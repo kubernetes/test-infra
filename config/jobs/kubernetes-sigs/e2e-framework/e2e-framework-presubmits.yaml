@@ -20,6 +20,10 @@ presubmits:
     always_run: true
     decorate: true
     path_alias: sigs.k8s.io/e2e-framework
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
