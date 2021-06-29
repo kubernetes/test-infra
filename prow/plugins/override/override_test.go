@@ -831,10 +831,11 @@ func TestWhoCanUse(t *testing.T) {
 		AllowedGitHubTeams: map[string][]string{
 			"org1/repo1": {"team-foo", "team-bar"},
 			"org2/repo2": {"team-bar"},
+			"org1":       {"team-foo-bar"},
 		},
 	}
 	expectedWho := "Repo administrators, and the following github teams:" +
-		"org1/repo1: team-foo team-bar."
+		"org1/repo1: team-foo team-bar, org1: team-foo-bar."
 
 	who := whoCanUse(override, "org1", "repo1")
 	if who != expectedWho {
@@ -873,6 +874,14 @@ func TestAuthorizedGitHubTeamMember(t *testing.T) {
 				"org/repo": {"team-foo"},
 			},
 			user: "member",
+		},
+		{
+			name: "members of specified teams are authorized to org",
+			slugs: map[string][]string{
+				fakeOrg: {"team-foo"},
+			},
+			user:     "user1",
+			expected: true,
 		},
 	}
 	log := logrus.WithField("plugin", pluginName)
