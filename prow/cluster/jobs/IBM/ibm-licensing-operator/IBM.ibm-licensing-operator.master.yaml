@@ -4,6 +4,9 @@ presubmits:
     cluster: default
     branches:
     - ^master$
+    - ^release-future$
+    - ^release-eus$
+    - ^release-efix$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-licensing-operator
@@ -22,6 +25,9 @@ presubmits:
     cluster: default
     branches:
     - ^master$
+    - ^release-future$
+    - ^release-eus$
+    - ^release-efix$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-licensing-operator
@@ -41,6 +47,9 @@ presubmits:
     cluster: ppc64le
     branches:
     - ^master$
+    - ^release-future$
+    - ^release-eus$
+    - ^release-efix$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-licensing-operator
@@ -60,6 +69,9 @@ presubmits:
     cluster: s390x
     branches:
     - ^master$
+    - ^release-future$
+    - ^release-eus$
+    - ^release-efix$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-licensing-operator
@@ -79,6 +91,9 @@ presubmits:
     cluster: default
     branches:
     - ^master$
+    - ^release-future$
+    - ^release-eus$
+    - ^release-efix$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-licensing-operator
@@ -98,6 +113,9 @@ presubmits:
     cluster: ppc64le
     branches:
     - ^master$
+    - ^release-future$
+    - ^release-eus$
+    - ^release-efix$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-licensing-operator
@@ -117,6 +135,9 @@ presubmits:
     cluster: s390x
     branches:
     - ^master$
+    - ^release-future$
+    - ^release-eus$
+    - ^release-efix$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-licensing-operator
@@ -137,6 +158,9 @@ postsubmits:
   - name: coverage-ibm-licensing-operator-postsubmit
     branches:
     - ^master$
+    - ^release-future$
+    - ^release-eus$
+    - ^release-efix$
     decorate: true
     path_alias: github.com/IBM/ibm-licensing-operator
     spec:
@@ -158,6 +182,9 @@ postsubmits:
     cluster: default
     branches:
     - ^master$
+    - ^release-future$
+    - ^release-eus$
+    - ^release-efix$
     decorate: true
     path_alias: github.com/IBM/ibm-licensing-operator
     spec:
@@ -174,6 +201,9 @@ postsubmits:
     cluster: ppc64le
     branches:
     - ^master$
+    - ^release-future$
+    - ^release-eus$
+    - ^release-efix$
     decorate: true
     path_alias: github.com/IBM/ibm-licensing-operator
     spec:
@@ -190,6 +220,9 @@ postsubmits:
     cluster: s390x
     branches:
     - ^master$
+    - ^release-future$
+    - ^release-eus$
+    - ^release-efix$
     decorate: true
     path_alias: github.com/IBM/ibm-licensing-operator
     spec:
@@ -206,6 +239,9 @@ postsubmits:
     cluster: default
     branches:
     - ^master$
+    - ^release-future$
+    - ^release-eus$
+    - ^release-efix$
     decorate: true
     path_alias: github.com/IBM/ibm-licensing-operator
     labels:
@@ -224,6 +260,9 @@ postsubmits:
     cluster: ppc64le
     branches:
     - ^master$
+    - ^release-future$
+    - ^release-eus$
+    - ^release-efix$
     decorate: true
     path_alias: github.com/IBM/ibm-licensing-operator
     labels:
@@ -242,6 +281,9 @@ postsubmits:
     cluster: s390x
     branches:
     - ^master$
+    - ^release-future$
+    - ^release-eus$
+    - ^release-efix$
     decorate: true
     path_alias: github.com/IBM/ibm-licensing-operator
     labels:
@@ -260,6 +302,9 @@ postsubmits:
     cluster: default
     branches:
     - ^master$
+    - ^release-future$
+    - ^release-eus$
+    - ^release-efix$
     decorate: true
     labels:
       preset-service-account: "true"
