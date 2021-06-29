@@ -653,19 +653,20 @@ def generate_misc():
         # A special test for IPv6 Conformance
         build_test(name_override="kops-grid-scenario-ipv6-conformance",
                    cloud="aws",
-                   distro="u2104",
+                   distro="u2004",
                    k8s_version="ci",
                    networking="calico",
                    feature_flags=["AWSIPv6"],
-                   runs_per_day=24,
+                   runs_per_day=6,
                    extra_flags=['--ipv6',
                                 '--api-loadbalancer-type=public',
                                 '--api-loadbalancer-class=network',
-                                '--override=cluster.spec.api.loadBalancer.useForInternalApi=true',
-                                '--override=cluster.spec.cloudControllerManager.cloudProvider=aws',
-                                '--override=cluster.spec.cloudControllerManager.image=hakman/cloud-controller-manager:ipv6-1', # pylint: disable=line-too-long
-                                '--override=cluster.spec.nonMasqueradeCIDR=fd00:10:96::/64',
-                                '--override=cluster.spec.kubeDNS.upstreamNameservers=2620:119:53::53', # pylint: disable=line-too-long
+                                '--set=cluster.spec.api.loadBalancer.useForInternalApi=true',
+                                '--set=cluster.spec.cloudControllerManager.cloudProvider=aws',
+                                '--set=cluster.spec.cloudControllerManager.image=hakman/cloud-controller-manager:ipv6-1', # pylint: disable=line-too-long
+                                '--set=cluster.spec.nonMasqueradeCIDR=fd00:10:96::/64',
+                                '--set=cluster.spec.kubeDNS.upstreamNameservers=2620:119:35::35',
+                                '--set=cluster.spec.kubeDNS.upstreamNameservers=2620:119:53::53',
                                 ],
                    focus_regex=r'\[Conformance\]|\[NodeConformance\]',
                    extra_dashboards=['kops-misc', 'kops-ipv6']),
@@ -673,30 +674,38 @@ def generate_misc():
         build_test(name_override="kops-grid-scenario-ipv6-calico",
                    cloud="aws",
                    distro="u2004",
-                   k8s_version="latest",
+                   k8s_version="ci",
                    networking="calico",
                    feature_flags=["AWSIPv6"],
                    runs_per_day=3,
                    extra_flags=['--ipv6',
-                                '--override=cluster.spec.cloudControllerManager.cloudProvider=aws',
-                                '--override=cluster.spec.cloudControllerManager.image=hakman/cloud-controller-manager:ipv6-1', # pylint: disable=line-too-long
-                                '--override=cluster.spec.nonMasqueradeCIDR=fd00:10:96::/64',
-                                '--override=cluster.spec.kubeDNS.upstreamNameservers=2620:119:53::53', # pylint: disable=line-too-long
+                                '--api-loadbalancer-type=public',
+                                '--api-loadbalancer-class=network',
+                                '--set=cluster.spec.api.loadBalancer.useForInternalApi=true',
+                                '--set=cluster.spec.cloudControllerManager.cloudProvider=aws',
+                                '--set=cluster.spec.cloudControllerManager.image=hakman/cloud-controller-manager:ipv6-1', # pylint: disable=line-too-long
+                                '--set=cluster.spec.nonMasqueradeCIDR=fd00:10:96::/64',
+                                '--set=cluster.spec.kubeDNS.upstreamNameservers=2620:119:35::35',
+                                '--set=cluster.spec.kubeDNS.upstreamNameservers=2620:119:53::53',
                                 ],
                    extra_dashboards=['kops-misc', 'kops-ipv6']),
         # A special test for IPv6 using Cilium CNI
         build_test(name_override="kops-grid-scenario-ipv6-cilium",
                    cloud="aws",
                    distro="u2004",
-                   k8s_version="latest",
+                   k8s_version="ci",
                    networking="cilium",
                    feature_flags=["AWSIPv6"],
                    runs_per_day=3,
                    extra_flags=['--ipv6',
-                                '--override=cluster.spec.cloudControllerManager.cloudProvider=aws',
-                                '--override=cluster.spec.cloudControllerManager.image=hakman/cloud-controller-manager:ipv6-1', # pylint: disable=line-too-long
-                                '--override=cluster.spec.nonMasqueradeCIDR=fd00:10:96::/64',
-                                '--override=cluster.spec.kubeDNS.upstreamNameservers=2620:119:53::53', # pylint: disable=line-too-long
+                                '--api-loadbalancer-type=public',
+                                '--api-loadbalancer-class=network',
+                                '--set=cluster.spec.api.loadBalancer.useForInternalApi=true',
+                                '--set=cluster.spec.cloudControllerManager.cloudProvider=aws',
+                                '--set=cluster.spec.cloudControllerManager.image=hakman/cloud-controller-manager:ipv6-1', # pylint: disable=line-too-long
+                                '--set=cluster.spec.nonMasqueradeCIDR=fd00:10:96::/64',
+                                '--set=cluster.spec.kubeDNS.upstreamNameservers=2620:119:35::35',
+                                '--set=cluster.spec.kubeDNS.upstreamNameservers=2620:119:53::53',
                                 ],
                    extra_dashboards=['kops-misc', 'kops-ipv6']),
 
@@ -841,8 +850,8 @@ def generate_misc():
 # kops-periodics-distros.yaml #
 ###############################
 def generate_distros():
-    distros = ['debian9', 'debian10', 'ubuntu1804', 'ubuntu2004', 'centos7', 'centos8',
-               'amazonlinux2', 'rhel7', 'rhel8', 'flatcar']
+    distros = ['debian9', 'debian10', 'ubuntu1804', 'ubuntu2004', 'ubuntu2104',
+               'centos7', 'centos8', 'amazonlinux2', 'rhel7', 'rhel8', 'flatcar']
     results = []
     for distro in distros:
         distro_short = distro.replace('ubuntu', 'u').replace('debian', 'deb').replace('amazonlinux', 'amzn') # pylint: disable=line-too-long
@@ -1050,18 +1059,19 @@ def generate_presubmits_e2e():
         presubmit_test(
             name="pull-kops-e2e-ipv6-conformance",
             cloud="aws",
-            distro="u2104",
+            distro="u2004",
             k8s_version="ci",
             networking="calico",
             feature_flags=["AWSIPv6"],
             extra_flags=['--ipv6',
                          '--api-loadbalancer-type=public',
                          '--api-loadbalancer-class=network',
-                         '--override=cluster.spec.api.loadBalancer.useForInternalApi=true',
-                         '--override=cluster.spec.cloudControllerManager.cloudProvider=aws',
-                         '--override=cluster.spec.cloudControllerManager.image=hakman/cloud-controller-manager:ipv6-1', # pylint: disable=line-too-long
-                         '--override=cluster.spec.nonMasqueradeCIDR=fd00:10:96::/64',
-                         '--override=cluster.spec.kubeDNS.upstreamNameservers=2620:119:53::53',
+                         '--set=cluster.spec.api.loadBalancer.useForInternalApi=true',
+                         '--set=cluster.spec.cloudControllerManager.cloudProvider=aws',
+                         '--set=cluster.spec.cloudControllerManager.image=hakman/cloud-controller-manager:ipv6-1', # pylint: disable=line-too-long
+                         '--set=cluster.spec.nonMasqueradeCIDR=fd00:10:96::/64',
+                         '--set=cluster.spec.kubeDNS.upstreamNameservers=2620:119:35::35',
+                         '--set=cluster.spec.kubeDNS.upstreamNameservers=2620:119:53::53',
                          ],
             focus_regex=r'\[Conformance\]|\[NodeConformance\]',
             tab_name='ipv6-conformance',
