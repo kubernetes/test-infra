@@ -33,7 +33,6 @@ import (
 
 const (
 	pluginName             = "cla"
-	claContextName         = "cla/linuxfoundation"
 	cncfclaNotFoundMessage = `Thanks for your pull request. Before we can look at your pull request, you'll need to sign a Contributor License Agreement (CLA).
 
 :memo: **Please follow instructions at <https://git.k8s.io/community/CLA.md#the-contributor-license-agreement> to sign the CLA.**
@@ -58,12 +57,19 @@ It may take a couple minutes for the CLA signature to be fully registered; after
 )
 
 var (
-	checkCLARe = regexp.MustCompile(`(?mi)^/check-cla\s*$`)
+	checkCLARe     = regexp.MustCompile(`(?mi)^/check-cla\s*$`)
+	claContextName string
 )
 
 func init() {
 	plugins.RegisterStatusEventHandler(pluginName, handleStatusEvent, helpProvider)
 	plugins.RegisterGenericCommentHandler(pluginName, handleCommentEvent, helpProvider)
+	config := &plugins.Configuration{}
+	if config.EasyCLAEnabled {
+		claContextName = "cla/easy-cla"
+	} else {
+		claContextName = "cla/linuxfoundation"
+	}
 }
 
 func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {

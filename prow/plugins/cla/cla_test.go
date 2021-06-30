@@ -332,6 +332,54 @@ func TestCheckCLA(t *testing.T) {
 
 			removedLabel: fmt.Sprintf("/#3:%s", labels.ClaYes),
 		},
+		{
+			name:       "cla/easy-cla status adds the cla-no label and removes cla-yes label when its state is \"failure\"",
+			context:    "cla/easy-cla",
+			state:      "failure",
+			issueState: "open",
+			SHA:        "sha",
+			action:     "created",
+			body:       "/check-cla",
+			pullRequests: []github.PullRequest{
+				{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
+			},
+			hasCLAYes: true,
+
+			addedLabel:   fmt.Sprintf("/#3:%s", labels.ClaNo),
+			removedLabel: fmt.Sprintf("/#3:%s", labels.ClaYes),
+		},
+		{
+			name:       "cla/easy-cla status retains the cla-yes label and removes cla-no label when its state is \"success\"",
+			context:    "cla/easy-cla",
+			state:      "success",
+			issueState: "open",
+			SHA:        "sha",
+			action:     "created",
+			body:       "/check-cla",
+			pullRequests: []github.PullRequest{
+				{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
+			},
+			hasCLANo:  true,
+			hasCLAYes: true,
+
+			removedLabel: fmt.Sprintf("/#3:%s", labels.ClaNo),
+		},
+		{
+			name:       "cla/easy-cla status retains the cla-no label and removes cla-yes label when its state is \"failure\"",
+			context:    "cla/easy-cla",
+			state:      "failure",
+			issueState: "open",
+			SHA:        "sha",
+			action:     "created",
+			body:       "/check-cla",
+			pullRequests: []github.PullRequest{
+				{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
+			},
+			hasCLANo:  true,
+			hasCLAYes: true,
+
+			removedLabel: fmt.Sprintf("/#3:%s", labels.ClaYes),
+		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {

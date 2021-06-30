@@ -90,6 +90,7 @@ type Configuration struct {
 	Welcome              []Welcome                    `json:"welcome,omitempty"`
 	Override             Override                     `json:"override,omitempty"`
 	Help                 Help                         `json:"help,omitempty"`
+	EasyCLAEnabled       bool                         `json:"easy_cla_enabled,omitempty"`
 }
 
 type Help struct {
