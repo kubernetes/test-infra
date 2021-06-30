@@ -9,9 +9,10 @@ ts_library(
 
 ts_library(
     name = "common",
-    srcs = glob(["common/*.ts"]),
+    srcs = glob(["common/*.ts"]) + ["vendor.d.ts"],
     deps = [
         ":api",
+        "@npm//@types/gtag.js",
         "@npm//moment",
     ],
 )
@@ -165,6 +166,7 @@ ts_library(
     name = "spyglass",
     srcs = ["spyglass/spyglass.ts"],
     deps = [
+        ":common",
         ":spyglass_common",
     ],
 )

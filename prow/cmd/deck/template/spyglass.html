@@ -5,6 +5,8 @@
   var src = {{.Source}};
   var lensArtifacts = {{.LensArtifacts}};
   var lensIndexes = {{.LensIndexes}};
+  var rerunCreatesJob = {{.ReRunCreatesJob}};
+  var prowJobName = {{.ProwJobName}};
 </script>
 <script type="text/javascript" src="/static/spyglass_bundle.min.js"></script>
 <link rel="stylesheet" type="text/css" href="/static/spyglass/spyglass.css">
@@ -47,3 +49,7 @@
 {{end}}
 
 {{template "page" (settings mobileUnfriendly darkMode "spyglass" .)}}
+
+<div id="rerun">
+  <div id="rerun-content"></div>
+</div>
