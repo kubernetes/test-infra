@@ -612,8 +612,7 @@ presubmits:
             --ginkgo-args="--debug" \
             --test-args="-test.timeout=60m -num-nodes=0" \
             --test-package-marker=latest.txt \
-            --parallel=25 \
-            --skip-regex="None"
+            --parallel=25
         securityContext:
           privileged: true
         env:
