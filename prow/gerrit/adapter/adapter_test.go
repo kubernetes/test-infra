@@ -1076,7 +1076,7 @@ func TestProcessChange(t *testing.T) {
 				if refs.Repo != tc.change.Project {
 					t.Errorf("repo %s != expected %s", refs.Repo, tc.change.Project)
 				}
-				if prowjobs[0].Spec.Refs.Pulls[0].Ref != tc.pjRef {
+				if len(prowjobs[0].Spec.Refs.Pulls) > 0 && prowjobs[0].Spec.Refs.Pulls[0].Ref != tc.pjRef {
 					t.Errorf("ref should be %s, got %s", tc.pjRef, prowjobs[0].Spec.Refs.Pulls[0].Ref)
 				}
 				if prowjobs[0].Spec.Refs.BaseSHA != tc.expectedBaseSHA {
