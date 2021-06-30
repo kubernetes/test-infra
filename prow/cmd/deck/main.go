@@ -1081,37 +1081,41 @@ lensesLoop:
 	}
 
 	var viewBuf bytes.Buffer
-	type lensesTemplate struct {
-		Lenses        map[int]spyglass.LensConfig
-		LensIndexes   []int
-		Source        string
-		LensArtifacts map[int][]string
-		JobHistLink   string
-		ProwJobLink   string
-		ArtifactsLink string
-		PRHistLink    string
-		Announcement  template.HTML
-		TestgridLink  string
-		JobName       string
-		BuildID       string
-		PRLink        string
-		ExtraLinks    []spyglass.ExtraLink
+	type spyglassTemplate struct {
+		Lenses          map[int]spyglass.LensConfig
+		LensIndexes     []int
+		Source          string
+		LensArtifacts   map[int][]string
+		JobHistLink     string
+		ProwJobLink     string
+		ArtifactsLink   string
+		PRHistLink      string
+		Announcement    template.HTML
+		TestgridLink    string
+		JobName         string
+		BuildID         string
+		PRLink          string
+		ExtraLinks      []spyglass.ExtraLink
+		ReRunCreatesJob bool
+		ProwJobName     string
 	}
-	lTmpl := lensesTemplate{
-		Lenses:        ls,
-		LensIndexes:   lensIndexes,
-		Source:        src,
-		LensArtifacts: lensCache,
-		JobHistLink:   jobHistLink,
-		ProwJobLink:   prowJobLink,
-		ArtifactsLink: artifactsLink,
-		PRHistLink:    prHistLink,
-		Announcement:  template.HTML(announcement),
-		TestgridLink:  tgLink,
-		JobName:       jobName,
-		BuildID:       buildID,
-		PRLink:        prLink,
-		ExtraLinks:    extraLinks,
+	sTmpl := spyglassTemplate{
+		Lenses:          ls,
+		LensIndexes:     lensIndexes,
+		Source:          src,
+		LensArtifacts:   lensCache,
+		JobHistLink:     jobHistLink,
+		ProwJobLink:     prowJobLink,
+		ArtifactsLink:   artifactsLink,
+		PRHistLink:      prHistLink,
+		Announcement:    template.HTML(announcement),
+		TestgridLink:    tgLink,
+		JobName:         jobName,
+		BuildID:         buildID,
+		PRLink:          prLink,
+		ExtraLinks:      extraLinks,
+		ReRunCreatesJob: o.rerunCreatesJob,
+		ProwJobName:     prowJobName,
 	}
 	t := template.New("spyglass.html")
 
@@ -1123,7 +1127,7 @@ lensesLoop:
 		return "", fmt.Errorf("error parsing template: %v", err)
 	}
 
-	if err = t.Execute(&viewBuf, lTmpl); err != nil {
+	if err = t.Execute(&viewBuf, sTmpl); err != nil {
 		return "", fmt.Errorf("error rendering template: %v", err)
 	}
 	renderElapsed := time.Since(renderStart)
