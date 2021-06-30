@@ -727,6 +727,9 @@ function redraw(fz: FuzzySearch, pushState: boolean = true): void {
         modal.style.display = "block";
         rerunCommand.innerHTML = "Rerunning that job requires GitHub login. Now that you're logged in, try again";
     }
+    // we need to upgrade DOM for new created dynamic elements
+    // see https://getmdl.io/started/index.html#dynamic
+    componentHandler.upgradeDom();
 }
 
 function createRerunCell(modal: HTMLElement, rerunElement: HTMLElement, prowjob: string): HTMLTableDataCellElement {
