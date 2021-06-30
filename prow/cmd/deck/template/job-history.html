@@ -1,5 +1,6 @@
 {{define "title"}}Job History: {{.Name}}{{end}}
 {{define "scripts"}}
+<script type="text/javascript" src="/static/job_history_bundle.min.js"></script>
 <style>
   .run-success {
     background-color: rgba(0, 255, 0, 0.3);
@@ -25,7 +26,10 @@
     </thead>
     <tbody>
       {{range .Builds}}
-      <tr class= {{if eq .Result "SUCCESS"}}"run-success"{{else if eq .Result "FAILURE"}}"run-failure"{{else}}"run-pending"{{end}}>
+      <tr id="build-{{.ID}}"
+        class="build-row {{if eq .Result "SUCCESS"}}run-success{{else if eq .Result "FAILURE"}}run-failure{{else}}run-pending{{end}}"
+        {{if .Pull}} data-title="{{.Pull.Title}}" {{end}}
+        >
         <td class="mdl-data-table__cell--non-numeric">
           {{if .SpyglassLink}}<a href="{{.SpyglassLink}}">{{.ID}}</a>
           {{else}}{{.ID}}{{end}}

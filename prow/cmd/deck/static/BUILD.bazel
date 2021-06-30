@@ -201,6 +201,22 @@ rollup_bundle(
     ],
 )
 
+ts_library(
+    name = "job_history",
+    srcs = glob(["job-history/*.ts"]),
+    deps = [
+        ":common",
+    ],
+)
+
+rollup_bundle(
+    name = "job_history_bundle",
+    entry_point = ":job-history/job-history.ts",
+    deps = [
+        ":job_history",
+    ],
+)
+
 test_suite(
     name = "unit_tests",
     tests = [
@@ -233,6 +249,7 @@ filegroup(
     name = "all-scripts",
     srcs = [
         ":command_help_bundle.min",
+        ":job_history_bundle.min",
         ":plugin_help_bundle.min",
         ":pr_bundle.min",
         ":prow_bundle.min",
