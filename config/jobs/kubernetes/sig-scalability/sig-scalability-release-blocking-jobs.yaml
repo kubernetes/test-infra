@@ -105,6 +105,7 @@ periodics:
       - --env=CL2_LOAD_TEST_THROUGHPUT=50
       - --env=CL2_DELETE_TEST_THROUGHPUT=30
       - --env=CL2_ENABLE_HUGE_SERVICES=true
+      - --env=CL2_ENABLE_HUGE_SERVICES_MULTIPLE_REPLICAS=true
       # Overrides CONTROLLER_MANAGER_TEST_ARGS from preset-e2e-scalability-periodics.
       - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling --kube-api-qps=100 --kube-api-burst=100 --endpointslice-updates-batch-period=500ms --endpoint-updates-batch-period=500ms
       - --env=CL2_ENABLE_API_AVAILABILITY_MEASUREMENT=true
