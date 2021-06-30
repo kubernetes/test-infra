@@ -179,7 +179,7 @@ func whoCanUse(overrideConfig plugins.Override, org, repo string) string {
 		repoRef := fmt.Sprintf("%s/%s", org, repo)
 		var allTeams []string
 		for r, allowedTeams := range overrideConfig.AllowedGitHubTeams {
-			if repoRef == "/" || r == repoRef {
+			if repoRef == "/" || r == repoRef || r == org {
 				allTeams = append(allTeams, fmt.Sprintf("%s: %s", r, strings.Join(allowedTeams, " ")))
 			}
 		}
@@ -244,7 +244,9 @@ func authorizedGitHubTeamMember(gc githubClient, log *logrus.Entry, teamSlugs ma
 		log.WithError(err).Warnf("invalid team slug(s)")
 	}
 
-	for _, slug := range teamSlugs[fmt.Sprintf("%s/%s", org, repo)] {
+	slugs := teamSlugs[fmt.Sprintf("%s/%s", org, repo)]
+	slugs = append(slugs, teamSlugs[org]...)
+	for _, slug := range slugs {
 		for _, team := range teams {
 			if team.Slug == slug {
 				members, err := gc.ListTeamMembers(org, team.ID, github.RoleAll)
