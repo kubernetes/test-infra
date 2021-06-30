@@ -40,7 +40,7 @@ periodics:
   interval: 1h          # Anything that can be parsed by time.ParseDuration.
   # Alternatively use a cron instead of an interval, for example:
   # cron: "05 15 * * 1-5"  # Run at 7:05 PST (15:05 UTC) every M-F
-  extra_ref:            # Periodic job doesn't clone any repo by default, needs to be added explicitly
+  extra_refs:            # Periodic job doesn't clone any repo by default, needs to be added explicitly
   - org: org
     repo: repo
     base_ref: main
