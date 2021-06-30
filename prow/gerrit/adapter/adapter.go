@@ -244,8 +244,17 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 			if shouldRun, err := postsubmit.ShouldRun(change.Branch, changedFiles); err != nil {
 				return fmt.Errorf("failed to determine if postsubmit %q should run: %v", postsubmit.Name, err)
 			} else if shouldRun {
+				postsubmitSpec := pjutil.PostsubmitSpec(postsubmit, refs)
+				// For postsubmit jobs, cloneref ignores `Refs.Pulls` because this is empty for github,
+				// for gerrit based repos, the commit SHA of the change is the same commit SHA merged into
+				// base branch, so using this for postsubmit jobs
+				if count := len(postsubmitSpec.Refs.Pulls); count == 1 {
+					postsubmitSpec.Refs.BaseSHA = postsubmitSpec.Refs.Pulls[0].SHA
+				} else {
+					logger.WithField("Pulls", count).Warn("Refs.Pulls should be exactly 1 for gerrit repos")
+				}
 				jobSpecs = append(jobSpecs, jobSpec{
-					spec:   pjutil.PostsubmitSpec(postsubmit, refs),
+					spec:   postsubmitSpec,
 					labels: postsubmit.Labels,
 				})
 			}
