@@ -24,9 +24,9 @@ window.onload = (): void => {
 
     tr.appendChild(cell.link(build.ID, build.SpyglassLink));
 
-    if (build.Pulls) {
-      for (const pull of build.Pulls) {
-        tr.appendChild(cell.prRevision("bla", pull));
+    if (build.Refs && build.Refs.pulls) {
+      for (const pull of build.Refs.pulls) {
+        tr.appendChild(cell.prRevision(`${build.Refs.org}/${build.Refs.repo}`, pull));
       }
     } else {
       tr.appendChild(cell.text(""));
