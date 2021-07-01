@@ -1,14 +1,46 @@
-import {tooltip} from '../common/common';
+import moment from "moment";
+import {cell, formatDuration} from '../common/common';
+
+declare const allBuilds: any;
 
 window.onload = (): void => {
-  const rows = document.getElementsByClassName("build-row");
+  const tbody = document.getElementById("history-table-body")!;
 
-  for (const row of rows) {
-    const title = row.getAttribute("data-title");
-    if (title != null) {
-      const tip = tooltip.forElem(row.id, document.createTextNode(title));
-      tip.classList.add("mdl-tooltip--right");
-      row.appendChild(tip);
+  for (const build of allBuilds) {
+    const tr = document.createElement("tr");
+
+    let className = "";
+    switch (build.Result) {
+      case "SUCCESS":
+        className = "run-success";
+        break;
+      case "FAILURE":
+        className = "run-failure";
+        break;
+      default:
+        className = "run-pending";
     }
+    tr.classList.add(className);
+
+    tr.appendChild(cell.link(build.ID, build.SpyglassLink));
+
+    if (build.Pulls) {
+      for (const pull of build.Pulls) {
+        tr.appendChild(cell.prRevision("bla", pull));
+      }
+    } else {
+      tr.appendChild(cell.text(""));
+    }
+
+    const started = Date.parse(build.Started) / 1000;
+    tr.appendChild(cell.time(build.ID, moment.unix(started)));
+    tr.appendChild(cell.text(formatDuration(build.Duration / 1000000000 ))); // convert from ns to s.
+    tr.appendChild(cell.text(build.Result));
+
+    for (const child of tr.children) {
+      child.classList.add("mdl-data-table__cell--non-numeric");
+    }
+
+    tbody.appendChild(tr);
   }
 };

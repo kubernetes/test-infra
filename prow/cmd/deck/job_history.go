@@ -67,7 +67,7 @@ type buildData struct {
 	Duration     time.Duration
 	Result       string
 	commitHash   string
-	Pull         *prowv1.Pull
+	Pulls        []prowv1.Pull
 }
 
 // storageBucket is an abstraction for unit testing
@@ -370,8 +370,8 @@ func getBuildData(ctx context.Context, bucket storageBucket, dir string) (buildD
 	if err != nil {
 		logrus.WithError(err).Debugf("failed to read %s", prowv1.ProwJobFile)
 	} else {
-		if pj.Spec.Refs != nil && len(pj.Spec.Refs.Pulls) > 0 {
-			b.Pull = &pj.Spec.Refs.Pulls[0]
+		if pj.Spec.Refs != nil {
+			b.Pulls = pj.Spec.Refs.Pulls
 		}
 	}
 
@@ -457,6 +457,7 @@ func getJobHistory(ctx context.Context, url *url.URL, cfg config.Getter, opener 
 	if err != nil && !errors.Is(err, context.DeadlineExceeded) {
 		return tmpl, fmt.Errorf("failed to get build ids: %v", err)
 	}
+
 	sort.Sort(sort.Reverse(int64slice(buildIDs)))
 
 	// determine which results to display on this page

@@ -1,6 +1,6 @@
 import moment from "moment";
 import {ProwJob, ProwJobList, ProwJobState, ProwJobType, Pull} from "../api/prow";
-import {cell, createRerunProwJobIcon, icon} from "../common/common";
+import {cell, createRerunProwJobIcon, formatDuration, icon} from "../common/common";
 import {getParameterByName} from "../common/urls";
 import {FuzzySearch} from './fuzzy-search';
 import {JobHistogram, JobSample} from './histogram';
@@ -803,51 +803,6 @@ function stateToAdj(state: ProwJobState): string {
         default:
             return state;
     }
-}
-
-function parseDuration(duration: string): number {
-    if (duration.length === 0) {
-        return 0;
-    }
-    let seconds = 0;
-    let multiple = 0;
-    for (let i = duration.length; i >= 0; i--) {
-        const ch = duration[i];
-        if (ch === 's') {
-            multiple = 1;
-        } else if (ch === 'm') {
-            multiple = 60;
-        } else if (ch === 'h') {
-            multiple = 60 * 60;
-        } else if (ch >= '0' && ch <= '9') {
-            seconds += Number(ch) * multiple;
-            multiple *= 10;
-        }
-    }
-    return seconds;
-}
-
-function formatDuration(seconds: number): string {
-    const parts: string[] = [];
-    if (seconds >= 3600) {
-        const hours = Math.floor(seconds / 3600);
-        parts.push(String(hours));
-        parts.push('h');
-        seconds = seconds % 3600;
-    }
-    if (seconds >= 60) {
-        const minutes = Math.floor(seconds / 60);
-        if (minutes > 0) {
-            parts.push(String(minutes));
-            parts.push('m');
-            seconds = seconds % 60;
-        }
-    }
-    if (seconds > 0) {
-        parts.push(String(seconds));
-        parts.push('s');
-    }
-    return parts.join('');
 }
 
 function drawJobHistogram(total: number, jobHistogram: JobHistogram, start: number, end: number, maximum: number): void {

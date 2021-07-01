@@ -208,6 +208,7 @@ ts_library(
     srcs = glob(["job-history/*.ts"]),
     deps = [
         ":common",
+        "@npm//moment",
     ],
 )
 
