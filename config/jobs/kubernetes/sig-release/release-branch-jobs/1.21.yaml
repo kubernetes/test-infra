@@ -424,7 +424,7 @@ periodics:
 - annotations:
     fork-per-release-periodic-interval: 2h 6h 24h
     testgrid-alert-email: release-team@kubernetes.io
-    testgrid-dashboards: sig-release-1.21-blocking, google-unit
+    testgrid-dashboards: sig-release-1.21-blocking
     testgrid-tab-name: integration-1.21
   cluster: k8s-infra-prow-build
   decorate: true
@@ -492,7 +492,7 @@ periodics:
 - annotations:
     fork-per-release-periodic-interval: 2h 6h 24h
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com, release-managers+alerts@kubernetes.io
-    testgrid-dashboards: sig-release-1.21-blocking, google-unit
+    testgrid-dashboards: sig-release-1.21-blocking
     testgrid-tab-name: verify-1.21
   cluster: k8s-infra-prow-build
   decorate: true
