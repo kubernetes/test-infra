@@ -21,11 +21,7 @@ export namespace cell {
     main.textContent = when.format(isADayOld ? 'MMM DD HH:mm:ss' : 'HH:mm:ss');
     main.id = tid;
 
-    const tip = document.createElement("div");
-    tip.textContent = when.format('MMM DD YYYY, HH:mm:ss [UTC]ZZ');
-    tip.setAttribute("data-mdl-for", tid);
-    tip.classList.add("mdl-tooltip", "mdl-tooltip--large");
-
+    const tip = tooltip.forElem(tid, document.createTextNode(when.format('MMM DD YYYY, HH:mm:ss [UTC]ZZ')));
     const c = document.createElement("td");
     c.appendChild(main);
     c.appendChild(tip);
@@ -298,4 +294,27 @@ function copyToClipboard(text: string) {
           document.body.removeChild(textarea);
       }
   }
+}
+
+export function formatDuration(seconds: number): string {
+  const parts: string[] = [];
+  if (seconds >= 3600) {
+      const hours = Math.floor(seconds / 3600);
+      parts.push(String(hours));
+      parts.push('h');
+      seconds = seconds % 3600;
+  }
+  if (seconds >= 60) {
+      const minutes = Math.floor(seconds / 60);
+      if (minutes > 0) {
+          parts.push(String(minutes));
+          parts.push('m');
+          seconds = seconds % 60;
+      }
+  }
+  if (seconds >= 0) {
+      parts.push(String(seconds));
+      parts.push('s');
+  }
+  return parts.join('');
 }
