@@ -555,34 +555,34 @@ func TestGetTimeout(t *testing.T) {
 
 func TestGetMinimumGracePeriod(t *testing.T) {
 	cases := []struct {
-		name     string
-		prowJobGracePeriod  time.Duration
-		optsGracePeriod       time.Duration
-		expected time.Duration
+		name               string
+		prowJobGracePeriod time.Duration
+		optsGracePeriod    time.Duration
+		expected           time.Duration
 	}{
 		{
-			name: "prowJob has defined grace of 30s, while option has default value -> prowjob grace overrides default",
+			name:               "prowJob has defined grace of 30s, while option has default value -> prowjob grace overrides default",
 			prowJobGracePeriod: 30 * time.Second,
-			optsGracePeriod: defaultGracePeriod,
-			expected: 30 * time.Second,
+			optsGracePeriod:    defaultGracePeriod,
+			expected:           30 * time.Second,
 		},
 		{
-			name: "prowJob has defined grace of 30s, while options grace is non default -> options overrides prowjob grace",
+			name:               "prowJob has defined grace of 30s, while options grace is non default -> options overrides prowjob grace",
 			prowJobGracePeriod: 30 * time.Second,
-			optsGracePeriod: 5 * time.Second,
-			expected: 5 * time.Second,
+			optsGracePeriod:    5 * time.Second,
+			expected:           5 * time.Second,
 		},
 		{
-			name: "prowJob has defined grace of 30s, while options has less than 1s -> minimum value of 1s",
+			name:               "prowJob has defined grace of 30s, while options has less than 1s -> minimum value of 1s",
 			prowJobGracePeriod: 30 * time.Second,
-			optsGracePeriod: 999 * time.Millisecond,
-			expected: 1 * time.Second,
+			optsGracePeriod:    999 * time.Millisecond,
+			expected:           1 * time.Second,
 		},
 		{
-			name: "prowJob has defined grace of < 1s, while option has default value -> minimum value of 1s",
+			name:               "prowJob has defined grace of < 1s, while option has default value -> minimum value of 1s",
 			prowJobGracePeriod: 999 * time.Millisecond,
-			optsGracePeriod: defaultGracePeriod,
-			expected: 1 * time.Second,
+			optsGracePeriod:    defaultGracePeriod,
+			expected:           1 * time.Second,
 		},
 	}
 
