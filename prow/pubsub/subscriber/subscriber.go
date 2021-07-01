@@ -19,6 +19,7 @@ package subscriber
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"cloud.google.com/go/pubsub"
@@ -30,33 +31,38 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/pjutil"
 )
 
 const (
-	prowEventType        = "prow.k8s.io/pubsub.EventType"
-	periodicProwJobEvent = "prow.k8s.io/pubsub.PeriodicProwJobEvent"
+	prowEventType          = "prow.k8s.io/pubsub.EventType"
+	periodicProwJobEvent   = "prow.k8s.io/pubsub.PeriodicProwJobEvent"
+	presubmitProwJobEvent  = "prow.k8s.io/pubsub.PresubmitProwJobEvent"
+	postsubmitProwJobEvent = "prow.k8s.io/pubsub.PostsubmitProwJobEvent"
 )
 
-// PeriodicProwJobEvent contains the minimum information required to start a ProwJob.
-type PeriodicProwJobEvent struct {
-	Name        string            `json:"name"`
+// ProwJobEvent contains the minimum information required to start a ProwJob.
+type ProwJobEvent struct {
+	Name string `json:"name"`
+	// Refs are used by presubmit and postsubmit jobs supplying baseSHA and SHA
+	Refs        *v1.Refs          `json:"refs,omitempty"`
 	Envs        map[string]string `json:"envs,omitempty"`
 	Labels      map[string]string `json:"labels,omitempty"`
 	Annotations map[string]string `json:"annotations,omitempty"`
 }
 
-// FromPayload set the PeriodicProwJobEvent from the PubSub message payload.
-func (pe *PeriodicProwJobEvent) FromPayload(data []byte) error {
+// FromPayload set the ProwJobEvent from the PubSub message payload.
+func (pe *ProwJobEvent) FromPayload(data []byte) error {
 	if err := json.Unmarshal(data, pe); err != nil {
 		return err
 	}
 	return nil
 }
 
-// ToMessage generates a PubSub Message from a PeriodicProwJobEvent.
-func (pe *PeriodicProwJobEvent) ToMessage() (*pubsub.Message, error) {
+// ToMessage generates a PubSub Message from a ProwJobEvent.
+func (pe *ProwJobEvent) ToMessage() (*pubsub.Message, error) {
 	data, err := json.Marshal(pe)
 	if err != nil {
 		return nil, err
@@ -121,6 +127,46 @@ func (m *pubSubMessage) nack() {
 	m.Message.Nack()
 }
 
+// jobHandler handles job type specific logic
+type jobHandler interface {
+	getProwJobSpec(cfg *config.Config, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error)
+}
+
+// periodicJobHandler implements jobHandler
+type periodicJobHandler struct{}
+
+func (peh *periodicJobHandler) getProwJobSpec(cfg *config.Config, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error) {
+	var periodicJob *config.Periodic
+	// TODO(chaodaiG): do we want to support inrepoconfig when
+	// https://github.com/kubernetes/test-infra/issues/21729 is done?
+	for _, job := range cfg.AllPeriodics() {
+		if job.Name == pe.Name {
+			periodicJob = &job
+			break
+		}
+	}
+	if periodicJob == nil {
+		return nil, nil, fmt.Errorf("failed to find associated periodic job %q", pe.Name)
+	}
+
+	prowJobSpec := pjutil.PeriodicSpec(*periodicJob)
+	return &prowJobSpec, periodicJob.Labels, nil
+}
+
+// presubmitJobHandler implements jobHandler
+type presubmitJobHandler struct{}
+
+func (prh *presubmitJobHandler) getProwJobSpec(cfg *config.Config, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error) {
+	return nil, nil, errors.New("presubmit not supported yet")
+}
+
+// ppostsubmitJobHandler implements jobHandler
+type postsubmitJobHandler struct{}
+
+func (poh *postsubmitJobHandler) getProwJobSpec(cfg *config.Config, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error) {
+	return nil, nil, errors.New("postsubmit not supported yet")
+}
+
 func extractFromAttribute(attrs map[string]string, key string) (string, error) {
 	value, ok := attrs[key]
 	if !ok {
@@ -141,62 +187,64 @@ func (s *Subscriber) handleMessage(msg messageInterface, subscription string) er
 		s.Metrics.ErrorCounter.With(prometheus.Labels{subscriptionLabel: subscription})
 		return err
 	}
+
+	var jh jobHandler
 	switch eType {
 	case periodicProwJobEvent:
-		err := s.handlePeriodicJob(l, msg, subscription)
-		if err != nil {
-			l.WithError(err).Error("failed to create Prow Periodic Job")
-			s.Metrics.ErrorCounter.With(prometheus.Labels{subscriptionLabel: subscription})
-		}
-		return err
+		jh = &periodicJobHandler{}
+	case presubmitProwJobEvent:
+		jh = &presubmitJobHandler{}
+	case postsubmitProwJobEvent:
+		jh = &postsubmitJobHandler{}
+	default:
+		l.WithField("type", eType).Error("Unsupported event type")
+		s.Metrics.ErrorCounter.With(prometheus.Labels{subscriptionLabel: subscription})
+		return fmt.Errorf("unsupported event type: %s", eType)
 	}
-	err = fmt.Errorf("unsupported event type")
-	l.WithError(err).Error("failed to read message")
-	s.Metrics.ErrorCounter.With(prometheus.Labels{subscriptionLabel: subscription})
+	if err = s.handleProwJob(l, jh, msg, subscription); err != nil {
+		l.WithError(err).Error("failed to create Prow Job")
+		s.Metrics.ErrorCounter.With(prometheus.Labels{subscriptionLabel: subscription})
+	}
 	return err
 }
 
-func (s *Subscriber) handlePeriodicJob(l *logrus.Entry, msg messageInterface, subscription string) error {
+func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msg messageInterface, subscription string) error {
 
-	var pe PeriodicProwJobEvent
+	var pe ProwJobEvent
 	var prowJob prowapi.ProwJob
+
+	if err := pe.FromPayload(msg.getPayload()); err != nil {
+		return err
+	}
 
 	reportProwJobFailure := func(pj *prowapi.ProwJob, err error) {
 		pj.Status.State = prowapi.ErrorState
 		pj.Status.Description = err.Error()
-		if s.Reporter.ShouldReport(context.TODO(), l, &prowJob) {
-			if _, _, err := s.Reporter.Report(context.TODO(), l, &prowJob); err != nil {
+		if s.Reporter.ShouldReport(context.TODO(), l, pj) {
+			if _, _, err := s.Reporter.Report(context.TODO(), l, pj); err != nil {
 				l.Warningf("failed to report status. %v", err)
 			}
 		}
 	}
 
-	if err := pe.FromPayload(msg.getPayload()); err != nil {
-		return err
-	}
-	var periodicJob *config.Periodic
-	for _, job := range s.ConfigAgent.Config().AllPeriodics() {
-		if job.Name == pe.Name {
-			periodicJob = &job
-			break
-		}
-	}
-	if periodicJob == nil {
-		err := fmt.Errorf("failed to find associated periodic job %q", pe.Name)
+	prowJobSpec, labels, err := jh.getProwJobSpec(s.ConfigAgent.Config(), pe)
+	if err != nil {
 		l.WithError(err).Errorf("failed to create job %q", pe.Name)
 		prowJob = pjutil.NewProwJob(prowapi.ProwJobSpec{}, nil, pe.Annotations)
 		reportProwJobFailure(&prowJob, err)
 		return err
 	}
+	if prowJobSpec == nil {
+		return fmt.Errorf("failed getting prowjob spec") // This should not happen
+	}
 
-	prowJobSpec := pjutil.PeriodicSpec(*periodicJob)
 	// Adds / Updates Labels from prow job event
 	for k, v := range pe.Labels {
-		periodicJob.Labels[k] = v
+		labels[k] = v
 	}
 
 	// Adds annotations
-	prowJob = pjutil.NewProwJob(prowJobSpec, periodicJob.Labels, pe.Annotations)
+	prowJob = pjutil.NewProwJob(*prowJobSpec, labels, pe.Annotations)
 	// Adds / Updates Environments to containers
 	if prowJob.Spec.PodSpec != nil {
 		for i, c := range prowJob.Spec.PodSpec.Containers {
@@ -212,6 +260,6 @@ func (s *Subscriber) handlePeriodicJob(l *logrus.Entry, msg messageInterface, su
 		reportProwJobFailure(&prowJob, err)
 		return err
 	}
-	l.Infof("periodic job %q created as %q", pe.Name, prowJob.Name)
+	l.Infof("Job %q created as %q", pe.Name, prowJob.Name)
 	return nil
 }
