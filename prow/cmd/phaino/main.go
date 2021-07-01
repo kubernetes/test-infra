@@ -37,6 +37,8 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
 
+const defaultTimeout = time.Hour
+
 type options struct {
 	keepGoing     bool
 	printCmd      bool
@@ -64,7 +66,7 @@ func gatherOptions() options {
 	fs.BoolVar(&o.keepGoing, "keep-going", false, "Continue running jobs after one fails if set")
 	fs.BoolVar(&o.printCmd, "print", false, "Just print the command it would run")
 	fs.BoolVar(&o.priv, "privileged", false, "Allow privileged local runs")
-	fs.DurationVar(&o.timeout, "timeout", time.Hour, "Maximum duration for each job (0 for unlimited)")
+	fs.DurationVar(&o.timeout, "timeout", defaultTimeout, "Maximum duration for each job (0 for unlimited)")
 	fs.DurationVar(&o.totalTimeout, "total-timeout", 0, "Maximum duration for all jobs (0 for unlimited)")
 	fs.DurationVar(&o.grace, "grace", 10*time.Second, "Terminate timed out jobs after this grace period (1s minimum)")
 	fs.StringVar(&o.gopath, "gopath", "", "The path that is used in the container. "+
