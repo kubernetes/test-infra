@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// TODO(shyamjvs): Make this exporter work for master too, currently facing
+// TODO: Make this exporter work for master too, currently facing
 // gcloud auth error when run from within a pod on the master.
 
 package main
