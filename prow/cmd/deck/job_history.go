@@ -67,7 +67,7 @@ type buildData struct {
 	Duration     time.Duration
 	Result       string
 	commitHash   string
-	Pulls        []prowv1.Pull
+	Refs         *prowv1.Refs
 }
 
 // storageBucket is an abstraction for unit testing
@@ -371,7 +371,7 @@ func getBuildData(ctx context.Context, bucket storageBucket, dir string) (buildD
 		logrus.WithError(err).Debugf("failed to read %s", prowv1.ProwJobFile)
 	} else {
 		if pj.Spec.Refs != nil {
-			b.Pulls = pj.Spec.Refs.Pulls
+			b.Refs = pj.Spec.Refs
 		}
 	}
 
