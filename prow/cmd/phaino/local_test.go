@@ -18,6 +18,7 @@ package main
 
 import (
 	"context"
+	"github.com/sirupsen/logrus"
 	"go/build"
 	"io/ioutil"
 	"os"
@@ -547,6 +548,49 @@ func TestGetTimeout(t *testing.T) {
 			timeout := getTimeout(tc.optsTimeout, tc.prowJobTimeout)
 			if tc.expected != timeout {
 				t.Errorf("getTimeout has wrong result! expected: %v , actual: %v", tc.expected, timeout)
+			}
+		})
+	}
+}
+
+func TestGetMinimumGracePeriod(t *testing.T) {
+	cases := []struct {
+		name     string
+		prowJobGracePeriod  time.Duration
+		optsGracePeriod       time.Duration
+		expected time.Duration
+	}{
+		{
+			name: "prowJob has defined grace of 30s, while option has default value -> prowjob grace overrides default",
+			prowJobGracePeriod: 30 * time.Second,
+			optsGracePeriod: defaultGracePeriod,
+			expected: 30 * time.Second,
+		},
+		{
+			name: "prowJob has defined grace of 30s, while options grace is non default -> options overrides prowjob grace",
+			prowJobGracePeriod: 30 * time.Second,
+			optsGracePeriod: 5 * time.Second,
+			expected: 5 * time.Second,
+		},
+		{
+			name: "prowJob has defined grace of 30s, while options has less than 1s -> minimum value of 1s",
+			prowJobGracePeriod: 30 * time.Second,
+			optsGracePeriod: 999 * time.Millisecond,
+			expected: 1 * time.Second,
+		},
+		{
+			name: "prowJob has defined grace of < 1s, while option has default value -> minimum value of 1s",
+			prowJobGracePeriod: 999 * time.Millisecond,
+			optsGracePeriod: defaultGracePeriod,
+			expected: 1 * time.Second,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			gracePeriod := getMinimumGracePeriod(1*time.Second, tc.prowJobGracePeriod, tc.optsGracePeriod, logrus.NewEntry(logrus.StandardLogger()))
+			if tc.expected != gracePeriod {
+				t.Errorf("getMinimumGracePeriod has wrong result! expected: %v , actual: %v", tc.expected, gracePeriod)
 			}
 		})
 	}

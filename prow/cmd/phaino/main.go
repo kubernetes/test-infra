@@ -37,7 +37,11 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
 
-const defaultTimeout = time.Hour
+const (
+	defaultTimeout     = time.Hour
+	defaultGracePeriod = 10 * time.Second
+	minimumGracePeriod = time.Second
+)
 
 type options struct {
 	keepGoing     bool
@@ -68,7 +72,7 @@ func gatherOptions() options {
 	fs.BoolVar(&o.priv, "privileged", false, "Allow privileged local runs")
 	fs.DurationVar(&o.timeout, "timeout", defaultTimeout, "Maximum duration for each job (0 for unlimited)")
 	fs.DurationVar(&o.totalTimeout, "total-timeout", 0, "Maximum duration for all jobs (0 for unlimited)")
-	fs.DurationVar(&o.grace, "grace", 10*time.Second, "Terminate timed out jobs after this grace period (1s minimum)")
+	fs.DurationVar(&o.grace, "grace", defaultGracePeriod, "Terminate timed out jobs after this grace period (1s minimum)")
 	fs.StringVar(&o.gopath, "gopath", "", "The path that is used in the container. "+
 		"Default is /home/prow/go/src, need to be changed if the repository depends on absolute code mount path it's is set to a different value in the container.")
 	fs.StringVar(&o.codeMountPath, "code-mount-path", "", "The GOPATH that is used in the container. "+
