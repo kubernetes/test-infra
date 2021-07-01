@@ -588,7 +588,7 @@ func TestGetMinimumGracePeriod(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			gracePeriod := getMinimumGracePeriod(1*time.Second, tc.prowJobGracePeriod, tc.optsGracePeriod, logrus.NewEntry(logrus.StandardLogger()))
+			gracePeriod := getMinimumGracePeriod(1*time.Second, tc.optsGracePeriod, tc.prowJobGracePeriod, logrus.NewEntry(logrus.StandardLogger()))
 			if tc.expected != gracePeriod {
 				t.Errorf("getMinimumGracePeriod has wrong result! expected: %v , actual: %v", tc.expected, gracePeriod)
 			}
