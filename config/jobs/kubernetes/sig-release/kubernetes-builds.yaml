@@ -144,7 +144,7 @@ periodics:
     github_team_ids:
       - 2241179 # release-managers
   annotations:
-    testgrid-dashboards: sig-release-master-blocking, google-unit
+    testgrid-dashboards: sig-release-master-blocking
     testgrid-tab-name: build-master-fast
     testgrid-alert-email: release-team@kubernetes.io
     description: 'Ends up running: make quick-release'

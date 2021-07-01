@@ -229,7 +229,6 @@ dashboards:
       - key: body
         value: <test-url>
 - name: google-soak
-- name: google-unit
 - name: google-windows
 
 - name: sig-auth-gce
@@ -274,7 +273,6 @@ dashboard_groups:
   - google-osconfig
   - google-rules_k8s
   - google-soak
-  - google-unit
   - google-windows
 
 

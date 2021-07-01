@@ -382,7 +382,7 @@ periodics:
   - 'perfDashBuildsCount: 500'
 - annotations:
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-    testgrid-dashboards: sig-release-1.19-informing, google-unit
+    testgrid-dashboards: sig-release-1.19-informing
     testgrid-tab-name: bazel-build-1.19
   decorate: true
   extra_refs:
@@ -426,7 +426,7 @@ periodics:
           memory: 12Gi
 - annotations:
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-    testgrid-dashboards: sig-release-1.19-blocking, google-unit
+    testgrid-dashboards: sig-release-1.19-blocking
     testgrid-tab-name: bazel-test-1.19
   cluster: k8s-infra-prow-build
   decorate: true
@@ -467,7 +467,7 @@ periodics:
     fork-per-release-generic-suffix: "true"
     fork-per-release-periodic-interval: 24h
     testgrid-alert-email: release-team@kubernetes.io
-    testgrid-dashboards: sig-release-1.19-blocking, google-unit
+    testgrid-dashboards: sig-release-1.19-blocking
     testgrid-tab-name: integration-1.19
   cluster: k8s-infra-prow-build
   decorate: true
@@ -502,7 +502,7 @@ periodics:
     fork-per-release-generic-suffix: "true"
     fork-per-release-periodic-interval: 24h
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com, release-managers+alerts@kubernetes.io
-    testgrid-dashboards: sig-release-1.19-blocking, google-unit
+    testgrid-dashboards: sig-release-1.19-blocking
     testgrid-tab-name: verify-1.19
   cluster: k8s-infra-prow-build
   decorate: true
@@ -688,7 +688,7 @@ periodics:
 postsubmits:
   kubernetes/kubernetes:
   - annotations:
-      testgrid-dashboards: google-unit, sig-release-job-config-errors
+      testgrid-dashboards: sig-release-job-config-errors
     branches:
     - release-1.19
     labels:
@@ -720,7 +720,7 @@ postsubmits:
             memory: 6Gi
   - annotations:
       testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-      testgrid-dashboards: sig-release-1.19-informing, google-unit
+      testgrid-dashboards: sig-release-1.19-informing
     branches:
     - release-1.19
     decorate: true
