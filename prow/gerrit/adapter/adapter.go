@@ -204,15 +204,10 @@ func failedJobs(account int, revision int, messages ...gerrit.ChangeMessageInfo)
 
 // processChange creates new presubmit prowjobs base off the gerrit changes
 func (c *Controller) processChange(logger logrus.FieldLogger, instance string, change client.ChangeInfo) error {
-
+	var refs prowapi.Refs
 	cloneURI, err := makeCloneURI(instance, change.Project)
 	if err != nil {
 		return fmt.Errorf("makeCloneURI: %w", err)
-	}
-
-	baseSHA, err := c.gc.GetBranchRevision(instance, change.Project, change.Branch)
-	if err != nil {
-		return fmt.Errorf("GetBranchRevision: %w", err)
 	}
 
 	type triggeredJob struct {
@@ -220,11 +215,6 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 		report bool
 	}
 	var triggeredJobs []triggeredJob
-
-	refs, err := createRefs(instance, change, cloneURI, baseSHA)
-	if err != nil {
-		return fmt.Errorf("createRefs from %s at %s: %w", cloneURI, baseSHA, err)
-	}
 
 	type jobSpec struct {
 		spec   prowapi.ProwJobSpec
@@ -239,13 +229,28 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 	case client.Merged:
 		// TODO: Do we want to add support for dynamic postsubmits?
 		postsubmits := c.config().PostsubmitsStatic[cloneURI.String()]
+		refs, err = createRefs(instance, change, cloneURI, "")
+		if err != nil {
+			return fmt.Errorf("createRefs from %s: %w", cloneURI, err)
+		}
 		postsubmits = append(postsubmits, c.config().PostsubmitsStatic[cloneURI.Host+"/"+cloneURI.Path]...)
 		for _, postsubmit := range postsubmits {
 			if shouldRun, err := postsubmit.ShouldRun(change.Branch, changedFiles); err != nil {
 				return fmt.Errorf("failed to determine if postsubmit %q should run: %v", postsubmit.Name, err)
 			} else if shouldRun {
+				postsubmitSpec := pjutil.PostsubmitSpec(postsubmit, refs)
+				// For postsubmit jobs, cloneref ignores `Refs.Pulls` because this is empty for github,
+				// for gerrit based repos, the commit SHA of the change is the same commit SHA merged into
+				// base branch, so using this for postsubmit jobs.
+				// Ref: https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#create-merge-patch-set-for-change
+				if count := len(postsubmitSpec.Refs.Pulls); count == 1 {
+					postsubmitSpec.Refs.BaseSHA = postsubmitSpec.Refs.Pulls[0].SHA
+					postsubmitSpec.Refs.Pulls = []prowapi.Pull{}
+				} else {
+					logger.WithField("Pulls", count).Warn("Refs.Pulls should be exactly 1 for gerrit repos")
+				}
 				jobSpecs = append(jobSpecs, jobSpec{
-					spec:   pjutil.PostsubmitSpec(postsubmit, refs),
+					spec:   postsubmitSpec,
 					labels: postsubmit.Labels,
 				})
 			}
@@ -253,6 +258,14 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 	case client.New:
 		// TODO: Do we want to add support for dynamic presubmits?
 		presubmits := c.config().PresubmitsStatic[cloneURI.String()]
+		baseSHA, err := c.gc.GetBranchRevision(instance, change.Project, change.Branch)
+		if err != nil {
+			return fmt.Errorf("GetBranchRevision: %w", err)
+		}
+		refs, err = createRefs(instance, change, cloneURI, baseSHA)
+		if err != nil {
+			return fmt.Errorf("createRefs from %s at %s: %w", cloneURI, baseSHA, err)
+		}
 		presubmits = append(presubmits, c.config().PresubmitsStatic[cloneURI.Host+"/"+cloneURI.Path]...)
 
 		account, err := c.gc.Account(instance)
