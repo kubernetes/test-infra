@@ -172,8 +172,6 @@ presubmits:
               value: "boskos.test-pods.svc.cluster.local"
             - name: AWS_REGION
               value: "us-west-2"
-            - name: NEW_E2E_FLOW
-              value: "1"
           securityContext:
             privileged: true
           resources:
@@ -212,8 +210,6 @@ presubmits:
               value: "boskos.test-pods.svc.cluster.local"
             - name: AWS_REGION
               value: "us-west-2"
-            - name: NEW_E2E_FLOW
-              value: "1"
           securityContext:
             privileged: true
           resources:

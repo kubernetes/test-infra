@@ -26,8 +26,6 @@ periodics:
         value: "boskos.test-pods.svc.cluster.local"
       - name: AWS_REGION
         value: "us-west-2"
-      - name: NEW_E2E_FLOW
-        value: "1"
       securityContext:
         privileged: true
       resources:
@@ -68,8 +66,6 @@ periodics:
             value: "us-west-2"
           - name: E2E_UNMANAGED_FOCUS
             value: "Cluster API E2E tests"
-          - name: NEW_E2E_FLOW
-            value: "1"
         securityContext:
           privileged: true
         resources:
