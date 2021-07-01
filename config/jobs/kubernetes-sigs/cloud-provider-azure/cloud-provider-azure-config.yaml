@@ -260,7 +260,6 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-cloud-provider-azure-e2e-ccm-capz
     always_run: true
-    optional: true
     decorate: true
     decoration_config:
       timeout: 3h
