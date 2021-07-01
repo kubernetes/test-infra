@@ -554,7 +554,7 @@ func getTimeout(optionsTimeout time.Duration, prowJobTimeout time.Duration) time
 	if prowJobTimeout > 0 {
 		return prowJobTimeout
 	}
-	return optionsTimeout
+	return defaultTimeout
 }
 
 func getMinimumGracePeriod(minimum time.Duration, optionsGracePeriod time.Duration, prowJobGracePeriod time.Duration, log *logrus.Entry) (gracePeriod time.Duration) {
