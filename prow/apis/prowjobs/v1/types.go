@@ -292,6 +292,35 @@ type SlackReporterConfig struct {
 	ReportTemplate    string         `json:"report_template,omitempty"`
 }
 
+func (src *SlackReporterConfig) ApplyDefault(def *SlackReporterConfig) *SlackReporterConfig {
+	if src == nil && def == nil {
+		return nil
+	}
+	var merged SlackReporterConfig
+	if src != nil {
+		merged = *src.DeepCopy()
+	} else {
+		merged = *def.DeepCopy()
+	}
+	if src == nil || def == nil {
+		return &merged
+	}
+
+	if merged.Channel == "" {
+		merged.Channel = def.Channel
+	}
+	if merged.Host == "" {
+		merged.Host = def.Host
+	}
+	if merged.JobStatesToReport == nil {
+		merged.JobStatesToReport = def.JobStatesToReport
+	}
+	if merged.ReportTemplate == "" {
+		merged.ReportTemplate = def.ReportTemplate
+	}
+	return &merged
+}
+
 // Duration is a wrapper around time.Duration that parses times in either
 // 'integer number of nanoseconds' or 'duration string' formats and serializes
 // to 'duration string' format.

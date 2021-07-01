@@ -3330,7 +3330,9 @@ func TestSlackReporterValidation(t *testing.T) {
 			config: func() Config {
 				slackCfg := map[string]SlackReporter{
 					"*": {
-						Channel: "my-channel",
+						SlackReporterConfig: prowjobv1.SlackReporterConfig{
+							Channel: "my-channel",
+						},
 					},
 				}
 				return Config{
@@ -3346,7 +3348,9 @@ func TestSlackReporterValidation(t *testing.T) {
 			config: func() Config {
 				slackCfg := map[string]SlackReporter{
 					"istio/proxy": {
-						Channel: "my-channel",
+						SlackReporterConfig: prowjobv1.SlackReporterConfig{
+							Channel: "my-channel",
+						},
 					},
 				}
 				return Config{
@@ -3362,7 +3366,9 @@ func TestSlackReporterValidation(t *testing.T) {
 			config: func() Config {
 				slackCfg := map[string]SlackReporter{
 					"proxy": {
-						Channel: "my-channel",
+						SlackReporterConfig: prowjobv1.SlackReporterConfig{
+							Channel: "my-channel",
+						},
 					},
 				}
 				return Config{
@@ -3406,8 +3412,10 @@ func TestSlackReporterValidation(t *testing.T) {
 			config: func() Config {
 				slackCfg := map[string]SlackReporter{
 					"*": {
-						Channel:        "my-channel",
-						ReportTemplate: "{{ if .Spec.Name}}",
+						SlackReporterConfig: prowjobv1.SlackReporterConfig{
+							Channel:        "my-channel",
+							ReportTemplate: "{{ if .Spec.Name}}",
+						},
 					},
 				}
 				return Config{
@@ -3423,8 +3431,10 @@ func TestSlackReporterValidation(t *testing.T) {
 			config: func() Config {
 				slackCfg := map[string]SlackReporter{
 					"*": {
-						Channel:        "my-channel",
-						ReportTemplate: "{{ .Undef}}",
+						SlackReporterConfig: prowjobv1.SlackReporterConfig{
+							Channel:        "my-channel",
+							ReportTemplate: "{{ .Undef}}",
+						},
 					},
 				}
 				return Config{
