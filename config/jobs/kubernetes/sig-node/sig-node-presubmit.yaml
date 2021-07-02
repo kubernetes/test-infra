@@ -646,3 +646,49 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
+
+  - name: pull-kubernetes-node-image-credential-provider
+    skip_branches:
+    - release-\d+\.\d+  # per-release image
+    annotations:
+      testgrid-dashboards: sig-node-kubelet
+      testgrid-tab-name: pr-kubelet-image-credential-provider
+    always_run: false
+    skip_report: true
+    optional: true
+    # run_if_changed: "^pkg/credentialprovider/.*"
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+        args:
+        # TODO: how to install credential provider binary
+        # I think below method won't work as it will not install binary on the e2e node
+        # the other way is to make a release and install using wget via cloudinit?
+        - "/bin/bash"
+        - "-c"
+        - set -o errexit;
+          set -o nounset;
+          set -o pipefail;
+          set -o xtrace;
+          cd;
+          go install github.com/adisky/sample-credential-provider;
+        - --root=/go/src
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=240"
+        - --scenario=kubernetes_e2e
+        - -- # end bootstrap args, scenario args below
+        - --deployment=node
+        - --env=KUBE_SSH_USER=core
+        - --gcp-project=k8s-jkns-pr-node-e2e
+        - --gcp-zone=us-west1-b
+        - '--node-test-args=--feature-gates=KubeletCredentialProviders=true --kubelet-flags="--image-credential-provider-config=/etc/kubernetes/kubelet-image-credential.yaml --image-credential-provider-bin-dir=$GOPATH/sample-credential-provider'
+        - --node-tests=true
+        - --test_args=--nodes=1 --focus="credential provider"
+        - --timeout=180m
+        - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/credentialprovider/image-config.yaml

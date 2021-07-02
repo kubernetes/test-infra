@@ -1,0 +1,5 @@
+images:
+  ubuntu:
+    image: ubuntu-gke-1804-1-17-v20200729 # docker 19.03.2 / containerd 1.2.10
+    project: ubuntu-os-gke-cloud
+    metdata: "user-data</workspace/test-infra/jobs/e2e_node/credentialprovider/credential-config.yaml"
