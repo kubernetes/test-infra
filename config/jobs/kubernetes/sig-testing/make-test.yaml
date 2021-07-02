@@ -48,8 +48,14 @@ presubmits:
     spec:
       # unit tests have no business requiring root or doing privileged operations
       securityContext:
-        runAsUser: 2000
+        # NOTE: these are arbitrary non-root values. They don't exist in the
+        # image and don't need to, the unit tests should only write to TMPDIR
+        runAsUser: 2001
+        runAsGroup: 2010
         allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - ALL
       containers:
         - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
           imagePullPolicy: Always
