@@ -71,6 +71,7 @@ periodics:
       fork-per-release: "true"
       testgrid-num-failures-to-alert: '3'
       testgrid-alert-stale-results-hours: '24'
+      testgrid-days-of-results: '7'
       testgrid-create-test-group: 'true'
       testgrid-dashboards: sig-release-master-blocking
       testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com
