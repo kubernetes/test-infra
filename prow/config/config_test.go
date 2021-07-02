@@ -2440,6 +2440,27 @@ in_repo_config:
 			},
 		},
 		{
+			name: "PubSubSubscriptions set but not PubSubTriggers",
+			prowConfig: `
+pubsub_subscriptions:
+  projA:
+  - topicB
+  - topicC
+`,
+			verify: func(c *Config) error {
+				if diff := cmp.Diff(c.PubSubTriggers, PubSubTriggers([]PubSubTrigger{
+					{
+						Project:         "projA",
+						Topics:          []string{"topicB", "topicC"},
+						AllowedClusters: []string{"*"},
+					},
+				})); diff != "" {
+					return fmt.Errorf("want(-), got(+): \n%s", diff)
+				}
+				return nil
+			},
+		},
+		{
 			name:               "Version file sets the version",
 			versionFileContent: "some-git-sha",
 			verify: func(c *Config) error {

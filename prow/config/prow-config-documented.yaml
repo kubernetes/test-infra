@@ -912,6 +912,16 @@ pubsub_subscriptions:
     "": null
 
 
+# PubSubTriggers defines Pub/Sub Subscriptions that we want to listen to,
+# can be used to restrict build cluster on a topic
+pubsub_triggers:
+  - allowed_clusters:
+      - ""
+    project: ' '
+    topics:
+      - ""
+
+
 # PushGateway is a prometheus push gateway.
 push_gateway:
     # Endpoint is the location of the prometheus pushgateway
