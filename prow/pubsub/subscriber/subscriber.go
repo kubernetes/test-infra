@@ -33,6 +33,7 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/pjutil"
 )
 
@@ -42,6 +43,16 @@ const (
 	presubmitProwJobEvent  = "prow.k8s.io/pubsub.PresubmitProwJobEvent"
 	postsubmitProwJobEvent = "prow.k8s.io/pubsub.PostsubmitProwJobEvent"
 )
+
+// Ensure interface is intact
+var _ prowCfgClient = (*config.Config)(nil)
+
+// prowCfgClient is for unit test purpose
+type prowCfgClient interface {
+	AllPeriodics() []config.Periodic
+	GetPresubmits(gc git.ClientFactory, identifier string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) ([]config.Presubmit, error)
+	GetPresubmitsStatic(identifier string) []config.Presubmit
+}
 
 // ProwJobEvent contains the minimum information required to start a ProwJob.
 type ProwJobEvent struct {
@@ -129,13 +140,13 @@ func (m *pubSubMessage) nack() {
 
 // jobHandler handles job type specific logic
 type jobHandler interface {
-	getProwJobSpec(cfg *config.Config, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error)
+	getProwJobSpec(cfg prowCfgClient, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error)
 }
 
 // periodicJobHandler implements jobHandler
 type periodicJobHandler struct{}
 
-func (peh *periodicJobHandler) getProwJobSpec(cfg *config.Config, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error) {
+func (peh *periodicJobHandler) getProwJobSpec(cfg prowCfgClient, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error) {
 	var periodicJob *config.Periodic
 	// TODO(chaodaiG): do we want to support inrepoconfig when
 	// https://github.com/kubernetes/test-infra/issues/21729 is done?
@@ -154,16 +165,65 @@ func (peh *periodicJobHandler) getProwJobSpec(cfg *config.Config, pe ProwJobEven
 }
 
 // presubmitJobHandler implements jobHandler
-type presubmitJobHandler struct{}
+type presubmitJobHandler struct {
+	GitClient git.ClientFactory
+}
 
-func (prh *presubmitJobHandler) getProwJobSpec(cfg *config.Config, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error) {
-	return nil, nil, errors.New("presubmit not supported yet")
+func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error) {
+	// presubmit jobs require Refs and Refs.Pulls to be set
+	refs := pe.Refs
+	if refs == nil {
+		return nil, nil, errors.New("Refs must be supplied")
+	}
+	if len(refs.Pulls) == 0 {
+		return nil, nil, errors.New("at least 1 Pulls is required")
+	}
+
+	var presubmitJob *config.Presubmit
+	org, repo, branch := refs.Org, refs.Repo, refs.BaseRef
+	orgRepo := org + "/" + repo
+	baseSHAGetter := func() (string, error) {
+		return refs.BaseSHA, nil
+	}
+	var headSHAGetters []func() (string, error)
+	for _, pull := range refs.Pulls {
+		headSHAGetters = append(headSHAGetters, func() (string, error) {
+			return pull.SHA, nil
+		})
+	}
+
+	// This will work with inrepoconfig
+	presubmits, err := cfg.GetPresubmits(prh.GitClient, orgRepo, baseSHAGetter, headSHAGetters...)
+	if err != nil {
+		// Fall back to static presubmits to avoid deadlocking when a presubmit is used to verify
+		// inrepoconfig
+		logrus.WithError(err).Debug("Failed to get presubmits")
+		presubmits = cfg.GetPresubmitsStatic(orgRepo)
+	}
+
+	for _, job := range presubmits {
+		if !job.CouldRun(branch) { // filter out jobs that are not branch matching
+			continue
+		}
+		if job.Name == pe.Name {
+			if presubmitJob != nil {
+				return nil, nil, fmt.Errorf("%s matches multiple prow jobs", pe.Name)
+			}
+			presubmitJob = &job
+		}
+	}
+	if presubmitJob == nil {
+		return nil, nil, fmt.Errorf("failed to find associated periodic job %q", pe.Name)
+	}
+
+	prowJobSpec := pjutil.PresubmitSpec(*presubmitJob, *refs)
+	return &prowJobSpec, presubmitJob.Labels, nil
 }
 
 // ppostsubmitJobHandler implements jobHandler
 type postsubmitJobHandler struct{}
 
-func (poh *postsubmitJobHandler) getProwJobSpec(cfg *config.Config, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error) {
+func (poh *postsubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error) {
 	return nil, nil, errors.New("postsubmit not supported yet")
 }
 
