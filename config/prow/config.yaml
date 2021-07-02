@@ -537,6 +537,7 @@ tide:
     - kubernetes/kubernetes
     excludedBranches:
     - master
+    - release-1.22
     labels:
     - lgtm
     - approved
@@ -558,6 +559,7 @@ tide:
     milestone: v1.22
     includedBranches:
     - master
+    - release-1.22
     labels:
     - lgtm
     - approved
