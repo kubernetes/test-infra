@@ -52,16 +52,17 @@ presubmits:
         # image and don't need to, the unit tests should only write to TMPDIR
         runAsUser: 2001
         runAsGroup: 2010
-        allowPrivilegeEscalation: false
-        capabilities:
-          drop:
-          - ALL
       containers:
         - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
           imagePullPolicy: Always
           command:
             - make
             - test
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
           # TODO: direct copy from pull-kubernetes-bazel-test, tune these
           resources:
             limits:
