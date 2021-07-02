@@ -47,7 +47,7 @@ presubmits:
         - "verify"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-      testgrid-tab-name: verify
+      testgrid-tab-name: pr-verify
   # conformance test
   - name: pull-cluster-api-provider-aws-e2e-conformance
     branches:
@@ -142,7 +142,7 @@ presubmits:
               memory: "9Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-      testgrid-tab-name: pr-conformance-k8s-master
+      testgrid-tab-name: pr-conformance-main-k8s-main
       testgrid-num-columns-recent: '20'
   - name: pull-cluster-api-provider-aws-e2e-blocking
     branches:
@@ -150,7 +150,7 @@ presubmits:
       - ^main$
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|exp|feature|hack|pkg|test|util)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
-    optional: false
+    optional: true
     decorate: true
     decoration_config:
       timeout: 5h
@@ -182,7 +182,7 @@ presubmits:
               memory: "9Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-      testgrid-tab-name: pr-blocking-e2e
+      testgrid-tab-name: pr-quick-e2e-main
       testgrid-num-columns-recent: '20'
   - name: pull-cluster-api-provider-aws-e2e
     branches:
@@ -221,7 +221,7 @@ presubmits:
               memory: "9Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-      testgrid-tab-name: pr-e2e
+      testgrid-tab-name: pr-e2e-main
       testgrid-num-columns-recent: '20'
   - name: pull-cluster-api-provider-aws-e2e-eks
     branches:
@@ -260,5 +260,5 @@ presubmits:
               memory: "9Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-      testgrid-tab-name: pr-e2e-eks
+      testgrid-tab-name: pr-e2e-eks-main
       testgrid-num-columns-recent: '20'
