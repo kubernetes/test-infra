@@ -48,7 +48,7 @@ presubmits:
         - "verify"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-      testgrid-tab-name: verify-release-0-6
+      testgrid-tab-name: pr-verify-release-0-6
   # conformance test
   - name: pull-cluster-api-provider-aws-e2e-conformance-release-0-6
     branches:
@@ -142,7 +142,7 @@ presubmits:
               memory: "9Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-      testgrid-tab-name: pr-conformance-k8s-master-release-0-6
+      testgrid-tab-name: pr-conformance-release-0-6-k8s-main
       testgrid-num-columns-recent: '20'
   - name: pull-cluster-api-provider-aws-e2e-release-0-6
     branches:
