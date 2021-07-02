@@ -417,6 +417,17 @@ dashboards:
       alert_mail_to_addresses: cert-manager-dev-alerts@googlegroups.com
     code_search_url_template:
       url: https://github.com/jetstack/testing/compare/<start-custom-0>...<end-custom-0>
+    description: Build and push the 'bazel-tools' image
+    name: post-testing-push-bazel-tools
+    open_bug_template:
+      url: https://github.com/jetstack/testing/issues/
+    open_test_template:
+      url: https://prow.build-infra.jetstack.net/view/gcs/gs/<gcs_prefix>/<changelist>
+    test_group_name: post-testing-push-bazel-tools
+  - alert_options:
+      alert_mail_to_addresses: cert-manager-dev-alerts@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/jetstack/testing/compare/<start-custom-0>...<end-custom-0>
     description: Build and push the 'bazelbuild' image
     name: post-testing-push-bazelbuild
     open_bug_template:
@@ -561,6 +572,8 @@ test_groups:
   name: periodic-testing-rotten
 - gcs_prefix: jetstack-logs/logs/periodic-testing-stale
   name: periodic-testing-stale
+- gcs_prefix: jetstack-logs/logs/post-testing-push-bazel-tools
+  name: post-testing-push-bazel-tools
 - gcs_prefix: jetstack-logs/logs/post-testing-push-bazelbuild
   name: post-testing-push-bazelbuild
 - gcs_prefix: jetstack-logs/logs/post-testing-push-golang-dind
