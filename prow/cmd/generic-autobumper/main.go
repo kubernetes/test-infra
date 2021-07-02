@@ -434,7 +434,7 @@ func getVersionsAndCheckConsistency(prefixes []prefix, images map[string]string)
 			if strings.HasPrefix(k, prefix.Prefix) {
 				found, ok := consistencyChecker[prefix.Prefix]
 				if ok && (found != v) && prefix.ConsistentImages {
-					return nil, fmt.Errorf("%q was supposed to be bumped consistntly but was not", prefix.Name)
+					return nil, fmt.Errorf("%s:%s not bumped consistently for prefix %s(%s), expected version: %s", k, v, prefix.Prefix, prefix.Name, found)
 				} else if !ok {
 					consistencyChecker[prefix.Prefix] = v
 				}
