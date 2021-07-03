@@ -1,0 +1,75 @@
+
+- name: {{job_name}}
+  cron: '{{cron}}'
+  labels:
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  decorate: true
+  decoration_config:
+    timeout: {{job_timeout}}
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
+  spec:
+    containers:
+    - command:
+      - runner.sh
+      args:
+      - bash
+      - -c
+      - |
+        make test-e2e-install
+        kubetest2 kops \
+          -v 2 \
+          --up --down \
+          --cloud-provider=aws \
+          --create-args="{{create_args}}" \
+          {%- if kops_feature_flags %}
+          --env=KOPS_FEATURE_FLAGS={{kops_feature_flags}} \
+          {%- endif %}
+          --kops-version-marker={{kops_deploy_url}} \
+          {%- if publish_version_marker %}
+          --publish-version-marker={{publish_version_marker}} \
+          {%- endif %}
+          --kubernetes-version={{k8s_deploy_url}} \
+          {%- if terraform_version %}
+          --terraform-version={{terraform_version}} \
+          {%- endif %}
+          {%- if validation_wait %}
+          --validation-wait={{validation_wait}} \
+          {%- endif %}
+          --test=kops \
+          -- \
+          --ginkgo-args="--debug" \
+          --test-args="-test.timeout={{test_timeout}} -num-nodes=0" \
+          {%- if test_package_bucket %}
+          --test-package-bucket={{test_package_bucket}} \
+          {%- endif %}
+          {%- if test_package_dir %}
+          --test-package-dir={{test_package_dir}} \
+          {%- endif %}
+          --test-package-marker={{marker}} \
+          {%- if focus_regex %}
+          --focus-regex="{{focus_regex}}" \
+          {%- endif %}
+          {%- if skip_regex %}
+          --skip-regex="{{skip_regex}}" \
+          {%- endif %}
+          --parallel={{test_parallelism}}
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: {{kops_ssh_user}}
+      image: {{image}}
+      imagePullPolicy: Always
+      resources:
+        limits:
+          memory: 3Gi
+        requests:
+          cpu: "2"
+          memory: 3Gi
