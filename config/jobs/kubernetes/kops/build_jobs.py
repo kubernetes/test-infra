@@ -563,6 +563,45 @@ def generate_misc():
                    extra_flags=["--zones=eu-central-1a",
                                 "--override=cluster.spec.networking.cilium.version=v1.10.0-rc2"],
                    extra_dashboards=['kops-misc']),
+
+        build_test(name_override="kops-aws-aws-ebs-csi-driver",
+                   cloud="aws",
+                   networking="cilium",
+                   distro="u2004",
+                   kops_channel="alpha",
+                   runs_per_day=3,
+                   scenario="aws-ebs-csi",
+                   extra_dashboards=['kops-misc']),
+
+        build_test(name_override="kops-aws-aws-ebs-csi-driver-irsa",
+                   cloud="aws",
+                   networking="cilium",
+                   distro="u2004",
+                   kops_channel="alpha",
+                   runs_per_day=3,
+                   scenario="aws-ebs-csi",
+                   env={'KOPS_IRSA': 'true'},
+                   extra_dashboards=['kops-misc']),
+
+        build_test(name_override="kops-aws-aws-load-balancer-controller",
+                   cloud="aws",
+                   networking="cilium",
+                   distro="u2004",
+                   kops_channel="alpha",
+                   runs_per_day=1,
+                   scenario="aws-lb-controller",
+                   extra_dashboards=['kops-misc']),
+
+        build_test(name_override="kops-aws-aws-load-balancer-controller-irsa",
+                   cloud="aws",
+                   networking="cilium",
+                   distro="u2004",
+                   kops_channel="alpha",
+                   runs_per_day=3,
+                   scenario="aws-lb-controller",
+                   env={'KOPS_IRSA': 'true'},
+                   extra_dashboards=['kops-misc']),
+
     ]
     return results
 
@@ -606,6 +645,49 @@ def generate_network_plugins():
                 extra_dashboards=['kops-network-plugins'],
                 runs_per_day=3,
             )
+        )
+    return results
+
+################################
+# kops-periodics-upgrades.yaml #
+################################
+def generate_upgrades():
+    versions_list = [
+        #  kops    k8s          kops   x k8s
+        (('1.21', 'v1.21.0'), ('1.21', 'latest')),
+        (('1.20', 'v1.20.7'), ('1.21', 'v1.21.0')),
+        (('1.19', 'v1.19.10'), ('1.20', 'v1.20.6')),
+        (('latest', 'v1.20.6'), ('latest', 'v1.21.0')),
+        (('1.20', 'v1.20.6'), ('latest', 'v1.21.0')),
+    ]
+    def shorten(version):
+        version = re.sub(r'^v', '', version)
+        version = re.sub(r'^(\d+\.\d+)\.\d+$', r'\g<1>', version)
+        return version.replace('.', '')
+    results = []
+    for versions in versions_list:
+        kops_a = versions[0][0]
+        k8s_a = versions[0][1]
+        kops_b = versions[1][0]
+        k8s_b = versions[1][1]
+        job_name = f"kops-aws-upgrade-k{shorten(k8s_a)}-ko{shorten(kops_a)}-to-k{shorten(k8s_b)}-ko{shorten(kops_b)}" # pylint: disable=line-too-long
+        env = {
+            'KOPS_VERSION_A': kops_a,
+            'K8S_VERSION_A': k8s_a,
+            'KOPS_VERSION_B': kops_b,
+            'K8S_VERSION_B': k8s_b,
+        }
+        results.append(
+            build_test(name_override=job_name,
+                       distro='u2004',
+                       networking='calico',
+                       k8s_version='stable',
+                       kops_channel='alpha',
+                       extra_dashboards=['kops-misc'],
+                       runs_per_day=12,
+                       scenario='upgrade-ab',
+                       env=env,
+                       )
         )
     return results
 
@@ -830,6 +912,7 @@ periodics_files = {
     'kops-periodics-grid.yaml': generate_grid,
     'kops-periodics-misc2.yaml': generate_misc,
     'kops-periodics-network-plugins.yaml': generate_network_plugins,
+    'kops-periodics-upgrades.yaml': generate_upgrades,
     'kops-periodics-versions.yaml': generate_versions,
     'kops-periodics-pipeline.yaml': generate_pipeline,
 }
