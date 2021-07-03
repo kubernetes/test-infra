@@ -12,11 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import hashlib
 import math
 import json
+import re
+import jinja2 # pylint: disable=import-error
 import yaml
 
-import jinja2 # pylint: disable=import-error
 
 from helpers import ( # pylint: disable=import-error, no-name-in-module
     build_cron,
@@ -55,7 +57,9 @@ def build_test(cloud='aws',
                test_timeout_minutes=60,
                skip_regex='',
                focus_regex=None,
-               runs_per_day=0):
+               runs_per_day=0,
+               scenario=None,
+               env=None):
     # pylint: disable=too-many-statements,too-many-branches,too-many-arguments
 
     if kops_version is None:
@@ -103,8 +107,20 @@ def build_test(cloud='aws',
 
     cron, runs_per_week = build_cron(tab, runs_per_day)
 
+    # Scenario-specific parameters
+    name_hash = hashlib.md5(job_name.encode()).hexdigest()
+    if env is None:
+        env = {}
+    env['CLOUD_PROVIDER'] = cloud
+    env['CLUSTER_NAME'] = f"e2e-{name_hash[0:10]}-{name_hash[11:16]}.test-cncf-aws.k8s.io"
+    env['KOPS_STATE_STORE'] = 's3://k8s-kops-prow'
+
+    tmpl_file = "periodic.yaml.jinja"
+    if scenario is not None:
+        tmpl_file = "periodic-scenario.yaml.jinja"
+
     loader = jinja2.FileSystemLoader(searchpath="./templates")
-    tmpl = jinja2.Environment(loader=loader).get_template("periodic.yaml.jinja")
+    tmpl = jinja2.Environment(loader=loader).get_template(tmpl_file)
     job = tmpl.render(
         job_name=job_name,
         cron=cron,
@@ -125,6 +141,8 @@ def build_test(cloud='aws',
         publish_version_marker=publish_version_marker,
         validation_wait=validation_wait,
         image=image,
+        scenario=scenario,
+        env=env,
     )
 
     spec = {
