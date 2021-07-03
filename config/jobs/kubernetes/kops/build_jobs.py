@@ -108,16 +108,16 @@ def build_test(cloud='aws',
     cron, runs_per_week = build_cron(tab, runs_per_day)
 
     # Scenario-specific parameters
-    name_hash = hashlib.md5(job_name.encode()).hexdigest()
     if env is None:
         env = {}
-    env['CLOUD_PROVIDER'] = cloud
-    env['CLUSTER_NAME'] = f"e2e-{name_hash[0:10]}-{name_hash[11:16]}.test-cncf-aws.k8s.io"
-    env['KOPS_STATE_STORE'] = 's3://k8s-kops-prow'
 
     tmpl_file = "periodic.yaml.jinja"
     if scenario is not None:
         tmpl_file = "periodic-scenario.yaml.jinja"
+        name_hash = hashlib.md5(job_name.encode()).hexdigest()
+        env['CLOUD_PROVIDER'] = cloud
+        env['CLUSTER_NAME'] = f"e2e-{name_hash[0:10]}-{name_hash[11:16]}.test-cncf-aws.k8s.io"
+        env['KOPS_STATE_STORE'] = 's3://k8s-kops-prow'
 
     loader = jinja2.FileSystemLoader(searchpath="./templates")
     tmpl = jinja2.Environment(loader=loader).get_template(tmpl_file)
@@ -209,7 +209,9 @@ def presubmit_test(branch='master',
                    focus_regex=None,
                    run_if_changed=None,
                    skip_report=False,
-                   always_run=False):
+                   always_run=False,
+                   scenario=None,
+                   env=None):
     # pylint: disable=too-many-statements,too-many-branches,too-many-arguments
     if cloud == 'aws':
         kops_image = distro_images[distro]
@@ -224,8 +226,20 @@ def presubmit_test(branch='master',
     marker, k8s_deploy_url, test_package_bucket, test_package_dir = k8s_version_info(k8s_version)
     args = create_args(kops_channel, networking, container_runtime, extra_flags, kops_image)
 
+    # Scenario-specific parameters
+    if env is None:
+        env = {}
+
+    tmpl_file = "presubmit.yaml.jinja"
+    if scenario is not None:
+        tmpl_file = "presubmit-scenario.yaml.jinja"
+        name_hash = hashlib.md5(name.encode()).hexdigest()
+        env['CLOUD_PROVIDER'] = cloud
+        env['CLUSTER_NAME'] = f"e2e-{name_hash[0:10]}-{name_hash[11:16]}.test-cncf-aws.k8s.io"
+        env['KOPS_STATE_STORE'] = 's3://k8s-kops-prow'
+
     loader = jinja2.FileSystemLoader(searchpath="./templates")
-    tmpl = jinja2.Environment(loader=loader).get_template("presubmit.yaml.jinja")
+    tmpl = jinja2.Environment(loader=loader).get_template(tmpl_file)
     job = tmpl.render(
         job_name=name,
         branch=branch,
@@ -247,6 +261,8 @@ def presubmit_test(branch='master',
         skip_report='true' if skip_report else 'false',
         always_run='true' if always_run else 'false',
         image=image,
+        scenario=scenario,
+        env=env,
     )
 
     spec = {
@@ -860,13 +876,26 @@ def generate_presubmits_e2e():
             cloud="aws",
             distro="u2004",
             k8s_version="latest",
-            feature_flags=["UseServiceAccountIAM"], # pylint: disable=line-too-long
+            feature_flags=["UseServiceAccountIAM"],
             extra_flags=[
                 '--override=cluster.spec.cloudControllerManager.cloudProvider=aws',
                 '--override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/kops-grid-scenario-aws-cloud-controller-manager-irsa/discovery', # pylint: disable=line-too-long
                 '--override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true'], # pylint: disable=line-too-long
             tab_name='e2e-ccm-irsa',
         ),
+
+        presubmit_test(
+            name="pull-kops-e2e-aws-irsa",
+            cloud="aws",
+            distro="u2004",
+            k8s_version="latest",
+            feature_flags=["UseServiceAccountIAM"],
+            extra_flags=[
+                '--override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/pull-aws-irsa/discovery', # pylint: disable=line-too-long
+                '--override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true'], # pylint: disable=line-too-long
+            tab_name='e2e-ccm-irsa',
+        ),
+
         presubmit_test(
             name="pull-kops-e2e-ipv6-conformance",
             cloud="aws",
@@ -886,6 +915,33 @@ def generate_presubmits_e2e():
                          ],
             focus_regex=r'\[Conformance\]|\[NodeConformance\]',
             tab_name='ipv6-conformance',
+        ),
+
+        presubmit_test(
+            name="pull-kops-e2e-aws-ebs-csi-driver",
+            cloud="aws",
+            distro="u2004",
+            k8s_version="ci",
+            networking="calico",
+            scenario="aws-ebs-csi",
+        ),
+
+        presubmit_test(
+            name="pull-e2e-kops-aws-load-balancer-controller",
+            cloud="aws",
+            distro="u2004",
+            k8s_version="ci",
+            networking="calico",
+            scenario="aws-lb-controller",
+        ),
+
+        presubmit_test(
+            name="pull-e2e-kops-addon-resource-tracking",
+            cloud="aws",
+            distro="u2004",
+            k8s_version="ci",
+            networking="calico",
+            scenario="addon-resource-tracking",
         ),
 
     ]
