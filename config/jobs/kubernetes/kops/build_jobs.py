@@ -689,6 +689,14 @@ def generate_presubmits_e2e():
     skip_regex = r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|\[Driver:.nfs\]|Dashboard|RuntimeClass|RuntimeHandler' # pylint: disable=line-too-long
     jobs = [
         presubmit_test(
+            k8s_version='ci',
+            kops_channel='alpha',
+            name='pull-kops-e2e-k8s-ci',
+            networking='calico',
+            tab_name='e2e-containerd-ci',
+            always_run=False,
+        ),
+        presubmit_test(
             container_runtime='docker',
             k8s_version='1.21',
             kops_channel='alpha',
