@@ -202,7 +202,7 @@ func failedJobs(account int, revision int, messages ...gerrit.ChangeMessageInfo)
 	return failures
 }
 
-// processChange creates new presubmit prowjobs base off the gerrit changes
+// processChange creates new presubmit/postsubmit prowjobs base off the gerrit changes
 func (c *Controller) processChange(logger logrus.FieldLogger, instance string, change client.ChangeInfo) error {
 	var refs prowapi.Refs
 	cloneURI, err := makeCloneURI(instance, change.Project)
@@ -287,7 +287,9 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 		filters := []pjutil.Filter{
 			messageFilter(messages, failed, all, logger),
 		}
-		if revision.Created.Time.After(lastUpdate) {
+		// Automatically trigger the Prow jobs if the revision is new and is not
+		// draft.
+		if revision.Created.Time.After(lastUpdate) && !revision.Draft {
 			filters = append(filters, pjutil.TestAllFilter())
 		}
 		toTrigger, err := pjutil.FilterPresubmits(pjutil.AggregateFilter(filters), listChangedFiles(change), change.Branch, presubmits, logger)

@@ -50,6 +50,10 @@ const (
 	Merged = "MERGED"
 	// New status indicates a Gerrit change is new (ie pending)
 	New = "NEW"
+
+	// ReadyForReviewMessage is the message for a Gerrit change if it's changed
+	// from Draft to Active
+	ReadyForReviewMessage = "Set Ready For Review"
 )
 
 // ProjectsFlag is the flag type for gerrit projects when initializing a gerrit client
@@ -339,7 +343,7 @@ func (h *gerritInstanceHandler) queryAllChanges(lastState map[string]time.Time, 
 		lastUpdate, ok := lastState[project]
 		if !ok {
 			lastUpdate = timeNow
-			log.WithField("now", timeNow).Warn("lastState not found, defaultint to now")
+			log.WithField("now", timeNow).Warn("lastState not found, defaulting to now")
 		}
 		changes, err := h.queryChangesForProject(log, project, lastUpdate, rateLimit)
 		if err != nil {
