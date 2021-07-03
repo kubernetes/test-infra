@@ -31,6 +31,7 @@ from helpers import ( # pylint: disable=import-error, no-name-in-module
 skip_jobs = [
 ]
 
+image = "gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master"
 
 ##############
 # Build Test #
@@ -123,6 +124,7 @@ def build_test(cloud='aws',
         focus_regex=focus_regex,
         publish_version_marker=publish_version_marker,
         validation_wait=validation_wait,
+        image=image,
     )
 
     spec = {
@@ -226,6 +228,7 @@ def presubmit_test(branch='master',
         run_if_changed=run_if_changed,
         skip_report='true' if skip_report else 'false',
         always_run='true' if always_run else 'false',
+        image=image,
     )
 
     spec = {

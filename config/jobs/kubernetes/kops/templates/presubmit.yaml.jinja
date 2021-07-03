@@ -27,7 +27,7 @@
       serviceAccountName: k8s-kops-test
       {%- endif %}
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+      - image: {{image}}
         imagePullPolicy: Always
         command:
         - runner.sh

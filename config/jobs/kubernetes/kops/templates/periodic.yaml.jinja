@@ -65,7 +65,7 @@
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: {{kops_ssh_user}}
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+      image: {{image}}
       imagePullPolicy: Always
       resources:
         limits:
