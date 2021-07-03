@@ -1126,6 +1126,9 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+    preset-dind-enabled: "true"
   decorate: true
   decoration_config:
     timeout: 90m
@@ -1152,10 +1155,12 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 3Gi
+          memory: 6Gi
         requests:
           cpu: "2"
-          memory: 3Gi
+          memory: 6Gi
+      securityContext:
+        privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -1175,6 +1180,9 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+    preset-dind-enabled: "true"
   decorate: true
   decoration_config:
     timeout: 90m
@@ -1203,10 +1211,12 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 3Gi
+          memory: 6Gi
         requests:
           cpu: "2"
-          memory: 3Gi
+          memory: 6Gi
+      securityContext:
+        privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -1226,6 +1236,9 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+    preset-dind-enabled: "true"
   decorate: true
   decoration_config:
     timeout: 90m
@@ -1252,10 +1265,12 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 3Gi
+          memory: 6Gi
         requests:
           cpu: "2"
-          memory: 3Gi
+          memory: 6Gi
+      securityContext:
+        privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
@@ -1275,6 +1290,9 @@ periodics:
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+    preset-dind-enabled: "true"
   decorate: true
   decoration_config:
     timeout: 90m
@@ -1303,10 +1321,12 @@ periodics:
       imagePullPolicy: Always
       resources:
         limits:
-          memory: 3Gi
+          memory: 6Gi
         requests:
           cpu: "2"
-          memory: 3Gi
+          memory: 6Gi
+      securityContext:
+        privileged: true
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
