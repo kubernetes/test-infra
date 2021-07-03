@@ -63,7 +63,7 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
         command:
-        - wrapper.sh
+        - runner.sh
         args:
         - make
         - sanity-test-v2
@@ -91,7 +91,7 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
         command:
-        - wrapper.sh
+        - runner.sh
         args:
         - make
         - integration-test-v2
