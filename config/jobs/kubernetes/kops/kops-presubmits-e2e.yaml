@@ -45,6 +45,7 @@ presubmits:
             --test-package-bucket=kubernetes-release-dev \
             --test-package-dir=ci \
             --test-package-marker=latest.txt \
+            --focus-regex="\[Conformance\]|\[NodeConformance\]" \
             --parallel=25
         securityContext:
           privileged: true
