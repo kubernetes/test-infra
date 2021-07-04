@@ -87,13 +87,23 @@ periodics:
       args:
       - -c
       - |
-        set -euo pipefail; \
-        apt update && apt -y install jq; \
-        wget -q -O /usr/local/bin/snyk https://github.com/snyk/snyk/releases/download/v1.605.0/snyk-linux && chmod +x /usr/local/bin/snyk; \
-        mkdir -p "${ARTIFACTS}"; \
-        [[ -z "${SNYK_TOKEN}" ]] && echo "SNYK_TOKEN env var is not set, required for snyk scan" && exit 1; \
-        snyk test --json > ${ARTIFACTS}/result_unfiltered.json || [[ $? -gt 1 ]] && echo "failed to run snyk scan" && exit 1; \
-        cat ${ARTIFACTS}/result_unfiltered.json | jq '.vulnerabilities | .[] | select ((.type=="license") or (.version=="0.0.0") | not)' | tee "${ARTIFACTS}/result.json"
+        set -euo pipefail
+        apt update && apt -y install jq
+        wget -q -O /usr/local/bin/snyk https://github.com/snyk/snyk/releases/download/v1.605.0/snyk-linux && chmod +x /usr/local/bin/snyk
+        mkdir -p "${ARTIFACTS}"
+        if [ -z "${SNYK_TOKEN}" ]; then
+          echo "SNYK_TOKEN env var is not set, required for snyk scan"
+          exit 1
+        fi
+        echo "Running snyk scan .."
+        snyk test --json > ${ARTIFACTS}/result_unfiltered.json || if [ $? -gt 1 ]; then
+          echo "failed to run snyk scan"
+          exit 1
+        fi
+        <${ARTIFACTS}/result_unfiltered.json jq \
+         '{vulnerabilities: .vulnerabilities | map(select((.type != "license") and (.version !=  "0.0.0"))) }' \
+        | tee "${ARTIFACTS}/result.json"
+        echo "Scan completed"
   annotations:
     testgrid-create-test-group: "true"
     testgrid-dashboards: sig-security-snyk-scan
