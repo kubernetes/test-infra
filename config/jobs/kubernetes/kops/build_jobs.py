@@ -795,6 +795,7 @@ def generate_presubmits_e2e():
             networking='calico',
             tab_name='e2e-containerd-ci',
             always_run=False,
+            focus_regex=r'\[Conformance\]|\[NodeConformance\]',
         ),
         presubmit_test(
             container_runtime='docker',
