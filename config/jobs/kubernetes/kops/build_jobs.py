@@ -293,7 +293,7 @@ def presubmit_test(branch='master',
     annotations = {
         'testgrid-dashboards': ', '.join(sorted(dashboards)),
         'testgrid-days-of-results': '90',
-        'testgrid-tab-name': tab_name,
+        'testgrid-tab-name': tab_name or name,
     }
     for (k, v) in spec.items():
         annotations[f"test.kops.k8s.io/{k}"] = v or ""
@@ -669,8 +669,8 @@ def generate_network_plugins():
 ################################
 def generate_upgrades():
     versions_list = [
-        #  kops    k8s          kops   x k8s
-        (('1.21', 'v1.21.0'), ('1.21', 'latest')),
+        #  kops    k8s          kops      k8s
+        (('1.21', 'v1.21.0'), ('latest', 'latest')),
         (('1.20', 'v1.20.7'), ('1.21', 'v1.21.0')),
         (('1.19', 'v1.19.10'), ('1.20', 'v1.20.6')),
         (('latest', 'v1.20.6'), ('latest', 'v1.21.0')),
@@ -893,7 +893,6 @@ def generate_presubmits_e2e():
             extra_flags=[
                 '--override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/pull-aws-irsa/discovery', # pylint: disable=line-too-long
                 '--override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true'], # pylint: disable=line-too-long
-            tab_name='e2e-ccm-irsa',
         ),
 
         presubmit_test(
@@ -933,6 +932,7 @@ def generate_presubmits_e2e():
             k8s_version="ci",
             networking="calico",
             scenario="aws-lb-controller",
+            tab_name="pull-kops-e2e-aws-load-balancer-controller",
         ),
 
         presubmit_test(
@@ -942,6 +942,7 @@ def generate_presubmits_e2e():
             k8s_version="ci",
             networking="calico",
             scenario="addon-resource-tracking",
+            tab_name="pull-kops-e2e-aws-addon-resource-tracking",
         ),
 
     ]

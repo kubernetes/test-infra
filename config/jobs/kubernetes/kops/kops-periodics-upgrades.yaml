@@ -3,8 +3,8 @@
 periodics:
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
-- name: e2e-kops-aws-upgrade-k121-ko121-to-klatest-ko121
-  cron: '27 0-23/2 * * *'
+- name: e2e-kops-aws-upgrade-k121-ko121-to-klatest-kolatest
+  cron: '50 0-23/2 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -33,13 +33,13 @@ periodics:
       - name: K8S_VERSION_A
         value: "v1.21.0"
       - name: KOPS_VERSION_B
-        value: "1.21"
+        value: "latest"
       - name: K8S_VERSION_B
         value: "latest"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
-        value: "e2e-111869076e-3667c.test-cncf-aws.k8s.io"
+        value: "e2e-ef350f61ed-9e810.test-cncf-aws.k8s.io"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-prow"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
@@ -62,7 +62,7 @@ periodics:
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-kubetest2, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '89'
-    testgrid-tab-name: kops-aws-upgrade-k121-ko121-to-klatest-ko121
+    testgrid-tab-name: kops-aws-upgrade-k121-ko121-to-klatest-kolatest
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k120-ko120-to-k121-ko121
