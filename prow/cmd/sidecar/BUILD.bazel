@@ -26,6 +26,8 @@ go_binary(
 prow_image(
     name = "image",
     base = "@git-base//image",
+    base_arm64 = "@git-base-arm64//image",
+    build_arm64 = True,
     component = NAME,
     symlinks = {"/sidecar": "/app/prow/cmd/sidecar/app.binary"},
     visibility = ["//visibility:public"],
