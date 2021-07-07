@@ -221,6 +221,17 @@ export function createRerunProwJobIcon(modal: HTMLElement, rerunElement: HTMLEle
   const url = `${location.protocol}//${location.host}/rerun?prowjob=${prowjob}`;
   const i = icon.create("refresh", "Show instructions for rerunning this job");
 
+  window.onkeydown = (event: any) => {
+    if ( event.key === "Escape" ) {
+      modal.style.display = "none";
+    }
+  };
+  window.onclick = (event: any) => {
+    if (event.target === modal) {
+      modal.style.display = "none";
+    }
+  };
+
   // we actually want to know whether the "access-token-session" cookie exists, but we can't always
   // access it from the frontend. "github_login" should be set whenever "access-token-session" is
   i.onclick = () => {

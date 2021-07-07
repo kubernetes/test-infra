@@ -176,11 +176,6 @@ function handleRerunButton() {
   const rerunStatus = getParameterByName("rerun");
   const modal = document.getElementById('rerun')!;
   const rerunCommand = document.getElementById('rerun-content')!;
-  window.onclick = (event: any) => {
-      if (event.target === modal) {
-          modal.style.display = "none";
-      }
-  };
 
   const r = document.getElementById("header-title")!;
   const c = document.createElement("div");
