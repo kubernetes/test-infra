@@ -320,7 +320,7 @@ func parseJobHistURL(url *url.URL) (storageProvider, bucketName, root string, bu
 			err = fmt.Errorf("invalid value for %s: %v", idParam, err)
 			return
 		}
-		if buildID < 0 {
+		if buildID < 1 {
 			err = fmt.Errorf("invalid value %s = %d", idParam, buildID)
 			return
 		}
