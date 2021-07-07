@@ -830,7 +830,7 @@ def generate_presubmits_e2e():
             always_run=True,
         ),
         presubmit_test(
-            k8s_version='1.21',
+            k8s_version='latest',
             kops_channel='alpha',
             name='pull-kops-e2e-k8s-containerd-ha',
             networking='calico',
