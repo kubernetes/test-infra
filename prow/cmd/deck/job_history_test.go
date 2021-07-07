@@ -407,7 +407,7 @@ func Test_getJobHistory(t *testing.T) {
 func TestListBuildIDsReturnsResultsOnError(t *testing.T) {
 	t.Run("logs-prefix", func(t *testing.T) {
 		bucket := blobStorageBucket{Opener: fakeOpener{iterator: fakeIterator{
-			result: io.ObjectAttributes{Name: "1327350934719696896", IsDir: true},
+			result: io.ObjectAttributes{Name: "13728953029057617923", IsDir: true},
 			err:    errors.New("some-err"),
 		}}}
 		ids, err := bucket.listBuildIDs(context.Background(), logsPrefix)
@@ -420,7 +420,7 @@ func TestListBuildIDsReturnsResultsOnError(t *testing.T) {
 	})
 	t.Run("no-prefix", func(t *testing.T) {
 		bucket := blobStorageBucket{Opener: fakeOpener{iterator: fakeIterator{
-			result: io.ObjectAttributes{Name: "/1327350934719696896.txt", IsDir: false},
+			result: io.ObjectAttributes{Name: "/13728953029057617923.txt", IsDir: false},
 			err:    errors.New("some-err"),
 		}}}
 		ids, err := bucket.listBuildIDs(context.Background(), "")
