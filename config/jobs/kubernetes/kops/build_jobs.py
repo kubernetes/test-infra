@@ -814,6 +814,16 @@ def generate_presubmits_e2e():
             focus_regex=r'\[Conformance\]|\[NodeConformance\]',
         ),
         presubmit_test(
+            k8s_version='ci',
+            kops_channel='alpha',
+            name='pull-kops-e2e-k8s-ci-ha',
+            networking='calico',
+            extra_flags=["--master-count=3", "--node-count=6", "--zones=eu-central-1a,eu-central-1b,eu-central-1c"],
+            tab_name='e2e-containerd-ci-ha',
+            always_run=False,
+            focus_regex=r'\[Conformance\]|\[NodeConformance\]',
+        ),
+        presubmit_test(
             container_runtime='docker',
             k8s_version='1.21',
             kops_channel='alpha',
@@ -828,16 +838,6 @@ def generate_presubmits_e2e():
             networking='calico',
             tab_name='e2e-containerd',
             always_run=True,
-        ),
-        presubmit_test(
-            k8s_version='latest',
-            kops_channel='alpha',
-            name='pull-kops-e2e-k8s-containerd-ha',
-            networking='calico',
-            extra_flags=["--master-count=3", "--zones=eu-central-1a,eu-central-1b,eu-central-1c"],
-            tab_name='e2e-containerd-ha',
-            always_run=False,
-            skip_regex=skip_regex+'|Multi-AZ|Invalid.AWS.KMS.key',
         ),
         presubmit_test(
             distro="u2010",
