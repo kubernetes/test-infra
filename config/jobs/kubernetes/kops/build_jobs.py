@@ -818,7 +818,10 @@ def generate_presubmits_e2e():
             kops_channel='alpha',
             name='pull-kops-e2e-k8s-ci-ha',
             networking='calico',
-            extra_flags=["--master-count=3", "--node-count=6", "--zones=eu-central-1a,eu-central-1b,eu-central-1c"],
+            extra_flags=[
+                "--master-count=3",
+                "--node-count=6",
+                "--zones=eu-central-1a,eu-central-1b,eu-central-1c"],
             tab_name='e2e-containerd-ci-ha',
             always_run=False,
             focus_regex=r'\[Conformance\]|\[NodeConformance\]',
