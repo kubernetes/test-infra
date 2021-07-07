@@ -33,7 +33,6 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	pkgio "k8s.io/test-infra/prow/io"
@@ -365,7 +364,7 @@ func getBuildData(ctx context.Context, bucket storageBucket, dir string) (buildD
 		logrus.Debugf("failed to read finished.json (job might be unfinished): %v", err)
 	}
 
-	pj := prowapi.ProwJob{}
+	pj := prowv1.ProwJob{}
 	err = readJSON(ctx, bucket, path.Join(dir, prowv1.ProwJobFile), &pj)
 	if err != nil {
 		logrus.WithError(err).Debugf("failed to read %s", prowv1.ProwJobFile)
