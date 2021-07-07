@@ -229,7 +229,7 @@ func (r *reconciler) reconcile(ctx context.Context, pj *prowv1.ProwJob) (*reconc
 
 	switch pj.Status.State {
 	case prowv1.PendingState:
-		return nil, r.syncPendingJob(ctx, pj)
+		return r.syncPendingJob(ctx, pj)
 	case prowv1.TriggeredState:
 		return r.syncTriggeredJob(ctx, pj)
 	case prowv1.AbortedState:
@@ -249,12 +249,12 @@ func (r *reconciler) terminateDupes(ctx context.Context, pj *prowv1.ProwJob) err
 }
 
 // syncPendingJob syncs jobs for which we already created the test workload
-func (r *reconciler) syncPendingJob(ctx context.Context, pj *prowv1.ProwJob) error {
+func (r *reconciler) syncPendingJob(ctx context.Context, pj *prowv1.ProwJob) (*reconcile.Result, error) {
 	prevPJ := pj.DeepCopy()
 
 	pod, podExists, err := r.pod(ctx, pj)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if !podExists {
@@ -263,7 +263,7 @@ func (r *reconciler) syncPendingJob(ctx context.Context, pj *prowv1.ProwJob) err
 		id, pn, err := r.startPod(ctx, pj)
 		if err != nil {
 			if !isRequestError(err) {
-				return fmt.Errorf("error starting pod %s: %v", pod.Name, err)
+				return nil, fmt.Errorf("error starting pod %s: %v", pod.Name, err)
 			}
 			pj.Status.State = prowv1.ErrorState
 			pj.SetComplete()
@@ -284,7 +284,7 @@ func (r *reconciler) syncPendingJob(ctx context.Context, pj *prowv1.ProwJob) err
 			r.log.WithFields(pjutil.ProwJobFields(pj)).Info("Pod is in unknown state, deleting & restarting pod")
 			client, ok := r.buildClients[pj.ClusterAlias()]
 			if !ok {
-				return fmt.Errorf("unknown pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
+				return nil, fmt.Errorf("unknown pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
 			}
 
 			if finalizers := sets.NewString(pod.Finalizers...); finalizers.Has(kubernetesreporterapi.FinalizerName) {
@@ -292,11 +292,11 @@ func (r *reconciler) syncPendingJob(ctx context.Context, pj *prowv1.ProwJob) err
 				oldPod := pod.DeepCopy()
 				pod.Finalizers = finalizers.Delete(kubernetesreporterapi.FinalizerName).UnsortedList()
 				if err := client.Patch(ctx, pod, ctrlruntimeclient.MergeFrom(oldPod)); err != nil {
-					return fmt.Errorf("failed to patch pod trying to remove %s finalizer: %w", kubernetesreporterapi.FinalizerName, err)
+					return nil, fmt.Errorf("failed to patch pod trying to remove %s finalizer: %w", kubernetesreporterapi.FinalizerName, err)
 				}
 			}
 			r.log.WithField("name", pj.ObjectMeta.Name).Debug("Delete Pod.")
-			return ctrlruntimeclient.IgnoreNotFound(client.Delete(ctx, pod))
+			return nil, ctrlruntimeclient.IgnoreNotFound(client.Delete(ctx, pod))
 
 		case corev1.PodSucceeded:
 			pj.SetComplete()
@@ -325,18 +325,18 @@ func (r *reconciler) syncPendingJob(ctx context.Context, pj *prowv1.ProwJob) err
 				// the next resync.
 				client, ok := r.buildClients[pj.ClusterAlias()]
 				if !ok {
-					return fmt.Errorf("evicted pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
+					return nil, fmt.Errorf("evicted pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
 				}
 				if finalizers := sets.NewString(pod.Finalizers...); finalizers.Has(kubernetesreporterapi.FinalizerName) {
 					// We want the end user to not see this, so we have to remove the finalizer, otherwise the pod hangs
 					oldPod := pod.DeepCopy()
 					pod.Finalizers = finalizers.Delete(kubernetesreporterapi.FinalizerName).UnsortedList()
 					if err := client.Patch(ctx, pod, ctrlruntimeclient.MergeFrom(oldPod)); err != nil {
-						return fmt.Errorf("failed to patch pod trying to remove %s finalizer: %w", kubernetesreporterapi.FinalizerName, err)
+						return nil, fmt.Errorf("failed to patch pod trying to remove %s finalizer: %w", kubernetesreporterapi.FinalizerName, err)
 					}
 				}
 				r.log.WithField("name", pj.ObjectMeta.Name).Debug("Delete Pod.")
-				return ctrlruntimeclient.IgnoreNotFound(client.Delete(ctx, pod))
+				return nil, ctrlruntimeclient.IgnoreNotFound(client.Delete(ctx, pod))
 			}
 			// Pod failed. Update ProwJob, talk to GitHub.
 			pj.SetComplete()
@@ -344,6 +344,7 @@ func (r *reconciler) syncPendingJob(ctx context.Context, pj *prowv1.ProwJob) err
 			pj.Status.Description = "Job failed."
 
 		case corev1.PodPending:
+			var requeueAfter time.Duration
 			maxPodPending := r.config().Plank.PodPendingTimeout.Duration
 			maxPodUnscheduled := r.config().Plank.PodUnscheduledTimeout.Duration
 			if pod.Status.StartTime.IsZero() {
@@ -355,25 +356,36 @@ func (r *reconciler) syncPendingJob(ctx context.Context, pj *prowv1.ProwJob) err
 					pj.Status.Description = "Pod scheduling timeout."
 					r.log.WithFields(pjutil.ProwJobFields(pj)).Info("Marked job for stale unscheduled pod as errored.")
 					if err := r.deletePod(ctx, pj); err != nil {
-						return fmt.Errorf("failed to delete pod %s/%s in cluster %s: %w", pod.Namespace, pod.Name, pj.ClusterAlias(), err)
+						return nil, fmt.Errorf("failed to delete pod %s/%s in cluster %s: %w", pod.Namespace, pod.Name, pj.ClusterAlias(), err)
 					}
 					break
+				} else {
+					// We have to re-check on the pod once we reached maxPodUnscheduled to
+					// be able to fail the job if it didn't get scheduled by then.
+					requeueAfter = maxPodUnscheduled - time.Since(pod.CreationTimestamp.Time)
 				}
-			} else if time.Since(pod.Status.StartTime.Time) >= maxPodPending {
-				// Pod is stuck in pending state longer than maxPodPending
-				// abort the job, and talk to GitHub
-				pj.SetComplete()
-				pj.Status.State = prowv1.ErrorState
-				pj.Status.Description = "Pod pending timeout."
-				r.log.WithFields(pjutil.ProwJobFields(pj)).Info("Marked job for stale pending pod as errored.")
-				if err := r.deletePod(ctx, pj); err != nil {
-					return fmt.Errorf("failed to delete pod %s/%s in cluster %s: %w", pod.Namespace, pod.Name, pj.ClusterAlias(), err)
+			} else {
+				if time.Since(pod.Status.StartTime.Time) >= maxPodPending {
+					// Pod is stuck in pending state longer than maxPodPending
+					// abort the job, and talk to GitHub
+					pj.SetComplete()
+					pj.Status.State = prowv1.ErrorState
+					pj.Status.Description = "Pod pending timeout."
+					r.log.WithFields(pjutil.ProwJobFields(pj)).Info("Marked job for stale pending pod as errored.")
+					if err := r.deletePod(ctx, pj); err != nil {
+						return nil, fmt.Errorf("failed to delete pod %s/%s in cluster %s: %w", pod.Namespace, pod.Name, pj.ClusterAlias(), err)
+					}
+					break
+				} else {
+					// We have to re-check on the pod once we reached maxPodPending to
+					// be able to fail the job if it didn't start running by then.
+					requeueAfter = maxPodPending - time.Since(pod.Status.StartTime.Time)
 				}
-				break
 			}
-			// Pod is running. Do nothing.
+			// Pod didn't start but didn't reach the scheduling or pending timeout yet,
+			// do nothing but check on it again once the timeout is reached.
 			if pod.DeletionTimestamp == nil {
-				return nil
+				return &reconcile.Result{RequeueAfter: requeueAfter}, nil
 			}
 		case corev1.PodRunning:
 			if pod.DeletionTimestamp != nil {
@@ -382,7 +394,7 @@ func (r *reconciler) syncPendingJob(ctx context.Context, pj *prowv1.ProwJob) err
 			maxPodRunning := r.config().Plank.PodRunningTimeout.Duration
 			if pod.Status.StartTime.IsZero() || time.Since(pod.Status.StartTime.Time) < maxPodRunning {
 				// Pod is still running. Do nothing.
-				return nil
+				return nil, nil
 			}
 
 			// Pod is stuck in running state longer than maxPodRunning
@@ -391,12 +403,12 @@ func (r *reconciler) syncPendingJob(ctx context.Context, pj *prowv1.ProwJob) err
 			pj.Status.State = prowv1.AbortedState
 			pj.Status.Description = "Pod running timeout."
 			if err := r.deletePod(ctx, pj); err != nil {
-				return fmt.Errorf("failed to delete pod %s/%s in cluster %s: %w", pod.Namespace, pod.Name, pj.ClusterAlias(), err)
+				return nil, fmt.Errorf("failed to delete pod %s/%s in cluster %s: %w", pod.Namespace, pod.Name, pj.ClusterAlias(), err)
 			}
 		default:
 			if pod.DeletionTimestamp == nil {
 				// other states, ignore
-				return nil
+				return nil, nil
 			}
 		}
 	}
@@ -407,7 +419,7 @@ func (r *reconciler) syncPendingJob(ctx context.Context, pj *prowv1.ProwJob) err
 		r.log.WithFields(pjutil.ProwJobFields(pj)).Info("Pods Node got lost, deleting & restarting pod")
 		client, ok := r.buildClients[pj.ClusterAlias()]
 		if !ok {
-			return fmt.Errorf("unknown pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
+			return nil, fmt.Errorf("unknown pod %s: unknown cluster alias %q", pod.Name, pj.ClusterAlias())
 		}
 
 		if finalizers := sets.NewString(pod.Finalizers...); finalizers.Has(kubernetesreporterapi.FinalizerName) {
@@ -415,11 +427,11 @@ func (r *reconciler) syncPendingJob(ctx context.Context, pj *prowv1.ProwJob) err
 			oldPod := pod.DeepCopy()
 			pod.Finalizers = finalizers.Delete(kubernetesreporterapi.FinalizerName).UnsortedList()
 			if err := client.Patch(ctx, pod, ctrlruntimeclient.MergeFrom(oldPod)); err != nil {
-				return fmt.Errorf("failed to patch pod trying to remove %s finalizer: %w", kubernetesreporterapi.FinalizerName, err)
+				return nil, fmt.Errorf("failed to patch pod trying to remove %s finalizer: %w", kubernetesreporterapi.FinalizerName, err)
 			}
 		}
 
-		return nil
+		return nil, nil
 	}
 
 	// If a pod gets deleted unexpectedly, it might be in any phase and will stick around until
@@ -442,10 +454,10 @@ func (r *reconciler) syncPendingJob(ctx context.Context, pj *prowv1.ProwJob) err
 	}
 
 	if err := r.pjClient.Patch(ctx, pj.DeepCopy(), ctrlruntimeclient.MergeFrom(prevPJ)); err != nil {
-		return fmt.Errorf("patching prowjob: %w", err)
+		return nil, fmt.Errorf("patching prowjob: %w", err)
 	}
 
-	return nil
+	return nil, nil
 }
 
 // syncTriggeredJob syncs jobs that do not yet have an associated test workload running

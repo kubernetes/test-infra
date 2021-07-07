@@ -437,7 +437,7 @@ func (c *Controller) query() (map[string]PullRequest, error) {
 	wg := sync.WaitGroup{}
 	prs := make(map[string]PullRequest)
 	var errs []error
-	for _, query := range c.config().Tide.Queries {
+	for i, query := range c.config().Tide.Queries {
 
 		// Use org-sharded queries only when GitHub apps auth is in use
 		var queries map[string]string
@@ -457,7 +457,8 @@ func (c *Controller) query() (map[string]PullRequest, error) {
 				defer lock.Unlock()
 
 				if err != nil && len(results) == 0 {
-					errs = append(errs, fmt.Errorf("query %q, err: %v", q, err))
+					c.logger.WithField("query", q).WithError(err).Warn("Failed to execute query.")
+					errs = append(errs, fmt.Errorf("query %d, err: %v", i, err))
 					return
 				}
 				if err != nil {
@@ -1334,6 +1335,7 @@ func (c *Controller) trigger(sp subpool, presubmits []config.Presubmit, prs []Pu
 			refs.Pulls,
 			prowapi.Pull{
 				Number: int(pr.Number),
+				Title:  string(pr.Title),
 				Author: string(pr.Author.Login),
 				SHA:    string(pr.HeadRefOID),
 			},

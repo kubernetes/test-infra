@@ -171,6 +171,12 @@ type Tide struct {
 }
 
 func (t *Tide) mergeFrom(additional *Tide) error {
+
+	// Duplicate queries are pointless but not harmful, we
+	// have code to de-duplicate them down the line to not
+	// increase token usage needlessly.
+	t.Queries = append(t.Queries, additional.Queries...)
+
 	if t.MergeType == nil {
 		t.MergeType = additional.MergeType
 		return nil
@@ -278,6 +284,25 @@ type TideQuery struct {
 	Orgs          []string `json:"orgs,omitempty"`
 	Repos         []string `json:"repos,omitempty"`
 	ExcludedRepos []string `json:"excludedRepos,omitempty"`
+}
+
+// tideQueryConfig contains the subset of attributes by which we de-duplicate
+// tide queries. Together with tideQueryTarget it must contain the full set
+// of all TideQuery properties.
+type tideQueryConfig struct {
+	Author                 string
+	ExcludedBranches       []string
+	IncludedBranches       []string
+	Labels                 []string
+	MissingLabels          []string
+	Milestone              string
+	ReviewApprovedRequired bool
+}
+
+type tideQueryTarget struct {
+	Orgs          []string
+	Repos         []string
+	ExcludedRepos []string
 }
 
 // constructQuery returns a map[org][]orgSpecificQueryParts (org, repo, -repo), remainingQueryString

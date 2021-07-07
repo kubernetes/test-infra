@@ -2,9 +2,12 @@ presubmits:
   kubernetes/kubernetes:
   - name: check-dependency-stats
     decorate: true
+    decoration_config:
+      timeout: 5m
     path_alias: k8s.io/kubernetes
     always_run: false
     optional: true
+    run_if_changed: '^(go.mod|go.sum|vendor)'
     spec:
       containers:
       - image: golang
@@ -13,16 +16,20 @@ presubmits:
         args:
         - -c
         - |
-          set -euo; \
-          export PATH=$PATH:$GOPATH/bin; \
-          mkdir -p "${ARTIFACTS}"; \
-          pushd "$ARTIFACTS"; \
-          go install github.com/kubernetes-sigs/depstat@latest; \
-          popd; \
-          depstat stats --json > "${ARTIFACTS}/stats.json"; \
-          git checkout -b base "${PULL_BASE_SHA}"; \
-          depstat stats --json > "${ARTIFACTS}/stats-base.json"; \
-          diff -s --ignore-all-space "${ARTIFACTS}"/stats-base.json "${ARTIFACTS}"/stats.json || true;
+          set -euo pipefail
+
+          export WORKDIR=${ARTIFACTS:-$TMPDIR}
+          export PATH=$PATH:$GOPATH/bin
+
+          mkdir -p "${WORKDIR}"
+          pushd "$WORKDIR"
+          go install github.com/kubernetes-sigs/depstat@latest
+          popd
+
+          depstat stats --json > "${WORKDIR}/stats.json"
+          git checkout -b base "${PULL_BASE_SHA}";
+          depstat stats --json > "${WORKDIR}/stats-base.json"
+          diff -s -u --ignore-all-space "${WORKDIR}"/stats-base.json "${WORKDIR}"/stats.json || true
     annotations:
       testgrid-create-test-group: "true"
       testgrid-dashboards: sig-testing-misc

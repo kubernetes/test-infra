@@ -20,7 +20,7 @@ presubmits:
       preset-windows-private-registry-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
         command:
         - runner.sh
         - kubetest
@@ -58,7 +58,7 @@ presubmits:
   - name: pull-kubernetes-e2e-aks-engine-windows-containerd
     always_run: false
     optional: true
-    run_if_changed: 'azure.*\.go$|.*windows\.go$'
+    run_if_changed: 'azure.*\.go$|.*windows\.go$|test/e2e/windows/.*'
     decorate: true
     decoration_config:
       timeout: 3h
@@ -75,7 +75,7 @@ presubmits:
       preset-windows-private-registry-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
         command:
         - runner.sh
         - kubetest
@@ -133,7 +133,7 @@ presubmits:
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
         command:
         - runner.sh
         - kubetest
@@ -195,7 +195,7 @@ presubmits:
       path_alias: sigs.k8s.io/azurefile-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
         command:
         - runner.sh
         - kubetest
@@ -233,4 +233,44 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-windows-presubmit
       testgrid-tab-name: pull-kubernetes-e2e-aks-engine-azure-file-windows-dockershim
+      testgrid-num-columns-recent: '30'
+  - name: pull-kubernetes-e2e-capz-windows-dockershim
+    decorate: true
+    always_run: false
+    optional: true
+    path_alias: k8s.io/kubernetes
+    branches:
+      - master
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true"
+    extra_refs:
+    - org: jsturtevant # TODO(jstur): change it to 'kubernetes-sigs'
+      repo: cluster-api-provider-azure
+      base_ref: windows-custom-binaries # TODO(jstur): change it to 'master'
+      path_alias: sigs.k8s.io/cluster-api-provider-azure
+      workdir: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+        command:
+        - runner.sh
+        - ./scripts/ci-conformance.sh
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 2
+            memory: "9Gi"
+        env:
+        - name: WINDOWS
+          value: "true"
+          # Windows isn't really conformance, we typically run at 4 to keep the time reasonable (~45 mins)
+        - name: CONFORMANCE_NODES
+          value: "4"
+    annotations:
+      testgrid-dashboards: sig-windows-presubmit
+      testgrid-tab-name: pull-kubernetes-e2e-capz-windows-dockershim
       testgrid-num-columns-recent: '30'

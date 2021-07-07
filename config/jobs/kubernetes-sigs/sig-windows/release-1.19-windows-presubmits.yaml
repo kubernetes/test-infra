@@ -17,10 +17,9 @@ presubmits:
       preset-windows-repo-list: "true"
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
-      preset-windows-private-registry-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-1.19
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-1.19
         command:
         - runner.sh
         - kubetest
@@ -47,7 +46,7 @@ presubmits:
         - --aksengine-deploy-custom-k8s
         - --aksengine-agentpoolcount=2
         # Specific test args
-        - --test_args=--node-os-distro=windows --docker-config-file=$(DOCKER_CONFIG_FILE) --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-network\].EndpointSlice --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|\[alpha\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows
+        - --test_args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-network\].EndpointSlice --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|\[alpha\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows
         - --ginkgo-parallel=4
         securityContext:
           privileged: true
@@ -55,7 +54,7 @@ presubmits:
   - name: pull-kubernetes-e2e-aks-engine-windows-containerd
     always_run: false
     optional: true
-    run_if_changed: 'azure.*\.go$|.*windows\.go$'
+    run_if_changed: 'azure.*\.go$|.*windows\.go$|test/e2e/windows/.*'
     decorate: true
     decoration_config:
       timeout: 3h
@@ -69,10 +68,9 @@ presubmits:
       preset-windows-repo-list: "true"
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
-      preset-windows-private-registry-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-1.19
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-1.19
         command:
         - runner.sh
         - kubetest
@@ -99,7 +97,7 @@ presubmits:
         - --aksengine-deploy-custom-k8s
         - --aksengine-agentpoolcount=2
         # Specific test args
-        - --test_args=--node-os-distro=windows --docker-config-file=$(DOCKER_CONFIG_FILE) --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-network\].EndpointSlice --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|\[alpha\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows
+        - --test_args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-network\].EndpointSlice --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|\[alpha\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows
         - --ginkgo-parallel=4
         securityContext:
           privileged: true
@@ -127,7 +125,7 @@ presubmits:
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-1.19
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-1.19
         command:
         - runner.sh
         - kubetest
@@ -186,7 +184,7 @@ presubmits:
       path_alias: sigs.k8s.io/azurefile-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
         command:
         - runner.sh
         - kubetest
@@ -207,7 +205,7 @@ presubmits:
         - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
         - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
         - --aksengine-winZipBuildScript=$(WIN_BUILD)
-        - --aksengine-orchestratorRelease=1.21
+        - --aksengine-orchestratorRelease=1.19
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_in_tree_volume_plugins.json
         - --aksengine-win-binaries
         - --aksengine-deploy-custom-k8s

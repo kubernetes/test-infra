@@ -480,13 +480,13 @@ func (c *Controller) ReportTemplateForRepo(refs *prowapi.Refs) *template.Templat
 type Plank struct {
 	Controller `json:",inline"`
 	// PodPendingTimeout is after how long the controller will perform a garbage
-	// collection on pending pods. Defaults to one day.
+	// collection on pending pods. Defaults to 10 minutes.
 	PodPendingTimeout *metav1.Duration `json:"pod_pending_timeout,omitempty"`
 	// PodRunningTimeout is after how long the controller will abort a prowjob pod
 	// stuck in running state. Defaults to two days.
 	PodRunningTimeout *metav1.Duration `json:"pod_running_timeout,omitempty"`
 	// PodUnscheduledTimeout is after how long the controller will abort a prowjob
-	// stuck in an unscheduled state. Defaults to one day.
+	// stuck in an unscheduled state. Defaults to 5 minutes.
 	PodUnscheduledTimeout *metav1.Duration `json:"pod_unscheduled_timeout,omitempty"`
 
 	// DefaultDecorationConfigs holds the default decoration config for specific values.
@@ -1042,10 +1042,8 @@ type ManagedWebhooks struct {
 // SlackReporter represents the config for the Slack reporter. The channel can be overridden
 // on the job via the .reporter_config.slack.channel property
 type SlackReporter struct {
-	JobTypesToReport  []prowapi.ProwJobType  `json:"job_types_to_report,omitempty"`
-	JobStatesToReport []prowapi.ProwJobState `json:"job_states_to_report,omitempty"`
-	Channel           string                 `json:"channel"`
-	ReportTemplate    string                 `json:"report_template"`
+	JobTypesToReport            []prowapi.ProwJobType `json:"job_types_to_report,omitempty"`
+	prowapi.SlackReporterConfig `json:",inline"`
 }
 
 // SlackReporterConfigs represents the config for the Slack reporter(s).
@@ -1263,6 +1261,12 @@ func loadConfig(prowConfig, jobConfig string, additionalProwConfigDirs []string,
 
 	nc.ProwYAMLGetter = defaultProwYAMLGetter
 
+	if deduplicatedTideQueries, err := deduplicateTideQueries(nc.Tide.Queries); err != nil {
+		logrus.WithError(err).Error("failed to deduplicate tide queriees")
+	} else {
+		nc.Tide.Queries = deduplicatedTideQueries
+	}
+
 	if nc.InRepoConfig.AllowedClusters == nil {
 		nc.InRepoConfig.AllowedClusters = map[string][]string{}
 	}
@@ -1453,12 +1457,12 @@ func setPeriodicDecorationDefaults(c *Config, ps *Periodic) {
 }
 
 // defaultPresubmits defaults the presubmits for one repo
-func defaultPresubmits(presubmits []Presubmit, addtionalPresets []Preset, c *Config, repo string) error {
+func defaultPresubmits(presubmits []Presubmit, additionalPresets []Preset, c *Config, repo string) error {
 	c.defaultPresubmitFields(presubmits)
 	var errs []error
 	for idx, ps := range presubmits {
 		setPresubmitDecorationDefaults(c, &presubmits[idx], repo)
-		if err := resolvePresets(ps.Name, ps.Labels, ps.Spec, append(c.Presets, addtionalPresets...)); err != nil {
+		if err := resolvePresets(ps.Name, ps.Labels, ps.Spec, append(c.Presets, additionalPresets...)); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -1470,12 +1474,12 @@ func defaultPresubmits(presubmits []Presubmit, addtionalPresets []Preset, c *Con
 }
 
 // defaultPostsubmits defaults the postsubmits for one repo
-func defaultPostsubmits(postsubmits []Postsubmit, addtionalPresets []Preset, c *Config, repo string) error {
+func defaultPostsubmits(postsubmits []Postsubmit, additionalPresets []Preset, c *Config, repo string) error {
 	c.defaultPostsubmitFields(postsubmits)
 	var errs []error
 	for idx, ps := range postsubmits {
 		setPostsubmitDecorationDefaults(c, &postsubmits[idx], repo)
-		if err := resolvePresets(ps.Name, ps.Labels, ps.Spec, append(c.Presets, addtionalPresets...)); err != nil {
+		if err := resolvePresets(ps.Name, ps.Labels, ps.Spec, append(c.Presets, additionalPresets...)); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -2269,8 +2273,16 @@ func validatePodSpec(jobType prowapi.ProwJobType, spec *v1.PodSpec, decorationEn
 }
 
 func validateTriggering(job Presubmit) error {
-	if job.AlwaysRun && job.RunIfChanged != "" {
-		return fmt.Errorf("job %s is set to always run but also declares run_if_changed targets, which are mutually exclusive", job.Name)
+	if job.AlwaysRun {
+		if job.RunIfChanged != "" {
+			return fmt.Errorf("job %s is set to always run but also declares run_if_changed targets, which are mutually exclusive", job.Name)
+		}
+		if job.SkipIfOnlyChanged != "" {
+			return fmt.Errorf("job %s is set to always run but also declares skip_if_only_changed targets, which are mutually exclusive", job.Name)
+		}
+	}
+	if job.RunIfChanged != "" && job.SkipIfOnlyChanged != "" {
+		return fmt.Errorf("job %s declares run_if_changed and skip_if_only_changed, which are mutually exclusive", job.Name)
 	}
 
 	if (job.Trigger != "" && job.RerunCommand == "") || (job.Trigger == "" && job.RerunCommand != "") {
@@ -2450,10 +2462,16 @@ func setBrancherRegexes(br Brancher) (Brancher, error) {
 }
 
 func setChangeRegexes(cm RegexpChangeMatcher) (RegexpChangeMatcher, error) {
-	if cm.RunIfChanged != "" {
-		re, err := regexp.Compile(cm.RunIfChanged)
+	var reString, propName string
+	if reString = cm.RunIfChanged; reString != "" {
+		propName = "run_if_changed"
+	} else if reString = cm.SkipIfOnlyChanged; reString != "" {
+		propName = "skip_if_only_changed"
+	}
+	if reString != "" {
+		re, err := regexp.Compile(reString)
 		if err != nil {
-			return cm, fmt.Errorf("could not compile run_if_changed regex: %v", err)
+			return cm, fmt.Errorf("could not compile %s regex: %v", propName, err)
 		}
 		cm.reChanges = re
 	}
@@ -2525,12 +2543,12 @@ func StringsToOrgRepos(vs []string) []OrgRepo {
 func (pc *ProwConfig) mergeFrom(additional *ProwConfig) error {
 	emptyReference := &ProwConfig{
 		BranchProtection: additional.BranchProtection,
-		Tide:             Tide{MergeType: additional.Tide.MergeType},
+		Tide:             Tide{MergeType: additional.Tide.MergeType, Queries: additional.Tide.Queries},
 	}
 
 	var errs []error
 	if diff := cmp.Diff(additional, emptyReference); diff != "" {
-		errs = append(errs, fmt.Errorf("only 'branch-protection' and 'tide.merge_method' may be set via additional config, all other fields have no merging logic yet. Diff: %s", diff))
+		errs = append(errs, fmt.Errorf("only 'branch-protection', 'tide.merge_method' and 'tide.queries' may be set via additional config, all other fields have no merging logic yet. Diff: %s", diff))
 	}
 	if err := pc.BranchProtection.merge(&additional.BranchProtection); err != nil {
 		errs = append(errs, fmt.Errorf("failed to merge branch protection config: %w", err))
@@ -2618,6 +2636,11 @@ func (pc *ProwConfig) HasConfigFor() (global bool, orgs sets.String, repos sets.
 		}
 	}
 
+	for _, query := range pc.Tide.Queries {
+		orgs.Insert(query.Orgs...)
+		repos.Insert(query.Repos...)
+	}
+
 	return global, orgs, repos
 }
 
@@ -2627,7 +2650,89 @@ func (pc *ProwConfig) hasGlobalConfig() bool {
 	}
 	emptyReference := &ProwConfig{
 		BranchProtection: pc.BranchProtection,
-		Tide:             Tide{MergeType: pc.Tide.MergeType},
+		Tide:             Tide{MergeType: pc.Tide.MergeType, Queries: pc.Tide.Queries},
 	}
 	return cmp.Diff(pc, emptyReference) != ""
+}
+
+// tideQueryMap is a map[tideQueryConfig]*tideQueryTarget. Because slices are not comparable, they
+// or structs containing them are not allowed as map keys. We sidestep this by using a json serialization
+// of the object as key instead. This is pretty inefficient but also something  we only do once during
+// load.
+type tideQueryMap map[string]*tideQueryTarget
+
+func (tm tideQueryMap) queries() (TideQueries, error) {
+	var result TideQueries
+	for k, v := range tm {
+		var queryConfig tideQueryConfig
+		if err := json.Unmarshal([]byte(k), &queryConfig); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal %q: %w", k, err)
+		}
+		result = append(result, TideQuery{
+			Orgs:                   v.Orgs,
+			Repos:                  v.Repos,
+			ExcludedRepos:          v.ExcludedRepos,
+			Author:                 queryConfig.Author,
+			ExcludedBranches:       queryConfig.ExcludedBranches,
+			IncludedBranches:       queryConfig.IncludedBranches,
+			Labels:                 queryConfig.Labels,
+			MissingLabels:          queryConfig.MissingLabels,
+			Milestone:              queryConfig.Milestone,
+			ReviewApprovedRequired: queryConfig.ReviewApprovedRequired,
+		})
+
+	}
+
+	// Sort the queries here to make sure that the de-duplication results
+	// in a deterministic order.
+	var errs []error
+	sort.SliceStable(result, func(i, j int) bool {
+		iSerialized, err := json.Marshal(result[i])
+		if err != nil {
+			errs = append(errs, fmt.Errorf("failed to marshal %+v: %w", result[i], err))
+		}
+		jSerialized, err := json.Marshal(result[j])
+		if err != nil {
+			errs = append(errs, fmt.Errorf("failed to marshal %+v: %w", result[j], err))
+		}
+		return string(iSerialized) < string(jSerialized)
+	})
+
+	return result, utilerrors.NewAggregate(errs)
+}
+
+// sortStringSlice is a tiny wrapper that returns
+// the slice after sorting.
+func sortStringSlice(s []string) []string {
+	sort.Strings(s)
+	return s
+}
+
+func deduplicateTideQueries(queries TideQueries) (TideQueries, error) {
+	m := tideQueryMap{}
+	for _, query := range queries {
+		key := tideQueryConfig{
+			Author:                 query.Author,
+			ExcludedBranches:       sortStringSlice(query.ExcludedBranches),
+			IncludedBranches:       sortStringSlice(query.IncludedBranches),
+			Labels:                 sortStringSlice(query.Labels),
+			MissingLabels:          sortStringSlice(query.MissingLabels),
+			Milestone:              query.Milestone,
+			ReviewApprovedRequired: query.ReviewApprovedRequired,
+		}
+		keyRaw, err := json.Marshal(key)
+		if err != nil {
+			return nil, fmt.Errorf("failed to marshal %+v: %w", key, err)
+		}
+		val, ok := m[string(keyRaw)]
+		if !ok {
+			val = &tideQueryTarget{}
+			m[string(keyRaw)] = val
+		}
+		val.Orgs = append(val.Orgs, query.Orgs...)
+		val.Repos = append(val.Repos, query.Repos...)
+		val.ExcludedRepos = append(val.ExcludedRepos, query.ExcludedRepos...)
+	}
+
+	return m.queries()
 }

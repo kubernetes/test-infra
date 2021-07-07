@@ -56,6 +56,14 @@ for repo in "${REPOS[@]}" "${BROKEN_REPOS[@]}"; do
     cat >>"${OUTPUT}" <<EOF
   ${org}/${repo}:
     - name: post-${repo}-push-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
+          - org: kubernetes
+            slug: test-infra-admins
+          - org: kubernetes
+            slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-storage-image-build
@@ -72,7 +80,7 @@ for repo in "${REPOS[@]}" "${BROKEN_REPOS[@]}"; do
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210302-aa40187
+          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
             command:
               - /run.sh
             args:
@@ -118,7 +126,7 @@ cat >>"${OUTPUT}" <<EOF
   spec:
     serviceAccountName: gcb-builder
     containers:
-      - image: gcr.io/k8s-testimages/image-builder:v20210302-aa40187
+      - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
         command:
           - /run.sh
         env:

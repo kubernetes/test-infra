@@ -23,6 +23,15 @@ if [[ $# != 6 ]]; then
   exit 1
 fi
 
+# Require bash version >= 4.4
+if ((${BASH_VERSINFO[0]}<4)) || ( ((${BASH_VERSINFO[0]}==4)) && ((${BASH_VERSINFO[1]}<4)) ); then
+  echo "ERROR: This script requires a minimum bash version of 4.4, but got version of ${BASH_VERSINFO[0]}.${BASH_VERSINFO[1]}"
+  if [ "$(uname)" = 'Darwin' ]; then
+    echo "On macOS with homebrew 'brew install bash' is sufficient."
+  fi
+  exit 1
+fi
+
 project=$1
 zone=$2
 cluster=$3
@@ -93,7 +102,7 @@ pod-identity() {
   head -n 1 <(
     entropy=$(date +%S)
     set -o xtrace
-    kubectl run --rm=true -i --generator=run-pod/v1 \
+    kubectl run --rm=true -i \
       "--context=$context" "--namespace=$namespace" "--serviceaccount=$name" \
       --image=google/cloud-sdk:slim "workload-identity-test-$entropy" \
       <<< "gcloud config get-value core/account"

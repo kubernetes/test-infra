@@ -6,6 +6,7 @@ dashboard_groups:
   - kops-network-plugins
   - kops-versions
   - kops-misc
+  - kops-ipv6
   - kops-kubetest2
   - kops-gce
   - kops-grid
@@ -21,6 +22,7 @@ dashboard_groups:
   - kops-distro-u2004
   - kops-distro-u2004arm64
   - kops-distro-u2010
+  - kops-distro-u2104
   - kops-k8s-1.17
   - kops-k8s-1.18
   - kops-k8s-1.19
@@ -39,6 +41,7 @@ dashboards:
 - name: kops-network-plugins
 - name: kops-versions
 - name: kops-misc
+- name: kops-ipv6
 - name: kops-kubetest2
 - name: kops-gce
 - name: kops-grid
@@ -54,6 +57,7 @@ dashboards:
 - name: kops-distro-u2004
 - name: kops-distro-u2004arm64
 - name: kops-distro-u2010
+- name: kops-distro-u2104
 - name: kops-k8s-1.17
 - name: kops-k8s-1.18
 - name: kops-k8s-1.19

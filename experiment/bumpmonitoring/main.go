@@ -17,19 +17,24 @@ limitations under the License.
 package main
 
 import (
-	"flag"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
 	"regexp"
+	"strings"
+
+	flag "github.com/spf13/pflag"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/cmd/generic-autobumper/bumper"
+	"sigs.k8s.io/yaml"
 )
 
 const (
-	srcPath = "../../config/prow/cluster/monitoring"
+	defaultSrcPath = "../../config/prow/cluster/monitoring"
 )
 
 var (
@@ -40,20 +45,91 @@ var (
 	configPathExcluded = []*regexp.Regexp{
 		regexp.MustCompile(`mixins/prometheus/prometheus\.libsonnet`),
 	}
-	configPathProwSpecific = []string{
-		"mixins/lib/config_util.libsonnet",
-	}
 )
 
 type options struct {
-	srcPath string
-	dstPath string
+	SrcPath string `json:"srcPath"`
+	DstPath string `json:"dstPath"`
+	bumper.Options
 }
+
+func parseOptions() (*options, error) {
+	var config string
+	var labelsOverride []string
+	var skipPullRequest bool
+
+	flag.StringVar(&config, "config", "", "The path to the config file for PR creation.")
+	flag.StringSliceVar(&labelsOverride, "labels-override", nil, "Override labels to be added to PR.")
+	flag.BoolVar(&skipPullRequest, "skip-pullrequest", false, "")
+	flag.Parse()
+
+	var o options
+	data, err := ioutil.ReadFile(config)
+	if err != nil {
+		return nil, fmt.Errorf("read %q: %w", config, err)
+	}
+	if err = yaml.Unmarshal(data, &o); err != nil {
+		return nil, fmt.Errorf("unmarshal %q: %w", config, err)
+	}
+
+	if len(o.SrcPath) == 0 {
+		o.SrcPath = defaultSrcPath
+	}
+	if labelsOverride != nil {
+		o.Labels = labelsOverride
+	}
+	o.SkipPullRequest = skipPullRequest
+	return &o, nil
+}
+
+func validateOptions(o *options) error {
+	if len(o.DstPath) == 0 {
+		return errors.New("dstPath is mandatory")
+	}
+
+	return nil
+}
+
+var _ bumper.PRHandler = (*client)(nil)
 
 type client struct {
 	srcPath string
 	dstPath string
 	paths   []string
+}
+
+// Changes returns a slice of functions, each one does some stuff, and
+// returns commit message for the changes
+func (c *client) Changes() []func() (string, error) {
+	return []func() (string, error){
+		func() (string, error) {
+			if err := c.findConfigToUpdate(); err != nil {
+				return "", err
+			}
+
+			if err := c.copyFiles(); err != nil {
+				return "", err
+			}
+
+			return strings.Join([]string{c.title(), c.body()}, "\n\n"), nil
+		},
+	}
+}
+
+// PRTitleBody returns the body of the PR, this function runs after each commit
+func (c *client) PRTitleBody() (string, string, error) {
+	return c.title(), c.body(), nil
+}
+
+func (c *client) title() string {
+	return "Update monitoring stack"
+}
+
+func (c *client) body() string {
+	return fmt.Sprintf(`For code reviewers:
+- breaking changes are only introduced in %s/mixins/lib/config.libsonnet
+- presubmit test is expected to fail if there is any breaking change
+- push to this change with fix if it's the case`, c.dstPath)
 }
 
 func (c *client) findConfigToUpdate() error {
@@ -88,45 +164,35 @@ func (c *client) findConfigToUpdate() error {
 
 func (c *client) copyFiles() error {
 	for _, subPath := range c.paths {
-		srcPath := path.Join(c.srcPath, subPath)
-		dstPath := path.Join(c.dstPath, subPath)
-		content, err := ioutil.ReadFile(srcPath)
+		SrcPath := path.Join(c.srcPath, subPath)
+		DstPath := path.Join(c.dstPath, subPath)
+		content, err := ioutil.ReadFile(SrcPath)
 		if err != nil {
-			return fmt.Errorf("failed reading file %q: %w", srcPath, err)
+			return fmt.Errorf("failed reading file %q: %w", SrcPath, err)
 		}
-		if err := ioutil.WriteFile(dstPath, content, 0755); err != nil {
-			return fmt.Errorf("failed writing file %q: %w", dstPath, err)
+		if err := ioutil.WriteFile(DstPath, content, 0755); err != nil {
+			return fmt.Errorf("failed writing file %q: %w", DstPath, err)
 		}
 	}
 	return nil
 }
 
-func (c *client) generateMsg() string {
-	return fmt.Sprintf(`Update monitoring stack
-
-For code reviewers:
-- breaking changes are only introduced in %s/mixins/lib/config.libsonnet
-- presubmit test is expected to fail if there is any breaking change
-- push to this change with fix if it's the case`, c.dstPath)
-}
-
 func main() {
-	o := options{}
-	flag.StringVar(&o.srcPath, "src", "", "Src dir of monitoring")
-	flag.StringVar(&o.dstPath, "dst", "", "Dst dir of monitoring")
-	flag.Parse()
+	o, err := parseOptions()
+	if err != nil {
+		logrus.WithError(err).Fatalf("Failed to run the bumper tool")
+	}
+	if err := validateOptions(o); err != nil {
+		logrus.WithError(err).Fatalf("Failed validating flags")
+	}
 
 	c := client{
-		srcPath: o.srcPath,
-		dstPath: o.dstPath,
+		srcPath: o.SrcPath,
+		dstPath: o.DstPath,
 		paths:   make([]string, 0),
 	}
 
-	if err := c.findConfigToUpdate(); err != nil {
-		logrus.Fatal(err)
-	}
-
-	if err := c.copyFiles(); err != nil {
+	if err := bumper.Run(&o.Options, &c); err != nil {
 		logrus.Fatal(err)
 	}
 }

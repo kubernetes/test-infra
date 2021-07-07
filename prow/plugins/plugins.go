@@ -33,6 +33,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/client-go/kubernetes"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"sigs.k8s.io/yaml"
@@ -267,10 +268,25 @@ func (pa *ConfigAgent) Load(path string, supplementalPluginConfigDirs []string, 
 
 	var errs []error
 	for _, supplementalPluginConfigDir := range supplementalPluginConfigDirs {
+		if supplementalPluginConfigFileSuffix == "" {
+			break
+		}
 		if err := filepath.Walk(supplementalPluginConfigDir, func(path string, info fs.FileInfo, err error) error {
 			if err != nil {
 				return err
 			}
+
+			// Kubernetes configmap mounts create symlinks for the configmap keys that point to files prefixed with '..'.
+			// This allows it to do  atomic changes by changing the symlink to a new target when the configmap content changes.
+			// This means that we should ignore the '..'-prefixed files, otherwise we might end up reading a half-written file and will
+			// get duplicate data.
+			if strings.HasPrefix(info.Name(), "..") {
+				if info.IsDir() {
+					return filepath.SkipDir
+				}
+				return nil
+			}
+
 			if info.IsDir() || !strings.HasSuffix(path, supplementalPluginConfigFileSuffix) {
 				return nil
 			}
@@ -296,6 +312,9 @@ func (pa *ConfigAgent) Load(path string, supplementalPluginConfigDirs []string, 
 		}); err != nil {
 			errs = append(errs, fmt.Errorf("failed to walk %s: %w", supplementalPluginConfigDir, err))
 		}
+	}
+	if err := utilerrors.NewAggregate(errs); err != nil {
+		return err
 	}
 
 	if err := np.Validate(); err != nil {

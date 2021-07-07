@@ -2001,83 +2001,156 @@ func TestListIssueEvents(t *testing.T) {
 }
 
 func TestThrottle(t *testing.T) {
-	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/repos/org/repo/issues/1/events" {
-			b, err := json.Marshal([]ListedIssueEvent{{Event: IssueActionClosed}})
-			if err != nil {
-				t.Fatalf("Didn't expect error: %v", err)
-			}
-			fmt.Fprint(w, string(b))
-		} else if r.URL.Path == "/repos/org/repo/issues/2/events" {
-			w.Header().Set(ghcache.CacheModeHeader, string(ghcache.ModeRevalidated))
-			b, err := json.Marshal([]ListedIssueEvent{{Event: IssueActionOpened}})
-			if err != nil {
-				t.Fatalf("Didn't expect error: %v", err)
-			}
-			fmt.Fprint(w, string(b))
-		} else {
-			t.Fatalf("Bad request path: %s", r.URL.Path)
-		}
-	}))
-	c := getClient(ts.URL)
-	c.Throttle(1, 2)
-	if c.client != &c.throttle {
-		t.Errorf("Bad client %v, expecting %v", c.client, &c.throttle)
-	}
-	if len(c.throttle.throttle) != 2 {
-		t.Fatalf("Expected two items in throttle channel, found %d", len(c.throttle.throttle))
-	}
-	if cap(c.throttle.throttle) != 2 {
-		t.Fatalf("Expected throttle channel capacity of two, found %d", cap(c.throttle.throttle))
-	}
-	check := func(events []ListedIssueEvent, err error, expectedAction IssueEventAction) {
-		if err != nil {
-			t.Errorf("Unexpected error: %v", err)
-		}
-		if len(events) != 1 || events[0].Event != expectedAction {
-			t.Errorf("Expected one %q event, found: %v", string(expectedAction), events)
-		}
-		if len(c.throttle.throttle) != 1 {
-			t.Errorf("Expected one item in throttle channel, found %d", len(c.throttle.throttle))
-		}
-	}
-	events, err := c.ListIssueEvents("org", "repo", 1)
-	check(events, err, IssueActionClosed)
-	// The following 2 calls should be refunded.
-	events, err = c.ListIssueEvents("org", "repo", 2)
-	check(events, err, IssueActionOpened)
-	events, err = c.ListIssueEvents("org", "repo", 2)
-	check(events, err, IssueActionOpened)
+	logrus.SetLevel(logrus.DebugLevel)
+	t.Parallel()
+	testCases := []struct {
+		name string
 
-	// Check that calls are delayed while throttled.
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	go func() {
-		if _, err := c.ListIssueEvents("org", "repo", 1); err != nil {
-			t.Errorf("Unexpected error: %v", err)
-		}
-		if _, err := c.ListIssueEvents("org", "repo", 1); err != nil {
-			t.Errorf("Unexpected error: %v", err)
-		}
-		cancel()
-	}()
-	slowed := false
-	for ctx.Err() == nil {
-		// Wait for the client to get throttled
-		if atomic.LoadInt32(&c.throttle.slow) == 0 {
-			continue
-		}
-		// Throttled, now add to the channel
-		slowed = true
-		select {
-		case c.throttle.throttle <- time.Now(): // Add items to the channel
-		case <-ctx.Done():
-		}
+		setupThrottling  func(t *testing.T, c *client)
+		expectThrottling bool
+	}{
+		{
+			name: "No apps auth, global throttler",
+			setupThrottling: func(t *testing.T, c *client) {
+				if err := c.Throttle(1, 2); err != nil {
+					t.Fatalf("calling Throttle failed: %v", err)
+				}
+			},
+			expectThrottling: true,
+		},
+		{
+			name: "Apps auth, our org is throttled",
+			setupThrottling: func(t *testing.T, c *client) {
+				c.usesAppsAuth = true
+				if err := c.Throttle(1, 2, "org"); err != nil {
+					t.Fatalf("calling Throttle failed: %v", err)
+				}
+			},
+			expectThrottling: true,
+		},
+		{
+			name: "Apps auth, different org is throttled, ours is not",
+			setupThrottling: func(t *testing.T, c *client) {
+				c.usesAppsAuth = true
+				if err := c.Throttle(1, 2, "something-else"); err != nil {
+					t.Fatalf("calling Throttle failed: %v", err)
+				}
+			},
+		},
+		{
+			name: "Apps auth, global throttler and throttler for our org",
+			setupThrottling: func(t *testing.T, c *client) {
+				c.usesAppsAuth = true
+				// Make sure this is not the budget we end up using.
+				if err := c.Throttle(100, 100); err != nil {
+					t.Fatalf("failed to set global throttler: %v", err)
+				}
+				if err := c.Throttle(1, 2, "org"); err != nil {
+					t.Fatalf("throttling our org failed: %v", err)
+				}
+			},
+			expectThrottling: true,
+		},
 	}
-	if !slowed {
-		t.Errorf("Never throttled")
-	}
-	if err := ctx.Err(); err != context.Canceled {
-		t.Errorf("Expected context cancellation did not happen: %v", err)
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if r.URL.Path == "/repos/org/repo/issues/1/events" {
+					b, err := json.Marshal([]ListedIssueEvent{{Event: IssueActionClosed}})
+					if err != nil {
+						t.Fatalf("Didn't expect error: %v", err)
+					}
+					fmt.Fprint(w, string(b))
+				} else if r.URL.Path == "/repos/org/repo/issues/2/events" {
+					w.Header().Set(ghcache.CacheModeHeader, string(ghcache.ModeRevalidated))
+					b, err := json.Marshal([]ListedIssueEvent{{Event: IssueActionOpened}})
+					if err != nil {
+						t.Fatalf("Didn't expect error: %v", err)
+					}
+					fmt.Fprint(w, string(b))
+				} else {
+					t.Fatalf("Bad request path: %s", r.URL.Path)
+				}
+			}))
+			c := getClient(ts.URL)
+			tc.setupThrottling(t, c)
+			throttlerKey := throttlerGlobalKey
+			if c.usesAppsAuth {
+				throttlerKey = "org"
+			}
+
+			if c.client != &c.throttle {
+				t.Errorf("Bad client %v, expecting %v", c.client, &c.throttle)
+			}
+			var expectItems int
+			if tc.expectThrottling {
+				expectItems = 2
+			}
+			if n := len(c.throttle.throttle[throttlerKey]); n != expectItems {
+				t.Fatalf("Expected %d items in throttle channel, found %d", expectItems, n)
+			}
+			if n := cap(c.throttle.throttle[throttlerKey]); n != expectItems {
+				t.Fatalf("Expected throttle channel capacity of %d, found %d", expectItems, n)
+			}
+			check := func(events []ListedIssueEvent, err error, expectedAction IssueEventAction) {
+				t.Helper()
+				if err != nil {
+					t.Errorf("Unexpected error: %v", err)
+				}
+				if len(events) != 1 || events[0].Event != expectedAction {
+					t.Errorf("Expected one %q event, found: %v", string(expectedAction), events)
+				}
+				if tc.expectThrottling {
+					if len(c.throttle.throttle[throttlerKey]) != 1 {
+						t.Errorf("Expected one item in throttle channel, found %d", len(c.throttle.throttle[throttlerKey]))
+					}
+				} else if _, throttleChannelExists := c.throttle.throttle[throttlerKey]; throttleChannelExists {
+					t.Error("didn't expect throttling, but throttler existed")
+				}
+			}
+			events, err := c.ListIssueEvents("org", "repo", 1)
+			check(events, err, IssueActionClosed)
+			// The following 2 calls should be refunded.
+			events, err = c.ListIssueEvents("org", "repo", 2)
+			check(events, err, IssueActionOpened)
+			events, err = c.ListIssueEvents("org", "repo", 2)
+			check(events, err, IssueActionOpened)
+
+			// Check that calls are delayed while throttled.
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			go func() {
+				if _, err := c.ListIssueEvents("org", "repo", 1); err != nil {
+					t.Errorf("Unexpected error: %v", err)
+				}
+				if _, err := c.ListIssueEvents("org", "repo", 1); err != nil {
+					t.Errorf("Unexpected error: %v", err)
+				}
+				cancel()
+			}()
+			slowed := false
+			for ctx.Err() == nil {
+				// Wait for the client to get throttled
+				val := c.throttle.slow[throttlerKey]
+				if val == nil || atomic.LoadInt32(val) == 0 {
+					continue
+				}
+				// Throttled, now add to the channel
+				slowed = true
+				select {
+				case c.throttle.throttle[throttlerKey] <- time.Now(): // Add items to the channel
+				case <-ctx.Done():
+				}
+			}
+			if slowed != tc.expectThrottling {
+				t.Errorf("expected throttling: %t, got throttled: %t", tc.expectThrottling, slowed)
+			}
+			if err := ctx.Err(); err != context.Canceled {
+				t.Errorf("Expected context cancellation did not happen: %v", err)
+			}
+		})
 	}
 }
 
@@ -2438,12 +2511,19 @@ func TestUpdatePullRequestBranch(t *testing.T) {
 	testcases := []struct {
 		name            string
 		expectedHeadSha *string
+		forceMismatch   bool
 		err             bool
 	}{
 		{
 			name:            "nil expectedHeadSha",
 			expectedHeadSha: nil,
 			err:             false,
+		},
+		{
+			name:            "nil mismatched expectedHeadSha",
+			expectedHeadSha: nil,
+			forceMismatch:   true,
+			err:             true,
 		},
 		{
 			name:            "matched expectedHeadSha",
@@ -2479,12 +2559,13 @@ func TestUpdatePullRequestBranch(t *testing.T) {
 				t.Errorf("Could not unmarshal request: %v", err)
 			}
 
-			if data.ExpectedHeadSha != nil {
-				if *data.ExpectedHeadSha != sha {
-					http.Error(w, "422 Unprocessable Entity", http.StatusUnprocessableEntity)
-				}
+			if data.ExpectedHeadSha != nil && *data.ExpectedHeadSha != sha {
+				http.Error(w, "422 Unprocessable Entity", http.StatusUnprocessableEntity)
+			} else if tc.forceMismatch == true {
+				http.Error(w, "422 Unprocessable Entity", http.StatusUnprocessableEntity)
+			} else {
+				http.Error(w, "202 Accepted", http.StatusAccepted)
 			}
-			http.Error(w, "202 Accepted", http.StatusAccepted)
 		}))
 		defer ts.Close()
 
@@ -2767,7 +2848,7 @@ func TestAuthHeaderGetsSet(t *testing.T) {
 			fake := &fakeHttpClient{}
 			c := &client{delegate: &delegate{client: fake}, logger: logrus.NewEntry(logrus.New())}
 			tc.mod(c)
-			if _, err := c.doRequest("POST", "/hello", "", "", nil); err != nil {
+			if _, err := c.doRequest(context.Background(), "POST", "/hello", "", "", nil); err != nil {
 				t.Fatalf("unexpected error: %v", err)
 			}
 			if tc.expectedHeader == nil {
@@ -2871,10 +2952,6 @@ func (rt testRoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
 // all requests made had an org header set.
 func TestAllMethodsThatDoRequestSetOrgHeader(t *testing.T) {
 	_, ghClient := NewAppsAuthClientWithFields(logrus.Fields{}, func(_ []byte) []byte { return nil }, "some-app-id", func() *rsa.PrivateKey { return nil }, "", "")
-	clientType := reflect.TypeOf(ghClient)
-	stringType := reflect.TypeOf("")
-	stringValue := reflect.ValueOf("org")
-
 	toSkip := sets.NewString(
 		// Doesn't support github apps
 		"Query",
@@ -2889,12 +2966,19 @@ func TestAllMethodsThatDoRequestSetOrgHeader(t *testing.T) {
 		"ListCurrentUserOrgInvitations",
 	)
 
-	for i := 0; i < clientType.NumMethod(); i++ {
-		if toSkip.Has(clientType.Method(i).Name) {
-			continue
-		}
-		t.Run(clientType.Method(i).Name, func(t *testing.T) {
-
+	clientMethods := getCallForAllClientMethodsThroughReflection(
+		ghClient,
+		func(method reflect.Method) bool { return toSkip.Has(method.Name) },
+		func(typeName string) interface{} {
+			if typeName == "string" {
+				return "org"
+			}
+			return nil
+		},
+	)
+	for _, clientMethod := range clientMethods {
+		methodName, call := clientMethod()
+		t.Run(methodName, func(t *testing.T) {
 			checkingRoundTripper := testRoundTripper{func(r *http.Request) (*http.Response, error) {
 				if !strings.HasPrefix(r.URL.Path, "/app") {
 					var orgVal string
@@ -2907,44 +2991,82 @@ func TestAllMethodsThatDoRequestSetOrgHeader(t *testing.T) {
 				}
 				return &http.Response{Body: ioutil.NopCloser(&bytes.Buffer{})}, nil
 			}}
-
 			ghClient.(*client).client.(*http.Client).Transport = checkingRoundTripper
 			ghClient.(*client).gqlc.(*graphQLGitHubAppsAuthClientWrapper).Client = githubv4.NewClient(&http.Client{Transport: checkingRoundTripper})
-			clientValue := reflect.ValueOf(ghClient)
-
-			var args []reflect.Value
-			// First arg is self, so start with second arg
-			for j := 1; j < clientType.Method(i).Func.Type().NumIn(); j++ {
-				arg := reflect.New(clientType.Method(i).Func.Type().In(j)).Elem()
-				if arg.Kind() == reflect.Ptr && arg.IsNil() {
-					arg.Set(reflect.New(arg.Type().Elem()))
-				}
-
-				if arg.Type() == stringType {
-					arg.Set(stringValue)
-				}
-
-				// We can not deal with interface types genererically, as there
-				// is no automatic way to figure out the concrete values they
-				// can or should be set to.
-				if arg.Type().String() == "context.Context" {
-					arg.Set(reflect.ValueOf(context.Background()))
-				}
-				if arg.Type().String() == "interface {}" {
-					arg.Set(reflect.ValueOf(map[string]interface{}{}))
-				}
-
-				// Just set all strings to a nonEmpty string, otherwise the header will not get set
-				args = append(args, arg)
-			}
-
-			if clientType.Method(i).Type.IsVariadic() {
-				args[len(args)-1] = reflect.New(args[len(args)-1].Type().Elem()).Elem()
-			}
 
 			// We don't care about the result at all, the verification happens via the roundTripper
-			_ = clientValue.Method(i).Call(args)
+			_ = call()
 		})
+	}
+}
+
+func getCallForAllClientMethodsThroughReflection(
+	c Client,
+	skip func(reflect.Method) bool,
+	typeOverrides ...func(typeName string) (override interface{}),
+) (getCalls []func() (methodName string, call func() error)) {
+
+	clientType := reflect.TypeOf(c)
+	clientValue := reflect.ValueOf(c)
+
+	for i := 0; i < clientType.NumMethod(); i++ {
+		i := i
+		if skip(clientType.Method(i)) {
+			continue
+		}
+		var args []reflect.Value
+		// First arg is self, so start with second arg
+		for j := 1; j < clientType.Method(i).Func.Type().NumIn(); j++ {
+			arg := reflect.New(clientType.Method(i).Func.Type().In(j)).Elem()
+			setValue(&arg, typeOverrides)
+
+			args = append(args, arg)
+		}
+
+		if clientType.Method(i).Type.IsVariadic() {
+			args[len(args)-1] = reflect.New(args[len(args)-1].Type().Elem()).Elem()
+		}
+
+		getCalls = append(getCalls, func() (methodName string, call func() error) {
+			return clientType.Method(i).Name, func() (err error) {
+				returnsValues := clientValue.Method(i).Call(args)
+
+				// If there are returns and the last return is a non-nil interface that has an Error method,
+				// we assume it is the error.
+				if len(returnsValues) > 0 &&
+					returnsValues[len(returnsValues)-1].Kind() == reflect.Interface &&
+					!returnsValues[len(returnsValues)-1].IsNil() &&
+					!reflect.DeepEqual(returnsValues[len(returnsValues)-1].MethodByName("Error"), reflect.Value{}) {
+					err = returnsValues[len(returnsValues)-1].Interface().(error)
+				}
+				return
+			}
+		})
+	}
+
+	return getCalls
+}
+
+func setValue(target *reflect.Value, typeOverrides []func(typeName string) (override interface{})) {
+	for _, typeOverride := range typeOverrides {
+		if override := typeOverride(target.Type().String()); override != nil {
+			target.Set(reflect.ValueOf(override))
+			return
+		}
+	}
+
+	if target.Kind() == reflect.Ptr && target.IsNil() {
+		target.Set(reflect.New(target.Type().Elem()))
+	}
+
+	// We can not deal with interface types genererically, as there
+	// is no automatic way to figure out the concrete values they
+	// can or should be set to.
+	if target.Type().String() == "context.Context" {
+		target.Set(reflect.ValueOf(context.Background()))
+	}
+	if target.Type().String() == "interface {}" {
+		target.Set(reflect.ValueOf(map[string]interface{}{}))
 	}
 }
 
@@ -3162,5 +3284,46 @@ func TestCreatePullRequestReviewComment(t *testing.T) {
 	c := getClient(ts.URL)
 	if err := c.CreatePullRequestReviewComment("k8s", "kuber", 5, ReviewComment{Body: "hello"}); err != nil {
 		t.Errorf("Didn't expect error: %v", err)
+	}
+}
+
+func TestThrottlerRespectsContexts(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+
+	// Set the throttler, use up the one token we have for this hour
+	c.Throttle(1, 1)
+	if err := c.CreateReview("", "", 0, DraftReview{}); err != nil {
+		t.Fatalf("failed to use up the throttlers token: %v", err)
+	}
+
+	// Use a very low timeout so we don't have to wait
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond)
+	defer cancel()
+
+	clientMethods := getCallForAllClientMethodsThroughReflection(c,
+		// Skip all method whose first arg is not of type context.Context (self is the actual first arg)
+		func(m reflect.Method) bool {
+			return m.Func.Type().NumIn() < 2 || m.Func.Type().In(1).String() != "context.Context"
+		},
+		// Insert our custom ctx for any arg of type context.Context
+		func(typeName string) interface{} {
+			if typeName == "context.Context" {
+				return ctx
+			}
+			return nil
+		},
+	)
+
+	for _, clientMethod := range clientMethods {
+		methodName, callMethod := clientMethod()
+		t.Run(methodName, func(t *testing.T) {
+			if actualErr := callMethod(); !errors.Is(actualErr, context.DeadlineExceeded) {
+				t.Errorf("expected to get %v error, got %v", context.DeadlineExceeded, actualErr)
+			}
+		})
 	}
 }

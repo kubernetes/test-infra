@@ -111,8 +111,8 @@ func (r *fakeReporter) ShouldReport(_ context.Context, _ *logrus.Entry, pj *prow
 	return pj.Annotations[reporter.PubSubProjectLabel] != "" && pj.Annotations[reporter.PubSubTopicLabel] != ""
 }
 
-func TestPeriodicProwJobEvent_ToFromMessage(t *testing.T) {
-	pe := PeriodicProwJobEvent{
+func TestProwJobEvent_ToFromMessage(t *testing.T) {
+	pe := ProwJobEvent{
 		Annotations: map[string]string{
 			reporter.PubSubProjectLabel: "project",
 			reporter.PubSubTopicLabel:   "topic",
@@ -131,7 +131,7 @@ func TestPeriodicProwJobEvent_ToFromMessage(t *testing.T) {
 	if m.Attributes[prowEventType] != periodicProwJobEvent {
 		t.Errorf("%s should be %s found %s instead", prowEventType, periodicProwJobEvent, m.Attributes[prowEventType])
 	}
-	var newPe PeriodicProwJobEvent
+	var newPe ProwJobEvent
 	if err = newPe.FromPayload(m.Data); err != nil {
 		t.Error(err)
 	}
@@ -144,7 +144,7 @@ func TestHandleMessage(t *testing.T) {
 	for _, tc := range []struct {
 		name   string
 		msg    *pubSubMessage
-		pe     *PeriodicProwJobEvent
+		pe     *ProwJobEvent
 		s      string
 		config *config.Config
 		err    string
@@ -152,7 +152,7 @@ func TestHandleMessage(t *testing.T) {
 	}{
 		{
 			name: "PeriodicJobNoPubsub",
-			pe: &PeriodicProwJobEvent{
+			pe: &ProwJobEvent{
 				Name: "test",
 			},
 			config: &config.Config{
@@ -177,7 +177,7 @@ func TestHandleMessage(t *testing.T) {
 				},
 			},
 			config: &config.Config{},
-			err:    "unsupported event type",
+			err:    "unsupported event type: unsupported",
 			labels: []string{reporter.PubSubTopicLabel, reporter.PubSubRunIDLabel, reporter.PubSubProjectLabel},
 		},
 		{
@@ -210,7 +210,7 @@ func TestHandleMessage(t *testing.T) {
 			}
 			if err := s.handleMessage(tc.msg, tc.s); err != nil {
 				if err.Error() != tc.err {
-					t1.Errorf("Expected error %v got %v", tc.err, err.Error())
+					t1.Errorf("Expected error '%v' got '%v'", tc.err, err.Error())
 				} else if tc.err == "" {
 					var created []*prowapi.ProwJob
 					for _, action := range fakeProwJobClient.Fake.Actions() {
@@ -235,7 +235,7 @@ func TestHandleMessage(t *testing.T) {
 	}
 }
 
-func CheckProwJob(pe *PeriodicProwJobEvent, pj *prowapi.ProwJob) error {
+func CheckProwJob(pe *ProwJobEvent, pj *prowapi.ProwJob) error {
 	// checking labels
 	for label, value := range pe.Labels {
 		if pj.Labels[label] != value {
@@ -269,7 +269,7 @@ func CheckProwJob(pe *PeriodicProwJobEvent, pj *prowapi.ProwJob) error {
 func TestHandlePeriodicJob(t *testing.T) {
 	for _, tc := range []struct {
 		name        string
-		pe          *PeriodicProwJobEvent
+		pe          *ProwJobEvent
 		s           string
 		config      *config.Config
 		err         string
@@ -278,7 +278,7 @@ func TestHandlePeriodicJob(t *testing.T) {
 	}{
 		{
 			name: "PeriodicJobNoPubsub",
-			pe: &PeriodicProwJobEvent{
+			pe: &ProwJobEvent{
 				Name: "test",
 			},
 			config: &config.Config{
@@ -295,7 +295,7 @@ func TestHandlePeriodicJob(t *testing.T) {
 		},
 		{
 			name: "PeriodicJobPubsubSet",
-			pe: &PeriodicProwJobEvent{
+			pe: &ProwJobEvent{
 				Name: "test",
 				Annotations: map[string]string{
 					reporter.PubSubProjectLabel: "project",
@@ -334,7 +334,7 @@ func TestHandlePeriodicJob(t *testing.T) {
 		},
 		{
 			name: "PeriodicJobPubsubSetCreationError",
-			pe: &PeriodicProwJobEvent{
+			pe: &ProwJobEvent{
 				Name: "test",
 				Annotations: map[string]string{
 					reporter.PubSubProjectLabel: "project",
@@ -359,7 +359,7 @@ func TestHandlePeriodicJob(t *testing.T) {
 		},
 		{
 			name: "JobNotFound",
-			pe: &PeriodicProwJobEvent{
+			pe: &ProwJobEvent{
 				Name: "test",
 			},
 			config: &config.Config{},
@@ -367,7 +367,7 @@ func TestHandlePeriodicJob(t *testing.T) {
 		},
 		{
 			name: "JobNotFoundReportNeeded",
-			pe: &PeriodicProwJobEvent{
+			pe: &ProwJobEvent{
 				Name: "test",
 				Annotations: map[string]string{
 					reporter.PubSubProjectLabel: "project",
@@ -402,7 +402,7 @@ func TestHandlePeriodicJob(t *testing.T) {
 				t.Error(err)
 			}
 			m.ID = "id"
-			err = s.handlePeriodicJob(logrus.NewEntry(logrus.New()), &pubSubMessage{*m}, tc.s)
+			err = s.handleProwJob(logrus.NewEntry(logrus.New()), &periodicJobHandler{}, &pubSubMessage{*m}, tc.s)
 			if err != nil {
 				if err.Error() != tc.err {
 					t1.Errorf("Expected error %v got %v", tc.err, err.Error())
@@ -438,7 +438,7 @@ func TestPushServer_ServeHTTP(t *testing.T) {
 		url          string
 		secret       string
 		pushRequest  interface{}
-		pe           *PeriodicProwJobEvent
+		pe           *ProwJobEvent
 		expectedCode int
 	}{
 		{
@@ -485,7 +485,7 @@ func TestPushServer_ServeHTTP(t *testing.T) {
 			secret:      "secret",
 			url:         "https://prow.k8s.io/push?token=secret",
 			pushRequest: pushRequest{},
-			pe: &PeriodicProwJobEvent{
+			pe: &ProwJobEvent{
 				Name: "test",
 			},
 			expectedCode: http.StatusOK,
@@ -494,7 +494,7 @@ func TestPushServer_ServeHTTP(t *testing.T) {
 			name:        "SuccessNoToken",
 			url:         "https://prow.k8s.io/push",
 			pushRequest: pushRequest{},
-			pe: &PeriodicProwJobEvent{
+			pe: &ProwJobEvent{
 				Name: "test",
 			},
 			expectedCode: http.StatusOK,

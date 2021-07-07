@@ -14,13 +14,10 @@ triggers:
   join_org_url: "https://git.k8s.io/community/community-membership.md#member"
 - repos:
   - containerd/cri
-  join_org_url: "https://github.com/containerd/containerd/blob/master/MAINTAINERS"
+  join_org_url: "https://github.com/containerd/project/blob/main/MAINTAINERS"
 - repos:
   - containerd/containerd
-  join_org_url: "https://github.com/containerd/project/blob/master/MAINTAINERS"
-- repos:
-  - tensorflow/minigo
-  join_org_url: "https://github.com/tensorflow/minigo/blob/master/CONTRIBUTING.md"
+  join_org_url: "https://github.com/containerd/project/blob/main/MAINTAINERS"
 - repos:
   - bazelbuild
 
@@ -256,6 +253,12 @@ slack:
     exempt_users:
     - k8s-publishing-bot
   - repos:
+    - kubernetes/pod-security-admission
+    channels:
+    - sig-auth
+    exempt_users:
+    - k8s-publishing-bot
+  - repos:
     - kubernetes/kubernetes
     channels:
     - kubernetes-dev
@@ -299,6 +302,12 @@ slack:
     - kops-dev
     exempt_users:
     - k8s-ci-robot
+  - repos:
+    - kubernetes/cluster-api-provider-aws
+    channels:
+    - cluster-api-aws
+    exempt_users:
+    - k8s-ci-robot
 
 milestone_applier:
   kubernetes/enhancements:
@@ -328,18 +337,23 @@ milestone_applier:
     release-1.17: v1.17
     release-1.16: v1.16
   kubernetes-sigs/cluster-api:
+    main: v0.4
     master: v0.4
     release-0.4: v0.4
     operator-0.4: v0.4 # Remove this when it gets merged back.
     release-0.3: v0.3
+  kubernetes-sigs/cluster-api-provider-aws:
+    main: v0.7.0
+    release-0.6: v0.6.x
   kubernetes-sigs/cluster-api-provider-azure:
+    main: v0.5.0
     master: v0.5.0
-    release-0.4: v0.4.15
+    release-0.4: v0.4.16
   kubernetes-sigs/cluster-api-provider-digitalocean:
-    master: v0.5.0
+    main: v0.5.0
     release-0.4: v0.4.3
   kubernetes-sigs/cluster-api-provider-gcp:
-    master: v0.4
+    main: v0.4
     release-0.4: v0.4
     release-0.3: v0.3
   kubernetes-sigs/controller-runtime:
@@ -650,7 +664,30 @@ require_matching_label:
   issues: true
   prs: true
   regexp: ^priority/
+- missing_label: needs-kind
+  org: kubernetes-sigs
+  repo: kustomize
+  issues: true
+  prs: false
+  regexp: ^kind/
+- missing_label: needs-triage
+  org: kubernetes-sigs
+  repo: kustomize
+  issues: true
+  prs: false
+  regexp: ^triage/accepted$
+  missing_comment: |
+    This issue is currently awaiting triage.
 
+    SIG CLI takes a lead on issue triage for this repo, but any Kubernetes member can accept issues by applying the `triage/accepted` label.
+
+    The `triage/accepted` label can be added by org members by writing `/triage accepted` in a comment.
+- missing_label: needs-priority
+  org: kubernetes-sigs
+  repo: cluster-api-provider-aws
+  issues: true
+  prs: true
+  regexp: ^priority/
 
 retitle:
   allow_closed_issues: true
@@ -896,6 +933,10 @@ plugins:
     - wip
     - yuks
 
+  kubernetes-security/cvelist-public:
+    plugins:
+    - trigger
+
   kubernetes-sigs:
     plugins:
     - approve
@@ -949,6 +990,11 @@ plugins:
     plugins:
     - override
 
+  kubernetes-sigs/kustomize:
+    plugins:
+    - require-matching-label
+    - merge-method-comment
+
   kubernetes-sigs/controller-runtime:
     plugins:
     - milestone
@@ -960,9 +1006,13 @@ plugins:
 
   kubernetes-sigs/cluster-api-provider-aws:
     plugins:
+    - golint
+    - mergecommitblocker
     - milestone
+    - milestonestatus
     - override
     - release-note
+    - require-matching-label
 
   kubernetes-sigs/cluster-api-provider-azure:
     plugins:
@@ -1051,16 +1101,6 @@ plugins:
     plugins:
     - assign  # Allow /assign and /cc
     - trigger # Allow people to configure CI jobs to /test
-
-  tensorflow/k8s:
-    plugins:
-    - trigger
-
-  tensorflow/minigo:
-    plugins:
-    - trigger
-    - lgtm
-    - size
 
   GoogleCloudPlatform/k8s-multicluster-ingress:
     plugins:

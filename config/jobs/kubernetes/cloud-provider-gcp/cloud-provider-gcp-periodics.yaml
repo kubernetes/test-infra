@@ -3,6 +3,8 @@ periodics:
   cluster: k8s-infra-prow-build
   name: ci-cloud-provider-gcp-conformance-latest
   decorate: true
+  decoration_config:
+    timeout: 150m
   annotations:
     testgrid-tab-name: Conformance - Cloud Provider GCP - master
     testgrid-dashboards: provider-gcp-periodics
@@ -17,7 +19,7 @@ periodics:
     path_alias: k8s.io/cloud-provider-gcp
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
       resources:
         limits:
           cpu: 4

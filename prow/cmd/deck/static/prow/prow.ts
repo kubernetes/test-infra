@@ -1,7 +1,7 @@
 import moment from "moment";
 import {ProwJob, ProwJobList, ProwJobState, ProwJobType, Pull} from "../api/prow";
-import {cell, icon} from "../common/common";
-import {getParameterByName, relativeURL} from "../common/urls";
+import {cell, createRerunProwJobIcon, formatDuration, icon} from "../common/common";
+import {getParameterByName} from "../common/urls";
 import {FuzzySearch} from './fuzzy-search';
 import {JobHistogram, JobSample} from './histogram';
 
@@ -727,49 +727,14 @@ function redraw(fz: FuzzySearch, pushState: boolean = true): void {
         modal.style.display = "block";
         rerunCommand.innerHTML = "Rerunning that job requires GitHub login. Now that you're logged in, try again";
     }
+    // we need to upgrade DOM for new created dynamic elements
+    // see https://getmdl.io/started/index.html#dynamic
+    componentHandler.upgradeDom();
 }
 
 function createRerunCell(modal: HTMLElement, rerunElement: HTMLElement, prowjob: string): HTMLTableDataCellElement {
-    const url = `${location.protocol}//${location.host}/rerun?prowjob=${prowjob}`;
     const c = document.createElement("td");
-    const i = icon.create("refresh", "Show instructions for rerunning this job");
-
-    // we actually want to know whether the "access-token-session" cookie exists, but we can't always
-    // access it from the frontend. "github_login" should be set whenever "access-token-session" is
-    i.onclick = () => {
-        modal.style.display = "block";
-        rerunElement.innerHTML = `kubectl create -f "<a href="${url}">${url}</a>"`;
-        const copyButton = document.createElement('a');
-        copyButton.className = "mdl-button mdl-js-button mdl-button--icon";
-        copyButton.onclick = () => copyToClipboardWithToast(`kubectl create -f "${url}"`);
-        copyButton.innerHTML = "<i class='material-icons state triggered' style='color: gray'>file_copy</i>";
-        rerunElement.appendChild(copyButton);
-        if (rerunCreatesJob) {
-            const runButton = document.createElement('a');
-            runButton.innerHTML = "<button class='mdl-button mdl-js-button'>Rerun</button>";
-            runButton.onclick = async () => {
-                gtag("event", "rerun", {
-                    event_category: "engagement",
-                    transport_type: "beacon",
-                });
-                const result = await fetch(url, {
-                    headers: {
-                        "Content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-                        "X-CSRF-Token": csrfToken,
-                    },
-                    method: 'post',
-                });
-                const data = await result.text();
-                if (result.status === 401) {
-                    window.location.href = window.location.origin + `/github-login?dest=${relativeURL({rerun: "gh_redirect"})}`;
-                } else {
-                    rerunElement.innerHTML = data;
-                }
-            };
-            rerunElement.appendChild(runButton);
-        }
-    };
-    c.appendChild(i);
+    c.appendChild(createRerunProwJobIcon(modal, rerunElement, prowjob, rerunCreatesJob, csrfToken));
     c.classList.add("icon-cell");
     return c;
 }
@@ -783,42 +748,6 @@ function createViewJobCell(prowjob: string): HTMLTableDataCellElement {
     return c;
 }
 
-// copyToClipboard is from https://stackoverflow.com/a/33928558
-// Copies a string to the clipboard. Must be called from within an
-// event handler such as click. May return false if it failed, but
-// this is not always possible. Browser support for Chrome 43+,
-// Firefox 42+, Safari 10+, Edge and IE 10+.
-// IE: The clipboard feature may be disabled by an administrator. By
-// default a prompt is shown the first time the clipboard is
-// used (per session).
-function copyToClipboard(text: string) {
-    if (window.clipboardData && window.clipboardData.setData) {
-        // IE specific code path to prevent textarea being shown while dialog is visible.
-        return window.clipboardData.setData("Text", text);
-    } else if (document.queryCommandSupported && document.queryCommandSupported("copy")) {
-        const textarea = document.createElement("textarea");
-        textarea.textContent = text;
-        textarea.style.position = "fixed";  // Prevent scrolling to bottom of page in MS Edge.
-        document.body.appendChild(textarea);
-        textarea.select();
-        try {
-            return document.execCommand("copy");  // Security exception may be thrown by some browsers.
-        } catch (ex) {
-            console.warn("Copy to clipboard failed.", ex);
-            return false;
-        } finally {
-            document.body.removeChild(textarea);
-        }
-    }
-}
-
-function copyToClipboardWithToast(text: string): void {
-    copyToClipboard(text);
-
-    const toast = document.getElementById("toast") as SnackbarElement<HTMLDivElement>;
-    toast.MaterialSnackbar.showSnackbar({message: "Copied to clipboard"});
-}
-
 function batchRevisionCell(build: ProwJob): HTMLTableDataCellElement {
     const {refs: {org = "", repo = "", pulls = []} = {}} = build.spec;
 
@@ -828,18 +757,9 @@ function batchRevisionCell(build: ProwJob): HTMLTableDataCellElement {
     }
     for (let i = 0; i < pulls.length; i++) {
         if (i !== 0) {
-            c.appendChild(document.createTextNode(", "));
+            c.appendChild(document.createElement("br"));
         }
-        const {link, number: prNumber} = pulls[i];
-        const l = document.createElement("a");
-        if (link) {
-            l.href = link;
-        } else {
-            l.href = `/github-link?dest=${org}/${repo}/pull/${prNumber}`;
-        }
-        l.text = prNumber.toString();
-        c.appendChild(document.createTextNode("#"));
-        c.appendChild(l);
+        cell.addPRRevision(c, `${org}/${repo}`, pulls[i]);
     }
     return c;
 }
@@ -883,51 +803,6 @@ function stateToAdj(state: ProwJobState): string {
         default:
             return state;
     }
-}
-
-function parseDuration(duration: string): number {
-    if (duration.length === 0) {
-        return 0;
-    }
-    let seconds = 0;
-    let multiple = 0;
-    for (let i = duration.length; i >= 0; i--) {
-        const ch = duration[i];
-        if (ch === 's') {
-            multiple = 1;
-        } else if (ch === 'm') {
-            multiple = 60;
-        } else if (ch === 'h') {
-            multiple = 60 * 60;
-        } else if (ch >= '0' && ch <= '9') {
-            seconds += Number(ch) * multiple;
-            multiple *= 10;
-        }
-    }
-    return seconds;
-}
-
-function formatDuration(seconds: number): string {
-    const parts: string[] = [];
-    if (seconds >= 3600) {
-        const hours = Math.floor(seconds / 3600);
-        parts.push(String(hours));
-        parts.push('h');
-        seconds = seconds % 3600;
-    }
-    if (seconds >= 60) {
-        const minutes = Math.floor(seconds / 60);
-        if (minutes > 0) {
-            parts.push(String(minutes));
-            parts.push('m');
-            seconds = seconds % 60;
-        }
-    }
-    if (seconds > 0) {
-        parts.push(String(seconds));
-        parts.push('s');
-    }
-    return parts.join('');
 }
 
 function drawJobHistogram(total: number, jobHistogram: JobHistogram, start: number, end: number, maximum: number): void {

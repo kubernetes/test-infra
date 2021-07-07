@@ -270,6 +270,9 @@ func (c *Client) LoadRepoOwners(org, repo, base string) (RepoOwner, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to get current SHA for %s: %v", fullName, err)
 	}
+	if sha == "" {
+		return nil, fmt.Errorf("got an empty SHA for %s@heads/%s", fullName, base)
+	}
 	log.WithField("duration", time.Since(start).String()).Debugf("Completed ghc.GetRef(%s, %s, %s)", org, repo, fmt.Sprintf("heads/%s", base))
 
 	entry, err := c.cacheEntryFor(org, repo, base, cloneRef, fullName, sha, log)

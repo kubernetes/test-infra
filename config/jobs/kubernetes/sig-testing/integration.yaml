@@ -18,7 +18,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
         command:
         - runner.sh
         args:
@@ -52,7 +52,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-go-canary
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-go-canary
         command:
         - runner.sh
         args:
@@ -83,13 +83,13 @@ periodics:
   annotations:
     fork-per-release: "true"
     fork-per-release-periodic-interval: 2h 2h 6h 24h
-    testgrid-dashboards: sig-release-master-blocking, google-unit
+    testgrid-dashboards: sig-release-master-blocking
     testgrid-tab-name: integration-master
     testgrid-alert-email: release-team@kubernetes.io
     description: "Ends up running: make test-cmd test-integration"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
       command:
       - runner.sh
       args:

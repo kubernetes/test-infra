@@ -33,6 +33,96 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
+func TestGetAssignment(t *testing.T) {
+	cases := []struct {
+		description          string
+		oncallURL            string
+		oncallGroup          string
+		oncallServerResponse string
+		expectResKeyword     string
+		expectOncallActive   bool
+	}{
+		{
+			description:          "empty oncall URL will return an empty string",
+			oncallURL:            "",
+			oncallGroup:          defaultOncallGroup,
+			oncallServerResponse: "",
+			expectResKeyword:     "",
+		},
+		{
+			description:          "an invalid oncall URL will return an error message",
+			oncallURL:            "whatever-url",
+			oncallGroup:          defaultOncallGroup,
+			oncallServerResponse: "",
+			expectResKeyword:     "error",
+		},
+		{
+			description:          "an invalid response will return an error message",
+			oncallURL:            "auto",
+			oncallGroup:          defaultOncallGroup,
+			oncallServerResponse: "whatever-malformed-response",
+			expectResKeyword:     "error",
+		},
+		{
+			description:          "a valid response will return the oncaller from default group",
+			oncallURL:            "auto",
+			oncallGroup:          defaultOncallGroup,
+			oncallServerResponse: `{"Oncall":{"testinfra":"fake-oncall-name"},"Active":{"testinfra":false}}`,
+			expectResKeyword:     "fake-oncall-name",
+		},
+		{
+			description:          "a valid response will return the oncaller from non-default group",
+			oncallURL:            "auto",
+			oncallGroup:          "another-group",
+			oncallServerResponse: `{"Oncall":{"testinfra":"fake-oncall-name","another-group":"fake-oncall-name2"},"Active":{"another-group":false}}`,
+			expectResKeyword:     "fake-oncall-name2",
+		},
+		{
+			description:          "a valid response without expected oncall group",
+			oncallURL:            "auto",
+			oncallGroup:          "group-not-exist",
+			oncallServerResponse: `{"Oncall":{"testinfra":"fake-oncall-name","another-group":"fake-oncall-name2"}}`,
+			expectResKeyword:     "error",
+		},
+		{
+			description:          "a valid response with empty oncall will return on oncall message",
+			oncallURL:            "auto",
+			oncallGroup:          defaultOncallGroup,
+			oncallServerResponse: `{"Oncall":{"testinfra":""},"Active":{"testinfra":false}}`,
+			expectResKeyword:     "Nobody",
+		},
+		{
+			description:          "oncall active",
+			oncallURL:            "auto",
+			oncallGroup:          defaultOncallGroup,
+			oncallServerResponse: `{"Oncall":{"testinfra":"fake-oncall-name"},"Active":{"testinfra":true}}`,
+			expectResKeyword:     "fake-oncall-name",
+			expectOncallActive:   true,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.description, func(t *testing.T) {
+			if tc.oncallURL == "auto" {
+				// generate a test server so we can capture and inspect the request
+				testServer := httptest.NewServer(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+					res.Write([]byte(tc.oncallServerResponse))
+				}))
+				defer func() { testServer.Close() }()
+				tc.oncallURL = testServer.URL
+			}
+
+			res := getAssignment(tc.oncallURL, tc.oncallGroup)
+			if !strings.Contains(res, tc.expectResKeyword) {
+				t.Errorf("Expect the result %q contains keyword %q but it does not", res, tc.expectResKeyword)
+			}
+			if got, want := isOncallActive(tc.oncallURL, tc.oncallGroup), tc.expectOncallActive; got != want {
+				t.Errorf("Expect oncall active. Want: %v, got: %v", want, got)
+			}
+		})
+	}
+}
+
 func TestValidateOptions(t *testing.T) {
 	emptyStr := ""
 	whateverStr := "whatever"

@@ -229,7 +229,6 @@ dashboards:
       - key: body
         value: <test-url>
 - name: google-soak
-- name: google-unit
 - name: google-windows
 
 - name: sig-auth-gce
@@ -247,7 +246,6 @@ dashboards:
     base_options: include-filter-by-regex=sig-auth
     description: apps gce serial e2e tests for master branch
 
-- name: sig-big-data
 - name: sig-multicluster-kubemci
 - name: sig-auth-secrets-store-csi-driver
 - name: vmware-presubmits-cloud-provider-vsphere
@@ -275,7 +273,6 @@ dashboard_groups:
   - google-osconfig
   - google-rules_k8s
   - google-soak
-  - google-unit
   - google-windows
 
 

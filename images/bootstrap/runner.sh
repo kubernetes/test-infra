@@ -34,6 +34,9 @@ cleanup_dind() {
 }
 
 early_exit_handler() {
+    if [ -n "${WRAPPED_COMMAND_PID:-}" ]; then
+        kill -TERM "$WRAPPED_COMMAND_PID" || true
+    fi
     cleanup_dind
 }
 
@@ -101,7 +104,9 @@ export SOURCE_DATE_EPOCH
 
 # actually start bootstrap and the job
 set -o xtrace
-"$@"
+"$@" &
+WRAPPED_COMMAND_PID=$!
+wait $WRAPPED_COMMAND_PID
 EXIT_VALUE=$?
 set +o xtrace
 

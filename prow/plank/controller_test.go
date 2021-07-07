@@ -29,6 +29,7 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	kapierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -830,13 +831,14 @@ func TestSyncPendingJob(t *testing.T) {
 		Pods []v1.Pod
 		Err  error
 
-		ExpectedState      prowapi.ProwJobState
-		ExpectedNumPods    int
-		ExpectedComplete   bool
-		ExpectedCreatedPJs int
-		ExpectedReport     bool
-		ExpectedURL        string
-		ExpectedBuildID    string
+		expectedReconcileResult *reconcile.Result
+		ExpectedState           prowapi.ProwJobState
+		ExpectedNumPods         int
+		ExpectedComplete        bool
+		ExpectedCreatedPJs      int
+		ExpectedReport          bool
+		ExpectedURL             string
+		ExpectedBuildID         string
 	}
 	var testcases = []testCase{
 		{
@@ -1335,7 +1337,7 @@ func TestSyncPendingJob(t *testing.T) {
 			ExpectedURL:      "homeless/error",
 		},
 		{
-			Name: "scheduled, pending started more than podUnscheduledTimeout ago",
+			Name: "pending, created less than podPendingTimeout ago",
 			PJ: prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "slowpoke",
@@ -1352,16 +1354,17 @@ func TestSyncPendingJob(t *testing.T) {
 					ObjectMeta: metav1.ObjectMeta{
 						Name:              "slowpoke",
 						Namespace:         "pods",
-						CreationTimestamp: metav1.Time{Time: time.Now().Add(-podUnscheduledTimeout * 2)},
+						CreationTimestamp: metav1.Time{Time: time.Now().Add(-(podPendingTimeout - 10*time.Minute))},
 					},
 					Status: v1.PodStatus{
 						Phase:     v1.PodPending,
-						StartTime: startTime(time.Now().Add(-podUnscheduledTimeout * 2)),
+						StartTime: startTime(time.Now().Add(-(podPendingTimeout - 10*time.Minute))),
 					},
 				},
 			},
-			ExpectedState:   prowapi.PendingState,
-			ExpectedNumPods: 1,
+			expectedReconcileResult: &reconcile.Result{RequeueAfter: 10 * time.Minute},
+			ExpectedState:           prowapi.PendingState,
+			ExpectedNumPods:         1,
 		},
 		{
 			Name: "unscheduled, created less than podUnscheduledTimeout ago",
@@ -1388,8 +1391,9 @@ func TestSyncPendingJob(t *testing.T) {
 					},
 				},
 			},
-			ExpectedState:   prowapi.PendingState,
-			ExpectedNumPods: 1,
+			expectedReconcileResult: &reconcile.Result{RequeueAfter: podUnscheduledTimeout},
+			ExpectedState:           prowapi.PendingState,
+			ExpectedNumPods:         1,
 		},
 		{
 			Name: "Pod deleted in pending phase, job marked as errored",
@@ -1508,7 +1512,7 @@ func TestSyncPendingJob(t *testing.T) {
 			},
 			ExpectedState:    prowapi.PendingState,
 			ExpectedComplete: false,
-			ExpectedNumPods:  1,
+			ExpectedNumPods:  0,
 		},
 	}
 
@@ -1543,8 +1547,16 @@ func TestSyncPendingJob(t *testing.T) {
 				totURL:       totServ.URL,
 				clock:        clock.RealClock{},
 			}
-			if err := r.syncPendingJob(context.Background(), &tc.PJ); err != nil {
+			reconcileResult, err := r.syncPendingJob(context.Background(), &tc.PJ)
+			if err != nil {
 				t.Fatalf("syncPendingJob failed: %v", err)
+			}
+			if reconcileResult != nil {
+				// Round this to minutes so we can compare the value without risking flaky tests
+				reconcileResult.RequeueAfter = reconcileResult.RequeueAfter.Round(time.Minute)
+			}
+			if diff := cmp.Diff(tc.expectedReconcileResult, reconcileResult); diff != "" {
+				t.Errorf("expected reconcileResult differs from actual: %s", diff)
 			}
 
 			actualProwJobs := &prowapi.ProwJobList{}

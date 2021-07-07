@@ -34,6 +34,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/gorilla/sessions"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
@@ -51,6 +52,7 @@ import (
 	"k8s.io/test-infra/prow/deck/jobs"
 	"k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
+	pluginsflagutil "k8s.io/test-infra/prow/flagutil/plugins"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/githuboauth"
 	"k8s.io/test-infra/prow/pluginhelp"
@@ -808,6 +810,9 @@ func Test_gatherOptions(t *testing.T) {
 					ConfigPath:                            "yo",
 					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
 				},
+				pluginsConfig: pluginsflagutil.PluginOptions{
+					SupplementalPluginsConfigsFileNameSuffix: "_pluginconfig.yaml",
+				},
 				githubOAuthConfigFile: "/etc/github/secret",
 				cookieSecretFile:      "",
 				staticFilesLocation:   "/static",
@@ -845,7 +850,7 @@ func Test_gatherOptions(t *testing.T) {
 			case tc.err:
 				t.Errorf("failed to receive expected error")
 			case !reflect.DeepEqual(*expected, actual):
-				t.Errorf("\n%#v\n!= expected\n%#v", actual, *expected)
+				t.Errorf("actual differs from expected: %s", cmp.Diff(actual, *expected, cmp.Exporter(func(_ reflect.Type) bool { return true })))
 			}
 		})
 	}

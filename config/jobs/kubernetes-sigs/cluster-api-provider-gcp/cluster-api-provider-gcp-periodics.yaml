@@ -5,7 +5,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-gcp
-    base_ref: master
+    base_ref: main
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
   labels:
     preset-service-account: "true"
@@ -13,7 +13,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
       command:
       - "runner.sh"
       - "./scripts/ci-build.sh"
@@ -26,7 +26,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-gcp
-    base_ref: master
+    base_ref: main
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
   labels:
     preset-service-account: "true"
@@ -34,7 +34,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
       args:
       - "runner.sh"
       - "./scripts/ci-test.sh"
@@ -55,7 +55,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-gcp
-    base_ref: master
+    base_ref: main
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
   - org: kubernetes-sigs
     repo: image-builder
@@ -67,7 +67,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
         env:
           - name: "BOSKOS_HOST"
             value: "boskos.test-pods.svc.cluster.local"
@@ -103,7 +103,7 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-gcp
-      base_ref: master
+      base_ref: main
       path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     - org: kubernetes-sigs
       repo: image-builder
@@ -115,7 +115,7 @@ periodics:
       path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
         env:
           - name: "BOSKOS_HOST"
             value: "boskos.test-pods.svc.cluster.local"

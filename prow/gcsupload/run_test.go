@@ -20,12 +20,11 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
-	"reflect"
-	"sort"
 	"strings"
 	"testing"
 
-	"k8s.io/apimachinery/pkg/util/diff"
+	"github.com/google/go-cmp/cmp"
+	"k8s.io/apimachinery/pkg/util/sets"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
@@ -34,13 +33,14 @@ import (
 
 func TestOptions_AssembleTargets(t *testing.T) {
 	var testCases = []struct {
-		name     string
-		jobType  prowapi.ProwJobType
-		options  Options
-		paths    []string
-		extra    map[string]gcs.UploadFunc
-		expected []string
-		wantErr  bool
+		name      string
+		jobType   prowapi.ProwJobType
+		options   Options
+		paths     []string
+		extra     map[string]gcs.UploadFunc
+		expected  []string
+		wantExtra []string
+		wantErr   bool
 	}{
 		{
 			name:    "no extra paths should upload infra files for presubmits",
@@ -110,11 +110,13 @@ func TestOptions_AssembleTargets(t *testing.T) {
 				"else":      gcs.DataUpload(strings.NewReader("data")),
 			},
 			expected: []string{
-				"pr-logs/pull/org_repo/1/job/build/something",
-				"pr-logs/pull/org_repo/1/job/build/else",
 				"pr-logs/directory/job/build.txt",
 				"pr-logs/directory/job/latest-build.txt",
 				"pr-logs/pull/org_repo/1/job/latest-build.txt",
+			},
+			wantExtra: []string{
+				"pr-logs/pull/org_repo/1/job/build/something",
+				"pr-logs/pull/org_repo/1/job/build/else",
 			},
 		},
 		{
@@ -226,20 +228,28 @@ func TestOptions_AssembleTargets(t *testing.T) {
 				testCase.options.Items[i] = path.Join(tmpDir, testCase.options.Items[i])
 			}
 
-			var uploadPaths []string
-			targets, err := testCase.options.assembleTargets(spec, testCase.extra)
+			targets, extraTargets, err := testCase.options.assembleTargets(spec, testCase.extra)
 			if (err != nil) != testCase.wantErr {
-				t.Errorf("assembleTargets() error = %v, wantErr %v", err, testCase.wantErr)
-			}
-			for uploadPath := range targets {
-				uploadPaths = append(uploadPaths, uploadPath)
-			}
-			sort.Strings(uploadPaths)
-			sort.Strings(testCase.expected)
-			if actual, expected := uploadPaths, testCase.expected; !reflect.DeepEqual(actual, expected) {
-				t.Errorf("%s: did not assemble targets correctly:\n%s\n", testCase.name, diff.ObjectReflectDiff(expected, actual))
+				t.Fatalf("assembleTargets() error = %v, wantErr %v", err, testCase.wantErr)
 			}
 
+			want := sets.NewString(testCase.expected...)
+			got := sets.NewString()
+			for uploadPath := range targets {
+				got.Insert(uploadPath)
+			}
+			if diff := cmp.Diff(want, got); diff != "" {
+				t.Errorf("assembleTargets() got unexpected target diff (-want +got):\n%s", diff)
+			}
+
+			want = sets.NewString(testCase.wantExtra...)
+			got = sets.NewString()
+			for et := range extraTargets {
+				got.Insert(et)
+			}
+			if diff := cmp.Diff(want, got); diff != "" {
+				t.Errorf("assembleTargets() got unexpected extra target diff (-want +got):\n%s", diff)
+			}
 		})
 	}
 }

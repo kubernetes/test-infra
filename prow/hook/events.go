@@ -63,6 +63,8 @@ var (
 		github.PullRequestActionConvertedToDraft:     true,
 		github.PullRequestActionLocked:               true,
 		github.PullRequestActionUnlocked:             true,
+		github.PullRequestActionAutoMergeEnabled:     true,
+		github.PullRequestActionAutoMergeDisabled:    true,
 	}
 )
 

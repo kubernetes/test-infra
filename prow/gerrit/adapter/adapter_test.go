@@ -17,6 +17,7 @@ limitations under the License.
 package adapter
 
 import (
+	"errors"
 	"sync"
 	"testing"
 	"time"
@@ -57,7 +58,8 @@ func (f *fca) Config() *config.Config {
 }
 
 type fgc struct {
-	reviews int
+	reviews     int
+	instanceMap map[string]*gerrit.AccountInfo
 }
 
 func (f *fgc) QueryChanges(lastUpdate client.LastSyncState, rateLimit int) map[string][]client.ChangeInfo {
@@ -73,8 +75,12 @@ func (f *fgc) GetBranchRevision(instance, project, branch string) (string, error
 	return "abc", nil
 }
 
-func (f *fgc) Account(instance string) *gerrit.AccountInfo {
-	return &gerrit.AccountInfo{AccountID: 42}
+func (f *fgc) Account(instance string) (*gerrit.AccountInfo, error) {
+	res, ok := f.instanceMap[instance]
+	if !ok {
+		return nil, errors.New("not exit")
+	}
+	return res, nil
 }
 
 func TestMakeCloneURI(t *testing.T) {
@@ -338,14 +344,18 @@ func TestFailedJobs(t *testing.T) {
 }
 
 func TestProcessChange(t *testing.T) {
+	testInstance := "https://gerrit"
 	var testcases = []struct {
 		name             string
 		change           client.ChangeInfo
 		numPJ            int
 		pjRef            string
+		instancesMap     map[string]*gerrit.AccountInfo
+		instance         string
 		shouldError      bool
 		shouldSkipReport bool
 		expectedLabels   map[string]string
+		expectedBaseSHA  string
 	}{
 		{
 			name: "no revisions errors out",
@@ -354,7 +364,10 @@ func TestProcessChange(t *testing.T) {
 				Project:         "test-infra",
 				Status:          "NEW",
 			},
-			shouldError: true,
+			instancesMap:    map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:        testInstance,
+			shouldError:     true,
+			expectedBaseSHA: "abc",
 		},
 		{
 			name: "wrong project triggers no jobs",
@@ -368,6 +381,9 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
+			instancesMap:    map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:        testInstance,
+			expectedBaseSHA: "abc",
 		},
 		{
 			name: "normal changes should trigger matching branch jobs",
@@ -382,8 +398,29 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
-			numPJ: 2,
-			pjRef: "refs/changes/00/1/1",
+			instancesMap:    map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:        testInstance,
+			numPJ:           2,
+			pjRef:           "refs/changes/00/1/1",
+			expectedBaseSHA: "abc",
+		},
+		{
+			name: "instance not registered",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "test-infra",
+				Status:          "NEW",
+				Revisions: map[string]client.RevisionInfo{
+					"1": {
+						Ref:     "refs/changes/00/1/1",
+						Created: stampNow,
+					},
+				},
+			},
+			instancesMap:    map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:        testInstance + "_notexist",
+			shouldError:     true,
+			expectedBaseSHA: "abc",
 		},
 		{
 			name: "jobs should trigger with correct labels",
@@ -399,8 +436,10 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
-			numPJ: 2,
-			pjRef: "refs/changes/00/1/1",
+			instancesMap: map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:     testInstance,
+			numPJ:        2,
+			pjRef:        "refs/changes/00/1/1",
 			expectedLabels: map[string]string{
 				client.GerritRevision:    "rev42",
 				client.GerritPatchset:    "42",
@@ -414,6 +453,7 @@ func TestProcessChange(t *testing.T) {
 				kube.BaseRefLabel:        "",
 				kube.PullLabel:           "0",
 			},
+			expectedBaseSHA: "abc",
 		},
 		{
 			name: "multiple revisions",
@@ -432,8 +472,11 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
-			numPJ: 2,
-			pjRef: "refs/changes/00/2/2",
+			instancesMap:    map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:        testInstance,
+			numPJ:           2,
+			pjRef:           "refs/changes/00/2/2",
+			expectedBaseSHA: "abc",
 		},
 		{
 			name: "other-test-with-https",
@@ -448,8 +491,11 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
-			numPJ: 1,
-			pjRef: "refs/changes/00/1/1",
+			instancesMap:    map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:        testInstance,
+			numPJ:           1,
+			pjRef:           "refs/changes/00/1/1",
+			expectedBaseSHA: "abc",
 		},
 		{
 			name: "merged change should trigger postsubmit",
@@ -464,8 +510,11 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
-			numPJ: 1,
-			pjRef: "refs/changes/00/1/1",
+			instancesMap:    map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:        testInstance,
+			numPJ:           1,
+			pjRef:           "refs/changes/00/1/1",
+			expectedBaseSHA: "1",
 		},
 		{
 			name: "merged change on project without postsubmits",
@@ -480,6 +529,9 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
+			instancesMap:    map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:        testInstance,
+			expectedBaseSHA: "1",
 		},
 		{
 			name: "presubmit runs when a file matches run_if_changed",
@@ -498,7 +550,10 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
-			numPJ: 3,
+			instancesMap:    map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:        testInstance,
+			numPJ:           3,
+			expectedBaseSHA: "abc",
 		},
 		{
 			name: "presubmit doesn't run when no files match run_if_changed",
@@ -517,7 +572,10 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
-			numPJ: 2,
+			instancesMap:    map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:        testInstance,
+			numPJ:           2,
+			expectedBaseSHA: "abc",
 		},
 		{
 			name: "presubmit run when change against matched branch",
@@ -532,7 +590,10 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
-			numPJ: 3,
+			instancesMap:    map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:        testInstance,
+			numPJ:           3,
+			expectedBaseSHA: "abc",
 		},
 		{
 			name: "presubmit doesn't run when not against target branch",
@@ -547,7 +608,10 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
-			numPJ: 1,
+			instancesMap:    map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:        testInstance,
+			numPJ:           1,
+			expectedBaseSHA: "abc",
 		},
 		{
 			name: "old presubmits don't run on old revision but trigger job does because new message",
@@ -570,7 +634,10 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
-			numPJ: 1,
+			instancesMap:    map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:        testInstance,
+			numPJ:           1,
+			expectedBaseSHA: "abc",
 		},
 		{
 			name: "unrelated comment shouldn't trigger anything",
@@ -593,7 +660,10 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
-			numPJ: 0,
+			instancesMap:    map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:        testInstance,
+			numPJ:           0,
+			expectedBaseSHA: "abc",
 		},
 		{
 			name: "trigger always run job on test all even if revision is old",
@@ -616,7 +686,10 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
-			numPJ: 1,
+			instancesMap:    map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:        testInstance,
+			numPJ:           1,
+			expectedBaseSHA: "abc",
 		},
 		{
 			name: "retest correctly triggers failed jobs",
@@ -645,7 +718,10 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
-			numPJ: 1,
+			instancesMap:    map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:        testInstance,
+			numPJ:           1,
+			expectedBaseSHA: "abc",
 		},
 		{
 			name: "retest uses latest status and ignores earlier status",
@@ -680,7 +756,10 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
-			numPJ: 1,
+			instancesMap:    map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:        testInstance,
+			numPJ:           1,
+			expectedBaseSHA: "abc",
 		},
 		{
 			name: "retest ignores statuses not reported by the prow account",
@@ -715,7 +794,10 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
-			numPJ: 2,
+			instancesMap:    map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:        testInstance,
+			numPJ:           2,
+			expectedBaseSHA: "abc",
 		},
 		{
 			name: "retest does nothing if there are no latest reports",
@@ -738,7 +820,10 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
-			numPJ: 0,
+			instancesMap:    map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:        testInstance,
+			numPJ:           0,
+			expectedBaseSHA: "abc",
 		},
 		{
 			name: "retest uses the latest report",
@@ -773,7 +858,10 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
-			numPJ: 2,
+			instancesMap:    map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:        testInstance,
+			numPJ:           2,
+			expectedBaseSHA: "abc",
 		},
 		{
 			name: "no comments when no jobs have Report set",
@@ -788,9 +876,12 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
+			instancesMap:     map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:         testInstance,
 			numPJ:            2,
 			pjRef:            "refs/changes/00/1/1",
 			shouldSkipReport: true,
+			expectedBaseSHA:  "abc",
 		},
 		{
 			name: "comment left when at-least 1 job has Report set",
@@ -808,8 +899,11 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
-			numPJ: 3,
-			pjRef: "refs/changes/00/1/1",
+			instancesMap:    map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:        testInstance,
+			numPJ:           3,
+			pjRef:           "refs/changes/00/1/1",
+			expectedBaseSHA: "abc",
 		},
 	}
 
@@ -931,7 +1025,7 @@ func TestProcessChange(t *testing.T) {
 			},
 		},
 	}
-	testInstance := "https://gerrit"
+
 	fca := &fca{
 		c: config,
 	}
@@ -941,10 +1035,11 @@ func TestProcessChange(t *testing.T) {
 			t.Parallel()
 
 			fakeProwJobClient := prowfake.NewSimpleClientset()
-			fakeLastSync := client.LastSyncState{testInstance: map[string]time.Time{}}
-			fakeLastSync[testInstance][tc.change.Project] = timeNow.Add(-time.Minute)
+			fakeLastSync := client.LastSyncState{tc.instance: map[string]time.Time{}}
+			fakeLastSync[tc.instance][tc.change.Project] = timeNow.Add(-time.Minute)
 
 			var gc fgc
+			gc.instanceMap = tc.instancesMap
 			c := &Controller{
 				config:        fca.Config,
 				prowJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
@@ -952,7 +1047,7 @@ func TestProcessChange(t *testing.T) {
 				tracker:       &fakeSync{val: fakeLastSync},
 			}
 
-			err := c.processChange(logrus.WithField("name", tc.name), testInstance, tc.change)
+			err := c.processChange(logrus.WithField("name", tc.name), tc.instance, tc.change)
 			if err != nil && !tc.shouldError {
 				t.Errorf("expect no error, but got %v", err)
 			} else if err == nil && tc.shouldError {
@@ -981,11 +1076,11 @@ func TestProcessChange(t *testing.T) {
 				if refs.Repo != tc.change.Project {
 					t.Errorf("repo %s != expected %s", refs.Repo, tc.change.Project)
 				}
-				if prowjobs[0].Spec.Refs.Pulls[0].Ref != tc.pjRef {
+				if len(prowjobs[0].Spec.Refs.Pulls) > 0 && prowjobs[0].Spec.Refs.Pulls[0].Ref != tc.pjRef {
 					t.Errorf("ref should be %s, got %s", tc.pjRef, prowjobs[0].Spec.Refs.Pulls[0].Ref)
 				}
-				if prowjobs[0].Spec.Refs.BaseSHA != "abc" {
-					t.Errorf("BaseSHA should be abc, got %s", prowjobs[0].Spec.Refs.BaseSHA)
+				if prowjobs[0].Spec.Refs.BaseSHA != tc.expectedBaseSHA {
+					t.Errorf("BaseSHA should be %s, got %s", tc.expectedBaseSHA, prowjobs[0].Spec.Refs.BaseSHA)
 				}
 				if tc.expectedLabels != nil {
 					if !equality.Semantic.DeepEqual(tc.expectedLabels, prowjobs[0].Labels) {

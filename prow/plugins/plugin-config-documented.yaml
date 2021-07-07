@@ -418,7 +418,7 @@ lgtm:
 milestone_applier:
     "": null
 override:
-    # AllowedGitHubTeams is a map of repositories (eg "k/k") to list of GitHub team slugs,
+    # AllowedGitHubTeams is a map of orgs and/or repositories (eg "org" or "org/repo") to list of GitHub team slugs,
     # members of which are allowed to override contexts
     allowed_github_teams:
         "": null

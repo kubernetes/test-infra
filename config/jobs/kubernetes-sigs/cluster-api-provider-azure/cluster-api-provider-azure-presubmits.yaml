@@ -10,7 +10,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-go-canary
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-go-canary
         command:
         - "./scripts/ci-test.sh"
     annotations:
@@ -27,7 +27,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-go-canary
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-go-canary
         command:
         - "./scripts/ci-build.sh"
     annotations:
@@ -51,7 +51,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-go-canary
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-go-canary
         command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
@@ -59,7 +59,7 @@ presubmits:
           - name: GINKGO_FOCUS
             value: "Workload cluster creation"
           - name: GINKGO_SKIP
-            value: "Creating a GPU-enabled cluster|.*Windows.*|Creating a cluster that uses the external cloud provider"
+            value: "Creating a GPU-enabled cluster|.*Windows.*|.*AKS.*|Creating a cluster that uses the external cloud provider"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -83,7 +83,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-go-canary
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-go-canary
         command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
@@ -116,7 +116,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-go-canary
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-go-canary
         command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
@@ -131,6 +131,39 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-e2e-windows-main
+      testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+  - name: pull-cluster-api-provider-azure-e2e-exp
+    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    always_run: false
+    optional: true
+    decorate: true
+    run_if_changed: '^((exp)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
+    max_concurrency: 5
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true"
+    branches:
+    # The script this job runs is not in all branches.
+    - ^master$
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-go-canary
+        command:
+        - "runner.sh"
+        - "./scripts/ci-e2e.sh"
+        env:
+          - name: GINKGO_FOCUS
+            value: ".*AKS.*"
+          - name: GINKGO_SKIP
+            value: ""
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+      testgrid-tab-name: capz-pr-e2e-exp-main
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
   - name: pull-cluster-api-provider-azure-capi-e2e
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
@@ -150,7 +183,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-go-canary
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-go-canary
         command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
@@ -169,16 +202,21 @@ presubmits:
     optional: false
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    labels:
+      # required for shellcheck in container.
+      preset-dind-enabled: "true"
     branches:
     # The script this job runs is not in all branches.
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-go-canary
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-go-canary
         command:
         - "runner.sh"
         - "make"
         - "verify"
+        securityContext:
+          privileged: true
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-verify-main
@@ -200,7 +238,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-go-canary
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-go-canary
         command:
         - "runner.sh"
         - "./scripts/ci-conformance.sh"
@@ -232,7 +270,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-go-canary
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-go-canary
         command:
         - "runner.sh"
         - "./scripts/ci-conformance.sh"
@@ -270,7 +308,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-go-canary
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-go-canary
           command:
             - "runner.sh"
             - "./scripts/ci-conformance.sh"
@@ -286,6 +324,44 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-conformance-v1alpha4-k8s-main
+  - name: pull-cluster-api-provider-azure-windows-upstream-with-ci-artifacts
+    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    always_run: false
+    optional: true
+    decorate: true
+    decoration_config:
+      timeout: 4h
+    max_concurrency: 5
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+    branches:
+    # The script this job runs is not in all branches.
+    - ^master$
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-go-canary
+          command:
+            - "runner.sh"
+            - "./scripts/ci-conformance.sh"
+          env:
+            - name: E2E_ARGS
+              value: "-kubetest.use-ci-artifacts"
+            - name: WINDOWS
+              value: "true"
+            # Windows isn't really conformance, we typically run at 4 to keep the time reasonable (~45 mins)
+            - name: CONFORMANCE_NODES
+              value: "4"
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 2
+              memory: "9Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+      testgrid-tab-name: capz-pull-upstream-v1alpha4-k8s-main-windows
   - name: pull-cluster-api-provider-azure-apidiff
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-azure
@@ -301,7 +377,7 @@ presubmits:
       - command:
         - runner.sh
         - ./scripts/ci-apidiff.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-go-canary
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-go-canary
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-apidiff-main
@@ -320,7 +396,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-go-canary
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-go-canary
         command:
         - runner.sh
         - bash

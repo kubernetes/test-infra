@@ -91,6 +91,12 @@ type CensoringFormatter struct {
 }
 
 func (f CensoringFormatter) Format(entry *logrus.Entry) ([]byte, error) {
+	// Depending on the formatter in the delegate, the message will actually
+	// change shape/content - think of a message with newlines or quotes going
+	// to a JSON output. In order to catch this, we need to pre-censor the message.
+	message := []byte(entry.Message)
+	f.censorer.Censor(&message)
+	entry.Message = string(message)
 	raw, err := f.delegate.Format(entry)
 	if err != nil {
 		return raw, err

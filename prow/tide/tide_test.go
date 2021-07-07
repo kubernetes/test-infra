@@ -748,6 +748,8 @@ func (f *fgc) Merge(org, repo string, number int, details github.MergeDetails) e
 }
 
 func (f *fgc) CreateStatus(org, repo, ref string, s github.Status) error {
+	f.lock.Lock()
+	defer f.lock.Unlock()
 	switch s.State {
 	case github.StatusSuccess, github.StatusError, github.StatusPending, github.StatusFailure:
 		if f.statuses == nil {
@@ -1753,6 +1755,14 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 							RerunCommand: "/test if-changed",
 							RegexpChangeMatcher: config.RegexpChangeMatcher{
 								RunIfChanged: "CHANGED",
+							},
+						},
+						{
+							Reporter:     config.Reporter{Context: "if-changed"},
+							Trigger:      "/test if-changed",
+							RerunCommand: "/test if-changed",
+							RegexpChangeMatcher: config.RegexpChangeMatcher{
+								SkipIfOnlyChanged: "CHANGED1",
 							},
 						},
 					},

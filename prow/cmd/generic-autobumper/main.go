@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -43,6 +44,10 @@ const (
 	upstreamStagingVersion = "upstream-staging"
 	tagVersion             = "vYYYYMMDD-deadbeef"
 	defaultUpstreamURLBase = "https://raw.githubusercontent.com/kubernetes/test-infra/master"
+
+	defaultOncallGroup = "testinfra"
+	errOncallMsgTempl  = "An error occurred while finding an assignee: `%s`.\nFalling back to Blunderbuss."
+	noOncallMsg        = "Nobody is currently oncall, so falling back to Blunderbuss."
 )
 
 var (
@@ -73,18 +78,20 @@ func (c *client) Changes() []func() (string, error) {
 			}
 
 			var body string
+			var prefixNames []string
 			for _, prefix := range c.o.Prefixes {
+				prefixNames = append(prefixNames, prefix.Name)
 				body = body + generateSummary(prefix.Name, prefix.Repo, prefix.Prefix, prefix.Summarise, c.images) + "\n\n"
 			}
 
-			return body, nil
+			return fmt.Sprintf("Bumping %s\n\n%s", strings.Join(prefixNames, " and "), body), nil
 		},
 	}
 }
 
 // PRTitleBody returns the body of the PR, this function runs after each commit
 func (c *client) PRTitleBody() (string, string, error) {
-	return makeCommitSummary(c.o.Prefixes, c.versions), generatePRBody(c.images, c.o.Prefixes), nil
+	return makeCommitSummary(c.o.Prefixes, c.versions), generatePRBody(c.images, c.o.Prefixes) + getAssignment(c.o.OncallAddress, c.o.OncallGroup) + "\n", nil
 }
 
 func generatePRBody(images map[string]string, prefixes []prefix) (body string) {
@@ -110,6 +117,12 @@ type options struct {
 	TargetVersion string `yaml:"targetVersion"`
 	// List of prefixes that the autobumped is looking for, and other information needed to bump them. Must have at least 1 prefix.
 	Prefixes []prefix `yaml:"prefixes"`
+	// The oncall address where we can get the JSON file that stores the current oncall information.
+	OncallAddress string `json:"onCallAddress"`
+	// The oncall group that is responsible for reviewing the change, i.e. "test-infra".
+	OncallGroup string `json:"onCallGroup"`
+	// Whether skip f no oncall is discovered
+	SkipIfNoOncall bool `yaml:"skipIfNoOncall"`
 }
 
 // prefix is the information needed for each prefix being bumped.
@@ -135,12 +148,13 @@ func parseOptions() (*options, *bumper.Options, error) {
 	var labelsOverride []string
 	var skipPullRequest bool
 
+	var o options
 	flag.StringVar(&config, "config", "", "The path to the config file for the autobumber.")
 	flag.StringSliceVar(&labelsOverride, "labels-override", nil, "Override labels to be added to PR.")
 	flag.BoolVar(&skipPullRequest, "skip-pullrequest", false, "")
+	flag.BoolVar(&o.SkipIfNoOncall, "skip-if-no-oncall", false, "Don't run anything if no oncall is discovered")
 	flag.Parse()
 
-	var o options
 	var pro bumper.Options
 	data, err := ioutil.ReadFile(config)
 	if err != nil {
@@ -157,6 +171,9 @@ func parseOptions() (*options, *bumper.Options, error) {
 
 	if labelsOverride != nil {
 		pro.Labels = labelsOverride
+	}
+	if o.OncallGroup == "" {
+		o.OncallGroup = defaultOncallGroup
 	}
 	pro.SkipPullRequest = skipPullRequest
 	return &o, &pro, nil
@@ -194,6 +211,56 @@ func validateOptions(o *options) error {
 	}
 
 	return nil
+}
+
+func isOncallActive(oncallAddress, oncallGroup string) bool {
+	_, oncallActive, _ := getOncallInfo(oncallAddress, oncallGroup)
+	return oncallActive
+}
+
+func getAssignment(oncallAddress, oncallGroup string) string {
+	curtOncall, _, err := getOncallInfo(oncallAddress, oncallGroup)
+	if err != nil {
+		return fmt.Sprintf(errOncallMsgTempl, err.Error())
+	}
+	if curtOncall == "" {
+		return noOncallMsg
+	}
+	return curtOncall
+}
+
+func getOncallInfo(oncallAddress, oncallGroup string) (string, bool, error) {
+	if oncallAddress == "" {
+		return "", false, nil
+	}
+
+	req, err := http.Get(oncallAddress)
+	if err != nil {
+		return "", false, err
+	}
+	defer req.Body.Close()
+	if req.StatusCode != http.StatusOK {
+		return "", false, fmt.Errorf("requesting oncall address: HTTP error %d: %q", req.StatusCode, req.Status)
+	}
+	oncall := struct {
+		Oncall map[string]string `json:"Oncall"`
+		Active map[string]bool   `json:"Active"`
+	}{}
+	if err := json.NewDecoder(req.Body).Decode(&oncall); err != nil {
+		return "", false, err
+	}
+	curtOncall, ok := oncall.Oncall[oncallGroup]
+	if !ok {
+		return "", false, fmt.Errorf("oncall map doesn't contain group '%s'", oncallGroup)
+	}
+	oncallActive, ok := oncall.Active[oncallGroup]
+	if !ok {
+		return "", false, fmt.Errorf("oncall map doesn't contain group '%s'", oncallGroup)
+	}
+	if curtOncall != "" {
+		return "/cc @" + curtOncall, oncallActive, nil
+	}
+	return "", false, nil
 }
 
 // updateReferencesWrapper update the references of prow-images and/or boskos-images and/or testimages
@@ -367,7 +434,7 @@ func getVersionsAndCheckConsistency(prefixes []prefix, images map[string]string)
 			if strings.HasPrefix(k, prefix.Prefix) {
 				found, ok := consistencyChecker[prefix.Prefix]
 				if ok && (found != v) && prefix.ConsistentImages {
-					return nil, fmt.Errorf("%q was supposed to be bumped consistntly but was not", prefix.Name)
+					return nil, fmt.Errorf("%s:%s not bumped consistently for prefix %s(%s), expected version: %s", k, v, prefix.Prefix, prefix.Name, found)
 				} else if !ok {
 					consistencyChecker[prefix.Prefix] = v
 				}
@@ -481,11 +548,19 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatalf("Failed to run the bumper tool")
 	}
+
+	if o.SkipIfNoOncall {
+		if !isOncallActive(o.OncallAddress, o.OncallGroup) {
+
+			logrus.Info("`skip-if-no-oncall` is configured and there is no active oncall. Skip bumping.")
+			return
+		}
+	}
 	if err := validateOptions(o); err != nil {
 		logrus.WithError(err).Fatalf("Failed validating flags")
 	}
 
-	if err := bumper.Run2(pro, &client{o: o}); err != nil {
+	if err := bumper.Run(pro, &client{o: o}); err != nil {
 		logrus.WithError(err).Fatalf("failed to run the bumper tool")
 	}
 }

@@ -10,7 +10,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-kubeadm
     testgrid-tab-name: kubeadm-kinder-no-addons-latest
-    testgrid-alert-email: kubernetes-sig-cluster-lifecycle+testgrid@googlegroups.com
+    testgrid-alert-email: sig-cluster-lifecycle-kubeadm-alerts@kubernetes.io
     description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster and test if 'join' and 'upgrade' works with missing addon ConfigMaps"
     testgrid-num-columns-recent: "20"
     testgrid-num-failures-to-alert: "4"
@@ -28,7 +28,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"

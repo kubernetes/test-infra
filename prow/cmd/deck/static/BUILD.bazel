@@ -9,9 +9,10 @@ ts_library(
 
 ts_library(
     name = "common",
-    srcs = glob(["common/*.ts"]),
+    srcs = glob(["common/*.ts"]) + ["vendor.d.ts"],
     deps = [
         ":api",
+        "@npm//@types/gtag.js",
         "@npm//moment",
     ],
 )
@@ -165,6 +166,7 @@ ts_library(
     name = "spyglass",
     srcs = ["spyglass/spyglass.ts"],
     deps = [
+        ":common",
         ":spyglass_common",
     ],
 )
@@ -201,6 +203,23 @@ rollup_bundle(
     ],
 )
 
+ts_library(
+    name = "job_history",
+    srcs = glob(["job-history/*.ts"]),
+    deps = [
+        ":common",
+        "@npm//moment",
+    ],
+)
+
+rollup_bundle(
+    name = "job_history_bundle",
+    entry_point = ":job-history/job-history.ts",
+    deps = [
+        ":job_history",
+    ],
+)
+
 test_suite(
     name = "unit_tests",
     tests = [
@@ -233,6 +252,7 @@ filegroup(
     name = "all-scripts",
     srcs = [
         ":command_help_bundle.min",
+        ":job_history_bundle.min",
         ":plugin_help_bundle.min",
         ":pr_bundle.min",
         ":prow_bundle.min",

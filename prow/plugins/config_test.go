@@ -1534,7 +1534,7 @@ func TestConfigMergingProperties(t *testing.T) {
 		{
 			name: "Plugins config",
 			makeMergeable: func(c *Configuration) {
-				*c = Configuration{Plugins: c.Plugins}
+				*c = Configuration{Plugins: c.Plugins, Bugzilla: c.Bugzilla}
 			},
 		},
 	}
@@ -1663,6 +1663,327 @@ func TestPluginsMergeFrom(t *testing.T) {
 	}
 }
 
+func TestBugzillaMergeFrom(t *testing.T) {
+	t.Parallel()
+
+	yes := true
+	targetRelease1 := "target-release-1"
+	targetRelease2 := "target-release-2"
+
+	testCases := []struct {
+		name string
+
+		from *Bugzilla
+		to   *Bugzilla
+
+		expected       *Bugzilla
+		expectedErrMsg string
+	}{
+		{
+			name: "Merging for two different repos",
+
+			from: &Bugzilla{Orgs: map[string]BugzillaOrgOptions{
+				"org": {
+					Repos: map[string]BugzillaRepoOptions{
+						"repo-1": {
+							Branches: map[string]BugzillaBranchOptions{
+								"master": {
+									IsOpen:        &yes,
+									TargetRelease: &targetRelease1,
+								},
+							},
+						},
+					},
+				},
+			}},
+			to: &Bugzilla{Orgs: map[string]BugzillaOrgOptions{
+				"org": {
+					Repos: map[string]BugzillaRepoOptions{
+						"repo-2": {
+							Branches: map[string]BugzillaBranchOptions{
+								"master": {
+									IsOpen:        &yes,
+									TargetRelease: &targetRelease2,
+								},
+							},
+						},
+					},
+				},
+			}},
+
+			expected: &Bugzilla{Orgs: map[string]BugzillaOrgOptions{
+				"org": {
+					Repos: map[string]BugzillaRepoOptions{
+						"repo-1": {
+							Branches: map[string]BugzillaBranchOptions{
+								"master": {
+									IsOpen:        &yes,
+									TargetRelease: &targetRelease1,
+								},
+							},
+						},
+						"repo-2": {
+							Branches: map[string]BugzillaBranchOptions{
+								"master": {
+									IsOpen:        &yes,
+									TargetRelease: &targetRelease2,
+								},
+							},
+						},
+					},
+				},
+			}},
+		},
+		{
+			name: "Merging organization defaults and repo in org",
+
+			from: &Bugzilla{Orgs: map[string]BugzillaOrgOptions{
+				"org": {
+					Repos: map[string]BugzillaRepoOptions{
+						"repo-2": {
+							Branches: map[string]BugzillaBranchOptions{
+								"master": {
+									IsOpen:        &yes,
+									TargetRelease: &targetRelease2,
+								},
+							},
+						},
+					},
+				},
+			}},
+			to: &Bugzilla{Orgs: map[string]BugzillaOrgOptions{
+				"org": {
+					Default: map[string]BugzillaBranchOptions{
+						"master": {
+							IsOpen:        &yes,
+							TargetRelease: &targetRelease1,
+						},
+					},
+				},
+			}},
+
+			expected: &Bugzilla{Orgs: map[string]BugzillaOrgOptions{
+				"org": {
+					Default: map[string]BugzillaBranchOptions{
+						"master": {
+							IsOpen:        &yes,
+							TargetRelease: &targetRelease1,
+						},
+					},
+					Repos: map[string]BugzillaRepoOptions{
+						"repo-2": {
+							Branches: map[string]BugzillaBranchOptions{
+								"master": {
+									IsOpen:        &yes,
+									TargetRelease: &targetRelease2,
+								},
+							},
+						},
+					},
+				},
+			}},
+		},
+		{
+			name: "Merging 2 organizations",
+
+			from: &Bugzilla{Orgs: map[string]BugzillaOrgOptions{
+				"org": {
+					Repos: map[string]BugzillaRepoOptions{
+						"repo-1": {
+							Branches: map[string]BugzillaBranchOptions{
+								"master": {
+									IsOpen:        &yes,
+									TargetRelease: &targetRelease1,
+								},
+							},
+						},
+					},
+				},
+			}},
+			to: &Bugzilla{Orgs: map[string]BugzillaOrgOptions{
+				"org-2": {
+					Repos: map[string]BugzillaRepoOptions{
+						"repo-1": {
+							Branches: map[string]BugzillaBranchOptions{
+								"master": {
+									IsOpen:        &yes,
+									TargetRelease: &targetRelease2,
+								},
+							},
+						},
+					},
+				},
+			}},
+
+			expected: &Bugzilla{Orgs: map[string]BugzillaOrgOptions{
+				"org": {
+					Repos: map[string]BugzillaRepoOptions{
+						"repo-1": {
+							Branches: map[string]BugzillaBranchOptions{
+								"master": {
+									IsOpen:        &yes,
+									TargetRelease: &targetRelease1,
+								},
+							},
+						},
+					}},
+				"org-2": {
+					Repos: map[string]BugzillaRepoOptions{
+						"repo-1": {
+							Branches: map[string]BugzillaBranchOptions{
+								"master": {
+									IsOpen:        &yes,
+									TargetRelease: &targetRelease2,
+								},
+							},
+						},
+					},
+				},
+			}},
+		},
+		{
+			name: "Merging global defaults succeeds",
+
+			from: &Bugzilla{Default: map[string]BugzillaBranchOptions{
+				"master": {
+					IsOpen:        &yes,
+					TargetRelease: &targetRelease1,
+				},
+			}},
+			to: &Bugzilla{Orgs: map[string]BugzillaOrgOptions{
+				"org": {
+					Repos: map[string]BugzillaRepoOptions{
+						"repo-1": {
+							Branches: map[string]BugzillaBranchOptions{
+								"master": {
+									IsOpen:        &yes,
+									TargetRelease: &targetRelease1,
+								},
+							},
+						},
+					},
+				},
+			}},
+			expected: &Bugzilla{Default: map[string]BugzillaBranchOptions{
+				"master": {
+					IsOpen:        &yes,
+					TargetRelease: &targetRelease1,
+				},
+			}, Orgs: map[string]BugzillaOrgOptions{
+				"org": {
+					Repos: map[string]BugzillaRepoOptions{
+						"repo-1": {
+							Branches: map[string]BugzillaBranchOptions{
+								"master": {
+									IsOpen:        &yes,
+									TargetRelease: &targetRelease1,
+								},
+							},
+						},
+					},
+				},
+			}},
+		},
+		{
+			name: "Merging multiple global defaults fails",
+
+			from: &Bugzilla{Default: map[string]BugzillaBranchOptions{
+				"master": {
+					IsOpen:        &yes,
+					TargetRelease: &targetRelease1,
+				},
+			}},
+			to: &Bugzilla{Default: map[string]BugzillaBranchOptions{
+				"master": {
+					IsOpen:        &yes,
+					TargetRelease: &targetRelease2,
+				},
+			}},
+			expectedErrMsg: "configuration of global default defined in multiple places",
+		},
+		{
+			name: "Merging same organization defaults fails",
+
+			from: &Bugzilla{Orgs: map[string]BugzillaOrgOptions{
+				"org": {
+					Default: map[string]BugzillaBranchOptions{
+						"master": {
+							IsOpen:        &yes,
+							TargetRelease: &targetRelease1,
+						},
+					},
+				},
+			}},
+			to: &Bugzilla{Orgs: map[string]BugzillaOrgOptions{
+				"org": {
+					Default: map[string]BugzillaBranchOptions{
+						"master": {
+							IsOpen:        &yes,
+							TargetRelease: &targetRelease2,
+						},
+					},
+				},
+			}},
+
+			expectedErrMsg: "found duplicate organization config for bugzilla.org",
+		},
+		{
+			name: "Merging same repository fails",
+
+			from: &Bugzilla{Orgs: map[string]BugzillaOrgOptions{
+				"org": {
+					Repos: map[string]BugzillaRepoOptions{
+						"repo-1": {
+							Branches: map[string]BugzillaBranchOptions{
+								"master": {
+									IsOpen:        &yes,
+									TargetRelease: &targetRelease1,
+								},
+							},
+						},
+					},
+				},
+			}},
+			to: &Bugzilla{Orgs: map[string]BugzillaOrgOptions{
+				"org": {
+					Repos: map[string]BugzillaRepoOptions{
+						"repo-1": {
+							Branches: map[string]BugzillaBranchOptions{
+								"master": {
+									IsOpen:        &yes,
+									TargetRelease: &targetRelease2,
+								},
+							},
+						},
+					},
+				},
+			}},
+
+			expectedErrMsg: "found duplicate repository config for bugzilla.org/repo-1",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var errMsg string
+			err := tc.to.mergeFrom(tc.from)
+			if err != nil {
+				errMsg = err.Error()
+			}
+			if tc.expectedErrMsg != errMsg {
+				t.Fatalf("expected error message %q, got %q", tc.expectedErrMsg, errMsg)
+			}
+			if err != nil {
+				return
+			}
+
+			if diff := cmp.Diff(tc.expected, tc.to); diff != "" {
+				t.Errorf("expexcted config differs from actual: %s", diff)
+			}
+		})
+	}
+}
+
 func TestHasConfigFor(t *testing.T) {
 	t.Parallel()
 	testCases := []struct {
@@ -1670,15 +1991,21 @@ func TestHasConfigFor(t *testing.T) {
 		resultGenerator func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.String, expectRepos sets.String)
 	}{
 		{
-			name: "Any non-empty config with empty Plugins is considered to be global",
+			name: "Any non-empty config with empty Plugins and Bugzilla is considered to be global",
 			resultGenerator: func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
 				fuzzedConfig.Plugins = nil
+				fuzzedConfig.Bugzilla = Bugzilla{}
+				fuzzedConfig.Approve = nil
+				fuzzedConfig.Lgtm = nil
+				fuzzedConfig.ExternalPlugins = nil
 				return fuzzedConfig, !reflect.DeepEqual(fuzzedConfig, &Configuration{}), nil, nil
 			},
 		},
 		{
 			name: "Any config with plugins is considered to be for the orgs and repos references there",
 			resultGenerator: func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
+				// exclude non-plugins configs to test plugins specifically
+				fuzzedConfig = &Configuration{Plugins: fuzzedConfig.Plugins}
 				expectOrgs, expectRepos = sets.String{}, sets.String{}
 				for orgOrRepo := range fuzzedConfig.Plugins {
 					if strings.Contains(orgOrRepo, "/") {
@@ -1688,6 +2015,77 @@ func TestHasConfigFor(t *testing.T) {
 					}
 				}
 				return fuzzedConfig, !reflect.DeepEqual(fuzzedConfig, &Configuration{Plugins: fuzzedConfig.Plugins}), expectOrgs, expectRepos
+			},
+		},
+		{
+			name: "Any config with bugzilla is considered to be for the orgs and repos references there",
+			resultGenerator: func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
+				// exclude non-plugins configs to test bugzilla specifically
+				fuzzedConfig = &Configuration{Bugzilla: fuzzedConfig.Bugzilla}
+				expectOrgs, expectRepos = sets.String{}, sets.String{}
+				for org, orgConfig := range fuzzedConfig.Bugzilla.Orgs {
+					if orgConfig.Default != nil {
+						expectOrgs.Insert(org)
+					}
+					for repo := range orgConfig.Repos {
+						expectRepos.Insert(org + "/" + repo)
+					}
+				}
+				return fuzzedConfig, len(fuzzedConfig.Bugzilla.Default) > 0, expectOrgs, expectRepos
+			},
+		},
+		{
+			name: "Any config with approve is considered to be for the orgs and repos references there",
+			resultGenerator: func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
+				fuzzedConfig = &Configuration{Approve: fuzzedConfig.Approve}
+				expectOrgs, expectRepos = sets.String{}, sets.String{}
+
+				for _, approveConfig := range fuzzedConfig.Approve {
+					for _, orgOrRepo := range approveConfig.Repos {
+						if strings.Contains(orgOrRepo, "/") {
+							expectRepos.Insert(orgOrRepo)
+						} else {
+							expectOrgs.Insert(orgOrRepo)
+						}
+					}
+				}
+
+				return fuzzedConfig, false, expectOrgs, expectRepos
+			},
+		},
+		{
+			name: "Any config with lgtm is considered to be for the orgs and repos references there",
+			resultGenerator: func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
+				fuzzedConfig = &Configuration{Lgtm: fuzzedConfig.Lgtm}
+				expectOrgs, expectRepos = sets.String{}, sets.String{}
+
+				for _, lgtm := range fuzzedConfig.Lgtm {
+					for _, orgOrRepo := range lgtm.Repos {
+						if strings.Contains(orgOrRepo, "/") {
+							expectRepos.Insert(orgOrRepo)
+						} else {
+							expectOrgs.Insert(orgOrRepo)
+						}
+					}
+				}
+
+				return fuzzedConfig, false, expectOrgs, expectRepos
+			},
+		},
+		{
+			name: "Any config with external-plugins is considered to be for the orgs and repos references there",
+			resultGenerator: func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
+				fuzzedConfig = &Configuration{ExternalPlugins: fuzzedConfig.ExternalPlugins}
+				expectOrgs, expectRepos = sets.String{}, sets.String{}
+
+				for orgOrRepo := range fuzzedConfig.ExternalPlugins {
+					if strings.Contains(orgOrRepo, "/") {
+						expectRepos.Insert(orgOrRepo)
+					} else {
+						expectOrgs.Insert(orgOrRepo)
+					}
+				}
+				return fuzzedConfig, false, expectOrgs, expectRepos
 			},
 		},
 	}
@@ -1718,7 +2116,86 @@ func TestHasConfigFor(t *testing.T) {
 					t.Errorf("expected repos differ from actual: %s", diff)
 				}
 			}
-
 		})
+	}
+}
+
+func TestMergeFrom(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name                string
+		in                  Configuration
+		supplementalConfigs []Configuration
+		expected            Configuration
+		errorExpected       bool
+	}{
+		{
+			name:                "Approve config gets merged",
+			in:                  Configuration{Approve: []Approve{{Repos: []string{"foo/bar"}}}},
+			supplementalConfigs: []Configuration{{Approve: []Approve{{Repos: []string{"foo/baz"}}}}},
+			expected: Configuration{Approve: []Approve{
+				{Repos: []string{"foo/bar"}},
+				{Repos: []string{"foo/baz"}},
+			}},
+		},
+		{
+			name:                "LGTM config gets merged",
+			in:                  Configuration{Lgtm: []Lgtm{{Repos: []string{"foo/bar"}}}},
+			supplementalConfigs: []Configuration{{Lgtm: []Lgtm{{Repos: []string{"foo/baz"}}}}},
+			expected: Configuration{Lgtm: []Lgtm{
+				{Repos: []string{"foo/bar"}},
+				{Repos: []string{"foo/baz"}},
+			}},
+		},
+		{
+			name: "ExternalPlugins get merged",
+			in: Configuration{
+				ExternalPlugins: map[string][]ExternalPlugin{
+					"foo/bar": {{Name: "refresh", Endpoint: "http://refresh", Events: []string{"issue_comment"}}},
+				},
+			},
+			supplementalConfigs: []Configuration{{ExternalPlugins: map[string][]ExternalPlugin{"foo/baz": {{Name: "refresh", Endpoint: "http://refresh", Events: []string{"issue_comment"}}}}}},
+			expected: Configuration{
+				ExternalPlugins: map[string][]ExternalPlugin{
+					"foo/bar": {{Name: "refresh", Endpoint: "http://refresh", Events: []string{"issue_comment"}}},
+					"foo/baz": {{Name: "refresh", Endpoint: "http://refresh", Events: []string{"issue_comment"}}},
+				},
+			},
+		},
+		{
+			name:                "main config has no ExternalPlugins config, supplemental config has, it gets merged",
+			supplementalConfigs: []Configuration{{ExternalPlugins: map[string][]ExternalPlugin{"foo/bar": {{Name: "refresh", Endpoint: "http://refresh", Events: []string{"issue_comment"}}}}}},
+			expected: Configuration{
+				ExternalPlugins: map[string][]ExternalPlugin{
+					"foo/bar": {{Name: "refresh", Endpoint: "http://refresh", Events: []string{"issue_comment"}}},
+				},
+			},
+		},
+		{
+			name: "ExternalPlugins cant't merge duplicated configs",
+			in: Configuration{
+				ExternalPlugins: map[string][]ExternalPlugin{
+					"foo/bar": {{Name: "refresh", Endpoint: "http://refresh", Events: []string{"issue_comment"}}},
+				},
+			},
+			supplementalConfigs: []Configuration{{ExternalPlugins: map[string][]ExternalPlugin{"foo/bar": {{Name: "refresh", Endpoint: "http://refresh", Events: []string{"issue_comment"}}}}}},
+			errorExpected:       true,
+		},
+	}
+
+	for _, tc := range testCases {
+		for idx, supplementalConfig := range tc.supplementalConfigs {
+			err := tc.in.mergeFrom(&supplementalConfig)
+			if err != nil && !tc.errorExpected {
+				t.Fatalf("failed to merge supplemental config %d: %v", idx, err)
+			}
+			if err == nil && tc.errorExpected {
+				t.Fatal("expected error but got nothing")
+			}
+		}
+
+		if diff := cmp.Diff(tc.expected, tc.in); !tc.errorExpected && diff != "" {
+			t.Errorf("expected config differs from expected: %s", diff)
+		}
 	}
 }

@@ -125,7 +125,7 @@ func main() {
 		ConfigAgent:   configAgent,
 		Metrics:       promMetrics,
 		ProwJobClient: kubeClient,
-		Reporter:      pubsub.NewReporter(configAgent.Config),
+		Reporter:      pubsub.NewReporter(configAgent.Config), // reuse crier reporter
 	}
 
 	// Return 200 on / for health checks.

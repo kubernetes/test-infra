@@ -33,6 +33,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	pkgio "k8s.io/test-infra/prow/io"
@@ -66,6 +67,7 @@ type buildData struct {
 	Duration     time.Duration
 	Result       string
 	commitHash   string
+	Refs         *prowv1.Refs
 }
 
 // storageBucket is an abstraction for unit testing
@@ -363,6 +365,16 @@ func getBuildData(ctx context.Context, bucket storageBucket, dir string) (buildD
 		logrus.Debugf("failed to read finished.json (job might be unfinished): %v", err)
 	}
 
+	pj := prowapi.ProwJob{}
+	err = readJSON(ctx, bucket, path.Join(dir, prowv1.ProwJobFile), &pj)
+	if err != nil {
+		logrus.WithError(err).Debugf("failed to read %s", prowv1.ProwJobFile)
+	} else {
+		if pj.Spec.Refs != nil {
+			b.Refs = pj.Spec.Refs
+		}
+	}
+
 	if commitHash, err := getPullCommitHash(started.Pull); err == nil {
 		b.commitHash = commitHash
 	}
@@ -445,6 +457,7 @@ func getJobHistory(ctx context.Context, url *url.URL, cfg config.Getter, opener 
 	if err != nil && !errors.Is(err, context.DeadlineExceeded) {
 		return tmpl, fmt.Errorf("failed to get build ids: %v", err)
 	}
+
 	sort.Sort(sort.Reverse(int64slice(buildIDs)))
 
 	// determine which results to display on this page

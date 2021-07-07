@@ -1,5 +1,6 @@
 import moment from "moment";
 import {ProwJobState, Pull} from "../api/prow";
+import {relativeURL} from "./urls";
 
 // This file likes namespaces, so stick with it for now.
 /* tslint:disable:no-namespace */
@@ -20,11 +21,7 @@ export namespace cell {
     main.textContent = when.format(isADayOld ? 'MMM DD HH:mm:ss' : 'HH:mm:ss');
     main.id = tid;
 
-    const tip = document.createElement("div");
-    tip.textContent = when.format('MMM DD YYYY, HH:mm:ss [UTC]ZZ');
-    tip.setAttribute("data-mdl-for", tid);
-    tip.classList.add("mdl-tooltip", "mdl-tooltip--large");
-
+    const tip = tooltip.forElem(tid, document.createTextNode(when.format('MMM DD YYYY, HH:mm:ss [UTC]ZZ')));
     const c = document.createElement("td");
     c.appendChild(main);
     c.appendChild(tip);
@@ -158,7 +155,7 @@ export namespace cell {
 }
 
 export namespace tooltip {
-  export function forElem(elemID: string, tipElem: Node): Node {
+  export function forElem(elemID: string, tipElem: Node): HTMLElement {
     const tip = document.createElement("div");
     tip.appendChild(tipElem);
     tip.setAttribute("data-mdl-for", elemID);
@@ -218,4 +215,106 @@ export function getCookieByName(name: string): string {
     }
   }
   return "";
+}
+
+export function createRerunProwJobIcon(modal: HTMLElement, rerunElement: HTMLElement, prowjob: string, rerunCreatesJob: boolean, csrfToken: string): HTMLElement {
+  const url = `${location.protocol}//${location.host}/rerun?prowjob=${prowjob}`;
+  const i = icon.create("refresh", "Show instructions for rerunning this job");
+
+  // we actually want to know whether the "access-token-session" cookie exists, but we can't always
+  // access it from the frontend. "github_login" should be set whenever "access-token-session" is
+  i.onclick = () => {
+    modal.style.display = "block";
+    rerunElement.innerHTML = `kubectl create -f "<a href="${url}">${url}</a>"`;
+    const copyButton = document.createElement('a');
+    copyButton.className = "mdl-button mdl-js-button mdl-button--icon";
+    copyButton.onclick = () => copyToClipboardWithToast(`kubectl create -f "${url}"`);
+    copyButton.innerHTML = "<i class='material-icons state triggered' style='color: gray'>file_copy</i>";
+    rerunElement.appendChild(copyButton);
+    if (rerunCreatesJob) {
+        const runButton = document.createElement('a');
+        runButton.innerHTML = "<button class='mdl-button mdl-js-button'>Rerun</button>";
+        runButton.onclick = async () => {
+            gtag("event", "rerun", {
+                event_category: "engagement",
+                transport_type: "beacon",
+            });
+            const result = await fetch(url, {
+                headers: {
+                    "Content-type": "application/x-www-form-urlencoded; charset=UTF-8",
+                    "X-CSRF-Token": csrfToken,
+                },
+                method: 'post',
+            });
+            const data = await result.text();
+            if (result.status === 401) {
+                window.location.href = window.location.origin + `/github-login?dest=${relativeURL({rerun: "gh_redirect"})}`;
+            } else {
+                rerunElement.innerHTML = data;
+            }
+        };
+        rerunElement.appendChild(runButton);
+    }
+  };
+
+  return i;
+}
+
+function copyToClipboardWithToast(text: string): void {
+  copyToClipboard(text);
+
+  const toast = document.getElementById("toast") as SnackbarElement<HTMLDivElement>;
+  toast.MaterialSnackbar.showSnackbar({message: "Copied to clipboard"});
+}
+
+// copyToClipboard is from https://stackoverflow.com/a/33928558
+// Copies a string to the clipboard. Must be called from within an
+// event handler such as click. May return false if it failed, but
+// this is not always possible. Browser support for Chrome 43+,
+// Firefox 42+, Safari 10+, Edge and IE 10+.
+// IE: The clipboard feature may be disabled by an administrator. By
+// default a prompt is shown the first time the clipboard is
+// used (per session).
+function copyToClipboard(text: string) {
+  if (window.clipboardData && window.clipboardData.setData) {
+      // IE specific code path to prevent textarea being shown while dialog is visible.
+      return window.clipboardData.setData("Text", text);
+  } else if (document.queryCommandSupported && document.queryCommandSupported("copy")) {
+      const textarea = document.createElement("textarea");
+      textarea.textContent = text;
+      textarea.style.position = "fixed";  // Prevent scrolling to bottom of page in MS Edge.
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+          return document.execCommand("copy");  // Security exception may be thrown by some browsers.
+      } catch (ex) {
+          console.warn("Copy to clipboard failed.", ex);
+          return false;
+      } finally {
+          document.body.removeChild(textarea);
+      }
+  }
+}
+
+export function formatDuration(seconds: number): string {
+  const parts: string[] = [];
+  if (seconds >= 3600) {
+      const hours = Math.floor(seconds / 3600);
+      parts.push(String(hours));
+      parts.push('h');
+      seconds = seconds % 3600;
+  }
+  if (seconds >= 60) {
+      const minutes = Math.floor(seconds / 60);
+      if (minutes > 0) {
+          parts.push(String(minutes));
+          parts.push('m');
+          seconds = seconds % 60;
+      }
+  }
+  if (seconds >= 0) {
+      parts.push(String(seconds));
+      parts.push('s');
+  }
+  return parts.join('');
 }

@@ -1209,6 +1209,10 @@ func configureTeamRepos(client teamRepoClient, githubTeams map[string]github.Tea
 			err = client.UpdateTeamRepo(gt.ID, orgName, repo, github.RepoPush)
 		case github.Read:
 			err = client.UpdateTeamRepo(gt.ID, orgName, repo, github.RepoPull)
+		case github.Triage:
+			err = client.UpdateTeamRepo(gt.ID, orgName, repo, github.RepoTriage)
+		case github.Maintain:
+			err = client.UpdateTeamRepo(gt.ID, orgName, repo, github.RepoMaintain)
 		}
 
 		if err != nil {

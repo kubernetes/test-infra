@@ -74,12 +74,16 @@ presubmits:
     # Because we run e2e tests, we cannot run more than 1 instance at a time
     # (the e2e test resources are not isolated across test runs).
     max_concurrency: 1
+    labels:
+      preset-dind-enabled: "true"
     branches:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
         command:
+        - runner.sh
+        args:
         - "./test-e2e/cip/e2e-entrypoint-from-container.sh"
         env:
         - name: CIP_E2E_KEY_FILE
@@ -88,6 +92,9 @@ presubmits:
         - name: k8s-cip-test-prod-service-account-creds
           mountPath: /etc/k8s-cip-test-prod-service-account
           readOnly: true
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
       volumes:
       - name: k8s-cip-test-prod-service-account-creds
         secret:
@@ -104,12 +111,16 @@ presubmits:
     # Because we run e2e tests, we cannot run more than 1 instance at a time
     # (the e2e test resources are not isolated across test runs).
     max_concurrency: 1
+    labels:
+      preset-dind-enabled: "true"
     branches:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
         command:
+        - runner.sh
+        args:
         - "./test-e2e/cip-auditor/entrypoint-from-container.sh"
         env:
         - name: CIP_E2E_KEY_FILE
@@ -118,6 +129,9 @@ presubmits:
         - name: k8s-gcr-audit-test-prod-service-account-creds
           mountPath: /etc/k8s-gcr-audit-test-prod-service-account
           readOnly: true
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
       volumes:
       - name: k8s-gcr-audit-test-prod-service-account-creds
         secret:
@@ -126,6 +140,41 @@ presubmits:
       testgrid-dashboards: sig-release-releng-presubmits
       testgrid-num-columns-recent: '30'
       testgrid-alert-email: release-managers+alerts@kubernetes.io
+  - name: pull-cip-image-cip
+    cluster: k8s-infra-prow-build
+    decorate: true
+    path_alias: "sigs.k8s.io/k8s-container-image-promoter"
+    # TODO(releng): Run unconditionally once the job runs successfully
+    always_run: false
+    spec:
+      serviceAccountName: gcb-builder-releng-test
+      containers:
+        - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          command:
+            - /run.sh
+          args:
+            - --project=k8s-staging-releng-test
+            - --scratch-bucket=gs://k8s-staging-releng-test
+            - --env-passthrough=PULL_BASE_REF
+            - .
+          env:
+            - name: LOG_TO_STDOUT
+              value: "y"
+            - name: REGISTRY
+              value: "gcr.io/k8s-staging-releng-test"
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 1Gi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+    annotations:
+      testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-tab-name: cip-image-cip
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
+      testgrid-num-columns-recent: '30'
   # Build all binaries and also run unit tests.
   - name: pull-cip-unit-tests
     decorate: true
@@ -136,7 +185,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
         command:
         - "make"
         args:
@@ -155,7 +204,8 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.15
+        imagePullPolicy: Always
         command:
         - make
         - verify

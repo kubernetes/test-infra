@@ -45,10 +45,10 @@ experimental_k8s_version="1.21"
 latest_stable_k8s_version="1.20" # TODO: bump to 1.21 after testing a pull job
 
 # Tag of the hostpath driver we should use for sidecar pull jobs
-hostpath_driver_version="v1.6.0"
+hostpath_driver_version="v1.7.2"
 
 # We need this image because it has Docker in Docker and go.
-dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20210428-a1a20d1-master"
+dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20210512-b8d1b30-master"
 
 # All kubernetes-csi repos which are part of the hostpath driver example.
 # For these repos we generate the full test matrix. For each entry here
@@ -67,11 +67,12 @@ node-driver-registrar
 # All kubernetes-csi repos for which want to define pull tests for
 # the csi-release-tools repo. Ideally, this list should represent
 # different ways of using csi-release-tools (for example, single image
-# vs. multiple images per repo).
+# vs. multiple images per repo). csi-sanity tests are used by csi-driver-host-path.
 csi_release_tools_repos="
 csi-test
 external-provisioner
 external-snapshotter
+csi-driver-host-path
 "
 
 # kubernetes-csi repos which only need to be tested against at most a

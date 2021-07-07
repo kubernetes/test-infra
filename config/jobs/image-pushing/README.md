@@ -155,7 +155,7 @@ postsubmits:
               - .
 ```
 
-[gcr instructions]: https://github.com/kubernetes/k8s.io/blob/master/k8s.gcr.io/README.md
+[gcr instructions]: https://github.com/kubernetes/k8s.io/blob/main/k8s.gcr.io/README.md
 [gcb documentation]: https://cloud.google.com/cloud-build/docs/configuring-builds/create-basic-configuration
 [gcb-docker-gcloud]: https://github.com/kubernetes/test-infra/blob/master/images/gcb-docker-gcloud/Dockerfile
 [substitution docs]: https://cloud.google.com/cloud-build/docs/configuring-builds/substitute-variable-values#using_user-defined_substitutions

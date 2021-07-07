@@ -9,7 +9,7 @@ periodics:
     testgrid-tab-name: api-review-help
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20210514-64850e516d
+    - image: gcr.io/k8s-prow/commenter:v20210707-3e989f60ab
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -55,7 +55,7 @@ periodics:
     testgrid-tab-name: cla
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20210514-64850e516d
+    - image: gcr.io/k8s-prow/commenter:v20210707-3e989f60ab
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -94,7 +94,7 @@ periodics:
     testgrid-tab-name: close
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20210514-64850e516d
+    - image: gcr.io/k8s-prow/commenter:v20210707-3e989f60ab
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -103,6 +103,7 @@ periodics:
         org:kubernetes-sigs
         org:kubernetes-client
         org:kubernetes-csi
+        -repo:kubernetes-sigs/kind
         -label:lifecycle/frozen
         label:lifecycle/rotten
       - --updated=720h
@@ -134,7 +135,7 @@ periodics:
     description: Automatically /retest for approved PRs that failed retesting
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20210514-64850e516d
+    - image: gcr.io/k8s-prow/commenter:v20210707-3e989f60ab
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -190,7 +191,7 @@ periodics:
     testgrid-tab-name: rotten
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20210514-64850e516d
+    - image: gcr.io/k8s-prow/commenter:v20210707-3e989f60ab
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -199,6 +200,7 @@ periodics:
         org:kubernetes-sigs
         org:kubernetes-client
         org:kubernetes-csi
+        -repo:kubernetes-sigs/kind
         -label:lifecycle/frozen
         label:lifecycle/stale
         -label:lifecycle/rotten
@@ -233,7 +235,7 @@ periodics:
     testgrid-tab-name: stale
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20210514-64850e516d
+    - image: gcr.io/k8s-prow/commenter:v20210707-3e989f60ab
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -242,6 +244,7 @@ periodics:
         org:kubernetes-sigs
         org:kubernetes-client
         org:kubernetes-csi
+        -repo:kubernetes-sigs/kind
         -label:lifecycle/frozen
         -label:lifecycle/stale
         -label:lifecycle/rotten
@@ -277,7 +280,7 @@ periodics:
     description: Creates github issues based on data from various 'IssueSource's.
   spec:
     containers:
-    - image: gcr.io/k8s-prow/issue-creator:v20210514-64850e516d
+    - image: gcr.io/k8s-prow/issue-creator:v20210707-3e989f60ab
       command:
       - /app/robots/issue-creator/app.binary
       args:
@@ -289,39 +292,6 @@ periodics:
       - --triage-window=1
       - --triage-count=10
       - --flakyjob-count=3
-      volumeMounts:
-      - name: token
-        mountPath: /etc/token
-    volumes:
-    - name: token
-      secret:
-        secretName: fejta-bot-token
-
-- name: periodic-enhancements-unfreeze
-  interval: 30m
-  decorate: true
-  annotations:
-    testgrid-dashboards: sig-testing-fejtabot
-    description: Prevents issues in `k/enhancements` from being marked as `lifecycle/frozen`y
-    testgrid-tab-name: enhancements-unfreeze
-  spec:
-    containers:
-    - image: gcr.io/k8s-prow/commenter:v20210514-64850e516d
-      command:
-      - /app/robots/commenter/app.binary
-      args:
-      - |-
-        --query=repo:kubernetes/enhancements
-        label:lifecycle/frozen
-      - --updated=5m
-      - --token=/etc/token/bot-github-token
-      - |-
-        --comment=Enhancement issues opened in `kubernetes/enhancements` should never be marked as frozen.
-        Enhancement Owners can ensure that enhancements stay fresh by consistently updating their states across release cycles.
-
-        /remove-lifecycle frozen
-      - --ceiling=10
-      - --confirm
       volumeMounts:
       - name: token
         mountPath: /etc/token

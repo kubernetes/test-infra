@@ -79,13 +79,13 @@ To see common Prow usage and interactions flow, see the pull request interaction
 Prow is used by the following organizations and projects:
 - [Kubernetes](https://prow.k8s.io)
   - This includes [kubernetes](https://github.com/kubernetes), [kubernetes-client](https://github.com/kubernetes-client), [kubernetes-csi](https://github.com/kubernetes-csi), and [kubernetes-sigs](https://github.com/kubernetes-sigs).
-- [OpenShift](https://prow.svc.ci.openshift.org/)
+- [OpenShift](https://prow.ci.openshift.org/)
   - This includes [openshift](https://github.com/openshift), [openshift-s2i](https://github.com/openshift-s2i), [operator-framework](https://github.com/operator-framework), and some repos in [containers](https://github.com/containers) and [heketi](https://github.com/heketi).
 - [Istio](https://prow.istio.io/)
 - [Knative](https://prow.knative.dev/)
 - [Jetstack](https://prow.build-infra.jetstack.net/)
 - [Kyma](https://status.build.kyma-project.io/)
-- [Metal³](https://prow.apps.ci.metal3.io/)
+- [Metal³](https://prow.apps.test.metal3.io/)
 - [Prometheus](http://prombench.prometheus.io/)
 - [Caicloud](https://github.com/caicloud)
 - [Kubeflow](https://github.com/kubeflow)

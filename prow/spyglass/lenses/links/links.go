@@ -21,6 +21,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"io"
+	"net/url"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -91,23 +93,50 @@ func humanReadableName(name string) string {
 	return strings.Join(words, " ")
 }
 
+func clickableLink(link string, spyglassConfig config.Spyglass) string {
+	if strings.HasPrefix(link, "gs://") {
+		return spyglassConfig.GCSBrowserPrefix + strings.TrimPrefix(link, "gs://")
+	}
+	if strings.HasPrefix(link, "http://") || strings.HasPrefix(link, "https://") {
+		// Use https://google.com/url?q=[url] redirect to avoid leaking referer.
+		url := url.URL{
+			Scheme: "https",
+			Host:   "google.com",
+			Path:   "/url",
+		}
+		q := url.Query()
+		q.Add("q", link)
+		url.RawQuery = q.Encode()
+		return url.String()
+	}
+	return ""
+}
+
+type link struct {
+	Name string
+	URL  string
+	Link string
+}
+
+func toLink(jobPath string, content []byte, spyglassConfig config.Spyglass) link {
+	url := strings.TrimSpace(string(content))
+	return link{
+		Name: humanReadableName(filepath.Base(jobPath)),
+		URL:  url,
+		Link: clickableLink(url, spyglassConfig),
+	}
+}
+
 // Body renders link to logs.
 func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage, spyglassConfig config.Spyglass) string {
-	type link struct {
-		Name string
-		URL  string
-	}
-
 	var links []link
 	for _, artifact := range artifacts {
 		content, err := artifact.ReadAtMost(bytesLimit)
-		if err != nil {
+		if err != nil && err != io.EOF {
 			logrus.WithError(err).Warnf("Failed to read artifact file: %q", artifact.JobPath())
+			continue
 		}
-		links = append(links, link{
-			Name: humanReadableName(filepath.Base(artifact.JobPath())),
-			URL:  strings.TrimSpace(string(content)),
-		})
+		links = append(links, toLink(artifact.JobPath(), content, spyglassConfig))
 	}
 
 	sort.Slice(links, func(i, j int) bool { return links[i].Name < links[j].Name })

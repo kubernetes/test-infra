@@ -111,6 +111,10 @@ func (c *Client) GetName() string {
 
 // ShouldReport returns if this prowjob should be reported by the gerrit reporter
 func (c *Client) ShouldReport(ctx context.Context, log *logrus.Entry, pj *v1.ProwJob) bool {
+	if !pj.Spec.Report {
+		return false
+	}
+
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
@@ -237,9 +241,6 @@ func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJo
 			}
 		}
 		for _, pjOnRevisionWithSameLabel := range mostRecentJob {
-			if pjOnRevisionWithSameLabel.Status.State == v1.AbortedState {
-				continue
-			}
 			toReportJobs = append(toReportJobs, pjOnRevisionWithSameLabel)
 		}
 	}
@@ -258,7 +259,7 @@ func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJo
 
 	if report.Total <= 0 {
 		// Shouldn't happen but return if does
-		logger.Warn("Tried to report empty or aborted jobs.")
+		logger.Warn("Tried to report empty jobs.")
 		return nil, nil, nil
 	}
 	var reviewLabels map[string]string
@@ -290,7 +291,7 @@ func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJo
 
 	logger.Infof("Reporting to instance %s on id %s with message %s", gerritInstance, gerritID, message)
 	if err := c.gc.SetReview(gerritInstance, gerritID, gerritRevision, message, reviewLabels); err != nil {
-		logger.WithError(err).Errorf("fail to set review with label %q on change ID %s", reportLabel, gerritID)
+		logger.WithError(err).Infof("fail to set review with label %q on change ID %s", reportLabel, gerritID)
 
 		if reportLabel == "" {
 			return nil, nil, err

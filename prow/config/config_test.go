@@ -3330,7 +3330,9 @@ func TestSlackReporterValidation(t *testing.T) {
 			config: func() Config {
 				slackCfg := map[string]SlackReporter{
 					"*": {
-						Channel: "my-channel",
+						SlackReporterConfig: prowjobv1.SlackReporterConfig{
+							Channel: "my-channel",
+						},
 					},
 				}
 				return Config{
@@ -3346,7 +3348,9 @@ func TestSlackReporterValidation(t *testing.T) {
 			config: func() Config {
 				slackCfg := map[string]SlackReporter{
 					"istio/proxy": {
-						Channel: "my-channel",
+						SlackReporterConfig: prowjobv1.SlackReporterConfig{
+							Channel: "my-channel",
+						},
 					},
 				}
 				return Config{
@@ -3362,7 +3366,9 @@ func TestSlackReporterValidation(t *testing.T) {
 			config: func() Config {
 				slackCfg := map[string]SlackReporter{
 					"proxy": {
-						Channel: "my-channel",
+						SlackReporterConfig: prowjobv1.SlackReporterConfig{
+							Channel: "my-channel",
+						},
 					},
 				}
 				return Config{
@@ -3406,8 +3412,10 @@ func TestSlackReporterValidation(t *testing.T) {
 			config: func() Config {
 				slackCfg := map[string]SlackReporter{
 					"*": {
-						Channel:        "my-channel",
-						ReportTemplate: "{{ if .Spec.Name}}",
+						SlackReporterConfig: prowjobv1.SlackReporterConfig{
+							Channel:        "my-channel",
+							ReportTemplate: "{{ if .Spec.Name}}",
+						},
 					},
 				}
 				return Config{
@@ -3423,8 +3431,10 @@ func TestSlackReporterValidation(t *testing.T) {
 			config: func() Config {
 				slackCfg := map[string]SlackReporter{
 					"*": {
-						Channel:        "my-channel",
-						ReportTemplate: "{{ .Undef}}",
+						SlackReporterConfig: prowjobv1.SlackReporterConfig{
+							Channel:        "my-channel",
+							ReportTemplate: "{{ .Undef}}",
+						},
 					},
 				}
 				return Config{
@@ -5649,6 +5659,38 @@ func TestValidatePresubmits(t *testing.T) {
 			presubmits:    []Presubmit{{JobBase: JobBase{Name: "my-job"}}},
 			expectedError: "invalid presubmit job my-job: job is set to report but has no context configured",
 		},
+		{
+			name: "Mutually exclusive settings: always_run and run_if_changed",
+			presubmits: []Presubmit{{
+				JobBase:             JobBase{Name: "a"},
+				Reporter:            Reporter{Context: "foo"},
+				AlwaysRun:           true,
+				RegexpChangeMatcher: RegexpChangeMatcher{RunIfChanged: `\.go$`},
+			}},
+			expectedError: "job a is set to always run but also declares run_if_changed targets, which are mutually exclusive",
+		},
+		{
+			name: "Mutually exclusive settings: always_run and skip_if_only_changed",
+			presubmits: []Presubmit{{
+				JobBase:             JobBase{Name: "a"},
+				Reporter:            Reporter{Context: "foo"},
+				AlwaysRun:           true,
+				RegexpChangeMatcher: RegexpChangeMatcher{SkipIfOnlyChanged: `\.go$`},
+			}},
+			expectedError: "job a is set to always run but also declares skip_if_only_changed targets, which are mutually exclusive",
+		},
+		{
+			name: "Mutually exclusive settings: run_if_changed and skip_if_only_changed",
+			presubmits: []Presubmit{{
+				JobBase:  JobBase{Name: "a"},
+				Reporter: Reporter{Context: "foo"},
+				RegexpChangeMatcher: RegexpChangeMatcher{
+					RunIfChanged:      `\.go$`,
+					SkipIfOnlyChanged: `\.md`,
+				},
+			}},
+			expectedError: "job a declares run_if_changed and skip_if_only_changed, which are mutually exclusive",
+		},
 	}
 
 	for _, tc := range testCases {
@@ -6011,6 +6053,81 @@ tide:
   sync_period: 1m0s
 `,
 		},
+		{
+			name: "Additional tide queries get merged in and de-duplicated",
+			prowConfig: `
+tide:
+  queries:
+  - labels:
+    - lgtm
+    - approved
+    repos:
+    - a/repo
+`,
+			supplementalProwConfigs: []string{`
+tide:
+  queries:
+  - labels:
+    - lgtm
+    - approved
+    repos:
+    - another/repo
+`},
+			expectedProwConfig: `branch-protection: {}
+deck:
+  spyglass:
+    gcs_browser_prefixes:
+      '*': ""
+    size_limit: 100000000
+  tide_update_period: 10s
+default_job_timeout: 24h0m0s
+gerrit:
+  ratelimit: 5
+  tick_interval: 1m0s
+github:
+  link_url: https://github.com
+github_reporter:
+  job_types_to_report:
+  - presubmit
+  - postsubmit
+horologium: {}
+in_repo_config:
+  allowed_clusters:
+    '*':
+    - default
+log_level: info
+managed_webhooks:
+  auto_accept_invitation: false
+  respect_legacy_global_token: false
+plank:
+  max_goroutines: 20
+  pod_pending_timeout: 10m0s
+  pod_running_timeout: 48h0m0s
+  pod_unscheduled_timeout: 5m0s
+pod_namespace: default
+prowjob_namespace: default
+push_gateway:
+  interval: 1m0s
+  serve_metrics: false
+sinker:
+  max_pod_age: 24h0m0s
+  max_prowjob_age: 168h0m0s
+  resync_period: 1h0m0s
+  terminated_pod_ttl: 24h0m0s
+status_error_link: https://github.com/kubernetes/test-infra/issues
+tide:
+  context_options: {}
+  max_goroutines: 20
+  queries:
+  - labels:
+    - approved
+    - lgtm
+    repos:
+    - a/repo
+    - another/repo
+  status_update_period: 1m0s
+  sync_period: 1m0s
+`},
 	}
 
 	for _, tc := range testCases {
@@ -6180,10 +6297,11 @@ func TestHasConfigFor(t *testing.T) {
 		resultGenerator func(fuzzedConfig *ProwConfig) (toCheck *ProwConfig, exceptGlobal bool, expectOrgs sets.String, expectRepos sets.String)
 	}{
 		{
-			name: "Any non-empty config with empty branchprotection and Tide merge_method properties is considered global",
+			name: "Any non-empty config with empty branchprotection and Tide properties is considered global",
 			resultGenerator: func(fuzzedConfig *ProwConfig) (toCheck *ProwConfig, exceptGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
 				fuzzedConfig.BranchProtection = BranchProtection{}
 				fuzzedConfig.Tide.MergeType = nil
+				fuzzedConfig.Tide.Queries = nil
 				return fuzzedConfig, true, nil, nil
 			},
 		},
@@ -6226,6 +6344,19 @@ func TestHasConfigFor(t *testing.T) {
 					} else {
 						expectOrgs.Insert(orgOrRepo)
 					}
+				}
+
+				return result, false, expectOrgs, expectRepos
+			},
+		},
+		{
+			name: "Any config that is empty except for tide.queries is considered to be for those orgs or repos",
+			resultGenerator: func(fuzzedConfig *ProwConfig) (toCheck *ProwConfig, exceptGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
+				expectOrgs, expectRepos = sets.String{}, sets.String{}
+				result := &ProwConfig{Tide: Tide{Queries: fuzzedConfig.Tide.Queries}}
+				for _, query := range result.Tide.Queries {
+					expectOrgs.Insert(query.Orgs...)
+					expectRepos.Insert(query.Repos...)
 				}
 
 				return result, false, expectOrgs, expectRepos
@@ -6353,6 +6484,12 @@ func TestProwConfigMergingProperties(t *testing.T) {
 				*pc = ProwConfig{Tide: Tide{MergeType: pc.Tide.MergeType}}
 			},
 		},
+		{
+			name: "Tide queries",
+			makeMergeable: func(pc *ProwConfig) {
+				*pc = ProwConfig{Tide: Tide{Queries: pc.Tide.Queries}}
+			},
+		},
 	}
 
 	expectedProperties := []struct {
@@ -6386,9 +6523,17 @@ func TestProwConfigMergingProperties(t *testing.T) {
 					return
 				}
 
-				// One exception: A non-nil branchprotection config with only empty policies
+				// One exception: Tide queries can be merged into themselves, as we just de-duplicate them
+				// later on.
+				if len(fuzzedMergeableConfig.Tide.Queries) > 0 {
+					return
+				}
+
+				// Another exception: A non-nil branchprotection config with only empty policies
 				// can be merged into itself so make sure this can't happen.
-				fuzzedMergeableConfig.BranchProtection.Exclude = []string{"foo"}
+				if !apiequality.Semantic.DeepEqual(fuzzedMergeableConfig.BranchProtection, BranchProtection{}) {
+					fuzzedMergeableConfig.BranchProtection.Exclude = []string{"foo"}
+				}
 
 				if err := fuzzedMergeableConfig.mergeFrom(fuzzedMergeableConfig); err == nil {
 					serialized, serializeErr := yaml.Marshal(fuzzedMergeableConfig)
@@ -6445,6 +6590,76 @@ func TestProwConfigMergingProperties(t *testing.T) {
 						propertyTest.verification(t, fuzzedConfig)
 					}
 				})
+			}
+		})
+	}
+}
+
+// TestDeduplicateTideQueriesDoesntLoseData simply uses deduplicateTideQueries
+// on a single fuzzed tidequery, which should never result in any change as
+// there is nothing that could be deduplicated. This is mostly to ensure we
+// don't forget to change our code when new fields get added to the type.
+func TestDeduplicateTideQueriesDoesntLoseData(t *testing.T) {
+	for i := 0; i < 100; i++ {
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			query := TideQuery{}
+			fuzz.New().Fuzz(&query)
+			result, err := deduplicateTideQueries(TideQueries{query})
+			if err != nil {
+				t.Fatalf("error: %v", err)
+			}
+
+			if diff := cmp.Diff(result[0], query); diff != "" {
+				t.Errorf("result differs from initial query: %s", diff)
+			}
+		})
+	}
+}
+
+func TestDeduplicateTideQueries(t *testing.T) {
+	testCases := []struct {
+		name     string
+		in       TideQueries
+		expected TideQueries
+	}{
+		{
+			name: "No overlap",
+			in: TideQueries{
+				{Orgs: []string{"kubernetes"}, Labels: []string{"merge-me"}},
+				{Orgs: []string{"kubernetes-priv"}, Labels: []string{"merge-me-differently"}},
+			},
+			expected: TideQueries{
+				{Orgs: []string{"kubernetes"}, Labels: []string{"merge-me"}},
+				{Orgs: []string{"kubernetes-priv"}, Labels: []string{"merge-me-differently"}},
+			},
+		},
+		{
+			name: "Queries get deduplicated",
+			in: TideQueries{
+				{Orgs: []string{"kubernetes"}, Labels: []string{"merge-me"}},
+				{Orgs: []string{"kubernetes-priv"}, Labels: []string{"merge-me"}},
+			},
+			expected: TideQueries{{Orgs: []string{"kubernetes", "kubernetes-priv"}, Labels: []string{"merge-me"}}},
+		},
+		{
+			name: "Queries get deduplicated regardless of element order",
+			in: TideQueries{
+				{Orgs: []string{"kubernetes"}, Labels: []string{"lgtm", "merge-me"}},
+				{Orgs: []string{"kubernetes-priv"}, Labels: []string{"merge-me", "lgtm"}},
+			},
+			expected: TideQueries{{Orgs: []string{"kubernetes", "kubernetes-priv"}, Labels: []string{"lgtm", "merge-me"}}},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result, err := deduplicateTideQueries(tc.in)
+			if err != nil {
+				t.Fatalf("failed: %v", err)
+			}
+
+			if diff := cmp.Diff(result, tc.expected); diff != "" {
+				t.Errorf("Result differs from expected: %v", diff)
 			}
 		})
 	}

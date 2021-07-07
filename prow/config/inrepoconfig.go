@@ -22,6 +22,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 
 	"github.com/sirupsen/logrus"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
@@ -32,6 +33,7 @@ import (
 
 const (
 	inRepoConfigFileName = ".prow.yaml"
+	inRepoConfigDirName  = ".prow"
 )
 
 // ProwYAML represents the content of a .prow.yaml file
@@ -57,7 +59,6 @@ func defaultProwYAMLGetter(
 	headSHAs ...string) (*ProwYAML, error) {
 
 	log := logrus.WithField("repo", identifier)
-	log.Debugf("Attempting to get %q.", inRepoConfigFileName)
 
 	if gc == nil {
 		log.Error("defaultProwYAMLGetter was called with a nil git client")
@@ -94,23 +95,60 @@ func defaultProwYAMLGetter(
 		return nil, fmt.Errorf("failed to merge: %v", err)
 	}
 
-	prowYAMLFilePath := path.Join(repo.Directory(), inRepoConfigFileName)
-	if _, err := os.Stat(prowYAMLFilePath); err != nil {
-		if os.IsNotExist(err) {
-			log.Debugf("File %q does not exist.", inRepoConfigFileName)
-			return &ProwYAML{}, nil
-		}
-		return nil, fmt.Errorf("failed to check if file %q exists: %v", inRepoConfigFileName, err)
-	}
-
-	bytes, err := ioutil.ReadFile(prowYAMLFilePath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read %q: %v", inRepoConfigFileName, err)
-	}
-
 	prowYAML := &ProwYAML{}
-	if err := yaml.Unmarshal(bytes, prowYAML); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal %q: %v", inRepoConfigFileName, err)
+
+	prowYAMLDirPath := path.Join(repo.Directory(), inRepoConfigDirName)
+	log.Debugf("Attempting to read config files under %q.", prowYAMLDirPath)
+	if fileInfo, err := os.Stat(prowYAMLDirPath); !os.IsNotExist(err) && err == nil && fileInfo.IsDir() {
+		mergeProwYAML := func(a, b *ProwYAML) *ProwYAML {
+			c := &ProwYAML{}
+			c.Presets = append(a.Presets, b.Presets...)
+			c.Presubmits = append(a.Presubmits, b.Presubmits...)
+			c.Postsubmits = append(a.Postsubmits, b.Postsubmits...)
+
+			return c
+		}
+
+		err := filepath.Walk(prowYAMLDirPath, func(p string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if !info.IsDir() && (filepath.Ext(p) == ".yaml" || filepath.Ext(p) == ".yml") {
+				log.Debugf("Reading YAML file %q", p)
+				bytes, err := ioutil.ReadFile(p)
+				if err != nil {
+					return err
+				}
+				partialProwYAML := &ProwYAML{}
+				if err := yaml.Unmarshal(bytes, partialProwYAML); err != nil {
+					return fmt.Errorf("failed to unmarshal %q: %w", p, err)
+				}
+				prowYAML = mergeProwYAML(prowYAML, partialProwYAML)
+			}
+			return err
+		})
+		if err != nil {
+			return nil, fmt.Errorf("failed to read contents of directory %q: %w", inRepoConfigDirName, err)
+		}
+	} else {
+		if !os.IsNotExist(err) {
+			return nil, fmt.Errorf("reading %q: %w", prowYAMLDirPath, err)
+		}
+		log.WithField("file", inRepoConfigFileName).Debug("Attempting to get inreconfigfile")
+		prowYAMLFilePath := path.Join(repo.Directory(), inRepoConfigFileName)
+		if _, err := os.Stat(prowYAMLFilePath); err == nil {
+			bytes, err := ioutil.ReadFile(prowYAMLFilePath)
+			if err != nil {
+				return nil, fmt.Errorf("failed to read %q: %w", prowYAMLDirPath, err)
+			}
+			if err := yaml.Unmarshal(bytes, prowYAML); err != nil {
+				return nil, fmt.Errorf("failed to unmarshal %q: %v", prowYAMLDirPath, err)
+			}
+		} else {
+			if !os.IsNotExist(err) {
+				return nil, fmt.Errorf("failed to check if file %q exists: %v", prowYAMLDirPath, err)
+			}
+		}
 	}
 
 	if err := DefaultAndValidateProwYAML(c, prowYAML, identifier); err != nil {

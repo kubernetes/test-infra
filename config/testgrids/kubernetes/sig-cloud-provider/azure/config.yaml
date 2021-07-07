@@ -1,13 +1,3 @@
-test_groups:
-  - name: pull-kubernetes-e2e-aks-engine-conformance
-    gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-aks-engine-conformance
-  - name: pull-kubernetes-e2e-aks-engine-azure-disk-vmas
-    gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-aks-engine-azure-disk-vmas
-  - name: pull-kubernetes-e2e-aks-engine-azure-disk-vmss
-    gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-aks-engine-azure-disk-vmss
-  - name: pull-kubernetes-e2e-aks-engine-azure-file
-    gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-aks-engine-azure-file
-
 dashboard_groups:
 - name: provider-azure
   dashboard_names:
@@ -17,6 +7,7 @@ dashboard_groups:
     - provider-azure-blobfuse-csi-driver
     - provider-azure-cloud-provider-azure
     - provider-azure-cloud-provider-azure-1-20-presubmit
+    - provider-azure-cloud-provider-azure-1-21-presubmit
     - provider-azure-dualstack
     - provider-azure-scalability
     - provider-azure-presubmit
@@ -33,6 +24,7 @@ dashboards:
 - name: provider-azure-blobfuse-csi-driver
 - name: provider-azure-cloud-provider-azure
 - name: provider-azure-cloud-provider-azure-1-20-presubmit
+- name: provider-azure-cloud-provider-azure-1-21-presubmit
 - name: provider-azure-dualstack
 - name: provider-azure-scalability
 - name: provider-azure-presubmit

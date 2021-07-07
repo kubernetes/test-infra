@@ -101,9 +101,10 @@ dashboard.new(
 )
 .addPanel(
     (graphPanel.new(
-        'number of Prow jobs by ${group_by_1}',
+        'number of Prow jobs (stacked) by ${group_by_1}',
         description='sum(prowjobs{...}) by (${group_by_1})',
         datasource='prometheus',
+        stack=true,
         legend_alignAsTable=true,
         legend_rightSide=true,
 
@@ -119,9 +120,10 @@ dashboard.new(
   })
 .addPanel(
     (graphPanel.new(
-        'number of Prow jobs by ${group_by_2}',
+        'number of Prow jobs (stacked) by ${group_by_2}',
         description='sum(prowjobs{...}) by (${group_by_2})',
         datasource='prometheus',
+        stack=true,
         legend_alignAsTable=true,
         legend_rightSide=true,
 
@@ -137,9 +139,10 @@ dashboard.new(
   })
 .addPanel(
     (graphPanel.new(
-        'number of Prow jobs by ${group_by_3}',
+        'number of Prow jobs (stacked) by ${group_by_3}',
         description='sum(prowjobs{...}) by (${group_by_3})',
         datasource='prometheus',
+        stack=true,
         legend_alignAsTable=true,
         legend_rightSide=true,
 

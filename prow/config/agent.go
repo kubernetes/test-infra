@@ -147,7 +147,8 @@ func GetFileWatcher(eventFunc func(*fsnotify.Watcher) error, errFunc func(error,
 			return nil, err
 		}
 	}
-	logrus.Debugf("Watching files: %v", files)
+	logrus.Debugf("Watching %d files", len(files))
+	logrus.Tracef("Watching files: %v", files)
 	return func(ctx context.Context) {
 		for {
 			select {

@@ -32,9 +32,9 @@ import (
 	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
+	pluginsflagutil "k8s.io/test-infra/prow/flagutil/plugins"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
-	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/statusreconciler"
 )
 
@@ -44,8 +44,8 @@ const (
 )
 
 type options struct {
-	config       configflagutil.ConfigOptions
-	pluginConfig string
+	config        configflagutil.ConfigOptions
+	pluginsConfig pluginsflagutil.PluginOptions
 
 	continueOnError           bool
 	addedPresubmitDenylist    prowflagutil.Strings
@@ -72,7 +72,6 @@ type options struct {
 func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	o := options{config: configflagutil.ConfigOptions{ConfigPath: "/etc/config/config.yaml"}}
 
-	fs.StringVar(&o.pluginConfig, "plugin-config", "/etc/plugins/plugins.yaml", "Path to plugin config file.")
 	fs.StringVar(&o.statusURI, "status-path", "", "The /local/path, gs://path/to/object or s3://path/to/object to store status controller state. GCS writes will use the default object ACL for the bucket.")
 
 	fs.BoolVar(&o.continueOnError, "continue-on-error", false, "Indicates that the migration should continue if context migration fails for an individual PR.")
@@ -83,7 +82,8 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.IntVar(&o.tokensPerHour, "tokens", defaultTokens, "Throttle hourly token consumption (0 to disable). DEPRECATED: use --github-hourly-tokens")
 	fs.IntVar(&o.tokenBurst, "token-burst", defaultBurst, "Allow consuming a subset of hourly tokens in a short burst. DEPRECATED: use --github-allowed-burst")
 	o.github.AddCustomizedFlags(fs, prowflagutil.ThrottlerDefaults(defaultTokens, defaultBurst))
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.storage, &o.instrumentationOptions, &o.config} {
+	o.pluginsConfig.PluginConfigPathDefault = "/etc/plugins/plugins.yaml"
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.storage, &o.instrumentationOptions, &o.config, &o.pluginsConfig} {
 		group.AddFlags(fs)
 	}
 	fs.Parse(args)
@@ -106,7 +106,7 @@ func (o *options) Validate() error {
 		o.github.ThrottleAllowBurst = o.tokenBurst
 	}
 
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.storage, &o.config} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.storage, &o.config, &o.pluginsConfig} {
 		if err := group.Validate(o.dryRun); err != nil {
 			return err
 		}
@@ -154,8 +154,8 @@ func main() {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
 
-	pluginAgent := &plugins.ConfigAgent{}
-	if err := pluginAgent.Start(o.pluginConfig, nil, "", false); err != nil {
+	pluginAgent, err := o.pluginsConfig.PluginAgent()
+	if err != nil {
 		logrus.WithError(err).Fatal("Error starting plugin configuration agent.")
 	}
 

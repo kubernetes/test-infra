@@ -11,11 +11,11 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-digitalocean
-      base_ref: master
+      base_ref: main
       path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
       command:
         - "runner.sh"
         - "./scripts/ci-conformance.sh"

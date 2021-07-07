@@ -1,0 +1,22 @@
+postsubmits:
+  kubernetes/website:
+    - name: post-website-push-image-k8s-website-hugo
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-docs-website
+        testgrid-tab-name: post-website-push-image-k8s-website-hugo
+      decorate: true
+      run_if_changed: "^Dockerfile$"
+      branches:
+        - ^main$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-sig-docs
+              - --scratch-bucket=gs://k8s-staging-infra-sig-docs-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - .

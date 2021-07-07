@@ -8,11 +8,11 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^main$
-    - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
         command:
+        - "runner.sh"
         - "./scripts/ci-test.sh"
         resources:
           requests:
@@ -29,11 +29,11 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^main$
-    - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
         command:
+        - "runner.sh"
         - "./scripts/ci-build.sh"
         resources:
           requests:
@@ -53,10 +53,9 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^main$
-    - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true

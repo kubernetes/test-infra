@@ -329,19 +329,32 @@ func (oa *orgAgent) sync(config *plugins.Configuration) {
 
 	orgs := orgsInConfig(config)
 	orgToRepos := map[string]sets.String{}
+
+	orgToReposLock := sync.Mutex{}
+	wg := sync.WaitGroup{}
 	for _, org := range orgs.List() {
-		repos, err := reposForOrgOrUser(oa.ghc, org)
-		if err != nil {
-			oa.log.WithError(err).Errorf("Getting repos for org or user: %s.", org)
-			// Remove 'org' from 'orgs' here to force future resync?
-			continue
-		}
-		repoSet := sets.NewString()
-		for _, repo := range repos {
-			repoSet.Insert(repo.FullName)
-		}
-		orgToRepos[org] = repoSet
+		org := org
+		wg.Add(1)
+
+		go func() {
+			defer wg.Done()
+
+			repos, err := reposForOrgOrUser(oa.ghc, org)
+			if err != nil {
+				oa.log.WithError(err).Errorf("Getting repos for org or user: %s.", org)
+				// Remove 'org' from 'orgs' here to force future resync?
+				return
+			}
+			repoSet := sets.NewString()
+			for _, repo := range repos {
+				repoSet.Insert(repo.FullName)
+			}
+			orgToReposLock.Lock()
+			orgToRepos[org] = repoSet
+			orgToReposLock.Unlock()
+		}()
 	}
+	wg.Wait()
 
 	oa.orgs = orgs
 	oa.orgToRepos = orgToRepos

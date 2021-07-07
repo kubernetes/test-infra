@@ -107,7 +107,7 @@ func LabelsAndAnnotationsForSpec(spec prowapi.ProwJobSpec, extraLabels, extraAnn
 		maybeTruncated := value
 		if len(value) > validation.LabelValueMaxLength {
 			// TODO(fejta): consider truncating middle rather than end.
-			maybeTruncated = strings.TrimRight(value[:validation.LabelValueMaxLength], ".-")
+			maybeTruncated = strings.TrimRight(value[:validation.LabelValueMaxLength], "._-")
 			log.WithFields(logrus.Fields{
 				"key":            key,
 				"value":          value,
@@ -426,8 +426,8 @@ func CloneRefs(pj prowapi.ProwJob, codeMount, logMount coreapi.VolumeMount) (*co
 	var cloneArgs []string
 	var cookiefilePath string
 
-	if cp := pj.Spec.DecorationConfig.CookiefileSecret; cp != "" {
-		v, vm, vp := cookiefileVolume(cp)
+	if cp := pj.Spec.DecorationConfig.CookiefileSecret; cp != nil && *cp != "" {
+		v, vm, vp := cookiefileVolume(*cp)
 		cloneMounts = append(cloneMounts, vm)
 		cloneVolumes = append(cloneVolumes, v)
 		cookiefilePath = vp

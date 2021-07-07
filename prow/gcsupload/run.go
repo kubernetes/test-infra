@@ -45,11 +45,25 @@ func (o Options) Run(ctx context.Context, spec *downwardapi.JobSpec, extra map[s
 		mime.AddExtensionType("."+extension, mediaType)
 	}
 
-	uploadTargets, err := o.assembleTargets(spec, extra)
+	uploadTargets, extraTargets, err := o.assembleTargets(spec, extra)
 	if err != nil {
 		return fmt.Errorf("assembleTargets: %w", err)
 	}
 
+	err = completeUpload(ctx, o, uploadTargets)
+
+	if extraErr := completeUpload(ctx, o, extraTargets); extraErr != nil {
+		if err == nil {
+			err = extraErr
+		} else {
+			logrus.WithError(extraErr).Info("Also failed to upload extra targets")
+		}
+	}
+
+	return err
+}
+
+func completeUpload(ctx context.Context, o Options, uploadTargets map[string]gcs.UploadFunc) error {
 	if o.DryRun {
 		for destination := range uploadTargets {
 			logrus.WithField("dest", destination).Info("Would upload")
@@ -71,7 +85,7 @@ func (o Options) Run(ctx context.Context, spec *downwardapi.JobSpec, extra map[s
 	return nil
 }
 
-func (o Options) assembleTargets(spec *downwardapi.JobSpec, extra map[string]gcs.UploadFunc) (map[string]gcs.UploadFunc, error) {
+func (o Options) assembleTargets(spec *downwardapi.JobSpec, extra map[string]gcs.UploadFunc) (map[string]gcs.UploadFunc, map[string]gcs.UploadFunc, error) {
 	jobBasePath, blobStoragePath, builder := PathsForJob(o.GCSConfiguration, spec, o.SubDir)
 
 	uploadTargets := map[string]gcs.UploadFunc{}
@@ -83,7 +97,7 @@ func (o Options) assembleTargets(spec *downwardapi.JobSpec, extra map[string]gcs
 		if alias := gcs.AliasForSpec(spec); alias != "" {
 			parsedBucket, err := url.Parse(o.Bucket)
 			if err != nil {
-				return nil, fmt.Errorf("parse bucket %q: %w", o.Bucket, err)
+				return nil, nil, fmt.Errorf("parse bucket %q: %w", o.Bucket, err)
 			}
 			// only add gs:// prefix if o.Bucket itself doesn't already have a scheme prefix
 			var fullBasePath string
@@ -129,11 +143,16 @@ func (o Options) assembleTargets(spec *downwardapi.JobSpec, extra map[string]gcs
 		}
 	}
 
-	for destination, upload := range extra {
-		uploadTargets[path.Join(blobStoragePath, destination)] = upload
+	if len(extra) == 0 {
+		return uploadTargets, nil, nil
 	}
 
-	return uploadTargets, nil
+	extraTargets := make(map[string]gcs.UploadFunc, len(extra))
+	for destination, upload := range extra {
+		extraTargets[path.Join(blobStoragePath, destination)] = upload
+	}
+
+	return uploadTargets, extraTargets, nil
 }
 
 // PathsForJob determines the following for a job:

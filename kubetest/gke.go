@@ -60,6 +60,7 @@ var (
 	gkeCreateNat                   = flag.Bool("gke-create-nat", false, "(gke only) Configure Cloud NAT allowing outbound connections in cluster with private nodes.")
 	gkeNatMinPortsPerVm            = flag.Int("gke-nat-min-ports-per-vm", 64, "(gke only) Specify number of ports per cluster VM for NAT router. Number of ports * number of nodes / 64k = number of auto-allocated IP addresses (there is a hard limit of 100 IPs).")
 	gkeDownTimeout                 = flag.Duration("gke-down-timeout", 1*time.Hour, "(gke only) Timeout for gcloud container clusters delete call. Defaults to 1 hour which matches gcloud's default.")
+	gkeRemoveNetwork               = flag.Bool("gke-remove-network", true, "(gke only) At the end of the test remove non-default network that was used by cluster.")
 
 	// poolReTemplate matches instance group URLs of the form `https://www.googleapis.com/compute/v1/projects/some-project/zones/a-zone/instanceGroupManagers/gke-some-cluster-some-pool-90fcb815-grp`. Match meaning:
 	// m[0]: path starting with zones/
@@ -874,8 +875,11 @@ func (g *gkeDeployer) Down() error {
 		errSubnet = control.FinishRunning(exec.Command("gcloud", "compute", "networks", "subnets", "delete", "-q", g.subnetwork,
 			g.subnetworkRegion, "--project="+g.project))
 	}
-	errNetwork := control.FinishRunning(exec.Command("gcloud", "compute", "networks", "delete", "-q", g.network,
-		"--project="+g.project))
+	var errNetwork error
+	if *gkeRemoveNetwork {
+		errNetwork = control.FinishRunning(exec.Command("gcloud", "compute", "networks", "delete", "-q", g.network,
+			"--project="+g.project))
+	}
 	if errCluster != nil {
 		return fmt.Errorf("error deleting cluster: %v", errCluster)
 	}

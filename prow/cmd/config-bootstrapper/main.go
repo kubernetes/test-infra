@@ -31,6 +31,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
+	pluginsflagutil "k8s.io/test-infra/prow/flagutil/plugins"
 	"k8s.io/test-infra/prow/github"
 	_ "k8s.io/test-infra/prow/hook/plugin-imports"
 	"k8s.io/test-infra/prow/logrusutil"
@@ -43,8 +44,8 @@ const bootstrapMode = true
 type options struct {
 	sourcePaths prowflagutil.Strings
 
-	config       configflagutil.ConfigOptions
-	pluginConfig string
+	config        configflagutil.ConfigOptions
+	pluginsConfig pluginsflagutil.PluginOptions
 
 	dryRun     bool
 	kubernetes prowflagutil.KubernetesOptions
@@ -56,10 +57,10 @@ func gatherOptions() options {
 
 	fs.Var(&o.sourcePaths, "source-path", "Path to root of source directory to use for config updates. Can be set multiple times.")
 
-	fs.StringVar(&o.pluginConfig, "plugin-config", "/etc/plugins/plugins.yaml", "Path to plugin config file.")
-
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub.")
 	o.config.AddFlags(fs)
+	o.pluginsConfig.PluginConfigPathDefault = "/etc/plugins/plugins.yaml"
+	o.pluginsConfig.AddFlags(fs)
 	o.kubernetes.AddFlags(fs)
 
 	fs.Parse(os.Args[1:])
@@ -71,12 +72,10 @@ func (o *options) Validate() error {
 		return errors.New("--source-path must be provided at least once")
 	}
 
-	if err := o.kubernetes.Validate(o.dryRun); err != nil {
-		return err
-	}
-
-	if err := o.config.Validate(o.dryRun); err != nil {
-		return err
+	for _, validate := range []interface{ Validate(bool) error }{&o.kubernetes, &o.config, &o.pluginsConfig} {
+		if err := validate.Validate(o.dryRun); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -175,8 +174,8 @@ func main() {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
-	pluginAgent := &plugins.ConfigAgent{}
-	if err := pluginAgent.Start(o.pluginConfig, nil, "", true); err != nil {
+	pluginAgent, err := o.pluginsConfig.PluginAgent()
+	if err != nil {
 		logrus.WithError(err).Fatal("Error starting plugin configuration agent.")
 	}
 

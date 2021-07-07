@@ -125,6 +125,8 @@ type FakeClient struct {
 
 	// A map of invitation id to user repository invitations
 	UserRepoInvitations map[int]github.UserRepoInvitation
+	// A map of organization invitations by name
+	UserOrgInvitations map[string]github.UserOrgInvitation
 
 	// Error will be returned if set. Currently only implemented for CreateStatus
 	Error error
@@ -171,6 +173,7 @@ func NewFakeClient() *FakeClient {
 		OrgHooks:            make(map[string][]github.Hook),
 		RepoHooks:           make(map[string][]github.Hook),
 		UserRepoInvitations: make(map[int]github.UserRepoInvitation),
+		UserOrgInvitations:  make(map[string]github.UserOrgInvitation),
 	}
 }
 
@@ -1015,4 +1018,26 @@ func (f *FakeClient) AcceptUserRepoInvitation(invitationID int) error {
 
 	delete(f.UserRepoInvitations, invitationID)
 	return nil
+}
+
+func (f *FakeClient) AcceptUserOrgInvitation(org string) error {
+	if _, ok := f.UserOrgInvitations[org]; !ok {
+		return fmt.Errorf("couldn't find invitation for org: %s", org)
+	}
+
+	delete(f.UserOrgInvitations, org)
+	return nil
+}
+
+func (f *FakeClient) ListCurrentUserOrgInvitations() ([]github.UserOrgInvitation, error) {
+	var ret []github.UserOrgInvitation
+	for _, inv := range f.UserOrgInvitations {
+		ret = append(ret, inv)
+	}
+
+	sort.Slice(ret, func(p, q int) bool {
+		return ret[p].Org.Login < ret[q].Org.Login
+	})
+
+	return ret, nil
 }

@@ -84,10 +84,11 @@ aliases:
     - dchen1107
     - derekwaynecarr
   sig-release-leads:
-    - alejandrox1
+    - cpanato
     - hasheddan
     - jeremyrickard
     - justaugustus
+    - puerco
     - saschagrunert
   sig-scalability-leads:
     - mm4tt
@@ -110,8 +111,8 @@ aliases:
     - stevekuznetsov
   sig-ui-leads:
     - floreks
-    - jeefy
     - maciaszczykm
+    - shu-mutou
   sig-usability-leads:
     - Rajakavitha1
     - hpandeycodeit
@@ -228,20 +229,17 @@ aliases:
   #   k/test-infra jobs and overall CI Signal
   #
   release-engineering-approvers:
-    - alejandrox1 # SIG Technical Lead / emergency approval
-    - cpanato # Release Manager / EU backup approval coverage
-    - hasheddan # Release Manager / US backup approval coverage
+    - cpanato # SIG Technical Lead / RelEng subproject owner / Release Manager
+    - hasheddan # SIG Technical Lead / RelEng subproject owner / Release Manager
     - justaugustus # SIG Chair / RelEng subproject owner / Release Manager
-    - saschagrunert # SIG Technical Lead / RelEng subproject owner / Release Manager
-    - tpepper # SIG Chair / RelEng subproject owner / Release Manager
+    - puerco # SIG Technical Lead / RelEng subproject owner / Release Manager
+    - saschagrunert # SIG Chair / RelEng subproject owner / Release Manager
   release-engineering-reviewers:
-    - cpanato # Release Manager
-    - feiskyer # Release Manager
-    - hasheddan # Release Manager
-    - hoegaarden # Release Manager
+    - cpanato # SIG Technical Lead / RelEng subproject owner / Release Manager
+    - hasheddan # SIG Technical Lead / RelEng subproject owner / Release Manager
     - justaugustus # SIG Chair / RelEng subproject owner / Release Manager
-    - saschagrunert # SIG Technical Lead / RelEng subproject owner / Release Manager
-    - tpepper # SIG Chair / RelEng subproject owner / Release Manager
+    - puerco # SIG Technical Lead / RelEng subproject owner / Release Manager
+    - saschagrunert # SIG Chair / RelEng subproject owner / Release Manager
     - xmudrii # Release Manager
 
   # copied from git.k8s.io/enhancements/OWNERS_ALIASES

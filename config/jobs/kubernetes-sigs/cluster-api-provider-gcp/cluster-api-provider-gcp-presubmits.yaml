@@ -6,11 +6,10 @@ presubmits:
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
-    # The script this job runs is not in all branches.
-    - ^master$
+    - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
         command:
         - "./scripts/ci-test.sh"
         resources:
@@ -26,11 +25,10 @@ presubmits:
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
-    # The script this job runs is not in all branches.
-    - ^master$
+    - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
         command:
         - "./scripts/ci-build.sh"
         resources:
@@ -49,11 +47,10 @@ presubmits:
       preset-kind-volume-mounts: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
-    # The script this job runs is not in all branches.
-    - ^master$
+    - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -76,8 +73,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
-    # The script this job runs is not in all branches.
-    - ^master$
+    - ^main$
     always_run: true
     optional: false
     decorate: true
@@ -90,7 +86,7 @@ presubmits:
       path_alias: "sigs.k8s.io/image-builder"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"
@@ -120,8 +116,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
-    # The script this job runs is not in all branches.
-    - ^master$
+    - ^main$
     always_run: false
     optional: true
     decorate: true
@@ -138,7 +133,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"
@@ -159,3 +154,43 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-conformance
+  - name: pull-cluster-api-provider-gcp-capi-e2e
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
+    branches:
+    - ^main$
+    always_run: false
+    optional: true
+    decorate: true
+    decoration_config:
+      timeout: 3h
+    extra_refs:
+    - org: kubernetes-sigs
+      repo: image-builder
+      base_ref: master
+      path_alias: "sigs.k8s.io/image-builder"
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+          env:
+            - name: "BOSKOS_HOST"
+              value: "boskos.test-pods.svc.cluster.local"
+            - name: GINKGO_FOCUS
+              value: "Cluster API E2E tests"
+          command:
+            - "runner.sh"
+            - "./scripts/ci-e2e.sh"
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              memory: "9000Mi"
+              cpu: 2000m
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
+      testgrid-tab-name: pr-capi-e2e-test

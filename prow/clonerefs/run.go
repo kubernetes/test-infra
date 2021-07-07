@@ -91,7 +91,7 @@ func (o *Options) createRecords() []clone.Record {
 		if err != nil {
 			l.WithError(err).Warn("Cannot read http cookiefile")
 		} else {
-			l.WithField("md5sum", fmt.Sprintf("%x", md5.Sum(f))).Debug("Http cookiefile md5 sum")
+			l.WithField("md5sum", fmt.Sprintf("%x", md5.Sum(f))).Info("Http cookiefile md5 sum")
 		}
 	}
 	if p := needsGlobalCookiePath(o.CookiePath, o.GitRefs...); p != "" {

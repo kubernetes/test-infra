@@ -21,6 +21,7 @@ import (
 	"os"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/pjutil/pprof"
 
@@ -67,8 +68,8 @@ func mustRegister(component string, lister lister) *prometheus.Registry {
 		lister: lister,
 	})
 	registry.MustRegister(
-		prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}),
-		prometheus.NewGoCollector(),
+		collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}),
+		collectors.NewGoCollector(),
 	)
 	return registry
 }

@@ -46,7 +46,6 @@ var (
 		"istio",
 		"googleoss",
 		"google",
-		"knative", // This allows both "knative" and "knative-sandbox", as well as "knative-google"
 		"kopeio",
 		"redhat",
 		"vmware",
@@ -401,7 +400,7 @@ func hasAnyPrefix(s string, prefixes []string) bool {
 // - reports (aka does not skip reporting)
 // - always runs OR runs if some path changed
 func isMergeBlocking(job prow_config.Presubmit) bool {
-	return !job.Optional && !job.SkipReport && (job.AlwaysRun || job.RunIfChanged != "")
+	return !job.Optional && !job.SkipReport && (job.AlwaysRun || job.RunIfChanged != "" || job.SkipIfOnlyChanged != "")
 }
 
 // All jobs in presubmits-kuberentes-blocking must be merge-blocking for kubernetes/kubernetes

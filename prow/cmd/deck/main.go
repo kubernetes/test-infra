@@ -59,6 +59,7 @@ import (
 	"k8s.io/test-infra/prow/deck/jobs"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
+	pluginsflagutil "k8s.io/test-infra/prow/flagutil/plugins"
 	"k8s.io/test-infra/prow/git/v2"
 	prowgithub "k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/githuboauth"
@@ -104,6 +105,7 @@ const (
 
 type options struct {
 	config                configflagutil.ConfigOptions
+	pluginsConfig         pluginsflagutil.PluginOptions
 	instrumentation       prowflagutil.InstrumentationOptions
 	kubernetes            prowflagutil.KubernetesOptions
 	github                prowflagutil.GitHubOptions
@@ -121,12 +123,10 @@ type options struct {
 	spyglass              bool
 	spyglassFilesLocation string
 	storage               prowflagutil.StorageClientOptions
-	gcsNoAuth             bool
 	gcsCookieAuth         bool
 	rerunCreatesJob       bool
 	allowInsecure         bool
 	dryRun                bool
-	pluginConfig          string
 }
 
 func (o *options) Validate() error {
@@ -141,6 +141,10 @@ func (o *options) Validate() error {
 		return err
 	}
 
+	if err := o.pluginsConfig.Validate(o.dryRun); err != nil {
+		return err
+	}
+
 	if o.oauthURL != "" {
 		if o.githubOAuthConfigFile == "" {
 			return errors.New("an OAuth URL was provided but required flag --github-oauth-config-file was unset")
@@ -152,12 +156,6 @@ func (o *options) Validate() error {
 
 	if o.hiddenOnly && o.showHidden {
 		return errors.New("'--hidden-only' and '--show-hidden' are mutually exclusive, the first one shows only hidden job, the second one shows both hidden and non-hidden jobs")
-	}
-	if o.gcsNoAuth {
-		logrus.Warn("'--gcs-no-auth' is deprecated and is not used anymore. We always fall back to an anonymous client now, if all other options fail.")
-	}
-	if o.storage.GCSCredentialsFile != "" && o.gcsNoAuth {
-		return errors.New("--gcs-credentials-file must not be set when --gcs-no-auth is set")
 	}
 	return nil
 }
@@ -179,12 +177,10 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.StringVar(&o.spyglassFilesLocation, "spyglass-files-location", "/lenses", "Location of the static files for spyglass.")
 	fs.StringVar(&o.staticFilesLocation, "static-files-location", "/static", "Path to the static files")
 	fs.StringVar(&o.templateFilesLocation, "template-files-location", "/template", "Path to the template files")
-	fs.BoolVar(&o.gcsNoAuth, "gcs-no-auth", false, "Whether to use anonymous auth for GCP. Requires when running outside of GCP and not setting gcs-credentials-file")
 	fs.BoolVar(&o.gcsCookieAuth, "gcs-cookie-auth", false, "Use storage.cloud.google.com instead of signed URLs")
 	fs.BoolVar(&o.rerunCreatesJob, "rerun-creates-job", false, "Change the re-run option in Deck to actually create the job. **WARNING:** Only use this with non-public deck instances, otherwise strangers can DOS your Prow instance")
 	fs.BoolVar(&o.allowInsecure, "allow-insecure", false, "Allows insecure requests for CSRF and GitHub oauth.")
 	fs.BoolVar(&o.dryRun, "dry-run", false, "Whether or not to make mutating API calls to GitHub.")
-	fs.StringVar(&o.pluginConfig, "plugin-config", "", "Path to plugin config file, probably /etc/plugins/plugins.yaml")
 	o.config.AddFlags(fs)
 	o.instrumentation.AddFlags(fs)
 	o.kubernetes.AddFlags(fs)
@@ -192,6 +188,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	o.github.AllowAnonymous = true
 	o.github.AllowDirectAccess = true
 	o.storage.AddFlags(fs)
+	o.pluginsConfig.AddFlags(fs)
 	fs.Parse(args)
 	return o
 }
@@ -281,9 +278,9 @@ func main() {
 	cfg := configAgent.Config
 
 	var pluginAgent *plugins.ConfigAgent
-	if o.pluginConfig != "" {
-		pluginAgent = &plugins.ConfigAgent{}
-		if err := pluginAgent.Start(o.pluginConfig, nil, "", false); err != nil {
+	if o.pluginsConfig.PluginConfigPath != "" {
+		pluginAgent, err = o.pluginsConfig.PluginAgent()
+		if err != nil {
 			logrus.WithError(err).Fatal("Error loading Prow plugin config.")
 		}
 	} else {
@@ -1084,37 +1081,41 @@ lensesLoop:
 	}
 
 	var viewBuf bytes.Buffer
-	type lensesTemplate struct {
-		Lenses        map[int]spyglass.LensConfig
-		LensIndexes   []int
-		Source        string
-		LensArtifacts map[int][]string
-		JobHistLink   string
-		ProwJobLink   string
-		ArtifactsLink string
-		PRHistLink    string
-		Announcement  template.HTML
-		TestgridLink  string
-		JobName       string
-		BuildID       string
-		PRLink        string
-		ExtraLinks    []spyglass.ExtraLink
+	type spyglassTemplate struct {
+		Lenses          map[int]spyglass.LensConfig
+		LensIndexes     []int
+		Source          string
+		LensArtifacts   map[int][]string
+		JobHistLink     string
+		ProwJobLink     string
+		ArtifactsLink   string
+		PRHistLink      string
+		Announcement    template.HTML
+		TestgridLink    string
+		JobName         string
+		BuildID         string
+		PRLink          string
+		ExtraLinks      []spyglass.ExtraLink
+		ReRunCreatesJob bool
+		ProwJobName     string
 	}
-	lTmpl := lensesTemplate{
-		Lenses:        ls,
-		LensIndexes:   lensIndexes,
-		Source:        src,
-		LensArtifacts: lensCache,
-		JobHistLink:   jobHistLink,
-		ProwJobLink:   prowJobLink,
-		ArtifactsLink: artifactsLink,
-		PRHistLink:    prHistLink,
-		Announcement:  template.HTML(announcement),
-		TestgridLink:  tgLink,
-		JobName:       jobName,
-		BuildID:       buildID,
-		PRLink:        prLink,
-		ExtraLinks:    extraLinks,
+	sTmpl := spyglassTemplate{
+		Lenses:          ls,
+		LensIndexes:     lensIndexes,
+		Source:          src,
+		LensArtifacts:   lensCache,
+		JobHistLink:     jobHistLink,
+		ProwJobLink:     prowJobLink,
+		ArtifactsLink:   artifactsLink,
+		PRHistLink:      prHistLink,
+		Announcement:    template.HTML(announcement),
+		TestgridLink:    tgLink,
+		JobName:         jobName,
+		BuildID:         buildID,
+		PRLink:          prLink,
+		ExtraLinks:      extraLinks,
+		ReRunCreatesJob: o.rerunCreatesJob,
+		ProwJobName:     prowJobName,
 	}
 	t := template.New("spyglass.html")
 
@@ -1126,7 +1127,7 @@ lensesLoop:
 		return "", fmt.Errorf("error parsing template: %v", err)
 	}
 
-	if err = t.Execute(&viewBuf, lTmpl); err != nil {
+	if err = t.Execute(&viewBuf, sTmpl); err != nil {
 		return "", fmt.Errorf("error rendering template: %v", err)
 	}
 	renderElapsed := time.Since(renderStart)

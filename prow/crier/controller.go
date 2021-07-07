@@ -97,7 +97,7 @@ func (r *reconciler) updateReportState(ctx context.Context, pj *prowv1.ProwJob, 
 	// that also does reporting dont trigger another report because our lister doesn't yet contain
 	// the updated Status
 	name := types.NamespacedName{Namespace: pj.Namespace, Name: pj.Name}
-	if err := wait.Poll(100*time.Millisecond, 3*time.Second, func() (bool, error) {
+	if err := wait.Poll(100*time.Millisecond, 10*time.Second, func() (bool, error) {
 		if err := r.pjclientset.Get(ctx, name, pj); err != nil {
 			return false, err
 		}
@@ -178,7 +178,7 @@ func (r *reconciler) reconcile(ctx context.Context, log *logrus.Entry, req recon
 
 	log = log.WithField("jobName", pj.Spec.Job)
 
-	if !pj.Spec.Report || !r.reporter.ShouldReport(ctx, log, &pj) {
+	if !r.reporter.ShouldReport(ctx, log, &pj) {
 		return nil, nil
 	}
 

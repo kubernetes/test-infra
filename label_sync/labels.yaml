@@ -630,6 +630,12 @@ default:
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
+      description: Categorizes an issue or PR as relevant to WG Structured Logging.
+      name: wg/structured-logging
+      target: both
+      prowPlugin: label
+      addedBy: anyone
+    - color: d2b48c
       description: Categorizes an issue or PR as relevant to ug-big-data.
       name: ug/big-data
       target: both
@@ -1388,6 +1394,12 @@ repos:
         target: both
         addedBy: humans
       - color: 0052cc
+        description: Issues or PRs related to the Release Engineering subproject
+        name: area/release-eng
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
         description: Issues or PRs related to the kubernetes.io's infrastructure, design, or build processes
         name: area/web-development
         target: both
@@ -1781,3 +1793,11 @@ repos:
           - name: area/release-infra
         target: both
         addedBy: label
+  kubernetes-sigs/contributor-tweets:
+    labels:
+      - color: 0052cc
+        description: Issues to parse and tweet from K8sContributor handle
+        name: kind/tweet
+        target: both
+        addedBy: anyone
+        prowPlugin: label

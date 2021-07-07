@@ -54,6 +54,16 @@ ADMIN_IAM_MEMBER="${ADMIN_IAM_MEMBER:-group:mdb.cloud-kubernetes-engprod-oncall@
 # Overriding output
 OUT_FILE="${OUT_FILE:-build-cluster-kubeconfig.yaml}"
 
+
+# Require bash version >= 4.4
+if ((${BASH_VERSINFO[0]}<4)) || ( ((${BASH_VERSINFO[0]}==4)) && ((${BASH_VERSINFO[1]}<4)) ); then
+  echo "ERROR: This script requires a minimum bash version of 4.4, but got version of ${BASH_VERSINFO[0]}.${BASH_VERSINFO[1]}"
+  if [ "$(uname)" = 'Darwin' ]; then
+    echo "On macOS with homebrew 'brew install bash' is sufficient."
+  fi
+  exit 1
+fi
+
 # Macos specific settings
 SED="sed"
 if command -v gsed &>/dev/null; then
@@ -151,7 +161,10 @@ function createCluster() {
 
 function createBucket() {
   gsutil mb -p "${PROJECT}" -b on "${GCS_BUCKET}"
-  gsutil iam ch "serviceAccount:${CONTROL_PLANE_SA}:roles/storage.objectAdmin" "${GCS_BUCKET}"
+  for i in ${CONTROL_PLANE_SA//,/ }
+  do
+    gsutil iam ch "serviceAccount:${i}:roles/storage.objectAdmin" "${GCS_BUCKET}"
+  done
 }
 
 function ensureBucket() {

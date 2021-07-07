@@ -1,9 +1,13 @@
+import {createRerunProwJobIcon} from "../common/common";
+import {getParameterByName} from "../common/urls";
 import {isTransitMessage, serialiseHashes} from "./common";
 
 declare const src: string;
 declare const lensArtifacts: {[index: string]: string[]};
 declare const lensIndexes: number[];
 declare const csrfToken: string;
+declare const rerunCreatesJob: boolean;
+declare const prowJobName: string;
 
 // Loads views for this job
 function loadLenses(): void {
@@ -160,4 +164,32 @@ window.addEventListener('hashchange', (e) => {
 // We can't use DOMContentLoaded here or we end up with a bunch of flickering. This appears to be MDL's fault.
 window.addEventListener('load', () => {
     loadLenses();
+    handleRerunButton();
 });
+
+function handleRerunButton() {
+  // In case prowJob is unavailable, the rerun button shouldn't be shown
+  if (!prowJobName) {
+    return;
+  }
+
+  const rerunStatus = getParameterByName("rerun");
+  const modal = document.getElementById('rerun')!;
+  const rerunCommand = document.getElementById('rerun-content')!;
+  window.onclick = (event: any) => {
+      if (event.target === modal) {
+          modal.style.display = "none";
+      }
+  };
+
+  const r = document.getElementById("header-title")!;
+  const c = document.createElement("div");
+  c.appendChild(createRerunProwJobIcon(modal, rerunCommand, prowJobName, rerunCreatesJob, csrfToken));
+  c.classList.add("icon-cell");
+  r.appendChild(c);
+
+  if (rerunStatus === "gh_redirect") {
+    modal.style.display = "block";
+    rerunCommand.innerHTML = "Rerunning that job requires GitHub login. Now that you're logged in, try again";
+  }
+}

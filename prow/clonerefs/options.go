@@ -25,8 +25,9 @@ import (
 	"strings"
 	"text/template"
 
-	"k8s.io/apimachinery/pkg/util/sets"
+	"github.com/sirupsen/logrus"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/pod-utils/clone"
 )
 
 // Options configures the clonerefs tool
@@ -66,12 +67,13 @@ type Options struct {
 
 	Fail bool `json:"fail,omitempty"`
 
-	// used to hold flag values
-	refs       gitRefs
-	clonePath  orgRepoFormat
-	cloneURI   orgRepoFormat
-	keys       stringSlice
 	CookiePath string `json:"cookie_path,omitempty"`
+
+	// used to hold flag values
+	refs      gitRefs
+	clonePath orgRepoFormat
+	cloneURI  orgRepoFormat
+	keys      stringSlice
 }
 
 // Validate ensures that the configuration options are valid
@@ -88,16 +90,19 @@ func (o *Options) Validate() error {
 		return errors.New("no refs specified to clone")
 	}
 
-	seen := map[string]sets.String{}
-	for _, ref := range o.GitRefs {
-		if _, seenOrg := seen[ref.Org]; seenOrg {
-			if seen[ref.Org].Has(ref.Repo) {
-				return fmt.Errorf("sync config for %s/%s provided more than once", ref.Org, ref.Repo)
+	seen := make(map[string]int)
+	for i, ref := range o.GitRefs {
+		path := clone.PathForRefs(o.SrcRoot, ref)
+		if existing, ok := seen[path]; ok {
+			existingRef := o.GitRefs[existing]
+			err := fmt.Errorf("clone ref config %d (for %s/%s) will be extracted to %s, which clone ref %d (for %s/%s) is also using", i, ref.Org, ref.Repo, path, existing, existingRef.Org, existingRef.Repo)
+			if existingRef.Org == ref.Org && existingRef.Repo == ref.Repo {
+				return err
 			}
-			seen[ref.Org].Insert(ref.Repo)
-		} else {
-			seen[ref.Org] = sets.NewString(ref.Repo)
+			// preserving existing behavior where this is a warning, not an error
+			logrus.WithError(err).WithField("path", path).Warning("multiple refs clone to the same location")
 		}
+		seen[path] = i
 	}
 
 	return nil

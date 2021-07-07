@@ -24,11 +24,12 @@ presubmits:
     spec:
       containers:
       - image: gcr.io/k8s-minikube/prow-test:v0.0.1
+        # we add --force since minikube is running as root
         command:
         - wrapper.sh
         - bash
         - -c
-        - make && ./out/minikube start --force && kubectl get pods -A
+        - make && ./out/minikube start --force-systemd --force && kubectl get pods -A
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true

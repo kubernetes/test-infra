@@ -1764,14 +1764,14 @@ func (b *Bugzilla) OptionsForRepo(org, repo string) map[string]BugzillaBranchOpt
 // Override holds options for the override plugin
 type Override struct {
 	AllowTopLevelOwners bool `json:"allow_top_level_owners,omitempty"`
-	// AllowedGitHubTeams is a map of repositories (eg "k/k") to list of GitHub team slugs,
+	// AllowedGitHubTeams is a map of orgs and/or repositories (eg "org" or "org/repo") to list of GitHub team slugs,
 	// members of which are allowed to override contexts
 	AllowedGitHubTeams map[string][]string `json:"allowed_github_teams,omitempty"`
 }
 
 func (c *Configuration) mergeFrom(other *Configuration) error {
 	var errs []error
-	if diff := cmp.Diff(other, &Configuration{Plugins: other.Plugins}); diff != "" {
+	if diff := cmp.Diff(other, &Configuration{Approve: other.Approve, Bugzilla: other.Bugzilla, ExternalPlugins: other.ExternalPlugins, Lgtm: other.Lgtm, Plugins: other.Plugins}); diff != "" {
 		errs = append(errs, fmt.Errorf("supplemental plugin configuration has config that doesn't support merging: %s", diff))
 	}
 
@@ -1780,6 +1780,34 @@ func (c *Configuration) mergeFrom(other *Configuration) error {
 	}
 	if err := c.Plugins.mergeFrom(&other.Plugins); err != nil {
 		errs = append(errs, fmt.Errorf("failed to merge .plugins from supplemental config: %w", err))
+	}
+
+	if err := c.Bugzilla.mergeFrom(&other.Bugzilla); err != nil {
+		errs = append(errs, fmt.Errorf("failed to merge .bugzilla from supplemental config: %w", err))
+	}
+
+	c.Approve = append(c.Approve, other.Approve...)
+	c.Lgtm = append(c.Lgtm, other.Lgtm...)
+
+	if err := c.mergeExternalPluginsFrom(other.ExternalPlugins); err != nil {
+		errs = append(errs, fmt.Errorf("failed to merge .external-plugins from supplemental config: %w", err))
+	}
+
+	return utilerrors.NewAggregate(errs)
+}
+
+func (c *Configuration) mergeExternalPluginsFrom(other map[string][]ExternalPlugin) error {
+	if c.ExternalPlugins == nil && other != nil {
+		c.ExternalPlugins = make(map[string][]ExternalPlugin)
+	}
+
+	var errs []error
+	for orgOrRepo, config := range other {
+		if _, ok := c.ExternalPlugins[orgOrRepo]; ok {
+			errs = append(errs, fmt.Errorf("found duplicate config for external-plugins.%s", orgOrRepo))
+			continue
+		}
+		c.ExternalPlugins[orgOrRepo] = config
 	}
 
 	return utilerrors.NewAggregate(errs)
@@ -1806,13 +1834,95 @@ func (p *Plugins) mergeFrom(other *Plugins) error {
 	return utilerrors.NewAggregate(errs)
 }
 
+func (p *Bugzilla) mergeFrom(other *Bugzilla) error {
+	if other == nil {
+		return nil
+	}
+
+	var errs []error
+	if other.Default != nil {
+		if p.Default != nil {
+			errs = append(errs, errors.New("configuration of global default defined in multiple places"))
+		} else {
+			p.Default = other.Default
+		}
+	}
+	if len(other.Orgs) != 0 && p.Orgs == nil {
+		p.Orgs = make(map[string]BugzillaOrgOptions)
+	}
+	for org, orgConfig := range other.Orgs {
+		if _, ok := p.Orgs[org]; !ok {
+			p.Orgs[org] = BugzillaOrgOptions{}
+		}
+		if orgConfig.Default != nil {
+			if p.Orgs[org].Default != nil {
+				errs = append(errs, fmt.Errorf("found duplicate organization config for bugzilla.%s", org))
+				continue
+			}
+			newConfig := p.Orgs[org]
+			newConfig.Default = orgConfig.Default
+			p.Orgs[org] = newConfig
+		}
+		if len(orgConfig.Repos) != 0 && p.Orgs[org].Repos == nil {
+			newConfig := p.Orgs[org]
+			newConfig.Repos = make(map[string]BugzillaRepoOptions)
+			p.Orgs[org] = newConfig
+		}
+		for repo, repoConfig := range orgConfig.Repos {
+			if _, ok := p.Orgs[org].Repos[repo]; ok {
+				errs = append(errs, fmt.Errorf("found duplicate repository config for bugzilla.%s/%s", org, repo))
+				continue
+			}
+			p.Orgs[org].Repos[repo] = repoConfig
+		}
+	}
+	return utilerrors.NewAggregate(errs)
+}
+
 func (c *Configuration) HasConfigFor() (global bool, orgs sets.String, repos sets.String) {
-	if !reflect.DeepEqual(c, &Configuration{Plugins: c.Plugins}) {
+	if !reflect.DeepEqual(c, &Configuration{Approve: c.Approve, Bugzilla: c.Bugzilla, ExternalPlugins: c.ExternalPlugins, Lgtm: c.Lgtm, Plugins: c.Plugins}) || c.Bugzilla.Default != nil {
 		global = true
 	}
 	orgs = sets.String{}
 	repos = sets.String{}
 	for orgOrRepo := range c.Plugins {
+		if strings.Contains(orgOrRepo, "/") {
+			repos.Insert(orgOrRepo)
+		} else {
+			orgs.Insert(orgOrRepo)
+		}
+	}
+
+	for org, orgConfig := range c.Bugzilla.Orgs {
+		if orgConfig.Default != nil {
+			orgs.Insert(org)
+		}
+		for repo := range orgConfig.Repos {
+			repos.Insert(org + "/" + repo)
+		}
+	}
+
+	for _, approveConfig := range c.Approve {
+		for _, orgOrRepo := range approveConfig.Repos {
+			if strings.Contains(orgOrRepo, "/") {
+				repos.Insert(orgOrRepo)
+			} else {
+				orgs.Insert(orgOrRepo)
+			}
+		}
+	}
+
+	for _, lgtm := range c.Lgtm {
+		for _, orgOrRepo := range lgtm.Repos {
+			if strings.Contains(orgOrRepo, "/") {
+				repos.Insert(orgOrRepo)
+			} else {
+				orgs.Insert(orgOrRepo)
+			}
+		}
+	}
+
+	for orgOrRepo := range c.ExternalPlugins {
 		if strings.Contains(orgOrRepo, "/") {
 			repos.Insert(orgOrRepo)
 		} else {

@@ -3,7 +3,7 @@ presubmits:
   - name: pull-containerd-build
     always_run: true
     branches:
-    - master
+    - main
     - release/1.5
     decorate: true
     annotations:
@@ -15,7 +15,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
         command:
         - runner.sh
         args:
@@ -29,7 +29,7 @@ presubmits:
     max_concurrency: 8
     decorate: true
     branches:
-    - master
+    - main
     - release/1.5
     decoration_config:
       timeout: 100m
@@ -52,7 +52,7 @@ presubmits:
     spec:
       containers:
       - name: pull-containerd-node-e2e
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210509-00de27f-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
         env:
         - name: USE_TEST_INFRA_LOG_DUMPING
           value: "true"

@@ -85,6 +85,8 @@ func generatePresubmits(c config.JobConfig, version string) (map[string][]config
 			p := presubmit
 			p.SkipBranches = nil
 			p.Branches = []string{"release-" + version}
+			p.Context = generatePresubmitContextVariant(p.Name, p.Context, version)
+			p.Name = generatePresubmitNameVariant(p.Name, version)
 			if p.Spec != nil {
 				for i := range p.Spec.Containers {
 					c := &p.Spec.Containers[i]
@@ -254,8 +256,14 @@ func performDeletion(args map[string]string, deletions string) map[string]string
 	return result
 }
 
+const masterSuffix = "-master"
+
+func replaceAllMaster(s, new string) string {
+	return strings.ReplaceAll(s, masterSuffix, new)
+}
+
 func fixImage(image, version string) string {
-	return strings.ReplaceAll(image, "-master", "-"+version)
+	return replaceAllMaster(image, "-"+version)
 }
 
 func fixBootstrapArgs(args []string, version string) []string {
@@ -350,10 +358,27 @@ func generateNameVariant(name, version string, generic bool) string {
 	if !generic {
 		suffix = "-" + strings.ReplaceAll(version, ".", "-")
 	}
-	if !strings.HasSuffix(name, "-master") {
+	if !strings.HasSuffix(name, masterSuffix) {
 		return name + suffix
 	}
-	return strings.ReplaceAll(name, "-master", suffix)
+	return replaceAllMaster(name, suffix)
+}
+
+func generatePresubmitNameVariant(name, version string) string {
+	suffix := "-" + version
+	if !strings.HasSuffix(name, masterSuffix) {
+		return name + suffix
+	}
+	return replaceAllMaster(name, suffix)
+}
+
+func generatePresubmitContextVariant(name, context, version string) string {
+	suffix := "-" + version
+
+	if context != "" {
+		return replaceAllMaster(context, suffix)
+	}
+	return replaceAllMaster(name, suffix)
 }
 
 type options struct {

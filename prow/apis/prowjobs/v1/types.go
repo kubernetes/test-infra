@@ -91,6 +91,9 @@ const (
 	// FinishedStatusFile is the JSON file that stores information about the build
 	// after its completion. See testgrid/metadata/job.go for more details.
 	FinishedStatusFile = "finished.json"
+
+	// ProwJobFile is the JSON file that stores the prowjob information.
+	ProwJobFile = "prowjob.json"
 )
 
 // +genclient
@@ -283,9 +286,39 @@ type ReporterConfig struct {
 }
 
 type SlackReporterConfig struct {
+	Host              string         `json:"host,omitempty"`
 	Channel           string         `json:"channel,omitempty"`
 	JobStatesToReport []ProwJobState `json:"job_states_to_report,omitempty"`
 	ReportTemplate    string         `json:"report_template,omitempty"`
+}
+
+func (src *SlackReporterConfig) ApplyDefault(def *SlackReporterConfig) *SlackReporterConfig {
+	if src == nil && def == nil {
+		return nil
+	}
+	var merged SlackReporterConfig
+	if src != nil {
+		merged = *src.DeepCopy()
+	} else {
+		merged = *def.DeepCopy()
+	}
+	if src == nil || def == nil {
+		return &merged
+	}
+
+	if merged.Channel == "" {
+		merged.Channel = def.Channel
+	}
+	if merged.Host == "" {
+		merged.Host = def.Host
+	}
+	if merged.JobStatesToReport == nil {
+		merged.JobStatesToReport = def.JobStatesToReport
+	}
+	if merged.ReportTemplate == "" {
+		merged.ReportTemplate = def.ReportTemplate
+	}
+	return &merged
 }
 
 // Duration is a wrapper around time.Duration that parses times in either
@@ -363,7 +396,7 @@ type DecorationConfig struct {
 	SkipCloning *bool `json:"skip_cloning,omitempty"`
 	// CookieFileSecret is the name of a kubernetes secret that contains
 	// a git http.cookiefile, which should be used during the cloning process.
-	CookiefileSecret string `json:"cookiefile_secret,omitempty"`
+	CookiefileSecret *string `json:"cookiefile_secret,omitempty"`
 	// OauthTokenSecret is a Kubernetes secret that contains the OAuth token,
 	// which is going to be used for fetching a private repository.
 	OauthTokenSecret *OauthTokenSecret `json:"oauth_token_secret,omitempty"`
@@ -528,7 +561,7 @@ func (d *DecorationConfig) ApplyDefault(def *DecorationConfig) *DecorationConfig
 	if merged.SkipCloning == nil {
 		merged.SkipCloning = def.SkipCloning
 	}
-	if merged.CookiefileSecret == "" {
+	if merged.CookiefileSecret == nil {
 		merged.CookiefileSecret = def.CookiefileSecret
 	}
 	if merged.OauthTokenSecret == nil {
@@ -878,7 +911,7 @@ type Refs struct {
 	// `https://github.com/org/repo.git`.
 	CloneURI string `json:"clone_uri,omitempty"`
 	// SkipSubmodules determines if submodules should be
-	// cloned when the job is run. Defaults to true.
+	// cloned when the job is run. Defaults to false.
 	SkipSubmodules bool `json:"skip_submodules,omitempty"`
 	// CloneDepth is the depth of the clone that will be used.
 	// A depth of zero will do a full clone.

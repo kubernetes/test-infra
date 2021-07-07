@@ -401,7 +401,7 @@ func (sc *statusController) setStatuses(all []PullRequest, pool map[string]PullR
 					State:       wantState,
 					Description: wantDesc,
 					TargetURL:   targetURL(c, pr, log),
-				}); err != nil {
+				}); err != nil && !github.IsNotFound(err) {
 				log.WithError(err).Errorf(
 					"Failed to set status context from %q to %q and description from %q to %q",
 					actualState,
@@ -607,7 +607,7 @@ func newBaseSHAGetter(baseSHAs map[string]string, ghc githubClient, org, repo, b
 }
 
 func openPRsQuery(orgs, repos []string, orgExceptions map[string]sets.String) string {
-	return "is:pr state:open sort:updated-asc " + orgRepoQueryString(orgs, repos, orgExceptions)
+	return "is:pr state:open sort:updated-asc archived:false " + orgRepoQueryString(orgs, repos, orgExceptions)
 }
 
 const indexNamePassingJobs = "tide-passing-jobs"

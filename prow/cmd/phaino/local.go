@@ -277,7 +277,12 @@ func (opts *options) convertToLocal(ctx context.Context, log *logrus.Entry, pj p
 	}
 	// Add args for volume mounts.
 	for target, src := range volumeMounts {
-		localArgs = append(localArgs, "-v", src+":"+target)
+		// empty dirs have "" as src
+		if src == "" {
+			localArgs = append(localArgs, "-v", target)
+		} else {
+			localArgs = append(localArgs, "-v", src+":"+target)
+		}
 	}
 	// Add args for env vars.
 	for envKey, envVal := range envs {
@@ -494,10 +499,10 @@ func (opts *options) convertJob(ctx context.Context, log *logrus.Entry, pj prowa
 		return nil
 	}
 	log.Info("Starting job...")
-	// TODO(fejta): default grace and timeout to the job's decoration_config
-	if opts.timeout > 0 {
+	timeout := getTimeout(opts.timeout, pj.Spec.DecorationConfig.Timeout.Duration)
+	if timeout > 0 {
 		var cancel func()
-		ctx, cancel = context.WithTimeout(ctx, opts.timeout)
+		ctx, cancel = context.WithTimeout(ctx, timeout)
 		defer cancel()
 	}
 	cmd, err := start(args)
@@ -518,11 +523,7 @@ func (opts *options) convertJob(ctx context.Context, log *logrus.Entry, pj prowa
 		// cancelled
 	}
 
-	grace := opts.grace
-	if grace < time.Second {
-		log.WithField("grace", grace).Info("Increasing grace period to the 1s minimum")
-		grace = time.Second
-	}
+	grace := getMinimumGracePeriod(minimumGracePeriod, opts.grace, pj.Spec.DecorationConfig.GracePeriod.Duration, log)
 	log = log.WithFields(logrus.Fields{
 		"grace":     grace,
 		"interrupt": ctx.Err(),
@@ -544,4 +545,26 @@ func (opts *options) convertJob(ctx context.Context, log *logrus.Entry, pj prowa
 		return fmt.Errorf("kill: %v", err)
 	}
 	return fmt.Errorf("grace period expired, aborted: %v", ctx.Err())
+}
+
+func getTimeout(optionsTimeout time.Duration, prowJobTimeout time.Duration) time.Duration {
+	if optionsTimeout != defaultTimeout {
+		return optionsTimeout
+	}
+	if prowJobTimeout > 0 {
+		return prowJobTimeout
+	}
+	return defaultTimeout
+}
+
+func getMinimumGracePeriod(minimum time.Duration, optionsGracePeriod time.Duration, prowJobGracePeriod time.Duration, log *logrus.Entry) (gracePeriod time.Duration) {
+	gracePeriod = prowJobGracePeriod
+	if optionsGracePeriod != defaultGracePeriod {
+		gracePeriod = optionsGracePeriod
+	}
+	if gracePeriod < minimum {
+		gracePeriod = minimum
+		log.WithField("grace", gracePeriod).Info("Increasing grace period to the minimum", gracePeriod)
+	}
+	return gracePeriod
 }

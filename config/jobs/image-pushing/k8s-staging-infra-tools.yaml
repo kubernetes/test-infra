@@ -1,6 +1,6 @@
 postsubmits:
   kubernetes/k8s.io:
-    - name: post-k8sio-infra-tools-push-images
+    - name: post-k8sio-push-image-octodns-docker
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: wg-k8s-infra-k8sio
@@ -11,7 +11,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210302-aa40187
+          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
             command:
               - /run.sh
             args:
@@ -21,3 +21,22 @@ postsubmits:
               - --scratch-bucket=gs://k8s-staging-infra-tools-gcb
               - --env-passthrough=PULL_BASE_REF
               - dns/octodns-docker
+    - name: post-k8sio-push-image-k8s-infra
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: wg-k8s-infra-k8sio
+      decorate: true
+      run_if_changed: "^images/k8s-infra/"
+      branches:
+        - ^main$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-infra-tools
+              - --scratch-bucket=gs://k8s-staging-infra-tools-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - images/k8s-infra
