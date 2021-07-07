@@ -222,7 +222,7 @@ func TestLinkID(t *testing.T) {
 	}{
 		{
 			startAddr: "http://www.example.com/job-history/foo-bucket/logs/bar-e2e",
-			id:        0,
+			id:        emptyID,
 			expAddr:   "http://www.example.com/job-history/foo-bucket/logs/bar-e2e?buildId=",
 		},
 		{

@@ -126,11 +126,11 @@ func readLatestBuild(ctx context.Context, bucket storageBucket, root string) (ui
 	key := path.Join(root, latestBuildFile)
 	data, err := bucket.readObject(ctx, key)
 	if err != nil {
-		return 0, fmt.Errorf("failed to read %s: %w", key, err)
+		return emptyID, fmt.Errorf("failed to read %s: %w", key, err)
 	}
 	n, err := strconv.ParseUint(strings.TrimSpace(string(data)), 10, 64)
 	if err != nil {
-		return 0, fmt.Errorf("failed to parse %s: %v", key, err)
+		return emptyID, fmt.Errorf("failed to parse %s: %v", key, err)
 	}
 	return n, nil
 }
