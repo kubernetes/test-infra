@@ -434,11 +434,6 @@ function redraw(fz: FuzzySearch, pushState: boolean = true): void {
     const rerunStatus = getParameterByName("rerun");
     const modal = document.getElementById('rerun')!;
     const rerunCommand = document.getElementById('rerun-content')!;
-    window.onclick = (event: any) => {
-        if (event.target === modal) {
-            modal.style.display = "none";
-        }
-    };
     const builds = document.getElementById("builds")!.getElementsByTagName(
         "tbody")[0];
     while (builds.firstChild) {
