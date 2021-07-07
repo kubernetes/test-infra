@@ -21,6 +21,7 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/sirupsen/logrus"
@@ -183,6 +184,7 @@ func whoCanUse(overrideConfig plugins.Override, org, repo string) string {
 				allTeams = append(allTeams, fmt.Sprintf("%s: %s", r, strings.Join(allowedTeams, " ")))
 			}
 		}
+		sort.Strings(allTeams)
 		teams = ", and the following github teams:" + strings.Join(allTeams, ", ")
 	}
 
