@@ -605,7 +605,7 @@ presubmits:
         resources:
           requests:
             memory: "6Gi"
-  - name: pull-kubernetes-node-kubelet-swap-ubuntu
+  - name: pull-kubernetes-node-swap-ubuntu
     always_run: false
     optional: true
     skip_report: false
