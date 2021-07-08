@@ -3,7 +3,7 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 5h
-  interval: 6h
+  interval: 12h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -26,6 +26,9 @@ periodics:
         value: "boskos.test-pods.svc.cluster.local"
       - name: AWS_REGION
         value: "us-west-2"
+      # Parallelize tests
+      - name: GINKGO_ARGS
+        value: "-nodes 20"
       securityContext:
         privileged: true
       resources:
@@ -37,11 +40,11 @@ periodics:
     testgrid-tab-name: periodic-e2e-main
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "2"
-- name: periodic-cluster-api-provider-aws-capi-e2e
+- name: periodic-cluster-api-provider-aws-eks-e2e
   decorate: true
   decoration_config:
     timeout: 5h
-  interval: 24h
+  interval: 12h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -49,32 +52,30 @@ periodics:
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
   extra_refs:
-    - org: kubernetes-sigs
-      repo: cluster-api-provider-aws
-      base_ref: main
-      path_alias: "sigs.k8s.io/cluster-api-provider-aws"
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-aws
+    base_ref: main
+    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-go-canary
-        command:
-          - "runner.sh"
-          - "./scripts/ci-e2e.sh"
-        env:
-          - name: BOSKOS_HOST
-            value: "boskos.test-pods.svc.cluster.local"
-          - name: AWS_REGION
-            value: "us-west-2"
-          - name: E2E_UNMANAGED_FOCUS
-            value: "Cluster API E2E tests"
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            cpu: 2
-            memory: "9Gi"
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-go-canary
+      command:
+        - "runner.sh"
+        - "./scripts/ci-e2e-eks.sh"
+      env:
+      - name: BOSKOS_HOST
+        value: "boskos.test-pods.svc.cluster.local"
+      - name: AWS_REGION
+        value: "us-west-2"
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 2
+          memory: "9Gi"
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-    testgrid-tab-name: periodic-capi-e2e-main
+    testgrid-tab-name: periodic-eks-e2e-main
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "2"
 - name: periodic-cluster-api-provider-aws-e2e-conformance
@@ -104,6 +105,9 @@ periodics:
             value: "boskos.test-pods.svc.cluster.local"
           - name: AWS_REGION
             value: "us-west-2"
+          # Parallelize tests
+          - name: GINKGO_ARGS
+            value: "-nodes 20"
         securityContext:
           privileged: true
         resources:
@@ -152,6 +156,9 @@ periodics:
             value: "us-west-2"
           - name: E2E_ARGS
             value: "-kubetest.use-ci-artifacts"
+          # Parallelize tests
+          - name: GINKGO_ARGS
+            value: "-nodes 20"
         command:
           - "runner.sh"
           - "./scripts/ci-conformance.sh"
