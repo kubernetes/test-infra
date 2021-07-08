@@ -69,5 +69,6 @@ func messageFilter(messages []string, failingContexts, allContexts sets.String, 
 		}
 		filters = append(filters, filter)
 	}
+
 	return pjutil.AggregateFilter(filters)
 }

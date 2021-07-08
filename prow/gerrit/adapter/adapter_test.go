@@ -905,6 +905,31 @@ func TestProcessChange(t *testing.T) {
 			pjRef:           "refs/changes/00/1/1",
 			expectedBaseSHA: "abc",
 		},
+		{
+			name: "/test ? will leave a comment with the commands to trigger presubmit Prow jobs",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "test-infra",
+				Status:          "NEW",
+				Revisions: map[string]client.RevisionInfo{
+					"1": {
+						Number:  1,
+						Created: makeStamp(timeNow.Add(-time.Hour)),
+					},
+				},
+				Messages: []gerrit.ChangeMessageInfo{
+					{
+						Message:        "/test ?",
+						RevisionNumber: 1,
+						Date:           makeStamp(timeNow),
+					},
+				},
+			},
+			instancesMap:    map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:        testInstance,
+			numPJ:           0,
+			expectedBaseSHA: "abc",
+		},
 	}
 
 	testInfraPresubmits := []config.Presubmit{

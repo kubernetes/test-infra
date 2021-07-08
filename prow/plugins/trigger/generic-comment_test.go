@@ -947,7 +947,7 @@ func TestHandleGenericComment(t *testing.T) {
 			Body:         "/test",
 			State:        "open",
 			IsPR:         true,
-			AddedComment: testWithoutTargetNote + helpComment + helpTestAllWithJobsComment,
+			AddedComment: pjutil.TestWithoutTargetNote + helpComment + helpTestAllWithJobsComment,
 		},
 		{
 			name:         "/test with no target but ? in the next line results in an invalid test command message",
@@ -955,7 +955,7 @@ func TestHandleGenericComment(t *testing.T) {
 			Body:         "/test \r\n?",
 			State:        "open",
 			IsPR:         true,
-			AddedComment: testWithoutTargetNote + helpComment + helpTestAllWithJobsComment,
+			AddedComment: pjutil.TestWithoutTargetNote + helpComment + helpTestAllWithJobsComment,
 		},
 		{
 			name:         "/retest with trailing words results in a help message",
@@ -963,7 +963,7 @@ func TestHandleGenericComment(t *testing.T) {
 			Body:         "/retest FOO",
 			State:        "open",
 			IsPR:         true,
-			AddedComment: retestWithTargetNote + helpComment + helpTestAllWithJobsComment,
+			AddedComment: pjutil.RetestWithTargetNote + helpComment + helpTestAllWithJobsComment,
 		},
 		{
 			name:          "/retest without target but with lines following it, is valid",
@@ -980,7 +980,7 @@ func TestHandleGenericComment(t *testing.T) {
 			Body:         "/test FOO",
 			State:        "open",
 			IsPR:         true,
-			AddedComment: targetNotFoundNote + helpComment + helpTestAllWithJobsComment,
+			AddedComment: pjutil.TargetNotFoundNote + helpComment + helpTestAllWithJobsComment,
 		},
 		{
 			name:   "help comment should list only eligible jobs under '/test all'",
@@ -1047,7 +1047,7 @@ func TestHandleGenericComment(t *testing.T) {
 					},
 				},
 			},
-			AddedComment: thereAreNoTestAllJobsNote + helpComment,
+			AddedComment: pjutil.ThereAreNoTestAllJobsNote + helpComment,
 		},
 		{
 			name:   "available presubmits should not list those excluded by branch",

@@ -294,6 +294,24 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 		if err != nil {
 			return fmt.Errorf("filter presubmits: %w", err)
 		}
+
+		// Reply with help information to run the presubmit Prow jobs if requested.
+		for _, msg := range messages {
+			needsHelp, note := pjutil.ShouldRespondWithHelp(msg, len(toTrigger))
+			if needsHelp {
+				runWithTestAllNames, runWithTriggerNames, err := pjutil.AvailablePresubmits(listChangedFiles(change), cloneURI.Host, change.Project, change.Branch, presubmits, logger.WithField("help", true))
+				if err != nil {
+					return err
+				}
+				message := pjutil.HelpMessage(cloneURI.Host, change.Project, change.Branch, note, runWithTestAllNames, runWithTriggerNames)
+				if err := c.gc.SetReview(instance, change.ID, change.CurrentRevision, message, nil); err != nil {
+					return err
+				}
+				// Only respond to the first message that requests help information.
+				break
+			}
+		}
+
 		for _, presubmit := range toTrigger {
 			jobSpecs = append(jobSpecs, jobSpec{
 				spec:   pjutil.PresubmitSpec(presubmit, refs),
