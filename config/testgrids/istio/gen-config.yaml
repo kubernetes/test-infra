@@ -95,6 +95,7 @@ dashboard_groups:
   - istio_istio.io_periodic
   - istio_test-infra_periodic
   - istio_istio_postsubmit
+  - istio_istio_periodic
   - istio_api_postsubmit
   - istio_bots_postsubmit
   - istio_client-go_postsubmit
@@ -1304,6 +1305,19 @@ dashboards:
       url: https://prow.istio.io/view/gs/<gcs_prefix>/<changelist>
     test_group_name: unit-tests_istio_postsubmit
   name: istio_istio_postsubmit
+- dashboard_tab:
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: integ-security-fuzz-k8s-tests_istio_periodic'
+    name: integ-security-fuzz-k8s-tests_istio_periodic
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    open_test_template:
+      url: https://prow.istio.io/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: integ-security-fuzz-k8s-tests_istio_periodic
+  name: istio_istio_periodic
 - dashboard_tab:
   - code_search_url_template:
       url: https://github.com/istio/pkg/compare/<start-custom-0>...<end-custom-0>
@@ -6743,6 +6757,9 @@ test_groups:
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/daily-nighthawk-performance-benchmark-release-1.10
   name: daily-nighthawk-performance-benchmark-release-1.10
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/integ-security-fuzz-k8s-tests_istio_periodic
+  name: integ-security-fuzz-k8s-tests_istio_periodic
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/istio-boutique-rollback-master-1.9
   name: istio-boutique-rollback-master-1.9
