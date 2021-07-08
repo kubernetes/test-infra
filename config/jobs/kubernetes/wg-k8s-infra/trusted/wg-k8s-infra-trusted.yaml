@@ -60,12 +60,11 @@ periodics:
         secretName: cncf-ci-github-token
 
 #  Periodic CI job for running snyk scans against k/k master
-# - It installs snyk CLI and requires 'snyk_token' secret available
+# - It installs snyk CLI and requires 'snyk-token' secret available
 #   in test infra with key name 'SNYK_TOKEN'. This secret is used to
 #   populate env var 'SNYK_TOKEN', required for snyk CLI auth.
 # - Licenses and few false positive deps (eg version '0.0.0') are
-#   filtered from the snyk scan results and printed on stdout as well
-#   as "${ARTIFACTS}/snyk_results.json"
+#   filtered from the snyk scan results.
 - name: ci-kubernetes-snyk-master
   interval: 6h
   cluster: k8s-infra-prow-build-trusted
@@ -96,16 +95,24 @@ periodics:
           exit 1
         fi
         echo "Running snyk scan .."
-        snyk test --json > ${ARTIFACTS}/result_unfiltered.json || if [ $? -gt 1 ]; then
-          echo "failed to run snyk scan"
+        EXIT_CODE=0
+        RESULT_UNFILTERED=$(snyk test --json) || EXIT_CODE=$?
+        if [ $EXIT_CODE -gt 1 ]; then
+          echo "Failed to run snyk scan with exit code $EXIT_CODE . Error message: $RESULT_UNFILTERED"
           exit 1
         fi
-        <${ARTIFACTS}/result_unfiltered.json jq \
-         '{vulnerabilities: .vulnerabilities | map(select((.type != "license") and (.version !=  "0.0.0"))) }' \
-        | tee "${ARTIFACTS}/result.json"
-        echo "Scan completed"
+        RESULT=$(echo $RESULT_UNFILTERED | jq \
+        '{vulnerabilities: .vulnerabilities | map(select((.type != "license") and (.version !=  "0.0.0"))) | select(length > 0) }')
+        if [[ ${RESULT} ]]; then
+          echo "Vulnerability filtering failed"
+          exit 1
+        else
+          echo "Scan completed"
+        fi
   annotations:
     testgrid-create-test-group: "true"
+    testgrid-alert-email: kubernetes-security-tooling-private@googlegroups.com
+    testgrid-num-failures-to-alert: '1'
     testgrid-dashboards: sig-security-snyk-scan
     description: Run snyk scan on k/k master periodically
 
