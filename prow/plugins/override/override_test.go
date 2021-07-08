@@ -347,6 +347,16 @@ func TestHandle(t *testing.T) {
 					State:   github.StatusPending,
 				},
 			},
+			presubmits: map[string]config.Presubmit{
+				"hung-test": {
+					JobBase: config.JobBase{
+						Name: "hung-prow-job",
+					},
+					Reporter: config.Reporter{
+						Context: "hung-test",
+					},
+				},
+			},
 			expected: map[string]github.Status{
 				"hung-test": {
 					Context: "hung-test",
@@ -355,7 +365,7 @@ func TestHandle(t *testing.T) {
 			},
 			checkComments: []string{
 				"The following unknown contexts were given", "whatever-you-want",
-				"Only the following contexts were expected", "hung-context",
+				"Only the following contexts were expected", "hung-context", "hung-prow-job",
 			},
 		},
 		{
@@ -573,6 +583,9 @@ func TestHandle(t *testing.T) {
 			},
 			presubmits: map[string]config.Presubmit{
 				"prow-job": {
+					JobBase: config.JobBase{
+						Name: "prow-job",
+					},
 					Reporter: config.Reporter{
 						Context: "prow-job",
 					},
@@ -582,6 +595,103 @@ func TestHandle(t *testing.T) {
 			expected: map[string]github.Status{
 				"prow-job": {
 					Context:     "prow-job",
+					State:       github.StatusSuccess,
+					Description: description(adminUser),
+				},
+			},
+		},
+		{
+			name:    "successfully override prow job name",
+			comment: "/override prow-job",
+			contexts: map[string]github.Status{
+				"ci/prow/prow-job": {
+					Context:     "ci/prow/prow-job",
+					Description: "failed",
+					State:       github.StatusFailure,
+				},
+			},
+			presubmits: map[string]config.Presubmit{
+				"prow-job": {
+					JobBase: config.JobBase{
+						Name: "prow-job",
+					},
+					Reporter: config.Reporter{
+						Context: "ci/prow/prow-job",
+					},
+				},
+			},
+			jobs: sets.NewString("ci/prow/prow-job"),
+			expected: map[string]github.Status{
+				"ci/prow/prow-job": {
+					Context:     "ci/prow/prow-job",
+					State:       github.StatusSuccess,
+					Description: description(adminUser),
+				},
+			},
+		},
+		{
+			name:    "override prow job and context",
+			comment: "/override prow-job\n/override ci/prow/context",
+			contexts: map[string]github.Status{
+				"ci/prow/context": {
+					Context:     "ci/prow/context",
+					Description: "failed",
+					State:       github.StatusFailure,
+				},
+				"ci/prow/prow-job": {
+					Context:     "ci/prow/prow-job",
+					Description: "failed",
+					State:       github.StatusFailure,
+				},
+			},
+			presubmits: map[string]config.Presubmit{
+				"prow-job": {
+					JobBase: config.JobBase{
+						Name: "prow-job",
+					},
+					Reporter: config.Reporter{
+						Context: "ci/prow/prow-job",
+					},
+				},
+			},
+			jobs: sets.NewString("ci/prow/prow-job"),
+			expected: map[string]github.Status{
+				"ci/prow/context": {
+					Context:     "ci/prow/context",
+					State:       github.StatusSuccess,
+					Description: description(adminUser),
+				},
+				"ci/prow/prow-job": {
+					Context:     "ci/prow/prow-job",
+					State:       github.StatusSuccess,
+					Description: description(adminUser),
+				},
+			},
+		},
+		{
+			name:    "override same context and prow job",
+			comment: "/override ci/prow/prow-job\n/override prow-job",
+			contexts: map[string]github.Status{
+				"ci/prow/prow-job": {
+					Context:     "ci/prow/prow-job",
+					Description: "failed",
+					State:       github.StatusFailure,
+				},
+			},
+			presubmits: map[string]config.Presubmit{
+				"prow-job": {
+					JobBase: config.JobBase{
+						Name: "prow-job",
+					},
+					Reporter: config.Reporter{
+						Context: "ci/prow/prow-job",
+					},
+				},
+			},
+			jobs: sets.NewString("ci/prow/prow-job"),
+			expected: map[string]github.Status{
+				"ci/prow/prow-job": {
+					Context:     "ci/prow/prow-job",
 					State:       github.StatusSuccess,
 					Description: description(adminUser),
 				},
