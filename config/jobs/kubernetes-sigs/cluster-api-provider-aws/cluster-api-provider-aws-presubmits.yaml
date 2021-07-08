@@ -150,6 +150,7 @@ presubmits:
       - ^main$
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|exp|feature|hack|pkg|test|util)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
+    always_run: false
     optional: true
     decorate: true
     decoration_config:
@@ -168,12 +169,15 @@ presubmits:
             - "runner.sh"
             - "./scripts/ci-e2e.sh"
           env:
-            - name: E2E_UNMANAGED_FOCUS
+            - name: E2E_FOCUS
               value: "\\[PR-Blocking\\]"
             - name: BOSKOS_HOST
               value: "boskos.test-pods.svc.cluster.local"
             - name: AWS_REGION
               value: "us-west-2"
+            # Parallelize tests
+            - name: GINKGO_ARGS
+              value: "-nodes 20"
           securityContext:
             privileged: true
           resources:
