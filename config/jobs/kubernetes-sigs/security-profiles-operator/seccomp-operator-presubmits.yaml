@@ -90,10 +90,10 @@ presubmits:
         - hack/pull-security-profiles-operator-test-e2e
         volumeMounts:
         - name: varlog
-          mountPath: /var/log
+          mountPath: /var/log/audit
           readOnly: true
       volumes:
       - name: varlog
         hostPath:
-          path: /var/log
+          path: /var/log/audit
           type: Directory
