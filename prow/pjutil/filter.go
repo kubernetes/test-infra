@@ -34,7 +34,7 @@ var RetestRe = regexp.MustCompile(`(?m)^/retest\s*$`)
 var OkToTestRe = regexp.MustCompile(`(?m)^/ok-to-test\s*$`)
 
 // Filter digests a presubmit config to determine if:
-//  - we the presubmit matched the filter
+//  - the presubmit matched the filter
 //  - we know that the presubmit is forced to run
 //  - what the default behavior should be if the presubmit
 //    runs conditionally and does not match trigger conditions
