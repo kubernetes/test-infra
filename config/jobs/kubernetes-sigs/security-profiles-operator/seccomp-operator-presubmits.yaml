@@ -48,7 +48,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210707-0f9c540-master
         securityContext:
           privileged: true  # for dind
         resources:
@@ -74,7 +74,7 @@ presubmits:
       hostNetwork: true
       hostPID: true
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210707-0f9c540-master
         securityContext:
           privileged: true  # for dind
         resources:
