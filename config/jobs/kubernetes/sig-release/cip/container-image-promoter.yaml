@@ -213,3 +213,28 @@ presubmits:
       testgrid-dashboards: sig-release-releng-presubmits
       testgrid-num-columns-recent: '30'
       testgrid-alert-email: release-managers+alerts@kubernetes.io
+  - name: pull-cip-verify-archives
+    decorate: true
+    path_alias: "sigs.k8s.io/k8s-container-image-promoter"
+    skip_report: false
+    always_run: true
+    labels:
+      preset-dind-enabled: "true"
+    branches:
+    - ^master$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-releng/k8s-ci-builder:latest-default
+        imagePullPolicy: Always
+        command:
+        - runner.sh
+        args:
+        - make
+        - verify-archives
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-num-columns-recent: '30'
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
