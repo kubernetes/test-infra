@@ -960,7 +960,7 @@ def generate_presubmits_e2e():
                 networking='calico',
                 tab_name='e2e-' + name_suffix,
                 always_run=True,
-                skip_regex=skip_regex+'|Invalid.AWS.KMS.key',
+                skip_regex=skip_regex,
             )
         )
     return jobs
