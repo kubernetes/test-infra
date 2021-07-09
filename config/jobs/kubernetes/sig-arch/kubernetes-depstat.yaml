@@ -27,7 +27,8 @@ presubmits:
           popd
 
           depstat stats --json > "${WORKDIR}/stats.json"
-          git checkout -b base "${PULL_BASE_SHA}";
+          git reset --hard HEAD
+          git checkout -b base "${PULL_BASE_SHA}"
           depstat stats --json > "${WORKDIR}/stats-base.json"
           diff -s -u --ignore-all-space "${WORKDIR}"/stats-base.json "${WORKDIR}"/stats.json || true
     annotations:
