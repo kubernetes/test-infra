@@ -358,14 +358,14 @@ func TestProcessChange(t *testing.T) {
 		expectedBaseSHA  string
 	}{
 		{
-			name: "no presubmit Prow jobs automatically triggered from draft revision",
+			name: "no presubmit Prow jobs automatically triggered from WorkInProgess change",
 			change: client.ChangeInfo{
 				CurrentRevision: "1",
 				Project:         "test-infra",
 				Status:          "NEW",
+				WorkInProgress:  true,
 				Revisions: map[string]gerrit.RevisionInfo{
 					"1": {
-						Draft:  true,
 						Number: 1001,
 					},
 				},
@@ -575,11 +575,12 @@ func TestProcessChange(t *testing.T) {
 			expectedBaseSHA: "abc",
 		},
 		{
-			name: "presubmit does not run when a file matches run_if_changed but the revision is draft",
+			name: "presubmit does not run when a file matches run_if_changed but the change is WorkInProgress",
 			change: client.ChangeInfo{
 				CurrentRevision: "1",
 				Project:         "test-infra",
 				Status:          "NEW",
+				WorkInProgress:  true,
 				Revisions: map[string]client.RevisionInfo{
 					"1": {
 						Files: map[string]client.FileInfo{
@@ -588,7 +589,6 @@ func TestProcessChange(t *testing.T) {
 							"important-code.go":    {},
 						},
 						Created: stampNow,
-						Draft:   true,
 					},
 				},
 			},
@@ -734,16 +734,16 @@ func TestProcessChange(t *testing.T) {
 			expectedBaseSHA: "abc",
 		},
 		{
-			name: "trigger always run job on test all even if revision is draft",
+			name: "trigger always run job on test all even if the change is WorkInProgress",
 			change: client.ChangeInfo{
 				CurrentRevision: "1",
 				Project:         "test-infra",
 				Branch:          "baz",
 				Status:          "NEW",
+				WorkInProgress:  true,
 				Revisions: map[string]client.RevisionInfo{
 					"1": {
 						Number: 1,
-						Draft:  true,
 					},
 				},
 				Messages: []gerrit.ChangeMessageInfo{
