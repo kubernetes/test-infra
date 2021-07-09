@@ -227,8 +227,7 @@ presubmits:
       - image: gcr.io/k8s-staging-releng/k8s-ci-builder:latest-default
         imagePullPolicy: Always
         command:
-        - runner.sh
-        args:
+        - wrapper.sh
         - make
         - verify-archives
         # docker-in-docker needs privileged mode
