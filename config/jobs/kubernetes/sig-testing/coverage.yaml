@@ -36,7 +36,7 @@ periodics:
           --build=quick \
           --dump-before-and-after \
           --extract=local \
-          --stage=gs://kubernetes-release-dev/ci/ci-kubernetes-conformance-coverage \
+          --stage=gs://k8s-release-dev/ci/ci-kubernetes-conformance-coverage \
           --gcp-zone=us-west1-b \
           --provider=gce \
           --timeout=300m \
@@ -98,7 +98,7 @@ periodics:
           --build=quick \
           --dump-before-and-after \
           --extract=local \
-          --stage=gs://kubernetes-release-dev/ci/ci-kubernetes-coverage-e2e-gci-gce \
+          --stage=gs://k8s-release-dev/ci/ci-kubernetes-coverage-e2e-gci-gce \
           --gcp-master-image=gci \
           --gcp-node-image=gci \
           --gcp-nodes=4 \
