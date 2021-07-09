@@ -149,7 +149,7 @@ presubmits:
       # The script this job runs is not in all branches.
       - ^main$
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
-    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|exp|feature|hack|pkg|test|util)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
+    #run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|exp|feature|hack|pkg|test|util)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     always_run: false
     optional: true
     decorate: true
