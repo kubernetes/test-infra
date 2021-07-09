@@ -71,38 +71,6 @@ periodics:
     testgrid-dashboards: sig-node-kubelet
     testgrid-tab-name: node-kubelet-alpha
 
-- name: ci-kubernetes-node-kubelet-conformance
-  interval: 2h
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-    preset-dind-enabled: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210707-0f9c540-master
-      args:
-      - --repo=k8s.io/kubernetes=master
-      - --timeout=90
-      - --root=/go/src
-      - --scenario=kubernetes_e2e
-      - --
-      - --deployment=node
-      - --gcp-project-type=node-e2e-project
-      - --gcp-zone=us-west1-b
-      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
-      - --node-test-args=--feature-gates=DynamicKubeletConfig=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
-      - --node-tests=true
-      - --provider=gce
-      - --test_args=--nodes=1 --focus="\[NodeConformance\]" --skip="\[Flaky\]"
-      - --timeout=65m
-      env:
-      - name: GOPATH
-        value: /go
-  annotations:
-    testgrid-dashboards: sig-node-kubelet
-    testgrid-tab-name: node-kubelet-conformance
-    testgrid-alert-email: kubernetes-sig-node+testgrid@googlegroups.com,kubernetes-sig-node-test-failures@googlegroups.com
-
 - name: ci-kubernetes-node-kubelet-features
   cluster: k8s-infra-prow-build
   interval: 1h

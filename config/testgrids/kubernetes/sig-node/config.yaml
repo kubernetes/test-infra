@@ -21,8 +21,6 @@ dashboards:
 - name: sig-node-release-blocking # Tabs included in this group are defined in the jobs that are included.
 - name: sig-node-critical
   dashboard_tab:
-    - name: kubelet-NodeConformance
-      test_group_name: ci-kubernetes-node-kubelet-conformance
     - name: containerd-NodeConformance
       test_group_name: ci-containerd-node-e2e
 
@@ -104,13 +102,6 @@ dashboards:
 test_groups:
 - name: ci-kubernetes-node-kubelet-alpha
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-alpha
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
-- name: ci-kubernetes-node-kubelet-conformance
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-conformance
   test_name_config:
     name_elements:
     - target_config: Tests name
