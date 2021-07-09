@@ -10,7 +10,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210707-0f9c540-go-canary
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-go-canary
         command:
         - "./scripts/ci-test.sh"
     annotations:
@@ -27,7 +27,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210707-0f9c540-go-canary
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-go-canary
         command:
         - "./scripts/ci-build.sh"
     annotations:
@@ -51,7 +51,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210707-0f9c540-go-canary
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-go-canary
         command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
@@ -83,7 +83,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210707-0f9c540-go-canary
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-go-canary
         command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
@@ -116,7 +116,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210707-0f9c540-go-canary
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-go-canary
         command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
@@ -149,7 +149,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210707-0f9c540-go-canary
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-go-canary
         command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
@@ -183,7 +183,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210707-0f9c540-go-canary
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-go-canary
         command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
@@ -210,7 +210,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210707-0f9c540-go-canary
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-go-canary
         command:
         - "runner.sh"
         - "make"
@@ -238,7 +238,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210707-0f9c540-go-canary
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-go-canary
         command:
         - "runner.sh"
         - "./scripts/ci-conformance.sh"
@@ -270,7 +270,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210707-0f9c540-go-canary
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-go-canary
         command:
         - "runner.sh"
         - "./scripts/ci-conformance.sh"
@@ -308,7 +308,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210707-0f9c540-go-canary
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-go-canary
           command:
             - "runner.sh"
             - "./scripts/ci-conformance.sh"
@@ -341,7 +341,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210707-0f9c540-go-canary
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-go-canary
           command:
             - "runner.sh"
             - "./scripts/ci-conformance.sh"
@@ -377,7 +377,7 @@ presubmits:
       - command:
         - runner.sh
         - ./scripts/ci-apidiff.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210707-0f9c540-go-canary
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-go-canary
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-apidiff-main
@@ -396,7 +396,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210707-0f9c540-go-canary
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-go-canary
         command:
         - runner.sh
         - bash
