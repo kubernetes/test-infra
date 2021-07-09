@@ -19,10 +19,11 @@ package pjutil
 import (
 	"errors"
 	"fmt"
-	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/test-infra/prow/github"
 	"reflect"
 	"testing"
+
+	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/test-infra/prow/github"
 
 	"github.com/sirupsen/logrus"
 
@@ -637,6 +638,58 @@ func TestPresubmitFilter(t *testing.T) {
 				},
 			},
 			expected: [][]bool{{false, false, false}, {false, false, false}, {true, false, true}, {true, false, true}, {true, false, false}},
+		},
+		{
+			name: "retest command selects for errored or failed contexts unless they are optional",
+			body: "/retest-required",
+			org:  "org",
+			repo: "repo",
+			ref:  "ref",
+			presubmits: []config.Presubmit{
+				{
+					JobBase: config.JobBase{
+						Name: "successful-job",
+					},
+					Reporter: config.Reporter{
+						Context: "existing-successful",
+					},
+				},
+				{
+					JobBase: config.JobBase{
+						Name: "pending-job",
+					},
+					Reporter: config.Reporter{
+						Context: "existing-pending",
+					},
+				},
+				{
+					JobBase: config.JobBase{
+						Name: "failure-job",
+					},
+					Reporter: config.Reporter{
+						Context: "existing-failure",
+					},
+					Optional: true,
+				},
+				{
+					JobBase: config.JobBase{
+						Name: "error-job",
+					},
+					Reporter: config.Reporter{
+						Context: "existing-error",
+					},
+				},
+				{
+					JobBase: config.JobBase{
+						Name: "missing-always-runs",
+					},
+					Reporter: config.Reporter{
+						Context: "missing-always-runs",
+					},
+					AlwaysRun: true,
+				},
+			},
+			expected: [][]bool{{false, false, false}, {false, false, false}, {true, false, false}, {true, false, true}, {true, false, false}},
 		},
 		{
 			name: "explicit test command filters for jobs that match",

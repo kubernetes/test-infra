@@ -272,7 +272,7 @@ func createComment(reportTemplate *template.Template, pj prowapi.ProwJob, entrie
 		}
 	}
 	lines := []string{
-		fmt.Sprintf("@%s: The following test%s **failed**, say `/retest` to rerun all failed tests:", pj.Spec.Refs.Pulls[0].Author, plural),
+		fmt.Sprintf("@%s: The following test%s **failed**, say `/retest` to rerun all failed tests or `/retest-required` to rerun all mandatory failed tests:", pj.Spec.Refs.Pulls[0].Author, plural),
 		"",
 		"Test name | Commit | Details | Rerun command",
 		"--- | --- | --- | ---",
