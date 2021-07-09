@@ -4,7 +4,7 @@ presubmits:
     labels:
       preset-azure-cred: "true"
     decorate: true
-    run_if_changed: 'images/capi/.*'
+    run_if_changed: 'images/capi/(Makefile|ansible\.cfg)|images/capi/ansible/.*|images/capi/scripts/ci-azure-e2e\.sh|images/capi/packer/(config|goss|azure)/.*|images/capi/hack/ensure-(ansible|packer|jq|azure-cli|goss).*'
     decoration_config:
       timeout: 1h
     max_concurrency: 5
