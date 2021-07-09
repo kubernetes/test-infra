@@ -131,6 +131,9 @@ type FakeClient struct {
 	// Error will be returned if set. Currently only implemented for CreateStatus
 	Error error
 
+	// WasLabelAddedByHumanVal determines the return of the method with the same name
+	WasLabelAddedByHumanVal bool
+
 	// lock to be thread safe
 	lock sync.RWMutex
 }
@@ -187,6 +190,12 @@ func (f *FakeClient) IsMember(org, user string) (bool, error) {
 		}
 	}
 	return false, nil
+}
+
+func (f *FakeClient) WasLabelAddedByHuman(_, _ string, _ int, _ string) (bool, error) {
+	f.lock.RLock()
+	defer f.lock.RUnlock()
+	return f.WasLabelAddedByHumanVal, nil
 }
 
 // ListOpenIssues returns f.issues
