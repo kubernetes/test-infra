@@ -322,6 +322,7 @@ type githubClient interface {
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
 	AddLabel(owner, repo string, number int, label string) error
 	RemoveLabel(owner, repo string, number int, label string) error
+	WasLabelAddedByHuman(org, repo string, num int, label string) (bool, error)
 	Query(ctx context.Context, q interface{}, vars map[string]interface{}) error
 }
 
@@ -748,6 +749,22 @@ Comment <code>/bugzilla refresh</code> to re-evaluate validity if changes to the
 	if severityLabel != "" && severityLabel != severityLabelToRemove {
 		if err := gc.AddLabel(e.org, e.repo, e.number, severityLabel); err != nil {
 			log.WithError(err).Error("Failed to add severity bug label.")
+		}
+	}
+
+	if hasValidLabel && !needsValidLabel {
+		humanLabelled, err := gc.WasLabelAddedByHuman(e.org, e.repo, e.number, labels.ValidBug)
+		if err != nil {
+			// Return rather than potentially doing the wrong thing. The user can re-trigger us.
+			return fmt.Errorf("failed to check if %s label was added by a human: %w", labels.ValidBug, err)
+		}
+		if humanLabelled {
+			// This will make us remove the invalid label if it exists but saves us another check if it was
+			// added by a human. It is reasonable to assume that it should be absent if the valid label was
+			// manually added.
+			needsInvalidLabel = false
+			needsValidLabel = true
+			response += fmt.Sprintf("\n\nRetaining the %s label as it was manually added.", labels.ValidBug)
 		}
 	}
 
