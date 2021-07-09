@@ -215,6 +215,7 @@ periodics:
       - --root=/go/src
       - --timeout=240
       - --scenario=kubernetes_build
+      - --release=kubernetes-release-dev
       - --
       - --allow-dup
       - --extra-version-markers=k8s-stable1

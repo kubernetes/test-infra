@@ -36,13 +36,13 @@ presubmits:
             --up --build --down \
             --cloud-provider=aws \
             --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210621' --channel=alpha --networking=calico --container-runtime=containerd" \
-            --kubernetes-version=https://storage.googleapis.com/kubernetes-release-dev/ci/latest.txt \
+            --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
             -- \
             --ginkgo-args="--debug" \
             --test-args="-test.timeout=60m -num-nodes=0" \
-            --test-package-bucket=kubernetes-release-dev \
+            --test-package-bucket=k8s-release-dev \
             --test-package-dir=ci \
             --test-package-marker=latest.txt \
             --focus-regex="\[Conformance\]|\[NodeConformance\]" \
@@ -104,13 +104,13 @@ presubmits:
             --up --build --down \
             --cloud-provider=aws \
             --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210621' --channel=alpha --networking=calico --container-runtime=containerd --master-count=3 --node-count=6 --zones=eu-central-1a,eu-central-1b,eu-central-1c" \
-            --kubernetes-version=https://storage.googleapis.com/kubernetes-release-dev/ci/latest.txt \
+            --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
             -- \
             --ginkgo-args="--debug" \
             --test-args="-test.timeout=60m -num-nodes=0" \
-            --test-package-bucket=kubernetes-release-dev \
+            --test-package-bucket=k8s-release-dev \
             --test-package-dir=ci \
             --test-package-marker=latest.txt \
             --focus-regex="\[Conformance\]|\[NodeConformance\]" \
@@ -635,13 +635,13 @@ presubmits:
             --cloud-provider=aws \
             --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210621' --channel=alpha --networking=calico --container-runtime=containerd --ipv6 --api-loadbalancer-type=public --api-loadbalancer-class=network --set=cluster.spec.api.loadBalancer.useForInternalApi=true --set=cluster.spec.cloudControllerManager.cloudProvider=aws --set=cluster.spec.cloudControllerManager.image=hakman/cloud-controller-manager:ipv6-1 --set=cluster.spec.nonMasqueradeCIDR=fd00:10:96::/64 --set=cluster.spec.kubeDNS.upstreamNameservers=2620:119:35::35 --set=cluster.spec.kubeDNS.upstreamNameservers=2620:119:53::53" \
             --env=KOPS_FEATURE_FLAGS=AWSIPv6 \
-            --kubernetes-version=https://storage.googleapis.com/kubernetes-release-dev/ci/latest.txt \
+            --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
             -- \
             --ginkgo-args="--debug" \
             --test-args="-test.timeout=60m -num-nodes=0" \
-            --test-package-bucket=kubernetes-release-dev \
+            --test-package-bucket=k8s-release-dev \
             --test-package-dir=ci \
             --test-package-marker=latest.txt \
             --focus-regex="\[Conformance\]|\[NodeConformance\]" \

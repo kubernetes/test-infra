@@ -1133,7 +1133,7 @@ func TestKubernetesE2eJobsMustExtractFromK8sInfraBuckets(t *testing.T) {
 		needsFix := false
 		extracts := []string{}
 		const (
-			defaultCIBucket       = "kubernetes-release-dev" // ensure this matches kubetest --extract-ci-bucket default
+			defaultCIBucket       = "k8s-release-dev" // ensure this matches kubetest --extract-ci-bucket default
 			expectedCIBucket      = "k8s-release-dev"
 			defaultReleaseBucket  = "kubernetes-release" // ensure this matches kubetest --extract-release-bucket default
 			expectedReleaseBucket = "k8s-release"
