@@ -412,7 +412,7 @@ periodics:
             --config=ci \
             "--build=//... -//vendor/..." \
             --release=//build/release-tars \
-            --gcs=gs://kubernetes-release-dev/ci-periodic \
+            --gcs=gs://k8s-release-dev/ci-periodic \
             --version-suffix=-bazel
       command:
       - bash
@@ -712,7 +712,7 @@ postsubmits:
         - --
         - --build=//... -//vendor/...
         - --release=//build/release-tars
-        - --gcs=gs://kubernetes-release-dev/ci
+        - --gcs=gs://k8s-release-dev/ci
         - --version-suffix=-bazel
         image: gcr.io/k8s-testimages/kubekins-e2e:v20210707-0f9c540-1.19
         name: ""
