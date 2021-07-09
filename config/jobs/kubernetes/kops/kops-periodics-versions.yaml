@@ -34,12 +34,12 @@ periodics:
           --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210621' --channel=alpha --networking=calico --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --publish-version-marker=gs://kops-ci/bin/latest-ci-green.txt \
-          --kubernetes-version=https://storage.googleapis.com/kubernetes-release-dev/ci/latest.txt \
+          --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
           -- \
           --ginkgo-args="--debug" \
           --test-args="-test.timeout=60m -num-nodes=0" \
-          --test-package-bucket=kubernetes-release-dev \
+          --test-package-bucket=k8s-release-dev \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --parallel=25

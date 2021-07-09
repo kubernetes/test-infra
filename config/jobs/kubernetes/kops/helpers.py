@@ -87,8 +87,8 @@ def k8s_version_info(k8s_version):
         k8s_deploy_url = "https://storage.googleapis.com/kubernetes-release/release/latest.txt"
     elif k8s_version == 'ci':
         marker = 'latest.txt'
-        k8s_deploy_url = "https://storage.googleapis.com/kubernetes-release-dev/ci/latest.txt"
-        test_package_bucket = 'kubernetes-release-dev'
+        k8s_deploy_url = "https://storage.googleapis.com/k8s-release-dev/ci/latest.txt"
+        test_package_bucket = 'k8s-release-dev'
         test_package_dir = 'ci'
     elif k8s_version == 'stable':
         marker = 'stable.txt'
