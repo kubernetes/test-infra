@@ -49,12 +49,12 @@ func (a *Agent) Start(paths []string) error {
 	a.ReloadingCensorer = secretutil.NewCensorer()
 	a.refreshCensorer()
 
+	logrus.SetFormatter(logrusutil.NewFormatterWithCensor(logrus.StandardLogger().Formatter, a.ReloadingCensorer))
+
 	// Start one goroutine for each file to monitor and update the secret's values.
 	for secretPath := range secretsMap {
 		go a.reloadSecret(secretPath)
 	}
-
-	logrus.SetFormatter(logrusutil.NewFormatterWithCensor(logrus.StandardLogger().Formatter, a.ReloadingCensorer))
 
 	return nil
 }
