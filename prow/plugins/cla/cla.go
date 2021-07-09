@@ -64,12 +64,6 @@ var (
 func init() {
 	plugins.RegisterStatusEventHandler(pluginName, handleStatusEvent, helpProvider)
 	plugins.RegisterGenericCommentHandler(pluginName, handleCommentEvent, helpProvider)
-	config := &plugins.Configuration{}
-	if config.EasyCLAEnabled {
-		claContextName = "cla/easy-cla"
-	} else {
-		claContextName = "cla/linuxfoundation"
-	}
 }
 
 func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
@@ -99,7 +93,7 @@ type gitHubClient interface {
 }
 
 func handleStatusEvent(pc plugins.Agent, se github.StatusEvent) error {
-	return handle(pc.GitHubClient, pc.Logger, se)
+	return handle(pc.GitHubClient, pc.Logger, se, pc.PluginConfig.EasyCLAEnabled)
 }
 
 // 1. Check that the status event received from the webhook is for the CNCF-CLA.
@@ -107,7 +101,13 @@ func handleStatusEvent(pc plugins.Agent, se github.StatusEvent) error {
 // 3. For each issue that matches, check that the PR's HEAD commit hash against the commit hash for which the status
 //    was received. This is because we only care about the status associated with the last (latest) commit in a PR.
 // 4. Set the corresponding CLA label if needed.
-func handle(gc gitHubClient, log *logrus.Entry, se github.StatusEvent) error {
+func handle(gc gitHubClient, log *logrus.Entry, se github.StatusEvent, isEasyCLAEnabled bool) error {
+	if isEasyCLAEnabled {
+		claContextName = "cla/easy-cla"
+	} else {
+		claContextName = "cla/linuxfoundation"
+	}
+
 	if se.State == "" || se.Context == "" {
 		return fmt.Errorf("invalid status event delivered with empty state/context")
 	}
@@ -199,10 +199,16 @@ func handle(gc gitHubClient, log *logrus.Entry, se github.StatusEvent) error {
 }
 
 func handleCommentEvent(pc plugins.Agent, ce github.GenericCommentEvent) error {
-	return handleComment(pc.GitHubClient, pc.Logger, &ce)
+	return handleComment(pc.GitHubClient, pc.Logger, &ce, pc.PluginConfig.EasyCLAEnabled)
 }
 
-func handleComment(gc gitHubClient, log *logrus.Entry, e *github.GenericCommentEvent) error {
+func handleComment(gc gitHubClient, log *logrus.Entry, e *github.GenericCommentEvent, isEasyCLAEnabled bool) error {
+	if isEasyCLAEnabled {
+		claContextName = "cla/easy-cla"
+	} else {
+		claContextName = "cla/linuxfoundation"
+	}
+
 	// Only consider open PRs and new comments.
 	if e.IssueState != "open" || e.Action != github.GenericCommentActionCreated {
 		return nil
