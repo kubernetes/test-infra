@@ -57,8 +57,7 @@ It may take a couple minutes for the CLA signature to be fully registered; after
 )
 
 var (
-	checkCLARe     = regexp.MustCompile(`(?mi)^/check-cla\s*$`)
-	claContextName string
+	checkCLARe = regexp.MustCompile(`(?mi)^/check-cla\s*$`)
 )
 
 func init() {
@@ -70,7 +69,7 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 	// The {WhoCanUse, Usage, Examples, Config} fields are omitted because this plugin cannot be
 	// manually triggered and is not configurable.
 	pluginHelp := &pluginhelp.PluginHelp{
-		Description: "The cla plugin manages the application and removal of the 'cncf-cla' prefixed labels on pull requests as a reaction to the " + claContextName + " github status context. It is also responsible for warning unauthorized PR authors that they need to sign the CNCF CLA before their PR will be merged.",
+		Description: "The cla plugin manages the application and removal of the 'cncf-cla' prefixed labels on pull requests as a reaction to the EasyCLA / cla-linuxfoundation github status context. It is also responsible for warning unauthorized PR authors that they need to sign the CNCF CLA before their PR will be merged.",
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/check-cla",
@@ -93,7 +92,7 @@ type gitHubClient interface {
 }
 
 func handleStatusEvent(pc plugins.Agent, se github.StatusEvent) error {
-	return handle(pc.GitHubClient, pc.Logger, se, pc.PluginConfig.EasyCLAEnabled)
+	return handle(pc.GitHubClient, pc.Logger, se, pc.PluginConfig.CLAConfig)
 }
 
 // 1. Check that the status event received from the webhook is for the CNCF-CLA.
@@ -101,18 +100,12 @@ func handleStatusEvent(pc plugins.Agent, se github.StatusEvent) error {
 // 3. For each issue that matches, check that the PR's HEAD commit hash against the commit hash for which the status
 //    was received. This is because we only care about the status associated with the last (latest) commit in a PR.
 // 4. Set the corresponding CLA label if needed.
-func handle(gc gitHubClient, log *logrus.Entry, se github.StatusEvent, isEasyCLAEnabled bool) error {
-	if isEasyCLAEnabled {
-		claContextName = "cla/easy-cla"
-	} else {
-		claContextName = "cla/linuxfoundation"
-	}
-
+func handle(gc gitHubClient, log *logrus.Entry, se github.StatusEvent, cc plugins.CLAConfig) error {
 	if se.State == "" || se.Context == "" {
 		return fmt.Errorf("invalid status event delivered with empty state/context")
 	}
 
-	if se.Context != claContextName {
+	if !contains(cc.CLAContextNames, se.Context) {
 		// Not the CNCF CLA context, do not process this.
 		return nil
 	}
@@ -199,16 +192,10 @@ func handle(gc gitHubClient, log *logrus.Entry, se github.StatusEvent, isEasyCLA
 }
 
 func handleCommentEvent(pc plugins.Agent, ce github.GenericCommentEvent) error {
-	return handleComment(pc.GitHubClient, pc.Logger, &ce, pc.PluginConfig.EasyCLAEnabled)
+	return handleComment(pc.GitHubClient, pc.Logger, &ce, pc.PluginConfig.CLAConfig)
 }
 
-func handleComment(gc gitHubClient, log *logrus.Entry, e *github.GenericCommentEvent, isEasyCLAEnabled bool) error {
-	if isEasyCLAEnabled {
-		claContextName = "cla/easy-cla"
-	} else {
-		claContextName = "cla/linuxfoundation"
-	}
-
+func handleComment(gc gitHubClient, log *logrus.Entry, e *github.GenericCommentEvent, cc plugins.CLAConfig) error {
 	// Only consider open PRs and new comments.
 	if e.IssueState != "open" || e.Action != github.GenericCommentActionCreated {
 		return nil
@@ -254,7 +241,7 @@ func handleComment(gc gitHubClient, log *logrus.Entry, e *github.GenericCommentE
 	for _, status := range combined.Statuses {
 
 		// Only consider "cla/linuxfoundation" status.
-		if status.Context == claContextName {
+		if contains(cc.CLAContextNames, status.Context) {
 
 			// Success state implies that the cla exists, so label should be cncf-cla:yes.
 			if status.State == github.StatusSuccess {
@@ -296,4 +283,15 @@ func handleComment(gc gitHubClient, log *logrus.Entry, e *github.GenericCommentE
 		}
 	}
 	return nil
+}
+
+// contains checks if a string is present in a slice
+func contains(s []string, str string) bool {
+	for _, v := range s {
+		if v == str {
+			return true
+		}
+	}
+
+	return false
 }

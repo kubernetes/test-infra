@@ -26,20 +26,20 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/labels"
+	"k8s.io/test-infra/prow/plugins"
 )
 
 func TestCLALabels(t *testing.T) {
 	var testcases = []struct {
-		name           string
-		context        string
-		state          string
-		easyCLAEnabled bool
-		statusSHA      string
-		issues         []github.Issue
-		pullRequests   []github.PullRequest
-		labels         []string
-		addedLabels    []string
-		removedLabels  []string
+		name          string
+		context       string
+		state         string
+		statusSHA     string
+		issues        []github.Issue
+		pullRequests  []github.PullRequest
+		labels        []string
+		addedLabels   []string
+		removedLabels []string
 	}{
 		{
 			name:          "unrecognized status context has no effect",
@@ -142,11 +142,10 @@ func TestCLALabels(t *testing.T) {
 			removedLabels: []string{fmt.Sprintf("/#3:%s", labels.ClaYes)},
 		},
 		{
-			name:           "cla/linuxfoundation status failure removes \"cncf-cla: yes\" label",
-			context:        "cla/easy-cla",
-			state:          "failure",
-			easyCLAEnabled: true,
-			statusSHA:      "a",
+			name:      "EasyCLA status failure removes \"cncf-cla: yes\" label",
+			context:   "EasyCLA",
+			state:     "failure",
+			statusSHA: "a",
 			issues: []github.Issue{
 				{Number: 3, State: "open", Labels: []github.Label{{Name: labels.ClaYes}}},
 			},
@@ -155,6 +154,20 @@ func TestCLALabels(t *testing.T) {
 			},
 			addedLabels:   []string{fmt.Sprintf("/#3:%s", labels.ClaNo)},
 			removedLabels: []string{fmt.Sprintf("/#3:%s", labels.ClaYes)},
+		},
+		{
+			name:      "EasyCLA status success removes \"cncf-cla: no\" label",
+			context:   "EasyCLA",
+			state:     "success",
+			statusSHA: "a",
+			issues: []github.Issue{
+				{Number: 3, State: "open", Labels: []github.Label{{Name: labels.ClaNo}}},
+			},
+			pullRequests: []github.PullRequest{
+				{Number: 3, Head: github.PullRequestBranch{SHA: "a"}},
+			},
+			addedLabels:   []string{fmt.Sprintf("/#3:%s", labels.ClaYes)},
+			removedLabels: []string{fmt.Sprintf("/#3:%s", labels.ClaNo)},
 		},
 	}
 	for _, tc := range testcases {
@@ -177,12 +190,10 @@ func TestCLALabels(t *testing.T) {
 			SHA:     tc.statusSHA,
 			State:   tc.state,
 		}
-		easyCLAEnabled := false
-		if tc.easyCLAEnabled {
-			easyCLAEnabled = true
+		cc := plugins.CLAConfig{
+			CLAContextNames: []string{"cla/linuxfoundation", "EasyCLA"},
 		}
-
-		if err := handle(fc, logrus.WithField("plugin", pluginName), se, easyCLAEnabled); err != nil {
+		if err := handle(fc, logrus.WithField("plugin", pluginName), se, cc); err != nil {
 			t.Errorf("For case %s, didn't expect error from cla plugin: %v", tc.name, err)
 			continue
 		}
@@ -199,17 +210,16 @@ func TestCLALabels(t *testing.T) {
 
 func TestCheckCLA(t *testing.T) {
 	var testcases = []struct {
-		name           string
-		context        string
-		easyCLAEnabled bool
-		state          string
-		issueState     string
-		SHA            string
-		action         string
-		body           string
-		pullRequests   []github.PullRequest
-		hasCLAYes      bool
-		hasCLANo       bool
+		name         string
+		context      string
+		state        string
+		issueState   string
+		SHA          string
+		action       string
+		body         string
+		pullRequests []github.PullRequest
+		hasCLAYes    bool
+		hasCLANo     bool
 
 		addedLabel   string
 		removedLabel string
@@ -355,14 +365,13 @@ func TestCheckCLA(t *testing.T) {
 			removedLabel: fmt.Sprintf("/#3:%s", labels.ClaYes),
 		},
 		{
-			name:           "cla/easy-cla status retains the cla-no label and removes cla-yes label when its state is \"failure\"",
-			context:        "cla/easy-cla",
-			easyCLAEnabled: true,
-			state:          "failure",
-			issueState:     "open",
-			SHA:            "sha",
-			action:         "created",
-			body:           "/check-cla",
+			name:       "EasyCLA status retains the cla-no label and removes cla-yes label when its state is \"failure\"",
+			context:    "EasyCLA",
+			state:      "failure",
+			issueState: "open",
+			SHA:        "sha",
+			action:     "created",
+			body:       "/check-cla",
 			pullRequests: []github.PullRequest{
 				{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
 			},
@@ -370,6 +379,22 @@ func TestCheckCLA(t *testing.T) {
 			hasCLAYes: true,
 
 			removedLabel: fmt.Sprintf("/#3:%s", labels.ClaYes),
+		},
+		{
+			name:       "EasyCLA status retains the cla-yes label and removes cla-no label when its state is \"success\"",
+			context:    "EasyCLA",
+			state:      "success",
+			issueState: "open",
+			SHA:        "sha",
+			action:     "created",
+			body:       "/check-cla",
+			pullRequests: []github.PullRequest{
+				{Number: 3, Head: github.PullRequestBranch{SHA: "sha"}},
+			},
+			hasCLANo:  true,
+			hasCLAYes: true,
+
+			removedLabel: fmt.Sprintf("/#3:%s", labels.ClaNo),
 		},
 	}
 	for _, tc := range testcases {
@@ -387,6 +412,9 @@ func TestCheckCLA(t *testing.T) {
 				Number:     3,
 				IssueState: tc.issueState,
 			}
+			cc := plugins.CLAConfig{
+				CLAContextNames: []string{"cla/linuxfoundation", "EasyCLA"},
+			}
 			fc.CombinedStatuses = map[string]*github.CombinedStatus{
 				tc.SHA: {
 					Statuses: []github.Status{
@@ -400,11 +428,7 @@ func TestCheckCLA(t *testing.T) {
 			if tc.hasCLANo {
 				fc.IssueLabelsAdded = append(fc.IssueLabelsAdded, fmt.Sprintf("/#3:%s", labels.ClaNo))
 			}
-			easyCLAEnabled := false
-			if tc.easyCLAEnabled {
-				easyCLAEnabled = true
-			}
-			if err := handleComment(fc, logrus.WithField("plugin", pluginName), e, easyCLAEnabled); err != nil {
+			if err := handleComment(fc, logrus.WithField("plugin", pluginName), e, cc); err != nil {
 				t.Errorf("For case %s, didn't expect error from cla plugin: %v", tc.name, err)
 			}
 			ok := tc.addedLabel == ""

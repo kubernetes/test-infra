@@ -90,7 +90,7 @@ type Configuration struct {
 	Welcome              []Welcome                    `json:"welcome,omitempty"`
 	Override             Override                     `json:"override,omitempty"`
 	Help                 Help                         `json:"help,omitempty"`
-	EasyCLAEnabled       bool                         `json:"easy_cla_enabled,omitempty"`
+	CLAConfig            CLAConfig                    `json:"cla_config,omitempty"`
 }
 
 type Help struct {
@@ -481,6 +481,11 @@ type ConfigUpdater struct {
 	// If GZIP is true then files will be gzipped before insertion into
 	// their corresponding configmap
 	GZIP bool `json:"gzip"`
+}
+
+// CLAConfig contains the list of available context names
+type CLAConfig struct {
+	CLAContextNames []string `json:"cla_context_names,omitempty"`
 }
 
 type configUpdatedWithoutUnmarshaler ConfigUpdater
