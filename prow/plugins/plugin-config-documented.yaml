@@ -316,6 +316,9 @@ cherry_pick_unapproved:
     # Comment is the comment added by the plugin while adding the
     # `do-not-merge/cherry-pick-not-approved` label.
     comment: ' '
+cla_config:
+    cla_context_names:
+      - ""
 config_updater:
     # ClusterGroups is a map of ClusterGroups that can be used as a target
     # in the map config.
