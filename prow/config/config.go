@@ -1800,9 +1800,8 @@ func parseProwConfig(c *Config) error {
 	}
 
 	// validate entries are valid job types
-	// Currently only presubmit and postsubmit can be reported to github
 	for _, t := range c.GitHubReporter.JobTypesToReport {
-		if t != prowapi.PresubmitJob && t != prowapi.PostsubmitJob {
+		if t != prowapi.PresubmitJob && t != prowapi.PostsubmitJob && t != prowapi.BatchJob {
 			return fmt.Errorf("invalid job_types_to_report: %v", t)
 		}
 	}

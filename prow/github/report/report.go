@@ -74,17 +74,25 @@ func reportStatus(ghc GitHubClient, pj prowapi.ProwJob) error {
 		if err != nil {
 			return err
 		}
-		sha := refs.BaseSHA
-		if len(refs.Pulls) > 0 {
-			sha = refs.Pulls[0].SHA
+		shaRefs := make([]string, 0)
+
+		if len(refs.Pulls) == 0 {
+			shaRefs = append(shaRefs, refs.BaseSHA)
+		} else {
+			for _, pull := range refs.Pulls {
+				shaRefs = append(shaRefs, pull.SHA)
+			}
 		}
-		if err := ghc.CreateStatus(refs.Org, refs.Repo, sha, github.Status{
-			State:       contextState,
-			Description: config.ContextDescriptionWithBaseSha(pj.Status.Description, refs.BaseSHA),
-			Context:     pj.Spec.Context, // consider truncating this too
-			TargetURL:   pj.Status.URL,
-		}); err != nil {
-			return err
+
+		for _, sha := range shaRefs {
+			if err := ghc.CreateStatus(refs.Org, refs.Repo, sha, github.Status{
+				State:       contextState,
+				Description: config.ContextDescriptionWithBaseSha(pj.Status.Description, refs.BaseSHA),
+				Context:     pj.Spec.Context, // consider truncating this too
+				TargetURL:   pj.Status.URL,
+			}); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -123,10 +131,6 @@ func Report(ghc GitHubClient, reportTemplate *template.Template, pj prowapi.Prow
 	}
 
 	refs := pj.Spec.Refs
-	// we are not reporting for batch jobs, we can consider support that in the future
-	if len(refs.Pulls) > 1 {
-		return nil
-	}
 
 	if err := reportStatus(ghc, pj); err != nil {
 		return fmt.Errorf("error setting status: %w", err)

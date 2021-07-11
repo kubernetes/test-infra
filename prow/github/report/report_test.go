@@ -278,6 +278,7 @@ func TestReportStatus(t *testing.T) {
 		pjType           prowapi.ProwJobType
 		expectedStatuses []string
 		expectedDesc     string
+		pulls            []prowapi.Pull
 	}{
 		{
 			name: "Successful prowjob with report true should set status",
@@ -337,6 +338,19 @@ func TestReportStatus(t *testing.T) {
 
 			expectedStatuses: []string{"success"},
 		},
+		{
+			name: "Successful batch job with report true should set success status to all pulls",
+
+			state:  prowapi.SuccessState,
+			report: true,
+			pjType: prowapi.BatchJob,
+			pulls: []prowapi.Pull{
+				{Author: "me", Number: 1, SHA: "abcdef"},
+				{Author: "me", Number: 2, SHA: "zxcvbn"},
+			},
+
+			expectedStatuses: []string{"success", "success"},
+		},
 	}
 
 	for _, tc := range tests {
@@ -350,6 +364,13 @@ func TestReportStatus(t *testing.T) {
 			if tc.expectedDesc == "" {
 				tc.expectedDesc = defMsg
 			}
+			if len(tc.pulls) == 0 {
+				tc.pulls = []prowapi.Pull{{
+					Author: "me",
+					Number: 1,
+					SHA:    "abcdef",
+				}}
+			}
 			pj := prowapi.ProwJob{
 				Status: prowapi.ProwJobStatus{
 					State:       tc.state,
@@ -362,13 +383,9 @@ func TestReportStatus(t *testing.T) {
 					Context: "parent",
 					Report:  tc.report,
 					Refs: &prowapi.Refs{
-						Org:  "k8s",
-						Repo: "test-infra",
-						Pulls: []prowapi.Pull{{
-							Author: "me",
-							Number: 1,
-							SHA:    "abcdef",
-						}},
+						Org:   "k8s",
+						Repo:  "test-infra",
+						Pulls: tc.pulls,
 					},
 				},
 			}
@@ -440,6 +457,17 @@ func TestShouldReport(t *testing.T) {
 				},
 			},
 			validTypes: []prowapi.ProwJobType{prowapi.PresubmitJob, prowapi.PostsubmitJob},
+			report:     true,
+		},
+		{
+			name: "should report batch job if told to",
+			pj: prowapi.ProwJob{
+				Spec: prowapi.ProwJobSpec{
+					Type:   prowapi.BatchJob,
+					Report: true,
+				},
+			},
+			validTypes: []prowapi.ProwJobType{prowapi.PresubmitJob, prowapi.BatchJob},
 			report:     true,
 		},
 	}

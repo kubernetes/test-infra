@@ -2827,7 +2827,7 @@ func TestValidGitHubReportType(t *testing.T) {
 github_reporter:
   job_types_to_report:
   - presubmit
-  - batch
+  - periodic
 `,
 			expectError: true,
 		},
@@ -2838,8 +2838,9 @@ github_reporter:
   job_types_to_report:
   - presubmit
   - postsubmit
+  - batch
 `,
-			expectTypes: []prowapi.ProwJobType{prowapi.PresubmitJob, prowapi.PostsubmitJob},
+			expectTypes: []prowapi.ProwJobType{prowapi.PresubmitJob, prowapi.PostsubmitJob, prowapi.BatchJob},
 		},
 	}
 
