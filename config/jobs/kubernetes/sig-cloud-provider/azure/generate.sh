@@ -38,7 +38,7 @@ EOF
 }
 
 # we need to define the full image URL so it can be autobumped
-tmp="gcr.io/k8s-testimages/kubekins-e2e:v20210707-0f9c540-master"
+tmp="gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-master"
 kubekins_e2e_image="${tmp/\-master/}"
 
 for release in "$@"; do
@@ -81,7 +81,7 @@ presubmits:
         path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-        - image: ${kubekins_e2e_image}-${release}
+        - image: ${kubekins_e2e_image}-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -126,7 +126,7 @@ $(generate_presubmit_annotations ${branch} pull-kubernetes-e2e-capz-azure-disk)
         path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-        - image: ${kubekins_e2e_image}-${release}
+        - image: ${kubekins_e2e_image}-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -173,7 +173,7 @@ $(generate_presubmit_annotations ${branch} pull-kubernetes-e2e-capz-azure-disk-v
         path_alias: sigs.k8s.io/azurefile-csi-driver
     spec:
       containers:
-        - image: ${kubekins_e2e_image}-${release}
+        - image: ${kubekins_e2e_image}-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -219,7 +219,7 @@ $(generate_presubmit_annotations ${branch} pull-kubernetes-e2e-capz-azure-file)
         path_alias: sigs.k8s.io/azurefile-csi-driver
     spec:
       containers:
-        - image: ${kubekins_e2e_image}-${release}
+        - image: ${kubekins_e2e_image}-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -263,7 +263,7 @@ $(generate_presubmit_annotations ${branch} pull-kubernetes-e2e-capz-azure-file-v
       workdir: true
     spec:
       containers:
-      - image: ${kubekins_e2e_image}-${release}
+      - image: ${kubekins_e2e_image}-master
         command:
         - runner.sh
         - ./scripts/ci-conformance.sh
@@ -301,7 +301,7 @@ $(generate_presubmit_annotations ${branch} pull-kubernetes-e2e-capz-conformance)
       workdir: true
     spec:
       containers:
-      - image: ${kubekins_e2e_image}-${release}
+      - image: ${kubekins_e2e_image}-master
         command:
         - runner.sh
         - ./scripts/ci-conformance.sh
