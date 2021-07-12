@@ -24,6 +24,7 @@ import (
 	"hash/crc32"
 	"math"
 	"path"
+	"strings"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -150,6 +151,10 @@ func (gr *gcsK8sReporter) addFinalizer(ctx context.Context, pj *prowv1.ProwJob) 
 	}
 
 	if err := gr.rg.PatchPod(ctx, pj.Spec.Cluster, pod.Namespace, pod.Name, patch.Type(), patchData); err != nil {
+		// The pod occasionally gets deleted between our check above and this request
+		if strings.Contains(err.Error(), "no new finalizers can be added if the object is being deleted") {
+			return nil
+		}
 		return fmt.Errorf("failed to patch pod: %w", err)
 	}
 
