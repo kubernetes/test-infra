@@ -6,11 +6,12 @@ presubmits:
         preset-kind-volume-mounts: "true"
         preset-cluster-api-provider-vsphere-e2e-config: "true"
         preset-cloud-provider-vsphere-e2e-config: "true"
-      always_run: false
-      optional: true
       decorate: true
+      decoration_config:
+        timeout: 1h
+      run_if_changed: 'images/capi/(Makefile|ansible\.cfg)|images/capi/ansible/.*|images/capi/scripts/ci-ova\.sh|images/capi/packer/(config|goss|ova)/.*|images/capi/hack/ensure-(ansible|packer|goss).*'
       path_alias: sigs.k8s.io/image-builder
-      max_concurrency: 5
+      max_concurrency: 3
       spec:
         containers:
           - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-master
