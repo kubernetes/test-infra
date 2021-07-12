@@ -104,18 +104,6 @@ func newFakeGitHubClient(hasLabel, humanApproved bool, files []string, comments 
 	if hasLabel {
 		labels = append(labels, fmt.Sprintf("org/repo#%v:approved", prNumber))
 	}
-	events := []github.ListedIssueEvent{}
-	if humanApproved {
-		events = append(
-			events,
-			github.ListedIssueEvent{
-				Event:     github.IssueActionLabeled,
-				Label:     github.Label{Name: "approved"},
-				Actor:     github.User{Login: "human"},
-				CreatedAt: time.Now(),
-			},
-		)
-	}
 	var changes []github.PullRequestChange
 	for _, file := range files {
 		changes = append(changes, github.PullRequestChange{Filename: file})
@@ -124,8 +112,8 @@ func newFakeGitHubClient(hasLabel, humanApproved bool, files []string, comments 
 	fgc.IssueLabelsAdded = labels
 	fgc.PullRequestChanges = map[int][]github.PullRequestChange{prNumber: changes}
 	fgc.IssueComments = map[int][]github.IssueComment{prNumber: comments}
-	fgc.IssueEvents = map[int][]github.ListedIssueEvent{prNumber: events}
 	fgc.Reviews = map[int][]github.Review{prNumber: reviews}
+	fgc.WasLabelAddedByHumanVal = humanApproved
 	return fgc
 }
 

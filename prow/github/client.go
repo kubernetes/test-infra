@@ -174,6 +174,7 @@ type RepositoryClient interface {
 	AddLabelsWithContext(ctx context.Context, org, repo string, number int, labels ...string) error
 	RemoveLabel(org, repo string, number int, label string) error
 	RemoveLabelWithContext(ctx context.Context, org, repo string, number int, label string) error
+	WasLabelAddedByHuman(org, repo string, number int, label string) (bool, error)
 	GetFile(org, repo, filepath, commit string) ([]byte, error)
 	GetDirectory(org, repo, dirpath, commit string) ([]DirectoryContent, error)
 	IsCollaborator(org, repo, user string) (bool, error)
@@ -2771,6 +2772,31 @@ func (c *client) RemoveLabelWithContext(ctx context.Context, org, repo string, n
 
 	// Otherwise we got some other 404 error.
 	return fmt.Errorf("deleting label 404: %s", ge.Message)
+}
+
+func (c *client) WasLabelAddedByHuman(org, repo string, number int, label string) (bool, error) {
+	isBot, err := c.BotUserChecker()
+	if err != nil {
+		return false, fmt.Errorf("failed to construct bot user checker: %w", err)
+	}
+
+	events, err := c.ListIssueEvents(org, repo, number)
+	if err != nil {
+		return false, fmt.Errorf("failed to list issue events: %w", err)
+	}
+	var lastAdded ListedIssueEvent
+	for _, event := range events {
+		if event.Event != IssueActionLabeled || event.Label.Name != label {
+			continue
+		}
+		lastAdded = event
+	}
+
+	if lastAdded.Actor.Login == "" || isBot(lastAdded.Actor.Login) {
+		return false, nil
+	}
+
+	return true, nil
 }
 
 // MissingUsers is an error specifying the users that could not be unassigned.

@@ -724,6 +724,7 @@ func TestHandle(t *testing.T) {
 	var testCases = []struct {
 		name                string
 		labels              []string
+		humanLabelled       bool
 		missing             bool
 		merged              bool
 		closed              bool
@@ -848,6 +849,30 @@ Instructions for interacting with me using PR comments are available [here](http
  - expected the bug to be open, but it isn't
 
 Comment <code>/bugzilla refresh</code> to re-evaluate validity if changes to the Bugzilla bug are made, or edit the title of this pull request to link to a different bug.
+
+<details>
+
+In response to [this](http.com):
+
+>Bug 123: fixed it!
+
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
+</details>`,
+		},
+		{
+			name:           "invalid bug adds keeps human-added valid bug label",
+			bugs:           []bugzilla.Bug{{ID: 123, Severity: "high"}},
+			options:        plugins.BugzillaBranchOptions{IsOpen: &open},
+			humanLabelled:  true,
+			labels:         []string{"bugzilla/valid-bug", "bugzilla/severity-urgent"},
+			expectedLabels: []string{"bugzilla/valid-bug", "bugzilla/severity-high"},
+			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123), which is invalid:
+ - expected the bug to be open, but it isn't
+
+Comment <code>/bugzilla refresh</code> to re-evaluate validity if changes to the Bugzilla bug are made, or edit the title of this pull request to link to a different bug.
+
+Retaining the bugzilla/valid-bug label as it was manually added.
 
 <details>
 
@@ -1729,6 +1754,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			gc.IssueLabelsExisting = []string{}
 			gc.IssueComments = map[int][]github.IssueComment{}
 			gc.PullRequests = map[int]*github.PullRequest{}
+			gc.WasLabelAddedByHumanVal = testCase.humanLabelled
 			for _, label := range testCase.labels {
 				gc.IssueLabelsExisting = append(gc.IssueLabelsExisting, fmt.Sprintf("%s/%s#%d:%s", e.org, e.repo, e.number, label))
 			}
