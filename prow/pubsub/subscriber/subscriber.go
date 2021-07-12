@@ -237,7 +237,7 @@ func extractFromAttribute(attrs map[string]string, key string) (string, error) {
 	return value, nil
 }
 
-func (s *Subscriber) handleMessage(msg messageInterface, subscription string) error {
+func (s *Subscriber) handleMessage(msg messageInterface, subscription string, allowedClusters []string) error {
 	l := logrus.WithFields(logrus.Fields{
 		"pubsub-subscription": subscription,
 		"pubsub-id":           msg.getID()})
@@ -263,14 +263,14 @@ func (s *Subscriber) handleMessage(msg messageInterface, subscription string) er
 		s.Metrics.ErrorCounter.With(prometheus.Labels{subscriptionLabel: subscription})
 		return fmt.Errorf("unsupported event type: %s", eType)
 	}
-	if err = s.handleProwJob(l, jh, msg, subscription); err != nil {
+	if err = s.handleProwJob(l, jh, msg, subscription, allowedClusters); err != nil {
 		l.WithError(err).Error("failed to create Prow Job")
 		s.Metrics.ErrorCounter.With(prometheus.Labels{subscriptionLabel: subscription})
 	}
 	return err
 }
 
-func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msg messageInterface, subscription string) error {
+func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msg messageInterface, subscription string, allowedClusters []string) error {
 
 	var pe ProwJobEvent
 	var prowJob prowapi.ProwJob
@@ -298,6 +298,22 @@ func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msg messageIn
 	}
 	if prowJobSpec == nil {
 		return fmt.Errorf("failed getting prowjob spec") // This should not happen
+	}
+
+	// deny job that runs on not allowed cluster
+	var clusterIsAllowed bool
+	for _, allowedCluster := range allowedClusters {
+		if allowedCluster == "*" || allowedCluster == prowJobSpec.Cluster {
+			clusterIsAllowed = true
+			break
+		}
+	}
+	if !clusterIsAllowed {
+		err := fmt.Errorf("cluster %s is not allowed. Can be fixed by defining this cluster under pubsub_triggers -> allowed_clusters", prowJobSpec.Cluster)
+		l.WithField("cluster", prowJobSpec.Cluster).Warn("cluster not allowed")
+		prowJob = pjutil.NewProwJob(*prowJobSpec, nil, pe.Annotations)
+		reportProwJobFailure(&prowJob, err)
+		return err
 	}
 
 	// Adds / Updates Labels from prow job event

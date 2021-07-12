@@ -208,7 +208,7 @@ func TestHandleMessage(t *testing.T) {
 				m.ID = "id"
 				tc.msg = &pubSubMessage{*m}
 			}
-			if err := s.handleMessage(tc.msg, tc.s); err != nil {
+			if err := s.handleMessage(tc.msg, tc.s, []string{"*"}); err != nil {
 				if err.Error() != tc.err {
 					t1.Errorf("Expected error '%v' got '%v'", tc.err, err.Error())
 				} else if tc.err == "" {
@@ -268,13 +268,14 @@ func CheckProwJob(pe *ProwJobEvent, pj *prowapi.ProwJob) error {
 
 func TestHandlePeriodicJob(t *testing.T) {
 	for _, tc := range []struct {
-		name        string
-		pe          *ProwJobEvent
-		s           string
-		config      *config.Config
-		err         string
-		reported    bool
-		clientFails bool
+		name            string
+		pe              *ProwJobEvent
+		s               string
+		config          *config.Config
+		allowedClusters []string
+		err             string
+		reported        bool
+		clientFails     bool
 	}{
 		{
 			name: "PeriodicJobNoPubsub",
@@ -292,6 +293,7 @@ func TestHandlePeriodicJob(t *testing.T) {
 					},
 				},
 			},
+			allowedClusters: []string{"*"},
 		},
 		{
 			name: "PeriodicJobPubsubSet",
@@ -331,6 +333,46 @@ func TestHandlePeriodicJob(t *testing.T) {
 					},
 				},
 			},
+			allowedClusters: []string{"*"},
+		},
+		{
+			name: "ClusterNotAllowed",
+			pe: &ProwJobEvent{
+				Name: "test",
+			},
+			config: &config.Config{
+				JobConfig: config.JobConfig{
+					Periodics: []config.Periodic{
+						{
+							JobBase: config.JobBase{
+								Name:    "test",
+								Cluster: "precious-cluster",
+							},
+						},
+					},
+				},
+			},
+			allowedClusters: []string{"normal-cluster"},
+			err:             "cluster precious-cluster is not allowed. Can be fixed by defining this cluster under pubsub_triggers -> allowed_clusters",
+		},
+		{
+			name: "DefaultClusterNotAllowed",
+			pe: &ProwJobEvent{
+				Name: "test",
+			},
+			config: &config.Config{
+				JobConfig: config.JobConfig{
+					Periodics: []config.Periodic{
+						{
+							JobBase: config.JobBase{
+								Name: "test",
+							},
+						},
+					},
+				},
+			},
+			allowedClusters: []string{"normal-cluster"},
+			err:             "cluster  is not allowed. Can be fixed by defining this cluster under pubsub_triggers -> allowed_clusters",
 		},
 		{
 			name: "PeriodicJobPubsubSetCreationError",
@@ -353,17 +395,19 @@ func TestHandlePeriodicJob(t *testing.T) {
 					},
 				},
 			},
-			err:         "failed to create prowjob",
-			clientFails: true,
-			reported:    true,
+			allowedClusters: []string{"*"},
+			err:             "failed to create prowjob",
+			clientFails:     true,
+			reported:        true,
 		},
 		{
 			name: "JobNotFound",
 			pe: &ProwJobEvent{
 				Name: "test",
 			},
-			config: &config.Config{},
-			err:    "failed to find associated periodic job \"test\"",
+			config:          &config.Config{},
+			allowedClusters: []string{"*"},
+			err:             "failed to find associated periodic job \"test\"",
 		},
 		{
 			name: "JobNotFoundReportNeeded",
@@ -375,9 +419,10 @@ func TestHandlePeriodicJob(t *testing.T) {
 					reporter.PubSubTopicLabel:   "topic",
 				},
 			},
-			config:   &config.Config{},
-			err:      "failed to find associated periodic job \"test\"",
-			reported: true,
+			config:          &config.Config{},
+			allowedClusters: []string{"*"},
+			err:             "failed to find associated periodic job \"test\"",
+			reported:        true,
 		},
 	} {
 		t.Run(tc.name, func(t1 *testing.T) {
@@ -402,10 +447,10 @@ func TestHandlePeriodicJob(t *testing.T) {
 				t.Error(err)
 			}
 			m.ID = "id"
-			err = s.handleProwJob(logrus.NewEntry(logrus.New()), &periodicJobHandler{}, &pubSubMessage{*m}, tc.s)
+			err = s.handleProwJob(logrus.NewEntry(logrus.New()), &periodicJobHandler{}, &pubSubMessage{*m}, tc.s, tc.allowedClusters)
 			if err != nil {
 				if err.Error() != tc.err {
-					t1.Errorf("Expected error %v got %v", tc.err, err.Error())
+					t1.Errorf("Expected error '%v' got '%v'", tc.err, err.Error())
 				}
 			} else if tc.err == "" {
 				var created []*prowapi.ProwJob
@@ -592,8 +637,12 @@ func TestPullServer_RunHandlePullFail(t *testing.T) {
 	}
 	c := &config.Config{
 		ProwConfig: config.ProwConfig{
-			PubSubSubscriptions: map[string][]string{
-				"project": {"test"},
+			PubSubTriggers: []config.PubSubTrigger{
+				{
+					Project:         "project",
+					Topics:          []string{"test"},
+					AllowedClusters: []string{"*"},
+				},
 			},
 		},
 	}
@@ -645,8 +694,12 @@ func TestPullServer_RunConfigChange(t *testing.T) {
 	case <-time.After(10 * time.Millisecond):
 		newConfig := &config.Config{
 			ProwConfig: config.ProwConfig{
-				PubSubSubscriptions: map[string][]string{
-					"project": {"test"},
+				PubSubTriggers: []config.PubSubTrigger{
+					{
+						Project:         "project",
+						Topics:          []string{"test"},
+						AllowedClusters: []string{"*"},
+					},
 				},
 			},
 		}

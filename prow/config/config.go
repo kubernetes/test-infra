@@ -161,6 +161,10 @@ type ProwConfig struct {
 	// Pub/Sub Subscriptions that we want to listen to
 	PubSubSubscriptions PubsubSubscriptions `json:"pubsub_subscriptions,omitempty"`
 
+	// PubSubTriggers defines Pub/Sub Subscriptions that we want to listen to,
+	// can be used to restrict build cluster on a topic
+	PubSubTriggers PubSubTriggers `json:"pubsub_triggers,omitempty"`
+
 	// GitHubOptions allows users to control how prow applications display GitHub website links.
 	GitHubOptions GitHubOptions `json:"github,omitempty"`
 
@@ -1013,8 +1017,18 @@ func (rac RerunAuthConfigs) GetRerunAuthConfig(refs *prowapi.Refs) prowapi.Rerun
 	return rac["*"]
 }
 
-// PubSubSubscriptions maps GCP projects to a list of Topics.
+// PubsubSubscriptions maps GCP projects to a list of Topics
 type PubsubSubscriptions map[string][]string
+
+// PubSubTriggers contains pubsub configurations
+type PubSubTriggers []PubSubTrigger
+
+// PubSubTrigger contain pubsub configuration for a single project
+type PubSubTrigger struct {
+	Project         string   `json:"project"`
+	Topics          []string `json:"topics"`
+	AllowedClusters []string `json:"allowed_clusters"`
+}
 
 // GitHubOptions allows users to control how prow applications display GitHub website links.
 type GitHubOptions struct {
@@ -1279,6 +1293,20 @@ func loadConfig(prowConfig, jobConfig string, additionalProwConfigDirs []string,
 	// Respect `"*": []`, which disabled default global cluster
 	if nc.InRepoConfig.AllowedClusters["*"] == nil {
 		nc.InRepoConfig.AllowedClusters["*"] = []string{kube.DefaultClusterAlias}
+	}
+
+	// merge pubsub configs
+	if nc.PubSubSubscriptions != nil {
+		if nc.PubSubTriggers != nil {
+			return nil, errors.New("pubsub_subscriptions and pubsub_triggers are mutually exclusive")
+		}
+		for proj, topics := range nc.PubSubSubscriptions {
+			nc.PubSubTriggers = append(nc.PubSubTriggers, PubSubTrigger{
+				Project:         proj,
+				Topics:          topics,
+				AllowedClusters: []string{"*"},
+			})
+		}
 	}
 
 	// TODO(krzyzacy): temporary allow empty jobconfig
