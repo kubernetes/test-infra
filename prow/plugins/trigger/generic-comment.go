@@ -57,6 +57,7 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 
 	// Skip comments not germane to this plugin
 	if !pjutil.RetestRe.MatchString(gc.Body) &&
+		!pjutil.RetestRequiredRe.MatchString(gc.Body) &&
 		!pjutil.OkToTestRe.MatchString(gc.Body) &&
 		!pjutil.TestAllRe.MatchString(gc.Body) &&
 		!pjutil.MayNeedHelpComment(gc.Body) {
