@@ -139,7 +139,7 @@ presubmits:
         - kubetest2
         - gce
         - -v=2
-        - --repo-root=$PWD
+        - --repo-root=$(PWD)
         - --legacy-mode # indicate that we are using kubernetes/kubernetes as opposed to kubernetes/cloud-provider-gcp
         - --build
         - --up
