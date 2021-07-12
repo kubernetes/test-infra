@@ -20,7 +20,7 @@ presubmits:
       preset-windows-private-registry-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-master
         command:
         - runner.sh
         - kubetest
@@ -58,7 +58,7 @@ presubmits:
   - name: pull-kubernetes-e2e-aks-engine-windows-containerd
     always_run: false
     optional: true
-    run_if_changed: 'azure.*\.go$|.*windows\.go$'
+    run_if_changed: 'azure.*\.go$|.*windows\.go$|test/e2e/windows/.*'
     decorate: true
     decoration_config:
       timeout: 3h
@@ -75,7 +75,7 @@ presubmits:
       preset-windows-private-registry-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-master
         command:
         - runner.sh
         - kubetest
@@ -133,7 +133,7 @@ presubmits:
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-master
         command:
         - runner.sh
         - kubetest
@@ -195,7 +195,7 @@ presubmits:
       path_alias: sigs.k8s.io/azurefile-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-master
         command:
         - runner.sh
         - kubetest
@@ -254,7 +254,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-master
         command:
         - runner.sh
         - ./scripts/ci-conformance.sh

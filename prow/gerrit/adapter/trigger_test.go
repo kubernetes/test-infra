@@ -27,6 +27,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/gerrit/client"
 )
 
 func TestPresubmitContexts(t *testing.T) {
@@ -292,6 +293,25 @@ func TestMessageFilter(t *testing.T) {
 				{
 					job:             job("bar", nil),
 					shouldRun:       false,
+					forcedToRun:     false,
+					defaultBehavior: false,
+				},
+			},
+		},
+		{
+			name:     "draft->active triggers multiple",
+			messages: []string{client.ReadyForReviewMessage},
+			all:      sets.NewString("foo", "bar"),
+			checks: []check{
+				{
+					job:             job("foo", nil),
+					shouldRun:       true,
+					forcedToRun:     false,
+					defaultBehavior: false,
+				},
+				{
+					job:             job("bar", nil),
+					shouldRun:       true,
 					forcedToRun:     false,
 					defaultBehavior: false,
 				},

@@ -358,6 +358,25 @@ func TestProcessChange(t *testing.T) {
 		expectedBaseSHA  string
 	}{
 		{
+			name: "no presubmit Prow jobs automatically triggered from WorkInProgess change",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "test-infra",
+				Status:          "NEW",
+				WorkInProgress:  true,
+				Revisions: map[string]gerrit.RevisionInfo{
+					"1": {
+						Number: 1001,
+					},
+				},
+			},
+			instancesMap:    map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:        testInstance,
+			shouldError:     false,
+			expectedBaseSHA: "abc",
+			numPJ:           0,
+		},
+		{
 			name: "no revisions errors out",
 			change: client.ChangeInfo{
 				CurrentRevision: "1",
@@ -556,6 +575,29 @@ func TestProcessChange(t *testing.T) {
 			expectedBaseSHA: "abc",
 		},
 		{
+			name: "presubmit does not run when a file matches run_if_changed but the change is WorkInProgress",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "test-infra",
+				Status:          "NEW",
+				WorkInProgress:  true,
+				Revisions: map[string]client.RevisionInfo{
+					"1": {
+						Files: map[string]client.FileInfo{
+							"bee-movie-script.txt": {},
+							"africa-lyrics.txt":    {},
+							"important-code.go":    {},
+						},
+						Created: stampNow,
+					},
+				},
+			},
+			instancesMap:    map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:        testInstance,
+			numPJ:           0,
+			expectedBaseSHA: "abc",
+		},
+		{
 			name: "presubmit doesn't run when no files match run_if_changed",
 			change: client.ChangeInfo{
 				CurrentRevision: "1",
@@ -676,6 +718,32 @@ func TestProcessChange(t *testing.T) {
 					"1": {
 						Number:  1,
 						Created: makeStamp(timeNow.Add(-time.Hour)),
+					},
+				},
+				Messages: []gerrit.ChangeMessageInfo{
+					{
+						Message:        "/test all",
+						RevisionNumber: 1,
+						Date:           makeStamp(timeNow.Add(time.Hour)),
+					},
+				},
+			},
+			instancesMap:    map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:        testInstance,
+			numPJ:           1,
+			expectedBaseSHA: "abc",
+		},
+		{
+			name: "trigger always run job on test all even if the change is WorkInProgress",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "test-infra",
+				Branch:          "baz",
+				Status:          "NEW",
+				WorkInProgress:  true,
+				Revisions: map[string]client.RevisionInfo{
+					"1": {
+						Number: 1,
 					},
 				},
 				Messages: []gerrit.ChangeMessageInfo{
@@ -903,6 +971,31 @@ func TestProcessChange(t *testing.T) {
 			instance:        testInstance,
 			numPJ:           3,
 			pjRef:           "refs/changes/00/1/1",
+			expectedBaseSHA: "abc",
+		},
+		{
+			name: "/test ? will leave a comment with the commands to trigger presubmit Prow jobs",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "test-infra",
+				Status:          "NEW",
+				Revisions: map[string]client.RevisionInfo{
+					"1": {
+						Number:  1,
+						Created: makeStamp(timeNow.Add(-time.Hour)),
+					},
+				},
+				Messages: []gerrit.ChangeMessageInfo{
+					{
+						Message:        "/test ?",
+						RevisionNumber: 1,
+						Date:           makeStamp(timeNow),
+					},
+				},
+			},
+			instancesMap:    map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:        testInstance,
+			numPJ:           0,
 			expectedBaseSHA: "abc",
 		},
 	}

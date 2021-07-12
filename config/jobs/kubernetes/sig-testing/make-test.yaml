@@ -19,7 +19,7 @@ presubmits:
         runAsUser: 2000
         allowPrivilegeEscalation: false
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-master
           command:
             - make
             - test
@@ -48,14 +48,21 @@ presubmits:
     spec:
       # unit tests have no business requiring root or doing privileged operations
       securityContext:
-        runAsUser: 2000
-        allowPrivilegeEscalation: false
+        # NOTE: these are arbitrary non-root values. They don't exist in the
+        # image and don't need to, the unit tests should only write to TMPDIR
+        runAsUser: 2001
+        runAsGroup: 2010
       containers:
         - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
           imagePullPolicy: Always
           command:
             - make
             - test
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
           # TODO: direct copy from pull-kubernetes-bazel-test, tune these
           resources:
             limits:
@@ -88,7 +95,7 @@ periodics:
         runAsUser: 2000
         allowPrivilegeEscalation: false
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-master
           command:
             - make
             - test
@@ -118,7 +125,7 @@ periodics:
         runAsUser: 2000
         allowPrivilegeEscalation: false
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-master
           command:
             - runner.sh
             - bash
@@ -148,7 +155,7 @@ periodics:
         runAsUser: 2000
         allowPrivilegeEscalation: false
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-master
           command:
             - runner.sh
             - bash
@@ -179,7 +186,7 @@ periodics:
         runAsUser: 2000
         allowPrivilegeEscalation: false
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-master
           command:
             - runner.sh
             - bash

@@ -11,7 +11,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-go-canary
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-go-canary
         command:
         - "./scripts/ci-test.sh"
     annotations:
@@ -24,7 +24,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-go-canary
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-go-canary
         command:
         - "./scripts/ci-build.sh"
     annotations:
@@ -41,7 +41,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-go-canary
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-go-canary
         command:
         - "make"
         - "verify"
@@ -80,7 +80,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-go-canary
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-go-canary
           command:
             - "runner.sh"
             - "./scripts/ci-conformance.sh"
@@ -123,7 +123,7 @@ presubmits:
       preset-aws-credential: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-go-canary
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-go-canary
           command:
             - "runner.sh"
             - "./scripts/ci-conformance.sh"
@@ -149,7 +149,8 @@ presubmits:
       # The script this job runs is not in all branches.
       - ^main$
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
-    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|exp|feature|hack|pkg|test|util)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
+    #run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|exp|feature|hack|pkg|test|util)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
+    always_run: false
     optional: true
     decorate: true
     decoration_config:
@@ -163,17 +164,20 @@ presubmits:
       preset-aws-credential: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210615-c973edd-go-canary
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-go-canary
           command:
             - "runner.sh"
             - "./scripts/ci-e2e.sh"
           env:
-            - name: E2E_UNMANAGED_FOCUS
+            - name: E2E_FOCUS
               value: "\\[PR-Blocking\\]"
             - name: BOSKOS_HOST
               value: "boskos.test-pods.svc.cluster.local"
             - name: AWS_REGION
               value: "us-west-2"
+            # Parallelize tests
+            - name: GINKGO_ARGS
+              value: "-nodes 20"
           securityContext:
             privileged: true
           resources:
@@ -204,7 +208,7 @@ presubmits:
       preset-aws-credential: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-go-canary
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-go-canary
           command:
             - "runner.sh"
             - "./scripts/ci-e2e.sh"
@@ -243,7 +247,7 @@ presubmits:
       preset-aws-credential: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-go-canary
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-go-canary
           command:
             - "runner.sh"
             - "./scripts/ci-e2e-eks.sh"

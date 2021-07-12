@@ -49,10 +49,18 @@ def repositories():
 
     container_pull(
         name = "git-base",
-        digest = "sha256:1527341aff1003b6b27c8ed935e6f0200258bee55b6eb178ca3ef124196384fe",
+        digest = "sha256:a4bc91ce515c3463dcbf4ee4c47aaa887fd5f62166b90e32fe9c5f19a57c08f8",
         registry = "gcr.io",
         repository = "k8s-prow/git",
-        # tag = "v20200713-e9b3d9d",
+        # tag = "v20210618-1017135",
+    )
+
+    container_pull(
+        name = "git-base-arm64",
+        digest = "sha256:70f1aea9c4c056fb371c1cfc38c6052a49e6d9548de1c1f57810e38331dad157",
+        registry = "gcr.io",
+        repository = "k8s-prow/git",
+        # tag = "v20210618-1017135",
     )
 
     container_pull(

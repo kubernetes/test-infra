@@ -17,7 +17,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-go-canary
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-go-canary
       args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
@@ -61,7 +61,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-go-canary
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-go-canary
       args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
@@ -105,7 +105,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-go-canary
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-go-canary
       args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
@@ -149,7 +149,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-go-canary
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-go-canary
       args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
@@ -161,7 +161,7 @@ periodics:
         - name: ETCD_VERSION_UPGRADE_TO
           value: "3.4.13-0"
         - name: COREDNS_VERSION_UPGRADE_TO
-          value: "v1.8.0"
+          value: "v1.8.4"
         - name: GINKGO_FOCUS
           value: "\\[K8s-Upgrade\\]"
       # we need privileged mode in order to do docker in docker

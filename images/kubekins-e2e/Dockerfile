@@ -17,7 +17,7 @@
 
 ARG OLD_BAZEL_VERSION
 FROM launcher.gcr.io/google/bazel:${OLD_BAZEL_VERSION} as old
-FROM gcr.io/k8s-testimages/bootstrap:v20210622-762366a
+FROM gcr.io/k8s-testimages/bootstrap:v20210709-5168b64
 
 # hint to kubetest that it is in CI
 ENV KUBETEST_IN_DOCKER="true"
@@ -44,7 +44,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 # preinstall this for kops tests xref kubetest prepareAws(...)
 # TODO(krzyzacy,justisb,chrislovecnm): remove this
-RUN pip install awscli
+RUN pip install --no-cache-dir awscli
 
 # install cfssl to prevent https://github.com/kubernetes/kubernetes/issues/55589
 # The invocation at the end is to prevent download failures downloads as in the bug.

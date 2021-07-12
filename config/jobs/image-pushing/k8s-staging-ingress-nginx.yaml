@@ -10,6 +10,7 @@ postsubmits:
       run_if_changed: '\.go$|^rootfs/.*|TAG|go.mod|go.sum'
       branches:
         - ^master$
+        - ^release-v1beta1$
       spec:
         serviceAccountName: gcb-builder
         containers:

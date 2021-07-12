@@ -33,8 +33,38 @@ var RetestRe = regexp.MustCompile(`(?m)^/retest\s*$`)
 
 var OkToTestRe = regexp.MustCompile(`(?m)^/ok-to-test\s*$`)
 
+// AvailablePresubmits returns 2 sets of presubmits:
+// 1. presubmits that can be run with '/test all' command.
+// 2. presubmits that can be run with their trigger, e.g. '/test job'
+func AvailablePresubmits(changes config.ChangedFilesProvider, org, repo, branch string, presubmits []config.Presubmit, logger *logrus.Entry) ([]string, []string, error) {
+	runWithTestAll, err := FilterPresubmits(TestAllFilter(), changes, branch, presubmits, logger)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var triggerFilters []Filter
+	for _, ps := range presubmits {
+		triggerFilters = append(triggerFilters, CommandFilter(ps.RerunCommand))
+	}
+	runWithTrigger, err := FilterPresubmits(AggregateFilter(triggerFilters), changes, branch, presubmits, logger)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var runWithTestAllNames []string
+	for _, ps := range runWithTestAll {
+		runWithTestAllNames = append(runWithTestAllNames, ps.Name)
+	}
+	var runWithTriggerNames []string
+	for _, ps := range runWithTrigger {
+		runWithTriggerNames = append(runWithTriggerNames, ps.RerunCommand)
+	}
+
+	return runWithTestAllNames, runWithTriggerNames, nil
+}
+
 // Filter digests a presubmit config to determine if:
-//  - we the presubmit matched the filter
+//  - the presubmit matched the filter
 //  - we know that the presubmit is forced to run
 //  - what the default behavior should be if the presubmit
 //    runs conditionally and does not match trigger conditions

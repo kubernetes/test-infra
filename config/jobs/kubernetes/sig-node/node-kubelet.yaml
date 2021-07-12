@@ -14,7 +14,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=90
@@ -47,7 +47,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=90
@@ -71,38 +71,6 @@ periodics:
     testgrid-dashboards: sig-node-kubelet
     testgrid-tab-name: node-kubelet-alpha
 
-- name: ci-kubernetes-node-kubelet-conformance
-  interval: 2h
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-    preset-dind-enabled: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
-      args:
-      - --repo=k8s.io/kubernetes=master
-      - --timeout=90
-      - --root=/go/src
-      - --scenario=kubernetes_e2e
-      - --
-      - --deployment=node
-      - --gcp-project-type=node-e2e-project
-      - --gcp-zone=us-west1-b
-      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
-      - --node-test-args=--feature-gates=DynamicKubeletConfig=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
-      - --node-tests=true
-      - --provider=gce
-      - --test_args=--nodes=1 --focus="\[NodeConformance\]" --skip="\[Flaky\]"
-      - --timeout=65m
-      env:
-      - name: GOPATH
-        value: /go
-  annotations:
-    testgrid-dashboards: sig-node-kubelet
-    testgrid-tab-name: node-kubelet-conformance
-    testgrid-alert-email: kubernetes-sig-node+testgrid@googlegroups.com,kubernetes-sig-node-test-failures@googlegroups.com
-
 - name: ci-kubernetes-node-kubelet-features
   cluster: k8s-infra-prow-build
   interval: 1h
@@ -115,7 +83,7 @@ periodics:
     testgrid-tab-name: node-kubelet-features-master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=90
@@ -148,7 +116,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=90
@@ -178,7 +146,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=400
@@ -209,7 +177,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=240
@@ -239,7 +207,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=320
@@ -269,7 +237,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=240
@@ -300,7 +268,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-master
         args:
           - --repo=k8s.io/kubernetes=master
           - --timeout=240
@@ -331,7 +299,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-master
         args:
           - --repo=k8s.io/kubernetes=master
           - --timeout=240
@@ -362,7 +330,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-master
         args:
           - --repo=k8s.io/kubernetes=master
           - --timeout=240
@@ -394,7 +362,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-master
         args:
           - --repo=k8s.io/kubernetes=master
           - --timeout=240
@@ -418,3 +386,33 @@ periodics:
     testgrid-tab-name: kubelet-serial-gce-e2e-graceful-node-shutdown
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
     description: Executes graceful node shutdown e2e node tests
+
+- name: ci-kubernetes-node-kubelet-lock-contention
+  interval: 4h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-master
+        args:
+          - --repo=k8s.io/kubernetes=master
+          - --timeout=240
+          - --root=/go/src
+          - --scenario=kubernetes_e2e
+          - --
+          - --deployment=node
+          - --gcp-project-type=node-e2e-project
+          - --gcp-zone=us-west1-b
+          - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
+          - --node-test-args=--kubelet-flags="--exit-on-lock-contention --lock-file=/var/run/kubelet.lock"
+          - --node-tests=true
+          - --provider=gce
+          - --test_args=--nodes=1 --focus="\[NodeFeature:LockContention\]" --restart-kubelet=false
+        env:
+          - name: GOPATH
+            value: /go
+  annotations:
+    testgrid-dashboards: sig-node-kubelet
+    testgrid-tab-name: kubelet-gce-e2e-lock-contention
+    description: "Contains disruptive tests for the Lock Contention feature."

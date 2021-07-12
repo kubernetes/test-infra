@@ -43,7 +43,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: KUBE_SSH_USER
         value: prow
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -95,12 +95,12 @@ periodics:
           --create-args="--channel=alpha" \
           --env=KOPS_FEATURE_FLAGS=GoogleCloudBucketACL \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
-          --kubernetes-version=https://storage.googleapis.com/kubernetes-release-dev/ci/latest.txt \
+          --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
           -- \
           --ginkgo-args="--debug" \
           --test-args="-test.timeout=60m -num-nodes=0" \
-          --test-package-bucket=kubernetes-release-dev \
+          --test-package-bucket=k8s-release-dev \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
           --parallel=25 \
@@ -110,7 +110,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: KUBE_SSH_USER
         value: prow
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-master
       imagePullPolicy: Always
       resources:
         limits:

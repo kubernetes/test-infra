@@ -1793,3 +1793,11 @@ repos:
           - name: area/release-infra
         target: both
         addedBy: label
+  kubernetes-sigs/contributor-tweets:
+    labels:
+      - color: 0052cc
+        description: Issues to parse and tweet from K8sContributor handle
+        name: kind/tweet
+        target: both
+        addedBy: anyone
+        prowPlugin: label

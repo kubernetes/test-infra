@@ -202,7 +202,7 @@ func failedJobs(account int, revision int, messages ...gerrit.ChangeMessageInfo)
 	return failures
 }
 
-// processChange creates new presubmit prowjobs base off the gerrit changes
+// processChange creates new presubmit/postsubmit prowjobs base off the gerrit changes
 func (c *Controller) processChange(logger logrus.FieldLogger, instance string, change client.ChangeInfo) error {
 	var refs prowapi.Refs
 	cloneURI, err := makeCloneURI(instance, change.Project)
@@ -287,13 +287,33 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 		filters := []pjutil.Filter{
 			messageFilter(messages, failed, all, logger),
 		}
-		if revision.Created.Time.After(lastUpdate) {
+		// Automatically trigger the Prow jobs if the revision is new and the
+		// change is not in WorkInProgress.
+		if revision.Created.Time.After(lastUpdate) && !change.WorkInProgress {
 			filters = append(filters, pjutil.TestAllFilter())
 		}
 		toTrigger, err := pjutil.FilterPresubmits(pjutil.AggregateFilter(filters), listChangedFiles(change), change.Branch, presubmits, logger)
 		if err != nil {
 			return fmt.Errorf("filter presubmits: %w", err)
 		}
+
+		// Reply with help information to run the presubmit Prow jobs if requested.
+		for _, msg := range messages {
+			needsHelp, note := pjutil.ShouldRespondWithHelp(msg, len(toTrigger))
+			if needsHelp {
+				runWithTestAllNames, runWithTriggerNames, err := pjutil.AvailablePresubmits(listChangedFiles(change), cloneURI.Host, change.Project, change.Branch, presubmits, logger.WithField("help", true))
+				if err != nil {
+					return err
+				}
+				message := pjutil.HelpMessage(cloneURI.Host, change.Project, change.Branch, note, runWithTestAllNames, runWithTriggerNames)
+				if err := c.gc.SetReview(instance, change.ID, change.CurrentRevision, message, nil); err != nil {
+					return err
+				}
+				// Only respond to the first message that requests help information.
+				break
+			}
+		}
+
 		for _, presubmit := range toTrigger {
 			jobSpecs = append(jobSpecs, jobSpec{
 				spec:   pjutil.PresubmitSpec(presubmit, refs),

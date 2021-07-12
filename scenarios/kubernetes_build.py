@@ -65,7 +65,7 @@ def check_build_exists(gcs, suffix, fast):
 
     if version:
         if not gcs:
-            gcs = 'kubernetes-release-dev'
+            gcs = 'k8s-release-dev'
         gcs = 'gs://' + gcs
         mode = 'ci'
         if fast:

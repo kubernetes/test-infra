@@ -434,11 +434,6 @@ function redraw(fz: FuzzySearch, pushState: boolean = true): void {
     const rerunStatus = getParameterByName("rerun");
     const modal = document.getElementById('rerun')!;
     const rerunCommand = document.getElementById('rerun-content')!;
-    window.onclick = (event: any) => {
-        if (event.target === modal) {
-            modal.style.display = "none";
-        }
-    };
     const builds = document.getElementById("builds")!.getElementsByTagName(
         "tbody")[0];
     while (builds.firstChild) {
@@ -522,6 +517,11 @@ function redraw(fz: FuzzySearch, pushState: boolean = true): void {
             },
             status: {startTime, completionTime = "", state = "", pod_name, build_id = "", url = ""},
         } = build;
+
+        let buildUrl = url;
+        if (url.includes('/view/')) {
+            buildUrl = `${window.location.origin}/${url.slice(url.indexOf('/view/') + 1)}`;
+        }
 
         let org = "";
         let repo = "";
@@ -607,12 +607,12 @@ function redraw(fz: FuzzySearch, pushState: boolean = true): void {
                 logIcon.href = `log?job=${job}&id=${build_id}`;
             } else {
                 // this logic exists for legacy jobs that are configured for gubernator compatibility
-                const buildIndex = url.indexOf('/build/');
+                const buildIndex = buildUrl.indexOf('/build/');
                 if (buildIndex !== -1) {
-                    const gcsUrl = `${window.location.origin}/view/gcs/${url.substring(buildIndex + '/build/'.length)}`;
+                    const gcsUrl = `${window.location.origin}/view/gcs/${buildUrl.substring(buildIndex + '/build/'.length)}`;
                     logIcon.href = gcsUrl;
-                } else if (url.includes('/view/')) {
-                    logIcon.href = url;
+                } else if (buildUrl.includes('/view/')) {
+                    logIcon.href = buildUrl;
                 } else {
                     logIcon.href = `log?job=${job}&id=${build_id}`;
                 }
@@ -661,22 +661,22 @@ function redraw(fz: FuzzySearch, pushState: boolean = true): void {
         }
         if (spyglass) {
             // this logic exists for legacy jobs that are configured for gubernator compatibility
-            const buildIndex = url.indexOf('/build/');
+            const buildIndex = buildUrl.indexOf('/build/');
             if (buildIndex !== -1) {
-                const gcsUrl = `${window.location.origin}/view/gcs/${url.substring(buildIndex + '/build/'.length)}`;
+                const gcsUrl = `${window.location.origin}/view/gcs/${buildUrl.substring(buildIndex + '/build/'.length)}`;
                 r.appendChild(createSpyglassCell(gcsUrl));
-            } else if (url.includes('/view/')) {
-                r.appendChild(createSpyglassCell(url));
+            } else if (buildUrl.includes('/view/')) {
+                r.appendChild(createSpyglassCell(buildUrl));
             } else {
                 r.appendChild(cell.text(''));
             }
         } else {
             r.appendChild(cell.text(''));
         }
-        if (url === "") {
+        if (buildUrl === "") {
             r.appendChild(cell.text(job));
         } else {
-            r.appendChild(cell.link(job, url));
+            r.appendChild(cell.link(job, buildUrl));
         }
 
         r.appendChild(cell.time(i.toString(), moment.unix(started)));

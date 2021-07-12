@@ -13,7 +13,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-experimental
         command:
         - runner.sh
         args:
@@ -38,7 +38,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-experimental
         command:
         - runner.sh
         args:
@@ -123,7 +123,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-1.19
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-1.19
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -171,7 +171,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-1.20
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-1.20
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -214,7 +214,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-experimental
         command:
         - runner.sh
         args:
@@ -233,7 +233,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-experimental
         command:
         - runner.sh
         args:
@@ -254,7 +254,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-experimental
         command:
         - runner.sh
         args:
@@ -275,7 +275,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-1.20
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-1.20
         command:
         - runner.sh
         args:
@@ -296,7 +296,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-1.19
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-1.19
         command:
         - runner.sh
         args:
@@ -315,7 +315,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-experimental
         command:
         - runner.sh
         args:
@@ -336,7 +336,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-experimental
         command:
         - runner.sh
         args:
@@ -358,7 +358,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-experimental
         command:
         - runner.sh
         args:
@@ -379,7 +379,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-experimental
         command:
         - runner.sh
         args:
@@ -399,7 +399,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-experimental
         command:
         - runner.sh
         args:
@@ -420,7 +420,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-experimental
         command:
         - runner.sh
         args:
@@ -446,7 +446,7 @@ presubmits:
     - release-1.18
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-experimental
         command:
         - runner.sh
         args:
@@ -458,185 +458,6 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: verify-cloudformation
-  - name: pull-kops-e2e-aws-ebs-csi-driver
-    always_run: false
-    skip_report: false
-    labels:
-      preset-service-account: "true"
-      preset-aws-ssh: "true"
-      preset-aws-credential: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
-      preset-dind-enabled: "true"
-      preset-e2e-platform-aws: "true"
-    decorate: true
-    decoration_config:
-      timeout: 2h
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
-        imagePullPolicy: Always
-        command:
-        - runner.sh
-        args:
-        - ./tests/e2e/scenarios/aws-ebs-csi/run-test.sh
-        env:
-        - name: CLOUD_PROVIDER
-          value: aws
-        - name: CLUSTER_NAME
-          value: e2e-f9b0e6b3f9-a6teg.test-cncf-aws.k8s.io
-        - name: KOPS_STATE_STORE
-          value: s3://k8s-kops-prow
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "6Gi"
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-kubetest2, kops-presubmits, presubmits-kops
-      testgrid-days-of-results: "30"
-      testgrid-tab-name: pull-kops-e2e-aws-ebs-csi-driver
-  - name: pull-e2e-kops-aws-load-balancer-controller
-    always_run: false
-    skip_report: false
-    labels:
-      preset-service-account: "true"
-      preset-aws-ssh: "true"
-      preset-aws-credential: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
-      preset-dind-enabled: "true"
-      preset-e2e-platform-aws: "true"
-    decorate: true
-    decoration_config:
-      timeout: 2h
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
-        imagePullPolicy: Always
-        command:
-        - runner.sh
-        args:
-        - ./tests/e2e/scenarios/aws-lb-controller/run-test.sh
-        env:
-        - name: CLOUD_PROVIDER
-          value: aws
-        - name: CLUSTER_NAME
-          value: e2e-f9b0e6b3f9-omw32.test-cncf-aws.k8s.io
-        - name: KOPS_STATE_STORE
-          value: s3://k8s-kops-prow
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "6Gi"
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-kubetest2, kops-presubmits, presubmits-kops
-      testgrid-days-of-results: "30"
-      testgrid-tab-name: pull-kops-e2e-aws-load-balancer-controller
-  - name: pull-e2e-kops-addon-resource-tracking
-    always_run: false
-    skip_report: false
-    labels:
-      preset-service-account: "true"
-      preset-aws-ssh: "true"
-      preset-aws-credential: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
-      preset-dind-enabled: "true"
-      preset-e2e-platform-aws: "true"
-    decorate: true
-    decoration_config:
-      timeout: 2h
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
-        imagePullPolicy: Always
-        command:
-        - runner.sh
-        args:
-        - ./tests/e2e/scenarios/addon-resource-tracking/run-test.sh
-        env:
-        - name: CLOUD_PROVIDER
-          value: aws
-        - name: CLUSTER_NAME
-          value: e2e-f9b0e6b3f9-omw33.test-cncf-aws.k8s.io
-        - name: KOPS_STATE_STORE
-          value: s3://k8s-kops-prow
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            memory: "6Gi"
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-kops, google-aws, kops-kubetest2, kops-presubmits, presubmits-kops
-      testgrid-days-of-results: "30"
-      testgrid-tab-name: pull-kops-e2e-aws-addon-resource-tracking
-  - name: pull-kops-e2e-aws-irsa
-    branches:
-    - master
-    always_run: false
-    skip_report: false
-    labels:
-      preset-service-account: "true"
-      preset-aws-ssh: "true"
-      preset-aws-credential: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
-      preset-dind-enabled: "true"
-    decorate: true
-    decoration_config:
-      timeout: 90m
-    path_alias: k8s.io/kops
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
-        imagePullPolicy: Always
-        command:
-        - runner.sh
-        args:
-        - bash
-        - -c
-        - |
-            make test-e2e-install
-            kubetest2 kops \
-            -v 2 \
-            --up --build --down \
-            --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210621' --channel=alpha --networking=kubenet --container-runtime=containerd --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/pull-aws-irsa/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true" \
-            --env=KOPS_FEATURE_FLAGS=UseServiceAccountIAM \
-            --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/latest.txt \
-            --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
-            --test=kops \
-            -- \
-            --ginkgo-args="--debug" \
-            --test-args="-test.timeout=60m -num-nodes=0" \
-            --test-package-marker=latest.txt \
-            --parallel=25
-        securityContext:
-          privileged: true
-        env:
-        - name: KUBE_SSH_KEY_PATH
-          value: /etc/aws-ssh/aws-ssh-private
-        - name: KUBE_SSH_USER
-          value: ubuntu
-        - name: GOPATH
-          value: /home/prow/go
-        resources:
-          requests:
-            cpu: "2"
-            memory: "6Gi"
-    annotations:
-      test.kops.k8s.io/cloud: aws
-      test.kops.k8s.io/container_runtime: containerd
-      test.kops.k8s.io/distro: u2004
-      test.kops.k8s.io/feature_flags: UseServiceAccountIAM
-      test.kops.k8s.io/k8s_version: latest
-      test.kops.k8s.io/kops_channel: alpha
-      test.kops.k8s.io/networking: kubenet
-      testgrid-dashboards: kops-distro-u2004, kops-k8s-latest, kops-kubetest2, kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
-      testgrid-days-of-results: '90'
-      testgrid-tab-name: pull-kops-e2e-aws-irsa
 postsubmits:
   kubernetes/kops:
   - name: kops-postsubmit
@@ -652,13 +473,13 @@ postsubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-experimental
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-experimental
         command:
         - runner.sh
         args:
         - "make"
         - "prow-postsubmit"
-        - "UPLOAD_DEST=gs://kubernetes-release-dev/kops/ci"
+        - "UPLOAD_DEST=gs://k8s-release-dev/kops/ci"
         resources:
           requests:
             memory: "2Gi"

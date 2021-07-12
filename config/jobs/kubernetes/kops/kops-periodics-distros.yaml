@@ -45,7 +45,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: admin
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -108,7 +108,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: admin
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -171,7 +171,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -234,7 +234,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -283,7 +283,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-hirsute-21.04-amd64-server-20210622.1' --channel=alpha --networking=calico --container-runtime=containerd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-hirsute-21.04-amd64-server-20210707' --channel=alpha --networking=calico --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
@@ -297,7 +297,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -360,7 +360,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: centos
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -423,7 +423,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: centos
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -472,7 +472,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='amazon/amzn2-ami-hvm-2.0.20210617.0-x86_64-gp2' --channel=alpha --networking=calico --container-runtime=containerd" \
+          --create-args="--image='amazon/amzn2-ami-hvm-2.0.20210701.0-x86_64-gp2' --channel=alpha --networking=calico --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
@@ -486,7 +486,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -549,7 +549,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -612,7 +612,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -676,7 +676,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: core
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-master
       imagePullPolicy: Always
       resources:
         limits:
