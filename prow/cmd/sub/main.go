@@ -33,6 +33,7 @@ import (
 	"k8s.io/test-infra/prow/crier/reporters/pubsub"
 	"k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
@@ -45,6 +46,7 @@ var (
 
 type options struct {
 	client         flagutil.KubernetesOptions
+	github         flagutil.GitHubOptions
 	port           int
 	pushSecretFile string
 
@@ -80,6 +82,7 @@ func init() {
 
 	flagOptions.config.AddFlags(fs)
 	flagOptions.client.AddFlags(fs)
+	flagOptions.github.AddFlags(fs)
 	flagOptions.instrumentationOptions.AddFlags(fs)
 
 	fs.Parse(os.Args[1:])
@@ -93,16 +96,22 @@ func main() {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
-	var tokenGenerator func() []byte
+	var tokens []string
 	if flagOptions.pushSecretFile != "" {
-		var tokens []string
 		tokens = append(tokens, flagOptions.pushSecretFile)
+	}
+	if flagOptions.github.TokenPath != "" {
+		tokens = append(tokens, flagOptions.github.TokenPath)
+	}
+	secretAgent := &secret.Agent{}
+	if err := secretAgent.Start(tokens); err != nil {
+		logrus.WithError(err).Fatal("Error starting secrets agent.")
+	}
+	tokenGenerator := secretAgent.GetTokenGenerator(flagOptions.pushSecretFile)
 
-		secretAgent := &secret.Agent{}
-		if err := secretAgent.Start(tokens); err != nil {
-			logrus.WithError(err).Fatal("Error starting secrets agent.")
-		}
-		tokenGenerator = secretAgent.GetTokenGenerator(flagOptions.pushSecretFile)
+	gitClient, err := flagOptions.github.GitClient(secretAgent, flagOptions.dryRun)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error getting Git client.")
 	}
 
 	prowjobClient, err := flagOptions.client.ProwJobClient(configAgent.Config().ProwJobNamespace, flagOptions.dryRun)
@@ -125,6 +134,7 @@ func main() {
 		ConfigAgent:   configAgent,
 		Metrics:       promMetrics,
 		ProwJobClient: kubeClient,
+		GitClient:     git.ClientFactoryFrom(gitClient),
 		Reporter:      pubsub.NewReporter(configAgent.Config), // reuse crier reporter
 	}
 

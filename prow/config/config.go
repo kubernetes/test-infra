@@ -361,7 +361,12 @@ func (c *Config) GetPresubmits(gc git.ClientFactory, identifier string, baseSHAG
 		return nil, err
 	}
 
-	return append(c.PresubmitsStatic[identifier], prowYAML.Presubmits...), nil
+	return append(c.GetPresubmitsStatic(identifier), prowYAML.Presubmits...), nil
+}
+
+// GetPresubmitsStatic will return presubmits for the given identifier that are versioned inside the tested repo
+func (c *Config) GetPresubmitsStatic(identifier string) []Presubmit {
+	return c.PresubmitsStatic[identifier]
 }
 
 // GetPostsubmits will return all postsubmits for the given identifier. This includes
