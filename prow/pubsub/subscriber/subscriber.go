@@ -99,6 +99,7 @@ type Subscriber struct {
 	ConfigAgent   *config.Agent
 	Metrics       *Metrics
 	ProwJobClient ProwJobClient
+	GitClient     git.ClientFactory
 	Reporter      reportClient
 }
 
@@ -187,6 +188,7 @@ func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pe ProwJobEven
 	}
 	var headSHAGetters []func() (string, error)
 	for _, pull := range refs.Pulls {
+		pull := pull
 		headSHAGetters = append(headSHAGetters, func() (string, error) {
 			return pull.SHA, nil
 		})
@@ -253,7 +255,7 @@ func (s *Subscriber) handleMessage(msg messageInterface, subscription string) er
 	case periodicProwJobEvent:
 		jh = &periodicJobHandler{}
 	case presubmitProwJobEvent:
-		jh = &presubmitJobHandler{}
+		jh = &presubmitJobHandler{GitClient: s.GitClient}
 	case postsubmitProwJobEvent:
 		jh = &postsubmitJobHandler{}
 	default:
