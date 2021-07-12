@@ -43,8 +43,8 @@ periodics:
       - --root=/go/src
       - --timeout=240
       - --scenario=kubernetes_build
-      - --release=kubernetes-release-dev
       - --
+      - --release=kubernetes-release-dev
       - --allow-dup
       - --extra-version-markers=k8s-master
       - --registry=gcr.io/kubernetes-ci-images
