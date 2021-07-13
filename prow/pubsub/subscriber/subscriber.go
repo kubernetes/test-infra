@@ -52,6 +52,8 @@ type prowCfgClient interface {
 	AllPeriodics() []config.Periodic
 	GetPresubmits(gc git.ClientFactory, identifier string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) ([]config.Presubmit, error)
 	GetPresubmitsStatic(identifier string) []config.Presubmit
+	GetPostsubmits(gc git.ClientFactory, identifier string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) ([]config.Postsubmit, error)
+	GetPostsubmitsStatic(identifier string) []config.Postsubmit
 }
 
 // ProwJobEvent contains the minimum information required to start a ProwJob.
@@ -179,6 +181,12 @@ func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pe ProwJobEven
 	if len(refs.Pulls) == 0 {
 		return nil, nil, errors.New("at least 1 Pulls is required")
 	}
+	if len(refs.BaseSHA) == 0 {
+		return nil, nil, errors.New("baseSHA must be supplied")
+	}
+	if len(refs.BaseRef) == 0 {
+		return nil, nil, errors.New("baseRef must be supplied")
+	}
 
 	var presubmitJob *config.Presubmit
 	org, repo, branch := refs.Org, refs.Repo, refs.BaseRef
@@ -215,7 +223,7 @@ func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pe ProwJobEven
 		}
 	}
 	if presubmitJob == nil {
-		return nil, nil, fmt.Errorf("failed to find associated periodic job %q", pe.Name)
+		return nil, nil, fmt.Errorf("failed to find associated presubmit job %q", pe.Name)
 	}
 
 	prowJobSpec := pjutil.PresubmitSpec(*presubmitJob, *refs)
@@ -223,10 +231,57 @@ func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pe ProwJobEven
 }
 
 // ppostsubmitJobHandler implements jobHandler
-type postsubmitJobHandler struct{}
+type postsubmitJobHandler struct {
+	GitClient git.ClientFactory
+}
 
 func (poh *postsubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error) {
-	return nil, nil, errors.New("postsubmit not supported yet")
+	// postsubmit jobs require Refs to be set
+	refs := pe.Refs
+	if refs == nil {
+		return nil, nil, errors.New("refs must be supplied")
+	}
+	if len(refs.BaseSHA) == 0 {
+		return nil, nil, errors.New("baseSHA must be supplied")
+	}
+	if len(refs.BaseRef) == 0 {
+		return nil, nil, errors.New("baseRef must be supplied")
+	}
+
+	var postsubmitJob *config.Postsubmit
+	org, repo, branch := refs.Org, refs.Repo, refs.BaseRef
+	orgRepo := org + "/" + repo
+	baseSHAGetter := func() (string, error) {
+		return refs.BaseSHA, nil
+	}
+
+	postsubmits := cfg.GetPostsubmitsStatic(orgRepo)
+	if poh.GitClient != nil { // Get from inrepoconfig only when GitClient is provided
+		postsubmitsWithInrepoconfig, err := cfg.GetPostsubmits(poh.GitClient, orgRepo, baseSHAGetter)
+		if err != nil {
+			logrus.WithError(err).Debug("Failed to get postsubmits")
+		} else {
+			postsubmits = postsubmitsWithInrepoconfig
+		}
+	}
+
+	for _, job := range postsubmits {
+		if !job.CouldRun(branch) { // filter out jobs that are not branch matching
+			continue
+		}
+		if job.Name == pe.Name {
+			if postsubmitJob != nil {
+				return nil, nil, fmt.Errorf("%s matches multiple prow jobs", pe.Name)
+			}
+			postsubmitJob = &job
+		}
+	}
+	if postsubmitJob == nil {
+		return nil, nil, fmt.Errorf("failed to find associated postsubmit job %q", pe.Name)
+	}
+
+	prowJobSpec := pjutil.PostsubmitSpec(*postsubmitJob, *refs)
+	return &prowJobSpec, postsubmitJob.Labels, nil
 }
 
 func extractFromAttribute(attrs map[string]string, key string) (string, error) {
@@ -257,7 +312,7 @@ func (s *Subscriber) handleMessage(msg messageInterface, subscription string, al
 	case presubmitProwJobEvent:
 		jh = &presubmitJobHandler{GitClient: s.GitClient}
 	case postsubmitProwJobEvent:
-		jh = &postsubmitJobHandler{}
+		jh = &postsubmitJobHandler{GitClient: s.GitClient}
 	default:
 		l.WithField("type", eType).Error("Unsupported event type")
 		s.Metrics.ErrorCounter.With(prometheus.Labels{subscriptionLabel: subscription})
