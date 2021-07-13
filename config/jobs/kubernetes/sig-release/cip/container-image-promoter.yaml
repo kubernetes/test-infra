@@ -144,8 +144,8 @@ presubmits:
     cluster: k8s-infra-prow-build
     decorate: true
     path_alias: "sigs.k8s.io/k8s-container-image-promoter"
-    # TODO(releng): Run unconditionally once the job runs successfully
-    always_run: false
+    skip_report: false
+    always_run: true
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
