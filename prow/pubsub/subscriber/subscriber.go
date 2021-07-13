@@ -194,13 +194,14 @@ func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pe ProwJobEven
 		})
 	}
 
-	// This will work with inrepoconfig
-	presubmits, err := cfg.GetPresubmits(prh.GitClient, orgRepo, baseSHAGetter, headSHAGetters...)
-	if err != nil {
-		// Fall back to static presubmits to avoid deadlocking when a presubmit is used to verify
-		// inrepoconfig
-		logrus.WithError(err).Debug("Failed to get presubmits")
-		presubmits = cfg.GetPresubmitsStatic(orgRepo)
+	presubmits := cfg.GetPresubmitsStatic(orgRepo)
+	if prh.GitClient != nil { // Get from inrepoconfig only when GitClient is provided
+		presubmitsWithInrepoconfig, err := cfg.GetPresubmits(prh.GitClient, orgRepo, baseSHAGetter, headSHAGetters...)
+		if err != nil {
+			logrus.WithError(err).Debug("Failed to get presubmits")
+		} else {
+			presubmits = presubmitsWithInrepoconfig
+		}
 	}
 
 	for _, job := range presubmits {
