@@ -388,6 +388,11 @@ func (c *Config) GetPostsubmits(gc git.ClientFactory, identifier string, baseSHA
 	return append(c.PostsubmitsStatic[identifier], prowYAML.Postsubmits...), nil
 }
 
+// GetPostsubmitsStatic will return postsubmits for the given identifier that are versioned inside the tested repo
+func (c *Config) GetPostsubmitsStatic(identifier string) []Postsubmit {
+	return c.PostsubmitsStatic[identifier]
+}
+
 // OwnersDirDenylist is used to configure regular expressions matching directories
 // to ignore when searching for OWNERS{,_ALIAS} files in a repo.
 type OwnersDirDenylist struct {
