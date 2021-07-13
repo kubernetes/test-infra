@@ -29,7 +29,6 @@ interface RepoOptions {
     jobs: {[key: string]: boolean};
     authors: {[key: string]: boolean};
     pulls: {[key: string]: boolean};
-    batches: {[key: string]: boolean};
     states: {[key: string]: boolean};
     clusters: {[key: string]: boolean};
 }
@@ -37,7 +36,6 @@ interface RepoOptions {
 function optionsForRepo(repository: string): RepoOptions {
     const opts: RepoOptions = {
         authors: {},
-        batches: {},
         clusters: {},
         jobs: {},
         pulls: {},
@@ -71,11 +69,11 @@ function optionsForRepo(repository: string): RepoOptions {
             opts.jobs[job] = true;
             opts.states[state] = true;
 
-            if (type === "presubmit" && pulls.length) {
-                opts.authors[pulls[0].author] = true;
-                opts.pulls[pulls[0].number] = true;
-            } else if (type === "batch") {
-                opts.batches[genShortRefKey(base_ref, pulls)] = true;
+            if (pulls.length) {
+                for (const pull of pulls) {
+                    opts.authors[pull.author] = true;
+                    opts.pulls[pull.number] = true;
+                }
             }
         }
     }
@@ -92,17 +90,16 @@ function redrawOptions(fz: FuzzySearch, opts: RepoOptions) {
     const jobInput = document.getElementById("job-input") as HTMLInputElement;
     const jobList = document.getElementById("job-list") as HTMLUListElement;
     addOptionFuzzySearch(fz, js, "job", jobList, jobInput);
-    const as = Object.keys(opts.authors).sort(
-        (a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
-    addOptions(as, "author");
-    if (selectedType === "batch") {
-        opts.pulls = opts.batches;
-    }
+
     if (selectedType !== "periodic" && selectedType !== "postsubmit") {
         const ps = Object.keys(opts.pulls).sort((a, b) => Number(a) - Number(b));
         addOptions(ps, "pull");
+        const as = Object.keys(opts.authors).sort(
+            (a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+        addOptions(as, "author");
     } else {
         addOptions([], "pull");
+        addOptions([], "author");
     }
     const ss = Object.keys(opts.states).sort();
     addOptions(ss, "state");
@@ -473,9 +470,6 @@ function redraw(fz: FuzzySearch, pushState: boolean = true): void {
     const opts = optionsForRepo(repoSel);
 
     const typeSel = getSelection("type") as ProwJobType;
-    if (typeSel === "batch") {
-        opts.pulls = opts.batches;
-    }
     const pullSel = getSelection("pull");
     const authorSel = getSelection("author");
     const jobSel = getSelectionFuzzySearch("job", "job-input");
@@ -548,21 +542,31 @@ function redraw(fz: FuzzySearch, pushState: boolean = true): void {
         if (!jobSel.test(job)) {
             continue;
         }
-        if (type === "presubmit" && pulls.length) {
-            const {number: prNumber, author} = pulls[0];
 
-            if (!equalSelected(pullSel, prNumber.toString())) {
+        if (pullSel) {
+            if (!pulls.length) {
                 continue;
             }
-            if (!equalSelected(authorSel, author)) {
+
+            if (!pulls.some((pull: Pull): boolean => {
+                const {number: prNumber} = pull;
+                return equalSelected(pullSel, prNumber.toString());
+            })) {
                 continue;
             }
-        } else if (type === "batch" && !authorSel) {
-            if (!equalSelected(pullSel, genShortRefKey(base_ref, pulls))) {
+        }
+
+        if (authorSel) {
+            if (!pulls.length) {
                 continue;
             }
-        } else if (pullSel || authorSel) {
-            continue;
+
+            if (!pulls.some((pull: Pull): boolean => {
+                const {author} = pull;
+                return equalSelected(authorSel, author);
+            })) {
+                continue;
+            }
         }
 
         totalJob++;
