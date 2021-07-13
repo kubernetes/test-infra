@@ -109,9 +109,13 @@ func main() {
 	}
 	tokenGenerator := secretAgent.GetTokenGenerator(flagOptions.pushSecretFile)
 
-	gitClient, err := flagOptions.github.GitClient(secretAgent, flagOptions.dryRun)
-	if err != nil {
-		logrus.WithError(err).Fatal("Error getting Git client.")
+	var gitClientFactory git.ClientFactory
+	if flagOptions.github.TokenPath != "" {
+		gitClient, err := flagOptions.github.GitClient(secretAgent, flagOptions.dryRun)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error getting Git client.")
+		}
+		gitClientFactory = git.ClientFactoryFrom(gitClient)
 	}
 
 	prowjobClient, err := flagOptions.client.ProwJobClient(configAgent.Config().ProwJobNamespace, flagOptions.dryRun)
@@ -134,7 +138,7 @@ func main() {
 		ConfigAgent:   configAgent,
 		Metrics:       promMetrics,
 		ProwJobClient: kubeClient,
-		GitClient:     git.ClientFactoryFrom(gitClient),
+		GitClient:     gitClientFactory,
 		Reporter:      pubsub.NewReporter(configAgent.Config), // reuse crier reporter
 	}
 
