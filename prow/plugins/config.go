@@ -991,6 +991,9 @@ func (c *Configuration) setDefaults() {
 			c.RequireMatchingLabel[i].GracePeriod = "5s"
 		}
 	}
+	if len(c.CLAConfig.CLAContextNames) == 0 {
+		c.CLAConfig.CLAContextNames = []string{"cla/linuxfoundation"}
+	}
 }
 
 // validatePluginsDupes will return an error if there are duplicated plugins.
