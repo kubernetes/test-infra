@@ -138,7 +138,7 @@ func RetestFilter(failedContexts, allContexts sets.String) Filter {
 func RetestRequiredFilter(failedContext, allContexts sets.String) Filter {
 	return func(ps config.Presubmit) (bool, bool, bool) {
 		if ps.Optional {
-			return true, false, false
+			return false, false, false
 		}
 		return RetestFilter(failedContext, allContexts)(ps)
 	}
