@@ -1129,7 +1129,6 @@ presubmits:
         - --gcp-project-type=scalability-project
         - --gcp-zone=us-east1-b
         - --provider=gce
-        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-100-performance
         - --tear-down-previous
         - --env=CL2_ENABLE_CLUSTER_OOMS_TRACKER=true
         - --env=CL2_ENABLE_VIOLATIONS_FOR_SCHEDULING_THROUGHPUT=false
