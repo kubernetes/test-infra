@@ -239,6 +239,8 @@ presubmits:
         - --gcp-zone=us-east1-b
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-large-performance
+        - --env=CL2_ENABLE_HUGE_SERVICES=true
+        - --env=CL2_ENABLE_HUGE_SERVICES_MULTIPLE_REPLICAS=true
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
         - --test-cmd-args=cluster-loader2
@@ -391,6 +393,8 @@ presubmits:
         - --kubemark-nodes=5000
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce-scale
+        - --env=CL2_ENABLE_HUGE_SERVICES=true
+        - --env=CL2_ENABLE_HUGE_SERVICES_MULTIPLE_REPLICAS=true
         - --test=false
         - --test_args=--ginkgo.focus=xxxx
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
