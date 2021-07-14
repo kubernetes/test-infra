@@ -345,12 +345,7 @@ func TestK8sInfraTrusted(t *testing.T) {
 		if job.Cluster != trusted {
 			continue
 		}
-		if strings.HasPrefix(job.SourcePath, imagePushingDir) {
-			if err := validateImagePushingImage(job.Spec); err != nil {
-				jobsToFix++
-				errs = append(errs, fmt.Errorf("%s defined in %s %s", job.Name, job.SourcePath, err))
-			}
-		} else if !strings.HasPrefix(job.SourcePath, trustedPath) {
+		if !strings.HasPrefix(job.SourcePath, imagePushingDir) && !strings.HasPrefix(job.SourcePath, trustedPath) {
 			jobsToFix++
 			errs = append(errs, fmt.Errorf("%s defined in %s may not run in cluster: %s", job.Name, job.SourcePath, trusted))
 		}
@@ -359,6 +354,60 @@ func TestK8sInfraTrusted(t *testing.T) {
 		t.Errorf("%v", err)
 	}
 	t.Logf("summary: %4d/%4d jobs fail to meet k8s-infra-prow-build-trusted CI policy", jobsToFix, len(jobs))
+}
+
+// Jobs in config/jobs/image-pushing must
+// - run on cluster: k8s-infra-prow-build-trusted
+// - use a pinned version of gcr.io/k8s-testimages/image-builder
+// - have wg-k8s-infra-gcb in their testgrid-dashboards annotation
+func TestImagePushingJobs(t *testing.T) {
+	jobsToFix := 0
+	const trusted = "k8s-infra-prow-build-trusted"
+	imagePushingDir := path.Join(*jobConfigPath, "image-pushing") + "/"
+	jobs := staticJobsMatchingAll(func(job cfg.JobBase) bool {
+		return strings.HasPrefix(job.SourcePath, imagePushingDir)
+	})
+
+	for _, job := range jobs {
+		errs := []error{}
+		// Only consider Pods
+		if job.Spec == nil {
+			continue
+		}
+		// Only consider jobs in config/jobs/image-pushing/...
+		if !strings.HasPrefix(job.SourcePath, imagePushingDir) {
+			continue
+		}
+		if err := validateImagePushingImage(job.Spec); err != nil {
+			errs = append(errs, fmt.Errorf("%s defined in %s %w", job.Name, job.SourcePath, err))
+		}
+		if job.Cluster != trusted {
+			errs = append(errs, fmt.Errorf("%s defined in %s must have cluster: %v, got: %v", job.Name, job.SourcePath, trusted, job.Cluster))
+		}
+		dashboardsString, ok := job.Annotations["testgrid-dashboards"]
+		if !ok {
+			errs = append(errs, fmt.Errorf("%s defined in %s must have annotation: %v, not found", job.Name, job.SourcePath, "testgrid-dashboards"))
+		}
+		expectedDashboard := "wg-k8s-infra-gcb"
+		foundDashboard := false
+		for _, dashboardName := range strings.Split(dashboardsString, ",") {
+			dashboardName = strings.TrimSpace(dashboardName)
+			if dashboardName == expectedDashboard {
+				foundDashboard = true
+				break
+			}
+		}
+		if !foundDashboard {
+			errs = append(errs, fmt.Errorf("%s defined in %s must have %s in testgrid-dashboards annotation, got: %s", job.Name, job.SourcePath, expectedDashboard, dashboardsString))
+		}
+		if len(errs) > 0 {
+			jobsToFix++
+			for _, err := range errs {
+				t.Errorf("%v", err)
+			}
+		}
+	}
+	t.Logf("summary: %4d/%4d jobs in config/jobs/image-pushing fail to meet CI policy", jobsToFix, len(jobs))
 }
 
 func validateImagePushingImage(spec *coreapi.PodSpec) error {
@@ -922,6 +971,8 @@ func TestValidScenarioArgs(t *testing.T) {
 	}
 }
 
+type jobBasePredicate func(job cfg.JobBase) bool
+
 func allStaticJobs() []cfg.JobBase {
 	jobs := []cfg.JobBase{}
 	for _, job := range c.AllStaticPresubmits(nil) {
@@ -937,6 +988,24 @@ func allStaticJobs() []cfg.JobBase {
 		return jobs[i].Name < jobs[j].Name
 	})
 	return jobs
+}
+
+func staticJobsMatchingAll(predicates ...jobBasePredicate) []cfg.JobBase {
+	jobs := allStaticJobs()
+	matchingJobs := []cfg.JobBase{}
+	for _, job := range jobs {
+		matched := true
+		for _, p := range predicates {
+			if !p(job) {
+				matched = false
+				break
+			}
+		}
+		if matched {
+			matchingJobs = append(matchingJobs, job)
+		}
+	}
+	return matchingJobs
 }
 
 func verifyPodQOSGuaranteed(spec *coreapi.PodSpec, required bool) (errs []error) {
