@@ -689,7 +689,7 @@ func TestPresubmitFilter(t *testing.T) {
 					AlwaysRun: true,
 				},
 			},
-			expected: [][]bool{{false, false, false}, {false, false, false}, {true, false, false}, {true, false, true}, {true, false, false}},
+			expected: [][]bool{{false, false, false}, {false, false, false}, {false, false, false}, {true, false, true}, {true, false, false}},
 		},
 		{
 			name: "explicit test command filters for jobs that match",
