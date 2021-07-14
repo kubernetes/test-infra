@@ -178,6 +178,12 @@ func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pe ProwJobEven
 	if refs == nil {
 		return nil, nil, errors.New("Refs must be supplied")
 	}
+	if len(refs.Org) == 0 {
+		return nil, nil, errors.New("org must be supplied")
+	}
+	if len(refs.Repo) == 0 {
+		return nil, nil, errors.New("repo must be supplied")
+	}
 	if len(refs.Pulls) == 0 {
 		return nil, nil, errors.New("at least 1 Pulls is required")
 	}
@@ -241,6 +247,12 @@ func (poh *postsubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pe ProwJobEve
 	refs := pe.Refs
 	if refs == nil {
 		return nil, nil, errors.New("refs must be supplied")
+	}
+	if len(refs.Org) == 0 {
+		return nil, nil, errors.New("org must be supplied")
+	}
+	if len(refs.Repo) == 0 {
+		return nil, nil, errors.New("repo must be supplied")
 	}
 	if len(refs.BaseSHA) == 0 {
 		return nil, nil, errors.New("baseSHA must be supplied")
