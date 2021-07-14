@@ -111,36 +111,36 @@ EOF
 for repo in "${REPOS[@]}"; do
     IFS=/ read -r org repo <<<"${repo}"
 cat >>"${OUTPUT}" <<EOF
-- name: canary-${repo}-push-images
-  cluster: k8s-infra-prow-build-trusted
-  annotations:
-    testgrid-dashboards: sig-storage-image-build
-  decorate: true
-  interval: 168h # one week
-  extra_refs:
-    # This also becomes the current directory for run.sh and thus
-    # the cloud image build.
-    - org: kubernetes-csi
-      repo: ${repo}
-      base_ref: master
-  spec:
-    serviceAccountName: gcb-builder
-    containers:
-      - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
-        command:
-          - /run.sh
-        env:
-        # We need to emulate a pull job for the cloud build to work the same
-        # way as it usually does.
-        - name: PULL_BASE_REF
-          value: master
-        args:
-          # this is the project GCB will run in, which is the same as the GCR
-          # images are pushed to.
-          - --project=k8s-staging-sig-storage
-          # This is the same as above, but with -gcb appended.
-          - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
-          - --env-passthrough=PULL_BASE_REF
-          - .
+  - name: canary-${repo}-push-images
+    cluster: k8s-infra-prow-build-trusted
+    annotations:
+      testgrid-dashboards: sig-storage-image-build
+    decorate: true
+    interval: 168h # one week
+    extra_refs:
+      # This also becomes the current directory for run.sh and thus
+      # the cloud image build.
+      - org: kubernetes-csi
+        repo: ${repo}
+        base_ref: master
+    spec:
+      serviceAccountName: gcb-builder
+      containers:
+        - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          command:
+            - /run.sh
+          env:
+            # We need to emulate a pull job for the cloud build to work the same
+            # way as it usually does.
+            - name: PULL_BASE_REF
+              value: master
+          args:
+            # this is the project GCB will run in, which is the same as the GCR
+            # images are pushed to.
+            - --project=k8s-staging-sig-storage
+            # This is the same as above, but with -gcb appended.
+            - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
+            - --env-passthrough=PULL_BASE_REF
+            - .
 EOF
 done
