@@ -196,6 +196,13 @@ blockades:
   blockregexps:
   - ^push-build.sh
   explanation: "Changes to push-build.sh will immediately affect the Kubernetes CI. This PR must be explicitly approved by SIG Release repo admins."
+- repos:
+  - kubernetes/client-go
+  blockregexps:
+  - .*
+  exceptionregexps:
+  - ^README\.md$
+  explanation: "We do not accept changes directly against this repository, unless the change is to the `README.md` itself. Please see `CONTRIBUTING.md` for information on where and how to contribute instead."
 
 blunderbuss:
   max_request_count: 2
