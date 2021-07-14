@@ -1270,3 +1270,45 @@ func TestKubernetesProwJobsShouldNotUseDeprecatedScenarios(t *testing.T) {
 		t.Logf("summary: %v/%v jobs using deprecated scenarios", jobsToFix, len(jobs))
 	}
 }
+
+// Could test against all prowjobs but in doing so we discovered all current violations
+// are in presubmits, and we want to know presubmit-specific things about those
+func TestKubernetesPresubmitsShouldNotUseKubernetesReleasePullBucket(t *testing.T) {
+	jobsToFix := 0
+	jobs := c.AllStaticPresubmits(nil)
+	for _, job := range jobs {
+		// Only consider Pods
+		if job.Spec == nil {
+			continue
+		}
+		for _, container := range job.Spec.Containers {
+			foundExtractLocal := false
+			stagePath := ""
+			provider := ""
+			jobName := job.Name
+			if len(job.Branches) > 1 {
+				jobName = fmt.Sprintf("%v@%v", job.Name, job.Branches)
+			} else if len(job.Branches) > 0 {
+				jobName = fmt.Sprintf("%v@%v", job.Name, job.Branches[0])
+			}
+			for _, arg := range container.Args {
+				if strings.HasPrefix(arg, "--extract=local") {
+					foundExtractLocal = true
+				}
+				if strings.HasPrefix(arg, "--stage=gs://kubernetes-release-pull") {
+					stagePath = strings.TrimPrefix(arg, "--stage=gs://kubernetes-release-pull")
+				}
+				if strings.HasPrefix(arg, "--provider=") {
+					provider = strings.TrimPrefix(arg, "--provider=")
+				}
+			}
+			if stagePath != "" && foundExtractLocal {
+				jobsToFix++
+				t.Logf("%v: %v: jobs using --extract=local and --provider=%v should not use --stage=gs://kubernetes-release-pull%v", job.SourcePath, jobName, provider, stagePath)
+			}
+		}
+	}
+	if jobsToFix > 0 {
+		t.Logf("summary: %v/%v jobs using --stage=gs://kubernetes-release-pull/...", jobsToFix, len(jobs))
+	}
+}
