@@ -478,6 +478,8 @@ periodics:
       - --kubemark-nodes=5000
       - --provider=gce
       - --metadata-sources=cl2-metadata.json
+      - --env=CL2_ENABLE_HUGE_SERVICES=true
+      - --env=CL2_ENABLE_HUGE_SERVICES_MULTIPLE_REPLICAS=true
       - --test=false
       - --test_args=--ginkgo.focus=xxxx
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
@@ -561,6 +563,8 @@ periodics:
       - --kubemark-nodes=5000
       - --provider=gce
       - --metadata-sources=cl2-metadata.json
+      - --env=CL2_ENABLE_HUGE_SERVICES=true
+      - --env=CL2_ENABLE_HUGE_SERVICES_MULTIPLE_REPLICAS=true
       - --test=false
       - --test_args=--ginkgo.focus=xxxx
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
