@@ -33,9 +33,9 @@ if ((${BASH_VERSINFO[0]}<4)) || ( ((${BASH_VERSINFO[0]}==4)) && ((${BASH_VERSINF
 fi
 
 project=$1
-location=$2
+zone=$2
 cluster=$3
-context="gke_${project}_${location}_${cluster}"
+context="gke_${project}_${zone}_${cluster}"
 namespace=$4
 name=$5
 gcp_service_account=$6
