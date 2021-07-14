@@ -2683,7 +2683,7 @@ func (pc *ProwConfig) HasConfigFor() (global bool, orgs sets.String, repos sets.
 }
 
 func (pc *ProwConfig) hasGlobalConfig() bool {
-	if pc.BranchProtection.ProtectTested != nil || pc.BranchProtection.AllowDisabledPolicies != nil || pc.BranchProtection.AllowDisabledJobPolicies != nil || isPolicySet(pc.BranchProtection.Policy) {
+	if pc.BranchProtection.ProtectTested != nil || pc.BranchProtection.AllowDisabledPolicies != nil || pc.BranchProtection.AllowDisabledJobPolicies != nil || pc.BranchProtection.ProtectReposWithOptionalJobs != nil || isPolicySet(pc.BranchProtection.Policy) {
 		return true
 	}
 	emptyReference := &ProwConfig{
