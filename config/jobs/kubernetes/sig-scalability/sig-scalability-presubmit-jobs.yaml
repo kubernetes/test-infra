@@ -45,6 +45,7 @@ presubmits:
         - --gcp-project-type=scalability-project
         - --gcp-zone=us-east1-b
         - --provider=gce
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-100-performance
         - --tear-down-previous
         - --env=CL2_SCHEDULER_THROUGHPUT_THRESHOLD=0
         - --test=false
