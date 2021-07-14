@@ -21,7 +21,7 @@ set -o pipefail
 # Enables workload identity on a cluster
 
 if [[ $# != 3 ]]; then
-  echo "Usage: $(basename "$0") <project> <zone> <cluster>" >&2
+  echo "Usage: $(basename "$0") <project> <zone_or_region> <cluster>" >&2
   exit 1
 fi
 
@@ -46,6 +46,7 @@ pool_metadata=GKE_METADATA
 call-gcloud() {
   (
     set -o xtrace
+    # gcloud container accepts region or zone for either argument
     gcloud beta container "$@" "--project=$project" "--zone=$zone"
   )
 }

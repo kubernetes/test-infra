@@ -19,7 +19,7 @@ set -o nounset
 set -o pipefail
 
 if [[ $# != 6 ]]; then
-  echo "Usage: $(basename "$0") <project> <zone> <cluster> <namespace> <name> <gcp-service-account>" >&2
+  echo "Usage: $(basename "$0") <project> <zone_or_region> <cluster> <namespace> <name> <gcp-service-account>" >&2
   exit 1
 fi
 
