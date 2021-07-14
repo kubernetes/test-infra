@@ -1201,8 +1201,7 @@ func TestKubernetesProwJobsShouldUsePodUtils(t *testing.T) {
 	jobs := allStaticJobs()
 	for _, job := range jobs {
 		// Only consider Pods
-		// TODO(https://github.com/kubernetes/test-infra/issues/14343): remove kubeflow exemption when job configs migrated
-		if job.Spec == nil || strings.HasPrefix("kubeflow", job.Name) {
+		if job.Spec == nil {
 			continue
 		}
 		if !*job.Decorate {
