@@ -25,10 +25,12 @@ This is not intended for general usage, because:
   done, rather that developing a general purpose language to do this
 """
 
-import re
 import argparse
 import glob
-from os import path, walk
+import re
+
+from os import path
+
 import ruamel.yaml
 
 # Prow files that will be ignored
@@ -61,51 +63,61 @@ def setup_yaml():
     yaml.width = MAX_WIDTH
     return yaml
 
-def edit_job_config(yaml, prow_job_file_name):
+def edit_job_config(yaml, prow_job_file_name, force_rewrite=False):
     with open(prow_job_file_name, "r") as job_fp:
         prow_config = yaml.load(job_fp)
 
-    def should_edit(job):
-        return job["name"] == "a-specific-job-to-edit"
-
     def edit(job):
-        return job
+        edited = False
+        name = job["name"]
+        print(f'  handling job: {name}')
+        annotations = job["annotations"]
+        dashboard_list = re.split('[, ]+', annotations["testgrid-dashboards"])
+        if 'wg-k8s-infra-gcb' not in dashboard_list:
+            dashboard_list.append('wg-k8s-infra-gcb')
+            annotations["testgrid-dashboards"] = ", ".join(dashboard_list)
+            edited = True
+        return edited
+
+    should_rewrite = force_rewrite
 
     # For each presubmit, postsubmit, and periodic
     # presubmits -> <any repository> -> [{name: prowjob}]
     if "presubmits" in prow_config:
         for _, jobs in prow_config["presubmits"].items():
             for job in jobs:
-                if should_edit(job):
-                    edit(job)
+                if edit(job):
+                    should_rewrite = True
 
     # postsubmits -> <any repository> -> [{name: prowjob}]
     if "postsubmits" in prow_config:
         for _, jobs in prow_config["postsubmits"].items():
             for job in jobs:
-                if should_edit(job):
-                    edit(job)
+                if edit(job):
+                    should_rewrite = True
 
     # periodics -> [{name: prowjob}]
     if "periodics" in prow_config:
         for job in prow_config["periodics"]:
-            if should_edit(job):
-                edit(job)
+            if edit(job):
+                should_rewrite = True
 
     # Dump ProwConfig to prowJobFile
-    with open(prow_job_file_name, "w") as job_fp:
-        yaml.dump(prow_config, job_fp)
-        job_fp.truncate()
+    if should_rewrite:
+        print(f'  writing {prow_job_file_name}')
+        with open(prow_job_file_name, "w") as job_fp:
+            yaml.dump(prow_config, job_fp)
+            job_fp.truncate()
 
-def main(prow_job_dir):
+def main(prow_job_dir, force_rewrite):
     yaml = setup_yaml()
     for f in glob.glob(f'{prow_job_dir}/**/*.yaml', recursive=True):
         if path.basename(f) not in EXCLUDED_JOB_CONFIGS:
             try:
-                print(f'editing {f}')
-                edit_job_config(yaml, f)
-            except:
-                print(f'ERROR: could not edit {f}')
+                print(f'processing config: {f}')
+                edit_job_config(yaml, f, force_rewrite)
+            except Exception as e:  # pylint: disable=broad-except
+                print(f'ERROR: could not edit {f}: {e}')
 
 if __name__ == '__main__':
     PARSER = argparse.ArgumentParser(
@@ -114,6 +126,10 @@ if __name__ == '__main__':
         '--prow-job-dir',
         default='../config/jobs',
         help='Path to Prow Job Directory')
+    PARSER.add_argument(
+        '--force',
+        default=True,
+        help='Force rewrite of all job configs')
     ARGS = PARSER.parse_args()
 
-    main(ARGS.prow_job_dir)
+    main(ARGS.prow_job_dir, ARGS.force)
