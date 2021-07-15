@@ -411,14 +411,14 @@ nodeTestSuites:
   default:
     args:
     - --timeout=120m
-    - --test_args=--nodes=8 --skip="\[Flaky\]|\[Serial\]|\[NodeAlphaFeature:.+\]"
+    - --test_args=--nodes=8 --skip="\[Flaky\]|\[Serial\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]"
   gkespec:
     args:
     - --node-args=--system-spec-name=gke
     - --timeout=120m
-    - --test_args=--nodes=8 --skip="\[Flaky\]|\[Serial\]|\[NodeAlphaFeature:.+\]"
+    - --test_args=--nodes=8 --skip="\[Flaky\]|\[Serial\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]"
   serial:
     args:
     - --timeout=300m
-    - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeAlphaFeature:.+\]"
+    - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]"
     - --node-test-args=--feature-gates=DynamicKubeletConfig=true
