@@ -51,9 +51,12 @@ const (
 	// New status indicates a Gerrit change is new (ie pending)
 	New = "NEW"
 
-	// ReadyForReviewMessage is the message for a Gerrit change if it's changed
-	// from Draft to Active
-	ReadyForReviewMessage = "Set Ready For Review"
+	// ReadyForReviewMessage are the messages for a Gerrit change if it's changed
+	// from Draft to Active.
+	// This message will be sent if users press the `MARK AS ACTIVE` button.
+	ReadyForReviewMessageFixed = "Set Ready For Review"
+	// This message will be sent if users press the `SEND AND START REVIEW` button.
+	ReadyForReviewMessageCustomizable = "This change is ready for review."
 )
 
 // ProjectsFlag is the flag type for gerrit projects when initializing a gerrit client
