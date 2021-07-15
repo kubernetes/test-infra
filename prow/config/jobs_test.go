@@ -24,7 +24,9 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	coreapi "k8s.io/api/core/v1"
+	"sigs.k8s.io/yaml"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
@@ -68,6 +70,53 @@ func TestMain(m *testing.M) {
 	c = conf
 
 	os.Exit(m.Run())
+}
+
+func TestUnmarshal(t *testing.T) {
+	tests := []struct {
+		content    string
+		expectedPJ JobBase
+	}{
+		{
+			content: `reporter_config:
+  slack:
+    job_states_to_report: []
+`,
+			expectedPJ: JobBase{
+				ReporterConfig: &prowapi.ReporterConfig{
+					Slack: &prowapi.SlackReporterConfig{
+						JobStatesToReport: []prowapi.ProwJobState{},
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run("a", func(t *testing.T) {
+			// Unmarshal straight should pass
+			var pj JobBase
+			if err := yaml.Unmarshal([]byte(tc.content), &pj); err != nil {
+				t.Fatal(err)
+			}
+			if diff := cmp.Diff(tc.expectedPJ, pj); diff != "" {
+				t.Fatal("Failed unmarshal straight:\n\n", diff)
+			}
+
+			// Marshal then unmarshal and expect failure
+			marshalFromUnmarshal, err := yaml.Marshal(pj)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var secondPj JobBase
+			if err := yaml.Unmarshal([]byte(marshalFromUnmarshal), &secondPj); err != nil {
+				t.Fatal(err)
+			}
+			if diff := cmp.Diff(tc.expectedPJ, secondPj); diff != "" {
+				t.Fatal("Failed restore:\n\n", diff)
+			}
+		})
+	}
 }
 
 func TestPresubmits(t *testing.T) {
