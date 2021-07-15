@@ -103,9 +103,6 @@ func TestReport(t *testing.T) {
 		{
 			name: "1 job, unfinished, should not report",
 			pj: &v1.ProwJob{
-				Spec: v1.ProwJobSpec{
-					Report: true,
-				},
 				Status: v1.ProwJobStatus{
 					State: v1.PendingState,
 				},
@@ -114,9 +111,6 @@ func TestReport(t *testing.T) {
 		{
 			name: "1 job, finished, no labels, should not report",
 			pj: &v1.ProwJob{
-				Spec: v1.ProwJobSpec{
-					Report: true,
-				},
 				Status: v1.ProwJobStatus{
 					State: v1.SuccessState,
 				},
@@ -125,9 +119,6 @@ func TestReport(t *testing.T) {
 		{
 			name: "1 job, finished, missing gerrit-id label, should not report",
 			pj: &v1.ProwJob{
-				Spec: v1.ProwJobSpec{
-					Report: true,
-				},
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
 						client.GerritRevision:    "abc",
@@ -146,9 +137,6 @@ func TestReport(t *testing.T) {
 		{
 			name: "1 job, finished, missing gerrit-revision label, should not report",
 			pj: &v1.ProwJob{
-				Spec: v1.ProwJobSpec{
-					Report: true,
-				},
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
 						client.GerritID:          "123-abc",
@@ -164,9 +152,6 @@ func TestReport(t *testing.T) {
 		{
 			name: "1 job, finished, missing gerrit-instance label, should not report",
 			pj: &v1.ProwJob{
-				Spec: v1.ProwJobSpec{
-					Report: true,
-				},
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
 						client.GerritRevision:    "abc",
@@ -204,41 +189,13 @@ func TestReport(t *testing.T) {
 					Refs: &v1.Refs{
 						Repo: "foo",
 					},
-					Job:    "ci-foo",
-					Report: true,
+					Job: "ci-foo",
 				},
 			},
 			expectReport:      true,
 			reportInclude:     []string{"1 out of 1", "ci-foo", "SUCCESS", "guber/foo"},
 			expectLabel:       map[string]string{codeReview: lgtm},
 			numExpectedReport: 1,
-		},
-		{
-			name: "1 job, passed, skip report set true, should not report",
-			pj: &v1.ProwJob{
-				ObjectMeta: metav1.ObjectMeta{
-					Labels: map[string]string{
-						client.GerritRevision:    "abc",
-						kube.ProwJobTypeLabel:    presubmit,
-						client.GerritReportLabel: "Code-Review",
-					},
-					Annotations: map[string]string{
-						client.GerritID:       "123-abc",
-						client.GerritInstance: "gerrit",
-					},
-				},
-				Status: v1.ProwJobStatus{
-					State: v1.SuccessState,
-					URL:   "guber/foo",
-				},
-				Spec: v1.ProwJobSpec{
-					Refs: &v1.Refs{
-						Repo: "foo",
-					},
-					Job:    "ci-foo",
-					Report: false,
-				},
-			},
 		},
 		{
 			name: "1 job, passed, bad label, should report without label",
@@ -262,8 +219,7 @@ func TestReport(t *testing.T) {
 					Refs: &v1.Refs{
 						Repo: "foo",
 					},
-					Job:    "ci-foo",
-					Report: true,
+					Job: "ci-foo",
 				},
 			},
 			expectReport:      true,
@@ -292,8 +248,7 @@ func TestReport(t *testing.T) {
 					Refs: &v1.Refs{
 						Repo: "foo",
 					},
-					Job:    "ci-foo",
-					Report: true,
+					Job: "ci-foo",
 				},
 			},
 			expectReport:      true,
@@ -322,8 +277,7 @@ func TestReport(t *testing.T) {
 					Refs: &v1.Refs{
 						Repo: "foo",
 					},
-					Job:    "ci-foo",
-					Report: true,
+					Job: "ci-foo",
 				},
 			},
 			expectReport: false,
@@ -350,8 +304,7 @@ func TestReport(t *testing.T) {
 					Refs: &v1.Refs{
 						Repo: "foo",
 					},
-					Job:    "ci-foo",
-					Report: true,
+					Job: "ci-foo",
 				},
 			},
 			expectReport:      true,
@@ -382,8 +335,7 @@ func TestReport(t *testing.T) {
 					Refs: &v1.Refs{
 						Repo: "foo",
 					},
-					Job:    "ci-foo",
-					Report: true,
+					Job: "ci-foo",
 				},
 			},
 			expectReport:      true,
@@ -413,8 +365,7 @@ func TestReport(t *testing.T) {
 					Refs: &v1.Refs{
 						Repo: "foo/bar",
 					},
-					Job:    "ci-foo-bar",
-					Report: true,
+					Job: "ci-foo-bar",
 				},
 			},
 			expectReport:      true,
@@ -445,8 +396,7 @@ func TestReport(t *testing.T) {
 					Refs: &v1.Refs{
 						Repo: "foo",
 					},
-					Job:    "ci-foo",
-					Report: true,
+					Job: "ci-foo",
 				},
 			},
 			existingPJs: []*v1.ProwJob{
@@ -470,8 +420,7 @@ func TestReport(t *testing.T) {
 						Refs: &v1.Refs{
 							Repo: "bar",
 						},
-						Job:    "ci-bar",
-						Report: true,
+						Job: "ci-bar",
 					},
 				},
 			},
@@ -503,8 +452,7 @@ func TestReport(t *testing.T) {
 					Refs: &v1.Refs{
 						Repo: "foo",
 					},
-					Job:    "ci-foo",
-					Report: true,
+					Job: "ci-foo",
 				},
 			},
 			existingPJs: []*v1.ProwJob{
@@ -528,8 +476,7 @@ func TestReport(t *testing.T) {
 						Refs: &v1.Refs{
 							Repo: "bar",
 						},
-						Job:    "ci-bar",
-						Report: true,
+						Job: "ci-bar",
 					},
 				},
 			},
@@ -556,8 +503,7 @@ func TestReport(t *testing.T) {
 					Refs: &v1.Refs{
 						Repo: "foo",
 					},
-					Job:    "ci-foo",
-					Report: true,
+					Job: "ci-foo",
 				},
 			},
 			existingPJs: []*v1.ProwJob{
@@ -581,8 +527,7 @@ func TestReport(t *testing.T) {
 						Refs: &v1.Refs{
 							Repo: "bar",
 						},
-						Job:    "ci-bar",
-						Report: true,
+						Job: "ci-bar",
 					},
 				},
 			},
@@ -614,8 +559,7 @@ func TestReport(t *testing.T) {
 					Refs: &v1.Refs{
 						Repo: "foo",
 					},
-					Job:    "ci-foo",
-					Report: true,
+					Job: "ci-foo",
 				},
 			},
 			expectReport:      true,
@@ -645,8 +589,7 @@ func TestReport(t *testing.T) {
 					Refs: &v1.Refs{
 						Repo: "foo",
 					},
-					Job:    "ci-foo",
-					Report: true,
+					Job: "ci-foo",
 				},
 			},
 			existingPJs: []*v1.ProwJob{
@@ -671,8 +614,7 @@ func TestReport(t *testing.T) {
 						Refs: &v1.Refs{
 							Repo: "bar",
 						},
-						Job:    "ci-bar",
-						Report: true,
+						Job: "ci-bar",
 					},
 				},
 			},
@@ -704,8 +646,7 @@ func TestReport(t *testing.T) {
 					Refs: &v1.Refs{
 						Repo: "foo",
 					},
-					Job:    "ci-foo",
-					Report: true,
+					Job: "ci-foo",
 				},
 			},
 			existingPJs: []*v1.ProwJob{
@@ -729,8 +670,7 @@ func TestReport(t *testing.T) {
 						Refs: &v1.Refs{
 							Repo: "bar",
 						},
-						Job:    "ci-bar",
-						Report: true,
+						Job: "ci-bar",
 					},
 				},
 			},
@@ -762,9 +702,8 @@ func TestReport(t *testing.T) {
 					Refs: &v1.Refs{
 						Repo: "foo",
 					},
-					Job:    "ci-foo",
-					Type:   v1.PresubmitJob,
-					Report: true,
+					Job:  "ci-foo",
+					Type: v1.PresubmitJob,
 				},
 			},
 			existingPJs: []*v1.ProwJob{
@@ -788,9 +727,8 @@ func TestReport(t *testing.T) {
 						Refs: &v1.Refs{
 							Repo: "bar",
 						},
-						Job:    "ci-bar",
-						Type:   v1.PresubmitJob,
-						Report: true,
+						Job:  "ci-bar",
+						Type: v1.PresubmitJob,
 					},
 				},
 			},
@@ -821,8 +759,7 @@ func TestReport(t *testing.T) {
 					Refs: &v1.Refs{
 						Repo: "foo",
 					},
-					Job:    "ci-foo",
-					Report: true,
+					Job: "ci-foo",
 				},
 			},
 			existingPJs: []*v1.ProwJob{
@@ -846,8 +783,7 @@ func TestReport(t *testing.T) {
 						Refs: &v1.Refs{
 							Repo: "bar",
 						},
-						Job:    "ci-bar",
-						Report: true,
+						Job: "ci-bar",
 					},
 				},
 			},
@@ -878,8 +814,7 @@ func TestReport(t *testing.T) {
 					Refs: &v1.Refs{
 						Repo: "foo",
 					},
-					Job:    "ci-foo",
-					Report: true,
+					Job: "ci-foo",
 				},
 			},
 			existingPJs: []*v1.ProwJob{
@@ -903,8 +838,7 @@ func TestReport(t *testing.T) {
 						Refs: &v1.Refs{
 							Repo: "bar",
 						},
-						Job:    "ci-bar",
-						Report: true,
+						Job: "ci-bar",
 					},
 				},
 			},
@@ -938,8 +872,7 @@ func TestReport(t *testing.T) {
 					Refs: &v1.Refs{
 						Repo: "foo",
 					},
-					Job:    "ci-foo",
-					Report: true,
+					Job: "ci-foo",
 				},
 			},
 			existingPJs: []*v1.ProwJob{
@@ -969,8 +902,7 @@ func TestReport(t *testing.T) {
 						Refs: &v1.Refs{
 							Repo: "foo",
 						},
-						Job:    "ci-foo",
-						Report: true,
+						Job: "ci-foo",
 					},
 				},
 			},
@@ -1001,8 +933,7 @@ func TestReport(t *testing.T) {
 					Refs: &v1.Refs{
 						Repo: "foo",
 					},
-					Job:    "ci-foo",
-					Report: true,
+					Job: "ci-foo",
 				},
 			},
 			existingPJs: []*v1.ProwJob{
@@ -1026,8 +957,7 @@ func TestReport(t *testing.T) {
 						Refs: &v1.Refs{
 							Repo: "bar",
 						},
-						Job:    "ci-bar",
-						Report: true,
+						Job: "ci-bar",
 					},
 				},
 			},
@@ -1062,8 +992,7 @@ func TestReport(t *testing.T) {
 					Refs: &v1.Refs{
 						Repo: "foo",
 					},
-					Job:    "ci-foo",
-					Report: true,
+					Job: "ci-foo",
 				},
 			},
 			existingPJs: []*v1.ProwJob{
@@ -1093,9 +1022,8 @@ func TestReport(t *testing.T) {
 						Refs: &v1.Refs{
 							Repo: "bar",
 						},
-						Job:    "ci-bar",
-						Type:   v1.PresubmitJob,
-						Report: true,
+						Job:  "ci-bar",
+						Type: v1.PresubmitJob,
 					},
 				},
 				{
@@ -1124,9 +1052,8 @@ func TestReport(t *testing.T) {
 						Refs: &v1.Refs{
 							Repo: "foo",
 						},
-						Job:    "ci-foo",
-						Type:   v1.PresubmitJob,
-						Report: true,
+						Job:  "ci-foo",
+						Type: v1.PresubmitJob,
 					},
 				},
 			},
@@ -1165,8 +1092,7 @@ func TestReport(t *testing.T) {
 					Refs: &v1.Refs{
 						Repo: "foo",
 					},
-					Job:    "ci-foo",
-					Report: true,
+					Job: "ci-foo",
 				},
 			},
 			existingPJs: []*v1.ProwJob{
@@ -1200,9 +1126,8 @@ func TestReport(t *testing.T) {
 						Refs: &v1.Refs{
 							Repo: "bar",
 						},
-						Job:    "ci-bar",
-						Type:   v1.PresubmitJob,
-						Report: true,
+						Job:  "ci-bar",
+						Type: v1.PresubmitJob,
 					},
 				},
 				{
@@ -1235,9 +1160,8 @@ func TestReport(t *testing.T) {
 						Refs: &v1.Refs{
 							Repo: "foo",
 						},
-						Job:    "ci-foo",
-						Type:   v1.PresubmitJob,
-						Report: true,
+						Job:  "ci-foo",
+						Type: v1.PresubmitJob,
 					},
 				},
 				{
@@ -1267,9 +1191,8 @@ func TestReport(t *testing.T) {
 						Refs: &v1.Refs{
 							Repo: "foo",
 						},
-						Job:    "ci-foo",
-						Type:   v1.PresubmitJob,
-						Report: true,
+						Job:  "ci-foo",
+						Type: v1.PresubmitJob,
 					},
 				},
 			},
@@ -1305,8 +1228,7 @@ func TestReport(t *testing.T) {
 					Refs: &v1.Refs{
 						Repo: "foo",
 					},
-					Job:    "ci-foo",
-					Report: true,
+					Job: "ci-foo",
 				},
 			},
 			existingPJs: []*v1.ProwJob{
@@ -1340,9 +1262,8 @@ func TestReport(t *testing.T) {
 						Refs: &v1.Refs{
 							Repo: "bar",
 						},
-						Job:    "ci-bar",
-						Type:   v1.PresubmitJob,
-						Report: true,
+						Job:  "ci-bar",
+						Type: v1.PresubmitJob,
 					},
 				},
 				{
@@ -1375,9 +1296,8 @@ func TestReport(t *testing.T) {
 						Refs: &v1.Refs{
 							Repo: "foo",
 						},
-						Job:    "ci-foo",
-						Type:   v1.PresubmitJob,
-						Report: true,
+						Job:  "ci-foo",
+						Type: v1.PresubmitJob,
 					},
 				},
 				{
@@ -1407,9 +1327,8 @@ func TestReport(t *testing.T) {
 						Refs: &v1.Refs{
 							Repo: "foo",
 						},
-						Job:    "ci-foo",
-						Type:   v1.PresubmitJob,
-						Report: true,
+						Job:  "ci-foo",
+						Type: v1.PresubmitJob,
 					},
 				},
 			},
@@ -1438,8 +1357,7 @@ func TestReport(t *testing.T) {
 					Refs: &v1.Refs{
 						Repo: "foo",
 					},
-					Job:    "ci-foo",
-					Report: true,
+					Job: "ci-foo",
 				},
 			},
 			expectReport:      true,
@@ -1469,8 +1387,7 @@ func TestReport(t *testing.T) {
 					Refs: &v1.Refs{
 						Repo: "foo",
 					},
-					Job:    "ci-foo",
-					Report: true,
+					Job: "ci-foo",
 				},
 			},
 			expectReport:      true,
