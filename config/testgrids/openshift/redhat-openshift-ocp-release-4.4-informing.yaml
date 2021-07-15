@@ -1091,11 +1091,14 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.4-e2e-aws-serial
   name: periodic-ci-openshift-release-master-ci-4.4-e2e-aws-serial
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.4-e2e-azure-upgrade
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.4-e2e-azure-upgrade
   name: periodic-ci-openshift-release-master-ci-4.4-e2e-azure-upgrade
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.4-e2e-gcp-upgrade
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.4-e2e-gcp-upgrade
   name: periodic-ci-openshift-release-master-ci-4.4-e2e-gcp-upgrade
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.4-upgrade-from-stable-4.4-e2e-aws-upgrade
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.4-upgrade-from-stable-4.4-e2e-aws-upgrade
   name: periodic-ci-openshift-release-master-ci-4.4-upgrade-from-stable-4.4-e2e-aws-upgrade
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.4-console-aws
@@ -1103,28 +1106,34 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.4-e2e-aws-fips
   name: periodic-ci-openshift-release-master-nightly-4.4-e2e-aws-fips
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.4-e2e-aws-fips-serial
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.4-e2e-aws-fips-serial
   name: periodic-ci-openshift-release-master-nightly-4.4-e2e-aws-fips-serial
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.4-e2e-aws-fips-upgrade
   name: periodic-ci-openshift-release-master-nightly-4.4-e2e-aws-fips-upgrade
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.4-e2e-aws-proxy
   name: periodic-ci-openshift-release-master-nightly-4.4-e2e-aws-proxy
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.4-e2e-aws-upgrade
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.4-e2e-aws-upgrade
   name: periodic-ci-openshift-release-master-nightly-4.4-e2e-aws-upgrade
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.4-e2e-azure
   name: periodic-ci-openshift-release-master-nightly-4.4-e2e-azure
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.4-e2e-azure-fips
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.4-e2e-azure-fips
   name: periodic-ci-openshift-release-master-nightly-4.4-e2e-azure-fips
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.4-e2e-azure-fips-serial
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.4-e2e-azure-fips-serial
   name: periodic-ci-openshift-release-master-nightly-4.4-e2e-azure-fips-serial
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.4-e2e-gcp
   name: periodic-ci-openshift-release-master-nightly-4.4-e2e-gcp
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.4-e2e-gcp-fips
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.4-e2e-gcp-fips
   name: periodic-ci-openshift-release-master-nightly-4.4-e2e-gcp-fips
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.4-e2e-gcp-fips-serial
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.4-e2e-gcp-fips-serial
   name: periodic-ci-openshift-release-master-nightly-4.4-e2e-gcp-fips-serial
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.4-e2e-ovirt
   name: periodic-ci-openshift-release-master-nightly-4.4-e2e-ovirt

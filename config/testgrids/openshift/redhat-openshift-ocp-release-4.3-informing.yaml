@@ -1151,7 +1151,8 @@ test_groups:
 - days_of_results: 8
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.3-e2e-aws-fips
   name: periodic-ci-openshift-release-master-nightly-4.3-e2e-aws-fips
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.3-e2e-aws-fips-serial
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.3-e2e-aws-fips-serial
   name: periodic-ci-openshift-release-master-nightly-4.3-e2e-aws-fips-serial
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.3-e2e-aws-fips-upgrade
@@ -1159,16 +1160,20 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.3-e2e-azure
   name: periodic-ci-openshift-release-master-nightly-4.3-e2e-azure
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.3-e2e-azure-fips
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.3-e2e-azure-fips
   name: periodic-ci-openshift-release-master-nightly-4.3-e2e-azure-fips
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.3-e2e-azure-fips-serial
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.3-e2e-azure-fips-serial
   name: periodic-ci-openshift-release-master-nightly-4.3-e2e-azure-fips-serial
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.3-e2e-gcp
   name: periodic-ci-openshift-release-master-nightly-4.3-e2e-gcp
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.3-e2e-gcp-fips
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.3-e2e-gcp-fips
   name: periodic-ci-openshift-release-master-nightly-4.3-e2e-gcp-fips
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.3-e2e-gcp-fips-serial
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.3-e2e-gcp-fips-serial
   name: periodic-ci-openshift-release-master-nightly-4.3-e2e-gcp-fips-serial
 - gcs_prefix: origin-ci-test/logs/promote-release-openshift-machine-os-content-e2e-aws-4.3
   name: promote-release-openshift-machine-os-content-e2e-aws-4.3
@@ -1223,13 +1228,17 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.1-to-4.2-to-4.3-nightly
   name: release-openshift-origin-installer-e2e-aws-upgrade-4.1-to-4.2-to-4.3-nightly
-- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.2-nightly-to-4.3-nightly
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.2-nightly-to-4.3-nightly
   name: release-openshift-origin-installer-e2e-aws-upgrade-4.2-nightly-to-4.3-nightly
-- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.2-to-4.3
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.2-to-4.3
   name: release-openshift-origin-installer-e2e-aws-upgrade-4.2-to-4.3
-- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.2-to-4.3
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.2-to-4.3
   name: release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.2-to-4.3
-- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.3
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.3
   name: release-openshift-origin-installer-e2e-aws-upgrade-rollback-4.3
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-azure-compact-4.3
@@ -1237,7 +1246,8 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-azure-shared-vpc-4.3
   name: release-openshift-origin-installer-e2e-azure-shared-vpc-4.3
-- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-azure-upgrade-4.3
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-azure-upgrade-4.3
   name: release-openshift-origin-installer-e2e-azure-upgrade-4.3
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-gcp-compact-4.3
@@ -1245,7 +1255,8 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-gcp-shared-vpc-4.3
   name: release-openshift-origin-installer-e2e-gcp-shared-vpc-4.3
-- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-gcp-upgrade-4.3
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-gcp-upgrade-4.3
   name: release-openshift-origin-installer-e2e-gcp-upgrade-4.3
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-old-rhcos-e2e-aws-4.3
