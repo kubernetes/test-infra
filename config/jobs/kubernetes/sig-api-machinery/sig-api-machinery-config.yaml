@@ -112,6 +112,7 @@ presubmits:
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-network-proxy-http-connect
         - --provider=gce
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=9
         - --timeout=80m

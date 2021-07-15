@@ -724,6 +724,7 @@ presubmits:
         - --ginkgo-parallel=30
         - --provider=gce
         - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=80m
         image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-1.18
@@ -859,6 +860,7 @@ presubmits:
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
         - --provider=gce
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-ubuntu-containerd
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=80m
         image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-1.18
@@ -1024,6 +1026,7 @@ presubmits:
         - --gcp-project-type=scalability-project
         - --gcp-zone=us-east1-b
         - --provider=gce
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-100-performance
         - --tear-down-previous
         - --test=false
         - --env=CL2_ENABLE_CLUSTER_OOMS_TRACKER=true
