@@ -178,7 +178,7 @@ func (r *reconciler) reconcile(ctx context.Context, log *logrus.Entry, req recon
 
 	log = log.WithField("jobName", pj.Spec.Job)
 
-	if !r.reporter.ShouldReport(ctx, log, &pj) {
+	if !pj.Spec.Report || !r.reporter.ShouldReport(ctx, log, &pj) {
 		return nil, nil
 	}
 
