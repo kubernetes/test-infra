@@ -15,7 +15,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/agnhost\/'
@@ -54,7 +54,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/apparmor-loader\/'
@@ -93,7 +93,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/busybox\/'
@@ -132,7 +132,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/cuda-vector-add\/'
@@ -171,7 +171,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/cuda-vector-add-old\/'
@@ -210,7 +210,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/echoserver\/'
@@ -249,7 +249,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/glusterdynamic-provisioner\/'
@@ -288,7 +288,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/httpd\/'
@@ -327,7 +327,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/httpd-new\/'
@@ -366,7 +366,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/ipc-utils\/'
@@ -405,7 +405,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/jessie-dnsutils\/'
@@ -444,7 +444,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/kitten\/'
@@ -483,7 +483,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/metadata-concealment\/'
@@ -522,7 +522,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/nautilus\/'
@@ -561,7 +561,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/nginx\/'
@@ -600,7 +600,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/nginx-new\/'
@@ -639,7 +639,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/node-perf\/tf-wide-deep\/'
@@ -678,7 +678,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/node-perf\/npb-ep\/'
@@ -717,7 +717,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/node-perf\/npb-is\/'
@@ -756,7 +756,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/nonewprivs\/'
@@ -795,7 +795,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/nonroot\/'
@@ -834,7 +834,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/perl\/'
@@ -873,7 +873,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/pets\/redis-installer\/'
@@ -912,7 +912,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/pets\/peer-finder\/'
@@ -951,7 +951,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/pets\/zookeeper-installer\/'
@@ -990,7 +990,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/redis\/'
@@ -1029,7 +1029,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/regression-issue-74839\/'
@@ -1068,7 +1068,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/resource-consumer\/'
@@ -1107,7 +1107,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/sample-apiserver\/'
@@ -1146,7 +1146,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/sample-device-plugin\/'
@@ -1185,7 +1185,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/volume\/iscsi\/'
@@ -1224,7 +1224,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/volume\/rbd\/'
@@ -1263,7 +1263,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/volume\/nfs\/'
@@ -1302,7 +1302,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/volume\/gluster\/'
@@ -1352,7 +1352,7 @@ periodics:
     interval: 744h
     cluster: k8s-infra-prow-build-trusted
     annotations:
-      testgrid-dashboards: sig-testing-images
+      testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
     decorate: true
     extra_refs:
       # This also becomes the current directory for run.sh and thus

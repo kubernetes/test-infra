@@ -3,7 +3,7 @@ postsubmits:
     - name: post-kind-push-binaries
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-kind
+        testgrid-dashboards: sig-testing-kind, wg-k8s-infra-gcb
         testgrid-alert-email: kubernetes-engprod+alerts@google.com,antonio.ojea.garcia@gmail.com
         testgrid-num-columns-recent: '3'
       decorate: true

@@ -3,7 +3,7 @@ postsubmits:
     - name: post-boskos-push-images
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-boskos
+        testgrid-dashboards: sig-testing-boskos, wg-k8s-infra-gcb
         testgrid-tab-name: push-images
         testgrid-alert-email: jgrafton@google.com
       decorate: true

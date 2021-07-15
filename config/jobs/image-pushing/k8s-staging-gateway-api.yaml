@@ -3,7 +3,7 @@ postsubmits:
     - name: post-gateway-api-push-images
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-network-gateway-api
+        testgrid-dashboards: sig-network-gateway-api, wg-k8s-infra-gcb
       decorate: true
       branches:
         - ^master$

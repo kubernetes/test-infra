@@ -3,7 +3,7 @@ postsubmits:
     - name: post-release-push-image-vulndash
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-release-releng-informing, sig-release-master-informing, sig-release-image-pushes
+        testgrid-dashboards: sig-release-releng-informing, sig-release-master-informing, sig-release-image-pushes, wg-k8s-infra-gcb
         testgrid-alert-email: release-managers+alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
       decorate: true
@@ -31,7 +31,7 @@ postsubmits:
     - name: post-cip-push-image-cip
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-release-releng-blocking, sig-release-master-informing, sig-release-image-pushes
+        testgrid-dashboards: sig-release-releng-blocking, sig-release-master-informing, sig-release-image-pushes, wg-k8s-infra-gcb
         testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
       decorate: true
