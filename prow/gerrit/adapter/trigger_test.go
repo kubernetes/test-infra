@@ -299,9 +299,32 @@ func TestMessageFilter(t *testing.T) {
 			},
 		},
 		{
-			name:     "draft->active triggers multiple",
-			messages: []string{client.ReadyForReviewMessage},
+			name:     "draft->active by clicking `MARK AS ACTIVE` triggers multiple",
+			messages: []string{client.ReadyForReviewMessageFixed},
 			all:      sets.NewString("foo", "bar"),
+			checks: []check{
+				{
+					job:             job("foo", nil),
+					shouldRun:       true,
+					forcedToRun:     false,
+					defaultBehavior: false,
+				},
+				{
+					job:             job("bar", nil),
+					shouldRun:       true,
+					forcedToRun:     false,
+					defaultBehavior: false,
+				},
+			},
+		},
+		{
+			name: "draft->active by clicking `SEND AND START REVIEW` triggers multiple",
+			messages: []string{`Patch Set 1:
+
+			(1 comment)
+			
+			` + client.ReadyForReviewMessageCustomizable},
+			all: sets.NewString("foo", "bar"),
 			checks: []check{
 				{
 					job:             job("foo", nil),
