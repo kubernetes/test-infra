@@ -192,6 +192,9 @@ type BranchProtection struct {
 	// AllowDisabledJobPolicies allows a branch to choose to opt out of branch protection
 	// even if Prow has registered required jobs for that branch.
 	AllowDisabledJobPolicies *bool `json:"allow_disabled_job_policies,omitempty"`
+	// ProtectReposWithOptionalJobs will make the Branchprotector manage required status
+	// contexts on repositories that only have optional jobs (default: false)
+	ProtectReposWithOptionalJobs *bool `json:"protect_repos_with_optional_jobs,omitempty"`
 }
 
 func isPolicySet(p Policy) bool {
@@ -219,6 +222,11 @@ func (bp *BranchProtection) merge(additional *BranchProtection) error {
 		errs = append(errs, errors.New("both branchprotection configs set allow_disabled_job_policies"))
 	} else if additional.AllowDisabledJobPolicies != nil {
 		bp.AllowDisabledJobPolicies = additional.AllowDisabledJobPolicies
+	}
+	if bp.ProtectReposWithOptionalJobs != nil && additional.ProtectReposWithOptionalJobs != nil {
+		errs = append(errs, errors.New("both branchprotection configs set protect_repos_with_optional_jobs"))
+	} else if additional.ProtectReposWithOptionalJobs != nil {
+		bp.ProtectReposWithOptionalJobs = additional.ProtectReposWithOptionalJobs
 	}
 	for org := range additional.Orgs {
 		if bp.Orgs == nil {
@@ -340,7 +348,7 @@ func (c *Config) GetPolicy(org, repo, branch string, b Branch, presubmits []Pres
 	policy := b.Policy
 
 	// Automatically require contexts from prow which must always be present
-	if prowContexts, _, _ := BranchRequirements(branch, presubmits); len(prowContexts) > 0 {
+	if prowContexts, requiredIfPresentContexts, optionalContexts := BranchRequirements(branch, presubmits); c.shouldManageRequiredStatusCheck(prowContexts, requiredIfPresentContexts, optionalContexts) {
 		// Error if protection is disabled
 		if policy.Protect != nil && !*policy.Protect {
 			if c.BranchProtection.AllowDisabledJobPolicies != nil && *c.BranchProtection.AllowDisabledJobPolicies {
@@ -375,6 +383,16 @@ func (c *Config) GetPolicy(org, repo, branch string, b Branch, presubmits []Pres
 		return nil, nil
 	}
 	return &policy, nil
+}
+
+func (c *Config) shouldManageRequiredStatusCheck(requiredContexts, requiredIfPresentContexts, optionalContexts []string) bool {
+	if len(requiredContexts) > 0 {
+		return true
+	}
+	if c.BranchProtection.ProtectReposWithOptionalJobs == nil || !*c.BranchProtection.ProtectReposWithOptionalJobs {
+		return false
+	}
+	return len(requiredIfPresentContexts) > 0 || len(optionalContexts) > 0
 }
 
 func isUnprotected(policy Policy, allowDisabledPolicies bool, hasRequiredContexts bool, allowDisabledJobPolicies bool) bool {

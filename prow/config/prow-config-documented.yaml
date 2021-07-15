@@ -211,6 +211,10 @@ branch-protection:
     # branch protection config.
     protect-tested-repos: false
 
+    # ProtectReposWithOptionalJobs will make the Branchprotector manage required status
+    # contexts on repositories that only have optional jobs (default: false)
+    protect_repos_with_optional_jobs: false
+
     # RequiredLinearHistory enforces a linear commit Git history, which prevents anyone from pushing merge commits to a branch.
     required_linear_history: false
 
