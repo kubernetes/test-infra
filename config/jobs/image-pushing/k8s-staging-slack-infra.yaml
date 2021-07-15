@@ -6,7 +6,7 @@ postsubmits:
       annotations:
         testgrid-num-failures-to-alert: "1"
         testgrid-alert-email: ktbry@google.com, k8s-infra-oncall@google.com, k8s-infra-staging-slack-infra@kubernetes.io
-        testgrid-dashboards: sig-contribex-slack-infra
+        testgrid-dashboards: sig-contribex-slack-infra, wg-k8s-infra-gcb
       decorate: true
       branches:
         - ^main$

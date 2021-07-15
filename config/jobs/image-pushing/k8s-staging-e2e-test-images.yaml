@@ -15,7 +15,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/agnhost\/'
@@ -37,10 +37,10 @@ postsubmits:
               - --build-dir=.
               - test/images
             env:
-            # By default, the E2E test image's WHAT is all-conformance.
-            # We override that with the agnhost image.
-            - name: WHAT
-              value: "agnhost"
+              # By default, the E2E test image's WHAT is all-conformance.
+              # We override that with the agnhost image.
+              - name: WHAT
+                value: "agnhost"
     - name: post-kubernetes-push-e2e-apparmor-loader-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -54,7 +54,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/apparmor-loader\/'
@@ -76,10 +76,10 @@ postsubmits:
               - --build-dir=.
               - test/images
             env:
-            # By default, the E2E test image's WHAT is all-conformance.
-            # We override that with the apparmor-loader image.
-            - name: WHAT
-              value: "apparmor-loader"
+              # By default, the E2E test image's WHAT is all-conformance.
+              # We override that with the apparmor-loader image.
+              - name: WHAT
+                value: "apparmor-loader"
     - name: post-kubernetes-push-e2e-busybox-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -93,7 +93,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/busybox\/'
@@ -115,10 +115,10 @@ postsubmits:
               - --build-dir=.
               - test/images
             env:
-            # By default, the E2E test image's WHAT is all-conformance.
-            # We override that with the busybox image.
-            - name: WHAT
-              value: "busybox"
+              # By default, the E2E test image's WHAT is all-conformance.
+              # We override that with the busybox image.
+              - name: WHAT
+                value: "busybox"
     - name: post-kubernetes-push-e2e-cuda-vector-add-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -132,7 +132,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/cuda-vector-add\/'
@@ -154,10 +154,10 @@ postsubmits:
               - --build-dir=.
               - test/images
             env:
-            # By default, the E2E test image's WHAT is all-conformance.
-            # We override that with the cuda-vector-add image.
-            - name: WHAT
-              value: "cuda-vector-add"
+              # By default, the E2E test image's WHAT is all-conformance.
+              # We override that with the cuda-vector-add image.
+              - name: WHAT
+                value: "cuda-vector-add"
     - name: post-kubernetes-push-e2e-cuda-vector-add-old-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -171,7 +171,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/cuda-vector-add-old\/'
@@ -193,10 +193,10 @@ postsubmits:
               - --build-dir=.
               - test/images
             env:
-            # By default, the E2E test image's WHAT is all-conformance.
-            # We override that with the cuda-vector-add-old image.
-            - name: WHAT
-              value: "cuda-vector-add-old"
+              # By default, the E2E test image's WHAT is all-conformance.
+              # We override that with the cuda-vector-add-old image.
+              - name: WHAT
+                value: "cuda-vector-add-old"
     - name: post-kubernetes-push-e2e-echoserver-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -210,7 +210,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/echoserver\/'
@@ -232,10 +232,10 @@ postsubmits:
               - --build-dir=.
               - test/images
             env:
-            # By default, the E2E test image's WHAT is all-conformance.
-            # We override that with the echoserver image.
-            - name: WHAT
-              value: "echoserver"
+              # By default, the E2E test image's WHAT is all-conformance.
+              # We override that with the echoserver image.
+              - name: WHAT
+                value: "echoserver"
     - name: post-kubernetes-push-e2e-glusterdynamic-provisioner-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -249,7 +249,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/glusterdynamic-provisioner\/'
@@ -271,10 +271,10 @@ postsubmits:
               - --build-dir=.
               - test/images
             env:
-            # By default, the E2E test image's WHAT is all-conformance.
-            # We override that with the glusterdynamic-provisioner image.
-            - name: WHAT
-              value: "glusterdynamic-provisioner"
+              # By default, the E2E test image's WHAT is all-conformance.
+              # We override that with the glusterdynamic-provisioner image.
+              - name: WHAT
+                value: "glusterdynamic-provisioner"
     - name: post-kubernetes-push-e2e-httpd-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -288,7 +288,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/httpd\/'
@@ -310,10 +310,10 @@ postsubmits:
               - --build-dir=.
               - test/images
             env:
-            # By default, the E2E test image's WHAT is all-conformance.
-            # We override that with the httpd image.
-            - name: WHAT
-              value: "httpd"
+              # By default, the E2E test image's WHAT is all-conformance.
+              # We override that with the httpd image.
+              - name: WHAT
+                value: "httpd"
     - name: post-kubernetes-push-e2e-httpd-new-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -327,7 +327,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/httpd-new\/'
@@ -349,10 +349,10 @@ postsubmits:
               - --build-dir=.
               - test/images
             env:
-            # By default, the E2E test image's WHAT is all-conformance.
-            # We override that with the httpd-new image.
-            - name: WHAT
-              value: "httpd-new"
+              # By default, the E2E test image's WHAT is all-conformance.
+              # We override that with the httpd-new image.
+              - name: WHAT
+                value: "httpd-new"
     - name: post-kubernetes-push-e2e-ipc-utils-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -366,7 +366,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/ipc-utils\/'
@@ -388,10 +388,10 @@ postsubmits:
               - --build-dir=.
               - test/images
             env:
-            # By default, the E2E test image's WHAT is all-conformance.
-            # We override that with the ipc-utils image.
-            - name: WHAT
-              value: "ipc-utils"
+              # By default, the E2E test image's WHAT is all-conformance.
+              # We override that with the ipc-utils image.
+              - name: WHAT
+                value: "ipc-utils"
     - name: post-kubernetes-push-e2e-jessie-dnsutils-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -405,7 +405,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/jessie-dnsutils\/'
@@ -427,10 +427,10 @@ postsubmits:
               - --build-dir=.
               - test/images
             env:
-            # By default, the E2E test image's WHAT is all-conformance.
-            # We override that with the jessie-dnsutils image.
-            - name: WHAT
-              value: "jessie-dnsutils"
+              # By default, the E2E test image's WHAT is all-conformance.
+              # We override that with the jessie-dnsutils image.
+              - name: WHAT
+                value: "jessie-dnsutils"
     - name: post-kubernetes-push-e2e-kitten-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -444,7 +444,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/kitten\/'
@@ -466,10 +466,10 @@ postsubmits:
               - --build-dir=.
               - test/images
             env:
-            # By default, the E2E test image's WHAT is all-conformance.
-            # We override that with the kitten image.
-            - name: WHAT
-              value: "kitten"
+              # By default, the E2E test image's WHAT is all-conformance.
+              # We override that with the kitten image.
+              - name: WHAT
+                value: "kitten"
     - name: post-kubernetes-push-e2e-metadata-concealment-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -483,7 +483,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/metadata-concealment\/'
@@ -505,10 +505,10 @@ postsubmits:
               - --build-dir=.
               - test/images
             env:
-            # By default, the E2E test image's WHAT is all-conformance.
-            # We override that with the metadata-concealment image.
-            - name: WHAT
-              value: "metadata-concealment"
+              # By default, the E2E test image's WHAT is all-conformance.
+              # We override that with the metadata-concealment image.
+              - name: WHAT
+                value: "metadata-concealment"
     - name: post-kubernetes-push-e2e-nautilus-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -522,7 +522,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/nautilus\/'
@@ -544,10 +544,10 @@ postsubmits:
               - --build-dir=.
               - test/images
             env:
-            # By default, the E2E test image's WHAT is all-conformance.
-            # We override that with the nautilus image.
-            - name: WHAT
-              value: "nautilus"
+              # By default, the E2E test image's WHAT is all-conformance.
+              # We override that with the nautilus image.
+              - name: WHAT
+                value: "nautilus"
     - name: post-kubernetes-push-e2e-nginx-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -561,7 +561,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/nginx\/'
@@ -583,10 +583,10 @@ postsubmits:
               - --build-dir=.
               - test/images
             env:
-            # By default, the E2E test image's WHAT is all-conformance.
-            # We override that with the nginx image.
-            - name: WHAT
-              value: "nginx"
+              # By default, the E2E test image's WHAT is all-conformance.
+              # We override that with the nginx image.
+              - name: WHAT
+                value: "nginx"
     - name: post-kubernetes-push-e2e-nginx-new-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -600,7 +600,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/nginx-new\/'
@@ -622,10 +622,10 @@ postsubmits:
               - --build-dir=.
               - test/images
             env:
-            # By default, the E2E test image's WHAT is all-conformance.
-            # We override that with the nginx-new image.
-            - name: WHAT
-              value: "nginx-new"
+              # By default, the E2E test image's WHAT is all-conformance.
+              # We override that with the nginx-new image.
+              - name: WHAT
+                value: "nginx-new"
     - name: post-kubernetes-push-e2e-node-perf-tf-wide-deep-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -639,7 +639,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/node-perf\/tf-wide-deep\/'
@@ -661,10 +661,10 @@ postsubmits:
               - --build-dir=.
               - test/images
             env:
-            # By default, the E2E test image's WHAT is all-conformance.
-            # We override that with the node-perf/tf-wide-deep image.
-            - name: WHAT
-              value: "node-perf/tf-wide-deep"
+              # By default, the E2E test image's WHAT is all-conformance.
+              # We override that with the node-perf/tf-wide-deep image.
+              - name: WHAT
+                value: "node-perf/tf-wide-deep"
     - name: post-kubernetes-push-e2e-node-perf-npb-ep-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -678,7 +678,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/node-perf\/npb-ep\/'
@@ -700,10 +700,10 @@ postsubmits:
               - --build-dir=.
               - test/images
             env:
-            # By default, the E2E test image's WHAT is all-conformance.
-            # We override that with the node-perf/npb-ep image.
-            - name: WHAT
-              value: "node-perf/npb-ep"
+              # By default, the E2E test image's WHAT is all-conformance.
+              # We override that with the node-perf/npb-ep image.
+              - name: WHAT
+                value: "node-perf/npb-ep"
     - name: post-kubernetes-push-e2e-node-perf-npb-is-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -717,7 +717,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/node-perf\/npb-is\/'
@@ -739,10 +739,10 @@ postsubmits:
               - --build-dir=.
               - test/images
             env:
-            # By default, the E2E test image's WHAT is all-conformance.
-            # We override that with the node-perf/npb-is image.
-            - name: WHAT
-              value: "node-perf/npb-is"
+              # By default, the E2E test image's WHAT is all-conformance.
+              # We override that with the node-perf/npb-is image.
+              - name: WHAT
+                value: "node-perf/npb-is"
     - name: post-kubernetes-push-e2e-nonewprivs-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -756,7 +756,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/nonewprivs\/'
@@ -778,10 +778,10 @@ postsubmits:
               - --build-dir=.
               - test/images
             env:
-            # By default, the E2E test image's WHAT is all-conformance.
-            # We override that with the nonewprivs image.
-            - name: WHAT
-              value: "nonewprivs"
+              # By default, the E2E test image's WHAT is all-conformance.
+              # We override that with the nonewprivs image.
+              - name: WHAT
+                value: "nonewprivs"
     - name: post-kubernetes-push-e2e-nonroot-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -795,7 +795,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/nonroot\/'
@@ -817,10 +817,10 @@ postsubmits:
               - --build-dir=.
               - test/images
             env:
-            # By default, the E2E test image's WHAT is all-conformance.
-            # We override that with the nonroot image.
-            - name: WHAT
-              value: "nonroot"
+              # By default, the E2E test image's WHAT is all-conformance.
+              # We override that with the nonroot image.
+              - name: WHAT
+                value: "nonroot"
     - name: post-kubernetes-push-e2e-perl-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -834,7 +834,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/perl\/'
@@ -856,10 +856,10 @@ postsubmits:
               - --build-dir=.
               - test/images
             env:
-            # By default, the E2E test image's WHAT is all-conformance.
-            # We override that with the perl image.
-            - name: WHAT
-              value: "perl"
+              # By default, the E2E test image's WHAT is all-conformance.
+              # We override that with the perl image.
+              - name: WHAT
+                value: "perl"
     - name: post-kubernetes-push-e2e-pets-redis-installer-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -873,7 +873,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/pets\/redis-installer\/'
@@ -895,10 +895,10 @@ postsubmits:
               - --build-dir=.
               - test/images
             env:
-            # By default, the E2E test image's WHAT is all-conformance.
-            # We override that with the pets/redis-installer image.
-            - name: WHAT
-              value: "pets/redis-installer"
+              # By default, the E2E test image's WHAT is all-conformance.
+              # We override that with the pets/redis-installer image.
+              - name: WHAT
+                value: "pets/redis-installer"
     - name: post-kubernetes-push-e2e-pets-peer-finder-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -912,7 +912,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/pets\/peer-finder\/'
@@ -934,10 +934,10 @@ postsubmits:
               - --build-dir=.
               - test/images
             env:
-            # By default, the E2E test image's WHAT is all-conformance.
-            # We override that with the pets/peer-finder image.
-            - name: WHAT
-              value: "pets/peer-finder"
+              # By default, the E2E test image's WHAT is all-conformance.
+              # We override that with the pets/peer-finder image.
+              - name: WHAT
+                value: "pets/peer-finder"
     - name: post-kubernetes-push-e2e-pets-zookeeper-installer-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -951,7 +951,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/pets\/zookeeper-installer\/'
@@ -973,10 +973,10 @@ postsubmits:
               - --build-dir=.
               - test/images
             env:
-            # By default, the E2E test image's WHAT is all-conformance.
-            # We override that with the pets/zookeeper-installer image.
-            - name: WHAT
-              value: "pets/zookeeper-installer"
+              # By default, the E2E test image's WHAT is all-conformance.
+              # We override that with the pets/zookeeper-installer image.
+              - name: WHAT
+                value: "pets/zookeeper-installer"
     - name: post-kubernetes-push-e2e-redis-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -990,7 +990,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/redis\/'
@@ -1012,10 +1012,10 @@ postsubmits:
               - --build-dir=.
               - test/images
             env:
-            # By default, the E2E test image's WHAT is all-conformance.
-            # We override that with the redis image.
-            - name: WHAT
-              value: "redis"
+              # By default, the E2E test image's WHAT is all-conformance.
+              # We override that with the redis image.
+              - name: WHAT
+                value: "redis"
     - name: post-kubernetes-push-e2e-regression-issue-74839-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -1029,7 +1029,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/regression-issue-74839\/'
@@ -1051,10 +1051,10 @@ postsubmits:
               - --build-dir=.
               - test/images
             env:
-            # By default, the E2E test image's WHAT is all-conformance.
-            # We override that with the regression-issue-74839 image.
-            - name: WHAT
-              value: "regression-issue-74839"
+              # By default, the E2E test image's WHAT is all-conformance.
+              # We override that with the regression-issue-74839 image.
+              - name: WHAT
+                value: "regression-issue-74839"
     - name: post-kubernetes-push-e2e-resource-consumer-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -1068,7 +1068,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/resource-consumer\/'
@@ -1090,10 +1090,10 @@ postsubmits:
               - --build-dir=.
               - test/images
             env:
-            # By default, the E2E test image's WHAT is all-conformance.
-            # We override that with the resource-consumer image.
-            - name: WHAT
-              value: "resource-consumer"
+              # By default, the E2E test image's WHAT is all-conformance.
+              # We override that with the resource-consumer image.
+              - name: WHAT
+                value: "resource-consumer"
     - name: post-kubernetes-push-e2e-sample-apiserver-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -1107,7 +1107,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/sample-apiserver\/'
@@ -1129,10 +1129,10 @@ postsubmits:
               - --build-dir=.
               - test/images
             env:
-            # By default, the E2E test image's WHAT is all-conformance.
-            # We override that with the sample-apiserver image.
-            - name: WHAT
-              value: "sample-apiserver"
+              # By default, the E2E test image's WHAT is all-conformance.
+              # We override that with the sample-apiserver image.
+              - name: WHAT
+                value: "sample-apiserver"
     - name: post-kubernetes-push-e2e-sample-device-plugin-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -1146,7 +1146,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/sample-device-plugin\/'
@@ -1168,10 +1168,10 @@ postsubmits:
               - --build-dir=.
               - test/images
             env:
-            # By default, the E2E test image's WHAT is all-conformance.
-            # We override that with the sample-device-plugin image.
-            - name: WHAT
-              value: "sample-device-plugin"
+              # By default, the E2E test image's WHAT is all-conformance.
+              # We override that with the sample-device-plugin image.
+              - name: WHAT
+                value: "sample-device-plugin"
     - name: post-kubernetes-push-e2e-volume-iscsi-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -1185,7 +1185,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/volume\/iscsi\/'
@@ -1207,10 +1207,10 @@ postsubmits:
               - --build-dir=.
               - test/images
             env:
-            # By default, the E2E test image's WHAT is all-conformance.
-            # We override that with the volume/iscsi image.
-            - name: WHAT
-              value: "volume/iscsi"
+              # By default, the E2E test image's WHAT is all-conformance.
+              # We override that with the volume/iscsi image.
+              - name: WHAT
+                value: "volume/iscsi"
     - name: post-kubernetes-push-e2e-volume-rbd-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -1224,7 +1224,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/volume\/rbd\/'
@@ -1246,10 +1246,10 @@ postsubmits:
               - --build-dir=.
               - test/images
             env:
-            # By default, the E2E test image's WHAT is all-conformance.
-            # We override that with the volume/rbd image.
-            - name: WHAT
-              value: "volume/rbd"
+              # By default, the E2E test image's WHAT is all-conformance.
+              # We override that with the volume/rbd image.
+              - name: WHAT
+                value: "volume/rbd"
     - name: post-kubernetes-push-e2e-volume-nfs-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -1263,7 +1263,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/volume\/nfs\/'
@@ -1285,10 +1285,10 @@ postsubmits:
               - --build-dir=.
               - test/images
             env:
-            # By default, the E2E test image's WHAT is all-conformance.
-            # We override that with the volume/nfs image.
-            - name: WHAT
-              value: "volume/nfs"
+              # By default, the E2E test image's WHAT is all-conformance.
+              # We override that with the volume/nfs image.
+              - name: WHAT
+                value: "volume/nfs"
     - name: post-kubernetes-push-e2e-volume-gluster-test-images
       rerun_auth_config:
         github_team_slugs:
@@ -1302,7 +1302,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/volume\/gluster\/'
@@ -1324,60 +1324,60 @@ postsubmits:
               - --build-dir=.
               - test/images
             env:
-            # By default, the E2E test image's WHAT is all-conformance.
-            # We override that with the volume/gluster image.
-            - name: WHAT
-              value: "volume/gluster"
+              # By default, the E2E test image's WHAT is all-conformance.
+              # We override that with the volume/gluster image.
+              - name: WHAT
+                value: "volume/gluster"
 
 periodics:
-# NOTE(claudiub): The base image for the Windows E2E test images is nanoserver.
-# In most cases, that is sufficient. But in some cases, we are missing some DLLs.
-# We can fetch those DLLs from Windows servercore images, but they are very large
-# (2GB compressed), while the DLLs are only a few megabytes in size. We can build
-# a monthly DLL cache image and use the cache instead.
-# For more info: https://github.com/kubernetes/kubernetes/pull/93889
-- name: kubernetes-e2e-windows-servercore-cache
-  rerun_auth_config:
-    github_team_slugs:
+  # NOTE(claudiub): The base image for the Windows E2E test images is nanoserver.
+  # In most cases, that is sufficient. But in some cases, we are missing some DLLs.
+  # We can fetch those DLLs from Windows servercore images, but they are very large
+  # (2GB compressed), while the DLLs are only a few megabytes in size. We can build
+  # a monthly DLL cache image and use the cache instead.
+  # For more info: https://github.com/kubernetes/kubernetes/pull/93889
+  - name: kubernetes-e2e-windows-servercore-cache
+    rerun_auth_config:
+      github_team_slugs:
+        - org: kubernetes
+          slug: test-infra-admins
+        - org: kubernetes
+          slug: release-engineering
+      github_users:
+        - aojea
+        - chewong
+        - claudiubelu
+    # Since the servercore image is updated once per month, we only need to build this
+    # cache once per month.
+    interval: 744h
+    cluster: k8s-infra-prow-build-trusted
+    annotations:
+      testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
+    decorate: true
+    extra_refs:
+      # This also becomes the current directory for run.sh and thus
+      # the cloud image build.
       - org: kubernetes
-        slug: test-infra-admins
-      - org: kubernetes
-        slug: release-engineering
-    github_users:
-      - aojea
-      - chewong
-      - claudiubelu
-  # Since the servercore image is updated once per month, we only need to build this
-  # cache once per month.
-  interval: 744h
-  cluster: k8s-infra-prow-build-trusted
-  annotations:
-    testgrid-dashboards: sig-testing-images
-  decorate: true
-  extra_refs:
-    # This also becomes the current directory for run.sh and thus
-    # the cloud image build.
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-  spec:
-    serviceAccountName: gcb-builder
-    containers:
-      - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
-        command:
-          - /run.sh
-        args:
-          - --project=k8s-staging-e2e-test-images
-          - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-          - --env-passthrough=PULL_BASE_REF,WHAT
-          - --build-dir=.
-          - test/images
-        env:
-        # We need to emulate a pull job for the cloud build to work the same
-        # way as it usually does.
-        - name: PULL_BASE_REF
-          value: master
-        # By default, the E2E test image's WHAT is all-conformance. We override that with
-        # the windows-servercore-cache image.
-        - name: WHAT
-          value: "windows-servercore-cache"
+        repo: kubernetes
+        base_ref: master
+    spec:
+      serviceAccountName: gcb-builder
+      containers:
+        - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          command:
+            - /run.sh
+          args:
+            - --project=k8s-staging-e2e-test-images
+            - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
+            - --env-passthrough=PULL_BASE_REF,WHAT
+            - --build-dir=.
+            - test/images
+          env:
+            # We need to emulate a pull job for the cloud build to work the same
+            # way as it usually does.
+            - name: PULL_BASE_REF
+              value: master
+            # By default, the E2E test image's WHAT is all-conformance. We override that with
+            # the windows-servercore-cache image.
+            - name: WHAT
+              value: "windows-servercore-cache"

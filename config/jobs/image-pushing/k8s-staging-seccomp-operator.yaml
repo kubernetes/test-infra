@@ -2,6 +2,8 @@ postsubmits:
   kubernetes-sigs/security-profiles-operator:
     - name: post-security-profiles-operator-push-image
       cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: wg-k8s-infra-gcb
       decorate: true
       always_run: true
       branches:

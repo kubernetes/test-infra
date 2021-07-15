@@ -3,9 +3,11 @@
 dashboard_groups:
 - name: wg-k8s-infra
   dashboard_names:
-  - wg-k8s-infra-k8sio
   - wg-k8s-infra-canaries
+  - wg-k8s-infra-gcb
+  - wg-k8s-infra-k8sio
 
 dashboards:
-- name: wg-k8s-infra-k8sio
 - name: wg-k8s-infra-canaries
+- name: wg-k8s-infra-gcb
+- name: wg-k8s-infra-k8sio

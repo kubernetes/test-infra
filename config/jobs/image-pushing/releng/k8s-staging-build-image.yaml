@@ -3,7 +3,7 @@ postsubmits:
     - name: post-release-push-image-debian-base
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-release-releng-informing, sig-release-master-informing, sig-release-image-pushes
+        testgrid-dashboards: sig-release-releng-informing, sig-release-master-informing, sig-release-image-pushes, wg-k8s-infra-gcb
         testgrid-alert-email: release-managers+alerts@kubernetes.io
       decorate: true
       run_if_changed: '^images\/build\/debian-base\/'
@@ -32,7 +32,7 @@ postsubmits:
     - name: post-release-push-image-debian-iptables
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-release-releng-informing, sig-release-master-informing, sig-release-image-pushes
+        testgrid-dashboards: sig-release-releng-informing, sig-release-master-informing, sig-release-image-pushes, wg-k8s-infra-gcb
         testgrid-alert-email: release-managers+alerts@kubernetes.io
       decorate: true
       run_if_changed: '^images\/build\/debian-iptables\/'
@@ -61,7 +61,7 @@ postsubmits:
     - name: post-release-push-image-go-runner
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-release-releng-informing, sig-release-master-informing, sig-release-image-pushes
+        testgrid-dashboards: sig-release-releng-informing, sig-release-master-informing, sig-release-image-pushes, wg-k8s-infra-gcb
         testgrid-alert-email: release-managers+alerts@kubernetes.io
       decorate: true
       run_if_changed: '^images\/build\/go-runner\/'
@@ -90,7 +90,7 @@ postsubmits:
     - name: post-release-push-image-kube-cross
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-release-releng-informing, sig-release-master-informing, sig-release-image-pushes
+        testgrid-dashboards: sig-release-releng-informing, sig-release-master-informing, sig-release-image-pushes, wg-k8s-infra-gcb
         testgrid-alert-email: release-managers+alerts@kubernetes.io
       decorate: true
       run_if_changed: '^images\/build\/cross\/'
@@ -119,7 +119,7 @@ postsubmits:
     - name: post-release-push-image-setcap
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-release-releng-informing, sig-release-master-informing, sig-release-image-pushes
+        testgrid-dashboards: sig-release-releng-informing, sig-release-master-informing, sig-release-image-pushes, wg-k8s-infra-gcb
         testgrid-alert-email: release-managers+alerts@kubernetes.io
       decorate: true
       run_if_changed: '^images\/build\/setcap\/'

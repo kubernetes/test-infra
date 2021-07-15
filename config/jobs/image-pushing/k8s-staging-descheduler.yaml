@@ -7,7 +7,7 @@ postsubmits:
       cluster: k8s-infra-prow-build-trusted
       annotations:
         # This is the name of some testgrid dashboard to report to.
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling, wg-k8s-infra-gcb
       decorate: true
       branches:
         - ^master$
