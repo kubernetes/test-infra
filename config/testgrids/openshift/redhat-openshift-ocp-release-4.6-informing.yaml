@@ -2204,14 +2204,17 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.6-e2e-aws-sdn-multitenant
   name: periodic-ci-openshift-release-master-ci-4.6-e2e-aws-sdn-multitenant
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.6-e2e-aws-upgrade-rollback
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.6-e2e-aws-upgrade-rollback
   name: periodic-ci-openshift-release-master-ci-4.6-e2e-aws-upgrade-rollback
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.6-e2e-azure-upgrade
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.6-e2e-azure-upgrade
   name: periodic-ci-openshift-release-master-ci-4.6-e2e-azure-upgrade
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.6-e2e-gcp
   name: periodic-ci-openshift-release-master-ci-4.6-e2e-gcp
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.6-e2e-gcp-upgrade
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.6-e2e-gcp-upgrade
   name: periodic-ci-openshift-release-master-ci-4.6-e2e-gcp-upgrade
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.6-e2e-openstack-parallel
   name: periodic-ci-openshift-release-master-ci-4.6-e2e-openstack-parallel
@@ -2226,7 +2229,8 @@ test_groups:
 - days_of_results: 50
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.6-upgrade-from-stable-4.5-e2e-aws-upgrade
   name: periodic-ci-openshift-release-master-ci-4.6-upgrade-from-stable-4.5-e2e-aws-upgrade
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.6-upgrade-from-stable-4.5-e2e-aws-upgrade-rollback
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.6-upgrade-from-stable-4.5-e2e-aws-upgrade-rollback
   name: periodic-ci-openshift-release-master-ci-4.6-upgrade-from-stable-4.5-e2e-aws-upgrade-rollback
 - days_of_results: 50
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.6-upgrade-from-stable-4.5-e2e-azure-ovn-upgrade
@@ -2243,7 +2247,8 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.6-upgrade-from-stable-4.5-e2e-openstack-upgrade
   name: periodic-ci-openshift-release-master-ci-4.6-upgrade-from-stable-4.5-e2e-openstack-upgrade
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.6-upgrade-from-stable-4.5-e2e-ovirt-upgrade
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.6-upgrade-from-stable-4.5-e2e-ovirt-upgrade
   name: periodic-ci-openshift-release-master-ci-4.6-upgrade-from-stable-4.5-e2e-ovirt-upgrade
 - days_of_results: 50
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.6-upgrade-from-stable-4.5-e2e-vsphere-upgrade
@@ -2257,7 +2262,8 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.6-e2e-aws-fips
   name: periodic-ci-openshift-release-master-nightly-4.6-e2e-aws-fips
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.6-e2e-aws-fips-serial
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.6-e2e-aws-fips-serial
   name: periodic-ci-openshift-release-master-nightly-4.6-e2e-aws-fips-serial
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.6-e2e-aws-proxy
   name: periodic-ci-openshift-release-master-nightly-4.6-e2e-aws-proxy
@@ -2266,16 +2272,20 @@ test_groups:
 - days_of_results: 50
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.6-e2e-azure
   name: periodic-ci-openshift-release-master-nightly-4.6-e2e-azure
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.6-e2e-azure-fips
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.6-e2e-azure-fips
   name: periodic-ci-openshift-release-master-nightly-4.6-e2e-azure-fips
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.6-e2e-azure-fips-serial
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.6-e2e-azure-fips-serial
   name: periodic-ci-openshift-release-master-nightly-4.6-e2e-azure-fips-serial
 - days_of_results: 50
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.6-e2e-gcp
   name: periodic-ci-openshift-release-master-nightly-4.6-e2e-gcp
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.6-e2e-gcp-fips
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.6-e2e-gcp-fips
   name: periodic-ci-openshift-release-master-nightly-4.6-e2e-gcp-fips
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.6-e2e-gcp-fips-serial
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.6-e2e-gcp-fips-serial
   name: periodic-ci-openshift-release-master-nightly-4.6-e2e-gcp-fips-serial
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.6-e2e-gcp-libvirt-cert-rotation
   name: periodic-ci-openshift-release-master-nightly-4.6-e2e-gcp-libvirt-cert-rotation
@@ -2386,7 +2396,8 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-gcp-compact-4.6
   name: release-openshift-origin-installer-e2e-gcp-compact-4.6
-- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-gcp-ovn-upgrade-4.5-stable-to-4.6-ci
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-gcp-ovn-upgrade-4.5-stable-to-4.6-ci
   name: release-openshift-origin-installer-e2e-gcp-ovn-upgrade-4.5-stable-to-4.6-ci
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-gcp-serial-4.6
