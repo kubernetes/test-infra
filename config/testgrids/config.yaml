@@ -248,6 +248,10 @@ dashboards:
 
 - name: sig-multicluster-kubemci
 - name: sig-auth-secrets-store-csi-driver
+- name: sig-auth-secrets-store-csi-driver-postsubmit
+- name: sig-auth-secrets-store-csi-driver-periodic
+- name: sig-auth-secrets-store-csi-driver-presubmit
+- name: sig-auth-secrets-store-csi-driver-release-signal
 - name: vmware-presubmits-cloud-provider-vsphere
 - name: vmware-postsubmits-cloud-provider-vsphere
 - name: vmware-presubmits-vsphere-csi-driver
@@ -295,3 +299,7 @@ dashboard_groups:
   dashboard_names:
   - sig-auth-gce
   - sig-auth-secrets-store-csi-driver
+  - sig-auth-secrets-store-csi-driver-postsubmit
+  - sig-auth-secrets-store-csi-driver-periodic
+  - sig-auth-secrets-store-csi-driver-presubmit
+  - sig-auth-secrets-store-csi-driver-release-signal
