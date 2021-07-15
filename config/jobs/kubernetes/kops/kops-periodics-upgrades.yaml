@@ -42,7 +42,7 @@ periodics:
         value: "e2e-ef350f61ed-9e810.test-cncf-aws.k8s.io"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-prow"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210715-521d667-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -104,7 +104,7 @@ periodics:
         value: "e2e-7abcc18095-239da.test-cncf-aws.k8s.io"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-prow"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210715-521d667-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -166,7 +166,7 @@ periodics:
         value: "e2e-1d9768cbdc-92017.test-cncf-aws.k8s.io"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-prow"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210715-521d667-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -228,7 +228,7 @@ periodics:
         value: "e2e-c668105d47-9ed76.test-cncf-aws.k8s.io"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-prow"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210715-521d667-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -290,7 +290,7 @@ periodics:
         value: "e2e-3a2aea22fc-20c84.test-cncf-aws.k8s.io"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-prow"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210709-09116fb-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210715-521d667-master
       imagePullPolicy: Always
       resources:
         limits:
