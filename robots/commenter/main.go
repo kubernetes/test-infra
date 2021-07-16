@@ -116,6 +116,8 @@ func parseHTMLURL(url string) (string, string, int, error) {
 }
 
 func makeQuery(query string, includeArchived, includeClosed bool, minUpdated time.Duration) (string, error) {
+	// GitHub used to allow \n but changed it at some point to result in no results at all
+	query = strings.ReplaceAll(query, "\n", " ")
 	parts := []string{query}
 	if !includeArchived {
 		if strings.Contains(query, "archived:true") {
@@ -210,7 +212,6 @@ func makeCommenter(comment string, useTemplate bool) func(meta) (string, error) 
 }
 
 func run(c client, query, sort string, asc, random bool, commenter func(meta) (string, error), ceiling int) error {
-	log.Printf("Searching: %s", query)
 	issues, err := c.FindIssues(query, sort, asc)
 	if err != nil {
 		return fmt.Errorf("search failed: %v", err)

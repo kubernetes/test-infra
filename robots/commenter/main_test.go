@@ -133,6 +133,11 @@ func TestMakeQuery(t *testing.T) {
 			unexpected: []string{"%", "+"},
 		},
 		{
+			name:     "linebreaks are replaced by whitespaces",
+			query:    "label:foo\nlabel:bar",
+			expected: []string{"label:foo label:bar"},
+		},
+		{
 			name:   "include closed with is:open query errors",
 			query:  "hello is:open",
 			closed: true,
