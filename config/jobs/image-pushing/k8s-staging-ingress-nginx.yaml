@@ -9,8 +9,8 @@ postsubmits:
       decorate: true
       run_if_changed: '\.go$|^rootfs/.*|TAG|go.mod|go.sum'
       branches:
-        - ^master$
-        - ^release-v1beta1$
+        - ^main$
+        - ^dev-v1$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -30,7 +30,8 @@ postsubmits:
       decorate: true
       run_if_changed: 'images/nginx/.*'
       branches:
-        - ^master$
+        - ^main$
+        - ^dev-v1$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -50,7 +51,8 @@ postsubmits:
       decorate: true
       run_if_changed: 'images/test-runner/.*'
       branches:
-        - ^master$
+        - ^main$
+        - ^dev-v1$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -70,7 +72,8 @@ postsubmits:
       decorate: true
       run_if_changed: 'images/cfssl/.*'
       branches:
-        - ^master$
+        - ^main$
+        - ^dev-v1$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -90,7 +93,8 @@ postsubmits:
       decorate: true
       run_if_changed: 'images/echo/.*'
       branches:
-        - ^master$
+        - ^main$
+        - ^dev-v1$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -110,7 +114,8 @@ postsubmits:
       decorate: true
       run_if_changed: 'images/fastcgi-helloserver/.*'
       branches:
-        - ^master$
+        - ^main$
+        - ^dev-v1$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -130,7 +135,8 @@ postsubmits:
       decorate: true
       run_if_changed: 'images/httpbin/.*'
       branches:
-        - ^master$
+        - ^main$
+        - ^dev-v1$
       spec:
         serviceAccountName: gcb-builder
         containers:
