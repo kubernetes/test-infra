@@ -213,6 +213,7 @@ func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pe ProwJobEven
 	}
 
 	for _, job := range presubmits {
+		job := job
 		if !job.CouldRun(branch) { // filter out jobs that are not branch matching
 			continue
 		}
