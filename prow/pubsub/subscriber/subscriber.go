@@ -373,6 +373,9 @@ func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msg messageIn
 	}
 
 	// Adds / Updates Labels from prow job event
+	if labels == nil { // Could be nil if the job doesn't have label
+		labels = make(map[string]string)
+	}
 	for k, v := range pe.Labels {
 		labels[k] = v
 	}
