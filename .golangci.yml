@@ -20,6 +20,7 @@ linters:
   - ineffassign
   - staticcheck
   - gosimple
+  - exportloopref
   disable-all: true
 
 issues:

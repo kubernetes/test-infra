@@ -1759,6 +1759,7 @@ Instructions for interacting with me using PR comments are available [here](http
 				gc.IssueLabelsExisting = append(gc.IssueLabelsExisting, fmt.Sprintf("%s/%s#%d:%s", e.org, e.repo, e.number, label))
 			}
 			for _, pr := range testCase.prs {
+				pr := pr
 				gc.PullRequests[pr.Number] = &pr
 			}
 			bc := bugzilla.Fake{

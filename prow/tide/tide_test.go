@@ -1887,6 +1887,7 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 					t.Errorf("prowjob %q didn't have expected namespace %q but %q", pj.Name, pjNamespace, pj.Namespace)
 				}
 				if pj.Spec.Type == prowapi.BatchJob {
+					pj := pj
 					batchJobs = append(batchJobs, &pj)
 				}
 			}

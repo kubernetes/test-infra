@@ -144,11 +144,13 @@ func TestCLALabels(t *testing.T) {
 	for _, tc := range testcases {
 		pullRequests := make(map[int]*github.PullRequest)
 		for _, pr := range tc.pullRequests {
+			pr := pr
 			pullRequests[pr.Number] = &pr
 		}
 
 		issues := make(map[int]*github.Issue)
 		for _, issue := range tc.issues {
+			issue := issue
 			issues[issue.Number] = &issue
 		}
 
@@ -337,6 +339,7 @@ func TestCheckCLA(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			pullRequests := make(map[int]*github.PullRequest)
 			for _, pr := range tc.pullRequests {
+				pr := pr
 				pullRequests[pr.Number] = &pr
 			}
 			fc := fakegithub.NewFakeClient()

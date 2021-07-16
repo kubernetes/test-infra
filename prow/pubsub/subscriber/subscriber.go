@@ -155,6 +155,8 @@ func (peh *periodicJobHandler) getProwJobSpec(cfg prowCfgClient, pe ProwJobEvent
 	// https://github.com/kubernetes/test-infra/issues/21729 is done?
 	for _, job := range cfg.AllPeriodics() {
 		if job.Name == pe.Name {
+			// Directly followed by break, so this is ok
+			// nolint: exportloopref
 			periodicJob = &job
 			break
 		}
@@ -268,6 +270,7 @@ func (poh *postsubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pe ProwJobEve
 	}
 
 	for _, job := range postsubmits {
+		job := job
 		if !job.CouldRun(branch) { // filter out jobs that are not branch matching
 			continue
 		}
