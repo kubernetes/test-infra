@@ -618,6 +618,13 @@ def generate_misc():
                    env={'KOPS_IRSA': 'true'},
                    extra_dashboards=['kops-misc']),
 
+        build_test(name_override="kops-aws-keypair-rotation",
+                   cloud="aws",
+                   kops_channel="alpha",
+                   runs_per_day=3,
+                   scenario="keypair-rotation",
+                   extra_dashboards=['kops-misc']),
+
     ]
     return results
 
