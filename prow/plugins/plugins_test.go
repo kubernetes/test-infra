@@ -278,6 +278,9 @@ func TestLoad(t *testing.T) {
 			Help: Help{
 				HelpGuidelinesURL: "https://git.k8s.io/community/contributors/guide/help-wanted.md",
 			},
+			CLAConfig: CLAConfig{
+				CLAContextNames: []string{"cla/linuxfoundation"},
+			},
 		}
 		for _, modify := range m {
 			modify(cfg)
