@@ -239,6 +239,8 @@ presubmits:
         - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
         - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2004-focal-v20200423
         - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
+        - --env=KUBE_CONTAINER_RUNTIME=docker
+        - --env=ENABLE_POD_SECURITY_POLICY=true
         - --extract=local
         - --gcp-master-image=ubuntu
         - --gcp-node-image=ubuntu
