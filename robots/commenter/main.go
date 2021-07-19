@@ -212,6 +212,7 @@ func makeCommenter(comment string, useTemplate bool) func(meta) (string, error) 
 }
 
 func run(c client, query, sort string, asc, random bool, commenter func(meta) (string, error), ceiling int) error {
+	log.Printf("Searching: %s", query)
 	issues, err := c.FindIssues(query, sort, asc)
 	if err != nil {
 		return fmt.Errorf("search failed: %v", err)
