@@ -135,7 +135,7 @@ postsubmits:
       testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
 periodics:
 - name: ci-ingress-gce-e2e
-  interval: 60m
+  interval: 6h
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -167,7 +167,7 @@ periodics:
     testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
 - name: ci-ingress-gce-e2e-canary
   cluster: k8s-infra-prow-build
-  interval: 60m
+  interval: 6h
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -203,7 +203,7 @@ periodics:
     testgrid-tab-name: ingress-gce-e2e-canary
     description: Duplicate of ci-ingress-gce-e2e pinned to a k8s-infra community-owned project
 - name: ci-ingress-gce-e2e-release-1-6
-  interval: 90m
+  interval: 6h
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
