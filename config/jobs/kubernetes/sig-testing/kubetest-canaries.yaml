@@ -138,7 +138,6 @@ periodics:
       - --check-leaked-resources
       - --check-version-skew=false
       - --cluster=canary-e2e
-      - --env=ENABLE_POD_SECURITY_POLICY=true
       - --extract=ci/k8s-stable1
       - --extract=ci/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging

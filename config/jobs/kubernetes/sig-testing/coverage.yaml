@@ -94,7 +94,6 @@ periodics:
       - |
         shopt -s globstar
         ../test-infra/scenarios/kubernetes_e2e.py \
-          --env=ENABLE_POD_SECURITY_POLICY=true \
           --build=quick \
           --dump-before-and-after \
           --extract=local \

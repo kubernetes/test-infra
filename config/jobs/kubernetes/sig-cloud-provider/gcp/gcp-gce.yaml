@@ -7,10 +7,6 @@ presets:
 - labels:
     preset-pull-kubernetes-e2e-gce: "true"
   env:
-  # Enable the PodSecurityPolicy in tests.
-  # TODO: Enable this by default in the test environment.
-  - name: ENABLE_POD_SECURITY_POLICY
-    value: "true"
   - name: CREATE_CUSTOM_NETWORK
     value: "true"
 
@@ -240,7 +236,6 @@ presubmits:
         - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2004-focal-v20200423
         - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
         - --env=KUBE_CONTAINER_RUNTIME=docker
-        - --env=ENABLE_POD_SECURITY_POLICY=true
         - --extract=local
         - --gcp-master-image=ubuntu
         - --gcp-node-image=ubuntu
@@ -290,7 +285,6 @@ presubmits:
             - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.5.2
             - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.0-rc95
             - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
-            - --env=ENABLE_POD_SECURITY_POLICY=true
             - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
             - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
             - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-2004-focal-v20200423
@@ -351,7 +345,6 @@ presubmits:
             - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.5.2
             - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.0-rc95
             - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
-            - --env=ENABLE_POD_SECURITY_POLICY=true
             - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
             - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
             - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-2004-focal-v20200423
@@ -438,7 +431,6 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env=ENABLE_POD_SECURITY_POLICY=true
       - --extract=ci/latest-fast
       - --extract-ci-bucket=k8s-release-dev
       - --gcp-master-image=gci
@@ -478,7 +470,6 @@ periodics:
           - --scenario=kubernetes_e2e
           - --
           - --check-leaked-resources
-          - --env=ENABLE_POD_SECURITY_POLICY=true
           - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
           - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-2004-focal-v20200423
           - --env=KUBE_GCE_MASTER_PROJECT=ubuntu-os-cloud
@@ -529,7 +520,6 @@ periodics:
           - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.5.2
           - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.0-rc95
           - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
-          - --env=ENABLE_POD_SECURITY_POLICY=true
           - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
           - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
           - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-2004-focal-v20200423
@@ -644,7 +634,6 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env=ENABLE_POD_SECURITY_POLICY=true
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
@@ -902,7 +891,6 @@ periodics:
       - --
       - --down=false
       - --env=DOCKER_TEST_LOG_LEVEL=--log-level=warn
-      - --env=ENABLE_POD_SECURITY_POLICY=true
       - --extract=ci/k8s-stable1
       - --gcp-node-image=gci
       - --gcp-project=k8s-jkns-gci-gce-soak-1-4
