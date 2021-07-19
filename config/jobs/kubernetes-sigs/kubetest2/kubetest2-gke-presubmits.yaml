@@ -1,6 +1,6 @@
 presubmits:
   kubernetes-sigs/kubetest2:
-  - name: gke-up-down-singlecluster
+  - name: pull-kubetest2-gke-up-down-singlecluster
     decorate: true
     run_if_changed: "kubetest2-gke/.*"
     labels:
@@ -15,7 +15,7 @@ presubmits:
         - "./kubetest2-gke/ci-tests/buildupdown.sh"
         - "--cluster-topology"
         - "singlecluster"
-  - name: gke-up-down-multicluster
+  - name: pull-kubetest2-gke-up-down-multicluster
     decorate: true
     run_if_changed: "kubetest2-gke/.*"
     labels:
