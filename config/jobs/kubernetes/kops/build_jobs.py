@@ -622,6 +622,7 @@ def generate_misc():
                    cloud="aws",
                    kops_channel="alpha",
                    runs_per_day=3,
+                   test_timeout_minutes=120,
                    scenario="keypair-rotation",
                    extra_dashboards=['kops-misc']),
 
