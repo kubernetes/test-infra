@@ -99,6 +99,7 @@ Prow is used by the following organizations and projects:
 - [Falco](http://prow.falco.org)
 - [TiDB](https://prow.tidb.io)
 - [Amazon EKS Distro](https://prow.eks.amazonaws.com/)
+- [KubeSphere](https://prow.kubesphere.io)
 
 [Jenkins X](https://jenkins-x.io/) uses [Prow as part of Serverless Jenkins](https://medium.com/@jdrawlings/serverless-jenkins-with-jenkins-x-9134cbfe6870).
 
