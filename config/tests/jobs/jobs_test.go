@@ -327,7 +327,7 @@ func TestK8sInfraTrusted(t *testing.T) {
 	for _, pre := range c.AllStaticPresubmits(nil) {
 		if pre.Cluster == trusted {
 			jobsToFix++
-			errs = append(errs, fmt.Errorf("%s: presubmits may not run in cluster: %s", pre.Name, trusted))
+			errs = append(errs, fmt.Errorf("%s: presubmits may not run in trusted cluster: %s", pre.Name, trusted))
 		}
 	}
 
