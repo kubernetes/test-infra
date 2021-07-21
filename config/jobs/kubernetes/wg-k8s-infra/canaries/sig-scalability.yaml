@@ -371,6 +371,60 @@ periodics:
           cpu: 6
           memory: "16Gi"
 
+- name: ci-build-and-push-k8s-at-golang-tip-canary
+  cluster: k8s-infra-prow-build
+  interval: 4h
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+  decorate: true
+  decoration_config:
+    timeout: 75m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    base_sha: e97c570a4ba5ba1e2285d3278396937feaa15385 # head of release-1.18 branch as of 2020-04-28
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
+  - org: kubernetes
+    repo: release
+    base_sha: 5ad08a0987f35d7b7280e847078987f58c6f8e1f # head of master branch as of 2020-05-04
+    base_ref: master
+    path_alias: k8s.io/release
+  - org: go.googlesource.com
+    repo: go
+    base_ref: master
+    path_alias: golang
+    clone_uri: https://go.googlesource.com/go
+  annotations:
+    testgrid-dashboards: wg-k8s-infra-canaries
+    testgrid-tab-name: build-and-push-k8s-at-golang-tip-canary
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210715-521d667-master
+      command:
+      - runner.sh
+      - bash
+      args:
+      - -c
+      - >-
+        cd /workspace/k8s.io/perf-tests/golang &&
+        make GCS_BUCKET=k8s-infra-scale-golang-builds
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 4
+          memory: "16Gi"
+        limits:
+          cpu: 4
+          memory: "16Gi"
+
 - interval: 4h
   name: ci-golang-tip-k8s-1-18-canary
   cluster: k8s-infra-prow-build
@@ -410,7 +464,7 @@ periodics:
       - --env=CL2_LOAD_TEST_THROUGHPUT=50
       - --env=KUBEMARK_CONTROLLER_MANAGER_TEST_ARGS=--profiling --kube-api-qps=200 --kube-api-burst=200
       - --env=KUBEMARK_SCHEDULER_TEST_ARGS=--profiling --kube-api-qps=200 --kube-api-burst=200
-      - --extract=gs://k8s-scale-golang-build/ci/latest-1.18.txt
+      - --extract=gs://k8ss-infra-scale-golang-builds/ci/latest-1.18.txt
       - --gcp-node-size=e2-standard-8
       - --gcp-nodes=50
       - --gcp-project=k8s-infra-e2e-scale-5k-project
