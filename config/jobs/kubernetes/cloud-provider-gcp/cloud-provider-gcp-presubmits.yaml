@@ -72,8 +72,8 @@ presubmits:
             - runner.sh
             - ./tools/verify-all.sh
   - name: cloud-provider-gcp-e2e-full
-    always_run: false
-    optional: true
+    always_run: true
+    optional: false
     decorate: true
     decoration_config:
       timeout: 80m
