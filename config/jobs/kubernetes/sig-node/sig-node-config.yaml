@@ -14,7 +14,6 @@ periodics:
       - --check-leaked-resources
       - --env=KUBE_CONTAINER_RUNTIME=containerd
       - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
-      - --env=ENABLE_POD_SECURITY_POLICY=true
       - --extract=ci/latest
       - --gcp-master-image=gci
       - --gcp-node-image=gci
