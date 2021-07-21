@@ -621,7 +621,7 @@ def generate_misc():
         build_test(name_override="kops-aws-keypair-rotation",
                    cloud="aws",
                    kops_channel="alpha",
-                   runs_per_day=6,
+                   runs_per_day=1,
                    test_timeout_minutes=120,
                    scenario="keypair-rotation",
                    extra_dashboards=['kops-misc']),
