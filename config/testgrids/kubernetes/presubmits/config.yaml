@@ -142,6 +142,9 @@ dashboards:
   - name: pull-kubernetes-cross
     test_group_name: pull-kubernetes-cross
     base_options: width=10
+  - name: pull-kubernetes-e2e-gce
+    test_group_name: pull-kubernetes-e2e-gce
+    base_options: width=10
   - name: pull-kubernetes-node-e2e
     test_group_name: pull-kubernetes-node-e2e
 - name: presubmits-kubernetes-scalability
