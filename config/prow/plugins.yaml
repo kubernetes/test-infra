@@ -801,6 +801,10 @@ plugins:
     - require-matching-label
     - stage
 
+  kubernetes/ingress-nginx:
+    plugins:
+    - require-matching-label
+
   kubernetes/k8s.io:
     plugins:
     - milestone
