@@ -412,7 +412,7 @@ periodics:
       args:
       - -c
       - >-
-        cd /workspace/k8s.io/perf-tests/golang &&
+        cd /home/prow/go/src/k8s.io/perf-tests/golang &&
         make GCS_BUCKET=k8s-infra-scale-golang-builds
       # docker-in-docker needs privileged mode
       securityContext:
