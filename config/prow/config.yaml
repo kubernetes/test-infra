@@ -360,10 +360,6 @@ branch-protection:
             users: []
             teams:
             - stage-bots
-        utils:
-          required_status_checks:
-            contexts:
-            - continuous-integration/travis-ci
         website:
           protect: false # TODO(fejta): protect all branches soon
           branches:
