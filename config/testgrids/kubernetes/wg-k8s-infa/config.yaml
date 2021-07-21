@@ -6,10 +6,12 @@ dashboard_groups:
   - wg-k8s-infra-canaries
   - wg-k8s-infra-gcb
   - wg-k8s-infra-groups
+  - wg-k8s-infra-prow
   - wg-k8s-infra-k8sio
 
 dashboards:
 - name: wg-k8s-infra-canaries
 - name: wg-k8s-infra-gcb
-- name: wg-k8s-infra-k8sio
 - name: wg-k8s-infra-groups
+- name: wg-k8s-infra-k8sio
+- name: wg-k8s-infra-prow

@@ -9,13 +9,15 @@ postsubmits:
     - ^main$
     annotations:
       testgrid-create-test-group: 'true'
-      testgrid-dashboards: wg-k8s-infra-k8sio
+      testgrid-dashboards: wg-k8s-infra-prow
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
     rerun_auth_config:
       github_team_slugs:
+      # proxy for wg-k8s-infra-oncall
       - org: kubernetes
         slug: wg-k8s-infra-leads
+      # proxy for test-infra-oncall
       - org: kubernetes
         slug: test-infra-admins
     spec:
@@ -33,13 +35,15 @@ postsubmits:
     - ^main$
     annotations:
       testgrid-create-test-group: 'true'
-      testgrid-dashboards: wg-k8s-infra-k8sio
+      testgrid-dashboards: wg-k8s-infra-prow
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
     rerun_auth_config:
       github_team_slugs:
+      # proxy for wg-k8s-infra-oncall
       - org: kubernetes
         slug: wg-k8s-infra-leads
+      # proxy for test-infra-oncall
       - org: kubernetes
         slug: test-infra-admins
     spec:
@@ -48,4 +52,3 @@ postsubmits:
       - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
         command:
         - ./infra/gcp/clusters/projects/k8s-infra-prow-build-trusted/deploy.sh
-
