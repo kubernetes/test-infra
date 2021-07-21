@@ -57,10 +57,6 @@ periodics:
     repo: cluster-api-provider-gcp
     base_ref: main
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
-  - org: kubernetes-sigs
-    repo: image-builder
-    base_ref: master
-    path_alias: "sigs.k8s.io/image-builder"
   - org: kubernetes
     repo: kubernetes
     base_ref: release-1.19
