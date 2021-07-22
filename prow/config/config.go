@@ -1162,6 +1162,8 @@ func ReadJobConfig(jobConfig string) (JobConfig, error) {
 	// since updateconfig plugin will use basename as a key in the configmap
 	uniqueBasenames := sets.String{}
 
+	jobConfigCount := 0
+	start := time.Now()
 	jc := JobConfig{}
 	err = filepath.Walk(jobConfig, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -1198,8 +1200,10 @@ func ReadJobConfig(jobConfig string) (JobConfig, error) {
 			return err
 		}
 		jc, err = mergeJobConfigs(jc, subConfig)
+		jobConfigCount++
 		return err
 	})
+	logrus.Tracef("Processed: %d jobConfigs in: %v\n", jobConfigCount, time.Now().Sub(start))
 
 	if err != nil {
 		return JobConfig{}, err
@@ -1223,6 +1227,9 @@ func loadConfig(prowConfig, jobConfig string, additionalProwConfigDirs []string,
 	if err := yamlToConfig(prowConfig, &nc); err != nil {
 		return nil, err
 	}
+
+	prowConfigCount := 0
+	start := time.Now()
 	for _, additionalProwConfigDir := range additionalProwConfigDirs {
 		var errs []error
 		errs = append(errs, filepath.Walk(additionalProwConfigDir, func(path string, info os.FileInfo, err error) error {
@@ -1256,6 +1263,7 @@ func loadConfig(prowConfig, jobConfig string, additionalProwConfigDirs []string,
 				errs = append(errs, fmt.Errorf("failed to merge in config from %s: %w", path, err))
 			}
 
+			prowConfigCount++
 			return nil
 		}))
 
@@ -1263,6 +1271,8 @@ func loadConfig(prowConfig, jobConfig string, additionalProwConfigDirs []string,
 			return nil, err
 		}
 	}
+	logrus.Tracef("Processed: %d prowConfigs in: %v", prowConfigCount, time.Now().Sub(start))
+
 	if err := parseProwConfig(&nc); err != nil {
 		return nil, err
 	}
