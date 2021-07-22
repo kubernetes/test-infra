@@ -25,3 +25,81 @@ postsubmits:
       rerun_auth_config:
         github_team_ids:
           - 2921947 # kind-maintainers
+    - name: post-kind-push-base-image
+      cluster: k8s-infra-prow-build-trusted
+      run_if_changed: '^images\/base'
+      annotations:
+        testgrid-dashboards: sig-testing-kind, wg-k8s-infra-gcb
+        testgrid-alert-email: kubernetes-engprod+alerts@google.com,antonio.ojea.garcia@gmail.com
+        testgrid-num-columns-recent: '3'
+      decorate: true
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-kind
+              - --scratch-bucket=gs://k8s-staging-kind-gcb
+              - --env-passthrough=PULL_BASE_SHA
+              - --build-dir=.
+              - images/base/
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"
+      rerun_auth_config:
+        github_team_ids:
+          - 2921947 # kind-maintainers
+    - name: post-kind-push-kindnetd-image
+      cluster: k8s-infra-prow-build-trusted
+      run_if_changed: '^images\/kindnetd'
+      annotations:
+        testgrid-dashboards: sig-testing-kind, wg-k8s-infra-gcb
+        testgrid-alert-email: kubernetes-engprod+alerts@google.com,antonio.ojea.garcia@gmail.com
+        testgrid-num-columns-recent: '3'
+      decorate: true
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-kind
+              - --scratch-bucket=gs://k8s-staging-kind-gcb
+              - --env-passthrough=PULL_BASE_SHA
+              - --build-dir=.
+              - images/kindnetd/
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"
+      rerun_auth_config:
+        github_team_ids:
+          - 2921947 # kind-maintainers
+    - name: post-kind-push-haproxy-image
+      cluster: k8s-infra-prow-build-trusted
+      run_if_changed: '^images\/haproxy'
+      annotations:
+        testgrid-dashboards: sig-testing-kind, wg-k8s-infra-gcb
+        testgrid-alert-email: kubernetes-engprod+alerts@google.com,antonio.ojea.garcia@gmail.com
+        testgrid-num-columns-recent: '3'
+      decorate: true
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-kind
+              - --scratch-bucket=gs://k8s-staging-kind-gcb
+              - --env-passthrough=PULL_BASE_SHA
+              - --build-dir=.
+              - images/haproxy/
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"
+      rerun_auth_config:
+        github_team_ids:
+          - 2921947 # kind-maintainers
