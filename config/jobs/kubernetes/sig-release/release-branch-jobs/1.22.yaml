@@ -288,7 +288,7 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  - base_ref: master
+  - base_ref: release-1.22
     org: kubernetes
     path_alias: k8s.io/perf-tests
     repo: perf-tests
@@ -366,7 +366,7 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  - base_ref: master
+  - base_ref: release-1.22
     org: kubernetes
     path_alias: k8s.io/perf-tests
     repo: perf-tests
@@ -718,7 +718,7 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  - base_ref: master
+  - base_ref: release-1.22
     org: kubernetes
     path_alias: k8s.io/perf-tests
     repo: perf-tests
@@ -1509,7 +1509,7 @@ presubmits:
     decoration_config:
       timeout: 2h0m0s
     extra_refs:
-    - base_ref: master
+    - base_ref: release-1.22
       org: kubernetes
       path_alias: k8s.io/perf-tests
       repo: perf-tests
@@ -1579,7 +1579,7 @@ presubmits:
     decoration_config:
       timeout: 2h0m0s
     extra_refs:
-    - base_ref: master
+    - base_ref: release-1.22
       org: kubernetes
       path_alias: k8s.io/perf-tests
       repo: perf-tests
