@@ -10,7 +10,7 @@ periodics:
     testgrid-tab-name: api-review-help
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20210720-cd01da37ec
+    - image: gcr.io/k8s-prow/commenter:v20210722-64d720b97e
       command:
       - /app/robots/commenter/app.binary
       args:
