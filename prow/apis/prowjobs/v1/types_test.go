@@ -30,6 +30,65 @@ func pStr(str string) *string {
 	return &str
 }
 
+// TODO(mpherman): Add more tests when ProwJobDefaults have more than 1 field
+func TestProwJobDefaulting(t *testing.T) {
+	var testCases = []struct {
+		name     string
+		provided *ProwJobDefault
+		def      *ProwJobDefault
+		expected *ProwJobDefault
+	}{
+		{
+			name:     "nothing provided",
+			provided: &ProwJobDefault{},
+			def:      &ProwJobDefault{},
+			expected: &ProwJobDefault{},
+		},
+		{
+			name: "TenantID provided, no default",
+			provided: &ProwJobDefault{
+				TenantID: "Provided",
+			},
+			def: &ProwJobDefault{},
+			expected: &ProwJobDefault{
+				TenantID: "Provided",
+			},
+		},
+		{
+			name: "TenantID provided, No Override",
+			provided: &ProwJobDefault{
+				TenantID: "Provided",
+			},
+			def: &ProwJobDefault{
+				TenantID: "Default",
+			},
+			expected: &ProwJobDefault{
+				TenantID: "Provided",
+			},
+		},
+		{
+			name:     "TenantID not Provided, Uses default",
+			provided: &ProwJobDefault{},
+			def: &ProwJobDefault{
+				TenantID: "Default",
+			},
+			expected: &ProwJobDefault{
+				TenantID: "Default",
+			},
+		},
+	}
+	for _, testCase := range testCases {
+		tc := testCase
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			actual := tc.provided.ApplyDefault(tc.def)
+			if diff := cmp.Diff(actual, tc.expected, cmpopts.EquateEmpty()); diff != "" {
+				t.Errorf("expected defaulted config but got diff %v", diff)
+			}
+		})
+	}
+}
+
 func TestDecorationDefaultingDoesntOverwrite(t *testing.T) {
 	truth := true
 	lies := false

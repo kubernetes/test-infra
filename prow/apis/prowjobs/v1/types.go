@@ -179,6 +179,10 @@ type ProwJobSpec struct {
 	// Presubmits and Postsubmits can also be set to hidden by
 	// adding their repository in Decks `hidden_repo` setting.
 	Hidden bool `json:"hidden,omitempty"`
+
+	// ProwJobDefault holds configuration options provided as defaults
+	// in the Prow config
+	ProwJobDefault *ProwJobDefault `json:"prowjob_defaults,omitempty"`
 }
 
 type GitHubTeamSlug struct {
@@ -353,6 +357,12 @@ func (d *Duration) MarshalJSON() ([]byte, error) {
 	return json.Marshal(d.Duration.String())
 }
 
+// ProwJobDefault is used for Prowjob fields we want to set as defaults
+// in Prow config
+type ProwJobDefault struct {
+	TenantID string `json:"tenant_id,omitempty"`
+}
+
 // DecorationConfig specifies how to augment pods.
 //
 // This is primarily used to provide automatic integration with gubernator
@@ -515,6 +525,26 @@ type OauthTokenSecret struct {
 	// Key is the a key of the corresponding kubernetes secret that
 	// holds the value of the OAuth token.
 	Key string `json:"key,omitempty"`
+}
+
+func (d *ProwJobDefault) ApplyDefault(def *ProwJobDefault) *ProwJobDefault {
+	if d == nil && def == nil {
+		return nil
+	}
+	var merged ProwJobDefault
+	if d != nil {
+		merged = *d.DeepCopy()
+	} else {
+		merged = *def.DeepCopy()
+	}
+	if d == nil || def == nil {
+		return &merged
+	}
+	if merged.TenantID == "" {
+		merged.TenantID = def.TenantID
+	}
+
+	return &merged
 }
 
 // ApplyDefault applies the defaults for the ProwJob decoration. If a field has a zero value, it

@@ -121,6 +121,9 @@ type JobBase struct {
 	// Presubmits and Postsubmits can also be set to hidden by
 	// adding their repository in Decks `hidden_repo` setting.
 	Hidden bool `json:"hidden,omitempty"`
+	// ProwJobDefault holds configuration options provided as defaults
+	// in the Prow config
+	ProwJobDefault *prowapi.ProwJobDefault `json:"prowjob_defaults,omitempty"`
 
 	UtilityConfig
 }
