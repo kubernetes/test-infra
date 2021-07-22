@@ -1,0 +1,36 @@
+# this file should contain all periodic jobs that use the k8s-triage-robot token
+periodics:
+- name: ci-k8s-triage-robot-testcomment
+  interval: 10m
+  decorate: true
+  cluster: k8s-infra-prow-build-trusted
+  annotations:
+    testgrid-dashboards: sig-contribex-k8s-triage-robot
+    description: A sample job to make sure things work
+    testgrid-tab-name: api-review-help
+  spec:
+    containers:
+    - image: gcr.io/k8s-prow/commenter:v20210720-cd01da37ec
+      command:
+      - /app/robots/commenter/app.binary
+      args:
+      # a sample job to confirm the commenter and token work
+      - |-
+        --query=is:issue
+        is:open
+        author:spiffxp
+        label:area/github-management
+        NOT "This is a test comment to confirm that k8s-triage-robot can comment on issues"
+      - --updated=5m
+      - --token=/etc/github-token/token
+      - |-
+        --comment=This is a test comment to confirm that k8s-triage-robot can comment on issues
+      - --ceiling=10
+      - --confirm
+      volumeMounts:
+      - name: token
+        mountPath: /etc/github-token
+    volumes:
+    - name: token
+      secret:
+        secretName: k8s-triage-robot-github-token
