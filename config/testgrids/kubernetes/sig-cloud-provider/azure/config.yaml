@@ -12,10 +12,10 @@ dashboard_groups:
     - provider-azure-scalability
     - provider-azure-presubmit
     - provider-azure-master-signal
+    - provider-azure-1.22-signal
     - provider-azure-1.21-signal
     - provider-azure-1.20-signal
     - provider-azure-1.19-signal
-    - provider-azure-1.18-signal
 
 dashboards:
 - name: provider-azure-azuredisk-csi-driver
@@ -29,7 +29,7 @@ dashboards:
 - name: provider-azure-scalability
 - name: provider-azure-presubmit
 - name: provider-azure-master-signal
+- name: provider-azure-1.22-signal
 - name: provider-azure-1.21-signal
 - name: provider-azure-1.20-signal
 - name: provider-azure-1.19-signal
-- name: provider-azure-1.18-signal
