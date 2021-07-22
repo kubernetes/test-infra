@@ -1,7 +1,7 @@
 periodics:
 - name: periodic-image-builder-gcp-all-nightly
   cluster: k8s-infra-prow-build-trusted
-  interval: 2h
+  interval: 24h
   decorate: true
   extra_refs:
   - org: kubernetes-sigs
