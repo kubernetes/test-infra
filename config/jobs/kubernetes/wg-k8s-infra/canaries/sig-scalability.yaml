@@ -159,7 +159,7 @@ periodics:
     fork-per-release: "true"
     fork-per-release-cron: 0 3 * * *, 0 9 * * *, 0 15 * * *, 0 21 * * *
     fork-per-release-deletions: "preset-e2e-scalability-periodics-master"
-    fork-per-release-replacements: "kubemark-500Nodes -> kubemark-500Nodes-{{.Version}}, extract=ci/latest -> extract=ci/latest-{{.Version}}, perf-tests=master -> perf-tests=release-{{.Version}}"
+    fork-per-release-replacements: "kubemark-500Nodes -> kubemark-500Nodes-{{.Version}}, extract=ci/latest -> extract=ci/latest-{{.Version}}"
     testgrid-dashboards: wg-k8s-infra-canaries
     testgrid-tab-name: kubemark-master-500-canary
     testgrid-num-failures-to-alert: '2'

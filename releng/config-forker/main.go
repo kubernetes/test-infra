@@ -291,6 +291,9 @@ func fixExtraRefs(refs []prowapi.Refs, version string) []prowapi.Refs {
 		if r.Org == "kubernetes" && r.Repo == "kubernetes" && r.BaseRef == "master" {
 			r.BaseRef = "release-" + version
 		}
+		if r.Org == "kubernetes" && r.Repo == "perf-tests" && r.BaseRef == "master" {
+			r.BaseRef = "release-" + version
+		}
 		newRefs = append(newRefs, r)
 	}
 	return newRefs
