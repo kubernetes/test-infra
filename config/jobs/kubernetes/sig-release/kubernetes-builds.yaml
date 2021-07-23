@@ -29,45 +29,6 @@ presubmits:
       testgrid-create-test-group: 'true'
 
 periodics:
-- interval: 1h
-  name: ci-kubernetes-build-deprecated
-  labels:
-    preset-service-account: "true"
-    preset-dind-enabled: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20210709-5168b64
-      args:
-      - --repo=k8s.io/kubernetes
-      - --repo=k8s.io/release
-      - --root=/go/src
-      - --timeout=240
-      - --scenario=kubernetes_build
-      - --
-      - --release=kubernetes-release-dev
-      - --allow-dup
-      - --extra-version-markers=k8s-master
-      - --registry=gcr.io/kubernetes-ci-images
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-      resources:
-        limits:
-          cpu: 7300m
-          memory: "34Gi"
-        requests:
-          cpu: 7300m
-          memory: "34Gi"
-  rerun_auth_config:
-    github_team_ids:
-      - 2241179 # release-managers
-  annotations:
-    fork-per-release: "true"
-    fork-per-release-replacements: "k8s-master -> k8s-beta"
-    testgrid-dashboards: sig-release-master-informing
-    testgrid-tab-name: build-master-deprecated
-    testgrid-alert-email: release-managers+alerts@kubernetes.io, release-team@kubernetes.io
-
 - name: ci-kubernetes-build
   interval: 1h
   cluster: k8s-infra-prow-build
