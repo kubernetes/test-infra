@@ -699,7 +699,7 @@ periodics:
     testgrid-tab-name: ci-kubernetes-e2e-aks-engine-azure-master-windows-containerd-hostprocess-alpha
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs Windows alpha HostProcess tests (https://github.com/Azure/aks-engine) on Azure cloud
-- interval: 3h
+- interval: 12h
   name: ci-kubernetes-e2e-aks-engine-azure-master-windows-containerd-nightly
   decorate: true
   decoration_config:
@@ -750,7 +750,6 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    fork-per-release: "true"
     testgrid-dashboards: sig-windows-master-release
     testgrid-tab-name: aks-engine-windows-containerd-nightly
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
