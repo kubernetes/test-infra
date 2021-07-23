@@ -1201,15 +1201,17 @@ func ReadJobConfig(jobConfig string) (JobConfig, error) {
 			return err
 		}
 		jc, err = mergeJobConfigs(jc, subConfig)
-		logrus.Tracef("jobConfig: %s loaded in: %v", path, time.Now().Sub(begin))
-		jobConfigCount++
+		if err == nil {
+			logrus.WithField("jobConfig", path).WithField("duration", time.Now().Sub(begin)).Traceln("config loaded")
+			jobConfigCount++
+		}
 		return err
 	})
-	logrus.Tracef("Processed: %d jobConfigs in: %v\n", jobConfigCount, time.Now().Sub(start))
 
 	if err != nil {
 		return JobConfig{}, err
 	}
+	logrus.WithField("count", jobConfigCount).WithField("duration", time.Now().Sub(start)).Traceln("jobConfigs loaded successfully")
 
 	return jc, nil
 }
@@ -1264,10 +1266,11 @@ func loadConfig(prowConfig, jobConfig string, additionalProwConfigDirs []string,
 
 			if err := nc.ProwConfig.mergeFrom(&cfg); err != nil {
 				errs = append(errs, fmt.Errorf("failed to merge in config from %s: %w", path, err))
+			} else {
+				logrus.WithField("prowConfig", path).WithField("duration", time.Now().Sub(begin)).Traceln("config loaded")
+				prowConfigCount++
 			}
-			logrus.Tracef("prowConfig: %s loaded in: %v", path, time.Now().Sub(begin))
 
-			prowConfigCount++
 			return nil
 		}))
 
@@ -1275,7 +1278,7 @@ func loadConfig(prowConfig, jobConfig string, additionalProwConfigDirs []string,
 			return nil, err
 		}
 	}
-	logrus.Tracef("Processed: %d prowConfigs in: %v", prowConfigCount, time.Now().Sub(start))
+	logrus.WithField("count", prowConfigCount).WithField("duration", time.Now().Sub(start)).Traceln("prowConfigs loaded successfully")
 
 	if err := parseProwConfig(&nc); err != nil {
 		return nil, err
