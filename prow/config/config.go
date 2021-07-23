@@ -1195,11 +1195,13 @@ func ReadJobConfig(jobConfig string) (JobConfig, error) {
 		}
 		uniqueBasenames.Insert(base)
 
+		begin := time.Now()
 		var subConfig JobConfig
 		if err := yamlToConfig(path, &subConfig); err != nil {
 			return err
 		}
 		jc, err = mergeJobConfigs(jc, subConfig)
+		logrus.Tracef("jobConfig: %s loaded in: %v", path, time.Now().Sub(begin))
 		jobConfigCount++
 		return err
 	})
@@ -1253,6 +1255,7 @@ func loadConfig(prowConfig, jobConfig string, additionalProwConfigDirs []string,
 				return nil
 			}
 
+			begin := time.Now()
 			var cfg ProwConfig
 			if err := yamlToConfig(path, &cfg); err != nil {
 				errs = append(errs, err)
@@ -1262,6 +1265,7 @@ func loadConfig(prowConfig, jobConfig string, additionalProwConfigDirs []string,
 			if err := nc.ProwConfig.mergeFrom(&cfg); err != nil {
 				errs = append(errs, fmt.Errorf("failed to merge in config from %s: %w", path, err))
 			}
+			logrus.Tracef("prowConfig: %s loaded in: %v", path, time.Now().Sub(begin))
 
 			prowConfigCount++
 			return nil
