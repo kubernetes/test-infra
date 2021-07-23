@@ -46,7 +46,7 @@ import (
 	"k8s.io/test-infra/pkg/genyaml"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	"k8s.io/test-infra/prow/config/secret"
+	"k8s.io/test-infra/prow/config/secret/v2"
 	gerrit "k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
@@ -2778,14 +2778,13 @@ func TestSecretAgentLoading(t *testing.T) {
 
 	tempSecrets := []string{firstTempSecret, secondTempSecret}
 	// Starting the agent and add the two temporary secrets.
-	secretAgent := &secret.Agent{}
-	if err := secretAgent.Start(tempSecrets); err != nil {
+	if err := secret.Add(tempSecrets...); err != nil {
 		t.Fatalf("Error starting secrets agent. %v", err)
 	}
 
 	// Check if the values are as expected.
 	for _, tempSecret := range tempSecrets {
-		tempSecretValue := secretAgent.GetSecret(tempSecret)
+		tempSecretValue := secret.GetSecret(tempSecret)
 		if string(tempSecretValue) != tempTokenValue {
 			t.Fatalf("In secret %s it was expected %s but found %s",
 				tempSecret, tempTokenValue, tempSecretValue)
@@ -2808,7 +2807,7 @@ func TestSecretAgentLoading(t *testing.T) {
 		// Reset counter
 		counter := 0
 		for counter <= retries {
-			tempSecretValue := secretAgent.GetSecret(tempSecret)
+			tempSecretValue := secret.GetSecret(tempSecret)
 			if string(tempSecretValue) != changedTokenValue {
 				if counter == retries {
 					errors = append(errors, fmt.Sprintf("In secret %s it was expected %s but found %s\n",

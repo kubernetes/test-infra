@@ -29,7 +29,6 @@ import (
 	"k8s.io/test-infra/prow/pjutil/pprof"
 
 	"k8s.io/test-infra/pkg/flagutil"
-	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	pluginsflagutil "k8s.io/test-infra/prow/flagutil/plugins"
@@ -149,17 +148,12 @@ func main() {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
-	secretAgent := &secret.Agent{}
-	if err := secretAgent.Start(nil); err != nil {
-		logrus.WithError(err).Fatal("Error starting secrets agent.")
-	}
-
 	pluginAgent, err := o.pluginsConfig.PluginAgent()
 	if err != nil {
 		logrus.WithError(err).Fatal("Error starting plugin configuration agent.")
 	}
 
-	githubClient, err := o.github.GitHubClient(secretAgent, o.dryRun)
+	githubClient, err := o.github.GitHubClient(o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}

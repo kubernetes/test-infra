@@ -42,7 +42,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
-	"k8s.io/test-infra/prow/config/secret"
+	"k8s.io/test-infra/prow/config/secret/v2"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 
@@ -550,13 +550,12 @@ func githubToken(choice string) (string, error) {
 }
 
 func githubClient(tokenPath string, dry bool) (github.Client, error) {
-	secretAgent := &secret.Agent{}
-	if err := secretAgent.Start([]string{tokenPath}); err != nil {
+	if err := secret.Add(tokenPath); err != nil {
 		return nil, fmt.Errorf("start agent: %v", err)
 	}
 
-	gen := secretAgent.GetTokenGenerator(tokenPath)
-	censor := secretAgent.Censor
+	gen := secret.GetTokenGenerator(tokenPath)
+	censor := secret.Censor
 	if dry {
 		return github.NewDryRunClient(gen, censor, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint), nil
 	}

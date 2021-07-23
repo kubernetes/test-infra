@@ -31,7 +31,6 @@ import (
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/github"
@@ -136,12 +135,7 @@ func main() {
 	cfg := ca.Config()
 	cfg.BranchProtectionWarnings(logrus.NewEntry(logrus.StandardLogger()), cfg.PresubmitsStatic)
 
-	secretAgent := &secret.Agent{}
-	if err := secretAgent.Start(nil); err != nil {
-		logrus.WithError(err).Fatal("Error starting secrets agent.")
-	}
-
-	githubClient, err := o.github.GitHubClient(secretAgent, !o.confirm)
+	githubClient, err := o.github.GitHubClient(!o.confirm)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}

@@ -28,7 +28,6 @@ import (
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/github"
@@ -232,11 +231,7 @@ func main() {
 	}
 	conf := ca.Config()
 
-	secretAgent := &secret.Agent{}
-	if err := secretAgent.Start(nil); err != nil {
-		logrus.WithError(err).Fatal("Failed to start secret agent")
-	}
-	o.githubClient, err = o.github.GitHubClient(secretAgent, false)
+	o.githubClient, err = o.github.GitHubClient(false)
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to get GitHub client")
 	}

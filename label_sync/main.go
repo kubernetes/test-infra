@@ -38,7 +38,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/yaml"
 
-	"k8s.io/test-infra/prow/config/secret"
+	"k8s.io/test-infra/prow/config/secret/v2"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/logrusutil"
@@ -686,15 +686,14 @@ func newClient(tokenPath string, tokens, tokenBurst int, dryRun bool, graphqlEnd
 		return nil, errors.New("--token unset")
 	}
 
-	secretAgent := &secret.Agent{}
-	if err := secretAgent.Start([]string{tokenPath}); err != nil {
+	if err := secret.Add(tokenPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
 
 	if dryRun {
-		return github.NewDryRunClient(secretAgent.GetTokenGenerator(tokenPath), secretAgent.Censor, graphqlEndpoint, hosts...), nil
+		return github.NewDryRunClient(secret.GetTokenGenerator(tokenPath), secret.Censor, graphqlEndpoint, hosts...), nil
 	}
-	c := github.NewClient(secretAgent.GetTokenGenerator(tokenPath), secretAgent.Censor, graphqlEndpoint, hosts...)
+	c := github.NewClient(secret.GetTokenGenerator(tokenPath), secret.Censor, graphqlEndpoint, hosts...)
 	if tokens > 0 && tokenBurst >= tokens {
 		return nil, fmt.Errorf("--tokens=%d must exceed --token-burst=%d", tokens, tokenBurst)
 	}

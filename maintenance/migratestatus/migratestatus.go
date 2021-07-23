@@ -27,7 +27,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/maintenance/migratestatus/migrator"
-	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/logrusutil"
 )
@@ -122,14 +121,7 @@ func main() {
 		logrus.WithError(err).Fatal("Invalid options")
 	}
 
-	secretAgent := &secret.Agent{}
-	if o.github.TokenPath != "" {
-		if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
-			logrus.WithError(err).Fatal("Error starting secrets agent.")
-		}
-	}
-
-	githubClient, err := o.github.GitHubClient(secretAgent, o.dryRun)
+	githubClient, err := o.github.GitHubClient(o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}

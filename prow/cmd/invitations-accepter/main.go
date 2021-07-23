@@ -25,7 +25,6 @@ import (
 
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 
-	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 )
@@ -69,12 +68,7 @@ func (o *options) Validate() error {
 func main() {
 	o := gatherOptions()
 
-	sa := &secret.Agent{}
-	if err := sa.Start(nil); err != nil {
-		logrus.WithError(err).Fatal("Error starting secrets agent.")
-	}
-
-	gc, err := o.github.GitHubClient(sa, o.dryRun)
+	gc, err := o.github.GitHubClient(o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}

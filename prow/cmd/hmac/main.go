@@ -38,7 +38,6 @@ import (
 
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/ghhook"
@@ -127,18 +126,13 @@ func main() {
 		logrus.WithError(err).Fatalf("Error creating Kubernetes client for cluster %q.", o.kubeconfigCtx)
 	}
 
-	agent := &secret.Agent{}
-	if err := agent.Start(nil); err != nil {
-		logrus.WithError(err).Fatalf("Error starting secret agent %s", o.github.TokenPath)
-	}
-
 	configAgent, err := o.config.ConfigAgent()
 	if err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 	newHMACConfig := configAgent.Config().ManagedWebhooks
 
-	gc, err := o.github.GitHubClient(agent, o.dryRun)
+	gc, err := o.github.GitHubClient(o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating github client")
 	}

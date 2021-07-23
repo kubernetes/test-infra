@@ -40,7 +40,7 @@ go_library(
     srcs = ["main.go"],
     importpath = "k8s.io/test-infra/label_sync",
     deps = [
-        "//prow/config/secret:go_default_library",
+        "//prow/config/secret/v2:go_default_library",
         "//prow/flagutil:go_default_library",
         "//prow/github:go_default_library",
         "//prow/logrusutil:go_default_library",
