@@ -29,7 +29,7 @@ import (
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
-	"k8s.io/test-infra/prow/config/secret"
+	"k8s.io/test-infra/prow/config/secret/v2"
 	"k8s.io/test-infra/prow/crier/reporters/pubsub"
 	"k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
@@ -103,15 +103,11 @@ func main() {
 	if flagOptions.github.TokenPath != "" {
 		tokens = append(tokens, flagOptions.github.TokenPath)
 	}
-	secretAgent := &secret.Agent{}
-	if err := secretAgent.Start(tokens); err != nil {
-		logrus.WithError(err).Fatal("Error starting secrets agent.")
-	}
-	tokenGenerator := secretAgent.GetTokenGenerator(flagOptions.pushSecretFile)
+	tokenGenerator := secret.GetTokenGenerator(flagOptions.pushSecretFile)
 
 	var gitClientFactory git.ClientFactory
 	if flagOptions.github.TokenPath != "" {
-		gitClient, err := flagOptions.github.GitClient(secretAgent, flagOptions.dryRun)
+		gitClient, err := flagOptions.github.GitClient(flagOptions.dryRun)
 		if err != nil {
 			logrus.WithError(err).Fatal("Error getting Git client.")
 		}

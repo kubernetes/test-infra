@@ -29,7 +29,7 @@ import (
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/bugzilla"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/config/secret"
+	"k8s.io/test-infra/prow/config/secret/v2"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	pluginsflagutil "k8s.io/test-infra/prow/flagutil/plugins"
@@ -129,8 +129,7 @@ func main() {
 		tokens = append(tokens, o.bugzilla.ApiKeyPath)
 	}
 
-	secretAgent := &secret.Agent{}
-	if err := secretAgent.Start(tokens); err != nil {
+	if err := secret.Add(tokens...); err != nil {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
 
@@ -139,18 +138,18 @@ func main() {
 		logrus.WithError(err).Fatal("Error starting plugins.")
 	}
 
-	githubClient, err := o.github.GitHubClient(secretAgent, o.dryRun)
+	githubClient, err := o.github.GitHubClient(o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
-	gitClient, err := o.github.GitClient(secretAgent, o.dryRun)
+	gitClient, err := o.github.GitClient(o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting Git client.")
 	}
 
 	var bugzillaClient bugzilla.Client
 	if orgs, repos, _ := pluginAgent.Config().EnabledReposForPlugin(bzplugin.PluginName); orgs != nil || repos != nil {
-		client, err := o.bugzilla.BugzillaClient(secretAgent)
+		client, err := o.bugzilla.BugzillaClient()
 		if err != nil {
 			logrus.WithError(err).Fatal("Error getting Bugzilla client.")
 		}
@@ -163,7 +162,7 @@ func main() {
 
 	var jiraClient jiraclient.Client
 	if orgs, repos, _ := pluginAgent.Config().EnabledReposForPlugin(jira.PluginName); orgs != nil || repos != nil {
-		client, err := o.jira.Client(secretAgent)
+		client, err := o.jira.Client()
 		if err != nil {
 			logrus.WithError(err).Fatal("Failed to construct Jira Client")
 		}
@@ -186,9 +185,9 @@ func main() {
 	}
 
 	var slackClient *slack.Client
-	if !o.dryRun && string(secretAgent.GetSecret(o.slackTokenFile)) != "" {
+	if !o.dryRun && string(secret.GetSecret(o.slackTokenFile)) != "" {
 		logrus.Info("Using real slack client.")
-		slackClient = slack.NewClient(secretAgent.GetTokenGenerator(o.slackTokenFile))
+		slackClient = slack.NewClient(secret.GetTokenGenerator(o.slackTokenFile))
 	}
 	if slackClient == nil {
 		logrus.Info("Using fake slack client.")
@@ -250,7 +249,7 @@ func main() {
 		Plugins:        pluginAgent,
 		Metrics:        promMetrics,
 		RepoEnabled:    o.githubEnablement.EnablementChecker(),
-		TokenGenerator: secretAgent.GetTokenGenerator(o.webhookSecretFile),
+		TokenGenerator: secret.GetTokenGenerator(o.webhookSecretFile),
 	}
 	interrupts.OnInterrupt(func() {
 		server.GracefulShutdown()

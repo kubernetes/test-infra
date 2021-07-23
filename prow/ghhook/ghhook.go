@@ -26,8 +26,6 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/config/secret"
-
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 )
@@ -86,11 +84,7 @@ func GetOptions(fs *flag.FlagSet, args []string) (*Options, error) {
 		return nil, err
 	}
 
-	agent := &secret.Agent{}
-	if err := agent.Start(nil); err != nil {
-		return nil, fmt.Errorf("error starting secret agent: %w", err)
-	}
-	o.GitHubHookClient, err = o.GitHubOptions.GitHubClient(agent, !o.Confirm)
+	o.GitHubHookClient, err = o.GitHubOptions.GitHubClient(!o.Confirm)
 	if err != nil {
 		return nil, fmt.Errorf("error creating github client: %v", err)
 	}
