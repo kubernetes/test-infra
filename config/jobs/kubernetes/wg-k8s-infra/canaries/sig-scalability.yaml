@@ -502,3 +502,77 @@ periodics:
         limits:
           cpu: 6
           memory: "16Gi"
+
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-kubernetes-e2e-gce-large-performance-canary
+    cluster: k8s-infra-prow-build
+    always_run: false
+    max_concurrency: 1
+    branches:
+    - master
+    decorate: true
+    path_alias: k8s.io/kubernetes
+    decoration_config:
+      timeout: 570m
+    extra_refs:
+    - org: kubernetes
+      repo: perf-tests
+      base_ref: master
+      path_alias: k8s.io/perf-tests
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+      preset-e2e-scalability-common: "true"
+      preset-e2e-scalability-presubmits: "true"
+    annotations:
+      testgrid-dashboards: wg-k8s-infra-canaries
+      testgrid-tab-name: pull-kubernetes-e2e-gce-large-performance-canary
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210715-521d667-master
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --build=quick
+        - --cluster=
+        - --env=HEAPSTER_MACHINE_TYPE=e2-standard-8
+        - --extract=local
+        - --flush-mem-after-build=true
+        - --gcp-nodes=5000
+        - --gcp-project=k8s-infra-e2e-scale-5k-project
+        - --gcp-zone=us-east1-b
+        - --provider=gce
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-large-performance
+        - --env=CL2_ENABLE_HUGE_SERVICES=true
+        - --env=CL2_ENABLE_HUGE_SERVICES_MULTIPLE_REPLICAS=true
+        - --test=false
+        - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+        - --test-cmd-args=cluster-loader2
+        - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
+        - --test-cmd-args=--nodes=5000
+        - --test-cmd-args=--provider=gce
+        - --test-cmd-args=--report-dir=$(ARTIFACTS)
+        - --test-cmd-args=--testconfig=testing/load/config.yaml
+        - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
+        - --test-cmd-args=--testoverrides=./testing/overrides/5000_nodes.yaml
+        - --test-cmd-name=ClusterLoaderV2
+        - --timeout=540m
+        - --use-logexporter
+        - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
+        resources:
+          limits:
+            # Using 6 CPU to speed up bazel build phase (4 is enough for the test itself)
+            cpu: 6
+            memory: "16Gi"
+          requests:
+            cpu: 6
+            memory: "16Gi"
+        securityContext:
+          privileged: true
