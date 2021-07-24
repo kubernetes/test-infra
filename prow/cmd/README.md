@@ -44,4 +44,4 @@ These are small tools that are automatically added to ProwJob pods for jobs that
 
 ## Base Images
 
-The container images in [`images`](/prow/cmd/images) are used as base images for Prow components.
+The container images in [`images`](/images) are used as base images for Prow components.
