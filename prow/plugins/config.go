@@ -485,6 +485,11 @@ type ConfigUpdater struct {
 
 // CLAConfig contains the list of available context names
 type CLAConfig struct {
+	// CLAContextNames is the list of status contexts to check to decide the
+	// CLA status of pull requests.  When any status in this list fails, the
+	// "cncf-cla: no" GitHub label is applied.  When any status in this list
+	// passes, the "cncf-cla: yes" GitHub label is applied. The last status in
+	// the list has priority.  Defaults to ["cla/linuxfoundation"]
 	CLAContextNames []string `json:"cla_context_names,omitempty"`
 }
 
