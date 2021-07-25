@@ -73,7 +73,7 @@ func HelpMessage(org, repo, branch, note string, testAllNames, testCommands []st
 		if len(testAllNames) == len(testCommands) {
 			testAllNote = "Use `/test all` to run all jobs.\n"
 		} else if len(testAllNames) > 0 {
-			testAllNote = fmt.Sprintf("Use `/test all` to run the following jobs:%s\n\n", listBuilder(testAllNames))
+			testAllNote = fmt.Sprintf("Use `/test all` to run the following jobs that were automatically triggered:%s\n\n", listBuilder(testAllNames))
 		}
 
 		resp = fmt.Sprintf("%sThe following commands are available to trigger jobs:%s\n\n%s",

@@ -66,7 +66,7 @@ type testcase struct {
 
 func TestHandleGenericComment(t *testing.T) {
 	helpComment := "The following commands are available to trigger jobs:\n* `/test job`\n* `/test jib`\n\n"
-	helpTestAllWithJobsComment := fmt.Sprintf("Use `/test all` to run the following jobs:%s\n\n", "\n* `job`")
+	helpTestAllWithJobsComment := fmt.Sprintf("Use `/test all` to run the following jobs that were automatically triggered:%s\n\n", "\n* `job`")
 	var testcases = []testcase{
 		{
 			name: "Not a PR.",
