@@ -181,14 +181,6 @@ func FilterPresubmits(honorOkToTest bool, gitHubClient GitHubClient, body string
 	return pjutil.FilterPresubmits(filter, changes, branch, presubmits, logger)
 }
 
-// availablePresubmits returns 2 sets of presubmits:
-// 1. presubmits that can be run with '/test all' command.
-// 2. presubmits that can be run with their trigger, e.g. '/test job'
-func availablePresubmits(githubClient GitHubClient, org, repo, branch string, number int, presubmits []config.Presubmit, logger *logrus.Entry) ([]string, []string, error) {
-	changes := config.NewGitHubDeferredChangedFilesProvider(githubClient, org, repo, number)
-	return pjutil.AvailablePresubmits(changes, org, repo, branch, presubmits, logger)
-}
-
 func getContexts(combinedStatus *github.CombinedStatus) (sets.String, sets.String) {
 	allContexts := sets.String{}
 	failedContexts := sets.String{}
@@ -204,11 +196,12 @@ func getContexts(combinedStatus *github.CombinedStatus) (sets.String, sets.Strin
 }
 
 func addHelpComment(githubClient githubClient, body, org, repo, branch string, number int, presubmits []config.Presubmit, HTMLURL, user, note string, logger *logrus.Entry) error {
-	testAllNames, testCommands, err := availablePresubmits(githubClient, org, repo, branch, number, presubmits, logger)
+	changes := config.NewGitHubDeferredChangedFilesProvider(githubClient, org, repo, number)
+	testAllNames, optionalJobsCommands, requiredJobsCommands, err := pjutil.AvailablePresubmits(changes, org, repo, branch, presubmits, logger)
 	if err != nil {
 		return err
 	}
 
-	resp := pjutil.HelpMessage(org, repo, branch, note, testAllNames, testCommands)
+	resp := pjutil.HelpMessage(org, repo, branch, note, testAllNames, optionalJobsCommands, requiredJobsCommands)
 	return githubClient.CreateComment(org, repo, number, plugins.FormatResponseRaw(body, HTMLURL, user, resp))
 }

@@ -58,29 +58,35 @@ func ShouldRespondWithHelp(body string, toRunOrSkip int) (bool, string) {
 	}
 }
 
-func HelpMessage(org, repo, branch, note string, testAllNames, testCommands []string) string {
+func HelpMessage(org, repo, branch, note string, testAllNames, optionalTestCommands, requiredTestCommands []string) string {
 	var resp string
-	if len(testAllNames)+len(testCommands) > 0 {
-		listBuilder := func(names []string) string {
-			var list strings.Builder
-			for _, name := range names {
-				list.WriteString(fmt.Sprintf("\n* `%s`", name))
-			}
-			return list.String()
-		}
-
-		var testAllNote string
-		if len(testAllNames) == len(testCommands) {
-			testAllNote = "Use `/test all` to run all jobs.\n"
-		} else if len(testAllNames) > 0 {
-			testAllNote = fmt.Sprintf("Use `/test all` to run the following jobs that were automatically triggered:%s\n\n", listBuilder(testAllNames))
-		}
-
-		resp = fmt.Sprintf("%sThe following commands are available to trigger jobs:%s\n\n%s",
-			note, listBuilder(testCommands), testAllNote)
-	} else {
-		resp = fmt.Sprintf("No presubmit jobs available for %s/%s@%s", org, repo, branch)
+	if len(testAllNames)+len(optionalTestCommands)+len(requiredTestCommands) == 0 {
+		return fmt.Sprintf("No presubmit jobs available for %s/%s@%s", org, repo, branch)
 	}
+
+	listBuilder := func(names []string) string {
+		var list strings.Builder
+		for _, name := range names {
+			list.WriteString(fmt.Sprintf("\n* `%s`", name))
+		}
+		return list.String()
+	}
+
+	resp = note
+	if len(requiredTestCommands) > 0 {
+		resp += fmt.Sprintf("The following commands are available to trigger required jobs:%s\n\n", listBuilder(requiredTestCommands))
+	}
+	if len(optionalTestCommands) > 0 {
+		resp += fmt.Sprintf("The following commands are available to trigger optional jobs:%s\n\n", listBuilder(optionalTestCommands))
+	}
+
+	var testAllNote string
+	if len(testAllNames) == len(optionalTestCommands)+len(requiredTestCommands) {
+		testAllNote = "Use `/test all` to run all jobs.\n"
+	} else if len(testAllNames) > 0 {
+		testAllNote = fmt.Sprintf("Use `/test all` to run the following jobs that were automatically triggered:%s\n\n", listBuilder(testAllNames))
+	}
+	resp += testAllNote
 
 	return resp
 }

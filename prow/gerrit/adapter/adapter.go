@@ -295,11 +295,11 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 		for _, msg := range messages {
 			needsHelp, note := pjutil.ShouldRespondWithHelp(msg, len(toTrigger))
 			if needsHelp && !isProjectOptOutHelp(c.projectsOptOutHelp, instance, change.Project) {
-				runWithTestAllNames, runWithTriggerNames, err := pjutil.AvailablePresubmits(listChangedFiles(change), cloneURI.Host, change.Project, change.Branch, presubmits, logger.WithField("help", true))
+				runWithTestAllNames, optionalJobsCommands, requiredJobsCommands, err := pjutil.AvailablePresubmits(listChangedFiles(change), cloneURI.Host, change.Project, change.Branch, presubmits, logger.WithField("help", true))
 				if err != nil {
 					return err
 				}
-				message := pjutil.HelpMessage(cloneURI.Host, change.Project, change.Branch, note, runWithTestAllNames, runWithTriggerNames)
+				message := pjutil.HelpMessage(cloneURI.Host, change.Project, change.Branch, note, runWithTestAllNames, optionalJobsCommands, requiredJobsCommands)
 				if err := c.gc.SetReview(instance, change.ID, change.CurrentRevision, message, nil); err != nil {
 					return err
 				}

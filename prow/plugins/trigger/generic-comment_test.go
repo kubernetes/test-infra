@@ -65,7 +65,7 @@ type testcase struct {
 }
 
 func TestHandleGenericComment(t *testing.T) {
-	helpComment := "The following commands are available to trigger jobs:\n* `/test job`\n* `/test jib`\n\n"
+	helpComment := "The following commands are available to trigger required jobs:\n* `/test job`\n* `/test jib`\n\n"
 	helpTestAllWithJobsComment := fmt.Sprintf("Use `/test all` to run the following jobs that were automatically triggered:%s\n\n", "\n* `job`")
 	var testcases = []testcase{
 		{
@@ -1028,7 +1028,7 @@ func TestHandleGenericComment(t *testing.T) {
 					},
 				},
 			},
-			AddedComment: "@trusted-member: The following commands are available to trigger jobs:\n* `/rerun_command`\n* `/command_foo`\n\nUse `/test all` to run all jobs.",
+			AddedComment: "@trusted-member: The following commands are available to trigger required jobs:\n* `/rerun_command`\n* `/command_foo`\n\nUse `/test all` to run all jobs.",
 		},
 		{
 			name:         "/test with no target results in a help message",
@@ -1185,6 +1185,54 @@ func TestHandleGenericComment(t *testing.T) {
 				},
 			},
 			AddedComment: helpComment + helpTestAllWithJobsComment,
+		},
+		{
+			name:   `help command "/test ?" differs between optional and required jobs`,
+			Author: "trusted-member",
+			Body:   "/test ?",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						JobBase: config.JobBase{
+							Name: "job",
+						},
+						AlwaysRun: true,
+						Reporter: config.Reporter{
+							Context: "pull-job",
+						},
+						Trigger:      `(?m)^/test (?:.*? )?job(?: .*?)?$`,
+						RerunCommand: `/test job`,
+					},
+					{
+						JobBase: config.JobBase{
+							Name: "jib",
+						},
+						AlwaysRun: true,
+						Reporter: config.Reporter{
+							Context: "pull-jib",
+						},
+						Trigger:      `(?m)^/test (?:.*? )?jib(?: .*?)?$`,
+						RerunCommand: `/test jib`,
+					},
+					{
+						JobBase: config.JobBase{
+							Name: "jub",
+						},
+						AlwaysRun: true,
+						Optional:  true,
+						Reporter: config.Reporter{
+							Context: "pull-jub",
+						},
+						Trigger:      `(?m)^/test (?:.*? )?jub(?: .*?)?$`,
+						RerunCommand: `/test jub`,
+					},
+				},
+			},
+			AddedComment: helpComment +
+				"The following commands are available to trigger optional jobs:\n* `/test jub`\n\n" +
+				"Use `/test all` to run all jobs.",
 		},
 	}
 	for _, tc := range testcases {

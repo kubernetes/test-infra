@@ -36,13 +36,14 @@ var RetestRequiredRe = regexp.MustCompile(`(?m)^/retest-required\s*$`)
 
 var OkToTestRe = regexp.MustCompile(`(?m)^/ok-to-test\s*$`)
 
-// AvailablePresubmits returns 2 sets of presubmits:
+// AvailablePresubmits returns 3 sets of presubmits:
 // 1. presubmits that can be run with '/test all' command.
-// 2. presubmits that can be run with their trigger, e.g. '/test job'
-func AvailablePresubmits(changes config.ChangedFilesProvider, org, repo, branch string, presubmits []config.Presubmit, logger *logrus.Entry) ([]string, []string, error) {
+// 2. optional presubmits commands that can be run with their trigger, e.g. '/test job'
+// 3. required presubmits commands that can be run with their trigger, e.g. '/test job'
+func AvailablePresubmits(changes config.ChangedFilesProvider, org, repo, branch string, presubmits []config.Presubmit, logger *logrus.Entry) ([]string, []string, []string, error) {
 	runWithTestAll, err := FilterPresubmits(TestAllFilter(), changes, branch, presubmits, logger)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	var triggerFilters []Filter
@@ -51,19 +52,25 @@ func AvailablePresubmits(changes config.ChangedFilesProvider, org, repo, branch 
 	}
 	runWithTrigger, err := FilterPresubmits(AggregateFilter(triggerFilters), changes, branch, presubmits, logger)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	var runWithTestAllNames []string
 	for _, ps := range runWithTestAll {
 		runWithTestAllNames = append(runWithTestAllNames, ps.Name)
 	}
-	var runWithTriggerNames []string
+	var optionalJobTriggerCommands []string
+	var requiredJobsTriggerCommands []string
 	for _, ps := range runWithTrigger {
-		runWithTriggerNames = append(runWithTriggerNames, ps.RerunCommand)
+		if ps.Optional {
+			optionalJobTriggerCommands = append(optionalJobTriggerCommands, ps.RerunCommand)
+		} else {
+			requiredJobsTriggerCommands = append(requiredJobsTriggerCommands, ps.RerunCommand)
+		}
+
 	}
 
-	return runWithTestAllNames, runWithTriggerNames, nil
+	return runWithTestAllNames, optionalJobTriggerCommands, requiredJobsTriggerCommands, nil
 }
 
 // Filter digests a presubmit config to determine if:
