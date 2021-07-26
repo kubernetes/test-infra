@@ -331,9 +331,10 @@ func TestK8sInfraTrusted(t *testing.T) {
 		}
 	}
 
-	// Postsubmits and periodics must
-	// - be defined in config/jobs/image-pushing/ and be a valid image-pushing job, OR
-	// - be defined in config/jobs/kubernetes/wg-k8s-infra/trusted/
+	// Postsubmits and periodics:
+	// - jobs in config/jobs/image-pushing must run in cluster: k8s-infra-prow-build-trusted
+	// - jobs in config/jobs/kubernetes/wg-k8s-infra/trusted must run in cluster: k8s-infra-prow-build-trusted
+	// - jobs defined anywhere else may not run in cluster: k8s-infra-prow-build-trusted
 	jobs := []cfg.JobBase{}
 	for _, job := range c.AllStaticPostsubmits(nil) {
 		jobs = append(jobs, job.JobBase)
@@ -342,10 +343,12 @@ func TestK8sInfraTrusted(t *testing.T) {
 		jobs = append(jobs, job.JobBase)
 	}
 	for _, job := range jobs {
-		if job.Cluster != trusted {
-			continue
-		}
-		if !strings.HasPrefix(job.SourcePath, imagePushingDir) && !strings.HasPrefix(job.SourcePath, trustedPath) {
+		isTrustedCluster := job.Cluster == trusted
+		isTrustedPath := strings.HasPrefix(job.SourcePath, imagePushingDir) || strings.HasPrefix(job.SourcePath, trustedPath)
+		if isTrustedPath && !isTrustedCluster {
+			jobsToFix++
+			errs = append(errs, fmt.Errorf("%s defined in %s must run in cluster: %s", job.Name, job.SourcePath, trusted))
+		} else if isTrustedCluster && !isTrustedPath {
 			jobsToFix++
 			errs = append(errs, fmt.Errorf("%s defined in %s may not run in cluster: %s", job.Name, job.SourcePath, trusted))
 		}
