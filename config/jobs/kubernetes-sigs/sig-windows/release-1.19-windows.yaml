@@ -18,7 +18,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210715-521d667-1.19
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-1.19
       command:
       - runner.sh
       - kubetest
@@ -72,7 +72,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210715-521d667-1.19
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-1.19
       command:
       - runner.sh
       - kubetest
@@ -126,7 +126,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210715-521d667-1.19
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-1.19
       command:
       - runner.sh
       - kubetest
@@ -180,7 +180,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210715-521d667-1.19
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-1.19
       command:
       - runner.sh
       - kubetest
