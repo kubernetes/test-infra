@@ -173,7 +173,12 @@ branch-protection:
         autoscaler:
           required_status_checks:
             contexts:
-            - continuous-integration/travis-ci/pr
+            - test-and-verify
+            - Helm chart
+            - Helm Docs
+          branches:
+            gh-pages:
+              protect: false
         client-go:
           restrictions:
             users: []
