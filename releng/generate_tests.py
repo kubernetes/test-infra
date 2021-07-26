@@ -91,12 +91,14 @@ def get_args(job_name, field):
 
 def write_prow_configs_file(output_file, job_defs):
     """Writes the Prow configurations into output_file."""
+    print(f'writing prow configuration to: {output_file}')
     with open(output_file, 'w') as fp:
         yaml.dump(
             job_defs, fp, Dumper=yaml.RoundTripDumper, width=float("inf"))
 
 def write_testgrid_config_file(output_file, testgrid_config):
     """Writes the TestGrid test group configurations into output_file."""
+    print(f'writing testgrid configuration to: {output_file}')
     with open(output_file, 'w') as fp:
         fp.write('# ' + COMMENT + '\n\n')
         yaml.dump(
@@ -183,6 +185,7 @@ class E2ENodeTest:
 
     def generate(self):
         '''Returns the job and the Prow configurations for this test.'''
+        print(f'generating node-e2e job: {self.job_name}')
         fields = self.job_name.split('-')
         if len(fields) != 6:
             raise ValueError('Expected 6 fields in job name', self.job_name)
@@ -308,6 +311,7 @@ class E2ETest:
 
     def generate(self):
         '''Returns the job and the Prow configurations for this test.'''
+        print(f'generating e2e job: {self.job_name}')
         fields = self.job_name.split('-')
         if len(fields) != 7:
             raise ValueError('Expected 7 fields in job name', self.job_name)
@@ -360,7 +364,7 @@ def for_each_job(output_dir, job_name, job, yaml_config):
     elif job_type == 'e2enode':
         generator = E2ENodeTest(job_name, job, yaml_config)
     else:
-        raise ValueError('Unexpected job type ', job_type)
+        raise ValueError(f'Job {job_name} has unexpected job type ', job_type)
     job_config, prow_config, testgrid_config = generator.generate()
 
     # Applies job-level overrides.
@@ -389,7 +393,8 @@ def main(yaml_config_path, output_dir, testgrid_output_path):
     output_config = {}
     output_config['periodics'] = []
     testgrid_config = {'test_groups': []}
-    for job_name, _ in yaml_config['jobs'].items():
+    job_names = sorted(yaml_config['jobs'].keys())
+    for job_name in job_names:
         # Get the envs and args for each job defined under "jobs".
         prow, testgrid = for_each_job(
             output_dir, job_name, yaml_config['jobs'][job_name], yaml_config)
