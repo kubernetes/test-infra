@@ -1628,7 +1628,7 @@ presubmits:
         env:
         - name: WHAT
           value: external-dependencies-version vendor vendor-licenses
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210715-521d667-go-canary
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-go-canary
         name: main
         resources:
           limits:
@@ -1712,7 +1712,7 @@ presubmits:
         - ./hack/jenkins/test-dockerized.sh
         command:
         - runner.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210715-521d667-go-canary
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-go-canary
         name: ""
         resources:
           limits:
@@ -1966,7 +1966,7 @@ presubmits:
           value: release-1.22
         - name: REPO_DIR
           value: /workspace/k8s.io/kubernetes
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210715-521d667-go-canary
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-go-canary
         imagePullPolicy: Always
         name: ""
         resources:
