@@ -120,6 +120,9 @@ func (c *Client) GetName() string {
 
 // ShouldReport returns if this prowjob should be reported by the github reporter
 func (c *Client) ShouldReport(_ context.Context, _ *logrus.Entry, pj *v1.ProwJob) bool {
+	if !pj.Spec.Report {
+		return false
+	}
 
 	switch {
 	case pj.Labels[client.GerritReportLabel] != "":
