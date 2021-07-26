@@ -2,6 +2,7 @@
 periodics:
 - name: ci-k8s-triage-robot
   interval: 1h
+  cluster: k8s-infra-prow-build-trusted
   decorate: true
   annotations:
     testgrid-dashboards: sig-contribex-k8s-triage-robot
@@ -48,8 +49,8 @@ periodics:
 
 - name: ci-k8s-triage-robot-cla
   interval: 10m
-  decorate: true
   cluster: k8s-infra-prow-build-trusted
+  decorate: true
   annotations:
     testgrid-dashboards: sig-contribex-k8s-triage-robot
     description: A sample job to make sure things work
@@ -88,6 +89,7 @@ periodics:
 
 - name: ci-k8s-triage-robot-close
   interval: 1h
+  cluster: k8s-infra-prow-build-trusted
   decorate: true
   annotations:
     testgrid-dashboards: sig-contribex-k8s-triage-robot
@@ -129,6 +131,7 @@ periodics:
 
 - name: ci-k8s-triage-robot-retester
   interval: 20m  # Retest at most 1 PR per 20m, which should not DOS the queue.
+  cluster: k8s-infra-prow-build-trusted
   decorate: true
   annotations:
     testgrid-dashboards: sig-contribex-k8s-triage-robot
@@ -185,6 +188,7 @@ periodics:
 
 - name: ci-k8s-triage-robot-rotten
   interval: 1h
+  cluster: k8s-infra-prow-build-trusted
   decorate: true
   annotations:
     testgrid-dashboards: sig-contribex-k8s-triage-robot
@@ -229,6 +233,7 @@ periodics:
 
 - name: ci-k8s-triage-robot-stale
   interval: 1h
+  cluster: k8s-infra-prow-build-trusted
   decorate: true
   annotations:
     testgrid-dashboards: sig-contribex-k8s-triage-robot
@@ -273,6 +278,7 @@ periodics:
 
 - name: issue-creator
   interval: 24h
+  cluster: k8s-infra-prow-build-trusted
   labels:
     preset-service-account: "true"
   decorate: true
@@ -304,6 +310,7 @@ periodics:
 # periodically file / close bugs for repos based on presence of SECURITY_CONTACTS
 - name: secping
   interval: 24h
+  cluster: k8s-infra-prow-build-trusted
   decorate: true
   annotations:
     testgrid-dashboards: sig-contribex-k8s-triage-robot
