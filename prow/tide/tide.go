@@ -241,7 +241,7 @@ func NewController(ghcSync, ghcStatus github.Client, mgr manager, cfg config.Get
 	mergeChecker := newMergeChecker(cfg, ghcSync)
 
 	ctx := context.Background()
-	sc, err := newStatusController(ctx, logger, ghcStatus, mgr, gc, cfg, opener, statusURI, mergeChecker)
+	sc, err := newStatusController(ctx, logger, ghcStatus, mgr, gc, cfg, opener, statusURI, mergeChecker, usesGitHubAppsAuth)
 	if err != nil {
 		return nil, err
 	}
@@ -250,21 +250,22 @@ func NewController(ghcSync, ghcStatus github.Client, mgr manager, cfg config.Get
 	return newSyncController(ctx, logger, ghcSync, mgr, cfg, gc, sc, hist, mergeChecker, usesGitHubAppsAuth)
 }
 
-func newStatusController(ctx context.Context, logger *logrus.Entry, ghc githubClient, mgr manager, gc git.ClientFactory, cfg config.Getter, opener io.Opener, statusURI string, mergeChecker *mergeChecker) (*statusController, error) {
+func newStatusController(ctx context.Context, logger *logrus.Entry, ghc githubClient, mgr manager, gc git.ClientFactory, cfg config.Getter, opener io.Opener, statusURI string, mergeChecker *mergeChecker, usesGitHubAppsAuth bool) (*statusController, error) {
 	if err := mgr.GetFieldIndexer().IndexField(ctx, &prowapi.ProwJob{}, indexNamePassingJobs, indexFuncPassingJobs); err != nil {
 		return nil, fmt.Errorf("failed to add index for passing jobs to cache: %v", err)
 	}
 	return &statusController{
-		pjClient:       mgr.GetClient(),
-		logger:         logger.WithField("controller", "status-update"),
-		ghc:            ghc,
-		gc:             gc,
-		config:         cfg,
-		mergeChecker:   mergeChecker,
-		newPoolPending: make(chan bool, 1),
-		shutDown:       make(chan bool),
-		opener:         opener,
-		path:           statusURI,
+		pjClient:           mgr.GetClient(),
+		logger:             logger.WithField("controller", "status-update"),
+		ghc:                ghc,
+		gc:                 gc,
+		usesGitHubAppsAuth: usesGitHubAppsAuth,
+		config:             cfg,
+		mergeChecker:       mergeChecker,
+		newPoolPending:     make(chan bool, 1),
+		shutDown:           make(chan bool),
+		opener:             opener,
+		path:               statusURI,
 	}, nil
 }
 
@@ -370,14 +371,14 @@ func (c *Controller) Sync() error {
 	var blocks blockers.Blockers
 	if len(prs) > 0 {
 		if label := c.config().Tide.BlockerLabel; label != "" {
-			c.logger.Debugf("Searching for blocking issues (label %q).", label)
+			c.logger.WithField("blocker_label", label).Debug("Searching for blocker issues")
 			orgExcepts, repos := c.config().Tide.Queries.OrgExceptionsAndRepos()
 			orgs := make([]string, 0, len(orgExcepts))
 			for org := range orgExcepts {
 				orgs = append(orgs, org)
 			}
-			orgRepoQuery := orgRepoQueryString(orgs, repos.UnsortedList(), orgExcepts)
-			blocks, err = blockers.FindAll(c.ghc, c.logger, label, orgRepoQuery)
+			orgRepoQuery := orgRepoQueryStrings(orgs, repos.UnsortedList(), orgExcepts)
+			blocks, err = blockers.FindAll(c.ghc, c.logger, label, orgRepoQuery, c.usesGitHubAppsAuth)
 			if err != nil {
 				return err
 			}
@@ -792,7 +793,12 @@ func unsuccessfulContexts(contexts []Context, cc contextChecker, log *logrus.Ent
 		failed = append(failed, newExpectedContext(c))
 	}
 
-	log.Debugf("from %d total contexts (%v) found %d failing contexts: %v", len(contexts), contextsToStrings(contexts), len(failed), contextsToStrings(failed))
+	log.WithFields(logrus.Fields{
+		"total_context_count":  len(contexts),
+		"context_names":        contextsToStrings(contexts),
+		"failed_context_count": len(failed),
+		"failed_context_names": contextsToStrings(contexts),
+	}).Debug("Filtered out failed contexts")
 	return failed
 }
 
@@ -1936,19 +1942,33 @@ func headContexts(log *logrus.Entry, ghc githubClient, pr *PullRequest) ([]Conte
 	return contexts, nil
 }
 
-func orgRepoQueryString(orgs, repos []string, orgExceptions map[string]sets.String) string {
-	toks := make([]string, 0, len(orgs))
-	for _, o := range orgs {
-		toks = append(toks, fmt.Sprintf("org:\"%s\"", o))
+func orgRepoQueryStrings(orgs, repos []string, orgExceptions map[string]sets.String) map[string]string {
+	queriesByOrg := map[string]string{}
 
-		for _, e := range orgExceptions[o].List() {
-			toks = append(toks, fmt.Sprintf("-repo:\"%s\"", e))
+	for _, org := range orgs {
+		queriesByOrg[org] = fmt.Sprintf(`org:"%s"`, org)
+
+		for _, exception := range orgExceptions[org].List() {
+			queriesByOrg[org] += fmt.Sprintf(` -repo:"%s"`, exception)
 		}
 	}
-	for _, r := range repos {
-		toks = append(toks, fmt.Sprintf("repo:\"%s\"", r))
+
+	for _, repo := range repos {
+		if org, _, ok := splitOrgRepoString(repo); ok {
+			queriesByOrg[org] += fmt.Sprintf(` repo:"%s"`, repo)
+		}
 	}
-	return strings.Join(toks, " ")
+
+	return queriesByOrg
+}
+
+func splitOrgRepoString(orgRepo string) (string, string, bool) {
+	split := strings.Split(orgRepo, "/")
+	if len(split) != 2 {
+		// Just do it like the github search itself and ignore invalid orgRepo identifiers
+		return "", "", false
+	}
+	return split[0], split[1], true
 }
 
 // cacheIndexName is the name of the index that indexes presubmit+batch ProwJobs by

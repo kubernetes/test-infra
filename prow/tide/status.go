@@ -30,6 +30,7 @@ import (
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -61,11 +62,12 @@ type storedState struct {
 }
 
 type statusController struct {
-	pjClient ctrlruntimeclient.Client
-	logger   *logrus.Entry
-	config   config.Getter
-	ghc      githubClient
-	gc       git.ClientFactory
+	pjClient           ctrlruntimeclient.Client
+	logger             *logrus.Entry
+	config             config.Getter
+	ghc                githubClient
+	gc                 git.ClientFactory
+	usesGitHubAppsAuth bool
 
 	mergeChecker *mergeChecker
 
@@ -91,9 +93,10 @@ type statusController struct {
 	blocks           blockers.Blockers
 	baseSHAs         map[string]string
 
-	storedState
-	opener io.Opener
-	path   string
+	storedState     map[string]storedState
+	storedStateLock sync.Mutex
+	opener          io.Opener
+	path            string
 }
 
 func (sc *statusController) shutdown() {
@@ -457,12 +460,19 @@ func (sc *statusController) load() {
 		return
 	}
 
-	var stored storedState
+	var stored map[string]storedState
 	if err := yaml.Unmarshal(buf, &stored); err != nil {
-		entry.WithError(err).Warn("Cannot unmarshal stored state")
-		return
+		var singleStored storedState
+		if singleStoredErr := yaml.Unmarshal(buf, &singleStored); singleStoredErr == nil {
+			stored = map[string]storedState{"": singleStored}
+		} else {
+			entry.WithError(err).Warn("Cannot unmarshal stored state")
+			return
+		}
 	}
+	sc.storedStateLock.Lock()
 	sc.storedState = stored
+	sc.storedStateLock.Unlock()
 }
 
 func (sc *statusController) save(ticker *time.Ticker) {
@@ -471,7 +481,9 @@ func (sc *statusController) save(ticker *time.Ticker) {
 			return
 		}
 		entry := sc.logger.WithField("path", sc.path)
+		sc.storedStateLock.Lock()
 		current := sc.storedState
+		sc.storedStateLock.Unlock()
 		buf, err := yaml.Marshal(current)
 		if err != nil {
 			entry.WithError(err).Warn("Cannot marshal state")
@@ -552,46 +564,93 @@ func (sc *statusController) sync(pool map[string]PullRequest, blocks blockers.Bl
 }
 
 func (sc *statusController) search() []PullRequest {
-	queries := sc.config().Tide.Queries
-	if len(queries) == 0 {
+	rawQueries := sc.config().Tide.Queries
+	if len(rawQueries) == 0 {
 		return nil
 	}
 
-	orgExceptions, repos := queries.OrgExceptionsAndRepos()
+	orgExceptions, repos := rawQueries.OrgExceptionsAndRepos()
 	orgs := sets.StringKeySet(orgExceptions)
-	query := openPRsQuery(orgs.List(), repos.List(), orgExceptions)
-	now := time.Now()
-	log := sc.logger.WithField("query", query)
-	if query != sc.PreviousQuery {
-		// Query changed and/or tide restarted, recompute everything
-		log.WithField("previously", sc.PreviousQuery).Info("Query changed, resetting start time to zero")
-		sc.LatestPR = metav1.Time{}
-		sc.PreviousQuery = query
+	queries := openPRsQueries(orgs.List(), repos.List(), orgExceptions)
+	if !sc.usesGitHubAppsAuth {
+		var query string
+		for _, orgQuery := range queries {
+			query += " " + orgQuery
+		}
+		queries = map[string]string{"": query}
 	}
 
-	// TODO @alvaroaleman: Add github apps support
-	prs, err := search(sc.ghc.QueryWithGitHubAppsSupport, sc.logger, query, sc.LatestPR.Time, now, "")
-	log.WithField("duration", time.Since(now).String()).Debugf("Found %d open PRs.", len(prs))
+	if sc.storedState == nil {
+		sc.storedState = map[string]storedState{}
+	}
+
+	var prs []PullRequest
+	var errs []error
+	var lock sync.Mutex
+	var wg sync.WaitGroup
+
+	for org, query := range queries {
+		org, query := org, query
+		wg.Add(1)
+
+		go func() {
+			defer wg.Done()
+			now := time.Now()
+			log := sc.logger.WithField("query", query)
+
+			sc.storedStateLock.Lock()
+			latestPR := sc.storedState[org].LatestPR
+			if query != sc.storedState[org].PreviousQuery {
+				// Query changed and/or tide restarted, recompute everything
+				log.WithField("previously", sc.storedState[org].PreviousQuery).Info("Query changed, resetting start time to zero")
+				sc.storedState[org] = storedState{PreviousQuery: query}
+			}
+			sc.storedStateLock.Unlock()
+
+			result, err := search(sc.ghc.QueryWithGitHubAppsSupport, sc.logger, query, latestPR.Time, now, org)
+			log.WithField("duration", time.Since(now).String()).WithField("result_count", len(result)).Debug("Searched for open PRs.")
+
+			func() {
+				sc.storedStateLock.Lock()
+				defer sc.storedStateLock.Unlock()
+
+				log := log.WithField("latestPR", sc.storedState[org].LatestPR)
+				if len(result) == 0 {
+					log.Debug("no new results")
+					return
+				}
+				latest := result[len(result)-1].UpdatedAt.Time
+				if latest.IsZero() {
+					log.Debug("latest PR has zero time")
+					return
+				}
+				sc.storedState[org] = storedState{
+					LatestPR:      metav1.Time{Time: latest.Add(-30 * time.Second)},
+					PreviousQuery: sc.storedState[org].PreviousQuery,
+				}
+				log.WithField("latestPR", sc.storedState[org].LatestPR).Debug("Advanced start time")
+			}()
+
+			lock.Lock()
+			defer lock.Unlock()
+
+			prs = append(prs, result...)
+			errs = append(errs, err)
+		}()
+
+	}
+	wg.Wait()
+
+	err := utilerrors.NewAggregate(errs)
 	if err != nil {
-		log := log.WithError(err)
+		log := sc.logger.WithError(err)
 		if len(prs) == 0 {
 			log.Error("Search failed")
 			return nil
 		}
 		log.Warn("Search partially completed")
 	}
-	if len(prs) == 0 {
-		log.WithField("latestPR", sc.LatestPR).Debug("no new results")
-		return nil
-	}
 
-	latest := prs[len(prs)-1].UpdatedAt.Time
-	if latest.IsZero() {
-		log.WithField("latestPR", sc.LatestPR).Debug("latest PR has zero time")
-		return prs
-	}
-	sc.LatestPR.Time = latest.Add(-30 * time.Second)
-	log.WithField("latestPR", sc.LatestPR).Debug("Advanced start time")
 	return prs
 }
 
@@ -611,8 +670,12 @@ func newBaseSHAGetter(baseSHAs map[string]string, ghc githubClient, org, repo, b
 	}
 }
 
-func openPRsQuery(orgs, repos []string, orgExceptions map[string]sets.String) string {
-	return "is:pr state:open sort:updated-asc archived:false " + orgRepoQueryString(orgs, repos, orgExceptions)
+func openPRsQueries(orgs, repos []string, orgExceptions map[string]sets.String) map[string]string {
+	result := map[string]string{}
+	for org, query := range orgRepoQueryStrings(orgs, repos, orgExceptions) {
+		result[org] = "is:pr state:open sort:updated-asc archived:false " + query
+	}
+	return result
 }
 
 const indexNamePassingJobs = "tide-passing-jobs"
