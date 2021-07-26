@@ -27,10 +27,10 @@ Usage example:
 import argparse
 import hashlib
 import os
-import ruamel.yaml as yaml
+import ruamel.yaml
 
-
-# TODO(yguo0905): Generate Prow and testgrid configurations.
+yaml = ruamel.yaml.YAML(typ='rt')
+yaml.width = float("inf")
 
 PROW_CONFIG_TEMPLATE = """
     tags:
@@ -93,16 +93,14 @@ def write_prow_configs_file(output_file, job_defs):
     """Writes the Prow configurations into output_file."""
     print(f'writing prow configuration to: {output_file}')
     with open(output_file, 'w') as fp:
-        yaml.dump(
-            job_defs, fp, Dumper=yaml.RoundTripDumper, width=float("inf"))
+        yaml.dump(job_defs, fp)
 
 def write_testgrid_config_file(output_file, testgrid_config):
     """Writes the TestGrid test group configurations into output_file."""
     print(f'writing testgrid configuration to: {output_file}')
     with open(output_file, 'w') as fp:
         fp.write('# ' + COMMENT + '\n\n')
-        yaml.dump(
-            testgrid_config, fp, Dumper=yaml.RoundTripDumper, width=float("inf"))
+        yaml.dump(testgrid_config, fp)
 
 def apply_job_overrides(envs_or_args, job_envs_or_args):
     '''Applies the envs or args overrides defined in the job level'''
@@ -140,7 +138,7 @@ class E2ENodeTest:
 
     def __get_prow_config(self, test_suite, k8s_version):
         """Returns the Prow config for the job from the given fields."""
-        prow_config = yaml.round_trip_load(PROW_CONFIG_TEMPLATE)
+        prow_config = yaml.load(PROW_CONFIG_TEMPLATE)
         prow_config['name'] = self.job_name
         # use cluster from test_suite, or job, or not at all
         if 'cluster' in test_suite:
@@ -185,7 +183,7 @@ class E2ENodeTest:
 
     def generate(self):
         '''Returns the job and the Prow configurations for this test.'''
-        print(f'generating node-e2e job: {self.job_name}')
+        print(f'generating e2enode job: {self.job_name}')
         fields = self.job_name.split('-')
         if len(fields) != 6:
             raise ValueError('Expected 6 fields in job name', self.job_name)
@@ -261,7 +259,7 @@ class E2ETest:
 
     def __get_prow_config(self, test_suite):
         """Returns the Prow config for the e2e job from the given fields."""
-        prow_config = yaml.round_trip_load(PROW_CONFIG_TEMPLATE)
+        prow_config = yaml.load(PROW_CONFIG_TEMPLATE)
         prow_config['name'] = self.job_name
         # use cluster from test_suite, or job, or not at all
         if 'cluster' in test_suite:
@@ -294,7 +292,7 @@ class E2ETest:
         return prow_config
 
     def __get_testgrid_config(self):
-        tg_config = yaml.round_trip_load(E2E_TESTGRID_CONFIG_TEMPLATE)
+        tg_config = yaml.load(E2E_TESTGRID_CONFIG_TEMPLATE)
         tg_config['name'] = self.job_name
         tg_config['gcs_prefix'] = GCS_LOG_PREFIX + self.job_name
         return tg_config
@@ -388,7 +386,7 @@ def main(yaml_config_path, output_dir, testgrid_output_path):
     # TODO(yguo0905): Validate the configurations from yaml_config_path.
 
     with open(yaml_config_path) as fp:
-        yaml_config = yaml.safe_load(fp)
+        yaml_config = yaml.load(fp)
 
     output_config = {}
     output_config['periodics'] = []
