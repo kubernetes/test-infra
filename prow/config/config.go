@@ -1163,7 +1163,7 @@ func ReadJobConfig(jobConfig string) (JobConfig, error) {
 	uniqueBasenames := sets.String{}
 
 	jobConfigCount := 0
-	start := time.Now()
+	allStart := time.Now()
 	jc := JobConfig{}
 	err = filepath.Walk(jobConfig, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -1195,14 +1195,14 @@ func ReadJobConfig(jobConfig string) (JobConfig, error) {
 		}
 		uniqueBasenames.Insert(base)
 
-		begin := time.Now()
+		fileStart := time.Now()
 		var subConfig JobConfig
 		if err := yamlToConfig(path, &subConfig); err != nil {
 			return err
 		}
 		jc, err = mergeJobConfigs(jc, subConfig)
 		if err == nil {
-			logrus.WithField("jobConfig", path).WithField("duration", time.Now().Sub(begin)).Traceln("config loaded")
+			logrus.WithField("jobConfig", path).WithField("duration", time.Since(fileStart)).Traceln("config loaded")
 			jobConfigCount++
 		}
 		return err
@@ -1211,7 +1211,7 @@ func ReadJobConfig(jobConfig string) (JobConfig, error) {
 	if err != nil {
 		return JobConfig{}, err
 	}
-	logrus.WithField("count", jobConfigCount).WithField("duration", time.Now().Sub(start)).Traceln("jobConfigs loaded successfully")
+	logrus.WithField("count", jobConfigCount).WithField("duration", time.Since(allStart)).Traceln("jobConfigs loaded successfully")
 
 	return jc, nil
 }
@@ -1233,7 +1233,7 @@ func loadConfig(prowConfig, jobConfig string, additionalProwConfigDirs []string,
 	}
 
 	prowConfigCount := 0
-	start := time.Now()
+	allStart := time.Now()
 	for _, additionalProwConfigDir := range additionalProwConfigDirs {
 		var errs []error
 		errs = append(errs, filepath.Walk(additionalProwConfigDir, func(path string, info os.FileInfo, err error) error {
@@ -1257,7 +1257,7 @@ func loadConfig(prowConfig, jobConfig string, additionalProwConfigDirs []string,
 				return nil
 			}
 
-			begin := time.Now()
+			fileStart := time.Now()
 			var cfg ProwConfig
 			if err := yamlToConfig(path, &cfg); err != nil {
 				errs = append(errs, err)
@@ -1267,7 +1267,7 @@ func loadConfig(prowConfig, jobConfig string, additionalProwConfigDirs []string,
 			if err := nc.ProwConfig.mergeFrom(&cfg); err != nil {
 				errs = append(errs, fmt.Errorf("failed to merge in config from %s: %w", path, err))
 			} else {
-				logrus.WithField("prowConfig", path).WithField("duration", time.Now().Sub(begin)).Traceln("config loaded")
+				logrus.WithField("prowConfig", path).WithField("duration", time.Since(fileStart)).Traceln("config loaded")
 				prowConfigCount++
 			}
 
@@ -1278,7 +1278,7 @@ func loadConfig(prowConfig, jobConfig string, additionalProwConfigDirs []string,
 			return nil, err
 		}
 	}
-	logrus.WithField("count", prowConfigCount).WithField("duration", time.Now().Sub(start)).Traceln("prowConfigs loaded successfully")
+	logrus.WithField("count", prowConfigCount).WithField("duration", time.Since(allStart)).Traceln("prowConfigs loaded successfully")
 
 	if err := parseProwConfig(&nc); err != nil {
 		return nil, err
