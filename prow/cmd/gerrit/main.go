@@ -42,10 +42,11 @@ import (
 )
 
 type options struct {
-	cookiefilePath    string
-	tokenPathOverride string
-	config            configflagutil.ConfigOptions
-	projects          client.ProjectsFlag
+	cookiefilePath     string
+	tokenPathOverride  string
+	config             configflagutil.ConfigOptions
+	projects           client.ProjectsFlag
+	projectsOptOutHelp client.ProjectsFlag
 	// lastSyncFallback is the path to sync the latest timestamp
 	// Can be /local/path, gs://path/to/object or s3://path/to/object.
 	lastSyncFallback       string
@@ -87,8 +88,10 @@ func (o *options) validate() error {
 func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	var o options
 	o.projects = client.ProjectsFlag{}
+	o.projectsOptOutHelp = client.ProjectsFlag{}
 	fs.StringVar(&o.cookiefilePath, "cookiefile", "", "Path to git http.cookiefile, leave empty for anonymous")
 	fs.Var(&o.projects, "gerrit-projects", "Set of gerrit repos to monitor on a host example: --gerrit-host=https://android.googlesource.com=platform/build,toolchain/llvm, repeat fs for each host")
+	fs.Var(&o.projectsOptOutHelp, "gerrit-projects-opt-out-help", "Set of gerrit repos that do not need help information for running the tests to be commented on their changes. The format is the same as --gerrit-projects.")
 	fs.StringVar(&o.lastSyncFallback, "last-sync-fallback", "", "The /local/path, gs://path/to/object or s3://path/to/object to sync the latest timestamp")
 	fs.BoolVar(&o.dryRun, "dry-run", false, "Run in dry-run mode, performing no modifying actions.")
 	fs.StringVar(&o.tokenPathOverride, "token-path", "", "Force the use of the token in this path, use with gcloud auth print-access-token")
@@ -269,7 +272,7 @@ func main() {
 	}
 	gerritClient.Authenticate(o.cookiefilePath, o.tokenPathOverride)
 
-	c := adapter.NewController(&st, gerritClient, prowJobClient, cfg)
+	c := adapter.NewController(&st, gerritClient, prowJobClient, cfg, o.projectsOptOutHelp)
 
 	logrus.Infof("Starting gerrit fetcher")
 
