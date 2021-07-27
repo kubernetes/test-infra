@@ -38,7 +38,7 @@ spec:
       terminationGracePeriodSeconds: 180
       containers:
       - name: hook
-        image: gcr.io/k8s-prow/hook:v20210727-b2b0794248
+        image: gcr.io/k8s-prow/hook:v20210727-e0795bc861
         imagePullPolicy: Always
         args:
         - --dry-run=false
