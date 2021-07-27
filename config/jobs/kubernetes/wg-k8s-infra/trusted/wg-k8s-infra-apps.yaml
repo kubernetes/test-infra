@@ -9,10 +9,20 @@ postsubmits:
       # intended for ignoring changes to README.md or OWNERS
       run_if_changed: '^apps\/gcsweb\/(.*.yaml|deploy.sh)$'
       branches:
-        - ^main$
+      - ^main$
+      reporter_config:
+        slack:
+          channel: "k8s-infra-alerts"
+          job_states_to_report:
+          - success
+          - failure
+          - aborted
+          - error
+          report_template: 'Deploying gcsweb: {{.Status.State}}. Commit: <{{.Spec.Refs.BaseLink}}|{{printf "%.7s" .Spec.Refs.BaseSHA}}> | <{{.Status.URL}}|Spyglass> | <https://testgrid.k8s.io/wg-k8s-infra-apps#deploy-gcsweb|Testgrid> | <https://prow.k8s.io/?job={{.Spec.Job}}|Deck>'
       annotations:
         testgrid-create-test-group: 'true'
         testgrid-dashboards: wg-k8s-infra-apps
+        testgrid-tab-name: deploy-gcsweb
         testgrid-description: 'runs https://git.k8s.io/k8s.io/apps/gcsweb/deploy.sh if files change in kubernetes/k8s.io/apps/gcsweb'
         testgrid-alert-email: k8s-infra-rbac-gcswebk8s-infra-alerts@kubernetes.io, k8s-infra-alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
@@ -40,10 +50,20 @@ postsubmits:
       # intended for ignoring changes to README.md or OWNERS
       run_if_changed: '^apps\/k8s-io\/(.*.yaml|deploy.sh)$'
       branches:
-        - ^main$
+      - ^main$
+      reporter_config:
+        slack:
+          channel: "k8s-infra-alerts"
+          job_states_to_report:
+          - success
+          - failure
+          - aborted
+          - error
+          report_template: 'Deploying k8s-io: {{.Status.State}}. Commit: <{{.Spec.Refs.BaseLink}}|{{printf "%.7s" .Spec.Refs.BaseSHA}}> | <{{.Status.URL}}|Spyglass> | <https://testgrid.k8s.io/wg-k8s-infra-apps#deploy-k8s-io|Testgrid> | <https://prow.k8s.io/?job={{.Spec.Job}}|Deck>'
       annotations:
         testgrid-create-test-group: 'true'
         testgrid-dashboards: wg-k8s-infra-apps
+        testgrid-tab-name: deploy-k8s-io
         testgrid-description: 'runs https://git.k8s.io/k8s.io/apps/k8s-io/deploy.sh if files change in kubernetes/k8s.io/apps/k8s-io'
         testgrid-alert-email: k8s-infra-rbac-k8s-iok8s-infra-alerts@kubernetes.io, k8s-infra-alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
@@ -71,10 +91,20 @@ postsubmits:
       # intended for ignoring changes to README.md or OWNERS
       run_if_changed: '^apps\/kubernetes-external-secrets\/(.*.yaml|deploy.sh)$'
       branches:
-        - ^main$
+      - ^main$
+      reporter_config:
+        slack:
+          channel: "k8s-infra-alerts"
+          job_states_to_report:
+          - success
+          - failure
+          - aborted
+          - error
+          report_template: 'Deploying kubernetes-external-secrets: {{.Status.State}}. Commit: <{{.Spec.Refs.BaseLink}}|{{printf "%.7s" .Spec.Refs.BaseSHA}}> | <{{.Status.URL}}|Spyglass> | <https://testgrid.k8s.io/wg-k8s-infra-apps#deploy-kubernetes-external-secrets|Testgrid> | <https://prow.k8s.io/?job={{.Spec.Job}}|Deck>'
       annotations:
         testgrid-create-test-group: 'true'
         testgrid-dashboards: wg-k8s-infra-apps
+        testgrid-tab-name: deploy-kubernetes-external-secrets
         testgrid-description: 'runs https://git.k8s.io/k8s.io/apps/kubernetes-external-secrets/deploy.sh if files change in kubernetes/k8s.io/apps/kubernetes-external-secrets'
         testgrid-alert-email: k8s-infra-rbac-kubernetes-external-secretsk8s-infra-alerts@kubernetes.io, k8s-infra-alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
@@ -102,10 +132,20 @@ postsubmits:
       # intended for ignoring changes to README.md or OWNERS
       run_if_changed: '^apps\/node-perf-dash\/(.*.yaml|deploy.sh)$'
       branches:
-        - ^main$
+      - ^main$
+      reporter_config:
+        slack:
+          channel: "k8s-infra-alerts"
+          job_states_to_report:
+          - success
+          - failure
+          - aborted
+          - error
+          report_template: 'Deploying node-perf-dash: {{.Status.State}}. Commit: <{{.Spec.Refs.BaseLink}}|{{printf "%.7s" .Spec.Refs.BaseSHA}}> | <{{.Status.URL}}|Spyglass> | <https://testgrid.k8s.io/wg-k8s-infra-apps#deploy-node-perf-dash|Testgrid> | <https://prow.k8s.io/?job={{.Spec.Job}}|Deck>'
       annotations:
         testgrid-create-test-group: 'true'
         testgrid-dashboards: wg-k8s-infra-apps
+        testgrid-tab-name: deploy-node-perf-dash
         testgrid-description: 'runs https://git.k8s.io/k8s.io/apps/node-perf-dash/deploy.sh if files change in kubernetes/k8s.io/apps/node-perf-dash'
         testgrid-alert-email: k8s-infra-rbac-node-perf-dashk8s-infra-alerts@kubernetes.io, k8s-infra-alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
@@ -133,10 +173,20 @@ postsubmits:
       # intended for ignoring changes to README.md or OWNERS
       run_if_changed: '^apps\/perfdash\/(.*.yaml|deploy.sh)$'
       branches:
-        - ^main$
+      - ^main$
+      reporter_config:
+        slack:
+          channel: "k8s-infra-alerts"
+          job_states_to_report:
+          - success
+          - failure
+          - aborted
+          - error
+          report_template: 'Deploying perfdash: {{.Status.State}}. Commit: <{{.Spec.Refs.BaseLink}}|{{printf "%.7s" .Spec.Refs.BaseSHA}}> | <{{.Status.URL}}|Spyglass> | <https://testgrid.k8s.io/wg-k8s-infra-apps#deploy-perfdash|Testgrid> | <https://prow.k8s.io/?job={{.Spec.Job}}|Deck>'
       annotations:
         testgrid-create-test-group: 'true'
         testgrid-dashboards: wg-k8s-infra-apps
+        testgrid-tab-name: deploy-perfdash
         testgrid-description: 'runs https://git.k8s.io/k8s.io/apps/perfdash/deploy.sh if files change in kubernetes/k8s.io/apps/perfdash'
         testgrid-alert-email: k8s-infra-rbac-perfdashk8s-infra-alerts@kubernetes.io, k8s-infra-alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
@@ -164,10 +214,20 @@ postsubmits:
       # intended for ignoring changes to README.md or OWNERS
       run_if_changed: '^apps\/prow\/(.*.yaml|deploy.sh)$'
       branches:
-        - ^main$
+      - ^main$
+      reporter_config:
+        slack:
+          channel: "k8s-infra-alerts"
+          job_states_to_report:
+          - success
+          - failure
+          - aborted
+          - error
+          report_template: 'Deploying prow: {{.Status.State}}. Commit: <{{.Spec.Refs.BaseLink}}|{{printf "%.7s" .Spec.Refs.BaseSHA}}> | <{{.Status.URL}}|Spyglass> | <https://testgrid.k8s.io/wg-k8s-infra-apps#deploy-prow|Testgrid> | <https://prow.k8s.io/?job={{.Spec.Job}}|Deck>'
       annotations:
         testgrid-create-test-group: 'true'
         testgrid-dashboards: wg-k8s-infra-apps
+        testgrid-tab-name: deploy-prow
         testgrid-description: 'runs https://git.k8s.io/k8s.io/apps/prow/deploy.sh if files change in kubernetes/k8s.io/apps/prow'
         testgrid-alert-email: k8s-infra-rbac-prowk8s-infra-alerts@kubernetes.io, k8s-infra-alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
@@ -195,10 +255,20 @@ postsubmits:
       # intended for ignoring changes to README.md or OWNERS
       run_if_changed: '^apps\/publishing-bot\/(.*.yaml|deploy.sh)$'
       branches:
-        - ^main$
+      - ^main$
+      reporter_config:
+        slack:
+          channel: "k8s-infra-alerts"
+          job_states_to_report:
+          - success
+          - failure
+          - aborted
+          - error
+          report_template: 'Deploying publishing-bot: {{.Status.State}}. Commit: <{{.Spec.Refs.BaseLink}}|{{printf "%.7s" .Spec.Refs.BaseSHA}}> | <{{.Status.URL}}|Spyglass> | <https://testgrid.k8s.io/wg-k8s-infra-apps#deploy-publishing-bot|Testgrid> | <https://prow.k8s.io/?job={{.Spec.Job}}|Deck>'
       annotations:
         testgrid-create-test-group: 'true'
         testgrid-dashboards: wg-k8s-infra-apps
+        testgrid-tab-name: deploy-publishing-bot
         testgrid-description: 'runs https://git.k8s.io/k8s.io/apps/publishing-bot/deploy.sh if files change in kubernetes/k8s.io/apps/publishing-bot'
         testgrid-alert-email: k8s-infra-rbac-publishing-botk8s-infra-alerts@kubernetes.io, k8s-infra-alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
@@ -226,10 +296,20 @@ postsubmits:
       # intended for ignoring changes to README.md or OWNERS
       run_if_changed: '^apps\/sippy\/(.*.yaml|deploy.sh)$'
       branches:
-        - ^main$
+      - ^main$
+      reporter_config:
+        slack:
+          channel: "k8s-infra-alerts"
+          job_states_to_report:
+          - success
+          - failure
+          - aborted
+          - error
+          report_template: 'Deploying sippy: {{.Status.State}}. Commit: <{{.Spec.Refs.BaseLink}}|{{printf "%.7s" .Spec.Refs.BaseSHA}}> | <{{.Status.URL}}|Spyglass> | <https://testgrid.k8s.io/wg-k8s-infra-apps#deploy-sippy|Testgrid> | <https://prow.k8s.io/?job={{.Spec.Job}}|Deck>'
       annotations:
         testgrid-create-test-group: 'true'
         testgrid-dashboards: wg-k8s-infra-apps
+        testgrid-tab-name: deploy-sippy
         testgrid-description: 'runs https://git.k8s.io/k8s.io/apps/sippy/deploy.sh if files change in kubernetes/k8s.io/apps/sippy'
         testgrid-alert-email: k8s-infra-rbac-sippyk8s-infra-alerts@kubernetes.io, k8s-infra-alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
@@ -257,10 +337,20 @@ postsubmits:
       # intended for ignoring changes to README.md or OWNERS
       run_if_changed: '^apps\/slack-infra\/(.*.yaml|deploy.sh)$'
       branches:
-        - ^main$
+      - ^main$
+      reporter_config:
+        slack:
+          channel: "k8s-infra-alerts"
+          job_states_to_report:
+          - success
+          - failure
+          - aborted
+          - error
+          report_template: 'Deploying slack-infra: {{.Status.State}}. Commit: <{{.Spec.Refs.BaseLink}}|{{printf "%.7s" .Spec.Refs.BaseSHA}}> | <{{.Status.URL}}|Spyglass> | <https://testgrid.k8s.io/wg-k8s-infra-apps#deploy-slack-infra|Testgrid> | <https://prow.k8s.io/?job={{.Spec.Job}}|Deck>'
       annotations:
         testgrid-create-test-group: 'true'
         testgrid-dashboards: wg-k8s-infra-apps
+        testgrid-tab-name: deploy-slack-infra
         testgrid-description: 'runs https://git.k8s.io/k8s.io/apps/slack-infra/deploy.sh if files change in kubernetes/k8s.io/apps/slack-infra'
         testgrid-alert-email: k8s-infra-rbac-slack-infrak8s-infra-alerts@kubernetes.io, k8s-infra-alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
@@ -288,10 +378,20 @@ postsubmits:
       # intended for ignoring changes to README.md or OWNERS
       run_if_changed: '^apps\/triageparty-release\/(.*.yaml|deploy.sh)$'
       branches:
-        - ^main$
+      - ^main$
+      reporter_config:
+        slack:
+          channel: "k8s-infra-alerts"
+          job_states_to_report:
+          - success
+          - failure
+          - aborted
+          - error
+          report_template: 'Deploying triageparty-release: {{.Status.State}}. Commit: <{{.Spec.Refs.BaseLink}}|{{printf "%.7s" .Spec.Refs.BaseSHA}}> | <{{.Status.URL}}|Spyglass> | <https://testgrid.k8s.io/wg-k8s-infra-apps#deploy-triageparty-release|Testgrid> | <https://prow.k8s.io/?job={{.Spec.Job}}|Deck>'
       annotations:
         testgrid-create-test-group: 'true'
         testgrid-dashboards: wg-k8s-infra-apps
+        testgrid-tab-name: deploy-triageparty-release
         testgrid-description: 'runs https://git.k8s.io/k8s.io/apps/triageparty-release/deploy.sh if files change in kubernetes/k8s.io/apps/triageparty-release'
         testgrid-alert-email: k8s-infra-rbac-triageparty-releasek8s-infra-alerts@kubernetes.io, k8s-infra-alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
