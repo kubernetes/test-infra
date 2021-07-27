@@ -52,10 +52,11 @@ type gerritClient interface {
 
 // Controller manages gerrit changes.
 type Controller struct {
-	config        config.Getter
-	prowJobClient prowJobClient
-	gc            gerritClient
-	tracker       LastSyncTracker
+	config             config.Getter
+	prowJobClient      prowJobClient
+	gc                 gerritClient
+	tracker            LastSyncTracker
+	projectsOptOutHelp map[string]sets.String
 }
 
 type LastSyncTracker interface {
@@ -64,12 +65,18 @@ type LastSyncTracker interface {
 }
 
 // NewController returns a new gerrit controller client
-func NewController(lastSyncTracker LastSyncTracker, gc gerritClient, prowJobClient prowv1.ProwJobInterface, cfg config.Getter) *Controller {
+func NewController(lastSyncTracker LastSyncTracker, gc gerritClient, prowJobClient prowv1.ProwJobInterface,
+	cfg config.Getter, projectsOptOutHelp map[string][]string) *Controller {
+	projs := map[string]sets.String{}
+	for i, p := range projectsOptOutHelp {
+		projs[i] = sets.NewString(p...)
+	}
 	return &Controller{
-		prowJobClient: prowJobClient,
-		config:        cfg,
-		gc:            gc,
-		tracker:       lastSyncTracker,
+		prowJobClient:      prowJobClient,
+		config:             cfg,
+		gc:                 gc,
+		tracker:            lastSyncTracker,
+		projectsOptOutHelp: projs,
 	}
 }
 
@@ -287,7 +294,7 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 		// Reply with help information to run the presubmit Prow jobs if requested.
 		for _, msg := range messages {
 			needsHelp, note := pjutil.ShouldRespondWithHelp(msg, len(toTrigger))
-			if needsHelp {
+			if needsHelp && !isProjectOptOutHelp(c.projectsOptOutHelp, instance, change.Project) {
 				runWithTestAllNames, runWithTriggerNames, err := pjutil.AvailablePresubmits(listChangedFiles(change), cloneURI.Host, change.Project, change.Branch, presubmits, logger.WithField("help", true))
 				if err != nil {
 					return err
@@ -371,6 +378,16 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 	}
 
 	return nil
+}
+
+// isProjectOptOutHelp returns if the project is opt-out from getting help
+// information about how to run presubmit tests on their changes.
+func isProjectOptOutHelp(projectsOptOutHelp map[string]sets.String, instance, project string) bool {
+	ps, ok := projectsOptOutHelp[instance]
+	if !ok {
+		return false
+	}
+	return ps.Has(project)
 }
 
 func deckLinkForPR(deckURL string, refs prowapi.Refs, changeStatus string) (string, error) {

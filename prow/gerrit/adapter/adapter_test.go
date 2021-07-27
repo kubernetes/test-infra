@@ -1162,6 +1162,60 @@ func TestProcessChange(t *testing.T) {
 	}
 }
 
+func TestIsProjectExemptFromHelp(t *testing.T) {
+	var testcases = []struct {
+		name                   string
+		projectsExemptFromHelp map[string]sets.String
+		instance               string
+		project                string
+		expected               bool
+	}{
+		{
+			name:                   "no project is exempt",
+			projectsExemptFromHelp: map[string]sets.String{},
+			instance:               "foo",
+			project:                "bar",
+			expected:               false,
+		},
+		{
+			name: "the instance does not match",
+			projectsExemptFromHelp: map[string]sets.String{
+				"foo": sets.NewString("bar"),
+			},
+			instance: "fuz",
+			project:  "bar",
+			expected: false,
+		},
+		{
+			name: "the instance matches but the project does not",
+			projectsExemptFromHelp: map[string]sets.String{
+				"foo": sets.NewString("baz"),
+			},
+			instance: "fuz",
+			project:  "bar",
+			expected: false,
+		},
+		{
+			name: "the project is exempt",
+			projectsExemptFromHelp: map[string]sets.String{
+				"foo": sets.NewString("bar"),
+			},
+			instance: "foo",
+			project:  "bar",
+			expected: true,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := isProjectOptOutHelp(tc.projectsExemptFromHelp, tc.instance, tc.project)
+			if got != tc.expected {
+				t.Errorf("expected %t for IsProjectExemptFromHelp but got %t", tc.expected, got)
+			}
+		})
+	}
+}
+
 func TestDeckLinkForPR(t *testing.T) {
 	tcs := []struct {
 		name         string
