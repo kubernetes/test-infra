@@ -3522,6 +3522,17 @@ dashboards:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: integ-k8s-122_istio_release-1.10_postsubmit'
+    name: integ-k8s-122_istio_release-1.10_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    open_test_template:
+      url: https://prow.istio.io/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: integ-k8s-122_istio_release-1.10_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: integ-pilot-k8s-tests_istio_release-1.10_postsubmit'
     name: integ-pilot-k8s-tests_istio_release-1.10_postsubmit
     open_bug_template:
@@ -8643,6 +8654,9 @@ test_groups:
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/integ-k8s-122_istio_postsubmit
   name: integ-k8s-122_istio_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/integ-k8s-122_istio_release-1.10_postsubmit
+  name: integ-k8s-122_istio_release-1.10_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/integ-k8s-122_istio_release-1.11_postsubmit
   name: integ-k8s-122_istio_release-1.11_postsubmit
