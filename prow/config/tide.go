@@ -168,6 +168,11 @@ type Tide struct {
 	// starting a new one requires to start new instances of all tests.
 	// Use '*' as key to set this globally. Defaults to true.
 	PrioritizeExistingBatchesMap map[string]bool `json:"prioritize_existing_batches,omitempty"`
+
+	// DisplayAllQueriesInStatus controls if Tide should mention all queries in the status it
+	// creates. The default is to only mention the one to which we are closest (Calculated
+	// by total number of requirements - fulfilled number of requirements).
+	DisplayAllQueriesInStatus bool `json:"display_all_tide_queries_in_status,omitempty"`
 }
 
 func (t *Tide) mergeFrom(additional *Tide) error {
