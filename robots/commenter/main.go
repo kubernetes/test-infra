@@ -65,6 +65,7 @@ func flagOptions() options {
 	flag.DurationVar(&o.updated, "updated", 2*time.Hour, "Filter to issues unmodified for at least this long if set")
 	flag.BoolVar(&o.includeArchived, "include-archived", false, "Match archived issues if set")
 	flag.BoolVar(&o.includeClosed, "include-closed", false, "Match closed issues if set")
+	flag.BoolVar(&o.includeLocked, "include-locked", false, "Match locked issues if set")
 	flag.BoolVar(&o.confirm, "confirm", false, "Mutate github if set")
 	flag.StringVar(&o.comment, "comment", "", "Append the following comment to matching issues")
 	flag.BoolVar(&o.useTemplate, "template", false, templateHelp)
@@ -90,6 +91,7 @@ type options struct {
 	comment         string
 	includeArchived bool
 	includeClosed   bool
+	includeLocked   bool
 	useTemplate     bool
 	query           string
 	sort            string
@@ -115,7 +117,7 @@ func parseHTMLURL(url string) (string, string, int, error) {
 	return mat[1], mat[2], n, nil
 }
 
-func makeQuery(query string, includeArchived, includeClosed bool, minUpdated time.Duration) (string, error) {
+func makeQuery(query string, includeArchived, includeClosed, includeLocked bool, minUpdated time.Duration) (string, error) {
 	// GitHub used to allow \n but changed it at some point to result in no results at all
 	query = strings.ReplaceAll(query, "\n", " ")
 	parts := []string{query}
@@ -134,6 +136,14 @@ func makeQuery(query string, includeArchived, includeClosed bool, minUpdated tim
 		parts = append(parts, "is:open")
 	} else if strings.Contains(query, "is:open") {
 		return "", errors.New("is:open conflicts with --include-closed")
+	}
+	if !includeLocked {
+		if strings.Contains(query, "is:locked") {
+			return "", errors.New("is:locked requires --include-locked")
+		}
+		parts = append(parts, "is:unlocked")
+	} else if strings.Contains(query, "is:unlocked") {
+		return "", errors.New("is:unlocked conflicts with --include-locked")
 	}
 	if minUpdated != 0 {
 		latest := time.Now().Add(-minUpdated)
@@ -181,7 +191,7 @@ func main() {
 		c = github.NewDryRunClient(secretAgent.GetTokenGenerator(o.token), secretAgent.Censor, o.graphqlEndpoint, o.endpoint.Strings()...)
 	}
 
-	query, err := makeQuery(o.query, o.includeArchived, o.includeClosed, o.updated)
+	query, err := makeQuery(o.query, o.includeArchived, o.includeClosed, o.includeLocked, o.updated)
 	if err != nil {
 		log.Fatalf("Bad query %q: %v", o.query, err)
 	}
