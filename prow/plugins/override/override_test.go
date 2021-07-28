@@ -131,16 +131,6 @@ func (c *fakeClient) presubmits(_, _ string, _ config.RefGetter, _ string) ([]co
 }
 
 func (c *fakeClient) CreateComment(org, repo string, number int, comment string) error {
-	switch {
-	case org != fakeOrg:
-		return fmt.Errorf("bad org: %s", org)
-	case repo != fakeRepo:
-		return fmt.Errorf("bad repo: %s", repo)
-	case number != fakePR:
-		return fmt.Errorf("bad number: %d", number)
-	case strings.Contains(comment, "fail-comment"):
-		return errors.New("injected CreateComment failure")
-	}
 	c.comments = append(c.comments, comment)
 	return nil
 }
@@ -365,7 +355,7 @@ func TestHandle(t *testing.T) {
 			},
 			checkComments: []string{
 				"The following unknown contexts were given", "whatever-you-want",
-				"Only the following contexts were expected", "hung-context", "hung-prow-job",
+				"Only the following contexts were expected", "hung-test", "hung-prow-job",
 			},
 		},
 		{
@@ -529,9 +519,8 @@ func TestHandle(t *testing.T) {
 			},
 			expected: map[string]github.Status{
 				"broken-test": {
-					Context:     "broken-test",
-					Description: description(adminUser),
-					State:       github.StatusSuccess,
+					Context: "broken-test",
+					State:   github.StatusFailure,
 				},
 			},
 			checkComments: []string{"Cannot get PR"},
@@ -830,27 +819,39 @@ func TestHandle(t *testing.T) {
 	log := logrus.WithField("plugin", pluginName)
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			var event github.GenericCommentEvent
-			event.Repo.Owner.Login = fakeOrg
-			event.Repo.Name = fakeRepo
-			event.Body = tc.comment
-			event.Number = fakePR
-			event.IsPR = !tc.issue
+			if tc.number == 0 {
+				tc.number = fakePR
+			}
 			if tc.user == "" {
 				tc.user = adminUser
 			}
-			event.User.Login = tc.user
 			if tc.state == "" {
 				tc.state = "open"
 			}
-			event.IssueState = tc.state
 			if tc.action == "" {
 				tc.action = github.GenericCommentActionCreated
 			}
-			event.Action = tc.action
 			if tc.contexts == nil {
 				tc.contexts = map[string]github.Status{}
 			}
+
+			event := github.GenericCommentEvent{
+				Repo: github.Repo{
+					Owner: github.User{
+						Login: fakeOrg,
+					},
+					Name: fakeRepo,
+				},
+				User: github.User{
+					Login: tc.user,
+				},
+				Body:       tc.comment,
+				Number:     tc.number,
+				IsPR:       !tc.issue,
+				IssueState: tc.state,
+				Action:     tc.action,
+			}
+
 			froc := &fakeRepoownersClient{
 				foc: &fakeOwnersClient{
 					topLevelApprovers: sets.NewString(tc.approvers...),
@@ -879,6 +880,12 @@ func TestHandle(t *testing.T) {
 				t.Errorf("bad statuses: actual %#v != expected %#v", fc.statuses, tc.expected)
 			case !reflect.DeepEqual(fc.jobs, tc.jobs):
 				t.Errorf("bad jobs: actual %#v != expected %#v", fc.jobs, tc.jobs)
+			}
+
+			for _, expectedComment := range tc.checkComments {
+				if !strings.Contains(strings.Join(fc.comments, "\n"), expectedComment) {
+					t.Errorf("bad comments: expected %#v to be in %#v", expectedComment, fc.comments)
+				}
 			}
 		})
 	}
@@ -949,7 +956,7 @@ func TestWhoCanUse(t *testing.T) {
 
 	who := whoCanUse(override, "org1", "repo1")
 	if who != expectedWho {
-		t.Errorf("expected %s, got %s", expectedWho, who)
+		t.Errorf("expected %q, got %q", expectedWho, who)
 	}
 }
 
