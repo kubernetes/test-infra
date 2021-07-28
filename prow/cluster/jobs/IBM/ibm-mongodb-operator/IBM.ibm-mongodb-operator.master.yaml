@@ -3,6 +3,9 @@ presubmits:
   - name: build_ibm-mongodb-operator
     branches:
     - ^master$
+    - ^release-efix$
+    - ^release-eus$
+    - ^release-future$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-mongodb-operator
@@ -38,6 +41,9 @@ presubmits:
   - name: test_ibm-mongodb-operator
     branches:
     - ^master$
+    - ^release-efix$
+    - ^release-eus$
+    - ^release-future$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-mongodb-operator
@@ -59,6 +65,9 @@ postsubmits:
   - name: check_ibm-mongodb-operator_postsubmit
     branches:
     - ^master$
+    - ^release-efix$
+    - ^release-eus$
+    - ^release-future$
     decorate: true
     path_alias: github.com/IBM/ibm-mongodb-operator
     spec:
@@ -73,6 +82,9 @@ postsubmits:
   - name: test_ibm-mongodb-operator_postsubmit
     branches:
     - ^master$
+    - ^release-efix$
+    - ^release-eus$
+    - ^release-future$
     decorate: true
     path_alias: github.com/IBM/ibm-mongodb-operator
     spec:
@@ -88,6 +100,9 @@ postsubmits:
   - name: coverage_ibm-mongodb-operator_postsubmit
     branches:
     - ^master$
+    - ^release-efix$
+    - ^release-eus$
+    - ^release-future$
     decorate: true
     path_alias: github.com/IBM/ibm-mongodb-operator
     spec:
@@ -108,6 +123,9 @@ postsubmits:
   - name: build_ibm-mongodb-operator_postsubmit
     branches:
     - ^master$
+    - ^release-efix$
+    - ^release-eus$
+    - ^release-future$
     decorate: true
     path_alias: github.com/IBM/ibm-mongodb-operator
     spec:
@@ -123,6 +141,9 @@ postsubmits:
   - name: images_ibm-mongodb-operator_postsubmit
     branches:
     - ^master$
+    - ^release-efix$
+    - ^release-eus$
+    - ^release-future$
     decorate: true
     path_alias: github.com/IBM/ibm-mongodb-operator
     labels:
