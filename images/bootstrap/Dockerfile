@@ -72,9 +72,13 @@ RUN wget -q https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.ta
         --bash-completion=false \
         --path-update=false \
         --usage-reporting=false && \
-    gcloud components install alpha beta kubectl && \
+    gcloud components install alpha beta && \
     gcloud info | tee /workspace/gcloud-info.txt
 
+# gcloud not provide kubectl arm64 binary
+ARG TARGETARCH
+RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/${TARGETARCH:-amd64}/kubectl" && \
+    chmod +x ./kubectl && mv ./kubectl /usr/local/bin/kubectl
 
 #
 # BEGIN: DOCKER IN DOCKER SETUP
@@ -93,10 +97,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     rm -rf /var/lib/apt/lists/*
 
 # Add the Docker apt-repository
+ARG TARGETARCH
 RUN curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg \
     | apt-key add - && \
     add-apt-repository \
-    "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") \
+    "deb [arch=${TARGETARCH:-amd64}] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") \
     $(lsb_release -cs) stable"
 
 # Install Docker

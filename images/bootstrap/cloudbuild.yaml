@@ -1,20 +1,22 @@
 steps:
   - name: busybox
     args: ['cp', '-r', 'scenarios', './images/bootstrap/scenarios']
-  - name: gcr.io/cloud-builders/docker
+  - name: gcr.io/k8s-testimages/gcb-docker-gcloud
+    entrypoint: /buildx-entrypoint
     args:
-    - build
-    - --tag=gcr.io/$PROJECT_ID/bootstrap:$_GIT_TAG
-    - --build-arg=IMAGE_ARG=gcr.io/$PROJECT_ID/bootstrap:$_GIT_TAG
-    - .
+      - build
+      - --tag=gcr.io/$PROJECT_ID/bootstrap:$_GIT_TAG
+      - --platform=linux/amd64,linux/arm64/v8
+      - --push
+      - .
     dir: images/bootstrap
-  - name: gcr.io/cloud-builders/docker
+  - name: gcr.io/k8s-testimages/gcb-docker-gcloud
+    entrypoint: gcloud
     args:
-    - tag
-    - gcr.io/$PROJECT_ID/bootstrap:$_GIT_TAG
-    - gcr.io/$PROJECT_ID/bootstrap:latest
+      - container
+      - images
+      - add-tag
+      - gcr.io/$PROJECT_ID/bootstrap:$_GIT_TAG
+      - gcr.io/$PROJECT_ID/bootstrap:latest
 substitutions:
   _GIT_TAG: '12345'
-images:
-  - 'gcr.io/$PROJECT_ID/bootstrap:$_GIT_TAG'
-  - 'gcr.io/$PROJECT_ID/bootstrap:latest'
