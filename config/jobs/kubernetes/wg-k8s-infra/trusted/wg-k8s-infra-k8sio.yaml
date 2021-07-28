@@ -1,6 +1,8 @@
 periodics:
 - name: ci-k8sio-audit
-  interval: 3h
+  # TODO(spiffxp): low interval for debugging / verification, remove and adjust cron when done
+  interval: 10m
+  # interval: 3h
   cluster: k8s-infra-prow-build-trusted
   decorate: true
   max_concurrency: 1
@@ -32,7 +34,7 @@ periodics:
     volumes:
     - name: github
       secret:
-        secretName: cncf-ci-github-token
+        secretName: k8s-infra-ci-robot-github-token
 
 postsubmits:
   kubernetes/k8s.io:
