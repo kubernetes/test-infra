@@ -43,22 +43,24 @@ func TestExpectedStatus(t *testing.T) {
 	testcases := []struct {
 		name string
 
-		baseref           string
-		branchAllowList   []string
-		branchDenyList    []string
-		sameBranchReqs    bool
-		labels            []string
-		author            string
-		firstQueryAuthor  string
-		secondQueryAuthor string
-		milestone         string
-		contexts          []Context
-		checkRuns         []CheckRun
-		inPool            bool
-		blocks            []int
-		prowJobs          []runtime.Object
-		requiredContexts  []string
-		mergeConflicts    bool
+		baseref               string
+		branchAllowList       []string
+		branchDenyList        []string
+		sameBranchReqs        bool
+		labels                []string
+		author                string
+		firstQueryAuthor      string
+		secondQueryAuthor     string
+		milestone             string
+		contexts              []Context
+		checkRuns             []CheckRun
+		inPool                bool
+		blocks                []int
+		prowJobs              []runtime.Object
+		requiredContexts      []string
+		mergeConflicts        bool
+		displayAllTideQueries bool
+		singleQuery           bool
 
 		state string
 		desc  string
@@ -125,6 +127,33 @@ func TestExpectedStatus(t *testing.T) {
 			secondQueryAuthor: "batman",
 			milestone:         "v1.0",
 			inPool:            false,
+
+			state: github.StatusPending,
+			desc:  fmt.Sprintf(statusNotInPool, " Needs need-1 label."),
+		},
+		{
+			name:                  "mention all possible queries when opted in",
+			labels:                append(append([]string{}, neededLabels[1:]...), forbiddenLabels[0]),
+			author:                "batman",
+			firstQueryAuthor:      "batman",
+			secondQueryAuthor:     "batman",
+			milestone:             "v1.0",
+			inPool:                false,
+			displayAllTideQueries: true,
+
+			state: github.StatusPending,
+			desc:  fmt.Sprintf(statusNotInPool, " Needs need-1 label OR Needs 1, 2, 3, 4, 5, 6, 7 labels."),
+		},
+		{
+			name:                  "displayAllTideQueries but only one query",
+			labels:                append(append([]string{}, neededLabels[1:]...), forbiddenLabels[0]),
+			author:                "batman",
+			firstQueryAuthor:      "batman",
+			secondQueryAuthor:     "batman",
+			milestone:             "v1.0",
+			inPool:                false,
+			displayAllTideQueries: true,
+			singleQuery:           true,
 
 			state: github.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, " Needs need-1 label."),
@@ -638,7 +667,7 @@ func TestExpectedStatus(t *testing.T) {
 				secondQuery.ExcludedBranches = tc.branchDenyList
 				secondQuery.IncludedBranches = tc.branchAllowList
 			}
-			queriesByRepo := config.TideQueries{
+			queries := config.TideQueries{
 				config.TideQuery{
 					Orgs:             []string{""},
 					ExcludedBranches: tc.branchDenyList,
@@ -649,7 +678,11 @@ func TestExpectedStatus(t *testing.T) {
 					Milestone:        "v1.0",
 				},
 				secondQuery,
-			}.QueryMap()
+			}
+			if tc.singleQuery {
+				queries = config.TideQueries{queries[0]}
+			}
+			queriesByRepo := queries.QueryMap()
 			var pr PullRequest
 			pr.BaseRef = struct {
 				Name   githubql.String
@@ -709,10 +742,10 @@ func TestExpectedStatus(t *testing.T) {
 			blocks.Repo[blockers.OrgRepo{Org: "", Repo: ""}] = items
 
 			ca := &config.Agent{}
-			ca.Set(&config.Config{})
+			ca.Set(&config.Config{ProwConfig: config.ProwConfig{Tide: config.Tide{DisplayAllQueriesInStatus: tc.displayAllTideQueries}}})
 			mmc := newMergeChecker(ca.Config, &fgc{})
 
-			sc, err := newStatusController(context.Background(), logrus.NewEntry(logrus.StandardLogger()), nil, newFakeManager(tc.prowJobs...), nil, nil, nil, "", mmc)
+			sc, err := newStatusController(context.Background(), logrus.NewEntry(logrus.StandardLogger()), nil, newFakeManager(tc.prowJobs...), nil, ca.Config, nil, "", mmc)
 			if err != nil {
 				t.Fatalf("failed to get statusController: %v", err)
 			}

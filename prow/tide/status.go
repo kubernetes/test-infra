@@ -284,7 +284,12 @@ func (sc *statusController) expectedStatus(log *logrus.Entry, queryMap *config.Q
 		var minDiff string
 		for _, q := range queryMap.ForRepo(repo) {
 			diff, diffCount := requirementDiff(pr, &q, cc)
-			if minDiffCount == -1 || diffCount < minDiffCount {
+			if sc.config().Tide.DisplayAllQueriesInStatus {
+				if minDiff != "" {
+					minDiff = strings.TrimSuffix(minDiff, ".") + " OR"
+				}
+				minDiff += diff
+			} else if minDiffCount == -1 || diffCount < minDiffCount {
 				minDiffCount = diffCount
 				minDiff = diff
 			}
