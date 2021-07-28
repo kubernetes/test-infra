@@ -1919,3 +1919,61 @@ func TestValidateUnmanagedBranchprotectionConfigDoesntHaveSubconfig(t *testing.T
 		}
 	}
 }
+
+type fakeGhAppListingClient struct {
+	installations []github.AppInstallation
+}
+
+func (f *fakeGhAppListingClient) ListAppInstallations() ([]github.AppInstallation, error) {
+	return f.installations, nil
+}
+
+func TestValidateGitHubAppIsInstalled(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name          string
+		allRepos      sets.String
+		installations []github.AppInstallation
+
+		expectedErrorMsg string
+	}{
+		{
+			name:     "Installations exist",
+			allRepos: sets.NewString("org/repo", "org-a/repo-a", "org-b/repo-b"),
+			installations: []github.AppInstallation{
+				{Account: github.User{Login: "org"}},
+				{Account: github.User{Login: "org-a"}},
+				{Account: github.User{Login: "org-b"}},
+			},
+		},
+		{
+			name:     "Some installations exist",
+			allRepos: sets.NewString("org/repo", "org-a/repo-a", "org-b/repo-b"),
+			installations: []github.AppInstallation{
+				{Account: github.User{Login: "org"}},
+				{Account: github.User{Login: "org-a"}},
+			},
+
+			expectedErrorMsg: `There is configuration for the GitHub org "org-b" but the GitHub app is not installed there`,
+		},
+		{
+			name:     "No installations exist",
+			allRepos: sets.NewString("org/repo", "org-a/repo-a", "org-b/repo-b"),
+
+			expectedErrorMsg: `[There is configuration for the GitHub org "org-a" but the GitHub app is not installed there, There is configuration for the GitHub org "org-b" but the GitHub app is not installed there, There is configuration for the GitHub org "org" but the GitHub app is not installed there]`,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var actualErrMsg string
+			if err := validateGitHubAppIsInstalled(&fakeGhAppListingClient{installations: tc.installations}, tc.allRepos); err != nil {
+				actualErrMsg = err.Error()
+			}
+
+			if actualErrMsg != tc.expectedErrorMsg {
+				t.Errorf("expected error %q, got error %q", tc.expectedErrorMsg, actualErrMsg)
+			}
+		})
+	}
+}
