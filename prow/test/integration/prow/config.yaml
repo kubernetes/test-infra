@@ -7,6 +7,12 @@ sinker:
 horologium:
   tick_interval: 5s
 
+tide:
+  sync_period: 10s
+  queries:
+  - repos:
+    - fake-org-tide/fake-repo-tide
+
 prowjob_namespace: default
 pod_namespace: test-pods
 log_level: debug

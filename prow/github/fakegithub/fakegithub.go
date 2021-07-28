@@ -367,6 +367,22 @@ func (f *FakeClient) GetPullRequest(owner, repo string, number int) (*github.Pul
 	return val, nil
 }
 
+// GetPullRequest returns details about the PR.
+func (f *FakeClient) GetPullRequests(owner, repo string) ([]github.PullRequest, error) {
+	f.lock.RLock()
+	defer f.lock.RUnlock()
+
+	val := make([]github.PullRequest, 0)
+	for number, pr := range f.PullRequests {
+		if pr == nil {
+			return nil, fmt.Errorf("pull request number key %d exist, but no data", number)
+		}
+		val = append(val, *pr)
+	}
+
+	return val, nil
+}
+
 // EditPullRequest edits the pull request.
 func (f *FakeClient) EditPullRequest(org, repo string, number int, issue *github.PullRequest) (*github.PullRequest, error) {
 	f.lock.Lock()
@@ -996,6 +1012,12 @@ func (f *FakeClient) CreatePullRequest(org, repo, title, body, head, base string
 		}
 		f.PullRequests[i] = &github.PullRequest{
 			Number: i,
+			Title:  title,
+			Body:   body,
+			Head: github.PullRequestBranch{
+				Ref:  head,
+				Repo: github.Repo{Owner: github.User{Login: org}, Name: repo},
+			},
 			Base: github.PullRequestBranch{
 				Ref:  base,
 				Repo: github.Repo{Owner: github.User{Login: org}, Name: repo},

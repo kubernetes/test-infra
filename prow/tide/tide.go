@@ -1894,7 +1894,7 @@ type PRNode struct {
 	PullRequest PullRequest `graphql:"... on PullRequest"`
 }
 
-type searchQuery struct {
+type SearchQuery struct {
 	RateLimit struct {
 		Cost      githubql.Int
 		Remaining githubql.Int

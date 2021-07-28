@@ -40,8 +40,8 @@ func TestSearch(t *testing.T) {
 		}
 		return prs
 	}
-	makeQuery := func(more bool, cursor string, numbers ...int) searchQuery {
-		var sq searchQuery
+	makeQuery := func(more bool, cursor string, numbers ...int) SearchQuery {
+		var sq SearchQuery
 		sq.Search.PageInfo.HasNextPage = githubql.Boolean(more)
 		sq.Search.PageInfo.EndCursor = githubql.String(cursor)
 		for _, pr := range makePRs(numbers...) {
@@ -56,7 +56,7 @@ func TestSearch(t *testing.T) {
 		end      time.Time
 		q        string
 		cursors  []*githubql.String
-		sqs      []searchQuery
+		sqs      []SearchQuery
 		errs     []error
 		expected []PullRequest
 		err      bool
@@ -67,7 +67,7 @@ func TestSearch(t *testing.T) {
 			end:     now,
 			q:       datedQuery(q, earlier, now),
 			cursors: []*githubql.String{nil},
-			sqs: []searchQuery{
+			sqs: []SearchQuery{
 				makeQuery(false, "", 1, 2),
 			},
 			errs:     []error{nil},
@@ -79,7 +79,7 @@ func TestSearch(t *testing.T) {
 			end:     now,
 			q:       datedQuery(q, earlier, now),
 			cursors: []*githubql.String{nil},
-			sqs: []searchQuery{
+			sqs: []SearchQuery{
 				{},
 			},
 			errs: []error{errors.New("injected error")},
@@ -91,7 +91,7 @@ func TestSearch(t *testing.T) {
 			end:     now,
 			q:       datedQuery(q, floor(time.Time{}), now),
 			cursors: []*githubql.String{nil},
-			sqs: []searchQuery{
+			sqs: []SearchQuery{
 				makeQuery(false, "", 1, 2),
 			},
 			errs:     []error{nil},
@@ -107,7 +107,7 @@ func TestSearch(t *testing.T) {
 				githubql.NewString("first"),
 				githubql.NewString("second"),
 			},
-			sqs: []searchQuery{
+			sqs: []SearchQuery{
 				makeQuery(true, "first", 1, 2),
 				makeQuery(true, "second", 3, 4),
 				makeQuery(false, "", 5, 6),
@@ -124,7 +124,7 @@ func TestSearch(t *testing.T) {
 				nil,
 				githubql.NewString("first"),
 			},
-			sqs: []searchQuery{
+			sqs: []SearchQuery{
 				makeQuery(true, "first", 1, 2),
 				{},
 			},
@@ -145,7 +145,7 @@ func TestSearch(t *testing.T) {
 				if !equality.Semantic.DeepEqual(expected, actual) {
 					t.Errorf("call %d vars do not match:\n%s", i, diff.ObjectReflectDiff(expected, actual))
 				}
-				ret := result.(*searchQuery)
+				ret := result.(*SearchQuery)
 				err := tc.errs[i]
 				sq := tc.sqs[i]
 				i++

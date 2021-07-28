@@ -38,6 +38,7 @@ spec:
         args:
         - --dry-run=true
         - --github-endpoint=http://fakeghserver
+        - --github-graphql-endpoint=http://fakeghserver/graphql
         - --github-token-path=/etc/github/oauth
         - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config

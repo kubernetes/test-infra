@@ -57,17 +57,18 @@ func search(query querier, log *logrus.Entry, q string, start, end time.Time, or
 
 	var totalCost, remaining int
 	var ret []PullRequest
-	var sq searchQuery
+	var sq SearchQuery
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
 	for {
-		log.Debug("Sending query")
+		log.Debugf("Sending query %#v %#v", sq, vars)
 		if err := query(ctx, &sq, vars, org); err != nil {
 			if cursor != nil {
 				err = fmt.Errorf("cursor: %q, err: %w", *cursor, err)
 			}
 			return ret, err
 		}
+
 		totalCost += int(sq.RateLimit.Cost)
 		remaining = int(sq.RateLimit.Remaining)
 		for _, n := range sq.Search.Nodes {

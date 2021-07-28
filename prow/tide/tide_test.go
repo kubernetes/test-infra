@@ -720,7 +720,7 @@ func (f *fgc) GetRef(o, r, ref string) (string, error) {
 }
 
 func (f *fgc) QueryWithGitHubAppsSupport(ctx context.Context, q interface{}, vars map[string]interface{}, org string) error {
-	sq, ok := q.(*searchQuery)
+	sq, ok := q.(*SearchQuery)
 	if !ok {
 		return errors.New("unexpected query type")
 	}

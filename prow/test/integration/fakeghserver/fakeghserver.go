@@ -22,12 +22,16 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
+	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	prowgh "k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/tide"
 
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/interrupts"
@@ -37,6 +41,16 @@ import (
 
 type options struct {
 	port int
+}
+
+type GraphQLObject struct {
+	Query     string           `json:"query"`
+	Variables GraphQLVariables `json:"variables"`
+}
+
+type GraphQLVariables struct {
+	Query        githubql.String  `json:"query"`
+	SearchCursor *githubql.String `json:"searchCursor"`
 }
 
 func (o *options) validate() error {
@@ -74,6 +88,7 @@ func main() {
 	//  AddLabels(org, repo string, number int, labels ...string) error # fmt.Sprintf("/repos/%s/%s/issues/%d/labels", org, repo, number),
 	//  AddLabel(org, repo string, number int, label string) # fmt.Sprintf("/repos/%s/%s/issues/%d/labels", org, repo, number)
 	//  AddRepoLabel(org, repo, label, description, color string) error # fmt.Sprintf("/repos/%s/%s/labels", org, repo),
+	//  CreatePullRequest(org, repo, title, body, head, base string, canModify bool) (int, error) # fmt.Sprintf("/repos/%s/%s/pulls", org, repo)
 	r.Path("/").Handler(response(defaultHandler()))
 	r.Path("/user").Handler(response(userHandler(ghClient)))
 	r.Path("/repos/{org}/{repo}/statuses/{sha}").Handler(response(statusHandler(ghClient)))
@@ -83,6 +98,8 @@ func main() {
 	r.Path("/repos/{org}/{repo}/issues/comments/${comment_id}").Handler(response(issueCommentHandler(ghClient)))
 	r.Path("/repos/{org}/{repo}/labels").Handler(response(labelHandler(ghClient)))
 	r.Path("/repos/{org}/{repo}/issues/{issue_id}/labels").Handler(response(labelHandler(ghClient)))
+	r.Path("/repos/{org}/{repo}/pulls").Handler(response(pullRequestHandler(ghClient)))
+	r.Path("/graphql").Handler(response(graphQLHandler(ghClient)))
 
 	health := pjutil.NewHealth()
 	health.ServeReady()
@@ -282,5 +299,80 @@ func labelHandler(ghc *fakegithub.FakeClient) func(*http.Request) (interface{}, 
 			return "", http.StatusCreated, ghc.AddRepoLabel(org, repo, data.Name, data.Description, data.Color)
 		}
 		return "", http.StatusInternalServerError, fmt.Errorf("{\"error\": \"API not supported\"}, %s, %s", r.URL.Path, r.Method)
+	}
+}
+
+func pullRequestHandler(ghc *fakegithub.FakeClient) func(*http.Request) (interface{}, int, error) {
+	return func(r *http.Request) (interface{}, int, error) {
+		logrus.Infof("Serving: %s, %s", r.URL.Path, r.Method)
+		vars := mux.Vars(r)
+		org, repo := vars["org"], vars["repo"]
+		data := struct {
+			Title string `json:"title"`
+			Body  string `json:"body"`
+			Head  string `json:"head"`
+			Base  string `json:"base"`
+			// MaintainerCanModify allows maintainers of the repo to modify this
+			// pull request, eg. push changes to it before merging.
+			MaintainerCanModify bool `json:"maintainer_can_modify"`
+		}{}
+		if err := unmarshal(r, &data); err != nil {
+			return "", http.StatusInternalServerError, err
+		}
+
+		id, err := ghc.CreatePullRequest(org, repo, data.Title, data.Body, data.Head, data.Base, true)
+		return fmt.Sprintf(`{"number": %d}`, id), http.StatusCreated, err
+	}
+}
+
+func graphQLHandler(ghc *fakegithub.FakeClient) func(*http.Request) (interface{}, int, error) {
+	// For now, only knows how to handle Tide query for TestTide
+	return func(r *http.Request) (interface{}, int, error) {
+		logrus.Infof("Serving: %s, %s", r.URL.Path, r.Method)
+
+		data := GraphQLObject{}
+		if err := unmarshal(r, &data); err != nil {
+			return "", http.StatusInternalServerError, err
+		}
+
+		re := regexp.MustCompile(`[a-z-]+/[a-z-]+`)
+		repos := re.FindString(string(data.Variables.Query))
+		if len(repos) == 0 {
+			return "", http.StatusBadRequest, fmt.Errorf("no repos in query %q", data.Variables.Query)
+		}
+		parts := strings.Split(repos, "/")
+		prs, err := ghc.GetPullRequests(parts[0], parts[1])
+		if err != nil {
+			return "", http.StatusBadRequest, err
+		}
+
+		makePRs := func(prowPRs ...prowgh.PullRequest) []tide.PullRequest {
+			var tidePRs []tide.PullRequest
+			for _, pr := range prowPRs {
+				tidePRs = append(tidePRs, tide.PullRequest{
+					Number: githubql.Int(pr.Number),
+					Title:  githubql.String(pr.Title),
+					Body:   githubql.String(pr.Body),
+				})
+			}
+			return tidePRs
+		}
+		makeQuery := func(more bool, cursor string, prowPRs ...prowgh.PullRequest) tide.SearchQuery {
+			var sq tide.SearchQuery
+			sq.Search.PageInfo.HasNextPage = githubql.Boolean(more)
+			sq.Search.PageInfo.EndCursor = githubql.String(cursor)
+			for _, pr := range makePRs(prowPRs...) {
+				sq.Search.Nodes = append(sq.Search.Nodes, tide.PRNode{PullRequest: pr})
+			}
+
+			return sq
+		}
+
+		sq, err := json.Marshal(makeQuery(false, "", prs...))
+		if err != nil {
+			return "", http.StatusInternalServerError, err
+		}
+
+		return string(sq), http.StatusOK, nil
 	}
 }
