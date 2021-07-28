@@ -1,8 +1,6 @@
 periodics:
 - name: ci-k8sio-audit
-  # TODO(spiffxp): low interval for debugging / verification, remove and adjust cron when done
-  interval: 10m
-  # interval: 3h
+  interval: 2h
   cluster: k8s-infra-prow-build-trusted
   decorate: true
   max_concurrency: 1
