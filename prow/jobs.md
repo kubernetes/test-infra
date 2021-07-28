@@ -194,7 +194,7 @@ presubmits:
   org/repo:
   - name: compile-job
     always_run: false
-    run_if_changed: "(\.[ch]|^Makefile)$"
+    run_if_changed: "(\\.[ch]|^Makefile)$"
     ...
 ```
 
@@ -207,7 +207,7 @@ presubmits:
   org/repo:
   - name: compile-job
     always_run: false
-    skip_if_only_changed: "^docs/|\.(md|adoc)$|^(README|LICENSE)$"
+    skip_if_only_changed: "^docs/|\\.(md|adoc)$|^(README|LICENSE)$"
 ```
 
 Both of the above examples would trigger on a pull request containing
