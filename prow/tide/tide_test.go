@@ -4504,3 +4504,128 @@ func TestPickBatchPrefersBatchesWithPreexistingJobs(t *testing.T) {
 
 	}
 }
+
+func TestTenantIDs(t *testing.T) {
+	tests := []struct {
+		name     string
+		pjs      []prowapi.ProwJob
+		expected sets.String
+	}{
+		{
+			name:     "no PJs",
+			pjs:      []prowapi.ProwJob{},
+			expected: sets.String{},
+		},
+		{
+			name: "one PJ",
+			pjs: []prowapi.ProwJob{
+				prowapi.ProwJob{
+					Spec: prowapi.ProwJobSpec{
+						ProwJobDefault: &prowapi.ProwJobDefault{
+							TenantID: "test",
+						},
+					},
+				},
+			},
+			expected: sets.String{}.Insert("test"),
+		},
+		{
+			name: "multiple PJs with same ID",
+			pjs: []prowapi.ProwJob{
+				prowapi.ProwJob{
+					Spec: prowapi.ProwJobSpec{
+						ProwJobDefault: &prowapi.ProwJobDefault{
+							TenantID: "test",
+						},
+					},
+				},
+				prowapi.ProwJob{
+					Spec: prowapi.ProwJobSpec{
+						ProwJobDefault: &prowapi.ProwJobDefault{
+							TenantID: "test",
+						},
+					},
+				},
+			},
+			expected: sets.String{}.Insert("test"),
+		},
+		{
+			name: "multiple PJs with different ID",
+			pjs: []prowapi.ProwJob{
+				prowapi.ProwJob{
+					Spec: prowapi.ProwJobSpec{
+						ProwJobDefault: &prowapi.ProwJobDefault{
+							TenantID: "test",
+						},
+					},
+				},
+				prowapi.ProwJob{
+					Spec: prowapi.ProwJobSpec{
+						ProwJobDefault: &prowapi.ProwJobDefault{
+							TenantID: "other",
+						},
+					},
+				},
+			},
+			expected: sets.String{}.Insert("test", "other"),
+		},
+		{
+			name: "no tenantID in prowJob",
+			pjs: []prowapi.ProwJob{
+				prowapi.ProwJob{
+					Spec: prowapi.ProwJobSpec{
+						ProwJobDefault: &prowapi.ProwJobDefault{
+							TenantID: "test",
+						},
+					},
+				},
+				prowapi.ProwJob{
+					Spec: prowapi.ProwJobSpec{
+						ProwJobDefault: &prowapi.ProwJobDefault{},
+					},
+				},
+			},
+			expected: sets.String{}.Insert("test", ""),
+		},
+		{
+			name: "no pjDefault in prowJob",
+			pjs: []prowapi.ProwJob{
+				prowapi.ProwJob{
+					Spec: prowapi.ProwJobSpec{
+						ProwJobDefault: &prowapi.ProwJobDefault{
+							TenantID: "test",
+						},
+					},
+				},
+				prowapi.ProwJob{
+					Spec: prowapi.ProwJobSpec{},
+				},
+			},
+			expected: sets.String{}.Insert("test", ""),
+		},
+		{
+			name: "multiple no tenant PJs",
+			pjs: []prowapi.ProwJob{
+				prowapi.ProwJob{
+					Spec: prowapi.ProwJobSpec{
+						ProwJobDefault: &prowapi.ProwJobDefault{
+							TenantID: "",
+						},
+					},
+				},
+				prowapi.ProwJob{
+					Spec: prowapi.ProwJobSpec{},
+				},
+			},
+			expected: sets.String{}.Insert(""),
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			sp := subpool{pjs: tc.pjs}
+			if diff := cmp.Diff(tc.expected, sp.TenantIDs()); diff != "" {
+				t.Errorf("expected tenantIDs differ from actual: %s", diff)
+			}
+		})
+	}
+}
