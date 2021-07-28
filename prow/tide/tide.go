@@ -1618,6 +1618,7 @@ func (c *Controller) syncSubpool(sp subpool, blocks []blockers.Blocker) (Pool, e
 		"batch-pending": prNumbers(batchPending),
 	}).Info("Subpool accumulated.")
 
+	tenentIDs := sp.TenantIDs()
 	var act Action
 	var targets []PullRequest
 	var err error
@@ -1636,6 +1637,7 @@ func (c *Controller) syncSubpool(sp subpool, blocks []blockers.Blocker) (Pool, e
 				sp.sha,
 				errorString,
 				prMeta(targets...),
+				tenentIDs,
 			)
 		}
 	}
@@ -1662,7 +1664,7 @@ func (c *Controller) syncSubpool(sp subpool, blocks []blockers.Blocker) (Pool, e
 			Blockers: blocks,
 			Error:    errorString,
 
-			TenantIDs: sp.TenantIDs(),
+			TenantIDs: tenentIDs,
 		},
 		err
 }

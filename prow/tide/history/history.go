@@ -30,6 +30,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/apimachinery/pkg/util/sets"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/io"
 )
@@ -114,11 +115,12 @@ func writeHistory(opener opener, path string, hist map[string][]*Record) error {
 
 // Record is an entry describing one action that Tide has taken (e.g. TRIGGER or MERGE).
 type Record struct {
-	Time    time.Time      `json:"time"`
-	Action  string         `json:"action"`
-	BaseSHA string         `json:"baseSHA,omitempty"`
-	Target  []prowapi.Pull `json:"target,omitempty"`
-	Err     string         `json:"err,omitempty"`
+	Time      time.Time      `json:"time"`
+	Action    string         `json:"action"`
+	BaseSHA   string         `json:"baseSHA,omitempty"`
+	Target    []prowapi.Pull `json:"target,omitempty"`
+	Err       string         `json:"err,omitempty"`
+	TenentIDs sets.String    `json:"tenentids"`
 }
 
 // New creates a new History struct with the specificed recordLog size limit.
@@ -148,17 +150,18 @@ func New(maxRecordsPerKey int, opener io.Opener, path string) (*History, error) 
 }
 
 // Record appends an entry to the recordlog specified by the poolKey.
-func (h *History) Record(poolKey, action, baseSHA, err string, targets []prowapi.Pull) {
+func (h *History) Record(poolKey, action, baseSHA, err string, targets []prowapi.Pull, tenentIDs sets.String) {
 	t := now()
 	sort.Sort(ByNum(targets))
 	h.addRecord(
 		poolKey,
 		&Record{
-			Time:    t,
-			Action:  action,
-			BaseSHA: baseSHA,
-			Target:  targets,
-			Err:     err,
+			Time:      t,
+			Action:    action,
+			BaseSHA:   baseSHA,
+			Target:    targets,
+			Err:       err,
+			TenentIDs: tenentIDs,
 		},
 	)
 }
