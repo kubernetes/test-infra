@@ -107,7 +107,7 @@ postsubmits:
         - failure
         - aborted
         - error
-        report_template: 'Deploying prow: {{.Status.State}}. <{{.Spec.Refs.BaseLink}}|Commit {{.Spec.Refs.BaseSHA}}> <{{.Status.URL}}|View logs> <https://testgrid.k8s.io/sig-testing-prow#deploy-prow|Job history on Testgrid>'
+        report_template: '{{.Status.State}}. Commit: <{{.Spec.Refs.BaseLink}}|{{printf "%.7s" .Spec.Refs.BaseSHA}}> | <{{.Status.URL}}|Spyglass> | <https://testgrid.k8s.io/sig-testing-prow#deploy-prow|Testgrid> | <https://prow.k8s.io/?job={{.Spec.Job}}|Deck>'
     spec:
       serviceAccountName: deployer
       containers:
