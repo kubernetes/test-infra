@@ -119,7 +119,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 	})
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/test [<job name>|all]",
-		Description: "Manually starts a/all test job(s). Lists all possible job(s) when no jobs/an invalid job are specified.",
+		Description: "Manually starts a/all automatically triggered test job(s). Lists all possible job(s) when no jobs/an invalid job are specified.",
 		Featured:    true,
 		WhoCanUse:   "Anyone can trigger this command on a trusted PR.",
 		Examples:    []string{"/test all", "/test pull-bazel-test"},
