@@ -18,6 +18,7 @@ package plank
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -623,6 +624,7 @@ func (r *reconciler) startPod(ctx context.Context, pj *prowv1.ProwJob) (string, 
 	pod.Namespace = r.config().PodNamespace
 	// Add prow version as a label for better debugging prowjobs.
 	pod.ObjectMeta.Labels[kube.PlankVersionLabel] = version.Version
+	podName := types.NamespacedName{Namespace: pod.Namespace, Name: pod.Name}
 
 	client, ok := r.buildClients[pj.ClusterAlias()]
 	if !ok {
@@ -631,12 +633,11 @@ func (r *reconciler) startPod(ctx context.Context, pj *prowv1.ProwJob) (string, 
 	err = client.Create(ctx, pod)
 	r.log.WithFields(pjutil.ProwJobFields(pj)).Debug("Create Pod.")
 	if err != nil {
-		return "", "", err
+		return "", "", fmt.Errorf("create pod %s in cluster %s: %w", podName.String(), pj.ClusterAlias(), err)
 	}
 
 	// We must block until we see the pod, otherwise a new reconciliation may be triggered that tries to create
 	// the pod because its not in the cache yet, errors with IsAlreadyExists and sets the prowjob to failed
-	podName := types.NamespacedName{Namespace: pod.Namespace, Name: pod.Name}
 	if err := wait.Poll(100*time.Millisecond, 10*time.Second, func() (bool, error) {
 		if err := client.Get(ctx, podName, pod); err != nil {
 			if kerrors.IsNotFound(err) {
@@ -842,9 +843,9 @@ func getPodBuildID(pod *corev1.Pod) string {
 // isRequestError extracts an HTTP status code from a kerrors.APIStatus and
 // returns true if it is a 4xx error.
 func isRequestError(err error) bool {
-	code := 500 // This is what kerrors.ReasonForError() defaults to.
-	if statusErr, ok := err.(kerrors.APIStatus); ok {
-		code = int(statusErr.Status().Code)
+	var code int32 = 500 // This is what kerrors.ReasonForError() defaults to.
+	if status := kerrors.APIStatus(nil); errors.As(err, &status) {
+		code = status.Status().Code
 	}
 	return 400 <= code && code < 500
 }
