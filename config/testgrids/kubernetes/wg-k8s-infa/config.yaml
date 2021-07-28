@@ -5,6 +5,7 @@ dashboard_groups:
   dashboard_names:
   - wg-k8s-infra-apps
   - wg-k8s-infra-canaries
+  - wg-k8s-infra-dns
   - wg-k8s-infra-gcb
   - wg-k8s-infra-groups
   - wg-k8s-infra-k8sio
@@ -12,6 +13,7 @@ dashboard_groups:
 
 dashboards:
 - name: wg-k8s-infra-apps
+- name: wg-k8s-infra-dns
 - name: wg-k8s-infra-canaries
 - name: wg-k8s-infra-gcb
 - name: wg-k8s-infra-groups

@@ -9,6 +9,7 @@ periodics:
     repo: k8s.io
     base_ref: main
   annotations:
+    testgrid-create-test-group: 'true'
     testgrid-dashboards: wg-k8s-infra-groups
     testgrid-alert-email: k8s-infra-alerts@kubernetes.io
     testgrid-num-failures-to-alert: '1'
@@ -44,7 +45,7 @@ postsubmits:
     - ^main$
     annotations:
       testgrid-create-test-group: 'true'
-      testgrid-dashboards: wg-k8s-infra-k8sio
+      testgrid-dashboards: wg-k8s-infra-groups
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
     rerun_auth_config:

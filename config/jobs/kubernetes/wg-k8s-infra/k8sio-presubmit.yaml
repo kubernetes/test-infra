@@ -3,7 +3,7 @@ presubmits:
   - name: pull-k8sio-groups-test
     annotations:
       testgrid-create-test-group: 'true'
-      testgrid-dashboards: wg-k8s-infra-k8sio
+      testgrid-dashboards: wg-k8s-infra-groups
     decorate: true
     path_alias: k8s.io/k8s.io
     run_if_changed: "^groups/"
@@ -54,7 +54,7 @@ presubmits:
     annotations:
       description: verify terraform files for GKE build cluster prow-build
       testgrid-create-test-group: 'true'
-      testgrid-dashboards: wg-k8s-infra-k8sio,sig-testing-prow
+      testgrid-dashboards: wg-k8s-infra-prow
       testgrid-tab-name: pull-k8sio-terraform-prow-build
       testgrid-alert-email: ameukam@gmail.com,spiffxp@gmail.com,spiffxp@google.com
       testgrid-num-failures-to-alert: '1'
@@ -83,7 +83,7 @@ presubmits:
     annotations:
       description: verify terraform files for GKE build cluster prow-build-trusted
       testgrid-create-test-group: 'true'
-      testgrid-dashboards: wg-k8s-infra-k8sio,sig-testing-prow
+      testgrid-dashboards: wg-k8s-infra-prow
       testgrid-tab-name: pull-k8sio-terraform-prow-build-trusted
       testgrid-alert-email: ameukam@gmail.com,spiffxp@gmail.com,spiffxp@google.com
       testgrid-num-failures-to-alert: '1'
