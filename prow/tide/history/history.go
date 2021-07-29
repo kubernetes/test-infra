@@ -30,7 +30,6 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/apimachinery/pkg/util/sets"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/io"
 )
@@ -120,7 +119,7 @@ type Record struct {
 	BaseSHA   string         `json:"baseSHA,omitempty"`
 	Target    []prowapi.Pull `json:"target,omitempty"`
 	Err       string         `json:"err,omitempty"`
-	TenentIDs sets.String    `json:"tenentids"`
+	TenantIDs []string       `json:"tenantids"`
 }
 
 // New creates a new History struct with the specificed recordLog size limit.
@@ -150,7 +149,7 @@ func New(maxRecordsPerKey int, opener io.Opener, path string) (*History, error) 
 }
 
 // Record appends an entry to the recordlog specified by the poolKey.
-func (h *History) Record(poolKey, action, baseSHA, err string, targets []prowapi.Pull, tenentIDs sets.String) {
+func (h *History) Record(poolKey, action, baseSHA, err string, targets []prowapi.Pull, tenantIDs []string) {
 	t := now()
 	sort.Sort(ByNum(targets))
 	h.addRecord(
@@ -161,7 +160,7 @@ func (h *History) Record(poolKey, action, baseSHA, err string, targets []prowapi
 			BaseSHA:   baseSHA,
 			Target:    targets,
 			Err:       err,
-			TenentIDs: tenentIDs,
+			TenantIDs: tenantIDs,
 		},
 	)
 }

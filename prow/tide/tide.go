@@ -141,7 +141,7 @@ type Pool struct {
 	Error    string
 
 	// All of the TenantIDs associated with PRs in the pool.
-	TenantIDs sets.String
+	TenantIDs []string
 }
 
 // Prometheus Metrics
@@ -1618,7 +1618,7 @@ func (c *Controller) syncSubpool(sp subpool, blocks []blockers.Blocker) (Pool, e
 		"batch-pending": prNumbers(batchPending),
 	}).Info("Subpool accumulated.")
 
-	tenentIDs := sp.TenantIDs()
+	tenantIDs := sp.TenantIDs()
 	var act Action
 	var targets []PullRequest
 	var err error
@@ -1637,7 +1637,7 @@ func (c *Controller) syncSubpool(sp subpool, blocks []blockers.Blocker) (Pool, e
 				sp.sha,
 				errorString,
 				prMeta(targets...),
-				tenentIDs,
+				tenantIDs,
 			)
 		}
 	}
@@ -1664,7 +1664,7 @@ func (c *Controller) syncSubpool(sp subpool, blocks []blockers.Blocker) (Pool, e
 			Blockers: blocks,
 			Error:    errorString,
 
-			TenantIDs: tenentIDs,
+			TenantIDs: tenantIDs,
 		},
 		err
 }
@@ -1723,7 +1723,7 @@ type subpool struct {
 	presubmits map[int][]config.Presubmit
 }
 
-func (sp subpool) TenantIDs() sets.String {
+func (sp subpool) TenantIDs() []string {
 	ids := sets.String{}
 	for _, pj := range sp.pjs {
 		if pj.Spec.ProwJobDefault == nil || pj.Spec.ProwJobDefault.TenantID == "" {
@@ -1732,7 +1732,7 @@ func (sp subpool) TenantIDs() sets.String {
 			ids.Insert(pj.Spec.ProwJobDefault.TenantID)
 		}
 	}
-	return ids
+	return ids.List()
 }
 
 func poolKey(org, repo, branch string) string {

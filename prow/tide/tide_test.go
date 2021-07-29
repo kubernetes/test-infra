@@ -35,6 +35,7 @@ import (
 
 	"github.com/go-test/deep"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	fuzz "github.com/google/gofuzz"
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
@@ -2111,6 +2112,7 @@ func TestSync(t *testing.T) {
 				SuccessPRs: []PullRequest{mergeableA},
 				Action:     Merge,
 				Target:     []PullRequest{mergeableA},
+				TenantIDs:  []string{},
 			}},
 		},
 		{
@@ -2128,6 +2130,7 @@ func TestSync(t *testing.T) {
 				SuccessPRs: []PullRequest{unknownA},
 				Action:     Merge,
 				Target:     []PullRequest{unknownA},
+				TenantIDs:  []string{},
 			}},
 		},
 		{
@@ -2140,6 +2143,7 @@ func TestSync(t *testing.T) {
 				SuccessPRs: []PullRequest{mergeableA},
 				Action:     Merge,
 				Target:     []PullRequest{mergeableA},
+				TenantIDs:  []string{},
 			}},
 		},
 		{
@@ -2152,6 +2156,7 @@ func TestSync(t *testing.T) {
 				SuccessPRs: []PullRequest{mergeableA},
 				Action:     Merge,
 				Target:     []PullRequest{mergeableA},
+				TenantIDs:  []string{},
 			}},
 		},
 		{
@@ -2164,6 +2169,7 @@ func TestSync(t *testing.T) {
 				SuccessPRs: []PullRequest{mergeableA},
 				Action:     Merge,
 				Target:     []PullRequest{mergeableA},
+				TenantIDs:  []string{},
 			}},
 		},
 	}
@@ -4509,12 +4515,12 @@ func TestTenantIDs(t *testing.T) {
 	tests := []struct {
 		name     string
 		pjs      []prowapi.ProwJob
-		expected sets.String
+		expected []string
 	}{
 		{
 			name:     "no PJs",
 			pjs:      []prowapi.ProwJob{},
-			expected: sets.String{},
+			expected: []string{},
 		},
 		{
 			name: "one PJ",
@@ -4527,7 +4533,7 @@ func TestTenantIDs(t *testing.T) {
 					},
 				},
 			},
-			expected: sets.String{}.Insert("test"),
+			expected: []string{"test"},
 		},
 		{
 			name: "multiple PJs with same ID",
@@ -4547,7 +4553,7 @@ func TestTenantIDs(t *testing.T) {
 					},
 				},
 			},
-			expected: sets.String{}.Insert("test"),
+			expected: []string{"test"},
 		},
 		{
 			name: "multiple PJs with different ID",
@@ -4567,7 +4573,7 @@ func TestTenantIDs(t *testing.T) {
 					},
 				},
 			},
-			expected: sets.String{}.Insert("test", "other"),
+			expected: []string{"test", "other"},
 		},
 		{
 			name: "no tenantID in prowJob",
@@ -4585,7 +4591,7 @@ func TestTenantIDs(t *testing.T) {
 					},
 				},
 			},
-			expected: sets.String{}.Insert("test", ""),
+			expected: []string{"test", ""},
 		},
 		{
 			name: "no pjDefault in prowJob",
@@ -4601,7 +4607,7 @@ func TestTenantIDs(t *testing.T) {
 					Spec: prowapi.ProwJobSpec{},
 				},
 			},
-			expected: sets.String{}.Insert("test", ""),
+			expected: []string{"test", ""},
 		},
 		{
 			name: "multiple no tenant PJs",
@@ -4617,13 +4623,13 @@ func TestTenantIDs(t *testing.T) {
 					Spec: prowapi.ProwJobSpec{},
 				},
 			},
-			expected: sets.String{}.Insert(""),
+			expected: []string{""},
 		},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			sp := subpool{pjs: tc.pjs}
-			if diff := cmp.Diff(tc.expected, sp.TenantIDs()); diff != "" {
+			if diff := cmp.Diff(tc.expected, sp.TenantIDs(), cmpopts.SortSlices(func(x, y string) bool { return strings.Compare(x, y) > 0 })); diff != "" {
 				t.Errorf("expected tenantIDs differ from actual: %s", diff)
 			}
 		})

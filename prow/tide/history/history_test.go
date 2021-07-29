@@ -28,7 +28,6 @@ import (
 
 	"cloud.google.com/go/storage"
 	"k8s.io/apimachinery/pkg/util/diff"
-	"k8s.io/apimachinery/pkg/util/sets"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	pkgio "k8s.io/test-infra/prow/io"
@@ -70,9 +69,9 @@ func TestHistory(t *testing.T) {
 	time5 := nextTime()
 	hist.Record("pool C", "TRIGGER_BATCH", "sha C1", "", []prowapi.Pull{testMeta(6, "joe"), testMeta(8, "me")}, nil)
 	time6 := nextTime()
-	hist.Record("pool B", "TRIGGER", "sha B4", "", []prowapi.Pull{testMeta(7, "abe")}, sets.String{})
+	hist.Record("pool B", "TRIGGER", "sha B4", "", []prowapi.Pull{testMeta(7, "abe")}, []string{})
 	time7 := nextTime()
-	hist.Record("pool D", "TRIGGER", "sha D1", "", []prowapi.Pull{testMeta(8, "joe")}, sets.String{}.Insert("testID"))
+	hist.Record("pool D", "TRIGGER", "sha D1", "", []prowapi.Pull{testMeta(8, "joe")}, []string{"testID"})
 
 	expected := map[string][]*Record{
 		"pool A": {
@@ -93,7 +92,7 @@ func TestHistory(t *testing.T) {
 				Target: []prowapi.Pull{
 					testMeta(7, "abe"),
 				},
-				TenentIDs: sets.String{},
+				TenantIDs: []string{},
 			},
 			&Record{
 				Time:    time4,
@@ -132,7 +131,7 @@ func TestHistory(t *testing.T) {
 				Target: []prowapi.Pull{
 					testMeta(8, "joe"),
 				},
-				TenentIDs: sets.String{}.Insert("testID"),
+				TenantIDs: []string{"testID"},
 			},
 		},
 	}
