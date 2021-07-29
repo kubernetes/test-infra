@@ -46,7 +46,7 @@ import (
 	"k8s.io/test-infra/pkg/genyaml"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	"k8s.io/test-infra/prow/config/secret/v2"
+	"k8s.io/test-infra/prow/config/secret"
 	gerrit "k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"

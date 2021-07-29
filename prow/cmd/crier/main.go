@@ -28,7 +28,7 @@ import (
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/config/secret/v2"
+	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/crier"
 	gcsreporter "k8s.io/test-infra/prow/crier/reporters/gcs"
 	k8sgcsreporter "k8s.io/test-infra/prow/crier/reporters/gcs/kubernetes"

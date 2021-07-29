@@ -36,7 +36,7 @@ import (
 	"text/template"
 	"time"
 
-	"k8s.io/test-infra/prow/config/secret/v2"
+	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 )

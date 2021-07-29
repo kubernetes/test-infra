@@ -29,7 +29,7 @@ import (
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/bugzilla"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/config/secret/v2"
+	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	pluginsflagutil "k8s.io/test-infra/prow/flagutil/plugins"

@@ -24,7 +24,7 @@ import (
 	"strings"
 	"testing"
 
-	"k8s.io/test-infra/prow/config/secret/v2"
+	"k8s.io/test-infra/prow/config/secret"
 )
 
 func TestValidateOptions(t *testing.T) {

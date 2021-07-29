@@ -387,12 +387,7 @@ func validate(o options) error {
 	}
 
 	if o.warningEnabled(validateGitHubAppInstallationWarning) {
-		secretAgent := &secret.Agent{}
-		if err := secretAgent.Start(nil); err != nil {
-			return fmt.Errorf("error starting secrets agent: %w", err)
-		}
-
-		githubClient, err := o.github.GitHubClient(secretAgent, false)
+		githubClient, err := o.github.GitHubClient(false)
 		if err != nil {
 			return fmt.Errorf("error loading GitHub client: %w", err)
 		}

@@ -24,7 +24,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/bugzilla"
-	"k8s.io/test-infra/prow/config/secret/v2"
+	"k8s.io/test-infra/prow/config/secret"
 )
 
 // BugzillaOptions holds options for interacting with Bugzilla.

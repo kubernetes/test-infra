@@ -27,7 +27,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/pkg/flagutil"
-	"k8s.io/test-infra/prow/config/secret/v2"
+	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/external-plugins/needs-rebase/plugin"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	pluginsflagutil "k8s.io/test-infra/prow/flagutil/plugins"

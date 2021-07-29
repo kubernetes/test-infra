@@ -29,7 +29,7 @@ import (
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
-	"k8s.io/test-infra/prow/config/secret/v2"
+	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/crier/reporters/pubsub"
 	"k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
@@ -102,6 +102,9 @@ func main() {
 	}
 	if flagOptions.github.TokenPath != "" {
 		tokens = append(tokens, flagOptions.github.TokenPath)
+	}
+	if err := secret.Add(tokens...); err != nil {
+		logrus.WithError(err).Fatal("failed to start secret agent")
 	}
 	tokenGenerator := secret.GetTokenGenerator(flagOptions.pushSecretFile)
 

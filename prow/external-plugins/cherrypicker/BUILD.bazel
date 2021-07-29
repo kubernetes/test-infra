@@ -12,7 +12,7 @@ go_library(
     deps = [
         "//pkg/flagutil:go_default_library",
         "//prow/config:go_default_library",
-        "//prow/config/secret/v2:go_default_library",
+        "//prow/config/secret:go_default_library",
         "//prow/external-plugins/cherrypicker/lib:go_default_library",
         "//prow/flagutil:go_default_library",
         "//prow/git/v2:go_default_library",

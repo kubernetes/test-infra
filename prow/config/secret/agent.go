@@ -29,6 +29,49 @@ import (
 	"k8s.io/test-infra/prow/secretutil"
 )
 
+// agent is the singleton that loads secrets for us
+var agent *Agent
+
+func init() {
+	agent = &Agent{
+		RWMutex:           sync.RWMutex{},
+		secretsMap:        map[string][]byte{},
+		ReloadingCensorer: secretutil.NewCensorer(),
+	}
+	logrus.SetFormatter(logrusutil.NewFormatterWithCensor(logrus.StandardLogger().Formatter, agent.ReloadingCensorer))
+}
+
+// Add registers a new path to the agent.
+func Add(paths ...string) error {
+	secrets, err := LoadSecrets(paths)
+	if err != nil {
+		return err
+	}
+
+	for path, value := range secrets {
+		agent.setSecret(path, value)
+		// Start one goroutine for each file to monitor and update the secret's values.
+		go agent.reloadSecret(path)
+	}
+	return nil
+}
+
+// GetSecret returns the value of a secret stored in a map.
+func GetSecret(secretPath string) []byte {
+	return agent.GetSecret(secretPath)
+}
+
+// GetTokenGenerator returns a function that gets the value of a given secret.
+func GetTokenGenerator(secretPath string) func() []byte {
+	return func() []byte {
+		return GetSecret(secretPath)
+	}
+}
+
+func Censor(content []byte) []byte {
+	return agent.Censor(content)
+}
+
 // Agent watches a path and automatically loads the secrets stored.
 type Agent struct {
 	sync.RWMutex

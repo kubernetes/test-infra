@@ -26,7 +26,7 @@ go_test(
     deps = [
         "//pkg/genyaml:go_default_library",
         "//prow/apis/prowjobs/v1:go_default_library",
-        "//prow/config/secret/v2:go_default_library",
+        "//prow/config/secret:go_default_library",
         "//prow/gerrit/client:go_default_library",
         "//prow/git/localgit:go_default_library",
         "//prow/git/v2:go_default_library",
@@ -100,7 +100,7 @@ filegroup(
         ":package-srcs",
         "//prow/config/jobtests:all-srcs",
         "//prow/config/org:all-srcs",
-        "//prow/config/secret/v2:all-srcs",
+        "//prow/config/secret:all-srcs",
     ],
     tags = ["automanaged"],
 )

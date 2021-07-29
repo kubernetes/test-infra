@@ -7,7 +7,7 @@ go_library(
     visibility = ["//visibility:private"],
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
-        "//prow/config/secret/v2:go_default_library",
+        "//prow/config/secret:go_default_library",
         "//prow/github:go_default_library",
         "//prow/jenkins:go_default_library",
         "//prow/pod-utils/downwardapi:go_default_library",
