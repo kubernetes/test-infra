@@ -17,6 +17,7 @@ go_test(
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/config:go_default_library",
+        "//prow/io:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/pjutil:go_default_library",
         "@com_github_go_test_deep//:go_default_library",
@@ -56,7 +57,9 @@ go_library(
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/config:go_default_library",
+        "//prow/crier/reporters/gcs/internal/util:go_default_library",
         "//prow/crier/reporters/gcs/kubernetes/api:go_default_library",
+        "//prow/io:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/pjutil:go_default_library",
         "//prow/pod-utils/decorate:go_default_library",

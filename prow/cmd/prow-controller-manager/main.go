@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"errors"
 	"flag"
 	"fmt"
@@ -36,6 +37,7 @@ import (
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/interrupts"
+	"k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
 	"k8s.io/test-infra/prow/plank"
@@ -56,6 +58,7 @@ type options struct {
 	kubernetes             prowflagutil.KubernetesOptions
 	github                 prowflagutil.GitHubOptions // TODO(fejta): remove
 	instrumentationOptions prowflagutil.InstrumentationOptions
+	storage                prowflagutil.StorageClientOptions
 }
 
 func gatherOptions(fs *flag.FlagSet, args ...string) options {
@@ -67,7 +70,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.Var(&o.enabledControllers, "enable-controller", fmt.Sprintf("Controllers to enable. Can be passed multiple times. Defaults to all controllers (%v)", allControllers.List()))
 
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub.")
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.instrumentationOptions, &o.config} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.instrumentationOptions, &o.config, &o.storage} {
 		group.AddFlags(fs)
 	}
 
@@ -79,7 +82,7 @@ func (o *options) Validate() error {
 	o.github.AllowAnonymous = true
 
 	var errs []error
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.config} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.config, &o.storage} {
 		if err := group.Validate(o.dryRun); err != nil {
 			errs = append(errs, err)
 		}
@@ -160,6 +163,11 @@ func main() {
 		}
 	}
 
+	opener, err := io.NewOpener(context.Background(), o.storage.GCSCredentialsFile, o.storage.S3CredentialsFile)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error creating opener")
+	}
+
 	// The watch apimachinery doesn't support restarts, so just exit the binary if a kubeconfig changes
 	// to make the kubelet restart us.
 	if err := o.kubernetes.AddKubeconfigChangeCallback(func() {
@@ -172,7 +180,7 @@ func main() {
 	enabledControllersSet := sets.NewString(o.enabledControllers.Strings()...)
 
 	if enabledControllersSet.Has(plank.ControllerName) {
-		if err := plank.Add(mgr, buildManagers, cfg, o.totURL, o.selector); err != nil {
+		if err := plank.Add(mgr, buildManagers, cfg, opener, o.totURL, o.selector); err != nil {
 			logrus.WithError(err).Fatal("Failed to add plank to manager")
 		}
 	}

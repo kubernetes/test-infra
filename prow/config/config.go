@@ -533,6 +533,11 @@ type Plank struct {
 	// JobURLPrefixDisableAppendStorageProvider disables that the storageProvider is
 	// automatically appended to the JobURLPrefix
 	JobURLPrefixDisableAppendStorageProvider bool `json:"jobURLPrefixDisableAppendStorageProvider,omitempty"`
+
+	// BuildClusterStatusFile is an optional field used to specify the blob storage location
+	// to publish cluster status information.
+	// e.g. gs://my-bucket/cluster-status.json
+	BuildClusterStatusFile string `json:"build_cluster_status_file,omitempty"`
 }
 
 // DefaultDecorationConfigEntry contains a DecorationConfig and a set of
