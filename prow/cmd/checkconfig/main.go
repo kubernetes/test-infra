@@ -109,6 +109,7 @@ const (
 	validateClusterFieldWarning                   = "validate-cluster-field"
 	validateSupplementalProwConfigOrgRepoHirarchy = "validate-supplemental-prow-config-hirarchy"
 	validateUnmanagedBranchConfigHasNoSubconfig   = "validate-unmanaged-branchconfig-has-no-subconfig"
+	validateGitHubAppInstallationWarning          = "validate-github-app-installation"
 
 	defaultHourlyTokens = 3000
 	defaultAllowedBurst = 100
@@ -143,6 +144,7 @@ func getAllWarnings() []string {
 	var all []string
 	all = append(all, defaultWarnings...)
 	all = append(all, expensiveWarnings...)
+	all = append(all, validateGitHubAppInstallationWarning)
 
 	return all
 }
@@ -238,6 +240,9 @@ func validate(o options) error {
 		} else {
 			o.warnings = flagutil.NewStrings(defaultWarnings...)
 		}
+	}
+	if o.github.AppID != "" && o.github.AppPrivateKeyPath != "" {
+		o.warnings.Set(validateGitHubAppInstallationWarning)
 	}
 
 	configAgent, err := o.config.ConfigAgent()
@@ -382,6 +387,22 @@ func validate(o options) error {
 
 	if o.warningEnabled(validateUnmanagedBranchConfigHasNoSubconfig) {
 		if err := validateUnmanagedBranchprotectionConfigDoesntHaveSubconfig(cfg.BranchProtection); err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	if o.warningEnabled(validateGitHubAppInstallationWarning) {
+		secretAgent := &secret.Agent{}
+		if err := secretAgent.Start(nil); err != nil {
+			return fmt.Errorf("error starting secrets agent: %w", err)
+		}
+
+		githubClient, err := o.github.GitHubClient(secretAgent, false)
+		if err != nil {
+			return fmt.Errorf("error loading GitHub client: %w", err)
+		}
+
+		if err := validateGitHubAppIsInstalled(githubClient, cfg.AllRepos); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -1318,4 +1339,28 @@ func getSupplementalConfigScope(path string, filesystem fs.FS, cfg hierarchicalC
 
 	global, orgs, repos = cfg.HasConfigFor()
 	return global, orgs, repos, nil
+}
+
+type ghAppListingClient interface {
+	ListAppInstallations() ([]github.AppInstallation, error)
+}
+
+func validateGitHubAppIsInstalled(client ghAppListingClient, allRepos sets.String) error {
+	installations, err := client.ListAppInstallations()
+	if err != nil {
+		return fmt.Errorf("failed to list app installations from GitHub: %w", err)
+	}
+	orgsWithInstalledApp := sets.String{}
+	for _, installation := range installations {
+		orgsWithInstalledApp.Insert(installation.Account.Login)
+	}
+
+	var errs []error
+	for _, repo := range allRepos.List() {
+		if org := strings.Split(repo, "/")[0]; !orgsWithInstalledApp.Has(org) {
+			errs = append(errs, fmt.Errorf("There is configuration for the GitHub org %q but the GitHub app is not installed there", org))
+		}
+	}
+
+	return utilerrors.NewAggregate(errs)
 }
