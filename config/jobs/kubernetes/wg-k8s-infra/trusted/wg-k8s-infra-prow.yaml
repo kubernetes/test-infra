@@ -75,9 +75,8 @@ postsubmits:
 
 periodics:
 - name: ci-k8sio-autobump-prow-build-clusters
-  # TODO(spiffxp): low interval for debugging / verification, remove and adjust cron when done
-  interval: 10m
-  # cron: "30 17-22/5 * * 1-5"  # Run at 10:30 and 15:30 PST (17:05 UTC) Mon-Fri
+  # This is arbitrarily 3h earlier than test-infra-oncall's prow autobump job
+  cron: "30 14-19/5 * * 1-5"  # Run at 7:30 and 12:30 PST Mon-Fri
   cluster: k8s-infra-prow-build-trusted
   decorate: true
   max_concurrency: 1
@@ -105,6 +104,7 @@ periodics:
       - /app/prow/cmd/generic-autobumper/app.binary
       args:
       - --config=hack/autobump-config.yaml
+      # TODO(spiffxp): consider making this a skip-review thing...
       volumeMounts:
       - name: github
         mountPath: /etc/github-token
