@@ -1212,6 +1212,13 @@ repos:
         name: area/release-team
         target: both
         addedBy: label
+  kubernetes/sig-security:
+    labels:
+      - color: 0052cc
+        description: Issues or PRs related to security assessment of sub-projects
+        name: area/security-assessment
+        target: both
+        addedBy: anyone
   kubernetes/test-infra:
     labels:
       - color: 0052cc
