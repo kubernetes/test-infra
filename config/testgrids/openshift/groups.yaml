@@ -7,7 +7,6 @@ dashboard_groups:
   - redhat-openshift-ocp-release-4.2-blocking
   - redhat-openshift-ocp-release-4.2-informing
   - redhat-openshift-ocp-release-4.3-blocking
-  - redhat-openshift-ocp-release-4.3-broken
   - redhat-openshift-ocp-release-4.3-informing
   - redhat-openshift-ocp-release-4.4-blocking
   - redhat-openshift-ocp-release-4.4-broken
@@ -40,7 +39,7 @@ dashboard_groups:
   - redhat-openshift-okd-release-4.9-informing
   - redhat-openshift-presubmit-master-gcp
   - redhat-openshift-serverless
+  - redhat-openshift-virtualization
   - redhat-osd
   - redhat-single-node
-  - redhat-openshift-virtualization
   name: redhat
