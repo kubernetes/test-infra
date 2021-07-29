@@ -20,10 +20,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sort"
 	"strings"
 	"testing"
 
 	"github.com/go-test/deep"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -745,7 +748,7 @@ func TestExpectedStatus(t *testing.T) {
 			ca.Set(&config.Config{ProwConfig: config.ProwConfig{Tide: config.Tide{DisplayAllQueriesInStatus: tc.displayAllTideQueries}}})
 			mmc := newMergeChecker(ca.Config, &fgc{})
 
-			sc, err := newStatusController(context.Background(), logrus.NewEntry(logrus.StandardLogger()), nil, newFakeManager(tc.prowJobs...), nil, ca.Config, nil, "", mmc)
+			sc, err := newStatusController(context.Background(), logrus.NewEntry(logrus.StandardLogger()), nil, newFakeManager(tc.prowJobs...), nil, ca.Config, nil, "", mmc, false)
 			if err != nil {
 				t.Fatalf("failed to get statusController: %v", err)
 			}
@@ -887,7 +890,7 @@ func TestSetStatuses(t *testing.T) {
 		}
 
 		mmc := newMergeChecker(ca.Config, fc)
-		sc, err := newStatusController(context.Background(), log, fc, newFakeManager(), nil, ca.Config, nil, "", mmc)
+		sc, err := newStatusController(context.Background(), log, fc, newFakeManager(), nil, ca.Config, nil, "", mmc, false)
 		if err != nil {
 			t.Fatalf("failed to get statusController: %v", err)
 		}
@@ -1033,13 +1036,6 @@ func TestTargetUrl(t *testing.T) {
 }
 
 func TestOpenPRsQuery(t *testing.T) {
-	var q string
-	checkTok := func(tok string) {
-		if !strings.Contains(q, " "+tok+" ") {
-			t.Errorf("Expected query to contain \"%s\", got \"%s\"", tok, q)
-		}
-	}
-
 	orgs := []string{"org", "kuber"}
 	repos := []string{"k8s/k8s", "k8s/t-i"}
 	exceptions := map[string]sets.String{
@@ -1047,15 +1043,23 @@ func TestOpenPRsQuery(t *testing.T) {
 		"irrelevant-org": sets.NewString("irrelevant-org/repo1", "irrelevant-org/repo2"),
 	}
 
-	q = " " + openPRsQuery(orgs, repos, exceptions) + " "
-	checkTok("is:pr")
-	checkTok("state:open")
-	checkTok("org:\"org\"")
-	checkTok("org:\"kuber\"")
-	checkTok("repo:\"k8s/k8s\"")
-	checkTok("repo:\"k8s/t-i\"")
-	checkTok("-repo:\"org/repo1\"")
-	checkTok("-repo:\"org/repo2\"")
+	queriesByOrg := openPRsQueries(orgs, repos, exceptions)
+	expectedQueriesByOrg := map[string]string{
+		"org":   `-repo:"org/repo1" -repo:"org/repo2" archived:false is:pr org:"org" sort:updated-asc state:open`,
+		"kuber": `archived:false is:pr org:"kuber" sort:updated-asc state:open`,
+		"k8s":   ` archived:false is:pr repo:"k8s/k8s" repo:"k8s/t-i" sort:updated-asc state:open`,
+	}
+	for org, query := range queriesByOrg {
+		// This is produced from a map so the result is not deterministic. Work around by using
+		// the fact that the parameters are space split and do a space split, sort, space join.
+		split := strings.Split(query, " ")
+		sort.Strings(split)
+		queriesByOrg[org] = strings.Join(split, " ")
+	}
+
+	if diff := cmp.Diff(queriesByOrg, expectedQueriesByOrg); diff != "" {
+		t.Errorf("actual queries differ from expected: %s", diff)
+	}
 }
 
 func TestIndexFuncPassingJobs(t *testing.T) {
@@ -1185,6 +1189,59 @@ func TestNewBaseSHAGetter(t *testing.T) {
 			}
 			if val := tc.baseSHAs[org+"/"+repo+":"+branch]; val != tc.expectedSHA {
 				t.Errorf("baseSHA in the map (%q) does not match expected(%q)", val, tc.expectedSHA)
+			}
+		})
+	}
+}
+
+func TestStatusControllerSearch(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name         string
+		prs          map[string][]PullRequest
+		usesAppsAuth bool
+
+		expected []PullRequest
+	}{
+		{
+			name: "Apps auth: Query gets split by org",
+			prs: map[string][]PullRequest{
+				"org-a": {{Number: githubql.Int(1)}},
+				"org-b": {{Number: githubql.Int(2)}},
+			},
+			usesAppsAuth: true,
+			expected: []PullRequest{
+				{Number: githubql.Int(1)},
+				{Number: githubql.Int(2)},
+			},
+		},
+		{
+			name: "No apps auth: Query remains unsplit",
+			prs: map[string][]PullRequest{
+				"": {{Number: githubql.Int(1)}, {Number: githubql.Int(2)}},
+			},
+			usesAppsAuth: false,
+			expected: []PullRequest{
+				{Number: githubql.Int(1)},
+				{Number: githubql.Int(2)},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ghc := &fgc{prs: tc.prs}
+			cfg := func() *config.Config {
+				return &config.Config{ProwConfig: config.ProwConfig{Tide: config.Tide{Queries: config.TideQueries{{Orgs: []string{"org-a", "org-b"}}}}}}
+			}
+			sc, err := newStatusController(context.Background(), logrus.WithField("tc", tc), ghc, newFakeManager(), nil, cfg, nil, "", nil, tc.usesAppsAuth)
+			if err != nil {
+				t.Fatalf("failed to construct status controller: %v", err)
+			}
+
+			result := sc.search()
+			if diff := cmp.Diff(result, tc.expected, cmpopts.SortSlices(func(a, b PullRequest) bool { return a.Number < b.Number })); diff != "" {
+				t.Errorf("result differs from expected: %s", diff)
 			}
 		})
 	}
