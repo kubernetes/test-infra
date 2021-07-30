@@ -60,7 +60,7 @@ func (o *BugzillaOptions) Validate(dryRun bool) error {
 }
 
 // BugzillaClient returns a Bugzilla client.
-func (o *BugzillaOptions) BugzillaClient(secretAgent *secret.Agent) (bugzilla.Client, error) {
+func (o *BugzillaOptions) BugzillaClient() (bugzilla.Client, error) {
 	if o.endpoint == "" {
 		return nil, fmt.Errorf("empty -bugzilla-endpoint, cannot create Bugzilla client")
 	}
@@ -72,10 +72,7 @@ func (o *BugzillaOptions) BugzillaClient(secretAgent *secret.Agent) (bugzilla.Cl
 		}
 		generator = &generatorFunc
 	} else {
-		if secretAgent == nil {
-			return nil, fmt.Errorf("cannot store token from %q without a secret agent", o.ApiKeyPath)
-		}
-		generatorFunc := secretAgent.GetTokenGenerator(o.ApiKeyPath)
+		generatorFunc := secret.GetTokenGenerator(o.ApiKeyPath)
 		generator = &generatorFunc
 	}
 

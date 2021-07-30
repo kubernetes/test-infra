@@ -132,7 +132,6 @@ go_library(
         "//prow/client/clientset/versioned/typed/prowjobs/v1:go_default_library",
         "//prow/cmd/deck/version:go_default_library",
         "//prow/config:go_default_library",
-        "//prow/config/secret:go_default_library",
         "//prow/deck/jobs:go_default_library",
         "//prow/flagutil:go_default_library",
         "//prow/flagutil/config:go_default_library",

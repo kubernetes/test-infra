@@ -128,8 +128,7 @@ func main() {
 		tokens = append(tokens, o.jenkinsBearerTokenFile)
 	}
 
-	secretAgent := &secret.Agent{}
-	if err := secretAgent.Start(tokens); err != nil {
+	if err := secret.Add(tokens...); err != nil {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
 
@@ -138,11 +137,11 @@ func main() {
 	if o.jenkinsTokenFile != "" {
 		ac.Basic = &jenkins.BasicAuthConfig{
 			User:     o.jenkinsUserName,
-			GetToken: secretAgent.GetTokenGenerator(o.jenkinsTokenFile),
+			GetToken: secret.GetTokenGenerator(o.jenkinsTokenFile),
 		}
 	} else if o.jenkinsBearerTokenFile != "" {
 		ac.BearerToken = &jenkins.BearerTokenAuthConfig{
-			GetToken: secretAgent.GetTokenGenerator(o.jenkinsBearerTokenFile),
+			GetToken: secret.GetTokenGenerator(o.jenkinsBearerTokenFile),
 		}
 	} else {
 		log.Fatalf("no jenkins auth token provided")
@@ -153,7 +152,7 @@ func main() {
 		log.Fatalf("cannot setup Jenkins client: %v", err)
 	}
 
-	gc := github.NewClient(secretAgent.GetTokenGenerator(o.githubTokenFile), secretAgent.Censor, o.graphqlEndpoint, o.githubEndpoint)
+	gc := github.NewClient(secret.GetTokenGenerator(o.githubTokenFile), secret.Censor, o.graphqlEndpoint, o.githubEndpoint)
 
 	pr, err := gc.GetPullRequest(o.org, o.repo, o.num)
 	if err != nil {

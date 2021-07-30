@@ -203,11 +203,6 @@ func main() {
 	}
 	cfg := configAgent.Config
 
-	secretAgent := &secret.Agent{}
-	if err := secretAgent.Start(nil); err != nil {
-		logrus.WithError(err).Fatal("unable to start secret agent")
-	}
-
 	restCfg, err := o.client.InfrastructureClusterConfig(o.dryrun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to get kubeconfig")
@@ -239,15 +234,15 @@ func main() {
 		}
 		tokensMap := make(map[string]func() []byte)
 		if o.slackTokenFile != "" {
-			tokensMap[slackreporter.DefaultHostName] = secretAgent.GetTokenGenerator(o.slackTokenFile)
-			if err := secretAgent.Add(o.slackTokenFile); err != nil {
+			tokensMap[slackreporter.DefaultHostName] = secret.GetTokenGenerator(o.slackTokenFile)
+			if err := secret.Add(o.slackTokenFile); err != nil {
 				logrus.WithError(err).Fatal("could not read slack token")
 			}
 		}
 		hasReporter = true
 		for host, additionalTokenFile := range o.additionalSlackTokenFiles {
-			tokensMap[host] = secretAgent.GetTokenGenerator(additionalTokenFile)
-			if err := secretAgent.Add(additionalTokenFile); err != nil {
+			tokensMap[host] = secret.GetTokenGenerator(additionalTokenFile)
+			if err := secret.Add(additionalTokenFile); err != nil {
 				logrus.WithError(err).Fatal("could not read slack token")
 			}
 		}
@@ -278,12 +273,12 @@ func main() {
 
 	if o.githubWorkers > 0 {
 		if o.github.TokenPath != "" {
-			if err := secretAgent.Add(o.github.TokenPath); err != nil {
+			if err := secret.Add(o.github.TokenPath); err != nil {
 				logrus.WithError(err).Fatal("Error reading GitHub credentials")
 			}
 		}
 
-		githubClient, err := o.github.GitHubClient(secretAgent, o.dryrun)
+		githubClient, err := o.github.GitHubClient(o.dryrun)
 		if err != nil {
 			logrus.WithError(err).Fatal("Error getting GitHub client.")
 		}

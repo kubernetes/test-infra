@@ -37,7 +37,6 @@ import (
 
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/config/secret"
 	needsrebase "k8s.io/test-infra/prow/external-plugins/needs-rebase/plugin"
 	"k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
@@ -275,12 +274,8 @@ func validate(o options) error {
 		if o.github.TokenPath == "" {
 			return errors.New("cannot verify OWNERS file presence without a GitHub token")
 		}
-		secretAgent := &secret.Agent{}
-		if err := secretAgent.Start(nil); err != nil {
-			return fmt.Errorf("error starting secrets agent: %w", err)
-		}
 
-		githubClient, err := o.github.GitHubClient(secretAgent, false)
+		githubClient, err := o.github.GitHubClient(false)
 		if err != nil {
 			return fmt.Errorf("error loading GitHub client: %w", err)
 		}
@@ -392,12 +387,7 @@ func validate(o options) error {
 	}
 
 	if o.warningEnabled(validateGitHubAppInstallationWarning) {
-		secretAgent := &secret.Agent{}
-		if err := secretAgent.Start(nil); err != nil {
-			return fmt.Errorf("error starting secrets agent: %w", err)
-		}
-
-		githubClient, err := o.github.GitHubClient(secretAgent, false)
+		githubClient, err := o.github.GitHubClient(false)
 		if err != nil {
 			return fmt.Errorf("error loading GitHub client: %w", err)
 		}

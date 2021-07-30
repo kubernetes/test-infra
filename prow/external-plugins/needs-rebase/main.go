@@ -110,12 +110,7 @@ func main() {
 	logrus.SetLevel(logLevel)
 	log := logrus.StandardLogger().WithField("plugin", labels.NeedsRebase)
 
-	secretAgent := &secret.Agent{}
-	secrets := []string{o.webhookSecretFile}
-	if o.github.TokenPath != "" {
-		secrets = append(secrets, o.github.TokenPath)
-	}
-	if err := secretAgent.Start(secrets); err != nil {
+	if err := secret.Add(o.webhookSecretFile); err != nil {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
 
@@ -124,13 +119,13 @@ func main() {
 		log.WithError(err).Fatal("Error loading plugin config")
 	}
 
-	githubClient, err := o.github.GitHubClient(secretAgent, o.dryRun)
+	githubClient, err := o.github.GitHubClient(o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
 
 	server := &Server{
-		tokenGenerator: secretAgent.GetTokenGenerator(o.webhookSecretFile),
+		tokenGenerator: secret.GetTokenGenerator(o.webhookSecretFile),
 		ghc:            githubClient,
 		log:            log,
 	}

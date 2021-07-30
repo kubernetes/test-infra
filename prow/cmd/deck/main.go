@@ -55,7 +55,6 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/deck/jobs"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
@@ -377,16 +376,12 @@ func main() {
 		// We use the GH client to resolve GH teams when determining who is permitted to rerun a job.
 		// When inrepoconfig is enabled, both the GitHubClient and the gitClient are used to resolve
 		// presubmits dynamically which we need for the PR history page.
-		secretAgent := &secret.Agent{}
 		if o.github.TokenPath != "" || o.github.AppID != "" {
-			if err := secretAgent.Start(nil); err != nil {
-				logrus.WithError(err).Fatal("Error starting secrets agent.")
-			}
-			githubClient, err = o.github.GitHubClient(secretAgent, o.dryRun)
+			githubClient, err = o.github.GitHubClient(o.dryRun)
 			if err != nil {
 				logrus.WithError(err).Fatal("Error getting GitHub client.")
 			}
-			g, err := o.github.GitClient(secretAgent, o.dryRun)
+			g, err := o.github.GitClient(o.dryRun)
 			if err != nil {
 				logrus.WithError(err).Fatal("Error getting Git client.")
 			}

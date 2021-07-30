@@ -221,15 +221,13 @@ func Run(o *Options, prh PRHandler) error {
 }
 
 func processGitHub(o *Options, prh PRHandler) error {
-	var sa secret.Agent
-
-	stdout := HideSecretsWriter{Delegate: os.Stdout, Censor: &sa}
-	stderr := HideSecretsWriter{Delegate: os.Stderr, Censor: &sa}
-	if err := sa.Start([]string{o.GitHubToken}); err != nil {
+	stdout := HideSecretsWriter{Delegate: os.Stdout, Censor: secret.Censor}
+	stderr := HideSecretsWriter{Delegate: os.Stderr, Censor: secret.Censor}
+	if err := secret.Add(o.GitHubToken); err != nil {
 		return fmt.Errorf("start secrets agent: %w", err)
 	}
 
-	gc := github.NewClient(sa.GetTokenGenerator(o.GitHubToken), sa.Censor, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint)
+	gc := github.NewClient(secret.GetTokenGenerator(o.GitHubToken), secret.Censor, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint)
 
 	if o.GitHubLogin == "" || o.GitName == "" || o.GitEmail == "" {
 		user, err := gc.BotUser()
@@ -275,7 +273,7 @@ func processGitHub(o *Options, prh PRHandler) error {
 		return nil
 	}
 
-	if err := gitPush(fmt.Sprintf("https://%s:%s@github.com/%s/%s.git", o.GitHubLogin, string(sa.GetTokenGenerator(o.GitHubToken)()), o.GitHubLogin, o.RemoteName), o.HeadBranchName, stdout, stderr, o.SkipPullRequest); err != nil {
+	if err := gitPush(fmt.Sprintf("https://%s:%s@github.com/%s/%s.git", o.GitHubLogin, string(secret.GetTokenGenerator(o.GitHubToken)()), o.GitHubLogin, o.RemoteName), o.HeadBranchName, stdout, stderr, o.SkipPullRequest); err != nil {
 		return fmt.Errorf("push changes to the remote branch: %w", err)
 	}
 
@@ -297,9 +295,8 @@ func processGitHub(o *Options, prh PRHandler) error {
 }
 
 func processGerrit(o *Options, prh PRHandler) error {
-	var sa secret.Agent
-	stdout := HideSecretsWriter{Delegate: os.Stdout, Censor: &sa}
-	stderr := HideSecretsWriter{Delegate: os.Stderr, Censor: &sa}
+	stdout := HideSecretsWriter{Delegate: os.Stdout, Censor: secret.Censor}
+	stderr := HideSecretsWriter{Delegate: os.Stderr, Censor: secret.Censor}
 
 	if err := Call(stdout, stderr, gitCmd, "config", "http.cookiefile", o.Gerrit.CookieFile); err != nil {
 		return fmt.Errorf("unable to load cookiefile: %v", err)
@@ -399,17 +396,13 @@ func Call(stdout, stderr io.Writer, cmd string, args ...string) error {
 	return c.Run()
 }
 
-type Censor interface {
-	Censor(content []byte) []byte
-}
-
 type HideSecretsWriter struct {
 	Delegate io.Writer
-	Censor   Censor
+	Censor   func(content []byte) []byte
 }
 
 func (w HideSecretsWriter) Write(content []byte) (int, error) {
-	_, err := w.Delegate.Write(w.Censor.Censor(content))
+	_, err := w.Delegate.Write(w.Censor(content))
 	if err != nil {
 		return 0, err
 	}
