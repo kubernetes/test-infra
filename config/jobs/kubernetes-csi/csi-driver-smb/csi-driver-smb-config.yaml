@@ -387,6 +387,12 @@ presubmits:
         args:
         - --check-leaked-resources
         - --cluster=
+        - --env=KUBE_MASTER_OS_DISTRIBUTION=cos
+        - --env=KUBE_GCE_MASTER_IMAGE=cos-89-16108-470-11
+        - --env=KUBE_GCE_MASTER_PROJECT=cos-cloud
+        - --env=KUBE_NODE_OS_DISTRIBUTION=cos
+        - --env=KUBE_GCE_NODE_IMAGE=cos-89-16108-470-11
+        - --env=KUBE_GCE_NODE_PROJECT=cos-cloud
         - --extract=ci/latest
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=8
