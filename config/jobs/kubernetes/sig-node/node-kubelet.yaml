@@ -467,6 +467,7 @@ periodics:
           - --scenario=kubernetes_e2e
           - --
           - --deployment=node
+          - --env=KUBE_SSH_USER=core
           - --gcp-project-type=node-e2e-project
           - --gcp-zone=us-west1-b
           - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/swap/image-config-swap-fedora.yaml
