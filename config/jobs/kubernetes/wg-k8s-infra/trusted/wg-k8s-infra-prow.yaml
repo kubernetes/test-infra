@@ -99,7 +99,7 @@ periodics:
       slug: test-infra-admins
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20210729-6b709c5ea0
+    - image: gcr.io/k8s-prow/generic-autobumper:v20210730-5757a5d200
       command:
       - /app/prow/cmd/generic-autobumper/app.binary
       args:
