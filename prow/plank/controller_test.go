@@ -1854,7 +1854,7 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 				&indexingClient{
 					Client:     fakeProwJobClient,
 					indexFuncs: map[string]ctrlruntimeclient.IndexerFunc{prowJobIndexName: prowJobIndexer("prowjobs")},
-				}, nil, newFakeConfigAgent(t, 0).Config, "")
+				}, nil, newFakeConfigAgent(t, 0).Config, nil, "")
 			r.buildClients = buildClients
 			for _, job := range test.PJs {
 				request := reconcile.Request{NamespacedName: types.NamespacedName{

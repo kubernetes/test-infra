@@ -18,6 +18,7 @@ package plank
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"sync"
@@ -44,7 +45,9 @@ import (
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/crier/reporters/gcs/internal/util"
 	kubernetesreporterapi "k8s.io/test-infra/prow/crier/reporters/gcs/kubernetes/api"
+	"k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
@@ -62,16 +65,18 @@ func Add(
 	mgr controllerruntime.Manager,
 	buildMgrs map[string]controllerruntime.Manager,
 	cfg config.Getter,
+	opener io.Opener,
 	totURL string,
 	additionalSelector string,
 ) error {
-	return add(mgr, buildMgrs, cfg, totURL, additionalSelector, nil, nil, 10)
+	return add(mgr, buildMgrs, cfg, opener, totURL, additionalSelector, nil, nil, 10)
 }
 
 func add(
 	mgr controllerruntime.Manager,
 	buildMgrs map[string]controllerruntime.Manager,
 	cfg config.Getter,
+	opener io.Opener,
 	totURL string,
 	additionalSelector string,
 	overwriteReconcile reconcile.Func,
@@ -94,7 +99,7 @@ func add(
 		WithEventFilter(predicate).
 		WithOptions(controller.Options{MaxConcurrentReconciles: numWorkers})
 
-	r := newReconciler(ctx, mgr.GetClient(), overwriteReconcile, cfg, totURL)
+	r := newReconciler(ctx, mgr.GetClient(), overwriteReconcile, cfg, opener, totURL)
 	for buildCluster, buildClusterMgr := range buildMgrs {
 		blder = blder.Watches(
 			source.NewKindWithCache(&corev1.Pod{}, buildClusterMgr.GetCache()),
@@ -110,16 +115,21 @@ func add(
 		return fmt.Errorf("failed to add metrics runnable to manager: %w", err)
 	}
 
+	if err := mgr.Add(manager.RunnableFunc(r.syncClusterStatus(time.Minute))); err != nil {
+		return fmt.Errorf("failed to add cluster status runnable to manager: %w", err)
+	}
+
 	return nil
 }
 
-func newReconciler(ctx context.Context, pjClient ctrlruntimeclient.Client, overwriteReconcile reconcile.Func, cfg config.Getter, totURL string) *reconciler {
+func newReconciler(ctx context.Context, pjClient ctrlruntimeclient.Client, overwriteReconcile reconcile.Func, cfg config.Getter, opener io.Opener, totURL string) *reconciler {
 	return &reconciler{
 		pjClient:           pjClient,
 		buildClients:       map[string]ctrlruntimeclient.Client{},
 		overwriteReconcile: overwriteReconcile,
 		log:                logrus.NewEntry(logrus.StandardLogger()).WithField("controller", ControllerName),
 		config:             cfg,
+		opener:             opener,
 		totURL:             totURL,
 		clock:              clock.RealClock{},
 		serializationLocks: &shardedLock{
@@ -135,6 +145,7 @@ type reconciler struct {
 	overwriteReconcile reconcile.Func
 	log                *logrus.Entry
 	config             config.Getter
+	opener             io.Opener
 	totURL             string
 	clock              clock.Clock
 	serializationLocks *shardedLock
@@ -169,6 +180,55 @@ func (r *reconciler) syncMetrics(ctx context.Context) error {
 			}
 			kube.GatherProwJobMetrics(r.log, pjs.Items)
 			version.GatherProwVersion(r.log)
+		}
+	}
+}
+
+type ClusterStatus string
+
+const (
+	ClusterStatusUnreachable ClusterStatus = "Unreachable"
+	ClusterStatusReachable   ClusterStatus = "Reachable"
+)
+
+func (r *reconciler) syncClusterStatus(interval time.Duration) func(context.Context) error {
+	return func(ctx context.Context) error {
+		ticker := time.NewTicker(interval)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				return nil
+			case <-ticker.C:
+				location := r.config().Plank.BuildClusterStatusFile
+				if location == "" {
+					continue
+				}
+				parsedPath, err := prowv1.ParsePath(location)
+				if err != nil {
+					r.log.WithError(err).Errorf("Failed to parse cluster status file location: %q.", location)
+					continue
+				}
+
+				clusters := map[string]ClusterStatus{}
+				for cluster, client := range r.buildClients {
+					status := ClusterStatusReachable
+					var pods corev1.PodList
+					if err := client.List(ctx, &pods, ctrlruntimeclient.MatchingLabels{kube.CreatedByProw: "true"}, ctrlruntimeclient.InNamespace(r.config().PodNamespace), ctrlruntimeclient.Limit(1)); err != nil {
+						r.log.WithField("cluster", cluster).WithError(err).Error("Error listing pod to check for build cluster reachability.")
+						status = ClusterStatusUnreachable
+					}
+					clusters[cluster] = status
+				}
+				payload, err := json.Marshal(clusters)
+				if err != nil {
+					r.log.WithError(err).Error("Error marshaling cluster status info.")
+					continue
+				}
+				if err := util.WriteContent(ctx, r.log, util.StorageAuthor{Opener: r.opener}, parsedPath.Bucket(), parsedPath.Path, true, payload); err != nil {
+					r.log.WithError(err).Error("Error writing cluster status info.")
+				}
+			}
 		}
 	}
 }

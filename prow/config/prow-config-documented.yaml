@@ -509,6 +509,11 @@ owners_dir_denylist:
     repos:
         "": null
 plank:
+    # BuildClusterStatusFile is an optional field used to specify the blob storage location
+    # to publish cluster status information.
+    # e.g. gs://my-bucket/cluster-status.json
+    build_cluster_status_file: ' '
+
     # DefaultDecorationConfigEntries holds the default decoration config for specific values.
     # Each entry in the slice specifies Repo and Cluster regexp filter fields to
     # match against jobs and a corresponding DecorationConfig. All entries that
