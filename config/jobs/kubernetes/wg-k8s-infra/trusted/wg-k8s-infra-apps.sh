@@ -27,7 +27,6 @@ readonly APPS=(
     gcsweb
     k8s-io
     kubernetes-external-secrets
-    node-perf-dash
     perfdash
     prow
     publishing-bot
