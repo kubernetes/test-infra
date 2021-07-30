@@ -21,7 +21,7 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"encoding/json"
-	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -62,7 +62,7 @@ func ValidatePayload(payload []byte, sig string, tokenGenerator func() []byte) b
 	}
 	hmacs, err := extractHMACs(orgRepo, tokenGenerator)
 	if err != nil {
-		logrus.WithError(err).Error("couldn't unmarshal the hmac secret")
+		logrus.WithError(err).Warning("failed to get an appropriate hmac secret")
 		return false
 	}
 
@@ -115,7 +115,7 @@ func extractHMACs(orgRepo string, tokenGenerator func() []byte) ([][]byte, error
 	if val, ok := repoToTokenMap["*"]; ok {
 		return extractTokens(val), nil
 	}
-	return nil, errors.New("invalid content in secret file, global token doesn't exist")
+	return nil, fmt.Errorf("no hmac is configured for the org/repo %q and no legacy global token is configured", orgRepo)
 }
 
 // extractTokens return tokens for any given level of tree.
