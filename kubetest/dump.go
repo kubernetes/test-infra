@@ -69,6 +69,7 @@ func newLogDumper(sshClientFactory sshClientFactory, artifactsDir string) (*logD
 		"etcd-events",
 		"glbc",
 		"cluster-autoscaler",
+		"konnectivity",
 		"kube-addon-manager",
 		"fluentd",
 		"kube-proxy",
@@ -307,17 +308,20 @@ func (n *logDumperNode) dump(ctx context.Context) []error {
 	}
 
 	// Capture any file logs where the files exist
-	fileList, err := n.findFiles(ctx, "/var/log")
-	if err != nil {
-		errors = append(errors, fmt.Errorf("error reading /var/log: %v", err))
-	}
 	for _, name := range n.dumper.files {
-		prefix := "/var/log/" + name + ".log"
-		for _, f := range fileList {
-			if !strings.HasPrefix(f, prefix) {
-				continue
+		var logfileFullPaths []string
+		err := filepath.Walk("/var/log", func(path string, info os.FileInfo, err error) error {
+			if err == nil && strings.HasPrefix(info.Name(), name) {
+				logfileFullPaths = append(logfileFullPaths, filepath.Join(path, info.Name()))
 			}
-			if err := n.shellToFile(ctx, "sudo cat "+f, filepath.Join(n.dir, filepath.Base(f))); err != nil {
+			return nil
+		})
+		if err != nil {
+			log.Printf("Error trying to find file match with %s: %v", name, err)
+			continue
+		}
+		for _, logfileFullPath := range logfileFullPaths {
+			if err := n.shellToFile(ctx, "sudo cat "+logfileFullPath, filepath.Join(n.dir, filepath.Base(logfileFullPath))); err != nil {
 				errors = append(errors, err)
 			}
 		}

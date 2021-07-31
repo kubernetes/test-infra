@@ -29,6 +29,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 
@@ -59,7 +60,7 @@ var (
 
 	// Cloud provider specific logfiles.
 	awsLogs      = []string{"cloud-init-output"}
-	gceLogs      = []string{"startupscript"}
+	gceLogs      = []string{"startupscript", "konnectivity-*"}
 	kubemarkLogs = []string{"*-hollow-node-*"}
 
 	// System services/kernel related logfiles.
@@ -183,12 +184,32 @@ func prepareLogfiles(logDir string) {
 
 	// Copy all the logfiles that exist, to logDir.
 	for _, logfile := range logfiles {
-		logfileFullPath := filepath.Join(localLogPath, logfile+".log*") // Append .log* to copy rotated logs too.
-		cmd := exec.Command("/bin/sh", "-c", fmt.Sprintf("cp %v %v", logfileFullPath, logDir))
-		if err := cmd.Run(); err != nil {
-			klog.Warningf("Failed to copy any logfiles with pattern '%v': %v", logfileFullPath, err)
+		var logfileFullPaths []string
+		match := convertBashToRegexpMatch(logfile)
+		err := filepath.Walk(localLogPath, func(path string, info os.FileInfo, err error) error {
+			if err == nil {
+				ok, _ := regexp.MatchString(match, info.Name())
+				if ok {
+					logfileFullPaths = append(logfileFullPaths, filepath.Join(path, info.Name()))
+				}
+			}
+			return nil
+		})
+		if err != nil {
+			klog.Warningf("Error trying to find file match with %s: %v", logfile, err)
+			continue
+		}
+		for _, logfileFullPath := range logfileFullPaths {
+			cmd := exec.Command("/bin/sh", "-c", fmt.Sprintf("cp %v %v", logfileFullPath, logDir))
+			if err := cmd.Run(); err != nil {
+				klog.Warningf("Failed to copy any logfiles with pattern '%v': %v", logfileFullPath, err)
+			}
 		}
 	}
+}
+
+func convertBashToRegexpMatch(bash string) string {
+	return strings.ReplaceAll(bash, "*", ".*")
 }
 
 func uploadLogfilesToGCS(logDir string) error {
