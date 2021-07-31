@@ -298,7 +298,7 @@ presubmits:
         - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-          - --timeout=240
+          - --timeout=260
           - --root=/go/src
           - "--upload=gs://kubernetes-jenkins/pr-logs"
           - --scenario=kubernetes_e2e
@@ -311,7 +311,7 @@ presubmits:
           - --node-tests=true
           - --provider=gce
           - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]"
-          - --timeout=180m
+          - --timeout=240m
           env:
           - name: GOPATH
             value: /go
