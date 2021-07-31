@@ -19,7 +19,7 @@ set -o pipefail
 
 bazel=$(command -v bazelisk || command -v bazel)
 
-retry() {
+function retry() {
   for attempt in $(seq 1 3); do
     if "$@"; then
       break
@@ -30,19 +30,42 @@ retry() {
   done
 }
 
-main() {
+function setup() {
+  "${bazel}" run //prow/test/integration:setup-local-registry "$@" || ( echo "FAILED: set up local registry">&2; return 1 )
+
+  # testimage-push builds images, could fail due to network flakiness
+  (retry "${bazel}" run //prow:testimage-push "$@") || ( echo "FAILED: pushing images">&2; return 1 )
+  "${bazel}" run //prow/test/integration:setup-cluster "$@" || ( echo "FAILED: setup cluster">&2; return 1 )
+}
+
+function run() {
+  "${bazel}" test //prow/test/integration/test:go_default_test --action_env=KUBECONFIG="${HOME}/.kube/config" --test_arg=--run-integration-test "$@" || \
+    ( echo "FAILED: running tests">&2; return 1 )
+}
+
+function teardown() {
+  "${bazel}" run //prow/test/integration:cleanup "$@"
+}
+
+function main() {
   # Remove retries after
   # https://github.com/bazelbuild/bazel/issues/12599
   if [ -n "${BAZEL_FETCH_PLEASE:-}" ]; then
     (retry "${bazel}" fetch //prow/test/integration:cleanup //prow/test/integration:setup-local-registry //prow:testimage-push //prow/test/integration:setup-cluster //prow/test/integration/test:go_default_test) || ( echo "FAILED: bazel fetch">&2; return 1 )
   fi
 
-  trap "'${bazel}' run //prow/test/integration:cleanup '$@'" EXIT
-  "${bazel}" run //prow/test/integration:setup-local-registry "$@" || ( echo "FAILED: set up local registry">&2; return 1 )
-  # testimage-push builds images, could fail due to network flakiness
-  (retry "${bazel}" run //prow:testimage-push "$@") || ( echo "FAILED: pushing images">&2; return 1 )
-  "${bazel}" run //prow/test/integration:setup-cluster "$@" || ( echo "FAILED: setup cluster">&2; return 1 )
-  "${bazel}" test //prow/test/integration/test:go_default_test --action_env=KUBECONFIG=${HOME}/.kube/config --test_arg=--run-integration-test "$@" || ( echo "FAILED: running tests">&2; return 1 )
+  trap "teardown '$@'" EXIT
+  setup "$@"
+
+  run "$@"
+  exit 0
 }
 
-main "$@"
+# If no parameters were given or the first parameter is a flag
+if [ $# -eq 0 ] || [[ "${1:-main}" =~ ^- ]]; then
+  main "$@"
+fi
+
+declare -F "${1}" || (echo "Function \"${1}\" is unavailable. Please use one of" && compgen -A function && exit 1)
+
+"$@"
