@@ -1,0 +1,28 @@
+postsubmits:
+  kubernetes/test-infra:
+    - name: post-test-infra-push-kettle-canary
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-testing-canaries, wg-k8s-infra-canaries, wg-k8s-infra-gcb
+        testgrid-alert-email: k8s-infra-alerts@kubernetes.io
+        testgrid-num-failures-to-alert: '1'
+        description: builds and pushes the kettle image
+      run_if_changed: '^kettle/'
+      decorate: true
+      decoration_config:
+        timeout: 50m
+        grace_period: 10m
+      branches:
+      - ^master$
+      max_concurrency: 1
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+        - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          command:
+          - images/builder/ci-runner.sh
+          args:
+          - --scratch-bucket=gs://k8s-staging-test-infra-gcb
+          - --project=k8s-staging-test-infra
+          - --build-dir=.
+          - kettle/
