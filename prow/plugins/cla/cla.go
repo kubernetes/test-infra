@@ -95,7 +95,7 @@ func handleStatusEvent(pc plugins.Agent, se github.StatusEvent) error {
 	return handle(pc.GitHubClient, pc.Logger, se, pc.PluginConfig.CLAConfig)
 }
 
-// 1. Check that the status event received from the webhook is for the CNCF-CLA. The valid values are cla/linuxfoundation and EasyCLA.
+// 1. Check that the status event received from the webhook is for the CNCF-CLA.
 // 2. Use the github search API to search for the PRs which match the commit hash corresponding to the status event.
 // 3. For each issue that matches, check that the PR's HEAD commit hash against the commit hash for which the status
 //    was received. This is because we only care about the status associated with the last (latest) commit in a PR.
@@ -239,8 +239,7 @@ func handleComment(gc gitHubClient, log *logrus.Entry, e *github.GenericCommentE
 	}
 
 	for _, status := range combined.Statuses {
-
-		// Valid status values are cla/linuxfoundation and EasyCLA
+		// Only consider "cla/linuxfoundation" or "EasyCLA" status
 		if contains(cc.CLAContextNames, status.Context) {
 
 			// Success state implies that the cla exists, so label should be cncf-cla:yes.
@@ -277,9 +276,6 @@ func handleComment(gc gitHubClient, log *logrus.Entry, e *github.GenericCommentE
 					}
 				}
 			}
-
-			// No need to consider other contexts once you find the one you need.
-			break
 		}
 	}
 	return nil

@@ -211,8 +211,7 @@ func TestCLALabels(t *testing.T) {
 func TestCheckCLA(t *testing.T) {
 	var testcases = []struct {
 		name         string
-		context      string
-		state        string
+		contexts     map[string]string
 		issueState   string
 		SHA          string
 		action       string
@@ -225,9 +224,10 @@ func TestCheckCLA(t *testing.T) {
 		removedLabel string
 	}{
 		{
-			name:       "ignore non cla/linuxfoundation context",
-			context:    "random/context",
-			state:      "success",
+			name: "ignore non cla/linuxfoundation context",
+			contexts: map[string]string{
+				"random/context": "success",
+			},
 			issueState: "open",
 			SHA:        "sha",
 			action:     "created",
@@ -238,8 +238,9 @@ func TestCheckCLA(t *testing.T) {
 		},
 		{
 			name:       "ignore non open PRs",
-			context:    "cla/linuxfoundation",
-			state:      "success",
+			contexts: map[string]string{
+				"cla/linuxfoundation": "success",
+			},
 			issueState: "closed",
 			SHA:        "sha",
 			action:     "created",
@@ -250,8 +251,9 @@ func TestCheckCLA(t *testing.T) {
 		},
 		{
 			name:       "ignore non /check-cla comments",
-			context:    "cla/linuxfoundation",
-			state:      "success",
+			contexts: map[string]string{
+				"cla/linuxfoundation": "success",
+			},
 			issueState: "open",
 			SHA:        "sha",
 			action:     "created",
@@ -262,8 +264,9 @@ func TestCheckCLA(t *testing.T) {
 		},
 		{
 			name:       "do nothing on when status state is \"pending\"",
-			context:    "cla/linuxfoundation",
-			state:      "pending",
+			contexts: map[string]string{
+				"cla/linuxfoundation": "pending",
+			},
 			issueState: "open",
 			SHA:        "sha",
 			action:     "created",
@@ -273,9 +276,10 @@ func TestCheckCLA(t *testing.T) {
 			},
 		},
 		{
-			name:       "cla/linuxfoundation status adds the cla-yes label when its state is \"success\"",
-			context:    "cla/linuxfoundation",
-			state:      "success",
+			name:       "EasyCLA status adds the cla-yes label when its state is \"success\"",
+			contexts: map[string]string{
+				"EasyCLA": "success",
+			},
 			issueState: "open",
 			SHA:        "sha",
 			action:     "created",
@@ -287,9 +291,10 @@ func TestCheckCLA(t *testing.T) {
 			addedLabel: fmt.Sprintf("/#3:%s", labels.ClaYes),
 		},
 		{
-			name:       "cla/linuxfoundation status adds the cla-yes label and removes cla-no label when its state is \"success\"",
-			context:    "cla/linuxfoundation",
-			state:      "success",
+			name:       "EasyCLA status adds the cla-yes label and removes cla-no label when its state is \"success\"",
+			contexts: map[string]string{
+				"EasyCLA": "success",
+			},
 			issueState: "open",
 			SHA:        "sha",
 			action:     "created",
@@ -304,8 +309,9 @@ func TestCheckCLA(t *testing.T) {
 		},
 		{
 			name:       "cla/linuxfoundation status adds the cla-no label when its state is \"failure\"",
-			context:    "cla/linuxfoundation",
-			state:      "failure",
+			contexts: map[string]string{
+				"cla/linuxfoundation": "failure",
+			},
 			issueState: "open",
 			SHA:        "sha",
 			action:     "created",
@@ -317,9 +323,10 @@ func TestCheckCLA(t *testing.T) {
 			addedLabel: fmt.Sprintf("/#3:%s", labels.ClaNo),
 		},
 		{
-			name:       "cla/linuxfoundation status adds the cla-no label and removes cla-yes label when its state is \"failure\"",
-			context:    "cla/linuxfoundation",
-			state:      "failure",
+			name:       "EasyCLA status adds the cla-no label and removes cla-yes label when its state is \"failure\"",
+			contexts: map[string]string{
+				"EasyCLA": "failure",
+			},
 			issueState: "open",
 			SHA:        "sha",
 			action:     "created",
@@ -334,8 +341,9 @@ func TestCheckCLA(t *testing.T) {
 		},
 		{
 			name:       "cla/linuxfoundation status retains the cla-yes label and removes cla-no label when its state is \"success\"",
-			context:    "cla/linuxfoundation",
-			state:      "success",
+			contexts: map[string]string{
+				"cla/linuxfoundation": "success",
+			},
 			issueState: "open",
 			SHA:        "sha",
 			action:     "created",
@@ -350,8 +358,9 @@ func TestCheckCLA(t *testing.T) {
 		},
 		{
 			name:       "cla/linuxfoundation status retains the cla-no label and removes cla-yes label when its state is \"failure\"",
-			context:    "cla/linuxfoundation",
-			state:      "failure",
+			contexts: map[string]string{
+				"cla/linuxfoundation": "failure",
+			},
 			issueState: "open",
 			SHA:        "sha",
 			action:     "created",
@@ -365,9 +374,11 @@ func TestCheckCLA(t *testing.T) {
 			removedLabel: fmt.Sprintf("/#3:%s", labels.ClaYes),
 		},
 		{
-			name:       "EasyCLA status retains the cla-no label and removes cla-yes label when its state is \"failure\"",
-			context:    "EasyCLA",
-			state:      "failure",
+			name:       "cla/linuxfoundation status retains the cla-no label and removes cla-yes label when its state is \"failure\"",
+			contexts: map[string]string{
+				"cla/linuxfoundation": "failure",
+				"EasyCLA": "success",
+			},
 			issueState: "open",
 			SHA:        "sha",
 			action:     "created",
@@ -381,9 +392,11 @@ func TestCheckCLA(t *testing.T) {
 			removedLabel: fmt.Sprintf("/#3:%s", labels.ClaYes),
 		},
 		{
-			name:       "EasyCLA status retains the cla-yes label and removes cla-no label when its state is \"success\"",
-			context:    "EasyCLA",
-			state:      "success",
+			name:       "cla/linuxfoundation status retains the cla-yes label and removes cla-no label when its state is \"success\"",
+			contexts: map[string]string{
+				"EasyCLA": "failure",
+				"cla/linuxfoundation": "success",
+			},
 			issueState: "open",
 			SHA:        "sha",
 			action:     "created",
@@ -396,6 +409,7 @@ func TestCheckCLA(t *testing.T) {
 
 			removedLabel: fmt.Sprintf("/#3:%s", labels.ClaNo),
 		},
+
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -415,11 +429,17 @@ func TestCheckCLA(t *testing.T) {
 			cc := plugins.CLAConfig{
 				CLAContextNames: []string{"cla/linuxfoundation", "EasyCLA"},
 			}
+			var statuses []github.Status
+			for context, state := range tc.contexts {
+				statuses = append(statuses, github.Status{
+					State:   state,
+					Context: context,
+				})
+			}
+
 			fc.CombinedStatuses = map[string]*github.CombinedStatus{
 				tc.SHA: {
-					Statuses: []github.Status{
-						{State: tc.state, Context: tc.context},
-					},
+					Statuses: statuses,
 				},
 			}
 			if tc.hasCLAYes {
