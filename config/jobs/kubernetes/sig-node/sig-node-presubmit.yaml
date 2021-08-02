@@ -281,6 +281,14 @@ presubmits:
         env:
         - name: GOPATH
           value: /go
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
+
   - name: pull-kubernetes-node-kubelet-serial-containerd
     always_run: false
     optional: true
