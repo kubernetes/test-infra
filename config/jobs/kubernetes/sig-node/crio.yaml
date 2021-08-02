@@ -70,7 +70,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
