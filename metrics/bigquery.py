@@ -151,6 +151,11 @@ def main(configs, project, bucket_path):
     """Loads metric config files and runs each metric."""
     queryer = BigQuerier(project, bucket_path)
 
+    # authenticate as the given service account if our environment is providing one
+    if 'GOOGLE_APPLICATION_CREDENTIALS' in os.environ:
+        keyfile = os.environ['GOOGLE_APPLICATION_CREDENTIALS']
+        check(['gcloud', 'auth', 'activate-service-account', f'--key-file={keyfile}'])
+
     # the 'bq show' command is called as a hack to dodge the config prompts that bq presents
     # the first time it is run. A newline is passed to stdin to skip the prompt for default project
     # when the service account in use has access to multiple projects.
