@@ -63,6 +63,7 @@ func TestExpectedStatus(t *testing.T) {
 		requiredContexts      []string
 		mergeConflicts        bool
 		displayAllTideQueries bool
+		additionalTideQueries []config.TideQuery
 		singleQuery           bool
 
 		state string
@@ -160,6 +161,42 @@ func TestExpectedStatus(t *testing.T) {
 
 			state: github.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, " Needs need-1 label."),
+		},
+		{
+			name:                  "displayAllTideQueries when there is no matching query",
+			baseref:               "bad",
+			branchDenyList:        []string{"bad"},
+			sameBranchReqs:        true,
+			labels:                append(append([]string{}, neededLabels[1:]...), forbiddenLabels[0]),
+			author:                "batman",
+			firstQueryAuthor:      "batman",
+			secondQueryAuthor:     "batman",
+			milestone:             "v1.0",
+			inPool:                false,
+			displayAllTideQueries: true,
+
+			state: github.StatusPending,
+			desc:  fmt.Sprintf(statusNotInPool, " No Tide query for branch bad found."),
+		},
+		{
+			name:           "displayAllTideQueries shows only queries matching the branch",
+			baseref:        "main",
+			branchDenyList: []string{"main"},
+			sameBranchReqs: true,
+			additionalTideQueries: []config.TideQuery{{
+				Orgs:   []string{""},
+				Labels: []string{"good-to-go"},
+			}},
+			labels:                append(append([]string{}, neededLabels[1:]...), forbiddenLabels[0]),
+			author:                "batman",
+			firstQueryAuthor:      "batman",
+			secondQueryAuthor:     "batman",
+			milestone:             "v1.0",
+			inPool:                false,
+			displayAllTideQueries: true,
+
+			state: github.StatusPending,
+			desc:  fmt.Sprintf(statusNotInPool, " Needs good-to-go label."),
 		},
 		{
 			name:           "against excluded branch",
@@ -685,6 +722,7 @@ func TestExpectedStatus(t *testing.T) {
 			if tc.singleQuery {
 				queries = config.TideQueries{queries[0]}
 			}
+			queries = append(queries, tc.additionalTideQueries...)
 			queriesByRepo := queries.QueryMap()
 			var pr PullRequest
 			pr.BaseRef = struct {

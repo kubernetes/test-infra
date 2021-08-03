@@ -151,7 +151,7 @@ func requirementDiff(pr *PullRequest, q *config.TideQuery, cc contextChecker) (s
 		}
 	}
 	if targetBranchDenied || !targetBranchAllowed {
-		diff += 1000
+		diff += 2000
 		if desc == "" {
 			desc = fmt.Sprintf(" Merging to branch %s is forbidden.", pr.BaseRef.Name)
 		}
@@ -288,6 +288,10 @@ func (sc *statusController) expectedStatus(log *logrus.Entry, queryMap *config.Q
 		for _, q := range queryMap.ForRepo(repo) {
 			diff, diffCount := requirementDiff(pr, &q, cc)
 			if sc.config().Tide.DisplayAllQueriesInStatus {
+				if diffCount >= 2000 {
+					// Query is for wrong branch
+					continue
+				}
 				if minDiff != "" {
 					minDiff = strings.TrimSuffix(minDiff, ".") + " OR"
 				}
@@ -296,6 +300,9 @@ func (sc *statusController) expectedStatus(log *logrus.Entry, queryMap *config.Q
 				minDiffCount = diffCount
 				minDiff = diff
 			}
+		}
+		if sc.config().Tide.DisplayAllQueriesInStatus && minDiff == "" {
+			minDiff = " No Tide query for branch " + string(pr.BaseRef.Name) + " found."
 		}
 		return github.StatusPending, fmt.Sprintf(statusNotInPool, minDiff), nil
 	}
