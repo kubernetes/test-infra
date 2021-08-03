@@ -35,7 +35,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210621' --channel=alpha --networking=calico --container-runtime=containerd" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210720' --channel=alpha --networking=calico --container-runtime=containerd" \
             --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
@@ -103,7 +103,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210621' --channel=alpha --networking=calico --container-runtime=containerd --master-count=3 --node-count=6 --zones=eu-central-1a,eu-central-1b,eu-central-1c" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210720' --channel=alpha --networking=calico --container-runtime=containerd --master-count=3 --node-count=6 --zones=eu-central-1a,eu-central-1b,eu-central-1c" \
             --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
@@ -172,7 +172,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210621' --channel=alpha --networking=kubenet --container-runtime=docker" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210720' --channel=alpha --networking=kubenet --container-runtime=docker" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.21.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
@@ -237,7 +237,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210621' --channel=alpha --networking=calico --container-runtime=containerd" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210720' --channel=alpha --networking=calico --container-runtime=containerd" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.21.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
@@ -302,7 +302,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-groovy-20.10-amd64-server-20210622' --channel=alpha --networking=calico --container-runtime=crio" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-groovy-20.10-amd64-server-20210720' --channel=alpha --networking=calico --container-runtime=crio" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.21.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
@@ -431,7 +431,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210621' --channel=alpha --networking=kubenet --container-runtime=containerd --override=cluster.spec.cloudControllerManager.cloudProvider=aws" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210720' --channel=alpha --networking=kubenet --container-runtime=containerd --override=cluster.spec.cloudControllerManager.cloudProvider=aws" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
@@ -497,7 +497,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210621' --channel=alpha --networking=kubenet --container-runtime=containerd --override=cluster.spec.cloudControllerManager.cloudProvider=aws --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/kops-grid-scenario-aws-cloud-controller-manager-irsa/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210720' --channel=alpha --networking=kubenet --container-runtime=containerd --override=cluster.spec.cloudControllerManager.cloudProvider=aws --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/kops-grid-scenario-aws-cloud-controller-manager-irsa/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true" \
             --env=KOPS_FEATURE_FLAGS=UseServiceAccountIAM \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
@@ -565,7 +565,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210621' --channel=alpha --networking=kubenet --container-runtime=containerd --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/pull-aws-irsa/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210720' --channel=alpha --networking=kubenet --container-runtime=containerd --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/pull-aws-irsa/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true" \
             --env=KOPS_FEATURE_FLAGS=UseServiceAccountIAM \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
@@ -633,7 +633,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210621' --channel=alpha --networking=calico --container-runtime=containerd --ipv6 --api-loadbalancer-type=public --api-loadbalancer-class=network --set=cluster.spec.api.loadBalancer.useForInternalApi=true --set=cluster.spec.cloudControllerManager.cloudProvider=aws --set=cluster.spec.cloudControllerManager.image=hakman/cloud-controller-manager:ipv6-1 --set=cluster.spec.nonMasqueradeCIDR=fd00:10:96::/64 --set=cluster.spec.kubeDNS.upstreamNameservers=2620:119:35::35 --set=cluster.spec.kubeDNS.upstreamNameservers=2620:119:53::53" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210720' --channel=alpha --networking=calico --container-runtime=containerd --ipv6 --api-loadbalancer-type=public --api-loadbalancer-class=network --set=cluster.spec.api.loadBalancer.useForInternalApi=true --set=cluster.spec.cloudControllerManager.cloudProvider=aws --set=cluster.spec.cloudControllerManager.image=hakman/cloud-controller-manager:ipv6-1 --set=cluster.spec.nonMasqueradeCIDR=fd00:10:96::/64 --set=cluster.spec.kubeDNS.upstreamNameservers=2620:119:35::35 --set=cluster.spec.kubeDNS.upstreamNameservers=2620:119:53::53" \
             --env=KOPS_FEATURE_FLAGS=AWSIPv6 \
             --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
@@ -869,7 +869,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210621' --channel=alpha --networking=calico --container-runtime=containerd" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210720' --channel=alpha --networking=calico --container-runtime=containerd" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.21.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
