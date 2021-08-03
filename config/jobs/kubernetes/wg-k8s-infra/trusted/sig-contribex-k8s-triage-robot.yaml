@@ -31,6 +31,7 @@ periodics:
         NOT "complete the pre-review checklist and request an API review"
       - --updated=5m
       - --token=/etc/github-token/token
+      - --endpoint=http://ghproxy.default.svc.cluster.local
       - |-
         --comment=This PR [may require API review](https://git.k8s.io/community/sig-architecture/api-review-process.md#what-apis-need-to-be-reviewed).
 
@@ -71,6 +72,7 @@ periodics:
         -label:"cncf-cla: no"
         -label:"cncf-cla: yes"
       - --token=/etc/github-token/token
+      - --endpoint=http://ghproxy.default.svc.cluster.local
       - |-
         --comment=Unknown CLA label state. Rechecking for CLA labels.
 
@@ -111,6 +113,7 @@ periodics:
         label:lifecycle/rotten
       - --updated=720h
       - --token=/etc/github-token/token
+      - --endpoint=http://ghproxy.default.svc.cluster.local
       - |-
         --comment=Rotten issues close after 30d of inactivity.
         Reopen the issue with `/reopen`.
@@ -167,6 +170,7 @@ periodics:
         repo:kubernetes/kubernetes
         repo:kubernetes/test-infra
       - --token=/etc/github-token/token
+      - --endpoint=http://ghproxy.default.svc.cluster.local
       - |-
         --comment=/retest
         This bot automatically retries jobs that failed/flaked on approved PRs (send feedback to [fejta](https://github.com/fejta)).
@@ -211,6 +215,7 @@ periodics:
         -label:lifecycle/rotten
       - --updated=720h
       - --token=/etc/github-token/token
+      - --endpoint=http://ghproxy.default.svc.cluster.local
       - |-
         --comment=Stale issues rot after 30d of inactivity.
         Mark the issue as fresh with `/remove-lifecycle rotten`.
@@ -256,6 +261,7 @@ periodics:
         -label:lifecycle/rotten
       - --updated=2160h
       - --token=/etc/github-token/token
+      - --endpoint=http://ghproxy.default.svc.cluster.local
       - |-
         --comment=Issues go stale after 90d of inactivity.
         Mark the issue as fresh with `/remove-lifecycle stale`.
