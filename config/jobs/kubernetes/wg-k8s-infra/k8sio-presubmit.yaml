@@ -33,7 +33,7 @@ presubmits:
     max_concurrency: 1
     cluster: k8s-infra-prow-build
     path_alias: k8s.io/k8s.io
-    run_if_changed: "^(infra/gcp/clusters/modules/.*.tf$|infra/gcp/clusters/projects/kubernetes-public/aaa/*.tf$)"
+    run_if_changed: 'infra\/gcp\/clusters\/(modules|projects\/kubernetes-public\/aaa)\/.*.tf'
     branches:
     - ^main$
     spec:
@@ -62,7 +62,7 @@ presubmits:
     max_concurrency: 1
     cluster: k8s-infra-prow-build
     path_alias: k8s.io/k8s.io
-    run_if_changed: "^(infra/gcp/clusters/modules/.*.tf$|infra/gcp/clusters/projects/k8s-infra-prow-build-trusted/prow-build-trusted/*.tf$)"
+    run_if_changed: 'infra\/gcp\/clusters\/(modules|projects\/k8s-infra-prow-build\/prow-build)\/.*.tf'
     branches:
     - ^main$
     spec:
@@ -91,7 +91,7 @@ presubmits:
     max_concurrency: 1
     cluster: k8s-infra-prow-build
     path_alias: k8s.io/k8s.io
-    run_if_changed: "^(infra/gcp/clusters/modules/.*.tf$|infra/gcp/clusters/projects/k8s-infra-prow-build-trusted/prow-build-trusted/*.tf$)"
+    run_if_changed: 'infra\/gcp\/clusters\/(modules|projects\/k8s-infra-prow-build-trusted\/prow-build-trusted)\/.*.tf'
     branches:
     - ^main$
     spec:
