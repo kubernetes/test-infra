@@ -48,7 +48,6 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-100-performance
         - --tear-down-previous
         - --env=CL2_ENABLE_HUGE_SERVICES=true
-        - --env=CL2_ENABLE_HUGE_SERVICES_MULTIPLE_REPLICAS=true
         - --env=CL2_SCHEDULER_THROUGHPUT_THRESHOLD=0
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
@@ -118,7 +117,6 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-big-performance
         - --tear-down-previous
         - --env=CL2_ENABLE_HUGE_SERVICES=true
-        - --env=CL2_ENABLE_HUGE_SERVICES_MULTIPLE_REPLICAS=true
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
         - --test-cmd-args=cluster-loader2
@@ -244,7 +242,6 @@ presubmits:
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-large-performance
         - --env=CL2_ENABLE_HUGE_SERVICES=true
-        - --env=CL2_ENABLE_HUGE_SERVICES_MULTIPLE_REPLICAS=true
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
         - --test-cmd-args=cluster-loader2
@@ -322,7 +319,6 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce-big
         - --tear-down-previous
         - --env=CL2_ENABLE_HUGE_SERVICES=true
-        - --env=CL2_ENABLE_HUGE_SERVICES_MULTIPLE_REPLICAS=true
         - --test=false
         - --test_args=--ginkgo.focus=xxxx
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
@@ -400,7 +396,6 @@ presubmits:
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce-scale
         - --env=CL2_ENABLE_HUGE_SERVICES=true
-        - --env=CL2_ENABLE_HUGE_SERVICES_MULTIPLE_REPLICAS=true
         - --test=false
         - --test_args=--ginkgo.focus=xxxx
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
@@ -586,7 +581,6 @@ presubmits:
         - --test-cmd-args=--provider=kubemark
         - --env=CL2_ENABLE_DNS_PROGRAMMING=true
         - --env=CL2_ENABLE_HUGE_SERVICES=true
-        - --env=CL2_ENABLE_HUGE_SERVICES_MULTIPLE_REPLICAS=true
         - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
         - --env=CL2_ENABLE_API_AVAILABILITY_MEASUREMENT=true
         - --test-cmd-args=--report-dir=$(ARTIFACTS)
