@@ -22,12 +22,12 @@ import (
 	"io/ioutil"
 )
 
-// LoadSecrets loads multiple paths of secrets and add them in a map.
-func LoadSecrets(paths []string) (map[string][]byte, error) {
+// loadSecrets loads multiple paths of secrets and add them in a map.
+func loadSecrets(paths []string) (map[string][]byte, error) {
 	secretsMap := make(map[string][]byte, len(paths))
 
 	for _, path := range paths {
-		secretValue, err := LoadSingleSecret(path)
+		secretValue, err := loadSingleSecret(path)
 		if err != nil {
 			return nil, err
 		}
@@ -37,7 +37,7 @@ func LoadSecrets(paths []string) (map[string][]byte, error) {
 }
 
 // LoadSingleSecret reads and returns the value of a single file.
-func LoadSingleSecret(path string) ([]byte, error) {
+func loadSingleSecret(path string) ([]byte, error) {
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("error reading %s: %v", path, err)
