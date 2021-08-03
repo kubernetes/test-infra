@@ -72,34 +72,6 @@ periodics:
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
     description: Runs BigQuery queries, summarizes results into clusters, and uploads to GCS for go.k8s.io/triage
 
-- name: metrics-bigquery
-  interval: 24h
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/bigquery:v20210707-0f9c540
-      args:
-      - --scenario=execute
-      - --
-      - test-infra/metrics/bigquery.py
-      - --
-      - --bucket=gs://k8s-metrics
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      volumeMounts:
-      - name: service
-        mountPath: /etc/service-account
-        readOnly: true
-    volumes:
-    - name: service
-      secret:
-        secretName: triage-service-account
-  annotations:
-    testgrid-dashboards: sig-testing-misc
-    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-    testgrid-num-failures-to-alert: '2'
-    description: Runs BigQuery queries to generate data for metrics.
-
 - name: metrics-kettle
   interval: 1h
   spec:
