@@ -27,7 +27,7 @@ periodics:
           go install github.com/kubernetes-sigs/depstat@latest
           popd
 
-          depstat stats --json | tee "${WORKDIR}/stats-base.json";
+          depstat stats -m "k8s.io/kubernetes$(ls staging/src/k8s.io | awk '{printf ",k8s.io/" $0}')" --json | tee "${WORKDIR}/stats-base.json";
     annotations:
       testgrid-create-test-group: "true"
       testgrid-dashboards: sig-testing-misc
