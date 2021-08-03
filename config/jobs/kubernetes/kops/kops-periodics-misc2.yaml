@@ -1151,6 +1151,8 @@ periodics:
         value: "e2e-7b1ad13b6b-6b565.test-cncf-aws.k8s.io"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-prow"
+      - name: KUBE_SSH_USER
+        value: "ubuntu"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
       imagePullPolicy: Always
       resources:
@@ -1207,6 +1209,8 @@ periodics:
         value: "e2e-fcfb5423d5-669c6.test-cncf-aws.k8s.io"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-prow"
+      - name: KUBE_SSH_USER
+        value: "ubuntu"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
       imagePullPolicy: Always
       resources:
@@ -1261,6 +1265,8 @@ periodics:
         value: "e2e-4342699135-29b4d.test-cncf-aws.k8s.io"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-prow"
+      - name: KUBE_SSH_USER
+        value: "ubuntu"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
       imagePullPolicy: Always
       resources:
@@ -1317,6 +1323,8 @@ periodics:
         value: "e2e-d623e0867e-24e66.test-cncf-aws.k8s.io"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-prow"
+      - name: KUBE_SSH_USER
+        value: "ubuntu"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
       imagePullPolicy: Always
       resources:
@@ -1371,6 +1379,8 @@ periodics:
         value: "e2e-dc9e19fb9a-cad00.test-cncf-aws.k8s.io"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-prow"
+      - name: KUBE_SSH_USER
+        value: "ubuntu"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
       imagePullPolicy: Always
       resources:
