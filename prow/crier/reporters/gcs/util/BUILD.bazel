@@ -3,7 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = ["util.go"],
-    importpath = "k8s.io/test-infra/prow/crier/reporters/gcs/internal/util",
+    importpath = "k8s.io/test-infra/prow/crier/reporters/gcs/util",
     visibility = ["//visibility:public"],
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
@@ -39,7 +39,7 @@ go_test(
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/config:go_default_library",
-        "//prow/crier/reporters/gcs/internal/testutil:go_default_library",
+        "//prow/crier/reporters/gcs/testutil:go_default_library",
         "@io_k8s_apimachinery//pkg/apis/meta/v1:go_default_library",
         "@org_golang_google_api//googleapi:go_default_library",
     ],
