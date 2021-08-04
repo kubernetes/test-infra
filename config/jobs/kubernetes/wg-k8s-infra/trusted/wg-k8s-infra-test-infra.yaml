@@ -1,3 +1,36 @@
+postsubmits:
+  kubernetes/test-infra:
+  - name: post-test-infra-upload-triage
+    cluster: k8s-infra-prow-build-trusted
+    branches:
+    - ^master$
+    max_concurrency: 1
+    run_if_changed: '^triage/Makefile$|^triage/[^/]+(\.html|\.js|\.css)$'
+    decorate: true
+    spec:
+      serviceAccountName: pusher
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+        command:
+        - make
+        args:
+        - -C
+        - ./triage/
+        - push-static
+        - push-staging
+        # TODO(spiffxp): when ready to switch
+        # - redirect-static
+        # - redirect-staging
+        resources:
+          requests:
+            memory: "1Gi"
+    annotations:
+      testgrid-dashboards: sig-testing-maintenance
+      testgrid-tab-name: triage-update
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '1'
+      description: Updates the html contents for go.k8s.io/triage.
+
 periodics:
 - name: metrics-bigquery
   cron: "03 0-23/6 * * *"  # like interval: 6h, but explicitly starting at 00:03 UTC
@@ -29,3 +62,49 @@ periodics:
       - ./metrics/bigquery.py
       - --bucket=gs://k8s-metrics
       - --project=k8s-infra-prow-build-trusted
+
+- name: ci-test-infra-triage-canary
+  interval: 30m
+  cluster: k8s-infra-prow-build-trusted
+  decorate: true
+  decoration_config:
+    timeout: 3h
+  max_concurrency: 1
+  annotations:
+    testgrid-num-failures-to-alert: '18'
+    testgrid-alert-stale-results-hours: '12'
+    testgrid-dashboards: wg-k8s-infra-canaries, sig-testing-canaries
+    testgrid-tab-name: triage
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
+    description: Runs BigQuery queries, summarizes results into clusters, and uploads to GCS for go.k8s.io/triage
+  rerun_auth_config:
+    github_team_slugs:
+    # proxy for wg-k8s-infra-oncall
+    - org: kubernetes
+      slug: wg-k8s-infra-leads
+    # proxy for test-infra-oncall
+    - org: kubernetes
+      slug: test-infra-admins
+  spec:
+    serviceAccountName: k8s-triage
+    containers:
+    - image: gcr.io/k8s-testimages/triage:latest
+      imagePullPolicy: Always
+      env:
+      # Go incorrectly determines the number of CPUs in a pod, set manually to (2*CPUs-1)
+      # TODO: determine the optimal number of workers, 2*CPU-1 is an assumption
+      - name: NUM_WORKERS
+        value: "13"
+      command:
+      - timeout
+      args:
+      - "10800"
+      - /update_summaries.sh
+      # When changing CPUs, also change NUM_WORKERS above
+      resources:
+        requests:
+          cpu: 7
+          memory: 40Gi
+        limits:
+          cpu: 7
+          memory: 40Gi
