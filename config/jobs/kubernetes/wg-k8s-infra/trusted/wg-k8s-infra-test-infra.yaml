@@ -63,7 +63,7 @@ periodics:
       - --bucket=gs://k8s-metrics
       - --project=k8s-infra-prow-build-trusted
 
-- name: ci-test-infra-triage-canary
+- name: ci-test-infra-triage
   interval: 30m
   cluster: k8s-infra-prow-build-trusted
   decorate: true
@@ -73,7 +73,7 @@ periodics:
   annotations:
     testgrid-num-failures-to-alert: '18'
     testgrid-alert-stale-results-hours: '12'
-    testgrid-dashboards: wg-k8s-infra-canaries, sig-testing-canaries
+    testgrid-dashboards: sig-testing-misc, wg-k8s-infra-prow
     testgrid-tab-name: triage
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
     description: Runs BigQuery queries, summarizes results into clusters, and uploads to GCS for go.k8s.io/triage
