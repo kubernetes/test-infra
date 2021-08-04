@@ -20,9 +20,9 @@ postsubmits:
         containers:
         - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
           command:
-          - images/builder/ci-runner.sh
+          - /run.sh
           args:
           - --scratch-bucket=gs://k8s-staging-test-infra-gcb
           - --project=k8s-staging-test-infra
-          - --build-dir=.
+          - --env-passthrough=PULL_BASE_REF
           - kettle/
