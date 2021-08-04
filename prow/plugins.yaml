@@ -119,9 +119,9 @@ plugins:
 
 external_plugins:
   IBM:
-  - name: needs-rebase
-    events:
-    - pull_request
+  # - name: needs-rebase
+  #   events:
+  #   - pull_request
   - name: cherrypicker
     events:
       - issue_comment
