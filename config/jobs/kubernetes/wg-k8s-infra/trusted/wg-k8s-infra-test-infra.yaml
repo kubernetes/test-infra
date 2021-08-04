@@ -88,7 +88,7 @@ periodics:
   spec:
     serviceAccountName: k8s-triage
     containers:
-    - image: gcr.io/k8s-testimages/triage:latest
+    - image: gcr.io/k8s-staging-test-infra/triage:latest
       imagePullPolicy: Always
       env:
       # Go incorrectly determines the number of CPUs in a pod, set manually to (2*CPUs-1)
