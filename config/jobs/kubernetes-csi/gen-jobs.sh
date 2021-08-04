@@ -408,6 +408,8 @@ EOF
         # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "$kubernetes.0"
+        - name: CSI_PROW_KUBERNETES_VERSION_MIN
+          value: "$kubernetes.0"
         - name: CSI_PROW_USE_BAZEL
           value: "$(use_bazel "$kubernetes")"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT

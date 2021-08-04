@@ -32,6 +32,8 @@ presubmits:
         # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "1.19.0"
+        - name: CSI_PROW_KUBERNETES_VERSION_MIN
+          value: "1.19.0"
         - name: CSI_PROW_USE_BAZEL
           value: "true"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
