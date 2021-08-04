@@ -8,7 +8,7 @@ postsubmits:
     run_if_changed: '^triage/Makefile$|^triage/[^/]+(\.html|\.js|\.css)$'
     decorate: true
     spec:
-      serviceAccountName: pusher
+      serviceAccountName: k8s-triage
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
         command:
@@ -25,7 +25,7 @@ postsubmits:
           requests:
             memory: "1Gi"
     annotations:
-      testgrid-dashboards: sig-testing-maintenance
+      testgrid-dashboards: sig-testing-maintenance, wg-k8s-infra-prow
       testgrid-tab-name: triage-update
       testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
