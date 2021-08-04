@@ -51,6 +51,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
     annotations:
       testgrid-dashboards: provider-gcp-presubmits
       description: End to end test of kubernetes/cloud-provider-gcp.
@@ -58,6 +59,9 @@ presubmits:
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
         command:
         - runner.sh
         args:
