@@ -429,6 +429,8 @@ You may choose to run test pods in a separate cluster entirely. This is a good p
 One can use a Kubernetes [`kubeconfig`](https://kubernetes.io/docs/concepts/configuration/organize-cluster-access-kubeconfig/) file (i.e. `Config` object) to instruct Prow components to use the *build* cluster(s).
 All contexts in `kubeconfig` are used as *build* clusters and the [`InClusterConfig`](https://kubernetes.io/docs/tasks/access-application-cluster/access-cluster/#accessing-the-api-from-a-pod) (or `current-context`) is the *default*.
 
+NOTE: See the [`create-build-cluster.sh` script](create-build-cluster.sh) to help you quickly create and register a GKE cluster as a build cluster for a Prow instance. Continue reading for information about registering a build cluster by hand.
+
 Create a secret containing a `kubeconfig` like this:
 
 ```yaml
