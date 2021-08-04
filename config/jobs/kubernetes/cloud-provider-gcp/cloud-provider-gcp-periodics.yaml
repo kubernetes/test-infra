@@ -12,6 +12,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
   extra_refs:
   - org: kubernetes
     repo: cloud-provider-gcp
@@ -27,6 +28,9 @@ periodics:
         requests:
           cpu: 4
           memory: 14Gi
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
       command:
       - runner.sh
       args:
