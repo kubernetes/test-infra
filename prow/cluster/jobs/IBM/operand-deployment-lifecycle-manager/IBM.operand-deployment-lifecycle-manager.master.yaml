@@ -52,6 +52,8 @@ presubmits:
     - ^release-efix$
     - ^release-eus$
     decorate: true
+    labels:
+      preset-service-account: "true"
     path_alias: github.com/IBM/operand-deployment-lifecycle-manager
     rerun_command: /test e2e-test-kind-operand-deployment-lifecycle-manager-amd64
     spec:
