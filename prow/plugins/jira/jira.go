@@ -186,6 +186,11 @@ func getLines(text string) []line {
 			prefixCount++
 		}
 		l := line{content: rawLine, replacing: true}
+
+		// Literal codeblocks
+		if strings.HasPrefix(rawLine, "    ") {
+			l.replacing = false
+		}
 		if prefixCount%2 == 1 {
 			l.replacing = false
 		}
