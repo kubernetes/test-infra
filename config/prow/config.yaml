@@ -404,6 +404,8 @@ branch-protection:
               protect: true
             release-1.20:
               protect: true
+            release-1.21:
+              protect: true
     kubernetes-client:
       protect: true
       required_status_checks:
