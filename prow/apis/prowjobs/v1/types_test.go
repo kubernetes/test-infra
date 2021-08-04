@@ -533,6 +533,7 @@ func TestParsePath(t *testing.T) {
 		wantStorageProvider string
 		wantBucket          string
 		wantFullPath        string
+		wantPath            string
 		wantErr             string
 	}{
 		{
@@ -543,6 +544,7 @@ func TestParsePath(t *testing.T) {
 			wantStorageProvider: "gs",
 			wantBucket:          "prow-artifacts",
 			wantFullPath:        "prow-artifacts",
+			wantPath:            "",
 		},
 		{
 			name: "valid gcs bucket with storage provider prefix",
@@ -552,6 +554,7 @@ func TestParsePath(t *testing.T) {
 			wantStorageProvider: "gs",
 			wantBucket:          "prow-artifacts",
 			wantFullPath:        "prow-artifacts",
+			wantPath:            "",
 		},
 		{
 			name: "valid gcs bucket with multiple separator with storage provider prefix",
@@ -561,6 +564,7 @@ func TestParsePath(t *testing.T) {
 			wantStorageProvider: "gs",
 			wantBucket:          "my-floppy-backup",
 			wantFullPath:        "my-floppy-backup/a://doom2.wad.006",
+			wantPath:            "/a://doom2.wad.006",
 		},
 		{
 			name: "valid s3 bucket with storage provider prefix",
@@ -570,6 +574,7 @@ func TestParsePath(t *testing.T) {
 			wantStorageProvider: "s3",
 			wantBucket:          "prow-artifacts",
 			wantFullPath:        "prow-artifacts",
+			wantPath:            "",
 		},
 	}
 	for _, tt := range tests {
@@ -586,11 +591,14 @@ func TestParsePath(t *testing.T) {
 			if prowPath.StorageProvider() != tt.wantStorageProvider {
 				t.Errorf("ParsePath() gotStorageProvider = %v, wantStorageProvider %v", prowPath.StorageProvider(), tt.wantStorageProvider)
 			}
-			if prowPath.Bucket() != tt.wantBucket {
-				t.Errorf("ParsePath() gotBucket = %v, wantBucket %v", prowPath.Bucket(), tt.wantBucket)
+			if got, want := prowPath.Bucket(), tt.wantBucket; got != want {
+				t.Errorf("ParsePath() gotBucket = %v, wantBucket %v", got, want)
 			}
-			if prowPath.FullPath() != tt.wantFullPath {
-				t.Errorf("ParsePath() gotFullPath = %v, wantFullPath %v", prowPath.FullPath(), tt.wantBucket)
+			if got, want := prowPath.FullPath(), tt.wantFullPath; got != want {
+				t.Errorf("ParsePath() gotFullPath = %v, wantFullPath %v", got, want)
+			}
+			if got, want := prowPath.Path, tt.wantPath; got != want {
+				t.Errorf("ParsePath() gotPath = %v, wantPath %v", got, want)
 			}
 		})
 	}
