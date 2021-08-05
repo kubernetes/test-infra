@@ -171,6 +171,21 @@ postsubmits:
             command:
               - echo
 ```
+To silence notifications at the ProwJob level you can pass an empty slice to `reporter_config.slack.job_states_to_report`:
+postsubmits:
+```yaml
+  some-org/some-repo:
+    - name: example-job
+      decorate: true
+      reporter_config:
+        slack:
+          job_states_to_report: []
+      spec:
+        containers:
+          - image: alpine
+            command:
+              - echo
+```
 
 ## Implementation details
 
