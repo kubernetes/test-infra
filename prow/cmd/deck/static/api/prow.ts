@@ -107,6 +107,7 @@ export interface ProwJobSpec {
   reporter_config?: object;
   rerun_auth_config?: object;
   hidden?: boolean;
+  prowjob_default?: object;
 }
 
 // ProwJobStatus provides runtime metadata, such as when it finished, whether it is running, etc.

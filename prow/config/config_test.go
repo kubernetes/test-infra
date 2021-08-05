@@ -4050,6 +4050,735 @@ func complexConfig() *Config {
 	}
 }
 
+// TODO(mpherman): Add more detailed unit test when there is more than 1 field in ProwJobDefaults
+// Need unit tests for merging more complicated defaults.
+func TestSetPeriodicProwJobDefaults(t *testing.T) {
+	testCases := []struct {
+		id            string
+		utilityConfig UtilityConfig
+		cluster       string
+		config        *Config
+		givenDefault  *prowapi.ProwJobDefault
+		expected      *prowapi.ProwJobDefault
+	}{
+		{
+			id:       "No ProwJobDefault in job or in config, expect no changes",
+			config:   &Config{ProwConfig: ProwConfig{}},
+			expected: &prowapi.ProwJobDefault{},
+		},
+		{
+			id: "no default in job or in config's by repo config, expect default entry",
+			config: &Config{
+				ProwConfig: ProwConfig{
+					ProwJobDefaultEntries: []*ProwJobDefaultEntry{
+						{
+							OrgRepo: "*",
+							Cluster: "",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "configDefault",
+							},
+						},
+					},
+				},
+			},
+			expected: &prowapi.ProwJobDefault{
+				TenantID: "configDefault",
+			},
+		},
+		{
+			id: "no default in presubmit, matching by repo config, expect merged by repo config",
+			utilityConfig: UtilityConfig{
+				ExtraRefs: []prowapi.Refs{
+					{
+						Org:  "org",
+						Repo: "repo",
+					},
+				},
+			},
+			config: &Config{
+				ProwConfig: ProwConfig{
+					ProwJobDefaultEntries: []*ProwJobDefaultEntry{
+						{
+							OrgRepo: "*",
+							Cluster: "",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "configDefault",
+							},
+						},
+						{
+							OrgRepo: "org/repo",
+							Cluster: "",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "org/repo default",
+							},
+						},
+					},
+				},
+			},
+			expected: &prowapi.ProwJobDefault{
+				TenantID: "org/repo default",
+			},
+		},
+		{
+			id: "default in job and config's defaults, expect job's default",
+			utilityConfig: UtilityConfig{
+				ExtraRefs: []prowapi.Refs{
+					{
+						Org:  "org",
+						Repo: "repo",
+					},
+				},
+			},
+			givenDefault: &prowapi.ProwJobDefault{
+				TenantID: "given default",
+			},
+			config: &Config{
+				ProwConfig: ProwConfig{
+					ProwJobDefaultEntries: []*ProwJobDefaultEntry{
+						{
+							OrgRepo: "*",
+							Cluster: "",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "config Default",
+							},
+						},
+						{
+							OrgRepo: "org/repo",
+							Cluster: "",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "org/repo default",
+							},
+						},
+					},
+				},
+			},
+			expected: &prowapi.ProwJobDefault{
+				TenantID: "given default",
+			},
+		},
+		{
+			id: "no default in job. config's default by org, expect org's default",
+			utilityConfig: UtilityConfig{
+				ExtraRefs: []prowapi.Refs{
+					{
+						Org:  "org",
+						Repo: "repo",
+					},
+				},
+			},
+			config: &Config{
+				ProwConfig: ProwConfig{
+					ProwJobDefaultEntries: []*ProwJobDefaultEntry{
+						{
+							OrgRepo: "*",
+							Cluster: "",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "configDefault",
+							},
+						},
+						{
+							OrgRepo: "org",
+							Cluster: "",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "org default",
+							},
+						},
+					},
+				},
+			},
+			expected: &prowapi.ProwJobDefault{
+				TenantID: "org default",
+			},
+		},
+		{
+			id: "no default in job or in config's by repo config, expect default entry with repo provided",
+			utilityConfig: UtilityConfig{
+				ExtraRefs: []prowapi.Refs{
+					{
+						Org:  "org",
+						Repo: "repo",
+					},
+				},
+			},
+			config: &Config{
+				ProwConfig: ProwConfig{
+					ProwJobDefaultEntries: []*ProwJobDefaultEntry{
+						{
+							OrgRepo: "*",
+							Cluster: "",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "configDefault",
+							},
+						},
+					},
+				},
+			},
+			expected: &prowapi.ProwJobDefault{
+				TenantID: "configDefault",
+			},
+		},
+		{
+			id: "no default in job. config's default by org and org/repo, expect org/repo default",
+			utilityConfig: UtilityConfig{
+				ExtraRefs: []prowapi.Refs{
+					{
+						Org:  "org",
+						Repo: "repo",
+					},
+				},
+			},
+			config: &Config{
+				ProwConfig: ProwConfig{
+					ProwJobDefaultEntries: []*ProwJobDefaultEntry{
+						{
+							OrgRepo: "*",
+							Cluster: "",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "configDefault",
+							},
+						},
+						{
+							OrgRepo: "org",
+							Cluster: "",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "org default",
+							},
+						},
+						{
+							OrgRepo: "org/repo",
+							Cluster: "",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "org/repo default",
+							},
+						},
+					},
+				},
+			},
+			expected: &prowapi.ProwJobDefault{
+				TenantID: "org/repo default",
+			},
+		},
+		{
+			id: "no default in job. config's default by org and org/repo, unknown repo uses org",
+			utilityConfig: UtilityConfig{
+				ExtraRefs: []prowapi.Refs{
+					{
+						Org:  "org",
+						Repo: "foo",
+					},
+				},
+			},
+			config: &Config{
+				ProwConfig: ProwConfig{
+					ProwJobDefaultEntries: []*ProwJobDefaultEntry{
+						{
+							OrgRepo: "*",
+							Cluster: "",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "configDefault",
+							},
+						},
+						{
+							OrgRepo: "org",
+							Cluster: "",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "org default",
+							},
+						},
+						{
+							OrgRepo: "org/repo",
+							Cluster: "",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "org/repo default",
+							},
+						},
+					},
+				},
+			},
+			expected: &prowapi.ProwJobDefault{
+				TenantID: "org default",
+			},
+		},
+		{
+			id: "no default in job. * cluster provided config's default by org and org/repo, unknown repo uses org",
+			utilityConfig: UtilityConfig{
+				ExtraRefs: []prowapi.Refs{
+					{
+						Org:  "org",
+						Repo: "foo",
+					},
+				},
+			},
+			cluster: "default",
+			config: &Config{
+				ProwConfig: ProwConfig{
+					ProwJobDefaultEntries: []*ProwJobDefaultEntry{
+						{
+							OrgRepo: "*",
+							Cluster: "*",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "configDefault",
+							},
+						},
+						{
+							OrgRepo: "org",
+							Cluster: "",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "org default",
+							},
+						},
+						{
+							OrgRepo: "org/repo",
+							Cluster: "",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "org/repo default",
+							},
+						},
+					},
+				},
+			},
+			expected: &prowapi.ProwJobDefault{
+				TenantID: "org default",
+			},
+		},
+		{
+			id: "override cluster",
+			utilityConfig: UtilityConfig{
+				ExtraRefs: []prowapi.Refs{
+					{
+						Org:  "org",
+						Repo: "foo",
+					},
+				},
+			},
+			cluster: "override",
+			config: &Config{
+				ProwConfig: ProwConfig{
+					ProwJobDefaultEntries: []*ProwJobDefaultEntry{
+						{
+							OrgRepo: "*",
+							Cluster: "*",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "configDefault",
+							},
+						},
+						{
+							OrgRepo: "org",
+							Cluster: "",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "org default",
+							},
+						},
+						{
+							OrgRepo: "*",
+							Cluster: "override",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "override default",
+							},
+						},
+					},
+				},
+			},
+			expected: &prowapi.ProwJobDefault{
+				TenantID: "override default",
+			},
+		},
+		{
+			id: "complicated config, but use provided config",
+			utilityConfig: UtilityConfig{
+				ExtraRefs: []prowapi.Refs{
+					{
+						Org:  "org",
+						Repo: "foo",
+					},
+				},
+			},
+			cluster: "override",
+			config: &Config{
+				ProwConfig: ProwConfig{
+					ProwJobDefaultEntries: []*ProwJobDefaultEntry{
+						{
+							OrgRepo: "*",
+							Cluster: "*",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "configDefault",
+							},
+						},
+						{
+							OrgRepo: "org",
+							Cluster: "",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "org default",
+							},
+						},
+						{
+							OrgRepo: "*",
+							Cluster: "override",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "override default",
+							},
+						},
+					},
+				},
+			},
+			givenDefault: &prowapi.ProwJobDefault{
+				TenantID: "given default",
+			},
+			expected: &prowapi.ProwJobDefault{
+				TenantID: "given default",
+			},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.id, func(t *testing.T) {
+			c := &Config{}
+			periodic := &Periodic{JobBase: JobBase{Cluster: tc.cluster, UtilityConfig: tc.utilityConfig, ProwJobDefault: tc.givenDefault}}
+			c.defaultJobBase(&periodic.JobBase)
+			setPeriodicProwJobDefaults(tc.config, periodic)
+			if diff := cmp.Diff(periodic.ProwJobDefault, tc.expected, cmpopts.EquateEmpty()); diff != "" {
+				t.Error(diff)
+			}
+		})
+	}
+}
+
+// TODO(mpherman): Add more detailed unit test when there is more than 1 field in ProwJobDefaults
+// Need unit tests for merging more complicated defaults.
+func TestSetProwJobDefaults(t *testing.T) {
+	testCases := []struct {
+		id           string
+		repo         string
+		cluster      string
+		config       *Config
+		givenDefault *prowapi.ProwJobDefault
+		expected     *prowapi.ProwJobDefault
+	}{
+		{
+			id:       "No ProwJobDefault in job or in config, expect no changes",
+			config:   &Config{ProwConfig: ProwConfig{}},
+			expected: &prowapi.ProwJobDefault{},
+		},
+		{
+			id: "no default in job or in config's by repo config, expect default entry",
+			config: &Config{
+				ProwConfig: ProwConfig{
+					ProwJobDefaultEntries: []*ProwJobDefaultEntry{
+						{
+							OrgRepo: "*",
+							Cluster: "",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "configDefault",
+							},
+						},
+					},
+				},
+			},
+			expected: &prowapi.ProwJobDefault{
+				TenantID: "configDefault",
+			},
+		},
+		{
+			id:   "no default in presubmit, matching by repo config, expect merged by repo config",
+			repo: "org/repo",
+			config: &Config{
+				ProwConfig: ProwConfig{
+					ProwJobDefaultEntries: []*ProwJobDefaultEntry{
+						{
+							OrgRepo: "*",
+							Cluster: "",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "configDefault",
+							},
+						},
+						{
+							OrgRepo: "org/repo",
+							Cluster: "",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "org/repo default",
+							},
+						},
+					},
+				},
+			},
+			expected: &prowapi.ProwJobDefault{
+				TenantID: "org/repo default",
+			},
+		},
+		{
+			id:   "default in job and config's defaults, expect job's default",
+			repo: "org/repo",
+			givenDefault: &prowapi.ProwJobDefault{
+				TenantID: "given default",
+			},
+			config: &Config{
+				ProwConfig: ProwConfig{
+					ProwJobDefaultEntries: []*ProwJobDefaultEntry{
+						{
+							OrgRepo: "*",
+							Cluster: "",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "configDefault",
+							},
+						},
+						{
+							OrgRepo: "org/repo",
+							Cluster: "",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "org/repo default",
+							},
+						},
+					},
+				},
+			},
+			expected: &prowapi.ProwJobDefault{
+				TenantID: "given default",
+			},
+		},
+		{
+			id:   "no default in job. config's default by org, expect org's default",
+			repo: "org/repo",
+			config: &Config{
+				ProwConfig: ProwConfig{
+					ProwJobDefaultEntries: []*ProwJobDefaultEntry{
+						{
+							OrgRepo: "*",
+							Cluster: "",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "configDefault",
+							},
+						},
+						{
+							OrgRepo: "org",
+							Cluster: "",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "org default",
+							},
+						},
+					},
+				},
+			},
+			expected: &prowapi.ProwJobDefault{
+				TenantID: "org default",
+			},
+		},
+		{
+			id:   "no default in job or in config's by repo config, expect default entry with repo provided",
+			repo: "org/repo",
+			config: &Config{
+				ProwConfig: ProwConfig{
+					ProwJobDefaultEntries: []*ProwJobDefaultEntry{
+						{
+							OrgRepo: "*",
+							Cluster: "",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "configDefault",
+							},
+						},
+					},
+				},
+			},
+			expected: &prowapi.ProwJobDefault{
+				TenantID: "configDefault",
+			},
+		},
+		{
+			id:   "no default in job. config's default by org and org/repo, expect org/repo default",
+			repo: "org/repo",
+			config: &Config{
+				ProwConfig: ProwConfig{
+					ProwJobDefaultEntries: []*ProwJobDefaultEntry{
+						{
+							OrgRepo: "*",
+							Cluster: "",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "configDefault",
+							},
+						},
+						{
+							OrgRepo: "org",
+							Cluster: "",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "org default",
+							},
+						},
+						{
+							OrgRepo: "org/repo",
+							Cluster: "",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "org/repo default",
+							},
+						},
+					},
+				},
+			},
+			expected: &prowapi.ProwJobDefault{
+				TenantID: "org/repo default",
+			},
+		},
+		{
+			id:   "no default in job. config's default by org and org/repo, unknown repo uses org",
+			repo: "org/foo",
+			config: &Config{
+				ProwConfig: ProwConfig{
+					ProwJobDefaultEntries: []*ProwJobDefaultEntry{
+						{
+							OrgRepo: "*",
+							Cluster: "",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "configDefault",
+							},
+						},
+						{
+							OrgRepo: "org",
+							Cluster: "",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "org default",
+							},
+						},
+						{
+							OrgRepo: "org/repo",
+							Cluster: "",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "org/repo default",
+							},
+						},
+					},
+				},
+			},
+			expected: &prowapi.ProwJobDefault{
+				TenantID: "org default",
+			},
+		},
+		{
+			id:      "no default in job. * cluster provided config's default by org and org/repo, unknown repo uses org",
+			repo:    "org/foo",
+			cluster: "default",
+			config: &Config{
+				ProwConfig: ProwConfig{
+					ProwJobDefaultEntries: []*ProwJobDefaultEntry{
+						{
+							OrgRepo: "*",
+							Cluster: "*",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "configDefault",
+							},
+						},
+						{
+							OrgRepo: "org",
+							Cluster: "",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "org default",
+							},
+						},
+						{
+							OrgRepo: "org/repo",
+							Cluster: "",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "org/repo default",
+							},
+						},
+					},
+				},
+			},
+			expected: &prowapi.ProwJobDefault{
+				TenantID: "org default",
+			},
+		},
+		{
+			id:      "override cluster",
+			repo:    "org/foo",
+			cluster: "override",
+			config: &Config{
+				ProwConfig: ProwConfig{
+					ProwJobDefaultEntries: []*ProwJobDefaultEntry{
+						{
+							OrgRepo: "*",
+							Cluster: "*",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "configDefault",
+							},
+						},
+						{
+							OrgRepo: "org",
+							Cluster: "",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "org default",
+							},
+						},
+						{
+							OrgRepo: "*",
+							Cluster: "override",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "override default",
+							},
+						},
+					},
+				},
+			},
+			expected: &prowapi.ProwJobDefault{
+				TenantID: "override default",
+			},
+		},
+		{
+			id:      "complicated config, but use provided config",
+			repo:    "org/foo",
+			cluster: "override",
+			config: &Config{
+				ProwConfig: ProwConfig{
+					ProwJobDefaultEntries: []*ProwJobDefaultEntry{
+						{
+							OrgRepo: "*",
+							Cluster: "*",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "configDefault",
+							},
+						},
+						{
+							OrgRepo: "org",
+							Cluster: "",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "org default",
+							},
+						},
+						{
+							OrgRepo: "*",
+							Cluster: "override",
+							Config: &prowapi.ProwJobDefault{
+								TenantID: "override default",
+							},
+						},
+					},
+				},
+			},
+			givenDefault: &prowapi.ProwJobDefault{
+				TenantID: "given default",
+			},
+			expected: &prowapi.ProwJobDefault{
+				TenantID: "given default",
+			},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.id, func(t *testing.T) {
+			c := &Config{}
+			jb := &JobBase{Cluster: tc.cluster, ProwJobDefault: tc.givenDefault}
+			c.defaultJobBase(jb)
+			presubmit := &Presubmit{JobBase: *jb}
+			postsubmit := &Postsubmit{JobBase: *jb}
+
+			setPresubmitProwJobDefaults(tc.config, presubmit, tc.repo)
+			if diff := cmp.Diff(presubmit.ProwJobDefault, tc.expected, cmpopts.EquateEmpty()); diff != "" {
+				t.Errorf("presubmit: %s", diff)
+			}
+
+			setPostsubmitProwJobDefaults(tc.config, postsubmit, tc.repo)
+			if diff := cmp.Diff(postsubmit.ProwJobDefault, tc.expected, cmpopts.EquateEmpty()); diff != "" {
+				t.Errorf("postsubmit: %s", diff)
+			}
+		})
+	}
+}
+
 func TestSetDecorationDefaults(t *testing.T) {
 	yes := true
 	no := false
