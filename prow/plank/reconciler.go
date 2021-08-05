@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -209,6 +210,8 @@ func (r *reconciler) syncClusterStatus(interval time.Duration) func(context.Cont
 					r.log.WithError(err).Errorf("Failed to parse cluster status file location: %q.", location)
 					continue
 				}
+				// prowv1.ParsePath prepends `Path` with `/`, trim it
+				bucket, subPath := parsedPath.Bucket(), strings.TrimPrefix(parsedPath.Path, "/")
 
 				clusters := map[string]ClusterStatus{}
 				for cluster, client := range r.buildClients {
@@ -225,7 +228,7 @@ func (r *reconciler) syncClusterStatus(interval time.Duration) func(context.Cont
 					r.log.WithError(err).Error("Error marshaling cluster status info.")
 					continue
 				}
-				if err := util.WriteContent(ctx, r.log, util.StorageAuthor{Opener: r.opener}, parsedPath.Bucket(), parsedPath.Path, true, payload); err != nil {
+				if err := util.WriteContent(ctx, r.log, util.StorageAuthor{Opener: r.opener}, bucket, subPath, true, payload); err != nil {
 					r.log.WithError(err).Error("Error writing cluster status info.")
 				}
 			}
