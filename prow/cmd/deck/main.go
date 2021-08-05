@@ -102,6 +102,17 @@ const (
 	PodSpec string = "pod_spec"
 )
 
+type tenantIDs []string
+
+func (ids *tenantIDs) Set(value string) error {
+	*ids = append(*ids, value)
+	return nil
+}
+
+func (ids *tenantIDs) String() string {
+	return strings.Join(*ids, ",")
+}
+
 type options struct {
 	config                configflagutil.ConfigOptions
 	pluginsConfig         pluginsflagutil.PluginOptions
@@ -126,6 +137,7 @@ type options struct {
 	rerunCreatesJob       bool
 	allowInsecure         bool
 	dryRun                bool
+	tenantIDs             tenantIDs
 }
 
 func (o *options) Validate() error {
@@ -153,8 +165,8 @@ func (o *options) Validate() error {
 		}
 	}
 
-	if o.hiddenOnly && o.showHidden {
-		return errors.New("'--hidden-only' and '--show-hidden' are mutually exclusive, the first one shows only hidden job, the second one shows both hidden and non-hidden jobs")
+	if o.hiddenOnly && o.showHidden || o.tenantIDs != nil && (o.hiddenOnly && o.showHidden) {
+		return errors.New("'--hidden-only', 'tenantID', and '--show-hidden' are mutually exclusive, 'hidden-only' shows only hidden job, 'tenantID' shows all jobs with matching ID and 'show-hidden' shows both hidden and non-hidden jobs")
 	}
 	return nil
 }
@@ -180,6 +192,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.BoolVar(&o.rerunCreatesJob, "rerun-creates-job", false, "Change the re-run option in Deck to actually create the job. **WARNING:** Only use this with non-public deck instances, otherwise strangers can DOS your Prow instance")
 	fs.BoolVar(&o.allowInsecure, "allow-insecure", false, "Allows insecure requests for CSRF and GitHub oauth.")
 	fs.BoolVar(&o.dryRun, "dry-run", false, "Whether or not to make mutating API calls to GitHub.")
+	fs.Var(&o.tenantIDs, "tenant-id", "The tenantID used by the ProwJobs that should be displayed by this instance of Deck")
 	o.config.AddFlags(fs)
 	o.instrumentation.AddFlags(fs)
 	o.kubernetes.AddFlags(fs)
@@ -422,7 +435,7 @@ func main() {
 		indexHandler(w, r)
 	})
 
-	ja := jobs.NewJobAgent(context.Background(), pjListingClient, o.hiddenOnly, o.showHidden, podLogClients, cfg)
+	ja := jobs.NewJobAgent(context.Background(), pjListingClient, o.hiddenOnly, o.showHidden, o.tenantIDs, podLogClients, cfg)
 	ja.Start()
 
 	// setup prod only handlers. These handlers can work with runlocal as long
