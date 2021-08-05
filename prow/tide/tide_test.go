@@ -4525,7 +4525,7 @@ func TestTenantIDs(t *testing.T) {
 		{
 			name: "one PJ",
 			pjs: []prowapi.ProwJob{
-				prowapi.ProwJob{
+				{
 					Spec: prowapi.ProwJobSpec{
 						ProwJobDefault: &prowapi.ProwJobDefault{
 							TenantID: "test",
@@ -4538,14 +4538,14 @@ func TestTenantIDs(t *testing.T) {
 		{
 			name: "multiple PJs with same ID",
 			pjs: []prowapi.ProwJob{
-				prowapi.ProwJob{
+				{
 					Spec: prowapi.ProwJobSpec{
 						ProwJobDefault: &prowapi.ProwJobDefault{
 							TenantID: "test",
 						},
 					},
 				},
-				prowapi.ProwJob{
+				{
 					Spec: prowapi.ProwJobSpec{
 						ProwJobDefault: &prowapi.ProwJobDefault{
 							TenantID: "test",
@@ -4558,14 +4558,14 @@ func TestTenantIDs(t *testing.T) {
 		{
 			name: "multiple PJs with different ID",
 			pjs: []prowapi.ProwJob{
-				prowapi.ProwJob{
+				{
 					Spec: prowapi.ProwJobSpec{
 						ProwJobDefault: &prowapi.ProwJobDefault{
 							TenantID: "test",
 						},
 					},
 				},
-				prowapi.ProwJob{
+				{
 					Spec: prowapi.ProwJobSpec{
 						ProwJobDefault: &prowapi.ProwJobDefault{
 							TenantID: "other",
@@ -4578,14 +4578,14 @@ func TestTenantIDs(t *testing.T) {
 		{
 			name: "no tenantID in prowJob",
 			pjs: []prowapi.ProwJob{
-				prowapi.ProwJob{
+				{
 					Spec: prowapi.ProwJobSpec{
 						ProwJobDefault: &prowapi.ProwJobDefault{
 							TenantID: "test",
 						},
 					},
 				},
-				prowapi.ProwJob{
+				{
 					Spec: prowapi.ProwJobSpec{
 						ProwJobDefault: &prowapi.ProwJobDefault{},
 					},
@@ -4596,14 +4596,14 @@ func TestTenantIDs(t *testing.T) {
 		{
 			name: "no pjDefault in prowJob",
 			pjs: []prowapi.ProwJob{
-				prowapi.ProwJob{
+				{
 					Spec: prowapi.ProwJobSpec{
 						ProwJobDefault: &prowapi.ProwJobDefault{
 							TenantID: "test",
 						},
 					},
 				},
-				prowapi.ProwJob{
+				{
 					Spec: prowapi.ProwJobSpec{},
 				},
 			},
@@ -4612,14 +4612,14 @@ func TestTenantIDs(t *testing.T) {
 		{
 			name: "multiple no tenant PJs",
 			pjs: []prowapi.ProwJob{
-				prowapi.ProwJob{
+				{
 					Spec: prowapi.ProwJobSpec{
 						ProwJobDefault: &prowapi.ProwJobDefault{
 							TenantID: "",
 						},
 					},
 				},
-				prowapi.ProwJob{
+				{
 					Spec: prowapi.ProwJobSpec{},
 				},
 			},

@@ -292,14 +292,14 @@ func TestWriteHistory(t *testing.T) {
 			recMap: map[string][]*Record{
 				"o/r:b": {{Action: "MERGE"}},
 			},
-			expectedWritten: `{"o/r:b":[{"time":"0001-01-01T00:00:00Z","action":"MERGE"}]}`,
+			expectedWritten: `{"o/r:b":[{"time":"0001-01-01T00:00:00Z","action":"MERGE","tenantids":null}]}`,
 		},
 		{
 			name: "write history with multiple records",
 			recMap: map[string][]*Record{
 				"o/r:b": {{Action: "MERGE3"}, {Action: "MERGE2"}, {Action: "MERGE1"}},
 			},
-			expectedWritten: `{"o/r:b":[{"time":"0001-01-01T00:00:00Z","action":"MERGE3"},{"time":"0001-01-01T00:00:00Z","action":"MERGE2"},{"time":"0001-01-01T00:00:00Z","action":"MERGE1"}]}`,
+			expectedWritten: `{"o/r:b":[{"time":"0001-01-01T00:00:00Z","action":"MERGE3","tenantids":null},{"time":"0001-01-01T00:00:00Z","action":"MERGE2","tenantids":null},{"time":"0001-01-01T00:00:00Z","action":"MERGE1","tenantids":null}]}`,
 		},
 		{
 			name: "write history, with multiple pools",
@@ -307,7 +307,7 @@ func TestWriteHistory(t *testing.T) {
 				"o/r:b":  {{Action: "MERGE"}},
 				"o/r:b2": {{Action: "MERGE2"}, {Action: "MERGE1"}},
 			},
-			expectedWritten: `{"o/r:b":[{"time":"0001-01-01T00:00:00Z","action":"MERGE"}],"o/r:b2":[{"time":"0001-01-01T00:00:00Z","action":"MERGE2"},{"time":"0001-01-01T00:00:00Z","action":"MERGE1"}]}`,
+			expectedWritten: `{"o/r:b":[{"time":"0001-01-01T00:00:00Z","action":"MERGE","tenantids":null}],"o/r:b2":[{"time":"0001-01-01T00:00:00Z","action":"MERGE2","tenantids":null},{"time":"0001-01-01T00:00:00Z","action":"MERGE1","tenantids":null}]}`,
 		},
 	}
 
