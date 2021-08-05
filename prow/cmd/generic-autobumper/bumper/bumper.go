@@ -466,7 +466,8 @@ func MakeGitCommit(remote, remoteBranch, name, email string, stdout, stderr io.W
 }
 
 func makeGerritCommit(summary, commitTag, changeId string) string {
-	return fmt.Sprintf("%s\n\n[%s]\n\nChange-Id: %s", summary, commitTag, changeId)
+	//Gerrit commits do not recognize "&#x2011;" as NON-BREAKING HYPHEN, so just replace with a regular hyphen.
+	return fmt.Sprintf("%s\n\n[%s]\n\nChange-Id: %s", strings.ReplaceAll(summary, "&#x2011;", "-"), commitTag, changeId)
 }
 
 // GitCommitAndPush runs a sequence of git commands to commit.
