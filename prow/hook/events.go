@@ -107,6 +107,7 @@ func (s *Server) handleReviewEvent(l *logrus.Entry, re github.ReviewEvent) {
 		l,
 		&github.GenericCommentEvent{
 			GUID:         re.GUID,
+			NodeID:       re.Review.NodeID,
 			IsPR:         true,
 			Action:       action,
 			Body:         re.Review.Body,
@@ -163,6 +164,7 @@ func (s *Server) handleReviewCommentEvent(l *logrus.Entry, rce github.ReviewComm
 		l,
 		&github.GenericCommentEvent{
 			GUID:         rce.GUID,
+			NodeID:       rce.Comment.NodeID,
 			IsPR:         true,
 			CommentID:    intPtr(rce.Comment.ID),
 			Action:       action,
@@ -221,6 +223,7 @@ func (s *Server) handlePullRequestEvent(l *logrus.Entry, pr github.PullRequestEv
 		l,
 		&github.GenericCommentEvent{
 			ID:           pr.PullRequest.ID,
+			NodeID:       pr.PullRequest.NodeID,
 			GUID:         pr.GUID,
 			IsPR:         true,
 			Action:       action,
@@ -304,6 +307,7 @@ func (s *Server) handleIssueEvent(l *logrus.Entry, i github.IssueEvent) {
 		l,
 		&github.GenericCommentEvent{
 			ID:           i.Issue.ID,
+			NodeID:       i.Issue.NodeID,
 			GUID:         i.GUID,
 			IsPR:         i.Issue.IsPullRequest(),
 			Action:       action,
@@ -360,6 +364,7 @@ func (s *Server) handleIssueCommentEvent(l *logrus.Entry, ic github.IssueComment
 		l,
 		&github.GenericCommentEvent{
 			ID:           ic.Issue.ID,
+			NodeID:       ic.Issue.NodeID,
 			CommentID:    intPtr(ic.Comment.ID),
 			GUID:         ic.GUID,
 			IsPR:         ic.Issue.IsPullRequest(),

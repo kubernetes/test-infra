@@ -3065,6 +3065,9 @@ func setValue(target *reflect.Value, typeOverrides []func(typeName string) (over
 	if target.Type().String() == "interface {}" {
 		target.Set(reflect.ValueOf(map[string]interface{}{}))
 	}
+	if target.Type().String() == "githubv4.Input" {
+		target.Set(reflect.ValueOf(struct{}{}))
+	}
 }
 
 func TestBotUserChecker(t *testing.T) {
@@ -3142,6 +3145,9 @@ func TestV4ClientSetsUserAgent(t *testing.T) {
 		if err := client.QueryWithGitHubAppsSupport(context.Background(), struct{}{}, nil, ""); err != nil {
 			t.Error(err)
 		}
+		if err := client.MutateWithGitHubAppsSupport(context.Background(), struct{}{}, githubv4.Input(struct{}{}), nil, ""); err != nil {
+			t.Error(err)
+		}
 	})
 
 	t.Run("ForPlugin changes the user agent accordingly", func(t *testing.T) {
@@ -3150,11 +3156,17 @@ func TestV4ClientSetsUserAgent(t *testing.T) {
 		if err := client.QueryWithGitHubAppsSupport(context.Background(), struct{}{}, nil, ""); err != nil {
 			t.Error(err)
 		}
+		if err := client.MutateWithGitHubAppsSupport(context.Background(), struct{}{}, githubv4.Input(struct{}{}), nil, ""); err != nil {
+			t.Error(err)
+		}
 	})
 
 	t.Run("The ForPlugin call doesn't manipulate the original client", func(t *testing.T) {
 		expectedUserAgent = "unset/0"
 		if err := client.QueryWithGitHubAppsSupport(context.Background(), struct{}{}, nil, ""); err != nil {
+			t.Error(err)
+		}
+		if err := client.MutateWithGitHubAppsSupport(context.Background(), struct{}{}, githubv4.Input(struct{}{}), nil, ""); err != nil {
 			t.Error(err)
 		}
 	})
@@ -3165,11 +3177,17 @@ func TestV4ClientSetsUserAgent(t *testing.T) {
 		if err := client.QueryWithGitHubAppsSupport(context.Background(), struct{}{}, nil, ""); err != nil {
 			t.Error(err)
 		}
+		if err := client.MutateWithGitHubAppsSupport(context.Background(), struct{}{}, githubv4.Input(struct{}{}), nil, ""); err != nil {
+			t.Error(err)
+		}
 	})
 
 	t.Run("The ForSubcomponent call doesn't manipulate the original client", func(t *testing.T) {
 		expectedUserAgent = "unset/0"
 		if err := client.QueryWithGitHubAppsSupport(context.Background(), struct{}{}, nil, ""); err != nil {
+			t.Error(err)
+		}
+		if err := client.MutateWithGitHubAppsSupport(context.Background(), struct{}{}, githubv4.Input(struct{}{}), nil, ""); err != nil {
 			t.Error(err)
 		}
 	})
