@@ -27,6 +27,8 @@ presets:
     mountPath: /root/ssh/.private-key
   - name: vpn-conf
     mountPath: /root/.openvpn
+  - name: ipam-conf
+    mountPath: /root/ipam-conf
   volumes:
   - name: private-key
     secret:
@@ -50,7 +52,13 @@ presets:
         path: ca.crt
       - key: tls.key
         path: tls.key
-
+  - name: ipam-conf
+    secret:
+      secretName: capv-ipam-kubeconfig
+      defaultMode: 256
+      items:
+        - key: capv-services.conf
+          path: capv-services.conf
 - labels:
     preset-cluster-api-provider-vsphere-gcs-creds: "true"
   env:
