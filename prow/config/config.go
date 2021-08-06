@@ -1081,6 +1081,10 @@ func (rac RerunAuthConfigs) GetRerunAuthConfig(refs *prowapi.Refs) prowapi.Rerun
 	return rac["*"]
 }
 
+const (
+	defaultMaxOutstandingMessages = 10
+)
+
 // PubsubSubscriptions maps GCP projects to a list of Topics
 type PubsubSubscriptions map[string][]string
 
@@ -1092,6 +1096,8 @@ type PubSubTrigger struct {
 	Project         string   `json:"project"`
 	Topics          []string `json:"topics"`
 	AllowedClusters []string `json:"allowed_clusters"`
+	// MaxOutstandingMessages is the max number of messaged being processed, default is 10
+	MaxOutstandingMessages int `json:"max_outstanding_messages"`
 }
 
 // GitHubOptions allows users to control how prow applications display GitHub website links.
@@ -1387,6 +1393,11 @@ func loadConfig(prowConfig, jobConfig string, additionalProwConfigDirs []string,
 				Topics:          topics,
 				AllowedClusters: []string{"*"},
 			})
+		}
+	}
+	for i, trigger := range nc.PubSubTriggers {
+		if trigger.MaxOutstandingMessages == 0 {
+			nc.PubSubTriggers[i].MaxOutstandingMessages = defaultMaxOutstandingMessages
 		}
 	}
 

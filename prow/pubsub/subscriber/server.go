@@ -122,7 +122,7 @@ type subscriptionInterface interface {
 // pubsubClientInterface interfaces with Cloud Pub/Sub client for testing reason
 type pubsubClientInterface interface {
 	new(ctx context.Context, project string) (pubsubClientInterface, error)
-	subscription(id string) subscriptionInterface
+	subscription(id string, maxOutstandingMessages int) subscriptionInterface
 }
 
 // pubSubClient is used to interface with a new Cloud Pub/Sub Client
@@ -156,9 +156,11 @@ func (c *pubSubClient) new(ctx context.Context, project string) (pubsubClientInt
 }
 
 // Subscription creates a subscription from the Cloud Pub/Sub Client
-func (c *pubSubClient) subscription(id string) subscriptionInterface {
+func (c *pubSubClient) subscription(id string, maxOutstandingMessages int) subscriptionInterface {
+	sub := c.client.Subscription(id)
+	sub.ReceiveSettings.MaxOutstandingMessages = maxOutstandingMessages
 	return &pubSubSubscription{
-		sub: c.client.Subscription(id),
+		sub: sub,
 	}
 }
 
@@ -173,7 +175,7 @@ func (s *PullServer) handlePulls(ctx context.Context, projectSubscriptions confi
 			return errGroup, derivedCtx, err
 		}
 		for _, subName := range subscriptions {
-			sub := client.subscription(subName)
+			sub := client.subscription(subName, topics.MaxOutstandingMessages)
 			errGroup.Go(func() error {
 				logrus.Infof("Listening for subscription %s on project %s", sub.string(), project)
 				defer logrus.Warnf("Stopped Listening for subscription %s on project %s", sub.string(), project)
