@@ -246,6 +246,10 @@ branch-protection:
             - continuous-integration/travis-ci
           required_pull_request_reviews:
             required_approving_review_count: 1
+        enhancements:
+          restrictions: # only allow admins
+            users: []
+            teams: []
         git-sync:
           enforce_admins: true
           restrictions: # only allow admins
