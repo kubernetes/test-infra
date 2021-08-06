@@ -94,7 +94,7 @@ func (c *pubSubTestClient) new(ctx context.Context, project string) (pubsubClien
 	return c, nil
 }
 
-func (c *pubSubTestClient) subscription(id string) subscriptionInterface {
+func (c *pubSubTestClient) subscription(id string, maxOutstandingMessages int) subscriptionInterface {
 	return &fakeSubscription{name: id, messageChan: c.messageChan}
 }
 

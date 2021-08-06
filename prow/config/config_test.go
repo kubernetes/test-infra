@@ -2450,9 +2450,10 @@ pubsub_subscriptions:
 			verify: func(c *Config) error {
 				if diff := cmp.Diff(c.PubSubTriggers, PubSubTriggers([]PubSubTrigger{
 					{
-						Project:         "projA",
-						Topics:          []string{"topicB", "topicC"},
-						AllowedClusters: []string{"*"},
+						Project:                "projA",
+						Topics:                 []string{"topicB", "topicC"},
+						AllowedClusters:        []string{"*"},
+						MaxOutstandingMessages: 10,
 					},
 				})); diff != "" {
 					return fmt.Errorf("want(-), got(+): \n%s", diff)

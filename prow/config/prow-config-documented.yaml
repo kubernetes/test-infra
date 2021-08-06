@@ -951,6 +951,7 @@ pubsub_subscriptions:
 pubsub_triggers:
   - allowed_clusters:
       - ""
+    max_outstanding_messages: 0
     project: ' '
     topics:
       - ""
