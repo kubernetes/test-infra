@@ -9,5 +9,5 @@ variants:
     OLD_BAZEL_VERSION: 3.1.0
   testgrid:
     CONFIG: testgrid
-    BAZEL_VERSION: 3.3.0
+    BAZEL_VERSION: 3.4.1
     OLD_BAZEL_VERSION: 3.0.0
