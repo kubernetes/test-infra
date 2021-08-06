@@ -103,8 +103,8 @@ periodics:
       # When changing CPUs, also change NUM_WORKERS above
       resources:
         requests:
-          cpu: 7
-          memory: 40Gi
+          cpu: 6
+          memory: 32Gi
         limits:
-          cpu: 7
-          memory: 40Gi
+          cpu: 6
+          memory: 32Gi
