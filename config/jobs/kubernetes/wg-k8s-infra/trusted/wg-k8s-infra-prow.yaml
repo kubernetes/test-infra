@@ -4,7 +4,7 @@ postsubmits:
     cluster: k8s-infra-prow-build-trusted
     decorate: true
     max_concurrency: 1
-    run_if_changed: "^infra/gcp/clusters/projects/k8s-infra-prow-build/"
+    run_if_changed: "^infra/gcp/terraform/k8s-infra-prow-build/"
     branches:
     - ^main$
     annotations:
@@ -35,12 +35,12 @@ postsubmits:
       containers:
       - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
         command:
-        - ./infra/gcp/clusters/projects/k8s-infra-prow-build/deploy.sh
+        - ./infra/gcp/terraform/k8s-infra-prow-build/deploy.sh
   - name: post-k8sio-deploy-prow-build-trusted-resources
     cluster: k8s-infra-prow-build-trusted
     decorate: true
     max_concurrency: 1
-    run_if_changed: "^infra/gcp/clusters/projects/k8s-infra-prow-build-trusted/"
+    run_if_changed: "^infra/gcp/terraform/k8s-infra-prow-build-trusted/"
     branches:
     - ^main$
     annotations:
@@ -62,7 +62,7 @@ postsubmits:
       containers:
       - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
         command:
-        - ./infra/gcp/clusters/projects/k8s-infra-prow-build-trusted/deploy.sh
+        - ./infra/gcp/terraform/k8s-infra-prow-build-trusted/deploy.sh
     reporter_config:
       slack:
         channel: "prow-alerts"

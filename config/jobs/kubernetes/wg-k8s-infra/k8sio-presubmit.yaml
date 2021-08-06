@@ -21,19 +21,19 @@ presubmits:
         env:
         - name: GO111MODULE
           value: "on"
-  - name: pull-k8sio-terraform-aaa
+  - name: pull-k8sio-terraform-kubernetes-public
     annotations:
       description: verify terraform files for GKE cluster aaa
       testgrid-create-test-group: 'true'
       testgrid-dashboards: wg-k8s-infra-k8sio
-      testgrid-tab-name: pull-k8sio-terraform-aaa
+      testgrid-tab-name: pull-k8sio-terraform-kubernetes-public
       testgrid-alert-email: ameukam@gmail.com,spiffxp@gmail.com,spiffxp@google.com
       testgrid-num-failures-to-alert: '1'
     decorate: true
     max_concurrency: 1
     cluster: k8s-infra-prow-build
     path_alias: k8s.io/k8s.io
-    run_if_changed: 'infra\/gcp\/clusters\/(modules|projects\/kubernetes-public\/aaa)\/.*.tf'
+    run_if_changed: 'infra\/gcp\/terraform\/(modules|kubernetes-public)\/.*.tf'
     branches:
     - ^main$
     spec:
@@ -42,7 +42,7 @@ presubmits:
         command:
         - hack/verify-terraform.sh
         args:
-        - infra/gcp/clusters/projects/kubernetes-public/aaa
+        - infra/gcp/terraform/kubernetes-public
         resources:
           limits:
             cpu: 1
@@ -62,7 +62,7 @@ presubmits:
     max_concurrency: 1
     cluster: k8s-infra-prow-build
     path_alias: k8s.io/k8s.io
-    run_if_changed: 'infra\/gcp\/clusters\/(modules|projects\/k8s-infra-prow-build\/prow-build)\/.*.tf'
+    run_if_changed: 'infra\/gcp\/terraform\/(modules|k8s-infra-prow-build)\/.*.tf'
     branches:
     - ^main$
     spec:
@@ -71,7 +71,7 @@ presubmits:
         command:
         - hack/verify-terraform.sh
         args:
-        - infra/gcp/clusters/projects/k8s-infra-prow-build/prow-build
+        - infra/gcp/terraform/k8s-infra-prow-build
         resources:
           limits:
             cpu: 1
@@ -91,7 +91,7 @@ presubmits:
     max_concurrency: 1
     cluster: k8s-infra-prow-build
     path_alias: k8s.io/k8s.io
-    run_if_changed: 'infra\/gcp\/clusters\/(modules|projects\/k8s-infra-prow-build-trusted\/prow-build-trusted)\/.*.tf'
+    run_if_changed: 'infra\/gcp\/terraform\/(modules|k8s-infra-prow-build-trusted)\/.*.tf'
     branches:
     - ^main$
     spec:
@@ -100,7 +100,7 @@ presubmits:
         command:
         - hack/verify-terraform.sh
         args:
-        - infra/gcp/clusters/projects/k8s-infra-prow-build-trusted/prow-build-trusted
+        - infra/gcp/terraform/k8s-infra-prow-build-trusted
         resources:
           limits:
             cpu: 1
