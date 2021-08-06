@@ -77,6 +77,7 @@ periodics:
         --comment=Unknown CLA label state. Rechecking for CLA labels.
 
         Send feedback to sig-contributor-experience at [kubernetes/community](https://github.com/kubernetes/community).
+
         /check-cla
       - --template
       - --ceiling=10
@@ -115,12 +116,23 @@ periodics:
       - --token=/etc/github-token/token
       - --endpoint=http://ghproxy.default.svc.cluster.local
       - |-
-        --comment=Rotten issues close after 30d of inactivity.
-        Reopen the issue with `/reopen`.
-        Mark the issue as fresh with `/remove-lifecycle rotten`.
+        --comment=The Kubernetes project currently lacks enough active contributors to adequately respond to all issues and PRs.
 
-        Send feedback to sig-contributor-experience at [kubernetes/community](https://github.com/kubernetes/community).
+        This bot triages issues and PRs according to the following rules:
+        - After 90d of inactivity, `lifecycle/stale` is applied
+        - After 30d of inactivity since `lifecycle/stale` was applied, `lifecycle/rotten` is applied
+        - After 30d of inactivity since `lifecycle/rotten` was applied, the issue is closed
+
+        You can:
+        - Reopen this issue or PR with `/reopen`
+        - Mark this issue or PR as fresh with `/remove-lifecycle rotten`
+        - Offer to help out with [Issue Triage][1]
+
+        Please send feedback to sig-contributor-experience at [kubernetes/community](https://github.com/kubernetes/community).
+
         /close
+
+        [1]: https://www.kubernetes.dev/docs/guide/issue-triage/
       - --template
       - --ceiling=10
       - --confirm
@@ -139,7 +151,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-contribex-k8s-triage-robot
     testgrid-tab-name: retester
-    description: Automatically /retest for approved PRs that failed retesting
+    description: Automatically /retest for approved PRs that are failing tests
   spec:
     containers:
     - image: gcr.io/k8s-prow/commenter:v20210806-c95403cd67
@@ -172,13 +184,23 @@ periodics:
       - --token=/etc/github-token/token
       - --endpoint=http://ghproxy.default.svc.cluster.local
       - |-
-        --comment=/retest
-        This bot automatically retries jobs that failed/flaked on approved PRs (send feedback to [fejta](https://github.com/fejta)).
+        --comment=The Kubernetes project has merge-blocking tests that are currently too flaky to consistently pass.
 
-        Review the [full test history](https://prow.k8s.io/pr-history/?org={{.Org}}&repo={{.Repo}}&pr={{.Number}}) for this PR.
+        This bot retests PRs for certain kubernetes repos according to the following rules:
+        - The PR does have any `do-not-merge/*` labels
+        - The PR does not have the `needs-ok-to-test` label
+        - The PR is mergeable (does not have a `needs-rebase` label)
+        - The PR is approved (has `cncf-cla: yes`, `lgtm`, `approved` labels)
+        - The PR is failing tests required for merge
 
-        Silence the bot with an `/lgtm cancel` or `/hold` comment for consistent failures.
+        You can:
+        - Review the [full test history](https://prow.k8s.io/pr-history/?org={{.Org}}&repo={{.Repo}}&pr={{.Number}}) for this PR
+        - Prevent this bot from retesting with `/lgtm cancel` or `/hold`
+        - Help make our tests less flaky by following our [Flaky Tests Guide][1]
 
+        /retest
+
+        [1]: https://git.k8s.io/community/contributors/devel/sig-testing/flaky-tests.md
       - --template
       - --ceiling=1
       - --confirm
@@ -217,14 +239,23 @@ periodics:
       - --token=/etc/github-token/token
       - --endpoint=http://ghproxy.default.svc.cluster.local
       - |-
-        --comment=Stale issues rot after 30d of inactivity.
-        Mark the issue as fresh with `/remove-lifecycle rotten`.
-        Rotten issues close after an additional 30d of inactivity.
+        --comment=The Kubernetes project currently lacks enough active contributors to adequately respond to all issues and PRs.
 
-        If this issue is safe to close now please do so with `/close`.
+        This bot triages issues and PRs according to the following rules:
+        - After 90d of inactivity, `lifecycle/stale` is applied
+        - After 30d of inactivity since `lifecycle/stale` was applied, `lifecycle/rotten` is applied
+        - After 30d of inactivity since `lifecycle/rotten` was applied, the issue is closed
 
-        Send feedback to sig-contributor-experience at [kubernetes/community](https://github.com/kubernetes/community).
+        You can:
+        - Mark this issue or PR as fresh with `/remove-lifecycle rotten`
+        - Close this issue or PR with `/close`
+        - Offer to help out with [Issue Triage][1]
+
+        Please send feedback to sig-contributor-experience at [kubernetes/community](https://github.com/kubernetes/community).
+
         /lifecycle rotten
+
+        [1]: https://www.kubernetes.dev/docs/guide/issue-triage/
       - --template
       - --ceiling=10
       - --confirm
@@ -263,14 +294,24 @@ periodics:
       - --token=/etc/github-token/token
       - --endpoint=http://ghproxy.default.svc.cluster.local
       - |-
-        --comment=Issues go stale after 90d of inactivity.
-        Mark the issue as fresh with `/remove-lifecycle stale`.
-        Stale issues rot after an additional 30d of inactivity and eventually close.
+        --comment=The Kubernetes project currently lacks enough contributors to adequately respond to all issues and PRs.
 
-        If this issue is safe to close now please do so with `/close`.
+        This bot triages issues and PRs according to the following rules:
+        - After 90d of inactivity, `lifecycle/stale` is applied
+        - After 30d of inactivity since `lifecycle/stale` was applied, `lifecycle/rotten` is applied
+        - After 30d of inactivity since `lifecycle/rotten` was applied, the issue is closed
 
-        Send feedback to sig-contributor-experience at [kubernetes/community](https://github.com/kubernetes/community).
+        You can:
+        - Mark this issue or PR as fresh with `/remove-lifecycle stale`
+        - Mark this issue or PR as rotten with `/lifecycle rotten`
+        - Close this issue or PR with `/close`
+        - Offer to help out with [Issue Triage][1]
+
+        Please send feedback to sig-contributor-experience at [kubernetes/community](https://github.com/kubernetes/community).
+
         /lifecycle stale
+
+        [1]: https://www.kubernetes.dev/docs/guide/issue-triage/
       - --template
       - --ceiling=10
       - --confirm
