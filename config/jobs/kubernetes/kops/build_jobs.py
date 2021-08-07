@@ -471,7 +471,7 @@ def generate_misc():
         build_test(name_override="kops-grid-scenario-aws-cloud-controller-manager",
                    cloud="aws",
                    distro="u2004",
-                   k8s_version="latest",
+                   k8s_version="ci",
                    runs_per_day=3,
                    extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws'],
                    extra_dashboards=['provider-aws-cloud-provider-aws', 'kops-misc']),
@@ -480,7 +480,7 @@ def generate_misc():
         build_test(name_override="kops-grid-scenario-aws-cloud-controller-manager-irsa",
                    cloud="aws",
                    distro="u2004",
-                   k8s_version="latest",
+                   k8s_version="ci",
                    runs_per_day=3,
                    feature_flags=["UseServiceAccountIAM"], # pylint: disable=line-too-long
                    extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws',
@@ -502,7 +502,7 @@ def generate_misc():
                    extra_dashboards=["kops-misc"]),
 
         build_test(name_override="kops-aws-misc-arm64-release",
-                   k8s_version="latest",
+                   k8s_version="ci",
                    distro="u2004arm64",
                    networking="calico",
                    kops_channel="alpha",
@@ -877,7 +877,7 @@ def generate_presubmits_e2e():
             name="pull-kops-e2e-aws-cloud-controller-manager",
             cloud="aws",
             distro="u2004",
-            k8s_version="latest",
+            k8s_version="ci",
             extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws'],
             tab_name='e2e-ccm',
         ),
@@ -887,7 +887,7 @@ def generate_presubmits_e2e():
             name="pull-kops-e2e-aws-cloud-controller-manager-irsa",
             cloud="aws",
             distro="u2004",
-            k8s_version="latest",
+            k8s_version="ci",
             feature_flags=["UseServiceAccountIAM"],
             extra_flags=[
                 '--override=cluster.spec.cloudControllerManager.cloudProvider=aws',
@@ -900,7 +900,7 @@ def generate_presubmits_e2e():
             name="pull-kops-e2e-aws-irsa",
             cloud="aws",
             distro="u2004",
-            k8s_version="latest",
+            k8s_version="ci",
             feature_flags=["UseServiceAccountIAM"],
             extra_flags=[
                 '--override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/pull-aws-irsa/discovery', # pylint: disable=line-too-long
