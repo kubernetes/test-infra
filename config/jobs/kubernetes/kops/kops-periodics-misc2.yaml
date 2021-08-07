@@ -200,7 +200,7 @@ periodics:
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: google-aws, kops-distro-u2004, kops-ipv6, kops-k8s-ci, kops-kubetest2, kops-latest, kops-misc, sig-cluster-lifecycle-kops
-    testgrid-days-of-results: '89'
+    testgrid-days-of-results: '47'
     testgrid-tab-name: kops-grid-scenario-ipv6-calico
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--ipv6 --api-loadbalancer-type=public --api-loadbalancer-class=network --set=cluster.spec.api.loadBalancer.useForInternalApi=true --set=cluster.spec.cloudControllerManager.cloudProvider=aws --set=cluster.spec.cloudControllerManager.image=hakman/cloud-controller-manager:ipv6-1 --set=cluster.spec.nonMasqueradeCIDR=fd00:10:96::/64 --set=cluster.spec.kubeDNS.upstreamNameservers=2620:119:35::35 --set=cluster.spec.kubeDNS.upstreamNameservers=2620:119:53::53", "feature_flags": "AWSIPv6", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
@@ -660,7 +660,7 @@ periodics:
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-kubetest2, kops-latest, kops-misc, sig-cluster-lifecycle-kops
-    testgrid-days-of-results: '90'
+    testgrid-days-of-results: '71'
     testgrid-tab-name: kops-aws-misc-ha-euwest1
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004arm64", "extra_flags": "--zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
@@ -994,7 +994,7 @@ periodics:
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-kubetest2, kops-latest, kops-misc, sig-cluster-lifecycle-kops
-    testgrid-days-of-results: '44'
+    testgrid-days-of-results: '23'
     testgrid-tab-name: kops-aws-misc-updown
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004arm64", "extra_flags": "--zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large", "k8s_version": "latest", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
