@@ -51,7 +51,7 @@ periodics:
         fi
   annotations:
     testgrid-create-test-group: "true"
-    testgrid-alert-email: kubernetes-security-tooling-private@googlegroups.com
+    testgrid-alert-email: security-tooling-private@kubernetes.io
     testgrid-num-failures-to-alert: '1'
     testgrid-dashboards: sig-security-snyk-scan
     description: Run snyk scan on k/k master periodically
