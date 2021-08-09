@@ -46,6 +46,13 @@ To see common Prow usage and interactions flow, see the pull request interaction
 - ["Life of a Prow Job"](/prow/life_of_a_prow_job.md)
 - [Getting more out of Prow](/prow/more_prow.md)
 
+### Tests
+
+The stability of prow is heavily relying on unit tests and integration tests.
+
+* Unit tests are co-located with prow source code
+* [Integration tests](./test/integration) utilizes [kind](https://kind.sigs.k8s.io/) with hermetic integration tests. See [instructions for adding new integration tests](./test/integration#add-new-integration-tests) for more details
+
 ## Useful Talks
 
 ### KubeCon 2020 EU virtual
