@@ -812,6 +812,15 @@ dashboards:
     test_group_name: integ-ipv6-k8s-tests_istio
   - code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: integ-istiodremote-k8s-tests_istio'
+    name: integ-istiodremote-k8s-tests_istio
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    open_test_template:
+      url: https://prow.istio.io/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: integ-istiodremote-k8s-tests_istio
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: integ-multicluster-k8s-tests_istio'
     name: integ-multicluster-k8s-tests_istio
     open_bug_template:
@@ -1621,6 +1630,15 @@ dashboards:
     open_test_template:
       url: https://prow.istio.io/view/gs/<gcs_prefix>/<changelist>
     test_group_name: integ-ipv6-k8s-tests_istio_release-1.11
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: integ-istiodremote-k8s-tests_istio_release-1.11'
+    name: integ-istiodremote-k8s-tests_istio_release-1.11
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    open_test_template:
+      url: https://prow.istio.io/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: integ-istiodremote-k8s-tests_istio_release-1.11
   - code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: integ-multicluster-k8s-tests_istio_release-1.11'
@@ -9670,6 +9688,12 @@ test_groups:
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/integ-ipv6-k8s-tests_istio_release-1.9
   name: integ-ipv6-k8s-tests_istio_release-1.9
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/integ-istiodremote-k8s-tests_istio
+  name: integ-istiodremote-k8s-tests_istio
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/integ-istiodremote-k8s-tests_istio_release-1.11
+  name: integ-istiodremote-k8s-tests_istio_release-1.11
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/integ-mixer-k8s-tests_istio_release-1.7
   name: integ-mixer-k8s-tests_istio_release-1.7
