@@ -99,7 +99,6 @@ require (
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
 	k8s.io/code-generator v0.21.1
 	k8s.io/klog v1.0.0
-	k8s.io/klog/v2 v2.8.0
 	k8s.io/utils v0.0.0-20210527160623-6fdb442a123b
 	knative.dev/pkg v0.0.0-20200711004937-22502028e31a
 	mvdan.cc/xurls/v2 v2.0.0
