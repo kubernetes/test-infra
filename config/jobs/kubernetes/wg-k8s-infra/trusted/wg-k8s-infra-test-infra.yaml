@@ -95,6 +95,14 @@ periodics:
       # TODO: determine the optimal number of workers, 2*CPU-1 is an assumption
       - name: NUM_WORKERS
         value: "13"
+      - name: TRIAGE_DATASET_TABLE
+        value: "k8s-gubernator:temp.triage" # TODO: definitely don't have permission to write here, need our own bq dataset
+      - name: TRIAGE_TEMP_GCS_PATH
+        value: "gs://k8s-triage/triage_tests"
+      - name: TRIAGE_GCS_PATH
+        value: "gs://k8s-triage"
+      - name: TRIAGE_BQ_USAGE_PROJECT
+        value: "k8s-infra-prow-build-trusted"
       command:
       - timeout
       args:
