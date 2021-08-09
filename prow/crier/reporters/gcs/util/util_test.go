@@ -27,7 +27,7 @@ import (
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/crier/reporters/gcs/internal/testutil"
+	"k8s.io/test-infra/prow/crier/reporters/gcs/testutil"
 )
 
 func TestIsErrUnexpected(t *testing.T) {

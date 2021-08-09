@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -41,6 +42,8 @@ import (
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	pluginsflagutil "k8s.io/test-infra/prow/flagutil/plugins"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/io"
+	"k8s.io/test-infra/prow/plank"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -1587,11 +1590,30 @@ func TestValidate(t *testing.T) {
 	}
 }
 
+type fakeOpener struct {
+	io.Opener
+	content   string
+	readError error
+}
+
+func (fo *fakeOpener) Reader(ctx context.Context, path string) (io.ReadCloser, error) {
+	if fo.readError != nil {
+		return nil, fo.readError
+	}
+	return ioutil.NopCloser(strings.NewReader(fo.content)), nil
+}
+
+func (fo *fakeOpener) Close() error {
+	return nil
+}
+
 func TestValidateClusterField(t *testing.T) {
 	testCases := []struct {
-		name          string
-		cfg           *config.Config
-		expectedError string
+		name              string
+		cfg               *config.Config
+		clusterStatusFile string
+		readError         error
+		expectedError     string
 	}{
 		{
 			name: "Jenkins job with unset cluster",
@@ -1659,12 +1681,81 @@ func TestValidateClusterField(t *testing.T) {
 								},
 							}}}}},
 		},
+		{
+			name: "cluster validates with lone reachable default cluster",
+			cfg: &config.Config{
+				ProwConfig: config.ProwConfig{
+					Plank: config.Plank{BuildClusterStatusFile: "gs://my-bucket/build-cluster-status.json"},
+				},
+				JobConfig: config.JobConfig{
+					PresubmitsStatic: map[string][]config.Presubmit{
+						"org1/repo1": {
+							{
+								JobBase: config.JobBase{
+									Cluster: "default",
+								},
+							}}}}},
+			clusterStatusFile: fmt.Sprintf(`{"default": %q}`, plank.ClusterStatusReachable),
+		},
+		{
+			name: "cluster validates with multiple clusters, specified is reachable",
+			cfg: &config.Config{
+				ProwConfig: config.ProwConfig{
+					Plank: config.Plank{BuildClusterStatusFile: "gs://my-bucket/build-cluster-status.json"},
+				},
+				JobConfig: config.JobConfig{
+					PresubmitsStatic: map[string][]config.Presubmit{
+						"org1/repo1": {
+							{
+								JobBase: config.JobBase{
+									Cluster: "build1",
+								},
+							}}}}},
+			clusterStatusFile: fmt.Sprintf(`{"default": %q, "build1": %q, "build2": %q}`, plank.ClusterStatusReachable, plank.ClusterStatusReachable, plank.ClusterStatusUnreachable),
+		},
+		{
+			name: "cluster fails validation with multiple clusters, specified is unreachable",
+			cfg: &config.Config{
+				ProwConfig: config.ProwConfig{
+					Plank: config.Plank{BuildClusterStatusFile: "gs://my-bucket/build-cluster-status.json"},
+				},
+				JobConfig: config.JobConfig{
+					PresubmitsStatic: map[string][]config.Presubmit{
+						"org1/repo1": {
+							{
+								JobBase: config.JobBase{
+									Name:    "my-job",
+									Cluster: "build2",
+								},
+							}}}}},
+			clusterStatusFile: fmt.Sprintf(`{"default": %q, "build1": %q, "build2": %q}`, plank.ClusterStatusReachable, plank.ClusterStatusReachable, plank.ClusterStatusUnreachable),
+			expectedError:     "org1/repo1: job configuration for \"my-job\" specifies cluster \"build2\" which cannot be reached from Plank",
+		},
+		{
+			name: "cluster validation skipped if status file does not exist yet",
+			cfg: &config.Config{
+				ProwConfig: config.ProwConfig{
+					Plank: config.Plank{BuildClusterStatusFile: "gs://my-bucket/build-cluster-status.json"},
+				},
+				JobConfig: config.JobConfig{
+					PresubmitsStatic: map[string][]config.Presubmit{
+						"org1/repo1": {
+							{
+								JobBase: config.JobBase{
+									Cluster: "build1",
+								},
+							}}}}},
+			readError: os.ErrNotExist,
+		},
 	}
 
-	for _, tc := range testCases {
+	for i := range testCases {
+		tc := testCases[i]
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			opener := fakeOpener{content: tc.clusterStatusFile, readError: tc.readError}
 			errMsg := ""
-			if err := validateCluster(tc.cfg); err != nil {
+			if err := validateCluster(tc.cfg, &opener); err != nil {
 				errMsg = err.Error()
 			}
 			if errMsg != tc.expectedError {
