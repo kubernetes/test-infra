@@ -159,6 +159,12 @@ func (c *pubSubClient) new(ctx context.Context, project string) (pubsubClientInt
 func (c *pubSubClient) subscription(id string, maxOutstandingMessages int) subscriptionInterface {
 	sub := c.client.Subscription(id)
 	sub.ReceiveSettings.MaxOutstandingMessages = maxOutstandingMessages
+	// Without this setting, a single Receiver can occupy more than the number of `MaxOutstandingMessages`,
+	// and other replicas of sub will have nothing to work on.
+	// cjwagner and chaodaiG understand it might not make much sense to set both MaxOutstandingMessages
+	// and Synchronous, nor did the GoDoc https://github.com/googleapis/google-cloud-go/blob/22ffc18e522c0f943db57f8c943e7356067bedfd/pubsub/subscription.go#L501
+	// agrees clearly with us, but trust us, both are required for making sure that every replica has something to do
+	sub.ReceiveSettings.Synchronous = true
 	return &pubSubSubscription{
 		sub: sub,
 	}
