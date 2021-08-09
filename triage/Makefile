@@ -18,10 +18,10 @@ push:
 STATIC_FILES=index.html interactive.js model.js render.js style.css
 
 push-static:
-	gsutil -h 'Cache-Control: no-store, must-revalidate' -m cp -Z -a public-read $(STATIC_FILES) gs://k8s-triage/
+	gsutil -h 'Cache-Control: no-store, must-revalidate' -m cp $(STATIC_FILES) gs://k8s-triage/
 
 push-staging:
-	gsutil -h 'Cache-Control: no-store, must-revalidate' -m cp -Z -a public-read $(STATIC_FILES) gs://k8s-triage/staging/
+	gsutil -h 'Cache-Control: no-store, must-revalidate' -m cp $(STATIC_FILES) gs://k8s-triage/staging/
 
 redirect-static:
 	gsutil -h 'Cache-Control: no-store, must-revalidate' -m cp redirect/index.html gs://k8s-gubernator/triage/
