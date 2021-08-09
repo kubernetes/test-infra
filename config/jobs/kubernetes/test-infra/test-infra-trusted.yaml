@@ -8,7 +8,7 @@ postsubmits:
     max_concurrency: 1
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20210204-b06ec78-org
+      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20210806-38e1be0-org
         command:
         - bazel
         args:
@@ -179,7 +179,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20210707-0f9c540-test-infra
+      - image: gcr.io/k8s-testimages/bazelbuild:v20210806-7bef894-test-infra
         command:
         - prow/push.sh
     annotations:
@@ -615,7 +615,7 @@ postsubmits:
     spec:
       serviceAccountName: testgrid-config-updater
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20210707-0f9c540-test-infra
+      - image: gcr.io/k8s-testimages/bazelbuild:v20210806-7bef894-test-infra
         command:
         - ./testgrid/config-upload.sh
         resources:
@@ -637,7 +637,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20210707-0f9c540-test-infra
+      - image: gcr.io/k8s-testimages/bazelbuild:v20210806-7bef894-test-infra
         command:
         - ./boskos/update_prow_config.sh
     annotations:
@@ -752,7 +752,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20210707-0f9c540-test-infra
+    - image: gcr.io/k8s-testimages/bazelbuild:v20210806-7bef894-test-infra
       command:
       - hack/autodeps.sh
       args:
@@ -789,7 +789,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20210707-0f9c540-test-infra
+    - image: gcr.io/k8s-testimages/bazelbuild:v20210806-7bef894-test-infra
       command:
       - hack/autodeps.sh
       args:
@@ -933,7 +933,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20210204-b06ec78-test-infra
+    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20210806-38e1be0-test-infra
       command:
       - bazel
       args:

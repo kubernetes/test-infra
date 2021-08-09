@@ -14,7 +14,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-1.21
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-1.21
         command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
