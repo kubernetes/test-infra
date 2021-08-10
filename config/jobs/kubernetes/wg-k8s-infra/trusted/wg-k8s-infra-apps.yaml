@@ -24,7 +24,7 @@ postsubmits:
         testgrid-dashboards: wg-k8s-infra-apps
         testgrid-tab-name: deploy-gcsweb
         testgrid-description: 'runs https://git.k8s.io/k8s.io/apps/gcsweb/deploy.sh if files change in kubernetes/k8s.io/apps/gcsweb'
-        testgrid-alert-email: k8s-infra-rbac-gcswebk8s-infra-alerts@kubernetes.io, k8s-infra-alerts@kubernetes.io
+        testgrid-alert-email: k8s-infra-rbac-gcsweb@kubernetes.io, k8s-infra-alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
       rerun_auth_config:
         github_team_slugs:
@@ -65,7 +65,7 @@ postsubmits:
         testgrid-dashboards: wg-k8s-infra-apps
         testgrid-tab-name: deploy-k8s-io
         testgrid-description: 'runs https://git.k8s.io/k8s.io/apps/k8s-io/deploy.sh if files change in kubernetes/k8s.io/apps/k8s-io'
-        testgrid-alert-email: k8s-infra-rbac-k8s-iok8s-infra-alerts@kubernetes.io, k8s-infra-alerts@kubernetes.io
+        testgrid-alert-email: k8s-infra-rbac-k8s-io@kubernetes.io, k8s-infra-alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
       rerun_auth_config:
         github_team_slugs:
@@ -106,7 +106,7 @@ postsubmits:
         testgrid-dashboards: wg-k8s-infra-apps
         testgrid-tab-name: deploy-kubernetes-external-secrets
         testgrid-description: 'runs https://git.k8s.io/k8s.io/apps/kubernetes-external-secrets/deploy.sh if files change in kubernetes/k8s.io/apps/kubernetes-external-secrets'
-        testgrid-alert-email: k8s-infra-rbac-kubernetes-external-secretsk8s-infra-alerts@kubernetes.io, k8s-infra-alerts@kubernetes.io
+        testgrid-alert-email: k8s-infra-rbac-kubernetes-external-secrets@kubernetes.io, k8s-infra-alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
       rerun_auth_config:
         github_team_slugs:
@@ -147,7 +147,7 @@ postsubmits:
         testgrid-dashboards: wg-k8s-infra-apps
         testgrid-tab-name: deploy-perfdash
         testgrid-description: 'runs https://git.k8s.io/k8s.io/apps/perfdash/deploy.sh if files change in kubernetes/k8s.io/apps/perfdash'
-        testgrid-alert-email: k8s-infra-rbac-perfdashk8s-infra-alerts@kubernetes.io, k8s-infra-alerts@kubernetes.io
+        testgrid-alert-email: k8s-infra-rbac-perfdash@kubernetes.io, k8s-infra-alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
       rerun_auth_config:
         github_team_slugs:
@@ -188,7 +188,7 @@ postsubmits:
         testgrid-dashboards: wg-k8s-infra-apps
         testgrid-tab-name: deploy-prow
         testgrid-description: 'runs https://git.k8s.io/k8s.io/apps/prow/deploy.sh if files change in kubernetes/k8s.io/apps/prow'
-        testgrid-alert-email: k8s-infra-rbac-prowk8s-infra-alerts@kubernetes.io, k8s-infra-alerts@kubernetes.io
+        testgrid-alert-email: k8s-infra-rbac-prow@kubernetes.io, k8s-infra-alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
       rerun_auth_config:
         github_team_slugs:
@@ -229,7 +229,7 @@ postsubmits:
         testgrid-dashboards: wg-k8s-infra-apps
         testgrid-tab-name: deploy-publishing-bot
         testgrid-description: 'runs https://git.k8s.io/k8s.io/apps/publishing-bot/deploy.sh if files change in kubernetes/k8s.io/apps/publishing-bot'
-        testgrid-alert-email: k8s-infra-rbac-publishing-botk8s-infra-alerts@kubernetes.io, k8s-infra-alerts@kubernetes.io
+        testgrid-alert-email: k8s-infra-rbac-publishing-bot@kubernetes.io, k8s-infra-alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
       rerun_auth_config:
         github_team_slugs:
@@ -270,7 +270,7 @@ postsubmits:
         testgrid-dashboards: wg-k8s-infra-apps
         testgrid-tab-name: deploy-sippy
         testgrid-description: 'runs https://git.k8s.io/k8s.io/apps/sippy/deploy.sh if files change in kubernetes/k8s.io/apps/sippy'
-        testgrid-alert-email: k8s-infra-rbac-sippyk8s-infra-alerts@kubernetes.io, k8s-infra-alerts@kubernetes.io
+        testgrid-alert-email: k8s-infra-rbac-sippy@kubernetes.io, k8s-infra-alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
       rerun_auth_config:
         github_team_slugs:
@@ -311,7 +311,7 @@ postsubmits:
         testgrid-dashboards: wg-k8s-infra-apps
         testgrid-tab-name: deploy-slack-infra
         testgrid-description: 'runs https://git.k8s.io/k8s.io/apps/slack-infra/deploy.sh if files change in kubernetes/k8s.io/apps/slack-infra'
-        testgrid-alert-email: k8s-infra-rbac-slack-infrak8s-infra-alerts@kubernetes.io, k8s-infra-alerts@kubernetes.io
+        testgrid-alert-email: k8s-infra-rbac-slack-infra@kubernetes.io, k8s-infra-alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
       rerun_auth_config:
         github_team_slugs:
@@ -352,7 +352,7 @@ postsubmits:
         testgrid-dashboards: wg-k8s-infra-apps
         testgrid-tab-name: deploy-triageparty-release
         testgrid-description: 'runs https://git.k8s.io/k8s.io/apps/triageparty-release/deploy.sh if files change in kubernetes/k8s.io/apps/triageparty-release'
-        testgrid-alert-email: k8s-infra-rbac-triageparty-releasek8s-infra-alerts@kubernetes.io, k8s-infra-alerts@kubernetes.io
+        testgrid-alert-email: k8s-infra-rbac-triageparty-release@kubernetes.io, k8s-infra-alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
       rerun_auth_config:
         github_team_slugs:
