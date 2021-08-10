@@ -35,6 +35,7 @@ import (
 
 	"github.com/go-test/deep"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	fuzz "github.com/google/gofuzz"
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
@@ -2111,6 +2112,7 @@ func TestSync(t *testing.T) {
 				SuccessPRs: []PullRequest{mergeableA},
 				Action:     Merge,
 				Target:     []PullRequest{mergeableA},
+				TenantIDs:  []string{},
 			}},
 		},
 		{
@@ -2128,6 +2130,7 @@ func TestSync(t *testing.T) {
 				SuccessPRs: []PullRequest{unknownA},
 				Action:     Merge,
 				Target:     []PullRequest{unknownA},
+				TenantIDs:  []string{},
 			}},
 		},
 		{
@@ -2140,6 +2143,7 @@ func TestSync(t *testing.T) {
 				SuccessPRs: []PullRequest{mergeableA},
 				Action:     Merge,
 				Target:     []PullRequest{mergeableA},
+				TenantIDs:  []string{},
 			}},
 		},
 		{
@@ -2152,6 +2156,7 @@ func TestSync(t *testing.T) {
 				SuccessPRs: []PullRequest{mergeableA},
 				Action:     Merge,
 				Target:     []PullRequest{mergeableA},
+				TenantIDs:  []string{},
 			}},
 		},
 		{
@@ -2164,6 +2169,7 @@ func TestSync(t *testing.T) {
 				SuccessPRs: []PullRequest{mergeableA},
 				Action:     Merge,
 				Target:     []PullRequest{mergeableA},
+				TenantIDs:  []string{},
 			}},
 		},
 	}
@@ -4502,5 +4508,130 @@ func TestPickBatchPrefersBatchesWithPreexistingJobs(t *testing.T) {
 			}
 		})
 
+	}
+}
+
+func TestTenantIDs(t *testing.T) {
+	tests := []struct {
+		name     string
+		pjs      []prowapi.ProwJob
+		expected []string
+	}{
+		{
+			name:     "no PJs",
+			pjs:      []prowapi.ProwJob{},
+			expected: []string{},
+		},
+		{
+			name: "one PJ",
+			pjs: []prowapi.ProwJob{
+				{
+					Spec: prowapi.ProwJobSpec{
+						ProwJobDefault: &prowapi.ProwJobDefault{
+							TenantID: "test",
+						},
+					},
+				},
+			},
+			expected: []string{"test"},
+		},
+		{
+			name: "multiple PJs with same ID",
+			pjs: []prowapi.ProwJob{
+				{
+					Spec: prowapi.ProwJobSpec{
+						ProwJobDefault: &prowapi.ProwJobDefault{
+							TenantID: "test",
+						},
+					},
+				},
+				{
+					Spec: prowapi.ProwJobSpec{
+						ProwJobDefault: &prowapi.ProwJobDefault{
+							TenantID: "test",
+						},
+					},
+				},
+			},
+			expected: []string{"test"},
+		},
+		{
+			name: "multiple PJs with different ID",
+			pjs: []prowapi.ProwJob{
+				{
+					Spec: prowapi.ProwJobSpec{
+						ProwJobDefault: &prowapi.ProwJobDefault{
+							TenantID: "test",
+						},
+					},
+				},
+				{
+					Spec: prowapi.ProwJobSpec{
+						ProwJobDefault: &prowapi.ProwJobDefault{
+							TenantID: "other",
+						},
+					},
+				},
+			},
+			expected: []string{"test", "other"},
+		},
+		{
+			name: "no tenantID in prowJob",
+			pjs: []prowapi.ProwJob{
+				{
+					Spec: prowapi.ProwJobSpec{
+						ProwJobDefault: &prowapi.ProwJobDefault{
+							TenantID: "test",
+						},
+					},
+				},
+				{
+					Spec: prowapi.ProwJobSpec{
+						ProwJobDefault: &prowapi.ProwJobDefault{},
+					},
+				},
+			},
+			expected: []string{"test", ""},
+		},
+		{
+			name: "no pjDefault in prowJob",
+			pjs: []prowapi.ProwJob{
+				{
+					Spec: prowapi.ProwJobSpec{
+						ProwJobDefault: &prowapi.ProwJobDefault{
+							TenantID: "test",
+						},
+					},
+				},
+				{
+					Spec: prowapi.ProwJobSpec{},
+				},
+			},
+			expected: []string{"test", ""},
+		},
+		{
+			name: "multiple no tenant PJs",
+			pjs: []prowapi.ProwJob{
+				{
+					Spec: prowapi.ProwJobSpec{
+						ProwJobDefault: &prowapi.ProwJobDefault{
+							TenantID: "",
+						},
+					},
+				},
+				{
+					Spec: prowapi.ProwJobSpec{},
+				},
+			},
+			expected: []string{""},
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			sp := subpool{pjs: tc.pjs}
+			if diff := cmp.Diff(tc.expected, sp.TenantIDs(), cmpopts.SortSlices(func(x, y string) bool { return strings.Compare(x, y) > 0 })); diff != "" {
+				t.Errorf("expected tenantIDs differ from actual: %s", diff)
+			}
+		})
 	}
 }
