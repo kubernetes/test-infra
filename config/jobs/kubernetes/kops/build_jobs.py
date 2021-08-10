@@ -413,7 +413,6 @@ def generate_misc():
                    distro="u2004",
                    k8s_version="ci",
                    networking="calico",
-                   feature_flags=["AWSIPv6,UseServiceAccountIAM"],
                    runs_per_day=12,
                    extra_flags=['--ipv6',
                                 '--api-loadbalancer-type=public',
@@ -424,6 +423,7 @@ def generate_misc():
                                 '--set=cluster.spec.nonMasqueradeCIDR=fd00:10:96::/64',
                                 '--set=cluster.spec.kubeDNS.upstreamNameservers=2620:119:35::35',
                                 '--set=cluster.spec.kubeDNS.upstreamNameservers=2620:119:53::53',
+                                '--set=cluster.spec.iam.useServiceAccountExternalPermissions=true',
                                 ],
                    extra_dashboards=['kops-misc', 'kops-ipv6']),
         # A special test for IPv6 using Cilium CNI
@@ -450,11 +450,11 @@ def generate_misc():
         build_test(name_override="kops-grid-scenario-service-account-iam",
                    cloud="aws",
                    distro="u2004",
-                   feature_flags=["UseServiceAccountIAM"],
                    runs_per_day=3,
                    extra_flags=['--api-loadbalancer-type=public',
                                 '--override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-dc69f71486-5831d.test-cncf-aws.k8s.io/discovery', # pylint: disable=line-too-long
                                 '--override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true', # pylint: disable=line-too-long
+                                '--override=cluster.spec.iam.useServiceAccountExternalPermissions=true',
                                 ],
                    extra_dashboards=['kops-misc']),
 
@@ -482,10 +482,10 @@ def generate_misc():
                    distro="u2004",
                    k8s_version="ci",
                    runs_per_day=3,
-                   feature_flags=["UseServiceAccountIAM"], # pylint: disable=line-too-long
                    extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws',
                                 '--override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/kops-grid-scenario-aws-cloud-controller-manager-irsa/discovery', # pylint: disable=line-too-long
-                                '--override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true'], # pylint: disable=line-too-long
+                                '--override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true', # pylint: disable=line-too-long
+                '--override=cluster.spec.iam.useServiceAccountExternalPermissions=true'],
                    extra_dashboards=['provider-aws-cloud-provider-aws', 'kops-misc']),
 
         build_test(name_override="kops-grid-scenario-terraform",
@@ -905,8 +905,8 @@ def generate_presubmits_e2e():
             cloud="aws",
             distro="u2004",
             k8s_version="ci",
-            feature_flags=["UseServiceAccountIAM"],
             extra_flags=[
+                '--override=cluster.spec.iam.useServiceAccountExternalPermissions=true',
                 '--override=cluster.spec.cloudControllerManager.cloudProvider=aws',
                 '--override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/kops-grid-scenario-aws-cloud-controller-manager-irsa/discovery', # pylint: disable=line-too-long
                 '--override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true'], # pylint: disable=line-too-long
@@ -918,8 +918,8 @@ def generate_presubmits_e2e():
             cloud="aws",
             distro="u2004",
             k8s_version="ci",
-            feature_flags=["UseServiceAccountIAM"],
             extra_flags=[
+                '--override=cluster.spec.iam.useServiceAccountExternalPermissions=true',
                 '--override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/pull-aws-irsa/discovery', # pylint: disable=line-too-long
                 '--override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true'], # pylint: disable=line-too-long
         ),
