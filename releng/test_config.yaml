@@ -151,7 +151,7 @@ jobs:
     - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
     - --runtime-config=api/all=true
     - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking
-      --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
+      --ginkgo.skip=Networking-Performance|IPv6|Feature:(Volumes|SCTPConnectivity) --minStartupPods=8
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
 
