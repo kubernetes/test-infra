@@ -1175,7 +1175,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-aws-ebs-csi-driver
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "latest", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--override=cluster.spec.iam.useServiceAccountExternalPermissions=true", "k8s_version": "latest", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
 - name: e2e-kops-aws-aws-ebs-csi-driver-irsa
   cron: '22 1-23/8 * * *'
   labels:
@@ -1225,6 +1225,7 @@ periodics:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/extra_flags: --override=cluster.spec.iam.useServiceAccountExternalPermissions=true
     test.kops.k8s.io/k8s_version: latest
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''

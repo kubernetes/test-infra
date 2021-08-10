@@ -454,7 +454,7 @@ def generate_misc():
                    extra_flags=['--api-loadbalancer-type=public',
                                 '--override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-dc69f71486-5831d.test-cncf-aws.k8s.io/discovery', # pylint: disable=line-too-long
                                 '--override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true', # pylint: disable=line-too-long
-                                '--override=cluster.spec.iam.useServiceAccountExternalPermissions=true',
+                                '--override=cluster.spec.iam.useServiceAccountExternalPermissions=true' # pylint: disable=line-too-long
                                 ],
                    extra_dashboards=['kops-misc']),
 
@@ -485,7 +485,8 @@ def generate_misc():
                    extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws',
                                 '--override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/kops-grid-scenario-aws-cloud-controller-manager-irsa/discovery', # pylint: disable=line-too-long
                                 '--override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true', # pylint: disable=line-too-long
-                '--override=cluster.spec.iam.useServiceAccountExternalPermissions=true'],
+                                '--override=cluster.spec.iam.useServiceAccountExternalPermissions=true'], # pylint: disable=line-too-long
+
                    extra_dashboards=['provider-aws-cloud-provider-aws', 'kops-misc']),
 
         build_test(name_override="kops-grid-scenario-terraform",
@@ -598,6 +599,7 @@ def generate_misc():
                    runs_per_day=3,
                    scenario="aws-ebs-csi",
                    env={'KOPS_IRSA': 'true'},
+                   extra_flags=["--override=cluster.spec.iam.useServiceAccountExternalPermissions=true"], # pylint: disable=line-too-long
                    extra_dashboards=['kops-misc']),
 
         build_test(name_override="kops-aws-aws-load-balancer-controller",
@@ -951,6 +953,16 @@ def generate_presubmits_e2e():
             distro="u2004",
             k8s_version="ci",
             networking="calico",
+            scenario="aws-ebs-csi",
+        ),
+
+        presubmit_test(
+            name="pull-kops-e2e-aws-ebs-csi-driver-irsa",
+            cloud="aws",
+            distro="u2004",
+            k8s_version="ci",
+            networking="calico",
+            extra_flags=['--override=cluster.spec.iam.useServiceAccountExternalPermissions=true'], # pylint: disable=line-too-long
             scenario="aws-ebs-csi",
         ),
 
