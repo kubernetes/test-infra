@@ -118,7 +118,7 @@ func main() {
 		logrus.WithError(err).Fatal("failed to load prow config")
 	}
 
-	configs, err := kube.LoadClusterConfigs(o.kubeconfig, "")
+	configs, err := kube.LoadClusterConfigs(kube.NewConfig(kube.ConfigFile(o.kubeconfig)))
 	if err != nil {
 		logrus.WithError(err).Fatal("Error building client configs")
 	}

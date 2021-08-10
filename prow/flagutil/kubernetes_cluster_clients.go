@@ -53,6 +53,7 @@ func init() {
 // on build clusters.
 type KubernetesOptions struct {
 	kubeconfig         string
+	kubeconfigDir      string
 	projectedTokenFile string
 
 	DeckURI string
@@ -88,6 +89,13 @@ func (o *KubernetesOptions) AddKubeconfigChangeCallback(callback func()) error {
 			err = watcher.Add(o.kubeconfig)
 			if err != nil {
 				err = fmt.Errorf("failed to watch %s: %w", o.kubeconfig, err)
+				return
+			}
+		}
+		if o.kubeconfigDir != "" {
+			err = watcher.Add(o.kubeconfigDir)
+			if err != nil {
+				err = fmt.Errorf("failed to watch %s: %w", o.kubeconfigDir, err)
 				return
 			}
 		}
@@ -131,7 +139,8 @@ func (o *KubernetesOptions) AddKubeconfigChangeCallback(callback func()) error {
 
 // AddFlags injects Kubernetes options into the given FlagSet.
 func (o *KubernetesOptions) AddFlags(fs *flag.FlagSet) {
-	fs.StringVar(&o.kubeconfig, "kubeconfig", "", "Path to .kube/config file. If empty, uses the local cluster. All contexts other than the default are used as build clusters.")
+	fs.StringVar(&o.kubeconfig, "kubeconfig", "", "Path to .kube/config file. If neither of --kubeconfig and --kubeconfig-dir is provided, use the in-cluster config. All contexts other than the default are used as build clusters.")
+	fs.StringVar(&o.kubeconfigDir, "kubeconfig-dir", "", "Path to the directory containing kubeconfig files. If neither of --kubeconfig and --kubeconfig-dir is provided, use the in-cluster config. All contexts other than the default are used as build clusters.")
 	fs.StringVar(&o.DeckURI, "deck-url", "", "Deck URI for read-only access to the infrastructure cluster.")
 	fs.StringVar(&o.projectedTokenFile, "projected-token-file", "", "A projected serviceaccount token file. If set, this will be configured as token file in the in-cluster config.")
 }
@@ -154,6 +163,14 @@ func (o *KubernetesOptions) Validate(dryRun bool) error {
 		}
 	}
 
+	if o.kubeconfigDir != "" {
+		if fileInfo, err := os.Stat(o.kubeconfigDir); err != nil {
+			return fmt.Errorf("error accessing --kubeconfig-dir: %v", err)
+		} else if !fileInfo.IsDir() {
+			return fmt.Errorf("--kubeconfig-dir must be a directory")
+		}
+	}
+
 	return nil
 }
 
@@ -165,7 +182,8 @@ func (o *KubernetesOptions) resolve(dryRun bool) error {
 
 	o.kubeconfigWach = &sync.Once{}
 
-	clusterConfigs, err := kube.LoadClusterConfigs(o.kubeconfig, o.projectedTokenFile)
+	clusterConfigs, err := kube.LoadClusterConfigs(kube.NewConfig(kube.ConfigFile(o.kubeconfig),
+		kube.ConfigDir(o.kubeconfigDir), kube.ConfigProjectedTokenFile(o.projectedTokenFile)))
 	if err != nil {
 		return fmt.Errorf("load --kubeconfig=%q configs: %v", o.kubeconfig, err)
 	}
