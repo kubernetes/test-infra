@@ -31,7 +31,6 @@ RUN apk update && apk add --no-cache \
 # Install gcloud
 ENV PATH=/google-cloud-sdk/bin:/workspace:${PATH} \
     CLOUDSDK_CORE_DISABLE_PROMPTS=1
-
 WORKDIR /workspace
 
 RUN wget -q https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz && \
