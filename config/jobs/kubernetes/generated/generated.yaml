@@ -497,7 +497,7 @@ periodics:
       - --env=KUBE_FEATURE_GATES=AllAlpha=true,CSIMigration=false
       - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
       - --runtime-config=api/all=true
-      - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:(Volumes|SCTPConnectivity) --minStartupPods=8
       env:
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-master
       resources:
