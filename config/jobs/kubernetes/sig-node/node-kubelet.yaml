@@ -452,7 +452,7 @@ periodics:
           - --node-test-args=--kubelet-flags="--exit-on-lock-contention --lock-file=/var/run/kubelet.lock"
           - --node-tests=true
           - --provider=gce
-          - --test_args=--nodes=1 --focus="\[NodeFeature:LockContention\]" --restart-kubelet=false
+          - --test_args=--nodes=1 --focus="\[NodeFeature:LockContention\]" --skip=""
         env:
           - name: GOPATH
             value: /go
