@@ -66,7 +66,7 @@ for app in "${APPS[@]}"; do
         testgrid-dashboards: wg-k8s-infra-apps
         testgrid-tab-name: deploy-${app}
         testgrid-description: 'runs https://git.k8s.io/k8s.io/apps/${app}/deploy.sh if files change in kubernetes/k8s.io/apps/${app}'
-        testgrid-alert-email: k8s-infra-rbac-${app}k8s-infra-alerts@kubernetes.io, k8s-infra-alerts@kubernetes.io
+        testgrid-alert-email: k8s-infra-rbac-${app}@kubernetes.io, k8s-infra-alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
       rerun_auth_config:
         github_team_slugs:
