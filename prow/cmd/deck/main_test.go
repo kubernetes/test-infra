@@ -277,7 +277,8 @@ func TestHandleProwJobs(t *testing.T) {
 			},
 		},
 	}
-	fakeJa := jobs.NewJobAgent(context.Background(), kc, false, true, map[string]jobs.PodLogClient{}, fca{}.Config)
+
+	fakeJa := jobs.NewJobAgent(context.Background(), kc, false, true, []string{}, map[string]jobs.PodLogClient{}, fca{}.Config)
 	fakeJa.Start()
 
 	handler := handleProwJobs(fakeJa, logrus.WithField("handler", "/prowjobs.js"))
