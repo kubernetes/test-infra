@@ -87,7 +87,7 @@ type PJListingClient interface {
 }
 
 // NewJobAgent is a JobAgent constructor.
-func NewJobAgent(ctx context.Context, pjLister PJListingClient, hiddenOnly, showHidden bool, plClients map[string]PodLogClient, cfg config.Getter) *JobAgent {
+func NewJobAgent(ctx context.Context, pjLister PJListingClient, hiddenOnly, showHidden bool, tenantIDs []string, plClients map[string]PodLogClient, cfg config.Getter) *JobAgent {
 	return &JobAgent{
 		kc: &filteringProwJobLister{
 			ctx:         ctx,
@@ -95,6 +95,7 @@ func NewJobAgent(ctx context.Context, pjLister PJListingClient, hiddenOnly, show
 			hiddenRepos: func() sets.String { return sets.NewString(cfg().Deck.HiddenRepos...) },
 			hiddenOnly:  hiddenOnly,
 			showHidden:  showHidden,
+			tenantIDs:   tenantIDs,
 			cfg:         cfg,
 		},
 		pkcs:   plClients,
@@ -109,6 +110,19 @@ type filteringProwJobLister struct {
 	hiddenRepos func() sets.String
 	hiddenOnly  bool
 	showHidden  bool
+	tenantIDs   []string
+}
+
+func (c *filteringProwJobLister) TenantIDMatch(pj prowapi.ProwJob) bool {
+	if pj.Spec.ProwJobDefault == nil {
+		return false
+	}
+	for _, id := range c.tenantIDs {
+		if id == pj.Spec.ProwJobDefault.TenantID {
+			return true
+		}
+	}
+	return false
 }
 
 func (c *filteringProwJobLister) ListProwJobs(selector string) ([]prowapi.ProwJob, error) {
@@ -124,13 +138,19 @@ func (c *filteringProwJobLister) ListProwJobs(selector string) ([]prowapi.ProwJo
 
 	var filtered []prowapi.ProwJob
 	for _, item := range prowJobList.Items {
-		shouldHide := item.Spec.Hidden || c.pjHasHiddenRefs(item)
-		if shouldHide && c.showHidden {
+		if len(c.tenantIDs) != 0 && c.TenantIDMatch(item) {
+			// Deck has tenantID and it matches Prowjob
 			filtered = append(filtered, item)
-		} else if shouldHide == c.hiddenOnly {
-			// this is a hidden job, show it if we're asked
-			// to only show hidden jobs otherwise hide it
-			filtered = append(filtered, item)
+		} else if len(c.tenantIDs) == 0 {
+			// Deck has no tenantID
+			shouldHide := item.Spec.Hidden || c.pjHasHiddenRefs(item)
+			if shouldHide && (c.showHidden || c.hiddenOnly) {
+				// If Hidden and we are showing Hidden we add it
+				filtered = append(filtered, item)
+			} else if !shouldHide && !c.hiddenOnly && (item.Spec.ProwJobDefault == nil || item.Spec.ProwJobDefault.TenantID == "") {
+				// If not Hidden then show if not hiddenOnly OR if no tenantID
+				filtered = append(filtered, item)
+			}
 		}
 	}
 
