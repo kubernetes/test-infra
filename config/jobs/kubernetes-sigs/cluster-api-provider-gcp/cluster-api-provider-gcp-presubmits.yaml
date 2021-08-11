@@ -206,11 +206,6 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 3h
-    extra_refs:
-    - org: kubernetes-sigs
-      repo: image-builder
-      base_ref: master
-      path_alias: "sigs.k8s.io/image-builder"
     spec:
       containers:
         - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-master
