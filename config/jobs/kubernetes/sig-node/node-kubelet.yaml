@@ -241,8 +241,10 @@ periodics:
           cpu: 4
           memory: 6Gi
   annotations:
-    testgrid-dashboards: sig-node-kubelet
+    testgrid-dashboards: sig-release-master-informing, sig-node-kubelet, sig-node-release-blocking
     testgrid-tab-name: node-kubelet-serial-containerd
+    testgrid-alert-email: kubernetes-sig-node+testgrid@googlegroups.com,kubernetes-sig-node-test-failures@googlegroups.com
+    description: "Uses kubetest to run serial node-e2e tests (+Serial, -Flaky|Benchmark|Node*Feature)"
 
 - name: ci-kubernetes-node-kubelet-eviction
   interval: 4h30m
