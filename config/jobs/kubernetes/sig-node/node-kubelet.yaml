@@ -81,6 +81,7 @@ periodics:
     fork-per-release: "true"
     testgrid-dashboards: sig-node-kubelet, sig-release-master-informing
     testgrid-tab-name: node-kubelet-features-master
+    testgrid-alert-email: kubernetes-sig-node+testgrid@googlegroups.com,kubernetes-sig-node-test-failures@googlegroups.com
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-master
