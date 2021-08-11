@@ -76,6 +76,8 @@ This will find and start the periodic job ```my-periodic-job```, and add / overw
 annotations and envs to the Prow job. The ```prow.k8s.io/pubsub.*``` annotations are
 used to publish job status.
 
+_Note: periodic jobs always clone source code from ref instead of specific SHA, if it's desired to trigger a prowjob on specific SHA you can use [postsubmit job](#postsubmit-prow-jobs)_
+
 #### Presubmit Prow Jobs
 
 Triggering presubmit job is similar to periodic jobs. Two things to change:
