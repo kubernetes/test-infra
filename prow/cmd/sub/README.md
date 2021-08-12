@@ -54,7 +54,7 @@ More information at https://cloud.google.com/pubsub/docs/access-control.
 When creating your Pub/Sub message, add an attributes with key ```prow.k8s.io/pubsub.EventType```
 and value ```prow.k8s.io/pubsub.PeriodicProwJobEvent```, and a payload like so:
 
-```json
+```yaml
 {
   "name":"my-periodic-job",
   "envs":{
@@ -65,8 +65,12 @@ and value ```prow.k8s.io/pubsub.PeriodicProwJobEvent```, and a payload like so:
     "myLabel":"myValue",
   },
   "annotations":{
+    # GCP project where prowjobs statues are published by prow. Must also provide "prow.k8s.io/pubsub.topic" to take effect.
+    # It's highly recommended to configure this even if prowjobs are monitorings by other means, since this is also where errors are
+    # reported when the job failed to be triggered
     "prow.k8s.io/pubsub.project":"myProject",
     "prow.k8s.io/pubsub.runID":"asdfasdfasdf",
+    # GCP pubsub topic where prowjobs statues are published by prow, must be a different topic from where this payload is published to
     "prow.k8s.io/pubsub.topic":"myTopic"
   }
 }
@@ -86,9 +90,9 @@ Triggering presubmit job is similar to periodic jobs. Two things to change:
 ```prow.k8s.io/pubsub.PeriodicProwJobEvent```, replace the value with ```prow.k8s.io/pubsub.PresubmitProwJobEvent```
 - requires setting `refs` instructing presubmit jobs how to clone source code:
 
-```json
+```yaml
 {
-  // Common fields as above
+  # Common fields as above
   "name":"my-presubmit-job",
   "envs":{...},
   "labels":{...},
@@ -121,9 +125,9 @@ Triggering presubmit job is similar to periodic jobs. Two things to change:
 ```prow.k8s.io/pubsub.PeriodicProwJobEvent```, replace the value with ```prow.k8s.io/pubsub.PostsubmitProwJobEvent```
 - requires setting `refs` instructing postsubmit jobs how to clone source code:
 
-```json
+```yaml
 {
-  // Common fields as above
+  # Common fields as above
   "name":"my-postsubmit-job",
   "envs":{...},
   "labels":{...},
