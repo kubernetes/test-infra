@@ -629,6 +629,16 @@ def generate_misc():
                    scenario="keypair-rotation",
                    extra_dashboards=['kops-misc']),
 
+        build_test(name_override="kops-aws-metrics-server",
+                   cloud="aws",
+                   networking="cilium",
+                   distro="u2004",
+                   kops_channel="alpha",
+                   runs_per_day=3,
+                   scenario="metrics-server",
+                   extra_dashboards=['kops-misc']),
+
+
     ]
     return results
 
@@ -984,6 +994,16 @@ def generate_presubmits_e2e():
             networking="calico",
             scenario="addon-resource-tracking",
             tab_name="pull-kops-e2e-aws-addon-resource-tracking",
+        ),
+
+        presubmit_test(
+            name="pull-e2e-kops-metrics-server",
+            cloud="aws",
+            distro="u2004",
+            k8s_version="ci",
+            networking="calico",
+            scenario="metrics-server",
+            tab_name="pull-kops-e2e-aws-metrics-server",
         ),
 
     ]
