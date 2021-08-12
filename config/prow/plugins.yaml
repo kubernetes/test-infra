@@ -401,10 +401,6 @@ repo_milestone:
     maintainers_id: 2978501
     maintainers_team: cluster-api-provider-digitalocean-maintainers
     maintainers_friendly_name: Cluster API Provider DigitalOcean Maintainers
-  kubernetes-sigs/cluster-api-provider-docker:
-    maintainers_id: 3297612
-    maintainers_team: cluster-api-provider-docker-maintainers
-    maintainers_friendly_name: Cluster API Provider Docker Maintainers
   kubernetes-sigs/cluster-api-provider-gcp:
     maintainers_id: 2829767
     maintainers_team: cluster-api-provider-gcp-maintainers
@@ -1049,10 +1045,6 @@ plugins:
     - milestonestatus
     - release-note
     - require-matching-label
-
-  kubernetes-sigs/cluster-api-provider-docker:
-    plugins:
-    - milestone
 
   kubernetes-sigs/cluster-api-provider-gcp:
     plugins:
