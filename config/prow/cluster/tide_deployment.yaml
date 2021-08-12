@@ -34,7 +34,7 @@ spec:
       serviceAccountName: tide
       containers:
       - name: tide
-        image: gcr.io/k8s-prow/tide:v20210812-912fbb99b5
+        image: gcr.io/k8s-prow/tide:v20210812-982f22264a
         args:
         - --dry-run=false
         - --github-endpoint=http://ghproxy
