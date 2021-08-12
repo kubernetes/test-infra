@@ -215,7 +215,7 @@ func (c *client) Endpoint() string {
 // https://bugzilla.readthedocs.io/en/latest/api/core/v1/bug.html#get-bug
 func (c *client) GetBug(id int) (*Bug, error) {
 	logger := c.logger.WithFields(logrus.Fields{methodField: "GetBug", "id": id})
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/rest/bug?id=%d", c.endpoint, id), nil)
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/rest/bug/%d", c.endpoint, id), nil)
 	if err != nil {
 		return nil, err
 	}

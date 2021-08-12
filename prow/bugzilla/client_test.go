@@ -76,12 +76,12 @@ func TestGetBug(t *testing.T) {
 			http.Error(w, "400 Bad Request", http.StatusBadRequest)
 			return
 		}
-		if !strings.HasPrefix(r.URL.Path, "/rest/bug") {
+		if !strings.HasPrefix(r.URL.Path, "/rest/bug/") {
 			t.Errorf("incorrect path to get a bug: %s", r.URL.Path)
 			http.Error(w, "400 Bad Request", http.StatusBadRequest)
 			return
 		}
-		if id, err := strconv.Atoi(r.URL.Query().Get("id")); err != nil {
+		if id, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/rest/bug/")); err != nil {
 			t.Errorf("malformed bug id: %s", r.URL.Path)
 			http.Error(w, "400 Bad Request", http.StatusBadRequest)
 			return
