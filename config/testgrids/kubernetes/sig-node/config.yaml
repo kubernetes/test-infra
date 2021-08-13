@@ -15,6 +15,7 @@ dashboard_groups:
     - sig-node-node-problem-detector
     - sig-node-security-profiles-operator
     - sig-node-cos
+    - sig-node-presubmits
 
 dashboards:
 - name: sig-node-containerd-io
@@ -98,6 +99,7 @@ dashboards:
     base_options: width=10
 
 - name: sig-node-cos
+- name: sig-node-presubmits
 
 test_groups:
 - name: ci-kubernetes-node-kubelet-alpha
