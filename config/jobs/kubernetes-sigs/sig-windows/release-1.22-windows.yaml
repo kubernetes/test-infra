@@ -54,3 +54,45 @@ periodics:
       resources: {}
       securityContext:
         privileged: true
+- name: ci-kubernetes-e2e-capz-azure-windows-dockershim-1-22
+  interval: 3h
+  path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+  always_run: false
+  optional: true
+  decorate: true
+  decoration_config:
+    timeout: 4h
+  max_concurrency: 5
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred-only: "true"
+  branches:
+  # The script this job runs is not in all branches.
+  - ^master$
+  spec:
+    containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-1.22
+        command:
+          - "runner.sh"
+          - "./scripts/ci-conformance.sh"
+        env:
+          - name: E2E_ARGS
+            value: "-kubetest.use-ci-artifacts"
+          - name: WINDOWS
+            value: "true"
+          # Windows isn't really conformance, we typically run at 4 to keep the time reasonable (~45 mins)
+          - name: CONFORMANCE_NODES
+            value: "4"
+          - name: "KUBERNETES_VERSION"
+            value: "latest-1.22"
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 2
+            memory: "9Gi"
+  annotations:
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-dashboards: sig-windows-1.22-release
+    testgrid-tab-name: capz-windows-dockershim-1.22
