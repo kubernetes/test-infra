@@ -1482,38 +1482,6 @@ presubmits:
     - release-1.21
     cluster: k8s-infra-prow-build
     decorate: true
-    labels:
-      preset-dind-enabled: "true"
-      preset-service-account: "true"
-    name: pull-kubernetes-dependencies-go-canary
-    path_alias: k8s.io/kubernetes
-    skip_report: true
-    spec:
-      containers:
-      - args:
-        - make
-        - verify
-        command:
-        - runner.sh
-        env:
-        - name: WHAT
-          value: external-dependencies-version vendor vendor-licenses
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-go-canary
-        name: main
-        resources:
-          limits:
-            cpu: "2"
-            memory: 1288490188800m
-          requests:
-            cpu: "2"
-            memory: 1288490188800m
-        securityContext:
-          privileged: true
-  - always_run: false
-    branches:
-    - release-1.21
-    cluster: k8s-infra-prow-build
-    decorate: true
     name: pull-kubernetes-files-remake
     path_alias: k8s.io/kubernetes
     run_if_changed: Makefile.generated_files|make-rules
@@ -1552,34 +1520,6 @@ presubmits:
         command:
         - runner.sh
         image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-1.21
-        name: ""
-        resources:
-          limits:
-            cpu: "6"
-            memory: 15Gi
-          requests:
-            cpu: "6"
-            memory: 15Gi
-        securityContext:
-          privileged: true
-  - always_run: false
-    branches:
-    - release-1.21
-    cluster: k8s-infra-prow-build
-    decorate: true
-    labels:
-      preset-dind-enabled: "true"
-      preset-service-account: "true"
-    name: pull-kubernetes-integration-go-canary
-    path_alias: k8s.io/kubernetes
-    skip_report: true
-    spec:
-      containers:
-      - args:
-        - ./hack/jenkins/test-dockerized.sh
-        command:
-        - runner.sh
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-go-canary
         name: ""
         resources:
           limits:
@@ -1682,46 +1622,6 @@ presubmits:
         - name: REPO_DIR
           value: /workspace/k8s.io/kubernetes
         image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-1.21
-        imagePullPolicy: Always
-        name: ""
-        resources:
-          limits:
-            cpu: "7"
-            memory: 12Gi
-          requests:
-            cpu: "7"
-            memory: 12Gi
-        securityContext:
-          privileged: true
-  - always_run: false
-    branches:
-    - release-1.21
-    cluster: k8s-infra-prow-build
-    decorate: true
-    labels:
-      preset-dind-enabled: "true"
-      preset-service-account: "true"
-    name: pull-kubernetes-verify-go-canary
-    path_alias: k8s.io/kubernetes
-    skip_report: true
-    spec:
-      containers:
-      - args:
-        - ./hack/jenkins/verify-dockerized.sh
-        command:
-        - runner.sh
-        env:
-        - name: EXCLUDE_TYPECHECK
-          value: "y"
-        - name: EXCLUDE_FILES_REMAKE
-          value: "y"
-        - name: EXCLUDE_GODEP
-          value: "y"
-        - name: KUBE_VERIFY_GIT_BRANCH
-          value: release-1.21
-        - name: REPO_DIR
-          value: /workspace/k8s.io/kubernetes
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-go-canary
         imagePullPolicy: Always
         name: ""
         resources:
