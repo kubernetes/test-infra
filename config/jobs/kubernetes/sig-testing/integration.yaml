@@ -36,7 +36,7 @@ presubmits:
   - name: pull-kubernetes-integration-go-canary
     cluster: k8s-infra-prow-build
     always_run: false
-    skip_report: true
+    skip_report: false
     decorate: true
     skip_branches:
     - release-\d+.\d+ # per-release job

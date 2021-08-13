@@ -52,7 +52,7 @@ presubmits:
       testgrid-create-test-group: 'true'
       testgrid-dashboards: sig-release-releng-informing, sig-testing-canaries
     always_run: false
-    skip_report: true
+    skip_report: false
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
