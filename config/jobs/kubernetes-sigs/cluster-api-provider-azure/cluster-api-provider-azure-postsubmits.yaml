@@ -1,6 +1,6 @@
 postsubmits:
   kubernetes-sigs/cluster-api-provider-azure:
-  - name: postsubmits-cluster-api-provider-azure-e2e-full-master
+  - name: postsubmits-cluster-api-provider-azure-e2e-full-main
     decorate: true
     decoration_config:
       timeout: 2h
@@ -11,7 +11,8 @@ postsubmits:
       preset-azure-anonymous-pull: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     branches:
-    - master
+      - ^master$
+      - ^main$
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-1.21
