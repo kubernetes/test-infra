@@ -8,6 +8,7 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^master$
+    - ^main$
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-1.21
@@ -25,6 +26,7 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^master$
+    - ^main$
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-1.21
@@ -49,6 +51,7 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^master$
+    - ^main$
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-1.21
@@ -81,6 +84,7 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^master$
+    - ^main$
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-1.21
@@ -114,6 +118,7 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^master$
+    - ^main$
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-1.21
@@ -147,6 +152,7 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^master$
+    - ^main$
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-1.21
@@ -181,6 +187,7 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^master$
+    - ^main$
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-1.21
@@ -208,6 +215,7 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^master$
+    - ^main$
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-1.21
@@ -236,6 +244,7 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^master$
+    - ^main$
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-1.21
@@ -268,6 +277,7 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^master$
+    - ^main$
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-1.21
@@ -306,6 +316,7 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^master$
+    - ^main$
     spec:
       containers:
         - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-1.21
@@ -339,6 +350,7 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^master$
+    - ^main$
     spec:
       containers:
         - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-1.21
@@ -372,6 +384,7 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^master$
+    - ^main$
     spec:
       containers:
       - command:
@@ -394,6 +407,7 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^master$
+    - ^main$
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-1.21
