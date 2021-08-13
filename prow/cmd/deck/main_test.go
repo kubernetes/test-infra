@@ -81,6 +81,8 @@ func (ca fca) Config() *config.Config {
 }
 
 func TestOptions_Validate(t *testing.T) {
+	setTenantIDs := flagutil.Strings{}
+	setTenantIDs.Set("Test")
 	var testCases = []struct {
 		name        string
 		input       options
@@ -123,6 +125,35 @@ func TestOptions_Validate(t *testing.T) {
 				config:                configflagutil.ConfigOptions{ConfigPath: "test"},
 				oauthURL:              "website",
 				githubOAuthConfigFile: "something",
+			},
+			expectedErr: true,
+		},
+		{
+			name: "hidden only and show hidden are mutually exclusive",
+			input: options{
+				config:     configflagutil.ConfigOptions{ConfigPath: "test"},
+				hiddenOnly: true,
+				showHidden: true,
+			},
+			expectedErr: true,
+		},
+		{
+			name: "show hidden and tenantIds are mutually exclusive",
+			input: options{
+				config:     configflagutil.ConfigOptions{ConfigPath: "test"},
+				hiddenOnly: false,
+				showHidden: true,
+				tenantIDs:  setTenantIDs,
+			},
+			expectedErr: true,
+		},
+		{
+			name: "hiddenOnly and tenantIds are mutually exclusive",
+			input: options{
+				config:     configflagutil.ConfigOptions{ConfigPath: "test"},
+				hiddenOnly: true,
+				showHidden: false,
+				tenantIDs:  setTenantIDs,
 			},
 			expectedErr: true,
 		},

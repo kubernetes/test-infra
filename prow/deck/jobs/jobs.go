@@ -138,9 +138,11 @@ func (c *filteringProwJobLister) ListProwJobs(selector string) ([]prowapi.ProwJo
 
 	var filtered []prowapi.ProwJob
 	for _, item := range prowJobList.Items {
-		if len(c.tenantIDs) != 0 && c.TenantIDMatch(item) {
-			// Deck has tenantID and it matches Prowjob
-			filtered = append(filtered, item)
+		if len(c.tenantIDs) != 0 {
+			if c.TenantIDMatch(item) {
+				// Deck has tenantID and it matches Prowjob
+				filtered = append(filtered, item)
+			}
 		} else if len(c.tenantIDs) == 0 {
 			// Deck has no tenantID
 			shouldHide := item.Spec.Hidden || c.pjHasHiddenRefs(item)
@@ -148,7 +150,7 @@ func (c *filteringProwJobLister) ListProwJobs(selector string) ([]prowapi.ProwJo
 				// If Hidden and we are showing Hidden we add it
 				filtered = append(filtered, item)
 			} else if !shouldHide && !c.hiddenOnly && (item.Spec.ProwJobDefault == nil || item.Spec.ProwJobDefault.TenantID == "") {
-				// If not Hidden then show if not hiddenOnly OR if no tenantID
+				// If not Hidden then show if not hiddenOnly AND if no tenantID
 				filtered = append(filtered, item)
 			}
 		}

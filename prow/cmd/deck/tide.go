@@ -52,8 +52,6 @@ type tideAgent struct {
 	hiddenOnly  bool
 	showHidden  bool
 
-	tenentIDs []string
-
 	sync.Mutex
 	pools   []tide.Pool
 	history map[string][]history.Record
