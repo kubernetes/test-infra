@@ -1049,6 +1049,8 @@ func TestPresubmitShouldRun(t *testing.T) {
 }
 
 func TestPostsubmitShouldRun(t *testing.T) {
+	true_ := true
+	false_ := false
 	var testCases = []struct {
 		name        string
 		fileChanges []string
@@ -1172,6 +1174,68 @@ func TestPostsubmitShouldRun(t *testing.T) {
 			ref:         "master",
 			fileChanges: []string{"onefile", "two-file", "pkg/controller/three_file.go"},
 			expectedRun: true,
+		},
+		{
+			name: "job with run_if_changed matching (and `always_run` explicitly set to false) should run",
+			job: Postsubmit{
+				AlwaysRun: &false_,
+				RegexpChangeMatcher: RegexpChangeMatcher{
+					RunIfChanged: "^file$",
+				},
+			},
+			ref:         "master",
+			fileChanges: []string{"file"},
+			expectedRun: true,
+		},
+		{
+			name: "job with skip_if_only_changed partially matching (and `always_run` explicitly set to false) should run",
+			job: Postsubmit{
+				AlwaysRun: &false_,
+				RegexpChangeMatcher: RegexpChangeMatcher{
+					SkipIfOnlyChanged: "file$",
+				},
+			},
+			ref:         "master",
+			fileChanges: []string{"onefile", "two-file", "pkg/controller/three_file.go"},
+			expectedRun: true,
+		},
+		{
+			name: "job with `always_run` explicitly set to true will run",
+			job: Postsubmit{
+				AlwaysRun: &true_,
+			},
+			ref:         "master",
+			expectedRun: true,
+		},
+		{
+			name: "job with `always_run` explicitly set to false will not run",
+			job: Postsubmit{
+				AlwaysRun: &false_,
+			},
+			ref:         "master",
+			expectedRun: false,
+		},
+		{
+			name: "job skipped on the branch will not run, even if `always_run` set to true explicitly",
+			job: Postsubmit{
+				AlwaysRun: &true_,
+				Brancher: Brancher{
+					SkipBranches: []string{"master"},
+				},
+			},
+			ref:         "master",
+			expectedRun: false,
+		},
+		{
+			name: "job enabled on the branch (with `always_run` explicitly set to false explicitly) will not run",
+			job: Postsubmit{
+				AlwaysRun: &false_,
+				Brancher: Brancher{
+					Branches: []string{"something"},
+				},
+			},
+			ref:         "something",
+			expectedRun: false,
 		},
 	}
 

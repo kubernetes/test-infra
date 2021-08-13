@@ -1842,6 +1842,9 @@ func validatePostsubmits(postsubmits []Postsubmit, podNamespace string) error {
 		if err := validateJobBase(ps.JobBase, prowapi.PostsubmitJob, podNamespace); err != nil {
 			errs = append(errs, fmt.Errorf("invalid postsubmit job %s: %v", ps.Name, err))
 		}
+		if err := validateAlwaysRun(ps); err != nil {
+			errs = append(errs, err)
+		}
 		if err := validateReporting(ps.JobBase, ps.Reporter); err != nil {
 			errs = append(errs, fmt.Errorf("invalid postsubmit job %s: %v", ps.Name, err))
 		}
@@ -2424,6 +2427,21 @@ func validatePodSpec(jobType prowapi.ProwJobType, spec *v1.PodSpec, decorationEn
 	}
 
 	return utilerrors.NewAggregate(errs)
+}
+
+func validateAlwaysRun(job Postsubmit) error {
+	if job.AlwaysRun != nil && *job.AlwaysRun {
+		if job.RunIfChanged != "" {
+			return fmt.Errorf("job %s is set to always run but also declares run_if_changed targets, which are mutually exclusive", job.Name)
+		}
+		if job.SkipIfOnlyChanged != "" {
+			return fmt.Errorf("job %s is set to always run but also declares skip_if_only_changed targets, which are mutually exclusive", job.Name)
+		}
+	}
+	if job.RunIfChanged != "" && job.SkipIfOnlyChanged != "" {
+		return fmt.Errorf("job %s declares run_if_changed and skip_if_only_changed, which are mutually exclusive", job.Name)
+	}
+	return nil
 }
 
 func validateTriggering(job Presubmit) error {

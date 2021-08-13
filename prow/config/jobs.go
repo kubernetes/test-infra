@@ -165,6 +165,17 @@ type Presubmit struct {
 type Postsubmit struct {
 	JobBase
 
+	// AlwaysRun determines whether we should try to run this job it (or not run
+	// it). The key difference with the AlwaysRun field for Presubmits is that
+	// here, we essentially treat "true" as the default value as Postsubmits by
+	// default run unless there is some falsifying condition.
+	//
+	// The use of a pointer allows us to check if the field was or was not
+	// provided by the user. This is required because otherwise when we
+	// Unmarshal() the bytes into this struct, we'll get a default "false" value
+	// if this field is not provided, which is the opposite of what we want.
+	AlwaysRun *bool `json:"always_run,omitempty"`
+
 	RegexpChangeMatcher
 
 	Brancher
@@ -334,12 +345,38 @@ func (ps Postsubmit) ShouldRun(baseRef string, changes ChangedFilesProvider) (bo
 	if !ps.CouldRun(baseRef) {
 		return false, nil
 	}
+	// If the `always_run` field was explicitly set to true, we should run it.
+	// There's no need to consider other possibilities like `run_if_changed` or
+	// `skip_if_only_changed` (and even if we tried to set either of these
+	// fields with `always_run: true`, it would have been an invalid
+	// configuration anyway).
+	if ps.AlwaysRun != nil && *ps.AlwaysRun {
+		return true, nil
+	}
+
+	// At this point either `always_run: false` is there, or one of
+	// `run_if_changed` or `skip_if_only_changed` could be set. The definition
+	// of `run_if_changed` or `skip_if_only_changed` rules take precedence, so
+	// consider them first.
 	if determined, shouldRun, err := ps.RegexpChangeMatcher.ShouldRun(changes); err != nil {
 		return false, err
 	} else if determined {
 		return shouldRun, nil
 	}
-	// Postsubmits default to always run
+
+	// At this point neither `run_if_changed` nor `skip_if_only_changed` were
+	// set. We're left with 2 cases: (1) `always_run: false` was provided, or
+	// (2) this field was not defined in the job at all. Only in the second case
+	// do we return "true".
+
+	// If the `always_run` field was explicitly set to false, override the
+	// default `true` response.
+	if ps.AlwaysRun != nil && !*ps.AlwaysRun {
+		return false, nil
+	}
+
+	// Postsubmits default to always run. This is the case if `always_run` was
+	// not explicitly set.
 	return true, nil
 }
 
