@@ -93,7 +93,7 @@ for image in "${IMAGES[@]}"; do
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
             env:
@@ -146,7 +146,7 @@ periodics:
           args:
             - --project=k8s-staging-e2e-test-images
             - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-            - --env-passthrough=PULL_BASE_REF,WHAT
+            - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
             - --build-dir=.
             - test/images
           env:
