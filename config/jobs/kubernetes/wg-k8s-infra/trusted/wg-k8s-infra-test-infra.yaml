@@ -10,17 +10,14 @@ postsubmits:
     spec:
       serviceAccountName: k8s-triage
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-master
+      - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
         command:
         - make
         args:
         - -C
         - ./triage/
         - push-static
-        - push-staging
-        # TODO(spiffxp): when ready to switch
-        # - redirect-static
-        # - redirect-staging
+        - redirect-static
         resources:
           requests:
             memory: "1Gi"
@@ -63,7 +60,7 @@ periodics:
       - --bucket=gs://k8s-metrics
       - --project=k8s-infra-prow-build-trusted
 
-- name: ci-test-infra-triage-canary
+- name: ci-test-infra-triage
   interval: 30m
   cluster: k8s-infra-prow-build-trusted
   decorate: true
@@ -73,7 +70,7 @@ periodics:
   annotations:
     testgrid-num-failures-to-alert: '18'
     testgrid-alert-stale-results-hours: '12'
-    testgrid-dashboards: wg-k8s-infra-canaries, sig-testing-canaries
+    testgrid-dashboards: sig-testing-misc, wg-k8s-infra-prow
     testgrid-tab-name: triage
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
     description: Runs BigQuery queries, summarizes results into clusters, and uploads to GCS for go.k8s.io/triage
@@ -96,7 +93,7 @@ periodics:
       - name: NUM_WORKERS
         value: "13"
       - name: TRIAGE_DATASET_TABLE
-        value: "kubernetes-public:k8s_triage.temp" # TODO: definitely don't have permission to write here, need our own bq dataset
+        value: "kubernetes-public:k8s_triage.temp"
       - name: TRIAGE_TEMP_GCS_PATH
         value: "gs://k8s-triage/triage_tests"
       - name: TRIAGE_GCS_PATH

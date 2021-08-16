@@ -27,51 +27,6 @@ periodics:
     testgrid-tab-name: ci-bazel
     description: Runs bazel test //... on the test-infra repo every hour
 
-- name: ci-test-infra-triage
-  decorate: true
-  decoration_config:
-    timeout: 3h
-  interval: 30m
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/triage:latest
-      imagePullPolicy: Always
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      # Go incorrectly determines the number of CPUs in a pod, set manually to (2*CPUs-1)
-      # TODO: determine the optimal number of workers, 2*CPU-1 is an assumption
-      - name: NUM_WORKERS
-        value: "13"
-      command:
-      - "timeout"
-      args:
-      - "10800"
-      - "/update_summaries.sh"
-      volumeMounts:
-      - name: service
-        mountPath: /etc/service-account
-        readOnly: true
-      # When changing CPUs, also change NUM_WORKERS above
-      resources:
-        requests:
-          cpu: 7
-          memory: 40Gi
-        limits:
-          cpu: 7
-          memory: 40Gi
-    volumes:
-    - name: service
-      secret:
-        secretName: triage-service-account
-  annotations:
-    testgrid-num-failures-to-alert: '18'
-    testgrid-alert-stale-results-hours: '12'
-    testgrid-dashboards: sig-testing-misc
-    testgrid-tab-name: triage
-    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-    description: Runs BigQuery queries, summarizes results into clusters, and uploads to GCS for go.k8s.io/triage
-
 - name: metrics-kettle
   interval: 1h
   spec:
