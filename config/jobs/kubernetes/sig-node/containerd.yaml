@@ -220,7 +220,7 @@ periodics:
       - name: GOPATH
         value: /go
   annotations:
-    testgrid-dashboards: sig-node-containerd, sig-node-cri
+    testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: containerd-node-conformance
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
 - name: ci-containerd-node-e2e-1-4
@@ -281,7 +281,7 @@ periodics:
       - name: GOPATH
         value: /go
   annotations:
-    testgrid-dashboards: sig-node-containerd, sig-node-cri
+    testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: containerd-node-features
 - name: ci-containerd-node-e2e-features-1-4
   interval: 1h
