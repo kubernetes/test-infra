@@ -200,7 +200,7 @@ periodics:
         value: "win20h2"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-master
   annotations:
     fork-per-release: "true"
     fork-per-release-replacements: "--extract=ci/latest -> --extract=ci/latest-{{.Version}}"
@@ -498,7 +498,7 @@ periodics:
         value: "win20h2"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-1.21
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-1.21
   annotations:
     testgrid-dashboards: google-windows, sig-windows-gce, sig-node-containerd, sig-windows-1.21-release
     testgrid-tab-name: gce-windows-20h2-containerd-1.21
