@@ -70,6 +70,8 @@ const (
 	// it up if present. This allows components to include the config version
 	// in their logs, which can be useful for debugging.
 	ConfigVersionFileName = "VERSION"
+
+	DefaultTenantID = "GlobalDefaultID"
 )
 
 // Config is a read-only snapshot of the config.
@@ -621,6 +623,9 @@ func (pc *ProwConfig) mergeProwJobDefault(repo, cluster string, jobDefault *prow
 	merged = jobDefault.ApplyDefault(merged)
 	if merged == nil {
 		merged = &prowapi.ProwJobDefault{}
+	}
+	if merged.TenantID == "" {
+		merged.TenantID = DefaultTenantID
 	}
 	return merged
 }

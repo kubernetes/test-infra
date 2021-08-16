@@ -4063,9 +4063,9 @@ func TestSetPeriodicProwJobDefaults(t *testing.T) {
 		expected      *prowapi.ProwJobDefault
 	}{
 		{
-			id:       "No ProwJobDefault in job or in config, expect no changes",
+			id:       "No ProwJobDefault in job or in config, expect DefaultTenantID",
 			config:   &Config{ProwConfig: ProwConfig{}},
-			expected: &prowapi.ProwJobDefault{},
+			expected: &prowapi.ProwJobDefault{TenantID: DefaultTenantID},
 		},
 		{
 			id: "no default in job or in config's by repo config, expect default entry",
@@ -4455,9 +4455,9 @@ func TestSetProwJobDefaults(t *testing.T) {
 		expected     *prowapi.ProwJobDefault
 	}{
 		{
-			id:       "No ProwJobDefault in job or in config, expect no changes",
+			id:       "No ProwJobDefault in job or in config, expect DefaultTenantID",
 			config:   &Config{ProwConfig: ProwConfig{}},
-			expected: &prowapi.ProwJobDefault{},
+			expected: &prowapi.ProwJobDefault{TenantID: DefaultTenantID},
 		},
 		{
 			id: "no default in job or in config's by repo config, expect default entry",
