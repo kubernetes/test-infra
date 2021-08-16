@@ -361,7 +361,7 @@ func getBuildData(ctx context.Context, bucket storageBucket, dir string) (buildD
 				break
 			}
 		}
-		logrus.Debugf("failed to read finished.json (job might be unfinished): %v", err)
+		logrus.WithError(err).Debugf("failed to read finished.json (job might be unfinished)")
 	}
 
 	pj := prowv1.ProwJob{}
@@ -495,13 +495,13 @@ func getJobHistory(ctx context.Context, url *url.URL, cfg config.Getter, opener 
 			}
 			b, err := getBuildData(ctx, bucket, dir)
 			if err != nil {
-				logrus.Warningf("build %d information incomplete: %v", buildID, err)
+				logrus.WithError(err).Warningf("build %d information incomplete", buildID)
 			}
 			b.index = i
 			b.ID = id
 			b.SpyglassLink, err = bucket.spyglassLink(ctx, root, id)
 			if err != nil {
-				logrus.Errorf("failed to get spyglass link: %v", err)
+				logrus.WithError(err).Errorf("failed to get spyglass link")
 			}
 			bch <- b
 		}(i, buildID)
