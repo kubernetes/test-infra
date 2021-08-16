@@ -107,6 +107,7 @@ Prow is used by the following organizations and projects:
 - [TiDB](https://prow.tidb.io)
 - [Amazon EKS Distro](https://prow.eks.amazonaws.com/)
 - [KubeSphere](https://prow.kubesphere.io)
+- [OpenYurt](https://github.com/openyurtio/openyurt)
 
 [Jenkins X](https://jenkins-x.io/) uses [Prow as part of Serverless Jenkins](https://medium.com/@jdrawlings/serverless-jenkins-with-jenkins-x-9134cbfe6870).
 
