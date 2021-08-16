@@ -6,7 +6,6 @@ dashboard_groups:
     - sig-node-cadvisor
     - sig-node-kubelet
     - sig-node-containerd
-    - sig-node-containerd-io # jobs in containerd/containerd repository
     - sig-node-ppc64le
     - sig-node-cri-o
     - sig-node-docker
@@ -18,7 +17,6 @@ dashboard_groups:
     - sig-node-presubmits
 
 dashboards:
-- name: sig-node-containerd-io
 - name: sig-node-release-blocking # Tabs included in this group are defined in the jobs that are included.
 - name: sig-node-critical
   dashboard_tab:

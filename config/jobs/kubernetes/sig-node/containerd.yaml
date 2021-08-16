@@ -107,33 +107,6 @@ periodics:
     testgrid-tab-name: containerd-build-test-images
     description: "builds test images for development in progress branch of upstream containerd"
 - interval: 1h
-  name: ci-containerd-e2e-cos-gce
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-    preset-e2e-containerd: "true"
-    preset-e2e-containerd-image-load: "true"
-  spec:
-    containers:
-    - args:
-      - --repo=github.com/containerd/containerd=main
-      - --timeout=70
-      - --scenario=kubernetes_e2e
-      - --
-      - --check-leaked-resources
-      - --extract=ci/latest
-      - --gcp-node-image=gci
-      - --gcp-nodes=4
-      - --gcp-zone=us-west1-b
-      - --ginkgo-parallel=30
-      - --provider=gce
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210825-f1955d1-master
-  annotations:
-    testgrid-dashboards: sig-node-containerd, sig-node-cos
-    testgrid-tab-name: containerd-e2e-cos
-- interval: 1h
   name: ci-containerd-e2e-cos-gce-1-4
   labels:
     preset-service-account: "true"
@@ -161,7 +134,7 @@ periodics:
           - --timeout=50m
         image: gcr.io/k8s-testimages/kubekins-e2e:v20210825-f1955d1-master
   annotations:
-    testgrid-dashboards: sig-node-containerd, sig-node-cos
+    testgrid-dashboards: sig-node-cos
     testgrid-tab-name: containerd-e2e-cos-1.4
 
 - interval: 1h
@@ -341,7 +314,7 @@ periodics:
       - --up=false
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210825-f1955d1-master
   annotations:
-    testgrid-dashboards: sig-node-containerd, sig-node-cos
+    testgrid-dashboards: sig-node-cos
     testgrid-tab-name: soak-cos-gce
 - name: ci-cri-containerd-e2e-gce-device-plugin-gpu
   cron: "30 1-23/3 * * *"
@@ -397,7 +370,7 @@ periodics:
       - --timeout=50m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210825-f1955d1-master
   annotations:
-    testgrid-dashboards: sig-node-containerd, sig-node-cos
+    testgrid-dashboards: sig-node-cos
     testgrid-tab-name: e2e-cos
 - interval: 2h
   name: ci-cri-containerd-e2e-cos-gce-alpha-features
@@ -426,7 +399,7 @@ periodics:
       - --timeout=180m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210825-f1955d1-master
   annotations:
-    testgrid-dashboards: sig-node-containerd, sig-node-cos
+    testgrid-dashboards: sig-node-cos
     testgrid-tab-name: e2e-cos-alpha-features
 - interval: 2h
   name: ci-cri-containerd-e2e-cos-gce-flaky
@@ -451,7 +424,7 @@ periodics:
       - --timeout=180m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210825-f1955d1-master
   annotations:
-    testgrid-dashboards: sig-node-containerd, sig-node-cos
+    testgrid-dashboards: sig-node-cos
     testgrid-tab-name: e2e-cos-flaky
 - interval: 2h
   name: ci-cri-containerd-e2e-cos-gce-ingress
@@ -479,7 +452,7 @@ periodics:
       - --timeout=320m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210825-f1955d1-master
   annotations:
-    testgrid-dashboards: sig-network-gce, sig-node-containerd, sig-node-cos
+    testgrid-dashboards: sig-network-gce, sig-node-cos
     testgrid-tab-name: e2e-cos-ingress
     testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
 - interval: 2h
@@ -509,7 +482,7 @@ periodics:
       - --timeout=50m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210825-f1955d1-master
   annotations:
-    testgrid-dashboards: sig-node-containerd, sig-node-cos
+    testgrid-dashboards: sig-node-cos
     testgrid-tab-name: e2e-cos-ip-alias
 - interval: 2h
   name: ci-cri-containerd-e2e-cos-gce-proto
@@ -536,7 +509,7 @@ periodics:
       - --timeout=50m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210825-f1955d1-master
   annotations:
-    testgrid-dashboards: sig-node-containerd, sig-node-cos
+    testgrid-dashboards: sig-node-cos
     testgrid-tab-name: e2e-cos-proto
 - interval: 1h
   name: ci-cri-containerd-e2e-cos-gce-reboot
@@ -561,7 +534,7 @@ periodics:
       - --timeout=180m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210825-f1955d1-master
   annotations:
-    testgrid-dashboards: sig-node-containerd, sig-node-cos
+    testgrid-dashboards: sig-node-cos
     testgrid-tab-name: e2e-cos-reboot
 - interval: 1h
   name: ci-cri-containerd-e2e-cos-gce-serial
@@ -586,7 +559,7 @@ periodics:
       - --timeout=500m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210825-f1955d1-master
   annotations:
-    testgrid-dashboards: sig-node-containerd, sig-node-cos
+    testgrid-dashboards: sig-node-cos
     testgrid-tab-name: e2e-cos-serial
 - interval: 1h
   name: ci-cri-containerd-e2e-cos-gce-slow
@@ -612,7 +585,7 @@ periodics:
       - --timeout=150m
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210825-f1955d1-master
   annotations:
-    testgrid-dashboards: sig-node-containerd, sig-node-cos
+    testgrid-dashboards: sig-node-cos
     testgrid-tab-name: e2e-cos-slow
 - interval: 1h
   name: ci-cri-containerd-e2e-ubuntu-gce
