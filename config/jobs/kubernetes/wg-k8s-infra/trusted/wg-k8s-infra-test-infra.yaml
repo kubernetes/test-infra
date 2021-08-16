@@ -17,7 +17,6 @@ postsubmits:
         - -C
         - ./triage/
         - push-static
-        - redirect-static
         resources:
           requests:
             memory: "1Gi"
