@@ -11,7 +11,7 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: master
+      base_ref: main
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
@@ -43,7 +43,7 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: master
+      base_ref: main
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
@@ -79,7 +79,7 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: master
+      base_ref: main
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
@@ -104,7 +104,7 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: master
+      base_ref: main
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     - org: kubernetes
       repo: test-infra
@@ -145,7 +145,7 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: master
+      base_ref: main
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
