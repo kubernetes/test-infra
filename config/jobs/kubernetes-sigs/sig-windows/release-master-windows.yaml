@@ -236,17 +236,18 @@ periodics:
     description: Staging job for new Windows tests on a Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
 - name: ci-kubernetes-e2e-capz-staging-dockershim-windows
   interval: 8h
-  path_alias: "sigs.k8s.io/cluster-api-provider-azure"
-  always_run: false
-  optional: true
   decorate: true
   decoration_config:
     timeout: 4h
-  max_concurrency: 5
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
   spec:
     containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-master
