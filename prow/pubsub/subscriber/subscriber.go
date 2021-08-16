@@ -331,12 +331,12 @@ func (s *Subscriber) handleMessage(msg messageInterface, subscription string, al
 	case postsubmitProwJobEvent:
 		jh = &postsubmitJobHandler{GitClient: s.GitClient}
 	default:
-		l.WithField("type", eType).Error("Unsupported event type")
+		l.WithField("type", eType).Debug("Unsupported event type")
 		s.Metrics.ErrorCounter.With(prometheus.Labels{subscriptionLabel: subscription})
 		return fmt.Errorf("unsupported event type: %s", eType)
 	}
 	if err = s.handleProwJob(l, jh, msg, subscription, allowedClusters); err != nil {
-		l.WithError(err).Error("failed to create Prow Job")
+		l.WithError(err).Debug("failed to create Prow Job")
 		s.Metrics.ErrorCounter.With(prometheus.Labels{subscriptionLabel: subscription})
 	}
 	return err
