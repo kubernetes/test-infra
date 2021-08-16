@@ -234,6 +234,45 @@ periodics:
     testgrid-tab-name: aks-engine-windows-dockershim-master
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Staging job for new Windows tests on a Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
+- name: ci-kubernetes-e2e-capz-staging-dockershim-windows
+  interval: 8h
+  path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+  always_run: false
+  optional: true
+  decorate: true
+  decoration_config:
+    timeout: 4h
+  max_concurrency: 5
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred-only: "true"
+  spec:
+    containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-master
+        command:
+          - "runner.sh"
+          - "./scripts/ci-conformance.sh"
+        env:
+          - name: E2E_ARGS
+            value: "-kubetest.use-ci-artifacts"
+          - name: WINDOWS
+            value: "true"
+          # Windows isn't really conformance, we typically run at 4 to keep the time reasonable (~45 mins)
+          - name: CONFORMANCE_NODES
+            value: "4"
+          - name: "KUBERNETES_VERSION"
+            value: "latest"
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 2
+            memory: "9Gi"
+  annotations:
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-dashboards: sig-windows-master-release
+    testgrid-tab-name: capz-windows-dockershim-master
 - interval: 24h
   name: ci-kubernetes-e2e-aks-engine-azure-master-staging-windows-serial-slow
   decorate: true
