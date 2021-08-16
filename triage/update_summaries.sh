@@ -97,7 +97,7 @@ mkdir -p slices
   triage_tests/*.json
 
 gsutil_cp() {
-  gsutil -h 'Cache-Control: no-store, must-revalidate' -m cp -Z -a public-read "$@"
+  gsutil -h 'Cache-Control: no-store, must-revalidate' -m cp -Z "$@"
 }
 
 gsutil_cp failure_data.json "${TRIAGE_GCS_PATH}/"
