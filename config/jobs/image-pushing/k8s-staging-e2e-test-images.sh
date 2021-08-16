@@ -75,7 +75,7 @@ for image in "${IMAGES[@]}"; do
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/${image//\//\\/}\/'
@@ -93,7 +93,7 @@ for image in "${IMAGES[@]}"; do
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
             env:
@@ -129,7 +129,7 @@ periodics:
     interval: 744h
     cluster: k8s-infra-prow-build-trusted
     annotations:
-      testgrid-dashboards: sig-testing-images
+      testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
     decorate: true
     extra_refs:
       # This also becomes the current directory for run.sh and thus
@@ -146,7 +146,7 @@ periodics:
           args:
             - --project=k8s-staging-e2e-test-images
             - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-            - --env-passthrough=PULL_BASE_REF,WHAT
+            - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
             - --build-dir=.
             - test/images
           env:
