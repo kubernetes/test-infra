@@ -641,7 +641,7 @@ periodics:
         value: win2019
       - name: PREPULL_YAML
         value: prepull-head.yaml
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-1.22
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-1.22
       name: ""
       resources: {}
 - annotations:
@@ -750,7 +750,7 @@ periodics:
         value: win20h2
       - name: PREPULL_YAML
         value: prepull-head.yaml
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-1.22
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-1.22
       name: ""
       resources: {}
 - annotations:
