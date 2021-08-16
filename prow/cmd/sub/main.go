@@ -29,6 +29,7 @@ import (
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/crier/reporters/pubsub"
 	"k8s.io/test-infra/prow/flagutil"
@@ -137,7 +138,7 @@ func main() {
 		ConfigAgent:   configAgent,
 		Metrics:       promMetrics,
 		ProwJobClient: kubeClient,
-		GitClient:     gitClientFactory,
+		GitClient:     config.NewInRepoConfigGitCache(gitClientFactory),
 		Reporter:      pubsub.NewReporter(configAgent.Config), // reuse crier reporter
 	}
 

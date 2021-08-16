@@ -20,8 +20,10 @@ import (
 	"errors"
 	"fmt"
 	"testing"
+	"time"
 
 	"k8s.io/test-infra/prow/git/localgit"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/kube"
 )
 
@@ -585,16 +587,23 @@ postsubmits: [{"name": "oli", "spec": {"containers": [{}]}}]`),
 			if tc.dontPassGitClient {
 				testGC = nil
 			}
+			testGCCached := NewInRepoConfigGitCache(testGC)
 
-			var p *ProwYAML
+			var p, pCached *ProwYAML
+			var errCached error
 			if headSHA == baseSHA {
 				p, err = defaultProwYAMLGetter(tc.config, testGC, org+"/"+repo, baseSHA)
+				pCached, errCached = defaultProwYAMLGetter(tc.config, testGCCached, org+"/"+repo, baseSHA)
 			} else {
 				p, err = defaultProwYAMLGetter(tc.config, testGC, org+"/"+repo, baseSHA, headSHA)
+				pCached, errCached = defaultProwYAMLGetter(tc.config, testGCCached, org+"/"+repo, baseSHA, headSHA)
 			}
 
 			if err := tc.validate(p, err); err != nil {
 				t.Fatal(err)
+			}
+			if errCached := tc.validate(pCached, errCached); errCached != nil {
+				t.Fatal(errCached)
 			}
 		})
 	}
@@ -629,5 +638,100 @@ func testDefaultProwYAMLGetter_RejectsNonGitHubRepo(clients localgit.Clients, t 
 	expectedErrMsg := `didn't get two results when splitting repo identifier "my-repo"`
 	if _, err := defaultProwYAMLGetter(&Config{}, gc, identifier, ""); err == nil || err.Error() != expectedErrMsg {
 		t.Errorf("Error %v does not have expected message %s", err, expectedErrMsg)
+	}
+}
+
+type testClientFactory struct {
+	git.ClientFactory // This will be nil during testing, we override the functions that are used.
+	clientsCreated    int
+}
+
+func (cf *testClientFactory) ClientFor(org, repo string) (git.RepoClient, error) {
+	cf.clientsCreated++
+	// Returning this RepoClient ensures that only Fetch() is called and that Close() is not.
+	return &fetchOnlyNoCleanRepoClient{}, nil
+}
+
+type fetchOnlyNoCleanRepoClient struct {
+	git.RepoClient // This will be nil during testing, we override the functions that are allowed to be used.
+}
+
+func (rc *fetchOnlyNoCleanRepoClient) Fetch() error {
+	return nil
+}
+
+// TestInRepoConfigGitCacheConcurrency validates the following properties of InRepoConfigGitCache
+// - RepoClients are protected from concurrent use.
+// - Use of a RepoClient for one repo does not prevent concurrent use of a RepoClient for another repo.
+// - RepoClients are reused, only 1 client is created per repo.
+func TestInRepoConfigGitCacheConcurrency(t *testing.T) {
+	t.Parallel()
+
+	cf := &testClientFactory{}
+	cache := NewInRepoConfigGitCache(cf)
+	org, repo1, repo2 := "org", "repo1", "repo2"
+	// block channels are populated from the main thread, signal channels are read from the main thread.
+	block1, signal1, signal2, signal3 := make(chan bool), make(chan bool), make(chan bool), make(chan bool)
+
+	// Thread 1: gets a client for repo1, signals on signal1, then blocks on block1 before Clean()ing the repo1 client.
+	thread1 := func() {
+		client, err := cache.ClientFor(org, repo1)
+		if err != nil {
+			t.Errorf("Unexpected error getting repo client for thread 1: %v.", err)
+			return
+		}
+		defer client.Clean()
+		signal1 <- true
+		<-block1
+	}
+
+	// Thread 2: gets a client for repo1, signals success on signal2, then Clean()s the repo1 client.
+	thread2 := func() {
+		client, err := cache.ClientFor(org, repo1)
+		if err != nil {
+			t.Errorf("Unexpected error getting repo client for thread 2: %v.", err)
+			return
+		}
+		defer client.Clean()
+		signal2 <- true
+	}
+
+	// Thread 3: gets a client for repo2, signals success on signal3, then Clean()s the repo2 client.
+	thread3 := func() {
+		client, err := cache.ClientFor(org, repo2)
+		if err != nil {
+			t.Errorf("Unexpected error getting repo client for thread 3: %v.", err)
+			return
+		}
+		defer client.Clean()
+		signal3 <- true
+	}
+
+	// First start thread1 and wait for it to get a repo1 client
+	go thread1()
+	<-signal1
+	// Now start the other two threads
+	go thread2()
+	go thread3()
+	// Ensure thread3 is not blocked by thread1 (repo2 client isn't blocked by concurrent repo1 client usage)
+	<-signal3
+	if cf.clientsCreated != 2 {
+		t.Errorf("Expected 2 clients to be created at this point, but got %d.", cf.clientsCreated)
+	}
+	// Try to confirm that thread2 is blocked by thread1 (disallow concurrent use of repo1 client)
+	// This check could technically yield false positives if thread2 is not truly blocked, just running very slowly,
+	// but that is very unlikely and I don't think there is any easy way to distinguish those outcomes.
+	time.Sleep(time.Second)
+	select {
+	case <-signal2:
+		t.Error("Expected thread2 to be blocked getting repo1 client, but thread2 was not blocked.")
+	default:
+	}
+
+	// Finish up by unblocking thread1 and receiving the signal from thread2
+	block1 <- true
+	<-signal2
+	if cf.clientsCreated != 2 {
+		t.Errorf("Expected 2 clients to be created at this point, but got %d.", cf.clientsCreated)
 	}
 }
