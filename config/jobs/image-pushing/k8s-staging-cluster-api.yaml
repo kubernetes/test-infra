@@ -56,6 +56,7 @@ postsubmits:
         testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
       decorate: true
       branches:
+        - ^main$
         - ^master$
         - ^release-0.3$
         - ^release-0.4$
