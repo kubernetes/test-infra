@@ -63,6 +63,12 @@ dashboards:
   - name: sac2004-containerd-flannel-sdnoverlay-stable
     description: Runs Windows (SAC 2004 with Containerd) E2E tests on stable branch K8s clusters and latest Flannel CNI release in overlay network mode.
     test_group_name: k8s-e2e-sac2004-containerd-flannel-sdnoverlay-stable
+  - name: ltsc2022-containerd-flannel-sdnbridge-stable
+    description: Runs Windows (LTSC 2022 with Containerd) E2E tests on stable branch K8s clusters and latest Flannel CNI release in l2bridge network mode.
+    test_group_name: k8s-e2e-ltsc2022-containerd-flannel-sdnbridge-stable
+  - name: ltsc2022-containerd-flannel-sdnoverlay-stable
+    description: Runs Windows (LTSC 2022 with Containerd) E2E tests on stable branch K8s clusters and latest Flannel CNI release in overlay network mode.
+    test_group_name: k8s-e2e-ltsc2022-containerd-flannel-sdnoverlay-stable
 - name: sig-windows-containerd-runtime-signal
   dashboard_tab:
   - name: win-2004-containerd-master-integration
@@ -98,6 +104,10 @@ test_groups:
   gcs_prefix: k8s-ovn/logs/k8s-e2e-sac2004-containerd-flannel-sdnbridge-stable
 - name: k8s-e2e-sac2004-containerd-flannel-sdnoverlay-stable
   gcs_prefix: k8s-ovn/logs/k8s-e2e-sac2004-containerd-flannel-sdnoverlay-stable
+- name: k8s-e2e-ltsc2022-containerd-flannel-sdnbridge-stable
+  gcs_prefix: k8s-ovn/logs/k8s-e2e-ltsc2022-containerd-flannel-sdnbridge-stable
+- name: k8s-e2e-ltsc2022-containerd-flannel-sdnoverlay-stable
+  gcs_prefix: k8s-ovn/logs/k8s-e2e-ltsc2022-containerd-flannel-sdnoverlay-stable
 # Containerd Runtime integration test groups
 - name: integration-containerd-windows-sac2004
   gcs_prefix: containerd-integration/logs/windows-sac2004
