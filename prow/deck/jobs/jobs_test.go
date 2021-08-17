@@ -664,6 +664,53 @@ func TestListProwJobs(t *testing.T) {
 			expected:   sets.NewString("Hidden ID"),
 			hiddenOnly: true,
 		},
+		{
+			name: "pjs with tenantIDs will not show up on Deck with no tenantID",
+			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "tenantedID"
+					in.Spec.ProwJobDefault = &prowapi.ProwJobDefault{TenantID: "ID"}
+					return in
+				},
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "Other ID"
+					in.Spec.ProwJobDefault = &prowapi.ProwJobDefault{TenantID: "Other ID"}
+					return in
+				},
+			},
+			expected: sets.NewString(),
+		},
+		{
+			name: "pjs with Default ID will  show up on Deck with no tenantID",
+			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "tenantedID"
+					in.Spec.ProwJobDefault = &prowapi.ProwJobDefault{TenantID: config.DefaultTenantID}
+					return in
+				},
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "Other ID"
+					in.Spec.ProwJobDefault = &prowapi.ProwJobDefault{TenantID: "Other ID"}
+					return in
+				},
+			},
+			expected: sets.NewString("tenantedID"),
+		},
+		{
+			name: "empty tenantID counts as no tenantID",
+			prowJobs: []func(*prowapi.ProwJob) runtime.Object{
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "empty tenant id"
+					in.Spec.ProwJobDefault = &prowapi.ProwJobDefault{TenantID: ""}
+					return in
+				},
+				func(in *prowapi.ProwJob) runtime.Object {
+					in.Name = "No ProwJobDefault"
+					return in
+				},
+			},
+			expected: sets.NewString("empty tenant id", "No ProwJobDefault"),
+		},
 	}
 
 	for _, testCase := range testCases {

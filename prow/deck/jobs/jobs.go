@@ -125,6 +125,10 @@ func (c *filteringProwJobLister) TenantIDMatch(pj prowapi.ProwJob) bool {
 	return false
 }
 
+func tenantIDMissingOrDefault(pj prowapi.ProwJob) bool {
+	return pj.Spec.ProwJobDefault == nil || pj.Spec.ProwJobDefault.TenantID == "" || pj.Spec.ProwJobDefault.TenantID == config.DefaultTenantID
+}
+
 func (c *filteringProwJobLister) ListProwJobs(selector string) ([]prowapi.ProwJob, error) {
 	prowJobList := &prowapi.ProwJobList{}
 	parsedSelector, err := labels.Parse(selector)
@@ -149,7 +153,7 @@ func (c *filteringProwJobLister) ListProwJobs(selector string) ([]prowapi.ProwJo
 			if shouldHide && (c.showHidden || c.hiddenOnly) {
 				// If Hidden and we are showing Hidden we add it
 				filtered = append(filtered, item)
-			} else if !shouldHide && !c.hiddenOnly && (item.Spec.ProwJobDefault == nil || item.Spec.ProwJobDefault.TenantID == "") {
+			} else if !shouldHide && !c.hiddenOnly && tenantIDMissingOrDefault(item) {
 				// If not Hidden then show if not hiddenOnly AND if no tenantID
 				filtered = append(filtered, item)
 			}
