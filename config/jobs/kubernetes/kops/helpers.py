@@ -140,7 +140,7 @@ distro_images = {
     'centos8': latest_aws_image('125523088429', 'CentOS 8.*x86_64'),
     'deb9': latest_aws_image('379101102735', 'debian-stretch-hvm-x86_64-gp2-*'),
     'deb10': latest_aws_image('136693071363', 'debian-10-amd64-*'),
-    'deb11': latest_aws_image('903794441882', 'debian-11-amd64-*'),
+    'deb11': latest_aws_image('136693071363', 'debian-11-amd64-*'),
     'flatcar': latest_aws_image('075585003325', 'Flatcar-stable-*-hvm'),
     'rhel7': latest_aws_image('309956199498', 'RHEL-7.*_HVM_*-x86_64-0-Hourly2-GP2'),
     'rhel8': latest_aws_image('309956199498', 'RHEL-8.*_HVM-*-x86_64-0-Hourly2-GP2'),

@@ -157,7 +157,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='903794441882/debian-11-amd64-daily-20210812-732' --channel=alpha --networking=calico --container-runtime=containerd" \
+          --create-args="--image='136693071363/debian-11-amd64-20210814-734' --channel=alpha --networking=calico --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
