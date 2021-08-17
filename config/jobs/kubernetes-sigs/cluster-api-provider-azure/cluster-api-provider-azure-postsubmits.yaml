@@ -11,7 +11,6 @@ postsubmits:
       preset-azure-anonymous-pull: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     branches:
-      - ^master$
       - ^main$
     spec:
       containers:
