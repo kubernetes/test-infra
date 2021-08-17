@@ -57,7 +57,6 @@ postsubmits:
       decorate: true
       branches:
         - ^main$
-        - ^master$
         - ^release-0.3$
         - ^release-0.4$
         # this is a regex for semver, from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
