@@ -11,8 +11,12 @@ dashboards:
 - dashboard_tab:
   - alert_options:
       alert_mail_to_addresses: cert-manager-dev-alerts@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/cert-manager/test-infra/compare/<start-custom-0>...<end-custom-0>
     description: Runs the end-to-end test suite against a EKS cluster
     name: aws-tests
+    open_bug_template:
+      url: https://github.com/cert-manager/test-infra/issues/
     open_test_template:
       url: https://prow.build-infra.jetstack.net/view/gcs/gs/<gcs_prefix>/<changelist>
     test_group_name: aws-tests
@@ -124,17 +128,6 @@ dashboards:
     open_test_template:
       url: https://prow.build-infra.jetstack.net/view/gcs/gs/<gcs_prefix>/<changelist>
     test_group_name: ci-cert-manager-upgrade
-  - alert_options:
-      alert_mail_to_addresses: cert-manager-dev-alerts@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
-    description: Runs the end-to-end test suite against a EKS cluster
-    name: aws-tests-pre
-    open_bug_template:
-      url: https://github.com/jetstack/cert-manager/issues/
-    open_test_template:
-      url: https://prow.build-infra.jetstack.net/view/gcs/gs/<gcs_prefix>/<changelist>
-    test_group_name: aws-tests-pre
   name: jetstack-cert-manager-master
 - dashboard_tab:
   - alert_options:
@@ -704,9 +697,6 @@ test_groups:
 - disable_prowjob_analysis: true
   gcs_prefix: jetstack-logs/logs/post-testing-upload-testgrid-config
   name: post-testing-upload-testgrid-config
-- gcs_prefix: jetstack-logs/pr-logs/directory/aws-tests-pre
-  name: aws-tests-pre
-  num_columns_recent: 20
 - gcs_prefix: jetstack-logs/pr-logs/directory/pull-cert-manager-bazel
   name: pull-cert-manager-bazel
   num_columns_recent: 20
