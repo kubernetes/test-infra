@@ -1,5 +1,5 @@
 presubmits:
-  kubernetes-sigs/sig-storage-lib-external-provisioner:
+  kubernetes-sigs/ibm-vpc-block-csi-driver:
   - name: pull-ibm-vpc-block-csi-driver-build
     always_run: true
     decorate: true
