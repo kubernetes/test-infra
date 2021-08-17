@@ -17,8 +17,13 @@ branch-protection:
     enforce_admins: false
 
     # Exclude specifies a set of regular expressions which identify branches
-    # that should be excluded from the protection policy
+    # that should be excluded from the protection policy, mutually exclusive with Include
     exclude:
+      - ""
+
+    # Include specifies a set of regular expressions which identify branches
+    # that should be included from the protection policy, mutually exclusive with Exclude
+    include:
       - ""
 
     # Orgs holds branch protection options for orgs by name
@@ -34,8 +39,13 @@ branch-protection:
             enforce_admins: false
 
             # Exclude specifies a set of regular expressions which identify branches
-            # that should be excluded from the protection policy
+            # that should be excluded from the protection policy, mutually exclusive with Include
             exclude:
+              - ""
+
+            # Include specifies a set of regular expressions which identify branches
+            # that should be included from the protection policy, mutually exclusive with Exclude
+            include:
               - ""
 
             # Protect overrides whether branch protection is enabled if set.
@@ -59,8 +69,13 @@ branch-protection:
                             enforce_admins: false
 
                             # Exclude specifies a set of regular expressions which identify branches
-                            # that should be excluded from the protection policy
+                            # that should be excluded from the protection policy, mutually exclusive with Include
                             exclude:
+                              - ""
+
+                            # Include specifies a set of regular expressions which identify branches
+                            # that should be included from the protection policy, mutually exclusive with Exclude
+                            include:
                               - ""
 
                             # Protect overrides whether branch protection is enabled if set.
@@ -112,8 +127,13 @@ branch-protection:
                     enforce_admins: false
 
                     # Exclude specifies a set of regular expressions which identify branches
-                    # that should be excluded from the protection policy
+                    # that should be excluded from the protection policy, mutually exclusive with Include
                     exclude:
+                      - ""
+
+                    # Include specifies a set of regular expressions which identify branches
+                    # that should be included from the protection policy, mutually exclusive with Exclude
+                    include:
                       - ""
 
                     # Protect overrides whether branch protection is enabled if set.
