@@ -27,6 +27,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/tide"
 	"k8s.io/test-infra/prow/tide/history"
@@ -51,6 +52,9 @@ type tideAgent struct {
 	hiddenRepos func() []string
 	hiddenOnly  bool
 	showHidden  bool
+
+	tenantIDs []string
+	cfg       config.Config
 
 	sync.Mutex
 	pools   []tide.Pool
@@ -155,60 +159,103 @@ func (ta *tideAgent) updateHistory() error {
 	return nil
 }
 
-func (ta *tideAgent) filterHiddenPools(pools []tide.Pool) []tide.Pool {
-	if len(ta.hiddenRepos()) == 0 {
-		return pools
-	}
+func (ta *tideAgent) matchingIDs(ids []string) bool {
+	return len(ids) > 0 && len(ta.tenantIDs) > 0 && sets.String{}.Insert(ta.tenantIDs...).HasAll(ids...)
+}
 
+func (ta *tideAgent) filterHiddenPools(pools []tide.Pool) []tide.Pool {
 	filtered := make([]tide.Pool, 0, len(pools))
 	for _, pool := range pools {
-		needsHide := matches(pool.Org+"/"+pool.Repo, ta.hiddenRepos())
-		if needsHide && ta.showHidden {
+		// curIDs are the IDs associated with all PJs in the Pool
+		// We want to add the ID associated with the OrgRepo for extra protection
+		curIDs := sets.String{}.Insert(pool.TenantIDs...)
+		orgRepoID := ta.cfg.GetProwJobDefault(pool.Org+"/"+pool.Repo, "*").TenantID
+		// If OrgRepo is associated with no TenantID, ignore it.
+		if orgRepoID != "" && orgRepoID != config.DefaultTenantID {
+			curIDs.Insert(orgRepoID)
+		}
+		if ta.matchingIDs(curIDs.List()) {
+			// Deck has tenantIDs and they match with the pool
 			filtered = append(filtered, pool)
-		} else if needsHide == ta.hiddenOnly {
-			filtered = append(filtered, pool)
+		} else if len(ta.tenantIDs) == 0 {
+			//Deck has no tenantID
+			needsHide := matches(pool.Org+"/"+pool.Repo, ta.hiddenRepos())
+			if needsHide && (ta.showHidden || ta.hiddenOnly) {
+				// Pool is hidden and Deck is showing hidden
+				filtered = append(filtered, pool)
+			} else if !needsHide && !ta.hiddenOnly && noTenantIDOrDefaultTenantID(curIDs.List()) {
+				// Pool is not hidden and has no tenantID and Deck is not hidden only.
+				filtered = append(filtered, pool)
+			}
 		}
 	}
 	return filtered
 }
 
-func (ta *tideAgent) filterHiddenHistory(hist map[string][]history.Record) map[string][]history.Record {
-	if len(ta.hiddenRepos()) == 0 {
-		return hist
+func noTenantIDOrDefaultTenantID(ids []string) bool {
+	for _, id := range ids {
+		if id != "" && id != config.DefaultTenantID {
+			return false
+		}
 	}
+	return true
+}
 
+func recordIDs(records []history.Record) sets.String {
+	res := sets.String{}
+	for _, record := range records {
+		res.Insert(record.TenantIDs...)
+	}
+	return res
+}
+
+func (ta *tideAgent) filterHiddenHistory(hist map[string][]history.Record) map[string][]history.Record {
 	filtered := make(map[string][]history.Record, len(hist))
 	for pool, records := range hist {
-		needsHide := matches(strings.Split(pool, ":")[0], ta.hiddenRepos())
-		if needsHide && ta.showHidden {
+		orgRepo := strings.Split(pool, ":")[0]
+		curIDs := recordIDs(records).Insert()
+		orgRepoID := ta.cfg.GetProwJobDefault(orgRepo, "*").TenantID
+		// If OrgRepo is associated with no TenantID, ignore it.
+		if orgRepoID != "" && orgRepoID != config.DefaultTenantID {
+			curIDs.Insert(orgRepoID)
+		}
+		if ta.matchingIDs(curIDs.List()) {
+			// Deck has tenantIDs and they match with the History
 			filtered[pool] = records
-		} else if needsHide == ta.hiddenOnly {
-			filtered[pool] = records
+		} else if len(ta.tenantIDs) == 0 {
+			needsHide := matches(orgRepo, ta.hiddenRepos())
+			if needsHide && (ta.showHidden || ta.hiddenOnly) {
+				filtered[pool] = records
+			} else if !needsHide && !ta.hiddenOnly && noTenantIDOrDefaultTenantID(curIDs.List()) {
+				filtered[pool] = records
+			}
 		}
 	}
 	return filtered
 }
 
 func (ta *tideAgent) filterHiddenQueries(queries []config.TideQuery) []config.TideQuery {
-	if len(ta.hiddenRepos()) == 0 {
-		return queries
-	}
-
 	filtered := make([]config.TideQuery, 0, len(queries))
 	for _, qc := range queries {
-		includesHidden := false
-		// This will exclude the query even if a single
-		// repo in the query is included in hiddenRepos.
-		for _, repo := range qc.Repos {
-			if matches(repo, ta.hiddenRepos()) {
-				includesHidden = true
-				break
+		curIDs := qc.TenantIDs(ta.cfg)
+		needsHide := false
+		if ta.matchingIDs(curIDs) {
+			// Deck has tenantIDs and they match with the Query
+			filtered = append(filtered, qc)
+		} else if len(ta.tenantIDs) == 0 {
+			for _, repo := range qc.Repos {
+				if matches(repo, ta.hiddenRepos()) {
+					needsHide = true
+					break
+				}
 			}
-		}
-		if includesHidden && ta.showHidden {
-			filtered = append(filtered, qc)
-		} else if includesHidden == ta.hiddenOnly {
-			filtered = append(filtered, qc)
+			if needsHide && (ta.showHidden || ta.hiddenOnly) {
+				// Query is hidden and Deck is showing hidden
+				filtered = append(filtered, qc)
+			} else if !needsHide && !ta.hiddenOnly && noTenantIDOrDefaultTenantID(curIDs) {
+				// Query is not hidden and has no tenantID and Deck is not hidden only.
+				filtered = append(filtered, qc)
+			}
 		}
 	}
 	return filtered

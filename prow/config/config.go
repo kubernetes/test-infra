@@ -647,6 +647,12 @@ func (p *Plank) mergeDefaultDecorationConfig(repo, cluster string, jobDC *prowap
 	return merged
 }
 
+// GetProwJobDefault finds the resolved prowJobDefault config for a given repo and
+// cluster
+func (c *Config) GetProwJobDefault(repo, cluster string) *prowapi.ProwJobDefault {
+	return c.mergeProwJobDefault(repo, cluster, nil)
+}
+
 // GuessDefaultDecorationConfig attempts to find the resolved default decoration
 // config for a given repo and cluster. It is primarily used for best effort
 // guesses about GCS configuration for undecorated jobs.
