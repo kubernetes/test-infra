@@ -4635,3 +4635,36 @@ func TestTenantIDs(t *testing.T) {
 		})
 	}
 }
+
+func TestSetTideStatusSuccess(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name string
+		pr   PullRequest
+
+		expectApiCall bool
+	}{
+		{
+			name:          "Status is set",
+			expectApiCall: true,
+		},
+		{
+			name: "PR already has tide status set to success, no api call is made",
+			pr:   PullRequest{Commits: struct{ Nodes []struct{ Commit Commit } }{Nodes: []struct{ Commit Commit }{{Commit: Commit{Status: CommitStatus{Contexts: []Context{{Context: "tide", State: githubql.StatusState("success")}}}}}}}},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ghc := &fgc{}
+			err := setTideStatusSuccess(tc.pr, ghc, &config.Config{}, logrus.WithField("test", tc.name))
+			if err != nil {
+				t.Fatalf("failed to set status: %v", err)
+			}
+
+			if ghc.setStatus != tc.expectApiCall {
+				t.Errorf("expected CreateStatusApiCall: %t, got CreateStatusApiCall: %t", tc.expectApiCall, ghc.setStatus)
+			}
+		})
+	}
+}
