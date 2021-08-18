@@ -901,6 +901,7 @@ plugins:
     - label
     - lgtm
     - lifecycle
+    - milestoneapplier
     - owners-label
     - pony
     - retitle
