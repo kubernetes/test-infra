@@ -235,7 +235,7 @@ func TestExpectedStatus(t *testing.T) {
 			desc:  fmt.Sprintf(statusNotInPool, " Needs 1, 2, 3, 4, 5, 6, 7 labels."),
 		},
 		{
-			name:              "only failed tide context",
+			name:              "tides own context failed but is ignored",
 			labels:            neededLabels,
 			author:            "batman",
 			firstQueryAuthor:  "batman",
@@ -244,8 +244,8 @@ func TestExpectedStatus(t *testing.T) {
 			contexts:          []Context{{Context: githubql.String(statusContext), State: githubql.StatusStateError}},
 			inPool:            false,
 
-			state: github.StatusPending,
-			desc:  fmt.Sprintf(statusNotInPool, ""),
+			state: github.StatusSuccess,
+			desc:  statusInPool,
 		},
 		{
 			name:              "single bad context",
@@ -462,7 +462,19 @@ func TestExpectedStatus(t *testing.T) {
 			desc:  fmt.Sprintf(statusNotInPool, " Must be in milestone v1.0."),
 		},
 		{
-			name:              "unknown requirement",
+			name:              "not in pool, but all requirements are met",
+			labels:            neededLabels,
+			author:            "batman",
+			firstQueryAuthor:  "batman",
+			secondQueryAuthor: "batman",
+			milestone:         "v1.0",
+			inPool:            false,
+
+			state: github.StatusSuccess,
+			desc:  statusInPool,
+		},
+		{
+			name:              "not in pool, but all requirements are met, including a successful third-party context",
 			labels:            neededLabels,
 			author:            "batman",
 			firstQueryAuthor:  "batman",
@@ -471,8 +483,8 @@ func TestExpectedStatus(t *testing.T) {
 			contexts:          []Context{{Context: githubql.String("job-name"), State: githubql.StatusStateSuccess}},
 			inPool:            false,
 
-			state: github.StatusPending,
-			desc:  fmt.Sprintf(statusNotInPool, ""),
+			state: github.StatusSuccess,
+			desc:  statusInPool,
 		},
 		{
 			name:              "check that min diff query is used",
