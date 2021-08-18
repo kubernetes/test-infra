@@ -20,7 +20,6 @@ import (
 	"errors"
 	"fmt"
 	"testing"
-	"time"
 
 	"k8s.io/test-infra/prow/git/localgit"
 	"k8s.io/test-infra/prow/git/v2"
@@ -671,67 +670,49 @@ func TestInRepoConfigGitCacheConcurrency(t *testing.T) {
 	cache := NewInRepoConfigGitCache(cf)
 	org, repo1, repo2 := "org", "repo1", "repo2"
 	// block channels are populated from the main thread, signal channels are read from the main thread.
-	block1, signal1, signal2, signal3 := make(chan bool), make(chan bool), make(chan bool), make(chan bool)
+	signal := make(chan bool)
+	sharedRepo1State := 0
 
 	// Thread 1: gets a client for repo1, signals on signal1, then blocks on block1 before Clean()ing the repo1 client.
-	thread1 := func() {
+	go func() {
 		client, err := cache.ClientFor(org, repo1)
 		if err != nil {
 			t.Errorf("Unexpected error getting repo client for thread 1: %v.", err)
 			return
 		}
-		defer client.Clean()
-		signal1 <- true
-		<-block1
-	}
+		sharedRepo1State++
+		client.Clean()
+		signal <- true
+	}()
 
 	// Thread 2: gets a client for repo1, signals success on signal2, then Clean()s the repo1 client.
-	thread2 := func() {
+	go func() {
 		client, err := cache.ClientFor(org, repo1)
 		if err != nil {
 			t.Errorf("Unexpected error getting repo client for thread 2: %v.", err)
 			return
 		}
-		defer client.Clean()
-		signal2 <- true
-	}
+		sharedRepo1State++
+		client.Clean()
+		signal <- true
+	}()
 
 	// Thread 3: gets a client for repo2, signals success on signal3, then Clean()s the repo2 client.
-	thread3 := func() {
+	go func() {
 		client, err := cache.ClientFor(org, repo2)
 		if err != nil {
 			t.Errorf("Unexpected error getting repo client for thread 3: %v.", err)
 			return
 		}
-		defer client.Clean()
-		signal3 <- true
+		client.Clean()
+		signal <- true
+	}()
+
+	for i := 0; i < 3; i++ {
+		<-signal
 	}
 
-	// First start thread1 and wait for it to get a repo1 client
-	go thread1()
-	<-signal1
-	// Now start the other two threads
-	go thread2()
-	go thread3()
-	// Ensure thread3 is not blocked by thread1 (repo2 client isn't blocked by concurrent repo1 client usage)
-	<-signal3
 	if cf.clientsCreated != 2 {
-		t.Errorf("Expected 2 clients to be created at this point, but got %d.", cf.clientsCreated)
-	}
-	// Try to confirm that thread2 is blocked by thread1 (disallow concurrent use of repo1 client)
-	// This check could technically yield false positives if thread2 is not truly blocked, just running very slowly,
-	// but that is very unlikely and I don't think there is any easy way to distinguish those outcomes.
-	time.Sleep(time.Second)
-	select {
-	case <-signal2:
-		t.Error("Expected thread2 to be blocked getting repo1 client, but thread2 was not blocked.")
-	default:
-	}
-
-	// Finish up by unblocking thread1 and receiving the signal from thread2
-	block1 <- true
-	<-signal2
-	if cf.clientsCreated != 2 {
-		t.Errorf("Expected 2 clients to be created at this point, but got %d.", cf.clientsCreated)
+		t.Errorf("Expected 2 clients to be created, but got %d.", cf.clientsCreated)
 	}
 }
