@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/client-go/rest"
@@ -96,10 +97,16 @@ func LoadClusterConfigs(opts *Options) (map[string]rest.Config, error) {
 			return nil, fmt.Errorf("kubecfg dir: %v", err)
 		}
 		for _, file := range files {
+			filename := file.Name()
 			if file.IsDir() {
+				logrus.WithField("dir", filename).Info("Ignored directory")
 				continue
 			}
-			candidates = append(candidates, filepath.Join(opts.dir, file.Name()))
+			if strings.HasPrefix(filename, "..") {
+				logrus.WithField("filename", filename).Info("Ignored file starting with double dots")
+				continue
+			}
+			candidates = append(candidates, filepath.Join(opts.dir, filename))
 		}
 	}
 
