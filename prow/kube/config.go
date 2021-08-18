@@ -96,6 +96,9 @@ func LoadClusterConfigs(opts *Options) (map[string]rest.Config, error) {
 			return nil, fmt.Errorf("kubecfg dir: %v", err)
 		}
 		for _, file := range files {
+			if file.IsDir() {
+				continue
+			}
 			candidates = append(candidates, filepath.Join(opts.dir, file.Name()))
 		}
 	}
