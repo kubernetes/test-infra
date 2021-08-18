@@ -37,6 +37,7 @@ import (
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
+	"k8s.io/test-infra/prow/pjutil/pprof"
 	"k8s.io/test-infra/prow/pubsub/subscriber"
 )
 
@@ -130,8 +131,9 @@ func main() {
 
 	defer interrupts.WaitForGracefulShutdown()
 
-	// Expose prometheus metrics
+	// Expose prometheus and pprof metrics
 	metrics.ExposeMetrics("sub", configAgent.Config().PushGateway, flagOptions.instrumentationOptions.MetricsPort)
+	pprof.Instrument(flagOptions.instrumentationOptions)
 
 	s := &subscriber.Subscriber{
 		ConfigAgent:   configAgent,
