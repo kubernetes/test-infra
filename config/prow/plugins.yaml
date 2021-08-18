@@ -363,6 +363,8 @@ milestone_applier:
     main: v0.4
     release-0.4: v0.4
     release-0.3: v0.3
+  kubernetes-sigs/boskos:
+    master: v1.23
   kubernetes-sigs/controller-runtime:
     master: v0.10.x
     release-0.9: v0.9.x
@@ -1001,6 +1003,7 @@ plugins:
 
   kubernetes-sigs/boskos:
     plugins:
+    - milestone
     - override
 
   kubernetes-sigs/kind:
