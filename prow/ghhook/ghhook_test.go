@@ -114,8 +114,10 @@ func TestGetOptions(t *testing.T) {
 
 			o, err := GetOptions(flag.NewFlagSet("fake-flags", flag.ExitOnError), args)
 			if o != nil { // TODO(fejta): github.GitHubOptions not unit testable
-				expected.GitHubOptions = o.GitHubOptions
-				expected.GitHubHookClient = o.GitHubHookClient
+				o.GitHubOptions = flagutil.GitHubOptions{}
+				expected.GitHubOptions = flagutil.GitHubOptions{}
+				expected.GitHubHookClient = nil
+				o.GitHubHookClient = nil
 			}
 			switch {
 			case err != nil:
