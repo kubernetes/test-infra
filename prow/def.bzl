@@ -22,6 +22,7 @@ load(
     "//def:image.bzl",
     _image_tags = "tags",
     _image_tags_arm64 = "tags_arm64",
+    _image_tags_ppc64le = "tags_ppc64le",
 )
 
 # prow_image is a macro for creating :app and :image targets
@@ -30,9 +31,11 @@ def prow_image(
         name,  # use "image"
         base = None,
         base_arm64 = None,
+        base_ppc64le = None,
         stamp = True,  # stamp by default, but allow overrides
         app_name = "app",
         build_arm64 = False,
+        build_ppc64le = False,
         **kwargs):
     go_image(
         name = app_name,
@@ -66,6 +69,25 @@ def prow_image(
             name = "%s-arm64" % name,
             base = ":%s-arm64" % app_name,
             architecture = "arm64",
+            stamp = stamp,
+            **kwargs
+        )
+
+    if build_ppc64le == True:
+        go_image(
+            name = "%s-ppc64le" % app_name,
+            base = base_ppc64le,
+            embed = [":go_default_library"],
+            goarch = "ppc64le",
+            goos = "linux",
+            pure = "on",
+            x_defs = {"k8s.io/test-infra/prow/version.Name": component},
+        )
+
+        container_image(
+            name = "%s-ppc64le" % name,
+            base = ":%s-ppc64le" % app_name,
+            architecture = "ppc64le",
             stamp = stamp,
             **kwargs
         )
@@ -118,6 +140,12 @@ def target(cmd):
 def target_arm64(cmd):
     return "//prow/cmd/%s:image-arm64" % cmd
 
+# target_ppc64le returns the arm64 image target for the command.
+#
+# Concretely, target("foo") returns "//prow/cmd/foo:image-ppc64le"
+def target_ppc64le(cmd):
+    return "//prow/cmd/%s:image-ppc64le" % cmd
+
 # tags returns a {image: target} map for each cmd or {name: target} kwarg.
 #
 # In particular it will prefix the cmd image name with {STABLE_PROW_REPO} and {EDGE_PROW_REPO}
@@ -153,6 +181,13 @@ def tags_arm64(cmds):
     if EDGE_PROW_REPO:
         cmd_targets.update({edge_prefix(cmd): target_arm64(cmd) for cmd in cmds})
     return _image_tags_arm64(cmd_targets)
+
+# tags_ppc64le returns a {image: target-ppc64le} map for each cmd kwarg.
+def tags_ppc64le(cmds):
+    cmd_targets = {prefix(cmd): target_ppc64le(cmd) for cmd in cmds}
+    if EDGE_PROW_REPO:
+        cmd_targets.update({edge_prefix(cmd): target_ppc64le(cmd) for cmd in cmds})
+    return _image_tags_ppc64le(cmd_targets)
 
 def object(name, cluster = CORE_CLUSTER, **kwargs):
     k8s_object(
