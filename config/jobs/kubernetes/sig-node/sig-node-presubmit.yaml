@@ -255,7 +255,7 @@ presubmits:
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
-      testgrid-dashboards: sig-node-kubelet
+      testgrid-dashboards: sig-node-presubmits
       testgrid-tab-name: pr-node-kubelet-serial
     labels:
       preset-service-account: "true"
@@ -298,7 +298,7 @@ presubmits:
     skip_branches:
       - release-\d+\.\d+  # per-release image
     annotations:
-      testgrid-dashboards: sig-node-kubelet
+      testgrid-dashboards: sig-node-presubmits
       testgrid-tab-name: pr-node-kubelet-serial-containerd
     labels:
       preset-service-account: "true"
@@ -339,7 +339,7 @@ presubmits:
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
-      testgrid-dashboards: sig-node-kubelet
+      testgrid-dashboards: sig-node-presubmits
       testgrid-tab-name: pr-node-kubelet-eviction
     labels:
       preset-service-account: "true"
@@ -373,7 +373,7 @@ presubmits:
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
-      testgrid-dashboards: sig-node-kubelet
+      testgrid-dashboards: sig-node-presubmits
       testgrid-tab-name: pr-kubelet-serial-gce-e2e-cpu-manager
     labels:
       preset-service-account: "true"
@@ -407,7 +407,7 @@ presubmits:
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
-      testgrid-dashboards: sig-node-kubelet
+      testgrid-dashboards: sig-node-presubmits
       testgrid-tab-name: pr-kubelet-serial-gce-e2e-topology-manager
     labels:
       preset-service-account: "true"
@@ -441,7 +441,7 @@ presubmits:
     skip_branches:
       - release-\d+\.\d+  # per-release image
     annotations:
-      testgrid-dashboards: sig-node-kubelet
+      testgrid-dashboards: sig-node-presubmits
       testgrid-tab-name: pr-kubelet-serial-gce-e2e-hugepages
     labels:
       preset-service-account: "true"
@@ -472,7 +472,7 @@ presubmits:
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
-      testgrid-dashboards: sig-node-cri-o
+      testgrid-dashboards: sig-node-presubmits
       testgrid-tab-name: pr-crio-cgrpv2-gce-e2e
     always_run: false
     optional: true
@@ -511,7 +511,7 @@ presubmits:
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
-      testgrid-dashboards: sig-node-kubelet
+      testgrid-dashboards: sig-node-presubmits
       testgrid-tab-name: pr-node-kubelet-serial-crio-cgroupv1
     always_run: false
     optional: true
@@ -549,7 +549,7 @@ presubmits:
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
-      testgrid-dashboards: sig-node-kubelet
+      testgrid-dashboards: sig-node-presubmits
       testgrid-tab-name: pr-node-kubelet-serial-crio-cgroupv2
     always_run: false
     optional: true
@@ -587,7 +587,7 @@ presubmits:
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
-      testgrid-dashboards: sig-node-cri-o
+      testgrid-dashboards: sig-node-presubmits
       testgrid-tab-name: pr-crio-gce-e2e
     always_run: false
     skip_report: false
@@ -631,7 +631,7 @@ presubmits:
     skip_branches:
       - release-\d+\.\d+  # per-release image
     annotations:
-      testgrid-dashboards: sig-node-kubelet
+      testgrid-dashboards: sig-node-presubmits
       testgrid-tab-name: pr-kubelet-serial-gce-e2e-memory-manager
       description: Executes memory manager e2e node tests
     labels:
@@ -664,7 +664,7 @@ presubmits:
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
-      testgrid-dashboards: sig-node-kubelet
+      testgrid-dashboards: sig-node-presubmits
       testgrid-tab-name: pr-node-memoryqos-cgrpv2
     always_run: false
     optional: true
@@ -706,7 +706,7 @@ presubmits:
     skip_branches:
       - release-\d+\.\d+  # per-release image
     annotations:
-      testgrid-dashboards: sig-node-kubelet
+      testgrid-dashboards: sig-node-presubmits
       testgrid-tab-name: pr-kubelet-gce-e2e-swap-ubuntu
     labels:
       preset-service-account: "true"
@@ -743,7 +743,7 @@ presubmits:
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
-      testgrid-dashboards: sig-node-kubelet
+      testgrid-dashboards: sig-node-presubmits
       testgrid-tab-name: pr-kubelet-gce-e2e-swap-fedora
     always_run: false
     skip_report: false
