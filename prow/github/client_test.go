@@ -80,10 +80,10 @@ func getClient(url string) *client {
 				},
 			},
 			bases:         []string{url},
-			maxRetries:    defaultMaxRetries,
-			max404Retries: defaultMax404Retries,
-			initialDelay:  defaultInitialDelay,
-			maxSleepTime:  defaultMaxSleepTime,
+			maxRetries:    DefaultMaxRetries,
+			max404Retries: DefaultMax404Retries,
+			initialDelay:  DefaultInitialDelay,
+			maxSleepTime:  DefaultMaxSleepTime,
 		},
 	}
 }
@@ -3128,16 +3128,18 @@ func TestV4ClientSetsUserAgent(t *testing.T) {
 		return &http.Response{StatusCode: 200, Body: ioutil.NopCloser(bytes.NewBufferString("{}"))}, nil
 	}}
 
-	_, client := newClient(
+	_, client := NewClientFromOptions(
 		logrus.Fields{},
-		func() []byte { return nil },
-		func(b []byte) []byte { return b },
-		"",
-		nil,
-		"",
-		false,
-		nil,
-		roundTripper,
+		ClientOptions{
+			Censor:           func(b []byte) []byte { return b },
+			GetToken:         func() []byte { return nil },
+			AppID:            "",
+			AppPrivateKey:    nil,
+			GraphqlEndpoint:  "",
+			Bases:            nil,
+			DryRun:           false,
+			BaseRoundTripper: roundTripper,
+		}.Default(),
 	)
 
 	t.Run("User agent gets set initially", func(t *testing.T) {
