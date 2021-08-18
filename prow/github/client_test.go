@@ -2953,9 +2953,6 @@ func (rt testRoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
 func TestAllMethodsThatDoRequestSetOrgHeader(t *testing.T) {
 	_, ghClient := NewAppsAuthClientWithFields(logrus.Fields{}, func(_ []byte) []byte { return nil }, "some-app-id", func() *rsa.PrivateKey { return nil }, "", "")
 	toSkip := sets.NewString(
-		// Doesn't support github apps
-		"Query",
-		// They fetch the user, which doesn't exist in case of github app.
 		// TODO: Split the search query by org when app auth is used
 		"FindIssues",
 		// Bound to user, not org specific

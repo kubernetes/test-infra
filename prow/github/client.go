@@ -259,7 +259,6 @@ type Client interface {
 	GetApp() (*App, error)
 
 	Throttle(hourlyTokens, burst int, org ...string) error
-	Query(ctx context.Context, q interface{}, vars map[string]interface{}) error
 	QueryWithGitHubAppsSupport(ctx context.Context, q interface{}, vars map[string]interface{}, org string) error
 
 	SetMax404Retries(int)
@@ -3342,10 +3341,6 @@ func (c *client) GetFile(org, repo, filepath, commit string) ([]byte, error) {
 	}
 
 	return decoded, nil
-}
-
-func (c *client) Query(ctx context.Context, q interface{}, vars map[string]interface{}) error {
-	return c.QueryWithGitHubAppsSupport(ctx, q, vars, "")
 }
 
 // QueryWithGitHubAppsSupport runs a GraphQL query using shurcooL/githubql's client.
