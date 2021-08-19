@@ -40,7 +40,6 @@ import (
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
-
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 
@@ -632,7 +631,11 @@ func (o ClientOptions) Default() ClientOptions {
 	return o
 }
 
-type GitHubAppTokenGenerator func(org string) (string, error)
+// TokenGenerator knows how to generate a token for use in git client calls
+type TokenGenerator func(org string) (string, error)
+
+// UserGenerator knows how to identify this user for use in git client calls
+type UserGenerator func() (string, error)
 
 // NewClientWithFields creates a new fully operational GitHub client. With
 // added logging fields.
@@ -642,7 +645,7 @@ type GitHubAppTokenGenerator func(org string) (string, error)
 //   This should be used when using the ghproxy GitHub proxy cache to allow
 //   this client to bypass the cache if it is temporarily unavailable.
 func NewClientWithFields(fields logrus.Fields, getToken func() []byte, censor func([]byte) []byte, graphqlEndpoint string, bases ...string) Client {
-	_, client := NewClientFromOptions(fields, ClientOptions{
+	_, _, client := NewClientFromOptions(fields, ClientOptions{
 		Censor:          censor,
 		GetToken:        getToken,
 		GraphqlEndpoint: graphqlEndpoint,
@@ -652,7 +655,7 @@ func NewClientWithFields(fields logrus.Fields, getToken func() []byte, censor fu
 	return client
 }
 
-func NewAppsAuthClientWithFields(fields logrus.Fields, censor func([]byte) []byte, appID string, appPrivateKey func() *rsa.PrivateKey, graphqlEndpoint string, bases ...string) (GitHubAppTokenGenerator, Client) {
+func NewAppsAuthClientWithFields(fields logrus.Fields, censor func([]byte) []byte, appID string, appPrivateKey func() *rsa.PrivateKey, graphqlEndpoint string, bases ...string) (TokenGenerator, UserGenerator, Client) {
 	return NewClientFromOptions(fields, ClientOptions{
 		Censor:          censor,
 		AppID:           appID,
@@ -664,13 +667,10 @@ func NewAppsAuthClientWithFields(fields logrus.Fields, censor func([]byte) []byt
 }
 
 // NewClientFromOptions creates a new client from the options we expose. This method should be used over the more-specific ones.
-func NewClientFromOptions(fields logrus.Fields, options ClientOptions) (GitHubAppTokenGenerator, Client) {
+func NewClientFromOptions(fields logrus.Fields, options ClientOptions) (TokenGenerator, UserGenerator, Client) {
 	// Will be nil if github app authentication is used
 	if options.GetToken == nil {
 		options.GetToken = func() []byte { return nil }
-	}
-	appsTokenGenerator := func(_ string) (string, error) {
-		return "", errors.New("BUG: GitHub apps authentication is not enabled, you shouldn't see this. Please report this in https://github.com/kubernetes/test-infra")
 	}
 	if options.BaseRoundTripper == nil {
 		options.BaseRoundTripper = http.DefaultTransport
@@ -708,6 +708,9 @@ func NewClientFromOptions(fields logrus.Fields, options ClientOptions) (GitHubAp
 		},
 	}
 	c.gqlc = c.gqlc.forUserAgent(c.userAgent())
+
+	var tokenGenerator func(_ string) (string, error)
+	var userGenerator func() (string, error)
 	if options.AppID != "" {
 		appsTransport := &appsRoundTripper{
 			appID:        options.AppID,
@@ -717,10 +720,28 @@ func NewClientFromOptions(fields logrus.Fields, options ClientOptions) (GitHubAp
 		}
 		httpClient.Transport = appsTransport
 		graphQLTransport.upstream = appsTransport
-		appsTokenGenerator = appsTransport.installationTokenFor
+
+		// Use github apps auth for git actions
+		// https://docs.github.com/en/free-pro-team@latest/developers/apps/authenticating-with-github-apps#http-based-git-access-by-an-installation=
+		tokenGenerator = appsTransport.installationTokenFor
+		userGenerator = func() (string, error) {
+			return "x-access-token", nil
+		}
+	} else {
+		// Use Personal Access token auth for git actions
+		tokenGenerator = func(_ string) (string, error) {
+			return string(options.GetToken()), nil
+		}
+		userGenerator = func() (string, error) {
+			user, err := c.BotUser()
+			if err != nil {
+				return "", err
+			}
+			return user.Login, nil
+		}
 	}
 
-	return appsTokenGenerator, c
+	return tokenGenerator, userGenerator, c
 }
 
 type graphQLGitHubAppsAuthClientWrapper struct {
@@ -782,7 +803,7 @@ func NewClient(getToken func() []byte, censor func([]byte) []byte, graphqlEndpoi
 //   This should be used when using the ghproxy GitHub proxy cache to allow
 //   this client to bypass the cache if it is temporarily unavailable.
 func NewDryRunClientWithFields(fields logrus.Fields, getToken func() []byte, censor func([]byte) []byte, graphqlEndpoint string, bases ...string) Client {
-	_, client := NewClientFromOptions(fields, ClientOptions{
+	_, _, client := NewClientFromOptions(fields, ClientOptions{
 		Censor:          censor,
 		GetToken:        getToken,
 		GraphqlEndpoint: graphqlEndpoint,
@@ -795,7 +816,7 @@ func NewDryRunClientWithFields(fields logrus.Fields, getToken func() []byte, cen
 // NewAppsAuthDryRunClientWithFields creates a new client that will not perform mutating actions
 // such as setting statuses or commenting, but it will still query GitHub and
 // use up API tokens. Additional fields are added to the logger.
-func NewAppsAuthDryRunClientWithFields(fields logrus.Fields, censor func([]byte) []byte, appId string, appPrivateKey func() *rsa.PrivateKey, graphqlEndpoint string, bases ...string) (GitHubAppTokenGenerator, Client) {
+func NewAppsAuthDryRunClientWithFields(fields logrus.Fields, censor func([]byte) []byte, appId string, appPrivateKey func() *rsa.PrivateKey, graphqlEndpoint string, bases ...string) (TokenGenerator, UserGenerator, Client) {
 	return NewClientFromOptions(fields, ClientOptions{
 		Censor:          censor,
 		AppID:           appId,

@@ -55,8 +55,9 @@ type GitHubOptions struct {
 	OrgThrottlers       Strings
 	parsedOrgThrottlers map[string]throttlerSettings
 
-	// This will only be set after a github client was retrieved for the first time
-	appsTokenGenerator github.GitHubAppTokenGenerator
+	// These will only be set after a github client was retrieved for the first time
+	tokenGenerator github.TokenGenerator
+	userGenerator  github.UserGenerator
 
 	// the following options determine how the client behaves around retries
 	maxRequestTime time.Duration
@@ -296,8 +297,9 @@ func (o *GitHubOptions) githubClient(dryRun bool) (github.Client, error) {
 		return c, nil
 	}
 
-	appsTokenGenerator, client := github.NewClientFromOptions(fields, options)
-	o.appsTokenGenerator = appsTokenGenerator
+	tokenGenerator, userGenerator, client := github.NewClientFromOptions(fields, options)
+	o.tokenGenerator = tokenGenerator
+	o.userGenerator = userGenerator
 	return optionallyThrottled(client)
 }
 
@@ -325,7 +327,7 @@ func (o *GitHubOptions) GitHubClient(dryRun bool) (github.Client, error) {
 func (o *GitHubOptions) GitHubClientWithAccessToken(token string) github.Client {
 	options := o.baseClientOptions()
 	options.GetToken = func() []byte { return []byte(token) }
-	_, client := github.NewClientFromOptions(logrus.Fields{}, options)
+	_, _, client := github.NewClientFromOptions(logrus.Fields{}, options)
 	return client
 }
 
@@ -355,25 +357,16 @@ func (o *GitHubOptions) GitClient(dryRun bool) (client *git.Client, err error) {
 }
 
 func (o *GitHubOptions) getGitAuthentication(dryRun bool) (string, git.GitTokenGenerator, error) {
-	githubClient, err := o.GitHubClient(dryRun)
+	// the client must have been created at least once for us to have generators
+	if o.userGenerator == nil {
+		if _, err := o.GitHubClient(dryRun); err != nil {
+			return "", nil, fmt.Errorf("error getting GitHub client: %v", err)
+		}
+	}
+
+	login, err := o.userGenerator()
 	if err != nil {
-		return "", nil, fmt.Errorf("error getting GitHub client: %v", err)
+		return "", nil, fmt.Errorf("error getting bot name: %w", err)
 	}
-
-	// Use Personal Access token auth
-	if o.appsTokenGenerator == nil {
-		botUser, err := githubClient.BotUser()
-		if err != nil {
-			return "", nil, fmt.Errorf("error getting bot name: %v", err)
-		}
-		generator := func(_ string) (string, error) {
-			return string(secret.GetTokenGenerator(o.TokenPath)()), nil
-		}
-
-		return botUser.Login, generator, nil
-	}
-
-	// Use github apps auth
-	// https://docs.github.com/en/free-pro-team@latest/developers/apps/authenticating-with-github-apps#http-based-git-access-by-an-installation
-	return "x-access-token", git.GitTokenGenerator(o.appsTokenGenerator), nil
+	return login, git.GitTokenGenerator(o.tokenGenerator), nil
 }

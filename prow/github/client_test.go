@@ -2951,7 +2951,7 @@ func (rt testRoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
 // their arguments and calls them with an empty argument, then verifies via a RoundTripper that
 // all requests made had an org header set.
 func TestAllMethodsThatDoRequestSetOrgHeader(t *testing.T) {
-	_, ghClient := NewAppsAuthClientWithFields(logrus.Fields{}, func(_ []byte) []byte { return nil }, "some-app-id", func() *rsa.PrivateKey { return nil }, "", "")
+	_, _, ghClient := NewAppsAuthClientWithFields(logrus.Fields{}, func(_ []byte) []byte { return nil }, "some-app-id", func() *rsa.PrivateKey { return nil }, "", "")
 	toSkip := sets.NewString(
 		// TODO: Split the search query by org when app auth is used
 		"FindIssues",
@@ -3125,7 +3125,7 @@ func TestV4ClientSetsUserAgent(t *testing.T) {
 		return &http.Response{StatusCode: 200, Body: ioutil.NopCloser(bytes.NewBufferString("{}"))}, nil
 	}}
 
-	_, client := NewClientFromOptions(
+	_, _, client := NewClientFromOptions(
 		logrus.Fields{},
 		ClientOptions{
 			Censor:           func(b []byte) []byte { return b },
