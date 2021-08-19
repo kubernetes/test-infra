@@ -203,9 +203,9 @@ Each crier controller takes in a reporter.
 Each reporter will implement the following interface:
 ```go
 type reportClient interface {
-	Report(pj *v1.ProwJob) error
+	Report(ctx context.Context, log *logrus.Entry, pj *prowv1.ProwJob) ([]*prowv1.ProwJob, *reconcile.Result, error)
 	GetName() string
-	ShouldReport(pj *v1.ProwJob) bool
+	ShouldReport(ctx context.Context, log *logrus.Entry, pj *prowv1.ProwJob) bool
 }
 ```
 
