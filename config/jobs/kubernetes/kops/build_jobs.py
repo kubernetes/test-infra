@@ -606,6 +606,7 @@ def generate_misc():
                    cloud="aws",
                    networking="cilium",
                    distro="u2004",
+                   k8s_version='1.21', # TODO(rifelpet): remove when kops#11689 is addressed
                    kops_channel="alpha",
                    runs_per_day=1,
                    scenario="aws-lb-controller",
@@ -615,6 +616,7 @@ def generate_misc():
                    cloud="aws",
                    networking="cilium",
                    distro="u2004",
+                   k8s_version='1.21', # TODO(rifelpet): remove when kops#11689 is addressed
                    kops_channel="alpha",
                    runs_per_day=3,
                    scenario="aws-lb-controller",
@@ -669,12 +671,13 @@ def generate_distros():
 def generate_network_plugins():
 
     plugins = ['amazon-vpc', 'calico', 'canal', 'cilium', 'cilium-etcd', 'flannel', 'kopeio', 'kuberouter', 'weave'] # pylint: disable=line-too-long
+    plugins_121 = ['amazon-vpc', 'canal'] # TODO(rifelpet): remove when kops#11689 is addressed
     results = []
     for plugin in plugins:
         networking_arg = plugin.replace('amazon-vpc', 'amazonvpc').replace('kuberouter', 'kube-router') # pylint: disable=line-too-long
         results.append(
             build_test(
-                k8s_version='stable',
+                k8s_version='1.21' if plugin in plugins_121 else 'stable',
                 kops_channel='alpha',
                 name_override=f"kops-aws-cni-{plugin}",
                 networking=networking_arg,
