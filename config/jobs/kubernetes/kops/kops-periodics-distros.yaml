@@ -697,7 +697,7 @@ periodics:
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "flatcar", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-distro-imageflatcar
-  cron: '36 6-23/2 * * *'
+  cron: '36 6-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"

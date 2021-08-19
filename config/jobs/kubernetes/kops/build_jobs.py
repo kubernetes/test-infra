@@ -173,9 +173,9 @@ def build_test(cloud='aws',
         dashboards.extend(extra_dashboards)
 
     days_of_results = 90
-    if runs_per_week * days_of_results > 4000:
+    if runs_per_week * days_of_results > 3000:
         # testgrid has a limit on number of test runs to show for a job
-        days_of_results = math.floor(4000 / runs_per_week)
+        days_of_results = math.floor(3000 / runs_per_week)
     annotations = {
         'testgrid-dashboards': ', '.join(sorted(dashboards)),
         'testgrid-days-of-results': str(days_of_results),
@@ -801,7 +801,7 @@ def generate_presubmits_network_plugins():
         'kuberouter': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.kuberouter\/|upup\/pkg\/fi\/cloudup\/template_functions.go)', # pylint: disable=line-too-long
         'weave': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.weave\/|upup\/pkg\/fi\/cloudup\/template_functions.go)' # pylint: disable=line-too-long
     }
-    plugins_121 = ['amazon-vpc', 'canal'] # TODO(rifelpet): remove when kops#11689 is addressed
+    plugins_121 = ['amazonvpc', 'canal'] # TODO(rifelpet): remove when kops#11689 is addressed
     results = []
     for plugin, run_if_changed in plugins.items():
         networking_arg = plugin
