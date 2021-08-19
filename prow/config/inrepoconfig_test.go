@@ -671,6 +671,11 @@ func TestInRepoConfigGitCacheConcurrency(t *testing.T) {
 	org, repo1, repo2 := "org", "repo1", "repo2"
 	// block channels are populated from the main thread, signal channels are read from the main thread.
 	signal := make(chan bool)
+	// We make Threads 1 and 2 both write to sharedRepo1State, so that the race
+	// detector can catch a case where both threads could attempt to write to it
+	// at the same time. As long as ClientFor() hands out locked clients (that
+	// are only unlocked with Clean()), Threads 1 and 2 will not write to
+	// sharedRepo1State at the same time.
 	sharedRepo1State := 0
 
 	// Thread 1: gets a client for repo1, signals on signal1, then blocks on block1 before Clean()ing the repo1 client.
