@@ -1,11 +1,11 @@
 # sigs.k8s.io/scheduler-plugins presubmits
 presubmits:
   kubernetes-sigs/scheduler-plugins:
-  - name: pull-scheduler-plugins-verify-gofmt-master
+  - name: pull-scheduler-plugins-verify-gofmt-release-1-20
     decorate: true
     path_alias: sigs.k8s.io/scheduler-plugins
     branches:
-    - ^master$
+    - ^release-1.20$
     always_run: true
     spec:
       containers:
@@ -14,11 +14,11 @@ presubmits:
         - make
         args:
         - verify-gofmt
-  - name: pull-scheduler-plugins-verify-build-master
+  - name: pull-scheduler-plugins-verify-build-release-1-20
     decorate: true
     path_alias: sigs.k8s.io/scheduler-plugins
     branches:
-    - ^master$
+    - ^release-1.20$
     always_run: true
     spec:
       containers:
@@ -27,11 +27,11 @@ presubmits:
         - make
         args:
         - build
-  - name: pull-scheduler-plugins-unit-test-master
+  - name: pull-scheduler-plugins-unit-test-release-1-20
     decorate: true
     path_alias: sigs.k8s.io/scheduler-plugins
     branches:
-    - ^master$
+    - ^release-1.20$
     always_run: true
     spec:
       containers:
@@ -40,11 +40,11 @@ presubmits:
         - make
         args:
         - unit-test
-  - name: pull-scheduler-plugins-integration-test-master
+  - name: pull-scheduler-plugins-integration-test-release-1-20
     decorate: true
     path_alias: sigs.k8s.io/scheduler-plugins
     branches:
-    - ^master$
+    - ^release-1.20$
     always_run: true
     spec:
       containers:
