@@ -41,8 +41,10 @@ spec:
         image: gcr.io/k8s-prow/deck:v20210818-b81cb0bc7b
         imagePullPolicy: Always
         ports:
-          - name: http
-            containerPort: 8080
+        - name: http
+          containerPort: 8080
+        - name: metrics
+          containerPort: 9090
         args:
         - --tide-url=http://tide/
         - --hook-url=http://hook:8888/plugin-help

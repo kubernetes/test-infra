@@ -47,6 +47,8 @@ spec:
         ports:
         - name: http
           containerPort: 8888
+        - name: metrics
+          containerPort: 9090
         volumeMounts:
         - name: oauth
           mountPath: /etc/github
