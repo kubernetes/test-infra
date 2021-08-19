@@ -801,7 +801,7 @@ def generate_presubmits_network_plugins():
         'kuberouter': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.kuberouter\/|upup\/pkg\/fi\/cloudup\/template_functions.go)', # pylint: disable=line-too-long
         'weave': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.weave\/|upup\/pkg\/fi\/cloudup\/template_functions.go)' # pylint: disable=line-too-long
     }
-    plugins_121 = ['amazon-vpc', 'canal'] # TODO(rifelpet): remove when kops#11689 is addressed
+    plugins_121 = ['amazonvpc', 'canal'] # TODO(rifelpet): remove when kops#11689 is addressed
     results = []
     for plugin, run_if_changed in plugins.items():
         networking_arg = plugin
