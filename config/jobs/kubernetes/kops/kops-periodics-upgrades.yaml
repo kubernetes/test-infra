@@ -63,7 +63,7 @@ periodics:
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-kubetest2, kops-latest, kops-misc, sig-cluster-lifecycle-kops
-    testgrid-days-of-results: '47'
+    testgrid-days-of-results: '35'
     testgrid-tab-name: kops-aws-upgrade-k121-ko121-to-klatest-kolatest
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
@@ -127,7 +127,7 @@ periodics:
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-kubetest2, kops-latest, kops-misc, sig-cluster-lifecycle-kops
-    testgrid-days-of-results: '47'
+    testgrid-days-of-results: '35'
     testgrid-tab-name: kops-aws-upgrade-k120-ko120-to-k121-ko121
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
@@ -191,7 +191,7 @@ periodics:
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-kubetest2, kops-latest, kops-misc, sig-cluster-lifecycle-kops
-    testgrid-days-of-results: '47'
+    testgrid-days-of-results: '35'
     testgrid-tab-name: kops-aws-upgrade-k119-ko119-to-k120-ko120
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
@@ -255,7 +255,7 @@ periodics:
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-kubetest2, kops-latest, kops-misc, sig-cluster-lifecycle-kops
-    testgrid-days-of-results: '47'
+    testgrid-days-of-results: '35'
     testgrid-tab-name: kops-aws-upgrade-k120-kolatest-to-k121-kolatest
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
@@ -319,5 +319,5 @@ periodics:
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-kubetest2, kops-latest, kops-misc, sig-cluster-lifecycle-kops
-    testgrid-days-of-results: '47'
+    testgrid-days-of-results: '35'
     testgrid-tab-name: kops-aws-upgrade-k120-ko120-to-k121-kolatest
