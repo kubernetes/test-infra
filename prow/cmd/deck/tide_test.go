@@ -30,7 +30,7 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
 
-func TestFilterHidden(t *testing.T) {
+func TestFilter(t *testing.T) {
 	exampleConfigNoDefaults := config.Config{
 		ProwConfig: config.ProwConfig{
 			ProwJobDefaultEntries: []*config.ProwJobDefaultEntry{
@@ -702,9 +702,9 @@ func TestFilterHidden(t *testing.T) {
 			cfg:        test.cfg,
 		}
 
-		gotQueries := ta.filterHiddenQueries(test.queries)
-		gotPools := ta.filterHiddenPools(test.pools)
-		gotHist := ta.filterHiddenHistory(test.hist)
+		gotQueries := ta.filterQueries(test.queries)
+		gotPools := ta.filterPools(test.pools)
+		gotHist := ta.filterHistory(test.hist)
 		if !equality.Semantic.DeepEqual(gotQueries, test.expectedQueries) {
 			t.Errorf("expected queries:\n%v\ngot queries:\n%v\n", test.expectedQueries, gotQueries)
 		}

@@ -137,7 +137,7 @@ func (ta *tideAgent) updatePools() error {
 	if err := fetchTideData(ta.log, ta.path, &pools); err != nil {
 		return err
 	}
-	pools = ta.filterHiddenPools(pools)
+	pools = ta.filterPools(pools)
 
 	ta.Lock()
 	defer ta.Unlock()
@@ -151,7 +151,7 @@ func (ta *tideAgent) updateHistory() error {
 	if err := fetchTideData(ta.log, path, &history); err != nil {
 		return err
 	}
-	history = ta.filterHiddenHistory(history)
+	history = ta.filterHistory(history)
 
 	ta.Lock()
 	defer ta.Unlock()
@@ -160,21 +160,23 @@ func (ta *tideAgent) updateHistory() error {
 }
 
 func (ta *tideAgent) matchingIDs(ids []string) bool {
-	return len(ids) > 0 && len(ta.tenantIDs) > 0 && sets.String{}.Insert(ta.tenantIDs...).HasAll(ids...)
+	return len(ids) > 0 && sets.String{}.Insert(ta.tenantIDs...).HasAll(ids...)
 }
 
-func (ta *tideAgent) filterHiddenPools(pools []tide.Pool) []tide.Pool {
+func (ta *tideAgent) filterPools(pools []tide.Pool) []tide.Pool {
 	filtered := make([]tide.Pool, 0, len(pools))
 	for _, pool := range pools {
 		// curIDs are the IDs associated with all PJs in the Pool
 		// We want to add the ID associated with the OrgRepo for extra protection
-		curIDs := sets.String{}.Insert(pool.TenantIDs...)
+		curIDs := sets.NewString(pool.TenantIDs...)
 		orgRepoID := ta.cfg.GetProwJobDefault(pool.Org+"/"+pool.Repo, "*").TenantID
-		// If OrgRepo is associated with no TenantID, ignore it.
+		// If the orgrepo is associated with no tenantID OR the default tenantID we ignore it here.
+		// This prevents already IDd pools from getting the default ID assigned to them when their orgrepo is not associated with an OrgRepo.
+		// Pools with no tenantID and with default tenantID behave the same, so adding the default ID just causes issues
 		if orgRepoID != "" && orgRepoID != config.DefaultTenantID {
 			curIDs.Insert(orgRepoID)
 		}
-		if ta.matchingIDs(curIDs.List()) {
+		if len(ta.tenantIDs) > 0 && ta.matchingIDs(curIDs.List()) {
 			// Deck has tenantIDs and they match with the pool
 			filtered = append(filtered, pool)
 		} else if len(ta.tenantIDs) == 0 {
@@ -209,17 +211,19 @@ func recordIDs(records []history.Record) sets.String {
 	return res
 }
 
-func (ta *tideAgent) filterHiddenHistory(hist map[string][]history.Record) map[string][]history.Record {
+func (ta *tideAgent) filterHistory(hist map[string][]history.Record) map[string][]history.Record {
 	filtered := make(map[string][]history.Record, len(hist))
 	for pool, records := range hist {
 		orgRepo := strings.Split(pool, ":")[0]
 		curIDs := recordIDs(records).Insert()
 		orgRepoID := ta.cfg.GetProwJobDefault(orgRepo, "*").TenantID
-		// If OrgRepo is associated with no TenantID, ignore it.
+		// If the orgrepo is associated with no tenantID OR the default tenantID we ignore it here.
+		// This prevents already IDd History from getting the default ID assigned to them when their orgrepo is not associated with an OrgRepo.
+		// History with no tenantID and with default tenantID behave the same, so adding the default ID just causes issues
 		if orgRepoID != "" && orgRepoID != config.DefaultTenantID {
 			curIDs.Insert(orgRepoID)
 		}
-		if ta.matchingIDs(curIDs.List()) {
+		if len(ta.tenantIDs) > 0 && ta.matchingIDs(curIDs.List()) {
 			// Deck has tenantIDs and they match with the History
 			filtered[pool] = records
 		} else if len(ta.tenantIDs) == 0 {
@@ -234,12 +238,12 @@ func (ta *tideAgent) filterHiddenHistory(hist map[string][]history.Record) map[s
 	return filtered
 }
 
-func (ta *tideAgent) filterHiddenQueries(queries []config.TideQuery) []config.TideQuery {
+func (ta *tideAgent) filterQueries(queries []config.TideQuery) []config.TideQuery {
 	filtered := make([]config.TideQuery, 0, len(queries))
 	for _, qc := range queries {
 		curIDs := qc.TenantIDs(ta.cfg)
 		needsHide := false
-		if ta.matchingIDs(curIDs) {
+		if len(ta.tenantIDs) > 0 && ta.matchingIDs(curIDs) {
 			// Deck has tenantIDs and they match with the Query
 			filtered = append(filtered, qc)
 		} else if len(ta.tenantIDs) == 0 {
