@@ -354,16 +354,15 @@ var (
 
 const (
 	acceptNone = ""
+	// Abort requests that don't return in 5 mins. Longest graphql calls can
+	// take up to 2 minutes. This limit should ensure all successful calls return
+	// but will prevent an indefinite stall if GitHub never responds.
+	maxRequestTime = 5 * time.Minute
 
-	// MaxRequestTime aborts requests that don't return in 5 mins. Longest graphql
-	// calls can take up to 2 minutes. This limit should ensure all successful calls
-	// return but will prevent an indefinite stall if GitHub never responds.
-	MaxRequestTime = 5 * time.Minute
-
-	DefaultMaxRetries    = 8
-	DefaultMax404Retries = 2
-	DefaultMaxSleepTime  = 2 * time.Minute
-	DefaultInitialDelay  = 2 * time.Second
+	defaultMaxRetries    = 8
+	defaultMax404Retries = 2
+	defaultMaxSleepTime  = 2 * time.Minute
+	defaultInitialDelay  = 2 * time.Second
 )
 
 // Force the compiler to check if the TokenSource is implementing correctly.
@@ -590,48 +589,6 @@ func (c *client) SetMax404Retries(max int) {
 	c.max404Retries = max
 }
 
-// ClientOptions holds options for creating a new client
-type ClientOptions struct {
-	// censor knows how to censor output
-	Censor func([]byte) []byte
-
-	// the following fields handle auth
-	GetToken      func() []byte
-	AppID         string
-	AppPrivateKey func() *rsa.PrivateKey
-
-	// the following fields determine which server we talk to
-	GraphqlEndpoint string
-	Bases           []string
-
-	// the following fields determine client retry behavior
-	MaxRequestTime, InitialDelay, MaxSleepTime time.Duration
-	MaxRetries, Max404Retries                  int
-
-	DryRun bool
-	// BaseRoundTripper is the last RoundTripper to be called. Used for testing, gets defaulted to http.DefaultTransport
-	BaseRoundTripper http.RoundTripper
-}
-
-func (o ClientOptions) Default() ClientOptions {
-	if o.MaxRequestTime == 0 {
-		o.MaxRequestTime = MaxRequestTime
-	}
-	if o.InitialDelay == 0 {
-		o.InitialDelay = DefaultInitialDelay
-	}
-	if o.MaxSleepTime == 0 {
-		o.MaxSleepTime = DefaultMaxSleepTime
-	}
-	if o.MaxRetries == 0 {
-		o.MaxRetries = DefaultMaxRetries
-	}
-	if o.Max404Retries == 0 {
-		o.Max404Retries = DefaultMax404Retries
-	}
-	return o
-}
-
 type GitHubAppTokenGenerator func(org string) (string, error)
 
 // NewClientWithFields creates a new fully operational GitHub client. With
@@ -642,77 +599,73 @@ type GitHubAppTokenGenerator func(org string) (string, error)
 //   This should be used when using the ghproxy GitHub proxy cache to allow
 //   this client to bypass the cache if it is temporarily unavailable.
 func NewClientWithFields(fields logrus.Fields, getToken func() []byte, censor func([]byte) []byte, graphqlEndpoint string, bases ...string) Client {
-	_, client := NewClientFromOptions(fields, ClientOptions{
-		Censor:          censor,
-		GetToken:        getToken,
-		GraphqlEndpoint: graphqlEndpoint,
-		Bases:           bases,
-		DryRun:          false,
-	}.Default())
+	_, client := newClient(fields, getToken, censor, "", nil, graphqlEndpoint, false, bases, nil)
 	return client
 }
 
 func NewAppsAuthClientWithFields(fields logrus.Fields, censor func([]byte) []byte, appID string, appPrivateKey func() *rsa.PrivateKey, graphqlEndpoint string, bases ...string) (GitHubAppTokenGenerator, Client) {
-	return NewClientFromOptions(fields, ClientOptions{
-		Censor:          censor,
-		AppID:           appID,
-		AppPrivateKey:   appPrivateKey,
-		GraphqlEndpoint: graphqlEndpoint,
-		Bases:           bases,
-		DryRun:          false,
-	}.Default())
+	return newClient(fields, nil, censor, appID, appPrivateKey, graphqlEndpoint, false, bases, nil)
 }
 
-// NewClientFromOptions creates a new client from the options we expose. This method should be used over the more-specific ones.
-func NewClientFromOptions(fields logrus.Fields, options ClientOptions) (GitHubAppTokenGenerator, Client) {
+func newClient(
+	fields logrus.Fields,
+	getToken func() []byte,
+	censor func([]byte) []byte,
+	appID string,
+	appPrivateKey func() *rsa.PrivateKey,
+	graphqlEndpoint string,
+	dryRun bool,
+	bases []string,
+	baseRoundTripper http.RoundTripper, // baseRoundTripper is the last RoundTripper to be called. Used for testing, gets defaulted to http.DefaultTransport
+) (GitHubAppTokenGenerator, Client) {
 	// Will be nil if github app authentication is used
-	if options.GetToken == nil {
-		options.GetToken = func() []byte { return nil }
+	if getToken == nil {
+		getToken = func() []byte { return nil }
 	}
 	appsTokenGenerator := func(_ string) (string, error) {
 		return "", errors.New("BUG: GitHub apps authentication is not enabled, you shouldn't see this. Please report this in https://github.com/kubernetes/test-infra")
 	}
-	if options.BaseRoundTripper == nil {
-		options.BaseRoundTripper = http.DefaultTransport
+	if baseRoundTripper == nil {
+		baseRoundTripper = http.DefaultTransport
 	}
 
 	httpClient := &http.Client{
-		Transport: options.BaseRoundTripper,
-		Timeout:   options.MaxRequestTime,
+		Transport: baseRoundTripper,
+		Timeout:   maxRequestTime,
 	}
-	graphQLTransport := newAddHeaderTransport(options.BaseRoundTripper)
+	graphQLTransport := newAddHeaderTransport(baseRoundTripper)
 	c := &client{
 		logger: logrus.WithFields(fields).WithField("client", "github"),
 		gqlc: &graphQLGitHubAppsAuthClientWrapper{Client: githubql.NewEnterpriseClient(
-			options.GraphqlEndpoint,
+			graphqlEndpoint,
 			&http.Client{
-				Timeout: options.MaxRequestTime,
+				Timeout: maxRequestTime,
 				Transport: &oauth2.Transport{
-					Source: newReloadingTokenSource(options.GetToken),
+					Source: newReloadingTokenSource(getToken),
 					Base:   graphQLTransport,
 				},
 			})},
 		delegate: &delegate{
 			time:          &standardTime{},
 			client:        httpClient,
-			bases:         options.Bases,
+			bases:         bases,
 			throttle:      throttler{throttlerDelegate: &throttlerDelegate{}},
-			getToken:      options.GetToken,
-			censor:        options.Censor,
-			dry:           options.DryRun,
-			usesAppsAuth:  options.AppID != "",
-			maxRetries:    options.MaxRetries,
-			max404Retries: options.Max404Retries,
-			initialDelay:  options.InitialDelay,
-			maxSleepTime:  options.MaxSleepTime,
+			getToken:      getToken,
+			censor:        censor,
+			dry:           dryRun,
+			usesAppsAuth:  appID != "",
+			maxRetries:    defaultMaxRetries,
+			max404Retries: defaultMax404Retries,
+			initialDelay:  defaultInitialDelay,
+			maxSleepTime:  defaultMaxSleepTime,
 		},
 	}
 	c.gqlc = c.gqlc.forUserAgent(c.userAgent())
-	if options.AppID != "" {
+	if appID != "" {
 		appsTransport := &appsRoundTripper{
-			appID:        options.AppID,
-			privateKey:   options.AppPrivateKey,
-			upstream:     options.BaseRoundTripper,
+			appID:        appID,
+			privateKey:   appPrivateKey,
+			upstream:     baseRoundTripper,
 			githubClient: c,
 		}
 		httpClient.Transport = appsTransport
@@ -782,13 +735,7 @@ func NewClient(getToken func() []byte, censor func([]byte) []byte, graphqlEndpoi
 //   This should be used when using the ghproxy GitHub proxy cache to allow
 //   this client to bypass the cache if it is temporarily unavailable.
 func NewDryRunClientWithFields(fields logrus.Fields, getToken func() []byte, censor func([]byte) []byte, graphqlEndpoint string, bases ...string) Client {
-	_, client := NewClientFromOptions(fields, ClientOptions{
-		Censor:          censor,
-		GetToken:        getToken,
-		GraphqlEndpoint: graphqlEndpoint,
-		Bases:           bases,
-		DryRun:          true,
-	}.Default())
+	_, client := newClient(fields, getToken, censor, "", nil, graphqlEndpoint, true, bases, nil)
 	return client
 }
 
@@ -796,14 +743,7 @@ func NewDryRunClientWithFields(fields logrus.Fields, getToken func() []byte, cen
 // such as setting statuses or commenting, but it will still query GitHub and
 // use up API tokens. Additional fields are added to the logger.
 func NewAppsAuthDryRunClientWithFields(fields logrus.Fields, censor func([]byte) []byte, appId string, appPrivateKey func() *rsa.PrivateKey, graphqlEndpoint string, bases ...string) (GitHubAppTokenGenerator, Client) {
-	return NewClientFromOptions(fields, ClientOptions{
-		Censor:          censor,
-		AppID:           appId,
-		AppPrivateKey:   appPrivateKey,
-		GraphqlEndpoint: graphqlEndpoint,
-		Bases:           bases,
-		DryRun:          false,
-	}.Default())
+	return newClient(fields, nil, censor, appId, appPrivateKey, graphqlEndpoint, true, bases, nil)
 }
 
 // NewDryRunClient creates a new client that will not perform mutating actions

@@ -17,6 +17,7 @@ limitations under the License.
 package flagutil
 
 import (
+	"bytes"
 	"crypto/rsa"
 	"errors"
 	"flag"
@@ -24,7 +25,6 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/dgrijalva/jwt-go/v4"
 	"github.com/sirupsen/logrus"
@@ -57,13 +57,6 @@ type GitHubOptions struct {
 
 	// This will only be set after a github client was retrieved for the first time
 	appsTokenGenerator github.GitHubAppTokenGenerator
-
-	// the following options determine how the client behaves around retries
-	maxRequestTime time.Duration
-	maxRetries     int
-	max404Retries  int
-	initialDelay   time.Duration
-	maxSleepTime   time.Duration
 }
 
 type throttlerSettings struct {
@@ -140,12 +133,6 @@ func (o *GitHubOptions) addFlags(fs *flag.FlagSet, paramFuncs ...FlagParameter) 
 		fs.IntVar(&o.ThrottleAllowBurst, "github-allowed-burst", defaults.ThrottleAllowBurst, "Size of token consumption bursts. If set, --github-hourly-tokens must be positive too and set to a higher or equal number.")
 		fs.Var(&o.OrgThrottlers, "github-throttle-org", "Throttler settings for a specific org in org:hourlyTokens:burst format. Can be passed multiple times. Only valid when using github apps auth.")
 	}
-
-	fs.DurationVar(&o.maxRequestTime, "github-client.request-timeout", github.DefaultMaxSleepTime, "Timeout for any single request to the GitHub API.")
-	fs.IntVar(&o.maxRetries, "github-client.max-retries", github.DefaultMaxRetries, "Maximum number of retries that will be used for a failing request to the GitHub API.")
-	fs.IntVar(&o.max404Retries, "github-client.max-404-retries", github.DefaultMax404Retries, "Maximum number of retries that will be used for a 404-ing request to the GitHub API.")
-	fs.DurationVar(&o.maxSleepTime, "github-client.backoff-timeout", github.DefaultMaxSleepTime, "Largest allowable Retry-After time for requests to the GitHub API.")
-	fs.DurationVar(&o.initialDelay, "github-client.initial-delay", github.DefaultInitialDelay, "Initial delay before retries begin for requests to the GitHub API.")
 }
 
 func (o *GitHubOptions) parseOrgThrottlers() error {
@@ -253,25 +240,27 @@ func (o *GitHubOptions) GitHubClientWithLogFields(dryRun bool, fields logrus.Fie
 
 func (o *GitHubOptions) githubClient(dryRun bool) (github.Client, error) {
 	fields := logrus.Fields{}
-	options := o.baseClientOptions()
-	options.DryRun = dryRun
+	var generator *func() []byte
 	if o.TokenPath == "" {
 		logrus.Warn("empty -github-token-path, will use anonymous github client")
-		options.GetToken = func() []byte {
+		generatorFunc := func() []byte {
 			return []byte{}
 		}
+		generator = &generatorFunc
 	} else {
 		if err := secret.Add(o.TokenPath); err != nil {
 			return nil, fmt.Errorf("failed to add GitHub token to secret agent: %w", err)
 		}
-		options.GetToken = secret.GetTokenGenerator(o.TokenPath)
+		generatorFunc := secret.GetTokenGenerator(o.TokenPath)
+		generator = &generatorFunc
 	}
 
+	var appsGenerator func() *rsa.PrivateKey
 	if o.AppPrivateKeyPath != "" {
 		if err := secret.Add(o.AppPrivateKeyPath); err != nil {
 			return nil, fmt.Errorf("failed to add the the key from --app-private-key-path to secret agent: %w", err)
 		}
-		options.AppPrivateKey = func() *rsa.PrivateKey {
+		appsGenerator = func() *rsa.PrivateKey {
 			raw := secret.GetTokenGenerator(o.AppPrivateKeyPath)()
 			privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(raw)
 			// TODO alvaroaleman: Add hooks to the SecretAgent
@@ -296,24 +285,22 @@ func (o *GitHubOptions) githubClient(dryRun bool) (github.Client, error) {
 		return c, nil
 	}
 
-	appsTokenGenerator, client := github.NewClientFromOptions(fields, options)
-	o.appsTokenGenerator = appsTokenGenerator
-	return optionallyThrottled(client)
-}
-
-// baseClientOptions populates client options that are derived from flags without processing
-func (o *GitHubOptions) baseClientOptions() github.ClientOptions {
-	return github.ClientOptions{
-		Censor:          secret.Censor,
-		AppID:           o.AppID,
-		GraphqlEndpoint: o.graphqlEndpoint,
-		Bases:           o.endpoint.Strings(),
-		MaxRequestTime:  o.maxRequestTime,
-		InitialDelay:    o.initialDelay,
-		MaxSleepTime:    o.maxSleepTime,
-		MaxRetries:      o.maxRetries,
-		Max404Retries:   o.max404Retries,
+	if dryRun {
+		if o.AppPrivateKeyPath != "" {
+			appsTokenGenerator, client := github.NewAppsAuthDryRunClientWithFields(fields, secret.Censor, o.AppID, appsGenerator, o.graphqlEndpoint, o.endpoint.Strings()...)
+			o.appsTokenGenerator = appsTokenGenerator
+			return optionallyThrottled(client)
+		}
+		client := github.NewDryRunClientWithFields(fields, *generator, secret.Censor, o.graphqlEndpoint, o.endpoint.Strings()...)
+		return optionallyThrottled(client)
 	}
+	if o.AppPrivateKeyPath != "" {
+		appsTokenGenerator, client := github.NewAppsAuthClientWithFields(fields, secret.Censor, o.AppID, appsGenerator, o.graphqlEndpoint, o.endpoint.Strings()...)
+		o.appsTokenGenerator = appsTokenGenerator
+		return optionallyThrottled(client)
+	}
+
+	return optionallyThrottled(github.NewClientWithFields(fields, *generator, secret.Censor, o.graphqlEndpoint, o.endpoint.Strings()...))
 }
 
 // GitHubClient returns a GitHub client.
@@ -323,10 +310,16 @@ func (o *GitHubOptions) GitHubClient(dryRun bool) (github.Client, error) {
 
 // GitHubClientWithAccessToken creates a GitHub client from an access token.
 func (o *GitHubOptions) GitHubClientWithAccessToken(token string) github.Client {
-	options := o.baseClientOptions()
-	options.GetToken = func() []byte { return []byte(token) }
-	_, client := github.NewClientFromOptions(logrus.Fields{}, options)
-	return client
+	return github.NewClient(func() []byte { return []byte(token) }, func(content []byte) []byte {
+		trimmedToken := strings.TrimSpace(token)
+		if trimmedToken != token {
+			token = trimmedToken
+		}
+		if token == "" {
+			return content
+		}
+		return bytes.ReplaceAll(content, []byte(token), []byte("CENSORED"))
+	}, o.graphqlEndpoint, o.endpoint.Strings()...)
 }
 
 // GitClient returns a Git client.
