@@ -44,6 +44,9 @@ spec:
         # Use KUBECONFIG envvar rather than --kubeconfig flag in order to provide multiple configs to merge.
         - name: KUBECONFIG
           value: "/etc/kubeconfig/config"
+        ports:
+        - name: metrics
+          containerPort: 9090
         volumeMounts:
         - mountPath: /etc/kubeconfig
           name: kubeconfig

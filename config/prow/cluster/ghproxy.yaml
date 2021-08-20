@@ -60,7 +60,10 @@ spec:
         - --push-gateway=pushgateway
         - --serve-metrics=true
         ports:
-        - containerPort: 8888
+        - name: main
+          containerPort: 8888
+        - name: metrics
+          containerPort: 9090
         volumeMounts:
         - name: cache
           mountPath: /cache
