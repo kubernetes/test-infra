@@ -176,19 +176,21 @@ func (ta *tideAgent) filterPools(pools []tide.Pool) []tide.Pool {
 		if orgRepoID != "" && orgRepoID != config.DefaultTenantID {
 			curIDs.Insert(orgRepoID)
 		}
-		if len(ta.tenantIDs) > 0 && ta.matchingIDs(curIDs.List()) {
-			// Deck has tenantIDs and they match with the pool
-			filtered = append(filtered, pool)
-		} else if len(ta.tenantIDs) == 0 {
-			//Deck has no tenantID
-			needsHide := matches(pool.Org+"/"+pool.Repo, ta.hiddenRepos())
-			if needsHide && (ta.showHidden || ta.hiddenOnly) {
-				// Pool is hidden and Deck is showing hidden
-				filtered = append(filtered, pool)
-			} else if !needsHide && !ta.hiddenOnly && noTenantIDOrDefaultTenantID(curIDs.List()) {
-				// Pool is not hidden and has no tenantID and Deck is not hidden only.
+		if len(ta.tenantIDs) > 0 {
+			// Deck has tenantIDs
+			if ta.matchingIDs(curIDs.List()) {
+				// tenantIDs match with the pool
 				filtered = append(filtered, pool)
 			}
+		} else if needsHide := matches(pool.Org+"/"+pool.Repo, ta.hiddenRepos()); needsHide {
+			// Deck has no tenantIDs, and the Pool needs to be hidden
+			if ta.showHidden || ta.hiddenOnly {
+				// Show hidden or hidden only is true
+				filtered = append(filtered, pool)
+			}
+		} else if !ta.hiddenOnly && noTenantIDOrDefaultTenantID(curIDs.List()) {
+			// Pool is not hidden and has no tenantID and Deck is not hidden only.
+			filtered = append(filtered, pool)
 		}
 	}
 	return filtered
@@ -223,16 +225,17 @@ func (ta *tideAgent) filterHistory(hist map[string][]history.Record) map[string]
 		if orgRepoID != "" && orgRepoID != config.DefaultTenantID {
 			curIDs.Insert(orgRepoID)
 		}
-		if len(ta.tenantIDs) > 0 && ta.matchingIDs(curIDs.List()) {
-			// Deck has tenantIDs and they match with the History
-			filtered[pool] = records
-		} else if len(ta.tenantIDs) == 0 {
-			needsHide := matches(orgRepo, ta.hiddenRepos())
-			if needsHide && (ta.showHidden || ta.hiddenOnly) {
-				filtered[pool] = records
-			} else if !needsHide && !ta.hiddenOnly && noTenantIDOrDefaultTenantID(curIDs.List()) {
+		if len(ta.tenantIDs) > 0 {
+			if ta.matchingIDs(curIDs.List()) {
+				// Deck has tenantIDs and they match with the History
 				filtered[pool] = records
 			}
+		} else if needsHide := matches(orgRepo, ta.hiddenRepos()); needsHide {
+			if ta.showHidden || ta.hiddenOnly {
+				filtered[pool] = records
+			}
+		} else if !ta.hiddenOnly && noTenantIDOrDefaultTenantID(curIDs.List()) {
+			filtered[pool] = records
 		}
 	}
 	return filtered
