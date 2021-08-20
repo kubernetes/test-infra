@@ -4,7 +4,7 @@ images:
     image_family: cos-89-lts
     project: cos-cloud
     machine: n1-standard-16
-    metadata: "user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled"
+    metadata: "user-data</workspace/test-infra/jobs/e2e_node/gci-init.yaml,gci-update-strategy=update_disabled"
     tests:
       - 'Node Performance Testing'
   ubuntu:

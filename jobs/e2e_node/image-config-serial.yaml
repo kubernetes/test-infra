@@ -10,7 +10,7 @@ images:
     image_family: cos-81-lts # deprecated after 2021-06-24
     project: cos-cloud
     machine: n1-standard-2 # These tests need a lot of memory
-    metadata: "user-data<test/e2e_node/jenkins/gci-init-gpu.yaml,gci-update-strategy=update_disabled"
+    metadata: "user-data</workspace/test-infra/jobs/e2e_node/gci-init-gpu.yaml,gci-update-strategy=update_disabled"
     resources:
       accelerators:
         - type: nvidia-tesla-k80
@@ -19,4 +19,4 @@ images:
     image_family: cos-89-lts # deprecated after 2021-12-17
     project: cos-cloud
     machine: n1-standard-2 # These tests need a lot of memory
-    metadata: "user-data<test/e2e_node/jenkins/cos-init-live-restore.yaml,gci-update-strategy=update_disabled"
+    metadata: "user-data</workspace/test-infra/jobs/e2e_node/cos-init-live-restore.yaml,gci-update-strategy=update_disabled"
