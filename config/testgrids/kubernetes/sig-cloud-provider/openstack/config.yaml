@@ -2,6 +2,7 @@ dashboard_groups:
 - name: provider-openstack
   dashboard_names:
     - provider-openstack-cloud-provider-openstack
+    - provider-openstack-openstack-cloud-controller-manager
 
 dashboards:
 - name: provider-openstack-cloud-provider-openstack
@@ -9,11 +10,6 @@ dashboards:
     - name: presubmit-master
       description: Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-openstack
       test_group_name: ci-presubmit-cloud-provider-openstack-acceptance-test-e2e-conformance
-      alert_options:
-        alert_mail_to_addresses: provider.openstack+testgrid@gmail.com
-    - name: presubmit-v1.18
-      description: Runs conformance tests using kubetest against kubernetes v1.18 with cloud-provider-openstack
-      test_group_name: ci-presubmit-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.18
       alert_options:
         alert_mail_to_addresses: provider.openstack+testgrid@gmail.com
     - name: presubmit-v1.19
@@ -31,11 +27,6 @@ dashboards:
       test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance
       alert_options:
         alert_mail_to_addresses: provider.openstack+testgrid@gmail.com
-    - name: periodic-v1.18
-      description: Runs conformance tests using kubetest against kubernetes v1.18 with cloud-provider-openstack
-      test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.18
-      alert_options:
-        alert_mail_to_addresses: provider.openstack+testgrid@gmail.com
     - name: periodic-v1.19
       description: Runs conformance tests using kubetest against kubernetes v1.19 with cloud-provider-openstack
       test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.19
@@ -46,15 +37,11 @@ dashboards:
       test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.20
       alert_options:
         alert_mail_to_addresses: provider.openstack+testgrid@gmail.com
+- name: provider-openstack-openstack-cloud-controller-manager
 
 test_groups:
 - name: ci-presubmit-cloud-provider-openstack-acceptance-test-e2e-conformance
   gcs_prefix: k8s-conform-provider-openstack/pr-logs/ci-cloud-provider-openstack-acceptance-test-e2e-conformance
-  alert_stale_results_hours: 24
-  num_failures_to_alert: 1
-  disable_prowjob_analysis: true
-- name: ci-presubmit-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.18
-  gcs_prefix: k8s-conform-provider-openstack/pr-logs/ci-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.18
   alert_stale_results_hours: 24
   num_failures_to_alert: 1
   disable_prowjob_analysis: true
@@ -70,11 +57,6 @@ test_groups:
   disable_prowjob_analysis: true
 - name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance
   gcs_prefix: k8s-conform-provider-openstack/periodic-logs/ci-cloud-provider-openstack-acceptance-test-e2e-conformance
-  alert_stale_results_hours: 24
-  num_failures_to_alert: 1
-  disable_prowjob_analysis: true
-- name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.18
-  gcs_prefix: k8s-conform-provider-openstack/periodic-logs/ci-cloud-provider-openstack-acceptance-test-e2e-conformance-stable-branch-v1.18
   alert_stale_results_hours: 24
   num_failures_to_alert: 1
   disable_prowjob_analysis: true
