@@ -244,6 +244,39 @@ func TestRunIfChangedPresubmits(t *testing.T) {
 	}
 }
 
+// TestRunIfChangedPostsubmits is identical to TestRunIfChangedPostsubmits.
+func TestRunIfChangedPostsubmits(t *testing.T) {
+	PostsubmitsStatic := []Postsubmit{
+		{
+			JobBase: JobBase{
+				Name: "cross build",
+			},
+			RegexpChangeMatcher: RegexpChangeMatcher{
+				RunIfChanged: `(Makefile|\.sh|_(windows|linux|osx|unknown)(_test)?\.go)$`,
+			},
+		},
+	}
+	SetPostsubmitRegexes(PostsubmitsStatic)
+	ps := PostsubmitsStatic[0]
+	var testcases = []struct {
+		changes  []string
+		expected bool
+	}{
+		{[]string{"some random file"}, false},
+		{[]string{"./pkg/util/rlimit/rlimit_linux.go"}, true},
+		{[]string{"./pkg/util/rlimit/rlimit_unknown_test.go"}, true},
+		{[]string{"build.sh"}, true},
+		{[]string{"build.shoo"}, false},
+		{[]string{"Makefile"}, true},
+	}
+	for _, tc := range testcases {
+		actual := ps.RunsAgainstChanges(tc.changes)
+		if actual != tc.expected {
+			t.Errorf("wrong RunsAgainstChanges(%#v) result. Got %v, expected %v", tc.changes, actual, tc.expected)
+		}
+	}
+}
+
 func TestSkipIfOnlyChangedPresubmits(t *testing.T) {
 	PresubmitsStatic := []Presubmit{
 		{
@@ -261,6 +294,46 @@ func TestSkipIfOnlyChangedPresubmits(t *testing.T) {
 	}
 	SetPresubmitRegexes(PresubmitsStatic)
 	ps := PresubmitsStatic[0]
+	var testcases = []struct {
+		changes  []string
+		expected bool
+	}{
+		{[]string{"some random file"}, true},
+		{[]string{"./pkg/util/rlimit/rlimit_linux.go"}, true},
+		// Skips because in docs/, even though it's a go file. Caveat emptor.
+		{[]string{"docs/cobragen.go"}, false},
+		// Our regex isn't expecting paths to start with ./
+		{[]string{"./docs/cobragen.go"}, true},
+		{[]string{"README", "README.md", "OWNERS", "path/to/something.adoc", "path/to/README"}, false},
+		// Any non-matching file triggers the job
+		{[]string{"README", "README.md", "OWNERS", "path/to/something.adoc", "path/to/README", "foo"}, true},
+	}
+	for _, tc := range testcases {
+		actual := ps.RunsAgainstChanges(tc.changes)
+		if actual != tc.expected {
+			t.Errorf("wrong RunsAgainstChanges(%#v) result. Got %v, expected %v", tc.changes, actual, tc.expected)
+		}
+	}
+}
+
+// TestSkipIfOnlyChangedPostsubmits is identical to TestSkipIfOnlyChangedPresubmits.
+func TestSkipIfOnlyChangedPostsubmits(t *testing.T) {
+	PostsubmitsStatic := []Postsubmit{
+		{
+			JobBase: JobBase{
+				Name: "cross build",
+			},
+			RegexpChangeMatcher: RegexpChangeMatcher{
+				// Files satisfying any of:
+				// - in the top-level docs/ directory
+				// - with .md/.adoc extensions
+				// - with basename README or OWNERS
+				SkipIfOnlyChanged: `^docs/|\.(md|adoc)$|/?(README|OWNERS)$`,
+			},
+		},
+	}
+	SetPostsubmitRegexes(PostsubmitsStatic)
+	ps := PostsubmitsStatic[0]
 	var testcases = []struct {
 		changes  []string
 		expected bool
