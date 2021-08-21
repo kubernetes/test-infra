@@ -51,6 +51,7 @@ readonly IMAGES=(
     volume/rbd
     volume/nfs
     volume/gluster
+    windows-servercore-cache
 )
 
 cat >"${OUTPUT}" <<EOF
