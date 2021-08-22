@@ -85,7 +85,6 @@ aliases:
     - derekwaynecarr
   sig-release-leads:
     - cpanato
-    - hasheddan
     - jeremyrickard
     - justaugustus
     - puerco
@@ -230,13 +229,11 @@ aliases:
   #
   release-engineering-approvers:
     - cpanato # SIG Technical Lead / RelEng subproject owner / Release Manager
-    - hasheddan # SIG Technical Lead / RelEng subproject owner / Release Manager
     - justaugustus # SIG Chair / RelEng subproject owner / Release Manager
     - puerco # SIG Technical Lead / RelEng subproject owner / Release Manager
     - saschagrunert # SIG Chair / RelEng subproject owner / Release Manager
   release-engineering-reviewers:
     - cpanato # SIG Technical Lead / RelEng subproject owner / Release Manager
-    - hasheddan # SIG Technical Lead / RelEng subproject owner / Release Manager
     - justaugustus # SIG Chair / RelEng subproject owner / Release Manager
     - puerco # SIG Technical Lead / RelEng subproject owner / Release Manager
     - saschagrunert # SIG Chair / RelEng subproject owner / Release Manager
