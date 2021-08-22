@@ -1,5 +1,5 @@
 periodics:
-- name: ci-ingress-nginx-e2e-dev-v1
+- name: ci-ingress-nginx-e2e-legacy
   interval: 12h
   max_concurrency: 1
   path_alias: k8s.io/ingress-nginx
@@ -9,7 +9,7 @@ periodics:
   extra_refs:
   - org: kubernetes
     repo: ingress-nginx
-    base_ref: dev-v1
+    base_ref: legacy
     path_alias: k8s.io/ingress-nginx
   skip_submodules: true
   labels:
@@ -31,5 +31,5 @@ periodics:
         value: https://github.com/kubernetes/ingress-nginx
   annotations:
     testgrid-dashboards: sig-network-ingress-nginx
-    testgrid-tab-name: ci-e2e-dev-v1
+    testgrid-tab-name: ci-e2e-legacy
     testgrid-num-columns-recent: '20'
