@@ -8,6 +8,8 @@ postsubmits:
       decorate: true
       run_if_changed: '^images\/build\/debian-base\/'
       branches:
+        - ^main$
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
       spec:
         serviceAccountName: gcb-builder
@@ -38,6 +40,8 @@ postsubmits:
       decorate: true
       run_if_changed: '^images\/build\/debian-iptables\/'
       branches:
+        - ^main$
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
       spec:
         serviceAccountName: gcb-builder
@@ -68,6 +72,8 @@ postsubmits:
       decorate: true
       run_if_changed: '^images\/build\/go-runner\/'
       branches:
+        - ^main$
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
       spec:
         serviceAccountName: gcb-builder
@@ -98,6 +104,8 @@ postsubmits:
       decorate: true
       run_if_changed: '^images\/build\/cross\/'
       branches:
+        - ^main$
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
       spec:
         serviceAccountName: gcb-builder
@@ -128,6 +136,8 @@ postsubmits:
       decorate: true
       run_if_changed: '^images\/build\/setcap\/'
       branches:
+        - ^main$
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
       spec:
         serviceAccountName: gcb-builder

@@ -8,6 +8,8 @@ postsubmits:
       decorate: true
       run_if_changed: '^(cmd\/|compile-release-tools|go.(mod|sum)|images\/releng\/k8s-ci-builder\/|pkg\/)'
       branches:
+        - ^main$
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
       spec:
         serviceAccountName: gcb-builder
@@ -38,6 +40,8 @@ postsubmits:
       decorate: true
       run_if_changed: '^images\/'
       branches:
+        - ^main$
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
       spec:
         serviceAccountName: gcb-builder
@@ -67,6 +71,8 @@ postsubmits:
       decorate: true
       run_if_changed: '^images\/'
       branches:
+        - ^main$
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
       spec:
         serviceAccountName: gcb-builder
@@ -96,6 +102,8 @@ postsubmits:
         testgrid-alert-email: release-managers+alerts@kubernetes.io
       decorate: true
       branches:
+        - ^main$
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
       spec:
         serviceAccountName: gcb-builder

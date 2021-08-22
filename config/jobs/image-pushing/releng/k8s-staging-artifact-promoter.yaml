@@ -9,6 +9,8 @@ postsubmits:
       decorate: true
       run_if_changed: '^cmd\/vulndash\/'
       branches:
+        - ^main$
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
       spec:
         serviceAccountName: gcb-builder
@@ -37,6 +39,8 @@ postsubmits:
         testgrid-num-failures-to-alert: '1'
       decorate: true
       branches:
+        - ^main$
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
       spec:
         serviceAccountName: gcb-builder

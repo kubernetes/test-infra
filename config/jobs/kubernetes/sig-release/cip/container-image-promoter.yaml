@@ -77,6 +77,8 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
     branches:
+    - ^main$
+    # TODO(releng): Remove once repo default branch has been renamed
     - ^master$
     spec:
       containers:
@@ -114,6 +116,8 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
     branches:
+    - ^main$
+    # TODO(releng): Remove once repo default branch has been renamed
     - ^master$
     spec:
       containers:
@@ -182,6 +186,8 @@ presubmits:
     skip_report: false
     always_run: true
     branches:
+    - ^main$
+    # TODO(releng): Remove once repo default branch has been renamed
     - ^master$
     spec:
       containers:
@@ -201,6 +207,8 @@ presubmits:
     skip_report: false
     always_run: true
     branches:
+    - ^main$
+    # TODO(releng): Remove once repo default branch has been renamed
     - ^master$
     spec:
       containers:
@@ -221,6 +229,8 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
     branches:
+    - ^main$
+    # TODO(releng): Remove once repo default branch has been renamed
     - ^master$
     spec:
       containers:

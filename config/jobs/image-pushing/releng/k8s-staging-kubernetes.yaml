@@ -8,6 +8,8 @@ postsubmits:
       decorate: true
       run_if_changed: '^cluster\/images\/etcd\/'
       branches:
+        - ^main$
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
       spec:
         serviceAccountName: gcb-builder
@@ -35,6 +37,8 @@ postsubmits:
       decorate: true
       run_if_changed: '^build\/pause\/'
       branches:
+        - ^main$
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
       spec:
         serviceAccountName: gcb-builder
