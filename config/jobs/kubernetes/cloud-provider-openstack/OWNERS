@@ -2,8 +2,12 @@
 
 reviewers:
 - dims
+- lingxiankong
+- ramineni
+- jichenjc
 approvers:
 - dims
+- lingxiankong
 labels:
 - sig/cloud-provider
 - area/provider/openstack
