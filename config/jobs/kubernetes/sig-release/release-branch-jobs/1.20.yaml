@@ -168,8 +168,9 @@ periodics:
     preset-service-account: "true"
   name: ci-kubernetes-build-1-20
   rerun_auth_config:
-    github_team_ids:
-    - 2241179
+    github_team_slugs:
+    - org: kubernetes
+      slug: release-managers
   spec:
     containers:
     - command:
@@ -203,8 +204,9 @@ periodics:
     preset-service-account: "true"
   name: ci-kubernetes-build-1-20-deprecated
   rerun_auth_config:
-    github_team_ids:
-    - 2241179
+    github_team_slugs:
+    - org: kubernetes
+      slug: release-managers
   spec:
     containers:
     - args:
@@ -397,8 +399,9 @@ periodics:
     preset-service-account: "true"
   name: periodic-kubernetes-bazel-build-1-20
   rerun_auth_config:
-    github_team_ids:
-    - 2241179
+    github_team_slugs:
+    - org: kubernetes
+      slug: release-managers
   spec:
     containers:
     - args:

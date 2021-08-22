@@ -27,8 +27,9 @@ postsubmits:
               - name: REGISTRY
                 value: "gcr.io/k8s-staging-releng"
       rerun_auth_config:
-        github_team_ids:
-          - 2241179 # release-managers
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
     - name: post-release-push-image-k8s-cloud-builder
       cluster: k8s-infra-prow-build-trusted
       annotations:
@@ -55,8 +56,9 @@ postsubmits:
               - name: REGISTRY
                 value: "gcr.io/k8s-staging-releng"
       rerun_auth_config:
-        github_team_ids:
-          - 2241179 # release-managers
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
     - name: post-release-push-image-releng-ci
       cluster: k8s-infra-prow-build-trusted
       annotations:
@@ -84,8 +86,9 @@ postsubmits:
               - name: REGISTRY
                 value: "gcr.io/k8s-staging-releng"
       rerun_auth_config:
-        github_team_ids:
-          - 2241179 # release-managers
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
     - name: post-release-push-image-kubepkg
       cluster: k8s-infra-prow-build-trusted
       annotations:
@@ -111,6 +114,7 @@ postsubmits:
                 value: "y"
               - name: REGISTRY
                 value: "gcr.io/k8s-staging-releng"
-        rerun_auth_config:
-          github_team_ids:
-            - 2241179 # release-managers
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers

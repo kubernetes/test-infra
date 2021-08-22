@@ -57,8 +57,9 @@ periodics:
     testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
     testgrid-num-failures-to-alert: '1'
   rerun_auth_config:
-    github_team_ids:
-      - 2241179 # release-managers
+    github_team_slugs:
+      - org: kubernetes
+        slug: release-managers
 
 - interval: 4h
   cluster: k8s-infra-prow-build-trusted
@@ -86,5 +87,6 @@ periodics:
     testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
     testgrid-num-failures-to-alert: '1'
   rerun_auth_config:
-    github_team_ids:
-      - 2241179 # release-managers
+    github_team_slugs:
+      - org: kubernetes
+        slug: release-managers

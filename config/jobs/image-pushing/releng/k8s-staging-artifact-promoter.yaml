@@ -25,8 +25,9 @@ postsubmits:
               - name: LOG_TO_STDOUT
                 value: "y"
       rerun_auth_config:
-        github_team_ids:
-          - 2241179 # release-managers
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
   kubernetes-sigs/k8s-container-image-promoter:
     - name: post-cip-push-image-cip
       cluster: k8s-infra-prow-build-trusted
@@ -52,5 +53,6 @@ postsubmits:
               - name: LOG_TO_STDOUT
                 value: "y"
       rerun_auth_config:
-        github_team_ids:
-          - 2241179 # release-managers
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers

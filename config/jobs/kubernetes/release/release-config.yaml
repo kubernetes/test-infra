@@ -427,8 +427,9 @@ periodics:
       - make
       - verify-published-debs
   rerun_auth_config:
-    github_team_ids:
-      - 2241179 # release-managers
+    github_team_slugs:
+      - org: kubernetes
+        slug: release-managers
 - name: periodic-release-verify-packages-rpms
   interval: 6h
   annotations:
@@ -449,5 +450,6 @@ periodics:
       - make
       - verify-published-rpms
   rerun_auth_config:
-    github_team_ids:
-      - 2241179 # release-managers
+    github_team_slugs:
+      - org: kubernetes
+        slug: release-managers
