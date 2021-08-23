@@ -134,6 +134,9 @@ func LoadClusterConfigs(opts *Options) (map[string]rest.Config, error) {
 		}
 	}
 
+	if opts.noInClusterConfig {
+		return allKubeCfgs, nil
+	}
 	return mergeConfigs(localCfg, allKubeCfgs, currentContext)
 }
 
@@ -142,6 +145,7 @@ type Options struct {
 	file               string
 	dir                string
 	projectedTokenFile string
+	noInClusterConfig  bool
 }
 
 type ConfigOptions func(*Options)
@@ -164,6 +168,13 @@ func ConfigFile(file string) ConfigOptions {
 func ConfigProjectedTokenFile(projectedTokenFile string) ConfigOptions {
 	return func(kc *Options) {
 		kc.projectedTokenFile = projectedTokenFile
+	}
+}
+
+// noInClusterConfig indicates that there is no InCluster Config to load
+func NoInClusterConfig(noInClusterConfig bool) ConfigOptions {
+	return func(kc *Options) {
+		kc.noInClusterConfig = noInClusterConfig
 	}
 }
 
