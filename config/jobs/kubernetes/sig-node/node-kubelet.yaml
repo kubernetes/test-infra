@@ -5,7 +5,7 @@ periodics:
   annotations:
     fork-per-release: "true"
     fork-per-release-periodic-interval: 1h 2h 6h 24h
-    testgrid-dashboards: sig-release-master-blocking, sig-node-kubelet, sig-node-release-blocking
+    testgrid-dashboards: sig-release-master-blocking, sig-node-release-blocking
     testgrid-tab-name: node-kubelet-master
     testgrid-alert-email: kubernetes-sig-node+testgrid@googlegroups.com,kubernetes-sig-node-test-failures@googlegroups.com
     description: "Uses kubetest to run a subset of node-e2e tests (+NodeConformance, -Flaky|Serial)"
@@ -242,7 +242,7 @@ periodics:
           cpu: 4
           memory: 6Gi
   annotations:
-    testgrid-dashboards: sig-release-master-informing, sig-node-kubelet, sig-node-release-blocking
+    testgrid-dashboards: sig-release-master-informing, sig-node-release-blocking
     testgrid-tab-name: node-kubelet-serial-containerd
     testgrid-alert-email: kubernetes-sig-node+testgrid@googlegroups.com,kubernetes-sig-node-test-failures@googlegroups.com
     description: "Uses kubetest to run serial node-e2e tests (+Serial, -Flaky|Benchmark|Node*Feature)"
