@@ -3,6 +3,7 @@
 ## New features
 
 New features added to each component:
+  - *August 27th, 2021* The prow `approve` plugin now accepts `/approved` as a synonym for `/approve`.
   - *August 24, 2021* Postsubmit Prow jobs now support the `always_run` field.
     This field interacts with the `run_if_changed` and `skip_if_only_changed`
     fields as follows:

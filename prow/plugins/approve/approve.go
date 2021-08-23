@@ -40,11 +40,12 @@ const (
 	// PluginName defines this plugin's registered name.
 	PluginName = "approve"
 
-	approveCommand       = "APPROVE"
-	cancelArgument       = "cancel"
-	lgtmCommand          = "LGTM"
-	noIssueArgument      = "no-issue"
-	removeApproveCommand = "REMOVE-APPROVE"
+	approveCommand          = "APPROVE"
+	alternateApproveCommand = "APPROVED"
+	cancelArgument          = "cancel"
+	lgtmCommand             = "LGTM"
+	noIssueArgument         = "no-issue"
+	removeApproveCommand    = "REMOVE-APPROVE"
 )
 
 var (
@@ -530,7 +531,7 @@ func isApprovalCommand(isBot func(string) bool, lgtmActsAsApprove bool, c *comme
 
 	for _, match := range commandRegex.FindAllStringSubmatch(c.Body, -1) {
 		cmd := strings.ToUpper(match[1])
-		if (cmd == lgtmCommand && lgtmActsAsApprove) || cmd == approveCommand || cmd == removeApproveCommand {
+		if (cmd == lgtmCommand && lgtmActsAsApprove) || cmd == approveCommand || cmd == alternateApproveCommand || cmd == removeApproveCommand {
 			return true
 		}
 	}
@@ -606,7 +607,7 @@ func addApprovers(approversHandler *approvers.Approvers, approveComments []*comm
 				approversHandler.RemoveApprover(c.Author)
 				continue
 			}
-			if name != approveCommand && name != lgtmCommand {
+			if name != approveCommand && name != alternateApproveCommand && name != lgtmCommand {
 				continue
 			}
 			args := strings.ToLower(strings.TrimSpace(match[2]))
@@ -623,7 +624,7 @@ func addApprovers(approversHandler *approvers.Approvers, approveComments []*comm
 				)
 			}
 
-			if name == approveCommand {
+			if name == approveCommand || name == alternateApproveCommand {
 				approversHandler.AddApprover(
 					c.Author,
 					c.HTMLURL,

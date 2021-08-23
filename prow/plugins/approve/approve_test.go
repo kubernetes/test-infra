@@ -1520,6 +1520,19 @@ func TestHandleGenericComment(t *testing.T) {
 			lgtmActsAsApprove: true,
 			expectHandle:      true,
 		},
+		{
+			name: "misspelled /approve as /approved, but whatever",
+			commentEvent: github.GenericCommentEvent{
+				Action: github.GenericCommentActionCreated,
+				IsPR:   true,
+				Body:   "/approved",
+				Number: 1,
+				User: github.User{
+					Login: "author",
+				},
+			},
+			expectHandle: true,
+		},
 	}
 
 	var handled bool
