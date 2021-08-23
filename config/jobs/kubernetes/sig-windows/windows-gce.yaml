@@ -402,7 +402,7 @@ periodics:
         value: "prepull-head.yaml"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-master
   annotations:
-    testgrid-dashboards: google-windows, sig-windows-gce, sig-node-containerd, sig-windows-master-release
+    testgrid-dashboards: google-windows, sig-windows-gce, sig-windows-master-release
     testgrid-tab-name: gce-windows-2019-containerd-master
     description: Runs tests on a Kubernetes cluster with Windows containerd nodes on GCE
 
@@ -451,7 +451,7 @@ periodics:
         value: "prepull-head.yaml"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-1.21
   annotations:
-    testgrid-dashboards: google-windows, sig-windows-gce, sig-node-containerd, sig-windows-1.21-release
+    testgrid-dashboards: google-windows, sig-windows-gce, sig-windows-1.21-release
     testgrid-tab-name: gce-windows-2019-containerd-1.21
     description: Runs tests on a Kubernetes cluster with Windows containerd nodes on GCE using 1.21 branch
 
@@ -500,7 +500,7 @@ periodics:
         value: "prepull-head.yaml"
       image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-1.21
   annotations:
-    testgrid-dashboards: google-windows, sig-windows-gce, sig-node-containerd, sig-windows-1.21-release
+    testgrid-dashboards: google-windows, sig-windows-gce, sig-windows-1.21-release
     testgrid-tab-name: gce-windows-20h2-containerd-1.21
     description: Runs tests on a Kubernetes cluster with Windows 20H2 containerd nodes on GCE using 1.21 branch
 
