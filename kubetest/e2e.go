@@ -164,6 +164,12 @@ func run(deploy deployer, o options) error {
 	if dumpPreTestLogs != "" {
 		errs = append(errs, dumpRemoteLogs(deploy, o, dumpPreTestLogs, "pre-test")...)
 	}
+	if o.preTestCmd != "" {
+		errs = util.AppendError(errs, control.XMLWrap(&suite, "pre-test command", func() error {
+			cmdLineTokenized := strings.Fields(os.ExpandEnv(o.preTestCmd))
+			return control.FinishRunning(exec.Command(cmdLineTokenized[0], cmdLineTokenized[1:]...))
+		}))
+	}
 
 	testArgs := argFields(o.testArgs, dump, o.clusterIPRange)
 	if o.test {
@@ -302,6 +308,13 @@ func run(deploy deployer, o options) error {
 			}
 			log.Printf("Set %s version to %s", o.publish, string(v))
 			return gcsWrite(o.publish, v)
+		}))
+	}
+
+	if o.postTestCmd != "" {
+		errs = util.AppendError(errs, control.XMLWrap(&suite, "post-test command", func() error {
+			cmdLineTokenized := strings.Fields(os.ExpandEnv(o.postTestCmd))
+			return control.FinishRunning(exec.Command(cmdLineTokenized[0], cmdLineTokenized[1:]...))
 		}))
 	}
 

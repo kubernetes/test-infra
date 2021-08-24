@@ -106,6 +106,8 @@ type options struct {
 	nodeTestArgs            string
 	nodeTests               bool
 	outputDir               string
+	preTestCmd              string
+	postTestCmd             string
 	provider                string
 	publish                 string
 	runtimeConfig           string
@@ -173,6 +175,8 @@ func defineFlags() *options {
 	flag.StringVar(&o.nodeTestArgs, "node-test-args", "", "Test args specifically for node e2e tests.")
 	flag.BoolVar(&o.noAllowDup, "no-allow-dup", false, "if set --allow-dup will not be passed to push-build and --stage will error if the build already exists on the gcs path")
 	flag.BoolVar(&o.nodeTests, "node-tests", false, "If true, run node-e2e tests.")
+	flag.StringVar(&o.preTestCmd, "pre-test-cmd", "", "If set, run the provided command before running any tests.")
+	flag.StringVar(&o.postTestCmd, "post-test-cmd", "", "If set, run the provided command after running all the tests.")
 	flag.StringVar(&o.provider, "provider", "", "Kubernetes provider such as gce, gke, aws, etc")
 	flag.StringVar(&o.publish, "publish", "", "Publish version to the specified gs:// path on success")
 	flag.StringVar(&o.runtimeConfig, "runtime-config", "", "If set, API versions can be turned on or off while bringing up the API server.")
