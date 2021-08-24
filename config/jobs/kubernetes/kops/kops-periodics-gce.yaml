@@ -61,7 +61,7 @@ periodics:
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: ''
     testgrid-dashboards: google-kops-gce, kops-distro-u2004, kops-gce, kops-k8s-latest, kops-kubetest2, kops-latest, sig-cluster-lifecycle-kops
-    testgrid-days-of-results: '71'
+    testgrid-days-of-results: '40'
     testgrid-tab-name: kops-gce-stable
 
 # Runs e2e on the cluster built with latest released kops and k/k master branch
@@ -128,5 +128,5 @@ periodics:
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: ''
     testgrid-dashboards: google-kops-gce, kops-distro-u2004, kops-gce, kops-k8s-latest, kops-kubetest2, kops-latest, sig-cluster-lifecycle-kops
-    testgrid-days-of-results: '71'
+    testgrid-days-of-results: '40'
     testgrid-tab-name: kops-gce-latest
