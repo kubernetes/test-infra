@@ -565,8 +565,8 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, authCfgGe
 			},
 			hiddenOnly: o.hiddenOnly,
 			showHidden: o.showHidden,
-			tenantIDs:  o.tenantIDs.Strings(),
-			cfg:        *cfg(),
+			tenantIDs:  sets.NewString(o.tenantIDs.Strings()...),
+			cfg:        cfg,
 		}
 		ta.start()
 		mux.Handle("/tide.js", gziphandler.GzipHandler(handleTidePools(cfg, ta, logrus.WithField("handler", "/tide.js"))))

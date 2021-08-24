@@ -642,6 +642,7 @@ func TestTide(t *testing.T) {
 			return []string{}
 		},
 		updatePeriod: func() time.Duration { return time.Minute },
+		cfg:          func() *config.Config { return &config.Config{} },
 	}
 	if err := ta.updatePools(); err != nil {
 		t.Fatalf("Updating: %v", err)
@@ -706,6 +707,7 @@ func TestTideHistory(t *testing.T) {
 			return []string{}
 		},
 		updatePeriod: func() time.Duration { return time.Minute },
+		cfg:          func() *config.Config { return &config.Config{} },
 	}
 	if err := ta.updateHistory(); err != nil {
 		t.Fatalf("Updating: %v", err)

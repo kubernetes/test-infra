@@ -22,6 +22,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/api/equality"
+	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/tide"
@@ -698,8 +699,8 @@ func TestFilter(t *testing.T) {
 			hiddenOnly: test.hiddenOnly,
 			showHidden: test.showHidden,
 			log:        logrus.WithField("agent", "tide"),
-			tenantIDs:  test.tenantIDs,
-			cfg:        test.cfg,
+			tenantIDs:  sets.NewString(test.tenantIDs...),
+			cfg:        func() *config.Config { return &test.cfg },
 		}
 
 		gotQueries := ta.filterQueries(test.queries)
