@@ -319,3 +319,21 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
+  - name: multiarch-latest-image-ibm-licensing-postsubmit
+    cluster: default
+    branches:
+    - ^master$
+    decorate: true
+    labels:
+      preset-service-account: "true"
+    path_alias: github.com/IBM/ibm-licensing-operator
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - multiarch-image-latest
+        image: quay.io/multicloudlab/build-tool:v20210728-821884179
+        name: ""
+        securityContext:
+          privileged: true
