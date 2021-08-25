@@ -164,44 +164,46 @@ func run(deploy deployer, o options) error {
 	if dumpPreTestLogs != "" {
 		errs = append(errs, dumpRemoteLogs(deploy, o, dumpPreTestLogs, "pre-test")...)
 	}
-	if o.preTestCmd != "" {
-		errs = util.AppendError(errs, control.XMLWrap(&suite, "pre-test command", func() error {
-			cmdLineTokenized := strings.Fields(os.ExpandEnv(o.preTestCmd))
-			return control.FinishRunning(exec.Command(cmdLineTokenized[0], cmdLineTokenized[1:]...))
-		}))
-	}
 
 	testArgs := argFields(o.testArgs, dump, o.clusterIPRange)
 	if o.test {
 		if err := control.XMLWrap(&suite, "test setup", deploy.TestSetup); err != nil {
 			errs = util.AppendError(errs, err)
-		} else if o.nodeTests {
-			nodeArgs := strings.Fields(o.nodeArgs)
-			errs = util.AppendError(errs, control.XMLWrap(&suite, "Node Tests", func() error {
-				return nodeTest(nodeArgs, o.testArgs, o.nodeTestArgs, o.gcpProject, o.gcpZone, o.runtimeConfig)
-			}))
-		} else if err := control.XMLWrap(&suite, "IsUp", deploy.IsUp); err != nil {
-			errs = util.AppendError(errs, err)
 		} else {
-			if o.deployment != "conformance" {
-				errs = util.AppendError(errs, control.XMLWrap(&suite, "kubectl version", func() error { return getKubectlVersion(deploy) }))
-			}
-
-			if o.skew {
-				errs = util.AppendError(errs, control.XMLWrap(&suite, "SkewTest", func() error {
-					return skewTest(testArgs, "skew", o.checkSkew)
+			if o.preTestCmd != "" {
+				errs = util.AppendError(errs, control.XMLWrap(&suite, "pre-test command", func() error {
+					cmdLineTokenized := strings.Fields(os.ExpandEnv(o.preTestCmd))
+					return control.FinishRunning(exec.Command(cmdLineTokenized[0], cmdLineTokenized[1:]...))
 				}))
+			}
+			if o.nodeTests {
+				nodeArgs := strings.Fields(o.nodeArgs)
+				errs = util.AppendError(errs, control.XMLWrap(&suite, "Node Tests", func() error {
+					return nodeTest(nodeArgs, o.testArgs, o.nodeTestArgs, o.gcpProject, o.gcpZone, o.runtimeConfig)
+				}))
+			} else if err := control.XMLWrap(&suite, "IsUp", deploy.IsUp); err != nil {
+				errs = util.AppendError(errs, err)
 			} else {
-				var tester e2e.Tester
-				tester = &GinkgoScriptTester{}
-				if testBuilder, ok := deploy.(e2e.TestBuilder); ok {
-					tester, err = testBuilder.BuildTester(toBuildTesterOptions(&o))
-					errs = util.AppendError(errs, err)
+				if o.deployment != "conformance" {
+					errs = util.AppendError(errs, control.XMLWrap(&suite, "kubectl version", func() error { return getKubectlVersion(deploy) }))
 				}
-				if tester != nil {
-					errs = util.AppendError(errs, control.XMLWrap(&suite, "Test", func() error {
-						return tester.Run(control, testArgs)
+
+				if o.skew {
+					errs = util.AppendError(errs, control.XMLWrap(&suite, "SkewTest", func() error {
+						return skewTest(testArgs, "skew", o.checkSkew)
 					}))
+				} else {
+					var tester e2e.Tester
+					tester = &GinkgoScriptTester{}
+					if testBuilder, ok := deploy.(e2e.TestBuilder); ok {
+						tester, err = testBuilder.BuildTester(toBuildTesterOptions(&o))
+						errs = util.AppendError(errs, err)
+					}
+					if tester != nil {
+						errs = util.AppendError(errs, control.XMLWrap(&suite, "Test", func() error {
+							return tester.Run(control, testArgs)
+						}))
+					}
 				}
 			}
 		}
@@ -225,6 +227,12 @@ func run(deploy deployer, o options) error {
 		if err := control.XMLWrap(&suite, "test setup", deploy.TestSetup); err != nil {
 			errs = util.AppendError(errs, err)
 		} else {
+			if o.preTestCmd != "" {
+				errs = util.AppendError(errs, control.XMLWrap(&suite, "pre-test command", func() error {
+					cmdLineTokenized := strings.Fields(os.ExpandEnv(o.preTestCmd))
+					return control.FinishRunning(exec.Command(cmdLineTokenized[0], cmdLineTokenized[1:]...))
+				}))
+			}
 			errs = util.AppendError(errs, control.XMLWrap(&suite, o.testCmdName, func() error {
 				cmdLine := os.ExpandEnv(o.testCmd)
 				return control.FinishRunning(exec.Command(cmdLine, o.testCmdArgs...))
