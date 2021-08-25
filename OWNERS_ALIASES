@@ -86,7 +86,6 @@ aliases:
     - derekwaynecarr
   sig-release-leads:
     - cpanato
-    - hasheddan
     - jeremyrickard
     - justaugustus
     - puerco
@@ -218,7 +217,7 @@ aliases:
     - frapposelli
 ## END CUSTOM CONTENT
 
-  # Modified from https://git.k8s.io/sig-release/release-managers.md#release-managers
+  # Modified from https://kubernetes.io/releases/release-managers/#release-managers
   #
   # While most Release Managers are included in the reviewers group, approvals
   # (especially for image pushing and container promotion jobs) are restricted
@@ -231,13 +230,13 @@ aliases:
   #
   release-engineering-approvers:
     - cpanato # SIG Technical Lead / RelEng subproject owner / Release Manager
-    - hasheddan # SIG Technical Lead / RelEng subproject owner / Release Manager
+    - jeremyrickard # SIG Technical Lead / RelEng subproject owner
     - justaugustus # SIG Chair / RelEng subproject owner / Release Manager
     - puerco # SIG Technical Lead / RelEng subproject owner / Release Manager
     - saschagrunert # SIG Chair / RelEng subproject owner / Release Manager
   release-engineering-reviewers:
     - cpanato # SIG Technical Lead / RelEng subproject owner / Release Manager
-    - hasheddan # SIG Technical Lead / RelEng subproject owner / Release Manager
+    - jeremyrickard # SIG Technical Lead / RelEng subproject owner
     - justaugustus # SIG Chair / RelEng subproject owner / Release Manager
     - puerco # SIG Technical Lead / RelEng subproject owner / Release Manager
     - saschagrunert # SIG Chair / RelEng subproject owner / Release Manager

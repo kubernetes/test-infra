@@ -8,6 +8,8 @@ postsubmits:
       decorate: true
       run_if_changed: '^images\/build\/debian-base\/'
       branches:
+        - ^main$
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
       spec:
         serviceAccountName: gcb-builder
@@ -27,8 +29,9 @@ postsubmits:
               - name: REGISTRY
                 value: "gcr.io/k8s-staging-build-image"
       rerun_auth_config:
-        github_team_ids:
-          - 2241179 # release-managers
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
     - name: post-release-push-image-debian-iptables
       cluster: k8s-infra-prow-build-trusted
       annotations:
@@ -37,6 +40,8 @@ postsubmits:
       decorate: true
       run_if_changed: '^images\/build\/debian-iptables\/'
       branches:
+        - ^main$
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
       spec:
         serviceAccountName: gcb-builder
@@ -56,8 +61,9 @@ postsubmits:
               - name: REGISTRY
                 value: "gcr.io/k8s-staging-build-image"
       rerun_auth_config:
-        github_team_ids:
-          - 2241179 # release-managers
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
     - name: post-release-push-image-go-runner
       cluster: k8s-infra-prow-build-trusted
       annotations:
@@ -66,6 +72,8 @@ postsubmits:
       decorate: true
       run_if_changed: '^images\/build\/go-runner\/'
       branches:
+        - ^main$
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
       spec:
         serviceAccountName: gcb-builder
@@ -85,8 +93,9 @@ postsubmits:
               - name: REGISTRY
                 value: "gcr.io/k8s-staging-build-image"
       rerun_auth_config:
-        github_team_ids:
-          - 2241179 # release-managers
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
     - name: post-release-push-image-kube-cross
       cluster: k8s-infra-prow-build-trusted
       annotations:
@@ -95,6 +104,8 @@ postsubmits:
       decorate: true
       run_if_changed: '^images\/build\/cross\/'
       branches:
+        - ^main$
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
       spec:
         serviceAccountName: gcb-builder
@@ -114,8 +125,9 @@ postsubmits:
               - name: REGISTRY
                 value: "gcr.io/k8s-staging-build-image"
       rerun_auth_config:
-        github_team_ids:
-          - 2241179 # release-managers
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
     - name: post-release-push-image-setcap
       cluster: k8s-infra-prow-build-trusted
       annotations:
@@ -124,6 +136,8 @@ postsubmits:
       decorate: true
       run_if_changed: '^images\/build\/setcap\/'
       branches:
+        - ^main$
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
       spec:
         serviceAccountName: gcb-builder
@@ -143,5 +157,6 @@ postsubmits:
               - name: REGISTRY
                 value: "gcr.io/k8s-staging-build-image"
       rerun_auth_config:
-        github_team_ids:
-          - 2241179 # release-managers
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers

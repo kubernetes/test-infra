@@ -120,7 +120,7 @@ periodics:
         - org: kubernetes
           slug: test-infra-admins
         - org: kubernetes
-          slug: release-engineering
+          slug: release-managers
       github_users:
         - aojea
         - chewong

@@ -9,6 +9,8 @@ postsubmits:
       decorate: true
       run_if_changed: '^cmd\/vulndash\/'
       branches:
+        - ^main$
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
       spec:
         serviceAccountName: gcb-builder
@@ -25,8 +27,9 @@ postsubmits:
               - name: LOG_TO_STDOUT
                 value: "y"
       rerun_auth_config:
-        github_team_ids:
-          - 2241179 # release-managers
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
   kubernetes-sigs/k8s-container-image-promoter:
     - name: post-cip-push-image-cip
       cluster: k8s-infra-prow-build-trusted
@@ -36,6 +39,8 @@ postsubmits:
         testgrid-num-failures-to-alert: '1'
       decorate: true
       branches:
+        - ^main$
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
       spec:
         serviceAccountName: gcb-builder
@@ -52,5 +57,6 @@ postsubmits:
               - name: LOG_TO_STDOUT
                 value: "y"
       rerun_auth_config:
-        github_team_ids:
-          - 2241179 # release-managers
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
