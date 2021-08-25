@@ -9,7 +9,7 @@ presubmits:
     run_if_changed: '^kinder\/.*$'
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210824-2dc36d0-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210825-bb6d84a-master
         command:
         - "./kinder/hack/verify-all.sh"
 
@@ -31,7 +31,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210824-2dc36d0-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210825-bb6d84a-master
         command:
         - runner.sh
         - "../kubeadm/kinder/ci/kinder-run.sh"
@@ -53,7 +53,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210824-2dc36d0-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210825-bb6d84a-master
         command:
         - runner.sh
         - "./operator/hack/verify-all.sh"
