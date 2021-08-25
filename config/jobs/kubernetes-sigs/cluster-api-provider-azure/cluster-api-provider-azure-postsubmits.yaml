@@ -14,7 +14,7 @@ postsubmits:
       - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-1.21
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210824-2dc36d0-1.21
         command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
