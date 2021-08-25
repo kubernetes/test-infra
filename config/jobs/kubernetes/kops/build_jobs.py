@@ -173,9 +173,9 @@ def build_test(cloud='aws',
         dashboards.extend(extra_dashboards)
 
     days_of_results = 90
-    if runs_per_week * days_of_results > 3000:
+    if runs_per_week * days_of_results > 2000:
         # testgrid has a limit on number of test runs to show for a job
-        days_of_results = math.floor(3000 / runs_per_week)
+        days_of_results = math.floor(2000 / runs_per_week)
     annotations = {
         'testgrid-dashboards': ', '.join(sorted(dashboards)),
         'testgrid-days-of-results': str(days_of_results),
