@@ -8,6 +8,8 @@ reviewers:
 approvers:
 - dims
 - lingxiankong
+- ramineni
+- jichenjc
 labels:
 - sig/cloud-provider
 - area/provider/openstack
