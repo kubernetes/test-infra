@@ -244,7 +244,7 @@ func TestRunIfChangedPresubmits(t *testing.T) {
 	}
 }
 
-// TestRunIfChangedPostsubmits is identical to TestRunIfChangedPostsubmits.
+// TestRunIfChangedPostsubmits is identical to TestRunIfChangedPresubmits.
 func TestRunIfChangedPostsubmits(t *testing.T) {
 	PostsubmitsStatic := []Postsubmit{
 		{

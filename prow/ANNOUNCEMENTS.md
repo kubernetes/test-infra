@@ -7,10 +7,11 @@ New features added to each component:
     This field interacts with the `run_if_changed` and `skip_if_only_changed`
     fields as follows:
     1. (NEW) If the field is explicitly set to `always_run: false`, then the
-       Postsubmit will not run automatically. Instead it may only be triggered
-       by other triggers outside of a GitHub change, such as a Pub/Sub event.
-       See [this issue](https://github.com/kubernetes/test-infra/issues/23234)
-       for the motivation. If `run_if_changed` or `skip_if_only_changed` is also
+       Postsubmit will not run automatically. The intention is to allow other
+       triggers outside of a GitHub change, such as a Pub/Sub event, to trigger
+       the job. See [this
+       issue](https://github.com/kubernetes/test-infra/issues/23234) for the
+       motivation. However if `run_if_changed` or `skip_if_only_changed` is also
        set, then those triggers are determined first; if for whatever reason
        they cannot be determined, then the job will *not* run automatically (and
        wait for another trigger such as a Pub/Sub event as mentioned above).
