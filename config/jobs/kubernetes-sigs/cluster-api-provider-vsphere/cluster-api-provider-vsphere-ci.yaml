@@ -13,7 +13,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210825-bb6d84a-1.21
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210825-f1955d1-1.21
       command:
       - runner.sh
       args:
@@ -51,7 +51,7 @@ postsubmits:
     max_concurrency: 1
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210825-bb6d84a-1.21
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210825-f1955d1-1.21
         resources:
           requests:
             cpu: "1000m"
@@ -82,7 +82,7 @@ postsubmits:
     max_concurrency: 1
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210825-bb6d84a-1.21
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210825-f1955d1-1.21
         resources:
           requests:
             cpu: "1000m"
