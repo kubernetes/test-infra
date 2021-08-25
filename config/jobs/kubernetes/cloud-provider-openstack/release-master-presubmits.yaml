@@ -10,7 +10,7 @@ presubmits:
     path_alias: "k8s.io/cloud-provider-openstack"
     always_run: false
     branches:
-      - ^main$
+      - ^master$
     run_if_changed: '^(pkg\/openstack\/|cmd\/openstack-cloud-controller-manager\/|tests\/e2e\/cloudprovider\/)'
     optional: false
     decorate: true
