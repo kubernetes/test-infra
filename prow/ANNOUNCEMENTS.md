@@ -3,6 +3,31 @@
 ## New features
 
 New features added to each component:
+  - *August 24, 2021* Postsubmit Prow jobs now support the `always_run` field.
+    This field interacts with the `run_if_changed` and `skip_if_only_changed`
+    fields as follows:
+    1. (NEW) If the field is explicitly set to `always_run: false`, then the
+       Postsubmit will not run automatically. The intention is to allow other
+       triggers outside of a GitHub change, such as a Pub/Sub event, to trigger
+       the job. See [this
+       issue](https://github.com/kubernetes/test-infra/issues/23234) for the
+       motivation. However if `run_if_changed` or `skip_if_only_changed` is also
+       set, then those triggers are determined first; if for whatever reason
+       they cannot be determined, then the job will *not* run automatically (and
+       wait for another trigger such as a Pub/Sub event as mentioned above).
+    2. If the field is explicitly set to `always_run: true`, then the Postsubmit
+       job will always run. Also trying to set `run_if_changed` or
+       `skip_if_only_changed` in the same Postsubmit job will result in a config
+       error. This mutual exclusivity matches the configuration behavior of
+       Presubmit jobs, which also disallow combining `always_run: true` together
+       with `run_if_changed` or `skip_if_only_changed`.
+    3. If `always_run` is not set (missing from the job config):
+       1. If both `run_if_changed` and `skip_if_only_changed` are not set: same
+          as old behavior (Postsubmit job will run automatically upon a GitHub
+          change).
+       2. If one of `run_if_changed` or `skip_if_only_changed` is set: same as
+          old behavior (running will depend on `run_if_changed` or
+          `skip_if_only_changed`).
   - *May 14th, 2021*: All components that interact with GitHub newly allow client-side throttling customization
     via `--github-hourly-tokens` and `--github-allowed-burst` parameters. A notable exception to this is Tide which
     has custom throttling logic and does not expose these two new options. Other existing custom options in branchprotector,
@@ -144,7 +169,6 @@ state and no claims of backwards compatibility are made for any external API.
 Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
-
  - *April 16th, 2021* Flagutil remove default value for `--github-token-path`.
  - *April 15th, 2021* Sinker requires --dry-run=false (default is true) to function correctly in production.
  - *April 14th, 2021* Deck remove default value for `--cookie-secret-file`.
