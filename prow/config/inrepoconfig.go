@@ -210,10 +210,7 @@ func NewInRepoConfigGitCache(factory git.ClientFactory) git.ClientFactory {
 
 func (c *InRepoConfigGitCache) ClientFor(org, repo string) (git.RepoClient, error) {
 	key := fmt.Sprintf("%s/%s", org, repo)
-	c.RLock()
-	cached, err := func() (git.RepoClient, error) {
-		defer c.RUnlock()
-
+	getCache := func() (git.RepoClient, error) {
 		if client, ok := c.cache[key]; ok {
 			client.Lock()
 			// Don't unlock the client unless we get an error or the consumer indicates they are done by Clean()ing.
@@ -224,7 +221,10 @@ func (c *InRepoConfigGitCache) ClientFor(org, repo string) (git.RepoClient, erro
 			return client, nil
 		}
 		return nil, nil
-	}()
+	}
+	c.RLock()
+	cached, err := getCache()
+	c.RUnlock()
 	if cached != nil || err != nil {
 		return cached, err
 	}
@@ -232,8 +232,19 @@ func (c *InRepoConfigGitCache) ClientFor(org, repo string) (git.RepoClient, erro
 	// The repo client was not cached, create a new one.
 	c.Lock()
 	defer c.Unlock()
+	// On cold start, all threads pass RLock and wait here, we need to do one more
+	// check here to avoid more than one cloning.
+	// (It would be nice if we could upgrade from `RLock` to `Lock`)
+	cached, err = getCache()
+	if cached != nil || err != nil {
+		return cached, err
+	}
 	coreClient, err := c.ClientFactory.ClientFor(org, repo)
 	if err != nil {
+		return nil, err
+	}
+	// This is the easiest way we can find for fetching all pull heads
+	if err := coreClient.Config("--add", "remote.origin.fetch", "+refs/pull/*/head:refs/remotes/origin/pr/*"); err != nil {
 		return nil, err
 	}
 	client := &skipCleanRepoClient{
