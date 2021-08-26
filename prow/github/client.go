@@ -98,6 +98,7 @@ type CommentClient interface {
 	DeleteComment(org, repo string, id int) error
 	DeleteCommentWithContext(ctx context.Context, org, repo string, id int) error
 	EditComment(org, repo string, id int, comment string) error
+	EditCommentWithContext(ctx context.Context, org, repo string, id int, comment string) error
 	CreateCommentReaction(org, repo string, id int, reaction string) error
 	DeleteStaleComments(org, repo string, number int, comments []IssueComment, isStale func(IssueComment) bool) error
 	DeleteStaleCommentsWithContext(ctx context.Context, org, repo string, number int, comments []IssueComment, isStale func(IssueComment) bool) error
@@ -147,6 +148,7 @@ type PullRequestClient interface {
 // CommitClient interface for commit related API actions
 type CommitClient interface {
 	CreateStatus(org, repo, SHA string, s Status) error
+	CreateStatusWithContext(ctx context.Context, org, repo, SHA string, s Status) error
 	ListStatuses(org, repo, ref string) ([]Status, error)
 	GetSingleCommit(org, repo, SHA string) (RepositoryCommit, error)
 	GetCombinedStatus(org, repo, ref string) (*CombinedStatus, error)
@@ -211,6 +213,7 @@ type UserClient interface {
 	BotUser() (*UserData, error)
 	// BotUserChecker can be used to check if a comment was authored by the bot user.
 	BotUserChecker() (func(candidate string) bool, error)
+	BotUserCheckerWithContext(ctx context.Context) (func(candidate string) bool, error)
 	Email() (string, error)
 }
 
@@ -257,6 +260,7 @@ type Client interface {
 	HookClient
 	ListAppInstallations() ([]AppInstallation, error)
 	GetApp() (*App, error)
+	GetAppWithContext(ctx context.Context) (*App, error)
 
 	Throttle(hourlyTokens, burst int, org ...string) error
 	QueryWithGitHubAppsSupport(ctx context.Context, q interface{}, vars map[string]interface{}, org string) error
@@ -1133,9 +1137,9 @@ func init() {
 }
 
 // Not thread-safe - callers need to hold c.mut.
-func (c *client) getUserData() error {
+func (c *client) getUserData(ctx context.Context) error {
 	if c.delegate.usesAppsAuth {
-		resp, err := c.GetApp()
+		resp, err := c.GetAppWithContext(ctx)
 		if err != nil {
 			return err
 		}
@@ -1148,7 +1152,7 @@ func (c *client) getUserData() error {
 	}
 	c.log("User")
 	var u User
-	_, err := c.request(&request{
+	_, err := c.requestWithContext(ctx, &request{
 		method:    http.MethodGet,
 		path:      "/user",
 		exitCodes: []int{200},
@@ -1178,7 +1182,7 @@ func (c *client) BotUser() (*UserData, error) {
 	c.mut.Lock()
 	defer c.mut.Unlock()
 	if c.userData == nil {
-		if err := c.getUserData(); err != nil {
+		if err := c.getUserData(context.Background()); err != nil {
 			return nil, fmt.Errorf("fetching bot name from GitHub: %v", err)
 		}
 	}
@@ -1186,11 +1190,15 @@ func (c *client) BotUser() (*UserData, error) {
 }
 
 func (c *client) BotUserChecker() (func(candidate string) bool, error) {
+	return c.BotUserCheckerWithContext(context.Background())
+}
+
+func (c *client) BotUserCheckerWithContext(ctx context.Context) (func(candidate string) bool, error) {
 	c.mut.Lock()
 	defer c.mut.Unlock()
 	if c.userData == nil {
-		if err := c.getUserData(); err != nil {
-			return nil, fmt.Errorf("fetching userdata from GitHub: %v", err)
+		if err := c.getUserData(ctx); err != nil {
+			return nil, fmt.Errorf("fetching userdata from GitHub: %w", err)
 		}
 	}
 
@@ -1210,7 +1218,7 @@ func (c *client) Email() (string, error) {
 	c.mut.Lock()
 	defer c.mut.Unlock()
 	if c.userData == nil {
-		if err := c.getUserData(); err != nil {
+		if err := c.getUserData(context.Background()); err != nil {
 			return "", fmt.Errorf("fetching e-mail from GitHub: %v", err)
 		}
 	}
@@ -1706,11 +1714,15 @@ func (c *client) DeleteCommentWithContext(ctx context.Context, org, repo string,
 //
 // See https://developer.github.com/v3/issues/comments/#edit-a-comment
 func (c *client) EditComment(org, repo string, id int, comment string) error {
+	return c.EditCommentWithContext(context.Background(), org, repo, id, comment)
+}
+
+func (c *client) EditCommentWithContext(ctx context.Context, org, repo string, id int, comment string) error {
 	c.log("EditComment", org, repo, id, comment)
 	ic := IssueComment{
 		Body: comment,
 	}
-	_, err := c.request(&request{
+	_, err := c.requestWithContext(ctx, &request{
 		method:      http.MethodPatch,
 		path:        fmt.Sprintf("/repos/%s/%s/issues/comments/%d", org, repo, id),
 		org:         org,
@@ -2291,9 +2303,13 @@ func (c *client) ListReviews(org, repo string, number int) ([]Review, error) {
 //
 // See https://docs.github.com/en/free-pro-team@latest/rest/reference/repos#create-a-commit-status
 func (c *client) CreateStatus(org, repo, SHA string, s Status) error {
+	return c.CreateStatusWithContext(context.Background(), org, repo, SHA, s)
+}
+
+func (c *client) CreateStatusWithContext(ctx context.Context, org, repo, SHA string, s Status) error {
 	durationLogger := c.log("CreateStatus", org, repo, SHA, s)
 	defer durationLogger()
-	_, err := c.request(&request{
+	_, err := c.requestWithContext(ctx, &request{
 		method:      http.MethodPost,
 		path:        fmt.Sprintf("/repos/%s/%s/statuses/%s", org, repo, SHA),
 		org:         org,
@@ -4459,11 +4475,15 @@ func (c *client) getAppInstallationToken(installationId int64) (*AppInstallation
 
 // GetApp gets the current app. Will not work with a Personal Access Token.
 func (c *client) GetApp() (*App, error) {
+	return c.GetAppWithContext(context.Background())
+}
+
+func (c *client) GetAppWithContext(ctx context.Context) (*App, error) {
 	durationLogger := c.log("App")
 	defer durationLogger()
 
 	var app App
-	if _, err := c.request(&request{
+	if _, err := c.requestWithContext(ctx, &request{
 		method:    http.MethodGet,
 		path:      "/app",
 		exitCodes: []int{200},

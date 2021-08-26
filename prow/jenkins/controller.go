@@ -51,12 +51,7 @@ type jenkinsClient interface {
 }
 
 type githubClient interface {
-	BotUserChecker() (func(candidate string) bool, error)
-	CreateStatus(org, repo, ref string, s github.Status) error
-	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
-	CreateComment(org, repo string, number int, comment string) error
-	DeleteComment(org, repo string, ID int) error
-	EditComment(org, repo string, ID int, comment string) error
+	reportlib.GitHubClient
 	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
 }
 
@@ -229,7 +224,7 @@ func (c *Controller) Sync() error {
 		jConfig := c.config()
 		for report := range reportCh {
 			reportTemplate := jConfig.ReportTemplateForRepo(report.Spec.Refs)
-			if err := reportlib.Report(c.ghc, reportTemplate, report, reportTypes); err != nil {
+			if err := reportlib.Report(context.Background(), c.ghc, reportTemplate, report, reportTypes); err != nil {
 				reportErrs = append(reportErrs, err)
 				c.log.WithFields(pjutil.ProwJobFields(&report)).WithError(err).Warn("Failed to report ProwJob status")
 			}

@@ -155,32 +155,32 @@ func (f *fghc) GetPullRequestChanges(org, repo string, number int) ([]github.Pul
 	return f.changes, f.err
 }
 
-func (f *fghc) BotUserChecker() (func(string) bool, error) {
+func (f *fghc) BotUserCheckerWithContext(context.Context) (func(string) bool, error) {
 	return func(candidate string) bool {
 		return candidate == "bot"
 	}, nil
 }
-func (f *fghc) CreateStatus(org, repo, ref string, s github.Status) error {
+func (f *fghc) CreateStatusWithContext(_ context.Context, org, repo, ref string, s github.Status) error {
 	f.Lock()
 	defer f.Unlock()
 	return nil
 }
-func (f *fghc) ListIssueComments(org, repo string, number int) ([]github.IssueComment, error) {
+func (f *fghc) ListIssueCommentsWithContext(_ context.Context, org, repo string, number int) ([]github.IssueComment, error) {
 	f.Lock()
 	defer f.Unlock()
 	return nil, nil
 }
-func (f *fghc) CreateComment(org, repo string, number int, comment string) error {
+func (f *fghc) CreateCommentWithContext(_ context.Context, org, repo string, number int, comment string) error {
 	f.Lock()
 	defer f.Unlock()
 	return nil
 }
-func (f *fghc) DeleteComment(org, repo string, ID int) error {
+func (f *fghc) DeleteCommentWithContext(_ context.Context, org, repo string, ID int) error {
 	f.Lock()
 	defer f.Unlock()
 	return nil
 }
-func (f *fghc) EditComment(org, repo string, ID int, comment string) error {
+func (f *fghc) EditCommentWithContext(_ context.Context, org, repo string, ID int, comment string) error {
 	f.Lock()
 	defer f.Unlock()
 	return nil

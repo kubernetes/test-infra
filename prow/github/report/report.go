@@ -20,6 +20,7 @@ package report
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"strings"
 	"text/template"
@@ -37,12 +38,12 @@ const (
 // GitHubClient provides a client interface to report job status updates
 // through GitHub comments.
 type GitHubClient interface {
-	BotUserChecker() (func(candidate string) bool, error)
-	CreateStatus(org, repo, ref string, s github.Status) error
-	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
-	CreateComment(org, repo string, number int, comment string) error
-	DeleteComment(org, repo string, ID int) error
-	EditComment(org, repo string, ID int, comment string) error
+	BotUserCheckerWithContext(ctx context.Context) (func(candidate string) bool, error)
+	CreateStatusWithContext(ctx context.Context, org, repo, ref string, s github.Status) error
+	ListIssueCommentsWithContext(ctx context.Context, org, repo string, number int) ([]github.IssueComment, error)
+	CreateCommentWithContext(ctx context.Context, org, repo string, number int, comment string) error
+	DeleteCommentWithContext(ctx context.Context, org, repo string, ID int) error
+	EditCommentWithContext(ctx context.Context, org, repo string, ID int, comment string) error
 }
 
 // prowjobStateToGitHubStatus maps prowjob status to github states.
@@ -67,7 +68,7 @@ func prowjobStateToGitHubStatus(pjState prowapi.ProwJobState) (string, error) {
 }
 
 // reportStatus should be called on any prowjob status changes
-func reportStatus(ghc GitHubClient, pj prowapi.ProwJob) error {
+func reportStatus(ctx context.Context, ghc GitHubClient, pj prowapi.ProwJob) error {
 	refs := pj.Spec.Refs
 	if pj.Spec.Report {
 		contextState, err := prowjobStateToGitHubStatus(pj.Status.State)
@@ -78,7 +79,7 @@ func reportStatus(ghc GitHubClient, pj prowapi.ProwJob) error {
 		if len(refs.Pulls) > 0 {
 			sha = refs.Pulls[0].SHA
 		}
-		if err := ghc.CreateStatus(refs.Org, refs.Repo, sha, github.Status{
+		if err := ghc.CreateStatusWithContext(ctx, refs.Org, refs.Repo, sha, github.Status{
 			State:       contextState,
 			Description: config.ContextDescriptionWithBaseSha(pj.Status.Description, refs.BaseSHA),
 			Context:     pj.Spec.Context, // consider truncating this too
@@ -113,7 +114,7 @@ func ShouldReport(pj prowapi.ProwJob, validTypes []prowapi.ProwJobType) bool {
 
 // Report is creating/updating/removing reports in GitHub based on the state of
 // the provided ProwJob.
-func Report(ghc GitHubClient, reportTemplate *template.Template, pj prowapi.ProwJob, validTypes []prowapi.ProwJobType) error {
+func Report(ctx context.Context, ghc GitHubClient, reportTemplate *template.Template, pj prowapi.ProwJob, validTypes []prowapi.ProwJobType) error {
 	if ghc == nil {
 		return fmt.Errorf("trying to report pj %s, but found empty github client", pj.ObjectMeta.Name)
 	}
@@ -128,7 +129,7 @@ func Report(ghc GitHubClient, reportTemplate *template.Template, pj prowapi.Prow
 		return nil
 	}
 
-	if err := reportStatus(ghc, pj); err != nil {
+	if err := reportStatus(ctx, ghc, pj); err != nil {
 		return fmt.Errorf("error setting status: %w", err)
 	}
 
@@ -142,17 +143,17 @@ func Report(ghc GitHubClient, reportTemplate *template.Template, pj prowapi.Prow
 		return nil
 	}
 
-	ics, err := ghc.ListIssueComments(refs.Org, refs.Repo, refs.Pulls[0].Number)
+	ics, err := ghc.ListIssueCommentsWithContext(ctx, refs.Org, refs.Repo, refs.Pulls[0].Number)
 	if err != nil {
 		return fmt.Errorf("error listing comments: %v", err)
 	}
-	botNameChecker, err := ghc.BotUserChecker()
+	botNameChecker, err := ghc.BotUserCheckerWithContext(ctx)
 	if err != nil {
 		return fmt.Errorf("error getting bot name checker: %w", err)
 	}
 	deletes, entries, updateID := parseIssueComments(pj, botNameChecker, ics)
 	for _, delete := range deletes {
-		if err := ghc.DeleteComment(refs.Org, refs.Repo, delete); err != nil {
+		if err := ghc.DeleteCommentWithContext(ctx, refs.Org, refs.Repo, delete); err != nil {
 			return fmt.Errorf("error deleting comment: %v", err)
 		}
 	}
@@ -162,11 +163,11 @@ func Report(ghc GitHubClient, reportTemplate *template.Template, pj prowapi.Prow
 			return fmt.Errorf("generating comment: %v", err)
 		}
 		if updateID == 0 {
-			if err := ghc.CreateComment(refs.Org, refs.Repo, refs.Pulls[0].Number, comment); err != nil {
+			if err := ghc.CreateCommentWithContext(ctx, refs.Org, refs.Repo, refs.Pulls[0].Number, comment); err != nil {
 				return fmt.Errorf("error creating comment: %v", err)
 			}
 		} else {
-			if err := ghc.EditComment(refs.Org, refs.Repo, updateID, comment); err != nil {
+			if err := ghc.EditCommentWithContext(ctx, refs.Org, refs.Repo, updateID, comment); err != nil {
 				return fmt.Errorf("error updating comment: %v", err)
 			}
 		}
