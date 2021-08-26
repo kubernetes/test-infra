@@ -259,6 +259,7 @@ type Client interface {
 
 	Throttle(hourlyTokens, burst int, org ...string) error
 	QueryWithGitHubAppsSupport(ctx context.Context, q interface{}, vars map[string]interface{}, org string) error
+	MutateWithGitHubAppsSupport(ctx context.Context, m interface{}, input githubql.Input, vars map[string]interface{}, org string) error
 
 	SetMax404Retries(int)
 
@@ -381,6 +382,7 @@ type httpClient interface {
 // Interface for how prow interacts with the graphql client, which we may throttle.
 type gqlClient interface {
 	QueryWithGitHubAppsSupport(ctx context.Context, q interface{}, vars map[string]interface{}, org string) error
+	MutateWithGitHubAppsSupport(ctx context.Context, m interface{}, input githubql.Input, vars map[string]interface{}, org string) error
 	forUserAgent(userAgent string) gqlClient
 }
 
@@ -505,6 +507,13 @@ func (t *throttler) QueryWithGitHubAppsSupport(ctx context.Context, q interface{
 		return err
 	}
 	return t.graph.QueryWithGitHubAppsSupport(ctx, q, vars, org)
+}
+
+func (t *throttler) MutateWithGitHubAppsSupport(ctx context.Context, m interface{}, input githubql.Input, vars map[string]interface{}, org string) error {
+	if err := t.Wait(ctx, extractOrgFromContext(ctx)); err != nil {
+		return err
+	}
+	return t.graph.MutateWithGitHubAppsSupport(ctx, m, input, vars, org)
 }
 
 func (t *throttler) forUserAgent(userAgent string) gqlClient {
@@ -755,6 +764,12 @@ func (c *graphQLGitHubAppsAuthClientWrapper) QueryWithGitHubAppsSupport(ctx cont
 	ctx = context.WithValue(ctx, githubOrgHeaderKey, org)
 	ctx = context.WithValue(ctx, userAgentContextKey, c.userAgent)
 	return c.Client.Query(ctx, q, vars)
+}
+
+func (c *graphQLGitHubAppsAuthClientWrapper) MutateWithGitHubAppsSupport(ctx context.Context, m interface{}, input githubql.Input, vars map[string]interface{}, org string) error {
+	ctx = context.WithValue(ctx, githubOrgHeaderKey, org)
+	ctx = context.WithValue(ctx, userAgentContextKey, c.userAgent)
+	return c.Client.Mutate(ctx, m, input, vars)
 }
 
 func (c *graphQLGitHubAppsAuthClientWrapper) forUserAgent(userAgent string) gqlClient {
@@ -3429,6 +3444,11 @@ func (c *client) QueryWithGitHubAppsSupport(ctx context.Context, q interface{}, 
 	// Don't log query here because Query is typically called multiple times to get all pages.
 	// Instead log once per search and include total search cost.
 	return c.gqlc.QueryWithGitHubAppsSupport(ctx, q, vars, org)
+}
+
+// MutateWithGitHubAppsSupport runs a GraphQL mutation using shurcooL/githubql's client.
+func (c *client) MutateWithGitHubAppsSupport(ctx context.Context, m interface{}, input githubql.Input, vars map[string]interface{}, org string) error {
+	return c.gqlc.MutateWithGitHubAppsSupport(ctx, m, input, vars, org)
 }
 
 // CreateTeam adds a team with name to the org, returning a struct with the new ID.

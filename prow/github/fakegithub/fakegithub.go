@@ -25,6 +25,8 @@ import (
 	"strings"
 	"sync"
 
+	githubql "github.com/shurcooL/githubv4"
+
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/test-infra/prow/github"
@@ -130,6 +132,9 @@ type FakeClient struct {
 
 	// Error will be returned if set. Currently only implemented for CreateStatus
 	Error error
+
+	// GetRepoError will be returned if set when GetRepo is called
+	GetRepoError error
 
 	// WasLabelAddedByHumanVal determines the return of the method with the same name
 	WasLabelAddedByHumanVal bool
@@ -849,6 +854,9 @@ func (f *FakeClient) GetRepos(org string, isUser bool) ([]github.Repo, error) {
 }
 
 func (f *FakeClient) GetRepo(owner, name string) (github.FullRepo, error) {
+	if f.GetRepoError != nil {
+		return github.FullRepo{}, f.GetRepoError
+	}
 	return github.FullRepo{
 		Repo: github.Repo{
 			Owner:         github.User{Login: owner},
@@ -1049,4 +1057,8 @@ func (f *FakeClient) ListCurrentUserOrgInvitations() ([]github.UserOrgInvitation
 	})
 
 	return ret, nil
+}
+
+func (f *FakeClient) MutateWithGitHubAppsSupport(ctx context.Context, m interface{}, input githubql.Input, vars map[string]interface{}, org string) error {
+	return nil
 }
