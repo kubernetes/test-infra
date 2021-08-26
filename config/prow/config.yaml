@@ -473,6 +473,10 @@ branch-protection:
           required_status_checks:
             contexts:
             - Kubespray CI Pipeline
+        nfs-ganesha-server-and-external-provisioner:
+          branches:
+            gh-pages:
+              protect: false
         nfs-subdir-external-provisioner:
           branches:
             gh-pages:
