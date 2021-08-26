@@ -244,9 +244,12 @@ func requirementDiff(pr *PullRequest, q *config.TideQuery, cc contextChecker) (s
 		}
 	}
 
-	// TODO(cjwagner): List reviews (states:[APPROVED], first: 1) as part of open
-	// PR query.
-
+	if q.ReviewApprovedRequired && pr.ReviewDecision != githubql.PullRequestReviewDecisionApproved {
+		diff += 50
+		if desc == "" {
+			desc = " PullRequest is missing sufficient approving GitHub review(s)"
+		}
+	}
 	return desc, diff
 }
 

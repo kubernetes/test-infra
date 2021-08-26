@@ -1826,7 +1826,8 @@ type PullRequest struct {
 			Login githubql.String
 		}
 	}
-	Commits struct {
+	ReviewDecision githubql.PullRequestReviewDecision `graphql:"reviewDecision"`
+	Commits        struct {
 		Nodes []struct {
 			Commit Commit
 		}

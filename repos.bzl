@@ -3953,8 +3953,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/shurcooL/githubv4",
-        sum = "h1:Cocq9/ZZxCoiybhygOR7hX4E3/PkV8eNbd1AEcUvaHM=",
-        version = "v0.0.0-20191102174205-af46314aec7b",
+        sum = "h1:N5B+JgvM/DVYIxreItPJMM3yWrNO/GB2q4nESrtBisM=",
+        version = "v0.0.0-20210725200734-83ba7b4c9228",
     )
 
     go_repository(

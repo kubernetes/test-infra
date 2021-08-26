@@ -64,6 +64,7 @@ func TestExpectedStatus(t *testing.T) {
 		mergeConflicts        bool
 		displayAllTideQueries bool
 		additionalTideQueries []config.TideQuery
+		hasApprovingReview    bool
 		singleQuery           bool
 
 		state string
@@ -705,6 +706,23 @@ func TestExpectedStatus(t *testing.T) {
 			state:          github.StatusError,
 			desc:           "Not mergeable. PR has a merge conflict.",
 		},
+		{
+			name:                  "Missing approving review",
+			additionalTideQueries: []config.TideQuery{{Orgs: []string{""}, ReviewApprovedRequired: true}},
+			inPool:                false,
+
+			state: github.StatusPending,
+			desc:  "Not mergeable. PullRequest is missing sufficient approving GitHub review(s)",
+		},
+		{
+			name:                  "Required approving review is present",
+			additionalTideQueries: []config.TideQuery{{Orgs: []string{""}, ReviewApprovedRequired: true}},
+			inPool:                false,
+			hasApprovingReview:    true,
+
+			state: github.StatusSuccess,
+			desc:  "In merge pool.",
+		},
 	}
 
 	for _, tc := range testcases {
@@ -780,6 +798,9 @@ func TestExpectedStatus(t *testing.T) {
 			}
 			if tc.mergeConflicts {
 				pr.Mergeable = githubql.MergeableStateConflicting
+			}
+			if tc.hasApprovingReview {
+				pr.ReviewDecision = githubql.PullRequestReviewDecisionApproved
 			}
 			var pool map[string]PullRequest
 			if tc.inPool {
