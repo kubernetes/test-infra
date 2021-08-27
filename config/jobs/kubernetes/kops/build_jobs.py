@@ -640,6 +640,29 @@ def generate_misc():
                    scenario="metrics-server",
                    extra_dashboards=['kops-misc']),
 
+        build_test(name_override="kops-aws-external-dns",
+                   cloud="aws",
+                   networking="cilium",
+                   distro="u2004",
+                   kops_channel="alpha",
+                   runs_per_day=3,
+                   extra_flags=[
+                       "--override=cluster.spec.externalDNS.provider=external-dns"
+                   ],
+                   extra_dashboards=['kops-misc']),
+
+        build_test(name_override="kops-aws-external-dns-irsa",
+                   cloud="aws",
+                   networking="cilium",
+                   distro="u2004",
+                   kops_channel="alpha",
+                   runs_per_day=3,
+                   extra_flags=[
+                       "--override=cluster.spec.externalDNS.provider=external-dns",
+                       "--override=cluster.spec.iam.useServiceAccountExternalPermissions=true"
+                   ],
+                   extra_dashboards=['kops-misc']),
+
 
     ]
     return results
@@ -1009,6 +1032,31 @@ def generate_presubmits_e2e():
             scenario="metrics-server",
             tab_name="pull-kops-e2e-aws-metrics-server",
         ),
+
+        presubmit_test(
+            name="pull-kops-e2e-aws-external-dns",
+            cloud="aws",
+            distro="u2004",
+            k8s_version="ci",
+            networking="calico",
+            extra_flags=[
+                '--override=cluster.spec.externalDNS.provider=external-dns'
+            ],
+        ),
+
+        presubmit_test(
+            name="pull-kops-e2e-aws-external-dns-irsa",
+            cloud="aws",
+            distro="u2004",
+            k8s_version="ci",
+            networking="calico",
+            extra_flags=[
+                '--override=cluster.spec.externalDNS.provider=external-dns',
+                '--override=cluster.spec.iam.useServiceAccountExternalPermissions=true'
+            ],
+        ),
+
+
 
     ]
     for branch in ['1.21']:
