@@ -23,10 +23,10 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"golang.org/x/sync/semaphore"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -54,17 +54,19 @@ type simplePull struct {
 }
 
 type shardedLock struct {
-	mapLock *sync.Mutex
-	locks   map[simplePull]*sync.Mutex
+	mapLock *semaphore.Weighted
+	locks   map[simplePull]*semaphore.Weighted
 }
 
-func (s *shardedLock) getLock(key simplePull) *sync.Mutex {
-	s.mapLock.Lock()
-	defer s.mapLock.Unlock()
-	if _, exists := s.locks[key]; !exists {
-		s.locks[key] = &sync.Mutex{}
+func (s *shardedLock) getLock(ctx context.Context, key simplePull) (*semaphore.Weighted, error) {
+	if err := s.mapLock.Acquire(ctx, 1); err != nil {
+		return nil, err
 	}
-	return s.locks[key]
+	defer s.mapLock.Release(1)
+	if _, exists := s.locks[key]; !exists {
+		s.locks[key] = semaphore.NewWeighted(1)
+	}
+	return s.locks[key], nil
 }
 
 // cleanup deletes all locks by acquiring first
@@ -76,13 +78,14 @@ func (s *shardedLock) getLock(key simplePull) *sync.Mutex {
 // Note that while this function is running, no new
 // presubmit reporting can happen, as we hold the mapLock.
 func (s *shardedLock) cleanup() {
-	s.mapLock.Lock()
-	defer s.mapLock.Unlock()
+	ctx := context.Background()
+	s.mapLock.Acquire(ctx, 1)
+	defer s.mapLock.Release(1)
 
 	for key, lock := range s.locks {
-		lock.Lock()
+		lock.Acquire(ctx, 1)
 		delete(s.locks, key)
-		lock.Unlock()
+		lock.Release(1)
 	}
 }
 
@@ -105,8 +108,8 @@ func NewReporter(gc report.GitHubClient, cfg config.Getter, reportAgent v1.ProwJ
 		config:      cfg,
 		reportAgent: reportAgent,
 		prLocks: &shardedLock{
-			mapLock: &sync.Mutex{},
-			locks:   map[simplePull]*sync.Mutex{},
+			mapLock: semaphore.NewWeighted(1),
+			locks:   map[simplePull]*semaphore.Weighted{},
 		},
 	}
 	c.prLocks.runCleanup()
@@ -137,7 +140,9 @@ func (c *Client) ShouldReport(_ context.Context, _ *logrus.Entry, pj *v1.ProwJob
 }
 
 // Report will report via reportlib
-func (c *Client) Report(_ context.Context, log *logrus.Entry, pj *v1.ProwJob) ([]*v1.ProwJob, *reconcile.Result, error) {
+func (c *Client) Report(ctx context.Context, log *logrus.Entry, pj *v1.ProwJob) ([]*v1.ProwJob, *reconcile.Result, error) {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Minute)
+	defer cancel()
 
 	// The github comment create/update/delete done for presubmits
 	// needs pr-level locking to avoid racing when reporting multiple
@@ -147,13 +152,18 @@ func (c *Client) Report(_ context.Context, log *logrus.Entry, pj *v1.ProwJob) ([
 		if err != nil {
 			return nil, nil, fmt.Errorf("failed to get lockkey for job: %v", err)
 		}
-		lock := c.prLocks.getLock(*key)
-		lock.Lock()
-		defer lock.Unlock()
+		lock, err := c.prLocks.getLock(ctx, *key)
+		if err != nil {
+			return nil, nil, err
+		}
+		if err := lock.Acquire(ctx, 1); err != nil {
+			return nil, nil, err
+		}
+		defer lock.Release(1)
 	}
 
 	// TODO(krzyzacy): ditch ReportTemplate, and we can drop reference to config.Getter
-	err := report.Report(c.gc, c.config().Plank.ReportTemplateForRepo(pj.Spec.Refs), *pj, c.config().GitHubReporter.JobTypesToReport)
+	err := report.Report(ctx, c.gc, c.config().Plank.ReportTemplateForRepo(pj.Spec.Refs), *pj, c.config().GitHubReporter.JobTypesToReport)
 	if err != nil {
 		if strings.Contains(err.Error(), "This SHA and context has reached the maximum number of statuses") {
 			// This is completely unrecoverable, so just swallow the error to make sure we wont retry, even when crier gets restarted.

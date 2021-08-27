@@ -17,6 +17,7 @@ limitations under the License.
 package report
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"testing"
@@ -229,7 +230,7 @@ type fakeGhClient struct {
 	status []github.Status
 }
 
-func (gh fakeGhClient) BotUserChecker() (func(string) bool, error) {
+func (gh fakeGhClient) BotUserCheckerWithContext(_ context.Context) (func(string) bool, error) {
 	return func(candidate string) bool {
 		return candidate == "BotName"
 	}, nil
@@ -237,7 +238,7 @@ func (gh fakeGhClient) BotUserChecker() (func(string) bool, error) {
 
 const maxLen = 140
 
-func (gh *fakeGhClient) CreateStatus(org, repo, ref string, s github.Status) error {
+func (gh *fakeGhClient) CreateStatusWithContext(_ context.Context, org, repo, ref string, s github.Status) error {
 	if d := s.Description; len(d) > maxLen {
 		return fmt.Errorf("%s is len %d, more than max of %d chars", d, len(d), maxLen)
 	}
@@ -245,16 +246,16 @@ func (gh *fakeGhClient) CreateStatus(org, repo, ref string, s github.Status) err
 	return nil
 
 }
-func (gh fakeGhClient) ListIssueComments(org, repo string, number int) ([]github.IssueComment, error) {
+func (gh fakeGhClient) ListIssueCommentsWithContext(_ context.Context, org, repo string, number int) ([]github.IssueComment, error) {
 	return nil, nil
 }
-func (gh fakeGhClient) CreateComment(org, repo string, number int, comment string) error {
+func (gh fakeGhClient) CreateCommentWithContext(_ context.Context, org, repo string, number int, comment string) error {
 	return nil
 }
-func (gh fakeGhClient) DeleteComment(org, repo string, ID int) error {
+func (gh fakeGhClient) DeleteCommentWithContext(_ context.Context, org, repo string, ID int) error {
 	return nil
 }
-func (gh fakeGhClient) EditComment(org, repo string, ID int, comment string) error {
+func (gh fakeGhClient) EditCommentWithContext(_ context.Context, org, repo string, ID int, comment string) error {
 	return nil
 }
 
@@ -373,7 +374,7 @@ func TestReportStatus(t *testing.T) {
 				},
 			}
 			// Run
-			if err := reportStatus(ghc, pj); err != nil {
+			if err := reportStatus(context.Background(), ghc, pj); err != nil {
 				t.Error(err)
 			}
 			// Check
