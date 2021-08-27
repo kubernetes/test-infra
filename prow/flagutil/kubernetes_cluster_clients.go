@@ -52,10 +52,11 @@ func init() {
 // and other resources on the infrastructure cluster, as well as Pods
 // on build clusters.
 type KubernetesOptions struct {
-	kubeconfig         string
-	kubeconfigDir      string
-	projectedTokenFile string
-	noInClusterConfig  bool
+	kubeconfig               string
+	kubeconfigDir            string
+	projectedTokenFile       string
+	noInClusterConfig        bool
+	NOInClusterConfigDefault bool
 
 	DeckURI string
 
@@ -167,7 +168,7 @@ func (o *KubernetesOptions) AddFlags(fs *flag.FlagSet) {
 	fs.StringVar(&o.kubeconfigDir, "kubeconfig-dir", "", "Path to the directory containing kubeconfig files. If neither of --kubeconfig and --kubeconfig-dir is provided, use the in-cluster config. All contexts other than the default are used as build clusters.")
 	fs.StringVar(&o.DeckURI, "deck-url", "", "Deck URI for read-only access to the infrastructure cluster.")
 	fs.StringVar(&o.projectedTokenFile, "projected-token-file", "", "A projected serviceaccount token file. If set, this will be configured as token file in the in-cluster config.")
-	fs.BoolVar(&o.noInClusterConfig, "no-in-cluster-config", false, "Not resolving InCluster Config if set.")
+	fs.BoolVar(&o.noInClusterConfig, "no-in-cluster-config", o.NOInClusterConfigDefault, "Not resolving InCluster Config if set.")
 }
 
 // Validate validates Kubernetes options.
