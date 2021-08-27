@@ -5162,8 +5162,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "sigs.k8s.io/controller-tools",
-        sum = "h1:+Y8L0UsAugDipGRw8lrkPoAi6XqlQVZuf1DQHME3PgU=",
-        version = "v0.6.2",
+        sum = "h1:xBiRgk6rKuW9rdHq0V6DTbyHzLLbb3HDjeArr8fy7LA=",
+        version = "v0.6.3-0.20210827222652-7b3a8699fa04",
     )
 
     go_repository(

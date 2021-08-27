@@ -104,7 +104,7 @@ require (
 	mvdan.cc/xurls/v2 v2.0.0
 	sigs.k8s.io/boskos v0.0.0-20210730172138-093b54882439
 	sigs.k8s.io/controller-runtime v0.9.0
-	sigs.k8s.io/controller-tools v0.6.2
+	sigs.k8s.io/controller-tools v0.6.3-0.20210827222652-7b3a8699fa04
 	sigs.k8s.io/yaml v1.2.0
 )
 

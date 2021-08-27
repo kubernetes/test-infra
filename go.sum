@@ -2670,8 +2670,8 @@ sigs.k8s.io/controller-runtime v0.5.0/go.mod h1:REiJzC7Y00U+2YkMbT8wxgrsX5USpXKG
 sigs.k8s.io/controller-runtime v0.5.4/go.mod h1:JZUwSMVbxDupo0lTJSSFP5pimEyxGynROImSsqIOx1A=
 sigs.k8s.io/controller-runtime v0.9.0 h1:ZIZ/dtpboPSbZYY7uUz2OzrkaBTOThx2yekLtpGB+zY=
 sigs.k8s.io/controller-runtime v0.9.0/go.mod h1:TgkfvrhhEw3PlI0BRL/5xM+89y3/yc0ZDfdbTl84si8=
-sigs.k8s.io/controller-tools v0.6.2 h1:+Y8L0UsAugDipGRw8lrkPoAi6XqlQVZuf1DQHME3PgU=
-sigs.k8s.io/controller-tools v0.6.2/go.mod h1:oaeGpjXn6+ZSEIQkUe/+3I40PNiDYp9aeawbt3xTgJ8=
+sigs.k8s.io/controller-tools v0.6.3-0.20210827222652-7b3a8699fa04 h1:xBiRgk6rKuW9rdHq0V6DTbyHzLLbb3HDjeArr8fy7LA=
+sigs.k8s.io/controller-tools v0.6.3-0.20210827222652-7b3a8699fa04/go.mod h1:oaeGpjXn6+ZSEIQkUe/+3I40PNiDYp9aeawbt3xTgJ8=
 sigs.k8s.io/kustomize v2.0.3+incompatible h1:JUufWFNlI44MdtnjUqVnvh29rR37PQFzPbLXqhyOyX0=
 sigs.k8s.io/kustomize v2.0.3+incompatible/go.mod h1:MkjgH3RdOWrievjo6c9T245dYlB5QeXV4WCbnt/PEpU=
 sigs.k8s.io/structured-merge-diff v0.0.0-20190302045857-e85c7b244fd2/go.mod h1:wWxsB5ozmmv/SG7nM11ayaAW51xMvak/t1r0CSlcokI=
