@@ -565,6 +565,8 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, authCfgGe
 			},
 			hiddenOnly: o.hiddenOnly,
 			showHidden: o.showHidden,
+			tenantIDs:  sets.NewString(o.tenantIDs.Strings()...),
+			cfg:        cfg,
 		}
 		ta.start()
 		mux.Handle("/tide.js", gziphandler.GzipHandler(handleTidePools(cfg, ta, logrus.WithField("handler", "/tide.js"))))
@@ -1233,7 +1235,7 @@ func handleRemoteLens(lens config.LensFileConfig, w http.ResponseWriter, r *http
 func handleTidePools(cfg config.Getter, ta *tideAgent, log *logrus.Entry) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		setHeadersNoCaching(w)
-		queryConfigs := ta.filterHiddenQueries(cfg().Tide.Queries)
+		queryConfigs := ta.filterQueries(cfg().Tide.Queries)
 		queries := make([]string, 0, len(queryConfigs))
 		for _, qc := range queryConfigs {
 			queries = append(queries, qc.Query())
