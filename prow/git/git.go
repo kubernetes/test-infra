@@ -197,7 +197,7 @@ func (c *Client) Clone(organization, repository string) (*Repo, error) {
 	// Updating remote url to true remote like `git@github.com:kubernetes/test-infra.git`,
 	// instead of something like `/tmp/12345/test-infra`, so that `git fetch` in this clone makes more sense.
 	cmd := exec.Command(c.git, "remote", "set-url", "origin", remote)
-	cmd.Dir = cache
+	cmd.Dir = t
 	if b, err := cmd.CombinedOutput(); err != nil {
 		return nil, fmt.Errorf("updating remote url failed: %w. output: %s", err, string(b))
 	}
