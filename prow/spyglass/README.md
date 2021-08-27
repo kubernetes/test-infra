@@ -100,7 +100,7 @@ deck:
     - lens:
         name: junit
       required_files:
-      - ^artifacts/junit.*\.xml$
+      - ^artifacts/junit_[^/]*\.xml$
     - lens:
         name: podinfo
       required_files:
