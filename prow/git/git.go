@@ -194,6 +194,13 @@ func (c *Client) Clone(organization, repository string) (*Repo, error) {
 	if b, err := exec.Command(c.git, "clone", cache, t).CombinedOutput(); err != nil {
 		return nil, fmt.Errorf("git repo clone error: %v. output: %s", err, string(b))
 	}
+	// Updating remote url to true remote like `git@github.com:kubernetes/test-infra.git`,
+	// instead of something like `/tmp/12345/test-infra`, so that `git fetch` in this clone makes more sense.
+	cmd := exec.Command(c.git, "remote", "set-url", "origin", remote)
+	cmd.Dir = cache
+	if b, err := cmd.CombinedOutput(); err != nil {
+		return nil, fmt.Errorf("updating remote url failed: %w. output: %s", err, string(b))
+	}
 	r := &Repo{
 		dir:    t,
 		logger: c.logger,
@@ -449,10 +456,10 @@ func (r *Repo) CheckoutPullRequest(number int) error {
 }
 
 // Config runs git config.
-func (r *Repo) Config(key, value string) error {
-	r.logger.WithFields(logrus.Fields{"key": key, "value": value}).Info("Running git config.")
-	if b, err := r.gitCommand("config", key, value).CombinedOutput(); err != nil {
-		return fmt.Errorf("git config %s %s failed: %v. output: %s", key, value, err, string(b))
+func (r *Repo) Config(args ...string) error {
+	r.logger.WithField("args", args).Info("Running git config.")
+	if b, err := r.gitCommand(append([]string{"config"}, args...)...).CombinedOutput(); err != nil {
+		return fmt.Errorf("git config %v failed: %v. output: %s", args, err, string(b))
 	}
 	return nil
 }

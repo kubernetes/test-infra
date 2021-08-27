@@ -642,13 +642,15 @@ func testDefaultProwYAMLGetter_RejectsNonGitHubRepo(clients localgit.Clients, t 
 
 type testClientFactory struct {
 	git.ClientFactory // This will be nil during testing, we override the functions that are used.
+	rcMap             map[string]git.RepoClient
 	clientsCreated    int
 }
 
 func (cf *testClientFactory) ClientFor(org, repo string) (git.RepoClient, error) {
 	cf.clientsCreated++
 	// Returning this RepoClient ensures that only Fetch() is called and that Close() is not.
-	return &fetchOnlyNoCleanRepoClient{}, nil
+
+	return &fetchOnlyNoCleanRepoClient{cf.rcMap[repo]}, nil
 }
 
 type fetchOnlyNoCleanRepoClient struct {
@@ -659,6 +661,11 @@ func (rc *fetchOnlyNoCleanRepoClient) Fetch() error {
 	return nil
 }
 
+// Override Close to make sure when Close is called it would error out
+func (rc *fetchOnlyNoCleanRepoClient) Close() error {
+	panic("This is not supposed to be called")
+}
+
 // TestInRepoConfigGitCacheConcurrency validates the following properties of InRepoConfigGitCache
 // - RepoClients are protected from concurrent use.
 // - Use of a RepoClient for one repo does not prevent concurrent use of a RepoClient for another repo.
@@ -666,7 +673,21 @@ func (rc *fetchOnlyNoCleanRepoClient) Fetch() error {
 func TestInRepoConfigGitCacheConcurrency(t *testing.T) {
 	t.Parallel()
 
-	cf := &testClientFactory{}
+	lg, c, _ := localgit.NewV2()
+	rcMap := make(map[string]git.RepoClient)
+	for _, repo := range []string{"repo1", "repo2"} {
+		if err := lg.MakeFakeRepo("org", repo); err != nil {
+			t.Fatal(err)
+		}
+		rc, err := c.ClientFor("org", repo)
+		if err != nil {
+			t.Fatal(err)
+		}
+		rcMap[repo] = rc
+	}
+	cf := &testClientFactory{
+		rcMap: rcMap,
+	}
 	cache := NewInRepoConfigGitCache(cf)
 	org, repo1, repo2 := "org", "repo1", "repo2"
 	// block channels are populated from the main thread, signal channels are read from the main thread.
