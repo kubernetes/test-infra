@@ -696,8 +696,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/cloudevents/sdk-go/v2",
-        sum = "h1:AUdGJwaSUnA+VvepKqgjy6XDkPcf0hf/3L7icEs1ibs=",
-        version = "v2.0.0",
+        sum = "h1:bmgrU8k+K2ppZ+G/q5xEQx/Xk9HRtJmkrEO3qtDO2k0=",
+        version = "v2.1.0",
     )
 
     go_repository(
@@ -4241,8 +4241,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/tektoncd/pipeline",
-        sum = "h1:hWdWj5bDjkSGYLlJS+u+Kh9ZktBJgs2JNUv/kP0LVOA=",
-        version = "v0.13.1-0.20200625065359-44f22a067b75",
+        sum = "h1:l9GiqDfZrUMJovJqcSID2oqZmNgD2feeT/HGAzQ0yBw=",
+        version = "v0.14.1-0.20200710073957-5eeb17f81999",
     )
 
     go_repository(
