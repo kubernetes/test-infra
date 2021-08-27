@@ -328,6 +328,7 @@ func (src *SlackReporterConfig) ApplyDefault(def *SlackReporterConfig) *SlackRep
 // Duration is a wrapper around time.Duration that parses times in either
 // 'integer number of nanoseconds' or 'duration string' formats and serializes
 // to 'duration string' format.
+// +kubebuilder:validation:Type=string
 type Duration struct {
 	time.Duration
 }
