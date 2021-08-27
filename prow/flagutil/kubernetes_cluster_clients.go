@@ -23,6 +23,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -148,6 +149,15 @@ func (o *KubernetesOptions) LoadClusterConfigs(callBacks ...func()) (map[string]
 	if !o.resolved {
 		if err := o.resolve(o.dryRun); err != nil {
 			errs = append(errs, fmt.Errorf("failed to resolve the kubeneates options: %w", err))
+		}
+	}
+
+	if o.kubeconfig == "" && o.kubeconfigDir == "" {
+		value := os.Getenv(clientcmd.RecommendedConfigPathEnvVar)
+		if kubeconfigsFromEnv := strings.Split(value, ":"); len(kubeconfigsFromEnv) > 0 &&
+			len(kubeconfigsFromEnv) > len(o.clusterConfigs) {
+			errs = append(errs, fmt.Errorf("%s env var with value %s had %d elements but only got %d kubeconfigs",
+				clientcmd.RecommendedConfigPathEnvVar, value, len(kubeconfigsFromEnv), len(o.clusterConfigs)))
 		}
 	}
 
