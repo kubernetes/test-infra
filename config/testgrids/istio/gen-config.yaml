@@ -848,6 +848,15 @@ dashboards:
     test_group_name: integ-pilot-istiodless-multicluster-tests_istio
   - code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: integ-pilot-istiodremote-tests_istio'
+    name: integ-pilot-istiodremote-tests_istio
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    open_test_template:
+      url: https://prow.istio.io/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: integ-pilot-istiodremote-tests_istio
+  - code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: integ-pilot-k8s-tests_istio'
     name: integ-pilot-k8s-tests_istio
     open_bug_template:
@@ -1249,6 +1258,17 @@ dashboards:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
       url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: integ-k8s-123_istio_postsubmit'
+    name: integ-k8s-123_istio_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    open_test_template:
+      url: https://prow.istio.io/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: integ-k8s-123_istio_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: integ-pilot-istiodless-multicluster-tests_istio_postsubmit'
     name: integ-pilot-istiodless-multicluster-tests_istio_postsubmit
     open_bug_template:
@@ -1256,6 +1276,17 @@ dashboards:
     open_test_template:
       url: https://prow.istio.io/view/gs/<gcs_prefix>/<changelist>
     test_group_name: integ-pilot-istiodless-multicluster-tests_istio_postsubmit
+  - alert_options:
+      alert_mail_to_addresses: istio-oncall@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/istio/istio/compare/<start-custom-0>...<end-custom-0>
+    description: 'prowjob_name: integ-pilot-istiodremote-tests_istio_postsubmit'
+    name: integ-pilot-istiodremote-tests_istio_postsubmit
+    open_bug_template:
+      url: https://github.com/istio/istio/issues/
+    open_test_template:
+      url: https://prow.istio.io/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: integ-pilot-istiodremote-tests_istio_postsubmit
   - alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
@@ -7674,13 +7705,13 @@ dashboards:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
       url: https://github.com/istio/tools/compare/<start-custom-0>...<end-custom-0>
-    description: 'prowjob_name: daily-fortio-performance-benchmark-release-1.10'
-    name: daily-fortio-performance-benchmark-release-1.10
+    description: 'prowjob_name: daily-fortio-performance-benchmark-release-1.11'
+    name: daily-fortio-performance-benchmark-release-1.11
     open_bug_template:
       url: https://github.com/istio/tools/issues/
     open_test_template:
       url: https://prow.istio.io/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: daily-fortio-performance-benchmark-release-1.10
+    test_group_name: daily-fortio-performance-benchmark-release-1.11
   - alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
@@ -7696,13 +7727,13 @@ dashboards:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
       url: https://github.com/istio/tools/compare/<start-custom-0>...<end-custom-0>
-    description: 'prowjob_name: daily-nighthawk-performance-benchmark-release-1.10'
-    name: daily-nighthawk-performance-benchmark-release-1.10
+    description: 'prowjob_name: daily-nighthawk-performance-benchmark-release-1.11'
+    name: daily-nighthawk-performance-benchmark-release-1.11
     open_bug_template:
       url: https://github.com/istio/tools/issues/
     open_test_template:
       url: https://prow.istio.io/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: daily-nighthawk-performance-benchmark-release-1.10
+    test_group_name: daily-nighthawk-performance-benchmark-release-1.11
   - alert_options:
       alert_mail_to_addresses: istio-oncall@googlegroups.com
     code_search_url_template:
@@ -8139,14 +8170,14 @@ test_groups:
 - gcs_prefix: istio-prow/logs/daily-fortio-performance-benchmark
   name: daily-fortio-performance-benchmark
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/daily-fortio-performance-benchmark-release-1.10
-  name: daily-fortio-performance-benchmark-release-1.10
+- gcs_prefix: istio-prow/logs/daily-fortio-performance-benchmark-release-1.11
+  name: daily-fortio-performance-benchmark-release-1.11
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/daily-nighthawk-performance-benchmark
   name: daily-nighthawk-performance-benchmark
   num_failures_to_alert: 1
-- gcs_prefix: istio-prow/logs/daily-nighthawk-performance-benchmark-release-1.10
-  name: daily-nighthawk-performance-benchmark-release-1.10
+- gcs_prefix: istio-prow/logs/daily-nighthawk-performance-benchmark-release-1.11
+  name: daily-nighthawk-performance-benchmark-release-1.11
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/integ-security-fuzz-k8s-tests_istio_periodic
   name: integ-security-fuzz-k8s-tests_istio_periodic
@@ -8679,6 +8710,9 @@ test_groups:
 - gcs_prefix: istio-prow/logs/integ-k8s-122_istio_release-1.11_postsubmit
   name: integ-k8s-122_istio_release-1.11_postsubmit
   num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/integ-k8s-123_istio_postsubmit
+  name: integ-k8s-123_istio_postsubmit
+  num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/integ-mixer-k8s-tests_istio_release-1.7_postsubmit
   name: integ-mixer-k8s-tests_istio_release-1.7_postsubmit
   num_failures_to_alert: 1
@@ -8687,6 +8721,9 @@ test_groups:
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/integ-pilot-istiodless-multicluster-tests_istio_release-1.11_postsubmit
   name: integ-pilot-istiodless-multicluster-tests_istio_release-1.11_postsubmit
+  num_failures_to_alert: 1
+- gcs_prefix: istio-prow/logs/integ-pilot-istiodremote-tests_istio_postsubmit
+  name: integ-pilot-istiodremote-tests_istio_postsubmit
   num_failures_to_alert: 1
 - gcs_prefix: istio-prow/logs/integ-pilot-k8s-tests_istio_postsubmit
   name: integ-pilot-k8s-tests_istio_postsubmit
@@ -9739,6 +9776,9 @@ test_groups:
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/integ-pilot-istiodless-multicluster-tests_istio_release-1.11
   name: integ-pilot-istiodless-multicluster-tests_istio_release-1.11
+  num_columns_recent: 20
+- gcs_prefix: istio-prow/pr-logs/directory/integ-pilot-istiodremote-tests_istio
+  name: integ-pilot-istiodremote-tests_istio
   num_columns_recent: 20
 - gcs_prefix: istio-prow/pr-logs/directory/integ-pilot-k8s-tests_istio
   name: integ-pilot-k8s-tests_istio
