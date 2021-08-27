@@ -55,6 +55,7 @@ type KubernetesOptions struct {
 	kubeconfig         string
 	kubeconfigDir      string
 	projectedTokenFile string
+	noInClusterConfig  bool
 
 	DeckURI string
 
@@ -99,12 +100,14 @@ func (o *KubernetesOptions) AddKubeconfigChangeCallback(callback func()) error {
 				return
 			}
 		}
-		if envVal := os.Getenv(clientcmd.RecommendedConfigPathEnvVar); envVal != "" {
-			for _, element := range sets.NewString(filepath.SplitList(envVal)...).List() {
-				err = watcher.Add(element)
-				if err != nil {
-					err = fmt.Errorf("failed to watch %s: %w", element, err)
-					return
+		if o.kubeconfig == "" && o.kubeconfigDir == "" {
+			if envVal := os.Getenv(clientcmd.RecommendedConfigPathEnvVar); envVal != "" {
+				for _, element := range sets.NewString(filepath.SplitList(envVal)...).List() {
+					err = watcher.Add(element)
+					if err != nil {
+						err = fmt.Errorf("failed to watch %s: %w", element, err)
+						return
+					}
 				}
 			}
 		}
@@ -137,12 +140,34 @@ func (o *KubernetesOptions) AddKubeconfigChangeCallback(callback func()) error {
 	return nil
 }
 
+// LoadClusterConfigs returns the resolved rest.Configs and each callback function will be executed if
+// the underlying kubeconfig files are modified. This function is for the case where the rest.Configs are
+// needed without interests of the clients.
+func (o *KubernetesOptions) LoadClusterConfigs(callBacks ...func()) (map[string]rest.Config, error) {
+	var errs []error
+	if !o.resolved {
+		if err := o.resolve(o.dryRun); err != nil {
+			errs = append(errs, fmt.Errorf("failed to resolve the kubeneates options: %w", err))
+		}
+	}
+
+	for i, callBack := range callBacks {
+		if callBack != nil {
+			if err := o.AddKubeconfigChangeCallback(callBack); err != nil {
+				errs = append(errs, fmt.Errorf("failed to add the %d-th kubeconfig change call back: %w", i, err))
+			}
+		}
+	}
+	return o.clusterConfigs, utilerrors.NewAggregate(errs)
+}
+
 // AddFlags injects Kubernetes options into the given FlagSet.
 func (o *KubernetesOptions) AddFlags(fs *flag.FlagSet) {
 	fs.StringVar(&o.kubeconfig, "kubeconfig", "", "Path to .kube/config file. If neither of --kubeconfig and --kubeconfig-dir is provided, use the in-cluster config. All contexts other than the default are used as build clusters.")
 	fs.StringVar(&o.kubeconfigDir, "kubeconfig-dir", "", "Path to the directory containing kubeconfig files. If neither of --kubeconfig and --kubeconfig-dir is provided, use the in-cluster config. All contexts other than the default are used as build clusters.")
 	fs.StringVar(&o.DeckURI, "deck-url", "", "Deck URI for read-only access to the infrastructure cluster.")
 	fs.StringVar(&o.projectedTokenFile, "projected-token-file", "", "A projected serviceaccount token file. If set, this will be configured as token file in the in-cluster config.")
+	fs.BoolVar(&o.noInClusterConfig, "no-in-cluster-config", false, "Not resolving InCluster Config if set.")
 }
 
 // Validate validates Kubernetes options.
@@ -183,7 +208,8 @@ func (o *KubernetesOptions) resolve(dryRun bool) error {
 	o.kubeconfigWach = &sync.Once{}
 
 	clusterConfigs, err := kube.LoadClusterConfigs(kube.NewConfig(kube.ConfigFile(o.kubeconfig),
-		kube.ConfigDir(o.kubeconfigDir), kube.ConfigProjectedTokenFile(o.projectedTokenFile)))
+		kube.ConfigDir(o.kubeconfigDir), kube.ConfigProjectedTokenFile(o.projectedTokenFile),
+		kube.NoInClusterConfig(o.noInClusterConfig)))
 	if err != nil {
 		return fmt.Errorf("load --kubeconfig=%q configs: %v", o.kubeconfig, err)
 	}
