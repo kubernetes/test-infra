@@ -263,6 +263,31 @@ func (r *Repo) Clean() error {
 	return os.RemoveAll(r.dir)
 }
 
+// ResetHard runs `git reset --hard`
+func (r *Repo) ResetHard(commitlike string) error {
+	// `git reset --hard` doesn't cleanup untracked file
+	r.logger.Info("Clean untracked files and dirs.")
+	if b, err := r.gitCommand("clean", "-df").CombinedOutput(); err != nil {
+		return fmt.Errorf("error clean -df: %v. output: %s", err, string(b))
+	}
+	r.logger.WithField("commitlike", commitlike).Info("Reset hard.")
+	co := r.gitCommand("reset", "--hard", commitlike)
+	if b, err := co.CombinedOutput(); err != nil {
+		return fmt.Errorf("error reset hard %s: %v. output: %s", commitlike, err, string(b))
+	}
+	return nil
+}
+
+// IsDirty checks whether the repo is dirty or not
+func (r *Repo) IsDirty() (bool, error) {
+	r.logger.Info("Checking is dirty.")
+	b, err := r.gitCommand("status", "--porcelain").CombinedOutput()
+	if err != nil {
+		return false, fmt.Errorf("error add -A: %v. output: %s", err, string(b))
+	}
+	return len(b) > 0, nil
+}
+
 func (r *Repo) gitCommand(arg ...string) *exec.Cmd {
 	cmd := exec.Command(r.git, arg...)
 	cmd.Dir = r.dir

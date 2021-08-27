@@ -210,9 +210,24 @@ func NewInRepoConfigGitCache(factory git.ClientFactory) git.ClientFactory {
 
 func (c *InRepoConfigGitCache) ClientFor(org, repo string) (git.RepoClient, error) {
 	key := fmt.Sprintf("%s/%s", org, repo)
-	getCache := func() (git.RepoClient, error) {
+	getCache := func(threadSafe bool) (git.RepoClient, error) {
 		if client, ok := c.cache[key]; ok {
 			client.Lock()
+			// if repo is dirty, perform git reset --hard instead of deleting entire repo
+			if isDirty, err := client.RepoClient.IsDirty(); err != nil || isDirty {
+				if err := client.ResetHard("HEAD"); err != nil {
+					if threadSafe {
+						// Called within client `Lock`, safe to delete from map,
+						// return with nil so that a fresh clone will be performed
+						delete(c.cache, key)
+						client.Clean() // best effort clean, to avoid jam up disk
+					}
+					// Called with client `RLock`, not safe to delete from map,
+					// also return because fetch doesn't make much sense any more
+					client.Unlock()
+					return nil, nil
+				}
+			}
 			// Don't unlock the client unless we get an error or the consumer indicates they are done by Clean()ing.
 			if err := client.Fetch(); err != nil {
 				client.Unlock()
@@ -223,7 +238,7 @@ func (c *InRepoConfigGitCache) ClientFor(org, repo string) (git.RepoClient, erro
 		return nil, nil
 	}
 	c.RLock()
-	cached, err := getCache()
+	cached, err := getCache(false)
 	c.RUnlock()
 	if cached != nil || err != nil {
 		return cached, err
@@ -235,7 +250,7 @@ func (c *InRepoConfigGitCache) ClientFor(org, repo string) (git.RepoClient, erro
 	// On cold start, all threads pass RLock and wait here, we need to do one more
 	// check here to avoid more than one cloning.
 	// (It would be nice if we could upgrade from `RLock` to `Lock`)
-	cached, err = getCache()
+	cached, err = getCache(true)
 	if cached != nil || err != nil {
 		return cached, err
 	}
@@ -264,6 +279,6 @@ type skipCleanRepoClient struct {
 
 func (rc *skipCleanRepoClient) Clean() error {
 	// Skip cleaning and unlock to allow reuse as a cached entry.
-	rc.Unlock()
+	rc.Mutex.Unlock()
 	return nil
 }
