@@ -64,6 +64,7 @@ sh_test(
         "$(location @io_k8s_code_generator//cmd/informer-gen)",
         "$(location @io_k8s_code_generator//cmd/lister-gen)",
         "$(location @com_github_go_bindata_go_bindata_v3//go-bindata)",
+				"$(location @io_k8s_sigs_controller_tools//cmd/controller-gen)",
     ],
     data = [
         ":boilerplate/boilerplate.generated.go.txt",  # TODO(fejta): use repo-infra version
@@ -77,6 +78,7 @@ sh_test(
         "@io_k8s_code_generator//cmd/deepcopy-gen",
         "@io_k8s_code_generator//cmd/informer-gen",
         "@io_k8s_code_generator//cmd/lister-gen",
+				"@io_k8s_sigs_controller_tools//cmd/controller-gen",
     ],
     tags = ["lint"],
 )
@@ -90,6 +92,7 @@ sh_binary(
         "$(location @io_k8s_code_generator//cmd/informer-gen)",
         "$(location @io_k8s_code_generator//cmd/lister-gen)",
         "$(location @com_github_go_bindata_go_bindata_v3//go-bindata)",
+				"$(location @io_k8s_sigs_controller_tools//cmd/controller-gen)",
     ],
     data = [
         ":boilerplate/boilerplate.generated.go.txt",  # TODO(fejta): use repo-infra version
@@ -101,6 +104,7 @@ sh_binary(
         "@io_k8s_code_generator//cmd/deepcopy-gen",
         "@io_k8s_code_generator//cmd/informer-gen",
         "@io_k8s_code_generator//cmd/lister-gen",
+				"@io_k8s_sigs_controller_tools//cmd/controller-gen",
     ],
 )
 
