@@ -92,6 +92,7 @@ csi-lib-utils
 csi-driver-iscsi
 csi-driver-nfs
 csi-proxy
+volume-data-source-validator
 "
 
 # No Prow support in them yet.
