@@ -485,6 +485,10 @@ branch-protection:
           branches:
             gh-pages:
               protect: false
+        secrets-store-csi-driver:
+          branches:
+            gh-pages:
+              protect: false
 
 tide:
   sync_period: 2m
