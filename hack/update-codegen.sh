@@ -181,9 +181,7 @@ gen-prowjob-crd(){
     |sed '/^$/d' \
     |sed '/^  annotations.*/a  \    api-approved.kubernetes.io: https://github.com/kubernetes/test-infra/pull/8669' \
     > ./config/prow/cluster/prowjob_customresourcedefinition.yaml
-  cp ./config/prow/cluster/prowjob_customresourcedefinition.yaml prow/test/integration/prow/cluster/50_crd.yaml
   copyfiles "./config/prow/cluster" "prowjob_customresourcedefinition.yaml"
-  copyfiles "./prow/test/integration/prow/cluster/" "50_crd.yaml"
   unset HOME
 }
 
