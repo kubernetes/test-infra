@@ -1460,7 +1460,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-metrics-server
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--override=cluster.spec.externalDNS.provider=external-dns", "k8s_version": "latest", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--override=cluster.spec.externalDns.provider=external-dns", "k8s_version": "latest", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
 - name: e2e-kops-aws-external-dns
   cron: '25 6-23/8 * * *'
   labels:
@@ -1489,7 +1489,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210825' --channel=alpha --networking=cilium --container-runtime=containerd --override=cluster.spec.externalDNS.provider=external-dns" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210825' --channel=alpha --networking=cilium --container-runtime=containerd --override=cluster.spec.externalDns.provider=external-dns" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/latest.txt \
           --test=kops \
@@ -1515,7 +1515,7 @@ periodics:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
-    test.kops.k8s.io/extra_flags: --override=cluster.spec.externalDNS.provider=external-dns
+    test.kops.k8s.io/extra_flags: --override=cluster.spec.externalDns.provider=external-dns
     test.kops.k8s.io/k8s_version: latest
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
@@ -1524,7 +1524,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-external-dns
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--override=cluster.spec.externalDNS.provider=external-dns --override=cluster.spec.iam.useServiceAccountExternalPermissions=true", "k8s_version": "latest", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--override=cluster.spec.externalDns.provider=external-dns --override=cluster.spec.iam.useServiceAccountExternalPermissions=true", "k8s_version": "latest", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
 - name: e2e-kops-aws-external-dns-irsa
   cron: '40 2-23/8 * * *'
   labels:
@@ -1553,7 +1553,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210825' --channel=alpha --networking=cilium --container-runtime=containerd --override=cluster.spec.externalDNS.provider=external-dns --override=cluster.spec.iam.useServiceAccountExternalPermissions=true" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210825' --channel=alpha --networking=cilium --container-runtime=containerd --override=cluster.spec.externalDns.provider=external-dns --override=cluster.spec.iam.useServiceAccountExternalPermissions=true" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/latest.txt \
           --test=kops \
@@ -1579,7 +1579,7 @@ periodics:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
-    test.kops.k8s.io/extra_flags: --override=cluster.spec.externalDNS.provider=external-dns --override=cluster.spec.iam.useServiceAccountExternalPermissions=true
+    test.kops.k8s.io/extra_flags: --override=cluster.spec.externalDns.provider=external-dns --override=cluster.spec.iam.useServiceAccountExternalPermissions=true
     test.kops.k8s.io/k8s_version: latest
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
