@@ -10,7 +10,8 @@ presubmits:
       containers:
       - image: golang:1.16
         command:
-        - make test-all
+        - make
+        - test-all
     annotations:
       testgrid-dashboards: sig-api-machinery-kubebuilder
       testgrid-tab-name: controller-tools-master
