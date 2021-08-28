@@ -177,8 +177,13 @@ gen-spyglass-bindata(){
 gen-prowjob-crd(){
   clean "./config/prow/cluster" "prowjob_customresourcedefinition.yaml"
   if [[ -z ${HOME:-} ]]; then export HOME=$PWD; fi
-  $controller_gen crd:preserveUnknownFields=false,crdVersions=v1beta1 paths=./prow/apis/prowjobs/v1 output:stdout |sed '/^$/d' >./config/prow/cluster/prowjob_customresourcedefinition.yaml
+  $controller_gen crd:preserveUnknownFields=false,crdVersions=v1 paths=./prow/apis/prowjobs/v1 output:stdout \
+    |sed '/^$/d' \
+    |sed '/^  annotations.*/a  \    api-approved.kubernetes.io: https://github.com/kubernetes/test-infra/pull/8669' \
+    > ./config/prow/cluster/prowjob_customresourcedefinition.yaml
+  cp ./config/prow/cluster/prowjob_customresourcedefinition.yaml prow/test/integration/prow/cluster/50_crd.yaml
   copyfiles "./config/prow/cluster" "prowjob_customresourcedefinition.yaml"
+  copyfiles "./prow/test/integration/prow/cluster/" "50_crd.yaml"
   unset HOME
 }
 
@@ -194,10 +199,10 @@ export GOSUMDB=sum.golang.org
 export PATH=$PATH:$go_sdk/bin
 export GO111MODULE=off
 export GOCACHE=$old
-#gen-deepcopy
-#gen-client
-#gen-lister
-#gen-informer
-#gen-spyglass-bindata
+gen-deepcopy
+gen-client
+gen-lister
+gen-informer
+gen-spyglass-bindata
 gen-prowjob-crd
 export GO111MODULE=on

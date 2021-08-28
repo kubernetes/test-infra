@@ -100,6 +100,15 @@ const (
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // ProwJob contains the spec as well as runtime metadata.
+// +kubebuilder:printcolumn:name="Job",type=string,JSONPath=`.spec.job`,description="The name of the job being run"
+// +kubebuilder:printcolumn:name="BuildId",type=string,JSONPath=`.status.build_id`,description="The ID of the job being run."
+// +kubebuilder:printcolumn:name="Type",type=string,JSONPath=`.spec.type`,description="The type of job being run."
+// +kubebuilder:printcolumn:name="Org",type=string,JSONPath=`.spec.refs.org`,description="The org for which the job is running."
+// +kubebuilder:printcolumn:name="Repo",type=string,JSONPath=`.spec.refs.repo`,description="The repo for which the job is running."
+// +kubebuilder:printcolumn:name="Pulls",type=string,JSONPath=`.spec.refs.pulls[*].number`,description="The pulls for which the job is running."
+// +kubebuilder:printcolumn:name="StartTime",type=date,JSONPath=`.status.startTime`,description="When the job started running."
+// +kubebuilder:printcolumn:name="CompletionTime",type=date,JSONPath=`.status.completionTime`,description="When the job finished running."
+// +kubebuilder:printcolumn:name="State",type=string,JSONPath=`.status.state`,description="The state of the job."
 type ProwJob struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -115,6 +124,8 @@ type ProwJob struct {
 type ProwJobSpec struct {
 	// Type is the type of job and informs how
 	// the jobs is triggered
+	// +kubebuilder:validation:Enum=presubmit;postsubmit;periodic;batch
+	// +kubebuilder:validation:Required
 	Type ProwJobType `json:"type,omitempty"`
 	// Agent determines which controller fulfills
 	// this specific ProwJobSpec and runs the job
@@ -126,6 +137,7 @@ type ProwJobSpec struct {
 	// Namespace defines where to create pods/resources.
 	Namespace string `json:"namespace,omitempty"`
 	// Job is the name of the job
+	// +kubebuilder:validation:Required
 	Job string `json:"job,omitempty"`
 	// Refs is the code under test, determined at
 	// runtime by Prow itself
@@ -144,6 +156,7 @@ type ProwJobSpec struct {
 	RerunCommand string `json:"rerun_command,omitempty"`
 	// MaxConcurrency restricts the total number of instances
 	// of this job that can run in parallel at once
+	// +kubebuilder:validation:Minimum=0
 	MaxConcurrency int `json:"max_concurrency,omitempty"`
 	// ErrorOnEviction indicates that the ProwJob should be completed and given
 	// the ErrorState status if the pod that is executing the job is evicted.
@@ -840,9 +853,11 @@ type ProwJobStatus struct {
 	PendingTime *metav1.Time `json:"pendingTime,omitempty"`
 	// CompletionTime is the timestamp for when the job goes to a final state
 	CompletionTime *metav1.Time `json:"completionTime,omitempty"`
-	State          ProwJobState `json:"state,omitempty"`
-	Description    string       `json:"description,omitempty"`
-	URL            string       `json:"url,omitempty"`
+	// +kubebuilder:validation:Enum=triggered;pending;success;failure;aborted;error
+	// +kubebuilder:validation:Required
+	State       ProwJobState `json:"state,omitempty"`
+	Description string       `json:"description,omitempty"`
+	URL         string       `json:"url,omitempty"`
 
 	// PodName applies only to ProwJobs fulfilled by
 	// plank. This field should always be the same as
