@@ -331,16 +331,16 @@ distro_options = [
 ]
 
 k8s_versions = [
-    #"latest", # disabled until we're ready to test 1.22
-    "1.19",
+    #"latest", # disabled until we're ready to test 1.23
     "1.20",
     "1.21",
+    "1.22"
 ]
 
 kops_versions = [
     None, # maps to latest
-    "1.20",
     "1.21",
+    "1.22"
 ]
 
 container_runtimes = [
@@ -770,7 +770,7 @@ def generate_versions():
             publish_version_marker='gs://kops-ci/bin/latest-ci-green.txt',
         )
     ]
-    for version in ['1.21', '1.20', '1.19', '1.18', '1.17']:
+    for version in ['1.22', '1.21', '1.20', '1.19', '1.18']:
         distro = 'deb9' if version == '1.17' else 'u2004'
         results.append(
             build_test(
@@ -790,7 +790,7 @@ def generate_versions():
 ######################
 def generate_pipeline():
     results = []
-    for version in ['master', '1.21', '1.20', '1.19']:
+    for version in ['master', '1.22', '1.21', '1.20']:
         branch = version if version == 'master' else f"release-{version}"
         publish_version_marker = f"gs://kops-ci/markers/{branch}/latest-ci-updown-green.txt"
         kops_version = f"https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/{branch}/latest-ci.txt" # pylint: disable=line-too-long
@@ -1059,7 +1059,7 @@ def generate_presubmits_e2e():
 
 
     ]
-    for branch in ['1.21']:
+    for branch in ['1.22', '1.21']:
         name_suffix = branch.replace('.', '-')
         jobs.append(
             presubmit_test(
