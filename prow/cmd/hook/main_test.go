@@ -69,14 +69,6 @@ func Test_gatherOptions(t *testing.T) {
 			},
 		},
 		{
-			name: "--dry-run=true requires --deck-url",
-			args: map[string]string{
-				"--dry-run":  "true",
-				"--deck-url": "",
-			},
-			err: true,
-		},
-		{
 			name: "explicitly set --plugin-config",
 			args: map[string]string{
 				"--plugin-config": "/random/value",
@@ -103,7 +95,6 @@ func Test_gatherOptions(t *testing.T) {
 				},
 				dryRun:                 true,
 				gracePeriod:            180 * time.Second,
-				kubernetes:             flagutil.KubernetesOptions{DeckURI: "http://whatever"},
 				webhookSecretFile:      "/etc/webhook/hmac",
 				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
 			}
@@ -115,7 +106,6 @@ func Test_gatherOptions(t *testing.T) {
 
 			argMap := map[string]string{
 				"--config-path": "yo",
-				"--deck-url":    "http://whatever",
 			}
 			for k, v := range tc.args {
 				argMap[k] = v

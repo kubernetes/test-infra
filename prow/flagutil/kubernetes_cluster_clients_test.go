@@ -54,18 +54,10 @@ func TestExperimentalKubernetesOptions_Validate(t *testing.T) {
 			expectedErr: false,
 		},
 		{
-			name:   "all ok with dry-run",
-			dryRun: true,
-			kubernetes: &KubernetesOptions{
-				DeckURI: "https://example.com",
-			},
-			expectedErr: false,
-		},
-		{
-			name:        "missing deck endpoint with dry-run",
+			name:        "all ok with dry-run",
 			dryRun:      true,
 			kubernetes:  &KubernetesOptions{},
-			expectedErr: true,
+			expectedErr: false,
 		},
 		{
 			name: "kubeconfig can be set alone",
