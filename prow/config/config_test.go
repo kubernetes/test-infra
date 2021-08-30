@@ -923,11 +923,12 @@ func TestValidatePodSpec(t *testing.T) {
 	postEnv := sets.NewString(downwardapi.EnvForType(prowapi.PostsubmitJob)...)
 	preEnv := sets.NewString(downwardapi.EnvForType(prowapi.PresubmitJob)...)
 	cases := []struct {
-		name    string
-		jobType prowapi.ProwJobType
-		spec    func(s *v1.PodSpec)
-		noSpec  bool
-		pass    bool
+		name             string
+		jobType          prowapi.ProwJobType
+		spec             func(s *v1.PodSpec)
+		decorationConfig *prowapi.DecorationConfig
+		noSpec           bool
+		pass             bool
 	}{
 		{
 			name:   "allow nil spec",
@@ -1004,7 +1005,7 @@ func TestValidatePodSpec(t *testing.T) {
 			name: "reject reserved mount name",
 			spec: func(s *v1.PodSpec) {
 				s.Containers[0].VolumeMounts = append(s.Containers[0].VolumeMounts, v1.VolumeMount{
-					Name:      decorate.VolumeMounts().List()[0],
+					Name:      decorate.VolumeMounts(nil).List()[0],
 					MountPath: "/whatever",
 				})
 			},
@@ -1055,9 +1056,44 @@ func TestValidatePodSpec(t *testing.T) {
 			pass: true,
 		},
 		{
+			name:             "accept mount path that works only through decoration volume specified by user",
+			decorationConfig: &prowapi.DecorationConfig{OauthTokenSecret: &prowapi.OauthTokenSecret{Name: "my-oauth-secret-name", Key: "oauth"}},
+			spec: func(s *v1.PodSpec) {
+				s.Containers[0].VolumeMounts = append(s.Containers[0].VolumeMounts, v1.VolumeMount{
+					Name:      "my-oauth-secret-name",
+					MountPath: "/secrets/oauth",
+				})
+			},
+			pass: true,
+		},
+		{
+			name: "accept multiple mount paths that works only through decoration volume specified by user",
+			decorationConfig: &prowapi.DecorationConfig{
+				OauthTokenSecret: &prowapi.OauthTokenSecret{Name: "my-oauth-secret-name", Key: "oauth"},
+				SSHKeySecrets:    []string{"ssh-private-1", "ssh-private-2"},
+			},
+			spec: func(s *v1.PodSpec) {
+				s.Containers[0].VolumeMounts = append(s.Containers[0].VolumeMounts, []v1.VolumeMount{
+					{
+						Name:      "my-oauth-secret-name",
+						MountPath: "/secrets/oauth",
+					},
+					{
+						Name:      "ssh-private-1",
+						MountPath: "/secrets/ssh-private-1",
+					},
+					{
+						Name:      "ssh-private-2",
+						MountPath: "/secrets/ssh-private-2",
+					},
+				}...)
+			},
+			pass: true,
+		},
+		{
 			name: "reject reserved volume",
 			spec: func(s *v1.PodSpec) {
-				s.Volumes = append(s.Volumes, v1.Volume{Name: decorate.VolumeMounts().List()[0]})
+				s.Volumes = append(s.Volumes, v1.Volume{Name: decorate.VolumeMounts(nil).List()[0]})
 			},
 		},
 		{
@@ -1100,7 +1136,7 @@ func TestValidatePodSpec(t *testing.T) {
 			} else if tc.spec != nil {
 				tc.spec(current)
 			}
-			switch err := validatePodSpec(jt, current, true); {
+			switch err := validatePodSpec(jt, current, tc.decorationConfig); {
 			case err == nil && !tc.pass:
 				t.Error("validation failed to raise an error")
 			case err != nil && tc.pass:

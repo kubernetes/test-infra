@@ -1738,7 +1738,7 @@ func validateJobBase(v JobBase, jobType prowapi.ProwJobType, podNamespace string
 	if err := validateAgent(v, podNamespace); err != nil {
 		return err
 	}
-	if err := validatePodSpec(jobType, v.Spec, v.DecorationConfig != nil); err != nil {
+	if err := validatePodSpec(jobType, v.Spec, v.DecorationConfig); err != nil {
 		return err
 	}
 	if err := ValidatePipelineRunSpec(jobType, v.ExtraRefs, v.PipelineRunSpec); err != nil {
@@ -2351,7 +2351,7 @@ func ValidatePipelineRunSpec(jobType prowapi.ProwJobType, extraRefs []prowapi.Re
 	return nil
 }
 
-func validatePodSpec(jobType prowapi.ProwJobType, spec *v1.PodSpec, decorationEnabled bool) error {
+func validatePodSpec(jobType prowapi.ProwJobType, spec *v1.PodSpec, decorationConfig *prowapi.DecorationConfig) error {
 	if spec == nil {
 		return nil
 	}
@@ -2367,7 +2367,7 @@ func validatePodSpec(jobType prowapi.ProwJobType, spec *v1.PodSpec, decorationEn
 		return utilerrors.NewAggregate(append(errs, fmt.Errorf("pod spec must specify at least 1 container, found: %d", n)))
 	}
 
-	if n := len(spec.Containers); n > 1 && !decorationEnabled {
+	if n := len(spec.Containers); n > 1 && decorationConfig == nil {
 		return utilerrors.NewAggregate(append(errs, fmt.Errorf("pod utility decoration must be enabled to use multiple containers: %d", n)))
 	}
 
@@ -2407,20 +2407,21 @@ func validatePodSpec(jobType prowapi.ProwJobType, spec *v1.PodSpec, decorationEn
 	}
 
 	volumeNames := sets.String{}
+	decoratedVolumeNames := decorate.VolumeMounts(decorationConfig)
 	for _, volume := range spec.Volumes {
 		if volumeNames.Has(volume.Name) {
 			errs = append(errs, fmt.Errorf("volume named %q is defined more than once", volume.Name))
 		}
 		volumeNames.Insert(volume.Name)
 
-		if decorate.VolumeMounts().Has(volume.Name) {
+		if decoratedVolumeNames.Has(volume.Name) {
 			errs = append(errs, fmt.Errorf("volume %s is a reserved for decoration", volume.Name))
 		}
 	}
 
 	for i := range spec.Containers {
 		for _, mount := range spec.Containers[i].VolumeMounts {
-			if !volumeNames.Has(mount.Name) && !decorate.VolumeMounts().Has(mount.Name) {
+			if !volumeNames.Has(mount.Name) && !decoratedVolumeNames.Has(mount.Name) {
 				errs = append(errs, fmt.Errorf("volumeMount named %q is undefined", mount.Name))
 			}
 			if decorate.VolumeMountsOnTestContainer().Has(mount.Name) {

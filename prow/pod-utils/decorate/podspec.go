@@ -68,8 +68,19 @@ func Labels() []string {
 }
 
 // VolumeMounts returns a string set with *MountName consts in it.
-func VolumeMounts() sets.String {
-	return sets.NewString(logMountName, codeMountName, toolsMountName, gcsCredentialsMountName, s3CredentialsMountName)
+func VolumeMounts(dc *prowapi.DecorationConfig) sets.String {
+	ret := sets.NewString(logMountName, codeMountName, toolsMountName, gcsCredentialsMountName, s3CredentialsMountName)
+	if dc == nil {
+		return ret
+	}
+
+	if dc.OauthTokenSecret != nil {
+		ret.Insert(dc.OauthTokenSecret.Name)
+	}
+	for _, sshKeySecret := range dc.SSHKeySecrets {
+		ret.Insert(sshKeySecret)
+	}
+	return ret
 }
 
 // VolumeMountsOnTestContainer returns a string set with *MountName consts in it which are applied to the test container.
