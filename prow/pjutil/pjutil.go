@@ -87,17 +87,20 @@ func createRefs(pr github.PullRequest, baseSHA string) prowapi.Refs {
 // NewPresubmit converts a config.Presubmit into a prowapi.ProwJob.
 // The prowapi.Refs are configured correctly per the pr, baseSHA.
 // The eventGUID becomes a github.EventGUID label.
-func NewPresubmit(pr github.PullRequest, baseSHA string, job config.Presubmit, eventGUID string) prowapi.ProwJob {
+func NewPresubmit(pr github.PullRequest, baseSHA string, job config.Presubmit, eventGUID string, additionalLabels map[string]string) prowapi.ProwJob {
 	refs := createRefs(pr, baseSHA)
 	labels := make(map[string]string)
 	for k, v := range job.Labels {
 		labels[k] = v
 	}
+	for k, v := range additionalLabels {
+		labels[k] = v
+	}
+	labels[github.EventGUID] = eventGUID
 	annotations := make(map[string]string)
 	for k, v := range job.Annotations {
 		annotations[k] = v
 	}
-	labels[github.EventGUID] = eventGUID
 	return NewProwJob(PresubmitSpec(job, refs), labels, annotations)
 }
 

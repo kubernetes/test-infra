@@ -398,7 +398,7 @@ Only the following contexts were expected:
 				return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 			}
 
-			pj := pjutil.NewPresubmit(*pr, baseSHA, *pre, e.GUID)
+			pj := pjutil.NewPresubmit(*pr, baseSHA, *pre, e.GUID, nil)
 			now := metav1.Now()
 			pj.Status = prowapi.ProwJobStatus{
 				StartTime:      now,

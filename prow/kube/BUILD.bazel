@@ -20,6 +20,7 @@ go_test(
         "@com_github_google_go_cmp//cmp:go_default_library",
         "@com_github_google_go_cmp//cmp/cmpopts:go_default_library",
         "@io_k8s_apimachinery//pkg/api/equality:go_default_library",
+        "@io_k8s_apimachinery//pkg/apis/meta/v1:go_default_library",
         "@io_k8s_apimachinery//pkg/util/diff:go_default_library",
         "@io_k8s_client_go//rest:go_default_library",
     ],
