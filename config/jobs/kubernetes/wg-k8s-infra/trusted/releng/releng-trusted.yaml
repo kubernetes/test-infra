@@ -47,6 +47,7 @@ periodics:
       - /kpromo
       args:
       - run
+      - files
       - --filestores=/home/prow/go/src/github.com/kubernetes/k8s.io/artifacts/filestores/
       - --files=/home/prow/go/src/github.com/kubernetes/k8s.io/artifacts/manifests/
       # TODO(releng): Use '--dry-run=false' (or '--confirm') once testing is complete
