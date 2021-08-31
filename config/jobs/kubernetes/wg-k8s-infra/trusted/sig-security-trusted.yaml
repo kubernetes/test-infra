@@ -49,6 +49,27 @@ periodics:
         else
           echo "Scan completed"
         fi
+
+        # snyk scan on container images
+        echo "Fetch the list of k8s images"
+        curl -L https://sbom.k8s.io/v1.22.1/release | grep 'PackageName: k8s.gcr.io/' | awk '{print $2}' > images
+        while read image; do
+          echo "Running snyk scan .."
+          EXIT_CODE=0
+          RESULT_UNFILTERED=$(snyk container test $image --json) || EXIT_CODE=$?
+          if [ $EXIT_CODE -gt 1 ]; then
+            echo "Failed to run snyk scan with exit code $EXIT_CODE . Error message: $RESULT_UNFILTERED"
+            exit 1
+          fi
+          RESULT=$(echo $RESULT_UNFILTERED | jq \
+          '{vulnerabilities: .vulnerabilities | select(length > 0) }')
+          if [[ ${RESULT} ]]; then
+            echo "Vulnerability filtering failed"
+            #exit 1
+          else
+            echo "Scan completed"
+          fi
+        done < images
   annotations:
     testgrid-create-test-group: "true"
     testgrid-alert-email: kubernetes-security-tooling-private@googlegroups.com
