@@ -7,6 +7,7 @@ go_test(
     srcs = [
         "crier_test.go",
         "deck_test.go",
+        "deck_tenant_test.go",
         "hook_test.go",
         "horologium_test.go",
         "overall_test.go",
