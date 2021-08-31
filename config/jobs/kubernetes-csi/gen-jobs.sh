@@ -46,7 +46,7 @@ latest_stable_k8s_version="1.20" # TODO: bump to 1.21 after testing a pull job
 hostpath_driver_version="v1.7.2"
 
 # We need this image because it has Docker in Docker and go.
-dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20210512-b8d1b30-master"
+dind_image="gcr.io/k8s-testimages/kubekins-e2e:v20210825-f1955d1-master"
 
 # All kubernetes-csi repos which are part of the hostpath driver example.
 # For these repos we generate the full test matrix. For each entry here
@@ -92,6 +92,7 @@ csi-lib-utils
 csi-driver-iscsi
 csi-driver-nfs
 csi-proxy
+lib-volume-populator
 volume-data-source-validator
 "
 
