@@ -25,6 +25,42 @@ postsubmits:
       testgrid-num-failures-to-alert: '1'
 
 periodics:
+- interval: 4h
+  cluster: k8s-infra-prow-build-trusted
+  max_concurrency: 1
+  name: ci-k8sio-file-promo
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: k8s.io
+    base_ref: main
+  spec:
+    # TODO(releng): Should we use a different service account or change this
+    #               one's name to 'k8s-infra-artifact-promoter'?
+    serviceAccountName: k8s-infra-gcr-promoter
+    containers:
+    # TODO(releng): Use a promoted image here once testing is complete
+    - image: gcr.io/k8s-staging-artifact-promoter/kpromo-amd64:v0.1.0-1
+      # TODO(releng): Remove once a promoted image is in use
+      imagePullPolicy: Always
+      command:
+      - /kpromo
+      args:
+      - run
+      - --filestores=/home/prow/go/src/github.com/kubernetes/k8s.io/artifacts/filestores/
+      - --files=/home/prow/go/src/github.com/kubernetes/k8s.io/artifacts/manifests/
+      # TODO(releng): Use '--dry-run=false' (or '--confirm') once testing is complete
+      - --dry-run=true
+  annotations:
+    testgrid-dashboards: sig-release-releng-blocking, wg-k8s-infra-k8sio
+    testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
+    # TODO(releng): Lower the alert threshold to '1' once testing is complete
+    testgrid-num-failures-to-alert: '10'
+  rerun_auth_config:
+    github_team_slugs:
+      - org: kubernetes
+        slug: release-managers
+
 # ci-k8sio-image-promo runs every 4 hours, to make sure that the destination
 # GCRs do not deviate away from the intent of the manifest.
 - interval: 4h
