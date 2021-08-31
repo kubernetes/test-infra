@@ -54,7 +54,7 @@ presubmits:
         - entrypoint
         - make
         - test
-        image: quay.io/multicloudlab/build-tool:v20210728-821884179
+        image: quay.io/multicloudlab/build-tool:v20210831-f48ffbb7e
         name: ""
         securityContext:
           privileged: true
@@ -73,7 +73,7 @@ presubmits:
         - entrypoint
         - make
         - build
-        image: quay.io/multicloudlab/build-tool:v20210728-821884179
+        image: quay.io/multicloudlab/build-tool:v20210831-f48ffbb7e
         name: ""
         securityContext:
           privileged: true

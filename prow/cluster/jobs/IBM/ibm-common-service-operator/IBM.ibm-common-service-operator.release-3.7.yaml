@@ -32,7 +32,7 @@ presubmits:
         - entrypoint
         - make
         - test
-        image: quay.io/multicloudlab/build-tool:v20210728-821884179
+        image: quay.io/multicloudlab/build-tool:v20210831-f48ffbb7e
         name: ""
         securityContext:
           privileged: true
@@ -51,7 +51,7 @@ presubmits:
         - entrypoint
         - make
         - test
-        image: quay.io/multicloudlab/build-tool:v20210728-821884179
+        image: quay.io/multicloudlab/build-tool:v20210831-f48ffbb7e
         name: ""
         securityContext:
           privileged: true
@@ -70,7 +70,7 @@ presubmits:
         - entrypoint
         - make
         - test
-        image: quay.io/multicloudlab/build-tool:v20210728-821884179
+        image: quay.io/multicloudlab/build-tool:v20210831-f48ffbb7e
         name: ""
         securityContext:
           privileged: true
@@ -91,7 +91,7 @@ postsubmits:
         - entrypoint
         - make
         - build-push-image
-        image: quay.io/multicloudlab/build-tool:v20210728-821884179
+        image: quay.io/multicloudlab/build-tool:v20210831-f48ffbb7e
         name: ""
         securityContext:
           privileged: true
@@ -109,7 +109,7 @@ postsubmits:
         - entrypoint
         - make
         - build-push-image
-        image: quay.io/multicloudlab/build-tool:v20210728-821884179
+        image: quay.io/multicloudlab/build-tool:v20210831-f48ffbb7e
         name: ""
         securityContext:
           privileged: true
@@ -127,7 +127,7 @@ postsubmits:
         - entrypoint
         - make
         - build-push-image
-        image: quay.io/multicloudlab/build-tool:v20210728-821884179
+        image: quay.io/multicloudlab/build-tool:v20210831-f48ffbb7e
         name: ""
         securityContext:
           privileged: true
@@ -145,7 +145,7 @@ postsubmits:
         - entrypoint
         - make
         - multiarch-image
-        image: quay.io/multicloudlab/build-tool:v20210728-821884179
+        image: quay.io/multicloudlab/build-tool:v20210831-f48ffbb7e
         name: ""
         securityContext:
           privileged: true
