@@ -491,7 +491,8 @@ def generate_misc():
 
         build_test(name_override="kops-grid-scenario-terraform",
                    k8s_version="1.20",
-                   terraform_version="0.14.6",
+                   terraform_version="1.0.5",
+                   extra_flags=["--zones=us-west-1a"],
                    extra_dashboards=['kops-misc']),
 
         build_test(name_override="kops-aws-misc-ha-euwest1",

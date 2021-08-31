@@ -529,7 +529,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-scenario-aws-cloud-controller-manager-irsa
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "1.20", "kops_channel": "alpha", "kops_version": null, "networking": "kubenet"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--zones=us-west-1a", "k8s_version": "1.20", "kops_channel": "alpha", "kops_version": null, "networking": "kubenet"}
 - name: e2e-kops-grid-scenario-terraform
   cron: '14 4 * * *'
   labels:
@@ -558,10 +558,10 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210825' --channel=alpha --networking=kubenet --container-runtime=containerd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210825' --channel=alpha --networking=kubenet --container-runtime=containerd --zones=us-west-1a" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
-          --terraform-version=0.14.6 \
+          --terraform-version=1.0.5 \
           --test=kops \
           -- \
           --ginkgo-args="--debug" \
@@ -585,6 +585,7 @@ periodics:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/extra_flags: --zones=us-west-1a
     test.kops.k8s.io/k8s_version: '1.20'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
