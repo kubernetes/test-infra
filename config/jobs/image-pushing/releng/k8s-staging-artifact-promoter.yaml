@@ -1,5 +1,35 @@
 postsubmits:
   kubernetes/release:
+    - name: post-release-push-image-kpromo
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-release-releng-informing, sig-release-master-informing, sig-release-image-pushes, wg-k8s-infra-gcb
+        testgrid-alert-email: release-managers+alerts@kubernetes.io
+        testgrid-num-failures-to-alert: '1'
+      decorate: true
+      run_if_changed: '^(cmd\/kpromo\/|pkg\/(api|filepromoter|promobot)\/)'
+      branches:
+        - ^main$
+        # TODO(releng): Remove once repo default branch has been renamed
+        - ^master$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-artifact-promoter
+              - --scratch-bucket=gs://k8s-staging-artifact-promoter-gcb
+              - --build-dir=.
+              - cmd/kpromo
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
     - name: post-release-push-image-vulndash
       cluster: k8s-infra-prow-build-trusted
       annotations:
