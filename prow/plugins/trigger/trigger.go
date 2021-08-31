@@ -233,22 +233,23 @@ func TrustedUser(ghc trustedUserClient, onlyOrgMembers bool, trustedOrg, user, o
 		return okResponse, nil
 	}
 
-	// First check if user is a collaborator, assuming this is allowed
+	// TODO(fejta): consider dropping support for org checks in the future.
+
+	// First check if the user is an org member. This caches across all repos.
+	if member, err := ghc.IsMember(org, user); err != nil {
+		return errorResponse, fmt.Errorf("error in IsMember(%s): %v", org, err)
+	} else if member {
+		return okResponse, nil
+	}
+
+	// Next check if the user is a collaborator if that is allowed, this is more
+	// expensive as it only caches per repo.
 	if !onlyOrgMembers {
 		if ok, err := ghc.IsCollaborator(org, repo, user); err != nil {
 			return errorResponse, fmt.Errorf("error in IsCollaborator: %v", err)
 		} else if ok {
 			return okResponse, nil
 		}
-	}
-
-	// TODO(fejta): consider dropping support for org checks in the future.
-
-	// Next see if the user is an org member
-	if member, err := ghc.IsMember(org, user); err != nil {
-		return errorResponse, fmt.Errorf("error in IsMember(%s): %v", org, err)
-	} else if member {
-		return okResponse, nil
 	}
 
 	// Determine if there is a second org to check. If there is no secondary org or they are the same, the result
