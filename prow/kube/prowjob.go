@@ -61,4 +61,6 @@ const (
 	// PullLabel is added in resources created by prow and
 	// carries the PR number associated with the job, eg 321.
 	PullLabel = "prow.k8s.io/refs.pull"
+	// RetestLabel exposes if the job was created by a re-test request.
+	RetestLabel = "prow.k8s.io/retest"
 )

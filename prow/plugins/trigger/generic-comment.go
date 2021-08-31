@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/kube"
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/config"
@@ -132,7 +133,12 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 	if needsHelp, note := pjutil.ShouldRespondWithHelp(gc.Body, len(toTest)); needsHelp {
 		return addHelpComment(c.GitHubClient, gc.Body, org, repo, pr.Base.Ref, pr.Number, presubmits, gc.HTMLURL, commentAuthor, note, c.Logger)
 	}
-	return RunRequested(c, pr, baseSHA, toTest, gc.GUID)
+	// we want to be able to track re-tests separately from the general body of tests
+	additionalLabels := map[string]string{}
+	if pjutil.RetestRe.MatchString(gc.Body) || pjutil.RetestRequiredRe.MatchString(gc.Body) {
+		additionalLabels[kube.RetestLabel] = "true"
+	}
+	return RunRequestedWithLabels(c, pr, baseSHA, toTest, gc.GUID, additionalLabels)
 }
 
 func HonorOkToTest(trigger plugins.Trigger) bool {
