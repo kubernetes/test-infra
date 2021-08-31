@@ -874,7 +874,7 @@ periodics:
     testgrid-alert-email: k8s-infra-oncall@google.com
     testgrid-num-failures-to-alert: '2' # This could fail when it runs right in the middle of prow push, tolerate it once
     description: runs autobumper to create/update a PR that bumps prow to the latest RC with label 'skip-review'
-- cron: "30 * * * 1-5"  # Bump don't label `skip-review`. Run at :30 past every hour Mon-Fri
+- cron: "15 * * * 1-5"  # Bump don't label `skip-review`. Run at :30 past every hour Mon-Fri
   name: ci-test-infra-autobump-prow
   cluster: test-infra-trusted
   decorate: true
