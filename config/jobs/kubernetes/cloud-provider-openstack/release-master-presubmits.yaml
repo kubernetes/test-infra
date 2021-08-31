@@ -34,3 +34,37 @@ presubmits:
     annotations:
       testgrid-dashboards: provider-openstack-openstack-cloud-controller-manager
       testgrid-tab-name: presubmit-e2e-test
+  - name: openstack-cloud-csi-cinder-e2e-test
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    path_alias: "k8s.io/cloud-provider-openstack"
+    always_run: false
+    branches:
+      - ^master$
+    run_if_changed: '^(pkg\/csi\/cinder\/|cmd\/cinder-csi-plugin\/|tests\/e2e\/csi\/cinder\/)'
+    optional: false
+    decorate: true
+    decoration_config:
+      timeout: 3h
+    spec:
+      containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210825-f1955d1-master
+          env:
+          - name: "BOSKOS_HOST"
+            value: "boskos.test-pods.svc.cluster.local"
+          command:
+          - "runner.sh"
+          - "./tests/ci-csi-cinder-e2e.sh"
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: 1
+    annotations:
+      testgrid-dashboards: provider-openstack-openstack-csi-cinder
+      testgrid-tab-name: presubmit-e2e-test
