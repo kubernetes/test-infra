@@ -244,7 +244,7 @@ export function createRerunProwJobIcon(modal: HTMLElement, rerunElement: HTMLEle
     rerunElement.appendChild(copyButton);
     if (rerunCreatesJob) {
         const runButton = document.createElement('a');
-        runButton.innerHTML = "<button class='mdl-button mdl-js-button'>Rerun</button>";
+        runButton.innerHTML = "<button class='mdl-button mdl-js-button mdl-button--raised mdl-button--colored'>Rerun</button>";
         runButton.onclick = async () => {
             gtag("event", "rerun", {
                 event_category: "engagement",
