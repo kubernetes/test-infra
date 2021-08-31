@@ -201,6 +201,7 @@ type TeamClient interface {
 	RemoveTeamRepo(id int, org, repo string) error
 	ListTeamInvitations(org string, id int) ([]OrgInvitation, error)
 	TeamHasMember(org string, teamID int, memberLogin string) (bool, error)
+	TeamBySlugHasMember(org string, teamSlug string, memberLogin string) (bool, error)
 	GetTeamBySlug(slug string, org string) (*Team, error)
 }
 
@@ -4487,6 +4488,22 @@ func (c *client) TeamHasMember(org string, teamID int, memberLogin string) (bool
 		}
 	}
 	return false, nil
+}
+
+func (c *client) TeamBySlugHasMember(org string, teamSlug string, memberLogin string) (bool, error) {
+	durationLogger := c.log("TeamBySlugHasMember", teamSlug, org)
+	defer durationLogger()
+
+	if c.fake {
+		return false, nil
+	}
+	exitCode, err := c.request(&request{
+		method:    http.MethodGet,
+		path:      fmt.Sprintf("/orgs/%s/teams/%s/memberships/%s", org, teamSlug, memberLogin),
+		org:       org,
+		exitCodes: []int{200, 404},
+	}, nil)
+	return exitCode == 200, err
 }
 
 // GetTeamBySlug returns information about that team

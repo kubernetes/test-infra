@@ -141,6 +141,14 @@ type FakeClient struct {
 
 	// lock to be thread safe
 	lock sync.RWMutex
+
+	// Team is a map org->teamSlug->TeamWithMembers
+	Teams map[string]map[string]TeamWithMembers
+}
+
+type TeamWithMembers struct {
+	Team    github.Team
+	Members sets.String
 }
 
 func (f *FakeClient) BotUser() (*github.UserData, error) {
@@ -674,6 +682,15 @@ func (f *FakeClient) ListTeamMembers(org string, teamID int, role string) ([]git
 		return []github.TeamMember{}, nil
 	}
 	return members, nil
+}
+
+func (f *FakeClient) TeamBySlugHasMember(org string, teamSlug string, memberLogin string) (bool, error) {
+	f.lock.RLock()
+	defer f.lock.RUnlock()
+	if f.Teams[org] != nil {
+		return f.Teams[org][teamSlug].Members.Has(memberLogin), nil
+	}
+	return false, nil
 }
 
 // IsCollaborator returns true if the user is a collaborator of the repo.
