@@ -65,6 +65,7 @@ class SpyglassImpl implements Spyglass {
     window.addEventListener('message', (e) => this.handleMessage(e));
     window.addEventListener('hashchange', (e) => this.handleHashChange(e));
     window.addEventListener('DOMContentLoaded', () => {
+      this.createHyperlinks(document.documentElement);
       this.fixAnchorLinks(document.documentElement);
       this.observer.observe(document.documentElement, {attributeFilter: ['href'], childList: true, subtree: true});
     });
@@ -151,6 +152,7 @@ class SpyglassImpl implements Spyglass {
         continue;
       }
       if (mutation.type === 'childList') {
+        this.createHyperlinks(mutation.target);
         this.fixAnchorLinks(mutation.target);
       } else if (mutation.type === 'attributes') {
         if (mutation.target instanceof HTMLAnchorElement && mutation.attributeName === 'href') {
@@ -187,6 +189,22 @@ class SpyglassImpl implements Spyglass {
     }
     const top = el.getBoundingClientRect().top + window.pageYOffset;
     this.scrollTo(0, top).then();
+  }
+
+ private setLink(match: string, attr: string): string {
+    if (typeof attr !== 'undefined') {
+        return match;
+    }
+    return `</span><a target="_blank" href="'${match}'">${match}</a><span>`;
+  }
+
+  private createHyperlinks(parent: Element): void {
+    // Solution is inspired by https://stackoverflow.com/questions/29055828/regex-to-make-links-clickable-in-only-a-href-and-not-img-src
+    const re = /((?:href|src)=")?(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+
+    for (const elem of Array.from(parent.querySelectorAll<HTMLAnchorElement>('div.linetext>span'))) {
+      elem.outerHTML = elem.innerText.replace(re, this.setLink);
+    }
   }
 
   // We need to fix up anchor links (i.e. links that only set the fragment)
