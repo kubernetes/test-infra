@@ -20,7 +20,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -58,8 +57,6 @@ type KubernetesOptions struct {
 	projectedTokenFile       string
 	noInClusterConfig        bool
 	NOInClusterConfigDefault bool
-
-	DeckURI string
 
 	// from resolution
 	resolved                    bool
@@ -176,23 +173,12 @@ func (o *KubernetesOptions) LoadClusterConfigs(callBacks ...func()) (map[string]
 func (o *KubernetesOptions) AddFlags(fs *flag.FlagSet) {
 	fs.StringVar(&o.kubeconfig, "kubeconfig", "", "Path to .kube/config file. If neither of --kubeconfig and --kubeconfig-dir is provided, use the in-cluster config. All contexts other than the default are used as build clusters.")
 	fs.StringVar(&o.kubeconfigDir, "kubeconfig-dir", "", "Path to the directory containing kubeconfig files. If neither of --kubeconfig and --kubeconfig-dir is provided, use the in-cluster config. All contexts other than the default are used as build clusters.")
-	fs.StringVar(&o.DeckURI, "deck-url", "", "Deck URI for read-only access to the infrastructure cluster.")
 	fs.StringVar(&o.projectedTokenFile, "projected-token-file", "", "A projected serviceaccount token file. If set, this will be configured as token file in the in-cluster config.")
 	fs.BoolVar(&o.noInClusterConfig, "no-in-cluster-config", o.NOInClusterConfigDefault, "Not resolving InCluster Config if set.")
 }
 
 // Validate validates Kubernetes options.
-func (o *KubernetesOptions) Validate(dryRun bool) error {
-	if dryRun && o.DeckURI == "" {
-		return errors.New("a dry-run was requested but required flag -deck-url was unset")
-	}
-
-	if o.DeckURI != "" {
-		if _, err := url.ParseRequestURI(o.DeckURI); err != nil {
-			return fmt.Errorf("invalid -deck-url URI: %q", o.DeckURI)
-		}
-	}
-
+func (o *KubernetesOptions) Validate(_ bool) error {
 	if o.kubeconfig != "" {
 		if _, err := os.Stat(o.kubeconfig); err != nil {
 			return fmt.Errorf("error accessing --kubeconfig: %v", err)
@@ -255,7 +241,7 @@ func (o *KubernetesOptions) resolve(dryRun bool) error {
 }
 
 // ProwJobClientset returns a ProwJob clientset for use in informer factories.
-func (o *KubernetesOptions) ProwJobClientset(namespace string, dryRun bool) (prowJobClientset prow.Interface, err error) {
+func (o *KubernetesOptions) ProwJobClientset(dryRun bool) (prowJobClientset prow.Interface, err error) {
 	if err := o.resolve(dryRun); err != nil {
 		return nil, err
 	}
@@ -274,9 +260,8 @@ func (o *KubernetesOptions) ProwJobClient(namespace string, dryRun bool) (prowJo
 	}
 
 	if o.dryRun {
-		return kube.NewDryRunProwJobClient(o.DeckURI), nil
+		return nil, errors.New("no dry-run prowjob client is supported in dry-run mode")
 	}
-
 	return o.prowJobClientset.ProwV1().ProwJobs(namespace), nil
 }
 

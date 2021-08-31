@@ -852,7 +852,6 @@ func Test_gatherOptions(t *testing.T) {
 				staticFilesLocation:   "/static",
 				templateFilesLocation: "/template",
 				spyglassFilesLocation: "/lenses",
-				kubernetes:            flagutil.KubernetesOptions{},
 				github:                ghoptions,
 				instrumentation:       flagutil.DefaultInstrumentationOptions(),
 			}

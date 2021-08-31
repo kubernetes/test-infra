@@ -258,18 +258,9 @@ func TestFlags(t *testing.T) {
 			},
 		},
 		{
-			name: "--dry-run=true requires --deck-url",
-			args: map[string]string{
-				"--dry-run":  "true",
-				"--deck-url": "",
-			},
-			err: true,
-		},
-		{
 			name: "explicitly set --dry-run=true",
 			args: map[string]string{
-				"--dry-run":  "true",
-				"--deck-url": "http://whatever",
+				"--dry-run": "true",
 			},
 			expected: func(o *options) {
 				o.dryRun = true
@@ -295,14 +286,12 @@ func TestFlags(t *testing.T) {
 				dryRun:                 true,
 				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
 			}
-			expected.kubernetes.DeckURI = "http://whatever"
 			if tc.expected != nil {
 				tc.expected(expected)
 			}
 
 			argMap := map[string]string{
 				"--config-path": "yo",
-				"--deck-url":    "http://whatever",
 			}
 			for k, v := range tc.args {
 				argMap[k] = v
