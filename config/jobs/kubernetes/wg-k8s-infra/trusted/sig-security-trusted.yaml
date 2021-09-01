@@ -50,11 +50,11 @@ periodics:
           echo "Scan completed"
         fi
 
-        # snyk scan on container images
+        # container images scan
         echo "Fetch the list of k8s images"
         curl -L https://sbom.k8s.io/v1.22.1/release | grep 'PackageName: k8s.gcr.io/' | awk '{print $2}' > images
         while read image; do
-          echo "Running snyk scan .."
+          echo "Running container image scan.."
           EXIT_CODE=0
           RESULT_UNFILTERED=$(snyk container test $image --json) || EXIT_CODE=$?
           if [ $EXIT_CODE -gt 1 ]; then
@@ -62,7 +62,7 @@ periodics:
             exit 1
           fi
           RESULT=$(echo $RESULT_UNFILTERED | jq \
-          '{vulnerabilities: .vulnerabilities | select(length > 0) }')
+          '{vulnerabilities: .vulnerabilities | map(select(.isUpgradable == true or .isPatchable == true)) | select(length > 0) }')
           if [[ ${RESULT} ]]; then
             echo "Vulnerability filtering failed"
             #exit 1
