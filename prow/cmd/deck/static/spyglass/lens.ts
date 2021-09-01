@@ -195,7 +195,7 @@ class SpyglassImpl implements Spyglass {
     if (typeof attr !== 'undefined') {
         return match;
     }
-    return `</span><a target="_blank" href="'${match}'">${match}</a><span>`;
+    return `</span><a target="_blank" href="${match}">${match}</a><span>`;
   }
 
   private createHyperlinks(parent: Element): void {
@@ -203,7 +203,7 @@ class SpyglassImpl implements Spyglass {
     const re = /((?:href|src)=")?(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
 
     for (const elem of Array.from(parent.querySelectorAll<HTMLAnchorElement>('div.linetext>span'))) {
-      elem.outerHTML = elem.innerText.replace(re, this.setLink);
+      elem.innerHTML = elem.innerText.replace(re, this.setLink);
     }
   }
 
