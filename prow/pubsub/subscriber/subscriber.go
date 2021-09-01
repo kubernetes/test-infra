@@ -44,10 +44,13 @@ const (
 	postsubmitProwJobEvent = "prow.k8s.io/pubsub.PostsubmitProwJobEvent"
 )
 
-// Ensure interface is intact
+// Ensure interface is intact. I.e., this declaration ensures that the type
+// "*config.Config" implements the "prowCfgClient" interface. See
+// https://golang.org/doc/faq#guarantee_satisfies_interface.
 var _ prowCfgClient = (*config.Config)(nil)
 
-// prowCfgClient is for unit test purpose
+// prowCfgClient is a subset of all the various behaviors that the
+// "*config.Config" type implements, which we will test here.
 type prowCfgClient interface {
 	AllPeriodics() []config.Periodic
 	GetPresubmits(gc git.ClientFactory, identifier string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) ([]config.Presubmit, error)
