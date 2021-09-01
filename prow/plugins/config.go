@@ -374,6 +374,29 @@ type Label struct {
 	// AdditionalLabels is a set of additional labels enabled for use
 	// on top of the existing "kind/*", "priority/*", and "area/*" labels.
 	AdditionalLabels []string `json:"additional_labels"`
+
+	// RestrictedLabels allows to configure labels that can only be modified
+	// by users that belong to at least one of the configured teams. The key
+	// defines to which repos this applies and can be `*` for global, an org
+	// or a repo in org/repo notation.
+	RestrictedLabels map[string][]RestrictedLabel `json:"restricted_labels,omitempty"`
+}
+
+func (l Label) RestrictedLabelsFor(org, repo string) map[string]RestrictedLabel {
+	result := map[string]RestrictedLabel{}
+	for _, orgRepoKey := range []string{"*", org, org + "/" + repo} {
+		for _, restrictedLabel := range l.RestrictedLabels[orgRepoKey] {
+			result[strings.ToLower(restrictedLabel.Label)] = restrictedLabel
+		}
+	}
+
+	return result
+}
+
+type RestrictedLabel struct {
+	Label        string   `json:"label"`
+	AllowedTeams []string `json:"allowed_teams"`
+	AllowedUsers []string `json:"allowed_users"`
 }
 
 // Trigger specifies a configuration for a single trigger.
