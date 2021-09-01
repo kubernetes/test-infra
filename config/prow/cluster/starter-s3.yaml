@@ -1303,11 +1303,11 @@ stringData:
   service-account.json: |
     {
       "region": "minio",
-      "access_key": "<<CHANGE_ME_MINIO_ACCESS_KEY>>",
+      "access_key": "<<CHANGE_ME_MINIO_ROOT_USER>>",
       "endpoint": "minio.prow.svc.cluster.local",
       "insecure": true,
       "s3_force_path_style": true,
-      "secret_key": "<<CHANGE_ME_MINIO_SECRET_KEY>>"
+      "secret_key": "<<CHANGE_ME_MINIO_ROOT_PASSWORD>>"
     }
 ---
 apiVersion: v1
@@ -1319,11 +1319,11 @@ stringData:
   service-account.json: |
     {
       "region": "minio",
-      "access_key": "<<CHANGE_ME_MINIO_ACCESS_KEY>>",
+      "access_key": "<<CHANGE_ME_MINIO_ROOT_USER>>",
       "endpoint": "minio.prow.svc.cluster.local",
       "insecure": true,
       "s3_force_path_style": true,
-      "secret_key": "<<CHANGE_ME_MINIO_SECRET_KEY>>"
+      "secret_key": "<<CHANGE_ME_MINIO_ROOT_PASSWORD>>"
     }
 ---
 apiVersion: apps/v1
@@ -1368,10 +1368,10 @@ spec:
         - server
         - /data
         env:
-        - name: MINIO_ACCESS_KEY
-          value: "<<CHANGE_ME_MINIO_ACCESS_KEY>>"
-        - name: MINIO_SECRET_KEY
-          value: "<<CHANGE_ME_MINIO_SECRET_KEY>>"
+        - name: MINIO_ROOT_USER
+          value: "<<CHANGE_ME_MINIO_ROOT_USER>>"
+        - name: MINIO_ROOT_PASSWORD
+          value: "<<CHANGE_ME_MINIO_ROOT_PASSWORD>>"
         - name: MINIO_REGION_NAME
           value: minio
         ports:
