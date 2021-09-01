@@ -25,7 +25,7 @@ presubmits:
     labels:
       preset-azure-cred: "true"
     decorate: true
-    always_run: false
+    run_if_changed: 'images/capi/Makefile|images/capi/scripts/ci-azure-e2e\.sh|images/capi/packer/azure/.*'
     optional: true
     decoration_config:
       timeout: 1h
