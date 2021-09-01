@@ -227,7 +227,7 @@ func (s *PullServer) Run(ctx context.Context) error {
 		select {
 		// Parent context. Shutdown
 		case <-ctx.Done():
-			return ctx.Err()
+			return nil
 		// Current thread context, it may be failing already
 		case <-derivedCtx.Done():
 			err = errGroup.Wait()
