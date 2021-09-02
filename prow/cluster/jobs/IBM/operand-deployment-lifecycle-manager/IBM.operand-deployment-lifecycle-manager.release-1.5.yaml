@@ -13,7 +13,7 @@ presubmits:
       - command:
         - make
         - check
-        image: quay.io/multicloudlab/check-tool:v20210728-868c32116
+        image: quay.io/multicloudlab/check-tool:v20210831-983bce9e2
         name: ""
         securityContext:
           privileged: true
