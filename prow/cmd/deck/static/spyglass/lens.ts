@@ -1,6 +1,9 @@
 import {parseQuery} from '../common/urls';
 import {isResponse, isTransitMessage, isUpdateHashMessage, Message, Response, serialiseHashes} from './common';
 
+// Solution is inspired by https://stackoverflow.com/questions/29055828/regex-to-make-links-clickable-in-only-a-href-and-not-img-src
+const linkRegex = /((?:href|src)=")?(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+
 export interface Spyglass {
   /**
    * Replaces the lens display with a new server-rendered page.
@@ -152,8 +155,13 @@ class SpyglassImpl implements Spyglass {
         continue;
       }
       if (mutation.type === 'childList') {
-        this.createHyperlinks(mutation.target);
         this.fixAnchorLinks(mutation.target);
+
+        if (mutation.target instanceof HTMLDivElement &&
+            (mutation.target.classList.contains('shown') ||
+             mutation.target.classList.contains('loglines'))) {
+               this.createHyperlinks(mutation.target);
+             }
       } else if (mutation.type === 'attributes') {
         if (mutation.target instanceof HTMLAnchorElement && mutation.attributeName === 'href') {
           const href = mutation.target.getAttribute('href');
@@ -199,11 +207,15 @@ class SpyglassImpl implements Spyglass {
   }
 
   private createHyperlinks(parent: Element): void {
-    // Solution is inspired by https://stackoverflow.com/questions/29055828/regex-to-make-links-clickable-in-only-a-href-and-not-img-src
-    const re = /((?:href|src)=")?(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+    for (const elem of Array.from(parent.querySelectorAll<HTMLElement>('div.linetext>span'))) {
+      this.createHyperlink(elem);
+    }
+  }
 
-    for (const elem of Array.from(parent.querySelectorAll<HTMLAnchorElement>('div.linetext>span'))) {
-      elem.innerHTML = elem.innerText.replace(re, this.setLink);
+  private createHyperlink(elem: HTMLElement): void {
+    // Doing a light match check before running heavier replace regex manipulation
+    if (elem.innerText.match(linkRegex)) {
+      elem.innerHTML = elem.innerText.replace(linkRegex, this.setLink);
     }
   }
 
