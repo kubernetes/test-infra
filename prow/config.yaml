@@ -82,7 +82,6 @@ tide:
   - repos:
     - multicloudlab/oasis
     - multicloudlab/mygit
-    - multicloudlab/test-infra
     - multicloudlab/tools
     - rh-ibm-synergy/multicloud-operators-foundation
     - IBM/deployer-operator
