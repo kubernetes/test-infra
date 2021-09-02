@@ -63,6 +63,7 @@ require (
 	github.com/gorilla/sessions v1.2.0
 	github.com/gregjones/httpcache v0.0.0-20190212212710-3befbb6ad0cc
 	github.com/hashicorp/go-retryablehttp v0.6.6
+	github.com/hashicorp/golang-lru v0.5.4
 	github.com/influxdata/influxdb v0.0.0-20161215172503-049f9b42e9a5
 	github.com/jinzhu/gorm v1.9.12
 	github.com/klauspost/pgzip v1.2.1
