@@ -28,12 +28,6 @@ data:
         - image: alpine
           command: ["/bin/date"]
 ---
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  namespace: default
-  name: job-config
----
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
@@ -81,7 +75,6 @@ spec:
                   - "success"
                   - "failure"
                   - "error"
-                  - "aborted"
           - required:
             - completionTime
   additionalPrinterColumns:
@@ -148,12 +141,11 @@ spec:
       terminationGracePeriodSeconds: 180
       containers:
       - name: hook
-        image: gcr.io/k8s-prow/hook:v20190918-7672de02b
+        image: gcr.io/k8s-prow/hook:v20200714-1215e87acc
         imagePullPolicy: Always
         args:
         - --dry-run=false
         - --config-path=/etc/config/config.yaml
-        - --job-config-path=/etc/job-config
         ports:
           - name: http
             containerPort: 8888
@@ -169,9 +161,6 @@ spec:
           readOnly: true
         - name: plugins
           mountPath: /etc/plugins
-          readOnly: true
-        - name: job-config
-          mountPath: /etc/job-config
           readOnly: true
         livenessProbe:
           httpGet:
@@ -199,9 +188,6 @@ spec:
       - name: plugins
         configMap:
           name: plugins
-      - name: job-config
-        configMap:
-          name: job-config
 ---
 apiVersion: v1
 kind: Service
@@ -215,7 +201,7 @@ spec:
   - port: 8888
   type: NodePort
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: default
@@ -223,6 +209,9 @@ metadata:
   labels:
     app: plank
 spec:
+  selector:
+    matchLabels:
+      app: plank
   replicas: 1 # Do not scale up.
   strategy:
     type: Recreate
@@ -234,20 +223,16 @@ spec:
       serviceAccountName: "plank"
       containers:
       - name: plank
-        image: gcr.io/k8s-prow/plank:v20190918-7672de02b
+        image: gcr.io/k8s-prow/plank:v20200714-1215e87acc
         args:
         - --dry-run=false
         - --config-path=/etc/config/config.yaml
-        - --job-config-path=/etc/job-config
         volumeMounts:
         - name: oauth
           mountPath: /etc/github
           readOnly: true
         - name: config
           mountPath: /etc/config
-          readOnly: true
-        - name: job-config
-          mountPath: /etc/job-config
           readOnly: true
       volumes:
       - name: oauth
@@ -256,9 +241,6 @@ spec:
       - name: config
         configMap:
           name: config
-      - name: job-config
-        configMap:
-          name: job-config
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -280,24 +262,17 @@ spec:
       serviceAccountName: "sinker"
       containers:
       - name: sinker
-        image: gcr.io/k8s-prow/sinker:v20190918-7672de02b
+        image: gcr.io/k8s-prow/sinker:v20200714-1215e87acc
         args:
         - --config-path=/etc/config/config.yaml
-        - --job-config-path=/etc/job-config
         volumeMounts:
         - name: config
           mountPath: /etc/config
-          readOnly: true
-        - name: job-config
-          mountPath: /etc/job-config
           readOnly: true
       volumes:
       - name: config
         configMap:
           name: config
-      - name: job-config
-        configMap:
-          name: job-config
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -325,25 +300,31 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: deck
-        image: gcr.io/k8s-prow/deck:v20190918-7672de02b
+        image: gcr.io/k8s-prow/deck:v20200714-1215e87acc
         args:
         - --config-path=/etc/config/config.yaml
-        - --job-config-path=/etc/job-config
+        - --plugin-config=/etc/plugins/plugins.yaml
         - --tide-url=http://tide/
         - --hook-url=http://hook:8888/plugin-help
         - --github-token-path=/etc/github/oauth
+        - --plugin-config=/etc/plugins/plugins.yaml
+        - --rerun-creates-job=true
+        - --cookie-secret=/etc/cookie/secret
         ports:
           - name: http
             containerPort: 8080
         volumeMounts:
+        - name: cookie-secret
+          mountPath: /etc/cookie
+          readOnly: true
         - name: config
           mountPath: /etc/config
           readOnly: true
-        - name: job-config
-          mountPath: /etc/job-config
-          readOnly: true
         - name: oauth
           mountPath: /etc/github
+          readOnly: true
+        - name: plugins
+          mountPath: /etc/plugins
           readOnly: true
         livenessProbe:
           httpGet:
@@ -362,12 +343,15 @@ spec:
       - name: config
         configMap:
           name: config
-      - name: job-config
-        configMap:
-          name: job-config
       - name: oauth
         secret:
           secretName: oauth-token
+      - name: plugins
+        configMap:
+          name: plugins
+      - name: cookie-secret
+        secret:
+          secretName: cookie
 ---
 apiVersion: v1
 kind: Service
@@ -405,24 +389,18 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: horologium
-        image: gcr.io/k8s-prow/horologium:v20190918-7672de02b
+        image: gcr.io/k8s-prow/horologium:v20200714-1215e87acc
         args:
+        - --dry-run=false
         - --config-path=/etc/config/config.yaml
-        - --job-config-path=/etc/job-config
         volumeMounts:
         - name: config
           mountPath: /etc/config
-          readOnly: true
-        - name: job-config
-          mountPath: /etc/job-config
           readOnly: true
       volumes:
       - name: config
         configMap:
           name: config
-      - name: job-config
-        configMap:
-          name: job-config
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -446,11 +424,10 @@ spec:
       serviceAccountName: "tide"
       containers:
       - name: tide
-        image: gcr.io/k8s-prow/tide:v20190918-7672de02b
+        image: gcr.io/k8s-prow/tide:v20200714-1215e87acc
         args:
         - --dry-run=false
         - --config-path=/etc/config/config.yaml
-        - --job-config-path=/etc/job-config
         ports:
           - name: http
             containerPort: 8888
@@ -461,9 +438,6 @@ spec:
         - name: config
           mountPath: /etc/config
           readOnly: true
-        - name: job-config
-          mountPath: /etc/job-config
-          readOnly: true
       volumes:
       - name: oauth
         secret:
@@ -471,9 +445,6 @@ spec:
       - name: config
         configMap:
           name: config
-      - name: job-config
-        configMap:
-          name: job-config
 ---
 apiVersion: v1
 kind: Service
@@ -530,14 +501,13 @@ spec:
       terminationGracePeriodSeconds: 180
       containers:
       - name: statusreconciler
-        image: gcr.io/k8s-prow/status-reconciler:v20190918-7672de02b
+        image: gcr.io/k8s-prow/status-reconciler:v20200714-1215e87acc
         args:
         - --dry-run=false
         - --continue-on-error=true
         - --plugin-config=/etc/plugins/plugins.yaml
         - --config-path=/etc/config/config.yaml
         - --github-token-path=/etc/github/oauth
-        - --job-config-path=/etc/job-config
         volumeMounts:
         - name: oauth
           mountPath: /etc/github
@@ -547,9 +517,6 @@ spec:
           readOnly: true
         - name: plugins
           mountPath: /etc/plugins
-          readOnly: true
-        - name: job-config
-          mountPath: /etc/job-config
           readOnly: true
       volumes:
       - name: oauth
@@ -561,9 +528,6 @@ spec:
       - name: plugins
         configMap:
           name: plugins
-      - name: job-config
-        configMap:
-          name: job-config
 ---
 apiVersion: v1
 kind: Namespace
@@ -616,6 +580,8 @@ rules:
     verbs:
       - get
       - list
+      - watch
+      - create
       # Required when deck runs with `--rerun-creates-job=true`
       # **Warning:** Only use this for non-public deck instances, this allows
       # anyone with access to your Deck instance to create new Prowjobs
@@ -687,7 +653,9 @@ rules:
       - get
       - create
       - list
+      - watch
       - update
+      - patch
 ---
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1beta1
@@ -870,6 +838,8 @@ rules:
     verbs:
       - create
       - list
+      - get
+      - watch
 ---
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
