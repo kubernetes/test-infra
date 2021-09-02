@@ -28,6 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/wait"
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -88,6 +89,12 @@ func TestLaunchProwJob(t *testing.T) {
 
 			t.Logf("Ensure there is at least one run of %q", existJobName)
 			pj := getNextRunOrFail(t, existJobName, nil)
+
+			// TODO(mpherman): Make a better test for this.
+			// Hijacking Horlogium Integration test to make sure PJ is created with a tenantID (specifically the default one)
+			if pj.Spec.ProwJobDefault == nil || pj.Spec.ProwJobDefault.TenantID != config.DefaultTenantID {
+				t.Fatalf("ProwJob Not created with TenantID")
+			}
 
 			// Now examines that 'interval' respects the last run instead of a
 			// fixed schedule. For example, if the previous pj started at 00:00:00,
