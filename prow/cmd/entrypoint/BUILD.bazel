@@ -31,7 +31,9 @@ prow_image(
     build_arm64 = True,
     build_ppc64le = True,
     component = NAME,
-    symlinks = {"/entrypoint": "/app/prow/cmd/entrypoint/app.binary"},
+    symlinks_arm64 = {"/entrypoint": "/app/prow/cmd/entrypoint/app-arm64.binary"},
+    symlinks_default = {"/entrypoint": "/app/prow/cmd/entrypoint/app.binary"},
+    symlinks_ppc64le = {"/entrypoint": "/app/prow/cmd/entrypoint/app-ppc64le.binary"},
     visibility = ["//visibility:public"],
 )
 
