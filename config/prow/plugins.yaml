@@ -770,6 +770,7 @@ plugins:
     - size
     - skip
     - slackevents
+    - transfer-issue
     - trick-or-treat
     - trigger
     - verify-owners
