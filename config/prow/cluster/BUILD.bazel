@@ -91,6 +91,7 @@ release(
         MULTI_KIND,
         cluster = BUILD_CLUSTER,
     ),
+    component("cherrypicker", "deployment", "service"),
 )
 
 # TODO(fejta): do we want to auto-apply this?
