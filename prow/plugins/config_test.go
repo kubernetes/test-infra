@@ -1996,6 +1996,7 @@ func TestHasConfigFor(t *testing.T) {
 				fuzzedConfig.Plugins = nil
 				fuzzedConfig.Bugzilla = Bugzilla{}
 				fuzzedConfig.Approve = nil
+				fuzzedConfig.Label.RestrictedLabels = nil
 				fuzzedConfig.Lgtm = nil
 				fuzzedConfig.ExternalPlugins = nil
 				return fuzzedConfig, !reflect.DeepEqual(fuzzedConfig, &Configuration{}), nil, nil
@@ -2086,6 +2087,28 @@ func TestHasConfigFor(t *testing.T) {
 					}
 				}
 				return fuzzedConfig, false, expectOrgs, expectRepos
+			},
+		},
+		{
+			name: "Any config with label.restricted_labels is considered to be for the org and repos references there",
+			resultGenerator: func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
+				fuzzedConfig = &Configuration{Label: fuzzedConfig.Label}
+				if len(fuzzedConfig.Label.AdditionalLabels) > 0 {
+					expectGlobal = true
+				}
+
+				expectOrgs, expectRepos = sets.String{}, sets.String{}
+
+				for orgOrRepo := range fuzzedConfig.Label.RestrictedLabels {
+					if orgOrRepo == "*" {
+						expectGlobal = true
+					} else if strings.Contains(orgOrRepo, "/") {
+						expectRepos.Insert(orgOrRepo)
+					} else {
+						expectOrgs.Insert(orgOrRepo)
+					}
+				}
+				return fuzzedConfig, expectGlobal, expectOrgs, expectRepos
 			},
 		},
 	}
