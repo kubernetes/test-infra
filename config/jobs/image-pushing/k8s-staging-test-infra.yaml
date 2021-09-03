@@ -24,7 +24,7 @@ postsubmits:
           args:
           - --scratch-bucket=gs://k8s-staging-test-infra-gcb
           - --project=k8s-staging-test-infra
-          - --env-passthrough=PULL_BASE_REF
+          - --build-dir=.
           - kettle/
     - name: post-test-infra-push-kubekins-e2e-canary
       cluster: k8s-infra-prow-build-trusted
