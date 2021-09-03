@@ -41,16 +41,23 @@ kind: Ingress
 metadata:
   name: deck
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   ingressClassName: "nginx"
   rules:
   - http:
       paths:
-      - path: /deck
+      - path: /deck(/|$)(.*)
         pathType: Prefix
         backend:
           service:
             name: deck
+            port:
+              number: 80
+      - path: /deck-tenanted(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: deck-tenanted
             port:
               number: 80
