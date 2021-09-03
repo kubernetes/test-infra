@@ -104,7 +104,8 @@ periodics:
       - /app/prow/cmd/generic-autobumper/app.binary
       args:
       - --config=hack/autobump-config.yaml
-      # TODO(spiffxp): consider making this a skip-review thing...
+      - --labels-override=skip-review
+      - --skip-if-no-oncall
       volumeMounts:
       - name: github
         mountPath: /etc/github-token
