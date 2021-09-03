@@ -105,7 +105,7 @@ periodics:
   decorate: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:latest-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -146,7 +146,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=Variable.Expansion --ginkgo.skip=\[Feature:.+\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=40m
-      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:latest-master
       imagePullPolicy: Always
   annotations:
     testgrid-dashboards: sig-testing-canaries
