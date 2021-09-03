@@ -319,7 +319,7 @@ func run(deploy deployer, o options) error {
 		}))
 	}
 
-	if o.postTestCmd != "" {
+	if o.postTestCmd != "" && (o.test || (kubemarkUpErr == nil && o.testCmd != "")) {
 		errs = util.AppendError(errs, control.XMLWrap(&suite, "post-test command", func() error {
 			cmdLineTokenized := strings.Fields(os.ExpandEnv(o.postTestCmd))
 			return control.FinishRunning(exec.Command(cmdLineTokenized[0], cmdLineTokenized[1:]...))
