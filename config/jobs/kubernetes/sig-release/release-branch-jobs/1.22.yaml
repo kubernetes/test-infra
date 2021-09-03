@@ -123,7 +123,7 @@ periodics:
 - annotations:
     fork-per-release-periodic-interval: 2h 6h 24h
     testgrid-alert-email: kubernetes-sig-node+testgrid@googlegroups.com,kubernetes-sig-node-test-failures@googlegroups.com
-    testgrid-dashboards: sig-release-1.22-blocking, sig-node-kubelet, sig-node-release-blocking
+    testgrid-dashboards: sig-release-1.22-blocking, sig-node-release-blocking
     testgrid-tab-name: node-kubelet-1.22
   cluster: k8s-infra-prow-build
   interval: 1h
