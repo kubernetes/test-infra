@@ -11,11 +11,19 @@ presubmits:
         - bash
         - -c
         - |
-          gcloud container clusters get-credentials testing --zone=us-central1-f --project=rules-k8s \
+          gcloud auth activate-service-account --key-file=/etc/gcp/service-account.json \
+          && gcloud container clusters get-credentials testing --zone=us-central1-f --project=rules-k8s \
           && echo "startup --host_jvm_args=-Duser.name=prow" > /root/.bazelrc \
           && ./test-e2e.sh
         env:
         - name: USER
           value: prow
+        volumeMounts:
+        - name: service-account
+          mountPath: /etc/gcp
+      volumes:
+      - name: service-account
+        secret:
+          secretName: service-account
     annotations:
       testgrid-dashboards: google-rules_k8s
