@@ -402,8 +402,6 @@ def generate_misc():
                                 '--set=cluster.spec.cloudControllerManager.cloudProvider=aws',
                                 '--set=cluster.spec.cloudControllerManager.image=hakman/cloud-controller-manager:ipv6-1', # pylint: disable=line-too-long
                                 '--set=cluster.spec.nonMasqueradeCIDR=fd00:10:96::/64',
-                                '--set=cluster.spec.kubeDNS.upstreamNameservers=2620:119:35::35',
-                                '--set=cluster.spec.kubeDNS.upstreamNameservers=2620:119:53::53',
                                 ],
                    focus_regex=r'\[Conformance\]|\[NodeConformance\]',
                    extra_dashboards=['kops-misc', 'kops-ipv6']),
@@ -413,6 +411,7 @@ def generate_misc():
                    distro="u2004",
                    k8s_version="ci",
                    networking="calico",
+                   feature_flags=["AWSIPv6"],
                    runs_per_day=3,
                    extra_flags=['--ipv6',
                                 '--api-loadbalancer-type=public',
@@ -421,8 +420,6 @@ def generate_misc():
                                 '--set=cluster.spec.cloudControllerManager.cloudProvider=aws',
                                 '--set=cluster.spec.cloudControllerManager.image=hakman/cloud-controller-manager:ipv6-1', # pylint: disable=line-too-long
                                 '--set=cluster.spec.nonMasqueradeCIDR=fd00:10:96::/64',
-                                '--set=cluster.spec.kubeDNS.upstreamNameservers=2620:119:35::35',
-                                '--set=cluster.spec.kubeDNS.upstreamNameservers=2620:119:53::53',
                                 '--set=cluster.spec.iam.useServiceAccountExternalPermissions=true',
                                 ],
                    extra_dashboards=['kops-misc', 'kops-ipv6']),
@@ -441,8 +438,6 @@ def generate_misc():
                                 '--set=cluster.spec.cloudControllerManager.cloudProvider=aws',
                                 '--set=cluster.spec.cloudControllerManager.image=hakman/cloud-controller-manager:ipv6-1', # pylint: disable=line-too-long
                                 '--set=cluster.spec.nonMasqueradeCIDR=fd00:10:96::/64',
-                                '--set=cluster.spec.kubeDNS.upstreamNameservers=2620:119:35::35',
-                                '--set=cluster.spec.kubeDNS.upstreamNameservers=2620:119:53::53',
                                 ],
                    extra_dashboards=['kops-misc', 'kops-ipv6']),
 
