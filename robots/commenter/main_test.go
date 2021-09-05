@@ -200,6 +200,14 @@ func TestMakeQuery(t *testing.T) {
 	}
 }
 
+const (
+	fakeOrg      = "fakeOrg"
+	fakeRepo     = "fakeRepo"
+	fakeTitle    = "fakeTitle"
+	fakeComment  = "fakeComment"
+	fakePRNumber = 67
+)
+
 func makeIssue(owner, repo string, number int, title string) github.Issue {
 	return github.Issue{
 		HTMLURL: fmt.Sprintf("fake://localhost/%s/%s/pull/%d", owner, repo, number),
@@ -208,7 +216,7 @@ func makeIssue(owner, repo string, number int, title string) github.Issue {
 }
 
 type fakeClient struct {
-	comments []int
+	comments map[int][]github.IssueComment
 	issues   []github.Issue
 }
 
@@ -217,7 +225,9 @@ func (c *fakeClient) CreateComment(owner, repo string, number int, comment strin
 	if strings.Contains(comment, "error") || repo == "error" {
 		return errors.New(comment)
 	}
-	c.comments = append(c.comments, number)
+
+	c.comments[number] = append(c.comments[number], github.IssueComment{Body: comment})
+
 	return nil
 }
 
@@ -235,38 +245,57 @@ func (c *fakeClient) FindIssues(query, sort string, asc bool) ([]github.Issue, e
 	return ret, nil
 }
 
+// Fakes searching for issues comments using the same signature as github.Client
+func (c *fakeClient) ListIssueComments(org, repo string, number int) ([]github.IssueComment, error) {
+	return c.comments[number], nil
+}
+
 func TestRun(t *testing.T) {
-	manyIssues := []github.Issue{}
-	manyComments := []int{}
-	for i := 0; i < 100; i++ {
-		manyIssues = append(manyIssues, makeIssue("o", "r", i, "many "+strconv.Itoa(i)))
-		manyComments = append(manyComments, i)
+	createIssues := func(num int) []github.Issue {
+		issues := []github.Issue{}
+		for i := 0; i < num; i++ {
+			issues = append(issues, makeIssue(fakeOrg, fakeRepo, i, fmt.Sprintf("%s %d", fakeTitle, i)))
+		}
+		return issues
 	}
 
+	createComments := func(num int, comment string, times int) map[int][]string {
+		comments := map[int][]string{}
+		for i := 0; i < num; i++ {
+			for j := 0; j < times; j++ {
+				comments[i] = append(comments[i], comment)
+			}
+		}
+		return comments
+	}
+
+	manyIssues := createIssues(100)
+
 	cases := []struct {
-		name     string
-		query    string
-		comment  string
-		template bool
-		ceiling  int
-		client   fakeClient
-		expected []int
-		err      bool
+		name        string
+		query       string
+		comment     string
+		template    bool
+		ceiling     int
+		spamCeiling int
+		client      fakeClient
+		expected    map[int][]string
+		err         bool
 	}{
 		{
 			name:     "find all",
-			query:    "many",
-			comment:  "found you",
+			query:    fakeTitle,
+			comment:  fakeComment,
 			client:   fakeClient{issues: manyIssues},
-			expected: manyComments,
+			expected: createComments(len(manyIssues), fakeComment, 1),
 		},
 		{
 			name:     "find first 10",
-			query:    "many",
+			query:    fakeTitle,
 			ceiling:  10,
-			comment:  "hey",
+			comment:  fakeComment,
 			client:   fakeClient{issues: manyIssues},
-			expected: []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9},
+			expected: createComments(10, fakeComment, 1),
 		},
 		{
 			name:    "find none",
@@ -286,35 +315,98 @@ func TestRun(t *testing.T) {
 			query:   "problematic",
 			comment: "rolo tomassi",
 			client: fakeClient{issues: []github.Issue{
-				makeIssue("o", "r", 1, "problematic this should work"),
-				makeIssue("o", "error", 2, "problematic expect an error"),
-				makeIssue("o", "r", 3, "problematic works as well"),
+				makeIssue(fakeOrg, fakeRepo, 1, "problematic this should work"),
+				makeIssue(fakeOrg, "error", 2, "problematic expect an error"),
+				makeIssue(fakeOrg, fakeRepo, 3, "problematic works as well"),
 			}},
 			err:      true,
-			expected: []int{1, 3},
+			expected: map[int][]string{1: {"rolo tomassi"}, 3: {"rolo tomassi"}},
 		},
 		{
 			name:     "template comment",
-			query:    "67",
+			query:    strconv.Itoa(fakePRNumber),
 			client:   fakeClient{issues: manyIssues},
 			comment:  "https://gubernator.k8s.io/pr/{{.Org}}/{{.Repo}}/{{.Number}}",
 			template: true,
-			expected: []int{67},
+			expected: map[int][]string{
+				fakePRNumber: {fmt.Sprintf("https://gubernator.k8s.io/pr/%s/%s/%d", fakeOrg, fakeRepo, fakePRNumber)},
+			},
 		},
 		{
 			name:     "bad template errors",
-			query:    "67",
+			query:    strconv.Itoa(fakePRNumber),
 			client:   fakeClient{issues: manyIssues},
 			comment:  "Bad {{.UnknownField}}",
 			template: true,
 			err:      true,
+		},
+		{
+			name:        "high spam ceiling - create new comment",
+			query:       fakeTitle,
+			spamCeiling: 5,
+			comment:     fakeComment,
+			client: fakeClient{
+				issues: createIssues(1),
+				comments: map[int][]github.IssueComment{
+					0: {{Body: fakeComment}, {Body: fakeComment}},
+				},
+			},
+			expected: createComments(1, fakeComment, 3),
+		},
+		{
+			name:        "spam ceiling - stop creating new comments",
+			query:       fakeTitle,
+			spamCeiling: 2,
+			comment:     fakeComment,
+			client: fakeClient{
+				issues: []github.Issue{makeIssue(fakeOrg, fakeRepo, fakePRNumber, fakeTitle)},
+				comments: map[int][]github.IssueComment{
+					fakePRNumber: {{Body: fakeComment}, {Body: fakeComment}},
+				},
+			},
+			expected: map[int][]string{
+				fakePRNumber: {fakeComment, fakeComment},
+			},
+		},
+		{
+			name:        "spam ceiling - don't stop when different comments",
+			query:       fakeTitle,
+			spamCeiling: 2,
+			comment:     fakeComment,
+			client: fakeClient{
+				issues: []github.Issue{makeIssue(fakeOrg, fakeRepo, fakePRNumber, fakeTitle)},
+				comments: map[int][]github.IssueComment{
+					fakePRNumber: {{Body: "hello"}, {Body: "world"}},
+				},
+			},
+			expected: map[int][]string{
+				fakePRNumber: {"hello", "world", fakeComment},
+			},
+		},
+		{
+			name:        "spam ceiling - don't stop when not in sequence",
+			query:       fakeTitle,
+			spamCeiling: 2,
+			comment:     fakeComment,
+			client: fakeClient{
+				issues: []github.Issue{makeIssue(fakeOrg, fakeRepo, fakePRNumber, fakeTitle)},
+				comments: map[int][]github.IssueComment{
+					fakePRNumber: {{Body: fakeComment}, {Body: "another"}, {Body: fakeComment}, {Body: "one"}},
+				},
+			},
+			expected: map[int][]string{
+				fakePRNumber: {fakeComment, "another", fakeComment, "one", fakeComment},
+			},
 		},
 	}
 
 	for _, tc := range cases {
 		ignoreSorting := ""
 		ignoreOrder := false
-		err := run(&tc.client, tc.query, ignoreSorting, ignoreOrder, false, makeCommenter(tc.comment, tc.template), tc.ceiling)
+		if tc.client.comments == nil {
+			tc.client.comments = make(map[int][]github.IssueComment)
+		}
+		err := run(&tc.client, tc.query, ignoreSorting, ignoreOrder, false, makeCommenter(tc.comment, tc.template), tc.ceiling, tc.spamCeiling)
 		if tc.err && err == nil {
 			t.Errorf("%s: failed to received an error", tc.name)
 			continue
@@ -323,21 +415,28 @@ func TestRun(t *testing.T) {
 			t.Errorf("%s: unexpected error: %v", tc.name, err)
 			continue
 		}
+		missing := []string{}
 		if len(tc.expected) != len(tc.client.comments) {
-			t.Errorf("%s: expected comments %v != actual %v", tc.name, tc.expected, tc.client.comments)
+			t.Errorf("%s: expected issues with comments %v != actual %v", tc.name, tc.expected, tc.client.comments)
 			continue
 		}
-		missing := []int{}
-		for _, e := range tc.expected {
-			found := false
-			for _, cmt := range tc.client.comments {
-				if cmt == e {
-					found = true
-					break
-				}
+		for number, expectedComments := range tc.expected {
+			if len(tc.expected[number]) != len(tc.client.comments[number]) {
+				t.Errorf("%s: expected comments %v != actual %v", tc.name, expectedComments, tc.client.comments[number])
+				continue
 			}
-			if !found {
-				missing = append(missing, e)
+			for _, comment := range expectedComments {
+				found := false
+				for _, actualComment := range tc.client.comments[number] {
+					if comment == actualComment.Body {
+						found = true
+						break
+					}
+				}
+
+				if !found {
+					missing = append(missing, comment)
+				}
 			}
 		}
 		if len(missing) > 0 {

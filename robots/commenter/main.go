@@ -70,6 +70,7 @@ func flagOptions() options {
 	flag.StringVar(&o.comment, "comment", "", "Append the following comment to matching issues")
 	flag.BoolVar(&o.useTemplate, "template", false, templateHelp)
 	flag.IntVar(&o.ceiling, "ceiling", 3, "Maximum number of issues to modify, 0 for infinite")
+	flag.IntVar(&o.spamCeiling, "spam-ceiling", 3, "Maximum number of the same comment in sequence to post, 0 for infinite")
 	flag.Var(&o.endpoint, "endpoint", "GitHub's API endpoint")
 	flag.StringVar(&o.graphqlEndpoint, "graphql-endpoint", github.DefaultGraphQLEndpoint, "GitHub's GraphQL API Endpoint")
 	flag.StringVar(&o.token, "token", "", "Path to github token")
@@ -88,6 +89,7 @@ type meta struct {
 type options struct {
 	asc             bool
 	ceiling         int
+	spamCeiling     int
 	comment         string
 	includeArchived bool
 	includeClosed   bool
@@ -155,6 +157,7 @@ func makeQuery(query string, includeArchived, includeClosed, includeLocked bool,
 type client interface {
 	CreateComment(owner, repo string, number int, comment string) error
 	FindIssues(query, sort string, asc bool) ([]github.Issue, error)
+	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
 }
 
 func main() {
@@ -201,7 +204,7 @@ func main() {
 		asc = true
 	}
 	commenter := makeCommenter(o.comment, o.useTemplate)
-	if err := run(c, query, sort, asc, o.random, commenter, o.ceiling); err != nil {
+	if err := run(c, query, sort, asc, o.random, commenter, o.ceiling, o.spamCeiling); err != nil {
 		log.Fatalf("Failed run: %v", err)
 	}
 }
@@ -220,7 +223,7 @@ func makeCommenter(comment string, useTemplate bool) func(meta) (string, error) 
 	}
 }
 
-func run(c client, query, sort string, asc, random bool, commenter func(meta) (string, error), ceiling int) error {
+func run(c client, query, sort string, asc, random bool, commenter func(meta) (string, error), ceiling, spamCeiling int) error {
 	log.Printf("Searching: %s", query)
 	issues, err := c.FindIssues(query, sort, asc)
 	if err != nil {
@@ -241,29 +244,51 @@ func run(c client, query, sort string, asc, random bool, commenter func(meta) (s
 			break
 		}
 		log.Printf("Matched %s (%s)", i.HTMLURL, i.Title)
-		org, repo, number, err := parseHTMLURL(i.HTMLURL)
-		if err != nil {
-			msg := fmt.Sprintf("Failed to parse %s: %v", i.HTMLURL, err)
-			log.Print(msg)
-			problems = append(problems, msg)
+		if err := createComment(c, commenter, spamCeiling, i); err != nil {
+			log.Print(err.Error())
+			problems = append(problems, err.Error())
 		}
-		comment, err := commenter(meta{Number: number, Org: org, Repo: repo, Issue: i})
-		if err != nil {
-			msg := fmt.Sprintf("Failed to create comment for %s/%s#%d: %v", org, repo, number, err)
-			log.Print(msg)
-			problems = append(problems, msg)
-			continue
-		}
-		if err := c.CreateComment(org, repo, number, comment); err != nil {
-			msg := fmt.Sprintf("Failed to apply comment to %s/%s#%d: %v", org, repo, number, err)
-			log.Print(msg)
-			problems = append(problems, msg)
-			continue
-		}
-		log.Printf("Commented on %s", i.HTMLURL)
 	}
 	if len(problems) > 0 {
 		return fmt.Errorf("encoutered %d failures: %v", len(problems), problems)
 	}
+	return nil
+}
+
+func createComment(c client, commenter func(meta) (string, error), spamCeiling int, issue github.Issue) error {
+	org, repo, number, err := parseHTMLURL(issue.HTMLURL)
+	if err != nil {
+		return fmt.Errorf("Failed to parse %s: %v", issue.HTMLURL, err)
+	}
+	comment, err := commenter(meta{Number: number, Org: org, Repo: repo, Issue: issue})
+	if err != nil {
+		return fmt.Errorf("Failed to create comment for %s/%s#%d: %v", org, repo, number, err)
+	}
+
+	issueComments, err := c.ListIssueComments(org, repo, number)
+	if err != nil {
+		return fmt.Errorf("Failed to get comments for %s/%s#%d: %v", org, repo, number, err)
+	}
+
+	sameCommentsSequenceCounter := 0
+	for _, issueComment := range issueComments {
+		if comment != issueComment.Body {
+			sameCommentsSequenceCounter = 0
+		} else {
+			sameCommentsSequenceCounter += 1
+
+			if spamCeiling > 0 && sameCommentsSequenceCounter == spamCeiling {
+				log.Printf("Stopping at --spam-ceiling=%d of %d results", sameCommentsSequenceCounter, len(issueComments))
+				return nil
+			}
+		}
+	}
+
+	if err := c.CreateComment(org, repo, number, comment); err != nil {
+		return fmt.Errorf("Failed to apply comment to %s/%s#%d: %v", org, repo, number, err)
+	}
+
+	log.Printf("Commented on %s", issue.HTMLURL)
+
 	return nil
 }
