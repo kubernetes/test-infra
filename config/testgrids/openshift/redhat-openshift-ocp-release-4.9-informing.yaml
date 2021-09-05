@@ -3454,13 +3454,17 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.9-e2e-openstack-ovn
   name: periodic-ci-openshift-release-master-ci-4.9-e2e-openstack-ovn
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.9-e2e-openstack-parallel
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.9-e2e-openstack-parallel
   name: periodic-ci-openshift-release-master-ci-4.9-e2e-openstack-parallel
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.9-e2e-openstack-serial
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.9-e2e-openstack-serial
   name: periodic-ci-openshift-release-master-ci-4.9-e2e-openstack-serial
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.9-e2e-openstack-techpreview-parallel
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.9-e2e-openstack-techpreview-parallel
   name: periodic-ci-openshift-release-master-ci-4.9-e2e-openstack-techpreview-parallel
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.9-e2e-openstack-techpreview-serial
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.9-e2e-openstack-techpreview-serial
   name: periodic-ci-openshift-release-master-ci-4.9-e2e-openstack-techpreview-serial
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.9-upgrade-from-stable-4.8-e2e-aws-compact-upgrade
