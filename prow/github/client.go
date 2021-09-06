@@ -3388,20 +3388,34 @@ func (c *client) FindIssues(query, sort string, asc bool) ([]Issue, error) {
 	durationLogger := c.log("FindIssues", query)
 	defer durationLogger()
 
-	path := fmt.Sprintf("/search/issues?q=%s", url.QueryEscape(query))
+	values := url.Values{
+		"per_page": []string{"100"},
+		"q":        []string{query},
+	}
+	var issues []Issue
+
 	if sort != "" {
-		path += "&sort=" + url.QueryEscape(sort)
+		values["sort"] = []string{sort}
 		if asc {
-			path += "&order=asc"
+			values["order"] = []string{"asc"}
 		}
 	}
-	var issSearchResult IssuesSearchResult
-	_, err := c.request(&request{
-		method:    http.MethodGet,
-		path:      path,
-		exitCodes: []int{200},
-	}, &issSearchResult)
-	return issSearchResult.Issues, err
+	err := c.readPaginatedResultsWithValues(
+		fmt.Sprintf("/search/issues"),
+		values,
+		acceptNone,
+		"",
+		func() interface{} { // newObj
+			return &IssuesSearchResult{}
+		},
+		func(obj interface{}) {
+			issues = append(issues, obj.(*IssuesSearchResult).Issues...)
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return issues, err
 }
 
 // FileNotFound happens when github cannot find the file requested by GetFile().
