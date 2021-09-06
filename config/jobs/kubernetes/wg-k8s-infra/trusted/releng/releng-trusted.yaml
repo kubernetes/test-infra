@@ -40,7 +40,7 @@ periodics:
     serviceAccountName: k8s-infra-gcr-promoter
     containers:
     # TODO(releng): Use a promoted image here once testing is complete
-    - image: gcr.io/k8s-staging-artifact-promoter/kpromo-amd64:v0.1.0-1
+    - image: gcr.io/k8s-staging-releng-test/kpromo-amd64:v0.2.0-1
       # TODO(releng): Remove once a promoted image is in use
       imagePullPolicy: Always
       command:
@@ -48,8 +48,7 @@ periodics:
       args:
       - run
       - files
-      - --filestores=/home/prow/go/src/github.com/kubernetes/k8s.io/artifacts/filestores/
-      - --files=/home/prow/go/src/github.com/kubernetes/k8s.io/artifacts/manifests/
+      - --manifests=/home/prow/go/src/github.com/kubernetes/k8s.io/artifacts/
       # TODO(releng): Use '--dry-run=false' (or '--confirm') once testing is complete
       - --dry-run=true
   annotations:
