@@ -70,7 +70,8 @@ func flagOptions() options {
 	flag.StringVar(&o.comment, "comment", "", "Append the following comment to matching issues")
 	flag.BoolVar(&o.useTemplate, "template", false, templateHelp)
 	flag.IntVar(&o.ceiling, "ceiling", 3, "Maximum number of issues to modify, 0 for infinite")
-	flag.IntVar(&o.spamCeiling, "spam-ceiling", 3, "Maximum number of the same comment in sequence to post, 0 for infinite")
+	flag.IntVar(&o.commentsCeiling, "comments-ceiling", 3, "Maximum number of the same comment in sequence to post, 0 for infinite")
+	flag.DurationVar(&o.commentsCeilingMargin, "comments-ceiling-margin", 7*24*time.Hour, "Period of time in which the same comments ceiling would be verified, 0 for infinite")
 	flag.Var(&o.endpoint, "endpoint", "GitHub's API endpoint")
 	flag.StringVar(&o.graphqlEndpoint, "graphql-endpoint", github.DefaultGraphQLEndpoint, "GitHub's GraphQL API Endpoint")
 	flag.StringVar(&o.token, "token", "", "Path to github token")
@@ -87,22 +88,23 @@ type meta struct {
 }
 
 type options struct {
-	asc             bool
-	ceiling         int
-	spamCeiling     int
-	comment         string
-	includeArchived bool
-	includeClosed   bool
-	includeLocked   bool
-	useTemplate     bool
-	query           string
-	sort            string
-	endpoint        flagutil.Strings
-	graphqlEndpoint string
-	token           string
-	updated         time.Duration
-	confirm         bool
-	random          bool
+	asc                   bool
+	ceiling               int
+	commentsCeiling       int
+	commentsCeilingMargin time.Duration
+	comment               string
+	includeArchived       bool
+	includeClosed         bool
+	includeLocked         bool
+	useTemplate           bool
+	query                 string
+	sort                  string
+	endpoint              flagutil.Strings
+	graphqlEndpoint       string
+	token                 string
+	updated               time.Duration
+	confirm               bool
+	random                bool
 }
 
 func parseHTMLURL(url string) (string, string, int, error) {
@@ -204,7 +206,7 @@ func main() {
 		asc = true
 	}
 	commenter := makeCommenter(o.comment, o.useTemplate)
-	if err := run(c, query, sort, asc, o.random, commenter, o.ceiling, o.spamCeiling); err != nil {
+	if err := run(c, query, sort, asc, o.random, commenter, o.ceiling, o.commentsCeiling, o.commentsCeilingMargin); err != nil {
 		log.Fatalf("Failed run: %v", err)
 	}
 }
@@ -223,7 +225,8 @@ func makeCommenter(comment string, useTemplate bool) func(meta) (string, error) 
 	}
 }
 
-func run(c client, query, sort string, asc, random bool, commenter func(meta) (string, error), ceiling, spamCeiling int) error {
+func run(c client, query, sort string, asc, random bool, commenter func(meta) (string, error),
+	ceiling, commentsCeiling int, commentsCeilingMargin time.Duration) error {
 	log.Printf("Searching: %s", query)
 	issues, err := c.FindIssues(query, sort, asc)
 	if err != nil {
@@ -238,16 +241,20 @@ func run(c client, query, sort string, asc, random bool, commenter func(meta) (s
 		})
 
 	}
-	for n, i := range issues {
-		if ceiling > 0 && n == ceiling {
-			log.Printf("Stopping at --ceiling=%d of %d results", n, len(issues))
+
+	modifiedIssues := 0
+	for _, i := range issues {
+		if ceiling > 0 && modifiedIssues == ceiling {
+			log.Printf("Stopping at --ceiling=%d of %d results", modifiedIssues, len(issues))
 			break
 		}
 		log.Printf("Matched %s (%s)", i.HTMLURL, i.Title)
-		if err := createComment(c, commenter, spamCeiling, i); err != nil {
+		if err := createComment(c, commenter, i, commentsCeiling, commentsCeilingMargin); err != nil {
 			log.Print(err.Error())
 			problems = append(problems, err.Error())
+			continue
 		}
+		modifiedIssues++
 	}
 	if len(problems) > 0 {
 		return fmt.Errorf("encoutered %d failures: %v", len(problems), problems)
@@ -255,7 +262,8 @@ func run(c client, query, sort string, asc, random bool, commenter func(meta) (s
 	return nil
 }
 
-func createComment(c client, commenter func(meta) (string, error), spamCeiling int, issue github.Issue) error {
+func createComment(c client, commenter func(meta) (string, error), issue github.Issue,
+	commentsCeiling int, commentsCeilingMargin time.Duration) error {
 	org, repo, number, err := parseHTMLURL(issue.HTMLURL)
 	if err != nil {
 		return fmt.Errorf("Failed to parse %s: %v", issue.HTMLURL, err)
@@ -265,20 +273,24 @@ func createComment(c client, commenter func(meta) (string, error), spamCeiling i
 		return fmt.Errorf("Failed to create comment for %s/%s#%d: %v", org, repo, number, err)
 	}
 
-	issueComments, err := c.ListIssueComments(org, repo, number)
-	if err != nil {
-		return fmt.Errorf("Failed to get comments for %s/%s#%d: %v", org, repo, number, err)
-	}
+	if commentsCeiling > 0 {
+		issueComments, err := c.ListIssueComments(org, repo, number)
+		if err != nil {
+			return fmt.Errorf("Failed to get comments for %s/%s#%d: %v", org, repo, number, err)
+		}
 
-	sameCommentsSequenceCounter := 0
-	for _, issueComment := range issueComments {
-		if comment != issueComment.Body {
-			sameCommentsSequenceCounter = 0
-		} else {
-			sameCommentsSequenceCounter += 1
+		sameCommentsInSequenceCounter := 0
+		for _, issueComment := range issueComments {
+			if issueComment.Body != comment || issueComment.CreatedAt.Before(time.Now().Add(-1*commentsCeilingMargin)) {
+				sameCommentsInSequenceCounter = 0
+				break
+				// continue
+			}
 
-			if spamCeiling > 0 && sameCommentsSequenceCounter == spamCeiling {
-				log.Printf("Stopping at --spam-ceiling=%d of %d results", sameCommentsSequenceCounter, len(issueComments))
+			sameCommentsInSequenceCounter++
+
+			if sameCommentsInSequenceCounter == commentsCeiling {
+				log.Printf("Stopping at --comments-ceiling=%d of %d results", sameCommentsInSequenceCounter, len(issueComments))
 				return nil
 			}
 		}

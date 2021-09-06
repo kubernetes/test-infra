@@ -215,6 +215,13 @@ func makeIssue(owner, repo string, number int, title string) github.Issue {
 	}
 }
 
+func makeComment(comment string) github.IssueComment {
+	return github.IssueComment{
+		Body:      comment,
+		CreatedAt: time.Now().Add(-1 * time.Hour),
+	}
+}
+
 type fakeClient struct {
 	comments map[int][]github.IssueComment
 	issues   []github.Issue
@@ -226,7 +233,7 @@ func (c *fakeClient) CreateComment(owner, repo string, number int, comment strin
 		return errors.New(comment)
 	}
 
-	c.comments[number] = append(c.comments[number], github.IssueComment{Body: comment})
+	c.comments[number] = append(c.comments[number], makeComment(comment))
 
 	return nil
 }
@@ -272,15 +279,16 @@ func TestRun(t *testing.T) {
 	manyIssues := createIssues(100)
 
 	cases := []struct {
-		name        string
-		query       string
-		comment     string
-		template    bool
-		ceiling     int
-		spamCeiling int
-		client      fakeClient
-		expected    map[int][]string
-		err         bool
+		name                  string
+		query                 string
+		comment               string
+		template              bool
+		ceiling               int
+		commentsCeiling       int
+		commentsCeilingMargin time.Duration
+		client                fakeClient
+		expected              map[int][]string
+		err                   bool
 	}{
 		{
 			name:     "find all",
@@ -341,27 +349,27 @@ func TestRun(t *testing.T) {
 			err:      true,
 		},
 		{
-			name:        "high spam ceiling - create new comment",
-			query:       fakeTitle,
-			spamCeiling: 5,
-			comment:     fakeComment,
+			name:            "high comments ceiling - create new comment",
+			query:           fakeTitle,
+			commentsCeiling: 5,
+			comment:         fakeComment,
 			client: fakeClient{
 				issues: createIssues(1),
 				comments: map[int][]github.IssueComment{
-					0: {{Body: fakeComment}, {Body: fakeComment}},
+					0: {makeComment(fakeComment), makeComment(fakeComment)},
 				},
 			},
 			expected: createComments(1, fakeComment, 3),
 		},
 		{
-			name:        "spam ceiling - stop creating new comments",
-			query:       fakeTitle,
-			spamCeiling: 2,
-			comment:     fakeComment,
+			name:            "comments ceiling - stop creating new comments",
+			query:           fakeTitle,
+			commentsCeiling: 2,
+			comment:         fakeComment,
 			client: fakeClient{
 				issues: []github.Issue{makeIssue(fakeOrg, fakeRepo, fakePRNumber, fakeTitle)},
 				comments: map[int][]github.IssueComment{
-					fakePRNumber: {{Body: fakeComment}, {Body: fakeComment}},
+					fakePRNumber: {makeComment(fakeComment), makeComment(fakeComment)},
 				},
 			},
 			expected: map[int][]string{
@@ -369,14 +377,14 @@ func TestRun(t *testing.T) {
 			},
 		},
 		{
-			name:        "spam ceiling - don't stop when different comments",
-			query:       fakeTitle,
-			spamCeiling: 2,
-			comment:     fakeComment,
+			name:            "comments ceiling - don't stop when different comments",
+			query:           fakeTitle,
+			commentsCeiling: 2,
+			comment:         fakeComment,
 			client: fakeClient{
 				issues: []github.Issue{makeIssue(fakeOrg, fakeRepo, fakePRNumber, fakeTitle)},
 				comments: map[int][]github.IssueComment{
-					fakePRNumber: {{Body: "hello"}, {Body: "world"}},
+					fakePRNumber: {makeComment("hello"), makeComment("world")},
 				},
 			},
 			expected: map[int][]string{
@@ -384,64 +392,83 @@ func TestRun(t *testing.T) {
 			},
 		},
 		{
-			name:        "spam ceiling - don't stop when not in sequence",
-			query:       fakeTitle,
-			spamCeiling: 2,
-			comment:     fakeComment,
+			name:            "comments ceiling - don't stop when not in sequence",
+			query:           fakeTitle,
+			commentsCeiling: 2,
+			comment:         fakeComment,
 			client: fakeClient{
 				issues: []github.Issue{makeIssue(fakeOrg, fakeRepo, fakePRNumber, fakeTitle)},
 				comments: map[int][]github.IssueComment{
-					fakePRNumber: {{Body: fakeComment}, {Body: "another"}, {Body: fakeComment}, {Body: "one"}},
+					fakePRNumber: {makeComment(fakeComment), makeComment("another"), makeComment(fakeComment), makeComment("one")},
 				},
 			},
 			expected: map[int][]string{
 				fakePRNumber: {fakeComment, "another", fakeComment, "one", fakeComment},
 			},
 		},
+		{
+			name:                  "comments ceiling - don't stop when small comments ceiling margin",
+			query:                 fakeTitle,
+			commentsCeiling:       2,
+			commentsCeilingMargin: 5 * time.Minute,
+			comment:               fakeComment,
+			client: fakeClient{
+				issues: []github.Issue{makeIssue(fakeOrg, fakeRepo, fakePRNumber, fakeTitle)},
+				comments: map[int][]github.IssueComment{
+					fakePRNumber: {makeComment(fakeComment), makeComment(fakeComment)},
+				},
+			},
+			expected: map[int][]string{
+				fakePRNumber: {fakeComment, fakeComment, fakeComment},
+			},
+		},
 	}
 
 	for _, tc := range cases {
-		ignoreSorting := ""
-		ignoreOrder := false
-		if tc.client.comments == nil {
-			tc.client.comments = make(map[int][]github.IssueComment)
-		}
-		err := run(&tc.client, tc.query, ignoreSorting, ignoreOrder, false, makeCommenter(tc.comment, tc.template), tc.ceiling, tc.spamCeiling)
-		if tc.err && err == nil {
-			t.Errorf("%s: failed to received an error", tc.name)
-			continue
-		}
-		if !tc.err && err != nil {
-			t.Errorf("%s: unexpected error: %v", tc.name, err)
-			continue
-		}
-		missing := []string{}
-		if len(tc.expected) != len(tc.client.comments) {
-			t.Errorf("%s: expected issues with comments %v != actual %v", tc.name, tc.expected, tc.client.comments)
-			continue
-		}
-		for number, expectedComments := range tc.expected {
-			if len(tc.expected[number]) != len(tc.client.comments[number]) {
-				t.Errorf("%s: expected comments %v != actual %v", tc.name, expectedComments, tc.client.comments[number])
-				continue
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			ignoreSorting := ""
+			ignoreOrder := false
+			if tc.client.comments == nil {
+				tc.client.comments = make(map[int][]github.IssueComment)
 			}
-			for _, comment := range expectedComments {
-				found := false
-				for _, actualComment := range tc.client.comments[number] {
-					if comment == actualComment.Body {
-						found = true
-						break
+			if tc.commentsCeilingMargin == 0 {
+				tc.commentsCeilingMargin = 24 * time.Hour
+			}
+			err := run(&tc.client, tc.query, ignoreSorting, ignoreOrder, false, makeCommenter(tc.comment, tc.template),
+				tc.ceiling, tc.commentsCeiling, tc.commentsCeilingMargin)
+			if tc.err && err == nil {
+				t.Errorf("%s: failed to received an error", tc.name)
+			}
+			if !tc.err && err != nil {
+				t.Errorf("%s: unexpected error: %v", tc.name, err)
+			}
+			missing := []string{}
+			if len(tc.expected) != len(tc.client.comments) {
+				t.Errorf("%s: expected issues with comments %v != actual %v", tc.name, tc.expected, tc.client.comments)
+			}
+			for number, expectedComments := range tc.expected {
+				if len(tc.expected[number]) != len(tc.client.comments[number]) {
+					t.Errorf("%s: expected comments %v != actual %v", tc.name, expectedComments, tc.client.comments[number])
+				}
+				for _, comment := range expectedComments {
+					found := false
+					for _, actualComment := range tc.client.comments[number] {
+						if comment == actualComment.Body {
+							found = true
+							break
+						}
+					}
+
+					if !found {
+						missing = append(missing, comment)
 					}
 				}
-
-				if !found {
-					missing = append(missing, comment)
-				}
 			}
-		}
-		if len(missing) > 0 {
-			t.Errorf("%s: missing %v from actual comments %v", tc.name, missing, tc.client.comments)
-		}
+			if len(missing) > 0 {
+				t.Errorf("%s: missing %v from actual comments %v", tc.name, missing, tc.client.comments)
+			}
+		})
 	}
 }
 
