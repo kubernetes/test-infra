@@ -35,7 +35,7 @@ presubmits:
             - -c
             - >-
               cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&
-              ./deploy/install-driver.sh v1.6.0 local,snapshot &&
+              ./deploy/install-driver.sh master local,snapshot &&
               make e2e-test
           env:
             - name: AZURE_STORAGE_DRIVER
