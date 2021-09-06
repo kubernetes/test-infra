@@ -2407,9 +2407,11 @@ test_groups:
   name: periodic-ci-openshift-release-master-ci-4.7-e2e-gcp-upgrade
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.7-e2e-openstack-kuryr
   name: periodic-ci-openshift-release-master-ci-4.7-e2e-openstack-kuryr
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.7-e2e-openstack-parallel
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.7-e2e-openstack-parallel
   name: periodic-ci-openshift-release-master-ci-4.7-e2e-openstack-parallel
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.7-e2e-openstack-serial
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.7-e2e-openstack-serial
   name: periodic-ci-openshift-release-master-ci-4.7-e2e-openstack-serial
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.7-upgrade-from-stable-4.6-e2e-aws-compact-upgrade
