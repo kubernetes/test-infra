@@ -35,6 +35,7 @@ presubmits:
             - -c
             - >-
               cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&
+              ./deploy/install-driver.sh v1.6.0 local,snapshot &&
               make e2e-test
           env:
             - name: AZURE_STORAGE_DRIVER
@@ -84,6 +85,7 @@ presubmits:
             - -c
             - >-
               cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&
+              ./deploy/install-driver.sh v1.6.0 local,snapshot &&
               make e2e-test
           env:
             - name: AZURE_STORAGE_DRIVER
@@ -136,6 +138,7 @@ presubmits:
             - >-
               kubectl apply -f templates/addons/azurefile-role.yaml &&
               cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
+              ./deploy/install-driver.sh v1.6.0 local,snapshot &&
               make e2e-test
           env:
             - name: AZURE_STORAGE_DRIVER
@@ -186,6 +189,7 @@ presubmits:
             - >-
               kubectl apply -f templates/addons/azurefile-role.yaml &&
               cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
+              ./deploy/install-driver.sh v1.6.0 local,snapshot &&
               make e2e-test
           env:
             - name: AZURE_STORAGE_DRIVER
@@ -362,6 +366,7 @@ periodics:
       - >-
         kubectl apply -f templates/addons/azurefile-role.yaml &&
         cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
+        ./deploy/install-driver.sh v1.6.0 local,snapshot &&
         make e2e-test
       env:
       - name: USE_CI_ARTIFACTS
@@ -414,6 +419,7 @@ periodics:
       - >-
         kubectl apply -f templates/addons/azurefile-role.yaml &&
         cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
+        ./deploy/install-driver.sh v1.6.0 local,snapshot &&
         make e2e-test
       env:
       - name: USE_CI_ARTIFACTS
@@ -467,6 +473,7 @@ periodics:
       - -c
       - >-
         cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&
+        ./deploy/install-driver.sh v1.6.0 local,snapshot &&
         make e2e-test
       env:
       - name: USE_CI_ARTIFACTS
@@ -518,6 +525,7 @@ periodics:
       - -c
       - >-
         cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&
+        ./deploy/install-driver.sh v1.6.0 local,snapshot &&
         make e2e-test
       env:
       - name: USE_CI_ARTIFACTS
