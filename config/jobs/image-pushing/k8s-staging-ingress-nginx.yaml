@@ -10,7 +10,7 @@ postsubmits:
       run_if_changed: '\.go$|^rootfs/.*|TAG|go.mod|go.sum'
       branches:
         - ^main$
-        - ^dev-v1$
+        - ^legacy$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -31,7 +31,7 @@ postsubmits:
       run_if_changed: 'images/nginx/.*'
       branches:
         - ^main$
-        - ^dev-v1$
+        - ^legacy$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -44,6 +44,46 @@ postsubmits:
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
               - images/nginx
 
+    - name: post-ingress-nginx-build-nginx-image-debian
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-network-ingress-nginx, wg-k8s-infra-gcb
+      decorate: true
+      run_if_changed: 'images/nginx-debian/.*'
+      branches:
+        - ^main$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-ingress-nginx
+              - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
+              - images/nginx-debian
+
+    - name: post-ingress-nginx-build-modsecurity
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-network-ingress-nginx, wg-k8s-infra-gcb
+      decorate: true
+      run_if_changed: 'images/modsecurity/.*'
+      branches:
+        - ^main$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-ingress-nginx
+              - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
+              - images/modsecurity
+
     - name: post-ingress-nginx-build-e2e-image
       cluster: k8s-infra-prow-build-trusted
       annotations:
@@ -52,7 +92,7 @@ postsubmits:
       run_if_changed: 'images/test-runner/.*'
       branches:
         - ^main$
-        - ^dev-v1$
+        - ^legacy$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -65,6 +105,26 @@ postsubmits:
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
               - images/test-runner
 
+    - name: post-ingress-nginx-build-e2e-image-debian
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-network-ingress-nginx, wg-k8s-infra-gcb
+      decorate: true
+      run_if_changed: 'images/test-runner-debian/.*'
+      branches:
+        - ^main$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-ingress-nginx
+              - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
+              - images/test-runner-debian
+
     - name: post-ingress-nginx-build-cfssl-image
       cluster: k8s-infra-prow-build-trusted
       annotations:
@@ -73,7 +133,6 @@ postsubmits:
       run_if_changed: 'images/cfssl/.*'
       branches:
         - ^main$
-        - ^dev-v1$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -94,7 +153,6 @@ postsubmits:
       run_if_changed: 'images/echo/.*'
       branches:
         - ^main$
-        - ^dev-v1$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -115,7 +173,6 @@ postsubmits:
       run_if_changed: 'images/fastcgi-helloserver/.*'
       branches:
         - ^main$
-        - ^dev-v1$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -136,7 +193,6 @@ postsubmits:
       run_if_changed: 'images/httpbin/.*'
       branches:
         - ^main$
-        - ^dev-v1$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -157,7 +213,6 @@ postsubmits:
       run_if_changed: 'images/kube-webhook-certgen/.*'
       branches:
         - ^main$
-        - ^dev-v1$
       spec:
         serviceAccountName: gcb-builder
         containers:
