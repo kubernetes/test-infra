@@ -85,7 +85,6 @@ presubmits:
         - run
         - files
         - --manifests=/home/prow/go/src/github.com/kubernetes/k8s.io/artifacts/
-        - --use-service-account
         - --dry-run=true
   kubernetes-sigs/k8s-container-image-promoter:
   # Run promoter e2e tests.

@@ -20,7 +20,6 @@ postsubmits:
         - run
         - files
         - --manifests=/home/prow/go/src/github.com/kubernetes/k8s.io/artifacts/
-        - --use-service-account
         - --dry-run=false
     annotations:
       testgrid-dashboards: sig-release-releng-blocking, wg-k8s-infra-k8sio
@@ -73,7 +72,6 @@ periodics:
       - run
       - files
       - --manifests=/home/prow/go/src/github.com/kubernetes/k8s.io/artifacts/
-      - --use-service-account
       - --dry-run=false
   annotations:
     testgrid-dashboards: sig-release-releng-blocking, wg-k8s-infra-k8sio
