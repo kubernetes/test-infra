@@ -229,12 +229,11 @@ func run(c client, query, sort string, asc, random bool, commenter func(meta) (s
 	problems := []string{}
 	log.Printf("Found %d matches", len(issues))
 	if random {
-		dest := make([]github.Issue, len(issues))
-		perm := rand.Perm(len(issues))
-		for i, v := range perm {
-			dest[v] = issues[i]
-		}
-		issues = dest
+		rand.Seed(time.Now().UnixNano())
+		rand.Shuffle(len(issues), func(i, j int) {
+			issues[i], issues[j] = issues[j], issues[i]
+		})
+
 	}
 	for n, i := range issues {
 		if ceiling > 0 && n == ceiling {
