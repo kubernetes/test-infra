@@ -71,8 +71,6 @@ presubmits:
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
       testgrid-num-failures-to-alert: '10'
     decorate: true
-    # TODO(releng): Remove once testing is complete
-    optional: true
     skip_report: false
     run_if_changed: '^artifacts\/(filestores|manifests)\/.*\/*.yaml'
     max_concurrency: 10
@@ -80,15 +78,14 @@ presubmits:
     - ^main$
     spec:
       containers:
-      # TODO(releng): Use a promoted image here once testing is complete
-      - image: gcr.io/k8s-staging-releng-test/kpromo-amd64:v0.2.0-1
+      - image: k8s.gcr.io/artifact-promoter/kpromo:v0.2.0-1
         command:
         - /kpromo
         args:
         - run
         - files
         - --manifests=/home/prow/go/src/github.com/kubernetes/k8s.io/artifacts/
-        # TODO(releng): Use '--dry-run=false' (or '--confirm') once testing is complete
+        - --use-service-account
         - --dry-run=true
   kubernetes-sigs/k8s-container-image-promoter:
   # Run promoter e2e tests.
