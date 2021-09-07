@@ -1816,6 +1816,10 @@ func (c *Configuration) mergeFrom(other *Configuration) error {
 		errs = append(errs, fmt.Errorf("failed to merge .external-plugins from supplemental config: %w", err))
 	}
 
+	if err := c.Label.mergeFrom(&other.Label); err != nil {
+		errs = append(errs, fmt.Errorf("failed to merge .label from supplemental config: %w", err))
+	}
+
 	return utilerrors.NewAggregate(errs)
 }
 
@@ -1902,8 +1906,40 @@ func (p *Bugzilla) mergeFrom(other *Bugzilla) error {
 	return utilerrors.NewAggregate(errs)
 }
 
+func (l *Label) mergeFrom(other *Label) error {
+	if other == nil {
+		return nil
+	}
+	l.AdditionalLabels = append(l.AdditionalLabels, other.AdditionalLabels...)
+
+	var errs []error
+	for key, labelConfigs := range other.RestrictedLabels {
+		for _, labelConfig := range labelConfigs {
+			if conflictingIdx := getLabelConfigFromRestrictedLabelsSlice(l.RestrictedLabels[key], labelConfig.Label); conflictingIdx != -1 {
+				errs = append(errs, fmt.Errorf("there are multiple label.restricted_labels configs for label %s", labelConfig.Label))
+			}
+		}
+		if l.RestrictedLabels == nil {
+			l.RestrictedLabels = map[string][]RestrictedLabel{}
+		}
+		l.RestrictedLabels[key] = append(l.RestrictedLabels[key], labelConfigs...)
+	}
+
+	return utilerrors.NewAggregate(errs)
+}
+
+func getLabelConfigFromRestrictedLabelsSlice(s []RestrictedLabel, label string) int {
+	for idx, item := range s {
+		if item.Label == label {
+			return idx
+		}
+	}
+
+	return -1
+}
+
 func (c *Configuration) HasConfigFor() (global bool, orgs sets.String, repos sets.String) {
-	if !reflect.DeepEqual(c, &Configuration{Approve: c.Approve, Bugzilla: c.Bugzilla, ExternalPlugins: c.ExternalPlugins, Lgtm: c.Lgtm, Plugins: c.Plugins}) || c.Bugzilla.Default != nil {
+	if !reflect.DeepEqual(c, &Configuration{Approve: c.Approve, Bugzilla: c.Bugzilla, ExternalPlugins: c.ExternalPlugins, Label: c.Label, Lgtm: c.Lgtm, Plugins: c.Plugins}) || c.Bugzilla.Default != nil {
 		global = true
 	}
 	orgs = sets.String{}
@@ -1932,6 +1968,19 @@ func (c *Configuration) HasConfigFor() (global bool, orgs sets.String, repos set
 			} else {
 				orgs.Insert(orgOrRepo)
 			}
+		}
+	}
+
+	if len(c.Label.AdditionalLabels) > 0 {
+		global = true
+	}
+	for key := range c.Label.RestrictedLabels {
+		if key == "*" {
+			global = true
+		} else if strings.Contains(key, "/") {
+			repos.Insert(key)
+		} else {
+			orgs.Insert(key)
 		}
 	}
 
