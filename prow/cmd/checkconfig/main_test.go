@@ -1797,6 +1797,12 @@ blunderbuss:
   request_count: 2
   use_status_availability: true`
 	const validOrgPluginsConfig = `
+label:
+  restricted_labels:
+    my-org:
+    - label: cherry-pick-approved
+      allowed_teams:
+      - patch-managers
 plugins:
   my-org:
     plugins:
