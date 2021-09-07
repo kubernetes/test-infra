@@ -77,6 +77,10 @@ dashboards:
   - name: win-2019-containerd-master-integration
     description: Runs containerd integration & cri-integration tests on Windows (LTSC 2019)
     test_group_name: integration-containerd-windows-ltsc2019
+  - name: win-2022-containerd-master-integration
+    description: Runs containerd integration & cri-integration tests on Windows (LTSC 2022)
+    test_group_name: integration-containerd-windows-ltsc2022
+
 
 test_groups:
 # Flannel CNI on Windows test groups
@@ -114,4 +118,7 @@ test_groups:
   disable_prowjob_analysis: true
 - name: integration-containerd-windows-ltsc2019
   gcs_prefix: containerd-integration/logs/windows-ltsc2019
+  disable_prowjob_analysis: true
+- name: integration-containerd-windows-ltsc2022
+  gcs_prefix: containerd-integration/logs/windows-ltsc2022
   disable_prowjob_analysis: true
