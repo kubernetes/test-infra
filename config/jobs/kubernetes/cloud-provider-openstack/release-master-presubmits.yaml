@@ -68,3 +68,22 @@ presubmits:
     annotations:
       testgrid-dashboards: provider-openstack-openstack-csi-cinder
       testgrid-tab-name: presubmit-e2e-test
+
+  - name: openstack-cloud-csi-cinder-sanity-test
+    always_run: false
+    run_if_changed: '^(pkg\/csi\/cinder\/|cmd\/cinder-csi-plugin\/|tests\/sanity\/cinder\/)'
+    decorate: true
+    branches:
+      - ^master$
+    path_alias: "k8s.io/cloud-provider-openstack"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210825-f1955d1-master
+        command:
+        - make
+        args:
+        - test-cinder-csi-sanity
+    annotations:
+      testgrid-dashboards: provider-openstack-openstack-csi-cinder
+      testgrid-tab-name: presubmit-sanity-test
+      description: Run cloud-provider-openstack csi sanity tests for cinder-csi-plugin
