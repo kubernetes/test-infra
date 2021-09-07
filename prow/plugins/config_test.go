@@ -2186,6 +2186,17 @@ func TestMergeFrom(t *testing.T) {
 			},
 		},
 		{
+			name:                "Labels.restricted_config gets merged",
+			in:                  Configuration{Label: Label{AdditionalLabels: []string{"foo"}}},
+			supplementalConfigs: []Configuration{{Label: Label{RestrictedLabels: map[string][]RestrictedLabel{"org": {{Label: "cherry-pick-approved", AllowedTeams: []string{"patch-managers"}}}}}}},
+			expected: Configuration{
+				Label: Label{
+					AdditionalLabels: []string{"foo"},
+					RestrictedLabels: map[string][]RestrictedLabel{"org": {{Label: "cherry-pick-approved", AllowedTeams: []string{"patch-managers"}}}},
+				},
+			},
+		},
+		{
 			name:                "main config has no ExternalPlugins config, supplemental config has, it gets merged",
 			supplementalConfigs: []Configuration{{ExternalPlugins: map[string][]ExternalPlugin{"foo/bar": {{Name: "refresh", Endpoint: "http://refresh", Events: []string{"issue_comment"}}}}}},
 			expected: Configuration{
