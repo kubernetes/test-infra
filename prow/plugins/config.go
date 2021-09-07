@@ -373,7 +373,7 @@ type Goose struct {
 type Label struct {
 	// AdditionalLabels is a set of additional labels enabled for use
 	// on top of the existing "kind/*", "priority/*", and "area/*" labels.
-	AdditionalLabels []string `json:"additional_labels"`
+	AdditionalLabels []string `json:"additional_labels,omitempty"`
 
 	// RestrictedLabels allows to configure labels that can only be modified
 	// by users that belong to at least one of the configured teams. The key
@@ -395,8 +395,8 @@ func (l Label) RestrictedLabelsFor(org, repo string) map[string]RestrictedLabel 
 
 type RestrictedLabel struct {
 	Label        string   `json:"label"`
-	AllowedTeams []string `json:"allowed_teams"`
-	AllowedUsers []string `json:"allowed_users"`
+	AllowedTeams []string `json:"allowed_teams,omitempty"`
+	AllowedUsers []string `json:"allowed_users,omitempty"`
 }
 
 // Trigger specifies a configuration for a single trigger.
