@@ -5,6 +5,7 @@ presubmits:
     always_run: true
     decorate: true
     spec:
+      serviceAccount: prowjob-default-sa
       containers:
       - image: gcr.io/rules-k8s/gcloud-bazel:v20210501-v0.6-28-gaf2e97d
         args:
