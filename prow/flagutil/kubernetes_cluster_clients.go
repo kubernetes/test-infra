@@ -151,11 +151,12 @@ func (o *KubernetesOptions) LoadClusterConfigs(callBacks ...func()) (map[string]
 	}
 
 	if o.kubeconfig == "" && o.kubeconfigDir == "" {
-		value := os.Getenv(clientcmd.RecommendedConfigPathEnvVar)
-		if kubeconfigsFromEnv := strings.Split(value, ":"); len(kubeconfigsFromEnv) > 0 &&
-			len(kubeconfigsFromEnv) > len(o.clusterConfigs) {
-			errs = append(errs, fmt.Errorf("%s env var with value %s had %d elements but only got %d kubeconfigs",
-				clientcmd.RecommendedConfigPathEnvVar, value, len(kubeconfigsFromEnv), len(o.clusterConfigs)))
+		if envVal := os.Getenv(clientcmd.RecommendedConfigPathEnvVar); envVal != "" {
+			if kubeconfigsFromEnv := strings.Split(envVal, ":"); len(kubeconfigsFromEnv) > 0 &&
+				len(kubeconfigsFromEnv) > len(o.clusterConfigs) {
+				errs = append(errs, fmt.Errorf("%s env var with value %s had %d elements but only got %d kubeconfigs",
+					clientcmd.RecommendedConfigPathEnvVar, envVal, len(kubeconfigsFromEnv), len(o.clusterConfigs)))
+			}
 		}
 	}
 
