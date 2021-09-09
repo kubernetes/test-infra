@@ -34,7 +34,6 @@ spec:
       labels:
         app: cherrypicker
     spec:
-      serviceAccountName: cherrypicker
       terminationGracePeriodSeconds: 180
       containers:
       - name: cherrypicker
