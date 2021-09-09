@@ -108,6 +108,35 @@ presubmits:
           requests:
             cpu: 1
             memory: "512Mi"
+  - name: pull-k8sio-terraform-public-pii
+    annotations:
+      description: verify terraform files for project k8s-infra-public-pii
+      testgrid-create-test-group: 'true'
+      testgrid-dashboards: wg-k8s-infra-prow
+      testgrid-tab-name: pull-k8sio-terraform-public-pii
+      testgrid-alert-email: ameukam@gmail.com,spiffxp@gmail.com,spiffxp@google.com
+      testgrid-num-failures-to-alert: '1'
+    decorate: true
+    max_concurrency: 1
+    cluster: k8s-infra-prow-build
+    path_alias: k8s.io/k8s.io
+    run_if_changed: 'infra\/gcp\/terraform\/(modules|k8s-infra-public-pii)\/.*.tf'
+    branches:
+    - ^main$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
+        command:
+        - hack/verify-terraform.sh
+        args:
+        - infra/gcp/terraform/k8s-infra-public-pii
+        resources:
+          limits:
+            cpu: 1
+            memory: "512Mi"
+          requests:
+            cpu: 1
+            memory: "512Mi"
   - name: pull-k8sio-verify
     annotations:
       testgrid-dashboards: wg-k8s-infra-k8sio
