@@ -141,7 +141,7 @@ func main() {
 	// Initialize cache for fetching Presubmit and Postsubmit information. If
 	// the cache cannot be initialized (e.g., cache size is too big), continue
 	// without one.
-	prowYAMLCache, err := subscriber.NewProwYAMLCache(flagOptions.cacheSize)
+	prowYAMLCache, err := config.NewProwYAMLCache(flagOptions.cacheSize)
 	if err != nil {
 		logrus.WithError(err).Warnf("unable to initialize cache (cacheSize: %d); continuing without one", flagOptions.cacheSize)
 	}

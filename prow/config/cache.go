@@ -14,28 +14,27 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package subscriber
+package config
 
 import (
 	"fmt"
 
 	lru "github.com/hashicorp/golang-lru"
-	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/git/v2"
 )
 
 // Caching implementation overview
 //
-// Consider the expensive function config.GetPresubmits(). This function returns
-// a []config.Presubmit slice, which is expensive to compute (it involves
+// Consider the expensive function GetPresubmits(). This function returns
+// a []Presubmit slice, which is expensive to compute (it involves
 // invoking a Git client, walking a filesystem path, etc). In our caching
 // implementation, we call a wrapper function instead, GetPresubmitsFromCache().
-// GetPresubmitsFromCache() can wrap around config.GetPresubmits(), and __only__
-// calls it when the corresponding []config.Presubmit slice we want is not found
+// GetPresubmitsFromCache() can wrap around GetPresubmits(), and __only__
+// calls it when the corresponding []Presubmit slice we want is not found
 // in the cache (or if the cache is not initialized properly, or even
 // corrupted).
 //
-// The same thing can be said for config.GetPostsubmits() and its wrapper,
+// The same thing can be said for GetPostsubmits() and its wrapper,
 // GetPostsubmitsFromCache() which we define in this file.
 //
 // The key idea is this: when we need to look up a value for the cache, we first
@@ -44,8 +43,8 @@ import (
 // matches the key that we just constructed, then return that. Otherwise if the
 // value is not found, we (begrudgingly) compute it from scratch using the given
 // "value constructor" function (aka the "valConstructor" type). For
-// []config.Presubmit the constructor function is config.GetPresubmits(), and
-// for []config.Postsubmit it is config.GetPostsubmits().
+// []Presubmit the constructor function is GetPresubmits(), and
+// for []Postsubmit it is GetPostsubmits().
 //
 // The functions GetPresubmitsFromCache() and GetPostsubmitsFromCache() both
 // implmement this key idea, with some additional protections around type safety
@@ -60,8 +59,8 @@ import (
 // ProwYAMLCache holds Presubmits and Postsubmits in a simple cache. It is named
 // ProwYAMLCache because the objects it caches resemble the fields that make up
 // the ProwYAML object defined in inrepoconfig.go (i.e., the values of the cache
-// are the []config.Presubmit and []config.Postsubmit objects). The point is to
-// avoid doing the expensive config.GetPresubmits() and config.GetPostsubmits()
+// are the []Presubmit and []Postsubmit objects). The point is to
+// avoid doing the expensive GetPresubmits() and GetPostsubmits()
 // calls if possible, which involves walking the repository to collect YAML
 // information, etc.
 //
@@ -70,7 +69,7 @@ import (
 // values are what we store in the cache, and to retrieve them, we have to
 // provide a key (which must be a hashable object). Because of Golang's lack of
 // generics, the values retrieved from the cache must be type-asserted into the
-// type we want ([]config.Presubmit or []config.Postsubmit) before we can use
+// type we want ([]Presubmit or []Postsubmit) before we can use
 // them.
 type ProwYAMLCache struct {
 	presubmits  *lru.Cache
@@ -130,8 +129,8 @@ func (k CacheKey) String() string {
 // debugging easier, we
 func MakeCacheKey(
 	identifier string,
-	baseSHAGetter config.RefGetter,
-	headSHAGetters ...config.RefGetter) (CacheKey, error) {
+	baseSHAGetter RefGetter,
+	headSHAGetters ...RefGetter) (CacheKey, error) {
 	// Initialize empty key.
 	key := CacheKey{}
 
@@ -173,17 +172,17 @@ type valConstructor func() (interface{}, error)
 type keyConstructor func() (fmt.Stringer, error)
 
 // GetPresubmitsFromCache uses ProwYAMLCache to first try to perform a lookup of
-// previously-calculated []config.Presubmit objects. The 'vg' function is taken
+// previously-calculated []Presubmit objects. The 'vg' function is taken
 // as an argument to make it easier to test this function. This way, unit tests
-// can just provide its own function for constructing a []config.Presubmit
+// can just provide its own function for constructing a []Presubmit
 // object (instead of needing to create an actual Git repo, etc., as required by
-// the config.GetPresubmits function).
+// the GetPresubmits function).
 func (p *ProwYAMLCache) GetPresubmitsFromCache(
-	vg func(git.ClientFactory, string, config.RefGetter, ...config.RefGetter) ([]config.Presubmit, error),
+	vg func(git.ClientFactory, string, RefGetter, ...RefGetter) ([]Presubmit, error),
 	gc git.ClientFactory,
 	identifier string,
-	baseSHAGetter config.RefGetter,
-	headSHAGetters ...config.RefGetter) ([]config.Presubmit, bool, bool, error) {
+	baseSHAGetter RefGetter,
+	headSHAGetters ...RefGetter) ([]Presubmit, bool, bool, error) {
 
 	keyConstructor := func() (fmt.Stringer, error) {
 		return MakeCacheKey(identifier, baseSHAGetter, headSHAGetters...)
@@ -198,7 +197,7 @@ func (p *ProwYAMLCache) GetPresubmitsFromCache(
 		return nil, cacheHit, evicted, err
 	}
 
-	if presubmits, ok := val.([]config.Presubmit); ok {
+	if presubmits, ok := val.([]Presubmit); ok {
 		return presubmits, cacheHit, evicted, err
 	}
 
@@ -225,10 +224,10 @@ func (p *ProwYAMLCache) GetPresubmitsFromCache(
 // only real difference is in the keyConstructor (postsubmits don't consider
 // headSHAGetters).
 func (p *ProwYAMLCache) GetPostsubmitsFromCache(
-	vg func(git.ClientFactory, string, config.RefGetter, ...config.RefGetter) ([]config.Postsubmit, error),
+	vg func(git.ClientFactory, string, RefGetter, ...RefGetter) ([]Postsubmit, error),
 	gc git.ClientFactory,
 	identifier string,
-	baseSHAGetter config.RefGetter) ([]config.Postsubmit, bool, bool, error) {
+	baseSHAGetter RefGetter) ([]Postsubmit, bool, bool, error) {
 
 	keyConstructor := func() (fmt.Stringer, error) {
 		return MakeCacheKey(identifier, baseSHAGetter)
@@ -243,7 +242,7 @@ func (p *ProwYAMLCache) GetPostsubmitsFromCache(
 		return nil, cacheHit, evicted, err
 	}
 
-	if postsubmits, ok := val.([]config.Postsubmit); ok {
+	if postsubmits, ok := val.([]Postsubmit); ok {
 		return postsubmits, cacheHit, evicted, err
 	}
 
