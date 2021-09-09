@@ -431,7 +431,7 @@ func getJobHistory(ctx context.Context, url *url.URL, cfg config.Getter, opener 
 
 	storageProvider, bucketName, root, top, err := parseJobHistURL(url)
 	if err != nil {
-		return tmpl, fmt.Errorf("invalid url %s: %v", url.String(), err)
+		return tmpl, fmt.Errorf("invalid url %s: %w", url.String(), err)
 	}
 	bucket, err := newBlobStorageBucket(bucketName, storageProvider, cfg(), opener)
 	if err != nil {
@@ -440,7 +440,7 @@ func getJobHistory(ctx context.Context, url *url.URL, cfg config.Getter, opener 
 	tmpl.Name = root
 	latest, err := readLatestBuild(ctx, bucket, root)
 	if err != nil {
-		return tmpl, fmt.Errorf("failed to locate build data: %v", err)
+		return tmpl, fmt.Errorf("failed to locate build data: %w", err)
 	}
 	if top == emptyID || top > latest {
 		top = latest
@@ -454,7 +454,7 @@ func getJobHistory(ctx context.Context, url *url.URL, cfg config.Getter, opener 
 	defer cancel()
 	buildIDs, err := bucket.listBuildIDs(buildIDListCtx, root)
 	if err != nil && !errors.Is(err, context.DeadlineExceeded) {
-		return tmpl, fmt.Errorf("failed to get build ids: %v", err)
+		return tmpl, fmt.Errorf("failed to get build ids: %w", err)
 	}
 
 	sort.Sort(sort.Reverse(uint64slice(buildIDs)))

@@ -881,7 +881,9 @@ func handleJobHistory(o options, cfg config.Getter, opener io.Opener, log *logru
 		if err != nil {
 			msg := fmt.Sprintf("failed to get job history: %v", err)
 			if shouldLogHTTPErrors(err) {
-				log.WithField("url", r.URL.String()).Warn(msg)
+				log.WithField("url", r.URL.String()).WithError(err).Warn(msg)
+			} else {
+				log.WithField("url", r.URL.String()).WithError(err).Debug(msg)
 			}
 			http.Error(w, msg, httpStatusForError(err))
 			return
@@ -1664,5 +1666,5 @@ func httpStatusForError(e error) int {
 }
 
 func shouldLogHTTPErrors(e error) bool {
-	return e != context.Canceled || httpStatusForError(e) >= http.StatusInternalServerError // 5XX
+	return !errors.Is(e, context.Canceled) || httpStatusForError(e) >= http.StatusInternalServerError // 5XX
 }
