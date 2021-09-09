@@ -42,6 +42,9 @@ spec:
         image: gcr.io/k8s-prow/cherrypicker:v20210908-7cf307fffc
         imagePullPolicy: Always
         args:
+        - --github-token-path=/etc/github/oauth
+        - --github-endpoint=http://ghproxy
+        - --github-endpoint=https://api.github.com
         - --dry-run=false
         ports:
           - name: http
