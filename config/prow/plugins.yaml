@@ -980,6 +980,7 @@ plugins:
     - shrug
     - size
     - skip
+    - transfer-issue
     - trick-or-treat
     - trigger
     - verify-owners
