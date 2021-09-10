@@ -16,9 +16,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: default
-  name: deck
+  name: deck-tenanted
   labels:
-    app: deck
+    app: deck-tenanted
 spec:
   replicas: 3
   strategy:
@@ -28,17 +28,17 @@ spec:
       maxUnavailable: 1
   selector:
     matchLabels:
-      app: deck
+      app: deck-tenanted
   template:
     metadata:
       labels:
-        app: deck
+        app: deck-tenanted
     spec:
-      serviceAccountName: deck
+      serviceAccountName: deck-tenanted
       terminationGracePeriodSeconds: 30
       containers:
-      - name: deck
-        image: gcr.io/k8s-prow/deck:v20210909-6c59eee681
+      - name: deck-tenanted
+        image: gcr.io/k8s-prow/deck:v20210830-fcbb70627f
         imagePullPolicy: Always
         ports:
           - name: http
@@ -50,6 +50,7 @@ spec:
         - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
         - --spyglass=true
+        - --tenant-id=tester
         - --rerun-creates-job
         - --github-token-path=/etc/github/oauth
         - --github-endpoint=http://fakeghserver
@@ -118,3 +119,84 @@ spec:
       - name: plugins
         configMap:
           name: plugins
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: deck-tenanted
+  namespace: default
+  name: deck-tenanted
+spec:
+  selector:
+    app: deck-tenanted
+  ports:
+  - name: main
+    port: 80
+    targetPort: 8080
+  - name: metrics
+    port: 9090
+  type: NodePort
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  namespace: default
+  name: deck-tenanted
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: default
+  name: deck-tenanted
+rules:
+- apiGroups:
+  - "prow.k8s.io"
+  resources:
+  - prowjobs
+  verbs:
+  - get
+  - list
+  - watch
+  # Required when deck runs with `--rerun-creates-job=true`
+  - create
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: test-pods
+  name: deck-tenanted
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods/log
+  verbs:
+  - get
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: default
+  name: deck-tenanted
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: deck-tenanted
+subjects:
+- kind: ServiceAccount
+  name: deck-tenanted
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: test-pods
+  name: deck-tenanted
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: deck-tenanted
+subjects:
+- kind: ServiceAccount
+  name: deck-tenanted
+  namespace: default
