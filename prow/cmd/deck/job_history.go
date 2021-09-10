@@ -348,7 +348,7 @@ func getBuildData(ctx context.Context, bucket storageBucket, dir string) (buildD
 	started := gcs.Started{}
 	err := readJSON(ctx, bucket, path.Join(dir, prowv1.StartedStatusFile), &started)
 	if err != nil {
-		return b, fmt.Errorf("failed to read started.json: %v", err)
+		return b, fmt.Errorf("failed to read started.json: %w", err)
 	}
 	b.Started = time.Unix(started.Timestamp, 0)
 	finished := gcs.Finished{}
@@ -495,7 +495,11 @@ func getJobHistory(ctx context.Context, url *url.URL, cfg config.Getter, opener 
 			}
 			b, err := getBuildData(ctx, bucket, dir)
 			if err != nil {
-				logrus.WithError(err).Warningf("build %d information incomplete", buildID)
+				if pkgio.IsNotExist(err) {
+					logrus.WithError(err).WithField("build-id", buildID).Debug("Build information incomplete.")
+				} else {
+					logrus.WithError(err).WithField("build-id", buildID).Warning("Build information incomplete.")
+				}
 			}
 			b.index = i
 			b.ID = id

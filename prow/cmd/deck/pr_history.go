@@ -36,6 +36,7 @@ import (
 	"k8s.io/test-infra/prow/gcsupload"
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/io"
+	pkgio "k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 )
 
@@ -143,7 +144,11 @@ func getPRBuildData(ctx context.Context, bucket storageBucket, jobs []jobBuilds)
 			go func(j int, jobName, buildPrefix string) {
 				build, err := getBuildData(ctx, bucket, buildPrefix)
 				if err != nil {
-					logrus.WithError(err).Warningf("build %s information incomplete", buildPrefix)
+					if pkgio.IsNotExist(err) {
+						logrus.WithError(err).WithField("prefix", buildPrefix).Debug("Build information incomplete.")
+					} else {
+						logrus.WithError(err).WithField("prefix", buildPrefix).Warning("Build information incomplete.")
+					}
 				}
 				split := strings.Split(strings.TrimSuffix(buildPrefix, "/"), "/")
 				build.SpyglassLink = path.Join(spyglassPrefix, bucket.getStorageProvider(), bucket.getName(), buildPrefix)
