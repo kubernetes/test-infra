@@ -55,9 +55,9 @@ presubmits:
     spec:
       serviceAccountName: k8s-infra-gcr-promoter-test
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210226-c001921-1.17
+      - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
         command:
-        - infra/gcp/backup_tools/backup_test.sh
+        - infra/gcp/bash/backup_tools/backup_test.sh
         env:
         # Even though GOPATH is set to /go in the kubekins-e2e image, we set it
         # here anyway in case the underlying image changes (the backup_test.sh
