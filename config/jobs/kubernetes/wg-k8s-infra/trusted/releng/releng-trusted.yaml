@@ -11,7 +11,7 @@ postsubmits:
     branches:
     - ^main$
     spec:
-      serviceAccountName: k8s-infra-gcr-promoter
+      serviceAccountName: k8s-infra-promoter
       containers:
       - image: k8s.gcr.io/artifact-promoter/kpromo:v0.2.1-2
         command:
@@ -61,9 +61,7 @@ periodics:
     repo: k8s.io
     base_ref: main
   spec:
-    # TODO(releng): Should we use a different service account or change this
-    #               one's name to 'k8s-infra-artifact-promoter'?
-    serviceAccountName: k8s-infra-gcr-promoter
+    serviceAccountName: k8s-infra-promoter
     containers:
     - image: k8s.gcr.io/artifact-promoter/kpromo:v0.2.1-2
       command:
