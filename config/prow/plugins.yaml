@@ -336,7 +336,8 @@ milestone_applier:
   kubernetes/k8s.io:
     main: v1.23
   kubernetes/kops:
-    master: v1.22
+    master: v1.23
+    release-1.22: v1.22
     release-1.21: v1.21
     release-1.20: v1.20
     release-1.19: v1.19
