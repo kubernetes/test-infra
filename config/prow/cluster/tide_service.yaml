@@ -26,8 +26,6 @@ spec:
   - name: main
     port: 80
     targetPort: 8888
-    protocol: TCP
   - name: metrics
     port: 9090
-    protocol: TCP
   type: ClusterIP

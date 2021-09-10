@@ -160,12 +160,6 @@ Regardless of which object storage you choose, the below adjustments are always 
 
 ### Add the prow components to the cluster
 
-First you need to create the ProwJob custom resource:
-
-```
-kubectl apply --server-side=true config/prow/cluster/prowjob_customresourcedefinition.yaml
-```
-
 Apply the manifest you edited above by executing one of the following two commands:
 
 
@@ -250,7 +244,7 @@ and hmac tokens for you via declarative configuration.
 
 ## Deploying with GitHub Enterprise
 
-When using GitHub Enterpise (GHE), Prow must be configured slightly differently. It's possible to run GHE with or
+When using GitHub Enterpise (GHE), Prow must be configured slightly differently. It's possible to run GHE with or 
 without the `api` subdomain:
 * with the `api` subdomain the endpoints are:
    * v3: `https://api.<<github-hostname>>`
@@ -260,16 +254,16 @@ without the `api` subdomain:
   * graphql: `https://<<github-hostname>>/api/graphql`
 
 Prow component configuration:
-* `ghproxy`:
+* `ghproxy`: 
   * configure arg: `--upstream=<<v3-endpoint>>`
-  * the `ghproxy` will not be able to proxy graphql requests when GHE is not using the `api` subdomain
+  * the `ghproxy` will not be able to proxy graphql requests when GHE is not using the `api` subdomain 
     (because it tries to use the wrong context path for graphql)
 
 * `crier`, `deck`, `hook`, `status-reconciler`, `tide`, `prow-controller-manager`:
   * configure args:
     * `--github-endpoint=http://ghproxy`
     * `--github-endpoint=<<v3-endpoint>>`
-    * with `api` subdomain:
+    * with `api` subdomain:    
       * `--github-graphql-endpoint=http://ghproxy/graphql`
     * without `api` subdomain:
       * `--github-graphql-endpoint=<<graphql-endpoint>>`

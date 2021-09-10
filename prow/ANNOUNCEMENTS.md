@@ -169,11 +169,6 @@ state and no claims of backwards compatibility are made for any external API.
 Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
- - *September 10th, 20201* The ProwJob [CRD manifest](config/prow/cluster/prowjob_customresourcedefinition.yaml)
-                           has been extended to specify a schema. Unfortunately, this results in a huge manifest which
-                           in turn makes the standard `kubectl apply` fail, as the last-applied annotation it generates
-                           exceeds the maximum annotation size. If you are using Kubernetes 1.18 or newer, you can add
-                           the `--server-side=true` argument to work around this. If not, you can use a [schemelass manifest](config/prow/cluster/prowjob_customresourcedefinition_schemaless.yaml)
  - *April 16th, 2021* Flagutil remove default value for `--github-token-path`.
  - *April 15th, 2021* Sinker requires --dry-run=false (default is true) to function correctly in production.
  - *April 14th, 2021* Deck remove default value for `--cookie-secret-file`.
