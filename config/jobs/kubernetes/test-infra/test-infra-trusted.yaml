@@ -203,6 +203,16 @@ postsubmits:
       - image: gcr.io/k8s-testimages/bazelbuild:v20210806-7bef894-test-infra
         command:
         - prow/push.sh
+      tolerations:
+      - key: "highcpu"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"
+      nodeSelector:
+        highcpu: "true"
+      resources:
+        requests:
+          cpu: "15"
     annotations:
       testgrid-dashboards: sig-testing-prow
       testgrid-tab-name: push-prow
