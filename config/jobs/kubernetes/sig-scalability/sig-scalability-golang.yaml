@@ -34,7 +34,7 @@ periodics:
     testgrid-tab-name: build-and-push-k8s-at-golang-tip
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20210709-5168b64
+    - image: gcr.io/k8s-testimages/bootstrap:v20210910-5bce0be
       command:
       - runner.sh
       - /workspace/scenarios/execute.py
