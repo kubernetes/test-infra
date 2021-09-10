@@ -21,7 +21,7 @@ presubmits:
       - name: main
         command:
         - make
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210902-e4567b8-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210910-95bedefd27-master
         args:
         - verify
         env:
