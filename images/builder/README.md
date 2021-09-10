@@ -1,4 +1,4 @@
-# GCB Builder
+# image-builder
 
 This builder is sugar on top of `gcloud builds submit`. It offers the following features:
 
