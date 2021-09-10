@@ -245,7 +245,7 @@ func (bucket blobStorageBucket) listBuildIDs(ctx context.Context, root string) (
 			if err == nil {
 				ids = append(ids, i)
 			} else {
-				logrus.WithField("gcs-path", dir).Warningf("unrecognized directory name (expected int64): %s", leaf)
+				logrus.WithFields(logrus.Fields{"gcs-path": dir, "dir-name": leaf}).Debug("Unrecognized directory name (expected int64)")
 			}
 		}
 		if listErr != nil {
