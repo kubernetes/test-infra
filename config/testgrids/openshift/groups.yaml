@@ -2,6 +2,7 @@ dashboard_groups:
 - dashboard_names:
   - redhat-assisted-installer
   - redhat-openshift-informing
+  - redhat-openshift-ocp-release-3.11-informing
   - redhat-openshift-ocp-release-4.1-blocking
   - redhat-openshift-ocp-release-4.1-informing
   - redhat-openshift-ocp-release-4.10-blocking
