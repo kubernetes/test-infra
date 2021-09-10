@@ -180,7 +180,19 @@ gen-prowjob-crd(){
   $controller_gen crd:preserveUnknownFields=false,crdVersions=v1 paths=./prow/apis/prowjobs/v1 output:stdout \
     |sed '/^$/d' \
     |sed '/^  annotations.*/a  \    api-approved.kubernetes.io: https://github.com/kubernetes/test-infra/pull/8669' \
-    > ./config/prow/cluster/prowjob_customresourcedefinition.yaml
+    |sed '/^          status:/r'<(cat<<EOF
+            anyOf:
+            - not:
+                properties:
+                  state:
+                    enum:
+                    - "success"
+                    - "failure"
+                    - "error"
+            - required:
+              - completionTime
+EOF
+    ) > ./config/prow/cluster/prowjob_customresourcedefinition.yaml
   copyfiles "./config/prow/cluster" "prowjob_customresourcedefinition.yaml"
   unset HOME
 }

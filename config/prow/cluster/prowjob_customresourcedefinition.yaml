@@ -20019,6 +20019,16 @@ spec:
                 type: string
             type: object
           status:
+            anyOf:
+            - not:
+                properties:
+                  state:
+                    enum:
+                    - "success"
+                    - "failure"
+                    - "error"
+            - required:
+              - completionTime
             description: ProwJobStatus provides runtime metadata, such as when it
               finished, whether it is running, etc.
             properties:
