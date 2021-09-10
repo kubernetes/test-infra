@@ -66,4 +66,4 @@ spec:
           secretName: hmac-token
       - name: github-token
         secret:
-          secretName: k8s-infra-cherrypicker-robot-github-token
+          secretName: k8s-infra-cherrypick-robot-github-token
