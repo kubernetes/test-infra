@@ -435,7 +435,7 @@ postsubmits:
     run_if_changed: '^(images/kubekins-e2e|kubetest|boskos)/'
     annotations:
       testgrid-dashboards: "sig-testing-images"
-      testgrid-tab-name: "kubekins-e2e"
+      testgrid-tab-name: kubekins-e2e-deprecated
       testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
       testgrid-num-failures-to-alert: '1'
       description: builds and pushes the kubekins-e2e image
