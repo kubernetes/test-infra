@@ -36,6 +36,9 @@ def prow_image(
         app_name = "app",
         build_arm64 = False,
         build_ppc64le = False,
+        symlinks_default = None,
+        symlinks_arm64 = None,
+        symlinks_ppc64le = None,
         **kwargs):
     go_image(
         name = app_name,
@@ -51,6 +54,7 @@ def prow_image(
         name = name,
         base = ":" + app_name,
         stamp = stamp,
+        symlinks = symlinks_default,
         **kwargs
     )
 
@@ -70,6 +74,7 @@ def prow_image(
             base = ":%s-arm64" % app_name,
             architecture = "arm64",
             stamp = stamp,
+            symlinks = symlinks_arm64,
             **kwargs
         )
 
@@ -89,6 +94,7 @@ def prow_image(
             base = ":%s-ppc64le" % app_name,
             architecture = "ppc64le",
             stamp = stamp,
+            symlinks = symlinks_ppc64le,
             **kwargs
         )
 

@@ -31,7 +31,9 @@ prow_image(
     build_arm64 = True,
     build_ppc64le = True,
     component = NAME,
-    symlinks = {"/sidecar": "/app/prow/cmd/sidecar/app.binary"},
+    symlinks_arm64 = {"/sidecar": "/app/prow/cmd/sidecar/app-arm64.binary"},
+    symlinks_default = {"/sidecar": "/app/prow/cmd/sidecar/app.binary"},
+    symlinks_ppc64le = {"/sidecar": "/app/prow/cmd/sidecar/app-ppc64le.binary"},
     visibility = ["//visibility:public"],
 )
 
