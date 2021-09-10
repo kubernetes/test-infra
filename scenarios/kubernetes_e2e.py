@@ -113,7 +113,7 @@ def check_env(env, *cmd):
 
 def kubekins(tag):
     """Return full path to kubekins-e2e:tag."""
-    return 'gcr.io/k8s-testimages/kubekins-e2e:%s' % tag
+    return 'gcr.io/k8s-staging-test-infra/kubekins-e2e:%s' % tag
 
 def parse_env(env):
     """Returns (FOO, BAR=MORE) for FOO=BAR=MORE."""

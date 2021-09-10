@@ -430,7 +430,7 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - images/gcloud/
-  - name: post-test-infra-push-kubekins-e2e
+  - name: post-test-infra-push-kubekins-e2e-deprecated
     cluster: test-infra-trusted
     run_if_changed: '^(images/kubekins-e2e|kubetest|boskos)/'
     annotations:
