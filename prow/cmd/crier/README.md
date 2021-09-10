@@ -34,6 +34,8 @@ You need to specify following labels in order for pubsub reporter to report your
 | `"prow.k8s.io/pubsub.topic"`   | The [topic](https://cloud.google.com/pubsub/docs/publisher) of your pubsub message                                                        |
 | `"prow.k8s.io/pubsub.runID"`   | A user assigned job id. It's tied to the prowjob, serves as a name tag and help user to differentiate results in multiple pubsub messages |
 
+The service account used by crier will need to have `pubsub.topics.publish` permission in the project where pubsub channel lives, e.g. by assigning the `roles/pubsub.publisher` IAM role
+
 Pubsub reporter will report whenever prowjob has a state transition.
 
 You can check the reported result by [list the pubsub topic](https://cloud.google.com/sdk/gcloud/reference/pubsub/topics/list).
