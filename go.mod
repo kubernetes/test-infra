@@ -24,7 +24,7 @@ replace (
 )
 
 require (
-	cloud.google.com/go v0.81.0
+	cloud.google.com/go v0.66.0
 	cloud.google.com/go/pubsub v1.4.0
 	cloud.google.com/go/storage v1.12.0
 	github.com/Azure/azure-sdk-for-go v42.3.0+incompatible
@@ -51,9 +51,9 @@ require (
 	github.com/go-openapi/spec v0.19.6
 	github.com/go-test/deep v1.0.7
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
-	github.com/golang/mock v1.5.0
+	github.com/golang/mock v1.4.4
 	github.com/gomodule/redigo v1.8.5
-	github.com/google/go-cmp v0.5.6
+	github.com/google/go-cmp v0.5.5
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/gofuzz v1.2.1-0.20210504230335-f78f29fc09ea
 	github.com/google/uuid v1.2.0
@@ -67,7 +67,7 @@ require (
 	github.com/jinzhu/gorm v1.9.12
 	github.com/klauspost/pgzip v1.2.1
 	github.com/mattn/go-zglob v0.0.2
-	github.com/pelletier/go-toml v1.9.3
+	github.com/pelletier/go-toml v1.8.0
 	github.com/peterbourgon/diskv v2.0.1+incompatible
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.11.0
@@ -76,35 +76,34 @@ require (
 	github.com/satori/go.uuid v1.2.0
 	github.com/shurcooL/githubv4 v0.0.0-20210725200734-83ba7b4c9228
 	github.com/sirupsen/logrus v1.8.1
-	github.com/spf13/cobra v1.2.1
+	github.com/spf13/cobra v1.1.3
 	github.com/spf13/pflag v1.0.5
-	github.com/tektoncd/pipeline v0.14.1-0.20200710073957-5eeb17f81999
+	github.com/tektoncd/pipeline v0.13.1-0.20200625065359-44f22a067b75
 	go.uber.org/zap v1.17.0
 	go4.org v0.0.0-20201209231011-d4a079459e60
 	gocloud.dev v0.19.0
 	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
-	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616
+	golang.org/x/lint v0.0.0-20200302205851-738671d3881b
 	golang.org/x/net v0.0.0-20210428140749-89ef3d95e781
-	golang.org/x/oauth2 v0.0.0-20210402161424-2e8d93401602
-	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
+	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43
+	golang.org/x/sync v0.0.0-20201207232520-09787c993a3a
 	golang.org/x/time v0.0.0-20210220033141-f8bda1e9f3ba
-	golang.org/x/tools v0.1.5
-	google.golang.org/api v0.44.0
-	google.golang.org/genproto v0.0.0-20210602131652-f16073e35f0c
+	golang.org/x/tools v0.1.0
+	google.golang.org/api v0.32.0
+	google.golang.org/genproto v0.0.0-20201110150050-8816d57aaa9a
 	gopkg.in/fsnotify.v1 v1.4.7
 	gopkg.in/robfig/cron.v2 v2.0.0-20150107220207-be2e0b0deed5
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
-	k8s.io/api v0.21.3
-	k8s.io/apimachinery v0.21.3
+	k8s.io/api v0.21.1
+	k8s.io/apimachinery v0.21.1
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
-	k8s.io/code-generator v0.21.3
+	k8s.io/code-generator v0.21.1
 	k8s.io/klog v1.0.0
 	k8s.io/utils v0.0.0-20210527160623-6fdb442a123b
 	knative.dev/pkg v0.0.0-20200711004937-22502028e31a
 	mvdan.cc/xurls/v2 v2.0.0
 	sigs.k8s.io/boskos v0.0.0-20210730172138-093b54882439
 	sigs.k8s.io/controller-runtime v0.9.0
-	sigs.k8s.io/controller-tools v0.6.3-0.20210827222652-7b3a8699fa04
 	sigs.k8s.io/yaml v1.2.0
 )
 

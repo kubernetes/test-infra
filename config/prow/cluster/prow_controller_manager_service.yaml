@@ -23,6 +23,5 @@ spec:
   ports:
     - name: metrics
       port: 9090
-      protocol: TCP
   selector:
     app: prow-controller-manager

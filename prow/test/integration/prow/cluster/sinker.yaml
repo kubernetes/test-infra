@@ -106,7 +106,6 @@ spec:
   ports:
     - name: metrics
       port: 9090
-      protocol: TCP
   selector:
     app: sinker
 ---
