@@ -87,3 +87,22 @@ presubmits:
       testgrid-dashboards: provider-openstack-openstack-csi-cinder
       testgrid-tab-name: presubmit-sanity-test
       description: Run cloud-provider-openstack csi sanity tests for cinder-csi-plugin
+
+  - name: openstack-cloud-csi-manila-sanity-test
+    always_run: false
+    run_if_changed: '^(pkg\/csi\/manila\/|cmd\/manila-csi-plugin\/|tests\/sanity\/manila\/)'
+    decorate: true
+    branches:
+      - ^master$
+    path_alias: "k8s.io/cloud-provider-openstack"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210902-e4567b8-master
+        command:
+        - make
+        args:
+        - test-manila-csi-sanity
+    annotations:
+      testgrid-dashboards: provider-openstack-manila-csi-plugin
+      testgrid-tab-name: presubmit-sanity-test
+      description: Run cloud-provider-openstack csi sanity tests for manila-csi-plugin
