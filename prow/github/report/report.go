@@ -22,11 +22,13 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 	"text/template"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
 )
@@ -44,6 +46,8 @@ type GitHubClient interface {
 	CreateCommentWithContext(ctx context.Context, org, repo string, number int, comment string) error
 	DeleteCommentWithContext(ctx context.Context, org, repo string, ID int) error
 	EditCommentWithContext(ctx context.Context, org, repo string, ID int, comment string) error
+	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
+	GetRef(org, repo, ref string) (string, error)
 }
 
 // prowjobStateToGitHubStatus maps prowjob status to github states.
@@ -114,7 +118,8 @@ func ShouldReport(pj prowapi.ProwJob, validTypes []prowapi.ProwJobType) bool {
 
 // Report is creating/updating/removing reports in GitHub based on the state of
 // the provided ProwJob.
-func Report(ctx context.Context, ghc GitHubClient, reportTemplate *template.Template, pj prowapi.ProwJob, validTypes []prowapi.ProwJobType) error {
+func Report(ctx context.Context, cfg *config.Config, gitClient git.ClientFactory, ghc GitHubClient,
+	reportTemplate *template.Template, pj prowapi.ProwJob, validTypes []prowapi.ProwJobType) error {
 	if ghc == nil {
 		return fmt.Errorf("trying to report pj %s, but found empty github client", pj.ObjectMeta.Name)
 	}
@@ -143,6 +148,22 @@ func Report(ctx context.Context, ghc GitHubClient, reportTemplate *template.Temp
 		return nil
 	}
 
+	var presubmit *config.Presubmit = nil
+
+	if pj.Spec.Type == prowapi.PresubmitJob {
+		prRefGetter := config.NewRefGetterForGitHubPullRequest(ghc, pj.Spec.Refs.Org, pj.Spec.Refs.Repo, pj.Spec.Refs.Pulls[0].Number)
+		prPresubmits, err := cfg.GetPresubmits(gitClient, pj.Spec.Refs.Org+"/"+pj.Spec.Refs.Repo, prRefGetter.BaseSHA, prRefGetter.HeadSHA)
+		if err != nil {
+			return fmt.Errorf("failed to get Presubmits for pull request %s/%s#%d: %v", pj.Spec.Refs.Org, pj.Spec.Refs.Repo, pj.Spec.Refs.Pulls[0].Number, err)
+		}
+		for index := range prPresubmits {
+			if prPresubmits[index].Context == pj.Spec.Context {
+				presubmit = &(prPresubmits[index])
+				break
+			}
+		}
+	}
+
 	ics, err := ghc.ListIssueCommentsWithContext(ctx, refs.Org, refs.Repo, refs.Pulls[0].Number)
 	if err != nil {
 		return fmt.Errorf("error listing comments: %v", err)
@@ -151,7 +172,7 @@ func Report(ctx context.Context, ghc GitHubClient, reportTemplate *template.Temp
 	if err != nil {
 		return fmt.Errorf("error getting bot name checker: %w", err)
 	}
-	deletes, entries, updateID := parseIssueComments(pj, botNameChecker, ics)
+	deletes, entries, updateID := parseIssueComments(pj, presubmit, botNameChecker, ics)
 	for _, delete := range deletes {
 		if err := ghc.DeleteCommentWithContext(ctx, refs.Org, refs.Repo, delete); err != nil {
 			return fmt.Errorf("error deleting comment: %v", err)
@@ -179,7 +200,7 @@ func Report(ctx context.Context, ghc GitHubClient, reportTemplate *template.Temp
 // entries, and the ID of the comment to update. If there are no table entries
 // then don't make a new comment. Otherwise, if the comment to update is 0,
 // create a new comment.
-func parseIssueComments(pj prowapi.ProwJob, isBot func(string) bool, ics []github.IssueComment) ([]int, []string, int) {
+func parseIssueComments(pj prowapi.ProwJob, presubmit *config.Presubmit, isBot func(string) bool, ics []github.IssueComment) ([]int, []string, int) {
 	var delete []int
 	var previousComments []int
 	var latestComment int
@@ -238,7 +259,7 @@ func parseIssueComments(pj prowapi.ProwJob, isBot func(string) bool, ics []githu
 	}
 	var createNewComment bool
 	if string(pj.Status.State) == github.StatusFailure {
-		newEntries = append(newEntries, createEntry(pj))
+		newEntries = append(newEntries, createEntry(pj, presubmit))
 		createNewComment = true
 	}
 	delete = append(delete, previousComments...)
@@ -249,11 +270,18 @@ func parseIssueComments(pj prowapi.ProwJob, isBot func(string) bool, ics []githu
 	return delete, newEntries, latestComment
 }
 
-func createEntry(pj prowapi.ProwJob) string {
+func createEntry(pj prowapi.ProwJob, presubmit *config.Presubmit) string {
+	required := strconv.FormatBool(true)
+
+	if pj.Spec.Type == prowapi.PresubmitJob && presubmit != nil {
+		required = strconv.FormatBool(!presubmit.Optional)
+	}
+
 	return strings.Join([]string{
 		pj.Spec.Context,
 		pj.Spec.Refs.Pulls[0].SHA,
 		fmt.Sprintf("[link](%s)", pj.Status.URL),
+		required,
 		fmt.Sprintf("`%s`", pj.Spec.RerunCommand),
 	}, " | ")
 }
@@ -275,8 +303,8 @@ func createComment(reportTemplate *template.Template, pj prowapi.ProwJob, entrie
 	lines := []string{
 		fmt.Sprintf("@%s: The following test%s **failed**, say `/retest` to rerun all failed tests or `/retest-required` to rerun all mandatory failed tests:", pj.Spec.Refs.Pulls[0].Author, plural),
 		"",
-		"Test name | Commit | Details | Rerun command",
-		"--- | --- | --- | ---",
+		"Test name | Commit | Details | Required | Rerun command",
+		"--- | --- | --- | --- | ---",
 	}
 	lines = append(lines, entries...)
 	if reportTemplate != nil {
