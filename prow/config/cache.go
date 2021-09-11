@@ -17,7 +17,9 @@ limitations under the License.
 package config
 
 import (
+	"encoding/json"
 	"fmt"
+	"sort"
 
 	lru "github.com/hashicorp/golang-lru"
 	"k8s.io/test-infra/prow/git/v2"
@@ -106,59 +108,61 @@ func NewProwYAMLCache(size int) (*ProwYAMLCache, error) {
 //
 // Users should take care to ensure that headSHAs remains stable (order
 // matters).
-type CacheKey struct {
-	identifier string
-	baseSHA    string
-	headSHAs   []string
+type CacheKeyParts struct {
+	Identifier string   `json:"identifier"`
+	BaseSHA    string   `json:"baseSHA"`
+	HeadSHAs   []string `json:"headSHAs"`
 }
 
-// This implements the fmt.Stringer interface for CacheKey.
-func (k CacheKey) String() string {
-	s := "identifier:" + k.identifier
-	s += ",baseSHA:" + k.baseSHA
-	for _, headSHA := range k.headSHAs {
-		s += ",headSHA:" + headSHA
-	}
+type CacheKey string
 
-	return s
-}
-
-// MakeCacheKey constructs a CacheKey type from uniquely-identifying
+// MakeCacheKeyParts constructs a CacheKeyParts struct from uniquely-identifying
 // information. The only requirement is that we take all of the stringlike
-// parameters and concatenate them together to form a UUID. However to make
-// debugging easier, we
-func MakeCacheKey(
+// parameters and concatenate them together to form a UUID.
+func MakeCacheKeyParts(
 	identifier string,
 	baseSHAGetter RefGetter,
-	headSHAGetters ...RefGetter) (CacheKey, error) {
-	// Initialize empty key.
-	key := CacheKey{}
+	headSHAGetters ...RefGetter) (CacheKeyParts, error) {
+	// Initialize empty key parts.
+	keyParts := CacheKeyParts{}
 
 	// Append "identifier" string information.
 	if identifier == "" {
-		return CacheKey{}, fmt.Errorf("identifier cannot be empty")
+		return CacheKeyParts{}, fmt.Errorf("identifier cannot be empty")
 	}
-	key.identifier = identifier
+	keyParts.Identifier = identifier
 
 	// Append "baseSHA" string information.
 	baseSHA, err := baseSHAGetter()
 	if err != nil {
-		return CacheKey{}, fmt.Errorf("failed to get baseSHA: %v", err)
+		return CacheKeyParts{}, fmt.Errorf("failed to get baseSHA: %v", err)
 	}
-	key.baseSHA = baseSHA
+	keyParts.BaseSHA = baseSHA
 
 	// Append "headSHAs" string information.
 	var headSHAs []string
 	for _, headSHAGetter := range headSHAGetters {
 		headSHA, err := headSHAGetter()
 		if err != nil {
-			return CacheKey{}, fmt.Errorf("failed to get headRef: %v", err)
+			return CacheKeyParts{}, fmt.Errorf("failed to get headRef: %v", err)
 		}
 		headSHAs = append(headSHAs, headSHA)
 	}
-	key.headSHAs = headSHAs
 
-	return key, err
+	// For determinism, sort the headSHAs, in case the caller has not sorted
+	// them already.
+	sort.Strings(headSHAs)
+	keyParts.HeadSHAs = headSHAs
+
+	return keyParts, nil
+}
+
+func MakeCacheKey(kp CacheKeyParts) (CacheKey, error) {
+	// Convert to JSON string. This is a bit "heavy" but as long as we get a
+	// deterministic string it doesn't matter.
+	data, err := json.Marshal(kp)
+
+	return CacheKey(data), err
 }
 
 // valConstructor is used to construct a value. The raw values of a cache are
@@ -169,7 +173,7 @@ type valConstructor func() (interface{}, error)
 // keyConstructor is used only when we need to perform a lookup inside a cache
 // (if it is available), because all values stored in the cache are paired with
 // a unique lookup key.
-type keyConstructor func() (fmt.Stringer, error)
+type keyConstructor func() (CacheKey, error)
 
 // GetPresubmitsFromCache uses ProwYAMLCache to first try to perform a lookup of
 // previously-calculated []Presubmit objects. The 'vg' function is taken
@@ -184,8 +188,13 @@ func (p *ProwYAMLCache) GetPresubmitsFromCache(
 	baseSHAGetter RefGetter,
 	headSHAGetters ...RefGetter) ([]Presubmit, bool, bool, error) {
 
-	keyConstructor := func() (fmt.Stringer, error) {
-		return MakeCacheKey(identifier, baseSHAGetter, headSHAGetters...)
+	keyConstructor := func() (CacheKey, error) {
+		kp, err := MakeCacheKeyParts(identifier, baseSHAGetter, headSHAGetters...)
+		if err != nil {
+			return CacheKey(""), err
+		}
+
+		return MakeCacheKey(kp)
 	}
 
 	valConstructor := func() (interface{}, error) {
@@ -215,11 +224,12 @@ func (p *ProwYAMLCache) GetPresubmitsFromCache(
 	if err != nil {
 		return nil, false, false, err
 	}
-	evicted = p.presubmits.Add(key.String(), presubmits)
+	evicted = p.presubmits.Add(key, presubmits)
 
 	return presubmits, false, evicted, nil
 }
 
+/*
 // GetPostsubmitsFromCache is virtually identical to GetPresubmitsFromCache. The
 // only real difference is in the keyConstructor (postsubmits don't consider
 // headSHAGetters).
@@ -258,6 +268,7 @@ func (p *ProwYAMLCache) GetPostsubmitsFromCache(
 
 	return postsubmits, false, evicted, nil
 }
+*/
 
 // GetFromCache tries to use a cache if it is available to get a Value. It is
 // assumed that Value is expensive to construct from scratch, which is the
@@ -289,7 +300,7 @@ func GetFromCache(
 	}
 
 	// Cache lookup.
-	valFound, ok := cache.Get(key.String())
+	valFound, ok := cache.Get(key)
 
 	// Cache hit.
 	if ok {
@@ -304,7 +315,7 @@ func GetFromCache(
 	}
 
 	// Add our constructed value to the cache.
-	evicted := cache.Add(key.String(), valConstructed)
+	evicted := cache.Add(key, valConstructed)
 
 	return valConstructed, false, evicted, nil
 }

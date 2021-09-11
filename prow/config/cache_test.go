@@ -18,9 +18,11 @@ package config
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 
 	lru "github.com/hashicorp/golang-lru"
+	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/test-infra/prow/git/v2"
 )
 
@@ -45,7 +47,7 @@ func TestNewProwYAMLCache(t *testing.T) {
 	}
 
 	// Valid size arguments.
-	valids := []int{1, 5}
+	valids := []int{1, 5, 1000}
 	for _, valid := range valids {
 
 		prowYAMLCache, err := NewProwYAMLCache(valid)
@@ -72,8 +74,8 @@ func badSHAGetter() (string, error) {
 
 func TestMakeCacheKey(t *testing.T) {
 	type expected struct {
-		cacheKey CacheKey
-		err      string
+		cacheKeyParts CacheKeyParts
+		err           string
 	}
 
 	for _, tc := range []struct {
@@ -91,10 +93,10 @@ func TestMakeCacheKey(t *testing.T) {
 				goodSHAGetter("abcd"),
 				goodSHAGetter("ef01")},
 			expected: expected{
-				CacheKey{
-					identifier: "foo/bar",
-					baseSHA:    "ba5e",
-					headSHAs:   []string{"abcd", "ef01"},
+				CacheKeyParts{
+					Identifier: "foo/bar",
+					BaseSHA:    "ba5e",
+					HeadSHAs:   []string{"abcd", "ef01"},
 				},
 				"",
 			},
@@ -105,10 +107,10 @@ func TestMakeCacheKey(t *testing.T) {
 			baseSHAGetter:  goodSHAGetter("ba5e"),
 			headSHAGetters: []RefGetter{},
 			expected: expected{
-				CacheKey{
-					identifier: "foo/bar",
-					baseSHA:    "ba5e",
-					headSHAs:   []string{},
+				CacheKeyParts{
+					Identifier: "foo/bar",
+					BaseSHA:    "ba5e",
+					HeadSHAs:   nil,
 				},
 				"",
 			},
@@ -121,7 +123,7 @@ func TestMakeCacheKey(t *testing.T) {
 				goodSHAGetter("abcd"),
 				goodSHAGetter("ef01")},
 			expected: expected{
-				CacheKey{},
+				CacheKeyParts{},
 				"identifier cannot be empty",
 			},
 		},
@@ -133,7 +135,7 @@ func TestMakeCacheKey(t *testing.T) {
 				goodSHAGetter("abcd"),
 				goodSHAGetter("ef01")},
 			expected: expected{
-				CacheKey{},
+				CacheKeyParts{},
 				"failed to get baseSHA: badSHAGetter",
 			},
 		},
@@ -145,17 +147,20 @@ func TestMakeCacheKey(t *testing.T) {
 				goodSHAGetter("abcd"),
 				badSHAGetter},
 			expected: expected{
-				CacheKey{},
+				CacheKeyParts{},
 				"failed to get headRef: badSHAGetter",
 			},
 		},
 	} {
 		t.Run(tc.name, func(t1 *testing.T) {
-			cacheKey, err := MakeCacheKey(tc.identifier, tc.baseSHAGetter, tc.headSHAGetters...)
+			cacheKeyParts, err := MakeCacheKeyParts(tc.identifier, tc.baseSHAGetter, tc.headSHAGetters...)
 
 			if tc.expected.err == "" {
 				if err != nil {
 					t.Errorf("Expected error 'nil' got '%v'", err.Error())
+				}
+				if !reflect.DeepEqual(tc.expected.cacheKeyParts, cacheKeyParts) {
+					t.Errorf("CacheKeyParts do not match:\n%s", diff.ObjectReflectDiff(tc.expected.cacheKeyParts, cacheKeyParts))
 				}
 			} else {
 				if err == nil {
@@ -166,49 +171,22 @@ func TestMakeCacheKey(t *testing.T) {
 					t.Errorf("Expected error '%v', got '%v'", tc.expected.err, err.Error())
 				}
 			}
-
-			if tc.expected.cacheKey.identifier != cacheKey.identifier {
-				t.Errorf("Expected CacheKey identifier '%v', got '%v'", tc.expected.cacheKey.identifier, cacheKey.identifier)
-			}
-
-			if tc.expected.cacheKey.baseSHA != cacheKey.baseSHA {
-				t.Errorf("Expected CacheKey baseSHA '%v', got '%v'", tc.expected.cacheKey.baseSHA, cacheKey.baseSHA)
-			}
-
-			if len(tc.expected.cacheKey.headSHAs) != len(cacheKey.headSHAs) {
-				t.Errorf("Expected CacheKey length '%d', got '%d'", len(tc.expected.cacheKey.headSHAs), len(cacheKey.headSHAs))
-			}
-
-			if len(tc.expected.cacheKey.headSHAs) > 0 {
-				for i := range tc.expected.cacheKey.headSHAs {
-					if tc.expected.cacheKey.headSHAs[i] != cacheKey.headSHAs[i] {
-						t.Errorf("Expected CacheKey headSHAs[%d] to be '%v', got '%v'", i, tc.expected.cacheKey.headSHAs[i], cacheKey.headSHAs[i])
-					}
-				}
-			}
-
 		})
 	}
 }
 
-type simpleKey string
-
-func (k simpleKey) String() string {
-	return string(k)
-}
-
 func TestGetFromCache(t *testing.T) {
 	keyConstructorCalls := 0
-	goodKeyConstructor := func(key string) func() (fmt.Stringer, error) {
-		return func() (fmt.Stringer, error) {
+	goodKeyConstructor := func(key string) func() (CacheKey, error) {
+		return func() (CacheKey, error) {
 			keyConstructorCalls++
-			return simpleKey("(key)" + key), nil
+			return CacheKey("(key)" + key), nil
 		}
 	}
-	badKeyConstructor := func(key string) func() (fmt.Stringer, error) {
-		return func() (fmt.Stringer, error) {
+	badKeyConstructor := func(key string) func() (CacheKey, error) {
+		return func() (CacheKey, error) {
 			keyConstructorCalls++
-			return simpleKey(""), fmt.Errorf("could not construct key")
+			return CacheKey(""), fmt.Errorf("could not construct key")
 		}
 	}
 
@@ -247,7 +225,7 @@ func TestGetFromCache(t *testing.T) {
 	for _, tc := range []struct {
 		name              string
 		cache             *lru.Cache
-		cacheInitialState map[string]string
+		cacheInitialState map[CacheKey]string
 		keyConstructor    keyConstructor
 		valConstructor    valConstructor
 		expected          expected
@@ -289,7 +267,7 @@ func TestGetFromCache(t *testing.T) {
 		{
 			name:  "CacheMissWithoutValueEviction",
 			cache: simpleCache,
-			cacheInitialState: map[string]string{
+			cacheInitialState: map[CacheKey]string{
 				"(key)foo": "(val)foo",
 			},
 			keyConstructor: goodKeyConstructor("bar"),
@@ -307,7 +285,7 @@ func TestGetFromCache(t *testing.T) {
 		{
 			name:  "CacheMissWithValueEviction",
 			cache: simpleCache,
-			cacheInitialState: map[string]string{
+			cacheInitialState: map[CacheKey]string{
 				"(key)foo": "(val)foo",
 				"(key)bar": "(val)bar",
 			},
@@ -328,7 +306,7 @@ func TestGetFromCache(t *testing.T) {
 		{
 			name:  "CacheHit",
 			cache: simpleCache,
-			cacheInitialState: map[string]string{
+			cacheInitialState: map[CacheKey]string{
 				"(key)foo": "(val)foo",
 				"(key)bar": "(val)bar",
 			},
@@ -457,7 +435,7 @@ func TestGetFromCache(t *testing.T) {
 }
 
 func TestGetPresubmitsFromCache(t *testing.T) {
-	fakePresubmitsMap := make(map[string][]Presubmit)
+	fakePresubmitsMap := make(map[CacheKey][]Presubmit)
 	// This mocks GetPresubmits. Instead of using the git.ClientFactory
 	// (and other operations), we just use a simple map to get the
 	// []Presubmit value we want. For simplicity we just reuse
@@ -467,43 +445,47 @@ func TestGetPresubmitsFromCache(t *testing.T) {
 	// test.
 	goodValConstructor := func(gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Presubmit, error) {
 
-		key, err := MakeCacheKey(identifier, baseSHAGetter, headSHAGetters...)
+		keyParts, err := MakeCacheKeyParts(identifier, baseSHAGetter, headSHAGetters...)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		val, ok := fakePresubmitsMap[key.String()]
+		key, err := MakeCacheKey(keyParts)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		val, ok := fakePresubmitsMap[key]
 		if ok {
 			return val, nil
 		}
 
 		return nil, fmt.Errorf("unable to construct []Presubmit value")
 	}
-	fakePresubmits := []CacheKey{
+	fakePresubmits := []CacheKeyParts{
 		{
-			identifier: "foo/bar",
-			baseSHA:    "ba5e",
-			headSHAs:   []string{"abcd", "ef01"},
+			Identifier: "foo/bar",
+			BaseSHA:    "ba5e",
+			HeadSHAs:   []string{"abcd", "ef01"},
 		},
 	}
 	// Populate config's Presubmits.
-	fakePresubmitsPopulator := func(fakeItems []CacheKey, fakeItemsMap map[string][]Presubmit) {
-
-		for _, fakeItem := range fakeItems {
-			// To make it easier to compare Presubmit values, we only set the
-			// Name field and only compare this field. We also only create a
-			// single Presubmit (singleton slice), again for simplicity. Lastly
-			// we also set the Name field to the same value as the "key", again
-			// for simplicity.
-			fakeItemsMap[fakeItem.String()] = []Presubmit{
-				{
-					JobBase: JobBase{Name: fakeItem.String()},
-				},
-			}
+	for _, fakePresubmit := range fakePresubmits {
+		// To make it easier to compare Presubmit values, we only set the
+		// Name field and only compare this field. We also only create a
+		// single Presubmit (singleton slice), again for simplicity. Lastly
+		// we also set the Name field to the same value as the "key", again
+		// for simplicity.
+		fakePresubmitKey, err := MakeCacheKey(fakePresubmit)
+		if err != nil {
+			t.Fatal(err)
+		}
+		fakePresubmitsMap[fakePresubmitKey] = []Presubmit{
+			{
+				JobBase: JobBase{Name: string(fakePresubmitKey)},
+			},
 		}
 	}
-
-	fakePresubmitsPopulator(fakePresubmits, fakePresubmitsMap)
 
 	badValConstructor := func(gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Presubmit, error) {
 		return nil, fmt.Errorf("unable to construct []Presubmit value")
@@ -524,8 +506,8 @@ func TestGetPresubmitsFromCache(t *testing.T) {
 	for _, tc := range []struct {
 		name           string
 		valConstructor func(git.ClientFactory, string, RefGetter, ...RefGetter) ([]Presubmit, error)
-		// We use a slice of CacheKeys for simplicity.
-		cacheInitialState []CacheKey
+		// We use a slice of CacheKeysParts for simplicity.
+		cacheInitialState []CacheKeyParts
 		cacheCorrupted    bool
 		identifier        string
 		baseSHAGetter     RefGetter
@@ -545,7 +527,7 @@ func TestGetPresubmitsFromCache(t *testing.T) {
 			expected: expected{
 				presubmits: []Presubmit{
 					{
-						JobBase: JobBase{Name: "identifier:foo/bar,baseSHA:ba5e,headSHA:abcd,headSHA:ef01"}},
+						JobBase: JobBase{Name: `{"identifier":"foo/bar","baseSHA":"ba5e","headSHAs":["abcd","ef01"]}`}},
 				},
 				cacheHit: false,
 				evicted:  false,
@@ -557,11 +539,11 @@ func TestGetPresubmitsFromCache(t *testing.T) {
 			// matter because it will never be called.
 			name:           "CacheHit",
 			valConstructor: badValConstructor,
-			cacheInitialState: []CacheKey{
+			cacheInitialState: []CacheKeyParts{
 				{
-					identifier: "foo/bar",
-					baseSHA:    "ba5e",
-					headSHAs:   []string{"abcd", "ef01"},
+					Identifier: "foo/bar",
+					BaseSHA:    "ba5e",
+					HeadSHAs:   []string{"abcd", "ef01"},
 				},
 			},
 			cacheCorrupted: false,
@@ -573,7 +555,7 @@ func TestGetPresubmitsFromCache(t *testing.T) {
 			expected: expected{
 				presubmits: []Presubmit{
 					{
-						JobBase: JobBase{Name: "identifier:foo/bar,baseSHA:ba5e,headSHA:abcd,headSHA:ef01"},
+						JobBase: JobBase{Name: `{"identifier":"foo/bar","baseSHA":"ba5e","headSHAs":["abcd","ef01"]}`},
 					},
 				},
 				cacheHit: true,
@@ -604,11 +586,11 @@ func TestGetPresubmitsFromCache(t *testing.T) {
 			// scratch (because we're solely relying on the cache).
 			name:           "BadValConstructorCacheHit",
 			valConstructor: badValConstructor,
-			cacheInitialState: []CacheKey{
+			cacheInitialState: []CacheKeyParts{
 				{
-					identifier: "foo/bar",
-					baseSHA:    "ba5e",
-					headSHAs:   []string{"abcd", "ef01"},
+					Identifier: "foo/bar",
+					BaseSHA:    "ba5e",
+					HeadSHAs:   []string{"abcd", "ef01"},
 				},
 			},
 			cacheCorrupted: false,
@@ -620,7 +602,7 @@ func TestGetPresubmitsFromCache(t *testing.T) {
 			expected: expected{
 				presubmits: []Presubmit{
 					{
-						JobBase: JobBase{Name: "identifier:foo/bar,baseSHA:ba5e,headSHA:abcd,headSHA:ef01"}},
+						JobBase: JobBase{Name: `{"identifier":"foo/bar","baseSHA":"ba5e","headSHAs":["abcd","ef01"]}`}},
 				},
 				cacheHit: true,
 				evicted:  false,
@@ -633,11 +615,11 @@ func TestGetPresubmitsFromCache(t *testing.T) {
 			// scratch.
 			name:           "GoodValConstructorCorruptedCacheHit",
 			valConstructor: goodValConstructor,
-			cacheInitialState: []CacheKey{
+			cacheInitialState: []CacheKeyParts{
 				{
-					identifier: "foo/bar",
-					baseSHA:    "ba5e",
-					headSHAs:   []string{"abcd", "ef01"},
+					Identifier: "foo/bar",
+					BaseSHA:    "ba5e",
+					HeadSHAs:   []string{"abcd", "ef01"},
 				},
 			},
 			cacheCorrupted: true,
@@ -649,7 +631,7 @@ func TestGetPresubmitsFromCache(t *testing.T) {
 			expected: expected{
 				presubmits: []Presubmit{
 					{
-						JobBase: JobBase{Name: "identifier:foo/bar,baseSHA:ba5e,headSHA:abcd,headSHA:ef01"}},
+						JobBase: JobBase{Name: `{"identifier":"foo/bar","baseSHA":"ba5e","headSHAs":["abcd","ef01"]}`}},
 				},
 				cacheHit: false,
 				evicted:  false,
@@ -663,11 +645,11 @@ func TestGetPresubmitsFromCache(t *testing.T) {
 			// presubmits value.
 			name:           "BadValConstructorCorruptedCacheHit",
 			valConstructor: badValConstructor,
-			cacheInitialState: []CacheKey{
+			cacheInitialState: []CacheKeyParts{
 				{
-					identifier: "foo/bar",
-					baseSHA:    "ba5e",
-					headSHAs:   []string{"abcd", "ef01"},
+					Identifier: "foo/bar",
+					BaseSHA:    "ba5e",
+					HeadSHAs:   []string{"abcd", "ef01"},
 				},
 			},
 			cacheCorrupted: true,
@@ -688,10 +670,14 @@ func TestGetPresubmitsFromCache(t *testing.T) {
 			// Reset test state.
 			prowYAMLCache.presubmits.Purge()
 
-			for _, k := range tc.cacheInitialState {
-				_ = prowYAMLCache.presubmits.Add(k.String(), []Presubmit{
+			for _, kp := range tc.cacheInitialState {
+				k, err := MakeCacheKey(kp)
+				if err != nil {
+					t.Errorf("Expected error 'nil' got '%v'", err.Error())
+				}
+				_ = prowYAMLCache.presubmits.Add(k, []Presubmit{
 					{
-						JobBase: JobBase{Name: k.String()}},
+						JobBase: JobBase{Name: string(k)}},
 				})
 			}
 
@@ -700,8 +686,12 @@ func TestGetPresubmitsFromCache(t *testing.T) {
 			if tc.cacheCorrupted {
 				prowYAMLCache.presubmits.Purge()
 
-				for _, k := range tc.cacheInitialState {
-					_ = prowYAMLCache.presubmits.Add(k.String(), "<wrong-type>")
+				for _, kp := range tc.cacheInitialState {
+					k, err := MakeCacheKey(kp)
+					if err != nil {
+						t.Errorf("Expected error 'nil' got '%v'", err.Error())
+					}
+					_ = prowYAMLCache.presubmits.Add(k, "<wrong-type>")
 				}
 			}
 
@@ -730,265 +720,6 @@ func TestGetPresubmitsFromCache(t *testing.T) {
 			for i := range tc.expected.presubmits {
 				if tc.expected.presubmits[i].Name != presubmits[i].Name {
 					t.Errorf("Expected presubmits[%d].Name to be '%v', got '%v'", i, tc.expected.presubmits[i].Name, presubmits[i].Name)
-				}
-			}
-
-			if tc.expected.cacheHit != cacheHit {
-				t.Errorf("Expected cache hit to be '%t', got '%t'", tc.expected.cacheHit, cacheHit)
-			}
-
-			if tc.expected.evicted != evicted {
-				t.Errorf("Expected evicted to be '%t', got '%t'", tc.expected.evicted, evicted)
-			}
-		})
-	}
-}
-
-// TestGetPostsubmitsFromCache is virtually identical to
-// TestGetPresubmitsFromCache. The main difference is that the headSHAGetters
-// are unused in the test cases.
-func TestGetPostsubmitsFromCache(t *testing.T) {
-	fakePostsubmitsMap := make(map[string][]Postsubmit)
-	goodValConstructor := func(gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Postsubmit, error) {
-
-		key, err := MakeCacheKey(identifier, baseSHAGetter, headSHAGetters...)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		val, ok := fakePostsubmitsMap[key.String()]
-		if ok {
-			return val, nil
-		}
-
-		return nil, fmt.Errorf("unable to construct []Postsubmit value")
-	}
-	fakePostsubmits := []CacheKey{
-		{
-			identifier: "foo/bar",
-			baseSHA:    "ba5e",
-		},
-	}
-	// Populate config's Postsubmits.
-	fakePostsubmitsPopulator := func(fakeItems []CacheKey, fakeItemsMap map[string][]Postsubmit) {
-
-		for _, fakeItem := range fakeItems {
-			fakeItemsMap[fakeItem.String()] = []Postsubmit{
-				{
-					JobBase: JobBase{Name: fakeItem.String()},
-				},
-			}
-		}
-	}
-
-	fakePostsubmitsPopulator(fakePostsubmits, fakePostsubmitsMap)
-
-	badValConstructor := func(gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Postsubmit, error) {
-		return nil, fmt.Errorf("unable to construct []Postsubmit value")
-	}
-
-	prowYAMLCache, err := NewProwYAMLCache(1)
-	if err != nil {
-		t.Fatal("could not initialize prowYAMLCache")
-	}
-
-	type expected struct {
-		postsubmits []Postsubmit
-		cacheHit    bool
-		evicted     bool
-		err         string
-	}
-
-	for _, tc := range []struct {
-		name           string
-		valConstructor func(git.ClientFactory, string, RefGetter, ...RefGetter) ([]Postsubmit, error)
-		// We use a slice of CacheKeys for simplicity.
-		cacheInitialState []CacheKey
-		cacheCorrupted    bool
-		identifier        string
-		baseSHAGetter     RefGetter
-		expected          expected
-	}{
-		{
-			name:              "CacheMiss",
-			valConstructor:    goodValConstructor,
-			cacheInitialState: nil,
-			cacheCorrupted:    false,
-			identifier:        "foo/bar",
-			baseSHAGetter:     goodSHAGetter("ba5e"),
-			expected: expected{
-				postsubmits: []Postsubmit{
-					{
-						JobBase: JobBase{Name: "identifier:foo/bar,baseSHA:ba5e"},
-					},
-				},
-				cacheHit: false,
-				evicted:  false,
-				err:      "",
-			},
-		},
-		{
-			// If we get a cache hit, the value constructor function doesn't
-			// matter because it will never be called.
-			name:           "CacheHit",
-			valConstructor: badValConstructor,
-			cacheInitialState: []CacheKey{
-				{
-					identifier: "foo/bar",
-					baseSHA:    "ba5e",
-				},
-			},
-			cacheCorrupted: false,
-			identifier:     "foo/bar",
-			baseSHAGetter:  goodSHAGetter("ba5e"),
-			expected: expected{
-				postsubmits: []Postsubmit{
-					{
-						JobBase: JobBase{Name: "identifier:foo/bar,baseSHA:ba5e"},
-					},
-				},
-				cacheHit: true,
-				evicted:  false,
-				err:      "",
-			},
-		},
-		{
-			name:              "BadValConstructorCacheMiss",
-			valConstructor:    badValConstructor,
-			cacheInitialState: nil,
-			cacheCorrupted:    false,
-			identifier:        "foo/bar",
-			baseSHAGetter:     goodSHAGetter("ba5e"),
-			expected: expected{
-				postsubmits: nil,
-				cacheHit:    false,
-				evicted:     false,
-				err:         "unable to construct []Postsubmit value",
-			},
-		},
-		{
-			// If we get a cache hit, then it doesn't matter if the state of the
-			// world was such that the value could not have been constructed from
-			// scratch (because we're solely relying on the cache).
-			name:           "BadValConstructorCacheHit",
-			valConstructor: badValConstructor,
-			cacheInitialState: []CacheKey{
-				{
-					identifier: "foo/bar",
-					baseSHA:    "ba5e",
-				},
-			},
-			cacheCorrupted: false,
-			identifier:     "foo/bar",
-			baseSHAGetter:  goodSHAGetter("ba5e"),
-			expected: expected{
-				postsubmits: []Postsubmit{
-					{
-						JobBase: JobBase{Name: "identifier:foo/bar,baseSHA:ba5e"},
-					},
-				},
-				cacheHit: true,
-				evicted:  false,
-				err:      "",
-			},
-		},
-		{
-			// If the cache is corrupted (it holds values of a type that is not
-			// []Postsubmit), then we expect to reconstruct the value from
-			// scratch.
-			name:           "GoodValConstructorCorruptedCacheHit",
-			valConstructor: goodValConstructor,
-			cacheInitialState: []CacheKey{
-				{
-					identifier: "foo/bar",
-					baseSHA:    "ba5e",
-				},
-			},
-			cacheCorrupted: true,
-			identifier:     "foo/bar",
-			baseSHAGetter:  goodSHAGetter("ba5e"),
-			expected: expected{
-				postsubmits: []Postsubmit{
-					{
-						JobBase: JobBase{Name: "identifier:foo/bar,baseSHA:ba5e"},
-					},
-				},
-				cacheHit: false,
-				evicted:  false,
-				err:      "",
-			},
-		},
-		{
-			// If the cache is corrupted (it holds values of a type that is not
-			// []Postsubmit), then we expect to reconstruct the value from
-			// scratch. But a faulty value constructor will result in a "nil"
-			// postsubmits value.
-			name:           "BadValConstructorCorruptedCacheHit",
-			valConstructor: badValConstructor,
-			cacheInitialState: []CacheKey{
-				{
-					identifier: "foo/bar",
-					baseSHA:    "ba5e",
-					headSHAs:   []string{"abcd", "ef01"},
-				},
-			},
-			cacheCorrupted: true,
-			identifier:     "foo/bar",
-			baseSHAGetter:  goodSHAGetter("ba5e"),
-			expected: expected{
-				postsubmits: nil,
-				cacheHit:    false,
-				evicted:     false,
-				err:         "unable to construct []Postsubmit value",
-			},
-		},
-	} {
-		t.Run(tc.name, func(t1 *testing.T) {
-			// Reset test state.
-			prowYAMLCache.postsubmits.Purge()
-
-			for _, k := range tc.cacheInitialState {
-				_ = prowYAMLCache.postsubmits.Add(k.String(), []Postsubmit{
-					{
-						JobBase: JobBase{Name: k.String()},
-					}})
-			}
-
-			// Simulate storing a value of the wrong type in the cache (a string
-			// instead of a []Postsubmit).
-			if tc.cacheCorrupted {
-				prowYAMLCache.postsubmits.Purge()
-
-				for _, k := range tc.cacheInitialState {
-					_ = prowYAMLCache.postsubmits.Add(k.String(), "<wrong-type>")
-				}
-			}
-
-			postsubmits, cacheHit, evicted, err := prowYAMLCache.GetPostsubmitsFromCache(tc.valConstructor, nil, tc.identifier, tc.baseSHAGetter)
-
-			if tc.expected.err == "" {
-				if err != nil {
-					t.Errorf("Expected error 'nil' got '%v'", err.Error())
-				}
-			} else {
-				if err == nil {
-					t.Fatal("Expected non-nil error, got nil")
-				}
-
-				if tc.expected.err != err.Error() {
-					t.Errorf("Expected error '%v', got '%v'", tc.expected.err, err.Error())
-				}
-			}
-
-			// The Postsubmit type is not comparable. So instead of checking the
-			// overall type for equality, we only check the Name field of it,
-			// because it is a simple string type.
-			if len(tc.expected.postsubmits) != len(postsubmits) {
-				t.Fatalf("Expected postsubmits length '%d', got '%d'", len(tc.expected.postsubmits), len(postsubmits))
-			}
-			for i := range tc.expected.postsubmits {
-				if tc.expected.postsubmits[i].Name != postsubmits[i].Name {
-					t.Errorf("Expected postsubmits[%d].Name to be '%v', got '%v'", i, tc.expected.postsubmits[i].Name, postsubmits[i].Name)
 				}
 			}
 
