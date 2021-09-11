@@ -20,10 +20,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/url"
 	"regexp"
 	"sort"
 	"strings"
 	"sync"
+	"time"
 
 	githubql "github.com/shurcooL/githubv4"
 
@@ -232,10 +234,35 @@ func (f *FakeClient) ListIssueComments(owner, repo string, number int) ([]github
 	return f.ListIssueCommentsWithContext(context.Background(), owner, repo, number)
 }
 
+func (f *FakeClient) ListIssueCommentsSince(owner, repo string, number int, since time.Time) ([]github.IssueComment, error) {
+	return f.ListIssueCommentsWithValuesWithContext(context.Background(), url.Values{}, owner, repo, number)
+}
+
 func (f *FakeClient) ListIssueCommentsWithContext(ctx context.Context, owner, repo string, number int) ([]github.IssueComment, error) {
+	return f.ListIssueCommentsWithValuesWithContext(ctx, url.Values{}, owner, repo, number)
+}
+
+func (f *FakeClient) ListIssueCommentsWithValuesWithContext(ctx context.Context, values url.Values, owner, repo string, number int) ([]github.IssueComment, error) {
 	f.lock.RLock()
 	defer f.lock.RUnlock()
-	return append([]github.IssueComment{}, f.IssueComments[number]...), nil
+
+	var comments []github.IssueComment
+	for _, comment := range f.IssueComments[number] {
+		if sinceString, ok := values["since"]; ok && len(sinceString) > 0 {
+			since, err := time.Parse(time.RFC3339, sinceString[0])
+			if err != nil {
+				return nil, err
+			}
+
+			if comment.CreatedAt.Before(since) {
+				continue
+			}
+		}
+
+		comments = append(comments, comment)
+	}
+
+	return append([]github.IssueComment{}, comments...), nil
 }
 
 // ListPullRequestComments returns review comments.

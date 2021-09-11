@@ -253,8 +253,16 @@ func (c *fakeClient) FindIssues(query, sort string, asc bool) ([]github.Issue, e
 }
 
 // Fakes searching for issues comments using the same signature as github.Client
-func (c *fakeClient) ListIssueComments(org, repo string, number int) ([]github.IssueComment, error) {
-	return c.comments[number], nil
+func (c *fakeClient) ListIssueCommentsSince(org, repo string, number int, since time.Time) ([]github.IssueComment, error) {
+	var comments []github.IssueComment
+	for _, comment := range c.comments[number] {
+		if comment.CreatedAt.Before(since) {
+			continue
+		}
+		comments = append(comments, comment)
+	}
+
+	return comments, nil
 }
 
 func TestRun(t *testing.T) {
@@ -410,7 +418,7 @@ func TestRun(t *testing.T) {
 			name:                  "comments ceiling - don't stop when small comments ceiling margin",
 			query:                 fakeTitle,
 			commentsCeiling:       2,
-			commentsCeilingMargin: 5 * time.Minute,
+			commentsCeilingMargin: 5 * time.Minute, // comments are created an hour ago
 			comment:               fakeComment,
 			client: fakeClient{
 				issues: []github.Issue{makeIssue(fakeOrg, fakeRepo, fakePRNumber, fakeTitle)},

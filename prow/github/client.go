@@ -108,7 +108,9 @@ type IssueClient interface {
 	CreateIssue(org, repo, title, body string, milestone int, labels, assignees []string) (int, error)
 	CreateIssueReaction(org, repo string, id int, reaction string) error
 	ListIssueComments(org, repo string, number int) ([]IssueComment, error)
+	ListIssueCommentsSince(org, repo string, number int, since time.Time) ([]IssueComment, error)
 	ListIssueCommentsWithContext(ctx context.Context, org, repo string, number int) ([]IssueComment, error)
+	ListIssueCommentsWithValuesWithContext(ctx context.Context, values url.Values, org, repo string, number int) ([]IssueComment, error)
 	GetIssueLabels(org, repo string, number int) ([]Label, error)
 	ListIssueEvents(org, repo string, num int) ([]ListedIssueEvent, error)
 	AssignIssue(org, repo string, number int, logins []string) error
@@ -1935,14 +1937,10 @@ func (c *client) DeleteStaleCommentsWithContext(ctx context.Context, org, repo s
 //
 // Returns an error any call to GitHub or object marshalling fails.
 func (c *client) readPaginatedResults(path, accept, org string, newObj func() interface{}, accumulate func(interface{})) error {
-	return c.readPaginatedResultsWithContext(context.Background(), path, accept, org, newObj, accumulate)
-}
-
-func (c *client) readPaginatedResultsWithContext(ctx context.Context, path, accept, org string, newObj func() interface{}, accumulate func(interface{})) error {
 	values := url.Values{
 		"per_page": []string{"100"},
 	}
-	return c.readPaginatedResultsWithValuesWithContext(ctx, path, values, accept, org, newObj, accumulate)
+	return c.readPaginatedResultsWithValuesWithContext(context.Background(), path, values, accept, org, newObj, accumulate)
 }
 
 // readPaginatedResultsWithValues is an override that allows control over the query string.
@@ -2014,15 +2012,31 @@ func (c *client) ListIssueComments(org, repo string, number int) ([]IssueComment
 }
 
 func (c *client) ListIssueCommentsWithContext(ctx context.Context, org, repo string, number int) ([]IssueComment, error) {
-	c.log("ListIssueComments", org, repo, number)
+	values := url.Values{
+		"per_page": []string{"100"},
+	}
+	return c.ListIssueCommentsWithValuesWithContext(ctx, values, org, repo, number)
+}
+
+func (c *client) ListIssueCommentsSince(org, repo string, number int, since time.Time) ([]IssueComment, error) {
+	values := url.Values{
+		"per_page": []string{"100"},
+		"since":    []string{since.Format(time.RFC3339)},
+	}
+	return c.ListIssueCommentsWithValuesWithContext(context.Background(), values, org, repo, number)
+}
+
+func (c *client) ListIssueCommentsWithValuesWithContext(ctx context.Context, values url.Values, org, repo string, number int) ([]IssueComment, error) {
+	c.log("ListIssueComments", values, org, repo, number)
 	if c.fake {
 		return nil, nil
 	}
 	path := fmt.Sprintf("/repos/%s/%s/issues/%d/comments", org, repo, number)
 	var comments []IssueComment
-	err := c.readPaginatedResultsWithContext(
+	err := c.readPaginatedResultsWithValuesWithContext(
 		ctx,
 		path,
+		values,
 		acceptNone,
 		org,
 		func() interface{} {

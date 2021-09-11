@@ -159,7 +159,7 @@ func makeQuery(query string, includeArchived, includeClosed, includeLocked bool,
 type client interface {
 	CreateComment(owner, repo string, number int, comment string) error
 	FindIssues(query, sort string, asc bool) ([]github.Issue, error)
-	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
+	ListIssueCommentsSince(org, repo string, number int, since time.Time) ([]github.IssueComment, error)
 }
 
 func main() {
@@ -274,17 +274,17 @@ func createComment(c client, commenter func(meta) (string, error), issue github.
 	}
 
 	if commentsCeiling > 0 {
-		issueComments, err := c.ListIssueComments(org, repo, number)
+		since := time.Now().Add(-1 * commentsCeilingMargin)
+		issueComments, err := c.ListIssueCommentsSince(org, repo, number, since)
 		if err != nil {
-			return fmt.Errorf("Failed to get comments for %s/%s#%d: %v", org, repo, number, err)
+			return fmt.Errorf("Failed to get comments for %s/%s#%d since %s: %v", org, repo, number, since, err)
 		}
 
 		sameCommentsInSequenceCounter := 0
 		for _, issueComment := range issueComments {
-			if issueComment.Body != comment || issueComment.CreatedAt.Before(time.Now().Add(-1*commentsCeilingMargin)) {
+			if issueComment.Body != comment {
 				sameCommentsInSequenceCounter = 0
-				break
-				// continue
+				continue
 			}
 
 			sameCommentsInSequenceCounter++
