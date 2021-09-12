@@ -53,10 +53,11 @@ var _ prowCfgClient = (*config.Config)(nil)
 // "*config.Config" type implements, which we will test here.
 type prowCfgClient interface {
 	AllPeriodics() []config.Periodic
-	GetPresubmits(gc git.ClientFactory, identifier string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) ([]config.Presubmit, error)
+	GetPresubmitsFromCache(gc git.ClientFactory, identifier string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) ([]config.Presubmit, error)
 	GetPresubmitsStatic(identifier string) []config.Presubmit
-	GetPostsubmits(gc git.ClientFactory, identifier string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) ([]config.Postsubmit, error)
+	GetPostsubmitsFromCache(gc git.ClientFactory, identifier string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) ([]config.Postsubmit, error)
 	GetPostsubmitsStatic(identifier string) []config.Postsubmit
+	InitProwYAMLCache(size int) error
 }
 
 // ProwJobEvent contains the minimum information required to start a ProwJob.
@@ -106,7 +107,6 @@ type Subscriber struct {
 	ProwJobClient ProwJobClient
 	GitClient     git.ClientFactory
 	Reporter      reportClient
-	ProwYAMLCache *ProwYAMLCache
 }
 
 type messageInterface interface {
@@ -147,13 +147,13 @@ func (m *pubSubMessage) nack() {
 
 // jobHandler handles job type specific logic
 type jobHandler interface {
-	getProwJobSpec(cfg prowCfgClient, cache *ProwYAMLCache, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error)
+	getProwJobSpec(cfg prowCfgClient, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error)
 }
 
 // periodicJobHandler implements jobHandler
 type periodicJobHandler struct{}
 
-func (peh *periodicJobHandler) getProwJobSpec(cfg prowCfgClient, cache *ProwYAMLCache, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error) {
+func (peh *periodicJobHandler) getProwJobSpec(cfg prowCfgClient, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error) {
 	var periodicJob *config.Periodic
 	// TODO(chaodaiG): do we want to support inrepoconfig when
 	// https://github.com/kubernetes/test-infra/issues/21729 is done?
@@ -178,7 +178,7 @@ type presubmitJobHandler struct {
 	GitClient git.ClientFactory
 }
 
-func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, cache *ProwYAMLCache, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error) {
+func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error) {
 	// presubmit jobs require Refs and Refs.Pulls to be set
 	refs := pe.Refs
 	if refs == nil {
@@ -216,7 +216,7 @@ func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, cache *ProwYAM
 
 	presubmits := cfg.GetPresubmitsStatic(orgRepo)
 	if prh.GitClient != nil { // Get from inrepoconfig only when GitClient is provided
-		presubmitsWithInrepoconfig, _, _, err := cache.GetPresubmitsFromCache(cfg.GetPresubmits, prh.GitClient, orgRepo, baseSHAGetter, headSHAGetters...)
+		presubmitsWithInrepoconfig, err := cfg.GetPresubmitsFromCache(prh.GitClient, orgRepo, baseSHAGetter, headSHAGetters...)
 		if err != nil {
 			logrus.WithError(err).Debug("Failed to get presubmits")
 		} else {
@@ -249,7 +249,7 @@ type postsubmitJobHandler struct {
 	GitClient git.ClientFactory
 }
 
-func (poh *postsubmitJobHandler) getProwJobSpec(cfg prowCfgClient, cache *ProwYAMLCache, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error) {
+func (poh *postsubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error) {
 	// postsubmit jobs require Refs to be set
 	refs := pe.Refs
 	if refs == nil {
@@ -277,7 +277,7 @@ func (poh *postsubmitJobHandler) getProwJobSpec(cfg prowCfgClient, cache *ProwYA
 
 	postsubmits := cfg.GetPostsubmitsStatic(orgRepo)
 	if poh.GitClient != nil { // Get from inrepoconfig only when GitClient is provided
-		postsubmitsWithInrepoconfig, _, _, err := cache.GetPostsubmitsFromCache(cfg.GetPostsubmits, poh.GitClient, orgRepo, baseSHAGetter)
+		postsubmitsWithInrepoconfig, err := cfg.GetPostsubmitsFromCache(poh.GitClient, orgRepo, baseSHAGetter)
 		if err != nil {
 			logrus.WithError(err).Debug("Failed to get postsubmits from inrepoconfig")
 		} else {

@@ -106,6 +106,9 @@ type JobConfig struct {
 	// provide their own implementation.
 	ProwYAMLGetter ProwYAMLGetter `json:"-"`
 
+	// ProwYAMLCache is a cache holding previous executions of ProwYAMLGetter.
+	ProwYAMLCache *ProwYAMLCache `json:"-"`
+
 	// DecorateAllJobs determines whether all jobs are decorated by default
 	DecorateAllJobs bool `json:"decorate_all_jobs,omitempty"`
 }

@@ -75,29 +75,38 @@ import (
 // type we want ([]Presubmit or []Postsubmit) before we can use
 // them.
 type ProwYAMLCache struct {
-	presubmits  *lru.Cache
-	postsubmits *lru.Cache
+	cache *lru.Cache
 }
 
 // NewProwYAMLCache creates a new LRU cache for presubmits and postsubmits,
 // where the keys are CacheKeys and values are ProwYAMLs.
 func NewProwYAMLCache(size int) (*ProwYAMLCache, error) {
-	presubmits, err := lru.New(size)
-	if err != nil {
-		return nil, err
-	}
-
-	postsubmits, err := lru.New(size)
+	cache, err := lru.New(size)
 	if err != nil {
 		return nil, err
 	}
 
 	prowYAMLCache := &ProwYAMLCache{
-		presubmits:  presubmits,
-		postsubmits: postsubmits,
+		cache: cache,
 	}
 
 	return prowYAMLCache, nil
+}
+
+// InitProwYAMLCache calls NewProwYAMLCache() to initialize a cache of ProwYAMLs
+// in the Config object. The cache sits inside the Config object because the
+// function signature of GetPresubmitsFromCache() matches that of
+// GetPresubmits() (which does not use the cache). The same reasoning applies
+// for GetPostsubmitsFromCache() and GetPostsubmits(). This way, callers can use
+// an interface to get presubmits in a cache-agnostic way.
+func (c *Config) InitProwYAMLCache(size int) error {
+	cache, err := NewProwYAMLCache(size)
+	if err != nil {
+		return err
+	}
+
+	c.ProwYAMLCache = cache
+	return nil
 }
 
 // CacheKey acts as a key to either the ProwYAMLCache.presubmits or
@@ -171,23 +180,59 @@ func MakeCacheKey(kp CacheKeyParts) (CacheKey, error) {
 // cache if the cache is unusable for whatever reason.
 type valConstructor func() (interface{}, error)
 
+type valConstructorHelper func(git.ClientFactory, string, RefGetter, ...RefGetter) (*ProwYAML, error)
+
 // keyConstructor is used only when we need to perform a lookup inside a cache
 // (if it is available), because all values stored in the cache are paired with
 // a unique lookup key.
 type keyConstructor func() (CacheKey, error)
 
-// GetPresubmitsFromCache uses ProwYAMLCache to first try to perform a lookup of
-// previously-calculated []Presubmit objects. The 'valConstructor' function is taken
-// as an argument to make it easier to test this function. This way, unit tests
-// can just provide its own function for constructing a []Presubmit
-// object (instead of needing to create an actual Git repo, etc., as required by
-// the GetPresubmits function).
-func (p *ProwYAMLCache) GetPresubmitsFromCache(
-	valConstructorHelper func(git.ClientFactory, string, RefGetter, ...RefGetter) ([]Presubmit, error),
+// GetPresubmitsFromCache is like GetPresubmits, but attempts to use a cache
+// lookup to get the prowYAML value (cache hit), instead of computing it from
+// scratch (cache miss).
+func (c *Config) GetPresubmitsFromCache(gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Presubmit, error) {
+
+	prowYAML, err := GetProwYAMLFromCache(c.ProwYAMLCache, c.getProwYAML, gc, identifier, baseSHAGetter, headSHAGetters...)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := DefaultAndValidateProwYAML(c, prowYAML, identifier); err != nil {
+		return nil, err
+	}
+
+	return append(c.GetPresubmitsStatic(identifier), prowYAML.Presubmits...), nil
+}
+
+// GetPostsubmitsFromCache is like GetPostsubmits, but attempts to use a cache
+// lookup to get the prowYAML value (cache hit), instead of computing it from
+// scratch (cache miss).
+func (c *Config) GetPostsubmitsFromCache(gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Postsubmit, error) {
+
+	prowYAML, err := GetProwYAMLFromCache(c.ProwYAMLCache, c.getProwYAML, gc, identifier, baseSHAGetter, headSHAGetters...)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := DefaultAndValidateProwYAML(c, prowYAML, identifier); err != nil {
+		return nil, err
+	}
+
+	return append(c.GetPostsubmitsStatic(identifier), prowYAML.Postsubmits...), nil
+}
+
+// GetProwYAMLFromCache uses ProwYAMLCache to first try to perform a lookup of
+// previously-calculated ProwYAML objects. The 'valConstructor' function is
+// taken as an argument to make it easier to test this function. This way, unit
+// tests can just provide its own function for constructing a ProwYAML object
+// (instead of needing to create an actual Git repo, etc.).
+func GetProwYAMLFromCache(
+	p *ProwYAMLCache,
+	valConstructorHelper valConstructorHelper,
 	gc git.ClientFactory,
 	identifier string,
 	baseSHAGetter RefGetter,
-	headSHAGetters ...RefGetter) ([]Presubmit, bool, bool, error) {
+	headSHAGetters ...RefGetter) (*ProwYAML, error) {
 
 	keyConstructor := func() (CacheKey, error) {
 		kp, err := MakeCacheKeyParts(identifier, baseSHAGetter, headSHAGetters...)
@@ -198,69 +243,31 @@ func (p *ProwYAMLCache) GetPresubmitsFromCache(
 		return MakeCacheKey(kp)
 	}
 
+	// The point of valConstructor is to allow us to mock this expensive value
+	// constructor call in tests (and, e.g., avoid having to do things like
+	// going over the network or dealing with an actual Git client, etc.).
 	valConstructor := func() (interface{}, error) {
 		return valConstructorHelper(gc, identifier, baseSHAGetter, headSHAGetters...)
 	}
 
-	val, cacheHit, evicted, err := GetFromCache(p.presubmits, keyConstructor, valConstructor)
+	val, _, _, err := GetFromCache(p.cache, keyConstructor, valConstructor)
 	if err != nil {
-		return nil, cacheHit, evicted, err
+		return nil, err
 	}
 
-	presubmits, ok := val.([]Presubmit)
+	prowYAML, ok := val.(*ProwYAML)
 	if ok {
-		return presubmits, cacheHit, evicted, err
+		return prowYAML, err
 	}
 
 	// Somehow, the value retrieved with GetFromCache has a malformed type. This
 	// can happen if some other function modified the cache. Ultimately, this is
 	// a price we pay for using a cache library that uses "interface{}" for the
 	// type of its items. In this case, we log a warning and return an error.
-	err = fmt.Errorf("cache value type error: expected value type '[]config.Presubmit', got '%T'", val)
+	err = fmt.Errorf("cache value type error: expected value type 'config.ProwYAML', got '%T'", val)
 	logrus.Warn(err)
-	return nil, false, false, err
+	return nil, err
 }
-
-/*
-// GetPostsubmitsFromCache is virtually identical to GetPresubmitsFromCache. The
-// only real difference is in the keyConstructor (postsubmits don't consider
-// headSHAGetters).
-func (p *ProwYAMLCache) GetPostsubmitsFromCache(
-	vg func(git.ClientFactory, string, RefGetter, ...RefGetter) ([]Postsubmit, error),
-	gc git.ClientFactory,
-	identifier string,
-	baseSHAGetter RefGetter) ([]Postsubmit, bool, bool, error) {
-
-	keyConstructor := func() (fmt.Stringer, error) {
-		return MakeCacheKey(identifier, baseSHAGetter)
-	}
-
-	valConstructor := func() (interface{}, error) {
-		return vg(gc, identifier, baseSHAGetter)
-	}
-
-	val, cacheHit, evicted, err := GetFromCache(p.postsubmits, keyConstructor, valConstructor)
-	if err != nil {
-		return nil, cacheHit, evicted, err
-	}
-
-	if postsubmits, ok := val.([]Postsubmit); ok {
-		return postsubmits, cacheHit, evicted, err
-	}
-
-	postsubmits, err := vg(gc, identifier, baseSHAGetter)
-	if err != nil {
-		return nil, false, false, err
-	}
-	key, err := keyConstructor()
-	if err != nil {
-		return nil, false, false, err
-	}
-	evicted = p.presubmits.Add(key.String(), postsubmits)
-
-	return postsubmits, false, evicted, nil
-}
-*/
 
 // GetFromCache tries to use a cache if it is available to get a Value. It is
 // assumed that Value is expensive to construct from scratch, which is the

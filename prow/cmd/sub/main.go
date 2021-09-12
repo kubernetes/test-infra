@@ -47,11 +47,11 @@ var (
 )
 
 type options struct {
-	client         flagutil.KubernetesOptions
-	github         flagutil.GitHubOptions
-	port           int
-	pushSecretFile string
-	cacheSize      int
+	client            flagutil.KubernetesOptions
+	github            flagutil.GitHubOptions
+	port              int
+	pushSecretFile    string
+	prowYAMLCacheSize int
 
 	config       configflagutil.ConfigOptions
 	pluginConfig string
@@ -82,7 +82,7 @@ func init() {
 
 	fs.BoolVar(&flagOptions.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 	fs.DurationVar(&flagOptions.gracePeriod, "grace-period", 180*time.Second, "On shutdown, try to handle remaining events for the specified duration. ")
-	fs.IntVar(&flagOptions.cacheSize, "cache-size", 1000, "Cache size for both ProwYAMLCache.presubmits and ProwYAMLCache.postsubmits")
+	fs.IntVar(&flagOptions.prowYAMLCacheSize, "ProwYAMLCache-size", 1000, "Cache size for ProwYAMLCache")
 
 	flagOptions.config.AddFlags(fs)
 	flagOptions.client.AddFlags(fs)
@@ -141,9 +141,8 @@ func main() {
 	// Initialize cache for fetching Presubmit and Postsubmit information. If
 	// the cache cannot be initialized (e.g., cache size is too big), continue
 	// without one.
-	prowYAMLCache, err := config.NewProwYAMLCache(flagOptions.cacheSize)
-	if err != nil {
-		logrus.WithError(err).Warnf("unable to initialize cache (cacheSize: %d); continuing without one", flagOptions.cacheSize)
+	if err := configAgent.Config().InitProwYAMLCache(flagOptions.prowYAMLCacheSize); err != nil {
+		logrus.WithError(err).Warnf("unable to initialize ProwYAMLCache (prowYAMLCacheSize: %d); continuing without one", flagOptions.prowYAMLCacheSize)
 	}
 
 	s := &subscriber.Subscriber{
@@ -152,7 +151,6 @@ func main() {
 		ProwJobClient: kubeClient,
 		GitClient:     config.NewInRepoConfigGitCache(gitClientFactory),
 		Reporter:      pubsub.NewReporter(configAgent.Config), // reuse crier reporter
-		ProwYAMLCache: prowYAMLCache,
 	}
 
 	// Return 200 on / for health checks.
