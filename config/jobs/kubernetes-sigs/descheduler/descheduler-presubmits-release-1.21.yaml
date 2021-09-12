@@ -64,7 +64,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     branches:
-    - master
+    - ^release-1.21$
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210910-f5a7052457-master
@@ -73,7 +73,7 @@ presubmits:
         - runner.sh
         env:
         - name: KUBERNETES_VERSION
-          value: "v1.21.4"
+          value: "v1.21.2"
         - name: KIND_E2E
           value: "true"
         args:
