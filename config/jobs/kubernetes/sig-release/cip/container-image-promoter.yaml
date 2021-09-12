@@ -78,7 +78,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: k8s.gcr.io/artifact-promoter/kpromo:v0.2.2-1
+      - image: k8s.gcr.io/artifact-promoter/kpromo:v0.2.3-1
         command:
         - /kpromo
         args:
