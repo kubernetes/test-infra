@@ -44,10 +44,11 @@ type requestCoalescer struct {
 	sync.Mutex
 	cache map[string]*firstRequest
 
-	// requestExecutor is anything that can resolve a request by executing a single
-	// HTTP transaction, returning a Response for the provided Request. Using an
-	// interface here allows us to mock this out with a fake non-HTTP transport
-	// in unit tests.
+	// requestExecutor is anything that can resolve a request by executing a
+	// single HTTP transaction, returning a Response for the provided Request.
+	// The coalescer uses this to talk to the actual proxied backend. Using an
+	// interface here allows us to mock out a fake backend server's response to
+	// the request.
 	requestExecutor http.RoundTripper
 
 	hasher ghmetrics.Hasher
@@ -64,9 +65,9 @@ type requestCoalescer struct {
 type firstRequest struct {
 	*sync.Cond
 
-	// Are there any threads that are "subscribed" to this first request's
+	// How many other threads are "subscribed" to this first request's
 	// response?
-	subscribers bool
+	subscribers int
 	resp        []byte
 	err         error
 }
@@ -74,10 +75,6 @@ type firstRequest struct {
 // RoundTrip coalesces concurrent GET requests for the same URI by blocking
 // the later requests until the first request returns and then sharing the
 // response between all requests.
-//
-// Notes: Deadlock shouldn't be possible because the map lock is always
-// acquired before firstRequest lock if both locks are to be held and we
-// never hold multiple firstRequest locks.
 func (coalescer *requestCoalescer) RoundTrip(req *http.Request) (*http.Response, error) {
 	// Only coalesce GET requests
 	if req.Method != http.MethodGet {
@@ -99,34 +96,24 @@ func (coalescer *requestCoalescer) RoundTrip(req *http.Request) (*http.Response,
 		key := req.URL.String()
 		coalescer.Lock()
 		firstReq, ok := coalescer.cache[key]
+		// Note that we cannot immediately Unlock() coalescer here just after
+		// the cache lookup, because that may result in multiple threads
+		// possibly becoming a "firstReq" creator (main) thread. This is why we
+		// only Unlock() coalescer __after__ creating the cache entry.
 
-		// Earlier request in flight (common case). Wait for its response, which
-		// will be received by a different thread (specifically, the original
-		// thread that created the firstReq object --- let's call this the
-		// "main" thread for simplicity).
+		// Earlier request in flight. Wait for its response, which will be
+		// received by a different thread (specifically, the original thread
+		// that created the firstReq object --- let's call this the "main"
+		// thread for simplicity).
 		if ok {
-			// If the request that we're trying to process has a body, don't
-			// forget to close it. Normally if we're performing the HTTP
-			// roundtrip ourselves, we won't need to do this because the
-			// RoundTripper will do it on its own. However we'll never call
-			// RoundTrip() on this request ourselves because we're going to be
-			// lazy and just wait for the main thread to do it for us. So we
-			// need to close the body directly. See
-			// https://cs.opensource.google/go/go/+/refs/tags/go1.17.1:src/net/http/transport.go;l=510
-			// and
-			// https://cs.opensource.google/go/go/+/refs/tags/go1.17.1:src/net/http/request.go;drc=refs%2Ftags%2Fgo1.17.1;l=1408
-			// for an example.
-			if req.Body != nil {
-				defer req.Body.Close()
-			}
-
-			// Let the main thread know that there is at least one subscriber (us).
-			firstReq.L.Lock()
 			// Unlock the coalescer, so that other threads can read from it.
 			// That is, the coalescer itself should never be blocked by
 			// subscribed threads.
 			coalescer.Unlock()
-			firstReq.subscribers = true
+
+			// Let the main thread know that there is at least one subscriber (us).
+			firstReq.L.Lock()
+			firstReq.subscribers++
 
 			// The documentation for Wait() says:
 			// "Because c.L is not locked when Wait first resumes, the caller typically
@@ -172,7 +159,9 @@ func (coalescer *requestCoalescer) RoundTrip(req *http.Request) (*http.Response,
 		firstReq = &firstRequest{Cond: sync.NewCond(&sync.Mutex{})}
 		coalescer.cache[key] = firstReq
 
-		// Unlock the coalescer so that it doesn't block on this particular request.
+		// Unlock the coalescer so that it doesn't block on this particular
+		// request. This allows subsequent requests for the same URL to become
+		// subscribers to this main one.
 		coalescer.Unlock()
 
 		// Actually process the request and get a response.
@@ -189,7 +178,12 @@ func (coalescer *requestCoalescer) RoundTrip(req *http.Request) (*http.Response,
 		//  3. *NEW* subscribers get created, because the cached key is still there
 		//  4. cached key is finally deleted
 		//  5. firstReq creator thread from Step 1 dies
-		//  6. subscribed threads from Step 3 will wait forever (memory leak, not to mention request timeout for all of these)
+		//  6. subscribed threads from Step 3 will wait forever
+		//     (memory leak, not to mention request timeout for all of these)
+		//
+		// Deleting the cache key now also allows a new firstRequest{} object to
+		// be created (and the whole cycle repeated again) by another set of
+		// requests in flight, if any.
 		coalescer.Lock()
 		delete(coalescer.cache, key)
 		coalescer.Unlock()
@@ -198,7 +192,7 @@ func (coalescer *requestCoalescer) RoundTrip(req *http.Request) (*http.Response,
 		// only bother with writing into firstReq if we have subscribers at all
 		// (because otherwise no other thread will use it anyway).
 		firstReq.L.Lock()
-		if firstReq.subscribers {
+		if firstReq.subscribers > 0 {
 			if err != nil {
 				firstReq.resp, firstReq.err = nil, err
 			} else {
@@ -219,7 +213,13 @@ func (coalescer *requestCoalescer) RoundTrip(req *http.Request) (*http.Response,
 			logrus.WithField("cache-key", key).WithError(err).Warn("Error from cache transport layer.")
 			return nil, err
 		}
+
+		// Return a ModeMiss by default (that is, the response was not in the
+		// cache, so we had to proxy the request and cache the response). This
+		// is what cacheResponseMode() does, unless there are other modes we can
+		// glean from the response header, find it with cacheResponseMode.
 		cacheMode = cacheResponseMode(resp.Header)
+
 		return resp, nil
 	}()
 
