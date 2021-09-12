@@ -400,7 +400,6 @@ def generate_misc():
                                 '--api-loadbalancer-class=network',
                                 '--set=cluster.spec.api.loadBalancer.useForInternalApi=true',
                                 '--set=cluster.spec.cloudControllerManager.cloudProvider=aws',
-                                '--set=cluster.spec.cloudControllerManager.image=gcr.io/k8s-staging-provider-aws/cloud-controller-manager:latest', # pylint: disable=line-too-long
                                 '--set=cluster.spec.nonMasqueradeCIDR=fd00:10:96::/64',
                                 ],
                    focus_regex=r'\[Conformance\]|\[NodeConformance\]',
@@ -418,9 +417,7 @@ def generate_misc():
                                 '--api-loadbalancer-class=network',
                                 '--set=cluster.spec.api.loadBalancer.useForInternalApi=true',
                                 '--set=cluster.spec.cloudControllerManager.cloudProvider=aws',
-                                '--set=cluster.spec.cloudControllerManager.image=gcr.io/k8s-staging-provider-aws/cloud-controller-manager:latest', # pylint: disable=line-too-long
                                 '--set=cluster.spec.nonMasqueradeCIDR=fd00:10:96::/64',
-                                '--set=cluster.spec.iam.useServiceAccountExternalPermissions=true',
                                 ],
                    extra_dashboards=['kops-misc', 'kops-ipv6']),
         # A special test for IPv6 using Cilium CNI
@@ -436,7 +433,6 @@ def generate_misc():
                                 '--api-loadbalancer-class=network',
                                 '--set=cluster.spec.api.loadBalancer.useForInternalApi=true',
                                 '--set=cluster.spec.cloudControllerManager.cloudProvider=aws',
-                                '--set=cluster.spec.cloudControllerManager.image=gcr.io/k8s-staging-provider-aws/cloud-controller-manager:latest', # pylint: disable=line-too-long
                                 '--set=cluster.spec.nonMasqueradeCIDR=fd00:10:96::/64',
                                 ],
                    extra_dashboards=['kops-misc', 'kops-ipv6']),
@@ -971,7 +967,6 @@ def generate_presubmits_e2e():
                          '--api-loadbalancer-class=network',
                          '--set=cluster.spec.api.loadBalancer.useForInternalApi=true',
                          '--set=cluster.spec.cloudControllerManager.cloudProvider=aws',
-                         '--set=cluster.spec.cloudControllerManager.image=gcr.io/k8s-staging-provider-aws/cloud-controller-manager:latest', # pylint: disable=line-too-long
                          '--set=cluster.spec.nonMasqueradeCIDR=fd00:10:96::/64',
                          ],
             focus_regex=r'\[Conformance\]|\[NodeConformance\]',

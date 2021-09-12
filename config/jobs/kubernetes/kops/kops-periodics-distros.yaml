@@ -220,7 +220,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20210825' --channel=alpha --networking=calico --container-runtime=containerd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20210907' --channel=alpha --networking=calico --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
@@ -283,7 +283,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210825' --channel=alpha --networking=calico --container-runtime=containerd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210907' --channel=alpha --networking=calico --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
@@ -346,7 +346,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-hirsute-21.04-amd64-server-20210826' --channel=alpha --networking=calico --container-runtime=containerd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-hirsute-21.04-amd64-server-20210908' --channel=alpha --networking=calico --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
@@ -661,7 +661,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='309956199498/RHEL-8.3_HVM-20210209-x86_64-0-Hourly2-GP2' --channel=alpha --networking=calico --container-runtime=containerd" \
+          --create-args="--image='309956199498/RHEL-8.4.0_HVM-20210825-x86_64-0-Hourly2-GP2' --channel=alpha --networking=calico --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
