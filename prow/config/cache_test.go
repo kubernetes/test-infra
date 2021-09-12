@@ -611,8 +611,7 @@ func TestGetPresubmitsFromCache(t *testing.T) {
 		},
 		{
 			// If the cache is corrupted (it holds values of a type that is not
-			// []Presubmit), then we expect to reconstruct the value from
-			// scratch.
+			// []Presubmit), then we expect an error.
 			name:           "GoodValConstructorCorruptedCacheHit",
 			valConstructor: goodValConstructor,
 			cacheInitialState: []CacheKeyParts{
@@ -629,20 +628,15 @@ func TestGetPresubmitsFromCache(t *testing.T) {
 				goodSHAGetter("abcd"),
 				goodSHAGetter("ef01")},
 			expected: expected{
-				presubmits: []Presubmit{
-					{
-						JobBase: JobBase{Name: `{"identifier":"foo/bar","baseSHA":"ba5e","headSHAs":["abcd","ef01"]}`}},
-				},
-				cacheHit: false,
-				evicted:  false,
-				err:      "",
+				presubmits: nil,
+				cacheHit:   false,
+				evicted:    false,
+				err:        "cache value type error: expected value type '[]config.Presubmit', got 'string'",
 			},
 		},
 		{
 			// If the cache is corrupted (it holds values of a type that is not
-			// []Presubmit), then we expect to reconstruct the value from
-			// scratch. But a faulty value constructor will result in a "nil"
-			// presubmits value.
+			// []Presubmit), then we expect an error.
 			name:           "BadValConstructorCorruptedCacheHit",
 			valConstructor: badValConstructor,
 			cacheInitialState: []CacheKeyParts{
@@ -662,7 +656,7 @@ func TestGetPresubmitsFromCache(t *testing.T) {
 				presubmits: nil,
 				cacheHit:   false,
 				evicted:    false,
-				err:        "unable to construct []Presubmit value",
+				err:        "cache value type error: expected value type '[]config.Presubmit', got 'string'",
 			},
 		},
 	} {

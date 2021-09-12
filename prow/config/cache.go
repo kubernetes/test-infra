@@ -22,6 +22,7 @@ import (
 	"sort"
 
 	lru "github.com/hashicorp/golang-lru"
+	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/git/v2"
 )
 
@@ -176,13 +177,13 @@ type valConstructor func() (interface{}, error)
 type keyConstructor func() (CacheKey, error)
 
 // GetPresubmitsFromCache uses ProwYAMLCache to first try to perform a lookup of
-// previously-calculated []Presubmit objects. The 'vg' function is taken
+// previously-calculated []Presubmit objects. The 'valConstructor' function is taken
 // as an argument to make it easier to test this function. This way, unit tests
 // can just provide its own function for constructing a []Presubmit
 // object (instead of needing to create an actual Git repo, etc., as required by
 // the GetPresubmits function).
 func (p *ProwYAMLCache) GetPresubmitsFromCache(
-	vg func(git.ClientFactory, string, RefGetter, ...RefGetter) ([]Presubmit, error),
+	valConstructorHelper func(git.ClientFactory, string, RefGetter, ...RefGetter) ([]Presubmit, error),
 	gc git.ClientFactory,
 	identifier string,
 	baseSHAGetter RefGetter,
@@ -198,7 +199,7 @@ func (p *ProwYAMLCache) GetPresubmitsFromCache(
 	}
 
 	valConstructor := func() (interface{}, error) {
-		return vg(gc, identifier, baseSHAGetter, headSHAGetters...)
+		return valConstructorHelper(gc, identifier, baseSHAGetter, headSHAGetters...)
 	}
 
 	val, cacheHit, evicted, err := GetFromCache(p.presubmits, keyConstructor, valConstructor)
@@ -206,27 +207,18 @@ func (p *ProwYAMLCache) GetPresubmitsFromCache(
 		return nil, cacheHit, evicted, err
 	}
 
-	if presubmits, ok := val.([]Presubmit); ok {
+	presubmits, ok := val.([]Presubmit)
+	if ok {
 		return presubmits, cacheHit, evicted, err
 	}
 
 	// Somehow, the value retrieved with GetFromCache has a malformed type. This
 	// can happen if some other function modified the cache. Ultimately, this is
 	// a price we pay for using a cache library that uses "interface{}" for the
-	// type of its items. In this case, we heal the cache by deleting the cached
-	// value because it is of an invalid type, and insert a valid one after
-	// constructing it from scratch.
-	presubmits, err := vg(gc, identifier, baseSHAGetter, headSHAGetters...)
-	if err != nil {
-		return nil, false, false, err
-	}
-	key, err := keyConstructor()
-	if err != nil {
-		return nil, false, false, err
-	}
-	evicted = p.presubmits.Add(key, presubmits)
-
-	return presubmits, false, evicted, nil
+	// type of its items. In this case, we log a warning and return an error.
+	err = fmt.Errorf("cache value type error: expected value type '[]config.Presubmit', got '%T'", val)
+	logrus.Warn(err)
+	return nil, false, false, err
 }
 
 /*
