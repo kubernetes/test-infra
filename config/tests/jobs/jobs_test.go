@@ -361,7 +361,7 @@ func TestK8sInfraTrusted(t *testing.T) {
 
 // Jobs in config/jobs/image-pushing must
 // - run on cluster: k8s-infra-prow-build-trusted
-// - use a pinned version of gcr.io/k8s-testimages/image-builder
+// - use a pinned version of gcr.io/k8s-staging-test-infra/image-builder
 // - have wg-k8s-infra-gcb in their testgrid-dashboards annotation
 func TestImagePushingJobs(t *testing.T) {
 	jobsToFix := 0
@@ -414,7 +414,7 @@ func TestImagePushingJobs(t *testing.T) {
 }
 
 func validateImagePushingImage(spec *coreapi.PodSpec) error {
-	const imagePushingImage = "gcr.io/k8s-testimages/image-builder"
+	const imagePushingImage = "gcr.io/k8s-staging-test-infra/image-builder"
 
 	for _, c := range spec.Containers {
 		if !strings.HasPrefix(c.Image, imagePushingImage+":") {
