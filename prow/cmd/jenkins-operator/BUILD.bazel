@@ -9,7 +9,7 @@ NAME = "jenkins-operator"
 
 prow_image(
     name = "image",
-    base = "@alpine-base//image",
+    base = "@git-base//image",
     component = NAME,
     visibility = ["//visibility:public"],
 )
