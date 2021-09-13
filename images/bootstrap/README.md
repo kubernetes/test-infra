@@ -6,7 +6,7 @@ Critical bugfies or security updates may be accepted, but approached with heavy 
 
 New dependencies or features will very likely not be accepted.
 
-# bootstrap
+# bootstrap image
 
 This image is used as the base layer for the kubekins-e2e image, with a focus
 on the deprecated bootstrap.py tooling that was used during Kubernetes' early

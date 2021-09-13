@@ -1,4 +1,4 @@
-# gcloud-in-go
+# gcloud-in-go image
 
 Use this image when you want to use `go` and `gcloud` in the same job
 

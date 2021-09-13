@@ -1,4 +1,4 @@
-# krte
+# krte image
 
 krte - [KIND](https://sigs.k8s.io/kind) RunTime Environment
 
