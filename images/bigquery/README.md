@@ -1,4 +1,4 @@
-# bigquery
+# bigquery image
 
 The `gcr.io/k8s-staging-test-infra/bigquery` image is used to run [`/metrics/bigquery.py`] and [`/kettle/monitor.py`]
 
