@@ -109,7 +109,7 @@ periodics:
         value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|should.provide.basic.identity|\[NodeFeature:PodReadinessGate\]
       - name: PARALLEL
         value: "true"
-      image: gcr.io/k8s-testimages/krte:v20210824-2dc36d0-1.22
+      image: gcr.io/k8s-testimages/krte:v20210910-b5a7cb2-1.22
       name: ""
       resources:
         limits:
@@ -222,7 +222,7 @@ periodics:
       - --allow-dup
       - --extra-version-markers=k8s-beta
       - --registry=gcr.io/kubernetes-ci-images
-      image: gcr.io/k8s-testimages/bootstrap:v20210910-5bce0be
+      image: gcr.io/k8s-testimages/bootstrap:v20210910-b5a7cb2
       name: ""
       resources:
         limits:
@@ -919,7 +919,7 @@ periodics:
         value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|should.provide.basic.identity|\[NodeFeature:PodReadinessGate\]
       - name: PARALLEL
         value: "true"
-      image: gcr.io/k8s-testimages/krte:v20210824-2dc36d0-1.22
+      image: gcr.io/k8s-testimages/krte:v20210910-b5a7cb2-1.22
       name: ""
       resources:
         limits:
@@ -969,7 +969,7 @@ periodics:
         value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|In-tree.Volumes.\[Driver:.nfs\]|PersistentVolumes.NFS|Network.should.set.TCP.CLOSE_WAIT.timeout|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|should.provide.basic.identity|\[NodeFeature:PodReadinessGate\]
       - name: PARALLEL
         value: "true"
-      image: gcr.io/k8s-testimages/krte:v20210824-2dc36d0-1.22
+      image: gcr.io/k8s-testimages/krte:v20210910-b5a7cb2-1.22
       name: ""
       resources:
         limits:
@@ -1671,7 +1671,7 @@ presubmits:
           value: ipv6
         - name: PARALLEL
           value: "true"
-        image: gcr.io/k8s-testimages/krte:v20210824-2dc36d0-1.22
+        image: gcr.io/k8s-testimages/krte:v20210910-b5a7cb2-1.22
         name: ""
         resources:
           requests:
@@ -1795,7 +1795,7 @@ presubmits:
           value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|NFS|nfs|inline.execution.and.attach|should.be.rejected.when.no.endpoints.exist
         - name: PARALLEL
           value: "true"
-        image: gcr.io/k8s-testimages/krte:v20210824-2dc36d0-1.22
+        image: gcr.io/k8s-testimages/krte:v20210910-b5a7cb2-1.22
         name: ""
         resources:
           limits:
@@ -1839,7 +1839,7 @@ presubmits:
           value: "true"
         - name: IP_FAMILY
           value: ipv6
-        image: gcr.io/k8s-testimages/krte:v20210824-2dc36d0-1.22
+        image: gcr.io/k8s-testimages/krte:v20210910-b5a7cb2-1.22
         name: ""
         resources:
           limits:
@@ -1877,7 +1877,7 @@ presubmits:
           value: "true"
         - name: PARALLEL
           value: "true"
-        image: gcr.io/k8s-testimages/krte:v20210824-2dc36d0-1.22
+        image: gcr.io/k8s-testimages/krte:v20210910-b5a7cb2-1.22
         name: ""
         resources:
           limits:

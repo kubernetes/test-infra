@@ -175,7 +175,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+        - image: gcr.io/k8s-testimages/image-builder:v20210910-b5a7cb2
           command:
             - /run.sh
           args:
