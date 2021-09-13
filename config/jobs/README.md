@@ -42,10 +42,7 @@ than needed, and will be periodically bumped by PRs. These are sources of
 technical debt that are often not very well maintained. Use at your own risk,
 eg:
 
-- [pull-community-verify] uses `gcr.io/k8s-testimages/gcloud-in-go:v20190125`
-  to run `make verify`, which ends up invoking some `bash` scripts, which use
-  commands like `git` and `go`. The `gcloud` dependency is not needed at all.
-- [periodic-kubernetes-e2e-packages-pushed] uses `gcr.io/k8s-testimages/kubekins:latest-master`
+- [periodic-kubernetes-e2e-packages-pushed] uses `gcr.io/k8s-staging-test-infra/kubekins:latest-master`
   to run `./tests/e2e/packages/verify_packages_published.sh` which ends up
   running `apt-get` and `yum` commands. Perhaps a `debian` image would be
   better.
