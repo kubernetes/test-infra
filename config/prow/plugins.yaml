@@ -268,7 +268,7 @@ slack:
   - repos:
     - kubernetes/kubernetes
     channels:
-    - kubernetes-dev
+    - github-management
     exempt_users:
     - k8s-ci-robot # future home of tide
     - k8s-release-robot # anago
