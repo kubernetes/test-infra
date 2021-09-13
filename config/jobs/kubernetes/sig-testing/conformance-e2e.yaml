@@ -61,7 +61,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20210824-2dc36d0-master
+      - image: gcr.io/k8s-testimages/krte:v20210910-b5a7cb2-master
         env:
         # enable IPV6 in bootstrap image
         - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
@@ -155,7 +155,7 @@ periodics:
     timeout: 200m # allow plenty of time for a serial conformance run
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/krte:v20210824-2dc36d0-master
+    - image: gcr.io/k8s-testimages/krte:v20210910-b5a7cb2-master
       command:
       - wrapper.sh
       - bash
