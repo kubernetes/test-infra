@@ -23,7 +23,6 @@ import (
 	"os"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/pjutil/pprof"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
@@ -283,14 +282,9 @@ func main() {
 		if err != nil {
 			logrus.WithError(err).Fatal("Error getting GitHub client.")
 		}
-		g, err := o.github.GitClient(o.dryrun)
-		if err != nil {
-			logrus.WithError(err).Fatal("Error getting Git client.")
-		}
-		gitClient := git.ClientFactoryFrom(g)
 
 		hasReporter = true
-		githubReporter := githubreporter.NewReporter(gitClient, githubClient, cfg, prowapi.ProwJobAgent(o.reportAgent))
+		githubReporter := githubreporter.NewReporter(githubClient, cfg, prowapi.ProwJobAgent(o.reportAgent))
 		if err := crier.New(mgr, githubReporter, o.githubWorkers, o.githubEnablement.EnablementChecker()); err != nil {
 			logrus.WithError(err).Fatal("failed to construct github reporter controller")
 		}

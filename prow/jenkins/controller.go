@@ -29,7 +29,6 @@ import (
 	ktypes "k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/clock"
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
-	"k8s.io/test-infra/prow/git/v2"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -62,7 +61,6 @@ type syncFn func(prowapi.ProwJob, chan<- prowapi.ProwJob, map[string]Build) erro
 type Controller struct {
 	prowJobClient prowJobClient
 	jc            jenkinsClient
-	gitClient     git.ClientFactory
 	ghc           githubClient
 	log           *logrus.Entry
 	cfg           config.Getter
@@ -85,8 +83,7 @@ type Controller struct {
 }
 
 // NewController creates a new Controller from the provided clients.
-func NewController(prowJobClient prowv1.ProwJobInterface, jc *Client, gitClient git.ClientFactory, ghc github.Client,
-	logger *logrus.Entry, cfg config.Getter, totURL, selector string, skipReport bool) (*Controller, error) {
+func NewController(prowJobClient prowv1.ProwJobInterface, jc *Client, ghc github.Client, logger *logrus.Entry, cfg config.Getter, totURL, selector string, skipReport bool) (*Controller, error) {
 	n, err := snowflake.NewNode(1)
 	if err != nil {
 		return nil, err
@@ -97,7 +94,6 @@ func NewController(prowJobClient prowv1.ProwJobInterface, jc *Client, gitClient 
 	return &Controller{
 		prowJobClient: prowJobClient,
 		jc:            jc,
-		gitClient:     gitClient,
 		ghc:           ghc,
 		log:           logger,
 		cfg:           cfg,
@@ -228,7 +224,7 @@ func (c *Controller) Sync() error {
 		jConfig := c.config()
 		for report := range reportCh {
 			reportTemplate := jConfig.ReportTemplateForRepo(report.Spec.Refs)
-			if err := reportlib.Report(context.Background(), c.cfg(), c.gitClient, c.ghc, reportTemplate, report, reportTypes); err != nil {
+			if err := reportlib.Report(context.Background(), c.ghc, reportTemplate, report, reportTypes); err != nil {
 				reportErrs = append(reportErrs, err)
 				c.log.WithFields(pjutil.ProwJobFields(&report)).WithError(err).Warn("Failed to report ProwJob status")
 			}

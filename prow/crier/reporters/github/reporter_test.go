@@ -97,7 +97,7 @@ func TestShouldReport(t *testing.T) {
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			c := NewReporter(nil, nil, nil, tc.reportAgent)
+			c := NewReporter(nil, nil, tc.reportAgent)
 			if r := c.ShouldReport(context.Background(), logrus.NewEntry(logrus.StandardLogger()), &tc.pj); r == tc.report {
 				return
 			}
@@ -116,7 +116,6 @@ func TestShouldReport(t *testing.T) {
 // threadsafe.
 func TestPresumitReportingLocks(t *testing.T) {
 	reporter := NewReporter(
-		nil,
 		fakegithub.NewFakeClient(),
 		func() *config.Config {
 			return &config.Config{
@@ -210,7 +209,7 @@ func TestReport(t *testing.T) {
 			fghc := fakegithub.NewFakeClient()
 			fghc.Error = tc.githubError
 			c := Client{
-				ghc: fghc,
+				gc: fghc,
 				config: func() *config.Config {
 					return &config.Config{
 						ProwConfig: config.ProwConfig{

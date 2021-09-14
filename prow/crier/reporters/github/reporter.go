@@ -32,7 +32,6 @@ import (
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/gerrit/client"
-	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github/report"
 )
 
@@ -43,8 +42,7 @@ const (
 
 // Client is a github reporter client
 type Client struct {
-	gitClient   git.ClientFactory
-	ghc         report.GitHubClient
+	gc          report.GitHubClient
 	config      config.Getter
 	reportAgent v1.ProwJobAgent
 	prLocks     *shardedLock
@@ -104,10 +102,9 @@ func (s *shardedLock) runCleanup() {
 }
 
 // NewReporter returns a reporter client
-func NewReporter(gitClient git.ClientFactory, ghc report.GitHubClient, cfg config.Getter, reportAgent v1.ProwJobAgent) *Client {
+func NewReporter(gc report.GitHubClient, cfg config.Getter, reportAgent v1.ProwJobAgent) *Client {
 	c := &Client{
-		gitClient:   gitClient,
-		ghc:         ghc,
+		gc:          gc,
 		config:      cfg,
 		reportAgent: reportAgent,
 		prLocks: &shardedLock{
@@ -162,12 +159,11 @@ func (c *Client) Report(ctx context.Context, log *logrus.Entry, pj *v1.ProwJob) 
 		if err := lock.Acquire(ctx, 1); err != nil {
 			return nil, nil, err
 		}
-
 		defer lock.Release(1)
 	}
 
 	// TODO(krzyzacy): ditch ReportTemplate, and we can drop reference to config.Getter
-	err := report.Report(ctx, c.config(), c.gitClient, c.ghc, c.config().Plank.ReportTemplateForRepo(pj.Spec.Refs), *pj, c.config().GitHubReporter.JobTypesToReport)
+	err := report.Report(ctx, c.gc, c.config().Plank.ReportTemplateForRepo(pj.Spec.Refs), *pj, c.config().GitHubReporter.JobTypesToReport)
 	if err != nil {
 		if strings.Contains(err.Error(), "This SHA and context has reached the maximum number of statuses") {
 			// This is completely unrecoverable, so just swallow the error to make sure we wont retry, even when crier gets restarted.

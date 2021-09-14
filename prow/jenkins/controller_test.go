@@ -185,16 +185,6 @@ func (f *fghc) EditCommentWithContext(_ context.Context, org, repo string, ID in
 	defer f.Unlock()
 	return nil
 }
-func (f *fghc) GetPullRequest(org, repo string, number int) (*github.PullRequest, error) {
-	f.Lock()
-	defer f.Unlock()
-	return nil, nil
-}
-func (f *fghc) GetRef(org, repo, ref string) (string, error) {
-	f.Lock()
-	defer f.Unlock()
-	return "", nil
-}
 
 func TestSyncTriggeredJobs(t *testing.T) {
 	fakeClock := clock.NewFakeClock(time.Now().Truncate(1 * time.Second))
