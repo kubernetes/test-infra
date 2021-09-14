@@ -287,7 +287,9 @@ func main() {
 		if err != nil {
 			logrus.WithError(err).Fatal("Error getting Git client.")
 		}
-		gitClient := git.ClientFactoryFrom(g)
+		// This git client is only used for inrepoconfig, updating it to use the cached
+		// version of git client for improved performance of inrepoconfig
+		gitClient := config.NewInRepoConfigGitCache(git.ClientFactoryFrom(g))
 
 		hasReporter = true
 		githubReporter := githubreporter.NewReporter(gitClient, githubClient, cfg, prowapi.ProwJobAgent(o.reportAgent))
