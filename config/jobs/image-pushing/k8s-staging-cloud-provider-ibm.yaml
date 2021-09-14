@@ -15,7 +15,7 @@ postsubmits:
       annotations:
         # This is the name of some testgrid dashboard to report to.
         # If this is the first one for your sig, you may need to create one
-        testgrid-dashboards: sig-cloud-provider-ibm-vpc-block-csi-driver-image-pushes, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-cloud-provider-ibm-vpc-block-csi-driver, wg-k8s-infra-gcb
       decorate: true
       # this causes the job to only run on the master branch. Remove it if your
       # job makes sense on every branch (unless it's setting a `latest` tag it
