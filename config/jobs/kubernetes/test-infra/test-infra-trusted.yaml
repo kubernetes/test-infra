@@ -680,12 +680,13 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:v2.4.1
+      - image: k8s.gcr.io/artifact-promoter/cip:v3.2.0
         command:
         - cip
         args:
-        - -manifest=prow/cip-manifest.yaml
-        - -dry-run=false
+        - run
+        - --manifest=prow/cip-manifest.yaml
+        - --confirm
     annotations:
       testgrid-dashboards: sig-testing-prow
       testgrid-tab-name: cip-prow
