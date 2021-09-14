@@ -14,7 +14,7 @@ presubmits:
       description: Build test in ibm-vpc-block-csi-driver repo.
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210913-82aac5659f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210914-eba58f4dbc-master
         command:
         - runner.sh
         args:

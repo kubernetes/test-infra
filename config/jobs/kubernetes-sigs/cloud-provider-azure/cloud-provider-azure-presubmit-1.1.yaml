@@ -10,7 +10,7 @@ presubmits:
         preset-service-account: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210913-82aac5659f-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210914-eba58f4dbc-master
             command:
               - runner.sh
             args:
@@ -42,7 +42,7 @@ presubmits:
           workdir: true
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210913-82aac5659f-1.22
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210914-eba58f4dbc-1.22
             command:
               - runner.sh
               - kubetest
@@ -99,7 +99,7 @@ presubmits:
           workdir: true
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210913-82aac5659f-1.22
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210914-eba58f4dbc-1.22
             command:
               - runner.sh
               - kubetest
@@ -159,7 +159,7 @@ presubmits:
           workdir: true
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210913-82aac5659f-1.22
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210914-eba58f4dbc-1.22
             command:
               - runner.sh
               - kubetest
@@ -219,7 +219,7 @@ presubmits:
           workdir: true
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210913-82aac5659f-1.22
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210914-eba58f4dbc-1.22
             command:
               - runner.sh
               - kubetest
@@ -268,7 +268,7 @@ presubmits:
         preset-service-account: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210913-82aac5659f-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210914-eba58f4dbc-master
             command:
               - runner.sh
             args:
