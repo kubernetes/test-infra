@@ -31,7 +31,7 @@ periodics:
   interval: 1h
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bigquery:v20210910-b5a7cb2
+    - image: gcr.io/k8s-staging-test-infra/bigquery:v20210913-fc7c4e84f6
       args:
       - --scenario=execute
       - --

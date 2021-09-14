@@ -102,7 +102,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210622-762366a-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210913-82aac5659f-master
         command:
           - runner.sh
           - make
