@@ -521,6 +521,23 @@ func (r *reconciler) syncPendingJob(ctx context.Context, pj *prowv1.ProwJob) (*r
 		return nil, fmt.Errorf("patching prowjob: %w", err)
 	}
 
+	// If the ProwJob state has changed, we must ensure that the update reaches the cache before
+	// processing the key again. Without this we might accidentally replace intentionally deleted pods
+	// or otherwise incorrectly react to stale ProwJob state.
+	state := pj.Status.State
+	if prevPJ.Status.State == state {
+		return nil, nil
+	}
+	nn := types.NamespacedName{Namespace: pj.Namespace, Name: pj.Name}
+	if err := wait.Poll(100*time.Millisecond, 2*time.Second, func() (bool, error) {
+		if err := r.pjClient.Get(ctx, nn, pj); err != nil {
+			return false, fmt.Errorf("failed to get prowjob: %w", err)
+		}
+		return pj.Status.State == state, nil
+	}); err != nil {
+		return nil, fmt.Errorf("failed to wait for cached prowjob %s to get into state %s: %w", nn.String(), state, err)
+	}
+
 	return nil, nil
 }
 
