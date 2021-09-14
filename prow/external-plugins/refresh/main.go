@@ -27,7 +27,6 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pjutil"
@@ -101,17 +100,11 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
-	g, err := o.github.GitClient(o.dryRun)
-	if err != nil {
-		logrus.WithError(err).Fatal("Error getting Git client.")
-	}
-	gitClient := git.ClientFactoryFrom(g)
 
 	serv := &server{
 		tokenGenerator: secret.GetTokenGenerator(o.webhookSecretFile),
 		prowURL:        o.prowURL,
 		configAgent:    configAgent,
-		gitClient:      gitClient,
 		ghc:            githubClient,
 		log:            log,
 	}

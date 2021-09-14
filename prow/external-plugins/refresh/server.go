@@ -30,7 +30,6 @@ import (
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/report"
 	"k8s.io/test-infra/prow/pjutil"
@@ -58,7 +57,6 @@ type server struct {
 	tokenGenerator func() []byte
 	prowURL        string
 	configAgent    *config.Agent
-	gitClient      git.ClientFactory
 	ghc            github.Client
 	log            *logrus.Entry
 }
@@ -185,7 +183,7 @@ func (s *server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 		}
 
 		s.log.WithFields(l.Data).Infof("Refreshing the status of job %q (pj: %s)", pj.Spec.Job, pj.ObjectMeta.Name)
-		if err := report.Report(context.Background(), s.configAgent.Config(), s.gitClient, s.ghc, reportTemplate, pj, reportTypes); err != nil {
+		if err := report.Report(context.Background(), s.ghc, reportTemplate, pj, reportTypes); err != nil {
 			s.log.WithError(err).WithFields(l.Data).Info("Failed report.")
 		}
 	}

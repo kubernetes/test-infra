@@ -31,7 +31,6 @@ import (
 	"github.com/NYTimes/gziphandler"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/pjutil/pprof"
 
 	"k8s.io/test-infra/pkg/flagutil"
@@ -197,13 +196,8 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
-	g, err := o.github.GitClient(o.dryRun)
-	if err != nil {
-		logrus.WithError(err).Fatal("Error getting Git client.")
-	}
-	gitClient := git.ClientFactoryFrom(g)
 
-	c, err := jenkins.NewController(prowJobClient, jc, gitClient, githubClient, nil, cfg, o.totURL, o.selector, o.skipReport)
+	c, err := jenkins.NewController(prowJobClient, jc, githubClient, nil, cfg, o.totURL, o.selector, o.skipReport)
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to instantiate Jenkins controller.")
 	}
