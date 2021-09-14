@@ -1,12 +1,19 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
-reviewers:
-- dims
-- hh
-- listx
-- tpepper
 approvers:
-- dims
-- hh
-- listx
-- tpepper
+- release-engineering-approvers
+- promo-tools-approvers
+# TODO(releng): Distill down to SIG K8s Infra leads, once the proposal to
+#               convert to a SIG is approved.
+#               ref: https://github.com/kubernetes/community/pull/5928
+- wg-k8s-infra-leads
+- thockin
+
+reviewers:
+- release-engineering-reviewers
+- promo-tools-reviewers
+
+labels:
+- sig/release
+- area/release-eng
+- area/artifacts
