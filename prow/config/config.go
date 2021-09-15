@@ -106,6 +106,15 @@ type JobConfig struct {
 	// provide their own implementation.
 	ProwYAMLGetter ProwYAMLGetter `json:"-"`
 
+	// ProwYAMLGetterNoDefault is like ProwYAMLGetter, but without default
+	// values (it does not call DefaultAndValidateProwYAML()). Its sole purpose
+	// is to allow caching of ProwYAMLs that are retrieved purely from the
+	// inrepoconfig's repo, __without__ having the contents modified by the main
+	// Config's own settings (which happens mostly inside
+	// DefaultAndValidateProwYAML()). ProwYAMLGetterNoDefault is only used by
+	// GetProwYAMLFromCache().
+	ProwYAMLGetterNoDefault ProwYAMLGetter `json:"-"`
+
 	// ProwYAMLCache is a cache holding previous executions of ProwYAMLGetter.
 	ProwYAMLCache *ProwYAMLCache `json:"-"`
 
@@ -358,6 +367,36 @@ func (c *Config) getProwYAML(gc git.ClientFactory, identifier string, baseSHAGet
 		headSHAs = append(headSHAs, headSHA)
 	}
 	prowYAML, err := c.ProwYAMLGetter(c, gc, identifier, baseSHA, headSHAs...)
+	if err != nil {
+		return nil, err
+	}
+
+	return prowYAML, nil
+}
+
+// getProwYAMLNoDefault is like getProwYAML, but it does __not__ use the
+// information found inside the retrieved *ProwYAML to modify the Config.
+func (c *Config) getProwYAMLNoDefault(gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) (*ProwYAML, error) {
+	if identifier == "" {
+		return nil, errors.New("no identifier for repo given")
+	}
+	if !c.InRepoConfigEnabled(identifier) {
+		return &ProwYAML{}, nil
+	}
+
+	baseSHA, err := baseSHAGetter()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get baseSHA: %v", err)
+	}
+	var headSHAs []string
+	for _, headSHAGetter := range headSHAGetters {
+		headSHA, err := headSHAGetter()
+		if err != nil {
+			return nil, fmt.Errorf("failed to get headRef: %v", err)
+		}
+		headSHAs = append(headSHAs, headSHA)
+	}
+	prowYAML, err := c.ProwYAMLGetterNoDefault(c, gc, identifier, baseSHA, headSHAs...)
 	if err != nil {
 		return nil, err
 	}
@@ -1383,6 +1422,7 @@ func loadConfig(prowConfig, jobConfig string, additionalProwConfigDirs []string,
 	}
 
 	nc.ProwYAMLGetter = defaultProwYAMLGetter
+	nc.ProwYAMLGetterNoDefault = prowYAMLGetter
 
 	if deduplicatedTideQueries, err := deduplicateTideQueries(nc.Tide.Queries); err != nil {
 		logrus.WithError(err).Error("failed to deduplicate tide queriees")

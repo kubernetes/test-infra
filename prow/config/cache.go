@@ -29,7 +29,7 @@ import (
 
 // Caching implementation overview
 //
-// Consider the expensive function defaultProwYAMLGetter(). This function is
+// Consider the expensive function prowYAMLGetter(). This function is
 // expensive to compute (it involves invoking a Git client, walking a filesystem
 // path, etc). In our caching implementation, we save results of this function
 // into a cache (named ProwYAMLCache). The point is to avoid doing the expensive
@@ -191,7 +191,7 @@ func MakeCacheKey(kp CacheKeyParts) (CacheKey, error) {
 // scratch (cache miss).
 func (c *Config) GetPresubmitsFromCache(gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Presubmit, error) {
 
-	prowYAML, err := GetProwYAMLFromCache(c.ProwYAMLCache, c.getProwYAML, gc, identifier, baseSHAGetter, headSHAGetters...)
+	prowYAML, err := GetProwYAMLFromCache(c.ProwYAMLCache, c.getProwYAMLNoDefault, gc, identifier, baseSHAGetter, headSHAGetters...)
 	if err != nil {
 		return nil, err
 	}
@@ -208,7 +208,7 @@ func (c *Config) GetPresubmitsFromCache(gc git.ClientFactory, identifier string,
 // scratch (cache miss).
 func (c *Config) GetPostsubmitsFromCache(gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Postsubmit, error) {
 
-	prowYAML, err := GetProwYAMLFromCache(c.ProwYAMLCache, c.getProwYAML, gc, identifier, baseSHAGetter, headSHAGetters...)
+	prowYAML, err := GetProwYAMLFromCache(c.ProwYAMLCache, c.getProwYAMLNoDefault, gc, identifier, baseSHAGetter, headSHAGetters...)
 	if err != nil {
 		return nil, err
 	}

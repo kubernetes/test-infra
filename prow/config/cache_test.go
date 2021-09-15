@@ -568,7 +568,7 @@ func TestGetOrAddBurst(t *testing.T) {
 }
 
 func TestGetProwYAMLFromCache(t *testing.T) {
-	// fakeProwYAMLMap mocks defaultProwYAMLGetter. Instead of using the
+	// fakeProwYAMLMap mocks prowYAMLGetter. Instead of using the
 	// git.ClientFactory (and other operations), we just use a simple map to get
 	// the *ProwYAML value we want. For simplicity we just reuse MakeCacheKey
 	// even though we're not using a cache. The point of fakeProwYAMLMap is to

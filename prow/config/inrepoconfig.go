@@ -49,10 +49,11 @@ type ProwYAML struct {
 // their own implementation and set that on the Config.
 type ProwYAMLGetter func(c *Config, gc git.ClientFactory, identifier, baseSHA string, headSHAs ...string) (*ProwYAML, error)
 
-// Verify defaultProwYAMLGetter is a ProwYAMLGetter
+// Verify prowYAMLGetter is a ProwYAMLGetter
 var _ ProwYAMLGetter = defaultProwYAMLGetter
+var _ ProwYAMLGetter = prowYAMLGetter
 
-func defaultProwYAMLGetter(
+func prowYAMLGetter(
 	c *Config,
 	gc git.ClientFactory,
 	identifier string,
@@ -62,7 +63,7 @@ func defaultProwYAMLGetter(
 	log := logrus.WithField("repo", identifier)
 
 	if gc == nil {
-		log.Error("defaultProwYAMLGetter was called with a nil git client")
+		log.Error("prowYAMLGetter was called with a nil git client")
 		return nil, errors.New("gitClient is nil")
 	}
 
@@ -152,11 +153,25 @@ func defaultProwYAMLGetter(
 		}
 	}
 
+	return prowYAML, nil
+}
+
+func defaultProwYAMLGetter(
+	c *Config,
+	gc git.ClientFactory,
+	identifier string,
+	baseSHA string,
+	headSHAs ...string) (*ProwYAML, error) {
+
+	prowYAML, err := prowYAMLGetter(c, gc, identifier, baseSHA, headSHAs...)
+	if err != nil {
+		return nil, err
+	}
+
 	if err := DefaultAndValidateProwYAML(c, prowYAML, identifier); err != nil {
 		return nil, err
 	}
 
-	log.Debugf("Successfully got %d presubmits and %d postsubmits from %q.", len(prowYAML.Presubmits), len(prowYAML.Postsubmits), inRepoConfigFileName)
 	return prowYAML, nil
 }
 
@@ -184,6 +199,11 @@ func DefaultAndValidateProwYAML(c *Config, p *ProwYAML, identifier string) error
 		if !c.InRepoConfigAllowsCluster(post.Cluster, identifier) {
 			errs = append(errs, fmt.Errorf("cluster %q is not allowed for repository %q", post.Cluster, identifier))
 		}
+	}
+
+	if len(errs) == 0 {
+		log := logrus.WithField("repo", identifier)
+		log.Debugf("Successfully got %d presubmits and %d postsubmits from %q.", len(p.Presubmits), len(p.Postsubmits), inRepoConfigFileName)
 	}
 
 	return utilerrors.NewAggregate(errs)
