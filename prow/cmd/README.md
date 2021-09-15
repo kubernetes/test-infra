@@ -65,7 +65,6 @@ The container images in [`images`](/images) are used as base images for Prow com
 
 ## Deprecated
 
-* [`autobump`](/prow/cmd/autobump) autobumps a prow installation. Deprecated because you should use `generic-autobumper` instead
 * [`cm2kc`](/prow/cmd/cm2kc) is a CLI tool used to convert a [clustermap file][clustermap docs] to a [kubeconfig file][kubeconfig docs]. Deprecated because we have moved away from clustermaps; you should use [`gencred`] to generate a [kubeconfig file] directly.
 
 <!-- links -->

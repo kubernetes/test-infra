@@ -72,14 +72,6 @@ def repositories():
     )
 
     container_pull(
-        name = "gcloud-go",
-        digest = "sha256:ca9873d744f19e77ceafb499846248a82cde74ab5a613dd394348e7904d08d71",
-        registry = "gcr.io",
-        repository = "k8s-testimages/gcloud-in-go",
-        # tag = "v20200205-602500d",
-    )
-
-    container_pull(
         name = "bazel-base",
         digest = "sha256:e006f1c3658dd11d5176d5f7a862df4d5b9c06cfe014d5b8a86bb64b20a6f8be",
         registry = "gcr.io",

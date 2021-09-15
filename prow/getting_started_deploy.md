@@ -335,7 +335,7 @@ v20191108-08fbf64ac
 ```
 Then, we can use that tag to retrieve the corresponding utility images in `default_decoration_config_entries[]` in `config.yaml`:
 
-For more information on how the pod utility images for prow are versioned see [autobump](/prow/cmd/autobump/README.md)
+For more information on how the pod utility images for prow are versioned see [generic-autobumper](/prow/cmd/generic-autobumper/README.md) and the [autobump config used for prow.k8s.io](/config/prow/autobump-config/prow-component-autobump-config.yaml)
 
 ```yaml
 plank:

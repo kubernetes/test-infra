@@ -169,6 +169,7 @@ state and no claims of backwards compatibility are made for any external API.
 Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
+ - *September 15th, 2021* `autobump` removed, please use `generic-autobumper` instead, see [example config](/config/prow/autobump-config/prow-component-autobump-config.yaml)
  - *April 16th, 2021* Flagutil remove default value for `--github-token-path`.
  - *April 15th, 2021* Sinker requires --dry-run=false (default is true) to function correctly in production.
  - *April 14th, 2021* Deck remove default value for `--cookie-secret-file`.
