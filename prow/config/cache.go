@@ -19,7 +19,6 @@ package config
 import (
 	"encoding/json"
 	"fmt"
-	"sort"
 	"sync"
 
 	"github.com/hashicorp/golang-lru/simplelru"
@@ -174,9 +173,6 @@ func MakeCacheKeyParts(
 		headSHAs = append(headSHAs, headSHA)
 	}
 
-	// For determinism, sort the headSHAs, in case the caller has not sorted
-	// them already.
-	sort.Strings(headSHAs)
 	keyParts.HeadSHAs = headSHAs
 
 	return keyParts, nil
