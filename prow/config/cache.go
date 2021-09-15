@@ -20,9 +20,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"sync"
 
-	lru "github.com/hashicorp/golang-lru"
+	"github.com/hashicorp/golang-lru/simplelru"
 	"github.com/sirupsen/logrus"
+
 	"k8s.io/test-infra/prow/git/v2"
 )
 
@@ -75,22 +77,42 @@ import (
 // type we want ([]Presubmit or []Postsubmit) before we can use
 // them.
 type ProwYAMLCache struct {
-	cache *lru.Cache
+	LRUCache
+}
+
+type LRUCache struct {
+	sync.Mutex
+	*simplelru.LRU
+}
+
+type Promise struct {
+	Result
+	resolve chan struct{}
+}
+
+type Result struct {
+	val interface{}
+	err error
+}
+
+func NewLRUCache(size int) (*LRUCache, error) {
+	cache, err := simplelru.NewLRU(size, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return &LRUCache{sync.Mutex{}, cache}, nil
 }
 
 // NewProwYAMLCache creates a new LRU cache for presubmits and postsubmits,
 // where the keys are CacheKeys and values are ProwYAMLs.
 func NewProwYAMLCache(size int) (*ProwYAMLCache, error) {
-	cache, err := lru.New(size)
+	cache, err := NewLRUCache(size)
 	if err != nil {
 		return nil, err
 	}
 
-	prowYAMLCache := &ProwYAMLCache{
-		cache: cache,
-	}
-
-	return prowYAMLCache, nil
+	return &ProwYAMLCache{*cache}, nil
 }
 
 // InitProwYAMLCache calls NewProwYAMLCache() to initialize a cache of ProwYAMLs
@@ -227,7 +249,7 @@ func (c *Config) GetPostsubmitsFromCache(gc git.ClientFactory, identifier string
 // tests can just provide its own function for constructing a ProwYAML object
 // (instead of needing to create an actual Git repo, etc.).
 func GetProwYAMLFromCache(
-	p *ProwYAMLCache,
+	prowYAMLCache *ProwYAMLCache,
 	valConstructorHelper valConstructorHelper,
 	gc git.ClientFactory,
 	identifier string,
@@ -250,7 +272,7 @@ func GetProwYAMLFromCache(
 		return valConstructorHelper(gc, identifier, baseSHAGetter, headSHAGetters...)
 	}
 
-	val, _, _, err := GetFromCache(p.cache, keyConstructor, valConstructor)
+	val, err := prowYAMLCache.GetOrAdd(keyConstructor, valConstructor)
 	if err != nil {
 		return nil, err
 	}
@@ -264,57 +286,127 @@ func GetProwYAMLFromCache(
 	// can happen if some other function modified the cache. Ultimately, this is
 	// a price we pay for using a cache library that uses "interface{}" for the
 	// type of its items. In this case, we log a warning and return an error.
-	err = fmt.Errorf("cache value type error: expected value type 'config.ProwYAML', got '%T'", val)
+	err = fmt.Errorf("cache value type error: expected value type '*config.ProwYAML', got '%T'", val)
 	logrus.Warn(err)
 	return nil, err
 }
 
-// GetFromCache tries to use a cache if it is available to get a Value. It is
+// GetOrAdd tries to use a cache if it is available to get a Value. It is
 // assumed that Value is expensive to construct from scratch, which is the
 // reason why we try to use the cache in the first place. If we do end up
 // constructing a Value from scratch, then we store it into the cache with a
 // corresponding Key, so that we can look up the Value with just the Key in the
 // future.
-func GetFromCache(
-	cache *lru.Cache,
+//
+// This code for a concurrent non-blocking cache with support for duplicate
+// suppression is drawn from Alan Donovan and Brian Kernighan, "The Go
+// Programming Language" (Addison-Wesley, 2016), p. 277.
+func (lruCache *LRUCache) GetOrAdd(
 	keyConstructor keyConstructor,
-	valConstructor valConstructor) (interface{}, bool, bool, error) {
+	valConstructor valConstructor) (interface{}, error) {
 
 	// If the cache is unreachable, then fall back to cache-less behavior
 	// (construct the value from scratch).
-	if cache == nil {
+	if lruCache == nil {
 		valConstructed, err := valConstructor()
 		if err != nil {
-			return nil, false, false, err
+			return nil, err
 		}
 
-		return valConstructed, false, false, nil
+		return valConstructed, nil
 	}
 
 	// Construct cache key. We use this key to find the value (if it was already
-	// stored in the cache by a previous call to GetFromCache).
+	// stored in the cache by a previous call to GetOrAdd).
 	key, err := keyConstructor()
 	if err != nil {
-		return nil, false, false, err
+		return nil, err
 	}
 
 	// Cache lookup.
-	valFound, ok := cache.Get(key)
+	lruCache.Lock()
+	var promise *Promise
+	var ok bool
+	maybePromise, promisePending := lruCache.Get(key)
 
-	// Cache hit.
-	if ok {
-		return valFound, true, false, nil
+	if promisePending {
+		// A promise exists, BUT the wrapped value inside it (p.result) might
+		// not be written to yet by the thread that is actually resolving the
+		// promise.
+		//
+		// For now we just unlock the overall lruCache itself so that it can
+		// service other GetOrAdd() calls to it.
+		lruCache.Unlock()
+
+		// If the type is not a promise type, there's no need to wait and we can
+		// just return immediately with an error.
+		promise, ok = maybePromise.(*Promise)
+		if !ok {
+			return nil, fmt.Errorf("invalid cache entry type '%T', expected '*Promise'", maybePromise)
+		}
+
+		// Block until the first thread originally created this promise has
+		// finished resolving it. Then it's safe to return the resolved values
+		// of the promise below.
+		//
+		// If the original thread resolved the promise already a long time ago
+		// (by closing the "resolve" channel), then this receive instruction
+		// will finish immediately and we will not block at all.
+		<-promise.resolve
+	} else {
+		// No promise exists for this key. In other words, we are the first
+		// thread to ask for this key's value and so We have no choice but to
+		// construct the value ourselves (this call is expensive!) and add it to
+		// the cache.
+		//
+		// If there are other concurrent threads that call GetOrAdd() with the
+		// same key and value constructors, we force them to use the same value
+		// as us (so that they don't have to also all valConstructor()). We do
+		// this with the following algorithm:
+		//
+		//  1. immediately create a promise to construct the value
+		//  2. actually construct the value (expensive operation)
+		//  3. resolve the promise to alert all threads looking at the same promise
+		//     get the value from step 2.
+		//
+		// This mitigation strategy is a kind of "duplicate suppression", also
+		// called "request coalescing". The problem of multiple requests for the
+		// same cache entry is also called "cache stampede".
+
+		// Step 1
+		//
+		// Let other threads know about our promise to construct the value. We
+		// don't care if the underlying LRU cache had to evict an existing
+		// entry.
+		promise = &Promise{resolve: make(chan struct{})}
+		_ = lruCache.Add(key, promise)
+		lruCache.Unlock()
+
+		// Step 2
+		//
+		// Construct the value (expensive operation).
+		promise.val, promise.err = valConstructor()
+
+		// Step 3
+		//
+		// Broadcast to all watchers of this promise that it is ready to be read
+		// from (no data race!).
+		close(promise.resolve)
+
+		// If the value construction (expensive operation) failed, then we
+		// delete the cached entry so that we may attempt to re-try again in the
+		// future (instead of waiting for the LRUCache to evict it on its own
+		// over time).
+		//
+		// TODO: If our cache implementation supports a TTL mechanism, then we
+		// could just set that instead and let the cached entry to expire on its
+		// own.
+		if promise.err != nil {
+			lruCache.Lock()
+			_ = lruCache.Remove(key)
+			lruCache.Unlock()
+		}
 	}
 
-	// Cache miss. We have no choice but to construct the value (this call is
-	// expensive!) and add it to the cache.
-	valConstructed, err := valConstructor()
-	if err != nil {
-		return nil, false, false, err
-	}
-
-	// Add our constructed value to the cache.
-	evicted := cache.Add(key, valConstructed)
-
-	return valConstructed, false, evicted, nil
+	return promise.val, promise.err
 }
