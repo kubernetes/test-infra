@@ -299,7 +299,7 @@ aliases:
 
   # end sigs.k8s.io/kubebuilder/OWNERS_ALIASES
 
-  # copied from sigs.k8s.io/k8s-container-image-promoter/OWNERS_ALIASES
+  # copied from sigs.k8s.io/promo-tools/OWNERS_ALIASES
   promo-tools-approvers:
     - cpanato
     - jeremyrickard

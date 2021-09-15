@@ -88,11 +88,11 @@ presubmits:
         - files
         - --manifests=/home/prow/go/src/github.com/kubernetes/k8s.io/artifacts/
         - --dry-run=true
-  kubernetes-sigs/k8s-container-image-promoter:
+  kubernetes-sigs/promo-tools:
   # Run promoter e2e tests.
   - name: pull-cip-e2e
     decorate: true
-    path_alias: "sigs.k8s.io/k8s-container-image-promoter"
+    path_alias: "sigs.k8s.io/promo-tools"
     skip_report: false
     always_run: true
     # Because we run e2e tests, we cannot run more than 1 instance at a time
@@ -131,7 +131,7 @@ presubmits:
       testgrid-alert-email: release-managers+alerts@kubernetes.io
   - name: pull-cip-auditor-e2e
     decorate: true
-    path_alias: "sigs.k8s.io/k8s-container-image-promoter"
+    path_alias: "sigs.k8s.io/promo-tools"
     skip_report: false
     always_run: true
     # Because we run e2e tests, we cannot run more than 1 instance at a time
@@ -171,7 +171,7 @@ presubmits:
   - name: pull-cip-image-cip
     cluster: k8s-infra-prow-build
     decorate: true
-    path_alias: "sigs.k8s.io/k8s-container-image-promoter"
+    path_alias: "sigs.k8s.io/promo-tools"
     skip_report: false
     always_run: true
     spec:
@@ -206,7 +206,7 @@ presubmits:
   # Build all binaries and also run unit tests.
   - name: pull-cip-unit-tests
     decorate: true
-    path_alias: "sigs.k8s.io/k8s-container-image-promoter"
+    path_alias: "sigs.k8s.io/promo-tools"
     skip_report: false
     always_run: true
     branches:
@@ -227,7 +227,7 @@ presubmits:
   # Run linter.
   - name: pull-cip-verify
     decorate: true
-    path_alias: "sigs.k8s.io/k8s-container-image-promoter"
+    path_alias: "sigs.k8s.io/promo-tools"
     skip_report: false
     always_run: true
     branches:
@@ -247,7 +247,7 @@ presubmits:
       testgrid-alert-email: release-managers+alerts@kubernetes.io
   - name: pull-cip-verify-archives
     decorate: true
-    path_alias: "sigs.k8s.io/k8s-container-image-promoter"
+    path_alias: "sigs.k8s.io/promo-tools"
     skip_report: false
     always_run: true
     labels:
