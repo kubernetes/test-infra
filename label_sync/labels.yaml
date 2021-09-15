@@ -1877,7 +1877,7 @@ repos:
         name: area/provider/podman
         target: both
         addedBy: humans
-  kubernetes-sigs/k8s-container-image-promoter:
+  kubernetes-sigs/promo-tools:
     labels:
       - color: 0052cc
         description: Issues or PRs related to the hosting of release artifacts for subprojects

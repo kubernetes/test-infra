@@ -30,7 +30,7 @@ postsubmits:
         github_team_slugs:
           - org: kubernetes
             slug: release-managers
-  kubernetes-sigs/k8s-container-image-promoter:
+  kubernetes-sigs/promo-tools:
     # TODO(releng): Rename to 'kpromo' once tools are merged
     - name: post-cip-push-image-cip
       cluster: k8s-infra-prow-build-trusted

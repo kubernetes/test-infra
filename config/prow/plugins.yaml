@@ -78,7 +78,7 @@ approve:
   - kubernetes-sigs/boskos
   - kubernetes-sigs/downloadkubernetes
   - kubernetes-sigs/e2e-framework
-  - kubernetes-sigs/k8s-container-image-promoter
+  - kubernetes-sigs/promo-tools
   - kubernetes-sigs/k8s-gsm-tools
   - kubernetes-sigs/kind
   - kubernetes-sigs/kubetest2
@@ -129,7 +129,7 @@ lgtm:
   - kubernetes-sigs/controller-runtime
   - kubernetes-sigs/downloadkubernetes
   - kubernetes-sigs/e2e-framework
-  - kubernetes-sigs/k8s-container-image-promoter
+  - kubernetes-sigs/promo-tools
   - kubernetes-sigs/k8s-gsm-tools
   - kubernetes-sigs/kind
   - kubernetes-sigs/kubetest2
@@ -1088,7 +1088,7 @@ plugins:
     - override
     - release-note
 
-  kubernetes-sigs/k8s-container-image-promoter:
+  kubernetes-sigs/promo-tools:
     plugins:
     - mergecommitblocker
     - override
