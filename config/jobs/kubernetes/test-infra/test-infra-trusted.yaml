@@ -51,27 +51,6 @@ postsubmits:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-prow
         - images/alpine/
-  - name: post-test-infra-push-alpine-bash
-    cluster: test-infra-trusted
-    run_if_changed: '^images/alpine-bash/'
-    annotations:
-      testgrid-dashboards: "sig-testing-images"
-      testgrid-tab-name: "alpine-bash"
-    decorate: true
-    branches:
-    - ^master$
-    max_concurrency: 1
-    spec:
-      serviceAccountName: deployer # TODO(fejta): should be pusher
-      containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20210128-v0.6-11-gf1c6399
-        command:
-        - images/builder/ci-runner.sh
-        args:
-        - --scratch-bucket=gs://k8s-testimages-scratch
-        - --project=k8s-testimages
-        - --build-dir=.
-        - images/alpine-bash/
   - name: post-test-infra-push-gcloud-terraform
     cluster: test-infra-trusted
     run_if_changed: '^images/gcloud-terraform/'

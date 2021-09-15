@@ -32,14 +32,6 @@ def repositories():
     )
 
     container_pull(
-        name = "alpine-bash",
-        digest = "sha256:5b2616c8e2a9ca1e8cd015ad76df3bedecdb7b98b8825c718360ec6b98cb1dcc",
-        registry = "gcr.io",
-        repository = "k8s-testimages/alpine-bash",
-        # tag = "v20200713-e9b3d9d",
-    )
-
-    container_pull(
         name = "gcloud-base",
         digest = "sha256:5b49dfb5e366dd75a5fc6d5d447be584f8f229c5a790ee0c3b0bd0cf70ec41dd",
         registry = "gcr.io",
