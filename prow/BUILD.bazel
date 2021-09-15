@@ -13,7 +13,6 @@ prow_push(
             tags(
                 cmds = [
                     "admission",
-                    "autobump",
                     "branchprotector",
                     "checkconfig",
                     "clonerefs",
@@ -115,7 +114,6 @@ filegroup(
         "//prow/client/listers/prowjobs/v1:all-srcs",
         "//prow/clonerefs:all-srcs",
         "//prow/cmd/admission:all-srcs",
-        "//prow/cmd/autobump:all-srcs",
         "//prow/cmd/branchprotector:all-srcs",
         "//prow/cmd/checkconfig:all-srcs",
         "//prow/cmd/clonerefs:all-srcs",
