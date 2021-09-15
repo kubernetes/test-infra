@@ -1,6 +1,6 @@
 presubmits:
   kubernetes-sigs/cluster-api:
-  - name: pull-cluster-api-build-main
+  - name: pull-cluster-api-build-release-0-4
     decorate: true
     path_alias: sigs.k8s.io/cluster-api
     always_run: true
@@ -8,7 +8,8 @@ presubmits:
       preset-service-account: "true"
     branches:
     # The script this job runs is not in all branches.
-    - ^master$
+    - ^release-0.4$
+    - ^operator-0.4$
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-1.21
@@ -16,9 +17,9 @@ presubmits:
         - runner.sh
         - ./scripts/ci-build.sh
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: capi-pr-build-main
-  - name: pull-cluster-api-make-main
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.4
+      testgrid-tab-name: capi-pr-build-release-0-4
+  - name: pull-cluster-api-make-release-0-4
     decorate: true
     path_alias: sigs.k8s.io/cluster-api
     always_run: false
@@ -28,7 +29,8 @@ presubmits:
       preset-dind-enabled: "true"
     branches:
     # The script this job runs is not in all branches.
-    - ^master$
+    - ^release-0.4$
+    - ^operator-0.4$
     spec:
       containers:
       - command:
@@ -42,9 +44,9 @@ presubmits:
           requests:
             cpu: 7300m
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: capi-pr-make-main
-  - name: pull-cluster-api-apidiff-main
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.4
+      testgrid-tab-name: capi-pr-make-release-0-4
+  - name: pull-cluster-api-apidiff-release-0-4
     decorate: true
     path_alias: sigs.k8s.io/cluster-api
     always_run: true
@@ -53,7 +55,8 @@ presubmits:
       preset-service-account: "true"
     branches:
     # The script this job runs is not in all branches.
-    - ^master$
+    - ^release-0.4$
+    - ^operator-0.4$
     spec:
       containers:
       - command:
@@ -61,8 +64,8 @@ presubmits:
         - ./scripts/ci-apidiff.sh
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-1.21
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: capi-pr-apidiff-main
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.4
+      testgrid-tab-name: capi-pr-apidiff-release-0-4
   - name: pull-cluster-api-verify
     decorate: true
     path_alias: sigs.k8s.io/cluster-api
@@ -71,7 +74,8 @@ presubmits:
       preset-service-account: "true"
     branches:
     # The script this job runs is not in all branches.
-    - ^master$
+    - ^release-0.4$
+    - ^operator-0.4$
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-1.21
@@ -82,9 +86,9 @@ presubmits:
           requests:
             cpu: 7300m
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: capi-pr-verify-main
-  - name: pull-cluster-api-test-main
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.4
+      testgrid-tab-name: capi-pr-verify-release-0-4
+  - name: pull-cluster-api-test-release-0-4
     decorate: true
     path_alias: sigs.k8s.io/cluster-api
     always_run: true
@@ -92,7 +96,8 @@ presubmits:
       preset-service-account: "true"
     branches:
     # The script this job runs is not in all branches.
-    - ^master$
+    - ^release-0.4$
+    - ^operator-0.4$
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-1.21
@@ -103,9 +108,9 @@ presubmits:
           requests:
             cpu: 7300m
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: capi-pr-test-main
-  - name: pull-cluster-api-test-main-mink8s
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.4
+      testgrid-tab-name: capi-pr-test-release-0-4
+  - name: pull-cluster-api-test-release-0-4-mink8s
     decorate: true
     path_alias: sigs.k8s.io/cluster-api
     always_run: true
@@ -113,7 +118,8 @@ presubmits:
       preset-service-account: "true"
     branches:
     # The script this job runs is not in all branches.
-    - ^master$
+    - ^release-0.4$
+    - ^operator-0.4$
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-1.21
@@ -132,16 +138,16 @@ presubmits:
           requests:
             cpu: 7300m
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: capi-pr-test-main-mink8s
-  - name: pull-cluster-api-e2e-main
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.4
+      testgrid-tab-name: capi-pr-test-release-0-4-mink8s
+  - name: pull-cluster-api-e2e-release-0-4
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     decorate: true
     branches:
     # The script this job runs is not in all branches.
-    - ^master$
+    - ^release-0.4$
     path_alias: sigs.k8s.io/cluster-api
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|scripts|test|third_party|util)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
@@ -160,9 +166,9 @@ presubmits:
           requests:
             cpu: 7300m
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: capi-pr-e2e-main
-  - name: pull-cluster-api-e2e-ipv6-main
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.4
+      testgrid-tab-name: capi-pr-e2e-release-0-4
+  - name: pull-cluster-api-e2e-ipv6-release-0-4
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -170,7 +176,7 @@ presubmits:
     optional: true
     branches:
     # The script this job runs is not in all branches.
-    - ^master$
+    - ^release-0.4$
     path_alias: sigs.k8s.io/cluster-api
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|scripts|test|third_party|util)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
@@ -195,9 +201,9 @@ presubmits:
           requests:
             cpu: 7300m
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: capi-pr-e2e-main-ipv6
-  - name: pull-cluster-api-e2e-full-main
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.4
+      testgrid-tab-name: capi-pr-e2e-release-0-4-ipv6
+  - name: pull-cluster-api-e2e-full-release-0-4
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -206,7 +212,7 @@ presubmits:
     always_run: false
     branches:
     # The script this job runs is not in all branches.
-    - ^master$
+    - ^release-0.4$
     path_alias: sigs.k8s.io/cluster-api
     spec:
       containers:
@@ -215,7 +221,7 @@ presubmits:
           - runner.sh
           - "./scripts/ci-e2e.sh"
         env:
-          # Since the PR-Blocking tests are run as part of the cluster-api-test-main job
+          # Since the PR-Blocking tests are run as part of the cluster-api-test-release-0-4 job
           # and the upgrade tests are being run as part of the periodic upgrade jobs.
           # This jobs ends up running all the other tests in the E2E suite
           - name: GINKGO_SKIP
@@ -227,9 +233,9 @@ presubmits:
           requests:
             cpu: 7300m
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: capi-pr-e2e-full-main
-  - name: pull-cluster-api-e2e-workload-upgrade-1-22-latest-main
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.4
+      testgrid-tab-name: capi-pr-e2e-full-release-0-4
+  - name: pull-cluster-api-e2e-workload-upgrade-1-22-latest-release-0-4
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -238,7 +244,7 @@ presubmits:
     always_run: false
     branches:
     # The script this job runs is not in all branches.
-    - ^master$
+    - ^release-0.4$
     path_alias: sigs.k8s.io/cluster-api
     extra_refs:
     - org: kubernetes
@@ -269,5 +275,5 @@ presubmits:
           requests:
             cpu: 7300m
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: capi-pr-e2e-main-1-22-latest
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.4
+      testgrid-tab-name: capi-pr-e2e-release-0-4-1-22-latest
