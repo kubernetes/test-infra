@@ -3,6 +3,54 @@ postsubmits:
     #
     # job images, e.g. images/*
     #
+    - name: post-test-infra-push-bazelbuild-canary
+      cluster: k8s-infra-prow-build-trusted
+      run_if_changed: '^images/bazelbuild/'
+      annotations:
+        testgrid-dashboards: sig-testing-canaries, wg-k8s-infra-canaries, wg-k8s-infra-gcb
+        testgrid-tab-name: bazelbuild-canary
+        testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
+        testgrid-num-failures-to-alert: '1'
+        description: builds and pushes the image builder's own image
+      decorate: true
+      branches:
+      - ^master$
+      max_concurrency: 1
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20210913-fc7c4e84f6
+          command:
+          - /run.sh
+          args:
+          - --scratch-bucket=gs://k8s-staging-test-infra-gcb
+          - --project=k8s-staging-test-infra
+          - --build-dir=.
+          - images/bazelbuild/
+    - name: post-test-infra-push-benchmarkjunit-canary
+      cluster: k8s-infra-prow-build-trusted
+      run_if_changed: '^images/benchmarkjunit/'
+      annotations:
+        testgrid-dashboards: sig-testing-canaries, wg-k8s-infra-canaries, wg-k8s-infra-gcb
+        testgrid-tab-name: benchmarkjunit-canary
+        testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
+        testgrid-num-failures-to-alert: '1'
+        description: builds and pushes the image builder's own image
+      decorate: true
+      branches:
+      - ^master$
+      max_concurrency: 1
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20210913-fc7c4e84f6
+          command:
+          - /run.sh
+          args:
+          - --scratch-bucket=gs://k8s-staging-test-infra-gcb
+          - --project=k8s-staging-test-infra
+          - --build-dir=.
+          - pkg/benchmarkjunit/
     - name: post-test-infra-push-bigquery
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '^(images/bigquery|scenarios)/'
@@ -51,6 +99,30 @@ postsubmits:
           - --project=k8s-staging-test-infra
           - --build-dir=.
           - images/bootstrap/
+    - name: post-test-infra-push-gcb-docker-gcloud-canary
+      cluster: k8s-infra-prow-build-trusted
+      run_if_changed: '^images/gcb-docker-gcloud/'
+      annotations:
+        testgrid-dashboards: sig-testing-canaries, wg-k8s-infra-canaries, wg-k8s-infra-gcb
+        testgrid-tab-name: gcb-docker-gcloud-canary
+        testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
+        testgrid-num-failures-to-alert: '1'
+        description: builds and pushes the image builder's own image
+      decorate: true
+      branches:
+      - ^master$
+      max_concurrency: 1
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20210913-fc7c4e84f6
+          command:
+          - /run.sh
+          args:
+          - --scratch-bucket=gs://k8s-staging-test-infra-gcb
+          - --project=k8s-staging-test-infra
+          - --build-dir=.
+          - images/gcb-docker-gcloud/
     - name: post-test-infra-push-gcloud-in-go
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '^images/gcloud/'
