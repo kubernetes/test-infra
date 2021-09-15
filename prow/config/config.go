@@ -791,6 +791,9 @@ type GitHubReporter struct {
 	//
 	// defaults to both presubmit and postsubmit jobs.
 	JobTypesToReport []prowapi.ProwJobType `json:"job_types_to_report,omitempty"`
+	// NoCommentRepos is a list of orgs and org/repos for which failure report
+	// comments should not be maintained. Status contexts will still be written.
+	NoCommentRepos []string `json:"no_comment_repos,omitempty"`
 }
 
 // Sinker is config for the sinker controller.

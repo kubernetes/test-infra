@@ -440,6 +440,11 @@ github_reporter:
     # defaults to both presubmit and postsubmit jobs.
     job_types_to_report:
       - ""
+
+    # NoCommentRepos is a list of orgs and org/repos for which failure report
+    # comments should not be maintained. Status contexts will still be written.
+    no_comment_repos:
+      - ""
 horologium:
     # TickInterval is the interval in which we check if new jobs need to be
     # created. Defaults to one minute.

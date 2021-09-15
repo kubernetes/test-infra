@@ -114,12 +114,12 @@ func ShouldReport(pj prowapi.ProwJob, validTypes []prowapi.ProwJobType) bool {
 
 // Report is creating/updating/removing reports in GitHub based on the state of
 // the provided ProwJob.
-func Report(ctx context.Context, ghc GitHubClient, reportTemplate *template.Template, pj prowapi.ProwJob, validTypes []prowapi.ProwJobType) error {
+func Report(ctx context.Context, ghc GitHubClient, reportTemplate *template.Template, pj prowapi.ProwJob, config config.GitHubReporter) error {
 	if ghc == nil {
 		return fmt.Errorf("trying to report pj %s, but found empty github client", pj.ObjectMeta.Name)
 	}
 
-	if !ShouldReport(pj, validTypes) {
+	if !ShouldReport(pj, config.JobTypesToReport) {
 		return nil
 	}
 
@@ -141,6 +141,14 @@ func Report(ctx context.Context, ghc GitHubClient, reportTemplate *template.Temp
 
 	if len(refs.Pulls) == 0 {
 		return nil
+	}
+
+	// Check if this org or repo has opted out of failure report comments
+	fullRepo := fmt.Sprintf("%s/%s", refs.Org, refs.Repo)
+	for _, ident := range config.NoCommentRepos {
+		if refs.Org == ident || fullRepo == ident {
+			return nil
+		}
 	}
 
 	ics, err := ghc.ListIssueCommentsWithContext(ctx, refs.Org, refs.Repo, refs.Pulls[0].Number)

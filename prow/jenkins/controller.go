@@ -220,11 +220,11 @@ func (c *Controller) Sync() error {
 
 	var reportErrs []error
 	if !c.skipReport {
-		reportTypes := c.cfg().GitHubReporter.JobTypesToReport
+		reportConfig := c.cfg().GitHubReporter
 		jConfig := c.config()
 		for report := range reportCh {
 			reportTemplate := jConfig.ReportTemplateForRepo(report.Spec.Refs)
-			if err := reportlib.Report(context.Background(), c.ghc, reportTemplate, report, reportTypes); err != nil {
+			if err := reportlib.Report(context.Background(), c.ghc, reportTemplate, report, reportConfig); err != nil {
 				reportErrs = append(reportErrs, err)
 				c.log.WithFields(pjutil.ProwJobFields(&report)).WithError(err).Warn("Failed to report ProwJob status")
 			}
