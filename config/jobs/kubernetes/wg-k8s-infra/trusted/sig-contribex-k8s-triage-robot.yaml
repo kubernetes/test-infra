@@ -10,7 +10,7 @@ periodics:
     testgrid-tab-name: api-review-help
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20210810-945418dcfd
+    - image: gcr.io/k8s-prow/commenter:v20210915-1112f4f614
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -58,7 +58,7 @@ periodics:
     testgrid-tab-name: cla
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20210810-945418dcfd
+    - image: gcr.io/k8s-prow/commenter:v20210915-1112f4f614
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -100,7 +100,7 @@ periodics:
     testgrid-tab-name: close
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20210810-945418dcfd
+    - image: gcr.io/k8s-prow/commenter:v20210915-1112f4f614
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -154,7 +154,7 @@ periodics:
     description: Automatically /retest for approved PRs that are failing tests
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20210810-945418dcfd
+    - image: gcr.io/k8s-prow/commenter:v20210915-1112f4f614
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -222,7 +222,7 @@ periodics:
     testgrid-tab-name: rotten
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20210810-945418dcfd
+    - image: gcr.io/k8s-prow/commenter:v20210915-1112f4f614
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -277,7 +277,7 @@ periodics:
     testgrid-tab-name: stale
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20210810-945418dcfd
+    - image: gcr.io/k8s-prow/commenter:v20210915-1112f4f614
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -323,6 +323,54 @@ periodics:
       secret:
         secretName: k8s-triage-robot-github-token
 
+- name: ci-k8s-triage-robot-thaw-prs
+  interval: 1h
+  cluster: k8s-infra-prow-build-trusted
+  decorate: true
+  annotations:
+    testgrid-dashboards: sig-contribex-k8s-triage-robot
+    description: Removes lifecycle/frozen from PRs
+    testgrid-tab-name: thaw-prs
+  spec:
+    containers:
+    - image: gcr.io/k8s-prow/commenter:v20210915-1112f4f614
+      command:
+      - /app/robots/commenter/app.binary
+      args:
+      - |-
+        --query=org:kubernetes
+        org:kubernetes-sigs
+        org:kubernetes-client
+        org:kubernetes-csi
+        label:lifecycle/frozen
+        is:pr
+      - --token=/etc/github-token/token
+      - --endpoint=http://ghproxy.default.svc.cluster.local
+      - |-
+        --comment=The `lifecycle/frozen` label can not be applied to PRs.
+
+        This bot removes `lifecycle/frozen` from PRs because:
+        - Commenting `/lifecycle frozen` on a PR has not worked since March 2021
+        - PRs that remain open for >150 days are unlikely to be easily rebased
+
+        You can:
+        - Rebase this PR and attempt to get it merged
+        - Close this PR with `/close`
+
+        Please send feedback to sig-contributor-experience at [kubernetes/community](https://github.com/kubernetes/community).
+
+        /remove-lifecycle frozen
+      - --template
+      - --ceiling=10
+      - --confirm
+      volumeMounts:
+      - name: token
+        mountPath: /etc/github-token
+    volumes:
+    - name: token
+      secret:
+        secretName: k8s-triage-robot-github-token
+
 - name: issue-creator
   interval: 24h
   cluster: k8s-infra-prow-build-trusted
@@ -334,7 +382,7 @@ periodics:
     description: Creates github issues based on data from various 'IssueSource's.
   spec:
     containers:
-    - image: gcr.io/k8s-prow/issue-creator:v20210810-945418dcfd
+    - image: gcr.io/k8s-prow/issue-creator:v20210915-1112f4f614
       command:
       - /app/robots/issue-creator/app.binary
       args:

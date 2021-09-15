@@ -34,7 +34,7 @@ spec:
       serviceAccountName: prow-controller-manager
       containers:
       - name: prow-controller-manager
-        image: gcr.io/k8s-prow/prow-controller-manager:v20210810-945418dcfd
+        image: gcr.io/k8s-prow/prow-controller-manager:v20210915-1112f4f614
         args:
         - --config-path=/etc/config/config.yaml
         - --dry-run=false
@@ -44,6 +44,9 @@ spec:
         # Use KUBECONFIG envvar rather than --kubeconfig flag in order to provide multiple configs to merge.
         - name: KUBECONFIG
           value: "/etc/kubeconfig/config"
+        ports:
+        - name: metrics
+          containerPort: 9090
         volumeMounts:
         - mountPath: /etc/kubeconfig
           name: kubeconfig

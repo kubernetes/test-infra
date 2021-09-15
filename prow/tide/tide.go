@@ -1257,8 +1257,13 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 	return fmt.Errorf("failed merging %v%s: %v", failed, batch, utilerrors.NewAggregate(errs))
 }
 
-// setTideStatusSuccess calls github api to change tide status context to success
+// setTideStatusSuccess ensures the tide context is set to success
 func setTideStatusSuccess(pr PullRequest, ghc githubClient, cfg *config.Config, log *logrus.Entry) error {
+	// Do not waste api tokens and risk hitting the 2.5k context limit by setting it to success if it is
+	// already set to success.
+	if prHasSuccessfullTideStatusContext(pr) {
+		return nil
+	}
 	return ghc.CreateStatus(
 		string(pr.Repository.Owner.Login),
 		string(pr.Repository.Name),
@@ -1268,6 +1273,21 @@ func setTideStatusSuccess(pr PullRequest, ghc githubClient, cfg *config.Config, 
 			State:     "success",
 			TargetURL: targetURL(cfg, &pr, log),
 		})
+}
+
+func prHasSuccessfullTideStatusContext(pr PullRequest) bool {
+	for _, commit := range pr.Commits.Nodes {
+		if commit.Commit.OID != pr.HeadRefOID {
+			continue
+		}
+		for _, context := range commit.Commit.Status.Contexts {
+			if strings.EqualFold(string(context.Context), statusContext) {
+				return strings.EqualFold(string(context.State), string(githubql.StatusStateSuccess))
+			}
+		}
+	}
+
+	return false
 }
 
 // tryMerge attempts 1 merge and returns a bool indicating if we should try
@@ -1806,7 +1826,8 @@ type PullRequest struct {
 			Login githubql.String
 		}
 	}
-	Commits struct {
+	ReviewDecision githubql.PullRequestReviewDecision `graphql:"reviewDecision"`
+	Commits        struct {
 		Nodes []struct {
 			Commit Commit
 		}

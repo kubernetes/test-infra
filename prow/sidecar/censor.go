@@ -323,7 +323,18 @@ func archive(srcDir, destArchive string) error {
 		if err != nil {
 			return err
 		}
-		header, err := tar.FileInfoHeader(info, info.Name())
+
+		// Handle symlinks. See https://stackoverflow.com/a/40003617.
+		var link string
+		if info.Mode()&os.ModeSymlink == os.ModeSymlink {
+			if link, err = os.Readlink(absPath); err != nil {
+				return err
+			}
+		}
+
+		// "link" is only used by FileInfoHeader if "info" here is a symlink.
+		// See https://pkg.go.dev/archive/tar#FileInfoHeader.
+		header, err := tar.FileInfoHeader(info, link)
 		if err != nil {
 			return fmt.Errorf("could not create tar header: %w", err)
 		}
@@ -339,6 +350,12 @@ func archive(srcDir, destArchive string) error {
 		if info.IsDir() {
 			return nil
 		}
+
+		// Nothing more to do for non-regular files (symlinks).
+		if !info.Mode().IsRegular() {
+			return nil
+		}
+
 		file, err := os.Open(absPath)
 		if err != nil {
 			return fmt.Errorf("could not open source file: %w", err)

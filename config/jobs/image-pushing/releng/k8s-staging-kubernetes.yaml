@@ -8,11 +8,13 @@ postsubmits:
       decorate: true
       run_if_changed: '^cluster\/images\/etcd\/'
       branches:
+        - ^main$
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210913-fc7c4e84f6
             command:
               - /run.sh
             args:
@@ -24,8 +26,9 @@ postsubmits:
               - name: LOG_TO_STDOUT
                 value: "y"
       rerun_auth_config:
-        github_team_ids:
-          - 2241179 # release-managers
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
     - name: post-kubernetes-push-image-pause
       cluster: k8s-infra-prow-build-trusted
       annotations:
@@ -34,11 +37,13 @@ postsubmits:
       decorate: true
       run_if_changed: '^build\/pause\/'
       branches:
+        - ^main$
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210913-fc7c4e84f6
             command:
               - /run.sh
             args:
@@ -50,5 +55,6 @@ postsubmits:
               - name: LOG_TO_STDOUT
                 value: "y"
       rerun_auth_config:
-        github_team_ids:
-          - 2241179 # release-managers
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers

@@ -535,7 +535,7 @@ func TestGeneratePresubmits(t *testing.T) {
 					Spec: &v1.PodSpec{
 						Containers: []v1.Container{
 							{
-								Image: "gcr.io/k8s-testimages/kubekins-e2e:blahblahblah-master",
+								Image: "gcr.io/k8s-staging-test-infra/kubekins-e2e:blahblahblah-master",
 								Args:  []string{"--repo=k8s.io/kubernetes", "--something=foo"},
 								Env:   []v1.EnvVar{{Name: "BRANCH", Value: "master"}},
 							},
@@ -614,7 +614,7 @@ func TestGeneratePresubmits(t *testing.T) {
 					Spec: &v1.PodSpec{
 						Containers: []v1.Container{
 							{
-								Image: "gcr.io/k8s-testimages/kubekins-e2e:blahblahblah-1.15",
+								Image: "gcr.io/k8s-staging-test-infra/kubekins-e2e:blahblahblah-1.15",
 								Args:  []string{"--repo=k8s.io/kubernetes", "--something=1.15"},
 								Env:   []v1.EnvVar{{Name: "BRANCH", Value: "release-1.15"}},
 							},
@@ -831,7 +831,7 @@ func TestGeneratePostsubmits(t *testing.T) {
 					Spec: &v1.PodSpec{
 						Containers: []v1.Container{
 							{
-								Image: "gcr.io/k8s-testimages/kubekins-e2e:blahblahblah-master",
+								Image: "gcr.io/k8s-staging-test-infra/kubekins-e2e:blahblahblah-master",
 								Args:  []string{"--repo=k8s.io/kubernetes", "--something=foo"},
 								Env:   []v1.EnvVar{{Name: "BRANCH", Value: "master"}},
 							},
@@ -896,7 +896,7 @@ func TestGeneratePostsubmits(t *testing.T) {
 					Spec: &v1.PodSpec{
 						Containers: []v1.Container{
 							{
-								Image: "gcr.io/k8s-testimages/kubekins-e2e:blahblahblah-1.15",
+								Image: "gcr.io/k8s-staging-test-infra/kubekins-e2e:blahblahblah-1.15",
 								Args:  []string{"--repo=k8s.io/kubernetes", "--something=1.15"},
 								Env:   []v1.EnvVar{{Name: "BRANCH", Value: "release-1.15"}},
 							},

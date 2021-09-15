@@ -245,7 +245,7 @@ func (bucket blobStorageBucket) listBuildIDs(ctx context.Context, root string) (
 			if err == nil {
 				ids = append(ids, i)
 			} else {
-				logrus.WithField("gcs-path", dir).Warningf("unrecognized directory name (expected int64): %s", leaf)
+				logrus.WithFields(logrus.Fields{"gcs-path": dir, "dir-name": leaf}).Debug("Unrecognized directory name (expected int64)")
 			}
 		}
 		if listErr != nil {
@@ -348,7 +348,7 @@ func getBuildData(ctx context.Context, bucket storageBucket, dir string) (buildD
 	started := gcs.Started{}
 	err := readJSON(ctx, bucket, path.Join(dir, prowv1.StartedStatusFile), &started)
 	if err != nil {
-		return b, fmt.Errorf("failed to read started.json: %v", err)
+		return b, fmt.Errorf("failed to read started.json: %w", err)
 	}
 	b.Started = time.Unix(started.Timestamp, 0)
 	finished := gcs.Finished{}
@@ -361,7 +361,7 @@ func getBuildData(ctx context.Context, bucket storageBucket, dir string) (buildD
 				break
 			}
 		}
-		logrus.Debugf("failed to read finished.json (job might be unfinished): %v", err)
+		logrus.WithError(err).Debugf("failed to read finished.json (job might be unfinished)")
 	}
 
 	pj := prowv1.ProwJob{}
@@ -431,7 +431,7 @@ func getJobHistory(ctx context.Context, url *url.URL, cfg config.Getter, opener 
 
 	storageProvider, bucketName, root, top, err := parseJobHistURL(url)
 	if err != nil {
-		return tmpl, fmt.Errorf("invalid url %s: %v", url.String(), err)
+		return tmpl, fmt.Errorf("invalid url %s: %w", url.String(), err)
 	}
 	bucket, err := newBlobStorageBucket(bucketName, storageProvider, cfg(), opener)
 	if err != nil {
@@ -440,7 +440,7 @@ func getJobHistory(ctx context.Context, url *url.URL, cfg config.Getter, opener 
 	tmpl.Name = root
 	latest, err := readLatestBuild(ctx, bucket, root)
 	if err != nil {
-		return tmpl, fmt.Errorf("failed to locate build data: %v", err)
+		return tmpl, fmt.Errorf("failed to locate build data: %w", err)
 	}
 	if top == emptyID || top > latest {
 		top = latest
@@ -454,7 +454,7 @@ func getJobHistory(ctx context.Context, url *url.URL, cfg config.Getter, opener 
 	defer cancel()
 	buildIDs, err := bucket.listBuildIDs(buildIDListCtx, root)
 	if err != nil && !errors.Is(err, context.DeadlineExceeded) {
-		return tmpl, fmt.Errorf("failed to get build ids: %v", err)
+		return tmpl, fmt.Errorf("failed to get build ids: %w", err)
 	}
 
 	sort.Sort(sort.Reverse(uint64slice(buildIDs)))
@@ -495,13 +495,17 @@ func getJobHistory(ctx context.Context, url *url.URL, cfg config.Getter, opener 
 			}
 			b, err := getBuildData(ctx, bucket, dir)
 			if err != nil {
-				logrus.Warningf("build %d information incomplete: %v", buildID, err)
+				if pkgio.IsNotExist(err) {
+					logrus.WithError(err).WithField("build-id", buildID).Debug("Build information incomplete.")
+				} else {
+					logrus.WithError(err).WithField("build-id", buildID).Warning("Build information incomplete.")
+				}
 			}
 			b.index = i
 			b.ID = id
 			b.SpyglassLink, err = bucket.spyglassLink(ctx, root, id)
 			if err != nil {
-				logrus.Errorf("failed to get spyglass link: %v", err)
+				logrus.WithError(err).Errorf("failed to get spyglass link")
 			}
 			bch <- b
 		}(i, buildID)

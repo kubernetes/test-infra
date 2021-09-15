@@ -17,7 +17,11 @@ limitations under the License.
 package kube
 
 import (
+	"path/filepath"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/util/diff"
@@ -105,6 +109,154 @@ func TestMergeConfigs(t *testing.T) {
 				t.Error("failed to receive an error")
 			case !equality.Semantic.DeepEqual(actual, tc.expected):
 				t.Errorf("configs do not match:\n%s", diff.ObjectReflectDiff(tc.expected, actual))
+			}
+		})
+	}
+}
+
+func TestLoadClusterConfigs(t *testing.T) {
+	cases := []struct {
+		name               string
+		kubeconfig         string
+		kubeconfigDir      string
+		projectedTokenFile string
+		noInClusterConfig  bool
+		expected           map[string]rest.Config
+		expectedErr        bool
+	}{
+		{
+			name:       "load from kubeconfig",
+			kubeconfig: filepath.Join(filepath.Join("testdata", "load_from_kubeconfig"), "kubeconfig"),
+			expected: map[string]rest.Config{
+				"": {
+					Host:        "https://api.ci.l2s4.p1.openshiftapps.com:6443",
+					BearerToken: "REDACTED",
+				},
+				"app.ci": {
+					Host:        "https://api.ci.l2s4.p1.openshiftapps.com:6443",
+					BearerToken: "REDACTED",
+				},
+				"build01": {
+					Host:        "https://api.build01.ci.devcluster.openshift.com:6443",
+					BearerToken: "REDACTED",
+				},
+				"build02": {
+					Host:        "https://api.build02.gcp.ci.openshift.org:6443",
+					BearerToken: "REDACTED",
+				},
+				"default": {
+					Host:        "https://api.ci.l2s4.p1.openshiftapps.com:6443",
+					BearerToken: "REDACTED",
+				},
+				"hive": {
+					Host:        "https://api.hive.9xw5.p1.openshiftapps.com:6443",
+					BearerToken: "REDACTED",
+				},
+			},
+		},
+		{
+			name:          "load from kubeconfigDir",
+			kubeconfigDir: filepath.Join("testdata", "load_from_kubeconfigDir"),
+			expected: map[string]rest.Config{
+				"": {
+					Host:        "https://api.build02.gcp.ci.openshift.org:6443",
+					BearerToken: "REDACTED",
+				},
+				"app.ci": {
+					Host:        "https://api.ci.l2s4.p1.openshiftapps.com:6443",
+					BearerToken: "REDACTED",
+				},
+				"build01": {
+					Host:        "https://api.build01.ci.devcluster.openshift.com:6443",
+					BearerToken: "REDACTED",
+				},
+				"build02": {
+					Host:        "https://api.build02.gcp.ci.openshift.org:6443",
+					BearerToken: "REDACTED",
+				},
+				"default": {
+					Host:        "https://api.build02.gcp.ci.openshift.org:6443",
+					BearerToken: "REDACTED",
+				},
+				"hive": {
+					Host:        "https://api.hive.9xw5.p1.openshiftapps.com:6443",
+					BearerToken: "REDACTED",
+				},
+			},
+		},
+		{
+			name:          "load from kubeconfigDir having contexts with the same name",
+			kubeconfigDir: filepath.Join("testdata", "load_from_kubeconfigDir_having_contexts_with_the_same_name"),
+			expectedErr:   true,
+		},
+		{
+			name:          "load from kubeconfig and kubeconfigDir",
+			kubeconfig:    filepath.Join(filepath.Join("testdata", "load_from_kubeconfig"), "kubeconfig2"),
+			kubeconfigDir: filepath.Join("testdata", "load_from_kubeconfig_and_kubeconfigDir"),
+			expected: map[string]rest.Config{
+				"": {
+					Host:        "https://api.build01.ci.devcluster.openshift.com:6443",
+					BearerToken: "REDACTED",
+				},
+				"app.ci": {
+					Host:        "https://api.ci.l2s4.p1.openshiftapps.com:6443",
+					BearerToken: "REDACTED",
+				},
+				"build01": {
+					Host:        "https://api.build01.ci.devcluster.openshift.com:6443",
+					BearerToken: "REDACTED",
+				},
+				"build02": {
+					Host:        "https://api.build02.gcp.ci.openshift.org:6443",
+					BearerToken: "REDACTED",
+				},
+				"default": {
+					Host:        "https://api.build01.ci.devcluster.openshift.com:6443",
+					BearerToken: "REDACTED",
+				},
+				"hive": {
+					Host:        "https://api.hive.9xw5.p1.openshiftapps.com:6443",
+					BearerToken: "REDACTED",
+				},
+			},
+		},
+		{
+			name:              "no inCluster config",
+			kubeconfig:        filepath.Join(filepath.Join("testdata", "load_from_kubeconfig"), "kubeconfig2"),
+			kubeconfigDir:     filepath.Join("testdata", "no_inCluster_config"),
+			noInClusterConfig: true,
+			expected: map[string]rest.Config{
+				"app.ci": {
+					Host:        "https://api.ci.l2s4.p1.openshiftapps.com:6443",
+					BearerToken: "REDACTED",
+				},
+				"build01": {
+					Host:        "https://api.build01.ci.devcluster.openshift.com:6443",
+					BearerToken: "REDACTED",
+				},
+				"build02": {
+					Host:        "https://api.build02.gcp.ci.openshift.org:6443",
+					BearerToken: "REDACTED",
+				},
+				"hive": {
+					Host:        "https://api.hive.9xw5.p1.openshiftapps.com:6443",
+					BearerToken: "REDACTED",
+				},
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			actual, actualErr := LoadClusterConfigs(NewConfig(ConfigFile(tc.kubeconfig),
+				ConfigDir(tc.kubeconfigDir), ConfigProjectedTokenFile(tc.projectedTokenFile),
+				NoInClusterConfig(tc.noInClusterConfig)))
+			if tc.expectedErr != (actualErr != nil) {
+				t.Errorf("%s: actualErr %v does not match expectedErr %v", tc.name, actualErr, tc.expectedErr)
+				return
+			}
+			if diff := cmp.Diff(tc.expected, actual, cmpopts.IgnoreFields(rest.Config{}, "UserAgent")); !tc.expectedErr && diff != "" {
+				t.Errorf("%s: actual does not match expected, diff: %s", tc.name, diff)
 			}
 		})
 	}

@@ -59,7 +59,6 @@ const (
 	s3CredentialsMountPath  = "/secrets/s3-storage"
 	outputMountName         = "output"
 	outputMountPath         = "/output"
-	oauthTokenFilename      = "oauth-token"
 )
 
 // Labels returns a string slice with label consts from kube.
@@ -68,8 +67,19 @@ func Labels() []string {
 }
 
 // VolumeMounts returns a string set with *MountName consts in it.
-func VolumeMounts() sets.String {
-	return sets.NewString(logMountName, codeMountName, toolsMountName, gcsCredentialsMountName, s3CredentialsMountName)
+func VolumeMounts(dc *prowapi.DecorationConfig) sets.String {
+	ret := sets.NewString(logMountName, codeMountName, toolsMountName, gcsCredentialsMountName, s3CredentialsMountName)
+	if dc == nil {
+		return ret
+	}
+
+	if dc.OauthTokenSecret != nil {
+		ret.Insert(dc.OauthTokenSecret.Name)
+	}
+	for _, sshKeySecret := range dc.SSHKeySecrets {
+		ret.Insert(sshKeySecret)
+	}
+	return ret
 }
 
 // VolumeMountsOnTestContainer returns a string set with *MountName consts in it which are applied to the test container.
@@ -299,7 +309,7 @@ func oauthVolume(secret, key string) (coreapi.Volume, coreapi.VolumeMount) {
 					SecretName: secret,
 					Items: []coreapi.KeyToPath{{
 						Key:  key,
-						Path: fmt.Sprintf("./%s", oauthTokenFilename),
+						Path: fmt.Sprintf("./%s", key),
 					}},
 				},
 			},
@@ -415,7 +425,7 @@ func CloneRefs(pj prowapi.ProwJob, codeMount, logMount coreapi.VolumeMount) (*co
 	if pj.Spec.DecorationConfig.OauthTokenSecret != nil {
 		oauthVolume, oauthMount := oauthVolume(pj.Spec.DecorationConfig.OauthTokenSecret.Name, pj.Spec.DecorationConfig.OauthTokenSecret.Key)
 		cloneMounts = append(cloneMounts, oauthMount)
-		oauthMountPath = filepath.Join(oauthMount.MountPath, oauthTokenFilename)
+		oauthMountPath = filepath.Join(oauthMount.MountPath, pj.Spec.DecorationConfig.OauthTokenSecret.Key)
 		cloneVolumes = append(cloneVolumes, oauthVolume)
 	}
 

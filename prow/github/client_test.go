@@ -80,10 +80,10 @@ func getClient(url string) *client {
 				},
 			},
 			bases:         []string{url},
-			maxRetries:    defaultMaxRetries,
-			max404Retries: defaultMax404Retries,
-			initialDelay:  defaultInitialDelay,
-			maxSleepTime:  defaultMaxSleepTime,
+			maxRetries:    DefaultMaxRetries,
+			max404Retries: DefaultMax404Retries,
+			initialDelay:  DefaultInitialDelay,
+			maxSleepTime:  DefaultMaxSleepTime,
 		},
 	}
 }
@@ -2951,11 +2951,8 @@ func (rt testRoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
 // their arguments and calls them with an empty argument, then verifies via a RoundTripper that
 // all requests made had an org header set.
 func TestAllMethodsThatDoRequestSetOrgHeader(t *testing.T) {
-	_, ghClient := NewAppsAuthClientWithFields(logrus.Fields{}, func(_ []byte) []byte { return nil }, "some-app-id", func() *rsa.PrivateKey { return nil }, "", "")
+	_, _, ghClient := NewAppsAuthClientWithFields(logrus.Fields{}, func(_ []byte) []byte { return nil }, "some-app-id", func() *rsa.PrivateKey { return nil }, "", "")
 	toSkip := sets.NewString(
-		// Doesn't support github apps
-		"Query",
-		// They fetch the user, which doesn't exist in case of github app.
 		// TODO: Split the search query by org when app auth is used
 		"FindIssues",
 		// Bound to user, not org specific
@@ -3068,6 +3065,9 @@ func setValue(target *reflect.Value, typeOverrides []func(typeName string) (over
 	if target.Type().String() == "interface {}" {
 		target.Set(reflect.ValueOf(map[string]interface{}{}))
 	}
+	if target.Type().String() == "githubv4.Input" {
+		target.Set(reflect.ValueOf(struct{}{}))
+	}
 }
 
 func TestBotUserChecker(t *testing.T) {
@@ -3128,21 +3128,26 @@ func TestV4ClientSetsUserAgent(t *testing.T) {
 		return &http.Response{StatusCode: 200, Body: ioutil.NopCloser(bytes.NewBufferString("{}"))}, nil
 	}}
 
-	_, client := newClient(
+	_, _, client := NewClientFromOptions(
 		logrus.Fields{},
-		func() []byte { return nil },
-		func(b []byte) []byte { return b },
-		"",
-		nil,
-		"",
-		false,
-		nil,
-		roundTripper,
+		ClientOptions{
+			Censor:           func(b []byte) []byte { return b },
+			GetToken:         func() []byte { return nil },
+			AppID:            "",
+			AppPrivateKey:    nil,
+			GraphqlEndpoint:  "",
+			Bases:            nil,
+			DryRun:           false,
+			BaseRoundTripper: roundTripper,
+		}.Default(),
 	)
 
 	t.Run("User agent gets set initially", func(t *testing.T) {
 		expectedUserAgent = "unset/0"
 		if err := client.QueryWithGitHubAppsSupport(context.Background(), struct{}{}, nil, ""); err != nil {
+			t.Error(err)
+		}
+		if err := client.MutateWithGitHubAppsSupport(context.Background(), struct{}{}, githubv4.Input(struct{}{}), nil, ""); err != nil {
 			t.Error(err)
 		}
 	})
@@ -3153,11 +3158,17 @@ func TestV4ClientSetsUserAgent(t *testing.T) {
 		if err := client.QueryWithGitHubAppsSupport(context.Background(), struct{}{}, nil, ""); err != nil {
 			t.Error(err)
 		}
+		if err := client.MutateWithGitHubAppsSupport(context.Background(), struct{}{}, githubv4.Input(struct{}{}), nil, ""); err != nil {
+			t.Error(err)
+		}
 	})
 
 	t.Run("The ForPlugin call doesn't manipulate the original client", func(t *testing.T) {
 		expectedUserAgent = "unset/0"
 		if err := client.QueryWithGitHubAppsSupport(context.Background(), struct{}{}, nil, ""); err != nil {
+			t.Error(err)
+		}
+		if err := client.MutateWithGitHubAppsSupport(context.Background(), struct{}{}, githubv4.Input(struct{}{}), nil, ""); err != nil {
 			t.Error(err)
 		}
 	})
@@ -3168,11 +3179,17 @@ func TestV4ClientSetsUserAgent(t *testing.T) {
 		if err := client.QueryWithGitHubAppsSupport(context.Background(), struct{}{}, nil, ""); err != nil {
 			t.Error(err)
 		}
+		if err := client.MutateWithGitHubAppsSupport(context.Background(), struct{}{}, githubv4.Input(struct{}{}), nil, ""); err != nil {
+			t.Error(err)
+		}
 	})
 
 	t.Run("The ForSubcomponent call doesn't manipulate the original client", func(t *testing.T) {
 		expectedUserAgent = "unset/0"
 		if err := client.QueryWithGitHubAppsSupport(context.Background(), struct{}{}, nil, ""); err != nil {
+			t.Error(err)
+		}
+		if err := client.MutateWithGitHubAppsSupport(context.Background(), struct{}{}, githubv4.Input(struct{}{}), nil, ""); err != nil {
 			t.Error(err)
 		}
 	})

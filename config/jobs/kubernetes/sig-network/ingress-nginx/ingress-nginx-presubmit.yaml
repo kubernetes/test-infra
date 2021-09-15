@@ -12,7 +12,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20210806-g26768e957@sha256:0f3c0d0bda953aa7f1164c452cc0165ce8a0c72469b550988a9601c539f61608
+      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20210906-g7d577d976@sha256:cf7079b5c05b8b1b108b16752c6ff4ca312cf96700e91eef6088b9e0c4a7aff1
         command:
         - ./hack/verify-boilerplate.sh
     annotations:
@@ -30,7 +30,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20210806-g26768e957@sha256:0f3c0d0bda953aa7f1164c452cc0165ce8a0c72469b550988a9601c539f61608
+      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20210906-g7d577d976@sha256:cf7079b5c05b8b1b108b16752c6ff4ca312cf96700e91eef6088b9e0c4a7aff1
         command:
         - ./hack/verify-codegen.sh
     annotations:
@@ -47,7 +47,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20210806-g26768e957@sha256:0f3c0d0bda953aa7f1164c452cc0165ce8a0c72469b550988a9601c539f61608
+      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20210906-g7d577d976@sha256:cf7079b5c05b8b1b108b16752c6ff4ca312cf96700e91eef6088b9e0c4a7aff1
         command:
         - ./hack/verify-gofmt.sh
     annotations:
@@ -66,7 +66,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20210806-g26768e957@sha256:0f3c0d0bda953aa7f1164c452cc0165ce8a0c72469b550988a9601c539f61608
+      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20210906-g7d577d976@sha256:cf7079b5c05b8b1b108b16752c6ff4ca312cf96700e91eef6088b9e0c4a7aff1
         command:
         - ./hack/verify-golint.sh
     annotations:
@@ -83,7 +83,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20210806-g26768e957@sha256:0f3c0d0bda953aa7f1164c452cc0165ce8a0c72469b550988a9601c539f61608
+      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20210906-g7d577d976@sha256:cf7079b5c05b8b1b108b16752c6ff4ca312cf96700e91eef6088b9e0c4a7aff1
         command:
         - ./hack/verify-lualint.sh
     annotations:
@@ -102,7 +102,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20210806-g26768e957@sha256:0f3c0d0bda953aa7f1164c452cc0165ce8a0c72469b550988a9601c539f61608
+      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20210906-g7d577d976@sha256:cf7079b5c05b8b1b108b16752c6ff4ca312cf96700e91eef6088b9e0c4a7aff1
         command:
         - ./hack/verify-chart-lint.sh
     annotations:
@@ -121,7 +121,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20210806-g26768e957@sha256:0f3c0d0bda953aa7f1164c452cc0165ce8a0c72469b550988a9601c539f61608
+      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20210906-g7d577d976@sha256:cf7079b5c05b8b1b108b16752c6ff4ca312cf96700e91eef6088b9e0c4a7aff1
         command:
         - make
         - lua-test
@@ -141,7 +141,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20210806-g26768e957@sha256:0f3c0d0bda953aa7f1164c452cc0165ce8a0c72469b550988a9601c539f61608
+      - image: k8s.gcr.io/ingress-nginx/e2e-test-runner:v20210906-g7d577d976@sha256:cf7079b5c05b8b1b108b16752c6ff4ca312cf96700e91eef6088b9e0c4a7aff1
         command:
         - make
         - test
@@ -162,7 +162,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20210808-1eaeec7-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20210913-fc7c4e84f6-master
         command:
           - wrapper.sh
           - bash
@@ -193,7 +193,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20210808-1eaeec7-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20210913-fc7c4e84f6-master
         command:
           - wrapper.sh
           - bash
@@ -224,7 +224,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20210808-1eaeec7-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20210913-fc7c4e84f6-master
         command:
           - wrapper.sh
           - bash
@@ -255,7 +255,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20210808-1eaeec7-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20210913-fc7c4e84f6-master
         command:
           - wrapper.sh
           - bash
@@ -286,7 +286,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/krte:v20210808-1eaeec7-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20210913-fc7c4e84f6-master
         command:
           - wrapper.sh
           - bash

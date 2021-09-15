@@ -233,22 +233,23 @@ func TrustedUser(ghc trustedUserClient, onlyOrgMembers bool, trustedOrg, user, o
 		return okResponse, nil
 	}
 
-	// First check if user is a collaborator, assuming this is allowed
+	// TODO(fejta): consider dropping support for org checks in the future.
+
+	// First check if the user is an org member. This caches across all repos.
+	if member, err := ghc.IsMember(org, user); err != nil {
+		return errorResponse, fmt.Errorf("error in IsMember(%s): %v", org, err)
+	} else if member {
+		return okResponse, nil
+	}
+
+	// Next check if the user is a collaborator if that is allowed, this is more
+	// expensive as it only caches per repo.
 	if !onlyOrgMembers {
 		if ok, err := ghc.IsCollaborator(org, repo, user); err != nil {
 			return errorResponse, fmt.Errorf("error in IsCollaborator: %v", err)
 		} else if ok {
 			return okResponse, nil
 		}
-	}
-
-	// TODO(fejta): consider dropping support for org checks in the future.
-
-	// Next see if the user is an org member
-	if member, err := ghc.IsMember(org, user); err != nil {
-		return errorResponse, fmt.Errorf("error in IsMember(%s): %v", org, err)
-	} else if member {
-		return okResponse, nil
 	}
 
 	// Determine if there is a second org to check. If there is no secondary org or they are the same, the result
@@ -295,14 +296,19 @@ func validateContextOverlap(toRun, toSkip []config.Presubmit) error {
 
 // RunRequested executes the config.Presubmits that are requested
 func RunRequested(c Client, pr *github.PullRequest, baseSHA string, requestedJobs []config.Presubmit, eventGUID string) error {
-	return runRequested(c, pr, baseSHA, requestedJobs, eventGUID)
+	return runRequested(c, pr, baseSHA, requestedJobs, eventGUID, nil)
 }
 
-func runRequested(c Client, pr *github.PullRequest, baseSHA string, requestedJobs []config.Presubmit, eventGUID string, millisecondOverride ...time.Duration) error {
+// RunRequestedWithLabels executes the config.Presubmits that are requested with the additional labels
+func RunRequestedWithLabels(c Client, pr *github.PullRequest, baseSHA string, requestedJobs []config.Presubmit, eventGUID string, labels map[string]string) error {
+	return runRequested(c, pr, baseSHA, requestedJobs, eventGUID, labels)
+}
+
+func runRequested(c Client, pr *github.PullRequest, baseSHA string, requestedJobs []config.Presubmit, eventGUID string, labels map[string]string, millisecondOverride ...time.Duration) error {
 	var errors []error
 	for _, job := range requestedJobs {
 		c.Logger.Infof("Starting %s build.", job.Name)
-		pj := pjutil.NewPresubmit(*pr, baseSHA, job, eventGUID)
+		pj := pjutil.NewPresubmit(*pr, baseSHA, job, eventGUID, labels)
 		c.Logger.WithFields(pjutil.ProwJobFields(&pj)).Info("Creating a new prowjob.")
 		if err := createWithRetry(context.TODO(), c.ProwJobClient, &pj, millisecondOverride...); err != nil {
 			c.Logger.WithError(err).Error("Failed to create prowjob.")

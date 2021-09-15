@@ -42,6 +42,7 @@ const (
 	fakeRepo    = "fake-repo"
 	fakePR      = 33
 	fakeSHA     = "deadbeef"
+	faseBaseRef = "fake-branch"
 	fakeBaseSHA = "fffffff"
 	adminUser   = "admin-user"
 )
@@ -115,11 +116,12 @@ func (foc *fakeOwnersClient) ParseFullConfig(path string) (repoowners.FullConfig
 }
 
 type fakeClient struct {
-	comments []string
-	statuses map[string]github.Status
-	ps       map[string]config.Presubmit
-	jobs     sets.String
-	owners   ownersClient
+	comments         []string
+	statuses         map[string]github.Status
+	branchProtection *github.BranchProtection
+	ps               map[string]config.Presubmit
+	jobs             sets.String
+	owners           ownersClient
 }
 
 func (c *fakeClient) presubmits(_, _ string, _ config.RefGetter, _ string) ([]config.Presubmit, error) {
@@ -163,6 +165,7 @@ func (c *fakeClient) GetPullRequest(org, repo string, number int) (*github.PullR
 	}
 	var pr github.PullRequest
 	pr.Head.SHA = fakeSHA
+	pr.Base.Ref = faseBaseRef
 	return &pr, nil
 }
 
@@ -183,6 +186,25 @@ func (c *fakeClient) ListStatuses(org, repo, ref string) ([]github.Status, error
 		out = append(out, s)
 	}
 	return out, nil
+}
+
+func (c *fakeClient) GetBranchProtection(org, repo, branch string) (*github.BranchProtection, error) {
+	switch {
+	case org != fakeOrg:
+		return nil, fmt.Errorf("bad org: %s", org)
+	case repo != fakeRepo:
+		return nil, fmt.Errorf("bad repo: %s", repo)
+	case branch != faseBaseRef:
+		return nil, fmt.Errorf("bad branch: %s", branch)
+	}
+
+	if c.branchProtection != nil && c.branchProtection.RequiredStatusChecks != nil &&
+		len(c.branchProtection.RequiredStatusChecks.Contexts) > 0 &&
+		c.branchProtection.RequiredStatusChecks.Contexts[0] == "fail-protection" {
+		return nil, errors.New("injected GetBranchProtection failure")
+	}
+
+	return c.branchProtection, nil
 }
 
 func (c *fakeClient) HasPermission(org, repo, user string, roles ...string) (bool, error) {
@@ -277,21 +299,22 @@ func TestAuthorizedUser(t *testing.T) {
 
 func TestHandle(t *testing.T) {
 	cases := []struct {
-		name          string
-		action        github.GenericCommentEventAction
-		issue         bool
-		state         string
-		comment       string
-		contexts      map[string]github.Status
-		presubmits    map[string]config.Presubmit
-		user          string
-		number        int
-		expected      map[string]github.Status
-		jobs          sets.String
-		checkComments []string
-		options       plugins.Override
-		approvers     []string
-		err           bool
+		name             string
+		action           github.GenericCommentEventAction
+		issue            bool
+		state            string
+		comment          string
+		contexts         map[string]github.Status
+		branchProtection *github.BranchProtection
+		presubmits       map[string]config.Presubmit
+		user             string
+		number           int
+		expected         map[string]github.Status
+		jobs             sets.String
+		checkComments    []string
+		options          plugins.Override
+		approvers        []string
+		err              bool
 	}{
 		{
 			name:    "successfully override failure",
@@ -541,6 +564,26 @@ func TestHandle(t *testing.T) {
 				},
 			},
 			checkComments: []string{"Cannot get commit statuses"},
+		},
+		{
+			name:    "comment on get branch protection failure",
+			comment: "/override fail-list",
+			branchProtection: &github.BranchProtection{RequiredStatusChecks: &github.RequiredStatusChecks{
+				Contexts: []string{"fail-protection"},
+			}},
+			contexts: map[string]github.Status{
+				"broken-test": {
+					Context: "broken-test",
+					State:   github.StatusFailure,
+				},
+			},
+			expected: map[string]github.Status{
+				"broken-test": {
+					Context: "broken-test",
+					State:   github.StatusFailure,
+				},
+			},
+			checkComments: []string{"Cannot get branch protection"},
 		},
 		{
 			name:    "do not override passing contexts",
@@ -814,6 +857,56 @@ func TestHandle(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:             "override with empty branch protection",
+			comment:          "/override job",
+			branchProtection: &github.BranchProtection{},
+			expected:         map[string]github.Status{},
+			checkComments:    []string{},
+		},
+		{
+			name:             "override with branch protection empty status checks",
+			comment:          "/override job",
+			branchProtection: &github.BranchProtection{RequiredStatusChecks: &github.RequiredStatusChecks{}},
+			expected:         map[string]github.Status{},
+			checkComments:    []string{},
+		},
+		{
+			name:    "override with branch protection status checks",
+			comment: "/override job",
+			branchProtection: &github.BranchProtection{RequiredStatusChecks: &github.RequiredStatusChecks{
+				Contexts: []string{"job"},
+			}},
+			expected: map[string]github.Status{
+				"job": {
+					Context:     "job",
+					Description: description(adminUser),
+					State:       github.StatusSuccess,
+				},
+			},
+			checkComments: []string{"on behalf of " + adminUser},
+		},
+		{
+			name:    "override with same branch protection status check and status",
+			comment: "/override job",
+			branchProtection: &github.BranchProtection{RequiredStatusChecks: &github.RequiredStatusChecks{
+				Contexts: []string{"job"},
+			}},
+			contexts: map[string]github.Status{
+				"job": {
+					Context: "job",
+					State:   github.StatusFailure,
+				},
+			},
+			expected: map[string]github.Status{
+				"job": {
+					Context:     "job",
+					Description: description(adminUser),
+					State:       github.StatusSuccess,
+				},
+			},
+			checkComments: []string{"on behalf of " + adminUser},
+		},
 	}
 
 	log := logrus.WithField("plugin", pluginName)
@@ -858,10 +951,11 @@ func TestHandle(t *testing.T) {
 				},
 			}
 			fc := fakeClient{
-				statuses: tc.contexts,
-				ps:       tc.presubmits,
-				jobs:     sets.String{},
-				owners:   froc,
+				statuses:         tc.contexts,
+				branchProtection: tc.branchProtection,
+				ps:               tc.presubmits,
+				jobs:             sets.String{},
+				owners:           froc,
 			}
 
 			if tc.jobs == nil {

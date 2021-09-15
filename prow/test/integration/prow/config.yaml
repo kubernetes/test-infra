@@ -10,3 +10,9 @@ horologium:
 prowjob_namespace: default
 pod_namespace: test-pods
 log_level: debug
+
+prowjob_default_entries:
+  - cluster: '*'
+    repo: 'testRepo'
+    config:
+      tenant_id: 'tester'

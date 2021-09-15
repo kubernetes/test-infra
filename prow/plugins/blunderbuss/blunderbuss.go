@@ -271,6 +271,9 @@ func getReviewers(rc reviewersClient, ghc githubClient, log *logrus.Entry, autho
 	leafReviewers := layeredsets.NewString()
 	busyReviewers := sets.NewString()
 	ownersSeen := sets.NewString()
+	if minReviewers == 0 {
+		return reviewers.List(), requiredReviewers.List(), nil
+	}
 	// first build 'reviewers' by taking a unique reviewer from each OWNERS file.
 	for _, file := range files {
 		ownersFile := rc.FindReviewersOwnersForFile(file.Filename)

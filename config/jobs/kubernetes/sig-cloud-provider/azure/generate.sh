@@ -38,7 +38,7 @@ EOF
 }
 
 # we need to define the full image URL so it can be autobumped
-tmp="gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-master"
+tmp="gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-master"
 kubekins_e2e_image="${tmp/\-master/}"
 
 for release in "$@"; do
@@ -72,7 +72,7 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: master
+        base_ref: main
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
@@ -117,7 +117,7 @@ $(generate_presubmit_annotations ${branch} pull-kubernetes-e2e-capz-azure-disk)
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: master
+        base_ref: main
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
@@ -164,7 +164,7 @@ $(generate_presubmit_annotations ${branch} pull-kubernetes-e2e-capz-azure-disk-v
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: master
+        base_ref: main
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
@@ -210,7 +210,7 @@ $(generate_presubmit_annotations ${branch} pull-kubernetes-e2e-capz-azure-file)
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: master
+        base_ref: main
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
@@ -258,7 +258,7 @@ $(generate_presubmit_annotations ${branch} pull-kubernetes-e2e-capz-azure-file-v
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: master
+      base_ref: main
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
@@ -296,7 +296,7 @@ $(generate_presubmit_annotations ${branch} pull-kubernetes-e2e-capz-conformance)
     extra_refs:
     - org: jackfrancis #TODO change back to kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: capz-ha-control-plane-tests #TODO change back to master
+      base_ref: capz-ha-control-plane-tests #TODO change back to main
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
@@ -332,7 +332,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: master
+    base_ref: main
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   spec:
     containers:
@@ -371,7 +371,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: master
+    base_ref: main
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   - org: kubernetes-sigs
     repo: azurefile-csi-driver
@@ -423,7 +423,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: master
+    base_ref: main
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   - org: kubernetes-sigs
     repo: azurefile-csi-driver
@@ -477,7 +477,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: master
+    base_ref: main
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   - org: kubernetes-sigs
     repo: azuredisk-csi-driver
@@ -528,7 +528,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: master
+    base_ref: main
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   - org: kubernetes-sigs
     repo: azuredisk-csi-driver

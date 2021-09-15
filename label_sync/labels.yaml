@@ -1698,6 +1698,12 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to cluster topology
+        name: area/topology
+        target: both
+        prowPlugin: label
+        addedBy: anyone
   kubernetes-sigs/cluster-api-provider-azure:
     labels:
       - color: c7def8
@@ -1871,7 +1877,7 @@ repos:
         name: area/provider/podman
         target: both
         addedBy: humans
-  kubernetes-sigs/k8s-container-image-promoter:
+  kubernetes-sigs/promo-tools:
     labels:
       - color: 0052cc
         description: Issues or PRs related to the hosting of release artifacts for subprojects

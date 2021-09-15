@@ -11,11 +11,11 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: master
+      base_ref: main
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-1.21
         command:
         - "runner.sh"
         - "./scripts/ci-conformance.sh"
@@ -43,11 +43,11 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: master
+      base_ref: main
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-1.21
         command:
         - "runner.sh"
         - "./scripts/ci-conformance.sh"
@@ -79,11 +79,11 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: master
+      base_ref: main
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-1.21
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-1.21
       command:
       - "runner.sh"
       - "./scripts/ci-e2e.sh"
@@ -104,7 +104,7 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: master
+      base_ref: main
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     - org: kubernetes
       repo: test-infra
@@ -112,7 +112,7 @@ periodics:
       path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-1.21
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-1.21
       command:
       - runner.sh
       - bash
@@ -145,11 +145,11 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: master
+      base_ref: main
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-1.21
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-1.21
       command:
       - "runner.sh"
       - "./scripts/ci-e2e.sh"

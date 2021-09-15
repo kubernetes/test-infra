@@ -45,7 +45,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: admin
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -108,7 +108,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: admin
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -157,7 +157,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='903794441882/debian-11-amd64-daily-20210807-727' --channel=alpha --networking=calico --container-runtime=containerd" \
+          --create-args="--image='136693071363/debian-11-amd64-20210814-734' --channel=alpha --networking=calico --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
@@ -171,7 +171,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: admin
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -220,7 +220,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20210720' --channel=alpha --networking=calico --container-runtime=containerd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20210907' --channel=alpha --networking=calico --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
@@ -234,7 +234,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -283,7 +283,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210720' --channel=alpha --networking=calico --container-runtime=containerd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210907' --channel=alpha --networking=calico --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
@@ -297,7 +297,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -346,7 +346,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-hirsute-21.04-amd64-server-20210720' --channel=alpha --networking=calico --container-runtime=containerd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-hirsute-21.04-amd64-server-20210908' --channel=alpha --networking=calico --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
@@ -360,7 +360,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -423,7 +423,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: centos
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -486,7 +486,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: centos
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -535,7 +535,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='amazon/amzn2-ami-hvm-2.0.20210721.2-x86_64-gp2' --channel=alpha --networking=calico --container-runtime=containerd" \
+          --create-args="--image='amazon/amzn2-ami-hvm-2.0.20210813.1-x86_64-gp2' --channel=alpha --networking=calico --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
@@ -549,7 +549,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -612,7 +612,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -661,7 +661,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='309956199498/RHEL-8.3_HVM-20210209-x86_64-0-Hourly2-GP2' --channel=alpha --networking=calico --container-runtime=containerd" \
+          --create-args="--image='309956199498/RHEL-8.4.0_HVM-20210825-x86_64-0-Hourly2-GP2' --channel=alpha --networking=calico --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
@@ -675,7 +675,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -724,7 +724,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-stable-2905.2.1-hvm' --channel=alpha --networking=calico --container-runtime=containerd" \
+          --create-args="--image='075585003325/Flatcar-stable-2905.2.3-hvm' --channel=alpha --networking=calico --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --validation-wait=20m \
@@ -739,7 +739,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: core
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-master
       imagePullPolicy: Always
       resources:
         limits:

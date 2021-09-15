@@ -140,7 +140,7 @@ func TestOptions(t *testing.T) {
 		},
 		{
 			name: "slack with --dry-run, sets",
-			args: []string{"--slack-workers=13", "--slack-token-file=/bar/baz", "--config-path=foo", "--dry-run", "--deck-url=http://www.example.com"},
+			args: []string{"--slack-workers=13", "--slack-token-file=/bar/baz", "--config-path=foo", "--dry-run"},
 			expected: &options{
 				slackWorkers:   13,
 				slackTokenFile: "/bar/baz",
@@ -150,19 +150,12 @@ func TestOptions(t *testing.T) {
 					ConfigPath:                            "foo",
 					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
 				},
-				dryrun: true,
-				client: prowflagutil.KubernetesOptions{
-					DeckURI: "http://www.example.com",
-				},
+				dryrun:                 true,
 				github:                 defaultGitHubOptions,
 				gerritProjects:         defaultGerritProjects,
 				k8sReportFraction:      1.0,
 				instrumentationOptions: prowflagutil.DefaultInstrumentationOptions(),
 			},
-		},
-		{
-			name: "Dry run with no --deck-url, rejects",
-			args: []string{"--slack-workers=13", "--slack-token-file=/bar/baz", "--config-path=foo", "--dry-run"},
 		},
 		{
 			name: "k8s-gcs enables k8s-gcs",

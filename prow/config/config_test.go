@@ -923,11 +923,12 @@ func TestValidatePodSpec(t *testing.T) {
 	postEnv := sets.NewString(downwardapi.EnvForType(prowapi.PostsubmitJob)...)
 	preEnv := sets.NewString(downwardapi.EnvForType(prowapi.PresubmitJob)...)
 	cases := []struct {
-		name    string
-		jobType prowapi.ProwJobType
-		spec    func(s *v1.PodSpec)
-		noSpec  bool
-		pass    bool
+		name             string
+		jobType          prowapi.ProwJobType
+		spec             func(s *v1.PodSpec)
+		decorationConfig *prowapi.DecorationConfig
+		noSpec           bool
+		pass             bool
 	}{
 		{
 			name:   "allow nil spec",
@@ -1004,7 +1005,7 @@ func TestValidatePodSpec(t *testing.T) {
 			name: "reject reserved mount name",
 			spec: func(s *v1.PodSpec) {
 				s.Containers[0].VolumeMounts = append(s.Containers[0].VolumeMounts, v1.VolumeMount{
-					Name:      decorate.VolumeMounts().List()[0],
+					Name:      decorate.VolumeMounts(nil).List()[0],
 					MountPath: "/whatever",
 				})
 			},
@@ -1055,9 +1056,44 @@ func TestValidatePodSpec(t *testing.T) {
 			pass: true,
 		},
 		{
+			name:             "accept mount path that works only through decoration volume specified by user",
+			decorationConfig: &prowapi.DecorationConfig{OauthTokenSecret: &prowapi.OauthTokenSecret{Name: "my-oauth-secret-name", Key: "oauth"}},
+			spec: func(s *v1.PodSpec) {
+				s.Containers[0].VolumeMounts = append(s.Containers[0].VolumeMounts, v1.VolumeMount{
+					Name:      "my-oauth-secret-name",
+					MountPath: "/secrets/oauth",
+				})
+			},
+			pass: true,
+		},
+		{
+			name: "accept multiple mount paths that works only through decoration volume specified by user",
+			decorationConfig: &prowapi.DecorationConfig{
+				OauthTokenSecret: &prowapi.OauthTokenSecret{Name: "my-oauth-secret-name", Key: "oauth"},
+				SSHKeySecrets:    []string{"ssh-private-1", "ssh-private-2"},
+			},
+			spec: func(s *v1.PodSpec) {
+				s.Containers[0].VolumeMounts = append(s.Containers[0].VolumeMounts, []v1.VolumeMount{
+					{
+						Name:      "my-oauth-secret-name",
+						MountPath: "/secrets/oauth",
+					},
+					{
+						Name:      "ssh-private-1",
+						MountPath: "/secrets/ssh-private-1",
+					},
+					{
+						Name:      "ssh-private-2",
+						MountPath: "/secrets/ssh-private-2",
+					},
+				}...)
+			},
+			pass: true,
+		},
+		{
 			name: "reject reserved volume",
 			spec: func(s *v1.PodSpec) {
-				s.Volumes = append(s.Volumes, v1.Volume{Name: decorate.VolumeMounts().List()[0]})
+				s.Volumes = append(s.Volumes, v1.Volume{Name: decorate.VolumeMounts(nil).List()[0]})
 			},
 		},
 		{
@@ -1100,7 +1136,7 @@ func TestValidatePodSpec(t *testing.T) {
 			} else if tc.spec != nil {
 				tc.spec(current)
 			}
-			switch err := validatePodSpec(jt, current, true); {
+			switch err := validatePodSpec(jt, current, tc.decorationConfig); {
 			case err == nil && !tc.pass:
 				t.Error("validation failed to raise an error")
 			case err != nil && tc.pass:
@@ -1790,6 +1826,13 @@ func TestValidateReportingWithGerritLabel(t *testing.T) {
 
 // integration test for fake config loading
 func TestValidConfigLoading(t *testing.T) {
+	ptrOrBool := func(p *bool) string {
+		if p != nil {
+			return fmt.Sprintf("%t", *p)
+		}
+
+		return "nil"
+	}
 	var testCases = []struct {
 		name               string
 		prowConfig         string
@@ -2526,6 +2569,181 @@ tide:
 				orgRepo := OrgRepo{Org: "org", Repo: "repo"}
 				if got, expected := c.Tide.GetTargetURL(orgRepo), ""; got != expected {
 					return fmt.Errorf("expected target URL for %q to be %q, but got %q", orgRepo.String(), expected, got)
+				}
+				return nil
+			},
+		},
+		{
+			name: "postsubmit without explicit 'always_run' sets this field to nil by default",
+			jobConfigs: []string{
+				`
+postsubmits:
+  k/test-infra:
+  - name: my-job
+    spec:
+      containers:
+      - name: lost-vessel
+        image: vessel:latest
+        command: ["ride"]`,
+			},
+			verify: func(c *Config) error {
+				jobs := c.PostsubmitsStatic["k/test-infra"]
+				if jobs[0].AlwaysRun != nil {
+					return fmt.Errorf("expected job to have 'always_run' set to nil, but got %q", ptrOrBool(jobs[0].AlwaysRun))
+				}
+				return nil
+			},
+		},
+		{
+			name: "postsubmit with explicit 'always_run: true' sets this field to true",
+			jobConfigs: []string{
+				`
+postsubmits:
+  k/test-infra:
+  - name: my-job
+    always_run: true
+    spec:
+      containers:
+      - name: lost-vessel
+        image: vessel:latest
+        command: ["ride"]`,
+			},
+			verify: func(c *Config) error {
+				jobs := c.PostsubmitsStatic["k/test-infra"]
+				if jobs[0].AlwaysRun == nil || *jobs[0].AlwaysRun == false {
+					return fmt.Errorf("expected job to have 'always_run' set to true, but got %q", ptrOrBool(jobs[0].AlwaysRun))
+				}
+				return nil
+			},
+		},
+		{
+			name: "postsubmit with explicit 'always_run: false' sets this field to false",
+			jobConfigs: []string{
+				`
+postsubmits:
+  k/test-infra:
+  - name: my-job
+    always_run: false
+    spec:
+      containers:
+      - name: lost-vessel
+        image: vessel:latest
+        command: ["ride"]`,
+			},
+			verify: func(c *Config) error {
+				jobs := c.PostsubmitsStatic["k/test-infra"]
+				if jobs[0].AlwaysRun == nil || *jobs[0].AlwaysRun == true {
+					return fmt.Errorf("expected job to have 'always_run' set to false, but got %q", ptrOrBool(jobs[0].AlwaysRun))
+				}
+				return nil
+			},
+		},
+		{
+			name: "postsubmit with explicit 'always_run: true' and 'run_if_changed' set, err",
+			jobConfigs: []string{
+				`
+postsubmits:
+  k/test-infra:
+  - name: my-job
+    always_run: true
+    run_if_changed: "foo"
+    spec:
+      containers:
+      - name: lost-vessel
+        image: vessel:latest
+        command: ["ride"]`,
+			},
+			expectError: true,
+		},
+		{
+			name: "postsubmit with explicit 'always_run: true' and 'skip_if_only_changed' set, err",
+			jobConfigs: []string{
+				`
+postsubmits:
+  k/test-infra:
+  - name: my-job
+    always_run: true
+	skip_if_only_changed: "foo"
+    spec:
+      containers:
+      - name: lost-vessel
+        image: vessel:latest
+        command: ["ride"]`,
+			},
+			expectError: true,
+		},
+		{
+			name: "postsubmit with explicit 'always_run: false' and 'run_if_changed' set, OK",
+			jobConfigs: []string{
+				`
+postsubmits:
+  k/test-infra:
+  - name: my-job
+    always_run: false
+    run_if_changed: "foo"
+    spec:
+      containers:
+      - name: lost-vessel
+        image: vessel:latest
+        command: ["ride"]`,
+			},
+		},
+		{
+			name: "postsubmit with explicit 'always_run: false' and 'skip_if_only_changed' set, OK",
+			jobConfigs: []string{
+				`
+postsubmits:
+  k/test-infra:
+  - name: my-job
+    always_run: false
+    skip_if_only_changed: "foo"
+    spec:
+      containers:
+      - name: lost-vessel
+        image: vessel:latest
+        command: ["ride"]`,
+			},
+		},
+		{
+			name: "postsubmit with 'run_if_changed' set, then 'always_run' is 'nil'",
+			jobConfigs: []string{
+				`
+postsubmits:
+  k/test-infra:
+  - name: my-job
+    run_if_changed: "foo"
+    spec:
+      containers:
+      - name: lost-vessel
+        image: vessel:latest
+        command: ["ride"]`,
+			},
+			verify: func(c *Config) error {
+				jobs := c.PostsubmitsStatic["k/test-infra"]
+				if jobs[0].AlwaysRun != nil {
+					return fmt.Errorf("expected job to have 'always_run' set to nil, but got %q", ptrOrBool(jobs[0].AlwaysRun))
+				}
+				return nil
+			},
+		},
+		{
+			name: "postsubmit with 'skip_if_only_changed' set, then 'always_run' is 'nil'",
+			jobConfigs: []string{
+				`
+postsubmits:
+  k/test-infra:
+  - name: my-job
+    skip_if_only_changed: "foo"
+    spec:
+      containers:
+      - name: lost-vessel
+        image: vessel:latest
+        command: ["ride"]`,
+			},
+			verify: func(c *Config) error {
+				jobs := c.PostsubmitsStatic["k/test-infra"]
+				if jobs[0].AlwaysRun != nil {
+					return fmt.Errorf("expected job to have 'always_run' set to nil, but got %q", ptrOrBool(jobs[0].AlwaysRun))
 				}
 				return nil
 			},
@@ -3583,6 +3801,55 @@ func TestValidateTriggering(t *testing.T) {
 	}
 }
 
+func TestValidateAlwaysRunPostsubmit(t *testing.T) {
+	true_ := true
+	testCases := []struct {
+		name        string
+		postsubmit  Postsubmit
+		errExpected bool
+	}{
+		{
+			name: "both always_run and run_if_changed set, err",
+			postsubmit: Postsubmit{
+				AlwaysRun: &true_,
+				RegexpChangeMatcher: RegexpChangeMatcher{
+					RunIfChanged: `foo`,
+				},
+			},
+			errExpected: true,
+		},
+		{
+			name: "both always_run and skip_if_only_changed set, err",
+			postsubmit: Postsubmit{
+				AlwaysRun: &true_,
+				RegexpChangeMatcher: RegexpChangeMatcher{
+					SkipIfOnlyChanged: `foo`,
+				},
+			},
+			errExpected: true,
+		},
+		{
+			name: "both run_if_changed and skip_if_only_changed set, err",
+			postsubmit: Postsubmit{
+				RegexpChangeMatcher: RegexpChangeMatcher{
+					RunIfChanged:      `foo`,
+					SkipIfOnlyChanged: `foo`,
+				},
+			},
+			errExpected: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := validateAlwaysRun(tc.postsubmit)
+			if err != nil != tc.errExpected {
+				t.Errorf("Expected err: %t but got err %v", tc.errExpected, err)
+			}
+		})
+	}
+}
+
 func TestRefGetterForGitHubPullRequest(t *testing.T) {
 	testCases := []struct {
 		name   string
@@ -4063,9 +4330,9 @@ func TestSetPeriodicProwJobDefaults(t *testing.T) {
 		expected      *prowapi.ProwJobDefault
 	}{
 		{
-			id:       "No ProwJobDefault in job or in config, expect no changes",
+			id:       "No ProwJobDefault in job or in config, expect DefaultTenantID",
 			config:   &Config{ProwConfig: ProwConfig{}},
-			expected: &prowapi.ProwJobDefault{},
+			expected: &prowapi.ProwJobDefault{TenantID: DefaultTenantID},
 		},
 		{
 			id: "no default in job or in config's by repo config, expect default entry",
@@ -4455,9 +4722,9 @@ func TestSetProwJobDefaults(t *testing.T) {
 		expected     *prowapi.ProwJobDefault
 	}{
 		{
-			id:       "No ProwJobDefault in job or in config, expect no changes",
+			id:       "No ProwJobDefault in job or in config, expect DefaultTenantID",
 			config:   &Config{ProwConfig: ProwConfig{}},
-			expected: &prowapi.ProwJobDefault{},
+			expected: &prowapi.ProwJobDefault{TenantID: DefaultTenantID},
 		},
 		{
 			id: "no default in job or in config's by repo config, expect default entry",
@@ -6457,6 +6724,7 @@ func TestValidatePresubmits(t *testing.T) {
 
 func TestValidatePostsubmits(t *testing.T) {
 	t.Parallel()
+	true_ := true
 	testCases := []struct {
 		name          string
 		postsubmits   []Postsubmit
@@ -6494,6 +6762,38 @@ func TestValidatePostsubmits(t *testing.T) {
 			name:          "Invalid reporting config causes error",
 			postsubmits:   []Postsubmit{{JobBase: JobBase{Name: "my-job"}}},
 			expectedError: "invalid postsubmit job my-job: job is set to report but has no context configured",
+		},
+		{
+			name: "Mutually exclusive settings: always_run and run_if_changed",
+			postsubmits: []Postsubmit{{
+				JobBase:             JobBase{Name: "a"},
+				Reporter:            Reporter{Context: "foo"},
+				AlwaysRun:           &true_,
+				RegexpChangeMatcher: RegexpChangeMatcher{RunIfChanged: `\.go$`},
+			}},
+			expectedError: "job a is set to always run but also declares run_if_changed targets, which are mutually exclusive",
+		},
+		{
+			name: "Mutually exclusive settings: always_run and skip_if_only_changed",
+			postsubmits: []Postsubmit{{
+				JobBase:             JobBase{Name: "a"},
+				Reporter:            Reporter{Context: "foo"},
+				AlwaysRun:           &true_,
+				RegexpChangeMatcher: RegexpChangeMatcher{SkipIfOnlyChanged: `\.go$`},
+			}},
+			expectedError: "job a is set to always run but also declares skip_if_only_changed targets, which are mutually exclusive",
+		},
+		{
+			name: "Mutually exclusive settings: run_if_changed and skip_if_only_changed",
+			postsubmits: []Postsubmit{{
+				JobBase:  JobBase{Name: "a"},
+				Reporter: Reporter{Context: "foo"},
+				RegexpChangeMatcher: RegexpChangeMatcher{
+					RunIfChanged:      `\.go$`,
+					SkipIfOnlyChanged: `\.md`,
+				},
+			}},
+			expectedError: "job a declares run_if_changed and skip_if_only_changed, which are mutually exclusive",
 		},
 	}
 

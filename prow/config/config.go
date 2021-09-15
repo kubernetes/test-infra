@@ -70,6 +70,8 @@ const (
 	// it up if present. This allows components to include the config version
 	// in their logs, which can be useful for debugging.
 	ConfigVersionFileName = "VERSION"
+
+	DefaultTenantID = "GlobalDefaultID"
 )
 
 // Config is a read-only snapshot of the config.
@@ -622,6 +624,9 @@ func (pc *ProwConfig) mergeProwJobDefault(repo, cluster string, jobDefault *prow
 	if merged == nil {
 		merged = &prowapi.ProwJobDefault{}
 	}
+	if merged.TenantID == "" {
+		merged.TenantID = DefaultTenantID
+	}
 	return merged
 }
 
@@ -640,6 +645,12 @@ func (p *Plank) mergeDefaultDecorationConfig(repo, cluster string, jobDC *prowap
 		merged = &prowapi.DecorationConfig{}
 	}
 	return merged
+}
+
+// GetProwJobDefault finds the resolved prowJobDefault config for a given repo and
+// cluster
+func (c *Config) GetProwJobDefault(repo, cluster string) *prowapi.ProwJobDefault {
+	return c.mergeProwJobDefault(repo, cluster, nil)
 }
 
 // GuessDefaultDecorationConfig attempts to find the resolved default decoration
@@ -780,6 +791,9 @@ type GitHubReporter struct {
 	//
 	// defaults to both presubmit and postsubmit jobs.
 	JobTypesToReport []prowapi.ProwJobType `json:"job_types_to_report,omitempty"`
+	// NoCommentRepos is a list of orgs and org/repos for which failure report
+	// comments should not be maintained. Status contexts will still be written.
+	NoCommentRepos []string `json:"no_comment_repos,omitempty"`
 }
 
 // Sinker is config for the sinker controller.
@@ -1727,7 +1741,7 @@ func validateJobBase(v JobBase, jobType prowapi.ProwJobType, podNamespace string
 	if err := validateAgent(v, podNamespace); err != nil {
 		return err
 	}
-	if err := validatePodSpec(jobType, v.Spec, v.DecorationConfig != nil); err != nil {
+	if err := validatePodSpec(jobType, v.Spec, v.DecorationConfig); err != nil {
 		return err
 	}
 	if err := ValidatePipelineRunSpec(jobType, v.ExtraRefs, v.PipelineRunSpec); err != nil {
@@ -1836,6 +1850,9 @@ func validatePostsubmits(postsubmits []Postsubmit, podNamespace string) error {
 
 		if err := validateJobBase(ps.JobBase, prowapi.PostsubmitJob, podNamespace); err != nil {
 			errs = append(errs, fmt.Errorf("invalid postsubmit job %s: %v", ps.Name, err))
+		}
+		if err := validateAlwaysRun(ps); err != nil {
+			errs = append(errs, err)
 		}
 		if err := validateReporting(ps.JobBase, ps.Reporter); err != nil {
 			errs = append(errs, fmt.Errorf("invalid postsubmit job %s: %v", ps.Name, err))
@@ -2197,6 +2214,11 @@ func parseProwConfig(c *Config) error {
 		c.DefaultJobTimeout = &metav1.Duration{Duration: DefaultJobTimeout}
 	}
 
+	// Ensure Policy.Include and Policy.Exclude are mutually exclusive
+	if len(c.BranchProtection.Include) > 0 && len(c.BranchProtection.Exclude) > 0 {
+		return fmt.Errorf("Forbidden to set both Policy.Include and Policy.Exclude, Please use either Include or Exclude!")
+	}
+
 	return nil
 }
 
@@ -2332,7 +2354,7 @@ func ValidatePipelineRunSpec(jobType prowapi.ProwJobType, extraRefs []prowapi.Re
 	return nil
 }
 
-func validatePodSpec(jobType prowapi.ProwJobType, spec *v1.PodSpec, decorationEnabled bool) error {
+func validatePodSpec(jobType prowapi.ProwJobType, spec *v1.PodSpec, decorationConfig *prowapi.DecorationConfig) error {
 	if spec == nil {
 		return nil
 	}
@@ -2348,7 +2370,7 @@ func validatePodSpec(jobType prowapi.ProwJobType, spec *v1.PodSpec, decorationEn
 		return utilerrors.NewAggregate(append(errs, fmt.Errorf("pod spec must specify at least 1 container, found: %d", n)))
 	}
 
-	if n := len(spec.Containers); n > 1 && !decorationEnabled {
+	if n := len(spec.Containers); n > 1 && decorationConfig == nil {
 		return utilerrors.NewAggregate(append(errs, fmt.Errorf("pod utility decoration must be enabled to use multiple containers: %d", n)))
 	}
 
@@ -2388,20 +2410,21 @@ func validatePodSpec(jobType prowapi.ProwJobType, spec *v1.PodSpec, decorationEn
 	}
 
 	volumeNames := sets.String{}
+	decoratedVolumeNames := decorate.VolumeMounts(decorationConfig)
 	for _, volume := range spec.Volumes {
 		if volumeNames.Has(volume.Name) {
 			errs = append(errs, fmt.Errorf("volume named %q is defined more than once", volume.Name))
 		}
 		volumeNames.Insert(volume.Name)
 
-		if decorate.VolumeMounts().Has(volume.Name) {
+		if decoratedVolumeNames.Has(volume.Name) {
 			errs = append(errs, fmt.Errorf("volume %s is a reserved for decoration", volume.Name))
 		}
 	}
 
 	for i := range spec.Containers {
 		for _, mount := range spec.Containers[i].VolumeMounts {
-			if !volumeNames.Has(mount.Name) && !decorate.VolumeMounts().Has(mount.Name) {
+			if !volumeNames.Has(mount.Name) && !decoratedVolumeNames.Has(mount.Name) {
 				errs = append(errs, fmt.Errorf("volumeMount named %q is undefined", mount.Name))
 			}
 			if decorate.VolumeMountsOnTestContainer().Has(mount.Name) {
@@ -2414,6 +2437,21 @@ func validatePodSpec(jobType prowapi.ProwJobType, spec *v1.PodSpec, decorationEn
 	}
 
 	return utilerrors.NewAggregate(errs)
+}
+
+func validateAlwaysRun(job Postsubmit) error {
+	if job.AlwaysRun != nil && *job.AlwaysRun {
+		if job.RunIfChanged != "" {
+			return fmt.Errorf("job %s is set to always run but also declares run_if_changed targets, which are mutually exclusive", job.Name)
+		}
+		if job.SkipIfOnlyChanged != "" {
+			return fmt.Errorf("job %s is set to always run but also declares skip_if_only_changed targets, which are mutually exclusive", job.Name)
+		}
+	}
+	if job.RunIfChanged != "" && job.SkipIfOnlyChanged != "" {
+		return fmt.Errorf("job %s declares run_if_changed and skip_if_only_changed, which are mutually exclusive", job.Name)
+	}
+	return nil
 }
 
 func validateTriggering(job Presubmit) error {

@@ -23,6 +23,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"sync"
 
 	"github.com/sirupsen/logrus"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
@@ -186,4 +187,83 @@ func DefaultAndValidateProwYAML(c *Config, p *ProwYAML, identifier string) error
 	}
 
 	return utilerrors.NewAggregate(errs)
+}
+
+// InRepoConfigGitCache is a wrapper around a git.ClientFactory that allows for
+// threadsafe reuse of git.RepoClients when one already exists for the specified repo.
+type InRepoConfigGitCache struct {
+	git.ClientFactory
+	cache map[string]*skipCleanRepoClient
+	sync.RWMutex
+}
+
+func NewInRepoConfigGitCache(factory git.ClientFactory) git.ClientFactory {
+	if factory == nil {
+		// Don't wrap a nil git factory, keep it nil so that errors are handled properly.
+		return nil
+	}
+	return &InRepoConfigGitCache{
+		ClientFactory: factory,
+		cache:         map[string]*skipCleanRepoClient{},
+	}
+}
+
+func (c *InRepoConfigGitCache) ClientFor(org, repo string) (git.RepoClient, error) {
+	key := fmt.Sprintf("%s/%s", org, repo)
+	getCache := func() (git.RepoClient, error) {
+		if client, ok := c.cache[key]; ok {
+			client.Lock()
+			// Don't unlock the client unless we get an error or the consumer indicates they are done by Clean()ing.
+			if err := client.Fetch(); err != nil {
+				client.Unlock()
+				return nil, err
+			}
+			return client, nil
+		}
+		return nil, nil
+	}
+	c.RLock()
+	cached, err := getCache()
+	c.RUnlock()
+	if cached != nil || err != nil {
+		return cached, err
+	}
+
+	// The repo client was not cached, create a new one.
+	c.Lock()
+	defer c.Unlock()
+	// On cold start, all threads pass RLock and wait here, we need to do one more
+	// check here to avoid more than one cloning.
+	// (It would be nice if we could upgrade from `RLock` to `Lock`)
+	cached, err = getCache()
+	if cached != nil || err != nil {
+		return cached, err
+	}
+	coreClient, err := c.ClientFactory.ClientFor(org, repo)
+	if err != nil {
+		return nil, err
+	}
+	// This is the easiest way we can find for fetching all pull heads
+	if err := coreClient.Config("--add", "remote.origin.fetch", "+refs/pull/*/head:refs/remotes/origin/pr/*"); err != nil {
+		return nil, err
+	}
+	client := &skipCleanRepoClient{
+		RepoClient: coreClient,
+	}
+	client.Lock()
+	c.cache[key] = client
+	return client, nil
+}
+
+var _ git.RepoClient = &skipCleanRepoClient{}
+
+type skipCleanRepoClient struct {
+	git.RepoClient
+	sync.Mutex
+}
+
+func (rc *skipCleanRepoClient) Clean() error {
+	// Skip cleaning and unlock to allow reuse as a cached entry.
+	rc.Unlock()
+	return nil
 }

@@ -51,8 +51,11 @@ type Policy struct {
 	// AllowDeletions allows deletion of the protected branch by anyone with write access to the repository.
 	AllowDeletions *bool `json:"allow_deletions,omitempty"`
 	// Exclude specifies a set of regular expressions which identify branches
-	// that should be excluded from the protection policy
+	// that should be excluded from the protection policy, mutually exclusive with Include
 	Exclude []string `json:"exclude,omitempty"`
+	// Include specifies a set of regular expressions which identify branches
+	// that should be included from the protection policy, mutually exclusive with Exclude
+	Include []string `json:"include,omitempty"`
 }
 
 func (p Policy) defined() bool {
@@ -174,6 +177,7 @@ func (p Policy) Apply(child Policy) Policy {
 		Restrictions:               mergeRestrictions(p.Restrictions, child.Restrictions),
 		RequiredPullRequestReviews: mergeReviewPolicy(p.RequiredPullRequestReviews, child.RequiredPullRequestReviews),
 		Exclude:                    unionStrings(p.Exclude, child.Exclude),
+		Include:                    unionStrings(p.Include, child.Include),
 	}
 }
 

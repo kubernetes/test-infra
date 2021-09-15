@@ -59,7 +59,7 @@ type Interactor interface {
 	// CheckoutPullRequest fetches and checks out the synthetic refspec from GitHub for a pull request HEAD
 	CheckoutPullRequest(number int) error
 	// Config runs `git config`
-	Config(key, value string) error
+	Config(args ...string) error
 	// Diff runs `git diff`
 	Diff(head, sha string) (changes []string, err error)
 	// MergeCommitsExistBetween determines if merge commits exist between target and HEAD
@@ -329,10 +329,10 @@ func (i *interactor) CheckoutPullRequest(number int) error {
 }
 
 // Config runs git config.
-func (i *interactor) Config(key, value string) error {
-	i.logger.Infof("Configuring %q=%q", key, value)
-	if out, err := i.executor.Run("config", key, value); err != nil {
-		return fmt.Errorf("error configuring %q=%q: %v %v", key, value, err, string(out))
+func (i *interactor) Config(args ...string) error {
+	i.logger.WithField("args", args).Info("Configuring.")
+	if out, err := i.executor.Run(append([]string{"config"}, args...)...); err != nil {
+		return fmt.Errorf("error configuring %v: %v %v", args, err, string(out))
 	}
 	return nil
 }

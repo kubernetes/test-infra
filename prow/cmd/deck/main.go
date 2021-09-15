@@ -47,6 +47,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
+	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/pjutil/pprof"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -126,6 +127,7 @@ type options struct {
 	rerunCreatesJob       bool
 	allowInsecure         bool
 	dryRun                bool
+	tenantIDs             flagutil.Strings
 }
 
 func (o *options) Validate() error {
@@ -153,8 +155,8 @@ func (o *options) Validate() error {
 		}
 	}
 
-	if o.hiddenOnly && o.showHidden {
-		return errors.New("'--hidden-only' and '--show-hidden' are mutually exclusive, the first one shows only hidden job, the second one shows both hidden and non-hidden jobs")
+	if (o.hiddenOnly && o.showHidden) || (o.tenantIDs.Strings() != nil && (o.hiddenOnly || o.showHidden)) {
+		return errors.New("'--hidden-only', '--tenant-id', and '--show-hidden' are mutually exclusive, 'hidden-only' shows only hidden job, '--tenant-id' shows all jobs with matching ID and 'show-hidden' shows both hidden and non-hidden jobs")
 	}
 	return nil
 }
@@ -180,6 +182,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.BoolVar(&o.rerunCreatesJob, "rerun-creates-job", false, "Change the re-run option in Deck to actually create the job. **WARNING:** Only use this with non-public deck instances, otherwise strangers can DOS your Prow instance")
 	fs.BoolVar(&o.allowInsecure, "allow-insecure", false, "Allows insecure requests for CSRF and GitHub oauth.")
 	fs.BoolVar(&o.dryRun, "dry-run", false, "Whether or not to make mutating API calls to GitHub.")
+	fs.Var(&o.tenantIDs, "tenant-id", "The tenantID(s) used by the ProwJobs that should be displayed by this instance of Deck. This flag can be repeated.")
 	o.config.AddFlags(fs)
 	o.instrumentation.AddFlags(fs)
 	o.kubernetes.AddFlags(fs)
@@ -422,7 +425,7 @@ func main() {
 		indexHandler(w, r)
 	})
 
-	ja := jobs.NewJobAgent(context.Background(), pjListingClient, o.hiddenOnly, o.showHidden, podLogClients, cfg)
+	ja := jobs.NewJobAgent(context.Background(), pjListingClient, o.hiddenOnly, o.showHidden, o.tenantIDs.Strings(), podLogClients, cfg)
 	ja.Start()
 
 	// setup prod only handlers. These handlers can work with runlocal as long
@@ -562,6 +565,8 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, authCfgGe
 			},
 			hiddenOnly: o.hiddenOnly,
 			showHidden: o.showHidden,
+			tenantIDs:  sets.NewString(o.tenantIDs.Strings()...),
+			cfg:        cfg,
 		}
 		ta.start()
 		mux.Handle("/tide.js", gziphandler.GzipHandler(handleTidePools(cfg, ta, logrus.WithField("handler", "/tide.js"))))
@@ -876,7 +881,9 @@ func handleJobHistory(o options, cfg config.Getter, opener io.Opener, log *logru
 		if err != nil {
 			msg := fmt.Sprintf("failed to get job history: %v", err)
 			if shouldLogHTTPErrors(err) {
-				log.WithField("url", r.URL.String()).Warn(msg)
+				log.WithField("url", r.URL.String()).WithError(err).Warn(msg)
+			} else {
+				log.WithField("url", r.URL.String()).WithError(err).Debug(msg)
 			}
 			http.Error(w, msg, httpStatusForError(err))
 			return
@@ -1230,7 +1237,7 @@ func handleRemoteLens(lens config.LensFileConfig, w http.ResponseWriter, r *http
 func handleTidePools(cfg config.Getter, ta *tideAgent, log *logrus.Entry) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		setHeadersNoCaching(w)
-		queryConfigs := ta.filterHiddenQueries(cfg().Tide.Queries)
+		queryConfigs := ta.filterQueries(cfg().Tide.Queries)
 		queries := make([]string, 0, len(queryConfigs))
 		for _, qc := range queryConfigs {
 			queries = append(queries, qc.Query())
@@ -1659,5 +1666,5 @@ func httpStatusForError(e error) int {
 }
 
 func shouldLogHTTPErrors(e error) bool {
-	return e != context.Canceled || httpStatusForError(e) >= http.StatusInternalServerError // 5XX
+	return !errors.Is(e, context.Canceled) || httpStatusForError(e) >= http.StatusInternalServerError // 5XX
 }

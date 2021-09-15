@@ -27,6 +27,8 @@ presets:
     mountPath: /root/ssh/.private-key
   - name: vpn-conf
     mountPath: /root/.openvpn
+  - name: ipam-conf
+    mountPath: /root/ipam-conf
   volumes:
   - name: private-key
     secret:
@@ -50,7 +52,13 @@ presets:
         path: ca.crt
       - key: tls.key
         path: tls.key
-
+  - name: ipam-conf
+    secret:
+      secretName: capv-ipam-kubeconfig
+      defaultMode: 256
+      items:
+        - key: capv-services.conf
+          path: capv-services.conf
 - labels:
     preset-cluster-api-provider-vsphere-gcs-creds: "true"
   env:
@@ -78,7 +86,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-1.21
         command:
         - hack/check-lint.sh
     annotations:
@@ -133,7 +141,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-1.21
         command:
         - hack/verify-crds.sh
     annotations:
@@ -149,7 +157,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-1.21
         resources:
           requests:
             cpu: "500m"
@@ -177,7 +185,7 @@ presubmits:
     max_concurrency: 3
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-1.21
         command:
         - runner.sh
         args:

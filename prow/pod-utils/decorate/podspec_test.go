@@ -396,7 +396,7 @@ func TestCloneRefs(t *testing.T) {
 					GitUserName:    clonerefs.DefaultGitUserName,
 					SrcRoot:        codeMount.MountPath,
 					Log:            CloneLogPath(logMount),
-					OauthTokenFile: "/secrets/oauth/oauth-token",
+					OauthTokenFile: "/secrets/oauth/oauth-file",
 				}),
 				VolumeMounts: []coreapi.VolumeMount{logMount, codeMount,
 					{Name: "oauth-secret", ReadOnly: true, MountPath: "/secrets/oauth"}, tmpMount,
@@ -410,7 +410,7 @@ func TestCloneRefs(t *testing.T) {
 							SecretName: "oauth-secret",
 							Items: []coreapi.KeyToPath{{
 								Key:  "oauth-file",
-								Path: "./oauth-token"}},
+								Path: "./oauth-file"}},
 						},
 					},
 				},

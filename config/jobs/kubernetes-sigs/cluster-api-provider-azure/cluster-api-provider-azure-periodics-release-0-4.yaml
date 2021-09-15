@@ -15,7 +15,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-1.18
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-1.18
         command:
         - "runner.sh"
         - "./scripts/ci-conformance.sh"
@@ -47,7 +47,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-1.18
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-1.18
         command:
         - "runner.sh"
         - "./scripts/ci-conformance.sh"
@@ -65,7 +65,7 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
     testgrid-tab-name: capz-periodic-conformance-v1alpha3-k8s-main-release-0-4
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
-    description: Runs conformance & node conformance tests on latest kubernetes master with cluster-api-provider-azure
+    description: Runs conformance & node conformance tests on latest kubernetes main with cluster-api-provider-azure
 - name: periodic-cluster-api-provider-azure-capi-e2e-release-0-4
   decorate: true
   decoration_config:
@@ -83,7 +83,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-1.18
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-1.18
       command:
       - "runner.sh"
       - "./scripts/ci-e2e.sh"
@@ -114,7 +114,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-1.18
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-1.18
       command:
       - "runner.sh"
       - "./scripts/ci-e2e.sh"

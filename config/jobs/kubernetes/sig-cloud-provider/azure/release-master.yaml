@@ -17,7 +17,7 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: master
+        base_ref: main
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
@@ -26,7 +26,7 @@ presubmits:
         path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -35,6 +35,7 @@ presubmits:
             - -c
             - >-
               cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&
+              ./deploy/install-driver.sh master local,snapshot,enable-avset &&
               make e2e-test
           env:
             - name: AZURE_STORAGE_DRIVER
@@ -66,7 +67,7 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: master
+        base_ref: main
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
@@ -75,7 +76,7 @@ presubmits:
         path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -84,6 +85,7 @@ presubmits:
             - -c
             - >-
               cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&
+              ./deploy/install-driver.sh v1.6.0 local,snapshot &&
               make e2e-test
           env:
             - name: AZURE_STORAGE_DRIVER
@@ -117,7 +119,7 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: master
+        base_ref: main
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
@@ -126,7 +128,7 @@ presubmits:
         path_alias: sigs.k8s.io/azurefile-csi-driver
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -136,6 +138,7 @@ presubmits:
             - >-
               kubectl apply -f templates/addons/azurefile-role.yaml &&
               cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
+              ./deploy/install-driver.sh v1.6.0 local,snapshot &&
               make e2e-test
           env:
             - name: AZURE_STORAGE_DRIVER
@@ -167,7 +170,7 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: master
+        base_ref: main
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
@@ -176,7 +179,7 @@ presubmits:
         path_alias: sigs.k8s.io/azurefile-csi-driver
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -186,6 +189,7 @@ presubmits:
             - >-
               kubectl apply -f templates/addons/azurefile-role.yaml &&
               cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
+              ./deploy/install-driver.sh v1.6.0 local,snapshot &&
               make e2e-test
           env:
             - name: AZURE_STORAGE_DRIVER
@@ -219,12 +223,12 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: master
+      base_ref: main
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-master
         command:
         - runner.sh
         - ./scripts/ci-conformance.sh
@@ -261,12 +265,12 @@ presubmits:
     extra_refs:
     - org: jackfrancis #TODO change back to kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: capz-ha-control-plane-tests #TODO change back to master
+      base_ref: capz-ha-control-plane-tests #TODO change back to main
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-master
         command:
         - runner.sh
         - ./scripts/ci-conformance.sh
@@ -301,11 +305,11 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: master
+    base_ref: main
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-master
       command:
       - runner.sh
       - ./scripts/ci-conformance.sh
@@ -340,7 +344,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: master
+    base_ref: main
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   - org: kubernetes-sigs
     repo: azurefile-csi-driver
@@ -352,7 +356,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -362,6 +366,7 @@ periodics:
       - >-
         kubectl apply -f templates/addons/azurefile-role.yaml &&
         cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
+        ./deploy/install-driver.sh v1.6.0 local,snapshot &&
         make e2e-test
       env:
       - name: USE_CI_ARTIFACTS
@@ -392,7 +397,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: master
+    base_ref: main
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   - org: kubernetes-sigs
     repo: azurefile-csi-driver
@@ -404,7 +409,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -414,6 +419,7 @@ periodics:
       - >-
         kubectl apply -f templates/addons/azurefile-role.yaml &&
         cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
+        ./deploy/install-driver.sh v1.6.0 local,snapshot &&
         make e2e-test
       env:
       - name: USE_CI_ARTIFACTS
@@ -446,7 +452,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: master
+    base_ref: main
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   - org: kubernetes-sigs
     repo: azuredisk-csi-driver
@@ -458,7 +464,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -467,6 +473,7 @@ periodics:
       - -c
       - >-
         cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&
+        ./deploy/install-driver.sh v1.6.0 local,snapshot &&
         make e2e-test
       env:
       - name: USE_CI_ARTIFACTS
@@ -497,7 +504,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: master
+    base_ref: main
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   - org: kubernetes-sigs
     repo: azuredisk-csi-driver
@@ -509,7 +516,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210808-1eaeec7-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -518,6 +525,7 @@ periodics:
       - -c
       - >-
         cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&
+        ./deploy/install-driver.sh v1.6.0 local,snapshot &&
         make e2e-test
       env:
       - name: USE_CI_ARTIFACTS

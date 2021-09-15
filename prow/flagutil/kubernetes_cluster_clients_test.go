@@ -19,12 +19,28 @@ package flagutil
 import (
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"k8s.io/test-infra/pkg/flagutil"
 )
 
 func TestExperimentalKubernetesOptions_Validate(t *testing.T) {
+	dir := t.TempDir()
+	configFile := filepath.Join(dir, "some-file")
+	if err := ioutil.WriteFile(configFile, []byte("a"), 0644); err != nil {
+		t.Fatalf("failed to write kubeconfig file %q: %v", configFile, err)
+	}
+	configDir := filepath.Join(dir, "some-dir")
+	if err := os.Mkdir(configDir, 0755); err != nil {
+		t.Fatalf("failed to create a directory %q: %v", configDir, err)
+	}
+	defer t.Cleanup(func() {
+		if err := os.RemoveAll(dir); err != nil {
+			t.Errorf("failed to remove files in %s: %v", dir, err)
+		}
+	})
+
 	var testCases = []struct {
 		name        string
 		dryRun      bool
@@ -38,18 +54,29 @@ func TestExperimentalKubernetesOptions_Validate(t *testing.T) {
 			expectedErr: false,
 		},
 		{
-			name:   "all ok with dry-run",
-			dryRun: true,
-			kubernetes: &KubernetesOptions{
-				DeckURI: "https://example.com",
-			},
+			name:        "all ok with dry-run",
+			dryRun:      true,
+			kubernetes:  &KubernetesOptions{},
 			expectedErr: false,
 		},
 		{
-			name:        "missing deck endpoint with dry-run",
-			dryRun:      true,
-			kubernetes:  &KubernetesOptions{},
-			expectedErr: true,
+			name: "kubeconfig can be set alone",
+			kubernetes: &KubernetesOptions{
+				kubeconfig: configFile,
+			},
+		},
+		{
+			name: "kubeconfigDir can be set alone",
+			kubernetes: &KubernetesOptions{
+				kubeconfigDir: configDir,
+			},
+		},
+		{
+			name: "kubeconfig and kubeconfigDir can be set together",
+			kubernetes: &KubernetesOptions{
+				kubeconfig:    configFile,
+				kubeconfigDir: configDir,
+			},
 		},
 	}
 

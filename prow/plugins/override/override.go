@@ -51,6 +51,7 @@ type githubClient interface {
 	GetRef(org, repo, ref string) (string, error)
 	HasPermission(org, repo, user string, role ...string) (bool, error)
 	ListStatuses(org, repo, ref string) ([]github.Status, error)
+	GetBranchProtection(org, repo, branch string) (*github.BranchProtection, error)
 	ListTeams(org string) ([]github.Team, error)
 	ListTeamMembers(org string, id int, role string) ([]github.TeamMember, error)
 }
@@ -94,6 +95,9 @@ func (c client) GetPullRequest(org, repo string, number int) (*github.PullReques
 }
 func (c client) ListStatuses(org, repo, ref string) ([]github.Status, error) {
 	return c.ghc.ListStatuses(org, repo, ref)
+}
+func (c client) GetBranchProtection(org, repo, branch string) (*github.BranchProtection, error) {
+	return c.ghc.GetBranchProtection(org, repo, branch)
 }
 func (c client) HasPermission(org, repo, user string, role ...string) (bool, error) {
 	return c.ghc.HasPermission(org, repo, user, role...)
@@ -360,6 +364,23 @@ func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent,
 		}
 	}
 
+	branch := pr.Base.Ref
+	branchProtection, err := oc.GetBranchProtection(org, repo, branch)
+	if err != nil {
+		resp := fmt.Sprintf("Cannot get branch protection for branch %s in %s/%s", branch, org, repo)
+		log.WithError(err).Warn(resp)
+		return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
+	}
+
+	if branchProtection != nil && branchProtection.RequiredStatusChecks != nil {
+		for _, context := range branchProtection.RequiredStatusChecks.Contexts {
+			if !contexts.Has(context) {
+				contexts.Insert(context)
+				statuses = append(statuses, github.Status{Context: context})
+			}
+		}
+	}
+
 	if unknown := overrides.Difference(contexts); unknown.Len() > 0 {
 		resp := fmt.Sprintf(`/override requires a failed status context or a job name to operate on.
 The following unknown contexts were given:
@@ -398,7 +419,7 @@ Only the following contexts were expected:
 				return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 			}
 
-			pj := pjutil.NewPresubmit(*pr, baseSHA, *pre, e.GUID)
+			pj := pjutil.NewPresubmit(*pr, baseSHA, *pre, e.GUID, nil)
 			now := metav1.Now()
 			pj.Status = prowapi.ProwJobStatus{
 				StartTime:      now,

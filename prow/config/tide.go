@@ -291,6 +291,17 @@ type TideQuery struct {
 	ExcludedRepos []string `json:"excludedRepos,omitempty"`
 }
 
+func (q TideQuery) TenantIDs(cfg Config) []string {
+	res := sets.String{}
+	for _, org := range q.Orgs {
+		res.Insert(cfg.GetProwJobDefault(org, "*").TenantID)
+	}
+	for _, repo := range q.Repos {
+		res.Insert(cfg.GetProwJobDefault(repo, "*").TenantID)
+	}
+	return res.List()
+}
+
 // tideQueryConfig contains the subset of attributes by which we de-duplicate
 // tide queries. Together with tideQueryTarget it must contain the full set
 // of all TideQuery properties.

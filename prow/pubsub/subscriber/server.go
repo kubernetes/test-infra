@@ -19,6 +19,7 @@ package subscriber
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"reflect"
@@ -193,7 +194,7 @@ func (s *PullServer) handlePulls(ctx context.Context, projectSubscriptions confi
 					}
 					msg.ack()
 				})
-				if err != nil {
+				if err != nil && !errors.Is(derivedCtx.Err(), context.Canceled) {
 					logrus.WithError(err).Errorf("failed to listen for subscription %s on project %s", sub.string(), project)
 					return err
 				}
@@ -213,9 +214,9 @@ func (s *PullServer) Run(ctx context.Context) error {
 	var err error
 	defer func() {
 		if err != nil {
-			logrus.WithError(ctx.Err()).Error("Pull server shutting down")
+			logrus.WithError(ctx.Err()).Error("Pull server shutting down.")
 		}
-		logrus.Warn("Pull server shutting down")
+		logrus.Debug("Pull server shutting down.")
 	}()
 	currentConfig := s.Subscriber.ConfigAgent.Config().PubSubTriggers
 	errGroup, derivedCtx, err := s.handlePulls(ctx, currentConfig)
@@ -227,7 +228,7 @@ func (s *PullServer) Run(ctx context.Context) error {
 		select {
 		// Parent context. Shutdown
 		case <-ctx.Done():
-			return ctx.Err()
+			return nil
 		// Current thread context, it may be failing already
 		case <-derivedCtx.Done():
 			err = errGroup.Wait()
@@ -237,7 +238,7 @@ func (s *PullServer) Run(ctx context.Context) error {
 			newConfig := event.After.PubSubTriggers
 			logrus.Info("Received new config")
 			if !reflect.DeepEqual(currentConfig, newConfig) {
-				logrus.Warn("New config found, reloading pull Server")
+				logrus.Info("New config found, reloading pull Server")
 				// Making sure the current thread finishes before starting a new one.
 				errGroup.Wait()
 				// Starting a new thread with new config

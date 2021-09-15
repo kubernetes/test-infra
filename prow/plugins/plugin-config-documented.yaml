@@ -404,6 +404,13 @@ label:
     # on top of the existing "kind/*", "priority/*", and "area/*" labels.
     additional_labels:
       - ""
+
+    # RestrictedLabels allows to configure labels that can only be modified
+    # by users that belong to at least one of the configured teams. The key
+    # defines to which repos this applies and can be `*` for global, an org
+    # or a repo in org/repo notation.
+    restricted_labels:
+        "": null
 lgtm:
   - # Repos is either of the form org/repos or just org.
     repos:
