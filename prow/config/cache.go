@@ -30,82 +30,75 @@ import (
 
 // Caching implementation overview
 //
-// Consider the expensive function GetPresubmits(). This function returns
-// a []Presubmit slice, which is expensive to compute (it involves
-// invoking a Git client, walking a filesystem path, etc). In our caching
-// implementation, we call a wrapper function instead, GetPresubmitsFromCache().
-// GetPresubmitsFromCache() can wrap around GetPresubmits(), and __only__
-// calls it when the corresponding []Presubmit slice we want is not found
-// in the cache (or if the cache is not initialized properly, or even
-// corrupted).
+// Consider the expensive function defaultProwYAMLGetter(). This function is
+// expensive to compute (it involves invoking a Git client, walking a filesystem
+// path, etc). In our caching implementation, we save results of this function
+// into a cache (named ProwYAMLCache). The point is to avoid doing the expensive
+// GetPresubmits() and GetPostsubmits() calls if possible, which involves
+// walking the repository to collect YAML information, etc.
 //
-// The same thing can be said for GetPostsubmits() and its wrapper,
-// GetPostsubmitsFromCache() which we define in this file.
-//
-// The key idea is this: when we need to look up a value for the cache, we first
-// look it up by its key. The function that creates a key ("keyConstructor"
-// type) is fast and easy to compute. If we find an entry in the cache that
-// matches the key that we just constructed, then return that. Otherwise if the
-// value is not found, we (begrudgingly) compute it from scratch using the given
-// "value constructor" function (aka the "valConstructor" type). For
-// []Presubmit the constructor function is GetPresubmits(), and
-// for []Postsubmit it is GetPostsubmits().
-//
-// The functions GetPresubmitsFromCache() and GetPostsubmitsFromCache() both
-// implmement this key idea, with some additional protections around type safety
-// guarantees, cache readiness (uninitialized cache), and cache corruption
-// (where the value in the cache does not match what we want). We have to have
-// two functions like this, one for each type, because Go does not yet support
-// generics (to be added in Go 1.18). Lastly, these functions make use of a
-// GetFromCache() helper function, so that we can test that separately (and also
-// add unit tests that add presumptions about the underlying cache
-// implementation's behavior).
+// ProwYAMLCache uses an off-the-shelf LRU cache library for the low-level
+// caching implementation, which uses the empty interface for keys and values.
+// The values are what we store in the cache, and to retrieve them, we have to
+// provide a key (which must be a hashable object). We wrap this cache with a
+// single lock, and use an algorithm for a concurrent non-blocking cache to make
+// it both thread-safe and also resistant to so-called cache stampede, where
+// many concurrent threads all attempt to look up the same (missing) key/value
+// pair from the cache (see Alan Donovan and Brian Kernighan, "The Go
+// Programming Language" (Addison-Wesley, 2016), p. 277).
 
-// ProwYAMLCache holds Presubmits and Postsubmits in a simple cache. It is named
-// ProwYAMLCache because the objects it caches resemble the fields that make up
-// the ProwYAML object defined in inrepoconfig.go (i.e., the values of the cache
-// are the []Presubmit and []Postsubmit objects). The point is to
-// avoid doing the expensive GetPresubmits() and GetPostsubmits()
-// calls if possible, which involves walking the repository to collect YAML
-// information, etc.
-//
-// We use an off-the-shelf LRU cache library for the low-level caching
-// implementation, which uses the empty interface for keys and values. The
-// values are what we store in the cache, and to retrieve them, we have to
-// provide a key (which must be a hashable object). Because of Golang's lack of
-// generics, the values retrieved from the cache must be type-asserted into the
-// type we want ([]Presubmit or []Postsubmit) before we can use
-// them.
+// ProwYAMLCache is the user-facing cache.
 type ProwYAMLCache struct {
 	LRUCache
 }
 
+// LRUCache is the actual concurrent non-blocking cache.
 type LRUCache struct {
-	sync.Mutex
+	*sync.Mutex
 	*simplelru.LRU
 }
 
+// Promise is a wrapper around cache value construction; it is used to
+// synchronize the to-be-cached value between threads that undergo a cache miss
+// and subsequent threads that attempt to look up the same cache entry.
 type Promise struct {
 	Result
 	resolve chan struct{}
 }
 
+// Result stores the result of executing an arbitrary valConstructor function.
 type Result struct {
 	val interface{}
 	err error
 }
 
+// valConstructor is used to construct a value. The assumption is that this
+// valConstructor is expensive to compute, and that we need to memoize it via
+// the LRUCache. The raw values of a cache are only constructed after a cache
+// miss or as a general fallback to bypass the cache if the cache is unusable
+// for whatever reason. Using this type allows us to use any arbitrary function
+// whose resulting values needs to be memoized (saved in the cache). This type
+// also allows us to delay running the expensive computation until we actually
+// need it.
+type valConstructor func() (interface{}, error)
+
+// keyConstructor is used only when we need to perform a lookup inside a cache
+// (if it is available), because all values stored in the cache are paired with
+// a unique lookup key.
+type keyConstructor func() (CacheKey, error)
+
+// NewLRUCache returns a new LRUCache with a given size (number of elements).
 func NewLRUCache(size int) (*LRUCache, error) {
 	cache, err := simplelru.NewLRU(size, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	return &LRUCache{sync.Mutex{}, cache}, nil
+	return &LRUCache{&sync.Mutex{}, cache}, nil
 }
 
-// NewProwYAMLCache creates a new LRU cache for presubmits and postsubmits,
-// where the keys are CacheKeys and values are ProwYAMLs.
+// NewProwYAMLCache creates a new LRU cache for ProwYAML values, where the keys
+// are CacheKeys and values are pointers to ProwYAMLs.
 func NewProwYAMLCache(size int) (*ProwYAMLCache, error) {
 	cache, err := NewLRUCache(size)
 	if err != nil {
@@ -131,12 +124,15 @@ func (c *Config) InitProwYAMLCache(size int) error {
 	return nil
 }
 
-// CacheKey acts as a key to either the ProwYAMLCache.presubmits or
-// ProwYAMLCache.postsubmits cache. The CacheKey is a struct because we want to
-// keep the various components that make up the key separate to help keep tests
-// readable. Because the headSHAs field is a slice, the overall CacheKey object
-// is not hashable and cannot be used directly as a key. Instead we use the
-// fmt.Stringer interface implementation for it.
+// CacheKey acts as a key to the ProwYAMLCache. We construct it by marshaling
+// CacheKeyParts into a JSON string.
+type CacheKey string
+
+// The CacheKeyParts is a struct because we want to keep the various components
+// that make up the key separate to help keep tests readable. Because the
+// headSHAs field is a slice, the overall CacheKey object is not hashable and
+// cannot be used directly as a key. Instead we marshal it to JSON first, then
+// convert its type to CacheKey.
 //
 // Users should take care to ensure that headSHAs remains stable (order
 // matters).
@@ -146,11 +142,8 @@ type CacheKeyParts struct {
 	HeadSHAs   []string `json:"headSHAs"`
 }
 
-type CacheKey string
-
 // MakeCacheKeyParts constructs a CacheKeyParts struct from uniquely-identifying
-// information. The only requirement is that we take all of the stringlike
-// parameters and concatenate them together to form a UUID.
+// information.
 func MakeCacheKeyParts(
 	identifier string,
 	baseSHAGetter RefGetter,
@@ -189,28 +182,16 @@ func MakeCacheKeyParts(
 	return keyParts, nil
 }
 
+// MakeCacheKey converts a CacheKeyParts object into a JSON string (to be used
+// as a CacheKey).
 func MakeCacheKey(kp CacheKeyParts) (CacheKey, error) {
-	// Convert to JSON string. This is a bit "heavy" but as long as we get a
-	// deterministic string it doesn't matter.
 	data, err := json.Marshal(kp)
 
 	return CacheKey(data), err
 }
 
-// valConstructor is used to construct a value. The raw values of a cache are
-// only constructed after a cache miss or as a general fallback to bypass the
-// cache if the cache is unusable for whatever reason.
-type valConstructor func() (interface{}, error)
-
-type valConstructorHelper func(git.ClientFactory, string, RefGetter, ...RefGetter) (*ProwYAML, error)
-
-// keyConstructor is used only when we need to perform a lookup inside a cache
-// (if it is available), because all values stored in the cache are paired with
-// a unique lookup key.
-type keyConstructor func() (CacheKey, error)
-
 // GetPresubmitsFromCache is like GetPresubmits, but attempts to use a cache
-// lookup to get the prowYAML value (cache hit), instead of computing it from
+// lookup to get the *ProwYAML value (cache hit), instead of computing it from
 // scratch (cache miss).
 func (c *Config) GetPresubmitsFromCache(gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Presubmit, error) {
 
@@ -227,7 +208,7 @@ func (c *Config) GetPresubmitsFromCache(gc git.ClientFactory, identifier string,
 }
 
 // GetPostsubmitsFromCache is like GetPostsubmits, but attempts to use a cache
-// lookup to get the prowYAML value (cache hit), instead of computing it from
+// lookup to get the *ProwYAML value (cache hit), instead of computing it from
 // scratch (cache miss).
 func (c *Config) GetPostsubmitsFromCache(gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Postsubmit, error) {
 
@@ -250,7 +231,7 @@ func (c *Config) GetPostsubmitsFromCache(gc git.ClientFactory, identifier string
 // (instead of needing to create an actual Git repo, etc.).
 func GetProwYAMLFromCache(
 	prowYAMLCache *ProwYAMLCache,
-	valConstructorHelper valConstructorHelper,
+	valConstructorHelper func(git.ClientFactory, string, RefGetter, ...RefGetter) (*ProwYAML, error),
 	gc git.ClientFactory,
 	identifier string,
 	baseSHAGetter RefGetter,
@@ -298,9 +279,8 @@ func GetProwYAMLFromCache(
 // corresponding Key, so that we can look up the Value with just the Key in the
 // future.
 //
-// This code for a concurrent non-blocking cache with support for duplicate
-// suppression is drawn from Alan Donovan and Brian Kernighan, "The Go
-// Programming Language" (Addison-Wesley, 2016), p. 277.
+// This cache is resistant to cache stampedes because it uses a duplicate
+// suppression strategy. This is also called request coalescing.
 func (lruCache *LRUCache) GetOrAdd(
 	keyConstructor keyConstructor,
 	valConstructor valConstructor) (interface{}, error) {

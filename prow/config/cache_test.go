@@ -420,8 +420,8 @@ func TestGetOrAddSimple(t *testing.T) {
 	}
 }
 
-// TestGetOrAdd tests getting 1000 sudden requests for the same cache
-// key against the cache at the same time. Because our cache can handle this
+// TestGetOrAddBurst tests getting 1000 sudden requests for the same cache key
+// against the cache at the same time. Because our cache can handle this
 // situation (called "cache stampede" or by its mitigation strategy known as
 // "duplicate suppression"), we expect to only have created a **single** cached
 // entry, with the remaining 999 "get" calls against the cache to reuse the
@@ -429,7 +429,7 @@ func TestGetOrAddSimple(t *testing.T) {
 // coalescing, which uses the same principle. For more discussion about
 // duplicate suppression, see Alan Donovan and Brian Kernighan, "The Go
 // Programming Language" (Addison-Wesley, 2016), p. 276.
-func TestGetOrAdd(t *testing.T) {
+func TestGetOrAddBurst(t *testing.T) {
 	// testLock is used for guarding keyConstructorCalls and valConstructorCalls
 	// for purposes of testing.
 	testLock := sync.Mutex{}
@@ -568,27 +568,15 @@ func TestGetOrAdd(t *testing.T) {
 }
 
 func TestGetProwYAMLFromCache(t *testing.T) {
+	// fakeProwYAMLMap mocks defaultProwYAMLGetter. Instead of using the
+	// git.ClientFactory (and other operations), we just use a simple map to get
+	// the *ProwYAML value we want. For simplicity we just reuse MakeCacheKey
+	// even though we're not using a cache. The point of fakeProwYAMLMap is to
+	// act as a "source of truth" of authoritative *ProwYAML values for purposes
+	// of the test cases in this unit test.
 	fakeProwYAMLMap := make(map[CacheKey]*ProwYAML)
-	// This mocks GetPresubmits. Instead of using the git.ClientFactory
-	// (and other operations), we just use a simple map to get the
-	// []Presubmit value we want. For simplicity we just reuse
-	// MakeCacheKey even though we're not using a cache. The point of
-	// fakeGetPresubmits is to act as a "source of truth" of authoritative
-	// []Presubmit values for purposes of the test cases in this unit
-	// test.
 
-	goodKeyConstructorForInitialState := func(key CacheKey) func() (CacheKey, error) {
-		return func() (CacheKey, error) {
-			return key, nil
-		}
-	}
-	goodValConstructorForInitialState := func(val ProwYAML) func() (interface{}, error) {
-		return func() (interface{}, error) {
-			return &val, nil
-		}
-	}
-
-	// This mocks config.getProwYAML.
+	// goodValConstructor mocks config.getProwYAML.
 	// This map pretends to be an expensive computation in order to generate a
 	// *ProwYAML value.
 	goodValConstructor := func(gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) (*ProwYAML, error) {
@@ -610,6 +598,7 @@ func TestGetProwYAMLFromCache(t *testing.T) {
 
 		return nil, fmt.Errorf("unable to construct *ProwYAML value")
 	}
+
 	fakeProwYAMLs := []CacheKeyParts{
 		{
 			Identifier: "foo/bar",
@@ -634,6 +623,21 @@ func TestGetProwYAMLFromCache(t *testing.T) {
 					JobBase: JobBase{Name: string(fakeProwYAMLKey)},
 				},
 			},
+		}
+	}
+
+	// goodKeyConstructorForInitialState is used for warming up the cache for
+	// tests that need it.
+	goodKeyConstructorForInitialState := func(key CacheKey) func() (CacheKey, error) {
+		return func() (CacheKey, error) {
+			return key, nil
+		}
+	}
+	// goodValConstructorForInitialState is used for warming up the cache for
+	// tests that need it.
+	goodValConstructorForInitialState := func(val ProwYAML) func() (interface{}, error) {
+		return func() (interface{}, error) {
+			return &val, nil
 		}
 	}
 
@@ -757,7 +761,7 @@ func TestGetProwYAMLFromCache(t *testing.T) {
 		},
 		{
 			// If the cache is corrupted (it holds values of a type that is not
-			// []Presubmit), then we expect an error.
+			// *ProwYAML), then we expect an error.
 			name:           "GoodValConstructorCorruptedCacheHit",
 			valConstructor: goodValConstructor,
 			cacheInitialState: []CacheKeyParts{
@@ -780,7 +784,7 @@ func TestGetProwYAMLFromCache(t *testing.T) {
 		},
 		{
 			// If the cache is corrupted (it holds values of a type that is not
-			// []Presubmit), then we expect an error.
+			// *ProwYAML), then we expect an error.
 			name:           "BadValConstructorCorruptedCacheHit",
 			valConstructor: badValConstructor,
 			cacheInitialState: []CacheKeyParts{
@@ -820,7 +824,7 @@ func TestGetProwYAMLFromCache(t *testing.T) {
 			}
 
 			// Simulate storing a value of the wrong type in the cache (a string
-			// instead of a []Presubmit).
+			// instead of a *ProwYAML).
 			if tc.cacheCorrupted {
 				prowYAMLCache.Purge()
 
