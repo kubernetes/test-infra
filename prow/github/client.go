@@ -682,6 +682,8 @@ func NewAppsAuthClientWithFields(fields logrus.Fields, censor func([]byte) []byt
 
 // NewClientFromOptions creates a new client from the options we expose. This method should be used over the more-specific ones.
 func NewClientFromOptions(fields logrus.Fields, options ClientOptions) (TokenGenerator, UserGenerator, Client) {
+	options = options.Default()
+
 	// Will be nil if github app authentication is used
 	if options.GetToken == nil {
 		options.GetToken = func() []byte { return nil }
@@ -737,7 +739,10 @@ func NewClientFromOptions(fields logrus.Fields, options ClientOptions) (TokenGen
 
 		// Use github apps auth for git actions
 		// https://docs.github.com/en/free-pro-team@latest/developers/apps/authenticating-with-github-apps#http-based-git-access-by-an-installation=
-		tokenGenerator = appsTransport.installationTokenFor
+		tokenGenerator = func(org string) (string, error) {
+			res, _, err := appsTransport.installationTokenFor(org)
+			return res, err
+		}
 		userGenerator = func() (string, error) {
 			return "x-access-token", nil
 		}
@@ -1110,7 +1115,6 @@ func (c *client) requestRetryWithContext(ctx context.Context, method, path, acce
 		} else if errors.Is(err, &appsAuthError{}) {
 			c.logger.WithError(err).Error("Stopping retry due to appsAuthError")
 			return resp, err
-
 		} else if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
 			return resp, err
 		} else {
