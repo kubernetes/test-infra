@@ -12,7 +12,7 @@ periodics:
       - "--root=/go/src"
       - "--upload=gs://kubernetes-jenkins/logs"
       - "--clean"
-      - "--timeout=120" # Minutes (usually runs take 1:15)
+      - "--timeout=180" # Minutes (120m runs consistently time out)
       - "--scenario=execute"
       - "--" # end bootstrap args, scenario args below
       - "test/run-k8s-integration-ci.sh"
