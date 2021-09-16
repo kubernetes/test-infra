@@ -48,3 +48,8 @@ Prow can also automatically upload changes to files that correspond to Kubernete
 ## Handle scale
 
 If your Prow instance operates on a lot of GitHub repos or runs lots of jobs you should review the ["Scaling Prow"](/prow/scaling.md) guide for tips and best practices.
+
+
+## Private Front end
+
+If you want to create a private Deck instnace that contains a subset of prowjobs, you should review the ["Private Deck"](/prow/private_deck.md) guide.
