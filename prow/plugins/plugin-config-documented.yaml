@@ -390,6 +390,14 @@ heart:
     # Compiles into CommentRe during config load.
     commentregexp: ' '
 help:
+    # Guidelines summary is the message displayed when an issue is labeled with help-wanted and/or good-first-issue reflecting
+    # a summary of the guidelines that an issue should follow to qualify as help-wanted or good-first-issue. The main purpose
+    # of a summary is to try and increase visibility of these guidelines to the author of the issue alongisde providing the
+    # HelpGuidelinesURL which will provide a more detailed version of the guidelines.
+
+    # HelpGuidelinesSummary is the summary of the guide lines for a help-wanted issue.
+    help_guidelines_summary: ' '
+
     # HelpGuidelinesURL is the URL of the help page, which provides guidance on how and when to use the help wanted and good first issue labels.
     # The default value is "https://git.k8s.io/community/contributors/guide/help-wanted.md".
     help_guidelines_url: ' '

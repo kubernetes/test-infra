@@ -172,7 +172,9 @@ func TestLabel(t *testing.T) {
 		},
 	}
 
-	helpGuidelinesURL := "https://git.k8s.io/community/contributors/guide/help-wanted.md"
+	ig := issueGuidelines{
+		issueGuidelinesURL: "https://git.k8s.io/community/contributors/guide/help-wanted.md",
+	}
 
 	for _, tc := range testcases {
 		sort.Strings(tc.expectedNewLabels)
@@ -203,7 +205,7 @@ func TestLabel(t *testing.T) {
 			Repo:       github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 			User:       github.User{Login: "Alice"},
 		}
-		err := handle(fakeClient, logrus.WithField("plugin", pluginName), &fakePruner{}, e, helpGuidelinesURL)
+		err := handle(fakeClient, logrus.WithField("plugin", pluginName), &fakePruner{}, e, ig)
 		if err != nil {
 			t.Errorf("For case %s, didn't expect error from label test: %v", tc.name, err)
 			continue
@@ -224,6 +226,91 @@ func TestLabel(t *testing.T) {
 		sort.Strings(fakeClient.IssueLabelsRemoved)
 		if !reflect.DeepEqual(tc.expectedRemovedLabels, fakeClient.IssueLabelsRemoved) {
 			t.Errorf("(%s): Expected the labels %q to be removed, but %q were removed.", tc.name, tc.expectedRemovedLabels, fakeClient.IssueLabelsRemoved)
+		}
+	}
+}
+
+func TestIssueGuidelines(t *testing.T) {
+	url := "https://git.k8s.io/community/contributors/guide/help-wanted.md"
+	guidelineSummary := "This is a guideline"
+	type testCase struct {
+		name                string
+		hasGuidelineSummary bool
+		isForHelpWanted     bool
+		expectedMsg         string
+	}
+	testCases := []testCase{
+		{
+			name:                "Help message with guidelines summary",
+			hasGuidelineSummary: true,
+			isForHelpWanted:     true,
+			expectedMsg: fmt.Sprintf(`
+	This request has been marked as needing help from a contributor.
+
+### Guidelines
+%s
+
+For more details on the requirements of such an issue, please see [here](%s) and ensure that they are met.
+
+If this request no longer meets these requirements, the label can be removed
+by commenting with the `+"`/remove-help`"+` command.
+`, guidelineSummary, url),
+		},
+		{
+			name:            "Help message without guidelines summary",
+			isForHelpWanted: true,
+			expectedMsg: fmt.Sprintf(`
+	This request has been marked as needing help from a contributor.
+
+Please ensure the request meets the requirements listed [here](%s).
+
+If this request no longer meets these requirements, the label can be removed
+by commenting with the `+"`/remove-help`"+` command.
+`, url),
+		},
+		{
+			name:                "Good First Issue message with guidelines summary",
+			hasGuidelineSummary: true,
+			expectedMsg: fmt.Sprintf(`
+	This request has been marked as suitable for new contributors.
+
+### Guidelines
+%s
+
+For more details on the requirements of such an issue, please see [here](%s#good-first-issue) and ensure that they are met.
+
+If this request no longer meets these requirements, the label can be removed
+by commenting with the `+"`/remove-good-first-issue`"+` command.
+`, guidelineSummary, url),
+		},
+		{
+			name: "Good First Issue message without guidelines summary",
+			expectedMsg: fmt.Sprintf(`
+	This request has been marked as suitable for new contributors.
+
+Please ensure the request meets the requirements listed [here](%s#good-first-issue).
+
+If this request no longer meets these requirements, the label can be removed
+by commenting with the `+"`/remove-good-first-issue`"+` command.
+`, url),
+		},
+	}
+
+	for _, tc := range testCases {
+		ig := issueGuidelines{
+			issueGuidelinesURL: url,
+		}
+		if tc.hasGuidelineSummary {
+			ig.issueGuidelinesSummary = guidelineSummary
+		}
+		var returnedMsg string
+		if tc.isForHelpWanted {
+			returnedMsg = ig.helpMsg()
+		} else {
+			returnedMsg = ig.goodFirstIssueMsg()
+		}
+		if returnedMsg != tc.expectedMsg {
+			t.Errorf("(%s): Expected message: %sReturned message: %s", tc.name, tc.expectedMsg, returnedMsg)
 		}
 	}
 }
