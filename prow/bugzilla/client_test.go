@@ -907,6 +907,27 @@ func TestPullFromIdentifier(t *testing.T) {
 			expectedNum:  1234,
 		},
 		{
+			name:         "extra `/` at end works correctly",
+			identifier:   "organization/repository/pull/1234/",
+			expectedOrg:  "organization",
+			expectedRepo: "repository",
+			expectedNum:  1234,
+		},
+		{
+			name:         "extra `/files` included works correctly",
+			identifier:   "organization/repository/pull/1234/files",
+			expectedOrg:  "organization",
+			expectedRepo: "repository",
+			expectedNum:  1234,
+		},
+		{
+			name:         "extra `/files/` included works correctly",
+			identifier:   "organization/repository/pull/1234/files/",
+			expectedOrg:  "organization",
+			expectedRepo: "repository",
+			expectedNum:  1234,
+		},
+		{
 			name:        "wrong number of parts fails",
 			identifier:  "organization/repository",
 			expectedErr: true,

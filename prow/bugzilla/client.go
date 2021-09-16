@@ -947,7 +947,7 @@ func IdentifierForPull(org, repo string, num int) string {
 
 func PullFromIdentifier(identifier string) (org, repo string, num int, err error) {
 	parts := strings.Split(identifier, "/")
-	if len(parts) != 4 {
+	if len(parts) != 4 && !(len(parts) == 5 && (parts[4] == "" || parts[4] == "files")) && !(len(parts) == 6 && (parts[4] == "files" && parts[5] == "")) {
 		return "", "", 0, fmt.Errorf("invalid pull identifier with %d parts: %q", len(parts), identifier)
 	}
 	if parts[2] != "pull" {
