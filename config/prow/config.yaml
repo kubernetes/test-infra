@@ -628,6 +628,9 @@ tide:
         repos:
           dashboard:
             from-branch-protection: true
+          org:
+            optional-contexts:
+            - "EasyCLA"
   batch_size_limit:
     "kubernetes/kubernetes": 15
   priority:
