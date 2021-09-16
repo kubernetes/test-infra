@@ -82,7 +82,7 @@ func init() {
 
 	fs.BoolVar(&flagOptions.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 	fs.DurationVar(&flagOptions.gracePeriod, "grace-period", 180*time.Second, "On shutdown, try to handle remaining events for the specified duration. ")
-	fs.IntVar(&flagOptions.prowYAMLCacheSize, "ProwYAMLCache-size", 1000, "Cache size for ProwYAMLCache")
+	fs.IntVar(&flagOptions.prowYAMLCacheSize, "in-repo-config-cache-size", 1000, "Cache size for in-repo configs")
 
 	flagOptions.config.AddFlags(fs)
 	flagOptions.client.AddFlags(fs)
@@ -142,7 +142,7 @@ func main() {
 	// the cache cannot be initialized (e.g., cache size is too big), continue
 	// without one.
 	if err := configAgent.Config().InitProwYAMLCache(flagOptions.prowYAMLCacheSize); err != nil {
-		logrus.WithError(err).Warnf("unable to initialize ProwYAMLCache (prowYAMLCacheSize: %d); continuing without one", flagOptions.prowYAMLCacheSize)
+		logrus.WithField("in-repo-config-cache-size", flagOptions.prowYAMLCacheSize).WithError(err).Warn("Unable to initialize in-repo-config-cache; continuing without one.")
 	}
 
 	s := &subscriber.Subscriber{
