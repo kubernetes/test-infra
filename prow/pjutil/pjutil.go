@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"net/url"
 	"path"
+	"strconv"
 
 	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
@@ -97,6 +98,7 @@ func NewPresubmit(pr github.PullRequest, baseSHA string, job config.Presubmit, e
 		labels[k] = v
 	}
 	labels[github.EventGUID] = eventGUID
+	labels[kube.IsOptionalLabel] = strconv.FormatBool(job.Optional)
 	annotations := make(map[string]string)
 	for k, v := range job.Annotations {
 		annotations[k] = v

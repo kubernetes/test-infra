@@ -22,12 +22,14 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 	"text/template"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -258,10 +260,21 @@ func parseIssueComments(pj prowapi.ProwJob, isBot func(string) bool, ics []githu
 }
 
 func createEntry(pj prowapi.ProwJob) string {
+	required := "unknown"
+
+	if pj.Spec.Type == prowapi.PresubmitJob {
+		if label, exist := pj.Labels[kube.IsOptionalLabel]; exist {
+			if optional, err := strconv.ParseBool(label); err == nil {
+				required = strconv.FormatBool(!optional)
+			}
+		}
+	}
+
 	return strings.Join([]string{
 		pj.Spec.Context,
 		pj.Spec.Refs.Pulls[0].SHA,
 		fmt.Sprintf("[link](%s)", pj.Status.URL),
+		required,
 		fmt.Sprintf("`%s`", pj.Spec.RerunCommand),
 	}, " | ")
 }
@@ -283,8 +296,8 @@ func createComment(reportTemplate *template.Template, pj prowapi.ProwJob, entrie
 	lines := []string{
 		fmt.Sprintf("@%s: The following test%s **failed**, say `/retest` to rerun all failed tests or `/retest-required` to rerun all mandatory failed tests:", pj.Spec.Refs.Pulls[0].Author, plural),
 		"",
-		"Test name | Commit | Details | Rerun command",
-		"--- | --- | --- | ---",
+		"Test name | Commit | Details | Required | Rerun command",
+		"--- | --- | --- | --- | ---",
 	}
 	lines = append(lines, entries...)
 	if reportTemplate != nil {

@@ -19,23 +19,27 @@ package report
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 	"testing"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/kube"
 )
 
 func TestParseIssueComment(t *testing.T) {
 	var testcases = []struct {
-		name             string
-		context          string
-		state            string
-		ics              []github.IssueComment
-		expectedDeletes  []int
-		expectedContexts []string
-		expectedUpdate   int
+		name            string
+		context         string
+		state           string
+		ics             []github.IssueComment
+		expectedDeletes []int
+		expectedEntries []string
+		expectedUpdate  int
+		isOptional      bool
 	}{
 		{
 			name:    "should delete old style comments",
@@ -66,10 +70,17 @@ func TestParseIssueComment(t *testing.T) {
 			expectedDeletes: []int{12345, 12367},
 		},
 		{
-			name:             "should create a new comment",
-			context:          "bla test",
-			state:            github.StatusFailure,
-			expectedContexts: []string{"bla test"},
+			name:            "should create a new comment",
+			context:         "bla test",
+			state:           github.StatusFailure,
+			expectedEntries: []string{createReportEntry("bla test", true)},
+		},
+		{
+			name:            "should create a new optional comment",
+			context:         "bla test",
+			state:           github.StatusFailure,
+			isOptional:      true,
+			expectedEntries: []string{createReportEntry("bla test", false)},
 		},
 		{
 			name:    "should not delete an up-to-date comment",
@@ -93,8 +104,8 @@ func TestParseIssueComment(t *testing.T) {
 					ID:   123,
 				},
 			},
-			expectedDeletes:  []int{123},
-			expectedContexts: []string{},
+			expectedDeletes: []int{123},
+			expectedEntries: []string{},
 		},
 		{
 			name:    "should delete a passing test with \\r",
@@ -107,8 +118,8 @@ func TestParseIssueComment(t *testing.T) {
 					ID:   123,
 				},
 			},
-			expectedDeletes:  []int{123},
-			expectedContexts: []string{},
+			expectedDeletes: []int{123},
+			expectedEntries: []string{},
 		},
 
 		{
@@ -122,8 +133,8 @@ func TestParseIssueComment(t *testing.T) {
 					ID:   123,
 				},
 			},
-			expectedDeletes:  []int{123},
-			expectedContexts: []string{"bla test"},
+			expectedDeletes: []int{123},
+			expectedEntries: []string{"bla test"},
 		},
 		{
 			name:    "should preserve old results when updating",
@@ -136,8 +147,8 @@ func TestParseIssueComment(t *testing.T) {
 					ID:   123,
 				},
 			},
-			expectedDeletes:  []int{123},
-			expectedContexts: []string{"bla test", "foo test"},
+			expectedDeletes: []int{123},
+			expectedEntries: []string{"bla test", "foo test"},
 		},
 		{
 			name:    "should merge duplicates",
@@ -155,8 +166,8 @@ func TestParseIssueComment(t *testing.T) {
 					ID:   124,
 				},
 			},
-			expectedDeletes:  []int{123, 124},
-			expectedContexts: []string{"bla test", "foo test"},
+			expectedDeletes: []int{123, 124},
+			expectedEntries: []string{"bla test", "foo test"},
 		},
 		{
 			name:    "should update an old comment when a test passes",
@@ -169,61 +180,73 @@ func TestParseIssueComment(t *testing.T) {
 					ID:   123,
 				},
 			},
-			expectedDeletes:  []int{},
-			expectedContexts: []string{"foo test"},
-			expectedUpdate:   123,
+			expectedDeletes: []int{},
+			expectedEntries: []string{"foo test"},
+			expectedUpdate:  123,
 		},
 	}
 	for _, tc := range testcases {
-		pj := prowapi.ProwJob{
-			Spec: prowapi.ProwJobSpec{
-				Context: tc.context,
-				Refs:    &prowapi.Refs{Pulls: []prowapi.Pull{{}}},
-			},
-			Status: prowapi.ProwJobStatus{
-				State: prowapi.ProwJobState(tc.state),
-			},
-		}
-		isBot := func(candidate string) bool {
-			return candidate == "k8s-ci-robot"
-		}
-		deletes, entries, update := parseIssueComments(pj, isBot, tc.ics)
-		if len(deletes) != len(tc.expectedDeletes) {
-			t.Errorf("It %s: wrong number of deletes. Got %v, expected %v", tc.name, deletes, tc.expectedDeletes)
-		} else {
-			for _, edel := range tc.expectedDeletes {
-				found := false
-				for _, del := range deletes {
-					if del == edel {
-						found = true
-						break
+		t.Run(tc.name, func(t *testing.T) {
+			pj := prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						kube.IsOptionalLabel: strconv.FormatBool(tc.isOptional),
+					},
+				},
+				Spec: prowapi.ProwJobSpec{
+					Type:    prowapi.PresubmitJob,
+					Context: tc.context,
+					Refs:    &prowapi.Refs{Pulls: []prowapi.Pull{{}}},
+				},
+				Status: prowapi.ProwJobStatus{
+					State: prowapi.ProwJobState(tc.state),
+				},
+			}
+			isBot := func(candidate string) bool {
+				return candidate == "k8s-ci-robot"
+			}
+			deletes, entries, update := parseIssueComments(pj, isBot, tc.ics)
+			if len(deletes) != len(tc.expectedDeletes) {
+				t.Errorf("It %q: wrong number of deletes. Got %v, expected %v", tc.name, deletes, tc.expectedDeletes)
+			} else {
+				for _, edel := range tc.expectedDeletes {
+					found := false
+					for _, del := range deletes {
+						if del == edel {
+							found = true
+							break
+						}
+					}
+					if !found {
+						t.Errorf("It %q: expected to find %d in %v", tc.name, edel, deletes)
 					}
 				}
-				if !found {
-					t.Errorf("It %s: expected to find %d in %v", tc.name, edel, deletes)
-				}
 			}
-		}
-		if len(entries) != len(tc.expectedContexts) {
-			t.Errorf("It %s: wrong number of entries. Got %v, expected %v", tc.name, entries, tc.expectedContexts)
-		} else {
-			for _, econt := range tc.expectedContexts {
+			if len(entries) != len(tc.expectedEntries) {
+				t.Errorf("It %q: wrong number of entries. Got %v, expected %v", tc.name, entries, tc.expectedEntries)
+			}
+			if tc.expectedUpdate != update {
+				t.Errorf("It %q: expected update %d, got %d", tc.name, tc.expectedUpdate, update)
+			}
+
+			for _, expectedEntry := range tc.expectedEntries {
 				found := false
 				for _, ent := range entries {
-					if strings.Contains(ent, econt) {
+					if strings.Contains(ent, expectedEntry) {
 						found = true
 						break
 					}
 				}
 				if !found {
-					t.Errorf("It %s: expected to find %s in %v", tc.name, econt, entries)
+					t.Errorf("It %q: expected to find %q in %v", tc.name, expectedEntry, entries)
 				}
 			}
-		}
-		if tc.expectedUpdate != update {
-			t.Errorf("It %s: expected update %d, got %d", tc.name, tc.expectedUpdate, update)
-		}
+		})
 	}
+}
+
+func createReportEntry(context string, isRequired bool) string {
+	return fmt.Sprintf("%s |  | [link]() | %s | ", context, strconv.FormatBool(isRequired))
 }
 
 type fakeGhClient struct {
