@@ -83,7 +83,12 @@ release(
     component("prow-canary-k8s-io", "managedcertificate"),
     component("prow-k8s-io", "managedcertificate"),
     component("prow-kubernetes-io", "managedcertificate"),
-    component("prowjob", "customresourcedefinition"),
+    # TODO: Find out how to tech bazel to apply with --server-side=true
+    # and use the CRD manifest that has a schema.
+    component(
+        "prowjob-schemaless",
+        "customresourcedefinition",
+    ),
     component("pushgateway", "deployment"),
     component("sinker", "service", "deployment", "rbac"),
     component("statusreconciler", "deployment", "rbac"),
