@@ -41,8 +41,6 @@ postsubmits:
       decorate: true
       branches:
         - ^main$
-        # TODO(releng): Remove once repo default branch has been renamed
-        - ^master$
       spec:
         serviceAccountName: gcb-builder
         containers:

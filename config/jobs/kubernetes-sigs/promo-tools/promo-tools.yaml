@@ -13,8 +13,6 @@ presubmits:
       preset-dind-enabled: "true"
     branches:
     - ^main$
-    # TODO(releng): Remove once repo default branch has been renamed
-    - ^master$
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-master
@@ -52,8 +50,6 @@ presubmits:
       preset-dind-enabled: "true"
     branches:
     - ^main$
-    # TODO(releng): Remove once repo default branch has been renamed
-    - ^master$
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-master
@@ -122,8 +118,6 @@ presubmits:
     always_run: true
     branches:
     - ^main$
-    # TODO(releng): Remove once repo default branch has been renamed
-    - ^master$
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-master
@@ -143,8 +137,6 @@ presubmits:
     always_run: true
     branches:
     - ^main$
-    # TODO(releng): Remove once repo default branch has been renamed
-    - ^master$
     spec:
       containers:
       - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.17
@@ -165,8 +157,6 @@ presubmits:
       preset-dind-enabled: "true"
     branches:
     - ^main$
-    # TODO(releng): Remove once repo default branch has been renamed
-    - ^master$
     spec:
       containers:
       - image: gcr.io/k8s-staging-releng/k8s-ci-builder:latest-default
