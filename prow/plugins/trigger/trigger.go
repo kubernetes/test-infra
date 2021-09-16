@@ -237,7 +237,7 @@ func TrustedUser(ghc trustedUserClient, onlyOrgMembers bool, trustedOrg, user, o
 
 	// First check if the user is an org member. This caches across all repos.
 	if member, err := ghc.IsMember(org, user); err != nil {
-		return errorResponse, fmt.Errorf("error in IsMember(%s): %v", org, err)
+		return errorResponse, fmt.Errorf("error in IsMember(%s): %w", org, err)
 	} else if member {
 		return okResponse, nil
 	}
@@ -246,7 +246,7 @@ func TrustedUser(ghc trustedUserClient, onlyOrgMembers bool, trustedOrg, user, o
 	// expensive as it only caches per repo.
 	if !onlyOrgMembers {
 		if ok, err := ghc.IsCollaborator(org, repo, user); err != nil {
-			return errorResponse, fmt.Errorf("error in IsCollaborator: %v", err)
+			return errorResponse, fmt.Errorf("error in IsCollaborator: %w", err)
 		} else if ok {
 			return okResponse, nil
 		}
@@ -265,7 +265,7 @@ func TrustedUser(ghc trustedUserClient, onlyOrgMembers bool, trustedOrg, user, o
 	// Check the second trusted org.
 	member, err := ghc.IsMember(trustedOrg, user)
 	if err != nil {
-		return errorResponse, fmt.Errorf("error in IsMember(%s): %v", trustedOrg, err)
+		return errorResponse, fmt.Errorf("error in IsMember(%s): %w", trustedOrg, err)
 	} else if member {
 		return okResponse, nil
 	}

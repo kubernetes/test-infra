@@ -157,7 +157,7 @@ func (c *Control) FinishRunning(cmd *exec.Cmd) error {
 
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	if err := cmd.Start(); err != nil {
-		return fmt.Errorf("error starting %v: %v", stepName, err)
+		return fmt.Errorf("error starting %v: %w", stepName, err)
 	}
 
 	finished := make(chan error)
@@ -212,7 +212,7 @@ func (c *Control) FinishRunning(cmd *exec.Cmd) error {
 				} else if c.isInterrupted() {
 					suffix = " (interrupted)"
 				}
-				return fmt.Errorf("error during %s%s: %v", stepName, suffix, err)
+				return fmt.Errorf("error during %s%s: %w", stepName, suffix, err)
 			}
 			return err
 		}
@@ -243,7 +243,7 @@ func (c *Control) executeParallelCommand(cmd *exec.Cmd, resChan chan cmdExecResu
 
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	if err := cmd.Start(); err != nil {
-		resChan <- cmdExecResult{stepName: stepName, output: stdout.String(), execTime: time.Since(start), err: fmt.Errorf("error starting %v: %v", stepName, err)}
+		resChan <- cmdExecResult{stepName: stepName, output: stdout.String(), execTime: time.Since(start), err: fmt.Errorf("error starting %v: %w", stepName, err)}
 		return
 	}
 
@@ -262,7 +262,7 @@ func (c *Control) executeParallelCommand(cmd *exec.Cmd, resChan chan cmdExecResu
 				} else if c.isInterrupted() {
 					suffix = " (interrupted)"
 				}
-				err = fmt.Errorf("error during %s%s: %v", stepName, suffix, err)
+				err = fmt.Errorf("error during %s%s: %w", stepName, suffix, err)
 			}
 			resChan <- cmdExecResult{stepName: stepName, output: stdout.String(), execTime: time.Since(start), err: err}
 			return

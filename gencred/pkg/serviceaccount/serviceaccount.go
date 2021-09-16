@@ -57,7 +57,7 @@ func checkSAAuth(clientset kubernetes.Interface) error {
 			},
 		},
 		metav1.CreateOptions{}); err != nil {
-		return fmt.Errorf("bind %s: %v", clusterRole, err)
+		return fmt.Errorf("bind %s: %w", clusterRole, err)
 	} else if !sar.Status.Allowed {
 		return fmt.Errorf("not authorized to bind %s: %s", clusterRole, sar.Status.Reason)
 	}
@@ -86,20 +86,20 @@ func getOrCreateSA(clientset kubernetes.Interface) ([]byte, []byte, error) {
 		// Create ServiceAccount.
 		_, err := client.Create(context.TODO(), saObj, metav1.CreateOptions{})
 		if err != nil {
-			return nil, nil, fmt.Errorf("create SA: %v", err)
+			return nil, nil, fmt.Errorf("create SA: %w", err)
 		}
 	}
 
 	// Get/Create ClusterRoleBinding.
 	err := getOrCreateCRB(clientset)
 	if err != nil {
-		return nil, nil, fmt.Errorf("get or create CRB: %v", err)
+		return nil, nil, fmt.Errorf("get or create CRB: %w", err)
 	}
 
 	// Get ServiceAccount.
 	saObj, err := client.Get(context.TODO(), serviceAccountName, metav1.GetOptions{})
 	if err != nil {
-		return nil, nil, fmt.Errorf("get SA: %v", err)
+		return nil, nil, fmt.Errorf("get SA: %w", err)
 	}
 
 	return getSASecrets(clientset, saObj)
@@ -124,7 +124,7 @@ func getOrCreateCRB(clientset kubernetes.Interface) error {
 	// Create ClusterRoleBinding.
 	_, err := client.Create(context.TODO(), crbObj, metav1.CreateOptions{})
 	if err != nil {
-		return fmt.Errorf("create CRB: %v", err)
+		return fmt.Errorf("create CRB: %w", err)
 	}
 
 	return nil
@@ -141,7 +141,7 @@ func getSASecrets(clientset kubernetes.Interface, saObj *corev1.ServiceAccount) 
 	// Get Secret.
 	secretObj, err := client.Get(context.TODO(), saObj.Secrets[0].Name, metav1.GetOptions{})
 	if err != nil {
-		return nil, nil, fmt.Errorf("get secret: %v", err)
+		return nil, nil, fmt.Errorf("get secret: %w", err)
 	}
 
 	token, ok := secretObj.Data[corev1.ServiceAccountTokenKey]
@@ -161,7 +161,7 @@ func getSASecrets(clientset kubernetes.Interface, saObj *corev1.ServiceAccount) 
 func CreateClusterServiceAccountCredentials(clientset kubernetes.Interface) (token []byte, caPEM []byte, err error) {
 	token, caPEM, err = getOrCreateSA(clientset)
 	if err != nil {
-		return nil, nil, fmt.Errorf("get or create SA: %v", err)
+		return nil, nil, fmt.Errorf("get or create SA: %w", err)
 	}
 
 	return token, caPEM, nil

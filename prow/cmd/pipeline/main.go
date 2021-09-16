@@ -68,7 +68,7 @@ func (o *options) parse(flags *flag.FlagSet, args []string) error {
 	o.instrumentationOptions.AddFlags(flags)
 	o.config.AddFlags(flags)
 	if err := flags.Parse(args); err != nil {
-		return fmt.Errorf("Parse flags: %v", err)
+		return fmt.Errorf("Parse flags: %w", err)
 	}
 	if err := o.config.Validate(false); err != nil {
 		return err

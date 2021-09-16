@@ -119,7 +119,7 @@ func (c client) presubmits(org, repo string, baseSHAGetter config.RefGetter, hea
 	}
 	presubmits, err := c.config.GetPresubmits(c.gc, org+"/"+repo, baseSHAGetter, headSHAGetter)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get presubmits: %v", err)
+		return nil, fmt.Errorf("failed to get presubmits: %w", err)
 	}
 	return presubmits, nil
 }

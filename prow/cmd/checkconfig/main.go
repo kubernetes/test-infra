@@ -207,10 +207,10 @@ func (o *options) gatherOptions(flag *flag.FlagSet, args []string) error {
 	o.pluginsConfig.AddFlags(flag)
 	o.storage.AddFlags(flag)
 	if err := flag.Parse(args); err != nil {
-		return fmt.Errorf("parse flags: %v", err)
+		return fmt.Errorf("parse flags: %w", err)
 	}
 	if err := o.DefaultAndValidate(); err != nil {
-		return fmt.Errorf("invalid options: %v", err)
+		return fmt.Errorf("invalid options: %w", err)
 	}
 	return nil
 }
@@ -510,7 +510,7 @@ func validateURLs(c config.ProwConfig) error {
 func validateUnknownFields(cfg interface{}, cfgBytes []byte, filePath string) error {
 	err := yaml.Unmarshal(cfgBytes, &cfg, yaml.DisallowUnknownFields)
 	if err != nil {
-		return fmt.Errorf("unknown fields or bad config in %s: %v", filePath, err)
+		return fmt.Errorf("unknown fields or bad config in %s: %w", filePath, err)
 	}
 	return nil
 }
@@ -985,7 +985,7 @@ func verifyOwnersPresence(cfg *plugins.Configuration, rc FileInRepoExistsChecker
 				if _, nf := err.(*github.FileNotFound); nf {
 					missing = append(missing, repo.FullName)
 				} else {
-					return fmt.Errorf("got error: %v", err)
+					return fmt.Errorf("got error: %w", err)
 				}
 			}
 		}
@@ -1000,7 +1000,7 @@ func verifyOwnersPresence(cfg *plugins.Configuration, rc FileInRepoExistsChecker
 			if _, nf := err.(*github.FileNotFound); nf {
 				missing = append(missing, repo)
 			} else {
-				return fmt.Errorf("got error: %v", err)
+				return fmt.Errorf("got error: %w", err)
 			}
 		}
 	}
@@ -1050,18 +1050,18 @@ func validateInRepoConfig(cfg *config.Config, filePath, repoIdentifier string) e
 	data, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		if !os.IsNotExist(err) {
-			return fmt.Errorf("failed to read file %q: %v", filePath, err)
+			return fmt.Errorf("failed to read file %q: %w", filePath, err)
 		}
 		return nil
 	}
 
 	prowYAML := &config.ProwYAML{}
 	if err := yaml.Unmarshal(data, prowYAML); err != nil {
-		return fmt.Errorf("failed to deserialize content of %q: %v", filePath, err)
+		return fmt.Errorf("failed to deserialize content of %q: %w", filePath, err)
 	}
 
 	if err := config.DefaultAndValidateProwYAML(cfg, prowYAML, repoIdentifier); err != nil {
-		return fmt.Errorf("failed to validate .prow.yaml: %v", err)
+		return fmt.Errorf("failed to validate .prow.yaml: %w", err)
 	}
 
 	return nil

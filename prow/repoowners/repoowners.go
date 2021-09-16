@@ -268,7 +268,7 @@ func (c *Client) LoadRepoOwners(org, repo, base string) (RepoOwner, error) {
 	start := time.Now()
 	sha, err := c.ghc.GetRef(org, repo, fmt.Sprintf("heads/%s", base))
 	if err != nil {
-		return nil, fmt.Errorf("failed to get current SHA for %s: %v", fullName, err)
+		return nil, fmt.Errorf("failed to get current SHA for %s: %w", fullName, err)
 	}
 	if sha == "" {
 		return nil, fmt.Errorf("got an empty SHA for %s@heads/%s", fullName, base)
@@ -318,7 +318,7 @@ func (c *Client) cacheEntryFor(org, repo, base, cloneRef, fullName, sha string, 
 		start := time.Now()
 		gitRepo, err := c.git.ClientFor(org, repo)
 		if err != nil {
-			return cacheEntry{}, fmt.Errorf("failed to clone %s: %v", cloneRef, err)
+			return cacheEntry{}, fmt.Errorf("failed to clone %s: %w", cloneRef, err)
 		}
 		log.WithField("duration", time.Since(start).String()).Debugf("Completed git.ClientFor(%s, %s)", org, repo)
 		defer gitRepo.Clean()
@@ -377,7 +377,7 @@ func (c *Client) cacheEntryFor(org, repo, base, cloneRef, fullName, sha string, 
 			start = time.Now()
 			entry.owners, err = loadOwnersFrom(gitRepo.Directory(), mdYaml, entry.aliases, dirIgnorelist, filenames, log)
 			if err != nil {
-				return cacheEntry{}, fmt.Errorf("failed to load RepoOwners for %s: %v", fullName, err)
+				return cacheEntry{}, fmt.Errorf("failed to load RepoOwners for %s: %w", fullName, err)
 			}
 			log.WithField("duration", time.Since(start).String()).Debugf("Completed loadOwnersFrom(%s, %t, entry.aliases, dirIgnorelist, log)", gitRepo.Directory(), mdYaml)
 			entry.sha = sha

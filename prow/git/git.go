@@ -437,7 +437,7 @@ func (r *Repo) PushToNamedFork(forkName, branch string, force bool) error {
 	out, err := co.CombinedOutput()
 	if err != nil {
 		r.logger.WithField("out", string(out)).WithError(err).Error("Pushing failed.")
-		return fmt.Errorf("pushing failed, output: %q, error: %v", string(out), err)
+		return fmt.Errorf("pushing failed, output: %q, error: %w", string(out), err)
 	}
 	return nil
 }
@@ -518,7 +518,7 @@ func (r *Repo) ShowRef(commitlike string) (string, error) {
 	r.logger.WithField("commitlike", commitlike).Info("Getting the commit sha.")
 	out, err := r.gitCommand("show-ref", "-s", commitlike).CombinedOutput()
 	if err != nil {
-		return "", fmt.Errorf("failed to get commit sha for commitlike %s: %v", commitlike, err)
+		return "", fmt.Errorf("failed to get commit sha for commitlike %s: %w", commitlike, err)
 	}
 	return strings.TrimSpace(string(out)), nil
 }

@@ -89,7 +89,7 @@ type blobStorageBucket struct {
 // newBlobStorageBucket validates the bucketName and returns a new instance of blobStorageBucket.
 func newBlobStorageBucket(bucketName, storageProvider string, config *config.Config, opener pkgio.Opener) (blobStorageBucket, error) {
 	if err := config.ValidateStorageBucket(bucketName); err != nil {
-		return blobStorageBucket{}, fmt.Errorf("could not instantiate storage bucket: %v", err)
+		return blobStorageBucket{}, fmt.Errorf("could not instantiate storage bucket: %w", err)
 	}
 	return blobStorageBucket{bucketName, storageProvider, opener}, nil
 }
@@ -129,7 +129,7 @@ func readLatestBuild(ctx context.Context, bucket storageBucket, root string) (ui
 	}
 	n, err := strconv.ParseUint(strings.TrimSpace(string(data)), 10, 64)
 	if err != nil {
-		return emptyID, fmt.Errorf("failed to parse %s: %v", key, err)
+		return emptyID, fmt.Errorf("failed to parse %s: %w", key, err)
 	}
 	return n, nil
 }
@@ -154,7 +154,7 @@ func (bucket blobStorageBucket) resolveSymLink(ctx context.Context, symLink stri
 func (bucket blobStorageBucket) spyglassLink(ctx context.Context, root, id string) (string, error) {
 	p, err := bucket.getPath(ctx, root, id, "")
 	if err != nil {
-		return "", fmt.Errorf("failed to get path: %v", err)
+		return "", fmt.Errorf("failed to get path: %w", err)
 	}
 	return path.Join(spyglassPrefix, bucket.storageProvider, bucket.name, p), nil
 }
@@ -175,11 +175,11 @@ func (bucket blobStorageBucket) getPath(ctx context.Context, root, id, fname str
 func readJSON(ctx context.Context, bucket storageBucket, key string, data interface{}) error {
 	rawData, err := bucket.readObject(ctx, key)
 	if err != nil {
-		return fmt.Errorf("failed to read %s: %v", key, err)
+		return fmt.Errorf("failed to read %s: %w", key, err)
 	}
 	err = json.Unmarshal(rawData, &data)
 	if err != nil {
-		return fmt.Errorf("failed to parse %s: %v", key, err)
+		return fmt.Errorf("failed to parse %s: %w", key, err)
 	}
 	return nil
 }
@@ -316,7 +316,7 @@ func parseJobHistURL(url *url.URL) (storageProvider, bucketName, root string, bu
 	if idVals := url.Query()[idParam]; len(idVals) >= 1 && idVals[0] != "" {
 		buildID, err = strconv.ParseUint(idVals[0], 10, 64)
 		if err != nil {
-			err = fmt.Errorf("invalid value for %s: %v", idParam, err)
+			err = fmt.Errorf("invalid value for %s: %w", idParam, err)
 			return
 		}
 		if buildID < 1 {

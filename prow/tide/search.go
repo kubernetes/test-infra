@@ -64,7 +64,7 @@ func search(query querier, log *logrus.Entry, q string, start, end time.Time, or
 		log.Debug("Sending query")
 		if err := query(ctx, &sq, vars, org); err != nil {
 			if cursor != nil {
-				err = fmt.Errorf("cursor: %q, err: %v", *cursor, err)
+				err = fmt.Errorf("cursor: %q, err: %w", *cursor, err)
 			}
 			return ret, err
 		}

@@ -115,7 +115,7 @@ type options struct {
 func (o *options) validate() error {
 	level, err := logrus.ParseLevel(o.logLevel)
 	if err != nil {
-		return fmt.Errorf("invalid log level specified: %v", err)
+		return fmt.Errorf("invalid log level specified: %w", err)
 	}
 	logrus.SetLevel(level)
 
@@ -124,7 +124,7 @@ func (o *options) validate() error {
 	}
 	upstreamURL, err := url.Parse(o.upstream)
 	if err != nil {
-		return fmt.Errorf("failed to parse upstream URL: %v", err)
+		return fmt.Errorf("failed to parse upstream URL: %w", err)
 	}
 	o.upstreamParsed = upstreamURL
 	return nil

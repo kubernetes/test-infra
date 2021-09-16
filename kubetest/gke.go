@@ -283,7 +283,7 @@ func newGKE(provider, project, zone, region, network, image, imageFamily, imageP
 					releasePrefix = strings.TrimPrefix(val, "gke-latest-")
 				}
 				if val, err = getLatestGKEVersion(project, zone, region, releasePrefix); err != nil {
-					return nil, fmt.Errorf("fail to get latest gke version : %v", err)
+					return nil, fmt.Errorf("fail to get latest gke version : %w", err)
 				}
 			}
 			fields = util.SetFieldDefault(fields, "--upgrade-target", val)
@@ -358,7 +358,7 @@ func (g *gkeDeployer) Up() error {
 	if g.additionalZones != "" {
 		args = append(args, "--additional-zones="+g.additionalZones)
 		if err := os.Setenv("MULTIZONE", "true"); err != nil {
-			return fmt.Errorf("error setting MULTIZONE env variable: %v", err)
+			return fmt.Errorf("error setting MULTIZONE env variable: %w", err)
 		}
 
 	}
@@ -367,7 +367,7 @@ func (g *gkeDeployer) Up() error {
 		numNodeLocations := strings.Split(g.nodeLocations, ",")
 		if len(numNodeLocations) > 1 {
 			if err := os.Setenv("MULTIZONE", "true"); err != nil {
-				return fmt.Errorf("error setting MULTIZONE env variable: %v", err)
+				return fmt.Errorf("error setting MULTIZONE env variable: %w", err)
 			}
 		}
 	}
@@ -384,7 +384,7 @@ func (g *gkeDeployer) Up() error {
 
 	args = append(args, g.cluster)
 	if err := control.FinishRunning(exec.Command("gcloud", args...)); err != nil {
-		return fmt.Errorf("error creating cluster: %v", err)
+		return fmt.Errorf("error creating cluster: %w", err)
 	}
 	for poolName, pool := range g.shape {
 		if poolName == defaultPool {
@@ -400,7 +400,7 @@ func (g *gkeDeployer) Up() error {
 		}
 		poolArgs = append(poolArgs, pool.ExtraArgs...)
 		if err := control.FinishRunning(exec.Command("gcloud", g.containerArgs(poolArgs...)...)); err != nil {
-			return fmt.Errorf("error creating node pool %q: %v", poolName, err)
+			return fmt.Errorf("error creating node pool %q: %w", poolName, err)
 		}
 	}
 	return nil
@@ -590,7 +590,7 @@ func (g *gkeDeployer) getKubeConfig() error {
 	if err := control.FinishRunning(exec.Command("gcloud", g.containerArgs("clusters", "get-credentials", g.cluster,
 		"--project="+g.project,
 		g.location)...)); err != nil {
-		return fmt.Errorf("error executing get-credentials: %v", err)
+		return fmt.Errorf("error executing get-credentials: %w", err)
 	}
 	return nil
 }
@@ -611,7 +611,7 @@ func (g *gkeDeployer) setupEnv() error {
 		}
 	}
 	if err := os.Setenv("NODE_INSTANCE_GROUP", strings.Join(filt, ",")); err != nil {
-		return fmt.Errorf("error setting NODE_INSTANCE_GROUP: %v", err)
+		return fmt.Errorf("error setting NODE_INSTANCE_GROUP: %w", err)
 	}
 	return nil
 }
@@ -622,7 +622,7 @@ func (g *gkeDeployer) ensureFirewall() error {
 	}
 	firewall, err := g.getClusterFirewall()
 	if err != nil {
-		return fmt.Errorf("error getting unique firewall: %v", err)
+		return fmt.Errorf("error getting unique firewall: %w", err)
 	}
 	if control.NoOutput(exec.Command("gcloud", "compute", "firewall-rules", "describe", firewall,
 		"--project="+g.project,
@@ -654,7 +654,7 @@ func (g *gkeDeployer) ensureFirewall() error {
 		"--network="+g.network,
 		"--allow="+allowPorts,
 		"--target-tags="+tag)); err != nil {
-		return fmt.Errorf("error creating e2e firewall: %v", err)
+		return fmt.Errorf("error creating e2e firewall: %w", err)
 	}
 	return nil
 }
@@ -733,7 +733,7 @@ func (g *gkeDeployer) cleanupNetworkFirewalls() (int, error) {
 		commandArgs = append(commandArgs, "--project="+g.project)
 		errFirewall := control.FinishRunning(exec.Command("gcloud", commandArgs...))
 		if errFirewall != nil {
-			return 0, fmt.Errorf("error deleting firewall: %v", errFirewall)
+			return 0, fmt.Errorf("error deleting firewall: %w", errFirewall)
 		}
 		return len(fwList), nil
 	}
@@ -749,7 +749,7 @@ func (g *gkeDeployer) ensureNat() error {
 	}
 	region, err := g.getRegion(g.region, g.zone)
 	if err != nil {
-		return fmt.Errorf("error finding region for NAT router: %v", err)
+		return fmt.Errorf("error finding region for NAT router: %w", err)
 	}
 	nat := g.getNatName()
 
@@ -763,7 +763,7 @@ func (g *gkeDeployer) ensureNat() error {
 			"--project="+g.project,
 			"--network="+g.network,
 			"--region="+region)); err != nil {
-			return fmt.Errorf("error creating NAT router: %v", err)
+			return fmt.Errorf("error creating NAT router: %w", err)
 		}
 	}
 	// Create this unique NAT configuration only if it does not exist yet.
@@ -780,7 +780,7 @@ func (g *gkeDeployer) ensureNat() error {
 			"--auto-allocate-nat-external-ips",
 			"--min-ports-per-vm="+strconv.Itoa(g.natMinPortsPerVm),
 			"--nat-primary-subnet-ip-ranges")); err != nil {
-			return fmt.Errorf("error adding NAT to a router: %v", err)
+			return fmt.Errorf("error adding NAT to a router: %w", err)
 		}
 	}
 
@@ -796,7 +796,7 @@ func (g *gkeDeployer) getRegion(region, zone string) (string, error) {
 		"--format=value(region)",
 		"--project="+g.project).Output()
 	if err != nil {
-		return "", fmt.Errorf("error resolving region of %s zone: %v", zone, err)
+		return "", fmt.Errorf("error resolving region of %s zone: %w", zone, err)
 	}
 	return strings.TrimSuffix(string(result), "\n"), nil
 }
@@ -811,7 +811,7 @@ func (g *gkeDeployer) cleanupNat() error {
 	}
 	region, err := g.getRegion(g.region, g.zone)
 	if err != nil {
-		return fmt.Errorf("error finding region for NAT router: %v", err)
+		return fmt.Errorf("error finding region for NAT router: %w", err)
 	}
 	nat := g.getNatName()
 
@@ -825,7 +825,7 @@ func (g *gkeDeployer) cleanupNat() error {
 			"--project="+g.project,
 			"--region="+region))
 		if err != nil {
-			return fmt.Errorf("error deleting NAT router: %v", err)
+			return fmt.Errorf("error deleting NAT router: %w", err)
 		}
 	} else {
 		log.Printf("Found no NAT router '%s', assuming resources are clean", nat)
@@ -881,22 +881,22 @@ func (g *gkeDeployer) Down() error {
 			"--project="+g.project))
 	}
 	if errCluster != nil {
-		return fmt.Errorf("error deleting cluster: %v", errCluster)
+		return fmt.Errorf("error deleting cluster: %w", errCluster)
 	}
 	if errFirewall != nil {
-		return fmt.Errorf("error deleting firewall: %v", errFirewall)
+		return fmt.Errorf("error deleting firewall: %w", errFirewall)
 	}
 	if errCleanFirewalls != nil {
-		return fmt.Errorf("error cleaning-up firewalls: %v", errCleanFirewalls)
+		return fmt.Errorf("error cleaning-up firewalls: %w", errCleanFirewalls)
 	}
 	if errNat != nil {
-		return fmt.Errorf("error cleaning-up NAT: %v", errNat)
+		return fmt.Errorf("error cleaning-up NAT: %w", errNat)
 	}
 	if errSubnet != nil {
-		return fmt.Errorf("error deleting subnetwork: %v", errSubnet)
+		return fmt.Errorf("error deleting subnetwork: %w", errSubnet)
 	}
 	if errNetwork != nil {
-		return fmt.Errorf("error deleting network: %v", errNetwork)
+		return fmt.Errorf("error deleting network: %w", errNetwork)
 	}
 	if numLeakedFWRules > 0 {
 		// Leaked firewall rules are cleaned up already, print a warning instead of failing hard
@@ -918,12 +918,12 @@ func (g *gkeDeployer) GetClusterCreated(gcpProject string) (time.Time, error) {
 		"--project="+gcpProject,
 		"--format=json(name,creationTimestamp)"))
 	if err != nil {
-		return time.Time{}, fmt.Errorf("list instance-group failed : %v", err)
+		return time.Time{}, fmt.Errorf("list instance-group failed : %w", err)
 	}
 
 	created, err := getLatestClusterUpTime(string(res))
 	if err != nil {
-		return time.Time{}, fmt.Errorf("parse time failed : got gcloud res %s, err %v", string(res), err)
+		return time.Time{}, fmt.Errorf("parse time failed : got gcloud res %s, err %w", string(res), err)
 	}
 	return created, nil
 }

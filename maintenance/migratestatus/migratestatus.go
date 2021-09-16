@@ -78,7 +78,7 @@ func (o *options) Validate() error {
 	if o.descriptionURL != "" {
 		_, err := url.ParseRequestURI(o.descriptionURL)
 		if err != nil {
-			return fmt.Errorf("'--description' URL '%s' is not valid: %v", o.descriptionURL, err)
+			return fmt.Errorf("'--description' URL '%s' is not valid: %w", o.descriptionURL, err)
 		}
 	}
 
@@ -106,7 +106,7 @@ func (o *options) Validate() error {
 
 	expr, err := regexp.Compile(o.branchFilterRaw)
 	if err != nil {
-		return fmt.Errorf("invalid --branch-filter regular expression: %v", err)
+		return fmt.Errorf("invalid --branch-filter regular expression: %w", err)
 	}
 	o.branchFilter = expr
 

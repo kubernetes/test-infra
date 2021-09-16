@@ -187,7 +187,7 @@ func handleGenericComment(ghc githubClient, roc repoownersClient, log *logrus.En
 
 	pr, err := ghc.GetPullRequest(repo.Owner.Login, repo.Name, prNumber)
 	if err != nil {
-		return fmt.Errorf("error loading PullRequest: %v", err)
+		return fmt.Errorf("error loading PullRequest: %w", err)
 	}
 
 	return handle(
@@ -206,12 +206,12 @@ func handleGenericComment(ghc githubClient, roc repoownersClient, log *logrus.En
 func handle(ghc githubClient, roc repoownersClient, log *logrus.Entry, reviewerCount *int, maxReviewers int, excludeApprovers bool, useStatusAvailability bool, repo *github.Repo, pr *github.PullRequest) error {
 	oc, err := roc.LoadRepoOwners(repo.Owner.Login, repo.Name, pr.Base.Ref)
 	if err != nil {
-		return fmt.Errorf("error loading RepoOwners: %v", err)
+		return fmt.Errorf("error loading RepoOwners: %w", err)
 	}
 
 	changes, err := ghc.GetPullRequestChanges(repo.Owner.Login, repo.Name, pr.Number)
 	if err != nil {
-		return fmt.Errorf("error getting PR changes: %v", err)
+		return fmt.Errorf("error getting PR changes: %w", err)
 	}
 
 	var reviewers []string

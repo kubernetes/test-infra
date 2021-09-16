@@ -39,7 +39,7 @@ type options struct {
 func cdToRootDir() error {
 	if bazelWorkspace := os.Getenv("BUILD_WORKSPACE_DIRECTORY"); bazelWorkspace != "" {
 		if err := os.Chdir(bazelWorkspace); err != nil {
-			return fmt.Errorf("failed to chdir to bazel workspace (%s): %v", bazelWorkspace, err)
+			return fmt.Errorf("failed to chdir to bazel workspace (%s): %w", bazelWorkspace, err)
 		}
 		return nil
 	}

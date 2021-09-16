@@ -952,12 +952,12 @@ func renderSpyglass(ctx context.Context, sg *spyglass.Spyglass, cfg config.Gette
 	src = strings.TrimSuffix(src, "/")
 	realPath, err := sg.ResolveSymlink(src)
 	if err != nil {
-		return "", fmt.Errorf("error when resolving real path %s: %v", src, err)
+		return "", fmt.Errorf("error when resolving real path %s: %w", src, err)
 	}
 	src = realPath
 	artifactNames, err := sg.ListArtifacts(ctx, src)
 	if err != nil {
-		return "", fmt.Errorf("error listing artifacts: %v", err)
+		return "", fmt.Errorf("error listing artifacts: %w", err)
 	}
 	if len(artifactNames) == 0 {
 		log.Infof("found no artifacts for %s", src)
@@ -1008,7 +1008,7 @@ lensesLoop:
 		if prowJobName != "" {
 			u, err := url.Parse("/prowjob")
 			if err != nil {
-				return "", fmt.Errorf("error parsing prowjob path: %v", err)
+				return "", fmt.Errorf("error parsing prowjob path: %w", err)
 			}
 			query := url.Values{}
 			query.Set("prowjob", prowJobName)
@@ -1040,7 +1040,7 @@ lensesLoop:
 
 	jobName, buildID, err := common.KeyToJob(src)
 	if err != nil {
-		return "", fmt.Errorf("error determining jobName / buildID: %v", err)
+		return "", fmt.Errorf("error determining jobName / buildID: %w", err)
 	}
 
 	prLink := ""
@@ -1053,7 +1053,7 @@ lensesLoop:
 	if cfg().Deck.Spyglass.Announcement != "" {
 		announcementTmpl, err := template.New("announcement").Parse(cfg().Deck.Spyglass.Announcement)
 		if err != nil {
-			return "", fmt.Errorf("error parsing announcement template: %v", err)
+			return "", fmt.Errorf("error parsing announcement template: %w", err)
 		}
 		runPath, err := sg.RunPath(src)
 		if err != nil {
@@ -1066,7 +1066,7 @@ lensesLoop:
 			ArtifactPath: runPath,
 		})
 		if err != nil {
-			return "", fmt.Errorf("error executing announcement template: %v", err)
+			return "", fmt.Errorf("error executing announcement template: %w", err)
 		}
 		announcement = announcementBuf.String()
 	}
@@ -1122,15 +1122,15 @@ lensesLoop:
 	t := template.New("spyglass.html")
 
 	if _, err := prepareBaseTemplate(o, cfg, csrfToken, t); err != nil {
-		return "", fmt.Errorf("error preparing base template: %v", err)
+		return "", fmt.Errorf("error preparing base template: %w", err)
 	}
 	t, err = t.ParseFiles(path.Join(o.templateFilesLocation, "spyglass.html"))
 	if err != nil {
-		return "", fmt.Errorf("error parsing template: %v", err)
+		return "", fmt.Errorf("error parsing template: %w", err)
 	}
 
 	if err = t.Execute(&viewBuf, sTmpl); err != nil {
-		return "", fmt.Errorf("error rendering template: %v", err)
+		return "", fmt.Errorf("error rendering template: %w", err)
 	}
 	renderElapsed := time.Since(renderStart)
 	log.WithFields(logrus.Fields{

@@ -100,7 +100,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, f
 	repo := e.Repo.Name
 	issueLabels, err := gc.GetIssueLabels(org, repo, e.Number)
 	if err != nil {
-		return fmt.Errorf("failed to get the labels on %s/%s#%d: %v", org, repo, e.Number, err)
+		return fmt.Errorf("failed to get the labels on %s/%s#%d: %w", org, repo, e.Number, err)
 	}
 
 	hasLabel := f(labels.Hold, issueLabels)

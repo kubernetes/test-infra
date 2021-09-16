@@ -224,7 +224,7 @@ func run(c client, query, sort string, asc, random bool, commenter func(meta) (s
 	log.Printf("Searching: %s", query)
 	issues, err := c.FindIssues(query, sort, asc)
 	if err != nil {
-		return fmt.Errorf("search failed: %v", err)
+		return fmt.Errorf("search failed: %w", err)
 	}
 	problems := []string{}
 	log.Printf("Found %d matches", len(issues))

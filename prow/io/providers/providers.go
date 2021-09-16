@@ -93,7 +93,7 @@ type s3Credentials struct {
 func getS3Bucket(ctx context.Context, creds []byte, bucketName string) (*blob.Bucket, error) {
 	s3Creds := &s3Credentials{}
 	if err := json.Unmarshal(creds, s3Creds); err != nil {
-		return nil, fmt.Errorf("error getting S3 credentials from JSON: %v", err)
+		return nil, fmt.Errorf("error getting S3 credentials from JSON: %w", err)
 	}
 
 	cfg := &aws.Config{}
@@ -117,12 +117,12 @@ func getS3Bucket(ctx context.Context, creds []byte, bucketName string) (*blob.Bu
 
 	sess, err := session.NewSession(cfg)
 	if err != nil {
-		return nil, fmt.Errorf("error creating S3 Session: %v", err)
+		return nil, fmt.Errorf("error creating S3 Session: %w", err)
 	}
 
 	bkt, err := s3blob.OpenBucket(ctx, sess, bucketName, nil)
 	if err != nil {
-		return nil, fmt.Errorf("error opening S3 bucket: %v", err)
+		return nil, fmt.Errorf("error opening S3 bucket: %w", err)
 	}
 	return bkt, nil
 }
@@ -147,7 +147,7 @@ func HasStorageProviderPrefix(path string) bool {
 func ParseStoragePath(storagePath string) (storageProvider, bucket, relativePath string, err error) {
 	parsedPath, err := url.Parse(storagePath)
 	if err != nil {
-		return "", "", "", fmt.Errorf("unable to parse path %q: %v", storagePath, err)
+		return "", "", "", fmt.Errorf("unable to parse path %q: %w", storagePath, err)
 	}
 
 	storageProvider = parsedPath.Scheme

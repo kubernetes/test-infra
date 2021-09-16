@@ -228,7 +228,7 @@ func (c *controller) runWorker() {
 			defer c.workqueue.Done(key)
 
 			if err := reconcile(c, key.(string)); err != nil {
-				runtime.HandleError(fmt.Errorf("failed to reconcile %s: %v", key, err))
+				runtime.HandleError(fmt.Errorf("failed to reconcile %s: %w", key, err))
 				return // Do not forget so we retry later.
 			}
 			c.workqueue.Forget(key)
@@ -368,7 +368,7 @@ func reconcile(c reconciler, key string) error {
 	case apierrors.IsNotFound(err):
 		// Do not want pipeline
 	case err != nil:
-		return fmt.Errorf("get prowjob: %v", err)
+		return fmt.Errorf("get prowjob: %w", err)
 	case pj.Spec.Agent != prowjobv1.TektonAgent:
 		// Do not want a pipeline for this job
 		// We could look for a pipeline to remove, but it is more efficient to
@@ -387,7 +387,7 @@ func reconcile(c reconciler, key string) error {
 	case apierrors.IsNotFound(err):
 		// Do not have a pipeline
 	case err != nil:
-		return fmt.Errorf("get pipelinerun %s: %v", key, err)
+		return fmt.Errorf("get pipelinerun %s: %w", key, err)
 	case p.DeletionTimestamp == nil:
 		havePipelineRun = true
 	}
@@ -409,7 +409,7 @@ func reconcile(c reconciler, key string) error {
 		}
 		logrus.Infof("Delete PipelineRun/%s", key)
 		if err = c.deletePipelineRun(ctx, namespace, name); err != nil {
-			return fmt.Errorf("delete pipelinerun: %v", err)
+			return fmt.Errorf("delete pipelinerun: %w", err)
 		}
 		return nil
 	case finalState(pj.Status.State):
@@ -420,20 +420,20 @@ func reconcile(c reconciler, key string) error {
 	case wantPipelineRun && !havePipelineRun:
 		id, url, err := c.pipelineID(*newpj)
 		if err != nil {
-			return fmt.Errorf("failed to get pipeline id: %v", err)
+			return fmt.Errorf("failed to get pipeline id: %w", err)
 		}
 		newpj.Status.BuildID = id
 		newpj.Status.URL = url
 		newPipelineRun = true
 		pipelineRun, err := makePipelineRun(*newpj)
 		if err != nil {
-			return fmt.Errorf("error preparing resources: %v", err)
+			return fmt.Errorf("error preparing resources: %w", err)
 		}
 
 		logrus.Infof("Create PipelineRun/%s", key)
 		p, err = c.createPipelineRun(ctx, namespace, pipelineRun)
 		if err != nil {
-			jerr := fmt.Errorf("start pipeline: %v", err)
+			jerr := fmt.Errorf("start pipeline: %w", err)
 			// Set the prow job in error state to avoid an endless loop when
 			// the pipeline cannot be executed (e.g. referenced pipeline does not exist)
 			return updateProwJobState(c, key, newPipelineRun, pj, newpj, prowjobv1.ErrorState, jerr.Error())
@@ -441,7 +441,7 @@ func reconcile(c reconciler, key string) error {
 	}
 
 	if p == nil {
-		return fmt.Errorf("no pipelinerun found or created for %q, wantPipelineRun was %v", key, wantPipelineRun)
+		return fmt.Errorf("no pipelinerun found or created for %q, wantPipelineRun was %t", key, wantPipelineRun)
 	}
 	wantState, wantMsg := prowJobStatus(p.Status)
 	return updateProwJobState(c, key, newPipelineRun, pj, newpj, wantState, wantMsg)
@@ -467,7 +467,7 @@ func updateProwJobState(c reconciler, key string, newPipelineRun bool, pj *prowj
 		logrus.Infof("Update ProwJob/%s: %s -> %s: %s", key, haveState, state, msg)
 
 		if _, err := c.patchProwJob(pj, newpj); err != nil {
-			return fmt.Errorf("update prow status: %v", err)
+			return fmt.Errorf("update prow status: %w", err)
 		}
 	}
 	return nil
@@ -600,7 +600,7 @@ func makePipelineRun(pj prowjobv1.ProwJob) (*pipelinev1alpha1.PipelineRun, error
 		return nil, errors.New("empty BuildID in status")
 	}
 	if err := config.ValidatePipelineRunSpec(pj.Spec.Type, pj.Spec.ExtraRefs, pj.Spec.PipelineRunSpec); err != nil {
-		return nil, fmt.Errorf("invalid pipeline_run_spec: %v", err)
+		return nil, fmt.Errorf("invalid pipeline_run_spec: %w", err)
 	}
 
 	p := pipelinev1alpha1.PipelineRun{

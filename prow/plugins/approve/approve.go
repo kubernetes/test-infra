@@ -378,7 +378,7 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.Repo, githubConf
 		log.WithField("duration", time.Since(funcStart).String()).Debug("Completed handle")
 	}()
 	fetchErr := func(context string, err error) error {
-		return fmt.Errorf("failed to get %s for %s/%s#%d: %v", context, pr.org, pr.repo, pr.number, err)
+		return fmt.Errorf("failed to get %s for %s/%s#%d: %w", context, pr.org, pr.repo, pr.number, err)
 	}
 
 	start := time.Now()

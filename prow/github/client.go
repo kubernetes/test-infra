@@ -1055,7 +1055,7 @@ func (c *client) requestRetryWithContext(ctx context.Context, method, path, acce
 							break
 						}
 					} else {
-						err = fmt.Errorf("failed to parse rate limit reset unix time %q: %v", resp.Header.Get("X-RateLimit-Reset"), err)
+						err = fmt.Errorf("failed to parse rate limit reset unix time %q: %w", resp.Header.Get("X-RateLimit-Reset"), err)
 						resp.Body.Close()
 						break
 					}
@@ -1076,7 +1076,7 @@ func (c *client) requestRetryWithContext(ctx context.Context, method, path, acce
 							break
 						}
 					} else {
-						err = fmt.Errorf("failed to parse abuse rate limit wait time %q: %v", rawTime, err)
+						err = fmt.Errorf("failed to parse abuse rate limit wait time %q: %w", rawTime, err)
 						resp.Body.Close()
 						break
 					}
@@ -1280,7 +1280,7 @@ func (c *client) BotUser() (*UserData, error) {
 	defer c.mut.Unlock()
 	if c.userData == nil {
 		if err := c.getUserData(context.Background()); err != nil {
-			return nil, fmt.Errorf("fetching bot name from GitHub: %v", err)
+			return nil, fmt.Errorf("fetching bot name from GitHub: %w", err)
 		}
 	}
 	return c.userData, nil
@@ -1316,7 +1316,7 @@ func (c *client) Email() (string, error) {
 	defer c.mut.Unlock()
 	if c.userData == nil {
 		if err := c.getUserData(context.Background()); err != nil {
-			return "", fmt.Errorf("fetching e-mail from GitHub: %v", err)
+			return "", fmt.Errorf("fetching e-mail from GitHub: %w", err)
 		}
 	}
 	return c.userData.Email, nil
@@ -1997,7 +1997,7 @@ func (c *client) readPaginatedResultsWithValuesWithContext(ctx context.Context, 
 
 		u, err := url.Parse(link)
 		if err != nil {
-			return fmt.Errorf("failed to parse 'next' link: %v", err)
+			return fmt.Errorf("failed to parse 'next' link: %w", err)
 		}
 		pagedPath = strings.TrimPrefix(u.RequestURI(), prefix)
 	}
@@ -2260,7 +2260,7 @@ func (c *client) CreatePullRequest(org, repo, title, body, head, base string, ca
 		exitCodes:   []int{201},
 	}, &resp)
 	if err != nil {
-		return 0, fmt.Errorf("failed to create pull request against %s/%s#%s from head %s: %v", org, repo, base, head, err)
+		return 0, fmt.Errorf("failed to create pull request against %s/%s#%s from head %s: %w", org, repo, base, head, err)
 	}
 	return resp.Num, nil
 }
@@ -2629,7 +2629,7 @@ func (c *client) GetBranchProtection(org, repo, branch string) (*BranchProtectio
 	case code == 404:
 		// continue
 	default:
-		return nil, fmt.Errorf("unexpected status code: %v", code)
+		return nil, fmt.Errorf("unexpected status code: %d", code)
 	}
 
 	var ge githubError
@@ -2868,7 +2868,7 @@ func (c *client) RemoveLabelWithContext(ctx context.Context, org, repo string, n
 	case err != nil:
 		return err
 	default:
-		return fmt.Errorf("unexpected status code: %v", code)
+		return fmt.Errorf("unexpected status code: %d", code)
 	}
 
 	ge := &githubError{}
@@ -3091,7 +3091,7 @@ func (c *client) RequestReview(org, repo string, number int, logins []string) er
 				// User is not a contributor, or team not in org.
 				missing.Users = append(missing.Users, user)
 			} else if err != nil {
-				return fmt.Errorf("failed to add reviewer to PR. Status code: %d, errmsg: %v", statusCode, err)
+				return fmt.Errorf("failed to add reviewer to PR. Status code: %d, errmsg: %w", statusCode, err)
 			}
 		}
 		if len(missing.Users) > 0 {
@@ -3464,7 +3464,7 @@ func (c *client) GetFile(org, repo, filepath, commit string) ([]byte, error) {
 
 	decoded, err := base64.StdEncoding.DecodeString(res.Content)
 	if err != nil {
-		return nil, fmt.Errorf("error decoding %s : %v", res.Content, err)
+		return nil, fmt.Errorf("error decoding %s : %w", res.Content, err)
 	}
 
 	return decoded, nil
@@ -4003,18 +4003,18 @@ func (c *client) EnsureFork(forkingUser, org, repo string) (string, error) {
 	fork := forkingUser + "/" + repo
 	repos, err := c.GetRepos(forkingUser, true)
 	if err != nil {
-		return repo, fmt.Errorf("could not fetch all existing repos: %v", err)
+		return repo, fmt.Errorf("could not fetch all existing repos: %w", err)
 	}
 	// if the repo does not exist, or it does, but is not a fork of the repo we want
 	if forkedRepo := getFork(fork, repos); forkedRepo == nil || forkedRepo.Parent.FullName != fmt.Sprintf("%s/%s", org, repo) {
 		if name, err := c.CreateFork(org, repo); err != nil {
-			return repo, fmt.Errorf("cannot fork %s/%s: %v", org, repo, err)
+			return repo, fmt.Errorf("cannot fork %s/%s: %w", org, repo, err)
 		} else {
 			// we got a fork but it may be named differently
 			repo = name
 		}
 		if err := c.waitForRepo(forkingUser, repo); err != nil {
-			return repo, fmt.Errorf("fork of %s/%s cannot show up on GitHub: %v", org, repo, err)
+			return repo, fmt.Errorf("fork of %s/%s cannot show up on GitHub: %w", org, repo, err)
 		}
 	}
 	return repo, nil

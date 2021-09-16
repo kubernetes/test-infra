@@ -983,10 +983,10 @@ func TestProwJobToPod(t *testing.T) {
 			return fmt.Errorf("missing %s env var", env)
 		}
 		if err := opt.LoadConfig(*val); err != nil {
-			return fmt.Errorf("load: %v", err)
+			return fmt.Errorf("load: %w", err)
 		}
 		if err := opt.Validate(); err != nil {
-			return fmt.Errorf("validate: %v", err)
+			return fmt.Errorf("validate: %w", err)
 		}
 		return nil
 	}

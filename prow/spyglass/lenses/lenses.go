@@ -128,7 +128,7 @@ func LastNLinesChunked(a api.Artifact, n, chunkSize int64) ([]string, error) {
 	var linesInContents int64
 	artifactSize, err := a.Size()
 	if err != nil {
-		return nil, fmt.Errorf("error getting artifact size: %v", err)
+		return nil, fmt.Errorf("error getting artifact size: %w", err)
 	}
 	offset := artifactSize - chunks*chunkSize
 	lastOffset := offset
@@ -142,7 +142,7 @@ func LastNLinesChunked(a api.Artifact, n, chunkSize int64) ([]string, error) {
 		bytesRead := make([]byte, toRead)
 		numBytesRead, err := a.ReadAt(bytesRead, offset)
 		if err != nil && err != io.EOF {
-			return nil, fmt.Errorf("error reading artifact: %v", err)
+			return nil, fmt.Errorf("error reading artifact: %w", err)
 		}
 		lastRead = int64(numBytesRead)
 		lastOffset = offset

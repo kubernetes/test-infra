@@ -102,7 +102,7 @@ func handleTransfer(gc githubClient, log *logrus.Entry, e github.GenericCommentE
 
 	isMember, err := gc.IsMember(org, user)
 	if err != nil {
-		return fmt.Errorf("unable to fetch if %s is an org member of %s: %v", user, org, err)
+		return fmt.Errorf("unable to fetch if %s is an org member of %s: %w", user, org, err)
 	}
 	if !isMember {
 		return gc.CreateComment(

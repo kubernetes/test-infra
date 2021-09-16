@@ -299,16 +299,16 @@ func processGerrit(o *Options, prh PRHandler) error {
 	stderr := HideSecretsWriter{Delegate: os.Stderr, Censor: secret.Censor}
 
 	if err := Call(stdout, stderr, gitCmd, "config", "http.cookiefile", o.Gerrit.CookieFile); err != nil {
-		return fmt.Errorf("unable to load cookiefile: %v", err)
+		return fmt.Errorf("unable to load cookiefile: %w", err)
 	}
 	if err := Call(stdout, stderr, gitCmd, "config", "user.name", o.Gerrit.Author); err != nil {
-		return fmt.Errorf("unable to set username: %v", err)
+		return fmt.Errorf("unable to set username: %w", err)
 	}
 	if err := Call(stdout, stderr, gitCmd, "config", "user.email", o.Gerrit.Email); err != nil {
-		return fmt.Errorf("unable to set password: %v", err)
+		return fmt.Errorf("unable to set password: %w", err)
 	}
 	if err := Call(stdout, stderr, gitCmd, "remote", "add", "upstream", o.Gerrit.HostRepo); err != nil {
-		return fmt.Errorf("unable to add upstream remote: %v", err)
+		return fmt.Errorf("unable to add upstream remote: %w", err)
 	}
 	changeId, err := getChangeId(o.Gerrit.Author, o.Gerrit.AutobumpPRIdentifier, "")
 	if err != nil {
@@ -344,7 +344,7 @@ func processGerrit(o *Options, prh PRHandler) error {
 				return err
 			}
 			if err := Call(stdout, stderr, gitCmd, "reset", "HEAD^"); err != nil {
-				return fmt.Errorf("unable to call git reset: %v", err)
+				return fmt.Errorf("unable to call git reset: %w", err)
 			}
 			return gerritCommitandPush(msg, o.Gerrit.AutobumpPRIdentifier, changeId, nil, nil, stdout, stderr)
 		}
@@ -611,7 +611,7 @@ func gerritNoOpChange(changeID string) (bool, error) {
 	}
 	// Get PR with same ChangeID for this bump
 	if err := Call(&outBuf, &garbageBuf, gitCmd, "log", "--all", fmt.Sprintf("--grep=Change-Id: %s", changeID), "-1", "--format=%H"); err != nil {
-		return false, fmt.Errorf("getting previous bump: %v", err)
+		return false, fmt.Errorf("getting previous bump: %w", err)
 	}
 	prevCommit := strings.TrimSpace(outBuf.String())
 	// No current CRs with cur ChangeID means this is not a noOp change
@@ -632,7 +632,7 @@ func gerritNoOpChange(changeID string) (bool, error) {
 func createCR(msg, branch, changeID string, reviewers, cc []string, stdout, stderr io.Writer) error {
 	noOp, err := gerritNoOpChange(changeID)
 	if err != nil {
-		return fmt.Errorf("diffing previous bump: %v", err)
+		return fmt.Errorf("diffing previous bump: %w", err)
 	}
 	if noOp {
 		logrus.Info("CR is a no-op change. Returning without pushing update")
@@ -641,10 +641,10 @@ func createCR(msg, branch, changeID string, reviewers, cc []string, stdout, stde
 
 	pushRef := buildPushRef(branch, reviewers, cc)
 	if err := Call(stdout, stderr, gitCmd, "commit", "-a", "-v", "-m", msg); err != nil {
-		return fmt.Errorf("unable to commit: %v", err)
+		return fmt.Errorf("unable to commit: %w", err)
 	}
 	if err := Call(stdout, stderr, gitCmd, "push", "upstream", pushRef); err != nil {
-		return fmt.Errorf("unable to push: %v", err)
+		return fmt.Errorf("unable to push: %w", err)
 	}
 	return nil
 }

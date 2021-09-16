@@ -120,7 +120,7 @@ func FindAll(ghc githubClient, log *logrus.Entry, label string, orgRepoTokensByO
 	wg.Wait()
 
 	if err := utilerrors.NewAggregate(errs); err != nil {
-		return Blockers{}, fmt.Errorf("error searching for blocker issues: %v", err)
+		return Blockers{}, fmt.Errorf("error searching for blocker issues: %w", err)
 	}
 
 	return fromIssues(issues, log), nil

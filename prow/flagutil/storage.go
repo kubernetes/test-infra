@@ -68,7 +68,7 @@ func (o *StorageClientOptions) StorageClient(ctx context.Context) (io.Opener, er
 		if o.S3CredentialsFile != "" {
 			message = fmt.Sprintf("%s s3-credentials-file: %s", message, o.S3CredentialsFile)
 		}
-		return opener, fmt.Errorf("error creating opener%s: %v", message, err)
+		return opener, fmt.Errorf("error creating opener%s: %w", message, err)
 	}
 	return opener, nil
 }

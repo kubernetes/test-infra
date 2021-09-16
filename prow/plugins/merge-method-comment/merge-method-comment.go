@@ -115,7 +115,7 @@ func issueHasComment(gc githubClient, org, repo string, number int, comment stri
 
 	comments, err := gc.ListIssueComments(org, repo, number)
 	if err != nil {
-		return false, fmt.Errorf("error listing issue comments: %v", err)
+		return false, fmt.Errorf("error listing issue comments: %w", err)
 	}
 
 	for _, c := range comments {

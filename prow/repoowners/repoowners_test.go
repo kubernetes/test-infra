@@ -169,15 +169,15 @@ func getTestClient(
 	}
 
 	if err := localGit.MakeFakeRepo("org", "repo"); err != nil {
-		return nil, nil, fmt.Errorf("cannot make fake repo: %v", err)
+		return nil, nil, fmt.Errorf("cannot make fake repo: %w", err)
 	}
 
 	if err := localGit.AddCommit("org", "repo", files); err != nil {
-		return nil, nil, fmt.Errorf("cannot add initial commit: %v", err)
+		return nil, nil, fmt.Errorf("cannot add initial commit: %w", err)
 	}
 	if includeAliases {
 		if err := localGit.AddCommit("org", "repo", testAliasesFile); err != nil {
-			return nil, nil, fmt.Errorf("cannot add OWNERS_ALIASES commit: %v", err)
+			return nil, nil, fmt.Errorf("cannot add OWNERS_ALIASES commit: %w", err)
 		}
 	}
 	if len(extraBranchesAndFiles) > 0 {
@@ -187,7 +187,7 @@ func getTestClient(
 			}
 			if len(extraFiles) > 0 {
 				if err := localGit.AddCommit("org", "repo", extraFiles); err != nil {
-					return nil, nil, fmt.Errorf("cannot add commit: %v", err)
+					return nil, nil, fmt.Errorf("cannot add commit: %w", err)
 				}
 			}
 		}
@@ -200,7 +200,7 @@ func getTestClient(
 		var entry cacheEntry
 		entry.sha, err = localGit.RevParse("org", "repo", "HEAD")
 		if err != nil {
-			return nil, nil, fmt.Errorf("cannot get commit SHA: %v", err)
+			return nil, nil, fmt.Errorf("cannot get commit SHA: %w", err)
 		}
 		if cacheOptions.hasAliases {
 			entry.aliases = make(map[string]sets.String)
@@ -213,7 +213,7 @@ func getTestClient(
 This file could be anything
 ---`)}
 			if err := localGit.AddCommit("org", "repo", md); err != nil {
-				return nil, nil, fmt.Errorf("cannot add commit: %v", err)
+				return nil, nil, fmt.Errorf("cannot add commit: %w", err)
 			}
 		}
 		if cacheOptions.mdFileChanged {
@@ -226,7 +226,7 @@ labels:
 - docs
 ---`)}
 			if err := localGit.AddCommit("org", "repo", md); err != nil {
-				return nil, nil, fmt.Errorf("cannot add commit: %v", err)
+				return nil, nil, fmt.Errorf("cannot add commit: %w", err)
 			}
 		}
 		if cacheOptions.ownersAliasesFileChanged {
@@ -234,7 +234,7 @@ labels:
 				"OWNERS_ALIASES": []byte("aliases:\n  Best-approvers:\n\n  - carl\n  - cjwagner\n  best-reviewers:\n  - Carl\n  - BOB"),
 			}
 			if err := localGit.AddCommit("org", "repo", testAliasesFile); err != nil {
-				return nil, nil, fmt.Errorf("cannot add commit: %v", err)
+				return nil, nil, fmt.Errorf("cannot add commit: %w", err)
 			}
 		}
 		if cacheOptions.ownersFileChanged {
@@ -251,7 +251,7 @@ labels:
 - EVERYTHING`),
 			}
 			if err := localGit.AddCommit("org", "repo", owners); err != nil {
-				return nil, nil, fmt.Errorf("cannot add commit: %v", err)
+				return nil, nil, fmt.Errorf("cannot add commit: %w", err)
 			}
 		}
 		cache.data["org"+"/"+"repo:master"] = entry
@@ -261,7 +261,7 @@ labels:
 	ghc := &fakeGitHubClient{Collaborators: []string{"cjwagner", "k8s-ci-robot", "alice", "bob", "carl", "mml", "maggie"}}
 	ghc.ref, err = localGit.RevParse("org", "repo", "HEAD")
 	if err != nil {
-		return nil, nil, fmt.Errorf("cannot get commit SHA: %v", err)
+		return nil, nil, fmt.Errorf("cannot get commit SHA: %w", err)
 	}
 	return &Client{
 			logger: logrus.WithField("client", "repoowners"),

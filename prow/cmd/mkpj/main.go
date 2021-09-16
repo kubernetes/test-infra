@@ -109,7 +109,7 @@ func (o *options) getPullRequest() (*github.PullRequest, error) {
 	}
 	pr, err := o.githubClient.GetPullRequest(o.org, o.repo, o.pullNumber)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch PullRequest from GitHub: %v", err)
+		return nil, fmt.Errorf("failed to fetch PullRequest from GitHub: %w", err)
 	}
 	o.pullRequest = pr
 	return pr, nil

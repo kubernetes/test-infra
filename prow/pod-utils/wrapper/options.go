@@ -102,7 +102,7 @@ func WaitForMarkers(ctx context.Context, paths ...string) map[string]MarkerResul
 	}
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		populateMapWithError(results, fmt.Errorf("new fsnotify watch: %v", err), paths...)
+		populateMapWithError(results, fmt.Errorf("new fsnotify watch: %w", err), paths...)
 		return results
 	}
 	defer watcher.Close()
@@ -118,7 +118,7 @@ func WaitForMarkers(ctx context.Context, paths ...string) map[string]MarkerResul
 	}
 
 	if err := watcher.Add(dir); err != nil {
-		populateMapWithError(results, fmt.Errorf("add %s to fsnotify watch: %v", dir, err), paths...)
+		populateMapWithError(results, fmt.Errorf("add %s to fsnotify watch: %w", dir, err), paths...)
 		return results
 	}
 
@@ -128,7 +128,7 @@ func WaitForMarkers(ctx context.Context, paths ...string) map[string]MarkerResul
 	for len(results) < len(paths) {
 		select {
 		case <-ctx.Done():
-			populateMapWithError(results, fmt.Errorf("cancelled: %v", ctx.Err()), paths...)
+			populateMapWithError(results, fmt.Errorf("cancelled: %w", ctx.Err()), paths...)
 			return results
 		case event := <-watcher.Events:
 			for _, path := range paths {
@@ -161,11 +161,11 @@ func populateMapWithError(markerMap map[string]MarkerResult, err error, paths ..
 func readMarkerFile(path string) MarkerResult {
 	returnCodeData, err := ioutil.ReadFile(path)
 	if err != nil {
-		return MarkerResult{-1, fmt.Errorf("bad read: %v", err)}
+		return MarkerResult{-1, fmt.Errorf("bad read: %w", err)}
 	}
 	returnCode, err := strconv.Atoi(strings.TrimSpace(string(returnCodeData)))
 	if err != nil {
-		return MarkerResult{-1, fmt.Errorf("invalid return code: %v", err)}
+		return MarkerResult{-1, fmt.Errorf("invalid return code: %w", err)}
 	}
 	return MarkerResult{returnCode, nil}
 }

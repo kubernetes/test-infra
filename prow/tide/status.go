@@ -262,14 +262,14 @@ func (sc *statusController) expectedStatus(log *logrus.Entry, queryMap *config.Q
 	repo := config.OrgRepo{Org: string(pr.Repository.Owner.Login), Repo: string(pr.Repository.Name)}
 
 	if reason, err := sc.mergeChecker.isAllowed(pr); err != nil {
-		return "", "", fmt.Errorf("error checking if merge is allowed: %v", err)
+		return "", "", fmt.Errorf("error checking if merge is allowed: %w", err)
 	} else if reason != "" {
 		return github.StatusError, fmt.Sprintf(statusNotInPool, " "+reason), nil
 	}
 
 	cc, err := ccg()
 	if err != nil {
-		return "", "", fmt.Errorf("failed to set up context register: %v", err)
+		return "", "", fmt.Errorf("failed to set up context register: %w", err)
 	}
 
 	if _, ok := pool[prKey(pr)]; !ok {

@@ -239,7 +239,7 @@ func NewController(ghcSync, ghcStatus github.Client, mgr manager, cfg config.Get
 	}
 	hist, err := history.New(maxRecordsPerPool, opener, historyURI)
 	if err != nil {
-		return nil, fmt.Errorf("error initializing history client from %q: %v", historyURI, err)
+		return nil, fmt.Errorf("error initializing history client from %q: %w", historyURI, err)
 	}
 	mergeChecker := newMergeChecker(cfg, ghcSync)
 
@@ -255,7 +255,7 @@ func NewController(ghcSync, ghcStatus github.Client, mgr manager, cfg config.Get
 
 func newStatusController(ctx context.Context, logger *logrus.Entry, ghc githubClient, mgr manager, gc git.ClientFactory, cfg config.Getter, opener io.Opener, statusURI string, mergeChecker *mergeChecker, usesGitHubAppsAuth bool) (*statusController, error) {
 	if err := mgr.GetFieldIndexer().IndexField(ctx, &prowapi.ProwJob{}, indexNamePassingJobs, indexFuncPassingJobs); err != nil {
-		return nil, fmt.Errorf("failed to add index for passing jobs to cache: %v", err)
+		return nil, fmt.Errorf("failed to add index for passing jobs to cache: %w", err)
 	}
 	return &statusController{
 		pjClient:           mgr.GetClient(),
@@ -290,7 +290,7 @@ func newSyncController(
 		cacheIndexName,
 		cacheIndexFunc,
 	); err != nil {
-		return nil, fmt.Errorf("failed to add baseSHA index to cache: %v", err)
+		return nil, fmt.Errorf("failed to add baseSHA index to cache: %w", err)
 	}
 	if err := mgr.GetFieldIndexer().IndexField(
 		ctx,
@@ -462,7 +462,7 @@ func (c *Controller) query() (map[string]PullRequest, error) {
 
 				if err != nil && len(results) == 0 {
 					c.logger.WithField("query", q).WithError(err).Warn("Failed to execute query.")
-					errs = append(errs, fmt.Errorf("query %d, err: %v", i, err))
+					errs = append(errs, fmt.Errorf("query %d, err: %w", i, err))
 					return
 				}
 				if err != nil {
@@ -551,13 +551,13 @@ func (c *Controller) initSubpoolData(sp *subpool) error {
 	var err error
 	sp.presubmits, err = c.presubmitsByPull(sp)
 	if err != nil {
-		return fmt.Errorf("error determining required presubmit prowjobs: %v", err)
+		return fmt.Errorf("error determining required presubmit prowjobs: %w", err)
 	}
 	sp.cc = make(map[int]contextChecker, len(sp.prs))
 	for _, pr := range sp.prs {
 		sp.cc[int(pr.Number)], err = c.config().GetTideContextPolicy(c.gc, sp.org, sp.repo, sp.branch, refGetterFactory(string(sp.sha)), string(pr.HeadRefOID))
 		if err != nil {
-			return fmt.Errorf("error setting up context checker for pr %d: %v", int(pr.Number), err)
+			return fmt.Errorf("error setting up context checker for pr %d: %w", int(pr.Number), err)
 		}
 	}
 	return nil
@@ -694,12 +694,12 @@ func (m *mergeChecker) isAllowed(pr *PullRequest) (string, error) {
 	mergeMethod, err := prMergeMethod(m.config().Tide, pr)
 	if err != nil {
 		// This should be impossible.
-		return "", fmt.Errorf("Programmer error! Failed to determine a merge method: %v", err)
+		return "", fmt.Errorf("Programmer error! Failed to determine a merge method: %w", err)
 	}
 	orgRepo := config.OrgRepo{Org: string(pr.Repository.Owner.Login), Repo: string(pr.Repository.Name)}
 	repoMethods, err := m.repoMethods(orgRepo)
 	if err != nil {
-		return "", fmt.Errorf("error getting repo data: %v", err)
+		return "", fmt.Errorf("error getting repo data: %w", err)
 	}
 	if allowed, exists := repoMethods[mergeMethod]; !exists {
 		// Should be impossible as well.
@@ -1254,7 +1254,7 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 			batch = fmt.Sprintf("%s, partial merge %v", batch, merged)
 		}
 	}
-	return fmt.Errorf("failed merging %v%s: %v", failed, batch, utilerrors.NewAggregate(errs))
+	return fmt.Errorf("failed merging %v%s: %w", failed, batch, utilerrors.NewAggregate(errs))
 }
 
 // setTideStatusSuccess ensures the tide context is set to success
@@ -1314,7 +1314,7 @@ func tryMerge(mergeFunc func() error) (bool, error) {
 			// modifies their PR as we try to merge it in a batch then we
 			// end up in an untested state. This is unlikely to cause any
 			// real problems.
-			return true, fmt.Errorf("PR was modified: %v", err)
+			return true, fmt.Errorf("PR was modified: %w", err)
 		} else if _, ok = err.(github.UnmergablePRBaseChangedError); ok {
 			//  complained that the base branch was modified. This is a
 			// strange error because the API doesn't even allow the request to
@@ -1324,7 +1324,7 @@ func tryMerge(mergeFunc func() error) (bool, error) {
 			// in time. https://github.com/kubernetes/test-infra/issues/5171
 			// We handle this by sleeping for a few seconds before trying to
 			// merge again.
-			err = fmt.Errorf("base branch was modified: %v", err)
+			err = fmt.Errorf("base branch was modified: %w", err)
 			if retry+1 < maxRetries {
 				sleep(backoff)
 				backoff *= 2
@@ -1335,15 +1335,15 @@ func tryMerge(mergeFunc func() error) (bool, error) {
 			// overzealous branch protection setting will not allow the robot to
 			// push to a specific branch.
 			// We won't be able to merge the other PRs.
-			return false, fmt.Errorf("branch needs to be configured to allow this robot to push: %v", err)
+			return false, fmt.Errorf("branch needs to be configured to allow this robot to push: %w", err)
 		} else if _, ok = err.(github.MergeCommitsForbiddenError); ok {
 			// GitHub let us know that the merge method configured for this repo
 			// is not allowed by other repo settings, so we should let the admins
 			// know that the configuration needs to be updated.
 			// We won't be able to merge the other PRs.
-			return false, fmt.Errorf("Tide needs to be configured to use the 'rebase' merge method for this repo or the repo needs to allow merge commits: %v", err)
+			return false, fmt.Errorf("Tide needs to be configured to use the 'rebase' merge method for this repo or the repo needs to allow merge commits: %w", err)
 		} else if _, ok = err.(github.UnmergablePRError); ok {
-			return true, fmt.Errorf("PR is unmergable. Do the Tide merge requirements match the GitHub settings for the repo? %v", err)
+			return true, fmt.Errorf("PR is unmergable. Do the Tide merge requirements match the GitHub settings for the repo? %w", err)
 		} else {
 			return true, err
 		}
@@ -1395,7 +1395,7 @@ func (c *Controller) trigger(sp subpool, presubmits []config.Presubmit, prs []Pu
 		start := time.Now()
 		if err := c.prowJobClient.Create(c.ctx, &pj); err != nil {
 			log.WithField("duration", time.Since(start).String()).Debug("Failed to create ProwJob on the cluster.")
-			return fmt.Errorf("failed to create a ProwJob for job: %q, PRs: %v: %v", spec.Job, prNumbers(prs), err)
+			return fmt.Errorf("failed to create a ProwJob for job: %q, PRs: %v: %w", spec.Job, prNumbers(prs), err)
 		}
 		log.WithField("duration", time.Since(start).String()).Debug("Created ProwJob on the cluster.")
 	}
@@ -1501,7 +1501,7 @@ func (c *changedFilesAgent) prChanges(pr *PullRequest) config.ChangedFilesProvid
 			int(pr.Number),
 		)
 		if err != nil {
-			return nil, fmt.Errorf("error getting PR changes for #%d: %v", int(pr.Number), err)
+			return nil, fmt.Errorf("error getting PR changes for #%d: %w", int(pr.Number), err)
 		}
 		changedFiles = make([]string, 0, len(changes))
 		for _, change := range changes {
@@ -1600,7 +1600,7 @@ func (c *Controller) presubmitsForBatch(prs []PullRequest, org, repo, baseSHA, b
 
 	presubmits, err := c.config().GetPresubmits(c.gc, org+"/"+repo, refGetterFactory(baseSHA), headRefGetters...)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get presubmits for batch: %v", err)
+		return nil, fmt.Errorf("failed to get presubmits for batch: %w", err)
 	}
 	log.Debugf("Found %d possible presubmits for batch", len(presubmits))
 
@@ -1798,7 +1798,7 @@ func (c *Controller) dividePool(pool map[string]PullRequest) (map[string]*subpoo
 			ctrlruntimeclient.MatchingFields{cacheIndexName: cacheIndexKey(sp.org, sp.repo, sp.branch, sp.sha)},
 			ctrlruntimeclient.InNamespace(c.config().ProwJobNamespace))
 		if err != nil {
-			return nil, fmt.Errorf("failed to list jobs for subpool %s: %v", subpoolkey, err)
+			return nil, fmt.Errorf("failed to list jobs for subpool %s: %w", subpoolkey, err)
 		}
 		c.logger.WithField("subpool", subpoolkey).Debugf("Found %d prowjobs.", len(pjs.Items))
 		sps[subpoolkey].pjs = pjs.Items
@@ -1944,7 +1944,7 @@ func headContexts(log *logrus.Entry, ghc githubClient, pr *PullRequest) ([]Conte
 	log.Warnf("'last' %d commits didn't contain logical last commit. Querying GitHub...", len(pr.Commits.Nodes))
 	combined, err := ghc.GetCombinedStatus(org, repo, string(pr.HeadRefOID))
 	if err != nil {
-		return nil, fmt.Errorf("failed to get the combined status: %v", err)
+		return nil, fmt.Errorf("failed to get the combined status: %w", err)
 	}
 	checkRunList, err := ghc.ListCheckRuns(org, repo, string(pr.HeadRefOID))
 	if err != nil {

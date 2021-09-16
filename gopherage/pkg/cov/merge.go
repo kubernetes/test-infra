@@ -46,7 +46,7 @@ func MergeProfiles(a []*cover.Profile, b []*cover.Profile) ([]*cover.Profile, er
 		dest, ok := files[profile.FileName]
 		if ok {
 			if err := ensureProfilesMatch(profile, dest); err != nil {
-				return nil, fmt.Errorf("error merging %s: %v", profile.FileName, err)
+				return nil, fmt.Errorf("error merging %s: %w", profile.FileName, err)
 			}
 			for i, block := range profile.Blocks {
 				db := &dest.Blocks[i]

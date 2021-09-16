@@ -169,7 +169,7 @@ func (c *Controller) incrementNumPendingJobs(job string) {
 func (c *Controller) Sync() error {
 	pjs, err := c.prowJobClient.List(context.TODO(), metav1.ListOptions{LabelSelector: c.selector})
 	if err != nil {
-		return fmt.Errorf("error listing prow jobs: %v", err)
+		return fmt.Errorf("error listing prow jobs: %w", err)
 	}
 	// Share what we have for gathering metrics.
 	c.pjLock.Lock()
@@ -186,7 +186,7 @@ func (c *Controller) Sync() error {
 	}
 	jbs, err := c.jc.ListBuilds(getJenkinsJobs(jenkinsJobs))
 	if err != nil {
-		return fmt.Errorf("error listing jenkins builds: %v", err)
+		return fmt.Errorf("error listing jenkins builds: %w", err)
 	}
 
 	var syncErrs []error
@@ -414,7 +414,7 @@ func (c *Controller) syncAbortedJob(pj prowapi.ProwJob, _ chan<- prowapi.ProwJob
 
 	if build, exists := jbs[pj.Name]; exists {
 		if err := c.jc.Abort(getJobName(&pj.Spec), &build); err != nil {
-			return fmt.Errorf("failed to abort Jenkins build: %v", err)
+			return fmt.Errorf("failed to abort Jenkins build: %w", err)
 		}
 	}
 
@@ -435,7 +435,7 @@ func (c *Controller) syncTriggeredJob(pj prowapi.ProwJob, reports chan<- prowapi
 		}
 		buildID, err := c.getBuildID(pj.Spec.Job)
 		if err != nil {
-			return fmt.Errorf("error getting build ID: %v", err)
+			return fmt.Errorf("error getting build ID: %w", err)
 		}
 		// Start the Jenkins job.
 		if err := c.jc.Build(&pj, buildID); err != nil {

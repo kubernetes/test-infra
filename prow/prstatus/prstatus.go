@@ -344,11 +344,11 @@ func (da *DashboardAgent) getHeadContexts(ghc githubStatusFetcher, pr PullReques
 	repo := string(pr.Repository.Name)
 	combined, err := ghc.GetCombinedStatus(org, repo, string(pr.HeadRefOID))
 	if err != nil {
-		return nil, fmt.Errorf("failed to get the combined status: %v", err)
+		return nil, fmt.Errorf("failed to get the combined status: %w", err)
 	}
 	checkruns, err := ghc.ListCheckRuns(org, repo, string(pr.HeadRefOID))
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch checkruns: %v", err)
+		return nil, fmt.Errorf("failed to fetch checkruns: %w", err)
 	}
 	contexts := make([]Context, 0, len(combined.Statuses)+len(checkruns.CheckRuns))
 	for _, status := range combined.Statuses {

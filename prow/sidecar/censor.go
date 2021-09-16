@@ -178,7 +178,7 @@ func fileCensorer(sem *semaphore.Weighted, errors chan<- error, censorer secretu
 func determineContentType(path string) (string, error) {
 	file, err := os.Open(path)
 	if err != nil {
-		return "", fmt.Errorf("could not open file to check content type: %v", err)
+		return "", fmt.Errorf("could not open file to check content type: %w", err)
 	}
 	defer func() {
 		if err := file.Close(); err != nil {
@@ -188,7 +188,7 @@ func determineContentType(path string) (string, error) {
 
 	header := make([]byte, 512)
 	if _, err := file.Read(header); err != nil {
-		return "", fmt.Errorf("could not read file to check content type: %v", err)
+		return "", fmt.Errorf("could not read file to check content type: %w", err)
 	}
 	return http.DetectContentType(header), nil
 }
@@ -276,10 +276,10 @@ func unarchive(archivePath, destPath string) error {
 			}
 			n, err := io.Copy(file, tarReader)
 			if closeErr := file.Close(); closeErr != nil && err == nil {
-				return fmt.Errorf("error closing %s: %v", abs, closeErr)
+				return fmt.Errorf("error closing %s: %w", abs, closeErr)
 			}
 			if err != nil {
-				return fmt.Errorf("error writing to %s: %v", abs, err)
+				return fmt.Errorf("error writing to %s: %w", abs, err)
 			}
 			if n != entry.Size {
 				return fmt.Errorf("only wrote %d bytes to %s; expected %d", n, abs, entry.Size)
@@ -502,7 +502,7 @@ func loadSecrets(paths []string) ([][]byte, error) {
 			}
 			extra, parseErr := parser(raw)
 			if parseErr != nil {
-				return fmt.Errorf("could not read %s as a docker secret: %v", path, parseErr)
+				return fmt.Errorf("could not read %s as a docker secret: %w", path, parseErr)
 			}
 			// It is important that these are added to the list of secrets *after* their parent data
 			// as we will censor in order and this will give a reasonable guarantee that the parent

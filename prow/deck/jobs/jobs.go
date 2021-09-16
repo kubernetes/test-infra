@@ -133,7 +133,7 @@ func (c *filteringProwJobLister) ListProwJobs(selector string) ([]prowapi.ProwJo
 	prowJobList := &prowapi.ProwJobList{}
 	parsedSelector, err := labels.Parse(selector)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse selector: %v", err)
+		return nil, fmt.Errorf("failed to parse selector: %w", err)
 	}
 	listOpts := &ctrlruntimeclient.ListOptions{LabelSelector: parsedSelector, Namespace: c.cfg().ProwJobNamespace}
 	if err := c.client.List(c.ctx, prowJobList, listOpts); err != nil {
@@ -240,7 +240,7 @@ func (ja *JobAgent) GetProwJob(job, id string) (prowapi.ProwJob, error) {
 func (ja *JobAgent) GetJobLog(job, id string, container string) ([]byte, error) {
 	j, err := ja.GetProwJob(job, id)
 	if err != nil {
-		return nil, fmt.Errorf("error getting prowjob: %v", err)
+		return nil, fmt.Errorf("error getting prowjob: %w", err)
 	}
 	if j.Spec.Agent == prowapi.KubernetesAgent {
 		client, ok := ja.pkcs[j.ClusterAlias()]
@@ -258,7 +258,7 @@ func (ja *JobAgent) GetJobLog(job, id string, container string) ([]byte, error) 
 		}
 		var b bytes.Buffer
 		if err := agentToTmpl.URLTemplate.Execute(&b, &j); err != nil {
-			return nil, fmt.Errorf("cannot execute URL template for prowjob %q with agent %q: %v", j.ObjectMeta.Name, j.Spec.Agent, err)
+			return nil, fmt.Errorf("cannot execute URL template for prowjob %q with agent %q: %w", j.ObjectMeta.Name, j.Spec.Agent, err)
 		}
 		resp, err := http.Get(b.String())
 		if err != nil {
