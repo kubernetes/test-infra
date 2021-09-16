@@ -136,6 +136,9 @@ type FakeClient struct {
 	// GetRepoError will be returned if set when GetRepo is called
 	GetRepoError error
 
+	// ListIssueCommentsWithContextError will be returned if set when ListIssueCommentsWithContext is called
+	ListIssueCommentsWithContextError error
+
 	// WasLabelAddedByHumanVal determines the return of the method with the same name
 	WasLabelAddedByHumanVal bool
 
@@ -235,6 +238,9 @@ func (f *FakeClient) ListIssueComments(owner, repo string, number int) ([]github
 func (f *FakeClient) ListIssueCommentsWithContext(ctx context.Context, owner, repo string, number int) ([]github.IssueComment, error) {
 	f.lock.RLock()
 	defer f.lock.RUnlock()
+	if f.ListIssueCommentsWithContextError != nil {
+		return nil, f.ListIssueCommentsWithContextError
+	}
 	return append([]github.IssueComment{}, f.IssueComments[number]...), nil
 }
 

@@ -22,7 +22,9 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"text/template"
 
+	"github.com/google/go-cmp/cmp"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -41,34 +43,6 @@ func TestParseIssueComment(t *testing.T) {
 		expectedUpdate  int
 		isOptional      bool
 	}{
-		{
-			name:    "should delete old style comments",
-			context: "Jenkins foo test",
-			state:   github.StatusSuccess,
-			ics: []github.IssueComment{
-				{
-					User: github.User{Login: "k8s-ci-robot"},
-					Body: "Jenkins foo test **failed** for such-and-such.",
-					ID:   12345,
-				},
-				{
-					User: github.User{Login: "someone-else"},
-					Body: "Jenkins foo test **failed**!? Why?",
-					ID:   12356,
-				},
-				{
-					User: github.User{Login: "k8s-ci-robot"},
-					Body: "Jenkins foo test **failed** for so-and-so.",
-					ID:   12367,
-				},
-				{
-					User: github.User{Login: "k8s-ci-robot"},
-					Body: "Jenkins bar test **failed** for something-or-other.",
-					ID:   12378,
-				},
-			},
-			expectedDeletes: []int{12345, 12367},
-		},
 		{
 			name:            "should create a new comment",
 			context:         "bla test",
@@ -205,7 +179,7 @@ func TestParseIssueComment(t *testing.T) {
 			isBot := func(candidate string) bool {
 				return candidate == "k8s-ci-robot"
 			}
-			deletes, entries, update := parseIssueComments(pj, isBot, tc.ics)
+			deletes, entries, update := parseIssueComments([]prowapi.ProwJob{pj}, isBot, tc.ics)
 			if len(deletes) != len(tc.expectedDeletes) {
 				t.Errorf("It %q: wrong number of deletes. Got %v, expected %v", tc.name, deletes, tc.expectedDeletes)
 			} else {
@@ -476,4 +450,150 @@ func TestShouldReport(t *testing.T) {
 				tc.name, tc.report, r)
 		}
 	}
+}
+
+func TestCreateComment(t *testing.T) {
+	tests := []struct {
+		name     string
+		template *template.Template
+		pjs      []prowapi.ProwJob
+		entries  []string
+		want     string
+		wantErr  bool
+	}{
+		{
+			name:     "single-job-single-failure",
+			template: mustParseTemplate(t, ""),
+			pjs: []prowapi.ProwJob{
+				{
+					Spec: prowapi.ProwJobSpec{
+						Refs: &prowapi.Refs{
+							Pulls: []prowapi.Pull{
+								{
+									Author: "chaodaig",
+								},
+							},
+						},
+					},
+				},
+			},
+			entries: []string{
+				"aaa | bbb | ccc | ddd | eee",
+			},
+			want: `@chaodaig: The following test **failed**, say ` + "`/retest`" + ` to rerun all failed tests or ` + "`/retest-required`" + ` to rerun all mandatory failed tests:
+
+Test name | Commit | Details | Required | Rerun command
+--- | --- | --- | --- | ---
+aaa | bbb | ccc | ddd | eee
+
+
+
+<details>
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](https://go.k8s.io/bot-commands).
+</details>
+<!-- test report -->`,
+		},
+		{
+			name:     "single-job-multi;e-failure",
+			template: mustParseTemplate(t, ""),
+			pjs: []prowapi.ProwJob{
+				{
+					Spec: prowapi.ProwJobSpec{
+						Refs: &prowapi.Refs{
+							Pulls: []prowapi.Pull{
+								{
+									Author: "chaodaig",
+								},
+							},
+						},
+					},
+				},
+			},
+			entries: []string{
+				"aaa | bbb | ccc | ddd | eee",
+				"fff | ggg | hhh | iii | jjj",
+			},
+			want: `@chaodaig: The following tests **failed**, say ` + "`/retest`" + ` to rerun all failed tests or ` + "`/retest-required`" + ` to rerun all mandatory failed tests:
+
+Test name | Commit | Details | Required | Rerun command
+--- | --- | --- | --- | ---
+aaa | bbb | ccc | ddd | eee
+fff | ggg | hhh | iii | jjj
+
+
+
+<details>
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](https://go.k8s.io/bot-commands).
+</details>
+<!-- test report -->`,
+		},
+		{
+			name:     "multiple-job-only-use-first-one",
+			template: mustParseTemplate(t, "{{.Spec.Job}}"),
+			pjs: []prowapi.ProwJob{
+				{
+					Spec: prowapi.ProwJobSpec{
+						Job: "job-a",
+						Refs: &prowapi.Refs{
+							Pulls: []prowapi.Pull{
+								{
+									Author: "chaodaig",
+								},
+							},
+						},
+					},
+				},
+				{
+					Spec: prowapi.ProwJobSpec{
+						Job: "job-b",
+						Refs: &prowapi.Refs{
+							Pulls: []prowapi.Pull{
+								{
+									Author: "chaodaig",
+								},
+							},
+						},
+					},
+				},
+			},
+			entries: []string{
+				"aaa | bbb | ccc | ddd | eee",
+			},
+			want: `@chaodaig: The following test **failed**, say ` + "`/retest`" + ` to rerun all failed tests or ` + "`/retest-required`" + ` to rerun all mandatory failed tests:
+
+Test name | Commit | Details | Required | Rerun command
+--- | --- | --- | --- | ---
+aaa | bbb | ccc | ddd | eee
+
+job-a
+
+<details>
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](https://go.k8s.io/bot-commands).
+</details>
+<!-- test report -->`,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			gotComment, gotErr := createComment(tc.template, tc.pjs, tc.entries)
+			if diff := cmp.Diff(gotComment, tc.want); diff != "" {
+				t.Fatalf("comment mismatch:\n%s", diff)
+			}
+			if (gotErr != nil && !tc.wantErr) || (gotErr == nil && tc.wantErr) {
+				t.Fatalf("error mismatch. got: %v, want: %v", gotErr, tc.wantErr)
+			}
+		})
+	}
+}
+
+func mustParseTemplate(t *testing.T, s string) *template.Template {
+	tmpl, err := template.New("test").Parse(s)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return tmpl
 }
