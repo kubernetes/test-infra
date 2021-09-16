@@ -151,6 +151,10 @@ func (fr fakeRepo) TopLevelApprovers() sets.String {
 	return nil
 }
 
+func (fr fakeRepo) StaleRepositoryState() string {
+	return ""
+}
+
 func (fr fakeRepo) ParseSimpleConfig(path string) (repoowners.SimpleConfig, error) {
 	dir := filepath.Dir(path)
 	for _, re := range fr.dirDenylist {

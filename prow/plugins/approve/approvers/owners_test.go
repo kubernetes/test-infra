@@ -70,6 +70,10 @@ func (f FakeRepo) IsAutoApproveUnownedSubfolders(ownerFilePath string) bool {
 	return f.autoApproveUnownedSubfolders[ownerFilePath]
 }
 
+func (f FakeRepo) StaleRepositoryState() string {
+	return ""
+}
+
 func canonicalize(path string) string {
 	if path == "." {
 		return ""

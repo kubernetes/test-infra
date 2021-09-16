@@ -48,6 +48,7 @@ type Repo interface {
 	IsNoParentOwners(path string) bool
 	IsAutoApproveUnownedSubfolders(directory string) bool
 	Filenames() ownersconfig.Filenames
+	StaleRepositoryState() string
 }
 
 // Owners provides functionality related to owners of a specific code change.
@@ -630,7 +631,8 @@ func GenerateTemplate(templ, name string, data interface{}) (string, error) {
 // 	- a suggested list of people from each OWNERS files that can fully approve the PR
 // 	- how an approver can indicate their approval
 // 	- how an approver can cancel their approval
-func GetMessage(ap Approvers, linkURL *url.URL, commandHelpLink, prProcessLink, org, repo, branch string) *string {
+// 	- a summary of stale information in the local repository (e.g. non-collaborator owners)
+func GetMessage(ap Approvers, linkURL *url.URL, commandHelpLink, prProcessLink, org, repo, branch, staleRepositoryState string) *string {
 	linkURL.Path = org + "/" + repo
 	message, err := GenerateTemplate(`{{if (and (not .ap.RequirementsMet) (call .ap.ManuallyApproved )) }}
 Approval requirements bypassed by manually added approval.
@@ -670,6 +672,12 @@ Associated issue requirement bypassed by:{{range $index, $approval := .ap.ListNo
 
 The full list of commands accepted by this bot can be found [here]({{ .commandHelpLink }}?repo={{ .org }}%2F{{ .repo }}).
 
+{{ if len .staleRepositoryState -}}
+The repository contains some stale state:
+{{ .staleRepositoryState }}
+
+{{ end -}}
+
 {{ if (or .ap.AreFilesApproved (call .ap.ManuallyApproved)) -}}
 The pull request process is described [here]({{ .prProcessLink }})
 
@@ -680,7 +688,7 @@ Needs approval from an approver in each of these files:
 {{range .ap.GetFiles .baseURL .branch}}{{.}}{{end}}
 Approvers can indicate their approval by writing `+"`/approve`"+` in a comment
 Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
-</details>`, "message", map[string]interface{}{"ap": ap, "baseURL": linkURL, "commandHelpLink": commandHelpLink, "prProcessLink": prProcessLink, "org": org, "repo": repo, "branch": branch})
+</details>`, "message", map[string]interface{}{"ap": ap, "baseURL": linkURL, "commandHelpLink": commandHelpLink, "prProcessLink": prProcessLink, "org": org, "repo": repo, "branch": branch, "staleRepositoryState": staleRepositoryState})
 	if err != nil {
 		ap.owners.log.WithError(err).Errorf("Error generating message.")
 		return nil
