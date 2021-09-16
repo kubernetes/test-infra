@@ -83,7 +83,11 @@ release(
     component("prow-canary-k8s-io", "managedcertificate"),
     component("prow-k8s-io", "managedcertificate"),
     component("prow-kubernetes-io", "managedcertificate"),
-    component("prowjob", "customresourcedefinition"),
+    component(
+        "prowjob",
+        "customresourcedefinition",
+        args = ["--server-side=true"],
+    ),
     component("pushgateway", "deployment"),
     component("sinker", "service", "deployment", "rbac"),
     component("statusreconciler", "deployment", "rbac"),
