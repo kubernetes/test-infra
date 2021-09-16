@@ -1405,6 +1405,10 @@ func (fro fakeRepoOwners) RequiredReviewers(path string) sets.String {
 	return sets.NewString()
 }
 
+func (fro fakeRepoOwners) StaleRepositoryState() string {
+	return ""
+}
+
 func TestHandleGenericComment(t *testing.T) {
 	tests := []struct {
 		name              string

@@ -94,6 +94,7 @@ func (f *fakeRepoOwners) Approvers(path string) layeredsets.String        { retu
 func (f *fakeRepoOwners) LeafReviewers(path string) sets.String           { return nil }
 func (f *fakeRepoOwners) Reviewers(path string) layeredsets.String        { return f.reviewers[path] }
 func (f *fakeRepoOwners) RequiredReviewers(path string) sets.String       { return nil }
+func (f *fakeRepoOwners) StaleRepositoryState() string                    { return "" }
 func (f *fakeRepoOwners) TopLevelApprovers() sets.String                  { return nil }
 
 func (f *fakeRepoOwners) ParseSimpleConfig(path string) (repoowners.SimpleConfig, error) {

@@ -242,6 +242,10 @@ func (foc *fakeOwnersClient) RequiredReviewers(path string) sets.String {
 	return foc.requiredReviewers[path]
 }
 
+func (foc *fakeOwnersClient) StaleRepositoryState() string {
+	return ""
+}
+
 func (foc *fakeOwnersClient) LeafReviewers(path string) sets.String {
 	return foc.leafReviewers[path]
 }

@@ -228,6 +228,7 @@ type RepoOwner interface {
 	LeafReviewers(path string) sets.String
 	Reviewers(path string) layeredsets.String
 	RequiredReviewers(path string) sets.String
+	StaleRepositoryState() string
 	ParseSimpleConfig(path string) (SimpleConfig, error)
 	ParseFullConfig(path string) (FullConfig, error)
 	TopLevelApprovers() sets.String
@@ -240,11 +241,12 @@ var _ RepoOwner = &RepoOwners{}
 type RepoOwners struct {
 	RepoAliases
 
-	approvers         map[string]map[*regexp.Regexp]sets.String
-	reviewers         map[string]map[*regexp.Regexp]sets.String
-	requiredReviewers map[string]map[*regexp.Regexp]sets.String
-	labels            map[string]map[*regexp.Regexp]sets.String
-	options           map[string]dirOptions
+	approvers                map[string]map[*regexp.Regexp]sets.String
+	reviewers                map[string]map[*regexp.Regexp]sets.String
+	filteredNonCollaborators sets.String
+	requiredReviewers        map[string]map[*regexp.Regexp]sets.String
+	labels                   map[string]map[*regexp.Regexp]sets.String
+	options                  map[string]dirOptions
 
 	baseDir      string
 	enableMDYAML bool
@@ -706,20 +708,22 @@ func (o *RepoOwners) filterCollaborators(toKeep []github.User) *RepoOwners {
 		collabs.Insert(github.NormLogin(keeper.Login))
 	}
 
-	filter := func(ownerMap map[string]map[*regexp.Regexp]sets.String) map[string]map[*regexp.Regexp]sets.String {
+	filter := func(ownerMap map[string]map[*regexp.Regexp]sets.String, filteredNonCollaborators sets.String) map[string]map[*regexp.Regexp]sets.String {
 		filtered := make(map[string]map[*regexp.Regexp]sets.String)
 		for path, reMap := range ownerMap {
 			filtered[path] = make(map[*regexp.Regexp]sets.String)
 			for re, unfiltered := range reMap {
 				filtered[path][re] = unfiltered.Intersection(collabs)
+				filteredNonCollaborators.Insert(unfiltered.Difference(collabs).UnsortedList()...)
 			}
 		}
 		return filtered
 	}
 
 	result := *o
-	result.approvers = filter(o.approvers)
-	result.reviewers = filter(o.reviewers)
+	result.filteredNonCollaborators = sets.NewString()
+	result.approvers = filter(o.approvers, result.filteredNonCollaborators)
+	result.reviewers = filter(o.reviewers, result.filteredNonCollaborators)
 	return &result
 }
 
@@ -849,6 +853,17 @@ func (o *RepoOwners) Reviewers(path string) layeredsets.String {
 // will return both user1 and user2 for the path pkg/util/sets/file.go
 func (o *RepoOwners) RequiredReviewers(path string) sets.String {
 	return o.entriesForFile(path, o.requiredReviewers, false).Set()
+}
+
+// StaleRepositoryState returns a description of stale repostory state, if any.
+// For example, it will list owners entries who are no longer
+// repository collaborators.
+func (o *RepoOwners) StaleRepositoryState() string {
+	if o.filteredNonCollaborators.Len() == 0 {
+		return ""
+	}
+
+	return fmt.Sprintf("Some listed owners are not repository collaborators: %s.", strings.Join(o.filteredNonCollaborators.List(), ", "))
 }
 
 func (o *RepoOwners) TopLevelApprovers() sets.String {
