@@ -203,7 +203,7 @@ func DefaultAndValidateProwYAML(c *Config, p *ProwYAML, identifier string) error
 
 	if len(errs) == 0 {
 		log := logrus.WithField("repo", identifier)
-		log.Debugf("Successfully got %d presubmits and %d postsubmits from %q.", len(p.Presubmits), len(p.Postsubmits), inRepoConfigFileName)
+		log.Debugf("Successfully got %d presubmits and %d postsubmits.", len(p.Presubmits), len(p.Postsubmits))
 	}
 
 	return utilerrors.NewAggregate(errs)
