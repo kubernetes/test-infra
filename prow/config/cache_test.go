@@ -123,7 +123,7 @@ func TestMakeCacheKey(t *testing.T) {
 				goodSHAGetter("ef01")},
 			expected: expected{
 				CacheKeyParts{},
-				"identifier cannot be empty",
+				"no identifier for repo given",
 			},
 		},
 		{

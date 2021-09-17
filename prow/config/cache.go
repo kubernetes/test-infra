@@ -80,7 +80,7 @@ func MakeCacheKeyParts(
 
 	// Append "identifier" string information.
 	if identifier == "" {
-		return CacheKeyParts{}, fmt.Errorf("identifier cannot be empty")
+		return CacheKeyParts{}, fmt.Errorf("no identifier for repo given")
 	}
 	keyParts.Identifier = identifier
 
