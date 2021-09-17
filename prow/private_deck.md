@@ -164,3 +164,21 @@ In order to use the new Deployment you will need to:
  - Add the new Rule
  - Configure Ingress to use the managed cert
  - [Here](https://github.com/GoogleCloudPlatform/oss-test-infra/blob/e1f836416d1b3cd2cebc81454eb7f5f1febbc468/prow/oss/cluster/cluster.yaml#L128) is an example
+
+ ## 6 [User] Update status check links
+ 
+ In the prow config, add the new domain to target_urls and job_url_prefix_config like so:
+
+ ```yaml
+ target_urls:
+    "*": https://oss-prow.knative.dev/tide
+    "privateOrg/repo": https://DOMAIN/tide
+```
+
+ ```yaml
+ job_url_prefix_config:
+    "*": https://oss-prow.knative.dev/view/
+    "privateOrg/repo": https://DOMAIN/view/
+```
+
+## 7 [Operator] Ensure that the public deck service account does not have access to the bucket for the jobs you wish to remain private
