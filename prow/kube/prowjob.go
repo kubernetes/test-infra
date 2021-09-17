@@ -63,4 +63,7 @@ const (
 	PullLabel = "prow.k8s.io/refs.pull"
 	// RetestLabel exposes if the job was created by a re-test request.
 	RetestLabel = "prow.k8s.io/retest"
+	// IsOptionalLabel is added in resources created by prow and
+	// carries the Optional from a Presubmit job.
+	IsOptionalLabel = "prow.k8s.io/is-optional"
 )
