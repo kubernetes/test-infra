@@ -186,9 +186,16 @@ func (lruCache *LRUCache) GetOrAdd(
 		// could just set that instead and let the cached entry expire on its
 		// own (we would not have to do this eviction ourselves manually).
 		if promise.err != nil {
+			logrus.WithField("key", key).Infof("promise was successfully resolved, but the call to valConstructor() returned an error; deleting key from cache...")
 			lruCache.Lock()
-			_ = lruCache.Remove(key)
+			keyWasFoundBeforeRemoval := lruCache.Remove(key)
 			lruCache.Unlock()
+			if keyWasFoundBeforeRemoval {
+				logrus.WithField("key", key).Infof("successfully deleted")
+			} else {
+				err := fmt.Errorf("unexpected race: key evicted by the cache without our knowledge; our own removal of this key was a NOP")
+				logrus.WithField("key", key).Error(err)
+			}
 		}
 	}
 
