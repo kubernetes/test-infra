@@ -1360,7 +1360,15 @@ func (c *Controller) trigger(sp subpool, presubmits []config.Presubmit, prs []Pu
 		BaseSHA: sp.sha,
 	}
 	for _, pr := range prs {
-		refs.Pulls = append(refs.Pulls, pr.toPull())
+		refs.Pulls = append(
+			refs.Pulls,
+			prowapi.Pull{
+				Number: int(pr.Number),
+				Title:  string(pr.Title),
+				Author: string(pr.Author.Login),
+				SHA:    string(pr.HeadRefOID),
+			},
+		)
 	}
 
 	// If PRs require the same job, we only want to trigger it once.
@@ -1684,7 +1692,12 @@ func (c *Controller) syncSubpool(sp subpool, blocks []blockers.Blocker) (Pool, e
 func prMeta(prs ...PullRequest) []prowapi.Pull {
 	var res []prowapi.Pull
 	for _, pr := range prs {
-		res = append(res, pr.toPull())
+		res = append(res, prowapi.Pull{
+			Number: int(pr.Number),
+			Author: string(pr.Author.Login),
+			Title:  string(pr.Title),
+			SHA:    string(pr.HeadRefOID),
+		})
 	}
 	return res
 }
@@ -1797,8 +1810,7 @@ func (c *Controller) dividePool(pool map[string]PullRequest) (map[string]*subpoo
 type PullRequest struct {
 	Number githubql.Int
 	Author struct {
-		Login   githubql.String
-		HTMLURL githubql.String
+		Login githubql.String
 	}
 	BaseRef struct {
 		Name   githubql.String
@@ -1810,7 +1822,6 @@ type PullRequest struct {
 	Repository  struct {
 		Name          githubql.String
 		NameWithOwner githubql.String
-		HTMLURL       githubql.String
 		Owner         struct {
 			Login githubql.String
 		}
@@ -1837,7 +1848,6 @@ type PullRequest struct {
 	Body      githubql.String
 	Title     githubql.String
 	UpdatedAt githubql.DateTime
-	HTMLURL   githubql.String
 }
 
 type CommitNode struct {
@@ -1905,18 +1915,6 @@ func (pr *PullRequest) logFields() logrus.Fields {
 		"pr":     int(pr.Number),
 		"branch": string(pr.BaseRef.Name),
 		"sha":    string(pr.HeadRefOID),
-	}
-}
-
-func (pr *PullRequest) toPull() prowapi.Pull {
-	return prowapi.Pull{
-		Number:     int(pr.Number),
-		Title:      string(pr.Title),
-		Author:     string(pr.Author.Login),
-		SHA:        string(pr.HeadRefOID),
-		Link:       string(pr.HTMLURL),
-		AuthorLink: string(pr.Author.HTMLURL),
-		CommitLink: fmt.Sprintf("%s/pull/%d/commits/%s", pr.Repository.HTMLURL, pr.Number, pr.HeadRefOID),
 	}
 }
 

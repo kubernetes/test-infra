@@ -1251,7 +1251,6 @@ func TestMergeMethodCheckerAndPRMergeMethod(t *testing.T) {
 				Repository: struct {
 					Name          githubql.String
 					NameWithOwner githubql.String
-					HTMLURL       githubql.String
 					Owner         struct {
 						Login githubql.String
 					}

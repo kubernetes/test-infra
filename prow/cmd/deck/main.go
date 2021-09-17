@@ -1043,15 +1043,10 @@ lensesLoop:
 		return "", fmt.Errorf("error determining jobName / buildID: %w", err)
 	}
 
-	prLinks := map[int]string{}
+	prLink := ""
 	j, err := sg.JobAgent.GetProwJob(jobName, buildID)
 	if err == nil && j.Spec.Refs != nil && len(j.Spec.Refs.Pulls) > 0 {
-		for _, pull := range j.Spec.Refs.Pulls {
-			if len(pull.Link) > 0 {
-				prLinks[pull.Number] = pull.Link
-			}
-		}
-
+		prLink = j.Spec.Refs.Pulls[0].Link
 	}
 
 	announcement := ""
@@ -1101,7 +1096,7 @@ lensesLoop:
 		TestgridLink    string
 		JobName         string
 		BuildID         string
-		PRLinks         map[int]string
+		PRLink          string
 		ExtraLinks      []spyglass.ExtraLink
 		ReRunCreatesJob bool
 		ProwJobName     string
@@ -1119,7 +1114,7 @@ lensesLoop:
 		TestgridLink:    tgLink,
 		JobName:         jobName,
 		BuildID:         buildID,
-		PRLinks:         prLinks,
+		PRLink:          prLink,
 		ExtraLinks:      extraLinks,
 		ReRunCreatesJob: o.rerunCreatesJob,
 		ProwJobName:     prowJobName,
