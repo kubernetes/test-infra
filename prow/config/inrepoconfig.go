@@ -49,7 +49,8 @@ type ProwYAML struct {
 // their own implementation and set that on the Config.
 type ProwYAMLGetter func(c *Config, gc git.ClientFactory, identifier, baseSHA string, headSHAs ...string) (*ProwYAML, error)
 
-// Verify prowYAMLGetter is a ProwYAMLGetter
+// Verify defaultProwYAMLGetter and prowYAMLGetter are both of type
+// ProwYAMLGetter.
 var _ ProwYAMLGetter = defaultProwYAMLGetter
 var _ ProwYAMLGetter = prowYAMLGetter
 
