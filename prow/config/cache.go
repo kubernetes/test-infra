@@ -197,11 +197,12 @@ func (p *ProwYAMLCache) GetOrAdd(
 		return prowYAML, err
 	}
 
-	// Somehow, the value retrieved with GetFromCache has a malformed type. This
-	// can happen if some other function modified the cache. Ultimately, this is
-	// a price we pay for using a cache library that uses "interface{}" for the
-	// type of its items. In this case, we log a warning and return an error.
-	err = fmt.Errorf("cache value type error: expected value type '*config.ProwYAML', got '%T'", val)
-	logrus.Warn(err)
+	// Somehow, the value retrieved with GetOrAdd has the wrong type. This can
+	// happen if some other function modified the cache and put in the wrong
+	// type. Ultimately, this is a price we pay for using a cache library that
+	// uses "interface{}" for the type of its items. In this case, we log an
+	// error message and return an error.
+	err = fmt.Errorf("Programmer error: expected value type '*config.ProwYAML', got '%T'", val)
+	logrus.Error(err)
 	return nil, err
 }
