@@ -141,12 +141,14 @@ func main() {
 	// Initialize cache for fetching Presubmit and Postsubmit information. If
 	// the cache cannot be initialized (e.g., cache size is too big), continue
 	// without one.
-	if err := configAgent.Config().InitProwYAMLCache(flagOptions.prowYAMLCacheSize); err != nil {
+	prowYAMLCache, err := config.NewProwYAMLCache(flagOptions.prowYAMLCacheSize)
+	if err != nil {
 		logrus.WithField("in-repo-config-cache-size", flagOptions.prowYAMLCacheSize).WithError(err).Warn("Unable to initialize in-repo-config-cache; continuing without one.")
 	}
 
 	s := &subscriber.Subscriber{
 		ConfigAgent:   configAgent,
+		ProwYAMLCache: prowYAMLCache,
 		Metrics:       promMetrics,
 		ProwJobClient: kubeClient,
 		GitClient:     config.NewInRepoConfigGitCache(gitClientFactory),

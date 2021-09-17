@@ -51,22 +51,6 @@ func NewProwYAMLCache(size int) (*ProwYAMLCache, error) {
 	return (*ProwYAMLCache)(cache), nil
 }
 
-// InitProwYAMLCache calls NewProwYAMLCache() to initialize a cache of ProwYAMLs
-// in the Config object. The cache sits inside the Config object because the
-// function signature of GetPresubmitsFromCache() matches that of
-// GetPresubmits() (which does not use the cache). The same reasoning applies
-// for GetPostsubmitsFromCache() and GetPostsubmits(). This way, callers can use
-// an interface to get presubmits in a cache-agnostic way.
-func (c *Config) InitProwYAMLCache(size int) error {
-	cache, err := NewProwYAMLCache(size)
-	if err != nil {
-		return err
-	}
-
-	c.ProwYAMLCache = cache
-	return nil
-}
-
 // CacheKey acts as a key to the ProwYAMLCache. We construct it by marshaling
 // CacheKeyParts into a JSON string.
 type CacheKey string
@@ -133,9 +117,9 @@ func MakeCacheKey(kp CacheKeyParts) (CacheKey, error) {
 // GetPresubmitsFromCache is like GetPresubmits, but attempts to use a cache
 // lookup to get the *ProwYAML value (cache hit), instead of computing it from
 // scratch (cache miss).
-func (c *Config) GetPresubmitsFromCache(gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Presubmit, error) {
+func (c *Config) GetPresubmitsFromCache(pc *ProwYAMLCache, gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Presubmit, error) {
 
-	prowYAML, err := GetProwYAMLFromCache(c.ProwYAMLCache, c.getProwYAMLNoDefault, gc, identifier, baseSHAGetter, headSHAGetters...)
+	prowYAML, err := GetProwYAMLFromCache(pc, c.getProwYAMLNoDefault, gc, identifier, baseSHAGetter, headSHAGetters...)
 	if err != nil {
 		return nil, err
 	}
@@ -150,9 +134,9 @@ func (c *Config) GetPresubmitsFromCache(gc git.ClientFactory, identifier string,
 // GetPostsubmitsFromCache is like GetPostsubmits, but attempts to use a cache
 // lookup to get the *ProwYAML value (cache hit), instead of computing it from
 // scratch (cache miss).
-func (c *Config) GetPostsubmitsFromCache(gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Postsubmit, error) {
+func (c *Config) GetPostsubmitsFromCache(pc *ProwYAMLCache, gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Postsubmit, error) {
 
-	prowYAML, err := GetProwYAMLFromCache(c.ProwYAMLCache, c.getProwYAMLNoDefault, gc, identifier, baseSHAGetter, headSHAGetters...)
+	prowYAML, err := GetProwYAMLFromCache(pc, c.getProwYAMLNoDefault, gc, identifier, baseSHAGetter, headSHAGetters...)
 	if err != nil {
 		return nil, err
 	}
