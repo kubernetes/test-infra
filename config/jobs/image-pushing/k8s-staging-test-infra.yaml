@@ -125,7 +125,7 @@ postsubmits:
           - images/gcb-docker-gcloud/
     - name: post-test-infra-push-gcloud-in-go
       cluster: k8s-infra-prow-build-trusted
-      run_if_changed: '^images/gcloud/'
+      run_if_changed: '^images/gcloud-in-go/'
       annotations:
         testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
         testgrid-tab-name: gcloud-in-go
@@ -146,7 +146,7 @@ postsubmits:
           - --scratch-bucket=gs://k8s-staging-test-infra-gcb
           - --project=k8s-staging-test-infra
           - --build-dir=.
-          - images/gcloud/
+          - images/gcloud-in-go/
     - name: post-test-infra-push-image-builder
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '^images/builder/'

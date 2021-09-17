@@ -13,9 +13,9 @@
 # limitations under the License.
 
 push-prod:
-  bazel run //images/builder -- --project=k8s-testimages --scratch-bucket=gs://k8s-testimages-scratch images/gcloud
+  bazel run //images/builder -- --project=k8s-testimages --scratch-bucket=gs://k8s-testimages-scratch images/gcloud-in-go
 
 push:
-	bazel run //images/builder -- --allow-dirty images/gcloud
+	bazel run //images/builder -- --allow-dirty images/gcloud-in-go
 
 .PHONY: push push-prod

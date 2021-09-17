@@ -3,7 +3,7 @@ steps:
     args: ['build', '-t', 'gcr.io/$PROJECT_ID/gcloud-in-go:$_GIT_TAG',
            '--build-arg', 'IMAGE_ARG=gcr.io/$PROJECT_ID/gcloud-in-go:$_GIT_TAG',
            '.']
-    dir: images/gcloud/
+    dir: images/gcloud-in-go/
 substitutions:
   _GIT_TAG: '12345'
 images:
