@@ -33,7 +33,7 @@ from helpers import ( # pylint: disable=import-error, no-name-in-module
 skip_jobs = [
 ]
 
-image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-master"
+image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master"
 
 ##############
 # Build Test #
