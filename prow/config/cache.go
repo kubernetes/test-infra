@@ -28,12 +28,9 @@ import (
 
 // Overview
 //
-// Consider the expensive function prowYAMLGetter(). This function is
-// expensive to compute (it involves invoking a Git client, walking a filesystem
-// path, etc). In our caching implementation, we save results of this function
-// into a cache (named ProwYAMLCache). The point is to avoid doing the expensive
-// GetPresubmits() and GetPostsubmits() calls if possible, which involves
-// walking the repository to collect YAML information, etc.
+// Consider the expensive function prowYAMLGetter(), which needs to use a Git
+// client, walk the filesystem path, etc. To speed things up, we save results of
+// this function into a cache named ProwYAMLCache.
 
 // ProwYAMLCache is the user-facing cache. It acts as a wrapper around the
 // generic LRUCache, by handling type casting in and out of the LRUCache (which
@@ -41,7 +38,7 @@ import (
 type ProwYAMLCache cache.LRUCache
 
 // NewProwYAMLCache creates a new LRU cache for ProwYAML values, where the keys
-// are CacheKeys and values are pointers to ProwYAMLs.
+// are CacheKeys (that is, JSON strings) and values are pointers to ProwYAMLs.
 func NewProwYAMLCache(size int) (*ProwYAMLCache, error) {
 	cache, err := cache.NewLRUCache(size)
 	if err != nil {
@@ -78,20 +75,20 @@ func MakeCacheKeyParts(
 	// Initialize empty key parts.
 	keyParts := CacheKeyParts{}
 
-	// Append "identifier" string information.
+	// Check "identifier".
 	if identifier == "" {
 		return CacheKeyParts{}, fmt.Errorf("no identifier for repo given")
 	}
 	keyParts.Identifier = identifier
 
-	// Append "baseSHA" string information.
+	// Parse "baseSHAGetter".
 	baseSHA, err := baseSHAGetter()
 	if err != nil {
 		return CacheKeyParts{}, fmt.Errorf("failed to get baseSHA: %v", err)
 	}
 	keyParts.BaseSHA = baseSHA
 
-	// Append "headSHAs" string information.
+	// Parse "headSHAGetterss".
 	var headSHAs []string
 	for _, headSHAGetter := range headSHAGetters {
 		headSHA, err := headSHAGetter()
@@ -116,7 +113,7 @@ func MakeCacheKey(kp CacheKeyParts) (CacheKey, error) {
 
 // GetPresubmitsCached is like GetPresubmits, but uses a cache lookup to get the
 // *ProwYAML value (cache hit), instead of computing it from scratch (cache
-// miss). It also stores the entry into the cache if there is a cache miss.
+// miss). It also stores the *ProwYAML into the cache if there is a cache miss.
 func (c *Config) GetPresubmitsCached(pc *ProwYAMLCache, gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Presubmit, error) {
 
 	prowYAML, err := c.GetProwYAMLCached(pc, c.getProwYAMLNoDefault, gc, identifier, baseSHAGetter, headSHAGetters...)
@@ -133,8 +130,8 @@ func (c *Config) GetPresubmitsCached(pc *ProwYAMLCache, gc git.ClientFactory, id
 
 // GetPostsubmitsCached is like GetPostsubmits, but attempts to use a cache
 // lookup to get the *ProwYAML value (cache hit), instead of computing it from
-// scratch (cache miss). It also stores the entry into the cache if there is a
-// cache miss.
+// scratch (cache miss). It also stores the *ProwYAML into the cache if there is
+// a cache miss.
 func (c *Config) GetPostsubmitsCached(pc *ProwYAMLCache, gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Postsubmit, error) {
 
 	prowYAML, err := c.GetProwYAMLCached(pc, c.getProwYAMLNoDefault, gc, identifier, baseSHAGetter, headSHAGetters...)
@@ -150,10 +147,13 @@ func (c *Config) GetPostsubmitsCached(pc *ProwYAMLCache, gc git.ClientFactory, i
 }
 
 // GetProwYAMLCached uses ProwYAMLCache to first try to perform a lookup of
-// previously-calculated ProwYAML objects. The 'valConstructor' function is
-// taken as an argument to make it easier to test this function. This way, unit
-// tests can just provide its own function for constructing a ProwYAML object
-// (instead of needing to create an actual Git repo, etc.).
+// previously-calculated *ProwYAML objects. The 'valConstructorHelper' is used
+// in two ways. First it is used by the caching mechanism to lazily generate the
+// value only when it is required (otherwise, if all threads had to generate the
+// value, it would defeat the purpose of the cache in the first place). Second,
+// it makes it easier to test this function, because unit tests can just provide
+// its own function for constructing a *ProwYAML object (instead of needing to
+// create an actual Git repo, etc.).
 func (c *Config) GetProwYAMLCached(
 	prowYAMLCache *ProwYAMLCache,
 	valConstructorHelper func(git.ClientFactory, string, RefGetter, ...RefGetter) (*ProwYAML, error),
@@ -182,9 +182,6 @@ func (c *Config) GetProwYAMLCached(
 		return nil, err
 	}
 
-	// The point of valConstructor is to allow us to mock this expensive value
-	// constructor call in tests (and, e.g., avoid having to do things like
-	// going over the network or dealing with an actual Git client, etc.).
 	valConstructor := func() (interface{}, error) {
 		return valConstructorHelper(gc, identifier, baseSHAGetter, headSHAGetters...)
 	}
@@ -192,8 +189,10 @@ func (c *Config) GetProwYAMLCached(
 	return prowYAMLCache.GetOrAdd(key, valConstructor)
 }
 
-// GetOrAdd is a type casting wrapper around the inner LRUCache object. Users
-// are expected to add their own GetOrAdd method for their own cached type.
+// GetOrAdd is a type assertion wrapper around the values retrieved from the
+// inner LRUCache object (which only understands empty interfaces for both keys
+// and values). Users are expected to add their own GetOrAdd method for their
+// own cached value.
 func (p *ProwYAMLCache) GetOrAdd(
 	key CacheKey,
 	valConstructor cache.ValConstructor) (*ProwYAML, error) {
@@ -211,8 +210,7 @@ func (p *ProwYAMLCache) GetOrAdd(
 	// Somehow, the value retrieved with GetOrAdd has the wrong type. This can
 	// happen if some other function modified the cache and put in the wrong
 	// type. Ultimately, this is a price we pay for using a cache library that
-	// uses "interface{}" for the type of its items. In this case, we log an
-	// error message and return an error.
+	// uses "interface{}" for the type of its items.
 	err = fmt.Errorf("Programmer error: expected value type '*config.ProwYAML', got '%T'", val)
 	logrus.Error(err)
 	return nil, err

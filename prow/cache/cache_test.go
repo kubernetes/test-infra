@@ -22,6 +22,10 @@ import (
 	"testing"
 )
 
+// TestGetOrAddSimple is a basic check that the underlying LRU cache
+// implementation that powers the LRUCache itself is behaving in an expected
+// way. We test things like cache eviction and also what to do when value
+// construction fails.
 func TestGetOrAddSimple(t *testing.T) {
 	valConstructorCalls := 0
 	goodValConstructor := func(val string) func() (interface{}, error) {
@@ -42,9 +46,7 @@ func TestGetOrAddSimple(t *testing.T) {
 			return val, nil
 		}
 	}
-	// simpleCache is a cache only used for testing. The difference between this
-	// cache and the ones in ProwYAMLCache is that simpleCache only holds
-	// strings, not ProwYAMLs as values.
+
 	simpleCache, err := NewLRUCache(2)
 	if err != nil {
 		t.Error("could not initialize simpleCache")
@@ -194,26 +196,27 @@ func TestGetOrAddSimple(t *testing.T) {
 }
 
 // TestGetOrAddBurst tests getting 1000 sudden requests for the same cache key
-// against the cache at the same time. Because our cache can handle this
-// situation (called "cache stampede" or by its mitigation strategy known as
-// "duplicate suppression"), we expect to only have created a **single** cached
-// entry, with the remaining 999 "get" calls against the cache to reuse the
-// cached entry. The HTTP analogue of duplicate suppression is known as request
-// coalescing, which uses the same principle. For more discussion about
-// duplicate suppression, see Alan Donovan and Brian Kernighan, "The Go
-// Programming Language" (Addison-Wesley, 2016), p. 276.
+// at the same time. Because our cache can handle this situation (called "cache
+// stampede" or by its mitigation strategy known as "duplicate suppression"), we
+// expect to only have created a __single__ cached entry, with the remaining 999
+// "get" calls against the cache to reuse the cached entry. The HTTP analogue of
+// duplicate suppression is known as request coalescing, which uses the same
+// principle. For more discussion about duplicate suppression, see Alan Donovan
+// and Brian Kernighan, "The Go Programming Language" (Addison-Wesley, 2016), p.
+// 277.
 func TestGetOrAddBurst(t *testing.T) {
 	// testLock is used for guarding valConstructorCalls for purposes of
 	// testing.
 	testLock := sync.Mutex{}
 
 	valConstructorCalls := 0
-	// This value is expensive to calculate. We simulate an "expensive" call by
-	// calculating the Collatz Conjecture for a small input. The point is that
-	// the value generated here will never be able to be optimized away by the
-	// compiler (because its value cannot be precomputed by the compiler),
-	// guaranteeing that some CPU cycles will be spent between the time we
-	// unlock the testLock and the time we retrieve the computed value.
+	// goodValConstructor simulates an "expensive" call by calculating the
+	// Collatz Conjecture for a small input. The point is that the value
+	// generated here will never be able to be optimized away by the compiler
+	// (because its value cannot be precomputed by the compiler), guaranteeing
+	// that some CPU cycles will be spent between the time we unlock the
+	// testLock and the time we retrieve the computed value (all within the same
+	// thread).
 	goodValConstructor := func(input int) func() (interface{}, error) {
 		return func() (interface{}, error) {
 			testLock.Lock()
@@ -280,6 +283,7 @@ func TestGetOrAddBurst(t *testing.T) {
 
 	valConstructorCalls = 0
 	lruCache.Purge()
+
 	// Consider the case where all threads perform one of 5 different cache lookups.
 	wg.Add(maxConcurrentRequests)
 	for i := 0; i < maxConcurrentRequests; i++ {

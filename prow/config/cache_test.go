@@ -26,7 +26,7 @@ import (
 )
 
 func TestNewProwYAMLCache(t *testing.T) {
-	// Invalid size arguments result in a nil prowYAMLCache and non-nil err.
+	// Invalid size arguments result in a nil prowYAMLCache and non-nil error.
 	invalids := []int{-1, 0}
 	for _, invalid := range invalids {
 
@@ -175,7 +175,7 @@ func TestMakeCacheKey(t *testing.T) {
 }
 
 func TestGetProwYAMLCached(t *testing.T) {
-	// fakeProwYAMLMap mocks prowYAMLGetter. Instead of using the
+	// fakeProwYAMLMap mocks prowYAMLGetter(). Instead of using the
 	// git.ClientFactory (and other operations), we just use a simple map to get
 	// the *ProwYAML value we want. For simplicity we just reuse MakeCacheKey
 	// even though we're not using a cache. The point of fakeProwYAMLMap is to
