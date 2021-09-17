@@ -57,7 +57,7 @@ func NewClients(configPath, clusterName string) (ctrlruntimeclient.Client, error
 	cfg, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
 		loader, &overrides).ClientConfig()
 	if err != nil {
-		return nil, fmt.Errorf("failed create rest config: %v", err)
+		return nil, fmt.Errorf("failed create rest config: %w", err)
 	}
 	return ctrlruntimeclient.New(cfg, ctrlruntimeclient.Options{})
 }

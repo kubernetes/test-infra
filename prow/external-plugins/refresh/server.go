@@ -137,7 +137,7 @@ func (s *server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 		PJs []prowapi.ProwJob `json:"items"`
 	}
 	if err := json.Unmarshal(data, &list); err != nil {
-		return fmt.Errorf("cannot unmarshal data from deck: %v", err)
+		return fmt.Errorf("cannot unmarshal data from deck: %w", err)
 	}
 
 	pr, err := s.ghc.GetPullRequest(org, repo, num)

@@ -133,7 +133,7 @@ func (gr gooseResult) Format() (string, error) {
 	}
 	img, err := url.Parse(gr.Images.Small)
 	if err != nil {
-		return "", fmt.Errorf("invalid image url %s: %v", gr.Images.Small, err)
+		return "", fmt.Errorf("invalid image url %s: %w", gr.Images.Small, err)
 	}
 
 	return fmt.Sprintf("\n![goose image](%s)", img), nil
@@ -154,7 +154,7 @@ func (g *realGaggle) readGoose() (string, error) {
 	uri := g.URL()
 	resp, err := http.Get(uri)
 	if err != nil {
-		return "", fmt.Errorf("could not read goose from %s: %v", uri, err)
+		return "", fmt.Errorf("could not read goose from %s: %w", uri, err)
 	}
 	defer resp.Body.Close()
 	if sc := resp.StatusCode; sc > 299 || sc < 200 {
@@ -173,7 +173,7 @@ func (g *realGaggle) readGoose() (string, error) {
 	// checking size, GitHub doesn't support big images
 	toobig, err := github.ImageTooBig(a.Images.Small)
 	if err != nil {
-		return "", fmt.Errorf("could not validate image size %s: %v", a.Images.Small, err)
+		return "", fmt.Errorf("could not validate image size %s: %w", a.Images.Small, err)
 	} else if toobig {
 		return "", fmt.Errorf("long goose is too long: %s", a.Images.Small)
 	}

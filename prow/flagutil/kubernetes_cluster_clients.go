@@ -182,13 +182,13 @@ func (o *KubernetesOptions) AddFlags(fs *flag.FlagSet) {
 func (o *KubernetesOptions) Validate(_ bool) error {
 	if o.kubeconfig != "" {
 		if _, err := os.Stat(o.kubeconfig); err != nil {
-			return fmt.Errorf("error accessing --kubeconfig: %v", err)
+			return fmt.Errorf("error accessing --kubeconfig: %w", err)
 		}
 	}
 
 	if o.kubeconfigDir != "" {
 		if fileInfo, err := os.Stat(o.kubeconfigDir); err != nil {
-			return fmt.Errorf("error accessing --kubeconfig-dir: %v", err)
+			return fmt.Errorf("error accessing --kubeconfig-dir: %w", err)
 		} else if !fileInfo.IsDir() {
 			return fmt.Errorf("--kubeconfig-dir must be a directory")
 		}
@@ -209,7 +209,7 @@ func (o *KubernetesOptions) resolve(dryRun bool) error {
 		kube.ConfigDir(o.kubeconfigDir), kube.ConfigProjectedTokenFile(o.projectedTokenFile),
 		kube.NoInClusterConfig(o.noInClusterConfig)))
 	if err != nil {
-		return fmt.Errorf("load --kubeconfig=%q configs: %v", o.kubeconfig, err)
+		return fmt.Errorf("load --kubeconfig=%q configs: %w", o.kubeconfig, err)
 	}
 	o.clusterConfigs = clusterConfigs
 
@@ -217,7 +217,7 @@ func (o *KubernetesOptions) resolve(dryRun bool) error {
 	for context, config := range clusterConfigs {
 		client, err := kubernetes.NewForConfig(&config)
 		if err != nil {
-			return fmt.Errorf("create %s kubernetes client: %v", context, err)
+			return fmt.Errorf("create %s kubernetes client: %w", context, err)
 		}
 		clients[context] = client
 	}

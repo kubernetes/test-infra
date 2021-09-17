@@ -1802,7 +1802,7 @@ func TestValidateReportingWithGerritLabel(t *testing.T) {
 			}
 			var expected error
 			if tc.expected != nil {
-				expected = fmt.Errorf("invalid presubmit job %s: %v", "test-job", tc.expected)
+				expected = fmt.Errorf("invalid presubmit job %s: %w", "test-job", tc.expected)
 			}
 			if err := validatePresubmits(presubmits, "default-namespace"); !reflect.DeepEqual(err, utilerrors.NewAggregate([]error{expected})) {
 				t.Errorf("did not get expected validation result:\n%v", cmp.Diff(expected, err))
@@ -1815,7 +1815,7 @@ func TestValidateReportingWithGerritLabel(t *testing.T) {
 				},
 			}
 			if tc.expected != nil {
-				expected = fmt.Errorf("invalid postsubmit job %s: %v", "test-job", tc.expected)
+				expected = fmt.Errorf("invalid postsubmit job %s: %w", "test-job", tc.expected)
 			}
 			if err := validatePostsubmits(postsubmits, "default-namespace"); !reflect.DeepEqual(err, utilerrors.NewAggregate([]error{expected})) {
 				t.Errorf("did not get expected validation result:\n%v", cmp.Diff(expected, err))
@@ -3875,7 +3875,7 @@ func TestRefGetterForGitHubPullRequest(t *testing.T) {
 			verify: func(rg *RefGetterForGitHubPullRequest) error {
 				pr, err := rg.PullRequest()
 				if err != nil {
-					return fmt.Errorf("failed to fetch PullRequest: %v", err)
+					return fmt.Errorf("failed to fetch PullRequest: %w", err)
 				}
 				if rg.pr == nil || rg.pr.ID != 123456 {
 					return fmt.Errorf("expected agent to contain pr with id 123456, pr was %v", rg.pr)
@@ -3892,7 +3892,7 @@ func TestRefGetterForGitHubPullRequest(t *testing.T) {
 			verify: func(rg *RefGetterForGitHubPullRequest) error {
 				baseSHA, err := rg.BaseSHA()
 				if err != nil {
-					return fmt.Errorf("error calling baseSHA: %v", err)
+					return fmt.Errorf("error calling baseSHA: %w", err)
 				}
 				if rg.baseSHA != "12345" {
 					return fmt.Errorf("expected agent baseSHA to be 12345, was %q", rg.baseSHA)
@@ -3913,7 +3913,7 @@ func TestRefGetterForGitHubPullRequest(t *testing.T) {
 			verify: func(rg *RefGetterForGitHubPullRequest) error {
 				baseSHA, err := rg.BaseSHA()
 				if err != nil {
-					return fmt.Errorf("expected err to be nil, was %v", err)
+					return fmt.Errorf("expected err to be nil, was %w", err)
 				}
 				if rg.baseSHA != fakegithub.TestRef {
 					return fmt.Errorf("expected baseSHA on agent to be %q, was %q", fakegithub.TestRef, rg.baseSHA)

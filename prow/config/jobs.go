@@ -430,7 +430,7 @@ func NewGitHubDeferredChangedFilesProvider(client githubClient, org, repo string
 		if changedFiles == nil {
 			changes, err := client.GetPullRequestChanges(org, repo, num)
 			if err != nil {
-				return nil, fmt.Errorf("error getting pull request changes: %v", err)
+				return nil, fmt.Errorf("error getting pull request changes: %w", err)
 			}
 			for _, change := range changes {
 				changedFiles = append(changedFiles, change.Filename)
@@ -482,7 +482,7 @@ func (u *UtilityConfig) Validate() error {
 		if len(u.CloneURI) != 0 {
 			uri, err := url.Parse(cloneURI)
 			if err != nil {
-				return fmt.Errorf("couldn't parse uri from clone_uri: %v", err)
+				return fmt.Errorf("couldn't parse uri from clone_uri: %w", err)
 			}
 
 			if u.DecorationConfig != nil && u.DecorationConfig.OauthTokenSecret != nil {
@@ -501,7 +501,7 @@ func (u *UtilityConfig) Validate() error {
 
 	for i, ref := range u.ExtraRefs {
 		if err := cloneURIValidate(ref.CloneURI); err != nil {
-			return fmt.Errorf("extra_ref[%d]: %v", i, err)
+			return fmt.Errorf("extra_ref[%d]: %w", i, err)
 		}
 	}
 

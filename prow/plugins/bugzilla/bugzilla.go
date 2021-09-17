@@ -366,7 +366,7 @@ func getCherryPickMatch(pre github.PullRequestEvent) (bool, int, string, error) 
 		cherrypickOf, err := strconv.Atoi(cherrypickMatch[1])
 		if err != nil {
 			// should be impossible based on the regex
-			return false, 0, "", fmt.Errorf("Failed to parse cherrypick bugID as int - is the regex correct? Err: %v", err)
+			return false, 0, "", fmt.Errorf("Failed to parse cherrypick bugID as int - is the regex correct? Err: %w", err)
 		}
 		return true, cherrypickOf, pre.PullRequest.Base.Ref, nil
 	}

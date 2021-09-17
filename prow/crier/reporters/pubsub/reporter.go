@@ -103,7 +103,7 @@ func (c *Client) Report(ctx context.Context, _ *logrus.Entry, pj *prowapi.ProwJo
 	// TODO: Consider caching the pubsub client.
 	client, err := pubsub.NewClient(ctx, message.Project)
 	if err != nil {
-		return nil, nil, fmt.Errorf("could not create pubsub Client: %v", err)
+		return nil, nil, fmt.Errorf("could not create pubsub Client: %w", err)
 	}
 	defer func() {
 		logrus.WithError(client.Close()).Debug("Closed pubsub client.")
@@ -114,7 +114,7 @@ func (c *Client) Report(ctx context.Context, _ *logrus.Entry, pj *prowapi.ProwJo
 
 	d, err := json.Marshal(message)
 	if err != nil {
-		return nil, nil, fmt.Errorf("could not marshal pubsub report: %v", err)
+		return nil, nil, fmt.Errorf("could not marshal pubsub report: %w", err)
 	}
 
 	res := topic.Publish(ctx, &pubsub.Message{

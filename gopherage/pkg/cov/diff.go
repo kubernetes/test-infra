@@ -32,7 +32,7 @@ func DiffProfiles(before []*cover.Profile, after []*cover.Profile) ([]*cover.Pro
 	for i, beforeProfile := range before {
 		afterProfile := after[i]
 		if err := ensureProfilesMatch(beforeProfile, afterProfile); err != nil {
-			return nil, fmt.Errorf("error on profile #%d: %v", i, err)
+			return nil, fmt.Errorf("error on profile #%d: %w", i, err)
 		}
 		diffProfile := cover.Profile{FileName: beforeProfile.FileName, Mode: beforeProfile.Mode}
 		for j, beforeBlock := range beforeProfile.Blocks {

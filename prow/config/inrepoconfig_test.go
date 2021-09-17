@@ -54,7 +54,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 			},
 			validate: func(p *ProwYAML, err error) error {
 				if err != nil {
-					return fmt.Errorf("unexpected error: %v", err)
+					return fmt.Errorf("unexpected error: %w", err)
 				}
 				if n := len(p.Presubmits); n != 1 || p.Presubmits[0].Name != "hans" {
 					return fmt.Errorf(`expected exactly one presubmit with name "hans", got %v`, p.Presubmits)
@@ -69,7 +69,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 			},
 			validate: func(p *ProwYAML, err error) error {
 				if err != nil {
-					return fmt.Errorf("unexpected error: %v", err)
+					return fmt.Errorf("unexpected error: %w", err)
 				}
 				if n := len(p.Presubmits); n != 1 || p.Presubmits[0].Name != "hans" {
 					return fmt.Errorf(`expected exactly one presubmit with name "hans", got %v`, p.Presubmits)
@@ -84,7 +84,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 			},
 			validate: func(p *ProwYAML, err error) error {
 				if err != nil {
-					return fmt.Errorf("unexpected error: %v", err)
+					return fmt.Errorf("unexpected error: %w", err)
 				}
 				if n := len(p.Presubmits); n != 1 || p.Presubmits[0].Name != "hans" {
 					return fmt.Errorf(`expected exactly one presubmit with name "hans", got %v`, p.Presubmits)
@@ -139,7 +139,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 			},
 			validate: func(p *ProwYAML, err error) error {
 				if err != nil {
-					return fmt.Errorf("unexpected error: %v", err)
+					return fmt.Errorf("unexpected error: %w", err)
 				}
 				if n := len(p.Presubmits); n != 1 || p.Presubmits[0].Name != "hans" {
 					return fmt.Errorf(`expected exactly one postsubmit with name "hans", got %v`, p.Presubmits)
@@ -174,7 +174,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 			},
 			validate: func(p *ProwYAML, err error) error {
 				if err != nil {
-					return fmt.Errorf("unexpected error: %v", err)
+					return fmt.Errorf("unexpected error: %w", err)
 				}
 				if n := len(p.Postsubmits); n != 1 || p.Postsubmits[0].Name != "hans" {
 					return fmt.Errorf(`expected exactly one postsubmit with name "hans", got %v`, p.Postsubmits)
@@ -189,7 +189,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 			},
 			validate: func(p *ProwYAML, err error) error {
 				if err != nil {
-					return fmt.Errorf("unexpected error: %v", err)
+					return fmt.Errorf("unexpected error: %w", err)
 				}
 				if n := len(p.Postsubmits); n != 1 || p.Postsubmits[0].Name != "hans" {
 					return fmt.Errorf(`expected exactly one postsubmit with name "hans", got %v`, p.Postsubmits)
@@ -244,7 +244,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 			},
 			validate: func(p *ProwYAML, err error) error {
 				if err != nil {
-					return fmt.Errorf("unexpected error: %v", err)
+					return fmt.Errorf("unexpected error: %w", err)
 				}
 				if n := len(p.Postsubmits); n != 1 || p.Postsubmits[0].Name != "hans" {
 					return fmt.Errorf(`expected exactly one postsubmit with name "hans", got %v`, p.Postsubmits)
@@ -276,7 +276,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 			name: "No prow.yaml, no error, no nullpointer",
 			validate: func(p *ProwYAML, err error) error {
 				if err != nil {
-					return fmt.Errorf("unexpected error: %v", err)
+					return fmt.Errorf("unexpected error: %w", err)
 				}
 				if p == nil {
 					return errors.New("prowYAML is nil")
@@ -294,7 +294,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 			},
 			validate: func(p *ProwYAML, err error) error {
 				if err != nil {
-					return fmt.Errorf("unexpected error: %v", err)
+					return fmt.Errorf("unexpected error: %w", err)
 				}
 				if n := len(p.Postsubmits); n != 1 || p.Postsubmits[0].Name != "hans" {
 					return fmt.Errorf(`expected exactly one postsubmit with name "hans", got %v`, p.Postsubmits)
@@ -321,7 +321,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 			},
 			validate: func(p *ProwYAML, err error) error {
 				if err != nil {
-					return fmt.Errorf("unexpected error: %v", err)
+					return fmt.Errorf("unexpected error: %w", err)
 				}
 				if n := len(p.Presubmits); n != 1 || p.Presubmits[0].Name != "hans" {
 					return fmt.Errorf(`expected exactly one presubmit with name "hans", got %v`, p.Presubmits)
@@ -337,7 +337,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 			},
 			validate: func(p *ProwYAML, err error) error {
 				if err != nil {
-					return fmt.Errorf("unexpected error: %v", err)
+					return fmt.Errorf("unexpected error: %w", err)
 				}
 				if n := len(p.Presubmits); n != 1 || p.Presubmits[0].Name != "kurt" {
 					return fmt.Errorf(`expected exactly one presubmit with name "kurt", got %v`, p.Presubmits)
@@ -353,7 +353,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 			},
 			validate: func(p *ProwYAML, err error) error {
 				if err != nil {
-					return fmt.Errorf("unexpected error: %v", err)
+					return fmt.Errorf("unexpected error: %w", err)
 				}
 				if n := len(p.Presubmits); n != 2 ||
 					p.Presubmits[0].Name != "hans" ||
@@ -371,7 +371,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 			},
 			validate: func(p *ProwYAML, err error) error {
 				if err != nil {
-					return fmt.Errorf("unexpected error: %v", err)
+					return fmt.Errorf("unexpected error: %w", err)
 				}
 				if n := len(p.Presubmits); n != 2 ||
 					p.Presubmits[0].Name != "hans" ||
@@ -389,7 +389,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 			},
 			validate: func(p *ProwYAML, err error) error {
 				if err != nil {
-					return fmt.Errorf("unexpected error: %v", err)
+					return fmt.Errorf("unexpected error: %w", err)
 				}
 				if n := len(p.Postsubmits); n != 2 ||
 					p.Postsubmits[0].Name != "hans" ||
@@ -407,7 +407,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 			},
 			validate: func(p *ProwYAML, err error) error {
 				if err != nil {
-					return fmt.Errorf("unexpected error: %v", err)
+					return fmt.Errorf("unexpected error: %w", err)
 				}
 				if n := len(p.Postsubmits); n != 2 ||
 					p.Postsubmits[0].Name != "hans" ||
@@ -425,7 +425,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 			},
 			validate: func(p *ProwYAML, err error) error {
 				if err != nil {
-					return fmt.Errorf("unexpected error: %v", err)
+					return fmt.Errorf("unexpected error: %w", err)
 				}
 				if n := len(p.Presets); n != 2 ||
 					p.Presets[0].Labels["hans"] != "hansValue" ||
@@ -443,7 +443,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 			},
 			validate: func(p *ProwYAML, err error) error {
 				if err != nil {
-					return fmt.Errorf("unexpected error: %v", err)
+					return fmt.Errorf("unexpected error: %w", err)
 				}
 				if n := len(p.Presets); n != 2 ||
 					p.Presets[0].Labels["hans"] != "hansValue" ||
@@ -466,7 +466,7 @@ postsubmits: [{"name": "oli", "spec": {"containers": [{}]}}]`),
 			},
 			validate: func(p *ProwYAML, err error) error {
 				if err != nil {
-					return fmt.Errorf("unexpected error: %v", err)
+					return fmt.Errorf("unexpected error: %w", err)
 				}
 				if n := len(p.Presubmits); n != 2 ||
 					p.Presubmits[0].Name != "hans" ||
@@ -496,7 +496,7 @@ postsubmits: [{"name": "oli", "spec": {"containers": [{}]}}]`),
 			},
 			validate: func(p *ProwYAML, err error) error {
 				if err != nil {
-					return fmt.Errorf("unexpected error: %v", err)
+					return fmt.Errorf("unexpected error: %w", err)
 				}
 				if n := len(p.Presubmits); n != 2 ||
 					p.Presubmits[0].Name != "hans" ||
@@ -514,7 +514,7 @@ postsubmits: [{"name": "oli", "spec": {"containers": [{}]}}]`),
 			},
 			validate: func(p *ProwYAML, err error) error {
 				if err != nil {
-					return fmt.Errorf("unexpected error: %v", err)
+					return fmt.Errorf("unexpected error: %w", err)
 				}
 				if n := len(p.Presubmits); n != 2 ||
 					p.Presubmits[0].Name != "hans" ||

@@ -138,7 +138,7 @@ func (c *client) findConfigToUpdate() error {
 
 		if _, err := os.Stat(fullPath); err != nil {
 			if !os.IsNotExist(err) {
-				return fmt.Errorf("failed to get the file info for %q: %v", fullPath, err)
+				return fmt.Errorf("failed to get the file info for %q: %w", fullPath, err)
 			}
 			logrus.Infof("Skipping %s as it doesn't exist from dst", fullPath)
 		}

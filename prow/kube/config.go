@@ -33,13 +33,13 @@ import (
 func kubeConfigs(loader clientcmd.ClientConfigLoader) (map[string]rest.Config, string, error) {
 	cfg, err := loader.Load()
 	if err != nil {
-		return nil, "", fmt.Errorf("failed to load: %v", err)
+		return nil, "", fmt.Errorf("failed to load: %w", err)
 	}
 	configs := map[string]rest.Config{}
 	for context := range cfg.Contexts {
 		contextCfg, err := clientcmd.NewNonInteractiveClientConfig(*cfg, context, &clientcmd.ConfigOverrides{}, loader).ClientConfig()
 		if err != nil {
-			return nil, "", fmt.Errorf("create %s client: %v", context, err)
+			return nil, "", fmt.Errorf("create %s client: %w", context, err)
 		}
 		contextCfg.UserAgent = version.UserAgent()
 		configs[context] = *contextCfg
@@ -94,7 +94,7 @@ func LoadClusterConfigs(opts *Options) (map[string]rest.Config, error) {
 	if opts.dir != "" {
 		files, err := ioutil.ReadDir(opts.dir)
 		if err != nil {
-			return nil, fmt.Errorf("kubecfg dir: %v", err)
+			return nil, fmt.Errorf("kubecfg dir: %w", err)
 		}
 		for _, file := range files {
 			filename := file.Name()
@@ -122,7 +122,7 @@ func LoadClusterConfigs(opts *Options) (map[string]rest.Config, error) {
 			logrus.Infof("Loading kubeconfig from: %q", candidate)
 			kubeCfgs, tempCurrentContext, err := kubeConfigs(&clientcmd.ClientConfigLoadingRules{ExplicitPath: candidate})
 			if err != nil {
-				return nil, fmt.Errorf("fail to load kubecfg from %q: %v", candidate, err)
+				return nil, fmt.Errorf("fail to load kubecfg from %q: %w", candidate, err)
 			}
 			currentContext = tempCurrentContext
 			for c, k := range kubeCfgs {

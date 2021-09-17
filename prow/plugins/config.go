@@ -1144,7 +1144,7 @@ func validateConfigUpdater(updater *ConfigUpdater) error {
 func validateRequireMatchingLabel(rs []RequireMatchingLabel) error {
 	for i, r := range rs {
 		if err := r.validate(); err != nil {
-			return fmt.Errorf("error validating require_matching_label config #%d: %v", i, err)
+			return fmt.Errorf("error validating require_matching_label config #%d: %w", i, err)
 		}
 	}
 	return nil
@@ -1220,7 +1220,7 @@ func compileRegexpsAndDurations(pc *Configuration) error {
 		}
 		branchRe, err := regexp.Compile(*pc.Blockades[i].BranchRegexp)
 		if err != nil {
-			return fmt.Errorf("failed to compile blockade branchregexp: %q, error: %v", *pc.Blockades[i].BranchRegexp, err)
+			return fmt.Errorf("failed to compile blockade branchregexp: %q, error: %w", *pc.Blockades[i].BranchRegexp, err)
 		}
 		pc.Blockades[i].BranchRe = branchRe
 	}
@@ -1235,14 +1235,14 @@ func compileRegexpsAndDurations(pc *Configuration) error {
 	for i := range rs {
 		re, err := regexp.Compile(rs[i].Regexp)
 		if err != nil {
-			return fmt.Errorf("failed to compile label regexp: %q, error: %v", rs[i].Regexp, err)
+			return fmt.Errorf("failed to compile label regexp: %q, error: %w", rs[i].Regexp, err)
 		}
 		rs[i].Re = re
 
 		var dur time.Duration
 		dur, err = time.ParseDuration(rs[i].GracePeriod)
 		if err != nil {
-			return fmt.Errorf("failed to compile grace period duration: %q, error: %v", rs[i].GracePeriod, err)
+			return fmt.Errorf("failed to compile grace period duration: %q, error: %w", rs[i].GracePeriod, err)
 		}
 		rs[i].GracePeriodDuration = dur
 	}

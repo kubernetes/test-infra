@@ -72,7 +72,7 @@ func defaultProwYAMLGetter(
 	}
 	repo, err := gc.ClientFor(orgRepo.Org, orgRepo.Repo)
 	if err != nil {
-		return nil, fmt.Errorf("failed to clone repo for %q: %v", identifier, err)
+		return nil, fmt.Errorf("failed to clone repo for %q: %w", identifier, err)
 	}
 	defer func() {
 		if err := repo.Clean(); err != nil {
@@ -93,7 +93,7 @@ func defaultProwYAMLGetter(
 	mergeMethod := c.Tide.MergeMethod(orgRepo)
 	log.Debugf("Using merge strategy %q.", mergeMethod)
 	if err := repo.MergeAndCheckout(baseSHA, string(mergeMethod), headSHAs...); err != nil {
-		return nil, fmt.Errorf("failed to merge: %v", err)
+		return nil, fmt.Errorf("failed to merge: %w", err)
 	}
 
 	prowYAML := &ProwYAML{}
@@ -143,11 +143,11 @@ func defaultProwYAMLGetter(
 				return nil, fmt.Errorf("failed to read %q: %w", prowYAMLDirPath, err)
 			}
 			if err := yaml.Unmarshal(bytes, prowYAML); err != nil {
-				return nil, fmt.Errorf("failed to unmarshal %q: %v", prowYAMLDirPath, err)
+				return nil, fmt.Errorf("failed to unmarshal %q: %w", prowYAMLDirPath, err)
 			}
 		} else {
 			if !os.IsNotExist(err) {
-				return nil, fmt.Errorf("failed to check if file %q exists: %v", prowYAMLDirPath, err)
+				return nil, fmt.Errorf("failed to check if file %q exists: %w", prowYAMLDirPath, err)
 			}
 		}
 	}

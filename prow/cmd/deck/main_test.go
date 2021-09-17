@@ -1117,7 +1117,7 @@ func TestSpyglassConfigDefaulting(t *testing.T) {
 			verify: func(_ *config.Config, err error) error {
 				expectedErrMsg := `lens "undef" has no remote_config and could not get default: invalid lens name`
 				if err == nil || err.Error() != expectedErrMsg {
-					return fmt.Errorf("expected err to be %q, was %v", expectedErrMsg, err)
+					return fmt.Errorf("expected err to be %q, was %w", expectedErrMsg, err)
 				}
 				return nil
 			},

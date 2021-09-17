@@ -665,7 +665,7 @@ func (c Config) GetTideContextPolicy(gitClient git.ClientFactory, org, repo, bra
 	}
 	presubmits, err := c.GetPresubmits(gitClient, org+"/"+repo, baseSHAGetter, headSHAGetter)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get presubmits: %v", err)
+		return nil, fmt.Errorf("failed to get presubmits: %w", err)
 	}
 
 	// automatically generate required and optional entries for Prow Jobs

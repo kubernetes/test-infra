@@ -229,7 +229,7 @@ func artifactByName(artifacts []api.Artifact, name string) (api.Artifact, bool) 
 func logLinesAll(artifact api.Artifact) ([]string, error) {
 	read, err := artifact.ReadAll()
 	if err != nil {
-		return nil, fmt.Errorf("failed to read log %q: %v", artifact.JobPath(), err)
+		return nil, fmt.Errorf("failed to read log %q: %w", artifact.JobPath(), err)
 	}
 	logLines := strings.Split(string(read), "\n")
 
@@ -241,11 +241,11 @@ func logLines(artifact api.Artifact, offset, length int64) ([]string, error) {
 	_, err := artifact.ReadAt(b, offset)
 	if err != nil && err != io.EOF {
 		if err != lenses.ErrGzipOffsetRead {
-			return nil, fmt.Errorf("couldn't read requested bytes: %v", err)
+			return nil, fmt.Errorf("couldn't read requested bytes: %w", err)
 		}
 		moreBytes, err := artifact.ReadAtMost(offset + length)
 		if err != nil && err != io.EOF {
-			return nil, fmt.Errorf("couldn't handle reading gzipped file: %v", err)
+			return nil, fmt.Errorf("couldn't handle reading gzipped file: %w", err)
 		}
 		b = moreBytes[offset:]
 	}

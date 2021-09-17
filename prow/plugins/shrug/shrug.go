@@ -100,7 +100,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent) e
 		resp := "¯\\\\\\_(ツ)\\_/¯"
 		log.Infof("Commenting with \"%s\".", resp)
 		if err := gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, resp)); err != nil {
-			return fmt.Errorf("failed to comment on %s/%s#%d: %v", org, repo, e.Number, err)
+			return fmt.Errorf("failed to comment on %s/%s#%d: %w", org, repo, e.Number, err)
 		}
 		return gc.RemoveLabel(org, repo, e.Number, labels.Shrug)
 	} else if !hasShrug && wantShrug {

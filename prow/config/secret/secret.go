@@ -40,7 +40,7 @@ func loadSecrets(paths []string) (map[string][]byte, error) {
 func loadSingleSecret(path string) ([]byte, error) {
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
-		return nil, fmt.Errorf("error reading %s: %v", path, err)
+		return nil, fmt.Errorf("error reading %s: %w", path, err)
 	}
 	return bytes.TrimSpace(b), nil
 }

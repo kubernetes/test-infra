@@ -80,12 +80,12 @@ type jokeResult struct {
 func (url realJoke) readJoke() (string, error) {
 	req, err := http.NewRequest("GET", string(url), nil)
 	if err != nil {
-		return "", fmt.Errorf("could not create request %s: %v", url, err)
+		return "", fmt.Errorf("could not create request %s: %w", url, err)
 	}
 	req.Header.Add("Accept", "application/json")
 	resp, err := client.Do(req)
 	if err != nil {
-		return "", fmt.Errorf("could not read joke from %s: %v", url, err)
+		return "", fmt.Errorf("could not read joke from %s: %w", url, err)
 	}
 	defer resp.Body.Close()
 	var a jokeResult

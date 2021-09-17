@@ -67,12 +67,12 @@ func run(deploy deployer, o options) error {
 
 	dump, err := util.OptionalAbsPath(o.dump)
 	if err != nil {
-		return fmt.Errorf("failed handling --dump path: %v", err)
+		return fmt.Errorf("failed handling --dump path: %w", err)
 	}
 
 	dumpPreTestLogs, err := util.OptionalAbsPath(o.dumpPreTestLogs)
 	if err != nil {
-		return fmt.Errorf("failed handling --dump-pre-test-logs path: %v", err)
+		return fmt.Errorf("failed handling --dump-pre-test-logs path: %w", err)
 	}
 
 	if o.up {
@@ -583,7 +583,7 @@ func nodeTest(nodeArgs []string, testArgs, nodeTestArgs, project, zone, runtimeC
 
 	sshKeyPath := os.Getenv("JENKINS_GCE_SSH_PRIVATE_KEY_FILE")
 	if _, err := os.Stat(sshKeyPath); err != nil {
-		return fmt.Errorf("Cannot find ssh key from: %v, err : %v", sshKeyPath, err)
+		return fmt.Errorf("Cannot find ssh key from: %v, err : %w", sshKeyPath, err)
 	}
 
 	artifactsDir, ok := os.LookupEnv("ARTIFACTS")
@@ -635,7 +635,7 @@ func kubemarkUp(dump string, o options, deploy deployer) error {
 	// Stop previously running kubemark cluster (if any).
 	if err := control.XMLWrap(&suite, "Kubemark TearDown Previous", func() error {
 		if err := control.FinishRunning(exec.Command("./test/kubemark/stop-kubemark.sh")); err != nil {
-			return fmt.Errorf("failed to stop kubemark cluster, err: %v", err)
+			return fmt.Errorf("failed to stop kubemark cluster, err: %w", err)
 		}
 		return nil
 	}); err != nil {
@@ -678,7 +678,7 @@ func kubemarkUp(dump string, o options, deploy deployer) error {
 			"--region="+o.gcpZone[:len(o.gcpZone)-2],
 			"--format=value(address)"))
 		if err != nil {
-			return fmt.Errorf("failed to get masterIP: %v", err)
+			return fmt.Errorf("failed to get masterIP: %w", err)
 		}
 
 		masterInternalIP, err = control.Output(exec.Command(
@@ -688,7 +688,7 @@ func kubemarkUp(dump string, o options, deploy deployer) error {
 			"--zone="+o.gcpZone,
 			"--format=value(networkInterfaces[0].networkIP)"))
 		if err != nil {
-			return fmt.Errorf("failed to get masterInternalIP: %v", err)
+			return fmt.Errorf("failed to get masterInternalIP: %w", err)
 		}
 	} else if o.deployment == "aks" {
 		var err error
@@ -698,7 +698,7 @@ func kubemarkUp(dump string, o options, deploy deployer) error {
 			"-n", *aksResourceName,
 			"--query", "fqdn", "-o", "tsv"))
 		if err != nil {
-			return fmt.Errorf("failed to get masterIP: %v", err)
+			return fmt.Errorf("failed to get masterIP: %w", err)
 		}
 		masterInternalIP = masterIP
 	}

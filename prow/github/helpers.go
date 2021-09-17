@@ -56,7 +56,7 @@ func ImageTooBig(url string) (bool, error) {
 	// try to get the image size from Content-Length header
 	resp, err := http.Head(url)
 	if err != nil {
-		return true, fmt.Errorf("HEAD error: %v", err)
+		return true, fmt.Errorf("HEAD error: %w", err)
 	}
 	defer resp.Body.Close()
 	if sc := resp.StatusCode; sc != http.StatusOK {

@@ -207,7 +207,7 @@ func handle(log *logrus.Entry, ghc githubClient, cp commentPruner, configs []plu
 		var err error
 		e.currentLabels, err = ghc.GetIssueLabels(e.org, e.repo, e.number)
 		if err != nil {
-			return fmt.Errorf("error getting the issue or pr's labels: %v", err)
+			return fmt.Errorf("error getting the issue or pr's labels: %w", err)
 		}
 	}
 

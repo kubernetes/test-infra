@@ -150,7 +150,7 @@ func (c *Client) Report(ctx context.Context, log *logrus.Entry, pj *v1.ProwJob) 
 	if pj.Spec.Type == v1.PresubmitJob {
 		key, err := lockKeyForPJ(pj)
 		if err != nil {
-			return nil, nil, fmt.Errorf("failed to get lockkey for job: %v", err)
+			return nil, nil, fmt.Errorf("failed to get lockkey for job: %w", err)
 		}
 		lock, err := c.prLocks.getLock(ctx, *key)
 		if err != nil {

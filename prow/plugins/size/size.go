@@ -123,7 +123,7 @@ func handlePR(gc githubClient, sizes plugins.Size, le *logrus.Entry, pe github.P
 
 	changes, err := gc.GetPullRequestChanges(owner, repo, num)
 	if err != nil {
-		return fmt.Errorf("can not get PR changes for size plugin: %v", err)
+		return fmt.Errorf("can not get PR changes for size plugin: %w", err)
 	}
 
 	var count int
@@ -162,7 +162,7 @@ func handlePR(gc githubClient, sizes plugins.Size, le *logrus.Entry, pe github.P
 	}
 
 	if err := gc.AddLabel(owner, repo, num, newLabel); err != nil {
-		return fmt.Errorf("error adding label to %s/%s PR #%d: %v", owner, repo, num, err)
+		return fmt.Errorf("error adding label to %s/%s PR #%d: %w", owner, repo, num, err)
 	}
 
 	return nil

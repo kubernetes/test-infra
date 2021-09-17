@@ -66,7 +66,7 @@ func prowjobStateToGitHubStatus(pjState prowapi.ProwJobState) (string, error) {
 	case prowapi.AbortedState:
 		return github.StatusFailure, nil
 	}
-	return "", fmt.Errorf("Unknown prowjob state: %v", pjState)
+	return "", fmt.Errorf("Unknown prowjob state: %s", pjState)
 }
 
 // reportStatus should be called on any prowjob status changes
@@ -155,7 +155,7 @@ func Report(ctx context.Context, ghc GitHubClient, reportTemplate *template.Temp
 
 	ics, err := ghc.ListIssueCommentsWithContext(ctx, refs.Org, refs.Repo, refs.Pulls[0].Number)
 	if err != nil {
-		return fmt.Errorf("error listing comments: %v", err)
+		return fmt.Errorf("error listing comments: %w", err)
 	}
 	botNameChecker, err := ghc.BotUserCheckerWithContext(ctx)
 	if err != nil {
@@ -164,21 +164,21 @@ func Report(ctx context.Context, ghc GitHubClient, reportTemplate *template.Temp
 	deletes, entries, updateID := parseIssueComments(pj, botNameChecker, ics)
 	for _, delete := range deletes {
 		if err := ghc.DeleteCommentWithContext(ctx, refs.Org, refs.Repo, delete); err != nil {
-			return fmt.Errorf("error deleting comment: %v", err)
+			return fmt.Errorf("error deleting comment: %w", err)
 		}
 	}
 	if len(entries) > 0 {
 		comment, err := createComment(reportTemplate, pj, entries)
 		if err != nil {
-			return fmt.Errorf("generating comment: %v", err)
+			return fmt.Errorf("generating comment: %w", err)
 		}
 		if updateID == 0 {
 			if err := ghc.CreateCommentWithContext(ctx, refs.Org, refs.Repo, refs.Pulls[0].Number, comment); err != nil {
-				return fmt.Errorf("error creating comment: %v", err)
+				return fmt.Errorf("error creating comment: %w", err)
 			}
 		} else {
 			if err := ghc.EditCommentWithContext(ctx, refs.Org, refs.Repo, updateID, comment); err != nil {
-				return fmt.Errorf("error updating comment: %v", err)
+				return fmt.Errorf("error updating comment: %w", err)
 			}
 		}
 	}

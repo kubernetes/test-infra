@@ -70,12 +70,12 @@ func (lens Lens) Header(artifacts []api.Artifact, resourceDir string, config jso
 func renderTemplate(resourceDir, block string, params interface{}) (string, error) {
 	t, err := template.ParseFiles(filepath.Join(resourceDir, "template.html"))
 	if err != nil {
-		return "", fmt.Errorf("Failed to parse template: %v", err)
+		return "", fmt.Errorf("Failed to parse template: %w", err)
 	}
 
 	var buf bytes.Buffer
 	if err := t.ExecuteTemplate(&buf, block, params); err != nil {
-		return "", fmt.Errorf("Failed to execute template: %v", err)
+		return "", fmt.Errorf("Failed to execute template: %w", err)
 	}
 	return buf.String(), nil
 }

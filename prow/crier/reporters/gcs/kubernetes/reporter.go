@@ -202,7 +202,7 @@ func (gr *gcsK8sReporter) reportPodInfo(ctx context.Context, log *logrus.Entry, 
 
 	bucketName, dir, err := util.GetJobDestination(gr.cfg, pj)
 	if err != nil {
-		return fmt.Errorf("couldn't get job destination: %v", err)
+		return fmt.Errorf("couldn't get job destination: %w", err)
 	}
 
 	if gr.dryRun {

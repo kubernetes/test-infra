@@ -215,7 +215,7 @@ func handle(ghc githubClient, gc git.ClientFactory, roc repoownersClient, log *l
 	// Get changes.
 	changes, err := ghc.GetPullRequestChanges(org, repo, number)
 	if err != nil {
-		return fmt.Errorf("error getting PR changes: %v", err)
+		return fmt.Errorf("error getting PR changes: %w", err)
 	}
 
 	// List modified OWNERS files.
@@ -280,7 +280,7 @@ func handle(ghc githubClient, gc git.ClientFactory, roc repoownersClient, log *l
 	// check if all newly added owners are trusted users.
 	oc, err := roc.LoadRepoOwners(org, repo, pr.Base.Ref)
 	if err != nil {
-		return fmt.Errorf("error loading RepoOwners: %v", err)
+		return fmt.Errorf("error loading RepoOwners: %w", err)
 	}
 
 	for _, c := range modifiedOwnersFiles {
@@ -330,7 +330,7 @@ func handle(ghc githubClient, gc git.ClientFactory, roc repoownersClient, log *l
 		}
 		err := ghc.CreateReview(org, repo, number, draftReview)
 		if err != nil {
-			return fmt.Errorf("error creating a review for invalid %s file%s: %v", filenames.Owners, s, err)
+			return fmt.Errorf("error creating a review for invalid %s file%s: %w", filenames.Owners, s, err)
 		}
 	}
 
@@ -354,7 +354,7 @@ func handle(ghc githubClient, gc git.ClientFactory, roc repoownersClient, log *l
 		// Don't bother checking if it has the label...it's a race, and we'll have
 		// to handle failure due to not being labeled anyway.
 		if err := ghc.RemoveLabel(org, repo, number, labels.InvalidOwners); err != nil {
-			return fmt.Errorf("failed removing %s label: %v", labels.InvalidOwners, err)
+			return fmt.Errorf("failed removing %s label: %w", labels.InvalidOwners, err)
 		}
 		cp.PruneComments(func(comment github.IssueComment) bool {
 			return strings.Contains(comment.Body, fmt.Sprintf(untrustedResponseFormat, filenames.Owners, triggerConfig.JoinOrgURL, org))
@@ -456,11 +456,11 @@ func nonTrustedUsersInOwnersAliases(ghc githubClient, log *logrus.Entry, trigger
 	if _, err := os.Stat(path); err == nil {
 		b, err := ioutil.ReadFile(path)
 		if err != nil {
-			return nonTrustedUsers, trustedUsers, repoAliases, fmt.Errorf("Failed to read %s: %v", path, err)
+			return nonTrustedUsers, trustedUsers, repoAliases, fmt.Errorf("Failed to read %s: %w", path, err)
 		}
 		repoAliases, err = repoowners.ParseAliasesConfig(b)
 		if err != nil {
-			return nonTrustedUsers, trustedUsers, repoAliases, fmt.Errorf("error parsing aliases config for %s file: %v", filenames.OwnersAliases, err)
+			return nonTrustedUsers, trustedUsers, repoAliases, fmt.Errorf("error parsing aliases config for %s file: %w", filenames.OwnersAliases, err)
 		}
 	}
 

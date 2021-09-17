@@ -18,10 +18,11 @@ package releasenote
 
 import (
 	"fmt"
-	"k8s.io/test-infra/prow/labels"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"k8s.io/test-infra/prow/labels"
 
 	"github.com/sirupsen/logrus"
 
@@ -247,7 +248,7 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent) e
 
 	prInitLabels, err := gc.GetIssueLabels(org, repo, pr.Number)
 	if err != nil {
-		return fmt.Errorf("failed to list labels on PR #%d. err: %v", pr.Number, err)
+		return fmt.Errorf("failed to list labels on PR #%d. err: %w", pr.Number, err)
 	}
 	prLabels := labelsSet(prInitLabels)
 
@@ -270,7 +271,7 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent) e
 		} else {
 			comments, err = gc.ListIssueComments(org, repo, pr.Number)
 			if err != nil {
-				return fmt.Errorf("failed to list comments on %s/%s#%d. err: %v", org, repo, pr.Number, err)
+				return fmt.Errorf("failed to list comments on %s/%s#%d. err: %w", org, repo, pr.Number, err)
 			}
 			if containsNoneCommand(comments) {
 				labelToAdd = labels.ReleaseNoteNone
@@ -474,7 +475,7 @@ func editReleaseNote(gc githubClient, log *logrus.Entry, ic github.IssueCommentE
 
 	isMember, err := gc.IsMember(org, user)
 	if err != nil {
-		return fmt.Errorf("unable to fetch if %s is an org member of %s: %v", user, org, err)
+		return fmt.Errorf("unable to fetch if %s is an org member of %s: %w", user, org, err)
 	}
 	if !isMember {
 		return gc.CreateComment(
@@ -510,7 +511,7 @@ func editReleaseNote(gc githubClient, log *logrus.Entry, ic github.IssueCommentE
 
 	_, err = gc.EditIssue(ic.Repo.Owner.Login, ic.Repo.Name, ic.Issue.Number, &ic.Issue)
 	if err != nil {
-		return fmt.Errorf("unable to edit issue: %v", err)
+		return fmt.Errorf("unable to edit issue: %w", err)
 	}
 	log.WithFields(logrus.Fields{
 		"user":        user,

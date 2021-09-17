@@ -92,19 +92,19 @@ func sanityCheckFlags(o options) error {
 	if o.githubEndpoint == "" {
 		return fmt.Errorf("empty --github-endpoint")
 	} else if _, err := url.Parse(o.githubEndpoint); err != nil {
-		return fmt.Errorf("bad --github-endpoint provided: %v", err)
+		return fmt.Errorf("bad --github-endpoint provided: %w", err)
 	}
 
 	if o.graphqlEndpoint == "" {
 		return fmt.Errorf("empty --graphql-endpoint")
 	} else if _, err := url.Parse(o.graphqlEndpoint); err != nil {
-		return fmt.Errorf("bad --graphql-endpoint provided: %v", err)
+		return fmt.Errorf("bad --graphql-endpoint provided: %w", err)
 	}
 
 	if o.jenkinsURL == "" {
 		return fmt.Errorf("empty --jenkins-url")
 	} else if _, err := url.Parse(o.jenkinsURL); err != nil {
-		return fmt.Errorf("bad --jenkins-url provided: %v", err)
+		return fmt.Errorf("bad --jenkins-url provided: %w", err)
 	}
 
 	return nil

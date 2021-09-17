@@ -184,7 +184,7 @@ func FetchArtifacts(
 	arts := []api.Artifact{}
 	keyType, key, err := splitSrc(src)
 	if err != nil {
-		return arts, fmt.Errorf("error parsing src: %v", err)
+		return arts, fmt.Errorf("error parsing src: %w", err)
 	}
 	gcsKey := ""
 	switch keyType {
@@ -246,12 +246,12 @@ type ProwJobFetcher interface {
 func ProwToGCS(fetcher ProwJobFetcher, config config.Getter, prowKey string) (string, string, error) {
 	jobName, buildID, err := KeyToJob(prowKey)
 	if err != nil {
-		return "", "", fmt.Errorf("could not get GCS src: %v", err)
+		return "", "", fmt.Errorf("could not get GCS src: %w", err)
 	}
 
 	job, err := fetcher.GetProwJob(jobName, buildID)
 	if err != nil {
-		return "", "", fmt.Errorf("failed to get prow job from src %q: %v", prowKey, err)
+		return "", "", fmt.Errorf("failed to get prow job from src %q: %w", prowKey, err)
 	}
 
 	url := job.Status.URL

@@ -360,7 +360,7 @@ func (o *GitHubOptions) getGitAuthentication(dryRun bool) (string, git.GitTokenG
 	// the client must have been created at least once for us to have generators
 	if o.userGenerator == nil {
 		if _, err := o.GitHubClient(dryRun); err != nil {
-			return "", nil, fmt.Errorf("error getting GitHub client: %v", err)
+			return "", nil, fmt.Errorf("error getting GitHub client: %w", err)
 		}
 	}
 

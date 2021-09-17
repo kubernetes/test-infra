@@ -242,7 +242,7 @@ func (rac *RerunAuthConfig) IsAuthorized(org, user string, cli prowgithub.RerunC
 	for _, gho := range rac.GitHubOrgs {
 		isOrgMember, err := cli.IsMember(gho, user)
 		if err != nil {
-			return false, fmt.Errorf("GitHub failed to fetch members of org %v: %v", gho, err)
+			return false, fmt.Errorf("GitHub failed to fetch members of org %v: %w", gho, err)
 		}
 		if isOrgMember {
 			return true, nil
@@ -251,7 +251,7 @@ func (rac *RerunAuthConfig) IsAuthorized(org, user string, cli prowgithub.RerunC
 	for _, ght := range rac.GitHubTeamIDs {
 		member, err := cli.TeamHasMember(org, ght, user)
 		if err != nil {
-			return false, fmt.Errorf("GitHub failed to fetch members of team %v, verify that you have the correct team number and access token: %v", ght, err)
+			return false, fmt.Errorf("GitHub failed to fetch members of team %v, verify that you have the correct team number and access token: %w", ght, err)
 		}
 		if member {
 			return true, nil
@@ -260,11 +260,11 @@ func (rac *RerunAuthConfig) IsAuthorized(org, user string, cli prowgithub.RerunC
 	for _, ghts := range rac.GitHubTeamSlugs {
 		team, err := cli.GetTeamBySlug(ghts.Slug, ghts.Org)
 		if err != nil {
-			return false, fmt.Errorf("GitHub failed to fetch team with slug %s and org %s: %v", ghts.Slug, ghts.Org, err)
+			return false, fmt.Errorf("GitHub failed to fetch team with slug %s and org %s: %w", ghts.Slug, ghts.Org, err)
 		}
 		member, err := cli.TeamHasMember(org, team.ID, user)
 		if err != nil {
-			return false, fmt.Errorf("GitHub failed to fetch members of team %v: %v", team, err)
+			return false, fmt.Errorf("GitHub failed to fetch members of team %v: %w", team, err)
 		}
 		if member {
 			return true, nil
@@ -652,7 +652,7 @@ func (d *DecorationConfig) Validate() error {
 	// Workload Identity: https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity
 
 	if err := d.GCSConfiguration.Validate(); err != nil {
-		return fmt.Errorf("GCS configuration is invalid: %v", err)
+		return fmt.Errorf("GCS configuration is invalid: %w", err)
 	}
 	if d.OauthTokenSecret != nil && len(d.SSHKeySecrets) > 0 {
 		return errors.New("both OAuth token and SSH key secrets are specified")
@@ -803,7 +803,7 @@ func (g *GCSConfiguration) Validate() error {
 	}
 	for _, mediaType := range g.MediaTypes {
 		if _, _, err := mime.ParseMediaType(mediaType); err != nil {
-			return fmt.Errorf("invalid extension media type %q: %v", mediaType, err)
+			return fmt.Errorf("invalid extension media type %q: %w", mediaType, err)
 		}
 	}
 	if g.PathStrategy != PathStrategyLegacy && g.PathStrategy != PathStrategyExplicit && g.PathStrategy != PathStrategySingle {

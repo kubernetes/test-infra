@@ -271,7 +271,7 @@ func (c Configuration) validate(orgs string) error {
 	// Check default labels
 	defaultSeen, err := validate(c.Default.Labels, "default", make(map[string]string))
 	if err != nil {
-		return fmt.Errorf("invalid config: %v", err)
+		return fmt.Errorf("invalid config: %w", err)
 	}
 
 	// Generate list of orgs
@@ -282,7 +282,7 @@ func (c Configuration) validate(orgs string) error {
 	orgSeen := map[string]map[string]string{}
 	for org, orgConfig := range c.Orgs {
 		if orgSeen[org], err = validate(orgConfig.Labels, org, defaultSeen); err != nil {
-			return fmt.Errorf("invalid config: %v", err)
+			return fmt.Errorf("invalid config: %w", err)
 		}
 	}
 
@@ -298,7 +298,7 @@ func (c Configuration) validate(orgs string) error {
 
 		// Check repo labels for duplicities with default and org-level labels
 		if _, err := validate(repoconfig.Labels, repo, orgSeen[org]); err != nil {
-			return fmt.Errorf("invalid config: %v", err)
+			return fmt.Errorf("invalid config: %w", err)
 		}
 		// If orgs have been specified, warn if repo isn't under orgs
 		if len(orgs) > 0 && !stringInSortedSlice(org, sortedOrgs) {
@@ -515,7 +515,7 @@ func syncLabels(config Configuration, org string, repos RepoLabels) (RepoUpdates
 		}
 		// Check for any duplicate labels
 		if _, err := validate(labels, "", make(map[string]string)); err != nil {
-			validationErrors = append(validationErrors, fmt.Errorf("invalid labels in %s: %v", repo, err))
+			validationErrors = append(validationErrors, fmt.Errorf("invalid labels in %s: %w", repo, err))
 			continue
 		}
 		// Create lowercase map of current labels, checking for dead labels to delete.
