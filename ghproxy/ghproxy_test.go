@@ -32,10 +32,13 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+
+	"k8s.io/test-infra/ghproxy/ghcache"
 	"k8s.io/test-infra/prow/github"
 )
 
 func TestDiskCachePruning(t *testing.T) {
+	t.Parallel()
 	cacheDir := t.TempDir()
 	o := &options{
 		dir:                 cacheDir,
@@ -44,15 +47,21 @@ func TestDiskCachePruning(t *testing.T) {
 		upstreamParsed:      &url.URL{},
 	}
 
-	expiryDuration := 5 * time.Second
+	now := time.Now()
+
+	// Five minutes so the test has sufficient time to finish
+	// but also sufficient room until the app token which is
+	// always valid for 10 minutes expires.
+	expiryDuration := 5 * time.Minute
 	roundTripper := func(r *http.Request) (*http.Response, error) {
+		t.Logf("got a reequest for path %s", r.URL.Path)
 		switch r.URL.Path {
 		case "/app":
 			return jsonResponse(github.App{Slug: "app-slug"}, 200)
 		case "/app/installations":
 			return jsonResponse([]github.AppInstallation{{Account: github.User{Login: "org"}}}, 200)
 		case "/app/installations/0/access_tokens":
-			return jsonResponse(github.AppInstallationToken{Token: "abc", ExpiresAt: time.Now().Add(expiryDuration)}, 201)
+			return jsonResponse(github.AppInstallationToken{Token: "abc", ExpiresAt: now.Add(expiryDuration)}, 201)
 		case "/repos/org/repo/git/refs/dev":
 			return jsonResponse(github.GetRefResult{}, 200)
 		default:
@@ -65,7 +74,7 @@ func TestDiskCachePruning(t *testing.T) {
 		t.Fatalf("Failed to generate RSA key: %v", err)
 	}
 
-	server := httptest.NewServer(proxy(o, httpRoundTripper(roundTripper), time.Second))
+	server := httptest.NewServer(proxy(o, httpRoundTripper(roundTripper), time.Hour))
 	t.Cleanup(server.Close)
 	_, _, client := github.NewClientFromOptions(logrus.Fields{}, github.ClientOptions{
 		MaxRetries:      1,
@@ -88,7 +97,7 @@ func TestDiskCachePruning(t *testing.T) {
 		t.Errorf("expected two cache paritions, one for the app and one for the app installation, got %d", numberPartitions)
 	}
 
-	time.Sleep(2 * expiryDuration)
+	ghcache.Prune(cacheDir, func() time.Time { return now.Add(expiryDuration).Add(time.Second) })
 
 	numberPartitions, err = getNumberOfCachePartitions(cacheDir)
 	if err != nil {
