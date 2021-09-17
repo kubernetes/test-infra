@@ -19,15 +19,14 @@ package config
 import (
 	"encoding/json"
 	"fmt"
-	"sync"
 
-	"github.com/hashicorp/golang-lru/simplelru"
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/cache"
 	"k8s.io/test-infra/prow/git/v2"
 )
 
-// Caching implementation overview
+// Overview
 //
 // Consider the expensive function prowYAMLGetter(). This function is
 // expensive to compute (it involves invoking a Git client, walking a filesystem
@@ -35,76 +34,21 @@ import (
 // into a cache (named ProwYAMLCache). The point is to avoid doing the expensive
 // GetPresubmits() and GetPostsubmits() calls if possible, which involves
 // walking the repository to collect YAML information, etc.
-//
-// ProwYAMLCache uses an off-the-shelf LRU cache library for the low-level
-// caching implementation, which uses the empty interface for keys and values.
-// The values are what we store in the cache, and to retrieve them, we have to
-// provide a key (which must be a hashable object). We wrap this cache with a
-// single lock, and use an algorithm for a concurrent non-blocking cache to make
-// it both thread-safe and also resistant to so-called cache stampede, where
-// many concurrent threads all attempt to look up the same (missing) key/value
-// pair from the cache (see Alan Donovan and Brian Kernighan, "The Go
-// Programming Language" (Addison-Wesley, 2016), p. 277).
 
-// ProwYAMLCache is the user-facing cache.
-type ProwYAMLCache struct {
-	LRUCache
-}
-
-// LRUCache is the actual concurrent non-blocking cache.
-type LRUCache struct {
-	*sync.Mutex
-	*simplelru.LRU
-}
-
-// Promise is a wrapper around cache value construction; it is used to
-// synchronize the to-be-cached value between threads that undergo a cache miss
-// and subsequent threads that attempt to look up the same cache entry.
-type Promise struct {
-	Result
-	resolve chan struct{}
-}
-
-// Result stores the result of executing an arbitrary valConstructor function.
-type Result struct {
-	val interface{}
-	err error
-}
-
-// valConstructor is used to construct a value. The assumption is that this
-// valConstructor is expensive to compute, and that we need to memoize it via
-// the LRUCache. The raw values of a cache are only constructed after a cache
-// miss or as a general fallback to bypass the cache if the cache is unusable
-// for whatever reason. Using this type allows us to use any arbitrary function
-// whose resulting values needs to be memoized (saved in the cache). This type
-// also allows us to delay running the expensive computation until we actually
-// need it.
-type valConstructor func() (interface{}, error)
-
-// keyConstructor is used only when we need to perform a lookup inside a cache
-// (if it is available), because all values stored in the cache are paired with
-// a unique lookup key.
-type keyConstructor func() (CacheKey, error)
-
-// NewLRUCache returns a new LRUCache with a given size (number of elements).
-func NewLRUCache(size int) (*LRUCache, error) {
-	cache, err := simplelru.NewLRU(size, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return &LRUCache{&sync.Mutex{}, cache}, nil
-}
+// ProwYAMLCache is the user-facing cache. It acts as a wrapper around the
+// generic LRUCache, by handling type casting in and out of the LRUCache (which
+// only handles empty interfaces).
+type ProwYAMLCache cache.LRUCache
 
 // NewProwYAMLCache creates a new LRU cache for ProwYAML values, where the keys
 // are CacheKeys and values are pointers to ProwYAMLs.
 func NewProwYAMLCache(size int) (*ProwYAMLCache, error) {
-	cache, err := NewLRUCache(size)
+	cache, err := cache.NewLRUCache(size)
 	if err != nil {
 		return nil, err
 	}
 
-	return &ProwYAMLCache{*cache}, nil
+	return (*ProwYAMLCache)(cache), nil
 }
 
 // InitProwYAMLCache calls NewProwYAMLCache() to initialize a cache of ProwYAMLs
@@ -233,7 +177,7 @@ func GetProwYAMLFromCache(
 	baseSHAGetter RefGetter,
 	headSHAGetters ...RefGetter) (*ProwYAML, error) {
 
-	keyConstructor := func() (CacheKey, error) {
+	keyConstructor := func() (interface{}, error) {
 		kp, err := MakeCacheKeyParts(identifier, baseSHAGetter, headSHAGetters...)
 		if err != nil {
 			return CacheKey(""), err
@@ -249,7 +193,16 @@ func GetProwYAMLFromCache(
 		return valConstructorHelper(gc, identifier, baseSHAGetter, headSHAGetters...)
 	}
 
-	val, err := prowYAMLCache.GetOrAdd(keyConstructor, valConstructor)
+	return prowYAMLCache.GetOrAdd(keyConstructor, valConstructor)
+}
+
+// GetOrAdd is a type casting wrapper around the inner LRUCache object. Users
+// are expected to add their own GetOrAdd method for their own cached type.
+func (p *ProwYAMLCache) GetOrAdd(
+	keyConstructor cache.KeyConstructor,
+	valConstructor cache.ValConstructor) (*ProwYAML, error) {
+
+	val, err := (*cache.LRUCache)(p).GetOrAdd(keyConstructor, valConstructor)
 	if err != nil {
 		return nil, err
 	}
@@ -266,123 +219,4 @@ func GetProwYAMLFromCache(
 	err = fmt.Errorf("cache value type error: expected value type '*config.ProwYAML', got '%T'", val)
 	logrus.Warn(err)
 	return nil, err
-}
-
-// GetOrAdd tries to use a cache if it is available to get a Value. It is
-// assumed that Value is expensive to construct from scratch, which is the
-// reason why we try to use the cache in the first place. If we do end up
-// constructing a Value from scratch, then we store it into the cache with a
-// corresponding Key, so that we can look up the Value with just the Key in the
-// future.
-//
-// This cache is resistant to cache stampedes because it uses a duplicate
-// suppression strategy. This is also called request coalescing.
-func (lruCache *LRUCache) GetOrAdd(
-	keyConstructor keyConstructor,
-	valConstructor valConstructor) (interface{}, error) {
-
-	// If the cache is unreachable, then fall back to cache-less behavior
-	// (construct the value from scratch).
-	if lruCache == nil {
-		valConstructed, err := valConstructor()
-		if err != nil {
-			return nil, err
-		}
-
-		return valConstructed, nil
-	}
-
-	// Construct cache key. We use this key to find the value (if it was already
-	// stored in the cache by a previous call to GetOrAdd).
-	key, err := keyConstructor()
-	if err != nil {
-		return nil, err
-	}
-
-	// Cache lookup.
-	lruCache.Lock()
-	var promise *Promise
-	var ok bool
-	maybePromise, promisePending := lruCache.Get(key)
-
-	if promisePending {
-		// A promise exists, BUT the wrapped value inside it (p.result) might
-		// not be written to yet by the thread that is actually resolving the
-		// promise.
-		//
-		// For now we just unlock the overall lruCache itself so that it can
-		// service other GetOrAdd() calls to it.
-		lruCache.Unlock()
-
-		// If the type is not a promise type, there's no need to wait and we can
-		// just return immediately with an error.
-		promise, ok = maybePromise.(*Promise)
-		if !ok {
-			return nil, fmt.Errorf("invalid cache entry type '%T', expected '*Promise'", maybePromise)
-		}
-
-		// Block until the first thread originally created this promise has
-		// finished resolving it. Then it's safe to return the resolved values
-		// of the promise below.
-		//
-		// If the original thread resolved the promise already a long time ago
-		// (by closing the "resolve" channel), then this receive instruction
-		// will finish immediately and we will not block at all.
-		<-promise.resolve
-	} else {
-		// No promise exists for this key. In other words, we are the first
-		// thread to ask for this key's value and so We have no choice but to
-		// construct the value ourselves (this call is expensive!) and add it to
-		// the cache.
-		//
-		// If there are other concurrent threads that call GetOrAdd() with the
-		// same key and value constructors, we force them to use the same value
-		// as us (so that they don't have to also all valConstructor()). We do
-		// this with the following algorithm:
-		//
-		//  1. immediately create a promise to construct the value
-		//  2. actually construct the value (expensive operation)
-		//  3. resolve the promise to alert all threads looking at the same promise
-		//     get the value from step 2.
-		//
-		// This mitigation strategy is a kind of "duplicate suppression", also
-		// called "request coalescing". The problem of multiple requests for the
-		// same cache entry is also called "cache stampede".
-
-		// Step 1
-		//
-		// Let other threads know about our promise to construct the value. We
-		// don't care if the underlying LRU cache had to evict an existing
-		// entry.
-		promise = &Promise{resolve: make(chan struct{})}
-		_ = lruCache.Add(key, promise)
-		lruCache.Unlock()
-
-		// Step 2
-		//
-		// Construct the value (expensive operation).
-		promise.val, promise.err = valConstructor()
-
-		// Step 3
-		//
-		// Broadcast to all watchers of this promise that it is ready to be read
-		// from (no data race!).
-		close(promise.resolve)
-
-		// If the value construction (expensive operation) failed, then we
-		// delete the cached entry so that we may attempt to re-try again in the
-		// future (instead of waiting for the LRUCache to evict it on its own
-		// over time).
-		//
-		// TODO: If our cache implementation supports a TTL mechanism, then we
-		// could just set that instead and let the cached entry to expire on its
-		// own.
-		if promise.err != nil {
-			lruCache.Lock()
-			_ = lruCache.Remove(key)
-			lruCache.Unlock()
-		}
-	}
-
-	return promise.val, promise.err
 }
