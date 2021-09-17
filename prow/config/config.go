@@ -371,8 +371,8 @@ func (c *Config) getProwYAML(gc git.ClientFactory, identifier string, baseSHAGet
 	return prowYAML, nil
 }
 
-// getProwYAMLNoDefault is like getProwYAML, but it does __not__ use the
-// information found inside the retrieved *ProwYAML to modify the Config.
+// getProwYAMLNoDefault is like getProwYAML, but it uses ProwYAMLGetterNoDefault
+// instead of ProwYAMLGetter.
 func (c *Config) getProwYAMLNoDefault(gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) (*ProwYAML, error) {
 	if identifier == "" {
 		return nil, errors.New("no identifier for repo given")
