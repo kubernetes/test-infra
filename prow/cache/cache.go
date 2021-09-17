@@ -21,6 +21,7 @@ import (
 	"sync"
 
 	"github.com/hashicorp/golang-lru/simplelru"
+	"github.com/sirupsen/logrus"
 )
 
 // Overview
@@ -106,7 +107,9 @@ func (lruCache *LRUCache) GetOrAdd(
 		// just return immediately with an error.
 		promise, ok = maybePromise.(*Promise)
 		if !ok {
-			return nil, fmt.Errorf("invalid cache entry type '%T', expected '*Promise'", maybePromise)
+			err := fmt.Errorf("Programmer error: expected cache entry type '*Promise', got '%T'", maybePromise)
+			logrus.WithField("key", key).Error(err)
+			return nil, err
 		}
 
 		// Block until the first thread originally created this promise has
