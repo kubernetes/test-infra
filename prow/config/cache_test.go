@@ -252,6 +252,7 @@ func TestGetProwYAMLCached(t *testing.T) {
 
 	type expected struct {
 		prowYAML *ProwYAML
+		cacheLen int
 		err      string
 	}
 
@@ -259,20 +260,22 @@ func TestGetProwYAMLCached(t *testing.T) {
 		name           string
 		valConstructor func(git.ClientFactory, string, RefGetter, ...RefGetter) (*ProwYAML, error)
 		// We use a slice of CacheKeysParts for simplicity.
-		cacheInitialState []CacheKeyParts
-		cacheCorrupted    bool
-		identifier        string
-		baseSHAGetter     RefGetter
-		headSHAGetters    []RefGetter
-		expected          expected
+		cacheInitialState   []CacheKeyParts
+		cacheCorrupted      bool
+		inRepoConfigEnabled bool
+		identifier          string
+		baseSHAGetter       RefGetter
+		headSHAGetters      []RefGetter
+		expected            expected
 	}{
 		{
-			name:              "CacheMiss",
-			valConstructor:    goodValConstructor,
-			cacheInitialState: nil,
-			cacheCorrupted:    false,
-			identifier:        "foo/bar",
-			baseSHAGetter:     goodSHAGetter("ba5e"),
+			name:                "CacheMiss",
+			valConstructor:      goodValConstructor,
+			cacheInitialState:   nil,
+			cacheCorrupted:      false,
+			inRepoConfigEnabled: true,
+			identifier:          "foo/bar",
+			baseSHAGetter:       goodSHAGetter("ba5e"),
 			headSHAGetters: []RefGetter{
 				goodSHAGetter("abcd"),
 				goodSHAGetter("ef01")},
@@ -283,7 +286,29 @@ func TestGetProwYAMLCached(t *testing.T) {
 							JobBase: JobBase{Name: `{"identifier":"foo/bar","baseSHA":"ba5e","headSHAs":["abcd","ef01"]}`}},
 					},
 				},
-				err: "",
+				cacheLen: 1,
+				err:      "",
+			},
+		},
+		{
+			// If the InRepoConfig is disabled for this repo, then the returned
+			// value should be an empty &ProwYAML{}. Also, the cache miss should
+			// not result in adding this entry into the cache (because the value
+			// will be a meaninless empty &ProwYAML{}).
+			name:                "CacheMiss/InRepoConfigDisabled",
+			valConstructor:      goodValConstructor,
+			cacheInitialState:   nil,
+			cacheCorrupted:      false,
+			inRepoConfigEnabled: false,
+			identifier:          "foo/bar",
+			baseSHAGetter:       goodSHAGetter("ba5e"),
+			headSHAGetters: []RefGetter{
+				goodSHAGetter("abcd"),
+				goodSHAGetter("ef01")},
+			expected: expected{
+				prowYAML: &ProwYAML{},
+				cacheLen: 0,
+				err:      "",
 			},
 		},
 		{
@@ -298,9 +323,10 @@ func TestGetProwYAMLCached(t *testing.T) {
 					HeadSHAs:   []string{"abcd", "ef01"},
 				},
 			},
-			cacheCorrupted: false,
-			identifier:     "foo/bar",
-			baseSHAGetter:  goodSHAGetter("ba5e"),
+			cacheCorrupted:      false,
+			inRepoConfigEnabled: true,
+			identifier:          "foo/bar",
+			baseSHAGetter:       goodSHAGetter("ba5e"),
 			headSHAGetters: []RefGetter{
 				goodSHAGetter("abcd"),
 				goodSHAGetter("ef01")},
@@ -312,16 +338,18 @@ func TestGetProwYAMLCached(t *testing.T) {
 						},
 					},
 				},
-				err: "",
+				cacheLen: 1,
+				err:      "",
 			},
 		},
 		{
-			name:              "BadValConstructorCacheMiss",
-			valConstructor:    badValConstructor,
-			cacheInitialState: nil,
-			cacheCorrupted:    false,
-			identifier:        "foo/bar",
-			baseSHAGetter:     goodSHAGetter("ba5e"),
+			name:                "BadValConstructorCacheMiss",
+			valConstructor:      badValConstructor,
+			cacheInitialState:   nil,
+			cacheCorrupted:      false,
+			inRepoConfigEnabled: true,
+			identifier:          "foo/bar",
+			baseSHAGetter:       goodSHAGetter("ba5e"),
 			headSHAGetters: []RefGetter{
 				goodSHAGetter("abcd"),
 				goodSHAGetter("ef01")},
@@ -343,9 +371,10 @@ func TestGetProwYAMLCached(t *testing.T) {
 					HeadSHAs:   []string{"abcd", "ef01"},
 				},
 			},
-			cacheCorrupted: false,
-			identifier:     "foo/bar",
-			baseSHAGetter:  goodSHAGetter("ba5e"),
+			cacheCorrupted:      false,
+			inRepoConfigEnabled: true,
+			identifier:          "foo/bar",
+			baseSHAGetter:       goodSHAGetter("ba5e"),
 			headSHAGetters: []RefGetter{
 				goodSHAGetter("abcd"),
 				goodSHAGetter("ef01")},
@@ -356,7 +385,8 @@ func TestGetProwYAMLCached(t *testing.T) {
 							JobBase: JobBase{Name: `{"identifier":"foo/bar","baseSHA":"ba5e","headSHAs":["abcd","ef01"]}`}},
 					},
 				},
-				err: "",
+				cacheLen: 1,
+				err:      "",
 			},
 		},
 		{
@@ -371,15 +401,16 @@ func TestGetProwYAMLCached(t *testing.T) {
 					HeadSHAs:   []string{"abcd", "ef01"},
 				},
 			},
-			cacheCorrupted: true,
-			identifier:     "foo/bar",
-			baseSHAGetter:  goodSHAGetter("ba5e"),
+			cacheCorrupted:      true,
+			inRepoConfigEnabled: true,
+			identifier:          "foo/bar",
+			baseSHAGetter:       goodSHAGetter("ba5e"),
 			headSHAGetters: []RefGetter{
 				goodSHAGetter("abcd"),
 				goodSHAGetter("ef01")},
 			expected: expected{
 				prowYAML: nil,
-				err:      "cache value type error (programmer error): expected value type '*config.ProwYAML', got 'string'",
+				err:      "Programmer error: expected value type '*config.ProwYAML', got 'string'",
 			},
 		},
 		{
@@ -394,15 +425,16 @@ func TestGetProwYAMLCached(t *testing.T) {
 					HeadSHAs:   []string{"abcd", "ef01"},
 				},
 			},
-			cacheCorrupted: true,
-			identifier:     "foo/bar",
-			baseSHAGetter:  goodSHAGetter("ba5e"),
+			cacheCorrupted:      true,
+			inRepoConfigEnabled: true,
+			identifier:          "foo/bar",
+			baseSHAGetter:       goodSHAGetter("ba5e"),
 			headSHAGetters: []RefGetter{
 				goodSHAGetter("abcd"),
 				goodSHAGetter("ef01")},
 			expected: expected{
 				prowYAML: nil,
-				err:      "cache value type error (programmer error): expected value type '*config.ProwYAML', got 'string'",
+				err:      "Programmer error: expected value type '*config.ProwYAML', got 'string'",
 			},
 		},
 	} {
@@ -437,7 +469,16 @@ func TestGetProwYAMLCached(t *testing.T) {
 				}
 			}
 
-			prowYAML, err := GetProwYAMLCached(prowYAMLCache, tc.valConstructor, nil, tc.identifier, tc.baseSHAGetter, tc.headSHAGetters...)
+			maybeEnabled := make(map[string]*bool)
+			maybeEnabled[tc.identifier] = &tc.inRepoConfigEnabled
+			c := Config{
+				ProwConfig: ProwConfig{
+					InRepoConfig: InRepoConfig{
+						Enabled: maybeEnabled,
+					},
+				},
+			}
+			prowYAML, err := c.GetProwYAMLCached(prowYAMLCache, tc.valConstructor, nil, tc.identifier, tc.baseSHAGetter, tc.headSHAGetters...)
 
 			if tc.expected.err == "" {
 				if err != nil {
@@ -476,6 +517,10 @@ func TestGetProwYAMLCached(t *testing.T) {
 				if tc.expected.prowYAML.Presubmits[i].Name != prowYAML.Presubmits[i].Name {
 					t.Errorf("Expected presubmits[%d].Name to be '%v', got '%v'", i, tc.expected.prowYAML.Presubmits[i].Name, prowYAML.Presubmits[i].Name)
 				}
+			}
+
+			if tc.expected.cacheLen != prowYAMLCache.Len() {
+				t.Errorf("Expected '%d' cached elements, got '%d'", tc.expected.cacheLen, prowYAMLCache.Len())
 			}
 		})
 	}

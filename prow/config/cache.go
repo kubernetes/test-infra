@@ -119,7 +119,7 @@ func MakeCacheKey(kp CacheKeyParts) (CacheKey, error) {
 // miss). It also stores the entry into the cache if there is a cache miss.
 func (c *Config) GetPresubmitsCached(pc *ProwYAMLCache, gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Presubmit, error) {
 
-	prowYAML, err := GetProwYAMLCached(pc, c.getProwYAMLNoDefault, gc, identifier, baseSHAGetter, headSHAGetters...)
+	prowYAML, err := c.GetProwYAMLCached(pc, c.getProwYAMLNoDefault, gc, identifier, baseSHAGetter, headSHAGetters...)
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +137,7 @@ func (c *Config) GetPresubmitsCached(pc *ProwYAMLCache, gc git.ClientFactory, id
 // cache miss.
 func (c *Config) GetPostsubmitsCached(pc *ProwYAMLCache, gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Postsubmit, error) {
 
-	prowYAML, err := GetProwYAMLCached(pc, c.getProwYAMLNoDefault, gc, identifier, baseSHAGetter, headSHAGetters...)
+	prowYAML, err := c.GetProwYAMLCached(pc, c.getProwYAMLNoDefault, gc, identifier, baseSHAGetter, headSHAGetters...)
 	if err != nil {
 		return nil, err
 	}
@@ -154,13 +154,23 @@ func (c *Config) GetPostsubmitsCached(pc *ProwYAMLCache, gc git.ClientFactory, i
 // taken as an argument to make it easier to test this function. This way, unit
 // tests can just provide its own function for constructing a ProwYAML object
 // (instead of needing to create an actual Git repo, etc.).
-func GetProwYAMLCached(
+func (c *Config) GetProwYAMLCached(
 	prowYAMLCache *ProwYAMLCache,
 	valConstructorHelper func(git.ClientFactory, string, RefGetter, ...RefGetter) (*ProwYAML, error),
 	gc git.ClientFactory,
 	identifier string,
 	baseSHAGetter RefGetter,
 	headSHAGetters ...RefGetter) (*ProwYAML, error) {
+
+	// Abort if the InRepoConfig is not enabled for this identifier (org/repo).
+	// It's important that we short-circuit here __before__ calling GetOrAdd()
+	// because we do NOT want to add an empty &ProwYAML{} value in the cache
+	// (because not only is it useless, but adding a useless entry also may
+	// result in evicting a useful entry if the underlying cache is full and an
+	// older (useful) key is evicted).
+	if !c.InRepoConfigEnabled(identifier) {
+		return &ProwYAML{}, nil
+	}
 
 	kp, err := MakeCacheKeyParts(identifier, baseSHAGetter, headSHAGetters...)
 	if err != nil {
