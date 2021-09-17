@@ -78,9 +78,10 @@ func (arr *appsRoundTripper) RoundTrip(r *http.Request) (*http.Response, error) 
 }
 
 func (arr *appsRoundTripper) addAppAuth(r *http.Request) *appsAuthError {
+	expiresAt := time.Now().UTC().Add(10 * time.Minute)
 	token, err := jwt.NewWithClaims(jwt.SigningMethodRS256, &jwt.StandardClaims{
 		IssuedAt:  jwt.NewTime(float64(time.Now().Unix())),
-		ExpiresAt: jwt.NewTime(float64(time.Now().UTC().Add(10 * time.Minute).Unix())),
+		ExpiresAt: jwt.NewTime(float64(expiresAt.Unix())),
 		Issuer:    arr.appID,
 	}).SignedString(arr.privateKey())
 	if err != nil {
@@ -88,6 +89,7 @@ func (arr *appsRoundTripper) addAppAuth(r *http.Request) *appsAuthError {
 	}
 
 	r.Header.Set("Authorization", "Bearer "+token)
+	r.Header.Set(ghcache.TokenExpiryAtHeader, expiresAt.Format(time.RFC3339))
 
 	// We call the /app endpoint to resolve the slug, so we can't set it there
 	if r.URL.Path == "/app" {
@@ -113,12 +115,13 @@ func extractOrgFromContext(ctx context.Context) string {
 func (arr *appsRoundTripper) addAppInstallationAuth(r *http.Request) *appsAuthError {
 	org := extractOrgFromContext(r.Context())
 
-	token, err := arr.installationTokenFor(org)
+	token, expiresAt, err := arr.installationTokenFor(org)
 	if err != nil {
 		return &appsAuthError{err}
 	}
 
 	r.Header.Set("Authorization", "Bearer "+token)
+	r.Header.Set(ghcache.TokenExpiryAtHeader, expiresAt.Format(time.RFC3339))
 	slug, err := arr.getSlug()
 	if err != nil {
 		return &appsAuthError{err}
@@ -131,18 +134,18 @@ func (arr *appsRoundTripper) addAppInstallationAuth(r *http.Request) *appsAuthEr
 	return nil
 }
 
-func (arr *appsRoundTripper) installationTokenFor(org string) (string, error) {
+func (arr *appsRoundTripper) installationTokenFor(org string) (string, time.Time, error) {
 	installationID, err := arr.installationIDFor(org)
 	if err != nil {
-		return "", fmt.Errorf("failed to get installation id for org %s: %w", org, err)
+		return "", time.Time{}, fmt.Errorf("failed to get installation id for org %s: %w", org, err)
 	}
 
-	token, err := arr.getTokenForInstallation(installationID)
+	token, expiresAt, err := arr.getTokenForInstallation(installationID)
 	if err != nil {
-		return "", fmt.Errorf("failed to get an installation token for org %s: %w", org, err)
+		return "", time.Time{}, fmt.Errorf("failed to get an installation token for org %s: %w", org, err)
 	}
 
-	return token, nil
+	return token, expiresAt, nil
 }
 
 // installationIDFor returns the installation id for the given org. Unfortunately,
@@ -190,13 +193,13 @@ func (arr *appsRoundTripper) installationIDFor(org string) (int64, error) {
 	return id.ID, nil
 }
 
-func (arr *appsRoundTripper) getTokenForInstallation(installation int64) (string, error) {
+func (arr *appsRoundTripper) getTokenForInstallation(installation int64) (string, time.Time, error) {
 	arr.tokenLock.RLock()
 	token, found := arr.tokens[installation]
 	arr.tokenLock.RUnlock()
 
 	if found && token.ExpiresAt.Add(-time.Minute).After(time.Now()) {
-		return token.Token, nil
+		return token.Token, token.ExpiresAt, nil
 	}
 
 	arr.tokenLock.Lock()
@@ -205,12 +208,12 @@ func (arr *appsRoundTripper) getTokenForInstallation(installation int64) (string
 	// Check again in case a concurrent routine got a token while we waited for the lock
 	token, found = arr.tokens[installation]
 	if found && token.ExpiresAt.Add(-time.Minute).After(time.Now()) {
-		return token.Token, nil
+		return token.Token, token.ExpiresAt, nil
 	}
 
 	token, err := arr.githubClient.getAppInstallationToken(installation)
 	if err != nil {
-		return "", fmt.Errorf("failed to get installation token from GitHub: %w", err)
+		return "", time.Time{}, fmt.Errorf("failed to get installation token from GitHub: %w", err)
 	}
 
 	if arr.tokens == nil {
@@ -218,7 +221,7 @@ func (arr *appsRoundTripper) getTokenForInstallation(installation int64) (string
 	}
 	arr.tokens[installation] = token
 
-	return token.Token, nil
+	return token.Token, token.ExpiresAt, nil
 }
 
 func (arr *appsRoundTripper) getSlug() (string, error) {
