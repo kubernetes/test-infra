@@ -233,13 +233,6 @@ func TestGetProwYAMLFromCache(t *testing.T) {
 		}
 	}
 
-	// goodKeyConstructorForInitialState is used for warming up the cache for
-	// tests that need it.
-	goodKeyConstructorForInitialState := func(key CacheKey) func() (interface{}, error) {
-		return func() (interface{}, error) {
-			return key, nil
-		}
-	}
 	// goodValConstructorForInitialState is used for warming up the cache for
 	// tests that need it.
 	goodValConstructorForInitialState := func(val ProwYAML) func() (interface{}, error) {
@@ -422,7 +415,7 @@ func TestGetProwYAMLFromCache(t *testing.T) {
 				if err != nil {
 					t.Errorf("Expected error 'nil' got '%v'", err.Error())
 				}
-				_, _ = prowYAMLCache.GetOrAdd(goodKeyConstructorForInitialState(k), goodValConstructorForInitialState(ProwYAML{
+				_, _ = prowYAMLCache.GetOrAdd(k, goodValConstructorForInitialState(ProwYAML{
 					Presubmits: []Presubmit{
 						{
 							JobBase: JobBase{Name: string(k)}},
@@ -440,7 +433,7 @@ func TestGetProwYAMLFromCache(t *testing.T) {
 					if err != nil {
 						t.Errorf("Expected error 'nil' got '%v'", err.Error())
 					}
-					_, _ = prowYAMLCache.GetOrAdd(goodKeyConstructorForInitialState(k), func() (interface{}, error) { return "<wrong-type>", nil })
+					_, _ = prowYAMLCache.GetOrAdd(k, func() (interface{}, error) { return "<wrong-type>", nil })
 				}
 			}
 

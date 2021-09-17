@@ -23,20 +23,6 @@ import (
 )
 
 func TestGetOrAddSimple(t *testing.T) {
-	keyConstructorCalls := 0
-	goodKeyConstructor := func(key string) func() (interface{}, error) {
-		return func() (interface{}, error) {
-			keyConstructorCalls++
-			return "(key)" + key, nil
-		}
-	}
-	badKeyConstructor := func(key string) func() (interface{}, error) {
-		return func() (interface{}, error) {
-			keyConstructorCalls++
-			return "", fmt.Errorf("could not construct key")
-		}
-	}
-
 	valConstructorCalls := 0
 	goodValConstructor := func(val string) func() (interface{}, error) {
 		return func() (interface{}, error) {
@@ -51,11 +37,6 @@ func TestGetOrAddSimple(t *testing.T) {
 		}
 	}
 
-	goodKeyConstructorForInitialState := func(key string) func() (interface{}, error) {
-		return func() (interface{}, error) {
-			return key, nil
-		}
-	}
 	goodValConstructorForInitialState := func(val string) func() (interface{}, error) {
 		return func() (interface{}, error) {
 			return val, nil
@@ -72,7 +53,6 @@ func TestGetOrAddSimple(t *testing.T) {
 	type expected struct {
 		val                 string
 		err                 string
-		keyConstructorCalls int
 		valConstructorCalls int
 		cachedValues        int
 	}
@@ -81,7 +61,7 @@ func TestGetOrAddSimple(t *testing.T) {
 		name              string
 		cache             *LRUCache
 		cacheInitialState map[string]string
-		keyConstructor    KeyConstructor
+		key               string
 		valConstructor    ValConstructor
 		expected          expected
 	}{
@@ -89,12 +69,11 @@ func TestGetOrAddSimple(t *testing.T) {
 			name:              "NilCache",
 			cache:             nil,
 			cacheInitialState: nil,
-			keyConstructor:    goodKeyConstructor("foo"),
+			key:               "foo",
 			valConstructor:    goodValConstructor("foo"),
 			expected: expected{
 				val:                 "(val)foo",
 				err:                 "",
-				keyConstructorCalls: 0,
 				valConstructorCalls: 1,
 				// Since there is no cache, its size does not change even after
 				// calling GetFromCache.
@@ -105,12 +84,11 @@ func TestGetOrAddSimple(t *testing.T) {
 			name:              "EmptyCache",
 			cache:             simpleCache,
 			cacheInitialState: nil,
-			keyConstructor:    goodKeyConstructor("foo"),
+			key:               "foo",
 			valConstructor:    goodValConstructor("foo"),
 			expected: expected{
 				val:                 "(val)foo",
 				err:                 "",
-				keyConstructorCalls: 1,
 				valConstructorCalls: 1,
 				cachedValues:        1,
 			},
@@ -121,12 +99,11 @@ func TestGetOrAddSimple(t *testing.T) {
 			cacheInitialState: map[string]string{
 				"(key)foo": "(val)foo",
 			},
-			keyConstructor: goodKeyConstructor("bar"),
+			key:            "bar",
 			valConstructor: goodValConstructor("bar"),
 			expected: expected{
 				val:                 "(val)bar",
 				err:                 "",
-				keyConstructorCalls: 1,
 				valConstructorCalls: 1,
 				cachedValues:        2,
 			},
@@ -138,12 +115,11 @@ func TestGetOrAddSimple(t *testing.T) {
 				"(key)foo": "(val)foo",
 				"(key)bar": "(val)bar",
 			},
-			keyConstructor: goodKeyConstructor("cat"),
+			key:            "cat",
 			valConstructor: goodValConstructor("cat"),
 			expected: expected{
 				val:                 "(val)cat",
 				err:                 "",
-				keyConstructorCalls: 1,
 				valConstructorCalls: 1,
 				// There are still only 2 values in the cache, even though we
 				// tried to add a 3rd item ("cat").
@@ -157,30 +133,15 @@ func TestGetOrAddSimple(t *testing.T) {
 				"(key)foo": "(val)foo",
 				"(key)bar": "(val)bar",
 			},
-			keyConstructor: goodKeyConstructor("bar"),
+			key:            "(key)bar",
 			valConstructor: goodValConstructor("bar"),
 			expected: expected{
-				val:                 "(val)bar",
-				err:                 "",
-				keyConstructorCalls: 1,
+				val: "(val)bar",
+				err: "",
 				// If the constructed value is already in the cache, we do not
 				// need to construct it from scratch.
 				valConstructorCalls: 0,
 				cachedValues:        2,
-			},
-		},
-		{
-			name:              "BadKeyConstructor",
-			cache:             simpleCache,
-			cacheInitialState: nil,
-			keyConstructor:    badKeyConstructor("bar"),
-			valConstructor:    goodValConstructor("bar"),
-			expected: expected{
-				val:                 "<nil>",
-				err:                 "could not construct key",
-				keyConstructorCalls: 1,
-				valConstructorCalls: 0,
-				cachedValues:        0,
 			},
 		},
 		{
@@ -189,12 +150,11 @@ func TestGetOrAddSimple(t *testing.T) {
 			name:              "BadValConstructor",
 			cache:             simpleCache,
 			cacheInitialState: nil,
-			keyConstructor:    goodKeyConstructor("bar"),
+			key:               "bar",
 			valConstructor:    badValConstructor("bar"),
 			expected: expected{
 				val:                 "",
 				err:                 "could not construct val",
-				keyConstructorCalls: 1,
 				valConstructorCalls: 1,
 				cachedValues:        0,
 			},
@@ -203,12 +163,11 @@ func TestGetOrAddSimple(t *testing.T) {
 			name:              "BadValConstructorNilCache",
 			cache:             nil,
 			cacheInitialState: nil,
-			keyConstructor:    goodKeyConstructor("bar"),
+			key:               "bar",
 			valConstructor:    badValConstructor("bar"),
 			expected: expected{
 				val:                 "<nil>",
 				err:                 "could not construct val",
-				keyConstructorCalls: 0,
 				valConstructorCalls: 1,
 				cachedValues:        0,
 			},
@@ -216,17 +175,16 @@ func TestGetOrAddSimple(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			// Reset test state.
-			keyConstructorCalls = 0
 			valConstructorCalls = 0
 			simpleCache.Purge()
 
 			for k, v := range tc.cacheInitialState {
 				if tc.cache != nil {
-					_, _ = tc.cache.GetOrAdd(goodKeyConstructorForInitialState(string(k)), goodValConstructorForInitialState(v))
+					_, _ = tc.cache.GetOrAdd(k, goodValConstructorForInitialState(v))
 				}
 			}
 
-			val, err := tc.cache.GetOrAdd(tc.keyConstructor, tc.valConstructor)
+			val, err := tc.cache.GetOrAdd(tc.key, tc.valConstructor)
 
 			if tc.expected.err == "" {
 				if err != nil {
@@ -252,10 +210,6 @@ func TestGetOrAddSimple(t *testing.T) {
 				}
 			}
 
-			if tc.expected.keyConstructorCalls != keyConstructorCalls {
-				t.Errorf("Expected '%d' calls to keyConstructor(), got '%d'", tc.expected.keyConstructorCalls, keyConstructorCalls)
-			}
-
 			if tc.expected.valConstructorCalls != valConstructorCalls {
 				t.Errorf("Expected '%d' calls to valConstructor(), got '%d'", tc.expected.valConstructorCalls, valConstructorCalls)
 			}
@@ -277,21 +231,9 @@ func TestGetOrAddSimple(t *testing.T) {
 // duplicate suppression, see Alan Donovan and Brian Kernighan, "The Go
 // Programming Language" (Addison-Wesley, 2016), p. 276.
 func TestGetOrAddBurst(t *testing.T) {
-	// testLock is used for guarding keyConstructorCalls and valConstructorCalls
-	// for purposes of testing.
+	// testLock is used for guarding valConstructorCalls for purposes of
+	// testing.
 	testLock := sync.Mutex{}
-
-	keyConstructorCalls := 0
-	// Always return the same key. This way we force all GetOrAdd() calls to
-	// target the same cache entry.
-	goodKeyConstructor := func(input int) func() (interface{}, error) {
-		return func() (interface{}, error) {
-			testLock.Lock()
-			keyConstructorCalls++
-			testLock.Unlock()
-			return string(fmt.Sprintf("(key)%d", input)), nil
-		}
-	}
 
 	valConstructorCalls := 0
 	// This value is expensive to calculate. We simulate an "expensive" call by
@@ -330,7 +272,6 @@ func TestGetOrAddBurst(t *testing.T) {
 		t.Error("could not initialize lruCache")
 	}
 
-	keyConstructorCalls = 0
 	valConstructorCalls = 0
 	const maxConcurrentRequests = 500
 	wg := sync.WaitGroup{}
@@ -342,7 +283,7 @@ func TestGetOrAddBurst(t *testing.T) {
 		go func() {
 			// Input of 3 for goodValConstructor will take 7 steps and reach a
 			// maximum value of 16. We check this below.
-			constructedVal, err := lruCache.GetOrAdd(goodKeyConstructor(3), goodValConstructor(3))
+			constructedVal, err := lruCache.GetOrAdd(3, goodValConstructor(3))
 			if err != nil {
 				t.Error("could not fetch or construct value")
 			}
@@ -365,11 +306,7 @@ func TestGetOrAddBurst(t *testing.T) {
 	if lruCache.Len() != 1 {
 		t.Errorf("Expected single cached element, got '%v'", lruCache.Len())
 	}
-	if keyConstructorCalls != maxConcurrentRequests {
-		t.Errorf("Expected keyConstructorCalls '%v', got '%v'", maxConcurrentRequests, keyConstructorCalls)
-	}
 
-	keyConstructorCalls = 0
 	valConstructorCalls = 0
 	lruCache.Purge()
 	// Consider the case where all threads perform one of 5 different cache lookups.
@@ -378,7 +315,7 @@ func TestGetOrAddBurst(t *testing.T) {
 		j := (i % 5) + 1
 		expectedVal := ""
 		go func() {
-			constructedVal, err := lruCache.GetOrAdd(goodKeyConstructor(j), goodValConstructor(j))
+			constructedVal, err := lruCache.GetOrAdd(j, goodValConstructor(j))
 			if err != nil {
 				t.Error("could not fetch or construct value")
 			}
@@ -408,8 +345,5 @@ func TestGetOrAddBurst(t *testing.T) {
 	}
 	if lruCache.Len() != 5 {
 		t.Errorf("Expected 5 cached entries, got '%v'", lruCache.Len())
-	}
-	if keyConstructorCalls != maxConcurrentRequests {
-		t.Errorf("Expected keyConstructorCalls '%v', got '%v'", maxConcurrentRequests, keyConstructorCalls)
 	}
 }

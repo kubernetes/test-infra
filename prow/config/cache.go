@@ -161,13 +161,14 @@ func GetProwYAMLFromCache(
 	baseSHAGetter RefGetter,
 	headSHAGetters ...RefGetter) (*ProwYAML, error) {
 
-	keyConstructor := func() (interface{}, error) {
-		kp, err := MakeCacheKeyParts(identifier, baseSHAGetter, headSHAGetters...)
-		if err != nil {
-			return CacheKey(""), err
-		}
+	kp, err := MakeCacheKeyParts(identifier, baseSHAGetter, headSHAGetters...)
+	if err != nil {
+		return nil, err
+	}
 
-		return MakeCacheKey(kp)
+	key, err := MakeCacheKey(kp)
+	if err != nil {
+		return nil, err
 	}
 
 	// The point of valConstructor is to allow us to mock this expensive value
@@ -177,16 +178,16 @@ func GetProwYAMLFromCache(
 		return valConstructorHelper(gc, identifier, baseSHAGetter, headSHAGetters...)
 	}
 
-	return prowYAMLCache.GetOrAdd(keyConstructor, valConstructor)
+	return prowYAMLCache.GetOrAdd(key, valConstructor)
 }
 
 // GetOrAdd is a type casting wrapper around the inner LRUCache object. Users
 // are expected to add their own GetOrAdd method for their own cached type.
 func (p *ProwYAMLCache) GetOrAdd(
-	keyConstructor cache.KeyConstructor,
+	key CacheKey,
 	valConstructor cache.ValConstructor) (*ProwYAML, error) {
 
-	val, err := (*cache.LRUCache)(p).GetOrAdd(keyConstructor, valConstructor)
+	val, err := (*cache.LRUCache)(p).GetOrAdd(key, valConstructor)
 	if err != nil {
 		return nil, err
 	}

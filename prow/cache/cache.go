@@ -64,11 +64,6 @@ type Result struct {
 // until we actually need it.
 type ValConstructor func() (interface{}, error)
 
-// KeyConstructor is used only when we need to perform a lookup inside a cache
-// (if it is available), because all values stored in the cache are paired with
-// a unique lookup key.
-type KeyConstructor func() (interface{}, error)
-
 // NewLRUCache returns a new LRUCache with a given size (number of elements).
 func NewLRUCache(size int) (*LRUCache, error) {
 	cache, err := simplelru.NewLRU(size, nil)
@@ -89,7 +84,7 @@ func NewLRUCache(size int) (*LRUCache, error) {
 // This cache is resistant to cache stampedes because it uses a duplicate
 // suppression strategy. This is also called request coalescing.
 func (lruCache *LRUCache) GetOrAdd(
-	keyConstructor KeyConstructor,
+	key interface{},
 	valConstructor ValConstructor) (interface{}, error) {
 
 	// If the cache is unreachable, then fall back to cache-less behavior
@@ -101,13 +96,6 @@ func (lruCache *LRUCache) GetOrAdd(
 		}
 
 		return valConstructed, nil
-	}
-
-	// Construct cache key. We use this key to find the value (if it was already
-	// stored in the cache by a previous call to GetOrAdd).
-	key, err := keyConstructor()
-	if err != nil {
-		return nil, err
 	}
 
 	// Cache lookup.
