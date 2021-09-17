@@ -6,26 +6,37 @@ Prow runs in any kubernetes cluster. Our `tackle` utility helps deploy it correc
 
 Both of these are focused on [Kubernetes Engine](https://cloud.google.com/kubernetes-engine/) but should work on any kubernetes distro with no/minimal changes.
 
-## GitHub bot account
+## GitHub App
 
-Before using `tackle` or deploying prow manually, ensure you have created a
-GitHub account for prow to use.  Prow will ignore most GitHub events generated
-by this account, so it is important this account be separate from any users or
-automation you wish to interact with prow. For example, you still need to do
-this even if you'd just setting up a prow instance to work against your own
-personal repos.
+First, you need to create a GitHub app. GitHub itself [documents this.](https://docs.github.com/en/developers/apps/building-github-apps/creating-a-github-app)
+Initially, it is sufficient to set a dummy url for the Webhook.
+The exact set of permissions needed varies based on what functionality you use. Below is a minimum
+set of permissions needed. Please keep in mind that any changes to the permissions your
+app requests (both added and removed) require everyone to re-install it.
 
-1. Ensure the bot user has the following permissions
-    - Write access to the repos you plan on handling
-    - Owner access (and org membership) for the orgs you plan on handling (note
-      it is possible to handle specific repos in an org without this)
-1. Create a [personal access token][1] for the GitHub bot account, adding the
-   following scopes (more details [here][8])
-    - Must have the `public_repo` and `repo:status` scopes
-    - Add the `repo` scope if you plan on handing private repos
-    - Add the `admin:org_hook` scope if you plan on handling a github org
-1. Set this token aside for later (we'll assume you wrote it to a file on your
-   workstation at `/path/to/github/token`)
+Repository permissions:
+
+* Actions: Read-Only (Only needed when using the merge automation `tide`)
+* Administration: Read-Only (Required to fetch teams and collaborateurs)
+* Checks: Read-Only (Only needed when using the merge automation `tide`)
+* Contents: Read-Only
+* Issues: Read & write
+* Metadata: Read-Only
+* Pull Requests: Read & write
+* Projects: Admin when using the `projects` plugin, none otherwise
+* Single File: Read-Only
+* Commit statuses: Read & write
+
+Organization permissions:
+
+* Members: Read-Only (Read & write when using `peribolos`)
+* Projects: Admin when using the `projects` plugin, none otherwise
+
+In `Subscribe to events` select all events.
+
+After you saved the app, click "Generate Private Key" on the bottom
+and save the private key together with the `App ID` in the top of the
+page.
 
 ## Tackle deployment
 
@@ -135,11 +146,12 @@ $ openssl rand -hex 20 > /path/to/hook/secret
 $ kubectl create secret -n prow generic hmac-token --from-file=hmac=/path/to/hook/secret
 ```
 
-The `github-token` is the *Personal access token* you created above for the [GitHub bot account].
-If you need to create one, go to <https://github.com/settings/tokens>.
+Aferwards, edit your GitHub app and set `Webhook secret` to the value of `/path/to/hook/secret`.
+
+The `github-token` is the RSA private key and app id you created above for the GitHub App.
 
 ```sh
-kubectl create secret -n prow generic github-token --from-file=token=/path/to/github/token
+kubectl create secret -n prow generic github-token --from-file=cert=/path/to/github/cert --from-literal=appid=<<The ID of your app>>
 ```
 
 ### Update the sample manifest
@@ -152,7 +164,8 @@ There are two sample manifests to get you started:
 
 Regardless of which object storage you choose, the below adjustments are always needed:
 
-* The github token by replacing the `<<insert-token-here>>` string
+* The github app cert by replacing the `<<insert-downloaded-cert-here>>` string
+* The github app id by replacing the `<<insert-the-app-id-here>>` string
 * The hmac token by replacing the `<< insert-hmac-token-here >>` string
 * The domain by replacing the `<< your-domain.com >>` string
 * Optionally, you can update the `cert-manager.io/cluster-issuer:` annotation if you use cert-manager
@@ -208,45 +221,16 @@ to start receiving GitHub events!
 
 ## Add the webhook to GitHub
 
-### Add your first webhook
+To set up the webhook, you have to go the the GitHub UI and edit your app. Update
+the `Webhook URL` property to `https://prow.<<yourdomain.com>>/hook`. Use the URL
+shown above when getting the `Ingress`.
 
-You have two options to do this:
+## Install Prow for a GitHub organization or repo
 
-1. You can do this with the `update-hook` utility:
-
-```sh
-# Note /path/to/hook/secret and /path/to/github/token from earlier secrets step
-# Note the an.ip.addr.ess from previous ingress step
-
-# Ideally use https://bazel.build, alternatively try:
-#   go get -u k8s.io/test-infra/experiment/update-hook && update-hook
-$ bazel run //experiment/update-hook -- \
-  --hmac-path=/path/to/hook/secret \
-  --github-token-path=/path/to/github/token \
-  --hook-url http://an.ip.addr.ess/hook \
-  --repo my-org/my-repo \
-  --repo my-whole-org \
-  --confirm=false  # Remove =false to actually add hook
-```
-
-Look for the `http://an.ip.addr.ess/hook` you added above.
-A green check mark (for a ping event, if you click edit and view the details of the event) suggests everything is working!
-
-2. If you do not want to use the `update-hook` utility, you can go the GitHub web page and add the hook manually:
-
-- Go to your org or repo and click `Settings -> Webhooks`, and click `Add webhook`.
-- Change the `Payload URL` to `http://an.ip.addr.ess/hook` you are planning to add.
-- Change the `Content type` to `application/json`, and change your `Secret` to the `hmac-path` secret you created above.
-- Change the trigger to `Send me **everything**`.
-- Click `Add webhook`.
-
-### Use `hmac` tool to manage webhooks and hmac tokens (recommended)
-
-If you need to configure webhooks for multiple orgs or repos, the manual process does not work that well as it
-can be error-prone, and it'll be painful when you want to replace the hmac token if it is accidentally leaked.
-
-In such case, it's recommended to use the [hmac](/prow/cmd/hmac/README.md) tool to automatically manage the webhooks
-and hmac tokens for you via declarative configuration.
+To install Prow for an org or repo, go to your GitHub app -> `Install app` and select the organizations to
+install the app in. If you want to install the app in other accounts than the one that created it, you need
+to make it public. To do so, go to `Advanced` -> `Make this GitHub app public`. After it is public, everyone
+can install it (Prow will not do anything for orgs or repos it doesn't have configuration for though).
 
 ## Deploying with GitHub Enterprise
 
