@@ -31,7 +31,7 @@ import (
 // The values are what we store in the cache, and to retrieve them, we have to
 // provide a key (which must be a hashable object). We wrap this cache with a
 // single lock, and use an algorithm for a concurrent non-blocking cache to make
-// it both thread-safe and also resistant to so-called cache stampede, where
+// it both thread-safe and also resistant to so-called cache stampedes, where
 // many concurrent threads all attempt to look up the same (missing) key/value
 // pair from the cache (see Alan Donovan and Brian Kernighan, "The Go
 // Programming Language" (Addison-Wesley, 2016), p. 277).
@@ -42,28 +42,48 @@ type LRUCache struct {
 	*simplelru.LRU
 }
 
-// Promise is a wrapper around cache value construction; it is used to
-// synchronize the to-be-cached value between threads that undergo a cache miss
-// and subsequent threads that attempt to look up the same cache entry.
-type Promise struct {
-	Result
-	resolve chan struct{}
-}
-
-// Result stores the result of executing an arbitrary ValConstructor function.
-type Result struct {
-	val interface{}
-	err error
-}
-
 // ValConstructor is used to construct a value. The assumption is that this
 // ValConstructor is expensive to compute, and that we need to memoize it via
 // the LRUCache. The raw values of a cache are only constructed after a cache
 // miss (and only the first cache miss). Using this type allows us to use any
-// arbitrary function whose resulting values needs to be memoized (saved in the
+// arbitrary function whose resulting value needs to be memoized (saved in the
 // cache). This type also allows us to delay running the expensive computation
-// until we actually need it.
+// until we actually need it (after a cache miss).
 type ValConstructor func() (interface{}, error)
+
+// Promise is a wrapper around cache value construction; it is used to
+// synchronize the to-be-cached value between the first thread that undergoes a
+// cache miss and subsequent threads that attempt to look up the same cache
+// entry (cache hit). When the Promise is resolved (when the
+// "valConstructionPending" channel is closed), the value is ready for
+// concurrent reads.
+type Promise struct {
+	valConstructor         ValConstructor
+	valConstructionPending chan struct{}
+	val                    interface{}
+	err                    error
+}
+
+func newPromise(valConstructor ValConstructor) *Promise {
+	return &Promise{
+		valConstructor:         valConstructor,
+		valConstructionPending: make(chan struct{}),
+	}
+}
+
+// waitForResolution blocks the current thread until the first thread that
+// detected a cache miss has finished constructing the value (see resolve()).
+func (p *Promise) waitForResolution() {
+	<-p.valConstructionPending
+}
+
+// resolve resolves the Promise by constructing the value and closing the
+// valConstructionPending channel, thereby unblocking any other thread that has
+// been waiting for the value to be constructed.
+func (p *Promise) resolve() {
+	p.val, p.err = p.valConstructor()
+	close(p.valConstructionPending)
+}
 
 // NewLRUCache returns a new LRUCache with a given size (number of elements).
 func NewLRUCache(size int) (*LRUCache, error) {
@@ -78,8 +98,8 @@ func NewLRUCache(size int) (*LRUCache, error) {
 // GetOrAdd tries to use a cache if it is available to get a Value. It is
 // assumed that Value is expensive to construct from scratch, which is the
 // reason why we try to use the cache in the first place. If we do end up
-// constructing a Value from scratch, then we store it into the cache with a
-// corresponding Key, so that we can look up the Value with just the Key in the
+// constructing a Value from scratch, we store it into the cache with a
+// corresponding key, so that we can look up the Value with just the key in the
 // future.
 //
 // This cache is resistant to cache stampedes because it uses a duplicate
@@ -103,7 +123,7 @@ func (lruCache *LRUCache) GetOrAdd(
 		// service other GetOrAdd() calls to it.
 		lruCache.Unlock()
 
-		// If the type is not a promise type, there's no need to wait and we can
+		// If the type is not a Promise type, there's no need to wait and we can
 		// just return immediately with an error.
 		promise, ok = maybePromise.(*Promise)
 		if !ok {
@@ -117,9 +137,9 @@ func (lruCache *LRUCache) GetOrAdd(
 		// of the promise below.
 		//
 		// If the original thread resolved the promise already a long time ago
-		// (by closing the "resolve" channel), then this receive instruction
-		// will finish immediately and we will not block at all.
-		<-promise.resolve
+		// (by calling resolve()), then this this waitForResolution() will
+		// finish immediately and we will not block at all.
+		promise.waitForResolution()
 	} else {
 		// No promise exists for this key. In other words, we are the first
 		// thread to ask for this key's value and so We have no choice but to
@@ -127,40 +147,37 @@ func (lruCache *LRUCache) GetOrAdd(
 		// the cache.
 		//
 		// If there are other concurrent threads that call GetOrAdd() with the
-		// same key and value constructors, we force them to use the same value
-		// as us (so that they don't have to also all valConstructor()). We do
-		// this with the following algorithm:
+		// same key and corresponding value constructor, we force them to use
+		// the same value as us (so that they don't have to also call
+		// valConstructor()). We do this with the following algorithm:
 		//
-		//  1. immediately create a promise to construct the value
-		//  2. actually construct the value (expensive operation)
-		//  3. resolve the promise to alert all threads looking at the same promise
-		//     get the value from step 2.
+		//  1. immediately create a Promise to construct the value;
+		//  2. actually construct the value (expensive operation);
+		//  3. resolve the promise to alert all threads looking at the same Promise
+		//     get the value from Step 2.
 		//
 		// This mitigation strategy is a kind of "duplicate suppression", also
-		// called "request coalescing". The problem of multiple requests for the
-		// same cache entry is also called "cache stampede".
+		// called "request coalescing". The problem of having to deal with a
+		// flood of multiple requests for the same cache entry is also called
+		// "cache stampede".
 
 		// Step 1
 		//
 		// Let other threads know about our promise to construct the value. We
 		// don't care if the underlying LRU cache had to evict an existing
 		// entry.
-		promise = &Promise{resolve: make(chan struct{})}
+		promise = newPromise(valConstructor)
 		_ = lruCache.Add(key, promise)
 		// We must unlock here so that the cache does not block other GetOrAdd()
 		// calls to it for different (or same) key/value pairs.
 		lruCache.Unlock()
 
-		// Step 2
+		// Step 2 & 3
 		//
-		// Construct the value (expensive operation).
-		promise.val, promise.err = valConstructor()
-
-		// Step 3
-		//
-		// Broadcast to all watchers of this promise that it is ready to be read
-		// from (no data race!).
-		close(promise.resolve)
+		// Construct the value (expensive operation), and broadcast to all
+		// watchers of this promise that it is ready to be read from (no data
+		// race!).
+		promise.resolve()
 
 		// If the value construction (expensive operation) failed, then we
 		// delete the cached entry so that we may attempt to re-try again in the
@@ -186,14 +203,14 @@ func (lruCache *LRUCache) GetOrAdd(
 		// could just set that instead and let the cached entry expire on its
 		// own (we would not have to do this eviction ourselves manually).
 		if promise.err != nil {
-			logrus.WithField("key", key).Infof("promise was successfully resolved, but the call to valConstructor() returned an error; deleting key from cache...")
+			logrus.WithField("key", key).Infof("promise was successfully resolved, but the call to resolve() returned an error; deleting key from cache...")
 			lruCache.Lock()
 			keyWasFoundBeforeRemoval := lruCache.Remove(key)
 			lruCache.Unlock()
 			if keyWasFoundBeforeRemoval {
 				logrus.WithField("key", key).Infof("successfully deleted")
 			} else {
-				err := fmt.Errorf("unexpected race: key evicted by the cache without our knowledge; our own removal of this key was a NOP")
+				err := fmt.Errorf("unexpected race: key deleted by the cache without our knowledge; our own deletion of this key was a NOP")
 				logrus.WithField("key", key).Error(err)
 			}
 		}

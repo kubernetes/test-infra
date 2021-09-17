@@ -213,8 +213,7 @@ func TestGetOrAddBurst(t *testing.T) {
 	// the value generated here will never be able to be optimized away by the
 	// compiler (because its value cannot be precomputed by the compiler),
 	// guaranteeing that some CPU cycles will be spent between the time we
-	// unlock the testLock and the time we send a true value to the
-	// valConstructionFinished channel.
+	// unlock the testLock and the time we retrieve the computed value.
 	goodValConstructor := func(input int) func() (interface{}, error) {
 		return func() (interface{}, error) {
 			testLock.Lock()
