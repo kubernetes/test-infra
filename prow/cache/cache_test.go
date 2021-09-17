@@ -66,21 +66,6 @@ func TestGetOrAddSimple(t *testing.T) {
 		expected          expected
 	}{
 		{
-			name:              "NilCache",
-			cache:             nil,
-			cacheInitialState: nil,
-			key:               "foo",
-			valConstructor:    goodValConstructor("foo"),
-			expected: expected{
-				val:                 "(val)foo",
-				err:                 "",
-				valConstructorCalls: 1,
-				// Since there is no cache, its size does not change even after
-				// calling GetFromCache.
-				cachedValues: 0,
-			},
-		},
-		{
 			name:              "EmptyCache",
 			cache:             simpleCache,
 			cacheInitialState: nil,
@@ -154,19 +139,6 @@ func TestGetOrAddSimple(t *testing.T) {
 			valConstructor:    badValConstructor("bar"),
 			expected: expected{
 				val:                 "",
-				err:                 "could not construct val",
-				valConstructorCalls: 1,
-				cachedValues:        0,
-			},
-		},
-		{
-			name:              "BadValConstructorNilCache",
-			cache:             nil,
-			cacheInitialState: nil,
-			key:               "bar",
-			valConstructor:    badValConstructor("bar"),
-			expected: expected{
-				val:                 "<nil>",
 				err:                 "could not construct val",
 				valConstructorCalls: 1,
 				cachedValues:        0,

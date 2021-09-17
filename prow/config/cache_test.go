@@ -174,7 +174,7 @@ func TestMakeCacheKey(t *testing.T) {
 	}
 }
 
-func TestGetProwYAMLFromCache(t *testing.T) {
+func TestGetProwYAMLCached(t *testing.T) {
 	// fakeProwYAMLMap mocks prowYAMLGetter. Instead of using the
 	// git.ClientFactory (and other operations), we just use a simple map to get
 	// the *ProwYAML value we want. For simplicity we just reuse MakeCacheKey
@@ -379,7 +379,7 @@ func TestGetProwYAMLFromCache(t *testing.T) {
 				goodSHAGetter("ef01")},
 			expected: expected{
 				prowYAML: nil,
-				err:      "cache value type error: expected value type '*config.ProwYAML', got 'string'",
+				err:      "cache value type error (programmer error): expected value type '*config.ProwYAML', got 'string'",
 			},
 		},
 		{
@@ -402,7 +402,7 @@ func TestGetProwYAMLFromCache(t *testing.T) {
 				goodSHAGetter("ef01")},
 			expected: expected{
 				prowYAML: nil,
-				err:      "cache value type error: expected value type '*config.ProwYAML', got 'string'",
+				err:      "cache value type error (programmer error): expected value type '*config.ProwYAML', got 'string'",
 			},
 		},
 	} {
@@ -437,7 +437,7 @@ func TestGetProwYAMLFromCache(t *testing.T) {
 				}
 			}
 
-			prowYAML, err := GetProwYAMLFromCache(prowYAMLCache, tc.valConstructor, nil, tc.identifier, tc.baseSHAGetter, tc.headSHAGetters...)
+			prowYAML, err := GetProwYAMLCached(prowYAMLCache, tc.valConstructor, nil, tc.identifier, tc.baseSHAGetter, tc.headSHAGetters...)
 
 			if tc.expected.err == "" {
 				if err != nil {

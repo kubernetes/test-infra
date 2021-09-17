@@ -87,17 +87,6 @@ func (lruCache *LRUCache) GetOrAdd(
 	key interface{},
 	valConstructor ValConstructor) (interface{}, error) {
 
-	// If the cache is unreachable, then fall back to cache-less behavior
-	// (construct the value from scratch).
-	if lruCache == nil {
-		valConstructed, err := valConstructor()
-		if err != nil {
-			return nil, err
-		}
-
-		return valConstructed, nil
-	}
-
 	// Cache lookup.
 	lruCache.Lock()
 	var promise *Promise

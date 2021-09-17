@@ -112,7 +112,7 @@ type JobConfig struct {
 	// inrepoconfig's repo, __without__ having the contents modified by the main
 	// Config's own settings (which happens mostly inside
 	// DefaultAndValidateProwYAML()). ProwYAMLGetterNoDefault is only used by
-	// GetProwYAMLFromCache().
+	// GetProwYAMLCached().
 	ProwYAMLGetterNoDefault ProwYAMLGetter `json:"-"`
 
 	// DecorateAllJobs determines whether all jobs are decorated by default
@@ -416,6 +416,22 @@ func (c *Config) GetPresubmits(gc git.ClientFactory, identifier string, baseSHAG
 	return append(c.GetPresubmitsStatic(identifier), prowYAML.Presubmits...), nil
 }
 
+// GetPresubmitsMaybeCached uses either GetPresubmits or
+// GetPresubmitsCached, depending on whether the cache is reachable.
+func (c *Config) GetPresubmitsMaybeCached(
+	pc *ProwYAMLCache,
+	gc git.ClientFactory,
+	identifier string,
+	baseSHAGetter RefGetter,
+	headSHAGetters ...RefGetter) ([]Presubmit, error) {
+
+	if pc == nil {
+		return c.GetPresubmits(gc, identifier, baseSHAGetter, headSHAGetters...)
+	}
+
+	return c.GetPresubmitsCached(pc, gc, identifier, baseSHAGetter, headSHAGetters...)
+}
+
 // GetPresubmitsStatic will return presubmits for the given identifier that are versioned inside the tested repo
 func (c *Config) GetPresubmitsStatic(identifier string) []Presubmit {
 	return c.PresubmitsStatic[identifier]
@@ -434,6 +450,22 @@ func (c *Config) GetPostsubmits(gc git.ClientFactory, identifier string, baseSHA
 	}
 
 	return append(c.PostsubmitsStatic[identifier], prowYAML.Postsubmits...), nil
+}
+
+// GetPostsubmitsMaybeCached uses either GetPostsubmits or
+// GetPostsubmitsCached, depending on whether the cache is reachable.
+func (c *Config) GetPostsubmitsMaybeCached(
+	pc *ProwYAMLCache,
+	gc git.ClientFactory,
+	identifier string,
+	baseSHAGetter RefGetter,
+	headSHAGetters ...RefGetter) ([]Postsubmit, error) {
+
+	if pc == nil {
+		return c.GetPostsubmits(gc, identifier, baseSHAGetter, headSHAGetters...)
+	}
+
+	return c.GetPostsubmitsCached(pc, gc, identifier, baseSHAGetter, headSHAGetters...)
 }
 
 // GetPostsubmitsStatic will return postsubmits for the given identifier that are versioned inside the tested repo
