@@ -555,25 +555,29 @@ type Plank struct {
 	PodUnscheduledTimeout *metav1.Duration `json:"pod_unscheduled_timeout,omitempty"`
 
 	// DefaultDecorationConfigs holds the default decoration config for specific values.
-	// Each entry in the slice specifies Repo and Cluster regexp filter fields to
-	// match against jobs and a corresponding DecorationConfig. All entries that
-	// match a job are used. Later matching entries override the fields of earlier
-	// matching entries.
-	// This field is populated either directly from DefaultDecorationConfigEntries,
-	// or by converting DefaultDecorationConfigsMap, depending on which is specified.
-	// Alternatively this field may be type `map[string]*prowapi.DecorationConfig`
-	// Use `org/repo`, `org` or `*` as a key to match against jobs.
+	//
+	// In FinalizeDefaultDecorationConfigs(), this field is populated either directly from
+	// DefaultDecorationConfigEntries, or from DefaultDecorationConfigsMap after
+	// it is converted to a slice. These fields are mutually exclusive, and
+	// defining both is an error.
 	DefaultDecorationConfigs []*DefaultDecorationConfigEntry `json:"-"`
-	// DefaultDecorationConfigsMap is a mapping from 'org', 'org/repo', or the literal string '*',
-	// to the default decoration config to use for that key. The '*' key matches all jobs.
-	// (Periodics use extra_refs[0] for matching if present.)
+	// DefaultDecorationConfigsMap is a mapping from 'org', 'org/repo', or the
+	// literal string '*', to the default decoration config to use for that key.
+	// The '*' key matches all jobs. (Periodics use extra_refs[0] for matching
+	// if present.)
+	//
 	// This field is mutually exclusive with the DefaultDecorationConfigEntries field.
 	DefaultDecorationConfigsMap map[string]*prowapi.DecorationConfig `json:"default_decoration_configs,omitempty"`
-	// DefaultDecorationConfigEntries holds the default decoration config for specific values.
+	// DefaultDecorationConfigEntries is used to populate DefaultDecorationConfigs.
 	// Each entry in the slice specifies Repo and Cluster regexp filter fields to
 	// match against jobs and a corresponding DecorationConfig. All entries that
 	// match a job are used. Later matching entries override the fields of earlier
 	// matching entries.
+	//
+	// This field is smarter than the DefaultDecorationConfigsMap, because each
+	// entry includes additional Cluster regexp information that the old format
+	// does not consider.
+	//
 	// This field is mutually exclusive with the DefaultDecorationConfigsMap field.
 	DefaultDecorationConfigEntries []*DefaultDecorationConfigEntry `json:"default_decoration_config_entries,omitempty"`
 
@@ -612,9 +616,13 @@ type ProwJobDefaultEntry struct {
 }
 
 // DefaultDecorationConfigEntry contains a DecorationConfig and a set of
-// filters to use to determine if the config should be used as a default for a
-// given ProwJob. When multiple of these entries match a ProwJob, they are all
-// merged with later entries overriding values from earlier entries.
+// regexps. If the regexps here match a ProwJob, then that ProwJob uses defaults
+// by looking the DecorationConfig defined here in this entry.
+//
+// If multiple entries match a single ProwJob, the multiple entries'
+// DecorationConfigs are merged, with later entries overriding values from
+// earlier entries. Then finally that merged DecorationConfig is used by the
+// matching ProwJob.
 type DefaultDecorationConfigEntry struct {
 	// Matching/filtering fields. All filters must match for an entry to match.
 
@@ -702,8 +710,9 @@ func (p *Plank) GuessDefaultDecorationConfig(repo, cluster string) *prowapi.Deco
 	return p.mergeDefaultDecorationConfig(repo, cluster, nil)
 }
 
-// defaultDecorationMapToSlice converts the old DefaultDecorationConfigs format:
-// map[string]*prowapi.DecorationConfig) to the new format: []*DefaultDecorationConfigEntry
+// defaultDecorationMapToSlice converts the old format
+// (map[string]*prowapi.DecorationConfig) to the new format
+// ([]*DefaultDecorationConfigEntry).
 func defaultDecorationMapToSlice(m map[string]*prowapi.DecorationConfig) []*DefaultDecorationConfigEntry {
 	var entries []*DefaultDecorationConfigEntry
 	add := func(repo string, dc *prowapi.DecorationConfig) {
@@ -743,7 +752,7 @@ func DefaultDecorationMapToSliceTesting(m map[string]*prowapi.DecorationConfig) 
 
 // FinalizeDefaultDecorationConfigs prepares the entries of
 // Plank.DefaultDecorationConfigs for use finalizing job config.
-// It parses the value of p.DefaultDecorationConfigsRaw into either the old map
+// It sets p.DefaultDecorationConfigs into either the old map
 // format or the new slice format:
 // Old format: map[string]*prowapi.DecorationConfig where the key is org,
 //             org/repo, or "*".
