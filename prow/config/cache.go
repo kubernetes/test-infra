@@ -18,6 +18,7 @@ package config
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/sirupsen/logrus"
@@ -66,49 +67,27 @@ type CacheKeyParts struct {
 	HeadSHAs   []string `json:"headSHAs"`
 }
 
-// MakeCacheKeyParts constructs a CacheKeyParts struct from uniquely-identifying
-// information.
-func MakeCacheKeyParts(
-	identifier string,
-	baseSHAGetter RefGetter,
-	headSHAGetters ...RefGetter) (CacheKeyParts, error) {
-	// Initialize empty key parts.
-	keyParts := CacheKeyParts{}
-
-	// Check "identifier".
-	if identifier == "" {
-		return CacheKeyParts{}, fmt.Errorf("no identifier for repo given")
-	}
-	keyParts.Identifier = identifier
-
-	// Parse "baseSHAGetter".
-	baseSHA, err := baseSHAGetter()
-	if err != nil {
-		return CacheKeyParts{}, fmt.Errorf("failed to get baseSHA: %v", err)
-	}
-	keyParts.BaseSHA = baseSHA
-
-	// Parse "headSHAGetterss".
-	var headSHAs []string
-	for _, headSHAGetter := range headSHAGetters {
-		headSHA, err := headSHAGetter()
-		if err != nil {
-			return CacheKeyParts{}, fmt.Errorf("failed to get headRef: %v", err)
-		}
-		headSHAs = append(headSHAs, headSHA)
+// MakeCacheKey simply bundles up the given arguments into a CacheKeyParts
+// struct, then converts it into a CacheKey (string).
+func MakeCacheKey(identifier string, baseSHA string, headSHAs []string) (CacheKey, error) {
+	kp := CacheKeyParts{
+		Identifier: identifier,
+		BaseSHA:    baseSHA,
+		HeadSHAs:   headSHAs,
 	}
 
-	keyParts.HeadSHAs = headSHAs
-
-	return keyParts, nil
+	return kp.CacheKey()
 }
 
-// MakeCacheKey converts a CacheKeyParts object into a JSON string (to be used
-// as a CacheKey).
-func MakeCacheKey(kp CacheKeyParts) (CacheKey, error) {
+// CacheKey converts a CacheKeyParts object into a JSON string (to be used as a
+// CacheKey).
+func (kp *CacheKeyParts) CacheKey() (CacheKey, error) {
 	data, err := json.Marshal(kp)
+	if err != nil {
+		return "", err
+	}
 
-	return CacheKey(data), err
+	return CacheKey(data), nil
 }
 
 // GetPresubmitsCached is like GetPresubmits, but uses a cache lookup to get the
@@ -162,6 +141,10 @@ func (c *Config) GetProwYAMLCached(
 	baseSHAGetter RefGetter,
 	headSHAGetters ...RefGetter) (*ProwYAML, error) {
 
+	if identifier == "" {
+		return nil, errors.New("no identifier for repo given")
+	}
+
 	// Abort if the InRepoConfig is not enabled for this identifier (org/repo).
 	// It's important that we short-circuit here __before__ calling GetOrAdd()
 	// because we do NOT want to add an empty &ProwYAML{} value in the cache
@@ -172,12 +155,12 @@ func (c *Config) GetProwYAMLCached(
 		return &ProwYAML{}, nil
 	}
 
-	kp, err := MakeCacheKeyParts(identifier, baseSHAGetter, headSHAGetters...)
+	baseSHA, headSHAs, err := GetAndCheckRefs(baseSHAGetter, headSHAGetters...)
 	if err != nil {
 		return nil, err
 	}
 
-	key, err := MakeCacheKey(kp)
+	key, err := MakeCacheKey(identifier, baseSHA, headSHAs)
 	if err != nil {
 		return nil, err
 	}

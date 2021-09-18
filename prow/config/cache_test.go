@@ -18,10 +18,8 @@ package config
 
 import (
 	"fmt"
-	"reflect"
 	"testing"
 
-	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/test-infra/prow/git/v2"
 )
 
@@ -71,134 +69,31 @@ func badSHAGetter() (string, error) {
 	return "", fmt.Errorf("badSHAGetter")
 }
 
-func TestMakeCacheKey(t *testing.T) {
-	type expected struct {
-		cacheKeyParts CacheKeyParts
-		err           string
-	}
-
-	for _, tc := range []struct {
-		name           string
-		identifier     string
-		baseSHAGetter  RefGetter
-		headSHAGetters []RefGetter
-		expected       expected
-	}{
-		{
-			name:          "Basic",
-			identifier:    "foo/bar",
-			baseSHAGetter: goodSHAGetter("ba5e"),
-			headSHAGetters: []RefGetter{
-				goodSHAGetter("abcd"),
-				goodSHAGetter("ef01")},
-			expected: expected{
-				CacheKeyParts{
-					Identifier: "foo/bar",
-					BaseSHA:    "ba5e",
-					HeadSHAs:   []string{"abcd", "ef01"},
-				},
-				"",
-			},
-		},
-		{
-			name:           "NoHeadSHAGetters",
-			identifier:     "foo/bar",
-			baseSHAGetter:  goodSHAGetter("ba5e"),
-			headSHAGetters: []RefGetter{},
-			expected: expected{
-				CacheKeyParts{
-					Identifier: "foo/bar",
-					BaseSHA:    "ba5e",
-					HeadSHAs:   nil,
-				},
-				"",
-			},
-		},
-		{
-			name:          "EmptyIdentifierFailure",
-			identifier:    "",
-			baseSHAGetter: goodSHAGetter("ba5e"),
-			headSHAGetters: []RefGetter{
-				goodSHAGetter("abcd"),
-				goodSHAGetter("ef01")},
-			expected: expected{
-				CacheKeyParts{},
-				"no identifier for repo given",
-			},
-		},
-		{
-			name:          "BaseSHAGetterFailure",
-			identifier:    "foo/bar",
-			baseSHAGetter: badSHAGetter,
-			headSHAGetters: []RefGetter{
-				goodSHAGetter("abcd"),
-				goodSHAGetter("ef01")},
-			expected: expected{
-				CacheKeyParts{},
-				"failed to get baseSHA: badSHAGetter",
-			},
-		},
-		{
-			name:          "HeadSHAGetterFailure",
-			identifier:    "foo/bar",
-			baseSHAGetter: goodSHAGetter("ba5e"),
-			headSHAGetters: []RefGetter{
-				goodSHAGetter("abcd"),
-				badSHAGetter},
-			expected: expected{
-				CacheKeyParts{},
-				"failed to get headRef: badSHAGetter",
-			},
-		},
-	} {
-		t.Run(tc.name, func(t1 *testing.T) {
-			cacheKeyParts, err := MakeCacheKeyParts(tc.identifier, tc.baseSHAGetter, tc.headSHAGetters...)
-
-			if tc.expected.err == "" {
-				if err != nil {
-					t.Errorf("Expected error 'nil' got '%v'", err.Error())
-				}
-				if !reflect.DeepEqual(tc.expected.cacheKeyParts, cacheKeyParts) {
-					t.Errorf("CacheKeyParts do not match:\n%s", diff.ObjectReflectDiff(tc.expected.cacheKeyParts, cacheKeyParts))
-				}
-			} else {
-				if err == nil {
-					t.Fatal("Expected non-nil error, got nil")
-				}
-
-				if tc.expected.err != err.Error() {
-					t.Errorf("Expected error '%v', got '%v'", tc.expected.err, err.Error())
-				}
-			}
-		})
-	}
-}
-
 func TestGetProwYAMLCached(t *testing.T) {
-	// fakeProwYAMLMap mocks prowYAMLGetter(). Instead of using the
+	// fakeProwYAMLGetter mocks prowYAMLGetter(). Instead of using the
 	// git.ClientFactory (and other operations), we just use a simple map to get
 	// the *ProwYAML value we want. For simplicity we just reuse MakeCacheKey
-	// even though we're not using a cache. The point of fakeProwYAMLMap is to
+	// even though we're not using a cache. The point of fakeProwYAMLGetter is to
 	// act as a "source of truth" of authoritative *ProwYAML values for purposes
 	// of the test cases in this unit test.
-	fakeProwYAMLMap := make(map[CacheKey]*ProwYAML)
+	fakeProwYAMLGetter := make(map[CacheKey]*ProwYAML)
 
 	// goodValConstructor mocks config.getProwYAML.
 	// This map pretends to be an expensive computation in order to generate a
 	// *ProwYAML value.
 	goodValConstructor := func(gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) (*ProwYAML, error) {
 
-		keyParts, err := MakeCacheKeyParts(identifier, baseSHAGetter, headSHAGetters...)
+		baseSHA, headSHAs, err := GetAndCheckRefs(baseSHAGetter, headSHAGetters...)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		key, err := MakeCacheKey(keyParts)
+		key, err := MakeCacheKey(identifier, baseSHA, headSHAs)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		val, ok := fakeProwYAMLMap[key]
+		val, ok := fakeProwYAMLGetter[key]
 		if ok {
 			return val, nil
 		}
@@ -206,28 +101,28 @@ func TestGetProwYAMLCached(t *testing.T) {
 		return nil, fmt.Errorf("unable to construct *ProwYAML value")
 	}
 
-	fakeProwYAMLs := []CacheKeyParts{
+	fakeCacheKeyPartsSlice := []CacheKeyParts{
 		{
 			Identifier: "foo/bar",
 			BaseSHA:    "ba5e",
 			HeadSHAs:   []string{"abcd", "ef01"},
 		},
 	}
-	// Populate fakeProwYAMLMap.
-	for _, fakeProwYAML := range fakeProwYAMLs {
+	// Populate fakeProwYAMLGetter.
+	for _, fakeCacheKeyParts := range fakeCacheKeyPartsSlice {
 		// To make it easier to compare Presubmit values, we only set the
 		// Name field and only compare this field. We also only create a
 		// single Presubmit (singleton slice), again for simplicity. Lastly
 		// we also set the Name field to the same value as the "key", again
 		// for simplicity.
-		fakeProwYAMLKey, err := MakeCacheKey(fakeProwYAML)
+		fakeCacheKey, err := fakeCacheKeyParts.CacheKey()
 		if err != nil {
 			t.Fatal(err)
 		}
-		fakeProwYAMLMap[fakeProwYAMLKey] = &ProwYAML{
+		fakeProwYAMLGetter[fakeCacheKey] = &ProwYAML{
 			Presubmits: []Presubmit{
 				{
-					JobBase: JobBase{Name: string(fakeProwYAMLKey)},
+					JobBase: JobBase{Name: string(fakeCacheKey)},
 				},
 			},
 		}
@@ -443,7 +338,7 @@ func TestGetProwYAMLCached(t *testing.T) {
 			prowYAMLCache.Purge()
 
 			for _, kp := range tc.cacheInitialState {
-				k, err := MakeCacheKey(kp)
+				k, err := kp.CacheKey()
 				if err != nil {
 					t.Errorf("Expected error 'nil' got '%v'", err.Error())
 				}
@@ -461,7 +356,7 @@ func TestGetProwYAMLCached(t *testing.T) {
 				prowYAMLCache.Purge()
 
 				for _, kp := range tc.cacheInitialState {
-					k, err := MakeCacheKey(kp)
+					k, err := kp.CacheKey()
 					if err != nil {
 						t.Errorf("Expected error 'nil' got '%v'", err.Error())
 					}

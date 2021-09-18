@@ -338,6 +338,31 @@ func (rg *RefGetterForGitHubPullRequest) BaseSHA() (string, error) {
 	return rg.baseSHA, nil
 }
 
+// GetAndCheckRefs resolves all uniquely-identifying information related to the
+// retrieval of a *ProwYAML.
+func GetAndCheckRefs(
+	baseSHAGetter RefGetter,
+	headSHAGetters ...RefGetter) (string, []string, error) {
+
+	// Parse "baseSHAGetter".
+	baseSHA, err := baseSHAGetter()
+	if err != nil {
+		return "", nil, fmt.Errorf("failed to get baseSHA: %v", err)
+	}
+
+	// Parse "headSHAGetterss".
+	var headSHAs []string
+	for _, headSHAGetter := range headSHAGetters {
+		headSHA, err := headSHAGetter()
+		if err != nil {
+			return "", nil, fmt.Errorf("failed to get headRef: %v", err)
+		}
+		headSHAs = append(headSHAs, headSHA)
+	}
+
+	return baseSHA, headSHAs, nil
+}
+
 // getProwYAML will load presubmits and postsubmits for the given identifier that are
 // versioned inside the tested repo, if the inrepoconfig feature is enabled.
 // Consumers that pass in a RefGetter implementation that does a call to GitHub and who
@@ -351,18 +376,11 @@ func (c *Config) getProwYAML(gc git.ClientFactory, identifier string, baseSHAGet
 		return &ProwYAML{}, nil
 	}
 
-	baseSHA, err := baseSHAGetter()
+	baseSHA, headSHAs, err := GetAndCheckRefs(baseSHAGetter, headSHAGetters...)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get baseSHA: %w", err)
+		return nil, err
 	}
-	var headSHAs []string
-	for _, headSHAGetter := range headSHAGetters {
-		headSHA, err := headSHAGetter()
-		if err != nil {
-			return nil, fmt.Errorf("failed to get headRef: %w", err)
-		}
-		headSHAs = append(headSHAs, headSHA)
-	}
+
 	prowYAML, err := c.ProwYAMLGetter(c, gc, identifier, baseSHA, headSHAs...)
 	if err != nil {
 		return nil, err
@@ -381,18 +399,11 @@ func (c *Config) getProwYAMLNoDefault(gc git.ClientFactory, identifier string, b
 		return &ProwYAML{}, nil
 	}
 
-	baseSHA, err := baseSHAGetter()
+	baseSHA, headSHAs, err := GetAndCheckRefs(baseSHAGetter, headSHAGetters...)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get baseSHA: %v", err)
+		return nil, err
 	}
-	var headSHAs []string
-	for _, headSHAGetter := range headSHAGetters {
-		headSHA, err := headSHAGetter()
-		if err != nil {
-			return nil, fmt.Errorf("failed to get headRef: %v", err)
-		}
-		headSHAs = append(headSHAs, headSHA)
-	}
+
 	prowYAML, err := c.ProwYAMLGetterNoDefault(c, gc, identifier, baseSHA, headSHAs...)
 	if err != nil {
 		return nil, err

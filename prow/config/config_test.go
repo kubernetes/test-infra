@@ -38,6 +38,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/util/diff"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	utilpointer "k8s.io/utils/pointer"
@@ -7710,6 +7711,92 @@ func TestDeduplicateTideQueries(t *testing.T) {
 
 			if diff := cmp.Diff(result, tc.expected); diff != "" {
 				t.Errorf("Result differs from expected: %v", diff)
+			}
+		})
+	}
+}
+
+func TestGetAndCheckRefs(t *testing.T) {
+	type expected struct {
+		baseSHA  string
+		headSHAs []string
+		err      string
+	}
+
+	for _, tc := range []struct {
+		name           string
+		baseSHAGetter  RefGetter
+		headSHAGetters []RefGetter
+		expected       expected
+	}{
+		{
+			name:          "Basic",
+			baseSHAGetter: goodSHAGetter("ba5e"),
+			headSHAGetters: []RefGetter{
+				goodSHAGetter("abcd"),
+				goodSHAGetter("ef01")},
+			expected: expected{
+				baseSHA:  "ba5e",
+				headSHAs: []string{"abcd", "ef01"},
+				err:      "",
+			},
+		},
+		{
+			name:           "NoHeadSHAGetters",
+			baseSHAGetter:  goodSHAGetter("ba5e"),
+			headSHAGetters: []RefGetter{},
+			expected: expected{
+				baseSHA:  "ba5e",
+				headSHAs: nil,
+				err:      "",
+			},
+		},
+		{
+			name:          "BaseSHAGetterFailure",
+			baseSHAGetter: badSHAGetter,
+			headSHAGetters: []RefGetter{
+				goodSHAGetter("abcd"),
+				goodSHAGetter("ef01")},
+			expected: expected{
+				baseSHA:  "",
+				headSHAs: nil,
+				err:      "failed to get baseSHA: badSHAGetter",
+			},
+		},
+		{
+			name:          "HeadSHAGetterFailure",
+			baseSHAGetter: goodSHAGetter("ba5e"),
+			headSHAGetters: []RefGetter{
+				goodSHAGetter("abcd"),
+				badSHAGetter},
+			expected: expected{
+				baseSHA:  "",
+				headSHAs: nil,
+				err:      "failed to get headRef: badSHAGetter",
+			},
+		},
+	} {
+		t.Run(tc.name, func(t1 *testing.T) {
+			baseSHA, headSHAs, err := GetAndCheckRefs(tc.baseSHAGetter, tc.headSHAGetters...)
+
+			if tc.expected.err == "" {
+				if err != nil {
+					t.Errorf("Expected error 'nil' got '%v'", err.Error())
+				}
+				if tc.expected.baseSHA != baseSHA {
+					t.Errorf("Expected baseSHA '%v', got '%v'", tc.expected.baseSHA, baseSHA)
+				}
+				if !reflect.DeepEqual(tc.expected.headSHAs, headSHAs) {
+					t.Errorf("headSHAs do not match:\n%s", diff.ObjectReflectDiff(tc.expected.headSHAs, headSHAs))
+				}
+			} else {
+				if err == nil {
+					t.Fatal("Expected non-nil error, got nil")
+				}
+
+				if tc.expected.err != err.Error() {
+					t.Errorf("Expected error '%v', got '%v'", tc.expected.err, err.Error())
+				}
 			}
 		})
 	}
