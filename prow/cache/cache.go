@@ -210,8 +210,8 @@ func (lruCache *LRUCache) GetOrAdd(
 			if keyWasFoundBeforeRemoval {
 				logrus.WithField("key", key).Infof("successfully deleted")
 			} else {
-				err := fmt.Errorf("unexpected race: key deleted by the cache without our knowledge; our own deletion of this key was a NOP")
-				logrus.WithField("key", key).Error(err)
+				err := fmt.Errorf("unexpected (non-problematic) race: key deleted by the cache without our knowledge; our own deletion of this key was a NOP but this does not constitute a problem")
+				logrus.WithField("key", key).Info(err)
 			}
 		}
 	}
