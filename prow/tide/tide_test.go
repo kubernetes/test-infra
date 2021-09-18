@@ -279,7 +279,7 @@ func TestAccumulateBatch(t *testing.T) {
 							PresubmitsStatic: map[string][]config.Presubmit{
 								"org/repo": test.presubmits,
 							},
-							ProwYAMLGetter: test.prowYAMLGetter,
+							ProwYAMLGetterWithDefaults: test.prowYAMLGetter,
 						},
 						ProwConfig: config.ProwConfig{
 							InRepoConfig: inrepoconfig,
@@ -3081,7 +3081,7 @@ func TestPresubmitsByPull(t *testing.T) {
 		})
 		if tc.prowYAMLGetter != nil {
 			cfg.InRepoConfig.Enabled = map[string]*bool{"*": utilpointer.BoolPtr(true)}
-			cfg.ProwYAMLGetter = tc.prowYAMLGetter
+			cfg.ProwYAMLGetterWithDefaults = tc.prowYAMLGetter
 		}
 		cfgAgent := &config.Agent{}
 		cfgAgent.Set(cfg)
@@ -3699,7 +3699,7 @@ func TestPresubmitsForBatch(t *testing.T) {
 							PresubmitsStatic: map[string][]config.Presubmit{
 								"org/repo": tc.jobs,
 							},
-							ProwYAMLGetter: tc.prowYAMLGetter,
+							ProwYAMLGetterWithDefaults: tc.prowYAMLGetter,
 						},
 						ProwConfig: config.ProwConfig{
 							InRepoConfig: inrepoconfig,

@@ -49,11 +49,17 @@ type ProwYAML struct {
 // their own implementation and set that on the Config.
 type ProwYAMLGetter func(c *Config, gc git.ClientFactory, identifier, baseSHA string, headSHAs ...string) (*ProwYAML, error)
 
-// Verify defaultProwYAMLGetter and prowYAMLGetter are both of type
+// Verify prowYAMLGetterWithDefaults and prowYAMLGetter are both of type
 // ProwYAMLGetter.
-var _ ProwYAMLGetter = defaultProwYAMLGetter
+var _ ProwYAMLGetter = prowYAMLGetterWithDefaults
 var _ ProwYAMLGetter = prowYAMLGetter
 
+// prowYAMLGetter is like prowYAMLGetterWithDefaults, but without default values
+// (it does not call DefaultAndValidateProwYAML()). Its sole purpose is to allow
+// caching of ProwYAMLs that are retrieved purely from the inrepoconfig's repo,
+// __without__ having the contents modified by the main Config's own settings
+// (which happens mostly inside DefaultAndValidateProwYAML()). prowYAMLGetter is
+// only used by GetProwYAMLCached().
 func prowYAMLGetter(
 	c *Config,
 	gc git.ClientFactory,
@@ -157,7 +163,9 @@ func prowYAMLGetter(
 	return prowYAML, nil
 }
 
-func defaultProwYAMLGetter(
+// prowYAMLGetterWithDefaults is like prowYAMLGetter, but additionally sets
+// defaults by calling DefaultAndValidateProwYAML.
+func prowYAMLGetterWithDefaults(
 	c *Config,
 	gc git.ClientFactory,
 	identifier string,

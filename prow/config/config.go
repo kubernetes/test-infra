@@ -102,18 +102,10 @@ type JobConfig struct {
 	// for which a tide query is configured.
 	AllRepos sets.String `json:"-"`
 
-	// ProwYAMLGetter is the function to get a ProwYAML. Tests should
-	// provide their own implementation.
-	ProwYAMLGetter ProwYAMLGetter `json:"-"`
-
-	// ProwYAMLGetterNoDefault is like ProwYAMLGetter, but without default
-	// values (it does not call DefaultAndValidateProwYAML()). Its sole purpose
-	// is to allow caching of ProwYAMLs that are retrieved purely from the
-	// inrepoconfig's repo, __without__ having the contents modified by the main
-	// Config's own settings (which happens mostly inside
-	// DefaultAndValidateProwYAML()). ProwYAMLGetterNoDefault is only used by
-	// GetProwYAMLCached().
-	ProwYAMLGetterNoDefault ProwYAMLGetter `json:"-"`
+	// ProwYAMLGetterWithDefaults is the function to get a ProwYAML with
+	// defaults based on the rest of the Config. Tests should provide their own
+	// implementation.
+	ProwYAMLGetterWithDefaults ProwYAMLGetter `json:"-"`
 
 	// DecorateAllJobs determines whether all jobs are decorated by default
 	DecorateAllJobs bool `json:"decorate_all_jobs,omitempty"`
@@ -363,11 +355,34 @@ func GetAndCheckRefs(
 	return baseSHA, headSHAs, nil
 }
 
-// getProwYAML will load presubmits and postsubmits for the given identifier that are
-// versioned inside the tested repo, if the inrepoconfig feature is enabled.
-// Consumers that pass in a RefGetter implementation that does a call to GitHub and who
-// also need the result of that GitHub call just keep a pointer to its result, but must
-// nilcheck that pointer before accessing it.
+// getProwYAMLWithDefaults will load presubmits and postsubmits for the given
+// identifier that are versioned inside the tested repo, if the inrepoconfig
+// feature is enabled. Consumers that pass in a RefGetter implementation that
+// does a call to GitHub and who also need the result of that GitHub call just
+// keep a pointer to its result, but must nilcheck that pointer before accessing
+// it.
+func (c *Config) getProwYAMLWithDefaults(gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) (*ProwYAML, error) {
+	if identifier == "" {
+		return nil, errors.New("no identifier for repo given")
+	}
+	if !c.InRepoConfigEnabled(identifier) {
+		return &ProwYAML{}, nil
+	}
+
+	baseSHA, headSHAs, err := GetAndCheckRefs(baseSHAGetter, headSHAGetters...)
+	if err != nil {
+		return nil, err
+	}
+
+	prowYAML, err := c.ProwYAMLGetterWithDefaults(c, gc, identifier, baseSHA, headSHAs...)
+	if err != nil {
+		return nil, err
+	}
+
+	return prowYAML, nil
+}
+
+// getProwYAML is like getProwYAMLWithDefaults, minus the defaulting logic.
 func (c *Config) getProwYAML(gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) (*ProwYAML, error) {
 	if identifier == "" {
 		return nil, errors.New("no identifier for repo given")
@@ -381,30 +396,7 @@ func (c *Config) getProwYAML(gc git.ClientFactory, identifier string, baseSHAGet
 		return nil, err
 	}
 
-	prowYAML, err := c.ProwYAMLGetter(c, gc, identifier, baseSHA, headSHAs...)
-	if err != nil {
-		return nil, err
-	}
-
-	return prowYAML, nil
-}
-
-// getProwYAMLNoDefault is like getProwYAML, but it uses ProwYAMLGetterNoDefault
-// instead of ProwYAMLGetter.
-func (c *Config) getProwYAMLNoDefault(gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) (*ProwYAML, error) {
-	if identifier == "" {
-		return nil, errors.New("no identifier for repo given")
-	}
-	if !c.InRepoConfigEnabled(identifier) {
-		return &ProwYAML{}, nil
-	}
-
-	baseSHA, headSHAs, err := GetAndCheckRefs(baseSHAGetter, headSHAGetters...)
-	if err != nil {
-		return nil, err
-	}
-
-	prowYAML, err := c.ProwYAMLGetterNoDefault(c, gc, identifier, baseSHA, headSHAs...)
+	prowYAML, err := prowYAMLGetter(c, gc, identifier, baseSHA, headSHAs...)
 	if err != nil {
 		return nil, err
 	}
@@ -419,7 +411,7 @@ func (c *Config) getProwYAMLNoDefault(gc git.ClientFactory, identifier string, b
 // also need the result of that GitHub call just keep a pointer to its result, but must
 // nilcheck that pointer before accessing it.
 func (c *Config) GetPresubmits(gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Presubmit, error) {
-	prowYAML, err := c.getProwYAML(gc, identifier, baseSHAGetter, headSHAGetters...)
+	prowYAML, err := c.getProwYAMLWithDefaults(gc, identifier, baseSHAGetter, headSHAGetters...)
 	if err != nil {
 		return nil, err
 	}
@@ -455,7 +447,7 @@ func (c *Config) GetPresubmitsStatic(identifier string) []Presubmit {
 // also need the result of that GitHub call just keep a pointer to its result, but must
 // nilcheck that pointer before accessing it.
 func (c *Config) GetPostsubmits(gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Postsubmit, error) {
-	prowYAML, err := c.getProwYAML(gc, identifier, baseSHAGetter, headSHAGetters...)
+	prowYAML, err := c.getProwYAMLWithDefaults(gc, identifier, baseSHAGetter, headSHAGetters...)
 	if err != nil {
 		return nil, err
 	}
@@ -1461,8 +1453,7 @@ func loadConfig(prowConfig, jobConfig string, additionalProwConfigDirs []string,
 		}
 	}
 
-	nc.ProwYAMLGetter = defaultProwYAMLGetter
-	nc.ProwYAMLGetterNoDefault = prowYAMLGetter
+	nc.ProwYAMLGetterWithDefaults = prowYAMLGetterWithDefaults
 
 	if deduplicatedTideQueries, err := deduplicateTideQueries(nc.Tide.Queries); err != nil {
 		logrus.WithError(err).Error("failed to deduplicate tide queriees")

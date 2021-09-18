@@ -545,7 +545,7 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 			name: "jobs from inrepoconfig are considered",
 			config: Config{
 				JobConfig: JobConfig{
-					ProwYAMLGetter: fakeProwYAMLGetterFactory(
+					ProwYAMLGetterWithDefaults: fakeProwYAMLGetterFactory(
 						[]Presubmit{
 							{
 								AlwaysRun: true,
@@ -593,7 +593,7 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 							},
 						},
 					},
-					ProwYAMLGetter: fakeProwYAMLGetterFactory(
+					ProwYAMLGetterWithDefaults: fakeProwYAMLGetterFactory(
 						[]Presubmit{
 							{
 								AlwaysRun: true,

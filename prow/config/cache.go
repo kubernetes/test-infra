@@ -95,7 +95,7 @@ func (kp *CacheKeyParts) CacheKey() (CacheKey, error) {
 // miss). It also stores the *ProwYAML into the cache if there is a cache miss.
 func (c *Config) GetPresubmitsCached(pc *ProwYAMLCache, gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Presubmit, error) {
 
-	prowYAML, err := c.GetProwYAMLCached(pc, c.getProwYAMLNoDefault, gc, identifier, baseSHAGetter, headSHAGetters...)
+	prowYAML, err := c.GetProwYAMLCached(pc, c.getProwYAML, gc, identifier, baseSHAGetter, headSHAGetters...)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +113,7 @@ func (c *Config) GetPresubmitsCached(pc *ProwYAMLCache, gc git.ClientFactory, id
 // a cache miss.
 func (c *Config) GetPostsubmitsCached(pc *ProwYAMLCache, gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Postsubmit, error) {
 
-	prowYAML, err := c.GetProwYAMLCached(pc, c.getProwYAMLNoDefault, gc, identifier, baseSHAGetter, headSHAGetters...)
+	prowYAML, err := c.GetProwYAMLCached(pc, c.getProwYAML, gc, identifier, baseSHAGetter, headSHAGetters...)
 	if err != nil {
 		return nil, err
 	}

@@ -2419,8 +2419,8 @@ postsubmits:
 		{
 			name: "prowYAMLGetter gets set",
 			verify: func(c *Config) error {
-				if c.ProwYAMLGetter == nil {
-					return errors.New("config.ProwYAMLGetter is nil")
+				if c.ProwYAMLGetterWithDefaults == nil {
+					return errors.New("config.ProwYAMLGetterWithDefaults is nil")
 				}
 				return nil
 			},
@@ -6346,7 +6346,7 @@ func TestGetProwYAMLDoesNotCallRefGettersWhenInrepoconfigIsDisabled(t *testing.T
 	}
 
 	c := &Config{}
-	if _, err := c.getProwYAML(nil, "test", baseSHAGetter, headSHAGetter); err != nil {
+	if _, err := c.getProwYAMLWithDefaults(nil, "test", baseSHAGetter, headSHAGetter); err != nil {
 		t.Fatalf("error calling GetProwYAML: %v", err)
 	}
 	if baseSHAGetterCalled {
@@ -6372,7 +6372,7 @@ func TestGetPresubmitsReturnsStaticAndInrepoconfigPresubmits(t *testing.T) {
 					Reporter: Reporter{Context: "my-static-presubmit"},
 				}},
 			},
-			ProwYAMLGetter: fakeProwYAMLGetterFactory(
+			ProwYAMLGetterWithDefaults: fakeProwYAMLGetterFactory(
 				[]Presubmit{
 					{
 						JobBase: JobBase{Name: "hans"},
@@ -6410,7 +6410,7 @@ func TestGetPostsubmitsReturnsStaticAndInrepoconfigPostsubmits(t *testing.T) {
 					Reporter: Reporter{Context: "my-static-postsubmits"},
 				}},
 			},
-			ProwYAMLGetter: fakeProwYAMLGetterFactory(
+			ProwYAMLGetterWithDefaults: fakeProwYAMLGetterFactory(
 				nil,
 				[]Postsubmit{
 					{
