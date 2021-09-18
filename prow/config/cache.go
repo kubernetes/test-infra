@@ -110,6 +110,25 @@ func (kp *CacheKeyParts) CacheKey() (CacheKey, error) {
 	return CacheKey(data), nil
 }
 
+func CopyProwYAML(p *ProwYAML) *ProwYAML {
+	newProwYAML := ProwYAML{}
+	newProwYAML.Presets = make([]Preset, len(p.Presets))
+	newProwYAML.Presubmits = make([]Presubmit, len(p.Presubmits))
+	newProwYAML.Postsubmits = make([]Postsubmit, len(p.Postsubmits))
+
+	for i := range p.Presets {
+		newProwYAML.Presets[i] = p.Presets[i]
+	}
+	for i := range p.Presubmits {
+		newProwYAML.Presubmits[i] = p.Presubmits[i]
+	}
+	for i := range p.Postsubmits {
+		newProwYAML.Postsubmits[i] = p.Postsubmits[i]
+	}
+
+	return &newProwYAML
+}
+
 // GetPresubmits uses a cache lookup to get the *ProwYAML value (cache hit),
 // instead of computing it from scratch (cache miss). It also stores the
 // *ProwYAML into the cache if there is a cache miss.
@@ -122,11 +141,18 @@ func (pc *ProwYAMLCache) GetPresubmits(identifier string, baseSHAGetter RefGette
 		return nil, err
 	}
 
-	if err := DefaultAndValidateProwYAML(c, prowYAML, identifier); err != nil {
+	// Create a new copy of Presubmits and Postsubmits slices. This way, the
+	// defaulted values do not modify the elements in the Presubmits and
+	// Postsubmits slices (recall that slices are just references to areas of
+	// memory). This is important for ProwYAMLCache to behave correctly;
+	// otherwise when we default the cached ProwYAML values, the cached item
+	// becomes mutated, affecting future cache lookups.
+	prowYAMLCopy := CopyProwYAML(prowYAML)
+	if err := DefaultAndValidateProwYAML(c, prowYAMLCopy, identifier); err != nil {
 		return nil, err
 	}
 
-	return append(c.GetPresubmitsStatic(identifier), prowYAML.Presubmits...), nil
+	return append(c.GetPresubmitsStatic(identifier), prowYAMLCopy.Presubmits...), nil
 }
 
 // GetPostsubmitsCached is like GetPostsubmits, but attempts to use a cache
@@ -142,11 +168,12 @@ func (pc *ProwYAMLCache) GetPostsubmits(identifier string, baseSHAGetter RefGett
 		return nil, err
 	}
 
-	if err := DefaultAndValidateProwYAML(c, prowYAML, identifier); err != nil {
+	prowYAMLCopy := CopyProwYAML(prowYAML)
+	if err := DefaultAndValidateProwYAML(c, prowYAMLCopy, identifier); err != nil {
 		return nil, err
 	}
 
-	return append(c.GetPostsubmitsStatic(identifier), prowYAML.Postsubmits...), nil
+	return append(c.GetPostsubmitsStatic(identifier), prowYAMLCopy.Postsubmits...), nil
 }
 
 // GetProwYAML performs a lookup of previously-calculated *ProwYAML objects. The
@@ -191,7 +218,12 @@ func (pc *ProwYAMLCache) GetProwYAML(
 		return valConstructorHelper(pc.GitClient, identifier, baseSHAGetter, headSHAGetters...)
 	}
 
-	return pc.Get(key, valConstructor)
+	got, err := pc.Get(key, valConstructor)
+	if err != nil {
+		return nil, err
+	}
+
+	return got, err
 }
 
 // Get is a type assertion wrapper around the values retrieved from the

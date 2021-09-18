@@ -107,6 +107,12 @@ type JobConfig struct {
 	// implementation.
 	ProwYAMLGetterWithDefaults ProwYAMLGetter `json:"-"`
 
+	// ProwYAMLGetter is like ProwYAMLGetterWithDefaults, but does not default
+	// the retrieved ProwYAML with defaulted values. It is mocked by
+	// TestGetPresubmitsAndPostubmitsCached (and in production, prowYAMLGetter()
+	// is used).
+	ProwYAMLGetter ProwYAMLGetter `json:"-"`
+
 	// DecorateAllJobs determines whether all jobs are decorated by default
 	DecorateAllJobs bool `json:"decorate_all_jobs,omitempty"`
 }
@@ -396,7 +402,7 @@ func (c *Config) getProwYAML(gc git.ClientFactory, identifier string, baseSHAGet
 		return nil, err
 	}
 
-	prowYAML, err := prowYAMLGetter(c, gc, identifier, baseSHA, headSHAs...)
+	prowYAML, err := c.ProwYAMLGetter(c, gc, identifier, baseSHA, headSHAs...)
 	if err != nil {
 		return nil, err
 	}
@@ -1430,6 +1436,9 @@ func loadConfig(prowConfig, jobConfig string, additionalProwConfigDirs []string,
 		}
 	}
 
+	// For production, use these functions for getting ProwYAML values. In
+	// tests, we can override these fields with mocked versions.
+	nc.ProwYAMLGetter = prowYAMLGetter
 	nc.ProwYAMLGetterWithDefaults = prowYAMLGetterWithDefaults
 
 	if deduplicatedTideQueries, err := deduplicateTideQueries(nc.Tide.Queries); err != nil {

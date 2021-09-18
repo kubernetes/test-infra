@@ -177,6 +177,7 @@ func prowYAMLGetterWithDefaults(
 		return nil, err
 	}
 
+	// Mutate prowYAML to default values as necessary.
 	if err := DefaultAndValidateProwYAML(c, prowYAML, identifier); err != nil {
 		return nil, err
 	}
