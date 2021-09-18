@@ -394,7 +394,7 @@ def generate_misc():
                    k8s_version="ci",
                    networking="calico",
                    feature_flags=["AWSIPv6"],
-                   runs_per_day=3,
+                   runs_per_day=6,
                    extra_flags=['--ipv6',
                                 '--api-loadbalancer-type=public',
                                 '--api-loadbalancer-class=network',
