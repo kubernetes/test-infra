@@ -18,17 +18,31 @@ package config
 
 import (
 	"fmt"
+	"sync"
 	"testing"
 
 	"k8s.io/test-infra/prow/git/v2"
 )
+
+type fakeConfigAgent struct {
+	sync.Mutex
+	c *Config
+}
+
+func (f *fakeConfigAgent) Config() *Config {
+	f.Lock()
+	defer f.Unlock()
+	return f.c
+}
 
 func TestNewProwYAMLCache(t *testing.T) {
 	// Invalid size arguments result in a nil prowYAMLCache and non-nil error.
 	invalids := []int{-1, 0}
 	for _, invalid := range invalids {
 
-		prowYAMLCache, err := NewProwYAMLCache(invalid)
+		fca := &fakeConfigAgent{}
+		cf := &testClientFactory{}
+		prowYAMLCache, err := NewProwYAMLCache(invalid, fca, cf)
 
 		if err == nil {
 			t.Fatal("Expected non-nil error, got nil")
@@ -47,7 +61,9 @@ func TestNewProwYAMLCache(t *testing.T) {
 	valids := []int{1, 5, 1000}
 	for _, valid := range valids {
 
-		prowYAMLCache, err := NewProwYAMLCache(valid)
+		fca := &fakeConfigAgent{}
+		cf := &testClientFactory{}
+		prowYAMLCache, err := NewProwYAMLCache(valid, fca, cf)
 
 		if err != nil {
 			t.Errorf("Expected error 'nil' got '%v'", err.Error())
@@ -138,11 +154,6 @@ func TestGetProwYAMLCached(t *testing.T) {
 
 	badValConstructor := func(gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) (*ProwYAML, error) {
 		return nil, fmt.Errorf("unable to construct *ProwYAML value")
-	}
-
-	prowYAMLCache, err := NewProwYAMLCache(1)
-	if err != nil {
-		t.Fatal("could not initialize prowYAMLCache")
 	}
 
 	type expected struct {
@@ -335,7 +346,23 @@ func TestGetProwYAMLCached(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t1 *testing.T) {
 			// Reset test state.
-			prowYAMLCache.Purge()
+			maybeEnabled := make(map[string]*bool)
+			maybeEnabled[tc.identifier] = &tc.inRepoConfigEnabled
+
+			fca := &fakeConfigAgent{
+				c: &Config{
+					ProwConfig: ProwConfig{
+						InRepoConfig: InRepoConfig{
+							Enabled: maybeEnabled,
+						},
+					},
+				},
+			}
+			cf := &testClientFactory{}
+			prowYAMLCache, err := NewProwYAMLCache(1, fca, cf)
+			if err != nil {
+				t.Fatal("could not initialize prowYAMLCache")
+			}
 
 			for _, kp := range tc.cacheInitialState {
 				k, err := kp.CacheKey()
@@ -364,16 +391,7 @@ func TestGetProwYAMLCached(t *testing.T) {
 				}
 			}
 
-			maybeEnabled := make(map[string]*bool)
-			maybeEnabled[tc.identifier] = &tc.inRepoConfigEnabled
-			c := Config{
-				ProwConfig: ProwConfig{
-					InRepoConfig: InRepoConfig{
-						Enabled: maybeEnabled,
-					},
-				},
-			}
-			prowYAML, err := c.GetProwYAMLCached(prowYAMLCache, tc.valConstructor, nil, tc.identifier, tc.baseSHAGetter, tc.headSHAGetters...)
+			prowYAML, err := prowYAMLCache.GetProwYAML(tc.valConstructor, tc.identifier, tc.baseSHAGetter, tc.headSHAGetters...)
 
 			if tc.expected.err == "" {
 				if err != nil {

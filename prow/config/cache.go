@@ -33,20 +33,40 @@ import (
 // client, walk the filesystem path, etc. To speed things up, we save results of
 // this function into a cache named ProwYAMLCache.
 
+var _ prowConfigAgentClient = (*Agent)(nil)
+
+type prowConfigAgentClient interface {
+	Config() *Config
+}
+
 // ProwYAMLCache is the user-facing cache. It acts as a wrapper around the
 // generic LRUCache, by handling type casting in and out of the LRUCache (which
 // only handles empty interfaces).
-type ProwYAMLCache cache.LRUCache
+type ProwYAMLCache struct {
+	*cache.LRUCache
+	ConfigAgent prowConfigAgentClient
+	GitClient   git.ClientFactory
+}
 
 // NewProwYAMLCache creates a new LRU cache for ProwYAML values, where the keys
 // are CacheKeys (that is, JSON strings) and values are pointers to ProwYAMLs.
-func NewProwYAMLCache(size int) (*ProwYAMLCache, error) {
-	cache, err := cache.NewLRUCache(size)
+func NewProwYAMLCache(
+	size int,
+	configAgent prowConfigAgentClient,
+	gitClientFactory git.ClientFactory) (*ProwYAMLCache, error) {
+
+	lruCache, err := cache.NewLRUCache(size)
 	if err != nil {
 		return nil, err
 	}
 
-	return (*ProwYAMLCache)(cache), nil
+	pc := &ProwYAMLCache{
+		lruCache,
+		configAgent,
+		gitClientFactory,
+	}
+
+	return pc, nil
 }
 
 // CacheKey acts as a key to the ProwYAMLCache. We construct it by marshaling
@@ -90,12 +110,14 @@ func (kp *CacheKeyParts) CacheKey() (CacheKey, error) {
 	return CacheKey(data), nil
 }
 
-// GetPresubmitsCached is like GetPresubmits, but uses a cache lookup to get the
-// *ProwYAML value (cache hit), instead of computing it from scratch (cache
-// miss). It also stores the *ProwYAML into the cache if there is a cache miss.
-func (c *Config) GetPresubmitsCached(pc *ProwYAMLCache, gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Presubmit, error) {
+// GetPresubmits uses a cache lookup to get the *ProwYAML value (cache hit),
+// instead of computing it from scratch (cache miss). It also stores the
+// *ProwYAML into the cache if there is a cache miss.
+func (pc *ProwYAMLCache) GetPresubmits(identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Presubmit, error) {
 
-	prowYAML, err := c.GetProwYAMLCached(pc, c.getProwYAML, gc, identifier, baseSHAGetter, headSHAGetters...)
+	c := pc.ConfigAgent.Config()
+
+	prowYAML, err := pc.GetProwYAML(c.getProwYAML, identifier, baseSHAGetter, headSHAGetters...)
 	if err != nil {
 		return nil, err
 	}
@@ -111,9 +133,11 @@ func (c *Config) GetPresubmitsCached(pc *ProwYAMLCache, gc git.ClientFactory, id
 // lookup to get the *ProwYAML value (cache hit), instead of computing it from
 // scratch (cache miss). It also stores the *ProwYAML into the cache if there is
 // a cache miss.
-func (c *Config) GetPostsubmitsCached(pc *ProwYAMLCache, gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Postsubmit, error) {
+func (pc *ProwYAMLCache) GetPostsubmits(identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Postsubmit, error) {
 
-	prowYAML, err := c.GetProwYAMLCached(pc, c.getProwYAML, gc, identifier, baseSHAGetter, headSHAGetters...)
+	c := pc.ConfigAgent.Config()
+
+	prowYAML, err := pc.GetProwYAML(c.getProwYAML, identifier, baseSHAGetter, headSHAGetters...)
 	if err != nil {
 		return nil, err
 	}
@@ -125,18 +149,15 @@ func (c *Config) GetPostsubmitsCached(pc *ProwYAMLCache, gc git.ClientFactory, i
 	return append(c.GetPostsubmitsStatic(identifier), prowYAML.Postsubmits...), nil
 }
 
-// GetProwYAMLCached uses ProwYAMLCache to first try to perform a lookup of
-// previously-calculated *ProwYAML objects. The 'valConstructorHelper' is used
-// in two ways. First it is used by the caching mechanism to lazily generate the
-// value only when it is required (otherwise, if all threads had to generate the
-// value, it would defeat the purpose of the cache in the first place). Second,
-// it makes it easier to test this function, because unit tests can just provide
-// its own function for constructing a *ProwYAML object (instead of needing to
-// create an actual Git repo, etc.).
-func (c *Config) GetProwYAMLCached(
-	prowYAMLCache *ProwYAMLCache,
+// GetProwYAML performs a lookup of previously-calculated *ProwYAML objects. The
+// 'valConstructorHelper' is used in two ways. First it is used by the caching
+// mechanism to lazily generate the value only when it is required (otherwise,
+// if all threads had to generate the value, it would defeat the purpose of the
+// cache in the first place). Second, it makes it easier to test this function,
+// because unit tests can just provide its own function for constructing a
+// *ProwYAML object (instead of needing to create an actual Git repo, etc.).
+func (pc *ProwYAMLCache) GetProwYAML(
 	valConstructorHelper func(git.ClientFactory, string, RefGetter, ...RefGetter) (*ProwYAML, error),
-	gc git.ClientFactory,
 	identifier string,
 	baseSHAGetter RefGetter,
 	headSHAGetters ...RefGetter) (*ProwYAML, error) {
@@ -151,6 +172,7 @@ func (c *Config) GetProwYAMLCached(
 	// (because not only is it useless, but adding a useless entry also may
 	// result in evicting a useful entry if the underlying cache is full and an
 	// older (useful) key is evicted).
+	c := pc.ConfigAgent.Config()
 	if !c.InRepoConfigEnabled(identifier) {
 		return &ProwYAML{}, nil
 	}
@@ -166,21 +188,21 @@ func (c *Config) GetProwYAMLCached(
 	}
 
 	valConstructor := func() (interface{}, error) {
-		return valConstructorHelper(gc, identifier, baseSHAGetter, headSHAGetters...)
+		return valConstructorHelper(pc.GitClient, identifier, baseSHAGetter, headSHAGetters...)
 	}
 
-	return prowYAMLCache.GetOrAdd(key, valConstructor)
+	return pc.Get(key, valConstructor)
 }
 
-// GetOrAdd is a type assertion wrapper around the values retrieved from the
+// Get is a type assertion wrapper around the values retrieved from the
 // inner LRUCache object (which only understands empty interfaces for both keys
 // and values). Users are expected to add their own GetOrAdd method for their
 // own cached value.
-func (p *ProwYAMLCache) GetOrAdd(
+func (pc *ProwYAMLCache) Get(
 	key CacheKey,
 	valConstructor cache.ValConstructor) (*ProwYAML, error) {
 
-	val, err := (*cache.LRUCache)(p).GetOrAdd(key, valConstructor)
+	val, err := pc.GetOrAdd(key, valConstructor)
 	if err != nil {
 		return nil, err
 	}

@@ -53,9 +53,9 @@ var _ prowCfgClient = (*config.Config)(nil)
 // "*config.Config" type implements, which we will test here.
 type prowCfgClient interface {
 	AllPeriodics() []config.Periodic
-	GetPresubmitsMaybeCached(pc *config.ProwYAMLCache, gc git.ClientFactory, identifier string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) ([]config.Presubmit, error)
+	GetPresubmits(gc git.ClientFactory, identifier string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) ([]config.Presubmit, error)
 	GetPresubmitsStatic(identifier string) []config.Presubmit
-	GetPostsubmitsMaybeCached(pc *config.ProwYAMLCache, gc git.ClientFactory, identifier string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) ([]config.Postsubmit, error)
+	GetPostsubmits(gc git.ClientFactory, identifier string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) ([]config.Postsubmit, error)
 	GetPostsubmitsStatic(identifier string) []config.Postsubmit
 }
 
@@ -216,7 +216,14 @@ func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.Pro
 
 	presubmits := cfg.GetPresubmitsStatic(orgRepo)
 	if prh.GitClient != nil { // Get from inrepoconfig only when GitClient is provided
-		presubmitsWithInrepoconfig, err := cfg.GetPresubmitsMaybeCached(pc, prh.GitClient, orgRepo, baseSHAGetter, headSHAGetters...)
+		var presubmitsWithInrepoconfig []config.Presubmit
+		var err error
+		if pc == nil {
+			presubmitsWithInrepoconfig, err = cfg.GetPresubmits(prh.GitClient, orgRepo, baseSHAGetter, headSHAGetters...)
+		} else {
+			pc.GitClient = prh.GitClient
+			presubmitsWithInrepoconfig, err = pc.GetPresubmits(orgRepo, baseSHAGetter, headSHAGetters...)
+		}
 		if err != nil {
 			logrus.WithError(err).Debug("Failed to get presubmits")
 		} else {
@@ -277,7 +284,14 @@ func (poh *postsubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.Pr
 
 	postsubmits := cfg.GetPostsubmitsStatic(orgRepo)
 	if poh.GitClient != nil { // Get from inrepoconfig only when GitClient is provided
-		postsubmitsWithInrepoconfig, err := cfg.GetPostsubmitsMaybeCached(pc, poh.GitClient, orgRepo, baseSHAGetter)
+		var postsubmitsWithInrepoconfig []config.Postsubmit
+		var err error
+		if pc == nil {
+			postsubmitsWithInrepoconfig, err = cfg.GetPostsubmits(poh.GitClient, orgRepo, baseSHAGetter)
+		} else {
+			pc.GitClient = poh.GitClient
+			postsubmitsWithInrepoconfig, err = pc.GetPostsubmits(orgRepo, baseSHAGetter)
+		}
 		if err != nil {
 			logrus.WithError(err).Debug("Failed to get postsubmits from inrepoconfig")
 		} else {
