@@ -18,7 +18,7 @@ postsubmits:
               - /run.sh
             args:
               # this is the project GCB will run in, which is the same as the GCR images are pushed to.
-              - --project=k8s-staging-apisnoop
+              - --project=k8s-infra-public-pii
               - --scratch-bucket=gs://k8s-staging-public-pii-gcb
               - --env-passthrough=PULL_BASE_REF
               - images/public-log-vendor-matcher
