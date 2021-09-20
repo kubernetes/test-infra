@@ -247,7 +247,7 @@ func NewDiskCache(delegate http.RoundTripper, cacheDir string, cacheSizeGB, maxC
 
 	go func() {
 		for range time.NewTicker(cachePruneInterval).C {
-			prune(cacheDir)
+			Prune(cacheDir, time.Now)
 		}
 	}()
 	return NewFromCache(delegate,
@@ -268,7 +268,7 @@ func NewDiskCache(delegate http.RoundTripper, cacheDir string, cacheSizeGB, maxC
 	)
 }
 
-func prune(baseDir string) {
+func Prune(baseDir string, now func() time.Time) {
 	// All of this would be easier if the structure was base/partition/{data,temp}
 	// but because of compatibility we can not change it.
 	for _, dir := range []string{"data", "temp"} {
@@ -294,7 +294,7 @@ func prune(baseDir string) {
 				logrus.WithError(err).WithField("filepath", metadataPath).Error("failed to deserialize metadata file")
 				continue
 			}
-			if metadata.ExpiresAt.After(time.Now()) {
+			if metadata.ExpiresAt.After(now()) {
 				continue
 			}
 			paritionPath := filepath.Dir(metadataPath)
