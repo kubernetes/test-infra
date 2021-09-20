@@ -3,7 +3,7 @@ periodics:
     agent: kubernetes
     name: public-log-vendor-matcher
     annotations:
-      testgrid-dashboards: k8s-infra-public-pii
+      testgrid-dashboards: wg-k8s-infra
       testgrid-tab-name: public-log-vendor-matcher
       testgrid-alert-email: public-log-vendor-matcher@ii.coop
       description: Runs the public-log-vendor-matcher job for generating data that is used for reviewing Kubernetes Public artifact traffic in DataStudio
