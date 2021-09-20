@@ -310,7 +310,7 @@ presets:
     preset-e2e-scalability-periodics: "true"
   env:
   - name: NODE_PRELOAD_IMAGES
-    value: k8s.gcr.io/pause:3.1
+    value: k8s.gcr.io/pause:3.6
 
 - labels:
     preset-e2e-scalability-periodics-master: "true"
