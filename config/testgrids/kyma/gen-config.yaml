@@ -13,15 +13,6 @@ dashboards:
 - dashboard_tab:
   - code_search_url_template:
       url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
-    description: Kyma AKS nightly fast integration tests.
-    name: kyma-aks-nightly-fast-integration
-    open_bug_template:
-      url: https://github.com/kyma-project/kyma/issues/
-    open_test_template:
-      url: https://status.build.kyma-project.io/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: kyma-aks-nightly-fast-integration
-  - code_search_url_template:
-      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
     description: Kyma AKS nightly build. (release-1.24)
     name: kyma-aks-nightly-rel124
     open_bug_template:
@@ -49,15 +40,6 @@ dashboards:
     test_group_name: kyma-alpha-integration-production-gardener-azure
   - code_search_url_template:
       url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
-    description: Kyma GKE nightly fast integration tests.
-    name: kyma-gke-nightly-fast-integration
-    open_bug_template:
-      url: https://github.com/kyma-project/kyma/issues/
-    open_test_template:
-      url: https://status.build.kyma-project.io/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: kyma-gke-nightly-fast-integration
-  - code_search_url_template:
-      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
     description: Kyma GKE nightly build. (release-1.24)
     name: kyma-gke-nightly-rel124
     open_bug_template:
@@ -65,15 +47,6 @@ dashboards:
     open_test_template:
       url: https://status.build.kyma-project.io/view/gs/<gcs_prefix>/<changelist>
     test_group_name: kyma-gke-nightly-rel124
-  - code_search_url_template:
-      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
-    description: Kyma GKE weekly fast integration tests.
-    name: kyma-gke-weekly-fast-integration
-    open_bug_template:
-      url: https://github.com/kyma-project/kyma/issues/
-    open_test_template:
-      url: https://status.build.kyma-project.io/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: kyma-gke-weekly-fast-integration
   - code_search_url_template:
       url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
     description: Kyma GKE weekly build. (release-1.24)
@@ -175,6 +148,25 @@ dashboards:
     open_test_template:
       url: https://status.build.kyma-project.io/view/gs/<gcs_prefix>/<changelist>
     test_group_name: post-main-kyma-integration-k3d
+  - code_search_url_template:
+      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
+    description: Kyma integration job on k3d with central Application Gateway.
+    name: post-main-kyma-integration-k3d-central-app-connectivity
+    open_bug_template:
+      url: https://github.com/kyma-project/kyma/issues/
+    open_test_template:
+      url: https://status.build.kyma-project.io/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: post-main-kyma-integration-k3d-central-app-connectivity
+  - code_search_url_template:
+      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
+    description: Kyma integration job on k3d with central Application Gateway and
+      Compass dev.
+    name: post-main-kyma-integration-k3d-central-app-connectivity-compass
+    open_bug_template:
+      url: https://github.com/kyma-project/kyma/issues/
+    open_test_template:
+      url: https://status.build.kyma-project.io/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: post-main-kyma-integration-k3d-central-app-connectivity-compass
   - code_search_url_template:
       url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
     description: Kyma integration job on k3d with compass dev.
@@ -443,20 +435,14 @@ dashboards:
     test_group_name: post-main-compass-integration-no-dump
   name: kyma-incubator_compass
 test_groups:
-- gcs_prefix: kyma-prow-logs/logs/kyma-aks-nightly-fast-integration
-  name: kyma-aks-nightly-fast-integration
 - gcs_prefix: kyma-prow-logs/logs/kyma-aks-nightly-rel124
   name: kyma-aks-nightly-rel124
 - gcs_prefix: kyma-prow-logs/logs/kyma-alpha-integration-evaluation-gardener-azure
   name: kyma-alpha-integration-evaluation-gardener-azure
 - gcs_prefix: kyma-prow-logs/logs/kyma-alpha-integration-production-gardener-azure
   name: kyma-alpha-integration-production-gardener-azure
-- gcs_prefix: kyma-prow-logs/logs/kyma-gke-nightly-fast-integration
-  name: kyma-gke-nightly-fast-integration
 - gcs_prefix: kyma-prow-logs/logs/kyma-gke-nightly-rel124
   name: kyma-gke-nightly-rel124
-- gcs_prefix: kyma-prow-logs/logs/kyma-gke-weekly-fast-integration
-  name: kyma-gke-weekly-fast-integration
 - gcs_prefix: kyma-prow-logs/logs/kyma-gke-weekly-rel124
   name: kyma-gke-weekly-rel124
 - gcs_prefix: kyma-prow-logs/logs/kyma-integration-evaluation-gardener-azure-rel124
@@ -495,6 +481,12 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: kyma-prow-logs/logs/post-main-kyma-integration-k3d
   name: post-main-kyma-integration-k3d
+- days_of_results: 60
+  gcs_prefix: kyma-prow-logs/logs/post-main-kyma-integration-k3d-central-app-connectivity
+  name: post-main-kyma-integration-k3d-central-app-connectivity
+- days_of_results: 60
+  gcs_prefix: kyma-prow-logs/logs/post-main-kyma-integration-k3d-central-app-connectivity-compass
+  name: post-main-kyma-integration-k3d-central-app-connectivity-compass
 - days_of_results: 60
   gcs_prefix: kyma-prow-logs/logs/post-main-kyma-integration-k3d-compass-dev
   name: post-main-kyma-integration-k3d-compass-dev
