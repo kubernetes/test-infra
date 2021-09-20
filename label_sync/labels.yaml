@@ -499,6 +499,14 @@ default:
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
+      description: Categorizes an issue or PR as relevant to SIG K8s Infra.
+      name: sig/k8s-infra
+      target: both
+      prowPlugin: label
+      addedBy: anyone
+      prevously:
+        - name: wg/k8s-infra
+    - color: d2b48c
       description: Categorizes an issue or PR as relevant to SIG Multicluster.
       name: sig/multicluster
       previously:
@@ -590,12 +598,6 @@ default:
     - color: d2b48c
       description: Categorizes an issue or PR as relevant to WG IOT Edge.
       name: wg/iot-edge
-      target: both
-      prowPlugin: label
-      addedBy: anyone
-    - color: d2b48c
-      description: Categorizes an issue or PR as relevant to WG k8s Infra.
-      name: wg/k8s-infra
       target: both
       prowPlugin: label
       addedBy: anyone
