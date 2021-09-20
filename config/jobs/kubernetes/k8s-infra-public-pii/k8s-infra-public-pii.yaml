@@ -1,0 +1,29 @@
+periodics:
+  - interval: 7d
+    agent: kubernetes
+    name: public-log-vendor-matcher
+    decorate: true
+    spec:
+      containers:
+        - name: public-log-vendor-matcher
+          image: public-log-vendor-matcher #something
+          command:
+            - /usr/local/bin/docker-entrypoint.sh
+            - postgres
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: gcp-app-creds
+              mountPath: /etc/asn-etl-pipeline
+          env:
+            - name: GCP_PROJECT
+              value: k8s-infra-ii-sandbox
+            - name: GCP_SERVICEACCOUNT
+              value: asn-etl@k8s-infra-ii-sandbox.iam.gserviceaccount.com
+            - name: GCP_BIGQUERY_DATASET
+              value: etl_script_generated_set
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /etc/asn-etl-pipeline/asn-etl-pipeline-gcp-sa.json
+      volumes:
+        - name: gcp-app-creds
+          secret:
+            secretName: gcp-app-creds
