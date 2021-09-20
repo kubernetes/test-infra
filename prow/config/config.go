@@ -348,7 +348,7 @@ func GetAndCheckRefs(
 		return "", nil, fmt.Errorf("failed to get baseSHA: %v", err)
 	}
 
-	// Parse "headSHAGetterss".
+	// Parse "headSHAGetters".
 	var headSHAs []string
 	for _, headSHAGetter := range headSHAGetters {
 		headSHA, err := headSHAGetter()

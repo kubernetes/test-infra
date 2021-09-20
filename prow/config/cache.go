@@ -33,6 +33,10 @@ import (
 // client, walk the filesystem path, etc. To speed things up, we save results of
 // this function into a cache named ProwYAMLCache.
 
+// The ProwYAMLCache needs a Config agent client. Here we require that the Agent
+// type fits the prowConfigAgentClient interface, which requires a Config()
+// method to retrieve the current Config. Tests can use a fake Config agent
+// instead of the real one.
 var _ prowConfigAgentClient = (*Agent)(nil)
 
 type prowConfigAgentClient interface {
@@ -110,7 +114,9 @@ func (kp *CacheKeyParts) CacheKey() (CacheKey, error) {
 	return CacheKey(data), nil
 }
 
-func CopyProwYAML(p *ProwYAML) *ProwYAML {
+// NewProwYAML creates a new ProwYAML object, based on the given ProwYAML
+// object.
+func NewProwYAML(p *ProwYAML) *ProwYAML {
 	newProwYAML := ProwYAML{}
 	newProwYAML.Presets = make([]Preset, len(p.Presets))
 	newProwYAML.Presubmits = make([]Presubmit, len(p.Presubmits))
@@ -141,18 +147,18 @@ func (pc *ProwYAMLCache) GetPresubmits(identifier string, baseSHAGetter RefGette
 		return nil, err
 	}
 
-	// Create a new copy of Presubmits and Postsubmits slices. This way, the
-	// defaulted values do not modify the elements in the Presubmits and
-	// Postsubmits slices (recall that slices are just references to areas of
-	// memory). This is important for ProwYAMLCache to behave correctly;
-	// otherwise when we default the cached ProwYAML values, the cached item
-	// becomes mutated, affecting future cache lookups.
-	prowYAMLCopy := CopyProwYAML(prowYAML)
-	if err := DefaultAndValidateProwYAML(c, prowYAMLCopy, identifier); err != nil {
+	// Create a new ProwYAML object based on what we retrieved from the cache.
+	// This way, the act of defaulting values does not modify the elements in
+	// the Presubmits and Postsubmits slices (recall that slices are just
+	// references to areas of memory). This is important for ProwYAMLCache to
+	// behave correctly; otherwise when we default the cached ProwYAML values,
+	// the cached item becomes mutated, affecting future cache lookups.
+	newProwYAML := NewProwYAML(prowYAML)
+	if err := DefaultAndValidateProwYAML(c, newProwYAML, identifier); err != nil {
 		return nil, err
 	}
 
-	return append(c.GetPresubmitsStatic(identifier), prowYAMLCopy.Presubmits...), nil
+	return append(c.GetPresubmitsStatic(identifier), newProwYAML.Presubmits...), nil
 }
 
 // GetPostsubmitsCached is like GetPostsubmits, but attempts to use a cache
@@ -168,12 +174,12 @@ func (pc *ProwYAMLCache) GetPostsubmits(identifier string, baseSHAGetter RefGett
 		return nil, err
 	}
 
-	prowYAMLCopy := CopyProwYAML(prowYAML)
-	if err := DefaultAndValidateProwYAML(c, prowYAMLCopy, identifier); err != nil {
+	newProwYAML := NewProwYAML(prowYAML)
+	if err := DefaultAndValidateProwYAML(c, newProwYAML, identifier); err != nil {
 		return nil, err
 	}
 
-	return append(c.GetPostsubmitsStatic(identifier), prowYAMLCopy.Postsubmits...), nil
+	return append(c.GetPostsubmitsStatic(identifier), newProwYAML.Postsubmits...), nil
 }
 
 // GetProwYAML performs a lookup of previously-calculated *ProwYAML objects. The
@@ -194,7 +200,7 @@ func (pc *ProwYAMLCache) GetProwYAML(
 	}
 
 	// Abort if the InRepoConfig is not enabled for this identifier (org/repo).
-	// It's important that we short-circuit here __before__ calling GetOrAdd()
+	// It's important that we short-circuit here __before__ calling pc.Get()
 	// because we do NOT want to add an empty &ProwYAML{} value in the cache
 	// (because not only is it useless, but adding a useless entry also may
 	// result in evicting a useful entry if the underlying cache is full and an
@@ -226,10 +232,10 @@ func (pc *ProwYAMLCache) GetProwYAML(
 	return got, err
 }
 
-// Get is a type assertion wrapper around the values retrieved from the
-// inner LRUCache object (which only understands empty interfaces for both keys
-// and values). Users are expected to add their own GetOrAdd method for their
-// own cached value.
+// Get is a type assertion wrapper around the values retrieved from the inner
+// LRUCache object (which only understands empty interfaces for both keys and
+// values). It wraps around the low-level GetOrAdd function. Users are expected
+// to add their own Get method for their own cached value.
 func (pc *ProwYAMLCache) Get(
 	key CacheKey,
 	valConstructor cache.ValConstructor) (*ProwYAML, error) {
