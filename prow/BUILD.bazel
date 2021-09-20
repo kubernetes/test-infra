@@ -178,6 +178,7 @@ filegroup(
         "//prow/github:all-srcs",
         "//prow/githubeventserver:all-srcs",
         "//prow/githuboauth:all-srcs",
+        "//prow/googlecloudbuild/client:all-srcs",
         "//prow/hook:all-srcs",
         "//prow/initupload:all-srcs",
         "//prow/interrupts:all-srcs",
