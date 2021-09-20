@@ -473,7 +473,7 @@ periodics:
       - -c
       - >-
         cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&
-        ./deploy/install-driver.sh v1.6.0 local,snapshot &&
+        ./deploy/install-driver.sh v1.6.0 local,snapshot,enable-avset &&
         make e2e-test
       env:
       - name: USE_CI_ARTIFACTS
