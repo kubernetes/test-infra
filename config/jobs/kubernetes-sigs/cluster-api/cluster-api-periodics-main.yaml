@@ -7,7 +7,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api
-    base_ref: master
+    base_ref: main
     path_alias: sigs.k8s.io/cluster-api
   spec:
     containers:
@@ -31,7 +31,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api
-    base_ref: master
+    base_ref: main
     path_alias: sigs.k8s.io/cluster-api
   - org: kubernetes
     repo: kubernetes
@@ -73,7 +73,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api
-    base_ref: master
+    base_ref: main
     path_alias: sigs.k8s.io/cluster-api
   - org: kubernetes
     repo: kubernetes
@@ -108,7 +108,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api
-    base_ref: master
+    base_ref: main
     path_alias: sigs.k8s.io/cluster-api
   - org: kubernetes
     repo: kubernetes
@@ -144,7 +144,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api
-    base_ref: master
+    base_ref: main
     path_alias: sigs.k8s.io/cluster-api
   spec:
     containers:
