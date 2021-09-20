@@ -1,5 +1,5 @@
 periodics:
-  - interval: 7d
+  - interval: 168h
     agent: kubernetes
     name: public-log-vendor-matcher
     decorate: true
