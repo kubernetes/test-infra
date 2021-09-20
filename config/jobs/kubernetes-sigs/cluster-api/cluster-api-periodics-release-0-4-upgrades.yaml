@@ -1,7 +1,7 @@
 periodics:
 
-- name: periodic-cluster-api-e2e-workload-upgrade-1-18-1-19-main
-  interval: 24h
+- name: periodic-cluster-api-e2e-workload-upgrade-1-18-1-19-release-0-4
+  interval: 48h
   decorate: true
   labels:
     preset-dind-enabled: "true"
@@ -9,7 +9,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api
-    base_ref: master
+    base_ref: release-0.4
     path_alias: sigs.k8s.io/cluster-api
   - org: kubernetes
     repo: kubernetes
@@ -17,7 +17,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-1.22
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-1.21
       args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
@@ -39,13 +39,13 @@ periodics:
         requests:
           cpu: 7300m
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-    testgrid-tab-name: capi-e2e-main-1-18-1-19
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.4
+    testgrid-tab-name: capi-e2e-release-0-4-1-18-1-19
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "2"
 
-- name: periodic-cluster-api-e2e-workload-upgrade-1-19-1-20-main
-  interval: 24h
+- name: periodic-cluster-api-e2e-workload-upgrade-1-19-1-20-release-0-4
+  interval: 48h
   decorate: true
   labels:
     preset-dind-enabled: "true"
@@ -53,7 +53,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api
-    base_ref: master
+    base_ref: release-0.4
     path_alias: sigs.k8s.io/cluster-api
   - org: kubernetes
     repo: kubernetes
@@ -61,7 +61,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-1.22
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-1.21
       args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
@@ -83,13 +83,13 @@ periodics:
         requests:
           cpu: 7300m
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-    testgrid-tab-name: capi-e2e-main-1-19-1-20
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.4
+    testgrid-tab-name: capi-e2e-release-0-4-1-19-1-20
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "2"
 
-- name: periodic-cluster-api-e2e-workload-upgrade-1-20-1-21-main
-  interval: 24h
+- name: periodic-cluster-api-e2e-workload-upgrade-1-20-1-21-release-0-4
+  interval: 48h
   decorate: true
   labels:
     preset-dind-enabled: "true"
@@ -97,7 +97,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api
-    base_ref: master
+    base_ref: release-0.4
     path_alias: sigs.k8s.io/cluster-api
   - org: kubernetes
     repo: kubernetes
@@ -127,13 +127,13 @@ periodics:
         requests:
           cpu: 7300m
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-    testgrid-tab-name: capi-e2e-main-1-20-1-21
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.4
+    testgrid-tab-name: capi-e2e-release-0-4-1-20-1-21
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "2"
 
-- name: periodic-cluster-api-e2e-workload-upgrade-1-21-1-22-main
-  interval: 24h
+- name: periodic-cluster-api-e2e-workload-upgrade-1-21-1-22-release-0-4
+  interval: 48h
   decorate: true
   labels:
     preset-dind-enabled: "true"
@@ -141,7 +141,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api
-    base_ref: master
+    base_ref: release-0.4
     path_alias: sigs.k8s.io/cluster-api
   - org: kubernetes
     repo: kubernetes
@@ -149,7 +149,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-1.22
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-1.21
       args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
@@ -171,13 +171,13 @@ periodics:
         requests:
           cpu: 7300m
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-    testgrid-tab-name: capi-e2e-main-1-21-1-22
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.4
+    testgrid-tab-name: capi-e2e-release-0-4-1-21-1-22
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "2"
 
-- name: periodic-cluster-api-e2e-workload-upgrade-1-22-latest-main
-  interval: 24h
+- name: periodic-cluster-api-e2e-workload-upgrade-1-22-latest-release-0-4
+  interval: 48h
   decorate: true
   labels:
     preset-dind-enabled: "true"
@@ -185,7 +185,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api
-    base_ref: master
+    base_ref: release-0.4
     path_alias: sigs.k8s.io/cluster-api
   - org: kubernetes
     repo: kubernetes
@@ -193,7 +193,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-1.22
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-1.21
       args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
@@ -215,7 +215,7 @@ periodics:
         requests:
           cpu: 7300m
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-    testgrid-tab-name: capi-e2e-main-1-22-latest
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.4
+    testgrid-tab-name: capi-e2e-release-0-4-1-22-latest
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "2"
