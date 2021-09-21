@@ -1,7 +1,7 @@
 dashboard_groups:
-  - name: k8s-infra-public-pii-group
+  - name: k8s-infra-public-pii
     dashboard_names:
-      - k8s-infra-public-pii
+      - k8s-infra-public-pii-all
 
 dashboards:
-  - name: k8s-infra-public-pii
+  - name: k8s-infra-public-pii-all
