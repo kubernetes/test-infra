@@ -95,6 +95,9 @@ type Client interface {
 	ForPlugin(plugin string) Client
 	ForSubcomponent(subcomponent string) Client
 	WithFields(fields logrus.Fields) Client
+
+	// SearchBugs returns all bugs that meet the given criteria
+	SearchBugs(filters map[string]string) ([]*Bug, error)
 }
 
 // NewClient returns a bugzilla client.
