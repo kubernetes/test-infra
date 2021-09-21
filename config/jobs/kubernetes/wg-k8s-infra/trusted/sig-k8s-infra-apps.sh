@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# generates wg-k8s-infra app deployment job configs
+# generates sig-k8s-infra app deployment job configs
 
 set -o errexit
 set -o nounset
