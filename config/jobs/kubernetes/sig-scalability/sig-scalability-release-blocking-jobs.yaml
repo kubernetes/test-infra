@@ -181,6 +181,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --cluster=e2e-big
+      - --env=HEAPSTER_MACHINE_TYPE=e2-standard-8
       - --extract=ci/latest-fast
       - --extract-ci-bucket=k8s-release-dev
       - --gcp-node-image=gci
