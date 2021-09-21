@@ -114,27 +114,6 @@ func (kp *CacheKeyParts) CacheKey() (CacheKey, error) {
 	return CacheKey(data), nil
 }
 
-// NewProwYAML creates a new ProwYAML object, based on the given ProwYAML
-// object.
-func NewProwYAML(p *ProwYAML) *ProwYAML {
-	newProwYAML := ProwYAML{}
-	newProwYAML.Presets = make([]Preset, len(p.Presets))
-	newProwYAML.Presubmits = make([]Presubmit, len(p.Presubmits))
-	newProwYAML.Postsubmits = make([]Postsubmit, len(p.Postsubmits))
-
-	for i := range p.Presets {
-		newProwYAML.Presets[i] = p.Presets[i]
-	}
-	for i := range p.Presubmits {
-		newProwYAML.Presubmits[i] = p.Presubmits[i]
-	}
-	for i := range p.Postsubmits {
-		newProwYAML.Postsubmits[i] = p.Postsubmits[i]
-	}
-
-	return &newProwYAML
-}
-
 // GetPresubmits uses a cache lookup to get the *ProwYAML value (cache hit),
 // instead of computing it from scratch (cache miss). It also stores the
 // *ProwYAML into the cache if there is a cache miss.
@@ -153,7 +132,7 @@ func (pc *ProwYAMLCache) GetPresubmits(identifier string, baseSHAGetter RefGette
 	// references to areas of memory). This is important for ProwYAMLCache to
 	// behave correctly; otherwise when we default the cached ProwYAML values,
 	// the cached item becomes mutated, affecting future cache lookups.
-	newProwYAML := NewProwYAML(prowYAML)
+	newProwYAML := prowYAML.DeepCopy()
 	if err := DefaultAndValidateProwYAML(c, newProwYAML, identifier); err != nil {
 		return nil, err
 	}
@@ -174,7 +153,7 @@ func (pc *ProwYAMLCache) GetPostsubmits(identifier string, baseSHAGetter RefGett
 		return nil, err
 	}
 
-	newProwYAML := NewProwYAML(prowYAML)
+	newProwYAML := prowYAML.DeepCopy()
 	if err := DefaultAndValidateProwYAML(c, newProwYAML, identifier); err != nil {
 		return nil, err
 	}
