@@ -145,8 +145,9 @@ func main() {
 		flagOptions.prowYAMLCacheSize,
 		configAgent,
 		gitClientFactory)
+	// If we cannot initialize the cache, exit with an error.
 	if err != nil {
-		logrus.WithField("in-repo-config-cache-size", flagOptions.prowYAMLCacheSize).WithError(err).Warn("unable to initialize in-repo-config-cache; continuing without one")
+		logrus.WithField("in-repo-config-cache-size", flagOptions.prowYAMLCacheSize).WithError(err).Fatal("unable to initialize in-repo-config-cache; continuing without one")
 	}
 
 	s := &subscriber.Subscriber{

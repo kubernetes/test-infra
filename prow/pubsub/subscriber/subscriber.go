@@ -53,9 +53,7 @@ var _ prowCfgClient = (*config.Config)(nil)
 // "*config.Config" type implements, which we will test here.
 type prowCfgClient interface {
 	AllPeriodics() []config.Periodic
-	GetPresubmits(gc git.ClientFactory, identifier string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) ([]config.Presubmit, error)
 	GetPresubmitsStatic(identifier string) []config.Presubmit
-	GetPostsubmits(gc git.ClientFactory, identifier string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) ([]config.Postsubmit, error)
 	GetPostsubmitsStatic(identifier string) []config.Postsubmit
 }
 
@@ -218,12 +216,8 @@ func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.Pro
 	if prh.GitClient != nil { // Get from inrepoconfig only when GitClient is provided
 		var presubmitsWithInrepoconfig []config.Presubmit
 		var err error
-		if pc == nil {
-			presubmitsWithInrepoconfig, err = cfg.GetPresubmits(prh.GitClient, orgRepo, baseSHAGetter, headSHAGetters...)
-		} else {
-			pc.GitClient = prh.GitClient
-			presubmitsWithInrepoconfig, err = pc.GetPresubmits(orgRepo, baseSHAGetter, headSHAGetters...)
-		}
+		pc.GitClient = prh.GitClient
+		presubmitsWithInrepoconfig, err = pc.GetPresubmits(orgRepo, baseSHAGetter, headSHAGetters...)
 		if err != nil {
 			logrus.WithError(err).Debug("Failed to get presubmits")
 		} else {
@@ -286,12 +280,8 @@ func (poh *postsubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.Pr
 	if poh.GitClient != nil { // Get from inrepoconfig only when GitClient is provided
 		var postsubmitsWithInrepoconfig []config.Postsubmit
 		var err error
-		if pc == nil {
-			postsubmitsWithInrepoconfig, err = cfg.GetPostsubmits(poh.GitClient, orgRepo, baseSHAGetter)
-		} else {
-			pc.GitClient = poh.GitClient
-			postsubmitsWithInrepoconfig, err = pc.GetPostsubmits(orgRepo, baseSHAGetter)
-		}
+		pc.GitClient = poh.GitClient
+		postsubmitsWithInrepoconfig, err = pc.GetPostsubmits(orgRepo, baseSHAGetter)
 		if err != nil {
 			logrus.WithError(err).Debug("Failed to get postsubmits from inrepoconfig")
 		} else {
