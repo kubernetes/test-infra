@@ -457,6 +457,12 @@ func TestGetProwYAMLCachedAndDefaulted(t *testing.T) {
 		goodSHAGetter("ef01"),
 	}
 
+	envBefore := []v1.EnvVar{
+		{
+			Name:  "ENV_VAR_FOO",
+			Value: "VALUE",
+		},
+	}
 	decorationConfigBefore := &prowapi.DecorationConfig{
 		GCSConfiguration: &prowapi.GCSConfiguration{
 			PathStrategy: prowapi.PathStrategyExplicit,
@@ -472,6 +478,7 @@ func TestGetProwYAMLCachedAndDefaulted(t *testing.T) {
 		},
 	}
 
+	envAfter := ([]v1.EnvVar)(nil)
 	decorationConfigAfter := &prowapi.DecorationConfig{
 		GCSConfiguration: &prowapi.GCSConfiguration{
 			PathStrategy: prowapi.PathStrategyExplicit,
@@ -494,7 +501,7 @@ func TestGetProwYAMLCachedAndDefaulted(t *testing.T) {
 
 	true_ := true
 
-	defaultedPresubmit := func(dc *prowapi.DecorationConfig) Presubmit {
+	defaultedPresubmit := func(env []v1.EnvVar, dc *prowapi.DecorationConfig) Presubmit {
 		return Presubmit{
 			JobBase: JobBase{
 				Name:           "presubmitFoo",
@@ -508,6 +515,7 @@ func TestGetProwYAMLCachedAndDefaulted(t *testing.T) {
 							Name:    "hello",
 							Image:   "there",
 							Command: []string{"earthlings"},
+							Env:     env,
 						},
 					},
 				},
@@ -525,7 +533,7 @@ func TestGetProwYAMLCachedAndDefaulted(t *testing.T) {
 		}
 	}
 
-	defaultedPostsubmit := func(dc *prowapi.DecorationConfig) Postsubmit {
+	defaultedPostsubmit := func(env []v1.EnvVar, dc *prowapi.DecorationConfig) Postsubmit {
 		return Postsubmit{
 			JobBase: JobBase{
 				Name:           "postsubmitFoo",
@@ -539,6 +547,7 @@ func TestGetProwYAMLCachedAndDefaulted(t *testing.T) {
 							Name:    "hello",
 							Image:   "there",
 							Command: []string{"earthlings"},
+							Env:     env,
 						},
 					},
 				},
@@ -599,7 +608,7 @@ func TestGetProwYAMLCachedAndDefaulted(t *testing.T) {
 			[]Postsubmit{postsubmitUndecorated})
 	}
 
-	makeConfig := func(ddc []*DefaultDecorationConfigEntry) *Config {
+	makeConfig := func(env []v1.EnvVar, ddc []*DefaultDecorationConfigEntry) *Config {
 		return &Config{
 			ProwConfig: ProwConfig{
 				InRepoConfig: InRepoConfig{
@@ -616,36 +625,38 @@ func TestGetProwYAMLCachedAndDefaulted(t *testing.T) {
 			JobConfig: JobConfig{
 				DecorateAllJobs: true,
 				ProwYAMLGetter:  fakeProwYAMLGetterFunc(),
+				Presets: []Preset{
+					{
+						Env: env,
+					},
+				},
 			},
 		}
 	}
 
-	presubmitBefore := defaultedPresubmit(decorationConfigBefore)
-	postsubmitBefore := defaultedPostsubmit(decorationConfigBefore)
-
-	presubmitAfter := defaultedPresubmit(decorationConfigAfter)
-	postsubmitAfter := defaultedPostsubmit(decorationConfigAfter)
+	presubmitBefore := defaultedPresubmit(envBefore, decorationConfigBefore)
+	postsubmitBefore := defaultedPostsubmit(envBefore, decorationConfigBefore)
 
 	for _, tc := range []struct {
 		name string
 		// Initial state of Config with a particular DefaultDecorationConfigEntry.
-		defaultDecorationConfigsBefore []*DefaultDecorationConfigEntry
-		expectedBefore                 expected
+		configBefore   *Config
+		expectedBefore expected
 		// Changed state of Config with a possibly __different__ DefaultDecorationConfigEntry.
-		defaultDecorationConfigsAfter []*DefaultDecorationConfigEntry
-		expectedAfter                 expected
+		configAfter   *Config
+		expectedAfter expected
 	}{
 		{
 			// Config has not changed between multiple
 			// prowYAMLCache.GetPresubmits() calls.
 			name: "ConfigNotChanged",
-			defaultDecorationConfigsBefore: []*DefaultDecorationConfigEntry{
+			configBefore: makeConfig(envBefore, []*DefaultDecorationConfigEntry{
 				{
 					OrgRepo: "*",
 					Cluster: "*",
 					Config:  decorationConfigBefore,
 				},
-			},
+			}),
 			// These are the expected []Presubmit and []Postsubmit values when
 			// defaulted with the "decorationConfigBefore" value. Among other
 			// things, the UtilityConfig.DecorationConfig value should reflect
@@ -657,13 +668,13 @@ func TestGetProwYAMLCachedAndDefaulted(t *testing.T) {
 			// For this test case, we do not change the
 			// DefualtDecorationConfigEntry at all, so we don't expect any
 			// changes.
-			defaultDecorationConfigsAfter: []*DefaultDecorationConfigEntry{
+			configAfter: makeConfig(envBefore, []*DefaultDecorationConfigEntry{
 				{
 					OrgRepo: "*",
 					Cluster: "*",
 					Config:  decorationConfigBefore,
 				},
-			},
+			}),
 			expectedAfter: expected{
 				presubmits:  []Presubmit{presubmitBefore},
 				postsubmits: []Postsubmit{postsubmitBefore},
@@ -672,13 +683,13 @@ func TestGetProwYAMLCachedAndDefaulted(t *testing.T) {
 		{
 			// Config has changed between multiple requests to prowYAMLCache.
 			name: "ConfigChanged",
-			defaultDecorationConfigsBefore: []*DefaultDecorationConfigEntry{
+			configBefore: makeConfig(envBefore, []*DefaultDecorationConfigEntry{
 				{
 					OrgRepo: "*",
 					Cluster: "*",
 					Config:  decorationConfigBefore,
 				},
-			},
+			}),
 			// These are the expected []Presubmit and []Postsubmit values when
 			// defaulted with the "decorationConfigBefore" value. Among other
 			// things, the UtilityConfig.DecorationConfig value should reflect
@@ -688,28 +699,84 @@ func TestGetProwYAMLCachedAndDefaulted(t *testing.T) {
 				postsubmits: []Postsubmit{postsubmitBefore},
 			},
 			// Change the config to decorationConfigAfter.
-			defaultDecorationConfigsAfter: []*DefaultDecorationConfigEntry{
+			configAfter: makeConfig(envAfter, []*DefaultDecorationConfigEntry{
 				{
 					OrgRepo: "*",
 					Cluster: "*",
 					Config:  decorationConfigAfter,
 				},
-			},
+			}),
+			// Expect "Env" field to be a nil pointer.
 			expectedAfter: expected{
-				presubmits:  []Presubmit{presubmitAfter},
-				postsubmits: []Postsubmit{postsubmitAfter},
+				presubmits: []Presubmit{
+					{
+						JobBase: JobBase{
+							Name:           "presubmitFoo",
+							Agent:          "kubernetes",
+							Cluster:        "clusterFoo",
+							Namespace:      pStr("default"),
+							ProwJobDefault: &prowapi.ProwJobDefault{TenantID: "GlobalDefaultID"},
+							Spec: &v1.PodSpec{
+								Containers: []v1.Container{
+									{
+										Name:    "hello",
+										Image:   "there",
+										Command: []string{"earthlings"},
+										// Env field is a nil pointer!
+										Env: nil,
+									},
+								},
+							},
+							UtilityConfig: UtilityConfig{
+								Decorate:         &true_,
+								DecorationConfig: decorationConfigAfter,
+							},
+						},
+						Trigger:      `(?m)^/test( | .* )presubmitFoo,?($|\s.*)`,
+						RerunCommand: "/test presubmitFoo",
+						Reporter: Reporter{
+							Context:    "presubmitFoo",
+							SkipReport: false,
+						},
+					},
+				},
+				postsubmits: []Postsubmit{
+					{
+						JobBase: JobBase{
+							Name:           "postsubmitFoo",
+							Agent:          "kubernetes",
+							Cluster:        "clusterFoo",
+							Namespace:      pStr("default"),
+							ProwJobDefault: &prowapi.ProwJobDefault{TenantID: "GlobalDefaultID"},
+							Spec: &v1.PodSpec{
+								Containers: []v1.Container{
+									{
+										Name:    "hello",
+										Image:   "there",
+										Command: []string{"earthlings"},
+										// Env field is a nil pointer!
+										Env: nil,
+									},
+								},
+							},
+							UtilityConfig: UtilityConfig{
+								Decorate:         &true_,
+								DecorationConfig: decorationConfigAfter,
+							},
+						},
+						Reporter: Reporter{
+							Context:    "postsubmitFoo",
+							SkipReport: false,
+						},
+					},
+				},
 			},
 		},
 	} {
 		t.Run(tc.name, func(t1 *testing.T) {
-			// Reset test state.
-
-			configBefore := makeConfig(tc.defaultDecorationConfigsBefore)
-			configAfter := makeConfig(tc.defaultDecorationConfigsAfter)
-
 			// Set initial Config.
 			fca := &fakeConfigAgent{
-				c: configBefore,
+				c: tc.configBefore,
 			}
 			cf := &testClientFactory{}
 
@@ -739,7 +806,7 @@ func TestGetProwYAMLCachedAndDefaulted(t *testing.T) {
 			}
 
 			// Reload Config.
-			fca.c = configAfter
+			fca.c = tc.configAfter
 
 			presubmits, err = prowYAMLCache.GetPresubmits(identifier, baseSHAGetter, headSHAGetters...)
 			if err != nil {
