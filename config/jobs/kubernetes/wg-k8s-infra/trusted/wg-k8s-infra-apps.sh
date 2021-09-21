@@ -60,10 +60,10 @@ for app in "${APPS[@]}"; do
           - failure
           - aborted
           - error
-          report_template: 'Deploying ${app}: {{.Status.State}}. Commit: <{{.Spec.Refs.BaseLink}}|{{printf "%.7s" .Spec.Refs.BaseSHA}}> | <{{.Status.URL}}|Spyglass> | <https://testgrid.k8s.io/wg-k8s-infra-apps#deploy-${app}|Testgrid> | <https://prow.k8s.io/?job={{.Spec.Job}}|Deck>'
+          report_template: 'Deploying ${app}: {{.Status.State}}. Commit: <{{.Spec.Refs.BaseLink}}|{{printf "%.7s" .Spec.Refs.BaseSHA}}> | <{{.Status.URL}}|Spyglass> | <https://testgrid.k8s.io/sig-k8s-infra-apps#deploy-${app}|Testgrid> | <https://prow.k8s.io/?job={{.Spec.Job}}|Deck>'
       annotations:
         testgrid-create-test-group: 'true'
-        testgrid-dashboards: wg-k8s-infra-apps
+        testgrid-dashboards: sig-k8s-infra-apps
         testgrid-tab-name: deploy-${app}
         testgrid-description: 'runs https://git.k8s.io/k8s.io/apps/${app}/deploy.sh if files change in kubernetes/k8s.io/apps/${app}'
         testgrid-alert-email: k8s-infra-rbac-${app}@kubernetes.io, k8s-infra-alerts@kubernetes.io
