@@ -209,14 +209,22 @@ func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.Pro
 		})
 	}
 
+	// Get presubmits from Config alone.
 	presubmits := cfg.GetPresubmitsStatic(orgRepo)
-	var presubmitsWithInrepoconfig []config.Presubmit
-	var err error
-	presubmitsWithInrepoconfig, err = pc.GetPresubmits(orgRepo, baseSHAGetter, headSHAGetters...)
-	if err != nil {
-		logrus.WithError(err).Debug("Failed to get presubmits")
-	} else {
-		presubmits = presubmitsWithInrepoconfig
+	// If ProwYAMLCache is provided, then it means that we also want to fetch
+	// from an inrepoconfig.
+	if pc != nil {
+		var presubmitsWithInrepoconfig []config.Presubmit
+		var err error
+		presubmitsWithInrepoconfig, err = pc.GetPresubmits(orgRepo, baseSHAGetter, headSHAGetters...)
+		if err != nil {
+			logrus.WithError(err).Debug("Failed to get presubmits")
+		} else {
+			// Overwrite presubmits. This is safe because pc.GetPresubmits()
+			// itself calls cfg.GetPresubmitsStatic() and adds to it all the
+			// presubmits found in the inrepoconfig.
+			presubmits = presubmitsWithInrepoconfig
+		}
 	}
 
 	for _, job := range presubmits {
@@ -270,13 +278,15 @@ func (poh *postsubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.Pr
 	}
 
 	postsubmits := cfg.GetPostsubmitsStatic(orgRepo)
-	var postsubmitsWithInrepoconfig []config.Postsubmit
-	var err error
-	postsubmitsWithInrepoconfig, err = pc.GetPostsubmits(orgRepo, baseSHAGetter)
-	if err != nil {
-		logrus.WithError(err).Debug("Failed to get postsubmits from inrepoconfig")
-	} else {
-		postsubmits = postsubmitsWithInrepoconfig
+	if pc != nil {
+		var postsubmitsWithInrepoconfig []config.Postsubmit
+		var err error
+		postsubmitsWithInrepoconfig, err = pc.GetPostsubmits(orgRepo, baseSHAGetter)
+		if err != nil {
+			logrus.WithError(err).Debug("Failed to get postsubmits from inrepoconfig")
+		} else {
+			postsubmits = postsubmitsWithInrepoconfig
+		}
 	}
 
 	for _, job := range postsubmits {

@@ -112,6 +112,9 @@ func main() {
 	}
 	tokenGenerator := secret.GetTokenGenerator(flagOptions.pushSecretFile)
 
+	// If we need to use a GitClient (for inrepoconfig), then we must use a
+	// ProwYAMLCache.
+	var prowYAMLCache *config.ProwYAMLCache
 	var gitClientFactory git.ClientFactory
 	if flagOptions.github.TokenPath != "" {
 		gitClient, err := flagOptions.github.GitClient(flagOptions.dryRun)
@@ -119,6 +122,17 @@ func main() {
 			logrus.WithError(err).Fatal("Error getting Git client.")
 		}
 		gitClientFactory = git.ClientFactoryFrom(gitClient)
+
+		// Initialize cache for fetching Presubmit and Postsubmit information. If
+		// the cache cannot be initialized, exit with an error.
+		prowYAMLCache, err = config.NewProwYAMLCache(
+			flagOptions.prowYAMLCacheSize,
+			configAgent,
+			config.NewInRepoConfigGitCache(gitClientFactory))
+		// If we cannot initialize the cache, exit with an error.
+		if err != nil {
+			logrus.WithField("in-repo-config-cache-size", flagOptions.prowYAMLCacheSize).WithError(err).Fatal("unable to initialize in-repo-config-cache")
+		}
 	}
 
 	prowjobClient, err := flagOptions.client.ProwJobClient(configAgent.Config().ProwJobNamespace, flagOptions.dryRun)
@@ -137,24 +151,6 @@ func main() {
 	// Expose prometheus and pprof metrics
 	metrics.ExposeMetrics("sub", configAgent.Config().PushGateway, flagOptions.instrumentationOptions.MetricsPort)
 	pprof.Instrument(flagOptions.instrumentationOptions)
-
-	// Initialize cache for fetching Presubmit and Postsubmit information. If
-	// the cache cannot be initialized (e.g., cache size is too big), continue
-	// without one.
-	prowYAMLCache, err := config.NewProwYAMLCache(
-		flagOptions.prowYAMLCacheSize,
-		configAgent,
-		gitClientFactory)
-	// If we cannot initialize the cache, exit with an error.
-	if err != nil {
-		logrus.WithField("in-repo-config-cache-size", flagOptions.prowYAMLCacheSize).WithError(err).Fatal("unable to initialize in-repo-config-cache; continuing without one")
-	}
-
-	// Inform the cache how to retrieve values on cache misses.
-	prowYAMLCache.GitClient = config.NewInRepoConfigGitCache(gitClientFactory)
-	if prowYAMLCache.GitClient == nil {
-		logrus.Fatal("in-repo-config-cache requires a non-nil GitClient; did you specify a '-github-token-path=...'?")
-	}
 
 	s := &subscriber.Subscriber{
 		ConfigAgent:   configAgent,

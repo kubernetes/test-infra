@@ -59,6 +59,10 @@ func NewProwYAMLCache(
 	configAgent prowConfigAgentClient,
 	gitClientFactory git.ClientFactory) (*ProwYAMLCache, error) {
 
+	if gitClientFactory == nil {
+		return nil, fmt.Errorf("ProwYAMLCache requires a non-nil gitClientFactory")
+	}
+
 	lruCache, err := cache.NewLRUCache(size)
 	if err != nil {
 		return nil, err
@@ -66,7 +70,10 @@ func NewProwYAMLCache(
 
 	pc := &ProwYAMLCache{
 		lruCache,
+		// Know how to default the retrieved ProwYAML values against the latest Config.
 		configAgent,
+		// Make the cache be able to handle cache misses (by calling out to Git
+		// to construct the ProwYAML value).
 		gitClientFactory,
 	}
 
