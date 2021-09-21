@@ -3,7 +3,7 @@ postsubmits:
     - name: post-release-push-image-k8s-ci-builder
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-release-releng-informing, sig-release-image-pushes, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-release-releng-informing, sig-release-image-pushes, sig-k8s-infra-gcb
         testgrid-alert-email: release-managers+alerts@kubernetes.io
       decorate: true
       run_if_changed: '^(cmd\/|compile-release-tools|go.(mod|sum)|images\/releng\/k8s-ci-builder\/|pkg\/)'
@@ -35,7 +35,7 @@ postsubmits:
     - name: post-release-push-image-k8s-cloud-builder
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-release-releng-informing, sig-release-image-pushes, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-release-releng-informing, sig-release-image-pushes, sig-k8s-infra-gcb
         testgrid-alert-email: release-managers+alerts@kubernetes.io
       decorate: true
       run_if_changed: '^images\/'
@@ -66,7 +66,7 @@ postsubmits:
     - name: post-release-push-image-releng-ci
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-release-releng-informing, sig-release-image-pushes, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-release-releng-informing, sig-release-image-pushes, sig-k8s-infra-gcb
         testgrid-alert-email: release-managers+alerts@kubernetes.io
       decorate: true
       run_if_changed: '^images\/'
@@ -98,7 +98,7 @@ postsubmits:
     - name: post-release-push-image-kubepkg
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-release-releng-informing, sig-release-image-pushes, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-release-releng-informing, sig-release-image-pushes, sig-k8s-infra-gcb
         testgrid-alert-email: release-managers+alerts@kubernetes.io
       decorate: true
       branches:

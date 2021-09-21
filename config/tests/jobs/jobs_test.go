@@ -362,7 +362,7 @@ func TestK8sInfraTrusted(t *testing.T) {
 // Jobs in config/jobs/image-pushing must
 // - run on cluster: k8s-infra-prow-build-trusted
 // - use a pinned version of gcr.io/k8s-staging-test-infra/image-builder
-// - have wg-k8s-infra-gcb in their testgrid-dashboards annotation
+// - have sig-k8s-infra-gcb in their testgrid-dashboards annotation
 func TestImagePushingJobs(t *testing.T) {
 	jobsToFix := 0
 	const trusted = "k8s-infra-prow-build-trusted"
@@ -391,7 +391,7 @@ func TestImagePushingJobs(t *testing.T) {
 		if !ok {
 			errs = append(errs, fmt.Errorf("%s defined in %s must have annotation: %v, not found", job.Name, job.SourcePath, "testgrid-dashboards"))
 		}
-		expectedDashboard := "wg-k8s-infra-gcb"
+		expectedDashboard := "sig-k8s-infra-gcb"
 		foundDashboard := false
 		for _, dashboardName := range strings.Split(dashboardsString, ",") {
 			dashboardName = strings.TrimSpace(dashboardName)

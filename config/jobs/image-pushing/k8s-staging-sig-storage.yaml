@@ -13,7 +13,7 @@ postsubmits:
             slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-storage-image-build, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
       decorate: true
       branches:
         # For publishing canary images.
@@ -50,7 +50,7 @@ postsubmits:
             slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-storage-image-build, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
       decorate: true
       branches:
         # For publishing canary images.
@@ -87,7 +87,7 @@ postsubmits:
             slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-storage-image-build, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
       decorate: true
       branches:
         # For publishing canary images.
@@ -124,7 +124,7 @@ postsubmits:
             slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-storage-image-build, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
       decorate: true
       branches:
         # For publishing canary images.
@@ -161,7 +161,7 @@ postsubmits:
             slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-storage-image-build, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
       decorate: true
       branches:
         # For publishing canary images.
@@ -198,7 +198,7 @@ postsubmits:
             slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-storage-image-build, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
       decorate: true
       branches:
         # For publishing canary images.
@@ -235,7 +235,7 @@ postsubmits:
             slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-storage-image-build, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
       decorate: true
       branches:
         # For publishing canary images.
@@ -272,7 +272,7 @@ postsubmits:
             slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-storage-image-build, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
       decorate: true
       branches:
         # For publishing canary images.
@@ -309,7 +309,7 @@ postsubmits:
             slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-storage-image-build, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
       decorate: true
       branches:
         # For publishing canary images.
@@ -346,7 +346,7 @@ postsubmits:
             slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-storage-image-build, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
       decorate: true
       branches:
         # For publishing canary images.
@@ -383,7 +383,7 @@ postsubmits:
             slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-storage-image-build, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
       decorate: true
       branches:
         # For publishing canary images.
@@ -420,7 +420,7 @@ postsubmits:
             slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-storage-image-build, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
       decorate: true
       branches:
         # For publishing canary images.
@@ -457,7 +457,7 @@ postsubmits:
             slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-storage-image-build, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
       decorate: true
       branches:
         # For publishing canary images.
@@ -494,7 +494,7 @@ postsubmits:
             slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-storage-image-build, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
       decorate: true
       branches:
         # For publishing canary images.
@@ -531,7 +531,7 @@ postsubmits:
             slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-storage-image-build, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
       decorate: true
       branches:
         # For publishing canary images.
@@ -568,7 +568,7 @@ postsubmits:
             slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-storage-image-build, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
       decorate: true
       branches:
         # For publishing canary images.
@@ -605,7 +605,7 @@ postsubmits:
             slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-storage-image-build, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
       decorate: true
       branches:
         # For publishing canary images.
@@ -642,7 +642,7 @@ postsubmits:
             slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-storage-image-build, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
       decorate: true
       branches:
         # For publishing canary images.
@@ -679,7 +679,7 @@ postsubmits:
             slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-storage-image-build, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
       decorate: true
       branches:
         # For publishing canary images.
@@ -716,7 +716,7 @@ postsubmits:
             slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-storage-image-build, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
       decorate: true
       branches:
         # For publishing canary images.
@@ -753,7 +753,7 @@ postsubmits:
             slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-storage-image-build, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
       decorate: true
       branches:
         # For publishing canary images.
@@ -792,7 +792,7 @@ periodics:
   - name: canary-csi-driver-host-path-push-images
     cluster: k8s-infra-prow-build-trusted
     annotations:
-      testgrid-dashboards: sig-storage-image-build, wg-k8s-infra-gcb
+      testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
     decorate: true
     interval: 168h # one week
     extra_refs:
@@ -823,7 +823,7 @@ periodics:
   - name: canary-csi-driver-smb-push-images
     cluster: k8s-infra-prow-build-trusted
     annotations:
-      testgrid-dashboards: sig-storage-image-build, wg-k8s-infra-gcb
+      testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
     decorate: true
     interval: 168h # one week
     extra_refs:
@@ -854,7 +854,7 @@ periodics:
   - name: canary-csi-test-push-images
     cluster: k8s-infra-prow-build-trusted
     annotations:
-      testgrid-dashboards: sig-storage-image-build, wg-k8s-infra-gcb
+      testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
     decorate: true
     interval: 168h # one week
     extra_refs:
@@ -885,7 +885,7 @@ periodics:
   - name: canary-external-attacher-push-images
     cluster: k8s-infra-prow-build-trusted
     annotations:
-      testgrid-dashboards: sig-storage-image-build, wg-k8s-infra-gcb
+      testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
     decorate: true
     interval: 168h # one week
     extra_refs:
@@ -916,7 +916,7 @@ periodics:
   - name: canary-external-health-monitor-push-images
     cluster: k8s-infra-prow-build-trusted
     annotations:
-      testgrid-dashboards: sig-storage-image-build, wg-k8s-infra-gcb
+      testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
     decorate: true
     interval: 168h # one week
     extra_refs:
@@ -947,7 +947,7 @@ periodics:
   - name: canary-external-provisioner-push-images
     cluster: k8s-infra-prow-build-trusted
     annotations:
-      testgrid-dashboards: sig-storage-image-build, wg-k8s-infra-gcb
+      testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
     decorate: true
     interval: 168h # one week
     extra_refs:
@@ -978,7 +978,7 @@ periodics:
   - name: canary-external-resizer-push-images
     cluster: k8s-infra-prow-build-trusted
     annotations:
-      testgrid-dashboards: sig-storage-image-build, wg-k8s-infra-gcb
+      testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
     decorate: true
     interval: 168h # one week
     extra_refs:
@@ -1009,7 +1009,7 @@ periodics:
   - name: canary-external-snapshotter-push-images
     cluster: k8s-infra-prow-build-trusted
     annotations:
-      testgrid-dashboards: sig-storage-image-build, wg-k8s-infra-gcb
+      testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
     decorate: true
     interval: 168h # one week
     extra_refs:
@@ -1040,7 +1040,7 @@ periodics:
   - name: canary-livenessprobe-push-images
     cluster: k8s-infra-prow-build-trusted
     annotations:
-      testgrid-dashboards: sig-storage-image-build, wg-k8s-infra-gcb
+      testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
     decorate: true
     interval: 168h # one week
     extra_refs:
@@ -1071,7 +1071,7 @@ periodics:
   - name: canary-node-driver-registrar-push-images
     cluster: k8s-infra-prow-build-trusted
     annotations:
-      testgrid-dashboards: sig-storage-image-build, wg-k8s-infra-gcb
+      testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
     decorate: true
     interval: 168h # one week
     extra_refs:
@@ -1102,7 +1102,7 @@ periodics:
   - name: canary-csi-driver-nfs-push-images
     cluster: k8s-infra-prow-build-trusted
     annotations:
-      testgrid-dashboards: sig-storage-image-build, wg-k8s-infra-gcb
+      testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
     decorate: true
     interval: 168h # one week
     extra_refs:
@@ -1133,7 +1133,7 @@ periodics:
   - name: canary-csi-driver-iscsi-push-images
     cluster: k8s-infra-prow-build-trusted
     annotations:
-      testgrid-dashboards: sig-storage-image-build, wg-k8s-infra-gcb
+      testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
     decorate: true
     interval: 168h # one week
     extra_refs:
@@ -1164,7 +1164,7 @@ periodics:
   - name: canary-sig-storage-local-static-provisioner-push-images
     cluster: k8s-infra-prow-build-trusted
     annotations:
-      testgrid-dashboards: sig-storage-image-build, wg-k8s-infra-gcb
+      testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
     decorate: true
     interval: 168h # one week
     extra_refs:
@@ -1195,7 +1195,7 @@ periodics:
   - name: canary-nfs-ganesha-server-and-external-provisioner-push-images
     cluster: k8s-infra-prow-build-trusted
     annotations:
-      testgrid-dashboards: sig-storage-image-build, wg-k8s-infra-gcb
+      testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
     decorate: true
     interval: 168h # one week
     extra_refs:
@@ -1226,7 +1226,7 @@ periodics:
   - name: canary-nfs-subdir-external-provisioner-push-images
     cluster: k8s-infra-prow-build-trusted
     annotations:
-      testgrid-dashboards: sig-storage-image-build, wg-k8s-infra-gcb
+      testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
     decorate: true
     interval: 168h # one week
     extra_refs:

@@ -3,7 +3,7 @@ postsubmits:
     - name: kube-storage-version-migrator-push-images
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-api-machinery-kube-storage-version-migrator, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-api-machinery-kube-storage-version-migrator, sig-k8s-infra-gcb
       decorate: true
       branches:
         - ^master$
