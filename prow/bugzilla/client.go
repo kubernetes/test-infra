@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"sort"
 	"strconv"
 	"strings"
@@ -972,4 +973,29 @@ func (i identifierNotForPull) Error() string {
 func IsIdentifierNotForPullErr(err error) bool {
 	_, ok := err.(*identifierNotForPull)
 	return ok
+}
+
+func (c *client) SearchBugs(filters map[string]string) ([]*Bug, error) {
+	logger := c.logger.WithFields(logrus.Fields{methodField: "SearchBugs", "filters": filters})
+
+	params := url.Values{}
+	for param, value := range filters {
+		params.Add(param, value)
+	}
+
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/rest/bug?%s", c.endpoint, params.Encode()), nil)
+	if err != nil {
+		return nil, err
+	}
+	raw, err := c.request(req, logger)
+	if err != nil {
+		return nil, err
+	}
+	var parsedResponse struct {
+		Bugs []*Bug `json:"bugs,omitempty"`
+	}
+	if err := json.Unmarshal(raw, &parsedResponse); err != nil {
+		return nil, fmt.Errorf("could not unmarshal response body: %v", err)
+	}
+	return parsedResponse.Bugs, nil
 }
