@@ -22,7 +22,7 @@ postsubmits:
         - --manifests=/home/prow/go/src/github.com/kubernetes/k8s.io/artifacts/
         - --dry-run=false
     annotations:
-      testgrid-dashboards: sig-release-releng-blocking, wg-k8s-infra-k8sio
+      testgrid-dashboards: sig-release-releng-blocking, sig-k8s-infra-k8sio
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
   - name: post-k8sio-image-promo
@@ -46,7 +46,7 @@ postsubmits:
         - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
         - --confirm
     annotations:
-      testgrid-dashboards: sig-release-releng-blocking, wg-k8s-infra-k8sio
+      testgrid-dashboards: sig-release-releng-blocking, sig-k8s-infra-k8sio
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
 
@@ -73,7 +73,7 @@ periodics:
       - --manifests=/home/prow/go/src/github.com/kubernetes/k8s.io/artifacts/
       - --dry-run=false
   annotations:
-    testgrid-dashboards: sig-release-releng-blocking, wg-k8s-infra-k8sio
+    testgrid-dashboards: sig-release-releng-blocking, sig-k8s-infra-k8sio
     testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
     testgrid-num-failures-to-alert: '1'
   rerun_auth_config:
@@ -110,7 +110,7 @@ periodics:
       - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
       - --confirm
   annotations:
-    testgrid-dashboards: sig-release-releng-blocking, wg-k8s-infra-k8sio
+    testgrid-dashboards: sig-release-releng-blocking, sig-k8s-infra-k8sio
     testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
     testgrid-num-failures-to-alert: '1'
   rerun_auth_config:

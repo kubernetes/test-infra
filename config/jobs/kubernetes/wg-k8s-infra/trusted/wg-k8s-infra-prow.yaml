@@ -85,7 +85,7 @@ periodics:
     repo: k8s.io
     base_ref: main
   annotations:
-    testgrid-dashboards: wg-k8s-infra-k8sio
+    testgrid-dashboards: sig-k8s-infra-k8sio
     testgrid-alert-email: k8s-infra-alerts@kubernetes.io
     testgrid-num-failures-to-alert: '1'
     description: runs autobumper to create/update a PR that updates prow build cluster component images

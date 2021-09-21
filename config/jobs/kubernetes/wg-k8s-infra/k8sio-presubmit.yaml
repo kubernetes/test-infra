@@ -25,7 +25,7 @@ presubmits:
     annotations:
       description: verify terraform files for GKE cluster aaa
       testgrid-create-test-group: 'true'
-      testgrid-dashboards: wg-k8s-infra-k8sio
+      testgrid-dashboards: sig-k8s-infra-k8sio
       testgrid-tab-name: pull-k8sio-terraform-kubernetes-public
       testgrid-alert-email: ameukam@gmail.com,spiffxp@gmail.com,spiffxp@google.com
       testgrid-num-failures-to-alert: '1'
@@ -139,7 +139,7 @@ presubmits:
             memory: "512Mi"
   - name: pull-k8sio-verify
     annotations:
-      testgrid-dashboards: wg-k8s-infra-k8sio
+      testgrid-dashboards: sig-k8s-infra-k8sio
       testgrid-tab-name: pull-k8sio-verify
     always_run: true
     decorate: true
