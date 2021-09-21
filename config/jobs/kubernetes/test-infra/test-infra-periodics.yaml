@@ -51,3 +51,31 @@ periodics:
     testgrid-dashboards: sig-testing-misc
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
     description: Monitors Kettle's BigQuery database freshness.
+
+- name: test-infra-fuzz
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+  interval: 1h
+  spec:
+    containers:
+    - image: gcr.io/oss-fuzz-base/cifuzz-base:latest
+      command:
+        - python3
+      args:
+        - "/opt/oss-fuzz/infra/cifuzz/cifuzz_combined_entrypoint.py"
+      env:
+      - name: REPOSITORY
+        value: test-infra
+      - name: PROJECT_SRC_PATH
+        value: .
+      - name: SANITIZER
+        value: 'address'
+      - name: WORKSPACE
+        value: /logs/artifacts
+  annotations:
+    testgrid-dashboards: sig-testing-misc
+    testgrid-tab-name: test-infra-fuzz
+    description: Runs clusterfuzzlite every hour
