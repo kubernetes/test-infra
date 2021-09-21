@@ -74,6 +74,11 @@ aliases:
     - brancz
     - ehashman
     - logicalhan
+  sig-k8s-infra-leads:
+    - ameukam
+    - dims
+    - spiffxp
+    - thockin
   sig-multicluster-leads:
     - pmorie
     - quinton-hoole
@@ -136,10 +141,6 @@ aliases:
     - cantbewong
     - cindyxing
     - dejanb
-  wg-k8s-infra-leads:
-    - ameukam
-    - dims
-    - spiffxp
   wg-lts-leads:
     - imkin
     - quinton-hoole
