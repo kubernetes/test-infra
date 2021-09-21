@@ -21,7 +21,7 @@ set -o pipefail
 
 SCRIPT_DIR=$(dirname "${BASH_SOURCE[0]}")
 
-readonly OUTPUT="${SCRIPT_DIR}/wg-k8s-infra-apps.yaml"
+readonly OUTPUT="${SCRIPT_DIR}/sig-k8s-infra-apps.yaml"
 # list of subdirs in kubernetes/k8s.io/apps
 readonly APPS=(
     gcsweb
