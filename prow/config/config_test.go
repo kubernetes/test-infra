@@ -2417,7 +2417,7 @@ postsubmits:
 			},
 		},
 		{
-			name: "prowYAMLGetter gets set",
+			name: "ProwYAMLGetterWithDefaults gets set",
 			verify: func(c *Config) error {
 				if c.ProwYAMLGetterWithDefaults == nil {
 					return errors.New("config.ProwYAMLGetterWithDefaults is nil")
