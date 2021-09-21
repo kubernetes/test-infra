@@ -54,7 +54,7 @@ presubmits:
     annotations:
       description: verify terraform files for GKE build cluster prow-build
       testgrid-create-test-group: 'true'
-      testgrid-dashboards: wg-k8s-infra-prow
+      testgrid-dashboards: sig-k8s-infra-prow
       testgrid-tab-name: pull-k8sio-terraform-prow-build
       testgrid-alert-email: ameukam@gmail.com,spiffxp@gmail.com,spiffxp@google.com
       testgrid-num-failures-to-alert: '1'
@@ -83,7 +83,7 @@ presubmits:
     annotations:
       description: verify terraform files for GKE build cluster prow-build-trusted
       testgrid-create-test-group: 'true'
-      testgrid-dashboards: wg-k8s-infra-prow
+      testgrid-dashboards: sig-k8s-infra-prow
       testgrid-tab-name: pull-k8sio-terraform-prow-build-trusted
       testgrid-alert-email: ameukam@gmail.com,spiffxp@gmail.com,spiffxp@google.com
       testgrid-num-failures-to-alert: '1'
@@ -112,7 +112,7 @@ presubmits:
     annotations:
       description: verify terraform files for project k8s-infra-public-pii
       testgrid-create-test-group: 'true'
-      testgrid-dashboards: wg-k8s-infra-prow
+      testgrid-dashboards: sig-k8s-infra-prow
       testgrid-tab-name: pull-k8sio-terraform-public-pii
       testgrid-alert-email: ameukam@gmail.com,spiffxp@gmail.com,spiffxp@google.com
       testgrid-num-failures-to-alert: '1'
