@@ -17,7 +17,7 @@ periodics:
     github_team_slugs:
     # proxy for wg-k8s-infra-oncall
     - org: kubernetes
-      slug: wg-k8s-infra-leads
+      slug: sig-k8s-infra-leads
     # team specifically for this service
     - org: kubernetes
       slug: k8s-infra-group-admins
@@ -52,7 +52,7 @@ postsubmits:
       github_team_slugs:
       # proxy for wg-k8s-infra-oncall
       - org: kubernetes
-        slug: wg-k8s-infra-leads
+        slug: sig-k8s-infra-leads
       # team specifically for this service
       - org: kubernetes
         slug: k8s-infra-group-admins
