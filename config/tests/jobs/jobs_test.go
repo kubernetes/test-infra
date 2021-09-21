@@ -319,7 +319,7 @@ func TestTrustedJobs(t *testing.T) {
 func TestK8sInfraTrusted(t *testing.T) {
 	jobsToFix := 0
 	const trusted = "k8s-infra-prow-build-trusted"
-	trustedPath := path.Join(*jobConfigPath, "kubernetes", "wg-k8s-infra", "trusted") + "/"
+	trustedPath := path.Join(*jobConfigPath, "kubernetes", "sig-k8s-infra", "trusted") + "/"
 	imagePushingDir := path.Join(*jobConfigPath, "image-pushing") + "/"
 
 	errs := []error{}
@@ -333,7 +333,7 @@ func TestK8sInfraTrusted(t *testing.T) {
 
 	// Postsubmits and periodics:
 	// - jobs in config/jobs/image-pushing must run in cluster: k8s-infra-prow-build-trusted
-	// - jobs in config/jobs/kubernetes/wg-k8s-infra/trusted must run in cluster: k8s-infra-prow-build-trusted
+	// - jobs in config/jobs/kubernetes/sig-k8s-infra/trusted must run in cluster: k8s-infra-prow-build-trusted
 	// - jobs defined anywhere else may not run in cluster: k8s-infra-prow-build-trusted
 	jobs := []cfg.JobBase{}
 	for _, job := range c.AllStaticPostsubmits(nil) {
