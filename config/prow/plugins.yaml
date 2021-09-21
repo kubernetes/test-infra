@@ -300,7 +300,7 @@ slack:
   - repos:
     - kubernetes/k8s.io
     channels:
-    - wg-k8s-infra
+    - sig-k8s-infra
     exempt_users:
     - k8s-ci-robot
   - repos:
