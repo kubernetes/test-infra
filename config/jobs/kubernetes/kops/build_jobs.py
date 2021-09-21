@@ -116,7 +116,7 @@ def build_test(cloud='aws',
         tmpl_file = "periodic-scenario.yaml.jinja"
         name_hash = hashlib.md5(job_name.encode()).hexdigest()
         env['CLOUD_PROVIDER'] = cloud
-        env['CLUSTER_NAME'] = f"e2e-{name_hash[0:10]}-{name_hash[11:16]}.test-cncf-aws.k8s.io"
+        env['CLUSTER_NAME'] = f"e2e-{name_hash[0:10]}-{name_hash[12:17]}.test-cncf-aws.k8s.io"
         env['KOPS_STATE_STORE'] = 's3://k8s-kops-prow'
         env['KUBE_SSH_USER'] = kops_ssh_user
 
@@ -713,7 +713,6 @@ def generate_upgrades():
         #  kops    k8s          kops      k8s
         (('1.21', 'v1.21.0'), ('latest', 'latest')),
         (('1.20', 'v1.20.7'), ('1.21', 'v1.21.0')),
-        (('1.19', 'v1.19.10'), ('1.20', 'v1.20.6')),
         (('latest', 'v1.20.6'), ('latest', 'v1.21.0')),
         (('1.20', 'v1.20.6'), ('latest', 'v1.21.0')),
     ]
