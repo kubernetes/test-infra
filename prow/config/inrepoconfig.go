@@ -37,6 +37,8 @@ const (
 	inRepoConfigDirName  = ".prow"
 )
 
+// +k8s:deepcopy-gen=true
+
 // ProwYAML represents the content of a .prow.yaml file
 // used to version Presubmits and Postsubmits inside the tested repo.
 type ProwYAML struct {

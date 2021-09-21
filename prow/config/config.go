@@ -2661,7 +2661,7 @@ func (c *ProwConfig) defaultPeriodicFields(js []Periodic) {
 func SetPresubmitRegexes(js []Presubmit) error {
 	for i, j := range js {
 		if re, err := regexp.Compile(j.Trigger); err == nil {
-			js[i].re = re
+			js[i].re = NewCopyableRegexp(re)
 		} else {
 			return fmt.Errorf("could not compile trigger regex for %s: %w", j.Name, err)
 		}
@@ -2688,14 +2688,14 @@ func SetPresubmitRegexes(js []Presubmit) error {
 func setBrancherRegexes(br Brancher) (Brancher, error) {
 	if len(br.Branches) > 0 {
 		if re, err := regexp.Compile(strings.Join(br.Branches, `|`)); err == nil {
-			br.re = re
+			br.re = NewCopyableRegexp(re)
 		} else {
 			return br, fmt.Errorf("could not compile positive branch regex: %w", err)
 		}
 	}
 	if len(br.SkipBranches) > 0 {
 		if re, err := regexp.Compile(strings.Join(br.SkipBranches, `|`)); err == nil {
-			br.reSkip = re
+			br.reSkip = NewCopyableRegexp(re)
 		} else {
 			return br, fmt.Errorf("could not compile negative branch regex: %w", err)
 		}
@@ -2715,7 +2715,7 @@ func setChangeRegexes(cm RegexpChangeMatcher) (RegexpChangeMatcher, error) {
 		if err != nil {
 			return cm, fmt.Errorf("could not compile %s regex: %w", propName, err)
 		}
-		cm.reChanges = re
+		cm.reChanges = NewCopyableRegexp(re)
 	}
 	return cm, nil
 }

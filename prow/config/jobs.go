@@ -36,6 +36,8 @@ const (
 	schemeHTTPS = "https"
 )
 
+// +k8s:deepcopy-gen=true
+
 // Presets can be used to re-use settings across multiple jobs.
 type Preset struct {
 	Labels       map[string]string `json:"labels"`
@@ -80,6 +82,8 @@ func mergePreset(preset Preset, labels map[string]string, containers []v1.Contai
 	}
 	return nil
 }
+
+// +k8s:deepcopy-gen=true
 
 // JobBase contains attributes common to all job types
 type JobBase struct {
@@ -128,6 +132,8 @@ type JobBase struct {
 	UtilityConfig
 }
 
+// +k8s:deepcopy-gen=true
+
 // Presubmit runs on PRs.
 type Presubmit struct {
 	JobBase
@@ -158,8 +164,29 @@ type Presubmit struct {
 	JenkinsSpec *JenkinsSpec `json:"jenkins_spec,omitempty"`
 
 	// We'll set these when we load it.
-	re *regexp.Regexp // from Trigger.
+	re *CopyableRegexp // from Trigger.
 }
+
+// +k8s:deepcopy-gen=true
+
+// CopyableRegexp wraps around regexp.Regexp. It's sole purpose is to allow us to
+// create a manual DeepCopyInto() method for it, because the standard library's
+// regexp package does not define one for us (making it impossible to generate
+// DeepCopy() methods for any type that uses the regexp.Regexp type directly).
+type CopyableRegexp struct {
+	*regexp.Regexp
+}
+
+func (in *CopyableRegexp) DeepCopyInto(out *CopyableRegexp) {
+	*out = *in
+}
+
+func NewCopyableRegexp(re *regexp.Regexp) *CopyableRegexp {
+	cr := CopyableRegexp{re}
+	return &cr
+}
+
+// +k8s:deepcopy-gen=true
 
 // Postsubmit runs on push events.
 type Postsubmit struct {
@@ -217,6 +244,8 @@ func (p *Periodic) GetInterval() time.Duration {
 	return p.interval
 }
 
+// +k8s:deepcopy-gen=true
+
 // Brancher is for shared code between jobs that only run against certain
 // branches. An empty brancher runs against all branches.
 type Brancher struct {
@@ -226,9 +255,11 @@ type Brancher struct {
 	Branches []string `json:"branches,omitempty"`
 
 	// We'll set these when we load it.
-	re     *regexp.Regexp
-	reSkip *regexp.Regexp
+	re     *CopyableRegexp
+	reSkip *CopyableRegexp
 }
+
+// +k8s:deepcopy-gen=true
 
 // RegexpChangeMatcher is for code shared between jobs that run only when certain files are changed.
 type RegexpChangeMatcher struct {
@@ -238,8 +269,8 @@ type RegexpChangeMatcher struct {
 	// SkipIfOnlyChanged defines a regex used to select which subset of file changes should trigger this job.
 	// If all files in the changeset match this regex, the job will be skipped.
 	// In other words, this is the negation of RunIfChanged.
-	SkipIfOnlyChanged string         `json:"skip_if_only_changed,omitempty"`
-	reChanges         *regexp.Regexp // from RunIfChanged xor SkipIfOnlyChanged
+	SkipIfOnlyChanged string          `json:"skip_if_only_changed,omitempty"`
+	reChanges         *CopyableRegexp // from RunIfChanged xor SkipIfOnlyChanged
 }
 
 type Reporter struct {
@@ -439,6 +470,8 @@ func NewGitHubDeferredChangedFilesProvider(client githubClient, org, repo string
 		return changedFiles, nil
 	}
 }
+
+// +k8s:deepcopy-gen=true
 
 // UtilityConfig holds decoration metadata, such as how to clone and additional containers/etc
 type UtilityConfig struct {

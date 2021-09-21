@@ -62,6 +62,7 @@ go_library(
         "inrepoconfig.go",
         "jobs.go",
         "tide.go",
+        "zz_generated.deepcopy.go",
     ],
     importpath = "k8s.io/test-infra/prow/config",
     deps = [
