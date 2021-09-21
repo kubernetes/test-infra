@@ -65,7 +65,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: wg-k8s-infra-canaries
+    testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-days-of-results: '11'
     testgrid-tab-name: kops-pipeline-updown-kopsmaster-canary
 
@@ -133,7 +133,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: wg-k8s-infra-canaries
+    testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-days-of-results: '11'
     testgrid-tab-name: kops-pipeline-updown-kops122-canary
 
@@ -201,7 +201,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: wg-k8s-infra-canaries
+    testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-days-of-results: '11'
     testgrid-tab-name: kops-pipeline-updown-kops121-canary
 
@@ -269,6 +269,6 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: wg-k8s-infra-canaries
+    testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-days-of-results: '11'
     testgrid-tab-name: kops-pipeline-updown-kops120-canary

@@ -5,7 +5,7 @@ postsubmits:
     - name: post-ingress-nginx-push-images
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-network-ingress-nginx, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
       decorate: true
       run_if_changed: '\.go$|^rootfs/.*|TAG|go.mod|go.sum'
       branches:
@@ -26,7 +26,7 @@ postsubmits:
     - name: post-ingress-nginx-build-nginx-image
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-network-ingress-nginx, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
       decorate: true
       run_if_changed: 'images/nginx/.*'
       branches:
@@ -47,7 +47,7 @@ postsubmits:
     - name: post-ingress-nginx-build-nginx-image-debian
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-network-ingress-nginx, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
       decorate: true
       run_if_changed: 'images/nginx-debian/.*'
       branches:
@@ -67,7 +67,7 @@ postsubmits:
     - name: post-ingress-nginx-build-modsecurity
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-network-ingress-nginx, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
       decorate: true
       run_if_changed: 'images/modsecurity/.*'
       branches:
@@ -87,7 +87,7 @@ postsubmits:
     - name: post-ingress-nginx-build-e2e-image
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-network-ingress-nginx, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
       decorate: true
       run_if_changed: 'images/test-runner/.*'
       branches:
@@ -108,7 +108,7 @@ postsubmits:
     - name: post-ingress-nginx-build-e2e-image-debian
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-network-ingress-nginx, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
       decorate: true
       run_if_changed: 'images/test-runner-debian/.*'
       branches:
@@ -128,7 +128,7 @@ postsubmits:
     - name: post-ingress-nginx-build-cfssl-image
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-network-ingress-nginx, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
       decorate: true
       run_if_changed: 'images/cfssl/.*'
       branches:
@@ -148,7 +148,7 @@ postsubmits:
     - name: post-ingress-nginx-build-echo-image
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-network-ingress-nginx, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
       decorate: true
       run_if_changed: 'images/echo/.*'
       branches:
@@ -168,7 +168,7 @@ postsubmits:
     - name: post-ingress-nginx-build-fastcgi-helloserver-image
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-network-ingress-nginx, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
       decorate: true
       run_if_changed: 'images/fastcgi-helloserver/.*'
       branches:
@@ -188,7 +188,7 @@ postsubmits:
     - name: post-ingress-nginx-build-httpbin-image
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-network-ingress-nginx, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
       decorate: true
       run_if_changed: 'images/httpbin/.*'
       branches:
@@ -208,7 +208,7 @@ postsubmits:
     - name: post-ingress-nginx-build-webhook-certgen-image
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-network-ingress-nginx, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
       decorate: true
       run_if_changed: 'images/kube-webhook-certgen/.*'
       branches:
@@ -228,7 +228,7 @@ postsubmits:
     - name: post-ingress-nginx-build-custom-error-pages-image
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-network-ingress-nginx, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
       decorate: true
       run_if_changed: 'images/custom-error-pages/.*'
       branches:

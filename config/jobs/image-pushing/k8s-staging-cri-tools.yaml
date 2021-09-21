@@ -3,7 +3,7 @@ postsubmits:
     - name: post-cri-tools-images
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-node-cri-tools, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-node-cri-tools, sig-k8s-infra-gcb
       decorate: true
       run_if_changed: '^images\/'
       branches:

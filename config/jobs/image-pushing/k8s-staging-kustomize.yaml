@@ -8,7 +8,7 @@ postsubmits:
       annotations:
         # This is the name of some testgrid dashboard to report to.
         # If this is the first one for your sig, you may need to create one
-        testgrid-dashboards: sig-cli-misc, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-cli-misc, sig-k8s-infra-gcb
         testgrid-tab-name: kustomize-pushing-image
         testgrid-alert-email: donnyxia@google.com
       decorate: true

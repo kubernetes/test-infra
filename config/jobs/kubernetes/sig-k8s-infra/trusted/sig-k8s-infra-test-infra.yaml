@@ -21,7 +21,7 @@ postsubmits:
           requests:
             memory: "1Gi"
     annotations:
-      testgrid-dashboards: sig-testing-maintenance, wg-k8s-infra-prow
+      testgrid-dashboards: sig-testing-maintenance, sig-k8s-infra-prow
       testgrid-tab-name: triage-update
       testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
@@ -38,13 +38,13 @@ periodics:
     repo: test-infra
     base_ref: master
   annotations:
-    testgrid-dashboards: sig-testing-misc, wg-k8s-infra-prow
+    testgrid-dashboards: sig-testing-misc, sig-k8s-infra-prow
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
     testgrid-num-failures-to-alert: '2'
     description: Runs BigQuery queries to generate data for metrics.
   rerun_auth_config:
     github_team_slugs:
-    # proxy for wg-k8s-infra-oncall
+    # proxy for sig-k8s-infra-oncall
     - org: kubernetes
       slug: sig-k8s-infra-leads
     # proxy for test-infra-oncall
@@ -69,13 +69,13 @@ periodics:
   annotations:
     testgrid-num-failures-to-alert: '18'
     testgrid-alert-stale-results-hours: '12'
-    testgrid-dashboards: sig-testing-misc, wg-k8s-infra-prow
+    testgrid-dashboards: sig-testing-misc, sig-k8s-infra-prow
     testgrid-tab-name: triage
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-alerts@kubernetes.io
     description: Runs BigQuery queries, summarizes results into clusters, and uploads to GCS for go.k8s.io/triage
   rerun_auth_config:
     github_team_slugs:
-    # proxy for wg-k8s-infra-oncall
+    # proxy for sig-k8s-infra-oncall
     - org: kubernetes
       slug: sig-k8s-infra-leads
     # proxy for test-infra-oncall

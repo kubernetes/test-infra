@@ -9,7 +9,7 @@ postsubmits:
       cluster: k8s-infra-prow-build-trusted
       annotations:
         # this is the name of some testgrid dashboard to report to.
-        testgrid-dashboards: sig-cluster-lifecycle-kops, kops-misc, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-cluster-lifecycle-kops, kops-misc, sig-k8s-infra-gcb
       decorate: true
       branches:
         - ^master$

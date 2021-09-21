@@ -17,7 +17,7 @@ aliases:
     - MushuEE
     - spiffxp
 
-  wg-k8s-infra-oncall:
+  sig-k8s-infra-oncall:
   - BenTheElder
   # kubernetes.io org admins
   - ameukam

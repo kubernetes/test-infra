@@ -9,13 +9,13 @@ postsubmits:
     - ^main$
     annotations:
       testgrid-create-test-group: 'true'
-      testgrid-dashboards: wg-k8s-infra-prow
+      testgrid-dashboards: sig-k8s-infra-prow
       testgrid-tab-name: deploy-prow-build
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
     rerun_auth_config:
       github_team_slugs:
-      # proxy for wg-k8s-infra-oncall
+      # proxy for sig-k8s-infra-oncall
       - org: kubernetes
         slug: sig-k8s-infra-leads
       # proxy for test-infra-oncall
@@ -29,7 +29,7 @@ postsubmits:
         - failure
         - aborted
         - error
-        report_template: 'Deploying k8s-infra-prow-build cluster: {{.Status.State}}. Commit: <{{.Spec.Refs.BaseLink}}|{{printf "%.7s" .Spec.Refs.BaseSHA}}> | <{{.Status.URL}}|Spyglass> | <https://testgrid.k8s.io/wg-k8s-infra-prow#deploy-prow-build|Testgrid> | <https://prow.k8s.io/?job={{.Spec.Job}}|Deck>'
+        report_template: 'Deploying k8s-infra-prow-build cluster: {{.Status.State}}. Commit: <{{.Spec.Refs.BaseLink}}|{{printf "%.7s" .Spec.Refs.BaseSHA}}> | <{{.Status.URL}}|Spyglass> | <https://testgrid.k8s.io/sig-k8s-infra-prow#deploy-prow-build|Testgrid> | <https://prow.k8s.io/?job={{.Spec.Job}}|Deck>'
     spec:
       serviceAccountName: prow-deployer
       containers:
@@ -45,13 +45,13 @@ postsubmits:
     - ^main$
     annotations:
       testgrid-create-test-group: 'true'
-      testgrid-dashboards: wg-k8s-infra-prow
+      testgrid-dashboards: sig-k8s-infra-prow
       testgrid-tab-name: deploy-prow-build-trusted
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
     rerun_auth_config:
       github_team_slugs:
-      # proxy for wg-k8s-infra-oncall
+      # proxy for sig-k8s-infra-oncall
       - org: kubernetes
         slug: sig-k8s-infra-leads
       # proxy for test-infra-oncall
@@ -71,7 +71,7 @@ postsubmits:
         - failure
         - aborted
         - error
-        report_template: 'Deploying k8s-infra-prow-build-trusted cluster: {{.Status.State}}. Commit: <{{.Spec.Refs.BaseLink}}|{{printf "%.7s" .Spec.Refs.BaseSHA}}> | <{{.Status.URL}}|Spyglass> | <https://testgrid.k8s.io/wg-k8s-infra-prow#deploy-prow-build-trusted|Testgrid> | <https://prow.k8s.io/?job={{.Spec.Job}}|Deck>'
+        report_template: 'Deploying k8s-infra-prow-build-trusted cluster: {{.Status.State}}. Commit: <{{.Spec.Refs.BaseLink}}|{{printf "%.7s" .Spec.Refs.BaseSHA}}> | <{{.Status.URL}}|Spyglass> | <https://testgrid.k8s.io/sig-k8s-infra-prow#deploy-prow-build-trusted|Testgrid> | <https://prow.k8s.io/?job={{.Spec.Job}}|Deck>'
 
 periodics:
 - name: ci-k8sio-autobump-prow-build-clusters
@@ -85,13 +85,13 @@ periodics:
     repo: k8s.io
     base_ref: main
   annotations:
-    testgrid-dashboards: wg-k8s-infra-k8sio
+    testgrid-dashboards: sig-k8s-infra-k8sio
     testgrid-alert-email: k8s-infra-alerts@kubernetes.io
     testgrid-num-failures-to-alert: '1'
     description: runs autobumper to create/update a PR that updates prow build cluster component images
   rerun_auth_config:
     github_team_slugs:
-    # proxy for wg-k8s-infra-oncall
+    # proxy for sig-k8s-infra-oncall
     - org: kubernetes
       slug: sig-k8s-infra-leads
     # proxy for test-infra-oncall

@@ -812,7 +812,7 @@ periodics:
       resources: {}
 - annotations:
     fork-per-release-cron: 0 9 * * *, 0 15 * * *, 0 21 * * *
-    testgrid-dashboards: wg-k8s-infra-canaries, sig-release-job-config-errors
+    testgrid-dashboards: sig-k8s-infra-canaries, sig-release-job-config-errors
     testgrid-num-failures-to-alert: "2"
     testgrid-tab-name: kubemark-1.22-500-canary
   cluster: k8s-infra-prow-build

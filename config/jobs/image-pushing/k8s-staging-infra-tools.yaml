@@ -3,7 +3,7 @@ postsubmits:
     - name: post-k8sio-push-image-octodns-docker
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: wg-k8s-infra-k8sio, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-k8s-infra-k8sio, sig-k8s-infra-gcb
       decorate: true
       run_if_changed: "^dns/octodns-docker/"
       branches:
@@ -24,7 +24,7 @@ postsubmits:
     - name: post-k8sio-push-image-k8s-infra
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: wg-k8s-infra-k8sio, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-k8s-infra-k8sio, sig-k8s-infra-gcb
       decorate: true
       run_if_changed: "^images/k8s-infra/"
       branches:
