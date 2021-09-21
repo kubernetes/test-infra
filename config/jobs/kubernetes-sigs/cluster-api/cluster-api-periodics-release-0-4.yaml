@@ -57,7 +57,7 @@ periodics:
     testgrid-tab-name: capi-e2e-release-0-4
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "2"
-- name: periodic-cluster-api-e2e-release-0-4-mink8s
+- name: periodic-cluster-api-e2e-mink8s-release-0-4
   interval: 1h
   decorate: true
   labels:
@@ -93,7 +93,7 @@ periodics:
           cpu: 7300m
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.4
-    testgrid-tab-name: capi-e2e-release-0-4-mink8s
+    testgrid-tab-name: capi-e2e-mink8s-release-0-4
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "2"
 - name: periodic-cluster-api-verify-book-links-release-0-4

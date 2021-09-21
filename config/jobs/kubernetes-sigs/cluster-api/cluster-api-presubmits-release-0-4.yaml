@@ -110,7 +110,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.4
       testgrid-tab-name: capi-pr-test-release-0-4
-  - name: pull-cluster-api-test-release-0-4-mink8s
+  - name: pull-cluster-api-test-mink8s-release-0-4
     decorate: true
     path_alias: sigs.k8s.io/cluster-api
     always_run: true
@@ -139,7 +139,7 @@ presubmits:
             cpu: 7300m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.4
-      testgrid-tab-name: capi-pr-test-release-0-4-mink8s
+      testgrid-tab-name: capi-pr-test-mink8s-release-0-4
   - name: pull-cluster-api-e2e-release-0-4
     labels:
       preset-dind-enabled: "true"
