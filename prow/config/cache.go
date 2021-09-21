@@ -48,8 +48,8 @@ type prowConfigAgentClient interface {
 // only handles empty interfaces).
 type ProwYAMLCache struct {
 	*cache.LRUCache
-	ConfigAgent prowConfigAgentClient
-	GitClient   git.ClientFactory
+	configAgent prowConfigAgentClient
+	gitClient   git.ClientFactory
 }
 
 // NewProwYAMLCache creates a new LRU cache for ProwYAML values, where the keys
@@ -126,7 +126,7 @@ func (kp *CacheKeyParts) CacheKey() (CacheKey, error) {
 // *ProwYAML into the cache if there is a cache miss.
 func (pc *ProwYAMLCache) GetPresubmits(identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Presubmit, error) {
 
-	c := pc.ConfigAgent.Config()
+	c := pc.configAgent.Config()
 
 	prowYAML, err := pc.GetProwYAML(c.getProwYAML, identifier, baseSHAGetter, headSHAGetters...)
 	if err != nil {
@@ -153,7 +153,7 @@ func (pc *ProwYAMLCache) GetPresubmits(identifier string, baseSHAGetter RefGette
 // a cache miss.
 func (pc *ProwYAMLCache) GetPostsubmits(identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Postsubmit, error) {
 
-	c := pc.ConfigAgent.Config()
+	c := pc.configAgent.Config()
 
 	prowYAML, err := pc.GetProwYAML(c.getProwYAML, identifier, baseSHAGetter, headSHAGetters...)
 	if err != nil {
@@ -191,7 +191,7 @@ func (pc *ProwYAMLCache) GetProwYAML(
 	// (because not only is it useless, but adding a useless entry also may
 	// result in evicting a useful entry if the underlying cache is full and an
 	// older (useful) key is evicted).
-	c := pc.ConfigAgent.Config()
+	c := pc.configAgent.Config()
 	if !c.InRepoConfigEnabled(identifier) {
 		return &ProwYAML{}, nil
 	}
@@ -207,7 +207,7 @@ func (pc *ProwYAMLCache) GetProwYAML(
 	}
 
 	valConstructor := func() (interface{}, error) {
-		return valConstructorHelper(pc.GitClient, identifier, baseSHAGetter, headSHAGetters...)
+		return valConstructorHelper(pc.gitClient, identifier, baseSHAGetter, headSHAGetters...)
 	}
 
 	got, err := pc.Get(key, valConstructor)
