@@ -390,10 +390,11 @@ func TestCreateComment(t *testing.T) {
 
 func TestCloneBugStruct(t *testing.T) {
 	testCases := []struct {
-		name     string
-		bug      Bug
-		comments []Comment
-		expected BugCreate
+		name          string
+		bug           Bug
+		comments      []Comment
+		targetRelease []string
+		expected      BugCreate
 	}{{
 		name: "Clone bug",
 		bug: Bug{
@@ -1246,14 +1247,45 @@ func TestGetRootForClone(t *testing.T) {
 func TestClone(t *testing.T) {
 	t.Parallel()
 	testCases := []struct {
-		name     string
-		original *Bug
-		expected Bug
+		name      string
+		mutations []func(bug *BugCreate)
+		original  *Bug
+		expected  Bug
 	}{
 		{
 			name:     "Simple",
 			original: &Bug{ID: 1},
 			expected: Bug{DependsOn: []int{1}},
+		},
+		{
+			name: "Simple with mutation",
+			mutations: []func(bug *BugCreate){
+				func(bug *BugCreate) {
+					bug.TargetRelease = []string{"1.2"}
+				},
+			},
+			original: &Bug{ID: 1},
+			expected: Bug{
+				DependsOn:     []int{1},
+				TargetRelease: []string{"1.2"},
+			},
+		},
+		{
+			name: "Simple with multiple mutations",
+			mutations: []func(bug *BugCreate){
+				func(bug *BugCreate) {
+					bug.TargetRelease = []string{"1.2"}
+				},
+				func(bug *BugCreate) {
+					bug.CC = []string{"test@test.com", "foo@bar.com"}
+				},
+			},
+			original: &Bug{ID: 1},
+			expected: Bug{
+				DependsOn:     []int{1},
+				TargetRelease: []string{"1.2"},
+				CC:            []string{"test@test.com", "foo@bar.com"},
+			},
 		},
 		{
 			name:     "Copy blocks field",
@@ -1265,7 +1297,7 @@ func TestClone(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			client := &Fake{Bugs: map[int]Bug{0: {}}, BugComments: map[int][]Comment{1: {{}}}}
-			newID, err := clone(client, tc.original)
+			newID, err := clone(client, tc.original, tc.mutations)
 			if err != nil {
 				t.Fatalf("cloning failed: %v", err)
 			}
