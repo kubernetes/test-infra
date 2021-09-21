@@ -70,7 +70,7 @@ for app in "${APPS[@]}"; do
         testgrid-num-failures-to-alert: '1'
       rerun_auth_config:
         github_team_slugs:
-        # proxy for wg-k8s-infra-oncall
+        # proxy for sig-k8s-infra-oncall
         - org: kubernetes
           slug: sig-k8s-infra-leads
         # proxy for test-infra-oncall

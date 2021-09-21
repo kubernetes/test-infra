@@ -44,7 +44,7 @@ periodics:
     description: Runs BigQuery queries to generate data for metrics.
   rerun_auth_config:
     github_team_slugs:
-    # proxy for wg-k8s-infra-oncall
+    # proxy for sig-k8s-infra-oncall
     - org: kubernetes
       slug: sig-k8s-infra-leads
     # proxy for test-infra-oncall
@@ -75,7 +75,7 @@ periodics:
     description: Runs BigQuery queries, summarizes results into clusters, and uploads to GCS for go.k8s.io/triage
   rerun_auth_config:
     github_team_slugs:
-    # proxy for wg-k8s-infra-oncall
+    # proxy for sig-k8s-infra-oncall
     - org: kubernetes
       slug: sig-k8s-infra-leads
     # proxy for test-infra-oncall
