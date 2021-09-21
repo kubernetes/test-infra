@@ -16,7 +16,7 @@ postsubmits:
       github_team_slugs:
       # proxy for wg-k8s-infra-oncall
       - org: kubernetes
-        slug: wg-k8s-infra-leads
+        slug: sig-k8s-infra-leads
       # TODO(spiffxp): team specifically for this service
       # - org: kubernetes
       #   slug: k8s-infra-dns-admins
@@ -49,7 +49,7 @@ periodics:
     github_team_slugs:
     # proxy for wg-k8s-infra-oncall
     - org: kubernetes
-      slug: wg-k8s-infra-leads
+      slug: sig-k8s-infra-leads
     # TODO(spiffxp): team specifically for this service
     # - org: kubernetes
     #   slug: k8s-infra-dns-admins

@@ -15,7 +15,7 @@ periodics:
   rerun_auth_config:
     github_team_slugs:
     - org: kubernetes
-      slug: wg-k8s-infra-leads
+      slug: sig-k8s-infra-leads
     - org: kubernetes
       slug: k8s-infra-gcp-auditors
   spec:

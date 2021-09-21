@@ -72,7 +72,7 @@ for app in "${APPS[@]}"; do
         github_team_slugs:
         # proxy for wg-k8s-infra-oncall
         - org: kubernetes
-          slug: wg-k8s-infra-leads
+          slug: sig-k8s-infra-leads
         # proxy for test-infra-oncall
         - org: kubernetes
           slug: test-infra-admins
