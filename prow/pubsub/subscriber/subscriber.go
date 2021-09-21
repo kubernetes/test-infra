@@ -33,7 +33,6 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/pjutil"
 )
 
@@ -103,7 +102,6 @@ type Subscriber struct {
 	ProwYAMLCache *config.ProwYAMLCache
 	Metrics       *Metrics
 	ProwJobClient ProwJobClient
-	GitClient     git.ClientFactory
 	Reporter      reportClient
 }
 
@@ -173,7 +171,6 @@ func (peh *periodicJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.Prow
 
 // presubmitJobHandler implements jobHandler
 type presubmitJobHandler struct {
-	GitClient git.ClientFactory
 }
 
 func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.ProwYAMLCache, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error) {
@@ -213,16 +210,13 @@ func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.Pro
 	}
 
 	presubmits := cfg.GetPresubmitsStatic(orgRepo)
-	if prh.GitClient != nil { // Get from inrepoconfig only when GitClient is provided
-		var presubmitsWithInrepoconfig []config.Presubmit
-		var err error
-		pc.GitClient = prh.GitClient
-		presubmitsWithInrepoconfig, err = pc.GetPresubmits(orgRepo, baseSHAGetter, headSHAGetters...)
-		if err != nil {
-			logrus.WithError(err).Debug("Failed to get presubmits")
-		} else {
-			presubmits = presubmitsWithInrepoconfig
-		}
+	var presubmitsWithInrepoconfig []config.Presubmit
+	var err error
+	presubmitsWithInrepoconfig, err = pc.GetPresubmits(orgRepo, baseSHAGetter, headSHAGetters...)
+	if err != nil {
+		logrus.WithError(err).Debug("Failed to get presubmits")
+	} else {
+		presubmits = presubmitsWithInrepoconfig
 	}
 
 	for _, job := range presubmits {
@@ -245,9 +239,8 @@ func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.Pro
 	return &prowJobSpec, presubmitJob.Labels, nil
 }
 
-// ppostsubmitJobHandler implements jobHandler
+// postsubmitJobHandler implements jobHandler
 type postsubmitJobHandler struct {
-	GitClient git.ClientFactory
 }
 
 func (poh *postsubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.ProwYAMLCache, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error) {
@@ -277,16 +270,13 @@ func (poh *postsubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.Pr
 	}
 
 	postsubmits := cfg.GetPostsubmitsStatic(orgRepo)
-	if poh.GitClient != nil { // Get from inrepoconfig only when GitClient is provided
-		var postsubmitsWithInrepoconfig []config.Postsubmit
-		var err error
-		pc.GitClient = poh.GitClient
-		postsubmitsWithInrepoconfig, err = pc.GetPostsubmits(orgRepo, baseSHAGetter)
-		if err != nil {
-			logrus.WithError(err).Debug("Failed to get postsubmits from inrepoconfig")
-		} else {
-			postsubmits = postsubmitsWithInrepoconfig
-		}
+	var postsubmitsWithInrepoconfig []config.Postsubmit
+	var err error
+	postsubmitsWithInrepoconfig, err = pc.GetPostsubmits(orgRepo, baseSHAGetter)
+	if err != nil {
+		logrus.WithError(err).Debug("Failed to get postsubmits from inrepoconfig")
+	} else {
+		postsubmits = postsubmitsWithInrepoconfig
 	}
 
 	for _, job := range postsubmits {
@@ -335,9 +325,9 @@ func (s *Subscriber) handleMessage(msg messageInterface, subscription string, al
 	case periodicProwJobEvent:
 		jh = &periodicJobHandler{}
 	case presubmitProwJobEvent:
-		jh = &presubmitJobHandler{GitClient: s.GitClient}
+		jh = &presubmitJobHandler{}
 	case postsubmitProwJobEvent:
-		jh = &postsubmitJobHandler{GitClient: s.GitClient}
+		jh = &postsubmitJobHandler{}
 	default:
 		l.WithField("type", eType).Debug("Unsupported event type")
 		s.Metrics.ErrorCounter.With(prometheus.Labels{subscriptionLabel: subscription})

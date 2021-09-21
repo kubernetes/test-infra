@@ -150,12 +150,17 @@ func main() {
 		logrus.WithField("in-repo-config-cache-size", flagOptions.prowYAMLCacheSize).WithError(err).Fatal("unable to initialize in-repo-config-cache; continuing without one")
 	}
 
+	// Inform the cache how to retrieve values on cache misses.
+	prowYAMLCache.GitClient = config.NewInRepoConfigGitCache(gitClientFactory)
+	if prowYAMLCache.GitClient == nil {
+		logrus.Fatal("in-repo-config-cache requires a non-nil GitClient; did you specify a '-github-token-path=...'?")
+	}
+
 	s := &subscriber.Subscriber{
 		ConfigAgent:   configAgent,
 		ProwYAMLCache: prowYAMLCache,
 		Metrics:       promMetrics,
 		ProwJobClient: kubeClient,
-		GitClient:     config.NewInRepoConfigGitCache(gitClientFactory),
 		Reporter:      pubsub.NewReporter(configAgent.Config), // reuse crier reporter
 	}
 
