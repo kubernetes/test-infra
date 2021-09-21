@@ -35,6 +35,7 @@ type Fake struct {
 	BugCreateErrors  sets.String
 	ExternalBugs     map[int][]ExternalBug
 	SubComponents    map[int]map[string][]string
+	SearchedBugs     []*Bug
 }
 
 // Endpoint returns the endpoint for this fake
@@ -295,6 +296,10 @@ func (c *Fake) GetRootForClone(bug *Bug) (*Bug, error) {
 		return nil, errors.New("injected error getting bug")
 	}
 	return getRootForClone(c, bug)
+}
+
+func (c *Fake) SearchBugs(filters map[string]string) ([]*Bug, error) {
+	return c.SearchedBugs, nil
 }
 
 // SetRoundTripper sets the Transport in http.Client to a custom RoundTripper
