@@ -3,7 +3,7 @@ presubmits:
   - name: pull-k8sio-groups-test
     annotations:
       testgrid-create-test-group: 'true'
-      testgrid-dashboards: wg-k8s-infra-groups
+      testgrid-dashboards: sig-k8s-infra-groups
     decorate: true
     path_alias: k8s.io/k8s.io
     run_if_changed: "^groups/"
