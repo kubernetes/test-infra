@@ -19,6 +19,9 @@ package config
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"path"
 	"testing"
 
 	"k8s.io/test-infra/prow/git/localgit"
@@ -740,5 +743,54 @@ func TestInRepoConfigGitCacheConcurrency(t *testing.T) {
 
 	if cf.clientsCreated != 2 {
 		t.Errorf("Expected 2 clients to be created, but got %d.", cf.clientsCreated)
+	}
+}
+
+func TestInRepoConfigClean(t *testing.T) {
+	t.Parallel()
+	org, repo := "org", "repo"
+
+	lg, c, _ := localgit.NewV2()
+	rcMap := make(map[string]git.RepoClient)
+	if err := lg.MakeFakeRepo(org, repo); err != nil {
+		t.Fatal(err)
+	}
+	rc, err := c.ClientFor(org, repo)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rcMap[repo] = rc
+
+	cf := &testClientFactory{
+		rcMap: rcMap,
+	}
+	cache := NewInRepoConfigGitCache(cf)
+
+	// First time clone should work
+	repoClient, err := cache.ClientFor(org, repo)
+	if err != nil {
+		t.Fatalf("Unexpected error getting repo client for thread 1: %v.", err)
+	}
+	repoClient.Clean()
+
+	// Now dirty the repo
+	casted := cache.(*InRepoConfigGitCache)
+	clonedRepo := casted.cache["org/repo"]
+	dir := clonedRepo.RepoClient.Directory()
+	f := path.Join(dir, "new-file")
+	if err := ioutil.WriteFile(f, []byte("something"), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	// Second time should be none dirty
+	repoClient, err = cache.ClientFor(org, repo)
+	if err != nil {
+		t.Fatalf("Unexpected error getting repo client for thread 1: %v.", err)
+	}
+	repoClient.Clean()
+
+	_, err = os.Stat(f)
+	if err == nil || !os.IsNotExist(err) {
+		t.Fatalf("%s should have been deleted", f)
 	}
 }

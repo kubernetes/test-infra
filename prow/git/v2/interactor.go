@@ -34,6 +34,10 @@ type Interactor interface {
 	Directory() string
 	// Clean removes the repository. It is up to the user to call this once they are done
 	Clean() error
+	// ResetHard runs `git reset --hard`
+	ResetHard(commitlike string) error
+	// IsDirty checks whether the repo is dirty or not
+	IsDirty() (bool, error)
 	// Checkout runs `git checkout`
 	Checkout(commitlike string) error
 	// RevParse runs `git rev-parse`
@@ -103,6 +107,30 @@ func (i *interactor) Directory() string {
 // Clean cleans up the repository from the on-disk cache
 func (i *interactor) Clean() error {
 	return os.RemoveAll(i.dir)
+}
+
+// ResetHard runs `git reset --hard`
+func (i *interactor) ResetHard(commitlike string) error {
+	// `git reset --hard` doesn't cleanup untracked file
+	i.logger.Info("Clean untracked files and dirs.")
+	if out, err := i.executor.Run("clean", "-df"); err != nil {
+		return fmt.Errorf("error clean -df: %v. output: %s", err, string(out))
+	}
+	i.logger.WithField("commitlike", commitlike).Info("Reset hard.")
+	if out, err := i.executor.Run("reset", "--hard", commitlike); err != nil {
+		return fmt.Errorf("error reset hard %s: %v. output: %s", commitlike, err, string(out))
+	}
+	return nil
+}
+
+// IsDirty checks whether the repo is dirty or not
+func (i *interactor) IsDirty() (bool, error) {
+	i.logger.Info("Checking is dirty.")
+	b, err := i.executor.Run("status", "--porcelain")
+	if err != nil {
+		return false, fmt.Errorf("error add -A: %v. output: %s", err, string(b))
+	}
+	return len(b) > 0, nil
 }
 
 // Clone clones the repository from a local path.
