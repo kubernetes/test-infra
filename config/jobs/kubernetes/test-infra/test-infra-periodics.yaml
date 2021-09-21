@@ -30,6 +30,8 @@ periodics:
 - name: metrics-kettle
   interval: 1h
   spec:
+    # TODO(cjwagner): Uncomment the following and delete secret mount + env once SA exists and is bound.
+    # serviceAccountName: triage
     containers:
     - image: gcr.io/k8s-staging-test-infra/bigquery:v20210913-fc7c4e84f6
       args:
