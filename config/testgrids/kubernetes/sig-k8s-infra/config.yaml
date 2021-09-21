@@ -1,21 +1,21 @@
 # Dashboard Group
 
 dashboard_groups:
-- name: wg-k8s-infra
+- name: sig-k8s-infra
   dashboard_names:
-  - wg-k8s-infra-apps
-  - wg-k8s-infra-canaries
-  - wg-k8s-infra-dns
-  - wg-k8s-infra-gcb
-  - wg-k8s-infra-groups
-  - wg-k8s-infra-k8sio
-  - wg-k8s-infra-prow
+  - sig-k8s-infra-apps
+  - sig-k8s-infra-canaries
+  - sig-k8s-infra-dns
+  - sig-k8s-infra-gcb
+  - sig-k8s-infra-groups
+  - sig-k8s-infra-k8sio
+  - sig-k8s-infra-prow
 
 dashboards:
-- name: wg-k8s-infra-apps
-- name: wg-k8s-infra-dns
-- name: wg-k8s-infra-canaries
-- name: wg-k8s-infra-gcb
-- name: wg-k8s-infra-groups
-- name: wg-k8s-infra-k8sio
-- name: wg-k8s-infra-prow
+- name: sig-k8s-infra-apps
+- name: sig-k8s-infra-dns
+- name: sig-k8s-infra-canaries
+- name: sig-k8s-infra-gcb
+- name: sig-k8s-infra-groups
+- name: sig-k8s-infra-k8sio
+- name: sig-k8s-infra-prow
