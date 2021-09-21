@@ -1,5 +1,5 @@
 dashboard_groups:
-  - name: k8s-infra-public-pii
+  - name: k8s-infra-public-pii-group
     dashboard_names:
       - k8s-infra-public-pii
 
