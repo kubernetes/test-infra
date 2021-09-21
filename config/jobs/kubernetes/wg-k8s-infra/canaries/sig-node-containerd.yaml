@@ -27,7 +27,7 @@ periodics:
           cpu: 4
           memory: 8Gi
   annotations:
-    testgrid-dashboards: wg-k8s-infra-canaries
+    testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-tab-name: containerd-build-canary
     description: "builds development in progress branch of upstream containerd"
 - name: ci-containerd-build-1-4-canary
@@ -56,7 +56,7 @@ periodics:
             cpu: 4
             memory: 8Gi
   annotations:
-    testgrid-dashboards: wg-k8s-infra-canaries
+    testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-tab-name: containerd-build-1.4-canary
     description: "builds release/1.4 branch of upstream containerd"
 - name: ci-containerd-build-test-images-canary
@@ -87,7 +87,7 @@ periodics:
             cpu: 4
             memory: 8Gi
   annotations:
-    testgrid-dashboards: wg-k8s-infra-canaries
+    testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-tab-name: containerd-build-test-images-canary
     description: "builds test images for development in progress branch of upstream containerd"
 - interval: 1h
@@ -123,7 +123,7 @@ periodics:
           cpu: 4
           memory: 8Gi
   annotations:
-    testgrid-dashboards: wg-k8s-infra-canaries
+    testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-tab-name: containerd-e2e-cos-canary
 - interval: 1h
   name: ci-containerd-e2e-cos-gce-1-4-canary
@@ -161,7 +161,7 @@ periodics:
             cpu: 4
             memory: 8Gi
   annotations:
-    testgrid-dashboards: wg-k8s-infra-canaries
+    testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-tab-name: containerd-e2e-cos-1.4-canary
 - interval: 1h
   name: ci-containerd-e2e-ubuntu-gce-canary
@@ -197,7 +197,7 @@ periodics:
           cpu: 4
           memory: 8Gi
   annotations:
-    testgrid-dashboards: wg-k8s-infra-canaries
+    testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-tab-name: containerd-e2e-ubuntu-canary
 - name: ci-containerd-node-e2e-canary
   interval: 1h
@@ -235,7 +235,7 @@ periodics:
           cpu: 4
           memory: 8Gi
   annotations:
-    testgrid-dashboards: wg-k8s-infra-canaries
+    testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-tab-name: containerd-node-conformance-canary
 - name: ci-containerd-node-e2e-1-4-canary
   interval: 1h
@@ -273,7 +273,7 @@ periodics:
           cpu: 4
           memory: 8Gi
   annotations:
-    testgrid-dashboards: wg-k8s-infra-canaries
+    testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-tab-name: containerd-node-e2e-1.4-canary
 - name: ci-containerd-node-e2e-features-canary
   interval: 1h
@@ -311,7 +311,7 @@ periodics:
           cpu: 4
           memory: 8Gi
   annotations:
-    testgrid-dashboards: wg-k8s-infra-canaries
+    testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-tab-name: containerd-node-features-canary
 - name: ci-containerd-node-e2e-features-1-4-canary
   interval: 1h
@@ -349,7 +349,7 @@ periodics:
           cpu: 4
           memory: 8Gi
   annotations:
-    testgrid-dashboards: wg-k8s-infra-canaries
+    testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-tab-name: containerd-node-e2e-features-1.4-canary
 - name: ci-cri-containerd-e2e-gce-device-plugin-gpu-canary
   cron: "30 1-23/3 * * *"
@@ -384,7 +384,7 @@ periodics:
           cpu: 4
           memory: 8Gi
   annotations:
-    testgrid-dashboards: wg-k8s-infra-canaries
+    testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-tab-name: e2e-cos-device-plugin-gpu
     testgrid-num-failures-to-alert: '8'
 - interval: 1h
@@ -420,7 +420,7 @@ periodics:
           cpu: 4
           memory: 8Gi
   annotations:
-    testgrid-dashboards: wg-k8s-infra-canaries
+    testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-tab-name: e2e-cos-canary
 - interval: 2h
   name: ci-cri-containerd-e2e-cos-gce-alpha-features-canary
@@ -457,7 +457,7 @@ periodics:
           cpu: 4
           memory: 8Gi
   annotations:
-    testgrid-dashboards: wg-k8s-infra-canaries
+    testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-tab-name: e2e-cos-alpha-features-canary
 - interval: 2h
   name: ci-cri-containerd-e2e-cos-gce-flaky-canary
@@ -490,7 +490,7 @@ periodics:
           cpu: 4
           memory: 8Gi
   annotations:
-    testgrid-dashboards: wg-k8s-infra-canaries
+    testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-tab-name: e2e-cos-flaky-canary
 - interval: 2h
   name: ci-cri-containerd-e2e-cos-gce-ip-alias-canary
@@ -527,7 +527,7 @@ periodics:
           cpu: 4
           memory: 8Gi
   annotations:
-    testgrid-dashboards: wg-k8s-infra-canaries
+    testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-tab-name: e2e-cos-ip-alias-canary
 - interval: 2h
   name: ci-cri-containerd-e2e-cos-gce-proto-canary
@@ -562,7 +562,7 @@ periodics:
           cpu: 4
           memory: 8Gi
   annotations:
-    testgrid-dashboards: wg-k8s-infra-canaries
+    testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-tab-name: e2e-cos-proto-canary
 - interval: 1h
   name: ci-cri-containerd-e2e-cos-gce-reboot-canary
@@ -595,7 +595,7 @@ periodics:
           cpu: 4
           memory: 8Gi
   annotations:
-    testgrid-dashboards: wg-k8s-infra-canaries
+    testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-tab-name: e2e-cos-reboot-canary
 - interval: 1h
   name: ci-cri-containerd-e2e-cos-gce-slow-canary
@@ -629,7 +629,7 @@ periodics:
           cpu: 4
           memory: 8Gi
   annotations:
-    testgrid-dashboards: wg-k8s-infra-canaries
+    testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-tab-name: e2e-cos-slow-canary
 - interval: 1h
   name: ci-cri-containerd-e2e-ubuntu-gce-canary
@@ -665,7 +665,7 @@ periodics:
           cpu: 4
           memory: 8Gi
   annotations:
-    testgrid-dashboards: wg-k8s-infra-canaries
+    testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-tab-name: e2e-ubuntu-canary
 - name: ci-cri-containerd-node-e2e-canary
   interval: 1h
@@ -703,7 +703,7 @@ periodics:
           cpu: 4
           memory: 8Gi
   annotations:
-    testgrid-dashboards: wg-k8s-infra-canaries
+    testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-tab-name: node-e2e-canary
 - name: ci-cri-containerd-node-e2e-benchmark-canary
   interval: 2h
@@ -741,7 +741,7 @@ periodics:
           cpu: 4
           memory: 8Gi
   annotations:
-    testgrid-dashboards: wg-k8s-infra-canaries
+    testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-tab-name: node-e2e-benchmark-canary
 - name: ci-cri-containerd-node-e2e-features-canary
   interval: 1h
@@ -779,7 +779,7 @@ periodics:
           cpu: 4
           memory: 8Gi
   annotations:
-    testgrid-dashboards: wg-k8s-infra-canaries
+    testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-tab-name: node-e2e-features-canary
 - interval: 1h
   name: ci-cos-containerd-e2e-cos-gce-canary
@@ -814,7 +814,7 @@ periodics:
           cpu: 4
           memory: 8Gi
   annotations:
-    testgrid-dashboards: wg-k8s-infra-canaries
+    testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-tab-name: image-validation-cos-e2e-canary
 - interval: 1h
   name: ci-cos-containerd-e2e-ubuntu-gce-canary
@@ -849,7 +849,7 @@ periodics:
           cpu: 4
           memory: 8Gi
   annotations:
-    testgrid-dashboards: wg-k8s-infra-canaries
+    testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-tab-name: image-validation-ubuntu-e2e-canary
 - name: ci-cos-containerd-node-e2e-canary
   interval: 1h
@@ -886,7 +886,7 @@ periodics:
           cpu: 4
           memory: 8Gi
   annotations:
-    testgrid-dashboards: wg-k8s-infra-canaries
+    testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-tab-name: image-validation-node-e2e-canary
 - name: ci-cos-containerd-node-e2e-features-canary
   interval: 1h
@@ -923,7 +923,7 @@ periodics:
           cpu: 4
           memory: 8Gi
   annotations:
-    testgrid-dashboards: wg-k8s-infra-canaries
+    testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-tab-name: image-validation-node-features-canary
 - name: ci-cos-cgroupv2-containerd-node-e2e-canary
   interval: 12h
@@ -960,5 +960,5 @@ periodics:
           cpu: 4
           memory: 8Gi
   annotations:
-    testgrid-dashboards: wg-k8s-infra-canaries
+    testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-tab-name: cos-cgroupv2-containerd-node-e2e-canary

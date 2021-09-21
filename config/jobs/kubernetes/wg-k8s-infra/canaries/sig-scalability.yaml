@@ -12,7 +12,7 @@ periodics:
   decoration_config:
     timeout: 270m
   annotations:
-    testgrid-dashboards: wg-k8s-infra-canaries
+    testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-tab-name: gce-master-scale-correctness-canary
     description: "Uses kubetest to run correctness tests against a 5000-node cluster created with cluster/kube-up.sh"
   spec:
@@ -76,7 +76,7 @@ periodics:
     base_ref: master
     path_alias: k8s.io/perf-tests
   annotations:
-    testgrid-dashboards: wg-k8s-infra-canaries
+    testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-tab-name: gce-master-scale-performance-canary
   spec:
     containers:
@@ -160,7 +160,7 @@ periodics:
     fork-per-release-cron: 0 3 * * *, 0 9 * * *, 0 15 * * *, 0 21 * * *
     fork-per-release-deletions: "preset-e2e-scalability-periodics-master"
     fork-per-release-replacements: "kubemark-500Nodes -> kubemark-500Nodes-{{.Version}}, extract=ci/latest -> extract=ci/latest-{{.Version}}"
-    testgrid-dashboards: wg-k8s-infra-canaries
+    testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-tab-name: kubemark-master-500-canary
     testgrid-num-failures-to-alert: '2'
   spec:
@@ -238,7 +238,7 @@ periodics:
     base_ref: master
     path_alias: k8s.io/perf-tests
   annotations:
-    testgrid-dashboards: wg-k8s-infra-canaries
+    testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-tab-name: kubemark-5000-canary
     testgrid-num-columns-recent: '3'
   spec:
@@ -321,7 +321,7 @@ periodics:
     base_ref: master
     path_alias: k8s.io/perf-tests
   annotations:
-    testgrid-dashboards: wg-k8s-infra-canaries
+    testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-tab-name: kubemark-5000-scheduler-canaries
     testgrid-num-columns-recent: '3'
   spec:
@@ -401,7 +401,7 @@ periodics:
     path_alias: golang
     clone_uri: https://go.googlesource.com/go
   annotations:
-    testgrid-dashboards: wg-k8s-infra-canaries
+    testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-tab-name: build-and-push-k8s-at-golang-tip-canary
   spec:
     containers:
@@ -450,7 +450,7 @@ periodics:
     base_sha: 39a6c09ddca620a430d38e5de1400844ea954c2f # head of perf-tests' master as of 2020-11-06
     path_alias: k8s.io/perf-tests
   annotations:
-    testgrid-dashboards: wg-k8s-infra-canaries
+    testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-tab-name: ci-golang-tip-k8s-1-18-canary
   spec:
     containers:
@@ -531,7 +531,7 @@ presubmits:
       preset-e2e-scalability-common: "true"
       preset-e2e-scalability-presubmits: "true"
     annotations:
-      testgrid-dashboards: wg-k8s-infra-canaries
+      testgrid-dashboards: sig-k8s-infra-canaries
       testgrid-tab-name: pull-kubernetes-e2e-gce-large-performance-canary
     spec:
       containers:
