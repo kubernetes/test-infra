@@ -1842,6 +1842,11 @@ type PullRequest struct {
 			Name githubql.String
 		}
 	} `graphql:"labels(first: 100)"`
+	ClosingIssuesReferences struct {
+		Nodes []struct {
+			Number githubql.Int
+		}
+	} `graphql:"closingIssuesReferences(last: 4)"`
 	Milestone *struct {
 		Title githubql.String
 	}
