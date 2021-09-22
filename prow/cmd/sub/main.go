@@ -47,11 +47,11 @@ var (
 )
 
 type options struct {
-	client            flagutil.KubernetesOptions
-	github            flagutil.GitHubOptions
-	port              int
-	pushSecretFile    string
-	prowYAMLCacheSize int
+	client                flagutil.KubernetesOptions
+	github                flagutil.GitHubOptions
+	port                  int
+	pushSecretFile        string
+	inRepoConfigCacheSize int
 
 	config       configflagutil.ConfigOptions
 	pluginConfig string
@@ -82,7 +82,7 @@ func init() {
 
 	fs.BoolVar(&flagOptions.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 	fs.DurationVar(&flagOptions.gracePeriod, "grace-period", 180*time.Second, "On shutdown, try to handle remaining events for the specified duration. ")
-	fs.IntVar(&flagOptions.prowYAMLCacheSize, "in-repo-config-cache-size", 1000, "Cache size for ProwYAMLs read from in-repo configs.")
+	fs.IntVar(&flagOptions.inRepoConfigCacheSize, "in-repo-config-cache-size", 1000, "Cache size for ProwYAMLs read from in-repo configs.")
 
 	flagOptions.config.AddFlags(fs)
 	flagOptions.client.AddFlags(fs)
@@ -113,8 +113,8 @@ func main() {
 	tokenGenerator := secret.GetTokenGenerator(flagOptions.pushSecretFile)
 
 	// If we need to use a GitClient (for inrepoconfig), then we must use a
-	// ProwYAMLCache.
-	var prowYAMLCache *config.ProwYAMLCache
+	// InRepoConfigCache.
+	var cache *config.InRepoConfigCache
 	var gitClientFactory git.ClientFactory
 	if flagOptions.github.TokenPath != "" {
 		gitClient, err := flagOptions.github.GitClient(flagOptions.dryRun)
@@ -125,13 +125,13 @@ func main() {
 
 		// Initialize cache for fetching Presubmit and Postsubmit information. If
 		// the cache cannot be initialized, exit with an error.
-		prowYAMLCache, err = config.NewProwYAMLCache(
-			flagOptions.prowYAMLCacheSize,
+		cache, err = config.NewInRepoConfigCache(
+			flagOptions.inRepoConfigCacheSize,
 			configAgent,
 			config.NewInRepoConfigGitCache(gitClientFactory))
 		// If we cannot initialize the cache, exit with an error.
 		if err != nil {
-			logrus.WithField("in-repo-config-cache-size", flagOptions.prowYAMLCacheSize).WithError(err).Fatal("unable to initialize in-repo-config-cache")
+			logrus.WithField("in-repo-config-cache-size", flagOptions.inRepoConfigCacheSize).WithError(err).Fatal("unable to initialize in-repo-config-cache")
 		}
 	}
 
@@ -153,11 +153,11 @@ func main() {
 	pprof.Instrument(flagOptions.instrumentationOptions)
 
 	s := &subscriber.Subscriber{
-		ConfigAgent:   configAgent,
-		ProwYAMLCache: prowYAMLCache,
-		Metrics:       promMetrics,
-		ProwJobClient: kubeClient,
-		Reporter:      pubsub.NewReporter(configAgent.Config), // reuse crier reporter
+		ConfigAgent:       configAgent,
+		InRepoConfigCache: cache,
+		Metrics:           promMetrics,
+		ProwJobClient:     kubeClient,
+		Reporter:          pubsub.NewReporter(configAgent.Config), // reuse crier reporter
 	}
 
 	// Return 200 on / for health checks.

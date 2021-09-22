@@ -61,7 +61,7 @@ var _ ProwYAMLGetter = prowYAMLGetter
 // caching of ProwYAMLs that are retrieved purely from the inrepoconfig's repo,
 // __without__ having the contents modified by the main Config's own settings
 // (which happens mostly inside DefaultAndValidateProwYAML()). prowYAMLGetter is
-// only used by GetProwYAMLCached().
+// only used by cache.GetPresubmits() and cache.GetPostsubmits().
 func prowYAMLGetter(
 	c *Config,
 	gc git.ClientFactory,

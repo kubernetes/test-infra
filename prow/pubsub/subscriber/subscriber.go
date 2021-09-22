@@ -98,11 +98,11 @@ type ProwJobClient interface {
 // validates them using Prow Configuration and
 // use a ProwJobClient to create Prow Jobs.
 type Subscriber struct {
-	ConfigAgent   *config.Agent
-	ProwYAMLCache *config.ProwYAMLCache
-	Metrics       *Metrics
-	ProwJobClient ProwJobClient
-	Reporter      reportClient
+	ConfigAgent       *config.Agent
+	InRepoConfigCache *config.InRepoConfigCache
+	Metrics           *Metrics
+	ProwJobClient     ProwJobClient
+	Reporter          reportClient
 }
 
 type messageInterface interface {
@@ -143,13 +143,13 @@ func (m *pubSubMessage) nack() {
 
 // jobHandler handles job type specific logic
 type jobHandler interface {
-	getProwJobSpec(cfg prowCfgClient, pc *config.ProwYAMLCache, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error)
+	getProwJobSpec(cfg prowCfgClient, pc *config.InRepoConfigCache, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error)
 }
 
 // periodicJobHandler implements jobHandler
 type periodicJobHandler struct{}
 
-func (peh *periodicJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.ProwYAMLCache, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error) {
+func (peh *periodicJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InRepoConfigCache, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error) {
 	var periodicJob *config.Periodic
 	// TODO(chaodaiG): do we want to support inrepoconfig when
 	// https://github.com/kubernetes/test-infra/issues/21729 is done?
@@ -173,7 +173,7 @@ func (peh *periodicJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.Prow
 type presubmitJobHandler struct {
 }
 
-func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.ProwYAMLCache, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error) {
+func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InRepoConfigCache, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error) {
 	// presubmit jobs require Refs and Refs.Pulls to be set
 	refs := pe.Refs
 	if refs == nil {
@@ -211,7 +211,7 @@ func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.Pro
 
 	// Get presubmits from Config alone.
 	presubmits := cfg.GetPresubmitsStatic(orgRepo)
-	// If ProwYAMLCache is provided, then it means that we also want to fetch
+	// If InRepoConfigCache is provided, then it means that we also want to fetch
 	// from an inrepoconfig.
 	if pc != nil {
 		var presubmitsWithInrepoconfig []config.Presubmit
@@ -251,7 +251,7 @@ func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.Pro
 type postsubmitJobHandler struct {
 }
 
-func (poh *postsubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.ProwYAMLCache, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error) {
+func (poh *postsubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InRepoConfigCache, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error) {
 	// postsubmit jobs require Refs to be set
 	refs := pe.Refs
 	if refs == nil {
@@ -380,7 +380,7 @@ func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msg messageIn
 		reportProwJob(pj, prowapi.TriggeredState, nil)
 	}
 
-	prowJobSpec, labels, err := jh.getProwJobSpec(s.ConfigAgent.Config(), s.ProwYAMLCache, pe)
+	prowJobSpec, labels, err := jh.getProwJobSpec(s.ConfigAgent.Config(), s.InRepoConfigCache, pe)
 	if err != nil {
 		// These are user errors, i.e. missing fields, requested prowjob doesn't exist etc.
 		// These errors are already surfaced to user via pubsub two lines below.
