@@ -96,6 +96,7 @@ clean() {
 
 gen-deepcopy() {
   clean prow/apis 'zz_generated.deepcopy.go'
+  clean prow/config 'zz_generated.deepcopy.non_k8s.go'
   echo "Generating DeepCopy() methods..." >&2
   "$deepcopygen" \
     --go-header-file hack/boilerplate/boilerplate.generated.go.txt \
@@ -103,6 +104,13 @@ gen-deepcopy() {
     --output-file-base zz_generated.deepcopy \
     --bounding-dirs k8s.io/test-infra/prow/apis
   copyfiles "prow/apis" "zz_generated.deepcopy.go"
+
+  "$deepcopygen" \
+    --go-header-file hack/boilerplate/boilerplate.generated.go.txt \
+    --input-dirs k8s.io/test-infra/prow/config \
+    --output-file-base zz_generated.deepcopy
+  copyfiles "prow/config" "zz_generated.deepcopy.go"
+
 }
 
 gen-client() {

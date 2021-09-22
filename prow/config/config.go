@@ -102,8 +102,15 @@ type JobConfig struct {
 	// for which a tide query is configured.
 	AllRepos sets.String `json:"-"`
 
-	// ProwYAMLGetter is the function to get a ProwYAML. Tests should
-	// provide their own implementation.
+	// ProwYAMLGetterWithDefaults is the function to get a ProwYAML with
+	// defaults based on the rest of the Config. Tests should provide their own
+	// implementation.
+	ProwYAMLGetterWithDefaults ProwYAMLGetter `json:"-"`
+
+	// ProwYAMLGetter is like ProwYAMLGetterWithDefaults, but does not default
+	// the retrieved ProwYAML with defaulted values. It is mocked by
+	// TestGetPresubmitsAndPostubmitsCached (and in production, prowYAMLGetter()
+	// is used).
 	ProwYAMLGetter ProwYAMLGetter `json:"-"`
 
 	// DecorateAllJobs determines whether all jobs are decorated by default
@@ -329,11 +336,59 @@ func (rg *RefGetterForGitHubPullRequest) BaseSHA() (string, error) {
 	return rg.baseSHA, nil
 }
 
-// getProwYAML will load presubmits and postsubmits for the given identifier that are
-// versioned inside the tested repo, if the inrepoconfig feature is enabled.
-// Consumers that pass in a RefGetter implementation that does a call to GitHub and who
-// also need the result of that GitHub call just keep a pointer to its result, but must
-// nilcheck that pointer before accessing it.
+// GetAndCheckRefs resolves all uniquely-identifying information related to the
+// retrieval of a *ProwYAML.
+func GetAndCheckRefs(
+	baseSHAGetter RefGetter,
+	headSHAGetters ...RefGetter) (string, []string, error) {
+
+	// Parse "baseSHAGetter".
+	baseSHA, err := baseSHAGetter()
+	if err != nil {
+		return "", nil, fmt.Errorf("failed to get baseSHA: %v", err)
+	}
+
+	// Parse "headSHAGetters".
+	var headSHAs []string
+	for _, headSHAGetter := range headSHAGetters {
+		headSHA, err := headSHAGetter()
+		if err != nil {
+			return "", nil, fmt.Errorf("failed to get headRef: %v", err)
+		}
+		headSHAs = append(headSHAs, headSHA)
+	}
+
+	return baseSHA, headSHAs, nil
+}
+
+// getProwYAMLWithDefaults will load presubmits and postsubmits for the given
+// identifier that are versioned inside the tested repo, if the inrepoconfig
+// feature is enabled. Consumers that pass in a RefGetter implementation that
+// does a call to GitHub and who also need the result of that GitHub call just
+// keep a pointer to its result, but must nilcheck that pointer before accessing
+// it.
+func (c *Config) getProwYAMLWithDefaults(gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) (*ProwYAML, error) {
+	if identifier == "" {
+		return nil, errors.New("no identifier for repo given")
+	}
+	if !c.InRepoConfigEnabled(identifier) {
+		return &ProwYAML{}, nil
+	}
+
+	baseSHA, headSHAs, err := GetAndCheckRefs(baseSHAGetter, headSHAGetters...)
+	if err != nil {
+		return nil, err
+	}
+
+	prowYAML, err := c.ProwYAMLGetterWithDefaults(c, gc, identifier, baseSHA, headSHAs...)
+	if err != nil {
+		return nil, err
+	}
+
+	return prowYAML, nil
+}
+
+// getProwYAML is like getProwYAMLWithDefaults, minus the defaulting logic.
 func (c *Config) getProwYAML(gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) (*ProwYAML, error) {
 	if identifier == "" {
 		return nil, errors.New("no identifier for repo given")
@@ -342,18 +397,11 @@ func (c *Config) getProwYAML(gc git.ClientFactory, identifier string, baseSHAGet
 		return &ProwYAML{}, nil
 	}
 
-	baseSHA, err := baseSHAGetter()
+	baseSHA, headSHAs, err := GetAndCheckRefs(baseSHAGetter, headSHAGetters...)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get baseSHA: %w", err)
+		return nil, err
 	}
-	var headSHAs []string
-	for _, headSHAGetter := range headSHAGetters {
-		headSHA, err := headSHAGetter()
-		if err != nil {
-			return nil, fmt.Errorf("failed to get headRef: %w", err)
-		}
-		headSHAs = append(headSHAs, headSHA)
-	}
+
 	prowYAML, err := c.ProwYAMLGetter(c, gc, identifier, baseSHA, headSHAs...)
 	if err != nil {
 		return nil, err
@@ -369,7 +417,7 @@ func (c *Config) getProwYAML(gc git.ClientFactory, identifier string, baseSHAGet
 // also need the result of that GitHub call just keep a pointer to its result, but must
 // nilcheck that pointer before accessing it.
 func (c *Config) GetPresubmits(gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Presubmit, error) {
-	prowYAML, err := c.getProwYAML(gc, identifier, baseSHAGetter, headSHAGetters...)
+	prowYAML, err := c.getProwYAMLWithDefaults(gc, identifier, baseSHAGetter, headSHAGetters...)
 	if err != nil {
 		return nil, err
 	}
@@ -389,7 +437,7 @@ func (c *Config) GetPresubmitsStatic(identifier string) []Presubmit {
 // also need the result of that GitHub call just keep a pointer to its result, but must
 // nilcheck that pointer before accessing it.
 func (c *Config) GetPostsubmits(gc git.ClientFactory, identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Postsubmit, error) {
-	prowYAML, err := c.getProwYAML(gc, identifier, baseSHAGetter, headSHAGetters...)
+	prowYAML, err := c.getProwYAMLWithDefaults(gc, identifier, baseSHAGetter, headSHAGetters...)
 	if err != nil {
 		return nil, err
 	}
@@ -513,25 +561,29 @@ type Plank struct {
 	PodUnscheduledTimeout *metav1.Duration `json:"pod_unscheduled_timeout,omitempty"`
 
 	// DefaultDecorationConfigs holds the default decoration config for specific values.
-	// Each entry in the slice specifies Repo and Cluster regexp filter fields to
-	// match against jobs and a corresponding DecorationConfig. All entries that
-	// match a job are used. Later matching entries override the fields of earlier
-	// matching entries.
-	// This field is populated either directly from DefaultDecorationConfigEntries,
-	// or by converting DefaultDecorationConfigsMap, depending on which is specified.
-	// Alternatively this field may be type `map[string]*prowapi.DecorationConfig`
-	// Use `org/repo`, `org` or `*` as a key to match against jobs.
+	//
+	// In FinalizeDefaultDecorationConfigs(), this field is populated either directly from
+	// DefaultDecorationConfigEntries, or from DefaultDecorationConfigsMap after
+	// it is converted to a slice. These fields are mutually exclusive, and
+	// defining both is an error.
 	DefaultDecorationConfigs []*DefaultDecorationConfigEntry `json:"-"`
-	// DefaultDecorationConfigsMap is a mapping from 'org', 'org/repo', or the literal string '*',
-	// to the default decoration config to use for that key. The '*' key matches all jobs.
-	// (Periodics use extra_refs[0] for matching if present.)
+	// DefaultDecorationConfigsMap is a mapping from 'org', 'org/repo', or the
+	// literal string '*', to the default decoration config to use for that key.
+	// The '*' key matches all jobs. (Periodics use extra_refs[0] for matching
+	// if present.)
+	//
 	// This field is mutually exclusive with the DefaultDecorationConfigEntries field.
 	DefaultDecorationConfigsMap map[string]*prowapi.DecorationConfig `json:"default_decoration_configs,omitempty"`
-	// DefaultDecorationConfigEntries holds the default decoration config for specific values.
+	// DefaultDecorationConfigEntries is used to populate DefaultDecorationConfigs.
 	// Each entry in the slice specifies Repo and Cluster regexp filter fields to
 	// match against jobs and a corresponding DecorationConfig. All entries that
 	// match a job are used. Later matching entries override the fields of earlier
 	// matching entries.
+	//
+	// This field is smarter than the DefaultDecorationConfigsMap, because each
+	// entry includes additional Cluster regexp information that the old format
+	// does not consider.
+	//
 	// This field is mutually exclusive with the DefaultDecorationConfigsMap field.
 	DefaultDecorationConfigEntries []*DefaultDecorationConfigEntry `json:"default_decoration_config_entries,omitempty"`
 
@@ -570,9 +622,13 @@ type ProwJobDefaultEntry struct {
 }
 
 // DefaultDecorationConfigEntry contains a DecorationConfig and a set of
-// filters to use to determine if the config should be used as a default for a
-// given ProwJob. When multiple of these entries match a ProwJob, they are all
-// merged with later entries overriding values from earlier entries.
+// regexps. If the regexps here match a ProwJob, then that ProwJob uses defaults
+// by looking the DecorationConfig defined here in this entry.
+//
+// If multiple entries match a single ProwJob, the multiple entries'
+// DecorationConfigs are merged, with later entries overriding values from
+// earlier entries. Then finally that merged DecorationConfig is used by the
+// matching ProwJob.
 type DefaultDecorationConfigEntry struct {
 	// Matching/filtering fields. All filters must match for an entry to match.
 
@@ -660,8 +716,9 @@ func (p *Plank) GuessDefaultDecorationConfig(repo, cluster string) *prowapi.Deco
 	return p.mergeDefaultDecorationConfig(repo, cluster, nil)
 }
 
-// defaultDecorationMapToSlice converts the old DefaultDecorationConfigs format:
-// map[string]*prowapi.DecorationConfig) to the new format: []*DefaultDecorationConfigEntry
+// defaultDecorationMapToSlice converts the old format
+// (map[string]*prowapi.DecorationConfig) to the new format
+// ([]*DefaultDecorationConfigEntry).
 func defaultDecorationMapToSlice(m map[string]*prowapi.DecorationConfig) []*DefaultDecorationConfigEntry {
 	var entries []*DefaultDecorationConfigEntry
 	add := func(repo string, dc *prowapi.DecorationConfig) {
@@ -701,7 +758,7 @@ func DefaultDecorationMapToSliceTesting(m map[string]*prowapi.DecorationConfig) 
 
 // FinalizeDefaultDecorationConfigs prepares the entries of
 // Plank.DefaultDecorationConfigs for use finalizing job config.
-// It parses the value of p.DefaultDecorationConfigsRaw into either the old map
+// It sets p.DefaultDecorationConfigs into either the old map
 // format or the new slice format:
 // Old format: map[string]*prowapi.DecorationConfig where the key is org,
 //             org/repo, or "*".
@@ -1379,7 +1436,10 @@ func loadConfig(prowConfig, jobConfig string, additionalProwConfigDirs []string,
 		}
 	}
 
-	nc.ProwYAMLGetter = defaultProwYAMLGetter
+	// For production, use these functions for getting ProwYAML values. In
+	// tests, we can override these fields with mocked versions.
+	nc.ProwYAMLGetter = prowYAMLGetter
+	nc.ProwYAMLGetterWithDefaults = prowYAMLGetterWithDefaults
 
 	if deduplicatedTideQueries, err := deduplicateTideQueries(nc.Tide.Queries); err != nil {
 		logrus.WithError(err).Error("failed to deduplicate tide queriees")
@@ -2601,7 +2661,7 @@ func (c *ProwConfig) defaultPeriodicFields(js []Periodic) {
 func SetPresubmitRegexes(js []Presubmit) error {
 	for i, j := range js {
 		if re, err := regexp.Compile(j.Trigger); err == nil {
-			js[i].re = re
+			js[i].re = &CopyableRegexp{re}
 		} else {
 			return fmt.Errorf("could not compile trigger regex for %s: %w", j.Name, err)
 		}
@@ -2628,14 +2688,14 @@ func SetPresubmitRegexes(js []Presubmit) error {
 func setBrancherRegexes(br Brancher) (Brancher, error) {
 	if len(br.Branches) > 0 {
 		if re, err := regexp.Compile(strings.Join(br.Branches, `|`)); err == nil {
-			br.re = re
+			br.re = &CopyableRegexp{re}
 		} else {
 			return br, fmt.Errorf("could not compile positive branch regex: %w", err)
 		}
 	}
 	if len(br.SkipBranches) > 0 {
 		if re, err := regexp.Compile(strings.Join(br.SkipBranches, `|`)); err == nil {
-			br.reSkip = re
+			br.reSkip = &CopyableRegexp{re}
 		} else {
 			return br, fmt.Errorf("could not compile negative branch regex: %w", err)
 		}
@@ -2655,7 +2715,7 @@ func setChangeRegexes(cm RegexpChangeMatcher) (RegexpChangeMatcher, error) {
 		if err != nil {
 			return cm, fmt.Errorf("could not compile %s regex: %w", propName, err)
 		}
-		cm.reChanges = re
+		cm.reChanges = &CopyableRegexp{re}
 	}
 	return cm, nil
 }

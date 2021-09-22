@@ -594,11 +594,11 @@ postsubmits: [{"name": "oli", "spec": {"containers": [{}]}}]`),
 			var p, pCached *ProwYAML
 			var errCached error
 			if headSHA == baseSHA {
-				p, err = defaultProwYAMLGetter(tc.config, testGC, org+"/"+repo, baseSHA)
-				pCached, errCached = defaultProwYAMLGetter(tc.config, testGCCached, org+"/"+repo, baseSHA)
+				p, err = prowYAMLGetterWithDefaults(tc.config, testGC, org+"/"+repo, baseSHA)
+				pCached, errCached = prowYAMLGetterWithDefaults(tc.config, testGCCached, org+"/"+repo, baseSHA)
 			} else {
-				p, err = defaultProwYAMLGetter(tc.config, testGC, org+"/"+repo, baseSHA, headSHA)
-				pCached, errCached = defaultProwYAMLGetter(tc.config, testGCCached, org+"/"+repo, baseSHA, headSHA)
+				p, err = prowYAMLGetterWithDefaults(tc.config, testGC, org+"/"+repo, baseSHA, headSHA)
+				pCached, errCached = prowYAMLGetterWithDefaults(tc.config, testGCCached, org+"/"+repo, baseSHA, headSHA)
 			}
 
 			if err := tc.validate(p, err); err != nil {
@@ -638,7 +638,7 @@ func testDefaultProwYAMLGetter_RejectsNonGitHubRepo(clients localgit.Clients, t 
 		t.Fatalf("Making fake repo: %v", err)
 	}
 	expectedErrMsg := `didn't get two results when splitting repo identifier "my-repo"`
-	if _, err := defaultProwYAMLGetter(&Config{}, gc, identifier, ""); err == nil || err.Error() != expectedErrMsg {
+	if _, err := prowYAMLGetterWithDefaults(&Config{}, gc, identifier, ""); err == nil || err.Error() != expectedErrMsg {
 		t.Errorf("Error %v does not have expected message %s", err, expectedErrMsg)
 	}
 }

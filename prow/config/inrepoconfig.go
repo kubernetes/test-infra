@@ -37,6 +37,8 @@ const (
 	inRepoConfigDirName  = ".prow"
 )
 
+// +k8s:deepcopy-gen=true
+
 // ProwYAML represents the content of a .prow.yaml file
 // used to version Presubmits and Postsubmits inside the tested repo.
 type ProwYAML struct {
@@ -49,10 +51,18 @@ type ProwYAML struct {
 // their own implementation and set that on the Config.
 type ProwYAMLGetter func(c *Config, gc git.ClientFactory, identifier, baseSHA string, headSHAs ...string) (*ProwYAML, error)
 
-// Verify defaultProwYAMLGetter is a ProwYAMLGetter
-var _ ProwYAMLGetter = defaultProwYAMLGetter
+// Verify prowYAMLGetterWithDefaults and prowYAMLGetter are both of type
+// ProwYAMLGetter.
+var _ ProwYAMLGetter = prowYAMLGetterWithDefaults
+var _ ProwYAMLGetter = prowYAMLGetter
 
-func defaultProwYAMLGetter(
+// prowYAMLGetter is like prowYAMLGetterWithDefaults, but without default values
+// (it does not call DefaultAndValidateProwYAML()). Its sole purpose is to allow
+// caching of ProwYAMLs that are retrieved purely from the inrepoconfig's repo,
+// __without__ having the contents modified by the main Config's own settings
+// (which happens mostly inside DefaultAndValidateProwYAML()). prowYAMLGetter is
+// only used by GetProwYAMLCached().
+func prowYAMLGetter(
 	c *Config,
 	gc git.ClientFactory,
 	identifier string,
@@ -62,7 +72,7 @@ func defaultProwYAMLGetter(
 	log := logrus.WithField("repo", identifier)
 
 	if gc == nil {
-		log.Error("defaultProwYAMLGetter was called with a nil git client")
+		log.Error("prowYAMLGetter was called with a nil git client")
 		return nil, errors.New("gitClient is nil")
 	}
 
@@ -152,11 +162,28 @@ func defaultProwYAMLGetter(
 		}
 	}
 
+	return prowYAML, nil
+}
+
+// prowYAMLGetterWithDefaults is like prowYAMLGetter, but additionally sets
+// defaults by calling DefaultAndValidateProwYAML.
+func prowYAMLGetterWithDefaults(
+	c *Config,
+	gc git.ClientFactory,
+	identifier string,
+	baseSHA string,
+	headSHAs ...string) (*ProwYAML, error) {
+
+	prowYAML, err := prowYAMLGetter(c, gc, identifier, baseSHA, headSHAs...)
+	if err != nil {
+		return nil, err
+	}
+
+	// Mutate prowYAML to default values as necessary.
 	if err := DefaultAndValidateProwYAML(c, prowYAML, identifier); err != nil {
 		return nil, err
 	}
 
-	log.Debugf("Successfully got %d presubmits and %d postsubmits from %q.", len(prowYAML.Presubmits), len(prowYAML.Postsubmits), inRepoConfigFileName)
 	return prowYAML, nil
 }
 
@@ -184,6 +211,11 @@ func DefaultAndValidateProwYAML(c *Config, p *ProwYAML, identifier string) error
 		if !c.InRepoConfigAllowsCluster(post.Cluster, identifier) {
 			errs = append(errs, fmt.Errorf("cluster %q is not allowed for repository %q", post.Cluster, identifier))
 		}
+	}
+
+	if len(errs) == 0 {
+		log := logrus.WithField("repo", identifier)
+		log.Debugf("Successfully got %d presubmits and %d postsubmits.", len(p.Presubmits), len(p.Postsubmits))
 	}
 
 	return utilerrors.NewAggregate(errs)

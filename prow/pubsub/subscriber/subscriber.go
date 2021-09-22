@@ -33,7 +33,6 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/pjutil"
 )
 
@@ -44,15 +43,16 @@ const (
 	postsubmitProwJobEvent = "prow.k8s.io/pubsub.PostsubmitProwJobEvent"
 )
 
-// Ensure interface is intact
+// Ensure interface is intact. I.e., this declaration ensures that the type
+// "*config.Config" implements the "prowCfgClient" interface. See
+// https://golang.org/doc/faq#guarantee_satisfies_interface.
 var _ prowCfgClient = (*config.Config)(nil)
 
-// prowCfgClient is for unit test purpose
+// prowCfgClient is a subset of all the various behaviors that the
+// "*config.Config" type implements, which we will test here.
 type prowCfgClient interface {
 	AllPeriodics() []config.Periodic
-	GetPresubmits(gc git.ClientFactory, identifier string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) ([]config.Presubmit, error)
 	GetPresubmitsStatic(identifier string) []config.Presubmit
-	GetPostsubmits(gc git.ClientFactory, identifier string, baseSHAGetter config.RefGetter, headSHAGetters ...config.RefGetter) ([]config.Postsubmit, error)
 	GetPostsubmitsStatic(identifier string) []config.Postsubmit
 }
 
@@ -99,9 +99,9 @@ type ProwJobClient interface {
 // use a ProwJobClient to create Prow Jobs.
 type Subscriber struct {
 	ConfigAgent   *config.Agent
+	ProwYAMLCache *config.ProwYAMLCache
 	Metrics       *Metrics
 	ProwJobClient ProwJobClient
-	GitClient     git.ClientFactory
 	Reporter      reportClient
 }
 
@@ -143,13 +143,13 @@ func (m *pubSubMessage) nack() {
 
 // jobHandler handles job type specific logic
 type jobHandler interface {
-	getProwJobSpec(cfg prowCfgClient, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error)
+	getProwJobSpec(cfg prowCfgClient, pc *config.ProwYAMLCache, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error)
 }
 
 // periodicJobHandler implements jobHandler
 type periodicJobHandler struct{}
 
-func (peh *periodicJobHandler) getProwJobSpec(cfg prowCfgClient, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error) {
+func (peh *periodicJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.ProwYAMLCache, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error) {
 	var periodicJob *config.Periodic
 	// TODO(chaodaiG): do we want to support inrepoconfig when
 	// https://github.com/kubernetes/test-infra/issues/21729 is done?
@@ -171,10 +171,9 @@ func (peh *periodicJobHandler) getProwJobSpec(cfg prowCfgClient, pe ProwJobEvent
 
 // presubmitJobHandler implements jobHandler
 type presubmitJobHandler struct {
-	GitClient git.ClientFactory
 }
 
-func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error) {
+func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.ProwYAMLCache, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error) {
 	// presubmit jobs require Refs and Refs.Pulls to be set
 	refs := pe.Refs
 	if refs == nil {
@@ -210,12 +209,20 @@ func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pe ProwJobEven
 		})
 	}
 
+	// Get presubmits from Config alone.
 	presubmits := cfg.GetPresubmitsStatic(orgRepo)
-	if prh.GitClient != nil { // Get from inrepoconfig only when GitClient is provided
-		presubmitsWithInrepoconfig, err := cfg.GetPresubmits(prh.GitClient, orgRepo, baseSHAGetter, headSHAGetters...)
+	// If ProwYAMLCache is provided, then it means that we also want to fetch
+	// from an inrepoconfig.
+	if pc != nil {
+		var presubmitsWithInrepoconfig []config.Presubmit
+		var err error
+		presubmitsWithInrepoconfig, err = pc.GetPresubmits(orgRepo, baseSHAGetter, headSHAGetters...)
 		if err != nil {
 			logrus.WithError(err).Debug("Failed to get presubmits")
 		} else {
+			// Overwrite presubmits. This is safe because pc.GetPresubmits()
+			// itself calls cfg.GetPresubmitsStatic() and adds to it all the
+			// presubmits found in the inrepoconfig.
 			presubmits = presubmitsWithInrepoconfig
 		}
 	}
@@ -240,12 +247,11 @@ func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pe ProwJobEven
 	return &prowJobSpec, presubmitJob.Labels, nil
 }
 
-// ppostsubmitJobHandler implements jobHandler
+// postsubmitJobHandler implements jobHandler
 type postsubmitJobHandler struct {
-	GitClient git.ClientFactory
 }
 
-func (poh *postsubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error) {
+func (poh *postsubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.ProwYAMLCache, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error) {
 	// postsubmit jobs require Refs to be set
 	refs := pe.Refs
 	if refs == nil {
@@ -272,8 +278,10 @@ func (poh *postsubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pe ProwJobEve
 	}
 
 	postsubmits := cfg.GetPostsubmitsStatic(orgRepo)
-	if poh.GitClient != nil { // Get from inrepoconfig only when GitClient is provided
-		postsubmitsWithInrepoconfig, err := cfg.GetPostsubmits(poh.GitClient, orgRepo, baseSHAGetter)
+	if pc != nil {
+		var postsubmitsWithInrepoconfig []config.Postsubmit
+		var err error
+		postsubmitsWithInrepoconfig, err = pc.GetPostsubmits(orgRepo, baseSHAGetter)
 		if err != nil {
 			logrus.WithError(err).Debug("Failed to get postsubmits from inrepoconfig")
 		} else {
@@ -327,9 +335,9 @@ func (s *Subscriber) handleMessage(msg messageInterface, subscription string, al
 	case periodicProwJobEvent:
 		jh = &periodicJobHandler{}
 	case presubmitProwJobEvent:
-		jh = &presubmitJobHandler{GitClient: s.GitClient}
+		jh = &presubmitJobHandler{}
 	case postsubmitProwJobEvent:
-		jh = &postsubmitJobHandler{GitClient: s.GitClient}
+		jh = &postsubmitJobHandler{}
 	default:
 		l.WithField("type", eType).Debug("Unsupported event type")
 		s.Metrics.ErrorCounter.With(prometheus.Labels{subscriptionLabel: subscription})
@@ -372,7 +380,7 @@ func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msg messageIn
 		reportProwJob(pj, prowapi.TriggeredState, nil)
 	}
 
-	prowJobSpec, labels, err := jh.getProwJobSpec(s.ConfigAgent.Config(), pe)
+	prowJobSpec, labels, err := jh.getProwJobSpec(s.ConfigAgent.Config(), s.ProwYAMLCache, pe)
 	if err != nil {
 		// These are user errors, i.e. missing fields, requested prowjob doesn't exist etc.
 		// These errors are already surfaced to user via pubsub two lines below.

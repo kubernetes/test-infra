@@ -10,6 +10,7 @@ go_test(
     name = "go_default_test",
     srcs = [
         "branch_protection_test.go",
+        "cache_test.go",
         "config_test.go",
         "inrepoconfig_test.go",
         "jobs_test.go",
@@ -56,14 +57,17 @@ go_library(
     srcs = [
         "agent.go",
         "branch_protection.go",
+        "cache.go",
         "config.go",
         "inrepoconfig.go",
         "jobs.go",
         "tide.go",
+        "zz_generated.deepcopy.go",
     ],
     importpath = "k8s.io/test-infra/prow/config",
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
+        "//prow/cache:go_default_library",
         "//prow/gerrit/client:go_default_library",
         "//prow/git/v2:go_default_library",
         "//prow/github:go_default_library",
