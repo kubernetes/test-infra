@@ -6,6 +6,7 @@ presubmits:
     - ^release-cd$
     - ^release-efix$
     - ^release-eus$
+    - ^release-k$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-iam-operator
@@ -27,6 +28,7 @@ presubmits:
     - ^release-cd$
     - ^release-efix$
     - ^release-eus$
+    - ^release-k$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-iam-operator
@@ -47,6 +49,7 @@ presubmits:
     - ^release-cd$
     - ^release-efix$
     - ^release-eus$
+    - ^release-k$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-iam-operator
@@ -71,6 +74,7 @@ postsubmits:
     - ^release-cd$
     - ^release-efix$
     - ^release-eus$
+    - ^release-k$
     decorate: true
     path_alias: github.com/IBM/ibm-iam-operator
     spec:
@@ -88,6 +92,7 @@ postsubmits:
     - ^release-cd$
     - ^release-efix$
     - ^release-eus$
+    - ^release-k$
     decorate: true
     path_alias: github.com/IBM/ibm-iam-operator
     spec:
@@ -106,6 +111,7 @@ postsubmits:
     - ^release-cd$
     - ^release-efix$
     - ^release-eus$
+    - ^release-k$
     decorate: true
     path_alias: github.com/IBM/ibm-iam-operator
     spec:
@@ -129,6 +135,7 @@ postsubmits:
     - ^release-cd$
     - ^release-efix$
     - ^release-eus$
+    - ^release-k$
     decorate: true
     path_alias: github.com/IBM/ibm-iam-operator
     spec:
@@ -147,6 +154,7 @@ postsubmits:
     - ^release-cd$
     - ^release-efix$
     - ^release-eus$
+    - ^release-k$
     decorate: true
     path_alias: github.com/IBM/ibm-iam-operator
     labels:
