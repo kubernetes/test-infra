@@ -738,8 +738,11 @@ def generate_upgrades():
     versions_list = [
         #  kops    k8s          kops      k8s
         (('1.21', 'v1.21.0'), ('latest', 'latest')),
+        (('1.22', 'v1.22.0'), ('latest', 'latest')),
+        (('1.21', 'v1.21.0'), ('1.22', 'v1.22.0')),
         (('1.20', 'v1.20.7'), ('1.21', 'v1.21.0')),
         (('latest', 'v1.20.6'), ('latest', 'v1.21.0')),
+        (('latest', 'v1.18.6'), ('latest', 'v1.19.0')),
         (('1.20', 'v1.20.6'), ('latest', 'v1.21.0')),
     ]
     def shorten(version):
