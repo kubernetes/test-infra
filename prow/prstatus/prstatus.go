@@ -294,7 +294,7 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler pullRequestQueryHandler, c
 }
 
 type githubQuerier interface {
-	Query(context.Context, interface{}, map[string]interface{}) error
+	QueryWithGitHubAppsSupport(ctx context.Context, q interface{}, vars map[string]interface{}, org string) error
 }
 
 // queryPullRequests is a query function that returns a list of open pull requests owned by the user whose access token
@@ -309,7 +309,7 @@ func (da *DashboardAgent) queryPullRequests(ctx context.Context, ghc githubQueri
 	var remaining int
 	for {
 		sq := searchQuery{}
-		if err := ghc.Query(ctx, &sq, vars); err != nil {
+		if err := ghc.QueryWithGitHubAppsSupport(ctx, &sq, vars, ""); err != nil {
 			return nil, err
 		}
 		totalCost += int(sq.RateLimit.Cost)
@@ -344,11 +344,11 @@ func (da *DashboardAgent) getHeadContexts(ghc githubStatusFetcher, pr PullReques
 	repo := string(pr.Repository.Name)
 	combined, err := ghc.GetCombinedStatus(org, repo, string(pr.HeadRefOID))
 	if err != nil {
-		return nil, fmt.Errorf("failed to get the combined status: %v", err)
+		return nil, fmt.Errorf("failed to get the combined status: %w", err)
 	}
 	checkruns, err := ghc.ListCheckRuns(org, repo, string(pr.HeadRefOID))
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch checkruns: %v", err)
+		return nil, fmt.Errorf("failed to fetch checkruns: %w", err)
 	}
 	contexts := make([]Context, 0, len(combined.Statuses)+len(checkruns.CheckRuns))
 	for _, status := range combined.Statuses {

@@ -90,11 +90,11 @@ func (sr *slackReporter) report(log *logrus.Entry, pj *v1.ProwJob) error {
 	tmpl, err := template.New("").Parse(jobSlackConfig.ReportTemplate)
 	if err != nil {
 		log.WithError(err).Error("failed to parse template")
-		return fmt.Errorf("failed to parse template: %v", err)
+		return fmt.Errorf("failed to parse template: %w", err)
 	}
 	if err := tmpl.Execute(b, pj); err != nil {
 		log.WithError(err).Error("failed to execute report template")
-		return fmt.Errorf("failed to execute report template: %v", err)
+		return fmt.Errorf("failed to execute report template: %w", err)
 	}
 	if sr.dryRun {
 		log.WithField("messagetext", b.String()).Debug("Skipping reporting because dry-run is enabled")
@@ -102,7 +102,7 @@ func (sr *slackReporter) report(log *logrus.Entry, pj *v1.ProwJob) error {
 	}
 	if err := client.WriteMessage(b.String(), channel); err != nil {
 		log.WithError(err).Error("failed to write Slack message")
-		return fmt.Errorf("failed to write Slack message: %v", err)
+		return fmt.Errorf("failed to write Slack message: %w", err)
 	}
 	return nil
 }

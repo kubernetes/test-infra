@@ -24,7 +24,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/krte:v20210721-2b77449-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20210915-5dbaf53458-master
       command:
       - wrapper.sh
       - bash
@@ -32,7 +32,7 @@ periodics:
       - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && e2e-k8s.sh
       env:
       # this is the key configuration
-      - name: KUBELET_LOG_FORMAT
+      - name: CLUSTER_LOG_FORMAT
         value: json
       # TODO: This is a fairly arbitrary test that actually schedules some pod(s).
       # We mostly just want cluster up/down and something that ensures the cluster is in fact up fully.

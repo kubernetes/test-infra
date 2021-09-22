@@ -255,6 +255,7 @@ const (
 // PullRequest contains information about a PullRequest.
 type PullRequest struct {
 	ID                 int               `json:"id"`
+	NodeID             string            `json:"node_id"`
 	Number             int               `json:"number"`
 	HTMLURL            string            `json:"html_url"`
 	User               User              `json:"user"`
@@ -347,6 +348,7 @@ type Repo struct {
 	HasIssues     bool   `json:"has_issues"`
 	HasProjects   bool   `json:"has_projects"`
 	HasWiki       bool   `json:"has_wiki"`
+	NodeID        string `json:"node_id"`
 	// Permissions reflect the permission level for the requester, so
 	// on a repository GET call this will be for the user whose token
 	// is being used, if listing a team's repos this will be for the
@@ -743,6 +745,7 @@ type IssueCommentEvent struct {
 // Issue represents general info about an issue.
 type Issue struct {
 	ID        int       `json:"id"`
+	NodeID    string    `json:"node_id"`
 	User      User      `json:"user"`
 	Number    int       `json:"number"`
 	Title     string    `json:"title"`
@@ -904,6 +907,7 @@ const (
 // Review describes a Pull Request review.
 type Review struct {
 	ID          int         `json:"id"`
+	NodeID      string      `json:"node_id"`
 	User        User        `json:"user"`
 	Body        string      `json:"body"`
 	State       ReviewState `json:"state"`
@@ -950,6 +954,7 @@ const (
 // ReviewComment describes a Pull Request review.
 type ReviewComment struct {
 	ID        int       `json:"id"`
+	NodeID    string    `json:"node_id"`
 	ReviewID  int       `json:"pull_request_review_id"`
 	User      User      `json:"user"`
 	Body      string    `json:"body"`
@@ -1168,7 +1173,8 @@ const (
 // Issue and PR "closed" events are not coerced to the "deleted" Action and do not trigger
 // a GenericCommentEvent because these events don't actually remove the comment content from GH.
 type GenericCommentEvent struct {
-	ID           int `json:"id"`
+	ID           int    `json:"id"`
+	NodeID       string `json:"node_id"`
 	CommentID    *int
 	IsPR         bool
 	Action       GenericCommentEventAction

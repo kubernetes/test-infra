@@ -153,7 +153,7 @@ func (o *Options) Validate() error {
 	}
 	for i, e := range ents {
 		if err := e.Validate(); err != nil {
-			return fmt.Errorf("entry %d: %v", i, err)
+			return fmt.Errorf("entry %d: %w", i, err)
 		}
 	}
 

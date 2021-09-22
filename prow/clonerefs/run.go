@@ -145,11 +145,11 @@ func (o Options) Run() error {
 	results := o.createRecords()
 	logData, err := json.Marshal(results)
 	if err != nil {
-		return fmt.Errorf("marshal clone records: %v", err)
+		return fmt.Errorf("marshal clone records: %w", err)
 	}
 
 	if err := ioutil.WriteFile(o.Log, logData, 0755); err != nil {
-		return fmt.Errorf("write clone records: %v", err)
+		return fmt.Errorf("write clone records: %w", err)
 	}
 
 	var failed int
@@ -208,7 +208,7 @@ func addHostFingerprints(fingerprints []string) (string, []clone.Command, error)
 		}
 		cmds = append(cmds, cmd)
 		if err != nil {
-			return "", cmds, fmt.Errorf("create sshDir %s: %v", sshDir, err)
+			return "", cmds, fmt.Errorf("create sshDir %s: %w", sshDir, err)
 		}
 	}
 
@@ -220,18 +220,18 @@ func addHostFingerprints(fingerprints []string) (string, []clone.Command, error)
 	if err != nil {
 		cmd.Error = err.Error()
 		cmds = append(cmds, cmd)
-		return "", cmds, fmt.Errorf("append %s: %v", knownHostsFile, err)
+		return "", cmds, fmt.Errorf("append %s: %w", knownHostsFile, err)
 	}
 
 	if _, err := f.Write([]byte(strings.Join(fingerprints, "\n"))); err != nil {
 		cmd.Error = err.Error()
 		cmds = append(cmds, cmd)
-		return "", cmds, fmt.Errorf("write fingerprints to %s: %v", knownHostsFile, err)
+		return "", cmds, fmt.Errorf("write fingerprints to %s: %w", knownHostsFile, err)
 	}
 	if err := f.Close(); err != nil {
 		cmd.Error = err.Error()
 		cmds = append(cmds, cmd)
-		return "", cmds, fmt.Errorf("close %s: %v", knownHostsFile, err)
+		return "", cmds, fmt.Errorf("close %s: %w", knownHostsFile, err)
 	}
 	cmds = append(cmds, cmd)
 	logrus.Infof("Updated known_hosts in file: %s", knownHostsFile)
@@ -244,7 +244,7 @@ func addHostFingerprints(fingerprints []string) (string, []clone.Command, error)
 	if err != nil {
 		cmd.Error = err.Error()
 		cmds = append(cmds, cmd)
-		return "", cmds, fmt.Errorf("lookup ssh path: %v", err)
+		return "", cmds, fmt.Errorf("lookup ssh path: %w", err)
 	}
 	cmds = append(cmds, cmd)
 	return fmt.Sprintf("GIT_SSH_COMMAND=%s -o UserKnownHostsFile=%s", ssh, knownHostsFile), cmds, nil
@@ -264,7 +264,7 @@ func addSSHKeys(paths []string) ([]string, []clone.Command, error) {
 	}
 	cmds = append(cmds, cmd)
 	if err != nil {
-		return []string{}, cmds, fmt.Errorf("start ssh-agent: %v", err)
+		return []string{}, cmds, fmt.Errorf("start ssh-agent: %w", err)
 	}
 	logrus.Info("Started SSH agent")
 	// ssh-agent will output three lines of text, in the form:
@@ -311,7 +311,7 @@ func addSSHKeys(paths []string) ([]string, []clone.Command, error) {
 			logrus.Infof("Added SSH key at %s", path)
 			return nil
 		}); err != nil {
-			return env, cmds, fmt.Errorf("walking path %q: %v", keyPath, err)
+			return env, cmds, fmt.Errorf("walking path %q: %w", keyPath, err)
 		}
 	}
 	return env, cmds, nil

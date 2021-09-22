@@ -6,7 +6,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=90
@@ -26,7 +26,7 @@ periodics:
         value: /go
 
   annotations:
-    testgrid-dashboards: sig-node-cri
+    testgrid-dashboards: sig-node-docker
     testgrid-tab-name: docker-node-conformance
 - name: ci-docker-node-features
   interval: 4h
@@ -35,7 +35,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=200
@@ -55,7 +55,7 @@ periodics:
         value: /go
 
   annotations:
-    testgrid-dashboards: sig-node-cri
+    testgrid-dashboards: sig-node-docker
     testgrid-tab-name: docker-node-features
 - name: ci-docker-node-legacy
   interval: 2h
@@ -64,7 +64,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=200
@@ -83,5 +83,5 @@ periodics:
       - name: GOPATH
         value: /go
   annotations:
-    testgrid-dashboards: sig-node-cri
+    testgrid-dashboards: sig-node-docker
     testgrid-tab-name: docker-node-legacy

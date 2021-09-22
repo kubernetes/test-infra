@@ -115,7 +115,7 @@ type options struct {
 func (o *options) validate() error {
 	level, err := logrus.ParseLevel(o.logLevel)
 	if err != nil {
-		return fmt.Errorf("invalid log level specified: %v", err)
+		return fmt.Errorf("invalid log level specified: %w", err)
 	}
 	logrus.SetLevel(level)
 
@@ -124,7 +124,7 @@ func (o *options) validate() error {
 	}
 	upstreamURL, err := url.Parse(o.upstream)
 	if err != nil {
-		return fmt.Errorf("failed to parse upstream URL: %v", err)
+		return fmt.Errorf("failed to parse upstream URL: %w", err)
 	}
 	o.upstreamParsed = upstreamURL
 	return nil
@@ -160,16 +160,6 @@ func main() {
 		logrus.Warningf("The deprecated `--legacy-disable-disk-cache-partitions-by-auth-header` flags value is `true`. If you are a bigger Prow setup, you should copy your existing cache directory to the directory mentioned in the `%s` messages to warm up the partitioned-by-auth-header cache, then set the flag to false. If you are a smaller Prow setup or just started using ghproxy you can just unconditionally set it to `false`.", ghcache.LogMessageWithDiskPartitionFields)
 	}
 
-	var cache http.RoundTripper
-	if o.redisAddress != "" {
-		cache = ghcache.NewRedisCache(apptokenequalizer.New(http.DefaultTransport), o.redisAddress, o.maxConcurrency)
-	} else if o.dir == "" {
-		cache = ghcache.NewMemCache(apptokenequalizer.New(http.DefaultTransport), o.maxConcurrency)
-	} else {
-		cache = ghcache.NewDiskCache(apptokenequalizer.New(http.DefaultTransport), o.dir, o.sizeGB, o.maxConcurrency, o.diskCacheDisableAuthHeaderPartitioning)
-		go diskMonitor(o.pushGatewayInterval, o.dir)
-	}
-
 	pprof.Instrument(o.instrumentationOptions)
 	defer interrupts.WaitForGracefulShutdown()
 	metrics.ExposeMetrics("ghproxy", config.PushGateway{
@@ -180,13 +170,27 @@ func main() {
 		ServeMetrics: o.serveMetrics,
 	}, o.instrumentationOptions.MetricsPort)
 
-	proxy := newReverseProxy(o.upstreamParsed, cache, 30*time.Second)
+	proxy := proxy(o, http.DefaultTransport, time.Hour)
 	server := &http.Server{Addr: ":" + strconv.Itoa(o.port), Handler: proxy}
 
 	health := pjutil.NewHealthOnPort(o.instrumentationOptions.HealthPort)
 	health.ServeReady()
 
 	interrupts.ListenAndServe(server, 30*time.Second)
+}
+
+func proxy(o *options, upstreamTransport http.RoundTripper, diskCachePruneInterval time.Duration) http.Handler {
+	var cache http.RoundTripper
+	if o.redisAddress != "" {
+		cache = ghcache.NewRedisCache(apptokenequalizer.New(upstreamTransport), o.redisAddress, o.maxConcurrency)
+	} else if o.dir == "" {
+		cache = ghcache.NewMemCache(apptokenequalizer.New(upstreamTransport), o.maxConcurrency)
+	} else {
+		cache = ghcache.NewDiskCache(apptokenequalizer.New(upstreamTransport), o.dir, o.sizeGB, o.maxConcurrency, o.diskCacheDisableAuthHeaderPartitioning, diskCachePruneInterval)
+		go diskMonitor(o.pushGatewayInterval, o.dir)
+	}
+
+	return newReverseProxy(o.upstreamParsed, cache, 30*time.Second)
 }
 
 func newReverseProxy(upstreamURL *url.URL, transport http.RoundTripper, timeout time.Duration) http.Handler {

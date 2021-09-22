@@ -182,7 +182,7 @@ func write(ctx context.Context, client *storage.Client, path string, bytes []byt
 
 	u, err := url.Parse(path)
 	if err != nil {
-		return fmt.Errorf("invalid url %s: %v", path, err)
+		return fmt.Errorf("invalid url %s: %w", path, err)
 	}
 	if u.Scheme != "gs" {
 		return ioutil.WriteFile(path, bytes, 0644)
@@ -200,7 +200,7 @@ func doOneshot(ctx context.Context, client *storage.Client, opt options, prowCon
 	// Read Data Sources: Default, YAML configs, Prow Annotations
 	c, err := yamlcfg.ReadConfig(opt.inputs, opt.defaultYAML, opt.strictUnmarshal)
 	if err != nil {
-		return fmt.Errorf("could not read testgrid config: %v", err)
+		return fmt.Errorf("could not read testgrid config: %w", err)
 	}
 
 	// Remains nil if no default YAML
@@ -228,7 +228,7 @@ func doOneshot(ctx context.Context, client *storage.Client, opt options, prowCon
 	if prowConfigAgent != nil {
 		pac.prowConfig = prowConfigAgent.Config()
 		if err := pac.applyProwjobAnnotations(&c); err != nil {
-			return fmt.Errorf("could not apply prowjob annotations: %v", err)
+			return fmt.Errorf("could not apply prowjob annotations: %w", err)
 		}
 	}
 
@@ -241,11 +241,11 @@ func doOneshot(ctx context.Context, client *storage.Client, opt options, prowCon
 		if opt.writeYAML {
 			b, err := yaml.Marshal(&c)
 			if err != nil {
-				return fmt.Errorf("could not print yaml config: %v", err)
+				return fmt.Errorf("could not print yaml config: %w", err)
 			}
 			os.Stdout.Write(b)
 		} else if err := tgCfgUtil.MarshalText(&c, os.Stdout); err != nil {
-			return fmt.Errorf("could not print config: %v", err)
+			return fmt.Errorf("could not print config: %w", err)
 		}
 	}
 
@@ -262,7 +262,7 @@ func doOneshot(ctx context.Context, client *storage.Client, opt options, prowCon
 			err = write(ctx, client, opt.output, b, opt.worldReadable, "")
 		}
 		if err != nil {
-			return fmt.Errorf("could not write config: %v", err)
+			return fmt.Errorf("could not write config: %w", err)
 		}
 	}
 	return nil

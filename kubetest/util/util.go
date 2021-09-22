@@ -106,7 +106,7 @@ func JoinURL(urlPath, path string) (string, error) {
 func Pushd(dir string) (func() error, error) {
 	old, err := os.Getwd()
 	if err != nil {
-		return nil, fmt.Errorf("failed to os.Getwd(): %v", err)
+		return nil, fmt.Errorf("failed to os.Getwd(): %w", err)
 	}
 	if err = os.Chdir(dir); err != nil {
 		return nil, err
@@ -120,7 +120,7 @@ func Pushd(dir string) (func() error, error) {
 func PushEnv(env, value string) (func() error, error) {
 	prev, present := os.LookupEnv(env)
 	if err := os.Setenv(env, value); err != nil {
-		return nil, fmt.Errorf("could not set %s: %v", env, err)
+		return nil, fmt.Errorf("could not set %s: %w", env, err)
 	}
 	return func() error {
 		if present {
@@ -160,7 +160,7 @@ func MigrateOptions(m []MigratedOption) error {
 			continue
 		}
 		if err := os.Setenv(s.Env, *s.Option); err != nil {
-			return fmt.Errorf("could not set %s=%s: %v", s.Env, *s.Option, err)
+			return fmt.Errorf("could not set %s=%s: %w", s.Env, *s.Option, err)
 		}
 	}
 	return nil
@@ -236,10 +236,10 @@ func ExecError(err error) string {
 func EnsureExecutable(p string) error {
 	s, err := os.Stat(p)
 	if err != nil {
-		return fmt.Errorf("error doing stat on %q: %v", p, err)
+		return fmt.Errorf("error doing stat on %q: %w", p, err)
 	}
 	if err := os.Chmod(p, s.Mode()|0111); err != nil {
-		return fmt.Errorf("error doing chmod on %q: %v", p, err)
+		return fmt.Errorf("error doing chmod on %q: %w", p, err)
 	}
 	return nil
 }

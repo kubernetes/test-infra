@@ -8,4 +8,8 @@ appear in TestGrid via Config Merger.
 1. Add Configurator Prow Job to _your_ Prow instance. You can use the
 [example prowjobs](./config-merger-prowjob-example.yaml) as a template.
 
-2. Add Configurator's cloud location to the [mergelists](/config/mergelists).
+2. Give k8s-testgrid permission to read your configuration:
+  - `testgrid-canary@k8s-testgrid.iam.gserviceaccount.com` for canary.yaml
+  - `updater@k8s-testgrid.iam.gserviceaccount.com` for prod.yaml
+
+3. Add Configurator's cloud location to the [mergelists](/config/mergelists).

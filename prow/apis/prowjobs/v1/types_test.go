@@ -30,6 +30,65 @@ func pStr(str string) *string {
 	return &str
 }
 
+// TODO(mpherman): Add more tests when ProwJobDefaults have more than 1 field
+func TestProwJobDefaulting(t *testing.T) {
+	var testCases = []struct {
+		name     string
+		provided *ProwJobDefault
+		def      *ProwJobDefault
+		expected *ProwJobDefault
+	}{
+		{
+			name:     "nothing provided",
+			provided: &ProwJobDefault{},
+			def:      &ProwJobDefault{},
+			expected: &ProwJobDefault{},
+		},
+		{
+			name: "TenantID provided, no default",
+			provided: &ProwJobDefault{
+				TenantID: "Provided",
+			},
+			def: &ProwJobDefault{},
+			expected: &ProwJobDefault{
+				TenantID: "Provided",
+			},
+		},
+		{
+			name: "TenantID provided, No Override",
+			provided: &ProwJobDefault{
+				TenantID: "Provided",
+			},
+			def: &ProwJobDefault{
+				TenantID: "Default",
+			},
+			expected: &ProwJobDefault{
+				TenantID: "Provided",
+			},
+		},
+		{
+			name:     "TenantID not Provided, Uses default",
+			provided: &ProwJobDefault{},
+			def: &ProwJobDefault{
+				TenantID: "Default",
+			},
+			expected: &ProwJobDefault{
+				TenantID: "Default",
+			},
+		},
+	}
+	for _, testCase := range testCases {
+		tc := testCase
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			actual := tc.provided.ApplyDefault(tc.def)
+			if diff := cmp.Diff(actual, tc.expected, cmpopts.EquateEmpty()); diff != "" {
+				t.Errorf("expected defaulted config but got diff %v", diff)
+			}
+		})
+	}
+}
+
 func TestDecorationDefaultingDoesntOverwrite(t *testing.T) {
 	truth := true
 	lies := false
@@ -533,6 +592,7 @@ func TestParsePath(t *testing.T) {
 		wantStorageProvider string
 		wantBucket          string
 		wantFullPath        string
+		wantPath            string
 		wantErr             string
 	}{
 		{
@@ -543,6 +603,7 @@ func TestParsePath(t *testing.T) {
 			wantStorageProvider: "gs",
 			wantBucket:          "prow-artifacts",
 			wantFullPath:        "prow-artifacts",
+			wantPath:            "",
 		},
 		{
 			name: "valid gcs bucket with storage provider prefix",
@@ -552,6 +613,7 @@ func TestParsePath(t *testing.T) {
 			wantStorageProvider: "gs",
 			wantBucket:          "prow-artifacts",
 			wantFullPath:        "prow-artifacts",
+			wantPath:            "",
 		},
 		{
 			name: "valid gcs bucket with multiple separator with storage provider prefix",
@@ -561,6 +623,7 @@ func TestParsePath(t *testing.T) {
 			wantStorageProvider: "gs",
 			wantBucket:          "my-floppy-backup",
 			wantFullPath:        "my-floppy-backup/a://doom2.wad.006",
+			wantPath:            "/a://doom2.wad.006",
 		},
 		{
 			name: "valid s3 bucket with storage provider prefix",
@@ -570,6 +633,7 @@ func TestParsePath(t *testing.T) {
 			wantStorageProvider: "s3",
 			wantBucket:          "prow-artifacts",
 			wantFullPath:        "prow-artifacts",
+			wantPath:            "",
 		},
 	}
 	for _, tt := range tests {
@@ -586,11 +650,14 @@ func TestParsePath(t *testing.T) {
 			if prowPath.StorageProvider() != tt.wantStorageProvider {
 				t.Errorf("ParsePath() gotStorageProvider = %v, wantStorageProvider %v", prowPath.StorageProvider(), tt.wantStorageProvider)
 			}
-			if prowPath.Bucket() != tt.wantBucket {
-				t.Errorf("ParsePath() gotBucket = %v, wantBucket %v", prowPath.Bucket(), tt.wantBucket)
+			if got, want := prowPath.Bucket(), tt.wantBucket; got != want {
+				t.Errorf("ParsePath() gotBucket = %v, wantBucket %v", got, want)
 			}
-			if prowPath.FullPath() != tt.wantFullPath {
-				t.Errorf("ParsePath() gotFullPath = %v, wantFullPath %v", prowPath.FullPath(), tt.wantBucket)
+			if got, want := prowPath.FullPath(), tt.wantFullPath; got != want {
+				t.Errorf("ParsePath() gotFullPath = %v, wantFullPath %v", got, want)
+			}
+			if got, want := prowPath.Path, tt.wantPath; got != want {
+				t.Errorf("ParsePath() gotPath = %v, wantPath %v", got, want)
 			}
 		})
 	}

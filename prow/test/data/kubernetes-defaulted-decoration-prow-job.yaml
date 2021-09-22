@@ -43,6 +43,8 @@ spec:
       image: golang:latest
       name: ""
       resources: {}
+  prowjob_defaults:
+    tenant_id: GlobalDefaultID
   refs:
     base_ref: master
     base_sha: basesha

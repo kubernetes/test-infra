@@ -48,7 +48,7 @@ func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) err
 		var err error
 		baseSHA, err = c.GitHubClient.GetRef(org, repo, "heads/"+pr.PullRequest.Base.Ref)
 		if err != nil {
-			return "", fmt.Errorf("failed to get baseSHA: %v", err)
+			return "", fmt.Errorf("failed to get baseSHA: %w", err)
 		}
 		return baseSHA, nil
 	}
@@ -88,7 +88,7 @@ func handlePR(c Client, trigger plugins.Trigger, pr github.PullRequestEvent) err
 		}
 		c.Logger.Infof("Welcome message to PR author %q.", author)
 		if err := welcomeMsg(c.GitHubClient, trigger, pr.PullRequest); err != nil {
-			return fmt.Errorf("could not welcome non-org member %q: %v", author, err)
+			return fmt.Errorf("could not welcome non-org member %q: %w", author, err)
 		}
 	case github.PullRequestActionReopened:
 		return buildAllIfTrusted(c, trigger, pr, baseSHA, presubmits)
@@ -314,7 +314,7 @@ func draftMsg(ghc githubClient, pr github.PullRequest) error {
 func TrustedPullRequest(tprc trustedPullRequestClient, trigger plugins.Trigger, author, org, repo string, num int, l []github.Label) ([]github.Label, bool, error) {
 	// First check if the author is a member of the org.
 	if trustedResponse, err := TrustedUser(tprc, trigger.OnlyOrgMembers, trigger.TrustedOrg, author, org, repo); err != nil {
-		return l, false, fmt.Errorf("error checking %s for trust: %v", author, err)
+		return l, false, fmt.Errorf("error checking %s for trust: %w", author, err)
 	} else if trustedResponse.IsTrusted {
 		return l, true, nil
 	}

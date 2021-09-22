@@ -233,7 +233,7 @@ func JiraError(response *jira.Response, err error) error {
 			if readError != nil && readError.Error() != "http: read on closed response body" {
 				logrus.WithError(readError).Warn("Failed to read Jira response body.")
 			}
-			return fmt.Errorf("%w: %v", err, string(body))
+			return fmt.Errorf("%w: %s", err, string(body))
 		}
 	}
 	return err

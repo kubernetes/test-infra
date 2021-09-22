@@ -1,6 +1,6 @@
 postsubmits:
   kubernetes-sigs/cluster-api-provider-azure:
-  - name: postsubmits-cluster-api-provider-azure-e2e-full-master-release-0-4
+  - name: postsubmits-cluster-api-provider-azure-e2e-full-release-0-4
     decorate: true
     decoration_config:
       timeout: 2h
@@ -14,7 +14,7 @@ postsubmits:
     - release-0.4
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-1.18
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-1.18
         command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"

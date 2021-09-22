@@ -35,11 +35,14 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: horologium
-        image: gcr.io/k8s-prow/horologium:v20210802-bd4b5f6003
+        image: gcr.io/k8s-prow/horologium:v20210921-341cf105e8
         args:
         - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
         - --dry-run=false
+        ports:
+        - name: metrics
+          containerPort: 9090
         volumeMounts:
         - name: config
           mountPath: /etc/config

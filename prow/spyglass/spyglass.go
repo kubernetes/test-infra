@@ -178,7 +178,7 @@ func (sg *Spyglass) ResolveSymlink(src string) (string, error) {
 	src = strings.TrimSuffix(src, "/")
 	keyType, key, err := splitSrc(src)
 	if err != nil {
-		return "", fmt.Errorf("error parsing src: %v", src)
+		return "", fmt.Errorf("error parsing src: %w", err)
 	}
 	switch keyType {
 	case prowKeyType:
@@ -198,14 +198,14 @@ func (sg *Spyglass) ResolveSymlink(src string) (string, error) {
 		bytes := make([]byte, 4096) // assume we won't get more than 4 kB of symlink to read
 		n, err := reader.Read(bytes)
 		if err != nil && err != io.EOF {
-			return "", fmt.Errorf("failed to read symlink file (which does seem to exist): %v", err)
+			return "", fmt.Errorf("failed to read symlink file (which does seem to exist): %w", err)
 		}
 		if n == len(bytes) {
 			return "", fmt.Errorf("symlink destination exceeds length limit of %d bytes", len(bytes)-1)
 		}
 		u, err := url.Parse(string(bytes[:n]))
 		if err != nil {
-			return "", fmt.Errorf("failed to parse URL: %v", err)
+			return "", fmt.Errorf("failed to parse URL: %w", err)
 		}
 		return path.Join(keyType, u.Host, u.Path), nil
 	}
@@ -216,7 +216,7 @@ func (sg *Spyglass) JobPath(src string) (string, error) {
 	src = strings.TrimSuffix(src, "/")
 	keyType, key, err := splitSrc(src)
 	if err != nil {
-		return "", fmt.Errorf("error parsing src: %v", src)
+		return "", fmt.Errorf("error parsing src: %w", err)
 	}
 	split := strings.Split(key, "/")
 	switch keyType {
@@ -228,7 +228,7 @@ func (sg *Spyglass) JobPath(src string) (string, error) {
 		buildID := split[1]
 		job, err := sg.jobAgent.GetProwJob(jobName, buildID)
 		if err != nil {
-			return "", fmt.Errorf("failed to get prow job from src %q: %v", key, err)
+			return "", fmt.Errorf("failed to get prow job from src %q: %w", key, err)
 		}
 		if job.Spec.DecorationConfig == nil {
 			return "", fmt.Errorf("failed to locate GCS upload bucket for %s: job is undecorated", jobName)
@@ -328,7 +328,7 @@ func (sg *Spyglass) RunToPR(src string) (string, string, int, error) {
 	src = strings.TrimSuffix(src, "/")
 	keyType, key, err := splitSrc(src)
 	if err != nil {
-		return "", "", 0, fmt.Errorf("error parsing src: %v", src)
+		return "", "", 0, fmt.Errorf("error parsing src: %w", err)
 	}
 	split := strings.Split(key, "/")
 	if len(split) < 2 {
@@ -343,7 +343,7 @@ func (sg *Spyglass) RunToPR(src string) (string, string, int, error) {
 		buildID := split[1]
 		job, err := sg.jobAgent.GetProwJob(jobName, buildID)
 		if err != nil {
-			return "", "", 0, fmt.Errorf("failed to get prow job from src %q: %v", key, err)
+			return "", "", 0, fmt.Errorf("failed to get prow job from src %q: %w", key, err)
 		}
 		if job.Spec.Refs == nil || len(job.Spec.Refs.Pulls) == 0 {
 			return "", "", 0, fmt.Errorf("no PRs on job %q", job.Name)
@@ -365,7 +365,7 @@ func (sg *Spyglass) RunToPR(src string) (string, string, int, error) {
 			prNumStr := split[len(split)-3]
 			prNum, err := strconv.Atoi(prNumStr)
 			if err != nil {
-				return "", "", 0, fmt.Errorf("couldn't parse PR number %q in %q: %v", prNumStr, key, err)
+				return "", "", 0, fmt.Errorf("couldn't parse PR number %q in %q: %w", prNumStr, key, err)
 			}
 			// We don't actually attempt to look up the job's own configuration.
 			// In practice, this shouldn't matter: we only want to read DefaultOrg and DefaultRepo, and overriding those
@@ -467,7 +467,7 @@ func (sg *Spyglass) TestGridLink(src string) (string, error) {
 	jobName := split[len(split)-2]
 	q, err := sg.testgrid.FindQuery(jobName)
 	if err != nil {
-		return "", fmt.Errorf("failed to find query: %v", err)
+		return "", fmt.Errorf("failed to find query: %w", err)
 	}
 	return sg.config().Deck.Spyglass.TestGridRoot + q, nil
 }

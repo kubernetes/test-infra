@@ -18,6 +18,8 @@ limitations under the License.
 package main
 
 import (
+	"context"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -43,9 +45,11 @@ import (
 	pluginsflagutil "k8s.io/test-infra/prow/flagutil/plugins"
 	"k8s.io/test-infra/prow/github"
 	_ "k8s.io/test-infra/prow/hook/plugin-imports"
+	"k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/logrusutil"
+	"k8s.io/test-infra/prow/plank"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/approve"
 	"k8s.io/test-infra/prow/plugins/blockade"
@@ -73,7 +77,8 @@ type options struct {
 	strict          bool
 	expensive       bool
 
-	github flagutil.GitHubOptions
+	github  flagutil.GitHubOptions
+	storage flagutil.StorageClientOptions
 }
 
 func reportWarning(strict bool, errs utilerrors.Aggregate) {
@@ -150,7 +155,7 @@ func getAllWarnings() []string {
 
 func (o *options) DefaultAndValidate() error {
 	allWarnings := getAllWarnings()
-	for _, validate := range []interface{ Validate(bool) error }{&o.config, &o.pluginsConfig} {
+	for _, validate := range []interface{ Validate(bool) error }{&o.config, &o.pluginsConfig, &o.storage} {
 		if err := validate.Validate(false); err != nil {
 			return err
 		}
@@ -200,11 +205,12 @@ func (o *options) gatherOptions(flag *flag.FlagSet, args []string) error {
 	o.github.AllowAnonymous = true
 	o.config.AddFlags(flag)
 	o.pluginsConfig.AddFlags(flag)
+	o.storage.AddFlags(flag)
 	if err := flag.Parse(args); err != nil {
-		return fmt.Errorf("parse flags: %v", err)
+		return fmt.Errorf("parse flags: %w", err)
 	}
 	if err := o.DefaultAndValidate(); err != nil {
-		return fmt.Errorf("invalid options: %v", err)
+		return fmt.Errorf("invalid options: %w", err)
 	}
 	return nil
 }
@@ -369,7 +375,11 @@ func validate(o options) error {
 		}
 	}
 	if o.warningEnabled(validateClusterFieldWarning) {
-		if err := validateCluster(cfg); err != nil {
+		opener, err := io.NewOpener(context.Background(), o.storage.GCSCredentialsFile, o.storage.S3CredentialsFile)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error creating opener")
+		}
+		if err := validateCluster(cfg, opener); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -500,7 +510,7 @@ func validateURLs(c config.ProwConfig) error {
 func validateUnknownFields(cfg interface{}, cfgBytes []byte, filePath string) error {
 	err := yaml.Unmarshal(cfgBytes, &cfg, yaml.DisallowUnknownFields)
 	if err != nil {
-		return fmt.Errorf("unknown fields or bad config in %s: %v", filePath, err)
+		return fmt.Errorf("unknown fields or bad config in %s: %w", filePath, err)
 	}
 	return nil
 }
@@ -975,7 +985,7 @@ func verifyOwnersPresence(cfg *plugins.Configuration, rc FileInRepoExistsChecker
 				if _, nf := err.(*github.FileNotFound); nf {
 					missing = append(missing, repo.FullName)
 				} else {
-					return fmt.Errorf("got error: %v", err)
+					return fmt.Errorf("got error: %w", err)
 				}
 			}
 		}
@@ -990,7 +1000,7 @@ func verifyOwnersPresence(cfg *plugins.Configuration, rc FileInRepoExistsChecker
 			if _, nf := err.(*github.FileNotFound); nf {
 				missing = append(missing, repo)
 			} else {
-				return fmt.Errorf("got error: %v", err)
+				return fmt.Errorf("got error: %w", err)
 			}
 		}
 	}
@@ -1040,18 +1050,18 @@ func validateInRepoConfig(cfg *config.Config, filePath, repoIdentifier string) e
 	data, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		if !os.IsNotExist(err) {
-			return fmt.Errorf("failed to read file %q: %v", filePath, err)
+			return fmt.Errorf("failed to read file %q: %w", filePath, err)
 		}
 		return nil
 	}
 
 	prowYAML := &config.ProwYAML{}
 	if err := yaml.Unmarshal(data, prowYAML); err != nil {
-		return fmt.Errorf("failed to deserialize content of %q: %v", filePath, err)
+		return fmt.Errorf("failed to deserialize content of %q: %w", filePath, err)
 	}
 
 	if err := config.DefaultAndValidateProwYAML(cfg, prowYAML, repoIdentifier); err != nil {
-		return fmt.Errorf("failed to validate .prow.yaml: %v", err)
+		return fmt.Errorf("failed to validate .prow.yaml: %w", err)
 	}
 
 	return nil
@@ -1105,31 +1115,60 @@ func validateTideContextPolicy(cfg *config.Config) error {
 
 var agentsNotSupportingCluster = sets.NewString("jenkins")
 
-func validateJobCluster(job config.JobBase) error {
+func validateJobCluster(job config.JobBase, statuses map[string]plank.ClusterStatus) error {
 	if job.Cluster != "" && job.Cluster != kube.DefaultClusterAlias && agentsNotSupportingCluster.Has(job.Agent) {
 		return fmt.Errorf("%s: cannot set cluster field if agent is %s", job.Name, job.Agent)
+	}
+	if statuses != nil {
+		status, ok := statuses[job.Cluster]
+		if !ok {
+			return fmt.Errorf("job configuration for %q specifies unknown 'cluster' value %q", job.Name, job.Cluster)
+		}
+		if status == plank.ClusterStatusUnreachable {
+			return fmt.Errorf("job configuration for %q specifies cluster %q which cannot be reached from Plank", job.Name, job.Cluster)
+		}
 	}
 	return nil
 }
 
-func validateCluster(cfg *config.Config) error {
+func validateCluster(cfg *config.Config, opener io.Opener) error {
+	var statuses map[string]plank.ClusterStatus
+	if location := cfg.Plank.BuildClusterStatusFile; location != "" {
+		reader, err := opener.Reader(context.Background(), location)
+		if err != nil {
+			if !io.IsNotExist(err) {
+				return fmt.Errorf("error opening build cluster status file for reading: %w", err)
+			}
+			logrus.Warnf("Build cluster status file location was specified, but could not be found: %v. This is expected when the location is first configured, before plank creates the file.", err)
+		} else {
+			defer reader.Close()
+			b, err := ioutil.ReadAll(reader)
+			if err != nil {
+				return fmt.Errorf("error reading build cluster status file: %w", err)
+			}
+			statuses = map[string]plank.ClusterStatus{}
+			if err := json.Unmarshal(b, &statuses); err != nil {
+				return fmt.Errorf("error unmarshaling build cluster status file: %w", err)
+			}
+		}
+	}
 	var errs []error
 	for orgRepo, jobs := range cfg.PresubmitsStatic {
 		for _, job := range jobs {
-			if err := validateJobCluster(job.JobBase); err != nil {
+			if err := validateJobCluster(job.JobBase, statuses); err != nil {
 				errs = append(errs, fmt.Errorf("%s: %w", orgRepo, err))
 			}
 		}
 	}
 	for _, job := range cfg.Periodics {
-		if err := validateJobCluster(job.JobBase); err != nil {
+		if err := validateJobCluster(job.JobBase, statuses); err != nil {
 			errs = append(errs, fmt.Errorf("%s: %w", "invalid periodic job", err))
 		}
 
 	}
 	for orgRepo, jobs := range cfg.PostsubmitsStatic {
 		for _, job := range jobs {
-			if err := validateJobCluster(job.JobBase); err != nil {
+			if err := validateJobCluster(job.JobBase, statuses); err != nil {
 				errs = append(errs, fmt.Errorf("%s: %w", orgRepo, err))
 			}
 		}

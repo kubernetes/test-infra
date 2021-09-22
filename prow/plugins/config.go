@@ -96,6 +96,13 @@ type Help struct {
 	// HelpGuidelinesURL is the URL of the help page, which provides guidance on how and when to use the help wanted and good first issue labels.
 	// The default value is "https://git.k8s.io/community/contributors/guide/help-wanted.md".
 	HelpGuidelinesURL string `json:"help_guidelines_url,omitempty"`
+	// Guidelines summary is the message displayed when an issue is labeled with help-wanted and/or good-first-issue reflecting
+	// a summary of the guidelines that an issue should follow to qualify as help-wanted or good-first-issue. The main purpose
+	// of a summary is to try and increase visibility of these guidelines to the author of the issue alongisde providing the
+	// HelpGuidelinesURL which will provide a more detailed version of the guidelines.
+	//
+	// HelpGuidelinesSummary is the summary of the guide lines for a help-wanted issue.
+	HelpGuidelinesSummary string `json:"help_guidelines_summary,omitempty"`
 }
 
 func (h *Help) setDefaults() {
@@ -373,7 +380,30 @@ type Goose struct {
 type Label struct {
 	// AdditionalLabels is a set of additional labels enabled for use
 	// on top of the existing "kind/*", "priority/*", and "area/*" labels.
-	AdditionalLabels []string `json:"additional_labels"`
+	AdditionalLabels []string `json:"additional_labels,omitempty"`
+
+	// RestrictedLabels allows to configure labels that can only be modified
+	// by users that belong to at least one of the configured teams. The key
+	// defines to which repos this applies and can be `*` for global, an org
+	// or a repo in org/repo notation.
+	RestrictedLabels map[string][]RestrictedLabel `json:"restricted_labels,omitempty"`
+}
+
+func (l Label) RestrictedLabelsFor(org, repo string) map[string]RestrictedLabel {
+	result := map[string]RestrictedLabel{}
+	for _, orgRepoKey := range []string{"*", org, org + "/" + repo} {
+		for _, restrictedLabel := range l.RestrictedLabels[orgRepoKey] {
+			result[strings.ToLower(restrictedLabel.Label)] = restrictedLabel
+		}
+	}
+
+	return result
+}
+
+type RestrictedLabel struct {
+	Label        string   `json:"label"`
+	AllowedTeams []string `json:"allowed_teams,omitempty"`
+	AllowedUsers []string `json:"allowed_users,omitempty"`
 }
 
 // Trigger specifies a configuration for a single trigger.
@@ -1114,7 +1144,7 @@ func validateConfigUpdater(updater *ConfigUpdater) error {
 func validateRequireMatchingLabel(rs []RequireMatchingLabel) error {
 	for i, r := range rs {
 		if err := r.validate(); err != nil {
-			return fmt.Errorf("error validating require_matching_label config #%d: %v", i, err)
+			return fmt.Errorf("error validating require_matching_label config #%d: %w", i, err)
 		}
 	}
 	return nil
@@ -1190,7 +1220,7 @@ func compileRegexpsAndDurations(pc *Configuration) error {
 		}
 		branchRe, err := regexp.Compile(*pc.Blockades[i].BranchRegexp)
 		if err != nil {
-			return fmt.Errorf("failed to compile blockade branchregexp: %q, error: %v", *pc.Blockades[i].BranchRegexp, err)
+			return fmt.Errorf("failed to compile blockade branchregexp: %q, error: %w", *pc.Blockades[i].BranchRegexp, err)
 		}
 		pc.Blockades[i].BranchRe = branchRe
 	}
@@ -1205,14 +1235,14 @@ func compileRegexpsAndDurations(pc *Configuration) error {
 	for i := range rs {
 		re, err := regexp.Compile(rs[i].Regexp)
 		if err != nil {
-			return fmt.Errorf("failed to compile label regexp: %q, error: %v", rs[i].Regexp, err)
+			return fmt.Errorf("failed to compile label regexp: %q, error: %w", rs[i].Regexp, err)
 		}
 		rs[i].Re = re
 
 		var dur time.Duration
 		dur, err = time.ParseDuration(rs[i].GracePeriod)
 		if err != nil {
-			return fmt.Errorf("failed to compile grace period duration: %q, error: %v", rs[i].GracePeriod, err)
+			return fmt.Errorf("failed to compile grace period duration: %q, error: %w", rs[i].GracePeriod, err)
 		}
 		rs[i].GracePeriodDuration = dur
 	}
@@ -1771,7 +1801,7 @@ type Override struct {
 
 func (c *Configuration) mergeFrom(other *Configuration) error {
 	var errs []error
-	if diff := cmp.Diff(other, &Configuration{Approve: other.Approve, Bugzilla: other.Bugzilla, ExternalPlugins: other.ExternalPlugins, Lgtm: other.Lgtm, Plugins: other.Plugins}); diff != "" {
+	if diff := cmp.Diff(other, &Configuration{Approve: other.Approve, Bugzilla: other.Bugzilla, ExternalPlugins: other.ExternalPlugins, Label: Label{RestrictedLabels: other.Label.RestrictedLabels}, Lgtm: other.Lgtm, Plugins: other.Plugins}); diff != "" {
 		errs = append(errs, fmt.Errorf("supplemental plugin configuration has config that doesn't support merging: %s", diff))
 	}
 
@@ -1791,6 +1821,10 @@ func (c *Configuration) mergeFrom(other *Configuration) error {
 
 	if err := c.mergeExternalPluginsFrom(other.ExternalPlugins); err != nil {
 		errs = append(errs, fmt.Errorf("failed to merge .external-plugins from supplemental config: %w", err))
+	}
+
+	if err := c.Label.mergeFrom(&other.Label); err != nil {
+		errs = append(errs, fmt.Errorf("failed to merge .label from supplemental config: %w", err))
 	}
 
 	return utilerrors.NewAggregate(errs)
@@ -1879,8 +1913,40 @@ func (p *Bugzilla) mergeFrom(other *Bugzilla) error {
 	return utilerrors.NewAggregate(errs)
 }
 
+func (l *Label) mergeFrom(other *Label) error {
+	if other == nil {
+		return nil
+	}
+	l.AdditionalLabels = append(l.AdditionalLabels, other.AdditionalLabels...)
+
+	var errs []error
+	for key, labelConfigs := range other.RestrictedLabels {
+		for _, labelConfig := range labelConfigs {
+			if conflictingIdx := getLabelConfigFromRestrictedLabelsSlice(l.RestrictedLabels[key], labelConfig.Label); conflictingIdx != -1 {
+				errs = append(errs, fmt.Errorf("there are multiple label.restricted_labels configs for label %s", labelConfig.Label))
+			}
+		}
+		if l.RestrictedLabels == nil {
+			l.RestrictedLabels = map[string][]RestrictedLabel{}
+		}
+		l.RestrictedLabels[key] = append(l.RestrictedLabels[key], labelConfigs...)
+	}
+
+	return utilerrors.NewAggregate(errs)
+}
+
+func getLabelConfigFromRestrictedLabelsSlice(s []RestrictedLabel, label string) int {
+	for idx, item := range s {
+		if item.Label == label {
+			return idx
+		}
+	}
+
+	return -1
+}
+
 func (c *Configuration) HasConfigFor() (global bool, orgs sets.String, repos sets.String) {
-	if !reflect.DeepEqual(c, &Configuration{Approve: c.Approve, Bugzilla: c.Bugzilla, ExternalPlugins: c.ExternalPlugins, Lgtm: c.Lgtm, Plugins: c.Plugins}) || c.Bugzilla.Default != nil {
+	if !reflect.DeepEqual(c, &Configuration{Approve: c.Approve, Bugzilla: c.Bugzilla, ExternalPlugins: c.ExternalPlugins, Label: Label{RestrictedLabels: c.Label.RestrictedLabels}, Lgtm: c.Lgtm, Plugins: c.Plugins}) || c.Bugzilla.Default != nil {
 		global = true
 	}
 	orgs = sets.String{}
@@ -1909,6 +1975,19 @@ func (c *Configuration) HasConfigFor() (global bool, orgs sets.String, repos set
 			} else {
 				orgs.Insert(orgOrRepo)
 			}
+		}
+	}
+
+	if len(c.Label.AdditionalLabels) > 0 {
+		global = true
+	}
+	for key := range c.Label.RestrictedLabels {
+		if key == "*" {
+			global = true
+		} else if strings.Contains(key, "/") {
+			repos.Insert(key)
+		} else {
+			orgs.Insert(key)
 		}
 	}
 

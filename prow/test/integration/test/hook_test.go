@@ -80,7 +80,7 @@ func TestHook(t *testing.T) {
 	if err := wait.Poll(500*time.Millisecond, 1*time.Minute, func() (bool, error) {
 		gotLabels, err := githubClient.GetIssueLabels(org, repo, issueID)
 		if err != nil {
-			return false, fmt.Errorf("failed listing issue labels: %v", err)
+			return false, fmt.Errorf("failed listing issue labels: %w", err)
 		}
 		for _, l := range gotLabels {
 			if l.Name == label {

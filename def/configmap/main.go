@@ -94,7 +94,7 @@ func buildConfigMap(name, namespace string, labels map[string]string, data map[s
 			buf, err := ioutil.ReadFile(value)
 			if err != nil {
 				wd, _ := os.Getwd()
-				return nil, fmt.Errorf("could not read %s/%s: %v", wd, value, err)
+				return nil, fmt.Errorf("could not read %s/%s: %w", wd, value, err)
 			}
 			cm.Data[key] = string(buf)
 		}

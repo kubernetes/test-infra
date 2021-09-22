@@ -189,13 +189,13 @@ func (p *protector) configureBranches() {
 	for u := range p.updates {
 		if u.Request == nil {
 			if err := p.client.RemoveBranchProtection(u.Org, u.Repo, u.Branch); err != nil {
-				p.errors.add(fmt.Errorf("remove %s/%s=%s protection failed: %v", u.Org, u.Repo, u.Branch, err))
+				p.errors.add(fmt.Errorf("remove %s/%s=%s protection failed: %w", u.Org, u.Repo, u.Branch, err))
 			}
 			continue
 		}
 
 		if err := p.client.UpdateBranchProtection(u.Org, u.Repo, u.Branch, *u.Request); err != nil {
-			p.errors.add(fmt.Errorf("update %s/%s=%s protection to %v failed: %v", u.Org, u.Repo, u.Branch, *u.Request, err))
+			p.errors.add(fmt.Errorf("update %s/%s=%s protection to %v failed: %w", u.Org, u.Repo, u.Branch, *u.Request, err))
 		}
 	}
 	p.done <- p.errors.errs
@@ -216,7 +216,7 @@ func (p *protector) protect() {
 		}
 		org := bp.GetOrg(orgName)
 		if err := p.UpdateOrg(orgName, *org); err != nil {
-			p.errors.add(fmt.Errorf("update %s: %v", orgName, err))
+			p.errors.add(fmt.Errorf("update %s: %w", orgName, err))
 		}
 	}
 
@@ -245,7 +245,7 @@ func (p *protector) protect() {
 		}
 		repo := bp.GetOrg(orgName).GetRepo(repoName)
 		if err := p.UpdateRepo(orgName, repoName, *repo); err != nil {
-			p.errors.add(fmt.Errorf("update %s/%s: %v", orgName, repoName, err))
+			p.errors.add(fmt.Errorf("update %s/%s: %w", orgName, repoName, err))
 		}
 	}
 }
@@ -261,7 +261,7 @@ func (p *protector) UpdateOrg(orgName string, org config.Org) error {
 		// Strongly opinionated org, configure every repo in the org.
 		rs, err := p.client.GetRepos(orgName, false)
 		if err != nil {
-			return fmt.Errorf("list repos: %v", err)
+			return fmt.Errorf("list repos: %w", err)
 		}
 		for _, r := range rs {
 			// Skip Archived repos as they can't be modified in this way
@@ -288,7 +288,7 @@ func (p *protector) UpdateOrg(orgName string, org config.Org) error {
 		}
 		repo := org.GetRepo(repoName)
 		if err := p.UpdateRepo(orgName, repoName, *repo); err != nil {
-			errs = append(errs, fmt.Errorf("update %s: %v", repoName, err))
+			errs = append(errs, fmt.Errorf("update %s: %w", repoName, err))
 		}
 	}
 
@@ -304,7 +304,7 @@ func (p *protector) UpdateRepo(orgName string, repoName string, repo config.Repo
 
 	githubRepo, err := p.client.GetRepo(orgName, repoName)
 	if err != nil {
-		return fmt.Errorf("could not get repo to check for archival: %v", err)
+		return fmt.Errorf("could not get repo to check for archival: %w", err)
 	}
 	// Skip Archived repos as they can't be modified in this way
 	if githubRepo.Archived {
@@ -313,6 +313,14 @@ func (p *protector) UpdateRepo(orgName string, repoName string, repo config.Repo
 	// Skip private security forks as they can't be modified in this way
 	if githubRepo.Private && github.SecurityForkNameRE.MatchString(githubRepo.Name) {
 		return nil
+	}
+
+	var branchInclusions *regexp.Regexp
+	if len(repo.Policy.Include) > 0 {
+		branchInclusions, err = regexp.Compile(strings.Join(repo.Policy.Include, `|`))
+		if err != nil {
+			return err
+		}
 	}
 
 	var branchExclusions *regexp.Regexp
@@ -327,11 +335,16 @@ func (p *protector) UpdateRepo(orgName string, repoName string, repo config.Repo
 	for _, onlyProtected := range []bool{false, true} { // put true second so b.Protected is set correctly
 		bs, err := p.client.GetBranches(orgName, repoName, onlyProtected)
 		if err != nil {
-			return fmt.Errorf("list branches: %v", err)
+			return fmt.Errorf("list branches: %w", err)
 		}
 		for _, b := range bs {
 			_, ok := repo.Branches[b.Name]
-			if !ok && branchExclusions != nil && branchExclusions.MatchString(b.Name) {
+			if !ok && branchInclusions != nil && branchInclusions.MatchString(b.Name) {
+				branches[b.Name] = b
+			} else if !ok && branchInclusions != nil && !branchInclusions.MatchString(b.Name) {
+				logrus.Infof("%s/%s=%s: not included", orgName, repoName, b.Name)
+				continue
+			} else if !ok && branchExclusions != nil && branchExclusions.MatchString(b.Name) {
 				logrus.Infof("%s/%s=%s: excluded", orgName, repoName, b.Name)
 				continue
 			}
@@ -357,9 +370,9 @@ func (p *protector) UpdateRepo(orgName string, repoName string, repo config.Repo
 	var errs []error
 	for bn, githubBranch := range branches {
 		if branch, err := repo.GetBranch(bn); err != nil {
-			errs = append(errs, fmt.Errorf("get %s: %v", bn, err))
+			errs = append(errs, fmt.Errorf("get %s: %w", bn, err))
 		} else if err = p.UpdateBranch(orgName, repoName, bn, *branch, githubBranch.Protected, collaborators, teams); err != nil {
-			errs = append(errs, fmt.Errorf("update %s from protected=%t: %v", bn, githubBranch.Protected, err))
+			errs = append(errs, fmt.Errorf("update %s from protected=%t: %w", bn, githubBranch.Protected, err))
 		}
 	}
 
@@ -424,7 +437,7 @@ func (p *protector) UpdateBranch(orgName, repo string, branchName string, branch
 	}
 	bp, err := p.cfg.GetPolicy(orgName, repo, branchName, branch, p.cfg.PresubmitsStatic[orgName+"/"+repo])
 	if err != nil {
-		return fmt.Errorf("get policy: %v", err)
+		return fmt.Errorf("get policy: %w", err)
 	}
 	if bp == nil || bp.Protect == nil {
 		return nil
@@ -460,7 +473,7 @@ func (p *protector) UpdateBranch(orgName, repo string, branchName string, branch
 	// for each branch.
 	currentBP, err := p.client.GetBranchProtection(orgName, repo, branchNameForRequest)
 	if err != nil {
-		return fmt.Errorf("get current branch protection: %v", err)
+		return fmt.Errorf("get current branch protection: %w", err)
 	}
 
 	if equalBranchProtections(currentBP, req) {

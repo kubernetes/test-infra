@@ -343,6 +343,60 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-multiarch-master-nightly-4.8-upgrade-from-nightly-4.7-ocp-remote-libvirt-ppc64le
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.8-upgrade-from-nightly-4.7-ocp-remote-libvirt-ppc64le
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-multiarch-master-nightly-4.8-upgrade-from-nightly-4.7-ocp-remote-libvirt-s390x
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.8-upgrade-from-nightly-4.7-ocp-remote-libvirt-s390x
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-openshift-release-master-ci-4.8-e2e-aws
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -540,6 +594,33 @@ dashboards:
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-ci-4.8-e2e-aws-ovn
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-master-ci-4.8-e2e-aws-ovn-network-stress
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-master-ci-4.8-e2e-aws-ovn-network-stress
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -1072,6 +1153,60 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-master-ci-4.8-e2e-network-migration
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-master-ci-4.8-e2e-network-migration
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-master-ci-4.8-e2e-network-migration-rollback
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-master-ci-4.8-e2e-network-migration-rollback
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-openshift-release-master-ci-4.8-e2e-openstack-kuryr
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -1296,6 +1431,33 @@ dashboards:
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: periodic-ci-openshift-release-master-ci-4.8-upgrade-from-stable-4.7-e2e-aws-upgrade-rollback
+  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
+    code_search_path: https://github.com/openshift/origin/search
+    code_search_url_template:
+      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: OpenShift Container Platform
+      - key: cf_internal_whiteboard
+        value: buildcop
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <link>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    name: periodic-ci-openshift-release-master-ci-4.8-upgrade-from-stable-4.7-e2e-aws-uwm
+    open_bug_template:
+      url: https://github.com/openshift/origin/issues/
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: periodic-ci-openshift-release-master-ci-4.8-upgrade-from-stable-4.7-e2e-aws-uwm
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -2125,33 +2287,6 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-release-master-nightly-4.8-e2e-metal-ipi-serial-ipv4
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-release-master-nightly-4.8-e2e-metal-ipi-serial-ipv4
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: classification
-        value: Red Hat
-      - key: product
-        value: OpenShift Container Platform
-      - key: cf_internal_whiteboard
-        value: buildcop
-      - key: short_desc
-        value: 'test: <test-name>'
-      - key: cf_environment
-        value: 'test: <test-name>'
-      - key: comment
-        value: 'test: <test-name> failed, see job: <link>'
-      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-openshift-release-master-nightly-4.8-e2e-metal-ipi-upgrade
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -2395,33 +2530,6 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-release-master-nightly-4.8-openshift-ipi-azure-arcconformance
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-release-master-nightly-4.8-openshift-ipi-azure-arcconformance
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: classification
-        value: Red Hat
-      - key: product
-        value: OpenShift Container Platform
-      - key: cf_internal_whiteboard
-        value: buildcop
-      - key: short_desc
-        value: 'test: <test-name>'
-      - key: cf_environment
-        value: 'test: <test-name>'
-      - key: comment
-        value: 'test: <test-name> failed, see job: <link>'
-      url: https://bugzilla.redhat.com/enter_bug.cgi
     name: periodic-ci-openshift-release-master-nightly-4.8-upgrade-from-stable-4.7-e2e-aws-upgrade
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
@@ -2538,33 +2646,6 @@ dashboards:
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: promote-release-openshift-machine-os-content-e2e-aws-4.8-s390x
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: classification
-        value: Red Hat
-      - key: product
-        value: OpenShift Container Platform
-      - key: cf_internal_whiteboard
-        value: buildcop
-      - key: short_desc
-        value: 'test: <test-name>'
-      - key: cf_environment
-        value: 'test: <test-name>'
-      - key: comment
-        value: 'test: <test-name> failed, see job: <link>'
-      url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: release-openshift-ocp-installer-cluster-logging-operator-e2e-4.8
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: release-openshift-ocp-installer-cluster-logging-operator-e2e-4.8
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -2781,87 +2862,6 @@ dashboards:
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: release-openshift-ocp-installer-e2e-metal-serial-4.8
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: classification
-        value: Red Hat
-      - key: product
-        value: OpenShift Container Platform
-      - key: cf_internal_whiteboard
-        value: buildcop
-      - key: short_desc
-        value: 'test: <test-name>'
-      - key: cf_environment
-        value: 'test: <test-name>'
-      - key: comment
-        value: 'test: <test-name> failed, see job: <link>'
-      url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: release-openshift-ocp-installer-elasticsearch-operator-e2e-4.8
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: release-openshift-ocp-installer-elasticsearch-operator-e2e-4.8
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: classification
-        value: Red Hat
-      - key: product
-        value: OpenShift Container Platform
-      - key: cf_internal_whiteboard
-        value: buildcop
-      - key: short_desc
-        value: 'test: <test-name>'
-      - key: cf_environment
-        value: 'test: <test-name>'
-      - key: comment
-        value: 'test: <test-name> failed, see job: <link>'
-      url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: release-openshift-ocp-installer-upgrade-remote-libvirt-ppc64le-4.7-to-4.8
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: release-openshift-ocp-installer-upgrade-remote-libvirt-ppc64le-4.7-to-4.8
-  - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
-    code_search_path: https://github.com/openshift/origin/search
-    code_search_url_template:
-      url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-    file_bug_template:
-      options:
-      - key: classification
-        value: Red Hat
-      - key: product
-        value: OpenShift Container Platform
-      - key: cf_internal_whiteboard
-        value: buildcop
-      - key: short_desc
-        value: 'test: <test-name>'
-      - key: cf_environment
-        value: 'test: <test-name>'
-      - key: comment
-        value: 'test: <test-name> failed, see job: <link>'
-      url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: release-openshift-ocp-installer-upgrade-remote-libvirt-s390x-4.7-to-4.8
-    open_bug_template:
-      url: https://github.com/openshift/origin/issues/
-    open_test_template:
-      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
-    results_url_template:
-      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: release-openshift-ocp-installer-upgrade-remote-libvirt-s390x-4.7-to-4.8
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -3106,6 +3106,10 @@ test_groups:
   name: periodic-ci-openshift-multiarch-master-nightly-4.8-ocp-jenkins-e2e-remote-libvirt-ppc64le
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.8-ocp-jenkins-e2e-remote-libvirt-s390x
   name: periodic-ci-openshift-multiarch-master-nightly-4.8-ocp-jenkins-e2e-remote-libvirt-s390x
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.8-upgrade-from-nightly-4.7-ocp-remote-libvirt-ppc64le
+  name: periodic-ci-openshift-multiarch-master-nightly-4.8-upgrade-from-nightly-4.7-ocp-remote-libvirt-ppc64le
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.8-upgrade-from-nightly-4.7-ocp-remote-libvirt-s390x
+  name: periodic-ci-openshift-multiarch-master-nightly-4.8-upgrade-from-nightly-4.7-ocp-remote-libvirt-s390x
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.8-e2e-aws
   name: periodic-ci-openshift-release-master-ci-4.8-e2e-aws
@@ -3130,6 +3134,9 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.8-e2e-aws-ovn
   name: periodic-ci-openshift-release-master-ci-4.8-e2e-aws-ovn
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.8-e2e-aws-ovn-network-stress
+  name: periodic-ci-openshift-release-master-ci-4.8-e2e-aws-ovn-network-stress
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.8-e2e-aws-sdn-multitenant
   name: periodic-ci-openshift-release-master-ci-4.8-e2e-aws-sdn-multitenant
@@ -3187,11 +3194,19 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.8-e2e-gcp-upgrade
   name: periodic-ci-openshift-release-master-ci-4.8-e2e-gcp-upgrade
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.8-e2e-network-migration
+  name: periodic-ci-openshift-release-master-ci-4.8-e2e-network-migration
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.8-e2e-network-migration-rollback
+  name: periodic-ci-openshift-release-master-ci-4.8-e2e-network-migration-rollback
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.8-e2e-openstack-kuryr
   name: periodic-ci-openshift-release-master-ci-4.8-e2e-openstack-kuryr
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.8-e2e-openstack-parallel
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.8-e2e-openstack-parallel
   name: periodic-ci-openshift-release-master-ci-4.8-e2e-openstack-parallel
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.8-e2e-openstack-serial
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.8-e2e-openstack-serial
   name: periodic-ci-openshift-release-master-ci-4.8-e2e-openstack-serial
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.8-upgrade-from-from-stable-4.7-from-stable-4.6-e2e-aws-upgrade
@@ -3212,6 +3227,9 @@ test_groups:
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.8-upgrade-from-stable-4.7-e2e-aws-upgrade-rollback
   name: periodic-ci-openshift-release-master-ci-4.8-upgrade-from-stable-4.7-e2e-aws-upgrade-rollback
 - days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.8-upgrade-from-stable-4.7-e2e-aws-uwm
+  name: periodic-ci-openshift-release-master-ci-4.8-upgrade-from-stable-4.7-e2e-aws-uwm
+- days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.8-upgrade-from-stable-4.7-e2e-azure-ovn-upgrade
   name: periodic-ci-openshift-release-master-ci-4.8-upgrade-from-stable-4.7-e2e-azure-ovn-upgrade
 - days_of_results: 60
@@ -3226,7 +3244,7 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.8-upgrade-from-stable-4.7-e2e-openstack-upgrade
   name: periodic-ci-openshift-release-master-ci-4.8-upgrade-from-stable-4.7-e2e-openstack-upgrade
-- days_of_results: 60
+- days_of_results: 25
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.8-upgrade-from-stable-4.7-e2e-ovirt-upgrade
   name: periodic-ci-openshift-release-master-ci-4.8-upgrade-from-stable-4.7-e2e-ovirt-upgrade
 - days_of_results: 50
@@ -3294,8 +3312,6 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.8-e2e-metal-ipi-ovn-dualstack-local-gateway
   name: periodic-ci-openshift-release-master-nightly-4.8-e2e-metal-ipi-ovn-dualstack-local-gateway
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.8-e2e-metal-ipi-serial-ipv4
-  name: periodic-ci-openshift-release-master-nightly-4.8-e2e-metal-ipi-serial-ipv4
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.8-e2e-metal-ipi-upgrade
   name: periodic-ci-openshift-release-master-nightly-4.8-e2e-metal-ipi-upgrade
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.8-e2e-metal-ipi-virtualmedia
@@ -3316,8 +3332,6 @@ test_groups:
   name: periodic-ci-openshift-release-master-nightly-4.8-e2e-vsphere-upi
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.8-e2e-vsphere-upi-serial
   name: periodic-ci-openshift-release-master-nightly-4.8-e2e-vsphere-upi-serial
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.8-openshift-ipi-azure-arcconformance
-  name: periodic-ci-openshift-release-master-nightly-4.8-openshift-ipi-azure-arcconformance
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.8-upgrade-from-stable-4.7-e2e-aws-upgrade
   name: periodic-ci-openshift-release-master-nightly-4.8-upgrade-from-stable-4.7-e2e-aws-upgrade
@@ -3329,9 +3343,6 @@ test_groups:
   name: promote-release-openshift-machine-os-content-e2e-aws-4.8-ppc64le
 - gcs_prefix: origin-ci-test/logs/promote-release-openshift-machine-os-content-e2e-aws-4.8-s390x
   name: promote-release-openshift-machine-os-content-e2e-aws-4.8-s390x
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-cluster-logging-operator-e2e-4.8
-  name: release-openshift-ocp-installer-cluster-logging-operator-e2e-4.8
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-csi-4.8
   name: release-openshift-ocp-installer-e2e-aws-csi-4.8
@@ -3356,13 +3367,6 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-metal-serial-4.8
   name: release-openshift-ocp-installer-e2e-metal-serial-4.8
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-elasticsearch-operator-e2e-4.8
-  name: release-openshift-ocp-installer-elasticsearch-operator-e2e-4.8
-- gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-upgrade-remote-libvirt-ppc64le-4.7-to-4.8
-  name: release-openshift-ocp-installer-upgrade-remote-libvirt-ppc64le-4.7-to-4.8
-- gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-upgrade-remote-libvirt-s390x-4.7-to-4.8
-  name: release-openshift-ocp-installer-upgrade-remote-libvirt-s390x-4.7-to-4.8
 - days_of_results: 33
   gcs_prefix: origin-ci-test/logs/release-openshift-ocp-osd-aws-nightly-4.8
   name: release-openshift-ocp-osd-aws-nightly-4.8

@@ -17,7 +17,7 @@ periodics:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-1.19
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-1.19
       command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
@@ -55,7 +55,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-1.19
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-1.19
         command:
           - "runner.sh"
           - "./scripts/ci-e2e.sh"
@@ -95,7 +95,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-1.19
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-1.19
         command:
           - "runner.sh"
           - "./scripts/ci-conformance.sh"
@@ -144,7 +144,7 @@ periodics:
       path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-1.19
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-1.19
         env:
           - name: BOSKOS_HOST
             value: "boskos.test-pods.svc.cluster.local"

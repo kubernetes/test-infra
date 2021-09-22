@@ -3,7 +3,7 @@ postsubmits:
     - name: post-security-profiles-operator-push-image
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: wg-k8s-infra-gcb
+        testgrid-dashboards: sig-k8s-infra-gcb
       decorate: true
       always_run: true
       branches:
@@ -11,7 +11,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210917-ee1e7c845b
             command:
               - /run.sh
             args:

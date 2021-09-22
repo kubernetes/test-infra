@@ -6,18 +6,17 @@ dashboard_groups:
     - sig-node-cadvisor
     - sig-node-kubelet
     - sig-node-containerd
-    - sig-node-containerd-io # jobs in containerd/containerd repository
     - sig-node-ppc64le
     - sig-node-cri-o
-    - sig-node-cri
+    - sig-node-docker
     - sig-node-cri-tools
     - sig-node-node-feature-discovery
     - sig-node-node-problem-detector
     - sig-node-security-profiles-operator
     - sig-node-cos
+    - sig-node-presubmits
 
 dashboards:
-- name: sig-node-containerd-io
 - name: sig-node-release-blocking # Tabs included in this group are defined in the jobs that are included.
 - name: sig-node-critical
   dashboard_tab:
@@ -70,7 +69,7 @@ dashboards:
         url: https://gcsweb-ci.svc.ci.openshift.org/gcs/<gcs_prefix>
       base_options: width=10
 
-- name: sig-node-cri
+- name: sig-node-docker
 - name: sig-node-cri-tools
 - name: sig-node-node-feature-discovery
 
@@ -98,6 +97,7 @@ dashboards:
     base_options: width=10
 
 - name: sig-node-cos
+- name: sig-node-presubmits
 
 test_groups:
 - name: ci-kubernetes-node-kubelet-alpha

@@ -18,12 +18,14 @@ package label
 
 import (
 	"fmt"
-	"reflect"
 	"sort"
 	"strings"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
@@ -53,6 +55,7 @@ func TestLabel(t *testing.T) {
 		body                  string
 		commenter             string
 		extraLabels           []string
+		restrictedLabels      map[string][]plugins.RestrictedLabel
 		expectedNewLabels     []string
 		expectedRemovedLabels []string
 		expectedBotComment    bool
@@ -60,6 +63,7 @@ func TestLabel(t *testing.T) {
 		issueLabels           []string
 		expectedCommentText   string
 		action                github.GenericCommentEventAction
+		teams                 map[string]map[string]fakegithub.TeamWithMembers
 	}
 	testcases := []testCase{
 		{
@@ -675,65 +679,125 @@ func TestLabel(t *testing.T) {
 			commenter:             orgMember,
 			action:                github.GenericCommentActionCreated,
 		},
+		{
+			name:               "Restricted label addition, user is not in group",
+			body:               `/label restricted-label`,
+			repoLabels:         []string{"restricted-label"},
+			commenter:          orgMember,
+			restrictedLabels:   map[string][]plugins.RestrictedLabel{"org": {{Label: "restricted-label", AllowedTeams: []string{"privileged-group"}}}},
+			action:             github.GenericCommentActionCreated,
+			expectedBotComment: true,
+		},
+		{
+			name:              "Restricted label addition, user is in group",
+			body:              `/label restricted-label`,
+			repoLabels:        []string{"restricted-label"},
+			commenter:         orgMember,
+			restrictedLabels:  map[string][]plugins.RestrictedLabel{"org": {{Label: "restricted-label", AllowedTeams: []string{"privileged-group"}}}},
+			action:            github.GenericCommentActionCreated,
+			teams:             map[string]map[string]fakegithub.TeamWithMembers{"org": {"privileged-group": {Members: sets.NewString(orgMember)}}},
+			expectedNewLabels: formatLabels("restricted-label"),
+		},
+		{
+			name:              "Restricted label addition, user is in allowed_users",
+			body:              `/label restricted-label`,
+			repoLabels:        []string{"restricted-label"},
+			commenter:         orgMember,
+			restrictedLabels:  map[string][]plugins.RestrictedLabel{"org": {{Label: "restricted-label", AllowedUsers: []string{orgMember}}}},
+			action:            github.GenericCommentActionCreated,
+			expectedNewLabels: formatLabels("restricted-label"),
+		},
+		{
+			name:               "Restricted label removal, user is not in group",
+			body:               `/remove-label restricted-label`,
+			repoLabels:         []string{"restricted-label"},
+			issueLabels:        []string{"restricted-label"},
+			commenter:          orgMember,
+			restrictedLabels:   map[string][]plugins.RestrictedLabel{"org": {{Label: "restricted-label", AllowedTeams: []string{"privileged-group"}}}},
+			action:             github.GenericCommentActionCreated,
+			expectedBotComment: true,
+		},
+		{
+			name:                  "Restricted label removal, user is in group",
+			body:                  `/remove-label restricted-label`,
+			repoLabels:            []string{"restricted-label"},
+			issueLabels:           []string{"restricted-label"},
+			commenter:             orgMember,
+			restrictedLabels:      map[string][]plugins.RestrictedLabel{"org": {{Label: "restricted-label", AllowedTeams: []string{"privileged-group"}}}},
+			action:                github.GenericCommentActionCreated,
+			teams:                 map[string]map[string]fakegithub.TeamWithMembers{"org": {"privileged-group": {Members: sets.NewString(orgMember)}}},
+			expectedRemovedLabels: formatLabels("restricted-label"),
+		},
+		{
+			name:                  "Restricted label removal, user is in allowed_users",
+			body:                  `/remove-label restricted-label`,
+			repoLabels:            []string{"restricted-label"},
+			issueLabels:           []string{"restricted-label"},
+			commenter:             orgMember,
+			restrictedLabels:      map[string][]plugins.RestrictedLabel{"org": {{Label: "restricted-label", AllowedUsers: []string{orgMember}}}},
+			action:                github.GenericCommentActionCreated,
+			expectedRemovedLabels: formatLabels("restricted-label"),
+		},
 	}
 
 	for _, tc := range testcases {
-		t.Logf("Running scenario %q", tc.name)
-		sort.Strings(tc.expectedNewLabels)
-		fakeClient := fakegithub.NewFakeClient()
-		fakeClient.Issues = make(map[int]*github.Issue)
-		fakeClient.IssueComments = make(map[int][]github.IssueComment)
-		fakeClient.RepoLabelsExisting = tc.repoLabels
-		fakeClient.OrgMembers = map[string][]string{"org": {orgMember}}
-		fakeClient.IssueLabelsAdded = []string{}
-		fakeClient.IssueLabelsRemoved = []string{}
-		// Add initial labels
-		for _, label := range tc.issueLabels {
-			fakeClient.AddLabel("org", "repo", 1, label)
-		}
-		e := &github.GenericCommentEvent{
-			Action: tc.action,
-			Body:   tc.body,
-			Number: 1,
-			Repo:   github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
-			User:   github.User{Login: tc.commenter},
-		}
-		err := handle(fakeClient, logrus.WithField("plugin", pluginName), tc.extraLabels, e)
-		if err != nil {
-			t.Errorf("didn't expect error from label test: %v", err)
-			continue
-		}
-
-		// Check that all the correct labels (and only the correct labels) were added.
-		expectLabels := append(formatLabels(tc.issueLabels...), tc.expectedNewLabels...)
-		if expectLabels == nil {
-			expectLabels = []string{}
-		}
-		sort.Strings(expectLabels)
-		sort.Strings(fakeClient.IssueLabelsAdded)
-		if !reflect.DeepEqual(expectLabels, fakeClient.IssueLabelsAdded) {
-			t.Errorf("expected the labels %q to be added, but %q were added.", expectLabels, fakeClient.IssueLabelsAdded)
-		}
-
-		sort.Strings(tc.expectedRemovedLabels)
-		sort.Strings(fakeClient.IssueLabelsRemoved)
-		if !reflect.DeepEqual(tc.expectedRemovedLabels, fakeClient.IssueLabelsRemoved) {
-			t.Errorf("expected the labels %q to be removed, but %q were removed.", tc.expectedRemovedLabels, fakeClient.IssueLabelsRemoved)
-		}
-		if len(fakeClient.IssueCommentsAdded) > 0 && !tc.expectedBotComment {
-			t.Errorf("unexpected bot comments: %#v", fakeClient.IssueCommentsAdded)
-		}
-		if len(fakeClient.IssueCommentsAdded) == 0 && tc.expectedBotComment {
-			t.Error("expected a bot comment but got none")
-		}
-		if tc.expectedBotComment && len(tc.expectedCommentText) > 0 {
-			if len(fakeClient.IssueComments) < 1 {
-				t.Errorf("expected actual: %v", fakeClient.IssueComments)
+		t.Run(tc.name, func(t *testing.T) {
+			sort.Strings(tc.expectedNewLabels)
+			fakeClient := fakegithub.NewFakeClient()
+			fakeClient.Issues = make(map[int]*github.Issue)
+			fakeClient.IssueComments = make(map[int][]github.IssueComment)
+			fakeClient.RepoLabelsExisting = tc.repoLabels
+			fakeClient.OrgMembers = map[string][]string{"org": {orgMember}}
+			fakeClient.IssueLabelsAdded = []string{}
+			fakeClient.IssueLabelsRemoved = []string{}
+			fakeClient.Teams = tc.teams
+			// Add initial labels
+			for _, label := range tc.issueLabels {
+				fakeClient.AddLabel("org", "repo", 1, label)
 			}
-			if len(fakeClient.IssueComments[1]) != 1 || !strings.Contains(fakeClient.IssueComments[1][0].Body, tc.expectedCommentText) {
-				t.Errorf("expected: `%v`, actual: `%v`", tc.expectedCommentText, fakeClient.IssueComments[1][0].Body)
+			e := &github.GenericCommentEvent{
+				Action: tc.action,
+				Body:   tc.body,
+				Number: 1,
+				Repo:   github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
+				User:   github.User{Login: tc.commenter},
 			}
-		}
+			err := handle(fakeClient, logrus.WithField("plugin", pluginName), plugins.Label{AdditionalLabels: tc.extraLabels, RestrictedLabels: tc.restrictedLabels}, e)
+			if err != nil {
+				t.Fatalf("didn't expect error from label test: %v", err)
+			}
+
+			// Check that all the correct labels (and only the correct labels) were added.
+			expectLabels := append(formatLabels(tc.issueLabels...), tc.expectedNewLabels...)
+			if expectLabels == nil {
+				expectLabels = []string{}
+			}
+			sort.Strings(expectLabels)
+			sort.Strings(fakeClient.IssueLabelsAdded)
+			if diff := cmp.Diff(expectLabels, fakeClient.IssueLabelsAdded, cmpopts.EquateEmpty()); diff != "" {
+				t.Errorf("labels expected to add do not match actual added labels: %s", diff)
+			}
+
+			sort.Strings(tc.expectedRemovedLabels)
+			sort.Strings(fakeClient.IssueLabelsRemoved)
+			if diff := cmp.Diff(tc.expectedRemovedLabels, fakeClient.IssueLabelsRemoved, cmpopts.EquateEmpty()); diff != "" {
+				t.Errorf("expected removed labels differ from actual removed labels: %s", diff)
+			}
+			if len(fakeClient.IssueCommentsAdded) > 0 && !tc.expectedBotComment {
+				t.Errorf("unexpected bot comments: %#v", fakeClient.IssueCommentsAdded)
+			}
+			if len(fakeClient.IssueCommentsAdded) == 0 && tc.expectedBotComment {
+				t.Error("expected a bot comment but got none")
+			}
+			if tc.expectedBotComment && len(tc.expectedCommentText) > 0 {
+				if len(fakeClient.IssueComments) < 1 {
+					t.Errorf("expected actual: %v", fakeClient.IssueComments)
+				}
+				if len(fakeClient.IssueComments[1]) != 1 || !strings.Contains(fakeClient.IssueComments[1][0].Body, tc.expectedCommentText) {
+					t.Errorf("expected: `%v`, actual: `%v`", tc.expectedCommentText, fakeClient.IssueComments[1][0].Body)
+				}
+			}
+		})
 	}
 }
 

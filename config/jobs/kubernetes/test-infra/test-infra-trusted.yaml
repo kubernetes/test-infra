@@ -8,7 +8,7 @@ postsubmits:
     max_concurrency: 1
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20210204-b06ec78-org
+      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20210806-38e1be0-org
         command:
         - bazel
         args:
@@ -51,12 +51,12 @@ postsubmits:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-prow
         - images/alpine/
-  - name: post-test-infra-push-alpine-bash
+  - name: post-test-infra-push-gcloud-terraform
     cluster: test-infra-trusted
-    run_if_changed: '^images/alpine-bash/'
+    run_if_changed: '^images/gcloud-terraform/'
     annotations:
       testgrid-dashboards: "sig-testing-images"
-      testgrid-tab-name: "alpine-bash"
+      testgrid-tab-name: "gcloud-terraform"
     decorate: true
     branches:
     - ^master$
@@ -71,7 +71,7 @@ postsubmits:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-testimages
         - --build-dir=.
-        - images/alpine-bash/
+        - images/gcloud-terraform/
   - name: post-test-infra-push-git
     cluster: test-infra-trusted
     run_if_changed: '^images/git/'
@@ -132,7 +132,7 @@ postsubmits:
     max_concurrency: 1
     spec:
       containers:
-      - image: gcr.io/k8s-prow/hmac:v20210802-bd4b5f6003
+      - image: gcr.io/k8s-prow/hmac:v20210921-341cf105e8
         command:
         - /hmac
         args:
@@ -179,9 +179,19 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20210707-0f9c540-test-infra
+      - image: gcr.io/k8s-testimages/bazelbuild:v20210917-12df099-test-infra
         command:
         - prow/push.sh
+      tolerations:
+      - key: "highcpu"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"
+      nodeSelector:
+        highcpu: "true"
+      resources:
+        requests:
+          cpu: "15"
     annotations:
       testgrid-dashboards: sig-testing-prow
       testgrid-tab-name: push-prow
@@ -218,30 +228,6 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - kettle/
-  - name: post-test-infra-push-triage
-    cluster: test-infra-trusted
-    run_if_changed: '^triage/'
-    annotations:
-      testgrid-dashboards: "sig-testing-images"
-      testgrid-tab-name: "triage"
-      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-      testgrid-num-failures-to-alert: '1'
-      description: builds and pushes the triage image
-    decorate: true
-    branches:
-    - ^master$
-    max_concurrency: 1
-    spec:
-      serviceAccountName: deployer # TODO(fejta): should be pusher
-      containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20210128-v0.6-11-gf1c6399
-        command:
-        - images/builder/ci-runner.sh
-        args:
-        - --scratch-bucket=gs://k8s-testimages-scratch
-        - --project=k8s-testimages
-        - --build-dir=.
-        - triage/
   - name: post-test-infra-push-bazel
     cluster: test-infra-trusted
     run_if_changed: '^images/bazel/'
@@ -289,102 +275,6 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - images/bazelbuild/
-  - name: post-test-infra-push-bazel-krte
-    cluster: test-infra-trusted
-    run_if_changed: '^images/bazel-krte/'
-    annotations:
-      testgrid-dashboards: "sig-testing-images"
-      testgrid-tab-name: "bazel-krte"
-      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-      testgrid-num-failures-to-alert: '1'
-      description: builds and pushes the bazel-krte image
-    decorate: true
-    branches:
-    - ^master$
-    max_concurrency: 1
-    spec:
-      serviceAccountName: deployer # TODO(fejta): should be pusher
-      containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20210128-v0.6-11-gf1c6399
-        command:
-        - images/builder/ci-runner.sh
-        args:
-        - --scratch-bucket=gs://k8s-testimages-scratch
-        - --project=k8s-testimages
-        - --build-dir=.
-        - images/bazel-krte/
-  - name: post-test-infra-push-bigquery
-    cluster: test-infra-trusted
-    run_if_changed: '^images/bigquery/'
-    annotations:
-      testgrid-dashboards: "sig-testing-images"
-      testgrid-tab-name: "bigquery"
-      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-      testgrid-num-failures-to-alert: '1'
-      description: builds and pushes the bigquery image
-    decorate: true
-    branches:
-    - ^master$
-    max_concurrency: 1
-    spec:
-      serviceAccountName: deployer # TODO(fejta): should be pusher
-      containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20210128-v0.6-11-gf1c6399
-        command:
-        - images/builder/ci-runner.sh
-        args:
-        - --scratch-bucket=gs://k8s-testimages-scratch
-        - --project=k8s-testimages
-        - --build-dir=.
-        - images/bigquery/
-  - name: post-test-infra-push-bootstrap
-    cluster: test-infra-trusted
-    run_if_changed: '^(images/bootstrap|scenarios)/'
-    annotations:
-      testgrid-dashboards: "sig-testing-images"
-      testgrid-tab-name: "bootstrap"
-      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-      testgrid-num-failures-to-alert: '1'
-      description: builds and pushes the bootstrap image
-    decorate: true
-    branches:
-    - ^master$
-    max_concurrency: 1
-    spec:
-      serviceAccountName: deployer # TODO(fejta): should be pusher
-      containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20210128-v0.6-11-gf1c6399
-        command:
-        - images/builder/ci-runner.sh
-        args:
-        - --scratch-bucket=gs://k8s-testimages-scratch
-        - --project=k8s-testimages
-        - --build-dir=.
-        - images/bootstrap/
-  - name: post-test-infra-push-cluster-api
-    cluster: test-infra-trusted
-    run_if_changed: '^images/cluster-api/'
-    annotations:
-      testgrid-dashboards: "sig-testing-images"
-      testgrid-tab-name: "cluster-api"
-      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-      testgrid-num-failures-to-alert: '1'
-      description: builds and pushes the cluster-api image
-    decorate: true
-    branches:
-    - ^master$
-    max_concurrency: 1
-    spec:
-      serviceAccountName: deployer # TODO(fejta): should be pusher
-      containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20210128-v0.6-11-gf1c6399
-        command:
-        - images/builder/ci-runner.sh
-        args:
-        - --scratch-bucket=gs://k8s-testimages-scratch
-        - --project=k8s-testimages
-        - --build-dir=.
-        - images/cluster-api/
   - name: post-test-infra-push-gcb-docker-gcloud
     cluster: test-infra-trusted
     run_if_changed: '^images/gcb-docker-gcloud/'
@@ -409,78 +299,6 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - images/gcb-docker-gcloud/
-  - name: post-test-infra-push-gcloud
-    cluster: test-infra-trusted
-    run_if_changed: '^images/gcloud/'
-    annotations:
-      testgrid-dashboards: "sig-testing-images"
-      testgrid-tab-name: "gcloud"
-      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-      testgrid-num-failures-to-alert: '1'
-      description: builds and pushes the gcloud image
-    decorate: true
-    branches:
-    - ^master$
-    max_concurrency: 1
-    spec:
-      serviceAccountName: deployer # TODO(fejta): should be pusher
-      containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20210128-v0.6-11-gf1c6399
-        command:
-        - images/builder/ci-runner.sh
-        args:
-        - --scratch-bucket=gs://k8s-testimages-scratch
-        - --project=k8s-testimages
-        - --build-dir=.
-        - images/gcloud/
-  - name: post-test-infra-push-kubekins-e2e
-    cluster: test-infra-trusted
-    run_if_changed: '^(images/kubekins-e2e|kubetest|boskos)/'
-    annotations:
-      testgrid-dashboards: "sig-testing-images"
-      testgrid-tab-name: "kubekins-e2e"
-      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-      testgrid-num-failures-to-alert: '1'
-      description: builds and pushes the kubekins-e2e image
-    decorate: true
-    branches:
-    - ^master$
-    max_concurrency: 1
-    spec:
-      serviceAccountName: deployer # TODO(fejta): should be pusher
-      containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20210128-v0.6-11-gf1c6399
-        command:
-        - images/builder/ci-runner.sh
-        args:
-        - --scratch-bucket=gs://k8s-testimages-scratch
-        - --project=k8s-testimages
-        - --build-dir=.
-        - images/kubekins-e2e/
-  - name: post-test-infra-push-krte
-    cluster: test-infra-trusted
-    run_if_changed: '^images/(krte/|kubekins-e2e/variants.yaml)'
-    annotations:
-      testgrid-dashboards: "sig-testing-images"
-      testgrid-tab-name: "krte"
-      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-      testgrid-num-failures-to-alert: '1'
-      description: builds and pushes the krte image
-    decorate: true
-    branches:
-    - ^master$
-    max_concurrency: 1
-    spec:
-      serviceAccountName: deployer # TODO(fejta): should be pusher
-      containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20210128-v0.6-11-gf1c6399
-        command:
-        - images/builder/ci-runner.sh
-        args:
-        - --scratch-bucket=gs://k8s-testimages-scratch
-        - --project=k8s-testimages
-        - --build-dir=.
-        - images/krte/
   - name: post-test-infra-push-kubemci
     cluster: test-infra-trusted
     run_if_changed: '^images/kubemci/'
@@ -529,30 +347,6 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - images/pull-test-infra-gubernator/
-  - name: post-test-infra-push-image-builder
-    cluster: test-infra-trusted
-    run_if_changed: '^images/builder/'
-    annotations:
-      testgrid-dashboards: "sig-testing-images"
-      testgrid-tab-name: "image-builder"
-      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-      testgrid-num-failures-to-alert: '1'
-      description: builds and pushes the image builder's own image
-    decorate: true
-    branches:
-    - ^master$
-    max_concurrency: 1
-    spec:
-      serviceAccountName: deployer # TODO(fejta): should be pusher
-      containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20210128-v0.6-11-gf1c6399
-        command:
-        - images/builder/ci-runner.sh
-        args:
-        - --scratch-bucket=gs://k8s-testimages-scratch
-        - --project=k8s-testimages
-        - --build-dir=.
-        - images/builder/
   - name: post-test-infra-push-image-benchmarkjunit
     cluster: test-infra-trusted
     run_if_changed: '^pkg/benchmarkjunit/'
@@ -627,33 +421,6 @@ postsubmits:
       testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
       testgrid-num-failures-to-alert: '1'
       description: Updates the html contents for go.k8s.io/oncall.
-  - name: post-test-infra-upload-triage
-    cluster: test-infra-trusted
-    branches:
-    - ^master$
-    max_concurrency: 1
-    run_if_changed: '^triage/Makefile$|^triage/[^/]+(\.html|\.js|\.css)$'
-    decorate: true
-    spec:
-      serviceAccountName: pusher
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
-        command:
-        - make
-        args:
-        - -C
-        - ./triage/
-        - push-static
-        - push-staging
-        resources:
-          requests:
-            memory: "1Gi"
-    annotations:
-      testgrid-dashboards: sig-testing-maintenance
-      testgrid-tab-name: triage-update
-      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-      testgrid-num-failures-to-alert: '1'
-      description: Updates the html contents for go.k8s.io/triage.
   - name: post-test-infra-upload-testgrid-config
     cluster: test-infra-trusted
     branches:
@@ -666,7 +433,7 @@ postsubmits:
     spec:
       serviceAccountName: testgrid-config-updater
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20210707-0f9c540-test-infra
+      - image: gcr.io/k8s-testimages/bazelbuild:v20210917-12df099-test-infra
         command:
         - ./testgrid/config-upload.sh
         resources:
@@ -688,7 +455,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20210707-0f9c540-test-infra
+      - image: gcr.io/k8s-testimages/bazelbuild:v20210917-12df099-test-infra
         command:
         - ./boskos/update_prow_config.sh
     annotations:
@@ -710,12 +477,13 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: us.gcr.io/k8s-artifacts-prod/artifact-promoter/cip:v2.4.1
+      - image: k8s.gcr.io/artifact-promoter/cip:v3.2.0
         command:
         - cip
         args:
-        - -manifest=prow/cip-manifest.yaml
-        - -dry-run=false
+        - run
+        - --manifest=prow/cip-manifest.yaml
+        - --confirm
     annotations:
       testgrid-dashboards: sig-testing-prow
       testgrid-tab-name: cip-prow
@@ -803,7 +571,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20210707-0f9c540-test-infra
+    - image: gcr.io/k8s-testimages/bazelbuild:v20210917-12df099-test-infra
       command:
       - hack/autodeps.sh
       args:
@@ -840,7 +608,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20210707-0f9c540-test-infra
+    - image: gcr.io/k8s-testimages/bazelbuild:v20210917-12df099-test-infra
       command:
       - hack/autodeps.sh
       args:
@@ -877,7 +645,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20210802-bd4b5f6003
+    - image: gcr.io/k8s-prow/generic-autobumper:v20210921-341cf105e8
       command:
       - /app/prow/cmd/generic-autobumper/app.binary
       args:
@@ -904,7 +672,7 @@ periodics:
     testgrid-alert-email: k8s-infra-oncall@google.com
     testgrid-num-failures-to-alert: '2' # This could fail when it runs right in the middle of prow push, tolerate it once
     description: runs autobumper to create/update a PR that bumps prow to the latest RC with label 'skip-review'
-- cron: "30 * * * 1-5"  # Bump don't label `skip-review`. Run at :30 past every hour Mon-Fri
+- cron: "15 * * * 1-5"  # Bump don't label `skip-review`. Run at :30 past every hour Mon-Fri
   name: ci-test-infra-autobump-prow
   cluster: test-infra-trusted
   decorate: true
@@ -914,7 +682,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20210802-bd4b5f6003
+    - image: gcr.io/k8s-prow/generic-autobumper:v20210921-341cf105e8
       command:
       - /app/prow/cmd/generic-autobumper/app.binary
       args:
@@ -939,41 +707,6 @@ periodics:
     description: runs autobumper to create/update a PR that bumps prow to the latest RC without label 'skip-review'
     testgrid-alert-email: k8s-infra-oncall@google.com
     testgrid-num-failures-to-alert: '3'
-- cron: "06 14-22 * * 1-5"  # Run every hour at 7:06-15:06 PST (14:06 UTC) Mon-Fri
-  name: ci-test-infra-autobump-prowjobs
-  cluster: test-infra-trusted
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
-  spec:
-    containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20210802-bd4b5f6003
-      command:
-      - /app/prow/cmd/generic-autobumper/app.binary
-      args:
-      - --config=config/prow/autobump-config/prow-job-autobump-config.yaml
-      volumeMounts:
-      - name: github
-        mountPath: /etc/github-token
-        readOnly: true
-      - name: ssh
-        mountPath: /root/.ssh
-    volumes:
-    - name: github
-      secret:
-        secretName: oauth-token
-    - name: ssh
-      secret:
-        secretName: k8s-ci-robot-ssh-keys
-        defaultMode: 0400
-  annotations:
-    testgrid-dashboards: sig-testing-prow
-    testgrid-tab-name: autobump-prowjobs
-    description: runs experiment/autobumper to create/update a PR that bumps prowjobs to the latest RC
-    testgrid-alert-email: k8s-infra-oncall@google.com
-    testgrid-num-failures-to-alert: '3'
 - cron: "30 * * * *"  # Run at half past the hour, every hour, every day
   name: ci-test-infra-update-slack-oncall
   cluster: test-infra-trusted
@@ -984,7 +717,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20210204-b06ec78-test-infra
+    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20210806-38e1be0-test-infra
       command:
       - bazel
       args:
@@ -1020,7 +753,7 @@ periodics:
   spec:
     containers:
     - name: branchprotector
-      image: gcr.io/k8s-prow/branchprotector:v20210802-bd4b5f6003
+      image: gcr.io/k8s-prow/branchprotector:v20210921-341cf105e8
       command:
       - /app/prow/cmd/branchprotector/app.binary
       args:
@@ -1054,7 +787,7 @@ periodics:
   spec:
     containers:
     - name: label-sync
-      image: gcr.io/k8s-prow/label_sync:v20210802-bd4b5f6003
+      image: gcr.io/k8s-prow/label_sync:v20210921-341cf105e8
       command:
       - /app/label_sync/app.binary
       args:
@@ -1100,7 +833,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/checkconfig:v20210802-bd4b5f6003
+    - image: gcr.io/k8s-prow/checkconfig:v20210921-341cf105e8
       command:
       - /checkconfig
       args:

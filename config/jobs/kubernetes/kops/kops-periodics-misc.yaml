@@ -6,7 +6,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-experimental
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-experimental
       args:
       - --repo=k8s.io/kops
       - --repo=k8s.io/release
@@ -45,7 +45,7 @@ periodics:
     path_alias: k8s.io/kops
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:latest-experimental
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -59,7 +59,7 @@ periodics:
           --up --down \
           --cloud-provider=digitalocean \
           --env S3_ENDPOINT=sfo3.digitaloceanspaces.com \
-          --create-args "--networking=calico --api-loadbalancer-type=public --node-count=2 --master-count=3" \
+          --create-args "--networking=calico --api-loadbalancer-type=public --node-count=2 --master-count=3 --override=cluster.spec.kubeAPIServer.serviceAccountIssuer=https://kubernetes.default" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.21.txt \
           --test=kops \

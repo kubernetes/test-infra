@@ -38,7 +38,7 @@ spec:
       terminationGracePeriodSeconds: 180
       containers:
       - name: hook
-        image: gcr.io/k8s-prow/hook:v20210802-bd4b5f6003
+        image: gcr.io/k8s-prow/hook:v20210921-341cf105e8
         imagePullPolicy: Always
         args:
         - --dry-run=false
@@ -53,8 +53,10 @@ spec:
         - name: KUBECONFIG
           value: "/etc/kubeconfig/config"
         ports:
-          - name: http
-            containerPort: 8888
+        - name: http
+          containerPort: 8888
+        - name: metrics
+          containerPort: 9090
         volumeMounts:
         - name: slack
           mountPath: /etc/slack

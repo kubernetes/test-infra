@@ -215,7 +215,7 @@ test/e2e/e2e.go:137 BeforeSuite on Node 1 failed test/e2e/e2e.go:137
 			},
 		},
 	}
-	fakeJa = jobs.NewJobAgent(context.Background(), kc, false, true, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fca{}.Config)
+	fakeJa = jobs.NewJobAgent(context.Background(), kc, false, true, []string{}, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fca{}.Config)
 	fakeJa.Start()
 	os.Exit(m.Run())
 }
@@ -416,7 +416,7 @@ func TestJobPath(t *testing.T) {
 			},
 		},
 	}
-	fakeJa = jobs.NewJobAgent(context.Background(), kc, false, true, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fca{}.Config)
+	fakeJa = jobs.NewJobAgent(context.Background(), kc, false, true, []string{}, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fca{}.Config)
 	fakeJa.Start()
 	testCases := []struct {
 		name       string
@@ -557,7 +557,7 @@ func TestProwJobName(t *testing.T) {
 			},
 		},
 	}
-	fakeJa = jobs.NewJobAgent(context.Background(), kc, false, true, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fca{}.Config)
+	fakeJa = jobs.NewJobAgent(context.Background(), kc, false, true, []string{}, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fca{}.Config)
 	fakeJa.Start()
 	testCases := []struct {
 		name       string
@@ -670,7 +670,7 @@ func TestRunPath(t *testing.T) {
 			},
 		},
 	}
-	fakeJa = jobs.NewJobAgent(context.Background(), kc, false, true, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fca{}.Config)
+	fakeJa = jobs.NewJobAgent(context.Background(), kc, false, true, []string{}, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fca{}.Config)
 	fakeJa.Start()
 	testCases := []struct {
 		name       string
@@ -794,7 +794,7 @@ func TestRunToPR(t *testing.T) {
 			},
 		},
 	}
-	fakeJa = jobs.NewJobAgent(context.Background(), kc, false, true, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fca{}.Config)
+	fakeJa = jobs.NewJobAgent(context.Background(), kc, false, true, []string{}, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fca{}.Config)
 	fakeJa.Start()
 	testCases := []struct {
 		name      string
@@ -980,7 +980,7 @@ func TestProwToGCS(t *testing.T) {
 				},
 			},
 		}
-		fakeJa = jobs.NewJobAgent(context.Background(), kc, false, true, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fakeConfigAgent.Config)
+		fakeJa = jobs.NewJobAgent(context.Background(), kc, false, true, []string{}, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fakeConfigAgent.Config)
 		fakeJa.Start()
 		sg := New(context.Background(), fakeJa, fakeConfigAgent.Config, io.NewGCSOpener(fakeGCSClient), false)
 
@@ -1113,7 +1113,7 @@ func TestGCSPathRoundTrip(t *testing.T) {
 				},
 			},
 		}
-		fakeJa = jobs.NewJobAgent(context.Background(), kc, false, true, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fakeConfigAgent.Config)
+		fakeJa = jobs.NewJobAgent(context.Background(), kc, false, true, []string{}, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fakeConfigAgent.Config)
 		fakeJa.Start()
 
 		fakeGCSClient := fakeGCSServer.Client()
@@ -1192,7 +1192,7 @@ func TestTestGridLink(t *testing.T) {
 	}
 
 	kc := fkc{}
-	fakeJa = jobs.NewJobAgent(context.Background(), kc, false, true, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fca{}.Config)
+	fakeJa = jobs.NewJobAgent(context.Background(), kc, false, true, []string{}, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fca{}.Config)
 	fakeJa.Start()
 
 	tg := TestGrid{c: &tgconf.Configuration{
@@ -1285,7 +1285,7 @@ func TestFetchArtifactsPodLog(t *testing.T) {
 			},
 		},
 	}
-	fakeJa = jobs.NewJobAgent(context.Background(), kc, false, true, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fakeConfigAgent.Config)
+	fakeJa = jobs.NewJobAgent(context.Background(), kc, false, true, []string{}, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fakeConfigAgent.Config)
 	fakeJa.Start()
 
 	fakeGCSClient := fakeGCSServer.Client()
@@ -1469,7 +1469,7 @@ func TestResolveSymlink(t *testing.T) {
 
 	for _, tc := range testCases {
 		fakeConfigAgent := fca{}
-		fakeJa = jobs.NewJobAgent(context.Background(), fkc{}, false, true, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fakeConfigAgent.Config)
+		fakeJa = jobs.NewJobAgent(context.Background(), fkc{}, false, true, []string{}, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fakeConfigAgent.Config)
 		fakeJa.Start()
 
 		fakeGCSClient := fakeGCSServer.Client()
@@ -1571,7 +1571,7 @@ func TestExtraLinks(t *testing.T) {
 					},
 				},
 			}
-			fakeJa = jobs.NewJobAgent(context.Background(), fkc{}, false, true, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fakeConfigAgent.Config)
+			fakeJa = jobs.NewJobAgent(context.Background(), fkc{}, false, true, []string{}, map[string]jobs.PodLogClient{kube.DefaultClusterAlias: fpkc("clusterA"), "trusted": fpkc("clusterB")}, fakeConfigAgent.Config)
 			fakeJa.Start()
 			sg := New(context.Background(), fakeJa, fakeConfigAgent.Config, io.NewGCSOpener(gcsClient), false)
 

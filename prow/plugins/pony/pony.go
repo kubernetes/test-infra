@@ -96,7 +96,7 @@ func (h realHerd) readPony(tags string) (string, error) {
 	uri := string(h) + "?q=" + url.QueryEscape(tags)
 	resp, err := client.Get(uri)
 	if err != nil {
-		return "", fmt.Errorf("failed to make request: %v", err)
+		return "", fmt.Errorf("failed to make request: %w", err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
@@ -104,13 +104,13 @@ func (h realHerd) readPony(tags string) (string, error) {
 	}
 	var a ponyResult
 	if err = json.NewDecoder(resp.Body).Decode(&a); err != nil {
-		return "", fmt.Errorf("failed to decode response: %v", err)
+		return "", fmt.Errorf("failed to decode response: %w", err)
 	}
 
 	embedded := a.Pony.Representations.Small
 	tooBig, err := github.ImageTooBig(embedded)
 	if err != nil {
-		return "", fmt.Errorf("couldn't fetch pony for size check: %v", err)
+		return "", fmt.Errorf("couldn't fetch pony for size check: %w", err)
 	}
 	if tooBig {
 		return "", fmt.Errorf("the pony is too big")

@@ -1,6 +1,6 @@
 periodics:
 # Runs e2e on the cluster built with latest released kops and latest released k/k
-- cron: '3 * * * *'
+- cron: '3 1-23/3 * * *'
   labels:
     preset-k8s-ssh: "true"
   name: e2e-kops-gce-stable
@@ -27,7 +27,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=gce \
-          --create-args="--channel=alpha" \
+          --create-args="--channel=alpha --override=cluster.spec.kubeAPIServer.serviceAccountIssuer=https://kubernetes.default" \
           --env=KOPS_FEATURE_FLAGS=GoogleCloudBucketACL \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/latest.txt \
@@ -43,7 +43,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: KUBE_SSH_USER
         value: prow
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -61,11 +61,11 @@ periodics:
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: ''
     testgrid-dashboards: google-kops-gce, kops-distro-u2004, kops-gce, kops-k8s-latest, kops-kubetest2, kops-latest, sig-cluster-lifecycle-kops
-    testgrid-days-of-results: '90'
+    testgrid-days-of-results: '40'
     testgrid-tab-name: kops-gce-stable
 
 # Runs e2e on the cluster built with latest released kops and k/k master branch
-- cron: '48 * * * *'
+- cron: '48 1-23/3 * * *'
   labels:
     preset-k8s-ssh: "true"
   name: e2e-kops-gce-latest
@@ -92,7 +92,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=gce \
-          --create-args="--channel=alpha" \
+          --create-args="--channel=alpha --override=cluster.spec.kubeAPIServer.serviceAccountIssuer=https://kubernetes.default" \
           --env=KOPS_FEATURE_FLAGS=GoogleCloudBucketACL \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
@@ -110,7 +110,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: KUBE_SSH_USER
         value: prow
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -128,5 +128,5 @@ periodics:
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: ''
     testgrid-dashboards: google-kops-gce, kops-distro-u2004, kops-gce, kops-k8s-latest, kops-kubetest2, kops-latest, sig-cluster-lifecycle-kops
-    testgrid-days-of-results: '90'
+    testgrid-days-of-results: '40'
     testgrid-tab-name: kops-gce-latest

@@ -616,9 +616,9 @@ func (ua UnapprovedFile) String() string {
 func GenerateTemplate(templ, name string, data interface{}) (string, error) {
 	buf := bytes.NewBufferString("")
 	if messageTempl, err := template.New(name).Parse(templ); err != nil {
-		return "", fmt.Errorf("failed to parse template for %s: %v", name, err)
+		return "", fmt.Errorf("failed to parse template for %s: %w", name, err)
 	} else if err := messageTempl.Execute(buf, data); err != nil {
-		return "", fmt.Errorf("failed to execute template for %s: %v", name, err)
+		return "", fmt.Errorf("failed to execute template for %s: %w", name, err)
 	}
 	return buf.String(), nil
 }

@@ -78,7 +78,7 @@ approve:
   - kubernetes-sigs/boskos
   - kubernetes-sigs/downloadkubernetes
   - kubernetes-sigs/e2e-framework
-  - kubernetes-sigs/k8s-container-image-promoter
+  - kubernetes-sigs/promo-tools
   - kubernetes-sigs/k8s-gsm-tools
   - kubernetes-sigs/kind
   - kubernetes-sigs/kubetest2
@@ -129,7 +129,7 @@ lgtm:
   - kubernetes-sigs/controller-runtime
   - kubernetes-sigs/downloadkubernetes
   - kubernetes-sigs/e2e-framework
-  - kubernetes-sigs/k8s-container-image-promoter
+  - kubernetes-sigs/promo-tools
   - kubernetes-sigs/k8s-gsm-tools
   - kubernetes-sigs/kind
   - kubernetes-sigs/kubetest2
@@ -268,7 +268,7 @@ slack:
   - repos:
     - kubernetes/kubernetes
     channels:
-    - kubernetes-dev
+    - github-management
     exempt_users:
     - k8s-ci-robot # future home of tide
     - k8s-release-robot # anago
@@ -300,7 +300,7 @@ slack:
   - repos:
     - kubernetes/k8s.io
     channels:
-    - wg-k8s-infra
+    - sig-k8s-infra
     exempt_users:
     - k8s-ci-robot
   - repos:
@@ -318,25 +318,26 @@ slack:
 
 milestone_applier:
   kubernetes/enhancements:
-    master: v1.22
+    master: v1.23
   kubernetes/kubernetes:
-    master: v1.22
+    master: v1.23
     release-1.22: v1.22
     release-1.21: v1.21
     release-1.20: v1.20
     release-1.19: v1.19
   kubernetes/org:
-    main: v1.22
+    main: v1.23
   kubernetes/release:
-    master: v1.22
+    master: v1.23
   kubernetes/sig-release:
-    master: v1.22
+    master: v1.23
   kubernetes/test-infra:
-    master: v1.22
+    master: v1.23
   kubernetes/k8s.io:
-    main: v1.22
+    main: v1.23
   kubernetes/kops:
-    master: v1.22
+    master: v1.23
+    release-1.22: v1.22
     release-1.21: v1.21
     release-1.20: v1.20
     release-1.19: v1.19
@@ -353,8 +354,7 @@ milestone_applier:
     main: v0.7.0
     release-0.6: v0.6.x
   kubernetes-sigs/cluster-api-provider-azure:
-    main: v0.5.2
-    master: v0.5.2
+    main: v0.5
     release-0.4: v0.4.16
   kubernetes-sigs/cluster-api-provider-digitalocean:
     main: v0.5.0
@@ -363,6 +363,8 @@ milestone_applier:
     main: v0.4
     release-0.4: v0.4
     release-0.3: v0.3
+  kubernetes-sigs/boskos:
+    master: v1.23
   kubernetes-sigs/controller-runtime:
     master: v0.10.x
     release-0.9: v0.9.x
@@ -371,7 +373,7 @@ milestone_applier:
     release-0.6: v0.6.x
     release-0.5: v0.5.x
   kubernetes/website:
-    dev-1.22: 1.22
+    dev-1.23: 1.23
 
 repo_milestone:
   # Default maintainer
@@ -401,10 +403,6 @@ repo_milestone:
     maintainers_id: 2978501
     maintainers_team: cluster-api-provider-digitalocean-maintainers
     maintainers_friendly_name: Cluster API Provider DigitalOcean Maintainers
-  kubernetes-sigs/cluster-api-provider-docker:
-    maintainers_id: 3297612
-    maintainers_team: cluster-api-provider-docker-maintainers
-    maintainers_friendly_name: Cluster API Provider Docker Maintainers
   kubernetes-sigs/cluster-api-provider-gcp:
     maintainers_id: 2829767
     maintainers_team: cluster-api-provider-gcp-maintainers
@@ -692,6 +690,18 @@ require_matching_label:
   issues: true
   prs: true
   regexp: ^priority/
+- missing_label: needs-sig
+  org: kubernetes
+  repo: test-infra
+  issues: true
+  regexp: ^(sig|wg|committee)/
+  missing_comment: |
+    There are no sig labels on this issue. Please add an appropriate label by using one of the following commands:
+    - `/sig <group-name>`
+    - `/wg <group-name>`
+    - `/committee <group-name>`
+
+    Please see the [group list](https://git.k8s.io/community/sig-list.md) for a listing of the SIGs, working groups, and committees available.
 
 retitle:
   allow_closed_issues: true
@@ -761,6 +771,7 @@ plugins:
     - size
     - skip
     - slackevents
+    - transfer-issue
     - trick-or-treat
     - trigger
     - verify-owners
@@ -863,6 +874,7 @@ plugins:
     - milestone
     - override
     - project
+    - require-matching-label
 
   kubernetes/utils:
     plugins:
@@ -890,6 +902,7 @@ plugins:
     - label
     - lgtm
     - lifecycle
+    - milestoneapplier
     - owners-label
     - pony
     - retitle
@@ -968,6 +981,7 @@ plugins:
     - shrug
     - size
     - skip
+    - transfer-issue
     - trick-or-treat
     - trigger
     - verify-owners
@@ -992,6 +1006,7 @@ plugins:
 
   kubernetes-sigs/boskos:
     plugins:
+    - milestone
     - override
 
   kubernetes-sigs/kind:
@@ -1037,10 +1052,6 @@ plugins:
     - release-note
     - require-matching-label
 
-  kubernetes-sigs/cluster-api-provider-docker:
-    plugins:
-    - milestone
-
   kubernetes-sigs/cluster-api-provider-gcp:
     plugins:
     - milestone
@@ -1077,7 +1088,7 @@ plugins:
     - override
     - release-note
 
-  kubernetes-sigs/k8s-container-image-promoter:
+  kubernetes-sigs/promo-tools:
     plugins:
     - mergecommitblocker
     - override
@@ -1171,3 +1182,21 @@ external_plugins:
     events:
       - issue_comment
       - pull_request
+  kubernetes-sigs/cluster-api:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
+    endpoint: http://cherrypicker
+  kubernetes-sigs/controller-tools:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
+    endpoint: http://cherrypicker
+  kubernetes-sigs/controller-runtime:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
+    endpoint: http://cherrypicker

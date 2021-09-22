@@ -89,12 +89,12 @@ func (b *bashDeployer) GetClusterCreated(gcpProject string) (time.Time, error) {
 		"--project="+gcpProject,
 		"--format=json(name,creationTimestamp)"))
 	if err != nil {
-		return time.Time{}, fmt.Errorf("list instance-group failed : %v", err)
+		return time.Time{}, fmt.Errorf("list instance-group failed : %w", err)
 	}
 
 	created, err := getLatestClusterUpTime(string(res))
 	if err != nil {
-		return time.Time{}, fmt.Errorf("parse time failed : got gcloud res %s, err %v", string(res), err)
+		return time.Time{}, fmt.Errorf("parse time failed : got gcloud res %s, err %w", string(res), err)
 	}
 	return created, nil
 }

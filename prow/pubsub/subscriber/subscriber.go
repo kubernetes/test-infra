@@ -275,7 +275,7 @@ func (poh *postsubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pe ProwJobEve
 	if poh.GitClient != nil { // Get from inrepoconfig only when GitClient is provided
 		postsubmitsWithInrepoconfig, err := cfg.GetPostsubmits(poh.GitClient, orgRepo, baseSHAGetter)
 		if err != nil {
-			logrus.WithError(err).Debug("Failed to get postsubmits")
+			logrus.WithError(err).Debug("Failed to get postsubmits from inrepoconfig")
 		} else {
 			postsubmits = postsubmitsWithInrepoconfig
 		}
@@ -331,12 +331,12 @@ func (s *Subscriber) handleMessage(msg messageInterface, subscription string, al
 	case postsubmitProwJobEvent:
 		jh = &postsubmitJobHandler{GitClient: s.GitClient}
 	default:
-		l.WithField("type", eType).Error("Unsupported event type")
+		l.WithField("type", eType).Debug("Unsupported event type")
 		s.Metrics.ErrorCounter.With(prometheus.Labels{subscriptionLabel: subscription})
 		return fmt.Errorf("unsupported event type: %s", eType)
 	}
 	if err = s.handleProwJob(l, jh, msg, subscription, allowedClusters); err != nil {
-		l.WithError(err).Error("failed to create Prow Job")
+		l.WithError(err).Debug("failed to create Prow Job")
 		s.Metrics.ErrorCounter.With(prometheus.Labels{subscriptionLabel: subscription})
 	}
 	return err
@@ -351,19 +351,32 @@ func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msg messageIn
 		return err
 	}
 
-	reportProwJobFailure := func(pj *prowapi.ProwJob, err error) {
-		pj.Status.State = prowapi.ErrorState
-		pj.Status.Description = err.Error()
+	reportProwJob := func(pj *prowapi.ProwJob, state v1.ProwJobState, err error) {
+		pj.Status.State = state
+		pj.Status.Description = "Successfully triggered prowjob."
+		if err != nil {
+			pj.Status.Description = fmt.Sprintf("Failed creating prowjob: %v", err)
+		}
 		if s.Reporter.ShouldReport(context.TODO(), l, pj) {
 			if _, _, err := s.Reporter.Report(context.TODO(), l, pj); err != nil {
-				l.Warningf("failed to report status. %v", err)
+				l.WithError(err).Warning("Failed to report status.")
 			}
 		}
 	}
 
+	reportProwJobFailure := func(pj *prowapi.ProwJob, err error) {
+		reportProwJob(pj, prowapi.ErrorState, err)
+	}
+
+	reportProwJobTriggered := func(pj *prowapi.ProwJob) {
+		reportProwJob(pj, prowapi.TriggeredState, nil)
+	}
+
 	prowJobSpec, labels, err := jh.getProwJobSpec(s.ConfigAgent.Config(), pe)
 	if err != nil {
-		l.WithError(err).Errorf("failed to create job %q", pe.Name)
+		// These are user errors, i.e. missing fields, requested prowjob doesn't exist etc.
+		// These errors are already surfaced to user via pubsub two lines below.
+		l.WithError(err).WithField("name", pe.Name).Debug("Failed getting prowjob spec")
 		prowJob = pjutil.NewProwJob(prowapi.ProwJobSpec{}, nil, pe.Annotations)
 		reportProwJobFailure(&prowJob, err)
 		return err
@@ -413,6 +426,10 @@ func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msg messageIn
 		reportProwJobFailure(&prowJob, err)
 		return err
 	}
-	l.Infof("Job %q created as %q", pe.Name, prowJob.Name)
+	l.WithFields(logrus.Fields{
+		"job":  pe.Name,
+		"name": prowJob.Name,
+	}).Info("Job created.")
+	reportProwJobTriggered(&prowJob)
 	return nil
 }

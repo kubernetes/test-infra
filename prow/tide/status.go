@@ -244,9 +244,12 @@ func requirementDiff(pr *PullRequest, q *config.TideQuery, cc contextChecker) (s
 		}
 	}
 
-	// TODO(cjwagner): List reviews (states:[APPROVED], first: 1) as part of open
-	// PR query.
-
+	if q.ReviewApprovedRequired && pr.ReviewDecision != githubql.PullRequestReviewDecisionApproved {
+		diff += 50
+		if desc == "" {
+			desc = " PullRequest is missing sufficient approving GitHub review(s)"
+		}
+	}
 	return desc, diff
 }
 
@@ -259,14 +262,14 @@ func (sc *statusController) expectedStatus(log *logrus.Entry, queryMap *config.Q
 	repo := config.OrgRepo{Org: string(pr.Repository.Owner.Login), Repo: string(pr.Repository.Name)}
 
 	if reason, err := sc.mergeChecker.isAllowed(pr); err != nil {
-		return "", "", fmt.Errorf("error checking if merge is allowed: %v", err)
+		return "", "", fmt.Errorf("error checking if merge is allowed: %w", err)
 	} else if reason != "" {
 		return github.StatusError, fmt.Sprintf(statusNotInPool, " "+reason), nil
 	}
 
 	cc, err := ccg()
 	if err != nil {
-		return "", "", fmt.Errorf("failed to set up context register: %v", err)
+		return "", "", fmt.Errorf("failed to set up context register: %w", err)
 	}
 
 	if _, ok := pool[prKey(pr)]; !ok {
@@ -283,11 +286,21 @@ func (sc *statusController) expectedStatus(log *logrus.Entry, queryMap *config.Q
 			}
 			return github.StatusError, fmt.Sprintf(statusNotInPool, fmt.Sprintf(" Merging is blocked by issue%s %s.", s, strings.Join(numbers, ", "))), nil
 		}
+
+		// hasFullfilledQuery is a weird state, it means that the PR is not in the pool but should be. It happens when all requirements were fulfilled
+		// at the time the status controller queried GitHub but not at the time the sync controller queried GitHub.
+		// We just fall through to check if there are missing jobs to avoid wasting api tokens by sending it to pending and then to success in the next
+		// sync or status controller iteration.
+		var hasFullfilledQuery bool
+
 		minDiffCount := -1
 		var minDiff string
 		for _, q := range queryMap.ForRepo(repo) {
 			diff, diffCount := requirementDiff(pr, &q, cc)
-			if sc.config().Tide.DisplayAllQueriesInStatus {
+			if diffCount == 0 {
+				hasFullfilledQuery = true
+				break
+			} else if sc.config().Tide.DisplayAllQueriesInStatus {
 				if diffCount >= 2000 {
 					// Query is for wrong branch
 					continue
@@ -304,7 +317,10 @@ func (sc *statusController) expectedStatus(log *logrus.Entry, queryMap *config.Q
 		if sc.config().Tide.DisplayAllQueriesInStatus && minDiff == "" {
 			minDiff = " No Tide query for branch " + string(pr.BaseRef.Name) + " found."
 		}
-		return github.StatusPending, fmt.Sprintf(statusNotInPool, minDiff), nil
+
+		if !hasFullfilledQuery {
+			return github.StatusPending, fmt.Sprintf(statusNotInPool, minDiff), nil
+		}
 	}
 
 	indexKey := indexKeyPassingJobs(repo, baseSHA, string(pr.HeadRefOID))

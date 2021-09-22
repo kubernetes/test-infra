@@ -91,7 +91,7 @@ func (a *repoClientAdapter) MirrorClone() error {
 }
 
 func (a *repoClientAdapter) Fetch() error {
-	return errors.New("no Fetch implementation exists in the v1 repo client")
+	return a.Repo.Fetch()
 }
 
 func (a *repoClientAdapter) FetchFromRemote(resolver RemoteResolver, branch string) error {

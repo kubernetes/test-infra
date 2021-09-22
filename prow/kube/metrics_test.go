@@ -20,6 +20,7 @@ import (
 	"reflect"
 	"testing"
 
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/diff"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
@@ -99,15 +100,38 @@ func TestGetJobLabelMap(t *testing.T) {
 				State: prowapi.FailureState,
 			},
 		},
+		{
+			ObjectMeta: v1.ObjectMeta{
+				Labels: map[string]string{
+					RetestLabel: "true",
+				},
+			},
+			Spec: prowapi.ProwJobSpec{
+				Job:  "test-job-4",
+				Type: prowapi.PresubmitJob,
+				Refs: nil,
+				ExtraRefs: []prowapi.Refs{
+					{
+						Org:     "org1",
+						Repo:    "repo1",
+						BaseRef: "release-4.2",
+					},
+				},
+			},
+			Status: prowapi.ProwJobStatus{
+				State: prowapi.FailureState,
+			},
+		},
 	}
 
 	jobLabelMap := getJobLabelMap(pjs)
 
 	expected := map[jobLabel]float64{
-		{jobName: "test-job-1", jobType: string(prowapi.PresubmitJob), org: "org1", repo: "repo1", baseRef: "master", state: string(prowapi.PendingState)}:      2,
-		{jobName: "test-job-2", jobType: string(prowapi.PresubmitJob), org: "org1", repo: "repo1", baseRef: "master", state: string(prowapi.PendingState)}:      1,
-		{jobName: "test-job-2", jobType: string(prowapi.PresubmitJob), org: "org1", repo: "repo1", baseRef: "release-4.1", state: string(prowapi.PendingState)}: 1,
-		{jobName: "test-job-3", jobType: string(prowapi.PresubmitJob), org: "org1", repo: "repo1", baseRef: "release-4.2", state: string(prowapi.FailureState)}: 1,
+		{jobName: "test-job-1", jobType: string(prowapi.PresubmitJob), org: "org1", repo: "repo1", baseRef: "master", state: string(prowapi.PendingState), retest: "false"}:      2,
+		{jobName: "test-job-2", jobType: string(prowapi.PresubmitJob), org: "org1", repo: "repo1", baseRef: "master", state: string(prowapi.PendingState), retest: "false"}:      1,
+		{jobName: "test-job-2", jobType: string(prowapi.PresubmitJob), org: "org1", repo: "repo1", baseRef: "release-4.1", state: string(prowapi.PendingState), retest: "false"}: 1,
+		{jobName: "test-job-3", jobType: string(prowapi.PresubmitJob), org: "org1", repo: "repo1", baseRef: "release-4.2", state: string(prowapi.FailureState), retest: "false"}: 1,
+		{jobName: "test-job-4", jobType: string(prowapi.PresubmitJob), org: "org1", repo: "repo1", baseRef: "release-4.2", state: string(prowapi.FailureState), retest: "true"}:  1,
 	}
 
 	if !reflect.DeepEqual(expected, jobLabelMap) {

@@ -293,7 +293,7 @@ func (c *fakeClient) ListTeamMembers(org string, id int, role string) ([]github.
 	case github.RoleMaintainer:
 		return c.makeMembers(c.admins), nil
 	default:
-		return nil, fmt.Errorf("fake does not support: %v", role)
+		return nil, fmt.Errorf("fake does not support: %s", role)
 	}
 }
 

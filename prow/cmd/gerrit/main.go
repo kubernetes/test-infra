@@ -167,12 +167,12 @@ func (st *syncTime) currentState() (client.LastSyncState, error) {
 		logrus.Warnf("lastSyncFallback not found at %q", st.path)
 		return nil, nil
 	} else if err != nil {
-		return nil, fmt.Errorf("open: %v", err)
+		return nil, fmt.Errorf("open: %w", err)
 	}
 	defer io.LogClose(r)
 	buf, err := ioutil.ReadAll(r)
 	if err != nil {
-		return nil, fmt.Errorf("read: %v", err)
+		return nil, fmt.Errorf("read: %w", err)
 	}
 	var state client.LastSyncState
 	if err := json.Unmarshal(buf, &state); err != nil {
@@ -215,18 +215,18 @@ func (st *syncTime) Update(newState client.LastSyncState) error {
 
 	w, err := st.opener.Writer(st.ctx, st.path)
 	if err != nil {
-		return fmt.Errorf("open for write %q: %v", st.path, err)
+		return fmt.Errorf("open for write %q: %w", st.path, err)
 	}
 	stateBytes, err := json.Marshal(targetState)
 	if err != nil {
-		return fmt.Errorf("marshall state: %v", err)
+		return fmt.Errorf("marshall state: %w", err)
 	}
 	if _, err := fmt.Fprint(w, string(stateBytes)); err != nil {
 		io.LogClose(w)
-		return fmt.Errorf("write %q: %v", st.path, err)
+		return fmt.Errorf("write %q: %w", st.path, err)
 	}
 	if err := w.Close(); err != nil {
-		return fmt.Errorf("close %q: %v", st.path, err)
+		return fmt.Errorf("close %q: %w", st.path, err)
 	}
 	st.val = targetState
 	return nil

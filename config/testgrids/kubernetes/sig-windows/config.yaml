@@ -51,18 +51,18 @@ dashboards:
   - name: ltsc2019-containerd-flannel-sdnoverlay-stable
     description: Runs Windows (LTSC 2019 with Containerd) E2E tests on stable branch K8s clusters and latest Flannel CNI release in overlay network mode.
     test_group_name: k8s-e2e-ltsc2019-containerd-flannel-sdnoverlay-stable
-  - name: sac1909-containerd-flannel-sdnbridge-stable
-    description: Runs Windows (SAC 1909 with Containerd) E2E tests on stable branch K8s clusters and latest Flannel CNI release in l2bridge network mode.
-    test_group_name: k8s-e2e-sac1909-containerd-flannel-sdnbridge-stable
-  - name: sac1909-containerd-flannel-sdnoverlay-stable
-    description: Runs Windows (SAC 1909 with Containerd) E2E tests on stable branch K8s clusters and latest Flannel CNI release in overlay network mode.
-    test_group_name: k8s-e2e-sac1909-containerd-flannel-sdnoverlay-stable
   - name: sac2004-containerd-flannel-sdnbridge-stable
     description: Runs Windows (SAC 2004 with Containerd) E2E tests on stable branch K8s clusters and latest Flannel CNI release in l2bridge network mode.
     test_group_name: k8s-e2e-sac2004-containerd-flannel-sdnbridge-stable
   - name: sac2004-containerd-flannel-sdnoverlay-stable
     description: Runs Windows (SAC 2004 with Containerd) E2E tests on stable branch K8s clusters and latest Flannel CNI release in overlay network mode.
     test_group_name: k8s-e2e-sac2004-containerd-flannel-sdnoverlay-stable
+  - name: ltsc2022-containerd-flannel-sdnbridge-stable
+    description: Runs Windows (LTSC 2022 with Containerd) E2E tests on stable branch K8s clusters and latest Flannel CNI release in l2bridge network mode.
+    test_group_name: k8s-e2e-ltsc2022-containerd-flannel-sdnbridge-stable
+  - name: ltsc2022-containerd-flannel-sdnoverlay-stable
+    description: Runs Windows (LTSC 2022 with Containerd) E2E tests on stable branch K8s clusters and latest Flannel CNI release in overlay network mode.
+    test_group_name: k8s-e2e-ltsc2022-containerd-flannel-sdnoverlay-stable
 - name: sig-windows-containerd-runtime-signal
   dashboard_tab:
   - name: win-2004-containerd-master-integration
@@ -71,6 +71,10 @@ dashboards:
   - name: win-2019-containerd-master-integration
     description: Runs containerd integration & cri-integration tests on Windows (LTSC 2019)
     test_group_name: integration-containerd-windows-ltsc2019
+  - name: win-2022-containerd-master-integration
+    description: Runs containerd integration & cri-integration tests on Windows (LTSC 2022)
+    test_group_name: integration-containerd-windows-ltsc2022
+
 
 test_groups:
 # Flannel CNI on Windows test groups
@@ -90,18 +94,21 @@ test_groups:
   gcs_prefix: k8s-ovn/logs/k8s-e2e-ltsc2019-containerd-flannel-sdnbridge-stable
 - name: k8s-e2e-ltsc2019-containerd-flannel-sdnoverlay-stable
   gcs_prefix: k8s-ovn/logs/k8s-e2e-ltsc2019-containerd-flannel-sdnoverlay-stable
-- name: k8s-e2e-sac1909-containerd-flannel-sdnbridge-stable
-  gcs_prefix: k8s-ovn/logs/k8s-e2e-sac1909-containerd-flannel-sdnbridge-stable
-- name: k8s-e2e-sac1909-containerd-flannel-sdnoverlay-stable
-  gcs_prefix: k8s-ovn/logs/k8s-e2e-sac1909-containerd-flannel-sdnoverlay-stable
 - name: k8s-e2e-sac2004-containerd-flannel-sdnbridge-stable
   gcs_prefix: k8s-ovn/logs/k8s-e2e-sac2004-containerd-flannel-sdnbridge-stable
 - name: k8s-e2e-sac2004-containerd-flannel-sdnoverlay-stable
   gcs_prefix: k8s-ovn/logs/k8s-e2e-sac2004-containerd-flannel-sdnoverlay-stable
+- name: k8s-e2e-ltsc2022-containerd-flannel-sdnbridge-stable
+  gcs_prefix: k8s-ovn/logs/k8s-e2e-ltsc2022-containerd-flannel-sdnbridge-stable
+- name: k8s-e2e-ltsc2022-containerd-flannel-sdnoverlay-stable
+  gcs_prefix: k8s-ovn/logs/k8s-e2e-ltsc2022-containerd-flannel-sdnoverlay-stable
 # Containerd Runtime integration test groups
 - name: integration-containerd-windows-sac2004
   gcs_prefix: containerd-integration/logs/windows-sac2004
   disable_prowjob_analysis: true
 - name: integration-containerd-windows-ltsc2019
   gcs_prefix: containerd-integration/logs/windows-ltsc2019
+  disable_prowjob_analysis: true
+- name: integration-containerd-windows-ltsc2022
+  gcs_prefix: containerd-integration/logs/windows-ltsc2022
   disable_prowjob_analysis: true

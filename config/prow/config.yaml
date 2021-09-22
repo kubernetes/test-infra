@@ -11,10 +11,10 @@ plank:
       timeout: 2h
       grace_period: 15m
       utility_images:
-        clonerefs: "gcr.io/k8s-prow/clonerefs:v20210802-bd4b5f6003"
-        initupload: "gcr.io/k8s-prow/initupload:v20210802-bd4b5f6003"
-        entrypoint: "gcr.io/k8s-prow/entrypoint:v20210802-bd4b5f6003"
-        sidecar: "gcr.io/k8s-prow/sidecar:v20210802-bd4b5f6003"
+        clonerefs: "gcr.io/k8s-prow/clonerefs:v20210921-341cf105e8"
+        initupload: "gcr.io/k8s-prow/initupload:v20210921-341cf105e8"
+        entrypoint: "gcr.io/k8s-prow/entrypoint:v20210921-341cf105e8"
+        sidecar: "gcr.io/k8s-prow/sidecar:v20210921-341cf105e8"
       gcs_configuration:
         bucket: "kubernetes-jenkins"
         path_strategy: "legacy"
@@ -246,6 +246,10 @@ branch-protection:
             - continuous-integration/travis-ci
           required_pull_request_reviews:
             required_approving_review_count: 1
+        enhancements:
+          restrictions: # only allow admins
+            users: []
+            teams: []
         git-sync:
           enforce_admins: true
           restrictions: # only allow admins
@@ -404,6 +408,8 @@ branch-protection:
               protect: true
             release-1.20:
               protect: true
+            release-1.21:
+              protect: true
     kubernetes-client:
       protect: true
       required_status_checks:
@@ -469,6 +475,10 @@ branch-protection:
           required_status_checks:
             contexts:
             - Kubespray CI Pipeline
+        nfs-ganesha-server-and-external-provisioner:
+          branches:
+            gh-pages:
+              protect: false
         nfs-subdir-external-provisioner:
           branches:
             gh-pages:
@@ -478,6 +488,10 @@ branch-protection:
             gh-pages:
               protect: false
         node-feature-discovery-operator:
+          branches:
+            gh-pages:
+              protect: false
+        secrets-store-csi-driver:
           branches:
             gh-pages:
               protect: false
@@ -540,31 +554,6 @@ tide:
     - needs-rebase
   - repos:
     - kubernetes/kubernetes
-    excludedBranches:
-    - master
-    - release-1.22
-    labels:
-    - lgtm
-    - approved
-    - "cncf-cla: yes"
-    missingLabels:
-    - do-not-merge
-    - do-not-merge/blocked-paths
-    - do-not-merge/cherry-pick-not-approved
-    - do-not-merge/hold
-    - do-not-merge/invalid-commit-message
-    - do-not-merge/invalid-owners-file
-    - do-not-merge/needs-kind
-    - do-not-merge/needs-sig
-    - do-not-merge/release-note-label-needed
-    - do-not-merge/work-in-progress
-    - needs-rebase
-  - repos:
-    - kubernetes/kubernetes
-    milestone: v1.22
-    includedBranches:
-    - master
-    - release-1.22
     labels:
     - lgtm
     - approved
@@ -609,17 +598,31 @@ tide:
     - needs-rebase
     repos:
     - kubernetes/test-infra
+  - author: k8s-infra-ci-robot
+    labels: # k8s-infra-ci-robot should only create autobump PR with this label
+    - skip-review
+    - "cncf-cla: yes"
+    missingLabels:
+    - do-not-merge
+    - do-not-merge/blocked-paths
+    - do-not-merge/contains-merge-commits
+    - do-not-merge/hold
+    - do-not-merge/invalid-commit-message
+    - do-not-merge/invalid-owners-file
+    - do-not-merge/release-note-label-needed
+    - do-not-merge/work-in-progress
+    - needs-rebase
+    repos:
+    - kubernetes/k8s.io
+    - kubernetes/test-infra
 
   merge_method:
     kubernetes-client/csharp: squash
     kubernetes-client/gen: squash
     kubernetes-sigs/cluster-api-provider-digitalocean: squash
     kubernetes-sigs/cluster-api-provider-ibmcloud: squash
-    kubernetes-sigs/controller-runtime: squash
-    kubernetes-sigs/controller-tools: squash
     kubernetes-sigs/krew-index: squash
     kubernetes-sigs/krew: squash
-    kubernetes-sigs/kubebuilder: squash
     kubernetes-sigs/kubespray: squash
     kubernetes-sigs/kui: rebase
     kubernetes-sigs/security-profiles-operator: rebase
@@ -639,6 +642,8 @@ tide:
   context_options:
     orgs:
       kubernetes:
+        optional-contexts:
+        - "EasyCLA" # NOTE(cblecker): This is temporary until we fully roll out EasyCLA
         repos:
           dashboard:
             from-branch-protection: true

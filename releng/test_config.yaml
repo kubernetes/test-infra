@@ -105,7 +105,7 @@ jobs:
     args:
     - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
-    # TODO(hasheddan): add "InTreePluginGCEUnregister=false" to feature gates when this 1.21 reaches k8sstable1
+    # TODO(releng): add "InTreePluginGCEUnregister=false" to feature gates when this 1.21 reaches k8sstable1
     - --env=KUBE_FEATURE_GATES=AllAlpha=true,CSIMigration=false
     # Panic if anything mutates a shared informer cache
     - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
@@ -145,13 +145,13 @@ jobs:
     args:
     - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
-    # TODO(hasheddan): add "InTreePluginGCEUnregister=false" to feature gates when this 1.21 reaches k8sstable2
+    # TODO(releng): add "InTreePluginGCEUnregister=false" to feature gates when this 1.21 reaches k8sstable2
     - --env=KUBE_FEATURE_GATES=AllAlpha=true,CSIMigration=false
     # Panic if anything mutates a shared informer cache
     - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
     - --runtime-config=api/all=true
     - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking
-      --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes --minStartupPods=8
+      --ginkgo.skip=Networking-Performance|IPv6|Feature:(Volumes|SCTPConnectivity) --minStartupPods=8
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
 
@@ -184,7 +184,7 @@ jobs:
     args:
     - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
-    # TODO(hasheddan): add "InTreePluginGCEUnregister=false" to feature gates when this 1.21 reaches k8sstable3
+    # TODO(releng): add "InTreePluginGCEUnregister=false" to feature gates when this 1.21 reaches k8sstable3
     - --env=KUBE_FEATURE_GATES=AllAlpha=true,CSIMigration=false
     # Panic if anything mutates a shared informer cache
     - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
@@ -388,23 +388,23 @@ nodeK8sVersions:
   dev:
     args:
     - --repo=k8s.io/kubernetes=master
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-master
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
   beta:
     args:
     - --repo=k8s.io/kubernetes=release-1.22
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-1.22
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-1.22
   stable1:
     args:
     - --repo=k8s.io/kubernetes=release-1.21
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-1.21
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-1.21
   stable2:
     args:
     - --repo=k8s.io/kubernetes=release-1.20
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-1.20
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-1.20
   stable3:
     args:
     - --repo=k8s.io/kubernetes=release-1.19
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20210302-a6bf478-1.19
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-1.19
 
 nodeTestSuites:
   default:

@@ -39,8 +39,8 @@ import (
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/crier/reporters/gcs/internal/util"
 	kubernetesreporterapi "k8s.io/test-infra/prow/crier/reporters/gcs/kubernetes/api"
+	"k8s.io/test-infra/prow/crier/reporters/gcs/util"
 	"k8s.io/test-infra/prow/io"
 )
 
@@ -202,7 +202,7 @@ func (gr *gcsK8sReporter) reportPodInfo(ctx context.Context, log *logrus.Entry, 
 
 	bucketName, dir, err := util.GetJobDestination(gr.cfg, pj)
 	if err != nil {
-		return fmt.Errorf("couldn't get job destination: %v", err)
+		return fmt.Errorf("couldn't get job destination: %w", err)
 	}
 
 	if gr.dryRun {

@@ -83,7 +83,7 @@ func acceptInvitations(gc githubClient, dryRun bool) error {
 
 	botUser, err := gc.BotUser()
 	if err != nil {
-		return fmt.Errorf("couldn't get bot's user name: %v", err)
+		return fmt.Errorf("couldn't get bot's user name: %w", err)
 	}
 
 	logger := logrus.WithField("bot-user", botUser.Login)
@@ -104,7 +104,7 @@ func acceptOrgInvitations(gc githubClient, dryRun bool, logger *logrus.Entry) er
 
 	orgInvitations, err := gc.ListCurrentUserOrgInvitations()
 	if err != nil {
-		return fmt.Errorf("couldn't get org invitations for the authenticated user: %v", err)
+		return fmt.Errorf("couldn't get org invitations for the authenticated user: %w", err)
 	}
 
 	for _, inv := range orgInvitations {
@@ -126,7 +126,7 @@ func acceptRepoInvitations(gc githubClient, dryRun bool, logger *logrus.Entry) e
 
 	repoInvitations, err := gc.ListCurrentUserRepoInvitations()
 	if err != nil {
-		return fmt.Errorf("couldn't get repo invitations for the authenticated user: %v", err)
+		return fmt.Errorf("couldn't get repo invitations for the authenticated user: %w", err)
 	}
 
 	for _, inv := range repoInvitations {

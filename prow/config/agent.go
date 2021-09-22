@@ -51,7 +51,7 @@ type Agent struct {
 func IsConfigMapMount(path string) (bool, error) {
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
-		return false, fmt.Errorf("Could not read provided directory %s: %v", path, err)
+		return false, fmt.Errorf("Could not read provided directory %s: %w", path, err)
 	}
 	for _, file := range files {
 		if file.Name() == "..data" {
@@ -180,7 +180,7 @@ func ListCMsAndDirs(path string) (cms sets.String, dirs sets.String, err error) 
 		// for files in a directory trigger events for the directory
 		if info != nil && info.IsDir() {
 			if isCM, err := IsConfigMapMount(path); err != nil {
-				return fmt.Errorf("Failed to check is path %s is configmap mounted: %v", path, err)
+				return fmt.Errorf("Failed to check is path %s is configmap mounted: %w", path, err)
 			} else if isCM {
 				cms.Insert(path)
 				// configmaps can't have nested directories

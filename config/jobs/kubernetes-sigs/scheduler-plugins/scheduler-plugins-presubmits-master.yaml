@@ -9,7 +9,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: golang:1.15.10
+      - image: golang:1.16.7
         command:
         - make
         args:
@@ -22,7 +22,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: golang:1.15.10
+      - image: golang:1.16.7
         command:
         - make
         args:
@@ -35,7 +35,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: golang:1.15.10
+      - image: golang:1.16.7
         command:
         - make
         args:
@@ -48,8 +48,21 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: golang:1.15.10
+      - image: golang:1.16.7
         command:
         - make
         args:
         - integration-test
+  - name: pull-scheduler-plugins-verify-crdgen-master
+    decorate: true
+    path_alias: sigs.k8s.io/scheduler-plugins
+    branches:
+    - ^master$
+    always_run: true
+    spec:
+      containers:
+      - image: golang:1.16.7
+        command:
+        - make
+        args:
+        - verify-crdgen

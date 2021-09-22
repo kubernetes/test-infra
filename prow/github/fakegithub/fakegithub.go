@@ -25,6 +25,8 @@ import (
 	"strings"
 	"sync"
 
+	githubql "github.com/shurcooL/githubv4"
+
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/test-infra/prow/github"
@@ -131,15 +133,30 @@ type FakeClient struct {
 	// Error will be returned if set. Currently only implemented for CreateStatus
 	Error error
 
+	// GetRepoError will be returned if set when GetRepo is called
+	GetRepoError error
+
 	// WasLabelAddedByHumanVal determines the return of the method with the same name
 	WasLabelAddedByHumanVal bool
 
 	// lock to be thread safe
 	lock sync.RWMutex
+
+	// Team is a map org->teamSlug->TeamWithMembers
+	Teams map[string]map[string]TeamWithMembers
+}
+
+type TeamWithMembers struct {
+	Team    github.Team
+	Members sets.String
 }
 
 func (f *FakeClient) BotUser() (*github.UserData, error) {
 	return &github.UserData{Login: botName}, nil
+}
+
+func (f *FakeClient) BotUserCheckerWithContext(_ context.Context) (func(candidate string) bool, error) {
+	return f.BotUserChecker()
 }
 
 func (f *FakeClient) BotUserChecker() (func(candidate string) bool, error) {
@@ -212,6 +229,10 @@ func (f *FakeClient) ListOpenIssues(org, repo string) ([]github.Issue, error) {
 
 // ListIssueComments returns comments.
 func (f *FakeClient) ListIssueComments(owner, repo string, number int) ([]github.IssueComment, error) {
+	return f.ListIssueCommentsWithContext(context.Background(), owner, repo, number)
+}
+
+func (f *FakeClient) ListIssueCommentsWithContext(ctx context.Context, owner, repo string, number int) ([]github.IssueComment, error) {
 	f.lock.RLock()
 	defer f.lock.RUnlock()
 	return append([]github.IssueComment{}, f.IssueComments[number]...), nil
@@ -240,6 +261,10 @@ func (f *FakeClient) ListIssueEvents(owner, repo string, number int) ([]github.L
 
 // CreateComment adds a comment to a PR
 func (f *FakeClient) CreateComment(owner, repo string, number int, comment string) error {
+	return f.CreateCommentWithContext(context.Background(), owner, repo, number, comment)
+}
+
+func (f *FakeClient) CreateCommentWithContext(_ context.Context, owner, repo string, number int, comment string) error {
 	f.lock.Lock()
 	defer f.lock.Unlock()
 	f.IssueCommentID++
@@ -254,6 +279,10 @@ func (f *FakeClient) CreateComment(owner, repo string, number int, comment strin
 
 // EditComment edits a comment. Its a stub that does nothing.
 func (f *FakeClient) EditComment(org, repo string, ID int, comment string) error {
+	return f.EditCommentWithContext(context.Background(), org, repo, ID, comment)
+}
+
+func (f *FakeClient) EditCommentWithContext(_ context.Context, org, repo string, ID int, comment string) error {
 	return nil
 }
 
@@ -288,6 +317,10 @@ func (f *FakeClient) CreateIssueReaction(org, repo string, ID int, reaction stri
 
 // DeleteComment deletes a comment.
 func (f *FakeClient) DeleteComment(owner, repo string, ID int) error {
+	return f.DeleteCommentWithContext(context.Background(), owner, repo, ID)
+}
+
+func (f *FakeClient) DeleteCommentWithContext(_ context.Context, owner, repo string, ID int) error {
 	f.lock.Lock()
 	defer f.lock.Unlock()
 	f.IssueCommentsDeleted = append(f.IssueCommentsDeleted, fmt.Sprintf("%s/%s#%d", owner, repo, ID))
@@ -431,6 +464,9 @@ func (f *FakeClient) GetSingleCommit(org, repo, SHA string) (github.RepositoryCo
 
 // CreateStatus adds a status context to a commit.
 func (f *FakeClient) CreateStatus(owner, repo, SHA string, s github.Status) error {
+	return f.CreateStatusWithContext(context.Background(), owner, repo, SHA, s)
+}
+func (f *FakeClient) CreateStatusWithContext(_ context.Context, owner, repo, SHA string, s github.Status) error {
 	f.lock.Lock()
 	defer f.lock.Unlock()
 	if f.Error != nil {
@@ -648,6 +684,15 @@ func (f *FakeClient) ListTeamMembers(org string, teamID int, role string) ([]git
 	return members, nil
 }
 
+func (f *FakeClient) TeamBySlugHasMember(org string, teamSlug string, memberLogin string) (bool, error) {
+	f.lock.RLock()
+	defer f.lock.RUnlock()
+	if f.Teams[org] != nil {
+		return f.Teams[org][teamSlug].Members.Has(memberLogin), nil
+	}
+	return false, nil
+}
+
 // IsCollaborator returns true if the user is a collaborator of the repo.
 func (f *FakeClient) IsCollaborator(org, repo, login string) (bool, error) {
 	f.lock.RLock()
@@ -849,6 +894,9 @@ func (f *FakeClient) GetRepos(org string, isUser bool) ([]github.Repo, error) {
 }
 
 func (f *FakeClient) GetRepo(owner, name string) (github.FullRepo, error) {
+	if f.GetRepoError != nil {
+		return github.FullRepo{}, f.GetRepoError
+	}
 	return github.FullRepo{
 		Repo: github.Repo{
 			Owner:         github.User{Login: owner},
@@ -1049,4 +1097,8 @@ func (f *FakeClient) ListCurrentUserOrgInvitations() ([]github.UserOrgInvitation
 	})
 
 	return ret, nil
+}
+
+func (f *FakeClient) MutateWithGitHubAppsSupport(ctx context.Context, m interface{}, input githubql.Input, vars map[string]interface{}, org string) error {
+	return nil
 }

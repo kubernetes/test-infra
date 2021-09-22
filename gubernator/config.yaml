@@ -33,7 +33,6 @@ jobs:
   - pull-kubernetes-e2e-kind
   - pull-kubernetes-e2e-kind-ipv6
   - pull-kubernetes-integration
-  - pull-kubernetes-node-crio-e2e
   - pull-kubernetes-node-e2e
   - pull-kubernetes-node-e2e-containerd
   - pull-kubernetes-typecheck

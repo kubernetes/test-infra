@@ -23,6 +23,7 @@ import (
 	"testing"
 
 	"github.com/sirupsen/logrus"
+	"golang.org/x/sync/semaphore"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -164,9 +165,9 @@ func TestPresumitReportingLocks(t *testing.T) {
 
 func TestShardedLockCleanup(t *testing.T) {
 	t.Parallel()
-	sl := &shardedLock{mapLock: &sync.Mutex{}, locks: map[simplePull]*sync.Mutex{}}
+	sl := &shardedLock{mapLock: semaphore.NewWeighted(1), locks: map[simplePull]*semaphore.Weighted{}}
 	key := simplePull{"org", "repo", 1}
-	sl.locks[key] = &sync.Mutex{}
+	sl.locks[key] = semaphore.NewWeighted(1)
 	sl.cleanup()
 	if _, exists := sl.locks[key]; exists {
 		t.Error("lock didn't get cleaned up")

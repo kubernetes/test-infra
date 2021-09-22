@@ -24,36 +24,6 @@ presubmits:
         - --
         - //...
         - -//vendor/...
-  - name: cloud-provider-gcp-e2e-create
-    always_run: true
-    decorate: true
-    path_alias: k8s.io/cloud-provider-gcp
-    labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
-    annotations:
-      testgrid-dashboards: provider-gcp-presubmits
-      description: End to end cluster creation test using kubetest2 based on kubernetes/cloud-provider-gcp.
-      testgrid-num-columns-recent: '30'
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
-        command:
-        - runner.sh
-        args:
-        - "/bin/bash"
-        - "-c"
-        - set -o errexit;
-          set -o nounset;
-          set -o pipefail;
-          set -o xtrace;
-          REPO_ROOT=$(git rev-parse --show-toplevel);
-          cd;
-          export GO111MODULE=on;
-          go get sigs.k8s.io/kubetest2@latest;
-          go get sigs.k8s.io/kubetest2/kubetest2-gce@latest;
-          go get sigs.k8s.io/kubetest2/kubetest2-tester-exec@latest;
-          kubetest2 gce -v 2 --repo-root $REPO_ROOT --build --up --down;
   - name: cloud-provider-gcp-verify-all
     always_run: true
     decorate: true
@@ -67,7 +37,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
           command:
             - runner.sh
             - ./tools/verify-all.sh
@@ -81,13 +51,17 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
     annotations:
       testgrid-dashboards: provider-gcp-presubmits
       description: End to end test of kubernetes/cloud-provider-gcp.
       testgrid-num-columns-recent: '30'
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
         command:
         - runner.sh
         args:
@@ -103,4 +77,4 @@ presubmits:
           go get sigs.k8s.io/kubetest2@latest;
           go get sigs.k8s.io/kubetest2/kubetest2-gce@latest;
           go get sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest;
-          kubetest2 gce -v 2 --repo-root $REPO_ROOT --build --up --down --test=ginkgo -- --test-package-version=v1.21.0 --parallel=30 --test-args='--minStartupPods=8 --container-runtime=containerd' --skip-regex='\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
+          kubetest2 gce -v 2 --repo-root $REPO_ROOT --build --up --down --test=ginkgo -- --test-package-version=v1.22.0 --parallel=30 --test-args='--minStartupPods=8 --container-runtime=containerd' --skip-regex='\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'

@@ -27,9 +27,13 @@ prow_image(
     name = "image",
     base = "@alpine-base//image",
     base_arm64 = "@git-base-arm64//image",
+    base_ppc64le = "@git-base-ppc64le//image",
     build_arm64 = True,
+    build_ppc64le = True,
     component = NAME,
-    symlinks = {"/initupload": "/app/prow/cmd/initupload/app.binary"},
+    symlinks_arm64 = {"/initupload": "/app/prow/cmd/initupload/app-arm64.binary"},
+    symlinks_default = {"/initupload": "/app/prow/cmd/initupload/app.binary"},
+    symlinks_ppc64le = {"/initupload": "/app/prow/cmd/initupload/app-ppc64le.binary"},
     visibility = ["//visibility:public"],
 )
 

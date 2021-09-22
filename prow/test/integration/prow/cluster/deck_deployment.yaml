@@ -38,7 +38,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: deck
-        image: gcr.io/k8s-prow/deck:v20210802-bd4b5f6003
+        image: gcr.io/k8s-prow/deck:v20210921-341cf105e8
         imagePullPolicy: Always
         ports:
           - name: http
@@ -46,7 +46,6 @@ spec:
         args:
         - --tide-url=http://tide/
         - --hook-url=http://hook:8888/plugin-help
-        - --redirect-http-to=prow.k8s.io
         - --oauth-url=/github-login
         - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
