@@ -104,8 +104,6 @@ presubmits:
       timeout: 65m
     labels:
       preset-service-account: "true"
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
       preset-k8s-ssh: "true"
     annotations:
       fork-per-release: "true"
@@ -114,7 +112,7 @@ presubmits:
       testgrid-num-failures-to-alert: "10"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-experimental
         resources:
           limits:
             cpu: 4
@@ -124,13 +122,9 @@ presubmits:
             memory: 6Gi
         command:
         - runner.sh
-        - /workspace/scenarios/kubernetes_e2e.py
         args:
         - kubetest2
         - noop
-        - --build
-        - --up
-        - --down
         - --test=node
         - --
         - --zone=us-west1-b
