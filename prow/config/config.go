@@ -562,6 +562,11 @@ type Plank struct {
 
 	// DefaultDecorationConfigs holds the default decoration config for specific values.
 	//
+	// Each entry in the slice specifies Repo and Cluster regexp filter fields to
+	// match against jobs and a corresponding DecorationConfig. All entries that
+	// match a job are used. Later matching entries override the fields of earlier
+	// matching entries.
+	//
 	// In FinalizeDefaultDecorationConfigs(), this field is populated either directly from
 	// DefaultDecorationConfigEntries, or from DefaultDecorationConfigsMap after
 	// it is converted to a slice. These fields are mutually exclusive, and
@@ -575,6 +580,7 @@ type Plank struct {
 	// This field is mutually exclusive with the DefaultDecorationConfigEntries field.
 	DefaultDecorationConfigsMap map[string]*prowapi.DecorationConfig `json:"default_decoration_configs,omitempty"`
 	// DefaultDecorationConfigEntries is used to populate DefaultDecorationConfigs.
+	//
 	// Each entry in the slice specifies Repo and Cluster regexp filter fields to
 	// match against jobs and a corresponding DecorationConfig. All entries that
 	// match a job are used. Later matching entries override the fields of earlier

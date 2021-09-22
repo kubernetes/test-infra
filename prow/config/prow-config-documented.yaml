@@ -540,6 +540,7 @@ plank:
     build_cluster_status_file: ' '
 
     # DefaultDecorationConfigEntries is used to populate DefaultDecorationConfigs.
+
     # Each entry in the slice specifies Repo and Cluster regexp filter fields to
     # match against jobs and a corresponding DecorationConfig. All entries that
     # match a job are used. Later matching entries override the fields of earlier
