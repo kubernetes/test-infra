@@ -103,6 +103,8 @@ type Bug struct {
 	UpdateToken string `json:"update_token,omitempty"`
 	// URL is a URL that demonstrates the problem described in the bug, or is somehow related to the bug report.
 	URL string `json:"url,omitempty"`
+	// Verified is a custom field in redhat bugzilla that indicates the status of verification by QA
+	Verified []string `json:"cf_verified,omitempty"`
 	// Version are the versions the bug was reported against.
 	Version []string `json:"version,omitempty"`
 	// Whiteboard is he value of the "status whiteboard" field on the bug.
