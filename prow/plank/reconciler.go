@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -45,8 +46,8 @@ import (
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/crier/reporters/gcs/internal/util"
 	kubernetesreporterapi "k8s.io/test-infra/prow/crier/reporters/gcs/kubernetes/api"
+	"k8s.io/test-infra/prow/crier/reporters/gcs/util"
 	"k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
@@ -209,6 +210,8 @@ func (r *reconciler) syncClusterStatus(interval time.Duration) func(context.Cont
 					r.log.WithError(err).Errorf("Failed to parse cluster status file location: %q.", location)
 					continue
 				}
+				// prowv1.ParsePath prepends `Path` with `/`, trim it
+				bucket, subPath := parsedPath.Bucket(), strings.TrimPrefix(parsedPath.Path, "/")
 
 				clusters := map[string]ClusterStatus{}
 				for cluster, client := range r.buildClients {
@@ -225,7 +228,7 @@ func (r *reconciler) syncClusterStatus(interval time.Duration) func(context.Cont
 					r.log.WithError(err).Error("Error marshaling cluster status info.")
 					continue
 				}
-				if err := util.WriteContent(ctx, r.log, util.StorageAuthor{Opener: r.opener}, parsedPath.Bucket(), parsedPath.Path, true, payload); err != nil {
+				if err := util.WriteContent(ctx, r.log, util.StorageAuthor{Opener: r.opener}, bucket, subPath, true, payload); err != nil {
 					r.log.WithError(err).Error("Error writing cluster status info.")
 				}
 			}
@@ -244,7 +247,7 @@ func (r *reconciler) defaultReconcile(ctx context.Context, request reconcile.Req
 	pj := &prowv1.ProwJob{}
 	if err := r.pjClient.Get(ctx, request.NamespacedName, pj); err != nil {
 		if !kerrors.IsNotFound(err) {
-			return reconcile.Result{}, fmt.Errorf("failed to get prowjob %s: %v", request.Name, err)
+			return reconcile.Result{}, fmt.Errorf("failed to get prowjob %s: %w", request.Name, err)
 		}
 
 		// Objects can be deleted from the API while being in our workqueue
@@ -303,7 +306,7 @@ func (r *reconciler) reconcile(ctx context.Context, pj *prowv1.ProwJob) (*reconc
 func (r *reconciler) terminateDupes(ctx context.Context, pj *prowv1.ProwJob) error {
 	pjs := &prowv1.ProwJobList{}
 	if err := r.pjClient.List(ctx, pjs, optPendingTriggeredJobsNamed(pj.Spec.Job)); err != nil {
-		return fmt.Errorf("failed to list prowjobs: %v", err)
+		return fmt.Errorf("failed to list prowjobs: %w", err)
 	}
 
 	return pjutil.TerminateOlderJobs(r.pjClient, r.log, pjs.Items)
@@ -324,7 +327,7 @@ func (r *reconciler) syncPendingJob(ctx context.Context, pj *prowv1.ProwJob) (*r
 		id, pn, err := r.startPod(ctx, pj)
 		if err != nil {
 			if !isRequestError(err) {
-				return nil, fmt.Errorf("error starting pod %s: %v", pod.Name, err)
+				return nil, fmt.Errorf("error starting pod %s: %w", pod.Name, err)
 			}
 			pj.Status.State = prowv1.ErrorState
 			pj.SetComplete()
@@ -518,6 +521,23 @@ func (r *reconciler) syncPendingJob(ctx context.Context, pj *prowv1.ProwJob) (*r
 		return nil, fmt.Errorf("patching prowjob: %w", err)
 	}
 
+	// If the ProwJob state has changed, we must ensure that the update reaches the cache before
+	// processing the key again. Without this we might accidentally replace intentionally deleted pods
+	// or otherwise incorrectly react to stale ProwJob state.
+	state := pj.Status.State
+	if prevPJ.Status.State == state {
+		return nil, nil
+	}
+	nn := types.NamespacedName{Namespace: pj.Namespace, Name: pj.Name}
+	if err := wait.Poll(100*time.Millisecond, 2*time.Second, func() (bool, error) {
+		if err := r.pjClient.Get(ctx, nn, pj); err != nil {
+			return false, fmt.Errorf("failed to get prowjob: %w", err)
+		}
+		return pj.Status.State == state, nil
+	}); err != nil {
+		return nil, fmt.Errorf("failed to wait for cached prowjob %s to get into state %s: %w", nn.String(), state, err)
+	}
+
 	return nil, nil
 }
 
@@ -542,7 +562,7 @@ func (r *reconciler) syncTriggeredJob(ctx context.Context, pj *prowv1.ProwJob) (
 		// Do not start more jobs than specified and check again later.
 		canExecuteConcurrently, err := r.canExecuteConcurrently(ctx, pj)
 		if err != nil {
-			return nil, fmt.Errorf("canExecuteConcurrently: %v", err)
+			return nil, fmt.Errorf("canExecuteConcurrently: %w", err)
 		}
 		if !canExecuteConcurrently {
 			return &reconcile.Result{RequeueAfter: 10 * time.Second}, nil
@@ -551,7 +571,7 @@ func (r *reconciler) syncTriggeredJob(ctx context.Context, pj *prowv1.ProwJob) (
 		id, pn, err = r.startPod(ctx, pj)
 		if err != nil {
 			if !isRequestError(err) {
-				return nil, fmt.Errorf("error starting pod: %v", err)
+				return nil, fmt.Errorf("error starting pod: %w", err)
 			}
 			pj.Status.State = prowv1.ErrorState
 			pj.SetComplete()
@@ -643,7 +663,7 @@ func (r *reconciler) pod(ctx context.Context, pj *prowv1.ProwJob) (*corev1.Pod, 
 		if kerrors.IsNotFound(err) {
 			return nil, false, nil
 		}
-		return nil, false, fmt.Errorf("failed to get pod: %v", err)
+		return nil, false, fmt.Errorf("failed to get pod: %w", err)
 	}
 
 	return pod, true, nil
@@ -673,7 +693,7 @@ func (r *reconciler) deletePod(ctx context.Context, pj *prowv1.ProwJob) error {
 func (r *reconciler) startPod(ctx context.Context, pj *prowv1.ProwJob) (string, string, error) {
 	buildID, err := r.getBuildID(pj.Spec.Job)
 	if err != nil {
-		return "", "", fmt.Errorf("error getting build ID: %v", err)
+		return "", "", fmt.Errorf("error getting build ID: %w", err)
 	}
 
 	pj.Status.BuildID = buildID

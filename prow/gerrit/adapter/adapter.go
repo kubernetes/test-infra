@@ -114,7 +114,7 @@ func (c *Controller) Sync() error {
 func makeCloneURI(instance, project string) (*url.URL, error) {
 	u, err := url.Parse(instance)
 	if err != nil {
-		return nil, fmt.Errorf("instance %s is not a url: %v", instance, err)
+		return nil, fmt.Errorf("instance %s is not a url: %w", instance, err)
 	}
 	if u.Host == "" {
 		return nil, errors.New("instance does not set host")
@@ -249,7 +249,7 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 		postsubmits = append(postsubmits, c.config().PostsubmitsStatic[cloneURI.Host+"/"+cloneURI.Path]...)
 		for _, postsubmit := range postsubmits {
 			if shouldRun, err := postsubmit.ShouldRun(change.Branch, changedFiles); err != nil {
-				return fmt.Errorf("failed to determine if postsubmit %q should run: %v", postsubmit.Name, err)
+				return fmt.Errorf("failed to determine if postsubmit %q should run: %w", postsubmit.Name, err)
 			} else if shouldRun {
 				jobSpecs = append(jobSpecs, jobSpec{
 					spec:   pjutil.PostsubmitSpec(postsubmit, refs),
@@ -265,7 +265,7 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 		account, err := c.gc.Account(instance)
 		if err != nil {
 			// This would happen if authenticateOnce hasn't done register this instance yet
-			return fmt.Errorf("account not found for %q: %v", instance, err)
+			return fmt.Errorf("account not found for %q: %w", instance, err)
 		}
 
 		lastUpdate, ok := c.tracker.Current()[instance][change.Project]
@@ -397,7 +397,7 @@ func deckLinkForPR(deckURL string, refs prowapi.Refs, changeStatus string) (stri
 
 	parsed, err := url.Parse(deckURL)
 	if err != nil {
-		return "", fmt.Errorf("failed to parse gerrit.deck_url (impossible: this should have been caught at load time): %v", err)
+		return "", fmt.Errorf("failed to parse gerrit.deck_url (impossible: this should have been caught at load time): %w", err)
 	}
 	query := parsed.Query()
 	query.Set("repo", fmt.Sprintf("%s/%s", refs.Org, refs.Repo))

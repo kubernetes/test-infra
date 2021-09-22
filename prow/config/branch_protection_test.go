@@ -290,6 +290,18 @@ func TestApply(test *testing.T) {
 				Exclude: []string{"bar*", "foo*"},
 			},
 		},
+		{
+			name: "merge inclusion strings",
+			child: Policy{
+				Include: []string{"foo*"},
+			},
+			parent: Policy{
+				Include: []string{"bar*"},
+			},
+			expected: Policy{
+				Include: []string{"bar*", "foo*"},
+			},
+		},
 	}
 
 	for _, tc := range cases {

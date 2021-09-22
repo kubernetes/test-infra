@@ -21,7 +21,7 @@ proj=k8s-prow-builds
 pool=prow-pool
 workers=200
 disk=600
-machine=n1-standard-2
+machine=e2-standard-2
 bot=pr-kubekins@kubernetes-jenkins-pull.iam.gserviceaccount.com
 
 "$(dirname "$0")/install.sh" "$proj" "$pool" "$workers" "$disk" "$machine" "$bot"

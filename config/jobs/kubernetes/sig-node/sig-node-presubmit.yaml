@@ -14,7 +14,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -66,7 +66,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -122,7 +122,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-containerd-gce
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\] --minStartupPods=8
         - --timeout=80m     # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
         resources:
           requests:
             memory: "6Gi"
@@ -145,7 +145,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
         args:
         - --root=/go/src
         - --job=$(JOB_NAME)
@@ -184,7 +184,7 @@ presubmits:
       testgrid-create-test-group: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
         args:
         - --root=/go/src
         - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
@@ -223,7 +223,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -249,19 +249,20 @@ presubmits:
       testgrid-create-test-group: 'true'
   - name: pull-kubernetes-node-kubelet-serial
     always_run: false
+    run_if_changed: '^test/.*(e2e_node|node)'
     optional: true
     skip_report: false
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
-      testgrid-dashboards: sig-node-kubelet
+      testgrid-dashboards: sig-node-presubmits
       testgrid-tab-name: pr-node-kubelet-serial
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - --timeout=260
@@ -291,19 +292,20 @@ presubmits:
 
   - name: pull-kubernetes-node-kubelet-serial-containerd
     always_run: false
+    run_if_changed: '^test/.*(e2e_node|node)'
     optional: true
     skip_report: false
     skip_branches:
       - release-\d+\.\d+  # per-release image
     annotations:
-      testgrid-dashboards: sig-node-kubelet
+      testgrid-dashboards: sig-node-presubmits
       testgrid-tab-name: pr-node-kubelet-serial-containerd
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - --timeout=260
@@ -337,14 +339,14 @@ presubmits:
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
-      testgrid-dashboards: sig-node-kubelet
+      testgrid-dashboards: sig-node-presubmits
       testgrid-tab-name: pr-node-kubelet-eviction
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - --timeout=440
@@ -371,14 +373,14 @@ presubmits:
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
-      testgrid-dashboards: sig-node-kubelet
+      testgrid-dashboards: sig-node-presubmits
       testgrid-tab-name: pr-kubelet-serial-gce-e2e-cpu-manager
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
           args:
             - --repo=k8s.io/kubernetes=$(PULL_REFS)
             - --repo=k8s.io/release
@@ -405,14 +407,14 @@ presubmits:
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
-      testgrid-dashboards: sig-node-kubelet
+      testgrid-dashboards: sig-node-presubmits
       testgrid-tab-name: pr-kubelet-serial-gce-e2e-topology-manager
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
           args:
             - --repo=k8s.io/kubernetes=$(PULL_REFS)
             - --repo=k8s.io/release
@@ -439,14 +441,14 @@ presubmits:
     skip_branches:
       - release-\d+\.\d+  # per-release image
     annotations:
-      testgrid-dashboards: sig-node-kubelet
+      testgrid-dashboards: sig-node-presubmits
       testgrid-tab-name: pr-kubelet-serial-gce-e2e-hugepages
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
           args:
             - --repo=k8s.io/kubernetes=$(PULL_REFS)
             - --repo=k8s.io/release
@@ -470,7 +472,7 @@ presubmits:
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
-      testgrid-dashboards: sig-node-cri-o
+      testgrid-dashboards: sig-node-presubmits
       testgrid-tab-name: pr-crio-cgrpv2-gce-e2e
     always_run: false
     optional: true
@@ -482,7 +484,7 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -509,7 +511,7 @@ presubmits:
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
-      testgrid-dashboards: sig-node-kubelet
+      testgrid-dashboards: sig-node-presubmits
       testgrid-tab-name: pr-node-kubelet-serial-crio-cgroupv1
     always_run: false
     optional: true
@@ -520,7 +522,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -547,7 +549,7 @@ presubmits:
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
-      testgrid-dashboards: sig-node-kubelet
+      testgrid-dashboards: sig-node-presubmits
       testgrid-tab-name: pr-node-kubelet-serial-crio-cgroupv2
     always_run: false
     optional: true
@@ -558,7 +560,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -585,10 +587,10 @@ presubmits:
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
-      testgrid-dashboards: sig-node-cri-o
+      testgrid-dashboards: sig-node-presubmits
       testgrid-tab-name: pr-crio-gce-e2e
-    always_run: true
-    skip_report: true
+    always_run: false
+    skip_report: false
     optional: true
     max_concurrency: 12
     labels:
@@ -598,7 +600,7 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -629,7 +631,7 @@ presubmits:
     skip_branches:
       - release-\d+\.\d+  # per-release image
     annotations:
-      testgrid-dashboards: sig-node-kubelet
+      testgrid-dashboards: sig-node-presubmits
       testgrid-tab-name: pr-kubelet-serial-gce-e2e-memory-manager
       description: Executes memory manager e2e node tests
     labels:
@@ -637,7 +639,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
           args:
             - --repo=k8s.io/kubernetes=$(PULL_REFS)
             - --repo=k8s.io/release
@@ -662,7 +664,7 @@ presubmits:
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
-      testgrid-dashboards: sig-node-kubelet
+      testgrid-dashboards: sig-node-presubmits
       testgrid-tab-name: pr-node-memoryqos-cgrpv2
     always_run: false
     optional: true
@@ -674,7 +676,7 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -704,14 +706,14 @@ presubmits:
     skip_branches:
       - release-\d+\.\d+  # per-release image
     annotations:
-      testgrid-dashboards: sig-node-kubelet
+      testgrid-dashboards: sig-node-presubmits
       testgrid-tab-name: pr-kubelet-gce-e2e-swap-ubuntu
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
           args:
             - --root=/go/src
             - "--job=$(JOB_NAME)"
@@ -741,7 +743,7 @@ presubmits:
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
-      testgrid-dashboards: sig-node-kubelet
+      testgrid-dashboards: sig-node-presubmits
       testgrid-tab-name: pr-kubelet-gce-e2e-swap-fedora
     always_run: false
     skip_report: false
@@ -754,7 +756,7 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"

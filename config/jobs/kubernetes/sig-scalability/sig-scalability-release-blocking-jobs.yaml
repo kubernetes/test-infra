@@ -19,7 +19,7 @@ periodics:
     description: "Uses kubetest to run correctness tests against a 5000-node cluster created with cluster/kube-up.sh"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -85,7 +85,7 @@ periodics:
     description: "Uses kubetest to run k8s.io/perf-tests/run-e2e.sh against a 5000-node cluster created with cluster/kube-up.sh"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -103,11 +103,12 @@ periodics:
       - --provider=gce
       - --metadata-sources=cl2-metadata.json
       - --env=CL2_LOAD_TEST_THROUGHPUT=50
-      - --env=CL2_DELETE_TEST_THROUGHPUT=30
+      - --env=CL2_DELETE_TEST_THROUGHPUT=50
       - --env=CL2_ENABLE_HUGE_SERVICES=true
-      - --env=CL2_ENABLE_HUGE_SERVICES_MULTIPLE_REPLICAS=true
       # Overrides CONTROLLER_MANAGER_TEST_ARGS from preset-e2e-scalability-periodics.
       - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling --kube-api-qps=100 --kube-api-burst=100 --endpointslice-updates-batch-period=500ms --endpoint-updates-batch-period=500ms
+      # With APF only sum of --max-requests-inflight and --max-mutating-requests-inflight matters, so set --max-mutating-requests-inflight to 0.
+      - --env=APISERVER_TEST_ARGS=--max-requests-inflight=640 --max-mutating-requests-inflight=0
       - --env=CL2_ENABLE_API_AVAILABILITY_MEASUREMENT=true
       - --env=CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD=99.5
       - --test=false
@@ -173,13 +174,14 @@ periodics:
     testgrid-num-failures-to-alert: '2'
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
       args:
       - --check-leaked-resources
       - --cluster=e2e-big
+      - --env=HEAPSTER_MACHINE_TYPE=e2-standard-8
       - --extract=ci/latest-fast
       - --extract-ci-bucket=k8s-release-dev
       - --gcp-node-image=gci
@@ -191,7 +193,6 @@ periodics:
       - --env=CL2_ENABLE_DNS_PROGRAMMING=true
       - --env=CL2_SCHEDULER_THROUGHPUT_THRESHOLD=0
       - --env=CL2_ENABLE_HUGE_SERVICES=true
-      - --env=CL2_ENABLE_HUGE_SERVICES_MULTIPLE_REPLICAS=true
       - --env=CL2_ENABLE_API_AVAILABILITY_MEASUREMENT=true
       - --env=CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD=99.5
       - --test=false

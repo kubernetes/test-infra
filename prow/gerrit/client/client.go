@@ -293,7 +293,7 @@ func (c *Client) SetReview(instance, id, revision, message string, labels map[st
 		Message: message,
 		Labels:  labels,
 	}); err != nil {
-		return fmt.Errorf("cannot comment to gerrit: %v", err)
+		return fmt.Errorf("cannot comment to gerrit: %w", err)
 	}
 
 	return nil
@@ -329,7 +329,7 @@ func (c *Client) Account(instance string) (*gerrit.AccountInfo, error) {
 
 	self, _, err := handler.accountService.GetAccount("self")
 	if err != nil {
-		return nil, fmt.Errorf("GetAccount() failed with new authentication: %v", err)
+		return nil, fmt.Errorf("GetAccount() failed with new authentication: %w", err)
 
 	}
 	c.accounts[instance] = self

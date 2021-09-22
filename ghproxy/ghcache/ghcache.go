@@ -27,11 +27,19 @@ package ghcache
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"net/http"
+	"os"
 	"path"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 
 	"github.com/gomodule/redigo/redis"
 	"github.com/gregjones/httpcache"
@@ -66,6 +74,10 @@ const (
 	// which metrics should be recorded if set. If unset, the sha256sum of
 	// the Authorization header will be used.
 	TokenBudgetIdentifierHeader = "X-PROW-GHCACHE-TOKEN-BUDGET-IDENTIFIER"
+
+	// TokenExpiryAtHeader includes a date at which the passed token expires and all associated caches
+	// can be cleaned up. It's value must be in RFC3339 format.
+	TokenExpiryAtHeader = "X-PROW-TOKEN-EXPIRES-AT"
 )
 
 func CacheModeIsFree(mode CacheResponseMode) bool {
@@ -214,7 +226,7 @@ const LogMessageWithDiskPartitionFields = "Not using a partitioned cache because
 // NewDiskCache creates a GitHub cache RoundTripper that is backed by a disk
 // cache.
 // It supports a partitioned cache.
-func NewDiskCache(delegate http.RoundTripper, cacheDir string, cacheSizeGB, maxConcurrency int, legacyDisablePartitioningByAuthHeader bool) http.RoundTripper {
+func NewDiskCache(delegate http.RoundTripper, cacheDir string, cacheSizeGB, maxConcurrency int, legacyDisablePartitioningByAuthHeader bool, cachePruneInterval time.Duration) http.RoundTripper {
 	if legacyDisablePartitioningByAuthHeader {
 		diskCache := diskcache.NewWithDiskv(
 			diskv.New(diskv.Options{
@@ -223,7 +235,7 @@ func NewDiskCache(delegate http.RoundTripper, cacheDir string, cacheSizeGB, maxC
 				CacheSizeMax: uint64(cacheSizeGB) * uint64(1000000000), // convert G to B
 			}))
 		return NewFromCache(delegate,
-			func(partitionKey string) httpcache.Cache {
+			func(partitionKey string, _ *time.Time) httpcache.Cache {
 				logrus.WithField("cache-base-path", path.Join(cacheDir, "data", partitionKey)).
 					WithField("cache-temp-path", path.Join(cacheDir, "temp", partitionKey)).
 					Warning(LogMessageWithDiskPartitionFields)
@@ -232,12 +244,23 @@ func NewDiskCache(delegate http.RoundTripper, cacheDir string, cacheSizeGB, maxC
 			maxConcurrency,
 		)
 	}
+
+	go func() {
+		for range time.NewTicker(cachePruneInterval).C {
+			Prune(cacheDir, time.Now)
+		}
+	}()
 	return NewFromCache(delegate,
-		func(partitionKey string) httpcache.Cache {
+		func(partitionKey string, expiresAt *time.Time) httpcache.Cache {
+			basePath := path.Join(cacheDir, "data", partitionKey)
+			tempDir := path.Join(cacheDir, "temp", partitionKey)
+			if err := writecachePartitionMetadata(basePath, tempDir, expiresAt); err != nil {
+				logrus.WithError(err).Warn("Failed to write cache metadata file, pruning will not work")
+			}
 			return diskcache.NewWithDiskv(
 				diskv.New(diskv.Options{
-					BasePath:     path.Join(cacheDir, "data", partitionKey),
-					TempDir:      path.Join(cacheDir, "temp", partitionKey),
+					BasePath:     basePath,
+					TempDir:      tempDir,
 					CacheSizeMax: uint64(cacheSizeGB) * uint64(1000000000), // convert G to B
 				}))
 		},
@@ -245,24 +268,93 @@ func NewDiskCache(delegate http.RoundTripper, cacheDir string, cacheSizeGB, maxC
 	)
 }
 
+func Prune(baseDir string, now func() time.Time) {
+	// All of this would be easier if the structure was base/partition/{data,temp}
+	// but because of compatibility we can not change it.
+	for _, dir := range []string{"data", "temp"} {
+		base := path.Join(baseDir, dir)
+		cachePartitionCandidates, err := os.ReadDir(base)
+		if err != nil {
+			logrus.WithError(err).Warn("os.ReadDir failed")
+			// no continue, os.ReadDir returns partial results if it encounters an error
+		}
+		for _, cachePartitionCandidate := range cachePartitionCandidates {
+			if !cachePartitionCandidate.IsDir() {
+				continue
+			}
+			metadataPath := path.Join(base, cachePartitionCandidate.Name(), cachePartitionMetadataFileName)
+
+			// Read optimistically and just ignore errors
+			raw, err := ioutil.ReadFile(metadataPath)
+			if err != nil {
+				continue
+			}
+			var metadata cachePartitionMetadata
+			if err := json.Unmarshal(raw, &metadata); err != nil {
+				logrus.WithError(err).WithField("filepath", metadataPath).Error("failed to deserialize metadata file")
+				continue
+			}
+			if metadata.ExpiresAt.After(now()) {
+				continue
+			}
+			paritionPath := filepath.Dir(metadataPath)
+			logrus.WithField("path", paritionPath).WithField("expiresAt", metadata.ExpiresAt.String()).Info("Cleaning up expired cache parition")
+			if err := os.RemoveAll(paritionPath); err != nil {
+				logrus.WithError(err).WithField("path", paritionPath).Error("failed to delete expired cache parition")
+			}
+		}
+	}
+}
+
+func writecachePartitionMetadata(basePath, tempDir string, expiresAt *time.Time) error {
+	// No expiry header for the token was passed, likely it is a PAT which never expires.
+	if expiresAt == nil {
+		return nil
+	}
+	metadata := cachePartitionMetadata{ExpiresAt: metav1.Time{Time: *expiresAt}}
+	serialized, err := json.Marshal(metadata)
+	if err != nil {
+		return fmt.Errorf("failed to serialize: %w", err)
+	}
+
+	var errs []error
+	for _, destBase := range []string{basePath, tempDir} {
+		if err := os.MkdirAll(destBase, 0755); err != nil {
+			errs = append(errs, fmt.Errorf("failed to create dir %s: %w", destBase, err))
+		}
+		dest := path.Join(destBase, cachePartitionMetadataFileName)
+		if err := ioutil.WriteFile(dest, serialized, 0644); err != nil {
+			errs = append(errs, fmt.Errorf("failed to write %s: %w", dest, err))
+		}
+	}
+
+	return utilerrors.NewAggregate(errs)
+}
+
+const cachePartitionMetadataFileName = ".cache_metadata.json"
+
+type cachePartitionMetadata struct {
+	ExpiresAt metav1.Time `json:"expires_at"`
+}
+
 // NewMemCache creates a GitHub cache RoundTripper that is backed by a memory
 // cache.
 // It supports a partitioned cache.
 func NewMemCache(delegate http.RoundTripper, maxConcurrency int) http.RoundTripper {
 	return NewFromCache(delegate,
-		func(_ string) httpcache.Cache { return httpcache.NewMemoryCache() },
+		func(_ string, _ *time.Time) httpcache.Cache { return httpcache.NewMemoryCache() },
 		maxConcurrency)
 }
 
 // CachePartitionCreator creates a new cache partition using the given key
-type CachePartitionCreator func(partitionKey string) httpcache.Cache
+type CachePartitionCreator func(partitionKey string, expiresAt *time.Time) httpcache.Cache
 
 // NewFromCache creates a GitHub cache RoundTripper that is backed by the
 // specified httpcache.Cache implementation.
 func NewFromCache(delegate http.RoundTripper, cache CachePartitionCreator, maxConcurrency int) http.RoundTripper {
 	hasher := ghmetrics.NewCachingHasher()
-	return newPartitioningRoundTripper(func(partitionKey string) http.RoundTripper {
-		cacheTransport := httpcache.NewTransport(cache(partitionKey))
+	return newPartitioningRoundTripper(func(partitionKey string, expiresAt *time.Time) http.RoundTripper {
+		cacheTransport := httpcache.NewTransport(cache(partitionKey, expiresAt))
 		cacheTransport.Transport = newThrottlingTransport(maxConcurrency, upstreamTransport{delegate: delegate, hasher: hasher})
 		return &requestCoalescer{
 			keys:     make(map[string]*responseWaiter),
@@ -284,6 +376,6 @@ func NewRedisCache(delegate http.RoundTripper, redisAddress string, maxConcurren
 	}
 	redisCache := rediscache.NewWithClient(conn)
 	return NewFromCache(delegate,
-		func(_ string) httpcache.Cache { return redisCache },
+		func(_ string, _ *time.Time) httpcache.Cache { return redisCache },
 		maxConcurrency)
 }

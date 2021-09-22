@@ -20,13 +20,16 @@ package report
 
 import (
 	"bytes"
+	"context"
 	"fmt"
+	"strconv"
 	"strings"
 	"text/template"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -37,12 +40,12 @@ const (
 // GitHubClient provides a client interface to report job status updates
 // through GitHub comments.
 type GitHubClient interface {
-	BotUserChecker() (func(candidate string) bool, error)
-	CreateStatus(org, repo, ref string, s github.Status) error
-	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
-	CreateComment(org, repo string, number int, comment string) error
-	DeleteComment(org, repo string, ID int) error
-	EditComment(org, repo string, ID int, comment string) error
+	BotUserCheckerWithContext(ctx context.Context) (func(candidate string) bool, error)
+	CreateStatusWithContext(ctx context.Context, org, repo, ref string, s github.Status) error
+	ListIssueCommentsWithContext(ctx context.Context, org, repo string, number int) ([]github.IssueComment, error)
+	CreateCommentWithContext(ctx context.Context, org, repo string, number int, comment string) error
+	DeleteCommentWithContext(ctx context.Context, org, repo string, ID int) error
+	EditCommentWithContext(ctx context.Context, org, repo string, ID int, comment string) error
 }
 
 // prowjobStateToGitHubStatus maps prowjob status to github states.
@@ -63,11 +66,11 @@ func prowjobStateToGitHubStatus(pjState prowapi.ProwJobState) (string, error) {
 	case prowapi.AbortedState:
 		return github.StatusFailure, nil
 	}
-	return "", fmt.Errorf("Unknown prowjob state: %v", pjState)
+	return "", fmt.Errorf("Unknown prowjob state: %s", pjState)
 }
 
 // reportStatus should be called on any prowjob status changes
-func reportStatus(ghc GitHubClient, pj prowapi.ProwJob) error {
+func reportStatus(ctx context.Context, ghc GitHubClient, pj prowapi.ProwJob) error {
 	refs := pj.Spec.Refs
 	if pj.Spec.Report {
 		contextState, err := prowjobStateToGitHubStatus(pj.Status.State)
@@ -78,7 +81,7 @@ func reportStatus(ghc GitHubClient, pj prowapi.ProwJob) error {
 		if len(refs.Pulls) > 0 {
 			sha = refs.Pulls[0].SHA
 		}
-		if err := ghc.CreateStatus(refs.Org, refs.Repo, sha, github.Status{
+		if err := ghc.CreateStatusWithContext(ctx, refs.Org, refs.Repo, sha, github.Status{
 			State:       contextState,
 			Description: config.ContextDescriptionWithBaseSha(pj.Status.Description, refs.BaseSHA),
 			Context:     pj.Spec.Context, // consider truncating this too
@@ -113,12 +116,12 @@ func ShouldReport(pj prowapi.ProwJob, validTypes []prowapi.ProwJobType) bool {
 
 // Report is creating/updating/removing reports in GitHub based on the state of
 // the provided ProwJob.
-func Report(ghc GitHubClient, reportTemplate *template.Template, pj prowapi.ProwJob, validTypes []prowapi.ProwJobType) error {
+func Report(ctx context.Context, ghc GitHubClient, reportTemplate *template.Template, pj prowapi.ProwJob, config config.GitHubReporter) error {
 	if ghc == nil {
 		return fmt.Errorf("trying to report pj %s, but found empty github client", pj.ObjectMeta.Name)
 	}
 
-	if !ShouldReport(pj, validTypes) {
+	if !ShouldReport(pj, config.JobTypesToReport) {
 		return nil
 	}
 
@@ -128,7 +131,7 @@ func Report(ghc GitHubClient, reportTemplate *template.Template, pj prowapi.Prow
 		return nil
 	}
 
-	if err := reportStatus(ghc, pj); err != nil {
+	if err := reportStatus(ctx, ghc, pj); err != nil {
 		return fmt.Errorf("error setting status: %w", err)
 	}
 
@@ -142,32 +145,40 @@ func Report(ghc GitHubClient, reportTemplate *template.Template, pj prowapi.Prow
 		return nil
 	}
 
-	ics, err := ghc.ListIssueComments(refs.Org, refs.Repo, refs.Pulls[0].Number)
-	if err != nil {
-		return fmt.Errorf("error listing comments: %v", err)
+	// Check if this org or repo has opted out of failure report comments
+	fullRepo := fmt.Sprintf("%s/%s", refs.Org, refs.Repo)
+	for _, ident := range config.NoCommentRepos {
+		if refs.Org == ident || fullRepo == ident {
+			return nil
+		}
 	}
-	botNameChecker, err := ghc.BotUserChecker()
+
+	ics, err := ghc.ListIssueCommentsWithContext(ctx, refs.Org, refs.Repo, refs.Pulls[0].Number)
+	if err != nil {
+		return fmt.Errorf("error listing comments: %w", err)
+	}
+	botNameChecker, err := ghc.BotUserCheckerWithContext(ctx)
 	if err != nil {
 		return fmt.Errorf("error getting bot name checker: %w", err)
 	}
 	deletes, entries, updateID := parseIssueComments(pj, botNameChecker, ics)
 	for _, delete := range deletes {
-		if err := ghc.DeleteComment(refs.Org, refs.Repo, delete); err != nil {
-			return fmt.Errorf("error deleting comment: %v", err)
+		if err := ghc.DeleteCommentWithContext(ctx, refs.Org, refs.Repo, delete); err != nil {
+			return fmt.Errorf("error deleting comment: %w", err)
 		}
 	}
 	if len(entries) > 0 {
 		comment, err := createComment(reportTemplate, pj, entries)
 		if err != nil {
-			return fmt.Errorf("generating comment: %v", err)
+			return fmt.Errorf("generating comment: %w", err)
 		}
 		if updateID == 0 {
-			if err := ghc.CreateComment(refs.Org, refs.Repo, refs.Pulls[0].Number, comment); err != nil {
-				return fmt.Errorf("error creating comment: %v", err)
+			if err := ghc.CreateCommentWithContext(ctx, refs.Org, refs.Repo, refs.Pulls[0].Number, comment); err != nil {
+				return fmt.Errorf("error creating comment: %w", err)
 			}
 		} else {
-			if err := ghc.EditComment(refs.Org, refs.Repo, updateID, comment); err != nil {
-				return fmt.Errorf("error updating comment: %v", err)
+			if err := ghc.EditCommentWithContext(ctx, refs.Org, refs.Repo, updateID, comment); err != nil {
+				return fmt.Errorf("error updating comment: %w", err)
 			}
 		}
 	}
@@ -249,10 +260,21 @@ func parseIssueComments(pj prowapi.ProwJob, isBot func(string) bool, ics []githu
 }
 
 func createEntry(pj prowapi.ProwJob) string {
+	required := "unknown"
+
+	if pj.Spec.Type == prowapi.PresubmitJob {
+		if label, exist := pj.Labels[kube.IsOptionalLabel]; exist {
+			if optional, err := strconv.ParseBool(label); err == nil {
+				required = strconv.FormatBool(!optional)
+			}
+		}
+	}
+
 	return strings.Join([]string{
 		pj.Spec.Context,
 		pj.Spec.Refs.Pulls[0].SHA,
 		fmt.Sprintf("[link](%s)", pj.Status.URL),
+		required,
 		fmt.Sprintf("`%s`", pj.Spec.RerunCommand),
 	}, " | ")
 }
@@ -274,8 +296,8 @@ func createComment(reportTemplate *template.Template, pj prowapi.ProwJob, entrie
 	lines := []string{
 		fmt.Sprintf("@%s: The following test%s **failed**, say `/retest` to rerun all failed tests or `/retest-required` to rerun all mandatory failed tests:", pj.Spec.Refs.Pulls[0].Author, plural),
 		"",
-		"Test name | Commit | Details | Rerun command",
-		"--- | --- | --- | ---",
+		"Test name | Commit | Details | Required | Rerun command",
+		"--- | --- | --- | --- | ---",
 	}
 	lines = append(lines, entries...)
 	if reportTemplate != nil {

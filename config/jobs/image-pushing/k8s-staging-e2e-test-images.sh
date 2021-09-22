@@ -51,6 +51,7 @@ readonly IMAGES=(
     volume/rbd
     volume/nfs
     volume/gluster
+    windows-servercore-cache
 )
 
 cat >"${OUTPUT}" <<EOF
@@ -75,7 +76,7 @@ for image in "${IMAGES[@]}"; do
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/${image//\//\\/}\/'
@@ -84,7 +85,7 @@ for image in "${IMAGES[@]}"; do
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210917-ee1e7c845b
             command:
               - /run.sh
             args:
@@ -93,7 +94,7 @@ for image in "${IMAGES[@]}"; do
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
             env:
@@ -119,7 +120,7 @@ periodics:
         - org: kubernetes
           slug: test-infra-admins
         - org: kubernetes
-          slug: release-engineering
+          slug: release-managers
       github_users:
         - aojea
         - chewong
@@ -129,7 +130,7 @@ periodics:
     interval: 744h
     cluster: k8s-infra-prow-build-trusted
     annotations:
-      testgrid-dashboards: sig-testing-images
+      testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
     decorate: true
     extra_refs:
       # This also becomes the current directory for run.sh and thus
@@ -140,13 +141,13 @@ periodics:
     spec:
       serviceAccountName: gcb-builder
       containers:
-        - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20210917-ee1e7c845b
           command:
             - /run.sh
           args:
             - --project=k8s-staging-e2e-test-images
             - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-            - --env-passthrough=PULL_BASE_REF,WHAT
+            - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
             - --build-dir=.
             - test/images
           env:

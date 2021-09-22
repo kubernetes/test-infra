@@ -219,7 +219,7 @@ func echoToSlack(pc client, e github.GenericCommentEvent) error {
 
 		msg := fmt.Sprintf("%s was mentioned by %s (<@%s>) on GitHub. (%s)\n>>>%s", sig, e.User.Login, e.User.Login, e.HTMLURL, e.Body)
 		if err := pc.SlackClient.WriteMessage(msg, sig); err != nil {
-			return fmt.Errorf("Failed to send message on slack channel: %q with message %q. Err: %v", sig, msg, err)
+			return fmt.Errorf("Failed to send message on slack channel: %q with message %q. Err: %w", sig, msg, err)
 		}
 	}
 	return nil

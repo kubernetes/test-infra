@@ -3,14 +3,14 @@ postsubmits:
     - name: post-kubetest2-push-binaries
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-kubetest2, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-kubetest2, sig-k8s-infra-gcb
         testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com
         testgrid-num-columns-recent: '3'
       decorate: true
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210917-ee1e7c845b
             command:
               - /run.sh
             args:

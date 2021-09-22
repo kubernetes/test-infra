@@ -15,6 +15,7 @@ dashboard_groups:
   - kops-distro-centos8
   - kops-distro-deb9
   - kops-distro-deb10
+  - kops-distro-deb11
   - kops-distro-flatcar
   - kops-distro-rhel7
   - kops-distro-rhel8
@@ -23,16 +24,16 @@ dashboard_groups:
   - kops-distro-u2004arm64
   - kops-distro-u2010
   - kops-distro-u2104
-  - kops-k8s-1.17
   - kops-k8s-1.18
   - kops-k8s-1.19
   - kops-k8s-1.20
   - kops-k8s-1.21
+  - kops-k8s-1.22
   - kops-k8s-ci
   - kops-k8s-latest
   - kops-k8s-stable
-  - kops-1.20
   - kops-1.21
+  - kops-1.22
   - kops-latest
 
 dashboards:
@@ -50,6 +51,7 @@ dashboards:
 - name: kops-distro-centos8
 - name: kops-distro-deb9
 - name: kops-distro-deb10
+- name: kops-distro-deb11
 - name: kops-distro-flatcar
 - name: kops-distro-rhel7
 - name: kops-distro-rhel8
@@ -58,14 +60,14 @@ dashboards:
 - name: kops-distro-u2004arm64
 - name: kops-distro-u2010
 - name: kops-distro-u2104
-- name: kops-k8s-1.17
 - name: kops-k8s-1.18
 - name: kops-k8s-1.19
 - name: kops-k8s-1.20
 - name: kops-k8s-1.21
+- name: kops-k8s-1.22
 - name: kops-k8s-ci
 - name: kops-k8s-latest
 - name: kops-k8s-stable
-- name: kops-1.20
 - name: kops-1.21
+- name: kops-1.22
 - name: kops-latest

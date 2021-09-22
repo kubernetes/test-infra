@@ -11,6 +11,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/github/fakegithub",
     deps = [
         "//prow/github:go_default_library",
+        "@com_github_shurcool_githubv4//:go_default_library",
         "@io_k8s_apimachinery//pkg/util/sets:go_default_library",
     ],
 )

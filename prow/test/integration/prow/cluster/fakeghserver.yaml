@@ -36,6 +36,7 @@ spec:
     targetPort: 8888
   - name: metrics
     port: 9090
+    protocol: TCP
   selector:
     app: fakeghserver
   type: ClusterIP

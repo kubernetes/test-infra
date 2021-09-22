@@ -64,7 +64,7 @@ func generatePostsubmits(c config.JobConfig, version string) (map[string][]confi
 					var err error
 					c.Args, err = performReplacement(c.Args, version, p.Annotations[replacementAnnotation])
 					if err != nil {
-						return nil, fmt.Errorf("%s: %v", postsubmit.Name, err)
+						return nil, fmt.Errorf("%s: %w", postsubmit.Name, err)
 					}
 				}
 			}
@@ -95,7 +95,7 @@ func generatePresubmits(c config.JobConfig, version string) (map[string][]config
 					var err error
 					c.Args, err = performReplacement(c.Args, version, p.Annotations[replacementAnnotation])
 					if err != nil {
-						return nil, fmt.Errorf("%s: %v", presubmit.Name, err)
+						return nil, fmt.Errorf("%s: %w", presubmit.Name, err)
 					}
 				}
 			}
@@ -133,7 +133,7 @@ func generatePeriodics(conf config.JobConfig, version string) ([]config.Periodic
 				var err error
 				c.Args, err = performReplacement(c.Args, version, p.Annotations[replacementAnnotation])
 				if err != nil {
-					return nil, fmt.Errorf("%s: %v", periodic.Name, err)
+					return nil, fmt.Errorf("%s: %w", periodic.Name, err)
 				}
 			}
 		}
@@ -162,7 +162,7 @@ func generatePeriodics(conf config.JobConfig, version string) ([]config.Periodic
 		var err error
 		p.Tags, err = performReplacement(p.Tags, version, p.Annotations[replacementAnnotation])
 		if err != nil {
-			return nil, fmt.Errorf("%s: %v", periodic.Name, err)
+			return nil, fmt.Errorf("%s: %w", periodic.Name, err)
 		}
 		p.Labels = performDeletion(p.Labels, p.Annotations[deletionAnnotation])
 		p.Annotations = cleanAnnotations(fixTestgridAnnotations(p.Annotations, version, false))
@@ -191,12 +191,12 @@ func cleanAnnotations(annotations map[string]string) map[string]string {
 func evaluateTemplate(s string, c interface{}) (string, error) {
 	t, err := template.New("t").Parse(s)
 	if err != nil {
-		return "", fmt.Errorf("failed to parse template %q: %v", s, err)
+		return "", fmt.Errorf("failed to parse template %q: %w", s, err)
 	}
 	wr := bytes.Buffer{}
 	err = t.Execute(&wr, c)
 	if err != nil {
-		return "", fmt.Errorf("failed to execute template: %v", err)
+		return "", fmt.Errorf("failed to execute template: %w", err)
 	}
 	return wr.String(), nil
 }

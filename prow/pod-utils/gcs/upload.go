@@ -151,11 +151,11 @@ func FileUploadWithOptions(file string, opts pkgio.WriterOptions) UploadFunc {
 
 		uploadErr := DataUploadWithOptions(reader, opts)(writer)
 		if uploadErr != nil {
-			uploadErr = fmt.Errorf("upload error: %v", uploadErr)
+			uploadErr = fmt.Errorf("upload error: %w", uploadErr)
 		}
 		closeErr := reader.Close()
 		if closeErr != nil {
-			closeErr = fmt.Errorf("reader close error: %v", closeErr)
+			closeErr = fmt.Errorf("reader close error: %w", closeErr)
 		}
 
 		return utilerrors.NewAggregate([]error{uploadErr, closeErr})
@@ -183,11 +183,11 @@ func DataUploadWithOptions(src io.Reader, attrs pkgio.WriterOptions) UploadFunc 
 		writer.ApplyWriterOptions(attrs)
 		_, copyErr := io.Copy(writer, src)
 		if copyErr != nil {
-			copyErr = fmt.Errorf("copy error: %v", copyErr)
+			copyErr = fmt.Errorf("copy error: %w", copyErr)
 		}
 		closeErr := writer.Close()
 		if closeErr != nil {
-			closeErr = fmt.Errorf("writer close error: %v", closeErr)
+			closeErr = fmt.Errorf("writer close error: %w", closeErr)
 		}
 		return utilerrors.NewAggregate([]error{copyErr, closeErr})
 	}

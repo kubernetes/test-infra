@@ -125,11 +125,11 @@ func (sl *Client) postMessage(url string, uv *url.Values) error {
 	}{}
 
 	if err := json.Unmarshal(body, &apiResponse); err != nil {
-		return fmt.Errorf("API returned invalid JSON (%q): %v", string(body), err)
+		return fmt.Errorf("API returned invalid JSON (%q): %w", string(body), err)
 	}
 
 	if resp.StatusCode != 200 || !apiResponse.Ok {
-		return fmt.Errorf("request failed: %v", apiResponse.Error)
+		return fmt.Errorf("request failed: %s", apiResponse.Error)
 	}
 
 	return nil

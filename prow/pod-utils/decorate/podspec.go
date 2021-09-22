@@ -59,7 +59,6 @@ const (
 	s3CredentialsMountPath  = "/secrets/s3-storage"
 	outputMountName         = "output"
 	outputMountPath         = "/output"
-	oauthTokenFilename      = "oauth-token"
 )
 
 // Labels returns a string slice with label consts from kube.
@@ -68,8 +67,19 @@ func Labels() []string {
 }
 
 // VolumeMounts returns a string set with *MountName consts in it.
-func VolumeMounts() sets.String {
-	return sets.NewString(logMountName, codeMountName, toolsMountName, gcsCredentialsMountName, s3CredentialsMountName)
+func VolumeMounts(dc *prowapi.DecorationConfig) sets.String {
+	ret := sets.NewString(logMountName, codeMountName, toolsMountName, gcsCredentialsMountName, s3CredentialsMountName)
+	if dc == nil {
+		return ret
+	}
+
+	if dc.OauthTokenSecret != nil {
+		ret.Insert(dc.OauthTokenSecret.Name)
+	}
+	for _, sshKeySecret := range dc.SSHKeySecrets {
+		ret.Insert(sshKeySecret)
+	}
+	return ret
 }
 
 // VolumeMountsOnTestContainer returns a string set with *MountName consts in it which are applied to the test container.
@@ -216,7 +226,7 @@ func ProwJobToPodLocal(pj prowapi.ProwJob, outputDir string) (*coreapi.Pod, erro
 		}
 	} else {
 		if err := decorate(spec, &pj, rawEnv, outputDir); err != nil {
-			return nil, fmt.Errorf("error decorating podspec: %v", err)
+			return nil, fmt.Errorf("error decorating podspec: %w", err)
 		}
 	}
 
@@ -299,7 +309,7 @@ func oauthVolume(secret, key string) (coreapi.Volume, coreapi.VolumeMount) {
 					SecretName: secret,
 					Items: []coreapi.KeyToPath{{
 						Key:  key,
-						Path: fmt.Sprintf("./%s", oauthTokenFilename),
+						Path: fmt.Sprintf("./%s", key),
 					}},
 				},
 			},
@@ -415,7 +425,7 @@ func CloneRefs(pj prowapi.ProwJob, codeMount, logMount coreapi.VolumeMount) (*co
 	if pj.Spec.DecorationConfig.OauthTokenSecret != nil {
 		oauthVolume, oauthMount := oauthVolume(pj.Spec.DecorationConfig.OauthTokenSecret.Name, pj.Spec.DecorationConfig.OauthTokenSecret.Key)
 		cloneMounts = append(cloneMounts, oauthMount)
-		oauthMountPath = filepath.Join(oauthMount.MountPath, oauthTokenFilename)
+		oauthMountPath = filepath.Join(oauthMount.MountPath, pj.Spec.DecorationConfig.OauthTokenSecret.Key)
 		cloneVolumes = append(cloneVolumes, oauthVolume)
 	}
 
@@ -446,7 +456,7 @@ func CloneRefs(pj prowapi.ProwJob, codeMount, logMount coreapi.VolumeMount) (*co
 		OauthTokenFile:   oauthMountPath,
 	})
 	if err != nil {
-		return nil, nil, nil, fmt.Errorf("clone env: %v", err)
+		return nil, nil, nil, fmt.Errorf("clone env: %w", err)
 	}
 
 	container := coreapi.Container{
@@ -603,7 +613,7 @@ func InitUpload(config *prowapi.DecorationConfig, gcsOptions gcsupload.Options, 
 	// TODO(fejta): use flags
 	initUploadConfigEnv, err := initupload.Encode(initUploadOptions)
 	if err != nil {
-		return nil, fmt.Errorf("could not encode initupload configuration as JSON: %v", err)
+		return nil, fmt.Errorf("could not encode initupload configuration as JSON: %w", err)
 	}
 	container := &coreapi.Container{
 		Name:    initUploadName,
@@ -693,7 +703,7 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 
 	cloner, refs, cloneVolumes, err := CloneRefs(*pj, codeMount, logMount)
 	if err != nil {
-		return fmt.Errorf("create clonerefs container: %v", err)
+		return fmt.Errorf("create clonerefs container: %w", err)
 	}
 	var cloneLogMount *coreapi.VolumeMount
 	if cloner != nil {
@@ -704,7 +714,7 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 	encodedJobSpec := rawEnv[downwardapi.JobSpecEnv]
 	initUpload, err := InitUpload(pj.Spec.DecorationConfig, blobStorageOptions, blobStorageMounts, cloneLogMount, outputMount, encodedJobSpec)
 	if err != nil {
-		return fmt.Errorf("create initupload container: %v", err)
+		return fmt.Errorf("create initupload container: %w", err)
 	}
 	spec.InitContainers = append(
 		spec.InitContainers,
@@ -742,7 +752,7 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 		}
 		wrapperOptions, err := InjectEntrypoint(&spec.Containers[i], pj.Spec.DecorationConfig.Timeout.Get(), pj.Spec.DecorationConfig.GracePeriod.Get(), prefix, previous, exitZero, logMount, toolsMount)
 		if err != nil {
-			return fmt.Errorf("wrap container: %v", err)
+			return fmt.Errorf("wrap container: %w", err)
 		}
 		for _, volumeMount := range spec.Containers[i].VolumeMounts {
 			if containsSecretData(volumeMount.Name) {
@@ -756,7 +766,7 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 
 	sidecar, err := Sidecar(pj.Spec.DecorationConfig, blobStorageOptions, blobStorageMounts, logMount, outputMount, encodedJobSpec, !RequirePassingEntries, ignoreInterrupts, secretVolumeMounts, wrappers...)
 	if err != nil {
-		return fmt.Errorf("create sidecar: %v", err)
+		return fmt.Errorf("create sidecar: %w", err)
 	}
 
 	spec.Volumes = append(spec.Volumes, logVolume, toolsVolume)

@@ -79,7 +79,7 @@ func (o Options) Run(ctx context.Context) (int, error) {
 	}
 	spec, err := downwardapi.ResolveSpecFromEnv()
 	if err != nil {
-		return 0, fmt.Errorf("could not resolve job spec: %v", err)
+		return 0, fmt.Errorf("could not resolve job spec: %w", err)
 	}
 
 	entries := o.entries()
@@ -245,7 +245,7 @@ func (o Options) doUpload(ctx context.Context, spec *downwardapi.JobSpec, passed
 	}
 
 	if err := o.GcsOptions.Run(ctx, spec, uploadTargets); err != nil {
-		return fmt.Errorf("failed to upload to GCS: %v", err)
+		return fmt.Errorf("failed to upload to GCS: %w", err)
 	}
 
 	return nil

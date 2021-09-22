@@ -94,7 +94,7 @@ func (c *pubSubTestClient) new(ctx context.Context, project string) (pubsubClien
 	return c, nil
 }
 
-func (c *pubSubTestClient) subscription(id string) subscriptionInterface {
+func (c *pubSubTestClient) subscription(id string, maxOutstandingMessages int) subscriptionInterface {
 	return &fakeSubscription{name: id, messageChan: c.messageChan}
 }
 
@@ -195,10 +195,12 @@ func TestHandleMessage(t *testing.T) {
 			ca := &config.Agent{}
 			tc.config.ProwJobNamespace = "prowjobs"
 			ca.Set(tc.config)
+			fr := fakeReporter{}
 			s := Subscriber{
 				Metrics:       NewMetrics(),
 				ProwJobClient: fakeProwJobClient.ProwV1().ProwJobs(tc.config.ProwJobNamespace),
 				ConfigAgent:   ca,
+				Reporter:      &fr,
 			}
 			if tc.pe != nil {
 				m, err := tc.pe.ToMessage()
@@ -334,6 +336,7 @@ func TestHandlePeriodicJob(t *testing.T) {
 				},
 			},
 			allowedClusters: []string{"*"},
+			reported:        true,
 		},
 		{
 			name: "ClusterNotAllowed",

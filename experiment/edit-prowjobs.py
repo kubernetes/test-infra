@@ -73,8 +73,8 @@ def edit_job_config(yaml, prow_job_file_name, force_rewrite=False):
         print(f'  handling job: {name}')
         annotations = job["annotations"]
         dashboard_list = re.split('[, ]+', annotations["testgrid-dashboards"])
-        if 'wg-k8s-infra-gcb' not in dashboard_list:
-            dashboard_list.append('wg-k8s-infra-gcb')
+        if 'sig-k8s-infra-gcb' not in dashboard_list:
+            dashboard_list.append('sig-k8s-infra-gcb')
             annotations["testgrid-dashboards"] = ", ".join(dashboard_list)
             edited = True
         return edited

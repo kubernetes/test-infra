@@ -87,11 +87,11 @@ func recordLogText(s *junit.Suite, text string) {
 func applyPropertiesFromMatch(result *junit.Result, match []string) error {
 	opCount, err := strconv.ParseFloat(match[2], 64)
 	if err != nil {
-		return fmt.Errorf("error parsing opcount %q: %v", match[2], err)
+		return fmt.Errorf("error parsing opcount %q: %w", match[2], err)
 	}
 	opDuration, err := strconv.ParseFloat(match[3], 64)
 	if err != nil {
-		return fmt.Errorf("error parsing ns/op %q: %v", match[3], err)
+		return fmt.Errorf("error parsing ns/op %q: %w", match[3], err)
 	}
 	result.Time = opCount * opDuration / 1000000000 // convert from ns to s.
 	result.SetProperty("op count", match[2])
@@ -142,7 +142,7 @@ func parse(raw []byte) (*junit.Suites, error) {
 			}
 			duration, err := time.ParseDuration(match[3])
 			if err != nil {
-				return nil, fmt.Errorf("failed to parse package test time %q: %v", match[3], err)
+				return nil, fmt.Errorf("failed to parse package test time %q: %w", match[3], err)
 			}
 			suite.Time = duration.Seconds()
 			suites.Suites = append(suites.Suites, suite)
@@ -155,7 +155,7 @@ func parse(raw []byte) (*junit.Suites, error) {
 				Name:      match[1],
 			}
 			if err := applyPropertiesFromMatch(&result, match); err != nil {
-				return nil, fmt.Errorf("error parsing benchmark metric values: %v", err)
+				return nil, fmt.Errorf("error parsing benchmark metric values: %w", err)
 			}
 			suite.Results = append(suite.Results, result)
 			suite.Tests += 1

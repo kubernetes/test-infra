@@ -70,6 +70,8 @@ const (
 	// it up if present. This allows components to include the config version
 	// in their logs, which can be useful for debugging.
 	ConfigVersionFileName = "VERSION"
+
+	DefaultTenantID = "GlobalDefaultID"
 )
 
 // Config is a read-only snapshot of the config.
@@ -180,6 +182,13 @@ type ProwConfig struct {
 	// ManagedWebhooks contains information about all github repositories and organizations which are using
 	// non-global Hmac token.
 	ManagedWebhooks ManagedWebhooks `json:"managed_webhooks,omitempty"`
+
+	// ProwJobDefaultEntries holds a list of defaults for specific values
+	// Each entry in the slice specifies Repo and CLuster regexp filter fields to
+	// match against the jobs and a corresponding ProwJobDefault . All entries that
+	// match a job are used. Later matching entries override the fields of earlier
+	// matching entires.
+	ProwJobDefaultEntries []*ProwJobDefaultEntry `json:"prowjob_default_entries,omitempty"`
 }
 
 type InRepoConfig struct {
@@ -335,13 +344,13 @@ func (c *Config) getProwYAML(gc git.ClientFactory, identifier string, baseSHAGet
 
 	baseSHA, err := baseSHAGetter()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get baseSHA: %v", err)
+		return nil, fmt.Errorf("failed to get baseSHA: %w", err)
 	}
 	var headSHAs []string
 	for _, headSHAGetter := range headSHAGetters {
 		headSHA, err := headSHAGetter()
 		if err != nil {
-			return nil, fmt.Errorf("failed to get headRef: %v", err)
+			return nil, fmt.Errorf("failed to get headRef: %w", err)
 		}
 		headSHAs = append(headSHAs, headSHA)
 	}
@@ -540,6 +549,26 @@ type Plank struct {
 	BuildClusterStatusFile string `json:"build_cluster_status_file,omitempty"`
 }
 
+type ProwJobDefaultEntry struct {
+	// Matching/filtering fields. All filters must match for an entry to match.
+
+	// OrgRepo matches against the "org" or "org/repo" that the presubmit or postsubmit
+	// is associated with. If the job is a periodic, extra_refs[0] is used. If the
+	// job is a periodic without extra_refs, the empty string will be used.
+	// If this field is omitted all jobs will match.
+	OrgRepo string `json:"repo,omitempty"`
+	// Cluster matches against the cluster alias of the build cluster that the
+	// ProwJob is configured to run on. Recall that ProwJobs default to running on
+	// the "default" build cluster if they omit the "cluster" field in config.
+	Cluster string `json:"cluster,omitempty"`
+
+	// Config is the ProwJobDefault to apply if the filter fields all match the
+	// ProwJob. Note that when multiple entries match a ProwJob they are all used
+	// by sequentially merging with later entries overriding fields from earlier
+	// entries.
+	Config *prowapi.ProwJobDefault `json:"config,omitempty"`
+}
+
 // DefaultDecorationConfigEntry contains a DecorationConfig and a set of
 // filters to use to determine if the config should be used as a default for a
 // given ProwJob. When multiple of these entries match a ProwJob, they are all
@@ -564,11 +593,41 @@ type DefaultDecorationConfigEntry struct {
 	Config *prowapi.DecorationConfig `json:"config,omitempty"`
 }
 
+// TODO(mpherman): Make a Matcher struct embedded in both ProwJobDefaultEntry and DefaultDecorationConfigEntry
+func matches(orgRepo, givenCluster, repo, cluster string) bool {
+	repoMatch := orgRepo == "" || orgRepo == "*" || orgRepo == repo || orgRepo == strings.Split(repo, "/")[0]
+	clusterMatch := givenCluster == "" || givenCluster == "*" || givenCluster == cluster
+	return repoMatch && clusterMatch
+}
+
+// matches returns true iff all the filters for the entry match a job.
+func (d *ProwJobDefaultEntry) matches(repo, cluster string) bool {
+	return matches(d.OrgRepo, d.Cluster, repo, cluster)
+}
+
 // matches returns true iff all the filters for the entry match a job.
 func (d *DefaultDecorationConfigEntry) matches(repo, cluster string) bool {
-	repoMatch := d.OrgRepo == "" || d.OrgRepo == "*" || d.OrgRepo == repo || d.OrgRepo == strings.Split(repo, "/")[0]
-	clusterMatch := d.Cluster == "" || d.Cluster == "*" || d.Cluster == cluster
-	return repoMatch && clusterMatch
+	return matches(d.OrgRepo, d.Cluster, repo, cluster)
+}
+
+// mergeProwJobDefault finds all matching ProwJobDefaultEntry
+// for a job and merges them sequentially before merging into the job's own
+// PrwoJobDefault. Configs merged later override values from earlier configs.
+func (pc *ProwConfig) mergeProwJobDefault(repo, cluster string, jobDefault *prowapi.ProwJobDefault) *prowapi.ProwJobDefault {
+	var merged *prowapi.ProwJobDefault
+	for _, entry := range pc.ProwJobDefaultEntries {
+		if entry.matches(repo, cluster) {
+			merged = entry.Config.ApplyDefault(merged)
+		}
+	}
+	merged = jobDefault.ApplyDefault(merged)
+	if merged == nil {
+		merged = &prowapi.ProwJobDefault{}
+	}
+	if merged.TenantID == "" {
+		merged.TenantID = DefaultTenantID
+	}
+	return merged
 }
 
 // mergeDefaultDecorationConfig finds all matching DefaultDecorationConfigEntry
@@ -586,6 +645,12 @@ func (p *Plank) mergeDefaultDecorationConfig(repo, cluster string, jobDC *prowap
 		merged = &prowapi.DecorationConfig{}
 	}
 	return merged
+}
+
+// GetProwJobDefault finds the resolved prowJobDefault config for a given repo and
+// cluster
+func (c *Config) GetProwJobDefault(repo, cluster string) *prowapi.ProwJobDefault {
+	return c.mergeProwJobDefault(repo, cluster, nil)
 }
 
 // GuessDefaultDecorationConfig attempts to find the resolved default decoration
@@ -726,6 +791,9 @@ type GitHubReporter struct {
 	//
 	// defaults to both presubmit and postsubmit jobs.
 	JobTypesToReport []prowapi.ProwJobType `json:"job_types_to_report,omitempty"`
+	// NoCommentRepos is a list of orgs and org/repos for which failure report
+	// comments should not be maintained. Status contexts will still be written.
+	NoCommentRepos []string `json:"no_comment_repos,omitempty"`
 }
 
 // Sinker is config for the sinker controller.
@@ -883,7 +951,7 @@ func (d *Deck) Validate() error {
 	if d.RerunAuthConfigs != nil {
 		for k, config := range d.RerunAuthConfigs {
 			if err := config.Validate(); err != nil {
-				return fmt.Errorf("rerun_auth_configs[%s]: %v", k, err)
+				return fmt.Errorf("rerun_auth_configs[%s]: %w", k, err)
 			}
 		}
 	}
@@ -1027,6 +1095,10 @@ func (rac RerunAuthConfigs) GetRerunAuthConfig(refs *prowapi.Refs) prowapi.Rerun
 	return rac["*"]
 }
 
+const (
+	defaultMaxOutstandingMessages = 10
+)
+
 // PubsubSubscriptions maps GCP projects to a list of Topics
 type PubsubSubscriptions map[string][]string
 
@@ -1038,6 +1110,8 @@ type PubSubTrigger struct {
 	Project         string   `json:"project"`
 	Topics          []string `json:"topics"`
 	AllowedClusters []string `json:"allowed_clusters"`
+	// MaxOutstandingMessages is the max number of messaged being processed, default is 10
+	MaxOutstandingMessages int `json:"max_outstanding_messages"`
 }
 
 // GitHubOptions allows users to control how prow applications display GitHub website links.
@@ -1108,10 +1182,10 @@ func (cfg *SlackReporter) DefaultAndValidate() error {
 	// Validate ReportTemplate
 	tmpl, err := template.New("").Parse(cfg.ReportTemplate)
 	if err != nil {
-		return fmt.Errorf("failed to parse template: %v", err)
+		return fmt.Errorf("failed to parse template: %w", err)
 	}
 	if err := tmpl.Execute(&bytes.Buffer{}, &prowapi.ProwJob{}); err != nil {
-		return fmt.Errorf("failed to execute report_template: %v", err)
+		return fmt.Errorf("failed to execute report_template: %w", err)
 	}
 
 	return nil
@@ -1335,6 +1409,11 @@ func loadConfig(prowConfig, jobConfig string, additionalProwConfigDirs []string,
 			})
 		}
 	}
+	for i, trigger := range nc.PubSubTriggers {
+		if trigger.MaxOutstandingMessages == 0 {
+			nc.PubSubTriggers[i].MaxOutstandingMessages = defaultMaxOutstandingMessages
+		}
+	}
 
 	// TODO(krzyzacy): temporary allow empty jobconfig
 	//                 also temporary allow job config in prow config
@@ -1357,10 +1436,10 @@ func loadConfig(prowConfig, jobConfig string, additionalProwConfigDirs []string,
 func yamlToConfig(path string, nc interface{}) error {
 	b, err := ReadFileMaybeGZIP(path)
 	if err != nil {
-		return fmt.Errorf("error reading %s: %v", path, err)
+		return fmt.Errorf("error reading %s: %w", path, err)
 	}
 	if err := yaml.Unmarshal(b, nc); err != nil {
-		return fmt.Errorf("error unmarshaling %s: %v", path, err)
+		return fmt.Errorf("error unmarshaling %s: %w", path, err)
 	}
 	var jc *JobConfig
 	switch v := nc.(type) {
@@ -1493,6 +1572,22 @@ func shouldDecorate(c *JobConfig, util *UtilityConfig) bool {
 	return c.DecorateAllJobs
 }
 
+func setPresubmitProwJobDefaults(c *Config, ps *Presubmit, repo string) {
+	ps.ProwJobDefault = c.mergeProwJobDefault(repo, ps.Cluster, ps.ProwJobDefault)
+}
+
+func setPostsubmitProwJobDefaults(c *Config, ps *Postsubmit, repo string) {
+	ps.ProwJobDefault = c.mergeProwJobDefault(repo, ps.Cluster, ps.ProwJobDefault)
+}
+
+func setPeriodicProwJobDefaults(c *Config, ps *Periodic) {
+	var repo string
+	if len(ps.UtilityConfig.ExtraRefs) > 0 {
+		repo = fmt.Sprintf("%s/%s", ps.UtilityConfig.ExtraRefs[0].Org, ps.UtilityConfig.ExtraRefs[0].Repo)
+	}
+
+	ps.ProwJobDefault = c.mergeProwJobDefault(repo, ps.Cluster, ps.ProwJobDefault)
+}
 func setPresubmitDecorationDefaults(c *Config, ps *Presubmit, repo string) {
 	if shouldDecorate(&c.JobConfig, &ps.JobBase.UtilityConfig) {
 		ps.DecorationConfig = c.Plank.mergeDefaultDecorationConfig(repo, ps.Cluster, ps.DecorationConfig)
@@ -1522,12 +1617,13 @@ func defaultPresubmits(presubmits []Presubmit, additionalPresets []Preset, c *Co
 	var errs []error
 	for idx, ps := range presubmits {
 		setPresubmitDecorationDefaults(c, &presubmits[idx], repo)
+		setPresubmitProwJobDefaults(c, &presubmits[idx], repo)
 		if err := resolvePresets(ps.Name, ps.Labels, ps.Spec, append(c.Presets, additionalPresets...)); err != nil {
 			errs = append(errs, err)
 		}
 	}
 	if err := SetPresubmitRegexes(presubmits); err != nil {
-		errs = append(errs, fmt.Errorf("could not set regex: %v", err))
+		errs = append(errs, fmt.Errorf("could not set regex: %w", err))
 	}
 
 	return utilerrors.NewAggregate(errs)
@@ -1539,12 +1635,13 @@ func defaultPostsubmits(postsubmits []Postsubmit, additionalPresets []Preset, c 
 	var errs []error
 	for idx, ps := range postsubmits {
 		setPostsubmitDecorationDefaults(c, &postsubmits[idx], repo)
+		setPostsubmitProwJobDefaults(c, &postsubmits[idx], repo)
 		if err := resolvePresets(ps.Name, ps.Labels, ps.Spec, append(c.Presets, additionalPresets...)); err != nil {
 			errs = append(errs, err)
 		}
 	}
 	if err := SetPostsubmitRegexes(postsubmits); err != nil {
-		errs = append(errs, fmt.Errorf("could not set regex: %v", err))
+		errs = append(errs, fmt.Errorf("could not set regex: %w", err))
 	}
 	return utilerrors.NewAggregate(errs)
 }
@@ -1555,6 +1652,7 @@ func defaultPeriodics(c *Config) error {
 	var errs []error
 	for i := range c.Periodics {
 		setPeriodicDecorationDefaults(c, &c.Periodics[i])
+		setPeriodicProwJobDefaults(c, &c.Periodics[i])
 		if err := resolvePresets(c.Periodics[i].Name, c.Periodics[i].Labels, c.Periodics[i].Spec, c.Presets); err != nil {
 			errs = append(errs, err)
 		}
@@ -1617,7 +1715,7 @@ func (c *Config) validateComponentConfig() error {
 	if c.SlackReporterConfigs != nil {
 		for k, config := range c.SlackReporterConfigs {
 			if err := config.DefaultAndValidate(); err != nil {
-				return fmt.Errorf("failed to validate slackreporter config: %v", err)
+				return fmt.Errorf("failed to validate slackreporter config: %w", err)
 			}
 			c.SlackReporterConfigs[k] = config
 		}
@@ -1643,7 +1741,7 @@ func validateJobBase(v JobBase, jobType prowapi.ProwJobType, podNamespace string
 	if err := validateAgent(v, podNamespace); err != nil {
 		return err
 	}
-	if err := validatePodSpec(jobType, v.Spec, v.DecorationConfig != nil); err != nil {
+	if err := validatePodSpec(jobType, v.Spec, v.DecorationConfig); err != nil {
 		return err
 	}
 	if err := ValidatePipelineRunSpec(jobType, v.ExtraRefs, v.PipelineRunSpec); err != nil {
@@ -1692,13 +1790,13 @@ func validatePresubmits(presubmits []Presubmit, podNamespace string) error {
 			}
 		}
 		if err := validateJobBase(ps.JobBase, prowapi.PresubmitJob, podNamespace); err != nil {
-			errs = append(errs, fmt.Errorf("invalid presubmit job %s: %v", ps.Name, err))
+			errs = append(errs, fmt.Errorf("invalid presubmit job %s: %w", ps.Name, err))
 		}
 		if err := validateTriggering(ps); err != nil {
 			errs = append(errs, err)
 		}
 		if err := validateReporting(ps.JobBase, ps.Reporter); err != nil {
-			errs = append(errs, fmt.Errorf("invalid presubmit job %s: %v", ps.Name, err))
+			errs = append(errs, fmt.Errorf("invalid presubmit job %s: %w", ps.Name, err))
 		}
 		validPresubmits[ps.Name] = append(validPresubmits[ps.Name], ps)
 	}
@@ -1751,10 +1849,13 @@ func validatePostsubmits(postsubmits []Postsubmit, podNamespace string) error {
 		}
 
 		if err := validateJobBase(ps.JobBase, prowapi.PostsubmitJob, podNamespace); err != nil {
-			errs = append(errs, fmt.Errorf("invalid postsubmit job %s: %v", ps.Name, err))
+			errs = append(errs, fmt.Errorf("invalid postsubmit job %s: %w", ps.Name, err))
+		}
+		if err := validateAlwaysRun(ps); err != nil {
+			errs = append(errs, err)
 		}
 		if err := validateReporting(ps.JobBase, ps.Reporter); err != nil {
-			errs = append(errs, fmt.Errorf("invalid postsubmit job %s: %v", ps.Name, err))
+			errs = append(errs, fmt.Errorf("invalid postsubmit job %s: %w", ps.Name, err))
 		}
 		validPostsubmits[ps.Name] = append(validPostsubmits[ps.Name], ps)
 	}
@@ -1774,7 +1875,7 @@ func validatePeriodics(periodics []Periodic, podNamespace string) error {
 		}
 		validPeriodics.Insert(p.Name)
 		if err := validateJobBase(p.JobBase, prowapi.PeriodicJob, podNamespace); err != nil {
-			return fmt.Errorf("invalid periodic job %s: %v", p.Name, err)
+			return fmt.Errorf("invalid periodic job %s: %w", p.Name, err)
 		}
 	}
 
@@ -1814,12 +1915,12 @@ func (c *Config) ValidateJobConfig() error {
 			errs = append(errs, fmt.Errorf("cron and interval cannot be both empty in periodic %s", p.Name))
 		} else if p.Cron != "" {
 			if _, err := cron.Parse(p.Cron); err != nil {
-				errs = append(errs, fmt.Errorf("invalid cron string %s in periodic %s: %v", p.Cron, p.Name, err))
+				errs = append(errs, fmt.Errorf("invalid cron string %s in periodic %s: %w", p.Cron, p.Name, err))
 			}
 		} else {
 			d, err := time.ParseDuration(c.Periodics[j].Interval)
 			if err != nil {
-				errs = append(errs, fmt.Errorf("cannot parse duration for %s: %v", c.Periodics[j].Name, err))
+				errs = append(errs, fmt.Errorf("cannot parse duration for %s: %w", c.Periodics[j].Name, err))
 			}
 			c.Periodics[j].interval = d
 		}
@@ -1832,7 +1933,7 @@ func (c *Config) ValidateJobConfig() error {
 
 func parseProwConfig(c *Config) error {
 	if err := ValidateController(&c.Plank.Controller); err != nil {
-		return fmt.Errorf("validating plank config: %v", err)
+		return fmt.Errorf("validating plank config: %w", err)
 	}
 
 	if c.Plank.PodPendingTimeout == nil {
@@ -1869,11 +1970,11 @@ func parseProwConfig(c *Config) error {
 
 	for i := range c.JenkinsOperators {
 		if err := ValidateController(&c.JenkinsOperators[i].Controller); err != nil {
-			return fmt.Errorf("validating jenkins_operators config: %v", err)
+			return fmt.Errorf("validating jenkins_operators config: %w", err)
 		}
 		sel, err := labels.Parse(c.JenkinsOperators[i].LabelSelectorString)
 		if err != nil {
-			return fmt.Errorf("invalid jenkins_operators.label_selector option: %v", err)
+			return fmt.Errorf("invalid jenkins_operators.label_selector option: %w", err)
 		}
 		c.JenkinsOperators[i].LabelSelector = sel
 		// TODO: Invalidate overlapping selectors more
@@ -1888,14 +1989,14 @@ func parseProwConfig(c *Config) error {
 	for i, agentToTmpl := range c.Deck.ExternalAgentLogs {
 		urlTemplate, err := template.New(agentToTmpl.Agent).Parse(agentToTmpl.URLTemplateString)
 		if err != nil {
-			return fmt.Errorf("parsing template for agent %q: %v", agentToTmpl.Agent, err)
+			return fmt.Errorf("parsing template for agent %q: %w", agentToTmpl.Agent, err)
 		}
 		c.Deck.ExternalAgentLogs[i].URLTemplate = urlTemplate
 		// we need to validate selectors used by deck since these are not
 		// sent to the api server.
 		s, err := labels.Parse(c.Deck.ExternalAgentLogs[i].SelectorString)
 		if err != nil {
-			return fmt.Errorf("error parsing selector %q: %v", c.Deck.ExternalAgentLogs[i].SelectorString, err)
+			return fmt.Errorf("error parsing selector %q: %w", c.Deck.ExternalAgentLogs[i].SelectorString, err)
 		}
 		c.Deck.ExternalAgentLogs[i].Selector = s
 	}
@@ -1937,7 +2038,7 @@ func parseProwConfig(c *Config) error {
 			}
 			r, err := regexp.Compile(v)
 			if err != nil {
-				return fmt.Errorf("cannot compile regexp %q, err: %v", v, err)
+				return fmt.Errorf("cannot compile regexp %q, err: %w", v, err)
 			}
 			c.Deck.Spyglass.RegexCache[v] = r
 		}
@@ -2050,7 +2151,7 @@ func parseProwConfig(c *Config) error {
 			titleTemplate, err := template.New("CommitTitle").Parse(templates.TitleTemplate)
 
 			if err != nil {
-				return fmt.Errorf("parsing template for commit title: %v", err)
+				return fmt.Errorf("parsing template for commit title: %w", err)
 			}
 
 			templates.Title = titleTemplate
@@ -2060,7 +2161,7 @@ func parseProwConfig(c *Config) error {
 			bodyTemplate, err := template.New("CommitBody").Parse(templates.BodyTemplate)
 
 			if err != nil {
-				return fmt.Errorf("parsing template for commit body: %v", err)
+				return fmt.Errorf("parsing template for commit body: %w", err)
 			}
 
 			templates.Body = bodyTemplate
@@ -2071,7 +2172,7 @@ func parseProwConfig(c *Config) error {
 
 	for i, tq := range c.Tide.Queries {
 		if err := tq.Validate(); err != nil {
-			return fmt.Errorf("tide query (index %d) is invalid: %v", i, err)
+			return fmt.Errorf("tide query (index %d) is invalid: %w", i, err)
 		}
 	}
 
@@ -2091,7 +2192,7 @@ func parseProwConfig(c *Config) error {
 	}
 	linkURL, err := url.Parse(c.GitHubOptions.LinkURLFromConfig)
 	if err != nil {
-		return fmt.Errorf("unable to parse github.link_url, might not be a valid url: %v", err)
+		return fmt.Errorf("unable to parse github.link_url, might not be a valid url: %w", err)
 	}
 	c.GitHubOptions.LinkURL = linkURL
 
@@ -2111,6 +2212,11 @@ func parseProwConfig(c *Config) error {
 	// Avoid using a job timeout of infinity by setting the default value to 24 hours
 	if c.DefaultJobTimeout == nil {
 		c.DefaultJobTimeout = &metav1.Duration{Duration: DefaultJobTimeout}
+	}
+
+	// Ensure Policy.Include and Policy.Exclude are mutually exclusive
+	if len(c.BranchProtection.Include) > 0 && len(c.BranchProtection.Exclude) > 0 {
+		return fmt.Errorf("Forbidden to set both Policy.Include and Policy.Exclude, Please use either Include or Exclude!")
 	}
 
 	return nil
@@ -2180,7 +2286,7 @@ func validateDecoration(container v1.Container, config *prowapi.DecorationConfig
 	}
 
 	if err := config.Validate(); err != nil {
-		return fmt.Errorf("invalid decoration config: %v", err)
+		return fmt.Errorf("invalid decoration config: %w", err)
 	}
 	var args []string
 	args = append(append(args, container.Command...), container.Args...)
@@ -2194,7 +2300,7 @@ func resolvePresets(name string, labels map[string]string, spec *v1.PodSpec, pre
 	for _, preset := range presets {
 		if spec != nil {
 			if err := mergePreset(preset, labels, spec.Containers, &spec.Volumes); err != nil {
-				return fmt.Errorf("job %s failed to merge presets for podspec: %v", name, err)
+				return fmt.Errorf("job %s failed to merge presets for podspec: %w", name, err)
 			}
 		}
 	}
@@ -2248,7 +2354,7 @@ func ValidatePipelineRunSpec(jobType prowapi.ProwJobType, extraRefs []prowapi.Re
 	return nil
 }
 
-func validatePodSpec(jobType prowapi.ProwJobType, spec *v1.PodSpec, decorationEnabled bool) error {
+func validatePodSpec(jobType prowapi.ProwJobType, spec *v1.PodSpec, decorationConfig *prowapi.DecorationConfig) error {
 	if spec == nil {
 		return nil
 	}
@@ -2264,7 +2370,7 @@ func validatePodSpec(jobType prowapi.ProwJobType, spec *v1.PodSpec, decorationEn
 		return utilerrors.NewAggregate(append(errs, fmt.Errorf("pod spec must specify at least 1 container, found: %d", n)))
 	}
 
-	if n := len(spec.Containers); n > 1 && !decorationEnabled {
+	if n := len(spec.Containers); n > 1 && decorationConfig == nil {
 		return utilerrors.NewAggregate(append(errs, fmt.Errorf("pod utility decoration must be enabled to use multiple containers: %d", n)))
 	}
 
@@ -2304,20 +2410,21 @@ func validatePodSpec(jobType prowapi.ProwJobType, spec *v1.PodSpec, decorationEn
 	}
 
 	volumeNames := sets.String{}
+	decoratedVolumeNames := decorate.VolumeMounts(decorationConfig)
 	for _, volume := range spec.Volumes {
 		if volumeNames.Has(volume.Name) {
 			errs = append(errs, fmt.Errorf("volume named %q is defined more than once", volume.Name))
 		}
 		volumeNames.Insert(volume.Name)
 
-		if decorate.VolumeMounts().Has(volume.Name) {
+		if decoratedVolumeNames.Has(volume.Name) {
 			errs = append(errs, fmt.Errorf("volume %s is a reserved for decoration", volume.Name))
 		}
 	}
 
 	for i := range spec.Containers {
 		for _, mount := range spec.Containers[i].VolumeMounts {
-			if !volumeNames.Has(mount.Name) && !decorate.VolumeMounts().Has(mount.Name) {
+			if !volumeNames.Has(mount.Name) && !decoratedVolumeNames.Has(mount.Name) {
 				errs = append(errs, fmt.Errorf("volumeMount named %q is undefined", mount.Name))
 			}
 			if decorate.VolumeMountsOnTestContainer().Has(mount.Name) {
@@ -2330,6 +2437,21 @@ func validatePodSpec(jobType prowapi.ProwJobType, spec *v1.PodSpec, decorationEn
 	}
 
 	return utilerrors.NewAggregate(errs)
+}
+
+func validateAlwaysRun(job Postsubmit) error {
+	if job.AlwaysRun != nil && *job.AlwaysRun {
+		if job.RunIfChanged != "" {
+			return fmt.Errorf("job %s is set to always run but also declares run_if_changed targets, which are mutually exclusive", job.Name)
+		}
+		if job.SkipIfOnlyChanged != "" {
+			return fmt.Errorf("job %s is set to always run but also declares skip_if_only_changed targets, which are mutually exclusive", job.Name)
+		}
+	}
+	if job.RunIfChanged != "" && job.SkipIfOnlyChanged != "" {
+		return fmt.Errorf("job %s declares run_if_changed and skip_if_only_changed, which are mutually exclusive", job.Name)
+	}
+	return nil
 }
 
 func validateTriggering(job Presubmit) error {
@@ -2371,7 +2493,7 @@ func validateReporting(j JobBase, r Reporter) error {
 func ValidateController(c *Controller) error {
 	urlTmpl, err := template.New("JobURL").Parse(c.JobURLTemplateString)
 	if err != nil {
-		return fmt.Errorf("parsing template: %v", err)
+		return fmt.Errorf("parsing template: %w", err)
 	}
 	c.JobURLTemplate = urlTmpl
 
@@ -2409,7 +2531,7 @@ func defaultAndValidateReportTemplate(c *Controller) error {
 	for orgRepo, value := range c.ReportTemplateStrings {
 		reportTmpl, err := template.New("Report").Parse(value)
 		if err != nil {
-			return fmt.Errorf("error while parsing template for %s: %v", orgRepo, err)
+			return fmt.Errorf("error while parsing template for %s: %w", orgRepo, err)
 		}
 		c.ReportTemplates[orgRepo] = reportTmpl
 	}
@@ -2481,20 +2603,20 @@ func SetPresubmitRegexes(js []Presubmit) error {
 		if re, err := regexp.Compile(j.Trigger); err == nil {
 			js[i].re = re
 		} else {
-			return fmt.Errorf("could not compile trigger regex for %s: %v", j.Name, err)
+			return fmt.Errorf("could not compile trigger regex for %s: %w", j.Name, err)
 		}
 		if !js[i].re.MatchString(j.RerunCommand) {
 			return fmt.Errorf("for job %s, rerun command \"%s\" does not match trigger \"%s\"", j.Name, j.RerunCommand, j.Trigger)
 		}
 		b, err := setBrancherRegexes(j.Brancher)
 		if err != nil {
-			return fmt.Errorf("could not set branch regexes for %s: %v", j.Name, err)
+			return fmt.Errorf("could not set branch regexes for %s: %w", j.Name, err)
 		}
 		js[i].Brancher = b
 
 		c, err := setChangeRegexes(j.RegexpChangeMatcher)
 		if err != nil {
-			return fmt.Errorf("could not set change regexes for %s: %v", j.Name, err)
+			return fmt.Errorf("could not set change regexes for %s: %w", j.Name, err)
 		}
 		js[i].RegexpChangeMatcher = c
 	}
@@ -2508,14 +2630,14 @@ func setBrancherRegexes(br Brancher) (Brancher, error) {
 		if re, err := regexp.Compile(strings.Join(br.Branches, `|`)); err == nil {
 			br.re = re
 		} else {
-			return br, fmt.Errorf("could not compile positive branch regex: %v", err)
+			return br, fmt.Errorf("could not compile positive branch regex: %w", err)
 		}
 	}
 	if len(br.SkipBranches) > 0 {
 		if re, err := regexp.Compile(strings.Join(br.SkipBranches, `|`)); err == nil {
 			br.reSkip = re
 		} else {
-			return br, fmt.Errorf("could not compile negative branch regex: %v", err)
+			return br, fmt.Errorf("could not compile negative branch regex: %w", err)
 		}
 	}
 	return br, nil
@@ -2531,7 +2653,7 @@ func setChangeRegexes(cm RegexpChangeMatcher) (RegexpChangeMatcher, error) {
 	if reString != "" {
 		re, err := regexp.Compile(reString)
 		if err != nil {
-			return cm, fmt.Errorf("could not compile %s regex: %v", propName, err)
+			return cm, fmt.Errorf("could not compile %s regex: %w", propName, err)
 		}
 		cm.reChanges = re
 	}
@@ -2544,12 +2666,12 @@ func SetPostsubmitRegexes(ps []Postsubmit) error {
 	for i, j := range ps {
 		b, err := setBrancherRegexes(j.Brancher)
 		if err != nil {
-			return fmt.Errorf("could not set branch regexes for %s: %v", j.Name, err)
+			return fmt.Errorf("could not set branch regexes for %s: %w", j.Name, err)
 		}
 		ps[i].Brancher = b
 		c, err := setChangeRegexes(j.RegexpChangeMatcher)
 		if err != nil {
-			return fmt.Errorf("could not set change regexes for %s: %v", j.Name, err)
+			return fmt.Errorf("could not set change regexes for %s: %w", j.Name, err)
 		}
 		ps[i].RegexpChangeMatcher = c
 	}

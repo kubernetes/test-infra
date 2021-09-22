@@ -1,7 +1,8 @@
 # Deprecation Notice
 
-July 14, 2020:  
-kubetest will be deprecated in favor of [kubetest2](https://github.com/kubernetes-sigs/kubetest2), 
+**July 14, 2020**
+  
+kubetest is deprecated in favor of [kubetest2](https://github.com/kubernetes-sigs/kubetest2), 
 so kubetest is moving to a maintenance mode only and we are not taking PRs except for urgent bug fixes. 
 
 # Kubetest

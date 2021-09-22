@@ -119,7 +119,7 @@ func handle(gc githubClient, log *logrus.Entry, pr github.PullRequestEvent, cp c
 
 	allCommits, err := gc.ListPRCommits(org, repo, number)
 	if err != nil {
-		return fmt.Errorf("error listing commits for pull request: %v", err)
+		return fmt.Errorf("error listing commits for pull request: %w", err)
 	}
 	log.Debugf("Found %d commits in PR", len(allCommits))
 

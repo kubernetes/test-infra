@@ -319,7 +319,7 @@ func TestTrustedJobs(t *testing.T) {
 func TestK8sInfraTrusted(t *testing.T) {
 	jobsToFix := 0
 	const trusted = "k8s-infra-prow-build-trusted"
-	trustedPath := path.Join(*jobConfigPath, "kubernetes", "wg-k8s-infra", "trusted") + "/"
+	trustedPath := path.Join(*jobConfigPath, "kubernetes", "sig-k8s-infra", "trusted") + "/"
 	imagePushingDir := path.Join(*jobConfigPath, "image-pushing") + "/"
 
 	errs := []error{}
@@ -333,7 +333,7 @@ func TestK8sInfraTrusted(t *testing.T) {
 
 	// Postsubmits and periodics:
 	// - jobs in config/jobs/image-pushing must run in cluster: k8s-infra-prow-build-trusted
-	// - jobs in config/jobs/kubernetes/wg-k8s-infra/trusted must run in cluster: k8s-infra-prow-build-trusted
+	// - jobs in config/jobs/kubernetes/sig-k8s-infra/trusted must run in cluster: k8s-infra-prow-build-trusted
 	// - jobs defined anywhere else may not run in cluster: k8s-infra-prow-build-trusted
 	jobs := []cfg.JobBase{}
 	for _, job := range c.AllStaticPostsubmits(nil) {
@@ -361,8 +361,8 @@ func TestK8sInfraTrusted(t *testing.T) {
 
 // Jobs in config/jobs/image-pushing must
 // - run on cluster: k8s-infra-prow-build-trusted
-// - use a pinned version of gcr.io/k8s-testimages/image-builder
-// - have wg-k8s-infra-gcb in their testgrid-dashboards annotation
+// - use a pinned version of gcr.io/k8s-staging-test-infra/image-builder
+// - have sig-k8s-infra-gcb in their testgrid-dashboards annotation
 func TestImagePushingJobs(t *testing.T) {
 	jobsToFix := 0
 	const trusted = "k8s-infra-prow-build-trusted"
@@ -391,7 +391,7 @@ func TestImagePushingJobs(t *testing.T) {
 		if !ok {
 			errs = append(errs, fmt.Errorf("%s defined in %s must have annotation: %v, not found", job.Name, job.SourcePath, "testgrid-dashboards"))
 		}
-		expectedDashboard := "wg-k8s-infra-gcb"
+		expectedDashboard := "sig-k8s-infra-gcb"
 		foundDashboard := false
 		for _, dashboardName := range strings.Split(dashboardsString, ",") {
 			dashboardName = strings.TrimSpace(dashboardName)
@@ -414,7 +414,7 @@ func TestImagePushingJobs(t *testing.T) {
 }
 
 func validateImagePushingImage(spec *coreapi.PodSpec) error {
-	const imagePushingImage = "gcr.io/k8s-testimages/image-builder"
+	const imagePushingImage = "gcr.io/k8s-staging-test-infra/image-builder"
 
 	for _, c := range spec.Containers {
 		if !strings.HasPrefix(c.Image, imagePushingImage+":") {

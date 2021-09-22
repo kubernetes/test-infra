@@ -30,7 +30,7 @@ automatically applied to the cluster when the changes merge. In order to ensure
 that all changes to production are properly approved, you can use OWNERS files
 with the [`approve` plugin](/prow/plugins/approve) and [`Tide`](/prow/cmd/tide).
 
-With the help of the [Prow Autobump utility](/prow/cmd/autobump#prow-autobump) you can easily create commits that update all references to Prow images to the latest image version that has been vetted by the https://prow.k8s.io instance. If your Prow component resource files live in GitHub, this utility can even automatically create/update a Pull Request that includes these changes. This works great when run as a periodic job since it will maintain a single open PR that is periodically updated to reference the most recent upstream version. See the [README](/prow/cmd/autobump#prow-autobump) for details and an example.
+With the help of the [Prow Autobump utility](/prow/cmd/generic-autobumper/README.md) you can easily create commits that update all references to Prow images to the latest image version that has been vetted by the https://prow.k8s.io instance. If your Prow component resource files live in GitHub, this utility can even automatically create/update a Pull Request that includes these changes. This works great when run as a periodic job since it will maintain a single open PR that is periodically updated to reference the most recent upstream version. See the [config used to bump prow.k8s.io](/config/prow/autobump-config/prow-component-autobump-config.yaml) for an example
 
 Combining a postsubmit deploy job with a periodic job that runs the Prow Autobump utility allows Prow to be updated to the latest version by simply merging the automatically created Pull Request (or letting Tide merge it after it has been approved).
 
@@ -48,3 +48,8 @@ Prow can also automatically upload changes to files that correspond to Kubernete
 ## Handle scale
 
 If your Prow instance operates on a lot of GitHub repos or runs lots of jobs you should review the ["Scaling Prow"](/prow/scaling.md) guide for tips and best practices.
+
+
+## Private Front end
+
+If you want to create a private Deck instnace that contains a subset of prowjobs, you should review the ["Private Deck"](/prow/private_deck.md) guide.

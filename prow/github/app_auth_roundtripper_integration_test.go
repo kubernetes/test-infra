@@ -22,7 +22,7 @@ import (
 	"os"
 	"testing"
 
-	jwt "github.com/dgrijalva/jwt-go/v4"
+	"github.com/dgrijalva/jwt-go/v4"
 	"github.com/sirupsen/logrus"
 )
 
@@ -43,7 +43,7 @@ func TestGetOrg(t *testing.T) {
 		t.Fatalf("Failed to parse key: %v", err)
 	}
 
-	_, client := NewAppsAuthClientWithFields(
+	_, _, client := NewAppsAuthClientWithFields(
 		logrus.Fields{},
 		func(b []byte) []byte { return b },
 		appID,

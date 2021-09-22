@@ -77,7 +77,7 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:latest-experimental
         imagePullPolicy: Always
         args:
         - "--job=$(JOB_NAME)"
@@ -105,7 +105,7 @@ periodics:
   decorate: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:latest-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -146,7 +146,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=Variable.Expansion --ginkgo.skip=\[Feature:.+\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=40m
-      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:latest-master
       imagePullPolicy: Always
   annotations:
     testgrid-dashboards: sig-testing-canaries
@@ -177,7 +177,7 @@ periodics:
       - --timeout=120m
       - --use-logexporter
       - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
-      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:latest-master
       imagePullPolicy: Always
   annotations:
     testgrid-dashboards: sig-testing-canaries
@@ -206,7 +206,7 @@ periodics:
       - --provider=gke
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:latest-master
       imagePullPolicy: Always
   annotations:
     testgrid-dashboards: google-gke, sig-testing-canaries
@@ -225,7 +225,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:latest-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -258,7 +258,7 @@ periodics:
     timeout: 260m
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:latest-master
       imagePullPolicy: Always
       command:
       - runner.sh

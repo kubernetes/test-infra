@@ -54,13 +54,13 @@ func generateCSR() (*certificates.CertificateSigningRequest, []byte, error) {
 	// Generate a new private key.
 	pk, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	if err != nil {
-		return nil, nil, fmt.Errorf("generate key: %v", err)
+		return nil, nil, fmt.Errorf("generate key: %w", err)
 	}
 
 	// Marshal pk -> der.
 	der, err := x509.MarshalECPrivateKey(pk)
 	if err != nil {
-		return nil, nil, fmt.Errorf("marshal key to DER: %v", err)
+		return nil, nil, fmt.Errorf("marshal key to DER: %w", err)
 	}
 
 	// Generate PEM key.
@@ -69,7 +69,7 @@ func generateCSR() (*certificates.CertificateSigningRequest, []byte, error) {
 	// Generate a x509 certificate signing request.
 	csrPEM, err := cert.MakeCSR(pk, &pkix.Name{CommonName: "client", Organization: []string{systemPrivilegedGroup}}, nil, nil)
 	if err != nil {
-		return nil, nil, fmt.Errorf("create CSR from key: %v", err)
+		return nil, nil, fmt.Errorf("create CSR from key: %w", err)
 	}
 
 	// Generate a Kubernetes CSR object.
@@ -99,7 +99,7 @@ func requestCSR(clientset kubernetes.Interface, csrObj *certificates.Certificate
 	// Create CSR.
 	csrObj, err := client.Create(context.TODO(), csrObj, metav1.CreateOptions{})
 	if err != nil {
-		return nil, fmt.Errorf("create CSR: %v", err)
+		return nil, fmt.Errorf("create CSR: %w", err)
 	}
 
 	csrName := csrObj.Name
@@ -115,7 +115,7 @@ func requestCSR(clientset kubernetes.Interface, csrObj *certificates.Certificate
 		return true, nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("approve CSR: %v", err)
+		return nil, fmt.Errorf("approve CSR: %w", err)
 	}
 
 	// Get CSR.
@@ -128,7 +128,7 @@ func requestCSR(clientset kubernetes.Interface, csrObj *certificates.Certificate
 		return true, nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("get CSR: %v", err)
+		return nil, fmt.Errorf("get CSR: %w", err)
 	}
 
 	return csrObj.Status.Certificate, nil
@@ -166,17 +166,17 @@ func appendApprovalCondition(csr *certificates.CertificateSigningRequest) {
 func CreateClusterCertificateCredentials(clientset kubernetes.Interface) (certPEM []byte, keyPEM []byte, caPEM []byte, err error) {
 	csrObj, keyPEM, err := generateCSR()
 	if err != nil {
-		return nil, nil, nil, fmt.Errorf("generate CSR: %v", err)
+		return nil, nil, nil, fmt.Errorf("generate CSR: %w", err)
 	}
 
 	certPEM, err = requestCSR(clientset, csrObj)
 	if err != nil {
-		return nil, nil, nil, fmt.Errorf("request CSR: %v", err)
+		return nil, nil, nil, fmt.Errorf("request CSR: %w", err)
 	}
 
 	caPEM, err = getRootCA(clientset)
 	if err != nil {
-		return nil, nil, nil, fmt.Errorf("get root CA: %v", err)
+		return nil, nil, nil, fmt.Errorf("get root CA: %w", err)
 	}
 
 	return certPEM, keyPEM, caPEM, nil

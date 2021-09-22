@@ -19,7 +19,7 @@ presubmits:
         runAsUser: 2000
         allowPrivilegeEscalation: false
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
           command:
             - make
             - test
@@ -53,7 +53,7 @@ presubmits:
         runAsUser: 2001
         runAsGroup: 2010
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:latest-master
           imagePullPolicy: Always
           command:
             - make
@@ -63,6 +63,39 @@ presubmits:
             capabilities:
               drop:
               - ALL
+          # TODO: direct copy from pull-kubernetes-bazel-test, tune these
+          resources:
+            limits:
+              cpu: 4
+              memory: "36Gi"
+            requests:
+              cpu: 4
+              memory: "36Gi"
+  - name: pull-kubernetes-unit-go-canary
+    annotations:
+      testgrid-num-failures-to-alert: '10'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-create-test-group: 'true'
+      testgrid-dashboards: sig-release-releng-informing, sig-testing-canaries
+    decorate: true
+    cluster: k8s-infra-prow-build
+    skip_branches:
+    - release-\d+.\d+ # per-release job
+    labels:
+      preset-service-account: "true"
+    always_run: false
+    skip_report: false
+    path_alias: k8s.io/kubernetes
+    spec:
+      # unit tests have no business requiring root or doing privileged operations
+      securityContext:
+        runAsUser: 2000
+        allowPrivilegeEscalation: false
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-go-canary
+          command:
+            - make
+            - test
           # TODO: direct copy from pull-kubernetes-bazel-test, tune these
           resources:
             limits:
@@ -95,7 +128,7 @@ periodics:
         runAsUser: 2000
         allowPrivilegeEscalation: false
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
           command:
             - make
             - test
@@ -125,7 +158,7 @@ periodics:
         runAsUser: 2000
         allowPrivilegeEscalation: false
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
           command:
             - runner.sh
             - bash
@@ -155,7 +188,7 @@ periodics:
         runAsUser: 2000
         allowPrivilegeEscalation: false
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
           command:
             - runner.sh
             - bash
@@ -186,7 +219,7 @@ periodics:
         runAsUser: 2000
         allowPrivilegeEscalation: false
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
           command:
             - runner.sh
             - bash

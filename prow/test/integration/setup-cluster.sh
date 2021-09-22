@@ -30,7 +30,7 @@ readonly DEFAULT_CLUSTER_NAME="kind-prow-integration"
 readonly DEFAULT_CONTEXT="kind-${DEFAULT_CLUSTER_NAME}"
 readonly DEFAULT_REGISTRY_NAME="kind-registry"
 readonly DEFAULT_REGISTRY_PORT="5000"
-readonly PROW_COMPONENTS="sinker crier hook horologium prow-controller-manager fakeghserver deck tide"
+readonly PROW_COMPONENTS="sinker crier hook horologium prow-controller-manager fakeghserver deck tide deck-tenanted"
 
 if [[ -z "${HOME:-}" ]]; then # kubectl looks for HOME which is not set in bazel
   export HOME="$(cd ~ && pwd -P)"
@@ -114,7 +114,7 @@ function deploy_prow() {
   do-kubectl create configmap config --from-file=config.yaml=${CONFIG_ROOT_DIR}/config.yaml --dry-run -oyaml | kubectl apply -f -
   do-kubectl create configmap plugins --from-file=plugins.yaml=${CONFIG_ROOT_DIR}/plugins.yaml --dry-run -oyaml | kubectl apply -f -
   do-kubectl create configmap job-config --from-file=periodics.yaml=${CONFIG_ROOT_DIR}/jobs/periodics.yaml --dry-run -oyaml | kubectl apply -f -
-  do-kubectl apply -f ${CONFIG_ROOT_DIR}/cluster
+  do-kubectl apply --server-side=true -f ${CONFIG_ROOT_DIR}/cluster
 
   echo "Wait until nginx is ready"
   for _ in $(seq 1 5); do

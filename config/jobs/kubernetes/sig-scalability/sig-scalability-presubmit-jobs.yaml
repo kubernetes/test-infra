@@ -32,7 +32,7 @@ presubmits:
       fork-per-release: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -48,7 +48,6 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-100-performance
         - --tear-down-previous
         - --env=CL2_ENABLE_HUGE_SERVICES=true
-        - --env=CL2_ENABLE_HUGE_SERVICES_MULTIPLE_REPLICAS=true
         - --env=CL2_SCHEDULER_THROUGHPUT_THRESHOLD=0
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
@@ -101,7 +100,7 @@ presubmits:
       preset-e2e-scalability-presubmits: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -118,7 +117,6 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-big-performance
         - --tear-down-previous
         - --env=CL2_ENABLE_HUGE_SERVICES=true
-        - --env=CL2_ENABLE_HUGE_SERVICES_MULTIPLE_REPLICAS=true
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
         - --test-cmd-args=cluster-loader2
@@ -168,7 +166,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-e2e-gce-correctness
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -228,7 +226,7 @@ presubmits:
       preset-e2e-scalability-presubmits: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -244,7 +242,6 @@ presubmits:
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-large-performance
         - --env=CL2_ENABLE_HUGE_SERVICES=true
-        - --env=CL2_ENABLE_HUGE_SERVICES_MULTIPLE_REPLICAS=true
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
         - --test-cmd-args=cluster-loader2
@@ -302,7 +299,7 @@ presubmits:
       testgrid-create-test-group: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -322,7 +319,6 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce-big
         - --tear-down-previous
         - --env=CL2_ENABLE_HUGE_SERVICES=true
-        - --env=CL2_ENABLE_HUGE_SERVICES_MULTIPLE_REPLICAS=true
         - --test=false
         - --test_args=--ginkgo.focus=xxxx
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
@@ -382,7 +378,7 @@ presubmits:
       preset-e2e-scalability-presubmits: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -400,7 +396,6 @@ presubmits:
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce-scale
         - --env=CL2_ENABLE_HUGE_SERVICES=true
-        - --env=CL2_ENABLE_HUGE_SERVICES_MULTIPLE_REPLICAS=true
         - --test=false
         - --test_args=--ginkgo.focus=xxxx
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
@@ -454,7 +449,7 @@ presubmits:
     run_if_changed: ^dns/.*$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -496,7 +491,7 @@ presubmits:
     run_if_changed: ^clusterloader2/.*$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -561,7 +556,7 @@ presubmits:
     run_if_changed: ^clusterloader2/.*$
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -586,7 +581,6 @@ presubmits:
         - --test-cmd-args=--provider=kubemark
         - --env=CL2_ENABLE_DNS_PROGRAMMING=true
         - --env=CL2_ENABLE_HUGE_SERVICES=true
-        - --env=CL2_ENABLE_HUGE_SERVICES_MULTIPLE_REPLICAS=true
         - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
         - --env=CL2_ENABLE_API_AVAILABILITY_MEASUREMENT=true
         - --test-cmd-args=--report-dir=$(ARTIFACTS)
@@ -628,7 +622,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-util-images
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20210709-5168b64
+      - image: gcr.io/k8s-staging-test-infra/bootstrap:v20210913-fc7c4e84f6
         command:
         - runner.sh
         - /workspace/scenarios/execute.py

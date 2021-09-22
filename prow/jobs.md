@@ -31,7 +31,7 @@ that you can define pods in yaml.  Please see kubernetes documentation
 for help here, for example the [Pod overview] and [PodSpec api
 reference].
 
-Periodic config looks like so:
+Periodic config looks like so (see [GoDocs](https://pkg.go.dev/k8s.io/test-infra/prow/config#Periodic) for complete config):
 
 ```yaml
 periodics:
@@ -47,7 +47,7 @@ periodics:
   spec: {}              # Valid Kubernetes PodSpec.
 ```
 
-Postsubmit config looks like so:
+Postsubmit config looks like so (see [GoDocs](https://pkg.go.dev/k8s.io/test-infra/prow/config#Postsubmit) for complete config):
 
 ```yaml
 postsubmits:
@@ -66,7 +66,7 @@ Postsubmits are run when a push event happens on a repo, hence they are
 configured per-repo. If no `branches` are specified, then they will run against
 every branch.
 
-Presubmit config looks like so:
+Presubmit config looks like so (see [GoDocs](https://pkg.go.dev/k8s.io/test-infra/prow/config#Presubmit) for complete config):
 
 ```yaml
 presubmits:
@@ -85,19 +85,19 @@ presubmits:
     rerun_command: "qux test this please"  # String, see discussion.
 ```
 
-If you only want to run tests when specific files are touched, you can use
-`run_if_changed`. Conversely, if you want to _skip_ tests when a change set
-_only_ touches specific files, you can use `skip_if_only_changed`. A useful
-pattern when adding new jobs is to start with `always_run` set to false and
-`skip_report` set to true. Test it out a few times by manually triggering,
-then switch `always_run` to true. Watch for a couple days, then switch
-`skip_report` to false.
-
 The `trigger` is a regexp that matches the `rerun_command`. Users will be told
 to input the `rerun_command` when they want to rerun the job. Actually, anything
 that matches `trigger` will suffice. This is useful if you want to make one
 command that reruns all jobs. If unspecified, the default configuration makes
 `/test <job-name>` trigger the job.
+
+See the [Triggering Jobs](#triggering-jobs) section below to learn how to
+control when jobs are automatically run. We also have sections about [posting](#posting-github-status-contexts)
+and [requiring](#requiring-job-statuses) GitHub status contexts. A useful
+pattern when adding new jobs is to start with `always_run` set to false and
+`skip_report` set to true. Test it out a few times by manually triggering,
+then switch `always_run` to true. Watch for a couple days, then switch
+`skip_report` to false.
 
 ## Presets
 
@@ -217,6 +217,7 @@ Note:
 - `run_if_changed` and `skip_if_only_changed` are mutually exclusive.
 - Jobs which would otherwise be skipped based on this configuration can still
   be triggered explicitly with comments (see below).
+- Only presubmit and postsubmit jobs are inherently associated with git refs and can use these fields.
 
 #### Triggering Jobs With Comments
 
@@ -274,6 +275,29 @@ these options at the same time.
 The branch protection rules will only enforce the presence of jobs that run unconditionally
 and have required status contexts. As conditionally-run jobs may or may not post a status
 context to GitHub, they cannot be required through this mechanism.
+
+## Running a ProwJob in a Build Cluster
+
+ProwJobs that execute as Kubernetes resources (namely `agent: kubernetes` jobs that run as Pods, the default value) can specify a `cluster: build-cluster-name` field as part of the ProwJob config to specify that the job should be run in a build cluster other than the default build cluster.
+
+```yaml
+periodics:
+- name: periodic-cluster-a
+  cluster: cluster-a
+  ...
+presubmits:
+  org/repo:
+  - name: presubmit-cluster-b
+    cluster: cluster-b
+    ...
+postsubmits:
+  org/repo:
+  - name: postsubmit-default-cluster
+    # cluster field omitted or set to "default"
+    ...
+```
+
+You can learn more about creating and using build clusters in [`scaling.md`](scaling.md#separate-build-clusters) and [`getting_started_deploy.md`](getting_started_deploy.md#Run-test-pods-in-different-clusters).
 
 ## Pod Utilities
 

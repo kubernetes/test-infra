@@ -3,7 +3,7 @@ postsubmits:
     - name: post-website-push-image-k8s-website-hugo
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-docs-website, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-docs-website, sig-k8s-infra-gcb
         testgrid-tab-name: post-website-push-image-k8s-website-hugo
       decorate: true
       run_if_changed: "^Dockerfile$"
@@ -12,7 +12,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210917-ee1e7c845b
             command:
               - /run.sh
             args:

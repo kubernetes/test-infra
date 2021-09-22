@@ -160,9 +160,14 @@ func RegisterGenericCommentHandler(name string, fn GenericCommentHandler, help H
 	genericCommentHandlers[name] = fn
 }
 
+type PluginGitHubClient interface {
+	github.Client
+	Query(ctx context.Context, q interface{}, vars map[string]interface{}) error
+}
+
 // Agent may be used concurrently, so each entry must be thread-safe.
 type Agent struct {
-	GitHubClient              github.Client
+	GitHubClient              PluginGitHubClient
 	ProwJobClient             prowv1.ProwJobInterface
 	KubernetesClient          kubernetes.Interface
 	BuildClusterCoreV1Clients map[string]corev1.CoreV1Interface

@@ -63,7 +63,7 @@ func (p *publisher) Commit(title, body string) error {
 	}
 	for _, command := range commands {
 		if out, err := p.executor.Run(command...); err != nil {
-			return fmt.Errorf("error committing %q: %v %v", title, err, string(out))
+			return fmt.Errorf("error committing %q: %w %v", title, err, string(out))
 		}
 	}
 	return nil
@@ -88,7 +88,7 @@ func (p *publisher) PushToFork(branch string, force bool) error {
 
 	p.logger.Infof("Pushing branch %q to %q", branch, remote)
 	if out, err := p.executor.Run(args...); err != nil {
-		return fmt.Errorf("error pushing %q: %v %v", branch, err, string(out))
+		return fmt.Errorf("error pushing %q: %w %v", branch, err, string(out))
 	}
 	return nil
 }
@@ -108,7 +108,7 @@ func (p *publisher) PushToCentral(branch string, force bool) error {
 
 	p.logger.Infof("Pushing branch %q to %q", branch, remote)
 	if out, err := p.executor.Run(args...); err != nil {
-		return fmt.Errorf("error pushing %q: %v %v", branch, err, string(out))
+		return fmt.Errorf("error pushing %q: %w %v", branch, err, string(out))
 	}
 	return nil
 }

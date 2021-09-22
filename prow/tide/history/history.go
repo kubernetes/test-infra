@@ -61,16 +61,16 @@ func readHistory(maxRecordsPerKey int, opener opener, path string) (map[string]*
 		return map[string]*recordLog{}, nil
 	}
 	if err != nil {
-		return nil, fmt.Errorf("open: %v", err)
+		return nil, fmt.Errorf("open: %w", err)
 	}
 	defer io.LogClose(reader)
 	raw, err := ioutil.ReadAll(reader)
 	if err != nil {
-		return nil, fmt.Errorf("read: %v", err)
+		return nil, fmt.Errorf("read: %w", err)
 	}
 	var recordsByPool map[string][]*Record
 	if err := json.Unmarshal(raw, &recordsByPool); err != nil {
-		return nil, fmt.Errorf("unmarshal: %v", err)
+		return nil, fmt.Errorf("unmarshal: %w", err)
 	}
 
 	// Load records into a new recordLog map.
@@ -96,29 +96,30 @@ func writeHistory(opener opener, path string, hist map[string][]*Record) error {
 	defer cancel()
 	writer, err := opener.Writer(ctx, path)
 	if err != nil {
-		return fmt.Errorf("open: %v", err)
+		return fmt.Errorf("open: %w", err)
 	}
 	b, err := json.Marshal(hist)
 	if err != nil {
-		return fmt.Errorf("marshal: %v", err)
+		return fmt.Errorf("marshal: %w", err)
 	}
 	if _, err := fmt.Fprint(writer, string(b)); err != nil {
 		io.LogClose(writer)
-		return fmt.Errorf("write: %v", err)
+		return fmt.Errorf("write: %w", err)
 	}
 	if err := writer.Close(); err != nil {
-		return fmt.Errorf("close: %v", err)
+		return fmt.Errorf("close: %w", err)
 	}
 	return nil
 }
 
 // Record is an entry describing one action that Tide has taken (e.g. TRIGGER or MERGE).
 type Record struct {
-	Time    time.Time      `json:"time"`
-	Action  string         `json:"action"`
-	BaseSHA string         `json:"baseSHA,omitempty"`
-	Target  []prowapi.Pull `json:"target,omitempty"`
-	Err     string         `json:"err,omitempty"`
+	Time      time.Time      `json:"time"`
+	Action    string         `json:"action"`
+	BaseSHA   string         `json:"baseSHA,omitempty"`
+	Target    []prowapi.Pull `json:"target,omitempty"`
+	Err       string         `json:"err,omitempty"`
+	TenantIDs []string       `json:"tenantids"`
 }
 
 // New creates a new History struct with the specificed recordLog size limit.
@@ -148,17 +149,18 @@ func New(maxRecordsPerKey int, opener io.Opener, path string) (*History, error) 
 }
 
 // Record appends an entry to the recordlog specified by the poolKey.
-func (h *History) Record(poolKey, action, baseSHA, err string, targets []prowapi.Pull) {
+func (h *History) Record(poolKey, action, baseSHA, err string, targets []prowapi.Pull, tenantIDs []string) {
 	t := now()
 	sort.Sort(ByNum(targets))
 	h.addRecord(
 		poolKey,
 		&Record{
-			Time:    t,
-			Action:  action,
-			BaseSHA: baseSHA,
-			Target:  targets,
-			Err:     err,
+			Time:      t,
+			Action:    action,
+			BaseSHA:   baseSHA,
+			Target:    targets,
+			Err:       err,
+			TenantIDs: tenantIDs,
 		},
 	)
 }

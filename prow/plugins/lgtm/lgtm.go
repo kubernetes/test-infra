@@ -462,7 +462,7 @@ func handlePullRequest(log *logrus.Entry, gc githubClient, config *plugins.Confi
 	}
 
 	if err := gc.RemoveLabel(org, repo, number, LGTMLabel); err != nil {
-		return fmt.Errorf("failed removing lgtm label: %v", err)
+		return fmt.Errorf("failed removing lgtm label: %w", err)
 	}
 
 	// Create a comment to inform participants that LGTM label is removed due to new

@@ -17,7 +17,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -50,12 +50,11 @@ presubmits:
   - name: pull-kubernetes-verify-go-canary
     cluster: k8s-infra-prow-build
     always_run: false
-    skip_report: true
+    skip_report: false
     decorate: true
     skip_branches:
     - release-\d+.\d+ # per-release job
     annotations:
-      fork-per-release: "true"
       testgrid-num-failures-to-alert: '10'
       testgrid-alert-stale-results-hours: '24'
       testgrid-create-test-group: 'true'
@@ -66,7 +65,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-go-canary
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-go-canary
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -118,7 +117,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
       imagePullPolicy: Always
       command:
       - runner.sh

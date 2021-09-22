@@ -84,7 +84,7 @@ func readMount(ctx context.Context, mount coreapi.VolumeMount) (string, error) {
 	fmt.Fprintf(os.Stderr, "local %s path (%q mount): ", mount.MountPath, mount.Name)
 	out, err := scanln(ctx)
 	if err != nil {
-		return "", fmt.Errorf("scan: %v", err)
+		return "", fmt.Errorf("scan: %w", err)
 	}
 	return realPath(out)
 }
@@ -112,7 +112,7 @@ func pathAlias(r prowapi.Refs) string {
 func readRepo(path string, readUserInput func(string, string) (string, error)) (string, error) {
 	wd, err := workingDir()
 	if err != nil {
-		return "", fmt.Errorf("workingDir: %v", err)
+		return "", fmt.Errorf("workingDir: %w", err)
 	}
 	// First finding repo from under GOPATH, then fall back from local path.
 	// Prefers GOPATH as it's more accurate, as finding from local path performs
@@ -131,7 +131,7 @@ func readRepo(path string, readUserInput func(string, string) (string, error)) (
 
 	out, err := readUserInput(path, def)
 	if err != nil {
-		return "", fmt.Errorf("scan: %v", err)
+		return "", fmt.Errorf("scan: %w", err)
 	}
 	return realPath(out)
 }
@@ -162,7 +162,7 @@ func workingDir() (string, error) {
 func findRepoFromLocal(wd, path string) (string, error) {
 	opwd, err := realPath(wd)
 	if err != nil {
-		return "", fmt.Errorf("wd not found: %v", err)
+		return "", fmt.Errorf("wd not found: %w", err)
 	}
 
 	var old string
@@ -320,7 +320,7 @@ func (opts *options) resolveVolumeMounts(ctx context.Context, pj prowapi.ProwJob
 		} else {
 			local, err := getMount(ctx, mount)
 			if err != nil {
-				return nil, fmt.Errorf("bad mount %q: %v", mount.Name, err)
+				return nil, fmt.Errorf("bad mount %q: %w", mount.Name, err)
 			}
 			mountPath := mount.MountPath
 			if mount.ReadOnly {
@@ -435,7 +435,7 @@ func (opts *options) resolveRefs(ctx context.Context, volumeMounts map[string]st
 		if _, ok := opts.extraVolumesMounts[dest]; !ok {
 			repo, err := readRepo(repoPath, readUserInput)
 			if err != nil {
-				return "", fmt.Errorf("bad repo(%s) when resolving the refs: %v", repoPath, err)
+				return "", fmt.Errorf("bad repo(%s) when resolving the refs: %w", repoPath, err)
 			}
 			volumeMounts[dest] = repo
 		}
@@ -492,7 +492,7 @@ func (opts *options) convertJob(ctx context.Context, log *logrus.Entry, pj prowa
 	cid := containerID()
 	args, err := opts.convertToLocal(ctx, log, pj, cid)
 	if err != nil {
-		return fmt.Errorf("convert: %v", err)
+		return fmt.Errorf("convert: %w", err)
 	}
 	printArgs(args)
 	if opts.printCmd {
@@ -507,7 +507,7 @@ func (opts *options) convertJob(ctx context.Context, log *logrus.Entry, pj prowa
 	}
 	cmd, err := start(args)
 	if err != nil {
-		return fmt.Errorf("start: %v", err)
+		return fmt.Errorf("start: %w", err)
 	}
 	log = log.WithField("container", cid)
 	ch := make(chan error)
@@ -542,9 +542,9 @@ func (opts *options) convertJob(ctx context.Context, log *logrus.Entry, pj prowa
 	case <-abort.Done():
 	}
 	if err := kill(cid, "SIGKILL"); err != nil {
-		return fmt.Errorf("kill: %v", err)
+		return fmt.Errorf("kill: %w", err)
 	}
-	return fmt.Errorf("grace period expired, aborted: %v", ctx.Err())
+	return fmt.Errorf("grace period expired, aborted: %w", ctx.Err())
 }
 
 func getTimeout(optionsTimeout time.Duration, prowJobTimeout time.Duration) time.Duration {

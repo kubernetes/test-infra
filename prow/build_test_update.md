@@ -10,9 +10,13 @@ Build with:
 ```shell
 bazel build //prow/...
 ```
-Test with:
+Unit test with:
 ```shell
 bazel test --@io_bazel_rules_go//go/config:race //prow/...
+```
+Integration test with([more details](./test/integration)):
+```shell
+./prow/test/integration/integration-test.sh
 ```
 Individual packages and components can be built and tested like:
 ```shell

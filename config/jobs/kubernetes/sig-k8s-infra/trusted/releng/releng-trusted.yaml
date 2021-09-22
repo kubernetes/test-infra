@@ -1,0 +1,149 @@
+postsubmits:
+  kubernetes/k8s.io:
+  - name: post-k8sio-file-promo
+    cluster: k8s-infra-prow-build-trusted
+    decorate: true
+    run_if_changed: '^artifacts\/(filestores|manifests)\/.*\/*.yaml'
+    # Never run more than 1 job at a time. This is because we don't want to run
+    # into a case where an older manifest PR merge gets run last (after a newer
+    # one).
+    max_concurrency: 1
+    branches:
+    - ^main$
+    spec:
+      serviceAccountName: k8s-infra-promoter
+      containers:
+      - image: k8s.gcr.io/artifact-promoter/kpromo:v3.2.0-1
+        command:
+        - /kpromo
+        args:
+        - run
+        - files
+        - --manifests=/home/prow/go/src/github.com/kubernetes/k8s.io/artifacts/
+        - --dry-run=false
+    annotations:
+      testgrid-dashboards: sig-release-releng-blocking, sig-k8s-infra-k8sio
+      testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '1'
+  - name: post-k8sio-image-promo
+    cluster: k8s-infra-prow-build-trusted
+    decorate: true
+    run_if_changed: 'k8s.gcr.io/((images/.*/images\.yaml)|(manifests/.*/promoter-manifest\.yaml))'
+    # Never run more than 1 job at a time. This is because we don't want to run
+    # into a case where an older manifest PR merge gets run last (after a newer
+    # one).
+    max_concurrency: 1
+    branches:
+    - ^main$
+    spec:
+      serviceAccountName: k8s-infra-gcr-promoter
+      containers:
+      - image: k8s.gcr.io/artifact-promoter/cip:v3.2.0
+        command:
+        - cip
+        args:
+        - run
+        - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
+        - --confirm
+    annotations:
+      testgrid-dashboards: sig-release-releng-blocking, sig-k8s-infra-k8sio
+      testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '1'
+
+periodics:
+# TODO(releng): Set this to '4h' once testing is complete
+- interval: 1h
+  cluster: k8s-infra-prow-build-trusted
+  max_concurrency: 1
+  name: ci-k8sio-file-promo
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: k8s.io
+    base_ref: main
+  spec:
+    serviceAccountName: k8s-infra-promoter
+    containers:
+    - image: k8s.gcr.io/artifact-promoter/kpromo:v3.2.0-1
+      command:
+      - /kpromo
+      args:
+      - run
+      - files
+      - --manifests=/home/prow/go/src/github.com/kubernetes/k8s.io/artifacts/
+      - --dry-run=false
+  annotations:
+    testgrid-dashboards: sig-release-releng-blocking, sig-k8s-infra-k8sio
+    testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
+    testgrid-num-failures-to-alert: '1'
+  rerun_auth_config:
+    github_team_slugs:
+      - org: kubernetes
+        slug: release-managers
+
+# ci-k8sio-image-promo runs every 4 hours, to make sure that the destination
+# GCRs do not deviate away from the intent of the manifest.
+- interval: 4h
+  cluster: k8s-infra-prow-build-trusted
+  max_concurrency: 1
+  # This name is the "job name", passed in as "--job=NAME" for mkpj.
+  name: ci-k8sio-image-promo
+  # Enable Pod Utilities.
+  # See https://git.k8s.io/test-infra/prow/pod-utilities.md.
+  decorate: true
+  extra_refs:
+  # We clone the below repo automatically (via Pod Utilities), and get dropped
+  # into /home/prow/go/src/github.com/kubernetes/k8s.io.
+  - org: kubernetes
+    repo: k8s.io
+    base_ref: main
+  spec:
+    # The k8s-artifacts-prod name was chosen in
+    # https://github.com/kubernetes/k8s.io/pull/695.
+    serviceAccountName: k8s-infra-gcr-promoter
+    containers:
+    - image: k8s.gcr.io/artifact-promoter/cip:v3.2.0
+      command:
+      - cip
+      args:
+      - run
+      - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
+      - --confirm
+  annotations:
+    testgrid-dashboards: sig-release-releng-blocking, sig-k8s-infra-k8sio
+    testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
+    testgrid-num-failures-to-alert: '1'
+  rerun_auth_config:
+    github_team_slugs:
+      - org: kubernetes
+        slug: release-managers
+
+- interval: 4h
+  cluster: k8s-infra-prow-build-trusted
+  max_concurrency: 1
+  name: ci-k8sio-gcr-prod-backup
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: k8s.io
+    base_ref: main
+  spec:
+    serviceAccountName: k8s-infra-gcr-promoter-bak
+    containers:
+    - image: k8s.gcr.io/releng/releng-ci:v0.1.1
+      command:
+      - infra/gcp/backup_tools/backup.sh
+      env:
+      # Even though GOPATH is set to /go in the kubekins-e2e image, we set it
+      # here anyway in case the underlying image changes (the backup.sh script
+      # needs it to be defined).
+      - name: GOPATH
+        value: /go
+  annotations:
+    testgrid-dashboards: sig-release-releng-blocking
+    testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
+    testgrid-num-failures-to-alert: '1'
+  rerun_auth_config:
+    github_team_slugs:
+      - org: kubernetes
+        slug: release-managers

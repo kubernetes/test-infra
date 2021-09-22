@@ -34,7 +34,7 @@ spec:
       serviceAccountName: tide
       containers:
       - name: tide
-        image: gcr.io/k8s-prow/tide:v20210802-bd4b5f6003
+        image: gcr.io/k8s-prow/tide:v20210921-341cf105e8
         args:
         - --dry-run=false
         - --github-endpoint=http://ghproxy
@@ -47,6 +47,8 @@ spec:
         ports:
         - name: http
           containerPort: 8888
+        - name: metrics
+          containerPort: 9090
         volumeMounts:
         - name: oauth
           mountPath: /etc/github

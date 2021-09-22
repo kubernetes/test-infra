@@ -106,6 +106,8 @@ type options struct {
 	nodeTestArgs            string
 	nodeTests               bool
 	outputDir               string
+	preTestCmd              string
+	postTestCmd             string
 	provider                string
 	publish                 string
 	runtimeConfig           string
@@ -173,6 +175,8 @@ func defineFlags() *options {
 	flag.StringVar(&o.nodeTestArgs, "node-test-args", "", "Test args specifically for node e2e tests.")
 	flag.BoolVar(&o.noAllowDup, "no-allow-dup", false, "if set --allow-dup will not be passed to push-build and --stage will error if the build already exists on the gcs path")
 	flag.BoolVar(&o.nodeTests, "node-tests", false, "If true, run node-e2e tests.")
+	flag.StringVar(&o.preTestCmd, "pre-test-cmd", "", "If set, run the provided command before running any tests.")
+	flag.StringVar(&o.postTestCmd, "post-test-cmd", "", "If set, run the provided command after running all the tests.")
 	flag.StringVar(&o.provider, "provider", "", "Kubernetes provider such as gce, gke, aws, etc")
 	flag.StringVar(&o.publish, "publish", "", "Publish version to the specified gs:// path on success")
 	flag.StringVar(&o.runtimeConfig, "runtime-config", "", "If set, API versions can be turned on or off while bringing up the API server.")
@@ -212,15 +216,15 @@ var suite util.TestSuite = util.TestSuite{Name: "kubetest"}
 func validWorkingDirectory() error {
 	cwd, err := os.Getwd()
 	if err != nil {
-		return fmt.Errorf("could not get pwd: %v", err)
+		return fmt.Errorf("could not get pwd: %w", err)
 	}
 	acwd, err := filepath.Abs(cwd)
 	if err != nil {
-		return fmt.Errorf("failed to convert %s to an absolute path: %v", cwd, err)
+		return fmt.Errorf("failed to convert %s to an absolute path: %w", cwd, err)
 	}
 	// This also matches "kubernetes_skew" for upgrades.
 	if !strings.Contains(filepath.Base(acwd), "kubernetes") {
-		return fmt.Errorf("must run from kubernetes directory root. current: %v", acwd)
+		return fmt.Errorf("must run from kubernetes directory root. current: %s", acwd)
 	}
 	return nil
 }
@@ -349,13 +353,13 @@ func complete(o *options) error {
 		o.testArgs += fmt.Sprintf(" --logexporter-gcs-path=%s", o.logexporterGCSPath)
 	}
 	if err := prepare(o); err != nil {
-		return fmt.Errorf("failed to prepare test environment: %v", err)
+		return fmt.Errorf("failed to prepare test environment: %w", err)
 	}
 	// Get the deployer before we acquire k8s so any additional flag
 	// verifications happen early.
 	deploy, err := getDeployer(o)
 	if err != nil {
-		return fmt.Errorf("error creating deployer: %v", err)
+		return fmt.Errorf("error creating deployer: %w", err)
 	}
 
 	// Check soaking before run tests
@@ -373,18 +377,18 @@ func complete(o *options) error {
 	}
 
 	if err := acquireKubernetes(o, deploy); err != nil {
-		return fmt.Errorf("failed to acquire k8s binaries: %v", err)
+		return fmt.Errorf("failed to acquire k8s binaries: %w", err)
 	}
 	if o.extract.Enabled() {
 		// If we specified `--extract-source` we will already be in the correct directory
 		if !o.extractSource {
 			if err := os.Chdir("kubernetes"); err != nil {
-				return fmt.Errorf("failed to chdir to kubernetes dir: %v", err)
+				return fmt.Errorf("failed to chdir to kubernetes dir: %w", err)
 			}
 		}
 	}
 	if err := validWorkingDirectory(); err != nil {
-		return fmt.Errorf("called from invalid working directory: %v", err)
+		return fmt.Errorf("called from invalid working directory: %w", err)
 	}
 
 	if o.down {
@@ -665,10 +669,10 @@ func prepareGcp(o *options) error {
 			o.gcpNodeImage = distro
 			o.gcpMasterImage = distro
 			if err := os.Setenv("KUBE_NODE_OS_DISTRIBUTION", distro); err != nil {
-				return fmt.Errorf("could not set KUBE_NODE_OS_DISTRIBUTION=%s: %v", distro, err)
+				return fmt.Errorf("could not set KUBE_NODE_OS_DISTRIBUTION=%s: %w", distro, err)
 			}
 			if err := os.Setenv("KUBE_MASTER_OS_DISTRIBUTION", distro); err != nil {
-				return fmt.Errorf("could not set KUBE_MASTER_OS_DISTRIBUTION=%s: %v", distro, err)
+				return fmt.Errorf("could not set KUBE_MASTER_OS_DISTRIBUTION=%s: %w", distro, err)
 			}
 		}
 
@@ -756,7 +760,7 @@ func prepareGcp(o *options) error {
 		defer cancel()
 		p, err := boskos.AcquireWait(ctx, resType, "free", "busy")
 		if err != nil {
-			return fmt.Errorf("--provider=%s boskos failed to acquire project: %v", o.provider, err)
+			return fmt.Errorf("--provider=%s boskos failed to acquire project: %w", o.provider, err)
 		}
 
 		if p == nil {
@@ -774,17 +778,17 @@ func prepareGcp(o *options) error {
 	}
 
 	if err := os.Setenv("CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS", "1"); err != nil {
-		return fmt.Errorf("could not set CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1: %v", err)
+		return fmt.Errorf("could not set CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1: %w", err)
 	}
 
 	if err := control.FinishRunning(exec.Command("gcloud", "config", "set", "project", o.gcpProject)); err != nil {
-		return fmt.Errorf("fail to set project %s : err %v", o.gcpProject, err)
+		return fmt.Errorf("fail to set project %s : err %w", o.gcpProject, err)
 	}
 
 	// TODO(krzyzacy):Remove this when we retire migrateGcpEnvAndOptions
 	// Note that a lot of scripts are still depend on this env in k/k repo.
 	if err := os.Setenv("PROJECT", o.gcpProject); err != nil {
-		return fmt.Errorf("fail to set env var PROJECT %s : err %v", o.gcpProject, err)
+		return fmt.Errorf("fail to set env var PROJECT %s : err %w", o.gcpProject, err)
 	}
 
 	// Ensure ssh keys exist

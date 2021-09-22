@@ -6,6 +6,7 @@ aliases:
   - cjwagner
   - e-blackwelder
   - fejta
+  - listx
   - michelle192837
   - mpherman2
 
@@ -16,7 +17,7 @@ aliases:
     - MushuEE
     - spiffxp
 
-  wg-k8s-infra-oncall:
+  sig-k8s-infra-oncall:
   - BenTheElder
   # kubernetes.io org admins
   - ameukam
@@ -73,6 +74,11 @@ aliases:
     - brancz
     - ehashman
     - logicalhan
+  sig-k8s-infra-leads:
+    - ameukam
+    - dims
+    - spiffxp
+    - thockin
   sig-multicluster-leads:
     - pmorie
     - quinton-hoole
@@ -85,7 +91,6 @@ aliases:
     - derekwaynecarr
   sig-release-leads:
     - cpanato
-    - hasheddan
     - jeremyrickard
     - justaugustus
     - puerco
@@ -136,10 +141,6 @@ aliases:
     - cantbewong
     - cindyxing
     - dejanb
-  wg-k8s-infra-leads:
-    - ameukam
-    - dims
-    - spiffxp
   wg-lts-leads:
     - imkin
     - quinton-hoole
@@ -217,7 +218,7 @@ aliases:
     - frapposelli
 ## END CUSTOM CONTENT
 
-  # Modified from https://git.k8s.io/sig-release/release-managers.md#release-managers
+  # Modified from https://kubernetes.io/releases/release-managers/#release-managers
   #
   # While most Release Managers are included in the reviewers group, approvals
   # (especially for image pushing and container promotion jobs) are restricted
@@ -230,13 +231,13 @@ aliases:
   #
   release-engineering-approvers:
     - cpanato # SIG Technical Lead / RelEng subproject owner / Release Manager
-    - hasheddan # SIG Technical Lead / RelEng subproject owner / Release Manager
+    - jeremyrickard # SIG Technical Lead / RelEng subproject owner
     - justaugustus # SIG Chair / RelEng subproject owner / Release Manager
     - puerco # SIG Technical Lead / RelEng subproject owner / Release Manager
     - saschagrunert # SIG Chair / RelEng subproject owner / Release Manager
   release-engineering-reviewers:
     - cpanato # SIG Technical Lead / RelEng subproject owner / Release Manager
-    - hasheddan # SIG Technical Lead / RelEng subproject owner / Release Manager
+    - jeremyrickard # SIG Technical Lead / RelEng subproject owner
     - justaugustus # SIG Chair / RelEng subproject owner / Release Manager
     - puerco # SIG Technical Lead / RelEng subproject owner / Release Manager
     - saschagrunert # SIG Chair / RelEng subproject owner / Release Manager
@@ -298,3 +299,19 @@ aliases:
   - pwittrock
 
   # end sigs.k8s.io/kubebuilder/OWNERS_ALIASES
+
+  # copied from sigs.k8s.io/promo-tools/OWNERS_ALIASES
+  promo-tools-approvers:
+    - cpanato
+    - jeremyrickard
+    - justaugustus
+    - listx
+    - puerco
+    - saschagrunert
+  promo-tools-reviewers:
+    - cpanato
+    - jeremyrickard
+    - justaugustus
+    - listx
+    - puerco
+    - saschagrunert

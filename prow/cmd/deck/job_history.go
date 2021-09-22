@@ -89,7 +89,7 @@ type blobStorageBucket struct {
 // newBlobStorageBucket validates the bucketName and returns a new instance of blobStorageBucket.
 func newBlobStorageBucket(bucketName, storageProvider string, config *config.Config, opener pkgio.Opener) (blobStorageBucket, error) {
 	if err := config.ValidateStorageBucket(bucketName); err != nil {
-		return blobStorageBucket{}, fmt.Errorf("could not instantiate storage bucket: %v", err)
+		return blobStorageBucket{}, fmt.Errorf("could not instantiate storage bucket: %w", err)
 	}
 	return blobStorageBucket{bucketName, storageProvider, opener}, nil
 }
@@ -129,7 +129,7 @@ func readLatestBuild(ctx context.Context, bucket storageBucket, root string) (ui
 	}
 	n, err := strconv.ParseUint(strings.TrimSpace(string(data)), 10, 64)
 	if err != nil {
-		return emptyID, fmt.Errorf("failed to parse %s: %v", key, err)
+		return emptyID, fmt.Errorf("failed to parse %s: %w", key, err)
 	}
 	return n, nil
 }
@@ -154,7 +154,7 @@ func (bucket blobStorageBucket) resolveSymLink(ctx context.Context, symLink stri
 func (bucket blobStorageBucket) spyglassLink(ctx context.Context, root, id string) (string, error) {
 	p, err := bucket.getPath(ctx, root, id, "")
 	if err != nil {
-		return "", fmt.Errorf("failed to get path: %v", err)
+		return "", fmt.Errorf("failed to get path: %w", err)
 	}
 	return path.Join(spyglassPrefix, bucket.storageProvider, bucket.name, p), nil
 }
@@ -175,11 +175,11 @@ func (bucket blobStorageBucket) getPath(ctx context.Context, root, id, fname str
 func readJSON(ctx context.Context, bucket storageBucket, key string, data interface{}) error {
 	rawData, err := bucket.readObject(ctx, key)
 	if err != nil {
-		return fmt.Errorf("failed to read %s: %v", key, err)
+		return fmt.Errorf("failed to read %s: %w", key, err)
 	}
 	err = json.Unmarshal(rawData, &data)
 	if err != nil {
-		return fmt.Errorf("failed to parse %s: %v", key, err)
+		return fmt.Errorf("failed to parse %s: %w", key, err)
 	}
 	return nil
 }
@@ -245,7 +245,7 @@ func (bucket blobStorageBucket) listBuildIDs(ctx context.Context, root string) (
 			if err == nil {
 				ids = append(ids, i)
 			} else {
-				logrus.WithField("gcs-path", dir).Warningf("unrecognized directory name (expected int64): %s", leaf)
+				logrus.WithFields(logrus.Fields{"gcs-path": dir, "dir-name": leaf}).Debug("Unrecognized directory name (expected int64)")
 			}
 		}
 		if listErr != nil {
@@ -316,7 +316,7 @@ func parseJobHistURL(url *url.URL) (storageProvider, bucketName, root string, bu
 	if idVals := url.Query()[idParam]; len(idVals) >= 1 && idVals[0] != "" {
 		buildID, err = strconv.ParseUint(idVals[0], 10, 64)
 		if err != nil {
-			err = fmt.Errorf("invalid value for %s: %v", idParam, err)
+			err = fmt.Errorf("invalid value for %s: %w", idParam, err)
 			return
 		}
 		if buildID < 1 {
@@ -348,7 +348,7 @@ func getBuildData(ctx context.Context, bucket storageBucket, dir string) (buildD
 	started := gcs.Started{}
 	err := readJSON(ctx, bucket, path.Join(dir, prowv1.StartedStatusFile), &started)
 	if err != nil {
-		return b, fmt.Errorf("failed to read started.json: %v", err)
+		return b, fmt.Errorf("failed to read started.json: %w", err)
 	}
 	b.Started = time.Unix(started.Timestamp, 0)
 	finished := gcs.Finished{}
@@ -361,7 +361,7 @@ func getBuildData(ctx context.Context, bucket storageBucket, dir string) (buildD
 				break
 			}
 		}
-		logrus.Debugf("failed to read finished.json (job might be unfinished): %v", err)
+		logrus.WithError(err).Debugf("failed to read finished.json (job might be unfinished)")
 	}
 
 	pj := prowv1.ProwJob{}
@@ -431,7 +431,7 @@ func getJobHistory(ctx context.Context, url *url.URL, cfg config.Getter, opener 
 
 	storageProvider, bucketName, root, top, err := parseJobHistURL(url)
 	if err != nil {
-		return tmpl, fmt.Errorf("invalid url %s: %v", url.String(), err)
+		return tmpl, fmt.Errorf("invalid url %s: %w", url.String(), err)
 	}
 	bucket, err := newBlobStorageBucket(bucketName, storageProvider, cfg(), opener)
 	if err != nil {
@@ -440,7 +440,7 @@ func getJobHistory(ctx context.Context, url *url.URL, cfg config.Getter, opener 
 	tmpl.Name = root
 	latest, err := readLatestBuild(ctx, bucket, root)
 	if err != nil {
-		return tmpl, fmt.Errorf("failed to locate build data: %v", err)
+		return tmpl, fmt.Errorf("failed to locate build data: %w", err)
 	}
 	if top == emptyID || top > latest {
 		top = latest
@@ -454,7 +454,7 @@ func getJobHistory(ctx context.Context, url *url.URL, cfg config.Getter, opener 
 	defer cancel()
 	buildIDs, err := bucket.listBuildIDs(buildIDListCtx, root)
 	if err != nil && !errors.Is(err, context.DeadlineExceeded) {
-		return tmpl, fmt.Errorf("failed to get build ids: %v", err)
+		return tmpl, fmt.Errorf("failed to get build ids: %w", err)
 	}
 
 	sort.Sort(sort.Reverse(uint64slice(buildIDs)))
@@ -495,13 +495,17 @@ func getJobHistory(ctx context.Context, url *url.URL, cfg config.Getter, opener 
 			}
 			b, err := getBuildData(ctx, bucket, dir)
 			if err != nil {
-				logrus.Warningf("build %d information incomplete: %v", buildID, err)
+				if pkgio.IsNotExist(err) {
+					logrus.WithError(err).WithField("build-id", buildID).Debug("Build information incomplete.")
+				} else {
+					logrus.WithError(err).WithField("build-id", buildID).Warning("Build information incomplete.")
+				}
 			}
 			b.index = i
 			b.ID = id
 			b.SpyglassLink, err = bucket.spyglassLink(ctx, root, id)
 			if err != nil {
-				logrus.Errorf("failed to get spyglass link: %v", err)
+				logrus.WithError(err).Errorf("failed to get spyglass link")
 			}
 			bch <- b
 		}(i, buildID)

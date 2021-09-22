@@ -62,14 +62,6 @@ func TestGatherOptions(t *testing.T) {
 				o.dryRun = false
 			},
 		},
-		{
-			name: "--dry-run=true requires --deck-url",
-			args: map[string]string{
-				"--dry-run":  "true",
-				"--deck-url": "",
-			},
-			err: true,
-		},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -85,7 +77,6 @@ func TestGatherOptions(t *testing.T) {
 				},
 				dryRun:                   true,
 				github:                   ghoptions,
-				kubernetes:               flagutil.KubernetesOptions{DeckURI: "http://whatever-deck-url"},
 				kubeconfigCtx:            "whatever-kubeconfig-context",
 				hookUrl:                  "http://whatever-hook-url",
 				hmacTokenSecretNamespace: "default",
@@ -98,7 +89,6 @@ func TestGatherOptions(t *testing.T) {
 
 			argMap := map[string]string{
 				"--config-path":            "yo",
-				"--deck-url":               "http://whatever-deck-url",
 				"--hook-url":               "http://whatever-hook-url",
 				"--kubeconfig-context":     "whatever-kubeconfig-context",
 				"--hmac-token-secret-name": "hmac-token",

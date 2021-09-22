@@ -7,7 +7,7 @@ presubmits:
     - release/1.5
     decorate: true
     annotations:
-      testgrid-dashboards: sig-node-containerd-io
+      testgrid-dashboards: sig-node-containerd
       testgrid-tab-name: pull-containerd-build
       description: build artifacts
     labels:
@@ -15,7 +15,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
         command:
         - runner.sh
         args:
@@ -43,7 +43,7 @@ presubmits:
       base_ref: master
       path_alias: k8s.io/test-infra
     annotations:
-      testgrid-dashboards: sig-node-containerd-io
+      testgrid-dashboards: sig-node-containerd
       testgrid-tab-name: pull-containerd-node-e2e
       description: run node e2e tests
     labels:
@@ -52,7 +52,7 @@ presubmits:
     spec:
       containers:
       - name: pull-containerd-node-e2e
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210721-2b77449-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
         env:
         - name: USE_TEST_INFRA_LOG_DUMPING
           value: "true"

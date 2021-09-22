@@ -9,6 +9,7 @@ release(
     component("prometheus_operator_rbac", MULTI_KIND),
     component("prometheus_operator", "deployment"),
     component("prow_servicemonitors", MULTI_KIND),
+    component("prow_podmonitors", MULTI_KIND),
     component("prometheus_rbac", MULTI_KIND),
     component("prow", "prometheus"),
     component("prometheus_expose", MULTI_KIND),

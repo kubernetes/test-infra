@@ -121,6 +121,9 @@ type JobBase struct {
 	// Presubmits and Postsubmits can also be set to hidden by
 	// adding their repository in Decks `hidden_repo` setting.
 	Hidden bool `json:"hidden,omitempty"`
+	// ProwJobDefault holds configuration options provided as defaults
+	// in the Prow config
+	ProwJobDefault *prowapi.ProwJobDefault `json:"prowjob_defaults,omitempty"`
 
 	UtilityConfig
 }
@@ -161,6 +164,17 @@ type Presubmit struct {
 // Postsubmit runs on push events.
 type Postsubmit struct {
 	JobBase
+
+	// AlwaysRun determines whether we should try to run this job it (or not run
+	// it). The key difference with the AlwaysRun field for Presubmits is that
+	// here, we essentially treat "true" as the default value as Postsubmits by
+	// default run unless there is some falsifying condition.
+	//
+	// The use of a pointer allows us to check if the field was or was not
+	// provided by the user. This is required because otherwise when we
+	// Unmarshal() the bytes into this struct, we'll get a default "false" value
+	// if this field is not provided, which is the opposite of what we want.
+	AlwaysRun *bool `json:"always_run,omitempty"`
 
 	RegexpChangeMatcher
 
@@ -331,12 +345,26 @@ func (ps Postsubmit) ShouldRun(baseRef string, changes ChangedFilesProvider) (bo
 	if !ps.CouldRun(baseRef) {
 		return false, nil
 	}
+
+	// Consider `run_if_changed` or `skip_if_only_changed` rules.
 	if determined, shouldRun, err := ps.RegexpChangeMatcher.ShouldRun(changes); err != nil {
 		return false, err
 	} else if determined {
 		return shouldRun, nil
 	}
-	// Postsubmits default to always run
+
+	// At this point neither `run_if_changed` nor `skip_if_only_changed` were
+	// set. We're left with 2 cases: (1) `always_run: ...` was provided
+	// explicitly, or (2) this field was not defined in the job at all. In the
+	// second case, we default to "true".
+
+	// If the `always_run` field was explicitly set, return it.
+	if ps.AlwaysRun != nil {
+		return *ps.AlwaysRun, nil
+	}
+
+	// Postsubmits default to always run. This is the case if `always_run` was
+	// not explicitly set.
 	return true, nil
 }
 
@@ -402,7 +430,7 @@ func NewGitHubDeferredChangedFilesProvider(client githubClient, org, repo string
 		if changedFiles == nil {
 			changes, err := client.GetPullRequestChanges(org, repo, num)
 			if err != nil {
-				return nil, fmt.Errorf("error getting pull request changes: %v", err)
+				return nil, fmt.Errorf("error getting pull request changes: %w", err)
 			}
 			for _, change := range changes {
 				changedFiles = append(changedFiles, change.Filename)
@@ -454,7 +482,7 @@ func (u *UtilityConfig) Validate() error {
 		if len(u.CloneURI) != 0 {
 			uri, err := url.Parse(cloneURI)
 			if err != nil {
-				return fmt.Errorf("couldn't parse uri from clone_uri: %v", err)
+				return fmt.Errorf("couldn't parse uri from clone_uri: %w", err)
 			}
 
 			if u.DecorationConfig != nil && u.DecorationConfig.OauthTokenSecret != nil {
@@ -473,7 +501,7 @@ func (u *UtilityConfig) Validate() error {
 
 	for i, ref := range u.ExtraRefs {
 		if err := cloneURIValidate(ref.CloneURI); err != nil {
-			return fmt.Errorf("extra_ref[%d]: %v", i, err)
+			return fmt.Errorf("extra_ref[%d]: %w", i, err)
 		}
 	}
 

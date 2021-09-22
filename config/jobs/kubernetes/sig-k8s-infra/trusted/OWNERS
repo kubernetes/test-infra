@@ -1,0 +1,9 @@
+# Only oncall gets approval here because it provides access to magic secrets.
+options:
+  no_parent_owners: true
+
+reviewers:
+- sig-k8s-infra-oncall
+approvers:
+- sig-k8s-infra-oncall
+- test-infra-oncall

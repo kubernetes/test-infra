@@ -119,7 +119,6 @@ func TestGatherOptions(t *testing.T) {
 					PluginConfigPathDefault:                  "/etc/plugins/plugins.yaml",
 					SupplementalPluginsConfigsFileNameSuffix: "_pluginconfig.yaml",
 				},
-				kubernetes:             flagutil.KubernetesOptions{DeckURI: "http://whatever"},
 				tokenBurst:             100,
 				tokensPerHour:          300,
 				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
@@ -131,8 +130,7 @@ func TestGatherOptions(t *testing.T) {
 			}
 
 			args := append(tc.args,
-				"--config-path=yo",
-				"--deck-url=http://whatever")
+				"--config-path=yo")
 			fs := flag.NewFlagSet("fake-flags", flag.PanicOnError)
 			actual := gatherOptions(fs, args...)
 			switch err := actual.Validate(); {

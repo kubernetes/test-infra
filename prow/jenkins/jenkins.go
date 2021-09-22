@@ -283,7 +283,7 @@ func NewClient(
 	}
 	if c.authConfig.CSRFProtect {
 		if err := c.CrumbRequest(); err != nil {
-			return nil, fmt.Errorf("cannot get Jenkins crumb: %v", err)
+			return nil, fmt.Errorf("cannot get Jenkins crumb: %w", err)
 		}
 	}
 	return c, nil
@@ -306,7 +306,7 @@ func (c *Client) CrumbRequest() error {
 		CrumbRequestField string `json:"crumbRequestField"`
 	}{}
 	if err := json.Unmarshal(data, &crumbResp); err != nil {
-		return fmt.Errorf("cannot unmarshal crumb response: %v", err)
+		return fmt.Errorf("cannot unmarshal crumb response: %w", err)
 	}
 	c.authConfig.csrfToken = crumbResp.Crumb
 	c.authConfig.csrfRequestField = crumbResp.CrumbRequestField
@@ -471,7 +471,7 @@ func (c *Client) GetJobInfo(spec *prowapi.ProwJobSpec) (*JobInfo, error) {
 	var jobInfo JobInfo
 
 	if err := json.Unmarshal(data, &jobInfo); err != nil {
-		return nil, fmt.Errorf("Cannot unmarshal job info from API: %v", err)
+		return nil, fmt.Errorf("Cannot unmarshal job info from API: %w", err)
 	}
 
 	c.logger.Tracef("JobInfo: %+v", jobInfo)
@@ -616,7 +616,7 @@ func (c *Client) BuildFromSpec(spec *prowapi.ProwJobSpec, buildID, prowJobID str
 	}
 
 	if err := c.EnsureBuildableJob(spec); err != nil {
-		return fmt.Errorf("Job %v cannot be build: %v", spec.Job, err)
+		return fmt.Errorf("Job %v cannot be build: %w", spec.Job, err)
 	}
 
 	return c.LaunchBuild(spec, params)
@@ -676,13 +676,13 @@ func (c *Client) GetEnqueuedBuilds(jobs []BuildQueryParams) (map[string]Build, e
 
 	data, err := c.Get("/queue/api/json?tree=items[task[name],actions[parameters[name,value]]]")
 	if err != nil {
-		return nil, fmt.Errorf("cannot list builds from the queue: %v", err)
+		return nil, fmt.Errorf("cannot list builds from the queue: %w", err)
 	}
 	page := struct {
 		QueuedBuilds []Build `json:"items"`
 	}{}
 	if err := json.Unmarshal(data, &page); err != nil {
-		return nil, fmt.Errorf("cannot unmarshal builds from the queue: %v", err)
+		return nil, fmt.Errorf("cannot unmarshal builds from the queue: %w", err)
 	}
 	jenkinsBuilds := make(map[string]Build)
 	for _, jb := range page.QueuedBuilds {
@@ -721,13 +721,13 @@ func (c *Client) GetBuilds(job string) (map[string]Build, error) {
 			c.logger.WithError(err).Warnf("Cannot list builds for job %q", job)
 			return nil, nil
 		}
-		return nil, fmt.Errorf("cannot list builds for job %q: %v", job, err)
+		return nil, fmt.Errorf("cannot list builds for job %q: %w", job, err)
 	}
 	page := struct {
 		Builds []Build `json:"builds"`
 	}{}
 	if err := json.Unmarshal(data, &page); err != nil {
-		return nil, fmt.Errorf("cannot unmarshal builds for job %q: %v", job, err)
+		return nil, fmt.Errorf("cannot unmarshal builds for job %q: %w", job, err)
 	}
 	jenkinsBuilds := make(map[string]Build)
 	for _, jb := range page.Builds {

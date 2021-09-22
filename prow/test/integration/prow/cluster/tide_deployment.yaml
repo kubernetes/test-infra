@@ -37,7 +37,6 @@ spec:
         image: localhost:5000/tide
         args:
         - --dry-run=true
-        - --deck-url=http://deck:8080
         - --github-endpoint=http://fakeghserver
         - --github-token-path=/etc/github/oauth
         - --config-path=/etc/config/config.yaml

@@ -17,8 +17,13 @@ branch-protection:
     enforce_admins: false
 
     # Exclude specifies a set of regular expressions which identify branches
-    # that should be excluded from the protection policy
+    # that should be excluded from the protection policy, mutually exclusive with Include
     exclude:
+      - ""
+
+    # Include specifies a set of regular expressions which identify branches
+    # that should be included from the protection policy, mutually exclusive with Exclude
+    include:
       - ""
 
     # Orgs holds branch protection options for orgs by name
@@ -34,8 +39,13 @@ branch-protection:
             enforce_admins: false
 
             # Exclude specifies a set of regular expressions which identify branches
-            # that should be excluded from the protection policy
+            # that should be excluded from the protection policy, mutually exclusive with Include
             exclude:
+              - ""
+
+            # Include specifies a set of regular expressions which identify branches
+            # that should be included from the protection policy, mutually exclusive with Exclude
+            include:
               - ""
 
             # Protect overrides whether branch protection is enabled if set.
@@ -59,8 +69,13 @@ branch-protection:
                             enforce_admins: false
 
                             # Exclude specifies a set of regular expressions which identify branches
-                            # that should be excluded from the protection policy
+                            # that should be excluded from the protection policy, mutually exclusive with Include
                             exclude:
+                              - ""
+
+                            # Include specifies a set of regular expressions which identify branches
+                            # that should be included from the protection policy, mutually exclusive with Exclude
+                            include:
                               - ""
 
                             # Protect overrides whether branch protection is enabled if set.
@@ -112,8 +127,13 @@ branch-protection:
                     enforce_admins: false
 
                     # Exclude specifies a set of regular expressions which identify branches
-                    # that should be excluded from the protection policy
+                    # that should be excluded from the protection policy, mutually exclusive with Include
                     exclude:
+                      - ""
+
+                    # Include specifies a set of regular expressions which identify branches
+                    # that should be included from the protection policy, mutually exclusive with Exclude
+                    include:
                       - ""
 
                     # Protect overrides whether branch protection is enabled if set.
@@ -419,6 +439,11 @@ github_reporter:
 
     # defaults to both presubmit and postsubmit jobs.
     job_types_to_report:
+      - ""
+
+    # NoCommentRepos is a list of orgs and org/repos for which failure report
+    # comments should not be maintained. Status contexts will still be written.
+    no_comment_repos:
       - ""
 horologium:
     # TickInterval is the interval in which we check if new jobs need to be
@@ -909,6 +934,31 @@ plank:
 pod_namespace: ' '
 
 
+# ProwJobDefaultEntries holds a list of defaults for specific values
+# Each entry in the slice specifies Repo and CLuster regexp filter fields to
+# match against the jobs and a corresponding ProwJobDefault . All entries that
+# match a job are used. Later matching entries override the fields of earlier
+# matching entires.
+prowjob_default_entries:
+  - # Cluster matches against the cluster alias of the build cluster that the
+    # ProwJob is configured to run on. Recall that ProwJobs default to running on
+    # the "default" build cluster if they omit the "cluster" field in config.
+    cluster: ' '
+
+    # Config is the ProwJobDefault to apply if the filter fields all match the
+    # ProwJob. Note that when multiple entries match a ProwJob they are all used
+    # by sequentially merging with later entries overriding fields from earlier
+    # entries.
+    config:
+        tenant_id: ' '
+
+    # OrgRepo matches against the "org" or "org/repo" that the presubmit or postsubmit
+    # is associated with. If the job is a periodic, extra_refs[0] is used. If the
+    # job is a periodic without extra_refs, the empty string will be used.
+    # If this field is omitted all jobs will match.
+    repo: ' '
+
+
 # ProwJobNamespace is the namespace in the cluster that prow
 # components will use for looking up ProwJobs. The namespace
 # needs to exist and will not be created by prow.
@@ -926,6 +976,7 @@ pubsub_subscriptions:
 pubsub_triggers:
   - allowed_clusters:
       - ""
+    max_outstanding_messages: 0
     project: ' '
     topics:
       - ""

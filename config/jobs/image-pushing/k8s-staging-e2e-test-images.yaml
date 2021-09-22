@@ -15,7 +15,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/agnhost\/'
@@ -24,7 +24,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210917-ee1e7c845b
             command:
               - /run.sh
             args:
@@ -33,7 +33,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
             env:
@@ -54,7 +54,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/apparmor-loader\/'
@@ -63,7 +63,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210917-ee1e7c845b
             command:
               - /run.sh
             args:
@@ -72,7 +72,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
             env:
@@ -93,7 +93,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/busybox\/'
@@ -102,7 +102,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210917-ee1e7c845b
             command:
               - /run.sh
             args:
@@ -111,7 +111,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
             env:
@@ -132,7 +132,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/cuda-vector-add\/'
@@ -141,7 +141,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210917-ee1e7c845b
             command:
               - /run.sh
             args:
@@ -150,7 +150,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
             env:
@@ -171,7 +171,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/cuda-vector-add-old\/'
@@ -180,7 +180,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210917-ee1e7c845b
             command:
               - /run.sh
             args:
@@ -189,7 +189,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
             env:
@@ -210,7 +210,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/echoserver\/'
@@ -219,7 +219,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210917-ee1e7c845b
             command:
               - /run.sh
             args:
@@ -228,7 +228,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
             env:
@@ -249,7 +249,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/glusterdynamic-provisioner\/'
@@ -258,7 +258,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210917-ee1e7c845b
             command:
               - /run.sh
             args:
@@ -267,7 +267,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
             env:
@@ -288,7 +288,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/httpd\/'
@@ -297,7 +297,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210917-ee1e7c845b
             command:
               - /run.sh
             args:
@@ -306,7 +306,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
             env:
@@ -327,7 +327,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/httpd-new\/'
@@ -336,7 +336,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210917-ee1e7c845b
             command:
               - /run.sh
             args:
@@ -345,7 +345,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
             env:
@@ -366,7 +366,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/ipc-utils\/'
@@ -375,7 +375,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210917-ee1e7c845b
             command:
               - /run.sh
             args:
@@ -384,7 +384,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
             env:
@@ -405,7 +405,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/jessie-dnsutils\/'
@@ -414,7 +414,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210917-ee1e7c845b
             command:
               - /run.sh
             args:
@@ -423,7 +423,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
             env:
@@ -444,7 +444,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/kitten\/'
@@ -453,7 +453,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210917-ee1e7c845b
             command:
               - /run.sh
             args:
@@ -462,7 +462,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
             env:
@@ -483,7 +483,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/metadata-concealment\/'
@@ -492,7 +492,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210917-ee1e7c845b
             command:
               - /run.sh
             args:
@@ -501,7 +501,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
             env:
@@ -522,7 +522,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/nautilus\/'
@@ -531,7 +531,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210917-ee1e7c845b
             command:
               - /run.sh
             args:
@@ -540,7 +540,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
             env:
@@ -561,7 +561,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/nginx\/'
@@ -570,7 +570,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210917-ee1e7c845b
             command:
               - /run.sh
             args:
@@ -579,7 +579,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
             env:
@@ -600,7 +600,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/nginx-new\/'
@@ -609,7 +609,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210917-ee1e7c845b
             command:
               - /run.sh
             args:
@@ -618,7 +618,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
             env:
@@ -639,7 +639,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/node-perf\/tf-wide-deep\/'
@@ -648,7 +648,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210917-ee1e7c845b
             command:
               - /run.sh
             args:
@@ -657,7 +657,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
             env:
@@ -678,7 +678,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/node-perf\/npb-ep\/'
@@ -687,7 +687,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210917-ee1e7c845b
             command:
               - /run.sh
             args:
@@ -696,7 +696,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
             env:
@@ -717,7 +717,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/node-perf\/npb-is\/'
@@ -726,7 +726,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210917-ee1e7c845b
             command:
               - /run.sh
             args:
@@ -735,7 +735,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
             env:
@@ -756,7 +756,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/nonewprivs\/'
@@ -765,7 +765,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210917-ee1e7c845b
             command:
               - /run.sh
             args:
@@ -774,7 +774,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
             env:
@@ -795,7 +795,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/nonroot\/'
@@ -804,7 +804,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210917-ee1e7c845b
             command:
               - /run.sh
             args:
@@ -813,7 +813,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
             env:
@@ -834,7 +834,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/perl\/'
@@ -843,7 +843,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210917-ee1e7c845b
             command:
               - /run.sh
             args:
@@ -852,7 +852,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
             env:
@@ -873,7 +873,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/pets\/redis-installer\/'
@@ -882,7 +882,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210917-ee1e7c845b
             command:
               - /run.sh
             args:
@@ -891,7 +891,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
             env:
@@ -912,7 +912,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/pets\/peer-finder\/'
@@ -921,7 +921,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210917-ee1e7c845b
             command:
               - /run.sh
             args:
@@ -930,7 +930,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
             env:
@@ -951,7 +951,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/pets\/zookeeper-installer\/'
@@ -960,7 +960,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210917-ee1e7c845b
             command:
               - /run.sh
             args:
@@ -969,7 +969,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
             env:
@@ -990,7 +990,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/redis\/'
@@ -999,7 +999,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210917-ee1e7c845b
             command:
               - /run.sh
             args:
@@ -1008,7 +1008,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
             env:
@@ -1029,7 +1029,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/regression-issue-74839\/'
@@ -1038,7 +1038,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210917-ee1e7c845b
             command:
               - /run.sh
             args:
@@ -1047,7 +1047,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
             env:
@@ -1068,7 +1068,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/resource-consumer\/'
@@ -1077,7 +1077,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210917-ee1e7c845b
             command:
               - /run.sh
             args:
@@ -1086,7 +1086,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
             env:
@@ -1107,7 +1107,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/sample-apiserver\/'
@@ -1116,7 +1116,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210917-ee1e7c845b
             command:
               - /run.sh
             args:
@@ -1125,7 +1125,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
             env:
@@ -1146,7 +1146,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/sample-device-plugin\/'
@@ -1155,7 +1155,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210917-ee1e7c845b
             command:
               - /run.sh
             args:
@@ -1164,7 +1164,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
             env:
@@ -1185,7 +1185,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/volume\/iscsi\/'
@@ -1194,7 +1194,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210917-ee1e7c845b
             command:
               - /run.sh
             args:
@@ -1203,7 +1203,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
             env:
@@ -1224,7 +1224,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/volume\/rbd\/'
@@ -1233,7 +1233,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210917-ee1e7c845b
             command:
               - /run.sh
             args:
@@ -1242,7 +1242,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
             env:
@@ -1263,7 +1263,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/volume\/nfs\/'
@@ -1272,7 +1272,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210917-ee1e7c845b
             command:
               - /run.sh
             args:
@@ -1281,7 +1281,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
             env:
@@ -1302,7 +1302,7 @@ postsubmits:
           - claudiubelu
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
       decorate: true
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/volume\/gluster\/'
@@ -1311,7 +1311,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210917-ee1e7c845b
             command:
               - /run.sh
             args:
@@ -1320,7 +1320,7 @@ postsubmits:
               - --project=k8s-staging-e2e-test-images
               # This is the same as above, but with -gcb appended.
               - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-              - --env-passthrough=PULL_BASE_REF,WHAT
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
               - --build-dir=.
               - test/images
             env:
@@ -1328,6 +1328,45 @@ postsubmits:
               # We override that with the volume/gluster image.
               - name: WHAT
                 value: "volume/gluster"
+    - name: post-kubernetes-push-e2e-windows-servercore-cache-test-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
+          - org: kubernetes
+            slug: test-infra-admins
+        github_users:
+          - aojea
+          - chewong
+          - claudiubelu
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
+      decorate: true
+      # we only need to run if the test images have been changed.
+      run_if_changed: '^test\/images\/windows-servercore-cache\/'
+      branches:
+        - ^master$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210917-ee1e7c845b
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR
+              # images are pushed to.
+              - --project=k8s-staging-e2e-test-images
+              # This is the same as above, but with -gcb appended.
+              - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
+              - --build-dir=.
+              - test/images
+            env:
+              # By default, the E2E test image's WHAT is all-conformance.
+              # We override that with the windows-servercore-cache image.
+              - name: WHAT
+                value: "windows-servercore-cache"
 
 periodics:
   # NOTE(claudiub): The base image for the Windows E2E test images is nanoserver.
@@ -1342,7 +1381,7 @@ periodics:
         - org: kubernetes
           slug: test-infra-admins
         - org: kubernetes
-          slug: release-engineering
+          slug: release-managers
       github_users:
         - aojea
         - chewong
@@ -1352,7 +1391,7 @@ periodics:
     interval: 744h
     cluster: k8s-infra-prow-build-trusted
     annotations:
-      testgrid-dashboards: sig-testing-images, wg-k8s-infra-gcb
+      testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
     decorate: true
     extra_refs:
       # This also becomes the current directory for run.sh and thus
@@ -1363,13 +1402,13 @@ periodics:
     spec:
       serviceAccountName: gcb-builder
       containers:
-        - image: gcr.io/k8s-testimages/image-builder:v20210622-762366a
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20210917-ee1e7c845b
           command:
             - /run.sh
           args:
             - --project=k8s-staging-e2e-test-images
             - --scratch-bucket=gs://k8s-staging-e2e-test-images-gcb
-            - --env-passthrough=PULL_BASE_REF,WHAT
+            - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA,WHAT
             - --build-dir=.
             - test/images
           env:

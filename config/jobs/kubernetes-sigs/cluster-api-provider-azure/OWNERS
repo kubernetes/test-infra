@@ -1,6 +1,7 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 approvers:
+- alexeldeib
 - andyzhangx
 - brendandburns
 - CecileRobertMichon
@@ -11,9 +12,9 @@ approvers:
 - khenidak
 - nader-ziada
 reviewers:
-- alexeldeib
 - cpanato
 - juan-lee
+- mboersma
 - shysank
 
 labels:

@@ -456,6 +456,11 @@ is very important` + "\n```bash\n" +
 				"\n```\n" + `[ABC-123](https://my-jira.com/browse/ABC-123)
 `,
 		},
+		{
+			name:     "Multiline codeblock that is denoted through four leading spaces",
+			body:     "I meant to do this test:\r\n\r\n    operator_test.go:1914: failed to read output from pod unique-id-header-test-1: container \"curl\" in pod \"unique-id-header-ABC-123\" is waiting to start: ContainerCreating\r\n\r\n",
+			expected: "I meant to do this test:\r\n\r\n    operator_test.go:1914: failed to read output from pod unique-id-header-test-1: container \"curl\" in pod \"unique-id-header-ABC-123\" is waiting to start: ContainerCreating\r\n\r\n",
+		},
 	}
 
 	for _, tc := range testCases {
