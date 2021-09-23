@@ -39,6 +39,7 @@ presubmits:
         args:
         - --build=quick
         - --cluster=
+        - --env=HEAPSTER_MACHINE_TYPE=e2-standard-8
         - --extract=local
         - --flush-mem-after-build=true
         - --gcp-nodes=100
@@ -497,6 +498,7 @@ presubmits:
         - /workspace/scenarios/kubernetes_e2e.py
         args:
         - --cluster=
+        - --env=HEAPSTER_MACHINE_TYPE=e2-standard-8
         - --extract=ci/latest
         - --gcp-nodes=100
         - --gcp-project-type=scalability-presubmit-project
