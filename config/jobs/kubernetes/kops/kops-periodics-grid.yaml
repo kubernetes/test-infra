@@ -33838,9 +33838,7 @@ periodics:
 - name: e2e-kops-grid-gce-u2004-k22-docker
   cron: '38 23 * * *'
   labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-k8s-ssh: "true"
   decorate: true
   decoration_config:
     timeout: 90m
@@ -33862,8 +33860,8 @@ periodics:
         kubetest2 kops \
           -v 2 \
           --up --down \
-          --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210907' --channel=alpha --networking=kubenet --container-runtime=docker" \
+          --cloud-provider=gce \
+          --create-args="--channel=alpha --networking=kubenet --container-runtime=docker" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -33874,9 +33872,9 @@ periodics:
           --parallel=25
       env:
       - name: KUBE_SSH_KEY_PATH
-        value: /etc/aws-ssh/aws-ssh-private
+        value: /etc/ssh-key-secret/ssh-private
       - name: KUBE_SSH_USER
-        value: ubuntu
+        value: prow
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
       imagePullPolicy: Always
       resources:
@@ -33901,9 +33899,7 @@ periodics:
 - name: e2e-kops-grid-gce-calico-u2004-k22-docker
   cron: '28 4 * * *'
   labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-k8s-ssh: "true"
   decorate: true
   decoration_config:
     timeout: 90m
@@ -33925,8 +33921,8 @@ periodics:
         kubetest2 kops \
           -v 2 \
           --up --down \
-          --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210907' --channel=alpha --networking=calico --container-runtime=docker" \
+          --cloud-provider=gce \
+          --create-args="--channel=alpha --networking=calico --container-runtime=docker" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -33937,9 +33933,9 @@ periodics:
           --parallel=25
       env:
       - name: KUBE_SSH_KEY_PATH
-        value: /etc/aws-ssh/aws-ssh-private
+        value: /etc/ssh-key-secret/ssh-private
       - name: KUBE_SSH_USER
-        value: ubuntu
+        value: prow
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
       imagePullPolicy: Always
       resources:
@@ -33964,9 +33960,7 @@ periodics:
 - name: e2e-kops-grid-gce-cilium-u2004-k22-docker
   cron: '6 6 * * *'
   labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-k8s-ssh: "true"
   decorate: true
   decoration_config:
     timeout: 90m
@@ -33988,8 +33982,8 @@ periodics:
         kubetest2 kops \
           -v 2 \
           --up --down \
-          --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210907' --channel=alpha --networking=cilium --container-runtime=docker" \
+          --cloud-provider=gce \
+          --create-args="--channel=alpha --networking=cilium --container-runtime=docker" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -34000,9 +33994,9 @@ periodics:
           --parallel=25
       env:
       - name: KUBE_SSH_KEY_PATH
-        value: /etc/aws-ssh/aws-ssh-private
+        value: /etc/ssh-key-secret/ssh-private
       - name: KUBE_SSH_USER
-        value: ubuntu
+        value: prow
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
       imagePullPolicy: Always
       resources:
@@ -34027,9 +34021,7 @@ periodics:
 - name: e2e-kops-grid-gce-u2004-k22-containerd
   cron: '49 22 * * *'
   labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-k8s-ssh: "true"
   decorate: true
   decoration_config:
     timeout: 90m
@@ -34051,8 +34043,8 @@ periodics:
         kubetest2 kops \
           -v 2 \
           --up --down \
-          --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210907' --channel=alpha --networking=kubenet --container-runtime=containerd" \
+          --cloud-provider=gce \
+          --create-args="--channel=alpha --networking=kubenet --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -34063,9 +34055,9 @@ periodics:
           --parallel=25
       env:
       - name: KUBE_SSH_KEY_PATH
-        value: /etc/aws-ssh/aws-ssh-private
+        value: /etc/ssh-key-secret/ssh-private
       - name: KUBE_SSH_USER
-        value: ubuntu
+        value: prow
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
       imagePullPolicy: Always
       resources:
@@ -34090,9 +34082,7 @@ periodics:
 - name: e2e-kops-grid-gce-calico-u2004-k22-containerd
   cron: '41 17 * * *'
   labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-k8s-ssh: "true"
   decorate: true
   decoration_config:
     timeout: 90m
@@ -34114,8 +34104,8 @@ periodics:
         kubetest2 kops \
           -v 2 \
           --up --down \
-          --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210907' --channel=alpha --networking=calico --container-runtime=containerd" \
+          --cloud-provider=gce \
+          --create-args="--channel=alpha --networking=calico --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -34126,9 +34116,9 @@ periodics:
           --parallel=25
       env:
       - name: KUBE_SSH_KEY_PATH
-        value: /etc/aws-ssh/aws-ssh-private
+        value: /etc/ssh-key-secret/ssh-private
       - name: KUBE_SSH_USER
-        value: ubuntu
+        value: prow
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
       imagePullPolicy: Always
       resources:
@@ -34153,9 +34143,7 @@ periodics:
 - name: e2e-kops-grid-gce-cilium-u2004-k22-containerd
   cron: '15 11 * * *'
   labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
+    preset-k8s-ssh: "true"
   decorate: true
   decoration_config:
     timeout: 90m
@@ -34177,8 +34165,8 @@ periodics:
         kubetest2 kops \
           -v 2 \
           --up --down \
-          --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20210907' --channel=alpha --networking=cilium --container-runtime=containerd" \
+          --cloud-provider=gce \
+          --create-args="--channel=alpha --networking=cilium --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -34189,9 +34177,9 @@ periodics:
           --parallel=25
       env:
       - name: KUBE_SSH_KEY_PATH
-        value: /etc/aws-ssh/aws-ssh-private
+        value: /etc/ssh-key-secret/ssh-private
       - name: KUBE_SSH_USER
-        value: ubuntu
+        value: prow
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
       imagePullPolicy: Always
       resources:
