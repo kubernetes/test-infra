@@ -9,7 +9,6 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^main$
-    - ^master$
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-1.22
@@ -30,7 +29,6 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^main$
-    - ^master$
     spec:
       containers:
       - command:
@@ -56,7 +54,6 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^main$
-    - ^master$
     spec:
       containers:
       - command:
@@ -75,7 +72,6 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^main$
-    - ^master$
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-1.22
@@ -97,7 +93,6 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^main$
-    - ^master$
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-1.22
@@ -119,7 +114,6 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^main$
-    - ^master$
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-1.22
@@ -148,7 +142,6 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^main$
-    - ^master$
     path_alias: sigs.k8s.io/cluster-api
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|scripts|test|third_party|util)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
@@ -178,7 +171,6 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^main$
-    - ^master$
     path_alias: sigs.k8s.io/cluster-api
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|scripts|test|third_party|util)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
@@ -215,7 +207,6 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^main$
-    - ^master$
     path_alias: sigs.k8s.io/cluster-api
     spec:
       containers:
@@ -248,7 +239,6 @@ presubmits:
     branches:
     # The script this job runs is not in all branches.
     - ^main$
-    - ^master$
     path_alias: sigs.k8s.io/cluster-api
     extra_refs:
     - org: kubernetes
