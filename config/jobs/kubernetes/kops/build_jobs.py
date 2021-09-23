@@ -78,8 +78,16 @@ def build_test(cloud='aws',
     if should_skip_newer_k8s(k8s_version, kops_version):
         return None
 
-    kops_image = distro_images[distro]
-    kops_ssh_user = distros_ssh_user[distro]
+    if cloud == 'aws':
+        kops_image = distro_images[distro]
+        kops_ssh_user = distros_ssh_user[distro]
+        kops_ssh_key_path = '/etc/aws-ssh/aws-ssh-private'
+
+    elif cloud == 'gce':
+        kops_image = None
+        kops_ssh_user = 'prow'
+        kops_ssh_key_path = '/etc/ssh-key-secret/ssh-private'
+
     validation_wait = '20m' if distro == 'flatcar' else None
 
     marker, k8s_deploy_url, test_package_bucket, test_package_dir = k8s_version_info(k8s_version)
@@ -124,8 +132,10 @@ def build_test(cloud='aws',
     tmpl = jinja2.Environment(loader=loader).get_template(tmpl_file)
     job = tmpl.render(
         job_name=job_name,
+        cloud=cloud,
         cron=cron,
         kops_ssh_user=kops_ssh_user,
+        kops_ssh_key_path=kops_ssh_key_path,
         create_args=args,
         k8s_deploy_url=k8s_deploy_url,
         kops_deploy_url=kops_deploy_url,
