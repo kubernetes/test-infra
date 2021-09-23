@@ -11,7 +11,7 @@ periodics:
   - org: kubernetes
     repo: kubernetes
     base_ref: master
-    base_sha: e97c570a4ba5ba1e2285d3278396937feaa15385 # head of release-1.18 branch as of 2020-04-28
+    base_sha: f55101913fe7e5fbc6ae1aef5cc2f3a3e2300e03 # head of master branch as of 2021-09-20
     path_alias: k8s.io/kubernetes
   - org: kubernetes
     repo: perf-tests
