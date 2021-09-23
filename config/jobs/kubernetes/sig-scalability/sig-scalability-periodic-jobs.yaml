@@ -123,8 +123,7 @@ periodics:
   - "perfDashPrefix: kubemark-100Nodes"
   - "perfDashJobType: performance"
   interval: 3h
-  # TODO(oxddr): renable this once we have a project pool in scalability build cluster
-  # cluster: scalability
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
