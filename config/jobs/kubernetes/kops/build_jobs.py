@@ -124,6 +124,7 @@ def build_test(cloud='aws',
     tmpl = jinja2.Environment(loader=loader).get_template(tmpl_file)
     job = tmpl.render(
         job_name=job_name,
+        cloud=cloud,
         cron=cron,
         kops_ssh_user=kops_ssh_user,
         create_args=args,

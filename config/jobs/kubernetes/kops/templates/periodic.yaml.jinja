@@ -2,9 +2,13 @@
 - name: {{job_name}}
   cron: '{{cron}}'
   labels:
+    {%- if cloud == "aws" %}
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
+    {%- else %}
+    preset-k8s-ssh: "true"
+    {%- endif %}
   decorate: true
   decoration_config:
     timeout: {{job_timeout}}
@@ -26,7 +30,7 @@
         kubetest2 kops \
           -v 2 \
           --up --down \
-          --cloud-provider=aws \
+          --cloud-provider={{cloud}} \
           --create-args="{{create_args}}" \
           {%- if kops_feature_flags %}
           --env=KOPS_FEATURE_FLAGS={{kops_feature_flags}} \
