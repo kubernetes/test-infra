@@ -72,7 +72,7 @@ func TestRoundTrip(t *testing.T) {
 		hits:            make(map[string]int),
 		beginResponding: sync.NewCond(&sync.Mutex{}),
 	}
-	coalesce := &requestCoalescer{
+	coalescer := &requestCoalescer{
 		cache:    make(map[string]*firstRequest),
 		requestExecutor: fre,
 		hasher:   ghmetrics.NewCachingHasher(),
@@ -81,7 +81,7 @@ func TestRoundTrip(t *testing.T) {
 	wg.Add(100)
 	for i := 0; i < 100; i++ {
 		go func() {
-			if _, err := runRequest(coalesce, "/resource1", false); err != nil {
+			if _, err := runRequest(coalescer, "/resource1", false); err != nil {
 				t.Errorf("Failed to run request: %v.", err)
 			}
 			wg.Done()
@@ -94,13 +94,13 @@ func TestRoundTrip(t *testing.T) {
 	time.Sleep(time.Second * 5)
 
 	// Check that requests for different resources are not blocked.
-	if _, err := runRequest(coalesce, "/resource2", true); err != nil {
+	if _, err := runRequest(coalescer, "/resource2", true); err != nil {
 		t.Errorf("Failed to run request: %v.", err)
 	} // Doesn't return until timeout or success.
 	fre.beginResponding.Broadcast()
 
 	// Check that non concurrent requests all hit upstream.
-	if _, err := runRequest(coalesce, "/resource2", true); err != nil {
+	if _, err := runRequest(coalescer, "/resource2", true); err != nil {
 		t.Errorf("Failed to run request: %v.", err)
 	}
 
@@ -118,7 +118,7 @@ func TestCacheModeHeader(t *testing.T) {
 		hits:            make(map[string]int),
 		beginResponding: sync.NewCond(&sync.Mutex{}),
 	}
-	coalesce := &requestCoalescer{
+	coalescer := &requestCoalescer{
 		cache:           make(map[string]*firstRequest),
 		requestExecutor: fre,
 		hasher:   ghmetrics.NewCachingHasher(),
@@ -135,7 +135,7 @@ func TestCacheModeHeader(t *testing.T) {
 	// This should eventually return ModeMiss.
 	wg.Add(1)
 	go func() {
-		if resp, err := runRequest(coalesce, "/resource1", false); err != nil {
+		if resp, err := runRequest(coalescer, "/resource1", false); err != nil {
 			t.Errorf("Failed to run request: %v.", err)
 		} else {
 			checkMode(resp, ModeMiss)
@@ -153,7 +153,7 @@ func TestCacheModeHeader(t *testing.T) {
 	// This should coalesce and eventually return ModeCoalesced.
 	wg.Add(1)
 	go func() {
-		if resp, err := runRequest(coalesce, "/resource1", false); err != nil {
+		if resp, err := runRequest(coalescer, "/resource1", false); err != nil {
 			t.Errorf("Failed to run request: %v.", err)
 		} else {
 			checkMode(resp, ModeCoalesced)
@@ -172,7 +172,7 @@ func TestCacheModeHeader(t *testing.T) {
 	header := http.Header{}
 	header.Set("Status", "304 Not Modified")
 	fre.responseHeader = header
-	if resp, err := runRequest(coalesce, "/resource1", true); err != nil {
+	if resp, err := runRequest(coalescer, "/resource1", true); err != nil {
 		t.Errorf("Failed to run request: %v.", err)
 	} else {
 		checkMode(resp, ModeRevalidated)
@@ -183,7 +183,7 @@ func TestCacheModeHeader(t *testing.T) {
 	header = http.Header{}
 	header.Set("X-Conditional-Request", "I am an E-Tag.")
 	fre.responseHeader = header
-	if resp, err := runRequest(coalesce, "/resource1", true); err != nil {
+	if resp, err := runRequest(coalescer, "/resource1", true); err != nil {
 		t.Errorf("Failed to run request: %v.", err)
 	} else {
 		checkMode(resp, ModeChanged)
@@ -192,7 +192,7 @@ func TestCacheModeHeader(t *testing.T) {
 	// Request for new resource2 with no concurrent requests.
 	// This should return ModeMiss.
 	fre.responseHeader = nil
-	if resp, err := runRequest(coalesce, "/resource2", true); err != nil {
+	if resp, err := runRequest(coalescer, "/resource2", true); err != nil {
 		t.Errorf("Failed to run request: %v.", err)
 	} else {
 		checkMode(resp, ModeMiss)
@@ -203,7 +203,7 @@ func TestCacheModeHeader(t *testing.T) {
 	header = http.Header{}
 	header.Set("Cache-Control", "no-store")
 	fre.responseHeader = header
-	if resp, err := runRequest(coalesce, "/resource3", true); err != nil {
+	if resp, err := runRequest(coalescer, "/resource3", true); err != nil {
 		t.Errorf("Failed to run request: %v.", err)
 	} else {
 		checkMode(resp, ModeNoStore)
