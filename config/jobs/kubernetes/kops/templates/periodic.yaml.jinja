@@ -19,6 +19,9 @@
     workdir: true
     path_alias: k8s.io/kops
   spec:
+    {%- if cloud == "gce" %}
+    serviceAccountName: k8s-kops-test
+    {%- endif %}
     containers:
     - command:
       - runner.sh
