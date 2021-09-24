@@ -16,8 +16,13 @@ postsubmits:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-1.21
         command:
-        - "runner.sh"
-        - "./scripts/ci-e2e.sh"
+          - runner.sh
+        args:
+          - bash
+          - -c
+          - >-
+            iptables -t mangle -A POSTROUTING -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu &&
+            ./scripts/ci-e2e.sh
         env:
           - name: GINKGO_FOCUS
             value: "Workload cluster creation"

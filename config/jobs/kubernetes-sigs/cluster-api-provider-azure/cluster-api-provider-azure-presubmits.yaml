@@ -53,8 +53,13 @@ presubmits:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-1.21
         command:
-        - "runner.sh"
-        - "./scripts/ci-e2e.sh"
+          - runner.sh
+        args:
+          - bash
+          - -c
+          - >-
+            iptables -t mangle -A POSTROUTING -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu &&
+            ./scripts/ci-e2e.sh
         env:
           - name: GINKGO_FOCUS
             value: "Workload cluster creation"
@@ -85,8 +90,13 @@ presubmits:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-1.21
         command:
-        - "runner.sh"
-        - "./scripts/ci-e2e.sh"
+          - runner.sh
+        args:
+          - bash
+          - -c
+          - >-
+            iptables -t mangle -A POSTROUTING -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu &&
+            ./scripts/ci-e2e.sh
         env:
           - name: GINKGO_FOCUS
             value: "Workload cluster creation"
@@ -118,8 +128,13 @@ presubmits:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-1.21
         command:
-        - "runner.sh"
-        - "./scripts/ci-e2e.sh"
+          - runner.sh
+        args:
+          - bash
+          - -c
+          - >-
+            iptables -t mangle -A POSTROUTING -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu &&
+            ./scripts/ci-e2e.sh
         env:
           - name: GINKGO_FOCUS
             value: ".*Windows.*"
@@ -151,8 +166,13 @@ presubmits:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-1.21
         command:
-        - "runner.sh"
-        - "./scripts/ci-e2e.sh"
+          - runner.sh
+        args:
+          - bash
+          - -c
+          - >-
+            iptables -t mangle -A POSTROUTING -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu &&
+            ./scripts/ci-e2e.sh
         env:
           - name: GINKGO_FOCUS
             value: ".*AKS.*"
@@ -185,8 +205,13 @@ presubmits:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-1.21
         command:
-        - "runner.sh"
-        - "./scripts/ci-e2e.sh"
+          - runner.sh
+        args:
+          - bash
+          - -c
+          - >-
+            iptables -t mangle -A POSTROUTING -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu &&
+            ./scripts/ci-e2e.sh
         env:
           - name: GINKGO_FOCUS
             value: "Cluster API E2E tests"
@@ -240,8 +265,13 @@ presubmits:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-1.21
         command:
-        - "runner.sh"
-        - "./scripts/ci-conformance.sh"
+          - runner.sh
+        args:
+          - bash
+          - -c
+          - >-
+            iptables -t mangle -A POSTROUTING -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu &&
+            ./scripts/ci-conformance.sh
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -272,8 +302,13 @@ presubmits:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-1.21
         command:
-        - "runner.sh"
-        - "./scripts/ci-conformance.sh"
+          - runner.sh
+        args:
+          - bash
+          - -c
+          - >-
+            iptables -t mangle -A POSTROUTING -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu &&
+            ./scripts/ci-conformance.sh
         env:
         - name: WINDOWS
           value: "true"
@@ -310,8 +345,13 @@ presubmits:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-1.21
           command:
-            - "runner.sh"
-            - "./scripts/ci-conformance.sh"
+            - runner.sh
+          args:
+            - bash
+            - -c
+            - >-
+              iptables -t mangle -A POSTROUTING -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu &&
+              ./scripts/ci-conformance.sh
           env:
             - name: E2E_ARGS
               value: "-kubetest.use-ci-artifacts"
@@ -343,8 +383,13 @@ presubmits:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-1.21
           command:
-            - "runner.sh"
-            - "./scripts/ci-conformance.sh"
+            - runner.sh
+          args:
+            - bash
+            - -c
+            - >-
+              iptables -t mangle -A POSTROUTING -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu &&
+              ./scripts/ci-conformance.sh
           env:
             - name: E2E_ARGS
               value: "-kubetest.use-ci-artifacts"
@@ -374,10 +419,11 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - command:
-        - runner.sh
-        - ./scripts/ci-apidiff.sh
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-1.21
+        command:
+          - runner.sh
+        args:
+          - ./scripts/ci-apidiff.sh
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-apidiff-main
@@ -399,8 +445,8 @@ presubmits:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-1.21
         command:
         - runner.sh
-        - bash
         args:
+        - bash
         - -c
         - |
           result=0

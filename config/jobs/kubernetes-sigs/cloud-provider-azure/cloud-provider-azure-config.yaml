@@ -282,8 +282,12 @@ presubmits:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-1.21
           command:
           - runner.sh
-          - ./scripts/ci-entrypoint.sh
           args:
+          - bash
+          - -c
+          - >-
+            iptables -t mangle -A POSTROUTING -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu &&
+            ./scripts/ci-entrypoint.sh
           - bash
           - -c
           - >-
