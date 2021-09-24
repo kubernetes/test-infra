@@ -357,7 +357,7 @@ func NewFromCache(delegate http.RoundTripper, cache CachePartitionCreator, maxCo
 		cacheTransport := httpcache.NewTransport(cache(partitionKey, expiresAt))
 		cacheTransport.Transport = newThrottlingTransport(maxConcurrency, upstreamTransport{delegate: delegate, hasher: hasher})
 		return &requestCoalescer{
-			keys:     make(map[string]*responseWaiter),
+			cache:    make(map[string]*responseWaiter),
 			delegate: cacheTransport,
 			hasher:   hasher,
 		}

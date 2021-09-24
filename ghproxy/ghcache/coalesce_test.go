@@ -73,7 +73,7 @@ func TestRoundTrip(t *testing.T) {
 		beginResponding: sync.NewCond(&sync.Mutex{}),
 	}
 	coalesce := &requestCoalescer{
-		keys:     make(map[string]*responseWaiter),
+		cache:    make(map[string]*responseWaiter),
 		delegate: delegate,
 		hasher:   ghmetrics.NewCachingHasher(),
 	}
@@ -119,7 +119,7 @@ func TestCacheModeHeader(t *testing.T) {
 		beginResponding: sync.NewCond(&sync.Mutex{}),
 	}
 	coalesce := &requestCoalescer{
-		keys:     make(map[string]*responseWaiter),
+		cache:    make(map[string]*responseWaiter),
 		delegate: delegate,
 		hasher:   ghmetrics.NewCachingHasher(),
 	}

@@ -35,7 +35,7 @@ import (
 // single upstream request and response.
 type requestCoalescer struct {
 	sync.Mutex
-	keys map[string]*responseWaiter
+	cache map[string]*responseWaiter
 
 	delegate http.RoundTripper
 
@@ -77,7 +77,7 @@ func (r *requestCoalescer) RoundTrip(req *http.Request) (*http.Response, error) 
 	resp, err := func() (*http.Response, error) {
 		key := req.URL.String()
 		r.Lock()
-		waiter, ok := r.keys[key]
+		waiter, ok := r.cache[key]
 		if ok {
 			// Earlier request in flight. Wait for it's response.
 			if req.Body != nil {
@@ -114,14 +114,14 @@ func (r *requestCoalescer) RoundTrip(req *http.Request) (*http.Response, error) 
 		// No earlier request in flight (common case).
 		// Register a new responseWaiter and make the request ourself.
 		waiter = &responseWaiter{Cond: sync.NewCond(&sync.Mutex{})}
-		r.keys[key] = waiter
+		r.cache[key] = waiter
 		r.Unlock()
 
 		resp, err := r.delegate.RoundTrip(req)
 		// Real response received. Remove this responseWaiter from the map THEN
 		// wake any requesters that were waiting on this response.
 		r.Lock()
-		delete(r.keys, key)
+		delete(r.cache, key)
 		r.Unlock()
 
 		waiter.L.Lock()
