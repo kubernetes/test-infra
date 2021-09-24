@@ -45,7 +45,7 @@ type requestCoalescer struct {
 type firstRequest struct {
 	*sync.Cond
 
-	waiting bool
+	subscribers bool
 	resp    []byte
 	err     error
 }
@@ -85,7 +85,7 @@ func (r *requestCoalescer) RoundTrip(req *http.Request) (*http.Response, error) 
 			}
 			firstReq.L.Lock()
 			r.Unlock()
-			firstReq.waiting = true
+			firstReq.subscribers = true
 
 			// The documentation for Wait() says:
 			// "Because c.L is not locked when Wait first resumes, the caller typically
@@ -125,7 +125,7 @@ func (r *requestCoalescer) RoundTrip(req *http.Request) (*http.Response, error) 
 		r.Unlock()
 
 		firstReq.L.Lock()
-		if firstReq.waiting {
+		if firstReq.subscribers {
 			if err != nil {
 				firstReq.resp, firstReq.err = nil, err
 			} else {
