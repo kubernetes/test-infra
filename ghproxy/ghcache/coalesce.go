@@ -57,16 +57,16 @@ type firstRequest struct {
 // Notes: Deadlock shouldn't be possible because the map lock is always
 // acquired before responseWaiter lock if both locks are to be held and we
 // never hold multiple responseWaiter locks.
-func (r *requestCoalescer) RoundTrip(req *http.Request) (*http.Response, error) {
+func (coalescer *requestCoalescer) RoundTrip(req *http.Request) (*http.Response, error) {
 	// Only coalesce GET requests
 	if req.Method != http.MethodGet {
-		resp, err := r.requestExecutor.RoundTrip(req)
+		resp, err := coalescer.requestExecutor.RoundTrip(req)
 		if strings.HasPrefix(req.URL.Path, "graphql") || strings.HasPrefix(req.URL.Path, "/graphql") {
 			var tokenBudgetName string
 			if val := req.Header.Get(TokenBudgetIdentifierHeader); val != "" {
 				tokenBudgetName = val
 			} else {
-				tokenBudgetName = r.hasher.Hash(req)
+				tokenBudgetName = coalescer.hasher.Hash(req)
 			}
 			collectMetrics(ModeNoStore, req, resp, tokenBudgetName)
 		}
@@ -76,15 +76,15 @@ func (r *requestCoalescer) RoundTrip(req *http.Request) (*http.Response, error) 
 	var cacheMode = ModeError
 	resp, err := func() (*http.Response, error) {
 		key := req.URL.String()
-		r.Lock()
-		firstReq, ok := r.cache[key]
+		coalescer.Lock()
+		firstReq, ok := coalescer.cache[key]
 		if ok {
 			// Earlier request in flight. Wait for it's response.
 			if req.Body != nil {
 				defer req.Body.Close() // Since we won't pass the request we must close it.
 			}
 			firstReq.L.Lock()
-			r.Unlock()
+			coalescer.Unlock()
 			firstReq.subscribers = true
 
 			// The documentation for Wait() says:
@@ -114,15 +114,15 @@ func (r *requestCoalescer) RoundTrip(req *http.Request) (*http.Response, error) 
 		// No earlier request in flight (common case).
 		// Register a new responseWaiter and make the request ourself.
 		firstReq = &firstRequest{Cond: sync.NewCond(&sync.Mutex{})}
-		r.cache[key] = firstReq
-		r.Unlock()
+		coalescer.cache[key] = firstReq
+		coalescer.Unlock()
 
-		resp, err := r.requestExecutor.RoundTrip(req)
+		resp, err := coalescer.requestExecutor.RoundTrip(req)
 		// Real response received. Remove this responseWaiter from the map THEN
 		// wake any requesters that were waiting on this response.
-		r.Lock()
-		delete(r.cache, key)
-		r.Unlock()
+		coalescer.Lock()
+		delete(coalescer.cache, key)
+		coalescer.Unlock()
 
 		firstReq.L.Lock()
 		if firstReq.subscribers {
@@ -148,7 +148,7 @@ func (r *requestCoalescer) RoundTrip(req *http.Request) (*http.Response, error) 
 	if val := req.Header.Get(TokenBudgetIdentifierHeader); val != "" {
 		tokenBudgetName = val
 	} else {
-		tokenBudgetName = r.hasher.Hash(req)
+		tokenBudgetName = coalescer.hasher.Hash(req)
 	}
 
 	collectMetrics(cacheMode, req, resp, tokenBudgetName)
