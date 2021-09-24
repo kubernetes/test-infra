@@ -1,7 +1,7 @@
 # Sub
 
 Sub is a Prow Cloud Pub/Sub adapter for handling CI Pub/Sub notification requests.
-It currently supports Periodic Prow Job. Note that the prow job need to be defined in the configuration.
+Note that the prow job need to be defined in the configuration.
 
 ## Deployment Usage
 
