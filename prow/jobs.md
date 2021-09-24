@@ -31,14 +31,32 @@ that you can define pods in yaml.  Please see kubernetes documentation
 for help here, for example the [Pod overview] and [PodSpec api
 reference].
 
-Periodic config looks like so (see [GoDocs](https://pkg.go.dev/k8s.io/test-infra/prow/config#Periodic) for complete config):
+### Types of jobs
+
+There are 3 basic types of jobs:
+
+1. periodics
+2. presubmits
+3. postsubmits
+
+They are distinguished by **when** they run. **Periodics** run at a regular
+interval, just like [UNIX cronjobs](https://en.wikipedia.org/wiki/Cron).
+**Presubmits** run against a PR before it gets merged (for a particular repo).
+Some examples are unit tests, integration tests, and linters. Finally,
+**postsubmits** run *after* a PR gets merged (for a particular repo). A common
+use case is a job that builds and publishes artifacts for later consumption by
+downstream users (e.g., a Docker image or binary file).
+
+#### Periodics
+
+Here is a sample **periodic** config (see [GoDocs](https://pkg.go.dev/k8s.io/test-infra/prow/config#Periodic) for complete config):
 
 ```yaml
 periodics:
 - name: foo-job         # Names need not be unique, but must match the regex ^[A-Za-z0-9-._]+$
   decorate: true        # Enable Pod Utility decoration. (see below)
   interval: 1h          # Anything that can be parsed by time.ParseDuration.
-  # Alternatively use a cron instead of an interval, for example:
+  # Alternatively use a cron format instead of an interval, for example:
   # cron: "05 15 * * 1-5"  # Run at 7:05 PST (15:05 UTC) every M-F
   extra_refs:            # Periodic job doesn't clone any repo by default, needs to be added explicitly
   - org: org
@@ -47,33 +65,16 @@ periodics:
   spec: {}              # Valid Kubernetes PodSpec.
 ```
 
-Postsubmit config looks like so (see [GoDocs](https://pkg.go.dev/k8s.io/test-infra/prow/config#Postsubmit) for complete config):
+#### Presubmits
 
-```yaml
-postsubmits:
-  org/repo:
-  - name: bar-job         # As for periodics.
-    decorate: true        # As for periodics.
-    spec: {}              # As for periodics.
-    max_concurrency: 10   # Run no more than this number concurrently.
-    branches:             # Regexps, only run against these branches.
-    - ^main$
-    skip_branches:        # Regexps, do not run against these branches.
-    - ^release-.*$
-```
-
-Postsubmits are run when a push event happens on a repo, hence they are
-configured per-repo. If no `branches` are specified, then they will run against
-every branch.
-
-Presubmit config looks like so (see [GoDocs](https://pkg.go.dev/k8s.io/test-infra/prow/config#Presubmit) for complete config):
+Here is a sample **presubmit** config (see [GoDocs](https://pkg.go.dev/k8s.io/test-infra/prow/config#Presubmit) for complete config):
 
 ```yaml
 presubmits:
   org/repo:
   - name: qux-job            # As for periodics.
     decorate: true           # As for periodics.
-    always_run: true         # Run for every PR, or only when requested.
+    always_run: true         # Run for every PR, or only when requested. Default `false`.
     run_if_changed: "qux/.*" # Regexp, only run on certain changed files.
     skip_report: true        # Whether to skip setting a status on GitHub.
     context: qux-job         # Status context. Defaults to the job name.
@@ -93,11 +94,119 @@ command that reruns all jobs. If unspecified, the default configuration makes
 
 See the [Triggering Jobs](#triggering-jobs) section below to learn how to
 control when jobs are automatically run. We also have sections about [posting](#posting-github-status-contexts)
-and [requiring](#requiring-job-statuses) GitHub status contexts. A useful
-pattern when adding new jobs is to start with `always_run` set to false and
-`skip_report` set to true. Test it out a few times by manually triggering,
-then switch `always_run` to true. Watch for a couple days, then switch
-`skip_report` to false.
+and [requiring](#requiring-job-statuses) GitHub status contexts.
+
+A useful pattern when adding new jobs is to start with `always_run` set to
+`false` and `skip_report` set to `true`. Test it out a few times by manually
+triggering; this manual triggering phase allows you to iron out any bugs without
+getting flooded with the same failures (see "Triggering Jobs With Comments"
+below). Then when things look good, switch `always_run` to `true`. Watch for a
+couple days, then switch `skip_report` to `false`.
+
+#### Postsubmits
+
+Here is a sample **postsubmit** config (see [GoDocs](https://pkg.go.dev/k8s.io/test-infra/prow/config#Postsubmit) for complete config):
+
+```yaml
+postsubmits:
+  org/repo:
+  - name: bar-job         # As for periodics.
+    decorate: true        # As for periodics.
+    spec: {}              # As for periodics.
+    max_concurrency: 10   # Run no more than this number concurrently.
+    branches:             # Regexps, only run against these branches.
+    - ^main$
+    skip_branches:        # Regexps, do not run against these branches.
+    - ^release-.*$
+```
+
+Postsubmits are configured per-repo, because most of the time they are
+configured to run when a branch updates on a repo (due to a push or PR merge).
+If no `branches` are specified, then they will run against every branch.
+
+Postsubmits do not always have to depend on branch updates. The trick is to set
+`always_run` to `false` (and also not specify `run_if_changed` or
+`skip_if_only_changed` fields). Then the postsubmit will not respond to any
+branch updates, and instead may be triggered by a Pub/Sub message when it is
+intercepted by
+[Sub](./cmd/sub).
+
+Below are some examples of how `always_run` can work with `run_if_changed`
+(`skip_if_only_changed` is mutually exclusive to `run_if_changed`, so you may
+only specify one or the other; for simplicity we just use `run_if_changed` in
+the examples below).
+
+```yaml
+postsubmits:
+  org/repo:
+  - name: bar-job
+
+    # Run on every `main` branch update. This is already the default, so
+    # setting `always_run: true` here is redundant.
+    always_run: true
+
+    decorate: true
+    spec: {}
+    max_concurrency: 10
+    branches:
+    - ^main$
+    skip_branches:
+    - ^release-.*$
+```
+
+```yaml
+postsubmits:
+  org/repo:
+  - name: bar-job
+
+    # CONFIGURATION ERROR: you cannot define both `always_run: true` and
+    # `run_if_changed: ...` because of conflicting intent.
+    always_run: true
+    run_if_changed: "qux/.*"
+
+    decorate: true
+    spec: {}
+    max_concurrency: 10
+    branches:
+    - ^main$
+    skip_branches:
+    - ^release-.*$
+```
+
+```yaml
+postsubmits:
+  org/repo:
+  - name: bar-job
+
+    # Wait for either manual trigger or Pub/Sub event.
+    always_run: false
+
+    decorate: true
+    spec: {}
+    max_concurrency: 10
+    branches:
+    - ^main$
+    skip_branches:
+    - ^release-.*$
+```
+
+```yaml
+postsubmits:
+  org/repo:
+  - name: bar-job
+
+    # `always_run: false` here is redundant, because `run_if_changed` is set.
+    always_run: false
+    run_if_changed: "qux/.*"
+
+    decorate: true
+    spec: {}
+    max_concurrency: 10
+    branches:
+    - ^main$
+    skip_branches:
+    - ^release-.*$
+```
 
 ## Presets
 
