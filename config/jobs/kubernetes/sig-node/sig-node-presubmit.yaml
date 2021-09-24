@@ -86,6 +86,55 @@ presubmits:
           requests:
             cpu: 4
             memory: 6Gi
+  - name: pull-kubernetes-node-e2e-kubetest2
+    # explicitly needs /test pull-kubernetes-node-e2e-kubetest2 to run
+    always_run: false
+    # if it is run and fails, don't block the PR
+    optional: true
+    branches:
+    - master
+    decorate: true
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+    decoration_config:
+      timeout: 65m
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    annotations:
+      fork-per-release: "true"
+      testgrid-alert-stale-results-hours: "24"
+      testgrid-create-test-group: "true"
+      testgrid-num-failures-to-alert: "10"
+    spec:
+      containers:
+      # experimental have the kubetest2 binaries
+      # https://github.com/kubernetes/test-infra/blob/3c3d64f398a5e4f324200d25183c98a4bfa842ac/images/kubekins-e2e/variants.yaml#L8
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-experimental
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
+        command:
+        - runner.sh
+        args:
+        - kubetest2
+        - noop
+        - --test=node
+        - --
+        - --zone=us-west1-b
+        - --parallelism=8
+        - --focus-regex='\[NodeConformance\]'
+        - --skip-regex='\[Flaky\]|\[Slow\]|\[Serial\]'
+        - --test-args='--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"'
+        - --image-config-file='../test-infra/jobs/e2e_node/image-config.yaml'
   - name: pull-kubernetes-e2e-containerd-gce
     always_run: false
     optional: true
