@@ -30,8 +30,7 @@ periodics:
 - name: metrics-kettle
   interval: 1h
   spec:
-    # TODO(cjwagner): Uncomment the following and delete secret mount + env once SA exists and is bound.
-    # serviceAccountName: triage
+    serviceAccountName: triage
     containers:
     - image: gcr.io/k8s-staging-test-infra/bigquery:v20210913-fc7c4e84f6
       args:
@@ -44,17 +43,6 @@ periodics:
       - k8s-gubernator:build.all
       - k8s-gubernator:build.week
       - k8s-gubernator:build.day
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      volumeMounts:
-      - name: service
-        mountPath: /etc/service-account
-        readOnly: true
-    volumes:
-    - name: service
-      secret:
-        secretName: triage-service-account
   annotations:
     testgrid-num-failures-to-alert: '6'
     testgrid-alert-stale-results-hours: '12'
