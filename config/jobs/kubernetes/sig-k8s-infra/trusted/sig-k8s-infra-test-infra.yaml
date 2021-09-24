@@ -159,7 +159,6 @@ periodics:
       args:
       - --config=config/prow/autobump-config/prow-job-autobump-config.yaml
       - --labels-override=skip-review # This label is used by tide for identifying trusted PR
-      - --skip-if-no-oncall # Only apply `skip-review` label when oncall is active
       volumeMounts:
       - name: github
         mountPath: /etc/github-token
