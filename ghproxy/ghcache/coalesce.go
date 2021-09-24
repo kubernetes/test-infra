@@ -37,7 +37,7 @@ type requestCoalescer struct {
 	sync.Mutex
 	cache map[string]*responseWaiter
 
-	delegate http.RoundTripper
+	requestExecutor http.RoundTripper
 
 	hasher ghmetrics.Hasher
 }
@@ -60,7 +60,7 @@ type responseWaiter struct {
 func (r *requestCoalescer) RoundTrip(req *http.Request) (*http.Response, error) {
 	// Only coalesce GET requests
 	if req.Method != http.MethodGet {
-		resp, err := r.delegate.RoundTrip(req)
+		resp, err := r.requestExecutor.RoundTrip(req)
 		if strings.HasPrefix(req.URL.Path, "graphql") || strings.HasPrefix(req.URL.Path, "/graphql") {
 			var tokenBudgetName string
 			if val := req.Header.Get(TokenBudgetIdentifierHeader); val != "" {
@@ -117,7 +117,7 @@ func (r *requestCoalescer) RoundTrip(req *http.Request) (*http.Response, error) 
 		r.cache[key] = waiter
 		r.Unlock()
 
-		resp, err := r.delegate.RoundTrip(req)
+		resp, err := r.requestExecutor.RoundTrip(req)
 		// Real response received. Remove this responseWaiter from the map THEN
 		// wake any requesters that were waiting on this response.
 		r.Lock()
