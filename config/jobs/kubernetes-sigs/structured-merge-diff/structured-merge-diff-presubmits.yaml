@@ -43,7 +43,7 @@ presubmits:
     path_alias: sigs.k8s.io/structured-merge-diff
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/benchmarkjunit:latest
+      - image: gcr.io/k8s-staging-test-infra/benchmarkjunit:latest
         command:
         - /benchmarkjunit
         args:

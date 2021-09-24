@@ -179,7 +179,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20210917-12df099-test-infra
+      - image: gcr.io/k8s-staging-test-infra/bazelbuild:v20210917-12df099d55-test-infra
         command:
         - prow/push.sh
       tolerations:
@@ -433,7 +433,7 @@ postsubmits:
     spec:
       serviceAccountName: testgrid-config-updater
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20210917-12df099-test-infra
+      - image: gcr.io/k8s-staging-test-infra/bazelbuild:v20210917-12df099d55-test-infra
         command:
         - ./testgrid/config-upload.sh
         resources:
@@ -455,7 +455,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20210917-12df099-test-infra
+      - image: gcr.io/k8s-staging-test-infra/bazelbuild:v20210917-12df099d55-test-infra
         command:
         - ./boskos/update_prow_config.sh
     annotations:
@@ -571,7 +571,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20210917-12df099-test-infra
+    - image: gcr.io/k8s-staging-test-infra/bazelbuild:v20210917-12df099d55-test-infra
       command:
       - hack/autodeps.sh
       args:
@@ -608,7 +608,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20210917-12df099-test-infra
+    - image: gcr.io/k8s-staging-test-infra/bazelbuild:v20210917-12df099d55-test-infra
       command:
       - hack/autodeps.sh
       args:

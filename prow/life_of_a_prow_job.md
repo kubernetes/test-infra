@@ -63,7 +63,7 @@ spec:
   decorate: true
   pod_spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:0.11
+    - image: gcr.io/k8s-staging-test-infra/bazelbuild:latest-test-infra
   refs:
     base_ref: master
     base_sha: 064678510782db5b382df478bb374aaa32e577ea
