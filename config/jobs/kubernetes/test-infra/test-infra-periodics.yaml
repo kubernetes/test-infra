@@ -29,15 +29,17 @@ periodics:
 
 - name: metrics-kettle
   interval: 1h
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
   spec:
     serviceAccountName: triage
     containers:
     - image: gcr.io/k8s-staging-test-infra/bigquery:v20210913-fc7c4e84f6
       args:
-      - --scenario=execute
-      - --
-      - test-infra/kettle/monitor.py
-      - --
+      - ./kettle/monitor.py
       - --stale=6
       - --table
       - k8s-gubernator:build.all
