@@ -35,14 +35,14 @@ import (
 // single upstream request and response.
 type requestCoalescer struct {
 	sync.Mutex
-	cache map[string]*responseWaiter
+	cache map[string]*firstRequest
 
 	requestExecutor http.RoundTripper
 
 	hasher ghmetrics.Hasher
 }
 
-type responseWaiter struct {
+type firstRequest struct {
 	*sync.Cond
 
 	waiting bool
@@ -77,15 +77,16 @@ func (r *requestCoalescer) RoundTrip(req *http.Request) (*http.Response, error) 
 	resp, err := func() (*http.Response, error) {
 		key := req.URL.String()
 		r.Lock()
-		waiter, ok := r.cache[key]
+		firstReq, ok := r.cache[key]
 		if ok {
 			// Earlier request in flight. Wait for it's response.
 			if req.Body != nil {
 				defer req.Body.Close() // Since we won't pass the request we must close it.
 			}
-			waiter.L.Lock()
+			firstReq.L.Lock()
 			r.Unlock()
-			waiter.waiting = true
+			firstReq.waiting = true
+
 			// The documentation for Wait() says:
 			// "Because c.L is not locked when Wait first resumes, the caller typically
 			// cannot assume that the condition is true when Wait returns. Instead, the
@@ -94,15 +95,14 @@ func (r *requestCoalescer) RoundTrip(req *http.Request) (*http.Response, error) 
 			// waiting for remains true once it becomes true. This lets us avoid the
 			// normal check to see if the condition has switched back to false between
 			// the signal being sent and this thread acquiring the lock.
-			waiter.Wait()
-			waiter.L.Unlock()
-			// Earlier request completed.
+			firstReq.Wait()
+			firstReq.L.Unlock()
 
-			if waiter.err != nil {
+			if firstReq.err != nil {
 				// Don't log the error, it will be logged by requester.
-				return nil, waiter.err
+				return nil, firstReq.err
 			}
-			resp, err := http.ReadResponse(bufio.NewReader(bytes.NewBuffer(waiter.resp)), nil)
+			resp, err := http.ReadResponse(bufio.NewReader(bytes.NewBuffer(firstReq.resp)), nil)
 			if err != nil {
 				logrus.WithField("cache-key", key).WithError(err).Error("Error loading response.")
 				return nil, err
@@ -113,8 +113,8 @@ func (r *requestCoalescer) RoundTrip(req *http.Request) (*http.Response, error) 
 		}
 		// No earlier request in flight (common case).
 		// Register a new responseWaiter and make the request ourself.
-		waiter = &responseWaiter{Cond: sync.NewCond(&sync.Mutex{})}
-		r.cache[key] = waiter
+		firstReq = &firstRequest{Cond: sync.NewCond(&sync.Mutex{})}
+		r.cache[key] = firstReq
 		r.Unlock()
 
 		resp, err := r.requestExecutor.RoundTrip(req)
@@ -124,17 +124,17 @@ func (r *requestCoalescer) RoundTrip(req *http.Request) (*http.Response, error) 
 		delete(r.cache, key)
 		r.Unlock()
 
-		waiter.L.Lock()
-		if waiter.waiting {
+		firstReq.L.Lock()
+		if firstReq.waiting {
 			if err != nil {
-				waiter.resp, waiter.err = nil, err
+				firstReq.resp, firstReq.err = nil, err
 			} else {
 				// Copy the response before releasing to waiter(s).
-				waiter.resp, waiter.err = httputil.DumpResponse(resp, true)
+				firstReq.resp, firstReq.err = httputil.DumpResponse(resp, true)
 			}
-			waiter.Broadcast()
+			firstReq.Broadcast()
 		}
-		waiter.L.Unlock()
+		firstReq.L.Unlock()
 
 		if err != nil {
 			logrus.WithField("cache-key", key).WithError(err).Warn("Error from cache transport layer.")
