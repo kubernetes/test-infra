@@ -67,6 +67,7 @@ type Configuration struct {
 	Blockades            []Blockade                   `json:"blockades,omitempty"`
 	Blunderbuss          Blunderbuss                  `json:"blunderbuss,omitempty"`
 	Bugzilla             Bugzilla                     `json:"bugzilla,omitempty"`
+	BranchCleaner        BranchCleaner                `json:"branch_cleaner,omitempty"`
 	Cat                  Cat                          `json:"cat,omitempty"`
 	CherryPickUnapproved CherryPickUnapproved         `json:"cherry_pick_unapproved,omitempty"`
 	ConfigUpdater        ConfigUpdater                `json:"config_updater,omitempty"`
@@ -1789,6 +1790,23 @@ func (b *Bugzilla) OptionsForRepo(org, repo string) map[string]BugzillaBranchOpt
 	}
 
 	return options
+}
+
+// BranchCleaner contains the configuration for the branchcleaner plugin.
+type BranchCleaner struct {
+	// ProtectedBranches is a set of repo branches, branches in this white list
+	// are exempt from branch gc, even if the branches are already merged into the target branch
+	ProtectedBranches []string `json:"protected_branches,omitempty"`
+}
+
+// IsProtectedBranch check if the branch is in the protected branch list or not.
+func (b *BranchCleaner) IsProtectedBranch(branch string) bool {
+	for _, pb := range b.ProtectedBranches {
+		if branch == pb {
+			return true
+		}
+	}
+	return false
 }
 
 // Override holds options for the override plugin

@@ -24,6 +24,7 @@ import (
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/plugins"
 )
 
 func TestBranchCleaner(t *testing.T) {
@@ -36,30 +37,55 @@ func TestBranchCleaner(t *testing.T) {
 		prAction             github.PullRequestEventAction
 		merged               bool
 		headRepoFullName     string
+		srcBranchName        string
+		protectedBranches    []string
 		branchDeleteExpected bool
 	}{
 		{
 			name:                 "Opened PR nothing to do",
 			prAction:             github.PullRequestActionOpened,
+			srcBranchName:        "my-feature1",
 			merged:               false,
 			branchDeleteExpected: false,
 		},
 		{
 			name:                 "Closed PR unmerged nothing to do",
 			prAction:             github.PullRequestActionClosed,
+			srcBranchName:        "my-feature2",
 			merged:               false,
 			branchDeleteExpected: false,
 		},
 		{
 			name:                 "PR from different repo nothing to do",
 			prAction:             github.PullRequestActionClosed,
+			srcBranchName:        "my-fix1",
 			merged:               true,
 			headRepoFullName:     "different-org/repo",
 			branchDeleteExpected: false,
 		},
 		{
+			name:          "PR from same repo with protected branch",
+			prAction:      github.PullRequestActionClosed,
+			srcBranchName: "release",
+			protectedBranches: []string{
+				"release", "master",
+			},
+			merged:               true,
+			headRepoFullName:     "my-org/repo",
+			branchDeleteExpected: false,
+		},
+		{
+			name:                 "PR from same repo without protected branch",
+			prAction:             github.PullRequestActionClosed,
+			srcBranchName:        "release",
+			merged:               true,
+			headRepoFullName:     "my-org/repo",
+			branchDeleteExpected: true,
+		},
+		{
 			name:                 "PR from same repo delete head ref",
 			prAction:             github.PullRequestActionClosed,
+			srcBranchName:        "my-chore1",
 			merged:               true,
 			headRepoFullName:     "my-org/repo",
 			branchDeleteExpected: true,
@@ -87,7 +113,7 @@ func TestBranchCleaner(t *testing.T) {
 						},
 					},
 					Head: github.PullRequestBranch{
-						Ref: "my-feature",
+						Ref: tc.srcBranchName,
 						Repo: github.Repo{
 							FullName: tc.headRepoFullName,
 						},
@@ -104,7 +130,9 @@ func TestBranchCleaner(t *testing.T) {
 					Number: prNumber,
 				},
 			}
-			if err := handle(fgc, log, event); err != nil {
+			if err := handle(fgc, log, plugins.BranchCleaner{
+				ProtectedBranches: tc.protectedBranches,
+			}, event); err != nil {
 				t.Fatalf("error in handle: %v", err)
 			}
 			if tc.branchDeleteExpected != (len(fgc.RefsDeleted) == 1) {

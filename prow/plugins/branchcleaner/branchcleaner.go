@@ -41,14 +41,14 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 }
 
 func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
-	return handle(pc.GitHubClient, pc.Logger, pre)
+	return handle(pc.GitHubClient, pc.Logger, pc.PluginConfig.BranchCleaner, pre)
 }
 
 type githubClient interface {
 	DeleteRef(owner, repo, ref string) error
 }
 
-func handle(gc githubClient, log *logrus.Entry, pre github.PullRequestEvent) error {
+func handle(gc githubClient, log *logrus.Entry, config plugins.BranchCleaner, pre github.PullRequestEvent) error {
 	// Only consider closed PRs that got merged
 	if pre.Action != github.PullRequestActionClosed || !pre.PullRequest.Merged {
 		return nil
@@ -56,8 +56,13 @@ func handle(gc githubClient, log *logrus.Entry, pre github.PullRequestEvent) err
 
 	pr := pre.PullRequest
 
-	//Only consider PRs from the same repo
+	// Only consider PRs from the same repo
 	if pr.Base.Repo.FullName != pr.Head.Repo.FullName {
+		return nil
+	}
+
+	// skip protected branches
+	if config.IsProtectedBranch(pr.Head.Ref) {
 		return nil
 	}
 
