@@ -8,12 +8,11 @@ postsubmits:
     max_concurrency: 1
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20210806-38e1be0-org
+      - image: golang:1.17
         command:
-        - bazel
+        - make
         args:
-        - run
-        - //admin:update
+        - deploy
         - --
         - --github-endpoint=http://ghproxy.default.svc.cluster.local
         - --github-endpoint=https://api.github.com
@@ -539,15 +538,11 @@ periodics:
     base_ref: main
   spec:
     containers:
-    - image: launcher.gcr.io/google/bazel:0.29.1
-      env:
-      - name: USE_BAZEL_VERSION
-        value: real  # Ignore .bazelversion
+    - image: golang:1.17
       command:
-      - bazel
+      - make
       args:
-      - run
-      - //admin:update
+      - deploy
       - --
       - --github-endpoint=http://ghproxy.default.svc.cluster.local
       - --github-endpoint=https://api.github.com
