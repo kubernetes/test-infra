@@ -36,7 +36,7 @@ DIFFROOT="${SCRIPT_ROOT}/prow"
 TMP_DIFFROOT="${TEST_TMPDIR}/prow"
 
 mkdir -p "${TMP_DIFFROOT}"
-cp -a "${DIFFROOT}"/{apis,client,spyglass} "${TMP_DIFFROOT}"
+cp -a "${DIFFROOT}"/{apis,client,config,spyglass} "${TMP_DIFFROOT}"
 
 clean=yes # bazel test files are read-only, must first delete
 BUILD_WORKSPACE_DIRECTORY="$SCRIPT_ROOT" "$@" "$clean"
@@ -44,8 +44,9 @@ echo "diffing ${DIFFROOT} against freshly generated codegen"
 ret=0
 diff -Naupr "${DIFFROOT}/apis" "${TMP_DIFFROOT}/apis" || ret=$?
 diff -Naupr "${DIFFROOT}/client" "${TMP_DIFFROOT}/client" || ret=$?
+diff -Naupr "${DIFFROOT}/config" "${TMP_DIFFROOT}/config" || ret=$?
 diff -Naupr "${DIFFROOT}/spyglass" "${TMP_DIFFROOT}/spyglass" || ret=$?
-cp -a "${TMP_DIFFROOT}"/{apis,client,spyglass} "${DIFFROOT}"
+cp -a "${TMP_DIFFROOT}"/{apis,client,config,spyglass} "${DIFFROOT}"
 if [[ ${ret} -eq 0 ]]; then
   echo "${DIFFROOT} up to date."
   exit 0
