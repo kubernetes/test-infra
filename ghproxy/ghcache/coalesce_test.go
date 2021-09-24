@@ -21,13 +21,14 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"k8s.io/test-infra/ghproxy/ghmetrics"
 	"net/http"
 	"net/url"
 	"reflect"
 	"sync"
 	"testing"
 	"time"
+
+	"k8s.io/test-infra/ghproxy/ghmetrics"
 
 	"k8s.io/apimachinery/pkg/util/diff"
 )
@@ -73,9 +74,9 @@ func TestRoundTrip(t *testing.T) {
 		beginResponding: sync.NewCond(&sync.Mutex{}),
 	}
 	coalescer := &requestCoalescer{
-		cache:    make(map[string]*firstRequest),
+		cache:           make(map[string]*firstRequest),
 		requestExecutor: fre,
-		hasher:   ghmetrics.NewCachingHasher(),
+		hasher:          ghmetrics.NewCachingHasher(),
 	}
 	wg := sync.WaitGroup{}
 	wg.Add(100)
@@ -121,7 +122,7 @@ func TestCacheModeHeader(t *testing.T) {
 	coalescer := &requestCoalescer{
 		cache:           make(map[string]*firstRequest),
 		requestExecutor: fre,
-		hasher:   ghmetrics.NewCachingHasher(),
+		hasher:          ghmetrics.NewCachingHasher(),
 	}
 
 	checkMode := func(resp *http.Response, expected CacheResponseMode) {

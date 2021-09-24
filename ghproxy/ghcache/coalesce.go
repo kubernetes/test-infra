@@ -46,8 +46,8 @@ type firstRequest struct {
 	*sync.Cond
 
 	subscribers bool
-	resp    []byte
-	err     error
+	resp        []byte
+	err         error
 }
 
 // RoundTrip coalesces concurrent GET requests for the same URI by blocking
