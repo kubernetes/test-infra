@@ -33,9 +33,10 @@ import (
 	"k8s.io/apimachinery/pkg/util/diff"
 )
 
-// testDelegate is a fake upstream transport delegate that logs hits by URI and
-// will wait to respond to requests until signaled unless the request has
-// a header specifying it should be responded to immediately.
+// fakeRequestExecutor is a fake upstream transport RoundTripper that logs hits by
+// URI. It will wait to respond to requests until signaled, or respond
+// immediately if the request has a header specifying it should be responded to
+// immediately.
 type fakeRequestExecutor struct {
 	beginResponding *sync.Cond
 
