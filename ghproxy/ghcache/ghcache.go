@@ -137,14 +137,14 @@ func cacheResponseMode(headers http.Header) CacheResponseMode {
 	return ModeMiss
 }
 
-func newThrottlingTransport(maxConcurrency int, delegate http.RoundTripper) http.RoundTripper {
-	return &throttlingTransport{sem: semaphore.NewWeighted(int64(maxConcurrency)), delegate: delegate}
+func newThrottlingTransport(maxConcurrency int, roundTripper http.RoundTripper) http.RoundTripper {
+	return &throttlingTransport{sem: semaphore.NewWeighted(int64(maxConcurrency)), roundTripper: roundTripper}
 }
 
 // throttlingTransport throttles outbound concurrency from the proxy
 type throttlingTransport struct {
-	sem      *semaphore.Weighted
-	delegate http.RoundTripper
+	sem          *semaphore.Weighted
+	roundTripper http.RoundTripper
 }
 
 func (c *throttlingTransport) RoundTrip(req *http.Request) (*http.Response, error) {
@@ -157,7 +157,7 @@ func (c *throttlingTransport) RoundTrip(req *http.Request) (*http.Response, erro
 	pendingOutboundConnectionsGauge.Dec()
 	outboundConcurrencyGauge.Inc()
 	defer outboundConcurrencyGauge.Dec()
-	return c.delegate.RoundTrip(req)
+	return c.roundTripper.RoundTrip(req)
 }
 
 // upstreamTransport changes response headers from upstream before they
@@ -171,8 +171,8 @@ func (c *throttlingTransport) RoundTrip(req *http.Request) (*http.Response, erro
 //    Cache-Control: no-cache
 // This instructs the cache to store the response, but always consider it stale.
 type upstreamTransport struct {
-	delegate http.RoundTripper
-	hasher   ghmetrics.Hasher
+	roundTripper http.RoundTripper
+	hasher       ghmetrics.Hasher
 }
 
 func (u upstreamTransport) RoundTrip(req *http.Request) (*http.Response, error) {
@@ -185,8 +185,8 @@ func (u upstreamTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 	}
 
 	reqStartTime := time.Now()
-	// Don't modify request, just pass to delegate.
-	resp, err := u.delegate.RoundTrip(req)
+	// Don't modify request, just pass to roundTripper.
+	resp, err := u.roundTripper.RoundTrip(req)
 	if err != nil {
 		ghmetrics.CollectRequestTimeoutMetrics(tokenBudgetName, req.URL.Path, req.Header.Get("User-Agent"), reqStartTime, time.Now())
 		logrus.WithField("cache-key", req.URL.String()).WithError(err).Warn("Error from upstream (GitHub).")
@@ -226,7 +226,7 @@ const LogMessageWithDiskPartitionFields = "Not using a partitioned cache because
 // NewDiskCache creates a GitHub cache RoundTripper that is backed by a disk
 // cache.
 // It supports a partitioned cache.
-func NewDiskCache(delegate http.RoundTripper, cacheDir string, cacheSizeGB, maxConcurrency int, legacyDisablePartitioningByAuthHeader bool, cachePruneInterval time.Duration) http.RoundTripper {
+func NewDiskCache(roundTripper http.RoundTripper, cacheDir string, cacheSizeGB, maxConcurrency int, legacyDisablePartitioningByAuthHeader bool, cachePruneInterval time.Duration) http.RoundTripper {
 	if legacyDisablePartitioningByAuthHeader {
 		diskCache := diskcache.NewWithDiskv(
 			diskv.New(diskv.Options{
@@ -234,7 +234,7 @@ func NewDiskCache(delegate http.RoundTripper, cacheDir string, cacheSizeGB, maxC
 				TempDir:      path.Join(cacheDir, "temp"),
 				CacheSizeMax: uint64(cacheSizeGB) * uint64(1000000000), // convert G to B
 			}))
-		return NewFromCache(delegate,
+		return NewFromCache(roundTripper,
 			func(partitionKey string, _ *time.Time) httpcache.Cache {
 				logrus.WithField("cache-base-path", path.Join(cacheDir, "data", partitionKey)).
 					WithField("cache-temp-path", path.Join(cacheDir, "temp", partitionKey)).
@@ -250,7 +250,7 @@ func NewDiskCache(delegate http.RoundTripper, cacheDir string, cacheSizeGB, maxC
 			Prune(cacheDir, time.Now)
 		}
 	}()
-	return NewFromCache(delegate,
+	return NewFromCache(roundTripper,
 		func(partitionKey string, expiresAt *time.Time) httpcache.Cache {
 			basePath := path.Join(cacheDir, "data", partitionKey)
 			tempDir := path.Join(cacheDir, "temp", partitionKey)
@@ -340,8 +340,8 @@ type cachePartitionMetadata struct {
 // NewMemCache creates a GitHub cache RoundTripper that is backed by a memory
 // cache.
 // It supports a partitioned cache.
-func NewMemCache(delegate http.RoundTripper, maxConcurrency int) http.RoundTripper {
-	return NewFromCache(delegate,
+func NewMemCache(roundTripper http.RoundTripper, maxConcurrency int) http.RoundTripper {
+	return NewFromCache(roundTripper,
 		func(_ string, _ *time.Time) httpcache.Cache { return httpcache.NewMemoryCache() },
 		maxConcurrency)
 }
@@ -351,15 +351,15 @@ type CachePartitionCreator func(partitionKey string, expiresAt *time.Time) httpc
 
 // NewFromCache creates a GitHub cache RoundTripper that is backed by the
 // specified httpcache.Cache implementation.
-func NewFromCache(delegate http.RoundTripper, cache CachePartitionCreator, maxConcurrency int) http.RoundTripper {
+func NewFromCache(roundTripper http.RoundTripper, cache CachePartitionCreator, maxConcurrency int) http.RoundTripper {
 	hasher := ghmetrics.NewCachingHasher()
 	return newPartitioningRoundTripper(func(partitionKey string, expiresAt *time.Time) http.RoundTripper {
 		cacheTransport := httpcache.NewTransport(cache(partitionKey, expiresAt))
-		cacheTransport.Transport = newThrottlingTransport(maxConcurrency, upstreamTransport{delegate: delegate, hasher: hasher})
+		cacheTransport.Transport = newThrottlingTransport(maxConcurrency, upstreamTransport{roundTripper: roundTripper, hasher: hasher})
 		return &requestCoalescer{
-			keys:     make(map[string]*responseWaiter),
-			delegate: cacheTransport,
-			hasher:   hasher,
+			cache:           make(map[string]*firstRequest),
+			requestExecutor: cacheTransport,
+			hasher:          hasher,
 		}
 	})
 }
@@ -369,13 +369,13 @@ func NewFromCache(delegate http.RoundTripper, cache CachePartitionCreator, maxCo
 // Important note: The redis implementation does not support partitioning the cache
 // which means that requests to the same path from different tokens will invalidate
 // each other.
-func NewRedisCache(delegate http.RoundTripper, redisAddress string, maxConcurrency int) http.RoundTripper {
+func NewRedisCache(roundTripper http.RoundTripper, redisAddress string, maxConcurrency int) http.RoundTripper {
 	conn, err := redis.Dial("tcp", redisAddress)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error connecting to Redis")
 	}
 	redisCache := rediscache.NewWithClient(conn)
-	return NewFromCache(delegate,
+	return NewFromCache(roundTripper,
 		func(_ string, _ *time.Time) httpcache.Cache { return redisCache },
 		maxConcurrency)
 }
