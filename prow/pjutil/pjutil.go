@@ -267,6 +267,7 @@ func ProwJobFields(pj *prowapi.ProwJob) logrus.Fields {
 	fields["name"] = pj.ObjectMeta.Name
 	fields["job"] = pj.Spec.Job
 	fields["type"] = pj.Spec.Type
+	fields["state"] = pj.Status.State
 	if len(pj.ObjectMeta.Labels[github.EventGUID]) > 0 {
 		fields[github.EventGUID] = pj.ObjectMeta.Labels[github.EventGUID]
 	}

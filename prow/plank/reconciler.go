@@ -102,6 +102,10 @@ func add(
 
 	r := newReconciler(ctx, mgr.GetClient(), overwriteReconcile, cfg, opener, totURL)
 	for buildCluster, buildClusterMgr := range buildMgrs {
+		r.log.WithFields(logrus.Fields{
+			"buildCluster": buildCluster,
+			"host":         buildClusterMgr.GetConfig().Host,
+		}).Debug("creating client")
 		blder = blder.Watches(
 			source.NewKindWithCache(&corev1.Pod{}, buildClusterMgr.GetCache()),
 			podEventRequestMapper(cfg().ProwJobNamespace))
@@ -257,6 +261,8 @@ func (r *reconciler) defaultReconcile(ctx context.Context, request reconcile.Req
 	res, err := r.serializeIfNeeded(ctx, pj)
 	if IsTerminalError(err) {
 		// Unfixable cases like missing build clusters, do not return an error to prevent requeuing
+		r.log.WithError(err).WithFields(pjutil.ProwJobFields(pj)).
+			Error("Reconciliation failed with terminal error and will not be requeued")
 		return reconcile.Result{}, nil
 	}
 	if res == nil {
