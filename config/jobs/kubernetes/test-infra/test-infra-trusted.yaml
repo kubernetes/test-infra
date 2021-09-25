@@ -14,10 +14,10 @@ postsubmits:
         args:
         - deploy
         - --
-        - --github-endpoint=http://ghproxy.default.svc.cluster.local
-        - --github-endpoint=https://api.github.com
-        - --github-token-path=/etc/github-token/oauth
-        - --tokens=1200
+        - --github-endpoint http://ghproxy.default.svc.cluster.local
+        - --github-endpoint https://api.github.com
+        - --github-token-path /etc/github-token/oauth
+        - --tokens 1200
         - --confirm
         volumeMounts:
         - name: github
@@ -544,10 +544,10 @@ periodics:
       args:
       - deploy
       - --
-      - --github-endpoint=http://ghproxy.default.svc.cluster.local
-      - --github-endpoint=https://api.github.com
-      - --github-token-path=/etc/github-token/oauth
-      - --tokens=1200
+      - --github-endpoint http://ghproxy.default.svc.cluster.local
+      - --github-endpoint https://api.github.com
+      - --github-token-path /etc/github-token/oauth
+      - --tokens 1200
       - --confirm
       volumeMounts:
       - name: github
