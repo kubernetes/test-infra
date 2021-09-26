@@ -59,7 +59,8 @@ def build_test(cloud='aws',
                focus_regex=None,
                runs_per_day=0,
                scenario=None,
-               env=None):
+               env=None,
+               template_path=None):
     # pylint: disable=too-many-statements,too-many-branches,too-many-arguments
 
     if kops_version is None:
@@ -143,6 +144,7 @@ def build_test(cloud='aws',
         job_timeout=str(test_timeout_minutes + 30) + 'm',
         test_timeout=str(test_timeout_minutes) + 'm',
         marker=marker,
+        template_path=template_path,
         skip_regex=skip_regex,
         kops_feature_flags=','.join(feature_flags),
         terraform_version=terraform_version,
@@ -226,7 +228,8 @@ def presubmit_test(branch='master',
                    skip_report=False,
                    always_run=False,
                    scenario=None,
-                   env=None):
+                   env=None,
+                   template_path=None):
     # pylint: disable=too-many-statements,too-many-branches,too-many-arguments
     if cloud == 'aws':
         kops_image = distro_images[distro]
@@ -278,6 +281,7 @@ def presubmit_test(branch='master',
         image=image,
         scenario=scenario,
         env=env,
+        template_path=template_path,
     )
 
     spec = {
@@ -1082,6 +1086,12 @@ def generate_presubmits_e2e():
                 '--override=cluster.spec.externalDns.provider=external-dns',
                 '--override=cluster.spec.iam.useServiceAccountExternalPermissions=true'
             ],
+        ),
+        presubmit_test(
+            name="pull-kops-e2e-aws-apiserver-nodes",
+            cloud="aws",
+            template_path="/home/prow/go/src/k8s.io/kops/tests/e2e/templates/apiserver.yaml.tmpl",
+            feature_flags=['APIServerNodes']
         ),
 
 

@@ -49,6 +49,9 @@
           {%- if validation_wait %}
           --validation-wait={{validation_wait}} \
           {%- endif %}
+          {%- if template_path %}
+          --template-path={{template_path}} \
+          {%- endif %}
           --test=kops \
           -- \
           --ginkgo-args="--debug" \

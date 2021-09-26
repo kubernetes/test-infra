@@ -49,6 +49,9 @@
             {%- if terraform_version %}
             --terraform-version={{terraform_version}} \
             {%- endif %}
+            {%- if template_path %}
+            --template-path={{template_path}} \
+            {%- endif %}
             --test=kops \
             -- \
             --ginkgo-args="--debug" \
