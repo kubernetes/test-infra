@@ -998,6 +998,24 @@ def generate_presubmits_e2e():
                 '--override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true'], # pylint: disable=line-too-long
         ),
 
+
+        presubmit_test(
+            name="pull-kops-e2e-ipv6-ci",
+            cloud="aws",
+            distro="u2004",
+            k8s_version="ci",
+            networking="calico",
+            feature_flags=["AWSIPv6"],
+            extra_flags=['--ipv6',
+                         '--api-loadbalancer-type=public',
+                         '--api-loadbalancer-class=network',
+                         '--set=cluster.spec.api.loadBalancer.useForInternalApi=true',
+                         '--set=cluster.spec.cloudControllerManager.cloudProvider=aws',
+                         '--set=cluster.spec.nonMasqueradeCIDR=fd00:10:96::/64',
+                         ],
+            tab_name='ipv6-ci',
+        ),
+
         presubmit_test(
             name="pull-kops-e2e-ipv6-conformance",
             cloud="aws",
