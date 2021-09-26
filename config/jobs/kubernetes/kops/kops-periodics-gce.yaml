@@ -28,7 +28,6 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --create-args="--channel=alpha --override=cluster.spec.kubeAPIServer.serviceAccountIssuer=https://kubernetes.default" \
-          --env=KOPS_FEATURE_FLAGS=GoogleCloudBucketACL \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/latest.txt \
           --test=kops \
@@ -93,7 +92,6 @@ periodics:
           --up --down \
           --cloud-provider=gce \
           --create-args="--channel=alpha --override=cluster.spec.kubeAPIServer.serviceAccountIssuer=https://kubernetes.default" \
-          --env=KOPS_FEATURE_FLAGS=GoogleCloudBucketACL \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \

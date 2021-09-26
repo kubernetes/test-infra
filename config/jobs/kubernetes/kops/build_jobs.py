@@ -958,7 +958,6 @@ def generate_presubmits_e2e():
             tab_name='e2e-gce',
             always_run=False,
             skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|\[Driver:.nfs\]|Firewall|Dashboard|RuntimeClass|RuntimeHandler|kube-dns|run.a.Pod.requesting.a.RuntimeClass|should.set.TCP.CLOSE_WAIT|Services.*rejected.*endpoints', # pylint: disable=line-too-long
-            feature_flags=['GoogleCloudBucketACL'],
         ),
         # A special test for AWS Cloud-Controller-Manager
         presubmit_test(
