@@ -19,6 +19,7 @@ presubmits:
         command:
         - /bin/bash
         args:
+        - -c
         - if [ -f Makefile ]; then
             make test
           else
