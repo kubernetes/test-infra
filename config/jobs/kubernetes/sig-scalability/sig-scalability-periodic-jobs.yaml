@@ -666,6 +666,7 @@ periodics:
           memory: "8Gi"
 
 - name: ci-perf-tests-kubemark-100-benchmark
+  cluster: k8s-infra-prow-build
   interval: 2h
   labels:
     preset-service-account: "true"
