@@ -13,7 +13,7 @@
 # limitations under the License.
 
 push-prod:
-	bazel run //images/builder -- --project=k8s-testimages --scratch-bucket=gs://k8s-testimages-scratch --build-dir=. images/bazelbuild
+	bazel run //images/builder -- --project=k8s-staging-test-infra --scratch-bucket=gs://k8s-staging-test-infra-gcb --build-dir=. images/bazelbuild
 
 push:
 	bazel run //images/builder -- --allow-dirty --build-dir=. images/bazelbuild
