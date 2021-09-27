@@ -14,7 +14,7 @@ Prow's Kubernetes cluster uses an [ingress resource][ingress-resource] for termi
 
 The pods for **hook** run [the **hook** executable][hook-main].
 **hook** listens for incoming HTTP requests and translates them to "GitHub event objects".
-For example, in the case of the `/test all` comment from above, **hook** builds an [`GenericCommentEvent`][github-GenericommentEvent].
+For example, in the case of the `/test all` comment from above, **hook** builds an [`GenericCommentEvent`][github-GenericCommentEvent].
 Afterwards, **hook** broadcasts these events to Prow Plugins.
 
 Prow Plugins receive 2 objects:
