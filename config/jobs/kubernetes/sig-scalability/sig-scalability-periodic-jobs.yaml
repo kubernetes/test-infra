@@ -1,5 +1,6 @@
 periodics:
 - name: ci-kubernetes-e2e-gce-node-throughput
+  cluster: k8s-infra-prow-build
   tags:
   - "perfDashPrefix: docker-node-throughput"
   - "perfDashJobType: throughput"
@@ -59,6 +60,7 @@ periodics:
           memory: "6Gi"
 
 - name: ci-kubernetes-e2e-gce-node-containerd-throughput
+  cluster: k8s-infra-prow-build
   tags:
   - "perfDashPrefix: containerd-node-throughput"
   - "perfDashJobType: throughput"
