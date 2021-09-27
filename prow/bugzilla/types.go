@@ -162,6 +162,8 @@ type BugCreate struct {
 	TargetMilestone string `json:"target_milestone,omitempty"`
 	// Version are the versions the bug was reported against.
 	Version []string `json:"version,omitempty"`
+	// TargetRelease are the releases that the bug will be fixed in.
+	TargetRelease []string `json:"target_release,omitempty"`
 }
 
 // Comment holds information about a comment

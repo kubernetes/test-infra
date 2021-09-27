@@ -64,7 +64,7 @@ type Client interface {
 	// https://bugzilla.redhat.com/docs/en/html/api/core/v1/comment.html#create-comments
 	CreateComment(bug *CommentCreate) (int, error)
 	// CloneBug clones a bug by creating a new bug with the same fields, copying the description, and updating the bug to depend on the original bug
-	CloneBug(bug *Bug) (int, error)
+	CloneBug(bug *Bug, mutations ...func(bug *BugCreate)) (int, error)
 	// UpdateBug updates the fields of a bug on the server
 	// https://bugzilla.readthedocs.io/en/latest/api/core/v1/bug.html#update-bug
 	UpdateBug(id int, update BugUpdate) error
@@ -619,7 +619,7 @@ func cloneBugStruct(bug *Bug, subcomponents map[string][]string, comments []Comm
 
 // clone handles the bz client calls for the bug cloning process and allows us to share the implementation
 // between the real and fake client to prevent bugs from accidental discrepencies between the two.
-func clone(c Client, bug *Bug) (int, error) {
+func clone(c Client, bug *Bug, mutations []func(bug *BugCreate)) (int, error) {
 	subcomponents, err := c.GetSubComponentsOnBug(bug.ID)
 	if err != nil {
 		return 0, fmt.Errorf("failed to check if bug has subcomponents: %w", err)
@@ -628,7 +628,13 @@ func clone(c Client, bug *Bug) (int, error) {
 	if err != nil {
 		return 0, fmt.Errorf("failed to get parent bug's comments: %w", err)
 	}
-	id, err := c.CreateBug(cloneBugStruct(bug, subcomponents, comments))
+
+	newBug := cloneBugStruct(bug, subcomponents, comments)
+	for _, mutation := range mutations {
+		mutation(newBug)
+	}
+
+	id, err := c.CreateBug(newBug)
 	if err != nil {
 		return id, err
 	}
@@ -648,8 +654,8 @@ func clone(c Client, bug *Bug) (int, error) {
 }
 
 // CloneBug clones a bug by creating a new bug with the same fields, copying the description, and updating the bug to depend on the original bug
-func (c *client) CloneBug(bug *Bug) (int, error) {
-	return clone(c, bug)
+func (c *client) CloneBug(bug *Bug, mutations ...func(bug *BugCreate)) (int, error) {
+	return clone(c, bug, mutations)
 }
 
 // GetComments gets a list of comments for a specific bug ID.

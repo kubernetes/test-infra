@@ -202,6 +202,7 @@ func (c *Fake) CreateBug(bug *BugCreate) (int, error) {
 		Summary:         bug.Summary,
 		TargetMilestone: bug.TargetMilestone,
 		Version:         bug.Version,
+		TargetRelease:   bug.TargetRelease,
 	}
 	c.Bugs[newID] = newBug
 	// add new comment one ID newer than highest existing CommentID
@@ -263,8 +264,8 @@ func (c *Fake) GetComments(id int) ([]Comment, error) {
 }
 
 // CloneBug clones a bug by creating a new bug with the same fields, copying the description, and updating the bug to depend on the original bug
-func (c *Fake) CloneBug(bug *Bug) (int, error) {
-	return clone(c, bug)
+func (c *Fake) CloneBug(bug *Bug, mutations ...func(bug *BugCreate)) (int, error) {
+	return clone(c, bug, mutations)
 }
 
 func (c *Fake) GetSubComponentsOnBug(id int) (map[string][]string, error) {
