@@ -129,7 +129,7 @@ presubmits:
         - noop
         - --test=node
         - --
-        - --zone=us-west1-b
+        - --gcp-zone=us-west1-b
         - --parallelism=8
         - --focus-regex='\[NodeConformance\]'
         - --skip-regex='\[Flaky\]|\[Slow\]|\[Serial\]'
@@ -260,7 +260,7 @@ presubmits:
         - noop
         - --test=node
         - --
-        - --zone=us-west1-b
+        - --gcp-zone=us-west1-b
         - --parallelism=8
         - --focus-regex='\[NodeConformance\]'
         - --skip-regex='\[Flaky\]|\[Slow\]|\[Serial\]'
