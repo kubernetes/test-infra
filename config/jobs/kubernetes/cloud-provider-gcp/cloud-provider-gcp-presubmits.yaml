@@ -20,7 +20,8 @@ presubmits:
         - /bin/bash
         args:
         - -c
-        - if [ -f Makefile ]; then
+        - |
+          if [ -f Makefile ]; then
             make test
           else
             ../test-infra/hack/bazel.sh test --test_output=errors -- //... -//vendor/...
