@@ -29,7 +29,7 @@ postsubmits:
           - images/bazelbuild/
     - name: post-test-infra-push-benchmarkjunit-canary
       cluster: k8s-infra-prow-build-trusted
-      run_if_changed: '^images/benchmarkjunit/'
+      run_if_changed: '^pkg/benchmarkjunit/'
       annotations:
         testgrid-dashboards: sig-testing-canaries, sig-k8s-infra-canaries, sig-k8s-infra-gcb
         testgrid-tab-name: benchmarkjunit-canary
