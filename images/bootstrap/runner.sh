@@ -83,6 +83,10 @@ if [[ "${DOCKER_IN_DOCKER_ENABLED}" == "true" ]]; then
     done
     printf '=%.0s' {1..80}; echo
     echo "Done setting up docker in docker."
+
+    # https://github.com/kubernetes/test-infra/issues/23741
+    echo "configure iptables to set MTU"
+    iptables -t mangle -A POSTROUTING -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
 fi
 
 trap early_exit_handler INT TERM
