@@ -84,7 +84,7 @@ periodics:
             cpu: 4
             memory: 8Gi
   annotations:
-    testgrid-dashboards: wg-k8s-infra-canaries
+    testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-tab-name: containerd-build-1.5-canary
     description: "builds release/1.5 branch of upstream containerd"
 - name: ci-containerd-build-test-images-canary
@@ -338,7 +338,7 @@ periodics:
           cpu: 4
           memory: 8Gi
   annotations:
-    testgrid-dashboards: wg-k8s-infra-canaries
+    testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-tab-name: containerd-node-e2e-1.5-canary
 - name: ci-containerd-node-e2e-features-canary
   interval: 1h
@@ -451,7 +451,7 @@ periodics:
           cpu: 4
           memory: 8Gi
   annotations:
-    testgrid-dashboards: wg-k8s-infra-canaries
+    testgrid-dashboards: sig-k8s-infra-canaries
     testgrid-tab-name: containerd-node-e2e-features-1.5-canary
 - name: ci-cri-containerd-e2e-gce-device-plugin-gpu-canary
   cron: "30 1-23/3 * * *"
