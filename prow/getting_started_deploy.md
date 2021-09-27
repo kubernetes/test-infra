@@ -159,6 +159,7 @@ kubectl create secret -n prow generic github-token --from-file=cert=/path/to/git
 There are two sample manifests to get you started:
 * [`starter-s3.yaml`](/config/prow/cluster/starter-s3.yaml) sets up a minio as blob storage for logs and is particularly well suited to quickly get something working. NOTE: this method requires 2 PVs of 100Gi each.
 * [`starter-gcs.yaml`](/config/prow/cluster/starter-gcs.yaml) uses GCS as blob storage and requires additional configuration to set up the bucket and ServiceAccounts. See [this](#configure-a-gcs-bucket) for details.
+* [`starter-azure.yaml`](/config/prow/cluster/starter-azure.yaml) uses Azure as blob storage and requires MinIO deployment. See [this](#configure-an-azure-blob-storage) for details.
 
 **Note**: It will deploy prow in the `prow` namespace of the cluster.
 
@@ -184,6 +185,7 @@ Apply the manifest you edited above by executing one of the following two comman
 
 * `kubectl apply -f config/prow/cluster/starter-s3.yaml`
 * `kubectl apply -f config/prow/cluster/starter-gcs.yaml`
+* `kubectl apply -f config/prow/cluster/starter-azure.yaml`
 
 After a moment, the cluster components will be running.
 
@@ -274,6 +276,36 @@ ProwJob configuration:
 
 You now have a working Prow cluster (Woohoo!), but it isn't doing anything interesting yet.
 This section will help you complete any additional setup that your instance may need.
+
+### Configure an Azure blob storage
+
+> If you want to persist logs and output in Azure, you need to follow the steps below.
+
+By default Prow doesn't support Azure blob storage for storing job metadata, logs, and artifacts.
+However, with [MinIO](https://github.com/minio/minio) it is possible to keep artifacts in
+Azure blob storage as one would in GCS or S3. MinIO Gateway adds Amazon S3 compatibility
+to Azure Blob Storage. As such, we can mimic S3 storage for Prow, while actually pushing
+artifacts to the Azure storage. To run MinIO in gateway mode with Azure being the backend
+storage, we need to pass the following arguments to MinIO deployment:
+
+```yaml
+  args:
+  - gateway # mode of MinIO
+  - azure # storage provider
+  - --console-address=:"<<CHANGE_ME_MINIO_CONSOLE_PORT>>" # predictable port number of the web console. E.g. 33333
+```
+
+In order to configure the Azure storage, follow the following steps:
+
+1. [create](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-create?tabs=azure-portal) a storage account.
+1. update MinIO deployment and `s3-credential` Secret with your Azure BlobStorage account name and key.
+1. update MinIO deployment and `minio-console` with your desired port number for accessing its web-console. `minio-console` service is optional and only necessary if you plan to access MinIO web-console.
+1. [create](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-quickstart-blobs-portal) the following containers in
+  your Azure BlobStorage account where Prow will push various artifacts:
+    - `prow-logs`
+    - `status-reconciler`
+    - `tide`
+1. apply [starter-azure.yaml](../config/prow/cluster/starter-azure.yaml).
 
 ### Configure a GCS bucket
 
