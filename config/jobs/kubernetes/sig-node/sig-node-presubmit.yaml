@@ -220,8 +220,8 @@ presubmits:
             cpu: 4
             memory: 6Gi
   - name: pull-kubernetes-node-e2e-containerd-kubetest2
-    always_run: true
-    optional: false
+    always_run: false
+    optional: true
     branches:
     - master
     decorate: true
