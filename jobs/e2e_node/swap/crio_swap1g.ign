@@ -1,14 +1,14 @@
 {
   "ignition": {
-    "version": "3.1.0"
+    "version": "3.3.0"
+  },
+  "kernelArguments": {
+    "shouldExist": [
+      "systemd.unified_cgroup_hierarchy=0"
+    ]
   },
   "systemd": {
     "units": [
-      {
-        "contents": "[Unit]\nDescription=Enable cgroup v1\nBefore=network-online.target\nConditionFirstBoot=yes\n\n[Service]\nType=oneshot\nExecStart=/usr/bin/rpm-ostree kargs --append systemd.unified_cgroup_hierarchy=0 --reboot\n[Install]\n\nWantedBy=multi-user.target\n",
-        "enabled": true,
-        "name": "cgroupv1.service"
-      },
       {
         "contents": "[Unit]\nDescription=Enable swap on CoreOS\nBefore=swap-enable.service\nConditionFirstBoot=yes\n\n[Service]\nType=oneshot\nExecStart=/bin/sh -c \"sudo rpm-ostree install dbus-tools && sudo systemctl reboot\"\n[Install]\n\nWantedBy=multi-user.target\n",
         "enabled": true,
