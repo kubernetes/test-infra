@@ -135,7 +135,7 @@ def latest_aws_image(owner, name):
     return images[sorted(images, reverse=True)[0]]
 
 distro_images = {
-    'amzn2': latest_aws_image('137112412989', 'amzn2-ami-hvm-*-x86_64-gp2'),
+    'amzn2': latest_aws_image('137112412989', 'amzn2-ami-kernel-5.10-hvm-*-x86_64-gp2'),
     'centos7': latest_aws_image('125523088429', 'CentOS 7.*x86_64'),
     'centos8': latest_aws_image('125523088429', 'CentOS 8.*x86_64'),
     'deb9': latest_aws_image('379101102735', 'debian-stretch-hvm-x86_64-gp2-*'),
