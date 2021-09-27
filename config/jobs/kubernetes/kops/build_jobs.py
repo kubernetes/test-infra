@@ -697,6 +697,12 @@ def generate_misc():
                    ],
                    extra_dashboards=['kops-misc']),
 
+        build_test(name_override="kops-aws-apiserver-nodes",
+                   cloud="aws",
+                   runs_per_day=3,
+                   template_path="/home/prow/go/src/k8s.io/kops/tests/e2e/templates/apiserver.yaml.tmpl", # pylint: disable=line-too-long
+                   extra_dashboards=['kops-misc'],
+                   feature_flags=['APIServerNodes']),
 
     ]
     return results
