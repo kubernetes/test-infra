@@ -13,7 +13,7 @@
 # limitations under the License.
 
 push-prod:
-  bazel run //images/builder -- --project=k8s-testimages --scratch-bucket=gs://k8s-testimages-scratch images/gcloud-in-go
+  bazel run //images/builder -- --project=k8s-staging-test-infra --scratch-bucket=gs://k8s-staging-test-infra-gcb images/gcloud-in-go
 
 push:
 	bazel run //images/builder -- --allow-dirty images/gcloud-in-go

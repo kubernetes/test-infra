@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Used by gcr.io/k8s-testimages/image-builder.
+# Used by gcr.io/k8s-staging-test-infra/image-builder.
 # See ci-runner.sh for the version prow uses to build and run on the fly.
 
 set -e
