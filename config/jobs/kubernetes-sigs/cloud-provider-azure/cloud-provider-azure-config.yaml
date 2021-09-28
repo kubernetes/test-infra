@@ -10,7 +10,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210927-471c27b6e3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210928-6525112548-master
         command:
         - runner.sh
         args:
@@ -42,7 +42,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210927-471c27b6e3-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210928-6525112548-1.21
         command:
         - runner.sh
         - kubetest
@@ -99,7 +99,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210927-471c27b6e3-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210928-6525112548-1.21
         command:
         - runner.sh
         - kubetest
@@ -159,7 +159,7 @@ presubmits:
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210927-471c27b6e3-1.21
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210928-6525112548-1.21
           command:
             - runner.sh
             - kubetest
@@ -219,7 +219,7 @@ presubmits:
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210927-471c27b6e3-1.21
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210928-6525112548-1.21
           command:
             - runner.sh
             - kubetest
@@ -279,7 +279,7 @@ presubmits:
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210927-471c27b6e3-1.21
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210928-6525112548-1.21
           command:
           - runner.sh
           args:
@@ -315,7 +315,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210927-471c27b6e3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210928-6525112548-master
         command:
         - runner.sh
         args:
@@ -348,7 +348,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210927-471c27b6e3-1.21
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210928-6525112548-1.21
       command:
       - runner.sh
       - kubetest
@@ -408,7 +408,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210927-471c27b6e3-1.21
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210928-6525112548-1.21
       command:
       - runner.sh
       - kubetest
@@ -470,7 +470,7 @@ periodics:
       path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210927-471c27b6e3-1.21
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210928-6525112548-1.21
       command:
       - runner.sh
       - kubetest
@@ -532,7 +532,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210927-471c27b6e3-1.21
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210928-6525112548-1.21
       command:
       - runner.sh
       - kubetest
@@ -589,7 +589,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210927-471c27b6e3-1.21
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210928-6525112548-1.21
       command:
       - runner.sh
       - kubetest
@@ -647,7 +647,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210927-471c27b6e3-1.21
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210928-6525112548-1.21
       command:
       - runner.sh
       - kubetest
@@ -714,7 +714,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210927-471c27b6e3-1.21
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210928-6525112548-1.21
       command:
       - runner.sh
       - kubetest
@@ -774,7 +774,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210927-471c27b6e3-1.21
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210928-6525112548-1.21
       command:
       - runner.sh
       - kubetest
@@ -831,7 +831,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210927-471c27b6e3-1.21
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210928-6525112548-1.21
       command:
       - runner.sh
       - kubetest
@@ -888,7 +888,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210927-471c27b6e3-1.21
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210928-6525112548-1.21
       command:
       - runner.sh
       - kubetest
@@ -943,7 +943,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210927-471c27b6e3-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210928-6525112548-master
       command:
       - runner.sh
       - kubetest
@@ -1006,7 +1006,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210927-471c27b6e3-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210928-6525112548-master
       command:
       - runner.sh
       - kubetest
