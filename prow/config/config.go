@@ -857,6 +857,10 @@ type GitHubReporter struct {
 	// NoCommentRepos is a list of orgs and org/repos for which failure report
 	// comments should not be maintained. Status contexts will still be written.
 	NoCommentRepos []string `json:"no_comment_repos,omitempty"`
+	// SummaryCommentRepos is a list of orgs and org/repos for which failure report
+	// comments is only sent when all jobs from current SHA are finished. Status
+	// contexts will still be written.
+	SummaryCommentRepos []string `json:"summary_comment_repos,omitempty"`
 }
 
 // Sinker is config for the sinker controller.

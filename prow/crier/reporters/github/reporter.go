@@ -27,12 +27,14 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/semaphore"
+	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/github/report"
+	"k8s.io/test-infra/prow/kube"
 )
 
 const (
@@ -46,6 +48,7 @@ type Client struct {
 	config      config.Getter
 	reportAgent v1.ProwJobAgent
 	prLocks     *shardedLock
+	lister      ctrlruntimeclient.Reader
 }
 
 type simplePull struct {
@@ -102,7 +105,7 @@ func (s *shardedLock) runCleanup() {
 }
 
 // NewReporter returns a reporter client
-func NewReporter(gc report.GitHubClient, cfg config.Getter, reportAgent v1.ProwJobAgent) *Client {
+func NewReporter(gc report.GitHubClient, cfg config.Getter, reportAgent v1.ProwJobAgent, lister ctrlruntimeclient.Reader) *Client {
 	c := &Client{
 		gc:          gc,
 		config:      cfg,
@@ -111,6 +114,7 @@ func NewReporter(gc report.GitHubClient, cfg config.Getter, reportAgent v1.ProwJ
 			mapLock: semaphore.NewWeighted(1),
 			locks:   map[simplePull]*semaphore.Weighted{},
 		},
+		lister: lister,
 	}
 	c.prLocks.runCleanup()
 	return c
@@ -144,6 +148,22 @@ func (c *Client) Report(ctx context.Context, log *logrus.Entry, pj *v1.ProwJob) 
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Minute)
 	defer cancel()
 
+	// TODO(krzyzacy): ditch ReportTemplate, and we can drop reference to config.Getter
+	err := report.ReportStatusContext(ctx, c.gc, *pj, c.config().GitHubReporter)
+	if err != nil {
+		if strings.Contains(err.Error(), "This SHA and context has reached the maximum number of statuses") {
+			// This is completely unrecoverable, so just swallow the error to make sure we wont retry, even when crier gets restarted.
+			log.WithError(err).Debug("Encountered an error, skipping retries")
+			err = nil
+		} else if strings.Contains(err.Error(), "\"message\":\"Not Found\"") || strings.Contains(err.Error(), "\"message\":\"No commit found for SHA:") {
+			// "message":"Not Found" error occurs when someone force push, which is not a crier error
+			log.WithError(err).Debug("Could not find PR commit, skipping retries")
+			err = nil
+		}
+		// Always return when there is any error reporting status context.
+		return []*v1.ProwJob{pj}, nil, err
+	}
+
 	// The github comment create/update/delete done for presubmits
 	// needs pr-level locking to avoid racing when reporting multiple
 	// jobs in parallel.
@@ -162,21 +182,68 @@ func (c *Client) Report(ctx context.Context, log *logrus.Entry, pj *v1.ProwJob) 
 		defer lock.Release(1)
 	}
 
-	// TODO(krzyzacy): ditch ReportTemplate, and we can drop reference to config.Getter
-	err := report.Report(ctx, c.gc, c.config().Plank.ReportTemplateForRepo(pj.Spec.Refs), *pj, c.config().GitHubReporter)
-	if err != nil {
-		if strings.Contains(err.Error(), "This SHA and context has reached the maximum number of statuses") {
-			// This is completely unrecoverable, so just swallow the error to make sure we wont retry, even when crier gets restarted.
-			log.WithError(err).Debug("Encountered an error, skipping retries")
-			err = nil
-		} else if strings.Contains(err.Error(), "\"message\":\"Not Found\"") || strings.Contains(err.Error(), "\"message\":\"No commit found for SHA:") {
-			// "message":"Not Found" error occurs when someone force push, which is not a crier error
-			log.WithError(err).Debug("Could not find PR commit, skipping retries")
-			err = nil
+	// Check if this org or repo has opted out of failure report comments.
+	// This check has to be here and not in ShouldReport as we always need to report
+	// the status context, just potentially not creating a comment.
+	refs := pj.Spec.Refs
+	fullRepo := fmt.Sprintf("%s/%s", refs.Org, refs.Repo)
+	for _, ident := range c.config().GitHubReporter.NoCommentRepos {
+		if refs.Org == ident || fullRepo == ident {
+			return []*v1.ProwJob{pj}, nil, nil
+		}
+	}
+	// Check if this org or repo has opted out of failure report comments
+	toReport := []v1.ProwJob{*pj}
+	for _, ident := range c.config().GitHubReporter.SummaryCommentRepos {
+		if pj.Spec.Refs.Org == ident || fullRepo == ident {
+			toReport, err = pjsToReport(ctx, log, c.lister, pj)
+			if err != nil {
+				return []*v1.ProwJob{pj}, nil, err
+			}
+		}
+	}
+	err = report.ReportComment(ctx, c.gc, c.config().Plank.ReportTemplateForRepo(pj.Spec.Refs), toReport, c.config().GitHubReporter)
+
+	return []*v1.ProwJob{pj}, nil, err
+}
+
+func pjsToReport(ctx context.Context, log *logrus.Entry, lister ctrlruntimeclient.Reader, pj *v1.ProwJob) ([]v1.ProwJob, error) {
+	if len(pj.Spec.Refs.Pulls) != 1 {
+		return nil, nil
+	}
+	// find all prowjobs from this PR
+	selector := map[string]string{}
+	for _, l := range []string{kube.OrgLabel, kube.RepoLabel, kube.PullLabel} {
+		selector[l] = pj.ObjectMeta.Labels[l]
+	}
+	var pjs v1.ProwJobList
+	if err := lister.List(ctx, &pjs, ctrlruntimeclient.MatchingLabels(selector)); err != nil {
+		return nil, fmt.Errorf("Cannot list prowjob with selector %v", selector)
+	}
+
+	latestBatch := make(map[string]v1.ProwJob)
+	for _, pjob := range pjs.Items {
+		if !pjob.Complete() { // Any job still running should prevent from comments
+			return nil, nil
+		}
+		if !pj.Spec.Report { // Filtering out non-reporting jobs
+			continue
+		}
+		// Now you have convinced me that you are the same job from my revision,
+		// continue convince me that you are the last one of your kind
+		if existing, ok := latestBatch[pjob.Spec.Job]; !ok {
+			latestBatch[pjob.Spec.Job] = pjob
+		} else if pjob.CreationTimestamp.After(existing.CreationTimestamp.Time) {
+			latestBatch[pjob.Spec.Job] = pjob
 		}
 	}
 
-	return []*v1.ProwJob{pj}, nil, err
+	var toReport []v1.ProwJob
+	for _, pjob := range latestBatch {
+		toReport = append(toReport, pjob)
+	}
+
+	return toReport, nil
 }
 
 func lockKeyForPJ(pj *v1.ProwJob) (*simplePull, error) {
