@@ -58,6 +58,7 @@ var (
 	gkeInstanceGroupPrefix         = flag.String("gke-instance-group-prefix", "gke", "(gke only) Use a different instance group prefix.")
 	gkeNodePorts                   = flag.String("gke-node-ports", "", "(gke only) List of ports on nodes to open, allowing e.g. master to connect to pods on private nodes. The format should be 'protocol[:port[-port]],[...]' as in gcloud compute firewall-rules create --allow.")
 	gkeCreateNat                   = flag.Bool("gke-create-nat", false, "(gke only) Configure Cloud NAT allowing outbound connections in cluster with private nodes.")
+	gkeNodeTagFromFirewallRules    = flag.Bool("gke-node-tag-from-firewall-rules", false, "(gke only) Get node tag for creating firewall rules from already exisiting firewall rules.")
 	gkeNatMinPortsPerVm            = flag.Int("gke-nat-min-ports-per-vm", 64, "(gke only) Specify number of ports per cluster VM for NAT router. Number of ports * number of nodes / 64k = number of auto-allocated IP addresses (there is a hard limit of 100 IPs).")
 	gkeDownTimeout                 = flag.Duration("gke-down-timeout", 1*time.Hour, "(gke only) Timeout for gcloud container clusters delete call. Defaults to 1 hour which matches gcloud's default.")
 	gkeRemoveNetwork               = flag.Bool("gke-remove-network", true, "(gke only) At the end of the test remove non-default network that was used by cluster.")
@@ -632,13 +633,25 @@ func (g *gkeDeployer) ensureFirewall() error {
 	}
 	log.Printf("Couldn't describe firewall '%s', assuming it doesn't exist and creating it", firewall)
 
-	tagOut, err := exec.Command("gcloud", "compute", "instances", "list",
-		"--project="+g.project,
-		"--filter=metadata.created-by ~ "+g.instanceGroups[0].path,
-		"--limit=1",
-		"--format=get(tags.items)").Output()
-	if err != nil {
-		return fmt.Errorf("instances list failed: %s", util.ExecError(err))
+	var tagOut []byte
+	if *gkeNodeTagFromFirewallRules {
+		tagOut, err = exec.Command("gcloud", "compute", "firewall-rules", "list",
+			"--project="+g.project,
+			"--filter=name ~ "+g.cluster,
+			"--limit=1",
+			"--format=get(targetTags)").Output()
+		if err != nil {
+			return fmt.Errorf("firewall-rules list failed: %s", util.ExecError(err))
+		}
+	} else {
+		tagOut, err = exec.Command("gcloud", "compute", "instances", "list",
+			"--project="+g.project,
+			"--filter=metadata.created-by ~ "+g.instanceGroups[0].path,
+			"--limit=1",
+			"--format=get(tags.items)").Output()
+		if err != nil {
+			return fmt.Errorf("instances list failed: %s", util.ExecError(err))
+		}
 	}
 	tag := strings.TrimSpace(string(tagOut))
 	if tag == "" {
