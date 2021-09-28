@@ -701,6 +701,7 @@ periodics:
           memory: "2Gi"
 
 - name: ci-benchmark-scheduler-master
+  cluster: k8s-infra-prow-build
   tags:
   - "perfDashPrefix: scheduler-benchmark"
   - "perfDashJobType: benchmark"
@@ -737,6 +738,7 @@ periodics:
           memory: "32Gi"
 
 - name: ci-benchmark-scheduler-perf-master
+  cluster: k8s-infra-prow-build
   tags:
   - "perfDashPrefix: scheduler-perf-benchmark"
   - "perfDashJobType: benchmark"
