@@ -10,7 +10,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210928-6525112548-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210928-2a55334641-master
         command:
         - runner.sh
         args:
@@ -31,7 +31,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210928-6525112548-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210928-2a55334641-master
         command:
         - runner.sh
         args:
