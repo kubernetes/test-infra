@@ -19,7 +19,7 @@ presubmits:
         runAsUser: 2000
         allowPrivilegeEscalation: false
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210928-6525112548-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210928-2a55334641-master
           command:
             - make
             - test
@@ -100,7 +100,7 @@ presubmits:
         runAsUser: 2000
         allowPrivilegeEscalation: false
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210928-6525112548-go-canary
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210928-2a55334641-go-canary
           command:
             - make
             - test
@@ -136,7 +136,7 @@ periodics:
         runAsUser: 2000
         allowPrivilegeEscalation: false
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210928-6525112548-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210928-2a55334641-master
           command:
             - make
             - test
@@ -166,7 +166,7 @@ periodics:
         runAsUser: 2000
         allowPrivilegeEscalation: false
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210928-6525112548-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210928-2a55334641-master
           command:
             - runner.sh
             - bash
@@ -196,7 +196,7 @@ periodics:
         runAsUser: 2000
         allowPrivilegeEscalation: false
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210928-6525112548-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210928-2a55334641-master
           command:
             - runner.sh
             - bash
@@ -227,7 +227,7 @@ periodics:
         runAsUser: 2000
         allowPrivilegeEscalation: false
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210928-6525112548-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210928-2a55334641-master
           command:
             - runner.sh
             - bash
