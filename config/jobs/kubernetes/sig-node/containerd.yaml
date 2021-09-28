@@ -888,7 +888,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --repo=github.com/containerd/containerd=master
+      - --repo=github.com/containerd/containerd=main
       - --timeout=70
       - --scenario=kubernetes_e2e
       - --
