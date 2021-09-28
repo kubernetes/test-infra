@@ -35,7 +35,7 @@ postsubmits:
     - name: aws-ebs-csi-driver-push-images
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: provider-aws-cloud-provider-aws, sig-k8s-infra-gcb
+        testgrid-dashboards: provider-aws-ebs-csi-driver, sig-k8s-infra-gcb
         testgrid-tab-name: aws-ebs-csi-driver-image-pushes
       decorate: true
       branches:
@@ -65,7 +65,7 @@ postsubmits:
     - name: aws-iam-authenticator-push-images
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: provider-aws-cloud-provider-aws, sig-k8s-infra-gcb
+        testgrid-dashboards: provider-aws-iam-authenticator, sig-k8s-infra-gcb
         testgrid-tab-name: aws-iam-authenticator-image-pushes
       decorate: true
       branches:
