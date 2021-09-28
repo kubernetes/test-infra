@@ -253,7 +253,7 @@ func main() {
 	}
 
 	if o.gerritWorkers > 0 {
-		gerritReporter, err := gerritreporter.NewReporter(o.cookiefilePath, o.gerritProjects, mgr.GetCache())
+		gerritReporter, err := gerritreporter.NewReporter(cfg, o.cookiefilePath, o.gerritProjects, mgr.GetCache())
 		if err != nil {
 			logrus.WithError(err).Fatal("Error starting gerrit reporter")
 		}

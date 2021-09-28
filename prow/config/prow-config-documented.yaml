@@ -422,6 +422,7 @@ gerrit:
     # DeckURL is the root URL of Deck. This is used to construct links to
     # job runs for a given CL.
     deck_url: ' '
+    org_repos_config: null
 
     # TickInterval is how often we do a sync with binded gerrit instance
     tick_interval: 0s

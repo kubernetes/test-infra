@@ -821,7 +821,43 @@ type Gerrit struct {
 	RateLimit int `json:"ratelimit,omitempty"`
 	// DeckURL is the root URL of Deck. This is used to construct links to
 	// job runs for a given CL.
-	DeckURL string `json:"deck_url,omitempty"`
+	DeckURL        string                `json:"deck_url,omitempty"`
+	OrgReposConfig *GerritOrgRepoConfigs `json:"org_repos_config,omitempty"`
+}
+
+// GerritOrgRepoConfigs is config for repos
+type GerritOrgRepoConfigs []GerritOrgRepoConfig
+
+// GerritOrgRepoConfig is config for repos
+type GerritOrgRepoConfig struct {
+	Org        string   `json:"org,omitempty"`
+	Repos      []string `json:"repos,omitempty"`
+	OptOutHelp bool     `json:"opt_out_help,omitempty"`
+}
+
+func (goc *GerritOrgRepoConfigs) AllRepos() map[string][]string {
+	var res map[string][]string
+	for _, orgConfig := range *goc {
+		if res == nil {
+			res = make(map[string][]string)
+		}
+		res[orgConfig.Org] = append(res[orgConfig.Org], orgConfig.Repos...)
+	}
+	return res
+}
+
+func (goc *GerritOrgRepoConfigs) OptOutHelpRepos() map[string]sets.String {
+	var res map[string]sets.String
+	for _, orgConfig := range *goc {
+		if !orgConfig.OptOutHelp {
+			continue
+		}
+		if res == nil {
+			res = make(map[string]sets.String)
+		}
+		res[orgConfig.Org] = res[orgConfig.Org].Union(sets.NewString(orgConfig.Repos...))
+	}
+	return res
 }
 
 // Horologium is config for the Horologium.
