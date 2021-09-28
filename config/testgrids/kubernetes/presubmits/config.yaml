@@ -150,6 +150,9 @@ dashboards:
   - name: pull-kubernetes-node-e2e-kubetest2
     test_group_name: pull-kubernetes-node-e2e-kubetest2
     base_options: width=10
+  - name: pull-kubernetes-node-e2e-containerd-kubetest2
+    test_group_name: pull-kubernetes-node-e2e-containerd-kubetest2
+    base_options: width=10
 - name: presubmits-kubernetes-scalability
   dashboard_tab:
   - name: pull-kubernetes-e2e-gce-100-performance
