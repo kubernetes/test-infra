@@ -783,6 +783,7 @@ periodics:
           memory: "24Gi"
 
 - name: ci-benchmark-kube-dns-master
+  cluster: k8s-infra-prow-build
   interval: 2h
   tags:
   - "perfDashPrefix: kube-dns benchmark"
@@ -837,6 +838,7 @@ periodics:
           memory: "6Gi"
 
 - name: ci-benchmark-nodelocal-dns-master
+  cluster: k8s-infra-prow-build
   interval: 2h
   tags:
   - "perfDashPrefix: node-local-dns benchmark"
