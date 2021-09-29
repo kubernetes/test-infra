@@ -1,40 +1,5 @@
 presubmits:
   kubernetes/kubernetes:
-  - name: pull-kubernetes-bazel-test-canary
-    cluster: k8s-infra-prow-build
-    decorate: true
-    always_run: false
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-    annotations:
-      testgrid-dashboards: sig-testing-canaries
-      testgrid-tab-name: pull-bazel-test
-      description: runs bazel test //... -//build/... -//vendor/... without RBE
-    extra_refs:
-    - base_ref: master
-      org: kubernetes
-      repo: test-infra
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:latest-kubernetes-master
-        imagePullPolicy: Always
-        command:
-        - ../test-infra/hack/bazel.sh
-        args:
-        - test
-        - --config=unit
-        - //...
-        - --
-        - -//build/...
-        - -//vendor/...
-        resources:
-          limits:
-            cpu: 4
-            memory: 38Gi
-          requests:
-            cpu: 4
-            memory: 38Gi
   - name: pull-kubernetes-bazel-test-integration-canary
     always_run: false
     labels:
