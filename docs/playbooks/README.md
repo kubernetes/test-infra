@@ -25,6 +25,6 @@ in presubmit on Prow.
 
 <!--URLS-->
 [kubernetes-repo]: https://github.com/kubernetes/kubernetes
-[greenhouse-playbook]: ./../greenhouse/playbook.md
-[prow-playbook]: ./../prow/playbook.md
+[greenhouse-playbook]: greenhouse.md
+[prow-playbook]: prow.md
 [remote build cache]: https://docs.bazel.build/versions/master/remote-caching.html

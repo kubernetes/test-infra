@@ -51,3 +51,9 @@ system c compiler) within our image
 - we use these in conjunction with the repo under test / built to compute a primary cache key
 
 This avoids [bazel#4558](https://github.com/bazelbuild/bazel/issues/4558).
+
+## Playbook
+
+For operational details on working with greenhouse, see [Greenhouse Playbook][greenhouse-playbook]
+
+[greenhouse-playbook]: /docs/playbooks/greenhouse.md
