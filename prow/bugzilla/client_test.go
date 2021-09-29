@@ -46,7 +46,8 @@ func clientForUrl(url string) *client {
 	return &client{
 		logger: logrus.WithField("testing", "true"),
 		delegate: &delegate{
-			endpoint: url,
+			authMethod: "x-bugzilla-api-key",
+			endpoint:   url,
 			client: &http.Client{
 				Transport: &http.Transport{
 					TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
@@ -63,11 +64,6 @@ func TestGetBug(t *testing.T) {
 	testServer := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("X-BUGZILLA-API-KEY") != "api-key" {
 			t.Error("did not get api-key passed in X-BUGZILLA-API-KEY header")
-			http.Error(w, "403 Forbidden", http.StatusForbidden)
-			return
-		}
-		if r.URL.Query().Get("api_key") != "api-key" {
-			t.Error("did not get api-key passed in api_key query parameter")
 			http.Error(w, "403 Forbidden", http.StatusForbidden)
 			return
 		}
@@ -147,11 +143,6 @@ func TestCreateBug(t *testing.T) {
 	testServer := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("X-BUGZILLA-API-KEY") != "api-key" {
 			t.Error("did not get api-key passed in X-BUGZILLA-API-KEY header")
-			http.Error(w, "403 Forbidden", http.StatusForbidden)
-			return
-		}
-		if r.URL.Query().Get("api_key") != "api-key" {
-			t.Error("did not get api-key passed in api_key query parameter")
 			http.Error(w, "403 Forbidden", http.StatusForbidden)
 			return
 		}
@@ -259,11 +250,6 @@ func TestGetComments(t *testing.T) {
 			http.Error(w, "403 Forbidden", http.StatusForbidden)
 			return
 		}
-		if r.URL.Query().Get("api_key") != "api-key" {
-			t.Error("did not get api-key passed in api_key query parameter")
-			http.Error(w, "403 Forbidden", http.StatusForbidden)
-			return
-		}
 		if r.Method != http.MethodGet {
 			t.Errorf("incorrect method to get bug comments: %s", r.Method)
 			http.Error(w, "400 Bad Request", http.StatusBadRequest)
@@ -343,11 +329,6 @@ func TestCreateComment(t *testing.T) {
 	testServer := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("X-BUGZILLA-API-KEY") != "api-key" {
 			t.Error("did not get api-key passed in X-BUGZILLA-API-KEY header")
-			http.Error(w, "403 Forbidden", http.StatusForbidden)
-			return
-		}
-		if r.URL.Query().Get("api_key") != "api-key" {
-			t.Error("did not get api-key passed in api_key query parameter")
 			http.Error(w, "403 Forbidden", http.StatusForbidden)
 			return
 		}
@@ -520,11 +501,6 @@ func TestUpdateBug(t *testing.T) {
 		}
 		if r.Header.Get("Content-Type") != "application/json" {
 			t.Error("did not correctly set content-type header for JSON")
-			http.Error(w, "403 Forbidden", http.StatusForbidden)
-			return
-		}
-		if r.URL.Query().Get("api_key") != "api-key" {
-			t.Error("did not get api-key passed in api_key query parameter")
 			http.Error(w, "403 Forbidden", http.StatusForbidden)
 			return
 		}
@@ -1025,11 +1001,6 @@ func TestGetExternalBugPRsOnBug(t *testing.T) {
 	testServer := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("X-BUGZILLA-API-KEY") != "api-key" {
 			t.Error("did not get api-key passed in X-BUGZILLA-API-KEY header")
-			http.Error(w, "403 Forbidden", http.StatusForbidden)
-			return
-		}
-		if r.URL.Query().Get("api_key") != "api-key" {
-			t.Error("did not get api-key passed in api_key query parameter")
 			http.Error(w, "403 Forbidden", http.StatusForbidden)
 			return
 		}

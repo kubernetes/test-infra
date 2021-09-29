@@ -32,6 +32,7 @@ type BugzillaOptions struct {
 	endpoint                string
 	githubExternalTrackerId uint
 	ApiKeyPath              string
+	authMethod              string
 }
 
 // AddFlags injects Bugzilla options into the given FlagSet.
@@ -39,6 +40,7 @@ func (o *BugzillaOptions) AddFlags(fs *flag.FlagSet) {
 	fs.StringVar(&o.endpoint, "bugzilla-endpoint", "", "Bugzilla's API endpoint.")
 	fs.UintVar(&o.githubExternalTrackerId, "bugzilla-github-external-tracker-id", 0, "The ext_type_id for GitHub external bugs, optional.")
 	fs.StringVar(&o.ApiKeyPath, "bugzilla-api-key-path", "", "Path to the file containing the Bugzilla API key.")
+	fs.StringVar(&o.authMethod, "--auth-method", "", "Which authorization method will be used. Values can be bearer, query or x-bugzilla-api-key.")
 }
 
 // Validate validates Bugzilla options.
@@ -54,6 +56,12 @@ func (o *BugzillaOptions) Validate(dryRun bool) error {
 
 	if o.ApiKeyPath == "" {
 		logrus.Info("empty -bugzilla-api-key-path, will use anonymous Bugzilla client")
+	}
+
+	if o.authMethod != "" {
+		if o.authMethod != "bearer" && o.authMethod != "query" && o.authMethod != "x-bugzilla-api-key" {
+			return fmt.Errorf("invalid --auth-method %s. Valid values are bearer,query or x-bugzilla-api-key", o.authMethod)
+		}
 	}
 
 	return nil

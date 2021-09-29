@@ -206,6 +206,7 @@ type delegate struct {
 	endpoint                string
 	githubExternalTrackerId uint
 	getAPIKey               func() []byte
+	authMethod              string
 }
 
 // the client is a Client impl
@@ -686,15 +687,24 @@ func (c *client) GetComments(bugID int) ([]Comment, error) {
 
 func (c *client) request(req *http.Request, logger *logrus.Entry) ([]byte, error) {
 	if apiKey := c.getAPIKey(); len(apiKey) > 0 {
-		// some BugZilla servers are too old and can't handle the header.
-		// some don't want the query parameter and some need Bearer Authorization instead.
-		// We can set all of them and keep
-		// everyone happy without negotiating on versions
-		req.Header.Set("Authorization", "Bearer "+string(apiKey))
-		req.Header.Set("X-BUGZILLA-API-KEY", string(apiKey))
-		values := req.URL.Query()
-		values.Add("api_key", string(apiKey))
-		req.URL.RawQuery = values.Encode()
+		switch c.authMethod {
+		case "bearer":
+			req.Header.Set("Authorization", "Bearer "+string(apiKey))
+		case "query":
+			values := req.URL.Query()
+			values.Add("api_key", string(apiKey))
+			req.URL.RawQuery = values.Encode()
+		case "x-bugzilla-api-key":
+			req.Header.Set("X-BUGZILLA-API-KEY", string(apiKey))
+		default:
+			// If there is no auth method specified, we use a union of `query` and
+			// `x-bugzilla-api-key` to mimic the previous default behavior which attempted
+			// to satisfy different BugZilla server versions.
+			req.Header.Set("X-BUGZILLA-API-KEY", string(apiKey))
+			values := req.URL.Query()
+			values.Add("api_key", string(apiKey))
+			req.URL.RawQuery = values.Encode()
+		}
 	}
 	if userAgent := c.userAgent(); userAgent != "" {
 		req.Header.Add("User-Agent", userAgent)
