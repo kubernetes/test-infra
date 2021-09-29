@@ -200,6 +200,7 @@ periodics:
           memory: "6Gi"
 
 - name: ci-kubernetes-kubemark-100-gce-scheduler
+  cluster: k8s-infra-prow-build
   tags:
   - "perfDashPrefix: kubemark-100Nodes-scheduler"
   - "perfDashJobType: performance"
@@ -262,7 +263,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=150m
       - --use-logexporter
-      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
+      - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
