@@ -9,17 +9,6 @@ dashboard_groups:
   name: jetstack
 dashboards:
 - dashboard_tab:
-  - alert_options:
-      alert_mail_to_addresses: cert-manager-dev-alerts@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/cert-manager/test-infra/compare/<start-custom-0>...<end-custom-0>
-    description: Runs the end-to-end test suite against a EKS cluster
-    name: aws-tests
-    open_bug_template:
-      url: https://github.com/cert-manager/test-infra/issues/
-    open_test_template:
-      url: https://prow.build-infra.jetstack.net/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: aws-tests
   - code_search_url_template:
       url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
     description: Runs 'bazel test --jobs=1 //...'
@@ -29,17 +18,6 @@ dashboards:
     open_test_template:
       url: https://prow.build-infra.jetstack.net/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ci-cert-manager-bazel
-  - alert_options:
-      alert_mail_to_addresses: cert-manager-dev-alerts@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
-    description: Runs 'bazel test --jobs=1 //...' using the 'experimental' Bazel version
-    name: ci-cert-manager-bazel-experimental
-    open_bug_template:
-      url: https://github.com/jetstack/cert-manager/issues/
-    open_test_template:
-      url: https://prow.build-infra.jetstack.net/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: ci-cert-manager-bazel-experimental
   - alert_options:
       alert_mail_to_addresses: cert-manager-dev-alerts@googlegroups.com
     code_search_url_template:
@@ -132,7 +110,7 @@ dashboards:
       alert_mail_to_addresses: cert-manager-dev-alerts@googlegroups.com
     code_search_url_template:
       url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
-    description: Runs the end-to-end test suite against a Kubernetes v1.22 cluster
+    description: Runs Venafi Cloud e2e tests against Kubernetes v1.22 cluster
     name: ci-cert-manager-venafi-cloud
     open_bug_template:
       url: https://github.com/jetstack/cert-manager/issues/
@@ -253,17 +231,6 @@ dashboards:
     open_test_template:
       url: https://prow.build-infra.jetstack.net/view/gs/<gcs_prefix>/<changelist>
     test_group_name: ci-cert-manager-next-bazel
-  - alert_options:
-      alert_mail_to_addresses: cert-manager-dev-alerts@googlegroups.com
-    code_search_url_template:
-      url: https://github.com/jetstack/cert-manager/compare/<start-custom-0>...<end-custom-0>
-    description: Runs 'bazel test --jobs=1 //...' using the 'experimental' Bazel version
-    name: ci-cert-manager-next-bazel-experimental
-    open_bug_template:
-      url: https://github.com/jetstack/cert-manager/issues/
-    open_test_template:
-      url: https://prow.build-infra.jetstack.net/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: ci-cert-manager-next-bazel-experimental
   - alert_options:
       alert_mail_to_addresses: cert-manager-dev-alerts@googlegroups.com
     code_search_url_template:
@@ -608,15 +575,11 @@ dashboards:
     test_group_name: post-testing-upload-testgrid-config
   name: jetstack-testing-janitors
 test_groups:
-- gcs_prefix: jetstack-logs/logs/aws-tests
-  name: aws-tests
 - disable_prowjob_analysis: true
   gcs_prefix: jetstack-logs/logs/cert-manager-website-update-index
   name: cert-manager-website-update-index
 - gcs_prefix: jetstack-logs/logs/ci-cert-manager-bazel
   name: ci-cert-manager-bazel
-- gcs_prefix: jetstack-logs/logs/ci-cert-manager-bazel-experimental
-  name: ci-cert-manager-bazel-experimental
 - gcs_prefix: jetstack-logs/logs/ci-cert-manager-e2e-v1-16
   name: ci-cert-manager-e2e-v1-16
 - gcs_prefix: jetstack-logs/logs/ci-cert-manager-e2e-v1-17
@@ -633,8 +596,6 @@ test_groups:
   name: ci-cert-manager-e2e-v1-22
 - gcs_prefix: jetstack-logs/logs/ci-cert-manager-next-bazel
   name: ci-cert-manager-next-bazel
-- gcs_prefix: jetstack-logs/logs/ci-cert-manager-next-bazel-experimental
-  name: ci-cert-manager-next-bazel-experimental
 - gcs_prefix: jetstack-logs/logs/ci-cert-manager-next-e2e-v1-16
   name: ci-cert-manager-next-e2e-v1-16
 - gcs_prefix: jetstack-logs/logs/ci-cert-manager-next-e2e-v1-17
