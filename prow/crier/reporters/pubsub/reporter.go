@@ -55,6 +55,7 @@ type ReportMessage struct {
 	Refs    []prowapi.Refs       `json:"refs,omitempty"`
 	JobType prowapi.ProwJobType  `json:"job_type"`
 	JobName string               `json:"job_name"`
+	Message string               `json:"message,omitempty"`
 }
 
 // Client is a reporter client fed to crier controller
@@ -176,5 +177,6 @@ func (c *Client) generateMessageFromPJ(pj *prowapi.ProwJob) *ReportMessage {
 		Refs:    refs,
 		JobType: pj.Spec.Type,
 		JobName: pj.Spec.Job,
+		Message: pj.Status.Description,
 	}
 }
