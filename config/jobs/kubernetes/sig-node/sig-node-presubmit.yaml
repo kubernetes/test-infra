@@ -128,6 +128,7 @@ presubmits:
         - noop
         - --test=node
         - --
+        - --repo-root=k8s.io/$(REPO_NAME)=$(PULL_REFS)
         - --gcp-zone=us-west1-b
         - --parallelism=8
         - --focus-regex='\[NodeConformance\]'
@@ -259,6 +260,7 @@ presubmits:
         - noop
         - --test=node
         - --
+        - --repo-root=k8s.io/$(REPO_NAME)=$(PULL_REFS)
         - --gcp-zone=us-west1-b
         - --parallelism=8
         - --focus-regex='\[NodeConformance\]'
