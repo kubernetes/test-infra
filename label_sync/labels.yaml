@@ -500,7 +500,7 @@ default:
       target: both
       prowPlugin: label
       addedBy: anyone
-      prevously:
+      previously:
         - name: wg/k8s-infra
     - color: d2b48c
       description: Categorizes an issue or PR as relevant to SIG Multicluster.
