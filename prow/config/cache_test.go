@@ -39,14 +39,14 @@ func (fca *fakeConfigAgent) Config() *Config {
 	return fca.c
 }
 
-func TestNewProwYAMLCache(t *testing.T) {
-	// Invalid size arguments result in a nil prowYAMLCache and non-nil error.
+func TestNewInRepoConfigCache(t *testing.T) {
+	// Invalid size arguments result in a nil cache and non-nil error.
 	invalids := []int{-1, 0}
 	for _, invalid := range invalids {
 
 		fca := &fakeConfigAgent{}
 		cf := &testClientFactory{}
-		prowYAMLCache, err := NewProwYAMLCache(invalid, fca, cf)
+		cache, err := NewInRepoConfigCache(invalid, fca, cf)
 
 		if err == nil {
 			t.Fatal("Expected non-nil error, got nil")
@@ -56,8 +56,8 @@ func TestNewProwYAMLCache(t *testing.T) {
 			t.Errorf("Expected error 'Must provide a positive size', got '%v'", err.Error())
 		}
 
-		if prowYAMLCache != nil {
-			t.Errorf("Expected nil prowYAMLCache, got %v", prowYAMLCache)
+		if cache != nil {
+			t.Errorf("Expected nil cache, got %v", cache)
 		}
 	}
 
@@ -67,14 +67,14 @@ func TestNewProwYAMLCache(t *testing.T) {
 
 		fca := &fakeConfigAgent{}
 		cf := &testClientFactory{}
-		prowYAMLCache, err := NewProwYAMLCache(valid, fca, cf)
+		cache, err := NewInRepoConfigCache(valid, fca, cf)
 
 		if err != nil {
 			t.Errorf("Expected error 'nil' got '%v'", err.Error())
 		}
 
-		if prowYAMLCache == nil {
-			t.Errorf("Expected non-nil prowYAMLCache, got nil")
+		if cache == nil {
+			t.Errorf("Expected non-nil cache, got nil")
 		}
 	}
 }
@@ -363,9 +363,9 @@ func TestGetProwYAMLCached(t *testing.T) {
 				},
 			}
 			cf := &testClientFactory{}
-			prowYAMLCache, err := NewProwYAMLCache(1, fca, cf)
+			cache, err := NewInRepoConfigCache(1, fca, cf)
 			if err != nil {
-				t.Fatal("could not initialize prowYAMLCache")
+				t.Fatal("could not initialize cache")
 			}
 
 			for _, kp := range tc.cacheInitialState {
@@ -373,7 +373,7 @@ func TestGetProwYAMLCached(t *testing.T) {
 				if err != nil {
 					t.Errorf("Expected error 'nil' got '%v'", err.Error())
 				}
-				_, _ = prowYAMLCache.GetOrAdd(k, goodValConstructorForInitialState(ProwYAML{
+				_, _ = cache.GetOrAdd(k, goodValConstructorForInitialState(ProwYAML{
 					Presubmits: []Presubmit{
 						{
 							JobBase: JobBase{Name: string(k)}},
@@ -384,18 +384,18 @@ func TestGetProwYAMLCached(t *testing.T) {
 			// Simulate storing a value of the wrong type in the cache (a string
 			// instead of a *ProwYAML).
 			if tc.cacheCorrupted {
-				prowYAMLCache.Purge()
+				cache.Purge()
 
 				for _, kp := range tc.cacheInitialState {
 					k, err := kp.CacheKey()
 					if err != nil {
 						t.Errorf("Expected error 'nil' got '%v'", err.Error())
 					}
-					_, _ = prowYAMLCache.GetOrAdd(k, func() (interface{}, error) { return "<wrong-type>", nil })
+					_, _ = cache.GetOrAdd(k, func() (interface{}, error) { return "<wrong-type>", nil })
 				}
 			}
 
-			prowYAML, err := prowYAMLCache.GetProwYAML(tc.valConstructor, tc.identifier, tc.baseSHAGetter, tc.headSHAGetters...)
+			prowYAML, err := cache.GetProwYAML(tc.valConstructor, tc.identifier, tc.baseSHAGetter, tc.headSHAGetters...)
 
 			if tc.expected.err == "" {
 				if err != nil {
@@ -436,15 +436,15 @@ func TestGetProwYAMLCached(t *testing.T) {
 				}
 			}
 
-			if tc.expected.cacheLen != prowYAMLCache.Len() {
-				t.Errorf("Expected '%d' cached elements, got '%d'", tc.expected.cacheLen, prowYAMLCache.Len())
+			if tc.expected.cacheLen != cache.Len() {
+				t.Errorf("Expected '%d' cached elements, got '%d'", tc.expected.cacheLen, cache.Len())
 			}
 		})
 	}
 }
 
 // TestGetProwYAMLCachedAndDefaulted checks that calls to
-// prowYAMLCache.GetPresubmits() and prowYAMLCache.GetPostsubmits() return
+// cache.GetPresubmits() and cache.GetPostsubmits() return
 // defaulted values from the Config, and that changing (reloading) this Config
 // and calling it again with the same key (same cached ProwYAML, which has both
 // []Presubmit and []Postsubmit jobs) results in returning a __differently__
@@ -648,7 +648,7 @@ func TestGetProwYAMLCachedAndDefaulted(t *testing.T) {
 	}{
 		{
 			// Config has not changed between multiple
-			// prowYAMLCache.GetPresubmits() calls.
+			// cache.GetPresubmits() calls.
 			name: "ConfigNotChanged",
 			configBefore: makeConfig(envBefore, []*DefaultDecorationConfigEntry{
 				{
@@ -681,7 +681,7 @@ func TestGetProwYAMLCachedAndDefaulted(t *testing.T) {
 			},
 		},
 		{
-			// Config has changed between multiple requests to prowYAMLCache.
+			// Config has changed between multiple requests to cache.
 			name: "ConfigChanged",
 			configBefore: makeConfig(envBefore, []*DefaultDecorationConfigEntry{
 				{
@@ -781,19 +781,19 @@ func TestGetProwYAMLCachedAndDefaulted(t *testing.T) {
 			cf := &testClientFactory{}
 
 			// Initialize cache. Notice that it relies on a snapshot of the Config with configBefore.
-			prowYAMLCache, err := NewProwYAMLCache(10, fca, cf)
+			cache, err := NewInRepoConfigCache(10, fca, cf)
 			if err != nil {
-				t1.Fatal("could not initialize prowYAMLCache")
+				t1.Fatal("could not initialize cache")
 			}
 
 			// Get cached values. These cached values should be defaulted by the
 			// initial Config.
-			presubmits, err := prowYAMLCache.GetPresubmits(identifier, baseSHAGetter, headSHAGetters...)
+			presubmits, err := cache.GetPresubmits(identifier, baseSHAGetter, headSHAGetters...)
 			if err != nil {
 				t1.Errorf("Expected error 'nil' got '%v'", err.Error())
 			}
 
-			postsubmits, err := prowYAMLCache.GetPostsubmits(identifier, baseSHAGetter, headSHAGetters...)
+			postsubmits, err := cache.GetPostsubmits(identifier, baseSHAGetter, headSHAGetters...)
 			if err != nil {
 				t1.Errorf("Expected error 'nil' got '%v'", err.Error())
 			}
@@ -808,11 +808,11 @@ func TestGetProwYAMLCachedAndDefaulted(t *testing.T) {
 			// Reload Config.
 			fca.c = tc.configAfter
 
-			presubmits, err = prowYAMLCache.GetPresubmits(identifier, baseSHAGetter, headSHAGetters...)
+			presubmits, err = cache.GetPresubmits(identifier, baseSHAGetter, headSHAGetters...)
 			if err != nil {
 				t1.Fatalf("Expected error 'nil' got '%v'", err.Error())
 			}
-			postsubmits, err = prowYAMLCache.GetPostsubmits(identifier, baseSHAGetter, headSHAGetters...)
+			postsubmits, err = cache.GetPostsubmits(identifier, baseSHAGetter, headSHAGetters...)
 			if err != nil {
 				t1.Fatalf("Expected error 'nil' got '%v'", err.Error())
 			}
