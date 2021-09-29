@@ -180,7 +180,6 @@ dashboards:
 
 - name: google-kops-gce
 - name: google-gci
-- name: google-gke
 - name: google-gce-upgrade
 - name: google-osconfig
   dashboard_tab:
@@ -271,7 +270,6 @@ dashboard_groups:
   - google-gce-compute-image-tools
   - google-gcp-guest
   - google-gci
-  - google-gke
   - google-gce-upgrade
   - google-kops-gce
   - google-osconfig

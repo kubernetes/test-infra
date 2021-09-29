@@ -183,35 +183,6 @@ periodics:
     testgrid-dashboards: sig-testing-canaries
     testgrid-tab-name: scalability
 
-- interval: 30m
-  name: ci-kubernetes-e2e-gke-canary
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  decorate: true
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --check-leaked-resources
-      - --cluster=
-      - --deployment=gke
-      - --extract=gke-latest
-      - --gcp-node-image=gci
-      - --gcp-zone=us-central1-b
-      - --ginkgo-parallel
-      - --gke-environment=staging
-      - --provider=gke
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --timeout=50m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:latest-master
-      imagePullPolicy: Always
-  annotations:
-    testgrid-dashboards: google-gke, sig-testing-canaries
-    testgrid-tab-name: gke-canary
-
 - name: ci-kubernetes-e2e-node-canary
   interval: 1h
   labels:
