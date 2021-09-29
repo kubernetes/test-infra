@@ -59,7 +59,7 @@ periodics:
   - "perfDashPrefix: gce-5000Nodes"
   - "perfDashBuildsCount: 270"
   - "perfDashJobType: performance"
-  cluster: scalability
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -98,7 +98,7 @@ periodics:
       - --extract=ci/latest-fast
       - --extract-ci-bucket=k8s-release-dev
       - --gcp-nodes=5000
-      - --gcp-project=kubernetes-scale
+      - --gcp-project=k8s-infra-e2e-scale-5k-project
       - --gcp-zone=us-east1-b
       - --provider=gce
       - --metadata-sources=cl2-metadata.json
@@ -128,7 +128,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=420m
       - --use-logexporter
-      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
+      - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
       resources:
         requests:
           cpu: 6
