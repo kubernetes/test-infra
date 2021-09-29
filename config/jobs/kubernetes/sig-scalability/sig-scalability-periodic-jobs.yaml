@@ -351,6 +351,7 @@ periodics:
           memory: "2Gi"
 
 - name: ci-kubernetes-kubemark-500-gce
+  cluster: k8s-infra-prow-build
   tags:
   - "perfDashPrefix: kubemark-500Nodes"
   - "perfDashJobType: performance"
@@ -396,7 +397,7 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-node-size=e2-standard-8
       - --gcp-nodes=8
-      - --gcp-project=k8s-jenkins-blocking-kubemark
+      - --gcp-project-type=scalability-project
       - --gcp-zone=us-central1-f
       - --kubemark
       - --kubemark-nodes=500
@@ -418,7 +419,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=100m
       - --use-logexporter
-      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
+      - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
       # docker-in-docker needs privilged mode
       securityContext:
         privileged: true
