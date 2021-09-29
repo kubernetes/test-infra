@@ -10,4 +10,4 @@ approvers:
 - jpbetz
 labels:
 - sig/cloud-provider
-- area/provider/aws
+- area/provider/gcp
