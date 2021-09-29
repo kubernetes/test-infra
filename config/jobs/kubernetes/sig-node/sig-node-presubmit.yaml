@@ -346,7 +346,6 @@ presubmits:
       testgrid-create-test-group: 'true'
   - name: pull-kubernetes-node-kubelet-serial
     always_run: false
-    run_if_changed: '^test/.*(e2e_node|node)'
     optional: true
     skip_report: false
     skip_branches:
@@ -388,7 +387,6 @@ presubmits:
 
   - name: pull-kubernetes-node-kubelet-serial-containerd
     always_run: false
-    run_if_changed: '^test/.*(e2e_node|node)'
     optional: true
     skip_report: false
     skip_branches:
