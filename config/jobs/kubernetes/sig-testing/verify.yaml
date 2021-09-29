@@ -64,14 +64,6 @@ presubmits:
       preset-service-account: "true"
       preset-dind-enabled: "true"
     spec:
-      # TODO(https://github.com/kubernetes/k8s.io/issues/1187): remove nodeSelector/tolerations once new nodepool confirmed healthy
-      nodeSelector:
-        cloud.google.com/gke-ephemeral-storage-local-ssd: "true"
-      tolerations:
-      - key: "ephemeral-ssd-experiment"
-        operator: "Equal"
-        value: "true"
-        effect: "NoSchedule"
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210928-2a55334641-go-canary
         imagePullPolicy: Always
