@@ -1023,8 +1023,8 @@ func TestPjsToReport(t *testing.T) {
 			if (gotErr != nil && !tc.wantErr) || (gotErr == nil && tc.wantErr) {
 				t.Fatalf("error mismatch. got: %v, want: %v", gotErr, tc.wantErr)
 			}
-			if diff := cmp.Diff(tc.wantPjs, gotPjs, cmpopts.SortSlices(func(a, b *v1.ProwJob) bool {
-				return b == nil || (a != nil && a.Name > b.Name)
+			if diff := cmp.Diff(tc.wantPjs, gotPjs, cmpopts.SortSlices(func(a, b v1.ProwJob) bool {
+				return a.Name > b.Name
 			})); diff != "" {
 				t.Fatalf("pjs mismatch. got(+), want(-):\n%s", diff)
 			}
