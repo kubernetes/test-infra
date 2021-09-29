@@ -38,10 +38,10 @@ jqfilter: |
 * failures - find jobs that have been failing the longest
     - [Config](configs/failures-config.yaml)
     - [failures-latest.json](http://storage.googleapis.com/k8s-metrics/failures-latest.json)
-* flakes - find the flakiest jobs this week (and the flakiest tests in each job).
+* flakes - find the flakiest jobs this week (and the flakiest tests in each job)
     - [Config](configs/flakes-config.yaml)
     - [flakes-latest.json](http://storage.googleapis.com/k8s-metrics/flakes-latest.json)
-* flakes-daily - find flakes from the previous day. Similar to `flakes`, but creates more granular results.
+* flakes-daily - find the flakiest jobs in the last 24h (and the flakiest tests in each job)
     - [Config](configs/flakes-daily-config.yaml)
     - [flakes-daily-latest.json](http://storage.googleapis.com/k8s-metrics/flakes-daily-latest.json)
 * job-health - compute daily health metrics for jobs (runs, tests, failure rate for each, duration percentiles)
