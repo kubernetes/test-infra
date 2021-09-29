@@ -366,8 +366,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-smb-e2e-gce
     decorate: true
-    always_run: false
-    optional: true
+    always_run: true
     path_alias: sigs.k8s.io/csi-driver-smb
     branches:
     - master
@@ -385,7 +384,6 @@ presubmits:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
         args:
-        - --check-leaked-resources
         - --cluster=
         - --env=KUBE_MASTER_OS_DISTRIBUTION=cos
         - --env=KUBE_GCE_MASTER_IMAGE=cos-89-16108-470-11
