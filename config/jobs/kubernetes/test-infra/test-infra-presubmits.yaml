@@ -131,3 +131,23 @@ presubmits:
     annotations:
       testgrid-dashboards: presubmits-test-infra
       testgrid-tab-name: integration
+
+  # Optional job for testing new build system.
+  # For testing a new make rule, simply pointing `make test` to the new make rule only.
+  # Once a make rule is merged the test should be moved to another job that's required.
+  - name: pull-test-infra-test-beta
+    branches:
+    - master
+    always_run: false
+    decorate: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210928-2a55334641-test-infra
+        command:
+        - runner.sh
+        args:
+        - make
+        - test
+    annotations:
+      testgrid-dashboards: presubmits-test-infra
+      testgrid-tab-name: make-test-beta
