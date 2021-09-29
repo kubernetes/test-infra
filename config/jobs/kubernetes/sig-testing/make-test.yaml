@@ -87,14 +87,6 @@ presubmits:
     skip_report: false
     path_alias: k8s.io/kubernetes
     spec:
-      # TODO(https://github.com/kubernetes/k8s.io/issues/1187): remove nodeSelector/tolerations once new nodepool confirmed healthy
-      nodeSelector:
-        cloud.google.com/gke-ephemeral-storage-local-ssd: "true"
-      tolerations:
-      - key: "ephemeral-ssd-experiment"
-        operator: "Equal"
-        value: "true"
-        effect: "NoSchedule"
       # unit tests have no business requiring root or doing privileged operations
       securityContext:
         runAsUser: 2000

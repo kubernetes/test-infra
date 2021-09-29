@@ -165,14 +165,6 @@ presubmits:
       preset-pull-kubernetes-e2e: "true"
       preset-pull-kubernetes-e2e-gce: "true"
     spec:
-      # TODO(https://github.com/kubernetes/k8s.io/issues/1187): remove nodeSelector/tolerations once new nodepool confirmed healthy
-      nodeSelector:
-        cloud.google.com/gke-ephemeral-storage-local-ssd: "true"
-      tolerations:
-      - key: "ephemeral-ssd-experiment"
-        operator: "Equal"
-        value: "true"
-        effect: "NoSchedule"
       containers:
       - args:
         - --root=/go/src

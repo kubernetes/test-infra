@@ -62,14 +62,6 @@ presubmits:
       grace_period: 15m
     path_alias: k8s.io/kubernetes
     spec:
-      # TODO(https://github.com/kubernetes/k8s.io/issues/1187): remove nodeSelector/tolerations once new nodepool confirmed healthy
-      nodeSelector:
-        cloud.google.com/gke-ephemeral-storage-local-ssd: "true"
-      tolerations:
-      - key: "ephemeral-ssd-experiment"
-        operator: "Equal"
-        value: "true"
-        effect: "NoSchedule"
       containers:
       - image: gcr.io/k8s-staging-test-infra/krte:latest-master
         imagePullPolicy: Always # pull latest image for canary testing
