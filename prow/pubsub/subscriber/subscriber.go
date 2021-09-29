@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 
 	"cloud.google.com/go/pubsub"
 
@@ -380,6 +381,8 @@ func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msg messageIn
 		reportProwJob(pj, prowapi.TriggeredState, nil)
 	}
 
+	// Normalize job name
+	pe.Name = strings.TrimSpace(pe.Name)
 	prowJobSpec, labels, err := jh.getProwJobSpec(s.ConfigAgent.Config(), s.InRepoConfigCache, pe)
 	if err != nil {
 		// These are user errors, i.e. missing fields, requested prowjob doesn't exist etc.
