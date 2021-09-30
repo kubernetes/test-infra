@@ -13,31 +13,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -o nounset
-set -o errexit
-set -o pipefail
-
-# cd to the repo root and setup go
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd -P)"
-cd "${REPO_ROOT}"
+# script to setup go version with gimme as needed
+# MUST BE RUN FROM THE REPO ROOT DIRECTORY
 
 # read go-version file unless GO_VERSION is set
 GO_VERSION="${GO_VERSION:-"$(cat .go-version)"}"
 
+# we don't actually care where the .env files are
+# however, GIMME_SILENT_ENV doesn't trigger re-generating a .env if it
+# already exists and isn't "silent" (no `go version` command in it)
+# so we fix that by changing where the .env is written, ensuring ours
+# is generated from this repo and silent.
+export GIMME_ENV_PREFIX=./_bin/.gimme/
+export GIMME_SILENT_ENV=y
+
 # only setup go if we haven't set FORCE_HOST_GO, or `go version` doesn't match
 # go version output looks like:
 # go version go1.14.5 darwin/amd64
-if ! ([ -n "${FORCE_HOST_GO:-}" ] ||
+if ! ([ -n "${FORCE_HOST_GO:-}" ] || \
       (command -v go >/dev/null && [ "$(go version | cut -d' ' -f3)" = "go${GO_VERSION}" ])); then
-
-    if ! (command -v gvm >/dev/null); then
-        apt-get install bison
-        bash -c "$(curl -s -S -L https://raw.githubusercontent.com/moovweb/gvm/master/binscripts/gvm-installer)"
-        source /root/.gvm/scripts/gvm
-    fi
-
-    gvm install go${GO_VERSION}
-    gvm use go${GO_VERSION}
+    # eval because the output of this is shell to set PATH etc.
+    eval "$(hack/third_party/gimme/gimme "${GO_VERSION}")"
 fi
 
 # force go modules

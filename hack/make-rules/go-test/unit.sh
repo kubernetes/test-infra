@@ -27,15 +27,16 @@ cd 'hack/tools'
 go build -o "${REPO_ROOT}/_bin/gotestsum" gotest.tools/gotestsum
 cd "${REPO_ROOT}"
 
+JUNIT_RESULT_DIR="${REPO_ROOT}/_output"
+# if we are in CI, copy to the artifact upload location
+if [[ -n "${ARTIFACTS:-}" ]]; then
+  JUNIT_RESULT_DIR="${ARTIFACTS}"
+fi
+
 # run unit tests with junit output
 (
   set -x;
-  mkdir -p "${REPO_ROOT}/_output"
-  "${REPO_ROOT}/_bin/gotestsum" --junitfile="${REPO_ROOT}/_output/unit-junit.xml" \
+  mkdir -p "${JUNIT_RESULT_DIR}"
+  "${REPO_ROOT}/_bin/gotestsum" --junitfile="${JUNIT_RESULT_DIR}/junit-unit.xml" \
     -- './...'
 )
-
-# if we are in CI, copy to the artifact upload location
-if [[ -n "${ARTIFACTS:-}" ]]; then
-  cp "_output/unit-junit.xml" "${ARTIFACTS:?}/unit-junit.xml"
-fi
