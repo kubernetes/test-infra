@@ -600,6 +600,7 @@ periodics:
           memory: "16Gi"
 
 - name: ci-kubernetes-kubemark-high-density-100-gce
+  cluster: k8s-infra-prow-build
   tags:
   - "perfDashPrefix: kubemark-100Nodes-highDensity"
   - "perfDashJobType: performance"
@@ -660,7 +661,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=280m
       - --use-logexporter
-      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
+      - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
