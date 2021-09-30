@@ -291,6 +291,7 @@ larger set of contributors to apply/remove them.
 | <a id="area/developer-guide" href="#area/developer-guide">`area/developer-guide`</a> | Issues or PRs related to the developer guide| label | |
 | <a id="area/devstats" href="#area/devstats">`area/devstats`</a> | Issues or PRs related to the devstats subproject| label | |
 | <a id="area/e2e-test-framework" href="#area/e2e-test-framework">`area/e2e-test-framework`</a> | Issues or PRs related to refactoring the kubernetes e2e test framework| label | |
+| <a id="area/elections" href="#area/elections">`area/elections`</a> | Issues or PRs related to community elections| label | |
 | <a id="area/enhancements" href="#area/enhancements">`area/enhancements`</a> | Issues or PRs related to the Enhancements subproject| label | |
 | <a id="area/eu-summit" href="#area/eu-summit">`area/eu-summit`</a> | Issues or PRs related to the Contributor Summit in Europe| label | |
 | <a id="area/github-management" href="#area/github-management">`area/github-management`</a> | Issues or PRs related to GitHub Management subproject| label | |

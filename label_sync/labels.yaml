@@ -761,6 +761,11 @@ repos:
         target: both
         addedBy: label
       - color: 0052cc
+        description: Issues or PRs related to community elections
+        name: area/elections
+        target: both
+        addedBy: label
+      - color: 0052cc
         description: Issues or PRs related to GitHub Management subproject
         name: area/github-management
         target: both
