@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2021 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package prow
 
 import (
 	"reflect"
@@ -381,11 +381,11 @@ func Test_applySingleProwjobAnnotations(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			pac := prowAwareConfigurator{
-				prowConfig:            fakeProwConfig(),
-				defaultTestgridConfig: nil,
-				prowJobURLPrefix:      test.prowJobURLPrefix,
-				updateDescription:     test.updateDescription,
+			pac := ProwAwareConfigurator{
+				ProwConfig:            fakeProwConfig(),
+				DefaultTestgridConfig: nil,
+				ProwJobURLPrefix:      test.prowJobURLPrefix,
+				UpdateDescription:     test.updateDescription,
 			}
 			jobBase := prowConfig.JobBase{
 				Name:        ProwJobName,
@@ -395,7 +395,7 @@ func Test_applySingleProwjobAnnotations(t *testing.T) {
 
 			pj := genProwJob(jobBase, test.prowJobType, ExampleRepository)
 
-			err := pac.applySingleProwjobAnnotations(&test.initialConfig, jobBase, pj)
+			err := pac.ApplySingleProwjobAnnotations(&test.initialConfig, jobBase, pj)
 
 			if test.expectError {
 				if err == nil {
@@ -608,9 +608,9 @@ func Test_applySingleProwjobAnnotation_WithDefaults(t *testing.T) {
 				test.initialConfig = &config.Configuration{}
 			}
 
-			pac := prowAwareConfigurator{
-				prowConfig:            fakeProwConfig(),
-				defaultTestgridConfig: defaultConfig,
+			pac := ProwAwareConfigurator{
+				ProwConfig:            fakeProwConfig(),
+				DefaultTestgridConfig: defaultConfig,
 			}
 
 			jobBase := prowConfig.JobBase{
@@ -620,7 +620,7 @@ func Test_applySingleProwjobAnnotation_WithDefaults(t *testing.T) {
 
 			pj := genProwJob(jobBase, test.prowJobType, ExampleRepository)
 
-			err := pac.applySingleProwjobAnnotations(test.initialConfig, jobBase, pj)
+			err := pac.ApplySingleProwjobAnnotations(test.initialConfig, jobBase, pj)
 
 			if test.expectedConfig == nil {
 				if err == nil {
@@ -718,11 +718,11 @@ func Test_applySingleProwjobAnnotations_OpenTestTemplate(t *testing.T) {
 
 			prowCfg := fakeProwConfig()
 			prowCfg.Plank.JobURLPrefixConfig = test.jobURLPrefixConfig
-			pac := prowAwareConfigurator{
-				prowConfig: prowCfg,
+			pac := ProwAwareConfigurator{
+				ProwConfig: prowCfg,
 			}
 			if test.defaultConfig != nil {
-				pac.defaultTestgridConfig = test.defaultConfig
+				pac.DefaultTestgridConfig = test.defaultConfig
 			}
 
 			jobBase := prowConfig.JobBase{
@@ -733,7 +733,7 @@ func Test_applySingleProwjobAnnotations_OpenTestTemplate(t *testing.T) {
 
 			pj := genProwJob(jobBase, prowapi.PresubmitJob, ExampleRepository)
 
-			err := pac.applySingleProwjobAnnotations(initialConfig, jobBase, pj)
+			err := pac.ApplySingleProwjobAnnotations(initialConfig, jobBase, pj)
 
 			if err != nil {
 				t.Errorf("Unexpected error: %v", err)

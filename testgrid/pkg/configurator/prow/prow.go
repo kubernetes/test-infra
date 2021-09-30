@@ -1,5 +1,5 @@
 /*
-Copyright 2019 The Kubernetes Authors.
+Copyright 2021 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package prow
 
 import (
 	"fmt"
@@ -49,32 +49,32 @@ const minPresubmitNumColumnsRecent = 20
 
 // Talk to @michelle192837 if you're thinking about adding more of these!
 
-type prowAwareConfigurator struct {
-	prowConfig            *prowConfig.Config
-	defaultTestgridConfig *yamlcfg.DefaultConfiguration
+type ProwAwareConfigurator struct {
+	ProwConfig            *prowConfig.Config
+	DefaultTestgridConfig *yamlcfg.DefaultConfiguration
 
-	updateDescription bool
-	prowJobConfigPath string
-	prowJobURLPrefix  string
+	UpdateDescription bool
+	ProwJobConfigPath string
+	ProwJobURLPrefix  string
 }
 
-func (pac *prowAwareConfigurator) tabDescriptionForProwJob(j prowConfig.JobBase) string {
+func (pac *ProwAwareConfigurator) TabDescriptionForProwJob(j prowConfig.JobBase) string {
 	fields := []string{}
 	fields = append(fields, fmt.Sprintf("prowjob_name: %v", j.Name))
-	if pac.prowJobURLPrefix != "" {
-		url := pac.prowJobURLPrefix + strings.TrimPrefix(j.SourcePath, pac.prowJobConfigPath)
+	if pac.ProwJobURLPrefix != "" {
+		url := pac.ProwJobURLPrefix + strings.TrimPrefix(j.SourcePath, pac.ProwJobConfigPath)
 		fields = append(fields, fmt.Sprintf("prowjob_config_url: %v", url))
 	}
 	if d := j.Annotations[descriptionAnnotation]; d != "" {
 		fields = append(fields, fmt.Sprintf("prowjob_description: %v", d))
-		if !pac.updateDescription {
+		if !pac.UpdateDescription {
 			return d
 		}
 	}
 	return strings.Join(fields, "\n")
 }
 
-func (pac *prowAwareConfigurator) applySingleProwjobAnnotations(c *configpb.Configuration, j prowConfig.JobBase, pj prowapi.ProwJob) error {
+func (pac *ProwAwareConfigurator) ApplySingleProwjobAnnotations(c *configpb.Configuration, j prowConfig.JobBase, pj prowapi.ProwJob) error {
 	tabName := j.Name
 	testGroupName := j.Name
 	var repo string
@@ -82,8 +82,8 @@ func (pac *prowAwareConfigurator) applySingleProwjobAnnotations(c *configpb.Conf
 		repo = fmt.Sprintf("%s/%s", pj.Spec.Refs.Org, pj.Spec.Refs.Repo)
 	}
 
-	pc := pac.prowConfig
-	dc := pac.defaultTestgridConfig
+	pc := pac.ProwConfig
+	dc := pac.DefaultTestgridConfig
 
 	mustMakeGroup := j.Annotations[testgridCreateTestGroupAnnotation] == "true"
 	mustNotMakeGroup := j.Annotations[testgridCreateTestGroupAnnotation] == "false"
@@ -181,7 +181,7 @@ func (pac *prowAwareConfigurator) applySingleProwjobAnnotations(c *configpb.Conf
 		tabName = tn
 	}
 
-	description := pac.tabDescriptionForProwJob(j)
+	description := pac.TabDescriptionForProwJob(j)
 
 	if addToDashboards {
 		firstDashboard := true
@@ -206,7 +206,7 @@ func (pac *prowAwareConfigurator) applySingleProwjobAnnotations(c *configpb.Conf
 				}
 			}
 
-			jobURLPrefix := pac.prowConfig.Plank.GetJobURLPrefix(&pj)
+			jobURLPrefix := pac.ProwConfig.Plank.GetJobURLPrefix(&pj)
 			var openTestLinkTemplate *configpb.LinkTemplate
 			if jobURLPrefix != "" {
 				openTestLinkTemplate = &configpb.LinkTemplate{
@@ -283,18 +283,18 @@ func sortPresubmits(pre map[string][]prowConfig.Presubmit) []string {
 	return preRepos
 }
 
-func (pac *prowAwareConfigurator) applyProwjobAnnotations(testgridConfig *configpb.Configuration) error {
-	if pac.prowConfig == nil {
+func (pac *ProwAwareConfigurator) ApplyProwjobAnnotations(testgridConfig *configpb.Configuration) error {
+	if pac.ProwConfig == nil {
 		return nil
 	}
-	jobs := pac.prowConfig.JobConfig
+	jobs := pac.ProwConfig.JobConfig
 
 	per := jobs.AllPeriodics()
 	sortPeriodics(per)
 	for _, j := range per {
 		pjSpec := pjutil.PeriodicSpec(prowConfig.Periodic{JobBase: j.JobBase})
 		pj := pjutil.NewProwJob(pjSpec, nil, nil)
-		if err := pac.applySingleProwjobAnnotations(testgridConfig, j.JobBase, pj); err != nil {
+		if err := pac.ApplySingleProwjobAnnotations(testgridConfig, j.JobBase, pj); err != nil {
 			return err
 		}
 	}
@@ -313,7 +313,7 @@ func (pac *prowAwareConfigurator) applyProwjobAnnotations(testgridConfig *config
 			)
 			pj := pjutil.NewProwJob(pjSpec, nil, nil)
 
-			if err := pac.applySingleProwjobAnnotations(testgridConfig, j.JobBase, pj); err != nil {
+			if err := pac.ApplySingleProwjobAnnotations(testgridConfig, j.JobBase, pj); err != nil {
 				return err
 			}
 		}
@@ -332,7 +332,7 @@ func (pac *prowAwareConfigurator) applyProwjobAnnotations(testgridConfig *config
 				},
 			)
 			pj := pjutil.NewProwJob(pjSpec, nil, nil)
-			if err := pac.applySingleProwjobAnnotations(testgridConfig, j.JobBase, pj); err != nil {
+			if err := pac.ApplySingleProwjobAnnotations(testgridConfig, j.JobBase, pj); err != nil {
 				return err
 			}
 		}
