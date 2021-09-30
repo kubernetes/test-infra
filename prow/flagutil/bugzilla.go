@@ -40,7 +40,7 @@ func (o *BugzillaOptions) AddFlags(fs *flag.FlagSet) {
 	fs.StringVar(&o.endpoint, "bugzilla-endpoint", "", "Bugzilla's API endpoint.")
 	fs.UintVar(&o.githubExternalTrackerId, "bugzilla-github-external-tracker-id", 0, "The ext_type_id for GitHub external bugs, optional.")
 	fs.StringVar(&o.ApiKeyPath, "bugzilla-api-key-path", "", "Path to the file containing the Bugzilla API key.")
-	fs.StringVar(&o.authMethod, "--auth-method", "", "Which authorization method will be used. Values can be bearer, query or x-bugzilla-api-key.")
+	fs.StringVar(&o.authMethod, "bugzilla-auth-method", "", "Which authorization method will be used. Values can be bearer, query or x-bugzilla-api-key.")
 }
 
 // Validate validates Bugzilla options.
