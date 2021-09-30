@@ -122,7 +122,7 @@ func Report(ctx context.Context, ghc GitHubClient, reportTemplate *template.Temp
 	if err := ReportStatusContext(ctx, ghc, pj, config); err != nil {
 		return err
 	}
-	return ReportComment(ctx, ghc, reportTemplate, []v1.ProwJob{pj}, config)
+	return ReportComment(ctx, ghc, reportTemplate, []v1.ProwJob{pj}, config, false)
 }
 
 // ReportStatusContext reports prowjob status on a PR.
@@ -150,7 +150,7 @@ func ReportStatusContext(ctx context.Context, ghc GitHubClient, pj prowapi.ProwJ
 // ReportComment takes multiple prowjobs as input. When there are more than one
 // prowjob, they are required to have identical refs, aka they are the same repo
 // and the same pull request.
-func ReportComment(ctx context.Context, ghc GitHubClient, reportTemplate *template.Template, pjs []prowapi.ProwJob, config config.GitHubReporter) error {
+func ReportComment(ctx context.Context, ghc GitHubClient, reportTemplate *template.Template, pjs []prowapi.ProwJob, config config.GitHubReporter, mustCreate bool) error {
 	if ghc == nil {
 		return errors.New("trying to report pj, but found empty github client")
 	}
@@ -190,7 +190,7 @@ func ReportComment(ctx context.Context, ghc GitHubClient, reportTemplate *templa
 			return fmt.Errorf("error deleting comment: %w", err)
 		}
 	}
-	if len(entries) > 0 {
+	if len(entries) > 0 || mustCreate {
 		comment, err := createComment(reportTemplate, pjs, entries)
 		if err != nil {
 			return fmt.Errorf("generating comment: %w", err)
@@ -330,6 +330,12 @@ func createComment(reportTemplate *template.Template, pjs []prowapi.ProwJob, ent
 		"",
 		"Test name | Commit | Details | Required | Rerun command",
 		"--- | --- | --- | --- | ---",
+	}
+	if len(entries) == 0 { // No test failed
+		lines = []string{
+			fmt.Sprintf("@%s: all tests **passed!**", pjs[0].Spec.Refs.Pulls[0].Author),
+			"",
+		}
 	}
 	lines = append(lines, entries...)
 	if reportTemplate != nil {

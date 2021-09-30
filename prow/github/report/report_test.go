@@ -575,6 +575,44 @@ Instructions for interacting with me using PR comments are available [here](http
 </details>
 <!-- test report -->`,
 		},
+		{
+			name: "multiple-job-all-passed",
+			pjs: []prowapi.ProwJob{
+				{
+					Spec: prowapi.ProwJobSpec{
+						Job: "job-a",
+						Refs: &prowapi.Refs{
+							Pulls: []prowapi.Pull{
+								{
+									Author: "chaodaig",
+								},
+							},
+						},
+					},
+				},
+				{
+					Spec: prowapi.ProwJobSpec{
+						Job: "job-b",
+						Refs: &prowapi.Refs{
+							Pulls: []prowapi.Pull{
+								{
+									Author: "chaodaig",
+								},
+							},
+						},
+					},
+				},
+			},
+			entries: []string{},
+			want: `@chaodaig: all tests **passed!**
+
+
+<details>
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository. I understand the commands that are listed [here](https://go.k8s.io/bot-commands).
+</details>
+<!-- test report -->`,
+		},
 	}
 
 	for _, tc := range tests {

@@ -194,15 +194,17 @@ func (c *Client) Report(ctx context.Context, log *logrus.Entry, pj *v1.ProwJob) 
 	}
 	// Check if this org or repo has opted out of failure report comments
 	toReport := []v1.ProwJob{*pj}
+	var mustCreateComment bool
 	for _, ident := range c.config().GitHubReporter.SummaryCommentRepos {
 		if pj.Spec.Refs.Org == ident || fullRepo == ident {
+			mustCreateComment = true
 			toReport, err = pjsToReport(ctx, log, c.lister, pj)
 			if err != nil {
 				return []*v1.ProwJob{pj}, nil, err
 			}
 		}
 	}
-	err = report.ReportComment(ctx, c.gc, c.config().Plank.ReportTemplateForRepo(pj.Spec.Refs), toReport, c.config().GitHubReporter)
+	err = report.ReportComment(ctx, c.gc, c.config().Plank.ReportTemplateForRepo(pj.Spec.Refs), toReport, c.config().GitHubReporter, mustCreateComment)
 
 	return []*v1.ProwJob{pj}, nil, err
 }
