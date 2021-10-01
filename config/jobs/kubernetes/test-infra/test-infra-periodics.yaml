@@ -37,7 +37,7 @@ periodics:
   spec:
     serviceAccountName: triage
     containers:
-    - image: gcr.io/k8s-staging-test-infra/bigquery:v20210927-471c27b6e3
+    - image: gcr.io/k8s-staging-test-infra/bigquery:v20210930-b6c4097796
       args:
       - ./kettle/monitor.py
       - --stale=6
