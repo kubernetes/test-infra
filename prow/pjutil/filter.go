@@ -40,10 +40,15 @@ var OkToTestRe = regexp.MustCompile(`(?m)^/ok-to-test\s*$`)
 // 1. presubmits that can be run with '/test all' command.
 // 2. optional presubmits commands that can be run with their trigger, e.g. '/test job'
 // 3. required presubmits commands that can be run with their trigger, e.g. '/test job'
-func AvailablePresubmits(changes config.ChangedFilesProvider, org, repo, branch string, presubmits []config.Presubmit, logger *logrus.Entry) ([]string, []string, []string, error) {
+func AvailablePresubmits(changes config.ChangedFilesProvider, org, repo, branch string,
+	presubmits []config.Presubmit, logger *logrus.Entry) (sets.String, sets.String, sets.String, error) {
+	runWithTestAllNames := sets.NewString()
+	optionalJobTriggerCommands := sets.NewString()
+	requiredJobsTriggerCommands := sets.NewString()
+
 	runWithTestAll, err := FilterPresubmits(TestAllFilter(), changes, branch, presubmits, logger)
 	if err != nil {
-		return nil, nil, nil, err
+		return runWithTestAllNames, optionalJobTriggerCommands, requiredJobsTriggerCommands, err
 	}
 
 	var triggerFilters []Filter
@@ -52,22 +57,19 @@ func AvailablePresubmits(changes config.ChangedFilesProvider, org, repo, branch 
 	}
 	runWithTrigger, err := FilterPresubmits(AggregateFilter(triggerFilters), changes, branch, presubmits, logger)
 	if err != nil {
-		return nil, nil, nil, err
+		return runWithTestAllNames, optionalJobTriggerCommands, requiredJobsTriggerCommands, err
 	}
 
-	var runWithTestAllNames []string
 	for _, ps := range runWithTestAll {
-		runWithTestAllNames = append(runWithTestAllNames, ps.Name)
+		runWithTestAllNames.Insert(ps.Name)
 	}
-	var optionalJobTriggerCommands []string
-	var requiredJobsTriggerCommands []string
+
 	for _, ps := range runWithTrigger {
 		if ps.Optional {
-			optionalJobTriggerCommands = append(optionalJobTriggerCommands, ps.RerunCommand)
+			optionalJobTriggerCommands.Insert(ps.RerunCommand)
 		} else {
-			requiredJobsTriggerCommands = append(requiredJobsTriggerCommands, ps.RerunCommand)
+			requiredJobsTriggerCommands.Insert(ps.RerunCommand)
 		}
-
 	}
 
 	return runWithTestAllNames, optionalJobTriggerCommands, requiredJobsTriggerCommands, nil

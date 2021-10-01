@@ -65,7 +65,7 @@ type testcase struct {
 }
 
 func TestHandleGenericComment(t *testing.T) {
-	helpComment := "The following commands are available to trigger required jobs:\n* `/test job`\n* `/test jib`\n\n"
+	helpComment := "The following commands are available to trigger required jobs:\n* `/test jib`\n* `/test job`\n\n"
 	helpTestAllWithJobsComment := fmt.Sprintf("Use `/test all` to run the following jobs that were automatically triggered:%s\n\n", "\n* `job`")
 	var testcases = []testcase{
 		{
@@ -997,7 +997,7 @@ func TestHandleGenericComment(t *testing.T) {
 			AddedComment: helpComment + "Use `/test all` to run all jobs.",
 		},
 		{
-			name:   `help command "/test ?" uses RerunCommand field of presubmits`,
+			name:   `help command "/test ?" uses unique RerunCommand field of presubmits`,
 			Author: "trusted-member",
 			Body:   "/test ?",
 			State:  "open",
@@ -1026,9 +1026,21 @@ func TestHandleGenericComment(t *testing.T) {
 						Trigger:      `/command_foo`,
 						RerunCommand: `/command_foo`,
 					},
+					{
+						JobBase: config.JobBase{
+							Name: "jab",
+						},
+						Reporter: config.Reporter{
+							Context: "pull-jab",
+						},
+						Trigger:      `/rerun_command`,
+						RerunCommand: `/rerun_command`,
+					},
 				},
 			},
-			AddedComment: "@trusted-member: The following commands are available to trigger required jobs:\n* `/rerun_command`\n* `/command_foo`\n\nUse `/test all` to run all jobs.",
+			AddedComment: "@trusted-member: The following commands are available to trigger required jobs:\n" +
+				"* `/command_foo`\n* `/rerun_command`\n\n" +
+				"Use `/test all` to run all jobs.",
 		},
 		{
 			name:         "/test with no target results in a help message",
