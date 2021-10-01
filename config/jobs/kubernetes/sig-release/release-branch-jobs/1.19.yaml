@@ -630,7 +630,7 @@ periodics:
         value: "true"
       - name: BUILD_TYPE
         value: bazel
-      image: gcr.io/k8s-staging-test-infra/krte:v20210927-471c27b6e3-1.19
+      image: gcr.io/k8s-staging-test-infra/krte:v20210930-b6c4097796-1.19
       name: ""
       resources:
         limits:
@@ -684,7 +684,7 @@ periodics:
         value: "true"
       - name: BUILD_TYPE
         value: bazel
-      image: gcr.io/k8s-staging-test-infra/krte:v20210927-471c27b6e3-1.19
+      image: gcr.io/k8s-staging-test-infra/krte:v20210930-b6c4097796-1.19
       name: ""
       resources:
         limits:
@@ -1433,7 +1433,7 @@ presubmits:
           value: "true"
         - name: BUILD_TYPE
           value: bazel
-        image: gcr.io/k8s-staging-test-infra/krte:v20210927-471c27b6e3-1.19
+        image: gcr.io/k8s-staging-test-infra/krte:v20210930-b6c4097796-1.19
         name: ""
         resources:
           limits:
