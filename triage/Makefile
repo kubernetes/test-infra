@@ -13,7 +13,7 @@
 # limitations under the License.
 
 push:
-  bazel run //images/builder -- --project=k8s-testimages --scratch-bucket=gs://k8s-testimages-scratch triage
+  bazel run //images/builder -- --project=k8s-staging-test-infra --scratch-bucket=gs://k8s-staging-test-infra-scratch triage
 
 STATIC_FILES=index.html interactive.js model.js render.js style.css
 
