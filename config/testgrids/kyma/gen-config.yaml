@@ -67,43 +67,6 @@ dashboards:
     test_group_name: kyma-gke-weekly-rel124
   - code_search_url_template:
       url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
-    description: Evaluation profile Kyma Azure Gardener integration job. (release
-      1.24)
-    name: kyma-integration-evaluation-gardener-azure-rel124
-    open_bug_template:
-      url: https://github.com/kyma-project/kyma/issues/
-    open_test_template:
-      url: https://status.build.kyma-project.io/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: kyma-integration-evaluation-gardener-azure-rel124
-  - code_search_url_template:
-      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
-    description: Kyma AWS Gardener integration job. (release 1.24)
-    name: kyma-integration-gardener-aws-rel124
-    open_bug_template:
-      url: https://github.com/kyma-project/kyma/issues/
-    open_test_template:
-      url: https://status.build.kyma-project.io/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: kyma-integration-gardener-aws-rel124
-  - code_search_url_template:
-      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
-    description: Kyma Azure Gardener integration job. (release 1.24)
-    name: kyma-integration-gardener-azure-rel124
-    open_bug_template:
-      url: https://github.com/kyma-project/kyma/issues/
-    open_test_template:
-      url: https://status.build.kyma-project.io/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: kyma-integration-gardener-azure-rel124
-  - code_search_url_template:
-      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
-    description: Kyma GCP Gardener integration job. (release 1.24)
-    name: kyma-integration-gardener-gcp-rel124
-    open_bug_template:
-      url: https://github.com/kyma-project/kyma/issues/
-    open_test_template:
-      url: https://status.build.kyma-project.io/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: kyma-integration-gardener-gcp-rel124
-  - code_search_url_template:
-      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
     description: Kyma integration periodic job on k3d.
     name: kyma-integration-k3d
     open_bug_template:
@@ -120,16 +83,6 @@ dashboards:
     open_test_template:
       url: https://status.build.kyma-project.io/view/gs/<gcs_prefix>/<changelist>
     test_group_name: kyma-integration-k3d-compass-dev
-  - code_search_url_template:
-      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
-    description: Production profile Kyma Azure Gardener integration job. (release
-      1.24)
-    name: kyma-integration-production-gardener-azure-rel124
-    open_bug_template:
-      url: https://github.com/kyma-project/kyma/issues/
-    open_test_template:
-      url: https://status.build.kyma-project.io/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: kyma-integration-production-gardener-azure-rel124
   - code_search_url_template:
       url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
     description: Azure Kyma 1.x to Kyma 2.0 upgrade.
@@ -456,20 +409,10 @@ test_groups:
   name: kyma-gke-nightly-rel124
 - gcs_prefix: kyma-prow-logs/logs/kyma-gke-weekly-rel124
   name: kyma-gke-weekly-rel124
-- gcs_prefix: kyma-prow-logs/logs/kyma-integration-evaluation-gardener-azure-rel124
-  name: kyma-integration-evaluation-gardener-azure-rel124
-- gcs_prefix: kyma-prow-logs/logs/kyma-integration-gardener-aws-rel124
-  name: kyma-integration-gardener-aws-rel124
-- gcs_prefix: kyma-prow-logs/logs/kyma-integration-gardener-azure-rel124
-  name: kyma-integration-gardener-azure-rel124
-- gcs_prefix: kyma-prow-logs/logs/kyma-integration-gardener-gcp-rel124
-  name: kyma-integration-gardener-gcp-rel124
 - gcs_prefix: kyma-prow-logs/logs/kyma-integration-k3d
   name: kyma-integration-k3d
 - gcs_prefix: kyma-prow-logs/logs/kyma-integration-k3d-compass-dev
   name: kyma-integration-k3d-compass-dev
-- gcs_prefix: kyma-prow-logs/logs/kyma-integration-production-gardener-azure-rel124
-  name: kyma-integration-production-gardener-azure-rel124
 - gcs_prefix: kyma-prow-logs/logs/kyma-upgrade-gardener-kyma-to-kyma2
   name: kyma-upgrade-gardener-kyma-to-kyma2
 - gcs_prefix: kyma-prow-logs/logs/post-main-compass-gke-integration
