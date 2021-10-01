@@ -92,15 +92,9 @@ PR_PROJECTS = {
     # k8s-jkns-pr-cnry-e2e-gce-fdrtn
     # cleans up resources older than 3h
     # which is more than enough for presubmit jobs to finish.
-    'k8s-jkns-pr-gce': 3,
-    'k8s-jkns-pr-gce-bazel': 3,
-    'k8s-jkns-pr-gce-etcd3': 3,
-    'k8s-jkns-pr-gci-gce': 3,
     'k8s-jkns-pr-gci-gke': 3,
-    'k8s-jkns-pr-gci-kubemark': 3,
     'k8s-jkns-pr-gke': 3,
     'k8s-jkns-pr-kubeadm': 3,
-    'k8s-jkns-pr-kubemark': 3,
     'k8s-jkns-pr-node-e2e': 3,
     'k8s-jkns-pr-gce-gpus': 3,
 }
