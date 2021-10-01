@@ -43,7 +43,7 @@ postsubmits:
     - name: post-k8sio-push-image-public-log-vendor-matcher
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: wg-k8s-infra-gcb
+        testgrid-dashboards: sig-k8s-infra-gcb
         testgrid-alert-email: public-log-vendor-matcher@ii.coop
         description: Builds the public-log-vendor-matcher image for generating data that is used for reviewing Kubernetes Public artifact traffic in DataStudio.
       decorate: true
