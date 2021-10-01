@@ -23,7 +23,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210928-2a55334641-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-f2ebda117d-master
   annotations:
     testgrid-dashboards: google-gce, sig-storage-kubernetes
     testgrid-tab-name: gce-containerd
