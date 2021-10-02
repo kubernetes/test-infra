@@ -1794,7 +1794,7 @@ func (b *Bugzilla) OptionsForRepo(org, repo string) map[string]BugzillaBranchOpt
 
 // BranchCleaner contains the configuration for the branchcleaner plugin.
 type BranchCleaner struct {
-	// ProtectedBranches is a set of repo branches, branches in this white list
+	// ProtectedBranches is a set of repo branches, branches in this allow list
 	// are exempt from branch gc, even if the branches are already merged into the target branch
 	ProtectedBranches []string `json:"protected_branches,omitempty"`
 }
