@@ -141,7 +141,7 @@ presubmits:
   - name: pull-kops-e2e-cni-canal
     branches:
     - master
-    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.projectcalico\.org\.canal\/|nodeup\/pkg\/model\/networking\/(flannel|canal).go)'
+    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.projectcalico\.org\.canal\/)'
     always_run: false
     skip_report: false
     labels:
@@ -341,7 +341,7 @@ presubmits:
   - name: pull-kops-e2e-cni-flannel
     branches:
     - master
-    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.flannel\/|nodeup\/pkg\/model\/(sysctls|networking\/flannel).go|upup\/pkg\/fi\/cloudup\/template_functions.go)'
+    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.flannel\/|upup\/pkg\/fi\/cloudup\/template_functions.go)'
     always_run: false
     skip_report: false
     labels:
