@@ -85,8 +85,11 @@ if [[ "${DOCKER_IN_DOCKER_ENABLED}" == "true" ]]; then
     echo "Done setting up docker in docker."
 
     # https://github.com/kubernetes/test-infra/issues/23741
-    echo "configure iptables to set MTU"
-    iptables -t mangle -A POSTROUTING -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
+    # TODO: default to false if this is proven unnecessary
+    if [[ "${BOOTSTRAP_MTU_WORKAROUND:-"true"}" == "true" ]]; then
+        echo "configure iptables to set MTU"
+        iptables -t mangle -A POSTROUTING -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
+    fi
 fi
 
 trap early_exit_handler INT TERM
