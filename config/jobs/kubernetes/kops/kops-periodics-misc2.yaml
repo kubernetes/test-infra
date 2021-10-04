@@ -45,7 +45,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-f2ebda117d-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-9bdcb71308-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -113,7 +113,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-f2ebda117d-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-9bdcb71308-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -181,7 +181,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-f2ebda117d-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-9bdcb71308-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -249,7 +249,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-f2ebda117d-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-9bdcb71308-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -314,7 +314,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-f2ebda117d-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-9bdcb71308-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -378,7 +378,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-f2ebda117d-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-9bdcb71308-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -444,7 +444,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-f2ebda117d-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-9bdcb71308-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -510,7 +510,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-f2ebda117d-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-9bdcb71308-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -575,7 +575,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-f2ebda117d-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-9bdcb71308-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -639,7 +639,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-f2ebda117d-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-9bdcb71308-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -705,7 +705,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-f2ebda117d-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-9bdcb71308-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -771,7 +771,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-f2ebda117d-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-9bdcb71308-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -839,7 +839,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-f2ebda117d-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-9bdcb71308-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -907,7 +907,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-f2ebda117d-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-9bdcb71308-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -973,7 +973,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-f2ebda117d-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-9bdcb71308-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1037,7 +1037,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-f2ebda117d-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-9bdcb71308-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1101,7 +1101,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-f2ebda117d-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-9bdcb71308-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1156,7 +1156,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-f2ebda117d-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-9bdcb71308-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1214,7 +1214,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-f2ebda117d-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-9bdcb71308-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1271,7 +1271,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-f2ebda117d-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-9bdcb71308-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1329,7 +1329,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-f2ebda117d-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-9bdcb71308-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1385,7 +1385,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-f2ebda117d-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-9bdcb71308-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1441,7 +1441,7 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-f2ebda117d-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-9bdcb71308-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1506,7 +1506,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-f2ebda117d-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-9bdcb71308-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1570,7 +1570,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-f2ebda117d-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-9bdcb71308-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -1636,7 +1636,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-f2ebda117d-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-9bdcb71308-master
       imagePullPolicy: Always
       resources:
         limits:
