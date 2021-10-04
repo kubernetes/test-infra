@@ -1,35 +1,6 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: boskos-janitor
-  labels:
-    app: boskos-janitor
-  namespace: test-pods
-spec:
-  replicas: 4  # 4 distributed janitor instances for gke
-  selector:
-    matchLabels:
-      app: boskos-janitor
-  template:
-    metadata:
-      labels:
-        app: boskos-janitor
-    spec:
-      terminationGracePeriodSeconds: 300
-      serviceAccountName: boskos-janitor
-      containers:
-      - name: boskos-janitor
-        image: gcr.io/k8s-staging-boskos/janitor:v20210929-121128f
-        args:
-        - --boskos-url=http://boskos.test-pods.svc.cluster.local.
-        - --resource-type=gke-project
-        - --pool-size=20
-        - --
-        - --hours=0
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
   name: boskos-janitor-nongke
   labels:
     app: boskos-janitor-nongke
