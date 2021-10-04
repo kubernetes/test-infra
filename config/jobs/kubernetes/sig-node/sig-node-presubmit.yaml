@@ -128,7 +128,7 @@ presubmits:
         - noop
         - --test=node
         - --
-        - --repo-root=k8s.io/$(REPO_NAME)=$(PULL_REFS)
+        - --repo-root=.
         - --gcp-zone=us-west1-b
         - --parallelism=8
         - --focus-regex='\[NodeConformance\]'
@@ -260,7 +260,7 @@ presubmits:
         - noop
         - --test=node
         - --
-        - --repo-root=k8s.io/$(REPO_NAME)=$(PULL_REFS)
+        - --repo-root=.
         - --gcp-zone=us-west1-b
         - --parallelism=8
         - --focus-regex='\[NodeConformance\]'
@@ -353,7 +353,7 @@ presubmits:
         - noop
         - --test=node
         - --
-        - --repo-root=k8s.io/$(REPO_NAME)=$(PULL_REFS)
+        - --repo-root=.
         - --gcp-project=cri-containerd-node-e2e
         - --gcp-zone=us-central1-b
         - --parallelism=8
@@ -431,7 +431,7 @@ presubmits:
         - noop
         - --test=node
         - --
-        - --repo-root=k8s.io/$(REPO_NAME)=$(PULL_REFS)
+        - --repo-root=.
         - --gcp-project=k8s-jkns-pr-node-e2e
         - --gcp-zone=us-west1-b
         - --parallelism=8
