@@ -310,6 +310,57 @@ presubmits:
       limits:
         cpu: 4
         memory: 6Gi
+  - name: pull-kubernetes-node-e2e-containerd-features-kubetest2
+    # explicitly needs /test pull-kubernetes-node-e2e-containerd-features to run
+    always_run: false
+    # if at all it is run and fails, don't block the PR
+    optional: true
+    branches:
+    - master
+    decorate: true
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+    decoration_config:
+      timeout: 65m
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    annotations:
+      testgrid-create-test-group: "true"
+    spec:
+      containers:
+      # experimental have the kubetest2 binaries
+      # https://github.com/kubernetes/test-infra/blob/3c3d64f398a5e4f324200d25183c98a4bfa842ac/images/kubekins-e2e/variants.yaml#L8
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-experimental
+        env:
+        - name: GOPATH
+          value: /go
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
+        command:
+        - runner.sh
+        args:
+        - kubetest2
+        - noop
+        - --test=node
+        - --
+        - --repo-root=k8s.io/$(REPO_NAME)=$(PULL_REFS)
+        - --gcp-project=cri-containerd-node-e2e
+        - --gcp-zone=us-central1-b
+        - --parallelism=8
+        - --focus-regex='\[NodeFeature:.+\]'
+        - --skip-regex='\[Flaky\]|\[Serial\]'
+        - '--test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+        - --image-config-file='../test-infra/jobs/e2e_node/containerd/containerd-master/image-config.yaml'
   - name: pull-kubernetes-node-e2e-alpha
     branches:
     - master
@@ -344,6 +395,50 @@ presubmits:
             memory: "6Gi"
     annotations:
       testgrid-create-test-group: 'true'
+  - name: pull-kubernetes-node-e2e-alpha-kubetest2
+    # explicitly needs /test pull-kubernetes-node-e2e-alpha to run
+    always_run: false
+    # if at all it is run and fails, don't block the PR
+    optional: true
+    branches:
+    - master
+    decorate: true
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+    decoration_config:
+      timeout: 65m
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    annotations:
+      testgrid-create-test-group: "true"
+    spec:
+      containers:
+      # experimental have the kubetest2 binaries
+      # https://github.com/kubernetes/test-infra/blob/3c3d64f398a5e4f324200d25183c98a4bfa842ac/images/kubekins-e2e/variants.yaml#L8
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-experimental
+        resources:
+          requests:
+            memory: "6Gi"
+        command:
+        - runner.sh
+        args:
+        - kubetest2
+        - noop
+        - --test=node
+        - --
+        - --repo-root=k8s.io/$(REPO_NAME)=$(PULL_REFS)
+        - --gcp-project=k8s-jkns-pr-node-e2e
+        - --gcp-zone=us-west1-b
+        - --parallelism=8
+        - --focus-regex='\[NodeConformance\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]'
+        - --skip-regex='\[Flaky\]|\[Serial\]'
+        - --test-args='--feature-gates=AllAlpha=true,CSIMigration=false,RotateKubeletServerCertificate=false,InTreePluginGCEUnregister=false --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"'
+        - --image-config-file='../test-infra/jobs/e2e_node/image-config.yaml'
   - name: pull-kubernetes-node-kubelet-serial
     always_run: false
     optional: true
