@@ -20,8 +20,10 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"net/mail"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -32,6 +34,10 @@ import (
 	"github.com/GoogleCloudPlatform/testgrid/config"
 	config_pb "github.com/GoogleCloudPlatform/testgrid/pb/config"
 	prow_config "k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/testgrid/pkg/configurator/configurator"
+	"k8s.io/test-infra/testgrid/pkg/configurator/options"
+
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 )
 
 type SQConfig struct {
@@ -72,8 +78,11 @@ var (
 	}
 )
 
+var defaultInputs options.MultiString = []string{"../../testgrids"}
 var prowPath = flag.String("prow-config", "../../../config/prow/config.yaml", "Path to prow config")
 var jobPath = flag.String("job-config", "../../jobs", "Path to prow job config")
+var defaultYAML = flag.String("default", "../../testgrids/default.yaml", "Default yaml for testgrid")
+var inputs options.MultiString
 var protoPath = flag.String("config", "", "Path to TestGrid config proto")
 
 // Shared testgrid config, loaded at TestMain.
@@ -83,10 +92,39 @@ var cfg *config_pb.Configuration
 var prowConfig *prow_config.Config
 
 func TestMain(m *testing.M) {
+	flag.Var(&inputs, "yaml", "comma-separated list of input YAML files or directories")
 	flag.Parse()
 	if *protoPath == "" {
-		fmt.Println("--config must be set")
-		os.Exit(1)
+		if len(inputs) == 0 {
+			inputs = defaultInputs
+		}
+		// Generate proto from testgrid config
+		tmpDir, err := ioutil.TempDir("", "testgrid-config-test")
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		defer os.RemoveAll(tmpDir)
+		tmpFile := path.Join(tmpDir, "test-proto")
+
+		opt := options.Options{
+			Inputs: inputs,
+			ProwConfig: configflagutil.ConfigOptions{
+				ConfigPath:    *prowPath,
+				JobConfigPath: *jobPath,
+			},
+			DefaultYAML:     *defaultYAML,
+			Output:          tmpFile,
+			Oneshot:         true,
+			StrictUnmarshal: true,
+		}
+
+		if err := configurator.RealMain(&opt); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		protoPath = &tmpFile
 	}
 
 	var err error
