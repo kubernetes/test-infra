@@ -67,7 +67,6 @@ local config = {
     {instance: "104.197.27.114:9090", job: "k8s-prow-builds-new-boskos", type: "aws-account", friendly: "AWS account"},
     {instance: "104.197.27.114:9090", job: "k8s-prow-builds-new-boskos", type: "gce-project", friendly: "GCE project"},
     {instance: "35.225.208.117:9090", job: "k8s-infra-prow-builds-boskos", type: "gce-project", friendly: "GCE project (k8s-infra)"},
-    {instance: "104.197.27.114:9090", job: "k8s-prow-builds-new-boskos", type: "gke-project", friendly: "GKE project"},
     {instance: "104.197.27.114:9090", job: "k8s-prow-builds-new-boskos", type: "gpu-project", friendly: "GPU project"},
     {instance: "35.225.208.117:9090", job: "k8s-infra-prow-builds-boskos", type: "gpu-project", friendly: "GPU project (k8s-infra)"},
     {instance: "104.197.27.114:9090", job: "k8s-prow-builds-new-boskos", type: "ingress-project", friendly: "Ingress project"},

@@ -1,15 +1,5 @@
 resources:
 - names:
-  - e2e-gke-gci-ci-master
-  - kubernetes-e2e-gci-gke-updown
-  - kubernetes-e2e-gke-updown
-  - kubernetes-gci-gke-ingress
-  - kubernetes-gci-gke-ingress-1-2
-  - kubernetes-gci-gke-ingress-1-3
-  - kubernetes-gke-ingress
-  state: dirty
-  type: gke-project
-- names:
   - ci-k8s-e2e-gci-tip-gce
   - ci-kubernetes-e2e-gke-gpu
   - e2e-gce-gci-ci-1-4

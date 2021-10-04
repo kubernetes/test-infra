@@ -204,14 +204,6 @@ cloudProviders:
     - --check-leaked-resources
     - --provider=gce
     - --gcp-zone=us-west1-b
-  gke:
-    args:
-    - --check-leaked-resources
-    - --provider=gke
-    - --deployment=gke
-    - --gcp-zone=us-west1-c
-    - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-    - --gke-environment=test
 
 images:
   cos1:
