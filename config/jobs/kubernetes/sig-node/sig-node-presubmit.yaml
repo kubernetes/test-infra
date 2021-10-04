@@ -335,7 +335,7 @@ presubmits:
       containers:
       # experimental have the kubetest2 binaries
       # https://github.com/kubernetes/test-infra/blob/3c3d64f398a5e4f324200d25183c98a4bfa842ac/images/kubekins-e2e/variants.yaml#L8
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-experimental
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-9bdcb71308-experimental
         env:
         - name: GOPATH
           value: /go
@@ -420,7 +420,7 @@ presubmits:
       containers:
       # experimental have the kubetest2 binaries
       # https://github.com/kubernetes/test-infra/blob/3c3d64f398a5e4f324200d25183c98a4bfa842ac/images/kubekins-e2e/variants.yaml#L8
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-experimental
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211001-9bdcb71308-experimental
         resources:
           requests:
             memory: "6Gi"
