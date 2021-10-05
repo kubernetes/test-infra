@@ -19,7 +19,7 @@ presubmits:
       preset-windows-private-registry-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211005-06df33eb71-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211005-ca067fbd9f-master
         command:
         - runner.sh
         - kubetest
@@ -78,7 +78,7 @@ presubmits:
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211005-06df33eb71-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211005-ca067fbd9f-master
         command:
         - runner.sh
         - kubetest
@@ -139,7 +139,7 @@ presubmits:
       path_alias: sigs.k8s.io/azurefile-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211005-06df33eb71-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211005-ca067fbd9f-master
         command:
         - runner.sh
         - kubetest
@@ -199,7 +199,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211005-06df33eb71-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211005-ca067fbd9f-master
       command:
       - runner.sh
       - kubetest
@@ -250,7 +250,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211005-06df33eb71-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211005-ca067fbd9f-master
         command:
           - "runner.sh"
           - "./scripts/ci-conformance.sh"
@@ -294,7 +294,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211005-06df33eb71-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211005-ca067fbd9f-master
       command:
       - runner.sh
       - kubetest
@@ -349,7 +349,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211005-06df33eb71-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211005-ca067fbd9f-master
       command:
       - runner.sh
       - kubetest
@@ -405,7 +405,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211005-06df33eb71-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211005-ca067fbd9f-master
       command:
       - runner.sh
       - kubetest
@@ -462,7 +462,7 @@ periodics:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211005-06df33eb71-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211005-ca067fbd9f-master
       command:
       - runner.sh
       - kubetest
@@ -524,7 +524,7 @@ periodics:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211005-06df33eb71-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211005-ca067fbd9f-master
       command:
       - runner.sh
       - kubetest
@@ -584,7 +584,7 @@ periodics:
     path_alias: sigs.k8s.io/azurefile-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211005-06df33eb71-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211005-ca067fbd9f-master
       command:
       - runner.sh
       - kubetest
@@ -646,7 +646,7 @@ periodics:
     path_alias: sigs.k8s.io/azurefile-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211005-06df33eb71-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211005-ca067fbd9f-master
       command:
       - runner.sh
       - kubetest
@@ -704,7 +704,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211005-06df33eb71-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211005-ca067fbd9f-master
       command:
       - runner.sh
       - kubetest
