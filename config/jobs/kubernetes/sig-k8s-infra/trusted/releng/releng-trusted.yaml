@@ -13,14 +13,14 @@ postsubmits:
     spec:
       serviceAccountName: k8s-infra-promoter
       containers:
-      - image: k8s.gcr.io/artifact-promoter/kpromo:v3.3.0-beta.0-1
+      - image: k8s.gcr.io/artifact-promoter/kpromo:v3.2.0-1
         command:
         - /kpromo
         args:
         - run
         - files
         - --manifests=/home/prow/go/src/github.com/kubernetes/k8s.io/artifacts/
-        - --confirm
+        - --dry-run=false
     annotations:
       testgrid-dashboards: sig-release-releng-blocking, sig-k8s-infra-k8sio
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
@@ -38,11 +38,11 @@ postsubmits:
     spec:
       serviceAccountName: k8s-infra-gcr-promoter
       containers:
-      - image: k8s.gcr.io/artifact-promoter/kpromo:v3.3.0-beta.0-1
+      - image: k8s.gcr.io/artifact-promoter/cip:v3.2.0
         command:
-        - /kpromo
-        args:
         - cip
+        args:
+        - run
         - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
         - --confirm
     annotations:
@@ -64,14 +64,14 @@ periodics:
   spec:
     serviceAccountName: k8s-infra-promoter
     containers:
-    - image: k8s.gcr.io/artifact-promoter/kpromo:v3.3.0-beta.0-1
+    - image: k8s.gcr.io/artifact-promoter/kpromo:v3.2.0-1
       command:
       - /kpromo
       args:
       - run
       - files
       - --manifests=/home/prow/go/src/github.com/kubernetes/k8s.io/artifacts/
-      - --confirm
+      - --dry-run=false
   annotations:
     testgrid-dashboards: sig-release-releng-blocking, sig-k8s-infra-k8sio
     testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
@@ -102,11 +102,11 @@ periodics:
     # https://github.com/kubernetes/k8s.io/pull/695.
     serviceAccountName: k8s-infra-gcr-promoter
     containers:
-    - image: k8s.gcr.io/artifact-promoter/kpromo:v3.3.0-beta.0-1
+    - image: k8s.gcr.io/artifact-promoter/cip:v3.2.0
       command:
-      - /kpromo
-      args:
       - cip
+      args:
+      - run
       - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
       - --confirm
   annotations:

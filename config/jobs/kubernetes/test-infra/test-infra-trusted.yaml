@@ -474,11 +474,11 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: k8s.gcr.io/artifact-promoter/kpromo:v3.3.0-beta.0-1
+      - image: k8s.gcr.io/artifact-promoter/cip:v3.2.0
         command:
-        - /kpromo
-        args:
         - cip
+        args:
+        - run
         - --manifest=prow/cip-manifest.yaml
         - --confirm
     annotations:
