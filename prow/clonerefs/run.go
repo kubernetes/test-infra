@@ -18,6 +18,7 @@ package clonerefs
 
 import (
 	"crypto/md5"
+	"crypto/rsa"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -27,25 +28,15 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/dgrijalva/jwt-go/v4"
 	"github.com/sirupsen/logrus"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/config/secret"
+	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pod-utils/clone"
 )
 
 var cloneFunc = clone.Run
-
-func readOauthToken(path string) (string, clone.Command, error) {
-	data, err := ioutil.ReadFile(path)
-	cmd := clone.Command{
-		Command: fmt.Sprintf("golang: read %q", path),
-		Output:  "redacted",
-	}
-	if err != nil {
-		cmd.Error = err.Error()
-		return "", cmd, err
-	}
-	return strings.TrimSpace(string(data)), cmd, nil
-}
 
 func (o *Options) createRecords() []clone.Record {
 	var rec clone.Record
@@ -72,16 +63,38 @@ func (o *Options) createRecords() []clone.Record {
 		env = append(env, envVar)
 	}
 
-	var oauthToken string
+	var userGenerator github.UserGenerator
+	var tokenGenerator github.TokenGenerator
 	if o.OauthTokenFile != "" {
-		token, cmd, err := readOauthToken(o.OauthTokenFile)
-		rec.Commands = append(rec.Commands, cmd)
-		if err != nil {
+		if err := secret.Add(o.OauthTokenFile); err != nil {
 			logrus.WithError(err).Error("Failed to read oauth key file.")
 			rec.Failed = true
 			return []clone.Record{rec}
 		}
-		oauthToken = token
+		tokenGenerator = func(_ string) (string, error) {
+			return string(secret.GetSecret(o.OauthTokenFile)), nil
+		}
+	}
+	if o.GitHubAppID != "" && o.GitHubAppPrivateKeyFile != "" {
+		if err := secret.Add(o.GitHubAppPrivateKeyFile); err != nil {
+			logrus.WithError(err).Error("Failed to read GitHub App private key file.")
+			rec.Failed = true
+			return []clone.Record{rec}
+		}
+		tokenGenerator, userGenerator, _ = github.NewClientFromOptions(logrus.Fields{}, github.ClientOptions{
+			Censor: secret.Censor,
+			AppID:  o.GitHubAppID,
+			AppPrivateKey: func() *rsa.PrivateKey {
+				raw := secret.GetSecret(o.GitHubAppPrivateKeyFile)
+				privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(raw)
+				if err != nil {
+					logrus.WithError(err).Error("Failed to parse GitHub App private key.")
+					return nil
+				}
+				return privateKey
+			},
+			Bases: o.GitHubAPIEndpoints,
+		})
 	}
 
 	// Print md5 sum of cookiefile for debugging purpose
@@ -120,7 +133,7 @@ func (o *Options) createRecords() []clone.Record {
 		go func() {
 			defer wg.Done()
 			for ref := range input {
-				output <- cloneFunc(ref, o.SrcRoot, o.GitUserName, o.GitUserEmail, o.CookiePath, env, oauthToken)
+				output <- cloneFunc(ref, o.SrcRoot, o.GitUserName, o.GitUserEmail, o.CookiePath, env, userGenerator, tokenGenerator)
 			}
 		}()
 	}

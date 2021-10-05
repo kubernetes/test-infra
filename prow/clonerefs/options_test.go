@@ -20,6 +20,7 @@ import (
 	"testing"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/github"
 )
 
 func TestOptions_Validate(t *testing.T) {
@@ -109,6 +110,104 @@ func TestOptions_Validate(t *testing.T) {
 						Org:  "org",
 					},
 				},
+			},
+			expectedErr: true,
+		},
+		{
+			name: "specify access token file",
+			input: Options{
+				SrcRoot: "test",
+				Log:     "thing",
+				GitRefs: []prowapi.Refs{
+					{
+						Repo: "repo",
+						Org:  "org",
+					},
+				},
+				OauthTokenFile: "/tmp/token",
+			},
+			expectedErr: false,
+		},
+		{
+			name: "specify GitHub App ID and private key",
+			input: Options{
+				SrcRoot: "test",
+				Log:     "thing",
+				GitRefs: []prowapi.Refs{
+					{
+						Repo: "repo",
+						Org:  "org",
+					},
+				},
+				GitHubAPIEndpoints:      []string{github.DefaultAPIEndpoint},
+				GitHubAppID:             "123456",
+				GitHubAppPrivateKeyFile: "/tmp/private-key.pem",
+			},
+			expectedErr: false,
+		},
+		{
+			name: "specify aceess token file and GitHub App authentication",
+			input: Options{
+				SrcRoot: "test",
+				Log:     "thing",
+				GitRefs: []prowapi.Refs{
+					{
+						Repo: "repo",
+						Org:  "org",
+					},
+				},
+				OauthTokenFile:          "/tmp/token",
+				GitHubAPIEndpoints:      []string{github.DefaultAPIEndpoint},
+				GitHubAppID:             "123456",
+				GitHubAppPrivateKeyFile: "/tmp/private-key.pem",
+			},
+			expectedErr: true,
+		},
+		{
+			name: "specify GitHub App authentication but no API endpoints",
+			input: Options{
+				SrcRoot: "test",
+				Log:     "thing",
+				GitRefs: []prowapi.Refs{
+					{
+						Repo: "repo",
+						Org:  "org",
+					},
+				},
+				GitHubAppID:             "123456",
+				GitHubAppPrivateKeyFile: "/tmp/private-key.pem",
+			},
+			expectedErr: true,
+		},
+		{
+			name: "specify GitHub App ID but no private key",
+			input: Options{
+				SrcRoot: "test",
+				Log:     "thing",
+				GitRefs: []prowapi.Refs{
+					{
+						Repo: "repo",
+						Org:  "org",
+					},
+				},
+				GitHubAPIEndpoints: []string{github.DefaultAPIEndpoint},
+				GitHubAppID:        "123456",
+			},
+			expectedErr: true,
+		},
+		{
+			name: "specify GitHub App private key but no ID",
+			input: Options{
+				SrcRoot: "test",
+				Log:     "thing",
+				GitRefs: []prowapi.Refs{
+					{
+						Repo: "repo",
+						Org:  "org",
+					},
+				},
+				GitHubAPIEndpoints:      []string{github.DefaultAPIEndpoint},
+				GitHubAppPrivateKeyFile: "/tmp/private-key.pem",
 			},
 			expectedErr: true,
 		},
