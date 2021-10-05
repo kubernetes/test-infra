@@ -1,7 +1,7 @@
 variants:
   experimental:
     CONFIG: experimental
-    GO_VERSION: 1.16.8
+    GO_VERSION: 1.17.1
     K8S_RELEASE: stable
     BAZEL_VERSION: 3.4.1
     OLD_BAZEL_VERSION: 2.2.0
