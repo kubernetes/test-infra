@@ -16,25 +16,28 @@
 # ========================== Capture Environment ===============================
 # get the repo root and output path
 REPO_ROOT:=${CURDIR}
-OUT_DIR=$(REPO_ROOT)/out
+OUT_DIR=$(REPO_ROOT)/_output
 ################################################################################
-# ========================= Setup Go ===========================================
+# ========================= Setup Go With Gimme ================================
+# go version to use for build etc.
 # go1.9+ can autodetect GOROOT, but if some other tool sets it ...
 GOROOT:=
 # enable modules
 GO111MODULE=on
-export GOROOT GO111MODULE
+export PATH GOROOT GO111MODULE
+# work around broken PATH export
+SPACE:=$(subst ,, )
+SHELL:=env PATH=$(subst $(SPACE),\$(SPACE),$(PATH)) $(SHELL)
 ################################################################################
 # ================================= Testing ====================================
 # unit tests (hermetic)
 unit:
 	hack/make-rules/go-test/unit.sh
 # integration tests
-integration:
-	hack/make-rules/go-test/integration.sh
+# integration:
+#	hack/make-rules/go-test/integration.sh
 # all tests
-test:
-	hack/make-rules/go-test/all.sh
+test: unit
 ################################################################################
 # ================================= Cleanup ====================================
 # standard cleanup target
@@ -43,24 +46,24 @@ clean:
 ################################################################################
 # ============================== Auto-Update ===================================
 # update generated code, gofmt, etc.
-update:
-	hack/make-rules/update/all.sh
+# update:
+#	hack/make-rules/update/all.sh
 # update generated code
-generate:
-	hack/make-rules/update/generated.sh
+#generate:
+#	hack/make-rules/update/generated.sh
 # gofmt
-gofmt:
-	hack/make-rules/update/gofmt.sh
+#gofmt:
+#	hack/make-rules/update/gofmt.sh
 ################################################################################
 # ================================== Linting ===================================
 # run linters, ensure generated code, etc.
-verify:
-	hack/make-rules/verify/all.sh
+#verify:
+#	hack/make-rules/verify/all.sh
 # code linters
-lint:
-	hack/make-rules/verify/lint.sh
+#lint:
+#	hack/make-rules/verify/lint.sh
 # shell linter
-shellcheck:
-	hack/make-rules/verify/shellcheck.sh
+#shellcheck:
+#	hack/make-rules/verify/shellcheck.sh
 #################################################################################
 .PHONY: unit test

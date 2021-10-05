@@ -17,7 +17,7 @@ set -o nounset
 set -o errexit
 set -o pipefail
 
-CUR_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
-cd "${CUR_DIR}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+cd "${SCRIPT_DIR}"
 
 ./unit.sh
