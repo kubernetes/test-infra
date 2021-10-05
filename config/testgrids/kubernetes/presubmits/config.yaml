@@ -159,6 +159,9 @@ dashboards:
   - name: pull-kubernetes-node-e2e-alpha-kubetest2
     test_group_name: pull-kubernetes-node-e2e-alpha-kubetest2
     base_options: width=10
+  - name: pull-kubernetes-integration-1-22-canary
+    test_group_name: pull-kubernetes-integration-1-22-canary
+    base_options: width=10
 - name: presubmits-kubernetes-scalability
   dashboard_tab:
   - name: pull-kubernetes-e2e-gce-100-performance
