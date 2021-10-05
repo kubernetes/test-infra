@@ -271,7 +271,7 @@ aliases:
 
   # mostly copied from sigs.k8s.io/controller-runtime/OWNERS_ALIASES
   controller-runtime-admins:
-  - directxman12
+  - vincepri
   - mengqiy
 
   controller-runtime-maintainers:
@@ -292,7 +292,7 @@ aliases:
   # mostly copied from sigs.k8s.io/kubebuilder/OWNERS_ALIASES
   kubebuilder-admins:
   - mengqiy
-  - directxman12
+  - estroz
 
   kubebuilder-reviewers:
   - alexeldeib
