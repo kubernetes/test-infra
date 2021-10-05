@@ -35,6 +35,7 @@ import (
 	"k8s.io/test-infra/prow/clonerefs"
 	"k8s.io/test-infra/prow/entrypoint"
 	"k8s.io/test-infra/prow/gcsupload"
+	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/initupload"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pod-utils/clone"
@@ -320,6 +321,25 @@ func oauthVolume(secret, key string) (coreapi.Volume, coreapi.VolumeMount) {
 		}
 }
 
+func githubAppVolume(secret, key string) (coreapi.Volume, coreapi.VolumeMount) {
+	return coreapi.Volume{
+			Name: secret,
+			VolumeSource: coreapi.VolumeSource{
+				Secret: &coreapi.SecretVolumeSource{
+					SecretName: secret,
+					Items: []coreapi.KeyToPath{{
+						Key:  key,
+						Path: fmt.Sprintf("./%s", key),
+					}},
+				},
+			},
+		}, coreapi.VolumeMount{
+			Name:      secret,
+			MountPath: "/secrets/github-app",
+			ReadOnly:  true,
+		}
+}
+
 // sshVolume converts a secret holding ssh keys into the corresponding volume and mount.
 //
 // This is used by CloneRefs to attach the mount to the clonerefs container.
@@ -429,6 +449,19 @@ func CloneRefs(pj prowapi.ProwJob, codeMount, logMount coreapi.VolumeMount) (*co
 		cloneVolumes = append(cloneVolumes, oauthVolume)
 	}
 
+	githubAPIEndpoints := pj.Spec.DecorationConfig.GitHubAPIEndpoints
+	if len(githubAPIEndpoints) == 0 {
+		githubAPIEndpoints = []string{github.DefaultAPIEndpoint}
+	}
+
+	var githubAppPrivateKeyMountPath string
+	if pj.Spec.DecorationConfig.GitHubAppPrivateKeySecret != nil {
+		keyVolume, keyMount := githubAppVolume(pj.Spec.DecorationConfig.GitHubAppPrivateKeySecret.Name, pj.Spec.DecorationConfig.GitHubAppPrivateKeySecret.Key)
+		cloneMounts = append(cloneMounts, keyMount)
+		githubAppPrivateKeyMountPath = filepath.Join(keyMount.MountPath, pj.Spec.DecorationConfig.GitHubAppPrivateKeySecret.Key)
+		cloneVolumes = append(cloneVolumes, keyVolume)
+	}
+
 	volume, mount := tmpVolume("clonerefs-tmp")
 	cloneMounts = append(cloneMounts, mount)
 	cloneVolumes = append(cloneVolumes, volume)
@@ -445,15 +478,18 @@ func CloneRefs(pj prowapi.ProwJob, codeMount, logMount coreapi.VolumeMount) (*co
 	}
 
 	env, err := cloneEnv(clonerefs.Options{
-		CookiePath:       cookiefilePath,
-		GitRefs:          refs,
-		GitUserEmail:     clonerefs.DefaultGitUserEmail,
-		GitUserName:      clonerefs.DefaultGitUserName,
-		HostFingerprints: pj.Spec.DecorationConfig.SSHHostFingerprints,
-		KeyFiles:         sshKeyPaths,
-		Log:              CloneLogPath(logMount),
-		SrcRoot:          codeMount.MountPath,
-		OauthTokenFile:   oauthMountPath,
+		CookiePath:              cookiefilePath,
+		GitRefs:                 refs,
+		GitUserEmail:            clonerefs.DefaultGitUserEmail,
+		GitUserName:             clonerefs.DefaultGitUserName,
+		HostFingerprints:        pj.Spec.DecorationConfig.SSHHostFingerprints,
+		KeyFiles:                sshKeyPaths,
+		Log:                     CloneLogPath(logMount),
+		SrcRoot:                 codeMount.MountPath,
+		OauthTokenFile:          oauthMountPath,
+		GitHubAPIEndpoints:      githubAPIEndpoints,
+		GitHubAppID:             pj.Spec.DecorationConfig.GitHubAppID,
+		GitHubAppPrivateKeyFile: githubAppPrivateKeyMountPath,
 	})
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("clone env: %w", err)
