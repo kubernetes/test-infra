@@ -25,10 +25,10 @@ import (
 func TestConfig(t *testing.T) {
 	config, err := common.ParseConfig("boskos-resources.yaml")
 	if err != nil {
-		t.Errorf("parseConfig error: %v", err)
+		t.Fatalf("parseConfig error: %v", err)
 	}
 
 	if err = common.ValidateConfig(config); err != nil {
-		t.Errorf("invalid config: %v", err)
+		t.Fatalf("invalid config: %v", err)
 	}
 }
