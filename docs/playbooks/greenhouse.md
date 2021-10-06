@@ -28,8 +28,7 @@ integration(s).
 
 ### Monitoring
 
-The Kubernetes project's deployment has [some monitoring on velodrome][velodrome].
-You may want to check if there has been a sudden change in stats.
+Prometheus metrics are available for scraping at `/metrics`
 
 Note that periodicly freeing disk space is expected, and will be highly variable
 with the load from our build workloads. 
