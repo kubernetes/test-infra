@@ -13,14 +13,14 @@ postsubmits:
     spec:
       serviceAccountName: k8s-infra-promoter
       containers:
-      - image: k8s.gcr.io/artifact-promoter/kpromo:v3.2.0-1
+      - image: k8s.gcr.io/artifact-promoter/kpromo:v3.3.0-beta.1-2
         command:
         - /kpromo
         args:
         - run
         - files
         - --manifests=/home/prow/go/src/github.com/kubernetes/k8s.io/artifacts/
-        - --dry-run=false
+        - --confirm
     annotations:
       testgrid-dashboards: sig-release-releng-blocking, sig-k8s-infra-k8sio
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
@@ -38,11 +38,11 @@ postsubmits:
     spec:
       serviceAccountName: k8s-infra-gcr-promoter
       containers:
-      - image: k8s.gcr.io/artifact-promoter/cip:v3.2.0
+      - image: k8s.gcr.io/artifact-promoter/kpromo:v3.3.0-beta.1-2
         command:
-        - cip
+        - /kpromo
         args:
-        - run
+        - cip
         - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
         - --confirm
     annotations:
@@ -51,7 +51,6 @@ postsubmits:
       testgrid-num-failures-to-alert: '1'
 
 periodics:
-# TODO(releng): Set this to '4h' once testing is complete
 - interval: 1h
   cluster: k8s-infra-prow-build-trusted
   max_concurrency: 1
@@ -64,14 +63,14 @@ periodics:
   spec:
     serviceAccountName: k8s-infra-promoter
     containers:
-    - image: k8s.gcr.io/artifact-promoter/kpromo:v3.2.0-1
+    - image: k8s.gcr.io/artifact-promoter/kpromo:v3.3.0-beta.1-2
       command:
       - /kpromo
       args:
       - run
       - files
       - --manifests=/home/prow/go/src/github.com/kubernetes/k8s.io/artifacts/
-      - --dry-run=false
+      - --confirm
   annotations:
     testgrid-dashboards: sig-release-releng-blocking, sig-k8s-infra-k8sio
     testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
@@ -81,9 +80,9 @@ periodics:
       - org: kubernetes
         slug: release-managers
 
-# ci-k8sio-image-promo runs every 4 hours, to make sure that the destination
+# ci-k8sio-image-promo runs every 1 hour, to make sure that the destination
 # GCRs do not deviate away from the intent of the manifest.
-- interval: 4h
+- interval: 1h
   cluster: k8s-infra-prow-build-trusted
   max_concurrency: 1
   # This name is the "job name", passed in as "--job=NAME" for mkpj.
@@ -102,11 +101,11 @@ periodics:
     # https://github.com/kubernetes/k8s.io/pull/695.
     serviceAccountName: k8s-infra-gcr-promoter
     containers:
-    - image: k8s.gcr.io/artifact-promoter/cip:v3.2.0
+    - image: k8s.gcr.io/artifact-promoter/kpromo:v3.3.0-beta.1-2
       command:
-      - cip
+      - /kpromo
       args:
-      - run
+      - cip
       - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
       - --confirm
   annotations:
