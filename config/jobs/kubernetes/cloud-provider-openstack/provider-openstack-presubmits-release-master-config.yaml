@@ -100,7 +100,7 @@ presubmits:
               memory: "1Gi"
               cpu: 1
     annotations:
-      testgrid-dashboards: provider-openstack-openstack-csi-manila
+      testgrid-dashboards: provider-openstack-manila-csi-plugin
       testgrid-tab-name: presubmit-e2e-test
 
   - name: openstack-cloud-csi-cinder-sanity-test
