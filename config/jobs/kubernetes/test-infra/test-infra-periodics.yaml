@@ -57,16 +57,17 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   extra_refs:
-  - org: mpherman2
+  - org: kubernetes
     repo: test-infra
-    base_ref: cifuzz_pj
+    base_ref: master
   interval: 1h
   spec:
     containers:
-    - image: gcr.io/oss-fuzz-base/cifuzz-base:latest
+    - image: gcr.io/k8s-testimages/ci_fuzz:v20211006-0046171
       command:
-        - python3
+        - runner.sh
       args:
+        - python3
         - "/opt/oss-fuzz/infra/cifuzz/cifuzz_combined_entrypoint.py"
       # docker-in-docker needs privileged mode
       securityContext:
@@ -80,6 +81,8 @@ periodics:
         value: 'address'
       - name: WORKSPACE
         value: /logs/artifacts
+      - name: DOCKER_IN_DOCKER
+        value: "true"
   annotations:
     testgrid-dashboards: sig-testing-misc
     testgrid-tab-name: test-infra-fuzz
