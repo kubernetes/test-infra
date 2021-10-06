@@ -3,11 +3,7 @@
 approvers:
 - release-engineering-approvers
 - promo-tools-approvers
-# TODO(releng): Distill down to SIG K8s Infra leads, once the proposal to
-#               convert to a SIG is approved.
-#               ref: https://github.com/kubernetes/community/pull/5928
 - sig-k8s-infra-leads
-- thockin
 
 reviewers:
 - release-engineering-reviewers
