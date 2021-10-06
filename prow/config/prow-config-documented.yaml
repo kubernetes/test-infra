@@ -653,6 +653,24 @@ plank:
             # that holds GCS push credentials.
             gcs_credentials_secret: ""
 
+            # GitHubAPIEndpoints are the endpoints of GitHub APIs.
+            github_api_endpoints:
+              - ""
+
+            # GitHubAppID is the ID of GitHub App, which is going to be used for fetching a private
+            # repository.
+            github_app_id: ' '
+
+            # GitHubAppPrivateKeySecret is a Kubernetes secret that contains the GitHub App private key,
+            # which is going to be used for fetching a private repository.
+            github_app_private_key_secret:
+                # Key is the key of the corresponding kubernetes secret that
+                # holds the value of the GitHub App private key.
+                key: ' '
+
+                # Name is the name of a kubernetes secret.
+                name: ' '
+
             # GracePeriod is how long the pod utilities will wait
             # after sending SIGINT to send SIGKILL when aborting
             # a job. Only applicable if decorating the PodSpec.
@@ -661,7 +679,7 @@ plank:
             # OauthTokenSecret is a Kubernetes secret that contains the OAuth token,
             # which is going to be used for fetching a private repository.
             oauth_token_secret:
-                # Key is the a key of the corresponding kubernetes secret that
+                # Key is the key of the corresponding kubernetes secret that
                 # holds the value of the OAuth token.
                 key: ' '
 
@@ -832,6 +850,24 @@ plank:
             # that holds GCS push credentials.
             gcs_credentials_secret: ""
 
+            # GitHubAPIEndpoints are the endpoints of GitHub APIs.
+            github_api_endpoints:
+              - ""
+
+            # GitHubAppID is the ID of GitHub App, which is going to be used for fetching a private
+            # repository.
+            github_app_id: ' '
+
+            # GitHubAppPrivateKeySecret is a Kubernetes secret that contains the GitHub App private key,
+            # which is going to be used for fetching a private repository.
+            github_app_private_key_secret:
+                # Key is the key of the corresponding kubernetes secret that
+                # holds the value of the GitHub App private key.
+                key: ' '
+
+                # Name is the name of a kubernetes secret.
+                name: ' '
+
             # GracePeriod is how long the pod utilities will wait
             # after sending SIGINT to send SIGKILL when aborting
             # a job. Only applicable if decorating the PodSpec.
@@ -840,7 +876,7 @@ plank:
             # OauthTokenSecret is a Kubernetes secret that contains the OAuth token,
             # which is going to be used for fetching a private repository.
             oauth_token_secret:
-                # Key is the a key of the corresponding kubernetes secret that
+                # Key is the key of the corresponding kubernetes secret that
                 # holds the value of the OAuth token.
                 key: ' '
 
