@@ -729,14 +729,14 @@ retitle:
 
 cherry_pick_unapproved:
   comment: |
-    This cherry pick PR is for a release branch and has not yet been approved by [Release Managers](https://git.k8s.io/sig-release/release-managers.md).
+    This cherry pick PR is for a release branch and has not yet been approved by [Release Managers](https://k8s.io/releases/release-managers).
     Adding the `do-not-merge/cherry-pick-not-approved` label.
 
     To merge this cherry pick, it must first be approved (`/lgtm` + `/approve`) by the relevant OWNERS.
 
     **AFTER** it has been approved by code owners, please ping the **kubernetes/release-managers** team in a comment to request a cherry pick review.
 
-    (For details on the patch release process and schedule, see the [Patch Releases](https://git.k8s.io/sig-release/releases/patch-releases.md) page.)
+    (For details on the patch release process and schedule, see the [Patch Releases](https://k8s.io/releases/patch-releases) page.)
 
 # Enabled plugins per repo.
 # Keys: Full repo name: "org/repo".
