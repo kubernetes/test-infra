@@ -171,17 +171,15 @@ func gitCtxForRefs(refs prowapi.Refs, baseDir string, env []string, user, token 
 	}
 
 	if token != "" {
+		u, _ := url.Parse(g.repositoryURI)
 		if user != "" {
-			u, _ := url.Parse(g.repositoryURI)
 			u.User = url.UserPassword(user, token)
-			g.repositoryURI = u.String()
 		} else {
 			// GitHub requires that the personal access token is set as a username.
 			// e.g., https://<token>:x-oauth-basic@github.com/owner/repo.git
-			u, _ := url.Parse(g.repositoryURI)
 			u.User = url.UserPassword(token, "x-oauth-basic")
-			g.repositoryURI = u.String()
 		}
+		g.repositoryURI = u.String()
 	}
 
 	return g
