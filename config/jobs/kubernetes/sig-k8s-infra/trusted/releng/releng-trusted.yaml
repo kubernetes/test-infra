@@ -51,7 +51,6 @@ postsubmits:
       testgrid-num-failures-to-alert: '1'
 
 periodics:
-# TODO(releng): Set this to '4h' once testing is complete
 - interval: 1h
   cluster: k8s-infra-prow-build-trusted
   max_concurrency: 1
@@ -81,9 +80,9 @@ periodics:
       - org: kubernetes
         slug: release-managers
 
-# ci-k8sio-image-promo runs every 4 hours, to make sure that the destination
+# ci-k8sio-image-promo runs every 1 hour, to make sure that the destination
 # GCRs do not deviate away from the intent of the manifest.
-- interval: 4h
+- interval: 1h
   cluster: k8s-infra-prow-build-trusted
   max_concurrency: 1
   # This name is the "job name", passed in as "--job=NAME" for mkpj.
