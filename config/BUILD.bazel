@@ -50,7 +50,6 @@ filegroup(
         ":package-srcs",
         "//config/mergelists:all-srcs",
         "//config/prow:all-srcs",
-        "//config/prow-staging:all-srcs",
         "//config/tests/jobs:all-srcs",
         "//config/tests/lint:all-srcs",
         "//config/tests/mergelists:all-srcs",
