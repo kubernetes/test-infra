@@ -86,6 +86,7 @@ filegroup(
         "//prow/plugins/blockade:all-srcs",
         "//prow/plugins/blunderbuss:all-srcs",
         "//prow/plugins/branchcleaner:all-srcs",
+        "//prow/plugins/branch-updater:all-srcs",
         "//prow/plugins/bugzilla:all-srcs",
         "//prow/plugins/buildifier:all-srcs",
         "//prow/plugins/cat:all-srcs",
