@@ -13,14 +13,14 @@ postsubmits:
     spec:
       serviceAccountName: k8s-infra-promoter
       containers:
-      - image: k8s.gcr.io/artifact-promoter/kpromo:v3.2.0-1
+      - image: k8s.gcr.io/artifact-promoter/kpromo:v3.3.0-beta.1-2
         command:
         - /kpromo
         args:
         - run
         - files
         - --manifests=/home/prow/go/src/github.com/kubernetes/k8s.io/artifacts/
-        - --dry-run=false
+        - --confirm
     annotations:
       testgrid-dashboards: sig-release-releng-blocking, sig-k8s-infra-k8sio
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
@@ -64,14 +64,14 @@ periodics:
   spec:
     serviceAccountName: k8s-infra-promoter
     containers:
-    - image: k8s.gcr.io/artifact-promoter/kpromo:v3.2.0-1
+    - image: k8s.gcr.io/artifact-promoter/kpromo:v3.3.0-beta.1-2
       command:
       - /kpromo
       args:
       - run
       - files
       - --manifests=/home/prow/go/src/github.com/kubernetes/k8s.io/artifacts/
-      - --dry-run=false
+      - --confirm
   annotations:
     testgrid-dashboards: sig-release-releng-blocking, sig-k8s-infra-k8sio
     testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
