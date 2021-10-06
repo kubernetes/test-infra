@@ -101,11 +101,11 @@ periodics:
     # https://github.com/kubernetes/k8s.io/pull/695.
     serviceAccountName: k8s-infra-gcr-promoter
     containers:
-    - image: k8s.gcr.io/artifact-promoter/kpromo:v3.3.0-beta.1-2
+    - image: k8s.gcr.io/artifact-promoter/cip:v3.2.0
       command:
-      - /kpromo
-      args:
       - cip
+      args:
+      - run
       - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes/k8s.io/k8s.gcr.io
       - --confirm
   annotations:
