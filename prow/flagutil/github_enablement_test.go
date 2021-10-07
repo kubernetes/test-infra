@@ -85,23 +85,30 @@ func TestGitHubEnablementValidation(t *testing.T) {
 }
 
 func TestEnablementChecker(t *testing.T) {
-	inOrg, inRepo := "org", "repo"
 	testCases := []struct {
+		repo                    string
+		org                     string
 		name                    string
 		gitHubEnablementOptions GitHubEnablementOptions
 		expectAllowed           bool
 	}{
 		{
+			org:           "org",
+			repo:          "repo",
 			name:          "Defalt allows everything",
 			expectAllowed: true,
 		},
 		{
+			org:  "org",
+			repo: "repo",
 			name: "Allowed orgs do not include it, forbidden",
 			gitHubEnablementOptions: GitHubEnablementOptions{
 				enabledOrgs: Strings{vals: []string{"other"}},
 			},
 		},
 		{
+			org:  "org",
+			repo: "repo",
 			name: "Allowed orgs include it, allowed",
 			gitHubEnablementOptions: GitHubEnablementOptions{
 				enabledOrgs: Strings{vals: []string{"org"}},
@@ -109,12 +116,16 @@ func TestEnablementChecker(t *testing.T) {
 			expectAllowed: true,
 		},
 		{
+			org:  "org",
+			repo: "repo",
 			name: "Allowed repos do not include it, forbidden",
 			gitHubEnablementOptions: GitHubEnablementOptions{
 				enabledRepos: Strings{vals: []string{"other/repo"}},
 			},
 		},
 		{
+			org:  "org",
+			repo: "repo",
 			name: "Allowed repos include it, allowed",
 			gitHubEnablementOptions: GitHubEnablementOptions{
 				enabledRepos: Strings{vals: []string{"org/repo"}},
@@ -122,19 +133,45 @@ func TestEnablementChecker(t *testing.T) {
 			expectAllowed: true,
 		},
 		{
+			org:  "org",
+			repo: "repo",
 			name: "Disabled orgs include it, forbidden",
 			gitHubEnablementOptions: GitHubEnablementOptions{
 				disabledOrgs: Strings{vals: []string{"org"}},
 			},
 		},
 		{
+			org:  "org",
+			repo: "repo",
 			name: "Disabled repos include it, forbidden",
 			gitHubEnablementOptions: GitHubEnablementOptions{
 				disabledRepos: Strings{vals: []string{"org/repo"}},
 			},
 		},
 		{
+			org:  "org",
+			repo: "repo",
 			name: "Allowed orgs and disabled repos include it, forbidden",
+			gitHubEnablementOptions: GitHubEnablementOptions{
+				enabledOrgs:   Strings{vals: []string{"org"}},
+				disabledRepos: Strings{vals: []string{"org/repo"}},
+			},
+		},
+		{
+			org:  "",
+			repo: "",
+			name: "Org repo is empty",
+			gitHubEnablementOptions: GitHubEnablementOptions{
+				enabledOrgs:   Strings{vals: []string{"org"}},
+				disabledRepos: Strings{vals: []string{"org/repo"}},
+				isDefault:     true,
+			},
+			expectAllowed: true,
+		},
+		{
+			org:  "",
+			repo: "",
+			name: "Org repo is empty",
 			gitHubEnablementOptions: GitHubEnablementOptions{
 				enabledOrgs:   Strings{vals: []string{"org"}},
 				disabledRepos: Strings{vals: []string{"org/repo"}},
@@ -144,7 +181,7 @@ func TestEnablementChecker(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			if result := tc.gitHubEnablementOptions.EnablementChecker()(inOrg, inRepo); result != tc.expectAllowed {
+			if result := tc.gitHubEnablementOptions.EnablementChecker()(tc.org, tc.repo); result != tc.expectAllowed {
 				t.Errorf("expected result %t, got result %t", tc.expectAllowed, result)
 			}
 		})

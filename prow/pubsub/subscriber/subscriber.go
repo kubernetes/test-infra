@@ -104,6 +104,7 @@ type Subscriber struct {
 	Metrics           *Metrics
 	ProwJobClient     ProwJobClient
 	Reporter          reportClient
+	EnablementChecker func(org, repo string) bool
 }
 
 type messageInterface interface {
@@ -360,6 +361,11 @@ func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msg messageIn
 		return err
 	}
 
+	if !s.shouldHandle(pe) {
+		l.Debug("Skip as not supposed to be handled.")
+		return nil
+	}
+
 	reportProwJob := func(pj *prowapi.ProwJob, state v1.ProwJobState, err error) {
 		pj.Status.State = state
 		pj.Status.Description = "Successfully triggered prowjob."
@@ -443,4 +449,29 @@ func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msg messageIn
 	}).Info("Job created.")
 	reportProwJobTriggered(&prowJob)
 	return nil
+}
+
+// shouldHandle mainly ensures that a message is handled only by a single instance of sub.
+// The initial reason why there are multiple deployments of the same sub, is that prow
+// supports authenticating with GitHub by either PAT token or GitHub app. It's recommended
+// to deploy two instances of sub, one with PAT and the other with GitHub app.
+func (s *Subscriber) shouldHandle(pe ProwJobEvent) bool {
+	var enabled bool
+	refs := pe.Refs
+	if refs == nil {
+		// It's possible that a pubsub message doesn't contain Refs, mainly periodic jobs.
+		// It doesn't really matter which sub deployment handles this workload, unless
+		// the job is meant to be from inrepoconfig, but if this is the case, then Refs is
+		// required. So if there is no `Refs`, we can do a simple math.
+		// TODO(chaodaiG): indicate Refs is required once inrepoconfig is enalbed with periodics:
+		// https://github.com/kubernetes/test-infra/issues/21729.
+		enabled = s.EnablementChecker("", "")
+	} else {
+		// It is possible to have conflicting settings here, we choose
+		// to report if in doubt because reporting multiple times is
+		// better than not reporting at all.
+		enabled = s.EnablementChecker(refs.Org, refs.Repo)
+	}
+
+	return enabled
 }

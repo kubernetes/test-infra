@@ -59,6 +59,7 @@ type options struct {
 	dryRun                 bool
 	gracePeriod            time.Duration
 	instrumentationOptions flagutil.InstrumentationOptions
+	githubEnablement       flagutil.GitHubEnablementOptions
 }
 
 type kubeClient struct {
@@ -71,6 +72,16 @@ func (c *kubeClient) Create(ctx context.Context, job *prowapi.ProwJob, o metav1.
 		return job, nil
 	}
 	return c.client.Create(ctx, job, o)
+}
+
+func (o *options) validate() error {
+	for _, opt := range []interface{ Validate(bool) error }{&o.client, &o.githubEnablement, &o.config} {
+		if err := opt.Validate(o.dryRun); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func init() {
@@ -88,12 +99,16 @@ func init() {
 	flagOptions.client.AddFlags(fs)
 	flagOptions.github.AddFlags(fs)
 	flagOptions.instrumentationOptions.AddFlags(fs)
+	flagOptions.githubEnablement.AddFlags(fs)
 
 	fs.Parse(os.Args[1:])
 }
 
 func main() {
 	logrusutil.ComponentInit()
+	if err := flagOptions.validate(); err != nil {
+		logrus.WithError(err).Fatal("Validate flags.")
+	}
 
 	configAgent, err := flagOptions.config.ConfigAgent()
 	if err != nil {
@@ -158,6 +173,7 @@ func main() {
 		Metrics:           promMetrics,
 		ProwJobClient:     kubeClient,
 		Reporter:          pubsub.NewReporter(configAgent.Config), // reuse crier reporter
+		EnablementChecker: flagOptions.githubEnablement.EnablementChecker(),
 	}
 
 	// Return 200 on / for health checks.

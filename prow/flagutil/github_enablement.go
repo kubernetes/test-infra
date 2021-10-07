@@ -33,6 +33,7 @@ type GitHubEnablementOptions struct {
 	enabledRepos  Strings
 	disabledOrgs  Strings
 	disabledRepos Strings
+	isDefault     bool
 }
 
 func (o *GitHubEnablementOptions) AddFlags(fs *flag.FlagSet) {
@@ -40,6 +41,7 @@ func (o *GitHubEnablementOptions) AddFlags(fs *flag.FlagSet) {
 	fs.Var(&o.enabledRepos, "github-enabled-repo", "Enabled github repo in org/repo format. Can be passed multiple times. If set, all orgs or repos that are not allowed via --gitbub-enabled-orgs or --github-enabled-repos will be ignored")
 	fs.Var(&o.disabledOrgs, "github-disabled-org", "Disabled github org. Can be passed multiple times. Orgs that are in this list will be ignored.")
 	fs.Var(&o.disabledRepos, "github-disabled-repo", "Disabled github repo in org/repo format. Can be passed multiple times. Repos that are in this list will be ignored.")
+	fs.BoolVar(&o.isDefault, "is-github-default-handler", false, "Set to true to claim that this deployment will handle the case where both org and repo and empty.")
 }
 
 func (o *GitHubEnablementOptions) Validate(_ bool) error {
@@ -82,6 +84,13 @@ func (o *GitHubEnablementOptions) EnablementChecker() func(org, repo string) boo
 	disabledOrgs := o.disabledOrgs.StringSet()
 	diabledRepos := o.disabledRepos.StringSet()
 	return func(org, repo string) bool {
+		// This is a special case where the request is not associated with org or repo,
+		// for example periodic job without any refs. We still want to ensure that the request
+		// is not processed multiple times.
+		if len(org) == 0 && len(repo) == 0 {
+			return o.isDefault
+		}
+
 		if len(enabledOrgs) > 0 || len(enabledRepos) > 0 {
 			if !enabledOrgs.Has(org) && !enabledRepos.Has(org+"/"+repo) {
 				return false
