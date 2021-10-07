@@ -7,6 +7,17 @@
       "systemd.unified_cgroup_hierarchy=0"
     ]
   },
+  "storage": {
+    "files": [
+      {
+        "path": "/etc/zincati/config.d/90-disable-auto-updates.toml",
+        "contents": {
+          "source": "data:,%5Bupdates%5D%0Aenabled%20%3D%20false%0A"
+        },
+        "mode": 420
+      }
+    ]
+  },
   "systemd": {
     "units": [
       {
