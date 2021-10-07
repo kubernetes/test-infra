@@ -1759,6 +1759,9 @@ presubmits:
         - ./hack/jenkins/test-dockerized.sh
         command:
         - runner.sh
+        env:
+        - name: SHORT
+          value: --short=false
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211005-ca067fbd9f-1.22
         name: ""
         resources:
