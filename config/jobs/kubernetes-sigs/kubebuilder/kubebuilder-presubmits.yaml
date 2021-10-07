@@ -19,7 +19,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-api-machinery-kubebuilder
       testgrid-tab-name: kubebuilder
-  - name: pull-kubebuilder-e2e-k8s-1-22-2
+  - name: pull-kubebuilder-e2e-k8s-1-22-1
     decorate: true
     always_run: true
     optional: true
@@ -37,7 +37,7 @@ presubmits:
         - ./test_e2e.sh
         env:
         - name: KIND_K8S_VERSION
-          value: "v1.22.2"
+          value: "v1.22.1"
         resources:
           requests:
             cpu: 4000m
@@ -45,11 +45,11 @@ presubmits:
           privileged: true
     annotations:
       testgrid-dashboards: sig-api-machinery-kubebuilder
-      testgrid-tab-name: kubebuilder-e2e-1-12-2
+      testgrid-tab-name: kubebuilder-e2e-1-22-1
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-  - name: pull-kubebuilder-e2e-k8s-1-21-5
+  - name: pull-kubebuilder-e2e-k8s-1-21-2
     decorate: true
     always_run: true
     optional: true
@@ -67,7 +67,7 @@ presubmits:
         - ./test_e2e.sh
         env:
         - name: KIND_K8S_VERSION
-          value: "v1.21.5"
+          value: "v1.21.2"
         resources:
           requests:
             cpu: 4000m
@@ -75,11 +75,11 @@ presubmits:
           privileged: true
     annotations:
       testgrid-dashboards: sig-api-machinery-kubebuilder
-      testgrid-tab-name: kubebuilder-e2e-1-21-5
+      testgrid-tab-name: kubebuilder-e2e-1-21-2
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-  - name: pull-kubebuilder-e2e-k8s-1-20-11
+  - name: pull-kubebuilder-e2e-k8s-1-20-7
     decorate: true
     always_run: true
     optional: true
@@ -97,7 +97,7 @@ presubmits:
         - ./test_e2e.sh
         env:
         - name: KIND_K8S_VERSION
-          value: "v1.20.11"
+          value: "v1.20.7"
         resources:
           requests:
             cpu: 4000m
@@ -105,7 +105,7 @@ presubmits:
           privileged: true
     annotations:
       testgrid-dashboards: sig-api-machinery-kubebuilder
-      testgrid-tab-name: kubebuilder-e2e-1-20-11
+      testgrid-tab-name: kubebuilder-e2e-1-20-7
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
