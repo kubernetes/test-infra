@@ -59,7 +59,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: ''
-    testgrid-dashboards: google-kops-gce, kops-distro-u2004, kops-gce, kops-k8s-latest, kops-kubetest2, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-kops-gce, kops-distro-u2004, kops-gce, kops-k8s-latest, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '40'
     testgrid-tab-name: kops-gce-stable
 
@@ -125,6 +125,6 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: ''
-    testgrid-dashboards: google-kops-gce, kops-distro-u2004, kops-gce, kops-k8s-latest, kops-kubetest2, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-kops-gce, kops-distro-u2004, kops-gce, kops-k8s-latest, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '40'
     testgrid-tab-name: kops-gce-latest

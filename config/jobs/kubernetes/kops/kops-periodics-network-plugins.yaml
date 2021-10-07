@@ -62,7 +62,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: amazonvpc
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-1.21, kops-kubetest2, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-1.21, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-cni-amazon-vpc
 
@@ -126,7 +126,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-kubetest2, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-cni-calico
 
@@ -190,7 +190,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: canal
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-1.21, kops-kubetest2, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-1.21, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-cni-canal
 
@@ -254,7 +254,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-kubetest2, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-cni-cilium
 
@@ -318,7 +318,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: cilium-etcd
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-kubetest2, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-cni-cilium-etcd
 
@@ -382,7 +382,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: flannel
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-kubetest2, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-cni-flannel
 
@@ -446,7 +446,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: kopeio
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-kubetest2, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-cni-kopeio
 
@@ -510,7 +510,7 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: kube-router
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-kubetest2, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-cni-kuberouter
 
@@ -574,6 +574,6 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: weave
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-kubetest2, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-cni-weave

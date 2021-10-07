@@ -7,7 +7,6 @@ dashboard_groups:
   - kops-versions
   - kops-misc
   - kops-ipv6
-  - kops-kubetest2
   - kops-gce
   - kops-grid
   - kops-distro-amzn2
@@ -43,7 +42,6 @@ dashboards:
 - name: kops-versions
 - name: kops-misc
 - name: kops-ipv6
-- name: kops-kubetest2
 - name: kops-gce
 - name: kops-grid
 - name: kops-distro-amzn2
