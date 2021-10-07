@@ -1738,20 +1738,18 @@ presubmits:
           requests:
             cpu: 1500m
             memory: 7Gi
-  # TODO(spiffxp): remove when finished investigating https://github.com/kubernetes/kubernetes/issues/105436
-  - always_run: false
+  - always_run: true
     annotations:
-      testgrid-create-test-group: "true"
-    optional: true
+      job-config-differs-because: "https://github.com/kubernetes/kubernetes/issues/105436#issuecomment-937805327"
     branches:
     - release-1.22
     cluster: k8s-infra-prow-build
-    context: pull-kubernetes-integration-1-22-canary
+    context: pull-kubernetes-integration
     decorate: true
     labels:
       preset-dind-enabled: "true"
       preset-service-account: "true"
-    name: pull-kubernetes-integration-1-22-canary
+    name: pull-kubernetes-integration
     path_alias: k8s.io/kubernetes
     spec:
       containers:
@@ -1771,34 +1769,6 @@ presubmits:
           requests:
             cpu: "6"
             memory: 20Gi
-        securityContext:
-          privileged: true
-  - always_run: true
-    branches:
-    - release-1.22
-    cluster: k8s-infra-prow-build
-    context: pull-kubernetes-integration
-    decorate: true
-    labels:
-      preset-dind-enabled: "true"
-      preset-service-account: "true"
-    name: pull-kubernetes-integration
-    path_alias: k8s.io/kubernetes
-    spec:
-      containers:
-      - args:
-        - ./hack/jenkins/test-dockerized.sh
-        command:
-        - runner.sh
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211005-ca067fbd9f-1.22
-        name: ""
-        resources:
-          limits:
-            cpu: "6"
-            memory: 15Gi
-          requests:
-            cpu: "6"
-            memory: 15Gi
         securityContext:
           privileged: true
   - always_run: true
