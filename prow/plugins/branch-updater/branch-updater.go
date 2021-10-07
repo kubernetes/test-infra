@@ -13,8 +13,11 @@ import (
 )
 
 const (
-	pluginName  = "branch-updater"
-	tideContext = "tide"
+	gitHubContextNameTide        = "tide"
+	gitHubMergeableStateBehind   = "behind"
+	gitHubMergeStateRefreshDelay = 10
+	pluginName                   = "branch-updater"
+	tideContextStatusSuccess     = "success"
 )
 
 var (
@@ -66,6 +69,8 @@ func pullRequestHandler(pc plugins.Agent, event github.PullRequestEvent) error {
 	return handlePR(pc.GitHubClient, pc.Logger, pc.PluginConfig.BranchUpdater, &event)
 }
 
+// If Tide thinks this PR should be mergeable, but GitHub says that the PR's branch is "behind",
+// ask GitHub to update the branch for us.
 func handlePR(gc githubClient, log *logrus.Entry, config plugins.BranchUpdater, event *github.PullRequestEvent) error {
 	// We only care about certain events, so ignore others - this significantly limits the number of race conditions
 	// that can cause multiple actions
@@ -84,52 +89,54 @@ func handlePR(gc githubClient, log *logrus.Entry, config plugins.BranchUpdater, 
 	repo := event.Repo.Name
 	pr := event.PullRequest
 
-	// - See if this PR has the Tide context in a passing state (eg Tide thinks this PR should be mergeable)
-	//   - If not, return - nothing to do.
-	//   - If so, see if GitHub thinks the PR is mergeable
-	//     - If null, refresh to get an answer.
-	//     - If true, return - nothing to do.
-	//     - If false, check mergeable_state
-	//       - If 'behind', call the rebase API.
-	//       - Otherwise, return - nothing to do
-
-	// Find out if Tide thinks this PR should be mergeable and bail out if not.
+	// Find out if Tide thinks this PR should be mergeable.
 	statuses, err := gc.GetCombinedStatus(org, repo, pr.Head.Ref)
 	if err != nil {
 		log.WithError(err).Errorf("Failed to get the context statuses on %s/%s#%d.", org, repo, pr.Number)
 		return err
 	}
 
+	// Find the Tide context and bail out if it's not success
+	foundTideContext := false
 	for _, status := range statuses.Statuses {
-		if status.Context == tideContext && status.State == "success" {
+		if status.Context == gitHubContextNameTide {
+			if status.State != tideContextStatusSuccess {
+				foundTideContext = true
+				break
+			}
 			return nil
 		}
+	}
+
+	if !foundTideContext {
+		log.Debugf("Skipping PR %d in repo %s/%s not monitored by Tide.", pr.Number, org, repo)
+		return nil
 	}
 
 	// If we have a "Tide mergeable" PR, check if GitHub agrees, and refresh our local PR state if we don't have an answer
 	// https://docs.github.com/en/rest/guides/getting-started-with-the-git-database-api#checking-mergeability-of-pull-requests
 	if pr.Mergable == nil {
 		// Crude, but this should always be enough time for GitHub to reach a decision.
-		time.Sleep(10 * time.Second)
+		// Worst case, we'll re-check the next time the PR is updated.
+		time.Sleep(gitHubMergeStateRefreshDelay * time.Second)
 		refreshedPr, err := gc.GetPullRequest(org, repo, pr.Number)
-		if err != nil || refreshedPr.Mergable == nil {
-			log.WithError(err).Errorf("Failed to refresh PR's mergable state on %s/%s#%d: %s, %s.", org, repo, pr.Number, refreshedPr.Mergable, err.Error())
+		if err != nil {
+			log.WithError(err).Errorf("Failed to refresh PR's mergable state on %s/%s#%d: %v, %s.", org, repo, pr.Number, *refreshedPr.Mergable, err.Error())
+			return err
+		}
+		if refreshedPr.Mergable == nil {
+			log.Errorf("Skipping PR: no reported mergable state after %ds on %s/%s#%d.", gitHubMergeStateRefreshDelay, org, repo, pr.Number)
 			return err
 		}
 		pr = *refreshedPr
 	}
 
-	// If the PR is already mergable, we don't need to do anything.
-	if *pr.Mergable {
+	// If the PR is already mergable, or mergeable_state is anything other than behind, there's nothing for us to do.
+	if *pr.Mergable || pr.MergeableState != gitHubMergeableStateBehind {
 		return nil
 	}
 
-	// If the mergeable state is anything other than behind, do nothing
-	if pr.MergeableState != "behind" {
-		return nil
-	}
-
-	// And finally if we get to this point, tell GitHub to update the branch
+	// And finally, if we get to this point, tell GitHub to update the branch
 	updateErr := gc.UpdatePullRequestBranch(org, repo, pr.Number, &pr.Head.SHA)
 	if err != nil {
 		log.WithError(updateErr).Errorf("Failed to update PR branch on %s/%s#%d: %s.", org, repo, pr.Number, updateErr.Error())
