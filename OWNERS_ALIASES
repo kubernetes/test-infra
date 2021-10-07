@@ -291,7 +291,6 @@ aliases:
 
   # mostly copied from sigs.k8s.io/kubebuilder/OWNERS_ALIASES
   kubebuilder-admins:
-  - mengqiy
   - estroz
 
   kubebuilder-reviewers:
@@ -299,6 +298,7 @@ aliases:
 
   kubebuilder-emeritus-approvers:
   - pwittrock
+  - mengqiy
 
   # end sigs.k8s.io/kubebuilder/OWNERS_ALIASES
 

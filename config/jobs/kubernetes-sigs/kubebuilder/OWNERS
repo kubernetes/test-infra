@@ -2,7 +2,6 @@
 
 approvers:
   - kubebuilder-admins
-  - kubebuilder-emeritus-approvers
 reviewers:
   - kubebuilder-admins
   - kubebuilder-reviewers
