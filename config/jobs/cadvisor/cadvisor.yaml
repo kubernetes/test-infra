@@ -49,31 +49,6 @@ presubmits:
       testgrid-dashboards: presubmits-misc
       testgrid-tab-name: cadvisor
 periodics:
-- interval: 24h
-  name: ci-cadvisor-canarypush
-  labels:
-    preset-service-account: "true"
-    preset-cadvisor-docker-credential: "true"
-    preset-dind-enabled: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/bootstrap:v20211004-881e25dc03
-      args:
-      - --repo=github.com/google/cadvisor
-      - --root=/go/src
-      - --timeout=30
-      - --scenario=canarypush
-      - --
-      - --file=deploy/canary/Dockerfile
-      - --owner=stclair@google.com
-      - --target=google/cadvisor:canary
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-
-  annotations:
-    testgrid-dashboards: sig-node-cadvisor
-    testgrid-tab-name: cadvisor-push
 - name: ci-cadvisor-e2e
   interval: 8h
   labels:
