@@ -87,7 +87,7 @@ postsubmits:
       path_alias: "sigs.k8s.io/cluster-api-provider-aws"
       decorate: true
       decoration_config:
-        timeout: 3h
+        timeout: 5h
       max_concurrency: 1
       labels:
         preset-dind-enabled: "true"
