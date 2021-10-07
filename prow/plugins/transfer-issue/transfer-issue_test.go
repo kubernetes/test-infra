@@ -201,7 +201,7 @@ type testClient struct {
 
 func (t *testClient) GetRepo(org, name string) (github.FullRepo, error) {
 	r := []rune(name)
-	if lastChar := r[len(r)-1:][0]; unicode.IsSpace(lastChar) {
+	if lastChar := r[len(r)-1]; unicode.IsSpace(lastChar) {
 		return github.FullRepo{}, fmt.Errorf("failed creating new request: parse \"https://api.github.com/repos/%s/%s\\r\": net/url: invalid control character in URL", org, name)
 	}
 	repo, err := t.fc.GetRepo(org, name)
