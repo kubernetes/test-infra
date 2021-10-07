@@ -1005,7 +1005,7 @@ def generate_presubmits_e2e():
 
 
         presubmit_test(
-            name="pull-kops-e2e-ipv6-ci",
+            name="pull-kops-e2e-ipv6-calico",
             cloud="aws",
             distro="u2004",
             k8s_version="ci",
@@ -1019,7 +1019,7 @@ def generate_presubmits_e2e():
                          '--set=cluster.spec.cloudControllerManager.cloudProvider=aws',
                          '--set=cluster.spec.nonMasqueradeCIDR=fd00:10:96::/64',
                          ],
-            tab_name='ipv6-ci',
+            extra_dashboards=['kops-ipv6'],
         ),
 
         presubmit_test(
@@ -1038,7 +1038,25 @@ def generate_presubmits_e2e():
                          '--set=cluster.spec.nonMasqueradeCIDR=fd00:10:96::/64',
                          ],
             focus_regex=r'\[Conformance\]|\[NodeConformance\]',
-            tab_name='ipv6-conformance',
+            extra_dashboards=['kops-ipv6'],
+        ),
+
+        presubmit_test(
+            name="pull-kops-e2e-ipv6-cilium",
+            cloud="aws",
+            distro="u2004",
+            k8s_version="ci",
+            networking="cilium",
+            feature_flags=["AWSIPv6"],
+            extra_flags=['--ipv6',
+                         '--api-loadbalancer-type=public',
+                         '--api-loadbalancer-class=network',
+                         '--zones=eu-west-1a',
+                         '--set=cluster.spec.api.loadBalancer.useForInternalApi=true',
+                         '--set=cluster.spec.cloudControllerManager.cloudProvider=aws',
+                         '--set=cluster.spec.nonMasqueradeCIDR=fd00:10:96::/64',
+                         ],
+            extra_dashboards=['kops-ipv6'],
         ),
 
         presubmit_test(
