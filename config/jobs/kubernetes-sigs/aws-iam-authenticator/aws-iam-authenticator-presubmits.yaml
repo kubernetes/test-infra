@@ -18,3 +18,22 @@ presubmits:
       testgrid-tab-name: pull-unit-test
       description: AWS IAM Authenticator unit test on pull request
       testgrid-num-columns-recent: '30'
+  - name: pull-aws-iam-authenticator-integration
+    always_run: true
+    decorate: true
+    labels:
+      preset-service-account: "true"
+      preset-aws-credential-aws-oss-testing: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210915-5dbaf53-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - integration
+    annotations:
+      testgrid-dashboards: provider-aws-iam-authenticator
+      testgrid-tab-name: pull-integration
+      description: AWS IAM Authenticator integration test on pull request
+      testgrid-num-columns-recent: '30'
