@@ -67,7 +67,7 @@ presubmits:
     optional: true
     decorate: true
     decoration_config:
-      timeout: 3h
+      timeout: 5h
     max_concurrency: 1
     extra_refs:
     - org: kubernetes-sigs
@@ -113,7 +113,7 @@ presubmits:
     optional: true
     decorate: true
     decoration_config:
-      timeout: 4h
+      timeout: 5h
     max_concurrency: 1
     labels:
       preset-dind-enabled: "true"
