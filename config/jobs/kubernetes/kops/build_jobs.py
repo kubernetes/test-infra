@@ -175,7 +175,6 @@ def build_test(cloud='aws',
 
     dashboards = [
         'sig-cluster-lifecycle-kops',
-        'kops-kubetest2',
         f"kops-distro-{distro}",
         f"kops-k8s-{k8s_version or 'latest'}",
         f"kops-{kops_version or 'latest'}",
@@ -302,7 +301,6 @@ def presubmit_test(branch='master',
         'presubmits-kops',
         'kops-presubmits',
         'sig-cluster-lifecycle-kops',
-        'kops-kubetest2',
         f"kops-distro-{distro}",
         f"kops-k8s-{k8s_version or 'latest'}",
     ]
