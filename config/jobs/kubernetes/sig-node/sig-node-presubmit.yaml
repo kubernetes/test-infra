@@ -134,7 +134,7 @@ presubmits:
         - --focus-regex='\[NodeConformance\]'
         - --skip-regex='\[Flaky\]|\[Slow\]|\[Serial\]'
         - --test-args='--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"'
-        - --image-config-file='../test-infra/jobs/e2e_node/image-config.yaml'
+        - --image-config-file='/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/image-config.yaml'
   - name: pull-kubernetes-e2e-containerd-gce
     always_run: false
     optional: true
@@ -266,7 +266,7 @@ presubmits:
         - --focus-regex='\[NodeConformance\]'
         - --skip-regex='\[Flaky\]|\[Slow\]|\[Serial\]'
         - '--test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
-        - --image-config-file='../test-infra/jobs/e2e_node/containerd/image-config.yaml'
+        - --image-config-file='/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config.yaml'
   - name: pull-kubernetes-node-e2e-containerd-features
     branches:
     - master
@@ -360,7 +360,7 @@ presubmits:
         - --focus-regex='\[NodeFeature:.+\]'
         - --skip-regex='\[Flaky\]|\[Serial\]'
         - '--test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
-        - --image-config-file='../test-infra/jobs/e2e_node/containerd/containerd-master/image-config.yaml'
+        - --image-config-file='/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-master/image-config.yaml'
   - name: pull-kubernetes-node-e2e-alpha
     branches:
     - master
@@ -438,7 +438,7 @@ presubmits:
         - --focus-regex='\[NodeConformance\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]'
         - --skip-regex='\[Flaky\]|\[Serial\]'
         - --test-args='--feature-gates=AllAlpha=true,CSIMigration=false,RotateKubeletServerCertificate=false,InTreePluginGCEUnregister=false --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"'
-        - --image-config-file='../test-infra/jobs/e2e_node/image-config.yaml'
+        - --image-config-file='/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/image-config.yaml'
   - name: pull-kubernetes-node-kubelet-serial
     always_run: false
     optional: true
@@ -529,7 +529,7 @@ presubmits:
         - --focus-regex='\[Serial\]'
         - --skip-regex='\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]'
         - --test-args='--feature-gates=DynamicKubeletConfig=true,LocalStorageCapacityIsolation=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"'
-        - --image-config-file='../test-infra/jobs/e2e_node/image-config-serial.yaml'
+        - --image-config-file='/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/image-config-serial.yaml'
 
   - name: pull-kubernetes-node-kubelet-serial-containerd
     always_run: false
@@ -621,7 +621,7 @@ presubmits:
         - --focus-regex='\[Serial\]'
         - --skip-regex='\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]'
         - '--test-args=--feature-gates=DynamicKubeletConfig=true,LocalStorageCapacityIsolation=true --container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
-        - --image-config-file='../test-infra/jobs/e2e_node/containerd/image-config-serial.yaml'
+        - --image-config-file='/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-serial.yaml'
   - name: pull-kubernetes-node-kubelet-eviction
     always_run: false
     optional: true
@@ -697,7 +697,7 @@ presubmits:
         - --parallelism=1
         - --focus-regex='\[NodeFeature:Eviction\]'
         - --test-args='--feature-gates=DynamicKubeletConfig=true,LocalStorageCapacityIsolation=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"'
-        - --image-config-file='../test-infra/jobs/e2e_node/image-config-serial.yaml'
+        - --image-config-file='/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/image-config-serial.yaml'
   - name: pull-kubernetes-node-kubelet-serial-cpu-manager
     always_run: false
     optional: true
