@@ -1759,18 +1759,15 @@ presubmits:
         - ./hack/jenkins/test-dockerized.sh
         command:
         - runner.sh
-        env:
-        - name: BOOTSTRAP_MTU_WORKAROUND
-          value: "false"
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211005-ca067fbd9f-1.22
         name: ""
         resources:
           limits:
             cpu: "6"
-            memory: 15Gi
+            memory: 20Gi
           requests:
             cpu: "6"
-            memory: 15Gi
+            memory: 20Gi
         securityContext:
           privileged: true
   - always_run: true
