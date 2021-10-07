@@ -22,6 +22,7 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"strings"
 
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
@@ -35,7 +36,7 @@ import (
 const pluginName = "transfer-issue"
 
 var (
-	transferRe = regexp.MustCompile(`(?mi)^/transfer(?:-issue)?\s+(.+)$`)
+	transferRe = regexp.MustCompile(`(?mi)^/transfer(?:-issue)?(?: +(.*))?$`)
 )
 
 type githubClient interface {
@@ -80,14 +81,14 @@ func handleTransfer(gc githubClient, log *logrus.Entry, e github.GenericCommentE
 	if len(matches) == 0 {
 		return nil
 	}
-	if len(matches) != 1 || len(matches[0]) != 2 {
+	if len(matches) != 1 || len(matches[0]) != 2 || len(matches[0][1]) == 0 {
 		return gc.CreateComment(
 			org, srcRepoName, e.Number,
 			plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, "/transfer-issue must only be used once and with a single destination repo."),
 		)
 	}
 
-	dstRepoName := matches[0][1]
+	dstRepoName := strings.TrimSpace(matches[0][1])
 	dstRepoPair := org + "/" + dstRepoName
 
 	dstRepo, err := gc.GetRepo(org, dstRepoName)

@@ -25,6 +25,7 @@ import (
 	"net/http"
 	"strings"
 	"testing"
+	"unicode"
 
 	"github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
@@ -109,10 +110,29 @@ func Test_handleTransfer(t *testing.T) {
 			},
 		},
 		{
+			name: "trims whitespace from user input",
+			event: github.GenericCommentEvent{
+				Action: github.GenericCommentActionCreated,
+				Body:   "/transfer-issue test-infra\r",
+				Number: issuerNum,
+				Repo:   github.Repo{Owner: github.User{Login: "kubernetes"}, Name: "kubectl"},
+				User:   github.User{Login: "user"},
+				NodeID: "fakeIssueNodeID",
+			},
+			fcFunc: func(fc *fakegithub.FakeClient) {
+				fc.OrgMembers["kubernetes"] = []string{"user"}
+			},
+			tcFunc: func(c *testClient) {
+				c.repoNodeID = "fakeRepoNodeID"
+			},
+		},
+		{
 			name: "happy path",
 			event: github.GenericCommentEvent{
 				Action: github.GenericCommentActionCreated,
-				Body:   "/transfer-issue test-infra",
+				Body: `This belongs elsewhere
+/transfer-issue test-infra
+Thanks!`,
 				Number: issuerNum,
 				Repo:   github.Repo{Owner: github.User{Login: "kubernetes"}, Name: "kubectl"},
 				User:   github.User{Login: "user"},
@@ -155,6 +175,8 @@ func Test_handleTransfer(t *testing.T) {
 					if !strings.Contains(cm[0].Body, tc.comment) {
 						t.Errorf("expected comment to contain: %s got: %s", tc.comment, cm[0].Body)
 					}
+				} else {
+					t.Errorf("expected comment to contain: %s but no comment", tc.comment)
 				}
 			}
 			if len(tc.comment) == 0 && len(fc.IssueComments[issuerNum]) != 0 {
@@ -178,6 +200,10 @@ type testClient struct {
 }
 
 func (t *testClient) GetRepo(org, name string) (github.FullRepo, error) {
+	r := []rune(name)
+	if lastChar := r[len(r)-1:][0]; unicode.IsSpace(lastChar) {
+		return github.FullRepo{}, fmt.Errorf("failed creating new request: parse \"https://api.github.com/repos/%s/%s\\r\": net/url: invalid control character in URL", org, name)
+	}
 	repo, err := t.fc.GetRepo(org, name)
 	if len(t.repoNodeID) != 0 {
 		repo.NodeID = t.repoNodeID
