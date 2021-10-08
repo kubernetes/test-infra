@@ -232,7 +232,9 @@ func (r *reconciler) syncClusterStatus(interval time.Duration) func(context.Cont
 					r.log.WithError(err).Error("Error marshaling cluster status info.")
 					continue
 				}
-				if err := util.WriteContent(ctx, r.log, util.StorageAuthor{Opener: r.opener}, bucket, subPath, true, payload); err != nil {
+				noCache := "no-cache"
+				author := util.StorageAuthor{Opener: r.opener, Opts: &io.WriterOptions{CacheControl: &noCache}}
+				if err := util.WriteContent(ctx, r.log, author, bucket, subPath, true, payload); err != nil {
 					r.log.WithError(err).Error("Error writing cluster status info.")
 				}
 			}

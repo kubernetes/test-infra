@@ -41,6 +41,7 @@ type Author interface {
 
 type StorageAuthor struct {
 	Opener pkgio.Opener
+	Opts   *pkgio.WriterOptions
 }
 
 func (sa StorageAuthor) NewWriter(ctx context.Context, bucket, path string, overwrite bool) (io.WriteCloser, error) {
@@ -48,8 +49,11 @@ func (sa StorageAuthor) NewWriter(ctx context.Context, bucket, path string, over
 	if err != nil {
 		return nil, err
 	}
-	return sa.Opener.Writer(ctx, fmt.Sprintf("%s://%s/%s", pp.StorageProvider(), pp.Bucket(), path),
-		pkgio.WriterOptions{PreconditionDoesNotExist: utilpointer.BoolPtr(!overwrite)})
+	opts := pkgio.WriterOptions{PreconditionDoesNotExist: utilpointer.BoolPtr(!overwrite)}
+	if sa.Opts != nil {
+		sa.Opts.Apply(&opts)
+	}
+	return sa.Opener.Writer(ctx, fmt.Sprintf("%s://%s/%s", pp.StorageProvider(), pp.Bucket(), path), opts)
 }
 
 func WriteContent(ctx context.Context, logger *logrus.Entry, author Author, bucket, path string, overwrite bool, content []byte) error {
