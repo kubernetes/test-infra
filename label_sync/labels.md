@@ -520,4 +520,9 @@ larger set of contributors to apply/remove them.
 | ---- | ----------- | -------- | --- |
 | <a id="team/katacoda" href="#team/katacoda">`team/katacoda`</a> | Issues with the Katacoda infrastructure for tutorials| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 
+## Labels that apply to kubernetes/website, only for PRs
+
+| Name | Description | Added By | Prow Plugin |
+| ---- | ----------- | -------- | --- |
+| <a id="refactor" href="#refactor">`refactor`</a> | Indicates a PR with large refactoring changes e.g. removes files or moves content | anyone | [label](https://git.k8s.io/test-infra/prow/plugins/label |
 
