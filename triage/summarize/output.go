@@ -40,7 +40,7 @@ type jsonOutput struct {
 
 // render accepts a map from build paths to builds, and the global clusters, and renders them in a
 // format consumable by the web page.
-func render(builds map[string]build, clustered nestedFailuresGroups) jsonOutput {
+func render(builds map[string]build, clustered nestedFailuresGroups, maxFailureTextLength int) jsonOutput {
 	clusteredSorted := clustered.sortByMostAggregatedFailures()
 
 	flattenedClusters := make([]flattenedGlobalCluster, len(clusteredSorted))
@@ -57,7 +57,7 @@ func render(builds map[string]build, clustered nestedFailuresGroups) jsonOutput 
 	}
 
 	return jsonOutput{
-		clustersToDisplay(flattenedClusters, builds),
+		clustersToDisplay(flattenedClusters, builds, maxFailureTextLength),
 		buildsToColumns(builds),
 	}
 }
@@ -286,7 +286,7 @@ type jsonCluster struct {
 
 // clustersToDisplay transposes and sorts the flattened output of clusterGlobal.
 // builds maps a build path to a build object.
-func clustersToDisplay(clustered []flattenedGlobalCluster, builds map[string]build) []jsonCluster {
+func clustersToDisplay(clustered []flattenedGlobalCluster, builds map[string]build, maxFailureTextLength int) []jsonCluster {
 	jsonClusters := make([]jsonCluster, 0, len(clustered))
 
 	for _, flattened := range clustered {
@@ -304,7 +304,7 @@ func clustersToDisplay(clustered []flattenedGlobalCluster, builds map[string]bui
 			jCluster := jsonCluster{
 				Key:   key,
 				ID:    keyID,
-				Text:  clusters[0].Failures[0].FailureText,
+				Text:  truncate(clusters[0].Failures[0].FailureText, maxFailureTextLength),
 				Tests: make([]test, len(clusters)),
 			}
 
@@ -312,7 +312,7 @@ func clustersToDisplay(clustered []flattenedGlobalCluster, builds map[string]bui
 			clusterFailureTexts := make([]string, 0, numClusterFailures)
 			for _, cluster := range clusters {
 				for _, flr := range cluster.Failures {
-					clusterFailureTexts = append(clusterFailureTexts, flr.FailureText)
+					clusterFailureTexts = append(clusterFailureTexts, truncate(flr.FailureText, maxFailureTextLength))
 				}
 			}
 			jCluster.Spans = commonSpans(clusterFailureTexts)
