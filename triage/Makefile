@@ -12,6 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+.PHONY: build
+build:
+	go build .
+
+.PHONY: test
+test:
+	go test ./...
+
 push:
   bazel run //images/builder -- --project=k8s-staging-test-infra --scratch-bucket=gs://k8s-staging-test-infra-scratch triage
 
@@ -31,6 +39,5 @@ redirect-static:
 redirect-staging:
 	gsutil -h 'Cache-Control: no-store, must-revalidate' -m cp -a public-read redirect/index.html gs://k8s-gubernator/triage/staging/
 
-.PHONY: all push push-static push-staging redirect-static redirect-staging
+.PHONY: push push-static push-staging redirect-static redirect-staging
 
-all: build
