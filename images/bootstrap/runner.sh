@@ -84,9 +84,9 @@ if [[ "${DOCKER_IN_DOCKER_ENABLED}" == "true" ]]; then
     printf '=%.0s' {1..80}; echo
     echo "Done setting up docker in docker."
 
-    # https://github.com/kubernetes/test-infra/issues/23741
-    # TODO: default to false if this is proven unnecessary
-    if [[ "${BOOTSTRAP_MTU_WORKAROUND:-"true"}" == "true" ]]; then
+    # Workaround for https://github.com/kubernetes/test-infra/issues/23741
+    # Instead of removing, disabled by default in case we need to address again
+    if [[ "${BOOTSTRAP_MTU_WORKAROUND:-"false"}" == "true" ]]; then
         echo "configure iptables to set MTU"
         iptables -t mangle -A POSTROUTING -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
     fi
