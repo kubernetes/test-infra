@@ -6,6 +6,7 @@ presubmits:
     - ^release-efix$
     - ^release-eus$
     - ^release-future$
+    - ^release-k$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-mongodb-operator
@@ -44,6 +45,7 @@ presubmits:
     - ^release-efix$
     - ^release-eus$
     - ^release-future$
+    - ^release-k$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-mongodb-operator
@@ -68,6 +70,7 @@ postsubmits:
     - ^release-efix$
     - ^release-eus$
     - ^release-future$
+    - ^release-k$
     decorate: true
     path_alias: github.com/IBM/ibm-mongodb-operator
     spec:
@@ -85,6 +88,7 @@ postsubmits:
     - ^release-efix$
     - ^release-eus$
     - ^release-future$
+    - ^release-k$
     decorate: true
     path_alias: github.com/IBM/ibm-mongodb-operator
     spec:
@@ -103,6 +107,7 @@ postsubmits:
     - ^release-efix$
     - ^release-eus$
     - ^release-future$
+    - ^release-k$
     decorate: true
     path_alias: github.com/IBM/ibm-mongodb-operator
     spec:
@@ -126,6 +131,7 @@ postsubmits:
     - ^release-efix$
     - ^release-eus$
     - ^release-future$
+    - ^release-k$
     decorate: true
     path_alias: github.com/IBM/ibm-mongodb-operator
     spec:
@@ -144,6 +150,7 @@ postsubmits:
     - ^release-efix$
     - ^release-eus$
     - ^release-future$
+    - ^release-k$
     decorate: true
     path_alias: github.com/IBM/ibm-mongodb-operator
     labels:
