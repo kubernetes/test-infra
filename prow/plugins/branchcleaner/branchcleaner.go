@@ -62,7 +62,7 @@ func handle(gc githubClient, log *logrus.Entry, config plugins.BranchCleaner, pr
 	}
 
 	// skip preserved branches
-	if config.IsPreservedBranch(pr.Head.Repo.Owner.Login, pr.Head.Repo.Name, pr.Head.Ref) {
+	if config.IsPreservedBranch(pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Head.Ref) {
 		return nil
 	}
 

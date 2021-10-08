@@ -37,8 +37,6 @@ func TestBranchCleaner(t *testing.T) {
 		prAction             github.PullRequestEventAction
 		merged               bool
 		headRepoFullName     string
-		headRepoOrg          string
-		headRepoName         string
 		srcBranchName        string
 		preservedBranches    map[string][]string
 		branchDeleteExpected bool
@@ -63,8 +61,6 @@ func TestBranchCleaner(t *testing.T) {
 			srcBranchName:        "my-fix1",
 			merged:               true,
 			headRepoFullName:     "different-org/repo",
-			headRepoOrg:          "different-org",
-			headRepoName:         "repo",
 			branchDeleteExpected: false,
 		},
 		{
@@ -78,8 +74,6 @@ func TestBranchCleaner(t *testing.T) {
 			},
 			merged:               true,
 			headRepoFullName:     "my-org/repo",
-			headRepoOrg:          "my-org",
-			headRepoName:         "repo",
 			branchDeleteExpected: false,
 		},
 		{
@@ -93,8 +87,6 @@ func TestBranchCleaner(t *testing.T) {
 			},
 			merged:               true,
 			headRepoFullName:     "my-org/repo",
-			headRepoOrg:          "my-org",
-			headRepoName:         "repo",
 			branchDeleteExpected: false,
 		},
 		{
@@ -108,8 +100,6 @@ func TestBranchCleaner(t *testing.T) {
 			},
 			merged:               true,
 			headRepoFullName:     "my-org/repo",
-			headRepoOrg:          "my-org",
-			headRepoName:         "repo",
 			branchDeleteExpected: true,
 		},
 		{
@@ -118,8 +108,6 @@ func TestBranchCleaner(t *testing.T) {
 			srcBranchName:        "release",
 			merged:               true,
 			headRepoFullName:     "my-org/repo",
-			headRepoOrg:          "my-org",
-			headRepoName:         "repo",
 			branchDeleteExpected: true,
 		},
 		{
@@ -128,8 +116,6 @@ func TestBranchCleaner(t *testing.T) {
 			srcBranchName:        "my-chore1",
 			merged:               true,
 			headRepoFullName:     "my-org/repo",
-			headRepoOrg:          "my-org",
-			headRepoName:         "repo",
 			branchDeleteExpected: true,
 		},
 	}
@@ -158,8 +144,6 @@ func TestBranchCleaner(t *testing.T) {
 						Ref: tc.srcBranchName,
 						Repo: github.Repo{
 							FullName: tc.headRepoFullName,
-							Name:     tc.headRepoName,
-							Owner:    github.User{Login: tc.headRepoOrg},
 						},
 					},
 					Merged: tc.merged},
