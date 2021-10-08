@@ -1794,14 +1794,17 @@ func (b *Bugzilla) OptionsForRepo(org, repo string) map[string]BugzillaBranchOpt
 
 // BranchCleaner contains the configuration for the branchcleaner plugin.
 type BranchCleaner struct {
-	// ProtectedBranches is a set of repo branches, branches in this allow list
+	// PreservedBranches is a set of repo branches, branches in this allow list
 	// are exempt from branch gc, even if the branches are already merged into the target branch
-	ProtectedBranches []string `json:"protected_branches,omitempty"`
+	PreservedBranches map[string][]string `json:"preserved_branches,omitempty"`
 }
 
-// IsProtectedBranch check if the branch is in the protected branch list or not.
-func (b *BranchCleaner) IsProtectedBranch(branch string) bool {
-	for _, pb := range b.ProtectedBranches {
+// IsPreservedBranch check if the branch is in the preserved branch list or not.
+func (b *BranchCleaner) IsPreservedBranch(repo, branch string) bool {
+	if _, exists := b.PreservedBranches[repo]; !exists {
+		return false
+	}
+	for _, pb := range b.PreservedBranches[repo] {
 		if branch == pb {
 			return true
 		}

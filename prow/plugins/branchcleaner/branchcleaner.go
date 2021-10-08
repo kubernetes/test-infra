@@ -61,8 +61,8 @@ func handle(gc githubClient, log *logrus.Entry, config plugins.BranchCleaner, pr
 		return nil
 	}
 
-	// skip protected branches
-	if config.IsProtectedBranch(pr.Head.Ref) {
+	// skip preserved branches
+	if config.IsPreservedBranch(pr.Head.Repo.FullName, pr.Head.Ref) {
 		return nil
 	}
 

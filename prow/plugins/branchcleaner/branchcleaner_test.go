@@ -38,7 +38,7 @@ func TestBranchCleaner(t *testing.T) {
 		merged               bool
 		headRepoFullName     string
 		srcBranchName        string
-		protectedBranches    []string
+		preservedBranches    map[string][]string
 		branchDeleteExpected bool
 	}{
 		{
@@ -64,18 +64,33 @@ func TestBranchCleaner(t *testing.T) {
 			branchDeleteExpected: false,
 		},
 		{
-			name:          "PR from same repo with protected branch",
+			name:          "PR from same repo with preserved branch",
 			prAction:      github.PullRequestActionClosed,
-			srcBranchName: "release",
-			protectedBranches: []string{
-				"release", "master",
+			srcBranchName: "betatest",
+			preservedBranches: map[string][]string{
+				"my-org/repo": {
+					"release", "betatest",
+				},
 			},
 			merged:               true,
 			headRepoFullName:     "my-org/repo",
 			branchDeleteExpected: false,
 		},
 		{
-			name:                 "PR from same repo without protected branch",
+			name:          "PR from same repo with other repo preserved branch",
+			prAction:      github.PullRequestActionClosed,
+			srcBranchName: "release",
+			preservedBranches: map[string][]string{
+				"my-org/other-repo": {
+					"release", "betatest",
+				},
+			},
+			merged:               true,
+			headRepoFullName:     "my-org/repo",
+			branchDeleteExpected: true,
+		},
+		{
+			name:                 "PR from same repo without preserved branch",
 			prAction:             github.PullRequestActionClosed,
 			srcBranchName:        "release",
 			merged:               true,
@@ -131,7 +146,7 @@ func TestBranchCleaner(t *testing.T) {
 				},
 			}
 			if err := handle(fgc, log, plugins.BranchCleaner{
-				ProtectedBranches: tc.protectedBranches,
+				PreservedBranches: tc.preservedBranches,
 			}, event); err != nil {
 				t.Fatalf("error in handle: %v", err)
 			}
