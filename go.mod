@@ -51,7 +51,6 @@ require (
 	github.com/go-openapi/spec v0.19.6
 	github.com/go-test/deep v1.0.7
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
-	github.com/golang/mock v1.5.0
 	github.com/gomodule/redigo v1.8.5
 	github.com/google/go-cmp v0.5.6
 	github.com/google/go-github v17.0.0+incompatible
@@ -64,8 +63,6 @@ require (
 	github.com/gregjones/httpcache v0.0.0-20190212212710-3befbb6ad0cc
 	github.com/hashicorp/go-retryablehttp v0.6.6
 	github.com/hashicorp/golang-lru v0.5.4
-	github.com/influxdata/influxdb v0.0.0-20161215172503-049f9b42e9a5
-	github.com/jinzhu/gorm v1.9.12
 	github.com/klauspost/pgzip v1.2.1
 	github.com/mattn/go-zglob v0.0.2
 	github.com/pelletier/go-toml v1.9.3
