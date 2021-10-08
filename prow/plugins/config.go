@@ -1800,15 +1800,23 @@ type BranchCleaner struct {
 }
 
 // IsPreservedBranch check if the branch is in the preserved branch list or not.
-func (b *BranchCleaner) IsPreservedBranch(repo, branch string) bool {
-	if _, exists := b.PreservedBranches[repo]; !exists {
-		return false
-	}
-	for _, pb := range b.PreservedBranches[repo] {
-		if branch == pb {
-			return true
+func (b *BranchCleaner) IsPreservedBranch(org, repo, branch string) bool {
+	fullRepoName := fmt.Sprintf("%s/%s", org, repo)
+	if _, existsRepo := b.PreservedBranches[fullRepoName]; existsRepo {
+		for _, pb := range b.PreservedBranches[fullRepoName] {
+			if branch == pb {
+				return true
+			}
 		}
 	}
+	if _, existsOrg := b.PreservedBranches[org]; existsOrg {
+		for _, pb := range b.PreservedBranches[org] {
+			if branch == pb {
+				return true
+			}
+		}
+	}
+	// no repo or org match.
 	return false
 }
 
