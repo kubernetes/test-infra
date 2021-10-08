@@ -22,7 +22,6 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"strconv"
-	"strings"
 	"sync"
 	"time"
 
@@ -83,15 +82,13 @@ func (coalescer *requestCoalescer) RoundTrip(req *http.Request) (*http.Response,
 	// Only coalesce GET requests
 	if req.Method != http.MethodGet {
 		resp, err := coalescer.requestExecutor.RoundTrip(req)
-		if strings.HasPrefix(req.URL.Path, "graphql") || strings.HasPrefix(req.URL.Path, "/graphql") {
-			var tokenBudgetName string
-			if val := req.Header.Get(TokenBudgetIdentifierHeader); val != "" {
-				tokenBudgetName = val
-			} else {
-				tokenBudgetName = coalescer.hasher.Hash(req)
-			}
-			collectMetrics(ModeNoStore, req, resp, tokenBudgetName)
+		var tokenBudgetName string
+		if val := req.Header.Get(TokenBudgetIdentifierHeader); val != "" {
+			tokenBudgetName = val
+		} else {
+			tokenBudgetName = coalescer.hasher.Hash(req)
 		}
+		collectMetrics(ModeSkip, req, resp, tokenBudgetName)
 		return resp, err
 	}
 

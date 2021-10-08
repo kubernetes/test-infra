@@ -62,6 +62,7 @@ const (
 	ModeNoStore CacheResponseMode = "NO-STORE" // response not cacheable
 	ModeMiss    CacheResponseMode = "MISS"     // not in cache, request proxied and response cached.
 	ModeChanged CacheResponseMode = "CHANGED"  // cache value invalid: resource changed, cache updated
+	ModeSkip    CacheResponseMode = "SKIP"     // cache was skipped, not applicable. e.g. POST request.
 	// The modes below are the happy cases in which the request is fulfilled for
 	// free (no API tokens used).
 	ModeCoalesced   CacheResponseMode = "COALESCED"   // coalesced request, this is a copied response
