@@ -507,7 +507,7 @@ postsubmits:
       testgrid-dashboards: sig-testing-prow
       testgrid-tab-name: cip-prow
       testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-      testgrid-num-failures-to-alert: '1'
+      testgrid-num-failures-to-alert: '2'
       description: Uses the Container Image Promoter to promote images from gcr.io/k8s-prow-edge to gcr.io/k8s-prow.
 
   kubernetes/community:
