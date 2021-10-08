@@ -88,7 +88,7 @@ func TestClusterTest(t *testing.T) {
 	// Run the tests
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			got := clusterTest(tc.arguments)
+			got := clusterTest(tc.arguments, defaultMaxClusterTextLength)
 
 			if !tc.want.equal(&got) {
 				t.Errorf("clusterTest(%#v) = %#v, wanted %#v", tc.arguments, got, tc.want)
@@ -119,7 +119,7 @@ func TestClusterGlobal(t *testing.T) {
 			},
 		}
 
-		got := clusterGlobal(argument, nil, false)
+		got := clusterGlobal(argument, nil, false, defaultMaxClusterTextLength)
 
 		if !want.equal(&got) {
 			t.Errorf("clusterGlobal(%#v) = %#v, wanted %#v", argument, got, want)
@@ -141,7 +141,7 @@ func TestClusterGlobal(t *testing.T) {
 
 		want := nestedFailuresGroups{textOld: failuresGroup{"test a": []failure{f1}}}
 
-		got := clusterGlobal(argument, previous, true)
+		got := clusterGlobal(argument, previous, true, defaultMaxClusterTextLength)
 
 		if !want.equal(&got) {
 			t.Errorf("clusterGlobal(%#v, %#v) = %#v, wanted %#v", argument, previous, got, want)
