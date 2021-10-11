@@ -28,7 +28,7 @@ periodics:
       - |
         set -euo pipefail
         apt update && apt -y install jq
-        wget -q -O /usr/local/bin/snyk https://github.com/snyk/snyk/releases/download/v1.605.0/snyk-linux && chmod +x /usr/local/bin/snyk
+        wget -q -O /usr/local/bin/snyk https://github.com/snyk/snyk/releases/download/v1.733.0/snyk-linux && chmod +x /usr/local/bin/snyk
         mkdir -p "${ARTIFACTS}"
         if [ -z "${SNYK_TOKEN}" ]; then
           echo "SNYK_TOKEN env var is not set, required for snyk scan"
