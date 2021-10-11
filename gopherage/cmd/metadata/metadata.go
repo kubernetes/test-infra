@@ -201,7 +201,7 @@ func ValidateAbs(Flags *Flags, r gitRunner) error {
 		ref, err := r("branch", "--show-current")
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Failed to fetch ref from within covered repo: %v. Defaulting to HEAD", err)
+			fmt.Fprintf(os.Stderr, "Failed to fetch ref from within covered repo: %v. Defaulting to HEAD\n", err)
 			ref = "HEAD"
 		}
 		Flags.ref = ref
