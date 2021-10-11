@@ -16,15 +16,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package hack
+/*
+Package tools is used to track binary dependencies with go modules
+https://github.com/golang/go/wiki/Modules#how-can-i-track-tool-dependencies-for-a-module
+*/
+package tools
 
-// Add tools that hack scripts depend on here, to ensure they are vendored.
 import (
-	_ "github.com/client9/misspell/cmd/misspell"
-	_ "github.com/go-bindata/go-bindata/v3"
-	_ "k8s.io/code-generator/cmd/client-gen"
+	// linter(s)
+	_ "github.com/golangci/golangci-lint/cmd/golangci-lint"
+
+	// kubernetes code generators
 	_ "k8s.io/code-generator/cmd/deepcopy-gen"
-	_ "k8s.io/code-generator/cmd/informer-gen"
-	_ "k8s.io/code-generator/cmd/lister-gen"
-	_ "sigs.k8s.io/controller-tools/cmd/controller-gen"
+
+	// test runner
+	_ "gotest.tools/gotestsum"
 )
