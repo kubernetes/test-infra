@@ -524,5 +524,5 @@ larger set of contributors to apply/remove them.
 
 | Name | Description | Added By | Prow Plugin |
 | ---- | ----------- | -------- | --- |
-| <a id="refactor" href="#refactor">`refactor`</a> | Indicates a PR with large refactoring changes e.g. removes files or moves content | anyone | [label](https://git.k8s.io/test-infra/prow/plugins/label |
+| <a id="refactor" href="#refactor">`refactor`</a> | Indicates a PR with large refactoring changes e.g. removes files or moves content| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 
