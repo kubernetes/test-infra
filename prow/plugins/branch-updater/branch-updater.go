@@ -88,14 +88,14 @@ func handlePR(gc githubClient, log *logrus.Entry, config plugins.BranchUpdater, 
 		log.WithError(err).Errorf("Failed to get the context statuses on %s/%s#%d.", org, repo, pr.Number)
 		return err
 	}
+	// Do nothing if Tide isn't in use here.
 	if tideStatus == "" {
 		log.Debugf("Skipping PR %d in repo %s/%s not monitored by Tide.", pr.Number, org, repo)
 		return nil
 	}
 
-	// And only take action if that status is success
+	// And only take action if that status is success.
 	if tideStatus != tideContextStatusSuccess {
-		log.Debugf("Skipping PR %d in repo %s/%s not monitored by Tide.", pr.Number, org, repo)
 		return nil
 	}
 
