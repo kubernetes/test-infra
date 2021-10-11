@@ -131,6 +131,23 @@ presubmits:
     annotations:
       testgrid-dashboards: presubmits-test-infra
       testgrid-tab-name: integration
+  - name: pull-test-infra-unit-test
+    branches:
+    - master
+    always_run: true
+    decorate: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211005-ca067fbd9f-test-infra
+        command:
+        - runner.sh
+        args:
+        - make
+        - unit
+    annotations:
+      testgrid-dashboards: presubmits-test-infra
+      testgrid-tab-name: unit-test
+
 
   # Optional job for testing new build system.
   # For testing a new make rule, simply pointing `make test` to the new make rule only.
