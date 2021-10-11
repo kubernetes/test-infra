@@ -477,6 +477,25 @@ def generate_misc():
                                 '--set=cluster.spec.nonMasqueradeCIDR=fd00:10:96::/64',
                                 ],
                    extra_dashboards=['kops-misc', 'kops-ipv6']),
+        # A special test for IPv6 using Cilium CNI, kubeproxy and cloud IPAM
+        build_test(name_override="kops-grid-scenario-ipv6-cilium-cloudipam",
+                   cloud="aws",
+                   distro="u2004",
+                   k8s_version="ci",
+                   networking="cilium",
+                   feature_flags=["AWSIPv6"],
+                   runs_per_day=3,
+                   extra_flags=['--ipv6',
+                                '--api-loadbalancer-type=public',
+                                '--api-loadbalancer-class=network',
+                                '--zones=eu-west-1a',
+                                '--set=cluster.spec.api.loadBalancer.useForInternalApi=true',
+                                '--set=cluster.spec.cloudControllerManager.cloudProvider=aws',
+                                '--set=cluster.spec.nonMasqueradeCIDR=fd00:10:96::/64',
+                                '--set=cluster.spec.podCIDRFromCloud=true',
+                                ],
+                   extra_dashboards=['kops-misc', 'kops-ipv6']),
+
 
         # A special test for JWKS
         build_test(name_override="kops-grid-scenario-service-account-iam",
