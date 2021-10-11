@@ -21,6 +21,7 @@ const (
 )
 
 var (
+	// This plugin should ignore any event type not on this list.
 	enabledEvents = []github.PullRequestEventAction{
 		github.PullRequestActionOpened,
 		github.PullRequestActionEdited,
@@ -72,16 +73,8 @@ func pullRequestHandler(pc plugins.Agent, event github.PullRequestEvent) error {
 // If Tide thinks this PR should be mergeable, but GitHub says that the PR's branch is "behind",
 // ask GitHub to update the branch for us.
 func handlePR(gc githubClient, log *logrus.Entry, config plugins.BranchUpdater, event *github.PullRequestEvent) error {
-	// We only care about certain events, so ignore others - this significantly limits the number of race conditions
-	// that can cause multiple actions
-	relevantEvent := false
-	for _, candidate := range enabledEvents {
-		if event.Action == candidate {
-			relevantEvent = true
-		}
-	}
-
-	if !relevantEvent {
+	// Ignore any event subtype that we don't care about
+	if !isEventRelevant(event.Action, enabledEvents) {
 		return nil
 	}
 
@@ -89,26 +82,19 @@ func handlePR(gc githubClient, log *logrus.Entry, config plugins.BranchUpdater, 
 	repo := event.Repo.Name
 	pr := event.PullRequest
 
-	// Find out if Tide thinks this PR should be mergeable.
-	statuses, err := gc.GetCombinedStatus(org, repo, pr.Head.Ref)
+	// Find the Tide status.
+	tideStatus, err := findTideStatus(gc, org, repo, pr)
 	if err != nil {
 		log.WithError(err).Errorf("Failed to get the context statuses on %s/%s#%d.", org, repo, pr.Number)
 		return err
 	}
-
-	// Find the Tide context and bail out if it's not success
-	foundTideContext := false
-	for _, status := range statuses.Statuses {
-		if status.Context == gitHubContextNameTide {
-			if status.State == tideContextStatusSuccess {
-				foundTideContext = true
-				break
-			}
-			return nil
-		}
+	if tideStatus == "" {
+		log.Debugf("Skipping PR %d in repo %s/%s not monitored by Tide.", pr.Number, org, repo)
+		return nil
 	}
 
-	if !foundTideContext {
+	// And only take action if that status is success
+	if tideStatus != tideContextStatusSuccess {
 		log.Debugf("Skipping PR %d in repo %s/%s not monitored by Tide.", pr.Number, org, repo)
 		return nil
 	}
@@ -145,4 +131,34 @@ func handlePR(gc githubClient, log *logrus.Entry, config plugins.BranchUpdater, 
 
 	log.Infof("Triggered update of branch %s/%s#%d", org, repo, pr.Number)
 	return nil
+}
+
+// We only care about certain events, so ignore others to limit duplicate actions
+func isEventRelevant(eventAction github.PullRequestEventAction, relevantEvents []github.PullRequestEventAction) bool {
+	for _, candidate := range relevantEvents {
+		if eventAction == candidate {
+			return true
+		}
+	}
+
+	return false
+}
+
+// Returns the state of the tide context, or an empty string if there is no Tide context.
+// Error means we failed to fetch statuses entirely.
+func findTideStatus(gc githubClient, org string, repo string, pr github.PullRequest) (string, error) {
+	// Find out if Tide thinks this PR should be mergeable.
+	statuses, err := gc.GetCombinedStatus(org, repo, pr.Head.Ref)
+	if err != nil {
+		return "", err
+	}
+
+	// Find the Tide context and bail out if it's not success
+	for _, status := range statuses.Statuses {
+		if status.Context == gitHubContextNameTide {
+			return status.State, nil
+		}
+	}
+
+	return "", nil
 }
