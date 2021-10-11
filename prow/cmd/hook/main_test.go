@@ -77,11 +77,21 @@ func Test_gatherOptions(t *testing.T) {
 				o.pluginsConfig.PluginConfigPath = "/random/value"
 			},
 		},
+		{
+			name: "explicitly set --webhook-path",
+			args: map[string]string{
+				"--webhook-path": "/random/hook",
+			},
+			expected: func(o *options) {
+				o.webookPath = "/random/hook"
+			},
+		},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			expected := &options{
-				port: 8888,
+				webookPath: "/hook",
+				port:       8888,
 				config: configflagutil.ConfigOptions{
 					ConfigPath:                            "yo",
 					ConfigPathFlagName:                    "config-path",
