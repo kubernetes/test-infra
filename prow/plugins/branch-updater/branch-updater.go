@@ -138,7 +138,7 @@ func handlePR(gc githubClient, log *logrus.Entry, config plugins.BranchUpdater, 
 
 	// And finally, if we get to this point, tell GitHub to update the branch
 	updateErr := gc.UpdatePullRequestBranch(org, repo, pr.Number, &pr.Head.SHA)
-	if err != nil {
+	if updateErr != nil {
 		log.WithError(updateErr).Errorf("Failed to update PR branch on %s/%s#%d: %s.", org, repo, pr.Number, updateErr.Error())
 		return updateErr
 	}
