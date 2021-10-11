@@ -100,7 +100,7 @@ func handlePR(gc githubClient, log *logrus.Entry, config plugins.BranchUpdater, 
 	foundTideContext := false
 	for _, status := range statuses.Statuses {
 		if status.Context == gitHubContextNameTide {
-			if status.State != tideContextStatusSuccess {
+			if status.State == tideContextStatusSuccess {
 				foundTideContext = true
 				break
 			}
