@@ -71,7 +71,7 @@ prefixes:
     consistentImages: true
   - name: "Boskos"
     prefix: "gcr.io/k8s-staging-boskos/"
-    refConfigFile: "config/prow/cluster/boskos.yaml"
+    refConfigFile: "config/prow/cluster/build/boskos.yaml"
     stagingRefConfigFile: "config/prow-staging/cluster/boskos.yaml"
     repo: "https://github.com/kubernetes-sigs/boskos"
     summarise: false
