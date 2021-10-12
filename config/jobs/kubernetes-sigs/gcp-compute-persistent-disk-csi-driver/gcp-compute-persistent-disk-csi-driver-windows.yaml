@@ -37,7 +37,7 @@ periodics:
         value: "win2019"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211005-06df33eb71-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211011-99d572842d-master
       securityContext:
           privileged: true
   annotations:
@@ -82,7 +82,7 @@ periodics:
         value: "win20h2"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211005-06df33eb71-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211011-99d572842d-master
       securityContext:
           privileged: true
   annotations:

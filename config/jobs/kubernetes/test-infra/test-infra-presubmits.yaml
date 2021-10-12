@@ -138,7 +138,7 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211005-ca067fbd9f-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211011-99d572842d-test-infra
         command:
         - runner.sh
         args:
