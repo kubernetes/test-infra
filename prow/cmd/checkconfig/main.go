@@ -1124,8 +1124,8 @@ func validateJobCluster(job config.JobBase, statuses map[string]plank.ClusterSta
 		if !ok {
 			return fmt.Errorf("job configuration for %q specifies unknown 'cluster' value %q", job.Name, job.Cluster)
 		}
-		if status == plank.ClusterStatusUnreachable {
-			return fmt.Errorf("job configuration for %q specifies cluster %q which cannot be reached from Plank", job.Name, job.Cluster)
+		if status != plank.ClusterStatusReachable {
+			logrus.Warnf("Job configuration for %q specifies cluster %q which cannot be reached from Plank. Status: %q", job.Name, job.Cluster, status)
 		}
 	}
 	return nil

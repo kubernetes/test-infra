@@ -1714,7 +1714,7 @@ func TestValidateClusterField(t *testing.T) {
 			clusterStatusFile: fmt.Sprintf(`{"default": %q, "build1": %q, "build2": %q}`, plank.ClusterStatusReachable, plank.ClusterStatusReachable, plank.ClusterStatusUnreachable),
 		},
 		{
-			name: "cluster fails validation with multiple clusters, specified is unreachable",
+			name: "cluster validates with multiple clusters, specified is unreachable (just warn)",
 			cfg: &config.Config{
 				ProwConfig: config.ProwConfig{
 					Plank: config.Plank{BuildClusterStatusFile: "gs://my-bucket/build-cluster-status.json"},
@@ -1729,7 +1729,24 @@ func TestValidateClusterField(t *testing.T) {
 								},
 							}}}}},
 			clusterStatusFile: fmt.Sprintf(`{"default": %q, "build1": %q, "build2": %q}`, plank.ClusterStatusReachable, plank.ClusterStatusReachable, plank.ClusterStatusUnreachable),
-			expectedError:     "org1/repo1: job configuration for \"my-job\" specifies cluster \"build2\" which cannot be reached from Plank",
+		},
+		{
+			name: "cluster fails validation with multiple clusters, specified is unrecognized",
+			cfg: &config.Config{
+				ProwConfig: config.ProwConfig{
+					Plank: config.Plank{BuildClusterStatusFile: "gs://my-bucket/build-cluster-status.json"},
+				},
+				JobConfig: config.JobConfig{
+					PresubmitsStatic: map[string][]config.Presubmit{
+						"org1/repo1": {
+							{
+								JobBase: config.JobBase{
+									Name:    "my-job",
+									Cluster: "build3",
+								},
+							}}}}},
+			clusterStatusFile: fmt.Sprintf(`{"default": %q, "build1": %q, "build2": %q}`, plank.ClusterStatusReachable, plank.ClusterStatusReachable, plank.ClusterStatusUnreachable),
+			expectedError:     "org1/repo1: job configuration for \"my-job\" specifies unknown 'cluster' value \"build3\"",
 		},
 		{
 			name: "cluster validation skipped if status file does not exist yet",
