@@ -1,5 +1,5 @@
 periodics:
-- name: periodic-cluster-api-provider-gcp-conformance-v1alpha3
+- name: periodic-cluster-api-provider-gcp-conformance-v1alpha4
   labels:
     preset-service-account: "true"
     preset-bazel-scratch-dir: "true"
@@ -13,7 +13,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-gcp
-    base_ref: release-0.3
+    base_ref: release-0.4
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
   - org: kubernetes-sigs
     repo: image-builder
@@ -21,11 +21,11 @@ periodics:
     path_alias: "sigs.k8s.io/image-builder"
   - org: kubernetes
     repo: kubernetes
-    base_ref: release-1.19
+    base_ref: release-1.20
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211011-99d572842d-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211011-99d572842d-1.20
         env:
           - name: "BOSKOS_HOST"
             value: "boskos.test-pods.svc.cluster.local"
@@ -44,10 +44,10 @@ periodics:
             cpu: 2000m
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-    testgrid-tab-name: capg-conformance-v1alpha3-release-0-3
+    testgrid-tab-name: capg-conformance-v1alpha4-release-0-4
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "2"
-- name: periodic-cluster-api-provider-gcp-conformance-v1alpha3-k8s-ci-artifacts
+- name: periodic-cluster-api-provider-gcp-conformance-v1alpha4-k8s-ci-artifacts
   labels:
     preset-service-account: "true"
     preset-bazel-scratch-dir: "true"
@@ -61,7 +61,7 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-gcp
-      base_ref: release-0.3
+      base_ref: release-0.4
       path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     - org: kubernetes-sigs
       repo: image-builder
@@ -93,6 +93,6 @@ periodics:
             cpu: 2000m
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-    testgrid-tab-name: capg-conformance-v1alpha3-release-0-3-ci-artifacts
+    testgrid-tab-name: capg-conformance-v1alpha4-release-0-4-ci-artifacts
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "2"
