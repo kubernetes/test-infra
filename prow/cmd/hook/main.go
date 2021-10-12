@@ -51,12 +51,12 @@ import (
 )
 
 const (
-	defaultWebookPath = "/hook"
+	defaultWebhookPath = "/hook"
 )
 
 type options struct {
-	webookPath string
-	port       int
+	webhookPath string
+	port        int
 
 	config        configflagutil.ConfigOptions
 	pluginsConfig pluginsflagutil.PluginOptions
@@ -86,7 +86,7 @@ func (o *options) Validate() error {
 
 func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	var o options
-	fs.StringVar(&o.webookPath, "webhook-path", defaultWebookPath, "The path of webhook events, default is '/hook'.")
+	fs.StringVar(&o.webhookPath, "webhook-path", defaultWebhookPath, "The path of webhook events, default is '/hook'.")
 	fs.IntVar(&o.port, "port", 8888, "Port to listen on.")
 
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
@@ -271,7 +271,7 @@ func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {})
 
 	// For /hook, handle a webhook normally.
-	http.Handle(o.webookPath, server)
+	http.Handle(o.webhookPath, server)
 	// Serve plugin help information from /plugin-help.
 	http.Handle("/plugin-help", pluginhelp.NewHelpAgent(pluginAgent, githubClient))
 
