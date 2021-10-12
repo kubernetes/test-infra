@@ -369,7 +369,7 @@ milestone_applier:
     main: v1.0.0
     release-0.5: v0.5.1
   kubernetes-sigs/cluster-api-provider-gcp:
-    main: v0.4
+    main: v1.0.0
     release-0.4: v0.4
     release-0.3: v0.3
   kubernetes-sigs/boskos:

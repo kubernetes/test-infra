@@ -1,12 +1,12 @@
 presubmits:
   kubernetes-sigs/cluster-api-provider-gcp:
-  - name: pull-cluster-api-provider-gcp-test-release-0-3
+  - name: pull-cluster-api-provider-gcp-test-release-0-4
     always_run: true
     optional: false
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
-      - ^release-0.3$
+      - ^release-0.4$
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211011-99d572842d-master
@@ -18,14 +18,14 @@ presubmits:
             cpu: "2"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-      testgrid-tab-name: pr-test-release-0-3
-  - name: pull-cluster-api-provider-gcp-build-release-0-3
+      testgrid-tab-name: pr-test-release-0-4
+  - name: pull-cluster-api-provider-gcp-build-release-0-4
     always_run: true
     optional: false
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
-      - ^release-0.3$
+      - ^release-0.4$
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211011-99d572842d-master
@@ -37,8 +37,8 @@ presubmits:
             cpu: "2"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-      testgrid-tab-name: pr-build-release-0-3
-  - name: pull-cluster-api-provider-gcp-make-release-0-3
+      testgrid-tab-name: pr-build-release-0-4
+  - name: pull-cluster-api-provider-gcp-make-release-0-4
     always_run: true
     optional: false
     decorate: true
@@ -47,7 +47,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
-      - ^release-0.3$
+      - ^release-0.4$
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211011-99d572842d-master
@@ -63,8 +63,8 @@ presubmits:
             cpu: "2"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-      testgrid-tab-name: pr-make-release-0-3
-  - name: pull-cluster-api-provider-gcp-e2e-test-release-0-3
+      testgrid-tab-name: pr-make-release-0-4
+  - name: pull-cluster-api-provider-gcp-e2e-test-release-0-4
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
@@ -73,7 +73,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
-      - ^release-0.3$
+      - ^release-0.4$
     always_run: true
     optional: false
     decorate: true
@@ -105,9 +105,9 @@ presubmits:
               cpu: 2000m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-      testgrid-tab-name: pr-e2e-test-release-0-3
+      testgrid-tab-name: pr-e2e-test-release-0-4
   # conformance test against kubernetes master branch with `kind` + cluster-api-provider-gcp
-  - name: pull-cluster-api-provider-gcp-make-conformance-release-0-3
+  - name: pull-cluster-api-provider-gcp-make-conformance-release-0-4
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
@@ -116,7 +116,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
-      - ^release-0.3$
+      - ^release-0.4$
     always_run: false
     optional: true
     decorate: true
@@ -153,4 +153,4 @@ presubmits:
               cpu: 2000m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-      testgrid-tab-name: pr-conformance-release-0-3
+      testgrid-tab-name: pr-conformance-release-0-4
