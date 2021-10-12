@@ -37,6 +37,7 @@ import (
 	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	v1 "k8s.io/api/core/v1"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/diff"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
@@ -818,6 +819,113 @@ periodics:
 				if diff := cmp.Diff(cfg.Periodics[0].DecorationConfig, tc.expected, cmpopts.EquateEmpty()); diff != "" {
 					t.Errorf("got diff: %s", diff)
 				}
+			}
+		})
+	}
+}
+
+func TestGerritRawYaml(t *testing.T) {
+	t.Parallel()
+	var testCases = []struct {
+		name        string
+		expectError bool
+		rawConfig   string
+		expected    Gerrit
+	}{
+		{
+			name:        "no-default",
+			expectError: false,
+			rawConfig: `
+gerrit:
+`,
+			expected: Gerrit{
+				TickInterval: &metav1.Duration{Duration: time.Minute},
+				RateLimit:    5,
+			},
+		},
+		{
+			name:        "override-default",
+			expectError: false,
+			rawConfig: `
+gerrit:
+  tick_interval: 2s
+  ratelimit: 10
+`,
+			expected: Gerrit{
+				TickInterval: &metav1.Duration{Duration: time.Second * 2},
+				RateLimit:    10,
+			},
+		},
+		{
+			name:        "simple-org-repo",
+			expectError: false,
+			rawConfig: `
+gerrit:
+  org_repos_config:
+  - org: org-a
+    repos:
+    - repo-b
+`,
+			expected: Gerrit{
+				TickInterval: &metav1.Duration{Duration: time.Minute},
+				RateLimit:    5,
+				OrgReposConfig: &GerritOrgRepoConfigs{
+					{
+						Org:   "org-a",
+						Repos: []string{"repo-b"},
+					},
+				},
+			},
+		},
+		{
+			name:        "multiple-org-repo",
+			expectError: false,
+			rawConfig: `
+gerrit:
+  org_repos_config:
+  - org: org-a
+    repos:
+    - repo-b
+  - org: org-c
+    repos:
+    - repo-d
+`,
+			expected: Gerrit{
+				TickInterval: &metav1.Duration{Duration: time.Minute},
+				RateLimit:    5,
+				OrgReposConfig: &GerritOrgRepoConfigs{
+					{
+						Org:   "org-a",
+						Repos: []string{"repo-b"},
+					},
+					{
+						Org:   "org-c",
+						Repos: []string{"repo-d"},
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// save the config
+			prowConfigDir := t.TempDir()
+
+			prowConfig := filepath.Join(prowConfigDir, "config.yaml")
+			if err := ioutil.WriteFile(prowConfig, []byte(tc.rawConfig), 0666); err != nil {
+				t.Fatalf("fail to write prow config: %v", err)
+			}
+
+			cfg, err := Load(prowConfig, "", nil, "")
+			if tc.expectError && err == nil {
+				t.Errorf("tc %s: Expect error, but got nil", tc.name)
+			} else if !tc.expectError && err != nil {
+				t.Fatalf("tc %s: Expect no error, but got error %v", tc.name, err)
+			}
+
+			if diff := cmp.Diff(tc.expected, cfg.Gerrit, cmpopts.EquateEmpty()); diff != "" {
+				t.Errorf("got diff: %s", diff)
 			}
 		})
 	}
@@ -1820,6 +1928,139 @@ func TestValidateReportingWithGerritLabel(t *testing.T) {
 			}
 			if err := validatePostsubmits(postsubmits, "default-namespace"); !reflect.DeepEqual(err, utilerrors.NewAggregate([]error{expected})) {
 				t.Errorf("did not get expected validation result:\n%v", cmp.Diff(expected, err))
+			}
+		})
+	}
+}
+
+func TestGerritAllRepos(t *testing.T) {
+	tests := []struct {
+		name string
+		in   *GerritOrgRepoConfigs
+		want map[string][]string
+	}{
+		{
+			name: "multiple-org",
+			in: &GerritOrgRepoConfigs{
+				{
+					Org:   "org-1",
+					Repos: []string{"repo-1"},
+				},
+				{
+					Org:   "org-2",
+					Repos: []string{"repo-2"},
+				},
+			},
+			want: map[string][]string{
+				"org-1": {"repo-1"},
+				"org-2": {"repo-2"},
+			},
+		},
+		{
+			name: "org-union",
+			in: &GerritOrgRepoConfigs{
+				{
+					Org:   "org-1",
+					Repos: []string{"repo-1"},
+				},
+				{
+					Org:   "org-1",
+					Repos: []string{"repo-2"},
+				},
+			},
+			want: map[string][]string{
+				"org-1": {"repo-1", "repo-2"},
+			},
+		},
+		{
+			name: "empty",
+			in:   &GerritOrgRepoConfigs{},
+			want: nil,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got := tc.in.AllRepos()
+			if diff := cmp.Diff(tc.want, got); diff != "" {
+				t.Errorf("output mismatch. got(+), want(-):\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestGerritOptOutHelpRepos(t *testing.T) {
+	tests := []struct {
+		name string
+		in   *GerritOrgRepoConfigs
+		want map[string]sets.String
+	}{
+		{
+			name: "multiple-org",
+			in: &GerritOrgRepoConfigs{
+				{
+					Org:        "org-1",
+					Repos:      []string{"repo-1"},
+					OptOutHelp: true,
+				},
+				{
+					Org:        "org-2",
+					Repos:      []string{"repo-2"},
+					OptOutHelp: true,
+				},
+			},
+			want: map[string]sets.String{
+				"org-1": sets.NewString("repo-1"),
+				"org-2": sets.NewString("repo-2"),
+			},
+		},
+		{
+			name: "org-union",
+			in: &GerritOrgRepoConfigs{
+				{
+					Org:        "org-1",
+					Repos:      []string{"repo-1"},
+					OptOutHelp: true,
+				},
+				{
+					Org:        "org-1",
+					Repos:      []string{"repo-2"},
+					OptOutHelp: true,
+				},
+			},
+			want: map[string]sets.String{
+				"org-1": sets.NewString("repo-1", "repo-2"),
+			},
+		},
+		{
+			name: "skip-non-optout",
+			in: &GerritOrgRepoConfigs{
+				{
+					Org:   "org-1",
+					Repos: []string{"repo-1"},
+				},
+				{
+					Org:        "org-1",
+					Repos:      []string{"repo-2"},
+					OptOutHelp: true,
+				},
+			},
+			want: map[string]sets.String{
+				"org-1": sets.NewString("repo-2"),
+			},
+		},
+		{
+			name: "empty",
+			in:   &GerritOrgRepoConfigs{},
+			want: nil,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got := tc.in.OptOutHelpRepos()
+			if diff := cmp.Diff(tc.want, got); diff != "" {
+				t.Errorf("output mismatch. got(+), want(-):\n%s", diff)
 			}
 		})
 	}

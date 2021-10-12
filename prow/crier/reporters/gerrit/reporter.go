@@ -30,6 +30,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/kube"
 )
@@ -92,12 +93,23 @@ type JobReport struct {
 }
 
 // NewReporter returns a reporter client
-func NewReporter(cookiefilePath string, projects map[string][]string, lister ctrlruntimeclient.Reader) (*Client, error) {
+func NewReporter(cfg config.Getter, cookiefilePath string, projects map[string][]string, lister ctrlruntimeclient.Reader) (*Client, error) {
 	gc, err := client.NewClient(projects)
 	if err != nil {
 		return nil, err
 	}
 	gc.Authenticate(cookiefilePath, "")
+	go func() {
+		for {
+			orgReposConfig := cfg().Gerrit.OrgReposConfig
+			if orgReposConfig == nil {
+				time.Sleep(time.Second)
+				continue
+			}
+			gc.UpdateClients(orgReposConfig.AllRepos())
+			time.Sleep(time.Second)
+		}
+	}()
 	return &Client{
 		gc:     gc,
 		lister: lister,

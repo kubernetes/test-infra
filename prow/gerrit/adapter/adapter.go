@@ -24,6 +24,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/andygrunwald/go-gerrit"
@@ -36,6 +37,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	reporter "k8s.io/test-infra/prow/crier/reporters/gerrit"
 	"k8s.io/test-infra/prow/gerrit/client"
+	"k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/pjutil"
 )
 
@@ -57,6 +59,7 @@ type Controller struct {
 	gc                 gerritClient
 	tracker            LastSyncTracker
 	projectsOptOutHelp map[string]sets.String
+	lock               sync.RWMutex
 }
 
 type LastSyncTracker interface {
@@ -65,19 +68,60 @@ type LastSyncTracker interface {
 }
 
 // NewController returns a new gerrit controller client
-func NewController(lastSyncTracker LastSyncTracker, gc gerritClient, prowJobClient prowv1.ProwJobInterface,
-	cfg config.Getter, projectsOptOutHelp map[string][]string) *Controller {
-	projs := map[string]sets.String{}
-	for i, p := range projectsOptOutHelp {
-		projs[i] = sets.NewString(p...)
+func NewController(ctx context.Context, prowJobClient prowv1.ProwJobInterface, op io.Opener,
+	cfg config.Getter, projects, projectsOptOutHelp map[string][]string, cookiefilePath, tokenPathOverride string, lastSyncFallback string) *Controller {
+
+	projectsOptOutHelpMap := map[string]sets.String{}
+	if cfg().Gerrit.OrgReposConfig != nil {
+		projectsOptOutHelpMap = cfg().Gerrit.OrgReposConfig.OptOutHelpRepos()
+	} else {
+		for i, p := range projectsOptOutHelp {
+			projectsOptOutHelpMap[i] = sets.NewString(p...)
+		}
 	}
-	return &Controller{
+	lastSyncTracker := &syncTime{
+		path:   lastSyncFallback,
+		ctx:    ctx,
+		opener: op,
+	}
+	if err := lastSyncTracker.init(projects); err != nil {
+		logrus.WithError(err).Fatal("Error initializing lastSyncFallback.")
+	}
+	gerritClient, err := client.NewClient(projects)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error creating gerrit client.")
+	}
+	gerritClient.Authenticate(cookiefilePath, tokenPathOverride)
+
+	c := &Controller{
 		prowJobClient:      prowJobClient,
 		config:             cfg,
-		gc:                 gc,
+		gc:                 gerritClient,
 		tracker:            lastSyncTracker,
-		projectsOptOutHelp: projs,
+		projectsOptOutHelp: projectsOptOutHelpMap,
 	}
+	go func() {
+		for {
+			orgReposConfig := cfg().Gerrit.OrgReposConfig
+			if orgReposConfig == nil {
+				time.Sleep(time.Second)
+				continue
+			}
+			if err := gerritClient.UpdateClients(orgReposConfig.AllRepos()); err != nil {
+				logrus.WithError(err).Error("Updating clients.")
+			}
+			if err := lastSyncTracker.update(orgReposConfig.AllRepos()); err != nil {
+				logrus.WithError(err).Error("Syncing states.")
+			}
+			// Updates a map, lock to make sure it's thread safe.
+			c.lock.Lock()
+			c.projectsOptOutHelp = orgReposConfig.OptOutHelpRepos()
+			c.lock.Unlock()
+			// No need to spin constantly, give it a break. It's ok that config change has one second delay.
+			time.Sleep(time.Second)
+		}
+	}()
+	return c
 }
 
 // Sync looks for newly made gerrit changes
@@ -294,7 +338,11 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 		// Reply with help information to run the presubmit Prow jobs if requested.
 		for _, msg := range messages {
 			needsHelp, note := pjutil.ShouldRespondWithHelp(msg, len(toTrigger))
-			if needsHelp && !isProjectOptOutHelp(c.projectsOptOutHelp, instance, change.Project) {
+			// Lock for projectOptOutHelp, which is a map.
+			c.lock.RLock()
+			optedOut := isProjectOptOutHelp(c.projectsOptOutHelp, instance, change.Project)
+			c.lock.RUnlock()
+			if needsHelp && !optedOut {
 				runWithTestAllNames, optionalJobsCommands, requiredJobsCommands, err := pjutil.AvailablePresubmits(listChangedFiles(change), cloneURI.Host, change.Project, change.Branch, presubmits, logger.WithField("help", true))
 				if err != nil {
 					return err

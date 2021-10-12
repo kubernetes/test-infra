@@ -7,6 +7,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
+        "//prow/config:go_default_library",
         "//prow/gerrit/client:go_default_library",
         "//prow/kube:go_default_library",
         "@com_github_andygrunwald_go_gerrit//:go_default_library",
