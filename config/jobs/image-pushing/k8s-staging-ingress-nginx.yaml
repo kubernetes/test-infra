@@ -7,7 +7,7 @@ postsubmits:
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
       decorate: true
-      run_if_changed: '\.go$|^rootfs/.*|TAG|go.mod|go.sum'
+      run_if_changed: 'TAG'
       branches:
         - ^main$
         - ^legacy$
