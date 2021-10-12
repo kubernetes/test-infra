@@ -33,6 +33,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/rest"
 	toolscache "k8s.io/client-go/tools/cache"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
@@ -171,7 +172,7 @@ func TestAdd(t *testing.T) {
 				predicateResultChan <- !b
 			}
 			var errMsg string
-			if err := add(mgr, buildMgrs, cfg, nil, "", tc.additionalSelector, reconcile, predicateCallBack, 1); err != nil {
+			if err := add(mgr, buildMgrs, nil, cfg, nil, "", tc.additionalSelector, reconcile, predicateCallBack, 1); err != nil {
 				errMsg = err.Error()
 			}
 			if errMsg != tc.expectedError {
@@ -519,25 +520,36 @@ func (fo fakeOpener) Close() error {
 
 func TestSyncClusterStatus(t *testing.T) {
 	tcs := []struct {
-		name            string
-		location        string
-		statuses        map[string]ClusterStatus
-		noWriteExpected bool
+		name             string
+		location         string
+		statuses         map[string]ClusterStatus
+		expectedStatuses map[string]ClusterStatus // This is set to statuses ^^ if unspecified.
+		knownClusters    sets.String
+		noWriteExpected  bool
 	}{
 		{
 			name:            "No location set, don't upload.",
 			statuses:        map[string]ClusterStatus{"default": ClusterStatusReachable},
+			knownClusters:   sets.NewString("default"),
 			noWriteExpected: true,
 		},
 		{
-			name:     "Single cluster reachable",
-			location: "gs://my-bucket/build-cluster-statuses.json",
-			statuses: map[string]ClusterStatus{"default": ClusterStatusReachable},
+			name:          "Single cluster reachable",
+			location:      "gs://my-bucket/build-cluster-statuses.json",
+			statuses:      map[string]ClusterStatus{"default": ClusterStatusReachable},
+			knownClusters: sets.NewString("default"),
 		},
 		{
-			name:     "Single cluster unreachable",
-			location: "gs://my-bucket/build-cluster-statuses.json",
-			statuses: map[string]ClusterStatus{"default": ClusterStatusUnreachable},
+			name:          "Single cluster unreachable",
+			location:      "gs://my-bucket/build-cluster-statuses.json",
+			statuses:      map[string]ClusterStatus{"default": ClusterStatusUnreachable},
+			knownClusters: sets.NewString("default"),
+		},
+		{
+			name:             "Single cluster build manager creation failed",
+			location:         "gs://my-bucket/build-cluster-statuses.json",
+			expectedStatuses: map[string]ClusterStatus{"default": ClusterStatusNoManager},
+			knownClusters:    sets.NewString("default"),
 		},
 		{
 			name:     "Multiple clusters mixed reachability",
@@ -547,6 +559,13 @@ func TestSyncClusterStatus(t *testing.T) {
 				"test-infra-trusted": ClusterStatusReachable,
 				"sad-build-cluster":  ClusterStatusUnreachable,
 			},
+			expectedStatuses: map[string]ClusterStatus{
+				"default":                  ClusterStatusReachable,
+				"test-infra-trusted":       ClusterStatusReachable,
+				"sad-build-cluster":        ClusterStatusUnreachable,
+				"always-sad-build-cluster": ClusterStatusNoManager,
+			},
+			knownClusters: sets.NewString("default", "test-infra-trusted", "sad-build-cluster", "always-sad-build-cluster"),
 		},
 	}
 	for i := range tcs {
@@ -578,16 +597,13 @@ func TestSyncClusterStatus(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
 			go func() {
-				r.syncClusterStatus(time.Millisecond)(ctx)
+				r.syncClusterStatus(time.Millisecond, tc.knownClusters)(ctx)
 				signal <- false
 			}()
 			if !tc.noWriteExpected {
 				<-signal // Wait for the first write
-			} else {
-				// I don't think we can difinitively test that no write occurs without races, but this sleep
-				// gives the sync thread a reasonable amount of time to try if there is a bug.
-				time.Sleep(time.Second)
 			}
+			// No need to sleep to confirm no write occurs, race detector should handle it.
 			cancel()
 			for running := range signal {
 				if !running {
@@ -605,7 +621,11 @@ func TestSyncClusterStatus(t *testing.T) {
 				if err := json.Unmarshal([]byte(opener.String()), &result); err != nil {
 					t.Fatalf("Failed to unmarshal output: %v.", err)
 				}
-				if diff := deep.Equal(result, tc.statuses); diff != nil {
+				expected := tc.expectedStatuses
+				if expected == nil {
+					expected = tc.statuses
+				}
+				if diff := deep.Equal(result, expected); diff != nil {
 					t.Errorf("result differs from expected: %v", diff)
 				}
 			}

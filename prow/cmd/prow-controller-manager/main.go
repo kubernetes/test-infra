@@ -178,9 +178,13 @@ func main() {
 	}
 
 	enabledControllersSet := sets.NewString(o.enabledControllers.Strings()...)
+	knownClusters, err := o.kubernetes.KnownClusters(o.dryRun)
+	if err != nil {
+		logrus.WithError(err).Fatal("Failed to resolve known clusters in kubeconfig.")
+	}
 
 	if enabledControllersSet.Has(plank.ControllerName) {
-		if err := plank.Add(mgr, buildManagers, cfg, opener, o.totURL, o.selector); err != nil {
+		if err := plank.Add(mgr, buildManagers, knownClusters, cfg, opener, o.totURL, o.selector); err != nil {
 			logrus.WithError(err).Fatal("Failed to add plank to manager")
 		}
 	}
