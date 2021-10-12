@@ -46,6 +46,11 @@ blunderbuss:
     # ReviewerCount is the minimum number of reviewers to request
     # reviews from. Defaults to requesting reviews from 2 reviewers
     request_count: 0
+branch_cleaner:
+    # PreservedBranches is a set of repo branches, branches in this allow list
+    # are exempt from branch gc, even if the branches are already merged into the target branch
+    preserved_branches:
+        "": null
 bugzilla:
     # Default settings mapped by branch in any repo in any org.
     # The `*` wildcard will apply to all branches.
