@@ -24,6 +24,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
@@ -355,18 +356,38 @@ func (o *KubernetesOptions) BuildClusterManagers(dryRun bool, opts ...func(*mana
 
 	res := map[string]manager.Manager{}
 	var errs []error
+	var lock sync.Mutex
+	var threads sync.WaitGroup
+	threads.Add(len(o.clusterConfigs))
 	for buildCluserName, buildClusterConfig := range o.clusterConfigs {
-		// We pass a pointer, need to capture it here. Dragons will fall if this is changed.
-		cfg := buildClusterConfig
-		mgr, err := manager.New(&cfg, options)
-		if err != nil {
-			clientCreationFailures.WithLabelValues(buildCluserName).Add(1)
-			errs = append(errs, fmt.Errorf("failed to construct manager for cluster %s: %w", buildCluserName, err))
-			continue
-		}
-		res[buildCluserName] = mgr
+		go func(name string, config rest.Config) {
+			defer threads.Done()
+			var mgr manager.Manager
+			var err error
+			// Try up to 4 times to create the manager. Total time trying: ~31s
+			delay := time.Second
+			tries := 4
+			for try := 0; try < tries; try++ {
+				mgr, err = manager.New(&config, options)
+				if err == nil {
+					break
+				}
+				if try+1 < tries {
+					time.Sleep(delay)
+					delay = delay * 5
+				}
+			}
+			lock.Lock()
+			defer lock.Unlock()
+			if err != nil {
+				clientCreationFailures.WithLabelValues(name).Add(1)
+				errs = append(errs, fmt.Errorf("failed to construct manager for cluster %s: %w", name, err))
+				return
+			}
+			res[name] = mgr
+		}(buildCluserName, buildClusterConfig)
 	}
-
+	threads.Wait()
 	return res, utilerrors.NewAggregate(errs)
 }
 
