@@ -65,17 +65,19 @@ const (
 func Add(
 	mgr controllerruntime.Manager,
 	buildMgrs map[string]controllerruntime.Manager,
+	knownClusters sets.String,
 	cfg config.Getter,
 	opener io.Opener,
 	totURL string,
 	additionalSelector string,
 ) error {
-	return add(mgr, buildMgrs, cfg, opener, totURL, additionalSelector, nil, nil, 10)
+	return add(mgr, buildMgrs, knownClusters, cfg, opener, totURL, additionalSelector, nil, nil, 10)
 }
 
 func add(
 	mgr controllerruntime.Manager,
 	buildMgrs map[string]controllerruntime.Manager,
+	knownClusters sets.String,
 	cfg config.Getter,
 	opener io.Opener,
 	totURL string,
@@ -120,7 +122,7 @@ func add(
 		return fmt.Errorf("failed to add metrics runnable to manager: %w", err)
 	}
 
-	if err := mgr.Add(manager.RunnableFunc(r.syncClusterStatus(time.Minute))); err != nil {
+	if err := mgr.Add(manager.RunnableFunc(r.syncClusterStatus(time.Minute, knownClusters))); err != nil {
 		return fmt.Errorf("failed to add cluster status runnable to manager: %w", err)
 	}
 
@@ -194,9 +196,10 @@ type ClusterStatus string
 const (
 	ClusterStatusUnreachable ClusterStatus = "Unreachable"
 	ClusterStatusReachable   ClusterStatus = "Reachable"
+	ClusterStatusNoManager   ClusterStatus = "No-Manager"
 )
 
-func (r *reconciler) syncClusterStatus(interval time.Duration) func(context.Context) error {
+func (r *reconciler) syncClusterStatus(interval time.Duration, knownClusters sets.String) func(context.Context) error {
 	return func(ctx context.Context) error {
 		ticker := time.NewTicker(interval)
 		defer ticker.Stop()
@@ -218,12 +221,17 @@ func (r *reconciler) syncClusterStatus(interval time.Duration) func(context.Cont
 				bucket, subPath := parsedPath.Bucket(), strings.TrimPrefix(parsedPath.Path, "/")
 
 				clusters := map[string]ClusterStatus{}
-				for cluster, client := range r.buildClients {
+				for cluster := range knownClusters {
 					status := ClusterStatusReachable
-					var pods corev1.PodList
-					if err := client.List(ctx, &pods, ctrlruntimeclient.MatchingLabels{kube.CreatedByProw: "true"}, ctrlruntimeclient.InNamespace(r.config().PodNamespace), ctrlruntimeclient.Limit(1)); err != nil {
-						r.log.WithField("cluster", cluster).WithError(err).Error("Error listing pod to check for build cluster reachability.")
-						status = ClusterStatusUnreachable
+					client, ok := r.buildClients[cluster]
+					if !ok {
+						status = ClusterStatusNoManager
+					} else {
+						var pods corev1.PodList
+						if err := client.List(ctx, &pods, ctrlruntimeclient.MatchingLabels{kube.CreatedByProw: "true"}, ctrlruntimeclient.InNamespace(r.config().PodNamespace), ctrlruntimeclient.Limit(1)); err != nil {
+							r.log.WithField("cluster", cluster).WithError(err).Warn("Error listing pod to check for build cluster reachability.")
+							status = ClusterStatusUnreachable
+						}
 					}
 					clusters[cluster] = status
 				}
