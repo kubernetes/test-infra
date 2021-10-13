@@ -10,6 +10,7 @@ go_library(
         "//prow/plugins/assign:go_default_library",
         "//prow/plugins/blockade:go_default_library",
         "//prow/plugins/blunderbuss:go_default_library",
+        "//prow/plugins/branch-updater:go_default_library",
         "//prow/plugins/branchcleaner:go_default_library",
         "//prow/plugins/bugzilla:go_default_library",
         "//prow/plugins/buildifier:go_default_library",

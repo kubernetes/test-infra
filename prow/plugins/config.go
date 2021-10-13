@@ -63,6 +63,7 @@ type Configuration struct {
 	Approve              []Approve                    `json:"approve,omitempty"`
 	Blockades            []Blockade                   `json:"blockades,omitempty"`
 	Blunderbuss          Blunderbuss                  `json:"blunderbuss,omitempty"`
+	BranchUpdater        BranchUpdater                `json:"branch_updater,omitempty"`
 	Bugzilla             Bugzilla                     `json:"bugzilla,omitempty"`
 	Cat                  Cat                          `json:"cat,omitempty"`
 	CherryPickUnapproved CherryPickUnapproved         `json:"cherry_pick_unapproved,omitempty"`
@@ -588,6 +589,51 @@ type JiraLinker struct {
 type JiraOverrides struct {
 	JiraUrl string   `json:"jira_url,omitempty"`
 	Repos   []string `json:"repos,omitempty"`
+}
+
+// BranchUpdater is config for the branch-updater plugin.
+// If `default_to_enabled`, use `ignore_repos` to mark specific repos to be ignored.
+// If not `default_to_enabled`, use `include_repos` to mark specific repos to be watched.
+type BranchUpdater struct {
+	// If true, this plugin is enabled for all repos by default.
+	// Otherwise, only watch explicitly listed ones.
+	DefaultEnabled bool `json:"default_to_enabled,omitempty"`
+
+	// IgnoredRepos is either of the form org/repos or just org.
+	// PRs in ignored repos will never be updated by this plugin.
+	IgnoredRepos []string `json:"ignore_repos,omitempty"`
+
+	// IncludeRepos is either of the form org/repos or just org.
+	// Harmless but useless if `default_to_enabled` is true
+	IncludeRepos []string `json:"include_repos,omitempty"`
+}
+
+func (b BranchUpdater) ShouldUpdateBranchesForRepo(repo string) bool {
+	if b.repoIsIgnored(repo) {
+		return false
+	}
+	if b.repoIsIncluded(repo) {
+		return true
+	}
+	return b.DefaultEnabled
+}
+
+func (b BranchUpdater) repoIsIgnored(repo string) bool {
+	for _, a := range b.IgnoredRepos {
+		if a == repo {
+			return true
+		}
+	}
+	return false
+}
+
+func (b BranchUpdater) repoIsIncluded(repo string) bool {
+	for _, a := range b.IncludeRepos {
+		if a == repo {
+			return true
+		}
+	}
+	return false
 }
 
 // Dco is config for the DCO (https://developercertificate.org/) checker plugin.

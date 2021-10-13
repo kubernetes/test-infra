@@ -41,6 +41,16 @@ blunderbuss:
     # ReviewerCount is the minimum number of reviewers to request
     # reviews from. Defaults to requesting reviews from 2 reviewers
     request_count: 0
+branch_updater:
+    # IgnoredRepos is either of the form org/repos or just org.
+    # PRs in ignored repos will never be updated by this plugin.
+    ignore_repos:
+      - ""
+
+    # IncludeRepos is either of the form org/repos or just org.
+    # Harmless but useless if `default_to_enabled` is true
+    include_repos:
+      - ""
 bugzilla:
     # Default settings mapped by branch in any repo in any org.
     # The `*` wildcard will apply to all branches.
@@ -386,6 +396,12 @@ help:
     # HelpGuidelinesURL is the URL of the help page, which provides guidance on how and when to use the help wanted and good first issue labels.
     # The default value is "https://git.k8s.io/community/contributors/guide/help-wanted.md".
     help_guidelines_url: ' '
+jira_linker:
+    jira_base_url: ' '
+    overrides:
+      - jira_url: ' '
+        repos:
+          - ""
 label:
     # AdditionalLabels is a set of additional labels enabled for use
     # on top of the existing "kind/*", "priority/*", and "area/*" labels.

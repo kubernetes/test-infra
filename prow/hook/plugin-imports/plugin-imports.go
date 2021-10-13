@@ -23,6 +23,7 @@ import (
 	_ "k8s.io/test-infra/prow/plugins/assign"
 	_ "k8s.io/test-infra/prow/plugins/blockade"
 	_ "k8s.io/test-infra/prow/plugins/blunderbuss"
+	_ "k8s.io/test-infra/prow/plugins/branch-updater"
 	_ "k8s.io/test-infra/prow/plugins/branchcleaner"
 	_ "k8s.io/test-infra/prow/plugins/bugzilla"
 	_ "k8s.io/test-infra/prow/plugins/buildifier"
