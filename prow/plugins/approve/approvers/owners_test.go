@@ -17,15 +17,17 @@ limitations under the License.
 package approvers
 
 import (
+	"path/filepath"
+	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/apimachinery/pkg/util/sets"
 
-	"path/filepath"
-	"reflect"
-	"strings"
+	"k8s.io/test-infra/prow/pkg/layeredsets"
+	"k8s.io/test-infra/prow/plugins/ownersconfig"
 )
 
 const (
@@ -33,12 +35,17 @@ const (
 )
 
 type FakeRepo struct {
-	approversMap      map[string]sets.String
-	leafApproversMap  map[string]sets.String
-	noParentOwnersMap map[string]bool
+	approversMap                 map[string]layeredsets.String
+	leafApproversMap             map[string]sets.String
+	noParentOwnersMap            map[string]bool
+	autoApproveUnownedSubfolders map[string]bool
 }
 
-func (f FakeRepo) Approvers(path string) sets.String {
+func (f FakeRepo) Filenames() ownersconfig.Filenames {
+	return ownersconfig.FakeFilenames
+}
+
+func (f FakeRepo) Approvers(path string) layeredsets.String {
 	return f.approversMap[path]
 }
 
@@ -59,9 +66,8 @@ func (f FakeRepo) IsNoParentOwners(path string) bool {
 	return f.noParentOwnersMap[path]
 }
 
-type dir struct {
-	fullPath  string
-	approvers sets.String
+func (f FakeRepo) IsAutoApproveUnownedSubfolders(ownerFilePath string) bool {
+	return f.autoApproveUnownedSubfolders[ownerFilePath]
 }
 
 func canonicalize(path string) string {
@@ -71,17 +77,17 @@ func canonicalize(path string) string {
 	return strings.TrimSuffix(path, "/")
 }
 
-func createFakeRepo(la map[string]sets.String) FakeRepo {
+func createFakeRepo(leafApproversMap map[string]sets.String, modify ...func(*FakeRepo)) FakeRepo {
 	// github doesn't use / at the root
-	a := map[string]sets.String{}
-	for dir, approvers := range la {
-		la[dir] = setToLower(approvers)
-		a[dir] = setToLower(approvers)
+	a := map[string]layeredsets.String{}
+	for dir, approvers := range leafApproversMap {
+		leafApproversMap[dir] = setToLower(approvers)
+		a[dir] = setToLowerMulti(approvers)
 		startingPath := dir
 		for {
 			dir = canonicalize(filepath.Dir(dir))
-			if parentApprovers, ok := la[dir]; ok {
-				a[startingPath] = a[startingPath].Union(setToLower(parentApprovers))
+			if parentApprovers, ok := leafApproversMap[dir]; ok {
+				a[startingPath] = a[startingPath].Union(setToLowerMulti(parentApprovers))
 			}
 			if dir == "" {
 				break
@@ -89,13 +95,25 @@ func createFakeRepo(la map[string]sets.String) FakeRepo {
 		}
 	}
 
-	return FakeRepo{approversMap: a, leafApproversMap: la}
+	fr := FakeRepo{approversMap: a, leafApproversMap: leafApproversMap}
+	for _, m := range modify {
+		m(&fr)
+	}
+	return fr
 }
 
 func setToLower(s sets.String) sets.String {
 	lowered := sets.NewString()
 	for _, elem := range s.List() {
 		lowered.Insert(strings.ToLower(elem))
+	}
+	return lowered
+}
+
+func setToLowerMulti(s sets.String) layeredsets.String {
+	lowered := layeredsets.NewString()
+	for _, elem := range s.List() {
+		lowered.Insert(0, strings.ToLower(elem))
 	}
 	return lowered
 }
@@ -164,7 +182,7 @@ func TestCreateFakeRepo(t *testing.T) {
 		}
 
 		test.expectedApprovers = setToLower(test.expectedApprovers)
-		if !calculatedApprovers.Equal(test.expectedApprovers) {
+		if !calculatedApprovers.Set().Equal(test.expectedApprovers) {
 			t.Errorf("Failed for test %v.  Expected Approvers: %v. Actual Approvers %v", test.testName, test.expectedApprovers, calculatedApprovers)
 		}
 	}

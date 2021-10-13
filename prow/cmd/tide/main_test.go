@@ -22,7 +22,9 @@ import (
 	"testing"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+
 	"k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 )
 
 func Test_gatherOptions(t *testing.T) {
@@ -42,7 +44,7 @@ func Test_gatherOptions(t *testing.T) {
 				"--config-path": "/random/value",
 			},
 			expected: func(o *options) {
-				o.configPath = "/random/value"
+				o.config.ConfigPath = "/random/value"
 			},
 		},
 		{
@@ -76,38 +78,32 @@ func Test_gatherOptions(t *testing.T) {
 				}
 			},
 		},
-		{
-			name: "--dry-run=true requires --deck-url",
-			args: map[string]string{
-				"--dry-run":  "true",
-				"--deck-url": "",
-			},
-			err: true,
-		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			expected := &options{
-				port:              8888,
-				configPath:        "yo",
-				jobConfigPath:     "",
-				dryRun:            true,
-				syncThrottle:      800,
-				statusThrottle:    400,
-				maxRecordsPerPool: 1000,
-				kubernetes:        flagutil.KubernetesOptions{DeckURI: "http://whatever"},
+				port: 8888,
+				config: configflagutil.ConfigOptions{
+					ConfigPathFlagName:                    "config-path",
+					JobConfigPathFlagName:                 "job-config-path",
+					ConfigPath:                            "yo",
+					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+				},
+				dryRun:                 true,
+				syncThrottle:           800,
+				statusThrottle:         400,
+				maxRecordsPerPool:      1000,
+				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
 			}
 			expectedfs := flag.NewFlagSet("fake-flags", flag.PanicOnError)
 			expected.github.AddFlags(expectedfs)
-			expected.github.TokenPath = flagutil.DefaultGitHubTokenPath
 			if tc.expected != nil {
 				tc.expected(expected)
 			}
 
 			argMap := map[string]string{
 				"--config-path": "yo",
-				"--deck-url":    "http://whatever",
 			}
 			for k, v := range tc.args {
 				argMap[k] = v

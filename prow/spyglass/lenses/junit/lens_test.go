@@ -31,7 +31,6 @@ import (
 )
 
 const (
-	fakeResourceDir   = "resources-for-tests"
 	fakeCanonicalLink = "linknotfound.io/404"
 )
 
@@ -92,6 +91,10 @@ func TestGetJvd(t *testing.T) {
 		" failure message 0 ",
 		" failure message 1 ",
 	}
+	errorMsgs := []string{
+		" error message 0 ",
+		" error message 1 ",
+	}
 
 	tests := []struct {
 		name       string
@@ -122,6 +125,39 @@ func TestGetJvd(t *testing.T) {
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
 									Failure:   &failureMsgs[0],
+								},
+							},
+						},
+						Link: "linknotfound.io/404",
+					},
+				},
+				Skipped: nil,
+				Flaky:   nil,
+			},
+		}, {
+			"Errored",
+			[][]byte{
+				[]byte(`
+				<testsuites>
+					<testsuite>
+						<testcase classname="fake_class_0" name="fake_test_0">
+							<error message="Error" type=""> error message 0 </error>
+						</testcase>
+					</testsuite>
+				</testsuites>
+				`),
+			},
+			JVD{
+				NumTests: 1,
+				Passed:   nil,
+				Failed: []TestResult{
+					{
+						Junit: []JunitResult{
+							{
+								junit.Result{
+									Name:      "fake_test_0",
+									ClassName: "fake_class_0",
+									Errored:   &errorMsgs[0],
 								},
 							},
 						},
@@ -182,6 +218,71 @@ func TestGetJvd(t *testing.T) {
 				Skipped: []TestResult{
 					{
 						Junit: []JunitResult{
+							{
+								junit.Result{
+									Name:      "fake_test_0",
+									ClassName: "fake_class_0",
+									Failure:   nil,
+									Skipped:   &emptyFailureMsg,
+								},
+							},
+						},
+						Link: "linknotfound.io/404",
+					},
+				},
+				Flaky: nil,
+			},
+		}, {
+			"Failed and Skipped",
+			[][]byte{
+				[]byte(`
+				<testsuites>
+					<testsuite>
+						<testcase classname="fake_class_0" name="fake_test_0">
+							<failure message="Failed" type=""> failure message 0 </failure>
+						</testcase>
+					<testcase classname="fake_class_0" name="fake_test_0">
+							<skipped/>
+						</testcase>
+					</testsuite>
+				</testsuites>
+				`),
+			},
+			JVD{
+				NumTests: 1,
+				Passed:   nil,
+				Failed: []TestResult{
+					{
+						Junit: []JunitResult{
+							{
+								junit.Result{
+									Name:      "fake_test_0",
+									ClassName: "fake_class_0",
+									Failure:   &failureMsgs[0],
+								},
+							},
+							{
+								junit.Result{
+									Name:      "fake_test_0",
+									ClassName: "fake_class_0",
+									Failure:   nil,
+									Skipped:   &emptyFailureMsg,
+								},
+							},
+						},
+						Link: "linknotfound.io/404",
+					},
+				},
+				Skipped: []TestResult{
+					{
+						Junit: []JunitResult{
+							{
+								junit.Result{
+									Name:      "fake_test_0",
+									ClassName: "fake_class_0",
+									Failure:   &failureMsgs[0],
+								},
+							},
 							{
 								junit.Result{
 									Name:      "fake_test_0",
@@ -613,6 +714,97 @@ func TestGetJvd(t *testing.T) {
 						Link: "linknotfound.io/404",
 					},
 				},
+				Skipped: nil,
+				Flaky:   nil,
+			},
+		}, {
+			"Sequence of test cases in the artifact file is reflected in the lens",
+			[][]byte{
+				[]byte(`
+				<testsuites>
+					<testsuite>
+						<testcase classname="fake_class_0" name="fake_test_0"></testcase>
+					</testsuite>
+					<testsuite>
+						<testcase classname="fake_class_1" name="fake_test_1"></testcase>
+					</testsuite>
+					<testsuite>
+						<testcase classname="fake_class_2" name="fake_test_2"></testcase>
+					</testsuite>
+					<testsuite>
+						<testcase classname="fake_class_3" name="fake_test_3"></testcase>
+					</testsuite>
+					<testsuite>
+						<testcase classname="fake_class_4" name="fake_test_4"></testcase>
+					</testsuite>
+				</testsuites>
+				`),
+			},
+			JVD{
+				NumTests: 5,
+				Passed: []TestResult{
+					{
+						Junit: []JunitResult{
+							{
+								junit.Result{
+									Name:      "fake_test_0",
+									ClassName: "fake_class_0",
+									Failure:   nil,
+								},
+							},
+						},
+						Link: "linknotfound.io/404",
+					},
+					{
+						Junit: []JunitResult{
+							{
+								junit.Result{
+									Name:      "fake_test_1",
+									ClassName: "fake_class_1",
+									Failure:   nil,
+								},
+							},
+						},
+						Link: "linknotfound.io/404",
+					},
+					{
+						Junit: []JunitResult{
+							{
+								junit.Result{
+									Name:      "fake_test_2",
+									ClassName: "fake_class_2",
+									Failure:   nil,
+								},
+							},
+						},
+						Link: "linknotfound.io/404",
+					},
+					{
+						Junit: []JunitResult{
+							{
+								junit.Result{
+									Name:      "fake_test_3",
+									ClassName: "fake_class_3",
+									Failure:   nil,
+								},
+							},
+						},
+						Link: "linknotfound.io/404",
+					},
+					{
+						Junit: []JunitResult{
+							{
+								junit.Result{
+									Name:      "fake_test_4",
+									ClassName: "fake_class_4",
+									Failure:   nil,
+								},
+							},
+						},
+						Link: "linknotfound.io/404",
+					},
+				},
+				Failed:  nil,
 				Skipped: nil,
 				Flaky:   nil,
 			},

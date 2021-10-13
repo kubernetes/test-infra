@@ -1,13 +1,15 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 reviewers:
-- Katharine
+- MushuEE
+- spiffxp
 - stevekuznetsov
 approvers:
-- Katharine
+- spiffxp
 - stevekuznetsov
 emeritus_approvers:
 - ibzib
+- Katharine
 - rmmh
 
 labels:

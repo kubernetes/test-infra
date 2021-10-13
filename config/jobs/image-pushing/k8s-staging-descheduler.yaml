@@ -7,16 +7,17 @@ postsubmits:
       cluster: k8s-infra-prow-build-trusted
       annotations:
         # This is the name of some testgrid dashboard to report to.
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling, sig-k8s-infra-gcb
       decorate: true
       branches:
         - ^master$
+        - ^release-.*
         # this is a regex for semver, from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
         - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200422-c760048
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210927-471c27b6e3
             command:
               - /run.sh
             args:

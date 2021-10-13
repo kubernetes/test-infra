@@ -24,7 +24,6 @@ go_library(
     importpath = "k8s.io/test-infra/maintenance/migratestatus",
     deps = [
         "//maintenance/migratestatus/migrator:go_default_library",
-        "//prow/config/secret:go_default_library",
         "//prow/flagutil:go_default_library",
         "//prow/logrusutil:go_default_library",
         "@com_github_pkg_errors//:go_default_library",

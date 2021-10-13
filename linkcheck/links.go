@@ -39,20 +39,20 @@ import (
 var (
 	rootDir    = flag.String("root-dir", "", "Root directory containing documents to be processed.")
 	fileSuffix = flag.StringSlice("file-suffix", []string{"types.go", ".md"}, "suffix of files to be checked")
-	// URLs matching the patterns in the regWhiteList won't be checked. Patterns
+	// URLs matching the patterns in the exemptRegexes won't be checked. Patterns
 	// of dummy URLs should be added to the list to avoid false alerts. Also,
 	// patterns of URLs that we don't care about can be added here to improve
 	// efficiency.
-	regWhiteList = []*regexp.Regexp{
+	exemptRegexes = []*regexp.Regexp{
 		regexp.MustCompile(`https://kubernetes-site\.appspot\.com`),
 		// skip url that doesn't start with an English alphabet, e.g., URLs with IP addresses.
 		regexp.MustCompile(`https?://[^A-Za-z].*`),
 		regexp.MustCompile(`https?://localhost.*`),
 	}
-	// URLs listed in the fullURLWhiteList won't be checked. This separated from
-	// the RegWhiteList to improve efficiency. This list includes dummy URLs that
+	// URLs listed in exemptURLs won't be checked. This is separate from
+	// exemptRegexes to improve efficiency. This list includes dummy URLs that
 	// are hard to be generalized by a regex, and URLs that will cause false alerts.
-	fullURLWhiteList = map[string]struct{}{
+	exemptURLs = map[string]struct{}{
 		"http://github.com/some/repo.git": {},
 		// This URL returns 404 when visited by this tool, but it works fine if visited by a browser.
 		"http://stackoverflow.com/questions/ask?tags=kubernetes":                                            {},
@@ -73,6 +73,9 @@ var (
 
 func newWalkFunc(invalidLink *bool, client *http.Client) filepath.WalkFunc {
 	return func(filePath string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
 		hasSuffix := false
 		for _, suffix := range *fileSuffix {
 			hasSuffix = hasSuffix || strings.HasSuffix(info.Name(), suffix)
@@ -94,12 +97,12 @@ func newWalkFunc(invalidLink *bool, client *http.Client) filepath.WalkFunc {
 			if !httpOrhttpsReg.Match(URL) {
 				continue
 			}
-			for _, whiteURL := range regWhiteList {
-				if whiteURL.Match(URL) {
+			for _, regex := range exemptRegexes {
+				if regex.Match(URL) {
 					continue URL
 				}
 			}
-			if _, found := fullURLWhiteList[string(URL)]; found {
+			if _, found := exemptURLs[string(URL)]; found {
 				continue
 			}
 			// remove the htmlpreview Prefix
@@ -121,7 +124,7 @@ func newWalkFunc(invalidLink *bool, client *http.Client) filepath.WalkFunc {
 				// false alert.
 				resp, err := client.Head(string(processedURL))
 				// URLs with mock host or mock port will cause error. If we report
-				// the error here, people need to add the mock URL to the white
+				// the error here, people need to add the mock URL to the exempt URL
 				// list every time they add a mock URL, which will be a maintenance
 				// nightmare. Hence, we decide to only report 404 to catch the
 				// cases where host and port are legit, but path is not, which

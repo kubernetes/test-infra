@@ -1,8 +1,0 @@
-apiVersion: networking.gke.io/v1beta1
-kind: ManagedCertificate
-metadata:
-  name: monitoring-prow-canary-k8s-io
-  namespace: prow-monitoring
-spec:
-  domains:
-  - monitoring.prow-canary.k8s.io

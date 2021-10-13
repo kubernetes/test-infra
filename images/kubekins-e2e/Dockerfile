@@ -17,7 +17,7 @@
 
 ARG OLD_BAZEL_VERSION
 FROM launcher.gcr.io/google/bazel:${OLD_BAZEL_VERSION} as old
-FROM gcr.io/k8s-testimages/bootstrap:v20200430-be2a8a9
+FROM gcr.io/k8s-staging-test-infra/bootstrap:v20211008-e0e089cfce
 
 # hint to kubetest that it is in CI
 ENV KUBETEST_IN_DOCKER="true"
@@ -44,7 +44,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 # preinstall this for kops tests xref kubetest prepareAws(...)
 # TODO(krzyzacy,justisb,chrislovecnm): remove this
-RUN pip install awscli
+RUN pip install --no-cache-dir awscli
 
 # install cfssl to prevent https://github.com/kubernetes/kubernetes/issues/55589
 # The invocation at the end is to prevent download failures downloads as in the bug.
@@ -73,7 +73,7 @@ RUN wget -q "https://storage.googleapis.com/golang/${GO_TARBALL}" && \
 # install bazel
 ARG BAZEL_VERSION_ARG
 ENV BAZEL_VERSION=${BAZEL_VERSION_ARG}
-COPY ./install-bazel.sh /
+COPY images/kubekins-e2e/install-bazel.sh /
 RUN bash /install-bazel.sh
 
 ARG OLD_BAZEL_VERSION
@@ -90,13 +90,39 @@ RUN [ "${UPGRADE_DOCKER_ARG}" = "true" ] && \
     rm -rf /var/lib/apt/lists/* && \
     sed -i 's/cgroupfs_mount$/#cgroupfs_mount\n/' /etc/init.d/docker || true
 
+# install kind if a version is provided
+ARG KIND_VERSION
+RUN if [ -n "${KIND_VERSION}" ]; then \
+    wget -q -O /usr/local/bin/kind https://kind.sigs.k8s.io/dl/v${KIND_VERSION}/kind-linux-amd64 && \
+    chmod +x /usr/local/bin/kind; \
+    fi
+
+# install kubetest2 binaries if a version is provided
+ARG KUBETEST2_VERSION
+RUN if [ -n "${KUBETEST2_VERSION}" ]; then \
+    wget -q -O /usr/local/bin/kubetest2.tgz https://storage.googleapis.com/k8s-staging-kubetest2/${KUBETEST2_VERSION}/linux-amd64.tgz && \
+    tar -xzf /usr/local/bin/kubetest2.tgz -C /usr/local/bin && \
+    rm -f /usr/local/bin/kubetest2.tgz && \
+    chmod +x /usr/local/bin/kubetest2*; \
+    fi
+
+# configure dockerd to use mirror.gcr.io
+# per instructions at https://cloud.google.com/container-registry/docs/pulling-cached-images
+ARG DOCKER_REGISTRY_MIRROR_URL=https://mirror.gcr.io
+RUN [ -n "${DOCKER_REGISTRY_MIRROR_URL}" ] && \
+    echo "DOCKER_OPTS=\"\${DOCKER_OPTS} --registry-mirror=${DOCKER_REGISTRY_MIRROR_URL}\"" | \
+    tee --append /etc/default/docker
+
 # add env we can debug with the image name:tag
 ARG IMAGE_ARG
 ENV IMAGE=${IMAGE_ARG}
 
 # everything below will be triggered on every new image tag ...
-ADD ["kops-e2e-runner.sh", \
-    "kubetest", \
+ADD ["images/kubekins-e2e/kops-e2e-runner.sh", \
+    "images/kubekins-e2e/kubetest", \
     "https://raw.githubusercontent.com/kubernetes/kubernetes/master/cluster/get-kube.sh", \
+    "logexporter/cluster/log-dump.sh", \
+    "logexporter/cluster/logexporter-daemonset.yaml", \
     "/workspace/"]
-RUN ["chmod", "+x", "/workspace/get-kube.sh"]
+ENV LOG_DUMP_SCRIPT_PATH "/workspace/log-dump.sh"
+RUN ["chmod", "+x", "/workspace/get-kube.sh", "/workspace/log-dump.sh"]

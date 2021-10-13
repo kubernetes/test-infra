@@ -31,8 +31,6 @@ import (
 var (
 	imageRegexp = regexp.MustCompile(`\b((?:[a-z0-9]+\.)?gcr\.io)/([a-z][a-z0-9-]{5,29}/[a-zA-Z0-9][a-zA-Z0-9_./-]+):([a-zA-Z0-9_.-]+)\b`)
 	tagRegexp   = regexp.MustCompile(`(v?\d{8}-(?:v\d(?:[.-]\d+)*-g)?[0-9a-f]{6,10}|latest)(-.+)?`)
-	tagCache    = map[string]string{}
-	httpClient  = http.Client{Timeout: 1 * time.Minute}
 )
 
 const (
@@ -43,11 +41,59 @@ const (
 	tagExtraPart   = 2
 )
 
+type Client struct {
+	// Keys are <imageHost>/<imageName>:<currentTag>. Values are corresponding tags.
+	tagCache   map[string]string
+	httpClient http.Client
+}
+
+func NewClient() *Client {
+	return &Client{
+		tagCache:   map[string]string{},
+		httpClient: http.Client{Timeout: 1 * time.Minute},
+	}
+}
+
 type manifest map[string]struct {
 	TimeCreatedMs string   `json:"timeCreatedMs"`
 	Tags          []string `json:"tag"`
 }
 
+// commit | tag-n-gcommit
+var commitRegexp = regexp.MustCompile(`^g?([\da-f]+)|(.+?)??(?:-(\d+)-g([\da-f]+))?$`)
+
+// DeconstructCommit separates a git describe commit into its parts.
+
+//
+// Examples:
+//  v0.0.30-14-gdeadbeef => (v0.0.30 14 deadbeef)
+//  v0.0.30 => (v0.0.30 0 "")
+//  deadbeef => ("", 0, deadbeef)
+//
+// See man git describe.
+func DeconstructCommit(commit string) (string, int, string) {
+	parts := commitRegexp.FindStringSubmatch(commit)
+	if parts == nil {
+		return "", 0, ""
+	}
+	if parts[1] != "" {
+		return "", 0, parts[1]
+	}
+	var n int
+	if s := parts[3]; s != "" {
+		var err error
+		n, err = strconv.Atoi(s)
+		if err != nil {
+			panic(err)
+		}
+	}
+	return parts[2], n, parts[4]
+}
+
+// DeconstructTag separates the tag into its vDATE-COMMIT-VARIANT components
+//
+// COMMIT may be in the form vTAG-NEW-gCOMMIT, use PureCommit to further process
+// this down to COMMIT.
 func DeconstructTag(tag string) (date, commit, variant string) {
 	currentTagParts := tagRegexp.FindStringSubmatch(tag)
 	if currentTagParts == nil {
@@ -57,9 +103,28 @@ func DeconstructTag(tag string) (date, commit, variant string) {
 	return parts[0][1:], parts[len(parts)-1], currentTagParts[tagExtraPart]
 }
 
-func findLatestTag(imageHost, imageName, currentTag string) (string, error) {
+func (cli *Client) getManifest(imageHost, imageName string) (manifest, error) {
+	resp, err := cli.httpClient.Get("https://" + imageHost + "/v2/" + imageName + "/tags/list")
+	if err != nil {
+		return nil, fmt.Errorf("couldn't fetch tag list: %w", err)
+	}
+	defer resp.Body.Close()
+
+	result := struct {
+		Manifest manifest `json:"manifest"`
+	}{}
+
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, fmt.Errorf("couldn't parse tag information from registry: %w", err)
+	}
+
+	return result.Manifest, nil
+}
+
+// FindLatestTag returns the latest valid tag for the given image.
+func (cli *Client) FindLatestTag(imageHost, imageName, currentTag string) (string, error) {
 	k := imageHost + "/" + imageName + ":" + currentTag
-	if result, ok := tagCache[k]; ok {
+	if result, ok := cli.tagCache[k]; ok {
 		return result, nil
 	}
 
@@ -71,28 +136,36 @@ func findLatestTag(imageHost, imageName, currentTag string) (string, error) {
 		return currentTag, nil
 	}
 
-	resp, err := httpClient.Get("https://" + imageHost + "/v2/" + imageName + "/tags/list")
-	if err != nil {
-		return "", fmt.Errorf("couldn't fetch tag list: %v", err)
-	}
-	defer resp.Body.Close()
-
-	result := struct {
-		Manifest manifest `json:"manifest"`
-	}{}
-
-	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-		return "", fmt.Errorf("couldn't parse tag information from registry: %v", err)
-	}
-
-	latestTag, err := pickBestTag(currentTagParts, result.Manifest)
+	imageList, err := cli.getManifest(imageHost, imageName)
 	if err != nil {
 		return "", err
 	}
 
-	tagCache[k] = latestTag
+	latestTag, err := pickBestTag(currentTagParts, imageList)
+	if err != nil {
+		return "", err
+	}
+
+	cli.tagCache[k] = latestTag
 
 	return latestTag, nil
+}
+
+func (cli *Client) TagExists(imageHost, imageName, currentTag string) (bool, error) {
+	imageList, err := cli.getManifest(imageHost, imageName)
+	if err != nil {
+		return false, err
+	}
+
+	for _, v := range imageList {
+		for _, tag := range v.Tags {
+			if tag == currentTag {
+				return true, nil
+			}
+		}
+	}
+
+	return false, nil
 }
 
 func pickBestTag(currentTagParts []string, manifest manifest) (string, error) {
@@ -125,7 +198,7 @@ func pickBestTag(currentTagParts []string, manifest manifest) (string, error) {
 		}
 		t, err := strconv.ParseInt(v.TimeCreatedMs, 10, 64)
 		if err != nil {
-			return "", fmt.Errorf("couldn't parse timestamp %q: %v", v.TimeCreatedMs, err)
+			return "", fmt.Errorf("couldn't parse timestamp %q: %w", v.TimeCreatedMs, err)
 		}
 		if override || t > latestTime {
 			latestTime = t
@@ -141,6 +214,11 @@ func pickBestTag(currentTagParts []string, manifest manifest) (string, error) {
 	}
 
 	return latestTag, nil
+}
+
+// AddToCache keeps track of changed tags
+func (cli *Client) AddToCache(image, newTag string) {
+	cli.tagCache[image] = newTag
 }
 
 func updateAllTags(tagPicker func(host, image, tag string) (string, error), content []byte, imageFilter *regexp.Regexp) []byte {
@@ -178,21 +256,22 @@ func updateAllTags(tagPicker func(host, image, tag string) (string, error), cont
 }
 
 // UpdateFile updates a file in place.
-func UpdateFile(path string, imageFilter *regexp.Regexp) error {
+func (cli *Client) UpdateFile(tagPicker func(imageHost, imageName, currentTag string) (string, error),
+	path string, imageFilter *regexp.Regexp) error {
 	content, err := ioutil.ReadFile(path)
 	if err != nil {
-		return fmt.Errorf("failed to read %s: %v", path, err)
+		return fmt.Errorf("failed to read %s: %w", path, err)
 	}
 
-	newContent := updateAllTags(findLatestTag, content, imageFilter)
+	newContent := updateAllTags(tagPicker, content, imageFilter)
 
 	if err := ioutil.WriteFile(path, newContent, 0644); err != nil {
-		return fmt.Errorf("failed to write %s: %v", path, err)
+		return fmt.Errorf("failed to write %s: %w", path, err)
 	}
 	return nil
 }
 
 // GetReplacements returns the tag replacements that have been made.
-func GetReplacements() map[string]string {
-	return tagCache
+func (cli *Client) GetReplacements() map[string]string {
+	return cli.tagCache
 }

@@ -1,12 +1,12 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
-reviwers:
+reviewers:
 - cjwagner
 - fejta
-- krzyzacy
 approvers:
 - cjwagner
 - fejta
+emeritus_approvers:
 - krzyzacy
 
 labels:

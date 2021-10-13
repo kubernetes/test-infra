@@ -17,10 +17,13 @@ limitations under the License.
 package trigger
 
 import (
+	"context"
+	"errors"
 	"testing"
+	"time"
 
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -178,7 +181,7 @@ func TestRunRequested(t *testing.T) {
 				Logger:        logrus.WithField("testcase", testCase.name),
 			}
 
-			err := RunRequested(client, pr, fakegithub.TestRef, testCase.requestedJobs, "event-guid")
+			err := runRequested(client, pr, fakegithub.TestRef, testCase.requestedJobs, "event-guid", nil, time.Nanosecond)
 			if err == nil && testCase.expectedErr {
 				t.Error("failed to receive an error")
 			}
@@ -187,7 +190,7 @@ func TestRunRequested(t *testing.T) {
 			}
 
 			observedCreatedProwJobs := sets.NewString()
-			existingProwJobs, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").List(metav1.ListOptions{})
+			existingProwJobs, err := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").List(context.Background(), metav1.ListOptions{})
 			if err != nil {
 				t.Errorf("could not list current state of prow jobs: %v", err)
 				return
@@ -270,6 +273,7 @@ func TestTrustedUser(t *testing.T) {
 		repo string
 
 		expectedTrusted bool
+		expectedReason  string
 	}{
 		{
 			name:            "user is member of trusted org",
@@ -302,6 +306,7 @@ func TestTrustedUser(t *testing.T) {
 			org:             "kubernetes",
 			repo:            "kubernetes",
 			expectedTrusted: false,
+			expectedReason:  (notMember).String(),
 		},
 		{
 			name:            "user is trusted org member",
@@ -319,24 +324,57 @@ func TestTrustedUser(t *testing.T) {
 			org:             "kubernetes",
 			repo:            "kubernetes",
 			expectedTrusted: false,
+			expectedReason:  (notMember | notCollaborator).String(),
+		},
+		{
+			name:            "user is not org member or trusted org member",
+			onlyOrgMembers:  false,
+			trustedOrg:      "kubernetes-sigs",
+			user:            "test-2",
+			org:             "kubernetes",
+			repo:            "kubernetes",
+			expectedTrusted: false,
+			expectedReason:  (notMember | notCollaborator | notSecondaryMember).String(),
+		},
+		{
+			name:            "user is not org member or trusted org member, onlyOrgMembers true",
+			onlyOrgMembers:  true,
+			trustedOrg:      "kubernetes-sigs",
+			user:            "test-2",
+			org:             "kubernetes",
+			repo:            "kubernetes",
+			expectedTrusted: false,
+			expectedReason:  (notMember | notSecondaryMember).String(),
+		},
+		{
+			name:            "Self as bot is trusted",
+			user:            "k8s-ci-robot",
+			expectedTrusted: true,
+		},
+		{
+			name:            "Self as app is trusted",
+			user:            "k8s-ci-robot[bot]",
+			expectedTrusted: true,
 		},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			fc := &fakegithub.FakeClient{
-				OrgMembers: map[string][]string{
-					"kubernetes": {"test"},
-				},
-				Collaborators: []string{"test-collaborator"},
+			fc := fakegithub.NewFakeClient()
+			fc.OrgMembers = map[string][]string{
+				"kubernetes": {"test"},
 			}
+			fc.Collaborators = []string{"test-collaborator"}
 
-			trusted, err := TrustedUser(fc, tc.onlyOrgMembers, tc.trustedOrg, tc.user, tc.org, tc.repo)
+			trustedResponse, err := TrustedUser(fc, tc.onlyOrgMembers, tc.trustedOrg, tc.user, tc.org, tc.repo)
 			if err != nil {
 				t.Errorf("For case %s, didn't expect error from TrustedUser: %v", tc.name, err)
 			}
-			if trusted != tc.expectedTrusted {
-				t.Errorf("For case %s, expect result: %v, but got: %v", tc.name, tc.expectedTrusted, trusted)
+			if trustedResponse.IsTrusted != tc.expectedTrusted {
+				t.Errorf("For case %s, expect trusted: %v, but got: %v", tc.name, tc.expectedTrusted, trustedResponse.IsTrusted)
+			}
+			if trustedResponse.Reason != tc.expectedReason {
+				t.Errorf("For case %s, expect trusted reason: %v, but got: %v", tc.name, tc.expectedReason, trustedResponse.Reason)
 			}
 		})
 	}
@@ -360,7 +398,7 @@ func TestGetPresubmits(t *testing.T) {
 							JobBase: config.JobBase{Name: "my-static-presubmit"},
 						}},
 					},
-					ProwYAMLGetter: func(_ *config.Config, _ git.ClientFactory, _, _ string, _ ...string) (*config.ProwYAML, error) {
+					ProwYAMLGetterWithDefaults: func(_ *config.Config, _ git.ClientFactory, _, _ string, _ ...string) (*config.ProwYAML, error) {
 						return &config.ProwYAML{
 							Presubmits: []config.Presubmit{{
 								JobBase: config.JobBase{Name: "my-inrepoconfig-presubmit"},
@@ -384,7 +422,7 @@ func TestGetPresubmits(t *testing.T) {
 							JobBase: config.JobBase{Name: "my-static-presubmit"},
 						}},
 					},
-					ProwYAMLGetter: func(_ *config.Config, _ git.ClientFactory, _, _ string, _ ...string) (*config.ProwYAML, error) {
+					ProwYAMLGetterWithDefaults: func(_ *config.Config, _ git.ClientFactory, _, _ string, _ ...string) (*config.ProwYAML, error) {
 						return &config.ProwYAML{
 							Presubmits: []config.Presubmit{{
 								JobBase: config.JobBase{Name: "my-inrepoconfig-presubmit"},
@@ -438,7 +476,7 @@ func TestGetPostsubmits(t *testing.T) {
 							JobBase: config.JobBase{Name: "my-static-postsubmit"},
 						}},
 					},
-					ProwYAMLGetter: func(_ *config.Config, _ git.ClientFactory, _, _ string, _ ...string) (*config.ProwYAML, error) {
+					ProwYAMLGetterWithDefaults: func(_ *config.Config, _ git.ClientFactory, _, _ string, _ ...string) (*config.ProwYAML, error) {
 						return &config.ProwYAML{
 							Postsubmits: []config.Postsubmit{{
 								JobBase: config.JobBase{Name: "my-inrepoconfig-postsubmit"},
@@ -462,7 +500,7 @@ func TestGetPostsubmits(t *testing.T) {
 							JobBase: config.JobBase{Name: "my-static-postsubmit"},
 						}},
 					},
-					ProwYAMLGetter: func(_ *config.Config, _ git.ClientFactory, _, _ string, _ ...string) (*config.ProwYAML, error) {
+					ProwYAMLGetterWithDefaults: func(_ *config.Config, _ git.ClientFactory, _, _ string, _ ...string) (*config.ProwYAML, error) {
 						return &config.ProwYAML{
 							Postsubmits: []config.Postsubmit{{
 								JobBase: config.JobBase{Name: "my-inrepoconfig-postsubmit"},
@@ -493,6 +531,65 @@ func TestGetPostsubmits(t *testing.T) {
 
 			if !tc.expectedPostsubmits.Equal(actualPostsubmits) {
 				t.Errorf("got a different set of postsubmits than expected, diff: %v", tc.expectedPostsubmits.Difference(actualPostsubmits))
+			}
+		})
+	}
+}
+
+func TestCreateWithRetry(t *testing.T) {
+	testCases := []struct {
+		name            string
+		numFailedCreate int
+		expectedErrMsg  string
+	}{
+		{
+			name: "Initial success",
+		},
+		{
+			name:            "Success after retry",
+			numFailedCreate: 7,
+		},
+		{
+			name:            "Failure",
+			numFailedCreate: 8,
+			expectedErrMsg:  "need retrying",
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+
+			fakeProwJobClient := fake.NewSimpleClientset()
+			fakeProwJobClient.PrependReactor("*", "*", func(action clienttesting.Action) (handled bool, ret runtime.Object, err error) {
+				if _, ok := action.(clienttesting.CreateActionImpl); ok && tc.numFailedCreate > 0 {
+					tc.numFailedCreate--
+					return true, nil, errors.New("need retrying")
+				}
+				return false, nil, nil
+			})
+
+			pj := &prowapi.ProwJob{ObjectMeta: metav1.ObjectMeta{Name: "foo"}}
+
+			var errMsg string
+			err := createWithRetry(context.TODO(), fakeProwJobClient.ProwV1().ProwJobs(""), pj, time.Nanosecond)
+			if err != nil {
+				errMsg = err.Error()
+			}
+			if errMsg != tc.expectedErrMsg {
+				t.Fatalf("expected error %s, got error %v", tc.expectedErrMsg, err)
+			}
+			if err != nil {
+				return
+			}
+
+			result, err := fakeProwJobClient.ProwV1().ProwJobs("").List(context.Background(), metav1.ListOptions{})
+			if err != nil {
+				t.Fatalf("faile to list prowjobs: %v", err)
+			}
+
+			if len(result.Items) != 1 {
+				t.Errorf("expected to find exactly one prowjob, got %+v", result.Items)
 			}
 		})
 	}

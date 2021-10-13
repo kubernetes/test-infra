@@ -34,7 +34,7 @@ const ImageSizeLimit = 5242880
 // HasLabel checks if label is in the label set "issueLabels".
 func HasLabel(label string, issueLabels []Label) bool {
 	for _, l := range issueLabels {
-		if strings.ToLower(l.Name) == strings.ToLower(label) {
+		if strings.EqualFold(l.Name, label) {
 			return true
 		}
 	}
@@ -56,8 +56,9 @@ func ImageTooBig(url string) (bool, error) {
 	// try to get the image size from Content-Length header
 	resp, err := http.Head(url)
 	if err != nil {
-		return true, fmt.Errorf("HEAD error: %v", err)
+		return true, fmt.Errorf("HEAD error: %w", err)
 	}
+	defer resp.Body.Close()
 	if sc := resp.StatusCode; sc != http.StatusOK {
 		return true, fmt.Errorf("failing %d response", sc)
 	}
@@ -73,8 +74,12 @@ func ImageTooBig(url string) (bool, error) {
 func LevelFromPermissions(permissions RepoPermissions) RepoPermissionLevel {
 	if permissions.Admin {
 		return Admin
+	} else if permissions.Maintain {
+		return Maintain
 	} else if permissions.Push {
 		return Write
+	} else if permissions.Triage {
+		return Triage
 	} else if permissions.Pull {
 		return Read
 	} else {
@@ -82,19 +87,21 @@ func LevelFromPermissions(permissions RepoPermissions) RepoPermissionLevel {
 	}
 }
 
-// PermissionsFromLevel adapts a repo permission level to the
-// appropriate permissions struct used elsewhere.
-func PermissionsFromLevel(permission RepoPermissionLevel) RepoPermissions {
+// PermissionsFromTeamPermissions
+func PermissionsFromTeamPermission(permission TeamPermission) RepoPermissions {
 	switch permission {
-	case None:
-		return RepoPermissions{}
-	case Read:
+	case RepoPull:
 		return RepoPermissions{Pull: true}
-	case Write:
-		return RepoPermissions{Pull: true, Push: true}
-	case Admin:
-		return RepoPermissions{Pull: true, Push: true, Admin: true}
+	case RepoTriage:
+		return RepoPermissions{Pull: true, Triage: true}
+	case RepoPush:
+		return RepoPermissions{Pull: true, Triage: true, Push: true}
+	case RepoMaintain:
+		return RepoPermissions{Pull: true, Triage: true, Push: true, Maintain: true}
+	case RepoAdmin:
+		return RepoPermissions{Pull: true, Triage: true, Push: true, Maintain: true, Admin: true}
 	default:
+		// Should never happen unless the type gets new value
 		return RepoPermissions{}
 	}
 }

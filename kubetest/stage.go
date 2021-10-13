@@ -68,10 +68,7 @@ func (s *stageStrategy) Enabled() bool {
 // Essentially release/push-build.sh --bucket=B --ci? --gcs-suffix=S --noupdatelatest
 func (s *stageStrategy) Stage(noAllowDup bool) error {
 	name := util.K8s("release", "push-build.sh")
-	b := s.bucket
-	if strings.HasPrefix(b, "gs://") {
-		b = b[len("gs://"):]
-	}
+	b := strings.TrimPrefix(s.bucket, "gs://")
 	args := []string{
 		"--nomock",
 		"--verbose",

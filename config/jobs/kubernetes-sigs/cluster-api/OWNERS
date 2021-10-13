@@ -1,16 +1,25 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 reviewers:
+- CecileRobertMichon
 - davidewatson
 - detiber
+- fabriziopandini
+- JoelSpeed
 - justinsb
-- luxas
 - timothysc
 - vincepri
 approvers:
+- CecileRobertMichon
 - davidewatson
 - detiber
+- fabriziopandini
 - justinsb
-- luxas
 - timothysc
 - vincepri
+emeritus_reviewers:
+- luxas
+- ncdc
+emeritus_approvers:
+- luxas
+- ncdc

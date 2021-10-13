@@ -28,6 +28,7 @@ import (
 
 func main() {
 	logrusutil.ComponentInit()
+	logrus.SetLevel(logrus.DebugLevel)
 
 	o := sidecar.NewOptions()
 	if err := options.Load(o); err != nil {

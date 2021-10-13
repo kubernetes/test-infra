@@ -1,12 +1,29 @@
 aliases:
   # business hours oncall for prow etc (https://go.k8s.io/oncall)
   test-infra-oncall:
-  - BenTheElder
+  - chaodaiG
   - chases2
   - cjwagner
+  - e-blackwelder
   - fejta
-  - Katharine
+  - listx
   - michelle192837
+  - mpherman2
+
+  # https://github.com/kubernetes/sig-release/blob/master/release-managers.md#build-admins
+  build-admins:
+    - amwat
+    - BenTheElder
+    - MushuEE
+    - spiffxp
+
+  sig-k8s-infra-oncall:
+  - BenTheElder
+  # kubernetes.io org admins
+  - ameukam
+  - dims
+  - spiffxp
+  - thockin
 
   # copied from git.k8s.io/community/OWNERS_ALIASES
   sig-api-machinery-leads:
@@ -48,15 +65,20 @@ aliases:
     - mrbobbytables
     - nikhita
   sig-docs-leads:
+    - irvifa
     - jimangel
     - kbarnard10
     - kbhawkey
     - sftim
-    - zacharysarah
   sig-instrumentation-leads:
     - brancz
     - ehashman
     - logicalhan
+  sig-k8s-infra-leads:
+    - ameukam
+    - dims
+    - spiffxp
+    - thockin
   sig-multicluster-leads:
     - pmorie
     - quinton-hoole
@@ -67,15 +89,12 @@ aliases:
   sig-node-leads:
     - dchen1107
     - derekwaynecarr
-  sig-pm-leads:
-    - calebamiles
-    - jdumars
-    - justaugustus
-    - lachie83
   sig-release-leads:
-    - calebamiles
+    - cpanato
+    - jeremyrickard
     - justaugustus
-    - tpepper
+    - puerco
+    - saschagrunert
   sig-scalability-leads:
     - mm4tt
     - shyamjvs
@@ -92,13 +111,15 @@ aliases:
     - saad-ali
     - xing-yang
   sig-testing-leads:
-    - fejta
+    - BenTheElder
+    - alvaroaleman
+    - cjwagner
     - spiffxp
     - stevekuznetsov
   sig-ui-leads:
     - floreks
-    - jeefy
     - maciaszczykm
+    - shu-mutou
   sig-usability-leads:
     - Rajakavitha1
     - hpandeycodeit
@@ -122,10 +143,6 @@ aliases:
     - cantbewong
     - cindyxing
     - dejanb
-  wg-k8s-infra-leads:
-    - bartsmykla
-    - dims
-    - spiffxp
   wg-lts-leads:
     - imkin
     - quinton-hoole
@@ -160,10 +177,10 @@ aliases:
     - phenixblue
   committee-code-of-conduct:
     - AevaOnline
-    - Bradamant3
-    - carolynvs
-    - jdumars
+    - celestehorgan
+    - karenhchu
     - tashimi
+    - tpepper
   committee-product-security:
     - cjcullen
     - joelsmith
@@ -203,20 +220,30 @@ aliases:
     - frapposelli
 ## END CUSTOM CONTENT
 
-  # copied from git.k8s.io/kubernetes/OWNERS_ALIASES
+  # Modified from https://kubernetes.io/releases/release-managers/#release-managers
+  #
+  # While most Release Managers are included in the reviewers group, approvals
+  # (especially for image pushing and container promotion jobs) are restricted
+  # to a rough subset of:
+  #
+  # - SIG Release Chairs/Technical Leads
+  # - Release Engineering subproject owners
+  # - Active Release Managers with deep experience maintaining our
+  #   k/test-infra jobs and overall CI Signal
+  #
   release-engineering-approvers:
-    - calebamiles # subproject owner
-    - justaugustus # subproject owner / Patch Release Team
-    - tpepper # subproject owner / Patch Release Team
+    - cpanato # SIG Technical Lead / RelEng subproject owner / Release Manager
+    - jeremyrickard # SIG Technical Lead / RelEng subproject owner
+    - justaugustus # SIG Chair / RelEng subproject owner / Release Manager
+    - puerco # SIG Technical Lead / RelEng subproject owner / Release Manager
+    - saschagrunert # SIG Chair / RelEng subproject owner / Release Manager
   release-engineering-reviewers:
-    - calebamiles # subproject owner
-    - cpanato # Branch Manager
-    - feiskyer # Patch Release Team
-    - hasheddan # Branch Manager
-    - hoegaarden # Patch Release Team
-    - justaugustus # subproject owner / Patch Release Team
-    - saschagrunert # Branch Manager
-    - tpepper # subproject owner / Patch Release Team
+    - cpanato # SIG Technical Lead / RelEng subproject owner / Release Manager
+    - jeremyrickard # SIG Technical Lead / RelEng subproject owner
+    - justaugustus # SIG Chair / RelEng subproject owner / Release Manager
+    - puerco # SIG Technical Lead / RelEng subproject owner / Release Manager
+    - saschagrunert # SIG Chair / RelEng subproject owner / Release Manager
+    - xmudrii # Release Manager
 
   # copied from git.k8s.io/enhancements/OWNERS_ALIASES
   enhancements-approvers:
@@ -244,7 +271,7 @@ aliases:
 
   # mostly copied from sigs.k8s.io/controller-runtime/OWNERS_ALIASES
   controller-runtime-admins:
-  - directxman12
+  - vincepri
   - mengqiy
 
   controller-runtime-maintainers:
@@ -252,9 +279,9 @@ aliases:
 
   controller-runtime-approvers:
   - gerred
+  - alvaroaleman
 
   controller-runtime-reviewers:
-  - alvaroaleman
   - alenkacz
   - vincepri
   - alexeldeib
@@ -265,12 +292,28 @@ aliases:
   # mostly copied from sigs.k8s.io/kubebuilder/OWNERS_ALIASES
   kubebuilder-admins:
   - mengqiy
-  - directxman12
+  - estroz
 
   kubebuilder-reviewers:
   - alexeldeib
 
-  kubebuilder-emeritus-approvers: 
+  kubebuilder-emeritus-approvers:
   - pwittrock
 
   # end sigs.k8s.io/kubebuilder/OWNERS_ALIASES
+
+  # copied from sigs.k8s.io/promo-tools/OWNERS_ALIASES
+  promo-tools-approvers:
+    - cpanato
+    - jeremyrickard
+    - justaugustus
+    - listx
+    - puerco
+    - saschagrunert
+  promo-tools-reviewers:
+    - cpanato
+    - jeremyrickard
+    - justaugustus
+    - listx
+    - puerco
+    - saschagrunert

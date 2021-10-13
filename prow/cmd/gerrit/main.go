@@ -18,53 +18,54 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/pjutil/pprof"
 
 	"k8s.io/test-infra/pkg/flagutil"
-	"k8s.io/test-infra/prow/config"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/gerrit/adapter"
 	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/interrupts"
-	"k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/logrusutil"
-	"k8s.io/test-infra/prow/pjutil"
 )
 
 type options struct {
-	cookiefilePath string
-	configPath     string
-	jobConfigPath  string
-	projects       client.ProjectsFlag
+	cookiefilePath     string
+	tokenPathOverride  string
+	config             configflagutil.ConfigOptions
+	projects           client.ProjectsFlag
+	projectsOptOutHelp client.ProjectsFlag
 	// lastSyncFallback is the path to sync the latest timestamp
 	// Can be /local/path, gs://path/to/object or s3://path/to/object.
-	lastSyncFallback string
-	dryRun           bool
-	kubernetes       prowflagutil.KubernetesOptions
-	storage          prowflagutil.StorageClientOptions
+	lastSyncFallback       string
+	dryRun                 bool
+	kubernetes             prowflagutil.KubernetesOptions
+	storage                prowflagutil.StorageClientOptions
+	instrumentationOptions prowflagutil.InstrumentationOptions
 }
 
-func (o *options) Validate() error {
+func (o *options) validate() error {
 	if len(o.projects) == 0 {
 		return errors.New("--gerrit-projects must be set")
 	}
 
-	if o.cookiefilePath == "" {
+	if o.cookiefilePath != "" && o.tokenPathOverride != "" {
+		return fmt.Errorf("only one of --cookiefile=%q --token-path=%q allowed, not both", o.cookiefilePath, o.tokenPathOverride)
+	}
+	if o.cookiefilePath == "" && o.tokenPathOverride == "" {
 		logrus.Info("--cookiefile is not set, using anonymous authentication")
 	}
 
-	if o.configPath == "" {
-		return errors.New("--config-path must be set")
+	if err := o.config.Validate(o.dryRun); err != nil {
+		return err
 	}
 
 	if o.lastSyncFallback == "" {
@@ -72,10 +73,10 @@ func (o *options) Validate() error {
 	}
 
 	if strings.HasPrefix(o.lastSyncFallback, "gs://") && !o.storage.HasGCSCredentials() {
-		logrus.WithField("last-sync-fallback", o.lastSyncFallback).Warn("--gcs-credentials-file unset, will try and access with a default service account")
+		logrus.WithField("last-sync-fallback", o.lastSyncFallback).Info("--gcs-credentials-file unset, will try and access with a default service account")
 	}
 	if strings.HasPrefix(o.lastSyncFallback, "s3://") && !o.storage.HasS3Credentials() {
-		logrus.WithField("last-sync-fallback", o.lastSyncFallback).Warn("--s3-credentials-file unset, will try and access with auto-discovered credentials")
+		logrus.WithField("last-sync-fallback", o.lastSyncFallback).Info("--s3-credentials-file unset, will try and access with auto-discovered credentials")
 	}
 	return nil
 }
@@ -83,163 +84,32 @@ func (o *options) Validate() error {
 func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	var o options
 	o.projects = client.ProjectsFlag{}
-	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
-	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs")
+	o.projectsOptOutHelp = client.ProjectsFlag{}
 	fs.StringVar(&o.cookiefilePath, "cookiefile", "", "Path to git http.cookiefile, leave empty for anonymous")
-	fs.Var(&o.projects, "gerrit-projects", "Set of gerrit repos to monitor on a host example: --gerrit-host=https://android.googlesource.com=platform/build,toolchain/llvm, repeat fs for each host")
+	fs.Var(&o.projects, "gerrit-projects", "(Deprecated 2022/03, set under Gerrit in prow config.yaml) Set of gerrit repos to monitor on a host example: --gerrit-host=https://android.googlesource.com=platform/build,toolchain/llvm, repeat fs for each host. Setting is deprecated, no effect if configured globally")
+	fs.Var(&o.projectsOptOutHelp, "gerrit-projects-opt-out-help", "(Deprecated 2022/03, set under Gerrit in prow config.yaml) Set of gerrit repos that do not need help information for running the tests to be commented on their changes. The format is the same as --gerrit-projects. Setting is deprecated, no effect if configured globally")
 	fs.StringVar(&o.lastSyncFallback, "last-sync-fallback", "", "The /local/path, gs://path/to/object or s3://path/to/object to sync the latest timestamp")
 	fs.BoolVar(&o.dryRun, "dry-run", false, "Run in dry-run mode, performing no modifying actions.")
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.storage} {
+	fs.StringVar(&o.tokenPathOverride, "token-path", "", "Force the use of the token in this path, use with gcloud auth print-access-token")
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.storage, &o.instrumentationOptions, &o.config} {
 		group.AddFlags(fs)
 	}
 	fs.Parse(args)
 	return o
 }
 
-// opener has methods to read and write paths
-type opener interface {
-	Reader(ctx context.Context, path string) (io.ReadCloser, error)
-	Writer(ctx context.Context, path string, opts ...io.WriterOptions) (io.WriteCloser, error)
-}
-
-type syncTime struct {
-	val    client.LastSyncState
-	lock   sync.RWMutex
-	path   string
-	opener opener
-	ctx    context.Context
-}
-
-func (st *syncTime) init(hostProjects client.ProjectsFlag) error {
-	timeNow := time.Now()
-	logrus.WithField("projects", hostProjects).Info(st.val)
-	st.lock.RLock()
-	zero := st.val == nil
-	st.lock.RUnlock()
-	if !zero {
-		return nil
-	}
-	st.lock.Lock()
-	defer st.lock.Unlock()
-	if st.val != nil {
-		return nil // Someone else set it while we waited for the write lock
-	}
-	state, err := st.currentState()
-	if err != nil {
-		return err
-	}
-	if state != nil {
-		// Initialize new hosts, projects
-		for host, projects := range hostProjects {
-			if _, ok := state[host]; !ok {
-				state[host] = map[string]time.Time{}
-			}
-			for _, project := range projects {
-				if _, ok := state[host][project]; !ok {
-					state[host][project] = timeNow
-				}
-			}
-		}
-		st.val = state
-		logrus.WithField("lastSync", st.val).Infoln("Initialized successfully from lastSyncFallback.")
-	} else {
-		targetState := client.LastSyncState{}
-		for host, projects := range hostProjects {
-			targetState[host] = map[string]time.Time{}
-			for _, project := range projects {
-				targetState[host][project] = timeNow
-			}
-		}
-		st.val = targetState
-	}
-	return nil
-}
-
-func (st *syncTime) currentState() (client.LastSyncState, error) {
-	r, err := st.opener.Reader(st.ctx, st.path)
-	if io.IsNotExist(err) {
-		logrus.Warnf("lastSyncFallback not found at %q", st.path)
-		return nil, nil
-	} else if err != nil {
-		return nil, fmt.Errorf("open: %v", err)
-	}
-	defer io.LogClose(r)
-	buf, err := ioutil.ReadAll(r)
-	if err != nil {
-		return nil, fmt.Errorf("read: %v", err)
-	}
-	var state client.LastSyncState
-	if err := json.Unmarshal(buf, &state); err != nil {
-		// Don't error on unmarshall error, let it default
-		logrus.WithField("lastSync", st.val).Warnln("Failed to unmarshal lastSyncFallback, resetting all last update times to current.")
-		return nil, nil
-	}
-	return state, nil
-}
-
-func (st *syncTime) Current() client.LastSyncState {
-	st.lock.RLock()
-	defer st.lock.RUnlock()
-	return st.val
-}
-
-func (st *syncTime) Update(newState client.LastSyncState) error {
-	st.lock.Lock()
-	defer st.lock.Unlock()
-
-	targetState := st.val.DeepCopy()
-
-	var changed bool
-	for host, newLastSyncs := range newState {
-		if _, ok := targetState[host]; !ok {
-			targetState[host] = map[string]time.Time{}
-		}
-		for project, newLastSync := range newLastSyncs {
-			currentLastSync, ok := targetState[host][project]
-			if !ok || currentLastSync.Before(newLastSync) {
-				targetState[host][project] = newLastSync
-				changed = true
-			}
-		}
-	}
-
-	if !changed {
-		return nil
-	}
-
-	w, err := st.opener.Writer(st.ctx, st.path)
-	if err != nil {
-		return fmt.Errorf("open for write %q: %v", st.path, err)
-	}
-	stateBytes, err := json.Marshal(targetState)
-	if err != nil {
-		return fmt.Errorf("marshall state: %v", err)
-	}
-	if _, err := fmt.Fprint(w, string(stateBytes)); err != nil {
-		io.LogClose(w)
-		return fmt.Errorf("write %q: %v", st.path, err)
-	}
-	if err := w.Close(); err != nil {
-		return fmt.Errorf("close %q: %v", st.path, err)
-	}
-	st.val = targetState
-	return nil
-}
-
 func main() {
 	logrusutil.ComponentInit()
 
-	defer interrupts.WaitForGracefulShutdown()
-
-	pjutil.ServePProf()
-
 	o := gatherOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:]...)
-	if err := o.Validate(); err != nil {
+	if err := o.validate(); err != nil {
 		logrus.Fatalf("Invalid options: %v", err)
 	}
 
-	ca := &config.Agent{}
-	if err := ca.Start(o.configPath, o.jobConfigPath); err != nil {
+	pprof.Instrument(o.instrumentationOptions)
+
+	ca, err := o.config.ConfigAgent()
+	if err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 	cfg := ca.Config
@@ -254,21 +124,12 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating opener")
 	}
-	st := syncTime{
-		path:   o.lastSyncFallback,
-		ctx:    ctx,
-		opener: op,
-	}
-	if err := st.init(o.projects); err != nil {
-		logrus.WithError(err).Fatal("Error initializing lastSyncFallback.")
-	}
-	c, err := adapter.NewController(&st, o.cookiefilePath, o.projects, prowJobClient, cfg)
-	if err != nil {
-		logrus.WithError(err).Fatal("Error creating gerrit client.")
-	}
+
+	c := adapter.NewController(ctx, prowJobClient, op, cfg, o.projects, o.projectsOptOutHelp, o.cookiefilePath, o.tokenPathOverride, o.lastSyncFallback)
 
 	logrus.Infof("Starting gerrit fetcher")
 
+	defer interrupts.WaitForGracefulShutdown()
 	interrupts.Tick(func() {
 		start := time.Now()
 		if err := c.Sync(); err != nil {

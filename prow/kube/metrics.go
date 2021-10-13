@@ -18,6 +18,7 @@ package kube
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/sirupsen/logrus"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
@@ -40,6 +41,8 @@ var (
 		"base_ref",
 		// the cluster the job runs on
 		"cluster",
+		// whether or not the job was a retest
+		"retest",
 	}
 	prowJobs = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "prowjobs",
@@ -60,10 +63,11 @@ type jobLabel struct {
 	repo         string
 	baseRef      string
 	cluster      string
+	retest       string
 }
 
 func (jl *jobLabel) values() []string {
-	return []string{jl.jobNamespace, jl.jobName, jl.jobType, jl.state, jl.org, jl.repo, jl.baseRef, jl.cluster}
+	return []string{jl.jobNamespace, jl.jobName, jl.jobType, jl.state, jl.org, jl.repo, jl.baseRef, jl.cluster, jl.retest}
 }
 
 func init() {
@@ -93,6 +97,12 @@ func getJobLabel(pj prowapi.ProwJob) jobLabel {
 		jl.baseRef = pj.Spec.ExtraRefs[0].BaseRef
 	}
 
+	if retest, exists := pj.ObjectMeta.Labels[RetestLabel]; exists && retest == "true" {
+		jl.retest = "true"
+	} else {
+		jl.retest = "false"
+	}
+
 	return jl
 }
 
@@ -113,7 +123,7 @@ var previousStates map[jobIdentifier]prowapi.ProwJobState
 
 // GatherProwJobMetrics gathers prometheus metrics for prowjobs.
 // Not threadsafe, ensure this is called serially.
-func GatherProwJobMetrics(current []prowapi.ProwJob) {
+func GatherProwJobMetrics(l *logrus.Entry, current []prowapi.ProwJob) {
 	// This may be racing with the prometheus server but we need to remove
 	// stale metrics like triggered or pending jobs that are now complete.
 	prowJobs.Reset()

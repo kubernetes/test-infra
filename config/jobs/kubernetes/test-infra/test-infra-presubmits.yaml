@@ -10,7 +10,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-2.0.0
+      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20210806-38e1be0-test-infra
         command:
         - hack/bazel.sh
         args:
@@ -18,6 +18,9 @@ presubmits:
         - --config=ci
         - --nobuild_tests_only
         - //...
+        env:
+        - name: BAZEL_FETCH_PLEASE
+          value: //...
     annotations:
       testgrid-dashboards: presubmits-test-infra
       testgrid-tab-name: bazel
@@ -25,13 +28,13 @@ presubmits:
   - name: pull-test-infra-gubernator
     branches:
     - master
-    run_if_changed: 'gubernator|config/prow/config.yaml'
+    run_if_changed: 'gubernator|config/prow/config.yaml|config/jobs/.+\.yaml'
     decorate: true
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gubernator:0.4
+      - image: gcr.io/k8s-testimages/gubernator:v20200824-5d057db
         command:
         - ./gubernator/test-gubernator.sh
         env:
@@ -50,7 +53,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-experimental
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-experimental
         command:
         - ./hack/verify-file-perms.sh
     annotations:
@@ -73,12 +76,13 @@ presubmits:
       testgrid-dashboards: presubmits-test-infra
       testgrid-tab-name: verify-yaml
 
+  # Please keep this in sync with the `ci-test-infra-prow-checkconfig` job
   - name: pull-test-infra-prow-checkconfig
     decorate: true
     run_if_changed: '^(config/prow/(config|plugins).yaml$|config/jobs/.*.yaml$)'
     spec:
       containers:
-      - image: gcr.io/k8s-prow/checkconfig:v20200501-e6124e633
+      - image: gcr.io/k8s-prow/checkconfig:v20211012-ba1fa86530
         command:
         - /checkconfig
         args:
@@ -93,5 +97,74 @@ presubmits:
         - --warnings=missing-trigger
         - --warnings=validate-urls
         - --warnings=unknown-fields
+        - --warnings=duplicate-job-refs
     annotations:
       testgrid-dashboards: presubmits-test-infra
+  - name: pull-test-infra-integration
+    branches:
+    - master
+    always_run: true # TODO(fejta): merge into bazel test //...
+    decorate: true
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-test-infra
+        command:
+        - runner.sh
+        args:
+        - ./prow/test/integration/integration-test.sh
+        - --config=ci
+        env:
+        - name: BAZEL_FETCH_PLEASE
+          value: "true" # integration test fetches a very specific set of targets, define them in integration-test.sh instead of here
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 1.9 # Peak usage around 1.5 cpu
+            memory: "8Gi" # Rough estimated usage of memory
+    annotations:
+      testgrid-dashboards: presubmits-test-infra
+      testgrid-tab-name: integration
+  - name: pull-test-infra-unit-test
+    branches:
+    - master
+    always_run: true
+    decorate: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-test-infra
+        command:
+        - runner.sh
+        args:
+        - make
+        - unit
+    annotations:
+      testgrid-dashboards: presubmits-test-infra
+      testgrid-tab-name: unit-test
+
+
+  # Optional job for testing new build system.
+  # For testing a new make rule, simply pointing `make test` to the new make rule only.
+  # Once a make rule is merged the test should be moved to another job that's required.
+  - name: pull-test-infra-test-beta
+    branches:
+    - master
+    always_run: false
+    decorate: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-test-infra
+        command:
+        - runner.sh
+        args:
+        - make
+        - test
+    annotations:
+      testgrid-dashboards: presubmits-test-infra
+      testgrid-tab-name: make-test-beta

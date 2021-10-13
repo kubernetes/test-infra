@@ -8,7 +8,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=github.com/$(REPO_OWNER)/$(REPO_NAME)=$(PULL_REFS)"
@@ -39,7 +39,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=github.com/$(REPO_OWNER)/$(REPO_NAME)=$(PULL_REFS)"
@@ -67,7 +67,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20200205-602500d
+      - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20210930-b6c4097796
         args:
         - "--repo=github.com/$(REPO_OWNER)/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"

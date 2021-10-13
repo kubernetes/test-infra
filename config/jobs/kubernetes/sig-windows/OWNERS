@@ -1,17 +1,19 @@
 reviewers:
-- pjh
-- PatrickLang
-- michmike
-- benmoss
+- chewong
 - ddebroy
-- yliaog
+- ibabou
+- jayunit100
+- jsturtevant
+- marosset
+- pjh
 approvers:
-- pjh
-- PatrickLang
-- michmike
-- benmoss
+- chewong
 - ddebroy
-- yliaog
+- ibabou
+- jayunit100
+- jsturtevant
+- marosset
+- pjh
 
 labels:
 - sig/windows

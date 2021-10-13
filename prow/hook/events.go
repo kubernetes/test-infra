@@ -17,6 +17,8 @@ limitations under the License.
 package hook
 
 import (
+	"fmt"
+	"runtime/debug"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -58,6 +60,11 @@ var (
 		github.PullRequestActionReopened:             true,
 		github.PullRequestActionSynchronize:          true,
 		github.PullRequestActionReadyForReview:       true,
+		github.PullRequestActionConvertedToDraft:     true,
+		github.PullRequestActionLocked:               true,
+		github.PullRequestActionUnlocked:             true,
+		github.PullRequestActionAutoMergeEnabled:     true,
+		github.PullRequestActionAutoMergeDisabled:    true,
 	}
 )
 
@@ -76,7 +83,7 @@ func (s *Server) handleReviewEvent(l *logrus.Entry, re github.ReviewEvent) {
 		s.wg.Add(1)
 		go func(p string, h plugins.ReviewEventHandler) {
 			defer s.wg.Done()
-			agent := plugins.NewAgent(s.ConfigAgent, s.Plugins, s.ClientAgent, s.Metrics.Metrics, l, p)
+			agent := plugins.NewAgent(s.ConfigAgent, s.Plugins, s.ClientAgent, re.Repo.Owner.Login, s.Metrics.Metrics, l, p)
 			agent.InitializeCommentPruner(
 				re.Repo.Owner.Login,
 				re.Repo.Name,
@@ -84,7 +91,7 @@ func (s *Server) handleReviewEvent(l *logrus.Entry, re github.ReviewEvent) {
 			)
 			start := time.Now()
 			labels := prometheus.Labels{"event_type": l.Data[eventTypeField].(string), "action": string(re.Action), "plugin": p}
-			if err := h(agent, re); err != nil {
+			if err := errorOnPanic(func() error { return h(agent, re) }); err != nil {
 				agent.Logger.WithError(err).Error("Error handling ReviewEvent.")
 				s.Metrics.PluginHandleErrors.With(labels).Inc()
 			}
@@ -100,6 +107,7 @@ func (s *Server) handleReviewEvent(l *logrus.Entry, re github.ReviewEvent) {
 		l,
 		&github.GenericCommentEvent{
 			GUID:         re.GUID,
+			NodeID:       re.Review.NodeID,
 			IsPR:         true,
 			Action:       action,
 			Body:         re.Review.Body,
@@ -110,6 +118,7 @@ func (s *Server) handleReviewEvent(l *logrus.Entry, re github.ReviewEvent) {
 			IssueAuthor:  re.PullRequest.User,
 			Assignees:    re.PullRequest.Assignees,
 			IssueState:   re.PullRequest.State,
+			IssueTitle:   re.PullRequest.Title,
 			IssueBody:    re.PullRequest.Body,
 			IssueHTMLURL: re.PullRequest.HTMLURL,
 		},
@@ -131,7 +140,7 @@ func (s *Server) handleReviewCommentEvent(l *logrus.Entry, rce github.ReviewComm
 		s.wg.Add(1)
 		go func(p string, h plugins.ReviewCommentEventHandler) {
 			defer s.wg.Done()
-			agent := plugins.NewAgent(s.ConfigAgent, s.Plugins, s.ClientAgent, s.Metrics.Metrics, l, p)
+			agent := plugins.NewAgent(s.ConfigAgent, s.Plugins, s.ClientAgent, rce.Repo.Owner.Login, s.Metrics.Metrics, l, p)
 			agent.InitializeCommentPruner(
 				rce.Repo.Owner.Login,
 				rce.Repo.Name,
@@ -139,7 +148,7 @@ func (s *Server) handleReviewCommentEvent(l *logrus.Entry, rce github.ReviewComm
 			)
 			start := time.Now()
 			labels := prometheus.Labels{"event_type": l.Data[eventTypeField].(string), "action": string(rce.Action), "plugin": p}
-			if err := h(agent, rce); err != nil {
+			if err := errorOnPanic(func() error { return h(agent, rce) }); err != nil {
 				agent.Logger.WithError(err).Error("Error handling ReviewCommentEvent.")
 				s.Metrics.PluginHandleErrors.With(labels).Inc()
 			}
@@ -155,7 +164,9 @@ func (s *Server) handleReviewCommentEvent(l *logrus.Entry, rce github.ReviewComm
 		l,
 		&github.GenericCommentEvent{
 			GUID:         rce.GUID,
+			NodeID:       rce.Comment.NodeID,
 			IsPR:         true,
+			CommentID:    intPtr(rce.Comment.ID),
 			Action:       action,
 			Body:         rce.Comment.Body,
 			HTMLURL:      rce.Comment.HTMLURL,
@@ -165,6 +176,7 @@ func (s *Server) handleReviewCommentEvent(l *logrus.Entry, rce github.ReviewComm
 			IssueAuthor:  rce.PullRequest.User,
 			Assignees:    rce.PullRequest.Assignees,
 			IssueState:   rce.PullRequest.State,
+			IssueTitle:   rce.PullRequest.Title,
 			IssueBody:    rce.PullRequest.Body,
 			IssueHTMLURL: rce.PullRequest.HTMLURL,
 		},
@@ -185,7 +197,7 @@ func (s *Server) handlePullRequestEvent(l *logrus.Entry, pr github.PullRequestEv
 		s.wg.Add(1)
 		go func(p string, h plugins.PullRequestHandler) {
 			defer s.wg.Done()
-			agent := plugins.NewAgent(s.ConfigAgent, s.Plugins, s.ClientAgent, s.Metrics.Metrics, l, p)
+			agent := plugins.NewAgent(s.ConfigAgent, s.Plugins, s.ClientAgent, pr.Repo.Owner.Login, s.Metrics.Metrics, l, p)
 			agent.InitializeCommentPruner(
 				pr.Repo.Owner.Login,
 				pr.Repo.Name,
@@ -193,7 +205,7 @@ func (s *Server) handlePullRequestEvent(l *logrus.Entry, pr github.PullRequestEv
 			)
 			start := time.Now()
 			labels := prometheus.Labels{"event_type": l.Data[eventTypeField].(string), "action": string(pr.Action), "plugin": p}
-			if err := h(agent, pr); err != nil {
+			if err := errorOnPanic(func() error { return h(agent, pr) }); err != nil {
 				agent.Logger.WithError(err).Error("Error handling PullRequestEvent.")
 				s.Metrics.PluginHandleErrors.With(labels).Inc()
 			}
@@ -211,6 +223,7 @@ func (s *Server) handlePullRequestEvent(l *logrus.Entry, pr github.PullRequestEv
 		l,
 		&github.GenericCommentEvent{
 			ID:           pr.PullRequest.ID,
+			NodeID:       pr.PullRequest.NodeID,
 			GUID:         pr.GUID,
 			IsPR:         true,
 			Action:       action,
@@ -222,6 +235,7 @@ func (s *Server) handlePullRequestEvent(l *logrus.Entry, pr github.PullRequestEv
 			IssueAuthor:  pr.PullRequest.User,
 			Assignees:    pr.PullRequest.Assignees,
 			IssueState:   pr.PullRequest.State,
+			IssueTitle:   pr.PullRequest.Title,
 			IssueBody:    pr.PullRequest.Body,
 			IssueHTMLURL: pr.PullRequest.HTMLURL,
 		},
@@ -241,10 +255,10 @@ func (s *Server) handlePushEvent(l *logrus.Entry, pe github.PushEvent) {
 		s.wg.Add(1)
 		go func(p string, h plugins.PushEventHandler) {
 			defer s.wg.Done()
-			agent := plugins.NewAgent(s.ConfigAgent, s.Plugins, s.ClientAgent, s.Metrics.Metrics, l, p)
+			agent := plugins.NewAgent(s.ConfigAgent, s.Plugins, s.ClientAgent, pe.Repo.Owner.Login, s.Metrics.Metrics, l, p)
 			start := time.Now()
 			labels := prometheus.Labels{"event_type": l.Data[eventTypeField].(string), "action": "none", "plugin": p}
-			if err := h(agent, pe); err != nil {
+			if err := errorOnPanic(func() error { return h(agent, pe) }); err != nil {
 				agent.Logger.WithError(err).Error("Error handling PushEvent.")
 				s.Metrics.PluginHandleErrors.With(labels).Inc()
 			}
@@ -267,7 +281,7 @@ func (s *Server) handleIssueEvent(l *logrus.Entry, i github.IssueEvent) {
 		s.wg.Add(1)
 		go func(p string, h plugins.IssueHandler) {
 			defer s.wg.Done()
-			agent := plugins.NewAgent(s.ConfigAgent, s.Plugins, s.ClientAgent, s.Metrics.Metrics, l, p)
+			agent := plugins.NewAgent(s.ConfigAgent, s.Plugins, s.ClientAgent, i.Repo.Owner.Login, s.Metrics.Metrics, l, p)
 			agent.InitializeCommentPruner(
 				i.Repo.Owner.Login,
 				i.Repo.Name,
@@ -275,7 +289,7 @@ func (s *Server) handleIssueEvent(l *logrus.Entry, i github.IssueEvent) {
 			)
 			start := time.Now()
 			labels := prometheus.Labels{"event_type": l.Data[eventTypeField].(string), "action": string(i.Action), "plugin": p}
-			if err := h(agent, i); err != nil {
+			if err := errorOnPanic(func() error { return h(agent, i) }); err != nil {
 				agent.Logger.WithError(err).Error("Error handling IssueEvent.")
 				s.Metrics.PluginHandleErrors.With(labels).Inc()
 			}
@@ -293,6 +307,7 @@ func (s *Server) handleIssueEvent(l *logrus.Entry, i github.IssueEvent) {
 		l,
 		&github.GenericCommentEvent{
 			ID:           i.Issue.ID,
+			NodeID:       i.Issue.NodeID,
 			GUID:         i.GUID,
 			IsPR:         i.Issue.IsPullRequest(),
 			Action:       action,
@@ -304,6 +319,7 @@ func (s *Server) handleIssueEvent(l *logrus.Entry, i github.IssueEvent) {
 			IssueAuthor:  i.Issue.User,
 			Assignees:    i.Issue.Assignees,
 			IssueState:   i.Issue.State,
+			IssueTitle:   i.Issue.Title,
 			IssueBody:    i.Issue.Body,
 			IssueHTMLURL: i.Issue.HTMLURL,
 		},
@@ -324,7 +340,7 @@ func (s *Server) handleIssueCommentEvent(l *logrus.Entry, ic github.IssueComment
 		s.wg.Add(1)
 		go func(p string, h plugins.IssueCommentHandler) {
 			defer s.wg.Done()
-			agent := plugins.NewAgent(s.ConfigAgent, s.Plugins, s.ClientAgent, s.Metrics.Metrics, l, p)
+			agent := plugins.NewAgent(s.ConfigAgent, s.Plugins, s.ClientAgent, ic.Repo.Owner.Login, s.Metrics.Metrics, l, p)
 			agent.InitializeCommentPruner(
 				ic.Repo.Owner.Login,
 				ic.Repo.Name,
@@ -332,7 +348,7 @@ func (s *Server) handleIssueCommentEvent(l *logrus.Entry, ic github.IssueComment
 			)
 			start := time.Now()
 			labels := prometheus.Labels{"event_type": l.Data[eventTypeField].(string), "action": string(ic.Action), "plugin": p}
-			if err := h(agent, ic); err != nil {
+			if err := errorOnPanic(func() error { return h(agent, ic) }); err != nil {
 				agent.Logger.WithError(err).Error("Error handling IssueCommentEvent.")
 				s.Metrics.PluginHandleErrors.With(labels).Inc()
 			}
@@ -348,6 +364,8 @@ func (s *Server) handleIssueCommentEvent(l *logrus.Entry, ic github.IssueComment
 		l,
 		&github.GenericCommentEvent{
 			ID:           ic.Issue.ID,
+			NodeID:       ic.Issue.NodeID,
+			CommentID:    intPtr(ic.Comment.ID),
 			GUID:         ic.GUID,
 			IsPR:         ic.Issue.IsPullRequest(),
 			Action:       action,
@@ -359,6 +377,7 @@ func (s *Server) handleIssueCommentEvent(l *logrus.Entry, ic github.IssueComment
 			IssueAuthor:  ic.Issue.User,
 			Assignees:    ic.Issue.Assignees,
 			IssueState:   ic.Issue.State,
+			IssueTitle:   ic.Issue.Title,
 			IssueBody:    ic.Issue.Body,
 			IssueHTMLURL: ic.Issue.HTMLURL,
 		},
@@ -380,10 +399,10 @@ func (s *Server) handleStatusEvent(l *logrus.Entry, se github.StatusEvent) {
 		s.wg.Add(1)
 		go func(p string, h plugins.StatusEventHandler) {
 			defer s.wg.Done()
-			agent := plugins.NewAgent(s.ConfigAgent, s.Plugins, s.ClientAgent, s.Metrics.Metrics, l, p)
+			agent := plugins.NewAgent(s.ConfigAgent, s.Plugins, s.ClientAgent, se.Repo.Owner.Login, s.Metrics.Metrics, l, p)
 			start := time.Now()
 			labels := prometheus.Labels{"event_type": l.Data[eventTypeField].(string), "action": "none", "plugin": p}
-			if err := h(agent, se); err != nil {
+			if err := errorOnPanic(func() error { return h(agent, se) }); err != nil {
 				agent.Logger.WithError(err).Error("Error handling StatusEvent.")
 				s.Metrics.PluginHandleErrors.With(labels).Inc()
 			}
@@ -412,7 +431,7 @@ func (s *Server) handleGenericComment(l *logrus.Entry, ce *github.GenericComment
 		s.wg.Add(1)
 		go func(p string, h plugins.GenericCommentHandler) {
 			defer s.wg.Done()
-			agent := plugins.NewAgent(s.ConfigAgent, s.Plugins, s.ClientAgent, s.Metrics.Metrics, l, p)
+			agent := plugins.NewAgent(s.ConfigAgent, s.Plugins, s.ClientAgent, ce.Repo.Owner.Login, s.Metrics.Metrics, l, p)
 			agent.InitializeCommentPruner(
 				ce.Repo.Owner.Login,
 				ce.Repo.Name,
@@ -420,11 +439,24 @@ func (s *Server) handleGenericComment(l *logrus.Entry, ce *github.GenericComment
 			)
 			start := time.Now()
 			labels := prometheus.Labels{"event_type": l.Data[eventTypeField].(string), "action": string(ce.Action), "plugin": p}
-			if err := h(agent, *ce); err != nil {
+			if err := errorOnPanic(func() error { return h(agent, *ce) }); err != nil {
 				agent.Logger.WithError(err).Error("Error handling GenericCommentEvent.")
 				s.Metrics.PluginHandleErrors.With(labels).Inc()
 			}
 			s.Metrics.PluginHandleDuration.With(labels).Observe(time.Since(start).Seconds())
 		}(p, h)
 	}
+}
+
+func intPtr(i int) *int {
+	return &i
+}
+
+func errorOnPanic(f func() error) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("panic caught: %v. stack is: %s", r, debug.Stack())
+		}
+	}()
+	return f()
 }

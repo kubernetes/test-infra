@@ -3,18 +3,24 @@
 reviewers:
 - adelina-t
 - andyzhangx
-- claudiubelu
-- benmoss
 - chewong
+- claudiubelu
+- ddebroy
 - feiskyer
+- jayunit100
+- jsturtevant
 - marosset
-- PatrickLang
 approvers:
 - adelina-t
 - andyzhangx
-- claudiubelu
 - benmoss
 - chewong
+- claudiubelu
+- ddebroy
 - feiskyer
+- jayunit100
+- jsturtevant
 - marosset
-- PatrickLang
+
+labels:
+- sig/windows

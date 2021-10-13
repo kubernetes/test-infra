@@ -35,10 +35,10 @@ import (
 func createTempFile() (string, error) {
 	outFile, err := ioutil.TempFile("", "dummybenchmarks")
 	if err != nil {
-		return "", fmt.Errorf("create error: %v", err)
+		return "", fmt.Errorf("create error: %w", err)
 	}
 	if err := outFile.Close(); err != nil {
-		return "", fmt.Errorf("close error: %v", err)
+		return "", fmt.Errorf("close error: %w", err)
 	}
 	return outFile.Name(), nil
 }

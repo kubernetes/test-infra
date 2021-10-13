@@ -54,6 +54,8 @@ func (s *simplifier) Simplify(path string) string {
 type Node struct {
 	PathFragment
 	children []Node
+	// Greedy makes the node match all remnaining path elements as well
+	Greedy bool
 }
 
 // PathFragment Interface for tree leafs to help resolve paths
@@ -89,6 +91,13 @@ func L(fragment string, children ...Node) Node {
 	}
 }
 
+func VGreedy(fragment string) Node {
+	return Node{
+		PathFragment: variable(fragment),
+		Greedy:       true,
+	}
+}
+
 func V(fragment string, children ...Node) Node {
 	return Node{
 		PathFragment: variable(fragment),
@@ -101,7 +110,7 @@ func resolve(parent Node, path []string) (string, bool) {
 		return "", false
 	}
 	representation := parent.Represent()
-	if len(path) == 1 {
+	if len(path) == 1 || parent.Greedy {
 		return representation, true
 	}
 	for _, child := range parent.children {

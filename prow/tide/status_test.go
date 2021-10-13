@@ -17,12 +17,16 @@ limitations under the License.
 package tide
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"sort"
 	"strings"
 	"testing"
 
 	"github.com/go-test/deep"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -42,21 +46,26 @@ func TestExpectedStatus(t *testing.T) {
 	testcases := []struct {
 		name string
 
-		baseref           string
-		branchWhitelist   []string
-		branchBlacklist   []string
-		sameBranchReqs    bool
-		labels            []string
-		author            string
-		firstQueryAuthor  string
-		secondQueryAuthor string
-		milestone         string
-		contexts          []Context
-		inPool            bool
-		blocks            []int
-		prowJobs          []runtime.Object
-		requiredContexts  []string
-		mergeConflicts    bool
+		baseref               string
+		branchAllowList       []string
+		branchDenyList        []string
+		sameBranchReqs        bool
+		labels                []string
+		author                string
+		firstQueryAuthor      string
+		secondQueryAuthor     string
+		milestone             string
+		contexts              []Context
+		checkRuns             []CheckRun
+		inPool                bool
+		blocks                []int
+		prowJobs              []runtime.Object
+		requiredContexts      []string
+		mergeConflicts        bool
+		displayAllTideQueries bool
+		additionalTideQueries []config.TideQuery
+		hasApprovingReview    bool
+		singleQuery           bool
 
 		state string
 		desc  string
@@ -128,12 +137,75 @@ func TestExpectedStatus(t *testing.T) {
 			desc:  fmt.Sprintf(statusNotInPool, " Needs need-1 label."),
 		},
 		{
-			name:            "against excluded branch",
-			baseref:         "bad",
-			branchBlacklist: []string{"bad"},
-			sameBranchReqs:  true,
-			labels:          neededLabels,
-			inPool:          false,
+			name:                  "mention all possible queries when opted in",
+			labels:                append(append([]string{}, neededLabels[1:]...), forbiddenLabels[0]),
+			author:                "batman",
+			firstQueryAuthor:      "batman",
+			secondQueryAuthor:     "batman",
+			milestone:             "v1.0",
+			inPool:                false,
+			displayAllTideQueries: true,
+
+			state: github.StatusPending,
+			desc:  fmt.Sprintf(statusNotInPool, " Needs need-1 label OR Needs 1, 2, 3, 4, 5, 6, 7 labels."),
+		},
+		{
+			name:                  "displayAllTideQueries but only one query",
+			labels:                append(append([]string{}, neededLabels[1:]...), forbiddenLabels[0]),
+			author:                "batman",
+			firstQueryAuthor:      "batman",
+			secondQueryAuthor:     "batman",
+			milestone:             "v1.0",
+			inPool:                false,
+			displayAllTideQueries: true,
+			singleQuery:           true,
+
+			state: github.StatusPending,
+			desc:  fmt.Sprintf(statusNotInPool, " Needs need-1 label."),
+		},
+		{
+			name:                  "displayAllTideQueries when there is no matching query",
+			baseref:               "bad",
+			branchDenyList:        []string{"bad"},
+			sameBranchReqs:        true,
+			labels:                append(append([]string{}, neededLabels[1:]...), forbiddenLabels[0]),
+			author:                "batman",
+			firstQueryAuthor:      "batman",
+			secondQueryAuthor:     "batman",
+			milestone:             "v1.0",
+			inPool:                false,
+			displayAllTideQueries: true,
+
+			state: github.StatusPending,
+			desc:  fmt.Sprintf(statusNotInPool, " No Tide query for branch bad found."),
+		},
+		{
+			name:           "displayAllTideQueries shows only queries matching the branch",
+			baseref:        "main",
+			branchDenyList: []string{"main"},
+			sameBranchReqs: true,
+			additionalTideQueries: []config.TideQuery{{
+				Orgs:   []string{""},
+				Labels: []string{"good-to-go"},
+			}},
+			labels:                append(append([]string{}, neededLabels[1:]...), forbiddenLabels[0]),
+			author:                "batman",
+			firstQueryAuthor:      "batman",
+			secondQueryAuthor:     "batman",
+			milestone:             "v1.0",
+			inPool:                false,
+			displayAllTideQueries: true,
+
+			state: github.StatusPending,
+			desc:  fmt.Sprintf(statusNotInPool, " Needs good-to-go label."),
+		},
+		{
+			name:           "against excluded branch",
+			baseref:        "bad",
+			branchDenyList: []string{"bad"},
+			sameBranchReqs: true,
+			labels:         neededLabels,
+			inPool:         false,
 
 			state: github.StatusPending,
 			desc:  fmt.Sprintf(statusNotInPool, " Merging to branch bad is forbidden."),
@@ -141,7 +213,7 @@ func TestExpectedStatus(t *testing.T) {
 		{
 			name:            "not against included branch",
 			baseref:         "bad",
-			branchWhitelist: []string{"good"},
+			branchAllowList: []string{"good"},
 			sameBranchReqs:  true,
 			labels:          neededLabels,
 			inPool:          false,
@@ -152,7 +224,7 @@ func TestExpectedStatus(t *testing.T) {
 		{
 			name:              "choose query for correct branch",
 			baseref:           "bad",
-			branchWhitelist:   []string{"good"},
+			branchAllowList:   []string{"good"},
 			author:            "batman",
 			firstQueryAuthor:  "batman",
 			secondQueryAuthor: "batman",
@@ -164,7 +236,7 @@ func TestExpectedStatus(t *testing.T) {
 			desc:  fmt.Sprintf(statusNotInPool, " Needs 1, 2, 3, 4, 5, 6, 7 labels."),
 		},
 		{
-			name:              "only failed tide context",
+			name:              "tides own context failed but is ignored",
 			labels:            neededLabels,
 			author:            "batman",
 			firstQueryAuthor:  "batman",
@@ -173,8 +245,8 @@ func TestExpectedStatus(t *testing.T) {
 			contexts:          []Context{{Context: githubql.String(statusContext), State: githubql.StatusStateError}},
 			inPool:            false,
 
-			state: github.StatusPending,
-			desc:  fmt.Sprintf(statusNotInPool, ""),
+			state: github.StatusSuccess,
+			desc:  statusInPool,
 		},
 		{
 			name:              "single bad context",
@@ -190,6 +262,136 @@ func TestExpectedStatus(t *testing.T) {
 			desc:  fmt.Sprintf(statusNotInPool, " Job job-name has not succeeded."),
 		},
 		{
+			name:              "single bad checkrun",
+			labels:            neededLabels,
+			checkRuns:         []CheckRun{{Name: githubql.String("job-name"), Status: checkRunStatusCompleted, Conclusion: githubql.String(githubql.StatusStateFailure)}},
+			author:            "batman",
+			firstQueryAuthor:  "batman",
+			secondQueryAuthor: "batman",
+			milestone:         "v1.0",
+			inPool:            false,
+
+			state: github.StatusPending,
+			desc:  fmt.Sprintf(statusNotInPool, " Job job-name has not succeeded."),
+		},
+		{
+			name:              "single good checkrun",
+			labels:            neededLabels,
+			checkRuns:         []CheckRun{{Name: githubql.String("job-name"), Status: checkRunStatusCompleted, Conclusion: githubql.String(githubql.StatusStateSuccess)}},
+			author:            "batman",
+			firstQueryAuthor:  "batman",
+			secondQueryAuthor: "batman",
+			milestone:         "v1.0",
+			inPool:            true,
+
+			state: github.StatusSuccess,
+			desc:  statusInPool,
+		},
+		{
+			name:   "multiple good checkruns",
+			labels: neededLabels,
+			checkRuns: []CheckRun{
+				{Name: githubql.String("job-name"), Status: checkRunStatusCompleted, Conclusion: githubql.String(githubql.StatusStateSuccess)},
+				{Name: githubql.String("another-job"), Status: checkRunStatusCompleted, Conclusion: githubql.String(githubql.StatusStateSuccess)},
+			},
+			author:            "batman",
+			firstQueryAuthor:  "batman",
+			secondQueryAuthor: "batman",
+			milestone:         "v1.0",
+			inPool:            true,
+
+			state: github.StatusSuccess,
+			desc:  statusInPool,
+		},
+		{
+			name:   "mix of good and bad checkruns",
+			labels: neededLabels,
+			checkRuns: []CheckRun{
+				{Name: githubql.String("job-name"), Status: checkRunStatusCompleted, Conclusion: githubql.String(githubql.StatusStateSuccess)},
+				{Name: githubql.String("another-job"), Status: checkRunStatusCompleted, Conclusion: githubql.String(githubql.StatusStateFailure)},
+			},
+			author:            "batman",
+			firstQueryAuthor:  "batman",
+			secondQueryAuthor: "batman",
+			milestone:         "v1.0",
+			inPool:            false,
+
+			state: github.StatusPending,
+			desc:  fmt.Sprintf(statusNotInPool, " Job another-job has not succeeded."),
+		},
+		{
+			name:   "mix of good status contexts and checkruns",
+			labels: neededLabels,
+			checkRuns: []CheckRun{
+				{Name: githubql.String("job-name"), Status: checkRunStatusCompleted, Conclusion: githubql.String(githubql.StatusStateSuccess)},
+			},
+			contexts: []Context{
+				{Context: githubql.String("other-job-name"), State: githubql.StatusStateSuccess},
+			},
+			author:            "batman",
+			firstQueryAuthor:  "batman",
+			secondQueryAuthor: "batman",
+			milestone:         "v1.0",
+			inPool:            true,
+
+			state: github.StatusSuccess,
+			desc:  statusInPool,
+		},
+		{
+			name:   "mix of bad status contexts and checkruns",
+			labels: neededLabels,
+			checkRuns: []CheckRun{
+				{Name: githubql.String("job-name"), Status: checkRunStatusCompleted, Conclusion: githubql.String(githubql.StatusStateFailure)},
+			},
+			contexts: []Context{
+				{Context: githubql.String("other-job-name"), State: githubql.StatusStateFailure},
+			},
+			author:            "batman",
+			firstQueryAuthor:  "batman",
+			secondQueryAuthor: "batman",
+			milestone:         "v1.0",
+			inPool:            false,
+
+			state: github.StatusPending,
+			desc:  fmt.Sprintf(statusNotInPool, " Jobs job-name, other-job-name have not succeeded."),
+		},
+		{
+			name:   "good context, bad checkrun",
+			labels: neededLabels,
+			checkRuns: []CheckRun{
+				{Name: githubql.String("job-name"), Status: checkRunStatusCompleted, Conclusion: githubql.String(githubql.StatusStateFailure)},
+			},
+			contexts: []Context{
+				{Context: githubql.String("other-job-name"), State: githubql.StatusStateSuccess},
+			},
+			author:            "batman",
+			firstQueryAuthor:  "batman",
+			secondQueryAuthor: "batman",
+			milestone:         "v1.0",
+			inPool:            false,
+
+			state: github.StatusPending,
+			desc:  fmt.Sprintf(statusNotInPool, " Job job-name has not succeeded."),
+		},
+		{
+			name:   "bad context, good checkrun",
+			labels: neededLabels,
+			checkRuns: []CheckRun{
+				{Name: githubql.String("job-name"), Status: checkRunStatusCompleted, Conclusion: githubql.String(githubql.StatusStateSuccess)},
+			},
+			contexts: []Context{
+				{Context: githubql.String("other-job-name"), State: githubql.StatusStateFailure},
+			},
+			author:            "batman",
+			firstQueryAuthor:  "batman",
+			secondQueryAuthor: "batman",
+			milestone:         "v1.0",
+			inPool:            false,
+
+			state: github.StatusPending,
+			desc:  fmt.Sprintf(statusNotInPool, " Job other-job-name has not succeeded."),
+		},
+		{
 			name:              "multiple bad contexts",
 			labels:            neededLabels,
 			author:            "batman",
@@ -199,6 +401,22 @@ func TestExpectedStatus(t *testing.T) {
 			contexts: []Context{
 				{Context: githubql.String("job-name"), State: githubql.StatusStateError},
 				{Context: githubql.String("other-job-name"), State: githubql.StatusStateError},
+			},
+			inPool: false,
+
+			state: github.StatusPending,
+			desc:  fmt.Sprintf(statusNotInPool, " Jobs job-name, other-job-name have not succeeded."),
+		},
+		{
+			name:              "multiple bad checkruns",
+			labels:            neededLabels,
+			author:            "batman",
+			firstQueryAuthor:  "batman",
+			secondQueryAuthor: "batman",
+			milestone:         "v1.0",
+			checkRuns: []CheckRun{
+				{Name: githubql.String("job-name"), Status: checkRunStatusCompleted, Conclusion: githubql.String(githubql.StatusStateFailure)},
+				{Name: githubql.String("other-job-name"), Status: checkRunStatusCompleted, Conclusion: githubql.String(githubql.StatusStateFailure)},
 			},
 			inPool: false,
 
@@ -245,7 +463,19 @@ func TestExpectedStatus(t *testing.T) {
 			desc:  fmt.Sprintf(statusNotInPool, " Must be in milestone v1.0."),
 		},
 		{
-			name:              "unknown requirement",
+			name:              "not in pool, but all requirements are met",
+			labels:            neededLabels,
+			author:            "batman",
+			firstQueryAuthor:  "batman",
+			secondQueryAuthor: "batman",
+			milestone:         "v1.0",
+			inPool:            false,
+
+			state: github.StatusSuccess,
+			desc:  statusInPool,
+		},
+		{
+			name:              "not in pool, but all requirements are met, including a successful third-party context",
 			labels:            neededLabels,
 			author:            "batman",
 			firstQueryAuthor:  "batman",
@@ -254,8 +484,8 @@ func TestExpectedStatus(t *testing.T) {
 			contexts:          []Context{{Context: githubql.String("job-name"), State: githubql.StatusStateSuccess}},
 			inPool:            false,
 
-			state: github.StatusPending,
-			desc:  fmt.Sprintf(statusNotInPool, ""),
+			state: github.StatusSuccess,
+			desc:  statusInPool,
 		},
 		{
 			name:              "check that min diff query is used",
@@ -476,6 +706,23 @@ func TestExpectedStatus(t *testing.T) {
 			state:          github.StatusError,
 			desc:           "Not mergeable. PR has a merge conflict.",
 		},
+		{
+			name:                  "Missing approving review",
+			additionalTideQueries: []config.TideQuery{{Orgs: []string{""}, ReviewApprovedRequired: true}},
+			inPool:                false,
+
+			state: github.StatusPending,
+			desc:  "Not mergeable. PullRequest is missing sufficient approving GitHub review(s)",
+		},
+		{
+			name:                  "Required approving review is present",
+			additionalTideQueries: []config.TideQuery{{Orgs: []string{""}, ReviewApprovedRequired: true}},
+			inPool:                false,
+			hasApprovingReview:    true,
+
+			state: github.StatusSuccess,
+			desc:  "In merge pool.",
+		},
 	}
 
 	for _, tc := range testcases {
@@ -487,21 +734,26 @@ func TestExpectedStatus(t *testing.T) {
 				Milestone: "v1.0",
 			}
 			if tc.sameBranchReqs {
-				secondQuery.ExcludedBranches = tc.branchBlacklist
-				secondQuery.IncludedBranches = tc.branchWhitelist
+				secondQuery.ExcludedBranches = tc.branchDenyList
+				secondQuery.IncludedBranches = tc.branchAllowList
 			}
-			queriesByRepo := config.TideQueries{
+			queries := config.TideQueries{
 				config.TideQuery{
 					Orgs:             []string{""},
-					ExcludedBranches: tc.branchBlacklist,
-					IncludedBranches: tc.branchWhitelist,
+					ExcludedBranches: tc.branchDenyList,
+					IncludedBranches: tc.branchAllowList,
 					Labels:           neededLabels,
 					MissingLabels:    forbiddenLabels,
 					Author:           tc.firstQueryAuthor,
 					Milestone:        "v1.0",
 				},
 				secondQuery,
-			}.QueryMap()
+			}
+			if tc.singleQuery {
+				queries = config.TideQueries{queries[0]}
+			}
+			queries = append(queries, tc.additionalTideQueries...)
+			queriesByRepo := queries.QueryMap()
 			var pr PullRequest
 			pr.BaseRef = struct {
 				Name   githubql.String
@@ -516,19 +768,26 @@ func TestExpectedStatus(t *testing.T) {
 				)
 			}
 			pr.HeadRefOID = githubql.String("head")
-			if len(tc.contexts) > 0 {
-				pr.Commits.Nodes = append(
-					pr.Commits.Nodes,
-					struct{ Commit Commit }{
-						Commit: Commit{
-							Status: struct{ Contexts []Context }{
-								Contexts: tc.contexts,
+			var checkRunNodes []CheckRunNode
+			for _, checkRun := range tc.checkRuns {
+				checkRunNodes = append(checkRunNodes, CheckRunNode{CheckRun: checkRun})
+			}
+			pr.Commits.Nodes = append(
+				pr.Commits.Nodes,
+				struct{ Commit Commit }{
+					Commit: Commit{
+						Status: struct{ Contexts []Context }{
+							Contexts: tc.contexts,
+						},
+						OID: githubql.String("head"),
+						StatusCheckRollup: StatusCheckRollup{
+							Contexts: StatusCheckRollupContext{
+								Nodes: checkRunNodes,
 							},
-							OID: githubql.String("head"),
 						},
 					},
-				)
-			}
+				},
+			)
 			pr.Author = struct {
 				Login githubql.String
 			}{githubql.String(tc.author)}
@@ -539,6 +798,9 @@ func TestExpectedStatus(t *testing.T) {
 			}
 			if tc.mergeConflicts {
 				pr.Mergeable = githubql.MergeableStateConflicting
+			}
+			if tc.hasApprovingReview {
+				pr.ReviewDecision = githubql.PullRequestReviewDecisionApproved
 			}
 			var pool map[string]PullRequest
 			if tc.inPool {
@@ -554,10 +816,10 @@ func TestExpectedStatus(t *testing.T) {
 			blocks.Repo[blockers.OrgRepo{Org: "", Repo: ""}] = items
 
 			ca := &config.Agent{}
-			ca.Set(&config.Config{})
+			ca.Set(&config.Config{ProwConfig: config.ProwConfig{Tide: config.Tide{DisplayAllQueriesInStatus: tc.displayAllTideQueries}}})
 			mmc := newMergeChecker(ca.Config, &fgc{})
 
-			sc, err := newStatusController(logrus.NewEntry(logrus.StandardLogger()), nil, newFakeManager(tc.prowJobs...), nil, nil, nil, "", mmc)
+			sc, err := newStatusController(context.Background(), logrus.NewEntry(logrus.StandardLogger()), nil, newFakeManager(tc.prowJobs...), nil, ca.Config, nil, "", mmc, false)
 			if err != nil {
 				t.Fatalf("failed to get statusController: %v", err)
 			}
@@ -583,10 +845,11 @@ func TestSetStatuses(t *testing.T) {
 	testcases := []struct {
 		name string
 
-		inPool     bool
-		hasContext bool
-		state      githubql.StatusState
-		desc       string
+		inPool          bool
+		hasContext      bool
+		inDontSetStatus bool
+		state           githubql.StatusState
+		desc            string
 
 		shouldSet bool
 	}{
@@ -627,6 +890,17 @@ func TestSetStatuses(t *testing.T) {
 			desc:       statusInPool,
 
 			shouldSet: true,
+		},
+		{
+			name: "in pool with wrong state but set to not update status",
+
+			inPool:          true,
+			hasContext:      true,
+			inDontSetStatus: true,
+			state:           githubql.StatusStatePending,
+			desc:            statusInPool,
+
+			shouldSet: false,
 		},
 		{
 			name: "not in pool with proper context",
@@ -687,9 +961,12 @@ func TestSetStatuses(t *testing.T) {
 		}
 
 		mmc := newMergeChecker(ca.Config, fc)
-		sc, err := newStatusController(log, fc, newFakeManager(), nil, ca.Config, nil, "", mmc)
+		sc, err := newStatusController(context.Background(), log, fc, newFakeManager(), nil, ca.Config, nil, "", mmc, false)
 		if err != nil {
 			t.Fatalf("failed to get statusController: %v", err)
+		}
+		if tc.inDontSetStatus {
+			sc.dontUpdateStatus = threadSafePRSet{data: map[pullRequestIdentifier]struct{}{{}: {}}}
 		}
 		sc.setStatuses([]PullRequest{pr}, pool, blockers.Blockers{}, nil, nil)
 		if str, err := log.String(); err != nil {
@@ -722,13 +999,13 @@ func TestTargetUrl(t *testing.T) {
 		{
 			name:        "tide overview config",
 			pr:          &PullRequest{},
-			config:      config.Tide{TargetURL: "tide.com"},
+			config:      config.Tide{TargetURLs: map[string]string{"*": "tide.com"}},
 			expectedURL: "tide.com",
 		},
 		{
 			name:        "PR dashboard config and overview config",
 			pr:          &PullRequest{},
-			config:      config.Tide{TargetURL: "tide.com", PRStatusBaseURLs: map[string]string{"*": "pr.status.com"}},
+			config:      config.Tide{TargetURLs: map[string]string{"*": "tide.com"}, PRStatusBaseURLs: map[string]string{"*": "pr.status.com"}},
 			expectedURL: "tide.com",
 		},
 		{
@@ -830,13 +1107,6 @@ func TestTargetUrl(t *testing.T) {
 }
 
 func TestOpenPRsQuery(t *testing.T) {
-	var q string
-	checkTok := func(tok string) {
-		if !strings.Contains(q, " "+tok+" ") {
-			t.Errorf("Expected query to contain \"%s\", got \"%s\"", tok, q)
-		}
-	}
-
 	orgs := []string{"org", "kuber"}
 	repos := []string{"k8s/k8s", "k8s/t-i"}
 	exceptions := map[string]sets.String{
@@ -844,15 +1114,23 @@ func TestOpenPRsQuery(t *testing.T) {
 		"irrelevant-org": sets.NewString("irrelevant-org/repo1", "irrelevant-org/repo2"),
 	}
 
-	q = " " + openPRsQuery(orgs, repos, exceptions) + " "
-	checkTok("is:pr")
-	checkTok("state:open")
-	checkTok("org:\"org\"")
-	checkTok("org:\"kuber\"")
-	checkTok("repo:\"k8s/k8s\"")
-	checkTok("repo:\"k8s/t-i\"")
-	checkTok("-repo:\"org/repo1\"")
-	checkTok("-repo:\"org/repo2\"")
+	queriesByOrg := openPRsQueries(orgs, repos, exceptions)
+	expectedQueriesByOrg := map[string]string{
+		"org":   `-repo:"org/repo1" -repo:"org/repo2" archived:false is:pr org:"org" sort:updated-asc state:open`,
+		"kuber": `archived:false is:pr org:"kuber" sort:updated-asc state:open`,
+		"k8s":   ` archived:false is:pr repo:"k8s/k8s" repo:"k8s/t-i" sort:updated-asc state:open`,
+	}
+	for org, query := range queriesByOrg {
+		// This is produced from a map so the result is not deterministic. Work around by using
+		// the fact that the parameters are space split and do a space split, sort, space join.
+		split := strings.Split(query, " ")
+		sort.Strings(split)
+		queriesByOrg[org] = strings.Join(split, " ")
+	}
+
+	if diff := cmp.Diff(queriesByOrg, expectedQueriesByOrg); diff != "" {
+		t.Errorf("actual queries differ from expected: %s", diff)
+	}
 }
 
 func TestIndexFuncPassingJobs(t *testing.T) {
@@ -883,9 +1161,7 @@ func TestIndexFuncPassingJobs(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			var results []string
-			for _, result := range indexFuncPassingJobs(tc.pj) {
-				results = append(results, result)
-			}
+			results = append(results, indexFuncPassingJobs(tc.pj)...)
 			if diff := deep.Equal(tc.expected, results); diff != nil {
 				t.Errorf("expected does not match result, diff: %v", diff)
 			}
@@ -984,6 +1260,59 @@ func TestNewBaseSHAGetter(t *testing.T) {
 			}
 			if val := tc.baseSHAs[org+"/"+repo+":"+branch]; val != tc.expectedSHA {
 				t.Errorf("baseSHA in the map (%q) does not match expected(%q)", val, tc.expectedSHA)
+			}
+		})
+	}
+}
+
+func TestStatusControllerSearch(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name         string
+		prs          map[string][]PullRequest
+		usesAppsAuth bool
+
+		expected []PullRequest
+	}{
+		{
+			name: "Apps auth: Query gets split by org",
+			prs: map[string][]PullRequest{
+				"org-a": {{Number: githubql.Int(1)}},
+				"org-b": {{Number: githubql.Int(2)}},
+			},
+			usesAppsAuth: true,
+			expected: []PullRequest{
+				{Number: githubql.Int(1)},
+				{Number: githubql.Int(2)},
+			},
+		},
+		{
+			name: "No apps auth: Query remains unsplit",
+			prs: map[string][]PullRequest{
+				"": {{Number: githubql.Int(1)}, {Number: githubql.Int(2)}},
+			},
+			usesAppsAuth: false,
+			expected: []PullRequest{
+				{Number: githubql.Int(1)},
+				{Number: githubql.Int(2)},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ghc := &fgc{prs: tc.prs}
+			cfg := func() *config.Config {
+				return &config.Config{ProwConfig: config.ProwConfig{Tide: config.Tide{Queries: config.TideQueries{{Orgs: []string{"org-a", "org-b"}}}}}}
+			}
+			sc, err := newStatusController(context.Background(), logrus.WithField("tc", tc), ghc, newFakeManager(), nil, cfg, nil, "", nil, tc.usesAppsAuth)
+			if err != nil {
+				t.Fatalf("failed to construct status controller: %v", err)
+			}
+
+			result := sc.search()
+			if diff := cmp.Diff(result, tc.expected, cmpopts.SortSlices(func(a, b PullRequest) bool { return a.Number < b.Number })); diff != "" {
+				t.Errorf("result differs from expected: %s", diff)
 			}
 		})
 	}

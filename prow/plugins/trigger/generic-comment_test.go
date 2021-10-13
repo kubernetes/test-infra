@@ -65,7 +65,8 @@ type testcase struct {
 }
 
 func TestHandleGenericComment(t *testing.T) {
-	helpComment := "The following commands are available to trigger jobs:\n* `/test job`\n* `/test jib`\n\nUse `/test all` to run all jobs."
+	helpComment := "The following commands are available to trigger required jobs:\n* `/test jib`\n* `/test job`\n\n"
+	helpTestAllWithJobsComment := fmt.Sprintf("Use `/test all` to run the following jobs that were automatically triggered:%s\n\n", "\n* `job`")
 	var testcases = []testcase{
 		{
 			name: "Not a PR.",
@@ -344,6 +345,33 @@ func TestHandleGenericComment(t *testing.T) {
 			StartsExactly: "pull-jab",
 		},
 		{
+			name:   "Retest of skip_if_only_changed job that hasn't run. Changes require job",
+			Author: "trusted-member",
+			Body:   "/retest",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						JobBase: config.JobBase{
+							Name: "jab",
+						},
+						RegexpChangeMatcher: config.RegexpChangeMatcher{
+							SkipIfOnlyChanged: "CHANGED2",
+						},
+						Reporter: config.Reporter{
+							SkipReport: true,
+							Context:    "pull-jab",
+						},
+						Trigger:      `(?m)^/test (?:.*? )?jab(?: .*?)?$`,
+						RerunCommand: `/test jab`,
+					},
+				},
+			},
+			ShouldBuild:   true,
+			StartsExactly: "pull-jab",
+		},
+		{
 			name:   "Retest of run_if_changed job that failed. Changes require job",
 			Author: "trusted-member",
 			Body:   "/retest",
@@ -357,6 +385,32 @@ func TestHandleGenericComment(t *testing.T) {
 						},
 						RegexpChangeMatcher: config.RegexpChangeMatcher{
 							RunIfChanged: "CHANGED",
+						},
+						Reporter: config.Reporter{
+							Context: "pull-jib",
+						},
+						Trigger:      `(?m)^/test (?:.*? )?jib(?: .*?)?$`,
+						RerunCommand: `/test jib`,
+					},
+				},
+			},
+			ShouldBuild:   true,
+			StartsExactly: "pull-jib",
+		},
+		{
+			name:   "Retest of skip_if_only_changed job that failed. Changes require job",
+			Author: "trusted-member",
+			Body:   "/retest",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						JobBase: config.JobBase{
+							Name: "jib",
+						},
+						RegexpChangeMatcher: config.RegexpChangeMatcher{
+							SkipIfOnlyChanged: "CHANGED2",
 						},
 						Reporter: config.Reporter{
 							Context: "pull-jib",
@@ -396,6 +450,121 @@ func TestHandleGenericComment(t *testing.T) {
 			StartsExactly: "pull-jub",
 		},
 		{
+			name:   "/test of skip_if_only_changed job that has passed",
+			Author: "trusted-member",
+			Body:   "/test jub",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						JobBase: config.JobBase{
+							Name: "jub",
+						},
+						RegexpChangeMatcher: config.RegexpChangeMatcher{
+							SkipIfOnlyChanged: "CHANGED2",
+						},
+						Reporter: config.Reporter{
+							Context: "pull-jub",
+						},
+						Trigger:      `(?m)^/test (?:.*? )?jub(?: .*?)?$`,
+						RerunCommand: `/test jub`,
+					},
+				},
+			},
+			ShouldBuild:   true,
+			StartsExactly: "pull-jub",
+		},
+		{
+			name:   "Retest triggers failed job",
+			Author: "trusted-member",
+			Body:   "/retest",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						JobBase: config.JobBase{
+							Name: "jib",
+						},
+						Reporter: config.Reporter{
+							Context: "pull-jib",
+						},
+						Trigger:      `(?m)^/test (?:.*? )?jib(?: .*?)?$`,
+						RerunCommand: `/test jib`,
+					},
+				},
+			},
+			ShouldBuild: true,
+		},
+		{
+			name:   "Retest triggers failed job that is optional",
+			Author: "trusted-member",
+			Body:   "/retest",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						JobBase: config.JobBase{
+							Name: "jib",
+						},
+						Reporter: config.Reporter{
+							Context: "pull-jib",
+						},
+						Trigger:      `(?m)^/test (?:.*? )?jib(?: .*?)?$`,
+						RerunCommand: `/test jib`,
+						Optional:     true,
+					},
+				},
+			},
+			ShouldBuild: true,
+		},
+		{
+			name:   "Retest-Required doesn't triggers failed job",
+			Author: "trusted-member",
+			Body:   "/retest-required",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						JobBase: config.JobBase{
+							Name: "jib",
+						},
+						Reporter: config.Reporter{
+							Context: "pull-jib",
+						},
+						Trigger:      `(?m)^/test (?:.*? )?jib(?: .*?)?$`,
+						RerunCommand: `/test jib`,
+					},
+				},
+			},
+			ShouldBuild: true,
+		},
+		{
+			name:   "Retest-Required doesn't trigger failed job that is optional",
+			Author: "trusted-member",
+			Body:   "/retest-required",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						JobBase: config.JobBase{
+							Name: "jib",
+						},
+						Reporter: config.Reporter{
+							Context: "pull-jib",
+						},
+						Trigger:      `(?m)^/test (?:.*? )?jib(?: .*?)?$`,
+						RerunCommand: `/test jib`,
+						Optional:     true,
+					},
+				},
+			},
+		},
+		{
 			name:   "Retest of run_if_changed job that failed. Changes do not require the job",
 			Author: "trusted-member",
 			Body:   "/retest",
@@ -418,7 +587,32 @@ func TestHandleGenericComment(t *testing.T) {
 					},
 				},
 			},
-			ShouldBuild: false,
+			ShouldBuild: true,
+		},
+		{
+			name:   "Retest of skip_if_only_changed job that failed. Changes do not require the job",
+			Author: "trusted-member",
+			Body:   "/retest",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						JobBase: config.JobBase{
+							Name: "jib",
+						},
+						RegexpChangeMatcher: config.RegexpChangeMatcher{
+							SkipIfOnlyChanged: "CHANGED",
+						},
+						Reporter: config.Reporter{
+							Context: "pull-jib",
+						},
+						Trigger:      `(?m)^/test (?:.*? )?jib(?: .*?)?$`,
+						RerunCommand: `/test jib`,
+					},
+				},
+			},
+			ShouldBuild: true,
 		},
 		{
 			name:   "Run if changed job triggered by /ok-to-test",
@@ -434,6 +628,35 @@ func TestHandleGenericComment(t *testing.T) {
 						},
 						RegexpChangeMatcher: config.RegexpChangeMatcher{
 							RunIfChanged: "CHANGED",
+						},
+						Reporter: config.Reporter{
+							Context: "pull-jab",
+						},
+						Trigger:      `(?m)^/test (?:.*? )?jab(?: .*?)?$`,
+						RerunCommand: `/test jab`,
+					},
+				},
+			},
+			ShouldBuild:   true,
+			StartsExactly: "pull-jab",
+			IssueLabels:   issueLabels(labels.NeedsOkToTest),
+			AddedLabels:   issueLabels(labels.OkToTest),
+			RemovedLabels: issueLabels(labels.NeedsOkToTest),
+		},
+		{
+			name:   "Run if non-skipped job triggered by /ok-to-test",
+			Author: "trusted-member",
+			Body:   "/ok-to-test",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						JobBase: config.JobBase{
+							Name: "jab",
+						},
+						RegexpChangeMatcher: config.RegexpChangeMatcher{
+							SkipIfOnlyChanged: "CHANGED2",
 						},
 						Reporter: config.Reporter{
 							Context: "pull-jab",
@@ -544,7 +767,7 @@ func TestHandleGenericComment(t *testing.T) {
 			},
 		},
 		{
-			name: "/retest of RunIfChanged job that doesn't need to run and hasn't run",
+			name: "/retest of SkipIfOnlyChanged job that doesn't need to run and hasn't run",
 
 			Author: "trusted-member",
 			Body:   "/retest",
@@ -557,7 +780,7 @@ func TestHandleGenericComment(t *testing.T) {
 							Name: "jeb",
 						},
 						RegexpChangeMatcher: config.RegexpChangeMatcher{
-							RunIfChanged: "CHANGED2",
+							SkipIfOnlyChanged: "CHANGED",
 						},
 						Reporter: config.Reporter{
 							Context: "pull-jeb",
@@ -583,6 +806,32 @@ func TestHandleGenericComment(t *testing.T) {
 						},
 						RegexpChangeMatcher: config.RegexpChangeMatcher{
 							RunIfChanged: "CHANGED2",
+						},
+						Reporter: config.Reporter{
+							Context: "pull-jeb",
+						},
+						Trigger:      `(?m)^/test (?:.*? )?jeb(?: .*?)?$`,
+						RerunCommand: `/test jeb`,
+					},
+				},
+			},
+			ShouldBuild: false,
+		},
+		{
+			name: "explicit /test for SkipIfOnlyChanged job that doesn't need to run",
+
+			Author: "trusted-member",
+			Body:   "/test pull-jeb",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						JobBase: config.JobBase{
+							Name: "jeb",
+						},
+						RegexpChangeMatcher: config.RegexpChangeMatcher{
+							SkipIfOnlyChanged: "CHANGED",
 						},
 						Reporter: config.Reporter{
 							Context: "pull-jeb",
@@ -621,6 +870,32 @@ func TestHandleGenericComment(t *testing.T) {
 			StartsExactly: "pull-jub",
 		},
 		{
+			name:   "/test all of skip_if_only_changed job that has passed and needs to run",
+			Author: "trusted-member",
+			Body:   "/test all",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						JobBase: config.JobBase{
+							Name: "jub",
+						},
+						RegexpChangeMatcher: config.RegexpChangeMatcher{
+							SkipIfOnlyChanged: "CHANGED2",
+						},
+						Reporter: config.Reporter{
+							Context: "pull-jub",
+						},
+						Trigger:      `(?m)^/test (?:.*? )?jub(?: .*?)?$`,
+						RerunCommand: `/test jub`,
+					},
+				},
+			},
+			ShouldBuild:   true,
+			StartsExactly: "pull-jub",
+		},
+		{
 			name:   "/test all of run_if_changed job that has passed and doesn't need to run",
 			Author: "trusted-member",
 			Body:   "/test all",
@@ -634,6 +909,30 @@ func TestHandleGenericComment(t *testing.T) {
 						},
 						RegexpChangeMatcher: config.RegexpChangeMatcher{
 							RunIfChanged: "CHANGED2",
+						},
+						Reporter: config.Reporter{
+							Context: "pull-jub",
+						},
+						Trigger:      `(?m)^/test (?:.*? )?jub(?: .*?)?$`,
+						RerunCommand: `/test jub`,
+					},
+				},
+			},
+		},
+		{
+			name:   "/test all of skip_if_only_changed job that has passed and doesn't need to run",
+			Author: "trusted-member",
+			Body:   "/test all",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						JobBase: config.JobBase{
+							Name: "jub",
+						},
+						RegexpChangeMatcher: config.RegexpChangeMatcher{
+							SkipIfOnlyChanged: "CHANGED",
 						},
 						Reporter: config.Reporter{
 							Context: "pull-jub",
@@ -664,15 +963,41 @@ func TestHandleGenericComment(t *testing.T) {
 			IssueLabels: issueLabels(labels.LGTM, labels.Approved),
 		},
 		{
-			name:         `help command "/test ?" lists available presubmits`,
-			Author:       "trusted-member",
-			Body:         "/test ?",
-			State:        "open",
-			IsPR:         true,
-			AddedComment: helpComment,
+			name:   `help command "/test ?" lists available presubmits`,
+			Author: "trusted-member",
+			Body:   "/test ?",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						JobBase: config.JobBase{
+							Name: "job",
+						},
+						AlwaysRun: true,
+						Reporter: config.Reporter{
+							Context: "pull-job",
+						},
+						Trigger:      `(?m)^/test (?:.*? )?job(?: .*?)?$`,
+						RerunCommand: `/test job`,
+					},
+					{
+						JobBase: config.JobBase{
+							Name: "jib",
+						},
+						AlwaysRun: true,
+						Reporter: config.Reporter{
+							Context: "pull-jib",
+						},
+						Trigger:      `(?m)^/test (?:.*? )?jib(?: .*?)?$`,
+						RerunCommand: `/test jib`,
+					},
+				},
+			},
+			AddedComment: helpComment + "Use `/test all` to run all jobs.",
 		},
 		{
-			name:   `help command "/test ?" uses RerunCommand field of presubmits`,
+			name:   `help command "/test ?" uses unique RerunCommand field of presubmits`,
 			Author: "trusted-member",
 			Body:   "/test ?",
 			State:  "open",
@@ -683,6 +1008,7 @@ func TestHandleGenericComment(t *testing.T) {
 						JobBase: config.JobBase{
 							Name: "jub",
 						},
+						AlwaysRun: true,
 						Reporter: config.Reporter{
 							Context: "pull-jub",
 						},
@@ -693,15 +1019,28 @@ func TestHandleGenericComment(t *testing.T) {
 						JobBase: config.JobBase{
 							Name: "jib",
 						},
+						AlwaysRun: true,
 						Reporter: config.Reporter{
 							Context: "pull-jib",
 						},
 						Trigger:      `/command_foo`,
 						RerunCommand: `/command_foo`,
 					},
+					{
+						JobBase: config.JobBase{
+							Name: "jab",
+						},
+						Reporter: config.Reporter{
+							Context: "pull-jab",
+						},
+						Trigger:      `/rerun_command`,
+						RerunCommand: `/rerun_command`,
+					},
 				},
 			},
-			AddedComment: "@trusted-member: The following commands are available to trigger jobs:\n* `/rerun_command`\n* `/command_foo`\n\nUse `/test all` to run all jobs.",
+			AddedComment: "@trusted-member: The following commands are available to trigger required jobs:\n" +
+				"* `/command_foo`\n* `/rerun_command`\n\n" +
+				"Use `/test all` to run all jobs.",
 		},
 		{
 			name:         "/test with no target results in a help message",
@@ -709,7 +1048,7 @@ func TestHandleGenericComment(t *testing.T) {
 			Body:         "/test",
 			State:        "open",
 			IsPR:         true,
-			AddedComment: testWithoutTargetNote + helpComment,
+			AddedComment: pjutil.TestWithoutTargetNote + helpComment + helpTestAllWithJobsComment,
 		},
 		{
 			name:         "/test with no target but ? in the next line results in an invalid test command message",
@@ -717,7 +1056,7 @@ func TestHandleGenericComment(t *testing.T) {
 			Body:         "/test \r\n?",
 			State:        "open",
 			IsPR:         true,
-			AddedComment: testWithoutTargetNote + helpComment,
+			AddedComment: pjutil.TestWithoutTargetNote + helpComment + helpTestAllWithJobsComment,
 		},
 		{
 			name:         "/retest with trailing words results in a help message",
@@ -725,7 +1064,7 @@ func TestHandleGenericComment(t *testing.T) {
 			Body:         "/retest FOO",
 			State:        "open",
 			IsPR:         true,
-			AddedComment: retestWithTargetNote + helpComment,
+			AddedComment: pjutil.RetestWithTargetNote + helpComment + helpTestAllWithJobsComment,
 		},
 		{
 			name:          "/retest without target but with lines following it, is valid",
@@ -742,7 +1081,170 @@ func TestHandleGenericComment(t *testing.T) {
 			Body:         "/test FOO",
 			State:        "open",
 			IsPR:         true,
-			AddedComment: targetNotFoundNote + helpComment,
+			AddedComment: pjutil.TargetNotFoundNote + helpComment + helpTestAllWithJobsComment,
+		},
+		{
+			name:   "help comment should list only eligible jobs under '/test all'",
+			Author: "trusted-member",
+			Body:   "/test ?",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						JobBase: config.JobBase{
+							Name: "job",
+						},
+						AlwaysRun: true,
+						Reporter: config.Reporter{
+							Context: "pull-job",
+						},
+						Trigger:      `(?m)^/test job$`,
+						RerunCommand: `/test job`,
+					},
+					{
+						JobBase: config.JobBase{
+							Name: "jib",
+						},
+						Reporter: config.Reporter{
+							Context: "pull-jib",
+						},
+						Trigger:      `(?m)^/test (?:.*? )?jib(?: .*?)?$`,
+						RerunCommand: `/test jib`,
+					},
+				},
+			},
+			AddedComment: helpComment + helpTestAllWithJobsComment,
+		},
+		{
+			name:   "when no jobs can be run with /test all, respond accordingly",
+			Author: "trusted-member",
+			Body:   "/test all",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						JobBase: config.JobBase{
+							Name: "job",
+						},
+						AlwaysRun: false,
+						Reporter: config.Reporter{
+							Context: "pull-job",
+						},
+						Trigger:      `(?m)^/test job$`,
+						RerunCommand: `/test job`,
+					},
+					{
+						JobBase: config.JobBase{
+							Name: "jib",
+						},
+						AlwaysRun: false,
+						Reporter: config.Reporter{
+							Context: "pull-jib",
+						},
+						Trigger:      `(?m)^/test jib$`,
+						RerunCommand: `/test jib`,
+					},
+				},
+			},
+			AddedComment: pjutil.ThereAreNoTestAllJobsNote + helpComment,
+		},
+		{
+			name:   "available presubmits should not list those excluded by branch",
+			Author: "trusted-member",
+			Body:   "/test ?",
+			State:  "open",
+			IsPR:   true,
+
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						JobBase: config.JobBase{
+							Name: "job-excluded-by-brancher",
+						},
+						Brancher: config.Brancher{
+							SkipBranches: []string{"master"},
+						},
+						AlwaysRun: true,
+						Reporter: config.Reporter{
+							Context: "pull-job-excluded-by-brancher",
+						},
+						Trigger:      `(?m)^/test job-excluded$`,
+						RerunCommand: `/test job-excluded`,
+					},
+					{
+						JobBase: config.JobBase{
+							Name: "job",
+						},
+						AlwaysRun: true,
+						Reporter: config.Reporter{
+							Context: "pull-job",
+						},
+						Trigger:      `(?m)^/test job$`,
+						RerunCommand: `/test job`,
+					},
+					{
+						JobBase: config.JobBase{
+							Name: "jib",
+						},
+						Reporter: config.Reporter{
+							Context: "pull-jib",
+						},
+						Trigger:      `(?m)^/test (?:.*? )?jib(?: .*?)?$`,
+						RerunCommand: `/test jib`,
+					},
+				},
+			},
+			AddedComment: helpComment + helpTestAllWithJobsComment,
+		},
+		{
+			name:   `help command "/test ?" differs between optional and required jobs`,
+			Author: "trusted-member",
+			Body:   "/test ?",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						JobBase: config.JobBase{
+							Name: "job",
+						},
+						AlwaysRun: true,
+						Reporter: config.Reporter{
+							Context: "pull-job",
+						},
+						Trigger:      `(?m)^/test (?:.*? )?job(?: .*?)?$`,
+						RerunCommand: `/test job`,
+					},
+					{
+						JobBase: config.JobBase{
+							Name: "jib",
+						},
+						AlwaysRun: true,
+						Reporter: config.Reporter{
+							Context: "pull-jib",
+						},
+						Trigger:      `(?m)^/test (?:.*? )?jib(?: .*?)?$`,
+						RerunCommand: `/test jib`,
+					},
+					{
+						JobBase: config.JobBase{
+							Name: "jub",
+						},
+						AlwaysRun: true,
+						Optional:  true,
+						Reporter: config.Reporter{
+							Context: "pull-jub",
+						},
+						Trigger:      `(?m)^/test (?:.*? )?jub(?: .*?)?$`,
+						RerunCommand: `/test jub`,
+					},
+				},
+			},
+			AddedComment: helpComment +
+				"The following commands are available to trigger optional jobs:\n* `/test jub`\n\n" +
+				"Use `/test all` to run all jobs.",
 		},
 	}
 	for _, tc := range testcases {
@@ -750,38 +1252,37 @@ func TestHandleGenericComment(t *testing.T) {
 			if tc.Branch == "" {
 				tc.Branch = "master"
 			}
-			g := &fakegithub.FakeClient{
-				IssueComments: map[int][]github.IssueComment{},
-				OrgMembers:    map[string][]string{"org": {"trusted-member"}},
-				PullRequests: map[int]*github.PullRequest{
-					0: {
-						User:   github.User{Login: tc.PRAuthor},
-						Number: 0,
-						Head: github.PullRequestBranch{
-							SHA: "cafe",
-						},
-						Base: github.PullRequestBranch{
-							Ref: tc.Branch,
-							Repo: github.Repo{
-								Owner: github.User{Login: "org"},
-								Name:  "repo",
-							},
+			g := fakegithub.NewFakeClient()
+			g.IssueComments = map[int][]github.IssueComment{}
+			g.OrgMembers = map[string][]string{"org": {"trusted-member"}}
+			g.PullRequests = map[int]*github.PullRequest{
+				0: {
+					User:   github.User{Login: tc.PRAuthor},
+					Number: 0,
+					Head: github.PullRequestBranch{
+						SHA: "cafe",
+					},
+					Base: github.PullRequestBranch{
+						Ref: tc.Branch,
+						Repo: github.Repo{
+							Owner: github.User{Login: "org"},
+							Name:  "repo",
 						},
 					},
 				},
-				IssueLabelsExisting: tc.IssueLabels,
-				PullRequestChanges:  map[int][]github.PullRequestChange{0: {{Filename: "CHANGED"}}},
-				CombinedStatuses: map[string]*github.CombinedStatus{
-					"cafe": {
-						Statuses: []github.Status{
-							{State: github.StatusPending, Context: "pull-job"},
-							{State: github.StatusFailure, Context: "pull-jib"},
-							{State: github.StatusSuccess, Context: "pull-jub"},
-						},
-					},
-				},
-				Collaborators: []string{"k8s-ci-robot"},
 			}
+			g.IssueLabelsExisting = tc.IssueLabels
+			g.PullRequestChanges = map[int][]github.PullRequestChange{0: {{Filename: "CHANGED"}}}
+			g.CombinedStatuses = map[string]*github.CombinedStatus{
+				"cafe": {
+					Statuses: []github.Status{
+						{State: github.StatusPending, Context: "pull-job"},
+						{State: github.StatusFailure, Context: "pull-jib"},
+						{State: github.StatusSuccess, Context: "pull-jub"},
+					},
+				},
+			}
+			g.Collaborators = []string{"k8s-ci-robot"}
 			fakeConfig := &config.Config{ProwConfig: config.ProwConfig{ProwJobNamespace: "prowjobs"}}
 			fakeProwJobClient := fake.NewSimpleClientset()
 			c := Client{
@@ -926,7 +1427,7 @@ func TestRetestFilter(t *testing.T) {
 					},
 				},
 			},
-			expected: [][]bool{{true, false, true}, {false, false, true}},
+			expected: [][]bool{{true, false, true}, {false, false, false}},
 		},
 		{
 			name:           "retest filter matches jobs that would run automatically and haven't yet ",
@@ -951,7 +1452,7 @@ func TestRetestFilter(t *testing.T) {
 					},
 				},
 			},
-			expected: [][]bool{{false, false, true}, {true, false, true}},
+			expected: [][]bool{{false, false, false}, {true, false, false}},
 		},
 	}
 

@@ -10,9 +10,13 @@ Build with:
 ```shell
 bazel build //prow/...
 ```
-Test with:
+Unit test with:
 ```shell
-bazel test --features=race //prow/...
+bazel test --@io_bazel_rules_go//go/config:race //prow/...
+```
+Integration test with([more details](./test/integration)):
+```shell
+./prow/test/integration/integration-test.sh
 ```
 Individual packages and components can be built and tested like:
 ```shell
@@ -31,7 +35,7 @@ Assuming your prow components have multiple replicas, this will result in no dow
 
 Update your deployment (optionally build/pushing the image) to a new image with:
 ```shell
-# export PROW_REPO_OVERRIDE=gcr.io/k8s-prow  # optionally override project
+# export PROW_REPO_OVERRIDE=gcr.io/k8s-prow  # optionally change k8s-prow to your project
 push.sh  # Build and push the current repo state.
 bump.sh --list  # Choose a recent published version
 bump.sh v20181002-deadbeef # Use a specific version
@@ -118,6 +122,10 @@ This command runs the ProwJob [`pull-test-infra-yamllint`](https://github.com/ku
 ```sh
 ./pj-on-kind.sh pull-test-infra-yamllint
 ```
+You may also need to set the `CONFIG_PATH` and `JOB_CONFIG_PATH` environmental variables:
+```sh
+CONFIG_PATH=$(realpath ../config/prow/config.yaml) JOB_CONFIG_PATH=$(realpath ../config/jobs/kubernetes/test-infra/test-infra-presubmits.yaml) ...
+```
 
 ##### Modifying pj-on-kind.sh for special scenarios
 This tool was written in bash so that it can be easily adjusted when debugging.
@@ -127,6 +135,12 @@ secrets, configmaps, or volumes.
 * Skip applying the pod.yaml to the Kind cluster to inspect it, modify it, or apply it to
 a real cluster instead of the `mkpod` Kind cluster. (Same for pj.yaml)
 
+##### Debugging within a pj-on-kind.sh container
+To point `kubectl` to the Kind cluster you will need to export the `KUBECONFIG` Env. The command to point this to the correct config is echoed in the pj-on-kind.sh logging. It will have the form:
+```sh
+export KUBECONFIG='/<path to user dir>/.kube/kind-config-mkpod'
+```
+After pointing to the correct master you will be able to drop into the container using `kubectl exec -it <pod name> <bash/sh/etc>`. **This pod will only last the lifecycle of the job, if you need more time to debug you might add a `sleep` within the job execution.
 
 #### Using Phaino
 [Phaino](/prow/cmd/phaino) lets you interactively mock and run the job locally on

@@ -3,49 +3,55 @@ presubmits:
   - name: pull-aws-ebs-csi-driver-verify
     always_run: true
     decorate: true
+    skip_branches:
+    - gh-pages
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
         command:
         - runner.sh
         args:
         - make
         - verify
     annotations:
-      testgrid-dashboards: sig-aws-ebs-csi-driver
+      testgrid-dashboards: provider-aws-ebs-csi-driver
       testgrid-tab-name: verify
       description: aws ebs csi driver basic code verification
       testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-unit
     always_run: true
     decorate: true
+    skip_branches:
+    - gh-pages
     labels:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
         command:
         - runner.sh
         args:
         - make
         - test
     annotations:
-      testgrid-dashboards: sig-aws-ebs-csi-driver
-      testgrid-tab-name: unit-test
-      description: aws ebs csi driver unit test
+      testgrid-dashboards: provider-aws-ebs-csi-driver
+      testgrid-tab-name: pull-unit-test
+      description: aws ebs csi driver unit test on pull request
       testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-e2e-single-az
     always_run: true
     decorate: true
+    skip_branches:
+    - gh-pages
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-aws-credential-aws-oss-testing: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
         command:
         - runner.sh
         args:
@@ -54,20 +60,22 @@ presubmits:
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: sig-aws-ebs-csi-driver
-      testgrid-tab-name: e2e-test-single-az
-      description: aws ebs csi driver e2e test on single az
+      testgrid-dashboards: provider-aws-ebs-csi-driver
+      testgrid-tab-name: pull-e2e-test-single-az
+      description: aws ebs csi driver e2e test on single az on pull request
       testgrid-num-columns-recent: '30'
   - name: pull-aws-ebs-csi-driver-e2e-multi-az
     always_run: true
     decorate: true
+    skip_branches:
+    - gh-pages
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-aws-credential-aws-oss-testing: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
         command:
         - runner.sh
         args:
@@ -76,20 +84,22 @@ presubmits:
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: sig-aws-ebs-csi-driver
-      testgrid-tab-name: e2e-test-multi-az
-      description: aws ebs csi driver e2e test on mutiple AZs
+      testgrid-dashboards: provider-aws-ebs-csi-driver
+      testgrid-tab-name: pull-e2e-test-multi-az
+      description: aws ebs csi driver e2e test on mutiple AZs on pull request
       testgrid-num-columns-recent: '30'
-  - name: pull-aws-ebs-csi-driver-migration-test-latest
-    always_run: false
+  - name: pull-aws-ebs-csi-driver-migration-test
+    always_run: true
     decorate: true
+    skip_branches:
+    - gh-pages
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
       preset-aws-credential-aws-oss-testing: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
           command:
             - runner.sh
           args:
@@ -98,7 +108,55 @@ presubmits:
           securityContext:
             privileged: true
     annotations:
-      testgrid-dashboards: sig-aws-ebs-csi-driver
-      testgrid-tab-name: pull-migration-test-latest
-      description: aws ebs csi driver migration test on latest kubernetes
+      testgrid-dashboards: provider-aws-ebs-csi-driver
+      testgrid-tab-name: pull-migration-test
+      description: aws ebs csi driver migration test on pull request
+      testgrid-num-columns-recent: '30'
+  - name: pull-aws-ebs-csi-driver-external-test
+    always_run: true
+    decorate: true
+    skip_branches:
+      - gh-pages
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-aws-credential-aws-oss-testing: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
+          command:
+            - runner.sh
+          args:
+            - make
+            - test-e2e-external
+          securityContext:
+            privileged: true
+    annotations:
+      testgrid-dashboards: provider-aws-ebs-csi-driver
+      testgrid-tab-name: pull-external-test
+      description: kubernetes/kubernetes external test on pull request
+      testgrid-num-columns-recent: '30'
+  - name: pull-aws-ebs-csi-driver-external-test-eks
+    always_run: true
+    decorate: true
+    skip_branches:
+      - gh-pages
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-aws-credential-aws-oss-testing: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
+          command:
+            - runner.sh
+          args:
+            - make
+            - test-e2e-external-eks
+          securityContext:
+            privileged: true
+    annotations:
+      testgrid-dashboards: provider-aws-ebs-csi-driver
+      testgrid-tab-name: pull-external-test-eks
+      description: kubernetes/kubernetes external test on pull request on eks
       testgrid-num-columns-recent: '30'

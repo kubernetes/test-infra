@@ -83,16 +83,9 @@ Peribolos can dump the current configuration to an org. For example you could du
 
 ```console
 $ bazel run //prow/cmd/peribolos -- --dump kubernetes-sigs --github-token-path ~/github-token | tee ~/current.yaml # --tokens=0 to disable throttling
-INFO: Analysed target //prow/cmd/peribolos:peribolos (0 packages loaded).
-INFO: Found 1 target...
-Target //prow/cmd/peribolos:peribolos up-to-date:
-  bazel-bin/prow/cmd/peribolos/darwin_amd64_pure_stripped/peribolos
-INFO: Elapsed time: 0.533s, Critical Path: 0.18s
-INFO: 0 processes.
+...
 INFO: Build completed successfully, 1 total action
-INFO: Running command line: bazel-bin/prow/cmd/peribolos/darwin_amd64_pure_stripped/peribolos --dump kubernetes-sigs
-INFO: Build completed successfully, 1 total action
-{"client":"github","component":"peribolos","level":"info","msg":"Throttle(300, 100)","time":"2018-09-28T13:17:42-07:00"}
+...
 {"client":"github","component":"peribolos","level":"info","msg":"GetOrg(kubernetes-sigs)","time":"2018-09-28T13:17:42-07:00"}
 {"client":"github","component":"peribolos","level":"info","msg":"ListOrgMembers(kubernetes-sigs, admin)","time":"2018-09-28T13:17:42-07:00"}
 {"client":"github","component":"peribolos","level":"info","msg":"ListOrgMembers(kubernetes-sigs, member)","time":"2018-09-28T13:17:43-07:00"}
@@ -161,7 +154,7 @@ In order to mitigate the chance of applying erroneous configs, the peribolos bin
 
 These flags are designed to ensure that any problems can be corrected by rerunning the tool with a fixed config and/or binary.
 
-* `--maximimum-removal-delta=0.25` - reject a config that deletes more than 25% of the current memberships.
+* `--maximum-removal-delta=0.25` - reject a config that deletes more than 25% of the current memberships.
 
 This flag is designed to protect against typos in the configuration which might cause massive, unwanted deletions. Raising this value to 1.0 will allow deleting everyone, and reducing it to 0.0 will prevent any deletions.
 

@@ -22,15 +22,19 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"k8s.io/apimachinery/pkg/util/sets"
+
 	"k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
+	pluginsflagutil "k8s.io/test-infra/prow/flagutil/plugins"
 	"k8s.io/test-infra/prow/plugins"
 )
 
 // Make sure that our plugins are valid.
 func TestPlugins(t *testing.T) {
 	pa := &plugins.ConfigAgent{}
-	if err := pa.Load("../../../config/prow/plugins.yaml", true); err != nil {
+	if err := pa.Load("../../../config/prow/plugins.yaml", nil, "", true); err != nil {
 		t.Fatalf("Could not load plugins: %v.", err)
 	}
 }
@@ -52,7 +56,7 @@ func Test_gatherOptions(t *testing.T) {
 				"--config-path": "/random/value",
 			},
 			expected: func(o *options) {
-				o.configPath = "/random/value"
+				o.config.ConfigPath = "/random/value"
 			},
 		},
 		{
@@ -65,44 +69,53 @@ func Test_gatherOptions(t *testing.T) {
 			},
 		},
 		{
-			name: "--dry-run=true requires --deck-url",
-			args: map[string]string{
-				"--dry-run":  "true",
-				"--deck-url": "",
-			},
-			err: true,
-		},
-		{
 			name: "explicitly set --plugin-config",
 			args: map[string]string{
 				"--plugin-config": "/random/value",
 			},
 			expected: func(o *options) {
-				o.pluginConfig = "/random/value"
+				o.pluginsConfig.PluginConfigPath = "/random/value"
+			},
+		},
+		{
+			name: "explicitly set --webhook-path",
+			args: map[string]string{
+				"--webhook-path": "/random/hook",
+			},
+			expected: func(o *options) {
+				o.webhookPath = "/random/hook"
 			},
 		},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			expected := &options{
-				port:              8888,
-				configPath:        "yo",
-				pluginConfig:      "/etc/plugins/plugins.yaml",
-				dryRun:            true,
-				gracePeriod:       180 * time.Second,
-				kubernetes:        flagutil.KubernetesOptions{DeckURI: "http://whatever"},
-				webhookSecretFile: "/etc/webhook/hmac",
+				webhookPath: "/hook",
+				port:        8888,
+				config: configflagutil.ConfigOptions{
+					ConfigPath:                            "yo",
+					ConfigPathFlagName:                    "config-path",
+					JobConfigPathFlagName:                 "job-config-path",
+					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+				},
+				pluginsConfig: pluginsflagutil.PluginOptions{
+					PluginConfigPath:                         "/etc/plugins/plugins.yaml",
+					PluginConfigPathDefault:                  "/etc/plugins/plugins.yaml",
+					SupplementalPluginsConfigsFileNameSuffix: "_pluginconfig.yaml",
+				},
+				dryRun:                 true,
+				gracePeriod:            180 * time.Second,
+				webhookSecretFile:      "/etc/webhook/hmac",
+				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
 			}
 			expectedfs := flag.NewFlagSet("fake-flags", flag.PanicOnError)
 			expected.github.AddFlags(expectedfs)
-			expected.github.TokenPath = flagutil.DefaultGitHubTokenPath
 			if tc.expected != nil {
 				tc.expected(expected)
 			}
 
 			argMap := map[string]string{
 				"--config-path": "yo",
-				"--deck-url":    "http://whatever",
 			}
 			for k, v := range tc.args {
 				argMap[k] = v
@@ -125,7 +138,7 @@ func Test_gatherOptions(t *testing.T) {
 			case tc.err:
 				t.Errorf("failed to receive expected error")
 			case !reflect.DeepEqual(*expected, actual):
-				t.Errorf("%#v != expected %#v", actual, *expected)
+				t.Errorf("actual differs from expected: %s", cmp.Diff(actual, *expected, cmp.Exporter(func(_ reflect.Type) bool { return true })))
 			}
 		})
 	}

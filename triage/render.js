@@ -65,7 +65,7 @@ function addElement(parent, type, opts, children) {
 
 function spyglassURLForBuild(build, test) {
   let buildPath = builds.jobPaths[build.job] + '/' + build.number;
-  var spyglassURL = 'https://prow.k8s.io/view/gcs/' + buildPath.slice(5);
+  var spyglassURL = 'https://prow.k8s.io/view/gs/' + buildPath.slice(5);
   if (build.pr) {
     spyglassURL = spyglassURL.replace(/(\/pr-logs\/pull\/)[^/]*\//, '$1' + build.pr + '/');
   }
@@ -249,7 +249,7 @@ function renderSpans(text, spans) {
 
 function makeGitHubIssue(id, text, owner, latestBuilds) {
   let title = `Failure cluster [${id.slice(0, 8)}...]`;
-  let body = `### Failure cluster [${id}](https://go.k8s.io/triage#{id})
+  let body = `### Failure cluster [${id}](https://go.k8s.io/triage#${id})
 
 ##### Error text:
 \`\`\`
@@ -262,7 +262,13 @@ ${text.slice(0, Math.min(text.length, 1500))}
     const started = tsToString(build.started);
     body += `[${started} ${job}](${url})\n`
   }
-  body += `\n\n/label sig/${owner}`
+  body += `\n\n/kind failing-test`;
+  body += '\n<!-- If this is a flake, please add: /kind flake -->';
+  if (owner) {
+    body += `\n\n/sig ${owner}`;
+  } else {
+    body += '\n\n<!-- Please assign a SIG using: /sig SIG-NAME -->';
+  }
   return [title, body];
 }
 

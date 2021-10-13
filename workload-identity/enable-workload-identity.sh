@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Copyright 2020 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,7 +21,16 @@ set -o pipefail
 # Enables workload identity on a cluster
 
 if [[ $# != 3 ]]; then
-  echo "Usage: $(basename "$0") <project> <zone> <cluster>" >&2
+  echo "Usage: $(basename "$0") <project> <zone_or_region> <cluster>" >&2
+  exit 1
+fi
+
+# Require bash version >= 4.4
+if ((${BASH_VERSINFO[0]}<4)) || ( ((${BASH_VERSINFO[0]}==4)) && ((${BASH_VERSINFO[1]}<4)) ); then
+  echo "ERROR: This script requires a minimum bash version of 4.4, but got version of ${BASH_VERSINFO[0]}.${BASH_VERSINFO[1]}"
+  if [ "$(uname)" = 'Darwin' ]; then
+    echo "On macOS with homebrew 'brew install bash' is sufficient."
+  fi
   exit 1
 fi
 
@@ -31,12 +40,13 @@ cluster=$3
 
 
 cluster_namespace="$project.svc.id.goog"
-pool_metadata=GKE_METADATA_SERVER
+pool_metadata=GKE_METADATA
 
 
 call-gcloud() {
   (
     set -o xtrace
+    # gcloud container accepts region or zone for either argument
     gcloud beta container "$@" "--project=$project" "--zone=$zone"
   )
 }
@@ -48,7 +58,7 @@ cluster-identity() {
 
 pool-identities() {
   call-gcloud node-pools list "--cluster=$cluster" --format='value(name)' \
-    --filter="config.workloadMetadataConfig.nodeMetadata != $pool_metadata"
+    --filter="config.workloadMetadataConfig.mode != $pool_metadata"
 }
 
 fix_service=
@@ -98,11 +108,11 @@ if [[ -n "$fix_service" ]]; then
 fi
 
 if [[ -n "$fix_cluster" ]]; then
-  call-gcloud clusters update "$cluster" "--identity-namespace=$cluster_namespace"
+  call-gcloud clusters update "$cluster" "--workload-pool=$cluster_namespace"
 fi
 
 for pool in "${fix_pools[@]}"; do
-  call-gcloud node-pools update --cluster="$cluster" "$pool" "--workload-metadata-from-node=$pool_metadata"
+  call-gcloud node-pools update --cluster="$cluster" "$pool" "--workload-metadata=$pool_metadata"
 done
 
 echo "DONE"

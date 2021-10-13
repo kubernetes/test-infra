@@ -43,7 +43,7 @@ bind-service-accounts.sh \
   SOMEBODY@PROJECT.iam.gserviceaccount.com
 ```
 
-This script assumes the same person can access both `K8S\_PROJECT` and
+This script assumes the same person can access both `K8S_PROJECT` and
 `PROJECT`. If that is not true then the `PROJECT` owner can just run this
 command directly:
 

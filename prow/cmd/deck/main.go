@@ -36,20 +36,19 @@ import (
 	"strings"
 	"time"
 
-	"cloud.google.com/go/storage"
 	"github.com/NYTimes/gziphandler"
 	"github.com/gorilla/csrf"
 	"github.com/gorilla/sessions"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
-	"google.golang.org/api/option"
 	coreapi "k8s.io/api/core/v1"
 	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/sets"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
+	"k8s.io/test-infra/prow/flagutil"
+	"k8s.io/test-infra/prow/pjutil/pprof"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/yaml"
@@ -57,13 +56,15 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/deck/jobs"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
+	pluginsflagutil "k8s.io/test-infra/prow/flagutil/plugins"
 	"k8s.io/test-infra/prow/git/v2"
 	prowgithub "k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/githuboauth"
 	"k8s.io/test-infra/prow/interrupts"
+	"k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
@@ -82,7 +83,9 @@ import (
 	"k8s.io/test-infra/prow/spyglass/lenses"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/buildlog"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/coverage"
+	_ "k8s.io/test-infra/prow/spyglass/lenses/html"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/junit"
+	_ "k8s.io/test-infra/prow/spyglass/lenses/links"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/metadata"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/podinfo"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/restcoverage"
@@ -101,8 +104,9 @@ const (
 )
 
 type options struct {
-	configPath            string
-	jobConfigPath         string
+	config                configflagutil.ConfigOptions
+	pluginsConfig         pluginsflagutil.PluginOptions
+	instrumentation       prowflagutil.InstrumentationOptions
 	kubernetes            prowflagutil.KubernetesOptions
 	github                prowflagutil.GitHubOptions
 	tideURL               string
@@ -118,13 +122,12 @@ type options struct {
 	showHidden            bool
 	spyglass              bool
 	spyglassFilesLocation string
-	gcsCredentialsFile    string
-	gcsNoAuth             bool
+	storage               prowflagutil.StorageClientOptions
 	gcsCookieAuth         bool
 	rerunCreatesJob       bool
 	allowInsecure         bool
 	dryRun                bool
-	pluginConfig          string
+	tenantIDs             flagutil.Strings
 }
 
 func (o *options) Validate() error {
@@ -135,19 +138,12 @@ func (o *options) Validate() error {
 		return err
 	}
 
-	if o.configPath == "" {
-		return errors.New("required flag --config-path was unset")
+	if err := o.config.Validate(o.dryRun); err != nil {
+		return err
 	}
 
-	// TODO(Katharine): remove this handling after 2019-10-31
-	// We used to set a default value for --cookie-secret-file, but we also have code that
-	// assumes we don't. If it's not set, but it is required that it is, and a file exists
-	// at the old default, we set it back to that default and emit an error.
-	if o.cookieSecretFile == "" && o.oauthURL != "" {
-		if _, err := os.Stat("/etc/cookie/secret"); err == nil {
-			o.cookieSecretFile = "/etc/cookie/secret"
-			logrus.Error("You haven't set --cookie-secret, but you're assuming it is set to '/etc/cookie/secret'. Add --cookie-secret=/etc/cookie/secret to your deck instance's arguments. Your configuration will stop working at the end of October 2019.")
-		}
+	if err := o.pluginsConfig.Validate(o.dryRun); err != nil {
+		return err
 	}
 
 	if o.oauthURL != "" {
@@ -159,20 +155,14 @@ func (o *options) Validate() error {
 		}
 	}
 
-	if o.hiddenOnly && o.showHidden {
-		return errors.New("'--hidden-only' and '--show-hidden' are mutually exclusive, the first one shows only hidden job, the second one shows both hidden and non-hidden jobs")
-	}
-
-	if o.gcsCredentialsFile != "" && o.gcsNoAuth {
-		return errors.New("--gcs-credentials-file must not be set when --gcs-no-auth is set")
+	if (o.hiddenOnly && o.showHidden) || (o.tenantIDs.Strings() != nil && (o.hiddenOnly || o.showHidden)) {
+		return errors.New("'--hidden-only', '--tenant-id', and '--show-hidden' are mutually exclusive, 'hidden-only' shows only hidden job, '--tenant-id' shows all jobs with matching ID and 'show-hidden' shows both hidden and non-hidden jobs")
 	}
 	return nil
 }
 
 func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	var o options
-	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
-	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 	fs.StringVar(&o.tideURL, "tide-url", "", "Path to tide. If empty, do not serve tide data.")
 	fs.StringVar(&o.hookURL, "hook-url", "", "Path to hook plugin help endpoint.")
 	fs.StringVar(&o.oauthURL, "oauth-url", "", "Path to deck user dashboard endpoint.")
@@ -188,16 +178,19 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.StringVar(&o.spyglassFilesLocation, "spyglass-files-location", "/lenses", "Location of the static files for spyglass.")
 	fs.StringVar(&o.staticFilesLocation, "static-files-location", "/static", "Path to the static files")
 	fs.StringVar(&o.templateFilesLocation, "template-files-location", "/template", "Path to the template files")
-	fs.StringVar(&o.gcsCredentialsFile, "gcs-credentials-file", "", "Path to the GCS credentials file")
-	fs.BoolVar(&o.gcsNoAuth, "gcs-no-auth", false, "Whether to use anonymous auth for GCP. Requires when running outside of GCP and not setting gcs-credentials-file")
 	fs.BoolVar(&o.gcsCookieAuth, "gcs-cookie-auth", false, "Use storage.cloud.google.com instead of signed URLs")
 	fs.BoolVar(&o.rerunCreatesJob, "rerun-creates-job", false, "Change the re-run option in Deck to actually create the job. **WARNING:** Only use this with non-public deck instances, otherwise strangers can DOS your Prow instance")
 	fs.BoolVar(&o.allowInsecure, "allow-insecure", false, "Allows insecure requests for CSRF and GitHub oauth.")
 	fs.BoolVar(&o.dryRun, "dry-run", false, "Whether or not to make mutating API calls to GitHub.")
-	fs.StringVar(&o.pluginConfig, "plugin-config", "", "Path to plugin config file, probably /etc/plugins/plugins.yaml")
+	fs.Var(&o.tenantIDs, "tenant-id", "The tenantID(s) used by the ProwJobs that should be displayed by this instance of Deck. This flag can be repeated.")
+	o.config.AddFlags(fs)
+	o.instrumentation.AddFlags(fs)
 	o.kubernetes.AddFlags(fs)
 	o.github.AddFlags(fs)
 	o.github.AllowAnonymous = true
+	o.github.AllowDirectAccess = true
+	o.storage.AddFlags(fs)
+	o.pluginsConfig.AddFlags(fs)
 	fs.Parse(args)
 	return o
 }
@@ -220,6 +213,7 @@ func init() {
 }
 
 var simplifier = simplifypath.NewSimplifier(l("", // shadow element mimicing the root
+	l(""),
 	l("badge.svg"),
 	l("command-help"),
 	l("config"),
@@ -227,6 +221,7 @@ var simplifier = simplifypath.NewSimplifier(l("", // shadow element mimicing the
 	l("favicon.ico"),
 	l("github-login",
 		l("redirect")),
+	l("github-link"),
 	l("job-history",
 		v("job")),
 	l("log"),
@@ -241,13 +236,13 @@ var simplifier = simplifypath.NewSimplifier(l("", // shadow element mimicing the
 	l("rerun"),
 	l("spyglass",
 		l("static",
-			v("path")),
+			simplifypath.VGreedy("path")),
 		l("lens",
 			v("lens",
 				v("job")),
 		)),
 	l("static",
-		v("path")),
+		simplifypath.VGreedy("path")),
 	l("tide"),
 	l("tide-history"),
 	l("tide-history.js"),
@@ -275,31 +270,30 @@ func main() {
 	}
 
 	defer interrupts.WaitForGracefulShutdown()
-	pjutil.ServePProf()
+	pprof.Instrument(o.instrumentation)
 
 	// setup config agent, pod log clients etc.
-	configAgent := &config.Agent{}
-	if err := configAgent.Start(o.configPath, o.jobConfigPath, spglassConfigDefaulting); err != nil {
+	configAgent, err := o.config.ConfigAgentWithAdditionals(&config.Agent{}, []func(*config.Config) error{spglassConfigDefaulting})
+	if err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 	cfg := configAgent.Config
 
 	var pluginAgent *plugins.ConfigAgent
-	if o.pluginConfig != "" {
-		pluginAgent = &plugins.ConfigAgent{}
-		if err := pluginAgent.Start(o.pluginConfig, false); err != nil {
+	if o.pluginsConfig.PluginConfigPath != "" {
+		pluginAgent, err = o.pluginsConfig.PluginAgent()
+		if err != nil {
 			logrus.WithError(err).Fatal("Error loading Prow plugin config.")
 		}
 	} else {
 		logrus.Info("No plugins configuration was provided to deck. You must provide one to reuse /test checks for rerun")
 	}
-
-	metrics.ExposeMetrics("deck", cfg().PushGateway)
+	metrics.ExposeMetrics("deck", cfg().PushGateway, o.instrumentation.MetricsPort)
 
 	// signal to the world that we are healthy
 	// this needs to be in a separate port as we don't start the
 	// main server with the main mux until we're ready
-	health := pjutil.NewHealth()
+	health := pjutil.NewHealthOnPort(o.instrumentation.HealthPort)
 
 	mux := http.NewServeMux()
 	// setup common handlers for local and deployed runs
@@ -319,11 +313,97 @@ func main() {
 	runLocal := o.pregeneratedData != ""
 
 	var fallbackHandler func(http.ResponseWriter, *http.Request)
+	var pjListingClient jobs.PJListingClient
+	var githubClient deckGitHubClient
+	var gitClient git.ClientFactory
+	var podLogClients map[string]jobs.PodLogClient
 	if runLocal {
 		localDataHandler := staticHandlerFromDir(o.pregeneratedData)
 		fallbackHandler = localDataHandler.ServeHTTP
+
+		var fjc fakePjListingClientWrapper
+		var pjs prowapi.ProwJobList
+		staticPjsPath := path.Join(o.pregeneratedData, "prowjobs.json")
+		content, err := ioutil.ReadFile(staticPjsPath)
+		if err != nil {
+			logrus.WithError(err).Fatal("Failed to read jobs from prowjobs.json.")
+		}
+		if err = json.Unmarshal(content, &pjs); err != nil {
+			logrus.WithError(err).Fatal("Failed to unmarshal jobs from prowjobs.json.")
+		}
+		fjc.pjs = &pjs
+		pjListingClient = &fjc
 	} else {
 		fallbackHandler = http.NotFound
+
+		restCfg, err := o.kubernetes.InfrastructureClusterConfig(false)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error getting infrastructure cluster config.")
+		}
+		mgr, err := manager.New(restCfg, manager.Options{
+			Namespace:          cfg().ProwJobNamespace,
+			MetricsBindAddress: "0",
+			LeaderElection:     false},
+		)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error getting manager.")
+		}
+		// Force a cache for ProwJobs
+		if _, err := mgr.GetCache().GetInformer(interrupts.Context(), &prowapi.ProwJob{}); err != nil {
+			logrus.WithError(err).Fatal("Failed to get prowjob informer")
+		}
+		go func() {
+			if err := mgr.Start(interrupts.Context()); err != nil {
+				logrus.WithError(err).Fatal("Error starting manager.")
+			} else {
+				logrus.Info("Manager stopped gracefully.")
+			}
+		}()
+		mgrSyncCtx, mgrSyncCtxCancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer mgrSyncCtxCancel()
+		if synced := mgr.GetCache().WaitForCacheSync(mgrSyncCtx); !synced {
+			logrus.Fatal("Timed out waiting for cachesync")
+		}
+
+		// The watch apimachinery doesn't support restarts, so just exit the binary if a kubeconfig changes
+		// to make the kubelet restart us.
+		if err := o.kubernetes.AddKubeconfigChangeCallback(func() {
+			logrus.Info("Kubeconfig changed, exiting to trigger a restart")
+			interrupts.Terminate()
+		}); err != nil {
+			logrus.WithError(err).Fatal("Failed to register kubeconfig change callback")
+		}
+
+		pjListingClient = &pjListingClientWrapper{mgr.GetClient()}
+
+		// We use the GH client to resolve GH teams when determining who is permitted to rerun a job.
+		// When inrepoconfig is enabled, both the GitHubClient and the gitClient are used to resolve
+		// presubmits dynamically which we need for the PR history page.
+		if o.github.TokenPath != "" || o.github.AppID != "" {
+			githubClient, err = o.github.GitHubClient(o.dryRun)
+			if err != nil {
+				logrus.WithError(err).Fatal("Error getting GitHub client.")
+			}
+			g, err := o.github.GitClient(o.dryRun)
+			if err != nil {
+				logrus.WithError(err).Fatal("Error getting Git client.")
+			}
+			gitClient = git.ClientFactoryFrom(g)
+		} else {
+			if len(cfg().InRepoConfig.Enabled) > 0 {
+				logrus.Fatal("--github-token-path must be configured with a valid token when using the inrepoconfig feature")
+			}
+		}
+
+		buildClusterClients, err := o.kubernetes.BuildClusterClients(cfg().PodNamespace, false)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error getting Kubernetes client.")
+		}
+
+		podLogClients = make(map[string]jobs.PodLogClient)
+		for clusterContext, client := range buildClusterClients {
+			podLogClients[clusterContext] = &podLogClient{client: client}
+		}
 	}
 
 	authCfgGetter := func(refs *prowapi.Refs) *prowapi.RerunAuthConfig {
@@ -345,10 +425,24 @@ func main() {
 		indexHandler(w, r)
 	})
 
+	ja := jobs.NewJobAgent(context.Background(), pjListingClient, o.hiddenOnly, o.showHidden, o.tenantIDs.Strings(), podLogClients, cfg)
+	ja.Start()
+
+	// setup prod only handlers. These handlers can work with runlocal as long
+	// as ja is properly mocked, more specifically pjListingClient inside ja
+	mux.Handle("/data.js", gziphandler.GzipHandler(handleData(ja, logrus.WithField("handler", "/data.js"))))
+	mux.Handle("/prowjobs.js", gziphandler.GzipHandler(handleProwJobs(ja, logrus.WithField("handler", "/prowjobs.js"))))
+	mux.Handle("/badge.svg", gziphandler.GzipHandler(handleBadge(ja)))
+	mux.Handle("/log", gziphandler.GzipHandler(handleLog(ja, logrus.WithField("handler", "/log"))))
+
+	if o.spyglass {
+		initSpyglass(cfg, o, mux, ja, githubClient, gitClient)
+	}
+
 	if runLocal {
 		mux = localOnlyMain(cfg, o, mux)
 	} else {
-		mux = prodOnlyMain(cfg, pluginAgent, authCfgGetter, o, mux)
+		mux = prodOnlyMain(cfg, pluginAgent, authCfgGetter, githubClient, o, mux)
 	}
 
 	// signal to the world that we're ready
@@ -406,10 +500,6 @@ func main() {
 func localOnlyMain(cfg config.Getter, o options, mux *http.ServeMux) *http.ServeMux {
 	mux.Handle("/github-login", gziphandler.GzipHandler(handleSimpleTemplate(o, cfg, "github-login.html", nil)))
 
-	if o.spyglass {
-		initSpyglass(cfg, o, mux, nil, nil, nil)
-	}
-
 	return mux
 }
 
@@ -417,64 +507,13 @@ type podLogClient struct {
 	client corev1.PodInterface
 }
 
-func (c *podLogClient) GetLogs(name string, opts *coreapi.PodLogOptions) ([]byte, error) {
-	reader, err := c.client.GetLogs(name, &coreapi.PodLogOptions{Container: kube.TestContainerName}).Stream()
+func (c *podLogClient) GetLogs(name, container string) ([]byte, error) {
+	reader, err := c.client.GetLogs(name, &coreapi.PodLogOptions{Container: container}).Stream(context.TODO())
 	if err != nil {
 		return nil, err
 	}
 	defer reader.Close()
 	return ioutil.ReadAll(reader)
-}
-
-type pjListingClient interface {
-	List(context.Context, *prowapi.ProwJobList, ...ctrlruntimeclient.ListOption) error
-}
-
-type filteringProwJobLister struct {
-	ctx         context.Context
-	client      pjListingClient
-	hiddenRepos func() sets.String
-	hiddenOnly  bool
-	showHidden  bool
-}
-
-func (c *filteringProwJobLister) ListProwJobs(selector string) ([]prowapi.ProwJob, error) {
-	prowJobList := &prowapi.ProwJobList{}
-	parsedSelector, err := labels.Parse(selector)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse selector: %v", err)
-	}
-	listOpts := &ctrlruntimeclient.ListOptions{LabelSelector: parsedSelector}
-	if err := c.client.List(c.ctx, prowJobList, listOpts); err != nil {
-		return nil, err
-	}
-
-	var filtered []prowapi.ProwJob
-	for _, item := range prowJobList.Items {
-		shouldHide := item.Spec.Hidden || c.pjHasHiddenRefs(item)
-		if shouldHide && c.showHidden {
-			filtered = append(filtered, item)
-		} else if shouldHide == c.hiddenOnly {
-			// this is a hidden job, show it if we're asked
-			// to only show hidden jobs otherwise hide it
-			filtered = append(filtered, item)
-		}
-	}
-	return filtered, nil
-}
-
-func (c *filteringProwJobLister) pjHasHiddenRefs(pj prowapi.ProwJob) bool {
-	allRefs := pj.Spec.ExtraRefs
-	if pj.Spec.Refs != nil {
-		allRefs = append(allRefs, *pj.Spec.Refs)
-	}
-	for _, refs := range allRefs {
-		if c.hiddenRepos().HasAny(fmt.Sprintf("%s/%s", refs.Org, refs.Repo), refs.Org) {
-			return true
-		}
-	}
-
-	return false
 }
 
 type pjListingClientWrapper struct {
@@ -488,99 +527,32 @@ func (w *pjListingClientWrapper) List(
 	return w.reader.List(ctx, pjl, opts...)
 }
 
+// fakePjListingClientWrapper implements pjListingClient for runlocal
+type fakePjListingClientWrapper struct {
+	pjs *prowapi.ProwJobList
+}
+
+func (fjc *fakePjListingClientWrapper) List(ctx context.Context, pjl *prowapi.ProwJobList, lo ...ctrlruntimeclient.ListOption) error {
+	*pjl = *fjc.pjs
+	return nil
+}
+
 // prodOnlyMain contains logic only used when running deployed, not locally
-func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, authCfgGetter authCfgGetter, o options, mux *http.ServeMux) *http.ServeMux {
+func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, authCfgGetter authCfgGetter, githubClient deckGitHubClient, o options, mux *http.ServeMux) *http.ServeMux {
 	prowJobClient, err := o.kubernetes.ProwJobClient(cfg().ProwJobNamespace, false)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting ProwJob client for infrastructure cluster.")
 	}
-	restCfg, err := o.kubernetes.InfrastructureClusterConfig(false)
-	if err != nil {
-		logrus.WithError(err).Fatal("Error getting infrastructure cluster config.")
-	}
-	mgr, err := manager.New(restCfg, manager.Options{
-		Namespace:          cfg().ProwJobNamespace,
-		MetricsBindAddress: "0",
-		LeaderElection:     false},
-	)
-	if err != nil {
-		logrus.WithError(err).Fatal("Error getting manager.")
-	}
-	go func() {
-		if err := mgr.Start(make(chan struct{})); err != nil {
-			logrus.WithError(err).Fatal("Error starting manager.")
-		} else {
-			logrus.Info("Manager stopped gracefully.")
-		}
-	}()
-	mgrSyncCtx, mgrSyncCtxCancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer mgrSyncCtxCancel()
-	if synced := mgr.GetCache().WaitForCacheSync(mgrSyncCtx.Done()); !synced {
-		logrus.Fatal("Timed out waiting for cachesync")
-	}
 
-	buildClusterClients, err := o.kubernetes.BuildClusterClients(cfg().PodNamespace, false)
-	if err != nil {
-		logrus.WithError(err).Fatal("Error getting Kubernetes client.")
-	}
-
-	podLogClients := map[string]jobs.PodLogClient{}
-	for clusterContext, client := range buildClusterClients {
-		podLogClients[clusterContext] = &podLogClient{client: client}
-	}
-
-	ja := jobs.NewJobAgent(&filteringProwJobLister{
-		client: &pjListingClientWrapper{mgr.GetClient()},
-		hiddenRepos: func() sets.String {
-			return sets.NewString(cfg().Deck.HiddenRepos...)
-		},
-		hiddenOnly: o.hiddenOnly,
-		showHidden: o.showHidden,
-	}, podLogClients, cfg)
-	ja.Start()
-
-	// setup prod only handlers
-	mux.Handle("/data.js", gziphandler.GzipHandler(handleData(ja, logrus.WithField("handler", "/data.js"))))
-	mux.Handle("/prowjobs.js", gziphandler.GzipHandler(handleProwJobs(ja, logrus.WithField("handler", "/prowjobs.js"))))
-	mux.Handle("/badge.svg", gziphandler.GzipHandler(handleBadge(ja)))
-	mux.Handle("/log", gziphandler.GzipHandler(handleLog(ja, logrus.WithField("handler", "/log"))))
-
+	// prowjob still needs prowJobClient for retrieving log
 	mux.Handle("/prowjob", gziphandler.GzipHandler(handleProwJob(prowJobClient, logrus.WithField("handler", "/prowjob"))))
-
-	// We use the GH client to resolve GH teams when determining who is permitted to rerun a job.
-	// When inrepoconfig is enabled, both the GitHubClient and the gitClient are used to resolve
-	// presubmits dynamically which we need for the PR history page.
-	var githubClient deckGitHubClient
-	var gitClient git.ClientFactory
-	secretAgent := &secret.Agent{}
-	if o.github.TokenPath != "" {
-		if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
-			logrus.WithError(err).Fatal("Error starting secrets agent.")
-		}
-		githubClient, err = o.github.GitHubClient(secretAgent, o.dryRun)
-		if err != nil {
-			logrus.WithError(err).Fatal("Error getting GitHub client.")
-		}
-		g, err := o.github.GitClient(secretAgent, o.dryRun)
-		if err != nil {
-			logrus.WithError(err).Fatal("Error getting Git client.")
-		}
-		gitClient = git.ClientFactoryFrom(g)
-	} else {
-		if len(cfg().InRepoConfig.Enabled) > 0 {
-			logrus.Fatal("--github-token-path must be configured with a valid token when using the inrepoconfig feature")
-		}
-	}
-
-	if o.spyglass {
-		initSpyglass(cfg, o, mux, ja, githubClient, gitClient)
-	}
 
 	if o.hookURL != "" {
 		mux.Handle("/plugin-help.js",
 			gziphandler.GzipHandler(handlePluginHelp(newHelpAgent(o.hookURL), logrus.WithField("handler", "/plugin-help.js"))))
 	}
 
+	// tide could potentially be mocked by static data
 	if o.tideURL != "" {
 		ta := &tideAgent{
 			log:  logrus.WithField("agent", "tide"),
@@ -593,11 +565,18 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, authCfgGe
 			},
 			hiddenOnly: o.hiddenOnly,
 			showHidden: o.showHidden,
+			tenantIDs:  sets.NewString(o.tenantIDs.Strings()...),
+			cfg:        cfg,
 		}
 		ta.start()
 		mux.Handle("/tide.js", gziphandler.GzipHandler(handleTidePools(cfg, ta, logrus.WithField("handler", "/tide.js"))))
 		mux.Handle("/tide-history.js", gziphandler.GzipHandler(handleTideHistory(ta, logrus.WithField("handler", "/tide-history.js"))))
 	}
+
+	secure := !o.allowInsecure
+
+	// Handles link to github
+	mux.HandleFunc("/github-link", HandleGitHubLink(o.github.Host, secure))
 
 	// Enable Git OAuth feature if oauthURL is provided.
 	var goa *githuboauth.Agent
@@ -650,8 +629,6 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, authCfgGe
 			&o.github,
 			logrus.WithField("client", "pr-status"))
 
-		secure := !o.allowInsecure
-
 		clientCreator := func(accessToken string) prstatus.GitHubClient {
 			return o.github.GitHubClientWithAccessToken(accessToken)
 		}
@@ -693,25 +670,18 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, authCfgGe
 
 func initSpyglass(cfg config.Getter, o options, mux *http.ServeMux, ja *jobs.JobAgent, gitHubClient deckGitHubClient, gitClient git.ClientFactory) {
 	ctx := context.TODO()
-	var options []option.ClientOption
-	if creds := o.gcsCredentialsFile; creds != "" {
-		options = append(options, option.WithCredentialsFile(creds))
-	}
-	if o.gcsNoAuth {
-		options = append(options, option.WithoutAuthentication())
-	}
-	c, err := storage.NewClient(ctx, options...)
+	opener, err := io.NewOpener(ctx, o.storage.GCSCredentialsFile, o.storage.S3CredentialsFile)
 	if err != nil {
-		logrus.WithError(err).Fatal("Error getting GCS client")
+		logrus.WithError(err).Fatal("Error creating opener")
 	}
-	sg := spyglass.New(ctx, ja, cfg, c, o.gcsCredentialsFile, o.gcsCookieAuth)
+	sg := spyglass.New(ctx, ja, cfg, opener, o.gcsCookieAuth)
 	sg.Start()
 
 	mux.Handle("/spyglass/static/", http.StripPrefix("/spyglass/static", staticHandlerFromDir(o.spyglassFilesLocation)))
 	mux.Handle("/spyglass/lens/", gziphandler.GzipHandler(http.StripPrefix("/spyglass/lens/", handleArtifactView(o, sg, cfg))))
 	mux.Handle("/view/", gziphandler.GzipHandler(handleRequestJobViews(sg, cfg, o, logrus.WithField("handler", "/view"))))
-	mux.Handle("/job-history/", gziphandler.GzipHandler(handleJobHistory(o, cfg, c, logrus.WithField("handler", "/job-history"))))
-	mux.Handle("/pr-history/", gziphandler.GzipHandler(handlePRHistory(o, cfg, c, gitHubClient, gitClient, logrus.WithField("handler", "/pr-history"))))
+	mux.Handle("/job-history/", gziphandler.GzipHandler(handleJobHistory(o, cfg, opener, logrus.WithField("handler", "/job-history"))))
+	mux.Handle("/pr-history/", gziphandler.GzipHandler(handlePRHistory(o, cfg, opener, gitHubClient, gitClient, logrus.WithField("handler", "/pr-history"))))
 	if err := initLocalLensHandler(cfg, o, sg); err != nil {
 		logrus.WithError(err).Fatal("Failed to initialize local lens handler")
 	}
@@ -720,7 +690,7 @@ func initSpyglass(cfg config.Getter, o options, mux *http.ServeMux, ja *jobs.Job
 func initLocalLensHandler(cfg config.Getter, o options, sg *spyglass.Spyglass) error {
 	var localLenses []common.LensWithConfiguration
 	for _, lfc := range cfg().Deck.Spyglass.Lenses {
-		if !strings.HasPrefix(strings.TrimLeft(lfc.RemoteConfig.Endpoint, "http://"), spyglassLocalLensListenerAddr) {
+		if !strings.HasPrefix(strings.TrimPrefix(lfc.RemoteConfig.Endpoint, "http://"), spyglassLocalLensListenerAddr) {
 			continue
 		}
 
@@ -738,7 +708,7 @@ func initLocalLensHandler(cfg config.Getter, o options, sg *spyglass.Spyglass) e
 		})
 	}
 
-	lensServer, err := common.NewLensServer(spyglassLocalLensListenerAddr, sg.JobAgent, sg.GCSArtifactFetcher, sg.PodLogArtifactFetcher, cfg, localLenses)
+	lensServer, err := common.NewLensServer(spyglassLocalLensListenerAddr, sg.JobAgent, sg.StorageArtifactFetcher, sg.PodLogArtifactFetcher, cfg, localLenses)
 	if err != nil {
 		return fmt.Errorf("constructing local lens server: %w", err)
 	}
@@ -753,16 +723,6 @@ func loadToken(file string) ([]byte, error) {
 		return []byte{}, err
 	}
 	return bytes.TrimSpace(raw), nil
-}
-
-// copy a http.Request
-// see: https://go-review.googlesource.com/c/go/+/36483/3/src/net/http/server.go
-func dupeRequest(original *http.Request) *http.Request {
-	r2 := new(http.Request)
-	*r2 = *original
-	r2.URL = new(url.URL)
-	*r2.URL = *original.URL
-	return r2
 }
 
 func handleCached(next http.Handler) http.Handler {
@@ -816,6 +776,7 @@ func handleProwJobs(ja *jobs.JobAgent, log *logrus.Entry) http.HandlerFunc {
 
 		if set := sets.NewString(strings.Split(omit, ",")...); set.Len() > 0 {
 			for i := range jobs {
+				jobs[i].ManagedFields = nil
 				if set.Has(Annotations) {
 					jobs[i].Annotations = nil
 				}
@@ -826,7 +787,19 @@ func handleProwJobs(ja *jobs.JobAgent, log *logrus.Entry) http.HandlerFunc {
 					jobs[i].Spec.DecorationConfig = nil
 				}
 				if set.Has(PodSpec) {
-					jobs[i].Spec.PodSpec = nil
+					// when we omit the podspec, we don't set it completely to nil
+					// instead, we set it to a new podspec that just has an empty container for each container that exists in the actual podspec
+					// this is so we can determine how many containers there are for a given prowjob without fetching all of the podspec details
+					// this is necessary for prow/cmd/deck/static/prow/prow.ts to determine whether the logIcon should link to a log endpoint or to spyglass
+					if jobs[i].Spec.PodSpec != nil {
+						emptyContainers := []coreapi.Container{}
+						for range jobs[i].Spec.PodSpec.Containers {
+							emptyContainers = append(emptyContainers, coreapi.Container{})
+						}
+						jobs[i].Spec.PodSpec = &coreapi.PodSpec{
+							Containers: emptyContainers,
+						}
+					}
 				}
 			}
 		}
@@ -882,27 +855,37 @@ func handleBadge(ja *jobs.JobAgent) http.HandlerFunc {
 }
 
 // handleJobHistory handles requests to get the history of a given job
-// The url must look like this for presubmits:
+// There is also a new format since we started supporting other storageProvider
+// like s3 and not only GCS.
+// The url must look like one of these for presubmits:
 //
-// /job-history/<gcs-bucket-name>/pr-logs/directory/<job-name>
+// - /job-history/<gcs-bucket-name>/pr-logs/directory/<job-name>
+// - /job-history/<storage-provider>/<bucket-name>/pr-logs/directory/<job-name>
 //
 // Example:
 // - /job-history/kubernetes-jenkins/pr-logs/directory/pull-test-infra-verify-gofmt
+// - /job-history/gs/kubernetes-jenkins/pr-logs/directory/pull-test-infra-verify-gofmt
 //
-// For periodics or postsubmits, the url must look like this:
+// For periodics or postsubmits, the url must look like one of these:
 //
-// /job-history/<gcs-bucket-name>/logs/<job-name>
+// - /job-history/<gcs-bucket-name>/logs/<job-name>
+// - /job-history/<storage-provider>/<bucket-name>/logs/<job-name>
 //
 // Example:
 // - /job-history/kubernetes-jenkins/logs/ci-kubernetes-e2e-prow-canary
-func handleJobHistory(o options, cfg config.Getter, gcsClient *storage.Client, log *logrus.Entry) http.HandlerFunc {
+// - /job-history/gs/kubernetes-jenkins/logs/ci-kubernetes-e2e-prow-canary
+func handleJobHistory(o options, cfg config.Getter, opener io.Opener, log *logrus.Entry) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		setHeadersNoCaching(w)
-		tmpl, err := getJobHistory(r.URL, cfg(), gcsClient)
+		tmpl, err := getJobHistory(r.Context(), r.URL, cfg, opener)
 		if err != nil {
 			msg := fmt.Sprintf("failed to get job history: %v", err)
-			log.WithField("url", r.URL.String()).Warn(msg)
-			http.Error(w, msg, http.StatusInternalServerError)
+			if shouldLogHTTPErrors(err) {
+				log.WithField("url", r.URL.String()).WithError(err).Warn(msg)
+			} else {
+				log.WithField("url", r.URL.String()).WithError(err).Debug(msg)
+			}
+			http.Error(w, msg, httpStatusForError(err))
 			return
 		}
 		handleSimpleTemplate(o, cfg, "job-history.html", tmpl)(w, r)
@@ -913,10 +896,10 @@ func handleJobHistory(o options, cfg config.Getter, gcsClient *storage.Client, l
 // The url must look like this:
 //
 // /pr-history?org=<org>&repo=<repo>&pr=<pr number>
-func handlePRHistory(o options, cfg config.Getter, gcsClient *storage.Client, gitHubClient deckGitHubClient, gitClient git.ClientFactory, log *logrus.Entry) http.HandlerFunc {
+func handlePRHistory(o options, cfg config.Getter, opener io.Opener, gitHubClient deckGitHubClient, gitClient git.ClientFactory, log *logrus.Entry) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		setHeadersNoCaching(w)
-		tmpl, err := getPRHistory(r.URL, cfg(), gcsClient, gitHubClient, gitClient)
+		tmpl, err := getPRHistory(r.Context(), r.URL, cfg(), opener, gitHubClient, gitClient, o.github.Host)
 		if err != nil {
 			msg := fmt.Sprintf("failed to get PR history: %v", err)
 			log.WithField("url", r.URL.String()).Info(msg)
@@ -942,11 +925,13 @@ func handleRequestJobViews(sg *spyglass.Spyglass, cfg config.Getter, o options, 
 		src := strings.TrimPrefix(r.URL.Path, "/view/")
 
 		csrfToken := csrf.Token(r)
-		page, err := renderSpyglass(sg, cfg, src, o, csrfToken, log)
+		page, err := renderSpyglass(r.Context(), sg, cfg, src, o, csrfToken, log)
 		if err != nil {
-			log.WithError(err).Error("error rendering spyglass page")
-			message := fmt.Sprintf("error rendering spyglass page: %v", err)
-			http.Error(w, message, http.StatusInternalServerError)
+			msg := fmt.Sprintf("error rendering spyglass page: %v", err)
+			if shouldLogHTTPErrors(err) {
+				log.WithError(err).Warn(msg)
+			}
+			http.Error(w, msg, httpStatusForError(err))
 			return
 		}
 
@@ -961,22 +946,21 @@ func handleRequestJobViews(sg *spyglass.Spyglass, cfg config.Getter, o options, 
 }
 
 // renderSpyglass returns a pre-rendered Spyglass page from the given source string
-func renderSpyglass(sg *spyglass.Spyglass, cfg config.Getter, src string, o options, csrfToken string, log *logrus.Entry) (string, error) {
+func renderSpyglass(ctx context.Context, sg *spyglass.Spyglass, cfg config.Getter, src string, o options, csrfToken string, log *logrus.Entry) (string, error) {
 	renderStart := time.Now()
 
 	src = strings.TrimSuffix(src, "/")
 	realPath, err := sg.ResolveSymlink(src)
 	if err != nil {
-		return "", fmt.Errorf("error when resolving real path %s: %v", src, err)
+		return "", fmt.Errorf("error when resolving real path %s: %w", src, err)
 	}
 	src = realPath
-
-	artifactNames, err := sg.ListArtifacts(src)
+	artifactNames, err := sg.ListArtifacts(ctx, src)
 	if err != nil {
-		return "", fmt.Errorf("error listing artifacts: %v", err)
+		return "", fmt.Errorf("error listing artifacts: %w", err)
 	}
 	if len(artifactNames) == 0 {
-		return "", fmt.Errorf("found no artifacts for %s", src)
+		log.Infof("found no artifacts for %s", src)
 	}
 
 	regexCache := cfg().Deck.Spyglass.RegexCache
@@ -1024,7 +1008,7 @@ lensesLoop:
 		if prowJobName != "" {
 			u, err := url.Parse("/prowjob")
 			if err != nil {
-				return "", fmt.Errorf("error parsing prowjob path: %v", err)
+				return "", fmt.Errorf("error parsing prowjob path: %w", err)
 			}
 			query := url.Values{}
 			query.Set("prowjob", prowJobName)
@@ -1035,8 +1019,14 @@ lensesLoop:
 		log.WithError(err).Warningf("Error getting ProwJob name for source %q.", src)
 	}
 
+	prHistLink := ""
+	org, repo, number, err := sg.RunToPR(src)
+	if err == nil {
+		prHistLink = "/pr-history?org=" + org + "&repo=" + repo + "&pr=" + strconv.Itoa(number)
+	}
+
 	artifactsLink := ""
-	gcswebPrefix := cfg().Deck.Spyglass.GCSBrowserPrefix
+	gcswebPrefix := cfg().Deck.Spyglass.GCSBrowserPrefixes.GetGCSBrowserPrefix(org, repo)
 	if gcswebPrefix != "" {
 		runPath, err := sg.RunPath(src)
 		if err == nil {
@@ -1048,15 +1038,9 @@ lensesLoop:
 		}
 	}
 
-	prHistLink := ""
-	org, repo, number, err := sg.RunToPR(src)
-	if err == nil {
-		prHistLink = "/pr-history?org=" + org + "&repo=" + repo + "&pr=" + strconv.Itoa(number)
-	}
-
-	jobName, buildID, err := sg.KeyToJob(src)
+	jobName, buildID, err := common.KeyToJob(src)
 	if err != nil {
-		return "", fmt.Errorf("error determining jobName / buildID: %v", err)
+		return "", fmt.Errorf("error determining jobName / buildID: %w", err)
 	}
 
 	prLink := ""
@@ -1069,7 +1053,7 @@ lensesLoop:
 	if cfg().Deck.Spyglass.Announcement != "" {
 		announcementTmpl, err := template.New("announcement").Parse(cfg().Deck.Spyglass.Announcement)
 		if err != nil {
-			return "", fmt.Errorf("error parsing announcement template: %v", err)
+			return "", fmt.Errorf("error parsing announcement template: %w", err)
 		}
 		runPath, err := sg.RunPath(src)
 		if err != nil {
@@ -1082,7 +1066,7 @@ lensesLoop:
 			ArtifactPath: runPath,
 		})
 		if err != nil {
-			return "", fmt.Errorf("error executing announcement template: %v", err)
+			return "", fmt.Errorf("error executing announcement template: %w", err)
 		}
 		announcement = announcementBuf.String()
 	}
@@ -1092,57 +1076,61 @@ lensesLoop:
 		tgLink = ""
 	}
 
-	extraLinks, err := sg.ExtraLinks(src)
+	extraLinks, err := sg.ExtraLinks(ctx, src)
 	if err != nil {
 		log.WithError(err).WithField("page", src).Warn("Failed to fetch extra links")
 		extraLinks = nil
 	}
 
 	var viewBuf bytes.Buffer
-	type lensesTemplate struct {
-		Lenses        map[int]spyglass.LensConfig
-		LensIndexes   []int
-		Source        string
-		LensArtifacts map[int][]string
-		JobHistLink   string
-		ProwJobLink   string
-		ArtifactsLink string
-		PRHistLink    string
-		Announcement  template.HTML
-		TestgridLink  string
-		JobName       string
-		BuildID       string
-		PRLink        string
-		ExtraLinks    []spyglass.ExtraLink
+	type spyglassTemplate struct {
+		Lenses          map[int]spyglass.LensConfig
+		LensIndexes     []int
+		Source          string
+		LensArtifacts   map[int][]string
+		JobHistLink     string
+		ProwJobLink     string
+		ArtifactsLink   string
+		PRHistLink      string
+		Announcement    template.HTML
+		TestgridLink    string
+		JobName         string
+		BuildID         string
+		PRLink          string
+		ExtraLinks      []spyglass.ExtraLink
+		ReRunCreatesJob bool
+		ProwJobName     string
 	}
-	lTmpl := lensesTemplate{
-		Lenses:        ls,
-		LensIndexes:   lensIndexes,
-		Source:        src,
-		LensArtifacts: lensCache,
-		JobHistLink:   jobHistLink,
-		ProwJobLink:   prowJobLink,
-		ArtifactsLink: artifactsLink,
-		PRHistLink:    prHistLink,
-		Announcement:  template.HTML(announcement),
-		TestgridLink:  tgLink,
-		JobName:       jobName,
-		BuildID:       buildID,
-		PRLink:        prLink,
-		ExtraLinks:    extraLinks,
+	sTmpl := spyglassTemplate{
+		Lenses:          ls,
+		LensIndexes:     lensIndexes,
+		Source:          src,
+		LensArtifacts:   lensCache,
+		JobHistLink:     jobHistLink,
+		ProwJobLink:     prowJobLink,
+		ArtifactsLink:   artifactsLink,
+		PRHistLink:      prHistLink,
+		Announcement:    template.HTML(announcement),
+		TestgridLink:    tgLink,
+		JobName:         jobName,
+		BuildID:         buildID,
+		PRLink:          prLink,
+		ExtraLinks:      extraLinks,
+		ReRunCreatesJob: o.rerunCreatesJob,
+		ProwJobName:     prowJobName,
 	}
 	t := template.New("spyglass.html")
 
 	if _, err := prepareBaseTemplate(o, cfg, csrfToken, t); err != nil {
-		return "", fmt.Errorf("error preparing base template: %v", err)
+		return "", fmt.Errorf("error preparing base template: %w", err)
 	}
 	t, err = t.ParseFiles(path.Join(o.templateFilesLocation, "spyglass.html"))
 	if err != nil {
-		return "", fmt.Errorf("error parsing template: %v", err)
+		return "", fmt.Errorf("error parsing template: %w", err)
 	}
 
-	if err = t.Execute(&viewBuf, lTmpl); err != nil {
-		return "", fmt.Errorf("error rendering template: %v", err)
+	if err = t.Execute(&viewBuf, sTmpl); err != nil {
+		return "", fmt.Errorf("error rendering template: %w", err)
 	}
 	renderElapsed := time.Since(renderStart)
 	log.WithFields(logrus.Fields{
@@ -1171,6 +1159,9 @@ func handleArtifactView(o options, sg *spyglass.Spyglass, cfg config.Getter) htt
 		var lens *config.LensFileConfig
 		for _, configLens := range cfg().Deck.Spyglass.Lenses {
 			if configLens.Lens.Name == lensName {
+
+				// Directly followed by break, so this is ok
+				// nolint: exportloopref
 				lens = &configLens
 				break
 			}
@@ -1184,6 +1175,10 @@ func handleArtifactView(o options, sg *spyglass.Spyglass, cfg config.Getter) htt
 		var request spyglass.LensRequest
 		if err := json.Unmarshal([]byte(reqString), &request); err != nil {
 			http.Error(w, fmt.Sprintf("Failed to parse request: %v", err), http.StatusBadRequest)
+			return
+		}
+		if err := validateStoragePath(cfg, request.Source); err != nil {
+			http.Error(w, fmt.Sprintf("Failed to process request: %v", err), httpStatusForError(err))
 			return
 		}
 
@@ -1242,7 +1237,7 @@ func handleRemoteLens(lens config.LensFileConfig, w http.ResponseWriter, r *http
 func handleTidePools(cfg config.Getter, ta *tideAgent, log *logrus.Entry) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		setHeadersNoCaching(w)
-		queryConfigs := ta.filterHiddenQueries(cfg().Tide.Queries)
+		queryConfigs := ta.filterQueries(cfg().Tide.Queries)
 		queries := make([]string, 0, len(queryConfigs))
 		for _, qc := range queryConfigs {
 			queries = append(queries, qc.Query())
@@ -1304,7 +1299,7 @@ func handlePluginHelp(ha *helpAgent, log *logrus.Entry) http.HandlerFunc {
 }
 
 type logClient interface {
-	GetJobLog(job, id string) ([]byte, error)
+	GetJobLog(job, id, container string) ([]byte, error)
 }
 
 // TODO(spxtr): Cache, rate limit.
@@ -1314,12 +1309,16 @@ func handleLog(lc logClient, log *logrus.Entry) http.HandlerFunc {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		job := r.URL.Query().Get("job")
 		id := r.URL.Query().Get("id")
-		logger := log.WithFields(logrus.Fields{"job": job, "id": id})
+		container := r.URL.Query().Get("container")
+		if container == "" {
+			container = kube.TestContainerName
+		}
+		logger := log.WithFields(logrus.Fields{"job": job, "id": id, "container": container})
 		if err := validateLogRequest(r); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		jobLog, err := lc.GetJobLog(job, id)
+		jobLog, err := lc.GetJobLog(job, id, container)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Log not found: %v", err), http.StatusNotFound)
 			logger := logger.WithError(err)
@@ -1366,31 +1365,40 @@ func handleProwJob(prowJobClient prowv1.ProwJobInterface, log *logrus.Entry) htt
 			return
 		}
 
-		pj, err := prowJobClient.Get(name, metav1.GetOptions{})
+		pj, err := prowJobClient.Get(context.TODO(), name, metav1.GetOptions{})
 		if err != nil {
 			http.Error(w, fmt.Sprintf("ProwJob not found: %v", err), http.StatusNotFound)
 			if !kerrors.IsNotFound(err) {
 				// admins only care about errors other than not found
-				l.WithError(err).Warning("ProwJob not found.")
+				l.WithError(err).Debug("ProwJob not found.")
 			}
 			return
 		}
+		pj.ManagedFields = nil
 		handleSerialize(w, "prowjob", pj, l)
 	}
 }
 
+type pluginsCfg func() *plugins.Configuration
+
 // canTriggerJob determines whether the given user can trigger any job.
-func canTriggerJob(user string, pj prowapi.ProwJob, cfg *prowapi.RerunAuthConfig, cli prowgithub.RerunClient, pluginAgent *plugins.ConfigAgent, log *logrus.Entry) (bool, error) {
+func canTriggerJob(user string, pj prowapi.ProwJob, cfg *prowapi.RerunAuthConfig, cli deckGitHubClient, pluginsCfg pluginsCfg, log *logrus.Entry) (bool, error) {
+	var org string
+	if pj.Spec.Refs != nil {
+		org = pj.Spec.Refs.Org
+	} else if len(pj.Spec.ExtraRefs) > 0 {
+		org = pj.Spec.ExtraRefs[0].Org
+	}
 
 	// Then check config-level rerun auth config.
-	if auth, err := cfg.IsAuthorized(user, cli); err != nil {
+	if auth, err := cfg.IsAuthorized(org, user, cli); err != nil {
 		return false, err
 	} else if auth {
 		return true, err
 	}
 
 	// Check job-level rerun auth config.
-	if auth, err := pj.Spec.RerunAuthConfig.IsAuthorized(user, cli); err != nil {
+	if auth, err := pj.Spec.RerunAuthConfig.IsAuthorized(org, user, cli); err != nil {
 		return false, err
 	} else if auth {
 		return true, nil
@@ -1404,14 +1412,14 @@ func canTriggerJob(user string, pj prowapi.ProwJob, cfg *prowapi.RerunAuthConfig
 	// If the job is a presubmit and has an associated PR, and a plugin config is provided,
 	// do the same checks as for /test
 	if pj.Spec.Type == prowapi.PresubmitJob && pj.Spec.Refs != nil && len(pj.Spec.Refs.Pulls) > 0 {
-		if pluginAgent == nil {
+		if pluginsCfg == nil {
 			log.Info("No plugin config was provided so we cannot check if the user would be allowed to use /test.")
 		} else {
-			pcfg := pluginAgent.Config()
+			pcfg := pluginsCfg()
 			pull := pj.Spec.Refs.Pulls[0]
 			org := pj.Spec.Refs.Org
 			repo := pj.Spec.Refs.Repo
-			_, allowed, err := trigger.TrustedPullRequest(cli, pcfg.TriggerFor(org, repo), pull.Author, org, repo, pull.Number, nil)
+			_, allowed, err := trigger.TrustedPullRequest(cli, pcfg.TriggerFor(org, repo), user, org, repo, pull.Number, nil)
 			return allowed, err
 		}
 	}
@@ -1421,7 +1429,7 @@ func canTriggerJob(user string, pj prowapi.ProwJob, cfg *prowapi.RerunAuthConfig
 // handleRerun triggers a rerun of the given job if that features is enabled, it receives a
 // POST request, and the user has the necessary permissions. Otherwise, it writes the config
 // for a new job but does not trigger it.
-func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool, cfg authCfgGetter, goa *githuboauth.Agent, ghc githuboauth.AuthenticatedUserIdentifier, cli prowgithub.RerunClient, pluginAgent *plugins.ConfigAgent, log *logrus.Entry) http.HandlerFunc {
+func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool, cfg authCfgGetter, goa *githuboauth.Agent, ghc githuboauth.AuthenticatedUserIdentifier, cli deckGitHubClient, pluginAgent *plugins.ConfigAgent, log *logrus.Entry) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		name := r.URL.Query().Get("prowjob")
 		l := log.WithField("prowjob", name)
@@ -1429,7 +1437,7 @@ func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool, cfg 
 			http.Error(w, "request did not provide the 'prowjob' query parameter", http.StatusBadRequest)
 			return
 		}
-		pj, err := prowJobClient.Get(name, metav1.GetOptions{})
+		pj, err := prowJobClient.Get(context.TODO(), name, metav1.GetOptions{})
 		if err != nil {
 			http.Error(w, fmt.Sprintf("ProwJob not found: %v", err), http.StatusNotFound)
 			if !kerrors.IsNotFound(err) {
@@ -1468,7 +1476,7 @@ func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool, cfg 
 					return
 				}
 				l = l.WithField("user", login)
-				allowed, err = canTriggerJob(login, newPJ, authConfig, cli, pluginAgent, l)
+				allowed, err = canTriggerJob(login, newPJ, authConfig, cli, pluginAgent.Config, l)
 				if err != nil {
 					http.Error(w, fmt.Sprintf("Error checking if user can trigger job: %v", err), http.StatusInternalServerError)
 					l.WithError(err).Errorf("Error checking if user can trigger job")
@@ -1484,7 +1492,7 @@ func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool, cfg 
 				}
 				return
 			}
-			created, err := prowJobClient.Create(&newPJ)
+			created, err := prowJobClient.Create(context.TODO(), &newPJ, metav1.CreateOptions{})
 			if err != nil {
 				l.WithError(err).Error("Error creating job")
 				http.Error(w, fmt.Sprintf("Error creating job: %v", err), http.StatusInternalServerError)
@@ -1552,6 +1560,17 @@ func handleFavicon(staticFilesLocation string, cfg config.Getter) http.HandlerFu
 	}
 }
 
+func HandleGitHubLink(githubHost string, secure bool) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		scheme := "http"
+		if secure {
+			scheme = "https"
+		}
+		redirectURL := scheme + "://" + githubHost + "/" + r.URL.Query().Get("dest")
+		http.Redirect(w, r, redirectURL, http.StatusFound)
+	}
+}
+
 func isValidatedGitOAuthConfig(githubOAuthConfig *githuboauth.Config) bool {
 	return githubOAuthConfig.ClientID != "" && githubOAuthConfig.ClientSecret != "" &&
 		githubOAuthConfig.RedirectURL != ""
@@ -1561,6 +1580,7 @@ type deckGitHubClient interface {
 	prowgithub.RerunClient
 	GetPullRequest(org, repo string, number int) (*prowgithub.PullRequest, error)
 	GetRef(org, repo, ref string) (string, error)
+	BotUserChecker() (func(candidate string) bool, error)
 }
 
 func spglassConfigDefaulting(c *config.Config) error {
@@ -1615,4 +1635,36 @@ func defaultLensRemoteConfig(lfc *config.LensFileConfig) error {
 	}
 
 	return nil
+}
+
+func validateStoragePath(cfg config.Getter, path string) error {
+	parts := strings.Split(path, "/")
+	if len(parts) < 3 {
+		return fmt.Errorf("invalid path: %s (expecting format <storageType>/<bucket>/<folders...>)", path)
+	}
+	bucketName := parts[1]
+	if err := cfg().ValidateStorageBucket(bucketName); err != nil {
+		return httpError{
+			error:      err,
+			statusCode: http.StatusBadRequest,
+		}
+	}
+	return nil
+}
+
+type httpError struct {
+	error
+	statusCode int
+}
+
+func httpStatusForError(e error) int {
+	var httpErr httpError
+	if ok := errors.As(e, &httpErr); ok {
+		return httpErr.statusCode
+	}
+	return http.StatusInternalServerError
+}
+
+func shouldLogHTTPErrors(e error) bool {
+	return !errors.Is(e, context.Canceled) || httpStatusForError(e) >= http.StatusInternalServerError // 5XX
 }

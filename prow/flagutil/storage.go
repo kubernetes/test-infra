@@ -29,13 +29,13 @@ type StorageClientOptions struct {
 	// It's optional, if you want to write to local paths or GCS credentials auto-discovery is used.
 	// If set, this file is used to read/write to gs:// paths
 	// If not, credential auto-discovery is used
-	GCSCredentialsFile string
+	GCSCredentialsFile string `json:"gcs_credentials_file,omitempty"`
 	// S3CredentialsFile is used for reading/writing to s3 block storage.
 	// It's optional, if you want to write to local paths or S3 credentials auto-discovery is used.
 	// If set, this file is used to read/write to s3:// paths
 	// If not, go cloud credential auto-discovery is used
 	// For more details see the prow/io/providers pkg.
-	S3CredentialsFile string
+	S3CredentialsFile string `json:"s3_credentials_file,omitempty"`
 }
 
 // AddFlags injects status client options into the given FlagSet.
@@ -68,7 +68,7 @@ func (o *StorageClientOptions) StorageClient(ctx context.Context) (io.Opener, er
 		if o.S3CredentialsFile != "" {
 			message = fmt.Sprintf("%s s3-credentials-file: %s", message, o.S3CredentialsFile)
 		}
-		return opener, fmt.Errorf("error creating opener%s: %v", message, err)
+		return opener, fmt.Errorf("error creating opener%s: %w", message, err)
 	}
 	return opener, nil
 }

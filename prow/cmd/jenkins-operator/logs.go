@@ -19,16 +19,12 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"regexp"
 	"strings"
 
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/jenkins"
 )
-
-// Matches letters, numbers, hyphens, and underscores.
-var objReg = regexp.MustCompile(`^[\w-]+$`)
 
 func handleLog(jc *jenkins.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {

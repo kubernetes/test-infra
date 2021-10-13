@@ -18,107 +18,146 @@ package slack
 
 import (
 	"bytes"
+	"context"
+	"errors"
 	"fmt"
 	"text/template"
 
 	"github.com/sirupsen/logrus"
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/pjutil"
 	slackclient "k8s.io/test-infra/prow/slack"
 )
 
-const reporterName = "slackreporter"
+const (
+	reporterName    = "slackreporter"
+	DefaultHostName = "*"
+)
+
+type slackClient interface {
+	WriteMessage(text, channel string) error
+}
 
 type slackReporter struct {
-	client *slackclient.Client
-	config func(*prowapi.Refs) config.SlackReporter
-	logger *logrus.Entry
-	dryRun bool
+	clients map[string]slackClient
+	config  func(*prowapi.Refs) config.SlackReporter
+	dryRun  bool
 }
 
-func jobChannel(pj *v1.ProwJob) (string, bool) {
-	if pj.Spec.ReporterConfig != nil && pj.Spec.ReporterConfig.Slack != nil && pj.Spec.ReporterConfig.Slack.Channel != "" {
-		return pj.Spec.ReporterConfig.Slack.Channel, true
+func hostAndChannel(cfg *v1.SlackReporterConfig) (string, string) {
+	host, channel := cfg.Host, cfg.Channel
+	if host == "" {
+		host = DefaultHostName
 	}
-	return "", false
+	return host, channel
 }
 
-func channel(cfg config.SlackReporter, pj *v1.ProwJob) string {
-	if channel, set := jobChannel(pj); set {
-		return channel
+func (sr *slackReporter) getConfig(pj *v1.ProwJob) (*config.SlackReporter, *v1.SlackReporterConfig) {
+	refs := pj.Spec.Refs
+	if refs == nil && len(pj.Spec.ExtraRefs) > 0 {
+		refs = &pj.Spec.ExtraRefs[0]
 	}
-	return cfg.Channel
+	globalConfig := sr.config(refs)
+	var jobSlackConfig *v1.SlackReporterConfig
+	if pj.Spec.ReporterConfig != nil && pj.Spec.ReporterConfig.Slack != nil {
+		jobSlackConfig = pj.Spec.ReporterConfig.Slack
+	}
+	return &globalConfig, jobSlackConfig
 }
 
-func (sr *slackReporter) Report(pj *v1.ProwJob) ([]*v1.ProwJob, error) {
-	config := sr.config(pj.Spec.Refs)
-	channel := channel(config, pj)
+func (sr *slackReporter) Report(_ context.Context, log *logrus.Entry, pj *v1.ProwJob) ([]*v1.ProwJob, *reconcile.Result, error) {
+	return []*v1.ProwJob{pj}, nil, sr.report(log, pj)
+}
+
+func (sr *slackReporter) report(log *logrus.Entry, pj *v1.ProwJob) error {
+	globalSlackConfig, jobSlackConfig := sr.getConfig(pj)
+	if globalSlackConfig != nil {
+		jobSlackConfig = jobSlackConfig.ApplyDefault(&globalSlackConfig.SlackReporterConfig)
+	}
+	if jobSlackConfig == nil {
+		return errors.New("resolved slack config is empty") // Shouldn't happen at all, just in case
+	}
+	host, channel := hostAndChannel(jobSlackConfig)
+
+	client, ok := sr.clients[host]
+	if !ok {
+		return fmt.Errorf("host '%s' not supported", host)
+	}
 	b := &bytes.Buffer{}
-	tmpl, err := template.New("").Parse(config.ReportTemplate)
+	tmpl, err := template.New("").Parse(jobSlackConfig.ReportTemplate)
 	if err != nil {
-		sr.logger.WithField("prowjob", pj.Name).Errorf("failed to parse template: %v", err)
-		return nil, fmt.Errorf("failed to parse template: %v", err)
+		log.WithError(err).Error("failed to parse template")
+		return fmt.Errorf("failed to parse template: %w", err)
 	}
 	if err := tmpl.Execute(b, pj); err != nil {
-		sr.logger.WithField("prowjob", pj.Name).WithError(err).Error("failed to execute report template")
-		return nil, fmt.Errorf("failed to execute report template: %v", err)
+		log.WithError(err).Error("failed to execute report template")
+		return fmt.Errorf("failed to execute report template: %w", err)
 	}
 	if sr.dryRun {
-		sr.logger.
-			WithField("prowjob", pj.Name).
-			WithField("messagetext", b.String()).
-			Debug("Skipping reporting because dry-run is enabled")
-		return []*v1.ProwJob{pj}, nil
+		log.WithField("messagetext", b.String()).Debug("Skipping reporting because dry-run is enabled")
+		return nil
 	}
-	if err := sr.client.WriteMessage(b.String(), channel); err != nil {
-		sr.logger.WithError(err).Error("failed to write Slack message")
-		return nil, fmt.Errorf("failed to write Slack message: %v", err)
+	if err := client.WriteMessage(b.String(), channel); err != nil {
+		log.WithError(err).Error("failed to write Slack message")
+		return fmt.Errorf("failed to write Slack message: %w", err)
 	}
-	return []*v1.ProwJob{pj}, nil
+	return nil
 }
 
 func (sr *slackReporter) GetName() string {
 	return reporterName
 }
 
-func (sr *slackReporter) ShouldReport(pj *v1.ProwJob) bool {
-	logger := sr.logger.WithFields(pjutil.ProwJobFields(pj))
-	// if a user specifically put a channel on their job, they want
-	// it to be reported regardless of what other settings exist
-	if _, set := jobChannel(pj); set {
-		logger.Debugf("reporting as channel is explicitly set")
-		return true
-	}
-	config := sr.config(pj.Spec.Refs)
+func (sr *slackReporter) ShouldReport(_ context.Context, logger *logrus.Entry, pj *v1.ProwJob) bool {
+	globalSlackConfig, jobSlackConfig := sr.getConfig(pj)
 
-	stateShouldReport := false
-	for _, stateToReport := range config.JobStatesToReport {
-		if pj.Status.State == stateToReport {
-			stateShouldReport = true
-			break
+	var typeShouldReport bool
+	if globalSlackConfig.JobTypesToReport != nil {
+		for _, tp := range globalSlackConfig.JobTypesToReport {
+			if tp == pj.Spec.Type {
+				typeShouldReport = true
+				break
+			}
 		}
 	}
 
-	typeShouldReport := false
-	for _, typeToReport := range config.JobTypesToReport {
-		if typeToReport == pj.Spec.Type {
-			typeShouldReport = true
-			break
+	// If a user specifically put a channel on their job, they want
+	// it to be reported regardless of the job types setting.
+	var jobShouldReport bool
+	if jobSlackConfig != nil && jobSlackConfig.Channel != "" {
+		jobShouldReport = true
+	}
+
+	// The job should only be reported if its state has a match with the
+	// JobStatesToReport config.
+	// Note the JobStatesToReport configured in the Prow job can overwrite the
+	// Prow config.
+	var stateShouldReport bool
+	if merged := jobSlackConfig.ApplyDefault(&globalSlackConfig.SlackReporterConfig); merged != nil && merged.JobStatesToReport != nil {
+		for _, stateToReport := range merged.JobStatesToReport {
+			if pj.Status.State == stateToReport {
+				stateShouldReport = true
+				break
+			}
 		}
 	}
 
-	logger.Debugf("reporting=%t", stateShouldReport && typeShouldReport)
-	return stateShouldReport && typeShouldReport
+	shouldReport := stateShouldReport && (typeShouldReport || jobShouldReport)
+	logger.WithField("reporting", shouldReport).Debug("Determined should report")
+	return shouldReport
 }
 
-func New(cfg func(refs *prowapi.Refs) config.SlackReporter, dryRun bool, token func() []byte) *slackReporter {
+func New(cfg func(refs *prowapi.Refs) config.SlackReporter, dryRun bool, tokensMap map[string]func() []byte) *slackReporter {
+	clients := map[string]slackClient{}
+	for key, val := range tokensMap {
+		clients[key] = slackclient.NewClient(val)
+	}
 	return &slackReporter{
-		client: slackclient.NewClient(token),
-		config: cfg,
-		logger: logrus.WithField("component", reporterName),
-		dryRun: dryRun,
+		clients: clients,
+		config:  cfg,
+		dryRun:  dryRun,
 	}
 }

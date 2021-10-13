@@ -1,81 +1,3 @@
-presubmits:
-  kubernetes/kubernetes:
-  - name: pull-kubernetes-bazel-build-canary
-    decorate: true
-    always_run: false
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-    annotations:
-      testgrid-dashboards: sig-testing-canaries
-      testgrid-tab-name: pull-bazel-build
-    extra_refs:
-    - base_ref: master
-      org: kubernetes
-      repo: test-infra
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-0.23.2
-        command:
-        - bash
-        args:
-        - -c
-        - |
-          ../test-infra/hack/bazel.sh build --config=remote --remote_instance_name=projects/k8s-prow-builds/instances/default_instance -- //... -//vendor/... -//build/... //build/release-tars
-  - name: pull-kubernetes-bazel-test-canary
-    decorate: true
-    always_run: false
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-    annotations:
-      testgrid-dashboards: sig-testing-canaries
-      testgrid-tab-name: pull-bazel-test
-    extra_refs:
-    - base_ref: master
-      org: kubernetes
-      repo: test-infra
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-0.23.2
-        command:
-        - ../test-infra/hack/bazel.sh
-        args:
-        - test
-        - --config=unit
-        - --config=remote
-        - --remote_instance_name=projects/k8s-prow-builds/instances/default_instance
-        - //...
-        - --
-        - -//build/...
-        - -//vendor/...
-  - name: pull-kubernetes-bazel-test-integration-canary
-    always_run: false
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-experimental
-        imagePullPolicy: Always
-        args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--scenario=kubernetes_execute_bazel"
-        - "--" # end bootstrap args, scenario args below
-        - "--test=//test/integration/..."
-        - "--test-args=--config=integration"
-        - "--timeout=60"
-        resources:
-          requests:
-            memory: "6Gi"
-
-    annotations:
-      testgrid-dashboards: sig-testing-canaries
-      testgrid-tab-name: pull-bazel-test-integration
 periodics:
 - name: ci-kubernetes-e2e-prow-canary
   interval: 1h
@@ -85,7 +7,7 @@ periodics:
   decorate: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:latest-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -118,7 +40,6 @@ periodics:
       - --check-leaked-resources
       - --check-version-skew=false
       - --cluster=canary-e2e
-      - --env=ENABLE_POD_SECURITY_POLICY=true
       - --extract=ci/k8s-stable1
       - --extract=ci/latest
       - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
@@ -127,7 +48,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=Variable.Expansion --ginkgo.skip=\[Feature:.+\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=40m
-      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:latest-master
       imagePullPolicy: Always
   annotations:
     testgrid-dashboards: sig-testing-canaries
@@ -157,106 +78,13 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true --gather-logs-sizes=true --minStartupPods=8
       - --timeout=120m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:latest-master
       imagePullPolicy: Always
   annotations:
     testgrid-dashboards: sig-testing-canaries
     testgrid-tab-name: scalability
 
-- interval: 30m
-  name: ci-kubernetes-e2e-gke-canary
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  decorate: true
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --check-leaked-resources
-      - --cluster=
-      - --deployment=gke
-      - --extract=gke-latest
-      - --gcp-node-image=gci
-      - --gcp-zone=us-central1-b
-      - --ginkgo-parallel
-      - --gke-environment=staging
-      - --provider=gke
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-      - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
-      imagePullPolicy: Always
-  annotations:
-    testgrid-dashboards: google-gke, sig-testing-canaries
-    testgrid-tab-name: gke-canary
-
-- interval: 1h
-  name: ci-kubernetes-e2e-kops-aws-canary
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: 140m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-aws-canary.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --env=KUBE_SSH_USER=admin
-      - --extract=ci/latest
-      - --ginkgo-parallel
-      - --kops-etcd-version=3.2.24
-      - --kops-master-count=3
-      - --kops-multiple-zones
-      - --kops-nodes=6
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
-      - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
-      imagePullPolicy: Always
-  annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops, sig-testing-canaries
-    testgrid-tab-name: kops-aws-canary
-
-- interval: 30m
-  name: ci-kubernetes-e2e-kops-gce-canary
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  decorate: true
-  decoration_config:
-    timeout: 140m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-gce-canary.k8s.local
-      - --deployment=kops
-      - --extract=ci/latest
-      - --ginkgo-parallel=30
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --kops-zones=us-central1-c
-      - --provider=gce
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
-      - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
-      imagePullPolicy: Always
-
-  annotations:
-    testgrid-dashboards: google-kops-gce, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-gce-canary
 - name: ci-kubernetes-e2e-node-canary
   interval: 1h
   labels:
@@ -270,7 +98,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:latest-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -303,7 +131,7 @@ periodics:
     timeout: 260m
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:latest-master
       imagePullPolicy: Always
       command:
       - runner.sh
@@ -321,6 +149,8 @@ periodics:
       - --test=false
       - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true
       - --timeout=240m
+      - --use-logexporter
+      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true

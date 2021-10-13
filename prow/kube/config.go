@@ -20,105 +20,37 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"path/filepath"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
+
+	"k8s.io/test-infra/prow/version"
 )
 
-func localConfig() (*rest.Config, error) {
-	return rest.InClusterConfig()
-}
-
-func kubeConfigs(kubeconfig string) (map[string]rest.Config, string, error) {
-	// Attempt to load external clusters too
-	var loader clientcmd.ClientConfigLoader
-	if kubeconfig != "" { // load from --kubeconfig
-		loader = &clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeconfig}
-	} else {
-		loader = clientcmd.NewDefaultClientConfigLoadingRules()
-	}
-
+func kubeConfigs(loader clientcmd.ClientConfigLoader) (map[string]rest.Config, string, error) {
 	cfg, err := loader.Load()
-	if err != nil && kubeconfig != "" {
-		return nil, "", fmt.Errorf("load: %v", err)
-	}
 	if err != nil {
-		logrus.WithError(err).Warn("Cannot load kubecfg")
-		return nil, "", nil
+		return nil, "", fmt.Errorf("failed to load: %w", err)
 	}
 	configs := map[string]rest.Config{}
 	for context := range cfg.Contexts {
 		contextCfg, err := clientcmd.NewNonInteractiveClientConfig(*cfg, context, &clientcmd.ConfigOverrides{}, loader).ClientConfig()
 		if err != nil {
-			return nil, "", fmt.Errorf("create %s client: %v", context, err)
+			return nil, "", fmt.Errorf("create %s client: %w", context, err)
 		}
+		contextCfg.UserAgent = version.UserAgent()
 		configs[context] = *contextCfg
 		logrus.Infof("Parsed kubeconfig context: %s", context)
 	}
 	return configs, cfg.CurrentContext, nil
 }
 
-func buildConfigs(buildCluster string) (map[string]rest.Config, error) {
-	if buildCluster == "" { // load from --build-cluster
-		return nil, nil
-	}
-	data, err := ioutil.ReadFile(buildCluster)
-	if err != nil {
-		return nil, fmt.Errorf("read: %v", err)
-	}
-	raw, err := UnmarshalClusterMap(data)
-	if err != nil {
-		return nil, fmt.Errorf("unmarshal: %v", err)
-	}
-	cfg := &clientcmdapi.Config{
-		Clusters:  map[string]*clientcmdapi.Cluster{},
-		AuthInfos: map[string]*clientcmdapi.AuthInfo{},
-		Contexts:  map[string]*clientcmdapi.Context{},
-	}
-	for alias, config := range raw {
-		cfg.Clusters[alias] = &clientcmdapi.Cluster{
-			Server:                   config.Endpoint,
-			CertificateAuthorityData: config.ClusterCACertificate,
-		}
-		cfg.AuthInfos[alias] = &clientcmdapi.AuthInfo{
-			ClientCertificateData: config.ClientCertificate,
-			ClientKeyData:         config.ClientKey,
-		}
-		cfg.Contexts[alias] = &clientcmdapi.Context{
-			Cluster:  alias,
-			AuthInfo: alias,
-			// TODO(fejta): Namespace?
-		}
-	}
-	configs := map[string]rest.Config{}
-	for context := range cfg.Contexts {
-		logrus.Infof("* %s", context)
-		contextCfg, err := clientcmd.NewNonInteractiveClientConfig(*cfg, context, &clientcmd.ConfigOverrides{}, nil).ClientConfig()
-		if err != nil {
-			return nil, fmt.Errorf("create %s client: %v", context, err)
-		}
-		// An arbitrary high number we expect to not exceed. There are various components that need more than the default 5 QPS/10 Burst, e.G.
-		// hook for creating ProwJobs and Plank for creating Pods.
-		contextCfg.QPS = 100
-		contextCfg.Burst = 1000
-		configs[context] = *contextCfg
-	}
-	return configs, nil
-}
-
-func mergeConfigs(local *rest.Config, foreign map[string]rest.Config, currentContext string, buildClusters map[string]rest.Config) (map[string]rest.Config, error) {
-	if buildClusters != nil {
-		if _, ok := buildClusters[DefaultClusterAlias]; !ok {
-			return nil, fmt.Errorf("build-cluster must have a %s context", DefaultClusterAlias)
-		}
-	}
+func mergeConfigs(local *rest.Config, foreign map[string]rest.Config, currentContext string) (map[string]rest.Config, error) {
 	ret := map[string]rest.Config{}
 	for ctx, cfg := range foreign {
-		ret[ctx] = cfg
-	}
-	for ctx, cfg := range buildClusters {
 		ret[ctx] = cfg
 	}
 	if local != nil {
@@ -137,30 +69,120 @@ func mergeConfigs(local *rest.Config, foreign map[string]rest.Config, currentCon
 	return ret, nil
 }
 
-// LoadClusterConfigs loads rest.Configs for creation of clients, by using either a normal
-// .kube/config file, a custom `Cluster` file, or both. The configs are returned in a mapping
-// of context --> config. The default context is included in this mapping and specified as a
-// return vaule. Errors are returned if .kube/config is specified and invalid or if no valid
-// contexts are found.
-func LoadClusterConfigs(kubeconfig, buildCluster string) (map[string]rest.Config, error) {
+// LoadClusterConfigs loads rest.Configs for creation of clients according to the given options.
+// Errors are returned if a file/dir is specified in the options and invalid or if no valid contexts are found.
+func LoadClusterConfigs(opts *Options) (map[string]rest.Config, error) {
 
 	logrus.Infof("Loading cluster contexts...")
 	// This will work if we are running inside kubernetes
-	localCfg, err := localConfig()
+	localCfg, err := rest.InClusterConfig()
 	if err != nil {
 		logrus.WithError(err).Warn("Could not create in-cluster config (expected when running outside the cluster).")
+	} else {
+		localCfg.UserAgent = version.UserAgent()
+	}
+	if localCfg != nil && opts.projectedTokenFile != "" {
+		localCfg.BearerToken = ""
+		localCfg.BearerTokenFile = opts.projectedTokenFile
+		logrus.WithField("tokenfile", opts.projectedTokenFile).Info("Using projected token file")
 	}
 
-	kubeCfgs, currentContext, err := kubeConfigs(kubeconfig)
-	if err != nil {
-		return nil, fmt.Errorf("kubecfg: %v", err)
+	var candidates []string
+	if opts.file != "" {
+		candidates = append(candidates, opts.file)
+	}
+	if opts.dir != "" {
+		files, err := ioutil.ReadDir(opts.dir)
+		if err != nil {
+			return nil, fmt.Errorf("kubecfg dir: %w", err)
+		}
+		for _, file := range files {
+			filename := file.Name()
+			if file.IsDir() {
+				logrus.WithField("dir", filename).Info("Ignored directory")
+				continue
+			}
+			if strings.HasPrefix(filename, "..") {
+				logrus.WithField("filename", filename).Info("Ignored file starting with double dots")
+				continue
+			}
+			candidates = append(candidates, filepath.Join(opts.dir, filename))
+		}
 	}
 
-	// TODO(fejta): drop build-cluster support
-	buildCfgs, err := buildConfigs(buildCluster)
-	if err != nil {
-		return nil, fmt.Errorf("build-cluster: %v", err)
+	allKubeCfgs := map[string]rest.Config{}
+	var currentContext string
+	if len(candidates) == 0 {
+		// loading from the defaults, e.g., ${KUBECONFIG}
+		if allKubeCfgs, currentContext, err = kubeConfigs(clientcmd.NewDefaultClientConfigLoadingRules()); err != nil {
+			logrus.WithError(err).Warn("Cannot load kubecfg")
+		}
+	} else {
+		for _, candidate := range candidates {
+			logrus.Infof("Loading kubeconfig from: %q", candidate)
+			kubeCfgs, tempCurrentContext, err := kubeConfigs(&clientcmd.ClientConfigLoadingRules{ExplicitPath: candidate})
+			if err != nil {
+				return nil, fmt.Errorf("fail to load kubecfg from %q: %w", candidate, err)
+			}
+			currentContext = tempCurrentContext
+			for c, k := range kubeCfgs {
+				if _, ok := allKubeCfgs[c]; ok {
+					return nil, fmt.Errorf("context %s occurred more than once in kubeconfig dir %q", c, opts.dir)
+				}
+				allKubeCfgs[c] = k
+			}
+		}
 	}
 
-	return mergeConfigs(localCfg, kubeCfgs, currentContext, buildCfgs)
+	if opts.noInClusterConfig {
+		return allKubeCfgs, nil
+	}
+	return mergeConfigs(localCfg, allKubeCfgs, currentContext)
+}
+
+// Options defines how to load kubeconfigs files
+type Options struct {
+	file               string
+	dir                string
+	projectedTokenFile string
+	noInClusterConfig  bool
+}
+
+type ConfigOptions func(*Options)
+
+// ConfigDir configures the directory containing kubeconfig files
+func ConfigDir(dir string) ConfigOptions {
+	return func(kc *Options) {
+		kc.dir = dir
+	}
+}
+
+// ConfigFile configures the path to a kubeconfig file
+func ConfigFile(file string) ConfigOptions {
+	return func(kc *Options) {
+		kc.file = file
+	}
+}
+
+// ConfigFile configures the path to a projectedToken file
+func ConfigProjectedTokenFile(projectedTokenFile string) ConfigOptions {
+	return func(kc *Options) {
+		kc.projectedTokenFile = projectedTokenFile
+	}
+}
+
+// noInClusterConfig indicates that there is no InCluster Config to load
+func NoInClusterConfig(noInClusterConfig bool) ConfigOptions {
+	return func(kc *Options) {
+		kc.noInClusterConfig = noInClusterConfig
+	}
+}
+
+// NewConfig builds Options according to the given ConfigOptions
+func NewConfig(opts ...ConfigOptions) *Options {
+	kc := &Options{}
+	for _, opt := range opts {
+		opt(kc)
+	}
+	return kc
 }

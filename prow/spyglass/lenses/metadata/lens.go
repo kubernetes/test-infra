@@ -31,9 +31,10 @@ import (
 
 	"github.com/GoogleCloudPlatform/testgrid/metadata"
 	"github.com/sirupsen/logrus"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/config"
 	k8sreporter "k8s.io/test-infra/prow/crier/reporters/gcs/kubernetes"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
 	"k8s.io/test-infra/prow/spyglass/api"
@@ -64,7 +65,7 @@ func (lens Lens) Config() lenses.LensConfig {
 }
 
 // Header renders the <head> from template.html.
-func (lens Lens) Header(artifacts []api.Artifact, resourceDir string, config json.RawMessage) string {
+func (lens Lens) Header(artifacts []api.Artifact, resourceDir string, config json.RawMessage, spyglassConfig config.Spyglass) string {
 	t, err := template.ParseFiles(filepath.Join(resourceDir, "template.html"))
 	if err != nil {
 		return fmt.Sprintf("<!-- FAILED LOADING HEADER: %v -->", err)
@@ -77,18 +78,19 @@ func (lens Lens) Header(artifacts []api.Artifact, resourceDir string, config jso
 }
 
 // Callback does nothing.
-func (lens Lens) Callback(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage) string {
+func (lens Lens) Callback(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage, spyglassConfig config.Spyglass) string {
 	return ""
 }
 
 // Body creates a view for prow job metadata.
-func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage) string {
+func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage, spyglassConfig config.Spyglass) string {
 	var buf bytes.Buffer
 	type MetadataViewData struct {
 		StartTime    time.Time
 		FinishedTime time.Time
 		Finished     bool
 		Passed       bool
+		Errored      bool
 		Elapsed      time.Duration
 		Hint         string
 		Metadata     map[string]interface{}
@@ -102,12 +104,12 @@ func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string,
 			logrus.WithError(err).Error("Failed reading from artifact.")
 		}
 		switch a.JobPath() {
-		case "started.json":
+		case prowv1.StartedStatusFile:
 			if err = json.Unmarshal(read, &started); err != nil {
 				logrus.WithError(err).Error("Error unmarshaling started.json")
 			}
 			metadataViewData.StartTime = time.Unix(started.Timestamp, 0)
-		case "finished.json":
+		case prowv1.FinishedStatusFile:
 			if err = json.Unmarshal(read, &finished); err != nil {
 				logrus.WithError(err).Error("Error unmarshaling finished.json")
 			}
@@ -122,18 +124,20 @@ func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string,
 			}
 		case "podinfo.json":
 			metadataViewData.Hint = hintFromPodInfo(read)
-		case "prowjob.json":
+		case prowv1.ProwJobFile:
 			// Only show the prowjob-based hint if we don't have a pod-based one
 			// (the pod-based ones are probably more useful when they exist)
 			if metadataViewData.Hint == "" {
-				metadataViewData.Hint = hintFromProwJob(read)
+				hint, errored := hintFromProwJob(read)
+				metadataViewData.Hint = hint
+				metadataViewData.Errored = errored
 			}
 		}
 	}
 
 	if !metadataViewData.StartTime.IsZero() {
 		if metadataViewData.FinishedTime.IsZero() {
-			metadataViewData.Elapsed = time.Now().Sub(metadataViewData.StartTime)
+			metadataViewData.Elapsed = time.Since(metadataViewData.StartTime)
 		} else {
 			metadataViewData.Elapsed =
 				metadataViewData.FinishedTime.Sub(metadataViewData.StartTime)
@@ -185,8 +189,8 @@ func hintFromPodInfo(buf []byte) string {
 	}
 	// Check if we have any images that didn't pull
 	for _, s := range append(report.Pod.Status.InitContainerStatuses, report.Pod.Status.ContainerStatuses...) {
-		if s.State.Waiting != nil && s.State.Waiting.Reason == "ImagePullBackOff" {
-			return fmt.Sprintf("The %s container could not start because it could not pull %q. Check your images.", s.Name, s.Image)
+		if s.State.Waiting != nil && (s.State.Waiting.Reason == "ImagePullBackOff" || s.State.Waiting.Reason == "ErrImagePull") {
+			return fmt.Sprintf("The %s container could not start because it could not pull %q. Check your images. Full message: %q", s.Name, s.Image, s.State.Waiting.Message)
 		}
 	}
 	// Check if we're trying to mount a volume
@@ -207,13 +211,13 @@ func hintFromPodInfo(buf []byte) string {
 			}
 		}
 		if failedMount {
-			return fmt.Sprintf("The job could not started because one or more of the volumes could not be mounted.")
+			return "The job could not started because one or more of the volumes could not be mounted."
 		}
 	}
 	// Check if we cannot be scheduled
 	// This is unlikely - we only outright fail if a pod is actually scheduled to a node that can't support it.
 	if report.Pod.Status.Phase == v1.PodFailed && report.Pod.Status.Reason == "MatchNodeSelector" {
-		return fmt.Sprintf("The job could not start because it was scheduled to a node that does not satisfy its NodeSelector")
+		return "The job could not start because it was scheduled to a node that does not satisfy its NodeSelector"
 	}
 	// Usually we would fail to schedule it at all, so it will be pending forever.
 	if report.Pod.Status.Phase == v1.PodPending {
@@ -231,22 +235,41 @@ func hintFromPodInfo(buf []byte) string {
 		}
 	}
 
-	// We've got nothing.
-	return ""
+	// There are cases where initContainers failed to start
+	var msgs []string
+	for _, ic := range report.Pod.Status.InitContainerStatuses {
+		if ic.Ready {
+			continue
+		}
+		var msg string
+		// Init container not ready by the time this job failed
+		// The 3 different states should be mutually exclusive, if it happens
+		// that there are more than one, use the most severe one
+		if state := ic.State.Terminated; state != nil {
+			msg = fmt.Sprintf("state: terminated, reason: %q, message: %q", state.Reason, state.Message)
+		} else if state := ic.State.Waiting; state != nil {
+			msg = fmt.Sprintf("state: waiting, reason: %q, message: %q", state.Reason, state.Message)
+		} else if state := ic.State.Running; state != nil {
+			// Yes this is weird, but it did happened https://github.com/kubernetes/test-infra/issues/21985
+			msg = "state: running"
+		}
+		msgs = append(msgs, fmt.Sprintf("Init container %s not ready: (%s)", ic.Name, msg))
+	}
+	return strings.Join(msgs, "\n")
 }
 
-func hintFromProwJob(buf []byte) string {
+func hintFromProwJob(buf []byte) (string, bool) {
 	var pj prowv1.ProwJob
 	if err := json.Unmarshal(buf, &pj); err != nil {
-		logrus.WithError(err).Info("Failed to decode prowjob.json")
-		return ""
+		logrus.WithError(err).Infof("Failed to decode %s", prowv1.ProwJobFile)
+		return "", false
 	}
 
 	if pj.Status.State == prowv1.ErrorState {
-		return fmt.Sprintf("Job execution failed: %s", pj.Status.Description)
+		return fmt.Sprintf("Job execution failed: %s", pj.Status.Description), true
 	}
 
-	return ""
+	return "", false
 }
 
 // flattenMetadata flattens the metadata for use by Body.

@@ -25,7 +25,7 @@ import (
 // FilterProfilePaths produces a new profile that removes either everything matching or everything
 // not matching the provided paths, depending on the value of include.
 // Paths are interpreted as regular expressions.
-// If include is true, paths is treated as a whitelist; otherwise it is treated as a blacklist.
+// If include is true, paths is treated as an allowlist; otherwise it is treated as a denylist.
 func FilterProfilePaths(profile []*cover.Profile, paths []string, include bool) ([]*cover.Profile, error) {
 	parenPaths := make([]string, len(paths))
 	for i, path := range paths {

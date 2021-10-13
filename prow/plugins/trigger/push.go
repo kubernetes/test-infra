@@ -17,6 +17,8 @@ limitations under the License.
 package trigger
 
 import (
+	"context"
+
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
@@ -49,6 +51,7 @@ func createRefs(pe github.PushEvent) prowapi.Refs {
 	return prowapi.Refs{
 		Org:      pe.Repo.Owner.Name,
 		Repo:     pe.Repo.Name,
+		RepoLink: pe.Repo.HTMLURL,
 		BaseRef:  pe.Branch(),
 		BaseSHA:  pe.After,
 		BaseLink: pe.Compare,
@@ -84,7 +87,7 @@ func handlePE(c Client, pe github.PushEvent) error {
 		labels[github.EventGUID] = pe.GUID
 		pj := pjutil.NewProwJob(pjutil.PostsubmitSpec(j, refs), labels, j.Annotations)
 		c.Logger.WithFields(pjutil.ProwJobFields(&pj)).Info("Creating a new prowjob.")
-		if _, err := c.ProwJobClient.Create(&pj); err != nil {
+		if err := createWithRetry(context.TODO(), c.ProwJobClient, &pj); err != nil {
 			return err
 		}
 	}

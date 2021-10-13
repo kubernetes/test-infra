@@ -124,7 +124,7 @@ function redrawQueries(): void {
 
         // GitHub query search link
         const a = createLink(
-            `https://github.com/search?utf8=${encodeURIComponent("\u2713")}&q=${encodeURIComponent(query)}`,
+            `/github-link?dest=${encodeURIComponent("search?utf8=\u2713&q=" + query)}`,
             "GitHub Search Link",
         );
         li.appendChild(a);
@@ -141,7 +141,7 @@ function redrawQueries(): void {
             const ul = document.createElement("ul");
             const innerLi = document.createElement("li");
             for (let j = 0; j < orgs.length; j++) {
-                innerLi.appendChild(createLink("https://github.com/" + orgs[j], orgs[j]));
+                innerLi.appendChild(createLink("/github-link?dest=" + orgs[j], orgs[j]));
                 if (j + 1 < repos.length) {
                     innerLi.appendChild(document.createTextNode(", "));
                 }
@@ -158,7 +158,7 @@ function redrawQueries(): void {
             const ul = document.createElement("ul");
             const innerLi = document.createElement("li");
             for (let j = 0; j < repos.length; j++) {
-                innerLi.appendChild(createLink("https://github.com/" + repos[j], repos[j]));
+                innerLi.appendChild(createLink("/github-link?dest=" + repos[j], repos[j]));
                 if (j + 1 < repos.length) {
                     innerLi.appendChild(document.createTextNode(", "));
                 }
@@ -171,7 +171,7 @@ function redrawQueries(): void {
             const ul = document.createElement("ul");
             const innerLi = document.createElement("li");
             for (let j = 0; j < excludedRepos.length; j++) {
-                innerLi.appendChild(createLink("https://github.com/" + excludedRepos[j], excludedRepos[j]));
+                innerLi.appendChild(createLink("/github-link?dest=" + excludedRepos[j], excludedRepos[j]));
                 if (j + 1 < excludedRepos.length) {
                     innerLi.appendChild(document.createTextNode(", "));
                 }
@@ -237,7 +237,7 @@ function createHistoryCell(pool: TidePool): HTMLTableDataCellElement {
 
 function createRepoCell(pool: TidePool): HTMLTableDataCellElement {
     const deckLink = `/?repo=` + encodeURIComponent(`${pool.Org}/${pool.Repo}`);
-    const branchLink = `https://github.com/${pool.Org}/${pool.Repo}/tree/${pool.Branch}`;
+    const branchLink = `/github-link?dest=${pool.Org}/${pool.Repo}/tree/${pool.Branch}`;
     const linksTD = document.createElement("td");
     linksTD.appendChild(createLink(deckLink, `${pool.Org}/${pool.Repo}`));
     linksTD.appendChild(document.createTextNode(" "));
@@ -304,7 +304,7 @@ function addPRsToElem(elem: HTMLElement, pool: TidePool, prs?: PullRequest[]): v
     if (prs) {
         for (let i = 0; i < prs.length; i++) {
             const a = document.createElement("a");
-            a.href = `https://github.com/${pool.Org}/${pool.Repo}/pull/${prs[i].Number}`;
+            a.href = `/github-link?dest=${pool.Org}/${pool.Repo}/pull/${prs[i].Number}`;
             a.appendChild(document.createTextNode("#" + prs[i].Number));
             a.id = `pr-${pool.Org}-${pool.Repo}-${prs[i].Number}-${nextID()}`;
             if (prs[i].Title) {

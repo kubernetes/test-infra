@@ -48,13 +48,15 @@ func main() {
 			log.Fatalf("Failed to parse image-regex: %v\n", err)
 		}
 	}
+
+	cli := bumper.NewClient()
 	for _, f := range o.files {
-		if err := bumper.UpdateFile(f, imageRegex); err != nil {
+		if err := cli.UpdateFile(cli.FindLatestTag, f, imageRegex); err != nil {
 			log.Printf("Failed to update %s: %v", f, err)
 		}
 	}
 	log.Println("Done.")
-	for before, after := range bumper.GetReplacements() {
+	for before, after := range cli.GetReplacements() {
 		if strings.Split(before, ":")[1] == after {
 			continue
 		}

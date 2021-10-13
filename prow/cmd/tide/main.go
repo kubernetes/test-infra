@@ -19,41 +19,39 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"net/http"
 	"os"
 	"strconv"
 	"time"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/test-infra/prow/interrupts"
+	"k8s.io/test-infra/prow/pjutil/pprof"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 
 	"k8s.io/test-infra/pkg/flagutil"
-	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/git/v2"
+	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
-	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/tide"
 )
 
 type options struct {
 	port int
 
-	configPath    string
-	jobConfigPath string
+	config configflagutil.ConfigOptions
 
 	syncThrottle   int
 	statusThrottle int
 
-	dryRun     bool
-	runOnce    bool
-	kubernetes prowflagutil.KubernetesOptions
-	github     prowflagutil.GitHubOptions
-	storage    prowflagutil.StorageClientOptions
+	dryRun                 bool
+	runOnce                bool
+	kubernetes             prowflagutil.KubernetesOptions
+	github                 prowflagutil.GitHubOptions
+	storage                prowflagutil.StorageClientOptions
+	instrumentationOptions prowflagutil.InstrumentationOptions
 
 	maxRecordsPerPool int
 	// historyURI where Tide should store its action history.
@@ -72,9 +70,9 @@ type options struct {
 }
 
 func (o *options) Validate() error {
-	for idx, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.storage} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.storage, &o.config} {
 		if err := group.Validate(o.dryRun); err != nil {
-			return fmt.Errorf("%d: %w", idx, err)
+			return err
 		}
 	}
 	return nil
@@ -83,11 +81,10 @@ func (o *options) Validate() error {
 func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	var o options
 	fs.IntVar(&o.port, "port", 8888, "Port to listen on.")
-	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
-	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether to mutate any real-world state.")
 	fs.BoolVar(&o.runOnce, "run-once", false, "If true, run only once then quit.")
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.storage} {
+	o.github.AddCustomizedFlags(fs, prowflagutil.DisableThrottlerOptions())
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.storage, &o.instrumentationOptions, &o.config} {
 		group.AddFlags(fs)
 	}
 	fs.IntVar(&o.syncThrottle, "sync-hourly-tokens", 800, "The maximum number of tokens per hour to be used by the sync controller.")
@@ -105,35 +102,30 @@ func main() {
 
 	defer interrupts.WaitForGracefulShutdown()
 
-	pjutil.ServePProf()
-
 	o := gatherOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:]...)
 	if err := o.Validate(); err != nil {
 		logrus.WithError(err).Fatal("Invalid options")
 	}
+
+	pprof.Instrument(o.instrumentationOptions)
 
 	opener, err := o.storage.StorageClient(context.Background())
 	if err != nil {
 		logrus.WithError(err).Fatal("Cannot create opener")
 	}
 
-	configAgent := &config.Agent{}
-	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
+	configAgent, err := o.config.ConfigAgent()
+	if err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 	cfg := configAgent.Config
 
-	secretAgent := &secret.Agent{}
-	if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
-		logrus.WithError(err).Fatal("Error starting secrets agent.")
-	}
-
-	githubSync, err := o.github.GitHubClientWithLogFields(secretAgent, o.dryRun, logrus.Fields{"controller": "sync"})
+	githubSync, err := o.github.GitHubClientWithLogFields(o.dryRun, logrus.Fields{"controller": "sync"})
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GitHub client for sync.")
 	}
 
-	githubStatus, err := o.github.GitHubClientWithLogFields(secretAgent, o.dryRun, logrus.Fields{"controller": "status-update"})
+	githubStatus, err := o.github.GitHubClientWithLogFields(o.dryRun, logrus.Fields{"controller": "status-update"})
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GitHub client for status.")
 	}
@@ -147,7 +139,7 @@ func main() {
 	githubSync.Throttle(o.syncThrottle, 3*tokensPerIteration(o.syncThrottle, cfg().Tide.SyncPeriod.Duration))
 	githubStatus.Throttle(o.statusThrottle, o.statusThrottle/2)
 
-	gitClient, err := o.github.GitClient(secretAgent, o.dryRun)
+	gitClient, err := o.github.GitClient(o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting Git client.")
 	}
@@ -162,19 +154,19 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error constructing mgr.")
 	}
-	c, err := tide.NewController(githubSync, githubStatus, mgr, cfg, git.ClientFactoryFrom(gitClient), o.maxRecordsPerPool, opener, o.historyURI, o.statusURI, nil)
+	c, err := tide.NewController(githubSync, githubStatus, mgr, cfg, git.ClientFactoryFrom(gitClient), o.maxRecordsPerPool, opener, o.historyURI, o.statusURI, nil, o.github.AppPrivateKeyPath != "")
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating Tide controller.")
 	}
 	interrupts.Run(func(ctx context.Context) {
-		if err := mgr.Start(ctx.Done()); err != nil {
+		if err := mgr.Start(ctx); err != nil {
 			logrus.WithError(err).Fatal("Mgr failed.")
 		}
 		logrus.Info("Mgr finished gracefully.")
 	})
 	mgrSyncCtx, mgrSyncCtxCancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer mgrSyncCtxCancel()
-	if synced := mgr.GetCache().WaitForCacheSync(mgrSyncCtx.Done()); !synced {
+	if synced := mgr.GetCache().WaitForCacheSync(mgrSyncCtx); !synced {
 		logrus.Fatal("Timed out waiting for cachesync")
 	}
 	interrupts.OnInterrupt(func() {
@@ -183,12 +175,22 @@ func main() {
 			logrus.WithError(err).Error("Could not clean up git client cache.")
 		}
 	})
+
+	// The watch apimachinery doesn't support restarts, so just exit the binary if a kubeconfig changes
+	// to make the kubelet restart us.
+	if err := o.kubernetes.AddKubeconfigChangeCallback(func() {
+		logrus.Info("Kubeconfig changed, exiting to trigger a restart")
+		interrupts.Terminate()
+	}); err != nil {
+		logrus.WithError(err).Fatal("Failed to register kubeconfig change callback")
+	}
+
 	http.Handle("/", c)
 	http.Handle("/history", c.History)
 	server := &http.Server{Addr: ":" + strconv.Itoa(o.port)}
 
 	// Push metrics to the configured prometheus pushgateway endpoint or serve them
-	metrics.ExposeMetrics("tide", cfg().PushGateway)
+	metrics.ExposeMetrics("tide", cfg().PushGateway, o.instrumentationOptions.MetricsPort)
 
 	start := time.Now()
 	sync(c)

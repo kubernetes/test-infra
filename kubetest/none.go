@@ -38,7 +38,8 @@ func (n noneDeploy) IsUp() error {
 }
 
 func (n noneDeploy) DumpClusterLogs(localPath, gcsPath string) error {
-	return defaultDumpClusterLogs(localPath, gcsPath)
+	log.Print("Noop DumpClusterLogs()")
+	return nil
 }
 
 func (n noneDeploy) TestSetup() error {

@@ -39,6 +39,7 @@ const (
 	periodicIntervalAnnotation   = "fork-per-release-periodic-interval"
 	cronAnnotation               = "fork-per-release-cron"
 	replacementAnnotation        = "fork-per-release-replacements"
+	deletionAnnotation           = "fork-per-release-deletions"
 	testgridDashboardsAnnotation = "testgrid-dashboards"
 	testgridTabNameAnnotation    = "testgrid-tab-name"
 	descriptionAnnotation        = "description"
@@ -63,7 +64,7 @@ func generatePostsubmits(c config.JobConfig, version string) (map[string][]confi
 					var err error
 					c.Args, err = performReplacement(c.Args, version, p.Annotations[replacementAnnotation])
 					if err != nil {
-						return nil, fmt.Errorf("%s: %v", postsubmit.Name, err)
+						return nil, fmt.Errorf("%s: %w", postsubmit.Name, err)
 					}
 				}
 			}
@@ -84,6 +85,8 @@ func generatePresubmits(c config.JobConfig, version string) (map[string][]config
 			p := presubmit
 			p.SkipBranches = nil
 			p.Branches = []string{"release-" + version}
+			p.Context = generatePresubmitContextVariant(p.Name, p.Context, version)
+			p.Name = generatePresubmitNameVariant(p.Name, version)
 			if p.Spec != nil {
 				for i := range p.Spec.Containers {
 					c := &p.Spec.Containers[i]
@@ -92,7 +95,7 @@ func generatePresubmits(c config.JobConfig, version string) (map[string][]config
 					var err error
 					c.Args, err = performReplacement(c.Args, version, p.Annotations[replacementAnnotation])
 					if err != nil {
-						return nil, fmt.Errorf("%s: %v", presubmit.Name, err)
+						return nil, fmt.Errorf("%s: %w", presubmit.Name, err)
 					}
 				}
 			}
@@ -103,9 +106,16 @@ func generatePresubmits(c config.JobConfig, version string) (map[string][]config
 	return newPresubmits, nil
 }
 
-func generatePeriodics(c config.JobConfig, version string) ([]config.Periodic, error) {
+func shouldDecorate(c *config.JobConfig, util config.UtilityConfig) bool {
+	if util.Decorate != nil {
+		return *util.Decorate
+	}
+	return c.DecorateAllJobs
+}
+
+func generatePeriodics(conf config.JobConfig, version string) ([]config.Periodic, error) {
 	var newPeriodics []config.Periodic
-	for _, periodic := range c.Periodics {
+	for _, periodic := range conf.Periodics {
 		if periodic.Annotations[forkAnnotation] != "true" {
 			continue
 		}
@@ -116,18 +126,18 @@ func generatePeriodics(c config.JobConfig, version string) ([]config.Periodic, e
 				c := &p.Spec.Containers[i]
 				c.Image = fixImage(c.Image, version)
 				c.Env = fixEnvVars(c.Env, version)
-				if !p.Decorate {
+				if !shouldDecorate(&conf, p.JobBase.UtilityConfig) {
 					c.Command = fixBootstrapArgs(c.Command, version)
 					c.Args = fixBootstrapArgs(c.Args, version)
 				}
 				var err error
 				c.Args, err = performReplacement(c.Args, version, p.Annotations[replacementAnnotation])
 				if err != nil {
-					return nil, fmt.Errorf("%s: %v", periodic.Name, err)
+					return nil, fmt.Errorf("%s: %w", periodic.Name, err)
 				}
 			}
 		}
-		if p.Decorate {
+		if shouldDecorate(&conf, p.JobBase.UtilityConfig) {
 			p.ExtraRefs = fixExtraRefs(p.ExtraRefs, version)
 		}
 		if interval, ok := p.Annotations[periodicIntervalAnnotation]; ok {
@@ -152,8 +162,9 @@ func generatePeriodics(c config.JobConfig, version string) ([]config.Periodic, e
 		var err error
 		p.Tags, err = performReplacement(p.Tags, version, p.Annotations[replacementAnnotation])
 		if err != nil {
-			return nil, fmt.Errorf("%s: %v", periodic.Name, err)
+			return nil, fmt.Errorf("%s: %w", periodic.Name, err)
 		}
+		p.Labels = performDeletion(p.Labels, p.Annotations[deletionAnnotation])
 		p.Annotations = cleanAnnotations(fixTestgridAnnotations(p.Annotations, version, false))
 		newPeriodics = append(newPeriodics, p)
 	}
@@ -163,7 +174,7 @@ func generatePeriodics(c config.JobConfig, version string) ([]config.Periodic, e
 func cleanAnnotations(annotations map[string]string) map[string]string {
 	result := map[string]string{}
 	for k, v := range annotations {
-		if k == forkAnnotation || k == replacementAnnotation {
+		if k == forkAnnotation || k == replacementAnnotation || k == deletionAnnotation {
 			continue
 		}
 		if k == periodicIntervalAnnotation && v == "" {
@@ -180,12 +191,12 @@ func cleanAnnotations(annotations map[string]string) map[string]string {
 func evaluateTemplate(s string, c interface{}) (string, error) {
 	t, err := template.New("t").Parse(s)
 	if err != nil {
-		return "", fmt.Errorf("failed to parse template %q: %v", s, err)
+		return "", fmt.Errorf("failed to parse template %q: %w", s, err)
 	}
 	wr := bytes.Buffer{}
 	err = t.Execute(&wr, c)
 	if err != nil {
-		return "", fmt.Errorf("failed to execute template: %v", err)
+		return "", fmt.Errorf("failed to execute template: %w", err)
 	}
 	return wr.String(), nil
 }
@@ -221,8 +232,38 @@ func performReplacement(args []string, version, replacements string) ([]string, 
 	return newArgs, nil
 }
 
+func performDeletion(args map[string]string, deletions string) map[string]string {
+	if args == nil {
+		return nil
+	}
+	if deletions == "" {
+		return args
+	}
+
+	deletionsSet := make(map[string]bool)
+	for _, s := range strings.Split(deletions, ", ") {
+		deletionsSet[s] = true
+	}
+
+	result := map[string]string{}
+
+	for k, v := range args {
+		if !deletionsSet[k] {
+			result[k] = v
+		}
+	}
+
+	return result
+}
+
+const masterSuffix = "-master"
+
+func replaceAllMaster(s, new string) string {
+	return strings.ReplaceAll(s, masterSuffix, new)
+}
+
 func fixImage(image, version string) string {
-	return strings.ReplaceAll(image, "-master", "-"+version)
+	return replaceAllMaster(image, "-"+version)
 }
 
 func fixBootstrapArgs(args []string, version string) []string {
@@ -248,6 +289,9 @@ func fixExtraRefs(refs []prowapi.Refs, version string) []prowapi.Refs {
 	newRefs := make([]prowapi.Refs, 0, len(refs))
 	for _, r := range refs {
 		if r.Org == "kubernetes" && r.Repo == "kubernetes" && r.BaseRef == "master" {
+			r.BaseRef = "release-" + version
+		}
+		if r.Org == "kubernetes" && r.Repo == "perf-tests" && r.BaseRef == "master" {
 			r.BaseRef = "release-" + version
 		}
 		newRefs = append(newRefs, r)
@@ -294,10 +338,8 @@ annotations:
 				v += ", " + "sig-release-job-config-errors"
 			}
 			didDashboards = true
-			break
 		case testgridTabNameAnnotation:
 			v = strings.ReplaceAll(v, "master", version)
-			break
 		case descriptionAnnotation:
 			continue annotations
 		}
@@ -319,10 +361,27 @@ func generateNameVariant(name, version string, generic bool) string {
 	if !generic {
 		suffix = "-" + strings.ReplaceAll(version, ".", "-")
 	}
-	if !strings.HasSuffix(name, "-master") {
+	if !strings.HasSuffix(name, masterSuffix) {
 		return name + suffix
 	}
-	return strings.ReplaceAll(name, "-master", suffix)
+	return replaceAllMaster(name, suffix)
+}
+
+func generatePresubmitNameVariant(name, version string) string {
+	suffix := "-" + version
+	if !strings.HasSuffix(name, masterSuffix) {
+		return name + suffix
+	}
+	return replaceAllMaster(name, suffix)
+}
+
+func generatePresubmitContextVariant(name, context, version string) string {
+	suffix := "-" + version
+
+	if context != "" {
+		return replaceAllMaster(context, suffix)
+	}
+	return replaceAllMaster(name, suffix)
 }
 
 type options struct {

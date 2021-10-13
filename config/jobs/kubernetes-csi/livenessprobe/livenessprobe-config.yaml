@@ -2,7 +2,7 @@
 
 presubmits:
   kubernetes-csi/livenessprobe:
-  - name: pull-kubernetes-csi-livenessprobe-1-16-on-kubernetes-1-16
+  - name: pull-kubernetes-csi-livenessprobe-1-20-on-kubernetes-1-20
     always_run: true
     optional: false
     decorate: true
@@ -14,12 +14,12 @@ presubmits:
       preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-storage-csi-livenessprobe
-      testgrid-tab-name: 1-16-on-kubernetes-1-16
-      description: Kubernetes-CSI pull job in repo livenessprobe for non-alpha tests, using deployment 1.16 on Kubernetes 1.16
+      testgrid-tab-name: 1-20-on-kubernetes-1-20
+      description: Kubernetes-CSI pull job in repo livenessprobe for non-alpha tests, using deployment 1.20 on Kubernetes 1.20
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
         command:
         - runner.sh
         args:
@@ -31,11 +31,17 @@ presubmits:
         # unrelated to the PR. Testing against the latest Kubernetes is covered
         # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
-          value: "1.16.2"
+          value: "1.20.0"
+        - name: CSI_PROW_USE_BAZEL
+          value: "true"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
-          value: "1.16"
+          value: "1.20"
+        - name: CSI_PROW_DEPLOYMENT_SUFFIX
+          value: ""
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.4.0-rc4"
+          value: "v1.7.2"
+        - name: CSI_SNAPSHOTTER_VERSION
+          value: "v4.0.0"
         - name: CSI_PROW_TESTS
           value: "sanity serial parallel"
         # docker-in-docker needs privileged mode
@@ -44,7 +50,7 @@ presubmits:
         resources:
           requests:
             cpu: 2000m
-  - name: pull-kubernetes-csi-livenessprobe-1-16-on-kubernetes-master
+  - name: pull-kubernetes-csi-livenessprobe-1-20-on-kubernetes-master
     # Explicitly needs to be started with /test.
     # This cannot be enabled by default because there's always the risk
     # that something changes in master which breaks the pre-merge check.
@@ -59,12 +65,12 @@ presubmits:
       preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-storage-csi-livenessprobe
-      testgrid-tab-name: 1-16-on-kubernetes-master
-      description: Kubernetes-CSI pull job in repo livenessprobe for non-alpha tests, using deployment 1.16 on Kubernetes master
+      testgrid-tab-name: 1-20-on-kubernetes-master
+      description: Kubernetes-CSI pull job in repo livenessprobe for non-alpha tests, using deployment 1.20 on Kubernetes master
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
         command:
         - runner.sh
         args:
@@ -72,8 +78,14 @@ presubmits:
         env:
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "latest"
+        - name: CSI_PROW_USE_BAZEL
+          value: "false"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.4.0-rc4"
+          value: "v1.7.2"
+        - name: CSI_PROW_DEPLOYMENT_SUFFIX
+          value: ""
+        - name: CSI_SNAPSHOTTER_VERSION
+          value: "master"
         - name: CSI_PROW_TESTS
           value: "sanity serial parallel"
         # docker-in-docker needs privileged mode
@@ -86,7 +98,7 @@ presubmits:
           memory: "9000Mi"
           # during the tests more like 3-20m is used
           cpu: 2000m
-  - name: pull-kubernetes-csi-livenessprobe-1-17-on-kubernetes-1-17
+  - name: pull-kubernetes-csi-livenessprobe-1-21-on-kubernetes-1-21
     always_run: true
     optional: false
     decorate: true
@@ -98,12 +110,12 @@ presubmits:
       preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-storage-csi-livenessprobe
-      testgrid-tab-name: 1-17-on-kubernetes-1-17
-      description: Kubernetes-CSI pull job in repo livenessprobe for non-alpha tests, using deployment 1.17 on Kubernetes 1.17
+      testgrid-tab-name: 1-21-on-kubernetes-1-21
+      description: Kubernetes-CSI pull job in repo livenessprobe for non-alpha tests, using deployment 1.21 on Kubernetes 1.21
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
         command:
         - runner.sh
         args:
@@ -115,11 +127,17 @@ presubmits:
         # unrelated to the PR. Testing against the latest Kubernetes is covered
         # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
-          value: "1.17.0"
+          value: "1.21.0"
+        - name: CSI_PROW_USE_BAZEL
+          value: "false"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
-          value: "1.17"
+          value: "1.21"
+        - name: CSI_PROW_DEPLOYMENT_SUFFIX
+          value: ""
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.4.0-rc4"
+          value: "v1.7.2"
+        - name: CSI_SNAPSHOTTER_VERSION
+          value: "v4.0.0"
         - name: CSI_PROW_TESTS
           value: "sanity serial parallel"
         # docker-in-docker needs privileged mode
@@ -128,7 +146,7 @@ presubmits:
         resources:
           requests:
             cpu: 2000m
-  - name: pull-kubernetes-csi-livenessprobe-1-17-on-kubernetes-master
+  - name: pull-kubernetes-csi-livenessprobe-1-21-on-kubernetes-master
     # Explicitly needs to be started with /test.
     # This cannot be enabled by default because there's always the risk
     # that something changes in master which breaks the pre-merge check.
@@ -143,12 +161,12 @@ presubmits:
       preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-storage-csi-livenessprobe
-      testgrid-tab-name: 1-17-on-kubernetes-master
-      description: Kubernetes-CSI pull job in repo livenessprobe for non-alpha tests, using deployment 1.17 on Kubernetes master
+      testgrid-tab-name: 1-21-on-kubernetes-master
+      description: Kubernetes-CSI pull job in repo livenessprobe for non-alpha tests, using deployment 1.21 on Kubernetes master
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
         command:
         - runner.sh
         args:
@@ -156,8 +174,14 @@ presubmits:
         env:
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "latest"
+        - name: CSI_PROW_USE_BAZEL
+          value: "false"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.4.0-rc4"
+          value: "v1.7.2"
+        - name: CSI_PROW_DEPLOYMENT_SUFFIX
+          value: ""
+        - name: CSI_SNAPSHOTTER_VERSION
+          value: "master"
         - name: CSI_PROW_TESTS
           value: "sanity serial parallel"
         # docker-in-docker needs privileged mode
@@ -170,9 +194,9 @@ presubmits:
           memory: "9000Mi"
           # during the tests more like 3-20m is used
           cpu: 2000m
-  - name: pull-kubernetes-csi-livenessprobe-1-18-on-kubernetes-1-18
+  - name: pull-kubernetes-csi-livenessprobe-1-22-on-kubernetes-1-22
     always_run: true
-    optional: false
+    optional: true
     decorate: true
     skip_report: false
     skip_branches: ["^(release-0.4|release-1.0)$"]
@@ -182,12 +206,12 @@ presubmits:
       preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-storage-csi-livenessprobe
-      testgrid-tab-name: 1-18-on-kubernetes-1-18
-      description: Kubernetes-CSI pull job in repo livenessprobe for non-alpha tests, using deployment 1.18 on Kubernetes 1.18
+      testgrid-tab-name: 1-22-on-kubernetes-1-22
+      description: Kubernetes-CSI pull job in repo livenessprobe for non-alpha tests, using deployment 1.22 on Kubernetes 1.22
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
         command:
         - runner.sh
         args:
@@ -199,20 +223,30 @@ presubmits:
         # unrelated to the PR. Testing against the latest Kubernetes is covered
         # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
-          value: "1.18.0"
+          value: "1.22.0"
+        - name: CSI_PROW_USE_BAZEL
+          value: "false"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
-          value: "1.18"
+          value: "1.22"
+        - name: CSI_PROW_DEPLOYMENT_SUFFIX
+          value: ""
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.4.0-rc4"
+          value: "v1.7.2"
+        - name: CSI_SNAPSHOTTER_VERSION
+          value: "v4.0.0"
         - name: CSI_PROW_TESTS
           value: "sanity serial parallel"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        resources:
-          requests:
-            cpu: 2000m
-  - name: pull-kubernetes-csi-livenessprobe-1-18-on-kubernetes-master
+      resources:
+        requests:
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
+          memory: "9000Mi"
+          # during the tests more like 3-20m is used
+          cpu: 2000m
+  - name: pull-kubernetes-csi-livenessprobe-1-22-on-kubernetes-master
     # Explicitly needs to be started with /test.
     # This cannot be enabled by default because there's always the risk
     # that something changes in master which breaks the pre-merge check.
@@ -227,12 +261,12 @@ presubmits:
       preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-storage-csi-livenessprobe
-      testgrid-tab-name: 1-18-on-kubernetes-master
-      description: Kubernetes-CSI pull job in repo livenessprobe for non-alpha tests, using deployment 1.18 on Kubernetes master
+      testgrid-tab-name: 1-22-on-kubernetes-master
+      description: Kubernetes-CSI pull job in repo livenessprobe for non-alpha tests, using deployment 1.22 on Kubernetes master
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
         command:
         - runner.sh
         args:
@@ -240,8 +274,14 @@ presubmits:
         env:
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "latest"
+        - name: CSI_PROW_USE_BAZEL
+          value: "false"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.4.0-rc4"
+          value: "v1.7.2"
+        - name: CSI_PROW_DEPLOYMENT_SUFFIX
+          value: ""
+        - name: CSI_SNAPSHOTTER_VERSION
+          value: "master"
         - name: CSI_PROW_TESTS
           value: "sanity serial parallel"
         # docker-in-docker needs privileged mode
@@ -254,7 +294,7 @@ presubmits:
           memory: "9000Mi"
           # during the tests more like 3-20m is used
           cpu: 2000m
-  - name: pull-kubernetes-csi-livenessprobe-alpha-1-18-on-kubernetes-1-18
+  - name: pull-kubernetes-csi-livenessprobe-alpha-1-21-on-kubernetes-1-21
     always_run: false
     optional: true
     decorate: true
@@ -266,12 +306,12 @@ presubmits:
       preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-storage-csi-livenessprobe
-      testgrid-tab-name: alpha-1-18-on-kubernetes-1-18
-      description: Kubernetes-CSI pull job in repo livenessprobe for alpha tests, using deployment 1.18 on Kubernetes 1.18
+      testgrid-tab-name: alpha-1-21-on-kubernetes-1-21
+      description: Kubernetes-CSI pull job in repo livenessprobe for alpha tests, using deployment 1.21 on Kubernetes 1.21
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
         command:
         - runner.sh
         args:
@@ -283,11 +323,17 @@ presubmits:
         # unrelated to the PR. Testing against the latest Kubernetes is covered
         # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
-          value: "1.18.0"
+          value: "1.21.0"
+        - name: CSI_PROW_USE_BAZEL
+          value: "false"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
-          value: "1.18"
+          value: "1.21"
+        - name: CSI_PROW_DEPLOYMENT_SUFFIX
+          value: ""
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.4.0-rc4"
+          value: "v1.7.2"
+        - name: CSI_SNAPSHOTTER_VERSION
+          value: "v4.0.0"
         - name: CSI_PROW_TESTS
           value: "serial-alpha parallel-alpha"
         # docker-in-docker needs privileged mode
@@ -296,48 +342,6 @@ presubmits:
         resources:
           requests:
             cpu: 2000m
-  - name: pull-kubernetes-csi-livenessprobe-alpha-1-18-on-kubernetes-master
-    # Explicitly needs to be started with /test.
-    # This cannot be enabled by default because there's always the risk
-    # that something changes in master which breaks the pre-merge check.
-    always_run: false
-    optional: true
-    decorate: true
-    skip_report: false
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-      preset-bazel-remote-cache-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    annotations:
-      testgrid-dashboards: sig-storage-csi-livenessprobe
-      testgrid-tab-name: alpha-1-18-on-kubernetes-master
-      description: Kubernetes-CSI pull job in repo livenessprobe for alpha tests, using deployment 1.18 on Kubernetes master
-    spec:
-      containers:
-      # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
-        command:
-        - runner.sh
-        args:
-        - ./.prow.sh
-        env:
-        - name: CSI_PROW_KUBERNETES_VERSION
-          value: "latest"
-        - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.4.0-rc4"
-        - name: CSI_PROW_TESTS
-          value: "serial-alpha parallel-alpha"
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-      resources:
-        requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
   - name: pull-kubernetes-csi-livenessprobe-unit
     always_run: true
     decorate: true
@@ -355,7 +359,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
         command:
         - runner.sh
         args:

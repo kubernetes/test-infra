@@ -1,0 +1,13 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+approvers:
+- release-engineering-approvers
+
+# As RelEng trusted jobs have the potential to broadly disrupt community
+# operations, reviewers are explicitly constrained to the RelEng approvers.
+reviewers:
+- release-engineering-approvers
+
+labels:
+- sig/release
+- area/release-eng

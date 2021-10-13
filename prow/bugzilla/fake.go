@@ -18,20 +18,24 @@ package bugzilla
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
+	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 // Fake is a fake Bugzilla client with injectable fields
 type Fake struct {
-	EndpointString  string
-	Bugs            map[int]Bug
-	BugComments     map[int][]Comment
-	BugErrors       sets.Int
-	BugCreateErrors sets.String
-	ExternalBugs    map[int][]ExternalBug
-	SubComponents   map[int]map[string][]string
+	EndpointString   string
+	Bugs             map[int]Bug
+	BugComments      map[int][]Comment
+	BugErrors        sets.Int
+	BugErrorMessages map[int]string
+	BugCreateErrors  sets.String
+	ExternalBugs     map[int][]ExternalBug
+	SubComponents    map[int]map[string][]string
+	SearchedBugs     []*Bug
 }
 
 // Endpoint returns the endpoint for this fake
@@ -39,11 +43,18 @@ func (c *Fake) Endpoint() string {
 	return c.EndpointString
 }
 
+func (c *Fake) bugErrorMsg(bug int, def string) error {
+	if c.BugErrorMessages[bug] != "" {
+		return errors.New(c.BugErrorMessages[bug])
+	}
+	return errors.New(def)
+}
+
 // GetBug retrieves the bug, if registered, or an error, if set,
 // or responds with an error that matches IsNotFound
 func (c *Fake) GetBug(id int) (*Bug, error) {
 	if c.BugErrors.Has(id) {
-		return nil, errors.New("injected error getting bug")
+		return nil, c.bugErrorMsg(id, "injected error getting bug")
 	}
 	if bug, exists := c.Bugs[id]; exists {
 		return &bug, nil
@@ -56,7 +67,7 @@ func (c *Fake) GetBug(id int) (*Bug, error) {
 // error that matches IsNotFound
 func (c *Fake) GetExternalBugPRsOnBug(id int) ([]ExternalBug, error) {
 	if c.BugErrors.Has(id) {
-		return nil, errors.New("injected error adding external bug to bug")
+		return nil, c.bugErrorMsg(id, "injected error adding external bug to bug")
 	}
 	if _, exists := c.Bugs[id]; exists {
 		return c.ExternalBugs[id], nil
@@ -68,33 +79,46 @@ func (c *Fake) GetExternalBugPRsOnBug(id int) ([]ExternalBug, error) {
 // or responds with an error that matches IsNotFound
 func (c *Fake) UpdateBug(id int, update BugUpdate) error {
 	if c.BugErrors.Has(id) {
-		return errors.New("injected error updating bug")
+		return c.bugErrorMsg(id, "injected error updating bug")
 	}
-	if bug, exists := c.Bugs[id]; exists {
-		bug.Status = update.Status
-		bug.Resolution = update.Resolution
-		if update.Version != "" {
-			bug.Version = []string{update.Version}
-		}
-		if update.TargetRelease != nil {
-			bug.TargetRelease = update.TargetRelease
-		}
-		if update.DependsOn != nil {
-			if len(update.DependsOn.Set) > 0 {
-				bug.DependsOn = update.DependsOn.Set
-			} else {
-				bug.DependsOn = sets.NewInt(bug.DependsOn...).Insert(update.DependsOn.Add...).Delete(update.DependsOn.Remove...).List()
-			}
-			for _, blockerID := range bug.DependsOn {
-				blockerBug := c.Bugs[blockerID]
-				blockerBug.Blocks = append(blockerBug.Blocks, id)
-				c.Bugs[blockerID] = blockerBug
-			}
-		}
-		c.Bugs[id] = bug
-		return nil
+	bug, exists := c.Bugs[id]
+	if !exists {
+		return &requestError{statusCode: http.StatusNotFound, message: "bug not registered in the fake"}
 	}
-	return &requestError{statusCode: http.StatusNotFound, message: "bug not registered in the fake"}
+	bug.Status = update.Status
+	bug.Resolution = update.Resolution
+	if update.Version != "" {
+		bug.Version = []string{update.Version}
+	}
+	if update.TargetRelease != nil {
+		bug.TargetRelease = update.TargetRelease
+	}
+	if update.DependsOn != nil {
+		if len(update.DependsOn.Set) > 0 {
+			bug.DependsOn = update.DependsOn.Set
+		} else {
+			bug.DependsOn = sets.NewInt(bug.DependsOn...).Insert(update.DependsOn.Add...).Delete(update.DependsOn.Remove...).List()
+		}
+		for _, blockerID := range bug.DependsOn {
+			blockerBug := c.Bugs[blockerID]
+			blockerBug.Blocks = append(blockerBug.Blocks, id)
+			c.Bugs[blockerID] = blockerBug
+		}
+	}
+	if update.Blocks != nil {
+		if len(update.Blocks.Set) > 0 {
+			bug.Blocks = update.Blocks.Set
+		} else {
+			bug.Blocks = sets.NewInt(bug.Blocks...).Insert(update.Blocks.Add...).Delete(update.Blocks.Remove...).List()
+		}
+		for _, blockerID := range bug.Blocks {
+			blockerBug := c.Bugs[blockerID]
+			blockerBug.DependsOn = append(blockerBug.DependsOn, id)
+			c.Bugs[blockerID] = blockerBug
+		}
+	}
+	c.Bugs[id] = bug
+	return nil
 }
 
 // AddPullRequestAsExternalBug adds an external bug to the Bugzilla bug,
@@ -102,7 +126,7 @@ func (c *Fake) UpdateBug(id int, update BugUpdate) error {
 // matches IsNotFound
 func (c *Fake) AddPullRequestAsExternalBug(id int, org, repo string, num int) (bool, error) {
 	if c.BugErrors.Has(id) {
-		return false, errors.New("injected error adding external bug to bug")
+		return false, c.bugErrorMsg(id, "injected error adding external bug to bug")
 	}
 	if _, exists := c.Bugs[id]; exists {
 		pullIdentifier := IdentifierForPull(org, repo, num)
@@ -116,6 +140,31 @@ func (c *Fake) AddPullRequestAsExternalBug(id int, org, repo string, num int) (b
 			ExternalBugID: pullIdentifier,
 		})
 		return true, nil
+	}
+	return false, &requestError{statusCode: http.StatusNotFound, message: "bug not registered in the fake"}
+}
+
+// RemovePullRequestAsExternalBug removes an external bug from the Bugzilla bug,
+// if registered, or an error, if set, or responds with an error that
+// matches IsNotFound
+func (c *Fake) RemovePullRequestAsExternalBug(id int, org, repo string, num int) (bool, error) {
+	if c.BugErrors.Has(id) {
+		return false, c.bugErrorMsg(id, "injected error removing external bug from bug")
+	}
+	if _, exists := c.Bugs[id]; exists {
+		pullIdentifier := IdentifierForPull(org, repo, num)
+		toRemove := -1
+		for i, bug := range c.ExternalBugs[id] {
+			if bug.BugzillaBugID == id && bug.ExternalBugID == pullIdentifier {
+				toRemove = i
+				break
+			}
+		}
+		if toRemove != -1 {
+			c.ExternalBugs[id] = append(c.ExternalBugs[id][:toRemove], c.ExternalBugs[id][toRemove+1:]...)
+			return true, nil
+		}
+		return false, nil
 	}
 	return false, &requestError{statusCode: http.StatusNotFound, message: "bug not registered in the fake"}
 }
@@ -153,6 +202,7 @@ func (c *Fake) CreateBug(bug *BugCreate) (int, error) {
 		Summary:         bug.Summary,
 		TargetMilestone: bug.TargetMilestone,
 		Version:         bug.Version,
+		TargetRelease:   bug.TargetRelease,
 	}
 	c.Bugs[newID] = newBug
 	// add new comment one ID newer than highest existing CommentID
@@ -180,21 +230,42 @@ func (c *Fake) CreateBug(bug *BugCreate) (int, error) {
 	return newID, nil
 }
 
+func (c *Fake) CreateComment(comment *CommentCreate) (int, error) {
+	// add new comment one ID newer than highest existing CommentID
+	newCommentID := 0
+	for _, comments := range c.BugComments {
+		for _, comment := range comments {
+			if comment.ID >= newCommentID {
+				newCommentID = comment.ID + 1
+			}
+		}
+	}
+	newComment := Comment{
+		ID:        newCommentID,
+		BugID:     comment.ID,
+		Count:     len(c.BugComments[comment.ID]),
+		Text:      comment.Comment,
+		IsPrivate: comment.IsPrivate,
+	}
+	c.BugComments[comment.ID] = append(c.BugComments[comment.ID], newComment)
+	return newCommentID, nil
+}
+
 // GetComments retrieves the bug comments, if registered, or an error, if set,
 // or responds with an error that matches IsNotFound
 func (c *Fake) GetComments(id int) ([]Comment, error) {
 	if c.BugErrors.Has(id) {
-		return nil, errors.New("injected error getting bug comments")
+		return nil, c.bugErrorMsg(id, "injected error getting bug comments")
 	}
 	if comments, exists := c.BugComments[id]; exists {
 		return comments, nil
 	}
-	return nil, &requestError{statusCode: http.StatusNotFound, message: "bug comments not registered in the fake"}
+	return nil, &requestError{statusCode: http.StatusNotFound, message: fmt.Sprintf("bug comments for id %d not registered in the fake", id)}
 }
 
 // CloneBug clones a bug by creating a new bug with the same fields, copying the description, and updating the bug to depend on the original bug
-func (c *Fake) CloneBug(bug *Bug) (int, error) {
-	return clone(c, bug)
+func (c *Fake) CloneBug(bug *Bug, mutations ...func(bug *BugCreate)) (int, error) {
+	return clone(c, bug, mutations)
 }
 
 func (c *Fake) GetSubComponentsOnBug(id int) (map[string][]string, error) {
@@ -210,6 +281,36 @@ func (c *Fake) GetClones(bug *Bug) ([]*Bug, error) {
 	}
 	return getClones(c, bug)
 }
+
+// GetAllClones gets all clones including its parents and children spanning multiple levels
+func (c *Fake) GetAllClones(bug *Bug) ([]*Bug, error) {
+	if c.BugErrors.Has(bug.ID) {
+		return nil, errors.New("injected error getting subcomponents")
+	}
+	bugCache := newBugDetailsCache()
+	return getAllClones(c, bug, bugCache)
+}
+
+// GetRootForClone gets the original bug.
+func (c *Fake) GetRootForClone(bug *Bug) (*Bug, error) {
+	if c.BugErrors.Has(bug.ID) {
+		return nil, errors.New("injected error getting bug")
+	}
+	return getRootForClone(c, bug)
+}
+
+func (c *Fake) SearchBugs(filters map[string]string) ([]*Bug, error) {
+	return c.SearchedBugs, nil
+}
+
+// SetRoundTripper sets the Transport in http.Client to a custom RoundTripper
+func (c *Fake) SetRoundTripper(t http.RoundTripper) {
+	// Do nothing here
+}
+
+func (c *Fake) ForPlugin(plugin string) Client             { return c }
+func (c *Fake) ForSubcomponent(subcomponent string) Client { return c }
+func (c *Fake) WithFields(fields logrus.Fields) Client     { return c }
 
 // the Fake is a Client
 var _ Client = &Fake{}

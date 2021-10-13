@@ -1,12 +1,15 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 reviewers:
-- fejta # lead
+- BenTheElder # lead
 - spiffxp # lead
 - stevekuznetsov # lead
-- test-infra-oncall # oncall
+- chaodaiG # oncall
+- cjwagner # oncall
+- mpherman2 # oncall
+- fejta # oncall
 approvers:
-- fejta # lead
+- BenTheElder # lead
 - spiffxp # lead
 - stevekuznetsov # lead
 - test-infra-oncall # oncall

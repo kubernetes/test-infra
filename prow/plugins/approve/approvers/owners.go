@@ -30,24 +30,34 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+
+	"k8s.io/test-infra/prow/pkg/layeredsets"
+	"k8s.io/test-infra/prow/plugins/ownersconfig"
 )
 
 const (
-	ownersFileName = "OWNERS"
 	// ApprovalNotificationName defines the name used in the title for the approval notifications.
 	ApprovalNotificationName = "ApprovalNotifier"
 )
 
 // Repo allows querying and interacting with OWNERS information in a repo.
 type Repo interface {
-	Approvers(path string) sets.String
+	Approvers(path string) layeredsets.String
 	LeafApprovers(path string) sets.String
 	FindApproverOwnersForFile(file string) string
 	IsNoParentOwners(path string) bool
+	IsAutoApproveUnownedSubfolders(directory string) bool
+	Filenames() ownersconfig.Filenames
 }
 
 // Owners provides functionality related to owners of a specific code change.
 type Owners struct {
+	// filenamesUnfiltered contains all files in a given PR, including those
+	// that do not need approval because of IsAutoApproveUnownedSubfolders
+	filenamesUnfiltered []string
+	// filenames refers to the files in a given PR, not to OWNERS files. Files
+	// that are a directory below an Owners file with IsAutoApproveUnownedSubfolders
+	// are excluded here but kept in filenamesUnfiltered.
 	filenames []string
 	repo      Repo
 	seed      int64
@@ -57,15 +67,15 @@ type Owners struct {
 
 // NewOwners consturcts a new Owners instance. filenames is the slice of files changed.
 func NewOwners(log *logrus.Entry, filenames []string, r Repo, s int64) Owners {
-	return Owners{filenames: filenames, repo: r, seed: s, log: log}
+	return Owners{filenamesUnfiltered: filenames, filenames: filenames, repo: r, seed: s, log: log}
 }
 
 // GetApprovers returns a map from ownersFiles -> people that are approvers in them
 func (o Owners) GetApprovers() map[string]sets.String {
 	ownersToApprovers := map[string]sets.String{}
 
-	for fn := range o.GetOwnersSet() {
-		ownersToApprovers[fn] = o.repo.Approvers(fn)
+	for ownersFilename := range o.GetOwnersSet() {
+		ownersToApprovers[ownersFilename] = o.repo.Approvers(ownersFilename).Set()
 	}
 
 	return ownersToApprovers
@@ -161,7 +171,7 @@ func (o Owners) GetSuggestedApprovers(reverseMap map[string]sets.String, potenti
 	for !ap.RequirementsMet() {
 		newApprover := findMostCoveringApprover(potentialApprovers, reverseMap, ap.UnapprovedFiles())
 		if newApprover == "" {
-			o.log.Warnf("Couldn't find/suggest approvers for each files. Unapproved: %q", ap.UnapprovedFiles().List())
+			o.log.Debugf("Couldn't find/suggest approvers for each files. Unapproved: %q", ap.UnapprovedFiles().List())
 			return ap.GetCurrentApproversSet()
 		}
 		ap.AddApprover(newApprover, "", false)
@@ -173,9 +183,20 @@ func (o Owners) GetSuggestedApprovers(reverseMap map[string]sets.String, potenti
 // GetOwnersSet returns a set containing all the Owners files necessary to get the PR approved
 func (o Owners) GetOwnersSet() sets.String {
 	owners := sets.NewString()
-	for _, fn := range o.filenames {
-		owners.Insert(o.repo.FindApproverOwnersForFile(fn))
+
+	var newFilenames []string
+	for _, toApprove := range o.filenames {
+		ownersFile := o.repo.FindApproverOwnersForFile(toApprove)
+		// If the ownersfile for toApprove is in the parent folder and has AllowFolderCreation enabled, we purge
+		// the file from our filenames list, because it doesn't need approval
+		if strings.Contains(filepath.Dir(filepath.Dir(toApprove)), ownersFile) && o.repo.IsAutoApproveUnownedSubfolders(ownersFile) {
+			continue
+		} else {
+			owners.Insert(o.repo.FindApproverOwnersForFile(toApprove))
+			newFilenames = append(newFilenames, toApprove)
+		}
 	}
+	o.filenames = newFilenames
 	o.removeSubdirs(owners)
 	return owners
 }
@@ -249,9 +270,9 @@ type Approvers struct {
 	ManuallyApproved func() bool
 }
 
-// IntersectSetsCase runs the intersection between to sets.String in a
-// case-insensitive way. It returns the name with the case of "one".
-func IntersectSetsCase(one, other sets.String) sets.String {
+// CaseInsensitiveIntersection runs the intersection between to sets.String in a
+// case-insensitive way. It returns the lowercased intersection.
+func CaseInsensitiveIntersection(one, other sets.String) sets.String {
 	lower := sets.NewString()
 	for item := range other {
 		lower.Insert(strings.ToLower(item))
@@ -380,7 +401,7 @@ func (ap Approvers) GetNoIssueApproversSet() sets.String {
 func (ap Approvers) GetFilesApprovers() map[string]sets.String {
 	filesApprovers := map[string]sets.String{}
 	currentApprovers := ap.GetCurrentApproversSetCased()
-	for fn, potentialApprovers := range ap.owners.GetApprovers() {
+	for ownersFilename, potentialApprovers := range ap.owners.GetApprovers() {
 		// The order of parameter matters here:
 		// - currentApprovers is the list of github handles that have approved
 		// - potentialApprovers is the list of handles in the OWNER
@@ -389,14 +410,14 @@ func (ap Approvers) GetFilesApprovers() map[string]sets.String {
 		// We want to keep the syntax of the github handle
 		// rather than the potential mis-cased username found in
 		// the OWNERS file, that's why it's the first parameter.
-		filesApprovers[fn] = IntersectSetsCase(currentApprovers, potentialApprovers)
+		filesApprovers[ownersFilename] = CaseInsensitiveIntersection(currentApprovers, potentialApprovers)
 	}
 
 	return filesApprovers
 }
 
 // NoIssueApprovers returns the list of people who have "no-issue"
-// approved the pull-request. They are included in the list iff they can
+// approved the pull-request. They are included in the list if they can
 // approve one of the files.
 func (ap Approvers) NoIssueApprovers() map[string]Approval {
 	nia := map[string]Approval{}
@@ -430,21 +451,23 @@ func (ap Approvers) UnapprovedFiles() sets.String {
 
 // GetFiles returns owners files that still need approval.
 func (ap Approvers) GetFiles(baseURL *url.URL, branch string) []File {
-	allOwnersFiles := []File{}
+	var allOwnersFiles []File
 	filesApprovers := ap.GetFilesApprovers()
 	for _, file := range ap.owners.GetOwnersSet().List() {
 		if len(filesApprovers[file]) == 0 {
 			allOwnersFiles = append(allOwnersFiles, UnapprovedFile{
-				baseURL:  baseURL,
-				filepath: file,
-				branch:   branch,
+				baseURL:        baseURL,
+				filepath:       file,
+				ownersFilename: ap.owners.repo.Filenames().Owners,
+				branch:         branch,
 			})
 		} else {
 			allOwnersFiles = append(allOwnersFiles, ApprovedFile{
-				baseURL:   baseURL,
-				filepath:  file,
-				approvers: filesApprovers[file],
-				branch:    branch,
+				baseURL:        baseURL,
+				filepath:       file,
+				ownersFilename: ap.owners.repo.Filenames().Owners,
+				approvers:      filesApprovers[file],
+				branch:         branch,
 			})
 		}
 	}
@@ -488,7 +511,7 @@ func (ap Approvers) GetCCs() []string {
 // returns true, the PR may still not be fully approved depending on the associated issue
 // requirement
 func (ap Approvers) AreFilesApproved() bool {
-	return len(ap.owners.filenames) != 0 && ap.UnapprovedFiles().Len() == 0
+	return (len(ap.owners.filenames) != 0 || len(ap.owners.filenamesUnfiltered) != 0) && ap.UnapprovedFiles().Len() == 0
 }
 
 // RequirementsMet returns a bool indicating whether the PR has met all approval requirements:
@@ -504,11 +527,7 @@ func (ap Approvers) RequirementsMet() bool {
 // IsApproved returns a bool indicating whether the PR is fully approved.
 // If a human manually added the approved label, this returns true, ignoring normal approval rules.
 func (ap Approvers) IsApproved() bool {
-	reqsMet := ap.RequirementsMet()
-	if !reqsMet && ap.ManuallyApproved() {
-		return true
-	}
-	return reqsMet
+	return ap.RequirementsMet() || ap.ManuallyApproved()
 }
 
 // ListApprovals returns the list of approvals
@@ -533,6 +552,16 @@ func (ap Approvers) ListNoIssueApprovals() []Approval {
 	return approvals
 }
 
+// AssignedCCs returns potential approvers that are already assigned
+func (ap Approvers) AssignedCCs() []string {
+	return sets.NewString(ap.GetCCs()...).Intersection(ap.assignees).List()
+}
+
+// SuggestedCCs returns potential approvers that are not already assigned
+func (ap Approvers) SuggestedCCs() []string {
+	return sets.NewString(ap.GetCCs()...).Difference(ap.assignees).List()
+}
+
 // File in an interface for files
 type File interface {
 	String() string
@@ -540,8 +569,9 @@ type File interface {
 
 // ApprovedFile contains the information of a an approved file.
 type ApprovedFile struct {
-	baseURL  *url.URL
-	filepath string
+	baseURL        *url.URL
+	filepath       string
+	ownersFilename string
 	// approvers is the set of users that approved this file change.
 	approvers sets.String
 	branch    string
@@ -549,13 +579,14 @@ type ApprovedFile struct {
 
 // UnapprovedFile contains the information of a an unapproved file.
 type UnapprovedFile struct {
-	baseURL  *url.URL
-	filepath string
-	branch   string
+	baseURL        *url.URL
+	filepath       string
+	ownersFilename string
+	branch         string
 }
 
 func (a ApprovedFile) String() string {
-	fullOwnersPath := filepath.Join(a.filepath, ownersFileName)
+	fullOwnersPath := filepath.Join(a.filepath, a.ownersFilename)
 	if strings.HasSuffix(a.filepath, ".md") {
 		fullOwnersPath = a.filepath
 	}
@@ -568,7 +599,7 @@ func (a ApprovedFile) String() string {
 }
 
 func (ua UnapprovedFile) String() string {
-	fullOwnersPath := filepath.Join(ua.filepath, ownersFileName)
+	fullOwnersPath := filepath.Join(ua.filepath, ua.ownersFilename)
 	if strings.HasSuffix(ua.filepath, ".md") {
 		fullOwnersPath = ua.filepath
 	}
@@ -585,9 +616,9 @@ func (ua UnapprovedFile) String() string {
 func GenerateTemplate(templ, name string, data interface{}) (string, error) {
 	buf := bytes.NewBufferString("")
 	if messageTempl, err := template.New(name).Parse(templ); err != nil {
-		return "", fmt.Errorf("failed to parse template for %s: %v", name, err)
+		return "", fmt.Errorf("failed to parse template for %s: %w", name, err)
 	} else if err := messageTempl.Execute(buf, data); err != nil {
-		return "", fmt.Errorf("failed to execute template for %s: %v", name, err)
+		return "", fmt.Errorf("failed to execute template for %s: %w", name, err)
 	}
 	return buf.String(), nil
 }
@@ -599,7 +630,7 @@ func GenerateTemplate(templ, name string, data interface{}) (string, error) {
 // 	- a suggested list of people from each OWNERS files that can fully approve the PR
 // 	- how an approver can indicate their approval
 // 	- how an approver can cancel their approval
-func GetMessage(ap Approvers, linkURL *url.URL, org, repo, branch string) *string {
+func GetMessage(ap Approvers, linkURL *url.URL, commandHelpLink, prProcessLink, org, repo, branch string) *string {
 	linkURL.Path = org + "/" + repo
 	message, err := GenerateTemplate(`{{if (and (not .ap.RequirementsMet) (call .ap.ManuallyApproved )) }}
 Approval requirements bypassed by manually added approval.
@@ -608,8 +639,18 @@ Approval requirements bypassed by manually added approval.
 This pull-request has been approved by:{{range $index, $approval := .ap.ListApprovals}}{{if $index}}, {{else}} {{end}}{{$approval}}{{end}}
 
 {{- if (and (not .ap.AreFilesApproved) (not (call .ap.ManuallyApproved))) }}
-To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign {{range $index, $cc := .ap.GetCCs}}{{if $index}}, {{end}}**{{$cc}}**{{end}}
-You can assign the PR to them by writing `+"`/assign {{range $index, $cc := .ap.GetCCs}}{{if $index}} {{end}}@{{$cc}}{{end}}`"+` in a comment when ready.
+{{ if len .ap.SuggestedCCs -}}
+{{- if len .ap.AssignedCCs -}}
+To complete the [pull request process]({{ .prProcessLink }}), please ask for approval from {{range $index, $cc := .ap.AssignedCCs}}{{if $index}}, {{end}}**{{$cc}}**{{end}} and additionally assign {{range $index, $cc := .ap.SuggestedCCs}}{{if $index}}, {{end}}**{{$cc}}**{{end}} after the PR has been reviewed.
+{{- else -}}
+To complete the [pull request process]({{ .prProcessLink }}), please assign {{range $index, $cc := .ap.SuggestedCCs}}{{if $index}}, {{end}}**{{$cc}}**{{end}} after the PR has been reviewed.
+{{- end}}
+You can assign the PR to them by writing `+"`/assign {{range $index, $cc := .ap.SuggestedCCs}}{{if $index}} {{end}}@{{$cc}}{{end}}`"+` in a comment when ready.
+{{- else -}}
+{{- if len .ap.AssignedCCs -}}
+To complete the [pull request process]({{ .prProcessLink }}), please ask for approval from {{range $index, $cc := .ap.AssignedCCs}}{{if $index}}, {{end}}**{{$cc}}**{{end}} after the PR has been reviewed.
+{{- end}}
+{{- end}}
 {{- end}}
 
 {{if not .ap.RequireIssue -}}
@@ -627,10 +668,10 @@ Associated issue requirement bypassed by:{{range $index, $approval := .ap.ListNo
 
 {{ end -}}
 
-The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo={{ .org }}%2F{{ .repo }}).
+The full list of commands accepted by this bot can be found [here]({{ .commandHelpLink }}?repo={{ .org }}%2F{{ .repo }}).
 
 {{ if (or .ap.AreFilesApproved (call .ap.ManuallyApproved)) -}}
-The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
+The pull request process is described [here]({{ .prProcessLink }})
 
 {{ end -}}
 <details {{if (and (not .ap.AreFilesApproved) (not (call .ap.ManuallyApproved))) }}open{{end}}>
@@ -639,7 +680,7 @@ Needs approval from an approver in each of these files:
 {{range .ap.GetFiles .baseURL .branch}}{{.}}{{end}}
 Approvers can indicate their approval by writing `+"`/approve`"+` in a comment
 Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
-</details>`, "message", map[string]interface{}{"ap": ap, "baseURL": linkURL, "org": org, "repo": repo, "branch": branch})
+</details>`, "message", map[string]interface{}{"ap": ap, "baseURL": linkURL, "commandHelpLink": commandHelpLink, "prProcessLink": prProcessLink, "org": org, "repo": repo, "branch": branch})
 	if err != nil {
 		ap.owners.log.WithError(err).Errorf("Error generating message.")
 		return nil

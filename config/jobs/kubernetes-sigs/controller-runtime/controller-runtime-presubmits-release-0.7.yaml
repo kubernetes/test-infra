@@ -1,0 +1,34 @@
+presubmits:
+  kubernetes-sigs/controller-runtime:
+  - name: pull-controller-runtime-test-release-0-7
+    decorate: true
+    always_run: true
+    path_alias: sigs.k8s.io/controller-runtime
+    branches:
+    - ^release-0.7$
+    spec:
+      containers:
+      - image: golang:1.15
+        command:
+        - ./hack/ci-check-everything.sh
+        resources:
+          requests:
+            cpu: "7000m"
+    annotations:
+      testgrid-dashboards: sig-api-machinery-kubebuilder
+      testgrid-tab-name: controller-runtime-release-0.7
+  - name: pull-controller-runtime-apidiff-release-0-7
+    decorate: true
+    always_run: true
+    optional: true
+    path_alias: sigs.k8s.io/controller-runtime
+    branches:
+    - ^release-0.7$
+    spec:
+      containers:
+      - image: golang:1.15
+        command:
+        - ./hack/apidiff.sh
+    annotations:
+      testgrid-dashboards: sig-api-machinery-kubebuilder
+      testgrid-tab-name: controller-runtime-release-0.7-apidiff

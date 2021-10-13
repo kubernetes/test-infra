@@ -79,7 +79,7 @@ func (o Options) Run() int {
 	if err != nil {
 		logrus.WithError(err).Error("Error executing test process")
 	}
-	if err := o.mark(code); err != nil {
+	if err := o.Mark(code); err != nil {
 		logrus.WithError(err).Error("Error writing exit code to marker file")
 		return InternalErrorCode // we need to mark the real error code to safely return AlwaysZero
 	}
@@ -94,12 +94,12 @@ func (o Options) Run() int {
 func (o Options) ExecuteProcess() (int, error) {
 	if o.ArtifactDir != "" {
 		if err := os.MkdirAll(o.ArtifactDir, os.ModePerm); err != nil {
-			return InternalErrorCode, fmt.Errorf("could not create artifact directory(%s): %v", o.ArtifactDir, err)
+			return InternalErrorCode, fmt.Errorf("could not create artifact directory(%s): %w", o.ArtifactDir, err)
 		}
 	}
 	processLogFile, err := os.Create(o.ProcessLog)
 	if err != nil {
-		return InternalErrorCode, fmt.Errorf("could not create process logfile(%s): %v", o.ProcessLog, err)
+		return InternalErrorCode, fmt.Errorf("could not create process logfile(%s): %w", o.ProcessLog, err)
 	}
 	defer processLogFile.Close()
 
@@ -122,10 +122,11 @@ func (o Options) ExecuteProcess() (int, error) {
 			case <-ctx.Done():
 			}
 		}()
-		code, err := wrapper.WaitForMarker(ctx, o.PreviousMarker)
+		prevMarkerResult := wrapper.WaitForMarkers(ctx, o.PreviousMarker)[o.PreviousMarker]
+		code, err := prevMarkerResult.ReturnCode, prevMarkerResult.Err
 		cancel() // end previous go-routine when not interrupted
 		if err != nil {
-			return InternalErrorCode, fmt.Errorf("wait for previous marker %s: %v", o.PreviousMarker, err)
+			return InternalErrorCode, fmt.Errorf("wait for previous marker %s: %w", o.PreviousMarker, err)
 		}
 		if code != 0 {
 			logrus.Infof("Skipping as previous step exited %d", code)
@@ -142,7 +143,7 @@ func (o Options) ExecuteProcess() (int, error) {
 	command.Stderr = output
 	command.Stdout = output
 	if err := command.Start(); err != nil {
-		errs := []error{fmt.Errorf("could not start the process: %v", err)}
+		errs := []error{fmt.Errorf("could not start the process: %w", err)}
 		if _, err := processLogFile.Write([]byte(errs[0].Error())); err != nil {
 			errs = append(errs, err)
 		}
@@ -163,12 +164,12 @@ func (o Options) ExecuteProcess() (int, error) {
 	case <-time.After(timeout):
 		logrus.Errorf("Process did not finish before %s timeout", timeout)
 		cancelled = true
-		gracefullyTerminate(command, done, gracePeriod)
+		gracefullyTerminate(command, done, gracePeriod, nil)
 	case s := <-interrupt:
 		logrus.Errorf("Entrypoint received interrupt: %v", s)
 		cancelled = true
 		aborted = true
-		gracefullyTerminate(command, done, gracePeriod)
+		gracefullyTerminate(command, done, gracePeriod, &s)
 	}
 
 	var returnCode int
@@ -190,35 +191,39 @@ func (o Options) ExecuteProcess() (int, error) {
 		}
 
 		if returnCode != 0 {
-			commandErr = fmt.Errorf("wrapped process failed: %v", commandErr)
+			commandErr = fmt.Errorf("wrapped process failed: %w", commandErr)
 		}
 	}
 	return returnCode, commandErr
 }
 
-func (o *Options) mark(exitCode int) error {
+func (o *Options) Mark(exitCode int) error {
 	content := []byte(strconv.Itoa(exitCode))
 
 	// create temp file in the same directory as the desired marker file
 	dir := filepath.Dir(o.MarkerFile)
-	tempFile, err := ioutil.TempFile(dir, "temp-marker")
+	tmpDir, err := ioutil.TempDir(dir, o.ContainerName)
 	if err != nil {
-		return fmt.Errorf("could not create temp marker file in %s: %v", dir, err)
+		return fmt.Errorf("%s: error creating temp dir: %w", o.ContainerName, err)
+	}
+	tempFile, err := ioutil.TempFile(tmpDir, "temp-marker")
+	if err != nil {
+		return fmt.Errorf("could not create temp marker file in %s: %w", tmpDir, err)
 	}
 	// write the exit code to the tempfile, sync to disk and close
 	if _, err = tempFile.Write(content); err != nil {
-		return fmt.Errorf("could not write to temp marker file (%s): %v", tempFile.Name(), err)
+		return fmt.Errorf("could not write to temp marker file (%s): %w", tempFile.Name(), err)
 	}
 	if err = tempFile.Sync(); err != nil {
-		return fmt.Errorf("could not sync temp marker file (%s): %v", tempFile.Name(), err)
+		return fmt.Errorf("could not sync temp marker file (%s): %w", tempFile.Name(), err)
 	}
 	tempFile.Close()
 	// set desired permission bits, then rename to the desired file name
 	if err = os.Chmod(tempFile.Name(), os.ModePerm); err != nil {
-		return fmt.Errorf("could not chmod (%x) temp marker file (%s): %v", os.ModePerm, tempFile.Name(), err)
+		return fmt.Errorf("could not chmod (%x) temp marker file (%s): %w", os.ModePerm, tempFile.Name(), err)
 	}
 	if err := os.Rename(tempFile.Name(), o.MarkerFile); err != nil {
-		return fmt.Errorf("could not move marker file to destination path (%s): %v", o.MarkerFile, err)
+		return fmt.Errorf("could not move marker file to destination path (%s): %w", o.MarkerFile, err)
 	}
 	return nil
 }
@@ -233,9 +238,14 @@ func optionOrDefault(option, defaultValue time.Duration) time.Duration {
 	return option
 }
 
-func gracefullyTerminate(command *exec.Cmd, done <-chan error, gracePeriod time.Duration) {
+func gracefullyTerminate(command *exec.Cmd, done <-chan error, gracePeriod time.Duration, signal *os.Signal) {
 	if err := command.Process.Signal(os.Interrupt); err != nil {
 		logrus.WithError(err).Error("Could not interrupt process after timeout")
+	}
+	if signal != nil {
+		if err := command.Process.Signal(*signal); err != nil {
+			logrus.WithError(err).Errorf("Could not send signal %v to process after timeout", signal)
+		}
 	}
 	select {
 	case <-done:

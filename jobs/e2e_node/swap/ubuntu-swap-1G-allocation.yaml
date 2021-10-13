@@ -1,0 +1,16 @@
+#cloud-config
+
+runcmd:
+  - 'echo current swappiness: $(sysctl vm.swappiness)'
+  - 'echo create swap file'
+  - 'fallocate -l 1G /swapfile || true'
+  - 'chmod 600 /swapfile'
+  - 'mkswap /swapfile'
+  - 'swapon /swapfile'
+  - 'echo "/swapfile swap swap defaults 0 0" | tee -a /etc/fstab'
+  - 'echo swap files'
+  - 'swapon --show'
+  - 'free -h'
+  - 'sudo sed -i "s:console=ttyS0:console=ttyS0 cgroup_enable=memory swapaccount=1:g" /etc/default/grub.d/50-cloudimg-settings.cfg' 
+  - 'sudo update-grub'
+  - 'sudo reboot' 

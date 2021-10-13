@@ -1,241 +1,85 @@
 periodics:
-
-- interval: 1h
-  name: e2e-kops-aws-misc-channelalpha
+- interval: 30m
+  name: ci-kops-build
   labels:
     preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: 140m
+    preset-dind-enabled: "true"
   spec:
     containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-experimental
       args:
-      - --cluster=e2e-kops-aws-channelalpha.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --env=KUBE_SSH_USER=admin
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --extract=release/stable
-      - --ginkgo-parallel
-      - --kops-args=--channel=alpha
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
-      - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+      - --repo=k8s.io/kops
+      - --repo=k8s.io/release
+      - --root=/go/src
+      - --timeout=30
+      - --scenario=execute
+      - --
+      - make
+      - gcs-publish-ci
+      - GCS_LOCATION=gs://kops-ci/bin
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-kops, kops-presubmits
+    testgrid-tab-name: kops-build
+    testgrid-alert-email: release-team@kubernetes.io
+- name: e2e-kops-do-calico
+  cron: '54 4-23/8 * * *'
+  labels:
+    preset-service-account: "true"
+    preset-do-credential: "true"
+    preset-do-spaces-credential: "true"
+    preset-do-ssh: "true"
+    preset-bazel-scratch-dir: "true"
+    preset-bazel-remote-cache-enabled: "true"
+    preset-dind-enabled: "true"
+  decorate: true
+  decoration_config:
+    timeout: 90m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:latest-experimental
       imagePullPolicy: Always
-  annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-aws-channelalpha
-
-- interval: 1h
-  name: e2e-kops-aws-misc-ha-euwest1
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: 140m
-  spec:
-    containers:
-    - command:
+      command:
       - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=e2e-kops-aws-ha-euwest1.k8s.local
-      - --deployment=kops
-      - --env=KUBE_SSH_USER=admin
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --extract=release/stable
-      - --ginkgo-parallel=10
-      - --kops-args=--master-count=3
-      - --kops-nodes=6
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --kops-zones=eu-west-1a,eu-west-1b,eu-west-1c
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
-      - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
-      imagePullPolicy: Always
+      - bash
+      - -c
+      - |
+          make test-e2e-install
+          kubetest2 kops \
+          -v 2 \
+          --up --down \
+          --cloud-provider=digitalocean \
+          --env S3_ENDPOINT=sfo3.digitaloceanspaces.com \
+          --create-args "--networking=calico --api-loadbalancer-type=public --node-count=2 --master-count=3 --override=cluster.spec.kubeAPIServer.serviceAccountIssuer=https://kubernetes.default" \
+          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
+          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.21.txt \
+          --test=kops \
+          -- \
+          --ginkgo-args="--debug" \
+          --test-package-marker=stable-1.21.txt \
+          --parallel 15 \
+          --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|\[Driver:.nfs\]|Dashboard|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*NodePort.*listening.*same.*port|TCP.CLOSE_WAIT|should.*run.*through.*the.*lifecycle.*of.*Pods.*and.*PodStatus"
+      resources:
+        limits:
+          memory: "3Gi"
+        requests:
+          cpu: "2"
+          memory: "3Gi"
   annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-aws-ha-euwest1
-
-- interval: 4h
-  name: e2e-kops-aws-misc-containerd
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: 140m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-aws-containerd.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --env=KUBE_SSH_USER=ubuntu
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --env=KOPS_RUN_TOO_NEW_VERSION=1
-      - --extract=release/stable
-      - --ginkgo-parallel
-      - --kops-args=--container-runtime=containerd --networking=calico --image=099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20200423
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-ssh-user=ubuntu
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort|Services.*rejected.*endpoints
-      - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
-  annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-aws-containerd
-
-- interval: 4h
-  name: e2e-kops-aws-misc-coredns
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-    preset-e2e-platform-aws: "true"
-  decorate: true
-  decoration_config:
-    timeout: 140m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-aws-coredns.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --extract=release/stable
-      - --ginkgo-parallel
-      - --kops-overrides=spec.kubeDNS.provider=CoreDNS
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-publish=gs://kops-ci/bin/latest-ci-green.txt
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
-      - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
-      imagePullPolicy: Always
-  annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-aws-coredns
-
-- interval: 4h
-  name: e2e-kops-aws-misc-launchtemplates
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-    preset-e2e-platform-aws: "true"
-  decorate: true
-  decoration_config:
-    timeout: 140m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-aws-launchtemplates.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --extract=release/stable
-      - --ginkgo-parallel
-      - --kops-feature-flags=EnableLaunchTemplates
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-publish=gs://kops-ci/bin/latest-ci-green.txt
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
-      - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
-      imagePullPolicy: Always
-  annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-aws-launchtemplates
-
-- interval: 1h
-  name: e2e-kops-aws-misc-newrunner
-  labels:
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: 140m
-  spec:
-    serviceAccountName: k8s-kops-test
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-aws-newrunner.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --env=KUBE_SSH_USER=admin
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --extract=release/stable
-      - --ginkgo-parallel
-      - --kops-priority-path=/workspace/kubernetes/platforms/linux/amd64
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt
-      - --provider=aws
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Dashboard|Services.*functioning.*NodePort
-      - --timeout=120m
-      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
-      imagePullPolicy: Always
-  annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-aws-newrunner
-
-- interval: 60m
-  name: e2e-kops-aws-misc-updown
-  labels:
-    preset-service-account: "true"
-    preset-aws-ssh: "true"
-    preset-aws-credential: "true"
-  decorate: true
-  decoration_config:
-    timeout: 45m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-kops-aws-updown.test-cncf-aws.k8s.io
-      - --deployment=kops
-      - --env=KUBE_SSH_USER=admin
-      - --env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release/release/stable.txt
-      - --env=KOPS_KUBE_RELEASE_URL=https://storage.googleapis.com/kubernetes-release/release
-      - --extract=release/stable
-      - --ginkgo-parallel
-      - --kops-publish=gs://kops-ci/bin/latest-ci-updown-green.txt
-      - --kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt
-      - --provider=aws
-      - --test_args=--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\]
-      - --timeout=45m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
-  annotations:
-    testgrid-dashboards: google-aws, sig-cluster-lifecycle-kops
-    testgrid-tab-name: kops-aws-updown
+    test.kops.k8s.io/cloud: digitalocean
+    test.kops.k8s.io/k8s_version: '1.21'
+    test.kops.k8s.io/kops_channel: stable
+    test.kops.k8s.io/kops_version: '1.21'
+    test.kops.k8s.io/networking: 'calico'
+    testgrid-dashboards: google-aws, kops-1.21, kops-k8s-1.21, sig-cluster-lifecycle-kops, kops-misc
+    testgrid-days-of-results: '90'
+    testgrid-tab-name: e2e-kops-do-calico

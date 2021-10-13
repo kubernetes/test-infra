@@ -2,9 +2,21 @@
 
 reviewers:
 - amwat
-- spiffxp
 - BenTheElder
+- cpanato
+- jeremyrickard
+- justaugustus
+- MushuEE
+- puerco
+- saschagrunert
+- spiffxp
+- xmudrii
 approvers:
 - amwat
-- spiffxp
 - BenTheElder
+- justaugustus
+- spiffxp
+
+labels:
+- sig/release
+- area/release-eng

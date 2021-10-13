@@ -121,6 +121,46 @@ Instructions for interacting with me using PR comments are available [here](http
 </details>`,
 		},
 		{
+			name:   "new comment on open issue comments with a title with @mention",
+			state:  "open",
+			action: github.GenericCommentActionCreated,
+			body:   "/retitle Add @mention to OWNERS",
+			trusted: func(user string) (bool, error) {
+				return true, nil
+			},
+			expectedComment: `org/repo#1:@user: Titles may not contain [keywords](https://help.github.com/articles/closing-issues-using-keywords) which can automatically close issues and at(@) mentions.
+
+<details>
+
+In response to [this]():
+
+>/retitle Add @mention to OWNERS
+
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
+</details>`,
+		},
+		{
+			name:   "new comment on open issue comments with a title with invalid keyword",
+			state:  "open",
+			action: github.GenericCommentActionCreated,
+			body:   "/retitle Fixes #9999",
+			trusted: func(user string) (bool, error) {
+				return true, nil
+			},
+			expectedComment: `org/repo#1:@user: Titles may not contain [keywords](https://help.github.com/articles/closing-issues-using-keywords) which can automatically close issues and at(@) mentions.
+
+<details>
+
+In response to [this]():
+
+>/retitle Fixes #9999
+
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
+</details>`,
+		},
+		{
 			name:   "trusted user edits PR title",
 			state:  "open",
 			action: github.GenericCommentActionCreated,
@@ -173,13 +213,12 @@ Instructions for interacting with me using PR comments are available [here](http
 				IsPR:       testCase.isPr,
 				Body:       testCase.body,
 			}
-			gc := fakegithub.FakeClient{
-				Issues:        map[int]*github.Issue{1: {Title: "Old"}},
-				PullRequests:  map[int]*github.PullRequest{1: {Title: "Old"}},
-				IssueComments: map[int][]github.IssueComment{},
-			}
+			gc := fakegithub.NewFakeClient()
+			gc.Issues = map[int]*github.Issue{1: {Title: "Old"}}
+			gc.PullRequests = map[int]*github.PullRequest{1: {Title: "Old"}}
+			gc.IssueComments = map[int][]github.IssueComment{}
 
-			err := handleGenericComment(&gc, testCase.trusted, testCase.allowClosedIssues, logrus.WithField("test-case", testCase.name), gce)
+			err := handleGenericComment(gc, testCase.trusted, testCase.allowClosedIssues, logrus.WithField("test-case", testCase.name), gce)
 			if err == nil && testCase.expectedErr {
 				t.Errorf("%s: expected an error but got none", testCase.name)
 			}

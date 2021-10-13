@@ -18,6 +18,8 @@ package api
 
 import (
 	"encoding/json"
+
+	"k8s.io/test-infra/prow/config"
 )
 
 // Key types specify the way Spyglass will fetch artifact handles
@@ -29,13 +31,13 @@ const (
 // Lens defines the interface that lenses are required to implement in order to be used by Spyglass.
 type Lens interface {
 	// Header returns a a string that is injected into the rendered lens's <head>
-	Header(artifacts []Artifact, resourceRoot string, config json.RawMessage) string
+	Header(artifacts []Artifact, resourceRoot string, config json.RawMessage, spyglassConfig config.Spyglass) string
 	// Body returns a string that is initially injected into the rendered lens's <body>.
 	// The lens's front-end code may call back to Body again, passing in some data string of its choosing.
-	Body(artifacts []Artifact, resourceRoot string, data string, config json.RawMessage) string
+	Body(artifacts []Artifact, resourceRoot string, data string, config json.RawMessage, spyglassConfig config.Spyglass) string
 	// Callback receives a string sent by the lens's front-end code and returns another string to be returned
 	// to that frontend code.
-	Callback(artifacts []Artifact, resourceRoot string, data string, config json.RawMessage) string
+	Callback(artifacts []Artifact, resourceRoot string, data string, config json.RawMessage, spyglassConfig config.Spyglass) string
 }
 
 // Artifact represents some output of a prow job
@@ -64,7 +66,7 @@ const (
 	RequestActionInitial RequestAction = "initial"
 	// RequestActionRerender means that this is a request to re-render the lenses body
 	RequestActionRerender RequestAction = "rerender"
-	// ResponseCallback means that this is an arbitrary callback
+	// RequestActionCallBack means that this is an arbitrary callback
 	RequestActionCallBack RequestAction = "callback"
 )
 
@@ -72,9 +74,9 @@ type LensRequest struct {
 	// Action is the specific type of request being made
 	Action RequestAction `json:"action"`
 	// Data is a string of data passed back from the lens frontend
-	Data string `json:"data,omitepty"`
+	Data string `json:"data,omitempty"`
 	// Config is the config for the lens, if any, in a lens-defined format
-	Config json.RawMessage `json:"config,omitepty"`
+	Config json.RawMessage `json:"config,omitempty"`
 	// ResourceRoot is a URL at which the lens's own resources can be accessed
 	// by the client browser.
 	ResourceRoot string `json:"resourceRoot"`

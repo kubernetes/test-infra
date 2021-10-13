@@ -5,7 +5,7 @@ postsubmits:
       cluster: k8s-infra-prow-build-trusted
       annotations:
         # this is the name of some testgrid dashboard to report to.
-        testgrid-dashboards: sig-instrumentation-image-pushes
+        testgrid-dashboards: sig-instrumentation-image-pushes, sig-k8s-infra-gcb
       decorate: true
       branches:
         - ^master$
@@ -14,7 +14,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200422-c760048
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210927-471c27b6e3
             command:
               - /run.sh
             args:

@@ -34,8 +34,16 @@ func TestRepoPermissionLevel(t *testing.T) {
 			get(Admin),
 		},
 		{
+			"maintain",
+			get(Maintain),
+		},
+		{
 			"write",
 			get(Write),
+		},
+		{
+			"triage",
+			get(Triage),
 		},
 		{
 			"read",
@@ -82,11 +90,19 @@ func TestLevelFromPermissions(t *testing.T) {
 			level:       Read,
 		},
 		{
-			permissions: RepoPermissions{Pull: true, Push: true},
+			permissions: RepoPermissions{Pull: true, Triage: true},
+			level:       Triage,
+		},
+		{
+			permissions: RepoPermissions{Pull: true, Triage: true, Push: true},
 			level:       Write,
 		},
 		{
-			permissions: RepoPermissions{Pull: true, Push: true, Admin: true},
+			permissions: RepoPermissions{Pull: true, Triage: true, Push: true, Maintain: true},
+			level:       Maintain,
+		},
+		{
+			permissions: RepoPermissions{Pull: true, Triage: true, Push: true, Maintain: true, Admin: true},
 			level:       Admin,
 		},
 	}
@@ -98,36 +114,40 @@ func TestLevelFromPermissions(t *testing.T) {
 	}
 }
 
-func TestPermissionsFromLevel(t *testing.T) {
+func TestPermissionsFromTeamPermission(t *testing.T) {
 	var testCases = []struct {
-		level       RepoPermissionLevel
+		level       TeamPermission
 		permissions RepoPermissions
 	}{
 		{
-			level:       RepoPermissionLevel("foobar"),
+			level:       TeamPermission("foobar"),
 			permissions: RepoPermissions{},
 		},
 		{
-			level:       None,
-			permissions: RepoPermissions{},
-		},
-		{
-			level:       Read,
+			level:       RepoPull,
 			permissions: RepoPermissions{Pull: true},
 		},
 		{
-			level:       Write,
-			permissions: RepoPermissions{Pull: true, Push: true},
+			level:       RepoTriage,
+			permissions: RepoPermissions{Pull: true, Triage: true},
 		},
 		{
-			level:       Admin,
-			permissions: RepoPermissions{Pull: true, Push: true, Admin: true},
+			level:       RepoPush,
+			permissions: RepoPermissions{Pull: true, Triage: true, Push: true},
+		},
+		{
+			level:       RepoMaintain,
+			permissions: RepoPermissions{Pull: true, Triage: true, Push: true, Maintain: true},
+		},
+		{
+			level:       RepoAdmin,
+			permissions: RepoPermissions{Pull: true, Triage: true, Push: true, Maintain: true, Admin: true},
 		},
 	}
 
 	for _, testCase := range testCases {
-		if actual, expected := PermissionsFromLevel(testCase.level), testCase.permissions; actual != expected {
-			t.Errorf("got incorrect permissions from level, expected %v but got %v", expected, actual)
+		if actual, expected := PermissionsFromTeamPermission(testCase.level), testCase.permissions; actual != expected {
+			t.Errorf("got incorrect permissions from team permissions, expected %v but got %v", expected, actual)
 		}
 	}
 }

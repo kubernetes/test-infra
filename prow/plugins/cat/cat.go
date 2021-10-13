@@ -56,11 +56,20 @@ func init() {
 }
 
 func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
+	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
+		Cat: plugins.Cat{
+			KeyPath: "/etc/cat-api/api-key",
+		},
+	})
+	if err != nil {
+		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", pluginName)
+	}
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The cat plugin adds a cat image to an issue or PR in response to the `/meow` command.",
 		Config: map[string]string{
 			"": fmt.Sprintf("The cat plugin uses an api key for thecatapi.com stored in %s.", config.Cat.KeyPath),
 		},
+		Snippet: yamlSnippet,
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/meow(vie) [CATegory]",
@@ -118,7 +127,7 @@ func (cr catResult) Format() (string, error) {
 	}
 	img, err := url.Parse(cr.Image)
 	if err != nil {
-		return "", fmt.Errorf("invalid image url %s: %v", cr.Image, err)
+		return "", fmt.Errorf("invalid image url %s: %w", cr.Image, err)
 	}
 
 	return fmt.Sprintf("![cat image](%s)", img), nil
@@ -148,7 +157,7 @@ func (c *realClowder) readCat(category string, movieCat bool, grumpyRoot string)
 	} else {
 		resp, err := http.Get(uri)
 		if err != nil {
-			return "", fmt.Errorf("could not read cat from %s: %v", uri, err)
+			return "", fmt.Errorf("could not read cat from %s: %w", uri, err)
 		}
 		defer resp.Body.Close()
 		if sc := resp.StatusCode; sc > 299 || sc < 200 {
@@ -168,7 +177,7 @@ func (c *realClowder) readCat(category string, movieCat bool, grumpyRoot string)
 	// checking size, GitHub doesn't support big images
 	toobig, err := github.ImageTooBig(a.Image)
 	if err != nil {
-		return "", fmt.Errorf("could not validate image size %s: %v", a.Image, err)
+		return "", fmt.Errorf("could not validate image size %s: %w", a.Image, err)
 	} else if toobig {
 		return "", fmt.Errorf("longcat is too long: %s", a.Image)
 	}

@@ -25,6 +25,7 @@ import (
 	"testing"
 
 	yaml3 "gopkg.in/yaml.v3"
+
 	simplealiases "k8s.io/test-infra/pkg/genyaml/testdata/alias_simple_types"
 	aliases "k8s.io/test-infra/pkg/genyaml/testdata/alias_types"
 	embedded "k8s.io/test-infra/pkg/genyaml/testdata/embedded_structs"
@@ -49,9 +50,13 @@ func resolvePath(t *testing.T, filename string) string {
 	return strings.ToLower(filepath.Join(testDir, name, filename))
 }
 
-func readFile(t *testing.T, extension string) []byte {
+func fileName(t *testing.T, extension string) string {
 	name := filepath.Base(t.Name())
-	data, err := ioutil.ReadFile(strings.ToLower(filepath.Join(testDir, name, name+"."+extension)))
+	return strings.ToLower(filepath.Join(testDir, name, name+"."+extension))
+}
+
+func readFile(t *testing.T, extension string) []byte {
+	data, err := ioutil.ReadFile(fileName(t, extension))
 	if err != nil {
 		t.Errorf("Failed reading .%s file: %v.", extension, err)
 	}
@@ -188,10 +193,12 @@ func TestInjectComment(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			cm := NewCommentMap()
-
-			err := json.Unmarshal(readFile(t, "json"), &cm.comments)
+			cm, err := NewCommentMap()
 			if err != nil {
+				t.Fatalf("Failed to construct comment map: %v", err)
+			}
+
+			if err := json.Unmarshal(readFile(t, "json"), &cm.comments); err != nil {
 				t.Errorf("Unexpected error unmarshalling JSON to comments: %v.", err)
 			}
 
@@ -234,65 +241,14 @@ func TestAddPath(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			cm := NewCommentMap()
-
-			for _, f := range test.paths {
-				cm.AddPath(resolvePath(t, f))
+			var resolved []string
+			for _, file := range test.paths {
+				resolved = append(resolved, resolvePath(t, file))
 			}
-
-			expectedComments := readFile(t, "json")
-			actualComments, err := json.MarshalIndent(cm.comments, "", "  ")
-
+			cm, err := NewCommentMap(resolved...)
 			if err != nil {
-				t.Errorf("Unexpected error generating JSON from comments: %v.", err)
+				t.Fatalf("failed to construct comment map: %v", err)
 			}
-
-			equal := bytes.Equal(expectedComments, actualComments)
-
-			if equal != test.expected {
-				t.Errorf("Expected comments equality to be: %t.", test.expected)
-			}
-		})
-	}
-
-}
-
-func TestSetPath(t *testing.T) {
-	tests := []struct {
-		name     string
-		setup    func(cm *CommentMap)
-		path     string
-		expected bool
-	}{
-		{
-			name: "Single path",
-			setup: func(cm *CommentMap) {
-				cm.comments = make(map[string]map[string]Comment)
-			},
-			path:     "example_config.go",
-			expected: true,
-		},
-		{
-			name: "Set path overwrite",
-			setup: func(cm *CommentMap) {
-				cm.comments["dummy_key"] = make(map[string]Comment)
-				cm.comments["dummy_key"]["dummy_sub_key"] = Comment{
-					Type:  "string",
-					IsObj: false,
-					Doc:   "Some preloaded comments",
-				}
-			},
-			path:     "example_config.go",
-			expected: true,
-		},
-	}
-
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			cm := NewCommentMap()
-			test.setup(cm)
-
-			cm.SetPath(resolvePath(t, test.path))
 
 			expectedComments := readFile(t, "json")
 			actualComments, err := json.MarshalIndent(cm.comments, "", "  ")
@@ -457,7 +413,10 @@ func TestGenYAML(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			cm := NewCommentMap(resolvePath(t, "example_config.go"))
+			cm, err := NewCommentMap(resolvePath(t, "example_config.go"))
+			if err != nil {
+				t.Fatalf("failed to construct comment map: %v", err)
+			}
 			expectedYaml := readFile(t, "yaml")
 
 			actualYaml, err := cm.GenYaml(test.structObj)

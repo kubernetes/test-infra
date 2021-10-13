@@ -21,7 +21,6 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"k8s.io/test-infra/prow/pjutil"
 	"os"
 	"path"
 	"strings"
@@ -31,6 +30,8 @@ import (
 	"sigs.k8s.io/yaml"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
 )
 
@@ -120,16 +121,29 @@ func main() {
 		}
 		logrus.WithField("out-dir", outDir).Info("Pod-utils configured for local mode. Instead of uploading to GCS, files will be copied to an output dir on the node.")
 
-		pod, err = makeLocalPod(job, o.buildID, outDir)
+		job.Status.BuildID = o.buildID
+		pod, err = makeLocalPod(job, outDir)
 		if err != nil {
 			logrus.WithError(err).Fatal("Could not decorate PodSpec for local mode.")
 		}
 	} else {
-		pod, err = decorate.ProwJobToPod(job, o.buildID)
+		job.Status.BuildID = o.buildID
+		pod, err = decorate.ProwJobToPod(job)
 		if err != nil {
 			logrus.WithError(err).Fatal("Could not decorate PodSpec.")
 		}
 	}
+
+	// We need to remove the created-by-prow label, otherwise sinker will promptly clean this
+	// up as there is no associated prowjob
+	newLabels := map[string]string{}
+	for k, v := range pod.Labels {
+		if k == kube.CreatedByProw {
+			continue
+		}
+		newLabels[k] = v
+	}
+	pod.Labels = newLabels
 
 	pod.GetObjectKind().SetGroupVersionKind(v1.SchemeGroupVersion.WithKind("Pod"))
 	podYAML, err := yaml.Marshal(pod)
@@ -139,8 +153,8 @@ func main() {
 	fmt.Println(string(podYAML))
 }
 
-func makeLocalPod(pj prowapi.ProwJob, buildID, outDir string) (*v1.Pod, error) {
-	pod, err := decorate.ProwJobToPodLocal(pj, buildID, outDir)
+func makeLocalPod(pj prowapi.ProwJob, outDir string) (*v1.Pod, error) {
+	pod, err := decorate.ProwJobToPodLocal(pj, outDir)
 	if err != nil {
 		return nil, err
 	}

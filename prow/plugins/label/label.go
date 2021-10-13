@@ -26,6 +26,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
+	prowlabels "k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
@@ -34,6 +35,7 @@ const pluginName = "label"
 
 var (
 	defaultLabels          = []string{"kind", "priority", "area"}
+	commentRegex           = regexp.MustCompile(`(?s)<!--(.*?)-->`)
 	labelRegex             = regexp.MustCompile(`(?m)^/(area|committee|kind|language|priority|sig|triage|wg)\s*(.*?)\s*$`)
 	removeLabelRegex       = regexp.MustCompile(`(?m)^/remove-(area|committee|kind|language|priority|sig|triage|wg)\s*(.*?)\s*$`)
 	customLabelRegex       = regexp.MustCompile(`(?m)^/label\s*(.*?)\s*$`)
@@ -56,38 +58,49 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 	labels := []string{}
 	labels = append(labels, defaultLabels...)
 	labels = append(labels, config.Label.AdditionalLabels...)
+	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
+		Label: plugins.Label{
+			AdditionalLabels: []string{"api-review", "community/discussion"},
+		},
+	})
+	if err != nil {
+		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", pluginName)
+	}
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The label plugin provides commands that add or remove certain types of labels. Labels of the following types can be manipulated: 'area/*', 'committee/*', 'kind/*', 'language/*', 'priority/*', 'sig/*', 'triage/*', and 'wg/*'. More labels can be configured to be used via the /label command.",
 		Config: map[string]string{
 			"": configString(labels),
 		},
+		Snippet: yamlSnippet,
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/[remove-](area|committee|kind|language|priority|sig|triage|wg|label) <target>",
 		Description: "Applies or removes a label from one of the recognized types of labels.",
 		Featured:    false,
-		WhoCanUse:   "Anyone can trigger this command on a PR.",
+		WhoCanUse:   "Anyone can trigger this command on issues and PRs. `triage/accepted` can only be added by org members.",
 		Examples:    []string{"/kind bug", "/remove-area prow", "/sig testing", "/language zh", "/label foo-bar-baz"},
 	})
 	return pluginHelp, nil
 }
 
 func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
-	return handle(pc.GitHubClient, pc.Logger, pc.PluginConfig.Label.AdditionalLabels, &e)
+	return handle(pc.GitHubClient, pc.Logger, pc.PluginConfig.Label, &e)
 }
 
 type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
 	AddLabel(owner, repo string, number int, label string) error
+	IsMember(org, user string) (bool, error)
 	RemoveLabel(owner, repo string, number int, label string) error
 	GetRepoLabels(owner, repo string) ([]github.Label, error)
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
+	TeamBySlugHasMember(org string, teamSlug string, memberLogin string) (bool, error)
 }
 
 // Get Labels from Regexp matches
 func getLabelsFromREMatches(matches [][]string) (labels []string) {
 	for _, match := range matches {
-		for _, label := range strings.Split(match[0], " ")[1:] {
+		for _, label := range strings.Split(strings.TrimSpace(match[0]), " ")[1:] {
 			label = strings.ToLower(match[1] + "/" + strings.TrimSpace(label))
 			labels = append(labels, label)
 		}
@@ -97,22 +110,15 @@ func getLabelsFromREMatches(matches [][]string) (labels []string) {
 
 // getLabelsFromGenericMatches returns label matches with extra labels if those
 // have been configured in the plugin config.
-func getLabelsFromGenericMatches(matches [][]string, additionalLabels []string, invalidLabels *[]string) []string {
-	if len(additionalLabels) == 0 {
-		return nil
-	}
+func getLabelsFromGenericMatches(matches [][]string, labelFilter func(string) bool, invalidLabels *[]string) []string {
 	var labels []string
-	labelFilter := sets.String{}
-	for _, l := range additionalLabels {
-		labelFilter.Insert(strings.ToLower(l))
-	}
 	for _, match := range matches {
 		parts := strings.Split(strings.TrimSpace(match[0]), " ")
 		if ((parts[0] != "/label") && (parts[0] != "/remove-label")) || len(parts) != 2 {
 			continue
 		}
-		if labelFilter.Has(strings.ToLower(parts[1])) {
-			labels = append(labels, parts[1])
+		if labelFilter(strings.ToLower(parts[1])) {
+			labels = append(labels, strings.ToLower(parts[1]))
 		} else {
 			*invalidLabels = append(*invalidLabels, match[0])
 		}
@@ -120,21 +126,23 @@ func getLabelsFromGenericMatches(matches [][]string, additionalLabels []string, 
 	return labels
 }
 
-func handle(gc githubClient, log *logrus.Entry, additionalLabels []string, e *github.GenericCommentEvent) error {
+func handle(gc githubClient, log *logrus.Entry, config plugins.Label, e *github.GenericCommentEvent) error {
 	if e.Action != github.GenericCommentActionCreated {
 		return nil
 	}
 
-	labelMatches := labelRegex.FindAllStringSubmatch(e.Body, -1)
-	removeLabelMatches := removeLabelRegex.FindAllStringSubmatch(e.Body, -1)
-	customLabelMatches := customLabelRegex.FindAllStringSubmatch(e.Body, -1)
-	customRemoveLabelMatches := customRemoveLabelRegex.FindAllStringSubmatch(e.Body, -1)
+	bodyWithoutComments := commentRegex.ReplaceAllString(e.Body, "")
+	labelMatches := labelRegex.FindAllStringSubmatch(bodyWithoutComments, -1)
+	removeLabelMatches := removeLabelRegex.FindAllStringSubmatch(bodyWithoutComments, -1)
+	customLabelMatches := customLabelRegex.FindAllStringSubmatch(bodyWithoutComments, -1)
+	customRemoveLabelMatches := customRemoveLabelRegex.FindAllStringSubmatch(bodyWithoutComments, -1)
 	if len(labelMatches) == 0 && len(removeLabelMatches) == 0 && len(customLabelMatches) == 0 && len(customRemoveLabelMatches) == 0 {
 		return nil
 	}
 
 	org := e.Repo.Owner.Login
 	repo := e.Repo.Name
+	user := e.User.Login
 
 	repoLabels, err := gc.GetRepoLabels(org, repo)
 	if err != nil {
@@ -150,15 +158,28 @@ func handle(gc githubClient, log *logrus.Entry, additionalLabels []string, e *gi
 		RepoLabelsExisting.Insert(strings.ToLower(l.Name))
 	}
 	var (
-		nonexistent         []string
-		noSuchLabelsInRepo  []string
-		noSuchLabelsOnIssue []string
-		labelsToAdd         []string
-		labelsToRemove      []string
+		nonexistent             []string
+		noSuchLabelsInRepo      []string
+		noSuchLabelsOnIssue     []string
+		labelsToAdd             []string
+		labelsToRemove          []string
+		nonMemberTriageAccepted bool
 	)
+
+	additionalLabelSet := sets.String{}
+	for _, label := range config.AdditionalLabels {
+		additionalLabelSet.Insert(strings.ToLower(label))
+	}
+	restrictedLabels := config.RestrictedLabelsFor(e.Repo.Owner.Login, e.Repo.Name)
+	labelFilter := func(label string) bool {
+		label = strings.ToLower(label)
+		_, restrictedLabel := restrictedLabels[label]
+		return restrictedLabel || additionalLabelSet.Has(label)
+	}
+
 	// Get labels to add and labels to remove from regexp matches
-	labelsToAdd = append(getLabelsFromREMatches(labelMatches), getLabelsFromGenericMatches(customLabelMatches, additionalLabels, &nonexistent)...)
-	labelsToRemove = append(getLabelsFromREMatches(removeLabelMatches), getLabelsFromGenericMatches(customRemoveLabelMatches, additionalLabels, &nonexistent)...)
+	labelsToAdd = append(getLabelsFromREMatches(labelMatches), getLabelsFromGenericMatches(customLabelMatches, labelFilter, &nonexistent)...)
+	labelsToRemove = append(getLabelsFromREMatches(removeLabelMatches), getLabelsFromGenericMatches(customRemoveLabelMatches, labelFilter, &nonexistent)...)
 	// Add labels
 	for _, labelToAdd := range labelsToAdd {
 		if github.HasLabel(labelToAdd, labels) {
@@ -167,6 +188,28 @@ func handle(gc githubClient, log *logrus.Entry, additionalLabels []string, e *gi
 
 		if !RepoLabelsExisting.Has(labelToAdd) {
 			noSuchLabelsInRepo = append(noSuchLabelsInRepo, labelToAdd)
+			continue
+		}
+
+		// only org members can add triage/accepted
+		if labelToAdd == prowlabels.TriageAccepted {
+			if member, err := gc.IsMember(org, user); err != nil {
+				log.WithError(err).Errorf("error in IsMember(%s): %v", org, err)
+				continue
+			} else if !member {
+				nonMemberTriageAccepted = true
+				continue
+			}
+		}
+
+		canSetLabel, canNotSetLabelReason, err := canUserSetLabel(gc, org, e.User.Login, labelToAdd, restrictedLabels)
+		if err != nil {
+			log.WithError(err).WithField("label", labelToAdd).Error("failed to check if user can set label")
+			continue
+		}
+
+		if !canSetLabel {
+			gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(bodyWithoutComments, e.HTMLURL, e.User.Login, canNotSetLabelReason))
 			continue
 		}
 
@@ -186,6 +229,17 @@ func handle(gc githubClient, log *logrus.Entry, additionalLabels []string, e *gi
 			continue
 		}
 
+		canSetLabel, canNotSetLabelReason, err := canUserSetLabel(gc, org, e.User.Login, labelToRemove, restrictedLabels)
+		if err != nil {
+			log.WithError(err).WithField("label", labelToRemove).Error("failed to check if user can set label")
+			continue
+		}
+
+		if !canSetLabel {
+			gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(bodyWithoutComments, e.HTMLURL, e.User.Login, canNotSetLabelReason))
+			continue
+		}
+
 		if err := gc.RemoveLabel(org, repo, e.Number, labelToRemove); err != nil {
 			log.WithError(err).Errorf("GitHub failed to remove the following label: %s", labelToRemove)
 		}
@@ -193,21 +247,51 @@ func handle(gc githubClient, log *logrus.Entry, additionalLabels []string, e *gi
 
 	if len(nonexistent) > 0 {
 		log.Infof("Nonexistent labels: %v", nonexistent)
-		msg := fmt.Sprintf("The label(s) `%s` cannot be applied. These labels are supported: `%s`", strings.Join(nonexistent, ", "), strings.Join(additionalLabels, ", "))
-		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
+		msg := fmt.Sprintf("The label(s) `%s` cannot be applied. These labels are supported: `%s`", strings.Join(nonexistent, ", "), strings.Join(append(config.AdditionalLabels, sets.StringKeySet(restrictedLabels).List()...), ", "))
+		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(bodyWithoutComments, e.HTMLURL, e.User.Login, msg))
 	}
 
 	if len(noSuchLabelsInRepo) > 0 {
 		log.Infof("Labels missing in repo: %v", noSuchLabelsInRepo)
-		msg := fmt.Sprintf("The label(s) `%s` cannot be applied, because the repository doesn't have them", strings.Join(noSuchLabelsInRepo, ", "))
-		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
+		msg := fmt.Sprintf("The label(s) `%s` cannot be applied, because the repository doesn't have them.", strings.Join(noSuchLabelsInRepo, ", "))
+		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(bodyWithoutComments, e.HTMLURL, e.User.Login, msg))
 	}
 
 	// Tried to remove Labels that were not present on the Issue
 	if len(noSuchLabelsOnIssue) > 0 {
 		msg := fmt.Sprintf("Those labels are not set on the issue: `%v`", strings.Join(noSuchLabelsOnIssue, ", "))
-		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
+		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(bodyWithoutComments, e.HTMLURL, e.User.Login, msg))
+	}
+
+	if nonMemberTriageAccepted {
+		msg := fmt.Sprintf("The label `%s` cannot be applied. Only GitHub organization members can add the label.", prowlabels.TriageAccepted)
+		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(bodyWithoutComments, e.HTMLURL, e.User.Login, msg))
 	}
 
 	return nil
+}
+
+func canUserSetLabel(ghc githubClient, org string, user string, label string, restrictedLabels map[string]plugins.RestrictedLabel) (canSet bool, canNotSetReason string, err error) {
+	config, isRestricted := restrictedLabels[label]
+	if !isRestricted {
+		return true, "", nil
+	}
+
+	for _, allowedUser := range config.AllowedUsers {
+		if strings.EqualFold(allowedUser, user) {
+			return true, "", nil
+		}
+	}
+
+	for _, team := range config.AllowedTeams {
+		isMember, err := ghc.TeamBySlugHasMember(org, team, user)
+		if err != nil {
+			return false, "", err
+		}
+		if isMember {
+			return true, "", nil
+		}
+	}
+
+	return false, fmt.Sprintf("Can not set label %s: Must be member in one of these teams: %v", label, config.AllowedTeams), nil
 }

@@ -30,6 +30,8 @@ import (
 
 	"k8s.io/test-infra/prow/config"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
+	pluginsflagutil "k8s.io/test-infra/prow/flagutil/plugins"
 	"k8s.io/test-infra/prow/github"
 	_ "k8s.io/test-infra/prow/hook/plugin-imports"
 	"k8s.io/test-infra/prow/logrusutil"
@@ -42,25 +44,23 @@ const bootstrapMode = true
 type options struct {
 	sourcePaths prowflagutil.Strings
 
-	configPath    string
-	jobConfigPath string
-	pluginConfig  string
+	config        configflagutil.ConfigOptions
+	pluginsConfig pluginsflagutil.PluginOptions
 
 	dryRun     bool
 	kubernetes prowflagutil.KubernetesOptions
 }
 
 func gatherOptions() options {
-	o := options{}
+	o := options{config: configflagutil.ConfigOptions{ConfigPath: "/etc/config/config.yaml"}}
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 
 	fs.Var(&o.sourcePaths, "source-path", "Path to root of source directory to use for config updates. Can be set multiple times.")
 
-	fs.StringVar(&o.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
-	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
-	fs.StringVar(&o.pluginConfig, "plugin-config", "/etc/plugins/plugins.yaml", "Path to plugin config file.")
-
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub.")
+	o.config.AddFlags(fs)
+	o.pluginsConfig.PluginConfigPathDefault = "/etc/plugins/plugins.yaml"
+	o.pluginsConfig.AddFlags(fs)
 	o.kubernetes.AddFlags(fs)
 
 	fs.Parse(os.Args[1:])
@@ -72,8 +72,10 @@ func (o *options) Validate() error {
 		return errors.New("--source-path must be provided at least once")
 	}
 
-	if err := o.kubernetes.Validate(o.dryRun); err != nil {
-		return err
+	for _, validate := range []interface{ Validate(bool) error }{&o.kubernetes, &o.config, &o.pluginsConfig} {
+		if err := validate.Validate(o.dryRun); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -106,7 +108,20 @@ func run(sourcePaths []string, defaultNamespace string, configUpdater plugins.Co
 	var errors int
 	// act like the whole repo just got committed
 	var changes []github.PullRequestChange
+	var version string
+
 	for _, sourcePath := range sourcePaths {
+
+		versionFilePath := filepath.Join(sourcePath, config.ConfigVersionFileName)
+		if _, errAccess := os.Stat(versionFilePath); errAccess == nil {
+			content, err := ioutil.ReadFile(versionFilePath)
+			if err != nil {
+				logrus.WithError(err).Warn("failed to read versionfile")
+			} else if version == "" {
+				version = string(content)
+			}
+		}
+
 		filepath.Walk(sourcePath, func(path string, info os.FileInfo, err error) error {
 			if info.IsDir() {
 				return nil
@@ -136,7 +151,7 @@ func run(sourcePaths []string, defaultNamespace string, configUpdater plugins.Co
 			logrus.WithError(err).Errorf("Failed to find configMap client")
 			continue
 		}
-		if err := updateconfig.Update(&osFileGetter{roots: sourcePaths}, configMapClient, cm.Name, cm.Namespace, data, bootstrapMode, nil, logger); err != nil {
+		if err := updateconfig.Update(&osFileGetter{roots: sourcePaths}, configMapClient, cm.Name, cm.Namespace, data, bootstrapMode, nil, logger, version); err != nil {
 			logger.WithError(err).Error("failed to update config on cluster")
 			errors++
 		} else {
@@ -154,13 +169,13 @@ func main() {
 		logrus.WithError(err).Fatal("Invalid options")
 	}
 
-	configAgent := &config.Agent{}
-	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
+	configAgent, err := o.config.ConfigAgent()
+	if err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
-	pluginAgent := &plugins.ConfigAgent{}
-	if err := pluginAgent.Start(o.pluginConfig, true); err != nil {
+	pluginAgent, err := o.pluginsConfig.PluginAgent()
+	if err != nil {
 		logrus.WithError(err).Fatal("Error starting plugin configuration agent.")
 	}
 

@@ -20,12 +20,18 @@ package report
 
 import (
 	"bytes"
+	"context"
+	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"text/template"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -36,12 +42,12 @@ const (
 // GitHubClient provides a client interface to report job status updates
 // through GitHub comments.
 type GitHubClient interface {
-	BotName() (string, error)
-	CreateStatus(org, repo, ref string, s github.Status) error
-	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
-	CreateComment(org, repo string, number int, comment string) error
-	DeleteComment(org, repo string, ID int) error
-	EditComment(org, repo string, ID int, comment string) error
+	BotUserCheckerWithContext(ctx context.Context) (func(candidate string) bool, error)
+	CreateStatusWithContext(ctx context.Context, org, repo, ref string, s github.Status) error
+	ListIssueCommentsWithContext(ctx context.Context, org, repo string, number int) ([]github.IssueComment, error)
+	CreateCommentWithContext(ctx context.Context, org, repo string, number int, comment string) error
+	DeleteCommentWithContext(ctx context.Context, org, repo string, ID int) error
+	EditCommentWithContext(ctx context.Context, org, repo string, ID int, comment string) error
 }
 
 // prowjobStateToGitHubStatus maps prowjob status to github states.
@@ -62,27 +68,11 @@ func prowjobStateToGitHubStatus(pjState prowapi.ProwJobState) (string, error) {
 	case prowapi.AbortedState:
 		return github.StatusFailure, nil
 	}
-	return "", fmt.Errorf("Unknown prowjob state: %v", pjState)
-}
-
-const (
-	maxLen = 140 // https://developer.github.com/v3/repos/deployments/#parameters-2
-	elide  = " ... "
-)
-
-// truncate converts "really long messages" into "really ... messages".
-func truncate(in string) string {
-	const (
-		half = (maxLen - len(elide)) / 2
-	)
-	if len(in) <= maxLen {
-		return in
-	}
-	return in[:half] + elide + in[len(in)-half:]
+	return "", fmt.Errorf("Unknown prowjob state: %s", pjState)
 }
 
 // reportStatus should be called on any prowjob status changes
-func reportStatus(ghc GitHubClient, pj prowapi.ProwJob) error {
+func reportStatus(ctx context.Context, ghc GitHubClient, pj prowapi.ProwJob) error {
 	refs := pj.Spec.Refs
 	if pj.Spec.Report {
 		contextState, err := prowjobStateToGitHubStatus(pj.Status.State)
@@ -93,9 +83,9 @@ func reportStatus(ghc GitHubClient, pj prowapi.ProwJob) error {
 		if len(refs.Pulls) > 0 {
 			sha = refs.Pulls[0].SHA
 		}
-		if err := ghc.CreateStatus(refs.Org, refs.Repo, sha, github.Status{
+		if err := ghc.CreateStatusWithContext(ctx, refs.Org, refs.Repo, sha, github.Status{
 			State:       contextState,
-			Description: truncate(pj.Status.Description),
+			Description: config.ContextDescriptionWithBaseSha(pj.Status.Description, refs.BaseSHA),
 			Context:     pj.Spec.Context, // consider truncating this too
 			TargetURL:   pj.Status.URL,
 		}); err != nil {
@@ -128,12 +118,20 @@ func ShouldReport(pj prowapi.ProwJob, validTypes []prowapi.ProwJobType) bool {
 
 // Report is creating/updating/removing reports in GitHub based on the state of
 // the provided ProwJob.
-func Report(ghc GitHubClient, reportTemplate *template.Template, pj prowapi.ProwJob, validTypes []prowapi.ProwJobType) error {
+func Report(ctx context.Context, ghc GitHubClient, reportTemplate *template.Template, pj prowapi.ProwJob, config config.GitHubReporter) error {
+	if err := ReportStatusContext(ctx, ghc, pj, config); err != nil {
+		return err
+	}
+	return ReportComment(ctx, ghc, reportTemplate, []v1.ProwJob{pj}, config, false)
+}
+
+// ReportStatusContext reports prowjob status on a PR.
+func ReportStatusContext(ctx context.Context, ghc GitHubClient, pj prowapi.ProwJob, config config.GitHubReporter) error {
 	if ghc == nil {
 		return fmt.Errorf("trying to report pj %s, but found empty github client", pj.ObjectMeta.Name)
 	}
 
-	if !ShouldReport(pj, validTypes) {
+	if !ShouldReport(pj, config.JobTypesToReport) {
 		return nil
 	}
 
@@ -143,46 +141,67 @@ func Report(ghc GitHubClient, reportTemplate *template.Template, pj prowapi.Prow
 		return nil
 	}
 
-	if err := reportStatus(ghc, pj); err != nil {
-		return fmt.Errorf("error setting status: %v", err)
+	if err := reportStatus(ctx, ghc, pj); err != nil {
+		return fmt.Errorf("error setting status: %w", err)
+	}
+	return nil
+}
+
+// ReportComment takes multiple prowjobs as input. When there are more than one
+// prowjob, they are required to have identical refs, aka they are the same repo
+// and the same pull request.
+func ReportComment(ctx context.Context, ghc GitHubClient, reportTemplate *template.Template, pjs []prowapi.ProwJob, config config.GitHubReporter, mustCreate bool) error {
+	if ghc == nil {
+		return errors.New("trying to report pj, but found empty github client")
 	}
 
-	// Report manually aborted Jenkins jobs and jobs with invalid pod specs alongside
-	// test successes/failures.
-	if !pj.Complete() {
-		return nil
-	}
-
-	if len(refs.Pulls) == 0 {
-		return nil
-	}
-
-	ics, err := ghc.ListIssueComments(refs.Org, refs.Repo, refs.Pulls[0].Number)
-	if err != nil {
-		return fmt.Errorf("error listing comments: %v", err)
-	}
-	botName, err := ghc.BotName()
-	if err != nil {
-		return fmt.Errorf("error getting bot name: %v", err)
-	}
-	deletes, entries, updateID := parseIssueComments(pj, botName, ics)
-	for _, delete := range deletes {
-		if err := ghc.DeleteComment(refs.Org, refs.Repo, delete); err != nil {
-			return fmt.Errorf("error deleting comment: %v", err)
+	var validPjs []v1.ProwJob
+	for _, pj := range pjs {
+		// Report manually aborted Jenkins jobs and jobs with invalid pod specs alongside
+		// test successes/failures.
+		if ShouldReport(pj, config.JobTypesToReport) && pj.Complete() {
+			validPjs = append(validPjs, pj)
 		}
 	}
-	if len(entries) > 0 {
-		comment, err := createComment(reportTemplate, pj, entries)
+	if len(validPjs) == 0 {
+		return nil
+	}
+
+	// Multiple prow jobs passed in to this function requires that all prowjobs from
+	// the input have exactly the same refs. Pick the ref from the first PR for checking
+	// whether to report or not.
+	refs := validPjs[0].Spec.Refs
+	// we are not reporting for batch jobs, we can consider support that in the future
+	if len(refs.Pulls) != 1 {
+		return nil
+	}
+
+	ics, err := ghc.ListIssueCommentsWithContext(ctx, refs.Org, refs.Repo, refs.Pulls[0].Number)
+	if err != nil {
+		return fmt.Errorf("error listing comments: %w", err)
+	}
+	botNameChecker, err := ghc.BotUserCheckerWithContext(ctx)
+	if err != nil {
+		return fmt.Errorf("error getting bot name checker: %w", err)
+	}
+	deletes, entries, updateID := parseIssueComments(pjs, botNameChecker, ics)
+	for _, delete := range deletes {
+		if err := ghc.DeleteCommentWithContext(ctx, refs.Org, refs.Repo, delete); err != nil {
+			return fmt.Errorf("error deleting comment: %w", err)
+		}
+	}
+	if len(entries) > 0 || mustCreate {
+		comment, err := createComment(reportTemplate, pjs, entries)
 		if err != nil {
-			return fmt.Errorf("generating comment: %v", err)
+			return fmt.Errorf("generating comment: %w", err)
 		}
 		if updateID == 0 {
-			if err := ghc.CreateComment(refs.Org, refs.Repo, refs.Pulls[0].Number, comment); err != nil {
-				return fmt.Errorf("error creating comment: %v", err)
+			if err := ghc.CreateCommentWithContext(ctx, refs.Org, refs.Repo, refs.Pulls[0].Number, comment); err != nil {
+				return fmt.Errorf("error creating comment: %w", err)
 			}
 		} else {
-			if err := ghc.EditComment(refs.Org, refs.Repo, updateID, comment); err != nil {
-				return fmt.Errorf("error updating comment: %v", err)
+			if err := ghc.EditCommentWithContext(ctx, refs.Org, refs.Repo, updateID, comment); err != nil {
+				return fmt.Errorf("error updating comment: %w", err)
 			}
 		}
 	}
@@ -193,20 +212,15 @@ func Report(ghc GitHubClient, reportTemplate *template.Template, pj prowapi.Prow
 // entries, and the ID of the comment to update. If there are no table entries
 // then don't make a new comment. Otherwise, if the comment to update is 0,
 // create a new comment.
-func parseIssueComments(pj prowapi.ProwJob, botName string, ics []github.IssueComment) ([]int, []string, int) {
+func parseIssueComments(pjs []prowapi.ProwJob, isBot func(string) bool, ics []github.IssueComment) ([]int, []string, int) {
 	var delete []int
 	var previousComments []int
 	var latestComment int
 	var entries []string
 	// First accumulate result entries and comment IDs
 	for _, ic := range ics {
-		if ic.User.Login != botName {
+		if !isBot(ic.User.Login) {
 			continue
-		}
-		// Old report comments started with the context. Delete them.
-		// TODO(spxtr): Delete this check a few weeks after this merges.
-		if strings.HasPrefix(ic.Body, pj.Spec.Context) {
-			delete = append(delete, ic.ID)
 		}
 		if !strings.Contains(ic.Body, commentTag) {
 			continue
@@ -229,6 +243,10 @@ func parseIssueComments(pj prowapi.ProwJob, botName string, ics []github.IssueCo
 	}
 	var newEntries []string
 	// Next decide which entries to keep.
+	pjsMap := make(map[string]prowapi.ProwJob)
+	for _, pj := range pjs {
+		pjsMap[pj.Spec.Context] = pj
+	}
 	for i := range entries {
 		keep := true
 		f1 := strings.Split(entries[i], " | ")
@@ -243,7 +261,7 @@ func parseIssueComments(pj prowapi.ProwJob, botName string, ics []github.IssueCo
 			}
 		}
 		// Use the current result if there is an old one.
-		if pj.Spec.Context == f1[0] {
+		if _, ok := pjsMap[f1[0]]; ok {
 			keep = false
 		}
 		if keep {
@@ -251,9 +269,11 @@ func parseIssueComments(pj prowapi.ProwJob, botName string, ics []github.IssueCo
 		}
 	}
 	var createNewComment bool
-	if string(pj.Status.State) == github.StatusFailure {
-		newEntries = append(newEntries, createEntry(pj))
-		createNewComment = true
+	for _, pj := range pjs {
+		if string(pj.Status.State) == github.StatusFailure {
+			newEntries = append(newEntries, createEntry(pj))
+			createNewComment = true
+		}
 	}
 	delete = append(delete, previousComments...)
 	if (createNewComment || len(newEntries) == 0) && latestComment != 0 {
@@ -264,10 +284,21 @@ func parseIssueComments(pj prowapi.ProwJob, botName string, ics []github.IssueCo
 }
 
 func createEntry(pj prowapi.ProwJob) string {
+	required := "unknown"
+
+	if pj.Spec.Type == prowapi.PresubmitJob {
+		if label, exist := pj.Labels[kube.IsOptionalLabel]; exist {
+			if optional, err := strconv.ParseBool(label); err == nil {
+				required = strconv.FormatBool(!optional)
+			}
+		}
+	}
+
 	return strings.Join([]string{
 		pj.Spec.Context,
 		pj.Spec.Refs.Pulls[0].SHA,
 		fmt.Sprintf("[link](%s)", pj.Status.URL),
+		required,
 		fmt.Sprintf("`%s`", pj.Spec.RerunCommand),
 	}, " | ")
 }
@@ -275,22 +306,36 @@ func createEntry(pj prowapi.ProwJob) string {
 // createComment take a ProwJob and a list of entries generated with
 // createEntry and returns a nicely formatted comment. It may fail if template
 // execution fails.
-func createComment(reportTemplate *template.Template, pj prowapi.ProwJob, entries []string) (string, error) {
+func createComment(reportTemplate *template.Template, pjs []prowapi.ProwJob, entries []string) (string, error) {
+	if len(pjs) == 0 {
+		return "", nil
+	}
 	plural := ""
 	if len(entries) > 1 {
 		plural = "s"
 	}
 	var b bytes.Buffer
+	// The report template is usually related to the PR not a specific PJ,
+	// even though it is using the PJ in the template. This is kind of unfortunate
+	// and doesn't really make sense given that we maintain one failure comment
+	// on PRs, not one per PJ. So we might be better off using the first PJ
+	// and still executing the template even if there are multiple PJs.
 	if reportTemplate != nil {
-		if err := reportTemplate.Execute(&b, &pj); err != nil {
+		if err := reportTemplate.Execute(&b, &pjs[0]); err != nil {
 			return "", err
 		}
 	}
 	lines := []string{
-		fmt.Sprintf("@%s: The following test%s **failed**, say `/retest` to rerun all failed tests:", pj.Spec.Refs.Pulls[0].Author, plural),
+		fmt.Sprintf("@%s: The following test%s **failed**, say `/retest` to rerun all failed tests or `/retest-required` to rerun all mandatory failed tests:", pjs[0].Spec.Refs.Pulls[0].Author, plural),
 		"",
-		"Test name | Commit | Details | Rerun command",
-		"--- | --- | --- | ---",
+		"Test name | Commit | Details | Required | Rerun command",
+		"--- | --- | --- | --- | ---",
+	}
+	if len(entries) == 0 { // No test failed
+		lines = []string{
+			fmt.Sprintf("@%s: all tests **passed!**", pjs[0].Spec.Refs.Pulls[0].Author),
+			"",
+		}
 	}
 	lines = append(lines, entries...)
 	if reportTemplate != nil {

@@ -32,7 +32,7 @@ const (
 
 type updateClient interface {
 	UpdatePullRequest(org, repo string, number int, title, body *string, open *bool, branch *string, canModify *bool) error
-	BotName() (string, error)
+	BotUser() (*github.UserData, error)
 	FindIssues(query, sort string, asc bool) ([]github.Issue, error)
 }
 
@@ -43,20 +43,40 @@ type ensureClient interface {
 	GetIssue(org, repo string, number int) (*github.Issue, error)
 }
 
-func UpdatePR(org, repo, title, body, matchTitle string, gc updateClient) (*int, error) {
-	if matchTitle == "" {
-		return nil, nil
+func UpdatePR(org, repo, title, body, headBranch string, gc updateClient) (*int, error) {
+	return updatePRWithQueryTokens(org, repo, title, body, "head:"+headBranch, gc)
+}
+
+func EnsurePR(org, repo, title, body, source, branch, headBranch string, allowMods bool, gc ensureClient) (*int, error) {
+	return EnsurePRWithLabels(org, repo, title, body, source, branch, headBranch, allowMods, gc, nil)
+}
+
+func EnsurePRWithQueryTokens(org, repo, title, body, source, baseBranch, queryTokensString string, allowMods bool, gc ensureClient) (*int, error) {
+	n, err := updatePRWithQueryTokens(org, repo, title, body, queryTokensString, gc)
+	if err != nil {
+		return nil, fmt.Errorf("update error: %w", err)
+	}
+	if n == nil {
+		pr, err := gc.CreatePullRequest(org, repo, title, body, source, baseBranch, allowMods)
+		if err != nil {
+			return nil, fmt.Errorf("create error: %w", err)
+		}
+		n = &pr
 	}
 
+	return n, nil
+}
+
+func updatePRWithQueryTokens(org, repo, title, body, queryTokensString string, gc updateClient) (*int, error) {
 	logrus.Info("Looking for a PR to reuse...")
-	me, err := gc.BotName()
+	me, err := gc.BotUser()
 	if err != nil {
-		return nil, fmt.Errorf("bot name: %v", err)
+		return nil, fmt.Errorf("bot name: %w", err)
 	}
 
-	issues, err := gc.FindIssues("is:open is:pr archived:false in:title repo:"+org+"/"+repo+" author:"+me+" author:"+me+" "+matchTitle, "updated", false)
+	issues, err := gc.FindIssues(fmt.Sprintf("is:open is:pr archived:false repo:%s/%s author:%s %s", org, repo, me.Login, queryTokensString), "updated", false)
 	if err != nil {
-		return nil, fmt.Errorf("find issues: %v", err)
+		return nil, fmt.Errorf("find issues: %w", err)
 	} else if len(issues) == 0 {
 		logrus.Info("No reusable issues found")
 		return nil, nil
@@ -67,27 +87,20 @@ func UpdatePR(org, repo, title, body, matchTitle string, gc updateClient) (*int,
 	var ignoreBranch *string
 	var ignoreModify *bool
 	if err := gc.UpdatePullRequest(org, repo, n, &title, &body, ignoreOpen, ignoreBranch, ignoreModify); err != nil {
-		return nil, fmt.Errorf("update %d: %v", n, err)
+		return nil, fmt.Errorf("update %d: %w", n, err)
 	}
 
 	return &n, nil
 }
 
-func EnsurePR(org, repo, title, body, source, branch, matchTitle string, allowMods bool, gc ensureClient) (*int, error) {
-	return EnsurePRWithLabels(org, repo, title, body, source, branch, matchTitle, allowMods, gc, nil)
+func EnsurePRWithLabels(org, repo, title, body, source, baseBranch, headBranch string, allowMods bool, gc ensureClient, labels []string) (*int, error) {
+	return EnsurePRWithQueryTokensAndLabels(org, repo, title, body, source, baseBranch, "head:"+headBranch, allowMods, labels, gc)
 }
 
-func EnsurePRWithLabels(org, repo, title, body, source, branch, matchTitle string, allowMods bool, gc ensureClient, labels []string) (*int, error) {
-	n, err := UpdatePR(org, repo, title, body, matchTitle, gc)
+func EnsurePRWithQueryTokensAndLabels(org, repo, title, body, source, baseBranch, queryTokensString string, allowMods bool, labels []string, gc ensureClient) (*int, error) {
+	n, err := EnsurePRWithQueryTokens(org, repo, title, body, source, baseBranch, queryTokensString, allowMods, gc)
 	if err != nil {
-		return nil, fmt.Errorf("update error: %v", err)
-	}
-	if n == nil {
-		pr, err := gc.CreatePullRequest(org, repo, title, body, source, branch, allowMods)
-		if err != nil {
-			return nil, fmt.Errorf("create error: %v", err)
-		}
-		n = &pr
+		return n, err
 	}
 
 	if len(labels) == 0 {
@@ -96,7 +109,7 @@ func EnsurePRWithLabels(org, repo, title, body, source, branch, matchTitle strin
 
 	issue, err := gc.GetIssue(org, repo, *n)
 	if err != nil {
-		return n, fmt.Errorf("failed to get PR: %v", err)
+		return n, fmt.Errorf("failed to get PR: %w", err)
 	}
 
 	for _, label := range labels {
@@ -105,7 +118,7 @@ func EnsurePRWithLabels(org, repo, title, body, source, branch, matchTitle strin
 		}
 
 		if err := gc.AddLabel(org, repo, *n, label); err != nil {
-			return n, fmt.Errorf("failed to add label %q: %v", label, err)
+			return n, fmt.Errorf("failed to add label %q: %w", label, err)
 		}
 		logrus.WithField("label", label).Info("Added label")
 	}

@@ -327,6 +327,7 @@ i.state {
     border: 1px solid #888;
     width: 80%;
     text-align: center;
+    color: #444;
 }
 
 #queries li {
@@ -955,6 +956,7 @@ Plugin Help style
     padding: 0;
     max-width: 50px;
     display: block;
+    transform-origin: 50% 50%;
 }
 
 /* fix tooltips should not copy */

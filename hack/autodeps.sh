@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Copyright 2018 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -58,7 +58,7 @@ echo "Creating PR to merge ${user}:autoupdate into master..." >&2
 bazel run //robots/pr-creator -- \
     --github-token-path="${token}" \
     --org=kubernetes --repo=test-infra --branch=master \
-    --title="${title}" --match-title="${title}" \
+    --title="${title}" --head-branch="autoupdate" \
     --body="Automatic go module update. Please review" \
     --source="${user}":autoupdate \
     --confirm

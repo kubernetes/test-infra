@@ -59,6 +59,7 @@ query: |
   ORDER BY
     day DESC,
     pr_failure_perc DESC
+
 jqfilter: |
   ([(.[] | .day|tonumber)] | max) as $newestday |
   [(.[] | select((.day|tonumber)==$newestday) | {
@@ -71,21 +72,3 @@ jqfilter: |
     avg_run_time_minutes: (.avg_run_time_minutes|tonumber),
     avg_pass_time_minutes: (.avg_pass_time_minutes|tonumber),
   })]
-measurements:
-  backfill: presubmit_health
-  jq: |
-    [(.[] | {
-      measurement: "presubmit_health",
-      time: (.day|tonumber),
-      tags: {
-        job: .job,
-      },
-      fields: {
-        pr_failure_perc: (.pr_failure_perc|tonumber),
-        prs: (.prs|tonumber),
-        prs_failed: (.prs_failed|tonumber),
-        total_runs: (.total_runs|tonumber),
-        avg_run_time_minutes: (.avg_run_time_minutes|tonumber),
-        avg_pass_time_minutes: (.avg_pass_time_minutes|tonumber),
-      }
-    })]

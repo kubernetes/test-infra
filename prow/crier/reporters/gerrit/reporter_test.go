@@ -17,16 +17,24 @@ limitations under the License.
 package gerrit
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/andygrunwald/go-gerrit"
+	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/diff"
+	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
+
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	pjlister "k8s.io/test-infra/prow/client/listers/prowjobs/v1"
 	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/kube"
 )
@@ -42,6 +50,7 @@ type fgc struct {
 	reportMessage string
 	reportLabel   map[string]string
 	instance      string
+	changes       map[string][]*gerrit.ChangeInfo
 }
 
 func (f *fgc) SetReview(instance, id, revision, message string, labels map[string]string) error {
@@ -58,26 +67,29 @@ func (f *fgc) SetReview(instance, id, revision, message string, labels map[strin
 	return nil
 }
 
-type fakeLister struct {
-	pjs []*v1.ProwJob
-}
-
-func (fl fakeLister) List(selector labels.Selector) (ret []*v1.ProwJob, err error) {
-	result := []*v1.ProwJob{}
-	for _, pj := range fl.pjs {
-		if selector.Matches(labels.Set(pj.ObjectMeta.Labels)) {
-			result = append(result, pj)
+func (f *fgc) GetChange(instance, id string) (*gerrit.ChangeInfo, error) {
+	if f.changes == nil {
+		return nil, errors.New("fake client changes is not initialized")
+	}
+	changes, ok := f.changes[instance]
+	if !ok {
+		return nil, fmt.Errorf("instance %s not found", instance)
+	}
+	for _, change := range changes {
+		if change.ID == id {
+			return change, nil
 		}
 	}
-
-	return result, nil
-}
-
-func (fl fakeLister) ProwJobs(namespace string) pjlister.ProwJobNamespaceLister {
-	return nil
+	return nil, nil
 }
 
 func TestReport(t *testing.T) {
+	changes := map[string][]*gerrit.ChangeInfo{
+		"gerrit": {
+			{ID: "123-abc", Status: "NEW"},
+			{ID: "merged", Status: "MERGED"},
+		},
+	}
 	var testcases = []struct {
 		name              string
 		pj                *v1.ProwJob
@@ -91,6 +103,9 @@ func TestReport(t *testing.T) {
 		{
 			name: "1 job, unfinished, should not report",
 			pj: &v1.ProwJob{
+				Spec: v1.ProwJobSpec{
+					Report: true,
+				},
 				Status: v1.ProwJobStatus{
 					State: v1.PendingState,
 				},
@@ -99,6 +114,9 @@ func TestReport(t *testing.T) {
 		{
 			name: "1 job, finished, no labels, should not report",
 			pj: &v1.ProwJob{
+				Spec: v1.ProwJobSpec{
+					Report: true,
+				},
 				Status: v1.ProwJobStatus{
 					State: v1.SuccessState,
 				},
@@ -107,6 +125,9 @@ func TestReport(t *testing.T) {
 		{
 			name: "1 job, finished, missing gerrit-id label, should not report",
 			pj: &v1.ProwJob{
+				Spec: v1.ProwJobSpec{
+					Report: true,
+				},
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
 						client.GerritRevision:    "abc",
@@ -125,6 +146,9 @@ func TestReport(t *testing.T) {
 		{
 			name: "1 job, finished, missing gerrit-revision label, should not report",
 			pj: &v1.ProwJob{
+				Spec: v1.ProwJobSpec{
+					Report: true,
+				},
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
 						client.GerritID:          "123-abc",
@@ -140,6 +164,9 @@ func TestReport(t *testing.T) {
 		{
 			name: "1 job, finished, missing gerrit-instance label, should not report",
 			pj: &v1.ProwJob{
+				Spec: v1.ProwJobSpec{
+					Report: true,
+				},
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
 						client.GerritRevision:    "abc",
@@ -177,13 +204,41 @@ func TestReport(t *testing.T) {
 					Refs: &v1.Refs{
 						Repo: "foo",
 					},
-					Job: "ci-foo",
+					Job:    "ci-foo",
+					Report: true,
 				},
 			},
 			expectReport:      true,
 			reportInclude:     []string{"1 out of 1", "ci-foo", "SUCCESS", "guber/foo"},
 			expectLabel:       map[string]string{codeReview: lgtm},
 			numExpectedReport: 1,
+		},
+		{
+			name: "1 job, passed, skip report set true, should not report",
+			pj: &v1.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						client.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:    presubmit,
+						client.GerritReportLabel: "Code-Review",
+					},
+					Annotations: map[string]string{
+						client.GerritID:       "123-abc",
+						client.GerritInstance: "gerrit",
+					},
+				},
+				Status: v1.ProwJobStatus{
+					State: v1.SuccessState,
+					URL:   "guber/foo",
+				},
+				Spec: v1.ProwJobSpec{
+					Refs: &v1.Refs{
+						Repo: "foo",
+					},
+					Job:    "ci-foo",
+					Report: false,
+				},
+			},
 		},
 		{
 			name: "1 job, passed, bad label, should report without label",
@@ -207,7 +262,8 @@ func TestReport(t *testing.T) {
 					Refs: &v1.Refs{
 						Repo: "foo",
 					},
-					Job: "ci-foo",
+					Job:    "ci-foo",
+					Report: true,
 				},
 			},
 			expectReport:      true,
@@ -236,7 +292,8 @@ func TestReport(t *testing.T) {
 					Refs: &v1.Refs{
 						Repo: "foo",
 					},
-					Job: "ci-foo",
+					Job:    "ci-foo",
+					Report: true,
 				},
 			},
 			expectReport:      true,
@@ -265,7 +322,8 @@ func TestReport(t *testing.T) {
 					Refs: &v1.Refs{
 						Repo: "foo",
 					},
-					Job: "ci-foo",
+					Job:    "ci-foo",
+					Report: true,
 				},
 			},
 			expectReport: false,
@@ -292,7 +350,8 @@ func TestReport(t *testing.T) {
 					Refs: &v1.Refs{
 						Repo: "foo",
 					},
-					Job: "ci-foo",
+					Job:    "ci-foo",
+					Report: true,
 				},
 			},
 			expectReport:      true,
@@ -323,7 +382,8 @@ func TestReport(t *testing.T) {
 					Refs: &v1.Refs{
 						Repo: "foo",
 					},
-					Job: "ci-foo",
+					Job:    "ci-foo",
+					Report: true,
 				},
 			},
 			expectReport:      true,
@@ -353,7 +413,8 @@ func TestReport(t *testing.T) {
 					Refs: &v1.Refs{
 						Repo: "foo/bar",
 					},
-					Job: "ci-foo-bar",
+					Job:    "ci-foo-bar",
+					Report: true,
 				},
 			},
 			expectReport:      true,
@@ -384,7 +445,8 @@ func TestReport(t *testing.T) {
 					Refs: &v1.Refs{
 						Repo: "foo",
 					},
-					Job: "ci-foo",
+					Job:    "ci-foo",
+					Report: true,
 				},
 			},
 			existingPJs: []*v1.ProwJob{
@@ -408,7 +470,8 @@ func TestReport(t *testing.T) {
 						Refs: &v1.Refs{
 							Repo: "bar",
 						},
-						Job: "ci-bar",
+						Job:    "ci-bar",
+						Report: true,
 					},
 				},
 			},
@@ -440,7 +503,8 @@ func TestReport(t *testing.T) {
 					Refs: &v1.Refs{
 						Repo: "foo",
 					},
-					Job: "ci-foo",
+					Job:    "ci-foo",
+					Report: true,
 				},
 			},
 			existingPJs: []*v1.ProwJob{
@@ -464,7 +528,8 @@ func TestReport(t *testing.T) {
 						Refs: &v1.Refs{
 							Repo: "bar",
 						},
-						Job: "ci-bar",
+						Job:    "ci-bar",
+						Report: true,
 					},
 				},
 			},
@@ -491,7 +556,8 @@ func TestReport(t *testing.T) {
 					Refs: &v1.Refs{
 						Repo: "foo",
 					},
-					Job: "ci-foo",
+					Job:    "ci-foo",
+					Report: true,
 				},
 			},
 			existingPJs: []*v1.ProwJob{
@@ -515,7 +581,8 @@ func TestReport(t *testing.T) {
 						Refs: &v1.Refs{
 							Repo: "bar",
 						},
-						Job: "ci-bar",
+						Job:    "ci-bar",
+						Report: true,
 					},
 				},
 			},
@@ -547,7 +614,8 @@ func TestReport(t *testing.T) {
 					Refs: &v1.Refs{
 						Repo: "foo",
 					},
-					Job: "ci-foo",
+					Job:    "ci-foo",
+					Report: true,
 				},
 			},
 			expectReport:      true,
@@ -577,7 +645,8 @@ func TestReport(t *testing.T) {
 					Refs: &v1.Refs{
 						Repo: "foo",
 					},
-					Job: "ci-foo",
+					Job:    "ci-foo",
+					Report: true,
 				},
 			},
 			existingPJs: []*v1.ProwJob{
@@ -602,7 +671,8 @@ func TestReport(t *testing.T) {
 						Refs: &v1.Refs{
 							Repo: "bar",
 						},
-						Job: "ci-bar",
+						Job:    "ci-bar",
+						Report: true,
 					},
 				},
 			},
@@ -634,7 +704,8 @@ func TestReport(t *testing.T) {
 					Refs: &v1.Refs{
 						Repo: "foo",
 					},
-					Job: "ci-foo",
+					Job:    "ci-foo",
+					Report: true,
 				},
 			},
 			existingPJs: []*v1.ProwJob{
@@ -658,7 +729,8 @@ func TestReport(t *testing.T) {
 						Refs: &v1.Refs{
 							Repo: "bar",
 						},
-						Job: "ci-bar",
+						Job:    "ci-bar",
+						Report: true,
 					},
 				},
 			},
@@ -669,7 +741,7 @@ func TestReport(t *testing.T) {
 			numExpectedReport: 2,
 		},
 		{
-			name: "2 jobs, one passed, one aborted, should report but skip aborted job",
+			name: "2 jobs, one passed, one aborted, should report",
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
@@ -690,7 +762,9 @@ func TestReport(t *testing.T) {
 					Refs: &v1.Refs{
 						Repo: "foo",
 					},
-					Job: "ci-foo",
+					Job:    "ci-foo",
+					Type:   v1.PresubmitJob,
+					Report: true,
 				},
 			},
 			existingPJs: []*v1.ProwJob{
@@ -714,15 +788,16 @@ func TestReport(t *testing.T) {
 						Refs: &v1.Refs{
 							Repo: "bar",
 						},
-						Job: "ci-bar",
+						Job:    "ci-bar",
+						Type:   v1.PresubmitJob,
+						Report: true,
 					},
 				},
 			},
 			expectReport:      true,
-			reportInclude:     []string{"1 out of 1", "ci-foo", "SUCCESS", "guber/foo"},
-			reportExclude:     []string{"2", "0", "FAILURE", "ABORTED", "ci-bar", "guber/bar"},
-			expectLabel:       map[string]string{codeReview: lgtm},
-			numExpectedReport: 1,
+			reportInclude:     []string{"1 out of 2", "ci-foo", "SUCCESS", "guber/foo"},
+			expectLabel:       map[string]string{codeReview: lbtm},
+			numExpectedReport: 2,
 		},
 		{
 			name: "postsubmit after presubmit on same revision, should report separately",
@@ -746,7 +821,8 @@ func TestReport(t *testing.T) {
 					Refs: &v1.Refs{
 						Repo: "foo",
 					},
-					Job: "ci-foo",
+					Job:    "ci-foo",
+					Report: true,
 				},
 			},
 			existingPJs: []*v1.ProwJob{
@@ -770,7 +846,8 @@ func TestReport(t *testing.T) {
 						Refs: &v1.Refs{
 							Repo: "bar",
 						},
-						Job: "ci-bar",
+						Job:    "ci-bar",
+						Report: true,
 					},
 				},
 			},
@@ -801,7 +878,8 @@ func TestReport(t *testing.T) {
 					Refs: &v1.Refs{
 						Repo: "foo",
 					},
-					Job: "ci-foo",
+					Job:    "ci-foo",
+					Report: true,
 				},
 			},
 			existingPJs: []*v1.ProwJob{
@@ -825,7 +903,8 @@ func TestReport(t *testing.T) {
 						Refs: &v1.Refs{
 							Repo: "bar",
 						},
-						Job: "ci-bar",
+						Job:    "ci-bar",
+						Report: true,
 					},
 				},
 			},
@@ -859,7 +938,8 @@ func TestReport(t *testing.T) {
 					Refs: &v1.Refs{
 						Repo: "foo",
 					},
-					Job: "ci-foo",
+					Job:    "ci-foo",
+					Report: true,
 				},
 			},
 			existingPJs: []*v1.ProwJob{
@@ -889,7 +969,8 @@ func TestReport(t *testing.T) {
 						Refs: &v1.Refs{
 							Repo: "foo",
 						},
-						Job: "ci-foo",
+						Job:    "ci-foo",
+						Report: true,
 					},
 				},
 			},
@@ -920,7 +1001,8 @@ func TestReport(t *testing.T) {
 					Refs: &v1.Refs{
 						Repo: "foo",
 					},
-					Job: "ci-foo",
+					Job:    "ci-foo",
+					Report: true,
 				},
 			},
 			existingPJs: []*v1.ProwJob{
@@ -944,7 +1026,8 @@ func TestReport(t *testing.T) {
 						Refs: &v1.Refs{
 							Repo: "bar",
 						},
-						Job: "ci-bar",
+						Job:    "ci-bar",
+						Report: true,
 					},
 				},
 			},
@@ -979,7 +1062,8 @@ func TestReport(t *testing.T) {
 					Refs: &v1.Refs{
 						Repo: "foo",
 					},
-					Job: "ci-foo",
+					Job:    "ci-foo",
+					Report: true,
 				},
 			},
 			existingPJs: []*v1.ProwJob{
@@ -1009,8 +1093,9 @@ func TestReport(t *testing.T) {
 						Refs: &v1.Refs{
 							Repo: "bar",
 						},
-						Job:  "ci-bar",
-						Type: v1.PresubmitJob,
+						Job:    "ci-bar",
+						Type:   v1.PresubmitJob,
+						Report: true,
 					},
 				},
 				{
@@ -1039,8 +1124,9 @@ func TestReport(t *testing.T) {
 						Refs: &v1.Refs{
 							Repo: "foo",
 						},
-						Job:  "ci-foo",
-						Type: v1.PresubmitJob,
+						Job:    "ci-foo",
+						Type:   v1.PresubmitJob,
+						Report: true,
 					},
 				},
 			},
@@ -1049,20 +1135,363 @@ func TestReport(t *testing.T) {
 			expectLabel:       map[string]string{"same-label": lbtm},
 			numExpectedReport: 2,
 		},
+		{
+			name: "2 jobs, both failed, job from newer patchset pending, should not report",
+			pj: &v1.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						client.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:    presubmit,
+						client.GerritReportLabel: "same-label",
+						client.GerritPatchset:    "5",
+						kube.OrgLabel:            "same-org",
+						kube.RepoLabel:           "same-repo",
+						kube.PullLabel:           "123456",
+					},
+					Annotations: map[string]string{
+						client.GerritID:       "123-abc",
+						client.GerritInstance: "gerrit",
+					},
+					CreationTimestamp: metav1.Time{
+						Time: timeNow,
+					},
+				},
+				Status: v1.ProwJobStatus{
+					State: v1.SuccessState,
+					URL:   "guber/foo",
+				},
+				Spec: v1.ProwJobSpec{
+					Type: v1.PresubmitJob,
+					Refs: &v1.Refs{
+						Repo: "foo",
+					},
+					Job:    "ci-foo",
+					Report: true,
+				},
+			},
+			existingPJs: []*v1.ProwJob{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Labels: map[string]string{
+							client.GerritRevision:    "abc",
+							kube.ProwJobTypeLabel:    presubmit,
+							client.GerritReportLabel: "same-label",
+							client.GerritPatchset:    "5",
+							kube.OrgLabel:            "same-org",
+							kube.RepoLabel:           "same-repo",
+							kube.PullLabel:           "123456",
+						},
+						Annotations: map[string]string{
+							client.GerritID:       "123-abc",
+							client.GerritInstance: "gerrit",
+						},
+						CreationTimestamp: metav1.Time{
+							Time: timeNow.Add(-time.Hour),
+						},
+					},
+					Status: v1.ProwJobStatus{
+						State: v1.FailureState,
+						URL:   "guber/bar",
+						PrevReportStates: map[string]v1.ProwJobState{
+							"gerrit-reporter": v1.FailureState,
+						},
+					},
+					Spec: v1.ProwJobSpec{
+						Refs: &v1.Refs{
+							Repo: "bar",
+						},
+						Job:    "ci-bar",
+						Type:   v1.PresubmitJob,
+						Report: true,
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Labels: map[string]string{
+							client.GerritRevision:    "abc",
+							kube.ProwJobTypeLabel:    presubmit,
+							client.GerritReportLabel: "same-label",
+							client.GerritPatchset:    "5",
+							kube.OrgLabel:            "same-org",
+							kube.RepoLabel:           "same-repo",
+							kube.PullLabel:           "123456",
+						},
+						Annotations: map[string]string{
+							client.GerritID:       "123-abc",
+							client.GerritInstance: "gerrit",
+						},
+						CreationTimestamp: metav1.Time{
+							Time: timeNow.Add(-time.Hour),
+						},
+					},
+					Status: v1.ProwJobStatus{
+						State: v1.FailureState,
+						URL:   "guber/foo",
+						PrevReportStates: map[string]v1.ProwJobState{
+							"gerrit-reporter": v1.FailureState,
+						},
+					},
+					Spec: v1.ProwJobSpec{
+						Refs: &v1.Refs{
+							Repo: "foo",
+						},
+						Job:    "ci-foo",
+						Type:   v1.PresubmitJob,
+						Report: true,
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Labels: map[string]string{
+							client.GerritRevision:    "def",
+							kube.ProwJobTypeLabel:    presubmit,
+							client.GerritReportLabel: "same-label",
+							client.GerritPatchset:    "6",
+							kube.OrgLabel:            "same-org",
+							kube.RepoLabel:           "same-repo",
+							kube.PullLabel:           "123456",
+						},
+						Annotations: map[string]string{
+							client.GerritID:       "123-def",
+							client.GerritInstance: "gerrit",
+						},
+						CreationTimestamp: metav1.Time{
+							Time: timeNow.Add(-time.Hour),
+						},
+					},
+					Status: v1.ProwJobStatus{
+						State: v1.PendingState,
+						URL:   "guber/foo",
+					},
+					Spec: v1.ProwJobSpec{
+						Refs: &v1.Refs{
+							Repo: "foo",
+						},
+						Job:    "ci-foo",
+						Type:   v1.PresubmitJob,
+						Report: true,
+					},
+				},
+			},
+			expectReport: false,
+		},
+		{
+			name: "2 jobs, both failed, job from newer patchset failed, should not report",
+			pj: &v1.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						client.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:    presubmit,
+						client.GerritReportLabel: "same-label",
+						client.GerritPatchset:    "5",
+						kube.OrgLabel:            "same-org",
+						kube.RepoLabel:           "same-repo",
+						kube.PullLabel:           "123456",
+					},
+					Annotations: map[string]string{
+						client.GerritID:       "123-abc",
+						client.GerritInstance: "gerrit",
+					},
+					CreationTimestamp: metav1.Time{
+						Time: timeNow,
+					},
+				},
+				Status: v1.ProwJobStatus{
+					State: v1.SuccessState,
+					URL:   "guber/foo",
+				},
+				Spec: v1.ProwJobSpec{
+					Type: v1.PresubmitJob,
+					Refs: &v1.Refs{
+						Repo: "foo",
+					},
+					Job:    "ci-foo",
+					Report: true,
+				},
+			},
+			existingPJs: []*v1.ProwJob{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Labels: map[string]string{
+							client.GerritRevision:    "abc",
+							kube.ProwJobTypeLabel:    presubmit,
+							client.GerritReportLabel: "same-label",
+							client.GerritPatchset:    "5",
+							kube.OrgLabel:            "same-org",
+							kube.RepoLabel:           "same-repo",
+							kube.PullLabel:           "123456",
+						},
+						Annotations: map[string]string{
+							client.GerritID:       "123-abc",
+							client.GerritInstance: "gerrit",
+						},
+						CreationTimestamp: metav1.Time{
+							Time: timeNow.Add(-time.Hour),
+						},
+					},
+					Status: v1.ProwJobStatus{
+						State: v1.FailureState,
+						URL:   "guber/bar",
+						PrevReportStates: map[string]v1.ProwJobState{
+							"gerrit-reporter": v1.FailureState,
+						},
+					},
+					Spec: v1.ProwJobSpec{
+						Refs: &v1.Refs{
+							Repo: "bar",
+						},
+						Job:    "ci-bar",
+						Type:   v1.PresubmitJob,
+						Report: true,
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Labels: map[string]string{
+							client.GerritRevision:    "abc",
+							kube.ProwJobTypeLabel:    presubmit,
+							client.GerritReportLabel: "same-label",
+							client.GerritPatchset:    "5",
+							kube.OrgLabel:            "same-org",
+							kube.RepoLabel:           "same-repo",
+							kube.PullLabel:           "123456",
+						},
+						Annotations: map[string]string{
+							client.GerritID:       "123-abc",
+							client.GerritInstance: "gerrit",
+						},
+						CreationTimestamp: metav1.Time{
+							Time: timeNow.Add(-time.Hour),
+						},
+					},
+					Status: v1.ProwJobStatus{
+						State: v1.FailureState,
+						URL:   "guber/foo",
+						PrevReportStates: map[string]v1.ProwJobState{
+							"gerrit-reporter": v1.FailureState,
+						},
+					},
+					Spec: v1.ProwJobSpec{
+						Refs: &v1.Refs{
+							Repo: "foo",
+						},
+						Job:    "ci-foo",
+						Type:   v1.PresubmitJob,
+						Report: true,
+					},
+				},
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Labels: map[string]string{
+							client.GerritRevision:    "def",
+							kube.ProwJobTypeLabel:    presubmit,
+							client.GerritReportLabel: "same-label",
+							client.GerritPatchset:    "6",
+							kube.OrgLabel:            "same-org",
+							kube.RepoLabel:           "same-repo",
+							kube.PullLabel:           "123456",
+						},
+						Annotations: map[string]string{
+							client.GerritID:       "123-def",
+							client.GerritInstance: "gerrit",
+						},
+						CreationTimestamp: metav1.Time{
+							Time: timeNow.Add(-time.Hour),
+						},
+					},
+					Status: v1.ProwJobStatus{
+						State: v1.FailureState,
+						URL:   "guber/foo",
+					},
+					Spec: v1.ProwJobSpec{
+						Refs: &v1.Refs{
+							Repo: "foo",
+						},
+						Job:    "ci-foo",
+						Type:   v1.PresubmitJob,
+						Report: true,
+					},
+				},
+			},
+			expectReport: false,
+		},
+		{
+			name: "1 job, failed after merge, should report with non negative vote",
+			pj: &v1.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						client.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:    presubmit,
+						client.GerritReportLabel: "Code-Review",
+					},
+					Annotations: map[string]string{
+						client.GerritID:       "merged",
+						client.GerritInstance: "gerrit",
+					},
+				},
+				Status: v1.ProwJobStatus{
+					State: v1.FailureState,
+					URL:   "guber/foo",
+				},
+				Spec: v1.ProwJobSpec{
+					Type: v1.PresubmitJob,
+					Refs: &v1.Refs{
+						Repo: "foo",
+					},
+					Job:    "ci-foo",
+					Report: true,
+				},
+			},
+			expectReport:      true,
+			reportInclude:     []string{"0 out of 1", "ci-foo", "FAILURE", "guber/foo"},
+			expectLabel:       map[string]string{codeReview: lztm},
+			numExpectedReport: 1,
+		},
+		{
+			name: "1 job, passed, should vote +1 even after merge",
+			pj: &v1.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						client.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:    presubmit,
+						client.GerritReportLabel: "Code-Review",
+					},
+					Annotations: map[string]string{
+						client.GerritID:       "merged",
+						client.GerritInstance: "gerrit",
+					},
+				},
+				Status: v1.ProwJobStatus{
+					State: v1.SuccessState,
+					URL:   "guber/foo",
+				},
+				Spec: v1.ProwJobSpec{
+					Refs: &v1.Refs{
+						Repo: "foo",
+					},
+					Job:    "ci-foo",
+					Report: true,
+				},
+			},
+			expectReport:      true,
+			reportInclude:     []string{"1 out of 1", "ci-foo", "SUCCESS", "guber/foo"},
+			expectLabel:       map[string]string{codeReview: lgtm},
+			numExpectedReport: 1,
+		},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			fgc := &fgc{instance: "gerrit"}
-			allpj := []*v1.ProwJob{tc.pj}
-			if tc.existingPJs != nil {
-				allpj = append(allpj, tc.existingPJs...)
+			fgc := &fgc{instance: "gerrit", changes: changes}
+			allpj := []runtime.Object{tc.pj}
+			for idx, pj := range tc.existingPJs {
+				pj.Name = strconv.Itoa(idx)
+				allpj = append(allpj, pj)
 			}
 
-			fl := &fakeLister{pjs: allpj}
-			reporter := &Client{gc: fgc, lister: fl}
+			reporter := &Client{gc: fgc, lister: fakectrlruntimeclient.NewFakeClient(allpj...)}
 
-			shouldReport := reporter.ShouldReport(tc.pj)
+			shouldReport := reporter.ShouldReport(context.Background(), logrus.NewEntry(logrus.StandardLogger()), tc.pj)
 			if shouldReport != tc.expectReport {
 				t.Errorf("shouldReport: %v, expectReport: %v", shouldReport, tc.expectReport)
 			}
@@ -1071,7 +1500,7 @@ func TestReport(t *testing.T) {
 				return
 			}
 
-			reportedJobs, err := reporter.Report(tc.pj)
+			reportedJobs, _, err := reporter.Report(context.Background(), logrus.NewEntry(logrus.StandardLogger()), tc.pj)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}
@@ -1157,4 +1586,23 @@ Prow Status: 0 out of 2 pjs passed!
 		}
 	}
 
+}
+
+// TestReportStability ensures a generated report's string parses to the same report
+func TestReportStability(t *testing.T) {
+	job := func(name, url string, state v1.ProwJobState) *v1.ProwJob {
+		var out v1.ProwJob
+		out.Spec.Job = name
+		out.Status.URL = url
+		out.Status.State = state
+		return &out
+	}
+	expected := GenerateReport([]*v1.ProwJob{
+		job("this", "url", v1.SuccessState),
+		job("that", "hey", v1.FailureState),
+	})
+	actual := ParseReport(expected.String())
+	if !equality.Semantic.DeepEqual(&expected, actual) {
+		t.Errorf(diff.ObjectReflectDiff(&expected, actual))
+	}
 }

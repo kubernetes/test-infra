@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Copyright 2017 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,4 +17,4 @@
 # file to keep it in sync with Prow.
 
 cd "$( dirname "${BASH_SOURCE[0]}" )"
-./update_config.py ./../config/prow/config.yaml ./config.yaml
+./update_config.py ../config/prow/config.yaml ../config/jobs ./config.yaml

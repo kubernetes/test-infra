@@ -68,8 +68,8 @@ Developing a new dashboard can be achieved by
 
     ```
     ### if you want to take a look at some json file, eg, hook.json
-    $ bazel build //prow/cluster/monitoring/mixins/grafana_dashboards:hook
-    $ cat bazel-bin/prow/cluster/monitoring/mixins/grafana_dashboards/hook.json
+    $ bazel build //config/prow/cluster/monitoring/mixins/grafana_dashboards:hook
+    $ cat bazel-bin/config/prow/cluster/monitoring/mixins/grafana_dashboards/hook.json
     ```
 
 * Add `bazel` target to [dashboards_out/BUILD.bazel](grafana_dashboards/BUILD.bazel) for generating the configMap with the json file above.
@@ -85,10 +85,29 @@ As an alternative to `bazel`, the Makefile in [mixin](mixins/Makefile) folder ca
 files from `jsonnet` for debugging locally. As prerequisites, [`jsonnet`](https://github.com/google/jsonnet)
 and [`gojsontoyaml`](https://github.com/brancz/gojsontoyaml) should be included in `${PATH}`.
 
+## Update vendored code
+
+The generation of grafana dashboards depends on [vendored code](./mixins/vendor), the vendored code can be updated by running:
+
+```
+cd ./mixins
+mv vendor/grafonnet/BUILD.bazel .
+make clean-vendor
+make install
+cp BUILD.bazel vendor/grafonnet
+```
+
 ## Access components' Web page
 
 * For `grafana`, visit [monitoring.prow.k8s.io](https://monitoring.prow.k8s.io). Anonymous users are with read-only mode.
-Use `adm` and [password](https://github.com/kubernetes/test-infra/blob/master/prow/cluster/monitoring/grafana_deployment.yaml#L39-L45) to become admin.
+Use `adm` and [password](https://github.com/kubernetes/test-infra/blob/master/config/prow/cluster/monitoring/grafana_deployment.yaml#L39-L45) to become admin.
+
+If the Prow instance does not publicly expose `grafana` it can still be accessed by cluster admins via [port-forwarding](https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/). Run
+
+```
+kubectl -n prow-monitoring port-forward service/grafana 8080:80
+```
+then visit [localhost:8080](http://127.0.0.1:8080).
 
 * For `prometheus` and `alertmanager`, there is no public domain configured based on the security
 concerns (no authorization out of the box).

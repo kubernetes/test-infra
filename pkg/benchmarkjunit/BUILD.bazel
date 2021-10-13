@@ -46,6 +46,8 @@ go_test(
     data = [
         "//experiment/dummybenchmarks:all-srcs",
         GO,
+        "//:go.mod",
+        "//:go.sum",
         "@go_sdk//:files",
     ],
     embed = [":go_default_library"],

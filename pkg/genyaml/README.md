@@ -1,7 +1,7 @@
 # Genyaml
 
 ## Description
-`genyaml` is a simple documentation tool used to marshal YAML from Golang structs. It extracts *doc comments* from `.go` sources files and adds them as *comment nodes* in the YAML output. 
+`genyaml` is a simple documentation tool used to marshal YAML from Golang structs. It extracts *doc comments* from `.go` sources files and adds them as *comment nodes* in the YAML output.
 
 ## Usage
 
@@ -75,8 +75,8 @@ All subsequent lines and blocks after a `---` will be ignored.
 ```go
 type Person struct {
 	// Name of person
-	// --- 
-	// The name of the person is both the first and last name separated 
+	// ---
+	// The name of the person is both the first and last name separated
 	// by a space character
 	Name string
 }
@@ -133,7 +133,7 @@ type Plugin struct {
 //...
 ```
 
-Next, in a separate `example.go` file, initialize a `Configuration` struct and marshal it to *commented* YAML. 
+Next, in a separate `example.go` file, initialize a `Configuration` struct and marshal it to *commented* YAML.
 
 ```go
 // example.go
@@ -157,7 +157,7 @@ config := &example.Configuration{
 }
 
 // Initialize a CommentMap instance from the `config.go` source file:
-cm := genyaml.NewCommentMap("config.go")
+cm, err := genyaml.NewCommentMap("config.go")
 
 // Generate a commented YAML snippet:
 yamlSnippet, err := cm.GenYaml(config)
@@ -177,10 +177,10 @@ plugin:
 
     # IntegerField comment
     integer: 1
-    
+
     # StringField comment
     string: string
-    
+
 ```
 
 ## Limitations / Going Forward

@@ -37,7 +37,7 @@ func monitorDiskAndEvict(
 	// forever check if usage is past thresholds and evict
 	ticker := time.NewTicker(interval)
 	for ; true; <-ticker.C {
-		blocksFree, _, _, err := diskutil.GetDiskUsage(diskRoot)
+		blocksFree, _, _, _, _, _, err := diskutil.GetDiskUsage(diskRoot)
 		if err != nil {
 			logrus.WithError(err).Error("Failed to get disk usage!")
 			continue
@@ -69,10 +69,10 @@ func monitorDiskAndEvict(
 					logger.WithError(err).Errorf("Error deleting entry at path: %v", entry.Path)
 				} else {
 					promMetrics.FilesEvicted.Inc()
-					promMetrics.LastEvictedAccessAge.Set(time.Now().Sub(entry.LastAccess).Hours())
+					promMetrics.LastEvictedAccessAge.Set(time.Since(entry.LastAccess).Hours())
 				}
 				// get new disk usage
-				blocksFree, _, _, err = diskutil.GetDiskUsage(diskRoot)
+				blocksFree, _, _, _, _, _, err = diskutil.GetDiskUsage(diskRoot)
 				logger = logrus.WithFields(logrus.Fields{
 					"sync-loop":   "MonitorDiskAndEvict",
 					"blocks-free": blocksFree,

@@ -1,10 +1,12 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
-reviwers:
+reviewers:
+- aojea
 - bowei
 - rramkumar1
 - mrhohn
 approvers:
+- aojea
 - bowei
 - rramkumar1
 - mrhohn

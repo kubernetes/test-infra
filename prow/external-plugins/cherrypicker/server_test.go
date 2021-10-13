@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"sync"
@@ -99,6 +100,16 @@ func (f *fghc) GetRepo(owner, name string) (github.FullRepo, error) {
 	return github.FullRepo{}, nil
 }
 
+func (f *fghc) EnsureFork(forkingUser, org, repo string) (string, error) {
+	if repo == "changeme" {
+		return "changed", nil
+	}
+	if repo == "error" {
+		return repo, errors.New("errors")
+	}
+	return repo, nil
+}
+
 var expectedFmt = `title=%q body=%q head=%s base=%s labels=%v`
 
 func prToString(pr github.PullRequest) string {
@@ -172,8 +183,8 @@ func (f *fghc) ListOrgMembers(org, role string) ([]github.TeamMember, error) {
 	return f.orgMembers, nil
 }
 
-func (f *fghc) CreateFork(org, repo string) error {
-	return nil
+func (f *fghc) CreateFork(org, repo string) (string, error) {
+	return repo, nil
 }
 
 var initialFiles = map[string][]byte{
@@ -213,10 +224,12 @@ index 1ea52dc..5bd70a9 100644
 var body = "This PR updates the magic number.\n\n```release-note\nUpdate the magic number from 42 to 49\n```"
 
 func TestCherryPickIC(t *testing.T) {
+	t.Parallel()
 	testCherryPickIC(localgit.New, t)
 }
 
 func TestCherryPickICV2(t *testing.T) {
+	t.Parallel()
 	testCherryPickIC(localgit.NewV2, t)
 }
 
@@ -277,11 +290,11 @@ func testCherryPickIC(clients localgit.Clients, t *testing.T) {
 		},
 	}
 
-	botName := "ci-robot"
+	botUser := &github.UserData{Login: "ci-robot", Email: "ci-robot@users.noreply.github.com"}
 	expectedTitle := "[stage] This is a fix for X"
 	expectedBody := "This is an automated cherry-pick of #2\n\n/assign wiseguy\n\n```release-note\nUpdate the magic number from 42 to 49\n```"
 	expectedBase := "stage"
-	expectedHead := fmt.Sprintf(botName+":"+cherryPickBranchFmt, 2, expectedBase)
+	expectedHead := fmt.Sprintf(botUser.Login+":"+cherryPickBranchFmt, 2, expectedBase)
 	expectedLabels := []string{}
 	expected := fmt.Sprintf(expectedFmt, expectedTitle, expectedBody, expectedHead, expectedBase, expectedLabels)
 
@@ -290,9 +303,9 @@ func testCherryPickIC(clients localgit.Clients, t *testing.T) {
 	}
 
 	s := &Server{
-		botName:        botName,
+		botUser:        botUser,
 		gc:             c,
-		push:           func(newBranch string) error { return nil },
+		push:           func(forkName, newBranch string, force bool) error { return nil },
 		ghc:            ghc,
 		tokenGenerator: getSecret,
 		log:            logrus.StandardLogger().WithField("client", "cherrypicker"),
@@ -302,7 +315,7 @@ func testCherryPickIC(clients localgit.Clients, t *testing.T) {
 	}
 
 	if err := s.handleIssueComment(logrus.NewEntry(logrus.StandardLogger()), ic); err != nil {
-		t.Errorf("unexpected error: %v", err)
+		t.Fatalf("unexpected error: %v", err)
 	}
 	got := prToString(ghc.prs[0])
 	if got != expected {
@@ -311,10 +324,12 @@ func testCherryPickIC(clients localgit.Clients, t *testing.T) {
 }
 
 func TestCherryPickPR(t *testing.T) {
+	t.Parallel()
 	testCherryPickPR(localgit.New, t)
 }
 
 func TestCherryPickPRV2(t *testing.T) {
+	t.Parallel()
 	testCherryPickPR(localgit.NewV2, t)
 }
 
@@ -337,11 +352,11 @@ func testCherryPickPR(clients localgit.Clients, t *testing.T) {
 	if err := lg.AddCommit("foo", "bar", initialFiles); err != nil {
 		t.Fatalf("Adding initial commit: %v", err)
 	}
-	if err := lg.CheckoutNewBranch("foo", "bar", "release-1.5"); err != nil {
-		t.Fatalf("Checking out pull branch: %v", err)
-	}
-	if err := lg.CheckoutNewBranch("foo", "bar", "release-1.6"); err != nil {
-		t.Fatalf("Checking out pull branch: %v", err)
+	expectedBranches := []string{"release-1.5", "release-1.6", "release-1.8"}
+	for _, branch := range expectedBranches {
+		if err := lg.CheckoutNewBranch("foo", "bar", branch); err != nil {
+			t.Fatalf("Checking out pull branch: %v", err)
+		}
 	}
 	if err := lg.CheckoutNewBranch("foo", "bar", "cherry-pick-2-to-release-1.5"); err != nil {
 		t.Fatalf("Checking out existing PR branch: %v", err)
@@ -367,7 +382,7 @@ func testCherryPickPR(clients localgit.Clients, t *testing.T) {
 				User: github.User{
 					Login: "approver",
 				},
-				Body: "/cherrypick release-1.5\r",
+				Body: "/cherrypick release-1.5\r\n/cherrypick release-1.8",
 			},
 			{
 				User: github.User{
@@ -428,16 +443,16 @@ func testCherryPickPR(clients localgit.Clients, t *testing.T) {
 		},
 	}
 
-	botName := "ci-robot"
+	botUser := &github.UserData{Login: "ci-robot", Email: "ci-robot@users.noreply.github.com"}
 
 	getSecret := func() []byte {
 		return []byte("sha=abcdefg")
 	}
 
 	s := &Server{
-		botName:        botName,
+		botUser:        botUser,
 		gc:             c,
-		push:           func(newBranch string) error { return nil },
+		push:           func(forkName, newBranch string, force bool) error { return nil },
 		ghc:            ghc,
 		tokenGenerator: getSecret,
 		log:            logrus.StandardLogger().WithField("client", "cherrypicker"),
@@ -447,45 +462,46 @@ func testCherryPickPR(clients localgit.Clients, t *testing.T) {
 	}
 
 	if err := s.handlePullRequest(logrus.NewEntry(logrus.StandardLogger()), pr); err != nil {
-		t.Errorf("unexpected error: %v", err)
+		t.Fatalf("unexpected error: %v", err)
 	}
 
 	var expectedFn = func(branch string) string {
 		expectedTitle := fmt.Sprintf("[%s] This is a fix for Y", branch)
 		expectedBody := "This is an automated cherry-pick of #2"
-		expectedHead := fmt.Sprintf(botName+":"+cherryPickBranchFmt, 2, branch)
+		expectedHead := fmt.Sprintf(botUser.Login+":"+cherryPickBranchFmt, 2, branch)
 		expectedLabels := s.labels
 		return fmt.Sprintf(expectedFmt, expectedTitle, expectedBody, expectedHead, branch, expectedLabels)
 	}
 
-	if len(ghc.prs) != 2 {
-		t.Fatalf("Expected %d PRs, got %d", 2, len(ghc.prs))
+	if len(ghc.prs) != len(expectedBranches) {
+		t.Fatalf("Expected %d PRs, got %d", len(expectedBranches), len(ghc.prs))
 	}
 
-	expectedBranches := []string{"release-1.5", "release-1.6"}
+	expectedPrs := make(map[string]string)
+	for _, branch := range expectedBranches {
+		expectedPrs[expectedFn(branch)] = branch
+	}
 	seenBranches := make(map[string]struct{})
 	for _, p := range ghc.prs {
 		pr := prToString(p)
-		if pr != expectedFn("release-1.5") && pr != expectedFn("release-1.6") {
-			t.Errorf("Unexpected PR:\n%s\nExpected to target one of the following branches: %v\n%s", pr, expectedBranches, expectedFn("release-1.5"))
+		branch, present := expectedPrs[pr]
+		if !present {
+			t.Errorf("Unexpected PR:\n%s\nExpected to target one of the following branches: %v\n", pr, expectedBranches)
 		}
-		if pr == expectedFn("release-1.5") {
-			seenBranches["release-1.5"] = struct{}{}
-		}
-		if pr == expectedFn("release-1.6") {
-			seenBranches["release-1.6"] = struct{}{}
-		}
+		seenBranches[branch] = struct{}{}
 	}
-	if len(seenBranches) != 2 {
-		t.Fatalf("Expected to see PRs for %d branches, got %d (%v)", 2, len(seenBranches), seenBranches)
+	if len(seenBranches) != len(expectedBranches) {
+		t.Fatalf("Expected to see PRs for %d branches, got %d (%v)", len(expectedBranches), len(seenBranches), seenBranches)
 	}
 }
 
 func TestCherryPickPRWithLabels(t *testing.T) {
+	t.Parallel()
 	testCherryPickPRWithLabels(localgit.New, t)
 }
 
 func TestCherryPickPRWithLabelsV2(t *testing.T) {
+	t.Parallel()
 	testCherryPickPRWithLabels(localgit.NewV2, t)
 }
 
@@ -541,33 +557,21 @@ func testCherryPickPRWithLabels(clients localgit.Clients, t *testing.T) {
 
 	events := []github.PullRequestEventAction{github.PullRequestActionClosed, github.PullRequestActionLabeled}
 
-	botName := "ci-robot"
+	botUser := &github.UserData{Login: "ci-robot", Email: "ci-robot@users.noreply.github.com"}
 
 	getSecret := func() []byte {
 		return []byte("sha=abcdefg")
 	}
 
-	for _, evt := range events {
-		ghc := &fghc{
-			orgMembers: []github.TeamMember{
-				{
-					Login: "approver",
-				},
-				{
-					Login: "merge-bot",
-				},
-				{
-					Login: "developer",
-				},
-			},
-			prComments: []github.IssueComment{
-				{
-					User: github.User{
-						Login: "developer",
-					},
-					Body: "a review comment",
-				},
-			},
+	testCases := []struct {
+		name        string
+		labelPrefix string
+		prLabels    []github.Label
+		prComments  []github.IssueComment
+	}{
+		{
+			name:        "Default label prefix",
+			labelPrefix: defaultLabelPrefix,
 			prLabels: []github.Label{
 				{
 					Name: "cherrypick/release-1.5",
@@ -579,60 +583,126 @@ func testCherryPickPRWithLabels(clients localgit.Clients, t *testing.T) {
 					Name: "cherrypick/release-1.7",
 				},
 			},
-			isMember: true,
-			patch:    patch,
-		}
+		},
+		{
+			name:        "Custom label prefix",
+			labelPrefix: "needs-cherry-pick-",
+			prLabels: []github.Label{
+				{
+					Name: "needs-cherry-pick-release-1.5",
+				},
+				{
+					Name: "needs-cherry-pick-release-1.6",
+				},
+				{
+					Name: "needs-cherry-pick-release-1.7",
+				},
+			},
+		},
+		{
+			name:        "No labels, label gets ignored",
+			labelPrefix: "needs-cherry-pick-",
+		},
+	}
 
-		s := &Server{
-			botName:        botName,
-			gc:             c,
-			push:           func(newBranch string) error { return nil },
-			ghc:            ghc,
-			tokenGenerator: getSecret,
-			log:            logrus.StandardLogger().WithField("client", "cherrypicker"),
-			repos:          []github.Repo{{Fork: true, FullName: "ci-robot/bar"}},
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			for _, evt := range events {
+				t.Run(string(evt), func(t *testing.T) {
+					ghc := &fghc{
+						orgMembers: []github.TeamMember{
+							{
+								Login: "approver",
+							},
+							{
+								Login: "merge-bot",
+							},
+							{
+								Login: "developer",
+							},
+						},
+						prComments: []github.IssueComment{
+							{
+								User: github.User{
+									Login: "developer",
+								},
+								Body: "a review comment",
+							},
+							{
+								User: github.User{
+									Login: "approver",
+								},
+								Body: "/cherrypick release-1.5\r",
+							},
+						},
+						prLabels: tc.prLabels,
+						isMember: true,
+						patch:    patch,
+					}
 
-			labels:          []string{"cla: yes"},
-			prowAssignments: false,
-		}
+					s := &Server{
+						botUser:        botUser,
+						gc:             c,
+						push:           func(forkName, newBranch string, force bool) error { return nil },
+						ghc:            ghc,
+						tokenGenerator: getSecret,
+						log:            logrus.StandardLogger().WithField("client", "cherrypicker"),
+						repos:          []github.Repo{{Fork: true, FullName: "ci-robot/bar"}},
 
-		if err := s.handlePullRequest(logrus.NewEntry(logrus.StandardLogger()), pr(evt)); err != nil {
-			t.Fatalf("unexpected error: %v", err)
-		}
+						labels:          []string{"cla: yes"},
+						prowAssignments: false,
+						labelPrefix:     tc.labelPrefix,
+					}
 
-		var expectedFn = func(branch string) string {
-			expectedTitle := fmt.Sprintf("[%s] This is a fix for Y", branch)
-			expectedBody := "This is an automated cherry-pick of #2"
-			expectedHead := fmt.Sprintf(botName+":"+cherryPickBranchFmt, 2, branch)
-			expectedLabels := s.labels
-			return fmt.Sprintf(expectedFmt, expectedTitle, expectedBody, expectedHead, branch, expectedLabels)
-		}
+					if err := s.handlePullRequest(logrus.NewEntry(logrus.StandardLogger()), pr(evt)); err != nil {
+						t.Fatalf("unexpected error: %v", err)
+					}
 
-		if len(ghc.prs) != 2 {
-			t.Fatalf("Expected %d PRs, got %d", 2, len(ghc.prs))
-		}
+					expectedFn := func(branch string) string {
+						expectedTitle := fmt.Sprintf("[%s] This is a fix for Y", branch)
+						expectedBody := "This is an automated cherry-pick of #2"
+						expectedHead := fmt.Sprintf(botUser.Login+":"+cherryPickBranchFmt, 2, branch)
+						expectedLabels := s.labels
+						return fmt.Sprintf(expectedFmt, expectedTitle, expectedBody, expectedHead, branch, expectedLabels)
+					}
 
-		expectedBranches := []string{"release-1.5", "release-1.6"}
-		seenBranches := make(map[string]struct{})
-		for _, p := range ghc.prs {
-			pr := prToString(p)
-			if pr != expectedFn("release-1.5") && pr != expectedFn("release-1.6") {
-				t.Errorf("Unexpected PR:\n%s\nExpected to target one of the following branches: %v", pr, expectedBranches)
+					expectedPRs := 2
+					if len(tc.prLabels) == 0 {
+						if evt == github.PullRequestActionLabeled {
+							expectedPRs = 0
+						} else {
+							expectedPRs = 1
+						}
+					}
+					if len(ghc.prs) != expectedPRs {
+						t.Errorf("Expected %d PRs, got %d", expectedPRs, len(ghc.prs))
+					}
+
+					expectedBranches := []string{"release-1.5", "release-1.6"}
+					seenBranches := make(map[string]struct{})
+					for _, p := range ghc.prs {
+						pr := prToString(p)
+						if pr != expectedFn("release-1.5") && pr != expectedFn("release-1.6") {
+							t.Errorf("Unexpected PR:\n%s\nExpected to target one of the following branches: %v", pr, expectedBranches)
+						}
+						if pr == expectedFn("release-1.5") {
+							seenBranches["release-1.5"] = struct{}{}
+						}
+						if pr == expectedFn("release-1.6") {
+							seenBranches["release-1.6"] = struct{}{}
+						}
+					}
+					if len(seenBranches) != expectedPRs {
+						t.Fatalf("Expected to see PRs for %d branches, got %d (%v)", expectedPRs, len(seenBranches), seenBranches)
+					}
+				})
 			}
-			if pr == expectedFn("release-1.5") {
-				seenBranches["release-1.5"] = struct{}{}
-			}
-			if pr == expectedFn("release-1.6") {
-				seenBranches["release-1.6"] = struct{}{}
-			}
-		}
-		if len(seenBranches) != 2 {
-			t.Fatalf("Expected to see PRs for %d branches, got %d (%v)", 2, len(seenBranches), seenBranches)
-		}
+		})
 	}
 }
 
 func TestCherryPickCreateIssue(t *testing.T) {
+	t.Parallel()
 	testCases := []struct {
 		org       string
 		repo      string
@@ -674,7 +744,7 @@ func TestCherryPickCreateIssue(t *testing.T) {
 			ghc: ghc,
 		}
 
-		if err := s.createIssue(tc.org, tc.repo, tc.title, tc.body, tc.prNum, nil, tc.labels, tc.assignees); err != nil {
+		if err := s.createIssue(logrus.WithField("test", t.Name()), tc.org, tc.repo, tc.title, tc.body, tc.prNum, nil, tc.labels, tc.assignees); err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
@@ -723,4 +793,104 @@ func TestCherryPickCreateIssue(t *testing.T) {
 		}
 
 	}
+}
+
+func TestHandleLocks(t *testing.T) {
+	t.Parallel()
+	s := &Server{
+		ghc:     &threadUnsafeFGHC{fghc: &fghc{}},
+		botUser: &github.UserData{},
+	}
+
+	routine1Done := make(chan struct{})
+	routine2Done := make(chan struct{})
+
+	l := logrus.WithField("test", t.Name())
+
+	go func() {
+		defer close(routine1Done)
+		if err := s.handle(l, "", &github.IssueComment{}, "org", "repo", "targetBranch", "title", "body", 0); err != nil {
+			t.Errorf("routine failed: %v", err)
+		}
+	}()
+	go func() {
+		defer close(routine2Done)
+		if err := s.handle(l, "", &github.IssueComment{}, "org", "repo", "targetBranch", "title", "body", 0); err != nil {
+			t.Errorf("routine failed: %v", err)
+		}
+	}()
+
+	<-routine1Done
+	<-routine2Done
+
+	if actual := s.ghc.(*threadUnsafeFGHC).orgRepoCountCalled; actual != 2 {
+		t.Errorf("expected two EnsureFork calls, got %d", actual)
+	}
+}
+
+func TestEnsureForkExists(t *testing.T) {
+	botUser := &github.UserData{Login: "ci-robot", Email: "ci-robot@users.noreply.github.com"}
+
+	ghc := &fghc{}
+
+	s := &Server{
+		botUser: botUser,
+		ghc:     ghc,
+		repos:   []github.Repo{{Fork: true, FullName: "ci-robot/bar"}},
+	}
+
+	testCases := []struct {
+		name     string
+		org      string
+		repo     string
+		expected string
+		errors   bool
+	}{
+		{
+			name:     "Repo name does not change after ensured",
+			org:      "whatever",
+			repo:     "repo",
+			expected: "repo",
+			errors:   false,
+		},
+		{
+			name:     "EnsureFork changes repo name",
+			org:      "whatever",
+			repo:     "changeme",
+			expected: "changed",
+			errors:   false,
+		},
+		{
+			name:     "EnsureFork errors",
+			org:      "whatever",
+			repo:     "error",
+			expected: "error",
+			errors:   true,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			res, err := s.ensureForkExists(tc.org, tc.repo)
+			if tc.errors && err == nil {
+				t.Errorf("expected error, but did not get one")
+			}
+			if !tc.errors && err != nil {
+				t.Errorf("expected no error, but got one")
+			}
+			if res != tc.expected {
+				t.Errorf("expected %s but got %s", tc.expected, res)
+			}
+		})
+	}
+
+}
+
+type threadUnsafeFGHC struct {
+	*fghc
+	orgRepoCountCalled int
+}
+
+func (tuf *threadUnsafeFGHC) EnsureFork(login, org, repo string) (string, error) {
+	tuf.orgRepoCountCalled++
+	return "", errors.New("that is enough")
 }

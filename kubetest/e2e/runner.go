@@ -62,6 +62,7 @@ type GinkgoTester struct {
 	NumNodes              int
 	ReportDir             string
 	ReportPrefix          string
+	StorageTestDriver     string
 
 	// Other ginkgo options
 	FocusRegex      string
@@ -123,7 +124,7 @@ func (t *GinkgoTester) validate() error {
 	// Check that our files and folders exist.
 	if t.ReportDir != "" {
 		if _, err := os.Stat(t.ReportDir); err != nil {
-			return fmt.Errorf("ReportDir %s must exist before tests are run: %v", t.ReportDir, err)
+			return fmt.Errorf("ReportDir %s must exist before tests are run: %w", t.ReportDir, err)
 		}
 	}
 
@@ -133,7 +134,7 @@ func (t *GinkgoTester) validate() error {
 // Run executes the test (calling ginkgo)
 func (t *GinkgoTester) Run(control *process.Control, extraArgs []string) error {
 	if err := t.validate(); err != nil {
-		return fmt.Errorf("configuration error in GinkgoTester: %v", err)
+		return fmt.Errorf("configuration error in GinkgoTester: %w", err)
 	}
 
 	ginkgoPath, err := t.findBinary("ginkgo")
@@ -190,6 +191,7 @@ func (t *GinkgoTester) Run(control *process.Control, extraArgs []string) error {
 	a.addIfNonEmpty("report-prefix", t.ReportPrefix)
 
 	a.addIfNonEmpty("systemd-services", strings.Join(t.SystemdServices, ","))
+	a.addIfNonEmpty("storage.testdriver", t.StorageTestDriver)
 
 	ginkgoArgs := append(a.values, extraArgs...)
 
@@ -223,7 +225,7 @@ func (t *GinkgoTester) findBinary(name string) (string, error) {
 	if bazelBinExists {
 		err := filepath.Walk(bazelBin, func(path string, info os.FileInfo, err error) error {
 			if err != nil {
-				return fmt.Errorf("error from walk: %v", err)
+				return fmt.Errorf("error from walk: %w", err)
 			}
 			if info.Name() != name {
 				return nil
@@ -247,7 +249,7 @@ func (t *GinkgoTester) findBinary(name string) (string, error) {
 			if os.IsNotExist(err) {
 				continue
 			}
-			return "", fmt.Errorf("error from stat %s: %v", loc, err)
+			return "", fmt.Errorf("error from stat %s: %w", loc, err)
 		}
 		if newestLocation == "" || stat.ModTime().After(newestModTime) {
 			newestModTime = stat.ModTime()

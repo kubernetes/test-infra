@@ -75,10 +75,22 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 			configInfo[repo.String()] = fmt.Sprintf("The trusted GitHub organization for this repository is %q.", repo)
 		}
 	}
-
+	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
+		Dco: map[string]*plugins.Dco{
+			"org/repo": {
+				SkipDCOCheckForMembers:       true,
+				TrustedOrg:                   "org",
+				SkipDCOCheckForCollaborators: true,
+			},
+		},
+	})
+	if err != nil {
+		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", pluginName)
+	}
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The dco plugin checks pull request commits for 'DCO sign off' and maintains the '" + dcoContextName + "' status context, as well as the 'dco' label.",
 		Config:      configInfo,
+		Snippet:     yamlSnippet,
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/check-dco",
@@ -91,7 +103,6 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 }
 
 type gitHubClient interface {
-	BotName() (string, error)
 	IsMember(org, user string) (bool, error)
 	IsCollaborator(org, repo, user string) (bool, error)
 	CreateComment(owner, repo string, number int, comment string) error
@@ -102,6 +113,7 @@ type gitHubClient interface {
 	ListPRCommits(org, repo string, number int) ([]github.RepositoryCommit, error)
 	GetPullRequest(owner, repo string, number int) (*github.PullRequest, error)
 	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
+	BotUserChecker() (func(candidate string) bool, error)
 }
 
 type commentPruner interface {
@@ -113,11 +125,11 @@ func filterTrustedUsers(gc gitHubClient, l *logrus.Entry, skipDCOCheckForCollabo
 	untrustedCommits := make([]github.RepositoryCommit, 0, len(allCommits))
 
 	for _, commit := range allCommits {
-		trusted, err := trigger.TrustedUser(gc, !skipDCOCheckForCollaborators, trustedOrg, commit.Author.Login, org, repo)
+		trustedResponse, err := trigger.TrustedUser(gc, !skipDCOCheckForCollaborators, trustedOrg, commit.Author.Login, org, repo)
 		if err != nil {
-			return nil, fmt.Errorf("Error checking is member trusted: %v", err)
+			return nil, fmt.Errorf("Error checking is member trusted: %w", err)
 		}
-		if !trusted {
+		if !trustedResponse.IsTrusted {
 			l.Debugf("Member %s is not trusted", commit.Author.Login)
 			untrustedCommits = append(untrustedCommits, commit)
 		}
@@ -133,7 +145,7 @@ func filterTrustedUsers(gc gitHubClient, l *logrus.Entry, skipDCOCheckForCollabo
 func checkCommitMessages(gc gitHubClient, l *logrus.Entry, org, repo string, number int) ([]github.RepositoryCommit, error) {
 	allCommits, err := gc.ListPRCommits(org, repo, number)
 	if err != nil {
-		return nil, fmt.Errorf("error listing commits for pull request: %v", err)
+		return nil, fmt.Errorf("error listing commits for pull request: %w", err)
 	}
 	l.Debugf("Found %d commits in PR", len(allCommits))
 
@@ -153,7 +165,7 @@ func checkCommitMessages(gc gitHubClient, l *logrus.Entry, org, repo string, num
 func checkExistingStatus(gc gitHubClient, l *logrus.Entry, org, repo, sha string) (string, error) {
 	combinedStatus, err := gc.GetCombinedStatus(org, repo, sha)
 	if err != nil {
-		return "", fmt.Errorf("error listing pull request combined statuses: %v", err)
+		return "", fmt.Errorf("error listing pull request combined statuses: %w", err)
 	}
 
 	existingStatus := ""
@@ -173,7 +185,7 @@ func checkExistingStatus(gc gitHubClient, l *logrus.Entry, org, repo, sha string
 func checkExistingLabels(gc gitHubClient, l *logrus.Entry, org, repo string, number int) (hasYesLabel, hasNoLabel bool, err error) {
 	labels, err := gc.GetIssueLabels(org, repo, number)
 	if err != nil {
-		return false, false, fmt.Errorf("error getting pull request labels: %v", err)
+		return false, false, fmt.Errorf("error getting pull request labels: %w", err)
 	}
 
 	for _, l := range labels {
@@ -202,14 +214,14 @@ func takeAction(gc gitHubClient, cp commentPruner, l *logrus.Entry, org, repo st
 			l.Debugf("Removing %q label", dcoNoLabel)
 			// remove 'dco-signoff: no' label
 			if err := gc.RemoveLabel(org, repo, pr.Number, dcoNoLabel); err != nil {
-				return fmt.Errorf("error removing label: %v", err)
+				return fmt.Errorf("error removing label: %w", err)
 			}
 		}
 		if !hasYesLabel {
 			l.Debugf("Adding %q label", dcoYesLabel)
 			// add 'dco-signoff: yes' label
 			if err := gc.AddLabel(org, repo, pr.Number, dcoYesLabel); err != nil {
-				return fmt.Errorf("error adding label: %v", err)
+				return fmt.Errorf("error adding label: %w", err)
 			}
 		}
 		if existingStatus != github.StatusSuccess {
@@ -220,7 +232,7 @@ func takeAction(gc gitHubClient, cp commentPruner, l *logrus.Entry, org, repo st
 				TargetURL:   targetURL,
 				Description: dcoContextMessageSuccess,
 			}); err != nil {
-				return fmt.Errorf("error setting pull request status: %v", err)
+				return fmt.Errorf("error setting pull request status: %w", err)
 			}
 		}
 
@@ -233,14 +245,14 @@ func takeAction(gc gitHubClient, cp commentPruner, l *logrus.Entry, org, repo st
 		l.Debugf("Adding %q label", dcoNoLabel)
 		// add 'dco-signoff: no' label
 		if err := gc.AddLabel(org, repo, pr.Number, dcoNoLabel); err != nil {
-			return fmt.Errorf("error adding label: %v", err)
+			return fmt.Errorf("error adding label: %w", err)
 		}
 	}
 	if hasYesLabel {
 		l.Debugf("Removing %q label", dcoYesLabel)
 		// remove 'dco-signoff: yes' label
 		if err := gc.RemoveLabel(org, repo, pr.Number, dcoYesLabel); err != nil {
-			return fmt.Errorf("error removing label: %v", err)
+			return fmt.Errorf("error removing label: %w", err)
 		}
 	}
 	if existingStatus != github.StatusFailure {
@@ -251,7 +263,7 @@ func takeAction(gc gitHubClient, cp commentPruner, l *logrus.Entry, org, repo st
 			TargetURL:   targetURL,
 			Description: dcoContextMessageFailed,
 		}); err != nil {
-			return fmt.Errorf("error setting pull request status: %v", err)
+			return fmt.Errorf("error setting pull request status: %w", err)
 		}
 	}
 
@@ -393,7 +405,7 @@ func handleComment(config plugins.Dco, gc gitHubClient, cp commentPruner, log *l
 
 	pr, err := gc.GetPullRequest(org, repo, ce.Number)
 	if err != nil {
-		return fmt.Errorf("error getting pull request for comment: %v", err)
+		return fmt.Errorf("error getting pull request for comment: %w", err)
 	}
 
 	return handle(config, gc, cp, log, org, repo, *pr, true)

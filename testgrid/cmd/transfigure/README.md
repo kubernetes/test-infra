@@ -1,12 +1,22 @@
 # Transfigure.sh
 
+**Transfigure is deprecated in favor of [Config Merger].
+See [Migration](#migration) for details**
+
 Transfigure is an image that generates a YAML TestGrid configuration from a Prow configuration and pushes it to be used on [testgrid.k8s.io].
 It is used specifically for Prow instances other than the k8s instance of Prow.
 
-## Usage with Prow
+## Migration
 
-To have your instance of Prow push to TestGrid automatically, add a [Prow Job](/prow/jobs.md)
-like the ones in this [example file](./example-prowjobs.yaml).
+Transfigure was made to let other Prow instances use TestGrid, but
+[Config Merger] can do the same thing without requiring periodic PR approval.
+
+When switching from Transfigure to Config Merger, avoid missing or duplicate TestGrid entries in this way:
+1. Add your Configurator jobs (like [this example](/testgrid/config-merger-prowjob-example.yaml))
+to your Prow instance.
+2. In the same PR, in this repository, add your instance to the [mergelists](/config/mergelists)
+and delete the `gen-config.yaml` file that Transfigure has been maintaining.
+3. Delete any leftover Transfigure jobs and close any leftover Transfigure PRs.
 
 ## Arguments
 
@@ -35,3 +45,4 @@ The `gcr.io/k8s-prow/transfigure` image is built and published automatically by 
 You can build the image locally and use it in Docker with `bazel run //testgrid/cmd/transfigure`. Publish to a remote repository after building with `docker push` or build and push all Prow images at once with [`prow/push.sh`](/prow/push.sh).
 
 [testgrid.k8s.io]: (https://testgrid.k8s.io/)
+[Config Merger]: /testgrid/merging.md

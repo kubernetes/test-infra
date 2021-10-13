@@ -111,7 +111,7 @@ func testWrapper(t *testing.T, jobs []string, builds map[string][]Build, status 
 			t.Errorf("unexpected error while marshaling builds: %v", err)
 			return
 		}
-		fmt.Fprint(w, fmt.Sprintf(`{"builds": %s}`, string(data)))
+		fmt.Fprintf(w, `{"builds": %s}`, string(data))
 	}
 }
 
@@ -176,7 +176,7 @@ func TestListBuilds(t *testing.T) {
 			requestedJobs: []BuildQueryParams{{JobName: "unit", ProwJobID: "prowjobidhere"}},
 			status:        intP(502),
 
-			expectedErr: fmt.Errorf("cannot list builds for job \"unit\": response not 2XX: 502 Bad Gateway"),
+			expectedErr: fmt.Errorf("cannot list builds for job \"unit\": %w", fmt.Errorf("response not 2XX: %s", "502 Bad Gateway")),
 		},
 	}
 

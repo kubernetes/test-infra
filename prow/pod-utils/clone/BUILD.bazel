@@ -33,10 +33,13 @@ filegroup(
 
 go_test(
     name = "go_default_test",
-    srcs = ["clone_test.go"],
+    srcs = [
+        "clone_test.go",
+        "format_test.go",
+    ],
     embed = [":go_default_library"],
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
-        "@io_k8s_apimachinery//pkg/util/diff:go_default_library",
+        "@com_github_google_go_cmp//cmp:go_default_library",
     ],
 )

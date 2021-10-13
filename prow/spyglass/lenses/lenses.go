@@ -23,10 +23,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"io"
 	"path/filepath"
 
+	"github.com/sirupsen/logrus"
+
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/spyglass/api"
 )
 
@@ -42,6 +44,8 @@ var (
 	// ErrFileTooLarge will be thrown when a size-limited operation (ex. ReadAll) is called on an
 	// artifact whose size exceeds the configured limit.
 	ErrFileTooLarge = errors.New("file size over specified limit")
+	// ErrRequestSizeTooLarge will be thrown when any operation is called whose size exceeds the configured limit.
+	ErrRequestSizeTooLarge = errors.New("request size over specified limit")
 	// ErrContextUnsupported is thrown when attempting to use a context with an artifact that
 	// does not support context operations (cancel, withtimeout, etc.)
 	ErrContextUnsupported = errors.New("artifact does not support context operations")
@@ -63,13 +67,13 @@ type Lens interface {
 	// Config returns a LensConfig that describes the lens.
 	Config() LensConfig
 	// Header returns a a string that is injected into the rendered lens's <head>
-	Header(artifacts []api.Artifact, resourceDir string, config json.RawMessage) string
+	Header(artifacts []api.Artifact, resourceDir string, config json.RawMessage, spyglassConfig config.Spyglass) string
 	// Body returns a string that is initially injected into the rendered lens's <body>.
 	// The lens's front-end code may call back to Body again, passing in some data string of its choosing.
-	Body(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage) string
+	Body(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage, spyglassConfig config.Spyglass) string
 	// Callback receives a string sent by the lens's front-end code and returns another string to be returned
 	// to that frontend code.
-	Callback(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage) string
+	Callback(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage, spyglassConfig config.Spyglass) string
 }
 
 // ResourceDirForLens returns the path to a lens's public resource directory.
@@ -87,9 +91,6 @@ func RegisterLens(lens Lens) error {
 
 	if config.Title == "" {
 		return errors.New("empty title field in view metadata")
-	}
-	if config.Priority < 0 {
-		return errors.New("priority must be >=0")
 	}
 	lensReg[config.Name] = lens
 	logrus.Infof("Spyglass registered viewer %s with title %s.", config.Name, config.Title)
@@ -127,7 +128,7 @@ func LastNLinesChunked(a api.Artifact, n, chunkSize int64) ([]string, error) {
 	var linesInContents int64
 	artifactSize, err := a.Size()
 	if err != nil {
-		return nil, fmt.Errorf("error getting artifact size: %v", err)
+		return nil, fmt.Errorf("error getting artifact size: %w", err)
 	}
 	offset := artifactSize - chunks*chunkSize
 	lastOffset := offset
@@ -141,7 +142,7 @@ func LastNLinesChunked(a api.Artifact, n, chunkSize int64) ([]string, error) {
 		bytesRead := make([]byte, toRead)
 		numBytesRead, err := a.ReadAt(bytesRead, offset)
 		if err != nil && err != io.EOF {
-			return nil, fmt.Errorf("error reading artifact: %v", err)
+			return nil, fmt.Errorf("error reading artifact: %w", err)
 		}
 		lastRead = int64(numBytesRead)
 		lastOffset = offset

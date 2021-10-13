@@ -73,11 +73,18 @@ func handleInterrupt() {
 // will fire first
 var signalsLock = sync.Mutex{}
 
+var signalChannel = make(chan os.Signal, 1)
+
+// Terminate can be called to trigger a termination
+// to the current process.
+func Terminate() {
+	signalChannel <- os.Interrupt
+}
+
 // signals allows for injection of mock signals in testing
 var signals = func() <-chan os.Signal {
-	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
-	return sig
+	signal.Notify(signalChannel, os.Interrupt, syscall.SIGTERM)
+	return signalChannel
 }
 
 // wait executes the cancel when an interrupt is seen or if one has already

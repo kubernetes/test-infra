@@ -27,13 +27,19 @@ package ghcache
 
 import (
 	"context"
-	"crypto/sha256"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
+	"os"
 	"path"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 
 	"github.com/gomodule/redigo/redis"
 	"github.com/gregjones/httpcache"
@@ -56,10 +62,23 @@ const (
 	ModeNoStore CacheResponseMode = "NO-STORE" // response not cacheable
 	ModeMiss    CacheResponseMode = "MISS"     // not in cache, request proxied and response cached.
 	ModeChanged CacheResponseMode = "CHANGED"  // cache value invalid: resource changed, cache updated
+	ModeSkip    CacheResponseMode = "SKIP"     // cache was skipped, not applicable. e.g. POST request.
 	// The modes below are the happy cases in which the request is fulfilled for
 	// free (no API tokens used).
 	ModeCoalesced   CacheResponseMode = "COALESCED"   // coalesced request, this is a copied response
 	ModeRevalidated CacheResponseMode = "REVALIDATED" // cached value revalidated and returned
+
+	// cacheEntryCreationDateHeader contains the creation date of the cache entry
+	cacheEntryCreationDateHeader = "X-PROW-REQUEST-DATE"
+
+	// TokenBudgetIdentifierHeader is used to identify the token budget for
+	// which metrics should be recorded if set. If unset, the sha256sum of
+	// the Authorization header will be used.
+	TokenBudgetIdentifierHeader = "X-PROW-GHCACHE-TOKEN-BUDGET-IDENTIFIER"
+
+	// TokenExpiryAtHeader includes a date at which the passed token expires and all associated caches
+	// can be cleaned up. It's value must be in RFC3339 format.
+	TokenExpiryAtHeader = "X-PROW-TOKEN-EXPIRES-AT"
 )
 
 func CacheModeIsFree(mode CacheResponseMode) bool {
@@ -119,14 +138,14 @@ func cacheResponseMode(headers http.Header) CacheResponseMode {
 	return ModeMiss
 }
 
-func newThrottlingTransport(maxConcurrency int, delegate http.RoundTripper) http.RoundTripper {
-	return &throttlingTransport{sem: semaphore.NewWeighted(int64(maxConcurrency)), delegate: delegate}
+func newThrottlingTransport(maxConcurrency int, roundTripper http.RoundTripper) http.RoundTripper {
+	return &throttlingTransport{sem: semaphore.NewWeighted(int64(maxConcurrency)), roundTripper: roundTripper}
 }
 
 // throttlingTransport throttles outbound concurrency from the proxy
 type throttlingTransport struct {
-	sem      *semaphore.Weighted
-	delegate http.RoundTripper
+	sem          *semaphore.Weighted
+	roundTripper http.RoundTripper
 }
 
 func (c *throttlingTransport) RoundTrip(req *http.Request) (*http.Response, error) {
@@ -139,7 +158,7 @@ func (c *throttlingTransport) RoundTrip(req *http.Request) (*http.Response, erro
 	pendingOutboundConnectionsGauge.Dec()
 	outboundConcurrencyGauge.Inc()
 	defer outboundConcurrencyGauge.Dec()
-	return c.delegate.RoundTrip(req)
+	return c.roundTripper.RoundTrip(req)
 }
 
 // upstreamTransport changes response headers from upstream before they
@@ -153,19 +172,24 @@ func (c *throttlingTransport) RoundTrip(req *http.Request) (*http.Response, erro
 //    Cache-Control: no-cache
 // This instructs the cache to store the response, but always consider it stale.
 type upstreamTransport struct {
-	delegate http.RoundTripper
-	hasher   ghmetrics.Hasher
+	roundTripper http.RoundTripper
+	hasher       ghmetrics.Hasher
 }
 
 func (u upstreamTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	etag := req.Header.Get("if-none-match")
-	authHeaderHash := u.hasher.Hash(req)
+	var tokenBudgetName string
+	if val := req.Header.Get(TokenBudgetIdentifierHeader); val != "" {
+		tokenBudgetName = val
+	} else {
+		tokenBudgetName = u.hasher.Hash(req)
+	}
 
 	reqStartTime := time.Now()
-	// Don't modify request, just pass to delegate.
-	resp, err := u.delegate.RoundTrip(req)
+	// Don't modify request, just pass to roundTripper.
+	resp, err := u.roundTripper.RoundTrip(req)
 	if err != nil {
-		ghmetrics.CollectRequestTimeoutMetrics(authHeaderHash, req.URL.Path, req.Header.Get("User-Agent"), reqStartTime, time.Now())
+		ghmetrics.CollectRequestTimeoutMetrics(tokenBudgetName, req.URL.Path, req.Header.Get("User-Agent"), reqStartTime, time.Now())
 		logrus.WithField("cache-key", req.URL.String()).WithError(err).Warn("Error from upstream (GitHub).")
 		return nil, err
 	}
@@ -177,6 +201,10 @@ func (u upstreamTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 		resp.Header.Set("Cache-Control", "no-store")
 	} else {
 		resp.Header.Set("Cache-Control", "no-cache")
+		if resp.StatusCode != http.StatusNotModified {
+			// Used for metrics about the age of cached requests
+			resp.Header.Set(cacheEntryCreationDateHeader, strconv.Itoa(int(time.Now().Unix())))
+		}
 	}
 	if etag != "" {
 		resp.Header.Set("X-Conditional-Request", etag)
@@ -188,20 +216,10 @@ func (u upstreamTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 		apiVersion = "v4"
 	}
 
-	ghmetrics.CollectGitHubTokenMetrics(authHeaderHash, apiVersion, resp.Header, reqStartTime, responseTime)
-	ghmetrics.CollectGitHubRequestMetrics(authHeaderHash, req.URL.Path, strconv.Itoa(resp.StatusCode), req.Header.Get("User-Agent"), roundTripTime.Seconds())
+	ghmetrics.CollectGitHubTokenMetrics(tokenBudgetName, apiVersion, resp.Header, reqStartTime, responseTime)
+	ghmetrics.CollectGitHubRequestMetrics(tokenBudgetName, req.URL.Path, strconv.Itoa(resp.StatusCode), req.Header.Get("User-Agent"), roundTripTime.Seconds())
 
 	return resp, nil
-}
-
-func authHeaderHash(req *http.Request) string {
-	// get authorization header to convert to sha256
-	authHeader := req.Header.Get("Authorization")
-	if authHeader == "" {
-		logrus.Warn("Couldn't retrieve 'Authorization' header, adding to unknown bucket")
-		authHeader = "unknown"
-	}
-	return fmt.Sprintf("%x", sha256.Sum256([]byte(authHeader))) // use %x to make this a utf-8 string for use as a label
 }
 
 const LogMessageWithDiskPartitionFields = "Not using a partitioned cache because legacyDisablePartitioningByAuthHeader is true"
@@ -209,7 +227,7 @@ const LogMessageWithDiskPartitionFields = "Not using a partitioned cache because
 // NewDiskCache creates a GitHub cache RoundTripper that is backed by a disk
 // cache.
 // It supports a partitioned cache.
-func NewDiskCache(delegate http.RoundTripper, cacheDir string, cacheSizeGB, maxConcurrency int, legacyDisablePartitioningByAuthHeader bool) http.RoundTripper {
+func NewDiskCache(roundTripper http.RoundTripper, cacheDir string, cacheSizeGB, maxConcurrency int, legacyDisablePartitioningByAuthHeader bool, cachePruneInterval time.Duration) http.RoundTripper {
 	if legacyDisablePartitioningByAuthHeader {
 		diskCache := diskcache.NewWithDiskv(
 			diskv.New(diskv.Options{
@@ -217,8 +235,8 @@ func NewDiskCache(delegate http.RoundTripper, cacheDir string, cacheSizeGB, maxC
 				TempDir:      path.Join(cacheDir, "temp"),
 				CacheSizeMax: uint64(cacheSizeGB) * uint64(1000000000), // convert G to B
 			}))
-		return NewFromCache(delegate,
-			func(partitionKey string) httpcache.Cache {
+		return NewFromCache(roundTripper,
+			func(partitionKey string, _ *time.Time) httpcache.Cache {
 				logrus.WithField("cache-base-path", path.Join(cacheDir, "data", partitionKey)).
 					WithField("cache-temp-path", path.Join(cacheDir, "temp", partitionKey)).
 					Warning(LogMessageWithDiskPartitionFields)
@@ -227,12 +245,23 @@ func NewDiskCache(delegate http.RoundTripper, cacheDir string, cacheSizeGB, maxC
 			maxConcurrency,
 		)
 	}
-	return NewFromCache(delegate,
-		func(partitionKey string) httpcache.Cache {
+
+	go func() {
+		for range time.NewTicker(cachePruneInterval).C {
+			Prune(cacheDir, time.Now)
+		}
+	}()
+	return NewFromCache(roundTripper,
+		func(partitionKey string, expiresAt *time.Time) httpcache.Cache {
+			basePath := path.Join(cacheDir, "data", partitionKey)
+			tempDir := path.Join(cacheDir, "temp", partitionKey)
+			if err := writecachePartitionMetadata(basePath, tempDir, expiresAt); err != nil {
+				logrus.WithError(err).Warn("Failed to write cache metadata file, pruning will not work")
+			}
 			return diskcache.NewWithDiskv(
 				diskv.New(diskv.Options{
-					BasePath:     path.Join(cacheDir, "data", partitionKey),
-					TempDir:      path.Join(cacheDir, "temp", partitionKey),
+					BasePath:     basePath,
+					TempDir:      tempDir,
 					CacheSizeMax: uint64(cacheSizeGB) * uint64(1000000000), // convert G to B
 				}))
 		},
@@ -240,29 +269,98 @@ func NewDiskCache(delegate http.RoundTripper, cacheDir string, cacheSizeGB, maxC
 	)
 }
 
+func Prune(baseDir string, now func() time.Time) {
+	// All of this would be easier if the structure was base/partition/{data,temp}
+	// but because of compatibility we can not change it.
+	for _, dir := range []string{"data", "temp"} {
+		base := path.Join(baseDir, dir)
+		cachePartitionCandidates, err := os.ReadDir(base)
+		if err != nil {
+			logrus.WithError(err).Warn("os.ReadDir failed")
+			// no continue, os.ReadDir returns partial results if it encounters an error
+		}
+		for _, cachePartitionCandidate := range cachePartitionCandidates {
+			if !cachePartitionCandidate.IsDir() {
+				continue
+			}
+			metadataPath := path.Join(base, cachePartitionCandidate.Name(), cachePartitionMetadataFileName)
+
+			// Read optimistically and just ignore errors
+			raw, err := ioutil.ReadFile(metadataPath)
+			if err != nil {
+				continue
+			}
+			var metadata cachePartitionMetadata
+			if err := json.Unmarshal(raw, &metadata); err != nil {
+				logrus.WithError(err).WithField("filepath", metadataPath).Error("failed to deserialize metadata file")
+				continue
+			}
+			if metadata.ExpiresAt.After(now()) {
+				continue
+			}
+			paritionPath := filepath.Dir(metadataPath)
+			logrus.WithField("path", paritionPath).WithField("expiresAt", metadata.ExpiresAt.String()).Info("Cleaning up expired cache parition")
+			if err := os.RemoveAll(paritionPath); err != nil {
+				logrus.WithError(err).WithField("path", paritionPath).Error("failed to delete expired cache parition")
+			}
+		}
+	}
+}
+
+func writecachePartitionMetadata(basePath, tempDir string, expiresAt *time.Time) error {
+	// No expiry header for the token was passed, likely it is a PAT which never expires.
+	if expiresAt == nil {
+		return nil
+	}
+	metadata := cachePartitionMetadata{ExpiresAt: metav1.Time{Time: *expiresAt}}
+	serialized, err := json.Marshal(metadata)
+	if err != nil {
+		return fmt.Errorf("failed to serialize: %w", err)
+	}
+
+	var errs []error
+	for _, destBase := range []string{basePath, tempDir} {
+		if err := os.MkdirAll(destBase, 0755); err != nil {
+			errs = append(errs, fmt.Errorf("failed to create dir %s: %w", destBase, err))
+		}
+		dest := path.Join(destBase, cachePartitionMetadataFileName)
+		if err := ioutil.WriteFile(dest, serialized, 0644); err != nil {
+			errs = append(errs, fmt.Errorf("failed to write %s: %w", dest, err))
+		}
+	}
+
+	return utilerrors.NewAggregate(errs)
+}
+
+const cachePartitionMetadataFileName = ".cache_metadata.json"
+
+type cachePartitionMetadata struct {
+	ExpiresAt metav1.Time `json:"expires_at"`
+}
+
 // NewMemCache creates a GitHub cache RoundTripper that is backed by a memory
 // cache.
 // It supports a partitioned cache.
-func NewMemCache(delegate http.RoundTripper, maxConcurrency int) http.RoundTripper {
-	return NewFromCache(delegate,
-		func(_ string) httpcache.Cache { return httpcache.NewMemoryCache() },
+func NewMemCache(roundTripper http.RoundTripper, maxConcurrency int) http.RoundTripper {
+	return NewFromCache(roundTripper,
+		func(_ string, _ *time.Time) httpcache.Cache { return httpcache.NewMemoryCache() },
 		maxConcurrency)
 }
 
 // CachePartitionCreator creates a new cache partition using the given key
-type CachePartitionCreator func(partitionKey string) httpcache.Cache
+type CachePartitionCreator func(partitionKey string, expiresAt *time.Time) httpcache.Cache
 
 // NewFromCache creates a GitHub cache RoundTripper that is backed by the
 // specified httpcache.Cache implementation.
-func NewFromCache(delegate http.RoundTripper, cache CachePartitionCreator, maxConcurrency int) http.RoundTripper {
+func NewFromCache(roundTripper http.RoundTripper, cache CachePartitionCreator, maxConcurrency int) http.RoundTripper {
 	hasher := ghmetrics.NewCachingHasher()
-	return newPartitioningRoundTripper(func(partitionKey string) http.RoundTripper {
-		cacheTransport := httpcache.NewTransport(cache(partitionKey))
-		cacheTransport.Transport = newThrottlingTransport(maxConcurrency, upstreamTransport{delegate: delegate, hasher: hasher})
+	return newPartitioningRoundTripper(func(partitionKey string, expiresAt *time.Time) http.RoundTripper {
+		cacheTransport := httpcache.NewTransport(cache(partitionKey, expiresAt))
+		cacheTransport.Transport = newThrottlingTransport(maxConcurrency, upstreamTransport{roundTripper: roundTripper, hasher: hasher})
 		return &requestCoalescer{
-			keys:     make(map[string]*responseWaiter),
-			delegate: cacheTransport,
-			hasher:   hasher,
+			cache:           make(map[string]*firstRequest),
+			requestExecutor: cacheTransport,
+			hasher:          hasher,
 		}
 	})
 }
@@ -272,13 +370,13 @@ func NewFromCache(delegate http.RoundTripper, cache CachePartitionCreator, maxCo
 // Important note: The redis implementation does not support partitioning the cache
 // which means that requests to the same path from different tokens will invalidate
 // each other.
-func NewRedisCache(delegate http.RoundTripper, redisAddress string, maxConcurrency int) http.RoundTripper {
+func NewRedisCache(roundTripper http.RoundTripper, redisAddress string, maxConcurrency int) http.RoundTripper {
 	conn, err := redis.Dial("tcp", redisAddress)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error connecting to Redis")
 	}
 	redisCache := rediscache.NewWithClient(conn)
-	return NewFromCache(delegate,
-		func(_ string) httpcache.Cache { return redisCache },
+	return NewFromCache(roundTripper,
+		func(_ string, _ *time.Time) httpcache.Cache { return redisCache },
 		maxConcurrency)
 }

@@ -8,6 +8,7 @@ dashboard_groups:
     - sig-scalability-benchmarks
     - sig-scalability-experiments
     - sig-scalability-golang
+    - sig-scalability-network
 
 dashboards:
 - name: sig-scalability-gce
@@ -17,3 +18,4 @@ dashboards:
 - name: sig-scalability-benchmarks
 - name: sig-scalability-experiments
 - name: sig-scalability-golang
+- name: sig-scalability-network

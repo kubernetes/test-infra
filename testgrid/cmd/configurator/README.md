@@ -40,6 +40,6 @@ a [protocol buffer][`config.proto`], and has no concept of a YAML configuration.
 By default, Configurator outputs a [`config.proto`], since it usually serves configurations to TestGrid.
 Configuration can also output a YAML configuration; for an example, see [`transfigure`](/testgrid/cmd/transfigure/README.md).
 
-[`config.proto`]: /testgrid/config/config.proto
+[`config.proto`]: https://github.com/GoogleCloudPlatform/testgrid/blob/master/pb/config/config.proto
 [`config.md`]: /testgrid/config.md
 [Prow]: /prow/README.md

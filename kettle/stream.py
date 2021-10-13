@@ -27,10 +27,12 @@ import traceback
 import time
 
 import multiprocessing.pool
+import ruamel.yaml as yaml
 
 try:
+    from google.api_core import exceptions as api_exceptions
     from google.cloud import bigquery
-    from google.cloud import pubsub
+    from google.cloud import pubsub_v1
     import google.cloud.exceptions
 except ImportError:
     print('WARNING: unable to load google cloud (test environment?)')
@@ -41,30 +43,37 @@ import make_db
 import make_json
 
 
-def process_changes(results):
-    """Split GCS change events into trivial acks and builds to further process."""
-    acks = []  # pubsub message ids to acknowledge
+MAX_ROW_UPLOAD = 10 # See https://github.com/googleapis/google-cloud-go/issues/2855
+
+
+def should_exclude(object_id, bucket_id, buckets):
+    # Objects of form a/b/c/<jobname>/<hash>/<objectFile>'
+    if bucket_id not in buckets:
+        return False
+    return any(f'/{job}/' in object_id for job in buckets[bucket_id].get('exclude_jobs', []))
+
+
+def process_changes(results, buckets):
+    """Split GCS change events into trivial ack_ids and builds to further process."""
+    ack_ids = []  # pubsub rec_message ids to acknowledge
     todo = []  # (id, job, build) of builds to grab
-
     # process results, find finished builds to process
-    for ack_id, message in results:
-        if message.attributes['eventType'] != 'OBJECT_FINALIZE':
-            acks.append(ack_id)
+    for rec_message in results:
+        object_id = rec_message.message.attributes['objectId']
+        bucket_id = rec_message.message.attributes['bucketId']
+        exclude = should_exclude(object_id, bucket_id, buckets)
+        if not object_id.endswith('/finished.json') or exclude:
+            ack_ids.append(rec_message.ack_id)
             continue
-        obj = message.attributes['objectId']
-        if not obj.endswith('/finished.json'):
-            acks.append(ack_id)
-            continue
-        job, build = obj[:-len('/finished.json')].rsplit('/', 1)
-        job = 'gs://%s/%s' % (message.attributes['bucketId'], job)
-        todo.append((ack_id, job, build))
-
-    return acks, todo
+        job, build = object_id[:-len('/finished.json')].rsplit('/', 1)
+        job = 'gs://%s/%s' % (bucket_id, job)
+        todo.append((rec_message.ack_id, job, build))
+    return ack_ids, todo
 
 
 def get_started_finished(gcs_client, db, todo):
     """Download started/finished.json from build dirs in todo."""
-    acks = []
+    ack_ids = []
     build_dirs = []
     pool = multiprocessing.pool.ThreadPool(16)
     try:
@@ -74,27 +83,19 @@ def get_started_finished(gcs_client, db, todo):
                 todo):
             if finished:
                 if not db.insert_build(build_dir, started, finished):
-                    print('already present??')
+                    print('build dir already present in db: ', build_dir)
                 start = time.localtime(started.get('timestamp', 0) if started else 0)
                 print((build_dir, bool(started), bool(finished),
                        time.strftime('%F %T %Z', start),
                        finished and finished.get('result')))
                 build_dirs.append(build_dir)
-                acks.append(ack_id)
+                ack_ids.append(ack_id)
             else:
                 print('finished.json missing?', build_dir, started, finished)
     finally:
         pool.close()
     db.commit()
-    return acks, build_dirs
-
-
-def row_to_mapping(row, schema):
-    """Convert a dictionary to a list for bigquery.Table.insert_data.
-
-    Silly. See https://github.com/GoogleCloudPlatform/google-cloud-python/issues/3396
-    """
-    return [row.get(field.name, [] if field.mode == 'REPEATED' else None) for field in schema]
+    return ack_ids, build_dirs
 
 
 def retry(func, *args, **kwargs):
@@ -107,59 +108,66 @@ def retry(func, *args, **kwargs):
             # retry with exponential backoff
             traceback.print_exc()
             time.sleep(1.4 ** attempt)
+        except api_exceptions.BadRequest as err:
+            args_size = sys.getsizeof(args)
+            kwargs_str = ','.join('{}={}'.format(k, v) for k, v in kwargs.items())
+            print(f"Error running {func.__name__} \
+                   ([bytes in args]{args_size} with {kwargs_str}) : {str(err).encode('utf8')}")
+            return None # Skip
     return func(*args, **kwargs)  # one last attempt
 
 
-def insert_data(table, rows_iter):
+def insert_data(bq_client, table, rows_iter):
     """Upload rows from rows_iter into bigquery table table.
 
     rows_iter should return a series of (row_id, row dictionary) tuples.
     The row dictionary must match the table's schema.
 
+    Args:
+        bq_client: Client connection to BigQuery
+        table: bigquery.Table object that points to a specific table
+        rows_iter: row_id, dict representing a make_json.Build
     Returns the row_ids that were inserted.
     """
-    emitted = set()
+    def divide_chunks(l, bin_size=MAX_ROW_UPLOAD):
+        # break up rows to not hit data limits
+        for i in range(0, len(l), bin_size):
+            yield l[i:i + bin_size]
 
-    rows = []
-    row_ids = []
+    emitted, rows = [], []
 
-    for row_id, row in rows_iter:
-        emitted.add(row_id)
-        if len(json.dumps(row)) > 1e6:
-            print('ERROR: row too long', row['path'])
-            continue
-        row = row_to_mapping(row, table.schema)
-        rows.append(row)
-        row_ids.append(row_id)
+    for row_id, build in rows_iter:
+        emitted.append(row_id)
+        rows.append(build)
 
     if not rows:  # nothing to do
         return []
 
-    def insert(table, rows, row_ids):
-        """Insert rows with row_ids into table, retrying as necessary."""
-        errors = retry(table.insert_data, rows, row_ids, skip_invalid_rows=True)
-
+    for chunk in divide_chunks(rows):
+        # Insert rows with row_ids into table, retrying as necessary.
+        errors = retry(bq_client.insert_rows, table, chunk, skip_invalid_rows=True)
         if not errors:
-            print('Loaded {} builds into {}'.format(len(rows), table.name))
+            print(f'Loaded {len(chunk)} builds into {table.full_table_id}')
         else:
-            print('Errors:')
+            print(f'Errors on Chunk: {chunk}')
             pprint.pprint(errors)
             pprint.pprint(table.schema)
-
-    if len(json.dumps(rows)) > 10e6:
-        print('WARNING: too big for one insert, doing stupid slow version')
-        for row, row_id in zip(rows, row_ids):
-            insert(table, [row], [row_id])
-    else:
-        insert(table, rows, row_ids)
 
     return emitted
 
 
-def main(db, sub, tables, client_class=make_db.GCSClient, stop=None):
+def main(
+        db,
+        subscriber,
+        subscription_path,
+        bq_client,
+        tables,
+        buckets,
+        client_class=make_db.GCSClient,
+        stop=None,
+    ):
     # pylint: disable=too-many-locals
     gcs_client = client_class('', {})
-
     if stop is None:
         stop = lambda: False
 
@@ -171,34 +179,45 @@ def main(db, sub, tables, client_class=make_db.GCSClient, stop=None):
 
         print('====', time.strftime("%F %T %Z"), '=' * 40)
 
-        results = retry(sub.pull, max_messages=1000)
+        results = retry(subscriber.pull, subscription=subscription_path, max_messages=1000)
+        results = list(results.received_messages)
         start = time.time()
         while time.time() < start + 7:
-            results_more = sub.pull(max_messages=1000, return_immediately=True)
+            results_more = list(subscriber.pull(
+                subscription=subscription_path,
+                max_messages=1000,
+                return_immediately=True).received_messages)
             if not results_more:
                 break
-            results += results_more
+            results.extend(results_more)
 
         print('PULLED', len(results))
 
-        acks, todo = process_changes(results)
+        ack_ids, todo = process_changes(results, buckets)
 
-        if acks:
-            print('ACK irrelevant', len(acks))
-            for n in range(0, len(acks), 1000):
-                retry(sub.acknowledge, acks[n: n + 1000])
+        if ack_ids:
+            print('ACK irrelevant', len(ack_ids))
+            for n in range(0, len(ack_ids), 1000):
+                retry(
+                    subscriber.acknowledge,
+                    subscription=subscription_path,
+                    ack_ids=ack_ids[n: n + 1000])
 
         if todo:
             print('EXTEND-ACK ', len(todo))
             # give 3 minutes to grab build details
-            retry(sub.modify_ack_deadline, [i for i, _j, _b in todo], 60*3)
+            retry(
+                subscriber.modify_ack_deadline,
+                subscription=subscription_path,
+                ack_ids=[i for i, _j, _b in todo],
+                ack_deadline_seconds=60*3)
 
-        acks, build_dirs = get_started_finished(gcs_client, db, todo)
+        ack_ids, build_dirs = get_started_finished(gcs_client, db, todo)
 
         # notify pubsub queue that we've handled the finished.json messages
-        if acks:
-            print('ACK "finished.json"', len(acks))
-            retry(sub.acknowledge, acks)
+        if ack_ids:
+            print('ACK "finished.json"', len(ack_ids))
+            retry(subscriber.acknowledge, subscription=subscription_path, ack_ids=ack_ids)
 
         # grab junit files for new builds
         make_db.download_junit(db, 16, client_class)
@@ -207,15 +226,24 @@ def main(db, sub, tables, client_class=make_db.GCSClient, stop=None):
         if build_dirs and tables:
             for table, incremental_table in tables.values():
                 builds = db.get_builds_from_paths(build_dirs, incremental_table)
-                emitted = insert_data(table, make_json.make_rows(db, builds))
+                emitted = insert_data(bq_client, table, make_json.make_rows(db, builds))
                 db.insert_emitted(emitted, incremental_table)
 
 
 def load_sub(poll):
-    """Return the PubSub subscription specified by the /-separated input."""
-    project, topic, subscription = poll.split('/')
-    pubsub_client = pubsub.Client(project)
-    return pubsub_client.topic(topic).subscription(subscription)
+    """Return the PubSub subscription specified by the /-separated input.
+
+    Args:
+        poll: Follow GCS changes from project/topic/subscription
+              Ex: kubernetes-jenkins/gcs-changes/kettle
+
+    Return:
+        Subscribed client
+    """
+    subscriber = pubsub_v1.SubscriberClient()
+    project_id, _, sub = poll.split('/')
+    subscription_path = f'projects/{project_id}/subscriptions/{sub}'
+    return subscriber, subscription_path
 
 
 def load_schema(schemafield):
@@ -223,7 +251,8 @@ def load_schema(schemafield):
 
     Only used for new tables."""
     basedir = os.path.dirname(__file__)
-    schema_json = json.load(open(os.path.join(basedir, 'schema.json')))
+    with open(os.path.join(basedir, 'schema.json')) as json_file:
+        schema_json = json.load(json_file)
     def make_field(spec):
         spec['field_type'] = spec.pop('type')
         if 'fields' in spec:
@@ -239,22 +268,22 @@ def load_tables(dataset, tablespecs):
         dataset: bigquery.Dataset
         tablespecs: list of strings of "NAME:DAYS", e.g. ["day:1"]
     Returns:
-        {name: (bigquery.Table, incremental table name)}
+        client, {name: (bigquery.Table, incremental table name)}
     """
     project, dataset_name = dataset.split(':')
-    dataset = bigquery.Client(project).dataset(dataset_name)
+    bq_client = bigquery.Client(project)
 
     tables = {}
     for spec in tablespecs:
-        name, days = spec.split(':')
-        table = dataset.table(name)
+        table_name, days = spec.split(':')
+        table_ref = f'{project}.{dataset_name}.{table_name}'
         try:
-            table.reload()
-        except google.cloud.exceptions.NotFound:  # pylint: disable=no-member
+            table = bq_client.get_table(table_ref) # pylint: disable=no-member
+        except google.cloud.exceptions.NotFound:
+            table = bq_client.create_table(table_ref) # pylint: disable=no-member
             table.schema = load_schema(bigquery.schema.SchemaField)
-            table.create()
-        tables[name] = (table, make_json.get_table(float(days)))
-    return tables
+        tables[table_name] = (table, make_json.get_table(float(days)))
+    return bq_client, tables
 
 
 class StopWhen:
@@ -272,6 +301,14 @@ class StopWhen:
         self.last = now
         return now != last and now == self.target
 
+
+def _make_bucket_map(path):
+    bucket_map = yaml.safe_load(open(path))
+    bucket_to_attrs = dict()
+    for k, v in bucket_map.items():
+        bucket = k.rsplit('/')[2] # of form gs://<bucket>/...
+        bucket_to_attrs[bucket] = v
+    return bucket_to_attrs
 
 def get_options(argv):
     """Process command line arguments."""
@@ -296,13 +333,19 @@ def get_options(argv):
         type=int,
         help='Terminate when this hour (0-23) rolls around (in local time).'
     )
+    parser.add_argument(
+        '--buckets',
+        type=str,
+        default='buckets.yaml',
+        help='Path to bucket configuration.'
+    )
     return parser.parse_args(argv)
 
 
 if __name__ == '__main__':
     OPTIONS = get_options(sys.argv[1:])
-
     main(model.Database(),
-         load_sub(OPTIONS.poll),
-         load_tables(OPTIONS.dataset, OPTIONS.tables),
+         *load_sub(OPTIONS.poll),
+         *load_tables(OPTIONS.dataset, OPTIONS.tables),
+         _make_bucket_map(OPTIONS.buckets),
          stop=StopWhen(OPTIONS.stop_at))

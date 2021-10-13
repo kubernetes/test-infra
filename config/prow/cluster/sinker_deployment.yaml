@@ -19,11 +19,17 @@ spec:
       containers:
       - name: sinker
         args:
-        - --kubeconfig=/etc/kubeconfig/config
         - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
         - --dry-run=false
-        image: gcr.io/k8s-prow/sinker:v20200501-e6124e633
+        image: gcr.io/k8s-prow/sinker:v20211012-ba1fa86530
+        env:
+        # Use KUBECONFIG envvar rather than --kubeconfig flag in order to provide multiple configs to merge.
+        - name: KUBECONFIG
+          value: "/etc/kubeconfig/config"
+        ports:
+        - name: metrics
+          containerPort: 9090
         volumeMounts:
         - mountPath: /etc/kubeconfig
           name: kubeconfig

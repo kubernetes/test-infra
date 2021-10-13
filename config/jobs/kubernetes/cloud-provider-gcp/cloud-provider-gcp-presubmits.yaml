@@ -15,16 +15,18 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/cloud-builders/bazel
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
         command:
-        - ../test-infra/hack/bazel.sh
+        - /bin/bash
         args:
-        - test
-        - --test_output=errors
-        - --
-        - //...
-        - -//vendor/...
-  - name: cloud-provider-gcp-e2e-create
+        - -c
+        - |
+          if [ -f Makefile ]; then
+            make test
+          else
+            ../test-infra/hack/bazel.sh test --test_output=errors -- //... -//vendor/...
+          fi
+  - name: cloud-provider-gcp-verify-all
     always_run: true
     decorate: true
     path_alias: k8s.io/cloud-provider-gcp
@@ -33,12 +35,48 @@ presubmits:
       preset-k8s-ssh: "true"
     annotations:
       testgrid-dashboards: provider-gcp-presubmits
-      description: End to end cluster creation test using cluster/kube-up based on kubernetes/cloud-provider-gcp.
+      description: Run verify scripts on kubernetes/cloud-provider-gcp.
       testgrid-num-columns-recent: '30'
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
+          command:
+            - runner.sh
+            - ./tools/verify-all.sh
+  - name: cloud-provider-gcp-e2e-full
+    always_run: true
+    optional: false
+    decorate: true
+    decoration_config:
+      timeout: 80m
+    path_alias: k8s.io/cloud-provider-gcp
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+    annotations:
+      testgrid-dashboards: provider-gcp-presubmits
+      description: End to end test of kubernetes/cloud-provider-gcp.
+      testgrid-num-columns-recent: '30'
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
         command:
         - runner.sh
         args:
-        - test/e2e.sh
+        - "/bin/bash"
+        - "-c"
+        - set -o errexit;
+          set -o nounset;
+          set -o pipefail;
+          set -o xtrace;
+          REPO_ROOT=$(git rev-parse --show-toplevel);
+          cd;
+          export GO111MODULE=on;
+          go get sigs.k8s.io/kubetest2@latest;
+          go get sigs.k8s.io/kubetest2/kubetest2-gce@latest;
+          go get sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest;
+          kubetest2 gce -v 2 --repo-root $REPO_ROOT --build --up --down --test=ginkgo -- --test-package-version=v1.22.0 --parallel=30 --test-args='--minStartupPods=8 --container-runtime=containerd' --skip-regex='\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'

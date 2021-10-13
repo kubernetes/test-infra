@@ -29,6 +29,7 @@ import (
 	"github.com/GoogleCloudPlatform/testgrid/metadata/junit"
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/spyglass/api"
 	"k8s.io/test-infra/prow/spyglass/lenses"
 )
@@ -69,7 +70,7 @@ func (lens Lens) Config() lenses.LensConfig {
 }
 
 // Header renders the content of <head> from template.html.
-func (lens Lens) Header(artifacts []api.Artifact, resourceDir string, config json.RawMessage) string {
+func (lens Lens) Header(artifacts []api.Artifact, resourceDir string, config json.RawMessage, spyglassConfig config.Spyglass) string {
 	t, err := template.ParseFiles(filepath.Join(resourceDir, "template.html"))
 	if err != nil {
 		return fmt.Sprintf("<!-- FAILED LOADING HEADER: %v -->", err)
@@ -82,7 +83,7 @@ func (lens Lens) Header(artifacts []api.Artifact, resourceDir string, config jso
 }
 
 // Callback does nothing.
-func (lens Lens) Callback(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage) string {
+func (lens Lens) Callback(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage, spyglassConfig config.Spyglass) string {
 	return ""
 }
 
@@ -98,7 +99,7 @@ func (jr JunitResult) Status() testStatus {
 	res := passedStatus
 	if jr.Skipped != nil {
 		res = skippedStatus
-	} else if jr.Failure != nil {
+	} else if jr.Failure != nil || jr.Errored != nil {
 		res = failedStatus
 	}
 	return res
@@ -111,7 +112,7 @@ type TestResult struct {
 }
 
 // Body renders the <body> for JUnit tests
-func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage) string {
+func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage, spyglassConfig config.Spyglass) string {
 	jvd := lens.getJvd(artifacts)
 
 	junitTemplate, err := template.ParseFiles(filepath.Join(resourceDir, "template.html"))
@@ -145,6 +146,7 @@ func (lens Lens) getJvd(artifacts []api.Artifact) JVD {
 	for _, artifact := range artifacts {
 		go func(artifact api.Artifact) {
 			groups := make(map[testIdentifier][]JunitResult)
+			var testsSequence []testIdentifier
 			result := testResults{
 				link: artifact.CanonicalLink(),
 				path: artifact.JobPath(),
@@ -156,7 +158,7 @@ func (lens Lens) getJvd(artifacts []api.Artifact) JVD {
 				resultChan <- result
 				return
 			}
-			var suites junit.Suites
+			var suites *junit.Suites
 			suites, result.err = junit.Parse(contents)
 			if result.err != nil {
 				logrus.WithError(result.err).WithField("artifact", artifact.CanonicalLink()).Info("Error parsing junit file.")
@@ -177,13 +179,16 @@ func (lens Lens) getJvd(artifacts []api.Artifact) JVD {
 					// flaky if it both succeeded and failed
 					k := testIdentifier{suite.Name, test.ClassName, test.Name}
 					groups[k] = append(groups[k], JunitResult{Result: test})
+					if len(groups[k]) == 1 {
+						testsSequence = append(testsSequence, k)
+					}
 				}
 			}
 			for _, suite := range suites.Suites {
 				record(suite)
 			}
-			for _, results := range groups {
-				result.junit = append(result.junit, results)
+			for _, identifier := range testsSequence {
+				result.junit = append(result.junit, groups[identifier])
 			}
 			resultChan <- result
 		}(artifact)
@@ -195,6 +200,7 @@ func (lens Lens) getJvd(artifacts []api.Artifact) JVD {
 	sort.Slice(results, func(i, j int) bool { return results[i].path < results[j].path })
 
 	var jvd JVD
+	var duplicates int
 
 	for _, result := range results {
 		if result.err != nil {
@@ -234,6 +240,16 @@ func (lens Lens) getJvd(artifacts []api.Artifact) JVD {
 					Junit: tests,
 					Link:  result.link,
 				})
+				// if the skipped test is a rerun of a failed test
+				if failed {
+					// store it as failed too
+					jvd.Failed = append(jvd.Failed, TestResult{
+						Junit: tests,
+						Link:  result.link,
+					})
+					// account for the duplication
+					duplicates++
+				}
 			} else if failed {
 				jvd.Failed = append(jvd.Failed, TestResult{
 					Junit: tests,
@@ -253,6 +269,6 @@ func (lens Lens) getJvd(artifacts []api.Artifact) JVD {
 		}
 	}
 
-	jvd.NumTests = len(jvd.Passed) + len(jvd.Failed) + len(jvd.Flaky) + len(jvd.Skipped)
+	jvd.NumTests = len(jvd.Passed) + len(jvd.Failed) + len(jvd.Flaky) + len(jvd.Skipped) - duplicates
 	return jvd
 }

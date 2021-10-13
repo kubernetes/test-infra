@@ -34,20 +34,18 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/pkg/layeredsets"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/plugins/ownersconfig"
 	"k8s.io/test-infra/prow/repoowners"
 )
 
 type fakeOwnersClient struct {
-	approvers map[string]sets.String
-	reviewers map[string]sets.String
+	approvers map[string]layeredsets.String
+	reviewers map[string]layeredsets.String
 }
 
 var _ repoowners.Interface = &fakeOwnersClient{}
-
-func (f *fakeOwnersClient) LoadRepoAliases(org, repo, base string) (repoowners.RepoAliases, error) {
-	return nil, nil
-}
 
 func (f *fakeOwnersClient) LoadRepoOwners(org, repo, base string) (repoowners.RepoOwner, error) {
 	return &fakeRepoOwners{approvers: f.approvers, reviewers: f.reviewers}, nil
@@ -62,9 +60,13 @@ func (f *fakeOwnersClient) WithGitHubClient(client github.Client) repoowners.Int
 }
 
 type fakeRepoOwners struct {
-	approvers    map[string]sets.String
-	reviewers    map[string]sets.String
-	dirBlacklist []*regexp.Regexp
+	approvers   map[string]layeredsets.String
+	reviewers   map[string]layeredsets.String
+	dirDenylist []*regexp.Regexp
+}
+
+func (f *fakeRepoOwners) Filenames() ownersconfig.Filenames {
+	return ownersconfig.FakeFilenames
 }
 
 type fakePruner struct {
@@ -82,20 +84,21 @@ func (fp *fakePruner) PruneComments(shouldPrune func(github.IssueComment) bool) 
 
 var _ repoowners.RepoOwner = &fakeRepoOwners{}
 
-func (f *fakeRepoOwners) FindApproverOwnersForFile(path string) string  { return "" }
-func (f *fakeRepoOwners) FindReviewersOwnersForFile(path string) string { return "" }
-func (f *fakeRepoOwners) FindLabelsForFile(path string) sets.String     { return nil }
-func (f *fakeRepoOwners) IsNoParentOwners(path string) bool             { return false }
-func (f *fakeRepoOwners) LeafApprovers(path string) sets.String         { return nil }
-func (f *fakeRepoOwners) Approvers(path string) sets.String             { return f.approvers[path] }
-func (f *fakeRepoOwners) LeafReviewers(path string) sets.String         { return nil }
-func (f *fakeRepoOwners) Reviewers(path string) sets.String             { return f.reviewers[path] }
-func (f *fakeRepoOwners) RequiredReviewers(path string) sets.String     { return nil }
-func (f *fakeRepoOwners) TopLevelApprovers() sets.String                { return nil }
+func (f *fakeRepoOwners) FindApproverOwnersForFile(path string) string    { return "" }
+func (f *fakeRepoOwners) FindReviewersOwnersForFile(path string) string   { return "" }
+func (f *fakeRepoOwners) FindLabelsForFile(path string) sets.String       { return nil }
+func (f *fakeRepoOwners) IsNoParentOwners(path string) bool               { return false }
+func (f *fakeRepoOwners) IsAutoApproveUnownedSubfolders(path string) bool { return false }
+func (f *fakeRepoOwners) LeafApprovers(path string) sets.String           { return nil }
+func (f *fakeRepoOwners) Approvers(path string) layeredsets.String        { return f.approvers[path] }
+func (f *fakeRepoOwners) LeafReviewers(path string) sets.String           { return nil }
+func (f *fakeRepoOwners) Reviewers(path string) layeredsets.String        { return f.reviewers[path] }
+func (f *fakeRepoOwners) RequiredReviewers(path string) sets.String       { return nil }
+func (f *fakeRepoOwners) TopLevelApprovers() sets.String                  { return nil }
 
 func (f *fakeRepoOwners) ParseSimpleConfig(path string) (repoowners.SimpleConfig, error) {
 	dir := filepath.Dir(path)
-	for _, re := range f.dirBlacklist {
+	for _, re := range f.dirDenylist {
 		if re.MatchString(dir) {
 			return repoowners.SimpleConfig{}, filepath.SkipDir
 		}
@@ -112,7 +115,7 @@ func (f *fakeRepoOwners) ParseSimpleConfig(path string) (repoowners.SimpleConfig
 
 func (f *fakeRepoOwners) ParseFullConfig(path string) (repoowners.FullConfig, error) {
 	dir := filepath.Dir(path)
-	for _, re := range f.dirBlacklist {
+	for _, re := range f.dirDenylist {
 		if re.MatchString(dir) {
 			return repoowners.FullConfig{}, filepath.SkipDir
 		}
@@ -127,20 +130,12 @@ func (f *fakeRepoOwners) ParseFullConfig(path string) (repoowners.FullConfig, er
 	return *full, err
 }
 
-var approvers = map[string]sets.String{
-	"doc/README.md": {
-		"cjwagner": {},
-		"jessica":  {},
-	},
+var approvers = map[string]layeredsets.String{
+	"doc/README.md": layeredsets.NewString("cjwagner", "jessica"),
 }
 
-var reviewers = map[string]sets.String{
-	"doc/README.md": {
-		"alice": {},
-		"bob":   {},
-		"mark":  {},
-		"sam":   {},
-	},
+var reviewers = map[string]layeredsets.String{
+	"doc/README.md": layeredsets.NewString("alice", "bob", "mark", "sam"),
 }
 
 func TestLGTMComment(t *testing.T) {
@@ -203,6 +198,15 @@ func TestLGTMComment(t *testing.T) {
 			shouldComment: false,
 		},
 		{
+			name:          "remove lgtm by author",
+			body:          "/remove-lgtm",
+			commenter:     "author",
+			hasLGTM:       true,
+			shouldToggle:  true,
+			shouldAssign:  false,
+			shouldComment: false,
+		},
+		{
 			name:          "lgtm comment by non-reviewer",
 			body:          "/lgtm",
 			commenter:     "collab2",
@@ -257,8 +261,26 @@ func TestLGTMComment(t *testing.T) {
 			shouldAssign:  true,
 		},
 		{
+			name:          "remove lgtm by non-reviewer",
+			body:          "/remove-lgtm",
+			commenter:     "collab2",
+			hasLGTM:       true,
+			shouldToggle:  true,
+			shouldComment: false,
+			shouldAssign:  true,
+		},
+		{
 			name:          "lgtm cancel by rando",
 			body:          "/lgtm cancel",
+			commenter:     "not-in-the-org",
+			hasLGTM:       true,
+			shouldToggle:  false,
+			shouldComment: true,
+			shouldAssign:  false,
+		},
+		{
+			name:          "remove lgtm by rando",
+			body:          "/remove-lgtm",
 			commenter:     "not-in-the-org",
 			hasLGTM:       true,
 			shouldToggle:  false,
@@ -273,6 +295,13 @@ func TestLGTMComment(t *testing.T) {
 			shouldToggle: true,
 		},
 		{
+			name:         "remove-lgtm comment by reviewer",
+			body:         "/remove-lgtm",
+			commenter:    "collab1",
+			hasLGTM:      true,
+			shouldToggle: true,
+		},
+		{
 			name:         "lgtm cancel comment by reviewer, with trailing space",
 			body:         "/lgtm cancel \r",
 			commenter:    "collab1",
@@ -280,8 +309,22 @@ func TestLGTMComment(t *testing.T) {
 			shouldToggle: true,
 		},
 		{
+			name:         "remove lgtm comment by reviewer, with trailing space",
+			body:         "/remove-lgtm \r",
+			commenter:    "collab1",
+			hasLGTM:      true,
+			shouldToggle: true,
+		},
+		{
 			name:         "lgtm cancel comment by reviewer, no lgtm",
 			body:         "/lgtm cancel",
+			commenter:    "collab1",
+			hasLGTM:      false,
+			shouldToggle: false,
+		},
+		{
+			name:         "remove lgtm comment by reviewer, no lgtm",
+			body:         "/remove-lgtm",
 			commenter:    "collab1",
 			hasLGTM:      false,
 			shouldToggle: false,
@@ -308,25 +351,24 @@ func TestLGTMComment(t *testing.T) {
 	SHA := "0bd3ed50c88cd53a09316bf7a298f900e9371652"
 	for _, tc := range testcases {
 		t.Logf("Running scenario %q", tc.name)
-		fc := &fakegithub.FakeClient{
-			IssueComments: make(map[int][]github.IssueComment),
-			PullRequests: map[int]*github.PullRequest{
-				5: {
-					Base: github.PullRequestBranch{
-						Ref: "master",
-					},
-					Head: github.PullRequestBranch{
-						SHA: SHA,
-					},
+		fc := fakegithub.NewFakeClient()
+		fc.IssueComments = make(map[int][]github.IssueComment)
+		fc.PullRequests = map[int]*github.PullRequest{
+			5: {
+				Base: github.PullRequestBranch{
+					Ref: "master",
+				},
+				Head: github.PullRequestBranch{
+					SHA: SHA,
 				},
 			},
-			PullRequestChanges: map[int][]github.PullRequestChange{
-				5: {
-					{Filename: "doc/README.md"},
-				},
-			},
-			Collaborators: []string{"collab1", "collab2"},
 		}
+		fc.PullRequestChanges = map[int][]github.PullRequestChange{
+			5: {
+				{Filename: "doc/README.md"},
+			},
+		}
+		fc.Collaborators = []string{"collab1", "collab2"}
 		e := &github.GenericCommentEvent{
 			Action:      github.GenericCommentActionCreated,
 			IssueState:  "open",
@@ -467,20 +509,25 @@ func TestLGTMCommentWithLGTMNoti(t *testing.T) {
 			commenter:    "collab1",
 			shouldDelete: false,
 		},
+		{
+			name:         "remove-lgtm comment by reviewer, no lgtm",
+			body:         "/remove-lgtm",
+			commenter:    "collab1",
+			shouldDelete: false,
+		},
 	}
 	SHA := "0bd3ed50c88cd53a09316bf7a298f900e9371652"
 	for _, tc := range testcases {
-		fc := &fakegithub.FakeClient{
-			IssueComments: make(map[int][]github.IssueComment),
-			PullRequests: map[int]*github.PullRequest{
-				5: {
-					Head: github.PullRequestBranch{
-						SHA: SHA,
-					},
+		fc := fakegithub.NewFakeClient()
+		fc.IssueComments = make(map[int][]github.IssueComment)
+		fc.PullRequests = map[int]*github.PullRequest{
+			5: {
+				Head: github.PullRequestBranch{
+					SHA: SHA,
 				},
 			},
-			Collaborators: []string{"collab1", "collab2"},
 		}
+		fc.Collaborators = []string{"collab1", "collab2"}
 		e := &github.GenericCommentEvent{
 			Action:      github.GenericCommentActionCreated,
 			IssueState:  "open",
@@ -493,13 +540,13 @@ func TestLGTMCommentWithLGTMNoti(t *testing.T) {
 			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 			HTMLURL:     "<url>",
 		}
-		botName, err := fc.BotName()
+		botUser, err := fc.BotUser()
 		if err != nil {
 			t.Fatalf("For case %s, could not get Bot nam", tc.name)
 		}
 		ic := github.IssueComment{
 			User: github.User{
-				Login: botName,
+				Login: botUser.Login,
 			},
 			Body: removeLGTMLabelNoti,
 		}
@@ -677,18 +724,17 @@ func TestLGTMFromApproveReview(t *testing.T) {
 	}
 	SHA := "0bd3ed50c88cd53a09316bf7a298f900e9371652"
 	for _, tc := range testcases {
-		fc := &fakegithub.FakeClient{
-			IssueComments:    make(map[int][]github.IssueComment),
-			IssueLabelsAdded: []string{},
-			PullRequests: map[int]*github.PullRequest{
-				5: {
-					Head: github.PullRequestBranch{
-						SHA: SHA,
-					},
+		fc := fakegithub.NewFakeClient()
+		fc.IssueComments = make(map[int][]github.IssueComment)
+		fc.IssueLabelsAdded = []string{}
+		fc.PullRequests = map[int]*github.PullRequest{
+			5: {
+				Head: github.PullRequestBranch{
+					SHA: SHA,
 				},
 			},
-			Collaborators: []string{"collab1", "collab2"},
 		}
+		fc.Collaborators = []string{"collab1", "collab2"}
 		e := &github.ReviewEvent{
 			Action:      tc.action,
 			Review:      github.Review{Body: tc.body, State: tc.state, HTMLURL: "<url>", User: github.User{Login: tc.reviewer}},
@@ -990,24 +1036,23 @@ func TestHandlePullRequest(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			fakeGitHub := &fakegithub.FakeClient{
-				IssueComments: c.issueComments,
-				PullRequests: map[int]*github.PullRequest{
-					101: {
-						Base: github.PullRequestBranch{
-							Ref: "master",
-						},
-						Head: github.PullRequestBranch{
-							SHA: SHA,
-						},
+			fakeGitHub := fakegithub.NewFakeClient()
+			fakeGitHub.IssueComments = c.issueComments
+			fakeGitHub.PullRequests = map[int]*github.PullRequest{
+				101: {
+					Base: github.PullRequestBranch{
+						Ref: "master",
+					},
+					Head: github.PullRequestBranch{
+						SHA: SHA,
 					},
 				},
-				Commits:          make(map[string]github.SingleCommit),
-				Collaborators:    []string{"collab"},
-				IssueLabelsAdded: c.IssueLabelsAdded,
 			}
+			fakeGitHub.Commits = make(map[string]github.RepositoryCommit)
+			fakeGitHub.Collaborators = []string{"collab"}
+			fakeGitHub.IssueLabelsAdded = c.IssueLabelsAdded
 			fakeGitHub.IssueLabelsAdded = append(fakeGitHub.IssueLabelsAdded, "kubernetes/kubernetes#101:lgtm")
-			commit := github.SingleCommit{}
+			commit := github.RepositoryCommit{}
 			commit.Commit.Tree.SHA = treeSHA
 			fakeGitHub.Commits[SHA] = commit
 			pc := &plugins.Configuration{}
@@ -1101,22 +1146,21 @@ func TestAddTreeHashComment(t *testing.T) {
 				number: 101,
 				body:   "/lgtm",
 			}
-			fc := &fakegithub.FakeClient{
-				Commits:       make(map[string]github.SingleCommit),
-				IssueComments: map[int][]github.IssueComment{},
-				PullRequests: map[int]*github.PullRequest{
-					101: {
-						Base: github.PullRequestBranch{
-							Ref: "master",
-						},
-						Head: github.PullRequestBranch{
-							SHA: SHA,
-						},
+			fc := fakegithub.NewFakeClient()
+			fc.Commits = make(map[string]github.RepositoryCommit)
+			fc.IssueComments = map[int][]github.IssueComment{}
+			fc.PullRequests = map[int]*github.PullRequest{
+				101: {
+					Base: github.PullRequestBranch{
+						Ref: "master",
+					},
+					Head: github.PullRequestBranch{
+						SHA: SHA,
 					},
 				},
-				Collaborators: []string{"collab1", "collab2"},
 			}
-			commit := github.SingleCommit{}
+			fc.Collaborators = []string{"collab1", "collab2"}
+			commit := github.RepositoryCommit{}
 			commit.Commit.Tree.SHA = treeSHA
 			fc.Commits[SHA] = commit
 			handle(true, pc, &fakeOwnersClient{}, rc, fc, logrus.WithField("plugin", PluginName), &fakePruner{})
@@ -1160,17 +1204,16 @@ func TestRemoveTreeHashComment(t *testing.T) {
 		number:    101,
 		body:      "/lgtm cancel",
 	}
-	fc := &fakegithub.FakeClient{
-		IssueComments: map[int][]github.IssueComment{
-			101: {
-				{
-					Body: fmt.Sprintf(addLGTMLabelNotification, treeSHA),
-					User: github.User{Login: fakegithub.Bot},
-				},
+	fc := fakegithub.NewFakeClient()
+	fc.IssueComments = map[int][]github.IssueComment{
+		101: {
+			{
+				Body: fmt.Sprintf(addLGTMLabelNotification, treeSHA),
+				User: github.User{Login: fakegithub.Bot},
 			},
 		},
-		Collaborators: []string{"collab1", "collab2"},
 	}
+	fc.Collaborators = []string{"collab1", "collab2"}
 	fc.IssueLabelsAdded = []string{"kubernetes/kubernetes#101:" + LGTMLabel}
 	fp := &fakePruner{
 		GitHubClient:  fc,

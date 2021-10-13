@@ -67,6 +67,8 @@ data:
     logs = /var/lib/grafana/logs
     plugins = /var/lib/grafana/plugins
     provisioning = /etc/grafana/provisioning
+    [security]
+    disable_gravatar = true
     [server]
     http_port = 3001
 ---

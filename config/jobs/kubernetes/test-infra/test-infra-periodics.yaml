@@ -11,7 +11,7 @@ periodics:
     preset-bazel-scratch-dir: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:2.2.0-from-2.0.0
+    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20210806-38e1be0-test-infra
       command:
       - hack/bazel.sh
       args:
@@ -19,121 +19,71 @@ periodics:
       - --config=ci
       - --nobuild_tests_only
       - //...
+      env:
+      - name: BAZEL_FETCH_PLEASE
+        value: //...
   annotations:
     testgrid-dashboards: sig-testing-misc
     testgrid-tab-name: ci-bazel
     description: Runs bazel test //... on the test-infra repo every hour
 
-- name: ci-test-infra-triage
-  decorate: true
-  interval: 30m
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/triage:latest
-      imagePullPolicy: Always
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      command:
-      - "timeout"
-      args:
-      - "10800"
-      - "/update_summaries.sh"
-      volumeMounts:
-      - name: service
-        mountPath: /etc/service-account
-        readOnly: true
-    volumes:
-    - name: service
-      secret:
-        secretName: triage-service-account
-  annotations:
-    testgrid-num-failures-to-alert: '18'
-    testgrid-alert-stale-results-hours: '12'
-    testgrid-dashboards: sig-testing-misc
-    testgrid-tab-name: triage
-    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-    description: Runs BigQuery queries, summarizes results into clusters, and uploads to GCS for go.k8s.io/triage
-- name: metrics-bigquery
-  interval: 24h
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/bigquery:v20191004-77e27616c
-      args:
-      - --scenario=execute
-      - --
-      - test-infra/metrics/bigquery.py
-      - --
-      - --bucket=gs://k8s-metrics
-      - --backfill-days=90
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-    # TODO(https://github.com/kubernetes/test-infra/issues/16836): re-enable if velodrome.k8s.io becomes available
-    # - name: VELODROME_INFLUXDB_CONFIG
-    #   value: /etc/velodrome-influxdb/config.json
-      volumeMounts:
-      - name: service
-        mountPath: /etc/service-account
-        readOnly: true
-    # TODO(https://github.com/kubernetes/test-infra/issues/16836): re-enable if velodrome.k8s.io becomes available
-    # - name: influxdb
-    #   mountPath: /etc/velodrome-influxdb
-    #   readOnly: true
-    volumes:
-    - name: service
-      secret:
-        secretName: triage-service-account
-  # TODO(https://github.com/kubernetes/test-infra/issues/16836): re-enable if velodrome.k8s.io becomes available
-  # - name: influxdb
-  #   secret:
-  #     secretName: velodrome-influxdb
-  annotations:
-    testgrid-dashboards: sig-testing-misc
-    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-    testgrid-num-failures-to-alert: '2'
-    description: Runs BigQuery queries to generate data for metrics.
-
 - name: metrics-kettle
   interval: 1h
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
   spec:
+    serviceAccountName: triage
     containers:
-    - image: gcr.io/k8s-testimages/bigquery:v20191004-77e27616c
+    - image: gcr.io/k8s-staging-test-infra/bigquery:v20211001-c920b4c552
       args:
-      - --scenario=execute
-      - --
-      - test-infra/kettle/monitor.py
-      - --
+      - ./kettle/monitor.py
       - --stale=6
       - --table
       - k8s-gubernator:build.all
       - k8s-gubernator:build.week
       - k8s-gubernator:build.day
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      # TODO(https://github.com/kubernetes/test-infra/issues/16836): re-enable if velodrome.k8s.io becomes available
-      # - name: VELODROME_INFLUXDB_CONFIG
-      #   value: /etc/velodrome-influxdb/config.json
-      volumeMounts:
-      - name: service
-        mountPath: /etc/service-account
-        readOnly: true
-      # TODO(https://github.com/kubernetes/test-infra/issues/16836): re-enable if velodrome.k8s.io becomes available
-      # - name: influxdb
-      #   mountPath: /etc/velodrome-influxdb
-      #   readOnly: true
-    volumes:
-    - name: service
-      secret:
-        secretName: triage-service-account
-    # TODO(https://github.com/kubernetes/test-infra/issues/16836): re-enable if velodrome.k8s.io becomes available
-    # - name: influxdb
-    #   secret:
-    #     secretName: velodrome-influxdb
   annotations:
     testgrid-num-failures-to-alert: '6'
     testgrid-alert-stale-results-hours: '12'
     testgrid-dashboards: sig-testing-misc
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
     description: Monitors Kettle's BigQuery database freshness.
+
+- name: test-infra-fuzz
+  labels:
+    preset-dind-enabled: "true"
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+  interval: 1h
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/ci_fuzz:v20211006-0046171
+      command:
+        - runner.sh
+      args:
+        - python3
+        - "/opt/oss-fuzz/infra/cifuzz/cifuzz_combined_entrypoint.py"
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      env:
+      - name: REPOSITORY
+        value: test-infra
+      - name: PROJECT_SRC_PATH
+        value: .
+      - name: SANITIZER
+        value: 'address'
+      - name: WORKSPACE
+        value: /logs/artifacts
+      - name: DOCKER_IN_DOCKER
+        value: "true"
+  annotations:
+    testgrid-dashboards: sig-testing-misc
+    testgrid-tab-name: test-infra-fuzz
+    description: Runs clusterfuzzlite every hour

@@ -39,7 +39,6 @@ py_binary(
         requirement("certifi"),
         requirement("chardet"),
         requirement("idna"),
-        requirement("influxdb"),
         requirement("python-dateutil"),
         requirement("pytz"),
         requirement("ruamel.yaml"),

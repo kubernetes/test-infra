@@ -5,16 +5,16 @@ periodics:
   annotations:
     fork-per-release: "true"
     fork-per-release-periodic-interval: 1h 2h 6h 24h
-    testgrid-dashboards: sig-release-master-blocking, sig-node-kubelet
+    testgrid-dashboards: sig-release-master-blocking, sig-node-release-blocking
     testgrid-tab-name: node-kubelet-master
-    testgrid-alert-email: kubernetes-sig-node+testgrid@googlegroups.com
+    testgrid-alert-email: kubernetes-sig-node+testgrid@googlegroups.com,kubernetes-sig-node-test-failures@googlegroups.com
     description: "Uses kubetest to run a subset of node-e2e tests (+NodeConformance, -Flaky|Serial)"
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=90
@@ -22,7 +22,6 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --deployment=node
-      - --gcp-project-type=k8s-infra-gce-project
       - --gcp-zone=us-west1-b
       - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
       - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
@@ -33,6 +32,13 @@ periodics:
       env:
       - name: GOPATH
         value: /go
+      resources:
+        limits:
+          cpu: 6
+          memory: 6Gi
+        requests:
+          cpu: 6
+          memory: 6Gi
 
 - name: ci-kubernetes-node-kubelet-alpha
   interval: 1h
@@ -41,7 +47,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=90
@@ -52,10 +58,11 @@ periodics:
       - --gcp-project-type=node-e2e-project
       - --gcp-zone=us-west1-b
       - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
-      - --node-test-args=--feature-gates=AllAlpha=true,CSIMigration=false,RotateKubeletServerCertificate=false --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+      - --node-test-args=--feature-gates=AllAlpha=true,CSIMigration=false,RotateKubeletServerCertificate=false,InTreePluginGCEUnregister=false --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
       - --node-tests=true
       - --provider=gce
-      - --test_args=--nodes=8 --focus="\[NodeConformance\]|\[NodeAlphaFeature:.+\]" --skip="\[Flaky\]|\[Serial\]"
+      - --test_args=--nodes=8 --focus="\[NodeConformance\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]" --skip="\[Flaky\]|\[Serial\]"
+      - --runtime-config=api/all=true
       - --timeout=65m
       env:
       - name: GOPATH
@@ -63,70 +70,6 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-kubelet
     testgrid-tab-name: node-kubelet-alpha
-
-- name: ci-kubernetes-node-kubelet-benchmark
-  interval: 2h
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
-      args:
-      - --repo=k8s.io/kubernetes=master
-      - --timeout=90
-      - --root=/go/src
-      - --scenario=kubernetes_e2e
-      - --
-      - --deployment=node
-      - --gcp-project-type=node-e2e-project
-      - --gcp-zone=us-west1-b
-      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/benchmark-config.yaml
-      - --node-test-args=--feature-gates=DynamicKubeletConfig=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
-      - --node-tests=true
-      - --provider=gce
-      - --test_args=--nodes=1 --skip="\[Flaky\]"
-      - --timeout=65m
-      env:
-      - name: GOPATH
-        value: /go
-  annotations:
-    testgrid-dashboards: sig-node-kubelet
-    testgrid-tab-name: node-kubelet-benchmark
-
-- name: ci-kubernetes-node-kubelet-conformance
-  interval: 2h
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-    preset-dind-enabled: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
-      args:
-      - --repo=k8s.io/kubernetes=master
-      - --timeout=90
-      - --root=/go/src
-      - --scenario=kubernetes_e2e
-      - --
-      - --deployment=node
-      - --gcp-project-type=node-e2e-project
-      - --gcp-zone=us-west1-b
-      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/benchmark-config.yaml --test-suite=conformance
-      - --node-test-args=--feature-gates=DynamicKubeletConfig=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
-      - --node-tests=true
-      - --provider=gce
-      - --test_args=--nodes=1 --focus="\[NodeConformance\]" --skip="\[Flaky\]"
-      - --timeout=65m
-      env:
-      - name: GOPATH
-        value: /go
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-  annotations:
-    testgrid-dashboards: sig-node-kubelet
-    testgrid-tab-name: node-kubelet-conformance
 
 - name: ci-kubernetes-node-kubelet-features
   cluster: k8s-infra-prow-build
@@ -137,10 +80,11 @@ periodics:
   annotations:
     fork-per-release: "true"
     testgrid-dashboards: sig-node-kubelet, sig-release-master-informing
-    testgrid-tab-name: node-kubelet-features
+    testgrid-tab-name: node-kubelet-features-master
+    testgrid-alert-email: kubernetes-sig-node+testgrid@googlegroups.com,kubernetes-sig-node-test-failures@googlegroups.com
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=90
@@ -148,17 +92,23 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --deployment=node
-      - --gcp-project-type=k8s-infra-gce-project
       - --gcp-zone=us-west1-b
       - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
       - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
       - --node-tests=true
       - --provider=gce
-      - --test_args=--nodes=8 --focus="\[NodeFeature:.+\]" --skip="\[Flaky\]|\[Serial\]"
+      - --test_args=--nodes=8 --focus="\[NodeFeature:.+\]|\[NodeFeature\]" --skip="\[Flaky\]|\[Serial\]"
       - --timeout=65m
       env:
       - name: GOPATH
         value: /go
+      resources:
+        limits:
+          cpu: 6
+          memory: 6Gi
+        requests:
+          cpu: 6
+          memory: 6Gi
 
 - name: ci-kubernetes-node-kubelet-flaky
   interval: 2h
@@ -167,7 +117,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=90
@@ -178,7 +128,7 @@ periodics:
       - --gcp-project-type=node-e2e-project
       - --gcp-zone=us-west1-b
       - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
-      - --node-test-args= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+      - --node-test-args= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/" --server-start-timeout=420s
       - --node-tests=true
       - --provider=gce
       - --test_args=--nodes=1 --focus="\[Flaky\]"
@@ -197,7 +147,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=400
@@ -211,7 +161,7 @@ periodics:
       - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
       - --node-tests=true
       - --provider=gce
-      - --test_args=--nodes=1 --skip="\[Flaky\]|\[NodeConformance\]|\[NodeFeature:.+\]|\[NodeSpecialFeature:.+\]|\[NodeAlphaFeature:.+\]|\[Legacy:.+\]|\[Benchmark\]"
+      - --test_args=--nodes=1 --skip="\[Flaky\]|\[NodeConformance\]|\[Conformance\]|\[Serial\]|\[NodeFeature:.+\]|\[NodeFeature\]|\[Feature:.+\]|\[Feature\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[Legacy:.+\]|\[Benchmark\]|\[Feature:SCTPConnectivity\]"
       - --timeout=300m
       env:
       - name: GOPATH
@@ -219,15 +169,92 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-kubelet
     testgrid-tab-name: node-kubelet-orphans
+    description: "Contains all uncategorized tests, these are tests which are not marked with a [Node] tag. All node tests should be marked with [NodeFeature] or [NodeSpecialFeature] or [NodeAlphaFeature] or [NodeConformance] classification. Also skipped are [Flaky], [Benchmark], [Legacy]."
 
 - name: ci-kubernetes-node-kubelet-serial
+  interval: 4h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
+      args:
+      - --repo=k8s.io/kubernetes=master
+      - --timeout=260
+      - --root=/go/src
+      - --scenario=kubernetes_e2e
+      - --
+      - --deployment=node
+      - --gcp-project-type=node-e2e-project
+      - --gcp-zone=us-west1-b
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial.yaml
+      - --node-test-args=--feature-gates=DynamicKubeletConfig=true,LocalStorageCapacityIsolation=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+      - --node-tests=true
+      - --provider=gce
+      - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]"
+      - --timeout=240m
+      env:
+      - name: GOPATH
+        value: /go
+      resources:
+        limits:
+          cpu: 4
+          memory: 6Gi
+        requests:
+          cpu: 4
+          memory: 6Gi
+  annotations:
+    testgrid-dashboards: sig-node-kubelet
+    testgrid-tab-name: node-kubelet-serial
+
+- name: ci-kubernetes-node-kubelet-serial-containerd
+  interval: 4h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
+      args:
+      - --repo=k8s.io/kubernetes=master
+      - --timeout=260
+      - --root=/go/src
+      - --scenario=kubernetes_e2e
+      - --
+      - --deployment=node
+      - --gcp-project-type=node-e2e-project
+      - --gcp-zone=us-west1-b
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/image-config-serial.yaml
+      - '--node-test-args=--feature-gates=DynamicKubeletConfig=true,LocalStorageCapacityIsolation=true --container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+      - --node-tests=true
+      - --provider=gce
+      - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]"
+      - --timeout=240m
+      env:
+      - name: GOPATH
+        value: /go
+      resources:
+        limits:
+          cpu: 4
+          memory: 6Gi
+        requests:
+          cpu: 4
+          memory: 6Gi
+  annotations:
+    testgrid-dashboards: sig-node-release-blocking
+    testgrid-tab-name: node-kubelet-serial-containerd
+    testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
+    description: "Uses kubetest to run serial node-e2e tests (+Serial, -Flaky|Benchmark|Node*Feature)"
+
+- name: ci-kubernetes-node-kubelet-eviction
   interval: 4h30m
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=320
@@ -241,44 +268,14 @@ periodics:
       - --node-test-args=--feature-gates=DynamicKubeletConfig=true,LocalStorageCapacityIsolation=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
       - --node-tests=true
       - --provider=gce
-      - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeAlphaFeature:.+\]"
+      - --test_args=--nodes=1 --focus="\[NodeFeature:Eviction\]"
       - --timeout=300m
       env:
       - name: GOPATH
         value: /go
   annotations:
     testgrid-dashboards: sig-node-kubelet
-    testgrid-tab-name: node-kubelet-serial
-
-- name: ci-kubernetes-node-kubelet-serial-alpha
-  interval: 3h30m
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
-      args:
-      - --repo=k8s.io/kubernetes=master
-      - --timeout=200
-      - --root=/go/src
-      - --scenario=kubernetes_e2e
-      - --
-      - --deployment=node
-      - --gcp-project-type=node-e2e-project
-      - --gcp-zone=us-west1-b
-      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial.yaml
-      - --node-test-args=--feature-gates=StartupProbe=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
-      - --node-tests=true
-      - --provider=gce
-      - --test_args=--nodes=1 --focus="\[Serial\].*\[NodeAlphaFeature:.+\]"
-      - --timeout=180m
-      env:
-      - name: GOPATH
-        value: /go
-  annotations:
-    testgrid-dashboards: sig-node-kubelet
-    testgrid-tab-name: node-kubelet-serial-alpha
+    testgrid-tab-name: node-kubelet-eviction
 
 - name: ci-kubernetes-node-kubelet-serial-cpu-manager
   interval: 4h
@@ -287,7 +284,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=240
@@ -307,7 +304,7 @@ periodics:
       - name: GOPATH
         value: /go
   annotations:
-    testgrid-dashboards: wg-resource-management, sig-node-kubelet
+    testgrid-dashboards: sig-node-kubelet
     testgrid-tab-name: kubelet-serial-gce-e2e-cpu-manager
     testgrid-alert-email: balaji.warft@gmail.com, connor.p.d@gmail.com
 
@@ -318,7 +315,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
         args:
           - --repo=k8s.io/kubernetes=master
           - --timeout=240
@@ -338,6 +335,233 @@ periodics:
           - name: GOPATH
             value: /go
   annotations:
-    testgrid-dashboards: wg-resource-management, sig-node-kubelet
+    testgrid-dashboards: sig-node-kubelet
     testgrid-tab-name: kubelet-serial-gce-e2e-topology-manager
     testgrid-alert-email: vpickard@redhat.com, klueska@gmail.com
+
+- name: ci-kubernetes-node-kubelet-serial-hugepages
+  interval: 4h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
+        args:
+          - --repo=k8s.io/kubernetes=master
+          - --timeout=240
+          - --root=/go/src
+          - --scenario=kubernetes_e2e
+          - --
+          - --deployment=node
+          - --gcp-project-type=node-e2e-project
+          - --gcp-zone=us-west1-b
+          - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial-hugepages.yaml
+          - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+          - --node-tests=true
+          - --provider=gce
+          - --test_args=--nodes=1 --focus="\[Feature:HugePages\]"
+          - --timeout=180m
+        env:
+          - name: GOPATH
+            value: /go
+  annotations:
+    testgrid-dashboards: sig-node-kubelet
+    testgrid-tab-name: kubelet-serial-gce-e2e-hugepages
+    testgrid-alert-email: alukiano@redhat.com, eduard.bartosh@intel.com
+
+- name: ci-kubernetes-node-kubelet-serial-memory-manager
+  interval: 4h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
+        args:
+          - --repo=k8s.io/kubernetes=master
+          - --timeout=240
+          - --root=/go/src
+          - --scenario=kubernetes_e2e
+          - --
+          - --deployment=node
+          - --gcp-project-type=node-e2e-project
+          - --gcp-zone=us-west1-b
+          - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial-cpu-manager.yaml
+          - --node-test-args=--feature-gates=DynamicKubeletConfig=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+          - --node-tests=true
+          - --provider=gce
+          - --test_args=--nodes=1 --focus="\[Feature:MemoryManager\]"
+          - --timeout=180m
+        env:
+          - name: GOPATH
+            value: /go
+  annotations:
+    testgrid-dashboards: sig-node-kubelet
+    testgrid-tab-name: kubelet-serial-gce-e2e-memory-manager
+    testgrid-alert-email: alukiano@redhat.com
+    description: Executes memory manager e2e node tests
+
+- name: ci-kubernetes-node-kubelet-serial-graceful-node-shutdown
+  interval: 4h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
+        args:
+          - --repo=k8s.io/kubernetes=master
+          - --timeout=240
+          - --root=/go/src
+          - --scenario=kubernetes_e2e
+          - --
+          - --deployment=node
+          - --gcp-project-type=node-e2e-project
+          - --gcp-zone=us-west1-b
+          - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial.yaml
+          # Remove DynamicKubeletConfig feature gate once https://github.com/kubernetes/kubernetes/issues/105047 is completed
+          - --node-test-args=--feature-gates=DynamicKubeletConfig=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+          - --node-tests=true
+          - --provider=gce
+          - --test_args=--nodes=1 --focus="\[NodeAlphaFeature:GracefulNodeShutdown\]"
+          - --timeout=60m
+        env:
+          - name: GOPATH
+            value: /go
+  annotations:
+    testgrid-dashboards: sig-node-kubelet
+    testgrid-tab-name: kubelet-serial-gce-e2e-graceful-node-shutdown
+    testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
+    description: Executes graceful node shutdown e2e node tests
+
+- name: ci-kubernetes-node-kubelet-lock-contention
+  interval: 4h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
+        args:
+          - --repo=k8s.io/kubernetes=master
+          - --timeout=240
+          - --root=/go/src
+          - --scenario=kubernetes_e2e
+          - --
+          - --deployment=node
+          - --gcp-project-type=node-e2e-project
+          - --gcp-zone=us-west1-b
+          - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
+          - --node-test-args=--kubelet-flags="--exit-on-lock-contention --lock-file=/var/run/kubelet.lock"
+          - --node-tests=true
+          - --provider=gce
+          - --test_args=--nodes=1 --focus="\[NodeFeature:LockContention\]" --skip=""
+        env:
+          - name: GOPATH
+            value: /go
+  annotations:
+    testgrid-dashboards: sig-node-kubelet
+    testgrid-tab-name: kubelet-gce-e2e-lock-contention
+    description: "Contains disruptive tests for the Lock Contention feature."
+
+- name: ci-kubernetes-node-swap-ubuntu
+  interval: 4h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
+        args:
+          - --repo=k8s.io/kubernetes=master
+          - --timeout=240
+          - --root=/go/src
+          - --scenario=kubernetes_e2e
+          - --
+          - --deployment=node
+          - --gcp-project-type=node-e2e-project
+          - --gcp-zone=us-west1-b
+          - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/swap/image-config-swap.yaml
+          - --node-test-args=--feature-gates=NodeSwap=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --fail-swap-on=false"
+          - --node-tests=true
+          - --provider=gce
+          - --test_args=--nodes=8 --focus="\[NodeConformance\]|\[NodeFeature:.+\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
+          - --timeout=180m
+        env:
+          - name: GOPATH
+            value: /go
+        resources:
+            requests:
+              memory: "6Gi"
+  annotations:
+    testgrid-dashboards: sig-node-kubelet
+    testgrid-tab-name: kubelet-gce-e2e-swap-ubuntu
+    testgrid-alert-email: ehashman@redhat.com, ikema@google.com
+    description: Executes E2E suite with swap enabled on Ubuntu
+
+- name: ci-kubernetes-node-swap-fedora
+  interval: 4h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
+        args:
+          - --repo=k8s.io/kubernetes=master
+          - --timeout=240
+          - --root=/go/src
+          - --scenario=kubernetes_e2e
+          - --
+          - --deployment=node
+          - --env=KUBE_SSH_USER=core
+          - --gcp-project-type=node-e2e-project
+          - --gcp-zone=us-west1-b
+          - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/swap/image-config-swap-fedora.yaml
+          - '--node-test-args=--feature-gates=NodeSwap=true --container-runtime=remote --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--fail-swap-on=false --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service --non-masquerade-cidr=0.0.0.0/0" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
+          - --node-tests=true
+          - --provider=gce
+          - --test_args=--nodes=8 --focus="\[NodeConformance\]|\[NodeFeature:.+\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
+          - --timeout=180m
+        env:
+          - name: GOPATH
+            value: /go
+        resources:
+            requests:
+              memory: "6Gi"
+  annotations:
+    testgrid-dashboards: sig-node-kubelet
+    testgrid-tab-name: kubelet-gce-e2e-swap-fedora
+    testgrid-alert-email: ehashman@redhat.com, ikema@google.com
+    description: Executes E2E suite with swap enabled on Fedora
+
+- name: ci-kubernetes-node-kubelet-performance-test
+  interval: 12h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
+        args:
+          - --repo=k8s.io/kubernetes=master
+          - --timeout=90
+          - --root=/go/src
+          - --scenario=kubernetes_e2e
+          - --
+          - --deployment=node
+          - --gcp-project-type=node-e2e-project
+          - --gcp-zone=us-west1-b
+          - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/perf-image-config.yaml
+          - --node-test-args= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/" --server-start-timeout=420s
+          - --node-tests=true
+          - --provider=gce
+          - --test_args=--nodes=1
+          - --timeout=60m
+        env:
+          - name: GOPATH
+            value: /go
+  annotations:
+    testgrid-dashboards: sig-node-kubelet
+    testgrid-tab-name: node-performance-test

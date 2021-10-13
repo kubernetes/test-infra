@@ -66,7 +66,7 @@ func (o *OwnerList) get(testName string) (owner *OwnerInfo) {
 	name := normalize(testName)
 
 	// exact mapping
-	owner, _ = o.mapping[name]
+	owner = o.mapping[name]
 
 	// glob matching
 	if owner == nil {

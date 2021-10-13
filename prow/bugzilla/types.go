@@ -103,10 +103,14 @@ type Bug struct {
 	UpdateToken string `json:"update_token,omitempty"`
 	// URL is a URL that demonstrates the problem described in the bug, or is somehow related to the bug report.
 	URL string `json:"url,omitempty"`
+	// Verified is a custom field in redhat bugzilla that indicates the status of verification by QA
+	Verified []string `json:"cf_verified,omitempty"`
 	// Version are the versions the bug was reported against.
 	Version []string `json:"version,omitempty"`
 	// Whiteboard is he value of the "status whiteboard" field on the bug.
 	Whiteboard string `json:"whiteboard,omitempty"`
+	// PRs holds the links to the pull requests associated with the bug.
+	PRs []ExternalBug `json:"external_bug,omitempty"`
 }
 
 // BugCreate holds the info needed to create a new bug
@@ -158,6 +162,8 @@ type BugCreate struct {
 	TargetMilestone string `json:"target_milestone,omitempty"`
 	// Version are the versions the bug was reported against.
 	Version []string `json:"version,omitempty"`
+	// TargetRelease are the releases that the bug will be fixed in.
+	TargetRelease []string `json:"target_release,omitempty"`
 }
 
 // Comment holds information about a comment
@@ -185,6 +191,16 @@ type Comment struct {
 	IsMarkdown bool `json:"is_markdown,omitempty"`
 	// Tags is an array of comment tags currently set for the comment.
 	Tags []string `json:"tags,omitempty"`
+}
+
+// CommentCreate holds information needed to create a comment
+type CommentCreate struct {
+	// ID is the ID of the bug this comment is on.
+	ID int `json:"id,omitempty"`
+	// Comment is the text of the comment being created.
+	Comment string `json:"comment,omitempty"`
+	// IsPrivate is true if this comment is private (only visible to a certain group called the "insidergroup"), false otherwise.
+	IsPrivate bool `json:"is_private,omitempty"`
 }
 
 // User holds information about a user
@@ -224,6 +240,7 @@ type Flag struct {
 type BugUpdate struct {
 	// DependsOn specifies the bugs that this bug depends on
 	DependsOn  *IDUpdate `json:"depends_on,omitempty"`
+	Blocks     *IDUpdate `json:"blocks,omitempty"`
 	Resolution string    `json:"resolution,omitempty"`
 	// Status is the current status of the bug.
 	Status string `json:"status,omitempty"`
@@ -256,6 +273,8 @@ type ExternalBug struct {
 	// The following fields are parsed from the external bug identifier
 	Org, Repo string
 	Num       int
+	// Status holds the status of the PR (ie closed, merged, open)
+	Status string `json:"ext_status"`
 }
 
 // ExternalBugType holds identifying metadata for a tracker
@@ -265,24 +284,39 @@ type ExternalBugType struct {
 }
 
 // AddExternalBugParameters are the parameters required to add an external
-// tracker bug to a Bugtzilla bug
+// tracker bug to a Bugzilla bug
 type AddExternalBugParameters struct {
 	// APIKey is the API key to use when authenticating with Bugzilla
 	APIKey string `json:"api_key"`
 	// BugIDs are the IDs of Bugzilla bugs to update
 	BugIDs []int `json:"bug_ids"`
 	// ExternalBugs are the external bugs to add
-	ExternalBugs []NewExternalBugIdentifier `json:"external_bugs"`
+	ExternalBugs []ExternalBugIdentifier `json:"external_bugs"`
 }
 
-// NewExternalBugIdentifier holds fields used to identify new external bugs when
-// adding them using the JSONRPC API
-type NewExternalBugIdentifier struct {
+// ExternalBugIdentifier holds fields used to identify external bugs when
+// modifying them using the JSONRPC API
+type ExternalBugIdentifier struct {
 	// Type is the URL prefix that identifies the external bug tracker type.
 	// For GitHub, this is commonly https://github.com/
-	Type string `json:"ext_type_url"`
+	Type string `json:"ext_type_url,omitempty"`
+	// TrackerID is the internal identifier for the external bug tracker type.
+	// This should be passed instead of the ext_type_url when there is more
+	// than one external tracker for https://github.com/
+	TrackerID int `json:"ext_type_id,omitempty"`
 	// ID is the identifier of the external bug within the bug tracker type.
 	// For GitHub issues and pull requests, this ID is commonly the path
 	// like `org/repo/pull/number` or `org/repo/issue/number`.
 	ID string `json:"ext_bz_bug_id"`
+}
+
+// RemoveExternalBugParameters are the parameters required to remove an external
+// tracker bug from a Bugzilla bug
+type RemoveExternalBugParameters struct {
+	// APIKey is the API key to use when authenticating with Bugzilla
+	APIKey string `json:"api_key"`
+	// BugIDs are the IDs of Bugzilla bugs to update
+	BugIDs []int `json:"bug_ids"`
+	// The inline identifier for which external bug to remove
+	ExternalBugIdentifier
 }

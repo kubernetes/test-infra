@@ -1,0 +1,11 @@
+target: "gs://k8s-testgrid/config"
+sources:
+- name: "" # Kubernetes configs can't be renamed
+  location: "gs://k8s-testgrid/configs/k8s/config"
+- name: "google-oss"
+  location: "gs://oss-prow-own-testgrid/config"
+- name: "istio"
+  location: "gs://istio-testgrid/config"
+- name: "kubevirt"
+  location: "gs://kubevirt-prow/testgrid/config"
+

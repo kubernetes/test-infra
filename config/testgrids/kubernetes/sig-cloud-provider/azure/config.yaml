@@ -2,24 +2,36 @@ dashboard_groups:
 - name: provider-azure
   dashboard_names:
     - provider-azure-azuredisk-csi-driver
+    - provider-azure-azuredisk-csi-driver-periodic
     - provider-azure-azurefile-csi-driver
     - provider-azure-blobfuse-csi-driver
     - provider-azure-cloud-provider-azure
+    - provider-azure-cloud-provider-azure-1-20-presubmit
+    - provider-azure-cloud-provider-azure-1-21-presubmit
+    - provider-azure-cloud-provider-azure-1-22-presubmit
     - provider-azure-dualstack
-    - provider-azure-periodic
-    - provider-azure-presubmit
     - provider-azure-scalability
-    - provider-azure-upstream
-    - provider-azure-windows
+    - provider-azure-presubmit
+    - provider-azure-master-signal
+    - provider-azure-1.22-signal
+    - provider-azure-1.21-signal
+    - provider-azure-1.20-signal
+    - provider-azure-1.19-signal
 
 dashboards:
 - name: provider-azure-azuredisk-csi-driver
+- name: provider-azure-azuredisk-csi-driver-periodic
 - name: provider-azure-azurefile-csi-driver
 - name: provider-azure-blobfuse-csi-driver
 - name: provider-azure-cloud-provider-azure
+- name: provider-azure-cloud-provider-azure-1-20-presubmit
+- name: provider-azure-cloud-provider-azure-1-21-presubmit
+- name: provider-azure-cloud-provider-azure-1-22-presubmit
 - name: provider-azure-dualstack
-- name: provider-azure-periodic
-- name: provider-azure-presubmit
 - name: provider-azure-scalability
-- name: provider-azure-upstream
-- name: provider-azure-windows
+- name: provider-azure-presubmit
+- name: provider-azure-master-signal
+- name: provider-azure-1.22-signal
+- name: provider-azure-1.21-signal
+- name: provider-azure-1.20-signal
+- name: provider-azure-1.19-signal

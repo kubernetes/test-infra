@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"net/url"
 	"path"
+	"strconv"
 
 	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
@@ -75,6 +76,7 @@ func createRefs(pr github.PullRequest, baseSHA string) prowapi.Refs {
 				Number:     number,
 				Author:     pr.User.Login,
 				SHA:        pr.Head.SHA,
+				Title:      pr.Title,
 				Link:       pr.HTMLURL,
 				AuthorLink: pr.User.HTMLURL,
 				CommitLink: fmt.Sprintf("%s/pull/%d/commits/%s", repoLink, number, pr.Head.SHA),
@@ -86,17 +88,21 @@ func createRefs(pr github.PullRequest, baseSHA string) prowapi.Refs {
 // NewPresubmit converts a config.Presubmit into a prowapi.ProwJob.
 // The prowapi.Refs are configured correctly per the pr, baseSHA.
 // The eventGUID becomes a github.EventGUID label.
-func NewPresubmit(pr github.PullRequest, baseSHA string, job config.Presubmit, eventGUID string) prowapi.ProwJob {
+func NewPresubmit(pr github.PullRequest, baseSHA string, job config.Presubmit, eventGUID string, additionalLabels map[string]string) prowapi.ProwJob {
 	refs := createRefs(pr, baseSHA)
 	labels := make(map[string]string)
 	for k, v := range job.Labels {
 		labels[k] = v
 	}
+	for k, v := range additionalLabels {
+		labels[k] = v
+	}
+	labels[github.EventGUID] = eventGUID
+	labels[kube.IsOptionalLabel] = strconv.FormatBool(job.Optional)
 	annotations := make(map[string]string)
 	for k, v := range job.Annotations {
 		annotations[k] = v
 	}
-	labels[github.EventGUID] = eventGUID
 	return NewProwJob(PresubmitSpec(job, refs), labels, annotations)
 }
 
@@ -175,6 +181,7 @@ func specFromJobBase(jb config.JobBase) prowapi.ProwJobSpec {
 		ReporterConfig:  jb.ReporterConfig,
 		RerunAuthConfig: jb.RerunAuthConfig,
 		Hidden:          jb.Hidden,
+		ProwJobDefault:  jb.ProwJobDefault,
 	}
 }
 
@@ -185,8 +192,15 @@ func CompletePrimaryRefs(refs prowapi.Refs, jb config.JobBase) *prowapi.Refs {
 	if jb.CloneURI != "" {
 		refs.CloneURI = jb.CloneURI
 	}
-	refs.SkipSubmodules = jb.SkipSubmodules
-	refs.CloneDepth = jb.CloneDepth
+	if jb.SkipSubmodules {
+		refs.SkipSubmodules = jb.SkipSubmodules
+	}
+	if jb.CloneDepth > 0 {
+		refs.CloneDepth = jb.CloneDepth
+	}
+	if jb.SkipFetchHead {
+		refs.SkipFetchHead = jb.SkipFetchHead
+	}
 	return &refs
 }
 
@@ -253,6 +267,7 @@ func ProwJobFields(pj *prowapi.ProwJob) logrus.Fields {
 	fields["name"] = pj.ObjectMeta.Name
 	fields["job"] = pj.Spec.Job
 	fields["type"] = pj.Spec.Type
+	fields["state"] = pj.Status.State
 	if len(pj.ObjectMeta.Labels[github.EventGUID]) > 0 {
 		fields[github.EventGUID] = pj.ObjectMeta.Labels[github.EventGUID]
 	}
@@ -271,23 +286,36 @@ func ProwJobFields(pj *prowapi.ProwJob) logrus.Fields {
 // JobURL returns the expected URL for ProwJobStatus.
 //
 // TODO(fejta): consider moving default JobURLTemplate and JobURLPrefix out of plank
-func JobURL(plank config.Plank, pj prowapi.ProwJob, log *logrus.Entry) string {
-	if pj.Spec.DecorationConfig != nil && plank.GetJobURLPrefix(pj.Spec.Refs) != "" {
+func JobURL(plank config.Plank, pj prowapi.ProwJob, log *logrus.Entry) (string, error) {
+	if pj.Spec.DecorationConfig != nil && plank.GetJobURLPrefix(&pj) != "" {
 		spec := downwardapi.NewJobSpec(pj.Spec, pj.Status.BuildID, pj.Name)
 		gcsConfig := pj.Spec.DecorationConfig.GCSConfiguration
 		_, gcsPath, _ := gcsupload.PathsForJob(gcsConfig, &spec, "")
 
-		prefix, _ := url.Parse(plank.GetJobURLPrefix(pj.Spec.Refs))
-		prefix.Path = path.Join(prefix.Path, gcsConfig.Bucket, gcsPath)
-		return prefix.String()
+		prefix, _ := url.Parse(plank.GetJobURLPrefix(&pj))
+
+		prowPath, err := prowapi.ParsePath(gcsConfig.Bucket)
+		if err != nil {
+			return "", fmt.Errorf("calculating joburl: %w", err)
+		}
+
+		// Final path will be, e.g.:
+		// prefix.Scheme + prefix.Host + prefix.Path + storageProvider + bucketName         + gcsPath
+		// https://prow.k8s.io/view/                 + gs/             + kubernetes-jenkins + pr-logs/pull/kubernetes-sigs_cluster-api-provider-openstack/541/pull-cluster-api-provider-openstack-test/1247344427123347459
+		if plank.JobURLPrefixDisableAppendStorageProvider {
+			prefix.Path = path.Join(prefix.Path, prowPath.FullPath(), gcsPath)
+		} else {
+			prefix.Path = path.Join(prefix.Path, prowPath.StorageProvider(), prowPath.FullPath(), gcsPath)
+		}
+		return prefix.String(), nil
 	}
 	var b bytes.Buffer
 	if err := plank.JobURLTemplate.Execute(&b, &pj); err != nil {
 		log.WithFields(ProwJobFields(&pj)).Errorf("error executing URL template: %v", err)
 	} else {
-		return b.String()
+		return b.String(), nil
 	}
-	return ""
+	return "", nil
 }
 
 // ClusterToCtx converts the prow job's cluster to a cluster context

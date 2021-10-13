@@ -1,0 +1,11 @@
+# Dashboard Group
+#
+dashboard_groups:
+- name: sig-arch
+  dashboard_names:
+  - sig-arch-conformance
+
+# Dashboards
+#
+dashboards:
+- name: sig-arch-conformance

@@ -52,6 +52,7 @@ func TestSpecToStarted(t *testing.T) {
 			expected: gcs.Started{
 				Pull:                  "123",
 				DeprecatedRepoVersion: "abcd1234",
+				RepoCommit:            "abcd1234",
 				Repos: map[string]string{
 					"kubernetes/test-infra": "master:deadbeef,123:abcd1234",
 				},
@@ -68,6 +69,7 @@ func TestSpecToStarted(t *testing.T) {
 			},
 			expected: gcs.Started{
 				DeprecatedRepoVersion: "master",
+				RepoCommit:            "master",
 				Repos: map[string]string{
 					"kubernetes/test-infra": "master",
 				},
@@ -92,6 +94,7 @@ func TestSpecToStarted(t *testing.T) {
 			},
 			expected: gcs.Started{
 				DeprecatedRepoVersion: "deadbeef",
+				RepoCommit:            "deadbeef",
 				Repos: map[string]string{
 					"kubernetes/test-infra": "master:deadbeef",
 					"kubernetes/release":    "v1.10",
@@ -124,6 +127,7 @@ func TestSpecToStarted(t *testing.T) {
 			}},
 			expected: gcs.Started{
 				DeprecatedRepoVersion: "aaaaaaaa",
+				RepoCommit:            "aaaaaaaa",
 				Repos: map[string]string{
 					"kubernetes/test-infra": "master",
 					"kubernetes/release":    "v1.10",
@@ -151,6 +155,7 @@ func TestSpecToStarted(t *testing.T) {
 			}},
 			expected: gcs.Started{
 				DeprecatedRepoVersion: "aaaaaaaa",
+				RepoCommit:            "aaaaaaaa",
 				Repos: map[string]string{
 					"kubernetes/release": "v1.10",
 				},

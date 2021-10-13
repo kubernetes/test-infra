@@ -18,6 +18,7 @@ package initupload
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -26,7 +27,7 @@ import (
 	"strconv"
 	"time"
 
-	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/pod-utils/clone"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 	"k8s.io/test-infra/prow/pod-utils/gcs"
@@ -35,17 +36,22 @@ import (
 // specToStarted translate a jobspec into a started struct
 // optionally overwrite RepoVersion with provided cloneRecords
 func specToStarted(spec *downwardapi.JobSpec, cloneRecords []clone.Record) gcs.Started {
+	var version string
+
 	started := gcs.Started{
 		Timestamp: time.Now().Unix(),
 	}
 
 	if mainRefs := spec.MainRefs(); mainRefs != nil {
-		started.DeprecatedRepoVersion = shaForRefs(*mainRefs, cloneRecords)
+		version = shaForRefs(*mainRefs, cloneRecords)
 	}
 
-	if started.DeprecatedRepoVersion == "" {
-		started.DeprecatedRepoVersion = downwardapi.GetRevisionFromSpec(spec)
+	if version == "" {
+		version = downwardapi.GetRevisionFromSpec(spec)
 	}
+
+	started.DeprecatedRepoVersion = version
+	started.RepoCommit = version
 
 	// TODO(fejta): VM name
 
@@ -66,7 +72,7 @@ func specToStarted(spec *downwardapi.JobSpec, cloneRecords []clone.Record) gcs.S
 }
 
 // shaForRefs finds the resolved SHA after cloning and merging for the given refs
-func shaForRefs(refs prowapi.Refs, cloneRecords []clone.Record) string {
+func shaForRefs(refs prowv1.Refs, cloneRecords []clone.Record) string {
 	for _, record := range cloneRecords {
 		if reflect.DeepEqual(refs, record.Refs) {
 			return record.FinalSHA
@@ -79,7 +85,7 @@ func shaForRefs(refs prowapi.Refs, cloneRecords []clone.Record) string {
 func (o Options) Run() error {
 	spec, err := downwardapi.ResolveSpecFromEnv()
 	if err != nil {
-		return fmt.Errorf("could not resolve job spec: %v", err)
+		return fmt.Errorf("could not resolve job spec: %w", err)
 	}
 
 	uploadTargets := map[string]gcs.UploadFunc{}
@@ -96,13 +102,14 @@ func (o Options) Run() error {
 
 	startedData, err := json.Marshal(&started)
 	if err != nil {
-		return fmt.Errorf("could not marshal starting data: %v", err)
+		return fmt.Errorf("could not marshal starting data: %w", err)
 	}
 
-	uploadTargets["started.json"] = gcs.DataUpload(bytes.NewReader(startedData))
+	uploadTargets[prowv1.StartedStatusFile] = gcs.DataUpload(bytes.NewReader(startedData))
 
-	if err := o.Options.Run(spec, uploadTargets); err != nil {
-		return fmt.Errorf("failed to upload to blob storage: %v", err)
+	ctx := context.Background()
+	if err := o.Options.Run(ctx, spec, uploadTargets); err != nil {
+		return fmt.Errorf("failed to upload to blob storage: %w", err)
 	}
 
 	if failed {
@@ -121,10 +128,10 @@ func processCloneLog(logfile string, uploadTargets map[string]gcs.UploadFunc) (b
 	var cloneRecords []clone.Record
 	data, err := ioutil.ReadFile(logfile)
 	if err != nil {
-		return true, cloneRecords, fmt.Errorf("could not read clone log: %v", err)
+		return true, cloneRecords, fmt.Errorf("could not read clone log: %w", err)
 	}
 	if err = json.Unmarshal(data, &cloneRecords); err != nil {
-		return true, cloneRecords, fmt.Errorf("could not unmarshal clone records: %v", err)
+		return true, cloneRecords, fmt.Errorf("could not unmarshal clone records: %w", err)
 	}
 	// Do not read from cloneLog directly. Instead create multiple readers from cloneLog so it can
 	// be uploaded to both clone-log.txt and build-log.txt on failure.
@@ -150,9 +157,9 @@ func processCloneLog(logfile string, uploadTargets map[string]gcs.UploadFunc) (b
 		}
 		finishedData, err := json.Marshal(&finished)
 		if err != nil {
-			return true, cloneRecords, fmt.Errorf("could not marshal finishing data: %v", err)
+			return true, cloneRecords, fmt.Errorf("could not marshal finishing data: %w", err)
 		}
-		uploadTargets["finished.json"] = gcs.DataUpload(bytes.NewReader(finishedData))
+		uploadTargets[prowv1.FinishedStatusFile] = gcs.DataUpload(bytes.NewReader(finishedData))
 	}
 	return failed, cloneRecords, nil
 }

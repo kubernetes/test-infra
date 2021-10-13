@@ -40,6 +40,8 @@ type JobSpec struct {
 	Refs      *prowapi.Refs  `json:"refs,omitempty"`
 	ExtraRefs []prowapi.Refs `json:"extra_refs,omitempty"`
 
+	DecorationConfig *prowapi.DecorationConfig `json:"decoration_config,omitempty"`
+
 	// we need to keep track of the agent until we
 	// migrate everyone away from using the $BUILD_NUMBER
 	// environment variable
@@ -49,13 +51,14 @@ type JobSpec struct {
 // NewJobSpec converts a prowapi.ProwJobSpec invocation into a JobSpec
 func NewJobSpec(spec prowapi.ProwJobSpec, buildID, prowJobID string) JobSpec {
 	return JobSpec{
-		Type:      spec.Type,
-		Job:       spec.Job,
-		BuildID:   buildID,
-		ProwJobID: prowJobID,
-		Refs:      spec.Refs,
-		ExtraRefs: spec.ExtraRefs,
-		agent:     spec.Agent,
+		Type:             spec.Type,
+		Job:              spec.Job,
+		BuildID:          buildID,
+		ProwJobID:        prowJobID,
+		Refs:             spec.Refs,
+		ExtraRefs:        spec.ExtraRefs,
+		DecorationConfig: spec.DecorationConfig,
+		agent:            spec.Agent,
 	}
 }
 
@@ -69,7 +72,7 @@ func ResolveSpecFromEnv() (*JobSpec, error) {
 
 	spec := &JobSpec{}
 	if err := json.Unmarshal([]byte(specEnv), spec); err != nil {
-		return nil, fmt.Errorf("malformed $%s: %v", JobSpecEnv, err)
+		return nil, fmt.Errorf("malformed $%s: %w", JobSpecEnv, err)
 	}
 
 	return spec, nil
@@ -118,7 +121,7 @@ func EnvForSpec(spec JobSpec) (map[string]string, error) {
 
 	raw, err := json.Marshal(spec)
 	if err != nil {
-		return env, fmt.Errorf("failed to marshal job spec: %v", err)
+		return env, fmt.Errorf("failed to marshal job spec: %w", err)
 	}
 	env[JobSpecEnv] = string(raw)
 

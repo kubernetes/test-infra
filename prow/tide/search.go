@@ -27,7 +27,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type querier func(ctx context.Context, result interface{}, vars map[string]interface{}) error
+type querier func(ctx context.Context, q interface{}, vars map[string]interface{}, org string) error
 
 func datedQuery(q string, start, end time.Time) string {
 	return fmt.Sprintf("%s %s", q, dateToken(start, end))
@@ -40,7 +40,7 @@ func floor(t time.Time) time.Time {
 	return t
 }
 
-func search(query querier, log *logrus.Entry, q string, start, end time.Time) ([]PullRequest, error) {
+func search(query querier, log *logrus.Entry, q string, start, end time.Time, org string) ([]PullRequest, error) {
 	start = floor(start)
 	end = floor(end)
 	log = log.WithFields(logrus.Fields{
@@ -58,12 +58,13 @@ func search(query querier, log *logrus.Entry, q string, start, end time.Time) ([
 	var totalCost, remaining int
 	var ret []PullRequest
 	var sq searchQuery
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	defer cancel()
 	for {
 		log.Debug("Sending query")
-		if err := query(ctx, &sq, vars); err != nil {
+		if err := query(ctx, &sq, vars, org); err != nil {
 			if cursor != nil {
-				err = fmt.Errorf("cursor: %q, err: %v", *cursor, err)
+				err = fmt.Errorf("cursor: %q, err: %w", *cursor, err)
 			}
 			return ret, err
 		}
@@ -79,7 +80,12 @@ func search(query querier, log *logrus.Entry, q string, start, end time.Time) ([
 		vars["searchCursor"] = cursor
 		log = log.WithField("searchCursor", *cursor)
 	}
-	log.WithField("duration", time.Since(requestStart).String()).Debugf("Query returned %d PRs and cost %d point(s). %d remaining.", len(ret), totalCost, remaining)
+	log.WithFields(logrus.Fields{
+		"duration":       time.Since(requestStart).String(),
+		"pr_found_count": len(ret),
+		"cost":           totalCost,
+		"remaining":      remaining,
+	}).Debug("Finished query")
 	return ret, nil
 }
 

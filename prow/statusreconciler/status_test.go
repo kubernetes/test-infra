@@ -27,9 +27,11 @@ import (
 
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/io"
 	"sigs.k8s.io/yaml"
+
+	"k8s.io/test-infra/prow/config"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
+	"k8s.io/test-infra/prow/io"
 )
 
 type testOpener struct{}
@@ -135,11 +137,13 @@ func TestLoad(t *testing.T) {
 			defer cleanupJobConfig()
 
 			sc := statusController{
-				logger:        logrus.NewEntry(logrus.StandardLogger()),
-				statusURI:     statusURI,
-				opener:        &testOpener{},
-				configPath:    configFile,
-				jobConfigPath: jobConfigFile,
+				logger:    logrus.NewEntry(logrus.StandardLogger()),
+				statusURI: statusURI,
+				opener:    &testOpener{},
+				configOpts: configflagutil.ConfigOptions{
+					ConfigPath:    configFile,
+					JobConfigPath: jobConfigFile,
+				},
 			}
 			changes, err := sc.Load()
 			if err != nil {
@@ -200,11 +204,13 @@ func TestSave(t *testing.T) {
 
 		t.Run(tc.name, func(t *testing.T) {
 			sc := statusController{
-				logger:        logrus.NewEntry(logrus.StandardLogger()),
-				statusURI:     statusURI,
-				opener:        &testOpener{},
-				configPath:    configFile,
-				jobConfigPath: jobConfigFile,
+				logger:    logrus.NewEntry(logrus.StandardLogger()),
+				statusURI: statusURI,
+				opener:    &testOpener{},
+				configOpts: configflagutil.ConfigOptions{
+					ConfigPath:    configFile,
+					JobConfigPath: jobConfigFile,
+				},
 			}
 			if err := sc.Save(); err != nil {
 				t.Fatalf("%s: unexpected error: %v", tc.name, err)

@@ -26,7 +26,7 @@ import (
 )
 
 type githubClient interface {
-	BotName() (string, error)
+	BotUserChecker() (func(candidate string) bool, error)
 	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
 	DeleteComment(org, repo string, id int) error
 }
@@ -66,7 +66,7 @@ func NewEventClient(ghc githubClient, log *logrus.Entry, org, repo string, numbe
 // and then deletes any bot comments indicated by the func 'shouldPrune'.
 func (c *EventClient) PruneComments(shouldPrune func(github.IssueComment) bool) {
 	c.once.Do(func() {
-		botName, err := c.ghc.BotName()
+		botUserChecker, err := c.ghc.BotUserChecker()
 		if err != nil {
 			c.log.WithError(err).Error("failed to get the bot's name. Pruning will consider all comments.")
 		}
@@ -74,9 +74,9 @@ func (c *EventClient) PruneComments(shouldPrune func(github.IssueComment) bool) 
 		if err != nil {
 			c.log.WithError(err).Errorf("failed to list comments for %s/%s#%d", c.org, c.repo, c.number)
 		}
-		if botName != "" {
+		if botUserChecker != nil {
 			for _, comment := range comments {
-				if comment.User.Login == botName {
+				if botUserChecker(comment.User.Login) {
 					c.comments = append(c.comments, comment)
 				}
 			}

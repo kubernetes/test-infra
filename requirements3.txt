@@ -4,6 +4,7 @@ configparser==4.0.2
 influxdb==5.2.3
 isort==4.3.21
 pylint==2.4.4
+parameterized==0.7.4
 PyYAML==5.3
 ruamel.yaml==0.16.5
 setuptools==44.0.0

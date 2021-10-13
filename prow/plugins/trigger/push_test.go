@@ -48,6 +48,7 @@ func TestCreateRefs(t *testing.T) {
 	expected := prowapi.Refs{
 		Org:      "kubernetes",
 		Repo:     "repo",
+		RepoLink: "https://example.com/kubernetes/repo",
 		BaseRef:  "master",
 		BaseSHA:  "abcdef",
 		BaseLink: "https://example.com/kubernetes/repo/compare/abcdee...abcdef",
@@ -153,7 +154,7 @@ func TestHandlePE(t *testing.T) {
 		},
 	}
 	for _, tc := range testCases {
-		g := &fakegithub.FakeClient{}
+		g := fakegithub.NewFakeClient()
 		fakeProwJobClient := fake.NewSimpleClientset()
 		c := Client{
 			GitHubClient:  g,

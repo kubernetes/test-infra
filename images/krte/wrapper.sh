@@ -20,7 +20,6 @@
 # Things wrapper.sh handles:
 # - starting / stopping docker-in-docker
 # -- configuring the docker daemon for IPv6
-# - confuring bazel caching
 # - activating GCP service account credentials
 # - ensuring GOPATH/bin is in PATH
 #
@@ -32,24 +31,26 @@ set -o pipefail
 set -o nounset
 
 >&2 echo "wrapper.sh] [INFO] Wrapping Test Command: \`$*\`"
->&2 echo "wrapper.sh] [INFO] Running in: ${IMAGE}"
+>&2 echo "wrapper.sh] [INFO] Running in: ${KRTE_IMAGE}"
 >&2 echo "wrapper.sh] [INFO] See: https://github.com/kubernetes/test-infra/blob/master/images/krte/wrapper.sh"
 printf '%0.s=' {1..80} >&2; echo >&2
 >&2 echo "wrapper.sh] [SETUP] Performing pre-test setup ..."
 
 cleanup(){
   if [[ "${DOCKER_IN_DOCKER_ENABLED:-false}" == "true" ]]; then
-    >&2 echo "wrapper.sh] [CLEANUP] Cleaning up after docker in docker ..."
+    >&2 echo "wrapper.sh] [CLEANUP] Cleaning up after Docker in Docker ..."
     docker ps -aq | xargs -r docker rm -f || true
     service docker stop || true
-    >&2 echo "wrapper.sh] [CLEANUP] Done cleaning up after docker in docker."
+    >&2 echo "wrapper.sh] [CLEANUP] Done cleaning up after Docker in Docker."
   fi
 }
 
 early_exit_handler() {
   >&2 echo "wrapper.sh] [EARLY EXIT] Interrupted, entering handler ..."
-  trap_code=$?
-  if [ -z ${EXIT_VALUE+x} ]; then
+  if [ -n "${WRAPPED_COMMAND_PID:-}" ]; then
+    kill -TERM "$WRAPPED_COMMAND_PID" || true
+  fi
+  if [ -n "${EXIT_VALUE:-}" ]; then
     >&2 echo "Original exit code was ${EXIT_VALUE}, not preserving due to interrupt signal"
   fi
   cleanup
@@ -58,15 +59,6 @@ early_exit_handler() {
 }
 
 trap early_exit_handler TERM INT
-
-# Check if the job has opted-in to bazel remote caching and if so generate 
-# .bazelrc entries pointing to the remote cache
-export BAZEL_REMOTE_CACHE_ENABLED=${BAZEL_REMOTE_CACHE_ENABLED:-false}
-if [[ "${BAZEL_REMOTE_CACHE_ENABLED}" == "true" ]]; then
-  >&2 echo "wrapper.sh] [SETUP] Bazel remote cache is enabled, generating .bazelrcs ..."
-  /usr/local/bin/create_bazel_cache_rcs.sh
-  >&2 echo "wrapper.sh] [SETUP] Done setting up .bazelrcs"
-fi
 
 # optionally enable ipv6 docker
 export DOCKER_IN_DOCKER_IPV6_ENABLED=${DOCKER_IN_DOCKER_IPV6_ENABLED:-false}
@@ -78,6 +70,18 @@ if [[ "${DOCKER_IN_DOCKER_IPV6_ENABLED}" == "true" ]]; then
   # enable ipv6 iptables
   modprobe -v ip6table_nat
   >&2 echo "wrapper.sh] [SETUP] Done enabling IPv6 in Docker config."
+fi
+
+# optionally enable iptables-nft
+export DOCKER_IN_DOCKER_NFT_ENABLED=${DOCKER_IN_DOCKER_NFT_ENABLED:-false}
+if [[ "${DOCKER_IN_DOCKER_NFT_ENABLED}" == "true" ]]; then
+  >&2 echo "wrapper.sh] [SETUP] Enabling iptables-nft ..."
+  # enable iptables-nft
+  update-alternatives --set iptables /usr/sbin/iptables-nft
+  update-alternatives --set ip6tables /usr/sbin/ip6tables-nft
+  # enable nft iptables module
+  modprobe -v nf_tables
+  >&2 echo "wrapper.sh] [SETUP] Done enabling iptables-nft by default."
 fi
 
 # Check if the job has opted-in to docker-in-docker
@@ -126,7 +130,9 @@ fi
 printf '%0.s=' {1..80}; echo
 >&2 echo "wrapper.sh] [TEST] Running Test Command: \`$*\` ..."
 set +o errexit
-"$@"
+"$@" &
+WRAPPED_COMMAND_PID=$!
+wait $WRAPPED_COMMAND_PID
 EXIT_VALUE=$?
 set -o errexit
 >&2 echo "wrapper.sh] [TEST] Test Command exit code: ${EXIT_VALUE}"

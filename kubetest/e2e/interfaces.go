@@ -31,9 +31,10 @@ type TestBuilder interface {
 	BuildTester(options *BuildTesterOptions) (Tester, error)
 }
 
-// BuildTesterOptions is the options structt that should be passed to testBuilder::BuildTester
+// BuildTesterOptions is the options struct that should be passed to testBuilder::BuildTester
 type BuildTesterOptions struct {
-	FocusRegex  string
-	SkipRegex   string
-	Parallelism int
+	FocusRegex            string
+	SkipRegex             string
+	StorageTestDriverPath string
+	Parallelism           int
 }

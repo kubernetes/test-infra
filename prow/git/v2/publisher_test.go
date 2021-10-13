@@ -131,20 +131,37 @@ func TestPublisher_Commit(t *testing.T) {
 	}
 }
 
-func TestPublisher_ForcePush(t *testing.T) {
+func TestPublisher_PushToFork(t *testing.T) {
 	var testCases = []struct {
 		name          string
 		branch        string
 		remote        string
+		force         bool
 		resolveErr    error
 		responses     map[string]execResponse
 		expectedCalls [][]string
 		expectedErr   bool
 	}{
 		{
-			name:   "no errors works fine",
+			name:   "no errors, no force",
 			branch: "master",
 			remote: "http.com",
+			force:  false,
+			responses: map[string]execResponse{
+				"push http.com master": {
+					out: []byte("ok"),
+				},
+			},
+			expectedCalls: [][]string{
+				{"push", "http.com", "master"},
+			},
+			expectedErr: false,
+		},
+		{
+			name:   "no errors with force",
+			branch: "master",
+			remote: "http.com",
+			force:  true,
 			responses: map[string]execResponse{
 				"push --force http.com master": {
 					out: []byte("ok"),
@@ -163,9 +180,24 @@ func TestPublisher_ForcePush(t *testing.T) {
 			expectedErr:   true,
 		},
 		{
-			name:   "errors pushing propagates",
+			name:   "errors pushing propagates, without force",
 			branch: "master",
 			remote: "http.com",
+			responses: map[string]execResponse{
+				"push http.com master": {
+					err: errors.New("oops"),
+				},
+			},
+			expectedCalls: [][]string{
+				{"push", "http.com", "master"},
+			},
+			expectedErr: true,
+		},
+		{
+			name:   "errors pushing propagates, with force",
+			branch: "master",
+			remote: "http.com",
+			force:  true,
 			responses: map[string]execResponse{
 				"push --force http.com master": {
 					err: errors.New("oops"),
@@ -190,10 +222,118 @@ func TestPublisher_ForcePush(t *testing.T) {
 			}
 			p := publisher{
 				executor: &e,
-				remote:   r.Resolve,
+				remotes:  remotes{publishRemote: r.Resolve},
 				logger:   logrus.WithField("test", testCase.name),
 			}
-			actualErr := p.ForcePush(testCase.branch)
+			actualErr := p.PushToFork(testCase.branch, testCase.force)
+			if testCase.expectedErr && actualErr == nil {
+				t.Errorf("%s: expected an error but got none", testCase.name)
+			}
+			if !testCase.expectedErr && actualErr != nil {
+				t.Errorf("%s: expected no error but got one: %v", testCase.name, actualErr)
+			}
+			if actual, expected := e.records, testCase.expectedCalls; !reflect.DeepEqual(actual, expected) {
+				t.Errorf("%s: got incorrect git calls: %v", testCase.name, diff.ObjectReflectDiff(actual, expected))
+			}
+		})
+	}
+}
+
+func TestPublisher_PushToCentral(t *testing.T) {
+	var testCases = []struct {
+		name          string
+		branch        string
+		remote        string
+		force         bool
+		resolveErr    error
+		responses     map[string]execResponse
+		expectedCalls [][]string
+		expectedErr   bool
+	}{
+		{
+			name:   "no errors, no force",
+			branch: "master",
+			remote: "http.com",
+			force:  false,
+			responses: map[string]execResponse{
+				"push http.com master": {
+					out: []byte("ok"),
+				},
+			},
+			expectedCalls: [][]string{
+				{"push", "http.com", "master"},
+			},
+			expectedErr: false,
+		},
+		{
+			name:   "no errors with force",
+			branch: "master",
+			remote: "http.com",
+			force:  true,
+			responses: map[string]execResponse{
+				"push --force http.com master": {
+					out: []byte("ok"),
+				},
+			},
+			expectedCalls: [][]string{
+				{"push", "--force", "http.com", "master"},
+			},
+			expectedErr: false,
+		},
+		{
+			name:          "error resolving remote makes no calls",
+			branch:        "master",
+			resolveErr:    errors.New("oops"),
+			expectedCalls: [][]string{},
+			expectedErr:   true,
+		},
+		{
+			name:   "errors pushing propagates, without force",
+			branch: "master",
+			remote: "http.com",
+			responses: map[string]execResponse{
+				"push http.com master": {
+					err: errors.New("oops"),
+				},
+			},
+			expectedCalls: [][]string{
+				{"push", "http.com", "master"},
+			},
+			expectedErr: true,
+		},
+		{
+			name:   "errors pushing propagates, with force",
+			branch: "master",
+			remote: "http.com",
+			force:  true,
+			responses: map[string]execResponse{
+				"push --force http.com master": {
+					err: errors.New("oops"),
+				},
+			},
+			expectedCalls: [][]string{
+				{"push", "--force", "http.com", "master"},
+			},
+			expectedErr: true,
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			e := fakeExecutor{
+				records:   [][]string{},
+				responses: testCase.responses,
+			}
+			r := fakeResolver{
+				out: testCase.remote,
+				err: testCase.resolveErr,
+			}
+			p := publisher{
+				executor: &e,
+				remotes:  remotes{centralRemote: r.Resolve},
+				logger:   logrus.WithField("test", testCase.name),
+			}
+			actualErr := p.PushToCentral(testCase.branch, testCase.force)
 			if testCase.expectedErr && actualErr == nil {
 				t.Errorf("%s: expected an error but got none", testCase.name)
 			}

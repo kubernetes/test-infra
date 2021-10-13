@@ -1,11 +1,17 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 reviewers:
-- Katharine
 - spiffxp
+- MushuEE
+- amwat
+- BenTheElder
 approvers:
-- Katharine
 - spiffxp
+- MushuEE
+- amwat
+- BenTheElder
+emeritus_approvers:
+- Katharine
 
 labels:
 - area/kettle

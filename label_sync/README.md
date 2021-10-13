@@ -74,4 +74,4 @@ We run this as a [`CronJob`](./cluster/label_sync_cron_job.yaml) on a kubernetes
 
 These pods read [`labels.yaml`](./labels.yaml) from a ConfigMap that is updated by the [prow updateconfig plugin](/prow/plugins/updateconfig).
 
-To update the `labels.yaml` file, simply open a pull request against it.
+To update the `labels.yaml` file, make the desired changes to `labels.yaml` and run the `./hack/update-labels.sh` script. Then open a pull request with the resulting `labels.yaml` and `labels.md` files.

@@ -62,6 +62,8 @@ class Database:
                 ' and started_json IS NOT NULL and finished_json IS NULL',
                 (jobs_dir + '\x00', jobs_dir + '\x7f')):
             started = json.loads(started_json)
+            if 'timestamp' not in started.keys():
+                continue # malformed started
             if int(started['timestamp']) < time.time() - 60*60*24*5:
                 # over 5 days old, no need to try looking for finished any more.
                 builds_have.add(path_tuple(path))
@@ -119,14 +121,22 @@ class Database:
     @staticmethod
     def _get_builds(results):
         for rowid, path, started, finished in results:
-            started = started and json.loads(started)
-            finished = finished and json.loads(finished)
+            started = json.loads(started) if started else started
+            finished = json.loads(finished) if finished else finished
             yield rowid, path, started, finished
 
-    def get_builds(self, path='', min_started=None, incremental_table=DEFAULT_INCREMENTAL_TABLE):
+    def get_builds(self, path='', min_started=0, incremental_table=DEFAULT_INCREMENTAL_TABLE):
         """
         Iterate through (buildid, gcs_path, started, finished) for each build under
         the given path that has not already been emitted.
+
+        Args:
+            path (string, optional): build path to fetch
+            min_started (int, optional): epoch time to fetch builds since
+            incremental_table (string, optional): table name
+
+        Returns:
+            Generator containing rowID, path, and dicts representing the started and finished json
         """
         self._init_incremental(incremental_table)
         results = self.db.execute(
@@ -135,7 +145,7 @@ class Database:
             ' and finished_time >= ?' +
             ' and rowid not in (select build_id from %s)'
             ' order by finished_time' % incremental_table
-            , (path + '%', min_started or 0)).fetchall()
+            , (path + '%', min_started)).fetchall()
         return self._get_builds(results)
 
     def get_builds_from_paths(self, paths, incremental_table=DEFAULT_INCREMENTAL_TABLE):
@@ -153,12 +163,19 @@ class Database:
         Return a list of file data under the given path. Intended for JUnit artifacts.
         """
         results = []
-        for dataz, in self.db.execute(
-                'select data from file where path between ? and ?',
-                (path, path + '\x7F')):
-            data = zlib.decompress(dataz).decode('utf-8')
-            if data:
-                results.append(data)
+        try:
+            for dataz, in self.db.execute(
+                    'select data from file where path between ? and ?',
+                    (path, path + '\x7F')):
+                try:
+                    data = zlib.decompress(dataz).decode('utf-8', 'replace')
+                    if data:
+                        results.append(data)
+                except UnicodeDecodeError:
+                    print(f'Failed to decode data for {path}')
+                    break
+        except Exception as e: # pylint: disable=broad-except
+            print(f'Exception of type {type(e)}: {e} on path: {path}')
         return results
 
     def get_oldest_emitted(self, incremental_table):

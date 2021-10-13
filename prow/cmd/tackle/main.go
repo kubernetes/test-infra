@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	context2 "context"
 	"crypto/rand"
 	"errors"
 	"flag"
@@ -32,6 +33,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
+	extensionsv1beta1 "k8s.io/api/extensions/v1beta1"
 	networking "k8s.io/api/networking/v1beta1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -65,11 +67,7 @@ func printArray(collection []string, limit int) bool {
 
 // validateNotEmpty handles validation that a collection is non-empty.
 func validateNotEmpty(collection []string) bool {
-	if len(collection) > 0 {
-		return true
-	}
-
-	return false
+	return len(collection) > 0
 }
 
 // validateContainment handles validation for containment of target in collection.
@@ -145,12 +143,6 @@ func currentZone() (string, error) {
 	return output("gcloud", "config", "get-value", "compute/zone")
 }
 
-// project holds info about a project
-type project struct {
-	name string
-	id   string
-}
-
 // projects returns the list of accessible gcp projects
 func projects(max int) ([]string, error) {
 	out, err := output("gcloud", "projects", "list", fmt.Sprintf("--limit=%d", max), "--format=value(project_id)")
@@ -190,7 +182,7 @@ func selectProject(choice string) (string, error) {
 			fmt.Println("  *", proj)
 		}
 		if err != nil {
-			return "", fmt.Errorf("list projects: %v", err)
+			return "", fmt.Errorf("list projects: %w", err)
 		}
 		if len(projs) == 0 {
 			fmt.Println("Create a project at https://console.cloud.google.com/")
@@ -203,7 +195,7 @@ func selectProject(choice string) (string, error) {
 
 		def, err := currentProject()
 		if err != nil {
-			return "", fmt.Errorf("get current project: %v", err)
+			return "", fmt.Errorf("get current project: %w", err)
 		}
 
 		choice = prompt("Select project", def)
@@ -226,7 +218,7 @@ func selectProject(choice string) (string, error) {
 
 	// no, make sure user has access to it
 	if err = exec.Command("gcloud", "projects", "describe", choice).Run(); err != nil {
-		return "", fmt.Errorf("%s cannot describe project: %v", who, err)
+		return "", fmt.Errorf("%s cannot describe project: %w", who, err)
 	}
 
 	return choice, nil
@@ -238,14 +230,14 @@ func selectZone() (string, error) {
 
 	def, err := currentZone()
 	if err != nil {
-		return "", fmt.Errorf("get current zone: %v", err)
+		return "", fmt.Errorf("get current zone: %w", err)
 	}
 
 	fmt.Printf("Available zones:\n")
 
 	zoneList, err := zones()
 	if err != nil {
-		return "", fmt.Errorf("list zones: %v", err)
+		return "", fmt.Errorf("list zones: %w", err)
 	}
 
 	isNonEmpty := validateNotEmpty(zoneList)
@@ -268,7 +260,7 @@ func selectZone() (string, error) {
 
 	isContained := validateContainment(zoneList, choice)
 	if !isContained {
-		return "", fmt.Errorf("invalid zone selection: %v", choice)
+		return "", fmt.Errorf("invalid zone selection: %s", choice)
 	}
 
 	return choice, nil
@@ -289,7 +281,7 @@ func (c cluster) context() string {
 func currentClusters(proj string) (map[string]cluster, error) {
 	clusters, err := output("gcloud", "container", "clusters", "list", "--project="+proj, "--format=value(name,zone)")
 	if err != nil {
-		return nil, fmt.Errorf("list clusters: %v", err)
+		return nil, fmt.Errorf("list clusters: %w", err)
 	}
 	options := map[string]cluster{}
 	for _, line := range strings.Split(clusters, "\n") {
@@ -315,7 +307,7 @@ func createCluster(proj, choice string) (*cluster, error) {
 
 	zone, err := selectZone()
 	if err != nil {
-		return nil, fmt.Errorf("select current zone for cluster: %v", err)
+		return nil, fmt.Errorf("select current zone for cluster: %w", err)
 	}
 
 	cmd := exec.Command("gcloud", "container", "clusters", "create", choice, "--zone="+zone, "--enable-legacy-authorization", "--issue-client-certificate")
@@ -323,12 +315,12 @@ func createCluster(proj, choice string) (*cluster, error) {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
-		return nil, fmt.Errorf("create cluster: %v", err)
+		return nil, fmt.Errorf("create cluster: %w", err)
 	}
 
 	out, err := output("gcloud", "container", "clusters", "describe", choice, "--zone="+zone, "--format=value(name,zone)")
 	if err != nil {
-		return nil, fmt.Errorf("describe cluster: %v", err)
+		return nil, fmt.Errorf("describe cluster: %w", err)
 	}
 	parts := strings.Split(out, "\t")
 	if len(parts) != 2 {
@@ -343,14 +335,14 @@ func createContext(co contextOptions) (string, error) {
 	proj, err := selectProject(co.project)
 	if err != nil {
 		logrus.Info("Run gcloud auth login to initialize gcloud")
-		return "", fmt.Errorf("get current project: %v", err)
+		return "", fmt.Errorf("get current project: %w", err)
 	}
 
 	fmt.Printf("Existing GKE clusters in %s:", proj)
 	fmt.Println()
 	clusters, err := currentClusters(proj)
 	if err != nil {
-		return "", fmt.Errorf("list %s clusters: %v", proj, err)
+		return "", fmt.Errorf("list %s clusters: %w", proj, err)
 	}
 	for name := range clusters {
 		fmt.Println("  *", name)
@@ -377,7 +369,7 @@ func createContext(co contextOptions) (string, error) {
 	if choice == "" || choice == "new" || choice == "create new" {
 		cluster, err := createCluster(proj, create)
 		if err != nil {
-			return "", fmt.Errorf("create cluster in %s: %v", proj, err)
+			return "", fmt.Errorf("create cluster in %s: %w", proj, err)
 		}
 		return cluster.context(), nil
 	}
@@ -391,7 +383,7 @@ func createContext(co contextOptions) (string, error) {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
-		return "", fmt.Errorf("get credentials: %v", err)
+		return "", fmt.Errorf("get credentials: %w", err)
 	}
 	return cluster.context(), nil
 }
@@ -453,7 +445,7 @@ func selectContext(co contextOptions) (string, error) {
 	if choice == "create" || choice == "" || choice == "create new" || choice == "new" {
 		ctx, err := createContext(co)
 		if err != nil {
-			return "", fmt.Errorf("create context: %v", err)
+			return "", fmt.Errorf("create context: %w", err)
 		}
 		return ctx, nil
 	}
@@ -483,17 +475,17 @@ func applyCreate(ctx string, args ...string) error {
 	create.Stderr = os.Stderr
 	obj, err := create.StdoutPipe()
 	if err != nil {
-		return fmt.Errorf("rolebinding pipe: %v", err)
+		return fmt.Errorf("rolebinding pipe: %w", err)
 	}
 
 	if err := create.Start(); err != nil {
-		return fmt.Errorf("start create: %v", err)
+		return fmt.Errorf("start create: %w", err)
 	}
 	if err := apply(ctx, obj); err != nil {
-		return fmt.Errorf("apply: %v", err)
+		return fmt.Errorf("apply: %w", err)
 	}
 	if err := create.Wait(); err != nil {
-		return fmt.Errorf("create: %v", err)
+		return fmt.Errorf("create: %w", err)
 	}
 	return nil
 }
@@ -504,7 +496,7 @@ func apply(ctx string, in io.Reader) error {
 	apply.Stdout = os.Stdout
 	apply.Stdin = in
 	if err := apply.Start(); err != nil {
-		return fmt.Errorf("start: %v", err)
+		return fmt.Errorf("start: %w", err)
 	}
 	return apply.Wait()
 }
@@ -512,7 +504,7 @@ func apply(ctx string, in io.Reader) error {
 func applyRoleBinding(context string) error {
 	who, err := currentAccount()
 	if err != nil {
-		return fmt.Errorf("current account: %v", err)
+		return fmt.Errorf("current account: %w", err)
 	}
 	return applyCreate(context, "clusterrolebinding", "prow-admin", "--clusterrole=cluster-admin", "--user="+who)
 }
@@ -552,19 +544,18 @@ func githubToken(choice string) (string, error) {
 	}
 	path := os.ExpandEnv(choice)
 	if _, err := os.Stat(path); err != nil {
-		return "", fmt.Errorf("open %s: %v", path, err)
+		return "", fmt.Errorf("open %s: %w", path, err)
 	}
 	return path, nil
 }
 
 func githubClient(tokenPath string, dry bool) (github.Client, error) {
-	secretAgent := &secret.Agent{}
-	if err := secretAgent.Start([]string{tokenPath}); err != nil {
-		return nil, fmt.Errorf("start agent: %v", err)
+	if err := secret.Add(tokenPath); err != nil {
+		return nil, fmt.Errorf("start agent: %w", err)
 	}
 
-	gen := secretAgent.GetTokenGenerator(tokenPath)
-	censor := secretAgent.Censor
+	gen := secret.GetTokenGenerator(tokenPath)
+	censor := secret.Censor
 	if dry {
 		return github.NewDryRunClient(gen, censor, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint), nil
 	}
@@ -576,7 +567,7 @@ func applySecret(ctx, ns, name, key, path string) error {
 }
 
 func applyStarter(kc *kubernetes.Clientset, ns, choice, ctx string, overwrite bool) error {
-	const defaultStarter = "https://raw.githubusercontent.com/kubernetes/test-infra/master/config/prow/cluster/starter.yaml"
+	const defaultStarter = "https://raw.githubusercontent.com/kubernetes/test-infra/master/config/prow/cluster/starter/starter-gcs.yaml"
 
 	if choice == "" {
 		choice = prompt("Apply starter.yaml from", "github upstream")
@@ -585,12 +576,12 @@ func applyStarter(kc *kubernetes.Clientset, ns, choice, ctx string, overwrite bo
 		choice = defaultStarter
 		fmt.Println("Loading from", choice)
 	}
-	_, err := kc.AppsV1().Deployments(ns).Get("plank", metav1.GetOptions{})
+	_, err := kc.AppsV1().Deployments(ns).Get(context2.TODO(), "plank", metav1.GetOptions{})
 	switch {
 	case err != nil && apierrors.IsNotFound(err):
 		// Great, new clean namespace to deploy!
 	case err != nil: // unexpected error
-		return fmt.Errorf("get plank: %v", err)
+		return fmt.Errorf("get plank: %w", err)
 	case !overwrite: // already a plank, confirm overwrite
 		overwriteChoice := prompt(fmt.Sprintf("Prow is already deployed to %s in %s, overwrite?", ns, ctx), "no")
 		switch overwriteChoice {
@@ -609,7 +600,7 @@ func applyStarter(kc *kubernetes.Clientset, ns, choice, ctx string, overwrite bo
 func clientConfigNamespace(context string) (string, bool, error) {
 	loader, cfg, err := contextConfig()
 	if err != nil {
-		return "", false, fmt.Errorf("load contexts: %v", err)
+		return "", false, fmt.Errorf("load contexts: %w", err)
 	}
 
 	return clientcmd.NewNonInteractiveClientConfig(*cfg, context, &clientcmd.ConfigOverrides{}, loader).Namespace()
@@ -618,7 +609,7 @@ func clientConfigNamespace(context string) (string, bool, error) {
 func clientConfig(context string) (*rest.Config, error) {
 	loader, cfg, err := contextConfig()
 	if err != nil {
-		return nil, fmt.Errorf("load contexts: %v", err)
+		return nil, fmt.Errorf("load contexts: %w", err)
 	}
 
 	return clientcmd.NewNonInteractiveClientConfig(*cfg, context, &clientcmd.ConfigOverrides{}, loader).ClientConfig()
@@ -631,9 +622,10 @@ func ingress(kc *kubernetes.Clientset, ns, service string) (url.URL, error) {
 
 		// Detect ingress API to use based on Kubernetes version
 		if hasResource(kc.Discovery(), networking.SchemeGroupVersion.WithResource("ingresses")) {
-			ing, err = kc.NetworkingV1beta1().Ingresses(ns).List(metav1.ListOptions{})
+			ing, err = kc.NetworkingV1beta1().Ingresses(ns).List(context2.TODO(), metav1.ListOptions{})
 		} else {
-			oldIng, err := kc.ExtensionsV1beta1().Ingresses(ns).List(metav1.ListOptions{})
+			var oldIng *extensionsv1beta1.IngressList
+			oldIng, err = kc.ExtensionsV1beta1().Ingresses(ns).List(context2.TODO(), metav1.ListOptions{})
 			if err == nil {
 				ing, err = toNewIngress(oldIng)
 			}
@@ -725,7 +717,7 @@ func findHook(client github.Client, org, repo string, loc url.URL) (*github.Hook
 		hooks, err = client.ListRepoHooks(org, repo)
 	}
 	if err != nil {
-		return nil, fmt.Errorf("list hooks: %v", err)
+		return nil, fmt.Errorf("list hooks: %w", err)
 	}
 
 	for _, h := range hooks {
@@ -753,9 +745,9 @@ func orgRepo(in string) (string, string) {
 }
 
 func ensureHmac(kc *kubernetes.Clientset, ns string) (string, error) {
-	secret, err := kc.CoreV1().Secrets(ns).Get("hmac-token", metav1.GetOptions{})
+	secret, err := kc.CoreV1().Secrets(ns).Get(context2.TODO(), "hmac-token", metav1.GetOptions{})
 	if err != nil && !apierrors.IsNotFound(err) {
-		return "", fmt.Errorf("get: %v", err)
+		return "", fmt.Errorf("get: %w", err)
 	}
 	if err == nil {
 		buf, ok := secret.Data["hmac"]
@@ -772,12 +764,12 @@ func ensureHmac(kc *kubernetes.Clientset, ns string) (string, error) {
 	secret.Namespace = ns
 	secret.StringData = map[string]string{"hmac": hmac}
 	if err == nil {
-		if _, err = kc.CoreV1().Secrets(ns).Update(secret); err != nil {
-			return "", fmt.Errorf("update: %v", err)
+		if _, err = kc.CoreV1().Secrets(ns).Update(context2.TODO(), secret, metav1.UpdateOptions{}); err != nil {
+			return "", fmt.Errorf("update: %w", err)
 		}
 	} else {
-		if _, err = kc.CoreV1().Secrets(ns).Create(secret); err != nil {
-			return "", fmt.Errorf("create: %v", err)
+		if _, err = kc.CoreV1().Secrets(ns).Create(context2.TODO(), secret, metav1.CreateOptions{}); err != nil {
+			return "", fmt.Errorf("create: %w", err)
 		}
 	}
 	return hmac, nil
@@ -807,7 +799,7 @@ func enableHooks(client github.Client, loc url.URL, secret string, repos ...stri
 		org, repo := orgRepo(choice)
 		hook, err := findHook(client, org, repo, loc)
 		if err != nil {
-			return enabled, fmt.Errorf("find %s hook in %s: %v", locStr, choice, err)
+			return enabled, fmt.Errorf("find %s hook in %s: %w", locStr, choice, err)
 		}
 		yes := true
 		j := "json"
@@ -829,7 +821,7 @@ func enableHooks(client github.Client, loc url.URL, secret string, repos ...stri
 				id, err = client.CreateRepoHook(org, repo, req)
 			}
 			if err != nil {
-				return enabled, fmt.Errorf("create %s hook in %s: %v", locStr, choice, err)
+				return enabled, fmt.Errorf("create %s hook in %s: %w", locStr, choice, err)
 			}
 			fmt.Printf("Created hook %d to %s in %s", id, locStr, choice)
 			fmt.Println()
@@ -840,7 +832,7 @@ func enableHooks(client github.Client, loc url.URL, secret string, repos ...stri
 				err = client.EditRepoHook(org, repo, hook.ID, req)
 			}
 			if err != nil {
-				return enabled, fmt.Errorf("edit %s hook %d in %s: %v", locStr, hook.ID, choice, err)
+				return enabled, fmt.Errorf("edit %s hook %d in %s: %w", locStr, hook.ID, choice, err)
 			}
 		}
 		enabled = append(enabled, choice)
@@ -848,19 +840,19 @@ func enableHooks(client github.Client, loc url.URL, secret string, repos ...stri
 }
 
 func ensureConfigMap(kc *kubernetes.Clientset, ns, name, key string) error {
-	cm, err := kc.CoreV1().ConfigMaps(ns).Get(name, metav1.GetOptions{})
+	cm, err := kc.CoreV1().ConfigMaps(ns).Get(context2.TODO(), name, metav1.GetOptions{})
 	if err != nil {
 		if !apierrors.IsNotFound(err) {
-			return fmt.Errorf("get: %v", err)
+			return fmt.Errorf("get: %w", err)
 		}
 		cm = &corev1.ConfigMap{
 			Data: map[string]string{key: ""},
 		}
 		cm.Name = name
 		cm.Namespace = ns
-		_, err := kc.CoreV1().ConfigMaps(ns).Create(cm)
+		_, err := kc.CoreV1().ConfigMaps(ns).Create(context2.TODO(), cm, metav1.CreateOptions{})
 		if err != nil {
-			return fmt.Errorf("create: %v", err)
+			return fmt.Errorf("create: %w", err)
 		}
 	}
 
@@ -872,8 +864,8 @@ func ensureConfigMap(kc *kubernetes.Clientset, ns, name, key string) error {
 		cm.Data = map[string]string{}
 	}
 	cm.Data[key] = ""
-	if _, err := kc.CoreV1().ConfigMaps(ns).Update(cm); err != nil {
-		return fmt.Errorf("update: %v", err)
+	if _, err := kc.CoreV1().ConfigMaps(ns).Update(context2.TODO(), cm, metav1.UpdateOptions{}); err != nil {
+		return fmt.Errorf("update: %w", err)
 	}
 	return nil
 }
@@ -941,11 +933,11 @@ func main() {
 		if err != nil {
 			logrus.WithError(err).Fatal("Failed to create github client")
 		}
-		who, err := client.BotName()
+		who, err := client.BotUser()
 		if err != nil {
 			logrus.WithError(err).Fatal("Cannot access github account name")
 		}
-		fmt.Println("Prow will act as", who, "on github")
+		fmt.Println("Prow will act as", who.Login, "on github")
 
 		// create github secrets
 		fmt.Print("Applying github token into oauth-token secret...")

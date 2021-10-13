@@ -48,7 +48,7 @@ type Client struct {
 	user string
 
 	// needed to generate the token.
-	tokenGenerator func() []byte
+	tokenGenerator GitTokenGenerator
 
 	// dir is the location of the git cache.
 	dir string
@@ -93,7 +93,7 @@ func NewClientWithHost(host string) (*Client, error) {
 	}
 	return &Client{
 		logger:         logrus.WithField("client", "git"),
-		tokenGenerator: func() []byte { return nil },
+		tokenGenerator: func(_ string) (string, error) { return "", nil },
 		dir:            t,
 		git:            g,
 		base:           fmt.Sprintf("https://%s", host),
@@ -110,19 +110,22 @@ func (c *Client) SetRemote(remote string) {
 	c.base = remote
 }
 
+type GitTokenGenerator func(org string) (string, error)
+
 // SetCredentials sets credentials in the client to be used for pushing to
 // or pulling from remote repositories.
-func (c *Client) SetCredentials(user string, tokenGenerator func() []byte) {
+func (c *Client) SetCredentials(user string, tokenGenerator GitTokenGenerator) {
 	c.credLock.Lock()
 	defer c.credLock.Unlock()
 	c.user = user
 	c.tokenGenerator = tokenGenerator
 }
 
-func (c *Client) getCredentials() (string, string) {
+func (c *Client) getCredentials(org string) (string, string, error) {
 	c.credLock.RLock()
 	defer c.credLock.RUnlock()
-	return c.user, string(c.tokenGenerator())
+	token, err := c.tokenGenerator(org)
+	return c.user, token, err
 }
 
 func (c *Client) lockRepo(repo string) {
@@ -153,18 +156,21 @@ func (c *Client) Clone(organization, repository string) (*Repo, error) {
 	defer c.unlockRepo(repo)
 
 	base := c.base
-	user, pass := c.getCredentials()
+	user, pass, err := c.getCredentials(organization)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get token: %w", err)
+	}
 	if user != "" && pass != "" {
 		base = fmt.Sprintf("https://%s:%s@%s", user, pass, c.host)
 	}
 	cache := filepath.Join(c.dir, repo) + ".git"
+	remote := fmt.Sprintf("%s/%s", base, repo)
 	if _, err := os.Stat(cache); os.IsNotExist(err) {
 		// Cache miss, clone it now.
-		c.logger.Infof("Cloning %s for the first time.", repo)
+		c.logger.WithField("repo", repo).Info("Cloning for the first time.")
 		if err := os.MkdirAll(filepath.Dir(cache), os.ModePerm); err != nil && !os.IsExist(err) {
 			return nil, err
 		}
-		remote := fmt.Sprintf("%s/%s", base, repo)
 		if b, err := retryCmd(c.logger, "", c.git, "clone", "--mirror", remote, cache); err != nil {
 			return nil, fmt.Errorf("git cache clone error: %v. output: %s", err, string(b))
 		}
@@ -172,8 +178,12 @@ func (c *Client) Clone(organization, repository string) (*Repo, error) {
 		return nil, err
 	} else {
 		// Cache hit. Do a git fetch to keep updated.
-		c.logger.Infof("Fetching %s.", repo)
-		if b, err := retryCmd(c.logger, cache, c.git, "fetch"); err != nil {
+		// Update remote url, if we use apps auth the token changes every hour
+		if b, err := retryCmd(c.logger, cache, c.git, "remote", "set-url", "origin", remote); err != nil {
+			return nil, fmt.Errorf("updating remote url failed: %w. output: %s", err, string(b))
+		}
+		c.logger.WithField("repo", repo).Info("Fetching.")
+		if b, err := retryCmd(c.logger, cache, c.git, "fetch", "--prune"); err != nil {
 			return nil, fmt.Errorf("git fetch error: %v. output: %s", err, string(b))
 		}
 	}
@@ -184,16 +194,29 @@ func (c *Client) Clone(organization, repository string) (*Repo, error) {
 	if b, err := exec.Command(c.git, "clone", cache, t).CombinedOutput(); err != nil {
 		return nil, fmt.Errorf("git repo clone error: %v. output: %s", err, string(b))
 	}
-	return &Repo{
+	// Updating remote url to true remote like `git@github.com:kubernetes/test-infra.git`,
+	// instead of something like `/tmp/12345/test-infra`, so that `git fetch` in this clone makes more sense.
+	cmd := exec.Command(c.git, "remote", "set-url", "origin", remote)
+	cmd.Dir = t
+	if b, err := cmd.CombinedOutput(); err != nil {
+		return nil, fmt.Errorf("updating remote url failed: %w. output: %s", err, string(b))
+	}
+	r := &Repo{
 		dir:    t,
 		logger: c.logger,
 		git:    c.git,
+		host:   c.host,
 		base:   base,
 		org:    organization,
 		repo:   repository,
 		user:   user,
 		pass:   pass,
-	}, nil
+	}
+	// disable git GC
+	if err := r.Config("gc.auto", "0"); err != nil {
+		return nil, err
+	}
+	return r, nil
 }
 
 // Repo is a clone of a git repository. Create with Client.Clone, and don't
@@ -204,6 +227,8 @@ type Repo struct {
 
 	// git is the path to the git binary.
 	git string
+	// host is the git host.
+	host string
 	// base is the base path for remote git fetch calls.
 	base string
 	// org is the organization name: "org" in "org/repo".
@@ -238,6 +263,31 @@ func (r *Repo) Clean() error {
 	return os.RemoveAll(r.dir)
 }
 
+// ResetHard runs `git reset --hard`
+func (r *Repo) ResetHard(commitlike string) error {
+	// `git reset --hard` doesn't cleanup untracked file
+	r.logger.Info("Clean untracked files and dirs.")
+	if b, err := r.gitCommand("clean", "-df").CombinedOutput(); err != nil {
+		return fmt.Errorf("error clean -df: %v. output: %s", err, string(b))
+	}
+	r.logger.WithField("commitlike", commitlike).Info("Reset hard.")
+	co := r.gitCommand("reset", "--hard", commitlike)
+	if b, err := co.CombinedOutput(); err != nil {
+		return fmt.Errorf("error reset hard %s: %v. output: %s", commitlike, err, string(b))
+	}
+	return nil
+}
+
+// IsDirty checks whether the repo is dirty or not
+func (r *Repo) IsDirty() (bool, error) {
+	r.logger.Info("Checking is dirty.")
+	b, err := r.gitCommand("status", "--porcelain").CombinedOutput()
+	if err != nil {
+		return false, fmt.Errorf("error add -A: %v. output: %s", err, string(b))
+	}
+	return len(b) > 0, nil
+}
+
 func (r *Repo) gitCommand(arg ...string) *exec.Cmd {
 	cmd := exec.Command(r.git, arg...)
 	cmd.Dir = r.dir
@@ -247,7 +297,7 @@ func (r *Repo) gitCommand(arg ...string) *exec.Cmd {
 
 // Checkout runs git checkout.
 func (r *Repo) Checkout(commitlike string) error {
-	r.logger.Infof("Checkout %s.", commitlike)
+	r.logger.WithField("commitlike", commitlike).Info("Checkout.")
 	co := r.gitCommand("checkout", commitlike)
 	if b, err := co.CombinedOutput(); err != nil {
 		return fmt.Errorf("error checking out %s: %v. output: %s", commitlike, err, string(b))
@@ -257,7 +307,7 @@ func (r *Repo) Checkout(commitlike string) error {
 
 // RevParse runs git rev-parse.
 func (r *Repo) RevParse(commitlike string) (string, error) {
-	r.logger.Infof("RevParse %s.", commitlike)
+	r.logger.WithField("commitlike", commitlike).Info("RevParse.")
 	b, err := r.gitCommand("rev-parse", commitlike).CombinedOutput()
 	if err != nil {
 		return "", fmt.Errorf("error rev-parsing %s: %v. output: %s", commitlike, err, string(b))
@@ -268,17 +318,14 @@ func (r *Repo) RevParse(commitlike string) (string, error) {
 // BranchExists returns true if branch exists in heads.
 func (r *Repo) BranchExists(branch string) bool {
 	heads := "origin"
-	r.logger.Infof("Checking if branch %s exists in %s.", branch, heads)
+	r.logger.WithFields(logrus.Fields{"branch": branch, "heads": heads}).Info("Checking if branch exists.")
 	co := r.gitCommand("ls-remote", "--exit-code", "--heads", heads, branch)
-	if co.Run() == nil {
-		return true
-	}
-	return false
+	return co.Run() == nil
 }
 
 // CheckoutNewBranch creates a new branch and checks it out.
 func (r *Repo) CheckoutNewBranch(branch string) error {
-	r.logger.Infof("Create and checkout %s.", branch)
+	r.logger.WithField("branch", branch).Info("Create and checkout.")
 	co := r.gitCommand("checkout", "-b", branch)
 	if b, err := co.CombinedOutput(); err != nil {
 		return fmt.Errorf("error checking out %s: %v. output: %s", branch, err, string(b))
@@ -295,7 +342,7 @@ func (r *Repo) Merge(commitlike string) (bool, error) {
 // MergeWithStrategy attempts to merge commitlike into the current branch given the merge strategy.
 // It returns true if the merge completes. It returns an error if the abort fails.
 func (r *Repo) MergeWithStrategy(commitlike string, mergeStrategy prowgithub.PullRequestMergeType) (bool, error) {
-	r.logger.Infof("Merging %s.", commitlike)
+	r.logger.WithField("commitlike", commitlike).Info("Merging.")
 	switch mergeStrategy {
 	case prowgithub.MergeMerge:
 		return r.mergeWithMergeStrategyMerge(commitlike)
@@ -313,7 +360,7 @@ func (r *Repo) mergeWithMergeStrategyMerge(commitlike string) (bool, error) {
 	if err == nil {
 		return true, nil
 	}
-	r.logger.WithError(err).Infof("Merge failed with output: %s", string(b))
+	r.logger.WithField("out", string(b)).WithError(err).Infof("Merge failed.")
 
 	if b, err := r.gitCommand("merge", "--abort").CombinedOutput(); err != nil {
 		return false, fmt.Errorf("error aborting merge for commitlike %s: %v. output: %s", commitlike, err, string(b))
@@ -327,7 +374,7 @@ func (r *Repo) mergeWithMergeStrategySquash(commitlike string) (bool, error) {
 
 	b, err := co.CombinedOutput()
 	if err != nil {
-		r.logger.WithError(err).Infof("Merge failed with output: %s", string(b))
+		r.logger.WithField("out", string(b)).WithError(err).Infof("Merge failed.")
 		if b, err := r.gitCommand("reset", "--hard", "HEAD").CombinedOutput(); err != nil {
 			return false, fmt.Errorf("error resetting after failed squash for commitlike %s: %v. output: %s", commitlike, err, string(b))
 		}
@@ -336,7 +383,7 @@ func (r *Repo) mergeWithMergeStrategySquash(commitlike string) (bool, error) {
 
 	b, err = r.gitCommand("commit", "--no-stat", "-m", "merge").CombinedOutput()
 	if err != nil {
-		r.logger.WithError(err).Infof("Commit after squash failed with output: %s", string(b))
+		r.logger.WithField("out", string(b)).WithError(err).Infof("Commit after squash failed.")
 		return false, err
 	}
 
@@ -356,7 +403,7 @@ func (r *Repo) MergeAndCheckout(baseSHA string, mergeStrategy prowgithub.PullReq
 	if len(headSHAs) == 0 {
 		return nil
 	}
-	r.logger.Infof("Merging headSHAs %v onto base %s using strategy %s", headSHAs, baseSHA, mergeStrategy)
+	r.logger.WithFields(logrus.Fields{"headSHAs": headSHAs, "baseSHA": baseSHA, "strategy": mergeStrategy}).Info("Merging.")
 	for _, headSHA := range headSHAs {
 		ok, err := r.MergeWithStrategy(headSHA, mergeStrategy)
 		if err != nil {
@@ -372,45 +419,57 @@ func (r *Repo) MergeAndCheckout(baseSHA string, mergeStrategy prowgithub.PullReq
 // by performing a three-way merge (similar to git cherry-pick). It returns
 // an error if the patch cannot be applied.
 func (r *Repo) Am(path string) error {
-	r.logger.Infof("Applying %s.", path)
+	r.logger.WithField("path", path).Info("Applying.")
 	co := r.gitCommand("am", "--3way", path)
 	b, err := co.CombinedOutput()
 	if err == nil {
 		return nil
 	}
 	output := string(b)
-	r.logger.WithError(err).Infof("Patch apply failed with output: %s", output)
+	r.logger.WithField("out", output).WithError(err).Infof("Patch apply failed.")
 	if b, abortErr := r.gitCommand("am", "--abort").CombinedOutput(); abortErr != nil {
-		r.logger.WithError(abortErr).Warningf("Aborting patch apply failed with output: %s", string(b))
+		r.logger.WithField("out", string(b)).WithError(abortErr).Warning("Aborting patch apply failed.")
 	}
 	applyMsg := "The copy of the patch that failed is found in: .git/rebase-apply/patch"
+	msg := ""
 	if strings.Contains(output, applyMsg) {
 		i := strings.Index(output, applyMsg)
-		err = fmt.Errorf("%s", output[:i])
+		msg = string(output[:i])
+	} else {
+		msg = string(output)
 	}
-	return err
+	return errors.New(msg)
 }
 
 // Push pushes over https to the provided owner/repo#branch using a password
 // for basic auth.
-func (r *Repo) Push(branch string) error {
+func (r *Repo) Push(branch string, force bool) error {
+	return r.PushToNamedFork(r.user, branch, force)
+}
+
+func (r *Repo) PushToNamedFork(forkName, branch string, force bool) error {
 	if r.user == "" || r.pass == "" {
 		return errors.New("cannot push without credentials - configure your git client")
 	}
-	r.logger.Infof("Pushing to '%s/%s (branch: %s)'.", r.user, r.repo, branch)
-	remote := fmt.Sprintf("https://%s:%s@%s/%s/%s", r.user, r.pass, github, r.user, r.repo)
-	co := r.gitCommand("push", remote, branch)
+	r.logger.WithFields(logrus.Fields{"user": r.user, "repo": r.repo, "branch": branch}).Info("Pushing.")
+	remote := fmt.Sprintf("https://%s:%s@%s/%s/%s", r.user, r.pass, r.host, r.user, forkName)
+	var co *exec.Cmd
+	if !force {
+		co = r.gitCommand("push", remote, branch)
+	} else {
+		co = r.gitCommand("push", "--force", remote, branch)
+	}
 	out, err := co.CombinedOutput()
 	if err != nil {
-		r.logger.Errorf("Pushing failed with error: %v and output: %q", err, string(out))
-		return fmt.Errorf("pushing failed, output: %q, error: %v", string(out), err)
+		r.logger.WithField("out", string(out)).WithError(err).Error("Pushing failed.")
+		return fmt.Errorf("pushing failed, output: %q, error: %w", string(out), err)
 	}
 	return nil
 }
 
 // CheckoutPullRequest does exactly that.
 func (r *Repo) CheckoutPullRequest(number int) error {
-	r.logger.Infof("Fetching and checking out %s/%s#%d.", r.org, r.repo, number)
+	r.logger.WithFields(logrus.Fields{"org": r.org, "repo": r.repo, "number": number}).Info("Fetching and checking out.")
 	if b, err := retryCmd(r.logger, r.dir, r.git, "fetch", r.base+"/"+r.org+"/"+r.repo, fmt.Sprintf("pull/%d/head:pull%d", number, number)); err != nil {
 		return fmt.Errorf("git fetch failed for PR %d: %v. output: %s", number, err, string(b))
 	}
@@ -422,10 +481,10 @@ func (r *Repo) CheckoutPullRequest(number int) error {
 }
 
 // Config runs git config.
-func (r *Repo) Config(key, value string) error {
-	r.logger.Infof("Running git config %s %s", key, value)
-	if b, err := r.gitCommand("config", key, value).CombinedOutput(); err != nil {
-		return fmt.Errorf("git config %s %s failed: %v. output: %s", key, value, err, string(b))
+func (r *Repo) Config(args ...string) error {
+	r.logger.WithField("args", args).Info("Running git config.")
+	if b, err := r.gitCommand(append([]string{"config"}, args...)...).CombinedOutput(); err != nil {
+		return fmt.Errorf("git config %v failed: %v. output: %s", args, err, string(b))
 	}
 	return nil
 }
@@ -441,7 +500,8 @@ func retryCmd(l *logrus.Entry, dir, cmd string, arg ...string) ([]byte, error) {
 		c.Dir = dir
 		b, err = c.CombinedOutput()
 		if err != nil {
-			l.Warningf("Running %s %v returned error %v with output %s.", cmd, arg, err, string(b))
+			err = fmt.Errorf("running %q %v returned error %w with output %q", cmd, arg, err, string(b))
+			l.WithField("count", i+1).WithError(err).Debug("Retrying, if this is not the 3rd try then this will be retried.")
 			time.Sleep(sleepyTime)
 			sleepyTime *= 2
 			continue
@@ -451,8 +511,10 @@ func retryCmd(l *logrus.Entry, dir, cmd string, arg ...string) ([]byte, error) {
 	return b, err
 }
 
+// Diff runs 'git diff HEAD <sha> --name-only' and returns a list
+// of file names with upcoming changes
 func (r *Repo) Diff(head, sha string) (changes []string, err error) {
-	r.logger.Infof("Diff head with %s'.", sha)
+	r.logger.WithField("sha", sha).Info("Diff head.")
 	output, err := r.gitCommand("diff", head, sha, "--name-only").CombinedOutput()
 	if err != nil {
 		return nil, err
@@ -468,7 +530,7 @@ func (r *Repo) Diff(head, sha string) (changes []string, err error) {
 // MergeCommitsExistBetween runs 'git log <target>..<head> --merged' to verify
 // if merge commits exist between "target" and "head".
 func (r *Repo) MergeCommitsExistBetween(target, head string) (bool, error) {
-	r.logger.Infof("Verifying if merge commits exist between %s and %s.", target, head)
+	r.logger.WithFields(logrus.Fields{"target": target, "head": head}).Info("Verifying if merge commits exist.")
 	b, err := r.gitCommand("log", fmt.Sprintf("%s..%s", target, head), "--oneline", "--merges").CombinedOutput()
 	if err != nil {
 		return false, fmt.Errorf("error verifying if merge commits exist between %s and %s: %v. output: %s", target, head, err, string(b))
@@ -477,11 +539,21 @@ func (r *Repo) MergeCommitsExistBetween(target, head string) (bool, error) {
 }
 
 // ShowRef returns the commit for a commitlike. Unlike rev-parse it does not require a checkout.
-func (i *Repo) ShowRef(commitlike string) (string, error) {
-	i.logger.Infof("Getting the commit sha for commitlike %s", commitlike)
-	out, err := i.gitCommand("show-ref", "-s", commitlike).CombinedOutput()
+func (r *Repo) ShowRef(commitlike string) (string, error) {
+	r.logger.WithField("commitlike", commitlike).Info("Getting the commit sha.")
+	out, err := r.gitCommand("show-ref", "-s", commitlike).CombinedOutput()
 	if err != nil {
-		return "", fmt.Errorf("failed to get commit sha for commitlike %s: %v", commitlike, err)
+		return "", fmt.Errorf("failed to get commit sha for commitlike %s: %w", commitlike, err)
 	}
 	return strings.TrimSpace(string(out)), nil
+}
+
+// Fetch fetches from remote
+func (r *Repo) Fetch() error {
+	r.logger.Infof("Fetching from remote.")
+	out, err := r.gitCommand("fetch").CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("failed to fetch: %v.\nOutput: %s", err, string(out))
+	}
+	return nil
 }

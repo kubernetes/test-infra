@@ -18,12 +18,13 @@ limitations under the License.
 package logrusutil
 
 import (
-	"bytes"
-	"strings"
+	"sync"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
 
+	"k8s.io/test-infra/prow/secretutil"
 	"k8s.io/test-infra/prow/version"
 )
 
@@ -63,7 +64,9 @@ func ComponentInit() {
 // map in order to not modify the caller's Entry, as that is not a thread
 // safe operation.
 func (f *DefaultFieldsFormatter) Format(entry *logrus.Entry) ([]byte, error) {
-	data := make(logrus.Fields, len(entry.Data)+len(f.DefaultFields))
+	data := make(logrus.Fields, len(entry.Data)+len(f.DefaultFields)+1)
+	// GCP's log collection expects a "severity" field instead of "level"
+	data["severity"] = entry.Level
 	for k, v := range f.DefaultFields {
 		data[k] = v
 	}
@@ -83,47 +86,68 @@ func (f *DefaultFieldsFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 // CensoringFormatter represents a logrus formatter that
 // can be used to censor sensitive information
 type CensoringFormatter struct {
-	delegate   logrus.Formatter
-	getSecrets func() sets.String
+	delegate logrus.Formatter
+	censorer secretutil.Censorer
 }
 
 func (f CensoringFormatter) Format(entry *logrus.Entry) ([]byte, error) {
+	// Depending on the formatter in the delegate, the message will actually
+	// change shape/content - think of a message with newlines or quotes going
+	// to a JSON output. In order to catch this, we need to pre-censor the message.
+	message := []byte(entry.Message)
+	f.censorer.Censor(&message)
+	entry.Message = string(message)
 	raw, err := f.delegate.Format(entry)
 	if err != nil {
 		return raw, err
 	}
-	return f.censor(raw), nil
-}
-
-const censored = "CENSORED"
-
-var (
-	censoredBytes = []byte(censored)
-	standardLog   = logrus.NewEntry(logrus.StandardLogger())
-)
-
-// Censor replaces sensitive parts of the content with a placeholder.
-func (f CensoringFormatter) censor(content []byte) []byte {
-	for _, secret := range f.getSecrets().List() {
-		trimmedSecret := strings.TrimSpace(secret)
-		if trimmedSecret != secret {
-			standardLog.Warning("Secret is not trimmed")
-			secret = trimmedSecret
-		}
-		if secret == "" {
-			standardLog.Warning("Secret is an empty string, ignoring")
-			continue
-		}
-		content = bytes.ReplaceAll(content, []byte(secret), censoredBytes)
-	}
-	return content
+	f.censorer.Censor(&raw)
+	return raw, nil
 }
 
 // NewCensoringFormatter generates a `CensoringFormatter` with
 // a formatter as delegate and a set of strings to censor
 func NewCensoringFormatter(f logrus.Formatter, getSecrets func() sets.String) CensoringFormatter {
+	censorer := secretutil.NewCensorer()
+	censorer.Refresh(getSecrets().List()...)
+	return NewFormatterWithCensor(f, censorer)
+}
+
+// NewFormatterWithCensor generates a `CensoringFormatter` with
+// a formatter as delegate and censorer to use
+func NewFormatterWithCensor(f logrus.Formatter, censorer secretutil.Censorer) CensoringFormatter {
 	return CensoringFormatter{
-		getSecrets: getSecrets,
-		delegate:   f,
+		censorer: censorer,
+		delegate: f,
 	}
+}
+
+// ThrottledWarnf prints a warning the first time called and if at most `period` has elapsed since the last time.
+func ThrottledWarnf(last *time.Time, period time.Duration, format string, args ...interface{}) {
+	if throttleCheck(last, period) {
+		logrus.Warnf(format, args...)
+	}
+}
+
+var throttleLock sync.RWMutex // Rare updates and concurrent readers, so reuse the same lock
+
+// throttleCheck returns true when first called or if
+// at least `period` has elapsed since the last time it returned true.
+func throttleCheck(last *time.Time, period time.Duration) bool {
+	// has it been at least `period` since we won the race?
+	throttleLock.RLock()
+	fresh := time.Since(*last) <= period
+	throttleLock.RUnlock()
+	if fresh { // event occurred too recently
+		return false
+	}
+	// Event is stale, will we win the race?
+	throttleLock.Lock()
+	defer throttleLock.Unlock()
+	now := time.Now()             // Recalculate now, we might wait awhile for the lock
+	if now.Sub(*last) <= period { // Nope, we lost
+		return false
+	}
+	*last = now
+	return true
 }

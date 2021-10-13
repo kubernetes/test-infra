@@ -1,0 +1,9 @@
+# Dashboard Group
+
+dashboard_groups:
+- name: sig-docs
+  dashboard_names:
+  - sig-docs-website
+
+dashboards:
+- name: sig-docs-website

@@ -17,6 +17,7 @@ limitations under the License.
 package serviceaccount
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -44,6 +45,7 @@ func checkSAAuth(clientset kubernetes.Interface) error {
 
 	// https://kubernetes.io/docs/reference/access-authn-authz/rbac/#privilege-escalation-prevention-and-bootstrapping
 	if sar, err := client.Create(
+		context.TODO(),
 		&authorizationv1beta1.SelfSubjectAccessReview{
 			Spec: authorizationv1beta1.SelfSubjectAccessReviewSpec{
 				ResourceAttributes: &authorizationv1beta1.ResourceAttributes{
@@ -53,8 +55,9 @@ func checkSAAuth(clientset kubernetes.Interface) error {
 					Name:     clusterRole,
 				},
 			},
-		}); err != nil {
-		return fmt.Errorf("bind %s: %v", clusterRole, err)
+		},
+		metav1.CreateOptions{}); err != nil {
+		return fmt.Errorf("bind %s: %w", clusterRole, err)
 	} else if !sar.Status.Allowed {
 		return fmt.Errorf("not authorized to bind %s: %s", clusterRole, sar.Status.Reason)
 	}
@@ -72,7 +75,7 @@ func getOrCreateSA(clientset kubernetes.Interface) ([]byte, []byte, error) {
 	}
 
 	// Create ServiceAccount if not exists.
-	if _, err := client.Get(serviceAccountName, metav1.GetOptions{}); err != nil {
+	if _, err := client.Get(context.TODO(), serviceAccountName, metav1.GetOptions{}); err != nil {
 		// Generate a Kubernetes ServiceAccount object.
 		saObj := &corev1.ServiceAccount{
 			ObjectMeta: metav1.ObjectMeta{
@@ -81,22 +84,22 @@ func getOrCreateSA(clientset kubernetes.Interface) ([]byte, []byte, error) {
 		}
 
 		// Create ServiceAccount.
-		_, err := client.Create(saObj)
+		_, err := client.Create(context.TODO(), saObj, metav1.CreateOptions{})
 		if err != nil {
-			return nil, nil, fmt.Errorf("create SA: %v", err)
+			return nil, nil, fmt.Errorf("create SA: %w", err)
 		}
 	}
 
 	// Get/Create ClusterRoleBinding.
 	err := getOrCreateCRB(clientset)
 	if err != nil {
-		return nil, nil, fmt.Errorf("get or create CRB: %v", err)
+		return nil, nil, fmt.Errorf("get or create CRB: %w", err)
 	}
 
 	// Get ServiceAccount.
-	saObj, err := client.Get(serviceAccountName, metav1.GetOptions{})
+	saObj, err := client.Get(context.TODO(), serviceAccountName, metav1.GetOptions{})
 	if err != nil {
-		return nil, nil, fmt.Errorf("get SA: %v", err)
+		return nil, nil, fmt.Errorf("get SA: %w", err)
 	}
 
 	return getSASecrets(clientset, saObj)
@@ -107,7 +110,7 @@ func getOrCreateCRB(clientset kubernetes.Interface) error {
 	client := clientset.RbacV1().ClusterRoleBindings()
 
 	// Get ClusterRoleBinding if exists.
-	if _, err := client.Get(clusterRoleBindingName, metav1.GetOptions{}); err == nil {
+	if _, err := client.Get(context.TODO(), clusterRoleBindingName, metav1.GetOptions{}); err == nil {
 		return nil
 	}
 
@@ -119,9 +122,9 @@ func getOrCreateCRB(clientset kubernetes.Interface) error {
 	}
 
 	// Create ClusterRoleBinding.
-	_, err := client.Create(crbObj)
+	_, err := client.Create(context.TODO(), crbObj, metav1.CreateOptions{})
 	if err != nil {
-		return fmt.Errorf("create CRB: %v", err)
+		return fmt.Errorf("create CRB: %w", err)
 	}
 
 	return nil
@@ -136,9 +139,9 @@ func getSASecrets(clientset kubernetes.Interface, saObj *corev1.ServiceAccount) 
 	}
 
 	// Get Secret.
-	secretObj, err := client.Get(saObj.Secrets[0].Name, metav1.GetOptions{})
+	secretObj, err := client.Get(context.TODO(), saObj.Secrets[0].Name, metav1.GetOptions{})
 	if err != nil {
-		return nil, nil, fmt.Errorf("get secret: %v", err)
+		return nil, nil, fmt.Errorf("get secret: %w", err)
 	}
 
 	token, ok := secretObj.Data[corev1.ServiceAccountTokenKey]
@@ -158,7 +161,7 @@ func getSASecrets(clientset kubernetes.Interface, saObj *corev1.ServiceAccount) 
 func CreateClusterServiceAccountCredentials(clientset kubernetes.Interface) (token []byte, caPEM []byte, err error) {
 	token, caPEM, err = getOrCreateSA(clientset)
 	if err != nil {
-		return nil, nil, fmt.Errorf("get or create SA: %v", err)
+		return nil, nil, fmt.Errorf("get or create SA: %w", err)
 	}
 
 	return token, caPEM, nil

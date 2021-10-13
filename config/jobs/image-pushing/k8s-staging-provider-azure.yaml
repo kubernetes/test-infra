@@ -8,20 +8,20 @@ postsubmits:
       annotations:
         # This is the name of some testgrid dashboard to report to.
         # If this is the first one for your sig, you may need to create one
-        testgrid-dashboards: provider-azure-cloud-provider-azure
+        testgrid-dashboards: provider-azure-cloud-provider-azure, sig-k8s-infra-gcb
         testgrid-tab-name: post-cloud-provider-azure-push-images
       decorate: true
       # this causes the job to only run on the master branch. Remove it if your
       # job makes sense on every branch (unless it's setting a `latest` tag it
       # probably does).
       branches:
-        - ^master$
+        - ^main$
         # this is a regex for semver, from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
         - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200422-c760048
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210927-471c27b6e3
             command:
               - /run.sh
             args:

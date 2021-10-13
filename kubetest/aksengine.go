@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -41,7 +42,6 @@ import (
 
 	"github.com/Azure/azure-storage-blob-go/azblob"
 	"github.com/Azure/go-autorest/autorest/azure"
-	uuid "github.com/satori/go.uuid"
 )
 
 const (
@@ -80,11 +80,14 @@ var (
 	aksCheckParams           = flag.Bool("aksengine-check-params", true, "Set to True if you want to validate your input parameters")
 	aksDumpClusterLogs       = flag.Bool("aksengine-dump-cluster-logs", true, "Set to True if you want to dump cluster logs")
 	aksNodeProblemDetector   = flag.Bool("aksengine-node-problem-detector", false, "Set to True if you want to enable node problem detector addon")
+	runExternalE2EGinkgoTest = flag.Bool("run-external-e2e-ginkgo-test", false, "Set to True if you want external e2e ginkgo tests for the CSI driver")
 	testCcm                  = flag.Bool("test-ccm", false, "Set to True if you want kubetest to run e2e tests for ccm")
 	testAzureFileCSIDriver   = flag.Bool("test-azure-file-csi-driver", false, "Set to True if you want kubetest to run e2e tests for Azure File CSI driver")
 	testAzureDiskCSIDriver   = flag.Bool("test-azure-disk-csi-driver", false, "Set to True if you want kubetest to run e2e tests for Azure Disk CSI driver")
-	testBlobfuseCSIDriver    = flag.Bool("test-blobfuse-csi-driver", false, "Set to True if you want kubetest to run e2e tests for Blobfuse CSI driver")
+	testBlobCSIDriver        = flag.Bool("test-blob-csi-driver", false, "Set to True if you want kubetest to run e2e tests for Azure Blob Storage CSI driver")
 	testSecretStoreCSIDriver = flag.Bool("test-secrets-store-csi-driver", false, "Set to True if you want kubetest to run e2e tests for Secrets Store CSI driver")
+	testSMBCSIDriver         = flag.Bool("test-csi-driver-smb", false, "Set to True if you want kubetest to run e2e tests for SMB CSI driver")
+	testNFSCSIDriver         = flag.Bool("test-csi-driver-nfs", false, "Set to True if you want kubetest to run e2e tests for NFS CSI driver")
 	// Commonly used variables
 	k8sVersion                = getImageVersion(util.K8s("kubernetes"))
 	cloudProviderAzureVersion = getImageVersion(util.K8sSigs("cloud-provider-azure"))
@@ -211,7 +214,11 @@ func (c *aksEngineDeployer) SetCustomCloudProfileEnvironment() error {
 			Timeout: 30 * time.Second,
 		}
 		endpointsresp, err := httpClient.Get(metadataURL)
-		if err != nil || endpointsresp.StatusCode != 200 {
+		if err != nil {
+			return fmt.Errorf("%s . apimodel invalid: failed to retrieve Azure Stack endpoints from %s", err, metadataURL)
+		}
+		defer endpointsresp.Body.Close()
+		if endpointsresp.StatusCode != 200 {
 			return fmt.Errorf("%s . apimodel invalid: failed to retrieve Azure Stack endpoints from %s", err, metadataURL)
 		}
 
@@ -284,10 +291,17 @@ func validateAzureStackCloudProfile() error {
 
 func randomAKSEngineLocation() string {
 	var AzureLocations = []string{
+		"canadacentral",
+		"centralus",
+		"eastus",
+		"eastus2",
+		"francecentral",
+		"northcentralus",
+		"northeurope",
+		"southcentralus",
+		"uksouth",
 		"westeurope",
 		"westus2",
-		"eastus2",
-		"southcentralus",
 	}
 
 	return AzureLocations[rand.Intn(len(AzureLocations))]
@@ -311,7 +325,7 @@ func checkParams() error {
 		return fmt.Errorf("no credentials file path specified")
 	}
 	if *aksResourceName == "" {
-		*aksResourceName = "kubetest-" + uuid.NewV1().String()
+		*aksResourceName = "kubetest-" + strings.ToLower(randString(8))
 	}
 	if *aksResourceGroupName == "" {
 		*aksResourceGroupName = *aksResourceName
@@ -340,7 +354,7 @@ func checkParams() error {
 
 func newAKSEngine() (*aksEngineDeployer, error) {
 	if err := checkParams(); err != nil {
-		return nil, fmt.Errorf("error creating Azure K8S cluster: %v", err)
+		return nil, fmt.Errorf("error creating Azure K8S cluster: %w", err)
 	}
 
 	sshKey, err := ioutil.ReadFile(*aksSSHPublicKeyPath)
@@ -348,13 +362,13 @@ func newAKSEngine() (*aksEngineDeployer, error) {
 		if os.IsNotExist(err) {
 			sshKey = []byte{}
 		} else {
-			return nil, fmt.Errorf("error reading SSH Key %v %v", *aksSSHPublicKeyPath, err)
+			return nil, fmt.Errorf("error reading SSH Key %v %w", *aksSSHPublicKeyPath, err)
 		}
 	}
 
 	outputDir, err := ioutil.TempDir(os.Getenv("HOME"), "tmp")
 	if err != nil {
-		return nil, fmt.Errorf("error creating tempdir: %v", err)
+		return nil, fmt.Errorf("error creating tempdir: %w", err)
 	}
 
 	c := aksEngineDeployer{
@@ -392,7 +406,7 @@ func newAKSEngine() (*aksEngineDeployer, error) {
 	}
 	creds, err := getAzCredentials()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get azure credentials: %v", err)
+		return nil, fmt.Errorf("failed to get azure credentials: %w", err)
 	}
 	c.credentials = creds
 	c.azureBlobContainerURL = fmt.Sprintf(azureBlobContainerURLTemplate, c.credentials.StorageAccountName, os.Getenv("AZ_STORAGE_CONTAINER_NAME"))
@@ -401,11 +415,11 @@ func newAKSEngine() (*aksEngineDeployer, error) {
 
 	err = c.SetCustomCloudProfileEnvironment()
 	if err != nil {
-		return nil, fmt.Errorf("failed to create custom cloud profile file: %v", err)
+		return nil, fmt.Errorf("failed to create custom cloud profile file: %w", err)
 	}
 	err = c.getAzureClient(c.ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to generate ARM client: %v", err)
+		return nil, fmt.Errorf("failed to generate ARM client: %w", err)
 	}
 	// like kops and gke set KUBERNETES_CONFORMANCE_TEST so the auth is picked up
 	// from kubectl instead of bash inference.
@@ -417,36 +431,7 @@ func newAKSEngine() (*aksEngineDeployer, error) {
 		return nil, err
 	}
 
-	if err := c.azLogin(); err != nil {
-		return nil, err
-	}
-
 	return &c, nil
-}
-
-func (c *aksEngineDeployer) azLogin() error {
-	// Check if azure-cli has been installed
-	if err := control.FinishRunning(exec.Command("az")); err != nil {
-		if err := control.FinishRunning(exec.Command("pip", "install", "azure-cli==2.2")); err != nil {
-			return err
-		}
-	}
-
-	cmd := exec.Command("az", "login", "--service-principal",
-		fmt.Sprintf("-u=%s", c.credentials.ClientID),
-		fmt.Sprintf("-p=%s", c.credentials.ClientSecret),
-		fmt.Sprintf("-t=%s", c.credentials.TenantID))
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("failed az login with error: %v", err)
-	}
-
-	cmd = exec.Command("az", "account", "set", "-s", c.credentials.SubscriptionID)
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("failed to az account set: %v", err)
-	}
-
-	log.Println("az login success.")
-	return nil
 }
 
 func getAKSDeploymentMethod(k8sRelease string) aksDeploymentMethod {
@@ -482,29 +467,25 @@ func (c *aksEngineDeployer) populateAPIModelTemplate() error {
 		if err != nil {
 			return fmt.Errorf("error reading ApiModel template file: %v.", err)
 		}
-		err = json.Unmarshal(template, &v)
-		if err != nil {
-			return fmt.Errorf("error unmarshaling ApiModel template file: %v", err)
+		dec := json.NewDecoder(bytes.NewReader(template))
+		// Enforce strict JSON
+		dec.DisallowUnknownFields()
+		if err := dec.Decode(&v); err != nil {
+			return fmt.Errorf("error unmarshaling ApiModel template file: %w", err)
 		}
 	} else {
-		return fmt.Errorf("No template file specified %v", err)
+		return fmt.Errorf("No template file specified %w", err)
 	}
 
-	// set default distro so we do not use prebuilt os image
-	if v.Properties.MasterProfile.Distro == "" {
-		v.Properties.MasterProfile.Distro = "ubuntu"
-	}
-	for _, agentPool := range v.Properties.AgentPoolProfiles {
-		if agentPool.Distro == "" {
-			agentPool.Distro = "ubuntu"
-		}
-	}
 	// replace APIModel template properties from flags
 	if c.location != "" {
 		v.Location = c.location
 	}
 	if c.name != "" {
 		v.Name = c.name
+	}
+	if v.Properties.OrchestratorProfile == nil {
+		v.Properties.OrchestratorProfile = &OrchestratorProfile{}
 	}
 	if c.k8sVersion != "" {
 		v.Properties.OrchestratorProfile.OrchestratorRelease = c.k8sVersion
@@ -549,8 +530,11 @@ func (c *aksEngineDeployer) populateAPIModelTemplate() error {
 	}}
 
 	if !toBool(v.Properties.OrchestratorProfile.KubernetesConfig.UseManagedIdentity) {
-		v.Properties.ServicePrincipalProfile.ClientID = c.credentials.ClientID
-		v.Properties.ServicePrincipalProfile.Secret = c.credentials.ClientSecret
+		// prevent the nil pointer panic
+		v.Properties.ServicePrincipalProfile = &ServicePrincipalProfile{
+			ClientID: c.credentials.ClientID,
+			Secret:   c.credentials.ClientSecret,
+		}
 	} else {
 		c.useManagedIdentity = true
 		if v.Properties.OrchestratorProfile.KubernetesConfig.UserAssignedID != "" {
@@ -624,11 +608,14 @@ func (c *aksEngineDeployer) populateAPIModelTemplate() error {
 		}
 	}
 
+	// disable runUnattendedUpgradesOnBootstrap to avoid health check during node reboot
+	v.Properties.LinuxProfile.RunUnattendedUpgradesOnBootstrap = false
+
 	apiModel, _ := json.MarshalIndent(v, "", "    ")
 	c.apiModelPath = path.Join(c.outputDir, "kubernetes.json")
 	err = ioutil.WriteFile(c.apiModelPath, apiModel, 0644)
 	if err != nil {
-		return fmt.Errorf("cannot write apimodel to file: %v", err)
+		return fmt.Errorf("cannot write apimodel to file: %w", err)
 	}
 	return nil
 }
@@ -710,16 +697,16 @@ func (c *aksEngineDeployer) loadARMTemplates() error {
 	c.templateJSON = make(map[string]interface{})
 	err = json.Unmarshal(template, &c.templateJSON)
 	if err != nil {
-		return fmt.Errorf("error unmarshall template %v", err.Error())
+		return fmt.Errorf("error unmarshall template %w", err)
 	}
 	parameters, err := ioutil.ReadFile(path.Join(c.outputDir, "azuredeploy.parameters.json"))
 	if err != nil {
-		return fmt.Errorf("error reading ARM parameters file: %v", err)
+		return fmt.Errorf("error reading ARM parameters file: %w", err)
 	}
 	c.parametersJSON = make(map[string]interface{})
 	err = json.Unmarshal(parameters, &c.parametersJSON)
 	if err != nil {
-		return fmt.Errorf("error unmarshall parameters %v", err.Error())
+		return fmt.Errorf("error unmarshall parameters %w", err)
 	}
 	c.parametersJSON = c.parametersJSON["parameters"].(map[string]interface{})
 
@@ -729,6 +716,9 @@ func (c *aksEngineDeployer) loadARMTemplates() error {
 func (c *aksEngineDeployer) getAzureClient(ctx context.Context) error {
 	// instantiate Azure Resource Manager Client
 	env, err := azure.EnvironmentFromName(c.azureEnvironment)
+	if err != nil {
+		return err
+	}
 	var client *AzureClient
 	if c.isAzureStackCloud() && strings.EqualFold(c.azureIdentitySystem, ADFSIdentitySystem) {
 		if client, err = getAzureClient(env,
@@ -736,7 +726,7 @@ func (c *aksEngineDeployer) getAzureClient(ctx context.Context) error {
 			c.credentials.ClientID,
 			c.azureIdentitySystem,
 			c.credentials.ClientSecret); err != nil {
-			return fmt.Errorf("error trying to get ADFS Azure Client: %v", err)
+			return fmt.Errorf("error trying to get ADFS Azure Client: %w", err)
 		}
 	} else {
 		if client, err = getAzureClient(env,
@@ -744,7 +734,7 @@ func (c *aksEngineDeployer) getAzureClient(ctx context.Context) error {
 			c.credentials.ClientID,
 			c.credentials.TenantID,
 			c.credentials.ClientSecret); err != nil {
-			return fmt.Errorf("error trying to get Azure Client: %v", err)
+			return fmt.Errorf("error trying to get Azure Client: %w", err)
 		}
 	}
 	c.azureClient = client
@@ -762,21 +752,21 @@ func (c *aksEngineDeployer) createCluster() error {
 	log.Printf("Creating Azure resource group: %v for cluster deployment.", c.resourceGroup)
 	_, err = c.azureClient.EnsureResourceGroup(c.ctx, c.resourceGroup, c.location, nil)
 	if err != nil {
-		return fmt.Errorf("could not ensure resource group: %v", err)
+		return fmt.Errorf("could not ensure resource group: %w", err)
 	}
 
 	log.Printf("Validating deployment ARM templates.")
 	if _, err := c.azureClient.ValidateDeployment(
 		c.ctx, c.resourceGroup, c.name, &c.templateJSON, &c.parametersJSON,
 	); err != nil {
-		return fmt.Errorf("ARM template invalid: %v", err)
+		return fmt.Errorf("ARM template invalid: %w", err)
 	}
 
 	log.Printf("Deploying cluster %v in resource group %v.", c.name, c.resourceGroup)
 	if _, err := c.azureClient.DeployTemplate(
 		c.ctx, c.resourceGroup, c.name, &c.templateJSON, &c.parametersJSON,
 	); err != nil {
-		return fmt.Errorf("cannot deploy: %v", err)
+		return fmt.Errorf("cannot deploy: %w", err)
 	}
 
 	if c.useManagedIdentity && c.identityName != "" {
@@ -791,7 +781,6 @@ func (c *aksEngineDeployer) createCluster() error {
 func (c *aksEngineDeployer) dockerLogin() error {
 	cwd, _ := os.Getwd()
 	log.Printf("CWD %v", cwd)
-	cmd := &exec.Cmd{}
 	username := ""
 	pwd := ""
 	server := ""
@@ -804,7 +793,7 @@ func (c *aksEngineDeployer) dockerLogin() error {
 		passwordFile := os.Getenv("DOCKER_PASSWORD_FILE")
 		password, err := ioutil.ReadFile(passwordFile)
 		if err != nil {
-			return fmt.Errorf("error reading docker password file %v: %v", passwordFile, err)
+			return fmt.Errorf("error reading docker password file %v: %w", passwordFile, err)
 		}
 		pwd = strings.TrimSuffix(string(password), "\n")
 	} else {
@@ -814,9 +803,9 @@ func (c *aksEngineDeployer) dockerLogin() error {
 		pwd = c.credentials.ClientSecret
 		server = imageRegistry
 	}
-	cmd = exec.Command("docker", "login", fmt.Sprintf("--username=%s", username), fmt.Sprintf("--password=%s", pwd), server)
+	cmd := exec.Command("docker", "login", fmt.Sprintf("--username=%s", username), fmt.Sprintf("--password=%s", pwd), server)
 	if err = cmd.Run(); err != nil {
-		return fmt.Errorf("failed Docker login with error: %v", err)
+		return fmt.Errorf("failed Docker login with error: %w", err)
 	}
 	log.Println("Docker login success.")
 	return nil
@@ -828,7 +817,7 @@ func dockerPush(images ...string) error {
 
 		cmd := exec.Command("docker", "push", image)
 		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("failed to push %s: %v", image, err)
+			return fmt.Errorf("failed to push %s: %w", image, err)
 		}
 	}
 
@@ -935,7 +924,7 @@ func (c *aksEngineDeployer) buildHyperkube() error {
 func (c *aksEngineDeployer) uploadToAzureStorage(filePath string) (string, error) {
 	credential, err := azblob.NewSharedKeyCredential(c.credentials.StorageAccountName, c.credentials.StorageAccountKey)
 	if err != nil {
-		return "", fmt.Errorf("new shared key credential: %v", err)
+		return "", fmt.Errorf("new shared key credential: %w", err)
 	}
 	p := azblob.NewPipeline(credential, azblob.PipelineOptions{})
 	URL, _ := url.Parse(c.azureBlobContainerURL)
@@ -943,7 +932,7 @@ func (c *aksEngineDeployer) uploadToAzureStorage(filePath string) (string, error
 	containerURL := azblob.NewContainerURL(*URL, p)
 	file, err := os.Open(filePath)
 	if err != nil {
-		return "", fmt.Errorf("failed to open file %v . Error %v", filePath, err)
+		return "", fmt.Errorf("failed to open file %v . Error %w", filePath, err)
 	}
 	defer file.Close()
 
@@ -1016,7 +1005,7 @@ func (c *aksEngineDeployer) Up() error {
 
 		cmd := exec.Command("curl", "-o", "build-kubemark.sh", *kubemarkBuildScriptURL)
 		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("failed to get build-kubemark.sh from %v: %v", *kubemarkBuildScriptURL, err)
+			return fmt.Errorf("failed to get build-kubemark.sh from %v: %w", *kubemarkBuildScriptURL, err)
 		}
 
 		cmd = exec.Command("bash", "build-kubemark.sh",
@@ -1028,7 +1017,7 @@ func (c *aksEngineDeployer) Up() error {
 			"--location", *kubemarkLocation)
 
 		if err := control.FinishRunning(cmd); err != nil {
-			return fmt.Errorf("failed to build up kubemark environment: %v", err)
+			return fmt.Errorf("failed to build up kubemark environment: %w", err)
 		}
 
 		log.Println("kubemark test finished")
@@ -1039,33 +1028,33 @@ func (c *aksEngineDeployer) Up() error {
 	if c.apiModelPath != "" {
 		templateFile, err := downloadFromURL(c.apiModelPath, path.Join(c.outputDir, "kubernetes.json"), 2)
 		if err != nil {
-			return fmt.Errorf("error downloading ApiModel template: %v with error %v", c.apiModelPath, err)
+			return fmt.Errorf("error downloading ApiModel template: %v with error %w", c.apiModelPath, err)
 		}
 		c.apiModelPath = templateFile
 	}
 
 	err = c.populateAPIModelTemplate()
 	if err != nil {
-		return fmt.Errorf("failed to populate aks-engine apimodel template: %v", err)
+		return fmt.Errorf("failed to populate aks-engine apimodel template: %w", err)
 	}
 
 	if *aksEngineURL != "" {
 		err = c.getAKSEngine(2)
 		if err != nil {
-			return fmt.Errorf("failed to get AKS Engine binary: %v", err)
+			return fmt.Errorf("failed to get AKS Engine binary: %w", err)
 		}
 	}
 	err = c.generateARMTemplates()
 	if err != nil {
-		return fmt.Errorf("failed to generate ARM templates: %v", err)
+		return fmt.Errorf("failed to generate ARM templates: %w", err)
 	}
 	err = c.loadARMTemplates()
 	if err != nil {
-		return fmt.Errorf("error loading ARM templates: %v", err)
+		return fmt.Errorf("error loading ARM templates: %w", err)
 	}
 	err = c.createCluster()
 	if err != nil {
-		return fmt.Errorf("error creating cluster: %v", err)
+		return fmt.Errorf("error creating cluster: %w", err)
 	}
 
 	return nil
@@ -1078,7 +1067,7 @@ func (c *aksEngineDeployer) Build(b buildStrategy) error {
 			return err
 		}
 		if err := c.buildHyperkube(); err != nil {
-			return fmt.Errorf("error building hyperkube %v", err)
+			return fmt.Errorf("error building hyperkube %w", err)
 		}
 	} else if c.aksDeploymentMethod == customK8sComponents &&
 		(!areAllDockerImagesExist(c.customKubeAPIServerImage,
@@ -1115,14 +1104,14 @@ func (c *aksEngineDeployer) Build(b buildStrategy) error {
 		newK8sNodeTarball := filepath.Join(k8sNodeTarballDir, fmt.Sprintf(k8sNodeTarballTemplate, k8sVersion))
 		log.Printf("Renaming %s to %s", oldK8sNodeTarball, newK8sNodeTarball)
 		if err := os.Rename(oldK8sNodeTarball, newK8sNodeTarball); err != nil {
-			return fmt.Errorf("error renaming %s to %s: %v", oldK8sNodeTarball, newK8sNodeTarball, err)
+			return fmt.Errorf("error renaming %s to %s: %w", oldK8sNodeTarball, newK8sNodeTarball, err)
 		}
 
 		var err error
 		if c.customKubeBinaryURL, err = c.uploadToAzureStorage(newK8sNodeTarball); err != nil {
 			return err
 		}
-	} else if !*testCcm && !*testAzureDiskCSIDriver && !*testAzureFileCSIDriver && !*testBlobfuseCSIDriver && !*testSecretStoreCSIDriver && !strings.EqualFold(string(b), "none") {
+	} else if (!*testCcm && !*testAzureDiskCSIDriver && !*testAzureFileCSIDriver && !*testBlobCSIDriver && !*testSecretStoreCSIDriver && !*testSMBCSIDriver && !*testNFSCSIDriver && !strings.EqualFold(string(b), "none")) || *runExternalE2EGinkgoTest {
 		// Only build the required components to run upstream e2e tests
 		for _, component := range []string{"WHAT='test/e2e/e2e.test'", "WHAT=cmd/kubectl", "ginkgo"} {
 			cmd := exec.Command("make", component)
@@ -1136,12 +1125,12 @@ func (c *aksEngineDeployer) Build(b buildStrategy) error {
 
 	if *aksCcm && !areAllDockerImagesExist(c.customCcmImage, c.customCnmImage) {
 		if err := c.buildAzureCloudComponents(); err != nil {
-			return fmt.Errorf("error building Azure cloud components: %v", err)
+			return fmt.Errorf("error building Azure cloud components: %w", err)
 		}
 	}
 	if *aksWinBinaries && !isURLExist(c.aksCustomWinBinariesURL) {
 		if err := c.buildWinZip(); err != nil {
-			return fmt.Errorf("error building windowsZipFile %v", err)
+			return fmt.Errorf("error building windowsZipFile %w", err)
 		}
 	}
 
@@ -1168,17 +1157,17 @@ func (c *aksEngineDeployer) DumpClusterLogs(localPath, gcsPath string) error {
 		const logDumpURLPrefix string = "https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/hack/log-dump/"
 		logDumpScript, err := downloadFromURL(logDumpURLPrefix+"log-dump.sh", path.Join(c.outputDir, "log-dump.sh"), 2)
 		if err != nil {
-			return fmt.Errorf("error downloading log dump script: %v", err)
+			return fmt.Errorf("error downloading log dump script: %w", err)
 		}
 		if err := control.FinishRunning(exec.Command("chmod", "+x", logDumpScript)); err != nil {
-			return fmt.Errorf("error changing access permission for %s: %v", logDumpScript, err)
+			return fmt.Errorf("error changing access permission for %s: %w", logDumpScript, err)
 		}
 		if _, err := downloadFromURL(logDumpURLPrefix+"log-dump-daemonset.yaml", path.Join(c.outputDir, "log-dump-daemonset.yaml"), 2); err != nil {
-			return fmt.Errorf("error downloading log dump manifest: %v", err)
+			return fmt.Errorf("error downloading log dump manifest: %w", err)
 		}
 
 		if err := control.FinishRunning(exec.Command("bash", "-c", logDumpScript)); err != nil {
-			return fmt.Errorf("error running log collection script %s: %v", logDumpScript, err)
+			return fmt.Errorf("error running log collection script %s: %w", logDumpScript, err)
 		}
 		return nil
 	}
@@ -1189,13 +1178,13 @@ func (c *aksEngineDeployer) DumpClusterLogs(localPath, gcsPath string) error {
 
 		masterFQDN := fmt.Sprintf("%s.%s.cloudapp.azure.com", c.dnsPrefix, c.location)
 		if err != nil {
-			return fmt.Errorf("error downloading windows logs dump script: %v", err)
+			return fmt.Errorf("error downloading windows logs dump script: %w", err)
 		}
 		if err := control.FinishRunning(exec.Command("chmod", "+x", winLogDumpScript)); err != nil {
-			return fmt.Errorf("error changing permission for script %s: %v", winLogDumpScript, err)
+			return fmt.Errorf("error changing permission for script %s: %w", winLogDumpScript, err)
 		}
 		if err := control.FinishRunning(exec.Command("bash", "-c", fmt.Sprintf("%s %s %s %s", winLogDumpScript, masterFQDN, c.outputDir, c.sshPrivateKeyPath))); err != nil {
-			return fmt.Errorf("error while running Windows log collector script: %v", err)
+			return fmt.Errorf("error while running Windows log collector script: %w", err)
 		}
 		return nil
 	}
@@ -1205,7 +1194,8 @@ func (c *aksEngineDeployer) DumpClusterLogs(localPath, gcsPath string) error {
 		errors = append(errors, err.Error())
 	}
 	if err := logDumperWindows(); err != nil {
-		errors = append(errors, err.Error())
+		// don't log error since logDumperWindows failed is expected on non-Windows cluster
+		_ = err
 	}
 	if len(errors) != 0 {
 		return fmt.Errorf(strings.Join(errors, "\n"))
@@ -1218,6 +1208,7 @@ func (c *aksEngineDeployer) GetClusterCreated(clusterName string) (time.Time, er
 }
 
 func (c *aksEngineDeployer) setCred() error {
+	// TODO (cecile): remove old variables once the cloud provider e2e test variables are updated.
 	if err := os.Setenv("K8S_AZURE_TENANTID", c.credentials.TenantID); err != nil {
 		return err
 	}
@@ -1234,6 +1225,21 @@ func (c *aksEngineDeployer) setCred() error {
 		return err
 	}
 
+	if err := os.Setenv("AZURE_TENANT_ID", c.credentials.TenantID); err != nil {
+		return err
+	}
+	if err := os.Setenv("AZURE_SUBSCRIPTION_ID", c.credentials.SubscriptionID); err != nil {
+		return err
+	}
+	if err := os.Setenv("AZURE_CLIENT_ID", c.credentials.ClientID); err != nil {
+		return err
+	}
+	if err := os.Setenv("AZURE_CLIENT_SECRET", c.credentials.ClientSecret); err != nil {
+		return err
+	}
+	if err := os.Setenv("AZURE_LOCATION", c.location); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -1244,13 +1250,13 @@ func (c *aksEngineDeployer) TestSetup() error {
 			log.Printf("error during setting up azure credentials: %v", err)
 			return err
 		}
-	} else if *testAzureFileCSIDriver || *testAzureDiskCSIDriver || *testBlobfuseCSIDriver {
+	} else if *testAzureFileCSIDriver || *testAzureDiskCSIDriver || *testBlobCSIDriver || *testSMBCSIDriver || *testNFSCSIDriver {
 		// Set env vars required by CSI driver e2e jobs.
 		// tenantId, subscriptionId, aadClientId, and aadClientSecret will be obtained from AZURE_CREDENTIAL
-		if err := os.Setenv("RESOURCE_GROUP", c.resourceGroup); err != nil {
+		if err := os.Setenv("AZURE_RESOURCE_GROUP", c.resourceGroup); err != nil {
 			return err
 		}
-		if err := os.Setenv("LOCATION", c.location); err != nil {
+		if err := os.Setenv("AZURE_LOCATION", c.location); err != nil {
 			return err
 		}
 	}
@@ -1302,15 +1308,33 @@ func (c *aksEngineDeployer) BuildTester(o *e2e.BuildTesterOptions) (e2e.Tester, 
 		csiDriverName = "azuredisk-csi-driver"
 	} else if *testAzureFileCSIDriver {
 		csiDriverName = "azurefile-csi-driver"
-	} else if *testBlobfuseCSIDriver {
-		csiDriverName = "blobfuse-csi-driver"
+	} else if *testBlobCSIDriver {
+		csiDriverName = "blob-csi-driver"
 	} else if *testSecretStoreCSIDriver {
 		csiDriverName = "secrets-store-csi-driver"
+	} else if *testSMBCSIDriver {
+		csiDriverName = "csi-driver-smb"
+	} else if *testNFSCSIDriver {
+		csiDriverName = "csi-driver-nfs"
 	}
 	if csiDriverName != "" {
-		return &GinkgoCSIDriverTester{
-			driverName: csiDriverName,
-		}, nil
+		if *runExternalE2EGinkgoTest {
+			t := e2e.NewGinkgoTester(o)
+			if o.StorageTestDriverPath != "" {
+				t.StorageTestDriver = filepath.Join(util.K8sSigs(csiDriverName), o.StorageTestDriverPath)
+			}
+			t.KubeRoot = "."
+			kubeConfig := os.Getenv("KUBECONFIG")
+			if kubeConfig != "" {
+				t.Kubeconfig = kubeConfig
+			}
+			t.Provider = "azure"
+			return t, nil
+		} else {
+			return &GinkgoCSIDriverTester{
+				driverName: csiDriverName,
+			}, nil
+		}
 	}
 
 	// Run e2e tests from upstream k8s repo

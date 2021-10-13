@@ -15,6 +15,24 @@ presets:
 
 presubmits:
   kubernetes/minikube:
+  - name: pull-minikube-build
+    decorate: true
+    path_alias: "k8s.io/minikube"
+    always_run: true
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-minikube/prow-test:v0.0.1
+        # we add --force since minikube is running as root
+        command:
+        - wrapper.sh
+        - bash
+        - -c
+        - make && ./out/minikube start --force-systemd --force && kubectl get pods -A
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
   - name: pull-minikube-platform-tests
     labels:
         preset-minikube-e2e-creds: "true"

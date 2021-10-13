@@ -26,7 +26,7 @@ from os import walk
 import ruamel.yaml
 
 # Prow files that will be ignored
-PROW_BLACKLIST = [
+EXEMPT_FILES = [
     # Ruamel won't be able to successfully dump fejta-bot-periodics
     # See https://bitbucket.org/ruamel/yaml/issues/258/applying-json-patch-breaks-comment
     "fejta-bot-periodics.yaml",
@@ -42,7 +42,7 @@ MAX_WIDTH = 2000000000
 def main(testgrid_config, prow_dir):
     with open(testgrid_config, "r") as config_fp:
         config = ruamel.yaml.load(config_fp,
-                                  Loader=ruamel.yaml.RoundTripLoader,
+                                  Loader=ruamel.yaml.SafeLoader,
                                   preserve_quotes=True)
 
     for dashboard in config["dashboards"]:
@@ -75,7 +75,7 @@ def move_tab(dashboard, dash_tab, prow_dir):
 
     with open(prow_job_file_name, "r") as job_fp:
         prow_config = ruamel.yaml.load(job_fp,
-                                       Loader=ruamel.yaml.RoundTripLoader,
+                                       Loader=ruamel.yaml.SafeLoader,
                                        preserve_quotes=True)
 
     # For each presubmits, postsubmits, periodic:
@@ -121,7 +121,7 @@ def move_group(config, group, prow_dir):
 
     with open(prow_job_file_name, "r") as job_fp:
         prow_config = ruamel.yaml.load(job_fp,
-                                       Loader=ruamel.yaml.RoundTripLoader,
+                                       Loader=ruamel.yaml.SafeLoader,
                                        preserve_quotes=True)
 
     # For each presubmit, postsubmit, and periodic
@@ -160,13 +160,13 @@ def move_group(config, group, prow_dir):
 def assert_tab_keys(tab):
     """Asserts if a dashboard tab is able to be migrated.
 
-    To be migratable, the annotations must only contain whitelisted keys
+    To be migratable, the annotations must only contain allowed keys
     AND alert_options, if present, must contain and only contain "alert_mail_to_addresses"
     """
-    whitelist = ["name", "description", "test_group_name", "alert_options",
-                 "num_failures_to_alert", "alert_stale_results_hours", "num_columns_recent"]
+    allowedKeys = ["name", "description", "test_group_name", "alert_options",
+                   "num_failures_to_alert", "alert_stale_results_hours", "num_columns_recent"]
 
-    if [k for k in tab.keys() if k not in whitelist]:
+    if [k for k in tab.keys() if k not in allowedKeys]:
         return False
 
     if "alert_options" in tab:
@@ -179,12 +179,12 @@ def assert_tab_keys(tab):
 def assert_group_keys(group):
     """Asserts if a testgroup is able to be migrated.
 
-    To be migratable, the group must only contain whitelisted keys
+    To be migratable, the group must only contain allowed keys
     """
-    whitelist = ["name", "gcs_prefix", "alert_stale_results_hours",
-                 "num_failures_to_alert", "num_columns_recent"]
+    allowedKeys = ["name", "gcs_prefix", "alert_stale_results_hours",
+                   "num_failures_to_alert", "num_columns_recent"]
 
-    if [k for k in group.keys() if k not in whitelist]:
+    if [k for k in group.keys() if k not in allowedKeys]:
         return False
     return True
 
@@ -195,12 +195,12 @@ def find_prow_job(name, path):
     Returns the first file that contains the named prow job
     Returns "" if there isn't one
     Dives into subdirectories
-    Ignores PROW_BLACKLIST
+    Ignores EXEMPT_FILES
     """
     pattern = re.compile("name: '?\"?" + name + "'?\"?$", re.MULTILINE)
     for (dirpath, _, filenames) in walk(path):
         for filename in filenames:
-            if filename.endswith(".yaml") and filename not in PROW_BLACKLIST:
+            if filename.endswith(".yaml") and filename not in EXEMPT_FILES:
                 for _, line in enumerate(open(dirpath + "/" + filename)):
                     for _ in re.finditer(pattern, line):
                         #print "Found %s in %s" % (name, filename)

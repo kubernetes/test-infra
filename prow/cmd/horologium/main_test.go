@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
 	"reflect"
 	"testing"
@@ -25,11 +26,13 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
-	clienttesting "k8s.io/client-go/testing"
+	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
+	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 )
 
 type fakeCron struct {
@@ -47,11 +50,8 @@ func (fc *fakeCron) SyncConfig(cfg *config.Config) error {
 }
 
 func (fc *fakeCron) QueuedJobs() []string {
-	res := []string{}
-	for _, job := range fc.jobs {
-		res = append(res, job)
-	}
-	fc.jobs = []string{}
+	res := fc.jobs
+	fc.jobs = nil
 	return res
 }
 
@@ -139,19 +139,13 @@ func TestSync(t *testing.T) {
 			}
 			jobs = append(jobs, job)
 		}
-		fakeProwJobClient := fake.NewSimpleClientset(jobs...)
+		fakeProwJobClient := &createTrackingClient{Client: fakectrlruntimeclient.NewFakeClient(jobs...)}
 		fc := &fakeCron{}
-		if err := sync(fakeProwJobClient.ProwV1().ProwJobs(cfg.ProwJobNamespace), &cfg, fc, now); err != nil {
+		if err := sync(fakeProwJobClient, &cfg, fc, now); err != nil {
 			t.Fatalf("For case %s, didn't expect error: %v", tc.testName, err)
 		}
 
-		sawCreation := false
-		for _, action := range fakeProwJobClient.Fake.Actions() {
-			switch action.(type) {
-			case clienttesting.CreateActionImpl:
-				sawCreation = true
-			}
-		}
+		sawCreation := fakeProwJobClient.sawCreate
 		if tc.shouldStart != sawCreation {
 			t.Errorf("For case %s, did the wrong thing.", tc.testName)
 		}
@@ -221,19 +215,13 @@ func TestSyncCron(t *testing.T) {
 			}
 			jobs = append(jobs, job)
 		}
-		fakeProwJobClient := fake.NewSimpleClientset(jobs...)
+		fakeProwJobClient := &createTrackingClient{Client: fakectrlruntimeclient.NewFakeClient(jobs...)}
 		fc := &fakeCron{}
-		if err := sync(fakeProwJobClient.ProwV1().ProwJobs(cfg.ProwJobNamespace), &cfg, fc, now); err != nil {
+		if err := sync(fakeProwJobClient, &cfg, fc, now); err != nil {
 			t.Fatalf("For case %s, didn't expect error: %v", tc.testName, err)
 		}
 
-		sawCreation := false
-		for _, action := range fakeProwJobClient.Fake.Actions() {
-			switch action.(type) {
-			case clienttesting.CreateActionImpl:
-				sawCreation = true
-			}
-		}
+		sawCreation := fakeProwJobClient.sawCreate
 		if tc.shouldStart != sawCreation {
 			t.Errorf("For case %s, did the wrong thing.", tc.testName)
 		}
@@ -257,7 +245,7 @@ func TestFlags(t *testing.T) {
 				"--config-path": "/random/value",
 			},
 			expected: func(o *options) {
-				o.configPath = "/random/value"
+				o.config.ConfigPath = "/random/value"
 			},
 		},
 		{
@@ -270,18 +258,9 @@ func TestFlags(t *testing.T) {
 			},
 		},
 		{
-			name: "--dry-run=true requires --deck-url",
-			args: map[string]string{
-				"--dry-run":  "true",
-				"--deck-url": "",
-			},
-			err: true,
-		},
-		{
 			name: "explicitly set --dry-run=true",
 			args: map[string]string{
-				"--dry-run":  "true",
-				"--deck-url": "http://whatever",
+				"--dry-run": "true",
 			},
 			expected: func(o *options) {
 				o.dryRun = true
@@ -298,17 +277,21 @@ func TestFlags(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			expected := &options{
-				configPath: "yo",
-				dryRun:     true,
+				config: configflagutil.ConfigOptions{
+					ConfigPathFlagName:                    "config-path",
+					JobConfigPathFlagName:                 "job-config-path",
+					ConfigPath:                            "yo",
+					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+				},
+				dryRun:                 true,
+				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
 			}
-			expected.kubernetes.DeckURI = "http://whatever"
 			if tc.expected != nil {
 				tc.expected(expected)
 			}
 
 			argMap := map[string]string{
 				"--config-path": "yo",
-				"--deck-url":    "http://whatever",
 			}
 			for k, v := range tc.args {
 				argMap[k] = v
@@ -335,4 +318,14 @@ func TestFlags(t *testing.T) {
 			}
 		})
 	}
+}
+
+type createTrackingClient struct {
+	ctrlruntimeclient.Client
+	sawCreate bool
+}
+
+func (ct *createTrackingClient) Create(ctx context.Context, obj ctrlruntimeclient.Object, opts ...ctrlruntimeclient.CreateOption) error {
+	ct.sawCreate = true
+	return ct.Client.Create(ctx, obj, opts...)
 }

@@ -77,7 +77,7 @@ func TestHandle(t *testing.T) {
 			Org:          "k8s",
 			Issues:       true,
 			Re:           regexp.MustCompile(`^(sig|wg|committee)/`),
-			MissingLabel: labels.NeedsSig,
+			MissingLabel: "needs-sig",
 		},
 
 		// needs-kind over k8s/t-i repo (PRs)
@@ -185,7 +185,7 @@ func TestHandle(t *testing.T) {
 				label: "sig/bash",
 			},
 			initialLabels: []string{labels.LGTM, "kind/best"},
-			expectedAdded: sets.NewString(labels.NeedsSig),
+			expectedAdded: sets.NewString("needs-sig"),
 		},
 		{
 			name: "don't add org scoped needs-sig to issue when another sig/* label remains",
@@ -235,9 +235,9 @@ func TestHandle(t *testing.T) {
 				org:  "k8s",
 				repo: "t-i",
 			},
-			initialLabels:   []string{labels.LGTM, labels.NeedsSig, "wg/foo"},
+			initialLabels:   []string{labels.LGTM, "needs-sig", "wg/foo"},
 			expectedAdded:   sets.NewString("needs-cat"),
-			expectedRemoved: sets.NewString(labels.NeedsSig),
+			expectedRemoved: sets.NewString("needs-sig"),
 			expectComment:   true,
 		},
 	}

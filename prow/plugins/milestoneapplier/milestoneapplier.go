@@ -53,9 +53,21 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 	}
 
 	// The {WhoCanUse, Usage, Examples} fields are omitted because this plugin is not triggered with commands.
+	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
+		MilestoneApplier: map[string]plugins.BranchToMilestone{
+			"kubernetes/kubernetes": {
+				"release-1.19": "v1.19",
+				"release-1.18": "v1.18",
+			},
+		},
+	})
+	if err != nil {
+		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", pluginName)
+	}
 	return &pluginhelp.PluginHelp{
 		Description: "The milestoneapplier plugin automatically applies the configured milestone for the base branch after a PR is merged. If a PR targets a non-default branch, it also adds the milestone when the PR is opened.",
 		Config:      configInfo,
+		Snippet:     yamlSnippet,
 	}, nil
 }
 

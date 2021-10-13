@@ -23,7 +23,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path"
@@ -32,8 +31,9 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-
+	"k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
+
 	prowconfig "k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
@@ -111,7 +111,7 @@ func (ha *HelpAgent) generateExternalPluginHelp(config *plugins.Configuration, r
 	for _, ext := range externals {
 		allPlugins = append(allPlugins, ext.Name)
 		go func(ext plugins.ExternalPlugin) {
-			help, err := externalHelpProvider(ha.log, ext.Endpoint)(revMap[ext.Name])
+			help, err := externalHelpProvider(ext.Endpoint)(revMap[ext.Name])
 			if err != nil {
 				ha.log.WithError(err).Errorf("Getting help from external plugin %q.", ext.Name)
 				help = nil
@@ -158,7 +158,7 @@ func (ha *HelpAgent) GeneratePluginHelp() *pluginhelp.Help {
 		"": allPlugins,
 	}
 	for repo, plugins := range config.Plugins {
-		repoPlugins[repo] = plugins
+		repoPlugins[repo] = plugins.Plugins
 	}
 	repoExternalPlugins := map[string][]string{
 		"": allExternalPlugins,
@@ -198,16 +198,16 @@ func allRepos(config *plugins.Configuration, orgToRepos map[string]sets.String) 
 	return flattened.List()
 }
 
-func externalHelpProvider(log *logrus.Entry, endpoint string) externalplugins.ExternalPluginHelpProvider {
+func externalHelpProvider(endpoint string) externalplugins.ExternalPluginHelpProvider {
 	return func(enabledRepos []prowconfig.OrgRepo) (*pluginhelp.PluginHelp, error) {
 		u, err := url.Parse(endpoint)
 		if err != nil {
-			return nil, fmt.Errorf("error parsing url: %s err: %v", endpoint, err)
+			return nil, fmt.Errorf("error parsing url: %s err: %w", endpoint, err)
 		}
 		u.Path = path.Join(u.Path, "/help")
 		b, err := json.Marshal(enabledRepos)
 		if err != nil {
-			return nil, fmt.Errorf("error marshalling enabled repos: %q, err: %v", enabledRepos, err)
+			return nil, fmt.Errorf("error marshalling enabled repos: %q, err: %w", enabledRepos, err)
 		}
 
 		// Don't retry because user is waiting for response to their browser.
@@ -215,7 +215,7 @@ func externalHelpProvider(log *logrus.Entry, endpoint string) externalplugins.Ex
 		urlString := u.String()
 		resp, err := http.Post(urlString, "application/json", bytes.NewReader(b))
 		if err != nil {
-			return nil, fmt.Errorf("error posting to %s err: %v", urlString, err)
+			return nil, fmt.Errorf("error posting to %s err: %w", urlString, err)
 		}
 		defer resp.Body.Close()
 		if resp.StatusCode < 200 || resp.StatusCode > 299 {
@@ -223,7 +223,7 @@ func externalHelpProvider(log *logrus.Entry, endpoint string) externalplugins.Ex
 		}
 		var help pluginhelp.PluginHelp
 		if err := json.NewDecoder(resp.Body).Decode(&help); err != nil {
-			return nil, fmt.Errorf("failed to decode json response from %s err: %v", urlString, err)
+			return nil, fmt.Errorf("failed to decode json response from %s err: %w", urlString, err)
 		}
 		return &help, nil
 	}
@@ -243,7 +243,7 @@ func reversePluginMaps(config *plugins.Configuration, orgToRepos map[string]sets
 		} else {
 			repos = []prowconfig.OrgRepo{*prowconfig.NewOrgRepo(repo)}
 		}
-		for _, plugin := range enabledPlugins {
+		for _, plugin := range enabledPlugins.Plugins {
 			normal[plugin] = append(normal[plugin], repos...)
 		}
 	}
@@ -304,6 +304,22 @@ func (oa *orgAgent) orgToReposMap(config *plugins.Configuration) map[string]sets
 	return oa.orgToRepos
 }
 
+func reposForOrgOrUser(ghc githubClient, orgOrUser string) ([]github.Repo, error) {
+	var errs [2]error
+	inError := map[bool]string{true: "user", false: "org"}
+
+	// Check as an org first, it is more likely in normal use case
+	for i, isUser := range []bool{false, true} {
+		if repos, err := ghc.GetRepos(orgOrUser, isUser); err == nil {
+			return repos, nil
+		} else {
+			errs[i] = fmt.Errorf("failed to get repos for %s %s: %w", inError[isUser], orgOrUser, err)
+		}
+	}
+
+	return nil, errors.NewAggregate(errs[:])
+}
+
 func (oa *orgAgent) sync(config *plugins.Configuration) {
 
 	// QUESTION: If we fail to list repos for a single org should we reuse the old orgToRepos or just
@@ -313,19 +329,32 @@ func (oa *orgAgent) sync(config *plugins.Configuration) {
 
 	orgs := orgsInConfig(config)
 	orgToRepos := map[string]sets.String{}
+
+	orgToReposLock := sync.Mutex{}
+	wg := sync.WaitGroup{}
 	for _, org := range orgs.List() {
-		repos, err := oa.ghc.GetRepos(org, false /*isUser*/)
-		if err != nil {
-			oa.log.WithError(err).Errorf("Getting repos in org: %s.", org)
-			// Remove 'org' from 'orgs' here to force future resync?
-			continue
-		}
-		repoSet := sets.NewString()
-		for _, repo := range repos {
-			repoSet.Insert(repo.FullName)
-		}
-		orgToRepos[org] = repoSet
+		org := org
+		wg.Add(1)
+
+		go func() {
+			defer wg.Done()
+
+			repos, err := reposForOrgOrUser(oa.ghc, org)
+			if err != nil {
+				oa.log.WithError(err).Errorf("Getting repos for org or user: %s.", org)
+				// Remove 'org' from 'orgs' here to force future resync?
+				return
+			}
+			repoSet := sets.NewString()
+			for _, repo := range repos {
+				repoSet.Insert(repo.FullName)
+			}
+			orgToReposLock.Lock()
+			orgToRepos[org] = repoSet
+			orgToReposLock.Unlock()
+		}()
 	}
+	wg.Wait()
 
 	oa.orgs = orgs
 	oa.orgToRepos = orgToRepos
@@ -362,13 +391,8 @@ func (ha *HelpAgent) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "405 Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	b, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		serverError("reading request body", err)
-		return
-	}
 	help := ha.GeneratePluginHelp()
-	b, err = json.Marshal(help)
+	b, err := json.Marshal(help)
 	if err != nil {
 		serverError("marshaling plugin help", err)
 		return

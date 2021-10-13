@@ -137,7 +137,7 @@ func TestSearch(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			var i int
-			querier := func(_ context.Context, result interface{}, actual map[string]interface{}) error {
+			querier := func(_ context.Context, result interface{}, actual map[string]interface{}, _ string) error {
 				expected := map[string]interface{}{
 					"query":        githubql.String(tc.q),
 					"searchCursor": tc.cursors[i],
@@ -155,7 +155,7 @@ func TestSearch(t *testing.T) {
 				*ret = sq
 				return nil
 			}
-			prs, err := search(querier, logrus.WithField("test", tc.name), q, tc.start, tc.end)
+			prs, err := search(querier, logrus.WithField("test", tc.name), q, tc.start, tc.end, "")
 			switch {
 			case err != nil:
 				if !tc.err {

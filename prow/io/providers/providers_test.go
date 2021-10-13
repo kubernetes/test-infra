@@ -22,6 +22,42 @@ import (
 	"k8s.io/test-infra/prow/io/providers"
 )
 
+func TestHasStorageProviderPrefix(t *testing.T) {
+	tests := []struct {
+		name string
+		path string
+		want bool
+	}{
+		{
+			name: "gs prefix",
+			path: "gs/kubernetes-jenkins",
+			want: true,
+		},
+		{
+			name: "s3 prefix",
+			path: "gs/kubernetes-jenkins",
+			want: true,
+		},
+		{
+			name: "no prefix",
+			path: "kubernetes-jenkins",
+			want: false,
+		},
+		{
+			name: "no prefix bucket starts with storage provider id",
+			path: "gs-bucket",
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := providers.HasStorageProviderPrefix(tt.path); got != tt.want {
+				t.Errorf("HasStorageProviderPrefix() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestParseStoragePath(t *testing.T) {
 	type args struct {
 		storagePath string
@@ -37,7 +73,7 @@ func TestParseStoragePath(t *testing.T) {
 		{
 			name:                "parse s3 path",
 			args:                args{storagePath: "s3://prow-artifacts/test"},
-			wantStorageProvider: "s3",
+			wantStorageProvider: providers.S3,
 			wantBucket:          "prow-artifacts",
 			wantRelativePath:    "test",
 			wantErr:             false,
@@ -45,7 +81,7 @@ func TestParseStoragePath(t *testing.T) {
 		{
 			name:                "parse s3 deep path",
 			args:                args{storagePath: "s3://prow-artifacts/pr-logs/test"},
-			wantStorageProvider: "s3",
+			wantStorageProvider: providers.S3,
 			wantBucket:          "prow-artifacts",
 			wantRelativePath:    "pr-logs/test",
 			wantErr:             false,
@@ -53,7 +89,7 @@ func TestParseStoragePath(t *testing.T) {
 		{
 			name:                "parse gs path",
 			args:                args{storagePath: "gs://prow-artifacts/pr-logs/bazel-build/test.log"},
-			wantStorageProvider: "gs",
+			wantStorageProvider: providers.GS,
 			wantBucket:          "prow-artifacts",
 			wantRelativePath:    "pr-logs/bazel-build/test.log",
 			wantErr:             false,
@@ -61,7 +97,7 @@ func TestParseStoragePath(t *testing.T) {
 		{
 			name:                "parse gs short path",
 			args:                args{storagePath: "gs://prow-artifacts"},
-			wantStorageProvider: "gs",
+			wantStorageProvider: providers.GS,
 			wantBucket:          "prow-artifacts",
 			wantRelativePath:    "",
 			wantErr:             false,

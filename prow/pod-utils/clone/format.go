@@ -24,11 +24,15 @@ import (
 // FormatRecord describes the record in a human-readable
 // manner for inclusion into build logs
 func FormatRecord(record Record) string {
-	output := bytes.Buffer{}
+	var output bytes.Buffer
 	if record.Failed {
-		fmt.Fprintln(&output, "# FAILED!")
+		fmt.Fprintln(&output, "# FAILED")
 	}
-	fmt.Fprintf(&output, "# Cloning %s/%s at %s", record.Refs.Org, record.Refs.Repo, record.Refs.BaseRef)
+	if record.Refs.Repo == "" {
+		fmt.Fprintf(&output, "Environment setup")
+	} else {
+		fmt.Fprintf(&output, "# Cloning %s/%s at %s", record.Refs.Org, record.Refs.Repo, record.Refs.BaseRef)
+	}
 	if record.Refs.BaseSHA != "" {
 		fmt.Fprintf(&output, "(%s)", record.Refs.BaseSHA)
 	}

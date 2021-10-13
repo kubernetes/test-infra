@@ -17,12 +17,79 @@ limitations under the License.
 package v1
 
 import (
-	"reflect"
+	"strconv"
 	"testing"
 	"time"
+
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
+	fuzz "github.com/google/gofuzz"
 )
 
-func TestDecorationDefaulting(t *testing.T) {
+func pStr(str string) *string {
+	return &str
+}
+
+// TODO(mpherman): Add more tests when ProwJobDefaults have more than 1 field
+func TestProwJobDefaulting(t *testing.T) {
+	var testCases = []struct {
+		name     string
+		provided *ProwJobDefault
+		def      *ProwJobDefault
+		expected *ProwJobDefault
+	}{
+		{
+			name:     "nothing provided",
+			provided: &ProwJobDefault{},
+			def:      &ProwJobDefault{},
+			expected: &ProwJobDefault{},
+		},
+		{
+			name: "TenantID provided, no default",
+			provided: &ProwJobDefault{
+				TenantID: "Provided",
+			},
+			def: &ProwJobDefault{},
+			expected: &ProwJobDefault{
+				TenantID: "Provided",
+			},
+		},
+		{
+			name: "TenantID provided, No Override",
+			provided: &ProwJobDefault{
+				TenantID: "Provided",
+			},
+			def: &ProwJobDefault{
+				TenantID: "Default",
+			},
+			expected: &ProwJobDefault{
+				TenantID: "Provided",
+			},
+		},
+		{
+			name:     "TenantID not Provided, Uses default",
+			provided: &ProwJobDefault{},
+			def: &ProwJobDefault{
+				TenantID: "Default",
+			},
+			expected: &ProwJobDefault{
+				TenantID: "Default",
+			},
+		},
+	}
+	for _, testCase := range testCases {
+		tc := testCase
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			actual := tc.provided.ApplyDefault(tc.def)
+			if diff := cmp.Diff(actual, tc.expected, cmpopts.EquateEmpty()); diff != "" {
+				t.Errorf("expected defaulted config but got diff %v", diff)
+			}
+		})
+	}
+}
+
+func TestDecorationDefaultingDoesntOverwrite(t *testing.T) {
 	truth := true
 	lies := false
 
@@ -91,12 +158,52 @@ func TestDecorationDefaulting(t *testing.T) {
 			},
 		},
 		{
-			name: "secret name provided",
+			name: "gcs secret name provided",
 			provided: &DecorationConfig{
-				GCSCredentialsSecret: "somethingSecret",
+				GCSCredentialsSecret: pStr("somethingSecret"),
 			},
 			expected: func(orig, def *DecorationConfig) *DecorationConfig {
 				def.GCSCredentialsSecret = orig.GCSCredentialsSecret
+				return def
+			},
+		},
+		{
+			name: "gcs secret name unset",
+			provided: &DecorationConfig{
+				GCSCredentialsSecret: pStr(""),
+			},
+			expected: func(orig, def *DecorationConfig) *DecorationConfig {
+				def.GCSCredentialsSecret = orig.GCSCredentialsSecret
+				return def
+			},
+		},
+		{
+			name: "s3 secret name provided",
+			provided: &DecorationConfig{
+				S3CredentialsSecret: pStr("overwritten"),
+			},
+			expected: func(orig, def *DecorationConfig) *DecorationConfig {
+				def.S3CredentialsSecret = orig.S3CredentialsSecret
+				return def
+			},
+		},
+		{
+			name: "s3 secret name unset",
+			provided: &DecorationConfig{
+				S3CredentialsSecret: pStr(""),
+			},
+			expected: func(orig, def *DecorationConfig) *DecorationConfig {
+				def.S3CredentialsSecret = orig.S3CredentialsSecret
+				return def
+			},
+		},
+		{
+			name: "default service account name provided",
+			provided: &DecorationConfig{
+				DefaultServiceAccountName: pStr("gcs-upload-sa"),
+			},
+			expected: func(orig, def *DecorationConfig) *DecorationConfig {
+				def.DefaultServiceAccountName = orig.DefaultServiceAccountName
 				return def
 			},
 		},
@@ -157,11 +264,32 @@ func TestDecorationDefaulting(t *testing.T) {
 				return def
 			},
 		},
+		{
+			name: "ingnore interrupts set",
+			provided: &DecorationConfig{
+				UploadIgnoresInterrupts: &truth,
+			},
+			expected: func(orig, def *DecorationConfig) *DecorationConfig {
+				def.UploadIgnoresInterrupts = orig.UploadIgnoresInterrupts
+				return def
+			},
+		},
+		{
+			name: "do not ingnore interrupts ",
+			provided: &DecorationConfig{
+				UploadIgnoresInterrupts: &lies,
+			},
+			expected: func(orig, def *DecorationConfig) *DecorationConfig {
+				def.UploadIgnoresInterrupts = orig.UploadIgnoresInterrupts
+				return def
+			},
+		},
 	}
 
 	for _, testCase := range testCases {
 		tc := testCase
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
 			defaults := &DecorationConfig{
 				Timeout:     &Duration{Duration: 1 * time.Minute},
 				GracePeriod: &Duration{Duration: 10 * time.Second},
@@ -178,16 +306,85 @@ func TestDecorationDefaulting(t *testing.T) {
 					DefaultOrg:   "org",
 					DefaultRepo:  "repo",
 				},
-				GCSCredentialsSecret: "secretName",
+				GCSCredentialsSecret: pStr("secretName"),
+				S3CredentialsSecret:  pStr("s3-secret"),
 				SSHKeySecrets:        []string{"first", "second"},
 				SSHHostFingerprints:  []string{"primero", "segundo"},
 				SkipCloning:          &truth,
 			}
-			t.Parallel()
 
 			expected := tc.expected(tc.provided, defaults)
-			if actual := tc.provided.ApplyDefault(defaults); !reflect.DeepEqual(actual, expected) {
-				t.Errorf("expected defaulted config %v but got %v", expected, actual)
+			actual := tc.provided.ApplyDefault(defaults)
+			if diff := cmp.Diff(actual, expected, cmpopts.EquateEmpty()); diff != "" {
+				t.Errorf("expected defaulted config but got diff %v", diff)
+			}
+		})
+	}
+}
+
+func TestApplyDefaultsAppliesDefaultsForAllFields(t *testing.T) {
+	t.Parallel()
+	seed := time.Now().UnixNano()
+	// Print the seed so failures can easily be reproduced
+	t.Logf("Seed: %d", seed)
+	fuzzer := fuzz.NewWithSeed(seed)
+	for i := 0; i < 100; i++ {
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			def := &DecorationConfig{}
+			fuzzer.Fuzz(def)
+
+			// Each of those three has its own DeepCopy and in case it is nil,
+			// we just call that and return. In order to make this test verify
+			// that copying of their fields also works, we have to set them to
+			// something non-nil.
+			toDefault := &DecorationConfig{
+				UtilityImages:    &UtilityImages{},
+				Resources:        &Resources{},
+				GCSConfiguration: &GCSConfiguration{},
+			}
+			if def.UtilityImages == nil {
+				def.UtilityImages = &UtilityImages{}
+			}
+			if def.Resources == nil {
+				def.Resources = &Resources{}
+			}
+			if def.GCSConfiguration == nil {
+				def.GCSConfiguration = &GCSConfiguration{}
+			}
+			defaulted := toDefault.ApplyDefault(def)
+
+			if diff := cmp.Diff(def, defaulted); diff != "" {
+				t.Errorf("defaulted decoration config didn't get all fields defaulted: %s", diff)
+			}
+		})
+	}
+}
+
+func TestSlackConfigApplyDefaultsAppliesDefaultsForAllFields(t *testing.T) {
+	t.Parallel()
+	seed := time.Now().UnixNano()
+	// Print the seed so failures can easily be reproduced
+	t.Logf("Seed: %d", seed)
+	fuzzer := fuzz.NewWithSeed(seed)
+	for i := 0; i < 100; i++ {
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			def := &SlackReporterConfig{}
+			fuzzer.Fuzz(def)
+
+			// Each of those three has its own DeepCopy and in case it is nil,
+			// we just call that and return. In order to make this test verify
+			// that copying of their fields also works, we have to set them to
+			// something non-nil.
+			toDefault := &SlackReporterConfig{
+				Host:              "",
+				Channel:           "",
+				JobStatesToReport: nil,
+				ReportTemplate:    "",
+			}
+			defaulted := toDefault.ApplyDefault(def)
+
+			if diff := cmp.Diff(def, defaulted); diff != "" {
+				t.Errorf("defaulted decoration config didn't get all fields defaulted: %s", diff)
 			}
 		})
 	}
@@ -340,7 +537,7 @@ func TestRerunAuthConfigIsAuthorized(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 
-			if actual, _ := tc.config.IsAuthorized(tc.user, nil); actual != tc.authorized {
+			if actual, _ := tc.config.IsAuthorized("", tc.user, nil); actual != tc.authorized {
 				t.Errorf("Expected %v, got %v", tc.authorized, actual)
 			}
 		})
@@ -380,6 +577,87 @@ func TestRerunAuthConfigIsAllowAnyone(t *testing.T) {
 
 			if actual := tc.config.IsAllowAnyone(); actual != tc.expected {
 				t.Errorf("Expected %v, got %v", tc.expected, actual)
+			}
+		})
+	}
+}
+
+func TestParsePath(t *testing.T) {
+	type args struct {
+		bucket string
+	}
+	tests := []struct {
+		name                string
+		args                args
+		wantStorageProvider string
+		wantBucket          string
+		wantFullPath        string
+		wantPath            string
+		wantErr             string
+	}{
+		{
+			name: "valid gcs bucket",
+			args: args{
+				bucket: "prow-artifacts",
+			},
+			wantStorageProvider: "gs",
+			wantBucket:          "prow-artifacts",
+			wantFullPath:        "prow-artifacts",
+			wantPath:            "",
+		},
+		{
+			name: "valid gcs bucket with storage provider prefix",
+			args: args{
+				bucket: "gs://prow-artifacts",
+			},
+			wantStorageProvider: "gs",
+			wantBucket:          "prow-artifacts",
+			wantFullPath:        "prow-artifacts",
+			wantPath:            "",
+		},
+		{
+			name: "valid gcs bucket with multiple separator with storage provider prefix",
+			args: args{
+				bucket: "gs://my-floppy-backup/a://doom2.wad.006",
+			},
+			wantStorageProvider: "gs",
+			wantBucket:          "my-floppy-backup",
+			wantFullPath:        "my-floppy-backup/a://doom2.wad.006",
+			wantPath:            "/a://doom2.wad.006",
+		},
+		{
+			name: "valid s3 bucket with storage provider prefix",
+			args: args{
+				bucket: "s3://prow-artifacts",
+			},
+			wantStorageProvider: "s3",
+			wantBucket:          "prow-artifacts",
+			wantFullPath:        "prow-artifacts",
+			wantPath:            "",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			prowPath, err := ParsePath(tt.args.bucket)
+			var gotErr string
+			if err != nil {
+				gotErr = err.Error()
+			}
+			if gotErr != tt.wantErr {
+				t.Errorf("ParsePath() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if prowPath.StorageProvider() != tt.wantStorageProvider {
+				t.Errorf("ParsePath() gotStorageProvider = %v, wantStorageProvider %v", prowPath.StorageProvider(), tt.wantStorageProvider)
+			}
+			if got, want := prowPath.Bucket(), tt.wantBucket; got != want {
+				t.Errorf("ParsePath() gotBucket = %v, wantBucket %v", got, want)
+			}
+			if got, want := prowPath.FullPath(), tt.wantFullPath; got != want {
+				t.Errorf("ParsePath() gotFullPath = %v, wantFullPath %v", got, want)
+			}
+			if got, want := prowPath.Path, tt.wantPath; got != want {
+				t.Errorf("ParsePath() gotPath = %v, wantPath %v", got, want)
 			}
 		})
 	}

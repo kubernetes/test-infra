@@ -17,6 +17,7 @@ limitations under the License.
 package simplifypath
 
 import (
+	"strings"
 	"testing"
 
 	"k8s.io/apimachinery/pkg/util/diff"
@@ -29,6 +30,16 @@ func TestLiteral(t *testing.T) {
 	}
 	if actual, expected := l.Represent(), "fragment"; actual != expected {
 		t.Errorf("expected literal to be represented by %v, but saw: %v", expected, actual)
+	}
+}
+
+func TestEmptyLiteral(t *testing.T) {
+	l := L("", Node{})
+	if !l.Matches(strings.Split("/", "/")[0]) {
+		t.Errorf("expected empty literal to match root, but didn't")
+	}
+	if actual, expected := l.Represent(), ""; actual != expected {
+		t.Errorf("expected empty literal to be represented by %v, but saw: %v", expected, actual)
 	}
 }
 
@@ -47,6 +58,7 @@ func TestVariable(t *testing.T) {
 
 func TestSimplify(t *testing.T) {
 	s := NewSimplifier(L("", // shadow element mimicing the root
+		L(""),
 		L("repos",
 			V("owner",
 				V("repo",
@@ -60,11 +72,16 @@ func TestSimplify(t *testing.T) {
 				),
 			),
 		),
+		L("labels", VGreedy("labelname")),
 	))
 
 	var testCases = []struct {
 		name, path, expected string
 	}{
+		{
+			name:     "root",
+			path:     "/",
+			expected: "/"},
 		{
 			name:     "repo branches",
 			path:     "/repos/testOwner/testRepo/branches",
@@ -109,6 +126,14 @@ func TestSimplify(t *testing.T) {
 			name:     "repo branches protection (restrictions for users) by name ",
 			path:     "/repos/testOwner/testRepo/branches/testBranch/protection/restrictions/users",
 			expected: "/repos/:owner/:repo/branches/:branch/protection/restrictions/users"},
+		{
+			name:     "Label without slash matches",
+			path:     "/labels/lgtm",
+			expected: "/labels/:labelname"},
+		{
+			name:     "Label with slash matches due to greedyness",
+			path:     "/labels/labels/do-not-merge/hold",
+			expected: "/labels/:labelname"},
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {

@@ -3,7 +3,11 @@ dashboard_groups:
   dashboard_names:
     - provider-gcp-compute-persistent-disk-csi-driver
     - provider-gcp-presubmits
+    - provider-gcp-filestore-csi-driver
+    - provider-gcp-periodics
 
 dashboards:
 - name: provider-gcp-compute-persistent-disk-csi-driver
 - name: provider-gcp-presubmits
+- name: provider-gcp-filestore-csi-driver
+- name: provider-gcp-periodics

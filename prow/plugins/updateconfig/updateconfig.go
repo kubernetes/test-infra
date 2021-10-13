@@ -19,10 +19,12 @@ package updateconfig
 import (
 	"bytes"
 	"compress/gzip"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"path"
 	"path/filepath"
+	"strings"
 	"unicode/utf8"
 
 	"github.com/mattn/go-zglob"
@@ -62,14 +64,6 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 				configFileName,
 				configMapSpec.Name,
 			)
-			if len(configMapSpec.AdditionalNamespaces) == 0 {
-				msg = msg + fmt.Sprintf("the %s namespace.\n", configMapSpec.Namespace)
-			} else {
-				for _, nameSpace := range configMapSpec.AdditionalNamespaces {
-					msg = msg + fmt.Sprintf("%s, ", nameSpace)
-				}
-				msg = msg + fmt.Sprintf("and %s namespaces.\n", configMapSpec.Namespace)
-			}
 		}
 		configInfo = map[string]string{"": msg}
 	}
@@ -105,11 +99,11 @@ func (g *OSFileGetter) GetFile(filename string) ([]byte, error) {
 // Update updates the configmap with the data from the identified files.
 // Existing configmap keys that are not included in the updates are left alone
 // unless bootstrap is true in which case they are deleted.
-func Update(fg FileGetter, kc corev1.ConfigMapInterface, name, namespace string, updates []ConfigMapUpdate, bootstrap bool, metrics *prometheus.GaugeVec, logger *logrus.Entry) error {
-	cm, getErr := kc.Get(name, metav1.GetOptions{})
+func Update(fg FileGetter, kc corev1.ConfigMapInterface, name, namespace string, updates []ConfigMapUpdate, bootstrap bool, metrics *prometheus.GaugeVec, logger *logrus.Entry, sha string) error {
+	cm, getErr := kc.Get(context.TODO(), name, metav1.GetOptions{})
 	isNotFound := errors.IsNotFound(getErr)
 	if getErr != nil && !isNotFound {
-		return fmt.Errorf("failed to fetch current state of configmap: %v", getErr)
+		return fmt.Errorf("failed to fetch current state of configmap: %w", getErr)
 	}
 
 	if cm == nil || isNotFound {
@@ -122,6 +116,9 @@ func Update(fg FileGetter, kc corev1.ConfigMapInterface, name, namespace string,
 	}
 	if cm.Data == nil || bootstrap {
 		cm.Data = map[string]string{}
+	}
+	if sha != "" {
+		cm.Data[config.ConfigVersionFileName] = sha
 	}
 	if cm.BinaryData == nil || bootstrap {
 		cm.BinaryData = map[string][]byte{}
@@ -137,7 +134,7 @@ func Update(fg FileGetter, kc corev1.ConfigMapInterface, name, namespace string,
 
 		content, err := fg.GetFile(upd.Filename)
 		if err != nil {
-			return fmt.Errorf("get file err: %v", err)
+			return fmt.Errorf("get file err: %w", err)
 		}
 		logger.WithFields(logrus.Fields{"key": upd.Key, "filename": upd.Filename}).Debug("Populating key.")
 		value := content
@@ -170,13 +167,13 @@ func Update(fg FileGetter, kc corev1.ConfigMapInterface, name, namespace string,
 	var verb string
 	if getErr != nil && isNotFound {
 		verb = "create"
-		_, updateErr = kc.Create(cm)
+		_, updateErr = kc.Create(context.TODO(), cm, metav1.CreateOptions{})
 	} else {
 		verb = "update"
-		_, updateErr = kc.Update(cm)
+		_, updateErr = kc.Update(context.TODO(), cm, metav1.UpdateOptions{})
 	}
 	if updateErr != nil {
-		return fmt.Errorf("%s config map err: %v", verb, updateErr)
+		return fmt.Errorf("%s config map err: %w", verb, updateErr)
 	}
 	if metrics != nil {
 		var size float64
@@ -231,10 +228,19 @@ func FilterChanges(cfg plugins.ConfigUpdater, changes []github.PullRequestChange
 				id := plugins.ConfigMapID{Name: cm.Name, Namespace: ns, Cluster: cluster}
 				key := cm.Key
 				if key == "" {
-					key = path.Base(change.Filename)
+					if cm.UseFullPathAsKey {
+						key = strings.ReplaceAll(change.Filename, "/", "-")
+					} else {
+						key = path.Base(change.Filename)
+					}
 					// if the key changed, we need to remove the old key
 					if change.Status == github.PullRequestFileRenamed {
-						oldKey := path.Base(change.PreviousFilename)
+						var oldKey string
+						if cm.UseFullPathAsKey {
+							oldKey = strings.ReplaceAll(change.PreviousFilename, "/", "-")
+						} else {
+							oldKey = path.Base(change.PreviousFilename)
+						}
 						// not setting the filename field will cause the key to be
 						// deleted
 						toUpdate[id] = append(toUpdate[id], ConfigMapUpdate{Key: oldKey})
@@ -309,6 +315,10 @@ func handle(gc githubClient, gitClient git.ClientFactory, kc corev1.ConfigMapsGe
 
 	// Are any of the changes files ones that define a configmap we want to update?
 	toUpdate := FilterChanges(config, changes, defaultNamespace, log)
+	log.WithFields(logrus.Fields{
+		"configmaps_to_update": len(toUpdate),
+		"changes":              len(changes),
+	}).Debug("Identified configmaps to update")
 
 	var updated []string
 	indent := " " // one space
@@ -321,8 +331,8 @@ func handle(gc githubClient, gitClient git.ClientFactory, kc corev1.ConfigMapsGe
 		return err
 	}
 	defer func() {
-		if err := gitClient.Clean(); err != nil {
-			log.WithError(err).Error("Could not clean up git client cache.")
+		if err := gitRepo.Clean(); err != nil {
+			log.WithError(err).Error("Could not clean up git repo cache.")
 		}
 	}()
 	if err := gitRepo.Checkout(*pr.MergeSHA); err != nil {
@@ -335,9 +345,10 @@ func handle(gc githubClient, gitClient git.ClientFactory, kc corev1.ConfigMapsGe
 		configMapClient, err := GetConfigMapClient(kc, cm.Namespace, buildClusterCoreV1Clients, cm.Cluster)
 		if err != nil {
 			log.WithError(err).Errorf("Failed to find configMap client")
+			errs = append(errs, err)
 			continue
 		}
-		if err := Update(&OSFileGetter{Root: gitRepo.Directory()}, configMapClient, cm.Name, cm.Namespace, data, bootstrapMode, metrics, logger); err != nil {
+		if err := Update(&OSFileGetter{Root: gitRepo.Directory()}, configMapClient, cm.Name, cm.Namespace, data, bootstrapMode, metrics, logger, *pr.MergeSHA); err != nil {
 			errs = append(errs, err)
 			continue
 		}
@@ -347,7 +358,7 @@ func handle(gc githubClient, gitClient git.ClientFactory, kc corev1.ConfigMapsGe
 	var msg string
 	switch n := len(updated); n {
 	case 0:
-		return nil
+		return utilerrors.NewAggregate(errs)
 	case 1:
 		msg = fmt.Sprintf("Updated the %s", updated[0])
 	default:
@@ -358,7 +369,7 @@ func handle(gc githubClient, gitClient git.ClientFactory, kc corev1.ConfigMapsGe
 	}
 
 	if err := gc.CreateComment(org, repo, pr.Number, plugins.FormatResponseRaw(pr.Body, pr.HTMLURL, pr.User.Login, msg)); err != nil {
-		errs = append(errs, fmt.Errorf("comment err: %v", err))
+		errs = append(errs, fmt.Errorf("comment err: %w", err))
 	}
 	return utilerrors.NewAggregate(errs)
 }

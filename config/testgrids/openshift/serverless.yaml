@@ -1,0 +1,290 @@
+dashboards:
+- name: redhat-openshift-serverless
+  dashboard_tab:
+  # 4.6
+  - name: main-continuous-4.6
+    test_group_name: periodic-ci-openshift-knative-serverless-operator-main-4.6-e2e-aws-ocp-46-continuous
+    base_options: width=14
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: Openshift Serverless
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <test-url>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    open_bug_template:
+      url: https://github.com/openshift-knative/serverless-operator/issues/
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: https://github.com/openshift-knative/serverless-operator/search
+    code_search_url_template:
+      url: https://github.com/openshift-knative/serverless-operator/compare/<start-custom-0>...<end-custom-0>
+  - name: main-continuous-upgrade-4.6
+    test_group_name: periodic-ci-openshift-knative-serverless-operator-main-4.6-upgrade-tests-aws-ocp-46-continuous
+    base_options: width=14
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: Openshift Serverless
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <test-url>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    open_bug_template:
+      url: https://github.com/openshift-knative/serverless-operator/issues/
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: https://github.com/openshift-knative/serverless-operator/search
+    code_search_url_template:
+      url: https://github.com/openshift-knative/serverless-operator/compare/<start-custom-0>...<end-custom-0>
+
+  # 4.7
+  - name: main-continuous-4.7
+    test_group_name: periodic-ci-openshift-knative-serverless-operator-main-4.7-e2e-aws-ocp-47-continuous
+    base_options: width=14
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: Openshift Serverless
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <test-url>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    open_bug_template:
+      url: https://github.com/openshift-knative/serverless-operator/issues/
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: https://github.com/openshift-knative/serverless-operator/search
+    code_search_url_template:
+      url: https://github.com/openshift-knative/serverless-operator/compare/<start-custom-0>...<end-custom-0>
+  - name: main-continuous-4.7-vsphere
+    test_group_name: periodic-ci-openshift-knative-serverless-operator-main-4.7-vsphere-e2e-vsphere-ocp-47-continuous
+    base_options: width=14
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: Openshift Serverless
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <test-url>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    open_bug_template:
+      url: https://github.com/openshift-knative/serverless-operator/issues/
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: https://github.com/openshift-knative/serverless-operator/search
+    code_search_url_template:
+      url: https://github.com/openshift-knative/serverless-operator/compare/<start-custom-0>...<end-custom-0>
+  - name: main-continuous-4.7-gcp
+    test_group_name: periodic-ci-openshift-knative-serverless-operator-main-4.7-gcp-e2e-gcp-ocp-47-continuous
+    base_options: width=14
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: Openshift Serverless
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <test-url>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    open_bug_template:
+      url: https://github.com/openshift-knative/serverless-operator/issues/
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: https://github.com/openshift-knative/serverless-operator/search
+    code_search_url_template:
+      url: https://github.com/openshift-knative/serverless-operator/compare/<start-custom-0>...<end-custom-0>
+  - name: main-continuous-4.7-azure
+    test_group_name: periodic-ci-openshift-knative-serverless-operator-main-4.7-azure-e2e-azure-ocp-47-continuous
+    base_options: width=14
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: Openshift Serverless
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <test-url>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    open_bug_template:
+      url: https://github.com/openshift-knative/serverless-operator/issues/
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: https://github.com/openshift-knative/serverless-operator/search
+    code_search_url_template:
+      url: https://github.com/openshift-knative/serverless-operator/compare/<start-custom-0>...<end-custom-0>
+  - name: main-continuous-4.7-mesh
+    test_group_name: periodic-ci-openshift-knative-serverless-operator-main-4.7-e2e-mesh-ocp-47-continuous
+    base_options: width=14
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: Openshift Serverless
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <test-url>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    open_bug_template:
+      url: https://github.com/openshift-knative/serverless-operator/issues/
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: https://github.com/openshift-knative/serverless-operator/search
+    code_search_url_template:
+      url: https://github.com/openshift-knative/serverless-operator/compare/<start-custom-0>...<end-custom-0>
+  - name: main-continuous-upgrade-4.7
+    test_group_name: periodic-ci-openshift-knative-serverless-operator-main-4.7-upgrade-tests-aws-ocp-47-continuous
+    base_options: width=14
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: Openshift Serverless
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <test-url>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    open_bug_template:
+      url: https://github.com/openshift-knative/serverless-operator/issues/
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: https://github.com/openshift-knative/serverless-operator/search
+    code_search_url_template:
+      url: https://github.com/openshift-knative/serverless-operator/compare/<start-custom-0>...<end-custom-0>
+
+  # 4.8
+  - name: main-continuous-4.8
+    test_group_name: periodic-ci-openshift-knative-serverless-operator-main-4.8-e2e-aws-ocp-48-continuous
+    base_options: width=14
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: Openshift Serverless
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <test-url>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    open_bug_template:
+      url: https://github.com/openshift-knative/serverless-operator/issues/
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: https://github.com/openshift-knative/serverless-operator/search
+    code_search_url_template:
+      url: https://github.com/openshift-knative/serverless-operator/compare/<start-custom-0>...<end-custom-0>
+  - name: main-continuous-upgrade-4.8
+    test_group_name: periodic-ci-openshift-knative-serverless-operator-main-4.8-upgrade-tests-aws-ocp-48-continuous
+    base_options: width=14
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    file_bug_template:
+      options:
+      - key: classification
+        value: Red Hat
+      - key: product
+        value: Openshift Serverless
+      - key: short_desc
+        value: 'test: <test-name>'
+      - key: cf_environment
+        value: 'test: <test-name>'
+      - key: comment
+        value: 'test: <test-name> failed, see job: <test-url>'
+      url: https://bugzilla.redhat.com/enter_bug.cgi
+    open_bug_template:
+      url: https://github.com/openshift-knative/serverless-operator/issues/
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    code_search_path: https://github.com/openshift-knative/serverless-operator/search
+    code_search_url_template:
+      url: https://github.com/openshift-knative/serverless-operator/compare/<start-custom-0>...<end-custom-0>
+
+test_groups:
+- days_of_results: 14
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-knative-serverless-operator-main-4.6-e2e-aws-ocp-46-continuous
+  name: periodic-ci-openshift-knative-serverless-operator-main-4.6-e2e-aws-ocp-46-continuous
+- days_of_results: 14
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-knative-serverless-operator-main-4.6-upgrade-tests-aws-ocp-46-continuous
+  name: periodic-ci-openshift-knative-serverless-operator-main-4.6-upgrade-tests-aws-ocp-46-continuous
+- days_of_results: 14
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-knative-serverless-operator-main-4.7-e2e-aws-ocp-47-continuous
+  name: periodic-ci-openshift-knative-serverless-operator-main-4.7-e2e-aws-ocp-47-continuous
+- days_of_results: 14
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-knative-serverless-operator-main-4.7-vsphere-e2e-vsphere-ocp-47-continuous
+  name: periodic-ci-openshift-knative-serverless-operator-main-4.7-vsphere-e2e-vsphere-ocp-47-continuous
+- days_of_results: 14
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-knative-serverless-operator-main-4.7-gcp-e2e-gcp-ocp-47-continuous
+  name: periodic-ci-openshift-knative-serverless-operator-main-4.7-gcp-e2e-gcp-ocp-47-continuous
+- days_of_results: 14
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-knative-serverless-operator-main-4.7-azure-e2e-azure-ocp-47-continuous
+  name: periodic-ci-openshift-knative-serverless-operator-main-4.7-azure-e2e-azure-ocp-47-continuous
+- days_of_results: 14
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-knative-serverless-operator-main-4.7-e2e-mesh-ocp-47-continuous
+  name: periodic-ci-openshift-knative-serverless-operator-main-4.7-e2e-mesh-ocp-47-continuous
+- days_of_results: 14
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-knative-serverless-operator-main-4.7-upgrade-tests-aws-ocp-47-continuous
+  name: periodic-ci-openshift-knative-serverless-operator-main-4.7-upgrade-tests-aws-ocp-47-continuous
+- days_of_results: 14
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-knative-serverless-operator-main-4.8-e2e-aws-ocp-48-continuous
+  name: periodic-ci-openshift-knative-serverless-operator-main-4.8-e2e-aws-ocp-48-continuous
+- days_of_results: 14
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-knative-serverless-operator-main-4.8-upgrade-tests-aws-ocp-48-continuous
+  name: periodic-ci-openshift-knative-serverless-operator-main-4.8-upgrade-tests-aws-ocp-48-continuous

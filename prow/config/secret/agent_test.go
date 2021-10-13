@@ -48,7 +48,7 @@ func TestCensoringFormatter(t *testing.T) {
 	defer secret2.Close()
 	defer os.Remove(secret2.Name())
 
-	agent := Agent{}
+	agent := agent{}
 	if err = agent.Start([]string{secret1.Name(), secret2.Name()}); err != nil {
 		t.Fatalf("failed to start a secret agent: %v", err)
 	}
@@ -61,22 +61,22 @@ func TestCensoringFormatter(t *testing.T) {
 		{
 			description: "all occurrences of a single secret in a message are censored",
 			entry:       &logrus.Entry{Message: "A SECRET is a SECRET if it is secret"},
-			expected:    "level=panic msg=\"A CENSORED is a CENSORED if it is secret\"\n",
+			expected:    "level=panic msg=\"A ****** is a ****** if it is secret\"\n",
 		},
 		{
 			description: "occurrences of a multiple secrets in a message are censored",
 			entry:       &logrus.Entry{Message: "A SECRET is a MYSTERY"},
-			expected:    "level=panic msg=\"A CENSORED is a CENSORED\"\n",
+			expected:    "level=panic msg=\"A ****** is a *******\"\n",
 		},
 		{
 			description: "occurrences of multiple secrets in a field",
 			entry:       &logrus.Entry{Message: "message", Data: logrus.Fields{"key": "A SECRET is a MYSTERY"}},
-			expected:    "level=panic msg=message key=\"A CENSORED is a CENSORED\"\n",
+			expected:    "level=panic msg=message key=\"A ****** is a *******\"\n",
 		},
 		{
 			description: "occurrences of a secret in a non-string field",
 			entry:       &logrus.Entry{Message: "message", Data: logrus.Fields{"key": fmt.Errorf("A SECRET is a MYSTERY")}},
-			expected:    "level=panic msg=message key=\"A CENSORED is a CENSORED\"\n",
+			expected:    "level=panic msg=message key=\"A ****** is a *******\"\n",
 		},
 	}
 

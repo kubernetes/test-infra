@@ -34,13 +34,15 @@ You need to specify following labels in order for pubsub reporter to report your
 | `"prow.k8s.io/pubsub.topic"`   | The [topic](https://cloud.google.com/pubsub/docs/publisher) of your pubsub message                                                        |
 | `"prow.k8s.io/pubsub.runID"`   | A user assigned job id. It's tied to the prowjob, serves as a name tag and help user to differentiate results in multiple pubsub messages |
 
+The service account used by crier will need to have `pubsub.topics.publish` permission in the project where pubsub channel lives, e.g. by assigning the `roles/pubsub.publisher` IAM role
+
 Pubsub reporter will report whenever prowjob has a state transition.
 
 You can check the reported result by [list the pubsub topic](https://cloud.google.com/sdk/gcloud/reference/pubsub/topics/list).
 
 ### [GitHub reporter](/prow/crier/reporters/github)
 
-You can enable github reporter in crier by specifying `--github-workers=1` flag. (We only support single worker for github, due to [#13306](https://github.com/kubernetes/test-infra/issues/13306))
+You can enable github reporter in crier by specifying `--github-workers=N` flag (N>0).
 
 You also need to mount a github oauth token by specifying `--github-token-path` flag, which defaults to `/etc/github/oauth`.
 
@@ -153,7 +155,7 @@ slack_reporter_configs:
     channel: istio-channel
 ```
 
-The Slack `channel` can be overridden at the ProwJob level via the `reporter_config.slack.channel` field:
+The `channel`, `job_states_to_report` and `report_template` can be overridden at the ProwJob level via the `reporter_config.slack` field:
 ```yaml
 postsubmits:
   some-org/some-repo:
@@ -162,6 +164,24 @@ postsubmits:
       reporter_config:
         slack:
           channel: 'override-channel-name'
+          job_states_to_report:
+            - success
+          report_template: "Overridden template for job {{.Spec.Job}}"
+      spec:
+        containers:
+          - image: alpine
+            command:
+              - echo
+```
+To silence notifications at the ProwJob level you can pass an empty slice to `reporter_config.slack.job_states_to_report`:
+postsubmits:
+```yaml
+  some-org/some-repo:
+    - name: example-job
+      decorate: true
+      reporter_config:
+        slack:
+          job_states_to_report: []
       spec:
         containers:
           - image: alpine

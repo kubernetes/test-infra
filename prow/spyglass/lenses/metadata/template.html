@@ -8,6 +8,8 @@
 <p class="test-summary">Test started <abbr id="summary-start-time" title="{{.StartTime}}">{{.StartTime}}</abbr> {{if .Finished -}}
 {{- if .Passed -}}
   <span class="passed">passed</span>
+{{- else if .Errored -}}
+  <span class="failed">error</span>
 {{- else -}}
   <span class="failed">failed</span>
 {{- end -}}

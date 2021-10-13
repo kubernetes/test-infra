@@ -35,6 +35,7 @@ func Test_GetSimplifiedPath(t *testing.T) {
 		{name: "repositories", args: args{path: "/repositories"}, want: "/repositories"},
 
 		{name: "user", args: args{path: "/user"}, want: "/user"},
+		{name: "user", args: args{path: "/user/33322735/repos"}, want: "/user/:id/repos"},
 		{name: "users", args: args{path: "/users"}, want: "/users"},
 		{name: "user by username", args: args{path: "/users/testUser"}, want: "/users/:username"},
 
@@ -103,6 +104,12 @@ func Test_GetSimplifiedPathRepos(t *testing.T) {
 
 		{name: "repo pulls", args: args{path: "/repos/testOwner/testRepo/pulls"}, want: "/repos/:owner/:repo/pulls"},
 		{name: "repo pulls by number", args: args{path: "/repos/testOwner/testRepo/pulls/421"}, want: "/repos/:owner/:repo/pulls/:pullId"},
+		{name: "repo pull commits", args: args{path: "/repos/testOwner/testRepo/pulls/421/commits"}, want: "/repos/:owner/:repo/pulls/:pullId/commits"},
+		{name: "repo pull files ", args: args{path: "/repos/testOwner/testRepo/pulls/421/files"}, want: "/repos/:owner/:repo/pulls/:pullId/files"},
+		{name: "repo pull comments", args: args{path: "/repos/testOwner/testRepo/pulls/421/comments"}, want: "/repos/:owner/:repo/pulls/:pullId/comments"},
+		{name: "repo pull reviews", args: args{path: "/repos/testOwner/testRepo/pulls/421/reviews"}, want: "/repos/:owner/:repo/pulls/:pullId/reviews"},
+		{name: "repo pull requested_reviewers", args: args{path: "/repos/testOwner/testRepo/pulls/421/requested_reviewers"}, want: "/repos/:owner/:repo/pulls/:pullId/requested_reviewers"},
+		{name: "repo pull merge", args: args{path: "/repos/testOwner/testRepo/pulls/421/merge"}, want: "/repos/:owner/:repo/pulls/:pullId/merge"},
 
 		{name: "repo releases", args: args{path: "/repos/testOwner/testRepo/releases"}, want: "/repos/:owner/:repo/releases"},
 		{name: "repo releases by number", args: args{path: "/repos/testOwner/testRepo/releases/421"}, want: "/repos/:owner/:repo/releases/:releaseId"},
@@ -156,6 +163,7 @@ func Test_GetSimplifiedPathRepos(t *testing.T) {
 		{name: "repo commits", args: args{path: "/repos/testOwner/testRepo/commits"}, want: "/repos/:owner/:repo/commits"},
 		{name: "repo commits by sha", args: args{path: "/repos/testOwner/testRepo/commits/testCommitSha"}, want: "/repos/:owner/:repo/commits/:sha"},
 		{name: "repo commit status by sha", args: args{path: "/repos/testOwner/testRepo/commits/testCommitSha/status"}, want: "/repos/:owner/:repo/commits/:sha/status"},
+		{name: "repo commit check-runs by sha", args: args{path: "/repos/testOwner/testRepo/commits/testCommitSha/check-runs"}, want: "/repos/:owner/:repo/commits/:sha/check-runs"},
 		{name: "longer postfix is unmatched", args: args{path: "/repos/testOwner/testRepo/commits/testCommitSha/status/else"}, want: "unmatched"},
 
 		// /compare/base...head
@@ -192,6 +200,7 @@ func Test_GetSimplifiedPathRepos(t *testing.T) {
 		{name: "issue comments", args: args{path: "/repos/openshift/aws-account-operator/issues/104/comments"}, want: "/repos/:owner/:repo/issues/:issueId/comments"},
 		{name: "issue labels", args: args{path: "/repos/openshift/aws-account-operator/issues/104/labels"}, want: "/repos/:owner/:repo/issues/:issueId/labels"},
 		{name: "issue label", args: args{path: "/repos/openshift/aws-account-operator/issues/104/labels/needs-rebase"}, want: "/repos/:owner/:repo/issues/:issueId/labels/:labelId"},
+		{name: "issue label with slash", args: args{path: "/repos/openshift/aws-account-operator/issues/104/labels/do-not-merge/hold"}, want: "/repos/:owner/:repo/issues/:issueId/labels/:labelId"},
 		{name: "issue events", args: args{path: "/repos/helm/charts/issues/15756/events"}, want: "/repos/:owner/:repo/issues/:issueId/events"},
 		{name: "issue assignees", args: args{path: "/repos/helm/charts/issues/15756/assignees"}, want: "/repos/:owner/:repo/issues/:issueId/assignees"},
 		{name: "issue reactions", args: args{path: "/repos/kubernetes-sigs/cluster-api-provider-aws/issues/958/reactions"}, want: "/repos/:owner/:repo/issues/:issueId/reactions"},
@@ -283,6 +292,7 @@ func Test_GetSimplifiedPathRepositories(t *testing.T) {
 
 		{name: "repo collaborators", args: args{path: "/repositories/testRepository/collaborators"}, want: "/repositories/:repoId/collaborators"},
 		{name: "repo collaborators by name", args: args{path: "/repositories/testRepository/collaborators/testCollaborator"}, want: "/repositories/:repoId/collaborators/:collaboratorId"},
+		{name: "repo collaborators by name permissions", args: args{path: "/repositories/testRepository/collaborators/testCollaborator/permission"}, want: "/repositories/:repoId/collaborators/:collaboratorId/permission"},
 
 		{name: "repo comments", args: args{path: "/repositories/testRepository/comments"}, want: "/repositories/:repoId/comments"},
 		{name: "repo comments by id", args: args{path: "/repositories/testRepository/comments/testComment"}, want: "/repositories/:repoId/comments/:commentId"},
@@ -426,6 +436,7 @@ func Test_GetSimplifiedPathOrganizations(t *testing.T) {
 		{name: "org invitations", args: args{path: "/organizations/openshift/invitations"}, want: "/organizations/:orgId/invitations"},
 		{name: "org members", args: args{path: "/organizations/openshift/members"}, want: "/organizations/:orgId/members"},
 		{name: "org member", args: args{path: "/organizations/openshift/members/stevekuznetsov"}, want: "/organizations/:orgId/members/:login"},
+		{name: "org memberships", args: args{path: "/organizations/openshift/memberships/stevekuznetsov"}, want: "/organizations/:orgId/memberships/:login"},
 		{name: "org teams", args: args{path: "/organizations/openshift/teams"}, want: "/organizations/:orgId/teams"},
 
 		{name: "org members by ID", args: args{path: "/organizations/792337/members"}, want: "/organizations/:orgId/members"},
@@ -494,6 +505,31 @@ func Test_GetSimplifiedPathNotifications(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := simplifier.Simplify(tt.args.path); got != tt.want {
 				t.Errorf("GetSimplifiedPath(%s) = %v, want %v", tt.args.path, got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_GetSimplifiedPathTeams(t *testing.T) {
+	type args struct {
+		path string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{name: "the team itself", args: args{path: "/teams/3673574"}, want: "/teams/:id"},
+		{name: "members", args: args{path: "/teams/3005744/members"}, want: "/teams/:id/members"},
+		{name: "all repos", args: args{path: "/teams/1020908/repos"}, want: "/teams/:id/repos"},
+		{name: "inviations", args: args{path: "/teams/1135236/invitations"}, want: "/teams/:id/invitations"},
+		{name: "a repo", args: args{path: "/teams/2984756/repos/openshift/gcp-project-operator"}, want: "/teams/:id/repos/:org/:repo"},
+		{name: "a member", args: args{path: "/teams/3224926/memberships/deads2k"}, want: "/teams/:id/memberships/:user"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := simplifier.Simplify(tt.args.path); got != tt.want {
+				t.Errorf("GetSimplifiedPath() = %v, want %v", got, tt.want)
 			}
 		})
 	}

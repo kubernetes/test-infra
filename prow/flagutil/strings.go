@@ -18,6 +18,8 @@ package flagutil
 
 import (
 	"strings"
+
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 // Strings represents the value of a flag that accept multiple strings.
@@ -37,6 +39,11 @@ func NewStrings(def ...string) Strings {
 // Strings returns the slice of strings set for this value instance.
 func (s *Strings) Strings() []string {
 	return s.vals
+}
+
+// StringSet returns a sets.String  of strings set for this value instance.
+func (s *Strings) StringSet() sets.String {
+	return sets.NewString(s.Strings()...)
 }
 
 // String returns a concatenated string of all the values joined by commas.

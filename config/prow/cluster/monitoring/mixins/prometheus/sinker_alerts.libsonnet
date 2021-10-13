@@ -1,5 +1,6 @@
 {
   prometheusAlerts+:: {
+    local componentName = $._config.components.sinker,
     groups+: [
       {
         name: 'sinker-missing',
@@ -12,6 +13,7 @@
             'for': '5m',
             labels: {
               severity: 'high',
+              slo: componentName,
             },
             annotations: {
               message: 'Sinker has not removed any Pods in the last hour, likely indicating an outage in the service.',
@@ -25,6 +27,7 @@
             'for': '5m',
             labels: {
               severity: 'high',
+              slo: componentName,
             },
             annotations: {
               message: 'Sinker has not removed any Prow jobs in the last hour, likely indicating an outage in the service.',

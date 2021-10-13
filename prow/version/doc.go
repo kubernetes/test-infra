@@ -17,11 +17,20 @@ limitations under the License.
 // version holds variables that identify a Prow binary's name and version
 package version
 
+import (
+	"fmt"
+	"regexp"
+	"time"
+)
+
 var (
 	// Name is the colloquial identifier for the compiled component
 	Name = "unset"
 	// Version is a concatenation of the commit SHA and date for the build
 	Version = "0"
+	// reVersion is a regex expression for extracting build time.
+	// Version derived from "v${build_date}-${git_commit}" as in /hack/print-workspace-status.sh
+	reVersion = regexp.MustCompile(`v(\d+)-.*`)
 )
 
 // UserAgent exposes the component's name and version for user-agent header
@@ -33,4 +42,18 @@ func UserAgent() string {
 // while embedding the additional identifier
 func UserAgentWithIdentifier(identifier string) string {
 	return Name + "." + identifier + "/" + Version
+}
+
+// VersionTimestamp returns the timestamp of date derived from version
+func VersionTimestamp() (int64, error) {
+	var ver int64
+	m := reVersion.FindStringSubmatch(Version)
+	if len(m) < 2 {
+		return ver, fmt.Errorf("version expected to be in form 'v${build_date}-${git_commit}': %q", Version)
+	}
+	t, err := time.Parse("20060102", m[1])
+	if err != nil {
+		return ver, err
+	}
+	return t.Unix(), nil
 }

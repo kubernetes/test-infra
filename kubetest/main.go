@@ -35,8 +35,8 @@ import (
 	"time"
 
 	"github.com/spf13/pflag"
+	"sigs.k8s.io/boskos/client"
 
-	"k8s.io/test-infra/boskos/client"
 	"k8s.io/test-infra/kubetest/conformance"
 	"k8s.io/test-infra/kubetest/kind"
 	"k8s.io/test-infra/kubetest/process"
@@ -48,41 +48,45 @@ const defaultGinkgoParallel = 25
 
 var (
 	artifacts = filepath.Join(os.Getenv("WORKSPACE"), "_artifacts")
-	interrupt = time.NewTimer(time.Duration(0)) // interrupt testing at this time.
-	terminate = time.NewTimer(time.Duration(0)) // terminate testing at this time.
-	verbose   = false
-	timeout   = time.Duration(0)
 	boskos, _ = client.NewClient(os.Getenv("JOB_NAME"), "http://boskos.test-pods.svc.cluster.local.", "", "")
 	control   = process.NewControl(timeout, interrupt, terminate, verbose)
+	gitTag    = ""                              // initializing default zero value. ldflags will populate this during build time.
+	interrupt = time.NewTimer(time.Duration(0)) // interrupt testing at this time.
+	terminate = time.NewTimer(time.Duration(0)) // terminate testing at this time.
+	timeout   = time.Duration(0)
+	verbose   = false
 )
 
 type options struct {
-	build              buildStrategy
-	charts             bool
-	checkLeaks         bool
-	checkSkew          bool
-	cluster            string
-	clusterIPRange     string
-	deployment         string
-	down               bool
-	dump               string
-	dumpPreTestLogs    string
-	extract            extractStrategies
-	extractSource      bool
-	flushMemAfterBuild bool
-	focusRegex         string
-	gcpCloudSdk        string
-	gcpMasterImage     string
-	gcpMasterSize      string
-	gcpNetwork         string
-	gcpNodeImage       string
-	gcpImageFamily     string
-	gcpImageProject    string
-	gcpNodes           string
-	gcpNodeSize        string
-	gcpProject         string
-	gcpProjectType     string
-	gcpServiceAccount  string
+	build                buildStrategy
+	boskosWaitDuration   time.Duration
+	charts               bool
+	checkLeaks           bool
+	checkSkew            bool
+	cluster              string
+	clusterIPRange       string
+	deployment           string
+	down                 bool
+	dump                 string
+	dumpPreTestLogs      string
+	extract              extractStrategies
+	extractCIBucket      string
+	extractReleaseBucket string
+	extractSource        bool
+	flushMemAfterBuild   bool
+	focusRegex           string
+	gcpCloudSdk          string
+	gcpMasterImage       string
+	gcpMasterSize        string
+	gcpNetwork           string
+	gcpNodeImage         string
+	gcpImageFamily       string
+	gcpImageProject      string
+	gcpNodes             string
+	gcpNodeSize          string
+	gcpProject           string
+	gcpProjectType       string
+	gcpServiceAccount    string
 	// gcpSSHProxyInstanceName is the name of the vm instance which ip address will be used to set the
 	// KUBE_SSH_BASTION env. If set, it will result in proxying ssh connections in tests through the
 	// "bastion". It's useful for clusters with nodes without public ssh access, e.g. nodes without
@@ -102,6 +106,8 @@ type options struct {
 	nodeTestArgs            string
 	nodeTests               bool
 	outputDir               string
+	preTestCmd              string
+	postTestCmd             string
 	provider                string
 	publish                 string
 	runtimeConfig           string
@@ -112,6 +118,7 @@ type options struct {
 	soakDuration            time.Duration
 	sshUser                 string
 	stage                   stageStrategy
+	storageTestDriverPath   string
 	test                    bool
 	testArgs                string
 	testCmd                 string
@@ -119,12 +126,13 @@ type options struct {
 	testCmdArgs             []string
 	up                      bool
 	upgradeArgs             string
-	boskosWaitDuration      time.Duration
+	version                 bool
 }
 
 func defineFlags() *options {
 	o := options{}
 	flag.Var(&o.build, "build", "Rebuild k8s binaries, optionally forcing (release|quick|bazel) strategy")
+	flag.DurationVar(&o.boskosWaitDuration, "boskos-wait-duration", 5*time.Minute, "Defines how long it waits until quit getting Boskos resoure, default 5 minutes")
 	flag.BoolVar(&o.charts, "charts", false, "If true, run charts tests")
 	flag.BoolVar(&o.checkSkew, "check-version-skew", true, "Verify client and server versions match")
 	flag.BoolVar(&o.checkLeaks, "check-leaked-resources", false, "Ensure project ends with the same resources")
@@ -135,6 +143,8 @@ func defineFlags() *options {
 	flag.StringVar(&o.dump, "dump", "", "If set, dump bring-up and cluster logs to this location on test or cluster-up failure")
 	flag.StringVar(&o.dumpPreTestLogs, "dump-pre-test-logs", "", "If set, dump cluster logs to this location before running tests")
 	flag.Var(&o.extract, "extract", "Extract k8s binaries from the specified release location")
+	flag.StringVar(&o.extractCIBucket, "extract-ci-bucket", "k8s-release-dev", "Extract k8s CI binaries from the specified GCS bucket")
+	flag.StringVar(&o.extractReleaseBucket, "extract-release-bucket", "kubernetes-release", "Extract k8s release binaries from the specified GCS bucket")
 	flag.BoolVar(&o.extractSource, "extract-source", false, "Extract k8s src together with other tarballs")
 	flag.BoolVar(&o.flushMemAfterBuild, "flush-mem-after-build", false, "If true, try to flush container memory after building")
 	flag.Var(&o.ginkgoParallel, "ginkgo-parallel", fmt.Sprintf("Run Ginkgo tests in parallel, default %d runners. Use --ginkgo-parallel=N to specify an exact count.", defaultGinkgoParallel))
@@ -165,9 +175,11 @@ func defineFlags() *options {
 	flag.StringVar(&o.nodeTestArgs, "node-test-args", "", "Test args specifically for node e2e tests.")
 	flag.BoolVar(&o.noAllowDup, "no-allow-dup", false, "if set --allow-dup will not be passed to push-build and --stage will error if the build already exists on the gcs path")
 	flag.BoolVar(&o.nodeTests, "node-tests", false, "If true, run node-e2e tests.")
+	flag.StringVar(&o.preTestCmd, "pre-test-cmd", "", "If set, run the provided command before running any tests.")
+	flag.StringVar(&o.postTestCmd, "post-test-cmd", "", "If set, run the provided command after running all the tests.")
 	flag.StringVar(&o.provider, "provider", "", "Kubernetes provider such as gce, gke, aws, etc")
 	flag.StringVar(&o.publish, "publish", "", "Publish version to the specified gs:// path on success")
-	flag.StringVar(&o.runtimeConfig, "runtime-config", "batch/v2alpha1=true", "If set, API versions can be turned on or off while bringing up the API server.")
+	flag.StringVar(&o.runtimeConfig, "runtime-config", "", "If set, API versions can be turned on or off while bringing up the API server.")
 	flag.StringVar(&o.stage.dockerRegistry, "registry", "", "Push images to the specified docker registry (e.g. gcr.io/a-test-project)")
 	flag.StringVar(&o.save, "save", "", "Save credentials to gs:// path on --up if set (or load from there if not --up)")
 	flag.BoolVar(&o.skew, "skew", false, "If true, run tests in another version at ../kubernetes/kubernetes_skew")
@@ -175,6 +187,7 @@ func defineFlags() *options {
 	flag.DurationVar(&o.soakDuration, "soak-duration", 7*24*time.Hour, "Maximum age of a soak cluster before it gets recycled")
 	flag.Var(&o.stage, "stage", "Upload binaries to gs://bucket/devel/job-suffix if set")
 	flag.StringVar(&o.stage.versionSuffix, "stage-suffix", "", "Append suffix to staged version when set")
+	flag.StringVar(&o.storageTestDriverPath, "storage-testdriver-repo-path", "", "Relative path for external e2e test driver config in the csi driver repo")
 	flag.BoolVar(&o.test, "test", false, "Run Ginkgo tests.")
 	flag.StringVar(&o.testArgs, "test_args", "", "Space-separated list of arguments to pass to Ginkgo test runner.")
 	flag.StringVar(&o.testCmd, "test-cmd", "", "command to run against the cluster instead of Ginkgo e2e tests")
@@ -182,7 +195,7 @@ func defineFlags() *options {
 	flag.DurationVar(&timeout, "timeout", time.Duration(0), "Terminate testing after the timeout duration (s/m/h)")
 	flag.BoolVar(&o.up, "up", false, "If true, start the e2e cluster. If cluster is already up, recreate it.")
 	flag.StringVar(&o.upgradeArgs, "upgrade_args", "", "If set, run upgrade tests before other tests")
-	flag.DurationVar(&o.boskosWaitDuration, "boskos-wait-duration", 5*time.Minute, "Defines how long it waits until quit getting Boskos resoure, default 5 minutes")
+	flag.BoolVar(&o.version, "version", false, "Command to print version")
 
 	// The "-v" flag was also used by glog, which is used by k8s.io/client-go. Duplicate flags cause panics.
 	// 1. Even if we could convince glog to change, they have too many consumers to ever do so.
@@ -198,20 +211,20 @@ func defineFlags() *options {
 	return &o
 }
 
-var suite util.TestSuite
+var suite util.TestSuite = util.TestSuite{Name: "kubetest"}
 
 func validWorkingDirectory() error {
 	cwd, err := os.Getwd()
 	if err != nil {
-		return fmt.Errorf("could not get pwd: %v", err)
+		return fmt.Errorf("could not get pwd: %w", err)
 	}
 	acwd, err := filepath.Abs(cwd)
 	if err != nil {
-		return fmt.Errorf("failed to convert %s to an absolute path: %v", cwd, err)
+		return fmt.Errorf("failed to convert %s to an absolute path: %w", cwd, err)
 	}
 	// This also matches "kubernetes_skew" for upgrades.
 	if !strings.Contains(filepath.Base(acwd), "kubernetes") {
-		return fmt.Errorf("must run from kubernetes directory root. current: %v", acwd)
+		return fmt.Errorf("must run from kubernetes directory root. current: %s", acwd)
 	}
 	return nil
 }
@@ -245,7 +258,7 @@ func getDeployer(o *options) (deployer, error) {
 	case "kops":
 		return newKops(o.provider, o.gcpProject, o.cluster)
 	case "node":
-		return nodeDeploy{}, nil
+		return nodeDeploy{provider: o.provider}, nil
 	case "none":
 		return noneDeploy{}, nil
 	case "local":
@@ -268,6 +281,7 @@ func validateFlags(o *options) error {
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	log.Printf("Running kubetest version: %s\n", gitTag)
 
 	// Initialize global pseudo random generator. Initializing it to select random AWS Zones.
 	rand.Seed(time.Now().UnixNano())
@@ -281,6 +295,11 @@ func main() {
 
 	if err := validateFlags(o); err != nil {
 		log.Fatalf("Flags validation failed. err: %v", err)
+	}
+
+	if o.version {
+		log.Printf("kubetest version: %s\n", gitTag)
+		return
 	}
 
 	control = process.NewControl(timeout, interrupt, terminate, verbose)
@@ -334,13 +353,13 @@ func complete(o *options) error {
 		o.testArgs += fmt.Sprintf(" --logexporter-gcs-path=%s", o.logexporterGCSPath)
 	}
 	if err := prepare(o); err != nil {
-		return fmt.Errorf("failed to prepare test environment: %v", err)
+		return fmt.Errorf("failed to prepare test environment: %w", err)
 	}
 	// Get the deployer before we acquire k8s so any additional flag
 	// verifications happen early.
 	deploy, err := getDeployer(o)
 	if err != nil {
-		return fmt.Errorf("error creating deployer: %v", err)
+		return fmt.Errorf("error creating deployer: %w", err)
 	}
 
 	// Check soaking before run tests
@@ -358,18 +377,18 @@ func complete(o *options) error {
 	}
 
 	if err := acquireKubernetes(o, deploy); err != nil {
-		return fmt.Errorf("failed to acquire k8s binaries: %v", err)
+		return fmt.Errorf("failed to acquire k8s binaries: %w", err)
 	}
 	if o.extract.Enabled() {
 		// If we specified `--extract-source` we will already be in the correct directory
 		if !o.extractSource {
 			if err := os.Chdir("kubernetes"); err != nil {
-				return fmt.Errorf("failed to chdir to kubernetes dir: %v", err)
+				return fmt.Errorf("failed to chdir to kubernetes dir: %w", err)
 			}
 		}
 	}
 	if err := validWorkingDirectory(); err != nil {
-		return fmt.Errorf("called from invalid working directory: %v", err)
+		return fmt.Errorf("called from invalid working directory: %w", err)
 	}
 
 	if o.down {
@@ -454,7 +473,7 @@ func acquireKubernetes(o *options, d deployer) error {
 			}
 
 			// New deployment, extract new version
-			return o.extract.Extract(o.gcpProject, o.gcpZone, o.gcpRegion, o.extractSource)
+			return o.extract.Extract(o.gcpProject, o.gcpZone, o.gcpRegion, o.extractCIBucket, o.extractReleaseBucket, o.extractSource)
 		})
 		if err != nil {
 			return err
@@ -507,6 +526,7 @@ func writeMetadata(path, metadataSources string) error {
 	ver := findVersion()
 	m["job-version"] = ver // TODO(krzyzacy): retire
 	m["revision"] = ver
+	m["kubetest-version"] = gitTag
 	re := regexp.MustCompile(`^BUILD_METADATA_(.+)$`)
 	for _, e := range os.Environ() {
 		p := strings.SplitN(e, "=", 2)
@@ -649,10 +669,10 @@ func prepareGcp(o *options) error {
 			o.gcpNodeImage = distro
 			o.gcpMasterImage = distro
 			if err := os.Setenv("KUBE_NODE_OS_DISTRIBUTION", distro); err != nil {
-				return fmt.Errorf("could not set KUBE_NODE_OS_DISTRIBUTION=%s: %v", distro, err)
+				return fmt.Errorf("could not set KUBE_NODE_OS_DISTRIBUTION=%s: %w", distro, err)
 			}
 			if err := os.Setenv("KUBE_MASTER_OS_DISTRIBUTION", distro); err != nil {
-				return fmt.Errorf("could not set KUBE_MASTER_OS_DISTRIBUTION=%s: %v", distro, err)
+				return fmt.Errorf("could not set KUBE_MASTER_OS_DISTRIBUTION=%s: %w", distro, err)
 			}
 		}
 
@@ -666,7 +686,7 @@ func prepareGcp(o *options) error {
 				return fmt.Errorf("failed to get latest image from family %q in project %q: %s", o.gcpImageFamily, o.gcpImageProject, err)
 			}
 			latestImage := ""
-			latestImageRegexp := regexp.MustCompile("^name: *(\\S+)")
+			latestImageRegexp := regexp.MustCompile(`^name: *(\S+)`)
 			for _, line := range strings.Split(string(out), "\n") {
 				matches := latestImageRegexp.FindStringSubmatch(line)
 				if len(matches) == 2 {
@@ -690,9 +710,6 @@ func prepareGcp(o *options) error {
 		}
 		if o.deployment != "gke" {
 			return fmt.Errorf("expected --deployment=gke for --provider=gke, found --deployment=%s", o.deployment)
-		}
-		if o.gcpNodeImage == "" {
-			return fmt.Errorf("--gcp-node-image must be set for GKE")
 		}
 		if o.gcpMasterImage != "" {
 			return fmt.Errorf("expected --gcp-master-image to be empty for --provider=gke, found --gcp-master-image=%s", o.gcpMasterImage)
@@ -743,7 +760,7 @@ func prepareGcp(o *options) error {
 		defer cancel()
 		p, err := boskos.AcquireWait(ctx, resType, "free", "busy")
 		if err != nil {
-			return fmt.Errorf("--provider=%s boskos failed to acquire project: %v", o.provider, err)
+			return fmt.Errorf("--provider=%s boskos failed to acquire project: %w", o.provider, err)
 		}
 
 		if p == nil {
@@ -761,17 +778,17 @@ func prepareGcp(o *options) error {
 	}
 
 	if err := os.Setenv("CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS", "1"); err != nil {
-		return fmt.Errorf("could not set CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1: %v", err)
+		return fmt.Errorf("could not set CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1: %w", err)
 	}
 
 	if err := control.FinishRunning(exec.Command("gcloud", "config", "set", "project", o.gcpProject)); err != nil {
-		return fmt.Errorf("fail to set project %s : err %v", o.gcpProject, err)
+		return fmt.Errorf("fail to set project %s : err %w", o.gcpProject, err)
 	}
 
 	// TODO(krzyzacy):Remove this when we retire migrateGcpEnvAndOptions
 	// Note that a lot of scripts are still depend on this env in k/k repo.
 	if err := os.Setenv("PROJECT", o.gcpProject); err != nil {
-		return fmt.Errorf("fail to set env var PROJECT %s : err %v", o.gcpProject, err)
+		return fmt.Errorf("fail to set env var PROJECT %s : err %w", o.gcpProject, err)
 	}
 
 	// Ensure ssh keys exist
@@ -868,13 +885,6 @@ func activateServiceAccount(path string) error {
 		return nil
 	}
 	return control.FinishRunning(exec.Command("gcloud", "auth", "activate-service-account", "--key-file="+path))
-}
-
-// Make all artifacts world readable.
-// The root user winds up owning the files when the container exists.
-// Ensure that other users can read these files at that time.
-func chmodArtifacts() error {
-	return control.FinishRunning(exec.Command("chmod", "-R", "o+r", artifacts))
 }
 
 func prepare(o *options) error {

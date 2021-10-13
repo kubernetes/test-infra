@@ -1,4 +1,5 @@
 local grafana = import 'grafonnet/grafana.libsonnet';
+local config =  import 'config.libsonnet';
 local dashboard = grafana.dashboard;
 local graphPanel = grafana.graphPanel;
 local prometheus = grafana.prometheus;
@@ -24,7 +25,7 @@ dashboard.new(
         aliasColors={'busy': '#ff0000', 'cleaning': '#00eeff', 'dirty': '#ff8000', 'free': '#00ff00', 'leased': '#ee00ff', 'other': '#aaaaff', 'toBeDeleted': '#fafa00', 'tombstone': '#cccccc'}
     )
     .addTarget(prometheus.target(
-        'sum(boskos_resources{type="%s"}) by (state)' % resource.type,
+        std.format('sum(boskos_resources{type="%s",job="%s"} or boskos_resources{type="%s",instance="%s"}) by (state)', [resource.type, resource.job, resource.type, resource.instance]),
         legendFormat='{{state}}',
     ))
     {gridPos: {
@@ -33,16 +34,6 @@ dashboard.new(
         x: 0,
         y: 0,
     }}
-      for resource in [
-        {type: "aws-account", friendly: "AWS account"},
-        {type: "gce-project", friendly: "GCE project"},
-        {type: "gke-project", friendly: "GKE project"},
-        {type: "gpu-project", friendly: "GPU project"},
-        {type: "ingress-project", friendly: "Ingress project"},
-        {type: "k8s-infra-gce-project", friendly: "K8s Infra GCE project"},
-        {type: "node-e2e-project", friendly: "Node e2e project"},
-        {type: "scalability-project", friendly: "Scalability project"},
-        {type: "scalability-presubmit-project", friendly: "Scalability presubmit project"}
-      ]
+      for resource in config._config.boskosResourcetypes
   ])
 + dashboardConfig

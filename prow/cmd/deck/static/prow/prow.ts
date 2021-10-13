@@ -1,7 +1,7 @@
 import moment from "moment";
 import {ProwJob, ProwJobList, ProwJobState, ProwJobType, Pull} from "../api/prow";
-import {cell, icon} from "../common/common";
-import {getParameterByName, relativeURL} from "../common/urls";
+import {cell, createRerunProwJobIcon, formatDuration, icon} from "../common/common";
+import {getParameterByName} from "../common/urls";
 import {FuzzySearch} from './fuzzy-search';
 import {JobHistogram, JobSample} from './histogram';
 
@@ -29,14 +29,14 @@ interface RepoOptions {
     jobs: {[key: string]: boolean};
     authors: {[key: string]: boolean};
     pulls: {[key: string]: boolean};
-    batches: {[key: string]: boolean};
     states: {[key: string]: boolean};
+    clusters: {[key: string]: boolean};
 }
 
 function optionsForRepo(repository: string): RepoOptions {
     const opts: RepoOptions = {
         authors: {},
-        batches: {},
+        clusters: {},
         jobs: {},
         pulls: {},
         repos: {},
@@ -47,6 +47,7 @@ function optionsForRepo(repository: string): RepoOptions {
     for (const build of allBuilds.items) {
         const {
             spec: {
+                cluster = "",
                 type = "",
                 job = "",
                 refs: {
@@ -59,6 +60,7 @@ function optionsForRepo(repository: string): RepoOptions {
         } = build;
 
         opts.types[type] = true;
+        opts.clusters[cluster] = true;
         const repoKey = `${org}/${repo}`;
         if (repoKey) {
             opts.repos[repoKey] = true;
@@ -67,11 +69,11 @@ function optionsForRepo(repository: string): RepoOptions {
             opts.jobs[job] = true;
             opts.states[state] = true;
 
-            if (type === "presubmit" && pulls.length) {
-                opts.authors[pulls[0].author] = true;
-                opts.pulls[pulls[0].number] = true;
-            } else if (type === "batch") {
-                opts.batches[genShortRefKey(base_ref, pulls)] = true;
+            if (pulls.length) {
+                for (const pull of pulls) {
+                    opts.authors[pull.author] = true;
+                    opts.pulls[pull.number] = true;
+                }
             }
         }
     }
@@ -88,20 +90,21 @@ function redrawOptions(fz: FuzzySearch, opts: RepoOptions) {
     const jobInput = document.getElementById("job-input") as HTMLInputElement;
     const jobList = document.getElementById("job-list") as HTMLUListElement;
     addOptionFuzzySearch(fz, js, "job", jobList, jobInput);
-    const as = Object.keys(opts.authors).sort(
-        (a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
-    addOptions(as, "author");
-    if (selectedType === "batch") {
-        opts.pulls = opts.batches;
-    }
+
     if (selectedType !== "periodic" && selectedType !== "postsubmit") {
         const ps = Object.keys(opts.pulls).sort((a, b) => Number(a) - Number(b));
         addOptions(ps, "pull");
+        const as = Object.keys(opts.authors).sort(
+            (a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+        addOptions(as, "author");
     } else {
         addOptions([], "pull");
+        addOptions([], "author");
     }
     const ss = Object.keys(opts.states).sort();
     addOptions(ss, "state");
+    const cs = Object.keys(opts.clusters).sort();
+    addOptions(cs, "cluster");
 }
 
 function adjustScroll(el: Element): void {
@@ -256,6 +259,16 @@ window.onload = (): void => {
         }
         const targetRow = builds.childNodes[rowNumber] as HTMLTableRowElement;
         targetRow.scrollIntoView();
+    });
+    window.addEventListener("popstate", () => {
+        const optsPopped = optionsForRepo("");
+        const fzPopped = initFuzzySearch(
+            "job",
+            "job-input",
+            "job-list",
+            Object.keys(optsPopped.jobs).sort());
+        redrawOptions(fzPopped, optsPopped);
+        redraw(fzPopped, false);
     });
     // set dropdown based on options from query string
     const opts = optionsForRepo("");
@@ -414,15 +427,10 @@ function escapeRegexLiteral(s: string): string {
     return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-function redraw(fz: FuzzySearch): void {
+function redraw(fz: FuzzySearch, pushState: boolean = true): void {
     const rerunStatus = getParameterByName("rerun");
     const modal = document.getElementById('rerun')!;
     const rerunCommand = document.getElementById('rerun-content')!;
-    window.onclick = (event) => {
-        if (event.target === modal) {
-            modal.style.display = "none";
-        }
-    };
     const builds = document.getElementById("builds")!.getElementsByTagName(
         "tbody")[0];
     while (builds.firstChild) {
@@ -433,7 +441,7 @@ function redraw(fz: FuzzySearch): void {
 
     function getSelection(name: string): string {
         const sel = selectionText(document.getElementById(name) as HTMLSelectElement);
-        if (sel && opts && !opts[name + 's' as keyof RepoOptions][sel]) {
+        if (sel && name !== 'repo' && !opts[name + 's' as keyof RepoOptions][sel]) {
             return "";
         }
         if (sel !== "") {
@@ -451,7 +459,7 @@ function redraw(fz: FuzzySearch): void {
         if (inputText !== "") {
             args.push(`${id}=${encodeURIComponent(inputText)}`);
         }
-        if (inputText !== "" && opts && opts[id + 's' as keyof RepoOptions][inputText]) {
+        if (inputText !== "" && opts[id + 's' as keyof RepoOptions][inputText]) {
             return new RegExp(`^${escapeRegexLiteral(inputText)}$`);
         }
         const expr = inputText.split('*').map(escapeRegexLiteral);
@@ -462,19 +470,17 @@ function redraw(fz: FuzzySearch): void {
     const opts = optionsForRepo(repoSel);
 
     const typeSel = getSelection("type") as ProwJobType;
-    if (typeSel === "batch") {
-        opts.pulls = opts.batches;
-    }
     const pullSel = getSelection("pull");
     const authorSel = getSelection("author");
     const jobSel = getSelectionFuzzySearch("job", "job-input");
     const stateSel = getSelection("state");
+    const clusterSel = getSelection("cluster");
 
-    if (window.history && window.history.replaceState !== undefined) {
+    if (pushState && window.history && window.history.pushState !== undefined) {
         if (args.length > 0) {
-            history.replaceState(null, "", "/?" + args.join('&'));
+            history.pushState(null, "", "/?" + args.join('&'));
         } else {
-            history.replaceState(null, "", "/");
+            history.pushState(null, "", "/");
         }
     }
     fz.setDict(Object.keys(opts.jobs));
@@ -496,13 +502,30 @@ function redraw(fz: FuzzySearch): void {
                 name: prowJobName = "",
             },
             spec: {
+                cluster = "",
                 type = "",
                 job = "",
                 agent = "",
-                refs: {org = "", repo = "", repo_link = "", base_sha = "", base_link = "", pulls = [], base_ref = ""} = {},
+                refs: {repo_link = "", base_sha = "", base_link = "", pulls = [], base_ref = ""} = {},
+                pod_spec,
             },
             status: {startTime, completionTime = "", state = "", pod_name, build_id = "", url = ""},
         } = build;
+
+        let buildUrl = url;
+        if (url.includes('/view/')) {
+            buildUrl = `${window.location.origin}/${url.slice(url.indexOf('/view/') + 1)}`;
+        }
+
+        let org = "";
+        let repo = "";
+        if (build.spec.refs !== undefined) {
+            org = build.spec.refs.org;
+            repo = build.spec.refs.repo;
+        } else if (build.spec.extra_refs !== undefined && build.spec.extra_refs.length > 0 ) {
+            org = build.spec.extra_refs[0].org;
+            repo = build.spec.extra_refs[0].repo;
+        }
 
         if (!equalSelected(typeSel, type)) {
             continue;
@@ -513,24 +536,37 @@ function redraw(fz: FuzzySearch): void {
         if (!equalSelected(stateSel, state)) {
             continue;
         }
+        if (!equalSelected(clusterSel, cluster)) {
+            continue;
+        }
         if (!jobSel.test(job)) {
             continue;
         }
-        if (type === "presubmit" && pulls.length) {
-            const {number: prNumber, author} = pulls[0];
 
-            if (!equalSelected(pullSel, prNumber.toString())) {
+        if (pullSel) {
+            if (!pulls.length) {
                 continue;
             }
-            if (!equalSelected(authorSel, author)) {
+
+            if (!pulls.some((pull: Pull): boolean => {
+                const {number: prNumber} = pull;
+                return equalSelected(pullSel, prNumber.toString());
+            })) {
                 continue;
             }
-        } else if (type === "batch" && !authorSel) {
-            if (!equalSelected(pullSel, genShortRefKey(base_ref, pulls))) {
+        }
+
+        if (authorSel) {
+            if (!pulls.length) {
                 continue;
             }
-        } else if (pullSel || authorSel) {
-            continue;
+
+            if (!pulls.some((pull: Pull): boolean => {
+                const {author} = pull;
+                return equalSelected(authorSel, author);
+            })) {
+                continue;
+            }
         }
 
         totalJob++;
@@ -571,7 +607,20 @@ function redraw(fz: FuzzySearch): void {
         r.appendChild(cell.state(state));
         if ((agent === "kubernetes" && pod_name) || agent !== "kubernetes") {
             const logIcon = icon.create("description", "Build log");
-            logIcon.href = `log?job=${job}&id=${build_id}`;
+            if (pod_spec == null || pod_spec.containers.length <= 1) {
+                logIcon.href = `log?job=${job}&id=${build_id}`;
+            } else {
+                // this logic exists for legacy jobs that are configured for gubernator compatibility
+                const buildIndex = buildUrl.indexOf('/build/');
+                if (buildIndex !== -1) {
+                    const gcsUrl = `${window.location.origin}/view/gcs/${buildUrl.substring(buildIndex + '/build/'.length)}`;
+                    logIcon.href = gcsUrl;
+                } else if (buildUrl.includes('/view/')) {
+                    logIcon.href = buildUrl;
+                } else {
+                    logIcon.href = `log?job=${job}&id=${build_id}`;
+                }
+            }
             const c = document.createElement("td");
             c.classList.add("icon-cell");
             c.appendChild(logIcon);
@@ -592,7 +641,7 @@ function redraw(fz: FuzzySearch): void {
             } else {
                 let repoLink = repo_link;
                 if (!repoLink) {
-                    repoLink = `https://github.com/${org}/${repo}`;
+                    repoLink = `/github-link?dest=${org}/${repo}`;
                 }
                 r.appendChild(cell.link(`${org}/${repo}`, repoLink));
             }
@@ -615,22 +664,23 @@ function redraw(fz: FuzzySearch): void {
             r.appendChild(cell.text(""));
         }
         if (spyglass) {
-            const buildIndex = url.indexOf('/build/');
+            // this logic exists for legacy jobs that are configured for gubernator compatibility
+            const buildIndex = buildUrl.indexOf('/build/');
             if (buildIndex !== -1) {
-                const gcsUrl = `${window.location.origin}/view/gcs/${url.substring(buildIndex + '/build/'.length)}`;
+                const gcsUrl = `${window.location.origin}/view/gcs/${buildUrl.substring(buildIndex + '/build/'.length)}`;
                 r.appendChild(createSpyglassCell(gcsUrl));
-            } else if (url.includes('/view/')) {
-                r.appendChild(createSpyglassCell(url));
+            } else if (buildUrl.includes('/view/')) {
+                r.appendChild(createSpyglassCell(buildUrl));
             } else {
                 r.appendChild(cell.text(''));
             }
         } else {
             r.appendChild(cell.text(''));
         }
-        if (url === "") {
+        if (buildUrl === "") {
             r.appendChild(cell.text(job));
         } else {
-            r.appendChild(cell.link(job, url));
+            r.appendChild(cell.link(job, buildUrl));
         }
 
         r.appendChild(cell.time(i.toString(), moment.unix(started)));
@@ -681,49 +731,14 @@ function redraw(fz: FuzzySearch): void {
         modal.style.display = "block";
         rerunCommand.innerHTML = "Rerunning that job requires GitHub login. Now that you're logged in, try again";
     }
+    // we need to upgrade DOM for new created dynamic elements
+    // see https://getmdl.io/started/index.html#dynamic
+    componentHandler.upgradeDom();
 }
 
 function createRerunCell(modal: HTMLElement, rerunElement: HTMLElement, prowjob: string): HTMLTableDataCellElement {
-    const url = `${location.protocol}//${location.host}/rerun?prowjob=${prowjob}`;
     const c = document.createElement("td");
-    const i = icon.create("refresh", "Show instructions for rerunning this job");
-
-    // we actually want to know whether the "access-token-session" cookie exists, but we can't always
-    // access it from the frontend. "github_login" should be set whenever "access-token-session" is
-    i.onclick = () => {
-        modal.style.display = "block";
-        rerunElement.innerHTML = `kubectl create -f "<a href="${url}">${url}</a>"`;
-        const copyButton = document.createElement('a');
-        copyButton.className = "mdl-button mdl-js-button mdl-button--icon";
-        copyButton.onclick = () => copyToClipboardWithToast(`kubectl create -f "${url}"`);
-        copyButton.innerHTML = "<i class='material-icons state triggered' style='color: gray'>file_copy</i>";
-        rerunElement.appendChild(copyButton);
-        if (rerunCreatesJob) {
-            const runButton = document.createElement('a');
-            runButton.innerHTML = "<button class='mdl-button mdl-js-button'>Rerun</button>";
-            runButton.onclick = async () => {
-                gtag("event", "rerun", {
-                    event_category: "engagement",
-                    transport_type: "beacon",
-                });
-                const result = await fetch(url, {
-                    headers: {
-                        "Content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-                        "X-CSRF-Token": csrfToken,
-                    },
-                    method: 'post',
-                });
-                const data = await result.text();
-                if (result.status === 401) {
-                    window.location.href = window.location.origin + `/github-login?dest=${relativeURL({rerun: "gh_redirect"})}`;
-                } else {
-                    rerunElement.innerHTML = data;
-                }
-            };
-            rerunElement.appendChild(runButton);
-        }
-    };
-    c.appendChild(i);
+    c.appendChild(createRerunProwJobIcon(modal, rerunElement, prowjob, rerunCreatesJob, csrfToken));
     c.classList.add("icon-cell");
     return c;
 }
@@ -737,42 +752,6 @@ function createViewJobCell(prowjob: string): HTMLTableDataCellElement {
     return c;
 }
 
-// copyToClipboard is from https://stackoverflow.com/a/33928558
-// Copies a string to the clipboard. Must be called from within an
-// event handler such as click. May return false if it failed, but
-// this is not always possible. Browser support for Chrome 43+,
-// Firefox 42+, Safari 10+, Edge and IE 10+.
-// IE: The clipboard feature may be disabled by an administrator. By
-// default a prompt is shown the first time the clipboard is
-// used (per session).
-function copyToClipboard(text: string) {
-    if (window.clipboardData && window.clipboardData.setData) {
-        // IE specific code path to prevent textarea being shown while dialog is visible.
-        return window.clipboardData.setData("Text", text);
-    } else if (document.queryCommandSupported && document.queryCommandSupported("copy")) {
-        const textarea = document.createElement("textarea");
-        textarea.textContent = text;
-        textarea.style.position = "fixed";  // Prevent scrolling to bottom of page in MS Edge.
-        document.body.appendChild(textarea);
-        textarea.select();
-        try {
-            return document.execCommand("copy");  // Security exception may be thrown by some browsers.
-        } catch (ex) {
-            console.warn("Copy to clipboard failed.", ex);
-            return false;
-        } finally {
-            document.body.removeChild(textarea);
-        }
-    }
-}
-
-function copyToClipboardWithToast(text: string): void {
-    copyToClipboard(text);
-
-    const toast = document.getElementById("toast") as SnackbarElement<HTMLDivElement>;
-    toast.MaterialSnackbar.showSnackbar({message: "Copied to clipboard"});
-}
-
 function batchRevisionCell(build: ProwJob): HTMLTableDataCellElement {
     const {refs: {org = "", repo = "", pulls = []} = {}} = build.spec;
 
@@ -782,18 +761,9 @@ function batchRevisionCell(build: ProwJob): HTMLTableDataCellElement {
     }
     for (let i = 0; i < pulls.length; i++) {
         if (i !== 0) {
-            c.appendChild(document.createTextNode(", "));
+            c.appendChild(document.createElement("br"));
         }
-        const {link, number: prNumber} = pulls[i];
-        const l = document.createElement("a");
-        if (link) {
-            l.href = link;
-        } else {
-            l.href = `https://github.com/${org}/${repo}/pull/${prNumber}`;
-        }
-        l.text = prNumber.toString();
-        c.appendChild(document.createTextNode("#"));
-        c.appendChild(l);
+        cell.addPRRevision(c, `${org}/${repo}`, pulls[i]);
     }
     return c;
 }
@@ -837,51 +807,6 @@ function stateToAdj(state: ProwJobState): string {
         default:
             return state;
     }
-}
-
-function parseDuration(duration: string): number {
-    if (duration.length === 0) {
-        return 0;
-    }
-    let seconds = 0;
-    let multiple = 0;
-    for (let i = duration.length; i >= 0; i--) {
-        const ch = duration[i];
-        if (ch === 's') {
-            multiple = 1;
-        } else if (ch === 'm') {
-            multiple = 60;
-        } else if (ch === 'h') {
-            multiple = 60 * 60;
-        } else if (ch >= '0' && ch <= '9') {
-            seconds += Number(ch) * multiple;
-            multiple *= 10;
-        }
-    }
-    return seconds;
-}
-
-function formatDuration(seconds: number): string {
-    const parts: string[] = [];
-    if (seconds >= 3600) {
-        const hours = Math.floor(seconds / 3600);
-        parts.push(String(hours));
-        parts.push('h');
-        seconds = seconds % 3600;
-    }
-    if (seconds >= 60) {
-        const minutes = Math.floor(seconds / 60);
-        if (minutes > 0) {
-            parts.push(String(minutes));
-            parts.push('m');
-            seconds = seconds % 60;
-        }
-    }
-    if (seconds > 0) {
-        parts.push(String(seconds));
-        parts.push('s');
-    }
-    return parts.join('');
 }
 
 function drawJobHistogram(total: number, jobHistogram: JobHistogram, start: number, end: number, maximum: number): void {

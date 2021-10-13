@@ -19,7 +19,7 @@ _repo_infra_repos()
 load("@io_k8s_repo_infra//:repos.bzl", "configure")
 
 configure(
-    go_version = "1.13",
+    go_version = "1.16.2",
     nogo = "@//:nogo_vet",
 )
 
@@ -38,6 +38,10 @@ _container_repositories()
 load("@io_bazel_rules_docker//repositories:deps.bzl", _container_deps = "deps")
 
 _container_deps()
+
+load("@io_bazel_rules_docker//repositories:pip_repositories.bzl", _pip_deps = "pip_deps")
+
+_pip_deps()
 
 load("@io_bazel_rules_docker//go:image.bzl", _go_repositories = "repositories")
 
@@ -62,22 +66,17 @@ load("@io_bazel_rules_k8s//k8s:k8s.bzl", "k8s_repositories")
 
 k8s_repositories()
 
-load("@build_bazel_rules_nodejs//:defs.bzl", "yarn_install")
+# TODO(fejta): node repositories
+load("@build_bazel_rules_nodejs//:index.bzl", "yarn_install")
 
 yarn_install(
     name = "npm",
+    # Updating yarn.lock? Set frozen_lockfile=False,
+    frozen_lockfile = True,
     package_json = "//:package.json",
     quiet = True,
     yarn_lock = "//:yarn.lock",
 )
-
-load("@npm//:install_bazel_dependencies.bzl", "install_bazel_dependencies")
-
-install_bazel_dependencies()
-
-load("@npm_bazel_typescript//:index.bzl", "ts_setup_workspace")
-
-ts_setup_workspace()
 
 load("@rules_python//python:pip.bzl", "pip_import")
 

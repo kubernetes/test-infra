@@ -46,7 +46,18 @@ To see common Prow usage and interactions flow, see the pull request interaction
 - ["Life of a Prow Job"](/prow/life_of_a_prow_job.md)
 - [Getting more out of Prow](/prow/more_prow.md)
 
+### Tests
+
+The stability of prow is heavily relying on unit tests and integration tests.
+
+* Unit tests are co-located with prow source code
+* [Integration tests](./test/integration) utilizes [kind](https://kind.sigs.k8s.io/) with hermetic integration tests. See [instructions for adding new integration tests](./test/integration#add-new-integration-tests) for more details
+
 ## Useful Talks
+
+### KubeCon 2020 EU virtual
+
+ - [Going Beyond CI/CD with Prow](https://youtu.be/qQvoImxHydk)
 
 ### KubeCon 2018 EU
 
@@ -74,25 +85,30 @@ To see common Prow usage and interactions flow, see the pull request interaction
 
 Prow is used by the following organizations and projects:
 - [Kubernetes](https://prow.k8s.io)
-  - This includes [kubernetes](https://github.com/kubernetes), [kubernetes-client](https://github.com/kubernetes-client), [kubernetes-csi](https://github.com/kubernetes-csi), [kubernetes-incubator](https://github.com/kubernetes-incubator), and [kubernetes-sigs](https://github.com/kubernetes-sigs).
-- [OpenShift](https://prow.svc.ci.openshift.org/)
-  - This includes [openshift](https://github.com/openshift), [openshift-s2i](https://github.com/openshift-s2i), [operator-framework](https://github.com/operator-framework), and some repos in [kubernetes-incubator](https://github.com/kubernetes-incubator), [containers](https://github.com/containers) and [heketi](https://github.com/heketi).
+  - This includes [kubernetes](https://github.com/kubernetes), [kubernetes-client](https://github.com/kubernetes-client), [kubernetes-csi](https://github.com/kubernetes-csi), and [kubernetes-sigs](https://github.com/kubernetes-sigs).
+- [OpenShift](https://prow.ci.openshift.org/)
+  - This includes [openshift](https://github.com/openshift), [openshift-s2i](https://github.com/openshift-s2i), [operator-framework](https://github.com/operator-framework), and some repos in [containers](https://github.com/containers) and [heketi](https://github.com/heketi).
 - [Istio](https://prow.istio.io/)
 - [Knative](https://prow.knative.dev/)
 - [Jetstack](https://prow.build-infra.jetstack.net/)
 - [Kyma](https://status.build.kyma-project.io/)
-- [Metal³](https://prow.apps.ci.metal3.io/)
+- [Metal³](https://prow.apps.test.metal3.io/)
 - [Prometheus](http://prombench.prometheus.io/)
 - [Caicloud](https://github.com/caicloud)
 - [Kubeflow](https://github.com/kubeflow)
 - [Azure AKS Engine](https://github.com/Azure/aks-engine/tree/master/.prowci)
 - [tensorflow/minigo](https://github.com/tensorflow/minigo#automated-tests)
-- [helm/charts](https://github.com/helm/charts)
-- [Daisy(google compute image tools)](https://github.com/GoogleCloudPlatform/compute-image-tools/tree/master/test-infra#prow-and-gubenator)
+- [Daisy (Google Compute Image Tools)](https://github.com/GoogleCloudPlatform/compute-image-tools/tree/master/test-infra#prow-and-gubenator)
 - [KubeEdge (Kubernetes Native Edge Computing Framework)](https://github.com/kubeedge/kubeedge)
 - [Volcano (Kubernetes Native Batch System)](https://github.com/volcano-sh/volcano)
 - [Loodse](https://public-prow.loodse.com/)
 - [Feast](https://github.com/gojek/feast)
+- [Falco](http://prow.falco.org)
+- [TiDB](https://prow.tidb.io)
+- [Amazon EKS Distro and Amazon EKS Anywhere](https://prow.eks.amazonaws.com/)
+- [KubeSphere](https://prow.kubesphere.io)
+- [OpenYurt](https://github.com/openyurtio/openyurt)
+- [KubeVirt](https://prow.ci.kubevirt.io/)
 
 [Jenkins X](https://jenkins-x.io/) uses [Prow as part of Serverless Jenkins](https://medium.com/@jdrawlings/serverless-jenkins-with-jenkins-x-9134cbfe6870).
 

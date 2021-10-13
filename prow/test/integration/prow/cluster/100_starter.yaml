@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: test-pods
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  namespace: default
+  name: oauth-token
+data:
+  oauth: ZmFrZW9hdXRodG9rZW4K # From 'fakeoauthtoken'
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  namespace: default
+  name: kubeconfig
+stringData:
+  config: ""

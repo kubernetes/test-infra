@@ -17,12 +17,30 @@ limitations under the License.
 package flagutil
 
 import (
+	"io/ioutil"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"k8s.io/test-infra/pkg/flagutil"
 )
 
 func TestExperimentalKubernetesOptions_Validate(t *testing.T) {
+	dir := t.TempDir()
+	configFile := filepath.Join(dir, "some-file")
+	if err := ioutil.WriteFile(configFile, []byte("a"), 0644); err != nil {
+		t.Fatalf("failed to write kubeconfig file %q: %v", configFile, err)
+	}
+	configDir := filepath.Join(dir, "some-dir")
+	if err := os.Mkdir(configDir, 0755); err != nil {
+		t.Fatalf("failed to create a directory %q: %v", configDir, err)
+	}
+	defer t.Cleanup(func() {
+		if err := os.RemoveAll(dir); err != nil {
+			t.Errorf("failed to remove files in %s: %v", dir, err)
+		}
+	})
+
 	var testCases = []struct {
 		name        string
 		dryRun      bool
@@ -36,18 +54,29 @@ func TestExperimentalKubernetesOptions_Validate(t *testing.T) {
 			expectedErr: false,
 		},
 		{
-			name:   "all ok with dry-run",
-			dryRun: true,
-			kubernetes: &KubernetesOptions{
-				DeckURI: "https://example.com",
-			},
+			name:        "all ok with dry-run",
+			dryRun:      true,
+			kubernetes:  &KubernetesOptions{},
 			expectedErr: false,
 		},
 		{
-			name:        "missing deck endpoint with dry-run",
-			dryRun:      true,
-			kubernetes:  &KubernetesOptions{},
-			expectedErr: true,
+			name: "kubeconfig can be set alone",
+			kubernetes: &KubernetesOptions{
+				kubeconfig: configFile,
+			},
+		},
+		{
+			name: "kubeconfigDir can be set alone",
+			kubernetes: &KubernetesOptions{
+				kubeconfigDir: configDir,
+			},
+		},
+		{
+			name: "kubeconfig and kubeconfigDir can be set together",
+			kubernetes: &KubernetesOptions{
+				kubeconfig:    configFile,
+				kubeconfigDir: configDir,
+			},
 		},
 	}
 
@@ -61,5 +90,71 @@ func TestExperimentalKubernetesOptions_Validate(t *testing.T) {
 				t.Errorf("%s: expected no error but got one: %v", testCase.name, err)
 			}
 		})
+	}
+}
+
+func TestResolveSetsConfigsButDoesntSetClients(t *testing.T) {
+	config := `apiVersion: v1
+clusters:
+- cluster:
+    server: https://build
+  name: build
+- cluster:
+    server: https://kubernetes.default
+  name: incluster
+contexts:
+- context:
+    cluster: build
+    user: build
+  name: build
+- context:
+    cluster: incluster
+    user: incluster
+  name: incluster
+kind: Config
+# We consider current-context to be in-cluster context to be prowjob context ¯\_(ツ)_/¯
+# https://github.com/kubernetes/test-infra/blob/1f02f841b7ffdbe78f14d20cabba4531e34feb20/prow/kube/config.go#L126-L127
+current-context: incluster
+users:
+- name: build
+  user:
+    token: abc
+- name: incluster
+  user:
+    token: cde
+`
+
+	tmpFile, err := ioutil.TempFile("", "")
+	if err != nil {
+		t.Fatalf("failed to get tempfile: %v", err)
+	}
+	kubeconfig := tmpFile.Name()
+	defer func() {
+		if err := os.Remove(kubeconfig); err != nil {
+			t.Errorf("failed to remove tempfile: %v", err)
+		}
+	}()
+	if _, err := tmpFile.Write([]byte(config)); err != nil {
+		t.Errorf("failed to write config to tempfile: %v", err)
+	}
+	if err := tmpFile.Close(); err != nil {
+		t.Errorf("failed to close tempfile: %v", err)
+	}
+
+	o := &KubernetesOptions{kubeconfig: kubeconfig}
+	if err := o.resolve(true); err != nil {
+		t.Fatalf("resolve failed: %v", err)
+	}
+	if len(o.clusterConfigs) == 0 {
+		t.Errorf("expected clsuterconfig to be set, was %v", o.clusterConfigs)
+	}
+	if o.infrastructureClusterConfig == nil {
+		t.Error("expected infrastructureClusterConfig to be set, was nil")
+	}
+	if len(o.kubernetesClientsByContext) != 0 {
+		t.Errorf("expected kubernetes clients to be nil, was %v", o.kubernetesClientsByContext)
+	}
+	if o.prowJobClientset != nil {
+		t.Errorf("expected prowJobClientset to be nil, was %v", o.prowJobClientset)
 	}
 }

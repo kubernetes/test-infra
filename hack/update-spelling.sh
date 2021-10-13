@@ -37,5 +37,7 @@ find -L . -type f -not \( \
     -o -path '*/third_party/*' \
     -o -path '*/node_modules/*' \
     -o -path '*/localdata/*' \
+    -o -path 'go.mod' \
+    -o -path './hack/tools/go.sum' \
     \) -prune \
   \) -exec "$@" '{}' +

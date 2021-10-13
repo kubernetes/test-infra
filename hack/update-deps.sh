@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Copyright 2018 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,5 +22,6 @@ if ! command -v bazel &>/dev/null; then
   exit 1
 fi
 
+bazel=$(command -v bazelisk || command -v bazel)
 set -o xtrace
-bazel run @io_k8s_repo_infra//hack:update-deps -- "$@"
+"$bazel" run @io_k8s_repo_infra//hack:update-deps -- "$@"

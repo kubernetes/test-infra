@@ -1,101 +1,120 @@
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-cross
-    run_if_changed: '^((build\/|hack\/lib\/).*)|(.*Makefile.*)$'
+    optional: true
+    always_run: false
+    decorate: true
     labels:
-      preset-service-account: "true"
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20200430-be2a8a9
+      - image: gcr.io/k8s-staging-test-infra/bootstrap:v20211008-e0e089cfce
+        command:
+        - runner.sh
         args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - --scenario=execute
-        - --
-        - --env=KUBE_RELEASE_RUN_TESTS=n
         - make
         - release
+        - KUBE_RELEASE_RUN_TESTS=n
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
         resources:
+          limits:
+            cpu: 7300m
+            memory: "41Gi"
           requests:
-            cpu: 7
+            cpu: 7300m
             memory: "41Gi"
     annotations:
       testgrid-create-test-group: 'true'
 
 periodics:
-- interval: 1h
-  name: ci-kubernetes-build
+- name: ci-kubernetes-build
+  interval: 1h
+  cluster: k8s-infra-prow-build
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20200430-be2a8a9
-      args:
-      - --repo=k8s.io/kubernetes
-      - --repo=k8s.io/release
-      - --root=/go/src
-      - --timeout=180
-      - --scenario=kubernetes_build
-      - --
+    - image: gcr.io/k8s-staging-releng/k8s-ci-builder:latest-default
+      imagePullPolicy: Always
+      command:
+      - wrapper.sh
+      - /krel
+      - ci-build
+      - --configure-docker
       - --allow-dup
-      - --extra-publish-file=k8s-master
-      - --registry=gcr.io/kubernetes-ci-images
+      - --bucket=k8s-release-dev
+      - --registry=gcr.io/k8s-staging-ci-images
+      - --extra-version-markers=k8s-master
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
       resources:
+        limits:
+          cpu: "7"
+          memory: "34Gi"
         requests:
-          cpu: 4
-          memory: "8Gi"
+          cpu: "7"
+          memory: "34Gi"
   rerun_auth_config:
-    github_team_ids:
-      - 2241179 # release-managers
+    github_team_slugs:
+      - org: kubernetes
+        slug: release-managers
   annotations:
     fork-per-release: "true"
-    fork-per-release-replacements: "--extra-publish-file=k8s-master -> --extra-publish-file=k8s-beta"
-    fork-per-release-generic-suffix: "true"
-    testgrid-dashboards: sig-release-master-blocking
+    fork-per-release-replacements: "k8s-master -> k8s-beta, latest-default -> latest-{{.Version}}"
+    testgrid-dashboards: sig-release-master-blocking, sig-release-releng-blocking
     testgrid-tab-name: build-master
-    testgrid-alert-email: release-managers@kubernetes.io, kubernetes-release-team@googlegroups.com
+    testgrid-alert-email: release-managers+alerts@kubernetes.io, release-team@kubernetes.io
 
 - interval: 5m
   name: ci-kubernetes-build-fast
+  cluster: k8s-infra-prow-build
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bootstrap:v20200430-be2a8a9
-      args:
-      - --repo=k8s.io/kubernetes
-      - --repo=k8s.io/release
-      - --root=/go/src
-      - --timeout=30
-      - --scenario=kubernetes_build
-      - --
+    - image: gcr.io/k8s-staging-releng/k8s-ci-builder:latest-default
+      imagePullPolicy: Always
+      command:
+      - wrapper.sh
+      - /krel
+      - ci-build
+      - --configure-docker
       - --allow-dup
       - --fast
+      - --bucket=k8s-release-dev
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
       resources:
+        limits:
+          cpu: 6
+          memory: "12Gi"
         requests:
-          cpu: 4
-          memory: "8Gi"
+          cpu: 6
+          memory: "12Gi"
   rerun_auth_config:
-    github_team_ids:
-      - 2241179 # release-managers
+    github_team_slugs:
+      - org: kubernetes
+        slug: release-managers
   annotations:
-    testgrid-dashboards: sig-release-master-blocking, google-unit
+    testgrid-dashboards: sig-release-master-blocking, sig-release-releng-blocking
     testgrid-tab-name: build-master-fast
-    testgrid-alert-email: kubernetes-release-team@googlegroups.com
+    testgrid-alert-email: release-managers+alerts@kubernetes.io, release-team@kubernetes.io
     description: 'Ends up running: make quick-release'
 
 - interval: 4h
@@ -114,10 +133,11 @@ periodics:
           cpu: 4
           memory: "8Gi"
   rerun_auth_config:
-    github_team_ids:
-      - 2241179 # release-managers
+    github_team_slugs:
+      - org: kubernetes
+        slug: release-managers
   annotations:
-    testgrid-alert-email: release-managers@kubernetes.io
+    testgrid-alert-email: release-managers+alerts@kubernetes.io
     testgrid-dashboards: sig-release-releng-informing
     testgrid-tab-name: build-packages-debs
 
@@ -137,9 +157,10 @@ periodics:
           cpu: 4
           memory: "8Gi"
   rerun_auth_config:
-    github_team_ids:
-      - 2241179 # release-managers
+    github_team_slugs:
+      - org: kubernetes
+        slug: release-managers
   annotations:
-    testgrid-alert-email: release-managers@kubernetes.io
+    testgrid-alert-email: release-managers+alerts@kubernetes.io
     testgrid-dashboards: sig-release-releng-informing
     testgrid-tab-name: build-packages-rpms

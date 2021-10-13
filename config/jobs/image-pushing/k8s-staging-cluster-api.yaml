@@ -5,17 +5,17 @@ postsubmits:
       cluster: k8s-infra-prow-build-trusted
       annotations:
         # this is the name of some testgrid dashboard to report to.
-        testgrid-dashboards: sig-cluster-lifecycle-image-pushes
+        testgrid-dashboards: sig-cluster-lifecycle-image-pushes, sig-k8s-infra-gcb
       decorate: true
       branches:
-        - ^master$
+        - ^main$
         - ^release-0.2$
         # this is a regex for semver, from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
         - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200422-c760048
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210927-471c27b6e3
             command:
               - /run.sh
             args:
@@ -29,17 +29,17 @@ postsubmits:
       cluster: k8s-infra-prow-build-trusted
       annotations:
         # this is the name of some testgrid dashboard to report to.
-        testgrid-dashboards: sig-cluster-lifecycle-image-pushes
+        testgrid-dashboards: sig-cluster-lifecycle-image-pushes, sig-k8s-infra-gcb
       decorate: true
       branches:
-        - ^master$
+        - ^main
         - ^release-0.4$
         # this is a regex for semver, from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
         - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200422-c760048
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210927-471c27b6e3
             command:
               - /run.sh
             args:
@@ -52,18 +52,19 @@ postsubmits:
     - name: post-cluster-api-provider-azure-push-images
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-cluster-lifecycle-image-pushes, sig-cluster-lifecycle-cluster-api-provider-azure
+        testgrid-dashboards: sig-cluster-lifecycle-image-pushes, sig-cluster-lifecycle-cluster-api-provider-azure, sig-k8s-infra-gcb
         testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
       decorate: true
       branches:
-        - ^master$
+        - ^main$
         - ^release-0.3$
+        - ^release-0.4$
         # this is a regex for semver, from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
         - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200422-c760048
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210927-471c27b6e3
             command:
               - /run.sh
             args:
@@ -71,22 +72,48 @@ postsubmits:
               - --scratch-bucket=gs://k8s-staging-cluster-api-azure-gcb
               - --env-passthrough=PULL_BASE_REF
               - .
-  kubernetes-sigs/cluster-api-provider-gcp:
-    - name: post-cluster-api-provider-gcp-push-images
+  kubernetes-sigs/cluster-api-provider-digitalocean:
+    - name: post-cluster-api-provider-digitalocean-push-images
       cluster: k8s-infra-prow-build-trusted
       annotations:
         # this is the name of some testgrid dashboard to report to.
-        testgrid-dashboards: sig-cluster-lifecycle-image-pushes
+        testgrid-dashboards: sig-cluster-lifecycle-image-pushes, sig-k8s-infra-gcb
+        testgrid-alert-email: k8s-infra-staging-cluster-api-do@kubernetes.io
       decorate: true
       branches:
-        - ^master$
-        - ^release-0.2$
+        - ^main$
+        - ^release-0.4$
+        - ^release-0.5$
         # this is a regex for semver, from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
         - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200422-c760048
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210927-471c27b6e3
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR images are pushed to.
+              - --project=k8s-staging-cluster-api-do
+              - --scratch-bucket=gs://k8s-staging-cluster-api-do-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - .
+  kubernetes-sigs/cluster-api-provider-gcp:
+    - name: post-cluster-api-provider-gcp-push-images
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        # this is the name of some testgrid dashboard to report to.
+        testgrid-dashboards: sig-cluster-lifecycle-image-pushes, sig-k8s-infra-gcb
+      decorate: true
+      branches:
+        - ^main$
+        - ^release-.*
+        # this is a regex for semver, from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
+        - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210927-471c27b6e3
             command:
               - /run.sh
             args:
@@ -95,27 +122,28 @@ postsubmits:
               - --scratch-bucket=gs://k8s-staging-cluster-api-gcp-gcb
               - --env-passthrough=PULL_BASE_REF
               - .
-  kubernetes-sigs/cluster-api-bootstrap-provider-kubeadm:
-    - name: post-cluster-api-bootstrap-provider-push-images
+  kubernetes-sigs/cluster-api-provider-nested:
+    - name: post-cluster-api-provider-nested-push-images
       cluster: k8s-infra-prow-build-trusted
       annotations:
         # this is the name of some testgrid dashboard to report to.
-        testgrid-dashboards: sig-cluster-lifecycle-image-pushes
+        testgrid-dashboards: sig-cluster-lifecycle-image-pushes, sig-k8s-infra-gcb
       decorate: true
       branches:
-        - ^master$
+        - ^main$
+        - ^release-.+$
         # this is a regex for semver, from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
         - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200422-c760048
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210927-471c27b6e3
             command:
               - /run.sh
             args:
               # this is the project GCB will run in, which is the same as the GCR images are pushed to.
-              - --project=k8s-staging-capi-kubeadm
-              - --scratch-bucket=gs://k8s-staging-capi-kubeadm-gcb
+              - --project=k8s-staging-cluster-api-nested
+              - --scratch-bucket=gs://k8s-staging-cluster-api-nested-gcb
               - --env-passthrough=PULL_BASE_REF
               - .
   kubernetes-sigs/cluster-api-provider-openstack:
@@ -123,7 +151,7 @@ postsubmits:
       cluster: k8s-infra-prow-build-trusted
       annotations:
         # this is the name of some testgrid dashboard to report to.
-        testgrid-dashboards: sig-cluster-lifecycle-image-pushes
+        testgrid-dashboards: sig-cluster-lifecycle-image-pushes, sig-k8s-infra-gcb
       decorate: true
       branches:
         - ^master$
@@ -133,7 +161,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200422-c760048
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210927-471c27b6e3
             command:
               - /run.sh
             args:
@@ -142,3 +170,155 @@ postsubmits:
               - --scratch-bucket=gs://k8s-staging-capi-openstack-gcb
               - --env-passthrough=PULL_BASE_REF
               - .
+  kubernetes-sigs/image-builder:
+    - name: post-image-builder-push-images
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        # this is the name of some testgrid dashboard to report to.
+        testgrid-dashboards: sig-cluster-lifecycle-image-pushes, sig-k8s-infra-gcb
+      decorate: true
+      branches:
+        - ^master$
+        # this is a regex for semver, from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
+        - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210927-471c27b6e3
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR images are pushed to.
+              - --project=k8s-staging-scl-image-builder
+              - --scratch-bucket=gs://k8s-staging-scl-image-builder-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - --with-git-dir
+              - .
+  kubernetes-sigs/cluster-api-provider-ibmcloud:
+    - name: post-cluster-api-provider-ibmcloud-push-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes-sigs
+            slug: cluster-api-provider-ibmcloud-maintainers
+        github_users:
+          - mkumatag
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        # this is the name of some testgrid dashboard to report to.
+        testgrid-dashboards: sig-cluster-lifecycle-image-pushes, sig-k8s-infra-gcb
+      decorate: true
+      branches:
+        - ^main
+        - ^release-.+$
+        # this is a regex for semver, from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
+        - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210927-471c27b6e3
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR images are pushed to.
+              - --project=k8s-staging-capi-ibmcloud
+              - --scratch-bucket=gs://k8s-staging-capi-ibmcloud-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - .
+
+periodics:
+  - name: cluster-api-push-images-nightly
+    cluster: k8s-infra-prow-build-trusted
+    decorate: true
+    cron: '0 8 * * *' # everyday at 0:00 PT (8:00 UTC)
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: cluster-api
+        base_ref: main
+        path_alias: sigs.k8s.io/cluster-api
+    spec:
+      serviceAccountName: gcb-builder
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20210927-471c27b6e3
+          command:
+            - /run.sh
+          args:
+          # this is the project GCB will run in, which is the same as the GCR images are pushed to.
+            - --project=k8s-staging-cluster-api
+            - --scratch-bucket=gs://k8s-staging-cluster-api-gcb
+            - --env-passthrough=PULL_BASE_REF
+            - --gcb-config=cloudbuild-nightly.yaml
+            - .
+          env:
+        # We need to emulate a pull job for the cloud build to work the same
+        # way as it usually does.
+            - name: PULL_BASE_REF
+              value: main
+    annotations:
+    # this is the name of some testgrid dashboard to report to.
+      testgrid-dashboards: sig-cluster-lifecycle-image-pushes, sig-k8s-infra-gcb
+      testgrid-tab-name: cluster-api-push-images-nightly
+      testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
+  - name: cluster-api-provider-openstack-push-images-nightly
+    cluster: k8s-infra-prow-build-trusted
+    decorate: true
+    cron: '0 8 * * *' # everyday at 0:00 PT (8:00 UTC)
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-openstack
+        base_ref: master
+        path_alias: sigs.k8s.io/cluster-api-provider-openstack
+    spec:
+      serviceAccountName: gcb-builder
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20210927-471c27b6e3
+          command:
+            - /run.sh
+          args:
+          # this is the project GCB will run in, which is the same as the GCR images are pushed to.
+            - --project=k8s-staging-capi-openstack
+            - --scratch-bucket=gs://k8s-staging-capi-openstack-gcb
+            - --env-passthrough=PULL_BASE_REF
+            - --gcb-config=cloudbuild-nightly.yaml
+            - .
+          env:
+        # We need to emulate a pull job for the cloud build to work the same
+        # way as it usually does.
+            - name: PULL_BASE_REF
+              value: master
+    annotations:
+    # this is the name of some testgrid dashboard to report to.
+      testgrid-dashboards: sig-cluster-lifecycle-image-pushes, sig-k8s-infra-gcb
+      testgrid-tab-name: cluster-api-provider-openstack-push-images-nightly
+      testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
+  - name: cluster-api-provider-aws-push-images-nightly
+    cluster: k8s-infra-prow-build-trusted
+    decorate: true
+    cron: '0 8 * * *' # everyday at 0:00 PT (8:00 UTC)
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-aws
+        base_ref: main
+        path_alias: sigs.k8s.io/cluster-api-provider-aws
+    spec:
+      serviceAccountName: gcb-builder
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20210927-471c27b6e3
+          command:
+            - /run.sh
+          args:
+          # this is the project GCB will run in, which is the same as the GCR images are pushed to.
+            - --project=k8s-staging-cluster-api-aws
+            - --scratch-bucket=gs://k8s-staging-cluster-api-aws-gcb
+            - --env-passthrough=PULL_BASE_REF
+            - --gcb-config=cloudbuild-nightly.yaml
+            - .
+          env:
+          # We need to emulate a pull job for the cloud build to work the same
+          # way as it usually does.
+            - name: PULL_BASE_REF
+              value: main
+    annotations:
+    # this is the name of some testgrid dashboard to report to.
+      testgrid-dashboards: sig-cluster-lifecycle-image-pushes, sig-k8s-infra-gcb
+      testgrid-tab-name: cluster-api-provider-aws-push-images-nightly
+      testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io

@@ -1,0 +1,15 @@
+# sigs.k8s.io/cluster-addons presubmits
+presubmits:
+  kubernetes-sigs/cluster-addons:
+  - name: pull-cluster-addons-unit-test
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-addons
+    always_run: true
+    spec:
+      containers:
+      - image: golang:1.13
+        command:
+        - "./hack/unit-test.sh"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-addons
+      testgrid-tab-name: pr-unit-test

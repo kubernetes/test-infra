@@ -19,32 +19,41 @@ def repositories():
     if not native.existing_rule("io_k8s_repo_infra"):
         http_archive(
             name = "io_k8s_repo_infra",
-            strip_prefix = "repo-infra-0.0.3",
-            sha256 = "a6ca952e365600a17f56f0fc8e41016e1d13cfb2b74c0c29bad6bdba3e3d8a4d",
+            sha256 = "ae75a3a8de9698df30dd5a177c61f31ae9dd3a5da96ec951f0d6e60b2672d5fe",
+            strip_prefix = "repo-infra-0.2.2",
             urls = [
-                "https://github.com/kubernetes/repo-infra/archive/v0.0.3.tar.gz",
+                "https://github.com/kubernetes/repo-infra/archive/v0.2.2.tar.gz",
             ],
         )
 
     http_archive(
+        name = "io_bazel_rules_go",
+        sha256 = "69de5c704a05ff37862f7e0f5534d4f479418afc21806c887db544a316f3cb6b",
+        urls = [
+            "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.27.0/rules_go-v0.27.0.tar.gz",
+            "https://github.com/bazelbuild/rules_go/releases/download/v0.27.0/rules_go-v0.27.0.tar.gz",
+        ],
+    )
+
+    http_archive(
         name = "io_bazel_rules_docker",
-        sha256 = "dc97fccceacd4c6be14e800b2a00693d5e8d07f69ee187babfd04a80a9f8e250",
-        strip_prefix = "rules_docker-0.14.1",
-        urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v0.14.1/rules_docker-v0.14.1.tar.gz"],
+        sha256 = "4521794f0fba2e20f3bf15846ab5e01d5332e587e9ce81629c7f96c793bb7036",
+        strip_prefix = "rules_docker-0.14.4",
+        urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v0.14.4/rules_docker-v0.14.4.tar.gz"],
     )
 
     http_archive(
         name = "io_bazel_rules_k8s",
-        sha256 = "cc75cf0d86312e1327d226e980efd3599704e01099b58b3c2fc4efe5e321fcd9",
-        strip_prefix = "rules_k8s-0.3.1",
-        urls = ["https://github.com/bazelbuild/rules_k8s/releases/download/v0.3.1/rules_k8s-v0.3.1.tar.gz"],
+        strip_prefix = "rules_k8s-0.6",
+        urls = ["https://github.com/bazelbuild/rules_k8s/archive/v0.6.tar.gz"],
+        sha256 = "51f0977294699cd547e139ceff2396c32588575588678d2054da167691a227ef",
     )
 
     # https://github.com/bazelbuild/rules_nodejs
     http_archive(
         name = "build_bazel_rules_nodejs",
-        sha256 = "9abd649b74317c9c135f4810636aaa838d5bea4913bfa93a85c2f52a919fdaf3",
-        urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/0.36.0/rules_nodejs-0.36.0.tar.gz"],
+        sha256 = "dd4dc46066e2ce034cba0c81aa3e862b27e8e8d95871f567359f7a534cccb666",
+        urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/3.1.0/rules_nodejs-3.1.0.tar.gz"],
     )
 
     # Python setup
@@ -66,18 +75,22 @@ def repositories():
     )
 
     new_git_repository(
-        name = "com_github_operator_framework_community_operators",
+        name = "com_github_prometheus_operator",
         build_file_content = """
 exports_files([
-    "upstream-community-operators/prometheus/alertmanager.crd.yaml",
-    "upstream-community-operators/prometheus/prometheus.crd.yaml",
-    "upstream-community-operators/prometheus/prometheusrule.crd.yaml",
-    "upstream-community-operators/prometheus/servicemonitor.crd.yaml",
+    "example/prometheus-operator-crd/monitoring.coreos.com_alertmanagerconfigs.yaml",
+    "example/prometheus-operator-crd/monitoring.coreos.com_alertmanagers.yaml",
+    "example/prometheus-operator-crd/monitoring.coreos.com_podmonitors.yaml",
+    "example/prometheus-operator-crd/monitoring.coreos.com_probes.yaml",
+    "example/prometheus-operator-crd/monitoring.coreos.com_prometheuses.yaml",
+    "example/prometheus-operator-crd/monitoring.coreos.com_prometheusrules.yaml",
+    "example/prometheus-operator-crd/monitoring.coreos.com_servicemonitors.yaml",
+    "example/prometheus-operator-crd/monitoring.coreos.com_thanosrulers.yaml",
 ])
 """,
-        commit = "efda5dc98fd580ab5f1115a50a28825ae4fe6562",
-        remote = "https://github.com/operator-framework/community-operators.git",
-        shallow_since = "1568320223 +0200",
+        commit = "5555f492df250168657b72bb8cb60bec071de71f",  # Latest of release-0.45 branch
+        remote = "https://github.com/prometheus-operator/prometheus-operator.git",
+        shallow_since = "1610438400 +0200",
     )
 
     http_archive(

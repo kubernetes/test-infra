@@ -47,6 +47,18 @@ If you need extra features, feel free to introduce new gerrit API functions to t
 The adapter package implements a controller that is periodically polling gerrit, and triggering
 presubmit and postsubmit jobs based on your prow config.
 
+#### Gerrit Labels
+
+Prow adds the following [Labels] to Gerrit Presubmits that can be accessed in the container by leveraging the [Downward Api].
+- "prow.k8s.io/gerrit-revision": SHA of current patchset from a gerrit change
+- "prow.k8s.io/gerrit-patchset": Numeric ID of the current patchset
+- "prow.k8s.io/gerrit-report-label": Gerrit label prow will cast vote on, fallback to CodeReview label if unset
+```yaml
+    - name: PATHCSET_NUMBER
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.labels['prow.k8s.io/gerrit-patchset']
+```
 
 ## Caveat
 
@@ -58,3 +70,5 @@ If you need them, please send us a PR to support them :-)
 [Prow]: /prow/README.md
 [grandmatriarch]: /prow/cmd/grandmatriarch
 [crier]: /prow/crier
+[Labels]: /prow/gerrit/client/client.go
+[Downward Api]: https://kubernetes.io/docs/tasks/inject-data-application/environment-variable-expose-pod-information/

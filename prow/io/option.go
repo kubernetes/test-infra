@@ -25,15 +25,38 @@ import (
 
 // WriterOptions are options for the opener Writer method
 type WriterOptions struct {
-	BufferSize      *int64
-	ContentEncoding *string
-	ContentType     *string
-	Metadata        map[string]string
+	BufferSize               *int64
+	ContentEncoding          *string
+	ContentType              *string
+	Metadata                 map[string]string
+	PreconditionDoesNotExist *bool
+	CacheControl             *string
+}
+
+func (wo WriterOptions) Apply(opts *WriterOptions) {
+	if wo.BufferSize != nil {
+		opts.BufferSize = wo.BufferSize
+	}
+	if wo.ContentEncoding != nil {
+		opts.ContentEncoding = wo.ContentEncoding
+	}
+	if wo.ContentType != nil {
+		opts.ContentType = wo.ContentType
+	}
+	if wo.Metadata != nil {
+		opts.Metadata = wo.Metadata
+	}
+	if wo.PreconditionDoesNotExist != nil {
+		opts.PreconditionDoesNotExist = wo.PreconditionDoesNotExist
+	}
+	if wo.CacheControl != nil {
+		opts.CacheControl = wo.CacheControl
+	}
 }
 
 // Apply applies the WriterOptions to storage.Writer and blob.WriterOptions
 // Both arguments are allowed to be nil.
-func (wo WriterOptions) Apply(writer *storage.Writer, o *blob.WriterOptions) {
+func (wo WriterOptions) apply(writer *storage.Writer, o *blob.WriterOptions) {
 	if writer != nil {
 		if wo.BufferSize != nil {
 			if *wo.BufferSize < googleapi.DefaultUploadChunkSize {
@@ -48,6 +71,9 @@ func (wo WriterOptions) Apply(writer *storage.Writer, o *blob.WriterOptions) {
 		}
 		if wo.Metadata != nil {
 			writer.ObjectAttrs.Metadata = wo.Metadata
+		}
+		if wo.CacheControl != nil {
+			writer.ObjectAttrs.CacheControl = *wo.CacheControl
 		}
 	}
 
@@ -73,4 +99,14 @@ func (wo WriterOptions) Apply(writer *storage.Writer, o *blob.WriterOptions) {
 	if wo.Metadata != nil {
 		o.Metadata = wo.Metadata
 	}
+	if wo.CacheControl != nil {
+		o.CacheControl = *wo.CacheControl
+	}
+}
+
+// SignedURLOptions are options for the opener SignedURL method
+type SignedURLOptions struct {
+	// UseGSCookieAuth defines if we should use cookie auth for GCS, see:
+	// https://cloud.google.com/storage/docs/access-control/cookie-based-authentication
+	UseGSCookieAuth bool
 }

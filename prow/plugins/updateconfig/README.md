@@ -7,7 +7,7 @@
 ## Usage
 
 Update your `plugins.yaml` file to something along the following lines:
-```
+```yaml
 plugins:
   my-github/repo:
   - config-updater
@@ -17,17 +17,14 @@ config_updater:
     # Update the thing-config configmap whenever thing changes
     path/to/some/other/thing:
       name: thing-config
-      # Using ProwJobNamespace by default.
+    # If cluster and namespace configuration are unset, it will be put into the default cluster in the prowjob namespace
     path/to/some/other/thing2:
       name: thing2-config
-      # DEPRECATED: Please use "clusters" below
-      namespace: otherNamespace
-      # specify the clusters and namespaces that the configmap targets
-      # which requires that either --build-cluster or --kubeconfig arg is enabled for Hook
+      # Specify the clusters and namespaces that the configmap targets
+      # which requires that the --kubeconfig arg is enabled for Hook
       # https://github.com/kubernetes/test-infra/blob/master/prow/getting_started_deploy.md#run-test-pods-in-different-clusters
       # if not set or empty, it uses the cluster where prow components are running
       # and the specified namespace(s)
-      # if defined, the above namespace will be ignored
       clusters: 
         others:
         - namespace1
@@ -41,10 +38,10 @@ config_updater:
     some/data.yaml:
       name: data
       key: this
-    some/other-data.yaml
+    some/other-data.yaml:
       name: data
       key: that
     # Update the fejtaverse configmap whenever any `.yaml` file under `fejtaverse` changes
-    fejtaverse/**/*.yaml
+    fejtaverse/**/*.yaml:
       name: fejtaverse
 ```

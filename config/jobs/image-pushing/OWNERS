@@ -4,8 +4,12 @@ options:
 
 # Oncallers with context on this
 reviewers:
-- Katharine
+- ameukam
+- BenTheElder
+- dims
+- spiffxp
 
 # All oncallers
 approvers:
-- test-infra-oncall # oncall
+- test-infra-oncall
+- sig-k8s-infra-oncall

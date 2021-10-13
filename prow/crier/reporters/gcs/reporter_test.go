@@ -26,10 +26,12 @@ import (
 
 	"github.com/GoogleCloudPlatform/testgrid/metadata"
 	"github.com/google/go-cmp/cmp"
+	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/crier/reporters/gcs/internal/testutil"
+	"k8s.io/test-infra/prow/crier/reporters/gcs/testutil"
 )
 
 func TestReportJobFinished(t *testing.T) {
@@ -72,15 +74,16 @@ func TestReportJobFinished(t *testing.T) {
 			cfg := testutil.Fca{C: config.Config{
 				ProwConfig: config.ProwConfig{
 					Plank: config.Plank{
-						DefaultDecorationConfigs: map[string]*prowv1.DecorationConfig{"*": {
-							GCSConfiguration: &prowv1.GCSConfiguration{
-								Bucket:       "kubernetes-jenkins",
-								PathPrefix:   "some-prefix",
-								PathStrategy: prowv1.PathStrategyLegacy,
-								DefaultOrg:   "kubernetes",
-								DefaultRepo:  "kubernetes",
-							},
-						}},
+						DefaultDecorationConfigs: config.DefaultDecorationMapToSliceTesting(
+							map[string]*prowv1.DecorationConfig{"*": {
+								GCSConfiguration: &prowv1.GCSConfiguration{
+									Bucket:       "kubernetes-jenkins",
+									PathPrefix:   "some-prefix",
+									PathStrategy: prowv1.PathStrategyLegacy,
+									DefaultOrg:   "kubernetes",
+									DefaultRepo:  "kubernetes",
+								},
+							}}),
 					},
 				},
 			}}.Config
@@ -107,7 +110,7 @@ func TestReportJobFinished(t *testing.T) {
 				},
 			}
 
-			err := reporter.reportFinishedJob(ctx, pj)
+			err := reporter.reportFinishedJob(ctx, logrus.NewEntry(logrus.StandardLogger()), pj)
 			if tc.expectErr {
 				if err == nil {
 					t.Fatalf("Expected an error, but didn't get one.")
@@ -117,7 +120,7 @@ func TestReportJobFinished(t *testing.T) {
 				t.Fatalf("Unexpected error: %v", err)
 			}
 
-			if !strings.HasSuffix(ta.Path, "finished.json") {
+			if !strings.HasSuffix(ta.Path, prowv1.FinishedStatusFile) {
 				t.Errorf("Expected file to be written to finished.json, but got %q", ta.Path)
 			}
 			if ta.Overwrite {
@@ -150,15 +153,16 @@ func TestReportJobStarted(t *testing.T) {
 			cfg := testutil.Fca{C: config.Config{
 				ProwConfig: config.ProwConfig{
 					Plank: config.Plank{
-						DefaultDecorationConfigs: map[string]*prowv1.DecorationConfig{"*": {
-							GCSConfiguration: &prowv1.GCSConfiguration{
-								Bucket:       "kubernetes-jenkins",
-								PathPrefix:   "some-prefix",
-								PathStrategy: prowv1.PathStrategyLegacy,
-								DefaultOrg:   "kubernetes",
-								DefaultRepo:  "kubernetes",
-							},
-						}},
+						DefaultDecorationConfigs: config.DefaultDecorationMapToSliceTesting(
+							map[string]*prowv1.DecorationConfig{"*": {
+								GCSConfiguration: &prowv1.GCSConfiguration{
+									Bucket:       "kubernetes-jenkins",
+									PathPrefix:   "some-prefix",
+									PathStrategy: prowv1.PathStrategyLegacy,
+									DefaultOrg:   "kubernetes",
+									DefaultRepo:  "kubernetes",
+								},
+							}}),
 					},
 				},
 			}}.Config
@@ -184,12 +188,12 @@ func TestReportJobStarted(t *testing.T) {
 				},
 			}
 
-			err := reporter.reportStartedJob(ctx, pj)
+			err := reporter.reportStartedJob(ctx, logrus.NewEntry(logrus.StandardLogger()), pj)
 			if err != nil {
 				t.Fatalf("Unexpected error: %v", err)
 			}
 
-			if !strings.HasSuffix(ta.Path, "started.json") {
+			if !strings.HasSuffix(ta.Path, prowv1.StartedStatusFile) {
 				t.Errorf("Expected file to be written to started.json, but got %q", ta.Path)
 			}
 			if ta.Overwrite {
@@ -212,15 +216,16 @@ func TestReportProwJob(t *testing.T) {
 	cfg := testutil.Fca{C: config.Config{
 		ProwConfig: config.ProwConfig{
 			Plank: config.Plank{
-				DefaultDecorationConfigs: map[string]*prowv1.DecorationConfig{"*": {
-					GCSConfiguration: &prowv1.GCSConfiguration{
-						Bucket:       "kubernetes-jenkins",
-						PathPrefix:   "some-prefix",
-						PathStrategy: prowv1.PathStrategyLegacy,
-						DefaultOrg:   "kubernetes",
-						DefaultRepo:  "kubernetes",
-					},
-				}},
+				DefaultDecorationConfigs: config.DefaultDecorationMapToSliceTesting(
+					map[string]*prowv1.DecorationConfig{"*": {
+						GCSConfiguration: &prowv1.GCSConfiguration{
+							Bucket:       "kubernetes-jenkins",
+							PathPrefix:   "some-prefix",
+							PathStrategy: prowv1.PathStrategyLegacy,
+							DefaultOrg:   "kubernetes",
+							DefaultRepo:  "kubernetes",
+						},
+					}}),
 			},
 		},
 	}}.Config
@@ -247,21 +252,21 @@ func TestReportProwJob(t *testing.T) {
 		},
 	}
 
-	if err := reporter.reportProwjob(ctx, pj); err != nil {
+	if err := reporter.reportProwjob(ctx, logrus.NewEntry(logrus.StandardLogger()), pj); err != nil {
 		t.Fatalf("Unexpected error calling reportProwjob: %v", err)
 	}
 
-	if !strings.HasSuffix(ta.Path, "/prowjob.json") {
-		t.Errorf("Expected prowjob to be written to prowjob.json, got %q", ta.Path)
+	if !strings.HasSuffix(ta.Path, fmt.Sprintf("/%s", prowv1.ProwJobFile)) {
+		t.Errorf("Expected prowjob to be written to %s, got %q", prowv1.ProwJobFile, ta.Path)
 	}
 
 	if !ta.Overwrite {
-		t.Errorf("Expected prowjob.json to be written with overwrite enabled, but it was not.")
+		t.Errorf("Expected %s to be written with overwrite enabled, but it was not.", prowv1.ProwJobFile)
 	}
 
 	var result prowv1.ProwJob
 	if err := json.Unmarshal(ta.Content, &result); err != nil {
-		t.Fatalf("Couldn't unmarshal prowjob.json: %v", err)
+		t.Fatalf("Couldn't unmarshal %s: %v", prowv1.ProwJobFile, err)
 	}
 	if !cmp.Equal(*pj, result) {
 		t.Fatalf("Input prowjob mismatches output prowjob:\n%s", cmp.Diff(*pj, result))
@@ -300,7 +305,7 @@ func TestShouldReport(t *testing.T) {
 				},
 			}
 			gr := newWithAuthor(testutil.Fca{}.Config, nil, false)
-			result := gr.ShouldReport(pj)
+			result := gr.ShouldReport(context.Background(), logrus.NewEntry(logrus.StandardLogger()), pj)
 			if result != tc.shouldReport {
 				t.Errorf("Got ShouldReport() returned %v, but expected %v", result, tc.shouldReport)
 			}

@@ -18,44 +18,48 @@ limitations under the License.
 package adapter
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/url"
+	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/andygrunwald/go-gerrit"
 	"github.com/sirupsen/logrus"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	reporter "k8s.io/test-infra/prow/crier/reporters/gerrit"
 	"k8s.io/test-infra/prow/gerrit/client"
+	"k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/pjutil"
 )
 
 type prowJobClient interface {
-	Create(*prowapi.ProwJob) (*prowapi.ProwJob, error)
+	Create(context.Context, *prowapi.ProwJob, metav1.CreateOptions) (*prowapi.ProwJob, error)
 }
 
 type gerritClient interface {
 	QueryChanges(lastState client.LastSyncState, rateLimit int) map[string][]client.ChangeInfo
 	GetBranchRevision(instance, project, branch string) (string, error)
 	SetReview(instance, id, revision, message string, labels map[string]string) error
-	Account(instance string) *gerrit.AccountInfo
-}
-
-type configAgent interface {
-	Config() *config.Config
+	Account(instance string) (*gerrit.AccountInfo, error)
 }
 
 // Controller manages gerrit changes.
 type Controller struct {
-	config        config.Getter
-	prowJobClient prowJobClient
-	gc            gerritClient
-	tracker       LastSyncTracker
+	config             config.Getter
+	prowJobClient      prowJobClient
+	gc                 gerritClient
+	tracker            LastSyncTracker
+	projectsOptOutHelp map[string]sets.String
+	lock               sync.RWMutex
 }
 
 type LastSyncTracker interface {
@@ -64,23 +68,60 @@ type LastSyncTracker interface {
 }
 
 // NewController returns a new gerrit controller client
-func NewController(lastSyncTracker LastSyncTracker, cookiefilePath string, projects map[string][]string, prowJobClient prowv1.ProwJobInterface, cfg config.Getter) (*Controller, error) {
-	if lastSyncTracker == nil {
-		return nil, errors.New("lastSyncTracker required")
-	}
+func NewController(ctx context.Context, prowJobClient prowv1.ProwJobInterface, op io.Opener,
+	cfg config.Getter, projects, projectsOptOutHelp map[string][]string, cookiefilePath, tokenPathOverride string, lastSyncFallback string) *Controller {
 
-	c, err := client.NewClient(projects)
+	projectsOptOutHelpMap := map[string]sets.String{}
+	if cfg().Gerrit.OrgReposConfig != nil {
+		projectsOptOutHelpMap = cfg().Gerrit.OrgReposConfig.OptOutHelpRepos()
+	} else {
+		for i, p := range projectsOptOutHelp {
+			projectsOptOutHelpMap[i] = sets.NewString(p...)
+		}
+	}
+	lastSyncTracker := &syncTime{
+		path:   lastSyncFallback,
+		ctx:    ctx,
+		opener: op,
+	}
+	if err := lastSyncTracker.init(projects); err != nil {
+		logrus.WithError(err).Fatal("Error initializing lastSyncFallback.")
+	}
+	gerritClient, err := client.NewClient(projects)
 	if err != nil {
-		return nil, err
+		logrus.WithError(err).Fatal("Error creating gerrit client.")
 	}
-	c.Start(cookiefilePath)
+	gerritClient.Authenticate(cookiefilePath, tokenPathOverride)
 
-	return &Controller{
-		prowJobClient: prowJobClient,
-		config:        cfg,
-		gc:            c,
-		tracker:       lastSyncTracker,
-	}, nil
+	c := &Controller{
+		prowJobClient:      prowJobClient,
+		config:             cfg,
+		gc:                 gerritClient,
+		tracker:            lastSyncTracker,
+		projectsOptOutHelp: projectsOptOutHelpMap,
+	}
+	go func() {
+		for {
+			orgReposConfig := cfg().Gerrit.OrgReposConfig
+			if orgReposConfig == nil {
+				time.Sleep(time.Second)
+				continue
+			}
+			if err := gerritClient.UpdateClients(orgReposConfig.AllRepos()); err != nil {
+				logrus.WithError(err).Error("Updating clients.")
+			}
+			if err := lastSyncTracker.update(orgReposConfig.AllRepos()); err != nil {
+				logrus.WithError(err).Error("Syncing states.")
+			}
+			// Updates a map, lock to make sure it's thread safe.
+			c.lock.Lock()
+			c.projectsOptOutHelp = orgReposConfig.OptOutHelpRepos()
+			c.lock.Unlock()
+			// No need to spin constantly, give it a break. It's ok that config change has one second delay.
+			time.Sleep(time.Second)
+		}
+	}()
+	return c
 }
 
 // Sync looks for newly made gerrit changes
@@ -90,9 +131,16 @@ func (c *Controller) Sync() error {
 	latest := syncTime.DeepCopy()
 
 	for instance, changes := range c.gc.QueryChanges(syncTime, c.config().Gerrit.RateLimit) {
+		log := logrus.WithField("host", instance)
 		for _, change := range changes {
-			if err := c.ProcessChange(instance, change); err != nil {
-				logrus.WithError(err).Errorf("Failed process change %v", change.CurrentRevision)
+			log := log.WithFields(logrus.Fields{
+				"branch":   change.Branch,
+				"change":   change.Number,
+				"repo":     change.Project,
+				"revision": change.CurrentRevision,
+			})
+			if err := c.processChange(log, instance, change); err != nil {
+				log.WithError(err).Errorf("Failed to process change")
 			}
 			lastTime, ok := latest[instance][change.Project]
 			if !ok || lastTime.Before(change.Updated.Time) {
@@ -101,7 +149,7 @@ func (c *Controller) Sync() error {
 			}
 		}
 
-		logrus.Infof("Processed %d changes for instance %s", len(changes), instance)
+		log.Infof("Processed %d changes", len(changes))
 	}
 
 	return c.tracker.Update(latest)
@@ -110,7 +158,7 @@ func (c *Controller) Sync() error {
 func makeCloneURI(instance, project string) (*url.URL, error) {
 	u, err := url.Parse(instance)
 	if err != nil {
-		return nil, fmt.Errorf("instance %s is not a url: %v", instance, err)
+		return nil, fmt.Errorf("instance %s is not a url: %w", instance, err)
 	}
 	if u.Host == "" {
 		return nil, errors.New("instance does not set host")
@@ -168,25 +216,65 @@ func createRefs(reviewHost string, change client.ChangeInfo, cloneURI *url.URL, 
 	return refs, nil
 }
 
-// ProcessChange creates new presubmit prowjobs base off the gerrit changes
-func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) error {
-	logger := logrus.WithField("gerrit change", change.Number)
+// failedJobs find jobs currently reported as failing (used for retesting).
+//
+// Failing means the job is complete and not passing.
+// Scans messages for prow reports, which lists jobs and whether they passed.
+// Job is included in the set if the latest report has it failing.
+func failedJobs(account int, revision int, messages ...gerrit.ChangeMessageInfo) sets.String {
+	failures := sets.String{}
+	times := map[string]time.Time{}
+	for _, message := range messages {
+		if message.Author.AccountID != account { // Ignore reports from other accounts
+			continue
+		}
+		if message.RevisionNumber != revision { // Ignore reports for old commits
+			continue
+		}
+		// TODO(fejta): parse triggered job reports and remove from failure set.
+		// (alternatively refactor this whole process rely less on fragile string parsing)
+		report := reporter.ParseReport(message.Message)
+		if report == nil {
+			continue
+		}
+		for _, job := range report.Jobs {
+			name := job.Name
+			if latest, present := times[name]; present && message.Date.Before(latest) {
+				continue
+			}
+			times[name] = message.Date.Time
+			if job.State == prowapi.FailureState || job.State == prowapi.ErrorState {
+				failures.Insert(name)
+			} else {
+				failures.Delete(name)
+			}
+		}
+	}
+	return failures
+}
+
+// processChange creates new presubmit/postsubmit prowjobs base off the gerrit changes
+func (c *Controller) processChange(logger logrus.FieldLogger, instance string, change client.ChangeInfo) error {
 
 	cloneURI, err := makeCloneURI(instance, change.Project)
 	if err != nil {
-		return fmt.Errorf("failed to create clone uri: %v", err)
+		return fmt.Errorf("makeCloneURI: %w", err)
 	}
 
 	baseSHA, err := c.gc.GetBranchRevision(instance, change.Project, change.Branch)
 	if err != nil {
-		return fmt.Errorf("failed to get SHA from base branch: %v", err)
+		return fmt.Errorf("GetBranchRevision: %w", err)
 	}
 
-	triggeredJobs := []string{}
+	type triggeredJob struct {
+		name   string
+		report bool
+	}
+	var triggeredJobs []triggeredJob
 
 	refs, err := createRefs(instance, change, cloneURI, baseSHA)
 	if err != nil {
-		return fmt.Errorf("failed to get refs: %v", err)
+		return fmt.Errorf("createRefs from %s at %s: %w", cloneURI, baseSHA, err)
 	}
 
 	type jobSpec struct {
@@ -205,7 +293,7 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 		postsubmits = append(postsubmits, c.config().PostsubmitsStatic[cloneURI.Host+"/"+cloneURI.Path]...)
 		for _, postsubmit := range postsubmits {
 			if shouldRun, err := postsubmit.ShouldRun(change.Branch, changedFiles); err != nil {
-				return fmt.Errorf("failed to determine if postsubmit %q should run: %v", postsubmit.Name, err)
+				return fmt.Errorf("failed to determine if postsubmit %q should run: %w", postsubmit.Name, err)
 			} else if shouldRun {
 				jobSpecs = append(jobSpecs, jobSpec{
 					spec:   pjutil.PostsubmitSpec(postsubmit, refs),
@@ -218,52 +306,56 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 		presubmits := c.config().PresubmitsStatic[cloneURI.String()]
 		presubmits = append(presubmits, c.config().PresubmitsStatic[cloneURI.Host+"/"+cloneURI.Path]...)
 
-		var filters []pjutil.Filter
-		var latestReport *reporter.JobReport
-		var latestReportTime time.Time
-		account := c.gc.Account(instance)
-		// Should not happen, since this means auth failed
-		if account == nil {
-			return fmt.Errorf("unable to get gerrit account")
-		}
-
-		for _, message := range change.Messages {
-			// If message status report is not from the prow account ignore
-			if message.Author.AccountID != account.AccountID {
-				continue
-			}
-			if message.Date.Before(latestReportTime) {
-				continue
-			}
-			report := reporter.ParseReport(message.Message)
-			if report != nil {
-				latestReport = report
-				latestReportTime = message.Date.Time
-			}
-		}
-		if latestReport != nil {
-			logger.Infof("Found latest report: %s", latestReport)
+		account, err := c.gc.Account(instance)
+		if err != nil {
+			// This would happen if authenticateOnce hasn't done register this instance yet
+			return fmt.Errorf("account not found for %q: %w", instance, err)
 		}
 
 		lastUpdate, ok := c.tracker.Current()[instance][change.Project]
 		if !ok {
-			logrus.Warnf("could not find lastTime for project %q, probably something went wrong with initTracker?", change.Project)
 			lastUpdate = time.Now()
+			logger.WithField("lastUpdate", lastUpdate).Warnf("lastUpdate not found, falling back to now")
 		}
 
-		filter, err := messageFilter(lastUpdate, change, presubmits, latestReport, logger)
-		if err != nil {
-			logger.WithError(err).Warn("failed to create filter on messages for presubmits")
-		} else {
-			filters = append(filters, filter)
+		revision := change.Revisions[change.CurrentRevision]
+		failedJobs := failedJobs(account.AccountID, revision.Number, change.Messages...)
+		failed, all := presubmitContexts(failedJobs, presubmits, logger)
+		messages := currentMessages(change, lastUpdate)
+		filters := []pjutil.Filter{
+			messageFilter(messages, failed, all, logger),
 		}
-		if change.Revisions[change.CurrentRevision].Created.Time.After(lastUpdate) {
+		// Automatically trigger the Prow jobs if the revision is new and the
+		// change is not in WorkInProgress.
+		if revision.Created.Time.After(lastUpdate) && !change.WorkInProgress {
 			filters = append(filters, pjutil.TestAllFilter())
 		}
 		toTrigger, err := pjutil.FilterPresubmits(pjutil.AggregateFilter(filters), listChangedFiles(change), change.Branch, presubmits, logger)
 		if err != nil {
-			return fmt.Errorf("failed to filter presubmits: %v", err)
+			return fmt.Errorf("filter presubmits: %w", err)
 		}
+
+		// Reply with help information to run the presubmit Prow jobs if requested.
+		for _, msg := range messages {
+			needsHelp, note := pjutil.ShouldRespondWithHelp(msg, len(toTrigger))
+			// Lock for projectOptOutHelp, which is a map.
+			c.lock.RLock()
+			optedOut := isProjectOptOutHelp(c.projectsOptOutHelp, instance, change.Project)
+			c.lock.RUnlock()
+			if needsHelp && !optedOut {
+				runWithTestAllNames, optionalJobsCommands, requiredJobsCommands, err := pjutil.AvailablePresubmits(listChangedFiles(change), cloneURI.Host, change.Project, change.Branch, presubmits, logger.WithField("help", true))
+				if err != nil {
+					return err
+				}
+				message := pjutil.HelpMessage(cloneURI.Host, change.Project, change.Branch, note, runWithTestAllNames, optionalJobsCommands, requiredJobsCommands)
+				if err := c.gc.SetReview(instance, change.ID, change.CurrentRevision, message, nil); err != nil {
+					return err
+				}
+				// Only respond to the first message that requests help information.
+				break
+			}
+		}
+
 		for _, presubmit := range toTrigger {
 			jobSpecs = append(jobSpecs, jobSpec{
 				spec:   pjutil.PresubmitSpec(presubmit, refs),
@@ -283,31 +375,84 @@ func (c *Controller) ProcessChange(instance string, change client.ChangeInfo) er
 			labels[k] = v
 		}
 		labels[client.GerritRevision] = change.CurrentRevision
+		labels[client.GerritPatchset] = strconv.Itoa(change.Revisions[change.CurrentRevision].Number)
 
 		if _, ok := labels[client.GerritReportLabel]; !ok {
 			labels[client.GerritReportLabel] = client.CodeReview
 		}
 
 		pj := pjutil.NewProwJob(jSpec.spec, labels, annotations)
-		if _, err := c.prowJobClient.Create(&pj); err != nil {
-			logger.WithError(err).Errorf("fail to create prowjob %v", pj)
-		} else {
-			logger.Infof("Triggered Prowjob %s", jSpec.spec.Job)
-			triggeredJobs = append(triggeredJobs, jSpec.spec.Job)
+		logger := logger.WithField("prowJob", pj)
+		if _, err := c.prowJobClient.Create(context.TODO(), &pj, metav1.CreateOptions{}); err != nil {
+			logger.WithError(err).Errorf("Failed to create ProwJob")
+			continue
+		}
+		logger.Infof("Triggered new job")
+		triggeredJobs = append(triggeredJobs, triggeredJob{
+			name:   jSpec.spec.Job,
+			report: jSpec.spec.Report,
+		})
+	}
+
+	if len(triggeredJobs) == 0 {
+		return nil
+	}
+
+	// comment back to gerrit if Report is set for any of the jobs
+	var reportingJobs int
+	var jobList string
+	for _, job := range triggeredJobs {
+		if job.report {
+			jobList += fmt.Sprintf("\n  * Name: %s", job.name)
+			reportingJobs++
 		}
 	}
 
-	if len(triggeredJobs) > 0 {
-		// comment back to gerrit
-		message := fmt.Sprintf("Triggered %d prow jobs:", len(triggeredJobs))
-		for _, job := range triggeredJobs {
-			message += fmt.Sprintf("\n  * Name: %s", job)
+	if reportingJobs > 0 {
+		message := fmt.Sprintf("Triggered %d prow jobs (%d suppressed reporting): ", len(triggeredJobs), len(triggeredJobs)-reportingJobs)
+		// If we have a Deck URL, link to all results for the CL, otherwise list the triggered jobs.
+		link, err := deckLinkForPR(c.config().Gerrit.DeckURL, refs, change.Status)
+		if err != nil {
+			logger.WithError(err).Error("Failed to generate link to job results on Deck.")
 		}
-
+		if link != "" && err == nil {
+			message = message + link
+		} else {
+			message = message + jobList
+		}
 		if err := c.gc.SetReview(instance, change.ID, change.CurrentRevision, message, nil); err != nil {
 			return err
 		}
 	}
 
 	return nil
+}
+
+// isProjectOptOutHelp returns if the project is opt-out from getting help
+// information about how to run presubmit tests on their changes.
+func isProjectOptOutHelp(projectsOptOutHelp map[string]sets.String, instance, project string) bool {
+	ps, ok := projectsOptOutHelp[instance]
+	if !ok {
+		return false
+	}
+	return ps.Has(project)
+}
+
+func deckLinkForPR(deckURL string, refs prowapi.Refs, changeStatus string) (string, error) {
+	if deckURL == "" || changeStatus == client.Merged {
+		return "", nil
+	}
+
+	parsed, err := url.Parse(deckURL)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse gerrit.deck_url (impossible: this should have been caught at load time): %w", err)
+	}
+	query := parsed.Query()
+	query.Set("repo", fmt.Sprintf("%s/%s", refs.Org, refs.Repo))
+	if len(refs.Pulls) != 1 {
+		return "", fmt.Errorf("impossible: triggered jobs for a Gerrit change, but refs.pulls was empty")
+	}
+	query.Set("pull", strconv.Itoa(refs.Pulls[0].Number))
+	parsed.RawQuery = query.Encode()
+	return parsed.String(), nil
 }

@@ -17,6 +17,7 @@ limitations under the License.
 package certificate
 
 import (
+	"context"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
@@ -53,13 +54,13 @@ func generateCSR() (*certificates.CertificateSigningRequest, []byte, error) {
 	// Generate a new private key.
 	pk, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	if err != nil {
-		return nil, nil, fmt.Errorf("generate key: %v", err)
+		return nil, nil, fmt.Errorf("generate key: %w", err)
 	}
 
 	// Marshal pk -> der.
 	der, err := x509.MarshalECPrivateKey(pk)
 	if err != nil {
-		return nil, nil, fmt.Errorf("marshal key to DER: %v", err)
+		return nil, nil, fmt.Errorf("marshal key to DER: %w", err)
 	}
 
 	// Generate PEM key.
@@ -68,7 +69,7 @@ func generateCSR() (*certificates.CertificateSigningRequest, []byte, error) {
 	// Generate a x509 certificate signing request.
 	csrPEM, err := cert.MakeCSR(pk, &pkix.Name{CommonName: "client", Organization: []string{systemPrivilegedGroup}}, nil, nil)
 	if err != nil {
-		return nil, nil, fmt.Errorf("create CSR from key: %v", err)
+		return nil, nil, fmt.Errorf("create CSR from key: %w", err)
 	}
 
 	// Generate a Kubernetes CSR object.
@@ -96,9 +97,9 @@ func requestCSR(clientset kubernetes.Interface, csrObj *certificates.Certificate
 	client := clientset.CertificatesV1beta1().CertificateSigningRequests()
 
 	// Create CSR.
-	csrObj, err := client.Create(csrObj)
+	csrObj, err := client.Create(context.TODO(), csrObj, metav1.CreateOptions{})
 	if err != nil {
-		return nil, fmt.Errorf("create CSR: %v", err)
+		return nil, fmt.Errorf("create CSR: %w", err)
 	}
 
 	csrName := csrObj.Name
@@ -106,7 +107,7 @@ func requestCSR(clientset kubernetes.Interface, csrObj *certificates.Certificate
 
 	// Approve CSR.
 	err = wait.Poll(waitInterval, waitTimeout, func() (bool, error) {
-		_, err = client.UpdateApproval(csrObj)
+		_, err = client.UpdateApproval(context.TODO(), csrObj, metav1.UpdateOptions{})
 		if err != nil {
 			return false, err
 		}
@@ -114,12 +115,12 @@ func requestCSR(clientset kubernetes.Interface, csrObj *certificates.Certificate
 		return true, nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("approve CSR: %v", err)
+		return nil, fmt.Errorf("approve CSR: %w", err)
 	}
 
 	// Get CSR.
 	err = wait.Poll(waitInterval, waitTimeout, func() (bool, error) {
-		csrObj, err = client.Get(csrName, metav1.GetOptions{})
+		csrObj, err = client.Get(context.TODO(), csrName, metav1.GetOptions{})
 		if err != nil {
 			return false, err
 		}
@@ -127,7 +128,7 @@ func requestCSR(clientset kubernetes.Interface, csrObj *certificates.Certificate
 		return true, nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("get CSR: %v", err)
+		return nil, fmt.Errorf("get CSR: %w", err)
 	}
 
 	return csrObj.Status.Certificate, nil
@@ -135,7 +136,7 @@ func requestCSR(clientset kubernetes.Interface, csrObj *certificates.Certificate
 
 // getRootCA fetches the service account root certificate authority (CA).
 func getRootCA(clientset kubernetes.Interface) ([]byte, error) {
-	secrets, err := clientset.CoreV1().Secrets(metav1.NamespaceSystem).List(metav1.ListOptions{})
+	secrets, err := clientset.CoreV1().Secrets(metav1.NamespaceSystem).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -165,17 +166,17 @@ func appendApprovalCondition(csr *certificates.CertificateSigningRequest) {
 func CreateClusterCertificateCredentials(clientset kubernetes.Interface) (certPEM []byte, keyPEM []byte, caPEM []byte, err error) {
 	csrObj, keyPEM, err := generateCSR()
 	if err != nil {
-		return nil, nil, nil, fmt.Errorf("generate CSR: %v", err)
+		return nil, nil, nil, fmt.Errorf("generate CSR: %w", err)
 	}
 
 	certPEM, err = requestCSR(clientset, csrObj)
 	if err != nil {
-		return nil, nil, nil, fmt.Errorf("request CSR: %v", err)
+		return nil, nil, nil, fmt.Errorf("request CSR: %w", err)
 	}
 
 	caPEM, err = getRootCA(clientset)
 	if err != nil {
-		return nil, nil, nil, fmt.Errorf("get root CA: %v", err)
+		return nil, nil, nil, fmt.Errorf("get root CA: %w", err)
 	}
 
 	return certPEM, keyPEM, caPEM, nil

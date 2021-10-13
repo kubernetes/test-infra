@@ -208,7 +208,7 @@ func TestCherryPickUnapprovedLabel(t *testing.T) {
 			labels:        tc.labels,
 			added:         []string{},
 			removed:       []string{},
-			commentsAdded: make(map[int][]string, 0),
+			commentsAdded: make(map[int][]string),
 		}
 
 		event := makeFakePullRequestEvent(tc.action, tc.branch, tc.changes)

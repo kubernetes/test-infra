@@ -1,3 +1,5 @@
+# PROW_INSTANCE_SPECIFIC
+# Contains prow dashboards list, will be different among prow instances
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -33,16 +35,16 @@ spec:
             name: grafana-nginx
       - args:
         - -config=/etc/grafana/grafana.ini
-        image: grafana/grafana:6.1.4
+        image: grafana/grafana:6.7.4
         name: grafana
         env:
-          - name: GF_SECURITY_ADMIN_USER
-            value: adm
-          - name: GF_SECURITY_ADMIN_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: grafana
-                key: password
+        - name: GF_SECURITY_ADMIN_USER
+          value: adm
+        - name: GF_SECURITY_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: grafana
+              key: password
         ports:
         - containerPort: 3001
           name: http
@@ -87,6 +89,9 @@ spec:
         - mountPath: /grafana-dashboard-definitions/0/sinker
           name: grafana-dashboard-sinker
           readOnly: false
+        - mountPath: /grafana-dashboard-definitions/0/slo
+          name: grafana-dashboard-slo
+          readOnly: false
         - mountPath: /grafana-dashboard-definitions/0/tide
           name: grafana-dashboard-tide
           readOnly: false
@@ -129,6 +134,9 @@ spec:
       - name: grafana-dashboard-sinker
         configMap:
           name: grafana-dashboard-sinker
+      - name: grafana-dashboard-slo
+        configMap:
+          name: grafana-dashboard-slo
       - name: grafana-dashboard-tide
         configMap:
           name: grafana-dashboard-tide

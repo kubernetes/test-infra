@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Copyright 2016 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,9 +18,6 @@ set -o nounset
 set -o pipefail
 
 # A wrapper script for running kettle
-
-# Update gcloud
-gcloud components update
 
 # Authenticate gcloud
 if [[ -n "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then

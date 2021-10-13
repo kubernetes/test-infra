@@ -1,87 +1,4 @@
 periodics:
-#- name: ci-kubernetes-storage-scalability-max-persistent-vol-per-pod
-#  tags:
-#    - "perfDashPrefix: storage-max-persistent-vol-per-pod"
-#    - "perfDashJobType: storage"
-#  interval: 1h
-#  labels:
-#    preset-service-account: "true"
-#    preset-k8s-ssh: "true"
-#    preset-e2e-scalability-node: "true"
-#  annotations:
-#    testgrid-dashboards: sig-scalability-experiments
-#    testgrid-tab-name: max-persistent-vol-per-pod
-#  spec:
-#    containers:
-#      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
-#        args:
-#          - --repo=k8s.io/kubernetes=master
-#          - --repo=k8s.io/perf-tests=master
-#          - --root=/go/src
-#          - --timeout=60
-#          - --scenario=kubernetes_e2e
-#          - --
-#          - --check-leaked-resources
-#          - --cluster=
-#          - --extract=ci/latest
-#          - --gcp-node-image=gci
-#          - --gcp-nodes=1
-#          - --provider=gce
-#          - --test=false
-#          - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
-#          - --test-cmd-args=cluster-loader2
-#          - --test-cmd-args=--nodes=1
-#          - --test-cmd-args=--provider=gce
-#          - --test-cmd-args=--report-dir=/workspace/_artifacts
-#          - --test-cmd-args=--testconfig=testing/experimental/storage/pod-startup/config.yaml
-#          - --test-cmd-args=--testoverrides=./testing/experimental/storage/pod-startup/volume-types/persistentvolume/override.yaml
-#          - --test-cmd-args=--testoverrides=./testing/experimental/storage/pod-startup/max_volumes_per_pod/override.yaml
-#          - --test-cmd-name=ClusterLoaderV2
-#          - --timeout=40m
-#          - --use-logexporter
-
-
-#- name: ci-kubernetes-storage-scalability-max-persistent-vol-per-node
-#  tags:
-#    - "perfDashPrefix: storage-max-persistent-vol-per-node"
-#    - "perfDashJobType: storage"
-#  interval: 1h
-#  labels:
-#    preset-service-account: "true"
-#    preset-k8s-ssh: "true"
-#    preset-e2e-scalability-node: "true"
-#  annotations:
-#    testgrid-dashboards: sig-scalability-experiments
-#    testgrid-tab-name: max-persistent-vol-per-node
-#  spec:
-#    containers:
-#      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
-#        args:
-#          - --repo=k8s.io/kubernetes=master
-#          - --repo=k8s.io/perf-tests=master
-#          - --root=/go/src
-#          - --timeout=60
-#          - --scenario=kubernetes_e2e
-#          - --
-#          - --check-leaked-resources
-#          - --cluster=
-#          - --extract=ci/latest
-#          - --gcp-node-image=gci
-#          - --gcp-nodes=1
-#          - --provider=gce
-#          - --test=false
-#          - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
-#          - --test-cmd-args=cluster-loader2
-#          - --test-cmd-args=--nodes=1
-#          - --test-cmd-args=--provider=gce
-#          - --test-cmd-args=--report-dir=/workspace/_artifacts
-#          - --test-cmd-args=--testconfig=testing/experimental/storage/pod-startup/config.yaml
-#          - --test-cmd-args=--testoverrides=./testing/experimental/storage/pod-startup/volume-types/persistentvolume/override.yaml
-#          - --test-cmd-args=--testoverrides=./testing/experimental/storage/pod-startup/max_volumes_per_node/override.yaml
-#          - --test-cmd-name=ClusterLoaderV2
-#          - --timeout=40m
-#          - --use-logexporter
-
 - name: ci-kubernetes-storage-scalability
   tags:
     - "perfDashPrefix: storage"
@@ -91,19 +8,30 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-scalability-node: "true"
+    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
+  decorate: true
+  decoration_config:
+    timeout: 360m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
   annotations:
     testgrid-dashboards: sig-scalability-experiments
     testgrid-tab-name: storage
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --repo=k8s.io/kubernetes=master
-      - --repo=k8s.io/perf-tests=master
-      - --root=/go/src
-      - --timeout=360
-      - --scenario=kubernetes_e2e
-      - --
       - --check-leaked-resources
       - --cluster=
       - --extract=ci/latest
@@ -115,11 +43,12 @@ periodics:
       - --test-cmd-args=cluster-loader2
       - --test-cmd-args=--nodes=1
       - --test-cmd-args=--provider=gce
-      - --test-cmd-args=--report-dir=/workspace/_artifacts
+      - --test-cmd-args=--report-dir=$(ARTIFACTS)
       - --test-cmd-args=--testsuite=testing/experimental/storage/pod-startup/suite.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=300m
       - --use-logexporter
+      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
 
 - interval: 6h
   name: ci-kubernetes-e2e-gci-gce-scalability-networkpolicies
@@ -130,26 +59,37 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-scalability-common: "true"
+    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
+  decorate: true
+  decoration_config:
+    timeout: 140m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
   annotations:
     testgrid-dashboards: sig-scalability-experiments
     testgrid-tab-name: calico
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
       env:
       - name: NETWORK_POLICY_PROVIDER
         value: "calico"
       - name: ADDITIONAL_MACHINE_TYPE
-        value: "n1-standard-2"
+        value: "e2-standard-2"
       - name: NUM_ADDITIONAL_NODES
         value: "4"
       args:
-      - --timeout=140
-      - --repo=k8s.io/kubernetes=master
-      - --repo=k8s.io/perf-tests=master
-      - --root=/go/src
-      - --scenario=kubernetes_e2e
-      - --
       - --check-leaked-resources
       - --cluster=e2e-scalability-calico
       - --env=CL2_ENABLE_NETWORKPOLICIES=true
@@ -159,179 +99,23 @@ periodics:
       - --gcp-project-type=scalability-project
       - --gcp-zone=us-east1-b
       - --provider=gce
+      - --env=CL2_ENABLE_HUGE_SERVICES=true
+      - --env=CL2_SCHEDULER_THROUGHPUT_THRESHOLD=0
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
       - --test-cmd-args=cluster-loader2
       - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
-      - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=ci-kubernetes-e2e-gci-gce-scalability-np-${BUILD_ID}
+      - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=ci-kubernetes-e2e-gci-gce-scalability-np-$(BUILD_ID)
       - --test-cmd-args=--nodes=100
       - --test-cmd-args=--prometheus-scrape-node-exporter
       - --test-cmd-args=--provider=gce
-      - --test-cmd-args=--report-dir=/workspace/_artifacts
-      - --test-cmd-args=--testconfig=testing/density/config.yaml
+      - --test-cmd-args=--report-dir=$(ARTIFACTS)
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=120m
       - --use-logexporter
-
-- interval: 6h
-  name: ci-kubernetes-e2e-scalability-experimental-load
-  tags:
-    - "perfDashPrefix: gce-100Nodes-master-experimental"
-    - "perfDashJobType: performance"
-    - "perfDashBuildsCount: 500"
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-    preset-e2e-scalability-common: "true"
-  annotations:
-    testgrid-dashboards: sig-scalability-experiments
-    testgrid-tab-name: experimental-load
-  spec:
-    containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
-        args:
-          - --timeout=140
-          - --repo=k8s.io/kubernetes=master
-          - --repo=k8s.io/perf-tests=master
-          - --root=/go/src
-          - --scenario=kubernetes_e2e
-          - --
-          - --check-leaked-resources
-          # TODO(oxddr): remove once debugging is finished
-          - --env=KUBEPROXY_TEST_LOG_LEVEL=--v=4
-          - --cluster=e2e-big-load
-          - --extract=ci/latest
-          - --gcp-node-image=gci
-          - --gcp-nodes=100
-          - --gcp-project-type=scalability-project
-          - --gcp-zone=us-east1-b
-          - --provider=gce
-          - --test=false
-          - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
-          - --test-cmd-args=cluster-loader2
-          - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
-          - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=${JOB_NAME}-${BUILD_ID}
-          - --test-cmd-args=--nodes=100
-          - --test-cmd-args=--prometheus-scrape-node-exporter
-          - --test-cmd-args=--provider=gce
-          - --test-cmd-args=--report-dir=/workspace/_artifacts
-          - --test-cmd-args=--testconfig=testing/load/experimental-config.yaml
-          - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
-          - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
-          - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
-          - --test-cmd-args=--testoverrides=./testing/load/gce/throughput_override.yaml
-          - --test-cmd-name=ClusterLoaderV2
-          - --timeout=120m
-          - --use-logexporter
-
-- interval: 1h
-  name: ci-kubernetes-e2e-scalability-experimental-load-containerd
-  tags:
-    - "perfDashPrefix: gce-100Nodes-master-experimental-containerd"
-    - "perfDashJobType: performance"
-    - "perfDashBuildsCount: 500"
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-    preset-e2e-scalability-common: "true"
-    preset-e2e-scalability-containerd: "true"
-  annotations:
-    testgrid-dashboards: sig-scalability-experiments
-    testgrid-tab-name: experimental-load-containerd
-  spec:
-    containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
-        args:
-          - --timeout=140
-          - --repo=k8s.io/kubernetes=master
-          - --repo=k8s.io/perf-tests=master
-          - --root=/go/src
-          - --scenario=kubernetes_e2e
-          - --
-          - --check-leaked-resources
-          - --cluster=e2e-big-load-containerd
-          # TODO(oxddr): remove once debugging is finished
-          - --env=KUBEPROXY_TEST_LOG_LEVEL=--v=4
-          - --extract=ci/latest
-          - --gcp-node-image=gci
-          - --gcp-nodes=100
-          - --gcp-project-type=scalability-project
-          - --gcp-zone=us-east1-b
-          - --provider=gce
-          - --test=false
-          - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
-          - --test-cmd-args=cluster-loader2
-          - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
-          - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=${JOB_NAME}-${BUILD_ID}
-          - --test-cmd-args=--nodes=100
-          - --test-cmd-args=--prometheus-scrape-node-exporter
-          - --test-cmd-args=--provider=gce
-          - --test-cmd-args=--report-dir=/workspace/_artifacts
-          - --test-cmd-args=--testconfig=testing/load/experimental-config.yaml
-          - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
-          - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
-          - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
-          - --test-cmd-args=--testoverrides=./testing/load/gce/throughput_override.yaml
-          - --test-cmd-name=ClusterLoaderV2
-          - --timeout=120m
-          - --use-logexporter
-
-# This is a fork of ci-kubernetes-e2e-gci-gce-scalability job (as of 2020-02-18) with enabled containerd.
-- interval: 1h
-  name: ci-kubernetes-e2e-gci-gce-scalability-containerd
-  tags:
-    - "perfDashPrefix: gce-100Nodes-master-containerd"
-    - "perfDashJobType: performance"
-    - "perfDashBuildsCount: 500"
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-    preset-e2e-scalability-common: "true"
-    preset-e2e-scalability-containerd: "true"
-  annotations:
-    testgrid-dashboards: sig-scalability-experiments
-    testgrid-tab-name: gce-cos-master-scalability-100-containerd
-  spec:
-    containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
-        args:
-          - --timeout=140
-          - --repo=k8s.io/kubernetes=master
-          - --repo=k8s.io/perf-tests=master
-          - --root=/go/src
-          - --scenario=kubernetes_e2e
-          - --
-          - --check-leaked-resources
-          - --cluster=e2e-big-containerd
-          # TODO(oxddr): remove once debugging is finished
-          - --env=KUBEPROXY_TEST_LOG_LEVEL=--v=4
-          - --extract=ci/latest
-          - --gcp-node-image=gci
-          - --gcp-nodes=100
-          - --gcp-project-type=scalability-project
-          - --gcp-zone=us-east1-b
-          - --provider=gce
-          - --test=false
-          - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
-          - --test-cmd-args=cluster-loader2
-          - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
-          - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=${JOB_NAME}-${BUILD_ID}
-          - --test-cmd-args=--nodes=100
-          - --test-cmd-args=--prometheus-scrape-node-exporter
-          - --test-cmd-args=--provider=gce
-          - --test-cmd-args=--report-dir=/workspace/_artifacts
-          - --test-cmd-args=--testconfig=testing/density/config.yaml
-          - --test-cmd-args=--testconfig=testing/load/config.yaml
-          - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
-          - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
-          - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
-          - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
-          - --test-cmd-args=--testoverrides=./testing/load/gce/throughput_override.yaml
-          - --test-cmd-name=ClusterLoaderV2
-          - --timeout=120m
-          - --use-logexporter
+      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
 
   # Experimental job confirming that node killer works. Fork of ci-kubernetes-e2e-gci-gce-scalability.
   # To be removed after Chaos Monkey flags are enabled in ci-kubernetes-e2e-gci-gce-scalability
@@ -341,22 +125,31 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-e2e-scalability-common: "true"
+    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
+  decorate: true
+  decoration_config:
+    timeout: 140m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
   annotations:
     testgrid-dashboards: sig-scalability-experiments
     testgrid-tab-name: gce-cos-master-scalability-100-nodekiller
   spec:
     containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20200501-e6124e6-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
         args:
-          - --timeout=140
-          - --repo=k8s.io/kubernetes=master
-          - --repo=k8s.io/perf-tests=master
-          - --root=/go/src
-          - --scenario=kubernetes_e2e
-          - --
           - --check-leaked-resources
-          # TODO(oxddr): remove once debugging is finished
-          - --env=KUBEPROXY_TEST_LOG_LEVEL=--v=4
           - --cluster=e2e-big
           - --extract=ci/latest
           - --gcp-node-image=gci
@@ -364,22 +157,24 @@ periodics:
           - --gcp-project-type=scalability-project
           - --gcp-zone=us-east1-b
           - --provider=gce
+          - --env=CL2_ENABLE_HUGE_SERVICES=true
+          - --env=CL2_ENABLE_VIOLATIONS_FOR_SCHEDULING_THROUGHPUT=false
           - --test=false
           - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
           - --test-cmd-args=cluster-loader2
           - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
-          - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=${JOB_NAME}-${BUILD_ID}
+          - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=$(JOB_NAME)-$(BUILD_ID)
           - --test-cmd-args=--nodes=100
           - --test-cmd-args=--prometheus-scrape-node-exporter
           - --test-cmd-args=--provider=gce
-          - --test-cmd-args=--report-dir=/workspace/_artifacts
+          - --test-cmd-args=--report-dir=$(ARTIFACTS)
           - --test-cmd-args=--testconfig=testing/load/config.yaml
           - --test-cmd-args=--testoverrides=./testing/chaosmonkey/override.yaml
           - --test-cmd-args=--testoverrides=./testing/chaosmonkey/ignore_node_killer_container_restarts_100.yaml
-          - --test-cmd-args=--testoverrides=./testing/experiments/enable_prometheus_api_responsiveness.yaml
           - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
           - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
-          - --test-cmd-args=--testoverrides=./testing/load/gce/throughput_override.yaml
+          - --test-cmd-args=--testoverrides=./testing/overrides/load_throughput.yaml
           - --test-cmd-name=ClusterLoaderV2
           - --timeout=120m
           - --use-logexporter
+          - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)

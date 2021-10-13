@@ -2,10 +2,12 @@
 
 approvers:
 - release-engineering-approvers
-- Katharine
 
 reviewers:
 - release-engineering-reviewers
+
+emeritus_approvers:
+- Katharine
 
 labels:
 - sig/release

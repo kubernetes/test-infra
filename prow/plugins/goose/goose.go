@@ -53,11 +53,20 @@ func init() {
 }
 
 func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
+	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
+		Goose: plugins.Goose{
+			KeyPath: "/etc/unsplash-api/honk.txt",
+		},
+	})
+	if err != nil {
+		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", pluginName)
+	}
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The goose plugin adds a goose image to an issue or PR in response to the `/honk` command.",
 		Config: map[string]string{
 			"": fmt.Sprintf("The goose plugin uses an api key for unsplash.com stored in %s.", config.Goose.KeyPath),
 		},
+		Snippet: yamlSnippet,
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/honk",
@@ -124,7 +133,7 @@ func (gr gooseResult) Format() (string, error) {
 	}
 	img, err := url.Parse(gr.Images.Small)
 	if err != nil {
-		return "", fmt.Errorf("invalid image url %s: %v", gr.Images.Small, err)
+		return "", fmt.Errorf("invalid image url %s: %w", gr.Images.Small, err)
 	}
 
 	return fmt.Sprintf("\n![goose image](%s)", img), nil
@@ -145,7 +154,7 @@ func (g *realGaggle) readGoose() (string, error) {
 	uri := g.URL()
 	resp, err := http.Get(uri)
 	if err != nil {
-		return "", fmt.Errorf("could not read goose from %s: %v", uri, err)
+		return "", fmt.Errorf("could not read goose from %s: %w", uri, err)
 	}
 	defer resp.Body.Close()
 	if sc := resp.StatusCode; sc > 299 || sc < 200 {
@@ -164,7 +173,7 @@ func (g *realGaggle) readGoose() (string, error) {
 	// checking size, GitHub doesn't support big images
 	toobig, err := github.ImageTooBig(a.Images.Small)
 	if err != nil {
-		return "", fmt.Errorf("could not validate image size %s: %v", a.Images.Small, err)
+		return "", fmt.Errorf("could not validate image size %s: %w", a.Images.Small, err)
 	} else if toobig {
 		return "", fmt.Errorf("long goose is too long: %s", a.Images.Small)
 	}

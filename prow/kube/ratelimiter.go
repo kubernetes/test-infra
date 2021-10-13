@@ -54,7 +54,6 @@ func (fl *fakeLimiter) AddAfter(a interface{}, d time.Duration) {
 	fl.added = a.(string)
 }
 func (fl *fakeLimiter) Len() {
-	return
 }
 func (fl *fakeLimiter) NumRequeues(item interface{}) int {
 	return 0

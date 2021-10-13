@@ -20,6 +20,8 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/diff"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -173,6 +175,55 @@ func TestPerformArgReplacements(t *testing.T) {
 			if tc.expectErr {
 				t.Fatalf("Expected an error, but got %v", result)
 			}
+			if !reflect.DeepEqual(result, tc.expected) {
+				t.Errorf("Expected result %v, but got %v instead", tc.expected, result)
+			}
+		})
+	}
+}
+
+func TestPerformArgDeletions(t *testing.T) {
+	tests := []struct {
+		name      string
+		args      map[string]string
+		deletions string
+		expected  map[string]string
+	}{
+		{
+			name:      "nil arguments remain nil",
+			args:      nil,
+			deletions: "",
+			expected:  nil,
+		},
+		{
+			name:      "empty arguments remain empty",
+			args:      map[string]string{},
+			deletions: "",
+			expected:  map[string]string{},
+		},
+		{
+			name:      "empty deletions do nothing",
+			args:      map[string]string{"foo": "bar"},
+			deletions: "",
+			expected:  map[string]string{"foo": "bar"},
+		},
+		{
+			name:      "simple deletion works",
+			args:      map[string]string{"foo": "bar", "baz": "baz2"},
+			deletions: "foo",
+			expected:  map[string]string{"baz": "baz2"},
+		},
+		{
+			name:      "multiple deletions work",
+			args:      map[string]string{"foo": "bar", "baz": "baz2", "hello": "world"},
+			deletions: "foo, baz",
+			expected:  map[string]string{"hello": "world"},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			result := performDeletion(tc.args, tc.deletions)
 			if !reflect.DeepEqual(result, tc.expected) {
 				t.Errorf("Expected result %v, but got %v instead", tc.expected, result)
 			}
@@ -441,6 +492,39 @@ func TestGeneratePresubmits(t *testing.T) {
 			},
 			{
 				JobBase: config.JobBase{
+					Name:        "pull-kubernetes-e2e-branch-in-name-master",
+					Annotations: map[string]string{forkAnnotation: "true"},
+				},
+				Brancher: config.Brancher{
+					SkipBranches: []string{`release-\d\.\d`},
+				},
+			},
+			{
+				JobBase: config.JobBase{
+					Name:        "pull-kubernetes-e2e-keep-context",
+					Annotations: map[string]string{forkAnnotation: "true"},
+				},
+				Brancher: config.Brancher{
+					SkipBranches: []string{`release-\d\.\d`},
+				},
+				Reporter: config.Reporter{
+					Context: "mycontext",
+				},
+			},
+			{
+				JobBase: config.JobBase{
+					Name:        "pull-kubernetes-e2e-replace-context",
+					Annotations: map[string]string{forkAnnotation: "true"},
+				},
+				Brancher: config.Brancher{
+					SkipBranches: []string{`release-\d\.\d`},
+				},
+				Reporter: config.Reporter{
+					Context: "mycontext-master",
+				},
+			},
+			{
+				JobBase: config.JobBase{
 					Name: "pull-replace-some-things",
 					Annotations: map[string]string{
 						forkAnnotation:                 "true",
@@ -451,7 +535,7 @@ func TestGeneratePresubmits(t *testing.T) {
 					Spec: &v1.PodSpec{
 						Containers: []v1.Container{
 							{
-								Image: "gcr.io/k8s-testimages/kubekins-e2e:blahblahblah-master",
+								Image: "gcr.io/k8s-staging-test-infra/kubekins-e2e:blahblahblah-master",
 								Args:  []string{"--repo=k8s.io/kubernetes", "--something=foo"},
 								Env:   []v1.EnvVar{{Name: "BRANCH", Value: "master"}},
 							},
@@ -475,23 +559,62 @@ func TestGeneratePresubmits(t *testing.T) {
 		"kubernetes/kubernetes": {
 			{
 				JobBase: config.JobBase{
-					Name:        "pull-kubernetes-e2e",
+					Name:        "pull-kubernetes-e2e-1.15",
 					Annotations: map[string]string{},
 				},
 				Brancher: config.Brancher{
 					Branches: []string{"release-1.15"},
 				},
+				Reporter: config.Reporter{
+					Context: "pull-kubernetes-e2e",
+				},
 			},
 			{
 				JobBase: config.JobBase{
-					Name: "pull-replace-some-things",
+					Name:        "pull-kubernetes-e2e-branch-in-name-1.15",
+					Annotations: map[string]string{},
+				},
+				Brancher: config.Brancher{
+					Branches: []string{"release-1.15"},
+				},
+				Reporter: config.Reporter{
+					Context: "pull-kubernetes-e2e-branch-in-name-1.15",
+				},
+			},
+			{
+				JobBase: config.JobBase{
+					Name:        "pull-kubernetes-e2e-keep-context-1.15",
+					Annotations: map[string]string{},
+				},
+				Brancher: config.Brancher{
+					Branches: []string{"release-1.15"},
+				},
+				Reporter: config.Reporter{
+					Context: "mycontext",
+				},
+			},
+			{
+				JobBase: config.JobBase{
+					Name:        "pull-kubernetes-e2e-replace-context-1.15",
+					Annotations: map[string]string{},
+				},
+				Brancher: config.Brancher{
+					Branches: []string{"release-1.15"},
+				},
+				Reporter: config.Reporter{
+					Context: "mycontext-1.15",
+				},
+			},
+			{
+				JobBase: config.JobBase{
+					Name: "pull-replace-some-things-1.15",
 					Annotations: map[string]string{
 						"some-annotation": "yup",
 					},
 					Spec: &v1.PodSpec{
 						Containers: []v1.Container{
 							{
-								Image: "gcr.io/k8s-testimages/kubekins-e2e:blahblahblah-1.15",
+								Image: "gcr.io/k8s-staging-test-infra/kubekins-e2e:blahblahblah-1.15",
 								Args:  []string{"--repo=k8s.io/kubernetes", "--something=1.15"},
 								Env:   []v1.EnvVar{{Name: "BRANCH", Value: "release-1.15"}},
 							},
@@ -500,6 +623,9 @@ func TestGeneratePresubmits(t *testing.T) {
 				},
 				Brancher: config.Brancher{
 					Branches: []string{"release-1.15"},
+				},
+				Reporter: config.Reporter{
+					Context: "pull-replace-some-things",
 				},
 			},
 		},
@@ -511,11 +637,12 @@ func TestGeneratePresubmits(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(result, expected) {
-		t.Errorf("Result does not match expected. Difference:\n%s", diff.ObjectDiff(expected, result))
+		t.Errorf("Result does not match expected. Difference:\n%s", cmp.Diff(expected, result, cmpopts.IgnoreUnexported(config.Brancher{}, config.RegexpChangeMatcher{}, config.Presubmit{})))
 	}
 }
 
 func TestGeneratePeriodics(t *testing.T) {
+	yes := true
 	periodics := []config.Periodic{
 		{
 			Cron: "0 * * * *",
@@ -529,6 +656,21 @@ func TestGeneratePeriodics(t *testing.T) {
 			JobBase: config.JobBase{
 				Name:        "some-generic-periodic-master",
 				Annotations: map[string]string{forkAnnotation: "true", suffixAnnotation: "true"},
+			},
+		},
+		{
+			Cron: "0 * * * *",
+			JobBase: config.JobBase{
+				Name: "generic-periodic-with-deletions-master",
+				Annotations: map[string]string{
+					forkAnnotation:     "true",
+					deletionAnnotation: "preset-e2e-scalability-periodics-master",
+					suffixAnnotation:   "true",
+				},
+				Labels: map[string]string{
+					"preset-e2e-scalability-periodics":        "true",
+					"preset-e2e-scalability-periodics-master": "true",
+				},
 			},
 		},
 		{
@@ -560,7 +702,7 @@ func TestGeneratePeriodics(t *testing.T) {
 					forkAnnotation: "true",
 				},
 				UtilityConfig: config.UtilityConfig{
-					Decorate:  true,
+					Decorate:  &yes,
 					ExtraRefs: []prowapi.Refs{{Org: "kubernetes", Repo: "kubernetes", BaseRef: "master"}},
 				},
 			},
@@ -585,6 +727,16 @@ func TestGeneratePeriodics(t *testing.T) {
 			JobBase: config.JobBase{
 				Name:        "some-generic-periodic-beta",
 				Annotations: map[string]string{suffixAnnotation: "true", testgridDashboardsAnnotation: "sig-release-job-config-errors"},
+			},
+		},
+		{
+			Cron: "0 * * * *",
+			JobBase: config.JobBase{
+				Name:        "generic-periodic-with-deletions-beta",
+				Annotations: map[string]string{suffixAnnotation: "true", testgridDashboardsAnnotation: "sig-release-job-config-errors"},
+				Labels: map[string]string{
+					"preset-e2e-scalability-periodics": "true",
+				},
 			},
 		},
 		{
@@ -613,7 +765,7 @@ func TestGeneratePeriodics(t *testing.T) {
 				Name:        "decorated-periodic-1-15",
 				Annotations: map[string]string{testgridDashboardsAnnotation: "sig-release-job-config-errors"},
 				UtilityConfig: config.UtilityConfig{
-					Decorate:  true,
+					Decorate:  &yes,
 					ExtraRefs: []prowapi.Refs{{Org: "kubernetes", Repo: "kubernetes", BaseRef: "release-1.15"}},
 				},
 			},
@@ -626,7 +778,7 @@ func TestGeneratePeriodics(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(result, expected) {
-		t.Errorf("Result does not match expected. Difference:\n%s", diff.ObjectDiff(expected, result))
+		t.Errorf("Result does not match expected. Difference:\n%s\n", cmp.Diff(expected, result, cmpopts.IgnoreUnexported(config.Periodic{})))
 	}
 }
 
@@ -679,7 +831,7 @@ func TestGeneratePostsubmits(t *testing.T) {
 					Spec: &v1.PodSpec{
 						Containers: []v1.Container{
 							{
-								Image: "gcr.io/k8s-testimages/kubekins-e2e:blahblahblah-master",
+								Image: "gcr.io/k8s-staging-test-infra/kubekins-e2e:blahblahblah-master",
 								Args:  []string{"--repo=k8s.io/kubernetes", "--something=foo"},
 								Env:   []v1.EnvVar{{Name: "BRANCH", Value: "master"}},
 							},
@@ -744,7 +896,7 @@ func TestGeneratePostsubmits(t *testing.T) {
 					Spec: &v1.PodSpec{
 						Containers: []v1.Container{
 							{
-								Image: "gcr.io/k8s-testimages/kubekins-e2e:blahblahblah-1.15",
+								Image: "gcr.io/k8s-staging-test-infra/kubekins-e2e:blahblahblah-1.15",
 								Args:  []string{"--repo=k8s.io/kubernetes", "--something=1.15"},
 								Env:   []v1.EnvVar{{Name: "BRANCH", Value: "release-1.15"}},
 							},

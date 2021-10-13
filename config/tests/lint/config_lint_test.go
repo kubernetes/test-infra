@@ -24,8 +24,19 @@ import (
 
 var configPath = "../../../config/"
 
+var exemptPaths = []string{
+	"prow/cluster/monitoring/mixins/vendor",
+}
+
 func Test_ForbidYmlExtension(t *testing.T) {
+	exempt := map[string]bool{}
+	for _, path := range exemptPaths {
+		exempt[filepath.Join(configPath, path)] = true
+	}
 	err := filepath.Walk(configPath, func(path string, info os.FileInfo, err error) error {
+		if _, ok := exempt[path]; ok {
+			return filepath.SkipDir
+		}
 		if filepath.Ext(path) == ".yml" {
 			t.Errorf("*.yml extension not allowed in this repository's configuration; use *.yaml instead (at %s)", path)
 		}

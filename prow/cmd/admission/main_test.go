@@ -20,6 +20,8 @@ import (
 	"flag"
 	"reflect"
 	"testing"
+
+	prowflagutil "k8s.io/test-infra/prow/flagutil"
 )
 
 func TestOptions(t *testing.T) {
@@ -39,8 +41,9 @@ func TestOptions(t *testing.T) {
 			name: "works with both private/pub",
 			args: []string{"--tls-cert-file=c", "--tls-private-key-file=k"},
 			expected: &options{
-				cert:       "c",
-				privateKey: "k",
+				cert:                   "c",
+				privateKey:             "k",
+				instrumentationOptions: prowflagutil.DefaultInstrumentationOptions(),
 			},
 		},
 		{
