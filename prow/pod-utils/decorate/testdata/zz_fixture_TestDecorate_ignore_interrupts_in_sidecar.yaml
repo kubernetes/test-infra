@@ -1,0 +1,112 @@
+containers:
+- command:
+  - /tools/entrypoint
+  env:
+  - name: ARTIFACTS
+    value: /logs/artifacts
+  - name: GOPATH
+    value: /home/prow/go
+  - name: custom
+    value: env
+  - name: ENTRYPOINT_OPTIONS
+    value: '{"timeout":60000000000,"grace_period":3600000000000,"artifact_dir":"/logs/artifacts","args":["/bin/ls","-l","-a"],"container_name":"test","process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt","metadata_file":"/logs/artifacts/metadata.json"}'
+  name: test
+  resources: {}
+  volumeMounts:
+  - mountPath: /secret
+    name: secret
+  - mountPath: /logs
+    name: logs
+  - mountPath: /tools
+    name: tools
+  - mountPath: /home/prow/go
+    name: code
+  workingDir: /home/prow/go/src/github.com/org/repo
+- command:
+  - /sidecar
+  env:
+  - name: JOB_SPEC
+  - name: SIDECAR_OPTIONS
+    value: '{"gcs_options":{"items":["/logs/artifacts"],"bucket":"bucket","path_strategy":"single","default_org":"org","default_repo":"repo","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false},"entries":[{"args":["/bin/ls","-l","-a"],"container_name":"test","process_log":"/logs/process-log.txt","marker_file":"/logs/marker-file.txt","metadata_file":"/logs/artifacts/metadata.json"}],"ignore_interrupts":true,"censoring_options":{}}'
+  image: sidecarimage
+  name: sidecar
+  resources:
+    limits:
+      cpu: "0"
+    requests:
+      memory: "0"
+  volumeMounts:
+  - mountPath: /logs
+    name: logs
+  - mountPath: /secrets/gcs
+    name: gcs-credentials
+initContainers:
+- command:
+  - /clonerefs
+  env:
+  - name: CLONEREFS_OPTIONS
+    value: '{"src_root":"/home/prow/go","log":"/logs/clone.json","git_user_name":"ci-robot","git_user_email":"ci-robot@k8s.io","refs":[{"org":"org","repo":"repo","base_ref":"main","base_sha":"abcd1234","pulls":[{"number":1,"author":"","sha":"aksdjhfkds"}]},{"org":"other","repo":"something","base_ref":"release","base_sha":"sldijfsd"}]}'
+  image: cloneimage
+  name: clonerefs
+  resources:
+    limits:
+      cpu: "0"
+    requests:
+      memory: "0"
+  volumeMounts:
+  - mountPath: /logs
+    name: logs
+  - mountPath: /home/prow/go
+    name: code
+  - mountPath: /tmp
+    name: clonerefs-tmp
+- command:
+  - /initupload
+  env:
+  - name: INITUPLOAD_OPTIONS
+    value: '{"bucket":"bucket","path_strategy":"single","default_org":"org","default_repo":"repo","gcs_credentials_file":"/secrets/gcs/service-account.json","dry_run":false,"log":"/logs/clone.json"}'
+  - name: JOB_SPEC
+  image: initimage
+  name: initupload
+  resources:
+    limits:
+      cpu: "0"
+    requests:
+      memory: "0"
+  volumeMounts:
+  - mountPath: /logs
+    name: logs
+  - mountPath: /secrets/gcs
+    name: gcs-credentials
+- args:
+  - /entrypoint
+  - /tools/entrypoint
+  command:
+  - /bin/cp
+  image: entrypointimage
+  name: place-entrypoint
+  resources:
+    limits:
+      cpu: "0"
+    requests:
+      memory: "0"
+  volumeMounts:
+  - mountPath: /tools
+    name: tools
+serviceAccountName: tester
+terminationGracePeriodSeconds: 4500
+volumes:
+- name: secret
+  secret:
+    secretName: secretname
+- emptyDir: {}
+  name: logs
+- emptyDir: {}
+  name: tools
+- name: gcs-credentials
+  secret:
+    secretName: gcs-secret
+- emptyDir: {}
+  name: clonerefs-tmp
+- emptyDir: {}
+  name: code

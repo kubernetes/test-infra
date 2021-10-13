@@ -29,9 +29,10 @@ import (
 
 func TestGetOptions(t *testing.T) {
 	defArgs := map[string][]string{
-		"--hmac-path": {"/fake/hmac-file"},
-		"--hook-url":  {"https://not-a-url"},
-		"--repo":      {"fake-org/fake-repo"},
+		"--hmac-path":         {"/fake/hmac-file"},
+		"--hook-url":          {"https://not-a-url"},
+		"--repo":              {"fake-org/fake-repo"},
+		"--github-token-path": {"./testdata/token"},
 	}
 	cases := []struct {
 		name     string
@@ -113,8 +114,10 @@ func TestGetOptions(t *testing.T) {
 
 			o, err := GetOptions(flag.NewFlagSet("fake-flags", flag.ExitOnError), args)
 			if o != nil { // TODO(fejta): github.GitHubOptions not unit testable
-				expected.GitHubOptions = o.GitHubOptions
-				expected.GitHubHookClient = o.GitHubHookClient
+				o.GitHubOptions = flagutil.GitHubOptions{}
+				expected.GitHubOptions = flagutil.GitHubOptions{}
+				expected.GitHubHookClient = nil
+				o.GitHubHookClient = nil
 			}
 			switch {
 			case err != nil:

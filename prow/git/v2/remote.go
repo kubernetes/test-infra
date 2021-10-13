@@ -108,13 +108,13 @@ func HttpResolver(remote func() (*url.URL, error), username LoginGetter, token T
 	return func() (string, error) {
 		remote, err := remote()
 		if err != nil {
-			return "", fmt.Errorf("could not resolve remote: %v", err)
+			return "", fmt.Errorf("could not resolve remote: %w", err)
 		}
 
 		if username != nil {
 			name, err := username()
 			if err != nil {
-				return "", fmt.Errorf("could not resolve username: %v", err)
+				return "", fmt.Errorf("could not resolve username: %w", err)
 			}
 			remote.User = url.UserPassword(name, string(token()))
 		}

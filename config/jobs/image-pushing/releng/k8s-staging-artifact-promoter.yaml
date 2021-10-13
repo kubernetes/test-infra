@@ -3,17 +3,19 @@ postsubmits:
     - name: post-release-push-image-vulndash
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-release-releng-informing, sig-release-master-informing, sig-release-image-pushes
+        testgrid-dashboards: sig-release-releng-informing, sig-release-master-informing, sig-release-image-pushes, sig-k8s-infra-gcb
         testgrid-alert-email: release-managers+alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
       decorate: true
       run_if_changed: '^cmd\/vulndash\/'
       branches:
+        - ^main$
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210927-471c27b6e3
             command:
               - /run.sh
             args:
@@ -25,22 +27,24 @@ postsubmits:
               - name: LOG_TO_STDOUT
                 value: "y"
       rerun_auth_config:
-        github_team_ids:
-          - 2241179 # release-managers
-  kubernetes-sigs/k8s-container-image-promoter:
-    - name: cip-postsubmit-push-to-staging
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
+  kubernetes-sigs/promo-tools:
+    # TODO(releng): Rename to 'kpromo' once tools are merged
+    - name: post-cip-push-image-cip
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-release-releng-blocking
+        testgrid-dashboards: sig-release-releng-blocking, sig-release-master-informing, sig-release-image-pushes, sig-k8s-infra-gcb
         testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
         testgrid-num-failures-to-alert: '1'
       decorate: true
       branches:
-        - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210927-471c27b6e3
             command:
               - /run.sh
             args:
@@ -48,3 +52,10 @@ postsubmits:
               - --scratch-bucket=gs://k8s-staging-artifact-promoter-gcb
               - --env-passthrough=PULL_BASE_REF
               - .
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers

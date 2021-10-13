@@ -35,9 +35,10 @@ const (
 )
 
 type FakeRepo struct {
-	approversMap      map[string]layeredsets.String
-	leafApproversMap  map[string]sets.String
-	noParentOwnersMap map[string]bool
+	approversMap                 map[string]layeredsets.String
+	leafApproversMap             map[string]sets.String
+	noParentOwnersMap            map[string]bool
+	autoApproveUnownedSubfolders map[string]bool
 }
 
 func (f FakeRepo) Filenames() ownersconfig.Filenames {
@@ -65,9 +66,8 @@ func (f FakeRepo) IsNoParentOwners(path string) bool {
 	return f.noParentOwnersMap[path]
 }
 
-type dir struct {
-	fullPath  string
-	approvers sets.String
+func (f FakeRepo) IsAutoApproveUnownedSubfolders(ownerFilePath string) bool {
+	return f.autoApproveUnownedSubfolders[ownerFilePath]
 }
 
 func canonicalize(path string) string {
@@ -77,16 +77,16 @@ func canonicalize(path string) string {
 	return strings.TrimSuffix(path, "/")
 }
 
-func createFakeRepo(la map[string]sets.String) FakeRepo {
+func createFakeRepo(leafApproversMap map[string]sets.String, modify ...func(*FakeRepo)) FakeRepo {
 	// github doesn't use / at the root
 	a := map[string]layeredsets.String{}
-	for dir, approvers := range la {
-		la[dir] = setToLower(approvers)
+	for dir, approvers := range leafApproversMap {
+		leafApproversMap[dir] = setToLower(approvers)
 		a[dir] = setToLowerMulti(approvers)
 		startingPath := dir
 		for {
 			dir = canonicalize(filepath.Dir(dir))
-			if parentApprovers, ok := la[dir]; ok {
+			if parentApprovers, ok := leafApproversMap[dir]; ok {
 				a[startingPath] = a[startingPath].Union(setToLowerMulti(parentApprovers))
 			}
 			if dir == "" {
@@ -95,7 +95,11 @@ func createFakeRepo(la map[string]sets.String) FakeRepo {
 		}
 	}
 
-	return FakeRepo{approversMap: a, leafApproversMap: la}
+	fr := FakeRepo{approversMap: a, leafApproversMap: leafApproversMap}
+	for _, m := range modify {
+		m(&fr)
+	}
+	return fr
 }
 
 func setToLower(s sets.String) sets.String {

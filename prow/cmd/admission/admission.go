@@ -67,14 +67,14 @@ func readRequest(r io.Reader, contentType string) (*admissionapi.AdmissionReques
 	}
 	body, err := ioutil.ReadAll(r)
 	if err != nil {
-		return nil, fmt.Errorf("read body: %v", err)
+		return nil, fmt.Errorf("read body: %w", err)
 	}
 
 	// Can we convert the body into an AdmissionReview?
 	var ar admissionapi.AdmissionReview
 	deserializer := codecs.UniversalDeserializer()
 	if _, _, err := deserializer.Decode(body, nil, &ar); err != nil {
-		return nil, fmt.Errorf("decode body: %v", err)
+		return nil, fmt.Errorf("decode body: %w", err)
 	}
 	return ar.Request, nil
 }
@@ -109,10 +109,10 @@ func writeResponse(ar admissionapi.AdmissionRequest, w io.Writer, decide decider
 	result.Response.UID = ar.UID
 	out, err := json.Marshal(result)
 	if err != nil {
-		return fmt.Errorf("encode response: %v", err)
+		return fmt.Errorf("encode response: %w", err)
 	}
 	if _, err := w.Write(out); err != nil {
-		return fmt.Errorf("write response: %v", err)
+		return fmt.Errorf("write response: %w", err)
 	}
 	return nil
 }
@@ -148,11 +148,11 @@ func onlyUpdateStatus(req admissionapi.AdmissionRequest) (*admissionapi.Admissio
 	// Otherwise, do the specs match?
 	var new prowjobv1.ProwJob
 	if _, _, err := codecs.UniversalDeserializer().Decode(req.Object.Raw, nil, &new); err != nil {
-		return nil, fmt.Errorf("decode new: %v", err)
+		return nil, fmt.Errorf("decode new: %w", err)
 	}
 	var old prowjobv1.ProwJob
 	if _, _, err := codecs.UniversalDeserializer().Decode(req.OldObject.Raw, nil, &old); err != nil {
-		return nil, fmt.Errorf("decode old: %v", err)
+		return nil, fmt.Errorf("decode old: %w", err)
 	}
 	if equality.Semantic.DeepEqual(old.Spec, new.Spec) {
 		logrus.Info("accept update with equivalent spec")

@@ -30,6 +30,7 @@ readonly REPOS=(
     kubernetes-csi/livenessprobe
     kubernetes-csi/node-driver-registrar
     kubernetes-csi/csi-driver-nfs
+    kubernetes-csi/csi-driver-iscsi
     kubernetes-sigs/sig-storage-local-static-provisioner
     kubernetes-sigs/nfs-ganesha-server-and-external-provisioner
     kubernetes-sigs/nfs-subdir-external-provisioner
@@ -38,7 +39,6 @@ readonly REPOS=(
 # Repos which should eventually enable cloud image builds but currently
 # don't.
 readonly BROKEN_REPOS=(
-    kubernetes-csi/csi-driver-iscsi
     kubernetes-csi/csi-proxy
     kubernetes-sigs/container-object-storage-interface-controller
     kubernetes-sigs/container-object-storage-interface-provisioner-sidecar
@@ -56,6 +56,14 @@ for repo in "${REPOS[@]}" "${BROKEN_REPOS[@]}"; do
     cat >>"${OUTPUT}" <<EOF
   ${org}/${repo}:
     - name: post-${repo}-push-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
+          - org: kubernetes
+            slug: test-infra-admins
+          - org: kubernetes
+            slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-storage-image-build
@@ -72,7 +80,7 @@ for repo in "${REPOS[@]}" "${BROKEN_REPOS[@]}"; do
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210927-471c27b6e3
             command:
               - /run.sh
             args:
@@ -103,36 +111,36 @@ EOF
 for repo in "${REPOS[@]}"; do
     IFS=/ read -r org repo <<<"${repo}"
 cat >>"${OUTPUT}" <<EOF
-- name: canary-${repo}-push-images
-  cluster: k8s-infra-prow-build-trusted
-  annotations:
-    testgrid-dashboards: sig-storage-image-build
-  decorate: true
-  interval: 168h # one week
-  extra_refs:
-    # This also becomes the current directory for run.sh and thus
-    # the cloud image build.
-    - org: kubernetes-csi
-      repo: ${repo}
-      base_ref: master
-  spec:
-    serviceAccountName: gcb-builder
-    containers:
-      - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
-        command:
-          - /run.sh
-        env:
-        # We need to emulate a pull job for the cloud build to work the same
-        # way as it usually does.
-        - name: PULL_BASE_REF
-          value: master
-        args:
-          # this is the project GCB will run in, which is the same as the GCR
-          # images are pushed to.
-          - --project=k8s-staging-sig-storage
-          # This is the same as above, but with -gcb appended.
-          - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
-          - --env-passthrough=PULL_BASE_REF
-          - .
+  - name: canary-${repo}-push-images
+    cluster: k8s-infra-prow-build-trusted
+    annotations:
+      testgrid-dashboards: sig-storage-image-build
+    decorate: true
+    interval: 168h # one week
+    extra_refs:
+      # This also becomes the current directory for run.sh and thus
+      # the cloud image build.
+      - org: kubernetes-csi
+        repo: ${repo}
+        base_ref: master
+    spec:
+      serviceAccountName: gcb-builder
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20210927-471c27b6e3
+          command:
+            - /run.sh
+          env:
+            # We need to emulate a pull job for the cloud build to work the same
+            # way as it usually does.
+            - name: PULL_BASE_REF
+              value: master
+          args:
+            # this is the project GCB will run in, which is the same as the GCR
+            # images are pushed to.
+            - --project=k8s-staging-sig-storage
+            # This is the same as above, but with -gcb appended.
+            - --scratch-bucket=gs://k8s-staging-sig-storage-gcb
+            - --env-passthrough=PULL_BASE_REF
+            - .
 EOF
 done

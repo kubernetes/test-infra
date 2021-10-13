@@ -21,11 +21,13 @@ import (
 	"os"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/pjutil/pprof"
 
 	prowjobinformer "k8s.io/test-infra/prow/client/informers/externalversions"
-	"k8s.io/test-infra/prow/config"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
@@ -34,7 +36,7 @@ import (
 )
 
 type options struct {
-	configPath             string
+	config                 configflagutil.ConfigOptions
 	kubernetes             prowflagutil.KubernetesOptions
 	instrumentationOptions prowflagutil.InstrumentationOptions
 }
@@ -42,8 +44,7 @@ type options struct {
 func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	var o options
 
-	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
-
+	o.config.AddFlags(fs)
 	o.kubernetes.AddFlags(fs)
 	o.instrumentationOptions.AddFlags(fs)
 	if err := fs.Parse(os.Args[1:]); err != nil {
@@ -53,7 +54,12 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 }
 
 func (o *options) Validate() error {
-	return o.kubernetes.Validate(false)
+	for _, fs := range []interface{ Validate(bool) error }{&o.config, &o.kubernetes, &o.instrumentationOptions} {
+		if err := fs.Validate(false); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func mustRegister(component string, lister lister) *prometheus.Registry {
@@ -62,8 +68,8 @@ func mustRegister(component string, lister lister) *prometheus.Registry {
 		lister: lister,
 	})
 	registry.MustRegister(
-		prometheus.NewProcessCollector(prometheus.ProcessCollectorOpts{}),
-		prometheus.NewGoCollector(),
+		collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}),
+		collectors.NewGoCollector(),
 	)
 	return registry
 }
@@ -77,16 +83,16 @@ func main() {
 
 	defer interrupts.WaitForGracefulShutdown()
 
-	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
+	pprof.Instrument(o.instrumentationOptions)
 	health := pjutil.NewHealthOnPort(o.instrumentationOptions.HealthPort)
 
-	configAgent := &config.Agent{}
-	if err := configAgent.Start(o.configPath, ""); err != nil {
+	configAgent, err := o.config.ConfigAgent()
+	if err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 	cfg := configAgent.Config
 
-	pjClientset, err := o.kubernetes.ProwJobClientset(cfg().ProwJobNamespace, false)
+	pjClientset, err := o.kubernetes.ProwJobClientset(false)
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to create prowjob client set")
 	}

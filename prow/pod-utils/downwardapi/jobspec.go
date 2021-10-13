@@ -72,7 +72,7 @@ func ResolveSpecFromEnv() (*JobSpec, error) {
 
 	spec := &JobSpec{}
 	if err := json.Unmarshal([]byte(specEnv), spec); err != nil {
-		return nil, fmt.Errorf("malformed $%s: %v", JobSpecEnv, err)
+		return nil, fmt.Errorf("malformed $%s: %w", JobSpecEnv, err)
 	}
 
 	return spec, nil
@@ -121,7 +121,7 @@ func EnvForSpec(spec JobSpec) (map[string]string, error) {
 
 	raw, err := json.Marshal(spec)
 	if err != nil {
-		return env, fmt.Errorf("failed to marshal job spec: %v", err)
+		return env, fmt.Errorf("failed to marshal job spec: %w", err)
 	}
 	env[JobSpecEnv] = string(raw)
 

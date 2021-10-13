@@ -25,7 +25,6 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/robots/pr-creator/updater"
 )
@@ -45,6 +44,7 @@ type options struct {
 	headBranch string
 	matchTitle string
 	body       string
+	labels     string
 }
 
 func (o options) validate() error {
@@ -66,6 +66,13 @@ func (o options) validate() error {
 	return nil
 }
 
+func (o options) getLabels() []string {
+	if o.labels != "" {
+		return strings.Split(o.labels, ",")
+	}
+	return nil
+}
+
 func optionsFromFlags() options {
 	var o options
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
@@ -82,6 +89,7 @@ func optionsFromFlags() options {
 	fs.StringVar(&o.headBranch, "head-branch", "", "Reuse any self-authored open PR from this branch. This takes priority over match-title")
 	fs.StringVar(&o.matchTitle, "match-title", "", "Reuse any self-autohred open PR that matches this title. If both this and head-branch are set, this will be overwritten by head-branch")
 	fs.StringVar(&o.body, "body", "", "Body of PR")
+	fs.StringVar(&o.labels, "labels", "", "labels to attach to PR")
 	fs.Parse(os.Args[1:])
 	return o
 }
@@ -92,12 +100,7 @@ func main() {
 		logrus.WithError(err).Fatal("bad flags")
 	}
 
-	jamesBond := &secret.Agent{}
-	if err := jamesBond.Start([]string{o.github.TokenPath}); err != nil {
-		logrus.WithError(err).Fatal("Failed to start secrets agent")
-	}
-
-	gc, err := o.github.GitHubClient(jamesBond, !o.confirm)
+	gc, err := o.github.GitHubClient(!o.confirm)
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to create github client")
 	}
@@ -109,7 +112,7 @@ func main() {
 	} else {
 		queryTokensString = "in:title " + o.matchTitle
 	}
-	n, err := updater.EnsurePRWithQueryTokens(o.org, o.repo, o.title, o.body, o.source, o.branch, queryTokensString, o.allowMods, gc)
+	n, err := updater.EnsurePRWithQueryTokensAndLabels(o.org, o.repo, o.title, o.body, o.source, o.branch, queryTokensString, o.allowMods, o.getLabels(), gc)
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to ensure PR exists.")
 	}

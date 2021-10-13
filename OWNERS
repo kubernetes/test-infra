@@ -4,7 +4,10 @@ reviewers:
 - BenTheElder # lead
 - spiffxp # lead
 - stevekuznetsov # lead
-- test-infra-oncall # oncall
+- chaodaiG # oncall
+- cjwagner # oncall
+- mpherman2 # oncall
+- fejta # oncall
 approvers:
 - BenTheElder # lead
 - spiffxp # lead

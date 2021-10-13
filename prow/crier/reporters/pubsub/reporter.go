@@ -55,6 +55,7 @@ type ReportMessage struct {
 	Refs    []prowapi.Refs       `json:"refs,omitempty"`
 	JobType prowapi.ProwJobType  `json:"job_type"`
 	JobName string               `json:"job_name"`
+	Message string               `json:"message,omitempty"`
 }
 
 // Client is a reporter client fed to crier controller
@@ -103,7 +104,7 @@ func (c *Client) Report(ctx context.Context, _ *logrus.Entry, pj *prowapi.ProwJo
 	// TODO: Consider caching the pubsub client.
 	client, err := pubsub.NewClient(ctx, message.Project)
 	if err != nil {
-		return nil, nil, fmt.Errorf("could not create pubsub Client: %v", err)
+		return nil, nil, fmt.Errorf("could not create pubsub Client: %w", err)
 	}
 	defer func() {
 		logrus.WithError(client.Close()).Debug("Closed pubsub client.")
@@ -114,7 +115,7 @@ func (c *Client) Report(ctx context.Context, _ *logrus.Entry, pj *prowapi.ProwJo
 
 	d, err := json.Marshal(message)
 	if err != nil {
-		return nil, nil, fmt.Errorf("could not marshal pubsub report: %v", err)
+		return nil, nil, fmt.Errorf("could not marshal pubsub report: %w", err)
 	}
 
 	res := topic.Publish(ctx, &pubsub.Message{
@@ -176,5 +177,6 @@ func (c *Client) generateMessageFromPJ(pj *prowapi.ProwJob) *ReportMessage {
 		Refs:    refs,
 		JobType: pj.Spec.Type,
 		JobName: pj.Spec.Job,
+		Message: pj.Status.Description,
 	}
 }

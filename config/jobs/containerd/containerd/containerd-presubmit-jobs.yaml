@@ -1,32 +1,36 @@
 presubmits:
   containerd/containerd:
   - name: pull-containerd-build
-    always_run: false
-    optional: true
+    always_run: true
     branches:
-    - master
+    - main
+    - release/1.5
     decorate: true
     annotations:
-      testgrid-dashboards: sig-node-containerd-io
+      testgrid-dashboards: sig-node-containerd
       testgrid-tab-name: pull-containerd-build
       description: build artifacts
     labels:
       preset-service-account: "true"
+      preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
         command:
         - runner.sh
         args:
         - ./test/build.sh
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
 
   - name: pull-containerd-node-e2e
-    always_run: false
-    optional: true
+    always_run: true
     max_concurrency: 8
     decorate: true
     branches:
-    - master
+    - main
+    - release/1.5
     decoration_config:
       timeout: 100m
     extra_refs:
@@ -39,7 +43,7 @@ presubmits:
       base_ref: master
       path_alias: k8s.io/test-infra
     annotations:
-      testgrid-dashboards: sig-node-containerd-io
+      testgrid-dashboards: sig-node-containerd
       testgrid-tab-name: pull-containerd-node-e2e
       description: run node e2e tests
     labels:
@@ -48,7 +52,10 @@ presubmits:
     spec:
       containers:
       - name: pull-containerd-node-e2e
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
+        env:
+        - name: USE_TEST_INFRA_LOG_DUMPING
+          value: "true"
         command:
         - sh
         - -c
@@ -65,6 +72,6 @@ presubmits:
           '--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
           --node-tests=true
           --provider=gce
-          '--test_args=--nodes=8 --focus="\[NodeConformance\]|\[NodeFeature:.+\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"'
+          '--test_args=--nodes=8 --focus="\[NodeConformance\]|\[NodeFeature:.+\]|\[NodeFeature\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"'
           --timeout=65m
-          "--node-args=--image-config-file=${GOPATH}/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-master/image-config-pr.yaml -node-env=PULL_REFS=$(PULL_REFS)"
+          "--node-args=--image-config-file=${GOPATH}/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-master-presubmit/image-config-presubmit.yaml -node-env=PULL_REFS=$(PULL_REFS)"

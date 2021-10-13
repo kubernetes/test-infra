@@ -3,10 +3,10 @@
 reviewers:
 - chrislovecnm
 - justinsb
-- shyamjvs
 approvers:
 - chrislovecnm
 - justinsb
+emeritus_approvers:
 - shyamjvs
 
 labels:

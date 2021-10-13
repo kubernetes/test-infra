@@ -88,11 +88,10 @@ func TestTrusted(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			g := &fakegithub.FakeClient{
-				OrgMembers:    map[string][]string{"kubernetes": {sister}, "kubernetes-sigs": {member, fakegithub.Bot}},
-				Collaborators: []string{friend},
-				IssueComments: map[int][]github.IssueComment{},
-			}
+			g := fakegithub.NewFakeClient()
+			g.OrgMembers = map[string][]string{"kubernetes": {sister}, "kubernetes-sigs": {member, fakegithub.Bot}}
+			g.Collaborators = []string{friend}
+			g.IssueComments = map[int][]github.IssueComment{}
 			trigger := plugins.Trigger{
 				TrustedOrg:     "kubernetes",
 				OnlyOrgMembers: tc.onlyOrg,
@@ -402,22 +401,21 @@ func TestHandlePullRequest(t *testing.T) {
 	for _, tc := range testcases {
 		t.Logf("running scenario %q", tc.name)
 		t.Run(tc.name, func(t *testing.T) {
-			g := &fakegithub.FakeClient{
-				IssueComments: map[int][]github.IssueComment{},
-				OrgMembers:    map[string][]string{"org": {"t"}},
-				PullRequests: map[int]*github.PullRequest{
-					0: {
-						Number: 0,
-						User:   github.User{Login: tc.Author},
-						Base: github.PullRequestBranch{
-							Ref: "master",
-							Repo: github.Repo{
-								Owner: github.User{Login: "org"},
-								Name:  "repo",
-							},
+			g := fakegithub.NewFakeClient()
+			g.IssueComments = map[int][]github.IssueComment{}
+			g.OrgMembers = map[string][]string{"org": {"t"}}
+			g.PullRequests = map[int]*github.PullRequest{
+				0: {
+					Number: 0,
+					User:   github.User{Login: tc.Author},
+					Base: github.PullRequestBranch{
+						Ref: "master",
+						Repo: github.Repo{
+							Owner: github.User{Login: "org"},
+							Name:  "repo",
 						},
-						Draft: tc.prIsDraft,
 					},
+					Draft: tc.prIsDraft,
 				},
 			}
 			fakeProwJobClient := fake.NewSimpleClientset(jobToAbort)

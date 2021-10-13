@@ -42,9 +42,7 @@ func (f *fgc) ListChangeComments(id string) (*map[string][]gerrit.CommentInfo, *
 	}
 
 	for path, retComments := range val {
-		for _, comment := range retComments {
-			comments[path] = append(comments[path], comment)
-		}
+		comments[path] = append(comments[path], retComments...)
 	}
 
 	return &comments, nil, nil
@@ -80,6 +78,10 @@ func (f *fgc) QueryChanges(opt *gerrit.QueryChangeOptions) (*[]gerrit.ChangeInfo
 }
 
 func (f *fgc) SetReview(changeID, revisionID string, input *gerrit.ReviewInput) (*gerrit.ReviewResult, *gerrit.Response, error) {
+	return nil, nil, nil
+}
+
+func (f *fgc) GetChange(changeId string, opt *gerrit.ChangeOptions) (*ChangeInfo, *gerrit.Response, error) {
 	return nil, nil, nil
 }
 
@@ -658,9 +660,7 @@ func TestQueryChange(t *testing.T) {
 			revisions[instance] = []string{}
 			for _, change := range changes {
 				revisions[instance] = append(revisions[instance], change.CurrentRevision)
-				for _, m := range change.Messages {
-					messages[change.ChangeID] = append(messages[change.ChangeID], m)
-				}
+				messages[change.ChangeID] = append(messages[change.ChangeID], change.Messages...)
 			}
 			sort.Strings(revisions[instance])
 		}

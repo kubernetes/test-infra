@@ -98,7 +98,7 @@ func TestAppsAuth(t *testing.T) {
 			doRequest: func(c Client) error {
 				_, err := c.GetApp()
 				if expectedMsg := "status code 401 not one of [200], body: "; err == nil || err.Error() != expectedMsg {
-					return fmt.Errorf("expected error to have message %s, was %v", expectedMsg, err)
+					return fmt.Errorf("expected error to have message %s, was %w", expectedMsg, err)
 				}
 				return nil
 			},
@@ -291,7 +291,7 @@ func TestAppsAuth(t *testing.T) {
 				_, err := c.GetOrg("other-org")
 				expectedErrMsgSubstr := "failed to get installation id for org other-org: the github app is not installed in organization other-org"
 				if err == nil || !strings.Contains(err.Error(), expectedErrMsgSubstr) {
-					return fmt.Errorf("expected error to contain string %s, was %v", expectedErrMsgSubstr, err)
+					return fmt.Errorf("expected error to contain string %s, was %w", expectedErrMsgSubstr, err)
 				}
 				return nil
 			},
@@ -324,7 +324,7 @@ func TestAppsAuth(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, ghClient := NewAppsAuthClientWithFields(logrus.Fields{}, func(b []byte) []byte { return b }, appID, func() *rsa.PrivateKey { return rsaKey }, "", "")
+			_, _, ghClient := NewAppsAuthClientWithFields(logrus.Fields{}, func(b []byte) []byte { return b }, appID, func() *rsa.PrivateKey { return rsaKey }, "", "")
 
 			if _, ok := ghClient.(*client); !ok {
 				t.Fatal("ghclient is not a *client")
@@ -372,7 +372,7 @@ func TestAppsRoundTripperThreadSafety(t *testing.T) {
 		t.Fatalf("Failed to generate RSA key: %v", err)
 	}
 
-	_, ghClient := NewAppsAuthClientWithFields(logrus.Fields{}, nil, appID, func() *rsa.PrivateKey { return rsaKey }, "", "")
+	_, _, ghClient := NewAppsAuthClientWithFields(logrus.Fields{}, nil, appID, func() *rsa.PrivateKey { return rsaKey }, "", "")
 
 	if _, ok := ghClient.(*client); !ok {
 		t.Fatal("ghclient is not a *client")

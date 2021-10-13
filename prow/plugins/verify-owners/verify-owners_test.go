@@ -43,6 +43,8 @@ import (
 	"k8s.io/test-infra/prow/repoowners"
 )
 
+var defaultBranch = localgit.DefaultBranch("")
+
 var ownerFiles = map[string][]byte{
 	"emptyApprovers": []byte(`approvers:
 reviewers:
@@ -186,12 +188,12 @@ func newFakeGitHubClient(changed map[string]string, removed []string, pr int) *f
 	for _, file := range removed {
 		changes = append(changes, github.PullRequestChange{Filename: file, Status: github.PullRequestFileRemoved})
 	}
-	return &fakegithub.FakeClient{
-		PullRequestChanges: map[int][]github.PullRequestChange{pr: changes},
-		Reviews:            map[int][]github.Review{},
-		Collaborators:      []string{"alice", "bob", "jdoe"},
-		IssueComments:      map[int][]github.IssueComment{},
-	}
+	fgc := fakegithub.NewFakeClient()
+	fgc.PullRequestChanges = map[int][]github.PullRequestChange{pr: changes}
+	fgc.Reviews = map[int][]github.Review{}
+	fgc.Collaborators = []string{"alice", "bob", "jdoe"}
+	fgc.IssueComments = map[int][]github.IssueComment{}
+	return fgc
 }
 
 type fakePruner struct{}
@@ -213,7 +215,7 @@ type fakeOwnersClient struct {
 	reviewers         map[string]layeredsets.String
 	requiredReviewers map[string]sets.String
 	leafReviewers     map[string]sets.String
-	dirBlacklist      []*regexp.Regexp
+	dirIgnorelist     []*regexp.Regexp
 }
 
 func (foc *fakeOwnersClient) Filenames() ownersconfig.Filenames {
@@ -256,9 +258,13 @@ func (foc *fakeOwnersClient) IsNoParentOwners(path string) bool {
 	return false
 }
 
+func (foc *fakeOwnersClient) IsAutoApproveUnownedSubfolders(path string) bool {
+	return false
+}
+
 func (foc *fakeOwnersClient) ParseSimpleConfig(path string) (repoowners.SimpleConfig, error) {
 	dir := filepath.Dir(path)
-	for _, re := range foc.dirBlacklist {
+	for _, re := range foc.dirIgnorelist {
 		if re.MatchString(dir) {
 			return repoowners.SimpleConfig{}, filepath.SkipDir
 		}
@@ -275,7 +281,7 @@ func (foc *fakeOwnersClient) ParseSimpleConfig(path string) (repoowners.SimpleCo
 
 func (foc *fakeOwnersClient) ParseFullConfig(path string) (repoowners.FullConfig, error) {
 	dir := filepath.Dir(path)
-	for _, re := range foc.dirBlacklist {
+	for _, re := range foc.dirIgnorelist {
 		if re.MatchString(dir) {
 			return repoowners.FullConfig{}, filepath.SkipDir
 		}
@@ -457,7 +463,7 @@ func testHandle(clients localgit.Clients, t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			pr := i + 1
 			// make sure we're on master before branching
-			if err := lg.Checkout("org", "repo", "master"); err != nil {
+			if err := lg.Checkout("org", "repo", defaultBranch); err != nil {
 				t.Fatalf("Switching to master branch: %v", err)
 			}
 			if len(test.filesRemoved) > 0 {
@@ -486,7 +492,7 @@ func testHandle(clients localgit.Clients, t *testing.T) {
 				t.Fatalf("Getting commit SHA: %v", err)
 			}
 			if len(test.filesChangedAfterPR) > 0 {
-				if err := lg.Checkout("org", "repo", "master"); err != nil {
+				if err := lg.Checkout("org", "repo", defaultBranch); err != nil {
 					t.Fatalf("Switching to master branch: %v", err)
 				}
 				if err := addFilesToRepo(lg, test.filesChangedAfterPR, test.addedContent); err != nil {
@@ -497,7 +503,7 @@ func testHandle(clients localgit.Clients, t *testing.T) {
 				PullRequest: github.PullRequest{
 					User: github.User{Login: "author"},
 					Base: github.PullRequestBranch{
-						Ref: "master",
+						Ref: defaultBranch,
 					},
 					Head: github.PullRequestBranch{
 						SHA: sha,
@@ -509,7 +515,7 @@ func testHandle(clients localgit.Clients, t *testing.T) {
 			fghc.PullRequests = map[int]*github.PullRequest{}
 			fghc.PullRequests[pr] = &github.PullRequest{
 				Base: github.PullRequestBranch{
-					Ref: "master",
+					Ref: defaultBranch,
 				},
 			}
 
@@ -619,7 +625,7 @@ func testParseOwnersFile(clients localgit.Clients, t *testing.T) {
 				t.Fatalf("Making fake repo: %v", err)
 			}
 			// make sure we're on master before branching
-			if err := lg.Checkout("org", "repo", "master"); err != nil {
+			if err := lg.Checkout("org", "repo", defaultBranch); err != nil {
 				t.Fatalf("Switching to master branch: %v", err)
 			}
 			if err := lg.CheckoutNewBranch("org", "repo", fmt.Sprintf("pull/%d/head", pr)); err != nil {
@@ -704,14 +710,14 @@ func TestHelpProvider(t *testing.T) {
 			name: "ReviewerCount specified",
 			config: &plugins.Configuration{
 				Owners: plugins.Owners{
-					LabelsBlackList: []string{"label1", "label2"},
+					LabelsDenyList: []string{"label1", "label2"},
 				},
 			},
 			enabledRepos: enabledRepos,
 			expected: &pluginhelp.PluginHelp{
 				Description: "The verify-owners plugin validates OWNERS and OWNERS_ALIASES files (by default) and ensures that they always contain collaborators of the org, if they are modified in a PR. On validation failure it automatically adds the 'do-not-merge/invalid-owners-file' label to the PR, and a review comment on the incriminating file(s). Per-repo configuration for filenames is possible.",
 				Config: map[string]string{
-					"default": "OWNERS and OWNERS_ALIASES files are validated. The verify-owners plugin will complain if OWNERS files contain any of the following blacklisted labels: label1, label2.",
+					"default": "OWNERS and OWNERS_ALIASES files are validated. The verify-owners plugin will complain if OWNERS files contain any of the following banned labels: label1, label2.",
 				},
 				Commands: []pluginhelp.Command{{
 					Usage:       "/verify-owners",
@@ -1038,7 +1044,7 @@ func testNonCollaborators(clients localgit.Clients, t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			pr := i + 1
 			// make sure we're on master before branching
-			if err := lg.Checkout("org", "repo", "master"); err != nil {
+			if err := lg.Checkout("org", "repo", defaultBranch); err != nil {
 				t.Fatalf("Switching to master branch: %v", err)
 			}
 			if err := lg.CheckoutNewBranch("org", "repo", fmt.Sprintf("pull/%d/head", pr)); err != nil {
@@ -1074,7 +1080,7 @@ func testNonCollaborators(clients localgit.Clients, t *testing.T) {
 				PullRequest: github.PullRequest{
 					User: github.User{Login: "author"},
 					Base: github.PullRequestBranch{
-						Ref: "master",
+						Ref: defaultBranch,
 					},
 					Head: github.PullRequestBranch{
 						SHA: sha,
@@ -1093,13 +1099,13 @@ func testNonCollaborators(clients localgit.Clients, t *testing.T) {
 
 			froc := makeFakeRepoOwnersClient()
 			if !test.includeVendorOwners {
-				var blacklist []*regexp.Regexp
+				var ignorePatterns []*regexp.Regexp
 				re, err := regexp.Compile("vendor/.*/.*$")
 				if err != nil {
 					t.Fatalf("error compiling regex: %v", err)
 				}
-				blacklist = append(blacklist, re)
-				froc.foc.dirBlacklist = blacklist
+				ignorePatterns = append(ignorePatterns, re)
+				froc.foc.dirIgnorelist = ignorePatterns
 			}
 
 			prInfo := info{
@@ -1238,7 +1244,7 @@ func testHandleGenericComment(clients localgit.Clients, t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			pr := i + 1
 			// make sure we're on master before branching
-			if err := lg.Checkout("org", "repo", "master"); err != nil {
+			if err := lg.Checkout("org", "repo", defaultBranch); err != nil {
 				t.Fatalf("Switching to master branch: %v", err)
 			}
 			if len(test.filesRemoved) > 0 {
@@ -1280,7 +1286,7 @@ func testHandleGenericComment(clients localgit.Clients, t *testing.T) {
 					SHA: sha,
 				},
 				Base: github.PullRequestBranch{
-					Ref: "master",
+					Ref: defaultBranch,
 				},
 			}
 
@@ -1350,7 +1356,7 @@ func testOwnersRemoval(clients localgit.Clients, t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			pr := i + 1
 			// make sure we're on master before branching
-			if err := lg.Checkout("org", "repo", "master"); err != nil {
+			if err := lg.Checkout("org", "repo", defaultBranch); err != nil {
 				t.Fatalf("Switching to master branch: %v", err)
 			}
 			pullFiles := map[string][]byte{}
@@ -1383,7 +1389,7 @@ func testOwnersRemoval(clients localgit.Clients, t *testing.T) {
 				PullRequest: github.PullRequest{
 					User: github.User{Login: "author"},
 					Base: github.PullRequestBranch{
-						Ref: "master",
+						Ref: defaultBranch,
 					},
 					Head: github.PullRequestBranch{
 						SHA: sha,

@@ -2,7 +2,8 @@
 
 approvers:
 - brendandburns
-- mbohlool
 reviewers:
 - brendandburns
+
+emeritus_approvers:
 - mbohlool

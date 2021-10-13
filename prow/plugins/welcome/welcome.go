@@ -84,6 +84,7 @@ type githubClient interface {
 	FindIssues(query, sort string, asc bool) ([]github.Issue, error)
 	IsCollaborator(org, repo, user string) (bool, error)
 	IsMember(org, user string) (bool, error)
+	BotUserChecker() (func(candidate string) bool, error)
 }
 
 type client struct {
@@ -120,7 +121,7 @@ func handlePR(c client, t plugins.Trigger, pre github.PullRequestEvent, welcomeT
 
 	trustedResponse, err := trigger.TrustedUser(c.GitHubClient, t.OnlyOrgMembers, t.TrustedOrg, user, org, repo)
 	if err != nil {
-		return fmt.Errorf("check if user %s is trusted: %v", user, err)
+		return fmt.Errorf("check if user %s is trusted: %w", user, err)
 	}
 	if trustedResponse.IsTrusted {
 		return nil

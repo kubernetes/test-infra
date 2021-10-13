@@ -17,8 +17,24 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-# get test-infra for latest bootstrap etc
-git clone https://github.com/kubernetes/test-infra
+BOOTSTRAP_FETCH_TEST_INFRA=${BOOTSTRAP_FETCH_TEST_INFRA:-"true"}
+
+# clone-or-fetch latest test-infra repo
+if ! [[ -d test-infra/.git ]] || [[ "${BOOTSTRAP_FETCH_TEST_INFRA}" != "true" ]]; then
+  echo "cloning https://github.com/kubernetes/test-infra"
+  rm -rf test-infra
+  git clone https://github.com/kubernetes/test-infra
+else
+  echo "fetching https://github.com/kubernetes/test-infra"
+  pushd test-infra >/dev/null
+  remote=origin
+  git remote set-head ${remote} -a
+  # auto-detect default remote branch name
+  branch=$(<".git/refs/remotes/${remote}/HEAD" sed -e "s|ref: refs/remotes/${remote}/||")
+  git fetch "${remote}" "${branch}" && git reset --hard "${remote}/${branch}"
+  # but don't bother setting local branch name yet; scenario-based jobs still assume 'master'
+  popd >/dev/null
+fi
 
 BOOTSTRAP_UPLOAD_BUCKET_PATH=${BOOTSTRAP_UPLOAD_BUCKET_PATH:-"gs://kubernetes-jenkins/logs"}
 

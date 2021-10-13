@@ -416,7 +416,7 @@ func (c *Cluster) Body(closedIssues []*githubapi.Issue) string {
 			}
 		}
 		path := strings.TrimPrefix(c.filer.data.Builds.JobPaths[job.Name], "gs://")
-		fmt.Fprintf(&buf, "| %s | %d | [%s](https://prow.k8s.io/view/gcs/%s/%d) |\n", job.Name, len(job.Builds), time.Unix(latestTime, 0).Format(timeFormat), path, latest)
+		fmt.Fprintf(&buf, "| %s | %d | [%s](https://prow.k8s.io/view/gs/%s/%d) |\n", job.Name, len(job.Builds), time.Unix(latestTime, 0).Format(timeFormat), path, latest)
 	}
 	// previously closed issues if there are any
 	if len(closedIssues) > 0 {

@@ -122,7 +122,7 @@ func AssetInfo(name string) (os.FileInfo, error) {
 	if f, ok := _bindata[cannonicalName]; ok {
 		a, err := f()
 		if err != nil {
-			return nil, fmt.Errorf("AssetInfo %s can't read by error: %v", name, err)
+			return nil, fmt.Errorf("AssetInfo %s can't read by error: %w", name, err)
 		}
 		return a.info, nil
 	}

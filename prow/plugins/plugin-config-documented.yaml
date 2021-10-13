@@ -26,6 +26,11 @@ blockades:
     blockregexps:
       - ""
 
+    # BranchRegexp is the regular expression for branches that the the blockade applies to.
+    # If BranchRegexp is not specified, the blockade applies to all branches by default.
+    # Compiles into BranchRe during config load.
+    branchregexp: ""
+
     # ExceptionRegexps are regular expressions matching the file paths that are exceptions to the BlockRegexps.
     exceptionregexps:
       - ""
@@ -356,7 +361,9 @@ config_updater:
             gzip: false
 
             # Key is the key in the ConfigMap to update with the file contents.
-            # If no explicit key is given, the basename of the file will be used.
+            # If no explicit key is given, the basename of the file will be used unless
+            # use_full_path_as_key: true is set, in which case the full filepath relative
+            # to the repository root will be used, replacing slashes with dashes.
             key: ' '
 
             # Name of ConfigMap
@@ -393,6 +400,14 @@ heart:
     # Compiles into CommentRe during config load.
     commentregexp: ' '
 help:
+    # Guidelines summary is the message displayed when an issue is labeled with help-wanted and/or good-first-issue reflecting
+    # a summary of the guidelines that an issue should follow to qualify as help-wanted or good-first-issue. The main purpose
+    # of a summary is to try and increase visibility of these guidelines to the author of the issue alongisde providing the
+    # HelpGuidelinesURL which will provide a more detailed version of the guidelines.
+
+    # HelpGuidelinesSummary is the summary of the guide lines for a help-wanted issue.
+    help_guidelines_summary: ' '
+
     # HelpGuidelinesURL is the URL of the help page, which provides guidance on how and when to use the help wanted and good first issue labels.
     # The default value is "https://git.k8s.io/community/contributors/guide/help-wanted.md".
     help_guidelines_url: ' '
@@ -402,11 +417,24 @@ jira_linker:
       - jira_url: ' '
         repos:
           - ""
+jira:
+    # DisabledJiraProjects are projects for which we will never try to create a link,
+    # for example including `enterprise` here would disable linking for all issues
+    # that start with `enterprise-` like `enterprise-4.` Matching is case-insenitive.
+    disabled_jira_projects:
+      - ""
 label:
     # AdditionalLabels is a set of additional labels enabled for use
     # on top of the existing "kind/*", "priority/*", and "area/*" labels.
     additional_labels:
       - ""
+
+    # RestrictedLabels allows to configure labels that can only be modified
+    # by users that belong to at least one of the configured teams. The key
+    # defines to which repos this applies and can be `*` for global, an org
+    # or a repo in org/repo notation.
+    restricted_labels:
+        "": null
 lgtm:
   - # Repos is either of the form org/repos or just org.
     repos:
@@ -421,7 +449,7 @@ lgtm:
 milestone_applier:
     "": null
 override:
-    # AllowedGitHubTeams is a map of repositories (eg "k/k") to list of GitHub team slugs,
+    # AllowedGitHubTeams is a map of orgs and/or repositories (eg "org" or "org/repo") to list of GitHub team slugs,
     # members of which are allowed to override contexts
     allowed_github_teams:
         "": null
@@ -436,10 +464,15 @@ owners:
             owners: ' '
             owners_aliases: ' '
 
-    # LabelsBlackList holds a list of labels that should not be present in any
+    # LabelsBlackList will be removed after October 2021, use
+    # labels_denylist instead
+    labels_blacklist:
+      - ""
+
+    # LabelsDenyList holds a list of labels that should not be present in any
     # OWNERS file, preventing their automatic addition by the owners-label plugin.
     # This check is performed by the verify-owners plugin.
-    labels_blacklist:
+    labels_denylist:
       - ""
 
     # MDYAMLRepos is a list of org and org/repo strings specifying the repos that support YAML
@@ -459,11 +492,15 @@ owners:
 
 # Plugins is a map of repositories (eg "k/k") to lists of
 # plugin names.
-# You can find a comprehensive list of the default avaulable plugins here
+# You can find a comprehensive list of the default available plugins here
 # https://github.com/kubernetes/test-infra/tree/master/prow/plugins
 # note that you're also able to add external plugins.
 plugins:
-    "": null
+    "":
+        excluded_repos:
+          - ""
+        plugins:
+          - ""
 project_config:
     # Org level configs for github projects; key is org name
     project_org_configs:

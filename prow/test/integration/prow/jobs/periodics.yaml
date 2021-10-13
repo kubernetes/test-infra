@@ -1,0 +1,10 @@
+periodics:
+- interval: 1m
+  name: horologium-schedule-test-job
+  spec:
+    containers:
+    - command:
+      - echo
+      args:
+      - "Hello World!"
+      image: localhost:5000/alpine

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Copyright 2016 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,7 +19,7 @@ set -o pipefail
 
 TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
 
-for output in gs://k8s-testgrid-canary/config gs://k8s-testgrid/config; do
+for output in gs://k8s-testgrid-canary/configs/k8s/config gs://k8s-testgrid/configs/k8s/config; do
   dir="$(dirname "${BASH_SOURCE}")"
   (
     set -o xtrace
@@ -29,6 +29,8 @@ for output in gs://k8s-testgrid-canary/config gs://k8s-testgrid/config; do
       --prow-config="${TESTINFRA_ROOT}/config/prow/config.yaml" \
       --prow-job-config="${TESTINFRA_ROOT}/config/jobs/" \
       --output="${output}" \
+      --prowjob-url-prefix="https://git.k8s.io/test-infra/config/jobs/" \
+      --update-description \
       --oneshot \
       --world-readable \
       "$@"

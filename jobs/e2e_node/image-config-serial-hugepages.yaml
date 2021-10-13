@@ -3,7 +3,7 @@
 # `gcloud compute --project <to-project> images create <image-name> --source-disk=<image-name>`
 images:
   ubuntu:
-    image: ubuntu-gke-1804-1-16-v20200330 # docker 17.03
+    image: ubuntu-gke-2004-1-20-v20210401 # docker 19.03.8 / containerd 1.4.3
     project: ubuntu-os-gke-cloud
     metadata: "user-data</workspace/test-infra/jobs/e2e_node/ubuntu-hugepages-1G-allocation.yaml"
     # Using `n1-standard-2` to have enough memory for 1Gb huge pages allocation

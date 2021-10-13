@@ -18,6 +18,7 @@ package initupload
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -84,7 +85,7 @@ func shaForRefs(refs prowv1.Refs, cloneRecords []clone.Record) string {
 func (o Options) Run() error {
 	spec, err := downwardapi.ResolveSpecFromEnv()
 	if err != nil {
-		return fmt.Errorf("could not resolve job spec: %v", err)
+		return fmt.Errorf("could not resolve job spec: %w", err)
 	}
 
 	uploadTargets := map[string]gcs.UploadFunc{}
@@ -101,13 +102,14 @@ func (o Options) Run() error {
 
 	startedData, err := json.Marshal(&started)
 	if err != nil {
-		return fmt.Errorf("could not marshal starting data: %v", err)
+		return fmt.Errorf("could not marshal starting data: %w", err)
 	}
 
 	uploadTargets[prowv1.StartedStatusFile] = gcs.DataUpload(bytes.NewReader(startedData))
 
-	if err := o.Options.Run(spec, uploadTargets); err != nil {
-		return fmt.Errorf("failed to upload to blob storage: %v", err)
+	ctx := context.Background()
+	if err := o.Options.Run(ctx, spec, uploadTargets); err != nil {
+		return fmt.Errorf("failed to upload to blob storage: %w", err)
 	}
 
 	if failed {
@@ -126,10 +128,10 @@ func processCloneLog(logfile string, uploadTargets map[string]gcs.UploadFunc) (b
 	var cloneRecords []clone.Record
 	data, err := ioutil.ReadFile(logfile)
 	if err != nil {
-		return true, cloneRecords, fmt.Errorf("could not read clone log: %v", err)
+		return true, cloneRecords, fmt.Errorf("could not read clone log: %w", err)
 	}
 	if err = json.Unmarshal(data, &cloneRecords); err != nil {
-		return true, cloneRecords, fmt.Errorf("could not unmarshal clone records: %v", err)
+		return true, cloneRecords, fmt.Errorf("could not unmarshal clone records: %w", err)
 	}
 	// Do not read from cloneLog directly. Instead create multiple readers from cloneLog so it can
 	// be uploaded to both clone-log.txt and build-log.txt on failure.
@@ -155,7 +157,7 @@ func processCloneLog(logfile string, uploadTargets map[string]gcs.UploadFunc) (b
 		}
 		finishedData, err := json.Marshal(&finished)
 		if err != nil {
-			return true, cloneRecords, fmt.Errorf("could not marshal finishing data: %v", err)
+			return true, cloneRecords, fmt.Errorf("could not marshal finishing data: %w", err)
 		}
 		uploadTargets[prowv1.FinishedStatusFile] = gcs.DataUpload(bytes.NewReader(finishedData))
 	}

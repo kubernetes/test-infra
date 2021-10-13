@@ -30,7 +30,7 @@ ENV PATH=/google-cloud-sdk/bin:/workspace:${PATH} \
 WORKDIR /workspace
 
 RUN echo http://dl-cdn.alpinelinux.org/alpine/latest-stable/community >> /etc/apk/repositories && \
-    apk --no-cache add curl python py-crcmod bash libc6-compat openssh-client git gnupg docker-cli make && \
+    apk --no-cache add curl python3 py-crcmod bash libc6-compat openssh-client git gnupg docker-cli make && \
     curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz && \
     tar xzf google-cloud-sdk.tar.gz -C / && \
     rm google-cloud-sdk.tar.gz && \
@@ -44,13 +44,16 @@ RUN echo http://dl-cdn.alpinelinux.org/alpine/latest-stable/community >> /etc/ap
 # Install docker Buildx for fast docker builds
 ENV HOME=/root
 RUN mkdir -p  $HOME/.docker/cli-plugins \
-    && curl -fsSL "https://github.com/docker/buildx/releases/download/v0.4.1/buildx-v0.4.1.linux-amd64" --output $HOME/.docker/cli-plugins/docker-buildx \
+    && curl -fsSL "https://github.com/docker/buildx/releases/download/v0.6.0/buildx-v0.6.0.linux-amd64" --output $HOME/.docker/cli-plugins/docker-buildx \
     && chmod a+x $HOME/.docker/cli-plugins/docker-buildx
 
 # Copy qemu static binaries.
 COPY --from=qemu-image /usr/bin /qemu-bin
 RUN cp /qemu-bin/qemu-* /usr/bin/ && \
     rm -rf /qemu-bin
+COPY --from=qemu-image /qemu-binfmt-conf.sh /qemu-binfmt-conf.sh
+COPY --from=qemu-image /register /register
+ADD ./buildx-entrypoint.sh /buildx-entrypoint
 
 RUN apk add qemu
 

@@ -131,18 +131,9 @@ type repoownersClient interface {
 	LoadRepoOwners(org, repo, base string) (repoowners.RepoOwner, error)
 }
 
-type githubV4OrgAddingWrapper struct {
-	org string
-	github.Client
-}
-
-func (c *githubV4OrgAddingWrapper) Query(ctx context.Context, q interface{}, args map[string]interface{}) error {
-	return c.QueryWithGitHubAppsSupport(ctx, q, args, c.org)
-}
-
 func handlePullRequestEvent(pc plugins.Agent, pre github.PullRequestEvent) error {
 	return handlePullRequest(
-		&githubV4OrgAddingWrapper{org: pre.Repo.Owner.Login, Client: pc.GitHubClient},
+		pc.GitHubClient,
 		pc.OwnersClient,
 		pc.Logger,
 		pc.PluginConfig.Blunderbuss,
@@ -172,7 +163,7 @@ func handlePullRequest(ghc githubClient, roc repoownersClient, log *logrus.Entry
 
 func handleGenericCommentEvent(pc plugins.Agent, ce github.GenericCommentEvent) error {
 	return handleGenericComment(
-		&githubV4OrgAddingWrapper{org: ce.Repo.Owner.Login, Client: pc.GitHubClient},
+		pc.GitHubClient,
 		pc.OwnersClient,
 		pc.Logger,
 		pc.PluginConfig.Blunderbuss,
@@ -196,7 +187,7 @@ func handleGenericComment(ghc githubClient, roc repoownersClient, log *logrus.En
 
 	pr, err := ghc.GetPullRequest(repo.Owner.Login, repo.Name, prNumber)
 	if err != nil {
-		return fmt.Errorf("error loading PullRequest: %v", err)
+		return fmt.Errorf("error loading PullRequest: %w", err)
 	}
 
 	return handle(
@@ -215,12 +206,12 @@ func handleGenericComment(ghc githubClient, roc repoownersClient, log *logrus.En
 func handle(ghc githubClient, roc repoownersClient, log *logrus.Entry, reviewerCount *int, maxReviewers int, excludeApprovers bool, useStatusAvailability bool, repo *github.Repo, pr *github.PullRequest) error {
 	oc, err := roc.LoadRepoOwners(repo.Owner.Login, repo.Name, pr.Base.Ref)
 	if err != nil {
-		return fmt.Errorf("error loading RepoOwners: %v", err)
+		return fmt.Errorf("error loading RepoOwners: %w", err)
 	}
 
 	changes, err := ghc.GetPullRequestChanges(repo.Owner.Login, repo.Name, pr.Number)
 	if err != nil {
-		return fmt.Errorf("error getting PR changes: %v", err)
+		return fmt.Errorf("error getting PR changes: %w", err)
 	}
 
 	var reviewers []string
@@ -280,6 +271,9 @@ func getReviewers(rc reviewersClient, ghc githubClient, log *logrus.Entry, autho
 	leafReviewers := layeredsets.NewString()
 	busyReviewers := sets.NewString()
 	ownersSeen := sets.NewString()
+	if minReviewers == 0 {
+		return reviewers.List(), requiredReviewers.List(), nil
+	}
 	// first build 'reviewers' by taking a unique reviewer from each OWNERS file.
 	for _, file := range files {
 		ownersFile := rc.FindReviewersOwnersForFile(file.Filename)

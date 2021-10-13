@@ -49,47 +49,6 @@ resource "google_container_cluster" "cluster" {
   }
 }
 
-
-# The "default-pool" pool is for running Prow service component nodes (e.g. Deck, Plank, Sinker, etc.)
-resource "google_container_node_pool" "default_nodes" {
-  name       = "default-pool"
-  location   = "${google_container_cluster.cluster.location}"
-  cluster    = "${google_container_cluster.cluster.name}"
-  node_count = 8
-
-  # Auto repair, and auto upgrade nodes to match the master version
-  management {
-    auto_repair  = false
-    auto_upgrade = true
-  }
-
-  node_config {
-    machine_type = "n1-standard-4"
-    disk_size_gb = "100"
-    labels = {
-      role = "prow"
-    }
-    oauth_scopes = [
-      # Compute Engine (rw)
-      "https://www.googleapis.com/auth/compute",
-      # Storage (full)
-      "https://www.googleapis.com/auth/devstorage.full_control",
-      # Storage (ro)
-      "https://www.googleapis.com/auth/devstorage.read_only",
-      # Service Control (enabled)
-      "https://www.googleapis.com/auth/servicecontrol",
-      # Service Management (rw)
-      "https://www.googleapis.com/auth/service.management",
-      # Service Management (ro)
-      "https://www.googleapis.com/auth/service.management.readonly",
-      # Stackdriver Logging (wo)
-      "https://www.googleapis.com/auth/logging.write",
-      # Stackdriver Monitoring (full)
-      "https://www.googleapis.com/auth/monitoring",
-    ]
-  }
-}
-
 # The "ghproxy" pool is for running the GitHub reverse proxy cache (i.e. GHproxy)
 resource "google_container_node_pool" "ghproxy_nodes" {
   provider = "google-beta"
@@ -108,7 +67,7 @@ resource "google_container_node_pool" "ghproxy_nodes" {
 
   #  The node configuration of the pool.
   node_config {
-    machine_type = "n1-standard-8"
+    machine_type = "e2-standard-8"
     disk_size_gb = "100"
     labels = {
       dedicated = "ghproxy"
@@ -135,8 +94,8 @@ resource "google_container_node_pool" "ghproxy_nodes" {
   }
 }
 
-resource "google_container_node_pool" "n1_standard_8_nodes" {
-  name       = "n1-standard-8"
+resource "google_container_node_pool" "e2_standard_8_nodes" {
+  name       = "e2-standard-8"
   location   = "${google_container_cluster.cluster.location}"
   cluster    = "${google_container_cluster.cluster.name}"
   node_count = 8
@@ -149,7 +108,7 @@ resource "google_container_node_pool" "n1_standard_8_nodes" {
 
   #  The node configuration of the pool.
   node_config {
-    machine_type = "n1-standard-8"
+    machine_type = "e2-standard-8"
     disk_size_gb = "200"
 
     oauth_scopes = [

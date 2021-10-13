@@ -14,5 +14,5 @@ presubmits:
         - ./presubmit.sh
         imagePullPolicy: Always
     annotations:
-      testgrid-dashboards: presubmits-test-infra
+      testgrid-dashboards: sig-release-releng-presubmits
       testgrid-tab-name: repo-infra

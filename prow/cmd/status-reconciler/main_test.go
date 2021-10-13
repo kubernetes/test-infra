@@ -25,6 +25,8 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
+	pluginsflagutil "k8s.io/test-infra/prow/flagutil/plugins"
 )
 
 func newSetStringsFlagForTest(vals ...string) flagutil.Strings {
@@ -105,28 +107,30 @@ func TestGatherOptions(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			expected := &options{
-				dryRun:        true,
-				configPath:    "yo",
-				pluginConfig:  "/etc/plugins/plugins.yaml",
-				kubernetes:    flagutil.KubernetesOptions{DeckURI: "http://whatever"},
-				tokenBurst:    100,
-				tokensPerHour: 300,
-				instrumentationOptions: flagutil.InstrumentationOptions{
-					MetricsPort: flagutil.DefaultMetricsPort,
-					PProfPort:   flagutil.DefaultPProfPort,
-					HealthPort:  flagutil.DefaultHealthPort,
+				dryRun: true,
+				config: configflagutil.ConfigOptions{
+					ConfigPath:                            "yo",
+					ConfigPathFlagName:                    "config-path",
+					JobConfigPathFlagName:                 "job-config-path",
+					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
 				},
+				pluginsConfig: pluginsflagutil.PluginOptions{
+					PluginConfigPath:                         "/etc/plugins/plugins.yaml",
+					PluginConfigPathDefault:                  "/etc/plugins/plugins.yaml",
+					SupplementalPluginsConfigsFileNameSuffix: "_pluginconfig.yaml",
+				},
+				tokenBurst:             100,
+				tokensPerHour:          300,
+				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
 			}
 			expectedfs := flag.NewFlagSet("fake-flags", flag.PanicOnError)
-			expected.github.AddFlags(expectedfs)
-			expected.github.TokenPath = flagutil.DefaultGitHubTokenPath
+			expected.github.AddCustomizedFlags(expectedfs, flagutil.ThrottlerDefaults(300, 100))
 			if tc.expected != nil {
 				tc.expected(expected)
 			}
 
 			args := append(tc.args,
-				"--config-path=yo",
-				"--deck-url=http://whatever")
+				"--config-path=yo")
 			fs := flag.NewFlagSet("fake-flags", flag.PanicOnError)
 			actual := gatherOptions(fs, args...)
 			switch err := actual.Validate(); {
@@ -137,7 +141,7 @@ func TestGatherOptions(t *testing.T) {
 			case err != nil && err.Error() != tc.expectedErr.Error():
 				t.Errorf("Expect error: %v\ngot:\n%v", err, tc.expectedErr)
 			case !reflect.DeepEqual(*expected, actual):
-				t.Errorf("got:\n%#v \n != \nexpected:\n%#v", actual, *expected)
+				t.Errorf("actual differs from expected: %s", cmp.Diff(actual, *expected, cmp.Exporter(func(_ reflect.Type) bool { return true })))
 			}
 		})
 	}

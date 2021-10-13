@@ -155,8 +155,8 @@ func TestExtractStrategies(t *testing.T) {
 			"bazel/49747/master:b341939d6d3666b119028400a4311cc66da9a542,49747:c4656c3d029e47d03b3d7d9915d79cab72a80852",
 		},
 		{
-			"gs://kubernetes-release-dev/bazel/v1.8.0-alpha.3.389+eab2f8f6c19fcb",
-			"https://storage.googleapis.com/kubernetes-release-dev/bazel",
+			"gs://k8s-release-dev/bazel/v1.8.0-alpha.3.389+eab2f8f6c19fcb",
+			"https://storage.googleapis.com/k8s-release-dev/bazel",
 			"v1.8.0-alpha.3.389+eab2f8f6c19fcb",
 		},
 		{

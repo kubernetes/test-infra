@@ -21,6 +21,7 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/sirupsen/logrus"
@@ -50,6 +51,7 @@ type githubClient interface {
 	GetRef(org, repo, ref string) (string, error)
 	HasPermission(org, repo, user string, role ...string) (bool, error)
 	ListStatuses(org, repo, ref string) ([]github.Status, error)
+	GetBranchProtection(org, repo, branch string) (*github.BranchProtection, error)
 	ListTeams(org string) ([]github.Team, error)
 	ListTeamMembers(org string, id int, role string) ([]github.TeamMember, error)
 }
@@ -94,6 +96,9 @@ func (c client) GetPullRequest(org, repo string, number int) (*github.PullReques
 func (c client) ListStatuses(org, repo, ref string) ([]github.Status, error) {
 	return c.ghc.ListStatuses(org, repo, ref)
 }
+func (c client) GetBranchProtection(org, repo, branch string) (*github.BranchProtection, error) {
+	return c.ghc.GetBranchProtection(org, repo, branch)
+}
 func (c client) HasPermission(org, repo, user string, role ...string) (bool, error) {
 	return c.ghc.HasPermission(org, repo, user, role...)
 }
@@ -114,7 +119,7 @@ func (c client) presubmits(org, repo string, baseSHAGetter config.RefGetter, hea
 	}
 	presubmits, err := c.config.GetPresubmits(c.gc, org+"/"+repo, baseSHAGetter, headSHAGetter)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get presubmits: %v", err)
+		return nil, fmt.Errorf("failed to get presubmits: %w", err)
 	}
 	return presubmits, nil
 }
@@ -179,10 +184,11 @@ func whoCanUse(overrideConfig plugins.Override, org, repo string) string {
 		repoRef := fmt.Sprintf("%s/%s", org, repo)
 		var allTeams []string
 		for r, allowedTeams := range overrideConfig.AllowedGitHubTeams {
-			if repoRef == "/" || r == repoRef {
+			if repoRef == "/" || r == repoRef || r == org {
 				allTeams = append(allTeams, fmt.Sprintf("%s: %s", r, strings.Join(allowedTeams, " ")))
 			}
 		}
+		sort.Strings(allTeams)
 		teams = ", and the following github teams:" + strings.Join(allTeams, ", ")
 	}
 
@@ -244,7 +250,9 @@ func authorizedGitHubTeamMember(gc githubClient, log *logrus.Entry, teamSlugs ma
 		log.WithError(err).Warnf("invalid team slug(s)")
 	}
 
-	for _, slug := range teamSlugs[fmt.Sprintf("%s/%s", org, repo)] {
+	slugs := teamSlugs[fmt.Sprintf("%s/%s", org, repo)]
+	slugs = append(slugs, teamSlugs[org]...)
+	for _, slug := range slugs {
 		for _, team := range teams {
 			if team.Slug == slug {
 				members, err := gc.ListTeamMembers(org, team.ID, github.RoleAll)
@@ -332,15 +340,49 @@ func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent,
 		return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 	}
 
+	baseSHAGetter := shaGetterFactory(oc, org, repo, pr.Base.Ref)
+	presubmits, err := oc.presubmits(org, repo, baseSHAGetter, sha)
+	if err != nil {
+		msg := "Failed to get presubmits"
+		log.WithError(err).Error(msg)
+		return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, msg))
+	}
+
 	contexts := sets.NewString()
 	for _, status := range statuses {
 		if status.State == github.StatusSuccess {
 			continue
 		}
+
 		contexts.Insert(status.Context)
+
+		for _, job := range presubmits {
+			if job.Context == status.Context {
+				contexts.Insert(job.Name)
+				break
+			}
+		}
 	}
+
+	branch := pr.Base.Ref
+	branchProtection, err := oc.GetBranchProtection(org, repo, branch)
+	if err != nil {
+		resp := fmt.Sprintf("Cannot get branch protection for branch %s in %s/%s", branch, org, repo)
+		log.WithError(err).Warn(resp)
+		return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
+	}
+
+	if branchProtection != nil && branchProtection.RequiredStatusChecks != nil {
+		for _, context := range branchProtection.RequiredStatusChecks.Contexts {
+			if !contexts.Has(context) {
+				contexts.Insert(context)
+				statuses = append(statuses, github.Status{Context: context})
+			}
+		}
+	}
+
 	if unknown := overrides.Difference(contexts); unknown.Len() > 0 {
-		resp := fmt.Sprintf(`/override requires a failed status context to operate on.
+		resp := fmt.Sprintf(`/override requires a failed status context or a job name to operate on.
 The following unknown contexts were given:
 %s
 
@@ -361,19 +403,14 @@ Only the following contexts were expected:
 		oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, msg))
 	}()
 
-	baseSHAGetter := shaGetterFactory(oc, org, repo, pr.Base.Ref)
-	presubmits, err := oc.presubmits(org, repo, baseSHAGetter, sha)
-	if err != nil {
-		msg := "Failed to get presubmits"
-		log.WithError(err).Error(msg)
-		return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, msg))
-	}
 	for _, status := range statuses {
-		if status.State == github.StatusSuccess || !overrides.Has(status.Context) {
+		pre := presubmitForContext(presubmits, status.Context)
+
+		if status.State == github.StatusSuccess || !(overrides.Has(status.Context) || pre != nil && overrides.Has(pre.Name)) {
 			continue
 		}
-		// First create the overridden prow result if necessary
-		pre := presubmitForContext(presubmits, status.Context)
+
+		// Create the overridden prow result if necessary
 		if pre != nil {
 			baseSHA, err := baseSHAGetter()
 			if err != nil {
@@ -382,7 +419,7 @@ Only the following contexts were expected:
 				return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 			}
 
-			pj := pjutil.NewPresubmit(*pr, baseSHA, *pre, e.GUID)
+			pj := pjutil.NewPresubmit(*pr, baseSHA, *pre, e.GUID, nil)
 			now := metav1.Now()
 			pj.Status = prowapi.ProwJobStatus{
 				StartTime:      now,

@@ -20,7 +20,7 @@ ifneq ($(K8S), everything)
 endif
 
 push-prod:
-	bazel run //images/builder -- $(EXTRA_ARG) --project=k8s-testimages --scratch-bucket=gs://k8s-testimages-scratch images/krte
+	bazel run //images/builder -- $(EXTRA_ARG) --project=k8s-staging-test-infra --scratch-bucket=gs://k8s-staging-test-infra-gcb images/krte
 
 push:
 	bazel run //images/builder -- $(EXTRA_ARG) --allow-dirty images/krte

@@ -22,6 +22,8 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
+	"sync"
 
 	"github.com/sirupsen/logrus"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
@@ -32,11 +34,15 @@ import (
 
 const (
 	inRepoConfigFileName = ".prow.yaml"
+	inRepoConfigDirName  = ".prow"
 )
+
+// +k8s:deepcopy-gen=true
 
 // ProwYAML represents the content of a .prow.yaml file
 // used to version Presubmits and Postsubmits inside the tested repo.
 type ProwYAML struct {
+	Presets     []Preset     `json:"presets"`
 	Presubmits  []Presubmit  `json:"presubmits"`
 	Postsubmits []Postsubmit `json:"postsubmits"`
 }
@@ -45,10 +51,18 @@ type ProwYAML struct {
 // their own implementation and set that on the Config.
 type ProwYAMLGetter func(c *Config, gc git.ClientFactory, identifier, baseSHA string, headSHAs ...string) (*ProwYAML, error)
 
-// Verify defaultProwYAMLGetter is a ProwYAMLGetter
-var _ ProwYAMLGetter = defaultProwYAMLGetter
+// Verify prowYAMLGetterWithDefaults and prowYAMLGetter are both of type
+// ProwYAMLGetter.
+var _ ProwYAMLGetter = prowYAMLGetterWithDefaults
+var _ ProwYAMLGetter = prowYAMLGetter
 
-func defaultProwYAMLGetter(
+// prowYAMLGetter is like prowYAMLGetterWithDefaults, but without default values
+// (it does not call DefaultAndValidateProwYAML()). Its sole purpose is to allow
+// caching of ProwYAMLs that are retrieved purely from the inrepoconfig's repo,
+// __without__ having the contents modified by the main Config's own settings
+// (which happens mostly inside DefaultAndValidateProwYAML()). prowYAMLGetter is
+// only used by cache.GetPresubmits() and cache.GetPostsubmits().
+func prowYAMLGetter(
 	c *Config,
 	gc git.ClientFactory,
 	identifier string,
@@ -56,10 +70,9 @@ func defaultProwYAMLGetter(
 	headSHAs ...string) (*ProwYAML, error) {
 
 	log := logrus.WithField("repo", identifier)
-	log.Debugf("Attempting to get %q.", inRepoConfigFileName)
 
 	if gc == nil {
-		log.Error("defaultProwYAMLGetter was called with a nil git client")
+		log.Error("prowYAMLGetter was called with a nil git client")
 		return nil, errors.New("gitClient is nil")
 	}
 
@@ -69,7 +82,7 @@ func defaultProwYAMLGetter(
 	}
 	repo, err := gc.ClientFor(orgRepo.Org, orgRepo.Repo)
 	if err != nil {
-		return nil, fmt.Errorf("failed to clone repo for %q: %v", identifier, err)
+		return nil, fmt.Errorf("failed to clone repo for %q: %w", identifier, err)
 	}
 	defer func() {
 		if err := repo.Clean(); err != nil {
@@ -90,41 +103,95 @@ func defaultProwYAMLGetter(
 	mergeMethod := c.Tide.MergeMethod(orgRepo)
 	log.Debugf("Using merge strategy %q.", mergeMethod)
 	if err := repo.MergeAndCheckout(baseSHA, string(mergeMethod), headSHAs...); err != nil {
-		return nil, fmt.Errorf("failed to merge: %v", err)
-	}
-
-	prowYAMLFilePath := path.Join(repo.Directory(), inRepoConfigFileName)
-	if _, err := os.Stat(prowYAMLFilePath); err != nil {
-		if os.IsNotExist(err) {
-			log.Debugf("File %q does not exist.", inRepoConfigFileName)
-			return &ProwYAML{}, nil
-		}
-		return nil, fmt.Errorf("failed to check if file %q exists: %v", inRepoConfigFileName, err)
-	}
-
-	bytes, err := ioutil.ReadFile(prowYAMLFilePath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read %q: %v", inRepoConfigFileName, err)
+		return nil, fmt.Errorf("failed to merge: %w", err)
 	}
 
 	prowYAML := &ProwYAML{}
-	if err := yaml.Unmarshal(bytes, prowYAML); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal %q: %v", inRepoConfigFileName, err)
+
+	prowYAMLDirPath := path.Join(repo.Directory(), inRepoConfigDirName)
+	log.Debugf("Attempting to read config files under %q.", prowYAMLDirPath)
+	if fileInfo, err := os.Stat(prowYAMLDirPath); !os.IsNotExist(err) && err == nil && fileInfo.IsDir() {
+		mergeProwYAML := func(a, b *ProwYAML) *ProwYAML {
+			c := &ProwYAML{}
+			c.Presets = append(a.Presets, b.Presets...)
+			c.Presubmits = append(a.Presubmits, b.Presubmits...)
+			c.Postsubmits = append(a.Postsubmits, b.Postsubmits...)
+
+			return c
+		}
+
+		err := filepath.Walk(prowYAMLDirPath, func(p string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if !info.IsDir() && (filepath.Ext(p) == ".yaml" || filepath.Ext(p) == ".yml") {
+				log.Debugf("Reading YAML file %q", p)
+				bytes, err := ioutil.ReadFile(p)
+				if err != nil {
+					return err
+				}
+				partialProwYAML := &ProwYAML{}
+				if err := yaml.Unmarshal(bytes, partialProwYAML); err != nil {
+					return fmt.Errorf("failed to unmarshal %q: %w", p, err)
+				}
+				prowYAML = mergeProwYAML(prowYAML, partialProwYAML)
+			}
+			return err
+		})
+		if err != nil {
+			return nil, fmt.Errorf("failed to read contents of directory %q: %w", inRepoConfigDirName, err)
+		}
+	} else {
+		if !os.IsNotExist(err) {
+			return nil, fmt.Errorf("reading %q: %w", prowYAMLDirPath, err)
+		}
+		log.WithField("file", inRepoConfigFileName).Debug("Attempting to get inreconfigfile")
+		prowYAMLFilePath := path.Join(repo.Directory(), inRepoConfigFileName)
+		if _, err := os.Stat(prowYAMLFilePath); err == nil {
+			bytes, err := ioutil.ReadFile(prowYAMLFilePath)
+			if err != nil {
+				return nil, fmt.Errorf("failed to read %q: %w", prowYAMLDirPath, err)
+			}
+			if err := yaml.Unmarshal(bytes, prowYAML); err != nil {
+				return nil, fmt.Errorf("failed to unmarshal %q: %w", prowYAMLDirPath, err)
+			}
+		} else {
+			if !os.IsNotExist(err) {
+				return nil, fmt.Errorf("failed to check if file %q exists: %w", prowYAMLDirPath, err)
+			}
+		}
 	}
 
+	return prowYAML, nil
+}
+
+// prowYAMLGetterWithDefaults is like prowYAMLGetter, but additionally sets
+// defaults by calling DefaultAndValidateProwYAML.
+func prowYAMLGetterWithDefaults(
+	c *Config,
+	gc git.ClientFactory,
+	identifier string,
+	baseSHA string,
+	headSHAs ...string) (*ProwYAML, error) {
+
+	prowYAML, err := prowYAMLGetter(c, gc, identifier, baseSHA, headSHAs...)
+	if err != nil {
+		return nil, err
+	}
+
+	// Mutate prowYAML to default values as necessary.
 	if err := DefaultAndValidateProwYAML(c, prowYAML, identifier); err != nil {
 		return nil, err
 	}
 
-	log.Debugf("Successfully got %d presubmits and %d postsubmits from %q.", len(prowYAML.Presubmits), len(prowYAML.Postsubmits), inRepoConfigFileName)
 	return prowYAML, nil
 }
 
 func DefaultAndValidateProwYAML(c *Config, p *ProwYAML, identifier string) error {
-	if err := defaultPresubmits(p.Presubmits, c, identifier); err != nil {
+	if err := defaultPresubmits(p.Presubmits, p.Presets, c, identifier); err != nil {
 		return err
 	}
-	if err := defaultPostsubmits(p.Postsubmits, c, identifier); err != nil {
+	if err := defaultPostsubmits(p.Postsubmits, p.Presets, c, identifier); err != nil {
 		return err
 	}
 	if err := validatePresubmits(append(p.Presubmits, c.PresubmitsStatic[identifier]...), c.PodNamespace); err != nil {
@@ -146,5 +213,104 @@ func DefaultAndValidateProwYAML(c *Config, p *ProwYAML, identifier string) error
 		}
 	}
 
+	if len(errs) == 0 {
+		log := logrus.WithField("repo", identifier)
+		log.Debugf("Successfully got %d presubmits and %d postsubmits.", len(p.Presubmits), len(p.Postsubmits))
+	}
+
 	return utilerrors.NewAggregate(errs)
+}
+
+// InRepoConfigGitCache is a wrapper around a git.ClientFactory that allows for
+// threadsafe reuse of git.RepoClients when one already exists for the specified repo.
+type InRepoConfigGitCache struct {
+	git.ClientFactory
+	cache map[string]*skipCleanRepoClient
+	sync.RWMutex
+}
+
+func NewInRepoConfigGitCache(factory git.ClientFactory) git.ClientFactory {
+	if factory == nil {
+		// Don't wrap a nil git factory, keep it nil so that errors are handled properly.
+		return nil
+	}
+	return &InRepoConfigGitCache{
+		ClientFactory: factory,
+		cache:         map[string]*skipCleanRepoClient{},
+	}
+}
+
+func (c *InRepoConfigGitCache) ClientFor(org, repo string) (git.RepoClient, error) {
+	key := fmt.Sprintf("%s/%s", org, repo)
+	getCache := func(threadSafe bool) (git.RepoClient, error) {
+		if client, ok := c.cache[key]; ok {
+			client.Lock()
+			// if repo is dirty, perform git reset --hard instead of deleting entire repo
+			if isDirty, err := client.RepoClient.IsDirty(); err != nil || isDirty {
+				if err := client.ResetHard("HEAD"); err != nil {
+					if threadSafe {
+						// Called within client `Lock`, safe to delete from map,
+						// return with nil so that a fresh clone will be performed
+						delete(c.cache, key)
+						client.Clean() // best effort clean, to avoid jam up disk
+					}
+					// Called with client `RLock`, not safe to delete from map,
+					// also return because fetch doesn't make much sense any more
+					client.Unlock()
+					return nil, nil
+				}
+			}
+			// Don't unlock the client unless we get an error or the consumer indicates they are done by Clean()ing.
+			if err := client.Fetch(); err != nil {
+				client.Unlock()
+				return nil, err
+			}
+			return client, nil
+		}
+		return nil, nil
+	}
+	c.RLock()
+	cached, err := getCache(false)
+	c.RUnlock()
+	if cached != nil || err != nil {
+		return cached, err
+	}
+
+	// The repo client was not cached, create a new one.
+	c.Lock()
+	defer c.Unlock()
+	// On cold start, all threads pass RLock and wait here, we need to do one more
+	// check here to avoid more than one cloning.
+	// (It would be nice if we could upgrade from `RLock` to `Lock`)
+	cached, err = getCache(true)
+	if cached != nil || err != nil {
+		return cached, err
+	}
+	coreClient, err := c.ClientFactory.ClientFor(org, repo)
+	if err != nil {
+		return nil, err
+	}
+	// This is the easiest way we can find for fetching all pull heads
+	if err := coreClient.Config("--add", "remote.origin.fetch", "+refs/pull/*/head:refs/remotes/origin/pr/*"); err != nil {
+		return nil, err
+	}
+	client := &skipCleanRepoClient{
+		RepoClient: coreClient,
+	}
+	client.Lock()
+	c.cache[key] = client
+	return client, nil
+}
+
+var _ git.RepoClient = &skipCleanRepoClient{}
+
+type skipCleanRepoClient struct {
+	git.RepoClient
+	sync.Mutex
+}
+
+func (rc *skipCleanRepoClient) Clean() error {
+	// Skip cleaning and unlock to allow reuse as a cached entry.
+	rc.Mutex.Unlock()
+	return nil
 }

@@ -27,12 +27,12 @@ import (
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/test-infra/prow/config"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 )
 
 type options struct {
-	configPath    string
-	jobConfigPath string
-	janitorPath   string
+	prowConfig  configflagutil.ConfigOptions
+	janitorPath string
 }
 
 var (
@@ -42,29 +42,21 @@ var (
 		"kubernetes-scale",  // Let it's up/down job handle the resources
 		"k8s-scale-testing", // As it can be running some manual experiments
 		// PR projects, migrate to boskos!
-		"k8s-jkns-pr-gce",
-		"k8s-jkns-pr-gce-bazel",
-		"k8s-jkns-pr-gce-etcd3",
-		"k8s-jkns-pr-gci-gce",
 		"k8s-jkns-pr-gci-gke",
-		"k8s-jkns-pr-gci-kubemark",
 		"k8s-jkns-pr-gke",
-		"k8s-jkns-pr-kubeadm",
 		"k8s-jkns-pr-kubemark",
 		"k8s-jkns-pr-node-e2e",
 		"k8s-jkns-pr-gce-gpus",
-		"k8s-gke-gpu-pr",
 		"k8s-presubmit-scale",
+		// k8s-infra projects, can't be cleaned by k8s-prow serviceaccounts
+		"k8s-infra-e2e-scale-5k-project",
+		"k8s-infra-e2e-gpu-project",
 	}
 )
 
 func (o *options) Validate() error {
-	if o.configPath == "" {
-		return errors.New("required flag --config-path was unset")
-	}
-
-	if o.jobConfigPath == "" {
-		return errors.New("required flag --job-config-path was unset")
+	if err := o.prowConfig.Validate(false); err != nil {
+		return err
 	}
 
 	if o.janitorPath == "" {
@@ -76,8 +68,7 @@ func (o *options) Validate() error {
 
 func gatherOptions() options {
 	o := options{}
-	flag.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
-	flag.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
+	o.prowConfig.AddFlags(flag.CommandLine)
 	flag.StringVar(&o.janitorPath, "janitor-path", "", "Path to gcp_janitor.py.")
 	flag.Parse()
 	return o
@@ -137,10 +128,11 @@ func main() {
 		logrus.Fatalf("Invalid options: %v", err)
 	}
 
-	conf, err := config.Load(o.configPath, o.jobConfigPath)
+	agent, err := o.prowConfig.ConfigAgent()
 	if err != nil {
 		logrus.WithError(err).Fatal("Error loading config.")
 	}
+	conf := agent.Config()
 
 	failed := []string{}
 

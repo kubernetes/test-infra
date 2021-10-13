@@ -22,22 +22,89 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/api/equality"
+	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/tide"
 	"k8s.io/test-infra/prow/tide/history"
+
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
 
-func TestFilterHidden(t *testing.T) {
+func TestFilter(t *testing.T) {
+	exampleConfigNoDefaults := config.Config{
+		ProwConfig: config.ProwConfig{
+			ProwJobDefaultEntries: []*config.ProwJobDefaultEntry{
+				{
+					OrgRepo: "tenanted",
+					Cluster: "*",
+					Config: &prowapi.ProwJobDefault{
+						TenantID: "t",
+					},
+				},
+				{
+					OrgRepo: "tenanted/repo",
+					Cluster: "*",
+					Config: &prowapi.ProwJobDefault{
+						TenantID: "t/r",
+					},
+				},
+				{
+					OrgRepo: "other",
+					Cluster: "*",
+					Config: &prowapi.ProwJobDefault{
+						TenantID: "o",
+					},
+				},
+			},
+		},
+	}
+	exampleConfigWithDefaults := config.Config{
+		ProwConfig: config.ProwConfig{
+			ProwJobDefaultEntries: []*config.ProwJobDefaultEntry{
+				{
+					OrgRepo: "*",
+					Cluster: "*",
+					Config: &prowapi.ProwJobDefault{
+						TenantID: "Default",
+					},
+				},
+				{
+					OrgRepo: "tenanted",
+					Cluster: "*",
+					Config: &prowapi.ProwJobDefault{
+						TenantID: "t",
+					},
+				},
+				{
+					OrgRepo: "tenanted/repo",
+					Cluster: "*",
+					Config: &prowapi.ProwJobDefault{
+						TenantID: "t/r",
+					},
+				},
+				{
+					OrgRepo: "other",
+					Cluster: "*",
+					Config: &prowapi.ProwJobDefault{
+						TenantID: "o",
+					},
+				},
+			},
+		},
+	}
+
 	tests := []struct {
 		name string
 
 		hiddenRepos []string
 		hiddenOnly  bool
 		showHidden  bool
+		tenantIDs   []string
 		queries     []config.TideQuery
 		pools       []tide.Pool
 		hist        map[string][]history.Record
+		cfg         config.Config
 
 		expectedQueries []config.TideQuery
 		expectedPools   []tide.Pool
@@ -206,6 +273,420 @@ func TestFilterHidden(t *testing.T) {
 				"kubernetes/kubernetes:master":         {{Action: "TRIGGER_BATCH"}, {Action: "MERGE_BATCH"}},
 			},
 		},
+		{
+			name: "public frontend. Config has no defaults",
+			cfg:  exampleConfigNoDefaults,
+			hiddenRepos: []string{
+				"kubernetes-security",
+				"kubernetes/website",
+			},
+			hiddenOnly: false,
+			queries: []config.TideQuery{
+				{
+					Repos: []string{"kubernetes/test-infra", "kubernetes/kubernetes"},
+				},
+				{
+					Repos: []string{"kubernetes/website", "kubernetes/docs"},
+				},
+				{
+					Repos: []string{"kubernetes/apiserver", "kubernetes-security/apiserver"},
+				},
+			},
+			pools: []tide.Pool{
+				{Org: "kubernetes", Repo: "test-infra"},
+				{Org: "kubernetes", Repo: "kubernetes"},
+				{Org: "kubernetes", Repo: "website"},
+				{Org: "kubernetes", Repo: "docs"},
+				{Org: "kubernetes", Repo: "apiserver"},
+				{Org: "kubernetes-security", Repo: "apiserver"},
+			},
+			hist: map[string][]history.Record{
+				"kubernetes/test-infra:master":         {{Action: "MERGE"}, {Action: "TRIGGER"}},
+				"kubernetes/website:master":            {{Action: "MERGE_BATCH"}, {Action: "TRIGGER_BATCH"}},
+				"kubernetes-security/apiserver:master": {{Action: "TRIGGER"}, {Action: "MERGE"}},
+				"kubernetes/kubernetes:master":         {{Action: "TRIGGER_BATCH"}, {Action: "MERGE_BATCH"}},
+			},
+
+			expectedQueries: []config.TideQuery{
+				{
+					Repos: []string{"kubernetes/test-infra", "kubernetes/kubernetes"},
+				},
+			},
+			expectedPools: []tide.Pool{
+				{Org: "kubernetes", Repo: "test-infra"},
+				{Org: "kubernetes", Repo: "kubernetes"},
+				{Org: "kubernetes", Repo: "docs"},
+				{Org: "kubernetes", Repo: "apiserver"},
+			},
+			expectedHist: map[string][]history.Record{
+				"kubernetes/test-infra:master": {{Action: "MERGE"}, {Action: "TRIGGER"}},
+				"kubernetes/kubernetes:master": {{Action: "TRIGGER_BATCH"}, {Action: "MERGE_BATCH"}},
+			},
+		},
+		{
+			name: "private frontend config has no defaults",
+			cfg:  exampleConfigNoDefaults,
+			hiddenRepos: []string{
+				"kubernetes-security",
+				"kubernetes/website",
+			},
+			hiddenOnly: true,
+			queries: []config.TideQuery{
+				{
+					Repos: []string{"kubernetes/test-infra", "kubernetes/kubernetes"},
+				},
+				{
+					Repos: []string{"kubernetes/website", "kubernetes/docs"},
+				},
+				{
+					Repos: []string{"kubernetes/apiserver", "kubernetes-security/apiserver"},
+				},
+			},
+			pools: []tide.Pool{
+				{Org: "kubernetes", Repo: "test-infra"},
+				{Org: "kubernetes", Repo: "kubernetes"},
+				{Org: "kubernetes", Repo: "website"},
+				{Org: "kubernetes", Repo: "docs"},
+				{Org: "kubernetes", Repo: "apiserver"},
+				{Org: "kubernetes-security", Repo: "apiserver"},
+			},
+			hist: map[string][]history.Record{
+				"kubernetes/test-infra:master":         {{Action: "MERGE"}, {Action: "TRIGGER"}},
+				"kubernetes/website:master":            {{Action: "MERGE_BATCH"}, {Action: "TRIGGER_BATCH"}},
+				"kubernetes-security/apiserver:master": {{Action: "TRIGGER"}, {Action: "MERGE"}},
+				"kubernetes/kubernetes:master":         {{Action: "TRIGGER_BATCH"}, {Action: "MERGE_BATCH"}},
+			},
+
+			expectedQueries: []config.TideQuery{
+				{
+					Repos: []string{"kubernetes/website", "kubernetes/docs"},
+				},
+				{
+					Repos: []string{"kubernetes/apiserver", "kubernetes-security/apiserver"},
+				},
+			},
+			expectedPools: []tide.Pool{
+				{Org: "kubernetes", Repo: "website"},
+				{Org: "kubernetes-security", Repo: "apiserver"},
+			},
+			expectedHist: map[string][]history.Record{
+				"kubernetes/website:master":            {{Action: "MERGE_BATCH"}, {Action: "TRIGGER_BATCH"}},
+				"kubernetes-security/apiserver:master": {{Action: "TRIGGER"}, {Action: "MERGE"}},
+			},
+		},
+		{
+			name:      "Nothing matches tenantID",
+			tenantIDs: []string{"nothing"},
+			cfg:       exampleConfigWithDefaults,
+			queries: []config.TideQuery{
+				{
+					Repos: []string{"kubernetes/test-infra", "kubernetes/kubernetes"},
+				},
+				{
+					Repos: []string{"kubernetes/website", "kubernetes/docs"},
+				},
+				{
+					Repos: []string{"kubernetes/apiserver", "kubernetes-security/apiserver"},
+				},
+			},
+			pools: []tide.Pool{
+				{Org: "kubernetes", Repo: "test-infra"},
+				{Org: "kubernetes", Repo: "kubernetes"},
+				{Org: "kubernetes", Repo: "website"},
+				{Org: "kubernetes", Repo: "docs"},
+				{Org: "kubernetes", Repo: "apiserver"},
+				{Org: "kubernetes-security", Repo: "apiserver"},
+			},
+			hist: map[string][]history.Record{
+				"kubernetes/test-infra:master":         {{Action: "MERGE"}, {Action: "TRIGGER"}},
+				"kubernetes/website:master":            {{Action: "MERGE_BATCH"}, {Action: "TRIGGER_BATCH"}},
+				"kubernetes-security/apiserver:master": {{Action: "TRIGGER"}, {Action: "MERGE"}},
+				"kubernetes/kubernetes:master":         {{Action: "TRIGGER_BATCH"}, {Action: "MERGE_BATCH"}},
+			},
+
+			expectedQueries: []config.TideQuery{},
+			expectedPools:   []tide.Pool{},
+			expectedHist:    map[string][]history.Record{},
+		},
+		{
+			name:       "frontend for everything no tenantID",
+			cfg:        exampleConfigNoDefaults,
+			showHidden: true,
+			hiddenRepos: []string{
+				"kubernetes-security",
+				"kubernetes/website",
+			},
+
+			pools: []tide.Pool{
+				{Org: "kubernetes", Repo: "test-infra"},
+				{Org: "kubernetes", Repo: "kubernetes"},
+				{Org: "kubernetes", Repo: "website"},
+				{Org: "kubernetes", Repo: "docs"},
+				{Org: "kubernetes", Repo: "apiserver"},
+				{Org: "kubernetes-security", Repo: "apiserver"},
+			},
+			expectedPools: []tide.Pool{
+				{Org: "kubernetes", Repo: "test-infra"},
+				{Org: "kubernetes", Repo: "kubernetes"},
+				{Org: "kubernetes", Repo: "website"},
+				{Org: "kubernetes", Repo: "docs"},
+				{Org: "kubernetes", Repo: "apiserver"},
+				{Org: "kubernetes-security", Repo: "apiserver"},
+			},
+
+			queries: []config.TideQuery{
+				{
+					Repos: []string{"kubernetes/test-infra", "kubernetes/kubernetes"},
+				},
+				{
+					Repos: []string{"kubernetes/website", "kubernetes/docs"},
+				},
+				{
+					Repos: []string{"kubernetes/apiserver", "kubernetes-security/apiserver"},
+				},
+			},
+			expectedQueries: []config.TideQuery{
+				{
+					Repos: []string{"kubernetes/test-infra", "kubernetes/kubernetes"},
+				},
+				{
+					Repos: []string{"kubernetes/website", "kubernetes/docs"},
+				},
+				{
+					Repos: []string{"kubernetes/apiserver", "kubernetes-security/apiserver"},
+				},
+			},
+			hist: map[string][]history.Record{
+				"kubernetes/test-infra:master":         {{Action: "MERGE"}, {Action: "TRIGGER"}},
+				"kubernetes/website:master":            {{Action: "MERGE_BATCH"}, {Action: "TRIGGER_BATCH"}},
+				"kubernetes-security/apiserver:master": {{Action: "TRIGGER"}, {Action: "MERGE"}},
+				"kubernetes/kubernetes:master":         {{Action: "TRIGGER_BATCH"}, {Action: "MERGE_BATCH"}},
+			},
+			expectedHist: map[string][]history.Record{
+				"kubernetes/test-infra:master":         {{Action: "MERGE"}, {Action: "TRIGGER"}},
+				"kubernetes/website:master":            {{Action: "MERGE_BATCH"}, {Action: "TRIGGER_BATCH"}},
+				"kubernetes-security/apiserver:master": {{Action: "TRIGGER"}, {Action: "MERGE"}},
+				"kubernetes/kubernetes:master":         {{Action: "TRIGGER_BATCH"}, {Action: "MERGE_BATCH"}},
+			},
+		},
+		{
+			name:      "Tenated front end",
+			cfg:       exampleConfigNoDefaults,
+			tenantIDs: []string{"t"},
+			queries: []config.TideQuery{
+				{
+					Repos: []string{"kubernetes/test-infra", "kubernetes/kubernetes"},
+				},
+				{
+					Repos: []string{"kubernetes/website", "kubernetes/docs"},
+				},
+				{
+					Repos: []string{"kubernetes/apiserver", "kubernetes-security/apiserver"},
+				},
+				{
+					Repos: []string{"tenanted/test"},
+				},
+			},
+			pools: []tide.Pool{
+				{Org: "kubernetes", Repo: "test-infra"},
+				{Org: "kubernetes", Repo: "kubernetes"},
+				{Org: "kubernetes", Repo: "website"},
+				{Org: "kubernetes", Repo: "docs"},
+				{Org: "kubernetes", Repo: "apiserver"},
+				{Org: "kubernetes-security", Repo: "apiserver"},
+				{Org: "tenanted", Repo: "test"},
+				{Org: "clustered-tenant", Repo: "test", TenantIDs: []string{"t"}},
+			},
+			hist: map[string][]history.Record{
+				"kubernetes/test-infra:master":         {{Action: "MERGE"}, {Action: "TRIGGER"}},
+				"kubernetes/website:master":            {{Action: "MERGE_BATCH"}, {Action: "TRIGGER_BATCH"}},
+				"kubernetes-security/apiserver:master": {{Action: "TRIGGER"}, {Action: "MERGE"}},
+				"kubernetes/kubernetes:master":         {{Action: "TRIGGER_BATCH"}, {Action: "MERGE_BATCH"}},
+				"tenanted/test:master":                 {{Action: "TRIGGER_BATCH"}, {Action: "MERGE_BATCH"}},
+				"clustered-tenant/test:master":         {{Action: "TRIGGER_BATCH", TenantIDs: []string{"t"}}, {Action: "MERGE_BATCH"}},
+			},
+
+			expectedQueries: []config.TideQuery{
+				{
+					Repos: []string{"tenanted/test"},
+				},
+			},
+			expectedPools: []tide.Pool{
+				{Org: "tenanted", Repo: "test"},
+				{Org: "clustered-tenant", Repo: "test", TenantIDs: []string{"t"}},
+			},
+			expectedHist: map[string][]history.Record{
+				"tenanted/test:master":         {{Action: "TRIGGER_BATCH"}, {Action: "MERGE_BATCH"}},
+				"clustered-tenant/test:master": {{Action: "TRIGGER_BATCH", TenantIDs: []string{"t"}}, {Action: "MERGE_BATCH"}},
+			},
+		},
+		{
+			name: "tenantID on Deck ignores hidden repos",
+			cfg:  exampleConfigNoDefaults,
+			hiddenRepos: []string{
+				"tenanted",
+			},
+			tenantIDs: []string{"t"},
+			queries: []config.TideQuery{
+				{
+					Repos: []string{"kubernetes/test-infra", "kubernetes/kubernetes"},
+				},
+				{
+					Repos: []string{"kubernetes/website", "kubernetes/docs"},
+				},
+				{
+					Repos: []string{"kubernetes/apiserver", "kubernetes-security/apiserver"},
+				},
+				{
+					Repos: []string{"tenanted/test"},
+				},
+			},
+			pools: []tide.Pool{
+				{Org: "kubernetes", Repo: "test-infra"},
+				{Org: "kubernetes", Repo: "kubernetes"},
+				{Org: "kubernetes", Repo: "website"},
+				{Org: "kubernetes", Repo: "docs"},
+				{Org: "kubernetes", Repo: "apiserver"},
+				{Org: "kubernetes-security", Repo: "apiserver"},
+				{Org: "tenanted", Repo: "test"},
+				{Org: "clustered-tenant", Repo: "test", TenantIDs: []string{"t"}},
+			},
+			hist: map[string][]history.Record{
+				"kubernetes/test-infra:master":         {{Action: "MERGE"}, {Action: "TRIGGER"}},
+				"kubernetes/website:master":            {{Action: "MERGE_BATCH"}, {Action: "TRIGGER_BATCH"}},
+				"kubernetes-security/apiserver:master": {{Action: "TRIGGER"}, {Action: "MERGE"}},
+				"kubernetes/kubernetes:master":         {{Action: "TRIGGER_BATCH"}, {Action: "MERGE_BATCH"}},
+				"tenanted/test:master":                 {{Action: "TRIGGER_BATCH"}, {Action: "MERGE_BATCH"}},
+				"clustered-tenant/test:master":         {{Action: "TRIGGER_BATCH", TenantIDs: []string{"t"}}, {Action: "MERGE_BATCH"}},
+			},
+
+			expectedQueries: []config.TideQuery{
+				{
+					Repos: []string{"tenanted/test"},
+				},
+			},
+			expectedPools: []tide.Pool{
+				{Org: "tenanted", Repo: "test"},
+				{Org: "clustered-tenant", Repo: "test", TenantIDs: []string{"t"}},
+			},
+			expectedHist: map[string][]history.Record{
+				"tenanted/test:master":         {{Action: "TRIGGER_BATCH"}, {Action: "MERGE_BATCH"}},
+				"clustered-tenant/test:master": {{Action: "TRIGGER_BATCH", TenantIDs: []string{"t"}}, {Action: "MERGE_BATCH"}},
+			},
+		},
+		{
+			name: "hidden repos ignores tenanted",
+			cfg:  exampleConfigNoDefaults,
+			hiddenRepos: []string{
+				"kubernetes-security",
+				"kubernetes/website",
+				"tenanted",
+			},
+			hiddenOnly: true,
+			queries: []config.TideQuery{
+				{
+					Repos: []string{"kubernetes/test-infra", "kubernetes/kubernetes"},
+				},
+				{
+					Repos: []string{"kubernetes/website", "kubernetes/docs"},
+				},
+				{
+					Repos: []string{"kubernetes/apiserver", "kubernetes-security/apiserver"},
+				},
+				{
+					Repos: []string{"tenanted/test"},
+				},
+			},
+			pools: []tide.Pool{
+				{Org: "kubernetes", Repo: "test-infra"},
+				{Org: "kubernetes", Repo: "kubernetes"},
+				{Org: "kubernetes", Repo: "website"},
+				{Org: "kubernetes", Repo: "docs"},
+				{Org: "kubernetes", Repo: "apiserver"},
+				{Org: "kubernetes-security", Repo: "apiserver"},
+				{Org: "tenanted", Repo: "test"},
+				{Org: "clustered-tenant", Repo: "test", TenantIDs: []string{"t"}},
+			},
+			hist: map[string][]history.Record{
+				"kubernetes/test-infra:master":         {{Action: "MERGE", TenantIDs: []string{config.DefaultTenantID}}, {Action: "TRIGGER"}},
+				"kubernetes/website:master":            {{Action: "MERGE_BATCH"}, {Action: "TRIGGER_BATCH"}},
+				"kubernetes-security/apiserver:master": {{Action: "TRIGGER"}, {Action: "MERGE"}},
+				"kubernetes/kubernetes:master":         {{Action: "TRIGGER_BATCH"}, {Action: "MERGE_BATCH"}},
+				"tenanted/test:master":                 {{Action: "TRIGGER_BATCH"}, {Action: "MERGE_BATCH"}},
+			},
+
+			expectedQueries: []config.TideQuery{
+				{
+					Repos: []string{"kubernetes/website", "kubernetes/docs"},
+				},
+				{
+					Repos: []string{"kubernetes/apiserver", "kubernetes-security/apiserver"},
+				},
+				{
+					Repos: []string{"tenanted/test"},
+				},
+			},
+			expectedPools: []tide.Pool{
+				{Org: "kubernetes", Repo: "website"},
+				{Org: "kubernetes-security", Repo: "apiserver"},
+				{Org: "tenanted", Repo: "test"},
+			},
+			expectedHist: map[string][]history.Record{
+				"kubernetes/website:master":            {{Action: "MERGE_BATCH"}, {Action: "TRIGGER_BATCH"}},
+				"kubernetes-security/apiserver:master": {{Action: "TRIGGER"}, {Action: "MERGE"}},
+				"tenanted/test:master":                 {{Action: "TRIGGER_BATCH"}, {Action: "MERGE_BATCH"}},
+			},
+		},
+		{
+			name: "public frontend with default tenantIDs assigned still respects hidden repos",
+
+			hiddenRepos: []string{
+				"kubernetes-security",
+				"kubernetes/website",
+			},
+			hiddenOnly: false,
+			queries: []config.TideQuery{
+				{
+					Repos: []string{"kubernetes/test-infra", "kubernetes/kubernetes"},
+				},
+				{
+					Repos: []string{"kubernetes/website", "kubernetes/docs"},
+				},
+				{
+					Repos: []string{"kubernetes/apiserver", "kubernetes-security/apiserver"},
+				},
+			},
+			pools: []tide.Pool{
+				{Org: "kubernetes", Repo: "test-infra", TenantIDs: []string{config.DefaultTenantID}},
+				{Org: "kubernetes", Repo: "kubernetes", TenantIDs: []string{config.DefaultTenantID}},
+				{Org: "kubernetes", Repo: "website", TenantIDs: []string{config.DefaultTenantID}},
+				{Org: "kubernetes", Repo: "docs", TenantIDs: []string{config.DefaultTenantID}},
+				{Org: "kubernetes", Repo: "apiserver", TenantIDs: []string{config.DefaultTenantID}},
+				{Org: "kubernetes-security", Repo: "apiserver", TenantIDs: []string{config.DefaultTenantID}},
+			},
+			hist: map[string][]history.Record{
+				"kubernetes/test-infra:master":         {{Action: "MERGE", TenantIDs: []string{config.DefaultTenantID}}, {Action: "TRIGGER"}},
+				"kubernetes/website:master":            {{Action: "MERGE_BATCH", TenantIDs: []string{config.DefaultTenantID}}, {Action: "TRIGGER_BATCH"}},
+				"kubernetes-security/apiserver:master": {{Action: "TRIGGER", TenantIDs: []string{config.DefaultTenantID}}, {Action: "MERGE"}},
+				"kubernetes/kubernetes:master":         {{Action: "TRIGGER_BATCH", TenantIDs: []string{config.DefaultTenantID}}, {Action: "MERGE_BATCH"}},
+			},
+
+			expectedQueries: []config.TideQuery{
+				{
+					Repos: []string{"kubernetes/test-infra", "kubernetes/kubernetes"},
+				},
+			},
+			expectedPools: []tide.Pool{
+				{Org: "kubernetes", Repo: "test-infra", TenantIDs: []string{config.DefaultTenantID}},
+				{Org: "kubernetes", Repo: "kubernetes", TenantIDs: []string{config.DefaultTenantID}},
+				{Org: "kubernetes", Repo: "docs", TenantIDs: []string{config.DefaultTenantID}},
+				{Org: "kubernetes", Repo: "apiserver", TenantIDs: []string{config.DefaultTenantID}},
+			},
+			expectedHist: map[string][]history.Record{
+				"kubernetes/test-infra:master": {{Action: "MERGE", TenantIDs: []string{config.DefaultTenantID}}, {Action: "TRIGGER"}},
+				"kubernetes/kubernetes:master": {{Action: "TRIGGER_BATCH", TenantIDs: []string{config.DefaultTenantID}}, {Action: "MERGE_BATCH"}},
+			},
+		},
 	}
 
 	for _, test := range tests {
@@ -218,11 +699,13 @@ func TestFilterHidden(t *testing.T) {
 			hiddenOnly: test.hiddenOnly,
 			showHidden: test.showHidden,
 			log:        logrus.WithField("agent", "tide"),
+			tenantIDs:  sets.NewString(test.tenantIDs...),
+			cfg:        func() *config.Config { return &test.cfg },
 		}
 
-		gotQueries := ta.filterHiddenQueries(test.queries)
-		gotPools := ta.filterHiddenPools(test.pools)
-		gotHist := ta.filterHiddenHistory(test.hist)
+		gotQueries := ta.filterQueries(test.queries)
+		gotPools := ta.filterPools(test.pools)
+		gotHist := ta.filterHistory(test.hist)
 		if !equality.Semantic.DeepEqual(gotQueries, test.expectedQueries) {
 			t.Errorf("expected queries:\n%v\ngot queries:\n%v\n", test.expectedQueries, gotQueries)
 		}

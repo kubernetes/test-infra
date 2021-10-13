@@ -15,6 +15,7 @@ go_library(
         "//prow/config:go_default_library",
         "//prow/config/secret:go_default_library",
         "//prow/flagutil:go_default_library",
+        "//prow/flagutil/config:go_default_library",
         "//prow/github:go_default_library",
         "//prow/github/report:go_default_library",
         "//prow/interrupts:go_default_library",

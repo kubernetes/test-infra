@@ -145,10 +145,12 @@ default:
       addedBy: anyone
     - color: c0ff4a
       description: Denotes an issue or PR intended to be handled by the product security committee.
-      name: committee/product-security
+      name: committee/security-response
       target: both
       prowPlugin: label
       addedBy: anyone
+      previously:
+        - name: committee/product-security
     - color: e11d21
       description: Indicates the PR's author has not signed the CNCF CLA.
       name: 'cncf-cla: no'
@@ -254,12 +256,6 @@ default:
     - color: e11d21
       description: Categorizes issue or PR as related to a feature/enhancement marked for deprecation.
       name: kind/deprecation
-      target: both
-      prowPlugin: label
-      addedBy: anyone
-    - color: c7def8
-      description: Categorizes issue or PR as related to design.
-      name: kind/design
       target: both
       prowPlugin: label
       addedBy: anyone
@@ -499,6 +495,14 @@ default:
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
+      description: Categorizes an issue or PR as relevant to SIG K8s Infra.
+      name: sig/k8s-infra
+      target: both
+      prowPlugin: label
+      addedBy: anyone
+      previously:
+        - name: wg/k8s-infra
+    - color: d2b48c
       description: Categorizes an issue or PR as relevant to SIG Multicluster.
       name: sig/multicluster
       previously:
@@ -594,12 +598,6 @@ default:
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to WG k8s Infra.
-      name: wg/k8s-infra
-      target: both
-      prowPlugin: label
-      addedBy: anyone
-    - color: d2b48c
       description: Categorizes an issue or PR as relevant to WG Multitenancy.
       name: wg/multitenancy
       target: both
@@ -624,8 +622,8 @@ default:
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to WG Component Standard.
-      name: wg/component-standard
+      description: Categorizes an issue or PR as relevant to WG Structured Logging.
+      name: wg/structured-logging
       target: both
       prowPlugin: label
       addedBy: anyone
@@ -763,6 +761,11 @@ repos:
         target: both
         addedBy: label
       - color: 0052cc
+        description: Issues or PRs related to community elections
+        name: area/elections
+        target: both
+        addedBy: label
+      - color: 0052cc
         description: Issues or PRs related to GitHub Management subproject
         name: area/github-management
         target: both
@@ -792,6 +795,20 @@ repos:
         name: area/contributor-comms
         target: both
         addedBy: humans
+  kubernetes/dns:
+    labels:
+      - color: 0052cc
+        description: Issues related to kube-dns
+        name: area/kubedns
+        target: issues
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues related to node-local-dns
+        name: area/nodelocaldns
+        target: issues
+        prowPlugin: label
+        addedBy: anyone
   kubernetes/enhancements:
     labels:
       - color: 0052cc
@@ -862,8 +879,80 @@ repos:
   kubernetes/k8s.io:
     labels:
       - color: 0052cc
-        description: Issues or PRs related to defining who has access to what (e.g. IAM, RBAC, google groups)
+        description: Define who has access to what via IAM bindings, role bindings, policy, etc.
         name: area/access
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Application management, code in apps/
+        name: area/apps
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+        previously:
+          - name: area/cluster-infra
+      - color: 0052cc
+        description: cert-manager, code in apps/cert-manager/
+        name: area/apps/cert-manager
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+        previously:
+          - name: area/infra/cert-manager
+      - color: 0052cc
+        description: gcsweb.k8s.io, code in apps/gcsweb/
+        name: area/apps/gcsweb
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: k8s.io redirector, code in apps/k8s-io/
+        name: area/apps/k8s-io
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: kubernetes-external-secrets, code in apps/kubernetes-external-secrets/
+        name: area/apps/kubernetes-external-secrets
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: perfdash.k8s.io, code in apps/perdash/
+        name: area/apps/perfdash
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: k8s-infra-prow.k8s.io, code in apps/prow/
+        name: area/apps/prow
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: publishing-bot, code in apps/publishing-bot/
+        name: area/apps/publishing-bot
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+        previously:
+          - name: area/infra/publishing-bot
+      - color: 0052cc
+        description: sippy.k8s.io, code in apps/sippy/
+        name: area/apps/sippy
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: slack.k8s.io, slack-infra, code in apps/slack-infra
+        name: area/apps/slack-infra
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: release.triage.k8s.io, triage-party, code in apps/triageparty-release
+        name: area/apps/triageparty-release
         target: both
         prowPlugin: label
         addedBy: anyone
@@ -874,14 +963,22 @@ repos:
         prowPlugin: label
         addedBy: anyone
       - color: 0052cc
-        description: Issues or PRs related to billing
-        name: area/billing
+        description: Audit of project resources, audit followup issues, code in audit/
+        name: area/audit
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+        previously:
+          - name: area/infra/auditing
+      - color: 0052cc
+        description: Bash scripts, testing them, writing less of them, code in infra/gcp/
+        name: area/bash
         target: both
         prowPlugin: label
         addedBy: anyone
       - color: 0052cc
-        description: Issue or PRs related to project infra that runs on a cluster
-        name: area/cluster-infra
+        description: Issues or PRs related to billing
+        name: area/billing
         target: both
         prowPlugin: label
         addedBy: anyone
@@ -891,44 +988,55 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
+        deleteAfter: "2021-08-04T00:00:00Z"
       - color: 0052cc
-        description: Issues or PRs related to DNS records
+        description: DNS records for k8s.io, kubernetes.io, k8s.dev, etc., code in dns/
         name: area/dns
         target: both
         prowPlugin: label
         addedBy: anyone
       - color: 0052cc
-        description: Issues or PRs related to auditing for the Kubernetes project infrastructure
-        name: area/infra/auditing
+        description: Code in k8s.gcr.io/
+        name: area/k8s.gcr.io
         target: both
         prowPlugin: label
         addedBy: anyone
       - color: 0052cc
-        description: Issues or PRs related to Cert Manager
-        name: area/infra/cert-manager
+        description: Google Groups management, code in groups/
+        name: area/groups
         target: both
         prowPlugin: label
         addedBy: anyone
+      - color: 0052cc
+        description: Infrastructure management, infrastructure design, code in infra/
+        name: area/infra
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+        previously:
+          - name: area/cluster-infra
       - color: 0052cc
         description: Issues or PRs related to monitoring of the Kubernetes project infrastructure
         name: area/infra/monitoring
         target: both
         prowPlugin: label
         addedBy: anyone
-      - color: 0052cc
-        description: Issues or PRs related to Publishing bot
-        name: area/infra/publishing-bot
-        target: both
-        prowPlugin: label
-        addedBy: anyone
+        deleteAfter: "2021-08-04T00:00:00Z"
       - color: 0052cc
         description: Issues or PR related to reliability of the Kubernetes project infrastructure
         name: area/infra/reliability
         target: both
         prowPlugin: label
         addedBy: anyone
+        deleteAfter: "2021-08-04T00:00:00Z"
       - color: 0052cc
-        description: Issues or PR related to prow, build clusters, migrating jobs
+        description: Crafting policy, policy decisions, code in policy/
+        name: area/policy
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Setting up or working with prow in general, prow.k8s.io, prow build clusters
         name: area/prow
         target: both
         prowPlugin: label
@@ -939,6 +1047,14 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
+      - color: 0052cc
+        description: Terraform modules, testing them, writing more of them, code in infra/gcp/clusters/
+        name: area/terraform
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+        previously:
+          - name: area/infra/terraform
   kubernetes/kubernetes:
     labels:
       - color: 0052cc
@@ -977,9 +1093,16 @@ repos:
         name: area/e2e-test-framework
         target: both
         addedBy: label
-      - color: 0052cc
+      - color: e11d21
         description: Issues or PRs related to the hyperkube subproject
-        name: area/hyperkube
+        name: deprecated/hyperkube
+        target: both
+        addedBy: label
+        previously:
+          - name: area/hyperkube
+      - color: 0052cc
+        description: Issues or PRs related to Network Policy subproject
+        name: area/network-policy
         target: both
         addedBy: label
       - color: 0052cc
@@ -1051,6 +1174,11 @@ repos:
           - name: area/release-infra
         target: both
         addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to release engineering security
+        name: area/release-eng/security
+        target: both
+        addedBy: label
   kubernetes/sig-release:
     labels:
       - color: 0052cc
@@ -1069,6 +1197,11 @@ repos:
         name: area/release-eng
         previously:
           - name: area/release-infra
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to release engineering security
+        name: area/release-eng/security
         target: both
         addedBy: label
       - color: 0052cc
@@ -1326,6 +1459,11 @@ repos:
           - name: area/release-infra
         target: both
         addedBy: label
+      - color: 0ffa16
+        description: Indicates a PR is trusted, used by tide for auto-merging PRs.
+        name: skip-review
+        target: prs
+        addedBy: autobump bot
       - color: f7c6c7
         description: Categorizes issue or PR as tracked by test-infra oncall.
         name: kind/oncall-hotlist
@@ -1345,6 +1483,12 @@ repos:
         name: area/contributor-comms
         target: both
         addedBy: humans
+      - color: 0052cc
+        description: Issues or PRs related to the Release Engineering subproject
+        name: area/release-eng
+        target: both
+        prowPlugin: label
+        addedBy: anyone
       - color: 0052cc
         description: Issues or PRs related to the kubernetes.io's infrastructure, design, or build processes
         name: area/web-development
@@ -1460,6 +1604,20 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
+      - color: d2b48c
+        description: Issues with the Katacoda infrastructure for tutorials
+        name: team/katacoda
+        target: issues
+        prowPlugin: label
+        addedBy: anyone
+  kubernetes/kubeadm:
+    labels:
+      - color: c7def8
+        description: Categorizes issue or PR as related to design.
+        name: kind/design
+        target: both
+        prowPlugin: label
+        addedBy: anyone
   kubernetes-sigs/cluster-api:
     labels:
       - color: c7def8
@@ -1468,6 +1626,12 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
+      - color: f6c5d8
+        description: Issues or PRs that need to be closed before the next CAPI release
+        name: kind/release-blocking
+        target: both
+        prowPlugin: label
+        addedBy: approvers
       - color: 0052cc
         description: Issues or PRs related to clusterctl
         name: area/clusterctl
@@ -1533,6 +1697,50 @@ repos:
         name: area/provider/docker
         target: both
         addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to operator
+        name: area/operator
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to cluster topology
+        name: area/topology
+      - color: c7def8
+        description: Categorizes issue or PR as related to design.
+        name: kind/design
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to the hosting of release artifacts
+        name: area/artifacts
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to Cluster API code organization
+        name: area/code-organization
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to Cluster API and Kubernetes conformance tests
+        name: area/conformance
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to networking
+        name: area/networking
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to security
+        name: area/security
+        target: both
+        addedBy: anyone
+        prowPlugin: label
   kubernetes-sigs/cluster-api-provider-azure:
     labels:
       - color: c7def8
@@ -1549,6 +1757,118 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to clusterawsadm
+        name: area/clusterawsadm
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to Amazon EKS provider
+        name: area/provider/eks
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to Amazon VPCs
+        name: area/vpc
+        target: both
+        addedBy: label
+      # Begin shared
+      - color: 0052cc
+        description: Indicates an issue on admin area.
+        name: area/admin
+        target: issues
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to the APIs
+        name: area/api
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to the hosting of release artifacts
+        name: area/artifacts
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to Cluster API code organization
+        name: area/code-organization
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to deflaking Cluster API tests
+        name: area/deflake
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to Cluster API and Kubernetes conformance tests
+        name: area/conformance
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to Cluster API Kubetest2 Provider
+        name: area/kubetest
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to networking
+        name: area/networking
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to security
+        name: area/security
+        target: both
+        addedBy: anyone
+        prowPlugin: label
+      - color: 0052cc
+        description: Issues or PRs related to releasing
+        name: area/release
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: f6c5d8
+        description: Issues or PRs that need to be closed before the next release
+        name: kind/release-blocking
+        target: both
+        prowPlugin: label
+        addedBy: approvers
+      - color: 0052cc
+        description: Issues or PRs related to testing
+        name: area/testing
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to upgrades
+        name: area/upgrades
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to UX
+        name: area/ux
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: c7def8
+        description: Issues or PRs requiring backports
+        name: kind/backport
+        target: both
+        prowPlugin: label
+        addedBy: approvers
+      - color: c7def8
+        description: Issues or PRs related to proposals.
+        name: kind/proposal
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      # End shared
   kubernetes-sigs/krew:
     labels:
       - color: ee0000
@@ -1575,7 +1895,7 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
-  kubernetes-sigs/service-apis:
+  kubernetes-sigs/gateway-api:
     labels:
       - color: c7def8
         description: Categorizes an issue as capturing a user story
@@ -1594,7 +1914,7 @@ repos:
         name: area/provider/podman
         target: both
         addedBy: humans
-  kubernetes-sigs/k8s-container-image-promoter:
+  kubernetes-sigs/promo-tools:
     labels:
       - color: 0052cc
         description: Issues or PRs related to the hosting of release artifacts for subprojects
@@ -1609,3 +1929,19 @@ repos:
           - name: area/release-infra
         target: both
         addedBy: label
+  kubernetes-sigs/contributor-tweets:
+    labels:
+      - color: 0052cc
+        description: Issues to parse and tweet from K8sContributor handle
+        name: kind/tweet
+        target: both
+        addedBy: anyone
+        prowPlugin: label
+  kubernetes-sigs/controller-runtime:
+    labels:
+      - color: c7def8
+        description: Categorizes issue or PR as related to design.
+        name: kind/design
+        target: both
+        prowPlugin: label
+        addedBy: anyone

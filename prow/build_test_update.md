@@ -10,9 +10,13 @@ Build with:
 ```shell
 bazel build //prow/...
 ```
-Test with:
+Unit test with:
 ```shell
-bazel test --features=race //prow/...
+bazel test --@io_bazel_rules_go//go/config:race //prow/...
+```
+Integration test with([more details](./test/integration)):
+```shell
+./prow/test/integration/integration-test.sh
 ```
 Individual packages and components can be built and tested like:
 ```shell
@@ -120,7 +124,7 @@ This command runs the ProwJob [`pull-test-infra-yamllint`](https://github.com/ku
 ```
 You may also need to set the `CONFIG_PATH` and `JOB_CONFIG_PATH` environmental variables:
 ```sh
-CONFIG_PATH=(realpath ../config/prow/config.yaml) JOB_CONFIG_PATH=(realpath ../config/jobs/kubernetes/test-infra/test-infra-presubmits.yaml) ...
+CONFIG_PATH=$(realpath ../config/prow/config.yaml) JOB_CONFIG_PATH=$(realpath ../config/jobs/kubernetes/test-infra/test-infra-presubmits.yaml) ...
 ```
 
 ##### Modifying pj-on-kind.sh for special scenarios

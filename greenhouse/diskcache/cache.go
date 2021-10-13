@@ -102,7 +102,7 @@ func (c *Cache) Put(key string, content io.Reader, contentSHA256 string) error {
 	// create a temp file to get the content on disk
 	temp, err := ioutil.TempFile(dir, "temp-put")
 	if err != nil {
-		return fmt.Errorf("failed to create cache entry: %v", err)
+		return fmt.Errorf("failed to create cache entry: %w", err)
 	}
 
 	// fast path copying when not hashing content,s
@@ -110,7 +110,7 @@ func (c *Cache) Put(key string, content io.Reader, contentSHA256 string) error {
 		_, err = io.Copy(temp, content)
 		if err != nil {
 			removeTemp(temp.Name())
-			return fmt.Errorf("failed to copy into cache entry: %v", err)
+			return fmt.Errorf("failed to copy into cache entry: %w", err)
 		}
 
 	} else {
@@ -118,7 +118,7 @@ func (c *Cache) Put(key string, content io.Reader, contentSHA256 string) error {
 		_, err = io.Copy(io.MultiWriter(temp, hasher), content)
 		if err != nil {
 			removeTemp(temp.Name())
-			return fmt.Errorf("failed to copy into cache entry: %v", err)
+			return fmt.Errorf("failed to copy into cache entry: %w", err)
 		}
 		actualContentSHA256 := hex.EncodeToString(hasher.Sum(nil))
 		if actualContentSHA256 != contentSHA256 {
@@ -133,13 +133,13 @@ func (c *Cache) Put(key string, content io.Reader, contentSHA256 string) error {
 	err = temp.Sync()
 	if err != nil {
 		removeTemp(temp.Name())
-		return fmt.Errorf("failed to sync cache entry: %v", err)
+		return fmt.Errorf("failed to sync cache entry: %w", err)
 	}
 	temp.Close()
 	err = os.Rename(temp.Name(), path)
 	if err != nil {
 		removeTemp(temp.Name())
-		return fmt.Errorf("failed to insert contents into cache: %v", err)
+		return fmt.Errorf("failed to insert contents into cache: %w", err)
 	}
 	return nil
 }
@@ -152,7 +152,7 @@ func (c *Cache) Get(key string, readHandler ReadHandler) error {
 		if os.IsNotExist(err) {
 			return readHandler(false, nil)
 		}
-		return fmt.Errorf("failed to get key: %v", err)
+		return fmt.Errorf("failed to get key: %w", err)
 	}
 	return readHandler(true, f)
 }

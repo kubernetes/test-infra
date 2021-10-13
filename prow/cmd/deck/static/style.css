@@ -327,6 +327,7 @@ i.state {
     border: 1px solid #888;
     width: 80%;
     text-align: center;
+    color: #444;
 }
 
 #queries li {

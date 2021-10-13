@@ -87,11 +87,11 @@ func TestGeneratePluginHelp(t *testing.T) {
 	defer helpfulServer.Close()
 
 	config := &plugins.Configuration{
-		Plugins: map[string][]string{
-			"org1":       {"org-plugin"},
-			"org1/repo1": {"repo-plugin1", "no-help-plugin"},
-			"org1/repo2": {"repo-plugin1", "repo-plugin2"},
-			"org2/repo1": {"repo-plugin3"},
+		Plugins: plugins.Plugins{
+			"org1":       {Plugins: []string{"org-plugin"}},
+			"org1/repo1": {Plugins: []string{"repo-plugin1", "no-help-plugin"}},
+			"org1/repo2": {Plugins: []string{"repo-plugin1", "repo-plugin2"}},
+			"org2/repo1": {Plugins: []string{"repo-plugin3"}},
 		},
 		ExternalPlugins: map[string][]plugins.ExternalPlugin{
 			"org1/repo1": {

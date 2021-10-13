@@ -30,6 +30,7 @@ type WriterOptions struct {
 	ContentType              *string
 	Metadata                 map[string]string
 	PreconditionDoesNotExist *bool
+	CacheControl             *string
 }
 
 func (wo WriterOptions) Apply(opts *WriterOptions) {
@@ -47,6 +48,9 @@ func (wo WriterOptions) Apply(opts *WriterOptions) {
 	}
 	if wo.PreconditionDoesNotExist != nil {
 		opts.PreconditionDoesNotExist = wo.PreconditionDoesNotExist
+	}
+	if wo.CacheControl != nil {
+		opts.CacheControl = wo.CacheControl
 	}
 }
 
@@ -67,6 +71,9 @@ func (wo WriterOptions) apply(writer *storage.Writer, o *blob.WriterOptions) {
 		}
 		if wo.Metadata != nil {
 			writer.ObjectAttrs.Metadata = wo.Metadata
+		}
+		if wo.CacheControl != nil {
+			writer.ObjectAttrs.CacheControl = *wo.CacheControl
 		}
 	}
 
@@ -91,6 +98,9 @@ func (wo WriterOptions) apply(writer *storage.Writer, o *blob.WriterOptions) {
 	}
 	if wo.Metadata != nil {
 		o.Metadata = wo.Metadata
+	}
+	if wo.CacheControl != nil {
+		o.CacheControl = *wo.CacheControl
 	}
 }
 

@@ -56,6 +56,10 @@ func newFakeClient() *fakeClient {
 	}
 }
 
+func (fc *fakeClient) BotUserChecker() (func(candidate string) bool, error) {
+	return func(_ string) bool { return false }, nil
+}
+
 // CreateComment adds and tracks a comment in the client
 func (fc *fakeClient) CreateComment(owner, repo string, number int, comment string) error {
 	fc.commentsAdded[number] = append(fc.commentsAdded[number], comment)

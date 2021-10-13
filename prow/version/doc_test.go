@@ -33,7 +33,7 @@ func TestVersionTimestamp(t *testing.T) {
 			false,
 		},
 		{
-			"invlid version",
+			"invalid version",
 			"v20200102a-a1b2c3",
 			0,
 			true,

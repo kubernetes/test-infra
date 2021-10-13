@@ -6,7 +6,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=90
@@ -26,7 +26,7 @@ periodics:
         value: /go
 
   annotations:
-    testgrid-dashboards: sig-node-cri
+    testgrid-dashboards: sig-node-docker
     testgrid-tab-name: docker-node-conformance
 - name: ci-docker-node-features
   interval: 4h
@@ -35,7 +35,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=200
@@ -48,14 +48,14 @@ periodics:
       - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
       - --node-tests=true
       - --provider=gce
-      - --test_args=--nodes=8 --focus="\[NodeFeature:.+\]" --skip="\[Flaky\]|\[Serial\]"
+      - --test_args=--nodes=8 --focus="\[NodeFeature:.+\]|\[NodeFeature\]" --skip="\[Flaky\]|\[Serial\]"
       - --timeout=180m
       env:
       - name: GOPATH
         value: /go
 
   annotations:
-    testgrid-dashboards: sig-node-cri
+    testgrid-dashboards: sig-node-docker
     testgrid-tab-name: docker-node-features
 - name: ci-docker-node-legacy
   interval: 2h
@@ -64,7 +64,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=200
@@ -83,5 +83,5 @@ periodics:
       - name: GOPATH
         value: /go
   annotations:
-    testgrid-dashboards: sig-node-cri
+    testgrid-dashboards: sig-node-docker
     testgrid-tab-name: docker-node-legacy

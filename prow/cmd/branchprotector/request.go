@@ -58,7 +58,7 @@ func makeBool(val *bool) bool {
 // makeChecks renders a ContextPolicy into the corresponding GitHub api object.
 //
 // Returns nil when input policy is nil.
-// Otherwise returns non-nil Contexts (empty if unset) and Strict iff Strict is true
+// Otherwise returns non-nil Contexts (empty if unset) and Strict if Strict is true
 func makeChecks(cp *branchprotection.ContextPolicy) *github.RequiredStatusChecks {
 	if cp == nil {
 		return nil

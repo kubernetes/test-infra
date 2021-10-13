@@ -6,17 +6,18 @@ presubmits:
     decorate: true
     skip_branches:
       - release-\d+.\d+ # per-release job
-    optional: true
+    optional: false
     skip_report: false
     path_alias: k8s.io/kubernetes
     annotations:
+      fork-per-release: "true"
       testgrid-create-test-group: "true"
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
         imagePullPolicy: IfNotPresent
         command:
         - make
@@ -28,7 +29,7 @@ presubmits:
           value: govet-levee
         - name: EXCLUDE_TYPECHECK
           value: "y"
-        # this is now covered by the optional pull-kubernetes-files-remake that runs when Makefile.generated_files / make-rules changes
+        # this is now covered by pull-kubernetes-files-remake that runs when Makefile.generated_files / make-rules changes
         - name: EXCLUDE_FILES_REMAKE
           value: "y"
         - name: EXCLUDE_GODEP

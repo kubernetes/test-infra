@@ -215,9 +215,7 @@ func TestHttpResponse(t *testing.T) {
 		}
 
 		// github fake client
-		fc := &fakegithub.FakeClient{
-			IssueComments: make(map[int][]github.IssueComment),
-		}
+		fc := fakegithub.NewFakeClient()
 
 		// fully test handling a comment
 		e := &github.GenericCommentEvent{
@@ -323,9 +321,7 @@ func TestPonies(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		fc := &fakegithub.FakeClient{
-			IssueComments: make(map[int][]github.IssueComment),
-		}
+		fc := fakegithub.NewFakeClient()
 		e := &github.GenericCommentEvent{
 			Action:     tc.action,
 			Body:       tc.body,

@@ -16,6 +16,9 @@ go_test(
     rundir = ".",
     deps = [
         "//prow/config:go_default_library",
+        "//prow/flagutil/config:go_default_library",
+        "//testgrid/pkg/configurator/configurator:go_default_library",
+        "//testgrid/pkg/configurator/options:go_default_library",
         "@com_github_googlecloudplatform_testgrid//config:go_default_library",
         "@com_github_googlecloudplatform_testgrid//pb/config:go_default_library",
         "@io_k8s_apimachinery//pkg/util/sets:go_default_library",
@@ -37,7 +40,8 @@ genrule(
            --prow-job-config=config/jobs \
            --default=$(location //config:testgrid_default) \
            --output=$@ \
-           --oneshot",
+           --oneshot \
+           --strict-unmarshal",
     tools = [
         "//testgrid/cmd/configurator",
     ],

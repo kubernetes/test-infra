@@ -27,10 +27,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
-	"sigs.k8s.io/yaml"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+	"sigs.k8s.io/yaml"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
@@ -103,36 +104,28 @@ func newFakeGitHubClient(hasLabel, humanApproved bool, files []string, comments 
 	if hasLabel {
 		labels = append(labels, fmt.Sprintf("org/repo#%v:approved", prNumber))
 	}
-	events := []github.ListedIssueEvent{}
-	if humanApproved {
-		events = append(
-			events,
-			github.ListedIssueEvent{
-				Event:     github.IssueActionLabeled,
-				Label:     github.Label{Name: "approved"},
-				Actor:     github.User{Login: "human"},
-				CreatedAt: time.Now(),
-			},
-		)
-	}
 	var changes []github.PullRequestChange
 	for _, file := range files {
 		changes = append(changes, github.PullRequestChange{Filename: file})
 	}
-	return &fakegithub.FakeClient{
-		IssueLabelsAdded:   labels,
-		PullRequestChanges: map[int][]github.PullRequestChange{prNumber: changes},
-		IssueComments:      map[int][]github.IssueComment{prNumber: comments},
-		IssueEvents:        map[int][]github.ListedIssueEvent{prNumber: events},
-		Reviews:            map[int][]github.Review{prNumber: reviews},
-	}
+	fgc := fakegithub.NewFakeClient()
+	fgc.IssueLabelsAdded = labels
+	fgc.PullRequestChanges = map[int][]github.PullRequestChange{prNumber: changes}
+	fgc.IssueComments = map[int][]github.IssueComment{prNumber: comments}
+	fgc.Reviews = map[int][]github.Review{prNumber: reviews}
+	fgc.WasLabelAddedByHumanVal = humanApproved
+	return fgc
 }
 
 type fakeRepo struct {
-	approvers      map[string]layeredsets.String
-	leafApprovers  map[string]sets.String
+	approvers map[string]layeredsets.String
+	// directory -> approver
+	leafApprovers map[string]sets.String
+	// toApprove -> directoryWithOwnersFile
 	approverOwners map[string]string
-	dirBlacklist   []*regexp.Regexp
+	// dir -> allowed
+	autoApproveUnownedSubfolders map[string]bool
+	dirDenylist                  []*regexp.Regexp
 }
 
 func (fr fakeRepo) Filenames() ownersconfig.Filenames {
@@ -151,13 +144,16 @@ func (fr fakeRepo) FindApproverOwnersForFile(path string) string {
 func (fr fakeRepo) IsNoParentOwners(path string) bool {
 	return false
 }
+func (fr fakeRepo) IsAutoApproveUnownedSubfolders(ownerFilePath string) bool {
+	return fr.autoApproveUnownedSubfolders[ownerFilePath]
+}
 func (fr fakeRepo) TopLevelApprovers() sets.String {
 	return nil
 }
 
 func (fr fakeRepo) ParseSimpleConfig(path string) (repoowners.SimpleConfig, error) {
 	dir := filepath.Dir(path)
-	for _, re := range fr.dirBlacklist {
+	for _, re := range fr.dirDenylist {
 		if re.MatchString(dir) {
 			return repoowners.SimpleConfig{}, filepath.SkipDir
 		}
@@ -174,7 +170,7 @@ func (fr fakeRepo) ParseSimpleConfig(path string) (repoowners.SimpleConfig, erro
 
 func (fr fakeRepo) ParseFullConfig(path string) (repoowners.FullConfig, error) {
 	dir := filepath.Dir(path)
-	for _, re := range fr.dirBlacklist {
+	for _, re := range fr.dirDenylist {
 		if re.MatchString(dir) {
 			return repoowners.FullConfig{}, filepath.SkipDir
 		}
@@ -269,8 +265,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by:
-To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **cjwagner** after the PR has been reviewed.
-You can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please ask for approval from **cjwagner** after the PR has been reviewed.
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
@@ -453,6 +448,45 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 <!-- META={"approvers":["alice"]} -->`,
 		},
 		{
+			name:     "remove approval with remove-approve",
+			hasLabel: true,
+			files:    []string{"a/a.go"},
+			comments: []github.IssueComment{
+				newTestComment("Alice", "/approve no-issue"),
+				newTestComment("k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **APPROVED**\n\nblah"),
+				newTestComment("Alice", "stuff\n/remove-approve \nmore stuff"),
+			},
+			reviews:             []github.Review{},
+			selfApprove:         true, // no-op test
+			needsIssue:          true,
+			lgtmActsAsApprove:   false,
+			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
+
+			expectDelete:  true,
+			expectToggle:  true,
+			expectComment: true,
+			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+
+This pull-request has been approved by: *<a href="#" title="Author self-approved">cjwagner</a>*
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **alice** after the PR has been reviewed.
+You can assign the PR to them by writing ` + "`/assign @alice`" + ` in a comment when ready.
+
+*No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+<details open>
+Needs approval from an approver in each of these files:
+
+- **[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)**
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+</details>
+<!-- META={"approvers":["alice"]} -->`,
+		},
+		{
 			name:     "remove approval after sync",
 			prBody:   "Changes the thing.\n fixes #42",
 			hasLabel: true,
@@ -480,6 +514,26 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			comments: []github.IssueComment{
 				newTestComment("k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **APPROVED**\n\nblah"),
 				newTestCommentTime(time.Now(), "CJWagner", "stuff\n/approve cancel \nmore stuff"),
+			},
+			reviews:             []github.Review{},
+			selfApprove:         true,
+			needsIssue:          true,
+			lgtmActsAsApprove:   false,
+			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
+
+			expectDelete:  true,
+			expectToggle:  true,
+			expectComment: true,
+		},
+		{
+			name:     "remove-approve for implicit self approveS",
+			prBody:   "Changes the thing.\n fixes #42",
+			hasLabel: true,
+			files:    []string{"c/c.go"},
+			comments: []github.IssueComment{
+				newTestComment("k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **APPROVED**\n\nblah"),
+				newTestCommentTime(time.Now(), "CJWagner", "stuff\n/remove-approve \nmore stuff"),
 			},
 			reviews:             []github.Review{},
 			selfApprove:         true,
@@ -715,8 +769,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by:
-To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **cjwagner** after the PR has been reviewed.
-You can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please ask for approval from **cjwagner** after the PR has been reviewed.
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
@@ -785,8 +838,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by:
-To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **cjwagner** after the PR has been reviewed.
-You can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please ask for approval from **cjwagner** after the PR has been reviewed.
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
@@ -823,8 +875,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by:
-To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **cjwagner** after the PR has been reviewed.
-You can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please ask for approval from **cjwagner** after the PR has been reviewed.
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
@@ -899,8 +950,44 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by:
-To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **cjwagner** after the PR has been reviewed.
-You can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please ask for approval from **cjwagner** after the PR has been reviewed.
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+<details open>
+Needs approval from an approver in each of these files:
+
+- **[c/OWNERS](https://github.com/org/repo/blob/master/c/OWNERS)**
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+</details>
+<!-- META={"approvers":["cjwagner"]} -->`,
+		},
+		{
+			name:     "remove-approve command supersedes earlier approved review",
+			hasLabel: true,
+			files:    []string{"c/c.go"},
+			comments: []github.IssueComment{
+				newTestCommentTime(time.Now().Add(time.Hour), "k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **APPROVED**\n\nblah"), // second
+				newTestCommentTime(time.Now().Add(time.Hour*2), "cjwagner", "stuff\n/remove-approve \nmore stuff"),                  // third
+			},
+			reviews: []github.Review{
+				newTestReviewTime(time.Now(), "cjwagner", "yep", github.ReviewStateApproved), // first
+			},
+			selfApprove:         false,
+			needsIssue:          false,
+			lgtmActsAsApprove:   false,
+			reviewActsAsApprove: true,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
+
+			expectDelete:  true,
+			expectToggle:  true,
+			expectComment: true,
+			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+
+This pull-request has been approved by:
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please ask for approval from **cjwagner** after the PR has been reviewed.
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
@@ -917,7 +1004,7 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 		{
 			name:     "approve cancel command supersedes simultaneous approved review",
 			hasLabel: false,
-			files:    []string{"c/c.go"},
+			files:    []string{"a/a.go", "c/c.go"},
 			comments: []github.IssueComment{},
 			reviews: []github.Review{
 				newTestReview("cjwagner", "/approve cancel", github.ReviewStateApproved),
@@ -934,20 +1021,57 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by:
-To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **cjwagner** after the PR has been reviewed.
-You can assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please ask for approval from **cjwagner** and additionally assign **alice** after the PR has been reviewed.
+You can assign the PR to them by writing ` + "`/assign @alice`" + ` in a comment when ready.
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
 
 <details open>
 Needs approval from an approver in each of these files:
 
+- **[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)**
 - **[c/OWNERS](https://github.com/org/repo/blob/master/c/OWNERS)**
 
 Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
 Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
-<!-- META={"approvers":["cjwagner"]} -->`,
+<!-- META={"approvers":["alice","cjwagner"]} -->`,
+		},
+		{
+			name:     "remove-approve command supersedes simultaneous approved review",
+			hasLabel: false,
+			files:    []string{"a/a.go", "c/c.go"},
+			comments: []github.IssueComment{},
+			reviews: []github.Review{
+				newTestReview("cjwagner", "/remove-approve", github.ReviewStateApproved),
+			},
+			selfApprove:         false,
+			needsIssue:          false,
+			lgtmActsAsApprove:   false,
+			reviewActsAsApprove: true,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
+
+			expectDelete:  false,
+			expectToggle:  false,
+			expectComment: true,
+			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+
+This pull-request has been approved by:
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please ask for approval from **cjwagner** and additionally assign **alice** after the PR has been reviewed.
+You can assign the PR to them by writing ` + "`/assign @alice`" + ` in a comment when ready.
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+<details open>
+Needs approval from an approver in each of these files:
+
+- **[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)**
+- **[c/OWNERS](https://github.com/org/repo/blob/master/c/OWNERS)**
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+</details>
+<!-- META={"approvers":["alice","cjwagner"]} -->`,
 		},
 		{
 			name:                "approve command supersedes simultaneous changes requested review",
@@ -1050,6 +1174,70 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 </details>
 <!-- META={"approvers":[]} -->`,
 		},
+		{
+			name:                "Approved because of AutoApproveUnownedSubfolders:",
+			hasLabel:            true,
+			humanApproved:       true,
+			files:               []string{"d/new-folder/new_file.go"},
+			selfApprove:         false,
+			needsIssue:          false,
+			lgtmActsAsApprove:   false,
+			reviewActsAsApprove: false,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
+
+			expectDelete:  false,
+			expectToggle:  false,
+			expectComment: true,
+			expectedComment: `[APPROVALNOTIFIER] This PR is **APPROVED**
+
+This pull-request has been approved by:
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
+
+<details >
+Needs approval from an approver in each of these files:
+
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+</details>
+<!-- META={"approvers":[]} -->`,
+		},
+		{
+			name:                "don't suggest to /assign already assigned cjwagner",
+			hasLabel:            false,
+			files:               []string{"a/a.go", "c/c.go"},
+			comments:            []github.IssueComment{},
+			reviews:             []github.Review{newTestReview("Alice", "/approve", github.ReviewStateChangesRequested)},
+			selfApprove:         false,
+			needsIssue:          false,
+			lgtmActsAsApprove:   false,
+			reviewActsAsApprove: true,
+			githubLinkURL:       &url.URL{Scheme: "https", Host: "github.com"},
+
+			expectDelete:  false,
+			expectToggle:  false,
+			expectComment: true,
+			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
+
+This pull-request has been approved by: *<a href="" title="Approved">Alice</a>*
+To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please ask for approval from **cjwagner** after the PR has been reviewed.
+
+The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands?repo=org%2Frepo).
+
+<details open>
+Needs approval from an approver in each of these files:
+
+- ~~[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)~~ [Alice]
+- **[c/OWNERS](https://github.com/org/repo/blob/master/c/OWNERS)**
+
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
+</details>
+<!-- META={"approvers":["cjwagner"]} -->`,
+		},
 	}
 
 	fr := fakeRepo{
@@ -1064,122 +1252,123 @@ Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a commen
 			"c":   sets.NewString("cblecker", "cjwagner"),
 		},
 		approverOwners: map[string]string{
-			"a/a.go":   "a",
-			"a/aa.go":  "a",
-			"a/b/b.go": "a/b",
-			"c/c.go":   "c",
+			"a/a.go":                   "a",
+			"a/aa.go":                  "a",
+			"a/b/b.go":                 "a/b",
+			"c/c.go":                   "c",
+			"d/new-folder/new_file.go": "d",
+		},
+		autoApproveUnownedSubfolders: map[string]bool{
+			"d": true,
 		},
 	}
 
 	for _, test := range tests {
-		fghc := newFakeGitHubClient(test.hasLabel, test.humanApproved, test.files, test.comments, test.reviews)
-		branch := "master"
-		if test.branch != "" {
-			branch = test.branch
-		}
+		t.Run(test.name, func(t *testing.T) {
+			fghc := newFakeGitHubClient(test.hasLabel, test.humanApproved, test.files, test.comments, test.reviews)
+			branch := "master"
+			if test.branch != "" {
+				branch = test.branch
+			}
 
-		rsa := !test.selfApprove
-		irs := !test.reviewActsAsApprove
-		if err := handle(
-			logrus.WithField("plugin", "approve"),
-			fghc,
-			fr,
-			config.GitHubOptions{
-				LinkURL: test.githubLinkURL,
-			},
-			&plugins.Approve{
-				Repos:               []string{"org/repo"},
-				RequireSelfApproval: &rsa,
-				IssueRequired:       test.needsIssue,
-				LgtmActsAsApprove:   test.lgtmActsAsApprove,
-				IgnoreReviewState:   &irs,
-				CommandHelpLink:     "https://go.k8s.io/bot-commands",
-				PrProcessLink:       "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process",
-			},
-			&state{
-				org:       "org",
-				repo:      "repo",
-				branch:    branch,
-				number:    prNumber,
-				body:      test.prBody,
-				author:    "cjwagner",
-				assignees: []github.User{{Login: "spxtr"}},
-			},
-		); err != nil {
-			t.Errorf("[%s] Unexpected error handling event: %v.", test.name, err)
-		}
+			rsa := !test.selfApprove
+			irs := !test.reviewActsAsApprove
+			if err := handle(
+				logrus.WithField("plugin", "approve"),
+				fghc,
+				fr,
+				config.GitHubOptions{
+					LinkURL: test.githubLinkURL,
+				},
+				&plugins.Approve{
+					Repos:               []string{"org/repo"},
+					RequireSelfApproval: &rsa,
+					IssueRequired:       test.needsIssue,
+					LgtmActsAsApprove:   test.lgtmActsAsApprove,
+					IgnoreReviewState:   &irs,
+					CommandHelpLink:     "https://go.k8s.io/bot-commands",
+					PrProcessLink:       "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process",
+				},
+				&state{
+					org:       "org",
+					repo:      "repo",
+					branch:    branch,
+					number:    prNumber,
+					body:      test.prBody,
+					author:    "cjwagner",
+					assignees: []github.User{{Login: "spxtr"}},
+				},
+			); err != nil {
+				t.Errorf("[%s] Unexpected error handling event: %v.", test.name, err)
+			}
 
-		if test.expectDelete {
-			if len(fghc.IssueCommentsDeleted) != 1 {
-				t.Errorf(
-					"[%s] Expected 1 notification to be deleted but %d notifications were deleted.",
-					test.name,
-					len(fghc.IssueCommentsDeleted),
-				)
-			}
-		} else {
-			if len(fghc.IssueCommentsDeleted) != 0 {
-				t.Errorf(
-					"[%s] Expected 0 notifications to be deleted but %d notification was deleted.",
-					test.name,
-					len(fghc.IssueCommentsDeleted),
-				)
-			}
-		}
-		if test.expectComment {
-			if len(fghc.IssueCommentsAdded) != 1 {
-				t.Errorf(
-					"[%s] Expected 1 notification to be added but %d notifications were added.",
-					test.name,
-					len(fghc.IssueCommentsAdded),
-				)
-			} else if expect, got := fmt.Sprintf("org/repo#%v:", prNumber)+test.expectedComment, fghc.IssueCommentsAdded[0]; test.expectedComment != "" && got != expect {
-				t.Errorf(
-					"[%s] Expected the created notification to be:\n%s\n\nbut got:\n%s\n\n",
-					test.name,
-					expect,
-					got,
-				)
-			}
-		} else {
-			if len(fghc.IssueCommentsAdded) != 0 {
-				t.Errorf(
-					"[%s] Expected 0 notifications to be added but %d notification was added.",
-					test.name,
-					len(fghc.IssueCommentsAdded),
-				)
-			}
-		}
-
-		labelAdded := false
-		for _, l := range fghc.IssueLabelsAdded {
-			if l == fmt.Sprintf("org/repo#%v:approved", prNumber) {
-				if labelAdded {
-					t.Errorf("[%s] The approved label was applied to a PR that already had it!", test.name)
+			if test.expectDelete {
+				if len(fghc.IssueCommentsDeleted) != 1 {
+					t.Errorf(
+						"[%s] Expected 1 notification to be deleted but %d notifications were deleted.",
+						test.name,
+						len(fghc.IssueCommentsDeleted),
+					)
 				}
-				labelAdded = true
-			}
-		}
-		if test.hasLabel {
-			labelAdded = false
-		}
-		toggled := labelAdded
-		for _, l := range fghc.IssueLabelsRemoved {
-			if l == fmt.Sprintf("org/repo#%v:approved", prNumber) {
-				if !test.hasLabel {
-					t.Errorf("[%s] The approved label was removed from a PR that doesn't have it!", test.name)
+			} else {
+				if len(fghc.IssueCommentsDeleted) != 0 {
+					t.Errorf(
+						"[%s] Expected 0 notifications to be deleted but %d notification was deleted.",
+						test.name,
+						len(fghc.IssueCommentsDeleted),
+					)
 				}
-				toggled = true
 			}
-		}
-		if test.expectToggle != toggled {
-			t.Errorf(
-				"[%s] Expected 'approved' label toggled: %t, but got %t.",
-				test.name,
-				test.expectToggle,
-				toggled,
-			)
-		}
+			if test.expectComment {
+				if len(fghc.IssueCommentsAdded) != 1 {
+					t.Errorf(
+						"[%s] Expected 1 notification to be added but %d notifications were added.",
+						test.name,
+						len(fghc.IssueCommentsAdded),
+					)
+				} else if expect, got := fmt.Sprintf("org/repo#%v:", prNumber)+test.expectedComment, fghc.IssueCommentsAdded[0]; test.expectedComment != "" && got != expect {
+					t.Errorf("expected notification differs from actual: %s", cmp.Diff(expect, got))
+				}
+			} else {
+				if len(fghc.IssueCommentsAdded) != 0 {
+					t.Errorf(
+						"[%s] Expected 0 notifications to be added but %d notification was added.",
+						test.name,
+						len(fghc.IssueCommentsAdded),
+					)
+				}
+			}
+
+			labelAdded := false
+			for _, l := range fghc.IssueLabelsAdded {
+				if l == fmt.Sprintf("org/repo#%v:approved", prNumber) {
+					if labelAdded {
+						t.Errorf("[%s] The approved label was applied to a PR that already had it!", test.name)
+					}
+					labelAdded = true
+				}
+			}
+			if test.hasLabel {
+				labelAdded = false
+			}
+			toggled := labelAdded
+			for _, l := range fghc.IssueLabelsRemoved {
+				if l == fmt.Sprintf("org/repo#%v:approved", prNumber) {
+					if !test.hasLabel {
+						t.Errorf("[%s] The approved label was removed from a PR that doesn't have it!", test.name)
+					}
+					toggled = true
+				}
+			}
+			if test.expectToggle != toggled {
+				t.Errorf(
+					"[%s] Expected 'approved' label toggled: %t, but got %t.",
+					test.name,
+					test.expectToggle,
+					toggled,
+				)
+			}
+		})
 	}
 }
 
@@ -1356,9 +1545,8 @@ func TestHandleGenericComment(t *testing.T) {
 		},
 		Number: 1,
 	}
-	fghc := &fakegithub.FakeClient{
-		PullRequests: map[int]*github.PullRequest{1: &pr},
-	}
+	fghc := fakegithub.NewFakeClient()
+	fghc.PullRequests = map[int]*github.PullRequest{1: &pr}
 
 	for _, test := range tests {
 		test.commentEvent.Repo = repo
@@ -1575,9 +1763,8 @@ func TestHandleReview(t *testing.T) {
 		Number: 1,
 		Body:   "Fix everything",
 	}
-	fghc := &fakegithub.FakeClient{
-		PullRequests: map[int]*github.PullRequest{1: &pr},
-	}
+	fghc := fakegithub.NewFakeClient()
+	fghc.PullRequests = map[int]*github.PullRequest{1: &pr}
 
 	for _, test := range tests {
 		test.reviewEvent.Repo = repo
@@ -1730,7 +1917,7 @@ func TestHandlePullRequest(t *testing.T) {
 		},
 		Name: "repo",
 	}
-	fghc := &fakegithub.FakeClient{}
+	fghc := fakegithub.NewFakeClient()
 
 	for _, test := range tests {
 		test.prEvent.Repo = repo

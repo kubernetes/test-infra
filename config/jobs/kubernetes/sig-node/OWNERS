@@ -4,6 +4,7 @@ reviewers:
 - alejandrox1
 - bart0sh
 - derekwaynecarr
+- ehashman
 - karan
 - MHBauer
 - vpickard
@@ -15,6 +16,10 @@ approvers:
 - dchen1107
 - derekwaynecarr
 - sjenning
+- mrunalp
+- klueska
+- ehashman
+- SergeyKanzhelev
 emeritus_approvers:
 - dashpole
 labels:

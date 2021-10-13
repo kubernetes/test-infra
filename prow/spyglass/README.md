@@ -21,7 +21,7 @@ To enable spyglass, just pass the `--spyglass` flag to your `deck` instance. Onc
 it will expose itself under `/view/` on your `deck` instance.
 
 In order to make Spyglass useful, you may want to set your job URLs to point at it. You can do so by
-setting `plank.job_url_prefix_config['*']` to `https://your.deck/view/gcs/`, and possibly `plank.job_url_template`
+setting `plank.job_url_prefix_config['*']` to `https://your.deck/view/`, and possibly `plank.job_url_template`
 to reference something similar depending on your setup.
 
 If you are not using the images we provide, you may also need to provide `--spyglass-files-location`,
@@ -110,5 +110,5 @@ deck:
 ### Accessing custom storage buckets
 
 By default, spyglass has access to all storage buckets defined globally
-(`plank.default_decoration_configs[...].gcs_configuration`) or on individual jobs (`<path-to-job>.gcs_configuration.bucket`).
+(`plank.default_decoration_config_entries[...].gcs_configuration`) or on individual jobs (`<path-to-job>.gcs_configuration.bucket`).
 In order to access additional/custom storage buckets, those buckets must be listed in `deck.additional_storage_buckets`.

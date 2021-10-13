@@ -66,7 +66,7 @@ This includes:
 
 - sorting randomly ordered map[] strings.
 */
-func normalize(s string) string {
+func normalize(s string, maxClusterTextLength int) string {
 	// blank out dates
 	s = flakeReasonDateRE.ReplaceAllLiteralString(s, "TIME")
 
@@ -99,14 +99,12 @@ func normalize(s string) string {
 	})
 
 	// for long strings, remove repeated lines!
-	if len(s) > longOutputLen {
+	if len(s) > maxClusterTextLength {
 		s = utils.RemoveDuplicateLines(s)
 	}
 
 	// truncate ridiculously long test output
-	if len(s) > longOutputLen {
-		s = s[:longOutputLen/2] + truncatedSep + s[len(s)-longOutputLen/2:]
-	}
+	s = truncate(s, maxClusterTextLength)
 
 	return s
 }
@@ -291,4 +289,13 @@ func makeNgramCounts(s string) []int {
 		memoizedNgramCountsMutex.RUnlock()
 		return result
 	}
+}
+
+const truncatedSep = "\n...[truncated]...\n"
+
+func truncate(s string, maxLength int) string {
+	if len(s) > maxLength {
+		return s[:maxLength/2] + truncatedSep + s[len(s)-maxLength/2:]
+	}
+	return s
 }

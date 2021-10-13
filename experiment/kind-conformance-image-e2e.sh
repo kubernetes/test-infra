@@ -47,21 +47,12 @@ install_kind() {
 
 # build kubernetes / node image, e2e binaries
 build() {
-    # possibly enable bazel build caching before building kubernetes
-    BAZEL_REMOTE_CACHE_ENABLED=${BAZEL_REMOTE_CACHE_ENABLED:-false}
-    if [[ "${BAZEL_REMOTE_CACHE_ENABLED}" == "true" ]]; then
-        # run the script in the kubekins image, do not fail if it fails
-        /usr/local/bin/create_bazel_cache_rcs.sh || true
-    fi
-
     # build the node image w/ kubernetes
-    kind build node-image --type=bazel --kube-root="${PWD}"
+    kind build node-image --kube-root="${PWD}"
 
-    # try to make sure the kubectl we built is in PATH
+    # ensure kubectl is in path
     local maybe_kubectl
-    maybe_kubectl="$(bazel aquery 'mnemonic("GoLink", //cmd/kubectl)' \
-      | grep '^  Outputs: \[.*\]$' \
-      | sed 's/^  Outputs: \[\(.*\)\]$/\1/')"
+    maybe_kubectl="$(find "${PWD}/_output" -name "kubectl" -type f)"
     if [[ -n "${maybe_kubectl}" ]]; then
         PATH="$(dirname "${maybe_kubectl}"):${PATH}"
         export PATH
@@ -111,9 +102,14 @@ EOF
 run_tests() {
   # binaries needed by the conformance image
   rm -rf _output/bin
-  NEW_GO_RUNNER_DIR="cluster/images/conformance/go-runner"
-  if [ -d "$NEW_GO_RUNNER_DIR" ]; then
-      make WHAT="test/e2e/e2e.test vendor/github.com/onsi/ginkgo/ginkgo cmd/kubectl cluster/images/conformance/go-runner"
+  # after https://github.com/kubernetes/kubernetes/pull/103874
+  NEW_CONFORMANCE_DIR="test/conformance/image"
+  # before https://github.com/kubernetes/kubernetes/pull/103874
+  OLD_CONFORMANCE_DIR="cluster/images/conformance"
+  if [ -d "${NEW_CONFORMANCE_DIR}/go-runner" ]; then
+      make WHAT="test/e2e/e2e.test vendor/github.com/onsi/ginkgo/ginkgo cmd/kubectl ${NEW_CONFORMANCE_DIR}/go-runner"
+  elif [ -d "${OLD_CONFORMANCE_DIR}/go-runner" ]; then
+      make WHAT="test/e2e/e2e.test vendor/github.com/onsi/ginkgo/ginkgo cmd/kubectl ${OLD_CONFORMANCE_DIR}/go-runner"
   else
       make WHAT="test/e2e/e2e.test vendor/github.com/onsi/ginkgo/ginkgo cmd/kubectl"
   fi
@@ -126,7 +122,14 @@ run_tests() {
   VERSION=$(echo -n "${KUBE_GIT_VERSION}" | cut -f 1 -d '+')
   export VERSION
 
-  pushd ${PWD}/cluster/images/conformance
+  if [ -d "${NEW_CONFORMANCE_DIR}" ]; then
+      pushd "${PWD}/${NEW_CONFORMANCE_DIR}"
+  elif [ -d "${OLD_CONFORMANCE_DIR}" ]; then
+      pushd "${PWD}/${OLD_CONFORMANCE_DIR}"
+  else
+      echo "Conformance dir not found"
+      exit 1
+  fi
 
   # build and load the conformance image into the kind nodes
   make build ARCH=amd64

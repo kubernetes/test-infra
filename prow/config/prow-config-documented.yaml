@@ -2,6 +2,14 @@ branch-protection:
     # AllowDeletions allows deletion of the protected branch by anyone with write access to the repository.
     allow_deletions: false
 
+    # AllowDisabledJobPolicies allows a branch to choose to opt out of branch protection
+    # even if Prow has registered required jobs for that branch.
+    allow_disabled_job_policies: false
+
+    # AllowDisabledPolicies allows a child to disable all protection even if the
+    # branch has inherited protection options from a parent.
+    allow_disabled_policies: false
+
     # AllowForcePushes permits force pushes to the protected branch by anyone with write access to the repository.
     allow_force_pushes: false
 
@@ -9,8 +17,13 @@ branch-protection:
     enforce_admins: false
 
     # Exclude specifies a set of regular expressions which identify branches
-    # that should be excluded from the protection policy
+    # that should be excluded from the protection policy, mutually exclusive with Include
     exclude:
+      - ""
+
+    # Include specifies a set of regular expressions which identify branches
+    # that should be included from the protection policy, mutually exclusive with Exclude
+    include:
       - ""
 
     # Orgs holds branch protection options for orgs by name
@@ -26,8 +39,13 @@ branch-protection:
             enforce_admins: false
 
             # Exclude specifies a set of regular expressions which identify branches
-            # that should be excluded from the protection policy
+            # that should be excluded from the protection policy, mutually exclusive with Include
             exclude:
+              - ""
+
+            # Include specifies a set of regular expressions which identify branches
+            # that should be included from the protection policy, mutually exclusive with Exclude
+            include:
               - ""
 
             # Protect overrides whether branch protection is enabled if set.
@@ -51,8 +69,13 @@ branch-protection:
                             enforce_admins: false
 
                             # Exclude specifies a set of regular expressions which identify branches
-                            # that should be excluded from the protection policy
+                            # that should be excluded from the protection policy, mutually exclusive with Include
                             exclude:
+                              - ""
+
+                            # Include specifies a set of regular expressions which identify branches
+                            # that should be included from the protection policy, mutually exclusive with Exclude
+                            include:
                               - ""
 
                             # Protect overrides whether branch protection is enabled if set.
@@ -95,12 +118,22 @@ branch-protection:
                                 users:
                                   - ""
 
+                            # Unmanaged makes us not manage the branchprotection.
+                            # Careful: Contrary to all other settings, this can _not_ be overridden
+                            # on a lower level and is always inherited.
+                            unmanaged: false
+
                     # Admins overrides whether protections apply to admins if set.
                     enforce_admins: false
 
                     # Exclude specifies a set of regular expressions which identify branches
-                    # that should be excluded from the protection policy
+                    # that should be excluded from the protection policy, mutually exclusive with Include
                     exclude:
+                      - ""
+
+                    # Include specifies a set of regular expressions which identify branches
+                    # that should be included from the protection policy, mutually exclusive with Exclude
+                    include:
                       - ""
 
                     # Protect overrides whether branch protection is enabled if set.
@@ -143,6 +176,11 @@ branch-protection:
                         users:
                           - ""
 
+                    # Unmanaged makes us not manage the branchprotection.
+                    # Careful: Contrary to all other settings, this can _not_ be overridden
+                    # on a lower level and is always inherited.
+                    unmanaged: false
+
             # RequiredLinearHistory enforces a linear commit Git history, which prevents anyone from pushing merge commits to a branch.
             required_linear_history: false
 
@@ -180,8 +218,22 @@ branch-protection:
                 users:
                   - ""
 
+            # Unmanaged makes us not manage the branchprotection.
+            # Careful: Contrary to all other settings, this can _not_ be overridden
+            # on a lower level and is always inherited.
+            unmanaged: false
+
     # Protect overrides whether branch protection is enabled if set.
     protect: false
+
+    # ProtectTested determines if branch protection rules are set for all repos
+    # that Prow has registered jobs for, regardless of if those repos are in the
+    # branch protection config.
+    protect-tested-repos: false
+
+    # ProtectReposWithOptionalJobs will make the Branchprotector manage required status
+    # contexts on repositories that only have optional jobs (default: false)
+    protect_repos_with_optional_jobs: false
 
     # RequiredLinearHistory enforces a linear commit Git history, which prevents anyone from pushing merge commits to a branch.
     required_linear_history: false
@@ -219,6 +271,11 @@ branch-protection:
           - ""
         users:
           - ""
+
+    # Unmanaged makes us not manage the branchprotection.
+    # Careful: Contrary to all other settings, this can _not_ be overridden
+    # on a lower level and is always inherited.
+    unmanaged: false
 
 
 # The git sha from which this config was generated
@@ -263,32 +320,6 @@ deck:
     # HiddenRepos is a list of orgs and/or repos that should not be displayed by Deck.
     hidden_repos:
       - ""
-
-    # Deprecated: RerunAuthConfig specifies who is able to trigger job reruns if that feature is enabled.
-    # The permissions here apply to all jobs.
-    # This option will be removed in favor of RerunAuthConfigs in July 2020.
-    rerun_auth_config:
-        # GitHubOrgs contains names of GitHub organizations whose members can rerun the job
-        github_orgs:
-          - ""
-
-        # GitHubTeams contains IDs of GitHub teams of users who can rerun the job
-        # If you know the name of a team and the org it belongs to,
-        # you can look up its ID using this command, where the team slug is the hyphenated name:
-        # curl -H "Authorization: token <token>" "https://api.github.com/orgs/<org-name>/teams/<team slug>"
-        # or, to list all teams in a given org, use
-        # curl -H "Authorization: token <token>" "https://api.github.com/orgs/<org-name>/teams"
-        github_team_ids:
-          - 0
-
-        # GitHubTeamSlugs contains slugs and orgs of teams of users who can rerun the job
-        github_team_slugs:
-          - org: ' '
-            slug: ' '
-
-        # GitHubUsers contains names of individual users who can rerun the job
-        github_users:
-          - ""
 
     # RerunAuthConfigs is a map of configs that specify who is able to trigger job reruns. The field
     # accepts a key of: `org/repo`, `org` or `*` (wildcard) to define what GitHub org (or repo) a particular
@@ -388,6 +419,11 @@ deck:
 # no timeout is configured at the job level. This value is set to 24 hours.
 default_job_timeout: 0s
 gerrit:
+    # DeckURL is the root URL of Deck. This is used to construct links to
+    # job runs for a given CL.
+    deck_url: ' '
+    org_repos_config: null
+
     # TickInterval is how often we do a sync with binded gerrit instance
     tick_interval: 0s
 
@@ -405,6 +441,21 @@ github_reporter:
     # defaults to both presubmit and postsubmit jobs.
     job_types_to_report:
       - ""
+
+    # NoCommentRepos is a list of orgs and org/repos for which failure report
+    # comments should not be maintained. Status contexts will still be written.
+    no_comment_repos:
+      - ""
+
+    # SummaryCommentRepos is a list of orgs and org/repos for which failure report
+    # comments is only sent when all jobs from current SHA are finished. Status
+    # contexts will still be written.
+    summary_comment_repos:
+      - ""
+horologium:
+    # TickInterval is the interval in which we check if new jobs need to be
+    # created. Defaults to one minute.
+    tick_interval: 0s
 in_repo_config:
     # AllowedClusters is a list of allowed clusternames that can be used for jobs on
     # a given repo. All clusters that are allowed for the specific repo, its org or
@@ -453,34 +504,111 @@ log_level: ' '
 # ManagedWebhooks contains information about all github repositories and organizations which are using
 # non-global Hmac token.
 managed_webhooks:
+    # Controls whether org/repo invitation for prow bot should be automatically
+    # accepted or not. Only admin level invitations related to orgs and repos
+    # in the managed_webhooks config will be accepted and all other invitations
+    # will be left pending.
+    auto_accept_invitation: false
     org_repo_config:
         "":
             token_created_after: "0001-01-01T00:00:00Z"
     respect_legacy_global_token: false
 
 
-# OwnersDirBlacklist is used to configure regular expressions matching directories
-# to ignore when searching for OWNERS{,_ALIAS} files in a repo.
+# OwnersDirBlacklist is deprecated, use OwnersDirDenylist instead
 owners_dir_blacklist:
-    # Default configures a default blacklist for all repos (or orgs).
+    # Default configures a default denylist for all repos (or orgs).
     # Some directories like ".git", "_output" and "vendor/.*/OWNERS"
-    # are already preconfigured to be blacklisted, and need not be included here.
+    # are already preconfigured to be denylisted, and need not be included here.
     default:
       - ""
 
-    # Repos configures a directory blacklist per repo (or org)
+    # Repos configures a directory denylist per repo (or org)
+    repos:
+        "": null
+
+
+# OwnersDirDenylist is used to configure regular expressions matching directories
+# to ignore when searching for OWNERS{,_ALIAS} files in a repo.
+owners_dir_denylist:
+    # Default configures a default denylist for all repos (or orgs).
+    # Some directories like ".git", "_output" and "vendor/.*/OWNERS"
+    # are already preconfigured to be denylisted, and need not be included here.
+    default:
+      - ""
+
+    # Repos configures a directory denylist per repo (or org)
     repos:
         "": null
 plank:
-    # DefaultDecorationConfigs holds the default decoration config for specific values.
-    # This config will be used on each Presubmit and Postsubmit's corresponding org/repo, and on Periodics
-    # if extraRefs[0] exists.
-    # Use `org/repo`, `org` or `*` as a key.
-    default_decoration_configs:
-        "":
+    # BuildClusterStatusFile is an optional field used to specify the blob storage location
+    # to publish cluster status information.
+    # e.g. gs://my-bucket/cluster-status.json
+    build_cluster_status_file: ' '
+
+    # DefaultDecorationConfigEntries is used to populate DefaultDecorationConfigs.
+
+    # Each entry in the slice specifies Repo and Cluster regexp filter fields to
+    # match against jobs and a corresponding DecorationConfig. All entries that
+    # match a job are used. Later matching entries override the fields of earlier
+    # matching entries.
+
+    # This field is smarter than the DefaultDecorationConfigsMap, because each
+    # entry includes additional Cluster regexp information that the old format
+    # does not consider.
+
+    # This field is mutually exclusive with the DefaultDecorationConfigsMap field.
+    default_decoration_config_entries:
+      - # Cluster matches against the cluster alias of the build cluster that the
+        # ProwJob is configured to run on. Recall that ProwJobs default to running on
+        # the "default" build cluster if they omit the "cluster" field in config.
+        cluster: ' '
+
+        # Config is the DecorationConfig to apply if the filter fields all match the
+        # ProwJob. Note that when multiple entries match a ProwJob they are all used
+        # by sequentially merging with later entries overriding fields from earlier
+        # entries.
+        config:
+            # CensorSecrets enables censoring output logs and artifacts.
+            censor_secrets: false
+
+            # CensoringOptions exposes options for censoring output logs and artifacts.
+            censoring_options:
+                # CensoringBufferSize is the size in bytes of the buffer allocated for every file
+                # being censored. We want to keep as little of the file in memory as possible in
+                # order for censoring to be reasonably performant in space. However, to guarantee
+                # that we censor every instance of every secret, our buffer size must be at least
+                # two times larger than the largest secret we are about to censor. While that size
+                # is the smallest possible buffer we could use, if the secrets being censored are
+                # small, censoring will not be performant as the number of I/O actions per file
+                # would increase. If unset, defaults to 10MiB.
+                censoring_buffer_size: 0
+
+                # CensoringConcurrency is the maximum number of goroutines that should be censoring
+                # artifacts and logs at any time. If unset, defaults to 10.
+                censoring_concurrency: 0
+
+                # ExcludeDirectories are directories which should not have their content censored. If
+                # present, content in these directories will not be censored even if the directory also
+                # matches a glob in IncludeDirectories. Entries in this list are relative to $ARTIFACTS,
+                # and are parsed with the go-zglob library, allowing for globbed matches.
+                exclude_directories:
+                  - ""
+
+                # IncludeDirectories are directories which should have their content censored. If
+                # present, only content in these directories will be censored. Entries in this list
+                # are relative to $ARTIFACTS and are parsed with the go-zglob library, allowing for
+                # globbed matches.
+                include_directories:
+                  - ""
+
             # CookieFileSecret is the name of a kubernetes secret that contains
             # a git http.cookiefile, which should be used during the cloning process.
-            cookiefile_secret: ' '
+            cookiefile_secret: ""
+
+            # DefaultServiceAccountName is the name of the Kubernetes service account
+            # that should be used by the pod if one is not specified in the podspec.
+            default_service_account_name: ""
 
             # GCSConfiguration holds options for pushing logs and
             # artifacts to GCS from a job.
@@ -523,7 +651,7 @@ plank:
 
             # GCSCredentialsSecret is the name of the Kubernetes secret
             # that holds GCS push credentials.
-            gcs_credentials_secret: ' '
+            gcs_credentials_secret: ""
 
             # GracePeriod is how long the pod utilities will wait
             # after sending SIGINT to send SIGKILL when aborting
@@ -566,7 +694,7 @@ plank:
 
             # S3CredentialsSecret is the name of the Kubernetes secret
             # that holds blob storage push credentials.
-            s3_credentials_secret: ' '
+            s3_credentials_secret: ""
 
             # SkipCloning determines if we should clone source code in the
             # initcontainers for jobs that specify refs
@@ -586,6 +714,189 @@ plank:
             # Timeout is how long the pod utilities will wait
             # before aborting a job with SIGINT.
             timeout: 0s
+
+            # UploadIgnoresInterrupts causes sidecar to ignore interrupts for the upload process in
+            # hope that the test process exits cleanly before starting an upload.
+            upload_ignores_interrupts: false
+
+            # UtilityImages holds pull specs for utility container
+            # images used to decorate a PodSpec.
+            utility_images:
+                # CloneRefs is the pull spec used for the clonerefs utility
+                clonerefs: ' '
+
+                # Entrypoint is the pull spec used for the entrypoint utility
+                entrypoint: ' '
+
+                # InitUpload is the pull spec used for the initupload utility
+                initupload: ' '
+
+                # sidecar is the pull spec used for the sidecar utility
+                sidecar: ' '
+
+        # OrgRepo matches against the "org" or "org/repo" that the presubmit or postsubmit
+        # is associated with. If the job is a periodic, extra_refs[0] is used. If the
+        # job is a periodic without extra_refs, the empty string will be used.
+        # If this field is omitted all jobs will match.
+        repo: ' '
+
+    # DefaultDecorationConfigsMap is a mapping from 'org', 'org/repo', or the
+    # literal string '*', to the default decoration config to use for that key.
+    # The '*' key matches all jobs. (Periodics use extra_refs[0] for matching
+    # if present.)
+
+    # This field is mutually exclusive with the DefaultDecorationConfigEntries field.
+    default_decoration_configs:
+        "":
+            # CensorSecrets enables censoring output logs and artifacts.
+            censor_secrets: false
+
+            # CensoringOptions exposes options for censoring output logs and artifacts.
+            censoring_options:
+                # CensoringBufferSize is the size in bytes of the buffer allocated for every file
+                # being censored. We want to keep as little of the file in memory as possible in
+                # order for censoring to be reasonably performant in space. However, to guarantee
+                # that we censor every instance of every secret, our buffer size must be at least
+                # two times larger than the largest secret we are about to censor. While that size
+                # is the smallest possible buffer we could use, if the secrets being censored are
+                # small, censoring will not be performant as the number of I/O actions per file
+                # would increase. If unset, defaults to 10MiB.
+                censoring_buffer_size: 0
+
+                # CensoringConcurrency is the maximum number of goroutines that should be censoring
+                # artifacts and logs at any time. If unset, defaults to 10.
+                censoring_concurrency: 0
+
+                # ExcludeDirectories are directories which should not have their content censored. If
+                # present, content in these directories will not be censored even if the directory also
+                # matches a glob in IncludeDirectories. Entries in this list are relative to $ARTIFACTS,
+                # and are parsed with the go-zglob library, allowing for globbed matches.
+                exclude_directories:
+                  - ""
+
+                # IncludeDirectories are directories which should have their content censored. If
+                # present, only content in these directories will be censored. Entries in this list
+                # are relative to $ARTIFACTS and are parsed with the go-zglob library, allowing for
+                # globbed matches.
+                include_directories:
+                  - ""
+
+            # CookieFileSecret is the name of a kubernetes secret that contains
+            # a git http.cookiefile, which should be used during the cloning process.
+            cookiefile_secret: ""
+
+            # DefaultServiceAccountName is the name of the Kubernetes service account
+            # that should be used by the pod if one is not specified in the podspec.
+            default_service_account_name: ""
+
+            # GCSConfiguration holds options for pushing logs and
+            # artifacts to GCS from a job.
+            gcs_configuration:
+                # Bucket is the bucket to upload to, it can be:
+                # * a GCS bucket: with gs:// prefix
+                # * a S3 bucket: with s3:// prefix
+                # * a GCS bucket: without a prefix (deprecated, it's discouraged to use Bucket without prefix please add the gs:// prefix)
+                bucket: ' '
+
+                # DefaultOrg is omitted from GCS paths when using the
+                # legacy or simple strategy
+                default_org: ' '
+
+                # DefaultRepo is omitted from GCS paths when using the
+                # legacy or simple strategy
+                default_repo: ' '
+
+                # JobURLPrefix holds the baseURL under which the jobs output can be viewed.
+                # If unset, this will be derived based on org/repo from the job_url_prefix_config.
+                job_url_prefix: ' '
+
+                # LocalOutputDir specifies a directory where files should be copied INSTEAD of uploading to blob storage.
+                # This option is useful for testing jobs that use the pod-utilities without actually uploading.
+                local_output_dir: ' '
+
+                # MediaTypes holds additional extension media types to add to Go's
+                # builtin's and the local system's defaults. This maps extensions
+                # to media types, for example: MediaTypes["log"] = "text/plain"
+                mediaTypes:
+                    "": ""
+
+                # PathPrefix is an optional path that follows the
+                # bucket name and comes before any structure
+                path_prefix: ' '
+
+                # PathStrategy dictates how the org and repo are used
+                # when calculating the full path to an artifact in GCS
+                path_strategy: ' '
+
+            # GCSCredentialsSecret is the name of the Kubernetes secret
+            # that holds GCS push credentials.
+            gcs_credentials_secret: ""
+
+            # GracePeriod is how long the pod utilities will wait
+            # after sending SIGINT to send SIGKILL when aborting
+            # a job. Only applicable if decorating the PodSpec.
+            grace_period: 0s
+
+            # OauthTokenSecret is a Kubernetes secret that contains the OAuth token,
+            # which is going to be used for fetching a private repository.
+            oauth_token_secret:
+                # Key is the a key of the corresponding kubernetes secret that
+                # holds the value of the OAuth token.
+                key: ' '
+
+                # Name is the name of a kubernetes secret.
+                name: ' '
+
+            # Resources holds resource requests and limits for utility
+            # containers used to decorate a PodSpec.
+            resources:
+                clonerefs:
+                    limits:
+                        "": "0"
+                    requests:
+                        "": "0"
+                initupload:
+                    limits:
+                        "": "0"
+                    requests:
+                        "": "0"
+                place_entrypoint:
+                    limits:
+                        "": "0"
+                    requests:
+                        "": "0"
+                sidecar:
+                    limits:
+                        "": "0"
+                    requests:
+                        "": "0"
+
+            # S3CredentialsSecret is the name of the Kubernetes secret
+            # that holds blob storage push credentials.
+            s3_credentials_secret: ""
+
+            # SkipCloning determines if we should clone source code in the
+            # initcontainers for jobs that specify refs
+            skip_cloning: false
+
+            # SSHHostFingerprints are the fingerprints of known SSH hosts
+            # that the cloning process can trust.
+            # Create with ssh-keyscan [-t rsa] host
+            ssh_host_fingerprints:
+              - ""
+
+            # SSHKeySecrets are the names of Kubernetes secrets that contain
+            # SSK keys which should be used during the cloning process.
+            ssh_key_secrets:
+              - ""
+
+            # Timeout is how long the pod utilities will wait
+            # before aborting a job with SIGINT.
+            timeout: 0s
+
+            # UploadIgnoresInterrupts causes sidecar to ignore interrupts for the upload process in
+            # hope that the test process exits cleanly before starting an upload.
+            upload_ignores_interrupts: false
 
             # UtilityImages holds pull specs for utility container
             # images used to decorate a PodSpec.
@@ -611,7 +922,7 @@ plank:
     job_url_template: ' '
 
     # PodPendingTimeout is after how long the controller will perform a garbage
-    # collection on pending pods. Defaults to one day.
+    # collection on pending pods. Defaults to 10 minutes.
     pod_pending_timeout: 0s
 
     # PodRunningTimeout is after how long the controller will abort a prowjob pod
@@ -619,7 +930,7 @@ plank:
     pod_running_timeout: 0s
 
     # PodUnscheduledTimeout is after how long the controller will abort a prowjob
-    # stuck in an unscheduled state. Defaults to one day.
+    # stuck in an unscheduled state. Defaults to 5 minutes.
     pod_unscheduled_timeout: 0s
 
     # ReportTemplateString compiles into ReportTemplate at load time.
@@ -638,6 +949,31 @@ plank:
 pod_namespace: ' '
 
 
+# ProwJobDefaultEntries holds a list of defaults for specific values
+# Each entry in the slice specifies Repo and CLuster regexp filter fields to
+# match against the jobs and a corresponding ProwJobDefault . All entries that
+# match a job are used. Later matching entries override the fields of earlier
+# matching entires.
+prowjob_default_entries:
+  - # Cluster matches against the cluster alias of the build cluster that the
+    # ProwJob is configured to run on. Recall that ProwJobs default to running on
+    # the "default" build cluster if they omit the "cluster" field in config.
+    cluster: ' '
+
+    # Config is the ProwJobDefault to apply if the filter fields all match the
+    # ProwJob. Note that when multiple entries match a ProwJob they are all used
+    # by sequentially merging with later entries overriding fields from earlier
+    # entries.
+    config:
+        tenant_id: ' '
+
+    # OrgRepo matches against the "org" or "org/repo" that the presubmit or postsubmit
+    # is associated with. If the job is a periodic, extra_refs[0] is used. If the
+    # job is a periodic without extra_refs, the empty string will be used.
+    # If this field is omitted all jobs will match.
+    repo: ' '
+
+
 # ProwJobNamespace is the namespace in the cluster that prow
 # components will use for looking up ProwJobs. The namespace
 # needs to exist and will not be created by prow.
@@ -648,6 +984,17 @@ prowjob_namespace: ' '
 # Pub/Sub Subscriptions that we want to listen to
 pubsub_subscriptions:
     "": null
+
+
+# PubSubTriggers defines Pub/Sub Subscriptions that we want to listen to,
+# can be used to restrict build cluster on a topic
+pubsub_triggers:
+  - allowed_clusters:
+      - ""
+    max_outstanding_messages: 0
+    project: ' '
+    topics:
+      - ""
 
 
 # PushGateway is a prometheus push gateway.
@@ -683,19 +1030,10 @@ sinker:
     # garbage collected.
     # Defaults to matching MaxPodAge.
     terminated_pod_ttl: 0s
-
-
-# Deprecated: this option will be removed in May 2020.
-slack_reporter:
-    channel: ' '
-    job_states_to_report:
-      - ""
-    job_types_to_report:
-      - ""
-    report_template: ' '
 slack_reporter_configs:
     "":
         channel: ' '
+        host: ' '
         job_states_to_report:
           - ""
         job_types_to_report:
@@ -709,8 +1047,7 @@ slack_reporter_configs:
 status_error_link: ' '
 tide:
     # BatchSizeLimitMap is a key/value pair of an org or org/repo as the key and
-    # integer batch size limit as the value. The empty string key can be used as
-    # a global default.
+    # integer batch size limit as the value. Use "*" as key to set a global default.
     # Special values:
     # 0 => unlimited batch size
     # -1 => batch merging disabled :(
@@ -810,8 +1147,17 @@ tide:
     pr_status_base_urls:
         "": ""
 
-    # Priority is an ordered list of labels that would be prioritized before other PRs
-    # PRs should match all labels contained in a list to be prioritized
+    # PrioritizeExistingBatches configures on org or org/repo level if Tide should continue
+    # testing pre-existing batches instead of immediately including new PRs as they become
+    # eligible. Continuing on an old batch allows to re-use all existing test results whereas
+    # starting a new one requires to start new instances of all tests.
+    # Use '*' as key to set this globally. Defaults to true.
+    prioritize_existing_batches:
+        "": false
+
+    # Priority is an ordered list of sets of labels that would be prioritized before other PRs
+    # PRs should match all labels contained in a set to be prioritized. The first entry has
+    # the highest priority.
     priority:
       - labels:
           - ""
@@ -857,3 +1203,9 @@ tide:
     # We can consider allowing this to be set separately for separate repos, or
     # allowing it to be a template.
     target_url: ' '
+
+    # TargetURLs is a map from "*", <org>, or <org/repo> to the URL for the tide status contexts.
+    # The most specific key that matches will be used.
+    # This field is mutually exclusive with TargetURL.
+    target_urls:
+        "": ""

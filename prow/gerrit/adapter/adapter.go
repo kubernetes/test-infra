@@ -22,7 +22,9 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/andygrunwald/go-gerrit"
@@ -35,6 +37,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	reporter "k8s.io/test-infra/prow/crier/reporters/gerrit"
 	"k8s.io/test-infra/prow/gerrit/client"
+	"k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/pjutil"
 )
 
@@ -46,19 +49,17 @@ type gerritClient interface {
 	QueryChanges(lastState client.LastSyncState, rateLimit int) map[string][]client.ChangeInfo
 	GetBranchRevision(instance, project, branch string) (string, error)
 	SetReview(instance, id, revision, message string, labels map[string]string) error
-	Account(instance string) *gerrit.AccountInfo
-}
-
-type configAgent interface {
-	Config() *config.Config
+	Account(instance string) (*gerrit.AccountInfo, error)
 }
 
 // Controller manages gerrit changes.
 type Controller struct {
-	config        config.Getter
-	prowJobClient prowJobClient
-	gc            gerritClient
-	tracker       LastSyncTracker
+	config             config.Getter
+	prowJobClient      prowJobClient
+	gc                 gerritClient
+	tracker            LastSyncTracker
+	projectsOptOutHelp map[string]sets.String
+	lock               sync.RWMutex
 }
 
 type LastSyncTracker interface {
@@ -67,13 +68,60 @@ type LastSyncTracker interface {
 }
 
 // NewController returns a new gerrit controller client
-func NewController(lastSyncTracker LastSyncTracker, gc gerritClient, prowJobClient prowv1.ProwJobInterface, cfg config.Getter) *Controller {
-	return &Controller{
-		prowJobClient: prowJobClient,
-		config:        cfg,
-		gc:            gc,
-		tracker:       lastSyncTracker,
+func NewController(ctx context.Context, prowJobClient prowv1.ProwJobInterface, op io.Opener,
+	cfg config.Getter, projects, projectsOptOutHelp map[string][]string, cookiefilePath, tokenPathOverride string, lastSyncFallback string) *Controller {
+
+	projectsOptOutHelpMap := map[string]sets.String{}
+	if cfg().Gerrit.OrgReposConfig != nil {
+		projectsOptOutHelpMap = cfg().Gerrit.OrgReposConfig.OptOutHelpRepos()
+	} else {
+		for i, p := range projectsOptOutHelp {
+			projectsOptOutHelpMap[i] = sets.NewString(p...)
+		}
 	}
+	lastSyncTracker := &syncTime{
+		path:   lastSyncFallback,
+		ctx:    ctx,
+		opener: op,
+	}
+	if err := lastSyncTracker.init(projects); err != nil {
+		logrus.WithError(err).Fatal("Error initializing lastSyncFallback.")
+	}
+	gerritClient, err := client.NewClient(projects)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error creating gerrit client.")
+	}
+	gerritClient.Authenticate(cookiefilePath, tokenPathOverride)
+
+	c := &Controller{
+		prowJobClient:      prowJobClient,
+		config:             cfg,
+		gc:                 gerritClient,
+		tracker:            lastSyncTracker,
+		projectsOptOutHelp: projectsOptOutHelpMap,
+	}
+	go func() {
+		for {
+			orgReposConfig := cfg().Gerrit.OrgReposConfig
+			if orgReposConfig == nil {
+				time.Sleep(time.Second)
+				continue
+			}
+			if err := gerritClient.UpdateClients(orgReposConfig.AllRepos()); err != nil {
+				logrus.WithError(err).Error("Updating clients.")
+			}
+			if err := lastSyncTracker.update(orgReposConfig.AllRepos()); err != nil {
+				logrus.WithError(err).Error("Syncing states.")
+			}
+			// Updates a map, lock to make sure it's thread safe.
+			c.lock.Lock()
+			c.projectsOptOutHelp = orgReposConfig.OptOutHelpRepos()
+			c.lock.Unlock()
+			// No need to spin constantly, give it a break. It's ok that config change has one second delay.
+			time.Sleep(time.Second)
+		}
+	}()
+	return c
 }
 
 // Sync looks for newly made gerrit changes
@@ -110,7 +158,7 @@ func (c *Controller) Sync() error {
 func makeCloneURI(instance, project string) (*url.URL, error) {
 	u, err := url.Parse(instance)
 	if err != nil {
-		return nil, fmt.Errorf("instance %s is not a url: %v", instance, err)
+		return nil, fmt.Errorf("instance %s is not a url: %w", instance, err)
 	}
 	if u.Host == "" {
 		return nil, errors.New("instance does not set host")
@@ -205,7 +253,7 @@ func failedJobs(account int, revision int, messages ...gerrit.ChangeMessageInfo)
 	return failures
 }
 
-// processChange creates new presubmit prowjobs base off the gerrit changes
+// processChange creates new presubmit/postsubmit prowjobs base off the gerrit changes
 func (c *Controller) processChange(logger logrus.FieldLogger, instance string, change client.ChangeInfo) error {
 
 	cloneURI, err := makeCloneURI(instance, change.Project)
@@ -245,7 +293,7 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 		postsubmits = append(postsubmits, c.config().PostsubmitsStatic[cloneURI.Host+"/"+cloneURI.Path]...)
 		for _, postsubmit := range postsubmits {
 			if shouldRun, err := postsubmit.ShouldRun(change.Branch, changedFiles); err != nil {
-				return fmt.Errorf("failed to determine if postsubmit %q should run: %v", postsubmit.Name, err)
+				return fmt.Errorf("failed to determine if postsubmit %q should run: %w", postsubmit.Name, err)
 			} else if shouldRun {
 				jobSpecs = append(jobSpecs, jobSpec{
 					spec:   pjutil.PostsubmitSpec(postsubmit, refs),
@@ -258,9 +306,10 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 		presubmits := c.config().PresubmitsStatic[cloneURI.String()]
 		presubmits = append(presubmits, c.config().PresubmitsStatic[cloneURI.Host+"/"+cloneURI.Path]...)
 
-		account := c.gc.Account(instance)
-		if account == nil {
-			return errors.New("account not found") // Should not happen, since this means auth failed
+		account, err := c.gc.Account(instance)
+		if err != nil {
+			// This would happen if authenticateOnce hasn't done register this instance yet
+			return fmt.Errorf("account not found for %q: %w", instance, err)
 		}
 
 		lastUpdate, ok := c.tracker.Current()[instance][change.Project]
@@ -276,13 +325,37 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 		filters := []pjutil.Filter{
 			messageFilter(messages, failed, all, logger),
 		}
-		if revision.Created.Time.After(lastUpdate) {
+		// Automatically trigger the Prow jobs if the revision is new and the
+		// change is not in WorkInProgress.
+		if revision.Created.Time.After(lastUpdate) && !change.WorkInProgress {
 			filters = append(filters, pjutil.TestAllFilter())
 		}
 		toTrigger, err := pjutil.FilterPresubmits(pjutil.AggregateFilter(filters), listChangedFiles(change), change.Branch, presubmits, logger)
 		if err != nil {
 			return fmt.Errorf("filter presubmits: %w", err)
 		}
+
+		// Reply with help information to run the presubmit Prow jobs if requested.
+		for _, msg := range messages {
+			needsHelp, note := pjutil.ShouldRespondWithHelp(msg, len(toTrigger))
+			// Lock for projectOptOutHelp, which is a map.
+			c.lock.RLock()
+			optedOut := isProjectOptOutHelp(c.projectsOptOutHelp, instance, change.Project)
+			c.lock.RUnlock()
+			if needsHelp && !optedOut {
+				runWithTestAllNames, optionalJobsCommands, requiredJobsCommands, err := pjutil.AvailablePresubmits(listChangedFiles(change), cloneURI.Host, change.Project, change.Branch, presubmits, logger.WithField("help", true))
+				if err != nil {
+					return err
+				}
+				message := pjutil.HelpMessage(cloneURI.Host, change.Project, change.Branch, note, runWithTestAllNames, optionalJobsCommands, requiredJobsCommands)
+				if err := c.gc.SetReview(instance, change.ID, change.CurrentRevision, message, nil); err != nil {
+					return err
+				}
+				// Only respond to the first message that requests help information.
+				break
+			}
+		}
+
 		for _, presubmit := range toTrigger {
 			jobSpecs = append(jobSpecs, jobSpec{
 				spec:   pjutil.PresubmitSpec(presubmit, refs),
@@ -302,6 +375,7 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 			labels[k] = v
 		}
 		labels[client.GerritRevision] = change.CurrentRevision
+		labels[client.GerritPatchset] = strconv.Itoa(change.Revisions[change.CurrentRevision].Number)
 
 		if _, ok := labels[client.GerritReportLabel]; !ok {
 			labels[client.GerritReportLabel] = client.CodeReview
@@ -326,20 +400,59 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 
 	// comment back to gerrit if Report is set for any of the jobs
 	var reportingJobs int
-	var message string
+	var jobList string
 	for _, job := range triggeredJobs {
 		if job.report {
-			message += fmt.Sprintf("\n  * Name: %s", job.name)
+			jobList += fmt.Sprintf("\n  * Name: %s", job.name)
 			reportingJobs++
 		}
 	}
 
 	if reportingJobs > 0 {
-		message = fmt.Sprintf("Triggered %d prow jobs (%d suppressed reporting):", len(triggeredJobs), len(triggeredJobs)-reportingJobs) + message
+		message := fmt.Sprintf("Triggered %d prow jobs (%d suppressed reporting): ", len(triggeredJobs), len(triggeredJobs)-reportingJobs)
+		// If we have a Deck URL, link to all results for the CL, otherwise list the triggered jobs.
+		link, err := deckLinkForPR(c.config().Gerrit.DeckURL, refs, change.Status)
+		if err != nil {
+			logger.WithError(err).Error("Failed to generate link to job results on Deck.")
+		}
+		if link != "" && err == nil {
+			message = message + link
+		} else {
+			message = message + jobList
+		}
 		if err := c.gc.SetReview(instance, change.ID, change.CurrentRevision, message, nil); err != nil {
 			return err
 		}
 	}
 
 	return nil
+}
+
+// isProjectOptOutHelp returns if the project is opt-out from getting help
+// information about how to run presubmit tests on their changes.
+func isProjectOptOutHelp(projectsOptOutHelp map[string]sets.String, instance, project string) bool {
+	ps, ok := projectsOptOutHelp[instance]
+	if !ok {
+		return false
+	}
+	return ps.Has(project)
+}
+
+func deckLinkForPR(deckURL string, refs prowapi.Refs, changeStatus string) (string, error) {
+	if deckURL == "" || changeStatus == client.Merged {
+		return "", nil
+	}
+
+	parsed, err := url.Parse(deckURL)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse gerrit.deck_url (impossible: this should have been caught at load time): %w", err)
+	}
+	query := parsed.Query()
+	query.Set("repo", fmt.Sprintf("%s/%s", refs.Org, refs.Repo))
+	if len(refs.Pulls) != 1 {
+		return "", fmt.Errorf("impossible: triggered jobs for a Gerrit change, but refs.pulls was empty")
+	}
+	query.Set("pull", strconv.Itoa(refs.Pulls[0].Number))
+	parsed.RawQuery = query.Encode()
+	return parsed.String(), nil
 }

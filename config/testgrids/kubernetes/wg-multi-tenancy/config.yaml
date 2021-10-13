@@ -3,7 +3,9 @@ dashboard_groups:
   dashboard_names:
     - wg-multi-tenancy-hnc
     - wg-multi-tenancy-mtb
+    - wg-multi-tenancy-externalip
 
 dashboards:
 - name: wg-multi-tenancy-hnc
 - name: wg-multi-tenancy-mtb
+- name: wg-multi-tenancy-externalip

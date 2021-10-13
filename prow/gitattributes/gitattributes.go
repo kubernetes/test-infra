@@ -52,7 +52,7 @@ func NewGroup(gitAttributesContent func() ([]byte, error)) (*Group, error) {
 		case *github.FileNotFound:
 			return g, nil
 		default:
-			return nil, fmt.Errorf("could not get .gitattributes: %v", err)
+			return nil, fmt.Errorf("could not get .gitattributes: %w", err)
 		}
 	}
 
@@ -87,14 +87,14 @@ func (g *Group) load(r io.Reader) error {
 		if attributes.Has("linguist-generated=true") {
 			p, err := parsePattern(fs[0])
 			if err != nil {
-				return fmt.Errorf("error parsing pattern: %v", err)
+				return fmt.Errorf("error parsing pattern: %w", err)
 			}
 			g.LinguistGeneratedPatterns = append(g.LinguistGeneratedPatterns, p)
 		}
 	}
 
 	if err := s.Err(); err != nil {
-		return fmt.Errorf("scan error: %v", err)
+		return fmt.Errorf("scan error: %w", err)
 	}
 
 	return nil

@@ -264,7 +264,7 @@ func TestWaitParallelContainers(t *testing.T) {
 				}
 				marker, err := strconv.Atoi(m)
 				if err != nil {
-					errCh <- fmt.Errorf("invalid exit code: %v", err)
+					errCh <- fmt.Errorf("invalid exit code: %w", err)
 				}
 				go func() {
 					errCh <- entrypointOptions.Mark(marker)
@@ -274,11 +274,9 @@ func TestWaitParallelContainers(t *testing.T) {
 
 			if tc.missing {
 				go func() {
-					select {
-					case <-time.After(missingMarkerTimeout):
-						cancel()
-						errCh <- nil
-					}
+					time.Sleep(missingMarkerTimeout)
+					cancel()
+					errCh <- nil
 				}()
 			}
 

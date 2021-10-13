@@ -51,7 +51,7 @@ type Agent struct {
 func IsConfigMapMount(path string) (bool, error) {
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
-		return false, fmt.Errorf("Could not read provided directory %s: %v", path, err)
+		return false, fmt.Errorf("Could not read provided directory %s: %w", path, err)
 	}
 	for _, file := range files {
 		if file.Name() == "..data" {
@@ -147,7 +147,8 @@ func GetFileWatcher(eventFunc func(*fsnotify.Watcher) error, errFunc func(error,
 			return nil, err
 		}
 	}
-	logrus.Debugf("Watching files: %v", files)
+	logrus.Debugf("Watching %d files", len(files))
+	logrus.Tracef("Watching files: %v", files)
 	return func(ctx context.Context) {
 		for {
 			select {
@@ -179,7 +180,7 @@ func ListCMsAndDirs(path string) (cms sets.String, dirs sets.String, err error) 
 		// for files in a directory trigger events for the directory
 		if info != nil && info.IsDir() {
 			if isCM, err := IsConfigMapMount(path); err != nil {
-				return fmt.Errorf("Failed to check is path %s is configmap mounted: %v", path, err)
+				return fmt.Errorf("Failed to check is path %s is configmap mounted: %w", path, err)
 			} else if isCM {
 				cms.Insert(path)
 				// configmaps can't have nested directories
@@ -194,9 +195,9 @@ func ListCMsAndDirs(path string) (cms sets.String, dirs sets.String, err error) 
 	return cms, dirs, err
 }
 
-func watchConfigs(ca *Agent, prowConfig, jobConfig string, additionals ...func(*Config) error) error {
+func watchConfigs(ca *Agent, prowConfig, jobConfig string, supplementalProwConfigDirs []string, supplementalProwConfigsFileNameSuffix string, additionals ...func(*Config) error) error {
 	cmEventFunc := func() error {
-		c, err := Load(prowConfig, jobConfig, additionals...)
+		c, err := Load(prowConfig, jobConfig, supplementalProwConfigDirs, supplementalProwConfigsFileNameSuffix, additionals...)
 		if err != nil {
 			return err
 		}
@@ -205,7 +206,7 @@ func watchConfigs(ca *Agent, prowConfig, jobConfig string, additionals ...func(*
 	}
 	// We may need to add more directories to be watched
 	dirsEventFunc := func(w *fsnotify.Watcher) error {
-		c, err := Load(prowConfig, jobConfig, additionals...)
+		c, err := Load(prowConfig, jobConfig, supplementalProwConfigDirs, supplementalProwConfigsFileNameSuffix, additionals...)
 		if err != nil {
 			return err
 		}
@@ -214,6 +215,13 @@ func watchConfigs(ca *Agent, prowConfig, jobConfig string, additionals ...func(*
 		_, dirs, err := ListCMsAndDirs(jobConfig)
 		if err != nil {
 			return err
+		}
+		for _, supplementalProwConfigDir := range supplementalProwConfigDirs {
+			_, additionalDirs, err := ListCMsAndDirs(supplementalProwConfigDir)
+			if err != nil {
+				return err
+			}
+			dirs.Insert(additionalDirs.UnsortedList()...)
 		}
 		for dir := range dirs {
 			// Adding a file or directory that already exists in fsnotify is a no-op, so it is safe to always run Add
@@ -288,13 +296,13 @@ func watchConfigs(ca *Agent, prowConfig, jobConfig string, additionals ...func(*
 // first load fails, Start will return the error and abort. Future load failures
 // will log the failure message but continue attempting to load.
 // This function will replace Start in a future release.
-func (ca *Agent) StartWatch(prowConfig, jobConfig string, additionals ...func(*Config) error) error {
-	c, err := Load(prowConfig, jobConfig, additionals...)
+func (ca *Agent) StartWatch(prowConfig, jobConfig string, supplementalProwConfigDirs []string, supplementalProwConfigsFileNameSuffix string, additionals ...func(*Config) error) error {
+	c, err := Load(prowConfig, jobConfig, supplementalProwConfigDirs, supplementalProwConfigsFileNameSuffix, additionals...)
 	if err != nil {
 		return err
 	}
 	ca.Set(c)
-	watchConfigs(ca, prowConfig, jobConfig, additionals...)
+	watchConfigs(ca, prowConfig, jobConfig, supplementalProwConfigDirs, supplementalProwConfigsFileNameSuffix, additionals...)
 	return nil
 }
 
@@ -325,12 +333,12 @@ func lastConfigModTime(prowConfig, jobConfig string) (time.Time, error) {
 // Start will begin polling the config file at the path. If the first load
 // fails, Start will return the error and abort. Future load failures will log
 // the failure message but continue attempting to load.
-func (ca *Agent) Start(prowConfig, jobConfig string, additionals ...func(*Config) error) error {
+func (ca *Agent) Start(prowConfig, jobConfig string, additionalProwConfigDirs []string, supplementalProwConfigsFileNameSuffix string, additionals ...func(*Config) error) error {
 	lastModTime, err := lastConfigModTime(prowConfig, jobConfig)
 	if err != nil {
 		lastModTime = time.Time{}
 	}
-	c, err := Load(prowConfig, jobConfig, additionals...)
+	c, err := Load(prowConfig, jobConfig, additionalProwConfigDirs, supplementalProwConfigsFileNameSuffix, additionals...)
 	if err != nil {
 		return err
 	}
@@ -352,7 +360,7 @@ func (ca *Agent) Start(prowConfig, jobConfig string, additionals ...func(*Config
 				}
 				lastModTime = recentModTime
 			}
-			if c, err := Load(prowConfig, jobConfig, additionals...); err != nil {
+			if c, err := Load(prowConfig, jobConfig, additionalProwConfigDirs, supplementalProwConfigsFileNameSuffix, additionals...); err != nil {
 				logrus.WithField("prowConfig", prowConfig).
 					WithField("jobConfig", jobConfig).
 					WithError(err).Error("Error loading config.")

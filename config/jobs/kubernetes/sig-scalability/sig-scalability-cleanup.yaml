@@ -2,20 +2,26 @@ periodics:
 - interval: 24h
   name: ci-kubernetes-e2e-scalability-cleanup
   labels:
-     preset-service-account: "true"
+    preset-service-account: "true"
+  decorate: true
+  decoration_config:
+    timeout: 60m
+  extra_refs:
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
   annotations:
     testgrid-dashboards: sig-scalability-experiments
     testgrid-tab-name: snapshots-cleanup
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
+      command:
+      - runner.sh
+      - /workspace/scenarios/execute.py
       args:
-      - --repo=k8s.io/perf-tests=master
-      - --root=/go/src
-      - --timeout=60
-      - --scenario=execute
-      - --
-      - $GOPATH/src/k8s.io/perf-tests/clusterloader2/clean-up-old-snapshots.sh
+      - $(GOPATH)/src/k8s.io/perf-tests/clusterloader2/clean-up-old-snapshots.sh
       # Command (list|delete)
       - delete
       # Comma-separated list of projects to process
@@ -25,3 +31,51 @@ periodics:
       - ci-kubernetes-e2e-gci-gce-scalability
       # Delete snapshots older than x days
       - "30"
+
+- name: ci-kubernetes-scalability-cleanup-golang-builds-canary
+  cluster: k8s-infra-prow-build
+  interval: 24h
+  labels:
+    preset-service-account: "true"
+  decorate: true
+  decoration_config:
+    timeout: 60m
+  extra_refs:
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
+  annotations:
+    # TODO(ameukam): update with email alert
+    testgrid-dashboards: sig-k8s-infra-canaries
+    testgrid-tab-name: golang-build-5k-project-snapshots-cleanup-canary
+    testgrid-alert-email: ameukam@gmail.com
+    testgrid-num-failures-to-alert: '3'
+  spec:
+    # TODO (ameukam): review the need of the specific service account.
+    # https://github.com/kubernetes/k8s.io/issues/2854
+    serviceAccountName: boskos-janitor
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
+      command:
+      - runner.sh
+      - /workspace/scenarios/execute.py
+      args:
+      - $(GOPATH)/src/k8s.io/perf-tests/clusterloader2/clean-up-old-snapshots.sh
+      # Command (list|delete)
+      - delete
+      # Comma-separated list of projects to process
+      # It should match projects list for type: scalability-project in prow/cluster/boskos-resources.yaml
+      - k8s-infra-e2e-scale-5k-project
+      # Comma-separated list of snapshot prefixes to delete
+      # TODO (ameukam): drop canary when migration is over: https://github.com/kubernetes/k8s.io/issues/2241
+      - ci-golang-tip-k8s-1-18-canary
+      # Delete snapshots older than x days
+      - "30"
+      resources:
+        limits:
+          cpu: 2
+          memory: 4Gi
+        requests:
+          cpu: 2
+          memory: 4Gi

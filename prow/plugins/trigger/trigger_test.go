@@ -181,7 +181,7 @@ func TestRunRequested(t *testing.T) {
 				Logger:        logrus.WithField("testcase", testCase.name),
 			}
 
-			err := runRequested(client, pr, fakegithub.TestRef, testCase.requestedJobs, "event-guid", time.Nanosecond)
+			err := runRequested(client, pr, fakegithub.TestRef, testCase.requestedJobs, "event-guid", nil, time.Nanosecond)
 			if err == nil && testCase.expectedErr {
 				t.Error("failed to receive an error")
 			}
@@ -346,16 +346,25 @@ func TestTrustedUser(t *testing.T) {
 			expectedTrusted: false,
 			expectedReason:  (notMember | notSecondaryMember).String(),
 		},
+		{
+			name:            "Self as bot is trusted",
+			user:            "k8s-ci-robot",
+			expectedTrusted: true,
+		},
+		{
+			name:            "Self as app is trusted",
+			user:            "k8s-ci-robot[bot]",
+			expectedTrusted: true,
+		},
 	}
 
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			fc := &fakegithub.FakeClient{
-				OrgMembers: map[string][]string{
-					"kubernetes": {"test"},
-				},
-				Collaborators: []string{"test-collaborator"},
+			fc := fakegithub.NewFakeClient()
+			fc.OrgMembers = map[string][]string{
+				"kubernetes": {"test"},
 			}
+			fc.Collaborators = []string{"test-collaborator"}
 
 			trustedResponse, err := TrustedUser(fc, tc.onlyOrgMembers, tc.trustedOrg, tc.user, tc.org, tc.repo)
 			if err != nil {
@@ -389,7 +398,7 @@ func TestGetPresubmits(t *testing.T) {
 							JobBase: config.JobBase{Name: "my-static-presubmit"},
 						}},
 					},
-					ProwYAMLGetter: func(_ *config.Config, _ git.ClientFactory, _, _ string, _ ...string) (*config.ProwYAML, error) {
+					ProwYAMLGetterWithDefaults: func(_ *config.Config, _ git.ClientFactory, _, _ string, _ ...string) (*config.ProwYAML, error) {
 						return &config.ProwYAML{
 							Presubmits: []config.Presubmit{{
 								JobBase: config.JobBase{Name: "my-inrepoconfig-presubmit"},
@@ -413,7 +422,7 @@ func TestGetPresubmits(t *testing.T) {
 							JobBase: config.JobBase{Name: "my-static-presubmit"},
 						}},
 					},
-					ProwYAMLGetter: func(_ *config.Config, _ git.ClientFactory, _, _ string, _ ...string) (*config.ProwYAML, error) {
+					ProwYAMLGetterWithDefaults: func(_ *config.Config, _ git.ClientFactory, _, _ string, _ ...string) (*config.ProwYAML, error) {
 						return &config.ProwYAML{
 							Presubmits: []config.Presubmit{{
 								JobBase: config.JobBase{Name: "my-inrepoconfig-presubmit"},
@@ -467,7 +476,7 @@ func TestGetPostsubmits(t *testing.T) {
 							JobBase: config.JobBase{Name: "my-static-postsubmit"},
 						}},
 					},
-					ProwYAMLGetter: func(_ *config.Config, _ git.ClientFactory, _, _ string, _ ...string) (*config.ProwYAML, error) {
+					ProwYAMLGetterWithDefaults: func(_ *config.Config, _ git.ClientFactory, _, _ string, _ ...string) (*config.ProwYAML, error) {
 						return &config.ProwYAML{
 							Postsubmits: []config.Postsubmit{{
 								JobBase: config.JobBase{Name: "my-inrepoconfig-postsubmit"},
@@ -491,7 +500,7 @@ func TestGetPostsubmits(t *testing.T) {
 							JobBase: config.JobBase{Name: "my-static-postsubmit"},
 						}},
 					},
-					ProwYAMLGetter: func(_ *config.Config, _ git.ClientFactory, _, _ string, _ ...string) (*config.ProwYAML, error) {
+					ProwYAMLGetterWithDefaults: func(_ *config.Config, _ git.ClientFactory, _, _ string, _ ...string) (*config.ProwYAML, error) {
 						return &config.ProwYAML{
 							Postsubmits: []config.Postsubmit{{
 								JobBase: config.JobBase{Name: "my-inrepoconfig-postsubmit"},
