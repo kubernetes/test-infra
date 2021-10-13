@@ -1712,6 +1712,35 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to the hosting of release artifacts
+        name: area/artifacts
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to Cluster API code organization
+        name: area/code-organization
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to Cluster API and Kubernetes conformance tests
+        name: area/conformance
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: 0052cc
+        description: Issues or PRs related to networking
+        name: area/networking
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs related to security
+        name: area/security
+        target: both
+        addedBy: anyone
+        prowPlugin: label
   kubernetes-sigs/cluster-api-provider-azure:
     labels:
       - color: c7def8
