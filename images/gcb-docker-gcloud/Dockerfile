@@ -14,7 +14,7 @@
 
 ARG GO_VERSION
 
-FROM multiarch/qemu-user-static:5.1.0-2 as qemu-image
+FROM multiarch/qemu-user-static:5.2.0-2 as qemu-image
 
 # Includes bash, docker, and gcloud
 FROM golang:${GO_VERSION}-alpine
