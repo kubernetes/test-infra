@@ -17,7 +17,7 @@ periodics:
     workdir: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211011-99d572842d-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
       command:
       - runner.sh
       - kubetest
