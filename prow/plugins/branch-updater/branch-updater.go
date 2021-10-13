@@ -104,6 +104,7 @@ func handlePR(gc githubClient, log *logrus.Entry, config plugins.BranchUpdater, 
 	if pr.Mergable == nil {
 		// Crude, but this should always be enough time for GitHub to reach a decision.
 		// Worst case, we'll re-check the next time the PR is updated.
+		log.Warnf("GitHub did not report mergeable status for PR %s/%s#%d. Sleeping for %d seconds and retrying.", org, repo, pr.Number, gitHubMergeStateRefreshDelay)
 		time.Sleep(gitHubMergeStateRefreshDelay * time.Second)
 		refreshedPr, err := gc.GetPullRequest(org, repo, pr.Number)
 		if err != nil {
