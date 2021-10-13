@@ -38,3 +38,21 @@ presubmits:
         - make
         args:
         - test
+
+  - name: pull-ibm-vpc-block-csi-driver-verify
+    always_run: true
+    decorate: true
+    skip_branches:
+    - gh-pages
+    path_alias: sigs.k8s.io/ibm-vpc-block-csi-driver
+    annotations:
+      testgrid-dashboards: sig-cloud-provider-ibm-vpc-block-csi-driver
+      testgrid-tab-name: verify
+      description: ibm-vpc-block-csi-driver basic code verification.
+    spec:
+      containers:
+      - image: golang:1.15
+        command:
+        - make
+        args:
+        - verify
