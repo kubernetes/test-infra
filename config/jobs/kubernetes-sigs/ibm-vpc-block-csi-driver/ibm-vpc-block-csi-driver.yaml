@@ -51,7 +51,7 @@ presubmits:
       description: ibm-vpc-block-csi-driver basic code verification.
     spec:
       containers:
-      - image: golang:1.15
+      - image: golang:1.16
         command:
         - make
         args:
