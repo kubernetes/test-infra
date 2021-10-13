@@ -163,8 +163,16 @@ func (o *options) defaultBaseRef(pjs *prowapi.ProwJobSpec) error {
 		} else {
 			baseSHA, err := o.githubClient.GetRef(o.org, o.repo, fmt.Sprintf("heads/%s", pjs.Refs.BaseRef))
 			if err != nil {
-				logrus.Fatalf("failed to get base sha: %v", err)
+				logrus.Fatalf("failed to get base sha from heads: %v", err)
 				return err
+			}
+			// fallback to work with tags also
+			if baseSHA == "" {
+				baseSHA, err = o.githubClient.GetRef(o.org, o.repo, fmt.Sprintf("tags/%s", pjs.Refs.BaseRef))
+				if err != nil {
+					logrus.Fatalf("failed to get base sha from tags: %v", err)
+					return err
+				}
 			}
 			pjs.Refs.BaseSHA = baseSHA
 		}
