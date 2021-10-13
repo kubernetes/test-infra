@@ -1,6 +1,6 @@
 presubmits:
   kubernetes-sigs/ibm-vpc-block-csi-driver:
-  - name: ibm-vpc-block-csi-driver-build
+  - name: pull-ibm-vpc-block-csi-driver-build
     always_run: true
     decorate: true
     skip_branches:
@@ -16,7 +16,7 @@ presubmits:
         command:
         - make
 
-  - name: ibm-vpc-block-csi-driver-unit
+  - name: pull-ibm-vpc-block-csi-driver-unit
     always_run: true
     decorate: true
     skip_branches:
@@ -34,7 +34,7 @@ presubmits:
         args:
         - test
 
-  - name: ibm-vpc-block-csi-driver-verify
+  - name: pull-ibm-vpc-block-csi-driver-verify
     always_run: true
     decorate: true
     skip_branches:
