@@ -347,6 +347,8 @@ presubmits:
         env:
           - name: TEST_WINDOWS
             value: "true"
+          - name: ENABLE_TOPOLOGY
+            value: "true"
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
       testgrid-tab-name: pr-azuredisk-csi-driver-e2e-windows
