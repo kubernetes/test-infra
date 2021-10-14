@@ -25,6 +25,7 @@ go_test(
     ],
     data = [":test-data"],
     embed = [":go_default_library"],
+    tags = ["manual"],
     deps = [
         "//pkg/genyaml/testdata/alias_simple_types:go_default_library",
         "//pkg/genyaml/testdata/alias_types:go_default_library",

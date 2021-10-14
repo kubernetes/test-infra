@@ -21,6 +21,7 @@ go_test(
     name = "go_default_test",
     srcs = ["repoowners_test.go"],
     embed = [":go_default_library"],
+    tags = ["manual"],
     deps = [
         "//prow/config:go_default_library",
         "//prow/git/localgit:go_default_library",

@@ -71,6 +71,7 @@ go_test(
         "kubernetes_cluster_clients_test.go",
     ],
     embed = [":go_default_library"],
+    tags = ["manual"],
     deps = [
         "//pkg/flagutil:go_default_library",
         "//prow/github:go_default_library",

@@ -14,6 +14,7 @@ go_library(
 go_binary(
     name = "coverage",
     embed = [":go_default_library"],
+    tags = ["manual"],
     visibility = ["//visibility:public"],
 )
 
@@ -35,4 +36,5 @@ go_test(
     name = "go_default_test",
     srcs = ["apicoverage_test.go"],
     embed = [":go_default_library"],
+    tags = ["manual"],
 )

@@ -34,4 +34,5 @@ go_test(
     name = "go_default_test",
     srcs = ["ghpath_test.go"],
     embed = [":go_default_library"],
+    tags = ["manual"],
 )

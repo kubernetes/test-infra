@@ -20,6 +20,7 @@ go_test(
         "owners_test.go",
     ],
     embed = [":go_default_library"],
+    tags = ["manual"],
     deps = [
         "//prow/pkg/layeredsets:go_default_library",
         "//prow/plugins/ownersconfig:go_default_library",

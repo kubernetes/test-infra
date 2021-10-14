@@ -33,6 +33,7 @@ go_test(
         "status_test.go",
     ],
     embed = [":go_default_library"],
+    tags = ["manual"],
     deps = [
         "//prow/config:go_default_library",
         "//prow/flagutil/config:go_default_library",

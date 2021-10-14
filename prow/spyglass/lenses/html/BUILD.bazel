@@ -69,6 +69,7 @@ go_test(
         "template.html",
     ]),
     embed = [":go_default_library"],
+    tags = ["manual"],
     deps = [
         "//prow/config:go_default_library",
         "//prow/spyglass/api:go_default_library",

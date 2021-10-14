@@ -48,5 +48,6 @@ filegroup(
 go_binary(
     name = "clustersecretbackup",
     embed = [":go_default_library"],
+    tags = ["manual"],
     visibility = ["//visibility:public"],
 )

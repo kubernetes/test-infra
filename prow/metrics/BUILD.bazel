@@ -46,6 +46,7 @@ go_test(
         "metrics_test.go",
     ],
     embed = [":go_default_library"],
+    tags = ["manual"],
     deps = [
         "//prow/config:go_default_library",
         "//prow/flagutil:go_default_library",

@@ -6,6 +6,7 @@ go_test(
     data = [
         "//config:all-srcs",
     ],
+    tags = ["manual"],
 )
 
 filegroup(

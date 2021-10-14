@@ -15,6 +15,7 @@ go_test(
     name = "go_default_test",
     srcs = ["berghelroach_test.go"],
     embed = [":go_default_library"],
+    tags = ["manual"],
     deps = ["//triage/utils:go_default_library"],
 )
 

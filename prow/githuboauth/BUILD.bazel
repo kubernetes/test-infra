@@ -34,6 +34,7 @@ go_test(
     name = "go_default_test",
     srcs = ["githuboauth_test.go"],
     embed = [":go_default_library"],
+    tags = ["manual"],
     deps = [
         "@com_github_gorilla_securecookie//:go_default_library",
         "@com_github_gorilla_sessions//:go_default_library",

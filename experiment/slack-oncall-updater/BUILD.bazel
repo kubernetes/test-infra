@@ -10,6 +10,7 @@ go_library(
 go_binary(
     name = "slack-oncall-updater",
     embed = [":go_default_library"],
+    tags = ["manual"],
     visibility = ["//visibility:public"],
 )
 

@@ -23,6 +23,7 @@ go_test(
     name = "go_default_test",
     srcs = ["jira_test.go"],
     embed = [":go_default_library"],
+    tags = ["manual"],
     deps = ["@com_github_hashicorp_go_retryablehttp//:go_default_library"],
 )
 

@@ -11,11 +11,13 @@ go_test(
     name = "go_default_test",
     srcs = ["migratestatus_test.go"],
     embed = [":go_default_library"],
+    tags = ["manual"],
 )
 
 go_binary(
     name = "migratestatus",
     embed = [":go_default_library"],
+    tags = ["manual"],
 )
 
 go_library(

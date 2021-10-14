@@ -8,6 +8,7 @@ go_test(
     args = ["-list='$(locations //config/mergelists)'"],
     data = ["//config/mergelists"],
     rundir = ".",
+    tags = ["manual"],
     deps = ["@com_github_googlecloudplatform_testgrid//pkg/merger:go_default_library"],
 )
 

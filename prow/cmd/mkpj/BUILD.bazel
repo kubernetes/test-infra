@@ -51,6 +51,7 @@ go_test(
     name = "go_default_test",
     srcs = ["main_test.go"],
     embed = [":go_default_library"],
+    tags = ["manual"],
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/flagutil/config:go_default_library",
@@ -62,4 +63,5 @@ go_test(
 go_binary(
     name = NAME,
     embed = [":go_default_library"],
+    tags = ["manual"],
 )

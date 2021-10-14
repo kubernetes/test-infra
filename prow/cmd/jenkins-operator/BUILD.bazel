@@ -55,11 +55,13 @@ go_binary(
     embed = [":go_default_library"],
     pure = "on",
     race = "off",
+    tags = ["manual"],
 )
 
 go_test(
     name = "go_default_test",
     srcs = ["main_test.go"],
     embed = [":go_default_library"],
+    tags = ["manual"],
     deps = ["//prow/flagutil:go_default_library"],
 )

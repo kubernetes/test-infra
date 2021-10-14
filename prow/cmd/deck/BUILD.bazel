@@ -67,6 +67,7 @@ go_binary(
     ],
     embed = [":go_default_library"],
     pure = "on",
+    tags = ["manual"],
 )
 
 go_test(
@@ -79,6 +80,7 @@ go_test(
         "tide_test.go",
     ],
     embed = [":go_default_library"],
+    tags = ["manual"],
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/client/clientset/versioned/fake:go_default_library",

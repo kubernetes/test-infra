@@ -33,4 +33,5 @@ go_test(
     name = "go_default_test",
     srcs = ["providers_test.go"],
     embed = [":go_default_library"],
+    tags = ["manual"],
 )
