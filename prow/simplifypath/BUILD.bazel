@@ -26,5 +26,6 @@ go_test(
     name = "go_default_test",
     srcs = ["simplify_test.go"],
     embed = [":go_default_library"],
+    tags = ["manual"],
     deps = ["@io_k8s_apimachinery//pkg/util/diff:go_default_library"],
 )

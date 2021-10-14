@@ -45,5 +45,6 @@ go_library(
 go_binary(
     name = "triage",
     embed = [":go_default_library"],
+    tags = ["manual"],
     visibility = ["//visibility:public"],
 )

@@ -18,6 +18,7 @@ go_test(
     name = "go_default_test",
     srcs = ["view_test.go"],
     embed = [":go_default_library"],
+    tags = ["manual"],
     deps = ["//gopherage/pkg/cov/junit/calculation:go_default_library"],
 )
 

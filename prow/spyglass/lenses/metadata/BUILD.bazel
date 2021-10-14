@@ -70,6 +70,7 @@ go_test(
     name = "go_default_test",
     srcs = ["lens_test.go"],
     embed = [":go_default_library"],
+    tags = ["manual"],
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/crier/reporters/gcs/kubernetes:go_default_library",

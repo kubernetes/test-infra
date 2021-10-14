@@ -44,5 +44,6 @@ go_test(
     name = "go_default_test",
     srcs = ["opener_test.go"],
     embed = [":go_default_library"],
+    tags = ["manual"],
     deps = ["@com_google_cloud_go_storage//:go_default_library"],
 )

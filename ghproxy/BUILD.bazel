@@ -8,6 +8,7 @@ NAME = "ghproxy"
 go_binary(
     name = NAME,
     embed = [":go_default_library"],
+    tags = ["manual"],
     visibility = ["//visibility:public"],
 )
 
@@ -72,6 +73,7 @@ go_test(
     name = "go_default_test",
     srcs = ["ghproxy_test.go"],
     embed = [":go_default_library"],
+    tags = ["manual"],
     deps = [
         "//ghproxy/ghcache:go_default_library",
         "//prow/github:go_default_library",

@@ -18,6 +18,7 @@ go_library(
 go_binary(
     name = "benchmarkjunit",
     embed = [":go_default_library"],
+    tags = ["manual"],
     visibility = ["//visibility:public"],
 )
 
@@ -51,5 +52,6 @@ go_test(
         "@go_sdk//:files",
     ],
     embed = [":go_default_library"],
+    tags = ["manual"],
     deps = ["@com_github_googlecloudplatform_testgrid//metadata/junit:go_default_library"],
 )

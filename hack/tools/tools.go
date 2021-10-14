@@ -31,4 +31,7 @@ import (
 
 	// test runner
 	_ "gotest.tools/gotestsum"
+
+	// bazel-related tools
+	_ "github.com/bazelbuild/buildtools/buildozer"
 )

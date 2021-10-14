@@ -45,6 +45,7 @@ go_test(
         "upload_test.go",
     ],
     embed = [":go_default_library"],
+    tags = ["manual"],
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/io:go_default_library",

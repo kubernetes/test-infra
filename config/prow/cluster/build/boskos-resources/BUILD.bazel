@@ -8,6 +8,7 @@ go_test(
     name = "go_default_test",
     srcs = ["boskos_test.go"],
     data = [":boskos-resources.yaml"],
+    tags = ["manual"],
     deps = ["@io_k8s_sigs_boskos//common:go_default_library"],
 )
 

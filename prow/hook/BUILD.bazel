@@ -13,6 +13,7 @@ go_test(
         "server_test.go",
     ],
     embed = [":go_default_library"],
+    tags = ["manual"],
     deps = [
         "//prow/bugzilla:go_default_library",
         "//prow/config:go_default_library",

@@ -52,6 +52,7 @@ go_library(
 go_binary(
     name = "kubetest",
     embed = [":go_default_library"],
+    tags = ["manual"],
     visibility = ["//visibility:public"],
 )
 
@@ -67,6 +68,7 @@ go_test(
         "util_test.go",
     ],
     embed = [":go_default_library"],
+    tags = ["manual"],
     deps = ["//kubetest/util:go_default_library"],
 )
 

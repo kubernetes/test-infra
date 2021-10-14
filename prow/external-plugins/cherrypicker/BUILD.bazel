@@ -40,6 +40,7 @@ prow_image(
 go_binary(
     name = NAME,
     embed = [":go_default_library"],
+    tags = ["manual"],
     visibility = ["//visibility:public"],
 )
 
@@ -64,6 +65,7 @@ go_test(
     name = "go_default_test",
     srcs = ["server_test.go"],
     embed = [":go_default_library"],
+    tags = ["manual"],
     deps = [
         "//prow/git/localgit:go_default_library",
         "//prow/github:go_default_library",

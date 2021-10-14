@@ -18,6 +18,7 @@ go_test(
         ":package-srcs",
     ],
     embed = [":go_default_library"],
+    tags = ["manual"],
     deps = [
         "//pkg/genyaml:go_default_library",
         "//prow/bugzilla:go_default_library",

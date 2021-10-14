@@ -35,6 +35,7 @@ go_binary(
     name = NAME,
     embed = [":go_default_library"],
     pure = "on",
+    tags = ["manual"],
 )
 
 go_library(
@@ -73,6 +74,7 @@ go_test(
     name = "go_default_test",
     srcs = ["gcsweb_test.go"],
     embed = [":go_default_library"],
+    tags = ["manual"],
     deps = [
         "@com_github_google_go_cmp//cmp:go_default_library",
         "@com_github_gorilla_mux//:go_default_library",

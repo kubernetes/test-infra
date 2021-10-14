@@ -21,6 +21,7 @@ go_test(
         "pattern_test.go",
     ],
     embed = [":go_default_library"],
+    tags = ["manual"],
 )
 
 filegroup(

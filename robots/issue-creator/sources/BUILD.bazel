@@ -22,6 +22,7 @@ go_test(
         "triage-filer_test.go",
     ],
     embed = [":go_default_library"],
+    tags = ["manual"],
     deps = [
         "//robots/issue-creator/creator:go_default_library",
         "//robots/issue-creator/testowner:go_default_library",

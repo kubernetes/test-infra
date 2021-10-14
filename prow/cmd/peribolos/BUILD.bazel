@@ -27,6 +27,7 @@ go_binary(
     name = NAME,
     embed = [":go_default_library"],
     pure = "on",
+    tags = ["manual"],
     visibility = ["//visibility:public"],
 )
 
@@ -48,6 +49,7 @@ go_test(
     name = "go_default_test",
     srcs = ["main_test.go"],
     embed = [":go_default_library"],
+    tags = ["manual"],
     deps = [
         "//prow/config/org:go_default_library",
         "//prow/flagutil:go_default_library",
@@ -68,6 +70,7 @@ go_binary(
     ],
     data = [":test-config.yaml"],
     embed = [":go_default_library"],
+    tags = ["manual"],
 )
 
 go_binary(
@@ -77,6 +80,7 @@ go_binary(
         "--dump=fejtaverse",
     ],
     embed = [":go_default_library"],
+    tags = ["manual"],
 )
 
 go_binary(
@@ -92,6 +96,7 @@ go_binary(
     ],
     data = [":test-config.yaml"],
     embed = [":go_default_library"],
+    tags = ["manual"],
 )
 
 # Usage:

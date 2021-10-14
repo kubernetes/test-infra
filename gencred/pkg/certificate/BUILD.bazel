@@ -36,6 +36,7 @@ go_test(
     name = "go_default_test",
     srcs = ["certificate_test.go"],
     embed = [":go_default_library"],
+    tags = ["manual"],
     deps = [
         "@io_k8s_api//core/v1:go_default_library",
         "@io_k8s_apimachinery//pkg/apis/meta/v1:go_default_library",

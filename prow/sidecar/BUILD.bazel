@@ -50,6 +50,7 @@ go_test(
     ],
     data = glob(["testdata/**"]),
     embed = [":go_default_library"],
+    tags = ["manual"],
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/entrypoint:go_default_library",

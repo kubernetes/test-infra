@@ -34,6 +34,7 @@ go_binary(
     name = NAME,
     embed = [":go_default_library"],
     pure = "on",
+    tags = ["manual"],
     visibility = ["//visibility:public"],
 )
 
@@ -55,6 +56,7 @@ go_test(
     name = "go_default_test",
     srcs = ["main_test.go"],
     embed = [":go_default_library"],
+    tags = ["manual"],
     deps = [
         "//prow/flagutil:go_default_library",
         "//prow/flagutil/config:go_default_library",

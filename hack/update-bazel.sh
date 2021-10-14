@@ -56,4 +56,16 @@ fi
 
 "$bazel" run @io_k8s_repo_infra//hack:update-bazel
 
+WORKDIR=$(pwd)
+pushd "${WORKDIR}/hack/tools" >/dev/null
+  GO111MODULE=on go install github.com/bazelbuild/buildtools/buildozer
+popd >/dev/null
+# make go_test targets manual
+# buildozer exits 3 when no changes are made ¯\_(ツ)_/¯
+# https://github.com/bazelbuild/buildtools/tree/master/buildozer#error-code
+buildozer -quiet 'add tags manual' '//...:%go_binary' '//...:%go_test' && ret=$? || ret=$?
+if [[ $ret != 0 && $ret != 3 ]]; then
+  exit 1
+fi
+
 exit $?

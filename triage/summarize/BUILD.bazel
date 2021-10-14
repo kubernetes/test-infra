@@ -43,4 +43,5 @@ go_test(
         "text_test.go",
     ],
     embed = [":go_default_library"],
+    tags = ["manual"],
 )

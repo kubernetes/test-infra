@@ -42,6 +42,7 @@ NAME = "config-bootstrapper"
 go_binary(
     name = NAME,
     embed = [":go_default_library"],
+    tags = ["manual"],
 )
 
 prow_image(
@@ -57,6 +58,7 @@ go_test(
     name = "go_default_test",
     srcs = ["main_test.go"],
     embed = [":go_default_library"],
+    tags = ["manual"],
     deps = [
         "//prow/git/localgit:go_default_library",
         "//prow/plugins:go_default_library",

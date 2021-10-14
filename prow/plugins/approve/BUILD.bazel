@@ -24,6 +24,7 @@ go_test(
         "//config/prow:configs",
     ],
     embed = [":go_default_library"],
+    tags = ["manual"],
     deps = [
         "//prow/config:go_default_library",
         "//prow/github:go_default_library",

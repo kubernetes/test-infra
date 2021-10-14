@@ -10,6 +10,7 @@ go_binary(
     name = "cmd",
     embed = [":go_default_library"],
     pure = "on",
+    tags = ["manual"],
 )
 
 go_library(

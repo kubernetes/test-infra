@@ -37,6 +37,7 @@ go_test(
     name = "go_default_test",
     srcs = ["git_test.go"],
     embed = [":go_default_library"],
+    tags = ["manual"],
     deps = [
         "//prow/git/localgit:go_default_library",
         "//prow/github:go_default_library",

@@ -28,6 +28,7 @@ go_library(
 go_binary(
     name = "invitations-accepter",
     embed = [":go_default_library"],
+    tags = ["manual"],
     visibility = ["//visibility:public"],
 )
 
@@ -35,6 +36,7 @@ go_test(
     name = "go_default_test",
     srcs = ["main_test.go"],
     embed = [":go_default_library"],
+    tags = ["manual"],
     deps = [
         "//prow/github:go_default_library",
         "//prow/github/fakegithub:go_default_library",

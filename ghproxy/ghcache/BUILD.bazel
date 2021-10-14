@@ -45,6 +45,7 @@ go_test(
         "partitioner_test.go",
     ],
     embed = [":go_default_library"],
+    tags = ["manual"],
     deps = [
         "//ghproxy/ghmetrics:go_default_library",
         "@io_k8s_apimachinery//pkg/util/diff:go_default_library",

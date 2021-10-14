@@ -36,6 +36,7 @@ go_test(
     name = "go_default_test",
     srcs = ["jira_test.go"],
     embed = [":go_default_library"],
+    tags = ["manual"],
     deps = [
         "//prow/github:go_default_library",
         "//prow/jira:go_default_library",

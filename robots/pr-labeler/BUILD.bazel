@@ -48,4 +48,5 @@ filegroup(
 go_binary(
     name = NAME,
     embed = [":go_default_library"],
+    tags = ["manual"],
 )

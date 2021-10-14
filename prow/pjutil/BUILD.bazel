@@ -71,6 +71,7 @@ go_test(
         "trigger_test.go",
     ],
     embed = [":go_default_library"],
+    tags = ["manual"],
     deps = [
         "//prow/apis/prowjobs/v1:go_default_library",
         "//prow/client/clientset/versioned/fake:go_default_library",

@@ -18,6 +18,7 @@ go_test(
         "types_test.go",
     ],
     embed = [":go_default_library"],
+    tags = ["manual"],
     deps = [
         "//ghproxy/ghcache:go_default_library",
         "//prow/version:go_default_library",
