@@ -10,7 +10,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211014-794b7e0910-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211014-7ca1952a94-1.21
         command:
         - "./scripts/ci-test.sh"
     annotations:
@@ -27,7 +27,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211014-794b7e0910-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211014-7ca1952a94-1.21
         command:
         - "./scripts/ci-build.sh"
     annotations:
@@ -51,7 +51,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211014-794b7e0910-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211014-7ca1952a94-1.21
         command:
           - runner.sh
         args:
@@ -84,7 +84,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211014-794b7e0910-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211014-7ca1952a94-1.21
         command:
           - runner.sh
         args:
@@ -118,7 +118,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211014-794b7e0910-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211014-7ca1952a94-1.21
         command:
           - runner.sh
         args:
@@ -152,7 +152,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211014-794b7e0910-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211014-7ca1952a94-1.21
         command:
           - runner.sh
         args:
@@ -187,7 +187,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211014-794b7e0910-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211014-7ca1952a94-1.21
         command:
           - runner.sh
         args:
@@ -215,7 +215,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211014-794b7e0910-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211014-7ca1952a94-1.21
         command:
         - "runner.sh"
         - "make"
@@ -243,7 +243,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211014-794b7e0910-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211014-7ca1952a94-1.21
         command:
           - runner.sh
         args:
@@ -276,7 +276,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211014-794b7e0910-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211014-7ca1952a94-1.21
         command:
           - runner.sh
         args:
@@ -315,7 +315,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211014-794b7e0910-1.21
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211014-7ca1952a94-1.21
           command:
             - runner.sh
           args:
@@ -349,7 +349,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211014-794b7e0910-1.21
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211014-7ca1952a94-1.21
           command:
             - runner.sh
           args:
@@ -383,7 +383,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211014-794b7e0910-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211014-7ca1952a94-1.21
         command:
           - runner.sh
         args:
@@ -406,7 +406,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211014-794b7e0910-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211014-7ca1952a94-1.21
         command:
         - runner.sh
         args:
@@ -446,7 +446,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211014-794b7e0910-1.22
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211014-7ca1952a94-1.22
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
