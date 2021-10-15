@@ -79,4 +79,5 @@ presubmits:
           go get sigs.k8s.io/kubetest2@latest;
           go get sigs.k8s.io/kubetest2/kubetest2-gce@latest;
           go get sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest;
+          KUBE_ENABLE_CREDENTIAL_SIDECAR=true;
           kubetest2 gce -v 2 --repo-root $REPO_ROOT --build --up --down --test=ginkgo -- --test-package-version=v1.22.0 --parallel=30 --test-args='--minStartupPods=8 --container-runtime=containerd' --skip-regex='\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
