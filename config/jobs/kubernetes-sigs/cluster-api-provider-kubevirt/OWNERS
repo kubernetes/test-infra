@@ -1,0 +1,16 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+reviewers:
+- agradouski
+- cchengleo
+- cluster-api-admins
+- cluster-api-provider-kubevirt-maintainers
+- sig-cluster-lifecycle-leads
+approvers:
+- agradouski
+- cchengleo
+- cluster-api-admins
+- cluster-api-provider-kubevirt-maintainers
+- sig-cluster-lifecycle-leads
+labels:
+- sig/cluster-lifecycle
