@@ -17,6 +17,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 
 bazel-from-image() {
 	if [ -x "$(command -v docker)" ]; then
@@ -56,8 +57,7 @@ fi
 
 "$bazel" run @io_k8s_repo_infra//hack:update-bazel
 
-WORKDIR=$(pwd)
-pushd "${WORKDIR}/hack/tools" >/dev/null
+pushd "${REPO_ROOT}/hack/tools" >/dev/null
   GO111MODULE=on go install github.com/bazelbuild/buildtools/buildozer
 popd >/dev/null
 # make go_test targets manual
