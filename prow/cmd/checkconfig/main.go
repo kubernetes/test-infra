@@ -28,6 +28,7 @@ import (
 	"net/url"
 	"os"
 	"reflect"
+	"sort"
 	"strings"
 
 	"github.com/sirupsen/logrus"
@@ -114,6 +115,7 @@ const (
 	validateSupplementalProwConfigOrgRepoHirarchy = "validate-supplemental-prow-config-hirarchy"
 	validateUnmanagedBranchConfigHasNoSubconfig   = "validate-unmanaged-branchconfig-has-no-subconfig"
 	validateGitHubAppInstallationWarning          = "validate-github-app-installation"
+	validateLabelWarning                          = "validate-label"
 
 	defaultHourlyTokens = 3000
 	defaultAllowedBurst = 100
@@ -136,6 +138,7 @@ var defaultWarnings = []string{
 	validateClusterFieldWarning,
 	validateSupplementalProwConfigOrgRepoHirarchy,
 	validateUnmanagedBranchConfigHasNoSubconfig,
+	validateLabelWarning,
 }
 
 var expensiveWarnings = []string{
@@ -403,6 +406,12 @@ func validate(o options) error {
 		}
 
 		if err := validateGitHubAppIsInstalled(githubClient, cfg.AllRepos); err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	if pcfg != nil && o.warningEnabled(validateLabelWarning) {
+		if err := verifyLabelPlugin(pcfg.Label); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -1023,6 +1032,25 @@ func verifyOwnersPlugin(cfg *plugins.Configuration) error {
 			"enable at least one plugin that uses OWNERS files (%s) "+
 			"but do not enable the %s plugin to ensure validity of OWNERS files: %v",
 			pluginsWithOwnersFile(), verifyowners.PluginName, invalid,
+		)
+	}
+	return nil
+}
+
+func verifyLabelPlugin(label plugins.Label) error {
+	var orgRepos []string
+	for orgRepo, restrictedLabels := range label.RestrictedLabels {
+		for _, restrictedLabel := range restrictedLabels {
+			if restrictedLabel.Label == "" {
+				orgRepos = append(orgRepos, orgRepo)
+			}
+		}
+	}
+
+	if len(orgRepos) > 0 {
+		sort.Strings(orgRepos)
+		return fmt.Errorf("the following orgs or repos have configuration of %s plugin using the empty string as label name in restricted labels: %s",
+			verifyowners.PluginName, strings.Join(orgRepos, ", "),
 		)
 	}
 	return nil
