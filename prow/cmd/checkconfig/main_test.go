@@ -2074,3 +2074,79 @@ func TestValidateGitHubAppIsInstalled(t *testing.T) {
 		})
 	}
 }
+
+func TestVerifyLabelPlugin(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name             string
+		label            plugins.Label
+		expectedErrorMsg string
+	}{
+		{
+			name: "empty label config is valid",
+		},
+		{
+			name: "cannot use the empty string as label name",
+			label: plugins.Label{
+				RestrictedLabels: map[string][]plugins.RestrictedLabel{
+					"openshift/machine-config-operator": {
+						{
+							Label:        "",
+							AllowedTeams: []string{"openshift-patch-managers"},
+						},
+						{
+							Label:        "backport-risk-assessed",
+							AllowedUsers: []string{"kikisdeliveryservice", "sinnykumari", "yuqi-zhang"},
+						},
+					},
+				},
+			},
+			expectedErrorMsg: "the following orgs or repos have configuration of verify-owners plugin using the empty string as label name in restricted labels: openshift/machine-config-operator",
+		},
+		{
+			name: "valid after removing the restricted labels for the empty string",
+			label: plugins.Label{
+				RestrictedLabels: map[string][]plugins.RestrictedLabel{
+					"openshift/machine-config-operator": {
+						{
+							Label:        "backport-risk-assessed",
+							AllowedUsers: []string{"kikisdeliveryservice", "sinnykumari", "yuqi-zhang"},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "two invalid label configs",
+			label: plugins.Label{
+				RestrictedLabels: map[string][]plugins.RestrictedLabel{
+					"orgRepo1": {
+						{
+							Label:        "",
+							AllowedTeams: []string{"some-team"},
+						},
+					},
+					"orgRepo2": {
+						{
+							Label:        "",
+							AllowedUsers: []string{"some-user"},
+						},
+					},
+				},
+			},
+			expectedErrorMsg: "the following orgs or repos have configuration of verify-owners plugin using the empty string as label name in restricted labels: orgRepo1, orgRepo2",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var actualErrMsg string
+			if err := verifyLabelPlugin(tc.label); err != nil {
+				actualErrMsg = err.Error()
+			}
+			if actualErrMsg != tc.expectedErrorMsg {
+				t.Errorf("expected error %q, got error %q", tc.expectedErrorMsg, actualErrMsg)
+			}
+		})
+	}
+}
