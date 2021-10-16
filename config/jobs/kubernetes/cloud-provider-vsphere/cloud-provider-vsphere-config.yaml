@@ -252,7 +252,6 @@ postsubmits:
     max_concurrency: 1
     branches:
     - ^v\d+\.\d+\.\d+(-(alpha|beta|rc)\.(\d)+)?$
-    always_run: false
     path_alias: k8s.io/cloud-provider-vsphere
     skip_submodules: true
     spec:
