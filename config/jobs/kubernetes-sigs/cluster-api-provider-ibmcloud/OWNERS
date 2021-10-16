@@ -3,10 +3,12 @@
 reviewers:
 - gyliu513
 - jichenjc
+- mkumatag
 # - morvencao # TODO: kubernetes-sigs member, must join kubernetes org
 # - xunpan # TODO: kubernetes-sigs member, must join kubernetes org
 approvers:
 - gyliu513
 - jichenjc
+- mkumatag
 # - morvencao # TODO: kubernetes-sigs member, must join kubernetes org
 # - xunpan # TODO: kubernetes-sigs member, must join kubernetes org
