@@ -177,7 +177,7 @@ Regardless of which object storage you choose, the below adjustments are always 
 First you need to create the ProwJob custom resource:
 
 ```
-kubectl apply --server-side=true config/prow/cluster/prowjob_customresourcedefinition.yaml
+kubectl apply --server-side=true -f config/prow/cluster/prowjob_customresourcedefinition.yaml
 ```
 
 Apply the manifest you edited above by executing one of the following two commands:
