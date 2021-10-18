@@ -4,7 +4,7 @@ steps:
     args:
     - build
     - --tag=gcr.io/$PROJECT_ID/git:$_GIT_TAG
-    - --platform=linux/amd64,linux/arm64/v8,linux/ppc64le
+    - --platform=linux/amd64,linux/arm64/v8,linux/ppc64le,linux/s390x
     - --build-arg=IMAGE_ARG=gcr.io/$PROJECT_ID/git:$_GIT_TAG
     - --push
     - .
