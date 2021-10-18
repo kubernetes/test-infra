@@ -45,7 +45,7 @@ requirements:
 GEN_TEST_OUT_PATH=../_bin-make/releng
 GEN_TEST_BIN_NAME=$(addsuffix generate_tests,$(GEN_TEST_OUT_PATH)/)
 build_generate_tests:
-	if [ ! -d $(GEN_TEST_OUT_PATH) ]; then mkdir $(GEN_TEST_OUT_PATH); fi
+	mkdir -p $(GEN_TEST_OUT_PATH)
 
 	cat generate_tests.py > $(GEN_TEST_BIN_NAME)
 	chmod a+x $(GEN_TEST_BIN_NAME)
@@ -55,7 +55,7 @@ PREP_REL_BIN_NAME=$(addsuffix prepare_release_branch,$(PREP_REL_OUT_PATH)/)
 build_prepare_release_branch:
 	bazel build //releng/config-forker //releng/config-rotator //releng:generate_tests
 
-	if [ ! -d $(PREP_REL_OUT_PATH) ]; then mkdir $(PREP_REL_OUT_PATH); fi
+	mkdir -p $(PREP_REL_OUT_PATH)
 
 	cat prepare_release_branch.py > $(PREP_REL_BIN_NAME)
 	chmod a+x $(PREP_REL_BIN_NAME)

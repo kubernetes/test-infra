@@ -20,7 +20,7 @@ all: build
 experiment: 
 	pip3 install requests
 
-	if [ ! -d $(OUT_PATH) ]; then mkdir $(OUT_PATH); fi
+	mkdir -p $(OUT_PATH)
 
 	cat flakedetector.py > $(BIN_NAME)
 	chmod a+x $(BIN_NAME)

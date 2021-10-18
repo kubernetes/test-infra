@@ -38,7 +38,7 @@ requirements:
 	pip3 install certifi chardet idna python-dateutil pytz ruamel.yaml requests six urllib3	
 
 bigquery:
-	if [ ! -d $(OUT_PATH) ]; then mkdir $(OUT_PATH); fi
+	mkdir -p $(OUT_PATH)
 
 	cat bigquery.py > $(BIN_NAME)
 	chmod a+x $(BIN_NAME)

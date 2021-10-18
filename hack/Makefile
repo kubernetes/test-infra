@@ -24,7 +24,7 @@ build: hack
 hack: pylint
 
 pylint:
-	if [ ! -d $(OUT_PATH) ]; then mkdir $(OUT_PATH); fi
+	mkdir -p $(OUT_PATH)
 
 	cat pylint_bin.py > $(BIN_NAME)
 	chmod a+x $(BIN_NAME)
