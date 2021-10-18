@@ -815,9 +815,6 @@ presets:
   env:
   - name: DOCKER_IN_DOCKER_ENABLED
     value: "true"
-  # TODO(spiffxp): remove when defaulted to false in image, ref: https://github.com/kubernetes/test-infra/issues/23741#issuecomment-933901984
-  - name: BOOTSTRAP_MTU_WORKAROUND
-    value: "false"
   volumes:
   # kubekins-e2e legacy path
   - name: docker-graph
