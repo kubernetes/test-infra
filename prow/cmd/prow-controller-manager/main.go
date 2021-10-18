@@ -28,6 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pjutil/pprof"
 	ctrlruntimelog "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
@@ -82,7 +83,7 @@ func (o *options) Validate() error {
 	o.github.AllowAnonymous = true
 
 	var errs []error
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.config, &o.storage} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.instrumentationOptions, &o.config, &o.storage} {
 		if err := group.Validate(o.dryRun); err != nil {
 			errs = append(errs, err)
 		}
@@ -115,6 +116,7 @@ func main() {
 
 	defer interrupts.WaitForGracefulShutdown()
 
+	health := pjutil.NewHealthOnPort(o.instrumentationOptions.HealthPort) // Start liveness endpoint
 	pprof.Instrument(o.instrumentationOptions)
 
 	configAgent, err := o.config.ConfigAgent()
@@ -191,6 +193,9 @@ func main() {
 
 	// Expose prometheus metrics
 	metrics.ExposeMetrics("plank", cfg().PushGateway, o.instrumentationOptions.MetricsPort)
+	// Serve readiness endpoint
+	health.ServeReady()
+
 	if err := mgr.Start(interrupts.Context()); err != nil {
 		logrus.WithError(err).Fatal("failed to start manager")
 	}
