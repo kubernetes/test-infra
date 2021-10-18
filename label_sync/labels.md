@@ -35,6 +35,7 @@
 - [Labels that apply to kubernetes/test-infra, only for PRs](#labels-that-apply-to-kubernetestest-infra-only-for-prs)
 - [Labels that apply to kubernetes/website, for both issues and PRs](#labels-that-apply-to-kuberneteswebsite-for-both-issues-and-prs)
 - [Labels that apply to kubernetes/website, only for issues](#labels-that-apply-to-kuberneteswebsite-only-for-issues)
+- [Labels that apply to kubernetes/website, only for PRs](#labels-that-apply-to-kuberneteswebsite-only-for-prs)
 
 
 ## Intro
@@ -525,4 +526,5 @@ larger set of contributors to apply/remove them.
 | Name | Description | Added By | Prow Plugin |
 | ---- | ----------- | -------- | --- |
 | <a id="refactor" href="#refactor">`refactor`</a> | Indicates a PR with large refactoring changes e.g. removes files or moves content| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+
 
