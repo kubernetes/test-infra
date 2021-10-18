@@ -19,7 +19,7 @@ periodics:
     path_alias: k8s.io/perf-tests
   - org: kubernetes
     repo: release
-    base_sha: 5ad08a0987f35d7b7280e847078987f58c6f8e1f # head of master branch as of 2020-05-04
+    base_sha: 0ff1922aa2269879957646a232f657bcb57824b1 # head of master branch as of 2021-09-25
     base_ref: master
     path_alias: k8s.io/release
   - org: go.googlesource.com
@@ -54,11 +54,10 @@ periodics:
           memory: "16Gi"
 
 - interval: 4h
-  name: ci-golang-tip-k8s-1-18
+  name: ci-golang-tip-k8s-1-23
   cluster: scalability
   tags:
-  - "perfDashPrefix: golang-tip-k8s-1-18"
-  - "perfDashBuildsCount: 240"
+  - "perfDashPrefix: golang-tip-k8s-1-23"
   - "perfDashJobType: performance"
   labels:
     preset-service-account: "true"
@@ -75,13 +74,13 @@ periodics:
   - org: kubernetes
     repo: perf-tests
     base_ref: master
-    base_sha: 39a6c09ddca620a430d38e5de1400844ea954c2f # head of perf-tests' master as of 2020-11-06
+    base_sha: 6f93c89d2bf3e6f18d621bc264091b6842967c61 # head of perf-tests' master as of 2021-10-18
     path_alias: k8s.io/perf-tests
   annotations:
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com, go-kubernetes-scalability-tickets@googlegroups.com
     testgrid-dashboards: sig-scalability-golang
     testgrid-num-failures-to-alert: "3"
-    testgrid-tab-name: golang-tip-k8s-1-18
+    testgrid-tab-name: golang-tip-k8s-1-23
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211014-7ca1952a94-master
@@ -94,7 +93,7 @@ periodics:
       - --env=CL2_LOAD_TEST_THROUGHPUT=50
       - --env=KUBEMARK_CONTROLLER_MANAGER_TEST_ARGS=--profiling --kube-api-qps=200 --kube-api-burst=200
       - --env=KUBEMARK_SCHEDULER_TEST_ARGS=--profiling --kube-api-qps=200 --kube-api-burst=200
-      - --extract=gs://k8s-scale-golang-build/ci/latest-1.18.txt
+      - --extract=gs://k8s-scale-golang-build/ci/latest-1.23.txt
       - --gcp-node-size=e2-standard-8
       - --gcp-nodes=50
       - --gcp-project=k8s-presubmit-scale
