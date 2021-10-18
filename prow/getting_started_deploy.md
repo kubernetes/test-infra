@@ -24,7 +24,6 @@ Repository permissions:
 * Metadata: Read-Only
 * Pull Requests: Read & write
 * Projects: Admin when using the `projects` plugin, none otherwise
-* Single File: Read-Only
 * Commit statuses: Read & write
 
 Organization permissions:
