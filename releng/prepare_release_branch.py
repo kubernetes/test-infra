@@ -139,14 +139,18 @@ def regenerate_files(generate_tests_bin, test_config):
 
 
 def main():
-    if not os.environ.get('BUILD_WORKSPACE_DIRECTORY'):
-        print("Please run me via bazel!")
-        print("bazel run //releng:prepare_release_branch")
-        sys.exit(1)
+    # if not os.environ.get('BUILD_WORKSPACE_DIRECTORY'):
+    #     print("Please run me via bazel!")
+    #     print("bazel run //releng:prepare_release_branch")
+    #     sys.exit(1)
     rotator_bin = sys.argv[1]
     forker_bin = sys.argv[2]
     generate_tests_bin = sys.argv[3]
-    d = os.environ.get('BUILD_WORKSPACE_DIRECTORY')
+
+    dirname=os.path.dirname
+    d = dirname(dirname(__file__))
+    # d = os.environ.get('BUILD_WORKSPACE_DIRECTORY')
+
 
     branch_path = os.path.join(d, BRANCH_JOB_DIR)
 

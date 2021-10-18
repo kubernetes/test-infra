@@ -419,6 +419,11 @@ if __name__ == '__main__':
         default='config/testgrids/generated-test-config.yaml')
     ARGS = PARSER.parse_args()
 
+    if not os.path.exists(ARGS.output_dir):
+        ARGS.output_dir = "../config/jobs/kubernetes/generated/"
+    if not os.path.exists(ARGS.testgrid_output_path):
+        ARGS.testgrid_output_path = "../config/testgrids/generated-test-config.yaml"
+
     main(
         ARGS.yaml_config_path,
         ARGS.output_dir,

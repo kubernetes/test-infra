@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-# Copyright 2021 The Kubernetes Authors.
+# Copyright 2019 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,16 +11,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-=======
->>>>>>> Build and test python with make
 
-mkdir jq-1.5
-wget -O - https://github.com/stedolan/jq/releases/download/jq-1.5/jq-osx-amd64 > jq-1.5/jq-osx-amd64
-chmod a+x jq-1.5/jq-osx-amd64
+HACK_BINARY_NAME?=hack
 
-wget -O - https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 > jq-1.5/jq-linux64
-<<<<<<< HEAD
-chmod a+x jq-1.5/jq-linux64
-=======
-chmod a+x jq-1.5/jq-linux64 
->>>>>>> Build and test python with make
+OUT_PATH=../_bin-make/hack
+BIN_NAME=$(addsuffix pylint_bin,$(OUT_PATH)/)
+
+all: build
+
+build: hack
+
+hack: pylint
+
+pylint:
+	if [ ! -d $(OUT_PATH) ]; then mkdir $(OUT_PATH); fi
+
+	cat pylint_bin.py > $(BIN_NAME)
+	chmod a+x $(BIN_NAME)
+
+test:
+	python3 coalesce_test.py
+
+.PHONY: all hack build pylint test

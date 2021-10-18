@@ -44,5 +44,23 @@ update-staging: get-cluster-credentials
 rollback: get-cluster-credentials
 	kubectl rollout undo deployments/kettle
 
+# Not include make-db-test which currently fails
+test: make-json-test model-test stream-test
+	echo "Ran all Kettle Binaries and Tests"
 
-.PHONY: all push
+requirements:
+	pip3 install certifi chardet google-api-core google-cloud-bigquery google-cloud-pubsub idna parameterized ruamel.yaml requests urllib3
+
+make-db-test:
+	python3 make_db_test.py
+
+make-json-test:
+	python3 make_json_test.py
+
+model-test:
+	python3 model_test.py
+
+stream-test:
+	python3 stream_test.py
+
+.PHONY: all push test

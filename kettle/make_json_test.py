@@ -19,6 +19,7 @@ import json
 import time
 import unittest
 
+from os.path import exists
 from parameterized import parameterized
 
 import make_json
@@ -677,6 +678,9 @@ class ParseJsonTest(unittest.TestCase):
     ])
     def test_parse_junit(self, _, path, expected):
         self.maxDiff = None
+        
+        if not exists(path):
+            path = "../" + path
         datasource = open(path)
         failures = make_json.parse_junit(datasource.read())
         self.assertEqual(list(failures), expected)
