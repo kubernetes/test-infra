@@ -29,8 +29,10 @@ prow_image(
     base = "@git-base//image",
     base_arm64 = "@git-base-arm64//image",
     base_ppc64le = "@git-base-ppc64le//image",
+    base_s390x = "@git-base-s390x//image",
     build_arm64 = True,
     build_ppc64le = True,
+    build_s390x = True,
     component = NAME,
     files = [
         "github_known_hosts",

@@ -55,3 +55,12 @@ def tags_ppc64le(targets):
         outs["%s:latest-ppc64le" % img] = target
         outs["%s:ppc64le" % img] = target
     return outs
+
+def tags_s390x(targets):
+    outs = {}
+    for img, target in targets.items():
+        outs["%s:{DOCKER_TAG}-s390x" % img] = target
+        outs["%s:latest-{BUILD_USER}-s390x" % img] = target
+        outs["%s:latest-s390x" % img] = target
+        outs["%s:s390x" % img] = target
+    return outs
