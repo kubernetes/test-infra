@@ -35,6 +35,7 @@ unit:
 	hack/make-rules/go-test/unit.sh
 
 pytests:
+	mkdir -p _bin-make
 	make -C kettle/ test
 	make -C metrics/ test
 	make -C hack/ test
