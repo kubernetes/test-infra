@@ -211,6 +211,7 @@ periodics:
     testgrid-tab-name: node-kubelet-serial
 
 - name: ci-kubernetes-node-kubelet-serial-containerd
+  cluster: k8s-infra-prow-build
   interval: 4h
   labels:
     preset-service-account: "true"
