@@ -96,7 +96,7 @@ data:
       default_decoration_configs:
         "*":
           gcs_configuration:
-            bucket: gs://bucket-name
+            bucket: gs://your-bucket-name
             path_strategy: explicit
           gcs_credentials_secret: gcs-credentials
           utility_images:
@@ -423,8 +423,8 @@ spec:
         - --github-endpoint=https://api.github.com
         - --github-graphql-endpoint=http://ghproxy/graphql
         - --gcs-credentials-file=/etc/gcs-credentials/service-account.json
-        - --status-path=gs://tide/tide-status
-        - --history-uri=gs://tide/tide-history.json
+        - --status-path=gs://your-bucket-name/tide-status
+        - --history-uri=gs://your-bucket-name/tide-history.json
         - --github-app-id=$(GITHUB_APP_ID)
         - --github-app-private-key-path=/etc/github/cert
         env:
@@ -491,14 +491,14 @@ spec:
     http:
       paths:
       - path: /
-        pathType: Prefix
+        pathType: ImplementationSpecific
         backend:
           service:
             name: deck
             port:
               number: 80
       - path: /hook
-        pathType: Prefix
+        pathType: ImplementationSpecific
         backend:
           service:
             name: hook
@@ -535,7 +535,7 @@ spec:
         - --github-endpoint=http://ghproxy
         - --github-endpoint=https://api.github.com
         - --gcs-credentials-file=/etc/gcs-credentials/service-account.json
-        - --status-path=gs://status-reconciler/status-reconciler-status
+        - --status-path=gs://your-bucket-name/status-reconciler-status
         - --github-app-id=$(GITHUB_APP_ID)
         - --github-app-private-key-path=/etc/github/cert
         env:

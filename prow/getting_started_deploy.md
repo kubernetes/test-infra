@@ -337,14 +337,17 @@ In order to configure the bucket, follow the following steps:
 After [downloading](https://cloud.google.com/sdk/gcloud/) the `gcloud` tool and authenticating,
 the following collection of commands will execute the above steps for you:
 
+> You will need to change the bucket name from `gs://your-bucket-name/` to a globally unique one and use that instead in [`starter-gcs.yaml`](/config/prow/cluster/starter-gcs.yaml) too.
+
 ```sh
 $ gcloud iam service-accounts create prow-gcs-publisher
-identifier="$(  gcloud iam service-accounts list --filter 'name:prow-gcs-publisher' --format 'value(email)' )"
-$ gsutil mb gs://prow-artifacts/ # step 2
+$ identifier="$(gcloud iam service-accounts list --filter 'name:prow-gcs-publisher' --format 'value(email)')"
+$ gsutil mb gs://your-bucket-name/ # step 2
 $ gsutil iam ch allUsers:objectViewer gs://prow-artifacts # step 3
 $ gsutil iam ch "serviceAccount:${identifier}:objectAdmin" gs://prow-artifacts # step 4
 $ gcloud iam service-accounts keys create --iam-account "${identifier}" service-account.json # step 5
 $ kubectl -n test-pods create secret generic gcs-credentials --from-file=service-account.json # step 6
+$ kubectl -n prow create secret generic gcs-credentials --from-file=service-account.json # this secret is also needed by deployments in the prow namespace 
 ```
 
 #### Configure the version of plank's utility images
