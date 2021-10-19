@@ -40,12 +40,12 @@ postsubmits:
               - --scratch-bucket=gs://k8s-staging-infra-tools-gcb
               - --env-passthrough=PULL_BASE_REF
               - images/k8s-infra
-    - name: post-k8sio-push-image-public-log-vendor-matcher
+    - name: post-k8sio-push-image-public-log-asn-matcher
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-k8s-infra-k8sio, sig-k8s-infra-gcb
-        testgrid-alert-email: public-log-vendor-matcher@ii.coop
-        description: Builds the public-log-vendor-matcher image for generating data that is used for reviewing Kubernetes Public artifact traffic in DataStudio.
+        testgrid-alert-email: public-log-asn-matcher@ii.coop
+        description: Builds the public-log-asn-matcher image for generating data that is used for reviewing Kubernetes Public artifact traffic in DataStudio.
       decorate: true
       branches:
         - ^main$
@@ -60,4 +60,4 @@ postsubmits:
               - --project=k8s-staging-infra-tools
               - --scratch-bucket=gs://k8s-staging-infra-tools-gcb
               - --env-passthrough=PULL_BASE_REF
-              - images/public-log-vendor-matcher
+              - images/public-log-asn-matcher
