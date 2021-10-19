@@ -30,6 +30,13 @@ SPACE:=$(subst ,, )
 SHELL:=env PATH=$(subst $(SPACE),\$(SPACE),$(PATH)) $(SHELL)
 ################################################################################
 # ================================ Building ===================================
+DOCKER_IMAGE_NAME=pytest-infra
+
+docker-build:
+	docker build -t $(DOCKER_IMAGE_NAME) .
+
+docker-run:
+	docker run -v $(shell pwd):/app $(DOCKER_IMAGE_NAME)
 
 pybuild:
 	mkdir -p _bin-make
@@ -40,7 +47,7 @@ pybuild:
 	make -C releng/ build
 
 # all build
-build:
+build: pybuild
 ################################################################################
 # ================================= Testing ====================================
 # unit tests (hermetic)

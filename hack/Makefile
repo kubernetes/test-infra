@@ -21,15 +21,18 @@ all: build
 
 build: hack
 
-hack: pylint
+hack: pylint-build
 
-pylint:
+pylint-build:
 	mkdir -p $(OUT_PATH)
 
 	cat pylint_bin.py > $(BIN_NAME)
 	chmod a+x $(BIN_NAME)
 
-test:
+test: coalesce_test
+	echo "Ran all hack/ tests"
+
+coalesce_test:
 	python3 coalesce_test.py
 
 .PHONY: all hack build pylint test

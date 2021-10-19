@@ -18,9 +18,9 @@ BIN_NAME=$(addsuffix bigquery,$(OUT_PATH)/)
 
 OS=$(shell uname)
 ifeq ($(shell uname),Darwin)
-    JQ_PATH=jq-1.5/jq-osx-amd64
+    JQ_PATH=/jq-1.5/jq-osx-amd64
 else
-    JQ_PATH=jq-1.5/jq-linux64
+    JQ_PATH=/jq-1.5/jq-linux64
 endif
 
 all: build
@@ -31,11 +31,13 @@ build: metrics
 metrics: bigquery
 	echo "Built Metrics!"
 
-test: bigquery_test
+test: bigquery-test
 	echo "Ran Metrics Tests!"
 
 requirements:
 	pip3 install certifi chardet idna python-dateutil pytz ruamel.yaml requests six urllib3	
+
+	if [ ! -d "../jq-1.5" ]; then ./get_jq.sh && mv jq-1.5 ..; fi
 
 bigquery:
 	mkdir -p $(OUT_PATH)
@@ -44,7 +46,6 @@ bigquery:
 	chmod a+x $(BIN_NAME)
 
 bigquery-test:
-	if [ ! -d "jq-1.5" ]; then ./get_jq.sh; fi
 	python3 bigquery_test.py --jq $(JQ_PATH)
 
 clean:

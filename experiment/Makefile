@@ -28,4 +28,7 @@ experiment:
 
 build: experiment
 
+flakedetector:
+	./$(BIN_NAME)
+
 .PHONY: all experiment build
