@@ -17,9 +17,10 @@ BIN_NAME=$(addsuffix flakedetector,$(OUT_PATH)/)
 
 all: build
 
-experiment: 
+requirements:
 	pip3 install requests
 
+experiment: 
 	mkdir -p $(OUT_PATH)
 
 	cat flakedetector.py > $(BIN_NAME)

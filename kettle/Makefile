@@ -44,7 +44,7 @@ update-staging: get-cluster-credentials
 rollback: get-cluster-credentials
 	kubectl rollout undo deployments/kettle
 
-# Not include make-db-test which currently fails
+# Not including make-db-test which currently fails
 test: make-json-test model-test stream-test
 	echo "Ran all Kettle Binaries and Tests"
 
