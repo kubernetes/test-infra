@@ -67,6 +67,7 @@ type Configuration struct {
 	Blockades            []Blockade                   `json:"blockades,omitempty"`
 	Blunderbuss          Blunderbuss                  `json:"blunderbuss,omitempty"`
 	Bugzilla             Bugzilla                     `json:"bugzilla,omitempty"`
+	BranchCleaner        BranchCleaner                `json:"branch_cleaner,omitempty"`
 	Cat                  Cat                          `json:"cat,omitempty"`
 	CherryPickUnapproved CherryPickUnapproved         `json:"cherry_pick_unapproved,omitempty"`
 	ConfigUpdater        ConfigUpdater                `json:"config_updater,omitempty"`
@@ -1789,6 +1790,37 @@ func (b *Bugzilla) OptionsForRepo(org, repo string) map[string]BugzillaBranchOpt
 	}
 
 	return options
+}
+
+// BranchCleaner contains the configuration for the branchcleaner plugin.
+type BranchCleaner struct {
+	// PreservedBranches is a map of org/repo branches
+	// format:
+	// ```
+	// preserved_branches:
+	//   <org>: ["master", "release"]
+	//   <org/repo>: ["master", "release"]
+	// ```
+	// branches in this allow map would be exempt from branch gc
+	// even if the branches are already merged into the target branch
+	PreservedBranches map[string][]string `json:"preserved_branches,omitempty"`
+}
+
+// IsPreservedBranch check if the branch is in the preserved branch list or not.
+func (b *BranchCleaner) IsPreservedBranch(org, repo, branch string) bool {
+	fullRepoName := fmt.Sprintf("%s/%s", org, repo)
+	for _, pb := range b.PreservedBranches[fullRepoName] {
+		if branch == pb {
+			return true
+		}
+	}
+	for _, pb := range b.PreservedBranches[org] {
+		if branch == pb {
+			return true
+		}
+	}
+	// no repo or org match.
+	return false
 }
 
 // Override holds options for the override plugin
