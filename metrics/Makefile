@@ -23,32 +23,38 @@ else
     JQ_PATH=/jq-1.5/jq-linux64
 endif
 
+################################################################################
+# ================================ Building ===================================
 all: build
 
 build: metrics
 
 # Not including bigquery (broken)
-metrics: bigquery
+metrics: bigquery-build
 	echo "Built Metrics!"
 
-test: bigquery-test
-	echo "Ran Metrics Tests!"
-
-requirements:
-	pip3 install certifi chardet idna python-dateutil pytz ruamel.yaml requests six urllib3	
-
-	if [ ! -d "../jq-1.5" ]; then ./get_jq.sh && mv jq-1.5 ..; fi
-
-bigquery:
+bigquery-build:
 	mkdir -p $(OUT_PATH)
 
 	cat bigquery.py > $(BIN_NAME)
 	chmod a+x $(BIN_NAME)
 
+################################################################################
+# ================================ Run ===================================
+bigquery:
+	./$(BIN_NAME)
+
+################################################################################
+# ================================ Test ===================================
 bigquery-test:
 	python3 bigquery_test.py --jq $(JQ_PATH)
 
+test: bigquery-test
+	echo "Ran Metrics Tests!"
+
+################################################################################
+# ================================ Clean ===================================
 clean:
-	rm -rf jq-1.5
+	rm -rf $(OUT_PATH)
 
 .PHONY: all metrics build metrics test requirements bigquery bigquery-test clean

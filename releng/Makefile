@@ -22,26 +22,16 @@ YAML_CONFIG_PATH=test_config.yaml
 OUTPUT_DIR=../config/jobs/kubernetes/generated/
 TEST_GRID_OUTPUT_PATH=../config/testgrids/generated-test-config.yaml
 
+################################################################################
+# ================================ Building ===================================
 all: build
-# builds releng in a container, outputs to $(OUT_DIR)
 
 # alias for building releng
 build: releng
 
-# Runs all tests
-test: generate_tests_test
-	echo "Ran Releng Tests!"
-
 releng: build_generate_tests build_prepare_release_branch
 	echo "Built releng targets!"
 
-# Install local requirements
-requirements:
-	pip3 install ruamel.yaml sh
-
-#
-#  Building targets
-#
 GEN_TEST_OUT_PATH=../_bin-make/releng
 GEN_TEST_BIN_NAME=$(addsuffix generate_tests,$(GEN_TEST_OUT_PATH)/)
 build_generate_tests:
@@ -60,16 +50,25 @@ build_prepare_release_branch:
 	cat prepare_release_branch.py > $(PREP_REL_BIN_NAME)
 	chmod a+x $(PREP_REL_BIN_NAME)
 
-#
-#  Running targets
-#
+################################################################################
+# ================================ Run ===================================
 generate_tests:	
-	python3 generate_tests.py --yaml-config-path $(YAML_CONFIG_PATH) --output-dir $(OUTPUT_DIR) --testgrid-output-path $(TEST_GRID_OUTPUT_PATH)
+	./$(GEN_TEST_BIN_NAME) --yaml-config-path $(YAML_CONFIG_PATH) --output-dir $(OUTPUT_DIR) --testgrid-output-path $(TEST_GRID_OUTPUT_PATH)
+
+prepare_release_branch: build_prepare_release_branch
+	./$(PREP_REL_BIN_NAME) $(CONFIG_ROTATOR_BIN) $(CONFIG_FORKER_BIN) $(GEN_TEST_BIN_NAME)
+
+################################################################################
+# ================================ Test ===================================
+test: generate_tests_test
+	echo "Ran Releng Tests!"
 
 generate_tests_test:
 	python3 generate_tests_test.py
 
-prepare_release_branch: build_prepare_release_branch
-	python3 prepare_release_branch.py $(CONFIG_ROTATOR_BIN) $(CONFIG_FORKER_BIN) $(GENERATE_TESTS_BIN)
+################################################################################
+# ================================ Clean ===================================
+clean:
+	rm -rf $(OUT_PATH)
 
 .PHONY: all releng build prepare_release_branch build_generate_tests build_prepare_release_branch generate_tests generate_tests_test test

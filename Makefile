@@ -41,7 +41,6 @@ docker-run:
 pybuild:
 	mkdir -p _bin-make
 	make -C experiment/ build
-	make -C kettle/ build
 	make -C metrics/ build
 	make -C hack/ build
 	make -C releng/ build
