@@ -1610,6 +1610,12 @@ repos:
         target: issues
         prowPlugin: label
         addedBy: anyone
+      - color: d2918c
+        description: Indicates a PR with large refactoring changes e.g. removes files or moves content
+        name: refactor
+        target: prs
+        prowPlugin: label
+        addedBy: anyone
   kubernetes/kubeadm:
     labels:
       - color: c7def8
