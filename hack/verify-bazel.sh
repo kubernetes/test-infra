@@ -17,13 +17,14 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
+
 if ! command -v bazel &> /dev/null; then
   echo "Install bazel at https://bazel.build" >&2
   exit 1
 fi
 
-WORKDIR=$(pwd)
-pushd "${WORKDIR}/hack/tools" >/dev/null
+pushd "${REPO_ROOT}/hack/tools" >/dev/null
   GO111MODULE=on go install github.com/bazelbuild/buildtools/buildozer
 popd >/dev/null
 # make go_test targets manual
