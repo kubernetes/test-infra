@@ -4597,6 +4597,10 @@ func (c *client) getAppInstallationToken(installationId int64) (*AppInstallation
 	durationLogger := c.log("AppInstallationToken")
 	defer durationLogger()
 
+	if c.dry {
+		return nil, fmt.Errorf("not requesting GitHub App access_token in dry-run mode")
+	}
+
 	var token AppInstallationToken
 	if _, err := c.request(&request{
 		method:    http.MethodPost,
