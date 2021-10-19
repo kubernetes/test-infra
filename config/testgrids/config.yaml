@@ -255,7 +255,6 @@ dashboards:
 - name: vmware-postsubmits-cloud-provider-vsphere
 - name: vmware-presubmits-vsphere-csi-driver
 - name: vmware-postsubmits-vsphere-csi-driver
-- name: google-rules_k8s
 
 #
 # Start dashboard groups
@@ -273,7 +272,6 @@ dashboard_groups:
   - google-gce-upgrade
   - google-kops-gce
   - google-osconfig
-  - google-rules_k8s
   - google-soak
   - google-windows
 

@@ -107,8 +107,6 @@ managed_webhooks:
   respect_legacy_global_token: true
   # Config for orgs and repos that have been onboarded to this Prow instance.
   org_repo_config:
-    bazelbuild/rules_k8s:
-      token_created_after: 2020-06-24T00:10:00Z
     kubernetes:
       token_created_after: 2020-08-12T00:00:00Z
     kubernetes-client:
