@@ -32,7 +32,7 @@ update-plugins: get-cluster-credentials
 	kubectl create configmap plugins --from-file=plugins.yaml=plugins.yaml --dry-run -o yaml | kubectl replace configmap plugins -f -
 
 deploy-prow: get-cluster-credentials
-	kubectl apply -f ./cluster/
+	kubectl apply --server-side=true -f ./cluster/
 
 deploy-build: get-build-cluster-credentials
 	kubectl apply -f ./cluster/build/
