@@ -99,8 +99,6 @@ presets:
   # TODO(https://github.com/kubernetes/perf-tests/issues/1828): Use konnectivity in kubemark.
   - name: KUBE_ENABLE_KONNECTIVITY_SERVICE
     value: false
-  - name: NODE_PRELOAD_IMAGES
-    value: k8s.gcr.io/pause:3.1
 
 ### kubemark-gce-scale
 - labels:
@@ -238,8 +236,6 @@ presets:
     value: "containerd"
   - name: DUMP_TO_GCS_ONLY
     value: true
-  - name: NODE_PRELOAD_IMAGES
-    value: k8s.gcr.io/pause:3.1
 
   ###### Scalability Envs
   ### Common env variables for containerd scalability-related suites.
