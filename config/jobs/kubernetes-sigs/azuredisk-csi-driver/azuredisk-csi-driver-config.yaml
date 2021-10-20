@@ -687,6 +687,8 @@ presubmits:
             # Windows isn't really conformance, we typically run at 4 to keep the time reasonable (~45 mins)
             - name: CONFORMANCE_NODES
               value: "4"
+            - name: TEST_WINDOWS
+              value: "true"
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
       testgrid-tab-name: pull-kubernetes-e2e-capz-azure-disk-windows
