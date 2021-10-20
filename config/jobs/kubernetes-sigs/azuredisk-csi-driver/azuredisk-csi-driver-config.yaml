@@ -645,7 +645,7 @@ presubmits:
     decorate: true
     always_run: false
     optional: true
-    path_alias: k8s.io/kubernetes
+    path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
       - master
     labels:
