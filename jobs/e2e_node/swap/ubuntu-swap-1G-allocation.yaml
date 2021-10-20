@@ -3,7 +3,7 @@
 runcmd:
   - 'echo current swappiness: $(sysctl vm.swappiness)'
   - 'echo create swap file'
-  - 'fallocate -l 1G /swapfile || true'
+  - 'fallocate -l 1G /swapfile || true' # TODO: replace with dd (see http://manpages.ubuntu.com/manpages/xenial/en/man8/mkswap.8.html)
   - 'chmod 600 /swapfile'
   - 'mkswap /swapfile'
   - 'swapon /swapfile'
