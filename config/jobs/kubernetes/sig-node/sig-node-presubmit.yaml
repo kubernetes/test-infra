@@ -133,7 +133,7 @@ presubmits:
         - --parallelism=8
         - --focus-regex=\[NodeConformance\]
         - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]
-        - --test-args='--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"'
+        - --test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/image-config.yaml
   - name: pull-kubernetes-e2e-containerd-gce
     always_run: false
