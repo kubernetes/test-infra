@@ -470,3 +470,32 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-e2e-main-1-22-latest
+  - name: pull-cluster-api-provider-azure-ci-entrypoint
+    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    optional: true
+    decorate: true
+    always_run: false
+    max_concurrency: 5
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true"
+    branches:
+    # The script this job runs is not in all branches.
+    - ^main$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211014-7ca1952a94-1.21
+        command:
+          - runner.sh
+        args:
+          - ./scripts/ci-entrypoint.sh
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+      testgrid-tab-name: capz-pr-ci-entrypoint
+      testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+      description: Creates a CAPZ cluster and exports KUBECONFIG. This job validates ci-entrypoint.sh used by other repositories for running tests on CAPZ clusters.
