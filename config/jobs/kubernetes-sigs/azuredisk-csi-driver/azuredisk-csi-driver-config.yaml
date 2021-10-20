@@ -659,10 +659,6 @@ presubmits:
         base_ref: main
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
-      - org: kubernetes-sigs
-        repo: azuredisk-csi-driver
-        base_ref: master
-        path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211014-7ca1952a94-master
