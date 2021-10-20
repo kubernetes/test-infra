@@ -44,4 +44,5 @@ dashboard_groups:
   - redhat-openshift-virtualization
   - redhat-osd
   - redhat-single-node
+  - redhat-hypershift
   name: redhat
