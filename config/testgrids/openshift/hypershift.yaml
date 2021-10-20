@@ -7,3 +7,7 @@ dashboards:
   dashboard_tab:
   - name: hypershift-main-aws-pooled-conformance
     test_group_name: redhat-hypershift-main-aws-pooled-conformance
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
