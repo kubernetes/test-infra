@@ -641,3 +641,54 @@ presubmits:
       testgrid-tab-name: pr-azuredisk-csi-driver-e2e-windows-containerd
       description: "Run E2E tests on a Windows containerd cluster for Azure Disk CSI driver."
       testgrid-num-columns-recent: '30'
+  - name: pull-kubernetes-e2e-capz-azure-disk-windows
+    decorate: true
+    always_run: false
+    optional: true
+    path_alias: k8s.io/kubernetes
+    branches:
+      - master
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-azure
+        base_ref: main
+        path_alias: sigs.k8s.io/cluster-api-provider-azure
+        workdir: true
+      - org: kubernetes-sigs
+        repo: azuredisk-csi-driver
+        base_ref: master
+        path_alias: sigs.k8s.io/azuredisk-csi-driver
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211014-7ca1952a94-master
+          command:
+            - runner.sh
+            - ./scripts/ci-entrypoint.sh
+          args:
+            - bash
+            - -c
+            - >-
+              cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&
+              make e2e-test
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 2
+              memory: "9Gi"
+          env:
+            - name: WINDOWS
+              value: "true"
+            # Windows isn't really conformance, we typically run at 4 to keep the time reasonable (~45 mins)
+            - name: CONFORMANCE_NODES
+              value: "4"
+    annotations:
+      testgrid-dashboards: provider-azure-azuredisk-csi-driver
+      testgrid-tab-name: pull-kubernetes-e2e-capz-azure-disk-windows
+      description: "Run E2E tests on a capz Windows cluster for Azure Disk CSI driver."
+      testgrid-num-columns-recent: '30'
