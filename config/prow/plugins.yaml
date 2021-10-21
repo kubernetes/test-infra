@@ -1123,6 +1123,14 @@ plugins:
     plugins:
     - milestone
 
+  kubernetes-sigs/node-feature-discovery:
+    plugins:
+    - override
+
+  kubernetes-sigs/node-feature-discovery-operator:
+    plugins:
+    - override
+
   containerd/cri:
     plugins:
     - assign
