@@ -771,7 +771,7 @@ presets:
     preset-azure-anonymous-pull: "true"
   env:
     - name: REGISTRY
-      value: capzci.azurecr.io
+      value: k8sprow.azurecr.io
     - name: LOCAL_ONLY
       value: "false"
 - labels:
