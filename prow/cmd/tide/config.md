@@ -65,8 +65,8 @@ The field to search token correspondence is based on the following mapping:
 * `repos` -> `repo:kubernetes/test-infra`
 * `labels` -> `label:lgtm`
 * `missingLabels` -> `-label:do-not-merge`
-* `excludedBranches` -> `-branch:dev`
-* `includedBranches` -> `branch:master`
+* `excludedBranches` -> `-base:dev`
+* `includedBranches` -> `base:master`
 * `author` -> `author:batman`
 * `reviewApprovedRequired` -> `review:approved`
 
