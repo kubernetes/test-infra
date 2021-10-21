@@ -89,7 +89,7 @@ periodics:
     preset-service-account: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210917-ee1e7c845b-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211014-7ca1952a94-master
         args:
           - --repo=github.com/containerd/containerd=release/1.5
           - --root=/go/src
@@ -283,7 +283,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210917-ee1e7c845b-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210915-5dbaf53-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes=release-1.22
@@ -342,7 +342,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210917-ee1e7c845b-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210915-5dbaf53-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes=release-1.22
