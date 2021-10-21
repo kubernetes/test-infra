@@ -206,7 +206,7 @@ periodics:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211014-7ca1952a94-master
       args:
       - --root=/go/src
-      - --repo=k8s.io/kubernetes=release-1.21
+      - --repo=k8s.io/kubernetes=release-1.22
       - --repo=github.com/containerd/cri=release/1.4
       - --timeout=90
       - --scenario=kubernetes_e2e
@@ -266,7 +266,7 @@ periodics:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211014-7ca1952a94-master
       args:
       - --root=/go/src
-      - --repo=k8s.io/kubernetes=release-1.21
+      - --repo=k8s.io/kubernetes=release-1.22
       - --repo=github.com/containerd/cri=release/1.4
       - --timeout=90
       - --scenario=kubernetes_e2e
