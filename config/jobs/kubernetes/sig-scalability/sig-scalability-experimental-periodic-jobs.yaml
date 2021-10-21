@@ -50,8 +50,9 @@ periodics:
       - --use-logexporter
       - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
 
-- interval: 6h
-  name: ci-kubernetes-e2e-gci-gce-scalability-networkpolicies
+- name: ci-kubernetes-e2e-gci-gce-scalability-networkpolicies
+  cluster: k8s-infra-prow-build
+  interval: 6h
   tags:
     - "perfDashPrefix: networkpolicies"
     - "perfDashJobType: networkpolicies"
@@ -115,7 +116,14 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=120m
       - --use-logexporter
-      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
+      - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
+      resources:
+        limits:
+          cpu: 2
+          memory: "6Gi"
+        requests:
+          cpu: 2
+          memory: "6Gi"
 
   # Experimental job confirming that node killer works. Fork of ci-kubernetes-e2e-gci-gce-scalability.
   # To be removed after Chaos Monkey flags are enabled in ci-kubernetes-e2e-gci-gce-scalability

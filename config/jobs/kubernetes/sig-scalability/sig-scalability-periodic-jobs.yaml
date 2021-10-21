@@ -933,6 +933,7 @@ periodics:
           cpu: 1
           memory: "2Gi"
 - name: ci-kubernetes-e2e-gce-network-metric-measurement
+  cluster: k8s-infra-prow-build
   tags:
     - "perfDashPrefix: network-performance"
     - "perfDashJobType: performance"
