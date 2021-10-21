@@ -379,7 +379,7 @@ func newAKSEngine() (*aksEngineDeployer, error) {
 		location:                         *aksLocation,
 		resourceGroup:                    *aksResourceGroupName,
 		outputDir:                        outputDir,
-		sshPublicKey:                     fmt.Sprintf("%s", sshKey),
+		sshPublicKey:                     string(sshKey),
 		sshPrivateKeyPath:                *aksSSHPrivateKeyPath,
 		credentials:                      &Creds{},
 		masterVMSize:                     *aksMasterVMSize,

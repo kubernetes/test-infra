@@ -42,9 +42,7 @@ func push(job string, grouping map[string]string, pushURL string, g prometheus.G
 	if !strings.Contains(pushURL, "://") {
 		pushURL = "http://" + pushURL
 	}
-	if strings.HasSuffix(pushURL, "/") {
-		pushURL = pushURL[:len(pushURL)-1]
-	}
+	pushURL = strings.TrimSuffix(pushURL, "/")
 
 	if strings.Contains(job, "/") {
 		return fmt.Errorf("job contains '/': %s", job)
