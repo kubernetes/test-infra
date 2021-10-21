@@ -685,6 +685,8 @@ presubmits:
               value: "4"
             - name: TEST_WINDOWS
               value: "true"
+            - name: REGISTRY
+              value: k8sprow.azurecr.io
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
       testgrid-tab-name: pull-kubernetes-e2e-capz-azure-disk-windows
