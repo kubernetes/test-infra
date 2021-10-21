@@ -74,6 +74,7 @@ for image in "${IMAGES[@]}"; do
           - aojea
           - chewong
           - claudiubelu
+          - mkumatag
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-testing-images, sig-k8s-infra-gcb
@@ -125,6 +126,7 @@ periodics:
         - aojea
         - chewong
         - claudiubelu
+        - mkumatag
     # Since the servercore image is updated once per month, we only need to build this
     # cache once per month.
     interval: 744h
