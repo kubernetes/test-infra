@@ -60,7 +60,7 @@ presubmits:
           - name: GINKGO_FOCUS
             value: "Workload cluster creation"
           - name: GINKGO_SKIP
-            value: "Creating a GPU-enabled cluster|.*Windows.*|.*AKS.*|Creating a cluster that uses the external cloud provider"
+            value: "Creating a GPU-enabled cluster|.*Windows.*dockershim.*|.*AKS.*|Creating a cluster that uses the external cloud provider"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -101,7 +101,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-e2e-full-main
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
-  - name: pull-cluster-api-provider-azure-e2e-windows
+  - name: pull-cluster-api-provider-azure-e2e-windows-dockershim
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     optional: false
     decorate: true
@@ -125,7 +125,7 @@ presubmits:
           - ./scripts/ci-e2e.sh
         env:
           - name: GINKGO_FOCUS
-            value: ".*Windows.*"
+            value: ".*Windows.*dockershim.*"
           - name: GINKGO_SKIP
             value: ""
         # docker-in-docker needs privileged mode
@@ -133,7 +133,7 @@ presubmits:
           privileged: true
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-      testgrid-tab-name: capz-pr-e2e-windows-main
+      testgrid-tab-name: capz-pr-e2e-windows-dockershim-main
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
   - name: pull-cluster-api-provider-azure-e2e-exp
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
@@ -259,7 +259,7 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pull-conformance-v1alpha4-main
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
-  - name: pull-cluster-api-provider-azure-upstream-v1alpha4-windows
+  - name: pull-cluster-api-provider-azure-upstream-v1alpha4-windows-dockershim
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     always_run: false
     optional: true
@@ -296,7 +296,7 @@ presubmits:
             memory: "9Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-      testgrid-tab-name: capz-pull-upstream-v1alpha4-main-windows
+      testgrid-tab-name: capz-pull-upstream-v1alpha4-main-windows-dockershim
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
   - name: pull-cluster-api-provider-azure-conformance-with-ci-artifacts
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
@@ -332,7 +332,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-conformance-v1alpha4-k8s-main
-  - name: pull-cluster-api-provider-azure-windows-upstream-with-ci-artifacts
+  - name: pull-cluster-api-provider-azure-windows-dockershim-upstream-with-ci-artifacts
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     always_run: false
     optional: true
@@ -370,7 +370,48 @@ presubmits:
               memory: "9Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-      testgrid-tab-name: capz-pull-upstream-v1alpha4-k8s-main-windows
+      testgrid-tab-name: capz-pull-upstream-v1alpha4-k8s-main-windows-dockershim
+  - name: pull-cluster-api-provider-azure-windows-containerd-upstream-with-ci-artifacts
+    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    always_run: false
+    optional: true
+    decorate: true
+    decoration_config:
+      timeout: 4h
+    max_concurrency: 5
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+    branches:
+    # The script this job runs is not in all branches.
+    - ^main$
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211005-ca067fbd9f-1.21
+          command:
+            - runner.sh
+          args:
+            - ./scripts/ci-conformance.sh
+          env:
+            - name: E2E_ARGS
+              value: "-kubetest.use-ci-artifacts"
+            - name: WINDOWS
+              value: "true"
+            - name: WINDOWS_FLAVOR
+              value: "containerd"
+            # Windows isn't really conformance, we typically run at 4 to keep the time reasonable (~45 mins)
+            - name: CONFORMANCE_NODES
+              value: "4"
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 2
+              memory: "9Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+      testgrid-tab-name: capz-pull-upstream-v1alpha4-k8s-main-windows-containerd
   - name: pull-cluster-api-provider-azure-apidiff
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-azure
