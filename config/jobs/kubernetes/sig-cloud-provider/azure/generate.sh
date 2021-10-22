@@ -38,7 +38,7 @@ EOF
 }
 
 # we need to define the full image URL so it can be autobumped
-tmp="gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211014-7ca1952a94-master"
+tmp="gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211022-00550799a0-master"
 kubekins_e2e_image="${tmp/\-master/}"
 
 for release in "$@"; do
