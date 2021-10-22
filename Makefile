@@ -57,13 +57,10 @@ clean:
 ################################################################################
 # ================================== Linting ===================================
 # run linters, ensure generated code, etc.
-#verify:
-#	hack/make-rules/verify/all.sh
-# code linters
-#lint:
-#	hack/make-rules/verify/lint.sh
-# shell linter
-#shellcheck:
-#	hack/make-rules/verify/shellcheck.sh
+verify:
+	hack/make-rules/verify/all.sh
+# go linters
+go-lint:
+	hack/make-rules/verify/golangci-lint.sh
 #################################################################################
-.PHONY: unit test
+.PHONY: unit test verify

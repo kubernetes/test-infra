@@ -86,7 +86,7 @@ func (o Options) Run(ctx context.Context) (int, error) {
 
 	ctx, cancel := context.WithCancel(ctx)
 
-	interrupt := make(chan os.Signal)
+	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		select {
