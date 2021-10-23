@@ -71,12 +71,14 @@ func main() {
 	pprof.Instrument(o.instrumentationOptions)
 	health := pjutil.NewHealthOnPort(o.instrumentationOptions.HealthPort)
 
-	http.HandleFunc("/validate", handle)
+	admissionMux := http.NewServeMux()
+	admissionMux.HandleFunc("/validate", handle)
 	s := http.Server{
 		Addr: ":8443",
 		TLSConfig: &tls.Config{
 			ClientAuth: tls.NoClientCert,
 		},
+		Handler: admissionMux,
 	}
 
 	health.ServeReady()

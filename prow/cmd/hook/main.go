@@ -266,16 +266,17 @@ func main() {
 
 	health := pjutil.NewHealthOnPort(o.instrumentationOptions.HealthPort)
 
+	hookMux := http.NewServeMux()
 	// TODO remove this health endpoint when the migration to health endpoint is done
 	// Return 200 on / for health checks.
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {})
+	hookMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {})
 
 	// For /hook, handle a webhook normally.
-	http.Handle(o.webhookPath, server)
+	hookMux.Handle(o.webhookPath, server)
 	// Serve plugin help information from /plugin-help.
-	http.Handle("/plugin-help", pluginhelp.NewHelpAgent(pluginAgent, githubClient))
+	hookMux.Handle("/plugin-help", pluginhelp.NewHelpAgent(pluginAgent, githubClient))
 
-	httpServer := &http.Server{Addr: ":" + strconv.Itoa(o.port)}
+	httpServer := &http.Server{Addr: ":" + strconv.Itoa(o.port), Handler: hookMux}
 
 	health.ServeReady()
 
