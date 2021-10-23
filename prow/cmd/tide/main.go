@@ -185,9 +185,10 @@ func main() {
 		logrus.WithError(err).Fatal("Failed to register kubeconfig change callback")
 	}
 
-	http.Handle("/", c)
-	http.Handle("/history", c.History)
-	server := &http.Server{Addr: ":" + strconv.Itoa(o.port)}
+	controllerMux := http.NewServeMux()
+	controllerMux.Handle("/", c)
+	controllerMux.Handle("/history", c.History)
+	server := &http.Server{Addr: ":" + strconv.Itoa(o.port), Handler: controllerMux}
 
 	// Push metrics to the configured prometheus pushgateway endpoint or serve them
 	metrics.ExposeMetrics("tide", cfg().PushGateway, o.instrumentationOptions.MetricsPort)

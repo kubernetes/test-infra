@@ -160,8 +160,9 @@ func main() {
 		Reporter:          pubsub.NewReporter(configAgent.Config), // reuse crier reporter
 	}
 
+	subMux := http.NewServeMux()
 	// Return 200 on / for health checks.
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {})
+	subMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {})
 
 	// Setting up Push Server
 	logrus.Info("Setting up Push Server")
@@ -169,7 +170,7 @@ func main() {
 		Subscriber:     s,
 		TokenGenerator: tokenGenerator,
 	}
-	http.Handle("/push", pushServer)
+	subMux.Handle("/push", pushServer)
 
 	// Setting up Pull Server
 	logrus.Info("Setting up Pull Server")
@@ -180,6 +181,6 @@ func main() {
 		}
 	})
 
-	httpServer := &http.Server{Addr: ":" + strconv.Itoa(flagOptions.port)}
+	httpServer := &http.Server{Addr: ":" + strconv.Itoa(flagOptions.port), Handler: subMux}
 	interrupts.ListenAndServe(httpServer, flagOptions.gracePeriod)
 }
