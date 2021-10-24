@@ -36,7 +36,6 @@ docker-build:
 	docker build -t $(DOCKER_IMAGE_NAME) .
 
 docker-run:
-	docker run -v $(shell pwd):/app $(DOCKER_IMAGE_NAME)
 
 pybuild:
 	mkdir -p _bin-make
@@ -57,7 +56,7 @@ PYTEST_IMAGE=gcr.io/k8s-staging-test-infra/pytest:12345
 
 run-pytest:
 	docker pull $(PYTEST_IMAGE)
-	docker run $(PYTEST_IMAGE)
+	docker run -v $(shell pwd):/app $(PYTEST_IMAGE)
 
 pytests:
 	mkdir -p _bin-make
