@@ -53,6 +53,12 @@ build: pybuild
 unit:
 	hack/make-rules/go-test/unit.sh
 
+PYTEST_IMAGE=gcr.io/k8s-staging-test-infra/pytest:12345
+
+run-pytest:
+	docker pull $(PYTEST_IMAGE)
+	docker run $(PYTEST_IMAGE)
+
 pytests:
 	mkdir -p _bin-make
 	make -C kettle/ test
@@ -64,7 +70,7 @@ pytests:
 # integration:
 #	hack/make-rules/go-test/integration.sh
 # all tests
-test: unit pytests
+test: unit run-pytest
 ################################################################################
 # ================================= Cleanup ====================================
 # standard cleanup target
