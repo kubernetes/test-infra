@@ -211,6 +211,12 @@ blockades:
   exceptionregexps:
   - ^README\.md$
   explanation: "We do not accept changes directly against this repository, unless the change is to the `README.md` itself. Please see `CONTRIBUTING.md` for information on where and how to contribute instead."
+- repos:
+  - kubernetes/website
+  blockregexps:
+  - ^content/*/blog/_posts/201*
+  explanation: "We do not accept changes to blogs older than two years."
+
 
 blunderbuss:
   max_request_count: 2
