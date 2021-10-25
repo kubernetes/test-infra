@@ -316,6 +316,48 @@ periodics:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     testgrid-dashboards: sig-windows-master-release
     testgrid-tab-name: capz-windows-containerd-master
+- name: ci-kubernetes-e2e-capz-staging-containerd-windows-2022
+  interval: 8h
+  decorate: true
+  decoration_config:
+    timeout: 4h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred-only: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-azure
+    base_ref: main
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211022-00550799a0-master
+        command:
+          - "runner.sh"
+          - "./scripts/ci-conformance.sh"
+        env:
+          - name: E2E_ARGS
+            value: "-kubetest.use-ci-artifacts"
+          - name: WINDOWS
+            value: "true"
+          # Windows isn't really conformance, we typically run at 4 to keep the time reasonable (~45 mins)
+          - name: CONFORMANCE_NODES
+            value: "4"
+          - name: "KUBERNETES_VERSION"
+            value: "latest"
+          - name: WINDOWS_FLAVOR
+            value: "containerd-2022"
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 2
+            memory: "9Gi"
+  annotations:
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-dashboards: sig-windows-master-release
+    testgrid-tab-name: capz-windows-containerd-2022-master
 - interval: 24h
   name: ci-kubernetes-e2e-aks-engine-azure-master-staging-windows-serial-slow
   decorate: true
