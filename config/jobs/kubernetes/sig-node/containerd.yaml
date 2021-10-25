@@ -96,7 +96,6 @@ periodics:
           - --upload=gs://kubernetes-jenkins/logs
           - --scenario=execute
           - --
-          - --env=GO111MODULE=off
           - --env=DEPLOY_DIR=release-1.5
           - /go/src/github.com/containerd/containerd/test/build.sh
   annotations:
