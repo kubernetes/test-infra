@@ -34,7 +34,7 @@ import (
 	"github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 	extensionsv1beta1 "k8s.io/api/extensions/v1beta1"
-	networking "k8s.io/api/networking/v1beta1"
+	networking "k8s.io/api/networking/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -622,7 +622,7 @@ func ingress(kc *kubernetes.Clientset, ns, service string) (url.URL, error) {
 
 		// Detect ingress API to use based on Kubernetes version
 		if hasResource(kc.Discovery(), networking.SchemeGroupVersion.WithResource("ingresses")) {
-			ing, err = kc.NetworkingV1beta1().Ingresses(ns).List(context2.TODO(), metav1.ListOptions{})
+			ing, err = kc.NetworkingV1().Ingresses(ns).List(context2.TODO(), metav1.ListOptions{})
 		} else {
 			var oldIng *extensionsv1beta1.IngressList
 			oldIng, err = kc.ExtensionsV1beta1().Ingresses(ns).List(context2.TODO(), metav1.ListOptions{})
@@ -647,7 +647,7 @@ func ingress(kc *kubernetes.Clientset, ns, service string) (url.URL, error) {
 					continue
 				}
 				for _, p := range h.Paths {
-					if p.Backend.ServiceName != service {
+					if p.Backend.Service.Name != service {
 						continue
 					}
 					maybe.Scheme = "http"

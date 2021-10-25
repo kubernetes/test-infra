@@ -167,7 +167,7 @@ Regardless of which object storage you choose, the below adjustments are always 
 * The github app cert by replacing the `<<insert-downloaded-cert-here>>` string
 * The github app id by replacing the `<<insert-the-app-id-here>>` string
 * The hmac token by replacing the `<< insert-hmac-token-here >>` string
-* The domain by replacing the `<< your-domain.com >>` string
+* The domain by replacing the `yourdomain` string
 * Optionally, you can update the `cert-manager.io/cluster-issuer:` annotation if you use cert-manager
 * Your github organization(s) by replacing the `<< your_github_org >>` string
 
@@ -342,8 +342,8 @@ the following collection of commands will execute the above steps for you:
 $ gcloud iam service-accounts create prow-gcs-publisher
 $ identifier="$(gcloud iam service-accounts list --filter 'name:prow-gcs-publisher' --format 'value(email)')"
 $ gsutil mb gs://your-bucket-name/ # step 2
-$ gsutil iam ch allUsers:objectViewer gs://prow-artifacts # step 3
-$ gsutil iam ch "serviceAccount:${identifier}:objectAdmin" gs://prow-artifacts # step 4
+$ gsutil iam ch allUsers:objectViewer gs://your-bucket-name # step 3
+$ gsutil iam ch "serviceAccount:${identifier}:objectAdmin" gs://your-bucket-name # step 4
 $ gcloud iam service-accounts keys create --iam-account "${identifier}" service-account.json # step 5
 $ kubectl -n test-pods create secret generic gcs-credentials --from-file=service-account.json # step 6
 $ kubectl -n prow create secret generic gcs-credentials --from-file=service-account.json # this secret is also needed by deployments in the prow namespace 

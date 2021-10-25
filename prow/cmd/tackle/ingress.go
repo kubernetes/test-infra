@@ -21,7 +21,7 @@ import (
 	"fmt"
 
 	extensions "k8s.io/api/extensions/v1beta1"
-	networking "k8s.io/api/networking/v1beta1"
+	networking "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/discovery"
 )
@@ -42,7 +42,7 @@ func hasResource(client discovery.DiscoveryInterface, resource schema.GroupVersi
 	return false
 }
 
-// toNewIngress converts a legacy "extensions/v1beta1" IngressList to the newer "networking.k8s.io/v1beta1" IngressList.
+// toNewIngress converts a legacy "extensions/v1beta1" IngressList to the newer "networking.k8s.io/v1" IngressList.
 func toNewIngress(oldIng *extensions.IngressList) (*networking.IngressList, error) {
 
 	raw, err := json.Marshal(oldIng)
