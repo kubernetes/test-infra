@@ -17,11 +17,48 @@ set -o nounset
 set -o errexit
 set -o pipefail
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd -P)"
+if [[ -z "${REPO_ROOT:-}" ]]; then
+  REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd -P)"
+fi
 cd $REPO_ROOT
 
 echo "Ensuring go version."
 source ./hack/build/setup-go.sh
 
+trap 'echo "FAILED" >&2' ERR
+
+export GO111MODULE=on
+export GOPROXY=https://proxy.golang.org
+export GOSUMDB=sum.golang.org
+mode="${1:-}"
+shift || true
+case "$mode" in
+--minor)
+    if [[ -z "$@" ]]; then
+      go get -u ./...
+    else
+      go get -u "$@"
+    fi
+    ;;
+--patch)
+    if [[ -z "$@" ]]; then
+      go get -u=patch ./...
+    else
+      go get -u=patch "$@"
+    fi
+    ;;
+"")
+    # Just validate, or maybe manual go.mod edit
+    ;;
+*)
+    echo "Usage: $(basename "$0") [--patch|--minor] [packages]" >&2
+    exit 1
+    ;;
+esac
+
+echo "Updating go mod tidy"
 echo "Go version: $(go version)"
-find . -name '*.go' -type f -print0 | xargs -0 gofmt -s -w
+go mod tidy
+cd "${REPO_ROOT}/hack/tools"
+go mod tidy
+echo "SUCCESS: updated modules"
