@@ -491,7 +491,9 @@ def generate_misc():
                                 '--zones=eu-west-1a',
                                 '--set=cluster.spec.api.loadBalancer.useForInternalApi=true',
                                 '--set=cluster.spec.cloudControllerManager.cloudProvider=aws',
-                                '--set=cluster.spec.nonMasqueradeCIDR=fd00:10:96::/64',
+                                "--set=cluster.spec.serviceClusterIPRange=fd00:10:96::/108",
+                                '--set=cluster.spec.nonMasqueradeCIDR=::/0',
+                                '--set=cluster.spec.networking.cilium.disableMasquerade=true'
                                 '--set=cluster.spec.podCIDRFromCloud=true',
                                 ],
                    extra_dashboards=['kops-misc', 'kops-ipv6']),
