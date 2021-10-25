@@ -20,28 +20,17 @@ set -o pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd -P)"
 cd $REPO_ROOT
 
-# exit code, if a script fails we'll set this to 1
-res=0
+echo "Ensuring go version."
+source ./hack/build/setup-go.sh
 
-# run all verify scripts, optionally skipping any of them
-
-if [[ "${VERIFY_GO_LINT:-true}" == "true" ]]; then
-  echo "verifying go lints ..."
-  hack/make-rules/verify/golangci-lint.sh || res=1
-  cd "${REPO_ROOT}"
-fi
-if [[ "${VERIFY_GOFMT:-true}" == "true" ]]; then
-  echo "verifying go fmt ..."
-  hack/make-rules/verify/gofmt.sh || res=1
-  cd "${REPO_ROOT}"
+find . -name '*.go' -type f -print0 | xargs -0 gofmt -s -w
+diff=$(find . -name '*.go' -type f -print0 | xargs -0 gofmt -s -d)
+if [[ -z "$diff" ]]; then
+  exit 0
 fi
 
-# exit based on verify scripts
-if [[ "${res}" = 0 ]]; then
-  echo ""
-  echo "All verify checks passed, congrats!"
-else
-  echo ""
-  echo "One or more verify checks failed! See output above..."
-fi
-exit "${res}"
+echo "$diff"
+echo
+echo "ERROR: found unformatted go files, fix with:" >&2
+echo "  make update-gofmt" >&2
+exit 1

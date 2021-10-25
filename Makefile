@@ -62,5 +62,9 @@ verify:
 # go linters
 go-lint:
 	hack/make-rules/verify/golangci-lint.sh
+update-gofmt:
+	hack/make-rules/update/gofmt.sh
+verify-gofmt:
+	hack/make-rules/verify/gofmt.sh
 #################################################################################
-.PHONY: unit test verify
+.PHONY: unit test verify go-lint update-gofmt verify-gofmt
