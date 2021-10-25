@@ -22,7 +22,7 @@ cd $REPO_ROOT
 
 trap 'echo ERROR: golangci-lint failed >&2' ERR
 
-echo "Ensure go version."
+echo "Ensuring go version."
 source ./hack/build/setup-go.sh
 
 if [[ ! -f .golangci.yml ]]; then
