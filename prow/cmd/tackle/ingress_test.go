@@ -22,7 +22,7 @@ import (
 	"time"
 
 	extensions "k8s.io/api/extensions/v1beta1"
-	networking "k8s.io/api/networking/v1beta1"
+	networking "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	discoveryFake "k8s.io/client-go/discovery/fake"
@@ -81,8 +81,12 @@ func createNetworkingIngressList() *networking.IngressList {
 									Paths: []networking.HTTPIngressPath{
 										{
 											Backend: networking.IngressBackend{
-												ServiceName: "demo",
-												ServicePort: intstr.FromInt(80),
+												Service: &networking.IngressServiceBackend{
+													Name: "demo",
+													Port: networking.ServiceBackendPort{
+														Number: 80,
+													},
+												},
 											},
 										},
 									},
