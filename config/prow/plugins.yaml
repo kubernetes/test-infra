@@ -213,8 +213,10 @@ blockades:
   explanation: "We do not accept changes directly against this repository, unless the change is to the `README.md` itself. Please see `CONTRIBUTING.md` for information on where and how to contribute instead."
 - repos:
   - kubernetes/website
+  # The below regex isn't perfect and needs to be updated with another rule to match 2020 in some time.
   blockregexps:
-  - ^content/*/blog/_posts/201*
+  - ^content/\w\w/blog/_posts/201
+  # We (SIG Docs) do sometimes access changes to blogs that are more than two years old. The policy is that we usually don't update, but we can if there's a good reason.
   explanation: "We do not accept changes to blogs older than two years."
 
 
