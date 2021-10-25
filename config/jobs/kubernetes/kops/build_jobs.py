@@ -754,13 +754,12 @@ def generate_distros():
 def generate_network_plugins():
 
     plugins = ['amazon-vpc', 'calico', 'canal', 'cilium', 'cilium-etcd', 'flannel', 'kopeio', 'kuberouter', 'weave'] # pylint: disable=line-too-long
-    plugins_121 = ['canal'] # TODO(rifelpet): remove when kops#11689 is addressed
     results = []
     for plugin in plugins:
         networking_arg = plugin.replace('amazon-vpc', 'amazonvpc').replace('kuberouter', 'kube-router') # pylint: disable=line-too-long
         results.append(
             build_test(
-                k8s_version='1.21' if plugin in plugins_121 else 'stable',
+                k8s_version='stable',
                 kops_channel='alpha',
                 name_override=f"kops-aws-cni-{plugin}",
                 networking=networking_arg,
@@ -886,7 +885,6 @@ def generate_presubmits_network_plugins():
         'kuberouter': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.kuberouter\/|upup\/pkg\/fi\/cloudup\/template_functions.go)', # pylint: disable=line-too-long
         'weave': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.weave\/|upup\/pkg\/fi\/cloudup\/template_functions.go)' # pylint: disable=line-too-long
     }
-    plugins_121 = ['canal'] # TODO(rifelpet): remove when kops#11689 is addressed
     results = []
     for plugin, run_if_changed in plugins.items():
         networking_arg = plugin
@@ -894,7 +892,7 @@ def generate_presubmits_network_plugins():
             networking_arg = 'kube-router'
         results.append(
             presubmit_test(
-                k8s_version='1.21' if plugin in plugins_121 else 'stable',
+                k8s_version='stable',
                 kops_channel='alpha',
                 name=f"pull-kops-e2e-cni-{plugin}",
                 tab_name=f"e2e-{plugin}",
