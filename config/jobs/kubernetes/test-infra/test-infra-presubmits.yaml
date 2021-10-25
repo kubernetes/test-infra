@@ -147,6 +147,22 @@ presubmits:
     annotations:
       testgrid-dashboards: presubmits-test-infra
       testgrid-tab-name: unit-test
+  - name: pull-test-infra-verify-lint
+    branches:
+    - master
+    always_run: false
+    decorate: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211022-00550799a0-test-infra
+        command:
+        - runner.sh
+        args:
+        - make
+        - verify
+    annotations:
+      testgrid-dashboards: presubmits-test-infra
+      testgrid-tab-name: verify-test
 
 
   # Optional job for testing new build system.
