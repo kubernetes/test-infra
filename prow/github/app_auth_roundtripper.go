@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
+	"runtime/debug"
 	"strings"
 	"sync"
 	"time"
@@ -114,6 +115,9 @@ func extractOrgFromContext(ctx context.Context) string {
 
 func (arr *appsRoundTripper) addAppInstallationAuth(r *http.Request) *appsAuthError {
 	org := extractOrgFromContext(r.Context())
+	if org == "" {
+		return &appsAuthError{fmt.Errorf("BUG apps auth requested but empty org, please report this to the test-infra repo. Stack: %s", string(debug.Stack()))}
+	}
 
 	token, expiresAt, err := arr.installationTokenFor(org)
 	if err != nil {
