@@ -833,6 +833,7 @@ plugins:
   kubernetes/ingress-nginx:
     plugins:
     - require-matching-label
+    - milestone
 
   kubernetes/k8s.io:
     plugins:
