@@ -150,7 +150,7 @@ presubmits:
   - name: pull-test-infra-verify-lint
     branches:
     - master
-    always_run: false
+    always_run: true
     decorate: true
     spec:
       containers:
