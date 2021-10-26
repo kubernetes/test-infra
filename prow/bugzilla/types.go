@@ -114,6 +114,7 @@ type Bug struct {
 }
 
 // BugCreate holds the info needed to create a new bug
+// https://bugzilla.readthedocs.io/en/latest/api/core/v1/bug.html#create-bug
 type BugCreate struct {
 	// Alias is an optional list of unique aliases of this bug.
 	Alias []string `json:"alias,omitempty"`
@@ -248,6 +249,8 @@ type BugUpdate struct {
 	TargetRelease []string `json:"target_release,omitempty"`
 	// Version is the version the bug was reported against.
 	Version string `json:"version,omitempty"`
+	// The Status Whiteboard field of a bug.
+	Whiteboard string `json:"whiteboard,omitempty"`
 }
 
 // IDUpdate is the struct used in Update calls to update fields that are arrays of IDs (ex. DependsOn)
