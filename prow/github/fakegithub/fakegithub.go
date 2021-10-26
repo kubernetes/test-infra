@@ -147,6 +147,9 @@ type FakeClient struct {
 
 	// Team is a map org->teamSlug->TeamWithMembers
 	Teams map[string]map[string]TeamWithMembers
+
+	// Reviewers Requested
+	ReviewersRequested []string
 }
 
 type TeamWithMembers struct {
@@ -1114,5 +1117,7 @@ func (f *FakeClient) GetFailedActionRunsByHeadBranch(org, repo, branchName, head
 }
 
 func (f *FakeClient) TriggerGitHubWorkflow(org, repo string, id int) error {
+func (f *FakeClient) RequestReview(org, repo string, number int, logins []string) error {
+	f.ReviewersRequested = logins
 	return nil
 }
