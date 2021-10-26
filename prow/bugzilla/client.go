@@ -643,6 +643,7 @@ func clone(c Client, bug *Bug, mutations []func(bug *BugCreate)) (int, error) {
 		DependsOn: &IDUpdate{
 			Add: []int{bug.ID},
 		},
+		Whiteboard: bug.Whiteboard,
 	}
 	for _, originalBlocks := range bug.Blocks {
 		if bugUpdate.Blocks == nil {
