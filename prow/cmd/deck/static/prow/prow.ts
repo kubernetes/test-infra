@@ -92,7 +92,7 @@ function redrawOptions(fz: FuzzySearch, opts: RepoOptions) {
     addOptionFuzzySearch(fz, js, "job", jobList, jobInput);
 
     if (selectedType !== "periodic" && selectedType !== "postsubmit") {
-        const ps = Object.keys(opts.pulls).sort((a, b) => Number(a) - Number(b));
+        const ps = Object.keys(opts.pulls).sort((a, b) => Number(b) - Number(a));
         addOptions(ps, "pull");
         const as = Object.keys(opts.authors).sort(
             (a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
