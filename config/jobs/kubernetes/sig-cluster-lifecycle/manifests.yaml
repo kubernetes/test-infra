@@ -9,7 +9,7 @@ periodics:
     containers:
     - args:
       - --timeout=60
-      - --repo=k8s.io/kubeadm=master
+      - --repo=k8s.io/kubeadm=main
       - --scenario=execute
       - --
       - ./tests/e2e/manifests/verify_manifest_lists.sh

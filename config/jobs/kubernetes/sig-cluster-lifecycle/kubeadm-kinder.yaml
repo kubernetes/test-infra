@@ -24,7 +24,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   - org: kubernetes
     repo: kubeadm
-    base_ref: master
+    base_ref: main
     path_alias: k8s.io/kubeadm
   spec:
     containers:
@@ -64,7 +64,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   - org: kubernetes
     repo: kubeadm
-    base_ref: master
+    base_ref: main
     path_alias: k8s.io/kubeadm
   spec:
     containers:
@@ -104,7 +104,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   - org: kubernetes
     repo: kubeadm
-    base_ref: master
+    base_ref: main
     path_alias: k8s.io/kubeadm
   spec:
     containers:
@@ -144,7 +144,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   - org: kubernetes
     repo: kubeadm
-    base_ref: master
+    base_ref: main
     path_alias: k8s.io/kubeadm
   spec:
     containers:
