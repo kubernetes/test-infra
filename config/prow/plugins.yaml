@@ -843,6 +843,7 @@ plugins:
     plugins:
     - mergecommitblocker
     - milestone
+    - override
 
   kubernetes/kubeadm:
     plugins:
