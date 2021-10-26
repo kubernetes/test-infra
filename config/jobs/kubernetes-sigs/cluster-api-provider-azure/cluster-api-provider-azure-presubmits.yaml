@@ -510,7 +510,51 @@ presubmits:
             cpu: 7300m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-      testgrid-tab-name: capz-pr-e2e-main-1-22-latest
+      testgrid-tab-name: capz-pr-e2e-upgrade-1-22-latest
+  - name: pull-cluster-api-provider-azure-e2e-workload-upgrade-1-21-1-22
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true"
+    decorate: true
+    optional: true
+    always_run: false
+    branches:
+    # The script this job runs is not in all branches.
+    - ^main$
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211022-00550799a0-1.22
+        args:
+          - runner.sh
+          - "./scripts/ci-e2e.sh"
+        env:
+          - name: KUBERNETES_VERSION_UPGRADE_FROM
+            value: "stable-1.21"
+          - name: KUBERNETES_VERSION_UPGRADE_TO
+            value: "stable-1.22"
+          - name: ETCD_VERSION_UPGRADE_TO
+            value: "3.5.0-0"
+          - name: COREDNS_VERSION_UPGRADE_TO
+            value: "v1.8.4"
+          - name: GINKGO_FOCUS
+            value: "\\[K8s-Upgrade\\]"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 7300m
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+      testgrid-tab-name: capz-pr-e2e-upgrade-1-21-1-22
   - name: pull-cluster-api-provider-azure-ci-entrypoint
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     optional: true
