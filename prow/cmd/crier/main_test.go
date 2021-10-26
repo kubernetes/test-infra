@@ -71,10 +71,6 @@ func TestOptions(t *testing.T) {
 			},
 		},
 		{
-			name: "gerrit missing --gerrit-projects, reject",
-			args: []string{"--gerrit-workers=5", "--cookiefile=foobar", "--config-path=foo"},
-		},
-		{
 			name: "gerrit missing --cookiefile",
 			args: []string{"--gerrit-workers=5", "--gerrit-projects=foo=bar", "--config-path=foo"},
 			expected: &options{
