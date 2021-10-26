@@ -24,6 +24,7 @@ import (
 	"time"
 
 	gerrit "github.com/andygrunwald/go-gerrit"
+	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
 )
 
@@ -92,6 +93,59 @@ func makeStamp(t time.Time) gerrit.Timestamp {
 func newStamp(t time.Time) *gerrit.Timestamp {
 	gt := makeStamp(t)
 	return &gt
+}
+
+func TestUpdateClients(t *testing.T) {
+	tests := []struct {
+		name              string
+		existingInstances map[string][]string
+		newInstances      map[string][]string
+		wantInstances     map[string][]string
+	}{
+		{
+			name:              "normal",
+			existingInstances: map[string][]string{"foo1": {"bar1"}},
+			newInstances:      map[string][]string{"foo2": {"bar2"}},
+			wantInstances:     map[string][]string{"foo2": {"bar2"}},
+		},
+		{
+			name:              "same instance",
+			existingInstances: map[string][]string{"foo1": {"bar1"}},
+			newInstances:      map[string][]string{"foo1": {"bar2"}},
+			wantInstances:     map[string][]string{"foo1": {"bar2"}},
+		},
+		{
+			name:              "delete",
+			existingInstances: map[string][]string{"foo1": {"bar1"}, "foo2": {"bar2"}},
+			newInstances:      map[string][]string{"foo1": {"bar1"}},
+			wantInstances:     map[string][]string{"foo1": {"bar1"}},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			client := &Client{
+				handlers: make(map[string]*gerritInstanceHandler),
+			}
+			for instance, projects := range tc.existingInstances {
+				client.handlers[instance] = &gerritInstanceHandler{
+					instance: instance,
+					projects: projects,
+				}
+			}
+
+			if err := client.UpdateClients(tc.newInstances); err != nil {
+				t.Fatal(err)
+			}
+			gotInstances := make(map[string][]string)
+			for instance, handler := range client.handlers {
+				gotInstances[instance] = handler.projects
+			}
+			if diff := cmp.Diff(tc.wantInstances, gotInstances); diff != "" {
+				t.Fatalf("mismatch. got(+), want(-):\n%s", diff)
+			}
+		})
+	}
 }
 
 func TestQueryChange(t *testing.T) {

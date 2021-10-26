@@ -256,12 +256,17 @@ func (c *Client) Authenticate(cookiefilePath, tokenPath string) {
 
 // UpdateClients update gerrit clients with new instances map
 func (c *Client) UpdateClients(instances map[string][]string) error {
+	// Recording in newHandlers, so that deleted instances can be handled.
+	newHandlers := make(map[string]*gerritInstanceHandler)
+	var errs []error
 	c.lock.Lock()
 	defer c.lock.Unlock()
-
-	var errs []error
 	for instance := range instances {
-		if _, ok := c.handlers[instance]; ok {
+		if handler, ok := c.handlers[instance]; ok {
+			// Already initialized, no need to re-initialize handler. But still need
+			// to remember to update projects underneath.
+			handler.projects = instances[instance]
+			newHandlers[instance] = handler
 			continue
 		}
 		gc, err := gerrit.NewClient(instance, nil)
@@ -271,7 +276,7 @@ func (c *Client) UpdateClients(instances map[string][]string) error {
 			continue
 		}
 
-		c.handlers[instance] = &gerritInstanceHandler{
+		newHandlers[instance] = &gerritInstanceHandler{
 			instance:       instance,
 			projects:       instances[instance],
 			authService:    gc.Authentication,
@@ -281,6 +286,7 @@ func (c *Client) UpdateClients(instances map[string][]string) error {
 			log:            logrus.WithField("host", instance),
 		}
 	}
+	c.handlers = newHandlers
 
 	return utilerrors.NewAggregate(errs)
 }
