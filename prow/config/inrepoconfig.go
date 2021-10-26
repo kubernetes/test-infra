@@ -106,9 +106,18 @@ func prowYAMLGetter(
 		return nil, fmt.Errorf("failed to merge: %w", err)
 	}
 
-	prowYAML := &ProwYAML{}
+	return ReadProwYAML(log, repo.Directory(), false)
+}
 
-	prowYAMLDirPath := path.Join(repo.Directory(), inRepoConfigDirName)
+// ReadProwYAML parses the .prow.yaml file or .prow directory, no commit checkout or defaulting is included.
+func ReadProwYAML(log *logrus.Entry, dir string, strict bool) (*ProwYAML, error) {
+	prowYAML := &ProwYAML{}
+	var opts []yaml.JSONOpt
+	if strict {
+		opts = append(opts, yaml.DisallowUnknownFields)
+	}
+
+	prowYAMLDirPath := path.Join(dir, inRepoConfigDirName)
 	log.Debugf("Attempting to read config files under %q.", prowYAMLDirPath)
 	if fileInfo, err := os.Stat(prowYAMLDirPath); !os.IsNotExist(err) && err == nil && fileInfo.IsDir() {
 		mergeProwYAML := func(a, b *ProwYAML) *ProwYAML {
@@ -131,7 +140,7 @@ func prowYAMLGetter(
 					return err
 				}
 				partialProwYAML := &ProwYAML{}
-				if err := yaml.Unmarshal(bytes, partialProwYAML); err != nil {
+				if err := yaml.Unmarshal(bytes, partialProwYAML, opts...); err != nil {
 					return fmt.Errorf("failed to unmarshal %q: %w", p, err)
 				}
 				prowYAML = mergeProwYAML(prowYAML, partialProwYAML)
@@ -146,13 +155,13 @@ func prowYAMLGetter(
 			return nil, fmt.Errorf("reading %q: %w", prowYAMLDirPath, err)
 		}
 		log.WithField("file", inRepoConfigFileName).Debug("Attempting to get inreconfigfile")
-		prowYAMLFilePath := path.Join(repo.Directory(), inRepoConfigFileName)
+		prowYAMLFilePath := path.Join(dir, inRepoConfigFileName)
 		if _, err := os.Stat(prowYAMLFilePath); err == nil {
 			bytes, err := ioutil.ReadFile(prowYAMLFilePath)
 			if err != nil {
 				return nil, fmt.Errorf("failed to read %q: %w", prowYAMLDirPath, err)
 			}
-			if err := yaml.Unmarshal(bytes, prowYAML); err != nil {
+			if err := yaml.Unmarshal(bytes, prowYAML, opts...); err != nil {
 				return nil, fmt.Errorf("failed to unmarshal %q: %w", prowYAMLDirPath, err)
 			}
 		} else {
@@ -161,7 +170,6 @@ func prowYAMLGetter(
 			}
 		}
 	}
-
 	return prowYAML, nil
 }
 

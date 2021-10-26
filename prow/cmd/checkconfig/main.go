@@ -27,6 +27,7 @@ import (
 	"io/ioutil"
 	"net/url"
 	"os"
+	"path"
 	"reflect"
 	"sort"
 	"strings"
@@ -110,7 +111,7 @@ const (
 	missingTriggerWarning                         = "missing-trigger"
 	validateURLsWarning                           = "validate-urls"
 	unknownFieldsWarning                          = "unknown-fields"
-	unknownFiledsAllWarning                       = "unknown-fields-all" // Superset of "unknown-fields" that includes validating job config.
+	unknownFieldsAllWarning                       = "unknown-fields-all" // Superset of "unknown-fields" that includes validating job config.
 	verifyOwnersFilePresence                      = "verify-owners-presence"
 	validateClusterFieldWarning                   = "validate-cluster-field"
 	validateSupplementalProwConfigOrgRepoHirarchy = "validate-supplemental-prow-config-hirarchy"
@@ -150,7 +151,7 @@ var optionalWarnings = []string{
 	validDecorationConfigWarning,
 	// It would be nice to make "unknown-fields-all" a default, but difficult to do due to K8s configs.
 	// https://github.com/kubernetes/test-infra/pull/21075#issuecomment-862550510
-	unknownFiledsAllWarning,
+	unknownFieldsAllWarning,
 	validateGitHubAppInstallationWarning,
 }
 
@@ -175,11 +176,6 @@ func (o *options) DefaultAndValidate() error {
 
 	if o.prowYAMLPath != "" && o.prowYAMLRepoName == "" {
 		return errors.New("--prow-yaml-repo-path requires --prow-yaml-repo-name to be set")
-	}
-	if o.prowYAMLRepoName != "" {
-		if o.prowYAMLPath == "" {
-			o.prowYAMLPath = fmt.Sprintf("/home/prow/go/src/github.com/%s/.prow.yaml", o.prowYAMLRepoName)
-		}
 	}
 	for _, warning := range o.warnings.Strings() {
 		found := false
@@ -208,7 +204,7 @@ func parseOptions() (options, error) {
 func (o *options) gatherOptions(flag *flag.FlagSet, args []string) error {
 	o.pluginsConfig.CheckUnknownPlugins = true
 	flag.StringVar(&o.prowYAMLRepoName, "prow-yaml-repo-name", "", "Name of the repo whose .prow.yaml should be checked.")
-	flag.StringVar(&o.prowYAMLPath, "prow-yaml-path", "", "Path to the .prow.yaml file to check. Requires --prow-yaml-repo-name to be set. Defaults to `/home/prow/go/src/github.com/<< prow-yaml-repo-name >>/.prow.yaml`")
+	flag.StringVar(&o.prowYAMLPath, "prow-yaml-path", "", "Path to the .prow.yaml file to check. Requires --prow-yaml-repo-name to be set. Omit to look for either .prow.yaml or a .prow directory in the current working directory (recommended).")
 	flag.Var(&o.warnings, "warnings", "Warnings to validate. Use repeatedly to provide a list of warnings")
 	flag.Var(&o.excludeWarnings, "exclude-warning", "Warnings to exclude. Use repeatedly to provide a list of warnings to exclude")
 	flag.BoolVar(&o.expensive, "expensive-checks", false, "If set, additional expensive warnings will be enabled")
@@ -246,7 +242,6 @@ func main() {
 	} else {
 		logrus.Info("checkconfig passes without any error!")
 	}
-
 }
 
 func validate(o options) error {
@@ -269,7 +264,7 @@ func validate(o options) error {
 	cfg := configAgent.Config()
 
 	if o.prowYAMLRepoName != "" {
-		if err := validateInRepoConfig(cfg, o.prowYAMLPath, o.prowYAMLRepoName); err != nil {
+		if err := validateInRepoConfig(cfg, o.prowYAMLPath, o.prowYAMLRepoName, o.warningEnabled(unknownFieldsAllWarning)); err != nil {
 			return fmt.Errorf("error validating .prow.yaml: %w", err)
 		}
 	}
@@ -360,18 +355,18 @@ func validate(o options) error {
 	}
 	// If both "unknown-fields" and "unknown-fields-all" are enabled, just run "unknown-fields-all" validation
 	// since it is a superset. This will avoid duplicate warnings.
-	unknownAllEnabled := o.warningEnabled(unknownFiledsAllWarning)
+	unknownAllEnabled := o.warningEnabled(unknownFieldsAllWarning)
 	unknownEnabled := o.warningEnabled(unknownFieldsWarning)
-	if unknownEnabled && !unknownAllEnabled {
+	if unknownAllEnabled {
+		if _, err := config.LoadStrict(o.config.ConfigPath, o.config.JobConfigPath, nil, ""); err != nil {
+			errs = append(errs, err)
+		}
+	} else if unknownEnabled {
 		cfgBytes, err := ioutil.ReadFile(o.config.ConfigPath)
 		if err != nil {
 			return fmt.Errorf("error reading Prow config for validation: %w", err)
 		}
 		if err := validateUnknownFields(&config.Config{}, cfgBytes, o.config.ConfigPath); err != nil {
-			errs = append(errs, err)
-		}
-	} else if unknownAllEnabled {
-		if _, err := config.LoadStrict(o.config.ConfigPath, o.config.JobConfigPath, nil, ""); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -1091,24 +1086,24 @@ func validateTriggers(cfg *config.Config, pcfg *plugins.Configuration) error {
 	return nil
 }
 
-func validateInRepoConfig(cfg *config.Config, filePath, repoIdentifier string) error {
-	data, err := ioutil.ReadFile(filePath)
-	if err != nil {
-		if !os.IsNotExist(err) {
-			return fmt.Errorf("failed to read file %q: %w", filePath, err)
+func validateInRepoConfig(cfg *config.Config, filepath, repoIdentifier string, strict bool) error {
+	var dir string
+	var err error
+	// Unfortunately we must continue to support the filepath arg for existing uses.
+	if filepath != "" {
+		dir = path.Dir(filepath)
+	} else {
+		if dir, err = os.Getwd(); err != nil {
+			return fmt.Errorf("failed to get current working directory")
 		}
-		return nil
 	}
-
-	prowYAML := &config.ProwYAML{}
-	if err := yaml.Unmarshal(data, prowYAML); err != nil {
-		return fmt.Errorf("failed to deserialize content of %q: %w", filePath, err)
+	prowYAML, err := config.ReadProwYAML(logrus.WithField("repo", repoIdentifier), dir, strict)
+	if err != nil {
+		return fmt.Errorf("failed to read Prow YAML: %w", err)
 	}
-
 	if err := config.DefaultAndValidateProwYAML(cfg, prowYAML, repoIdentifier); err != nil {
-		return fmt.Errorf("failed to validate .prow.yaml: %w", err)
+		return fmt.Errorf("failed to validate Prow YAML: %w", err)
 	}
-
 	return nil
 }
 
