@@ -110,6 +110,7 @@ const (
 	missingTriggerWarning                         = "missing-trigger"
 	validateURLsWarning                           = "validate-urls"
 	unknownFieldsWarning                          = "unknown-fields"
+	unknownFiledsAllWarning                       = "unknown-fields-all" // Superset of "unknown-fields" that includes validating job config.
 	verifyOwnersFilePresence                      = "verify-owners-presence"
 	validateClusterFieldWarning                   = "validate-cluster-field"
 	validateSupplementalProwConfigOrgRepoHirarchy = "validate-supplemental-prow-config-hirarchy"
@@ -145,13 +146,21 @@ var expensiveWarnings = []string{
 	verifyOwnersFilePresence,
 }
 
+var optionalWarnings = []string{
+	validDecorationConfigWarning,
+	// It would be nice to make "unknown-fields-all" a default, but difficult to do due to K8s configs.
+	// https://github.com/kubernetes/test-infra/pull/21075#issuecomment-862550510
+	unknownFiledsAllWarning,
+	validateGitHubAppInstallationWarning,
+}
+
 var throttlerDefaults = flagutil.ThrottlerDefaults(defaultHourlyTokens, defaultAllowedBurst)
 
 func getAllWarnings() []string {
 	var all []string
 	all = append(all, defaultWarnings...)
 	all = append(all, expensiveWarnings...)
-	all = append(all, validateGitHubAppInstallationWarning)
+	all = append(all, optionalWarnings...)
 
 	return all
 }
@@ -349,7 +358,11 @@ func validate(o options) error {
 			errs = append(errs, err)
 		}
 	}
-	if o.warningEnabled(unknownFieldsWarning) {
+	// If both "unknown-fields" and "unknown-fields-all" are enabled, just run "unknown-fields-all" validation
+	// since it is a superset. This will avoid duplicate warnings.
+	unknownAllEnabled := o.warningEnabled(unknownFiledsAllWarning)
+	unknownEnabled := o.warningEnabled(unknownFieldsWarning)
+	if unknownEnabled && !unknownAllEnabled {
 		cfgBytes, err := ioutil.ReadFile(o.config.ConfigPath)
 		if err != nil {
 			return fmt.Errorf("error reading Prow config for validation: %w", err)
@@ -357,8 +370,12 @@ func validate(o options) error {
 		if err := validateUnknownFields(&config.Config{}, cfgBytes, o.config.ConfigPath); err != nil {
 			errs = append(errs, err)
 		}
+	} else if unknownAllEnabled {
+		if _, err := config.LoadStrict(o.config.ConfigPath, o.config.JobConfigPath, nil, ""); err != nil {
+			errs = append(errs, err)
+		}
 	}
-	if pcfg != nil && o.warningEnabled(unknownFieldsWarning) {
+	if pcfg != nil && unknownEnabled || unknownAllEnabled {
 		pcfgBytes, err := ioutil.ReadFile(o.pluginsConfig.PluginConfigPath)
 		if err != nil {
 			return fmt.Errorf("error reading Prow plugin config for validation: %w", err)

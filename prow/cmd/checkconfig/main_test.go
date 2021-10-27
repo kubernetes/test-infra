@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"reflect"
 	"regexp"
 	"strings"
@@ -386,7 +387,6 @@ func TestValidateUnknownFields(t *testing.T) {
 		name, filename string
 		cfg            interface{}
 		configBytes    []byte
-		config         interface{}
 		expectedErr    string
 	}{
 		{
@@ -541,8 +541,10 @@ size:
 		},
 	}
 
-	for _, tc := range testCases {
+	for i := range testCases {
+		tc := testCases[i]
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
 			if err := yaml.Unmarshal(tc.configBytes, tc.cfg); err != nil {
 				t.Fatalf("Unable to unmarhsal yaml: %v", err)
 			}
@@ -561,6 +563,164 @@ size:
 					if !strings.Contains(errMsg, s) {
 						t.Errorf("%s: did not get expected validation error: expected substring in error message:\n%s\n but got:\n%v", tc.name, s, got)
 					}
+				}
+			}
+		})
+	}
+}
+
+func TestValidateUnknownFieldsAll(t *testing.T) {
+	testcases := []struct {
+		name             string
+		configContent    string
+		jobConfigContent map[string]string
+		expectedErr      bool
+	}{
+		{
+			name: "no separate job-config, all known fields",
+			configContent: `
+plank:
+  default_decoration_config_entries:
+    - config:
+        timeout: 2h
+        grace_period: 15s
+        utility_images:
+          clonerefs: "clonerefs:default"
+          initupload: "initupload:default"
+          entrypoint: "entrypoint:default"
+          sidecar: "sidecar:default"
+        gcs_configuration:
+          bucket: "default-bucket"
+          path_strategy: "legacy"
+          default_org: "kubernetes"
+          default_repo: "kubernetes"
+        gcs_credentials_secret: "default-service-account"
+
+presubmits:
+  kube/kube:
+  - name: test-presubmit
+    decorate: true
+    spec:
+      containers:
+      - image: alpine
+        command: ["/bin/printenv"]
+`,
+		},
+		{
+			name: "no separate job-config, unknown field",
+			configContent: `
+presubmits:
+  kube/kube:
+  - name: test-presubmit
+    never_run: true      // I'm unknown
+    spec:
+      containers:
+      - image: alpine
+`,
+			expectedErr: true,
+		},
+		{
+			name: "separate job-configs, all known field",
+			configContent: `
+presubmits:
+  kube/kube:
+  - name: kube-presubmit
+    run_if_changed: "^src/"
+    spec:
+      containers:
+      - image: alpine
+`,
+			jobConfigContent: map[string]string{
+				"org-repo-presubmits.yaml": `
+presubmits:
+  org/repo:
+  - name: org-repo-presubmit
+    always_run: true
+    spec:
+      containers:
+      - image: alpine
+`,
+				"org-repo2-presubmits.yaml": `
+presubmits:
+  org/repo2:
+  - name: org-repo2-presubmit
+    always_run: true
+    spec:
+      containers:
+      - image: alpine
+`,
+			},
+		},
+		{
+			name: "separate job-configs, unknown field in second job config",
+			configContent: `
+presubmits:
+  kube/kube:
+  - name: kube-presubmit
+    never_run: true      // I'm unknown
+    spec:
+      containers:
+      - image: alpine
+`,
+			jobConfigContent: map[string]string{
+				"org-repo-presubmits.yaml": `
+presubmits:
+  org/repo:
+  - name: org-repo-presubmit
+    always_run: true
+    spec:
+      containers:
+      - image: alpine
+`,
+				"org-repo2-presubmits.yaml": `
+presubmits:
+  org/repo2:
+  - name: org-repo2-presubmit
+    never_run: true       // I'm unknown
+    spec:
+      containers:
+      - image: alpine
+`,
+			},
+			expectedErr: true,
+		},
+	}
+	for i := range testcases {
+		tc := testcases[i]
+		t.Run(tc.name, func(t *testing.T) {
+			// Set up config files
+			root, err := ioutil.TempDir("", fmt.Sprintf("TestValidateUnknownFieldsAll-%s_*", tc.name))
+			if err != nil {
+				t.Fatalf("Error creating temp dir: %v.", err)
+			}
+			defer os.RemoveAll(root) // clean up
+
+			prowConfigFile := filepath.Join(root, "config.yaml")
+			if err := ioutil.WriteFile(prowConfigFile, []byte(tc.configContent), 0666); err != nil {
+				t.Fatalf("Error writing config.yaml file: %v.", err)
+			}
+			var jobConfigDir string
+			if len(tc.jobConfigContent) > 0 {
+				jobConfigDir = filepath.Join(root, "job-config")
+				if err := os.Mkdir(jobConfigDir, 0777); err != nil {
+					t.Fatalf("Error creating job-config directory: %v.", err)
+				}
+				for file, content := range tc.jobConfigContent {
+					file = filepath.Join(jobConfigDir, file)
+					if err := ioutil.WriteFile(file, []byte(content), 0666); err != nil {
+						t.Fatalf("Error writing %q file: %v.", file, err)
+					}
+				}
+			}
+			// Test validation
+			_, err = config.LoadStrict(prowConfigFile, jobConfigDir, nil, "")
+			if (err != nil) != tc.expectedErr {
+				if tc.expectedErr {
+					t.Error("Expected an error, but did not receive one.")
+				} else {
+					content, _ := ioutil.ReadFile(prowConfigFile)
+					t.Log(string(content))
+					t.Errorf("Unexpected error: %v.", err)
 				}
 			}
 		})
