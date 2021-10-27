@@ -433,6 +433,10 @@ repo_milestone:
     maintainers_id: 2060651
     maintainers_team: kops-maintainers
     maintainers_friendly_name: Kops Maintainers
+  kubernetes/ingress-nginx:
+    maintainers_id: 2179129
+    maintainers_team: ingress-nginx-maintainers
+    maintainers_friendly_name: Ingress Nginx Maintainers
   kubernetes/org:
     maintainers_id: 2842373
     maintainers_team: owners
