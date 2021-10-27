@@ -14,6 +14,16 @@ py_binary(
     deps = [requirement("ruamel.yaml")],
 )
 
+py_test(
+    name = "generate_tests_test",
+    srcs = [
+        "generate_tests.py",
+        "generate_tests_test.py",
+    ],
+    python_version = "PY3",
+    deps = [requirement("ruamel.yaml")],
+)
+
 py_binary(
     name = "prepare_release_branch",
     srcs = ["prepare_release_branch.py"],

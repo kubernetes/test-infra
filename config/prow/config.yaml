@@ -1,5 +1,5 @@
 plank:
-  job_url_template: '{{if .Spec.Refs}}{{if eq .Spec.Refs.Org "kubernetes-security"}}https://console.cloud.google.com/storage/browser/kubernetes-security-prow/{{else}}https://prow.k8s.io/view/gcs/kubernetes-jenkins/{{end}}{{else}}https://prow.k8s.io/view/gcs/kubernetes-jenkins/{{end}}{{if eq .Spec.Type "presubmit"}}pr-logs/pull{{else if eq .Spec.Type "batch"}}pr-logs/pull{{else}}logs{{end}}{{if .Spec.Refs}}{{if ne .Spec.Refs.Org ""}}{{if ne .Spec.Refs.Org "kubernetes"}}/{{if and (eq .Spec.Refs.Org "kubernetes-sigs") (ne .Spec.Refs.Repo "poseidon")}}sigs.k8s.io{{else}}{{.Spec.Refs.Org}}{{end}}_{{.Spec.Refs.Repo}}{{else if ne .Spec.Refs.Repo "kubernetes"}}/{{.Spec.Refs.Repo}}{{end}}{{end}}{{end}}{{if eq .Spec.Type "presubmit"}}/{{with index .Spec.Refs.Pulls 0}}{{.Number}}{{end}}{{else if eq .Spec.Type "batch"}}/batch{{end}}/{{.Spec.Job}}/{{.Status.BuildID}}/'
+  job_url_template: 'https://prow.k8s.io/view/gs/kubernetes-jenkins/{{if eq .Spec.Type "presubmit"}}pr-logs/pull{{else if eq .Spec.Type "batch"}}pr-logs/pull{{else}}logs{{end}}{{if .Spec.Refs}}{{if ne .Spec.Refs.Org ""}}{{if ne .Spec.Refs.Org "kubernetes"}}/{{if and (eq .Spec.Refs.Org "kubernetes-sigs") (ne .Spec.Refs.Repo "poseidon")}}sigs.k8s.io{{else}}{{.Spec.Refs.Org}}{{end}}_{{.Spec.Refs.Repo}}{{else if ne .Spec.Refs.Repo "kubernetes"}}/{{.Spec.Refs.Repo}}{{end}}{{end}}{{end}}{{if eq .Spec.Type "presubmit"}}/{{with index .Spec.Refs.Pulls 0}}{{.Number}}{{end}}{{else if eq .Spec.Type "batch"}}/batch{{end}}/{{.Spec.Job}}/{{.Status.BuildID}}/'
   report_templates:
     '*': '[Full PR test history](https://prow.k8s.io/pr-history?org={{.Spec.Refs.Org}}&repo={{.Spec.Refs.Repo}}&pr={{with index .Spec.Refs.Pulls 0}}{{.Number}}{{end}}). [Your PR dashboard](https://prow.k8s.io/pr?query=is%3Apr%20state%3Aopen%20author%3A{{with index .Spec.Refs.Pulls 0}}{{.Author}}{{end}}). Please help us cut down on flakes by [linking to](https://git.k8s.io/community/contributors/devel/sig-testing/flaky-tests.md#filing-issues-for-flaky-tests) an [open issue](https://github.com/{{.Spec.Refs.Org}}/{{.Spec.Refs.Repo}}/issues?q=is:issue+is:open) when you hit one in your PR.'
   job_url_prefix_config:
@@ -11,10 +11,10 @@ plank:
       timeout: 2h
       grace_period: 15m
       utility_images:
-        clonerefs: "gcr.io/k8s-prow/clonerefs:v20210123-aa0de54ee1"
-        initupload: "gcr.io/k8s-prow/initupload:v20210123-aa0de54ee1"
-        entrypoint: "gcr.io/k8s-prow/entrypoint:v20210123-aa0de54ee1"
-        sidecar: "gcr.io/k8s-prow/sidecar:v20210123-aa0de54ee1"
+        clonerefs: "gcr.io/k8s-prow/clonerefs:v20211012-ba1fa86530"
+        initupload: "gcr.io/k8s-prow/initupload:v20211012-ba1fa86530"
+        entrypoint: "gcr.io/k8s-prow/entrypoint:v20211012-ba1fa86530"
+        sidecar: "gcr.io/k8s-prow/sidecar:v20211012-ba1fa86530"
       gcs_configuration:
         bucket: "kubernetes-jenkins"
         path_strategy: "legacy"
@@ -81,6 +81,10 @@ deck:
         name: podinfo
       required_files:
         - ^podinfo\.json$
+    - lens:
+        name: links
+      required_files:
+        - artifacts/.*\.link\.txt
   tide_update_period: 1s
   hidden_repos:
   - kubernetes-security
@@ -90,6 +94,9 @@ deck:
       github_team_ids:
       - 2009231 # test-infra-admins
       - 2460384 # milestone-maintainers
+  additional_allowed_buckets:
+    - k8s-ovn
+    - containerd-integration
 
 prowjob_namespace: default
 pod_namespace: test-pods
@@ -108,6 +115,8 @@ managed_webhooks:
       token_created_after: 2020-07-24T00:00:00Z
     kubernetes-csi:
       token_created_after: 2020-08-12T00:00:00Z
+    kubernetes-security:
+      token_created_after: 2021-05-19T00:00:00Z
     kubernetes-sigs:
       token_created_after: 2020-08-12T00:00:00Z
     containerd/containerd:
@@ -164,7 +173,12 @@ branch-protection:
         autoscaler:
           required_status_checks:
             contexts:
-            - continuous-integration/travis-ci/pr
+            - test-and-verify
+            - Helm chart
+            - Helm Docs
+          branches:
+            gh-pages:
+              protect: false
         client-go:
           restrictions:
             users: []
@@ -232,6 +246,10 @@ branch-protection:
             - continuous-integration/travis-ci
           required_pull_request_reviews:
             required_approving_review_count: 1
+        enhancements:
+          restrictions: # only allow admins
+            users: []
+            teams: []
         git-sync:
           enforce_admins: true
           restrictions: # only allow admins
@@ -331,6 +349,11 @@ branch-protection:
           restrictions: # only allow admins
             users: []
             teams: []
+        pod-security-admission:
+          restrictions:
+            users: []
+            teams:
+            - stage-bots
         sample-apiserver:
           restrictions:
             users: []
@@ -346,10 +369,6 @@ branch-protection:
             users: []
             teams:
             - stage-bots
-        utils:
-          required_status_checks:
-            contexts:
-            - continuous-integration/travis-ci
         website:
           protect: false # TODO(fejta): protect all branches soon
           branches:
@@ -388,6 +407,8 @@ branch-protection:
             release-1.19:
               protect: true
             release-1.20:
+              protect: true
+            release-1.21:
               protect: true
     kubernetes-client:
       protect: true
@@ -438,6 +459,14 @@ branch-protection:
           branches:
             gh-pages:
               protect: false
+        cluster-api-provider-gcp:
+          required_status_checks:
+            contexts:
+            - lint
+        cluster-proportional-autoscaler:
+          branches:
+            gh-pages:
+              protect: false
         kube-batch:
           required_status_checks:
             contexts:
@@ -446,6 +475,10 @@ branch-protection:
           required_status_checks:
             contexts:
             - Kubespray CI Pipeline
+        nfs-ganesha-server-and-external-provisioner:
+          branches:
+            gh-pages:
+              protect: false
         nfs-subdir-external-provisioner:
           branches:
             gh-pages:
@@ -454,32 +487,18 @@ branch-protection:
           branches:
             gh-pages:
               protect: false
-    kubeflow:
-      protect: true
-      required_status_checks:
-        contexts:
-        - cla/google
-      exclude:
-      - "^revert-" # don't protect revert branches
-      - "^dependabot/" # don't protect branches created by dependabot
-      - "-patch-" # don't protect branches created by editing on GitHub UI
+        node-feature-discovery-operator:
+          branches:
+            gh-pages:
+              protect: false
+        secrets-store-csi-driver:
+          branches:
+            gh-pages:
+              protect: false
 
 tide:
   sync_period: 2m
   queries:
-  - orgs:
-    - kubeflow
-    excludedRepos: # TODO(Bobgy): move entire Kubeflow org to oss prow.
-    - kubeflow/pipelines
-    labels:
-    - lgtm
-    - approved
-    missingLabels:
-    - do-not-merge
-    - do-not-merge/hold
-    - do-not-merge/invalid-owners-file
-    - do-not-merge/work-in-progress
-    - needs-rebase
   - orgs:
     - kubernetes
     - kubernetes-client
@@ -515,6 +534,7 @@ tide:
     - kubernetes/mount-utils
     - kubernetes/node-api
     - kubernetes/noderesourcetopology-api
+    - kubernetes/pod-security-admission
     - kubernetes/sample-apiserver
     - kubernetes/sample-cli-plugin
     - kubernetes/sample-controller
@@ -562,9 +582,41 @@ tide:
     - do-not-merge/hold
     - do-not-merge/invalid-owners-file
     - do-not-merge/work-in-progress
+  - author: k8s-ci-robot
+    labels: # k8s-ci-robot should only create autobump PR with this label
+    - skip-review
+    - "cncf-cla: yes"
+    missingLabels:
+    - do-not-merge
+    - do-not-merge/blocked-paths
+    - do-not-merge/contains-merge-commits
+    - do-not-merge/hold
+    - do-not-merge/invalid-commit-message
+    - do-not-merge/invalid-owners-file
+    - do-not-merge/release-note-label-needed
+    - do-not-merge/work-in-progress
+    - needs-rebase
+    repos:
+    - kubernetes/test-infra
+  - author: k8s-infra-ci-robot
+    labels: # k8s-infra-ci-robot should only create autobump PR with this label
+    - skip-review
+    - "cncf-cla: yes"
+    missingLabels:
+    - do-not-merge
+    - do-not-merge/blocked-paths
+    - do-not-merge/contains-merge-commits
+    - do-not-merge/hold
+    - do-not-merge/invalid-commit-message
+    - do-not-merge/invalid-owners-file
+    - do-not-merge/release-note-label-needed
+    - do-not-merge/work-in-progress
+    - needs-rebase
+    repos:
+    - kubernetes/k8s.io
+    - kubernetes/test-infra
 
   merge_method:
-    kubeflow: squash
     kubernetes-client/csharp: squash
     kubernetes-client/gen: squash
     kubernetes-sigs/cluster-api-provider-digitalocean: squash
@@ -572,15 +624,15 @@ tide:
     kubernetes-sigs/krew-index: squash
     kubernetes-sigs/krew: squash
     kubernetes-sigs/kubespray: squash
+    kubernetes-sigs/kui: rebase
     kubernetes-sigs/security-profiles-operator: rebase
     kubernetes-sigs/service-catalog: squash
     kubernetes-sigs/go-open-service-broker-client: squash
     kubernetes-sigs/minibroker: squash
+    kubernetes-sigs/vsphere-csi-driver: squash
     kubernetes/cloud-provider-openstack: squash
     kubernetes/dashboard: squash
-  merge_commit_template:
-    kubeflow:
-      title: "{{ .Title }} (#{{ .Number }})"
+    kubernetes/ingress-nginx: squash
   pr_status_base_urls:
     '*': https://prow.k8s.io/pr
   blocker_label: tide/merge-blocker
@@ -590,22 +642,17 @@ tide:
   context_options:
     orgs:
       kubernetes:
+        optional-contexts:
+        - "EasyCLA" # NOTE(cblecker): This is temporary until we fully roll out EasyCLA
         repos:
           dashboard:
             from-branch-protection: true
-      kubernetes-sigs:
-        repos:
-          cluster-api-provider-openstack:
-            skip-unknown-contexts: true
   batch_size_limit:
     "kubernetes/kubernetes": 15
-#  TODO uncomment after merging #20468
-#  priority:
-#  # prioritize PRs fixing flaking/failing tests
-#  - labels: [ "kind/failing-test" ]
-#  - labels: [ "area/deflake" ]
-#  # prioritize critical bugfixes
-#  - labels: [ "kind/bug", "priority/critical-urgent" ]
+  priority:
+  - labels: [ "kind/flake", "priority/critical-urgent" ]
+  - labels: [ "kind/failing-test", "priority/critical-urgent" ]
+  - labels: [ "kind/bug", "priority/critical-urgent" ]
 
 push_gateway:
   endpoint: pushgateway
@@ -645,6 +692,10 @@ presets:
   - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
     value: /etc/ssh-key-secret/ssh-private
   - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+    value: /etc/ssh-key-secret/ssh-public
+  - name: GCE_SSH_PRIVATE_KEY_FILE
+    value: /etc/ssh-key-secret/ssh-private
+  - name: GCE_SSH_PUBLIC_KEY_FILE
     value: /etc/ssh-key-secret/ssh-public
   volumes:
   - name: ssh
@@ -699,6 +750,8 @@ presets:
     value: "0"
   - name: AZ_STORAGE_CONTAINER_NAME
     value: mystoragecontainer
+  - name: KUBE_BUILD_CONFORMANCE
+    value: "n"
   volumes:
   - name: azure-cred
     secret:
@@ -718,6 +771,8 @@ presets:
   env:
     - name: REGISTRY
       value: capzci.azurecr.io
+    - name: LOCAL_ONLY
+      value: "false"
 - labels:
     preset-azure-cred-only: "true"
   env:
@@ -760,6 +815,9 @@ presets:
   env:
   - name: DOCKER_IN_DOCKER_ENABLED
     value: "true"
+  # TODO(spiffxp): remove when defaulted to false in image, ref: https://github.com/kubernetes/test-infra/issues/23741#issuecomment-933901984
+  - name: BOOTSTRAP_MTU_WORKAROUND
+    value: "false"
   volumes:
   # kubekins-e2e legacy path
   - name: docker-graph

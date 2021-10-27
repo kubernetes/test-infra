@@ -1,0 +1,35 @@
+bob smith and jim james carelessly leaked their passwords, bobspass and jimspass, for registries, along with their auth values, bobsencodedauth and jimsencodedauth. Sidecar censored that data even when it wasn't part of the full secret.
+To make matters worse, they even printed the full contents of the secret!
+{
+  "registry.com": {
+    "username": "bob smith",
+    "password": "bobspass",
+    "email": "bob@smith.com",
+    "auth": "bobsencodedauth"
+  },
+  "other.com": {
+    "username": "jim james",
+    "password": "jimspass",
+    "email": "jim@james.com",
+    "auth": "jimsencodedauth"
+  }
+}
+
+BOB SMITH and JIM JAMES carelessly leaked their passwords, BOBspass and JIMspass, for registries, along with their auth values, BOBsencodedauth and JIMsencodedauth. Sidecar censored that data even when it wasn't part of the full secret.
+To make matters worse, they even printed the full contents of the secret!
+{
+  "auths": {
+    "registry.com": {
+      "username": "BOB SMITH",
+      "password": "BOBspass",
+      "email": "BOB@SMITH.com",
+      "auth": "BOBsencodedauth"
+    },
+    "other.com": {
+      "username": "JIM JAMES",
+      "password": "JIMspass",
+      "email": "JIM@JAMES.com",
+      "auth": "JIMsencodedauth"
+    }
+  }
+}

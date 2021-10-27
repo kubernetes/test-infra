@@ -24,12 +24,15 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/pjutil/pprof"
 
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/bugzilla"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
+	pluginsflagutil "k8s.io/test-infra/prow/flagutil/plugins"
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/githubeventserver"
 	"k8s.io/test-infra/prow/hook"
@@ -47,12 +50,16 @@ import (
 	"k8s.io/test-infra/prow/slack"
 )
 
-type options struct {
-	port int
+const (
+	defaultWebhookPath = "/hook"
+)
 
-	configPath    string
-	jobConfigPath string
-	pluginConfig  string
+type options struct {
+	webhookPath string
+	port        int
+
+	config        configflagutil.ConfigOptions
+	pluginsConfig pluginsflagutil.PluginOptions
 
 	dryRun                 bool
 	gracePeriod            time.Duration
@@ -68,7 +75,7 @@ type options struct {
 }
 
 func (o *options) Validate() error {
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.bugzilla, &o.jira, &o.githubEnablement} {
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.bugzilla, &o.jira, &o.githubEnablement, &o.config, &o.pluginsConfig} {
 		if err := group.Validate(o.dryRun); err != nil {
 			return err
 		}
@@ -79,15 +86,13 @@ func (o *options) Validate() error {
 
 func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	var o options
+	fs.StringVar(&o.webhookPath, "webhook-path", defaultWebhookPath, "The path of webhook events, default is '/hook'.")
 	fs.IntVar(&o.port, "port", 8888, "Port to listen on.")
-
-	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
-	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
-	fs.StringVar(&o.pluginConfig, "plugin-config", "/etc/plugins/plugins.yaml", "Path to plugin config file.")
 
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 	fs.DurationVar(&o.gracePeriod, "grace-period", 180*time.Second, "On shutdown, try to handle remaining events for the specified duration. ")
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.bugzilla, &o.instrumentationOptions, &o.jira, &o.githubEnablement} {
+	o.pluginsConfig.PluginConfigPathDefault = "/etc/plugins/plugins.yaml"
+	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.bugzilla, &o.instrumentationOptions, &o.jira, &o.githubEnablement, &o.config, &o.pluginsConfig} {
 		group.AddFlags(fs)
 	}
 
@@ -105,8 +110,8 @@ func main() {
 		logrus.WithError(err).Fatal("Invalid options")
 	}
 
-	configAgent := &config.Agent{}
-	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
+	configAgent, err := o.config.ConfigAgent()
+	if err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
@@ -130,28 +135,27 @@ func main() {
 		tokens = append(tokens, o.bugzilla.ApiKeyPath)
 	}
 
-	secretAgent := &secret.Agent{}
-	if err := secretAgent.Start(tokens); err != nil {
+	if err := secret.Add(tokens...); err != nil {
 		logrus.WithError(err).Fatal("Error starting secrets agent.")
 	}
 
-	pluginAgent := &plugins.ConfigAgent{}
-	if err := pluginAgent.Start(o.pluginConfig, true); err != nil {
+	pluginAgent, err := o.pluginsConfig.PluginAgent()
+	if err != nil {
 		logrus.WithError(err).Fatal("Error starting plugins.")
 	}
 
-	githubClient, err := o.github.GitHubClient(secretAgent, o.dryRun)
+	githubClient, err := o.github.GitHubClient(o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting GitHub client.")
 	}
-	gitClient, err := o.github.GitClient(secretAgent, o.dryRun)
+	gitClient, err := o.github.GitClient(o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting Git client.")
 	}
 
 	var bugzillaClient bugzilla.Client
-	if orgs, repos := pluginAgent.Config().EnabledReposForPlugin(bzplugin.PluginName); orgs != nil || repos != nil {
-		client, err := o.bugzilla.BugzillaClient(secretAgent)
+	if orgs, repos, _ := pluginAgent.Config().EnabledReposForPlugin(bzplugin.PluginName); orgs != nil || repos != nil {
+		client, err := o.bugzilla.BugzillaClient()
 		if err != nil {
 			logrus.WithError(err).Fatal("Error getting Bugzilla client.")
 		}
@@ -163,8 +167,8 @@ func main() {
 	}
 
 	var jiraClient jiraclient.Client
-	if orgs, repos := pluginAgent.Config().EnabledReposForPlugin(jira.PluginName); orgs != nil || repos != nil {
-		client, err := o.jira.Client(secretAgent)
+	if orgs, repos, _ := pluginAgent.Config().EnabledReposForPlugin(jira.PluginName); orgs != nil || repos != nil {
+		client, err := o.jira.Client()
 		if err != nil {
 			logrus.WithError(err).Fatal("Failed to construct Jira Client")
 		}
@@ -187,9 +191,9 @@ func main() {
 	}
 
 	var slackClient *slack.Client
-	if !o.dryRun && string(secretAgent.GetSecret(o.slackTokenFile)) != "" {
+	if !o.dryRun && string(secret.GetSecret(o.slackTokenFile)) != "" {
 		logrus.Info("Using real slack client.")
-		slackClient = slack.NewClient(secretAgent.GetTokenGenerator(o.slackTokenFile))
+		slackClient = slack.NewClient(secret.GetTokenGenerator(o.slackTokenFile))
 	}
 	if slackClient == nil {
 		logrus.Info("Using fake slack client.")
@@ -202,13 +206,28 @@ func main() {
 	skipCollaborators := func(org, repo string) bool {
 		return pluginAgent.Config().SkipCollaborators(org, repo)
 	}
-	ownersDirBlacklist := func() config.OwnersDirBlacklist {
-		return configAgent.Config().OwnersDirBlacklist
+	ownersDirDenylist := func() *config.OwnersDirDenylist {
+		// OwnersDirDenylist struct contains some defaults that's required by all
+		// repos, so this function cannot return nil
+		res := &config.OwnersDirDenylist{}
+		deprecated := configAgent.Config().OwnersDirBlacklist
+		if l := configAgent.Config().OwnersDirDenylist; l != nil {
+			res = l
+		}
+		if deprecated != nil {
+			logrus.Warn("owners_dir_blacklist will be deprecated after October 2021, use owners_dir_denylist instead")
+			if res != nil {
+				logrus.Warn("Both owners_dir_blacklist and owners_dir_denylist are provided, owners_dir_blacklist is discarded")
+			} else {
+				res = deprecated
+			}
+		}
+		return res
 	}
 	resolver := func(org, repo string) ownersconfig.Filenames {
 		return pluginAgent.Config().OwnersFilenames(org, repo)
 	}
-	ownersClient := repoowners.NewClient(git.ClientFactoryFrom(gitClient), githubClient, mdYAMLEnabled, skipCollaborators, ownersDirBlacklist, resolver)
+	ownersClient := repoowners.NewClient(git.ClientFactoryFrom(gitClient), githubClient, mdYAMLEnabled, skipCollaborators, ownersDirDenylist, resolver)
 
 	clientAgent := &plugins.ClientAgent{
 		GitHubClient:              githubClient,
@@ -228,7 +247,7 @@ func main() {
 
 	// Expose prometheus metrics
 	metrics.ExposeMetrics("hook", configAgent.Config().PushGateway, o.instrumentationOptions.MetricsPort)
-	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
+	pprof.Instrument(o.instrumentationOptions)
 
 	server := &hook.Server{
 		ClientAgent:    clientAgent,
@@ -236,7 +255,7 @@ func main() {
 		Plugins:        pluginAgent,
 		Metrics:        promMetrics,
 		RepoEnabled:    o.githubEnablement.EnablementChecker(),
-		TokenGenerator: secretAgent.GetTokenGenerator(o.webhookSecretFile),
+		TokenGenerator: secret.GetTokenGenerator(o.webhookSecretFile),
 	}
 	interrupts.OnInterrupt(func() {
 		server.GracefulShutdown()
@@ -252,7 +271,7 @@ func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {})
 
 	// For /hook, handle a webhook normally.
-	http.Handle("/hook", server)
+	http.Handle(o.webhookPath, server)
 	// Serve plugin help information from /plugin-help.
 	http.Handle("/plugin-help", pluginhelp.NewHelpAgent(pluginAgent, githubClient))
 	// Improbable: add our own repo-owner endpoint handler.

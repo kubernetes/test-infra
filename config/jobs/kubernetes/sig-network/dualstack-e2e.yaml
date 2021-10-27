@@ -1,56 +1,5 @@
 periodics:
 - interval: 24h
-  name: ci-dualstack-azure-e2e-1-18
-  decorate: true
-  decoration_config:
-    timeout: 5h
-  labels:
-    preset-service-account: "true"
-    preset-azure-cred: "true"
-    preset-dind-enabled: "true"
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: release-1.18
-    path_alias: k8s.io/kubernetes
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.18
-      command:
-      - runner.sh
-      - kubetest
-      args:
-      # Generic e2e test args
-      - --test
-      - --up
-      - --down
-      - --build=quick
-      - --dump=$(ARTIFACTS)
-      # Azure-specific test args
-      - --provider=skeleton
-      - --deployment=aksengine
-      - --aksengine-agentpoolcount=2
-      - --aksengine-admin-username=azureuser
-      - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-orchestratorRelease=1.18
-      - --aksengine-mastervmsize=Standard_DS2_v2
-      - --aksengine-agentvmsize=Standard_D4s_v3
-      - --aksengine-deploy-custom-k8s
-      - --aksengine-location=westus2
-      - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-      - --aksengine-template-url=https://raw.githubusercontent.com/Azure/aks-engine/master/examples/dualstack/kubernetes.json
-      - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
-      # Specific test args
-      - --test_args=--ginkgo.focus=\[Feature:IPv6DualStackAlphaFeature\]
-      - --ginkgo-parallel=1
-      securityContext:
-        privileged: true
-  annotations:
-    testgrid-dashboards: sig-network-dualstack-azure-e2e, provider-azure-dualstack, provider-azure-periodic
-    testgrid-tab-name: dualstack-azure-e2e-1-18
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
-    description: "Dual-stack e2e tests on a 1.18 Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
-- interval: 24h
   name: ci-dualstack-azure-e2e-1-19
   decorate: true
   decoration_config:
@@ -66,7 +15,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.19
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-1.19
       command:
       - runner.sh
       - kubetest
@@ -87,9 +36,8 @@ periodics:
       - --aksengine-mastervmsize=Standard_DS2_v2
       - --aksengine-agentvmsize=Standard_D4s_v3
       - --aksengine-deploy-custom-k8s
-      - --aksengine-location=westus2
       - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-      - --aksengine-template-url=https://raw.githubusercontent.com/Azure/aks-engine/master/examples/dualstack/kubernetes.json
+      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-dual-stack-ipvs-kubenet.json
       - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
       # Specific test args
       - --test_args=--ginkgo.focus=\[Feature:IPv6DualStackAlphaFeature\]
@@ -97,7 +45,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-network-dualstack-azure-e2e, provider-azure-dualstack, provider-azure-periodic
+    testgrid-dashboards: sig-network-dualstack-azure-e2e, provider-azure-dualstack, provider-azure-1.19-signal
     testgrid-tab-name: dualstack-azure-e2e-1-19
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: "Dual-stack e2e tests on a 1.19 Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
@@ -117,7 +65,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-1.20
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-1.20
       command:
       - runner.sh
       - kubetest
@@ -138,20 +86,128 @@ periodics:
       - --aksengine-mastervmsize=Standard_DS2_v2
       - --aksengine-agentvmsize=Standard_D4s_v3
       - --aksengine-deploy-custom-k8s
-      - --aksengine-location=westus2
       - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-      - --aksengine-template-url=https://raw.githubusercontent.com/Azure/aks-engine/master/examples/dualstack/kubernetes.json
+      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-dual-stack-ipvs-kubenet.json
       - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
-      # Specific test args
-      - --test_args=--ginkgo.focus=\[Feature:IPv6DualStackAlphaFeature\]|\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|Should.recreate.evicted.statefulset
+      # Skipping "Should recreate evicted statefulset" because of an issue in dockershim for dualstack
+      # Suggested fix - https://github.com/kubernetes/kubernetes/pull/94382
+      # Skipping "HostPort validates that there is no conflict between pods with same hostPort but different hostIP and protocol" because of kubenet bug in HostPort impl
+      # Skipping Feature:SCTPConnectivity tests because the vhd used for tests doesn't have sctp enabled
+      - --test_args=--ginkgo.focus=\[Feature:IPv6DualStack\]|\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|\[Feature:SCTPConnectivity\]|Should.recreate.evicted.statefulset|HostPort.validates.that.there.is.no.conflict.between.pods.with.same.hostPort.but.different.hostIP.and.protocol
       - --ginkgo-parallel=1
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-network-dualstack-azure-e2e, provider-azure-dualstack, provider-azure-periodic
+    testgrid-dashboards: sig-network-dualstack-azure-e2e, provider-azure-dualstack, provider-azure-1.20-signal
     testgrid-tab-name: dualstack-azure-e2e-1-20
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: "Dual-stack e2e tests on a 1.20 Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
+- interval: 24h
+  name: ci-dualstack-azure-e2e-1-21
+  decorate: true
+  decoration_config:
+    timeout: 5h
+  labels:
+    preset-service-account: "true"
+    preset-azure-cred: "true"
+    preset-dind-enabled: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: release-1.21
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-1.21
+      command:
+      - runner.sh
+      - kubetest
+      args:
+      # Generic e2e test args
+      - --test
+      - --up
+      - --down
+      - --build=quick
+      - --dump=$(ARTIFACTS)
+      # Azure-specific test args
+      - --provider=skeleton
+      - --deployment=aksengine
+      - --aksengine-agentpoolcount=2
+      - --aksengine-admin-username=azureuser
+      - --aksengine-creds=$(AZURE_CREDENTIALS)
+      - --aksengine-orchestratorRelease=1.21
+      - --aksengine-mastervmsize=Standard_DS2_v2
+      - --aksengine-agentvmsize=Standard_D4s_v3
+      - --aksengine-deploy-custom-k8s
+      - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
+      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-dual-stack-ipvs-kubenet.json
+      - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
+      # Skipping "Should recreate evicted statefulset" because of an issue in dockershim for dualstack
+      # Suggested fix - https://github.com/kubernetes/kubernetes/pull/94382
+      # Skipping "HostPort validates that there is no conflict between pods with same hostPort but different hostIP and protocol" because of kubenet bug in HostPort impl
+      # Skipping Feature:SCTPConnectivity tests because the vhd used for tests doesn't have sctp enabled
+      - --test_args=--ginkgo.focus=\[Feature:IPv6DualStack\]|\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|\[Feature:SCTPConnectivity\]|Should.recreate.evicted.statefulset|HostPort.validates.that.there.is.no.conflict.between.pods.with.same.hostPort.but.different.hostIP.and.protocol
+      - --ginkgo-parallel=1
+      securityContext:
+        privileged: true
+  annotations:
+    testgrid-dashboards: sig-network-dualstack-azure-e2e, provider-azure-dualstack, provider-azure-1.21-signal
+    testgrid-tab-name: dualstack-azure-e2e-1-21
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    description: "Dual-stack e2e tests on a 1.21 Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
+- interval: 24h
+  name: ci-dualstack-azure-e2e-1-22
+  decorate: true
+  decoration_config:
+    timeout: 5h
+  labels:
+    preset-service-account: "true"
+    preset-azure-cred: "true"
+    preset-dind-enabled: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: release-1.22
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-1.22
+      command:
+      - runner.sh
+      - kubetest
+      args:
+      # Generic e2e test args
+      - --test
+      - --up
+      - --down
+      - --build=quick
+      - --dump=$(ARTIFACTS)
+      # Azure-specific test args
+      - --provider=skeleton
+      - --deployment=aksengine
+      - --aksengine-agentpoolcount=2
+      - --aksengine-admin-username=azureuser
+      - --aksengine-creds=$(AZURE_CREDENTIALS)
+      - --aksengine-orchestratorRelease=1.22
+      - --aksengine-mastervmsize=Standard_DS2_v2
+      - --aksengine-agentvmsize=Standard_D4s_v3
+      - --aksengine-deploy-custom-k8s
+      - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
+      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-dual-stack-ipvs-kubenet.json
+      - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
+      # Skipping "Should recreate evicted statefulset" because of an issue in dockershim for dualstack
+      # Suggested fix - https://github.com/kubernetes/kubernetes/pull/94382
+      # Skipping "HostPort validates that there is no conflict between pods with same hostPort but different hostIP and protocol" because of kubenet bug in HostPort impl
+      # Skipping Feature:SCTPConnectivity tests because the vhd used for tests doesn't have sctp enabled
+      - --test_args=--ginkgo.focus=\[Feature:IPv6DualStack\]|\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|\[Feature:SCTPConnectivity\]|Should.recreate.evicted.statefulset|HostPort.validates.that.there.is.no.conflict.between.pods.with.same.hostPort.but.different.hostIP.and.protocol
+      - --ginkgo-parallel=1
+      securityContext:
+        privileged: true
+  annotations:
+    testgrid-dashboards: sig-network-dualstack-azure-e2e, provider-azure-dualstack, provider-azure-1.22-signal
+    testgrid-tab-name: dualstack-azure-e2e-1-22
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    description: "Dual-stack e2e tests on a 1.22 Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
 - interval: 24h
   name: ci-dualstack-azure-e2e-master-iptables
   decorate: true
@@ -168,7 +224,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
       command:
       - runner.sh
       - kubetest
@@ -185,22 +241,23 @@ periodics:
       - --aksengine-agentpoolcount=2
       - --aksengine-admin-username=azureuser
       - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-orchestratorRelease=1.20
+      - --aksengine-orchestratorRelease=1.22
       - --aksengine-mastervmsize=Standard_DS2_v2
       - --aksengine-agentvmsize=Standard_D4s_v3
       - --aksengine-deploy-custom-k8s
-      - --aksengine-location=westus2
       - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-      - --aksengine-template-url=https://raw.githubusercontent.com/Azure/aks-engine/master/examples/dualstack/kubernetes-iptables.json
+      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-dual-stack-iptables-kubenet.json
       - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
       # Skipping "Should recreate evicted statefulset" because of an issue in dockershim for dualstack
       # Suggested fix - https://github.com/kubernetes/kubernetes/pull/94382
-      - --test_args=--ginkgo.focus=\[Feature:IPv6DualStackAlphaFeature\]|\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|Should.recreate.evicted.statefulset
+      # Skipping "HostPort validates that there is no conflict between pods with same hostPort but different hostIP and protocol" because of kubenet bug in HostPort impl
+      # Skipping Feature:SCTPConnectivity tests because the vhd used for tests doesn't have sctp enabled
+      - --test_args=--ginkgo.focus=\[Feature:IPv6DualStack\]|\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|\[Feature:SCTPConnectivity\]|Should.recreate.evicted.statefulset|HostPort.validates.that.there.is.no.conflict.between.pods.with.same.hostPort.but.different.hostIP.and.protocol
       - --ginkgo-parallel=1
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-network-dualstack-azure-e2e, provider-azure-dualstack, provider-azure-periodic
+    testgrid-dashboards: sig-network-dualstack-azure-e2e, provider-azure-dualstack, provider-azure-master-signal
     testgrid-tab-name: dualstack-azure-e2e-master-iptables
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: "Dual-stack and Conformance e2e tests on a Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud in iptables mode"
@@ -220,7 +277,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
       command:
       - runner.sh
       - kubetest
@@ -237,26 +294,84 @@ periodics:
       - --aksengine-agentpoolcount=2
       - --aksengine-admin-username=azureuser
       - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-orchestratorRelease=1.20
+      - --aksengine-orchestratorRelease=1.22
       - --aksengine-mastervmsize=Standard_DS2_v2
       - --aksengine-agentvmsize=Standard_D4s_v3
       - --aksengine-deploy-custom-k8s
-      - --aksengine-location=westus2
       - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-      - --aksengine-template-url=https://raw.githubusercontent.com/Azure/aks-engine/master/examples/dualstack/kubernetes.json
+      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-dual-stack-ipvs-kubenet.json
       - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
       # Skipping "Should recreate evicted statefulset" because of an issue in dockershim for dualstack
       # Suggested fix - https://github.com/kubernetes/kubernetes/pull/94382
-      - --test_args=--ginkgo.focus=\[Feature:IPv6DualStackAlphaFeature\]|\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|Should.recreate.evicted.statefulset
+      # Skipping "HostPort validates that there is no conflict between pods with same hostPort but different hostIP and protocol" because of kubenet bug in HostPort impl
+      # Skipping Feature:SCTPConnectivity tests because the vhd used for tests doesn't have sctp enabled
+      - --test_args=--ginkgo.focus=\[Feature:IPv6DualStack\]|\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|\[Feature:SCTPConnectivity\]|Should.recreate.evicted.statefulset|HostPort.validates.that.there.is.no.conflict.between.pods.with.same.hostPort.but.different.hostIP.and.protocol
       - --ginkgo-parallel=1
       securityContext:
         privileged: true
   annotations:
-    testgrid-dashboards: sig-network-dualstack-azure-e2e, provider-azure-dualstack, provider-azure-periodic
+    testgrid-dashboards: sig-network-dualstack-azure-e2e, provider-azure-dualstack, provider-azure-master-signal
     testgrid-tab-name: dualstack-azure-e2e-master-ipvs
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: "Dual-stack and Conformance e2e tests on a Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud in ipvs mode"
-
+- interval: 24h
+  name: ci-dualstack-azure-e2e-master-windows
+  decorate: true
+  decoration_config:
+    timeout: 5h
+  labels:
+    preset-service-account: "true"
+    preset-azure-cred: "true"
+    preset-dind-enabled: "true"
+    preset-azure-windows: "true"
+    preset-k8s-ssh: "true"
+    preset-windows-private-registry-cred: "true"
+    preset-windows-repo-list-master: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
+      command:
+      - runner.sh
+      - kubetest
+      args:
+      # Generic e2e test args
+      - --test
+      - --up
+      - --down
+      - --build=quick
+      - --dump=$(ARTIFACTS)
+      # Azure-specific test args
+      - --provider=skeleton
+      - --deployment=aksengine
+      - --aksengine-agentpoolcount=2
+      - --aksengine-admin-username=azureuser
+      - --aksengine-admin-password=AdminPassw0rd
+      - --aksengine-creds=$(AZURE_CREDENTIALS)
+      - --aksengine-orchestratorRelease=1.22
+      - --aksengine-mastervmsize=Standard_DS2_v2
+      - --aksengine-agentvmsize=Standard_D4s_v3
+      - --aksengine-deploy-custom-k8s
+      - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
+      - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
+      - --aksengine-winZipBuildScript=$(WIN_BUILD)
+      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/windows-dual-stack.json
+      - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
+      - --aksengine-win-binaries
+      # Specific test args
+      - --test_args=--ginkgo.focus=\[Feature:IPv6DualStack\] --ginkgo.skip=\[LinuxOnly\]
+      - --ginkgo-parallel=1
+      securityContext:
+        privileged: true
+  annotations:
+    testgrid-dashboards: sig-network-dualstack-azure-e2e, provider-azure-dualstack
+    testgrid-tab-name: dualstack-azure-e2e-master-windows
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    description: "Dual-stack windows tests on a Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
 
 presubmits:
   kubernetes/kubernetes:
@@ -275,7 +390,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
         command:
         - runner.sh
         - kubetest
@@ -292,22 +407,23 @@ presubmits:
         - --aksengine-agentpoolcount=2
         - --aksengine-admin-username=azureuser
         - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-orchestratorRelease=1.20
+        - --aksengine-orchestratorRelease=1.22
         - --aksengine-mastervmsize=Standard_DS2_v2
         - --aksengine-agentvmsize=Standard_D4s_v3
         - --aksengine-deploy-custom-k8s
-        - --aksengine-location=westus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-        - --aksengine-template-url=https://raw.githubusercontent.com/Azure/aks-engine/master/examples/dualstack/kubernetes.json
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-dual-stack-ipvs-kubenet.json
         - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
         # Skipping "Should recreate evicted statefulset" because of an issue in dockershim for dualstack
         # Suggested fix - https://github.com/kubernetes/kubernetes/pull/94382
-        - --test_args=--ginkgo.focus=\[Feature:IPv6DualStackAlphaFeature\]|\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|Should.recreate.evicted.statefulset
+        # Skipping "HostPort validates that there is no conflict between pods with same hostPort but different hostIP and protocol" because of kubenet bug in HostPort impl
+        # Skipping Feature:SCTPConnectivity tests because the vhd used for tests doesn't have sctp enabled
+        - --test_args=--ginkgo.focus=\[Feature:IPv6DualStack\]|\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|\[Feature:SCTPConnectivity\]|Should.recreate.evicted.statefulset|HostPort.validates.that.there.is.no.conflict.between.pods.with.same.hostPort.but.different.hostIP.and.protocol
         - --ginkgo-parallel=20
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: sig-network-dualstack-azure-e2e, provider-azure-dualstack, provider-azure-presubmit
+      testgrid-dashboards: sig-network-dualstack-azure-e2e, provider-azure-dualstack
       testgrid-tab-name: pr-dualstack-e2e-ipvs
       testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       description: Run e2e tests for dualstack on azure in ipvs mode
@@ -327,7 +443,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
         command:
         - runner.sh
         - kubetest
@@ -344,22 +460,23 @@ presubmits:
         - --aksengine-agentpoolcount=2
         - --aksengine-admin-username=azureuser
         - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-orchestratorRelease=1.20
+        - --aksengine-orchestratorRelease=1.22
         - --aksengine-mastervmsize=Standard_DS2_v2
         - --aksengine-agentvmsize=Standard_D4s_v3
         - --aksengine-deploy-custom-k8s
-        - --aksengine-location=westus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-        - --aksengine-template-url=https://raw.githubusercontent.com/Azure/aks-engine/master/examples/dualstack/kubernetes-iptables.json
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-dual-stack-iptables-kubenet.json
         - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
         # Skipping "Should recreate evicted statefulset" because of an issue in dockershim for dualstack
         # Suggested fix - https://github.com/kubernetes/kubernetes/pull/94382
-        - --test_args=--ginkgo.focus=\[Feature:IPv6DualStackAlphaFeature\]|\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|Should.recreate.evicted.statefulset
+        # Skipping "HostPort validates that there is no conflict between pods with same hostPort but different hostIP and protocol" because of kubenet bug in HostPort impl
+        # Skipping Feature:SCTPConnectivity tests because the vhd used for tests doesn't have sctp enabled
+        - --test_args=--ginkgo.focus=\[Feature:IPv6DualStack\]|\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|\[Feature:SCTPConnectivity\]|Should.recreate.evicted.statefulset|HostPort.validates.that.there.is.no.conflict.between.pods.with.same.hostPort.but.different.hostIP.and.protocol
         - --ginkgo-parallel=20
         securityContext:
           privileged: true
     annotations:
-      testgrid-dashboards: sig-network-dualstack-azure-e2e, provider-azure-dualstack, provider-azure-presubmit
+      testgrid-dashboards: sig-network-dualstack-azure-e2e, provider-azure-dualstack
       testgrid-tab-name: pr-dualstack-e2e-iptables
       testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       description: Run e2e tests for dualstack on azure in iptables mode

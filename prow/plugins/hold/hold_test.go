@@ -148,12 +148,35 @@ func TestHandle(t *testing.T) {
 			shouldUnlabel: false,
 			isPR:          false,
 		},
+		{
+			name:          "requested remove hold label",
+			body:          "/remove-hold",
+			hasLabel:      true,
+			shouldLabel:   false,
+			shouldUnlabel: true,
+			isPR:          true,
+		},
+		{
+			name:          "requested remove hold label with whitespaces in between",
+			body:          "/remove -    hold",
+			hasLabel:      false,
+			shouldLabel:   false,
+			shouldUnlabel: false,
+			isPR:          true,
+		},
+		{
+			name:          "requested remove hold label with no separating hyphen",
+			body:          "/removehold",
+			hasLabel:      false,
+			shouldLabel:   false,
+			shouldUnlabel: false,
+			isPR:          true,
+		},
 	}
 
 	for _, tc := range tests {
-		fc := &fakegithub.FakeClient{
-			IssueComments: make(map[int][]github.IssueComment),
-		}
+		fc := fakegithub.NewFakeClient()
+		fc.IssueComments = make(map[int][]github.IssueComment)
 
 		e := &github.GenericCommentEvent{
 			Action: github.GenericCommentActionCreated,

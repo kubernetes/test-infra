@@ -91,7 +91,7 @@ type instanceGroup struct {
 func getLatestClusterUpTime(gcloudJSON string) (time.Time, error) {
 	igs := []instanceGroup{}
 	if err := json.Unmarshal([]byte(gcloudJSON), &igs); err != nil {
-		return time.Time{}, fmt.Errorf("error when unmarshal json: %v", err)
+		return time.Time{}, fmt.Errorf("error when unmarshal json: %w", err)
 	}
 
 	latest := time.Time{}
@@ -99,7 +99,7 @@ func getLatestClusterUpTime(gcloudJSON string) (time.Time, error) {
 	for _, ig := range igs {
 		created, err := time.Parse(time.RFC3339, ig.CreationTimestamp)
 		if err != nil {
-			return time.Time{}, fmt.Errorf("error when parse time from %s: %v", ig.CreationTimestamp, err)
+			return time.Time{}, fmt.Errorf("error when parse time from %s: %w", ig.CreationTimestamp, err)
 		}
 
 		if created.After(latest) {
@@ -228,7 +228,7 @@ func getChannelGKEVersion(project, zone, region, gkeChannel string) (string, err
 func gcsWrite(dest string, contents []byte) error {
 	f, err := ioutil.TempFile("", "")
 	if err != nil {
-		return fmt.Errorf("error creating temp file: %v", err)
+		return fmt.Errorf("error creating temp file: %w", err)
 	}
 
 	defer func() {
@@ -238,11 +238,11 @@ func gcsWrite(dest string, contents []byte) error {
 	}()
 
 	if _, err := f.Write(contents); err != nil {
-		return fmt.Errorf("error writing temp file: %v", err)
+		return fmt.Errorf("error writing temp file: %w", err)
 	}
 
 	if err := f.Close(); err != nil {
-		return fmt.Errorf("error closing temp file: %v", err)
+		return fmt.Errorf("error closing temp file: %w", err)
 	}
 
 	return control.FinishRunning(exec.Command("gsutil", "cp", f.Name(), dest))
@@ -256,7 +256,7 @@ func setKubeShhBastionEnv(gcpProject, gcpZone, sshProxyInstanceName string) erro
 		"--zone="+gcpZone,
 		"--format=get(networkInterfaces[0].accessConfigs[0].natIP)"))
 	if err != nil {
-		return fmt.Errorf("failed to get the external IP address of the '%s' instance: %v",
+		return fmt.Errorf("failed to get the external IP address of the '%s' instance: %w",
 			sshProxyInstanceName, err)
 	}
 	address := strings.TrimSpace(string(value))

@@ -31,7 +31,7 @@ import (
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/crier/reporters/gcs/internal/util"
+	"k8s.io/test-infra/prow/crier/reporters/gcs/util"
 	"k8s.io/test-infra/prow/io"
 )
 
@@ -77,12 +77,12 @@ func (gr *gcsReporter) reportStartedJob(ctx context.Context, log *logrus.Entry, 
 	}
 	output, err := json.MarshalIndent(s, "", "\t")
 	if err != nil {
-		return fmt.Errorf("failed to marshal started metadata: %v", err)
+		return fmt.Errorf("failed to marshal started metadata: %w", err)
 	}
 
 	bucketName, dir, err := util.GetJobDestination(gr.cfg, pj)
 	if err != nil {
-		return fmt.Errorf("failed to get job destination: %v", err)
+		return fmt.Errorf("failed to get job destination: %w", err)
 	}
 
 	if gr.dryRun {
@@ -107,12 +107,12 @@ func (gr *gcsReporter) reportFinishedJob(ctx context.Context, log *logrus.Entry,
 	}
 	output, err := json.MarshalIndent(f, "", "\t")
 	if err != nil {
-		return fmt.Errorf("failed to marshal finished metadata: %v", err)
+		return fmt.Errorf("failed to marshal finished metadata: %w", err)
 	}
 
 	bucketName, dir, err := util.GetJobDestination(gr.cfg, pj)
 	if err != nil {
-		return fmt.Errorf("failed to get job destination: %v", err)
+		return fmt.Errorf("failed to get job destination: %w", err)
 	}
 
 	if gr.dryRun {
@@ -126,19 +126,19 @@ func (gr *gcsReporter) reportProwjob(ctx context.Context, log *logrus.Entry, pj 
 	// Unconditionally dump the prowjob to GCS, on all job updates.
 	output, err := json.MarshalIndent(pj, "", "\t")
 	if err != nil {
-		return fmt.Errorf("failed to marshal prowjob: %v", err)
+		return fmt.Errorf("failed to marshal prowjob: %w", err)
 	}
 
 	bucketName, dir, err := util.GetJobDestination(gr.cfg, pj)
 	if err != nil {
-		return fmt.Errorf("failed to get job destination: %v", err)
+		return fmt.Errorf("failed to get job destination: %w", err)
 	}
 
 	if gr.dryRun {
 		log.WithFields(logrus.Fields{"bucketName": bucketName, "dir": dir}).Debug("Would upload pod info")
 		return nil
 	}
-	return util.WriteContent(ctx, log, gr.author, bucketName, path.Join(dir, "prowjob.json"), true, output)
+	return util.WriteContent(ctx, log, gr.author, bucketName, path.Join(dir, prowv1.ProwJobFile), true, output)
 }
 
 func (gr *gcsReporter) GetName() string {

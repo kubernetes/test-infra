@@ -20,6 +20,8 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/diff"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -490,6 +492,39 @@ func TestGeneratePresubmits(t *testing.T) {
 			},
 			{
 				JobBase: config.JobBase{
+					Name:        "pull-kubernetes-e2e-branch-in-name-master",
+					Annotations: map[string]string{forkAnnotation: "true"},
+				},
+				Brancher: config.Brancher{
+					SkipBranches: []string{`release-\d\.\d`},
+				},
+			},
+			{
+				JobBase: config.JobBase{
+					Name:        "pull-kubernetes-e2e-keep-context",
+					Annotations: map[string]string{forkAnnotation: "true"},
+				},
+				Brancher: config.Brancher{
+					SkipBranches: []string{`release-\d\.\d`},
+				},
+				Reporter: config.Reporter{
+					Context: "mycontext",
+				},
+			},
+			{
+				JobBase: config.JobBase{
+					Name:        "pull-kubernetes-e2e-replace-context",
+					Annotations: map[string]string{forkAnnotation: "true"},
+				},
+				Brancher: config.Brancher{
+					SkipBranches: []string{`release-\d\.\d`},
+				},
+				Reporter: config.Reporter{
+					Context: "mycontext-master",
+				},
+			},
+			{
+				JobBase: config.JobBase{
 					Name: "pull-replace-some-things",
 					Annotations: map[string]string{
 						forkAnnotation:                 "true",
@@ -500,7 +535,7 @@ func TestGeneratePresubmits(t *testing.T) {
 					Spec: &v1.PodSpec{
 						Containers: []v1.Container{
 							{
-								Image: "gcr.io/k8s-testimages/kubekins-e2e:blahblahblah-master",
+								Image: "gcr.io/k8s-staging-test-infra/kubekins-e2e:blahblahblah-master",
 								Args:  []string{"--repo=k8s.io/kubernetes", "--something=foo"},
 								Env:   []v1.EnvVar{{Name: "BRANCH", Value: "master"}},
 							},
@@ -524,23 +559,62 @@ func TestGeneratePresubmits(t *testing.T) {
 		"kubernetes/kubernetes": {
 			{
 				JobBase: config.JobBase{
-					Name:        "pull-kubernetes-e2e",
+					Name:        "pull-kubernetes-e2e-1.15",
 					Annotations: map[string]string{},
 				},
 				Brancher: config.Brancher{
 					Branches: []string{"release-1.15"},
 				},
+				Reporter: config.Reporter{
+					Context: "pull-kubernetes-e2e",
+				},
 			},
 			{
 				JobBase: config.JobBase{
-					Name: "pull-replace-some-things",
+					Name:        "pull-kubernetes-e2e-branch-in-name-1.15",
+					Annotations: map[string]string{},
+				},
+				Brancher: config.Brancher{
+					Branches: []string{"release-1.15"},
+				},
+				Reporter: config.Reporter{
+					Context: "pull-kubernetes-e2e-branch-in-name-1.15",
+				},
+			},
+			{
+				JobBase: config.JobBase{
+					Name:        "pull-kubernetes-e2e-keep-context-1.15",
+					Annotations: map[string]string{},
+				},
+				Brancher: config.Brancher{
+					Branches: []string{"release-1.15"},
+				},
+				Reporter: config.Reporter{
+					Context: "mycontext",
+				},
+			},
+			{
+				JobBase: config.JobBase{
+					Name:        "pull-kubernetes-e2e-replace-context-1.15",
+					Annotations: map[string]string{},
+				},
+				Brancher: config.Brancher{
+					Branches: []string{"release-1.15"},
+				},
+				Reporter: config.Reporter{
+					Context: "mycontext-1.15",
+				},
+			},
+			{
+				JobBase: config.JobBase{
+					Name: "pull-replace-some-things-1.15",
 					Annotations: map[string]string{
 						"some-annotation": "yup",
 					},
 					Spec: &v1.PodSpec{
 						Containers: []v1.Container{
 							{
-								Image: "gcr.io/k8s-testimages/kubekins-e2e:blahblahblah-1.15",
+								Image: "gcr.io/k8s-staging-test-infra/kubekins-e2e:blahblahblah-1.15",
 								Args:  []string{"--repo=k8s.io/kubernetes", "--something=1.15"},
 								Env:   []v1.EnvVar{{Name: "BRANCH", Value: "release-1.15"}},
 							},
@@ -549,6 +623,9 @@ func TestGeneratePresubmits(t *testing.T) {
 				},
 				Brancher: config.Brancher{
 					Branches: []string{"release-1.15"},
+				},
+				Reporter: config.Reporter{
+					Context: "pull-replace-some-things",
 				},
 			},
 		},
@@ -560,7 +637,7 @@ func TestGeneratePresubmits(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(result, expected) {
-		t.Errorf("Result does not match expected. Difference:\n%s", diff.ObjectDiff(expected, result))
+		t.Errorf("Result does not match expected. Difference:\n%s", cmp.Diff(expected, result, cmpopts.IgnoreUnexported(config.Brancher{}, config.RegexpChangeMatcher{}, config.Presubmit{})))
 	}
 }
 
@@ -701,7 +778,7 @@ func TestGeneratePeriodics(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(result, expected) {
-		t.Errorf("Result does not match expected. Difference:\n%s", diff.ObjectDiff(expected, result))
+		t.Errorf("Result does not match expected. Difference:\n%s\n", cmp.Diff(expected, result, cmpopts.IgnoreUnexported(config.Periodic{})))
 	}
 }
 
@@ -754,7 +831,7 @@ func TestGeneratePostsubmits(t *testing.T) {
 					Spec: &v1.PodSpec{
 						Containers: []v1.Container{
 							{
-								Image: "gcr.io/k8s-testimages/kubekins-e2e:blahblahblah-master",
+								Image: "gcr.io/k8s-staging-test-infra/kubekins-e2e:blahblahblah-master",
 								Args:  []string{"--repo=k8s.io/kubernetes", "--something=foo"},
 								Env:   []v1.EnvVar{{Name: "BRANCH", Value: "master"}},
 							},
@@ -819,7 +896,7 @@ func TestGeneratePostsubmits(t *testing.T) {
 					Spec: &v1.PodSpec{
 						Containers: []v1.Container{
 							{
-								Image: "gcr.io/k8s-testimages/kubekins-e2e:blahblahblah-1.15",
+								Image: "gcr.io/k8s-staging-test-infra/kubekins-e2e:blahblahblah-1.15",
 								Args:  []string{"--repo=k8s.io/kubernetes", "--something=1.15"},
 								Env:   []v1.EnvVar{{Name: "BRANCH", Value: "release-1.15"}},
 							},

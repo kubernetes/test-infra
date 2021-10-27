@@ -42,12 +42,12 @@ func loadClusterConfig(masterURL, kubeConfig string) (*rest.Config, error) {
 
 	credentials, err := clientcmd.NewDefaultClientConfigLoadingRules().Load()
 	if err != nil {
-		return nil, fmt.Errorf("could not load credentials from config: %v", err)
+		return nil, fmt.Errorf("could not load credentials from config: %w", err)
 	}
 
 	clusterConfig, err = clientcmd.NewDefaultClientConfig(*credentials, &clientcmd.ConfigOverrides{}).ClientConfig()
 	if err != nil {
-		return nil, fmt.Errorf("could not load client configuration: %v", err)
+		return nil, fmt.Errorf("could not load client configuration: %w", err)
 	}
 	return clusterConfig, nil
 }

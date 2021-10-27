@@ -2,11 +2,11 @@
 
 reviewers:
 - mborsz
-- shyamjvs
 - wojtek-t
 - sig-scalability-leads
 approvers:
 - mborsz
-- shyamjvs
 - wojtek-t
 - sig-scalability-leads
+emeritus_approvers:
+- shyamjvs

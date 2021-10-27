@@ -98,7 +98,7 @@ func parseLogins(text string) []string {
 
 func combineErrors(err1, err2 error) error {
 	if err1 != nil && err2 != nil {
-		return fmt.Errorf("two errors: 1) %v 2) %v", err1, err2)
+		return fmt.Errorf("two errors: 1) %v 2) %w", err1, err2)
 	} else if err1 != nil {
 		return err1
 	} else {
@@ -153,7 +153,7 @@ func handle(h *handler) error {
 					return nil
 				}
 				if err := h.gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg)); err != nil {
-					return fmt.Errorf("comment err: %v", err)
+					return fmt.Errorf("comment err: %w", err)
 				}
 				return nil
 			}

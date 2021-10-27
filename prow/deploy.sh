@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Copyright 2018 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -86,6 +86,7 @@ for s in {5..1}; do
     sleep 1s
 done
 bazel run //config/prow/cluster:production.apply --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 "$@"
+bazel run //config/prow/cluster/build:production.apply --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 "$@"
 bazel run //config/prow/cluster/monitoring:prow_monitoring_objects.apply --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 "$@"
 bazel run //config/prow/cluster/monitoring:production.apply --platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 "$@"
 echo "$(color-green SUCCESS)"

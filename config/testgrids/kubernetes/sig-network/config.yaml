@@ -7,7 +7,7 @@ dashboard_groups:
     - sig-network-gce
     - sig-network-ingress-gce-e2e
     - sig-network-ingress-nginx
-    - sig-network-service-apis
+    - sig-network-gateway-api
     - sig-network-ingress-controller-conformance
     - sig-network-kind
 
@@ -97,14 +97,9 @@ dashboards:
       description: network gci-gce alpha features e2e tests for master branch
       alert_options:
         alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
-    - name: ubuntu-gce-basic-sctp
-      test_group_name: ci-kubernetes-e2e-ubuntu-gce-basic-sctp
-      description: network ubuntu-gce SCTP support basic e2e tests for master branch
-      alert_options:
-        alert_mail_to_addresses: kubernetes-sig-network-test-failures@googlegroups.com
 
 - name: sig-network-ingress-gce-e2e
 - name: sig-network-ingress-nginx
-- name: sig-network-service-apis
+- name: sig-network-gateway-api
 - name: sig-network-ingress-controller-conformance
 - name: sig-network-kind

@@ -17,6 +17,7 @@ limitations under the License.
 package adapter
 
 import (
+	"errors"
 	"sync"
 	"testing"
 	"time"
@@ -33,6 +34,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	reporter "k8s.io/test-infra/prow/crier/reporters/gerrit"
 	"k8s.io/test-infra/prow/gerrit/client"
+	"k8s.io/test-infra/prow/kube"
 )
 
 func makeStamp(t time.Time) gerrit.Timestamp {
@@ -56,7 +58,8 @@ func (f *fca) Config() *config.Config {
 }
 
 type fgc struct {
-	reviews int
+	reviews     int
+	instanceMap map[string]*gerrit.AccountInfo
 }
 
 func (f *fgc) QueryChanges(lastUpdate client.LastSyncState, rateLimit int) map[string][]client.ChangeInfo {
@@ -72,8 +75,12 @@ func (f *fgc) GetBranchRevision(instance, project, branch string) (string, error
 	return "abc", nil
 }
 
-func (f *fgc) Account(instance string) *gerrit.AccountInfo {
-	return &gerrit.AccountInfo{AccountID: 42}
+func (f *fgc) Account(instance string) (*gerrit.AccountInfo, error) {
+	res, ok := f.instanceMap[instance]
+	if !ok {
+		return nil, errors.New("not exit")
+	}
+	return res, nil
 }
 
 func TestMakeCloneURI(t *testing.T) {
@@ -337,14 +344,36 @@ func TestFailedJobs(t *testing.T) {
 }
 
 func TestProcessChange(t *testing.T) {
+	testInstance := "https://gerrit"
 	var testcases = []struct {
 		name             string
 		change           client.ChangeInfo
 		numPJ            int
 		pjRef            string
+		instancesMap     map[string]*gerrit.AccountInfo
+		instance         string
 		shouldError      bool
 		shouldSkipReport bool
+		expectedLabels   map[string]string
 	}{
+		{
+			name: "no presubmit Prow jobs automatically triggered from WorkInProgess change",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "test-infra",
+				Status:          "NEW",
+				WorkInProgress:  true,
+				Revisions: map[string]gerrit.RevisionInfo{
+					"1": {
+						Number: 1001,
+					},
+				},
+			},
+			instancesMap: map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:     testInstance,
+			shouldError:  false,
+			numPJ:        0,
+		},
 		{
 			name: "no revisions errors out",
 			change: client.ChangeInfo{
@@ -352,7 +381,9 @@ func TestProcessChange(t *testing.T) {
 				Project:         "test-infra",
 				Status:          "NEW",
 			},
-			shouldError: true,
+			instancesMap: map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:     testInstance,
+			shouldError:  true,
 		},
 		{
 			name: "wrong project triggers no jobs",
@@ -366,6 +397,8 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
+			instancesMap: map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:     testInstance,
 		},
 		{
 			name: "normal changes should trigger matching branch jobs",
@@ -380,8 +413,59 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
-			numPJ: 2,
-			pjRef: "refs/changes/00/1/1",
+			instancesMap: map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:     testInstance,
+			numPJ:        2,
+			pjRef:        "refs/changes/00/1/1",
+		},
+		{
+			name: "instance not registered",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "test-infra",
+				Status:          "NEW",
+				Revisions: map[string]client.RevisionInfo{
+					"1": {
+						Ref:     "refs/changes/00/1/1",
+						Created: stampNow,
+					},
+				},
+			},
+			instancesMap: map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:     testInstance + "_notexist",
+			shouldError:  true,
+		},
+		{
+			name: "jobs should trigger with correct labels",
+			change: client.ChangeInfo{
+				CurrentRevision: "rev42",
+				Project:         "test-infra",
+				Status:          "NEW",
+				Revisions: map[string]client.RevisionInfo{
+					"rev42": {
+						Ref:     "refs/changes/00/1/1",
+						Created: stampNow,
+						Number:  42,
+					},
+				},
+			},
+			instancesMap: map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:     testInstance,
+			numPJ:        2,
+			pjRef:        "refs/changes/00/1/1",
+			expectedLabels: map[string]string{
+				client.GerritRevision:    "rev42",
+				client.GerritPatchset:    "42",
+				client.GerritReportLabel: client.CodeReview,
+				kube.CreatedByProw:       "true",
+				kube.ProwJobTypeLabel:    "presubmit",
+				kube.ProwJobAnnotation:   "always-runs-all-branches",
+				kube.ContextAnnotation:   "always-runs-all-branches",
+				kube.OrgLabel:            "gerrit",
+				kube.RepoLabel:           "test-infra",
+				kube.BaseRefLabel:        "",
+				kube.PullLabel:           "0",
+			},
 		},
 		{
 			name: "multiple revisions",
@@ -400,8 +484,10 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
-			numPJ: 2,
-			pjRef: "refs/changes/00/2/2",
+			instancesMap: map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:     testInstance,
+			numPJ:        2,
+			pjRef:        "refs/changes/00/2/2",
 		},
 		{
 			name: "other-test-with-https",
@@ -416,8 +502,10 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
-			numPJ: 1,
-			pjRef: "refs/changes/00/1/1",
+			instancesMap: map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:     testInstance,
+			numPJ:        1,
+			pjRef:        "refs/changes/00/1/1",
 		},
 		{
 			name: "merged change should trigger postsubmit",
@@ -432,8 +520,10 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
-			numPJ: 1,
-			pjRef: "refs/changes/00/1/1",
+			instancesMap: map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:     testInstance,
+			numPJ:        1,
+			pjRef:        "refs/changes/00/1/1",
 		},
 		{
 			name: "merged change on project without postsubmits",
@@ -448,6 +538,8 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
+			instancesMap: map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:     testInstance,
 		},
 		{
 			name: "presubmit runs when a file matches run_if_changed",
@@ -466,7 +558,31 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
-			numPJ: 3,
+			instancesMap: map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:     testInstance,
+			numPJ:        3,
+		},
+		{
+			name: "presubmit does not run when a file matches run_if_changed but the change is WorkInProgress",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "test-infra",
+				Status:          "NEW",
+				WorkInProgress:  true,
+				Revisions: map[string]client.RevisionInfo{
+					"1": {
+						Files: map[string]client.FileInfo{
+							"bee-movie-script.txt": {},
+							"africa-lyrics.txt":    {},
+							"important-code.go":    {},
+						},
+						Created: stampNow,
+					},
+				},
+			},
+			instancesMap: map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:     testInstance,
+			numPJ:        0,
 		},
 		{
 			name: "presubmit doesn't run when no files match run_if_changed",
@@ -485,7 +601,9 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
-			numPJ: 2,
+			instancesMap: map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:     testInstance,
+			numPJ:        2,
 		},
 		{
 			name: "presubmit run when change against matched branch",
@@ -500,7 +618,9 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
-			numPJ: 3,
+			instancesMap: map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:     testInstance,
+			numPJ:        3,
 		},
 		{
 			name: "presubmit doesn't run when not against target branch",
@@ -515,7 +635,9 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
-			numPJ: 1,
+			instancesMap: map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:     testInstance,
+			numPJ:        1,
 		},
 		{
 			name: "old presubmits don't run on old revision but trigger job does because new message",
@@ -538,7 +660,9 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
-			numPJ: 1,
+			instancesMap: map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:     testInstance,
+			numPJ:        1,
 		},
 		{
 			name: "unrelated comment shouldn't trigger anything",
@@ -561,7 +685,9 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
-			numPJ: 0,
+			instancesMap: map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:     testInstance,
+			numPJ:        0,
 		},
 		{
 			name: "trigger always run job on test all even if revision is old",
@@ -584,7 +710,34 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
-			numPJ: 1,
+			instancesMap: map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:     testInstance,
+			numPJ:        1,
+		},
+		{
+			name: "trigger always run job on test all even if the change is WorkInProgress",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "test-infra",
+				Branch:          "baz",
+				Status:          "NEW",
+				WorkInProgress:  true,
+				Revisions: map[string]client.RevisionInfo{
+					"1": {
+						Number: 1,
+					},
+				},
+				Messages: []gerrit.ChangeMessageInfo{
+					{
+						Message:        "/test all",
+						RevisionNumber: 1,
+						Date:           makeStamp(timeNow.Add(time.Hour)),
+					},
+				},
+			},
+			instancesMap: map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:     testInstance,
+			numPJ:        1,
 		},
 		{
 			name: "retest correctly triggers failed jobs",
@@ -613,7 +766,9 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
-			numPJ: 1,
+			instancesMap: map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:     testInstance,
+			numPJ:        1,
 		},
 		{
 			name: "retest uses latest status and ignores earlier status",
@@ -648,7 +803,9 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
-			numPJ: 1,
+			instancesMap: map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:     testInstance,
+			numPJ:        1,
 		},
 		{
 			name: "retest ignores statuses not reported by the prow account",
@@ -683,7 +840,9 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
-			numPJ: 2,
+			instancesMap: map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:     testInstance,
+			numPJ:        2,
 		},
 		{
 			name: "retest does nothing if there are no latest reports",
@@ -706,7 +865,9 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
-			numPJ: 0,
+			instancesMap: map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:     testInstance,
+			numPJ:        0,
 		},
 		{
 			name: "retest uses the latest report",
@@ -741,7 +902,9 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
-			numPJ: 2,
+			instancesMap: map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:     testInstance,
+			numPJ:        2,
 		},
 		{
 			name: "no comments when no jobs have Report set",
@@ -756,6 +919,8 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
+			instancesMap:     map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:         testInstance,
 			numPJ:            2,
 			pjRef:            "refs/changes/00/1/1",
 			shouldSkipReport: true,
@@ -776,8 +941,34 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
-			numPJ: 3,
-			pjRef: "refs/changes/00/1/1",
+			instancesMap: map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:     testInstance,
+			numPJ:        3,
+			pjRef:        "refs/changes/00/1/1",
+		},
+		{
+			name: "/test ? will leave a comment with the commands to trigger presubmit Prow jobs",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "test-infra",
+				Status:          "NEW",
+				Revisions: map[string]client.RevisionInfo{
+					"1": {
+						Number:  1,
+						Created: makeStamp(timeNow.Add(-time.Hour)),
+					},
+				},
+				Messages: []gerrit.ChangeMessageInfo{
+					{
+						Message:        "/test ?",
+						RevisionNumber: 1,
+						Date:           makeStamp(timeNow),
+					},
+				},
+			},
+			instancesMap: map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:     testInstance,
+			numPJ:        0,
 		},
 	}
 
@@ -899,7 +1090,7 @@ func TestProcessChange(t *testing.T) {
 			},
 		},
 	}
-	testInstance := "https://gerrit"
+
 	fca := &fca{
 		c: config,
 	}
@@ -909,10 +1100,11 @@ func TestProcessChange(t *testing.T) {
 			t.Parallel()
 
 			fakeProwJobClient := prowfake.NewSimpleClientset()
-			fakeLastSync := client.LastSyncState{testInstance: map[string]time.Time{}}
-			fakeLastSync[testInstance][tc.change.Project] = timeNow.Add(-time.Minute)
+			fakeLastSync := client.LastSyncState{tc.instance: map[string]time.Time{}}
+			fakeLastSync[tc.instance][tc.change.Project] = timeNow.Add(-time.Minute)
 
 			var gc fgc
+			gc.instanceMap = tc.instancesMap
 			c := &Controller{
 				config:        fca.Config,
 				prowJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
@@ -920,7 +1112,7 @@ func TestProcessChange(t *testing.T) {
 				tracker:       &fakeSync{val: fakeLastSync},
 			}
 
-			err := c.processChange(logrus.WithField("name", tc.name), testInstance, tc.change)
+			err := c.processChange(logrus.WithField("name", tc.name), tc.instance, tc.change)
 			if err != nil && !tc.shouldError {
 				t.Errorf("expect no error, but got %v", err)
 			} else if err == nil && tc.shouldError {
@@ -955,11 +1147,144 @@ func TestProcessChange(t *testing.T) {
 				if prowjobs[0].Spec.Refs.BaseSHA != "abc" {
 					t.Errorf("BaseSHA should be abc, got %s", prowjobs[0].Spec.Refs.BaseSHA)
 				}
+				if tc.expectedLabels != nil {
+					if !equality.Semantic.DeepEqual(tc.expectedLabels, prowjobs[0].Labels) {
+						t.Errorf("diff between expected and actual labels:%s", diff.ObjectReflectDiff(tc.expectedLabels, prowjobs[0].Labels))
+					}
+				}
 			}
 			if tc.shouldSkipReport {
 				if gc.reviews > 0 {
 					t.Errorf("expected no comments, got: %d", gc.reviews)
 				}
+			}
+		})
+	}
+}
+
+func TestIsProjectExemptFromHelp(t *testing.T) {
+	var testcases = []struct {
+		name                   string
+		projectsExemptFromHelp map[string]sets.String
+		instance               string
+		project                string
+		expected               bool
+	}{
+		{
+			name:                   "no project is exempt",
+			projectsExemptFromHelp: map[string]sets.String{},
+			instance:               "foo",
+			project:                "bar",
+			expected:               false,
+		},
+		{
+			name: "the instance does not match",
+			projectsExemptFromHelp: map[string]sets.String{
+				"foo": sets.NewString("bar"),
+			},
+			instance: "fuz",
+			project:  "bar",
+			expected: false,
+		},
+		{
+			name: "the instance matches but the project does not",
+			projectsExemptFromHelp: map[string]sets.String{
+				"foo": sets.NewString("baz"),
+			},
+			instance: "fuz",
+			project:  "bar",
+			expected: false,
+		},
+		{
+			name: "the project is exempt",
+			projectsExemptFromHelp: map[string]sets.String{
+				"foo": sets.NewString("bar"),
+			},
+			instance: "foo",
+			project:  "bar",
+			expected: true,
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := isProjectOptOutHelp(tc.projectsExemptFromHelp, tc.instance, tc.project)
+			if got != tc.expected {
+				t.Errorf("expected %t for IsProjectExemptFromHelp but got %t", tc.expected, got)
+			}
+		})
+	}
+}
+
+func TestDeckLinkForPR(t *testing.T) {
+	tcs := []struct {
+		name         string
+		deckURL      string
+		refs         prowapi.Refs
+		changeStatus string
+		expected     string
+	}{
+		{
+			name:         "No deck_url specified",
+			changeStatus: client.New,
+			expected:     "",
+		},
+		{
+			name:    "deck_url specified, repo without slash",
+			deckURL: "https://prow.k8s.io/",
+			refs: prowapi.Refs{
+				Org:  "gerrit-review.host.com",
+				Repo: "test-infra",
+				Pulls: []prowapi.Pull{
+					{
+						Number: 42,
+					},
+				},
+			},
+			changeStatus: client.New,
+			expected:     "https://prow.k8s.io/?pull=42&repo=gerrit-review.host.com%2Ftest-infra",
+		},
+		{
+			name:    "deck_url specified, repo with slash",
+			deckURL: "https://prow.k8s.io/",
+			refs: prowapi.Refs{
+				Org:  "gerrit-review.host.com",
+				Repo: "test/infra",
+				Pulls: []prowapi.Pull{
+					{
+						Number: 42,
+					},
+				},
+			},
+			changeStatus: client.New,
+			expected:     "https://prow.k8s.io/?pull=42&repo=gerrit-review.host.com%2Ftest%2Finfra",
+		},
+		{
+			name:    "deck_url specified, change is merged (triggering postsubmits)",
+			deckURL: "https://prow.k8s.io/",
+			refs: prowapi.Refs{
+				Org:  "gerrit-review.host.com",
+				Repo: "test-infra",
+				Pulls: []prowapi.Pull{
+					{
+						Number: 42,
+					},
+				},
+			},
+			changeStatus: client.Merged,
+			expected:     "",
+		},
+	}
+
+	for i := range tcs {
+		tc := tcs[i]
+		t.Run(tc.name, func(t *testing.T) {
+			result, err := deckLinkForPR(tc.deckURL, tc.refs, tc.changeStatus)
+			if err != nil {
+				t.Errorf("unexpected error generating Deck link: %w", err)
+			}
+			if result != tc.expected {
+				t.Errorf("expected deck link %s, but got %s", tc.expected, result)
 			}
 		})
 	}

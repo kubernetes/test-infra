@@ -6,17 +6,19 @@ presubmits:
         preset-kind-volume-mounts: "true"
         preset-cluster-api-provider-vsphere-e2e-config: "true"
         preset-cloud-provider-vsphere-e2e-config: "true"
-      always_run: false
-      optional: true
       decorate: true
+      optional: true
+      decoration_config:
+        timeout: 1h
+      run_if_changed: 'images/capi/(Makefile|ansible\.cfg)|images/capi/ansible/.*|images/capi/scripts/ci-ova\.sh|images/capi/packer/(config|goss|ova)/.*|images/capi/hack/ensure-(ansible|packer|goss).*'
       path_alias: sigs.k8s.io/image-builder
-      max_concurrency: 5
+      max_concurrency: 3
       spec:
         containers:
-          - image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
             args:
               - runner.sh
-              - "./images/capi/packer/ova/scripts/ci-ova.sh"
+              - "./images/capi/scripts/ci-ova.sh"
             resources:
               requests:
                 cpu: "1000m"

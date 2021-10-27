@@ -57,7 +57,7 @@ type fgc struct {
 	botName        string
 }
 
-func (c fgc) Query(context.Context, interface{}, map[string]interface{}) error {
+func (c fgc) QueryWithGitHubAppsSupport(context.Context, interface{}, map[string]interface{}, string) error {
 	return nil
 }
 

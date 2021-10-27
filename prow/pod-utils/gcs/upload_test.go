@@ -143,7 +143,8 @@ func TestUploadWithRetries(t *testing.T) {
 
 			}
 
-			err := Upload("", "", "", uploadFuncs)
+			ctx := context.Background()
+			err := Upload(ctx, "", "", "", uploadFuncs)
 
 			isErrExpected := false
 			for _, currentTestState := range currentTestStates {

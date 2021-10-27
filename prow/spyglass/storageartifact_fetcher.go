@@ -130,7 +130,7 @@ func (af *StorageArtifactFetcher) newStorageJobSource(storagePath string) (*stor
 func (af *StorageArtifactFetcher) artifacts(ctx context.Context, key string) ([]string, error) {
 	src, err := af.newStorageJobSource(key)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to get GCS job source from %s: %v", key, err)
+		return nil, fmt.Errorf("Failed to get GCS job source from %s: %w", key, err)
 	}
 
 	listStart := time.Now()
@@ -154,7 +154,7 @@ func (af *StorageArtifactFetcher) artifacts(ctx context.Context, key string) ([]
 			}
 			logrus.WithFields(fieldsForJob(src)).WithError(err).Error("Error accessing GCS artifact.")
 			if i >= len(wait) {
-				return artifacts, fmt.Errorf("timed out: error accessing GCS artifact: %v", err)
+				return artifacts, fmt.Errorf("timed out: error accessing GCS artifact: %w", err)
 			}
 			time.Sleep((wait[i] + time.Duration(rand.Intn(10))) * time.Millisecond)
 			i++
@@ -199,7 +199,7 @@ func (h *storageArtifactHandle) Attrs(ctx context.Context) (pkgio.Attributes, er
 func (af *StorageArtifactFetcher) Artifact(ctx context.Context, key string, artifactName string, sizeLimit int64) (api.Artifact, error) {
 	src, err := af.newStorageJobSource(key)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get GCS job source from %s: %v", key, err)
+		return nil, fmt.Errorf("failed to get GCS job source from %s: %w", key, err)
 	}
 
 	_, prefix := extractBucketPrefixPair(src.jobPath())

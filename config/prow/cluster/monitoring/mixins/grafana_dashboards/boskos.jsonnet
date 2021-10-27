@@ -25,7 +25,7 @@ dashboard.new(
         aliasColors={'busy': '#ff0000', 'cleaning': '#00eeff', 'dirty': '#ff8000', 'free': '#00ff00', 'leased': '#ee00ff', 'other': '#aaaaff', 'toBeDeleted': '#fafa00', 'tombstone': '#cccccc'}
     )
     .addTarget(prometheus.target(
-        std.format('sum(boskos_resources{type="%s",instance="%s"}) by (state)', [resource.type, resource.instance]),
+        std.format('sum(boskos_resources{type="%s",job="%s"} or boskos_resources{type="%s",instance="%s"}) by (state)', [resource.type, resource.job, resource.type, resource.instance]),
         legendFormat='{{state}}',
     ))
     {gridPos: {

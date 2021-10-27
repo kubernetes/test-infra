@@ -39,7 +39,7 @@ import (
 )
 
 var (
-	titleMatch           = regexp.MustCompile(`(?i)Bug ([0-9]+):`)
+	titleMatch           = regexp.MustCompile(`(?i)Bug\s+([0-9]+):`)
 	refreshCommandMatch  = regexp.MustCompile(`(?mi)^/bugzilla refresh\s*$`)
 	qaAssignCommandMatch = regexp.MustCompile(`(?mi)^/bugzilla assign-qa\s*$`)
 	qaReviewCommandMatch = regexp.MustCompile(`(?mi)^/bugzilla cc-qa\s*$`)
@@ -322,6 +322,7 @@ type githubClient interface {
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
 	AddLabel(owner, repo string, number int, label string) error
 	RemoveLabel(owner, repo string, number int, label string) error
+	WasLabelAddedByHuman(org, repo string, num int, label string) (bool, error)
 	Query(ctx context.Context, q interface{}, vars map[string]interface{}) error
 }
 
@@ -337,7 +338,7 @@ func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) (err e
 	}
 	if event != nil {
 		options := pc.PluginConfig.Bugzilla.OptionsForBranch(event.org, event.repo, event.baseRef)
-		return handle(*event, pc.GitHubClient, pc.BugzillaClient, options, pc.Logger)
+		return handle(*event, pc.GitHubClient, pc.BugzillaClient, options, pc.Logger, pc.Config.AllRepos)
 	}
 	return nil
 }
@@ -354,7 +355,7 @@ func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) (err error
 		return err
 	}
 	if event != nil {
-		return handle(*event, pc.GitHubClient, pc.BugzillaClient, options, pc.Logger)
+		return handle(*event, pc.GitHubClient, pc.BugzillaClient, options, pc.Logger, pc.Config.AllRepos)
 	}
 	return nil
 }
@@ -365,7 +366,7 @@ func getCherryPickMatch(pre github.PullRequestEvent) (bool, int, string, error) 
 		cherrypickOf, err := strconv.Atoi(cherrypickMatch[1])
 		if err != nil {
 			// should be impossible based on the regex
-			return false, 0, "", fmt.Errorf("Failed to parse cherrypick bugID as int - is the regex correct? Err: %v", err)
+			return false, 0, "", fmt.Errorf("Failed to parse cherrypick bugID as int - is the regex correct? Err: %w", err)
 		}
 		return true, cherrypickOf, pre.PullRequest.Base.Ref, nil
 	}
@@ -576,7 +577,7 @@ func processQuery(query *emailToLoginQuery, email string, log *logrus.Entry) str
 	}
 }
 
-func handle(e event, gc githubClient, bc bugzilla.Client, options plugins.BugzillaBranchOptions, log *logrus.Entry) error {
+func handle(e event, gc githubClient, bc bugzilla.Client, options plugins.BugzillaBranchOptions, log *logrus.Entry, allRepos sets.String) error {
 	comment := e.comment(gc)
 	// check if bug is part of a restricted group
 	if !e.missing {
@@ -603,7 +604,7 @@ func handle(e event, gc githubClient, bc bugzilla.Client, options plugins.Bugzil
 	}
 	// merges follow a different pattern from the normal validation
 	if e.merged {
-		return handleMerge(e, gc, bc, options, log)
+		return handleMerge(e, gc, bc, options, log, allRepos)
 	}
 	// close events follow a different pattern from the normal validation
 	if e.closed && !e.merged {
@@ -677,27 +678,30 @@ To reference a bug, add 'Bug XXX:' to the title of this pull request and request
 			}
 			response += "</details>"
 
-			// if bug is valid and qa command was used, identify qa contact via email
-			if e.assign || e.cc {
-				if bug.QAContactDetail == nil {
+			// identify qa contact via email if possible
+			explicitQARequest := e.assign || e.cc
+			if bug.QAContactDetail == nil {
+				if explicitQARequest {
 					response += fmt.Sprintf(bugLink+" does not have a QA contact, skipping assignment", e.bugId, bc.Endpoint(), e.bugId)
-				} else if bug.QAContactDetail.Email == "" {
+				}
+			} else if bug.QAContactDetail.Email == "" {
+				if explicitQARequest {
 					response += fmt.Sprintf("QA contact for "+bugLink+" does not have a listed email, skipping assignment", e.bugId, bc.Endpoint(), e.bugId)
-				} else {
-					query := &emailToLoginQuery{}
-					email := bug.QAContactDetail.Email
-					queryVars := map[string]interface{}{
-						"email": githubql.String(email),
-					}
-					err := gc.Query(context.Background(), query, queryVars)
-					if err != nil {
-						log.WithError(err).Error("Failed to run graphql github query")
-						return comment(formatError(fmt.Sprintf("querying GitHub for users with public email (%s)", email), bc.Endpoint(), e.bugId, err))
-					}
-					response += fmt.Sprint("\n\n", processQuery(query, email, log))
-					if e.assign {
-						response += "\n\n**DEPRECATION NOTICE**: The command `assign-qa` has been deprecated. Please use the `cc-qa` command instead."
-					}
+				}
+			} else {
+				query := &emailToLoginQuery{}
+				email := bug.QAContactDetail.Email
+				queryVars := map[string]interface{}{
+					"email": githubql.String(email),
+				}
+				err := gc.Query(context.Background(), query, queryVars)
+				if err != nil {
+					log.WithError(err).Error("Failed to run graphql github query")
+					return comment(formatError(fmt.Sprintf("querying GitHub for users with public email (%s)", email), bc.Endpoint(), e.bugId, err))
+				}
+				response += fmt.Sprint("\n\n", processQuery(query, email, log))
+				if e.assign {
+					response += "\n\n**DEPRECATION NOTICE**: The command `assign-qa` has been deprecated. Please use the `cc-qa` command instead."
 				}
 			}
 		} else {
@@ -745,6 +749,22 @@ Comment <code>/bugzilla refresh</code> to re-evaluate validity if changes to the
 	if severityLabel != "" && severityLabel != severityLabelToRemove {
 		if err := gc.AddLabel(e.org, e.repo, e.number, severityLabel); err != nil {
 			log.WithError(err).Error("Failed to add severity bug label.")
+		}
+	}
+
+	if hasValidLabel && !needsValidLabel {
+		humanLabelled, err := gc.WasLabelAddedByHuman(e.org, e.repo, e.number, labels.ValidBug)
+		if err != nil {
+			// Return rather than potentially doing the wrong thing. The user can re-trigger us.
+			return fmt.Errorf("failed to check if %s label was added by a human: %w", labels.ValidBug, err)
+		}
+		if humanLabelled {
+			// This will make us remove the invalid label if it exists but saves us another check if it was
+			// added by a human. It is reasonable to assume that it should be absent if the valid label was
+			// manually added.
+			needsInvalidLabel = false
+			needsValidLabel = true
+			response += fmt.Sprintf("\n\nRetaining the %s label as it was manually added.", labels.ValidBug)
 		}
 	}
 
@@ -914,7 +934,7 @@ func validateBug(bug bugzilla.Bug, dependents []bugzilla.Bug, options plugins.Bu
 	return valid, validations, errors
 }
 
-func handleMerge(e event, gc githubClient, bc bugzilla.Client, options plugins.BugzillaBranchOptions, log *logrus.Entry) error {
+func handleMerge(e event, gc githubClient, bc bugzilla.Client, options plugins.BugzillaBranchOptions, log *logrus.Entry, allRepos sets.String) error {
 	comment := e.comment(gc)
 
 	if options.StateAfterMerge == nil {
@@ -961,6 +981,12 @@ func handleMerge(e event, gc githubClient, bc bugzilla.Client, options plugins.B
 			merged = e.merged
 			state = e.state
 		} else {
+			// This could be literally anything, only process PRs in repos that are mentioned in our config, otherwise this will potentially
+			// fail.
+			if !allRepos.Has(item.Org + "/" + item.Repo) {
+				logrus.WithField("pr", item.Org+"/"+item.Repo+"#"+strconv.Itoa(item.Num)).Debug("Not processing PR from third-party repo")
+				continue
+			}
 			pr, err := gc.GetPullRequest(item.Org, item.Repo, item.Num)
 			if err != nil {
 				log.WithError(err).Warn("Unexpected error checking merge state of related pull request.")
@@ -1184,22 +1210,33 @@ func handleClose(e event, gc githubClient, bc bugzilla.Client, options plugins.B
 			return comment(formatError("removing this pull request from the external tracker bugs", bc.Endpoint(), e.bugId, err))
 		}
 		if options.StateAfterClose != nil {
-			links, err := bc.GetExternalBugPRsOnBug(e.bugId)
+			bug, err := bc.GetBug(e.bugId)
 			if err != nil {
-				log.WithError(err).Warn("Unexpected error getting external tracker bugs for Bugzilla bug.")
-				return comment(formatError("getting external tracker bugs", bc.Endpoint(), e.bugId, err))
+				log.WithError(err).Warn("Unexpected error getting Bugzilla bug.")
+				return comment(formatError("getting bug", bc.Endpoint(), e.bugId, err))
 			}
-			if len(links) == 0 {
-				bug, err := getBug(bc, e.bugId, log, comment)
-				if err != nil || bug == nil {
-					return err
+			if bug.Status != "CLOSED" {
+				links, err := bc.GetExternalBugPRsOnBug(e.bugId)
+				if err != nil {
+					log.WithError(err).Warn("Unexpected error getting external tracker bugs for Bugzilla bug.")
+					return comment(formatError("getting external tracker bugs", bc.Endpoint(), e.bugId, err))
 				}
-				if update := options.StateAfterClose.AsBugUpdate(bug); update != nil {
-					if err := bc.UpdateBug(e.bugId, *update); err != nil {
-						log.WithError(err).Warn("Unexpected error updating Bugzilla bug.")
-						return comment(formatError(fmt.Sprintf("updating to the %s state", options.StateAfterClose), bc.Endpoint(), e.bugId, err))
+				if len(links) == 0 {
+					bug, err := getBug(bc, e.bugId, log, comment)
+					if err != nil || bug == nil {
+						return err
 					}
-					response += fmt.Sprintf(" All external bug links have been closed. The bug has been moved to the %s state.", options.StateAfterClose)
+					if update := options.StateAfterClose.AsBugUpdate(bug); update != nil {
+						if err := bc.UpdateBug(e.bugId, *update); err != nil {
+							log.WithError(err).Warn("Unexpected error updating Bugzilla bug.")
+							return comment(formatError(fmt.Sprintf("updating to the %s state", options.StateAfterClose), bc.Endpoint(), e.bugId, err))
+						}
+						response += fmt.Sprintf(" All external bug links have been closed. The bug has been moved to the %s state.", options.StateAfterClose)
+					}
+					bzComment := &bugzilla.CommentCreate{ID: bug.ID, Comment: fmt.Sprintf("Bug status changed to %s as previous linked PR https://github.com/%s/%s/pull/%d has been closed", options.StateAfterClose.Status, e.org, e.repo, e.number), IsPrivate: true}
+					if _, err := bc.CreateComment(bzComment); err != nil {
+						response += "\nWarning: Failed to comment on Bugzilla bug with reason for changed state."
+					}
 				}
 			}
 		}

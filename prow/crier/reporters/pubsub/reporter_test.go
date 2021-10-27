@@ -295,6 +295,34 @@ func TestGenerateMessageFromPJ(t *testing.T) {
 				GCSPath: "gs://test1",
 			},
 		},
+		{
+			name: "Status message",
+			pj: &prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test1",
+					Annotations: map[string]string{
+						PubSubProjectLabel: testPubSubProjectName,
+						PubSubTopicLabel:   testPubSubTopicName,
+						PubSubRunIDLabel:   testPubSubRunID,
+					},
+				},
+				Status: prowapi.ProwJobStatus{
+					State:       prowapi.SuccessState,
+					URL:         "https://prow.k8s.io/view/gcs/test1",
+					Description: "this job went great",
+				},
+			},
+			jobURLPrefix: "https://prow.k8s.io/view/gcs/",
+			expectedMessage: &ReportMessage{
+				Project: testPubSubProjectName,
+				Topic:   testPubSubTopicName,
+				RunID:   testPubSubRunID,
+				Status:  prowapi.SuccessState,
+				URL:     "https://prow.k8s.io/view/gcs/test1",
+				GCSPath: "gs://test1",
+				Message: "this job went great",
+			},
+		},
 	}
 
 	for _, tc := range testcases {

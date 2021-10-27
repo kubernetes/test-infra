@@ -44,7 +44,7 @@ const retryCount = 4
 // Upload uploads all of the data in the
 // uploadTargets map to blob storage in parallel. The map is
 // keyed on blob storage path under the bucket
-func Upload(bucket, gcsCredentialsFile, s3CredentialsFile string, uploadTargets map[string]UploadFunc) error {
+func Upload(ctx context.Context, bucket, gcsCredentialsFile, s3CredentialsFile string, uploadTargets map[string]UploadFunc) error {
 	parsedBucket, err := url.Parse(bucket)
 	if err != nil {
 		return fmt.Errorf("cannot parse bucket name %s: %w", bucket, err)
@@ -53,7 +53,6 @@ func Upload(bucket, gcsCredentialsFile, s3CredentialsFile string, uploadTargets 
 		parsedBucket.Scheme = providers.GS
 	}
 
-	ctx := context.Background()
 	opener, err := pkgio.NewOpener(ctx, gcsCredentialsFile, s3CredentialsFile)
 	if err != nil {
 		return fmt.Errorf("new opener: %w", err)
@@ -66,8 +65,7 @@ func Upload(bucket, gcsCredentialsFile, s3CredentialsFile string, uploadTargets 
 
 // LocalExport copies all of the data in the uploadTargets map to local files in parallel. The map
 // is keyed on file path under the exportDir.
-func LocalExport(exportDir string, uploadTargets map[string]UploadFunc) error {
-	ctx := context.Background()
+func LocalExport(ctx context.Context, exportDir string, uploadTargets map[string]UploadFunc) error {
 	opener, err := pkgio.NewOpener(ctx, "", "")
 	if err != nil {
 		return fmt.Errorf("new opener: %w", err)
@@ -153,11 +151,11 @@ func FileUploadWithOptions(file string, opts pkgio.WriterOptions) UploadFunc {
 
 		uploadErr := DataUploadWithOptions(reader, opts)(writer)
 		if uploadErr != nil {
-			uploadErr = fmt.Errorf("upload error: %v", uploadErr)
+			uploadErr = fmt.Errorf("upload error: %w", uploadErr)
 		}
 		closeErr := reader.Close()
 		if closeErr != nil {
-			closeErr = fmt.Errorf("reader close error: %v", closeErr)
+			closeErr = fmt.Errorf("reader close error: %w", closeErr)
 		}
 
 		return utilerrors.NewAggregate([]error{uploadErr, closeErr})
@@ -185,11 +183,11 @@ func DataUploadWithOptions(src io.Reader, attrs pkgio.WriterOptions) UploadFunc 
 		writer.ApplyWriterOptions(attrs)
 		_, copyErr := io.Copy(writer, src)
 		if copyErr != nil {
-			copyErr = fmt.Errorf("copy error: %v", copyErr)
+			copyErr = fmt.Errorf("copy error: %w", copyErr)
 		}
 		closeErr := writer.Close()
 		if closeErr != nil {
-			closeErr = fmt.Errorf("writer close error: %v", closeErr)
+			closeErr = fmt.Errorf("writer close error: %w", closeErr)
 		}
 		return utilerrors.NewAggregate([]error{copyErr, closeErr})
 	}

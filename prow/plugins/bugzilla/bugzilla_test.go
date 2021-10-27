@@ -689,13 +689,11 @@ Instructions for interacting with me using PR comments are available [here](http
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			client := fakegithub.FakeClient{
-				PullRequests: map[int]*github.PullRequest{
-					1: {Base: github.PullRequestBranch{Ref: "branch"}, Title: testCase.title, Merged: testCase.merged},
-				},
-				IssueComments: map[int][]github.IssueComment{},
+			client := fakegithub.NewFakeClient()
+			client.PullRequests = map[int]*github.PullRequest{
+				1: {Base: github.PullRequestBranch{Ref: "branch"}, Title: testCase.title, Merged: testCase.merged},
 			}
-			event, err := digestComment(&client, logrus.WithField("testCase", testCase.name), testCase.e)
+			event, err := digestComment(client, logrus.WithField("testCase", testCase.name), testCase.e)
 			if err == nil && testCase.expectedErr {
 				t.Errorf("%s: expected an error but got none", testCase.name)
 			}
@@ -726,6 +724,7 @@ func TestHandle(t *testing.T) {
 	var testCases = []struct {
 		name                string
 		labels              []string
+		humanLabelled       bool
 		missing             bool
 		merged              bool
 		closed              bool
@@ -747,6 +746,7 @@ func TestHandle(t *testing.T) {
 		expectedLabels        []string
 		expectedComment       string
 		expectedBug           *bugzilla.Bug
+		expectedBugComments   map[int][]bugzilla.Comment
 		expectedExternalBugs  []bugzilla.ExternalBug
 		expectedSubComponents map[int]map[string][]string
 	}{
@@ -849,6 +849,30 @@ Instructions for interacting with me using PR comments are available [here](http
  - expected the bug to be open, but it isn't
 
 Comment <code>/bugzilla refresh</code> to re-evaluate validity if changes to the Bugzilla bug are made, or edit the title of this pull request to link to a different bug.
+
+<details>
+
+In response to [this](http.com):
+
+>Bug 123: fixed it!
+
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
+</details>`,
+		},
+		{
+			name:           "invalid bug adds keeps human-added valid bug label",
+			bugs:           []bugzilla.Bug{{ID: 123, Severity: "high"}},
+			options:        plugins.BugzillaBranchOptions{IsOpen: &open},
+			humanLabelled:  true,
+			labels:         []string{"bugzilla/valid-bug", "bugzilla/severity-urgent"},
+			expectedLabels: []string{"bugzilla/valid-bug", "bugzilla/severity-high"},
+			expectedComment: `org/repo#1:@user: This pull request references [Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123), which is invalid:
+ - expected the bug to be open, but it isn't
+
+Comment <code>/bugzilla refresh</code> to re-evaluate validity if changes to the Bugzilla bug are made, or edit the title of this pull request to link to a different bug.
+
+Retaining the bugzilla/valid-bug label as it was manually added.
 
 <details>
 
@@ -1174,6 +1198,36 @@ Instructions for interacting with me using PR comments are available [here](http
 </details>`,
 		},
 		{
+			name:   "External bug on rep that is not in our config is ignored, bug gets set to MODIFIED",
+			merged: true,
+			bugs:   []bugzilla.Bug{{ID: 123}},
+			externalBugs: []bugzilla.ExternalBug{{
+				BugzillaBugID: base.bugId,
+				ExternalBugID: "unreferenced/repo/pull/22",
+				Org:           "unreferenced", Repo: "repo", Num: 22,
+			}},
+			prs:         []github.PullRequest{{Number: 22, Merged: false, State: "open"}},
+			options:     plugins.BugzillaBranchOptions{StateAfterMerge: &modified}, // no requirements --> always valid
+			expectedBug: &bugzilla.Bug{ID: 123, Status: "MODIFIED"},
+			expectedExternalBugs: []bugzilla.ExternalBug{
+				{BugzillaBugID: 123, ExternalBugID: "unreferenced/repo/pull/22", Org: "unreferenced", Repo: "repo", Num: 22},
+			},
+			expectedComment: `org/repo#1:@user: All pull requests linked via external trackers have merged:
+
+
+[Bugzilla bug 123](www.bugzilla/show_bug.cgi?id=123) has been moved to the MODIFIED state.
+
+<details>
+
+In response to [this](http.com):
+
+>Bug 123: fixed it!
+
+
+Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/guide/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository.
+</details>`,
+		},
+		{
 			name:   "valid bug on merged PR with one external link but no status after merge configured does nothing",
 			merged: true,
 			bugs:   []bugzilla.Bug{{ID: 123}},
@@ -1299,10 +1353,11 @@ Instructions for interacting with me using PR comments are available [here](http
 			expectedBug: &bugzilla.Bug{ID: 123, Status: "CLOSED", Severity: "urgent"},
 		},
 		{
-			name:   "closed PR removes link, changes bug state, and comments",
-			merged: false,
-			closed: true,
-			bugs:   []bugzilla.Bug{{ID: 123, Status: "POST", Severity: "urgent"}},
+			name:        "closed PR removes link, changes bug state, and comments",
+			merged:      false,
+			closed:      true,
+			bugs:        []bugzilla.Bug{{ID: 123, Status: "POST", Severity: "urgent"}},
+			bugComments: map[int][]bugzilla.Comment{123: {{BugID: 123, Count: 0, Text: "This is a bug"}}},
 			externalBugs: []bugzilla.ExternalBug{{
 				BugzillaBugID: base.bugId,
 				ExternalBugID: fmt.Sprintf("%s/%s/pull/%d", base.org, base.repo, base.number),
@@ -1323,6 +1378,7 @@ Instructions for interacting with me using PR comments are available [here](http
 </details>`,
 			expectedBug:          &bugzilla.Bug{ID: 123, Status: "NEW", Severity: "urgent"},
 			expectedExternalBugs: []bugzilla.ExternalBug{},
+			expectedBugComments:  map[int][]bugzilla.Comment{123: {{BugID: 123, Count: 0, Text: "This is a bug"}, {BugID: 123, ID: 1, Count: 1, Text: "Bug status changed to NEW as previous linked PR https://github.com/org/repo/pull/1 has been closed", IsPrivate: true}}},
 		},
 		{
 			name:        "closed PR with missing bug does nothing",
@@ -1694,15 +1750,16 @@ Instructions for interacting with me using PR comments are available [here](http
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			e := *base // copy so parallel tests don't collide
-			gc := fakegithub.FakeClient{
-				IssueLabelsExisting: []string{},
-				IssueComments:       map[int][]github.IssueComment{},
-				PullRequests:        map[int]*github.PullRequest{},
-			}
+			gc := fakegithub.NewFakeClient()
+			gc.IssueLabelsExisting = []string{}
+			gc.IssueComments = map[int][]github.IssueComment{}
+			gc.PullRequests = map[int]*github.PullRequest{}
+			gc.WasLabelAddedByHumanVal = testCase.humanLabelled
 			for _, label := range testCase.labels {
 				gc.IssueLabelsExisting = append(gc.IssueLabelsExisting, fmt.Sprintf("%s/%s#%d:%s", e.org, e.repo, e.number, label))
 			}
 			for _, pr := range testCase.prs {
+				pr := pr
 				gc.PullRequests[pr.Number] = &pr
 			}
 			bc := bugzilla.Fake{
@@ -1736,7 +1793,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			if testCase.body != "" {
 				e.body = testCase.body
 			}
-			err := handle(e, &gc, &bc, testCase.options, logrus.WithField("testCase", testCase.name))
+			err := handle(e, gc, &bc, testCase.options, logrus.WithField("testCase", testCase.name), sets.NewString("org/repo"))
 			if err != nil {
 				t.Errorf("%s: expected no error but got one: %v", testCase.name, err)
 			}
@@ -1770,11 +1827,22 @@ Instructions for interacting with me using PR comments are available [here](http
 			if testCase.expectedSubComponents != nil && !reflect.DeepEqual(bc.SubComponents, testCase.expectedSubComponents) {
 				t.Errorf("%s: got incorrect subcomponents after update: %s", testCase.name, cmp.Diff(actual, expected))
 			}
+			for bugID, expectedComments := range testCase.expectedBugComments {
+				if actualComments, ok := bc.BugComments[bugID]; ok {
+					for index, comment := range expectedComments {
+						if !reflect.DeepEqual(actualComments[index], comment) {
+							t.Errorf("%s: got incorrect bug comments for bugID %d, index %d: %s", testCase.name, bugID, index, cmp.Diff(actualComments[index], comment))
+						}
+					}
+				} else {
+					t.Errorf("%s: Actual comments map missing bugID %d", testCase.name, bugID)
+				}
+			}
 		})
 	}
 }
 
-func checkComments(client fakegithub.FakeClient, name, expectedComment string, t *testing.T) {
+func checkComments(client *fakegithub.FakeClient, name, expectedComment string, t *testing.T) {
 	wantedComments := 0
 	if expectedComment != "" {
 		wantedComments = 1
@@ -1824,6 +1892,10 @@ func TestBugIDFromTitle(t *testing.T) {
 		},
 		{
 			title:       "Bug 34: Revert: \"Bug 12: Revert default\"",
+			expectedNum: 34,
+		},
+		{
+			title:       "Bug  34: A title with multiple whitespaces between Bug and number",
 			expectedNum: 34,
 		},
 	}

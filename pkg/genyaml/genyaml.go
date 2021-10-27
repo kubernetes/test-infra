@@ -130,12 +130,12 @@ type Comment struct {
 func marshal(o interface{}) ([]byte, error) {
 	j, err := json.Marshal(o)
 	if err != nil {
-		return nil, fmt.Errorf("error marshaling into JSON: %v", err)
+		return nil, fmt.Errorf("error marshaling into JSON: %w", err)
 	}
 
 	y, err := jsonToYaml(j)
 	if err != nil {
-		return nil, fmt.Errorf("error converting JSON to YAML: %v", err)
+		return nil, fmt.Errorf("error converting JSON to YAML: %w", err)
 	}
 
 	return y, nil
@@ -432,7 +432,7 @@ func (cm *CommentMap) GenYaml(config interface{}) (string, error) {
 
 	err := cm.EncodeYaml(config, encoder)
 	if err != nil {
-		return "", fmt.Errorf("failed to encode config as YAML: %v", err)
+		return "", fmt.Errorf("failed to encode config as YAML: %w", err)
 	}
 
 	return buffer.String(), nil

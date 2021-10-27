@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"net/url"
 	"path"
+	"strconv"
 
 	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
@@ -75,6 +76,7 @@ func createRefs(pr github.PullRequest, baseSHA string) prowapi.Refs {
 				Number:     number,
 				Author:     pr.User.Login,
 				SHA:        pr.Head.SHA,
+				Title:      pr.Title,
 				Link:       pr.HTMLURL,
 				AuthorLink: pr.User.HTMLURL,
 				CommitLink: fmt.Sprintf("%s/pull/%d/commits/%s", repoLink, number, pr.Head.SHA),
@@ -86,17 +88,21 @@ func createRefs(pr github.PullRequest, baseSHA string) prowapi.Refs {
 // NewPresubmit converts a config.Presubmit into a prowapi.ProwJob.
 // The prowapi.Refs are configured correctly per the pr, baseSHA.
 // The eventGUID becomes a github.EventGUID label.
-func NewPresubmit(pr github.PullRequest, baseSHA string, job config.Presubmit, eventGUID string) prowapi.ProwJob {
+func NewPresubmit(pr github.PullRequest, baseSHA string, job config.Presubmit, eventGUID string, additionalLabels map[string]string) prowapi.ProwJob {
 	refs := createRefs(pr, baseSHA)
 	labels := make(map[string]string)
 	for k, v := range job.Labels {
 		labels[k] = v
 	}
+	for k, v := range additionalLabels {
+		labels[k] = v
+	}
+	labels[github.EventGUID] = eventGUID
+	labels[kube.IsOptionalLabel] = strconv.FormatBool(job.Optional)
 	annotations := make(map[string]string)
 	for k, v := range job.Annotations {
 		annotations[k] = v
 	}
-	labels[github.EventGUID] = eventGUID
 	return NewProwJob(PresubmitSpec(job, refs), labels, annotations)
 }
 
@@ -175,6 +181,7 @@ func specFromJobBase(jb config.JobBase) prowapi.ProwJobSpec {
 		ReporterConfig:  jb.ReporterConfig,
 		RerunAuthConfig: jb.RerunAuthConfig,
 		Hidden:          jb.Hidden,
+		ProwJobDefault:  jb.ProwJobDefault,
 	}
 }
 
@@ -260,6 +267,7 @@ func ProwJobFields(pj *prowapi.ProwJob) logrus.Fields {
 	fields["name"] = pj.ObjectMeta.Name
 	fields["job"] = pj.Spec.Job
 	fields["type"] = pj.Spec.Type
+	fields["state"] = pj.Status.State
 	if len(pj.ObjectMeta.Labels[github.EventGUID]) > 0 {
 		fields[github.EventGUID] = pj.ObjectMeta.Labels[github.EventGUID]
 	}

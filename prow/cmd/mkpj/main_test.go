@@ -20,6 +20,7 @@ import (
 	"testing"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 )
@@ -33,8 +34,8 @@ func TestOptions_Validate(t *testing.T) {
 		{
 			name: "all ok",
 			input: options{
-				jobName:    "job",
-				configPath: "somewhere",
+				jobName: "job",
+				config:  configflagutil.ConfigOptions{ConfigPath: "somewhere"},
 			},
 			expectedErr: false,
 		},
@@ -48,7 +49,7 @@ func TestOptions_Validate(t *testing.T) {
 		{
 			name: "missing job",
 			input: options{
-				configPath: "somewhere",
+				config: configflagutil.ConfigOptions{ConfigPath: "somewhere"},
 			},
 			expectedErr: true,
 		},
@@ -68,7 +69,7 @@ func TestOptions_Validate(t *testing.T) {
 func TestDefaultPR(t *testing.T) {
 	author := "Bernardo Soares"
 	sha := "Esther Greenwood"
-	fakeGitHubClient := &fakegithub.FakeClient{}
+	fakeGitHubClient := fakegithub.NewFakeClient()
 	fakeGitHubClient.PullRequests = map[int]*github.PullRequest{2: {
 		User: github.User{Login: author},
 		Head: github.PullRequestBranch{SHA: sha},
@@ -109,7 +110,7 @@ func TestDefaultBaseRef(t *testing.T) {
 
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
-			fakeGitHubClient := &fakegithub.FakeClient{}
+			fakeGitHubClient := fakegithub.NewFakeClient()
 			fakeGitHubClient.PullRequests = map[int]*github.PullRequest{2: {Base: github.PullRequestBranch{
 				SHA: test.prBaseSha,
 			}}}
@@ -124,5 +125,67 @@ func TestDefaultBaseRef(t *testing.T) {
 			}
 		})
 	}
+}
 
+func TestSplitRepoName(t *testing.T) {
+	tests := []struct {
+		name     string
+		full     string
+		wantOrg  string
+		wantRepo string
+		wantErr  bool
+	}{
+		{
+			name:     "github repo",
+			full:     "orgA/repoB",
+			wantOrg:  "orgA",
+			wantRepo: "repoB",
+			wantErr:  false,
+		},
+		{
+			name:     "ref name with http://",
+			full:     "http://orgA/repoB",
+			wantOrg:  "orgA",
+			wantRepo: "repoB",
+			wantErr:  false,
+		},
+		{
+			name:     "ref name with https://",
+			full:     "https://orgA/repoB",
+			wantOrg:  "orgA",
+			wantRepo: "repoB",
+			wantErr:  false,
+		},
+		{
+			name:     "repo name contains /",
+			full:     "orgA/repoB/subC",
+			wantOrg:  "orgA",
+			wantRepo: "repoB/subC",
+			wantErr:  false,
+		},
+		{
+			name:     "invalid",
+			full:     "repoB",
+			wantOrg:  "",
+			wantRepo: "",
+			wantErr:  true,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			gotOrg, gotRepo, err := splitRepoName(tt.full)
+			if gotOrg != tt.wantOrg {
+				t.Errorf("org mismatch. Want: %v, got: %v", tt.wantOrg, gotOrg)
+			}
+			if gotRepo != tt.wantRepo {
+				t.Errorf("repo mismatch. Want: %v, got: %v", tt.wantRepo, gotRepo)
+			}
+			gotErr := (err != nil)
+			if gotErr != (tt.wantErr && gotErr) {
+				t.Errorf("err mismatch. Want: %v, got: %v", tt.wantErr, gotErr)
+			}
+		})
+	}
 }

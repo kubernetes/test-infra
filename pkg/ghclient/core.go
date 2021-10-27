@@ -153,7 +153,7 @@ func (c *Client) depaginate(action string, opts *github.ListOptions, call func()
 	for ; opts.Page <= lastPage; opts.Page++ {
 		resp, err := c.retry(action, wrapper)
 		if err != nil {
-			return allItems, fmt.Errorf("error while depaginating page %d/%d: %v", opts.Page, lastPage, err)
+			return allItems, fmt.Errorf("error while depaginating page %d/%d: %w", opts.Page, lastPage, err)
 		}
 		if resp.LastPage > 0 {
 			lastPage = resp.LastPage

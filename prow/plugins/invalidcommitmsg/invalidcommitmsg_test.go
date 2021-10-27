@@ -32,10 +32,6 @@ type fakePruner struct{}
 
 func (fp *fakePruner) PruneComments(shouldPrune func(github.IssueComment) bool) {}
 
-func strP(str string) *string {
-	return &str
-}
-
 func makeFakePullRequestEvent(action github.PullRequestEventAction, title string) github.PullRequestEvent {
 	return github.PullRequestEvent{
 		Action: action,
@@ -106,6 +102,7 @@ func TestHandlePullRequest(t *testing.T) {
 				{SHA: "sha1", Commit: github.GitCommit{Message: "this is a valid message"}},
 				{SHA: "sha2", Commit: github.GitCommit{Message: "fixing k/k#9999"}},
 				{SHA: "sha3", Commit: github.GitCommit{Message: "not a @ mention"}},
+				{SHA: "sha4", Commit: github.GitCommit{Message: "escape @\u200bmention with zero width unicode"}},
 			},
 			hasInvalidCommitMessageLabel: false,
 		},
@@ -230,12 +227,11 @@ func TestHandlePullRequest(t *testing.T) {
 			}
 
 			event := makeFakePullRequestEvent(tc.action, title)
-			fc := &fakegithub.FakeClient{
-				PullRequests:  map[int]*github.PullRequest{event.Number: &event.PullRequest},
-				IssueComments: make(map[int][]github.IssueComment),
-				CommitMap: map[string][]github.RepositoryCommit{
-					"k/k#3": tc.commits,
-				},
+			fc := fakegithub.NewFakeClient()
+			fc.PullRequests = map[int]*github.PullRequest{event.Number: &event.PullRequest}
+			fc.IssueComments = make(map[int][]github.IssueComment)
+			fc.CommitMap = map[string][]github.RepositoryCommit{
+				"k/k#3": tc.commits,
 			}
 
 			if tc.hasInvalidCommitMessageLabel {

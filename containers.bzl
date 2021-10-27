@@ -32,14 +32,6 @@ def repositories():
     )
 
     container_pull(
-        name = "alpine-bash",
-        digest = "sha256:5b2616c8e2a9ca1e8cd015ad76df3bedecdb7b98b8825c718360ec6b98cb1dcc",
-        registry = "gcr.io",
-        repository = "k8s-testimages/alpine-bash",
-        # tag = "v20200713-e9b3d9d",
-    )
-
-    container_pull(
         name = "gcloud-base",
         digest = "sha256:5b49dfb5e366dd75a5fc6d5d447be584f8f229c5a790ee0c3b0bd0cf70ec41dd",
         registry = "gcr.io",
@@ -49,24 +41,32 @@ def repositories():
 
     container_pull(
         name = "git-base",
-        digest = "sha256:1527341aff1003b6b27c8ed935e6f0200258bee55b6eb178ca3ef124196384fe",
+        digest = "sha256:3fef8233c73aa85f953f0f90a3dc0daee88b2eea5210af0779512c34ce5f1ae6",
         registry = "gcr.io",
         repository = "k8s-prow/git",
-        # tag = "v20200713-e9b3d9d",
+        # tag = "v20210819-42fed69",
     )
 
     container_pull(
-        name = "gcloud-go",
-        digest = "sha256:ca9873d744f19e77ceafb499846248a82cde74ab5a613dd394348e7904d08d71",
+        name = "git-base-arm64",
+        digest = "sha256:17373d3456b4ad146b42b23fd4b6322dc804b62af6c3f939fbf7533239d2dce5",
         registry = "gcr.io",
-        repository = "k8s-testimages/gcloud-in-go",
-        # tag = "v20200205-602500d",
+        repository = "k8s-prow/git",
+        # tag = "v20210819-42fed69",
+    )
+
+    container_pull(
+        name = "git-base-ppc64le",
+        digest = "sha256:cc5b28dfc4165dccc91d0cf04e9addf1b2d22ab70b9a5e313b6299a4aa1d6646",
+        registry = "gcr.io",
+        repository = "k8s-prow/git",
+        # tag = "v20210819-42fed69",
     )
 
     container_pull(
         name = "bazel-base",
-        digest = "sha256:2e8163b61f3759f6ff0e4df43c40d092dae331b1c2d5326f05f78e72a68d3203",
+        digest = "sha256:e006f1c3658dd11d5176d5f7a862df4d5b9c06cfe014d5b8a86bb64b20a6f8be",
         registry = "gcr.io",
         repository = "k8s-testimages/launcher.gcr.io/google/bazel",
-        tag = "v20200609-e7bfd25-test-infra",
+        tag = "v20210128-721ee66-test-infra",
     )

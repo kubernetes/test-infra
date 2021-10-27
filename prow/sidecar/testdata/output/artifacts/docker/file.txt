@@ -1,0 +1,7 @@
+bob smith and jim james carelessly leaked their passwords, ******** and ********, for registries, along with their auth values, *************** and ***************. Sidecar censored that data even when it wasn't part of the full secret.
+To make matters worse, they even printed the full contents of the secret!
+*******************************************************************************************************************************************************************************************************************************************************************************************
+
+BOB SMITH and JIM JAMES carelessly leaked their passwords, ******** and ********, for registries, along with their auth values, *************** and ***************. Sidecar censored that data even when it wasn't part of the full secret.
+To make matters worse, they even printed the full contents of the secret!
+************************************************************************************************************************************************************************************************************************************************************************************************************************************

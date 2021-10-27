@@ -92,10 +92,10 @@ func (h *fakeArtifactHandle) NewReader(ctx context.Context) (io.ReadCloser, erro
 	zw := gzip.NewWriter(&buf)
 	_, err := zw.Write([]byte("unreadable contents"))
 	if err != nil {
-		return nil, fmt.Errorf("Failed to gzip log text, err: %v", err)
+		return nil, fmt.Errorf("Failed to gzip log text, err: %w", err)
 	}
 	if err := zw.Close(); err != nil {
-		return nil, fmt.Errorf("Failed to close gzip writer, err: %v", err)
+		return nil, fmt.Errorf("Failed to close gzip writer, err: %w", err)
 	}
 	if bytes.Equal(h.contents, buf.Bytes()) {
 		return nil, fmt.Errorf("cannot read unreadable contents, even if they're gzipped")

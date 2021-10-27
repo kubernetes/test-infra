@@ -5,7 +5,7 @@ that execute e2e test jobs.  This ensures we have coverage of Kubernetes on more
 platforms than just those that the Kubernetes project itself can fund or support.
 
 The process is as follows:
-- Request a [G Suite](https://gsuite.google.com/) group in [groups.yaml](https://github.com/kubernetes/k8s.io/blob/master/groups/groups.yaml) by a PR.
+- Request a [G Suite](https://gsuite.google.com/) group in [groups.yaml](https://github.com/kubernetes/k8s.io/blob/main/groups/groups.yaml) by a PR.
   - The approver will help create the GCS bucket accordingly.
   - If you are using your personal GCS bucket, then you can skip this step.
 - Make sure the GCS bucket is [world-readable](https://cloud.google.com/storage/docs/access-control/making-data-public)

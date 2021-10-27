@@ -151,11 +151,10 @@ func TestSigMention(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		fakeClient := &fakegithub.FakeClient{
-			OrgMembers:         map[string][]string{"org": {orgMember, bot}},
-			RepoLabelsExisting: tc.repoLabels,
-			IssueComments:      make(map[int][]github.IssueComment),
-		}
+		fakeClient := fakegithub.NewFakeClient()
+		fakeClient.OrgMembers = map[string][]string{"org": {orgMember, bot}}
+		fakeClient.RepoLabelsExisting = tc.repoLabels
+		fakeClient.IssueComments = make(map[int][]github.IssueComment)
 		// Add initial labels to issue.
 		for _, label := range tc.issueLabels {
 			fakeClient.AddLabel("org", "repo", 1, label)

@@ -37,6 +37,18 @@ const (
 	defaultOutput = "/dev/stdout"
 )
 
+// Cluster represents the information necessary to talk to a Kubernetes master endpoint.
+type Cluster struct {
+	// The IP address of the cluster's master endpoint.
+	Endpoint string `json:"endpoint"`
+	// Base64-encoded public cert used by clients to authenticate to the cluster endpoint.
+	ClientCertificate []byte `json:"clientCertificate"`
+	// Base64-encoded private key used by clients..
+	ClientKey []byte `json:"clientKey"`
+	// Base64-encoded public certificate that is the root of trust for the cluster.
+	ClusterCACertificate []byte `json:"clusterCaCertificate"`
+}
+
 // options are the available command-line flags.
 type options struct {
 	input  string
@@ -57,8 +69,22 @@ func printErrAndExit(err error, code int) {
 	os.Exit(code)
 }
 
+// unmarshalClusterMap reads a map[string]Cluster in yaml bytes.
+func unmarshalClusterMap(data []byte) (map[string]Cluster, error) {
+	var raw map[string]Cluster
+	if err := yaml.Unmarshal(data, &raw); err != nil {
+		// If we failed to unmarshal the multicluster format try the single Cluster format.
+		var singleConfig Cluster
+		if err := yaml.Unmarshal(data, &singleConfig); err != nil {
+			return nil, err
+		}
+		raw = map[string]Cluster{kube.DefaultClusterAlias: singleConfig}
+	}
+	return raw, nil
+}
+
 // createKubeConfigFromClusterMap creates a standard kube config from a cluster map.
-func createKubeConfigFromClusterMap(cm map[string]kube.Cluster) ([]byte, error) {
+func createKubeConfigFromClusterMap(cm map[string]Cluster) ([]byte, error) {
 	config := clientcmdapi.Config{
 		APIVersion:     "v1",
 		Kind:           "Config",
@@ -114,7 +140,7 @@ func main() {
 		printErrAndExit(err, 1)
 	}
 
-	cm, err := kube.UnmarshalClusterMap(in)
+	cm, err := unmarshalClusterMap(in)
 	if err != nil {
 		printErrAndExit(err, 1)
 	}

@@ -17,7 +17,7 @@
 
 ARG OLD_BAZEL_VERSION
 FROM launcher.gcr.io/google/bazel:${OLD_BAZEL_VERSION} as old
-FROM gcr.io/k8s-testimages/bootstrap:v20210108-5927ee692c
+FROM gcr.io/k8s-staging-test-infra/bootstrap:v20211008-e0e089cfce
 
 # hint to kubetest that it is in CI
 ENV KUBETEST_IN_DOCKER="true"
@@ -44,7 +44,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 # preinstall this for kops tests xref kubetest prepareAws(...)
 # TODO(krzyzacy,justisb,chrislovecnm): remove this
-RUN pip install awscli
+RUN pip install --no-cache-dir awscli
 
 # install cfssl to prevent https://github.com/kubernetes/kubernetes/issues/55589
 # The invocation at the end is to prevent download failures downloads as in the bug.
@@ -89,6 +89,22 @@ RUN [ "${UPGRADE_DOCKER_ARG}" = "true" ] && \
     apt-get install -y --no-install-recommends docker-ce && \
     rm -rf /var/lib/apt/lists/* && \
     sed -i 's/cgroupfs_mount$/#cgroupfs_mount\n/' /etc/init.d/docker || true
+
+# install kind if a version is provided
+ARG KIND_VERSION
+RUN if [ -n "${KIND_VERSION}" ]; then \
+    wget -q -O /usr/local/bin/kind https://kind.sigs.k8s.io/dl/v${KIND_VERSION}/kind-linux-amd64 && \
+    chmod +x /usr/local/bin/kind; \
+    fi
+
+# install kubetest2 binaries if a version is provided
+ARG KUBETEST2_VERSION
+RUN if [ -n "${KUBETEST2_VERSION}" ]; then \
+    wget -q -O /usr/local/bin/kubetest2.tgz https://storage.googleapis.com/k8s-staging-kubetest2/${KUBETEST2_VERSION}/linux-amd64.tgz && \
+    tar -xzf /usr/local/bin/kubetest2.tgz -C /usr/local/bin && \
+    rm -f /usr/local/bin/kubetest2.tgz && \
+    chmod +x /usr/local/bin/kubetest2*; \
+    fi
 
 # configure dockerd to use mirror.gcr.io
 # per instructions at https://cloud.google.com/container-registry/docs/pulling-cached-images

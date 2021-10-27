@@ -23,6 +23,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"regexp"
 	"strconv"
 	"strings"
 	"testing"
@@ -45,7 +46,8 @@ func clientForUrl(url string) *client {
 	return &client{
 		logger: logrus.WithField("testing", "true"),
 		delegate: &delegate{
-			endpoint: url,
+			authMethod: "x-bugzilla-api-key",
+			endpoint:   url,
 			client: &http.Client{
 				Transport: &http.Transport{
 					TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
@@ -62,11 +64,6 @@ func TestGetBug(t *testing.T) {
 	testServer := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("X-BUGZILLA-API-KEY") != "api-key" {
 			t.Error("did not get api-key passed in X-BUGZILLA-API-KEY header")
-			http.Error(w, "403 Forbidden", http.StatusForbidden)
-			return
-		}
-		if r.URL.Query().Get("api_key") != "api-key" {
-			t.Error("did not get api-key passed in api_key query parameter")
 			http.Error(w, "403 Forbidden", http.StatusForbidden)
 			return
 		}
@@ -146,11 +143,6 @@ func TestCreateBug(t *testing.T) {
 	testServer := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("X-BUGZILLA-API-KEY") != "api-key" {
 			t.Error("did not get api-key passed in X-BUGZILLA-API-KEY header")
-			http.Error(w, "403 Forbidden", http.StatusForbidden)
-			return
-		}
-		if r.URL.Query().Get("api_key") != "api-key" {
-			t.Error("did not get api-key passed in api_key query parameter")
 			http.Error(w, "403 Forbidden", http.StatusForbidden)
 			return
 		}
@@ -258,11 +250,6 @@ func TestGetComments(t *testing.T) {
 			http.Error(w, "403 Forbidden", http.StatusForbidden)
 			return
 		}
-		if r.URL.Query().Get("api_key") != "api-key" {
-			t.Error("did not get api-key passed in api_key query parameter")
-			http.Error(w, "403 Forbidden", http.StatusForbidden)
-			return
-		}
 		if r.Method != http.MethodGet {
 			t.Errorf("incorrect method to get bug comments: %s", r.Method)
 			http.Error(w, "400 Bad Request", http.StatusBadRequest)
@@ -338,12 +325,57 @@ func TestGetComments(t *testing.T) {
 	}
 }
 
+func TestCreateComment(t *testing.T) {
+	testServer := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("X-BUGZILLA-API-KEY") != "api-key" {
+			t.Error("did not get api-key passed in X-BUGZILLA-API-KEY header")
+			http.Error(w, "403 Forbidden", http.StatusForbidden)
+			return
+		}
+		if r.Method != http.MethodPost {
+			t.Errorf("incorrect method to create a comment: %s", r.Method)
+			http.Error(w, "400 Bad Request", http.StatusBadRequest)
+			return
+		}
+		if !regexp.MustCompile(`^/rest/bug/\d+/comment$`).MatchString(r.URL.Path) {
+			t.Errorf("incorrect path to create a comment: %s", r.URL.Path)
+			http.Error(w, "400 Bad Request", http.StatusBadRequest)
+			return
+		}
+		raw, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			t.Errorf("failed to read request body: %v", err)
+			http.Error(w, "500 Server Error", http.StatusInternalServerError)
+			return
+		}
+		payload := &CommentCreate{}
+		if err := json.Unmarshal(raw, &payload); err != nil {
+			t.Errorf("malformed JSONRPC payload: %s", string(raw))
+			http.Error(w, "400 Bad Request", http.StatusBadRequest)
+			return
+		}
+		if _, err := w.Write([]byte(`{"id" : 12345}`)); err != nil {
+			t.Fatalf("failed to send JSONRPC response: %v", err)
+		}
+	}))
+	defer testServer.Close()
+	client := clientForUrl(testServer.URL)
+
+	// this should create a new comment
+	if id, err := client.CreateComment(&CommentCreate{ID: 2, Comment: "This is a test bug"}); err != nil {
+		t.Errorf("expected no error, but got one: %v", err)
+	} else if id != 12345 {
+		t.Errorf("expected id of 12345, got %d", id)
+	}
+}
+
 func TestCloneBugStruct(t *testing.T) {
 	testCases := []struct {
-		name     string
-		bug      Bug
-		comments []Comment
-		expected BugCreate
+		name          string
+		bug           Bug
+		comments      []Comment
+		targetRelease []string
+		expected      BugCreate
 	}{{
 		name: "Clone bug",
 		bug: Bug{
@@ -469,11 +501,6 @@ func TestUpdateBug(t *testing.T) {
 		}
 		if r.Header.Get("Content-Type") != "application/json" {
 			t.Error("did not correctly set content-type header for JSON")
-			http.Error(w, "403 Forbidden", http.StatusForbidden)
-			return
-		}
-		if r.URL.Query().Get("api_key") != "api-key" {
-			t.Error("did not get api-key passed in api_key query parameter")
 			http.Error(w, "403 Forbidden", http.StatusForbidden)
 			return
 		}
@@ -857,6 +884,27 @@ func TestPullFromIdentifier(t *testing.T) {
 			expectedNum:  1234,
 		},
 		{
+			name:         "extra `/` at end works correctly",
+			identifier:   "organization/repository/pull/1234/",
+			expectedOrg:  "organization",
+			expectedRepo: "repository",
+			expectedNum:  1234,
+		},
+		{
+			name:         "extra `/files` included works correctly",
+			identifier:   "organization/repository/pull/1234/files",
+			expectedOrg:  "organization",
+			expectedRepo: "repository",
+			expectedNum:  1234,
+		},
+		{
+			name:         "extra `/files/` included works correctly",
+			identifier:   "organization/repository/pull/1234/files/",
+			expectedOrg:  "organization",
+			expectedRepo: "repository",
+			expectedNum:  1234,
+		},
+		{
 			name:        "wrong number of parts fails",
 			identifier:  "organization/repository",
 			expectedErr: true,
@@ -953,11 +1001,6 @@ func TestGetExternalBugPRsOnBug(t *testing.T) {
 	testServer := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("X-BUGZILLA-API-KEY") != "api-key" {
 			t.Error("did not get api-key passed in X-BUGZILLA-API-KEY header")
-			http.Error(w, "403 Forbidden", http.StatusForbidden)
-			return
-		}
-		if r.URL.Query().Get("api_key") != "api-key" {
-			t.Error("did not get api-key passed in api_key query parameter")
 			http.Error(w, "403 Forbidden", http.StatusForbidden)
 			return
 		}
@@ -1167,6 +1210,71 @@ func TestGetRootForClone(t *testing.T) {
 			}
 			if root.ID != tc.expectedRoot {
 				t.Errorf("ID of root incorrect.")
+			}
+		})
+	}
+}
+
+func TestClone(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name      string
+		mutations []func(bug *BugCreate)
+		original  *Bug
+		expected  Bug
+	}{
+		{
+			name:     "Simple",
+			original: &Bug{ID: 1},
+			expected: Bug{DependsOn: []int{1}},
+		},
+		{
+			name: "Simple with mutation",
+			mutations: []func(bug *BugCreate){
+				func(bug *BugCreate) {
+					bug.TargetRelease = []string{"1.2"}
+				},
+			},
+			original: &Bug{ID: 1},
+			expected: Bug{
+				DependsOn:     []int{1},
+				TargetRelease: []string{"1.2"},
+			},
+		},
+		{
+			name: "Simple with multiple mutations",
+			mutations: []func(bug *BugCreate){
+				func(bug *BugCreate) {
+					bug.TargetRelease = []string{"1.2"}
+				},
+				func(bug *BugCreate) {
+					bug.CC = []string{"test@test.com", "foo@bar.com"}
+				},
+			},
+			original: &Bug{ID: 1},
+			expected: Bug{
+				DependsOn:     []int{1},
+				TargetRelease: []string{"1.2"},
+				CC:            []string{"test@test.com", "foo@bar.com"},
+			},
+		},
+		{
+			name:     "Copy blocks field",
+			original: &Bug{ID: 1, Blocks: []int{0}},
+			expected: Bug{DependsOn: []int{1}, Blocks: []int{0}},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			client := &Fake{Bugs: map[int]Bug{0: {}}, BugComments: map[int][]Comment{1: {{}}}}
+			newID, err := clone(client, tc.original, tc.mutations)
+			if err != nil {
+				t.Fatalf("cloning failed: %v", err)
+			}
+			tc.expected.ID = newID
+			if diff := cmp.Diff(tc.expected, client.Bugs[newID]); diff != "" {
+				t.Errorf("expected clone differs from actual clone: %s", diff)
 			}
 		})
 	}

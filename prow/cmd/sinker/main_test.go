@@ -38,6 +38,7 @@ import (
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/kube"
 )
 
@@ -864,47 +865,32 @@ func TestFlags(t *testing.T) {
 				"--config-path": "/random/path",
 			},
 			expected: func(o *options) {
-				o.configPath = "/random/path"
+				o.config.ConfigPath = "/random/path"
 			},
 		},
 		{
-			name: "expicitly set --dry-run=false",
+			name: "explicitly set --dry-run=false",
 			args: map[string]string{
 				"--dry-run": "false",
 			},
 			expected: func(o *options) {
-				o.dryRun = flagutil.Bool{
-					Explicit: true,
-				}
 			},
-		},
-		{
-			name: "--dry-run=true requires --deck-url",
-			args: map[string]string{
-				"--dry-run":  "true",
-				"--deck-url": "",
-			},
-			err: true,
 		},
 		{
 			name: "explicitly set --dry-run=true",
 			args: map[string]string{
-				"--dry-run":  "true",
-				"--deck-url": "http://whatever",
+				"--dry-run": "true",
 			},
 			expected: func(o *options) {
-				o.dryRun = flagutil.Bool{
-					Value:    true,
-					Explicit: true,
-				}
-				o.kubernetes.DeckURI = "http://whatever"
+				o.dryRun = true
 			},
 		},
 		{
-			name: "dry run defaults to false", // TODO(fejta): change to true in April
+			name: "dry run defaults to true",
+			args: map[string]string{},
 			del:  sets.NewString("--dry-run"),
 			expected: func(o *options) {
-				o.dryRun = flagutil.Bool{}
+				o.dryRun = true
 			},
 		},
 	}
@@ -912,15 +898,14 @@ func TestFlags(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			expected := &options{
-				configPath: "yo",
-				dryRun: flagutil.Bool{
-					Explicit: true,
+				config: configflagutil.ConfigOptions{
+					ConfigPathFlagName:                    "config-path",
+					JobConfigPathFlagName:                 "job-config-path",
+					ConfigPath:                            "yo",
+					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
 				},
-				instrumentationOptions: flagutil.InstrumentationOptions{
-					MetricsPort: flagutil.DefaultMetricsPort,
-					PProfPort:   flagutil.DefaultPProfPort,
-					HealthPort:  flagutil.DefaultHealthPort,
-				},
+				dryRun:                 false,
+				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
 			}
 			if tc.expected != nil {
 				tc.expected(expected)
@@ -951,7 +936,7 @@ func TestFlags(t *testing.T) {
 			case tc.err:
 				t.Errorf("failed to receive expected error")
 			case !reflect.DeepEqual(*expected, actual):
-				t.Errorf("%#v != expected %#v", actual, *expected)
+				t.Errorf("\n%#v\n != expected \n%#v\n", actual, *expected)
 			}
 		})
 	}

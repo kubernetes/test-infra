@@ -2,10 +2,14 @@ postsubmits:
   # this is the github repo we'll build from; this block needs to be repeated for each repo.
   kubernetes/kops:
     - name: kops-postsubmit-push-to-staging
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: kops-maintainers
       cluster: k8s-infra-prow-build-trusted
       annotations:
         # this is the name of some testgrid dashboard to report to.
-        testgrid-dashboards: sig-cluster-lifecycle-kops, kops-misc
+        testgrid-dashboards: sig-cluster-lifecycle-kops, kops-misc, sig-k8s-infra-gcb
       decorate: true
       branches:
         - ^master$
@@ -16,7 +20,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210927-471c27b6e3
             command:
               - /run.sh
             args:

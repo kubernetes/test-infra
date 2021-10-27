@@ -24,6 +24,7 @@ import (
 	"hash/crc32"
 	"math"
 	"path"
+	"strings"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -38,8 +39,8 @@ import (
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/crier/reporters/gcs/internal/util"
 	kubernetesreporterapi "k8s.io/test-infra/prow/crier/reporters/gcs/kubernetes/api"
+	"k8s.io/test-infra/prow/crier/reporters/gcs/util"
 	"k8s.io/test-infra/prow/io"
 )
 
@@ -150,6 +151,10 @@ func (gr *gcsK8sReporter) addFinalizer(ctx context.Context, pj *prowv1.ProwJob) 
 	}
 
 	if err := gr.rg.PatchPod(ctx, pj.Spec.Cluster, pod.Namespace, pod.Name, patch.Type(), patchData); err != nil {
+		// The pod occasionally gets deleted between our check above and this request
+		if strings.Contains(err.Error(), "no new finalizers can be added if the object is being deleted") {
+			return nil
+		}
 		return fmt.Errorf("failed to patch pod: %w", err)
 	}
 
@@ -197,7 +202,7 @@ func (gr *gcsK8sReporter) reportPodInfo(ctx context.Context, log *logrus.Entry, 
 
 	bucketName, dir, err := util.GetJobDestination(gr.cfg, pj)
 	if err != nil {
-		return fmt.Errorf("couldn't get job destination: %v", err)
+		return fmt.Errorf("couldn't get job destination: %w", err)
 	}
 
 	if gr.dryRun {

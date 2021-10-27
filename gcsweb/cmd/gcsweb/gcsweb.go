@@ -140,7 +140,7 @@ func getStorageClient(o options) (*storage.Client, error) {
 	if o.oauthTokenFile != "" {
 		b, err := ioutil.ReadFile(o.oauthTokenFile)
 		if err != nil {
-			return nil, fmt.Errorf("error reading oauth token file %s: %v", o.oauthTokenFile, err)
+			return nil, fmt.Errorf("error reading oauth token file %s: %w", o.oauthTokenFile, err)
 		}
 		clientOption = option.WithAPIKey(string(bytes.TrimSpace(b)))
 	}
@@ -151,7 +151,7 @@ func getStorageClient(o options) (*storage.Client, error) {
 
 	storageClient, err := storage.NewClient(ctx, clientOption)
 	if err != nil {
-		return nil, fmt.Errorf("couldn't create the gcs storage client: %v", err)
+		return nil, fmt.Errorf("couldn't create the gcs storage client: %w", err)
 	}
 
 	return storageClient, nil
@@ -294,7 +294,7 @@ func (s *server) handleObject(w http.ResponseWriter, bucket, object string, head
 
 	objReader, err := obj.NewReader(context.Background())
 	if err != nil {
-		return fmt.Errorf("couldn't create the object reader: %v", err)
+		return fmt.Errorf("couldn't create the object reader: %w", err)
 	}
 	defer objReader.Close()
 
@@ -314,7 +314,7 @@ func (s *server) handleObject(w http.ResponseWriter, bucket, object string, head
 	}
 
 	if _, err := io.Copy(w, objReader); err != nil {
-		return fmt.Errorf("coudln't copy data to the response writer: %v", err)
+		return fmt.Errorf("coudln't copy data to the response writer: %w", err)
 	}
 
 	return nil
@@ -338,7 +338,7 @@ func (s *server) handleDirectory(w http.ResponseWriter, bucket, object, path str
 			break
 		}
 		if err != nil {
-			return fmt.Errorf("error while processing object: %v", err)
+			return fmt.Errorf("error while processing object: %w", err)
 		}
 
 		// That means that the object is a file

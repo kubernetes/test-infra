@@ -3,6 +3,8 @@
 reviewers:
 - andyzhangx
 - brendandburns
+- CecileRobertMichon
+- chewong
 - feiskyer
 - justaugustus
 - karataliu
@@ -10,6 +12,7 @@ reviewers:
 approvers:
 - andyzhangx
 - brendandburns
+- chewong
 - feiskyer
 - justaugustus
 - karataliu

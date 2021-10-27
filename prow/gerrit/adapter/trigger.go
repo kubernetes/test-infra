@@ -17,6 +17,7 @@ limitations under the License.
 package adapter
 
 import (
+	"strings"
 	"time"
 
 	"github.com/andygrunwald/go-gerrit"
@@ -24,6 +25,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/pjutil"
 )
 
@@ -62,6 +64,13 @@ func messageFilter(messages []string, failingContexts, allContexts sets.String, 
 		return failingContexts, allContexts, nil
 	}
 	for _, message := range messages {
+		// If the Gerrit Change changed from draft to active state, trigger all
+		// presubmit Prow jobs.
+		if strings.HasSuffix(message, client.ReadyForReviewMessageFixed) || strings.HasSuffix(message, client.ReadyForReviewMessageCustomizable) {
+			filters = append(filters, pjutil.TestAllFilter())
+			continue
+		}
+
 		filter, err := pjutil.PresubmitFilter(false, contextGetter, message, logger)
 		if err != nil {
 			logger.WithError(err).WithField("message", message).Warn("failed to create presubmit filter")
@@ -69,5 +78,6 @@ func messageFilter(messages []string, failingContexts, allContexts sets.String, 
 		}
 		filters = append(filters, filter)
 	}
+
 	return pjutil.AggregateFilter(filters)
 }

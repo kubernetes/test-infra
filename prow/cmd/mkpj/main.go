@@ -28,26 +28,25 @@ import (
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pjutil"
 )
 
 type options struct {
-	jobName       string
-	configPath    string
-	jobConfigPath string
-	triggerJob    bool
-	outputPath    string
-	kubeOptions   prowflagutil.KubernetesOptions
-	baseRef       string
-	baseSha       string
-	pullNumber    int
-	pullSha       string
-	pullAuthor    string
-	org           string
-	repo          string
+	jobName     string
+	config      configflagutil.ConfigOptions
+	triggerJob  bool
+	outputPath  string
+	kubeOptions prowflagutil.KubernetesOptions
+	baseRef     string
+	baseSha     string
+	pullNumber  int
+	pullSha     string
+	pullAuthor  string
+	org         string
+	repo        string
 
 	local bool
 
@@ -110,7 +109,7 @@ func (o *options) getPullRequest() (*github.PullRequest, error) {
 	}
 	pr, err := o.githubClient.GetPullRequest(o.org, o.repo, o.pullNumber)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch PullRequest from GitHub: %v", err)
+		return nil, fmt.Errorf("failed to fetch PullRequest from GitHub: %w", err)
 	}
 	o.pullRequest = pr
 	return pr, nil
@@ -183,8 +182,8 @@ func (o *options) Validate() error {
 		return errors.New("required flag --job was unset")
 	}
 
-	if o.configPath == "" {
-		return errors.New("required flag --config-path was unset")
+	if err := o.config.Validate(false); err != nil {
+		return err
 	}
 
 	if err := o.github.Validate(false); err != nil {
@@ -205,14 +204,13 @@ func gatherOptions() options {
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	fs.StringVar(&o.jobName, "job", "", "Job to run.")
 	fs.BoolVar(&o.local, "local", false, "Print help for running locally")
-	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
-	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 	fs.StringVar(&o.baseRef, "base-ref", "", "Git base ref under test")
 	fs.StringVar(&o.baseSha, "base-sha", "", "Git base SHA under test")
 	fs.IntVar(&o.pullNumber, "pull-number", 0, "Git pull number under test")
 	fs.StringVar(&o.pullSha, "pull-sha", "", "Git pull SHA under test")
 	fs.StringVar(&o.pullAuthor, "pull-author", "", "Git pull author under test")
 	fs.BoolVar(&o.triggerJob, "trigger-job", false, "Submit the job to Prow and wait for results")
+	o.config.AddFlags(fs)
 	o.kubeOptions.AddFlags(fs)
 	o.github.AddFlags(fs)
 	o.github.AllowAnonymous = true
@@ -227,19 +225,13 @@ func main() {
 		logrus.WithError(err).Fatalf("Bad flags")
 	}
 
-	conf, err := config.Load(o.configPath, o.jobConfigPath)
+	ca, err := o.config.ConfigAgent()
 	if err != nil {
 		logrus.WithError(err).Fatal("Error loading config")
 	}
+	conf := ca.Config()
 
-	var secretAgent *secret.Agent
-	if o.github.TokenPath != "" {
-		secretAgent = &secret.Agent{}
-		if err := secretAgent.Start([]string{o.github.TokenPath}); err != nil {
-			logrus.WithError(err).Fatal("Failed to start secret agent")
-		}
-	}
-	o.githubClient, err = o.github.GitHubClient(secretAgent, false)
+	o.githubClient, err = o.github.GitHubClient(false)
 	if err != nil {
 		logrus.WithError(err).Fatal("Failed to get GitHub client")
 	}
@@ -247,7 +239,10 @@ func main() {
 	if job.Name == "" {
 		logrus.Fatalf("Job %s not found.", o.jobName)
 	}
-	if pjs.Refs != nil {
+	// local mode runs with phaino, which uses local source code instead of cloing, so
+	// no need to fetch refs from github.
+	// Aside, this also makes mkpj usable for source control system other than github.
+	if pjs.Refs != nil && !o.local {
 		o.org = pjs.Refs.Org
 		o.repo = pjs.Refs.Repo
 		if len(pjs.Refs.Pulls) != 0 {
@@ -278,6 +273,10 @@ func main() {
 }
 
 func splitRepoName(repo string) (string, string, error) {
+	// Normalize repo name to remove http:// or https://, this is the case for some
+	// of the gerrit instances.
+	repo = strings.TrimPrefix(repo, "http://")
+	repo = strings.TrimPrefix(repo, "https://")
 	s := strings.SplitN(repo, "/", 2)
 	if len(s) != 2 {
 		return "", "", fmt.Errorf("repo %s cannot be split into org/repo", repo)

@@ -43,46 +43,48 @@ import (
 
 const defaultNamespace = "default"
 
+var defaultBranch = localgit.DefaultBranch("")
+
 var remoteFiles = map[string]map[string]string{
 	"prow/config.yaml": {
-		"master": "old-config",
-		"12345":  "new-config",
+		defaultBranch: "old-config",
+		"12345":       "new-config",
 	},
 	"prow/binary.yaml": {
-		"master": "old-binary\x00\xFF\xFF",
-		"12345":  "new-binary\x00\xFF\xFF",
+		defaultBranch: "old-binary\x00\xFF\xFF",
+		"12345":       "new-binary\x00\xFF\xFF",
 	},
 	"prow/becoming-binary.yaml": {
-		"master": "not-yet-binary",
-		"12345":  "now-binary\x00\xFF\xFF",
+		defaultBranch: "not-yet-binary",
+		"12345":       "now-binary\x00\xFF\xFF",
 	},
 	"prow/becoming-text.yaml": {
-		"master": "not-yet-text\x00\xFF\xFF",
-		"12345":  "now-text",
+		defaultBranch: "not-yet-text\x00\xFF\xFF",
+		"12345":       "now-text",
 	},
 	"prow/plugins.yaml": {
-		"master": "old-plugins",
-		"12345":  "new-plugins",
+		defaultBranch: "old-plugins",
+		"12345":       "new-plugins",
 	},
 	"boskos/resources.yaml": {
-		"master": "old-boskos-config",
-		"12345":  "new-boskos-config",
+		defaultBranch: "old-boskos-config",
+		"12345":       "new-boskos-config",
 	},
 	"config/foo.yaml": {
-		"master": "old-foo-config",
-		"12345":  "new-foo-config",
+		defaultBranch: "old-foo-config",
+		"12345":       "new-foo-config",
 	},
 	"config/bar.yaml": {
-		"master": "old-bar-config",
-		"12345":  "new-bar-config",
+		defaultBranch: "old-bar-config",
+		"12345":       "new-bar-config",
 	},
 	"dir/subdir/fejta.yaml": {
-		"master": "old-fejta-config",
-		"12345":  "new-fejta-config",
+		defaultBranch: "old-fejta-config",
+		"12345":       "new-fejta-config",
 	},
 	"dir/subdir/fejtaverse/krzyzacy.yaml": {
-		"master": "old-krzyzacy-config",
-		"12345":  "new-krzyzacy-config",
+		defaultBranch: "old-krzyzacy-config",
+		"12345":       "new-krzyzacy-config",
 	},
 	"dir/subdir/fejtaverse/fejtabot.yaml": {
 		"54321": "new-fejtabot-config",
@@ -91,7 +93,7 @@ var remoteFiles = map[string]map[string]string{
 		"12345": "new-added-config",
 	},
 	"dir/subdir/fejtaverse/sig-bar/removed.yaml": {
-		"master": "old-removed-config",
+		defaultBranch: "old-removed-config",
 	},
 }
 
@@ -103,10 +105,10 @@ func setupLocalGitRepo(clients localgit.Clients, t *testing.T, org, repo string)
 	if err := lg.MakeFakeRepo(org, repo); err != nil {
 		t.Fatalf("Making fake repo: %v", err)
 	}
-	if err := lg.Checkout(org, repo, "master"); err != nil {
+	if err := lg.Checkout(org, repo, defaultBranch); err != nil {
 		t.Fatalf("Checkout new branch: %v", err)
 	}
-	if err := lg.AddCommit(org, repo, getFileMap("master")); err != nil {
+	if err := lg.AddCommit(org, repo, getFileMap(defaultBranch)); err != nil {
 		t.Fatalf("Add commit: %v", err)
 	}
 	if err := lg.CheckoutNewBranch(org, repo, "12345"); err != nil {
@@ -115,7 +117,7 @@ func setupLocalGitRepo(clients localgit.Clients, t *testing.T, org, repo string)
 	if err := lg.AddCommit(org, repo, getFileMap("12345")); err != nil {
 		t.Fatalf("Add commit: %v", err)
 	}
-	if err := lg.Checkout(org, repo, "master"); err != nil {
+	if err := lg.Checkout(org, repo, defaultBranch); err != nil {
 		t.Fatalf("Checkout new branch: %v", err)
 	}
 	if err := lg.CheckoutNewBranch(org, repo, "54321"); err != nil {
@@ -124,7 +126,7 @@ func setupLocalGitRepo(clients localgit.Clients, t *testing.T, org, repo string)
 	if err := lg.AddCommit(org, repo, getFileMap("54321")); err != nil {
 		t.Fatalf("Add commit: %v", err)
 	}
-	if err := lg.Checkout(org, repo, "master"); err != nil {
+	if err := lg.Checkout(org, repo, defaultBranch); err != nil {
 		t.Fatalf("Checkout new branch: %v", err)
 	}
 	return c
@@ -619,6 +621,51 @@ func testUpdateConfig(clients localgit.Clients, t *testing.T) {
 					Data: map[string]string{
 						"fejtabot.yaml": "new-fejtabot-config",
 						"VERSION":       "54321",
+					},
+				},
+			},
+		},
+		{
+			name:        "Renamed with UseFullPathAsKey set, old entry gets deleted",
+			prAction:    github.PullRequestActionClosed,
+			merged:      true,
+			mergeCommit: "54321",
+			changes: []github.PullRequestChange{
+				{
+					Filename:         "dir/subdir/fejtaverse/fejtabot.yaml",
+					PreviousFilename: "dir/subdir/fejtaverse/krzyzacy.yaml",
+					Status:           "renamed",
+					Additions:        1,
+				},
+			},
+			existConfigMaps: []runtime.Object{
+				&coreapi.ConfigMap{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "glob-config",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"dir-subdir-fejtaverse-krzyzacy.yaml": "retired",
+					},
+				},
+			},
+			expectedConfigMaps: []*coreapi.ConfigMap{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "config",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"dir-subdir-fejtaverse-fejtabot.yaml": "new-fejtabot-config",
+						"VERSION":                             "54321",
+					},
+				},
+			},
+			config: &plugins.ConfigUpdater{
+				Maps: map[string]plugins.ConfigMapSpec{
+					"dir/subdir/**/*.yaml": {
+						Name:             "config",
+						UseFullPathAsKey: true,
 					},
 				},
 			},
@@ -1122,6 +1169,40 @@ func testUpdateConfig(clients localgit.Clients, t *testing.T) {
 				},
 			},
 		},
+		{
+			name:        "Uses the full path slash-separated when UseFullPathAsKey is set",
+			prAction:    github.PullRequestActionClosed,
+			merged:      true,
+			mergeCommit: "12345",
+			changes: []github.PullRequestChange{
+				{
+					Filename:  "prow/config.yaml",
+					Status:    "modified",
+					Additions: 1,
+				},
+			},
+			expectedConfigMaps: []*coreapi.ConfigMap{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "config",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"prow-config.yaml": "new-config",
+						"VERSION":          "12345",
+					},
+				},
+			},
+			config: &plugins.ConfigUpdater{
+				GZIP: false,
+				Maps: map[string]plugins.ConfigMapSpec{
+					"prow/*.yaml": {
+						Name:             "config",
+						UseFullPathAsKey: true,
+					},
+				},
+			},
+		},
 	}
 
 	for _, tc := range testcases {
@@ -1136,15 +1217,14 @@ func testUpdateConfig(clients localgit.Clients, t *testing.T) {
 			event.PullRequest.MergeSHA = &tc.mergeCommit
 		}
 
-		fgc := &fakegithub.FakeClient{
-			PullRequests: map[int]*github.PullRequest{
-				basicPR.Number: &basicPR,
-			},
-			PullRequestChanges: map[int][]github.PullRequestChange{
-				basicPR.Number: tc.changes,
-			},
-			IssueComments: map[int][]github.IssueComment{},
+		fgc := fakegithub.NewFakeClient()
+		fgc.PullRequests = map[int]*github.PullRequest{
+			basicPR.Number: &basicPR,
 		}
+		fgc.PullRequestChanges = map[int][]github.PullRequestChange{
+			basicPR.Number: tc.changes,
+		}
+		fgc.IssueComments = map[int][]github.IssueComment{}
 		fkc := fake.NewSimpleClientset(tc.existConfigMaps...)
 
 		m := tc.config

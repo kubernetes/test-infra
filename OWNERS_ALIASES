@@ -6,7 +6,9 @@ aliases:
   - cjwagner
   - e-blackwelder
   - fejta
+  - listx
   - michelle192837
+  - mpherman2
 
   # https://github.com/kubernetes/sig-release/blob/master/release-managers.md#build-admins
   build-admins:
@@ -15,10 +17,10 @@ aliases:
     - MushuEE
     - spiffxp
 
-  wg-k8s-infra-oncall:
+  sig-k8s-infra-oncall:
   - BenTheElder
   # kubernetes.io org admins
-  - cblecker
+  - ameukam
   - dims
   - spiffxp
   - thockin
@@ -72,6 +74,11 @@ aliases:
     - brancz
     - ehashman
     - logicalhan
+  sig-k8s-infra-leads:
+    - ameukam
+    - dims
+    - spiffxp
+    - thockin
   sig-multicluster-leads:
     - pmorie
     - quinton-hoole
@@ -83,10 +90,10 @@ aliases:
     - dchen1107
     - derekwaynecarr
   sig-release-leads:
-    - alejandrox1
-    - hasheddan
+    - cpanato
     - jeremyrickard
     - justaugustus
+    - puerco
     - saschagrunert
   sig-scalability-leads:
     - mm4tt
@@ -105,12 +112,14 @@ aliases:
     - xing-yang
   sig-testing-leads:
     - BenTheElder
+    - alvaroaleman
+    - cjwagner
     - spiffxp
     - stevekuznetsov
   sig-ui-leads:
     - floreks
-    - jeefy
     - maciaszczykm
+    - shu-mutou
   sig-usability-leads:
     - Rajakavitha1
     - hpandeycodeit
@@ -134,10 +143,6 @@ aliases:
     - cantbewong
     - cindyxing
     - dejanb
-  wg-k8s-infra-leads:
-    - bartsmykla
-    - dims
-    - spiffxp
   wg-lts-leads:
     - imkin
     - quinton-hoole
@@ -215,7 +220,7 @@ aliases:
     - frapposelli
 ## END CUSTOM CONTENT
 
-  # Modified from https://git.k8s.io/sig-release/release-managers.md#release-managers
+  # Modified from https://kubernetes.io/releases/release-managers/#release-managers
   #
   # While most Release Managers are included in the reviewers group, approvals
   # (especially for image pushing and container promotion jobs) are restricted
@@ -227,20 +232,17 @@ aliases:
   #   k/test-infra jobs and overall CI Signal
   #
   release-engineering-approvers:
-    - alejandrox1 # SIG Technical Lead / emergency approval
-    - cpanato # Release Manager / EU backup approval coverage
-    - hasheddan # Release Manager / US backup approval coverage
+    - cpanato # SIG Technical Lead / RelEng subproject owner / Release Manager
+    - jeremyrickard # SIG Technical Lead / RelEng subproject owner
     - justaugustus # SIG Chair / RelEng subproject owner / Release Manager
-    - saschagrunert # SIG Technical Lead / RelEng subproject owner / Release Manager
-    - tpepper # SIG Chair / RelEng subproject owner / Release Manager
+    - puerco # SIG Technical Lead / RelEng subproject owner / Release Manager
+    - saschagrunert # SIG Chair / RelEng subproject owner / Release Manager
   release-engineering-reviewers:
-    - cpanato # Release Manager
-    - feiskyer # Release Manager
-    - hasheddan # Release Manager
-    - hoegaarden # Release Manager
+    - cpanato # SIG Technical Lead / RelEng subproject owner / Release Manager
+    - jeremyrickard # SIG Technical Lead / RelEng subproject owner
     - justaugustus # SIG Chair / RelEng subproject owner / Release Manager
-    - saschagrunert # SIG Technical Lead / RelEng subproject owner / Release Manager
-    - tpepper # SIG Chair / RelEng subproject owner / Release Manager
+    - puerco # SIG Technical Lead / RelEng subproject owner / Release Manager
+    - saschagrunert # SIG Chair / RelEng subproject owner / Release Manager
     - xmudrii # Release Manager
 
   # copied from git.k8s.io/enhancements/OWNERS_ALIASES
@@ -269,7 +271,7 @@ aliases:
 
   # mostly copied from sigs.k8s.io/controller-runtime/OWNERS_ALIASES
   controller-runtime-admins:
-  - directxman12
+  - vincepri
   - mengqiy
 
   controller-runtime-maintainers:
@@ -290,7 +292,7 @@ aliases:
   # mostly copied from sigs.k8s.io/kubebuilder/OWNERS_ALIASES
   kubebuilder-admins:
   - mengqiy
-  - directxman12
+  - estroz
 
   kubebuilder-reviewers:
   - alexeldeib
@@ -299,3 +301,19 @@ aliases:
   - pwittrock
 
   # end sigs.k8s.io/kubebuilder/OWNERS_ALIASES
+
+  # copied from sigs.k8s.io/promo-tools/OWNERS_ALIASES
+  promo-tools-approvers:
+    - cpanato
+    - jeremyrickard
+    - justaugustus
+    - listx
+    - puerco
+    - saschagrunert
+  promo-tools-reviewers:
+    - cpanato
+    - jeremyrickard
+    - justaugustus
+    - listx
+    - puerco
+    - saschagrunert

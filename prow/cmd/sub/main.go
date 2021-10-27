@@ -33,9 +33,12 @@ import (
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/crier/reporters/pubsub"
 	"k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
+	"k8s.io/test-infra/prow/pjutil/pprof"
 	"k8s.io/test-infra/prow/pubsub/subscriber"
 )
 
@@ -44,13 +47,14 @@ var (
 )
 
 type options struct {
-	client         flagutil.KubernetesOptions
-	port           int
-	pushSecretFile string
+	client                flagutil.KubernetesOptions
+	github                flagutil.GitHubOptions
+	port                  int
+	pushSecretFile        string
+	inRepoConfigCacheSize int
 
-	configPath    string
-	jobConfigPath string
-	pluginConfig  string
+	config       configflagutil.ConfigOptions
+	pluginConfig string
 
 	dryRun                 bool
 	gracePeriod            time.Duration
@@ -70,19 +74,19 @@ func (c *kubeClient) Create(ctx context.Context, job *prowapi.ProwJob, o metav1.
 }
 
 func init() {
-	flagOptions = &options{}
+	flagOptions = &options{config: configflagutil.ConfigOptions{ConfigPath: "/etc/config/config.yaml"}}
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 
 	fs.IntVar(&flagOptions.port, "port", 80, "HTTP Port.")
 	fs.StringVar(&flagOptions.pushSecretFile, "push-secret-file", "", "Path to Pub/Sub Push secret file.")
 
-	fs.StringVar(&flagOptions.configPath, "config-path", "/etc/config/config.yaml", "Path to config.yaml.")
-	fs.StringVar(&flagOptions.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
-
 	fs.BoolVar(&flagOptions.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 	fs.DurationVar(&flagOptions.gracePeriod, "grace-period", 180*time.Second, "On shutdown, try to handle remaining events for the specified duration. ")
+	fs.IntVar(&flagOptions.inRepoConfigCacheSize, "in-repo-config-cache-size", 1000, "Cache size for ProwYAMLs read from in-repo configs.")
 
+	flagOptions.config.AddFlags(fs)
 	flagOptions.client.AddFlags(fs)
+	flagOptions.github.AddFlags(fs)
 	flagOptions.instrumentationOptions.AddFlags(fs)
 
 	fs.Parse(os.Args[1:])
@@ -91,21 +95,44 @@ func init() {
 func main() {
 	logrusutil.ComponentInit()
 
-	configAgent := &config.Agent{}
-	if err := configAgent.Start(flagOptions.configPath, flagOptions.jobConfigPath); err != nil {
+	configAgent, err := flagOptions.config.ConfigAgent()
+	if err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
-	var tokenGenerator func() []byte
+	var tokens []string
 	if flagOptions.pushSecretFile != "" {
-		var tokens []string
 		tokens = append(tokens, flagOptions.pushSecretFile)
+	}
+	if flagOptions.github.TokenPath != "" {
+		tokens = append(tokens, flagOptions.github.TokenPath)
+	}
+	if err := secret.Add(tokens...); err != nil {
+		logrus.WithError(err).Fatal("failed to start secret agent")
+	}
+	tokenGenerator := secret.GetTokenGenerator(flagOptions.pushSecretFile)
 
-		secretAgent := &secret.Agent{}
-		if err := secretAgent.Start(tokens); err != nil {
-			logrus.WithError(err).Fatal("Error starting secrets agent.")
+	// If we need to use a GitClient (for inrepoconfig), then we must use a
+	// InRepoConfigCache.
+	var cache *config.InRepoConfigCache
+	var gitClientFactory git.ClientFactory
+	if flagOptions.github.TokenPath != "" {
+		gitClient, err := flagOptions.github.GitClient(flagOptions.dryRun)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error getting Git client.")
 		}
-		tokenGenerator = secretAgent.GetTokenGenerator(flagOptions.pushSecretFile)
+		gitClientFactory = git.ClientFactoryFrom(gitClient)
+
+		// Initialize cache for fetching Presubmit and Postsubmit information. If
+		// the cache cannot be initialized, exit with an error.
+		cache, err = config.NewInRepoConfigCache(
+			flagOptions.inRepoConfigCacheSize,
+			configAgent,
+			config.NewInRepoConfigGitCache(gitClientFactory))
+		// If we cannot initialize the cache, exit with an error.
+		if err != nil {
+			logrus.WithField("in-repo-config-cache-size", flagOptions.inRepoConfigCacheSize).WithError(err).Fatal("unable to initialize in-repo-config-cache")
+		}
 	}
 
 	prowjobClient, err := flagOptions.client.ProwJobClient(configAgent.Config().ProwJobNamespace, flagOptions.dryRun)
@@ -121,14 +148,16 @@ func main() {
 
 	defer interrupts.WaitForGracefulShutdown()
 
-	// Expose prometheus metrics
+	// Expose prometheus and pprof metrics
 	metrics.ExposeMetrics("sub", configAgent.Config().PushGateway, flagOptions.instrumentationOptions.MetricsPort)
+	pprof.Instrument(flagOptions.instrumentationOptions)
 
 	s := &subscriber.Subscriber{
-		ConfigAgent:   configAgent,
-		Metrics:       promMetrics,
-		ProwJobClient: kubeClient,
-		Reporter:      pubsub.NewReporter(configAgent.Config),
+		ConfigAgent:       configAgent,
+		InRepoConfigCache: cache,
+		Metrics:           promMetrics,
+		ProwJobClient:     kubeClient,
+		Reporter:          pubsub.NewReporter(configAgent.Config), // reuse crier reporter
 	}
 
 	// Return 200 on / for health checks.

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Copyright 2019 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,4 +17,4 @@ set -o nounset
 set -o errexit
 set -o pipefail
 
-bazel run //experiment/autobumper -- %@
+bazel run //prow/cmd/generic-autobumper -- %@

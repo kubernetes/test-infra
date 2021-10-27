@@ -46,6 +46,10 @@ const (
 
 type dirOptions struct {
 	NoParentOwners bool `json:"no_parent_owners,omitempty"`
+	// AutoApproveUnownedSubfolders will result in changes to a subpath of a given path
+	// that does not have an OWNERS file being auto-approved. This should be
+	// enabled with caution.
+	AutoApproveUnownedSubfolders bool `json:"auto_approve_unowned_subfolders,omitempty"`
 }
 
 // Config holds roles+usernames and labels for a directory considered as a unit of independent code
@@ -139,7 +143,6 @@ func (entry cacheEntry) fullyLoaded() bool {
 
 // Interface is an interface to work with OWNERS files.
 type Interface interface {
-	LoadRepoAliases(org, repo, base string) (RepoAliases, error)
 	LoadRepoOwners(org, repo, base string) (RepoOwner, error)
 
 	WithFields(fields logrus.Fields) Interface
@@ -159,10 +162,10 @@ type Client struct {
 type delegate struct {
 	git git.ClientFactory
 
-	mdYAMLEnabled      func(org, repo string) bool
-	skipCollaborators  func(org, repo string) bool
-	ownersDirBlacklist func() prowConf.OwnersDirBlacklist
-	filenames          ownersconfig.Resolver
+	mdYAMLEnabled     func(org, repo string) bool
+	skipCollaborators func(org, repo string) bool
+	ownersDirDenylist func() *prowConf.OwnersDirDenylist
+	filenames         ownersconfig.Resolver
 
 	cache *cache
 }
@@ -192,7 +195,7 @@ func NewClient(
 	ghc github.Client,
 	mdYAMLEnabled func(org, repo string) bool,
 	skipCollaborators func(org, repo string) bool,
-	ownersDirBlacklist func() prowConf.OwnersDirBlacklist,
+	ownersDirDenylist func() *prowConf.OwnersDirDenylist,
 	filenames ownersconfig.Resolver,
 ) *Client {
 	return &Client{
@@ -202,10 +205,10 @@ func NewClient(
 			git:   gc,
 			cache: newCache(),
 
-			mdYAMLEnabled:      mdYAMLEnabled,
-			skipCollaborators:  skipCollaborators,
-			ownersDirBlacklist: ownersDirBlacklist,
-			filenames:          filenames,
+			mdYAMLEnabled:     mdYAMLEnabled,
+			skipCollaborators: skipCollaborators,
+			ownersDirDenylist: ownersDirDenylist,
+			filenames:         filenames,
 		},
 	}
 }
@@ -219,6 +222,7 @@ type RepoOwner interface {
 	FindReviewersOwnersForFile(path string) string
 	FindLabelsForFile(path string) sets.String
 	IsNoParentOwners(path string) bool
+	IsAutoApproveUnownedSubfolders(directory string) bool
 	LeafApprovers(path string) sets.String
 	Approvers(path string) layeredsets.String
 	LeafReviewers(path string) sets.String
@@ -244,7 +248,7 @@ type RepoOwners struct {
 
 	baseDir      string
 	enableMDYAML bool
-	dirBlacklist []*regexp.Regexp
+	dirDenylist  []*regexp.Regexp
 	filenames    ownersconfig.Filenames
 
 	log *logrus.Entry
@@ -252,40 +256,6 @@ type RepoOwners struct {
 
 func (r *RepoOwners) Filenames() ownersconfig.Filenames {
 	return r.filenames
-}
-
-// LoadRepoAliases returns an up-to-date RepoAliases struct for the specified repo.
-// If the repo does not have an aliases file then an empty alias map is returned with no error.
-// Note: The returned RepoAliases should be treated as read only.
-func (c *Client) LoadRepoAliases(org, repo, base string) (RepoAliases, error) {
-	log := c.logger.WithFields(logrus.Fields{"org": org, "repo": repo, "base": base})
-	cloneRef := fmt.Sprintf("%s/%s", org, repo)
-	fullName := fmt.Sprintf("%s:%s", cloneRef, base)
-
-	sha, err := c.ghc.GetRef(org, repo, fmt.Sprintf("heads/%s", base))
-	if err != nil {
-		return nil, fmt.Errorf("failed to get current SHA for %s: %v", fullName, err)
-	}
-
-	entry, ok, entryLock := c.cache.getEntry(fullName)
-	defer entryLock.Unlock()
-	if !ok || entry.sha != sha {
-		// entry is non-existent or stale.
-		gitRepo, err := c.git.ClientFor(org, repo)
-		if err != nil {
-			return nil, fmt.Errorf("failed to clone %s: %v", cloneRef, err)
-		}
-		defer gitRepo.Clean()
-		if err := gitRepo.Checkout(base); err != nil {
-			return nil, err
-		}
-
-		entry.aliases = loadAliasesFrom(gitRepo.Directory(), c.filenames(org, repo).OwnersAliases, log)
-		entry.sha = sha
-		c.cache.setEntry(fullName, entry)
-	}
-
-	return entry.aliases, nil
 }
 
 // LoadRepoOwners returns an up-to-date RepoOwners struct for the specified repo.
@@ -298,7 +268,10 @@ func (c *Client) LoadRepoOwners(org, repo, base string) (RepoOwner, error) {
 	start := time.Now()
 	sha, err := c.ghc.GetRef(org, repo, fmt.Sprintf("heads/%s", base))
 	if err != nil {
-		return nil, fmt.Errorf("failed to get current SHA for %s: %v", fullName, err)
+		return nil, fmt.Errorf("failed to get current SHA for %s: %w", fullName, err)
+	}
+	if sha == "" {
+		return nil, fmt.Errorf("got an empty SHA for %s@heads/%s", fullName, base)
 	}
 	log.WithField("duration", time.Since(start).String()).Debugf("Completed ghc.GetRef(%s, %s, %s)", org, repo, fmt.Sprintf("heads/%s", base))
 
@@ -345,7 +318,7 @@ func (c *Client) cacheEntryFor(org, repo, base, cloneRef, fullName, sha string, 
 		start := time.Now()
 		gitRepo, err := c.git.ClientFor(org, repo)
 		if err != nil {
-			return cacheEntry{}, fmt.Errorf("failed to clone %s: %v", cloneRef, err)
+			return cacheEntry{}, fmt.Errorf("failed to clone %s: %w", cloneRef, err)
 		}
 		log.WithField("duration", time.Since(start).String()).Debugf("Completed git.ClientFor(%s, %s)", org, repo)
 		defer gitRepo.Clean()
@@ -389,24 +362,24 @@ func (c *Client) cacheEntryFor(org, repo, base, cloneRef, fullName, sha string, 
 			log.WithField("duration", time.Since(start).String()).Debugf("Completed loadAliasesFrom(%s, log)", gitRepo.Directory())
 
 			start = time.Now()
-			dirBlacklistPatterns := c.ownersDirBlacklist().DirBlacklist(org, repo)
-			var dirBlacklist []*regexp.Regexp
-			for _, pattern := range dirBlacklistPatterns {
+			ignoreDirPatterns := c.ownersDirDenylist().ListIgnoredDirs(org, repo)
+			var dirIgnorelist []*regexp.Regexp
+			for _, pattern := range ignoreDirPatterns {
 				re, err := regexp.Compile(pattern)
 				if err != nil {
-					log.WithError(err).Errorf("Invalid OWNERS dir blacklist regexp %q.", pattern)
+					log.WithError(err).Errorf("Invalid OWNERS dir denylist regexp %q.", pattern)
 					continue
 				}
-				dirBlacklist = append(dirBlacklist, re)
+				dirIgnorelist = append(dirIgnorelist, re)
 			}
-			log.WithField("duration", time.Since(start).String()).Debugf("Completed dirBlacklist loading")
+			log.WithField("duration", time.Since(start).String()).Debugf("Completed dirIgnorelist loading")
 
 			start = time.Now()
-			entry.owners, err = loadOwnersFrom(gitRepo.Directory(), mdYaml, entry.aliases, dirBlacklist, filenames, log)
+			entry.owners, err = loadOwnersFrom(gitRepo.Directory(), mdYaml, entry.aliases, dirIgnorelist, filenames, log)
 			if err != nil {
-				return cacheEntry{}, fmt.Errorf("failed to load RepoOwners for %s: %v", fullName, err)
+				return cacheEntry{}, fmt.Errorf("failed to load RepoOwners for %s: %w", fullName, err)
 			}
-			log.WithField("duration", time.Since(start).String()).Debugf("Completed loadOwnersFrom(%s, %t, entry.aliases, dirBlacklist, log)", gitRepo.Directory(), mdYaml)
+			log.WithField("duration", time.Since(start).String()).Debugf("Completed loadOwnersFrom(%s, %t, entry.aliases, dirIgnorelist, log)", gitRepo.Directory(), mdYaml)
 			entry.sha = sha
 			c.cache.setEntry(fullName, entry)
 		}
@@ -470,7 +443,7 @@ func loadAliasesFrom(baseDir, filename string, log *logrus.Entry) RepoAliases {
 	return result
 }
 
-func loadOwnersFrom(baseDir string, mdYaml bool, aliases RepoAliases, dirBlacklist []*regexp.Regexp, filenames ownersconfig.Filenames, log *logrus.Entry) (*RepoOwners, error) {
+func loadOwnersFrom(baseDir string, mdYaml bool, aliases RepoAliases, dirIgnorelist []*regexp.Regexp, filenames ownersconfig.Filenames, log *logrus.Entry) (*RepoOwners, error) {
 	o := &RepoOwners{
 		RepoAliases:  aliases,
 		baseDir:      baseDir,
@@ -484,7 +457,7 @@ func loadOwnersFrom(baseDir string, mdYaml bool, aliases RepoAliases, dirBlackli
 		labels:            make(map[string]map[*regexp.Regexp]sets.String),
 		options:           make(map[string]dirOptions),
 
-		dirBlacklist: dirBlacklist,
+		dirDenylist: dirIgnorelist,
 	}
 
 	return o, filepath.Walk(o.baseDir, o.walkFunc)
@@ -515,7 +488,7 @@ func (o *RepoOwners) walkFunc(path string, info os.FileInfo, err error) error {
 	relPathDir := canonicalize(filepath.Dir(relPath))
 
 	if info.Mode().IsDir() {
-		for _, re := range o.dirBlacklist {
+		for _, re := range o.dirDenylist {
 			if re.MatchString(relPath) {
 				return filepath.SkipDir
 			}
@@ -579,12 +552,12 @@ func (o *RepoOwners) walkFunc(path string, info os.FileInfo, err error) error {
 }
 
 // ParseFullConfig will unmarshal the content of the OWNERS file at the path into a FullConfig.
-// If the OWNERS directory is blacklisted, it returns filepath.SkipDir.
+// If the OWNERS directory is ignorelisted, it returns filepath.SkipDir.
 // Returns an error if the content cannot be unmarshalled.
 func (o *RepoOwners) ParseFullConfig(path string) (FullConfig, error) {
-	// if path is in a blacklisted directory, ignore it
+	// if path is in an ignored directory, ignore it
 	dir := filepath.Dir(path)
-	for _, re := range o.dirBlacklist {
+	for _, re := range o.dirDenylist {
 		if re.MatchString(dir) {
 			return FullConfig{}, filepath.SkipDir
 		}
@@ -598,12 +571,12 @@ func (o *RepoOwners) ParseFullConfig(path string) (FullConfig, error) {
 }
 
 // ParseSimpleConfig will unmarshal the content of the OWNERS file at the path into a SimpleConfig.
-// If the OWNERS directory is blacklisted, it returns filepath.SkipDir.
+// If the OWNERS directory is ignorelisted, it returns filepath.SkipDir.
 // Returns an error if the content cannot be unmarshalled.
 func (o *RepoOwners) ParseSimpleConfig(path string) (SimpleConfig, error) {
-	// if path is in a blacklisted directory, ignore it
+	// if path is in a an ignored directory, ignore it
 	dir := filepath.Dir(path)
-	for _, re := range o.dirBlacklist {
+	for _, re := range o.dirDenylist {
 		if re.MatchString(dir) {
 			return SimpleConfig{}, filepath.SkipDir
 		}
@@ -773,7 +746,7 @@ func findOwnersForFile(log *logrus.Entry, path string, ownerMap map[string]map[*
 	return ""
 }
 
-// FindApproverOwnersForFile returns the OWNERS file path furthest down the tree for a specified file
+// FindApproverOwnersForFile returns the directory containing the OWNERS file furthest down the tree for a specified file
 // that contains an approvers section
 func (o *RepoOwners) FindApproverOwnersForFile(path string) string {
 	return findOwnersForFile(o.log, path, o.approvers)
@@ -794,6 +767,10 @@ func (o *RepoOwners) FindLabelsForFile(path string) sets.String {
 // IsNoParentOwners checks if an OWNERS file path refers to an OWNERS file with NoParentOwners enabled.
 func (o *RepoOwners) IsNoParentOwners(path string) bool {
 	return o.options[path].NoParentOwners
+}
+
+func (o *RepoOwners) IsAutoApproveUnownedSubfolders(ownersFilePath string) bool {
+	return o.options[ownersFilePath].AutoApproveUnownedSubfolders
 }
 
 // entriesForFile returns a set of users who are assignees to the

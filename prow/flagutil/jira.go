@@ -54,18 +54,18 @@ func (o *JiraOptions) Validate(_ bool) error {
 	return nil
 }
 
-func (o *JiraOptions) Client(secretAgent *secret.Agent) (jira.Client, error) {
+func (o *JiraOptions) Client() (jira.Client, error) {
 	if o.endpoint == "" {
 		return nil, errors.New("empty --jira-endpoint, can not create a client")
 	}
 
 	var opts []jira.Option
 	if o.passwordFile != "" {
-		if err := secretAgent.Add(o.passwordFile); err != nil {
+		if err := secret.Add(o.passwordFile); err != nil {
 			return nil, fmt.Errorf("failed to get --jira-password-file: %w", err)
 		}
 		opts = append(opts, jira.WithBasicAuth(func() (string, string) {
-			return o.username, string(secretAgent.GetSecret(o.passwordFile))
+			return o.username, string(secret.GetSecret(o.passwordFile))
 		}))
 	}
 

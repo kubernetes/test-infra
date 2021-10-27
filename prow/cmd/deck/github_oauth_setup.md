@@ -69,6 +69,7 @@ The following steps will show you how to set up an OAuth app.
       ```yaml
       - --github-oauth-config-file=/etc/githuboauth/secret
       - --oauth-url=/github-login
+      - --cookie-secret=/etc/cookie/secret
       ```
       Note that the `--oauth-url` should eventually be changed to a boolean as described 
       in [#13804](https://github.com/kubernetes/test-infra/issues/13804).
@@ -80,7 +81,7 @@ The rerun button can be configured so that certain GitHub teams are allowed to t
 from the frontend. In order to make API calls to determine whether a user is on a given team, `deck` needs 
 to use the access token of an org member. 
 
-If not, you can create a new GitHub account, make it an org number, and set up a personal access token 
+If not, you can create a new GitHub account, make it an org member, and set up a personal access token 
 [here](https://github.com/settings/tokens).
 
 Then create the access token secret:

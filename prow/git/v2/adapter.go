@@ -78,6 +78,10 @@ func (a *repoClientAdapter) PushToFork(branch string, force bool) error {
 	return a.Repo.Push(branch, force)
 }
 
+func (a *repoClientAdapter) PushToNamedFork(forkName, branch string, force bool) error {
+	return a.Repo.PushToNamedFork(forkName, branch, force)
+}
+
 func (a *repoClientAdapter) PushToCentral(branch string, force bool) error {
 	return errors.New("no PushToCentral implementation exists in the v1 repo client")
 }
@@ -87,7 +91,7 @@ func (a *repoClientAdapter) MirrorClone() error {
 }
 
 func (a *repoClientAdapter) Fetch() error {
-	return errors.New("no Fetch implementation exists in the v1 repo client")
+	return a.Repo.Fetch()
 }
 
 func (a *repoClientAdapter) FetchFromRemote(resolver RemoteResolver, branch string) error {

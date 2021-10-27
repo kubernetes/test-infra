@@ -62,7 +62,7 @@ func (pjc prowJobCollector) Collect(ch chan<- prometheus.Metric) {
 	//because sending the same sample twice would lead to prometheus runtime error
 	for _, pj := range getLatest(prowJobs) {
 		agent := string(pj.Spec.Agent)
-		pjLabelKeys, pjLabelValues := kubeLabelsToPrometheusLabels(filterWithBlacklist(pj.Labels), "label_")
+		pjLabelKeys, pjLabelValues := kubeLabelsToPrometheusLabels(filterWithDenylist(pj.Labels), "label_")
 		pjLabelKeys = append([]string{"job_name", "job_namespace", "job_agent"}, pjLabelKeys...)
 		pjLabelValues = append([]string{pj.Spec.Job, pj.Namespace, agent}, pjLabelValues...)
 		labelDesc := prometheus.NewDesc(
@@ -112,7 +112,7 @@ func getLatest(jobs []*prowapi.ProwJob) map[string]*prowapi.ProwJob {
 }
 
 var (
-	labelKeyBlacklist = sets.NewString(
+	labelKeyDenylist = sets.NewString(
 		kube.CreatedByProw,
 		kube.ProwJobTypeLabel,
 		kube.ProwJobIDLabel,
@@ -124,13 +124,13 @@ var (
 	)
 )
 
-func filterWithBlacklist(labels map[string]string) map[string]string {
+func filterWithDenylist(labels map[string]string) map[string]string {
 	if labels == nil {
 		return nil
 	}
 	result := map[string]string{}
 	for k, v := range labels {
-		if !labelKeyBlacklist.Has(k) {
+		if !labelKeyDenylist.Has(k) {
 			result[k] = v
 		}
 	}

@@ -1,5 +1,5 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
-load("@npm_bazel_jasmine//:index.bzl", "jasmine_node_test")
+load("//def:ts.bzl", "jasmine_node_test", "ts_library")
 
 jasmine_node_test(
     name = "script_test",

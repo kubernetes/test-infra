@@ -21,7 +21,11 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
+	"sort"
 	"strings"
+	"sync"
+
+	githubql "github.com/shurcooL/githubv4"
 
 	"k8s.io/apimachinery/pkg/util/sets"
 
@@ -39,20 +43,23 @@ const (
 
 // FakeClient is like client, but fake.
 type FakeClient struct {
-	Issues              map[int]*github.Issue
-	OrgMembers          map[string][]string
-	Collaborators       []string
-	IssueComments       map[int][]github.IssueComment
-	IssueCommentID      int
-	PullRequests        map[int]*github.PullRequest
-	PullRequestChanges  map[int][]github.PullRequestChange
-	PullRequestComments map[int][]github.ReviewComment
-	ReviewID            int
-	Reviews             map[int][]github.Review
-	CombinedStatuses    map[string]*github.CombinedStatus
-	CreatedStatuses     map[string][]github.Status
-	IssueEvents         map[int][]github.ListedIssueEvent
-	Commits             map[string]github.RepositoryCommit
+	Issues                     map[int]*github.Issue
+	IssueID                    int
+	OrgMembers                 map[string][]string
+	Collaborators              []string
+	IssueComments              map[int][]github.IssueComment
+	IssueCommentID             int
+	PullRequests               map[int]*github.PullRequest
+	PullRequestChanges         map[int][]github.PullRequestChange
+	PullRequestComments        map[int][]github.ReviewComment
+	PullRequestReviewCommentID int
+	PullRequestReviewComments  map[int][]github.ReviewComment
+	ReviewID                   int
+	Reviews                    map[int][]github.Review
+	CombinedStatuses           map[string]*github.CombinedStatus
+	CreatedStatuses            map[string][]github.Status
+	IssueEvents                map[int][]github.ListedIssueEvent
+	Commits                    map[string]github.RepositoryCommit
 
 	// All Labels That Exist In The Repo
 	RepoLabelsExisting []string
@@ -65,6 +72,9 @@ type FakeClient struct {
 	IssueCommentsAdded []string
 	// org/repo#issuecommentid
 	IssueCommentsDeleted []string
+
+	// org/repo#number:body
+	PullRequestReviewCommentsAdded []string
 
 	// org/repo#issuecommentid:reaction
 	IssueReactionsAdded   []string
@@ -115,12 +125,41 @@ type FakeClient struct {
 	// Maps repo name to the list of hooks
 	RepoHooks map[string][]github.Hook
 
+	// A map of invitation id to user repository invitations
+	UserRepoInvitations map[int]github.UserRepoInvitation
+	// A map of organization invitations by name
+	UserOrgInvitations map[string]github.UserOrgInvitation
+
 	// Error will be returned if set. Currently only implemented for CreateStatus
 	Error error
+
+	// GetRepoError will be returned if set when GetRepo is called
+	GetRepoError error
+
+	// ListIssueCommentsWithContextError will be returned if set when ListIssueCommentsWithContext is called
+	ListIssueCommentsWithContextError error
+
+	// WasLabelAddedByHumanVal determines the return of the method with the same name
+	WasLabelAddedByHumanVal bool
+
+	// lock to be thread safe
+	lock sync.RWMutex
+
+	// Team is a map org->teamSlug->TeamWithMembers
+	Teams map[string]map[string]TeamWithMembers
+}
+
+type TeamWithMembers struct {
+	Team    github.Team
+	Members sets.String
 }
 
 func (f *FakeClient) BotUser() (*github.UserData, error) {
 	return &github.UserData{Login: botName}, nil
+}
+
+func (f *FakeClient) BotUserCheckerWithContext(_ context.Context) (func(candidate string) bool, error) {
+	return f.BotUserChecker()
 }
 
 func (f *FakeClient) BotUserChecker() (func(candidate string) bool, error) {
@@ -130,8 +169,41 @@ func (f *FakeClient) BotUserChecker() (func(candidate string) bool, error) {
 	}, nil
 }
 
+func NewFakeClient() *FakeClient {
+	return &FakeClient{
+		Issues:              make(map[int]*github.Issue),
+		OrgMembers:          make(map[string][]string),
+		IssueComments:       make(map[int][]github.IssueComment),
+		PullRequests:        make(map[int]*github.PullRequest),
+		PullRequestChanges:  make(map[int][]github.PullRequestChange),
+		PullRequestComments: make(map[int][]github.ReviewComment),
+		Reviews:             make(map[int][]github.Review),
+		CombinedStatuses:    make(map[string]*github.CombinedStatus),
+		CreatedStatuses:     make(map[string][]github.Status),
+		IssueEvents:         make(map[int][]github.ListedIssueEvent),
+		Commits:             make(map[string]github.RepositoryCommit),
+
+		MilestoneMap: make(map[string]int),
+		CommitMap:    make(map[string][]github.RepositoryCommit),
+		RemoteFiles:  make(map[string]map[string]string),
+
+		RepoProjects:        make(map[string][]github.Project),
+		ProjectColumnsMap:   make(map[string][]github.ProjectColumn),
+		ColumnCardsMap:      make(map[int][]github.ProjectCard),
+		ColumnIDMap:         make(map[string]map[int]string),
+		OrgRepoIssueLabels:  make(map[string][]github.Label),
+		OrgProjects:         make(map[string][]github.Project),
+		OrgHooks:            make(map[string][]github.Hook),
+		RepoHooks:           make(map[string][]github.Hook),
+		UserRepoInvitations: make(map[int]github.UserRepoInvitation),
+		UserOrgInvitations:  make(map[string]github.UserOrgInvitation),
+	}
+}
+
 // IsMember returns true if user is in org.
 func (f *FakeClient) IsMember(org, user string) (bool, error) {
+	f.lock.RLock()
+	defer f.lock.RUnlock()
 	for _, m := range f.OrgMembers[org] {
 		if m == user {
 			return true, nil
@@ -140,9 +212,17 @@ func (f *FakeClient) IsMember(org, user string) (bool, error) {
 	return false, nil
 }
 
+func (f *FakeClient) WasLabelAddedByHuman(_, _ string, _ int, _ string) (bool, error) {
+	f.lock.RLock()
+	defer f.lock.RUnlock()
+	return f.WasLabelAddedByHumanVal, nil
+}
+
 // ListOpenIssues returns f.issues
 // To mock a mix of issues and pull requests, see github.Issue.PullRequest
 func (f *FakeClient) ListOpenIssues(org, repo string) ([]github.Issue, error) {
+	f.lock.RLock()
+	defer f.lock.RUnlock()
 	var issues []github.Issue
 	for _, issue := range f.Issues {
 		issues = append(issues, *issue)
@@ -152,66 +232,103 @@ func (f *FakeClient) ListOpenIssues(org, repo string) ([]github.Issue, error) {
 
 // ListIssueComments returns comments.
 func (f *FakeClient) ListIssueComments(owner, repo string, number int) ([]github.IssueComment, error) {
+	return f.ListIssueCommentsWithContext(context.Background(), owner, repo, number)
+}
+
+func (f *FakeClient) ListIssueCommentsWithContext(ctx context.Context, owner, repo string, number int) ([]github.IssueComment, error) {
+	f.lock.RLock()
+	defer f.lock.RUnlock()
+	if f.ListIssueCommentsWithContextError != nil {
+		return nil, f.ListIssueCommentsWithContextError
+	}
 	return append([]github.IssueComment{}, f.IssueComments[number]...), nil
 }
 
 // ListPullRequestComments returns review comments.
 func (f *FakeClient) ListPullRequestComments(owner, repo string, number int) ([]github.ReviewComment, error) {
+	f.lock.RLock()
+	defer f.lock.RUnlock()
 	return append([]github.ReviewComment{}, f.PullRequestComments[number]...), nil
 }
 
 // ListReviews returns reviews.
 func (f *FakeClient) ListReviews(owner, repo string, number int) ([]github.Review, error) {
+	f.lock.RLock()
+	defer f.lock.RUnlock()
 	return append([]github.Review{}, f.Reviews[number]...), nil
 }
 
 // ListIssueEvents returns issue events
 func (f *FakeClient) ListIssueEvents(owner, repo string, number int) ([]github.ListedIssueEvent, error) {
+	f.lock.RLock()
+	defer f.lock.RUnlock()
 	return append([]github.ListedIssueEvent{}, f.IssueEvents[number]...), nil
 }
 
 // CreateComment adds a comment to a PR
 func (f *FakeClient) CreateComment(owner, repo string, number int, comment string) error {
+	return f.CreateCommentWithContext(context.Background(), owner, repo, number, comment)
+}
+
+func (f *FakeClient) CreateCommentWithContext(_ context.Context, owner, repo string, number int, comment string) error {
+	f.lock.Lock()
+	defer f.lock.Unlock()
+	f.IssueCommentID++
 	f.IssueCommentsAdded = append(f.IssueCommentsAdded, fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, comment))
 	f.IssueComments[number] = append(f.IssueComments[number], github.IssueComment{
 		ID:   f.IssueCommentID,
 		Body: comment,
 		User: github.User{Login: botName},
 	})
-	f.IssueCommentID++
 	return nil
 }
 
 // EditComment edits a comment. Its a stub that does nothing.
 func (f *FakeClient) EditComment(org, repo string, ID int, comment string) error {
+	return f.EditCommentWithContext(context.Background(), org, repo, ID, comment)
+}
+
+func (f *FakeClient) EditCommentWithContext(_ context.Context, org, repo string, ID int, comment string) error {
 	return nil
 }
 
 // CreateReview adds a review to a PR
 func (f *FakeClient) CreateReview(org, repo string, number int, r github.DraftReview) error {
+	f.lock.Lock()
+	defer f.lock.Unlock()
+	f.ReviewID++
 	f.Reviews[number] = append(f.Reviews[number], github.Review{
 		ID:   f.ReviewID,
 		User: github.User{Login: botName},
 		Body: r.Body,
 	})
-	f.ReviewID++
 	return nil
 }
 
 // CreateCommentReaction adds emoji to a comment.
 func (f *FakeClient) CreateCommentReaction(org, repo string, ID int, reaction string) error {
+	f.lock.Lock()
+	defer f.lock.Unlock()
 	f.CommentReactionsAdded = append(f.CommentReactionsAdded, fmt.Sprintf("%s/%s#%d:%s", org, repo, ID, reaction))
 	return nil
 }
 
 // CreateIssueReaction adds an emoji to an issue.
 func (f *FakeClient) CreateIssueReaction(org, repo string, ID int, reaction string) error {
+	f.lock.Lock()
+	defer f.lock.Unlock()
 	f.IssueReactionsAdded = append(f.IssueReactionsAdded, fmt.Sprintf("%s/%s#%d:%s", org, repo, ID, reaction))
 	return nil
 }
 
 // DeleteComment deletes a comment.
 func (f *FakeClient) DeleteComment(owner, repo string, ID int) error {
+	return f.DeleteCommentWithContext(context.Background(), owner, repo, ID)
+}
+
+func (f *FakeClient) DeleteCommentWithContext(_ context.Context, owner, repo string, ID int) error {
+	f.lock.Lock()
+	defer f.lock.Unlock()
 	f.IssueCommentsDeleted = append(f.IssueCommentsDeleted, fmt.Sprintf("%s/%s#%d", owner, repo, ID))
 	for num, ics := range f.IssueComments {
 		for i, ic := range ics {
@@ -241,6 +358,8 @@ func (f *FakeClient) DeleteStaleComments(org, repo string, number int, comments 
 
 // GetPullRequest returns details about the PR.
 func (f *FakeClient) GetPullRequest(owner, repo string, number int) (*github.PullRequest, error) {
+	f.lock.RLock()
+	defer f.lock.RUnlock()
 	val, exists := f.PullRequests[number]
 	if !exists {
 		return nil, fmt.Errorf("pull request number %d does not exist", number)
@@ -250,6 +369,8 @@ func (f *FakeClient) GetPullRequest(owner, repo string, number int) (*github.Pul
 
 // EditPullRequest edits the pull request.
 func (f *FakeClient) EditPullRequest(org, repo string, number int, issue *github.PullRequest) (*github.PullRequest, error) {
+	f.lock.Lock()
+	defer f.lock.Unlock()
 	if _, exists := f.PullRequests[number]; !exists {
 		return nil, fmt.Errorf("issue number %d does not exist", number)
 	}
@@ -259,6 +380,8 @@ func (f *FakeClient) EditPullRequest(org, repo string, number int, issue *github
 
 // GetIssue returns the issue.
 func (f *FakeClient) GetIssue(owner, repo string, number int) (*github.Issue, error) {
+	f.lock.RLock()
+	defer f.lock.RUnlock()
 	val, exists := f.Issues[number]
 	if !exists {
 		return nil, fmt.Errorf("issue number %d does not exist", number)
@@ -268,6 +391,8 @@ func (f *FakeClient) GetIssue(owner, repo string, number int) (*github.Issue, er
 
 // EditIssue edits the issue.
 func (f *FakeClient) EditIssue(org, repo string, number int, issue *github.Issue) (*github.Issue, error) {
+	f.lock.Lock()
+	defer f.lock.Unlock()
 	if _, exists := f.Issues[number]; !exists {
 		return nil, fmt.Errorf("issue number %d does not exist", number)
 	}
@@ -275,8 +400,51 @@ func (f *FakeClient) EditIssue(org, repo string, number int, issue *github.Issue
 	return issue, nil
 }
 
+// CreateIssue creates the issue.
+func (f *FakeClient) CreateIssue(org, repo, title, body string, milestone int, labels, assignees []string) (int, error) {
+	f.lock.Lock()
+	defer f.lock.Unlock()
+	f.IssueID++
+	if f.Issues == nil {
+		f.Issues = make(map[int]*github.Issue)
+	}
+	var ls []github.Label
+	for _, l := range labels {
+		ls = append(ls, github.Label{Name: l})
+	}
+	var as []github.User
+	for _, a := range assignees {
+		as = append(as, github.User{Name: a})
+	}
+	new := &github.Issue{
+		ID:        f.IssueID,
+		Title:     title,
+		Body:      body,
+		Milestone: github.Milestone{Number: milestone},
+		Labels:    ls,
+		Assignees: as,
+	}
+	f.Issues[f.IssueID] = new
+	f.IssueComments[f.IssueID] = make([]github.IssueComment, 0)
+	return new.ID, nil
+}
+
+func (f *FakeClient) CloseIssue(org, repo string, number int) error {
+	f.lock.Lock()
+	defer f.lock.Unlock()
+
+	if _, ok := f.Issues[number]; !ok {
+		return fmt.Errorf("issue number %d does not exist", number)
+	}
+
+	f.Issues[number].State = "closed"
+	return nil
+}
+
 // GetPullRequestChanges returns the file modifications in a PR.
 func (f *FakeClient) GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error) {
+	f.lock.RLock()
+	defer f.lock.RUnlock()
 	return f.PullRequestChanges[number], nil
 }
 
@@ -287,17 +455,26 @@ func (f *FakeClient) GetRef(owner, repo, ref string) (string, error) {
 
 // DeleteRef returns an error indicating if deletion of the given ref was successful
 func (f *FakeClient) DeleteRef(owner, repo, ref string) error {
+	f.lock.Lock()
+	defer f.lock.Unlock()
 	f.RefsDeleted = append(f.RefsDeleted, struct{ Org, Repo, Ref string }{Org: owner, Repo: repo, Ref: ref})
 	return nil
 }
 
 // GetSingleCommit returns a single commit.
 func (f *FakeClient) GetSingleCommit(org, repo, SHA string) (github.RepositoryCommit, error) {
+	f.lock.RLock()
+	defer f.lock.RUnlock()
 	return f.Commits[SHA], nil
 }
 
 // CreateStatus adds a status context to a commit.
 func (f *FakeClient) CreateStatus(owner, repo, SHA string, s github.Status) error {
+	return f.CreateStatusWithContext(context.Background(), owner, repo, SHA, s)
+}
+func (f *FakeClient) CreateStatusWithContext(_ context.Context, owner, repo, SHA string, s github.Status) error {
+	f.lock.Lock()
+	defer f.lock.Unlock()
 	if f.Error != nil {
 		return f.Error
 	}
@@ -316,21 +493,31 @@ func (f *FakeClient) CreateStatus(owner, repo, SHA string, s github.Status) erro
 		statuses = append(statuses, s)
 	}
 	f.CreatedStatuses[SHA] = statuses
+	f.CombinedStatuses[SHA] = &github.CombinedStatus{
+		SHA:      SHA,
+		Statuses: statuses,
+	}
 	return nil
 }
 
 // ListStatuses returns individual status contexts on a commit.
 func (f *FakeClient) ListStatuses(org, repo, ref string) ([]github.Status, error) {
+	f.lock.RLock()
+	defer f.lock.RUnlock()
 	return f.CreatedStatuses[ref], nil
 }
 
 // GetCombinedStatus returns the overall status for a commit.
 func (f *FakeClient) GetCombinedStatus(owner, repo, ref string) (*github.CombinedStatus, error) {
+	f.lock.RLock()
+	defer f.lock.RUnlock()
 	return f.CombinedStatuses[ref], nil
 }
 
 // GetRepoLabels gets labels in a repo.
 func (f *FakeClient) GetRepoLabels(owner, repo string) ([]github.Label, error) {
+	f.lock.RLock()
+	defer f.lock.RUnlock()
 	la := []github.Label{}
 	for _, l := range f.RepoLabelsExisting {
 		la = append(la, github.Label{Name: l})
@@ -338,8 +525,19 @@ func (f *FakeClient) GetRepoLabels(owner, repo string) ([]github.Label, error) {
 	return la, nil
 }
 
+// AddRepoLabel adds a defined label given org/repo
+func (f *FakeClient) AddRepoLabel(org, repo, label, description, color string) error {
+	f.lock.RLock()
+	defer f.lock.RUnlock()
+
+	f.RepoLabelsExisting = append(f.RepoLabelsExisting, label)
+	return nil
+}
+
 // GetIssueLabels gets labels on an issue
 func (f *FakeClient) GetIssueLabels(owner, repo string, number int) ([]github.Label, error) {
+	f.lock.RLock()
+	defer f.lock.RUnlock()
 	re := regexp.MustCompile(fmt.Sprintf(`^%s/%s#%d:(.*)$`, owner, repo, number))
 	la := []github.Label{}
 	allLabels := sets.NewString(f.IssueLabelsExisting...)
@@ -361,12 +559,13 @@ func (f *FakeClient) AddLabel(owner, repo string, number int, label string) erro
 
 // AddLabels adds a list of labels
 func (f *FakeClient) AddLabels(owner, repo string, number int, labels ...string) error {
+	f.lock.Lock()
+	defer f.lock.Unlock()
 	for _, label := range labels {
 		labelString := fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, label)
 		if sets.NewString(f.IssueLabelsAdded...).Has(labelString) {
 			return fmt.Errorf("cannot add %v to %s/%s/#%d", label, owner, repo, number)
 		}
-
 		if f.RepoLabelsExisting == nil {
 			f.IssueLabelsAdded = append(f.IssueLabelsAdded, labelString)
 			continue
@@ -389,6 +588,8 @@ func (f *FakeClient) AddLabels(owner, repo string, number int, labels ...string)
 
 // RemoveLabel removes a label
 func (f *FakeClient) RemoveLabel(owner, repo string, number int, label string) error {
+	f.lock.Lock()
+	defer f.lock.Unlock()
 	labelString := fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, label)
 	if !sets.NewString(f.IssueLabelsRemoved...).Has(labelString) {
 		f.IssueLabelsRemoved = append(f.IssueLabelsRemoved, labelString)
@@ -399,6 +600,8 @@ func (f *FakeClient) RemoveLabel(owner, repo string, number int, label string) e
 
 // FindIssues returns f.Issues
 func (f *FakeClient) FindIssues(query, sort string, asc bool) ([]github.Issue, error) {
+	f.lock.RLock()
+	defer f.lock.RUnlock()
 	var issues []github.Issue
 	for _, issue := range f.Issues {
 		issues = append(issues, *issue)
@@ -414,6 +617,8 @@ func (f *FakeClient) FindIssues(query, sort string, asc bool) ([]github.Issue, e
 
 // AssignIssue adds assignees.
 func (f *FakeClient) AssignIssue(owner, repo string, number int, assignees []string) error {
+	f.lock.Lock()
+	defer f.lock.Unlock()
 	var m github.MissingUsers
 	for _, a := range assignees {
 		if a == "not-in-the-org" {
@@ -430,6 +635,8 @@ func (f *FakeClient) AssignIssue(owner, repo string, number int, assignees []str
 
 // GetFile returns the bytes of the file.
 func (f *FakeClient) GetFile(org, repo, file, commit string) ([]byte, error) {
+	f.lock.RLock()
+	defer f.lock.RUnlock()
 	contents, ok := f.RemoteFiles[file]
 	if !ok {
 		return nil, fmt.Errorf("could not find file %s", file)
@@ -451,6 +658,8 @@ func (f *FakeClient) GetFile(org, repo, file, commit string) ([]byte, error) {
 
 // ListTeams return a list of fake teams that correspond to the fake team members returned by ListTeamMembers
 func (f *FakeClient) ListTeams(org string) ([]github.Team, error) {
+	f.lock.RLock()
+	defer f.lock.RUnlock()
 	return []github.Team{
 		{
 			ID:   0,
@@ -465,6 +674,8 @@ func (f *FakeClient) ListTeams(org string) ([]github.Team, error) {
 
 // ListTeamMembers return a fake team with a single "sig-lead" GitHub teammember
 func (f *FakeClient) ListTeamMembers(org string, teamID int, role string) ([]github.TeamMember, error) {
+	f.lock.RLock()
+	defer f.lock.RUnlock()
 	if role != github.RoleAll {
 		return nil, fmt.Errorf("unsupported role %v (only all supported)", role)
 	}
@@ -479,8 +690,19 @@ func (f *FakeClient) ListTeamMembers(org string, teamID int, role string) ([]git
 	return members, nil
 }
 
+func (f *FakeClient) TeamBySlugHasMember(org string, teamSlug string, memberLogin string) (bool, error) {
+	f.lock.RLock()
+	defer f.lock.RUnlock()
+	if f.Teams[org] != nil {
+		return f.Teams[org][teamSlug].Members.Has(memberLogin), nil
+	}
+	return false, nil
+}
+
 // IsCollaborator returns true if the user is a collaborator of the repo.
 func (f *FakeClient) IsCollaborator(org, repo, login string) (bool, error) {
+	f.lock.RLock()
+	defer f.lock.RUnlock()
 	normed := github.NormLogin(login)
 	for _, collab := range f.Collaborators {
 		if github.NormLogin(collab) == normed {
@@ -492,6 +714,8 @@ func (f *FakeClient) IsCollaborator(org, repo, login string) (bool, error) {
 
 // ListCollaborators lists the collaborators.
 func (f *FakeClient) ListCollaborators(org, repo string) ([]github.User, error) {
+	f.lock.RLock()
+	defer f.lock.RUnlock()
 	result := make([]github.User, 0, len(f.Collaborators))
 	for _, login := range f.Collaborators {
 		result = append(result, github.User{Login: login})
@@ -507,6 +731,8 @@ func (f *FakeClient) ClearMilestone(org, repo string, issueNum int) error {
 
 // SetMilestone sets the milestone.
 func (f *FakeClient) SetMilestone(org, repo string, issueNum, milestoneNum int) error {
+	f.lock.Lock()
+	defer f.lock.Unlock()
 	if milestoneNum < 0 {
 		return fmt.Errorf("Milestone Numbers Cannot Be Negative")
 	}
@@ -516,6 +742,8 @@ func (f *FakeClient) SetMilestone(org, repo string, issueNum, milestoneNum int) 
 
 // ListMilestones lists milestones.
 func (f *FakeClient) ListMilestones(org, repo string) ([]github.Milestone, error) {
+	f.lock.RLock()
+	defer f.lock.RUnlock()
 	milestones := []github.Milestone{}
 	for k, v := range f.MilestoneMap {
 		milestones = append(milestones, github.Milestone{Title: k, Number: v})
@@ -525,22 +753,30 @@ func (f *FakeClient) ListMilestones(org, repo string) ([]github.Milestone, error
 
 // ListPRCommits lists commits for a given PR.
 func (f *FakeClient) ListPRCommits(org, repo string, prNumber int) ([]github.RepositoryCommit, error) {
+	f.lock.RLock()
+	defer f.lock.RUnlock()
 	k := fmt.Sprintf("%s/%s#%d", org, repo, prNumber)
 	return f.CommitMap[k], nil
 }
 
 // GetRepoProjects returns the list of projects under a repo.
 func (f *FakeClient) GetRepoProjects(owner, repo string) ([]github.Project, error) {
+	f.lock.Lock()
+	defer f.lock.Unlock()
 	return f.RepoProjects[fmt.Sprintf("%s/%s", owner, repo)], nil
 }
 
 // GetOrgProjects returns the list of projects under an org
 func (f *FakeClient) GetOrgProjects(org string) ([]github.Project, error) {
+	f.lock.RLock()
+	defer f.lock.RUnlock()
 	return f.RepoProjects[fmt.Sprintf("%s/*", org)], nil
 }
 
 // GetProjectColumns returns the list of columns for a given project.
 func (f *FakeClient) GetProjectColumns(org string, projectID int) ([]github.ProjectColumn, error) {
+	f.lock.RLock()
+	defer f.lock.RUnlock()
 	// Get project name
 	for _, projects := range f.RepoProjects {
 		for _, project := range projects {
@@ -554,18 +790,22 @@ func (f *FakeClient) GetProjectColumns(org string, projectID int) ([]github.Proj
 
 // CreateProjectCard creates a project card under a given column.
 func (f *FakeClient) CreateProjectCard(org string, columnID int, projectCard github.ProjectCard) (*github.ProjectCard, error) {
-	if f.ColumnCardsMap == nil {
-		f.ColumnCardsMap = make(map[int][]github.ProjectCard)
+	cards, err := f.GetColumnProjectCards(org, columnID)
+	if err != nil {
+		return nil, err
 	}
+	f.lock.Lock()
+	defer f.lock.Unlock()
 
 	for project, columnIDMap := range f.ColumnIDMap {
 		if _, exists := columnIDMap[columnID]; exists {
 			for id := range columnIDMap {
 				// Make sure that we behave same as github API
 				// Create project will generate an error when the card already exist in the project
-				card, err := f.GetColumnProjectCard(org, id, projectCard.ContentURL)
-				if err == nil && card != nil {
-					return nil, fmt.Errorf("Card already exist in the project: %s, column %d, cannot add to column  %d", project, id, columnID)
+				for _, existingCard := range cards {
+					if existingCard.ContentURL == projectCard.ContentURL {
+						return nil, fmt.Errorf("Card already exist in the project: %s, column %d, cannot add to column  %d", project, id, columnID)
+					}
 				}
 			}
 		}
@@ -585,6 +825,8 @@ func (f *FakeClient) CreateProjectCard(org string, columnID int, projectCard git
 
 // DeleteProjectCard deletes the project card of a specific issue or PR
 func (f *FakeClient) DeleteProjectCard(org string, projectCardID int) error {
+	f.lock.Lock()
+	defer f.lock.Unlock()
 	if f.ColumnCardsMap == nil {
 		return fmt.Errorf("Project card doesn't exist")
 	}
@@ -617,10 +859,13 @@ func (f *FakeClient) DeleteProjectCard(org string, projectCardID int) error {
 
 // GetColumnProjectCards fetches project cards  under given column
 func (f *FakeClient) GetColumnProjectCards(org string, columnID int) ([]github.ProjectCard, error) {
+	f.lock.RLock()
 	if f.ColumnCardsMap == nil {
 		f.ColumnCardsMap = make(map[int][]github.ProjectCard)
 	}
-	return f.ColumnCardsMap[columnID], nil
+	res := f.ColumnCardsMap[columnID]
+	f.lock.RUnlock()
+	return res, nil
 }
 
 // GetColumnProjectCard fetches project card if the content_url in the card matched the issue/pr
@@ -629,7 +874,6 @@ func (f *FakeClient) GetColumnProjectCard(org string, columnID int, contentURL s
 	if err != nil {
 		return nil, err
 	}
-
 	for _, existingCard := range cards {
 		if existingCard.ContentURL == contentURL {
 			return &existingCard, nil
@@ -655,7 +899,10 @@ func (f *FakeClient) GetRepos(org string, isUser bool) ([]github.Repo, error) {
 	}, nil
 }
 
-func (f FakeClient) GetRepo(owner, name string) (github.FullRepo, error) {
+func (f *FakeClient) GetRepo(owner, name string) (github.FullRepo, error) {
+	if f.GetRepoError != nil {
+		return github.FullRepo{}, f.GetRepoError
+	}
 	return github.FullRepo{
 		Repo: github.Repo{
 			Owner:         github.User{Login: owner},
@@ -670,6 +917,8 @@ func (f FakeClient) GetRepo(owner, name string) (github.FullRepo, error) {
 
 // MoveProjectCard moves a specific project card to a specified column in the same project
 func (f *FakeClient) MoveProjectCard(org string, projectCardID int, newColumnID int) error {
+	f.lock.Lock()
+	defer f.lock.Unlock()
 	// Remove project card from old column
 	newCards := []github.ProjectCard{}
 	oldColumnID := -1
@@ -733,6 +982,8 @@ func (f *FakeClient) GetTeamBySlug(slug string, org string) (*github.Team, error
 }
 
 func (f *FakeClient) CreatePullRequest(org, repo, title, body, head, base string, canModify bool) (int, error) {
+	f.lock.Lock()
+	defer f.lock.Unlock()
 	if f.PullRequests == nil {
 		f.PullRequests = map[int]*github.PullRequest{}
 	}
@@ -758,6 +1009,8 @@ func (f *FakeClient) CreatePullRequest(org, repo, title, body, head, base string
 }
 
 func (f *FakeClient) UpdatePullRequest(org, repo string, number int, title, body *string, open *bool, branch *string, canModify *bool) error {
+	f.lock.Lock()
+	defer f.lock.Unlock()
 	pr, found := f.PullRequests[number]
 	if !found {
 		return fmt.Errorf("no pr with number %d found", number)
@@ -796,4 +1049,62 @@ func (f *FakeClient) GetDirectory(org, repo, dir, commit string) ([]github.Direc
 	}
 
 	return nil, fmt.Errorf("could not find dir %s with ref %s", dir, commit)
+}
+
+// CreatePullRequestReviewComment adds a comment on a PR.
+func (f *FakeClient) CreatePullRequestReviewComment(owner, repo string, number int, rc github.ReviewComment) error {
+	f.lock.Lock()
+	defer f.lock.Unlock()
+	f.PullRequestReviewCommentID++
+	f.PullRequestReviewCommentsAdded = append(f.PullRequestReviewCommentsAdded, fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, rc.Body))
+	f.PullRequestReviewComments[number] = append(f.PullRequestReviewComments[number], rc)
+	return nil
+}
+
+func (f *FakeClient) ListCurrentUserRepoInvitations() ([]github.UserRepoInvitation, error) {
+	var ret []github.UserRepoInvitation
+	for _, inv := range f.UserRepoInvitations {
+		ret = append(ret, inv)
+	}
+
+	sort.Slice(ret, func(p, q int) bool {
+		return ret[p].InvitationID < ret[q].InvitationID
+	})
+
+	return ret, nil
+}
+
+func (f *FakeClient) AcceptUserRepoInvitation(invitationID int) error {
+	if _, ok := f.UserRepoInvitations[invitationID]; !ok {
+		return fmt.Errorf("couldn't find invitation id: %d", invitationID)
+	}
+
+	delete(f.UserRepoInvitations, invitationID)
+	return nil
+}
+
+func (f *FakeClient) AcceptUserOrgInvitation(org string) error {
+	if _, ok := f.UserOrgInvitations[org]; !ok {
+		return fmt.Errorf("couldn't find invitation for org: %s", org)
+	}
+
+	delete(f.UserOrgInvitations, org)
+	return nil
+}
+
+func (f *FakeClient) ListCurrentUserOrgInvitations() ([]github.UserOrgInvitation, error) {
+	var ret []github.UserOrgInvitation
+	for _, inv := range f.UserOrgInvitations {
+		ret = append(ret, inv)
+	}
+
+	sort.Slice(ret, func(p, q int) bool {
+		return ret[p].Org.Login < ret[q].Org.Login
+	})
+
+	return ret, nil
+}
+
+func (f *FakeClient) MutateWithGitHubAppsSupport(ctx context.Context, m interface{}, input githubql.Input, vars map[string]interface{}, org string) error {
+	return nil
 }

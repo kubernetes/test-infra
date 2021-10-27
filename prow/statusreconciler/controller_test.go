@@ -18,17 +18,19 @@ package statusreconciler
 
 import (
 	"errors"
-	"reflect"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/sirupsen/logrus"
-	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/yaml"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 )
+
+var ignoreUnexported = cmpopts.IgnoreUnexported(config.Presubmit{}, config.RegexpChangeMatcher{}, config.Brancher{})
 
 func TestAddedBlockingPresubmits(t *testing.T) {
 	var testCases = []struct {
@@ -240,21 +242,22 @@ func TestAddedBlockingPresubmits(t *testing.T) {
 			if err := yaml.Unmarshal([]byte(testCase.new), &newConfig); err != nil {
 				t.Fatalf("%s: could not unmarshal new config: %v", testCase.name, err)
 			}
-			if actual, _ := addedBlockingPresubmits(oldConfig, newConfig, logrusEntry()); !reflect.DeepEqual(actual, testCase.expected) {
-				t.Errorf("%s: did not get correct added presubmits: %v", testCase.name, diff.ObjectReflectDiff(actual, testCase.expected))
+			actual, _ := addedBlockingPresubmits(oldConfig, newConfig, logrusEntry())
+			if diff := cmp.Diff(actual, testCase.expected, ignoreUnexported); diff != "" {
+				t.Errorf("%s: did not get correct added presubmits: %v", testCase.name, diff)
 			}
 		})
 	}
 }
 
-func TestRemovedBlockingPresubmits(t *testing.T) {
+func TestRemovedPresubmits(t *testing.T) {
 	var testCases = []struct {
 		name     string
 		old, new string
 		expected map[string][]config.Presubmit
 	}{
 		{
-			name: "no change in blocking presubmits means no removed blocking jobs",
+			name: "no change in blocking presubmits means no removed jobs",
 			old: `"org/repo":
 - name: old-job
   context: old-context`,
@@ -266,29 +269,36 @@ func TestRemovedBlockingPresubmits(t *testing.T) {
 			},
 		},
 		{
-			name: "removed optional presubmit means no removed blocking jobs",
+			name: "removed optional presubmit means removed job",
 			old: `"org/repo":
 - name: old-job
   context: old-context
   optional: true`,
 			new: `"org/repo": []`,
 			expected: map[string][]config.Presubmit{
-				"org/repo": {},
+				"org/repo": {{
+					JobBase:  config.JobBase{Name: "old-job"},
+					Reporter: config.Reporter{Context: "old-context"},
+					Optional: true,
+				}},
 			},
 		},
 		{
-			name: "removed non-reporting presubmit means no removed blocking jobs",
+			name: "removed non-reporting presubmit means removed job",
 			old: `"org/repo":
 - name: old-job
   context: old-context
   skip_report: true`,
 			new: `"org/repo": []`,
 			expected: map[string][]config.Presubmit{
-				"org/repo": {},
+				"org/repo": {{
+					JobBase:  config.JobBase{Name: "old-job"},
+					Reporter: config.Reporter{Context: "old-context", SkipReport: true},
+				}},
 			},
 		},
 		{
-			name: "removed required presubmit means removed blocking jobs",
+			name: "removed required presubmit means removed jobs",
 			old: `"org/repo":
 - name: old-job
   context: old-context`,
@@ -301,7 +311,7 @@ func TestRemovedBlockingPresubmits(t *testing.T) {
 			},
 		},
 		{
-			name: "required presubmit transitioning to optional means no removed blocking jobs",
+			name: "required presubmit transitioning to optional means no removed jobs",
 			old: `"org/repo":
 - name: old-job
   context: old-context`,
@@ -314,7 +324,7 @@ func TestRemovedBlockingPresubmits(t *testing.T) {
 			},
 		},
 		{
-			name: "reporting presubmit transitioning to non-reporting means no removed blocking jobs",
+			name: "reporting presubmit transitioning to non-reporting means no removed jobs",
 			old: `"org/repo":
 - name: old-job
   context: old-context`,
@@ -327,7 +337,7 @@ func TestRemovedBlockingPresubmits(t *testing.T) {
 			},
 		},
 		{
-			name: "all presubmits removed means removed blocking jobs",
+			name: "all presubmits removed means removed jobs",
 			old: `"org/repo":
 - name: old-job
   context: old-context`,
@@ -340,7 +350,7 @@ func TestRemovedBlockingPresubmits(t *testing.T) {
 			},
 		},
 		{
-			name: "required presubmit transitioning to new context means no removed blocking jobs",
+			name: "required presubmit transitioning to new context means no removed jobs",
 			old: `"org/repo":
 - name: old-job
   context: old-context`,
@@ -352,7 +362,7 @@ func TestRemovedBlockingPresubmits(t *testing.T) {
 			},
 		},
 		{
-			name: "required presubmit transitioning run_if_changed means no removed blocking jobs",
+			name: "required presubmit transitioning run_if_changed means no removed jobs",
 			old: `"org/repo":
 - name: old-job
   context: old-context
@@ -366,7 +376,7 @@ func TestRemovedBlockingPresubmits(t *testing.T) {
 			},
 		},
 		{
-			name: "optional presubmit transitioning to required run_if_changed means no removed blocking jobs",
+			name: "optional presubmit transitioning to required run_if_changed means no removed jobs",
 			old: `"org/repo":
 - name: old-job
   context: old-context
@@ -390,8 +400,9 @@ func TestRemovedBlockingPresubmits(t *testing.T) {
 			if err := yaml.Unmarshal([]byte(testCase.new), &newConfig); err != nil {
 				t.Fatalf("%s: could not unmarshal new config: %v", testCase.name, err)
 			}
-			if actual, _ := removedBlockingPresubmits(oldConfig, newConfig, logrusEntry()); !reflect.DeepEqual(actual, testCase.expected) {
-				t.Errorf("%s: did not get correct removed presubmits: %v", testCase.name, diff.ObjectReflectDiff(actual, testCase.expected))
+			actual, _ := removedPresubmits(oldConfig, newConfig, logrusEntry())
+			if diff := cmp.Diff(actual, testCase.expected, ignoreUnexported); diff != "" {
+				t.Errorf("%s: did not get correct removed presubmits: %v", testCase.name, diff)
 			}
 		})
 	}
@@ -543,8 +554,9 @@ func TestMigratedBlockingPresubmits(t *testing.T) {
 			if err := yaml.Unmarshal([]byte(testCase.new), &newConfig); err != nil {
 				t.Fatalf("%s: could not unmarshal new config: %v", testCase.name, err)
 			}
-			if actual, _ := migratedBlockingPresubmits(oldConfig, newConfig, logrusEntry()); !reflect.DeepEqual(actual, testCase.expected) {
-				t.Errorf("%s: did not get correct removed presubmits: %v", testCase.name, diff.ObjectReflectDiff(actual, testCase.expected))
+			actual, _ := migratedBlockingPresubmits(oldConfig, newConfig, logrusEntry())
+			if diff := cmp.Diff(actual, testCase.expected, ignoreUnexported, cmp.AllowUnexported(presubmitMigration{})); diff != "" {
+				t.Errorf("%s: did not get correct removed presubmits: %v", testCase.name, diff)
 			}
 		})
 	}
@@ -595,7 +607,7 @@ type fakeMigrator struct {
 	migrated map[orgRepo]migrationSet
 }
 
-func (m *fakeMigrator) retire(org, repo, context string, targetBranchFilter func(string) bool) error {
+func (m *fakeMigrator) retire(org, repo, context string, _ func(string) bool) error {
 	key := orgRepo{org: org, repo: repo}
 	if contexts, exist := m.retireErrors[key]; exist && contexts.Has(context) {
 		return errors.New("failed to retire context")
@@ -608,7 +620,7 @@ func (m *fakeMigrator) retire(org, repo, context string, targetBranchFilter func
 	return nil
 }
 
-func (m *fakeMigrator) migrate(org, repo, from, to string, targetBranchFilter func(string) bool) error {
+func (m *fakeMigrator) migrate(org, repo, from, to string, _ func(string) bool) error {
 	key := orgRepo{org: org, repo: repo}
 	item := migration{from: from, to: to}
 	if contexts, exist := m.migrateErrors[key]; exist && contexts.has(item) {
@@ -867,7 +879,7 @@ func TestControllerReconcile(t *testing.T) {
 		expectErr bool
 	}{
 		{
-			name: "ignored org skips creation, still does retire and migrate",
+			name: "ignored org skips creation, retire and migrate",
 			generator: func() (Controller, func(*testing.T)) {
 				fpjt := newfakeProwJobTriggerer()
 				fghc := newFakeGitHubClient(orgRepoKey)
@@ -892,7 +904,7 @@ func TestControllerReconcile(t *testing.T) {
 			},
 		},
 		{
-			name: "ignored org/repo skips creation, still does retire and migrate",
+			name: "ignored org/repo skips creation, retire and migrate",
 			generator: func() (Controller, func(*testing.T)) {
 				fpjt := newfakeProwJobTriggerer()
 				fghc := newFakeGitHubClient(orgRepoKey)
@@ -912,6 +924,56 @@ func TestControllerReconcile(t *testing.T) {
 				checker := func(t *testing.T) {
 					checkTriggerer(t, fpjt, map[prKey]sets.String{})
 					checkMigrator(t, fsm, map[orgRepo]sets.String{orgRepoKey: sets.NewString("required-job")}, map[orgRepo]migrationSet{orgRepoKey: {migrate: nil}})
+				}
+				return controller, checker
+			},
+		},
+		{
+			name: "ignored all org skips creation, retire and migrate",
+			generator: func() (Controller, func(*testing.T)) {
+				fpjt := newfakeProwJobTriggerer()
+				fghc := newFakeGitHubClient(orgRepoKey)
+				fghc.prs[orgRepoKey] = []github.PullRequest{pr}
+				fghc.refs[orgRepoKey]["heads/"+pr.Base.Ref] = baseSha
+				fsm := newFakeMigrator(orgRepoKey)
+				ftc := newFakeTrustedChecker(orgRepoKey)
+				ftc.trusted[orgRepoKey][prAuthorKey] = true
+				controller := Controller{
+					continueOnError:           true,
+					addedPresubmitDenylistAll: sets.NewString("org"),
+					prowJobTriggerer:          &fpjt,
+					githubClient:              &fghc,
+					statusMigrator:            &fsm,
+					trustedChecker:            &ftc,
+				}
+				checker := func(t *testing.T) {
+					checkTriggerer(t, fpjt, map[prKey]sets.String{})
+					checkMigrator(t, fsm, map[orgRepo]sets.String{orgRepoKey: sets.NewString()}, map[orgRepo]migrationSet{orgRepoKey: {}})
+				}
+				return controller, checker
+			},
+		},
+		{
+			name: "ignored all org/repo skips creation, retire and migrate",
+			generator: func() (Controller, func(*testing.T)) {
+				fpjt := newfakeProwJobTriggerer()
+				fghc := newFakeGitHubClient(orgRepoKey)
+				fghc.prs[orgRepoKey] = []github.PullRequest{pr}
+				fghc.refs[orgRepoKey]["heads/"+pr.Base.Ref] = baseSha
+				fsm := newFakeMigrator(orgRepoKey)
+				ftc := newFakeTrustedChecker(orgRepoKey)
+				ftc.trusted[orgRepoKey][prAuthorKey] = true
+				controller := Controller{
+					continueOnError:           true,
+					addedPresubmitDenylistAll: sets.NewString("org/repo"),
+					prowJobTriggerer:          &fpjt,
+					githubClient:              &fghc,
+					statusMigrator:            &fsm,
+					trustedChecker:            &ftc,
+				}
+				checker := func(t *testing.T) {
+					checkTriggerer(t, fpjt, map[prKey]sets.String{})
+					checkMigrator(t, fsm, map[orgRepo]sets.String{orgRepoKey: sets.NewString()}, map[orgRepo]migrationSet{orgRepoKey: {}})
 				}
 				return controller, checker
 			},
@@ -1148,16 +1210,17 @@ func logrusEntry() *logrus.Entry {
 }
 
 func checkTriggerer(t *testing.T, triggerer fakeProwJobTriggerer, expectedCreatedJobs map[prKey]sets.String) {
-	if actual, expected := triggerer.created, expectedCreatedJobs; !reflect.DeepEqual(actual, expected) {
-		t.Errorf("did not create expected ProwJob: %s", diff.ObjectReflectDiff(actual, expected))
+	actual, expected := triggerer.created, expectedCreatedJobs
+	if diff := cmp.Diff(actual, expected, ignoreUnexported); diff != "" {
+		t.Errorf("did not create expected ProwJob: %s", diff)
 	}
 }
 
 func checkMigrator(t *testing.T, migrator fakeMigrator, expectedRetiredStatuses map[orgRepo]sets.String, expectedMigratedStatuses map[orgRepo]migrationSet) {
-	if actual, expected := migrator.retired, expectedRetiredStatuses; !reflect.DeepEqual(actual, expected) {
-		t.Errorf("did not retire correct statuses: %s", diff.ObjectReflectDiff(actual, expected))
+	if diff := cmp.Diff(migrator.retired, expectedRetiredStatuses, ignoreUnexported); diff != "" {
+		t.Errorf("did not retire correct statuses: %s", diff)
 	}
-	if actual, expected := migrator.migrated, expectedMigratedStatuses; !reflect.DeepEqual(actual, expected) {
-		t.Errorf("did not migrate correct statuses: %s", diff.ObjectReflectDiff(actual, expected))
+	if diff := cmp.Diff(migrator.migrated, expectedMigratedStatuses, ignoreUnexported); diff != "" {
+		t.Errorf("did not migrate correct statuses: %s", diff)
 	}
 }

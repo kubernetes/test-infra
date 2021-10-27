@@ -39,7 +39,7 @@ type closeClient interface {
 func isActive(gc closeClient, org, repo string, number int) (bool, error) {
 	labels, err := gc.GetIssueLabels(org, repo, number)
 	if err != nil {
-		return true, fmt.Errorf("list issue labels error: %v", err)
+		return true, fmt.Errorf("list issue labels error: %w", err)
 	}
 	for _, label := range []string{"lifecycle/stale", "lifecycle/rotten"} {
 		if github.HasLabel(label, labels) {
@@ -94,7 +94,7 @@ func handleClose(gc closeClient, log *logrus.Entry, e *github.GenericCommentEven
 	if e.IsPR {
 		log.Info("Closing PR.")
 		if err := gc.ClosePR(org, repo, number); err != nil {
-			return fmt.Errorf("Error closing PR: %v", err)
+			return fmt.Errorf("Error closing PR: %w", err)
 		}
 		response := plugins.FormatResponseRaw(e.Body, e.HTMLURL, commentAuthor, "Closed this PR.")
 		return gc.CreateComment(org, repo, number, response)
@@ -102,7 +102,7 @@ func handleClose(gc closeClient, log *logrus.Entry, e *github.GenericCommentEven
 
 	log.Info("Closing issue.")
 	if err := gc.CloseIssue(org, repo, number); err != nil {
-		return fmt.Errorf("Error closing issue: %v", err)
+		return fmt.Errorf("Error closing issue: %w", err)
 	}
 	response := plugins.FormatResponseRaw(e.Body, e.HTMLURL, commentAuthor, "Closing this issue.")
 	return gc.CreateComment(org, repo, number, response)

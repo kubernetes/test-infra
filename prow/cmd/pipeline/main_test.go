@@ -22,15 +22,10 @@ import (
 	"testing"
 
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 )
 
 func TestOptions(t *testing.T) {
-
-	defaultInstrumentationOptions := prowflagutil.InstrumentationOptions{
-		MetricsPort: prowflagutil.DefaultMetricsPort,
-		PProfPort:   prowflagutil.DefaultPProfPort,
-		HealthPort:  prowflagutil.DefaultHealthPort,
-	}
 	cases := []struct {
 		name     string
 		args     []string
@@ -44,19 +39,29 @@ func TestOptions(t *testing.T) {
 		name: "only config works",
 		args: []string{"--config=/etc/config.yaml"},
 		expected: &options{
-			configPath:             "/etc/config.yaml",
-			instrumentationOptions: defaultInstrumentationOptions,
+			config: configflagutil.ConfigOptions{
+				ConfigPathFlagName:                    "config",
+				ConfigPath:                            "/etc/config.yaml",
+				JobConfigPathFlagName:                 "job-config-path",
+				SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+			},
+			instrumentationOptions: prowflagutil.DefaultInstrumentationOptions(),
 		},
 	}, {
 		name: "parse all arguments",
 		args: []string{"--all-contexts=true", "--tot-url=https://tot",
 			"--kubeconfig=/root/kubeconfig", "--config=/etc/config.yaml"},
 		expected: &options{
-			allContexts:            true,
-			totURL:                 "https://tot",
-			kubeconfig:             "/root/kubeconfig",
-			configPath:             "/etc/config.yaml",
-			instrumentationOptions: defaultInstrumentationOptions,
+			allContexts: true,
+			totURL:      "https://tot",
+			kubeconfig:  "/root/kubeconfig",
+			config: configflagutil.ConfigOptions{
+				ConfigPathFlagName:                    "config",
+				ConfigPath:                            "/etc/config.yaml",
+				JobConfigPathFlagName:                 "job-config-path",
+				SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+			},
+			instrumentationOptions: prowflagutil.DefaultInstrumentationOptions(),
 		},
 	}}
 	for _, tc := range cases {

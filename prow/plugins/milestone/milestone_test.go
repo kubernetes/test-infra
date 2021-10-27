@@ -17,7 +17,6 @@ limitations under the License.
 package milestone
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/sirupsen/logrus"
@@ -26,17 +25,6 @@ import (
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/plugins"
 )
-
-func formatLabels(labels ...string) []string {
-	r := []string{}
-	for _, l := range labels {
-		r = append(r, fmt.Sprintf("%s/%s#%d:%s", "org", "repo", 1, l))
-	}
-	if len(r) == 0 {
-		return nil
-	}
-	return r
-}
 
 func TestMilestoneStatus(t *testing.T) {
 	type testCase struct {
@@ -117,7 +105,8 @@ func TestMilestoneStatus(t *testing.T) {
 	}
 
 	for _, tc := range testcases {
-		fakeClient := &fakegithub.FakeClient{IssueComments: make(map[int][]github.IssueComment), MilestoneMap: milestonesMap}
+		fakeClient := fakegithub.NewFakeClient()
+		fakeClient.MilestoneMap = milestonesMap
 		fakeClient.Milestone = tc.previousMilestone
 
 		maintainersID := 42

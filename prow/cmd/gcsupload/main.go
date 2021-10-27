@@ -19,6 +19,8 @@ limitations under the License.
 package main
 
 import (
+	"context"
+
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 	"k8s.io/test-infra/prow/pod-utils/options"
@@ -45,7 +47,8 @@ func main() {
 		logrus.WithError(err).Fatal("Could not resolve job spec")
 	}
 
-	if err := o.Run(spec, map[string]gcs.UploadFunc{}); err != nil {
+	ctx := context.Background()
+	if err := o.Run(ctx, spec, map[string]gcs.UploadFunc{}); err != nil {
 		logrus.WithError(err).Fatal("Failed to upload to GCS")
 	}
 }

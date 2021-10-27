@@ -17,6 +17,7 @@ limitations under the License.
 package fakeghhook
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/sirupsen/logrus"
@@ -29,7 +30,9 @@ type FakeClient struct {
 	// Maps org name to the list of hooks
 	OrgHooks map[string][]github.Hook
 	// Maps repo name to the list of hooks
-	RepoHooks map[string][]github.Hook
+	RepoHooks           map[string][]github.Hook
+	UserRepoInvitations []github.UserRepoInvitation
+	UserOrgInvitations  []github.UserOrgInvitation
 }
 
 func (f *FakeClient) ListOrgHooks(org string) ([]github.Hook, error) {
@@ -123,15 +126,51 @@ func (f *FakeClient) DeleteRepoHook(org, repo string, id int, req github.HookReq
 	return deleteHook(f.RepoHooks, org+"/"+repo, req)
 }
 
+func (f *FakeClient) ListCurrentUserRepoInvitations() ([]github.UserRepoInvitation, error) {
+	return f.UserRepoInvitations, nil
+}
+
+func (f *FakeClient) AcceptUserRepoInvitation(invitationID int) error {
+	found := -1
+	for idx, iv := range f.UserRepoInvitations {
+		if iv.InvitationID == invitationID {
+			found = idx
+			break
+		}
+	}
+	if found == -1 {
+		return errors.New("invitation doesn't exist")
+	}
+	f.UserRepoInvitations = append(f.UserRepoInvitations[:found], f.UserRepoInvitations[found+1:]...)
+	return nil
+}
+
+func (f *FakeClient) ListCurrentUserOrgInvitations() ([]github.UserOrgInvitation, error) {
+	return f.UserOrgInvitations, nil
+}
+
+func (f *FakeClient) AcceptUserOrgInvitation(org string) error {
+	found := -1
+	for idx, iv := range f.UserOrgInvitations {
+		if iv.Org.Login == org {
+			found = idx
+			break
+		}
+	}
+	if found == -1 {
+		return errors.New("invitation doesn't exist")
+	}
+	f.UserOrgInvitations = append(f.UserOrgInvitations[:found], f.UserOrgInvitations[found+1:]...)
+	return nil
+}
+
 func deleteHook(m map[string][]github.Hook, key string, req github.HookRequest) error {
 	if _, ok := m[key]; !ok {
 		return nil
 	}
 
-	hookExists := false
 	for i, hook := range m[key] {
 		if hook.Config.URL == req.Config.URL {
-			hookExists = true
 			m[key] = append(m[key][:i], m[key][i+1:]...)
 			if len(m[key]) == 0 {
 				delete(m, key)
@@ -140,8 +179,5 @@ func deleteHook(m map[string][]github.Hook, key string, req github.HookRequest) 
 		}
 	}
 
-	if !hookExists {
-		return fmt.Errorf("hook for %q does not exist, cannot delete", req.Config.URL)
-	}
-	return nil
+	return fmt.Errorf("hook for %q does not exist, cannot delete", req.Config.URL)
 }

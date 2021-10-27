@@ -31,4 +31,4 @@ defined in [`pushgateway_deployment.yaml`](/config/prow/cluster/pushgateway_depl
 ## Kubernetes Prow Metrics
 
 Prometheus metrics from the Kubernetes Prow instance are used to create the
-graphs at http://velodrome.k8s.io/.
+graphs at http://monitoring.prow.k8s.io

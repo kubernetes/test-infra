@@ -26,16 +26,19 @@ import (
 )
 
 // GetDiskUsage wraps syscall.Statfs for usage in GCing the disk
-func GetDiskUsage(path string) (percentBlocksFree float64, bytesFree, bytesUsed uint64, err error) {
+func GetDiskUsage(path string) (percentBlocksFree float64, bytesFree, bytesUsed uint64, percentInodeFree float64, inodeFree, inodeUsed uint64, err error) {
 	var stat syscall.Statfs_t
 	err = syscall.Statfs(path, &stat)
 	if err != nil {
-		return 0, 0, 0, err
+		return 0, 0, 0, 0, 0, 0, err
 	}
 	percentBlocksFree = float64(stat.Bfree) / float64(stat.Blocks) * 100
 	bytesFree = stat.Bfree * uint64(stat.Bsize)
 	bytesUsed = (stat.Blocks - stat.Bfree) * uint64(stat.Bsize)
-	return percentBlocksFree, bytesFree, bytesUsed, nil
+
+	percentInodeFree = float64(stat.Ffree) / float64(stat.Files) * 100
+	inodeUsed = stat.Files - stat.Ffree
+	return percentBlocksFree, bytesFree, bytesUsed, percentInodeFree, stat.Ffree, inodeUsed, nil
 }
 
 // GetATime the atime for a file, logging errors instead of failing

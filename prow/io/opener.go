@@ -204,7 +204,7 @@ func (o *opener) Reader(ctx context.Context, path string) (io.ReadCloser, error)
 	if strings.HasPrefix(path, providers.GS+"://") {
 		g, err := o.openGCS(path)
 		if err != nil {
-			return nil, fmt.Errorf("bad gcs path: %v", err)
+			return nil, fmt.Errorf("bad gcs path: %w", err)
 		}
 		return g.NewReader(ctx)
 	}
@@ -227,7 +227,7 @@ func (o *opener) RangeReader(ctx context.Context, path string, offset, length in
 	if strings.HasPrefix(path, providers.GS+"://") {
 		g, err := o.openGCS(path)
 		if err != nil {
-			return nil, fmt.Errorf("bad gcs path: %v", err)
+			return nil, fmt.Errorf("bad gcs path: %w", err)
 		}
 		return g.NewRangeReader(ctx, offset, length)
 	}
@@ -254,7 +254,7 @@ func (o *opener) Writer(ctx context.Context, p string, opts ...WriterOptions) (i
 	if strings.HasPrefix(p, providers.GS+"://") {
 		g, err := o.openGCS(p)
 		if err != nil {
-			return nil, fmt.Errorf("bad gcs path: %v", err)
+			return nil, fmt.Errorf("bad gcs path: %w", err)
 		}
 		if options.PreconditionDoesNotExist != nil && *options.PreconditionDoesNotExist {
 			g = g.If(storage.Conditions{DoesNotExist: true})
@@ -307,7 +307,7 @@ func (o *opener) Attributes(ctx context.Context, path string) (Attributes, error
 	if strings.HasPrefix(path, providers.GS+"://") {
 		g, err := o.openGCS(path)
 		if err != nil {
-			return Attributes{}, fmt.Errorf("bad gcs path: %v", err)
+			return Attributes{}, fmt.Errorf("bad gcs path: %w", err)
 		}
 		attr, err := g.Attrs(ctx)
 		if err != nil {

@@ -1,3 +1,11 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  annotations:
+    iam.gke.io/gcp-service-account: kettle@k8s-gubernator.iam.gserviceaccount.com
+  name: kettle
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -12,13 +20,12 @@ spec:
       labels:
         app: kettle-staging
     spec:
+      serviceAccountName: kettle
       containers:
       - name: kettle-staging
         image: gcr.io/k8s-testimages/kettle:latest
         imagePullPolicy: Always
         env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /etc/service-account/service-account.json
         - name: BUILD_LIMIT
           value: "1000"
         - name: DEPLOYMENT
@@ -26,15 +33,9 @@ spec:
         - name: SUBSCRIPTION_PATH
           value: kubernetes-jenkins/gcs-changes/kettle-staging
         volumeMounts:
-        - name: service
-          mountPath: /etc/service-account
-          readOnly: true
         - name: data
           mountPath: /data
       volumes:
-      - name: service
-        secret:
-          secretName: kettle-service-account
       - name: data
         persistentVolumeClaim:
           claimName: kettle-data-staging

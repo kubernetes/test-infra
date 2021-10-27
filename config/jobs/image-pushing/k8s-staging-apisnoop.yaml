@@ -3,17 +3,17 @@ postsubmits:
     - name: apisnoop-push-auditlogger-images
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: conformance-apisnoop
+        testgrid-dashboards: conformance-apisnoop, sig-k8s-infra-gcb
         testgrid-tab-name: apisnoop-auditlogger-image
         testgrid-alert-email: apisnoop@ii.coop
         description: Builds the auditlogger image for APISnoop deployments
       decorate: true
       branches:
-        - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210927-471c27b6e3
             command:
               - /run.sh
             args:
@@ -25,17 +25,17 @@ postsubmits:
     - name: apisnoop-push-snoopdb-images
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: conformance-apisnoop
+        testgrid-dashboards: conformance-apisnoop, sig-k8s-infra-gcb
         testgrid-tab-name: apisnoop-snoopdb-image
         testgrid-alert-email: apisnoop@ii.coop
         description: Builds the snoopdb image for APISnoop deployments
       decorate: true
       branches:
-        - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-testimages/image-builder:v20200901-ab141a0
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20210927-471c27b6e3
             command:
               - /run.sh
             args:

@@ -1,13 +1,12 @@
 # test-infra
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/kubernetes/test-infra)](https://goreportcard.com/report/github.com/kubernetes/test-infra)
 [![GoDoc](https://godoc.org/github.com/kubernetes/test-infra?status.svg)](https://godoc.org/github.com/kubernetes/test-infra)
 [![Build status](https://prow.k8s.io/badge.svg?jobs=post-test-infra-bazel)](https://testgrid.k8s.io/sig-testing-misc#post-bazel)
 
 This repository contains tools and configuration files for the testing and
 automation needs of the Kubernetes project.
 
-Our [architecture diagram](docs/architecture.svg) provides a (wildly out of date [#13063])
+Our [architecture diagram](docs/architecture.svg) provides an (updated [#13063])
 overview of how the different tools and services interact.
 
 ## CI Job Management

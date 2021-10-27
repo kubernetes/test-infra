@@ -1,8 +1,78 @@
 presubmits:
-  # Note, these jobs need to generally stage reults to a GCE bucket.
-  # We currently have two, network-policies , and ipvs...
+  # Note, these jobs need to generally stage results to a GCE bucket.
+  # We currently have three, ingress, network-policies , and ipvs...
   kubernetes/kubernetes:
+
+  - name: pull-kubernetes-e2e-gci-gce-ingress
+    branches:
+    - master
+    always_run: false
+    run_if_changed: '^(test/e2e/network/|pkg/apis/networking)'
+    optional: true
+    decorate: true
+    decoration_config:
+      timeout: 360m
+      grace_period: 15m
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: "k8s.io/release"
+    skip_report: false
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
+    spec:
+      containers:
+      - command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --build=quick
+        - --extract=local
+        - --env=ALLOW_PRIVILEGED=true
+        - --env=KUBE_CONTAINER_RUNTIME=containerd
+        - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.5.7
+        - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.2
+        - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
+        - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
+        - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
+        - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-2004-focal-v20200423
+        - --env=KUBE_GCE_MASTER_PROJECT=ubuntu-os-cloud
+        - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
+        - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2004-focal-v20200423
+        - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
+        - --env=GCE_ALPHA_FEATURES=NetworkEndpointGroup
+        - --env=KUBE_GCE_ENABLE_IP_ALIASES=true
+        - --gcp-master-image=ubuntu
+        - --gcp-node-image=ubuntu
+        - --gcp-nodes=4
+        - --gcp-zone=us-west1-b
+        - --provider=gce
+        - --test_args=--ginkgo.focus=\[Feature:Ingress\]|\[Feature:NEG\]|Loadbalancing|LoadBalancers --ginkgo.skip=\[Feature:kubemci\]|\[Disruptive\]|\[Feature:IngressScale\]
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gci-gce-ingress
+        - --timeout=320m
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
+        resources:
+          requests:
+            memory: "6Gi"
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-network-gce
+      testgrid-tab-name: presubmit-network-ingress, google-gce
+      testgrid-num-failures-to-alert: '6'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
+      description: Uses kubetest to run e2e Conformance, SIG-Network or Network Ingress tests against a cluster (ubuntu based and uses containerd) created with cluster/kube-up.sh
+
   - name: pull-kubernetes-e2e-ubuntu-gce-network-policies
+    branches:
+    - master
     always_run: false
     run_if_changed: '^(test/e2e/network/|pkg/apis/networking)'
     optional: true
@@ -17,8 +87,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
       preset-pull-kubernetes-e2e: "true"
       preset-pull-kubernetes-e2e-gce: "true"
     spec:
@@ -27,13 +96,14 @@ presubmits:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
         args:
-        - --build=bazel
+        - --build=quick
         - --extract=local
         - --env=ALLOW_PRIVILEGED=true
         - --env=NETWORK_POLICY_PROVIDER=calico
         - --env=KUBE_CONTAINER_RUNTIME=containerd
-        - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.4.0
-        - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.0-rc92
+        - --env=KUBE_FEATURE_GATES=NetworkPolicyEndPort=true
+        - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.5.7
+        - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.2
         - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
         - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
         - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
@@ -42,6 +112,7 @@ presubmits:
         - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
         - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2004-focal-v20200423
         - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
+        - --env=KUBE_ENABLE_KONNECTIVITY_SERVICE=false
         - --ginkgo-parallel=15
         - --gcp-master-image=ubuntu
         - --gcp-node-image=ubuntu
@@ -50,17 +121,20 @@ presubmits:
         - --provider=gce
         # Skipping snat tests probably GCE related? https://github.com/kubernetes/test-infra/issues/20321
         # Skipping Cloud Provider specific tests: LoadBalancer, ESIPP (Source IP Preservation)
-        - --test_args=--ginkgo.focus=\[sig-network\]|\[Conformance\]|\[Feature:NetworkPolicy\] --ginkgo.skip=\[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS)\]|DualStack|GCE|SCTP|Disruptive|Serial|SNAT|LB.health.check|LoadBalancer|load.balancer|ESIPP
+        - --test_args=--ginkgo.focus=\[sig-network\]|\[Conformance\]|\[Feature:NetworkPolicy\]|\[Feature:NetworkPolicyEndPort\] --ginkgo.skip=\[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS|KubeProxyDaemonSetMigration|SCTP)\]|DualStack|GCE|Disruptive|Serial|SNAT|LoadBalancer|ESIPP
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-ubuntu-gce-network-policies
         - --timeout=150m
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
         resources:
           requests:
             memory: "6Gi"
+        securityContext:
+          privileged: true
     annotations:
       testgrid-dashboards: sig-network-gce
       testgrid-tab-name: presubmit-network-policies, google-gce
       testgrid-num-failures-to-alert: '6'
+      testgrid-alert-stale-results-hours: '24'
       testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
       description: Uses kubetest to run e2e Conformance, SIG-Network or Network Policy tests against a cluster (ubuntu based and uses containerd) created with cluster/kube-up.sh
 
@@ -74,8 +148,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
       preset-pull-kubernetes-e2e: "true"
       preset-pull-kubernetes-e2e-gce: "true"
     spec:
@@ -88,7 +161,7 @@ presubmits:
         - --timeout=105
         - --scenario=kubernetes_e2e
         - --
-        - --build=bazel
+        - --build=quick
         - --cluster=
         - --env=KUBE_PROXY_MODE=ipvs
         - --extract=local
@@ -99,31 +172,34 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gci-gce-ipvs
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=80m # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
         resources:
           requests:
             memory: "6Gi"
+        securityContext:
+          privileged: true
 
   kubernetes/dns:
   - name: pull-kubernetes-dns-test
     branches:
     - master
     always_run: true
+    decorate: true
     labels:
       preset-service-account: "true"
+      preset-dind-enabled: "true"
+    path_alias: k8s.io/dns
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20200824-5d057db
-        args:
-        - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
-        - --root=/go/src
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --scenario=execute
-        - --
-        - "true"
-
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
+        command:
+        - "runner.sh"
+        - ./presubmits.sh
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
 periodics:
-- interval: 30m
+- interval: 6h
   name: ci-kubernetes-e2e-gce-alpha-api
   labels:
     preset-service-account: "true"
@@ -148,7 +224,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:GCEAlphaFeature\] --minStartupPods=8
       - --timeout=60m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
   annotations:
     testgrid-dashboards: google-gce, sig-network-gce
     testgrid-tab-name: gce-alpha-api
@@ -176,7 +252,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:PerformanceDNS\]
       - --timeout=60m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
   annotations:
     testgrid-dashboards: sig-network-gce
     testgrid-tab-name: gce-coredns-performance
@@ -203,11 +279,11 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:PerformanceDNS\]
       - --timeout=60m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
   annotations:
     testgrid-dashboards: sig-network-gce
     testgrid-tab-name: gce-kubedns-performance
-- interval: 60m
+- interval: 6h
   name: ci-kubernetes-e2e-gci-gce-coredns
   labels:
     preset-service-account: "true"
@@ -228,7 +304,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=150m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
 
 - interval: 6h
   name: ci-kubernetes-e2e-gce-coredns-performance-nodecache
@@ -254,7 +330,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:PerformanceDNS\]
       - --timeout=60m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
   annotations:
     testgrid-dashboards: sig-network-gce
     testgrid-tab-name: gce-coredns-performance-nodecache
@@ -282,11 +358,11 @@ periodics:
       - --test_args=--ginkgo.focus=\[Feature:PerformanceDNS\]
       - --timeout=60m
       - --use-logexporter
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
   annotations:
     testgrid-dashboards: sig-network-gce
     testgrid-tab-name: gce-kubedns-performance-nodecache
-- interval: 60m
+- interval: 6h
   name: ci-kubernetes-e2e-gci-gce-coredns-nodecache
   labels:
     preset-service-account: "true"
@@ -306,11 +382,11 @@ periodics:
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=30
       - --provider=gce
-      - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|hostNetwork --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=150m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
 
-- interval: 30m
+- interval: 6h
   name: ci-kubernetes-e2e-gci-gce-ingress
   cluster: k8s-infra-prow-build
   labels:
@@ -329,11 +405,11 @@ periodics:
       - --extract=ci/latest-fast
       - --extract-ci-bucket=k8s-release-dev
       - --gcp-node-image=gci
-      - --gcp-zone=asia-southeast1-a
+      - --gcp-zone=us-west1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:Ingress\]|\[Feature:NEG\]
       - --timeout=320m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
       resources:
         limits:
           cpu: 1
@@ -347,7 +423,7 @@ periodics:
     testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
     description: Uses kubetest to run e2e tests (+Feature:Ingress|NEG) against a cluster created with cluster/kube-up.sh
     testgrid-alert-stale-results-hours: '24'
-- interval: 30m
+- interval: 6h
   name: ci-kubernetes-e2e-gci-gce-ingress-canary
   cluster: k8s-infra-prow-build
   labels:
@@ -366,11 +442,11 @@ periodics:
       - --extract=ci/latest-fast
       - --extract-ci-bucket=k8s-release-dev
       - --gcp-node-image=gci
-      - --gcp-zone=asia-southeast1-a
+      - --gcp-zone=us-west1-b
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:Ingress\]|\[Feature:NEG\]
       - --timeout=320m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
       resources:
         limits:
           cpu: 1
@@ -383,7 +459,7 @@ periodics:
     testgrid-tab-name: gci-gce-ingress
     description: Duplicate of ci-kubernetes-e2e-gci-gce-ingress pinned to a k8s-infra project to verify quota
     testgrid-alert-stale-results-hours: '24'
-- interval: 60m
+- interval: 6h
   name: ci-kubernetes-e2e-gci-gce-ingress-manual-network
   labels:
     preset-service-account: "true"
@@ -404,13 +480,13 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
   annotations:
     testgrid-dashboards: sig-network-gce
     testgrid-tab-name: gci-gce-ingress-manual-network
     testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
     testgrid-alert-stale-results-hours: '24'
-- interval: 30m
+- interval: 6h
   name: ci-kubernetes-e2e-gci-gce-ip-alias
   labels:
     preset-service-account: "true"
@@ -434,11 +510,11 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
   annotations:
     testgrid-dashboards: google-gce, google-gci
     testgrid-tab-name: ip-alias
-- interval: 60m
+- interval: 6h
   name: ci-kubernetes-e2e-gci-gce-ipvs
   labels:
     preset-service-account: "true"
@@ -458,13 +534,14 @@ periodics:
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=30
       - --provider=gce
-      - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      # skip ESIPP should work from pods #97081
+      - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|ESIPP.*should.work.from.pods --minStartupPods=8
       - --timeout=150m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
   annotations:
     testgrid-num-failures-to-alert: '6'
     testgrid-alert-stale-results-hours: '24'
-- interval: 60m
+- interval: 6h
   name: ci-kubernetes-e2e-gci-gce-kube-dns
   labels:
     preset-service-account: "true"
@@ -485,9 +562,9 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=150m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
 
-- interval: 60m
+- interval: 6h
   name: ci-kubernetes-e2e-gci-gce-kube-dns-nodecache
   labels:
     preset-service-account: "true"
@@ -507,11 +584,11 @@ periodics:
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=30
       - --provider=gce
-      - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|hostNetwork --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=150m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
 
-- interval: 30m
+- interval: 6h
   name: ci-kubernetes-e2e-gci-gce-serial-kube-dns
   labels:
     preset-service-account: "true"
@@ -533,9 +610,9 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=500m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
 
-- interval: 30m
+- interval: 6h
   name: ci-kubernetes-e2e-gci-gce-serial-kube-dns-nodecache
   labels:
     preset-service-account: "true"
@@ -558,47 +635,9 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=500m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
 
-- interval: 12h
-  name: ci-kubernetes-e2e-ubuntu-gce-basic-sctp
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=70
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
-      - --check-leaked-resources
-      - --env=KUBE_FEATURE_GATES=SCTPSupport=true
-      - --env=ALLOW_PRIVILEGED=true
-      - --env=NET_PLUGIN=kubenet
-      - --env=KUBE_CONTAINER_RUNTIME=containerd
-      - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.4.3
-      - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.0-rc92
-      - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
-      - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
-      - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
-      - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-2004-focal-v20200423
-      - --env=KUBE_GCE_MASTER_PROJECT=ubuntu-os-cloud
-      - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
-      - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2004-focal-v20200423
-      - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
-      - --extract=ci/latest
-      - --gcp-master-image=ubuntu
-      - --gcp-node-image=ubuntu
-      - --gcp-nodes=4
-      - --gcp-zone=us-west1-b
-      - --provider=gce
-      # SCTPConnectivity hangs on GCE when trying to access the NodePort service, but works for ClusterIP
-      - --test_args=--ginkgo.focus=\[Feature:SCTP\] --ginkgo.skip=\[Feature:NetworkPolicy\]
-      - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
-
-- interval: 4h
+- interval: 6h
   name: ci-kubernetes-e2e-ubuntu-gce-network-policies
   labels:
     preset-service-account: "true"
@@ -614,8 +653,9 @@ periodics:
       - --env=ALLOW_PRIVILEGED=true
       - --env=NETWORK_POLICY_PROVIDER=calico
       - --env=KUBE_CONTAINER_RUNTIME=containerd
-      - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.4.0
-      - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.0-rc92
+      - --env=KUBE_FEATURE_GATES=NetworkPolicyEndPort=true
+      - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.5.7
+      - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.2
       - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
       - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
       - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
@@ -624,6 +664,7 @@ periodics:
       - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
       - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2004-focal-v20200423
       - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
+      - --env=KUBE_ENABLE_KONNECTIVITY_SERVICE=false
       - --ginkgo-parallel=15
       - --gcp-master-image=ubuntu
       - --gcp-node-image=ubuntu
@@ -632,10 +673,10 @@ periodics:
       - --provider=gce
       # Skipping snat tests probably GCE related? https://github.com/kubernetes/test-infra/issues/20321
       # Skipping Cloud Provider specific tests: LoadBalancer, ESIPP (Source IP Preservation)
-      - --test_args=--ginkgo.focus=\[sig-network\]|\[Conformance\]|\[Feature:NetworkPolicy\] --ginkgo.skip=\[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS)\]|DualStack|GCE|SCTP|Disruptive|Serial|SNAT|LB.health.check|LoadBalancer|load.balancer|ESIPP
+      - --test_args=--ginkgo.focus=\[sig-network\]|\[Conformance\]|\[Feature:NetworkPolicy\]|\[Feature:NetworkPolicyEndPort\] --ginkgo.skip=\[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS|KubeProxyDaemonSetMigration|SCTP)\]|DualStack|GCE|Disruptive|Serial|SNAT|LoadBalancer|ESIPP
       - --extract=ci/latest
       - --timeout=150m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210113-cc576af-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211012-ba1fa86530-master
       resources:
         requests:
           memory: "6Gi"
@@ -643,5 +684,6 @@ periodics:
     testgrid-dashboards: sig-network-gce
     testgrid-tab-name: network-policies, google-gce
     testgrid-num-failures-to-alert: '6'
+    testgrid-alert-stale-results-hours: '24'
     testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
     description: Uses kubetest to run e2e Conformance, SIG-Network or Network Policy tests against a cluster (ubuntu based and uses containerd) created with cluster/kube-up.sh

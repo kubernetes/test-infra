@@ -67,6 +67,7 @@ py_test(
         requirement("certifi"),
         requirement("chardet"),
         requirement("idna"),
+        requirement("parameterized"),
         requirement("ruamel.yaml"),
         requirement("requests"),
         requirement("urllib3"),

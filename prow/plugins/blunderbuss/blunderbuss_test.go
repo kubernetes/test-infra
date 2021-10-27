@@ -112,7 +112,7 @@ type fakeOwnersClient struct {
 	reviewers         map[string]layeredsets.String
 	requiredReviewers map[string]sets.String
 	leafReviewers     map[string]sets.String
-	dirBlacklist      []*regexp.Regexp
+	dirDenylist       []*regexp.Regexp
 }
 
 func (foc *fakeOwnersClient) Filenames() ownersconfig.Filenames {
@@ -155,9 +155,13 @@ func (foc *fakeOwnersClient) IsNoParentOwners(path string) bool {
 	return false
 }
 
+func (foc *fakeOwnersClient) IsAutoApproveUnownedSubfolders(path string) bool {
+	return false
+}
+
 func (foc *fakeOwnersClient) ParseSimpleConfig(path string) (repoowners.SimpleConfig, error) {
 	dir := filepath.Dir(path)
-	for _, re := range foc.dirBlacklist {
+	for _, re := range foc.dirDenylist {
 		if re.MatchString(dir) {
 			return repoowners.SimpleConfig{}, filepath.SkipDir
 		}
@@ -174,7 +178,7 @@ func (foc *fakeOwnersClient) ParseSimpleConfig(path string) (repoowners.SimpleCo
 
 func (foc *fakeOwnersClient) ParseFullConfig(path string) (repoowners.FullConfig, error) {
 	dir := filepath.Dir(path)
-	for _, re := range foc.dirBlacklist {
+	for _, re := range foc.dirDenylist {
 		if re.MatchString(dir) {
 			return repoowners.FullConfig{}, filepath.SkipDir
 		}
@@ -310,6 +314,11 @@ var (
 			filesChanged:      []string{"f.go"},
 			reviewerCount:     1,
 			expectedRequested: []string{"non-author"},
+		},
+		{
+			name:          "reviewerCount==0",
+			filesChanged:  []string{"f.go"},
+			reviewerCount: 0,
 		},
 	}
 )
@@ -509,6 +518,11 @@ func TestHandleWithoutExcludeApproversMixed(t *testing.T) {
 			maxReviewerCount:  2,
 			expectedRequested: []string{"leafApprover1", "leafApprover2"},
 		},
+		{
+			name:          "reviewerCount==0",
+			filesChanged:  []string{"g.go"},
+			reviewerCount: 0,
+		},
 	}
 	for _, tc := range testcases {
 		pr := github.PullRequest{Number: 5, User: github.User{Login: "author"}}
@@ -562,19 +576,22 @@ func TestHandlePullRequest(t *testing.T) {
 			action:            github.PullRequestActionOpened,
 			body:              "/auto-cc",
 			filesChanged:      []string{"a.go"},
+			reviewerCount:     1,
 			expectedRequested: []string{"al"},
 		},
 		{
-			name:         "PR opened with /cc command",
-			action:       github.PullRequestActionOpened,
-			body:         "/cc",
-			filesChanged: []string{"a.go"},
+			name:          "PR opened with /cc command",
+			action:        github.PullRequestActionOpened,
+			body:          "/cc",
+			filesChanged:  []string{"a.go"},
+			reviewerCount: 1,
 		},
 		{
-			name:         "PR closed",
-			action:       github.PullRequestActionClosed,
-			body:         "/auto-cc",
-			filesChanged: []string{"a.go"},
+			name:          "PR closed",
+			action:        github.PullRequestActionClosed,
+			body:          "/auto-cc",
+			filesChanged:  []string{"a.go"},
+			reviewerCount: 1,
 		},
 	}
 	for _, tc := range testcases {
@@ -633,38 +650,43 @@ func TestHandleGenericComment(t *testing.T) {
 			isPR:              true,
 			body:              "/auto-cc",
 			filesChanged:      []string{"a.go"},
+			reviewerCount:     1,
 			expectedRequested: []string{"al"},
 		},
 		{
-			name:         "comment with an invalid command in an open PR will not trigger auto-assignment",
-			action:       github.GenericCommentActionCreated,
-			issueState:   "open",
-			isPR:         true,
-			body:         "/automatic-review",
-			filesChanged: []string{"a.go"},
+			name:          "comment with an invalid command in an open PR will not trigger auto-assignment",
+			action:        github.GenericCommentActionCreated,
+			issueState:    "open",
+			isPR:          true,
+			body:          "/automatic-review",
+			filesChanged:  []string{"a.go"},
+			reviewerCount: 1,
 		},
 		{
-			name:         "comment with a valid command in a closed PR will not trigger auto-assignment",
-			action:       github.GenericCommentActionCreated,
-			issueState:   "closed",
-			isPR:         true,
-			body:         "/auto-cc",
-			filesChanged: []string{"a.go"},
+			name:          "comment with a valid command in a closed PR will not trigger auto-assignment",
+			action:        github.GenericCommentActionCreated,
+			issueState:    "closed",
+			isPR:          true,
+			body:          "/auto-cc",
+			filesChanged:  []string{"a.go"},
+			reviewerCount: 1,
 		},
 		{
-			name:         "comment deleted from an open PR will not trigger auto-assignment",
-			action:       github.GenericCommentActionDeleted,
-			issueState:   "open",
-			isPR:         true,
-			body:         "/auto-cc",
-			filesChanged: []string{"a.go"},
+			name:          "comment deleted from an open PR will not trigger auto-assignment",
+			action:        github.GenericCommentActionDeleted,
+			issueState:    "open",
+			isPR:          true,
+			body:          "/auto-cc",
+			filesChanged:  []string{"a.go"},
+			reviewerCount: 1,
 		},
 		{
-			name:       "comment with valid command in an open issue will not trigger auto-assignment",
-			action:     github.GenericCommentActionCreated,
-			issueState: "open",
-			isPR:       false,
-			body:       "/auto-cc",
+			name:          "comment with valid command in an open issue will not trigger auto-assignment",
+			action:        github.GenericCommentActionCreated,
+			issueState:    "open",
+			isPR:          false,
+			body:          "/auto-cc",
+			reviewerCount: 1,
 		},
 	}
 	for _, tc := range testcases {

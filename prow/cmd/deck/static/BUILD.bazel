@@ -1,8 +1,6 @@
 package(default_visibility = ["//visibility:public"])
 
-load("@build_bazel_rules_nodejs//:defs.bzl", "rollup_bundle")
-load("@npm_bazel_jasmine//:index.bzl", "jasmine_node_test")
-load("@npm_bazel_typescript//:index.bzl", "ts_library")
+load("//def:ts.bzl", "jasmine_node_test", "rollup_bundle", "ts_library")
 
 ts_library(
     name = "api",
@@ -11,9 +9,10 @@ ts_library(
 
 ts_library(
     name = "common",
-    srcs = glob(["common/*.ts"]),
+    srcs = glob(["common/*.ts"]) + ["vendor.d.ts"],
     deps = [
         ":api",
+        "@npm//@types/gtag.js",
         "@npm//moment",
     ],
 )
@@ -55,6 +54,7 @@ jasmine_node_test(
     srcs = [
         ":prow_test_lib",
     ],
+    templated_args = ["--bazel_patch_module_resolver"],
     deps = [
         "@npm//jasmine",
     ],
@@ -62,7 +62,6 @@ jasmine_node_test(
 
 rollup_bundle(
     name = "prow_bundle",
-    enable_code_splitting = False,
     entry_point = ":prow/prow.ts",
     deps = [
         ":prow",
@@ -81,7 +80,6 @@ ts_library(
 
 rollup_bundle(
     name = "plugin_help_bundle",
-    enable_code_splitting = False,
     entry_point = ":plugin-help/plugin-help.ts",
     deps = [
         ":plugin_help",
@@ -101,7 +99,6 @@ ts_library(
 
 rollup_bundle(
     name = "pr_bundle",
-    enable_code_splitting = False,
     entry_point = "pr/pr.ts",
     deps = [
         ":pr",
@@ -121,7 +118,6 @@ ts_library(
 
 rollup_bundle(
     name = "tide_bundle",
-    enable_code_splitting = False,
     entry_point = ":tide/tide.ts",
     deps = [
         ":tide",
@@ -141,7 +137,6 @@ ts_library(
 
 rollup_bundle(
     name = "tide_history_bundle",
-    enable_code_splitting = False,
     entry_point = ":tide-history/tide-history.ts",
     deps = [
         ":tide_history",
@@ -160,7 +155,6 @@ ts_library(
 
 rollup_bundle(
     name = "command_help_bundle",
-    enable_code_splitting = False,
     entry_point = ":command-help/command-help.ts",
     deps = [
         ":command_help",
@@ -172,6 +166,7 @@ ts_library(
     name = "spyglass",
     srcs = ["spyglass/spyglass.ts"],
     deps = [
+        ":common",
         ":spyglass_common",
     ],
 )
@@ -192,7 +187,6 @@ ts_library(
 
 rollup_bundle(
     name = "spyglass_bundle",
-    enable_code_splitting = False,
     entry_point = ":spyglass/spyglass.ts",
     deps = [
         ":spyglass",
@@ -202,11 +196,27 @@ rollup_bundle(
 
 rollup_bundle(
     name = "spyglass_lens_bundle",
-    enable_code_splitting = False,
     entry_point = ":spyglass/lens.ts",
     deps = [
         ":spyglass_common",
         ":spyglass_lens",
+    ],
+)
+
+ts_library(
+    name = "job_history",
+    srcs = glob(["job-history/*.ts"]),
+    deps = [
+        ":common",
+        "@npm//moment",
+    ],
+)
+
+rollup_bundle(
+    name = "job_history_bundle",
+    entry_point = ":job-history/job-history.ts",
+    deps = [
+        ":job_history",
     ],
 )
 
@@ -241,14 +251,15 @@ filegroup(
 filegroup(
     name = "all-scripts",
     srcs = [
-        ":command_help_bundle",
-        ":plugin_help_bundle",
-        ":pr_bundle",
-        ":prow_bundle",
-        ":spyglass_bundle",
-        ":spyglass_lens_bundle",
-        ":tide_bundle",
-        ":tide_history_bundle",
+        ":command_help_bundle.min",
+        ":job_history_bundle.min",
+        ":plugin_help_bundle.min",
+        ":pr_bundle.min",
+        ":prow_bundle.min",
+        ":spyglass_bundle.min",
+        ":spyglass_lens_bundle.min",
+        ":tide_bundle.min",
+        ":tide_history_bundle.min",
     ],
 )
 

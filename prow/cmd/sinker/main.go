@@ -23,7 +23,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	corev1api "k8s.io/api/core/v1"
@@ -31,6 +30,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/test-infra/prow/pjutil/pprof"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	ctrlruntimelog "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
@@ -40,6 +40,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	kubernetesreporterapi "k8s.io/test-infra/prow/crier/reporters/gcs/kubernetes/api"
 	"k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
@@ -50,9 +51,8 @@ import (
 
 type options struct {
 	runOnce                bool
-	configPath             string
-	jobConfigPath          string
-	dryRun                 flagutil.Bool
+	config                 configflagutil.ConfigOptions
+	dryRun                 bool
 	kubernetes             flagutil.KubernetesOptions
 	instrumentationOptions flagutil.InstrumentationOptions
 }
@@ -69,12 +69,10 @@ const (
 func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	o := options{}
 	fs.BoolVar(&o.runOnce, "run-once", false, "If true, run only once then quit.")
-	fs.StringVar(&o.configPath, "config-path", "", "Path to config.yaml.")
-	fs.StringVar(&o.jobConfigPath, "job-config-path", "", "Path to prow job configs.")
 
-	// TODO(fejta): switch dryRun to be a bool, defaulting to true after March 15, 2019.
-	fs.Var(&o.dryRun, "dry-run", "Whether or not to make mutating API calls to Kubernetes.")
+	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to Kubernetes.")
 
+	o.config.AddFlags(fs)
 	o.kubernetes.AddFlags(fs)
 	o.instrumentationOptions.AddFlags(fs)
 	fs.Parse(args)
@@ -82,12 +80,12 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 }
 
 func (o *options) Validate() error {
-	if err := o.kubernetes.Validate(o.dryRun.Value); err != nil {
+	if err := o.kubernetes.Validate(o.dryRun); err != nil {
 		return err
 	}
 
-	if o.configPath == "" {
-		return errors.New("--config-path is required")
+	if err := o.config.Validate(o.dryRun); err != nil {
+		return err
 	}
 
 	return nil
@@ -103,15 +101,10 @@ func main() {
 
 	defer interrupts.WaitForGracefulShutdown()
 
-	pjutil.ServePProf(o.instrumentationOptions.PProfPort)
+	pprof.Instrument(o.instrumentationOptions)
 
-	if !o.dryRun.Explicit {
-		logrus.Warning("Sinker requires --dry-run=false to function correctly in production.")
-		logrus.Warning("--dry-run will soon default to true. Set --dry-run=false by March 15.")
-	}
-
-	configAgent := &config.Agent{}
-	if err := configAgent.Start(o.configPath, o.jobConfigPath); err != nil {
+	configAgent, err := o.config.ConfigAgent()
+	if err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 	cfg := configAgent.Config
@@ -120,7 +113,7 @@ func main() {
 
 	ctrlruntimelog.SetLogger(zap.New(zap.JSONEncoder()))
 
-	infrastructureClusterConfig, err := o.kubernetes.InfrastructureClusterConfig(o.dryRun.Value)
+	infrastructureClusterConfig, err := o.kubernetes.InfrastructureClusterConfig(o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting config for infastructure cluster")
 	}
@@ -147,7 +140,7 @@ func main() {
 		logrus.WithError(err).Fatal("Error creating manager")
 	}
 
-	buildManagers, err := o.kubernetes.BuildClusterManagers(o.dryRun.Value,
+	buildManagers, err := o.kubernetes.BuildClusterManagers(o.dryRun,
 		func(o *manager.Options) {
 			o.Namespace = cfg().PodNamespace
 		},

@@ -62,7 +62,7 @@ func handle(gc githubClient, log *logrus.Entry, pre github.PullRequestEvent) err
 	}
 
 	if err := gc.DeleteRef(pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, fmt.Sprintf("heads/%s", pr.Head.Ref)); err != nil {
-		return fmt.Errorf("failed to delete branch %s on repo %s/%s after Pull Request #%d got merged: %v",
+		return fmt.Errorf("failed to delete branch %s on repo %s/%s after Pull Request #%d got merged: %w",
 			pr.Head.Ref, pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pre.PullRequest.Number, err)
 	}
 

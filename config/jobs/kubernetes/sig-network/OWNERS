@@ -4,15 +4,16 @@ reviewers:
 - aojea
 - bowei
 - cadmuxe
-- jingax10
 - mrhohn
 - rramkumar1
 approvers:
 - aojea
 - bowei
 - cadmuxe
-- jingax10
 - mrhohn
 - rramkumar1
 labels:
 - sig/network
+
+emeritus_approvers:
+- jingax10

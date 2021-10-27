@@ -26,13 +26,25 @@ go_binary(
 prow_image(
     name = "image",
     base = "@git-base//image",
+    base_arm64 = "@git-base-arm64//image",
+    base_ppc64le = "@git-base-ppc64le//image",
+    build_arm64 = True,
+    build_ppc64le = True,
     component = NAME,
     files = [
         "github_known_hosts",
         "ssh_config",
     ],
-    symlinks = {
+    symlinks_arm64 = {
+        "/clonerefs": "/app/prow/cmd/clonerefs/app-arm64.binary",
+        "/etc/ssh/ssh_config": "/ssh_config",
+    },
+    symlinks_default = {
         "/clonerefs": "/app/prow/cmd/clonerefs/app.binary",
+        "/etc/ssh/ssh_config": "/ssh_config",
+    },
+    symlinks_ppc64le = {
+        "/clonerefs": "/app/prow/cmd/clonerefs/app-ppc64le.binary",
         "/etc/ssh/ssh_config": "/ssh_config",
     },
     visibility = ["//visibility:public"],

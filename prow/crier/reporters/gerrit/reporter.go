@@ -20,14 +20,17 @@ package gerrit
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
+	"github.com/andygrunwald/go-gerrit"
 	"github.com/sirupsen/logrus"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/kube"
 )
@@ -63,6 +66,7 @@ var (
 
 type gerritClient interface {
 	SetReview(instance, id, revision, message string, labels map[string]string) error
+	GetChange(instance, id string) (*gerrit.ChangeInfo, error)
 }
 
 // Client is a gerrit reporter client
@@ -89,12 +93,23 @@ type JobReport struct {
 }
 
 // NewReporter returns a reporter client
-func NewReporter(cookiefilePath string, projects map[string][]string, lister ctrlruntimeclient.Reader) (*Client, error) {
+func NewReporter(cfg config.Getter, cookiefilePath string, projects map[string][]string, lister ctrlruntimeclient.Reader) (*Client, error) {
 	gc, err := client.NewClient(projects)
 	if err != nil {
 		return nil, err
 	}
 	gc.Authenticate(cookiefilePath, "")
+	go func() {
+		for {
+			orgReposConfig := cfg().Gerrit.OrgReposConfig
+			if orgReposConfig == nil {
+				time.Sleep(time.Second)
+				continue
+			}
+			gc.UpdateClients(orgReposConfig.AllRepos())
+			time.Sleep(time.Second)
+		}
+	}()
 	return &Client{
 		gc:     gc,
 		lister: lister,
@@ -108,6 +123,10 @@ func (c *Client) GetName() string {
 
 // ShouldReport returns if this prowjob should be reported by the gerrit reporter
 func (c *Client) ShouldReport(ctx context.Context, log *logrus.Entry, pj *v1.ProwJob) bool {
+	if !pj.Spec.Report {
+		return false
+	}
+
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
@@ -136,28 +155,64 @@ func (c *Client) ShouldReport(ctx context.Context, log *logrus.Entry, pj *v1.Pro
 		return true
 	}
 
-	// Only report when all jobs of the same type on the same revision finished
-	selector := map[string]string{
-		client.GerritRevision:    pj.ObjectMeta.Labels[client.GerritRevision],
-		kube.ProwJobTypeLabel:    pj.ObjectMeta.Labels[kube.ProwJobTypeLabel],
-		client.GerritReportLabel: pj.ObjectMeta.Labels[client.GerritReportLabel],
+	// allPJsAgreeToReport is a helper function that queries all prowjobs based
+	// on provided labels and run each one through singlePJAgreeToReport,
+	// returns false if any of the prowjob doesn't agree.
+	allPJsAgreeToReport := func(labels []string, singlePJAgreeToReport func(pj *v1.ProwJob) bool) bool {
+		selector := map[string]string{}
+		for _, l := range labels {
+			selector[l] = pj.ObjectMeta.Labels[l]
+		}
+
+		var pjs v1.ProwJobList
+		if err := c.lister.List(ctx, &pjs, ctrlruntimeclient.MatchingLabels(selector)); err != nil {
+			log.WithError(err).Errorf("Cannot list prowjob with selector %v", selector)
+			return false
+		}
+
+		for _, pjob := range pjs.Items {
+			if !singlePJAgreeToReport(&pjob) {
+				return false
+			}
+		}
+
+		return true
 	}
 
-	var pjs v1.ProwJobList
-	if err := c.lister.List(ctx, &pjs, ctrlruntimeclient.MatchingLabels(selector)); err != nil {
-		log.WithError(err).Errorf("Cannot list prowjob with selector %v", selector)
-		return false
+	// patchsetNumFromPJ converts value of "prow.k8s.io/gerrit-patchset" to
+	// integer, the value is used for evaluating whether a newer patchset for
+	// current CR was already established. It may accidentally omit reporting if
+	// current prowjob doesn't have this label or has an invalid value, this
+	// will be reflected as warning message in prow.
+	patchsetNumFromPJ := func(pj *v1.ProwJob) int {
+		ps, ok := pj.ObjectMeta.Labels[client.GerritPatchset]
+		if !ok {
+			log.Warnf("Label %s not found in prowjob %s", client.GerritPatchset, pj.Name)
+			return -1
+		}
+		intPs, err := strconv.Atoi(ps)
+		if err != nil {
+			log.Warnf("Found non integer label for %s: %s in prowjob %s", client.GerritPatchset, ps, pj.Name)
+			return -1
+		}
+		return intPs
 	}
 
-	for _, pjob := range pjs.Items {
-		if pjob.Status.State == v1.TriggeredState || pjob.Status.State == v1.PendingState {
+	// Get patchset number from current pj.
+	patchsetNum := patchsetNumFromPJ(pj)
+
+	// Check all other prowjobs to see whether they agree or not
+	return allPJsAgreeToReport([]string{client.GerritRevision, kube.ProwJobTypeLabel, client.GerritReportLabel}, func(pj *v1.ProwJob) bool {
+		if pj.Status.State == v1.TriggeredState || pj.Status.State == v1.PendingState {
 			// other jobs with same label are still running on this revision, skip report
 			log.Info("Other jobs with same label are still running on this revision")
 			return false
 		}
-	}
-
-	return true
+		return true
+	}) && allPJsAgreeToReport([]string{kube.OrgLabel, kube.RepoLabel, kube.PullLabel}, func(pj *v1.ProwJob) bool {
+		// Newer patchset exists, skip report
+		return patchsetNumFromPJ(pj) <= patchsetNum
+	})
 }
 
 // Report will send the current prowjob status as a gerrit review
@@ -198,9 +253,6 @@ func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJo
 			}
 		}
 		for _, pjOnRevisionWithSameLabel := range mostRecentJob {
-			if pjOnRevisionWithSameLabel.Status.State == v1.AbortedState {
-				continue
-			}
 			toReportJobs = append(toReportJobs, pjOnRevisionWithSameLabel)
 		}
 	}
@@ -219,7 +271,7 @@ func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJo
 
 	if report.Total <= 0 {
 		// Shouldn't happen but return if does
-		logger.Warn("Tried to report empty or aborted jobs.")
+		logger.Warn("Tried to report empty jobs.")
 		return nil, nil, nil
 	}
 	var reviewLabels map[string]string
@@ -231,7 +283,18 @@ func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJo
 		case report.Success == report.Total:
 			vote = lgtm
 		case pj.Spec.Type == v1.PresubmitJob:
+			//https://gerrit-documentation.storage.googleapis.com/Documentation/3.1.4/config-labels.html#label_allowPostSubmit
+			// If presubmit and failure vote -1...
 			vote = lbtm
+
+			change, err := c.gc.GetChange(gerritInstance, gerritID)
+			//TODO(mpherman): In cases where the change was deleted we do not want warn nor report
+			if err != nil {
+				logger.WithError(err).Warnf("Unable to get change from instance %s with id %s", gerritInstance, gerritID)
+			} else if change.Status == client.Merged {
+				// Unless change is already merged. Merged changes should not be voted <0
+				vote = lztm
+			}
 		default:
 			vote = lztm
 		}
@@ -240,7 +303,7 @@ func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJo
 
 	logger.Infof("Reporting to instance %s on id %s with message %s", gerritInstance, gerritID, message)
 	if err := c.gc.SetReview(gerritInstance, gerritID, gerritRevision, message, reviewLabels); err != nil {
-		logger.WithError(err).Errorf("fail to set review with label %q on change ID %s", reportLabel, gerritID)
+		logger.WithError(err).Infof("fail to set review with label %q on change ID %s", reportLabel, gerritID)
 
 		if reportLabel == "" {
 			return nil, nil, err

@@ -103,6 +103,8 @@ type Bug struct {
 	UpdateToken string `json:"update_token,omitempty"`
 	// URL is a URL that demonstrates the problem described in the bug, or is somehow related to the bug report.
 	URL string `json:"url,omitempty"`
+	// Verified is a custom field in redhat bugzilla that indicates the status of verification by QA
+	Verified []string `json:"cf_verified,omitempty"`
 	// Version are the versions the bug was reported against.
 	Version []string `json:"version,omitempty"`
 	// Whiteboard is he value of the "status whiteboard" field on the bug.
@@ -160,6 +162,8 @@ type BugCreate struct {
 	TargetMilestone string `json:"target_milestone,omitempty"`
 	// Version are the versions the bug was reported against.
 	Version []string `json:"version,omitempty"`
+	// TargetRelease are the releases that the bug will be fixed in.
+	TargetRelease []string `json:"target_release,omitempty"`
 }
 
 // Comment holds information about a comment
@@ -187,6 +191,16 @@ type Comment struct {
 	IsMarkdown bool `json:"is_markdown,omitempty"`
 	// Tags is an array of comment tags currently set for the comment.
 	Tags []string `json:"tags,omitempty"`
+}
+
+// CommentCreate holds information needed to create a comment
+type CommentCreate struct {
+	// ID is the ID of the bug this comment is on.
+	ID int `json:"id,omitempty"`
+	// Comment is the text of the comment being created.
+	Comment string `json:"comment,omitempty"`
+	// IsPrivate is true if this comment is private (only visible to a certain group called the "insidergroup"), false otherwise.
+	IsPrivate bool `json:"is_private,omitempty"`
 }
 
 // User holds information about a user
@@ -226,6 +240,7 @@ type Flag struct {
 type BugUpdate struct {
 	// DependsOn specifies the bugs that this bug depends on
 	DependsOn  *IDUpdate `json:"depends_on,omitempty"`
+	Blocks     *IDUpdate `json:"blocks,omitempty"`
 	Resolution string    `json:"resolution,omitempty"`
 	// Status is the current status of the bug.
 	Status string `json:"status,omitempty"`
