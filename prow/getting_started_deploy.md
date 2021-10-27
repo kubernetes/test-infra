@@ -180,7 +180,7 @@ Regardless of which object storage you choose, the below adjustments are always 
 * The github app cert by replacing the `<<insert-downloaded-cert-here>>` string
 * The github app id by replacing the `<<insert-the-app-id-here>>` string
 * The hmac token by replacing the `<< insert-hmac-token-here >>` string
-* The domain by replacing the `yourdomain` string
+* The domain by replacing the `<< your-domain.com >>` string
 * Optionally, you can update the `cert-manager.io/cluster-issuer:` annotation if you use cert-manager
 * Your github organization(s) by replacing the `<< your_github_org >>` string
 
@@ -226,7 +226,7 @@ show up.
 ```sh
 kubectl get ingress -n prow prow
 NAME   CLASS    HOSTS                     ADDRESS               	PORTS     AGE
-prow   <none>   prow.<<yourdomain.com>>   an.ip.addr.ess          80, 443   22d
+prow   <none>   prow.<<your-domain.com>>   an.ip.addr.ess          80, 443   22d
 ```
 
 Go to that address in a web browser and verify that the "echo-test" job has a
@@ -236,7 +236,7 @@ to start receiving GitHub events!
 ## Add the webhook to GitHub
 
 To set up the webhook, you have to go the the GitHub UI and edit your app. Update
-the `Webhook URL` property to `https://prow.<<yourdomain.com>>/hook`. Use the URL
+the `Webhook URL` property to `https://prow.<<your-domain.com>>/hook`. Use the URL
 shown above when getting the `Ingress`.
 
 ## Install Prow for a GitHub organization or repo
