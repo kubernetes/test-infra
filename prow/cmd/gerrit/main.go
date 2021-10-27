@@ -54,7 +54,7 @@ type options struct {
 
 func (o *options) validate() error {
 	if len(o.projects) == 0 {
-		return errors.New("--gerrit-projects must be set")
+		logrus.Info("--gerrit-projects is not set, using global config")
 	}
 
 	if o.cookiefilePath != "" && o.tokenPathOverride != "" {

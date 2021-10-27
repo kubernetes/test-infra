@@ -96,7 +96,7 @@ func (o *options) validate() error {
 
 	if o.gerritWorkers > 0 {
 		if len(o.gerritProjects) == 0 {
-			return errors.New("--gerrit-projects must be set")
+			logrus.Info("--gerrit-projects is not set, using global config")
 		}
 
 		if o.cookiefilePath == "" {
