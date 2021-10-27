@@ -1021,7 +1021,7 @@ lensesLoop:
 
 	prHistLink := ""
 	org, repo, number, err := sg.RunToPR(src)
-	if err == nil {
+	if err == nil && !cfg().Deck.Spyglass.HidePRHistLink {
 		prHistLink = "/pr-history?org=" + org + "&repo=" + repo + "&pr=" + strconv.Itoa(number)
 	}
 

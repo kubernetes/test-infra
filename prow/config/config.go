@@ -995,6 +995,10 @@ type Spyglass struct {
 	// TestGridRoot is the root URL to the TestGrid frontend, e.g. "https://testgrid.k8s.io/".
 	// If left blank, TestGrid links will not appear.
 	TestGridRoot string `json:"testgrid_root,omitempty"`
+	// HidePRHistLink allows prow hiding PR History link from deck, this is handy especially for
+	// prow instances that only serves gerrit.
+	// This might become obsolete once https://github.com/kubernetes/test-infra/issues/24130 is fixed.
+	HidePRHistLink bool `json:"hide_pr_history_link,omitempty"`
 }
 
 type GCSBrowserPrefixes map[string]string
