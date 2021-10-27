@@ -28,6 +28,9 @@ expose-gobin:
 grafana-dashboards: install clean-dashboard-out
 	@mkdir -p dashboards_out
 	@for input in $(shell ls grafana_dashboards); do \
+		if [[ ! $input =~ .*\.jsonnet ]]; then \
+			continue; \
+		fi; \
 		output="$${input%.*}.json"; \
 		echo "Generating $${output} from $${input} ..."; \
 		jsonnet -J vendor/ -J lib/ "grafana_dashboards/$${input}" > "./dashboards_out/$${output}"; \
@@ -40,6 +43,9 @@ prow_prometheusrule.yaml: install clean-prometheus-out
 
 apply-configmaps: get-cluster-credentials grafana-dashboards
 	@for input in $(shell ls dashboards_out); do \
+		if [[ ! $input =~ .*\.json ]]; then \
+			continue; \
+		fi; \
 		dashboard_name="grafana-dashboard-$${input%.*}"; \
 		echo "Generating dashboard $${dashboard_name} from $${input} ..."; \
 		kubectl create configmap -n prow-monitoring "$${dashboard_name}" --from-file="$${input}=dashboards_out/$${input}" --dry-run -o yaml | kubectl apply -f -; \
