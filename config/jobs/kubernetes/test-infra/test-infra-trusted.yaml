@@ -132,10 +132,11 @@ postsubmits:
       containers:
       - image: gcr.io/k8s-testimages/gcloud-bazel:v20210128-v0.6-11-gf1c6399
         command:
-        - prow/deploy.sh
+        - make
         args:
-        - --confirm
-        - --config=trusted
+        - -C
+        - config/prow
+        - deploy-all
     annotations:
       testgrid-dashboards: sig-testing-prow
       testgrid-tab-name: deploy-prow
