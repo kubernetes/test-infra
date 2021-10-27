@@ -49,19 +49,32 @@ You need a few things:
 if you are doing this on another cloud skip to the **Manual deployment** below.
 1. Optionally, credentials to a Kubernetes cluster (otherwise, `tackle` will help you create on GCP)
 
+Installing Prow using `tackle` will help you through the following steps:
+
+* Choosing a kubectl context (and creating a cluster / getting its credentials if necessary)
+* Deploying prow into that cluster
+* Configuring GitHub to send prow webhooks for your repos. This is where you'll provide the absolute `/path/to/github/token`
+
 To install prow run the following from the `test-infra` directory and follow the on-screen instructions:
 
+1. Run `tackle`:
 ```sh
 # Ideally use https://bazel.build, alternatively try:
 #   go get -u k8s.io/test-infra/prow/cmd/tackle && tackle
 $ bazel run //prow/cmd/tackle
 ```
 
-This will help you through the following steps:
+2. Once your cluster is created, you'll get a prompt to apply a `starter.yaml`. Before you do that open another terminal and apply the prow CRDs using:
 
-* Choosing a kubectl context (and creating a cluster / getting its credentials if necessary)
-* Deploying prow into that cluster
-* Configuring GitHub to send prow webhooks for your repos. This is where you'll provide the absolute `/path/to/github/token`
+```
+kubectl apply --server-side=true -f https://raw.githubusercontent.com/kubernetes/test-infra/master/config/prow/cluster/prowjob_customresourcedefinition.yaml
+```
+
+3. After that specify the `starter.yaml` you want to use. Once that is done some pods still won't be in the `Running` state because we haven't created the secret containing the credentials needed for our GCS bucket. To do that follow the steps in [Configure a GCS bucket](#configure-a-gcs-bucket).
+
+4. Once that is done, `tackle` should show you the URL where you can access the prow dashboard. To use it with your repositories head over to the settings of the GitHub app you created and there under webhook secret, supply the HMAC token you specified in the [`starter.yaml`](https://github.com/kubernetes/test-infra/blob/master/config/prow/cluster/starter/starter-gcs.yaml#L51).
+
+5. Once that is done, install the GitHub app on the repositories you want (this is only needed if you ran `tackle` with the `--skip-github` flag) and you should now be able to use Prow :)
 
 See the [Next Steps](#next-steps) section after running this utility.
 

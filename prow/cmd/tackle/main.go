@@ -876,7 +876,7 @@ func main() {
 	opt := addFlags(fs)
 	fs.Parse(os.Args[1:])
 
-	const ns = "default"
+	const ns = "prow"
 
 	ctx, err := selectContext(opt.contextOptions)
 	if err != nil {
@@ -908,6 +908,11 @@ func main() {
 		logrus.WithError(err).Fatalf("Failed to apply cluster role binding to %s", ctx)
 	}
 
+	fmt.Println("Deploying prow...")
+	if err := applyStarter(kc, ns, opt.starter, ctx, opt.confirm); err != nil {
+		logrus.WithError(err).Fatal("Could not deploy prow")
+	}
+
 	// configure plugins.yaml and config.yaml
 	// TODO(fejta): throw up an editor
 	if err = ensureConfigMap(kc, ns, "config", "config.yaml"); err != nil {
@@ -915,11 +920,6 @@ func main() {
 	}
 	if err = ensureConfigMap(kc, ns, "plugins", "plugins.yaml"); err != nil {
 		logrus.WithError(err).Fatal("Failed to ensure plugins.yaml exists")
-	}
-
-	fmt.Println("Deploying prow...")
-	if err := applyStarter(kc, ns, opt.starter, ctx, opt.confirm); err != nil {
-		logrus.WithError(err).Fatal("Could not deploy prow")
 	}
 
 	if !*skipGitHub {
@@ -971,6 +971,6 @@ func main() {
 		logrus.WithError(err).Fatalf("Could not find deck URL")
 	}
 	deck.Path = strings.TrimRight(deck.Path, "*")
-	fmt.Printf("Enjoy your %s prow instance at: %s!", ctx, deck.String())
+	fmt.Printf("Enjoy your %s prow instance at: %s", ctx, deck.String())
 	fmt.Println()
 }
