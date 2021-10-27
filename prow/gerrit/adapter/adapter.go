@@ -107,6 +107,7 @@ func NewController(ctx context.Context, prowJobClient prowv1.ProwJobInterface, o
 				time.Sleep(time.Second)
 				continue
 			}
+			// Use globally defined gerrit repos if present
 			if err := gerritClient.UpdateClients(orgReposConfig.AllRepos()); err != nil {
 				logrus.WithError(err).Error("Updating clients.")
 			}
