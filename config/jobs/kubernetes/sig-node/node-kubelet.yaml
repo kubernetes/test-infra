@@ -424,7 +424,8 @@ periodics:
           - --node-test-args=--feature-gates=DynamicKubeletConfig=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
           - --node-tests=true
           - --provider=gce
-          - --test_args=--nodes=1 --focus="\[NodeAlphaFeature:GracefulNodeShutdown\]"
+          # Remove NodeAlphaFeature:GracefulNodeShutdown once the k/k code is submitted
+          - --test_args=--nodes=1 --focus="\[NodeAlphaFeature:GracefulNodeShutdown\]|\[NodeFeature:GracefulNodeShutdown\]"
           - --timeout=60m
         env:
           - name: GOPATH
