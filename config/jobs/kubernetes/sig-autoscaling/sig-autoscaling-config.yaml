@@ -290,6 +290,8 @@ periodics:
       - --provider=gce
       - --gcp-zone=us-west1-b
       - --gcp-node-image=gci
+      # Enable HPAContainerMetrics. Required for container metrics tests.
+      - --env=KUBE_FEATURE_GATES=HPAContainerMetrics=true
       - --extract=ci/latest
       - --timeout=100m
       - --test_args=--ginkgo.focus=\[Feature:HPA\]
