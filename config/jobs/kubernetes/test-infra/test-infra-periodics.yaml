@@ -63,7 +63,7 @@ periodics:
   interval: 1h
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/ci_fuzz:v20211006-0046171
+    - image: gcr.io/k8s-testimages/ci_fuzz:v20211028-ca780f7
       command:
         - runner.sh
       args:
