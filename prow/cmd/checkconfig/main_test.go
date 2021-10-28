@@ -1462,33 +1462,6 @@ func TestOptions(t *testing.T) {
 			expectedError: false,
 		},
 		{
-			name: "prow-yaml-path gets defaulted",
-			args: []string{
-				"--config-path=prow/config.yaml",
-				"--plugin-config=prow/plugins/plugin.yaml",
-				"--job-config-path=config/jobs/org/job.yaml",
-				"--prow-yaml-repo-name=my/repo",
-			},
-			expectedOptions: &options{
-				pluginsConfig: pluginsflagutil.PluginOptions{
-					PluginConfigPath:                         "prow/plugins/plugin.yaml",
-					SupplementalPluginsConfigsFileNameSuffix: "_pluginconfig.yaml",
-					CheckUnknownPlugins:                      true,
-				},
-				config: configflagutil.ConfigOptions{
-					ConfigPathFlagName:                    "config-path",
-					JobConfigPathFlagName:                 "job-config-path",
-					ConfigPath:                            "prow/config.yaml",
-					JobConfigPath:                         "config/jobs/org/job.yaml",
-					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
-				},
-				prowYAMLRepoName: "my/repo",
-				prowYAMLPath:     "/home/prow/go/src/github.com/my/repo/.prow.yaml",
-				github:           defaultGitHubOptions,
-			},
-			expectedError: false,
-		},
-		{
 			name: "prow-yaml-path without prow-yaml-repo-name is invalid",
 			args: []string{
 				"--prow-yaml-path=my-file",
@@ -1571,6 +1544,7 @@ func TestValidateInRepoConfig(t *testing.T) {
 	testCases := []struct {
 		name         string
 		prowYAMLData []byte
+		strict       bool
 		expectedErr  string
 	}{
 		{
@@ -1580,15 +1554,21 @@ func TestValidateInRepoConfig(t *testing.T) {
 		{
 			name:         "Invalid prowYAML presubmit, err",
 			prowYAMLData: []byte(`presubmits: [{"name": "hans"}]`),
-			expectedErr:  "failed to validate .prow.yaml: invalid presubmit job hans: kubernetes jobs require a spec",
+			expectedErr:  "failed to validate Prow YAML: invalid presubmit job hans: kubernetes jobs require a spec",
 		},
 		{
 			name:         "Invalid prowYAML postsubmit, err",
 			prowYAMLData: []byte(`postsubmits: [{"name": "hans"}]`),
-			expectedErr:  "failed to validate .prow.yaml: invalid postsubmit job hans: kubernetes jobs require a spec",
+			expectedErr:  "failed to validate Prow YAML: invalid postsubmit job hans: kubernetes jobs require a spec",
 		},
 		{
 			name: "Absent prowYAML, no err",
+		},
+		{
+			name:         "unknown field prowYAML fails strict validation",
+			strict:       true,
+			prowYAMLData: []byte(`presubmits: [{"name": "hans", "never_run": "true", "spec": {"containers": [{}]}}]`),
+			expectedErr:  "error unmarshaling JSON: while decoding JSON: json: unknown field \"never_run\"",
 		},
 	}
 
@@ -1596,28 +1576,16 @@ func TestValidateInRepoConfig(t *testing.T) {
 		prowYAMLFileName := "/this-must-not-exist"
 
 		if tc.prowYAMLData != nil {
-			tempFile, err := ioutil.TempFile("", "prow-test")
-			if err != nil {
-				t.Fatalf("failed to get tempfile: %v", err)
-			}
-			defer func() {
-				if err := tempFile.Close(); err != nil {
-					t.Errorf("failed to close tempFile: %v", err)
-				}
-				if err := os.Remove(tempFile.Name()); err != nil {
-					t.Errorf("failed to remove tempfile: %v", err)
-				}
-			}()
-
-			if _, err := tempFile.Write(tc.prowYAMLData); err != nil {
+			fileName := filepath.Join(t.TempDir(), ".prow.yaml")
+			if err := ioutil.WriteFile(fileName, tc.prowYAMLData, 0666); err != nil {
 				t.Fatalf("failed to write to tempfile: %v", err)
 			}
 
-			prowYAMLFileName = tempFile.Name()
+			prowYAMLFileName = fileName
 		}
 
 		// Need an empty file to load the config from so we go through its defaulting
-		tempConfig, err := ioutil.TempFile("/tmp", "prow-test")
+		tempConfig, err := ioutil.TempFile("", "prow-test")
 		if err != nil {
 			t.Fatalf("failed to get tempfile: %v", err)
 		}
@@ -1634,13 +1602,13 @@ func TestValidateInRepoConfig(t *testing.T) {
 		if err != nil {
 			t.Fatalf("failed to load config: %v", err)
 		}
-		err = validateInRepoConfig(cfg, prowYAMLFileName, "my/repo")
+		err = validateInRepoConfig(cfg, prowYAMLFileName, "my/repo", tc.strict)
 		var errString string
 		if err != nil {
 			errString = err.Error()
 		}
 
-		if errString != tc.expectedErr {
+		if errString != tc.expectedErr && !strings.Contains(errString, tc.expectedErr) {
 			t.Errorf("expected error %q does not match actual error %q", tc.expectedErr, errString)
 		}
 	}
