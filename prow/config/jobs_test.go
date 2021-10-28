@@ -81,13 +81,27 @@ func TestReporterConfigRoundtrip(t *testing.T) {
 		{
 			content: `name: abc
 reporter_config:
-  slack:
-    job_states_to_report: []`,
+  slack: {}`,
 			expectedPJ: JobBase{
 				Name: "abc",
 				ReporterConfig: &prowapi.ReporterConfig{
 					Slack: &prowapi.SlackReporterConfig{
-						JobStatesToReport: []prowapi.ProwJobState{},
+						JobStatesToReport: nil,
+					},
+				},
+			},
+		},
+		{
+			content: `name: abc
+reporter_config:
+  slack:
+    job_states_to_report:
+    - test`,
+			expectedPJ: JobBase{
+				Name: "abc",
+				ReporterConfig: &prowapi.ReporterConfig{
+					Slack: &prowapi.SlackReporterConfig{
+						JobStatesToReport: []prowapi.ProwJobState{"test"},
 					},
 				},
 			},
