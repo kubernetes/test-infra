@@ -10,6 +10,6 @@ images:
     project: cos-cloud
     metadata: "user-data<test/e2e_node/jenkins/cos-init-live-restore.yaml,gci-update-strategy=update_disabled"
   cos-stable2:
-    image_family: cos-81-lts
+    image_family: cos-93-lts
     project: cos-cloud
     metadata: "user-data<test/e2e_node/jenkins/cos-init-live-restore.yaml,gci-update-strategy=update_disabled"
