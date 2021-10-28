@@ -330,7 +330,10 @@ presubmits:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
     annotations:
+      fork-per-release: "true"
+      testgrid-alert-stale-results-hours: "24"
       testgrid-create-test-group: "true"
+      testgrid-num-failures-to-alert: "10"
     spec:
       containers:
       # experimental have the kubetest2 binaries
@@ -415,7 +418,10 @@ presubmits:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
     annotations:
+      fork-per-release: "true"
+      testgrid-alert-stale-results-hours: "24"
       testgrid-create-test-group: "true"
+      testgrid-num-failures-to-alert: "10"
     spec:
       containers:
       # experimental have the kubetest2 binaries
