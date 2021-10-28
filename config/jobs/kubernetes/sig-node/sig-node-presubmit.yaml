@@ -324,6 +324,10 @@ presubmits:
       repo: test-infra
       base_ref: master
       path_alias: k8s.io/test-infra
+    - org: containerd
+      repo: containerd
+      base_ref: main
+      path_alias: github.com/containerd/containerd
     decoration_config:
       timeout: 65m
     labels:
