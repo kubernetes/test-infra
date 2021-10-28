@@ -305,7 +305,7 @@ type ReporterConfig struct {
 type SlackReporterConfig struct {
 	Host              string         `json:"host,omitempty"`
 	Channel           string         `json:"channel,omitempty"`
-	JobStatesToReport []ProwJobState `json:"job_states_to_report"`
+	JobStatesToReport []ProwJobState `json:"job_states_to_report,omitempty"`
 	ReportTemplate    string         `json:"report_template,omitempty"`
 }
 

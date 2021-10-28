@@ -19955,8 +19955,6 @@ spec:
                         type: array
                       report_template:
                         type: string
-                    required:
-                    - job_states_to_report
                     type: object
                 type: object
               rerun_auth_config:
