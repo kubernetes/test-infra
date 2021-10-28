@@ -981,9 +981,9 @@ periodics:
       - --gcp-nodes=4
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=30
-      # Using cos-beta to pick up COS-M93 which uses 5.10 kernel which includes cgroupv2 stat metrics.
+      # Using cos-93-lts to pick up 5.10 kernel.
       # See https://github.com/kubernetes/kubernetes/issues/103759
-      - --image-family=cos-beta
+      - --image-family=cos-93-lts
       - --image-project=cos-cloud
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
