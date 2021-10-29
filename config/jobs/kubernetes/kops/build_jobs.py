@@ -488,8 +488,6 @@ def generate_misc():
                    extra_flags=['--ipv6',
                                 '--zones=eu-west-1a',
                                 '--set=cluster.spec.cloudControllerManager.cloudProvider=aws',
-                                '--set=cluster.spec.networking.cilium.disableMasquerade=true',
-                                '--set=cluster.spec.podCIDRFromCloud=true',
                                 ],
                    extra_dashboards=['kops-misc', 'kops-ipv6']),
 
@@ -1080,7 +1078,6 @@ def generate_presubmits_e2e():
                          '--zones=eu-west-1a',
                          '--set=cluster.spec.api.loadBalancer.useForInternalApi=true',
                          '--set=cluster.spec.cloudControllerManager.cloudProvider=aws',
-                         '--set=cluster.spec.nonMasqueradeCIDR=fd00:10:96::/64',
                          ],
             extra_dashboards=['kops-ipv6'],
         ),
