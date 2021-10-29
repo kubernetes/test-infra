@@ -66,7 +66,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-scenario-arm64
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--ipv6 --api-loadbalancer-type=public --api-loadbalancer-class=network --zones=eu-west-1a --set=cluster.spec.api.loadBalancer.useForInternalApi=true --set=cluster.spec.cloudControllerManager.cloudProvider=aws --set=cluster.spec.nonMasqueradeCIDR=fd00:10:96::/64", "feature_flags": "AWSIPv6", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--ipv6 --zones=eu-west-1a --set=cluster.spec.cloudControllerManager.cloudProvider=aws", "feature_flags": "AWSIPv6", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-grid-scenario-ipv6-conformance
   cron: '49 7-23/8 * * *'
   labels:
@@ -95,7 +95,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211021' --channel=alpha --networking=calico --container-runtime=containerd --ipv6 --api-loadbalancer-type=public --api-loadbalancer-class=network --zones=eu-west-1a --set=cluster.spec.api.loadBalancer.useForInternalApi=true --set=cluster.spec.cloudControllerManager.cloudProvider=aws --set=cluster.spec.nonMasqueradeCIDR=fd00:10:96::/64" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211021' --channel=alpha --networking=calico --container-runtime=containerd --ipv6 --zones=eu-west-1a --set=cluster.spec.cloudControllerManager.cloudProvider=aws" \
           --env=KOPS_FEATURE_FLAGS=AWSIPv6 \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
@@ -125,7 +125,7 @@ periodics:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
-    test.kops.k8s.io/extra_flags: --ipv6 --api-loadbalancer-type=public --api-loadbalancer-class=network --zones=eu-west-1a --set=cluster.spec.api.loadBalancer.useForInternalApi=true --set=cluster.spec.cloudControllerManager.cloudProvider=aws --set=cluster.spec.nonMasqueradeCIDR=fd00:10:96::/64
+    test.kops.k8s.io/extra_flags: --ipv6 --zones=eu-west-1a --set=cluster.spec.cloudControllerManager.cloudProvider=aws
     test.kops.k8s.io/feature_flags: AWSIPv6
     test.kops.k8s.io/k8s_version: ci
     test.kops.k8s.io/kops_channel: alpha
@@ -135,7 +135,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-scenario-ipv6-conformance
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--ipv6 --api-loadbalancer-type=public --api-loadbalancer-class=network --zones=eu-west-1a --set=cluster.spec.api.loadBalancer.useForInternalApi=true --set=cluster.spec.cloudControllerManager.cloudProvider=aws --set=cluster.spec.nonMasqueradeCIDR=fd00:10:96::/64", "feature_flags": "AWSIPv6", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--ipv6 --zones=eu-west-1a --set=cluster.spec.cloudControllerManager.cloudProvider=aws", "feature_flags": "AWSIPv6", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-grid-scenario-ipv6-calico
   cron: '59 2-23/4 * * *'
   labels:
@@ -164,7 +164,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211021' --channel=alpha --networking=calico --container-runtime=containerd --ipv6 --api-loadbalancer-type=public --api-loadbalancer-class=network --zones=eu-west-1a --set=cluster.spec.api.loadBalancer.useForInternalApi=true --set=cluster.spec.cloudControllerManager.cloudProvider=aws --set=cluster.spec.nonMasqueradeCIDR=fd00:10:96::/64" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211021' --channel=alpha --networking=calico --container-runtime=containerd --ipv6 --zones=eu-west-1a --set=cluster.spec.cloudControllerManager.cloudProvider=aws" \
           --env=KOPS_FEATURE_FLAGS=AWSIPv6 \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
@@ -193,7 +193,7 @@ periodics:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
-    test.kops.k8s.io/extra_flags: --ipv6 --api-loadbalancer-type=public --api-loadbalancer-class=network --zones=eu-west-1a --set=cluster.spec.api.loadBalancer.useForInternalApi=true --set=cluster.spec.cloudControllerManager.cloudProvider=aws --set=cluster.spec.nonMasqueradeCIDR=fd00:10:96::/64
+    test.kops.k8s.io/extra_flags: --ipv6 --zones=eu-west-1a --set=cluster.spec.cloudControllerManager.cloudProvider=aws
     test.kops.k8s.io/feature_flags: AWSIPv6
     test.kops.k8s.io/k8s_version: ci
     test.kops.k8s.io/kops_channel: alpha
