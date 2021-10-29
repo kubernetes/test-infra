@@ -70,7 +70,7 @@ $ bazel run //prow/cmd/tackle
 kubectl apply --server-side=true -f https://raw.githubusercontent.com/kubernetes/test-infra/master/config/prow/cluster/prowjob_customresourcedefinition.yaml
 ```
 
-3. After that specify the `starter.yaml` you want to use. Once that is done some pods still won't be in the `Running` state because we haven't created the secret containing the credentials needed for our GCS bucket. To do that follow the steps in [Configure a GCS bucket](#configure-a-gcs-bucket).
+3. After that specify the `starter.yaml` you want to use (please make sure to replace the values mentioned [here](#update-the-sample-manifest)). Once that is done some pods still won't be in the `Running` state because we haven't created the secret containing the credentials needed for our GCS bucket. To do that follow the steps in [Configure a GCS bucket](#configure-a-gcs-bucket).
 
 4. Once that is done, `tackle` should show you the URL where you can access the prow dashboard. To use it with your repositories head over to the settings of the GitHub app you created and there under webhook secret, supply the HMAC token you specified in the [`starter.yaml`](https://github.com/kubernetes/test-infra/blob/master/config/prow/cluster/starter/starter-gcs.yaml#L51).
 
