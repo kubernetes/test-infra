@@ -74,10 +74,11 @@ type options struct {
 	prowYAMLRepoName string
 	prowYAMLPath     string
 
-	warnings        flagutil.Strings
-	excludeWarnings flagutil.Strings
-	strict          bool
-	expensive       bool
+	warnings               flagutil.Strings
+	excludeWarnings        flagutil.Strings
+	strict                 bool
+	expensive              bool
+	includeDefaultWarnings bool
 
 	github  flagutil.GitHubOptions
 	storage flagutil.StorageClientOptions
@@ -209,6 +210,7 @@ func (o *options) gatherOptions(flag *flag.FlagSet, args []string) error {
 	flag.Var(&o.excludeWarnings, "exclude-warning", "Warnings to exclude. Use repeatedly to provide a list of warnings to exclude")
 	flag.BoolVar(&o.expensive, "expensive-checks", false, "If set, additional expensive warnings will be enabled")
 	flag.BoolVar(&o.strict, "strict", false, "If set, consider all warnings as errors.")
+	flag.BoolVar(&o.includeDefaultWarnings, "include-default-warnings", false, "If set force inclusion of default warning set. Normally this is inferred based on a lack of '--warnings' flags.")
 	o.github.AddCustomizedFlags(flag, throttlerDefaults)
 	o.github.AllowAnonymous = true
 	o.config.AddFlags(flag)
@@ -246,11 +248,11 @@ func main() {
 
 func validate(o options) error {
 	// use all warnings by default
-	if len(o.warnings.Strings()) == 0 {
+	if len(o.warnings.Strings()) == 0 || o.includeDefaultWarnings {
 		if o.expensive {
-			o.warnings = flagutil.NewStrings(getAllWarnings()...)
+			o.warnings = flagutil.NewStrings(append(o.warnings.Strings(), getAllWarnings()...)...)
 		} else {
-			o.warnings = flagutil.NewStrings(defaultWarnings...)
+			o.warnings = flagutil.NewStrings(append(o.warnings.Strings(), defaultWarnings...)...)
 		}
 	}
 	if o.github.AppID != "" && o.github.AppPrivateKeyPath != "" {
