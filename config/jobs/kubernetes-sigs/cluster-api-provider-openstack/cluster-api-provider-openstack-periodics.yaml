@@ -13,7 +13,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-openstack
-    base_ref: master
+    base_ref: main
     path_alias: "sigs.k8s.io/cluster-api-provider-openstack"
   - org: kubernetes-sigs
     repo: image-builder
@@ -59,7 +59,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-openstack
-    base_ref: master
+    base_ref: main
     path_alias: "sigs.k8s.io/cluster-api-provider-openstack"
   - org: kubernetes-sigs
     repo: image-builder
