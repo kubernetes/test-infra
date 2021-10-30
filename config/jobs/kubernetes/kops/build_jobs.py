@@ -466,7 +466,6 @@ def generate_misc():
                                 '--zones=eu-west-1a',
                                 '--set=cluster.spec.api.loadBalancer.useForInternalApi=true',
                                 '--set=cluster.spec.cloudControllerManager.cloudProvider=aws',
-                                '--set=cluster.spec.nonMasqueradeCIDR=fd00:10:96::/64',
                                 ],
                    extra_dashboards=['kops-misc', 'kops-ipv6']),
         # A special test for IPv6 using Cilium CNI, kubeproxy and cloud IPAM
