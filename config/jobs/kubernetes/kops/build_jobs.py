@@ -1002,6 +1002,35 @@ def generate_presubmits_e2e():
                 '--override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true'], # pylint: disable=line-too-long
         ),
 
+        presubmit_test(
+            name="pull-kops-e2e-ipv6-amazonvpc",
+            cloud="aws",
+            distro="deb11",
+            k8s_version="ci",
+            networking="amazonvpc",
+            feature_flags=["AWSIPv6"],
+            extra_flags=['--ipv6',
+                         '--zones=eu-west-1a',
+                         ],
+            extra_dashboards=['kops-ipv6'],
+        ),
+
+        presubmit_test(
+            name="pull-kops-e2e-ipv6-amazonvpc-irsa",
+            cloud="aws",
+            distro="deb11",
+            k8s_version="ci",
+            networking="amazonvpc",
+            feature_flags=["AWSIPv6"],
+            extra_flags=[
+                '--ipv6',
+                '--zones=eu-west-1a',
+                '--override=cluster.spec.iam.useServiceAccountExternalPermissions=true',
+                '--override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/pull-amazonvpc-irsa/discovery', # pylint: disable=line-too-long
+                '--override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true'
+                ],
+            extra_dashboards=['kops-ipv6'],
+        ),
 
         presubmit_test(
             name="pull-kops-e2e-ipv6-calico",
