@@ -62,6 +62,7 @@ periodics:
     base_ref: master
   interval: 1h
   spec:
+    serviceAccountName: fuzz-test
     containers:
     - image: gcr.io/k8s-testimages/ci_fuzz:v20211028-ca780f7
       command:
