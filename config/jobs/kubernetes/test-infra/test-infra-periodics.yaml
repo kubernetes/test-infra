@@ -83,6 +83,10 @@ periodics:
         value: /logs/artifacts
       - name: DOCKER_IN_DOCKER
         value: "true"
+      - name: FILESTORE
+        value: gsutil
+      - name: CLOUD_BUCKET
+        value: gs://prow-cifuzz-test/
   annotations:
     testgrid-dashboards: sig-testing-misc
     testgrid-tab-name: test-infra-fuzz
