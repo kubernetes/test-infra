@@ -69,7 +69,8 @@ func TestCommandsForRefs(t *testing.T) {
 		env                                        []string
 		expectedBase                               []runnable
 		expectedPull                               []runnable
-		oauthToken                                 string
+		authUser                                   string
+		authToken                                  string
 	}{
 		{
 			name: "simplest case, minimal refs",
@@ -265,8 +266,8 @@ func TestCommandsForRefs(t *testing.T) {
 			expectedPull: nil,
 		},
 		{
-			name:       "minimal refs with oauth token",
-			oauthToken: "12345678",
+			name:      "minimal refs with oauth token",
+			authToken: "12345678",
 			refs: prowapi.Refs{
 				Org:     "org",
 				Repo:    "repo",
@@ -290,7 +291,37 @@ func TestCommandsForRefs(t *testing.T) {
 			},
 			expectedPull: []runnable{
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"submodule", "update", "--init", "--recursive"}},
-			}},
+			},
+		},
+		{
+			name:      "minimal refs with GitHub App user and token",
+			authUser:  "x-access-token",
+			authToken: "xxxxx",
+			refs: prowapi.Refs{
+				Org:     "org",
+				Repo:    "repo",
+				BaseRef: "master",
+			},
+			dir: "/go",
+			expectedBase: []runnable{
+				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.com/org/repo"}},
+				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"init"}},
+				retryCommand{
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://x-access-token:xxxxx@github.com/org/repo.git", "--tags", "--prune"}},
+					fetchRetries,
+				},
+				retryCommand{
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://x-access-token:xxxxx@github.com/org/repo.git", "master"}},
+					fetchRetries,
+				},
+				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"checkout", "FETCH_HEAD"}},
+				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"branch", "--force", "master", "FETCH_HEAD"}},
+				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"checkout", "master"}},
+			},
+			expectedPull: []runnable{
+				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"submodule", "update", "--init", "--recursive"}},
+			},
+		},
 		{
 			name: "refs with clone URI override",
 			refs: prowapi.Refs{
@@ -320,8 +351,8 @@ func TestCommandsForRefs(t *testing.T) {
 			},
 		},
 		{
-			name:       "refs with clone URI override and oauth token specified",
-			oauthToken: "12345678",
+			name:      "refs with clone URI override and oauth token specified",
+			authToken: "12345678",
 			refs: prowapi.Refs{
 				Org:      "org",
 				Repo:     "repo",
@@ -673,7 +704,7 @@ func TestCommandsForRefs(t *testing.T) {
 	allow := cmp.AllowUnexported(retryCommand{}, cloneCommand{})
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			g := gitCtxForRefs(testCase.refs, testCase.dir, testCase.env, testCase.oauthToken)
+			g := gitCtxForRefs(testCase.refs, testCase.dir, testCase.env, testCase.authUser, testCase.authToken)
 			actualBase := g.commandsForBaseRef(testCase.refs, testCase.gitUserName, testCase.gitUserEmail, testCase.cookiePath)
 			if diff := cmp.Diff(actualBase, testCase.expectedBase, allow); diff != "" {
 				t.Errorf("commandsForBaseRef() got unexpected diff (-got, +want):\n%s", diff)
@@ -759,7 +790,6 @@ func TestGitHeadTimestamp(t *testing.T) {
 					t.Errorf("%s: failed to set PATH to original: %v", testCase.name, err)
 				}
 			}
-
 		})
 	}
 }

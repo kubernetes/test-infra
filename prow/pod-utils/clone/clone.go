@@ -29,8 +29,9 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/apimachinery/pkg/util/sets"
-
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/config/secret"
+	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/logrusutil"
 )
 
@@ -40,14 +41,35 @@ type runnable interface {
 
 // Run clones the refs under the prescribed directory and optionally
 // configures the git username and email in the repository as well.
-func Run(refs prowapi.Refs, dir, gitUserName, gitUserEmail, cookiePath string, env []string, oauthToken string) Record {
-	if len(oauthToken) > 0 {
+func Run(refs prowapi.Refs, dir, gitUserName, gitUserEmail, cookiePath string, env []string, userGenerator github.UserGenerator, tokenGenerator github.TokenGenerator) Record {
+	record := Record{Refs: refs}
+
+	var (
+		user  string
+		token string
+		err   error
+	)
+	if userGenerator != nil {
+		user, err = userGenerator()
+		if err != nil {
+			logrus.WithError(err).Warn("Cannot generate user")
+			return record
+		}
+	}
+	if tokenGenerator != nil {
+		token, err = tokenGenerator(refs.Org)
+		if err != nil {
+			logrus.WithError(err).Warnf("Cannot generate token for %s", refs.Org)
+			return record
+		}
+	}
+
+	if token != "" {
 		logrus.SetFormatter(logrusutil.NewCensoringFormatter(logrus.StandardLogger().Formatter, func() sets.String {
-			return sets.NewString(oauthToken)
+			return sets.NewString(token)
 		}))
 	}
 	logrus.WithFields(logrus.Fields{"refs": refs}).Info("Cloning refs")
-	record := Record{Refs: refs}
 
 	// This function runs the provided commands in order, logging them as they run,
 	// aborting early and returning if any command fails.
@@ -64,7 +86,11 @@ func Run(refs prowapi.Refs, dir, gitUserName, gitUserEmail, cookiePath string, e
 				message = err.Error()
 				record.Failed = true
 			}
-			record.Commands = append(record.Commands, Command{Command: censorToken(formattedCommand, oauthToken), Output: censorToken(output, oauthToken), Error: censorToken(message, oauthToken)})
+			record.Commands = append(record.Commands, Command{
+				Command: censorToken(string(secret.Censor([]byte(formattedCommand))), token),
+				Output:  censorToken(string(secret.Censor([]byte(output))), token),
+				Error:   censorToken(string(secret.Censor([]byte(message))), token),
+			})
 			if err != nil {
 				return err
 			}
@@ -72,7 +98,7 @@ func Run(refs prowapi.Refs, dir, gitUserName, gitUserEmail, cookiePath string, e
 		return nil
 	}
 
-	g := gitCtxForRefs(refs, dir, env, oauthToken)
+	g := gitCtxForRefs(refs, dir, env, user, token)
 	if err := runCommands(g.commandsForBaseRef(refs, gitUserName, gitUserEmail, cookiePath)); err != nil {
 		return record
 	}
@@ -127,7 +153,7 @@ type gitCtx struct {
 }
 
 // gitCtxForRefs creates a gitCtx based on the provide refs and baseDir.
-func gitCtxForRefs(refs prowapi.Refs, baseDir string, env []string, oauthToken string) gitCtx {
+func gitCtxForRefs(refs prowapi.Refs, baseDir string, env []string, user, token string) gitCtx {
 	var repoURI string
 	if refs.RepoLink != "" {
 		repoURI = fmt.Sprintf("%s.git", refs.RepoLink)
@@ -144,9 +170,15 @@ func gitCtxForRefs(refs prowapi.Refs, baseDir string, env []string, oauthToken s
 		g.repositoryURI = refs.CloneURI
 	}
 
-	if len(oauthToken) > 0 {
+	if token != "" {
 		u, _ := url.Parse(g.repositoryURI)
-		u.User = url.UserPassword(oauthToken, "x-oauth-basic")
+		if user != "" {
+			u.User = url.UserPassword(user, token)
+		} else {
+			// GitHub requires that the personal access token is set as a username.
+			// e.g., https://<token>:x-oauth-basic@github.com/owner/repo.git
+			u.User = url.UserPassword(token, "x-oauth-basic")
+		}
 		g.repositoryURI = u.String()
 	}
 

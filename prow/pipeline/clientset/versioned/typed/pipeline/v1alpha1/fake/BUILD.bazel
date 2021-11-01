@@ -9,6 +9,7 @@ go_library(
         "fake_pipeline.go",
         "fake_pipeline_client.go",
         "fake_pipelinerun.go",
+        "fake_run.go",
         "fake_task.go",
         "fake_taskrun.go",
     ],

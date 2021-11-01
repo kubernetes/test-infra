@@ -8,6 +8,7 @@ go_library(
         "expansion_generated.go",
         "pipeline.go",
         "pipelinerun.go",
+        "run.go",
         "task.go",
         "taskrun.go",
     ],

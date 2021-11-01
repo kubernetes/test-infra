@@ -10,6 +10,7 @@ go_library(
         "pipeline.go",
         "pipeline_client.go",
         "pipelinerun.go",
+        "run.go",
         "task.go",
         "taskrun.go",
     ],
