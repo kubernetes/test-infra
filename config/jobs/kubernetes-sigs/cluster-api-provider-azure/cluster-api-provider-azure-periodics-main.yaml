@@ -15,7 +15,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211022-00550799a0-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211022-00550799a0-1.22
         command:
           - runner.sh
         args:
@@ -48,7 +48,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211022-00550799a0-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211022-00550799a0-1.22
         command:
           - runner.sh
         args:
@@ -85,7 +85,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211022-00550799a0-1.21
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211022-00550799a0-1.22
       command:
         - runner.sh
       args:
@@ -100,7 +100,7 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
     testgrid-tab-name: capz-periodic-capi-e2e-main
     testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
-- name: periodic-cluster-api-provider-azure-coverage-main
+- name: periodic-cluster-api-provider-azure-coverage
   interval: 12h
   decorate: true
   path_alias: "sigs.k8s.io/cluster-api-provider-azure"
@@ -115,7 +115,7 @@ periodics:
       path_alias: k8s.io/test-infra
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211022-00550799a0-1.21
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211022-00550799a0-1.22
       command:
         - runner.sh
       args:
@@ -133,10 +133,6 @@ periodics:
           exit $result
       securityContext:
         privileged: true
-  annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-    testgrid-tab-name: capz-periodic-coverage-main
-    testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
 - name: periodic-cluster-api-provider-azure-e2e-full-main
   decorate: true
   decoration_config:
@@ -154,7 +150,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211022-00550799a0-1.21
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211022-00550799a0-1.22
       command:
         - runner.sh
       args:
