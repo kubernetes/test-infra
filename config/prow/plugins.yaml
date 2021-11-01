@@ -129,6 +129,8 @@ label:
     - tide/merge-method-squash
     # This label, for k/website, identifies issues relevant to https://katacoda.com/
     - team/katacoda
+    # This label, for k/website, identifies PRs with large refactoring changes
+    - refactor
 
 lgtm:
 - repos:
