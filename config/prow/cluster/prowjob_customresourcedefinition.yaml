@@ -4,7 +4,7 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     api-approved.kubernetes.io: https://github.com/kubernetes/test-infra/pull/8669
-    controller-gen.kubebuilder.io/version: (unknown)
+    controller-gen.kubebuilder.io/version: v0.6.3-0.20210827222652-7b3a8699fa04
   creationTimestamp: null
   name: prowjobs.prow.k8s.io
 spec:
