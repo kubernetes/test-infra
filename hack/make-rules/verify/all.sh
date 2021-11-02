@@ -35,6 +35,11 @@ if [[ "${VERIFY_GOFMT:-true}" == "true" ]]; then
   hack/make-rules/verify/gofmt.sh || res=1
   cd "${REPO_ROOT}"
 fi
+if [[ "${VERIFY_FILE_PERMS:-true}" == "true" ]]; then
+  echo "verifying .sh files permissions ..."
+  hack/make-rules/verify/file-perms.sh || res=1
+  cd "${REPO_ROOT}"
+fi
 
 # exit based on verify scripts
 if [[ "${res}" = 0 ]]; then

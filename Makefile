@@ -66,5 +66,9 @@ update-gofmt:
 	hack/make-rules/update/gofmt.sh
 verify-gofmt:
 	hack/make-rules/verify/gofmt.sh
+update-file-perms:
+	hack/make-rules/update/file-perms.sh
+verify-file-perms:
+	hack/make-rules/verify/file-perms.sh
 #################################################################################
 .PHONY: unit test verify go-lint update-gofmt verify-gofmt
