@@ -74,5 +74,9 @@ update-spelling:
 	hack/make-rules/update/misspell.sh
 verify-spelling:
 	hack/make-rules/verify/misspell.sh
+update-labels:
+	hack/make-rules/update/labels.sh
+verify-labels:
+	hack/make-rules/verify/labels.sh
 #################################################################################
-.PHONY: unit test verify go-lint update-gofmt verify-gofmt update-spelling verify-spelling
+.PHONY: unit test verify go-lint update-gofmt verify-gofmt update-file-perms verify-file-perms update-spelling verify-spelling update-labels verify-labels

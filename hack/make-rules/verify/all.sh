@@ -45,6 +45,11 @@ if [[ "${VERIFY_SPELLING:-true}" == "true" ]]; then
   hack/make-rules/verify/misspell.sh || res=1
   cd "${REPO_ROOT}"
 fi
+if [[ "${VERIFY_LABELS:-true}" == "true" ]]; then
+  echo "verifying labels ..."
+  hack/make-rules/verify/labels.sh || res=1
+  cd "${REPO_ROOT}"
+fi
 
 # exit based on verify scripts
 if [[ "${res}" = 0 ]]; then
