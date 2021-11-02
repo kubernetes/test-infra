@@ -5,6 +5,7 @@ presubmits:
     - ^master$
     - ^release-future$
     - ^release-efix$
+    - ^release-eus$
     labels:
       preset-service-account: "true"
     decorate: true
@@ -27,6 +28,7 @@ presubmits:
     - ^master$
     - ^release-future$
     - ^release-efix$
+    - ^release-eus$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-platform-api-operator
@@ -46,6 +48,7 @@ presubmits:
     - ^master$
     - ^release-future$
     - ^release-efix$
+    - ^release-eus$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-platform-api-operator
@@ -69,6 +72,7 @@ postsubmits:
     - ^master$
     - ^release-future$
     - ^release-efix$
+    - ^release-eus$
     decorate: true
     path_alias: github.com/IBM/ibm-platform-api-operator
     spec:
@@ -85,6 +89,7 @@ postsubmits:
     - ^master$
     - ^release-future$
     - ^release-efix$
+    - ^release-eus$
     decorate: true
     path_alias: github.com/IBM/ibm-platform-api-operator
     spec:
@@ -102,6 +107,7 @@ postsubmits:
     - ^master$
     - ^release-future$
     - ^release-efix$
+    - ^release-eus$
     labels:
       preset-service-account: "true"
     decorate: true
@@ -121,6 +127,7 @@ postsubmits:
     - ^master$
     - ^release-future$
     - ^release-efix$
+    - ^release-eus$
     decorate: true
     path_alias: github.com/IBM/ibm-platform-api-operator
     labels:
