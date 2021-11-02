@@ -70,5 +70,9 @@ update-file-perms:
 	hack/make-rules/update/file-perms.sh
 verify-file-perms:
 	hack/make-rules/verify/file-perms.sh
+update-spelling:
+	hack/make-rules/update/misspell.sh
+verify-spelling:
+	hack/make-rules/verify/misspell.sh
 #################################################################################
-.PHONY: unit test verify go-lint update-gofmt verify-gofmt
+.PHONY: unit test verify go-lint update-gofmt verify-gofmt update-spelling verify-spelling

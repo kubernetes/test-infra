@@ -40,6 +40,11 @@ if [[ "${VERIFY_FILE_PERMS:-true}" == "true" ]]; then
   hack/make-rules/verify/file-perms.sh || res=1
   cd "${REPO_ROOT}"
 fi
+if [[ "${VERIFY_SPELLING:-true}" == "true" ]]; then
+  echo "verifying spelling ..."
+  hack/make-rules/verify/misspell.sh || res=1
+  cd "${REPO_ROOT}"
+fi
 
 # exit based on verify scripts
 if [[ "${res}" = 0 ]]; then
