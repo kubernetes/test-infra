@@ -901,14 +901,14 @@ def generate_presubmits_e2e():
         ),
         presubmit_test(
             container_runtime='docker',
-            k8s_version='1.21',
+            k8s_version='stable',
             kops_channel='alpha',
             name='pull-kops-e2e-k8s-docker',
             tab_name='e2e-docker',
             always_run=False,
         ),
         presubmit_test(
-            k8s_version='1.21',
+            k8s_version='stable',
             kops_channel='alpha',
             name='pull-kops-e2e-kubernetes-aws',
             networking='calico',
@@ -918,7 +918,7 @@ def generate_presubmits_e2e():
         presubmit_test(
             distro="u2010",
             networking='calico',
-            k8s_version='1.21',
+            k8s_version='stable',
             kops_channel='alpha',
             name='pull-kops-e2e-k8s-ubuntu2010',
             tab_name='e2e-ubuntu2010',
@@ -927,7 +927,7 @@ def generate_presubmits_e2e():
         presubmit_test(
             distro="u2104",
             networking='calico',
-            k8s_version='1.21',
+            k8s_version='stable',
             kops_channel='alpha',
             name='pull-kops-e2e-k8s-ubuntu2104',
             tab_name='e2e-ubuntu2104',
@@ -936,7 +936,7 @@ def generate_presubmits_e2e():
         presubmit_test(
             distro="deb11",
             networking='calico',
-            k8s_version='1.21',
+            k8s_version='stable',
             kops_channel='alpha',
             name='pull-kops-e2e-k8s-debian11',
             tab_name='e2e-debian11',
@@ -944,7 +944,7 @@ def generate_presubmits_e2e():
         ),
         presubmit_test(
             cloud='gce',
-            k8s_version='1.21',
+            k8s_version='stable',
             kops_channel='alpha',
             name='pull-kops-e2e-k8s-gce',
             networking='cilium',
@@ -954,7 +954,7 @@ def generate_presubmits_e2e():
         ),
         presubmit_test(
             cloud='gce',
-            k8s_version='1.22',
+            k8s_version='stable',
             kops_channel='alpha',
             name='pull-kops-e2e-k8s-gce-calico-u2004-k22-containerd',
             networking='calico',
