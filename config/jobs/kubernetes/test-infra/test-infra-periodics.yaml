@@ -74,6 +74,8 @@ periodics:
       securityContext:
         privileged: true
       env:
+      - name: MODE
+        value: batch
       - name: REPOSITORY
         value: test-infra
       - name: PROJECT_SRC_PATH
@@ -88,7 +90,97 @@ periodics:
         value: gsutil
       - name: CLOUD_BUCKET
         value: gs://prow-cifuzz-test/
+      - name: CFL_PLATFORM
+        value: prow
   annotations:
     testgrid-dashboards: sig-testing-misc
     testgrid-tab-name: test-infra-fuzz
     description: Runs clusterfuzzlite every hour
+
+- name: test-infra-cfl-coverage-report
+  labels:
+    preset-dind-enabled: "true"
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+  interval: 12h
+  spec:
+    serviceAccountName: fuzz-test
+    containers:
+    - image: gcr.io/k8s-testimages/ci_fuzz:v20211102-77ba931
+      command:
+        - runner.sh
+      args:
+        - python3
+        - "/opt/oss-fuzz/infra/cifuzz/cifuzz_combined_entrypoint.py"
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      env:
+      - name: MODE
+        value: coverage
+      - name: REPOSITORY
+        value: test-infra
+      - name: PROJECT_SRC_PATH
+        value: .
+      - name: SANITIZER
+        value: 'coverage'
+      - name: WORKSPACE
+        value: /logs/artifacts
+      - name: DOCKER_IN_DOCKER
+        value: "true"
+      - name: FILESTORE
+        value: gsutil
+      - name: CLOUD_BUCKET
+        value: gs://prow-cifuzz-test/
+      - name: CFL_PLATFORM
+        value: prow
+  annotations:
+    testgrid-dashboards: sig-testing-misc
+    testgrid-tab-name: test-infra-cfl-coverage-report
+    description: Runs clusterfuzzlite coverage report every day
+
+- name: test-infra-cfl-prune
+  labels:
+    preset-dind-enabled: "true"
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+  interval: 12h
+  spec:
+    serviceAccountName: fuzz-test
+    containers:
+    - image: gcr.io/k8s-testimages/ci_fuzz:v20211102-77ba931
+      command:
+        - runner.sh
+      args:
+        - python3
+        - "/opt/oss-fuzz/infra/cifuzz/cifuzz_combined_entrypoint.py"
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      env:
+      - name: MODE
+        value: prune
+      - name: REPOSITORY
+        value: test-infra
+      - name: PROJECT_SRC_PATH
+        value: .
+      - name: WORKSPACE
+        value: /logs/artifacts
+      - name: DOCKER_IN_DOCKER
+        value: "true"
+      - name: FILESTORE
+        value: gsutil
+      - name: CLOUD_BUCKET
+        value: gs://prow-cifuzz-test/
+      - name: CFL_PLATFORM
+        value: prow
+  annotations:
+    testgrid-dashboards: sig-testing-misc
+    testgrid-tab-name: test-infra-cfl-prune
+    description: Runs clusterfuzzlite corpora prune every day
