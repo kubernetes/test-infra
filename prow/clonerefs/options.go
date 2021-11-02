@@ -69,6 +69,10 @@ type Options struct {
 
 	CookiePath string `json:"cookie_path,omitempty"`
 
+	GitHubAPIEndpoints      []string `json:"github_api_endpoints,omitempty"`
+	GitHubAppID             string   `json:"github_app_id,omitempty"`
+	GitHubAppPrivateKeyFile string   `json:"github_app_private_key_file,omitempty"`
+
 	// used to hold flag values
 	refs      gitRefs
 	clonePath orgRepoFormat
@@ -103,6 +107,21 @@ func (o *Options) Validate() error {
 			logrus.WithError(err).WithField("path", path).Warning("multiple refs clone to the same location")
 		}
 		seen[path] = i
+	}
+
+	if o.GitHubAppID != "" || o.GitHubAppPrivateKeyFile != "" {
+		if o.OauthTokenFile != "" {
+			return errors.New("multiple authentication methods specified")
+		}
+		if len(o.GitHubAPIEndpoints) == 0 {
+			return errors.New("no GitHub API endpoints for GitHub App authentication")
+		}
+	}
+	if o.GitHubAppID != "" && o.GitHubAppPrivateKeyFile == "" {
+		return errors.New("no GitHub App private key file specified")
+	}
+	if o.GitHubAppID == "" && o.GitHubAppPrivateKeyFile != "" {
+		return errors.New("no GitHub App ID specified")
 	}
 
 	return nil

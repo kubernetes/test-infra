@@ -129,6 +129,9 @@ label:
     - tide/merge-method-squash
     # This label, for k/website, identifies issues relevant to https://katacoda.com/
     - team/katacoda
+    # This label, for k/website, identifies PRs with large refactoring changes
+    - refactor
+
   restricted_labels:
     kubernetes/kubernetes:
         # Security Response Committee (SRC) is allowed to add this label, 
@@ -140,6 +143,7 @@ label:
           - pushkarj
         # This label is used to filter/tag CVEs announced by SRC
         label: official-cve-feed
+
 lgtm:
 - repos:
   - bazelbuild

@@ -62,6 +62,7 @@ periodics:
     base_ref: master
   interval: 1h
   spec:
+    serviceAccountName: fuzz-test
     containers:
     - image: gcr.io/k8s-testimages/ci_fuzz:v20211028-ca780f7
       command:
@@ -83,6 +84,10 @@ periodics:
         value: /logs/artifacts
       - name: DOCKER_IN_DOCKER
         value: "true"
+      - name: FILESTORE
+        value: gsutil
+      - name: CLOUD_BUCKET
+        value: gs://prow-cifuzz-test/
   annotations:
     testgrid-dashboards: sig-testing-misc
     testgrid-tab-name: test-infra-fuzz

@@ -424,6 +424,14 @@ type DecorationConfig struct {
 	// OauthTokenSecret is a Kubernetes secret that contains the OAuth token,
 	// which is going to be used for fetching a private repository.
 	OauthTokenSecret *OauthTokenSecret `json:"oauth_token_secret,omitempty"`
+	// GitHubAPIEndpoints are the endpoints of GitHub APIs.
+	GitHubAPIEndpoints []string `json:"github_api_endpoints,omitempty"`
+	// GitHubAppID is the ID of GitHub App, which is going to be used for fetching a private
+	// repository.
+	GitHubAppID string `json:"github_app_id,omitempty"`
+	// GitHubAppPrivateKeySecret is a Kubernetes secret that contains the GitHub App private key,
+	// which is going to be used for fetching a private repository.
+	GitHubAppPrivateKeySecret *GitHubAppPrivateKeySecret `json:"github_app_private_key_secret,omitempty"`
 
 	// CensorSecrets enables censoring output logs and artifacts.
 	CensorSecrets *bool `json:"censor_secrets,omitempty"`
@@ -495,7 +503,6 @@ func (g *CensoringOptions) ApplyDefault(def *CensoringOptions) *CensoringOptions
 		merged.ExcludeDirectories = def.ExcludeDirectories
 	}
 	return &merged
-
 }
 
 // Resources holds resource requests and limits for
@@ -536,8 +543,17 @@ func (u *Resources) ApplyDefault(def *Resources) *Resources {
 type OauthTokenSecret struct {
 	// Name is the name of a kubernetes secret.
 	Name string `json:"name,omitempty"`
-	// Key is the a key of the corresponding kubernetes secret that
+	// Key is the key of the corresponding kubernetes secret that
 	// holds the value of the OAuth token.
+	Key string `json:"key,omitempty"`
+}
+
+// GitHubAppPrivateKeySecret holds the information of the GitHub App private key's secret name and key.
+type GitHubAppPrivateKeySecret struct {
+	// Name is the name of a kubernetes secret.
+	Name string `json:"name,omitempty"`
+	// Key is the key of the corresponding kubernetes secret that
+	// holds the value of the GitHub App private key.
 	Key string `json:"key,omitempty"`
 }
 
@@ -610,6 +626,15 @@ func (d *DecorationConfig) ApplyDefault(def *DecorationConfig) *DecorationConfig
 	}
 	if merged.OauthTokenSecret == nil {
 		merged.OauthTokenSecret = def.OauthTokenSecret
+	}
+	if len(merged.GitHubAPIEndpoints) == 0 {
+		merged.GitHubAPIEndpoints = def.GitHubAPIEndpoints
+	}
+	if merged.GitHubAppID == "" {
+		merged.GitHubAppID = def.GitHubAppID
+	}
+	if merged.GitHubAppPrivateKeySecret == nil {
+		merged.GitHubAppPrivateKeySecret = def.GitHubAppPrivateKeySecret
 	}
 	if merged.CensorSecrets == nil {
 		merged.CensorSecrets = def.CensorSecrets

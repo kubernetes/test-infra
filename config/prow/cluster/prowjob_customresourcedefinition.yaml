@@ -198,6 +198,28 @@ spec:
                     description: GCSCredentialsSecret is the name of the Kubernetes
                       secret that holds GCS push credentials.
                     type: string
+                  github_api_endpoints:
+                    description: GitHubAPIEndpoints are the endpoints of GitHub APIs.
+                    items:
+                      type: string
+                    type: array
+                  github_app_id:
+                    description: GitHubAppID is the ID of GitHub App, which is going
+                      to be used for fetching a private repository.
+                    type: string
+                  github_app_private_key_secret:
+                    description: GitHubAppPrivateKeySecret is a Kubernetes secret
+                      that contains the GitHub App private key, which is going to
+                      be used for fetching a private repository.
+                    properties:
+                      key:
+                        description: Key is the key of the corresponding kubernetes
+                          secret that holds the value of the GitHub App private key.
+                        type: string
+                      name:
+                        description: Name is the name of a kubernetes secret.
+                        type: string
+                    type: object
                   grace_period:
                     description: GracePeriod is how long the pod utilities will wait
                       after sending SIGINT to send SIGKILL when aborting a job. Only
@@ -209,7 +231,7 @@ spec:
                       repository.
                     properties:
                       key:
-                        description: Key is the a key of the corresponding kubernetes
+                        description: Key is the key of the corresponding kubernetes
                           secret that holds the value of the OAuth token.
                         type: string
                       name:
