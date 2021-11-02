@@ -97,7 +97,7 @@ periodics:
     testgrid-tab-name: test-infra-fuzz
     description: Runs clusterfuzzlite every hour
 
-- name: cfl-coverage-report
+- name: test-infra-cfl-coverage-report
   labels:
     preset-dind-enabled: "true"
   decorate: true
@@ -139,10 +139,10 @@ periodics:
         value: prow
   annotations:
     testgrid-dashboards: sig-testing-misc
-    testgrid-tab-name: cfl-coverage-report
+    testgrid-tab-name: test-infra-cfl-coverage-report
     description: Runs clusterfuzzlite coverage report every day
 
-- name: cfl-prune
+- name: test-infra-cfl-prune
   labels:
     preset-dind-enabled: "true"
   decorate: true
@@ -182,5 +182,5 @@ periodics:
         value: prow
   annotations:
     testgrid-dashboards: sig-testing-misc
-    testgrid-tab-name: cfl-prune
+    testgrid-tab-name: test-infra-cfl-prune
     description: Runs clusterfuzzlite corpora prune every day
