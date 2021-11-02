@@ -44,22 +44,6 @@ presubmits:
       testgrid-dashboards: presubmits-test-infra
       testgrid-tab-name: gubernator
 
-  - name: pull-test-infra-verify-file-perms
-    branches:
-    - master
-    always_run: true
-    decorate: true
-    labels:
-      preset-service-account: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211022-00550799a0-experimental
-        command:
-        - ./hack/verify-file-perms.sh
-    annotations:
-      testgrid-dashboards: presubmits-test-infra
-      testgrid-tab-name: verify-file-perms
-
   - name: pull-test-infra-yamllint
     always_run: true
     decorate: true
