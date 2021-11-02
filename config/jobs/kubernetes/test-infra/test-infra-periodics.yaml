@@ -64,7 +64,7 @@ periodics:
   spec:
     serviceAccountName: fuzz-test
     containers:
-    - image: gcr.io/k8s-testimages/ci_fuzz:v20211028-ca780f7
+    - image: gcr.io/k8s-testimages/ci_fuzz:v20211102-77ba931
       command:
         - runner.sh
       args:
