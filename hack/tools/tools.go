@@ -34,4 +34,6 @@ import (
 
 	// bazel-related tools
 	_ "github.com/bazelbuild/buildtools/buildozer"
+
+	_ "github.com/client9/misspell/cmd/misspell"
 )
