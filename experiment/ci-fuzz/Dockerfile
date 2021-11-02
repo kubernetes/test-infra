@@ -14,7 +14,7 @@
 
 FROM gcr.io/k8s-staging-test-infra/bootstrap:v20210913-fc7c4e84f6
 
-FROM gcr.io/oss-fuzz-base/cifuzz-base@sha256:b449a67eaaa63653690b4b270f03cb21ab9aa56f6887253e24fecf5626003ec7
+FROM gcr.io/oss-fuzz-base/cifuzz-base@sha256:b517acf48b7ebd364d145bd12a7eaeeb9f9ba649b8c46b90bbcf9a3fc5141d7d
 COPY --from=gcr.io/oss-fuzz-base/cifuzz-base:latest /opt/oss-fuzz /opt/
 
 #
