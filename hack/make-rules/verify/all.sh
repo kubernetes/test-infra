@@ -50,6 +50,11 @@ if [[ "${VERIFY_LABELS:-true}" == "true" ]]; then
   hack/make-rules/verify/labels.sh || res=1
   cd "${REPO_ROOT}"
 fi
+if [[ "${VERIFY_CODEGEN:-true}" == "true" ]]; then
+  echo "verifying codegen ..."
+  hack/make-rules/verify/codegen.sh || res=1
+  cd "${REPO_ROOT}"
+fi
 
 # exit based on verify scripts
 if [[ "${res}" = 0 ]]; then

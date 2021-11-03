@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright 2018 The Kubernetes Authors.
+# Copyright 2021 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,39 +17,33 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-if [[ -n "${TEST_WORKSPACE:-}" ]]; then # Running inside bazel
-  echo "Validating codegen files..." >&2
-elif ! command -v bazel &> /dev/null; then
-  echo "Install bazel at https://bazel.build" >&2
-  exit 1
-else
-  (
-    set -o xtrace
-    bazel test --test_output=streamed @io_k8s_test_infra//hack:verify-codegen
-  )
-  exit 0
-fi
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd -P)"
+cd $REPO_ROOT
 
-SCRIPT_ROOT=$PWD
+# place to stick temp binaries
+BINDIR="${REPO_ROOT}/_bin"
 
-DIFFROOT="${SCRIPT_ROOT}/prow"
-TMP_DIFFROOT="${TEST_TMPDIR}/prow"
+DIFFROOT="${REPO_ROOT}/prow"
+TMP_DIFFROOT="$(TMPDIR="${BINDIR}" mktemp -d "${BINDIR}/verify-codegen.XXXXX")"
 
-mkdir -p "${TMP_DIFFROOT}"
 cp -a "${DIFFROOT}"/{apis,client,config,spyglass} "${TMP_DIFFROOT}"
 
-clean=yes # bazel test files are read-only, must first delete
-BUILD_WORKSPACE_DIRECTORY="$SCRIPT_ROOT" "$@" "$clean"
+"${REPO_ROOT}/hack/make-rules/update/codegen.sh"
+
 echo "diffing ${DIFFROOT} against freshly generated codegen"
 ret=0
 diff -Naupr "${DIFFROOT}/apis" "${TMP_DIFFROOT}/apis" || ret=$?
 diff -Naupr "${DIFFROOT}/client" "${TMP_DIFFROOT}/client" || ret=$?
 diff -Naupr "${DIFFROOT}/config" "${TMP_DIFFROOT}/config" || ret=$?
 diff -Naupr "${DIFFROOT}/spyglass" "${TMP_DIFFROOT}/spyglass" || ret=$?
+# Restore so that verify codegen doesn't modify workspace
 cp -a "${TMP_DIFFROOT}"/{apis,client,config,spyglass} "${DIFFROOT}"
+# Clean up
+rm -rf "${TMP_DIFFROOT}"
+
 if [[ ${ret} -eq 0 ]]; then
   echo "${DIFFROOT} up to date."
   exit 0
 fi
-echo "ERROR: out of date codegen files. Fix with hack/update-codegen.sh" >&2
+echo "ERROR: out of date codegen files. Fix with make update-codegen" >&2
 exit 1

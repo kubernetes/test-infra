@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright 2018 The Kubernetes Authors.
+# Copyright 2021 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,50 +17,66 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-if [[ -n "${BUILD_WORKSPACE_DIRECTORY:-}" ]]; then # Running inside bazel
-  echo "Updating codegen files..." >&2
-elif ! command -v bazel &>/dev/null; then
-  echo "Install bazel at https://bazel.build" >&2
+# darwin is great
+SED=sed
+if which gsed &>/dev/null; then
+  SED=gsed
+fi
+if ! (${SED} --version 2>&1 | grep -q GNU); then
+  echo "!!! GNU sed is required.  If on OS X, use 'brew install gnu-sed'." >&2
   exit 1
-else
-  (
-    set -o xtrace
-    bazel run @io_k8s_test_infra//hack:update-codegen
-  )
-  exit 0
 fi
 
-go_sdk=$PWD/external/go_sdk
-clientgen=$PWD/$1
-deepcopygen=$PWD/$2
-informergen=$PWD/$3
-listergen=$PWD/$4
-go_bindata=$PWD/$5
-controller_gen=$PWD/$6
-do_clean=${7:-}
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd -P)"
+cd $REPO_ROOT
 
-# Ensure correct go binary is on path
-PATH=$go_sdk/bin:${PATH:-}
+echo "Ensuring go version."
+source ./hack/build/setup-go.sh
+
+# build codegen tools
+echo "Install codegen tools."
+cd "hack/tools"
+clientgen=${REPO_ROOT}/_bin/client-gen
+go build -o "${REPO_ROOT}/_bin/client-gen" k8s.io/code-generator/cmd/client-gen
+deepcopygen=${REPO_ROOT}/_bin/deepcopy-gen
+go build -o "${REPO_ROOT}/_bin/deepcopy-gen" k8s.io/code-generator/cmd/deepcopy-gen
+informergen=${REPO_ROOT}/_bin/informer-gen
+go build -o "${REPO_ROOT}/_bin/informer-gen" k8s.io/code-generator/cmd/informer-gen
+listergen=${REPO_ROOT}/_bin/lister-gen
+go build -o "${REPO_ROOT}/_bin/lister-gen" k8s.io/code-generator/cmd/lister-gen
+go_bindata=${REPO_ROOT}/_bin/go-bindata
+go build -o "${REPO_ROOT}/_bin/go-bindata" github.com/go-bindata/go-bindata/v3/go-bindata
+controller_gen=${REPO_ROOT}/_bin/controller-gen
+go build -o "${REPO_ROOT}/_bin/controller-gen" sigs.k8s.io/controller-tools/cmd/controller-gen
+echo "Finished installations."
+do_clean=${1:-}
+
+cd "${REPO_ROOT}"
+
+# FAKE_GOPATH is for mimicking GOPATH layout.
+# K8s code-generator tools all assume the structure of ${GOPATH}/src/k8s.io/...,
+# faking GOPATH so that the output are dropped correctly.
+# All the clean/copy functions below are for transferring output to this repo.
+FAKE_GOPATH=""
 
 cleanup() {
-  if [[ -n ${fake_gopath:-} ]]; then chmod u+rwx -R $fake_gopath && rm -rf $fake_gopath; fi
+  if [[ -n ${FAKE_GOPATH:-} ]]; then chmod -R u+rwx $FAKE_GOPATH && rm -rf $FAKE_GOPATH; fi
   if [[ -n ${TEMP_GOCACHE:-} ]]; then rm -rf $TEMP_GOCACHE; fi
 }
 trap cleanup EXIT
 
 ensure-in-gopath() {
-  fake_gopath=$(mktemp -d -t codegen.gopath.XXXX)
+  FAKE_GOPATH=$(mktemp -d -t codegen.gopath.XXXX)
 
-  fake_repopath=$fake_gopath/src/k8s.io/test-infra
+  fake_repopath=$FAKE_GOPATH/src/k8s.io/test-infra
   mkdir -p "$(dirname "$fake_repopath")"
   if [[ -n "$do_clean" ]]; then
-    cp -LR "$BUILD_WORKSPACE_DIRECTORY/" "$fake_repopath"
+    cp -LR "${REPO_ROOT}/" "$fake_repopath"
   else
-    cp -R "$BUILD_WORKSPACE_DIRECTORY/" "$fake_repopath"
+    cp -R "${REPO_ROOT}/" "$fake_repopath"
   fi
 
-  export GOPATH=$fake_gopath
-  export GOROOT=$go_sdk
+  export GOPATH=$FAKE_GOPATH
   cd "$fake_repopath"
 }
 
@@ -75,7 +91,7 @@ copyfiles() {
   fi
   (
     cd "$GOPATH/src/k8s.io/test-infra/$path"
-    find "." -name "$name" -exec cp {} "$BUILD_WORKSPACE_DIRECTORY/$path/{}" \;
+    find "." -name "$name" -exec cp {} "$REPO_ROOT/$path/{}" \;
   )
 }
 
@@ -91,7 +107,7 @@ clean() {
     return 0
   fi
   find "$path" -name "$name" -delete
-  find "$BUILD_WORKSPACE_DIRECTORY"/"$path" -name "$name" -delete
+  find "${REPO_ROOT}"/"$path" -name "$name" -delete
 }
 
 gen-deepcopy() {
@@ -177,18 +193,20 @@ gen-informer() {
 
 gen-spyglass-bindata(){
   cd prow/spyglass/lenses/common/
+  echo "Generating spyglass bindata..." >&2
   $go_bindata -pkg=common static/
-  "$go_sdk/bin/gofmt" -s -w ./
-  cd -
+  gofmt -s -w ./
+  cd - >/dev/null
 }
 
 gen-prowjob-crd(){
   clean "./config/prow/cluster" "prowjob_customresourcedefinition.yaml"
+  echo "Generating prowjob crd..." >&2
   if [[ -z ${HOME:-} ]]; then export HOME=$PWD; fi
   $controller_gen crd:preserveUnknownFields=false,crdVersions=v1 paths=./prow/apis/prowjobs/v1 output:stdout \
-    |sed '/^$/d' \
-    |sed '/^  annotations.*/a  \    api-approved.kubernetes.io: https://github.com/kubernetes/test-infra/pull/8669' \
-    |sed '/^          status:/r'<(cat<<EOF
+    | $SED '/^$/d' \
+    | $SED '/^  annotations.*/a  \    api-approved.kubernetes.io: https://github.com/kubernetes/test-infra/pull/8669' \
+    | $SED '/^          status:/r'<(cat<<EOF
             anyOf:
             - not:
                 properties:
@@ -213,8 +231,7 @@ export GOCACHE=$TEMP_GOCACHE
 export GO111MODULE=on
 export GOPROXY=https://proxy.golang.org
 export GOSUMDB=sum.golang.org
-"$go_sdk/bin/go" mod vendor
-export PATH=$PATH:$go_sdk/bin
+go mod vendor
 export GO111MODULE=off
 export GOCACHE=$old
 gen-deepcopy
