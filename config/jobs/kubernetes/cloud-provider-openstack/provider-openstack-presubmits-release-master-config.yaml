@@ -140,3 +140,38 @@ presubmits:
       testgrid-dashboards: provider-openstack-manila-csi-plugin
       testgrid-tab-name: presubmit-sanity-test
       description: Run cloud-provider-openstack csi sanity tests for manila-csi-plugin
+
+  - name: openstack-cloud-keystone-authentication-authorization-test
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    path_alias: "k8s.io/cloud-provider-openstack"
+    always_run: false
+    branches:
+      - ^master$
+    run_if_changed: '^(pkg\/identity\/|cmd\/k8s-keystone-auth\/|tests\/e2e\/k8s-keystone-auth\/)'
+    optional: false
+    decorate: true
+    decoration_config:
+      timeout: 3h
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211022-00550799a0-master
+          env:
+          - name: "BOSKOS_HOST"
+            value: "boskos.test-pods.svc.cluster.local"
+          command:
+          - "runner.sh"
+          - "./tests/ci-keystone-e2e.sh"
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: 1
+    annotations:
+      testgrid-dashboards: provider-openstack-keystone-authentication-authorization
+      testgrid-tab-name: presubmit-e2e-test
