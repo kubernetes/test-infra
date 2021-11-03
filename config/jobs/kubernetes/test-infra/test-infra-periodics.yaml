@@ -77,18 +77,10 @@ periodics:
       env:
       - name: MODE
         value: batch
-      - name: REPOSITORY
+      - name: REPO_NAME
         value: test-infra
-      - name: PROJECT_SRC_PATH
-        value: .
       - name: SANITIZER
         value: 'address'
-      - name: WORKSPACE
-        value: /logs/artifacts
-      - name: DOCKER_IN_DOCKER
-        value: "true"
-      - name: FILESTORE
-        value: gsutil
       - name: CLOUD_BUCKET
         value: gs://prow-cifuzz-test/
       - name: CFL_PLATFORM
@@ -123,18 +115,10 @@ periodics:
       env:
       - name: MODE
         value: coverage
-      - name: REPOSITORY
+      - name: REPO_NAME
         value: test-infra
-      - name: PROJECT_SRC_PATH
-        value: .
       - name: SANITIZER
         value: 'coverage'
-      - name: WORKSPACE
-        value: /logs/artifacts
-      - name: DOCKER_IN_DOCKER
-        value: "true"
-      - name: FILESTORE
-        value: gsutil
       - name: CLOUD_BUCKET
         value: gs://prow-cifuzz-test/
       - name: CFL_PLATFORM
@@ -169,16 +153,8 @@ periodics:
       env:
       - name: MODE
         value: prune
-      - name: REPOSITORY
+      - name: REPO_NAME
         value: test-infra
-      - name: PROJECT_SRC_PATH
-        value: .
-      - name: WORKSPACE
-        value: /logs/artifacts
-      - name: DOCKER_IN_DOCKER
-        value: "true"
-      - name: FILESTORE
-        value: gsutil
       - name: CLOUD_BUCKET
         value: gs://prow-cifuzz-test/
       - name: CFL_PLATFORM
