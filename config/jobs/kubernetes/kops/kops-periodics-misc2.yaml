@@ -203,7 +203,7 @@ periodics:
     testgrid-days-of-results: '47'
     testgrid-tab-name: kops-grid-scenario-ipv6-calico
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--ipv6 --zones=eu-west-1a", "feature_flags": "AWSIPv6", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "deb11", "extra_flags": "--ipv6 --zones=eu-west-1a", "feature_flags": "AWSIPv6", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
 - name: e2e-kops-grid-scenario-ipv6-cilium
   cron: '9 4-23/8 * * *'
   labels:
@@ -232,7 +232,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211021' --channel=alpha --networking=cilium --container-runtime=containerd --ipv6 --zones=eu-west-1a" \
+          --create-args="--image='136693071363/debian-11-amd64-20211011-792' --channel=alpha --networking=cilium --container-runtime=containerd --ipv6 --zones=eu-west-1a" \
           --env=KOPS_FEATURE_FLAGS=AWSIPv6 \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
@@ -248,7 +248,7 @@ periodics:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
-        value: ubuntu
+        value: admin
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211022-00550799a0-master
       imagePullPolicy: Always
       resources:
@@ -260,14 +260,14 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
-    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/distro: deb11
     test.kops.k8s.io/extra_flags: --ipv6 --zones=eu-west-1a
     test.kops.k8s.io/feature_flags: AWSIPv6
     test.kops.k8s.io/k8s_version: ci
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-ipv6, kops-k8s-ci, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-deb11, kops-ipv6, kops-k8s-ci, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-scenario-ipv6-cilium
 
