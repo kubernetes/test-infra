@@ -64,7 +64,8 @@ periodics:
   spec:
     serviceAccountName: fuzz-test
     containers:
-    - image: gcr.io/k8s-testimages/ci_fuzz:v20211102-77ba931
+      #TODO(mpherman) : Change to versioned once stable
+    - image: gcr.io/k8s-testimages/ci_fuzz:latest
       command:
         - runner.sh
       args:
@@ -109,7 +110,8 @@ periodics:
   spec:
     serviceAccountName: fuzz-test
     containers:
-    - image: gcr.io/k8s-testimages/ci_fuzz:v20211102-77ba931
+      #TODO(mpherman) : Change to versioned once stable
+    - image: gcr.io/k8s-testimages/ci_fuzz:latest
       command:
         - runner.sh
       args:
@@ -154,7 +156,8 @@ periodics:
   spec:
     serviceAccountName: fuzz-test
     containers:
-    - image: gcr.io/k8s-testimages/ci_fuzz:v20211102-77ba931
+      #TODO(mpherman) : Change to versioned once stable
+    - image: gcr.io/k8s-testimages/ci_fuzz:latest
       command:
         - runner.sh
       args:
