@@ -467,6 +467,10 @@ branch-protection:
           branches:
             gh-pages:
               protect: false
+        external-dns:
+          branches:
+            gh-pages:
+              protect: false 
         kube-batch:
           required_status_checks:
             contexts:
@@ -475,6 +479,10 @@ branch-protection:
           required_status_checks:
             contexts:
             - Kubespray CI Pipeline
+        metrics-server:
+          branches:
+            gh-pages:
+              protect: false          
         nfs-ganesha-server-and-external-provisioner:
           branches:
             gh-pages:
