@@ -405,7 +405,7 @@ presubmits:
         - name: PREPULL_YAML
           value: "prepull-head.yaml"
         - name: REGISTRY
-          value: "gcr.io/kubernetes-e2e-test-images"
+          value: "k8s.gcr.io/e2e-test-images"
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211022-00550799a0-master
         securityContext:
             privileged: true
