@@ -65,7 +65,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-scale-correctness
   days_of_results: 60
   num_columns_recent: 3
-  num_failures_to_alert: 1
 - name: ci-kubernetes-e2e-gce-scale-performance
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-scale-performance
   days_of_results: 60
