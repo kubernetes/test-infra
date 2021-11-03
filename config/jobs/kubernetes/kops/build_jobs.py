@@ -74,7 +74,7 @@ def build_test(cloud='aws',
 
 
     # https://github.com/cilium/cilium/blob/f7a3f59fd74983c600bfce9cac364b76d20849d9/Documentation/operations/system_requirements.rst
-    if networking in ("cilium", "cilium-etcd") and distro not in ["u2004", "u2004arm64", "deb10", "rhel8", "amzn2"]: # pylint: disable=line-too-long
+    if networking in ("cilium", "cilium-etcd") and distro not in ["u2004", "u2004arm64", "deb10", "deb11", "rhel8", "amzn2"]: # pylint: disable=line-too-long
         return None
     if should_skip_newer_k8s(k8s_version, kops_version):
         return None
@@ -453,7 +453,7 @@ def generate_misc():
         # A special test for IPv6 using Cilium CNI
         build_test(name_override="kops-grid-scenario-ipv6-cilium",
                    cloud="aws",
-                   distro="u2004",
+                   distro="deb11",
                    k8s_version="ci",
                    networking="cilium",
                    feature_flags=["AWSIPv6"],
@@ -1059,7 +1059,7 @@ def generate_presubmits_e2e():
         presubmit_test(
             name="pull-kops-e2e-ipv6-cilium",
             cloud="aws",
-            distro="u2004",
+            distro="deb11",
             k8s_version="ci",
             networking="cilium",
             feature_flags=["AWSIPv6"],
