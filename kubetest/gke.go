@@ -28,6 +28,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strconv"
@@ -62,6 +63,7 @@ var (
 	gkeNatMinPortsPerVm            = flag.Int("gke-nat-min-ports-per-vm", 64, "(gke only) Specify number of ports per cluster VM for NAT router. Number of ports * number of nodes / 64k = number of auto-allocated IP addresses (there is a hard limit of 100 IPs).")
 	gkeDownTimeout                 = flag.Duration("gke-down-timeout", 1*time.Hour, "(gke only) Timeout for gcloud container clusters delete call. Defaults to 1 hour which matches gcloud's default.")
 	gkeRemoveNetwork               = flag.Bool("gke-remove-network", true, "(gke only) At the end of the test remove non-default network that was used by cluster.")
+	gkeDumpConfigMaps              = flag.String("gke-dump-configmaps", "[]", `(gke-only) A JSON description of ConfigMaps to dump as part of gathering cluster logs. Note: --dump or --dump-pre-test-logs flags must also be set. Example: '[{"Name":"my-map", "Namespace":"default"}]`)
 
 	// poolReTemplate matches instance group URLs of the form `https://www.googleapis.com/compute/v1/projects/some-project/zones/a-zone/instanceGroupManagers/gke-some-cluster-some-pool-90fcb815-grp`. Match meaning:
 	// m[0]: path starting with zones/
@@ -77,6 +79,12 @@ type gkeNodePool struct {
 	Nodes       int
 	MachineType string
 	ExtraArgs   []string
+}
+
+type gkeConfigMap struct {
+	Name      string
+	Namespace string
+	DataKey   string
 }
 
 type gkeDeployer struct {
@@ -103,6 +111,7 @@ type gkeDeployer struct {
 	singleZoneNodeInstanceGroup bool
 	sshProxyInstanceName        string
 	poolRe                      *regexp.Regexp
+	dumpedConfigMaps            []gkeConfigMap
 
 	setup          bool
 	kubecfg        string
@@ -294,6 +303,11 @@ func newGKE(provider, project, zone, region, network, image, imageFamily, imageP
 
 	g.singleZoneNodeInstanceGroup = *gkeSingleZoneNodeInstanceGroup
 	g.sshProxyInstanceName = sshProxyInstanceName
+
+	err = json.Unmarshal([]byte(*gkeDumpConfigMaps), &g.dumpedConfigMaps)
+	if err != nil {
+		return nil, fmt.Errorf("--gke-dump-configmaps must be valid JSON, unmarshal error: %v, JSON: %q", err, *gkeDumpConfigMaps)
+	}
 
 	return g, nil
 }
@@ -488,6 +502,31 @@ export KUBE_NODE_OS_DISTRIBUTION='%[3]s'
 	}
 	if len(errorMessages) > 0 {
 		return fmt.Errorf("errors while dumping logs: %s", strings.Join(errorMessages, ", "))
+	}
+
+	// Fetch any ConfigMap data fields that were requested to be dumped
+	errorMessages = nil
+	dumpValues := make(map[string]string)
+	for _, cm := range g.dumpedConfigMaps {
+		cmd := exec.Command("kubectl", "get", fmt.Sprintf("ConfigMaps/%s", cm.Name), "-n", cm.Namespace, "-o", fmt.Sprintf("jsonpath={.data.%s}", cm.DataKey))
+		log.Printf("Running: %s", cmd)
+		out, err := cmd.Output()
+		if err != nil {
+			errorMessages = append(errorMessages, util.ExecError(err))
+			continue
+		}
+		jsonKey := strings.Join([]string{cm.Namespace, cm.Name, cm.DataKey}, ".")
+		dumpValues[jsonKey] = string(out)
+	}
+	if len(errorMessages) > 0 {
+		return fmt.Errorf("errors while dumping ConfigMaps: %s", strings.Join(errorMessages, ", "))
+	}
+	jsonDump, err := json.Marshal(dumpValues)
+	if err != nil {
+		return err
+	}
+	if err := os.WriteFile(filepath.Join(localPath, "gke-configmap.json"), jsonDump, 0644); err != nil {
+		return err
 	}
 	return nil
 }
