@@ -154,7 +154,7 @@ postsubmits:
         testgrid-dashboards: sig-cluster-lifecycle-image-pushes, sig-k8s-infra-gcb
       decorate: true
       branches:
-        - ^master$
+        - ^main$
         - ^release-.+$
         # this is a regex for semver, from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
         - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
@@ -265,7 +265,7 @@ periodics:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-openstack
-        base_ref: master
+        base_ref: main
         path_alias: sigs.k8s.io/cluster-api-provider-openstack
     spec:
       serviceAccountName: gcb-builder
@@ -284,7 +284,7 @@ periodics:
         # We need to emulate a pull job for the cloud build to work the same
         # way as it usually does.
             - name: PULL_BASE_REF
-              value: master
+              value: main
     annotations:
     # this is the name of some testgrid dashboard to report to.
       testgrid-dashboards: sig-cluster-lifecycle-image-pushes, sig-k8s-infra-gcb
