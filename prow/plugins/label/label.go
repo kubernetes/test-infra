@@ -31,7 +31,9 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 )
 
-const pluginName = "label"
+const (
+	PluginName = "label"
+)
 
 var (
 	defaultLabels          = []string{"kind", "priority", "area"}
@@ -43,7 +45,7 @@ var (
 )
 
 func init() {
-	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, helpProvider)
+	plugins.RegisterGenericCommentHandler(PluginName, handleGenericComment, helpProvider)
 }
 
 func configString(labels []string) string {
@@ -64,7 +66,7 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 		},
 	})
 	if err != nil {
-		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", pluginName)
+		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", PluginName)
 	}
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The label plugin provides commands that add or remove certain types of labels. Labels of the following types can be manipulated: 'area/*', 'committee/*', 'kind/*', 'language/*', 'priority/*', 'sig/*', 'triage/*', and 'wg/*'. More labels can be configured to be used via the /label command.",

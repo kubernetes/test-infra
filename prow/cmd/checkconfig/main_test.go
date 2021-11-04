@@ -462,19 +462,19 @@ triggers:
 		//  kube/kube:
 		//  - size
 		//  - config-updater
-		//config_updater:
+		// config_updater:
 		//  maps:
 		//    # Update the plugins configmap whenever plugins.yaml changes
 		//    kube/plugins.yaml:
 		//      name: plugins
 		//    kube/config.yaml:
 		//      validation: config
-		//size:
+		// size:
 		//  s: 1`),
 		//			expectedErr: "validation",
 		//		},
 		{
-			//only one invalid element is printed in the error
+			// only one invalid element is printed in the error
 			name:     "multiple invalid elements",
 			filename: "multiple.yaml",
 			cfg:      &plugins.Configuration{},
@@ -2246,7 +2246,7 @@ func TestVerifyLabelPlugin(t *testing.T) {
 					},
 				},
 			},
-			expectedErrorMsg: "the following orgs or repos have configuration of verify-owners plugin using the empty string as label name in restricted labels: openshift/machine-config-operator",
+			expectedErrorMsg: "the following orgs or repos have configuration of label plugin using the empty string as label name in restricted labels: openshift/machine-config-operator",
 		},
 		{
 			name: "valid after removing the restricted labels for the empty string",
@@ -2279,7 +2279,7 @@ func TestVerifyLabelPlugin(t *testing.T) {
 					},
 				},
 			},
-			expectedErrorMsg: "the following orgs or repos have configuration of verify-owners plugin using the empty string as label name in restricted labels: orgRepo1, orgRepo2",
+			expectedErrorMsg: "the following orgs or repos have configuration of label plugin using the empty string as label name in restricted labels: orgRepo1, orgRepo2",
 		},
 	}
 

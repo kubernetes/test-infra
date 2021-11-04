@@ -28,6 +28,7 @@ go_library(
         "//prow/plugins/bugzilla:go_default_library",
         "//prow/plugins/cherrypickunapproved:go_default_library",
         "//prow/plugins/hold:go_default_library",
+        "//prow/plugins/label:go_default_library",
         "//prow/plugins/lgtm:go_default_library",
         "//prow/plugins/owners-label:go_default_library",
         "//prow/plugins/releasenote:go_default_library",
