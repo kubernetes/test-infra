@@ -59,6 +59,7 @@ import (
 	"k8s.io/test-infra/prow/plugins/bugzilla"
 	"k8s.io/test-infra/prow/plugins/cherrypickunapproved"
 	"k8s.io/test-infra/prow/plugins/hold"
+	labelplugin "k8s.io/test-infra/prow/plugins/label"
 	"k8s.io/test-infra/prow/plugins/lgtm"
 	ownerslabel "k8s.io/test-infra/prow/plugins/owners-label"
 	"k8s.io/test-infra/prow/plugins/releasenote"
@@ -1064,7 +1065,7 @@ func verifyLabelPlugin(label plugins.Label) error {
 	if len(orgRepos) > 0 {
 		sort.Strings(orgRepos)
 		return fmt.Errorf("the following orgs or repos have configuration of %s plugin using the empty string as label name in restricted labels: %s",
-			verifyowners.PluginName, strings.Join(orgRepos, ", "),
+			labelplugin.PluginName, strings.Join(orgRepos, ", "),
 		)
 	}
 	return nil

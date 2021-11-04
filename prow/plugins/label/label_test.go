@@ -762,7 +762,7 @@ func TestLabel(t *testing.T) {
 				Repo:   github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 				User:   github.User{Login: tc.commenter},
 			}
-			err := handle(fakeClient, logrus.WithField("plugin", pluginName), plugins.Label{AdditionalLabels: tc.extraLabels, RestrictedLabels: tc.restrictedLabels}, e)
+			err := handle(fakeClient, logrus.WithField("plugin", PluginName), plugins.Label{AdditionalLabels: tc.extraLabels, RestrictedLabels: tc.restrictedLabels}, e)
 			if err != nil {
 				t.Fatalf("didn't expect error from label test: %v", err)
 			}
