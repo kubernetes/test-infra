@@ -127,6 +127,8 @@ presubmits:
         - -c
         - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/k8s.io/test-infra/experiment/kind-multizone-e2e.sh
         env:
+        - name: PARALLEL
+          value: "true"
         - name: FOCUS
           value: \[sig-network\]|\[Conformance\]
         - name: SKIP
