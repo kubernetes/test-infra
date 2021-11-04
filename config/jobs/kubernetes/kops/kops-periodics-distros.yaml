@@ -317,9 +317,9 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-distro-imageubuntu2004
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2104", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
-- name: e2e-kops-aws-distro-imageubuntu2104
-  cron: '10 1-23/8 * * *'
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2110", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+- name: e2e-kops-aws-distro-imageubuntu2110
+  cron: '14 1-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -346,7 +346,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-hirsute-21.04-amd64-server-20211028' --channel=alpha --networking=calico --container-runtime=containerd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-impish-21.10-arm64-server-20211014' --channel=alpha --networking=calico --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
@@ -371,14 +371,14 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
-    test.kops.k8s.io/distro: u2104
+    test.kops.k8s.io/distro: u2110
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2104, kops-distros, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2110, kops-distros, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-distro-imageubuntu2104
+    testgrid-tab-name: kops-aws-distro-imageubuntu2110
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "centos7", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-distro-imagecentos7
