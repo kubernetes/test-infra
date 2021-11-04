@@ -10,7 +10,8 @@ Update your `plugins.yaml` file to something along the following lines:
 ```yaml
 plugins:
   my-github/repo:
-  - config-updater
+    plugins:
+    - config-updater
 
 config_updater:
   maps:
