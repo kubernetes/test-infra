@@ -277,6 +277,12 @@ default:
       target: both
       prowPlugin: label
       addedBy: anyone
+    - color: 88be00
+      description: Categorizes issue or PR as related to the reinforcement of tests, or the addition of new tests.
+      name: kind/test
+      target: both
+      prowPlugin: label
+      addedBy: anyone
     - color: c7def8
       description: Categorizes issue or PR as related to a new feature.
       name: kind/feature
