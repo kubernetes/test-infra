@@ -98,22 +98,49 @@ func NewReporter(cfg config.Getter, cookiefilePath string, projects map[string][
 	if err != nil {
 		return nil, err
 	}
+	// applyGlobalConfig reads gerrit configurations from global gerrit config,
+	// it will completely override previously configured gerrit hosts and projects.
+	// it will also by the way authenticate gerrit
+	applyGlobalConfig(cfg, gc, cookiefilePath)
+
+	// Authenticate creates a goroutine for rotating token secrets when called the first
+	// time, afterwards it only authenticate once.
+	// applyGlobalConfig calls authenticate only when global gerrit config presents,
+	// call it here is required for cases where gerrit repos are defined as command
+	// line arg(which is going to be deprecated).
 	gc.Authenticate(cookiefilePath, "")
-	go func() {
-		for {
-			orgReposConfig := cfg().Gerrit.OrgReposConfig
-			if orgReposConfig == nil {
-				time.Sleep(time.Second)
-				continue
-			}
-			gc.UpdateClients(orgReposConfig.AllRepos())
-			time.Sleep(time.Second)
-		}
-	}()
+
 	return &Client{
 		gc:     gc,
 		lister: lister,
 	}, nil
+}
+
+func applyGlobalConfig(cfg config.Getter, gerritClient *client.Client, cookiefilePath string) {
+	applyGlobalConfigOnce(cfg, gerritClient, cookiefilePath)
+
+	go func() {
+		for {
+			applyGlobalConfigOnce(cfg, gerritClient, cookiefilePath)
+			// No need to spin constantly, give it a break. It's ok that config change has one second delay.
+			time.Sleep(time.Second)
+		}
+	}()
+}
+
+func applyGlobalConfigOnce(cfg config.Getter, gerritClient *client.Client, cookiefilePath string) {
+	orgReposConfig := cfg().Gerrit.OrgReposConfig
+	if orgReposConfig == nil {
+		return
+	}
+	// Updates clients based on global gerrit config.
+	gerritClient.UpdateClients(orgReposConfig.AllRepos())
+	// Authenticate creates a goroutine for rotating token secrets when called the first
+	// time, afterwards it only authenticate once.
+	// Newly added orgs/repos are only authenticated by the goroutine when token secret is
+	// rotated, which is up to 1 hour after config change. Explicitly call Authenticate
+	// here to get them authenticated immediately.
+	gerritClient.Authenticate(cookiefilePath, "")
 }
 
 // GetName returns the name of the reporter
