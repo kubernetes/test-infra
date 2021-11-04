@@ -51,7 +51,7 @@ func (s *Strings) String() string {
 	return strings.Join(s.vals, ",")
 }
 
-// Set records the value passed
+// Set records the value passed, overwriting the defaults (if any)
 func (s *Strings) Set(value string) error {
 	if !s.beenSet {
 		s.beenSet = true
@@ -60,4 +60,9 @@ func (s *Strings) Set(value string) error {
 	}
 	s.vals = append(s.vals, value)
 	return nil
+}
+
+// Add records the value passes, adding to the defaults (if any)
+func (s *Strings) Add(value string) {
+	s.vals = append(s.vals, value)
 }
