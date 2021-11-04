@@ -273,7 +273,7 @@ postsubmits:
           - --project=k8s-staging-test-infra
           - --env-passthrough=PULL_BASE_REF
           - triage/
-    -name: post-test-infra-push-pytest
+    - name: post-test-infra-push-pytest
       cluster: k8s-infra-prow-build-trusted
       run_if_changed: '^(images/pytest|experiment|hack|kettle|metrics|releng)/'
       annotations:
