@@ -35,6 +35,7 @@ echo "Checking .sh files permission..."
 # - that are not executable by all
 files=$(find . -type f -name '*.sh' -not -perm "${desired_perm}" -not -path './.git/*')
 if [[ -n "${files}" ]]; then
+  echo "ERROR: the following file(s) cannot be executed:"
   echo "${files}"
   echo
   echo "Please run 'make update-file-perms'"
