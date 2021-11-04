@@ -696,7 +696,7 @@ def generate_misc():
 # kops-periodics-distros.yaml #
 ###############################
 def generate_distros():
-    distros = ['debian9', 'debian10', 'debian11', 'ubuntu1804', 'ubuntu2004', 'ubuntu2104',
+    distros = ['debian9', 'debian10', 'debian11', 'ubuntu1804', 'ubuntu2004', 'ubuntu2110',
                'centos7', 'centos8', 'amazonlinux2', 'rhel7', 'rhel8', 'flatcar']
     results = []
     for distro in distros:
@@ -916,21 +916,12 @@ def generate_presubmits_e2e():
             always_run=True,
         ),
         presubmit_test(
-            distro="u2010",
+            distro="u2110",
             networking='calico',
             k8s_version='stable',
             kops_channel='alpha',
-            name='pull-kops-e2e-k8s-ubuntu2010',
-            tab_name='e2e-ubuntu2010',
-            always_run=False,
-        ),
-        presubmit_test(
-            distro="u2104",
-            networking='calico',
-            k8s_version='stable',
-            kops_channel='alpha',
-            name='pull-kops-e2e-k8s-ubuntu2104',
-            tab_name='e2e-ubuntu2104',
+            name='pull-kops-e2e-k8s-ubuntu2110',
+            tab_name='e2e-ubuntu2110',
             always_run=False,
         ),
         presubmit_test(
