@@ -256,7 +256,7 @@ func validate(o options) error {
 		}
 	}
 	if o.github.AppID != "" && o.github.AppPrivateKeyPath != "" {
-		o.warnings.Set(validateGitHubAppInstallationWarning)
+		o.warnings.Add(validateGitHubAppInstallationWarning)
 	}
 
 	configAgent, err := o.config.ConfigAgent()
