@@ -147,7 +147,7 @@ distro_images = {
     'u1804': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-*'), # pylint: disable=line-too-long
     'u2004': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*'), # pylint: disable=line-too-long
     'u2004arm64': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-*'), # pylint: disable=line-too-long
-    'u2110': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-impish-21.10-arm64-server-*'), # pylint: disable=line-too-long
+    'u2110': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-impish-21.10-amd64-server-*'), # pylint: disable=line-too-long
 }
 
 distros_ssh_user = {
