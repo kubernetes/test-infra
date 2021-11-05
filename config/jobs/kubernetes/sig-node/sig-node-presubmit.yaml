@@ -817,6 +817,54 @@ presubmits:
           env:
             - name: GOPATH
               value: /go
+  - name: pull-kubernetes-node-kubelet-serial-cpu-manager-kubetest2
+    # explicitly needs /test pull-kubernetes-node-kubelet-serial-cpu-manager to run
+    always_run: false
+    # if at all it is run and fails, don't block the PR
+    optional: true
+    branches:
+    - master
+    decorate: true
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
+    decoration_config:
+      timeout: 180m
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    annotations:
+      testgrid-dashboards: sig-node-presubmits
+      testgrid-tab-name: pr-kubelet-serial-gce-e2e-cpu-manager-kubetest2
+    spec:
+      containers:
+      # experimental have the kubetest2 binaries
+      # https://github.com/kubernetes/test-infra/blob/3c3d64f398a5e4f324200d25183c98a4bfa842ac/images/kubekins-e2e/variants.yaml#L8
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-experimental
+        env:
+        - name: GOPATH
+          value: /go
+        command:
+        - runner.sh
+        args:
+        - kubetest2
+        - noop
+        - --test=node
+        - --
+        - --repo-root=.
+        - --gcp-project=k8s-jkns-pr-node-e2e
+        - --gcp-zone=us-west1-b
+        - --parallelism=1
+        - --focus-regex=\[Feature:CPUManager\]
+        - --test-args=--feature-gates=DynamicKubeletConfig=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+        - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/image-config-serial-cpu-manager.yaml
   - name: pull-kubernetes-node-kubelet-serial-topology-manager
     always_run: false
     optional: true
@@ -851,6 +899,54 @@ presubmits:
           env:
             - name: GOPATH
               value: /go
+  - name: pull-kubernetes-node-kubelet-serial-topology-manager-kubetest2
+    # explicitly needs /test pull-kubernetes-node-kubelet-serial-topology-manager to run
+    always_run: false
+    # if at all it is run and fails, don't block the PR
+    optional: true
+    branches:
+    - master
+    decorate: true
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
+    decoration_config:
+      timeout: 180m
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    annotations:
+      testgrid-dashboards: sig-node-presubmits
+      testgrid-tab-name: pr-kubelet-serial-gce-e2e-topology-manager-kubetest2
+    spec:
+      containers:
+      # experimental have the kubetest2 binaries
+      # https://github.com/kubernetes/test-infra/blob/3c3d64f398a5e4f324200d25183c98a4bfa842ac/images/kubekins-e2e/variants.yaml#L8
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20210915-5dbaf53458-experimental
+        env:
+        - name: GOPATH
+          value: /go
+        command:
+        - runner.sh
+        args:
+        - kubetest2
+        - noop
+        - --test=node
+        - --
+        - --repo-root=.
+        - --gcp-project=k8s-jkns-pr-node-e2e
+        - --gcp-zone=us-west1-b
+        - --parallelism=1
+        - --focus-regex=\[Feature:TopologyManager\]
+        - --test-args=--feature-gates=DynamicKubeletConfig=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+        - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/image-config-serial-cpu-manager.yaml
   - name: pull-kubernetes-node-kubelet-serial-hugepages
     always_run: false
     optional: true
