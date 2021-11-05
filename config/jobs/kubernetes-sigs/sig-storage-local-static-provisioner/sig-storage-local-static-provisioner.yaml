@@ -64,6 +64,44 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+  - name: pull-sig-storage-local-static-provisioner-e2e-windows-2019
+    always_run: false
+    decorate: true
+    path_alias: sigs.k8s.io/sig-storage-local-static-provisioner
+    labels:
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
+      preset-common-gce-windows: "true"
+      preset-e2e-gce-windows: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20210902-e4567b8-master
+        command:
+        - runner.sh
+        args:
+        - hack/e2e.sh
+        - --
+        - --test-cmd-args=--allowed-not-ready-nodes=10
+        - --test-cmd-args=--node-os-distro=windows
+        env:
+        # minimum size that supports Hyper-V
+        - name: NODE_SIZE
+          value: "e2-standard-2"
+        - name: NODE_LOCAL_SSDS
+          value: "2"
+        # added in https://github.com/kubernetes/kubernetes/pull/105999
+        - name: WINDOWS_ENABLE_HYPERV
+          value: "true"
+        # if the value is changed, also change the hack/e2e.sh Windows image to build!
+        # this is done so that the e2e test runs faster
+        - name: WINDOWS_NODE_OS_DISTRIBUTION
+          value: "win2019"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
 
 periodics:
 - name: ci-sig-storage-local-static-provisioner-master-gce-latest
