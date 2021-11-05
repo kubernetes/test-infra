@@ -97,7 +97,9 @@ periodics:
       - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
       - --node-tests=true
       - --provider=gce
-      - --test_args=--nodes=8 --focus="\[NodeFeature:.+\]|\[NodeFeature\]" --skip="\[Flaky\]|\[Serial\]"
+      # Feature:DynamicKubeletConfig is deprecated and soon will be removed.
+      # If we want to run these tests, we need a separate job for it and not include them in release informing.
+      - --test_args=--nodes=8 --focus="\[NodeFeature:.+\]|\[NodeFeature\]" --skip="\[Flaky\]|\[Serial\]|\[Feature:DynamicKubeletConfig\]"
       - --timeout=65m
       env:
       - name: GOPATH
