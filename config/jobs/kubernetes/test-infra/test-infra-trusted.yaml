@@ -48,13 +48,13 @@ postsubmits:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-prow
         - images/alpine/
-  - name: post-test-infra-push-ci-fuzz
+  - name: post-test-infra-push-clusterfuzzlite
     cluster: test-infra-trusted
-    run_if_changed: '^(experiment/ci-fuzz)'
+    run_if_changed: '^(experiment/clusterfuzzlite)'
     annotations:
       testgrid-dashboards: "sig-testing-images"
-      testgrid-tab-name: "ci-fuzz-push"
-      description: builds and pushes the ci-fuzz image
+      testgrid-tab-name: "clusterfuzzlite-push"
+      description: builds and pushes the clusterfuzzlite image
     decorate: true
     branches:
     - ^master$
@@ -69,7 +69,7 @@ postsubmits:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-testimages
         - --build-dir=.
-        - experiment/ci-fuzz/
+        - experiment/clusterfuzzlite/
   - name: post-test-infra-push-gcloud-terraform
     cluster: test-infra-trusted
     run_if_changed: '^images/gcloud-terraform/'
