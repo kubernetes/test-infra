@@ -87,9 +87,8 @@ presubmits:
         - --test-cmd-args=--allowed-not-ready-nodes=10
         - --test-cmd-args=--node-os-distro=windows
         env:
-        # minimum size that supports Hyper-V
         - name: NODE_SIZE
-          value: "e2-standard-2"
+          value: "n2-standard-2"
         - name: NODE_LOCAL_SSDS
           value: "2"
         # added in https://github.com/kubernetes/kubernetes/pull/105999
