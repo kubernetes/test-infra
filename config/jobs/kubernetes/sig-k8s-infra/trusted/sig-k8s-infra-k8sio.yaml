@@ -40,10 +40,8 @@ postsubmits:
     cluster: k8s-infra-prow-build-trusted
     decorate: true
     max_concurrency: 1
-    extra_refs:
-    - org: kubernetes
-      repo: k8s.io
-      base_ref: main
+    branches:
+    - ^main$
     annotations:
       testgrid-dashboards: sig-k8s-infra-k8sio
       testgrid-alert-email: ameukam@gmail.com
