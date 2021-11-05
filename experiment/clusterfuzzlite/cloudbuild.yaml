@@ -4,7 +4,7 @@ steps:
     - build
     - --tag=gcr.io/$PROJECT_ID/clusterfuzzlite:$_GIT_TAG
     - --tag=gcr.io/$PROJECT_ID/clusterfuzzlite:latest
-    - ./experiment/ci-fuzz
+    - ./experiment/clusterfuzzlite
 substitutions:
   _GIT_TAG: '12345'
 images:
