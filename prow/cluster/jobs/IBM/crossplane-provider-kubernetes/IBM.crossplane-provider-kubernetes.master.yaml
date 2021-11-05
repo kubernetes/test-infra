@@ -1,0 +1,152 @@
+presubmits:
+  IBM/crossplane-provider-kubernetes:
+  - name: build_crossplane-provider-kubernetes
+    branches:
+    - ^master$
+    - ^release-cd$
+    - ^release-efix$
+    - ^release-eus$
+    - ^release-future$
+    labels:
+      preset-service-account: "true"
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/crossplane-provider-kubernetes
+    rerun_command: /test build crossplane-provider-kubernetes
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tool:v20210203-ad22dc7f6
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
+  - name: check_crossplane-provider-kubernetes
+    branches:
+    - ^master$
+    - ^release-cd$
+    - ^release-efix$
+    - ^release-eus$
+    - ^release-future$
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/crossplane-provider-kubernetes
+    rerun_command: /test check crossplane-provider-kubernetes
+    spec:
+      containers:
+      - command:
+        - make
+        - check
+        image: quay.io/multicloudlab/check-tool:v20201120-383f8da3c
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?check(?: .*?)?$'
+  - name: test_crossplane-provider-kubernetes
+    branches:
+    - ^master$
+    - ^release-cd$
+    - ^release-efix$
+    - ^release-eus$
+    - ^release-future$
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/crossplane-provider-kubernetes
+    rerun_command: /test test crossplane-provider-kubernetes
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tool:v20210203-ad22dc7f6
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?test(?: .*?)?$'
+
+postsubmits:
+  IBM/crossplane-provider-kubernetes:
+  - name: check_crossplane-provider-kubernetes_postsubmit
+    branches:
+    - ^master$
+    - ^release-cd$
+    - ^release-efix$
+    - ^release-eus$
+    - ^release-future$
+    decorate: true
+    path_alias: github.com/IBM/crossplane-provider-kubernetes
+    spec:
+      containers:
+      - command:
+        - make
+        - check
+        image: quay.io/multicloudlab/check-tool:v20201120-383f8da3c
+        name: ""
+        securityContext:
+          privileged: true
+  - name: test_crossplane-provider-kubernetes_postsubmit
+    branches:
+    - ^master$
+    - ^release-cd$
+    - ^release-efix$
+    - ^release-eus$
+    - ^release-future$
+    decorate: true
+    path_alias: github.com/IBM/crossplane-provider-kubernetes
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tool:v20210203-ad22dc7f6
+        name: ""
+        securityContext:
+          privileged: true
+  - name: build_crossplane-provider-kubernetes_postsubmit
+    branches:
+    - ^master$
+    - ^release-cd$
+    - ^release-efix$
+    - ^release-eus$
+    - ^release-future$
+    labels:
+      preset-service-account: "true"
+    decorate: true
+    path_alias: github.com/IBM/crossplane-provider-kubernetes
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tool:v20210203-ad22dc7f6
+        name: ""
+        securityContext:
+          privileged: true
+  - name: images_crossplane-provider-kubernetes_postsubmit
+    branches:
+    - ^master$
+    - ^release-cd$
+    - ^release-efix$
+    - ^release-eus$
+    - ^release-future$
+    decorate: true
+    path_alias: github.com/IBM/crossplane-provider-kubernetes
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - images
+        image: quay.io/multicloudlab/build-tool:v20210203-ad22dc7f6
+        name: ""
+        securityContext:
+          privileged: true
+
