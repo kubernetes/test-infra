@@ -812,38 +812,27 @@ dashboards:
     test_group_name: release-openshift-origin-installer-e2e-gcp-upgrade-4.2
   name: redhat-openshift-ocp-release-4.2-informing
 test_groups:
-- days_of_results: 50
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.2-e2e-aws-sdn-multitenant
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.2-e2e-aws-sdn-multitenant
   name: periodic-ci-openshift-release-master-ci-4.2-e2e-aws-sdn-multitenant
-- days_of_results: 50
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.2-e2e-gcp
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.2-e2e-gcp
   name: periodic-ci-openshift-release-master-ci-4.2-e2e-gcp
-- days_of_results: 50
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.2-console-aws
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.2-console-aws
   name: periodic-ci-openshift-release-master-nightly-4.2-console-aws
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.2-e2e-aws-fips
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.2-e2e-aws-fips
   name: periodic-ci-openshift-release-master-nightly-4.2-e2e-aws-fips
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.2-e2e-aws-fips-serial
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.2-e2e-aws-fips-serial
   name: periodic-ci-openshift-release-master-nightly-4.2-e2e-aws-fips-serial
-- days_of_results: 50
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.2-e2e-azure
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.2-e2e-azure
   name: periodic-ci-openshift-release-master-nightly-4.2-e2e-azure
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.2-e2e-azure-fips
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.2-e2e-azure-fips
   name: periodic-ci-openshift-release-master-nightly-4.2-e2e-azure-fips
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.2-e2e-azure-fips-serial
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.2-e2e-azure-fips-serial
   name: periodic-ci-openshift-release-master-nightly-4.2-e2e-azure-fips-serial
-- days_of_results: 50
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.2-e2e-gcp
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.2-e2e-gcp
   name: periodic-ci-openshift-release-master-nightly-4.2-e2e-gcp
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.2-e2e-gcp-fips
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.2-e2e-gcp-fips
   name: periodic-ci-openshift-release-master-nightly-4.2-e2e-gcp-fips
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.2-e2e-gcp-fips-serial
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.2-e2e-gcp-fips-serial
   name: periodic-ci-openshift-release-master-nightly-4.2-e2e-gcp-fips-serial
 - days_of_results: 8
   gcs_prefix: origin-ci-test/logs/promote-release-openshift-machine-os-content-e2e-aws-4.1

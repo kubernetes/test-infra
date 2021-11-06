@@ -1592,28 +1592,21 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.5-e2e-gcp-upgrade
   name: periodic-ci-openshift-release-master-ci-4.5-e2e-gcp-upgrade
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.5-upgrade-from-stable-4.4-e2e-aws-ovn-upgrade
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.5-upgrade-from-stable-4.4-e2e-aws-ovn-upgrade
   name: periodic-ci-openshift-release-master-ci-4.5-upgrade-from-stable-4.4-e2e-aws-ovn-upgrade
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.5-upgrade-from-stable-4.4-e2e-aws-upgrade
   name: periodic-ci-openshift-release-master-ci-4.5-upgrade-from-stable-4.4-e2e-aws-upgrade
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.5-upgrade-from-stable-4.4-e2e-aws-upgrade-rollback
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.5-upgrade-from-stable-4.4-e2e-aws-upgrade-rollback
   name: periodic-ci-openshift-release-master-ci-4.5-upgrade-from-stable-4.4-e2e-aws-upgrade-rollback
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.5-upgrade-from-stable-4.4-e2e-azure-ovn-upgrade
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.5-upgrade-from-stable-4.4-e2e-azure-ovn-upgrade
   name: periodic-ci-openshift-release-master-ci-4.5-upgrade-from-stable-4.4-e2e-azure-ovn-upgrade
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.5-upgrade-from-stable-4.4-e2e-azure-upgrade
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.5-upgrade-from-stable-4.4-e2e-azure-upgrade
   name: periodic-ci-openshift-release-master-ci-4.5-upgrade-from-stable-4.4-e2e-azure-upgrade
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.5-upgrade-from-stable-4.4-e2e-gcp-ovn-upgrade
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.5-upgrade-from-stable-4.4-e2e-gcp-ovn-upgrade
   name: periodic-ci-openshift-release-master-ci-4.5-upgrade-from-stable-4.4-e2e-gcp-ovn-upgrade
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.5-upgrade-from-stable-4.4-e2e-gcp-upgrade
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.5-upgrade-from-stable-4.4-e2e-gcp-upgrade
   name: periodic-ci-openshift-release-master-ci-4.5-upgrade-from-stable-4.4-e2e-gcp-upgrade
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.5-upgrade-from-stable-4.4-e2e-ovirt-upgrade
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.5-upgrade-from-stable-4.4-e2e-ovirt-upgrade
   name: periodic-ci-openshift-release-master-ci-4.5-upgrade-from-stable-4.4-e2e-ovirt-upgrade
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.5-cluster-logging-operator-e2e
