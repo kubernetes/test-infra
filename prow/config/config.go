@@ -1320,7 +1320,7 @@ func loadWithYamlOpts(yamlOpts []yaml.JSONOpt, prowConfig, jobConfig string, sup
 	if err != nil {
 		return nil, err
 	}
-	if err := c.finalizeJobConfig(); err != nil {
+	if err := c.FinalizeJobConfig(); err != nil {
 		return nil, err
 	}
 	if err := c.validateComponentConfig(); err != nil {
@@ -1780,8 +1780,8 @@ func defaultPeriodics(c *Config) error {
 	return utilerrors.NewAggregate(errs)
 }
 
-// finalizeJobConfig mutates and fixes entries for jobspecs
-func (c *Config) finalizeJobConfig() error {
+// FinalizeJobConfig mutates and fixes entries for jobspecs
+func (c *Config) FinalizeJobConfig() error {
 	if err := c.Plank.FinalizeDefaultDecorationConfigs(); err != nil {
 		return err
 	}
@@ -2003,7 +2003,7 @@ func validatePeriodics(periodics []Periodic, podNamespace string) error {
 }
 
 // ValidateJobConfig validates if all the jobspecs/presets are valid
-// if you are mutating the jobs, please add it to finalizeJobConfig above
+// if you are mutating the jobs, please add it to FinalizeJobConfig above
 func (c *Config) ValidateJobConfig() error {
 
 	var errs []error
