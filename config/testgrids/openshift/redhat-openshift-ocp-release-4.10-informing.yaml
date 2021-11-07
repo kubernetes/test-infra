@@ -3718,25 +3718,25 @@ test_groups:
   name: periodic-ci-openshift-release-master-nightly-4.10-upgrade-from-stable-4.9-e2e-aws-upgrade
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.10-upgrade-from-stable-4.9-e2e-metal-ipi-upgrade
   name: periodic-ci-openshift-release-master-nightly-4.10-upgrade-from-stable-4.9-e2e-metal-ipi-upgrade
-- days_of_results: 25
+- days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-verification-tests-master-ocp-4.10-e2e-aws-cucushift-ipi
   name: periodic-ci-openshift-verification-tests-master-ocp-4.10-e2e-aws-cucushift-ipi
-- days_of_results: 25
+- days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-verification-tests-master-ocp-4.10-e2e-baremetal-cucushift-ipi
   name: periodic-ci-openshift-verification-tests-master-ocp-4.10-e2e-baremetal-cucushift-ipi
-- days_of_results: 25
+- days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-verification-tests-master-ocp-4.10-e2e-gcp-cucushift-ipi
   name: periodic-ci-openshift-verification-tests-master-ocp-4.10-e2e-gcp-cucushift-ipi
-- days_of_results: 25
+- days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-verification-tests-master-ocp-4.10-e2e-gcp-cucushift-upi
   name: periodic-ci-openshift-verification-tests-master-ocp-4.10-e2e-gcp-cucushift-upi
-- days_of_results: 25
+- days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-verification-tests-master-ocp-4.10-e2e-openstack-cucushift-ipi
   name: periodic-ci-openshift-verification-tests-master-ocp-4.10-e2e-openstack-cucushift-ipi
-- days_of_results: 25
+- days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-verification-tests-master-ocp-4.10-e2e-openstack-cucushift-upi
   name: periodic-ci-openshift-verification-tests-master-ocp-4.10-e2e-openstack-cucushift-upi
-- days_of_results: 25
+- days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-verification-tests-master-ocp-4.10-e2e-vsphere-cucushift-ipi
   name: periodic-ci-openshift-verification-tests-master-ocp-4.10-e2e-vsphere-cucushift-ipi
 - gcs_prefix: origin-ci-test/logs/promote-release-openshift-machine-os-content-e2e-aws-4.10
