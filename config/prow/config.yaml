@@ -97,6 +97,7 @@ deck:
   additional_allowed_buckets:
     - k8s-ovn
     - containerd-integration
+    - ppc64le-kubernetes
 
 prowjob_namespace: default
 pod_namespace: test-pods
