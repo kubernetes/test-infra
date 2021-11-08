@@ -2281,6 +2281,45 @@ func TestVerifyLabelPlugin(t *testing.T) {
 			},
 			expectedErrorMsg: "the following orgs or repos have configuration of label plugin using the empty string as label name in restricted labels: orgRepo1, orgRepo2",
 		},
+		{
+			name: "invalid when additional and restricted labels are the same",
+			label: plugins.Label{
+				AdditionalLabels: []string{"cherry-pick-approved"},
+				RestrictedLabels: map[string][]plugins.RestrictedLabel{
+					"orgRepo1": {
+						{
+							Label: "cherry-pick-approved",
+						},
+					},
+				},
+			},
+			expectedErrorMsg: "the following orgs or repos have configuration of label plugin using the restricted label cherry-pick-approved which is also configured as an additional label: orgRepo1",
+		},
+		{
+			name: "invalid when additional and restricted labels are the same in multiple orgRepos and empty string",
+			label: plugins.Label{
+				AdditionalLabels: []string{"cherry-pick-approved"},
+				RestrictedLabels: map[string][]plugins.RestrictedLabel{
+					"orgRepo1": {
+						{
+							Label: "cherry-pick-approved",
+						},
+					},
+					"orgRepo2": {
+						{
+							Label: "",
+						},
+					},
+					"orgRepo3": {
+						{
+							Label: "cherry-pick-approved",
+						},
+					},
+				},
+			},
+			expectedErrorMsg: "[the following orgs or repos have configuration of label plugin using the restricted label cherry-pick-approved which is also configured as an additional label: orgRepo1, orgRepo3, " +
+				"the following orgs or repos have configuration of label plugin using the empty string as label name in restricted labels: orgRepo2]",
+		},
 	}
 
 	for _, tc := range testCases {
