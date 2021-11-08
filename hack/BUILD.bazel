@@ -80,7 +80,7 @@ sh_test(
         "@io_k8s_code_generator//cmd/lister-gen",
         "@io_k8s_sigs_controller_tools//cmd/controller-gen",
     ],
-    tags = ["lint"],
+    tags = ["manual"],
 )
 
 sh_binary(
