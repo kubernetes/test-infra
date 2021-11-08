@@ -1078,6 +1078,7 @@ slack_reporter_configs:
           - ""
         job_types_to_report:
           - ""
+        report: false
         report_template: ' '
 
 
