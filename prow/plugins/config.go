@@ -401,6 +401,15 @@ func (l Label) RestrictedLabelsFor(org, repo string) map[string]RestrictedLabel 
 	return result
 }
 
+func (l Label) IsRestrictedLabelInAdditionalLables(restricted string) bool {
+	for _, additional := range l.AdditionalLabels {
+		if restricted == additional {
+			return true
+		}
+	}
+	return false
+}
+
 type RestrictedLabel struct {
 	Label        string   `json:"label"`
 	AllowedTeams []string `json:"allowed_teams,omitempty"`

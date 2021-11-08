@@ -1053,22 +1053,33 @@ func verifyOwnersPlugin(cfg *plugins.Configuration) error {
 }
 
 func verifyLabelPlugin(label plugins.Label) error {
-	var orgRepos []string
+	var orgReposWithEmptyLabelConfig []string
+	var errs []error
+	restrictedAndAdditionalLabels := make(map[string][]string)
 	for orgRepo, restrictedLabels := range label.RestrictedLabels {
 		for _, restrictedLabel := range restrictedLabels {
+			if label.IsRestrictedLabelInAdditionalLables(restrictedLabel.Label) {
+				restrictedAndAdditionalLabels[restrictedLabel.Label] = append(restrictedAndAdditionalLabels[restrictedLabel.Label], orgRepo)
+			}
 			if restrictedLabel.Label == "" {
-				orgRepos = append(orgRepos, orgRepo)
+				orgReposWithEmptyLabelConfig = append(orgReposWithEmptyLabelConfig, orgRepo)
 			}
 		}
 	}
 
-	if len(orgRepos) > 0 {
-		sort.Strings(orgRepos)
-		return fmt.Errorf("the following orgs or repos have configuration of %s plugin using the empty string as label name in restricted labels: %s",
-			labelplugin.PluginName, strings.Join(orgRepos, ", "),
-		)
+	for label, repos := range restrictedAndAdditionalLabels {
+		sort.Strings(repos)
+		errs = append(errs,
+			fmt.Errorf("the following orgs or repos have configuration of label plugin using the restricted label %s which is also configured as an additional label: %s", label, strings.Join(repos, ", ")))
 	}
-	return nil
+
+	if len(orgReposWithEmptyLabelConfig) > 0 {
+		sort.Strings(orgReposWithEmptyLabelConfig)
+		errs = append(errs, fmt.Errorf("the following orgs or repos have configuration of %s plugin using the empty string as label name in restricted labels: %s",
+			labelplugin.PluginName, strings.Join(orgReposWithEmptyLabelConfig, ", "),
+		))
+	}
+	return utilerrors.NewAggregate(errs)
 }
 
 func validateTriggers(cfg *config.Config, pcfg *plugins.Configuration) error {
