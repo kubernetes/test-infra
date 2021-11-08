@@ -1137,24 +1137,27 @@ def generate_presubmits_e2e():
             template_path="/home/prow/go/src/k8s.io/kops/tests/e2e/templates/apiserver.yaml.tmpl",
             feature_flags=['APIServerNodes']
         ),
-
-
-
-    ]
-    for branch in ['1.22', '1.21']:
-        name_suffix = branch.replace('.', '-')
-        jobs.append(
-            presubmit_test(
-                branch='release-' + branch,
-                k8s_version=branch,
-                kops_channel='alpha',
-                name='pull-kops-e2e-kubernetes-aws-' + name_suffix,
-                networking='calico',
-                tab_name='e2e-' + name_suffix,
-                always_run=True,
-                skip_regex=skip_regex,
-            )
+        presubmit_test(
+            branch='release-1.22',
+            k8s_version='1.22',
+            kops_channel='alpha',
+            name='pull-kops-e2e-kubernetes-aws-1-22',
+            networking='calico',
+            tab_name='e2e-1-22',
+            always_run=True,
+            skip_regex=skip_regex,
+        ),
+        presubmit_test(
+            branch='release-1.21',
+            k8s_version='1.21',
+            kops_channel='alpha',
+            name='pull-kops-e2e-kubernetes-aws-1-21',
+            networking='calico',
+            tab_name='e2e-1-21',
+            always_run=True,
+            skip_regex=skip_regex + "|MetricsGrabber",
         )
+    ]
     return jobs
 
 ########################
