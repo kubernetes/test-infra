@@ -119,7 +119,7 @@ sh_test(
         "@//:all-srcs",
         MISSPELL,
     ],
-    tags = ["lint"],
+    tags = ["manual"],
 )
 
 sh_binary(
@@ -133,7 +133,7 @@ sh_binary(
         "@//:all-srcs",
         MISSPELL,
     ],
-    tags = ["lint"],
+    tags = ["manual"],
 )
 
 protoc = "@com_google_protobuf//:protoc"
@@ -211,7 +211,7 @@ sh_test(
         "//label_sync:labels.md.tmpl",
         "//label_sync:labels.yaml",
     ],
-    tags = ["lint"],
+    tags = ["manual"],
 )
 
 test_suite(
