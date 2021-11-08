@@ -265,7 +265,7 @@ testSuites:
   alphafeatures:
     args:
     - --timeout=180m
-    - --test_args=--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|DynamicKubeletConfig)\]
+    - --test_args=--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly)\]
       --minStartupPods=8
     cluster: k8s-infra-prow-build
   default:
@@ -412,4 +412,3 @@ nodeTestSuites:
     args:
     - --timeout=300m
     - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]"
-    - --node-test-args=--feature-gates=DynamicKubeletConfig=true
