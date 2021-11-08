@@ -467,6 +467,10 @@ branch-protection:
           branches:
             gh-pages:
               protect: false
+        descheduler:
+          branches:
+            gh-pages:
+              protect: false
         external-dns:
           branches:
             gh-pages:
