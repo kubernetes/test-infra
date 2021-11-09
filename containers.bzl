@@ -41,26 +41,34 @@ def repositories():
 
     container_pull(
         name = "git-base",
-        digest = "sha256:3fef8233c73aa85f953f0f90a3dc0daee88b2eea5210af0779512c34ce5f1ae6",
+        digest = "sha256:d04b737f2a655f0a432ca7da64fde774292a313a96510b3a95ec8caacd8092cf",
         registry = "gcr.io",
         repository = "k8s-prow/git",
-        # tag = "v20210819-42fed69",
+        # tag = "v20211018-372b1c8",
     )
 
     container_pull(
         name = "git-base-arm64",
-        digest = "sha256:17373d3456b4ad146b42b23fd4b6322dc804b62af6c3f939fbf7533239d2dce5",
+        digest = "sha256:6ef92a6977693612922628be8d412e381fac58cc4918ff27679f73d84538d953",
         registry = "gcr.io",
         repository = "k8s-prow/git",
-        # tag = "v20210819-42fed69",
+        # tag = "v20211018-372b1c8",
     )
 
     container_pull(
         name = "git-base-ppc64le",
-        digest = "sha256:cc5b28dfc4165dccc91d0cf04e9addf1b2d22ab70b9a5e313b6299a4aa1d6646",
+        digest = "sha256:9333361f7f10d0f116dd6a3a39f38bf89e208ebf873b07ec0171772675d242ca",
         registry = "gcr.io",
         repository = "k8s-prow/git",
-        # tag = "v20210819-42fed69",
+        # tag = "v20211018-372b1c8",
+    )
+
+    container_pull(
+        name = "git-base-s390x",
+        digest = "sha256:22617c9314ffae594db048083f094a1ee7d2da1eb98c414e741b701f3ac7ec48",
+        registry = "gcr.io",
+        repository = "k8s-prow/git",
+        # tag = "v20211018-372b1c8",
     )
 
     container_pull(

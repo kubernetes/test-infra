@@ -23,6 +23,7 @@ load(
     _image_tags = "tags",
     _image_tags_arm64 = "tags_arm64",
     _image_tags_ppc64le = "tags_ppc64le",
+    _image_tags_s390x = "tags_s390x",
 )
 
 # prow_image is a macro for creating :app and :image targets
@@ -32,13 +33,16 @@ def prow_image(
         base = None,
         base_arm64 = None,
         base_ppc64le = None,
+        base_s390x = None,
         stamp = True,  # stamp by default, but allow overrides
         app_name = "app",
         build_arm64 = False,
         build_ppc64le = False,
+        build_s390x = False,
         symlinks_default = None,
         symlinks_arm64 = None,
         symlinks_ppc64le = None,
+        symlinks_s390x = None,
         **kwargs):
     go_image(
         name = app_name,
@@ -98,6 +102,26 @@ def prow_image(
             **kwargs
         )
 
+    if build_s390x == True:
+        go_image(
+            name = "%s-s390x" % app_name,
+            base = base_s390x,
+            embed = [":go_default_library"],
+            goarch = "s390x",
+            goos = "linux",
+            pure = "on",
+            x_defs = {"k8s.io/test-infra/prow/version.Name": component},
+        )
+
+        container_image(
+            name = "%s-s390x" % name,
+            base = ":%s-s390x" % app_name,
+            architecture = "s390x",
+            stamp = stamp,
+            symlinks = symlinks_s390x,
+            **kwargs
+        )
+
 # prow_push creates a bundle of container images, and a target to push them.
 def prow_push(
         name,
@@ -146,11 +170,17 @@ def target(cmd):
 def target_arm64(cmd):
     return "//prow/cmd/%s:image-arm64" % cmd
 
-# target_ppc64le returns the arm64 image target for the command.
+# target_ppc64le returns the ppc64le image target for the command.
 #
 # Concretely, target("foo") returns "//prow/cmd/foo:image-ppc64le"
 def target_ppc64le(cmd):
     return "//prow/cmd/%s:image-ppc64le" % cmd
+
+# target_s390x returns the s390x image target for the command.
+#
+# Concretely, target("foo") returns "//prow/cmd/foo:image-s390x"
+def target_s390x(cmd):
+    return "//prow/cmd/%s:image-s390x" % cmd
 
 # tags returns a {image: target} map for each cmd or {name: target} kwarg.
 #
@@ -194,6 +224,13 @@ def tags_ppc64le(cmds):
     if EDGE_PROW_REPO:
         cmd_targets.update({edge_prefix(cmd): target_ppc64le(cmd) for cmd in cmds})
     return _image_tags_ppc64le(cmd_targets)
+
+# tags_s390x returns a {image: target-s390x} map for each cmd kwarg.
+def tags_s390x(cmds):
+    cmd_targets = {prefix(cmd): target_s390x(cmd) for cmd in cmds}
+    if EDGE_PROW_REPO:
+        cmd_targets.update({edge_prefix(cmd): target_s390x(cmd) for cmd in cmds})
+    return _image_tags_s390x(cmd_targets)
 
 def object(name, cluster = CORE_CLUSTER, **kwargs):
     k8s_object(
