@@ -628,6 +628,7 @@ tide:
   merge_method:
     kubernetes-client/csharp: squash
     kubernetes-client/gen: squash
+    kubernetes-sigs/cluster-api: squash
     kubernetes-sigs/cluster-api-provider-digitalocean: squash
     kubernetes-sigs/cluster-api-provider-ibmcloud: squash
     kubernetes-sigs/ibm-vpc-block-csi-driver: squash
