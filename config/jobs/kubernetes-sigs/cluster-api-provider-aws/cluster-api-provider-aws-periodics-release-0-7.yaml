@@ -65,7 +65,7 @@ periodics:
           - name: AWS_REGION
             value: "us-west-2"
           - name: E2E_UNMANAGED_FOCUS
-            value: "Cluster API E2E tests"
+            value: "Cluster API Framework"
         securityContext:
           privileged: true
         resources:
