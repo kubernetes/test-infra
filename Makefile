@@ -59,6 +59,7 @@ run-pytest:
 	docker run -v $(shell pwd):/app $(PYTEST_IMAGE)
 
 pytests:
+	pip3 install -r requirements3.txt
 	mkdir -p _bin-make
 	make -C kettle/ test
 	make -C metrics/ test
