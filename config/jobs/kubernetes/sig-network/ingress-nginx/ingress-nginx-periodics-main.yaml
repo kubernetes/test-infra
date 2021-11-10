@@ -17,7 +17,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20211108-d0d3c6d7a8-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20211110-cdea54775d-master
       command:
         - wrapper.sh
         - bash

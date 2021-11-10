@@ -15,7 +15,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211109-db1707d3de-1.19
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211110-cdea54775d-1.19
       command:
       - runner.sh
       - kubetest
@@ -65,7 +65,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211109-db1707d3de-1.20
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211110-cdea54775d-1.20
       command:
       - runner.sh
       - kubetest
@@ -118,7 +118,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211109-db1707d3de-1.21
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211110-cdea54775d-1.21
       command:
       - runner.sh
       - kubetest
@@ -171,7 +171,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211109-db1707d3de-1.22
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211110-cdea54775d-1.22
       command:
       - runner.sh
       - kubetest
@@ -224,7 +224,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211109-db1707d3de-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211110-cdea54775d-master
       command:
       - runner.sh
       - kubetest
@@ -277,7 +277,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211109-db1707d3de-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211110-cdea54775d-master
       command:
       - runner.sh
       - kubetest
@@ -334,7 +334,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211109-db1707d3de-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211110-cdea54775d-master
       command:
       - runner.sh
       - kubetest
@@ -390,7 +390,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211109-db1707d3de-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211110-cdea54775d-master
         command:
         - runner.sh
         - kubetest
@@ -443,7 +443,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211109-db1707d3de-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211110-cdea54775d-master
         command:
         - runner.sh
         - kubetest
