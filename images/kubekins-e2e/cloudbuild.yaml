@@ -9,32 +9,38 @@ steps:
     env:
     - CGO_ENABLED=0
     - GOOS=linux
-    - GOARCH=amd64
+    - GOARCH=$_GO_ARCH
     - GO111MODULE=on
     - GOPROXY=https://proxy.golang.org
     - GOSUMDB=sum.golang.org
-  - name: gcr.io/cloud-builders/docker
+  - name: gcr.io/k8s-testimages/gcb-docker-gcloud
+    entrypoint: /buildx-entrypoint
     args:
-    - build
-    - --tag=gcr.io/$PROJECT_ID/kubekins-e2e:$_GIT_TAG-$_CONFIG
-    - --build-arg=BAZEL_VERSION_ARG=$_BAZEL_VERSION
-    - --build-arg=CFSSL_VERSION=$_CFSSL_VERSION
-    - --build-arg=GO_VERSION=$_GO_VERSION
-    - --build-arg=IMAGE_ARG=gcr.io/$PROJECT_ID/kubekins-e2e:$_GIT_TAG-$_CONFIG
-    - --build-arg=K8S_RELEASE=$_K8S_RELEASE
-    - --build-arg=OLD_BAZEL_VERSION=$_OLD_BAZEL_VERSION
-    - --build-arg=UPGRADE_DOCKER_ARG=$_UPGRADE_DOCKER
-    - --build-arg=KIND_VERSION=$_KIND_VERSION
-    - --build-arg=KUBETEST2_VERSION=$_KUBETEST2_VERSION
-    - -f
-    - images/kubekins-e2e/Dockerfile
-    - .
+      - build
+      - --tag=gcr.io/$PROJECT_ID/kubekins-e2e:$_GIT_TAG-$_CONFIG
+      - --platform=linux/$_PLATFORM
+      - --build-arg=BAZEL_VERSION_ARG=$_BAZEL_VERSION
+      - --build-arg=CFSSL_VERSION=$_CFSSL_VERSION
+      - --build-arg=GO_VERSION=$_GO_VERSION
+      - --build-arg=IMAGE_ARG=gcr.io/$PROJECT_ID/kubekins-e2e:$_GIT_TAG-$_CONFIG
+      - --build-arg=K8S_RELEASE=$_K8S_RELEASE
+      - --build-arg=OLD_BAZEL_VERSION=$_OLD_BAZEL_VERSION
+      - --build-arg=UPGRADE_DOCKER_ARG=$_UPGRADE_DOCKER
+      - --build-arg=KIND_VERSION=$_KIND_VERSION
+      - --build-arg=KUBETEST2_VERSION=$_KUBETEST2_VERSION
+      - -f
+      - images/kubekins-e2e/Dockerfile
+      - --push
+      - .
     dir: .
-  - name: gcr.io/cloud-builders/docker
+  - name: gcr.io/k8s-testimages/gcb-docker-gcloud
+    entrypoint: gcloud
     args:
-    - tag
-    - gcr.io/$PROJECT_ID/kubekins-e2e:$_GIT_TAG-$_CONFIG
-    - gcr.io/$PROJECT_ID/kubekins-e2e:latest-$_CONFIG
+      - container
+      - images
+      - add-tag
+      - gcr.io/$PROJECT_ID/kubekins-e2e:$_GIT_TAG-$_CONFIG
+      - gcr.io/$PROJECT_ID/kubekins-e2e:latest-$_CONFIG
     dir: .
 substitutions:
   _BAZEL_VERSION: 3.4.1
@@ -47,8 +53,7 @@ substitutions:
   _UPGRADE_DOCKER: 'false'
   _KIND_VERSION: ''
   _KUBETEST2_VERSION: ''
+  _GO_ARCH: amd64
+  _PLATFORM: amd64
 options:
   substitution_option: ALLOW_LOOSE
-images:
-  - 'gcr.io/$PROJECT_ID/kubekins-e2e:$_GIT_TAG-$_CONFIG'
-  - 'gcr.io/$PROJECT_ID/kubekins-e2e:latest-$_CONFIG'

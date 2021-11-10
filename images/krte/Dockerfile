@@ -49,6 +49,7 @@ COPY wrapper.sh /usr/local/bin/
 # We're already inside docker though so we can be sure these are already mounted.
 # Trying to remount these makes for a very noisy error block in the beginning of
 # the pod logs, so we just comment out the call to it... :shrug:
+ARG TARGETARCH
 RUN echo "Installing Packages ..." \
         && apt-get update \
         && apt-get install -y --no-install-recommends \
@@ -72,7 +73,7 @@ RUN echo "Installing Packages ..." \
             unzip \
         && rm -rf /var/lib/apt/lists/* \
     && echo "Installing Go ..." \
-        && export GO_TARBALL="go${GO_VERSION}.linux-amd64.tar.gz"\
+        && export GO_TARBALL="go${GO_VERSION}.linux-${TARGETARCH:-amd64}.tar.gz"\
         && curl -fsSL "https://storage.googleapis.com/golang/${GO_TARBALL}" --output "${GO_TARBALL}" \
         && tar xzf "${GO_TARBALL}" -C /usr/local \
         && rm "${GO_TARBALL}"\
@@ -86,11 +87,12 @@ RUN echo "Installing Packages ..." \
             --bash-completion=false \
             --path-update=false \
             --usage-reporting=false \
-        && gcloud components install kubectl \
+        && curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/${TARGETARCH:-amd64}/kubectl" \
+        && chmod +x ./kubectl && mv ./kubectl /usr/local/bin/kubectl \
     && echo "Installing Docker ..." \
         && curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg | apt-key add - \
         && add-apt-repository \
-            "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") \
+            "deb [arch=${TARGETARCH:-amd64}] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") \
             $(lsb_release -cs) stable" \
         && apt-get update \
         && apt-get install -y --no-install-recommends docker-ce \

@@ -50,22 +50,31 @@ RUN pip install --no-cache-dir awscli
 # The invocation at the end is to prevent download failures downloads as in the bug.
 # TODO(porridge): bump CFSSL_VERSION to one where cfssljson supports the -version flag and test it as well.
 ARG CFSSL_VERSION
-RUN wget -q -O cfssl "https://pkg.cfssl.org/${CFSSL_VERSION}/cfssl_linux-amd64" && \
+ARG TARGETARCH
+RUN if [ "${TARGETARCH}" = "amd64" ]; then \
+    wget -q -O cfssl "https://pkg.cfssl.org/${CFSSL_VERSION}/cfssl_linux-amd64" && \
     wget -q -O cfssljson "https://pkg.cfssl.org/${CFSSL_VERSION}/cfssljson_linux-amd64" && \
     chmod +x cfssl cfssljson && \
     mv cfssl cfssljson /usr/local/bin && \
-    cfssl version
+    cfssl version; \
+    fi
+RUN if [ "${TARGETARCH}" = "arm64" ]; then \
+    apt-get update && \
+    apt-get install -y golang-cfssl && \
+    rm -rf /var/lib/apt/lists/* && \
+    cfssl version; \
+    fi
 
 # replace kubectl with one from K8S_RELEASE
 ARG K8S_RELEASE=latest
 RUN rm -f $(which kubectl) && \
     export KUBECTL_VERSION=$(curl https://storage.googleapis.com/kubernetes-release/release/${K8S_RELEASE}.txt) && \
-    wget https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl -O /usr/local/bin/kubectl && \
+    wget -q https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/${TARGETARCH:-amd64}/kubectl -O /usr/local/bin/kubectl && \
     chmod +x /usr/local/bin/kubectl
 
 # install go
 ARG GO_VERSION
-ENV GO_TARBALL "go${GO_VERSION}.linux-amd64.tar.gz"
+ENV GO_TARBALL "go${GO_VERSION}.linux-${TARGETARCH:-amd64}.tar.gz"
 RUN wget -q "https://storage.googleapis.com/golang/${GO_TARBALL}" && \
     tar xzf "${GO_TARBALL}" -C /usr/local && \
     rm "${GO_TARBALL}"
@@ -74,7 +83,8 @@ RUN wget -q "https://storage.googleapis.com/golang/${GO_TARBALL}" && \
 ARG BAZEL_VERSION_ARG
 ENV BAZEL_VERSION=${BAZEL_VERSION_ARG}
 COPY images/kubekins-e2e/install-bazel.sh /
-RUN bash /install-bazel.sh
+RUN if [ "${TARGETARCH}" = "amd64" ]; then bash /install-bazel.sh; fi
+RUN if [ "${TARGETARCH}" = "arm64" ]; then go install github.com/bazelbuild/bazelisk@latest; fi
 
 ARG OLD_BAZEL_VERSION
 COPY --from=old \
@@ -93,17 +103,23 @@ RUN [ "${UPGRADE_DOCKER_ARG}" = "true" ] && \
 # install kind if a version is provided
 ARG KIND_VERSION
 RUN if [ -n "${KIND_VERSION}" ]; then \
-    wget -q -O /usr/local/bin/kind https://kind.sigs.k8s.io/dl/v${KIND_VERSION}/kind-linux-amd64 && \
+    wget -q -O /usr/local/bin/kind https://kind.sigs.k8s.io/dl/v${KIND_VERSION}/kind-linux-${TARGETARCH:-amd64} && \
     chmod +x /usr/local/bin/kind; \
     fi
 
 # install kubetest2 binaries if a version is provided
 ARG KUBETEST2_VERSION
-RUN if [ -n "${KUBETEST2_VERSION}" ]; then \
+RUN if [ -n "${KUBETEST2_VERSION}" && "${TARGETARCH}" = "amd64" ]; then \
     wget -q -O /usr/local/bin/kubetest2.tgz https://storage.googleapis.com/k8s-staging-kubetest2/${KUBETEST2_VERSION}/linux-amd64.tgz && \
     tar -xzf /usr/local/bin/kubetest2.tgz -C /usr/local/bin && \
     rm -f /usr/local/bin/kubetest2.tgz && \
     chmod +x /usr/local/bin/kubetest2*; \
+    fi
+RUN if [ -n "${KUBETEST2_VERSION}" && "${TARGETARCH}" = "arm64" ]; then \
+    wget -q -O kubetest2.zip https://github.com/kubernetes-sigs/kubetest2/archive/refs/heads/master.zip && \
+    unzip -q kubetest2.zip && \
+    cd kubetest2-master/ && make install-all && \
+    cd .. && rm -rf kubetest2-master && rm -f kubetest2.zip; \
     fi
 
 # configure dockerd to use mirror.gcr.io

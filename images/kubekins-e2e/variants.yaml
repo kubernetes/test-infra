@@ -56,3 +56,11 @@ variants:
     K8S_RELEASE: stable-1.18
     BAZEL_VERSION: 2.2.0
     OLD_BAZEL_VERSION: 0.23.2
+  arm64:
+    CONFIG: "arm64"
+    GO_VERSION: 1.17.3
+    K8S_RELEASE: stable
+    BAZEL_VERSION: 3.4.1
+    OLD_BAZEL_VERSION: 2.2.0
+    GO_ARCH: "arm64"
+    PLATFORM: "arm64/v8" 
