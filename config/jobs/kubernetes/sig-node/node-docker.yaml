@@ -51,6 +51,8 @@ periodics:
       env:
       - name: GOPATH
         value: /go
+      command:
+      - runner.sh
       args:
       - kubetest2
       - noop
