@@ -1766,16 +1766,19 @@ func defaultPostsubmits(postsubmits []Postsubmit, additionalPresets []Preset, c 
 	return utilerrors.NewAggregate(errs)
 }
 
+// DefaultPeriodic defaults (mutates) a single Periodic
+func (c *Config) DefaultPeriodic(periodic *Periodic) error {
+	c.defaultPeriodicFields(periodic)
+	setPeriodicDecorationDefaults(c, periodic)
+	setPeriodicProwJobDefaults(c, periodic)
+	return resolvePresets(periodic.Name, periodic.Labels, periodic.Spec, c.Presets)
+}
+
 // defaultPeriodics defaults c.Periodics
 func defaultPeriodics(c *Config) error {
-	c.defaultPeriodicFields(c.Periodics)
 	var errs []error
 	for i := range c.Periodics {
-		setPeriodicDecorationDefaults(c, &c.Periodics[i])
-		setPeriodicProwJobDefaults(c, &c.Periodics[i])
-		if err := resolvePresets(c.Periodics[i].Name, c.Periodics[i].Labels, c.Periodics[i].Spec, c.Presets); err != nil {
-			errs = append(errs, err)
-		}
+		errs = append(errs, c.DefaultPeriodic(&c.Periodics[i]))
 	}
 	return utilerrors.NewAggregate(errs)
 }
@@ -2710,10 +2713,8 @@ func (c *ProwConfig) defaultPostsubmitFields(js []Postsubmit) {
 	}
 }
 
-func (c *ProwConfig) defaultPeriodicFields(js []Periodic) {
-	for i := range js {
-		c.defaultJobBase(&js[i].JobBase)
-	}
+func (c *ProwConfig) defaultPeriodicFields(js *Periodic) {
+	c.defaultJobBase(&js.JobBase)
 }
 
 // SetPresubmitRegexes compiles and validates all the regular expressions for
