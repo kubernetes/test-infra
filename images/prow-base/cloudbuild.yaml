@@ -1,0 +1,1165 @@
+timeout: 3600s
+options:
+  machineType: N1_HIGHCPU_32
+  env:
+  - GOPATH=/go
+  - GO111MODULE=on
+  - GOPROXY=https://proxy.golang.org,direct
+  - CGO_ENABLED=0
+  - GOOS=linux
+  volumes:
+  - name: go-modules
+    path: /go/pkg
+substitutions:
+  _REPO: prow-exp
+  _TAG: ""
+steps:
+- id: download-go-mod
+  name: golang:1.16.9
+  args:
+  - go
+  - mod
+  - download
+  - -x
+  waitFor:
+  - '-'
+- id: dockerize-admission-amd64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_amd64
+  - --tag=gcr.io/${_REPO}/admission:latest
+  - --tag=gcr.io/${_REPO}/admission:${_TAG}
+  - --tag=gcr.io/${_REPO}/admission:amd64
+  - --tag=gcr.io/${_REPO}/admission:latest-amd64
+  - --tag=gcr.io/${_REPO}/admission:${_TAG}-amd64
+  - --build-arg=IMAGE_NAME=admission
+  - --build-arg=TARGETARCH=amd64
+  - .
+  waitFor:
+  - download-go-mod
+- id: dockerize-branchprotector-amd64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_amd64
+  - --tag=gcr.io/${_REPO}/branchprotector:latest
+  - --tag=gcr.io/${_REPO}/branchprotector:${_TAG}
+  - --tag=gcr.io/${_REPO}/branchprotector:amd64
+  - --tag=gcr.io/${_REPO}/branchprotector:latest-amd64
+  - --tag=gcr.io/${_REPO}/branchprotector:${_TAG}-amd64
+  - --build-arg=IMAGE_NAME=branchprotector
+  - --build-arg=TARGETARCH=amd64
+  - .
+  waitFor:
+  - download-go-mod
+- id: dockerize-checkconfig-amd64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_amd64
+  - --tag=gcr.io/${_REPO}/checkconfig:latest
+  - --tag=gcr.io/${_REPO}/checkconfig:${_TAG}
+  - --tag=gcr.io/${_REPO}/checkconfig:amd64
+  - --tag=gcr.io/${_REPO}/checkconfig:latest-amd64
+  - --tag=gcr.io/${_REPO}/checkconfig:${_TAG}-amd64
+  - --build-arg=IMAGE_NAME=checkconfig
+  - --build-arg=TARGETARCH=amd64
+  - .
+  waitFor:
+  - download-go-mod
+- id: dockerize-config-bootstrapper-amd64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_amd64
+  - --tag=gcr.io/${_REPO}/config-bootstrapper:latest
+  - --tag=gcr.io/${_REPO}/config-bootstrapper:${_TAG}
+  - --tag=gcr.io/${_REPO}/config-bootstrapper:amd64
+  - --tag=gcr.io/${_REPO}/config-bootstrapper:latest-amd64
+  - --tag=gcr.io/${_REPO}/config-bootstrapper:${_TAG}-amd64
+  - --build-arg=IMAGE_NAME=config-bootstrapper
+  - --build-arg=TARGETARCH=amd64
+  - .
+  waitFor:
+  - download-go-mod
+- id: dockerize-exporter-amd64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_amd64
+  - --tag=gcr.io/${_REPO}/exporter:latest
+  - --tag=gcr.io/${_REPO}/exporter:${_TAG}
+  - --tag=gcr.io/${_REPO}/exporter:amd64
+  - --tag=gcr.io/${_REPO}/exporter:latest-amd64
+  - --tag=gcr.io/${_REPO}/exporter:${_TAG}-amd64
+  - --build-arg=IMAGE_NAME=exporter
+  - --build-arg=TARGETARCH=amd64
+  - .
+  waitFor:
+  - download-go-mod
+- id: dockerize-gerrit-amd64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_amd64
+  - --tag=gcr.io/${_REPO}/gerrit:latest
+  - --tag=gcr.io/${_REPO}/gerrit:${_TAG}
+  - --tag=gcr.io/${_REPO}/gerrit:amd64
+  - --tag=gcr.io/${_REPO}/gerrit:latest-amd64
+  - --tag=gcr.io/${_REPO}/gerrit:${_TAG}-amd64
+  - --build-arg=IMAGE_NAME=gerrit
+  - --build-arg=TARGETARCH=amd64
+  - .
+  waitFor:
+  - download-go-mod
+- id: dockerize-crier-amd64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_amd64
+  - --tag=gcr.io/${_REPO}/crier:latest
+  - --tag=gcr.io/${_REPO}/crier:${_TAG}
+  - --tag=gcr.io/${_REPO}/crier:amd64
+  - --tag=gcr.io/${_REPO}/crier:latest-amd64
+  - --tag=gcr.io/${_REPO}/crier:${_TAG}-amd64
+  - --build-arg=IMAGE_NAME=crier
+  - --build-arg=TARGETARCH=amd64
+  - .
+  waitFor:
+  - download-go-mod
+- id: dockerize-generic-autobumper-amd64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_amd64
+  - --tag=gcr.io/${_REPO}/generic-autobumper:latest
+  - --tag=gcr.io/${_REPO}/generic-autobumper:${_TAG}
+  - --tag=gcr.io/${_REPO}/generic-autobumper:amd64
+  - --tag=gcr.io/${_REPO}/generic-autobumper:latest-amd64
+  - --tag=gcr.io/${_REPO}/generic-autobumper:${_TAG}-amd64
+  - --build-arg=IMAGE_NAME=generic-autobumper
+  - --build-arg=TARGETARCH=amd64
+  - .
+  waitFor:
+  - download-go-mod
+- id: dockerize-gcsupload-amd64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_amd64
+  - --tag=gcr.io/${_REPO}/gcsupload:latest
+  - --tag=gcr.io/${_REPO}/gcsupload:${_TAG}
+  - --tag=gcr.io/${_REPO}/gcsupload:amd64
+  - --tag=gcr.io/${_REPO}/gcsupload:latest-amd64
+  - --tag=gcr.io/${_REPO}/gcsupload:${_TAG}-amd64
+  - --build-arg=IMAGE_NAME=gcsupload
+  - --build-arg=TARGETARCH=amd64
+  - .
+  waitFor:
+  - download-go-mod
+- id: dockerize-hook-amd64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_amd64
+  - --tag=gcr.io/${_REPO}/hook:latest
+  - --tag=gcr.io/${_REPO}/hook:${_TAG}
+  - --tag=gcr.io/${_REPO}/hook:amd64
+  - --tag=gcr.io/${_REPO}/hook:latest-amd64
+  - --tag=gcr.io/${_REPO}/hook:${_TAG}-amd64
+  - --build-arg=IMAGE_NAME=hook
+  - --build-arg=TARGETARCH=amd64
+  - .
+  waitFor:
+  - download-go-mod
+- id: dockerize-hmac-amd64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_amd64
+  - --tag=gcr.io/${_REPO}/hmac:latest
+  - --tag=gcr.io/${_REPO}/hmac:${_TAG}
+  - --tag=gcr.io/${_REPO}/hmac:amd64
+  - --tag=gcr.io/${_REPO}/hmac:latest-amd64
+  - --tag=gcr.io/${_REPO}/hmac:${_TAG}-amd64
+  - --build-arg=IMAGE_NAME=hmac
+  - --build-arg=TARGETARCH=amd64
+  - .
+  waitFor:
+  - download-go-mod
+- id: dockerize-horologium-amd64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_amd64
+  - --tag=gcr.io/${_REPO}/horologium:latest
+  - --tag=gcr.io/${_REPO}/horologium:${_TAG}
+  - --tag=gcr.io/${_REPO}/horologium:amd64
+  - --tag=gcr.io/${_REPO}/horologium:latest-amd64
+  - --tag=gcr.io/${_REPO}/horologium:${_TAG}-amd64
+  - --build-arg=IMAGE_NAME=horologium
+  - --build-arg=TARGETARCH=amd64
+  - .
+  waitFor:
+  - download-go-mod
+- id: dockerize-invitations-accepter-amd64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_amd64
+  - --tag=gcr.io/${_REPO}/invitations-accepter:latest
+  - --tag=gcr.io/${_REPO}/invitations-accepter:${_TAG}
+  - --tag=gcr.io/${_REPO}/invitations-accepter:amd64
+  - --tag=gcr.io/${_REPO}/invitations-accepter:latest-amd64
+  - --tag=gcr.io/${_REPO}/invitations-accepter:${_TAG}-amd64
+  - --build-arg=IMAGE_NAME=invitations-accepter
+  - --build-arg=TARGETARCH=amd64
+  - .
+  waitFor:
+  - download-go-mod
+- id: dockerize-jenkins-operator-amd64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_amd64
+  - --tag=gcr.io/${_REPO}/jenkins-operator:latest
+  - --tag=gcr.io/${_REPO}/jenkins-operator:${_TAG}
+  - --tag=gcr.io/${_REPO}/jenkins-operator:amd64
+  - --tag=gcr.io/${_REPO}/jenkins-operator:latest-amd64
+  - --tag=gcr.io/${_REPO}/jenkins-operator:${_TAG}-amd64
+  - --build-arg=IMAGE_NAME=jenkins-operator
+  - --build-arg=TARGETARCH=amd64
+  - .
+  waitFor:
+  - download-go-mod
+- id: dockerize-mkpj-amd64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_amd64
+  - --tag=gcr.io/${_REPO}/mkpj:latest
+  - --tag=gcr.io/${_REPO}/mkpj:${_TAG}
+  - --tag=gcr.io/${_REPO}/mkpj:amd64
+  - --tag=gcr.io/${_REPO}/mkpj:latest-amd64
+  - --tag=gcr.io/${_REPO}/mkpj:${_TAG}-amd64
+  - --build-arg=IMAGE_NAME=mkpj
+  - --build-arg=TARGETARCH=amd64
+  - .
+  waitFor:
+  - download-go-mod
+- id: dockerize-mkpod-amd64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_amd64
+  - --tag=gcr.io/${_REPO}/mkpod:latest
+  - --tag=gcr.io/${_REPO}/mkpod:${_TAG}
+  - --tag=gcr.io/${_REPO}/mkpod:amd64
+  - --tag=gcr.io/${_REPO}/mkpod:latest-amd64
+  - --tag=gcr.io/${_REPO}/mkpod:${_TAG}-amd64
+  - --build-arg=IMAGE_NAME=mkpod
+  - --build-arg=TARGETARCH=amd64
+  - .
+  waitFor:
+  - download-go-mod
+- id: dockerize-peribolos-amd64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_amd64
+  - --tag=gcr.io/${_REPO}/peribolos:latest
+  - --tag=gcr.io/${_REPO}/peribolos:${_TAG}
+  - --tag=gcr.io/${_REPO}/peribolos:amd64
+  - --tag=gcr.io/${_REPO}/peribolos:latest-amd64
+  - --tag=gcr.io/${_REPO}/peribolos:${_TAG}-amd64
+  - --build-arg=IMAGE_NAME=peribolos
+  - --build-arg=TARGETARCH=amd64
+  - .
+  waitFor:
+  - download-go-mod
+- id: dockerize-sinker-amd64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_amd64
+  - --tag=gcr.io/${_REPO}/sinker:latest
+  - --tag=gcr.io/${_REPO}/sinker:${_TAG}
+  - --tag=gcr.io/${_REPO}/sinker:amd64
+  - --tag=gcr.io/${_REPO}/sinker:latest-amd64
+  - --tag=gcr.io/${_REPO}/sinker:${_TAG}-amd64
+  - --build-arg=IMAGE_NAME=sinker
+  - --build-arg=TARGETARCH=amd64
+  - .
+  waitFor:
+  - download-go-mod
+- id: dockerize-status-reconciler-amd64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_amd64
+  - --tag=gcr.io/${_REPO}/status-reconciler:latest
+  - --tag=gcr.io/${_REPO}/status-reconciler:${_TAG}
+  - --tag=gcr.io/${_REPO}/status-reconciler:amd64
+  - --tag=gcr.io/${_REPO}/status-reconciler:latest-amd64
+  - --tag=gcr.io/${_REPO}/status-reconciler:${_TAG}-amd64
+  - --build-arg=IMAGE_NAME=status-reconciler
+  - --build-arg=TARGETARCH=amd64
+  - .
+  waitFor:
+  - download-go-mod
+- id: dockerize-sub-amd64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_amd64
+  - --tag=gcr.io/${_REPO}/sub:latest
+  - --tag=gcr.io/${_REPO}/sub:${_TAG}
+  - --tag=gcr.io/${_REPO}/sub:amd64
+  - --tag=gcr.io/${_REPO}/sub:latest-amd64
+  - --tag=gcr.io/${_REPO}/sub:${_TAG}-amd64
+  - --build-arg=IMAGE_NAME=sub
+  - --build-arg=TARGETARCH=amd64
+  - .
+  waitFor:
+  - download-go-mod
+- id: dockerize-tide-amd64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_amd64
+  - --tag=gcr.io/${_REPO}/tide:latest
+  - --tag=gcr.io/${_REPO}/tide:${_TAG}
+  - --tag=gcr.io/${_REPO}/tide:amd64
+  - --tag=gcr.io/${_REPO}/tide:latest-amd64
+  - --tag=gcr.io/${_REPO}/tide:${_TAG}-amd64
+  - --build-arg=IMAGE_NAME=tide
+  - --build-arg=TARGETARCH=amd64
+  - .
+  waitFor:
+  - download-go-mod
+- id: dockerize-tot-amd64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_amd64
+  - --tag=gcr.io/${_REPO}/tot:latest
+  - --tag=gcr.io/${_REPO}/tot:${_TAG}
+  - --tag=gcr.io/${_REPO}/tot:amd64
+  - --tag=gcr.io/${_REPO}/tot:latest-amd64
+  - --tag=gcr.io/${_REPO}/tot:${_TAG}-amd64
+  - --build-arg=IMAGE_NAME=tot
+  - --build-arg=TARGETARCH=amd64
+  - .
+  waitFor:
+  - download-go-mod
+- id: dockerize-pipeline-amd64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_amd64
+  - --tag=gcr.io/${_REPO}/pipeline:latest
+  - --tag=gcr.io/${_REPO}/pipeline:${_TAG}
+  - --tag=gcr.io/${_REPO}/pipeline:amd64
+  - --tag=gcr.io/${_REPO}/pipeline:latest-amd64
+  - --tag=gcr.io/${_REPO}/pipeline:${_TAG}-amd64
+  - --build-arg=IMAGE_NAME=pipeline
+  - --build-arg=TARGETARCH=amd64
+  - .
+  waitFor:
+  - download-go-mod
+- id: dockerize-prow-controller-manager-amd64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_amd64
+  - --tag=gcr.io/${_REPO}/prow-controller-manager:latest
+  - --tag=gcr.io/${_REPO}/prow-controller-manager:${_TAG}
+  - --tag=gcr.io/${_REPO}/prow-controller-manager:amd64
+  - --tag=gcr.io/${_REPO}/prow-controller-manager:latest-amd64
+  - --tag=gcr.io/${_REPO}/prow-controller-manager:${_TAG}-amd64
+  - --build-arg=IMAGE_NAME=prow-controller-manager
+  - --build-arg=TARGETARCH=amd64
+  - .
+  waitFor:
+  - download-go-mod
+- id: dockerize-clonerefs-amd64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_amd64
+  - --tag=gcr.io/${_REPO}/clonerefs:latest
+  - --tag=gcr.io/${_REPO}/clonerefs:${_TAG}
+  - --tag=gcr.io/${_REPO}/clonerefs:amd64
+  - --tag=gcr.io/${_REPO}/clonerefs:latest-amd64
+  - --tag=gcr.io/${_REPO}/clonerefs:${_TAG}-amd64
+  - --build-arg=IMAGE_NAME=clonerefs
+  - --build-arg=TARGETARCH=amd64
+  - .
+  waitFor:
+  - download-go-mod
+- id: dockerize-entrypoint-amd64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_amd64
+  - --tag=gcr.io/${_REPO}/entrypoint:latest
+  - --tag=gcr.io/${_REPO}/entrypoint:${_TAG}
+  - --tag=gcr.io/${_REPO}/entrypoint:amd64
+  - --tag=gcr.io/${_REPO}/entrypoint:latest-amd64
+  - --tag=gcr.io/${_REPO}/entrypoint:${_TAG}-amd64
+  - --build-arg=IMAGE_NAME=entrypoint
+  - --build-arg=TARGETARCH=amd64
+  - .
+  waitFor:
+  - download-go-mod
+- id: dockerize-initupload-amd64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_amd64
+  - --tag=gcr.io/${_REPO}/initupload:latest
+  - --tag=gcr.io/${_REPO}/initupload:${_TAG}
+  - --tag=gcr.io/${_REPO}/initupload:amd64
+  - --tag=gcr.io/${_REPO}/initupload:latest-amd64
+  - --tag=gcr.io/${_REPO}/initupload:${_TAG}-amd64
+  - --build-arg=IMAGE_NAME=initupload
+  - --build-arg=TARGETARCH=amd64
+  - .
+  waitFor:
+  - download-go-mod
+- id: dockerize-sidecar-amd64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_amd64
+  - --tag=gcr.io/${_REPO}/sidecar:latest
+  - --tag=gcr.io/${_REPO}/sidecar:${_TAG}
+  - --tag=gcr.io/${_REPO}/sidecar:amd64
+  - --tag=gcr.io/${_REPO}/sidecar:latest-amd64
+  - --tag=gcr.io/${_REPO}/sidecar:${_TAG}-amd64
+  - --build-arg=IMAGE_NAME=sidecar
+  - --build-arg=TARGETARCH=amd64
+  - .
+  waitFor:
+  - download-go-mod
+- id: dockerize-needs-rebase-amd64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_amd64
+  - --tag=gcr.io/${_REPO}/needs-rebase:latest
+  - --tag=gcr.io/${_REPO}/needs-rebase:${_TAG}
+  - --tag=gcr.io/${_REPO}/needs-rebase:amd64
+  - --tag=gcr.io/${_REPO}/needs-rebase:latest-amd64
+  - --tag=gcr.io/${_REPO}/needs-rebase:${_TAG}-amd64
+  - --build-arg=IMAGE_NAME=needs-rebase
+  - --build-arg=SOURCE_PATH=prow/external-plugins/needs-rebase
+  - --build-arg=TARGETARCH=amd64
+  - .
+  waitFor:
+  - download-go-mod
+- id: dockerize-cherrypicker-amd64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_amd64
+  - --tag=gcr.io/${_REPO}/cherrypicker:latest
+  - --tag=gcr.io/${_REPO}/cherrypicker:${_TAG}
+  - --tag=gcr.io/${_REPO}/cherrypicker:amd64
+  - --tag=gcr.io/${_REPO}/cherrypicker:latest-amd64
+  - --tag=gcr.io/${_REPO}/cherrypicker:${_TAG}-amd64
+  - --build-arg=IMAGE_NAME=cherrypicker
+  - --build-arg=SOURCE_PATH=prow/external-plugins/cherrypicker
+  - --build-arg=TARGETARCH=amd64
+  - .
+  waitFor:
+  - download-go-mod
+- id: dockerize-refresh-amd64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_amd64
+  - --tag=gcr.io/${_REPO}/refresh:latest
+  - --tag=gcr.io/${_REPO}/refresh:${_TAG}
+  - --tag=gcr.io/${_REPO}/refresh:amd64
+  - --tag=gcr.io/${_REPO}/refresh:latest-amd64
+  - --tag=gcr.io/${_REPO}/refresh:${_TAG}-amd64
+  - --build-arg=IMAGE_NAME=refresh
+  - --build-arg=SOURCE_PATH=prow/external-plugins/refresh
+  - --build-arg=TARGETARCH=amd64
+  - .
+  waitFor:
+  - download-go-mod
+- id: dockerize-ghproxy-amd64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_amd64
+  - --tag=gcr.io/${_REPO}/ghproxy:latest
+  - --tag=gcr.io/${_REPO}/ghproxy:${_TAG}
+  - --tag=gcr.io/${_REPO}/ghproxy:amd64
+  - --tag=gcr.io/${_REPO}/ghproxy:latest-amd64
+  - --tag=gcr.io/${_REPO}/ghproxy:${_TAG}-amd64
+  - --build-arg=IMAGE_NAME=ghproxy
+  - --build-arg=SOURCE_PATH=ghproxy
+  - --build-arg=TARGETARCH=amd64
+  - .
+  waitFor:
+  - download-go-mod
+- id: dockerize-label_sync-amd64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_amd64
+  - --tag=gcr.io/${_REPO}/label_sync:latest
+  - --tag=gcr.io/${_REPO}/label_sync:${_TAG}
+  - --tag=gcr.io/${_REPO}/label_sync:amd64
+  - --tag=gcr.io/${_REPO}/label_sync:latest-amd64
+  - --tag=gcr.io/${_REPO}/label_sync:${_TAG}-amd64
+  - --build-arg=IMAGE_NAME=label_sync
+  - --build-arg=SOURCE_PATH=label_sync
+  - --build-arg=TARGETARCH=amd64
+  - .
+  waitFor:
+  - download-go-mod
+- id: dockerize-commenter-amd64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_amd64
+  - --tag=gcr.io/${_REPO}/commenter:latest
+  - --tag=gcr.io/${_REPO}/commenter:${_TAG}
+  - --tag=gcr.io/${_REPO}/commenter:amd64
+  - --tag=gcr.io/${_REPO}/commenter:latest-amd64
+  - --tag=gcr.io/${_REPO}/commenter:${_TAG}-amd64
+  - --build-arg=IMAGE_NAME=commenter
+  - --build-arg=SOURCE_PATH=robots/commenter
+  - --build-arg=TARGETARCH=amd64
+  - .
+  waitFor:
+  - download-go-mod
+- id: dockerize-pr-creator-amd64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_amd64
+  - --tag=gcr.io/${_REPO}/pr-creator:latest
+  - --tag=gcr.io/${_REPO}/pr-creator:${_TAG}
+  - --tag=gcr.io/${_REPO}/pr-creator:amd64
+  - --tag=gcr.io/${_REPO}/pr-creator:latest-amd64
+  - --tag=gcr.io/${_REPO}/pr-creator:${_TAG}-amd64
+  - --build-arg=IMAGE_NAME=pr-creator
+  - --build-arg=SOURCE_PATH=robots/pr-creator
+  - --build-arg=TARGETARCH=amd64
+  - .
+  waitFor:
+  - download-go-mod
+- id: dockerize-issue-creator-amd64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_amd64
+  - --tag=gcr.io/${_REPO}/issue-creator:latest
+  - --tag=gcr.io/${_REPO}/issue-creator:${_TAG}
+  - --tag=gcr.io/${_REPO}/issue-creator:amd64
+  - --tag=gcr.io/${_REPO}/issue-creator:latest-amd64
+  - --tag=gcr.io/${_REPO}/issue-creator:${_TAG}-amd64
+  - --build-arg=IMAGE_NAME=issue-creator
+  - --build-arg=SOURCE_PATH=robots/issue-creator
+  - --build-arg=TARGETARCH=amd64
+  - .
+  waitFor:
+  - download-go-mod
+- id: dockerize-configurator-amd64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_amd64
+  - --tag=gcr.io/${_REPO}/configurator:latest
+  - --tag=gcr.io/${_REPO}/configurator:${_TAG}
+  - --tag=gcr.io/${_REPO}/configurator:amd64
+  - --tag=gcr.io/${_REPO}/configurator:latest-amd64
+  - --tag=gcr.io/${_REPO}/configurator:${_TAG}-amd64
+  - --build-arg=IMAGE_NAME=configurator
+  - --build-arg=SOURCE_PATH=testgrid/cmd/configurator
+  - --build-arg=TARGETARCH=amd64
+  - .
+  waitFor:
+  - download-go-mod
+- id: dockerize-transfigure-amd64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_amd64
+  - --tag=gcr.io/${_REPO}/transfigure:latest
+  - --tag=gcr.io/${_REPO}/transfigure:${_TAG}
+  - --tag=gcr.io/${_REPO}/transfigure:amd64
+  - --tag=gcr.io/${_REPO}/transfigure:latest-amd64
+  - --tag=gcr.io/${_REPO}/transfigure:${_TAG}-amd64
+  - --build-arg=IMAGE_NAME=transfigure
+  - --build-arg=SOURCE_PATH=testgrid/cmd/transfigure
+  - --build-arg=TARGETARCH=amd64
+  - .
+  waitFor:
+  - download-go-mod
+- id: dockerize-gcsweb-amd64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_amd64
+  - --tag=gcr.io/${_REPO}/gcsweb:latest
+  - --tag=gcr.io/${_REPO}/gcsweb:${_TAG}
+  - --tag=gcr.io/${_REPO}/gcsweb:amd64
+  - --tag=gcr.io/${_REPO}/gcsweb:latest-amd64
+  - --tag=gcr.io/${_REPO}/gcsweb:${_TAG}-amd64
+  - --build-arg=IMAGE_NAME=gcsweb
+  - --build-arg=SOURCE_PATH=gcsweb/cmd/gcsweb
+  - --build-arg=TARGETARCH=amd64
+  - .
+  waitFor:
+  - download-go-mod
+- id: dockerize-bumpmonitoring-amd64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_amd64
+  - --tag=gcr.io/${_REPO}/bumpmonitoring:latest
+  - --tag=gcr.io/${_REPO}/bumpmonitoring:${_TAG}
+  - --tag=gcr.io/${_REPO}/bumpmonitoring:amd64
+  - --tag=gcr.io/${_REPO}/bumpmonitoring:latest-amd64
+  - --tag=gcr.io/${_REPO}/bumpmonitoring:${_TAG}-amd64
+  - --build-arg=IMAGE_NAME=bumpmonitoring
+  - --build-arg=SOURCE_PATH=experiment/bumpmonitoring
+  - --build-arg=TARGETARCH=amd64
+  - .
+  waitFor:
+  - download-go-mod
+- id: dockerize-clonerefs-arm64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_arm64
+  - --tag=gcr.io/${_REPO}/clonerefs:arm64
+  - --tag=gcr.io/${_REPO}/clonerefs:latest-arm64
+  - --tag=gcr.io/${_REPO}/clonerefs:${_TAG}-arm64
+  - --build-arg=IMAGE_NAME=clonerefs
+  - --build-arg=TARGETARCH=arm64
+  - .
+  waitFor:
+  - '-'
+- id: dockerize-entrypoint-arm64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_arm64
+  - --tag=gcr.io/${_REPO}/entrypoint:arm64
+  - --tag=gcr.io/${_REPO}/entrypoint:latest-arm64
+  - --tag=gcr.io/${_REPO}/entrypoint:${_TAG}-arm64
+  - --build-arg=IMAGE_NAME=entrypoint
+  - --build-arg=TARGETARCH=arm64
+  - .
+  waitFor:
+  - '-'
+- id: dockerize-initupload-arm64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_arm64
+  - --tag=gcr.io/${_REPO}/initupload:arm64
+  - --tag=gcr.io/${_REPO}/initupload:latest-arm64
+  - --tag=gcr.io/${_REPO}/initupload:${_TAG}-arm64
+  - --build-arg=IMAGE_NAME=initupload
+  - --build-arg=TARGETARCH=arm64
+  - .
+  waitFor:
+  - '-'
+- id: dockerize-sidecar-arm64
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_arm64
+  - --tag=gcr.io/${_REPO}/sidecar:arm64
+  - --tag=gcr.io/${_REPO}/sidecar:latest-arm64
+  - --tag=gcr.io/${_REPO}/sidecar:${_TAG}-arm64
+  - --build-arg=IMAGE_NAME=sidecar
+  - --build-arg=TARGETARCH=arm64
+  - .
+  waitFor:
+  - '-'
+- id: dockerize-clonerefs-s390x
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_s390x
+  - --tag=gcr.io/${_REPO}/clonerefs:s390x
+  - --tag=gcr.io/${_REPO}/clonerefs:latest-s390x
+  - --tag=gcr.io/${_REPO}/clonerefs:${_TAG}-s390x
+  - --build-arg=IMAGE_NAME=clonerefs
+  - --build-arg=TARGETARCH=s390x
+  - .
+  waitFor:
+  - '-'
+- id: dockerize-entrypoint-s390x
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_s390x
+  - --tag=gcr.io/${_REPO}/entrypoint:s390x
+  - --tag=gcr.io/${_REPO}/entrypoint:latest-s390x
+  - --tag=gcr.io/${_REPO}/entrypoint:${_TAG}-s390x
+  - --build-arg=IMAGE_NAME=entrypoint
+  - --build-arg=TARGETARCH=s390x
+  - .
+  waitFor:
+  - '-'
+- id: dockerize-initupload-s390x
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_s390x
+  - --tag=gcr.io/${_REPO}/initupload:s390x
+  - --tag=gcr.io/${_REPO}/initupload:latest-s390x
+  - --tag=gcr.io/${_REPO}/initupload:${_TAG}-s390x
+  - --build-arg=IMAGE_NAME=initupload
+  - --build-arg=TARGETARCH=s390x
+  - .
+  waitFor:
+  - '-'
+- id: dockerize-sidecar-s390x
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_s390x
+  - --tag=gcr.io/${_REPO}/sidecar:s390x
+  - --tag=gcr.io/${_REPO}/sidecar:latest-s390x
+  - --tag=gcr.io/${_REPO}/sidecar:${_TAG}-s390x
+  - --build-arg=IMAGE_NAME=sidecar
+  - --build-arg=TARGETARCH=s390x
+  - .
+  waitFor:
+  - '-'
+- id: dockerize-clonerefs-ppc64le
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_ppc64le
+  - --tag=gcr.io/${_REPO}/clonerefs:ppc64le
+  - --tag=gcr.io/${_REPO}/clonerefs:latest-ppc64le
+  - --tag=gcr.io/${_REPO}/clonerefs:${_TAG}-ppc64le
+  - --build-arg=IMAGE_NAME=clonerefs
+  - --build-arg=TARGETARCH=ppc64le
+  - .
+  waitFor:
+  - '-'
+- id: dockerize-entrypoint-ppc64le
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_ppc64le
+  - --tag=gcr.io/${_REPO}/entrypoint:ppc64le
+  - --tag=gcr.io/${_REPO}/entrypoint:latest-ppc64le
+  - --tag=gcr.io/${_REPO}/entrypoint:${_TAG}-ppc64le
+  - --build-arg=IMAGE_NAME=entrypoint
+  - --build-arg=TARGETARCH=ppc64le
+  - .
+  waitFor:
+  - '-'
+- id: dockerize-initupload-ppc64le
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_ppc64le
+  - --tag=gcr.io/${_REPO}/initupload:ppc64le
+  - --tag=gcr.io/${_REPO}/initupload:latest-ppc64le
+  - --tag=gcr.io/${_REPO}/initupload:${_TAG}-ppc64le
+  - --build-arg=IMAGE_NAME=initupload
+  - --build-arg=TARGETARCH=ppc64le
+  - .
+  waitFor:
+  - '-'
+- id: dockerize-sidecar-ppc64le
+  name: docker:20
+  args:
+  - build
+  - --file=images/prow-base/Dockerfile_ppc64le
+  - --tag=gcr.io/${_REPO}/sidecar:ppc64le
+  - --tag=gcr.io/${_REPO}/sidecar:latest-ppc64le
+  - --tag=gcr.io/${_REPO}/sidecar:${_TAG}-ppc64le
+  - --build-arg=IMAGE_NAME=sidecar
+  - --build-arg=TARGETARCH=ppc64le
+  - .
+  waitFor:
+  - '-'
+- id: push-admission-latest
+  name: docker:20
+  args:
+  - image
+  - push
+  - gcr.io/${_REPO}/admission
+  - --all-tags
+  waitFor:
+  - dockerize-admission-amd64
+- id: push-branchprotector-latest
+  name: docker:20
+  args:
+  - image
+  - push
+  - gcr.io/${_REPO}/branchprotector
+  - --all-tags
+  waitFor:
+  - dockerize-branchprotector-amd64
+- id: push-checkconfig-latest
+  name: docker:20
+  args:
+  - image
+  - push
+  - gcr.io/${_REPO}/checkconfig
+  - --all-tags
+  waitFor:
+  - dockerize-checkconfig-amd64
+- id: push-config-bootstrapper-latest
+  name: docker:20
+  args:
+  - image
+  - push
+  - gcr.io/${_REPO}/config-bootstrapper
+  - --all-tags
+  waitFor:
+  - dockerize-config-bootstrapper-amd64
+- id: push-exporter-latest
+  name: docker:20
+  args:
+  - image
+  - push
+  - gcr.io/${_REPO}/exporter
+  - --all-tags
+  waitFor:
+  - dockerize-exporter-amd64
+- id: push-gerrit-latest
+  name: docker:20
+  args:
+  - image
+  - push
+  - gcr.io/${_REPO}/gerrit
+  - --all-tags
+  waitFor:
+  - dockerize-gerrit-amd64
+- id: push-crier-latest
+  name: docker:20
+  args:
+  - image
+  - push
+  - gcr.io/${_REPO}/crier
+  - --all-tags
+  waitFor:
+  - dockerize-crier-amd64
+- id: push-generic-autobumper-latest
+  name: docker:20
+  args:
+  - image
+  - push
+  - gcr.io/${_REPO}/generic-autobumper
+  - --all-tags
+  waitFor:
+  - dockerize-generic-autobumper-amd64
+- id: push-gcsupload-latest
+  name: docker:20
+  args:
+  - image
+  - push
+  - gcr.io/${_REPO}/gcsupload
+  - --all-tags
+  waitFor:
+  - dockerize-gcsupload-amd64
+- id: push-hook-latest
+  name: docker:20
+  args:
+  - image
+  - push
+  - gcr.io/${_REPO}/hook
+  - --all-tags
+  waitFor:
+  - dockerize-hook-amd64
+- id: push-hmac-latest
+  name: docker:20
+  args:
+  - image
+  - push
+  - gcr.io/${_REPO}/hmac
+  - --all-tags
+  waitFor:
+  - dockerize-hmac-amd64
+- id: push-horologium-latest
+  name: docker:20
+  args:
+  - image
+  - push
+  - gcr.io/${_REPO}/horologium
+  - --all-tags
+  waitFor:
+  - dockerize-horologium-amd64
+- id: push-invitations-accepter-latest
+  name: docker:20
+  args:
+  - image
+  - push
+  - gcr.io/${_REPO}/invitations-accepter
+  - --all-tags
+  waitFor:
+  - dockerize-invitations-accepter-amd64
+- id: push-jenkins-operator-latest
+  name: docker:20
+  args:
+  - image
+  - push
+  - gcr.io/${_REPO}/jenkins-operator
+  - --all-tags
+  waitFor:
+  - dockerize-jenkins-operator-amd64
+- id: push-mkpj-latest
+  name: docker:20
+  args:
+  - image
+  - push
+  - gcr.io/${_REPO}/mkpj
+  - --all-tags
+  waitFor:
+  - dockerize-mkpj-amd64
+- id: push-mkpod-latest
+  name: docker:20
+  args:
+  - image
+  - push
+  - gcr.io/${_REPO}/mkpod
+  - --all-tags
+  waitFor:
+  - dockerize-mkpod-amd64
+- id: push-peribolos-latest
+  name: docker:20
+  args:
+  - image
+  - push
+  - gcr.io/${_REPO}/peribolos
+  - --all-tags
+  waitFor:
+  - dockerize-peribolos-amd64
+- id: push-sinker-latest
+  name: docker:20
+  args:
+  - image
+  - push
+  - gcr.io/${_REPO}/sinker
+  - --all-tags
+  waitFor:
+  - dockerize-sinker-amd64
+- id: push-status-reconciler-latest
+  name: docker:20
+  args:
+  - image
+  - push
+  - gcr.io/${_REPO}/status-reconciler
+  - --all-tags
+  waitFor:
+  - dockerize-status-reconciler-amd64
+- id: push-sub-latest
+  name: docker:20
+  args:
+  - image
+  - push
+  - gcr.io/${_REPO}/sub
+  - --all-tags
+  waitFor:
+  - dockerize-sub-amd64
+- id: push-tide-latest
+  name: docker:20
+  args:
+  - image
+  - push
+  - gcr.io/${_REPO}/tide
+  - --all-tags
+  waitFor:
+  - dockerize-tide-amd64
+- id: push-tot-latest
+  name: docker:20
+  args:
+  - image
+  - push
+  - gcr.io/${_REPO}/tot
+  - --all-tags
+  waitFor:
+  - dockerize-tot-amd64
+- id: push-pipeline-latest
+  name: docker:20
+  args:
+  - image
+  - push
+  - gcr.io/${_REPO}/pipeline
+  - --all-tags
+  waitFor:
+  - dockerize-pipeline-amd64
+- id: push-prow-controller-manager-latest
+  name: docker:20
+  args:
+  - image
+  - push
+  - gcr.io/${_REPO}/prow-controller-manager
+  - --all-tags
+  waitFor:
+  - dockerize-prow-controller-manager-amd64
+- id: push-clonerefs-latest
+  name: docker:20
+  args:
+  - image
+  - push
+  - gcr.io/${_REPO}/clonerefs
+  - --all-tags
+  waitFor:
+  - dockerize-clonerefs-amd64
+  - dockerize-clonerefs-arm64
+  - dockerize-clonerefs-s390x
+  - dockerize-clonerefs-ppc64le
+- id: push-entrypoint-latest
+  name: docker:20
+  args:
+  - image
+  - push
+  - gcr.io/${_REPO}/entrypoint
+  - --all-tags
+  waitFor:
+  - dockerize-entrypoint-amd64
+  - dockerize-entrypoint-arm64
+  - dockerize-entrypoint-s390x
+  - dockerize-entrypoint-ppc64le
+- id: push-initupload-latest
+  name: docker:20
+  args:
+  - image
+  - push
+  - gcr.io/${_REPO}/initupload
+  - --all-tags
+  waitFor:
+  - dockerize-initupload-amd64
+  - dockerize-initupload-arm64
+  - dockerize-initupload-s390x
+  - dockerize-initupload-ppc64le
+- id: push-sidecar-latest
+  name: docker:20
+  args:
+  - image
+  - push
+  - gcr.io/${_REPO}/sidecar
+  - --all-tags
+  waitFor:
+  - dockerize-sidecar-amd64
+  - dockerize-sidecar-arm64
+  - dockerize-sidecar-s390x
+  - dockerize-sidecar-ppc64le
+- id: push-needs-rebase-latest
+  name: docker:20
+  args:
+  - image
+  - push
+  - gcr.io/${_REPO}/needs-rebase
+  - --all-tags
+  waitFor:
+  - dockerize-needs-rebase-amd64
+- id: push-cherrypicker-latest
+  name: docker:20
+  args:
+  - image
+  - push
+  - gcr.io/${_REPO}/cherrypicker
+  - --all-tags
+  waitFor:
+  - dockerize-cherrypicker-amd64
+- id: push-refresh-latest
+  name: docker:20
+  args:
+  - image
+  - push
+  - gcr.io/${_REPO}/refresh
+  - --all-tags
+  waitFor:
+  - dockerize-refresh-amd64
+- id: push-ghproxy-latest
+  name: docker:20
+  args:
+  - image
+  - push
+  - gcr.io/${_REPO}/ghproxy
+  - --all-tags
+  waitFor:
+  - dockerize-ghproxy-amd64
+- id: push-label_sync-latest
+  name: docker:20
+  args:
+  - image
+  - push
+  - gcr.io/${_REPO}/label_sync
+  - --all-tags
+  waitFor:
+  - dockerize-label_sync-amd64
+- id: push-commenter-latest
+  name: docker:20
+  args:
+  - image
+  - push
+  - gcr.io/${_REPO}/commenter
+  - --all-tags
+  waitFor:
+  - dockerize-commenter-amd64
+- id: push-pr-creator-latest
+  name: docker:20
+  args:
+  - image
+  - push
+  - gcr.io/${_REPO}/pr-creator
+  - --all-tags
+  waitFor:
+  - dockerize-pr-creator-amd64
+- id: push-issue-creator-latest
+  name: docker:20
+  args:
+  - image
+  - push
+  - gcr.io/${_REPO}/issue-creator
+  - --all-tags
+  waitFor:
+  - dockerize-issue-creator-amd64
+- id: push-configurator-latest
+  name: docker:20
+  args:
+  - image
+  - push
+  - gcr.io/${_REPO}/configurator
+  - --all-tags
+  waitFor:
+  - dockerize-configurator-amd64
+- id: push-transfigure-latest
+  name: docker:20
+  args:
+  - image
+  - push
+  - gcr.io/${_REPO}/transfigure
+  - --all-tags
+  waitFor:
+  - dockerize-transfigure-amd64
+- id: push-gcsweb-latest
+  name: docker:20
+  args:
+  - image
+  - push
+  - gcr.io/${_REPO}/gcsweb
+  - --all-tags
+  waitFor:
+  - dockerize-gcsweb-amd64
+- id: push-bumpmonitoring-latest
+  name: docker:20
+  args:
+  - image
+  - push
+  - gcr.io/${_REPO}/bumpmonitoring
+  - --all-tags
+  waitFor:
+  - dockerize-bumpmonitoring-amd64

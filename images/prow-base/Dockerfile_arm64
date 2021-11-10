@@ -1,0 +1,40 @@
+# Copyright 2021 The Kubernetes Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Ideally this should be derived from `.go-version`, however couldn't figure out a way
+# of injecting this in dockerfile. This dockerfile will also be used by Google Cloud Build
+# so doing it from outside of dockerfile isn't an option.
+FROM golang:1.16.9
+WORKDIR /go/src
+
+ARG IMAGE_NAME
+ARG SOURCE_PATH=prow/cmd/${IMAGE_NAME}
+ENV IMAGE_NAME=${IMAGE_NAME}
+ENV GOARCH=arm64
+
+RUN echo "Image is: ${IMAGE_NAME}"
+
+COPY . .
+
+# https://github.com/moby/moby/issues/5509#issuecomment-633616514
+# CMD doesn't allow variable expansion, the best can be done for now is using a
+# fixed name
+ENV PLACEHOLDER_BINARY="placeholder-binary"
+RUN mkdir -p ./bin
+RUN CGO_ENABLED=0 go build -o ./bin/${PLACEHOLDER_BINARY} ./${SOURCE_PATH}
+
+# Part of v20211018-372b1c8, inspected by `docker buildx imagetools inspect gcr.io/k8s-prow/git:v20211018-372b1c8`
+FROM gcr.io/k8s-prow/git:v20211018-372b1c8@sha256:6ef92a6977693612922628be8d412e381fac58cc4918ff27679f73d84538d953
+COPY --from=0 --chown=root:root /go/src/bin/placeholder-binary /bin/placeholder-binary
+CMD ["/bin/placeholder-binary"]

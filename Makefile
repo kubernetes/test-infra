@@ -44,16 +44,14 @@ test: unit
 clean:
 	rm -rf "$(OUT_DIR)/"
 ################################################################################
-# ============================== Auto-Update ===================================
-# update generated code, gofmt, etc.
-# update:
-#	hack/make-rules/update/all.sh
-# update generated code
-#generate:
-#	hack/make-rules/update/generated.sh
-# gofmt
-#gofmt:
-#	hack/make-rules/update/gofmt.sh
+# ============================== Prow Images ===================================
+# Pushing prow images.
+.PHONY: push-prow build-image-local
+# Usage: PROJECT_ID=<PROJECT_ID> REGISTRY=<DEFAULT_TO_PROJECT_ID_IF_NOT_PROVIDED> make push-prow
+push-prow:
+	hack/make-rules/images/push-prow.sh
+build-image-local:
+	hack/make-rules/images/push-prow.sh --local --image ${IMAGE_NAME}
 ################################################################################
 # ================================== Linting ===================================
 # run linters, ensure generated code, etc.
