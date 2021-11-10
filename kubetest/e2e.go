@@ -768,11 +768,6 @@ func kubemarkDown(err *error, wg *sync.WaitGroup, provider, dump, logexporterGCS
 		logDumpPath := logDumpPath(provider)
 		masterName := os.Getenv("MASTER_NAME")
 		var cmd *exec.Cmd
-		cmd.Env = append(
-			os.Environ(),
-			"KUBEMARK_MASTER_NAME="+masterName,
-			"DUMP_ONLY_MASTER_LOGS=true",
-		)
 		if logexporterGCSPath != "" {
 			log.Printf("Dumping logs for kubemark master to GCS directly at path: %v", logexporterGCSPath)
 			cmd = exec.Command(logDumpPath, dump, logexporterGCSPath)
@@ -780,6 +775,11 @@ func kubemarkDown(err *error, wg *sync.WaitGroup, provider, dump, logexporterGCS
 			log.Printf("Dumping logs for kubemark master locally to: %v", dump)
 			cmd = exec.Command(logDumpPath, dump)
 		}
+		cmd.Env = append(
+			os.Environ(),
+			"KUBEMARK_MASTER_NAME="+masterName,
+			"DUMP_ONLY_MASTER_LOGS=true",
+		)
 		return control.FinishRunning(cmd)
 	})
 	*err = control.XMLWrap(&suite, "Kubemark TearDown", func() error {
