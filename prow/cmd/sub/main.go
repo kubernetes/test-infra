@@ -107,6 +107,9 @@ func main() {
 	if flagOptions.github.TokenPath != "" {
 		tokens = append(tokens, flagOptions.github.TokenPath)
 	}
+	if flagOptions.github.AppPrivateKeyPath != "" {
+		tokens = append(tokens, flagOptions.github.AppPrivateKeyPath)
+	}
 	if err := secret.Add(tokens...); err != nil {
 		logrus.WithError(err).Fatal("failed to start secret agent")
 	}
