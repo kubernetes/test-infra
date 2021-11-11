@@ -139,12 +139,22 @@ presubmits:
       description: Uses kubetest to run e2e Conformance, SIG-Network or Network Policy tests against a cluster (ubuntu based and uses containerd) created with cluster/kube-up.sh
 
   - name: pull-kubernetes-e2e-gci-gce-ipvs
+    branches:
+    - master
     always_run: false
-    run_if_changed: '^pkg/.*/ipvs/'
+    run_if_changed: '^(test/e2e/network/|pkg/apis/networking|pkg/.*/ipvs/)'
     optional: true
+    decorate: true
+    decoration_config:
+      timeout: 120m
+      grace_period: 15m
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: "k8s.io/release"
     skip_report: false
-    annotations:
-      testgrid-create-test-group: "true"
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -153,31 +163,47 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
     spec:
       containers:
-      - args:
-        - --root=/go/src
-        - --repo=k8s.io/kubernetes=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=105
-        - --scenario=kubernetes_e2e
-        - --
+      - command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
         - --build=quick
-        - --cluster=
-        - --env=KUBE_PROXY_MODE=ipvs
         - --extract=local
-        - --gcp-node-image=gci
+        - --env=ALLOW_PRIVILEGED=true
+        - --env=KUBE_CONTAINER_RUNTIME=containerd
+        - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.5.7
+        - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.2
+        - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
+        - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
+        - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
+        - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-2004-focal-v20200423
+        - --env=KUBE_GCE_MASTER_PROJECT=ubuntu-os-cloud
+        - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
+        - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2004-focal-v20200423
+        - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
+        - --env=KUBE_PROXY_MODE=ipvs
+        - --gcp-master-image=ubuntu
+        - --gcp-node-image=ubuntu
+        - --gcp-nodes=4
         - --gcp-zone=us-west1-b
-        - --ginkgo-parallel=30
         - --provider=gce
-        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gci-gce-ipvs
+        - --ginkgo-parallel=30
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-        - --timeout=80m # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gci-gce-ipvs
+        - --timeout=80m
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211110-cdea54775d-master
         resources:
           requests:
             memory: "6Gi"
         securityContext:
           privileged: true
+    annotations:
+      testgrid-dashboards: sig-network-gce
+      testgrid-tab-name: presubmit-network-ipvs, google-gce
+      testgrid-num-failures-to-alert: '6'
+      testgrid-alert-stale-results-hours: '24'
+      testgrid-alert-email: kubernetes-sig-network-test-failures@googlegroups.com
+      description: Uses kubetest to run e2e Conformance, SIG-Network tests against a cluster using IPVS (ubuntu based and uses containerd) created with cluster/kube-up.sh
 
   kubernetes/dns:
   - name: pull-kubernetes-dns-test
