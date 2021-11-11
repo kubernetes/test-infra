@@ -196,7 +196,7 @@ periodics:
       - --provider=gce
       # Feature:DynamicKubeletConfig is deprecated and soon will be removed so tests are skipped.
       # If we want to run these tests, we need a separate job for it.
-      - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]|\[Feature:DynamicKubeletConfig\]"
+      - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]|\[Feature:DynamicKubeletConfig\]|\[Feature:Docker\]"
       - --timeout=240m
       env:
       - name: GOPATH
@@ -211,6 +211,43 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-kubelet
     testgrid-tab-name: node-kubelet-serial
+
+- name: ci-kubernetes-node-kubelet-serial-docker
+  interval: 4h
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+      args:
+      - --repo=k8s.io/kubernetes=master
+      - --timeout=260
+      - --root=/go/src
+      - --scenario=kubernetes_e2e
+      - --
+      - --deployment=node
+      - --gcp-project-type=node-e2e-project
+      - --gcp-zone=us-west1-b
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial.yaml
+      - --node-test-args=--feature-gates=LocalStorageCapacityIsolation=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+      - --node-tests=true
+      - --provider=gce
+      - --test_args=--nodes=1 --focus="\[Feature:Docker\]" --skip=""
+      - --timeout=240m
+      env:
+      - name: GOPATH
+        value: /go
+      resources:
+        limits:
+          cpu: 4
+          memory: 6Gi
+        requests:
+          cpu: 4
+          memory: 6Gi
+  annotations:
+    testgrid-dashboards: sig-node-kubelet
+    testgrid-tab-name: node-kubelet-serial-docker
 
 - name: ci-kubernetes-node-kubelet-serial-containerd
   cluster: k8s-infra-prow-build
