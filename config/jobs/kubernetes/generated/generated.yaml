@@ -721,7 +721,7 @@ periodics:
       - --extract=ci/latest-1.19
       - --extract-ci-bucket=k8s-release-dev
       - --timeout=180m
-      - --test_args=--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|DynamicKubeletConfig)\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly)\] --minStartupPods=8
       - --env=KUBE_PROXY_DAEMONSET=true
       - --env=ENABLE_POD_PRIORITY=true
       - --env=KUBE_FEATURE_GATES=AllAlpha=true,CSIMigration=false

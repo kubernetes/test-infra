@@ -56,6 +56,8 @@ presubmits:
         env:
         - name: USE_TEST_INFRA_LOG_DUMPING
           value: "true"
+        # Feature:DynamicKubeletConfig is deprecated and soon will be removed so tests are skipped.
+        # If we want to run these tests, we need a separate job for it.
         command:
         - sh
         - -c
