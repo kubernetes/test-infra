@@ -6,7 +6,6 @@ reviewers:
 - CecileRobertMichon
 - chewong
 - feiskyer
-- justaugustus
 - karataliu
 - khenidak
 approvers:
@@ -14,7 +13,6 @@ approvers:
 - brendandburns
 - chewong
 - feiskyer
-- justaugustus
 - karataliu
 - khenidak
 
