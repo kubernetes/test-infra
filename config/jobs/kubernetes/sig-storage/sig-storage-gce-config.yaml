@@ -39,7 +39,7 @@ presubmits:
         - --ginkgo-parallel=30
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-storage-slow
-        - --test_args=--ginkgo.focus=\[sig-storage\].*\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+        - --test_args=--ginkgo.focus=\[sig-storage\].*\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
         - --timeout=80m
         securityContext:
           privileged: true
@@ -258,7 +258,7 @@ presubmits:
         - --gcp-zone=us-west1-b
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-storage-disruptive
-        - --test_args=--ginkgo.focus=\[sig-storage\].*\[Disruptive\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
+        - --test_args=--ginkgo.focus=\[sig-storage\].*\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Flaky\] --minStartupPods=8
         - --timeout=240m
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
         resources:
