@@ -137,8 +137,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/andygrunwald/go-jira",
-        sum = "h1:vvIImGgX32bHfoiyUwkNo+/YrPnRczNarvhLOncP6dE=",
-        version = "v1.13.0",
+        sum = "h1:7GT/3qhar2dGJ0kq8w0d63liNyHOnxZsUZ9Pe4+AKBI=",
+        version = "v1.14.0",
     )
     go_repository(
         name = "com_github_anmitsu_go_shlex",
@@ -1229,8 +1229,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/fatih/structs",
-        sum = "h1:BrX964Rv5uQ3wwS+KRUAJCBBw5PQmgJfJ6v4yly5QwU=",
-        version = "v1.0.0",
+        sum = "h1:Q7juDM0QtcnhCpeyLGQKyg4TOIghuNXrkL32pHAUMxo=",
+        version = "v1.1.0",
     )
 
     go_repository(
@@ -1731,6 +1731,14 @@ def go_repositories():
         importpath = "github.com/golang/groupcache",
         sum = "h1:1r7pUrabqp18hOBcwBwiTsbnFeTZHV9eER/QT5JVZxY=",
         version = "v0.0.0-20200121045136-8c9f03a8e57e",
+    )
+    go_repository(
+        name = "com_github_golang_jwt_jwt",
+        build_file_generation = "on",
+        build_file_proto_mode = "disable",
+        importpath = "github.com/golang-jwt/jwt",
+        sum = "h1:73Z+4BJcrTC+KczS6WvTPvRGOp1WmfEP4Q1lOd9Z/+c=",
+        version = "v3.2.1+incompatible",
     )
 
     go_repository(
@@ -4342,8 +4350,8 @@ def go_repositories():
         build_file_generation = "on",
         build_file_proto_mode = "disable",
         importpath = "github.com/trivago/tgo",
-        sum = "h1:bxatjJIXNIpV18bucU4Uk/LaoxvxuOlp/oowRHyncLQ=",
-        version = "v1.0.1",
+        sum = "h1:uaWH/XIy9aWYWpjm2CU3RpcqZXmX2ysQ9/Go+d9gyrM=",
+        version = "v1.0.7",
     )
     go_repository(
         name = "com_github_tsenart_vegeta",
