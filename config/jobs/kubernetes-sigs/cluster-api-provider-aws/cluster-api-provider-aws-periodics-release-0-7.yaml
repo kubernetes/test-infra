@@ -64,8 +64,8 @@ periodics:
             value: "boskos.test-pods.svc.cluster.local"
           - name: AWS_REGION
             value: "us-west-2"
-          - name: E2E_UNMANAGED_FOCUS
-            value: "[unmanaged] [Cluster API Framework]"
+          - name: E2E_FOCUS
+            value: "\\[Cluster API Framework\\]"
         securityContext:
           privileged: true
         resources:
