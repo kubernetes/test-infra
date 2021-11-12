@@ -1137,6 +1137,18 @@ def generate_presubmits_e2e():
             template_path="/home/prow/go/src/k8s.io/kops/tests/e2e/templates/apiserver.yaml.tmpl",
             feature_flags=['APIServerNodes']
         ),
+
+        presubmit_test(
+            name="pull-kops-e2e-arm64",
+            cloud="aws",
+            distro="u2004arm64",
+            k8s_version="ci",
+            networking="calico",
+            extra_flags=["--zones=eu-central-1a",
+                         "--node-size=m6g.large",
+                         "--master-size=m6g.large"],
+        ),
+
         presubmit_test(
             branch='release-1.22',
             k8s_version='1.22',
