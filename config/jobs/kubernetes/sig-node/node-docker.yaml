@@ -62,7 +62,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --parallelism=8
       - --focus-regex=\[NodeConformance\]
-      - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]
+      - --skip-regex=\[Flaky\]|\[Serial\]
       - --test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
       - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/image-config.yaml
 - name: ci-docker-node-features
