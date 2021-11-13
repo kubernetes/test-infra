@@ -44,6 +44,7 @@ def build_test(cloud='aws',
                distro='u2004',
                networking='kubenet',
                container_runtime='containerd',
+               irsa=False,
                k8s_version='latest',
                kops_channel='alpha',
                kops_version=None,
@@ -91,9 +92,6 @@ def build_test(cloud='aws',
 
     validation_wait = '20m' if distro == 'flatcar' else None
 
-    marker, k8s_deploy_url, test_package_bucket, test_package_dir = k8s_version_info(k8s_version)
-    args = create_args(kops_channel, networking, container_runtime, extra_flags, kops_image)
-
     suffix = ""
     if cloud and cloud != "aws":
         suffix += "-" + cloud
@@ -109,10 +107,20 @@ def build_test(cloud='aws',
         suffix += "-" + container_runtime
 
     tab = name_override or (f"kops-grid{suffix}")
+    job_name = f"e2e-{tab}"
+
+    if irsa and cloud == "aws":
+        if extra_flags is None:
+            extra_flags = []
+        extra_flags.append(f"--override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/{job_name}/discovery") # pylint: disable=line-too-long
+        extra_flags.append("--override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true") # pylint: disable=line-too-long
+        extra_flags.append("--override=cluster.spec.iam.useServiceAccountExternalPermissions=true")
+
+    marker, k8s_deploy_url, test_package_bucket, test_package_dir = k8s_version_info(k8s_version)
+    args = create_args(kops_channel, networking, container_runtime, extra_flags, kops_image)
 
     if tab in skip_jobs:
         return None
-    job_name = f"e2e-{tab}"
 
     cron, runs_per_week = build_cron(tab, runs_per_day)
 
@@ -212,6 +220,7 @@ def presubmit_test(branch='master',
                    distro='u2004',
                    networking='kubenet',
                    container_runtime='containerd',
+                   irsa=False,
                    k8s_version='latest',
                    kops_channel='alpha',
                    name=None,
@@ -239,6 +248,13 @@ def presubmit_test(branch='master',
         kops_image = None
         kops_ssh_user = 'prow'
         kops_ssh_key_path = '/etc/ssh-key-secret/ssh-private'
+
+    if irsa and cloud == "aws":
+        if extra_flags is None:
+            extra_flags = []
+        extra_flags.append(f"--override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/{name}/discovery") # pylint: disable=line-too-long
+        extra_flags.append("--override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true") # pylint: disable=line-too-long
+        extra_flags.append("--override=cluster.spec.iam.useServiceAccountExternalPermissions=true")
 
     marker, k8s_deploy_url, test_package_bucket, test_package_dir = k8s_version_info(k8s_version)
     args = create_args(kops_channel, networking, container_runtime, extra_flags, kops_image)
@@ -469,10 +485,8 @@ def generate_misc():
                    cloud="aws",
                    distro="u2004",
                    runs_per_day=3,
+                   irsa=True,
                    extra_flags=['--api-loadbalancer-type=public',
-                                '--override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-dc69f71486-5831d.test-cncf-aws.k8s.io/discovery', # pylint: disable=line-too-long
-                                '--override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true', # pylint: disable=line-too-long
-                                '--override=cluster.spec.iam.useServiceAccountExternalPermissions=true' # pylint: disable=line-too-long
                                 ],
                    extra_dashboards=['kops-misc']),
 
@@ -500,10 +514,9 @@ def generate_misc():
                    distro="u2004",
                    k8s_version="ci",
                    runs_per_day=3,
+                   irsa=True,
                    extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws',
-                                '--override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/kops-grid-scenario-aws-cloud-controller-manager-irsa/discovery', # pylint: disable=line-too-long
-                                '--override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true', # pylint: disable=line-too-long
-                                '--override=cluster.spec.iam.useServiceAccountExternalPermissions=true'], # pylint: disable=line-too-long
+                                ],
 
                    extra_dashboards=['provider-aws-cloud-provider-aws', 'kops-misc']),
 
@@ -617,8 +630,7 @@ def generate_misc():
                    kops_channel="alpha",
                    runs_per_day=3,
                    scenario="aws-ebs-csi",
-                   env={'KOPS_IRSA': 'true'},
-                   extra_flags=["--override=cluster.spec.iam.useServiceAccountExternalPermissions=true"], # pylint: disable=line-too-long
+                   irsa=True,
                    extra_dashboards=['kops-misc']),
 
         build_test(name_override="kops-aws-aws-load-balancer-controller",
@@ -639,7 +651,7 @@ def generate_misc():
                    kops_channel="alpha",
                    runs_per_day=3,
                    scenario="aws-lb-controller",
-                   env={'KOPS_IRSA': 'true'},
+                   irsa=True,
                    extra_dashboards=['kops-misc']),
 
         build_test(name_override="kops-aws-keypair-rotation",
@@ -676,10 +688,10 @@ def generate_misc():
                    distro="u2004",
                    kops_channel="alpha",
                    runs_per_day=3,
+                   irsa=True,
                    extra_flags=[
                        "--override=cluster.spec.externalDns.provider=external-dns",
-                       "--override=cluster.spec.iam.useServiceAccountExternalPermissions=true"
-                   ],
+                       ],
                    extra_dashboards=['kops-misc']),
 
         build_test(name_override="kops-aws-apiserver-nodes",
@@ -971,11 +983,10 @@ def generate_presubmits_e2e():
             cloud="aws",
             distro="u2004",
             k8s_version="ci",
+            irsa=True,
             extra_flags=[
-                '--override=cluster.spec.iam.useServiceAccountExternalPermissions=true',
                 '--override=cluster.spec.cloudControllerManager.cloudProvider=aws',
-                '--override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/kops-grid-scenario-aws-cloud-controller-manager-irsa/discovery', # pylint: disable=line-too-long
-                '--override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true'], # pylint: disable=line-too-long
+                ],
             tab_name='e2e-ccm-irsa',
         ),
 
@@ -984,10 +995,7 @@ def generate_presubmits_e2e():
             cloud="aws",
             distro="u2004",
             k8s_version="ci",
-            extra_flags=[
-                '--override=cluster.spec.iam.useServiceAccountExternalPermissions=true',
-                '--override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/pull-aws-irsa/discovery', # pylint: disable=line-too-long
-                '--override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true'], # pylint: disable=line-too-long
+            irsa=True,
         ),
 
         presubmit_test(
@@ -1010,12 +1018,10 @@ def generate_presubmits_e2e():
             k8s_version="ci",
             networking="amazonvpc",
             feature_flags=["AWSIPv6"],
+            irsa=True,
             extra_flags=[
                 '--ipv6',
                 '--zones=eu-west-1a',
-                '--override=cluster.spec.iam.useServiceAccountExternalPermissions=true',
-                '--override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/pull-amazonvpc-irsa/discovery', # pylint: disable=line-too-long
-                '--override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true'
                 ],
             extra_dashboards=['kops-ipv6'],
         ),
@@ -1075,7 +1081,7 @@ def generate_presubmits_e2e():
             distro="u2004",
             k8s_version="ci",
             networking="calico",
-            extra_flags=['--override=cluster.spec.iam.useServiceAccountExternalPermissions=true'], # pylint: disable=line-too-long
+            irsa=True,
             scenario="aws-ebs-csi",
         ),
 
@@ -1126,10 +1132,10 @@ def generate_presubmits_e2e():
             distro="u2004",
             k8s_version="ci",
             networking="calico",
+            irsa=True,
             extra_flags=[
                 '--override=cluster.spec.externalDns.provider=external-dns',
-                '--override=cluster.spec.iam.useServiceAccountExternalPermissions=true'
-            ],
+                ],
         ),
         presubmit_test(
             name="pull-kops-e2e-aws-apiserver-nodes",
