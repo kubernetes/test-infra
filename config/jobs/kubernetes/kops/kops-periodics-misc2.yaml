@@ -1178,7 +1178,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-aws-ebs-csi-driver
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-kops-aws-aws-ebs-csi-driver-irsa/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true --override=cluster.spec.iam.useServiceAccountExternalPermissions=true", "k8s_version": "latest", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "latest", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
 - name: e2e-kops-aws-aws-ebs-csi-driver-irsa
   cron: '22 1-23/8 * * *'
   labels:
@@ -1212,6 +1212,8 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KUBE_SSH_USER
         value: "ubuntu"
+      - name: KOPS_IRSA
+        value: "true"
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
       imagePullPolicy: Always
       resources:
@@ -1226,7 +1228,6 @@ periodics:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
-    test.kops.k8s.io/extra_flags: --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-kops-aws-aws-ebs-csi-driver-irsa/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true --override=cluster.spec.iam.useServiceAccountExternalPermissions=true
     test.kops.k8s.io/k8s_version: latest
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
@@ -1291,7 +1292,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-aws-load-balancer-controller
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-kops-aws-aws-load-balancer-controller-irsa/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true --override=cluster.spec.iam.useServiceAccountExternalPermissions=true", "k8s_version": "1.21", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "1.21", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
 - name: e2e-kops-aws-aws-load-balancer-controller-irsa
   cron: '13 3-23/8 * * *'
   labels:
@@ -1325,6 +1326,8 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KUBE_SSH_USER
         value: "ubuntu"
+      - name: KOPS_IRSA
+        value: "true"
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
       imagePullPolicy: Always
       resources:
@@ -1339,7 +1342,6 @@ periodics:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
-    test.kops.k8s.io/extra_flags: --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-kops-aws-aws-load-balancer-controller-irsa/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true --override=cluster.spec.iam.useServiceAccountExternalPermissions=true
     test.kops.k8s.io/k8s_version: '1.21'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''

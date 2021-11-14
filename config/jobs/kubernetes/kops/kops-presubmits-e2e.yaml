@@ -1136,7 +1136,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-e2e-aws-ebs-csi-driver
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/pull-kops-e2e-aws-ebs-csi-driver-irsa/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true --override=cluster.spec.iam.useServiceAccountExternalPermissions=true", "k8s_version": "ci", "kops_channel": "alpha", "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "ci", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-aws-ebs-csi-driver-irsa
     branches:
     - master
@@ -1176,6 +1176,8 @@ presubmits:
           value: "e2e-c3f2775103-c95b4.test-cncf-aws.k8s.io"
         - name: KOPS_STATE_STORE
           value: "s3://k8s-kops-prow"
+        - name: KOPS_IRSA
+          value: "true"
         resources:
           requests:
             cpu: "2"
@@ -1184,7 +1186,6 @@ presubmits:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/container_runtime: containerd
       test.kops.k8s.io/distro: u2004
-      test.kops.k8s.io/extra_flags: --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/pull-kops-e2e-aws-ebs-csi-driver-irsa/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true --override=cluster.spec.iam.useServiceAccountExternalPermissions=true
       test.kops.k8s.io/k8s_version: ci
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: calico

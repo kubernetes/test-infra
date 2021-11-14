@@ -109,7 +109,7 @@ def build_test(cloud='aws',
     tab = name_override or (f"kops-grid{suffix}")
     job_name = f"e2e-{tab}"
 
-    if irsa and cloud == "aws":
+    if irsa and cloud == "aws" and scenario is None:
         if extra_flags is None:
             extra_flags = []
         extra_flags.append(f"--override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/{job_name}/discovery") # pylint: disable=line-too-long
@@ -136,6 +136,8 @@ def build_test(cloud='aws',
         env['CLUSTER_NAME'] = f"e2e-{name_hash[0:10]}-{name_hash[12:17]}.test-cncf-aws.k8s.io"
         env['KOPS_STATE_STORE'] = 's3://k8s-kops-prow'
         env['KUBE_SSH_USER'] = kops_ssh_user
+        if irsa and cloud == "aws":
+            env['KOPS_IRSA'] = "true"
 
     loader = jinja2.FileSystemLoader(searchpath="./templates")
     tmpl = jinja2.Environment(loader=loader).get_template(tmpl_file)
@@ -249,7 +251,7 @@ def presubmit_test(branch='master',
         kops_ssh_user = 'prow'
         kops_ssh_key_path = '/etc/ssh-key-secret/ssh-private'
 
-    if irsa and cloud == "aws":
+    if irsa and cloud == "aws" and scenario is None:
         if extra_flags is None:
             extra_flags = []
         extra_flags.append(f"--override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/{name}/discovery") # pylint: disable=line-too-long
@@ -270,6 +272,8 @@ def presubmit_test(branch='master',
         env['CLOUD_PROVIDER'] = cloud
         env['CLUSTER_NAME'] = f"e2e-{name_hash[0:10]}-{name_hash[11:16]}.test-cncf-aws.k8s.io"
         env['KOPS_STATE_STORE'] = 's3://k8s-kops-prow'
+        if irsa and cloud == "aws":
+            env['KOPS_IRSA'] = "true"
 
     loader = jinja2.FileSystemLoader(searchpath="./templates")
     tmpl = jinja2.Environment(loader=loader).get_template(tmpl_file)
