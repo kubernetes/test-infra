@@ -44,7 +44,7 @@ def build_test(cloud='aws',
                distro='u2004',
                networking='kubenet',
                container_runtime='containerd',
-               irsa=False,
+               irsa=True,
                k8s_version='latest',
                kops_channel='alpha',
                kops_version=None,
@@ -405,6 +405,7 @@ def generate_grid():
                                        k8s_version=k8s_version,
                                        kops_version=kops_version,
                                        networking=networking,
+                                       irsa=kops_version is None or kops_version >= '1.21',
                                        container_runtime=container_runtime)
                         )
 
@@ -484,12 +485,12 @@ def generate_misc():
                    extra_dashboards=['kops-misc', 'kops-ipv6']),
 
 
-        # A special test for JWKS
-        build_test(name_override="kops-grid-scenario-service-account-iam",
+        # A special test for disabling IRSA
+        build_test(name_override="kops-grid-scenario-no-irsa",
                    cloud="aws",
                    distro="u2004",
                    runs_per_day=3,
-                   irsa=True,
+                   irsa=False,
                    extra_flags=['--api-loadbalancer-type=public',
                                 ],
                    extra_dashboards=['kops-misc']),
@@ -512,20 +513,7 @@ def generate_misc():
                    extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws'],
                    extra_dashboards=['provider-aws-cloud-provider-aws', 'kops-misc']),
 
-        # A special test for AWS Cloud-Controller-Manager and irsa
-        build_test(name_override="kops-grid-scenario-aws-cloud-controller-manager-irsa",
-                   cloud="aws",
-                   distro="u2004",
-                   k8s_version="ci",
-                   runs_per_day=3,
-                   irsa=True,
-                   extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws',
-                                ],
-
-                   extra_dashboards=['provider-aws-cloud-provider-aws', 'kops-misc']),
-
         build_test(name_override="kops-grid-scenario-terraform",
-                   k8s_version="1.20",
                    terraform_version="1.0.5",
                    extra_flags=["--zones=us-west-1a"],
                    extra_dashboards=['kops-misc']),
@@ -627,16 +615,6 @@ def generate_misc():
                    scenario="aws-ebs-csi",
                    extra_dashboards=['kops-misc']),
 
-        build_test(name_override="kops-aws-aws-ebs-csi-driver-irsa",
-                   cloud="aws",
-                   networking="cilium",
-                   distro="u2004",
-                   kops_channel="alpha",
-                   runs_per_day=3,
-                   scenario="aws-ebs-csi",
-                   irsa=True,
-                   extra_dashboards=['kops-misc']),
-
         build_test(name_override="kops-aws-aws-load-balancer-controller",
                    cloud="aws",
                    networking="cilium",
@@ -645,17 +623,6 @@ def generate_misc():
                    kops_channel="alpha",
                    runs_per_day=1,
                    scenario="aws-lb-controller",
-                   extra_dashboards=['kops-misc']),
-
-        build_test(name_override="kops-aws-aws-load-balancer-controller-irsa",
-                   cloud="aws",
-                   networking="cilium",
-                   distro="u2004",
-                   k8s_version='1.21', # TODO(rifelpet): remove when kops#11689 is addressed
-                   kops_channel="alpha",
-                   runs_per_day=3,
-                   scenario="aws-lb-controller",
-                   irsa=True,
                    extra_dashboards=['kops-misc']),
 
         build_test(name_override="kops-aws-keypair-rotation",
@@ -684,18 +651,6 @@ def generate_misc():
                    extra_flags=[
                        "--override=cluster.spec.externalDns.provider=external-dns"
                    ],
-                   extra_dashboards=['kops-misc']),
-
-        build_test(name_override="kops-aws-external-dns-irsa",
-                   cloud="aws",
-                   networking="cilium",
-                   distro="u2004",
-                   kops_channel="alpha",
-                   runs_per_day=3,
-                   irsa=True,
-                   extra_flags=[
-                       "--override=cluster.spec.externalDns.provider=external-dns",
-                       ],
                    extra_dashboards=['kops-misc']),
 
         build_test(name_override="kops-aws-apiserver-nodes",
@@ -786,6 +741,7 @@ def generate_upgrades():
             build_test(name_override=job_name,
                        distro='u2004',
                        networking='calico',
+                       irsa=k8s_a >= 'v1.21',
                        k8s_version='stable',
                        kops_channel='alpha',
                        extra_dashboards=['kops-misc'],
@@ -818,6 +774,7 @@ def generate_versions():
             build_test(
                 distro=distro,
                 k8s_version=version,
+                irsa=version >= '1.21',
                 kops_channel='alpha',
                 name_override=f"kops-aws-k8s-{version.replace('.', '-')}",
                 networking='calico',
@@ -843,6 +800,7 @@ def generate_pipeline():
                 kops_channel='alpha',
                 name_override=f"kops-pipeline-updown-kops{version.replace('.', '')}",
                 networking='calico',
+                irsa=version >= '1.21',
                 extra_dashboards=['kops-versions'],
                 runs_per_day=24,
                 skip_regex=r'\[Slow\]|\[Serial\]',
@@ -990,27 +948,6 @@ def generate_presubmits_e2e():
             tab_name='e2e-ccm',
         ),
 
-        # A special test for AWS Cloud-Controller-Manager and irsa
-        presubmit_test(
-            name="pull-kops-e2e-aws-cloud-controller-manager-irsa",
-            cloud="aws",
-            distro="u2004",
-            k8s_version="ci",
-            irsa=True,
-            extra_flags=[
-                '--override=cluster.spec.cloudControllerManager.cloudProvider=aws',
-                ],
-            tab_name='e2e-ccm-irsa',
-        ),
-
-        presubmit_test(
-            name="pull-kops-e2e-aws-irsa",
-            cloud="aws",
-            distro="u2004",
-            k8s_version="ci",
-            irsa=True,
-        ),
-
         presubmit_test(
             name="pull-kops-e2e-ipv6-amazonvpc",
             cloud="aws",
@@ -1021,21 +958,6 @@ def generate_presubmits_e2e():
             extra_flags=['--ipv6',
                          '--zones=eu-west-1a',
                          ],
-            extra_dashboards=['kops-ipv6'],
-        ),
-
-        presubmit_test(
-            name="pull-kops-e2e-ipv6-amazonvpc-irsa",
-            cloud="aws",
-            distro="deb11",
-            k8s_version="ci",
-            networking="amazonvpc",
-            feature_flags=["AWSIPv6"],
-            irsa=True,
-            extra_flags=[
-                '--ipv6',
-                '--zones=eu-west-1a',
-                ],
             extra_dashboards=['kops-ipv6'],
         ),
 
@@ -1089,16 +1011,6 @@ def generate_presubmits_e2e():
         ),
 
         presubmit_test(
-            name="pull-kops-e2e-aws-ebs-csi-driver-irsa",
-            cloud="aws",
-            distro="u2004",
-            k8s_version="ci",
-            networking="calico",
-            irsa=True,
-            scenario="aws-ebs-csi",
-        ),
-
-        presubmit_test(
             name="pull-e2e-kops-aws-load-balancer-controller",
             cloud="aws",
             distro="u2004",
@@ -1139,17 +1051,6 @@ def generate_presubmits_e2e():
             ],
         ),
 
-        presubmit_test(
-            name="pull-kops-e2e-aws-external-dns-irsa",
-            cloud="aws",
-            distro="u2004",
-            k8s_version="ci",
-            networking="calico",
-            irsa=True,
-            extra_flags=[
-                '--override=cluster.spec.externalDns.provider=external-dns',
-                ],
-        ),
         presubmit_test(
             name="pull-kops-e2e-aws-apiserver-nodes",
             cloud="aws",
