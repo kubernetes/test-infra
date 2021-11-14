@@ -525,7 +525,6 @@ def generate_misc():
                    extra_dashboards=['provider-aws-cloud-provider-aws', 'kops-misc']),
 
         build_test(name_override="kops-grid-scenario-terraform",
-                   k8s_version="1.20",
                    terraform_version="1.0.5",
                    extra_flags=["--zones=us-west-1a"],
                    extra_dashboards=['kops-misc']),
