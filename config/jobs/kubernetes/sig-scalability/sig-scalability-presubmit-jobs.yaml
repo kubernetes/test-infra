@@ -356,6 +356,7 @@ presubmits:
           privileged: true
 
   - name: pull-kubernetes-kubemark-e2e-gce-scale
+    cluster: k8s-infra-prow-build
     always_run: false
     max_concurrency: 1
     branches:
@@ -393,7 +394,7 @@ presubmits:
         - --flush-mem-after-build=true
         - --gcp-node-size=e2-standard-8
         - --gcp-nodes=84
-        - --gcp-project=k8s-presubmit-scale
+        - --gcp-project-type=scalability-project
         - --gcp-zone=us-east1-b
         - --kubemark
         - --kubemark-nodes=5000
@@ -404,6 +405,9 @@ presubmits:
         - --test_args=--ginkgo.focus=xxxx
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
         - --test-cmd-args=cluster-loader2
+        - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
+        - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=$(JOB_NAME)-$(BUILD_ID)
+        - --test-cmd-args=--experimental-prometheus-snapshot-to-report-dir=true
         - --test-cmd-args=--nodes=5000
         - --test-cmd-args=--provider=kubemark
         - --test-cmd-args=--report-dir=$(ARTIFACTS)
@@ -412,7 +416,7 @@ presubmits:
         - --test-cmd-name=ClusterLoaderV2
         - --timeout=1200m
         - --use-logexporter
-        - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
+        - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
         # TODO(krzyzacy): Figure out bazel built kubemark image
         #env:
         # - name: KUBEMARK_BAZEL_BUILD
