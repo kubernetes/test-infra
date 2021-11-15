@@ -313,7 +313,3 @@ presets:
 - labels:
     preset-e2e-scalability-periodics-master: "true"
   env:
-  - name: DEPLOY_GCI_DRIVER
-    value: true
-  - name: PROMETHEUS_STORAGE_CLASS_PROVISIONER
-    value: pd.csi.storage.gke.io
