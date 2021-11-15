@@ -405,7 +405,7 @@ def generate_grid():
                                        k8s_version=k8s_version,
                                        kops_version=kops_version,
                                        networking=networking,
-                                       irsa=kops_version is None or kops_version >= '1.21',
+                                       irsa=k8s_version >= '1.22',
                                        container_runtime=container_runtime)
                         )
 
@@ -741,7 +741,7 @@ def generate_upgrades():
             build_test(name_override=job_name,
                        distro='u2004',
                        networking='calico',
-                       irsa=k8s_a >= 'v1.21',
+                       irsa=k8s_a >= 'v1.22',
                        k8s_version='stable',
                        kops_channel='alpha',
                        extra_dashboards=['kops-misc'],
@@ -774,7 +774,7 @@ def generate_versions():
             build_test(
                 distro=distro,
                 k8s_version=version,
-                irsa=version >= '1.21',
+                irsa=version >= '1.22',
                 kops_channel='alpha',
                 name_override=f"kops-aws-k8s-{version.replace('.', '-')}",
                 networking='calico',
@@ -800,7 +800,7 @@ def generate_pipeline():
                 kops_channel='alpha',
                 name_override=f"kops-pipeline-updown-kops{version.replace('.', '')}",
                 networking='calico',
-                irsa=version >= '1.21',
+                irsa=version >= '1.22',
                 extra_dashboards=['kops-versions'],
                 runs_per_day=24,
                 skip_regex=r'\[Slow\]|\[Serial\]',
