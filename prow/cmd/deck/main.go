@@ -32,7 +32,6 @@ import (
 	"net/url"
 	"os"
 	"path"
-	"strconv"
 	"strings"
 	"time"
 
@@ -101,6 +100,8 @@ const (
 	DecorationConfig string = "decoration_config"
 	// PodSpec maps to the serialized value of <ProwJob>.Spec.PodSpec.
 	PodSpec string = "pod_spec"
+
+	defaultPRHistLinkTemplate = "/pr-history?org={{.Org}}&repo={{.Repo}}&pr={{.Number}}"
 )
 
 type options struct {
@@ -1022,7 +1023,14 @@ lensesLoop:
 	prHistLink := ""
 	org, repo, number, err := sg.RunToPR(src)
 	if err == nil && !cfg().Deck.Spyglass.HidePRHistLink {
-		prHistLink = "/pr-history?org=" + org + "&repo=" + repo + "&pr=" + strconv.Itoa(number)
+		prHistLinkTemplate := cfg().Deck.Spyglass.PRHistLinkTemplate
+		if prHistLinkTemplate == "" { // Not defined globally
+			prHistLinkTemplate = defaultPRHistLinkTemplate
+		}
+		prHistLink, err = prHistLinkFromTemplate(prHistLinkTemplate, org, repo, number)
+		if err != nil {
+			return "", err
+		}
 	}
 
 	artifactsLink := ""
@@ -1138,6 +1146,23 @@ lensesLoop:
 		"source":   src,
 	}).Info("Rendered spyglass views.")
 	return viewBuf.String(), nil
+}
+
+func prHistLinkFromTemplate(prHistLinkTemplate, org, repo string, number int) (string, error) {
+	tmp, err := template.New("t").Parse(prHistLinkTemplate)
+	if err != nil {
+		return "", fmt.Errorf("failed compiling template %q: %v", prHistLinkTemplate, err)
+	}
+	tmpBuff := bytes.Buffer{}
+	if err = tmp.Execute(&tmpBuff, struct {
+		Org    string
+		Repo   string
+		Number int
+	}{org, repo, number}); err != nil {
+		return "", fmt.Errorf("failed executing template %q: %v", prHistLinkTemplate, err)
+	}
+
+	return tmpBuff.String(), nil
 }
 
 // handleArtifactView handles requests to load a single view for a job. This is what viewers

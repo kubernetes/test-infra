@@ -999,6 +999,9 @@ type Spyglass struct {
 	// prow instances that only serves gerrit.
 	// This might become obsolete once https://github.com/kubernetes/test-infra/issues/24130 is fixed.
 	HidePRHistLink bool `json:"hide_pr_history_link,omitempty"`
+	// PRHistLinkTemplate is the template for constructing href of `PR History` button,
+	// by default it's "/pr-history?org={{.Org}}&repo={{.Repo}}&pr={{.Number}}"
+	PRHistLinkTemplate string `json:"pr_history_link_template,omitempty"`
 }
 
 type GCSBrowserPrefixes map[string]string
