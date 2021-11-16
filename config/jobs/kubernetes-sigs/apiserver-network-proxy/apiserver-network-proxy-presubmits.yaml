@@ -16,7 +16,7 @@ presubmits:
       testgrid-dashboards: sig-cloud-provider-apiserver-network-proxy
       testgrid-tab-name: pr-test
       description: Tests the apiserver-network-proxy
-  - name: pull-apiserver-network-proxy-docker-build-all
+  - name: pull-apiserver-network-proxy-docker-build-amd64
     always_run: true
     skip_report: false
     decorate: true
@@ -30,14 +30,36 @@ presubmits:
         - "runner.sh"
         args:
         - make
-        - docker-build-all
+        - docker-build/proxy-agent-amd64
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
     annotations:
       testgrid-dashboards: sig-cloud-provider-apiserver-network-proxy
-      testgrid-tab-name: pr-docker-build-all
-      description: Build via Docker all the arch release for the apiserver-network-proxy
+      testgrid-tab-name: pr-docker-build-amd64
+      description: Build amd64 image via Docker for the apiserver-network-proxy
+  - name: pull-apiserver-network-proxy-docker-build-arm64
+    always_run: true
+    skip_report: false
+    decorate: true
+    path_alias: sigs.k8s.io/apiserver-network-proxy
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+        command:
+        - "runner.sh"
+        args:
+        - make
+        - docker-build/proxy-agent-arm64
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-cloud-provider-apiserver-network-proxy
+      testgrid-tab-name: pr-docker-build-arm64
+      description: Build arm64 image via Docker for the apiserver-network-proxy
   - name: pull-apiserver-network-proxy-make-lint
     always_run: true
     skip_report: false
