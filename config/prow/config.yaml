@@ -657,6 +657,15 @@ tide:
         repos:
           dashboard:
             from-branch-protection: true
+      kubernetes-client:
+        optional-contexts:
+        - "EasyCLA" # NOTE(mrbobbytables): This is temporary until we fully roll out EasyCLA
+      kubernetes-csi:
+        optional-contexts:
+        - "EasyCLA" # NOTE(mrbobbytables): This is temporary until we fully roll out EasyCLA
+      kubernetes-sigs:
+        optional-contexts:
+        - "EasyCLA" # NOTE(mrbobbytables): This is temporary until we fully roll out EasyCLA
   batch_size_limit:
     "kubernetes/kubernetes": 15
   priority:
