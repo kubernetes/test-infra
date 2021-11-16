@@ -21,7 +21,7 @@ presets:
           hostNetwork: true
           containers:
             # HEAD is used unless otherwised specified by each individual job.
-          - image: k8s.gcr.io/ingress-gce-glbc-amd64:master
+          - image: gcr.io/k8s-ingress-image-push/ingress-gce-glbc-amd64:master
             livenessProbe:
               httpGet:
                 path: /healthz
