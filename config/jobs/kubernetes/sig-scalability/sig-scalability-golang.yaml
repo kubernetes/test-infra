@@ -83,7 +83,7 @@ periodics:
     testgrid-tab-name: golang-tip-k8s-1-23
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -93,6 +93,8 @@ periodics:
       - --env=CL2_LOAD_TEST_THROUGHPUT=50
       - --env=KUBEMARK_CONTROLLER_MANAGER_TEST_ARGS=--profiling --kube-api-qps=200 --kube-api-burst=200
       - --env=KUBEMARK_SCHEDULER_TEST_ARGS=--profiling --kube-api-qps=200 --kube-api-burst=200
+      - --env=DEPLOY_GCI_DRIVER=false
+      - --env=PROMETHEUS_STORAGE_CLASS_PROVISIONER=kubernetes.io/gce-pd
       - --extract=gs://k8s-scale-golang-build/ci/latest-1.23.txt
       - --gcp-node-size=e2-standard-8
       - --gcp-nodes=50

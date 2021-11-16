@@ -78,5 +78,11 @@ update-labels:
 	hack/make-rules/update/labels.sh
 verify-labels:
 	hack/make-rules/verify/labels.sh
+.PHONY: update-codegen
+update-codegen:
+	hack/make-rules/update/codegen.sh
+.PHONY: verify-codegen
+verify-codegen:
+	hack/make-rules/verify/codegen.sh
 #################################################################################
 .PHONY: unit test verify go-lint update-gofmt verify-gofmt update-file-perms verify-file-perms update-spelling verify-spelling update-labels verify-labels

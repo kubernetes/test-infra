@@ -104,9 +104,6 @@ func main() {
 	if flagOptions.pushSecretFile != "" {
 		tokens = append(tokens, flagOptions.pushSecretFile)
 	}
-	if flagOptions.github.TokenPath != "" {
-		tokens = append(tokens, flagOptions.github.TokenPath)
-	}
 	if err := secret.Add(tokens...); err != nil {
 		logrus.WithError(err).Fatal("failed to start secret agent")
 	}
@@ -116,7 +113,7 @@ func main() {
 	// InRepoConfigCache.
 	var cache *config.InRepoConfigCache
 	var gitClientFactory git.ClientFactory
-	if flagOptions.github.TokenPath != "" {
+	if flagOptions.github.TokenPath != "" || flagOptions.github.AppPrivateKeyPath != "" {
 		gitClient, err := flagOptions.github.GitClient(flagOptions.dryRun)
 		if err != nil {
 			logrus.WithError(err).Fatal("Error getting Git client.")

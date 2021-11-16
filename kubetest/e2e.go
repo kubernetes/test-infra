@@ -246,7 +246,7 @@ func run(deploy deployer, o options) error {
 	var kubemarkDownErr error
 	if o.down && o.kubemark {
 		kubemarkWg.Add(1)
-		go kubemarkDown(&kubemarkDownErr, &kubemarkWg, o.provider, dump)
+		go kubemarkDown(&kubemarkDownErr, &kubemarkWg, o.provider, dump, o.logexporterGCSPath)
 	}
 
 	if o.charts {
@@ -762,18 +762,24 @@ func kubemarkGinkgoTest(testArgs []string, dump string) error {
 }
 
 // Brings down the kubemark cluster.
-func kubemarkDown(err *error, wg *sync.WaitGroup, provider, dump string) {
+func kubemarkDown(err *error, wg *sync.WaitGroup, provider, dump, logexporterGCSPath string) {
 	defer wg.Done()
 	control.XMLWrap(&suite, "Kubemark MasterLogDump", func() error {
 		logDumpPath := logDumpPath(provider)
-		cmd := exec.Command(logDumpPath, dump)
 		masterName := os.Getenv("MASTER_NAME")
+		var cmd *exec.Cmd
+		if logexporterGCSPath != "" {
+			log.Printf("Dumping logs for kubemark master to GCS directly at path: %v", logexporterGCSPath)
+			cmd = exec.Command(logDumpPath, dump, logexporterGCSPath)
+		} else {
+			log.Printf("Dumping logs for kubemark master locally to: %v", dump)
+			cmd = exec.Command(logDumpPath, dump)
+		}
 		cmd.Env = append(
 			os.Environ(),
 			"KUBEMARK_MASTER_NAME="+masterName,
 			"DUMP_ONLY_MASTER_LOGS=true",
 		)
-		log.Printf("Dumping logs for kubemark master: %s", masterName)
 		return control.FinishRunning(cmd)
 	})
 	*err = control.XMLWrap(&suite, "Kubemark TearDown", func() error {

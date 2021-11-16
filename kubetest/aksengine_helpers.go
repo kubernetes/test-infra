@@ -198,20 +198,21 @@ type MasterProfile struct {
 }
 
 type AgentPoolProfile struct {
-	Name                   string              `json:"name"`
-	Count                  int                 `json:"count"`
-	Distro                 string              `json:"distro"`
-	VMSize                 string              `json:"vmSize"`
-	OSType                 string              `json:"osType,omitempty"`
-	AvailabilityProfile    string              `json:"availabilityProfile"`
-	AvailabilityZones      []string            `json:"availabilityZones,omitempty"`
-	IPAddressCount         int                 `json:"ipAddressCount,omitempty"`
-	PreProvisionExtension  map[string]string   `json:"preProvisionExtension,omitempty"`
-	Extensions             []map[string]string `json:"extensions,omitempty"`
-	OSDiskSizeGB           int                 `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
-	EnableVMSSNodePublicIP bool                `json:"enableVMSSNodePublicIP,omitempty"`
-	StorageProfile         string              `json:"storageProfile,omitempty"`
-	UltraSSDEnabled        bool                `json:"ultraSSDEnabled,omitempty"`
+	Name                                string              `json:"name"`
+	Count                               int                 `json:"count"`
+	Distro                              string              `json:"distro"`
+	VMSize                              string              `json:"vmSize"`
+	OSType                              string              `json:"osType,omitempty"`
+	AvailabilityProfile                 string              `json:"availabilityProfile"`
+	AvailabilityZones                   []string            `json:"availabilityZones,omitempty"`
+	IPAddressCount                      int                 `json:"ipAddressCount,omitempty"`
+	PreProvisionExtension               map[string]string   `json:"preProvisionExtension,omitempty"`
+	Extensions                          []map[string]string `json:"extensions,omitempty"`
+	OSDiskSizeGB                        int                 `json:"osDiskSizeGB,omitempty" validate:"min=0,max=1023"`
+	EnableVMSSNodePublicIP              bool                `json:"enableVMSSNodePublicIP,omitempty"`
+	StorageProfile                      string              `json:"storageProfile,omitempty"`
+	UltraSSDEnabled                     bool                `json:"ultraSSDEnabled,omitempty"`
+	AcceleratedNetworkingEnabledWindows bool                `json:"acceleratedNetworkingEnabledWindows,omitempty"`
 }
 
 type AzureClient struct {

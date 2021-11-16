@@ -247,6 +247,7 @@ larger set of contributors to apply/remove them.
 
 | Name | Description | Added By | Prow Plugin |
 | ---- | ----------- | -------- | --- |
+| <a id="area/contributor-comms" href="#area/contributor-comms">`area/contributor-comms`</a> | Issues or PRs related to the upstream marketing team| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="kind/tweet" href="#kind/tweet">`kind/tweet`</a> | Issues to parse and tweet from K8sContributor handle| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 
 ## Labels that apply to kubernetes-sigs/controller-runtime, for both issues and PRs

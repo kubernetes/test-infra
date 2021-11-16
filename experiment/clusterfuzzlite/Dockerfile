@@ -20,7 +20,7 @@ COPY --from=gcr.io/oss-fuzz-base/cifuzz-base:latest /opt/oss-fuzz /opt/
 
 #
 # BEGIN: DOCKER IN DOCKER SETUP
-#
+# 
  
 # Install Docker deps, some of these are already installed in the image but
 # that's fine since they won't re-install and we can reuse the code below

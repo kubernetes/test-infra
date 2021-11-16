@@ -14,7 +14,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20211014-75b15aa220-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20211110-cdea54775d-master
         command:
         - wrapper.sh
         - bash
@@ -63,7 +63,7 @@ presubmits:
     path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20211014-75b15aa220-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20211110-cdea54775d-master
         command:
         - wrapper.sh
         - bash
@@ -120,7 +120,7 @@ presubmits:
       path_alias: "k8s.io/test-infra"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20211014-75b15aa220-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20211110-cdea54775d-master
         command:
         - wrapper.sh
         - bash
@@ -164,7 +164,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20211014-75b15aa220-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20211110-cdea54775d-master
       command:
         - wrapper.sh
         - bash
@@ -211,7 +211,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20211014-75b15aa220-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20211110-cdea54775d-master
       command:
         - wrapper.sh
         - bash
@@ -264,7 +264,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20211014-75b15aa220-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20211110-cdea54775d-master
       command:
         - wrapper.sh
         - bash
@@ -319,7 +319,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20211014-75b15aa220-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20211110-cdea54775d-master
       command:
         - wrapper.sh
         - bash
@@ -368,7 +368,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20211014-75b15aa220-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20211110-cdea54775d-master
       command:
         - wrapper.sh
         - bash
@@ -423,7 +423,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20211014-75b15aa220-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20211110-cdea54775d-master
       command:
         - wrapper.sh
         - bash
@@ -479,7 +479,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20211014-75b15aa220-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20211110-cdea54775d-master
       env:
       # skip serial tests and run with --ginkgo-parallel
       - name: "PARALLEL"
@@ -527,7 +527,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20211014-75b15aa220-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20211110-cdea54775d-master
       env:
       # enable IPV6 in bootstrap image
       - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
@@ -566,3 +566,46 @@ periodics:
     description: Runs network tests using KIND against latest kubernetes master with an IPv6 kubernetes-in-docker cluster, skipping [Serial] tests
     testgrid-alert-email: antonio.ojea.garcia@gmail.com, kubernetes-sig-network-test-failures@googlegroups.com
     testgrid-num-columns-recent: '3'
+- interval: 6h
+  name: ci-kubernetes-kind-multizone
+  decorate: true
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: "k8s.io/test-infra"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/krte:v20211110-cdea54775d-master
+      command:
+      - wrapper.sh
+      - bash
+      - -c
+      - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/k8s.io/test-infra/experiment/kind-multizone-e2e.sh
+      env:
+      - name: PARALLEL
+        value: "true"
+      - name: FOCUS
+        value: \[sig-network\]|\[Conformance\]
+      - name: SKIP
+        value: \[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS)\]|LB.health.check|LoadBalancer|load.balancer|GCE|NetworkPolicy|DualStack
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: "9000Mi"
+          cpu: 4000m
+  annotations:
+    testgrid-dashboards: sig-network-kind
+    testgrid-tab-name: sig-network-kind, multizone
+    description: Runs tests against a Multizone Kubernetes in Docker cluster
+    testgrid-alert-email: antonio.ojea.garcia@gmail.com, robertjscott@google.com

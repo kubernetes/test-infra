@@ -9,7 +9,7 @@ presubmits:
     - ^release-0.4$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-1.18
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.18
         command:
         - "./scripts/ci-test.sh"
     annotations:
@@ -25,7 +25,7 @@ presubmits:
     - ^release-0.4$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-1.18
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.18
         command:
         - "./scripts/ci-build.sh"
     annotations:
@@ -48,7 +48,7 @@ presubmits:
     - ^release-0.4$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-1.18
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.18
         command:
           - runner.sh
         args:
@@ -80,7 +80,7 @@ presubmits:
     - ^release-0.4$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-1.18
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.18
         command:
           - runner.sh
         args:
@@ -114,7 +114,7 @@ presubmits:
     - ^release-0.4$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-1.18
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.18
         command:
           - runner.sh
         args:
@@ -122,6 +122,8 @@ presubmits:
         env:
           - name: GINKGO_FOCUS
             value: "Cluster API E2E tests"
+          - name: GINKGO_SKIP
+            value: "\\[K8s-Upgrade\\]"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -141,7 +143,7 @@ presubmits:
     - ^release-0.4$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-1.18
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.18
         command:
         - "runner.sh"
         - "make"
@@ -168,7 +170,7 @@ presubmits:
     - ^release-0.4$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-1.18
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.18
         command:
           - runner.sh
         args:
@@ -195,7 +197,7 @@ presubmits:
     - ^release-0.4$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-1.18
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.18
         command:
           - runner.sh
         args:

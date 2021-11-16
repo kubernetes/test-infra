@@ -99,6 +99,10 @@ presets:
   # TODO(https://github.com/kubernetes/perf-tests/issues/1828): Use konnectivity in kubemark.
   - name: KUBE_ENABLE_KONNECTIVITY_SERVICE
     value: false
+  - name: DEPLOY_GCI_DRIVER
+    value: true
+  - name: PROMETHEUS_STORAGE_CLASS_PROVISIONER
+    value: pd.csi.storage.gke.io
 
 ### kubemark-gce-scale
 - labels:
@@ -236,6 +240,10 @@ presets:
     value: "containerd"
   - name: DUMP_TO_GCS_ONLY
     value: true
+  - name: DEPLOY_GCI_DRIVER
+    value: true
+  - name: PROMETHEUS_STORAGE_CLASS_PROVISIONER
+    value: pd.csi.storage.gke.io
 
   ###### Scalability Envs
   ### Common env variables for containerd scalability-related suites.

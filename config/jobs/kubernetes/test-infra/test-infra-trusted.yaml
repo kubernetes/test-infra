@@ -48,13 +48,13 @@ postsubmits:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-prow
         - images/alpine/
-  - name: post-test-infra-push-ci-fuzz
+  - name: post-test-infra-push-clusterfuzzlite
     cluster: test-infra-trusted
-    run_if_changed: '^(experiment/ci-fuzz)'
+    run_if_changed: '^(experiment/clusterfuzzlite)'
     annotations:
       testgrid-dashboards: "sig-testing-images"
-      testgrid-tab-name: "ci-fuzz-push"
-      description: builds and pushes the ci-fuzz image
+      testgrid-tab-name: "clusterfuzzlite-push"
+      description: builds and pushes the clusterfuzzlite image
     decorate: true
     branches:
     - ^master$
@@ -69,7 +69,7 @@ postsubmits:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-testimages
         - --build-dir=.
-        - experiment/ci-fuzz/
+        - experiment/clusterfuzzlite/
   - name: post-test-infra-push-gcloud-terraform
     cluster: test-infra-trusted
     run_if_changed: '^images/gcloud-terraform/'
@@ -151,7 +151,7 @@ postsubmits:
     max_concurrency: 1
     spec:
       containers:
-      - image: gcr.io/k8s-prow/hmac:v20211104-016e918fc0
+      - image: gcr.io/k8s-prow/hmac:v20211115-e14c34d581
         command:
         - /hmac
         args:
@@ -270,30 +270,6 @@ postsubmits:
         - --scratch-bucket=gs://k8s-testimages-scratch
         - --project=k8s-testimages
         - images/bazel/
-  - name: post-test-infra-push-bazelbuild
-    cluster: test-infra-trusted
-    run_if_changed: '^images/bazelbuild/'
-    annotations:
-      testgrid-dashboards: "sig-testing-images"
-      testgrid-tab-name: "bazelbuild"
-      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-      testgrid-num-failures-to-alert: '1'
-      description: builds and pushes the bazelbuild test image
-    decorate: true
-    branches:
-    - ^master$
-    max_concurrency: 1
-    spec:
-      serviceAccountName: deployer # TODO(fejta): should be pusher
-      containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20210128-v0.6-11-gf1c6399
-        command:
-        - images/builder/ci-runner.sh
-        args:
-        - --scratch-bucket=gs://k8s-testimages-scratch
-        - --project=k8s-testimages
-        - --build-dir=.
-        - images/bazelbuild/
   - name: post-test-infra-push-gcb-docker-gcloud
     cluster: test-infra-trusted
     run_if_changed: '^images/gcb-docker-gcloud/'
@@ -366,30 +342,6 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - images/pull-test-infra-gubernator/
-  - name: post-test-infra-push-image-benchmarkjunit
-    cluster: test-infra-trusted
-    run_if_changed: '^pkg/benchmarkjunit/'
-    annotations:
-      testgrid-dashboards: "sig-testing-images"
-      testgrid-tab-name: "benchmarkjunit"
-      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-      testgrid-num-failures-to-alert: '3'
-      description: builds and pushes the benchmarkjunit image
-    decorate: true
-    branches:
-    - ^master$
-    max_concurrency: 1
-    spec:
-      serviceAccountName: deployer # TODO(fejta): should be pusher
-      containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20210128-v0.6-11-gf1c6399
-        command:
-        - images/builder/ci-runner.sh
-        args:
-        - --scratch-bucket=gs://k8s-testimages-scratch
-        - --project=k8s-testimages
-        - --build-dir=.
-        - pkg/benchmarkjunit/
   - name: post-test-infra-push-gencred
     cluster: test-infra-trusted
     run_if_changed: '^gencred/'
@@ -658,7 +610,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20211104-016e918fc0
+    - image: gcr.io/k8s-prow/generic-autobumper:v20211115-e14c34d581
       command:
       - /app/prow/cmd/generic-autobumper/app.binary
       args:
@@ -695,7 +647,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20211104-016e918fc0
+    - image: gcr.io/k8s-prow/generic-autobumper:v20211115-e14c34d581
       command:
       - /app/prow/cmd/generic-autobumper/app.binary
       args:
@@ -766,7 +718,7 @@ periodics:
   spec:
     containers:
     - name: branchprotector
-      image: gcr.io/k8s-prow/branchprotector:v20211104-016e918fc0
+      image: gcr.io/k8s-prow/branchprotector:v20211115-e14c34d581
       command:
       - /app/prow/cmd/branchprotector/app.binary
       args:
@@ -800,7 +752,7 @@ periodics:
   spec:
     containers:
     - name: label-sync
-      image: gcr.io/k8s-prow/label_sync:v20211104-016e918fc0
+      image: gcr.io/k8s-prow/label_sync:v20211115-e14c34d581
       command:
       - /app/label_sync/app.binary
       args:
@@ -846,7 +798,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/checkconfig:v20211104-016e918fc0
+    - image: gcr.io/k8s-prow/checkconfig:v20211115-e14c34d581
       command:
       - /checkconfig
       args:

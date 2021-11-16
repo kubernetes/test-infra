@@ -265,7 +265,7 @@ testSuites:
   alphafeatures:
     args:
     - --timeout=180m
-    - --test_args=--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|DynamicKubeletConfig)\]
+    - --test_args=--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly)\]
       --minStartupPods=8
     cluster: k8s-infra-prow-build
   default:
@@ -380,23 +380,23 @@ nodeK8sVersions:
   dev:
     args:
     - --repo=k8s.io/kubernetes=master
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-master
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
   beta:
     args:
     - --repo=k8s.io/kubernetes=release-1.22
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-1.22
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.22
   stable1:
     args:
     - --repo=k8s.io/kubernetes=release-1.21
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-1.21
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.21
   stable2:
     args:
     - --repo=k8s.io/kubernetes=release-1.20
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-1.20
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.20
   stable3:
     args:
     - --repo=k8s.io/kubernetes=release-1.19
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-1.19
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.19
 
 nodeTestSuites:
   default:
@@ -412,4 +412,3 @@ nodeTestSuites:
     args:
     - --timeout=300m
     - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]"
-    - --node-test-args=--feature-gates=DynamicKubeletConfig=true

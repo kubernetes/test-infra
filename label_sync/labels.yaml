@@ -1950,6 +1950,12 @@ repos:
         target: both
         addedBy: anyone
         prowPlugin: label
+      - color: 0052cc
+        description: Issues or PRs related to the upstream marketing team
+        name: area/contributor-comms
+        target: both
+        prowPlugin: label
+        addedBy: anyone
   kubernetes-sigs/controller-runtime:
     labels:
       - color: c7def8

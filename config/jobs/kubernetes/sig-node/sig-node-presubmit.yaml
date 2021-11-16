@@ -14,7 +14,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -65,7 +65,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -113,7 +113,7 @@ presubmits:
       containers:
       # experimental have the kubetest2 binaries
       # https://github.com/kubernetes/test-infra/blob/3c3d64f398a5e4f324200d25183c98a4bfa842ac/images/kubekins-e2e/variants.yaml#L8
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-experimental
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-experimental
         resources:
           limits:
             cpu: 4
@@ -171,7 +171,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-containerd-gce
         - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\] --minStartupPods=8
         - --timeout=80m     # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
         resources:
           requests:
             memory: "6Gi"
@@ -194,7 +194,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
         args:
         - --root=/go/src
         - --job=$(JOB_NAME)
@@ -245,7 +245,7 @@ presubmits:
       containers:
       # experimental have the kubetest2 binaries
       # https://github.com/kubernetes/test-infra/blob/3c3d64f398a5e4f324200d25183c98a4bfa842ac/images/kubekins-e2e/variants.yaml#L8
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-experimental
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-experimental
         resources:
           limits:
             cpu: 4
@@ -281,7 +281,7 @@ presubmits:
       testgrid-create-test-group: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
         args:
         - --root=/go/src
         - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
@@ -339,7 +339,7 @@ presubmits:
       containers:
       # experimental have the kubetest2 binaries
       # https://github.com/kubernetes/test-infra/blob/3c3d64f398a5e4f324200d25183c98a4bfa842ac/images/kubekins-e2e/variants.yaml#L8
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-experimental
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-experimental
         env:
         - name: GOPATH
           value: /go
@@ -367,6 +367,7 @@ presubmits:
         - --image-config-file=/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-master/image-config.yaml
         - --image-config-dir=/home/prow
   - name: pull-kubernetes-node-e2e-alpha
+    cluster: k8s-infra-prow-build
     branches:
     - master
     always_run: false
@@ -376,7 +377,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -387,7 +388,6 @@ presubmits:
         - --scenario=kubernetes_e2e
         - -- # end bootstrap args, scenario args below
         - --deployment=node
-        - --gcp-project=k8s-jkns-pr-node-e2e
         - --gcp-zone=us-west1-b
         - --node-test-args=--feature-gates=AllAlpha=true,CSIMigration=false,RotateKubeletServerCertificate=false,InTreePluginGCEUnregister=false --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
         - --node-tests=true
@@ -396,11 +396,16 @@ presubmits:
         - --timeout=65m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
         resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
           requests:
-            memory: "6Gi"
+            cpu: 4
+            memory: 6Gi
     annotations:
       testgrid-create-test-group: 'true'
   - name: pull-kubernetes-node-e2e-alpha-kubetest2
+    cluster: k8s-infra-prow-build
     # explicitly needs /test pull-kubernetes-node-e2e-alpha-kubetest2 to run
     always_run: false
     # if at all it is run and fails, don't block the PR
@@ -425,10 +430,14 @@ presubmits:
       containers:
       # experimental have the kubetest2 binaries
       # https://github.com/kubernetes/test-infra/blob/3c3d64f398a5e4f324200d25183c98a4bfa842ac/images/kubekins-e2e/variants.yaml#L8
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-experimental
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-experimental
         resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
           requests:
-            memory: "6Gi"
+            cpu: 4
+            memory: 6Gi
         command:
         - runner.sh
         args:
@@ -437,7 +446,6 @@ presubmits:
         - --test=node
         - --
         - --repo-root=.
-        - --gcp-project=k8s-jkns-pr-node-e2e
         - --gcp-zone=us-west1-b
         - --parallelism=8
         - --focus-regex=\[NodeConformance\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]
@@ -458,7 +466,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - --timeout=260
@@ -469,10 +477,50 @@ presubmits:
         - --deployment=node
         - --gcp-zone=us-west1-b
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial.yaml
-        - --node-test-args=--feature-gates=DynamicKubeletConfig=true,LocalStorageCapacityIsolation=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+        - --node-test-args=LocalStorageCapacityIsolation=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
         - --node-tests=true
         - --provider=gce
-        - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]"
+        - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]|\[NodeFeature:DynamicKubeletConfig\]|\[Feature:Docker\]"
+        - --timeout=240m
+        env:
+        - name: GOPATH
+          value: /go
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
+  - name: pull-kubernetes-node-kubelet-serial-dockershim
+    always_run: false
+    optional: true
+    skip_report: false
+    skip_branches:
+    - release-\d+\.\d+  # per-release image
+    annotations:
+      testgrid-dashboards: sig-node-presubmits
+      testgrid-tab-name: pr-node-kubelet-serial-dockershim
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+        args:
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - --timeout=260
+        - --root=/go/src
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - --scenario=kubernetes_e2e
+        - --
+        - --deployment=node
+        - --gcp-zone=us-west1-b
+        - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial.yaml
+        - --node-test-args=LocalStorageCapacityIsolation=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+        - --node-tests=true
+        - --provider=gce
+        - --test_args=--nodes=1 --focus="\[Feature:Docker\]" --skip=""
         - --timeout=240m
         env:
         - name: GOPATH
@@ -498,7 +546,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.21
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - --timeout=260
@@ -509,7 +557,7 @@ presubmits:
         - --deployment=node
         - --gcp-zone=us-west1-b
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial.yaml
-        - --node-test-args=--feature-gates=DynamicKubeletConfig=true,LocalStorageCapacityIsolation=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+        - --node-test-args=--feature-gates=LocalStorageCapacityIsolation=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
         - --node-tests=true
         - --provider=gce
         - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]"
@@ -538,7 +586,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-1.22
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.22
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - --timeout=260
@@ -549,7 +597,7 @@ presubmits:
         - --deployment=node
         - --gcp-zone=us-west1-b
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial.yaml
-        - --node-test-args=--feature-gates=DynamicKubeletConfig=true,LocalStorageCapacityIsolation=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+        - --node-test-args=--feature-gates=LocalStorageCapacityIsolation=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
         - --node-tests=true
         - --provider=gce
         - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]"
@@ -590,7 +638,7 @@ presubmits:
       containers:
       # experimental have the kubetest2 binaries
       # https://github.com/kubernetes/test-infra/blob/3c3d64f398a5e4f324200d25183c98a4bfa842ac/images/kubekins-e2e/variants.yaml#L8
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-experimental
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-experimental
         env:
         - name: GOPATH
           value: /go
@@ -613,7 +661,7 @@ presubmits:
         - --parallelism=1
         - --focus-regex=\[Serial\]
         - --skip-regex=\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]
-        - --test-args=--feature-gates=DynamicKubeletConfig=true,LocalStorageCapacityIsolation=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+        - --test-args=--feature-gates=LocalStorageCapacityIsolation=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/image-config-serial.yaml
 
   - name: pull-kubernetes-node-kubelet-serial-containerd
@@ -630,7 +678,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - --timeout=260
@@ -641,7 +689,7 @@ presubmits:
           - --deployment=node
           - --gcp-zone=us-west1-b
           - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/image-config-serial.yaml
-          - '--node-test-args=--feature-gates=DynamicKubeletConfig=true,LocalStorageCapacityIsolation=true --container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+          - '--node-test-args=--feature-gates=LocalStorageCapacityIsolation=true --container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
           - --node-tests=true
           - --provider=gce
           - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]"
@@ -682,7 +730,7 @@ presubmits:
       containers:
       # experimental have the kubetest2 binaries
       # https://github.com/kubernetes/test-infra/blob/3c3d64f398a5e4f324200d25183c98a4bfa842ac/images/kubekins-e2e/variants.yaml#L8
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-experimental
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-experimental
         env:
         - name: GOPATH
           value: /go
@@ -705,7 +753,7 @@ presubmits:
         - --parallelism=1
         - --focus-regex=\[Serial\]
         - --skip-regex=\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]
-        - '--test-args=--feature-gates=DynamicKubeletConfig=true,LocalStorageCapacityIsolation=true --container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+        - '--test-args=--feature-gates=LocalStorageCapacityIsolation=true --container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config-serial.yaml
   - name: pull-kubernetes-node-kubelet-eviction
     always_run: false
@@ -721,7 +769,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - --timeout=440
@@ -732,7 +780,7 @@ presubmits:
         - --deployment=node
         - --gcp-zone=us-west1-b
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial.yaml
-        - --node-test-args=--feature-gates=DynamicKubeletConfig=true,LocalStorageCapacityIsolation=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+        - --node-test-args=--feature-gates=LocalStorageCapacityIsolation=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
         - --node-tests=true
         - --provider=gce
         - --test_args=--nodes=1 --focus="\[NodeFeature:Eviction\]"
@@ -766,7 +814,7 @@ presubmits:
       containers:
       # experimental have the kubetest2 binaries
       # https://github.com/kubernetes/test-infra/blob/3c3d64f398a5e4f324200d25183c98a4bfa842ac/images/kubekins-e2e/variants.yaml#L8
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-experimental
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-experimental
         env:
         - name: GOPATH
           value: /go
@@ -781,9 +829,10 @@ presubmits:
         - --gcp-zone=us-west1-b
         - --parallelism=1
         - --focus-regex=\[NodeFeature:Eviction\]
-        - --test-args=--feature-gates=DynamicKubeletConfig=true,LocalStorageCapacityIsolation=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+        - --test-args=--feature-gates=LocalStorageCapacityIsolation=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/image-config-serial.yaml
   - name: pull-kubernetes-node-kubelet-serial-cpu-manager
+    cluster: k8s-infra-prow-build
     always_run: false
     optional: true
     skip_report: false
@@ -797,7 +846,14 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+          resources:
+            limits:
+              cpu: 4
+              memory: 6Gi
+            requests:
+              cpu: 4
+              memory: 6Gi
           args:
             - --repo=k8s.io/kubernetes=$(PULL_REFS)
             - --repo=k8s.io/release
@@ -806,10 +862,9 @@ presubmits:
             - --scenario=kubernetes_e2e
             - --
             - --deployment=node
-            - --gcp-project=k8s-jkns-pr-node-e2e
             - --gcp-zone=us-west1-b
             - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial-cpu-manager.yaml
-            - --node-test-args=--feature-gates=DynamicKubeletConfig=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+            - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
             - --node-tests=true
             - --provider=gce
             - --test_args=--nodes=1 --skip="" --focus="\[Feature:CPUManager\]"
@@ -817,7 +872,56 @@ presubmits:
           env:
             - name: GOPATH
               value: /go
+  - name: pull-kubernetes-node-kubelet-serial-cpu-manager-kubetest2
+    # explicitly needs /test pull-kubernetes-node-kubelet-serial-cpu-manager-kubetest2 to run
+    always_run: false
+    # if at all it is run and fails, don't block the PR
+    optional: true
+    branches:
+    - master
+    decorate: true
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
+    decoration_config:
+      timeout: 180m
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    annotations:
+      testgrid-dashboards: sig-node-presubmits
+      testgrid-tab-name: pr-kubelet-serial-gce-e2e-cpu-manager-kubetest2
+    spec:
+      containers:
+      # experimental have the kubetest2 binaries
+      # https://github.com/kubernetes/test-infra/blob/3c3d64f398a5e4f324200d25183c98a4bfa842ac/images/kubekins-e2e/variants.yaml#L8
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-experimental
+        env:
+        - name: GOPATH
+          value: /go
+        command:
+        - runner.sh
+        args:
+        - kubetest2
+        - noop
+        - --test=node
+        - --
+        - --repo-root=.
+        - --gcp-project=k8s-jkns-pr-node-e2e
+        - --gcp-zone=us-west1-b
+        - --parallelism=1
+        - --focus-regex=\[Feature:CPUManager\]
+        - --test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+        - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/image-config-serial-cpu-manager.yaml
   - name: pull-kubernetes-node-kubelet-serial-topology-manager
+    cluster: k8s-infra-prow-build
     always_run: false
     optional: true
     skip_report: false
@@ -831,7 +935,14 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+          resources:
+            limits:
+              cpu: 4
+              memory: 6Gi
+            requests:
+              cpu: 4
+              memory: 6Gi
           args:
             - --repo=k8s.io/kubernetes=$(PULL_REFS)
             - --repo=k8s.io/release
@@ -840,10 +951,9 @@ presubmits:
             - --scenario=kubernetes_e2e
             - --
             - --deployment=node
-            - --gcp-project=k8s-jkns-pr-node-e2e
             - --gcp-zone=us-west1-b
             - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial-cpu-manager.yaml
-            - --node-test-args=--feature-gates=DynamicKubeletConfig=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+            - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
             - --node-tests=true
             - --provider=gce
             - --test_args=--nodes=1 --skip="" --focus="\[Feature:TopologyManager\]"
@@ -851,7 +961,56 @@ presubmits:
           env:
             - name: GOPATH
               value: /go
+  - name: pull-kubernetes-node-kubelet-serial-topology-manager-kubetest2
+    # explicitly needs /test pull-kubernetes-node-kubelet-serial-topology-manager-kubetest2 to run
+    always_run: false
+    # if at all it is run and fails, don't block the PR
+    optional: true
+    branches:
+    - master
+    decorate: true
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
+    decoration_config:
+      timeout: 180m
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    annotations:
+      testgrid-dashboards: sig-node-presubmits
+      testgrid-tab-name: pr-kubelet-serial-gce-e2e-topology-manager-kubetest2
+    spec:
+      containers:
+      # experimental have the kubetest2 binaries
+      # https://github.com/kubernetes/test-infra/blob/3c3d64f398a5e4f324200d25183c98a4bfa842ac/images/kubekins-e2e/variants.yaml#L8
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-experimental
+        env:
+        - name: GOPATH
+          value: /go
+        command:
+        - runner.sh
+        args:
+        - kubetest2
+        - noop
+        - --test=node
+        - --
+        - --repo-root=.
+        - --gcp-project=k8s-jkns-pr-node-e2e
+        - --gcp-zone=us-west1-b
+        - --parallelism=1
+        - --focus-regex=\[Feature:TopologyManager\]
+        - --test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+        - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/image-config-serial-cpu-manager.yaml
   - name: pull-kubernetes-node-kubelet-serial-hugepages
+    cluster: k8s-infra-prow-build
     always_run: false
     optional: true
     skip_report: false
@@ -865,7 +1024,14 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+          resources:
+            limits:
+              cpu: 4
+              memory: 6Gi
+            requests:
+              cpu: 4
+              memory: 6Gi
           args:
             - --repo=k8s.io/kubernetes=$(PULL_REFS)
             - --repo=k8s.io/release
@@ -874,7 +1040,6 @@ presubmits:
             - --scenario=kubernetes_e2e
             - --
             - --deployment=node
-            - --gcp-project=k8s-jkns-pr-node-e2e
             - --gcp-zone=us-west1-b
             - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial-hugepages.yaml
             - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
@@ -886,6 +1051,7 @@ presubmits:
             - name: GOPATH
               value: /go
   - name: pull-kubernetes-node-crio-cgrpv2-e2e
+    cluster: k8s-infra-prow-build
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
@@ -901,7 +1067,7 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -913,7 +1079,6 @@ presubmits:
         - -- # end bootstrap args, scenario args below
         - --deployment=node
         - --env=KUBE_SSH_USER=core
-        - --gcp-project=k8s-jkns-pr-node-e2e
         - --gcp-zone=us-west1-b
         - '--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service --non-masquerade-cidr=0.0.0.0/0" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
         - --node-tests=true
@@ -922,9 +1087,64 @@ presubmits:
         - --timeout=180m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv2.yaml
         resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
+  - name: pull-kubernetes-node-crio-cgrpv2-e2e-kubetest2
+    # explicitly needs /test pull-kubernetes-node-crio-cgrpv2-e2e-kubetest2 to run
+    always_run: false
+    # if at all it is run and fails, don't block the PR
+    optional: true
+    branches:
+    - master
+    decorate: true
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+    decoration_config:
+      timeout: 180m
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
+    annotations:
+      testgrid-dashboards: sig-node-presubmits
+      testgrid-tab-name: pr-crio-cgrpv2-gce-e2e-kubetest2
+    spec:
+      containers:
+      # experimental have the kubetest2 binaries
+      # https://github.com/kubernetes/test-infra/blob/3c3d64f398a5e4f324200d25183c98a4bfa842ac/images/kubekins-e2e/variants.yaml#L8
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-experimental
+        resources:
           requests:
             memory: "6Gi"
+        env:
+          - name: KUBE_SSH_USER
+            value: core
+        command:
+        - runner.sh
+        args:
+        - kubetest2
+        - noop
+        - --test=node
+        - --
+        - --repo-root=.
+        - --gcp-project=k8s-jkns-pr-node-e2e
+        - --gcp-zone=us-west1-b
+        - --parallelism=8
+        - --focus-regex=\[NodeConformance\]|\[NodeFeature:.+\]|\[NodeFeature\]
+        - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]
+        - '--test-args=--container-runtime=remote --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service --non-masquerade-cidr=0.0.0.0/0" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
+        - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv2.yaml
   - name: pull-kubernetes-node-kubelet-serial-crio-cgroupv1
+    cluster: k8s-infra-prow-build
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
@@ -939,7 +1159,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -951,18 +1171,22 @@ presubmits:
         - -- # end bootstrap args, scenario args below
         - --deployment=node
         - --env=KUBE_SSH_USER=core
-        - --gcp-project=k8s-jkns-pr-node-e2e
         - --gcp-zone=us-west1-b
-        - '--node-test-args=--feature-gates=DynamicKubeletConfig=true,LocalStorageCapacityIsolation=true --container-runtime=remote --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service --non-masquerade-cidr=0.0.0.0/0" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
+        - '--node-test-args=--feature-gates=LocalStorageCapacityIsolation=true --container-runtime=remote --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service --non-masquerade-cidr=0.0.0.0/0" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
         - --node-tests=true
         - --provider=gce
         - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[Feature:Eviction\]"
         - --timeout=420m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1-serial.yaml
         resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
           requests:
-            memory: "6Gi"
+            cpu: 4
+            memory: 6Gi
   - name: pull-kubernetes-node-kubelet-serial-crio-cgroupv2
+    cluster: k8s-infra-prow-build
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
@@ -977,7 +1201,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -989,18 +1213,22 @@ presubmits:
         - -- # end bootstrap args, scenario args below
         - --deployment=node
         - --env=KUBE_SSH_USER=core
-        - --gcp-project=k8s-jkns-pr-node-e2e
         - --gcp-zone=us-west1-b
-        - '--node-test-args=--feature-gates=DynamicKubeletConfig=true,LocalStorageCapacityIsolation=true --container-runtime=remote --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service --non-masquerade-cidr=0.0.0.0/0" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
+        - '--node-test-args=--feature-gates=LocalStorageCapacityIsolation=true --container-runtime=remote --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service --non-masquerade-cidr=0.0.0.0/0" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
         - --node-tests=true
         - --provider=gce
         - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[Feature:Eviction\]"
         - --timeout=420m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv2-serial.yaml
         resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
           requests:
-            memory: "6Gi"
+            cpu: 4
+            memory: 6Gi
   - name: pull-kubernetes-node-crio-e2e
+    cluster: k8s-infra-prow-build
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
@@ -1017,7 +1245,7 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -1029,7 +1257,6 @@ presubmits:
         - -- # end bootstrap args, scenario args below
         - --deployment=node
         - --env=KUBE_SSH_USER=core
-        - --gcp-project=k8s-jkns-pr-node-e2e
         - --gcp-zone=us-west1-b
         - '--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service --non-masquerade-cidr=0.0.0.0/0" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
         - --node-tests=true
@@ -1038,10 +1265,65 @@ presubmits:
         - --timeout=180m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1.yaml
         resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
+  - name: pull-kubernetes-node-crio-e2e-kubetest2
+    # explicitly needs /test pull-kubernetes-node-crio-e2e-kubetest2 to run
+    always_run: false
+    # if at all it is run and fails, don't block the PR
+    optional: true
+    branches:
+    - master
+    decorate: true
+    path_alias: k8s.io/kubernetes
+    extra_refs:
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+    decoration_config:
+      timeout: 180m
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
+    annotations:
+      testgrid-dashboards: sig-node-presubmits
+      testgrid-tab-name: pr-crio-gce-e2e-kubetest2
+    spec:
+      containers:
+      # experimental have the kubetest2 binaries
+      # https://github.com/kubernetes/test-infra/blob/3c3d64f398a5e4f324200d25183c98a4bfa842ac/images/kubekins-e2e/variants.yaml#L8
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-experimental
+        resources:
           requests:
             memory: "6Gi"
+        env:
+          - name: KUBE_SSH_USER
+            value: core
+        command:
+        - runner.sh
+        args:
+        - kubetest2
+        - noop
+        - --test=node
+        - --
+        - --repo-root=.
+        - --gcp-project=k8s-jkns-pr-node-e2e
+        - --gcp-zone=us-west1-b
+        - --parallelism=8
+        - --focus-regex=\[NodeConformance\]|\[NodeFeature:.+\]|\[NodeFeature\]
+        - --skip-regex=\[Flaky\]|\[Slow\]|\[Serial\]
+        - '--test-args=--container-runtime=remote --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service --non-masquerade-cidr=0.0.0.0/0" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
+        - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1.yaml
 
   - name: pull-kubernetes-node-kubelet-serial-memory-manager
+    cluster: k8s-infra-prow-build
     always_run: false
     optional: true
     skip_report: false
@@ -1056,7 +1338,14 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+          resources:
+            limits:
+              cpu: 4
+              memory: 6Gi
+            requests:
+              cpu: 4
+              memory: 6Gi
           args:
             - --repo=k8s.io/kubernetes=$(PULL_REFS)
             - --repo=k8s.io/release
@@ -1065,7 +1354,6 @@ presubmits:
             - --scenario=kubernetes_e2e
             - --
             - --deployment=node
-            - --gcp-project=k8s-jkns-pr-node-e2e
             - --gcp-zone=us-west1-b
             - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial-cpu-manager.yaml
             - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
@@ -1078,6 +1366,7 @@ presubmits:
               value: /go
 
   - name: pull-kubernetes-node-memoryqos-cgrpv2
+    cluster: k8s-infra-prow-build
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
@@ -1093,7 +1382,7 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -1105,7 +1394,6 @@ presubmits:
         - -- # end bootstrap args, scenario args below
         - --deployment=node
         - --env=KUBE_SSH_USER=core
-        - --gcp-project=k8s-jkns-pr-node-e2e
         - --gcp-zone=us-west1-b
         - '--node-test-args=--feature-gates=MemoryQoS=true --container-runtime=remote --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service --non-masquerade-cidr=0.0.0.0/0" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
         - --node-tests=true
@@ -1114,9 +1402,14 @@ presubmits:
         - --timeout=180m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv2.yaml
         resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
           requests:
-            memory: "6Gi"
+            cpu: 4
+            memory: 6Gi
   - name: pull-kubernetes-node-swap-ubuntu
+    cluster: k8s-infra-prow-build
     always_run: false
     optional: true
     skip_report: false
@@ -1130,7 +1423,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
           args:
             - --root=/go/src
             - "--job=$(JOB_NAME)"
@@ -1141,7 +1434,6 @@ presubmits:
             - --scenario=kubernetes_e2e
             - --
             - --deployment=node
-            - --gcp-project=k8s-jkns-pr-node-e2e
             - --gcp-zone=us-west1-b
             - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/swap/image-config-swap.yaml
             - --node-test-args=--feature-gates=NodeSwap=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --fail-swap-on=false"
@@ -1153,10 +1445,15 @@ presubmits:
             - name: GOPATH
               value: /go
           resources:
+            limits:
+              cpu: 4
+              memory: 6Gi
             requests:
-              memory: "6Gi"
+              cpu: 4
+              memory: 6Gi
 
   - name: pull-kubernetes-node-swap-fedora
+    cluster: k8s-infra-prow-build
     skip_branches:
     - release-\d+\.\d+  # per-release image
     annotations:
@@ -1173,7 +1470,7 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
         args:
         - --root=/go/src
         - "--job=$(JOB_NAME)"
@@ -1185,7 +1482,6 @@ presubmits:
         - -- # end bootstrap args, scenario args below
         - --deployment=node
         - --env=KUBE_SSH_USER=core
-        - --gcp-project=k8s-jkns-pr-node-e2e
         - --gcp-zone=us-west1-b
         - '--node-test-args=--feature-gates=NodeSwap=true --container-runtime=remote --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--fail-swap-on=false --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service --non-masquerade-cidr=0.0.0.0/0" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
         - --node-tests=true
@@ -1194,5 +1490,9 @@ presubmits:
         - --timeout=180m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/swap/image-config-swap-fedora.yaml
         resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
           requests:
-            memory: "6Gi"
+            cpu: 4
+            memory: 6Gi

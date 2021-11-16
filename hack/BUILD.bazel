@@ -80,7 +80,7 @@ sh_test(
         "@io_k8s_code_generator//cmd/lister-gen",
         "@io_k8s_sigs_controller_tools//cmd/controller-gen",
     ],
-    tags = ["lint"],
+    tags = ["manual"],
 )
 
 sh_binary(
@@ -119,7 +119,7 @@ sh_test(
         "@//:all-srcs",
         MISSPELL,
     ],
-    tags = ["lint"],
+    tags = ["manual"],
 )
 
 sh_binary(
@@ -133,7 +133,7 @@ sh_binary(
         "@//:all-srcs",
         MISSPELL,
     ],
-    tags = ["lint"],
+    tags = ["manual"],
 )
 
 protoc = "@com_google_protobuf//:protoc"
@@ -211,14 +211,20 @@ sh_test(
         "//label_sync:labels.md.tmpl",
         "//label_sync:labels.yaml",
     ],
-    tags = ["lint"],
+    tags = ["manual"],
 )
 
 test_suite(
     name = "verify-all",
     tests = [
         ":verify-linters",
-        "@io_k8s_repo_infra//hack:verify-all",
+        # Gofmt and golangci-lint have been migrated to make rules, if desired run
+        # bazel test @io_k8s_repo_infra//hack:verify-gofmt
+        # bazel test @io_k8s_repo_infra//hack:verify-golangci-lint
+        # Ref: https://github.com/kubernetes/test-infra/issues/23796
+        "@io_k8s_repo_infra//hack:verify-bazel",
+        "@io_k8s_repo_infra//hack:verify-boilerplate",
+        "@io_k8s_repo_infra//hack:verify-deps",
     ],
 )
 

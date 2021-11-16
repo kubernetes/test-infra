@@ -23,7 +23,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -36,7 +36,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211021' --channel=alpha --networking=amazonvpc --container-runtime=containerd --node-size=t3.large" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211115' --channel=alpha --networking=amazonvpc --container-runtime=containerd --node-size=t3.large" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
@@ -90,7 +90,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -103,7 +103,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211021' --channel=alpha --networking=calico --container-runtime=containerd --node-size=t3.large" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211115' --channel=alpha --networking=calico --container-runtime=containerd --node-size=t3.large" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
@@ -157,7 +157,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -170,7 +170,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211021' --channel=alpha --networking=canal --container-runtime=containerd --node-size=t3.large" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211115' --channel=alpha --networking=canal --container-runtime=containerd --node-size=t3.large" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
@@ -224,7 +224,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -237,7 +237,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211021' --channel=alpha --networking=cilium --container-runtime=containerd --node-size=t3.large" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211115' --channel=alpha --networking=cilium --container-runtime=containerd --node-size=t3.large" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
@@ -290,7 +290,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -303,7 +303,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211021' --channel=alpha --networking=cilium-etcd --container-runtime=containerd --node-size=t3.large" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211115' --channel=alpha --networking=cilium-etcd --container-runtime=containerd --node-size=t3.large" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
@@ -357,7 +357,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -370,7 +370,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211021' --channel=alpha --networking=flannel --container-runtime=containerd --node-size=t3.large" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211115' --channel=alpha --networking=flannel --container-runtime=containerd --node-size=t3.large" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
@@ -424,7 +424,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -437,7 +437,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211021' --channel=alpha --networking=kube-router --container-runtime=containerd --node-size=t3.large" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211115' --channel=alpha --networking=kube-router --container-runtime=containerd --node-size=t3.large" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
@@ -491,7 +491,7 @@ presubmits:
     path_alias: k8s.io/kops
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211104-c3a88263fc-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
         imagePullPolicy: Always
         command:
         - runner.sh
@@ -504,7 +504,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211021' --channel=alpha --networking=weave --container-runtime=containerd --node-size=t3.large" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211115' --channel=alpha --networking=weave --container-runtime=containerd --node-size=t3.large" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
