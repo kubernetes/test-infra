@@ -50,6 +50,7 @@ clean:
 # Usage: PROJECT_ID=<PROJECT_ID> REGISTRY=<DEFAULT_TO_PROJECT_ID_IF_NOT_PROVIDED> make push-prow
 push-prow:
 	hack/make-rules/images/push-prow.sh
+# Usage: IMAGE_NAME=<IMAGE_NAME> REGISTRY=<REGISTRY> make build-image-local
 build-image-local:
 	hack/make-rules/images/push-prow.sh --local --image ${IMAGE_NAME}
 ################################################################################
