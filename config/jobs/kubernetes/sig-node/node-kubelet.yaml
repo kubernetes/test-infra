@@ -54,7 +54,7 @@ periodics:
   annotations:
     fork-per-release: "true"
     fork-per-release-periodic-interval: 1h 2h 6h 24h
-    testgrid-dashboards: sig-release-master-blocking, sig-node-release-blocking
+    testgrid-dashboards: sig-node-release-blocking
     testgrid-tab-name: node-kubelet-master-kubetest2
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
     description: "Uses kubetest2 to run a subset of node-e2e tests (+NodeConformance, -Flaky|Serial)"
