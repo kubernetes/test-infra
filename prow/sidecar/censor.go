@@ -33,6 +33,7 @@ import (
 	"github.com/mattn/go-zglob"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/semaphore"
+	"gopkg.in/ini.v1"
 	kerrors "k8s.io/apimachinery/pkg/util/errors"
 
 	"k8s.io/test-infra/prow/secretutil"
@@ -62,7 +63,7 @@ func (o Options) censor() error {
 		errLock.Unlock()
 	}()
 
-	secrets, err := loadSecrets(o.CensoringOptions.SecretDirectories)
+	secrets, err := loadSecrets(o.CensoringOptions.SecretDirectories, o.CensoringOptions.IniFilenames)
 	if err != nil {
 		return fmt.Errorf("could not load secrets: %w", err)
 	}
@@ -459,7 +460,7 @@ func censor(input io.ReadCloser, output io.WriteCloser, censorer secretutil.Cens
 }
 
 // loadSecrets loads all files under the paths into memory
-func loadSecrets(paths []string) ([][]byte, error) {
+func loadSecrets(paths, iniFilenames []string) ([][]byte, error) {
 	var secrets [][]byte
 	for _, path := range paths {
 		if err := filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
@@ -499,6 +500,12 @@ func loadSecrets(paths []string) ([][]byte, error) {
 			}
 			if info.Name() == ".dockerconfigjson" {
 				parser = loadDockerconfigJsonAuths
+			}
+			for _, filename := range iniFilenames {
+				if info.Name() == filename {
+					parser = loadIniData
+					break
+				}
 			}
 			extra, parseErr := parser(raw)
 			if parseErr != nil {
@@ -566,4 +573,28 @@ func collectSecretsFrom(entries []authEntry) []string {
 		}
 	}
 	return auths
+}
+
+func handleSection(section *ini.Section, extra []string) []string {
+	for _, subsection := range section.ChildSections() {
+		extra = handleSection(subsection, extra)
+	}
+	for _, key := range section.Keys() {
+		extra = append(extra, key.Value())
+	}
+	return extra
+}
+
+// loadIniData parses key-value data from an INI file
+func loadIniData(content []byte) ([]string, error) {
+	cfg, err := ini.Load(content)
+	if err != nil {
+		return nil, err
+	}
+
+	var extra []string
+	for _, section := range cfg.Sections() {
+		extra = handleSection(section, extra)
+	}
+	return extra, nil
 }

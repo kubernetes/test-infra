@@ -90,6 +90,7 @@ require (
 	google.golang.org/api v0.44.0
 	google.golang.org/genproto v0.0.0-20210602131652-f16073e35f0c
 	gopkg.in/fsnotify.v1 v1.4.7
+	gopkg.in/ini.v1 v1.62.0
 	gopkg.in/robfig/cron.v2 v2.0.0-20150107220207-be2e0b0deed5
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	k8s.io/api v0.21.3
