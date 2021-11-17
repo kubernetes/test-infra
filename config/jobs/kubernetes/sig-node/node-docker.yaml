@@ -47,7 +47,7 @@ periodics:
     testgrid-tab-name: docker-node-conformance-kubetest2
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211108-d0d3c6d7a8-experimental
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-experimental
       env:
       - name: GOPATH
         value: /go
