@@ -62,6 +62,7 @@ presubmits:
           privileged: true
   - name: pull-kubernetes-e2e-gce-no-stage
     always_run: false
+    cluster: k8s-infra-prow-build
     annotations:
       testgrid-dashboards: presubmits-kubernetes-nonblocking
       testgrid-tab-name: pull-kubernetes-e2e-gce-no-stage
@@ -83,7 +84,6 @@ presubmits:
         - --
         - --build=quick
         - --cluster=
-        - --extract=local
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
@@ -100,6 +100,8 @@ presubmits:
           limits:
             cpu: 4
             memory: 14Gi
+        securityContext:
+          privileged: true
   - name: pull-kubernetes-e2e-gce-kubetest2
     # explicitly needs /test pull-kubernetes-e2e-gce to run
     always_run: false
