@@ -142,7 +142,7 @@ presubmits:
         - --aksengine-creds=$(AZURE_CREDENTIALS)
         - --aksengine-orchestratorRelease=1.21
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/single-az.json
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/main_v2/test/e2e/manifest/single-az.json
         - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
         - --timeout=180m
         # Specific test args
@@ -197,7 +197,7 @@ presubmits:
         - --aksengine-orchestratorRelease=1.21
         - --aksengine-location=eastus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/multi-az.json
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/main_v2/test/e2e/manifest/multi-az.json
         - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
         - --timeout=180m
         # Specific test args
@@ -251,7 +251,7 @@ presubmits:
         - --aksengine-creds=$(AZURE_CREDENTIALS)
         - --aksengine-orchestratorRelease=1.21
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/migration.json
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/main_v2/test/e2e/manifest/migration.json
         - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
         - --timeout=180m
         # Specific test args
@@ -309,7 +309,7 @@ presubmits:
         - --aksengine-creds=$(AZURE_CREDENTIALS)
         - --aksengine-orchestratorRelease=1.21
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/migration-windows.json
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/main_v2/test/e2e/manifest/migration-windows.json
         - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
         - --timeout=180m
         # Specific test args
