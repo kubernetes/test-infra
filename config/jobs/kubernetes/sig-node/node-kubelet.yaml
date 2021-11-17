@@ -39,6 +39,55 @@ periodics:
         requests:
           cpu: 6
           memory: 6Gi
+- name: ci-kubernetes-node-kubelet-kubetest2
+  cluster: k8s-infra-prow-build
+  interval: 1h
+  decorate: true
+  path_alias: k8s.io/kubernetes
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
+  decoration_config:
+    timeout: 65m
+  annotations:
+    fork-per-release: "true"
+    fork-per-release-periodic-interval: 1h 2h 6h 24h
+    testgrid-dashboards: sig-release-master-blocking, sig-node-release-blocking
+    testgrid-tab-name: node-kubelet-master-kubetest2
+    testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
+    description: "Uses kubetest2 to run a subset of node-e2e tests (+NodeConformance, -Flaky|Serial)"
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211108-d0d3c6d7a8-experimental
+      resources:
+        limits:
+          cpu: 6
+          memory: 6Gi
+        requests:
+          cpu: 6
+          memory: 6Gi
+      env:
+      - name: GOPATH
+        value: /go
+      command:
+      - runner.sh
+      args:
+      - kubetest2
+      - noop
+      - --test=node
+      - --
+      - --repo-root=.
+      - --gcp-zone=us-west1-b
+      - --parallelism=8
+      - --focus-regex=\[NodeConformance\]
+      - --skip-regex=\[Flaky\]|\[Serial\]
+      - --test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+      - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/image-config.yaml
 
 - name: ci-kubernetes-node-kubelet-alpha
   interval: 1h
