@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-node-e2e
+    cluster: k8s-infra-prow-build
     branches:
       - master
     annotations:
@@ -367,11 +368,13 @@ presubmits:
         - --image-config-file=/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-master/image-config.yaml
         - --image-config-dir=/home/prow
   - name: pull-kubernetes-node-e2e-alpha
+    cluster: k8s-infra-prow-build
     branches:
     - master
     annotations:
       testgrid-create-test-group: "true"
     always_run: false
+    optional: true
     max_concurrency: 12
     labels:
       preset-service-account: "true"
@@ -394,6 +397,7 @@ presubmits:
         - --node-tests=true
         - --provider=gce
         - --test_args=--nodes=8 --focus="\[NodeConformance\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]" --skip="\[Flaky\]|\[Serial\]"
+        - --runtime-config=api/all=true
         - --timeout=65m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
         resources:
@@ -450,6 +454,7 @@ presubmits:
         - --focus-regex=\[NodeConformance\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]
         - --skip-regex=\[Flaky\]|\[Serial\]
         - --test-args=--feature-gates=AllAlpha=true,CSIMigration=false,RotateKubeletServerCertificate=false,InTreePluginGCEUnregister=false --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+        - --runtime-config=api/all=true
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/image-config.yaml
   - name: pull-kubernetes-node-kubelet-serial
     always_run: false
