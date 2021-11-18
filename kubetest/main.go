@@ -218,13 +218,9 @@ func validWorkingDirectory() error {
 	if err != nil {
 		return fmt.Errorf("could not get pwd: %w", err)
 	}
-	acwd, err := filepath.Abs(cwd)
+	_, err = filepath.Abs(cwd)
 	if err != nil {
 		return fmt.Errorf("failed to convert %s to an absolute path: %w", cwd, err)
-	}
-	// This also matches "kubernetes_skew" for upgrades.
-	if !strings.Contains(filepath.Base(acwd), "kubernetes") {
-		return fmt.Errorf("must run from kubernetes directory root. current: %s", acwd)
 	}
 	return nil
 }
