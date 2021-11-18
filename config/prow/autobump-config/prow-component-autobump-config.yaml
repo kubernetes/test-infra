@@ -4,6 +4,7 @@ gitHubToken: "/etc/github-token/oauth"
 gitName: "Kubernetes Prow Robot"
 gitEmail: "k8s.ci.robot@gmail.com"
 onCallAddress: "https://storage.googleapis.com/kubernetes-jenkins/oncall.json"
+selfAssign: true # Commenting `/cc`, so that autobump PR is not assigned to anyone
 skipPullRequest: false
 gitHubOrg: "kubernetes"
 gitHubRepo: "test-infra"
