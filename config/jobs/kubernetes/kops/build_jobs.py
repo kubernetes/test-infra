@@ -446,18 +446,19 @@ def generate_misc():
                                 "--master-size=m6g.large"],
                    extra_dashboards=['kops-misc']),
 
-        # A special test for IPv6 Conformance
-        build_test(name_override="kops-grid-scenario-ipv6-conformance",
+        # A special test for IPv6 using Calico CNI on Ubuntu 22.04
+        # This will fail until the fix for systemd DHCPv6 is added
+        # https://github.com/systemd/systemd/issues/20803
+        build_test(name_override="kops-grid-scenario-ipv6-calico-u2204",
                    cloud="aws",
-                   distro="deb11",
+                   distro="u2204",
                    k8s_version="ci",
                    networking="calico",
                    feature_flags=["AWSIPv6"],
-                   runs_per_day=3,
+                   runs_per_day=1,
                    extra_flags=['--ipv6',
                                 '--zones=eu-west-1a',
                                 ],
-                   focus_regex=r'\[Conformance\]|\[NodeConformance\]',
                    extra_dashboards=['kops-misc', 'kops-ipv6']),
         # A special test for IPv6 using Calico CNI
         build_test(name_override="kops-grid-scenario-ipv6-calico",
@@ -466,7 +467,7 @@ def generate_misc():
                    k8s_version="ci",
                    networking="calico",
                    feature_flags=["AWSIPv6"],
-                   runs_per_day=6,
+                   runs_per_day=3,
                    extra_flags=['--ipv6',
                                 '--zones=eu-west-1a',
                                 ],
@@ -969,20 +970,6 @@ def generate_presubmits_e2e():
             extra_flags=['--ipv6',
                          '--zones=eu-west-1a',
                          ],
-            extra_dashboards=['kops-ipv6'],
-        ),
-
-        presubmit_test(
-            name="pull-kops-e2e-ipv6-conformance",
-            cloud="aws",
-            distro="deb11",
-            k8s_version="ci",
-            networking="calico",
-            feature_flags=["AWSIPv6"],
-            extra_flags=['--ipv6',
-                         '--zones=eu-west-1a',
-                         ],
-            focus_regex=r'\[Conformance\]|\[NodeConformance\]',
             extra_dashboards=['kops-ipv6'],
         ),
 
