@@ -367,9 +367,10 @@ presubmits:
         - --image-config-file=/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-master/image-config.yaml
         - --image-config-dir=/home/prow
   - name: pull-kubernetes-node-e2e-alpha
-    cluster: k8s-infra-prow-build
     branches:
     - master
+    annotations:
+      testgrid-create-test-group: "true"
     always_run: false
     max_concurrency: 12
     labels:
@@ -402,8 +403,6 @@ presubmits:
           requests:
             cpu: 4
             memory: 6Gi
-    annotations:
-      testgrid-create-test-group: 'true'
   - name: pull-kubernetes-node-e2e-alpha-kubetest2
     cluster: k8s-infra-prow-build
     # explicitly needs /test pull-kubernetes-node-e2e-alpha-kubetest2 to run

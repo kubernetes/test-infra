@@ -62,6 +62,7 @@ presubmits:
           privileged: true
   - name: pull-kubernetes-e2e-gce-no-stage
     always_run: false
+    cluster: k8s-infra-prow-build
     annotations:
       testgrid-dashboards: presubmits-kubernetes-nonblocking
       testgrid-tab-name: pull-kubernetes-e2e-gce-no-stage
@@ -83,7 +84,6 @@ presubmits:
         - --
         - --build=quick
         - --cluster=
-        - --extract=local
         - --gcp-node-image=gci
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=30
@@ -100,6 +100,8 @@ presubmits:
           limits:
             cpu: 4
             memory: 14Gi
+        securityContext:
+          privileged: true
   - name: pull-kubernetes-e2e-gce-kubetest2
     # explicitly needs /test pull-kubernetes-e2e-gce to run
     always_run: false
@@ -405,8 +407,7 @@ presubmits:
         - --provider=gce
         - --runtime-config=api/all=true
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-alpha-features
-        - --test_args=--ginkgo.focus=\[Feature:(CPUManager|GRPCContainerProbe|InPlacePodVerticalScaling|ProbeTerminationGracePeriod|APIServerTracing|StorageVersionAPI|PodPreset|StatefulSetMinReadySeconds)\]|Networking --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance)\]|IPv6|csi-hostpath-v0 --minStartupPods=8
-        - --timeout=180m
+        - --test_args=--ginkgo.focus=\[Feature:(CustomResourceValidationExpressions|CPUManager|GRPCContainerProbe|InPlacePodVerticalScaling|ProbeTerminationGracePeriod|APIServerTracing|StorageVersionAPI|PodPreset|StatefulSetMinReadySeconds)\]|Networking --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance)\]|IPv6|csi-hostpath-v0 --minStartupPods=8
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
         resources:
           requests:

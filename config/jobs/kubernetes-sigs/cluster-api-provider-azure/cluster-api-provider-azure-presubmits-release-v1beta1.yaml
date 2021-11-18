@@ -189,7 +189,7 @@ presubmits:
           - name: GINKGO_FOCUS
             value: "Cluster API E2E tests"
           - name: GINKGO_SKIP
-            value: "\\[K8s-Upgrade\\]"
+            value: "\\[K8s-Upgrade\\]|API Version Upgrade"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
