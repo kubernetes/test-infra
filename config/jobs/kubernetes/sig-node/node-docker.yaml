@@ -30,9 +30,14 @@ periodics:
     testgrid-tab-name: docker-node-conformance
 - name: ci-docker-node-conformance-kubetest2
   interval: 2h
+  branches:
+  - master
   decorate: true
-  path_alias: k8s.io/kubernetes
   extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
   - org: kubernetes
     repo: test-infra
     base_ref: master
