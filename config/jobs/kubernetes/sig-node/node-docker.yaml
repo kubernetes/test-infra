@@ -30,8 +30,6 @@ periodics:
     testgrid-tab-name: docker-node-conformance
 - name: ci-docker-node-conformance-kubetest2
   interval: 2h
-  branches:
-  - master
   decorate: true
   extra_refs:
   - org: kubernetes

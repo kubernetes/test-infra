@@ -42,8 +42,6 @@ periodics:
 - name: ci-kubernetes-node-kubelet-kubetest2
   cluster: k8s-infra-prow-build
   interval: 1h
-  branches:
-  - master
   decorate: true
   extra_refs:
   - org: kubernetes
