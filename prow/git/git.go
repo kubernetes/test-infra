@@ -144,6 +144,14 @@ func (c *Client) unlockRepo(repo string) {
 	c.repoLocks[repo].Unlock()
 }
 
+func remoteFromBase(base, user, pass, host, org, repo string) string {
+	baseWithAuth := base
+	if user != "" && pass != "" {
+		baseWithAuth = fmt.Sprintf("https://%s:%s@%s", user, pass, host)
+	}
+	return fmt.Sprintf("%s/%s/%s", baseWithAuth, org, repo)
+}
+
 // Clone clones a repository. Pass the full repository name, such as
 // "kubernetes/test-infra" as the repo.
 // This function may take a long time if it is the first time cloning the repo.
@@ -151,23 +159,19 @@ func (c *Client) unlockRepo(repo string) {
 // take a while. Once that is done, it will do a git fetch instead of a clone,
 // which will usually take at most a few seconds.
 func (c *Client) Clone(organization, repository string) (*Repo, error) {
-	repo := organization + "/" + repository
-	c.lockRepo(repo)
-	defer c.unlockRepo(repo)
+	orgRepo := organization + "/" + repository
+	c.lockRepo(orgRepo)
+	defer c.unlockRepo(orgRepo)
 
-	base := c.base
 	user, pass, err := c.getCredentials(organization)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get token: %w", err)
 	}
-	if user != "" && pass != "" {
-		base = fmt.Sprintf("https://%s:%s@%s", user, pass, c.host)
-	}
-	cache := filepath.Join(c.dir, repo) + ".git"
-	remote := fmt.Sprintf("%s/%s", base, repo)
+	cache := filepath.Join(c.dir, orgRepo) + ".git"
+	remote := remoteFromBase(c.base, user, pass, c.host, organization, repository)
 	if _, err := os.Stat(cache); os.IsNotExist(err) {
 		// Cache miss, clone it now.
-		c.logger.WithField("repo", repo).Info("Cloning for the first time.")
+		c.logger.WithField("repo", orgRepo).Info("Cloning for the first time.")
 		if err := os.MkdirAll(filepath.Dir(cache), os.ModePerm); err != nil && !os.IsExist(err) {
 			return nil, err
 		}
@@ -182,7 +186,7 @@ func (c *Client) Clone(organization, repository string) (*Repo, error) {
 		if b, err := retryCmd(c.logger, cache, c.git, "remote", "set-url", "origin", remote); err != nil {
 			return nil, fmt.Errorf("updating remote url failed: %w. output: %s", err, string(b))
 		}
-		c.logger.WithField("repo", repo).Info("Fetching.")
+		c.logger.WithField("repo", orgRepo).Info("Fetching.")
 		if b, err := retryCmd(c.logger, cache, c.git, "fetch", "--prune"); err != nil {
 			return nil, fmt.Errorf("git fetch error: %v. output: %s", err, string(b))
 		}
@@ -202,15 +206,16 @@ func (c *Client) Clone(organization, repository string) (*Repo, error) {
 		return nil, fmt.Errorf("updating remote url failed: %w. output: %s", err, string(b))
 	}
 	r := &Repo{
-		dir:    t,
-		logger: c.logger,
-		git:    c.git,
-		host:   c.host,
-		base:   base,
-		org:    organization,
-		repo:   repository,
-		user:   user,
-		pass:   pass,
+		dir:            t,
+		logger:         c.logger,
+		git:            c.git,
+		host:           c.host,
+		base:           c.base,
+		org:            organization,
+		repo:           repository,
+		user:           user,
+		pass:           pass,
+		tokenGenerator: c.tokenGenerator,
 	}
 	// disable git GC
 	if err := r.Config("gc.auto", "0"); err != nil {
@@ -240,6 +245,11 @@ type Repo struct {
 	// pass is used for pushing to the remote repo.
 	pass string
 
+	// needed to generate the token.
+	tokenGenerator GitTokenGenerator
+
+	credLock sync.RWMutex
+
 	logger *logrus.Entry
 }
 
@@ -261,6 +271,29 @@ func (r *Repo) SetGit(git string) {
 // Clean deletes the repo. It is unusable after calling.
 func (r *Repo) Clean() error {
 	return os.RemoveAll(r.dir)
+}
+
+// refreshRepoAuth updates Repo client token when current token is going to expire.
+// Git client authenticating with PAT(personal access token) doesn't have this problem as it's a single token.
+// GitHub app auth will need this for rotating token every hour.
+func (r *Repo) refreshRepoAuth() error {
+	// Lock because we'll update r.pass here
+	r.credLock.Lock()
+	defer r.credLock.Unlock()
+	pass, err := r.tokenGenerator(r.org)
+	if err != nil {
+		return fmt.Errorf("failed to get token: %w", err)
+	}
+	if pass == r.pass { // Token unchanged, no need to do anything
+		return nil
+	}
+
+	r.pass = pass
+	remote := remoteFromBase(r.base, r.user, r.pass, r.host, r.org, r.repo)
+	if b, err := r.gitCommand("remote", "set-url", "origin", remote).CombinedOutput(); err != nil {
+		return fmt.Errorf("updating remote url failed: %w. output: %s", err, string(b))
+	}
+	return nil
 }
 
 // ResetHard runs `git reset --hard`
@@ -448,11 +481,14 @@ func (r *Repo) Push(branch string, force bool) error {
 }
 
 func (r *Repo) PushToNamedFork(forkName, branch string, force bool) error {
+	if err := r.refreshRepoAuth(); err != nil {
+		return err
+	}
 	if r.user == "" || r.pass == "" {
 		return errors.New("cannot push without credentials - configure your git client")
 	}
 	r.logger.WithFields(logrus.Fields{"user": r.user, "repo": r.repo, "branch": branch}).Info("Pushing.")
-	remote := fmt.Sprintf("https://%s:%s@%s/%s/%s", r.user, r.pass, r.host, r.user, forkName)
+	remote := remoteFromBase(r.base, r.user, r.pass, r.host, r.user, forkName)
 	var co *exec.Cmd
 	if !force {
 		co = r.gitCommand("push", remote, branch)
@@ -469,8 +505,12 @@ func (r *Repo) PushToNamedFork(forkName, branch string, force bool) error {
 
 // CheckoutPullRequest does exactly that.
 func (r *Repo) CheckoutPullRequest(number int) error {
+	if err := r.refreshRepoAuth(); err != nil {
+		return err
+	}
 	r.logger.WithFields(logrus.Fields{"org": r.org, "repo": r.repo, "number": number}).Info("Fetching and checking out.")
-	if b, err := retryCmd(r.logger, r.dir, r.git, "fetch", r.base+"/"+r.org+"/"+r.repo, fmt.Sprintf("pull/%d/head:pull%d", number, number)); err != nil {
+	remote := remoteFromBase(r.base, r.user, r.pass, r.host, r.org, r.repo)
+	if b, err := retryCmd(r.logger, r.dir, r.git, "fetch", remote, fmt.Sprintf("pull/%d/head:pull%d", number, number)); err != nil {
 		return fmt.Errorf("git fetch failed for PR %d: %v. output: %s", number, err, string(b))
 	}
 	co := r.gitCommand("checkout", fmt.Sprintf("pull%d", number))
@@ -550,6 +590,9 @@ func (r *Repo) ShowRef(commitlike string) (string, error) {
 
 // Fetch fetches from remote
 func (r *Repo) Fetch() error {
+	if err := r.refreshRepoAuth(); err != nil {
+		return err
+	}
 	r.logger.Infof("Fetching from remote.")
 	out, err := r.gitCommand("fetch").CombinedOutput()
 	if err != nil {
