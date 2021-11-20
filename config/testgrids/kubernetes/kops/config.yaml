@@ -2,6 +2,7 @@ dashboard_groups:
 - name: kops
   dashboard_names:
   - kops-presubmits
+  - kops-conformance
   - kops-distros
   - kops-network-plugins
   - kops-versions
@@ -37,6 +38,7 @@ dashboard_groups:
 
 dashboards:
 - name: kops-presubmits
+- name: kops-conformance
 - name: kops-distros
 - name: kops-network-plugins
 - name: kops-versions

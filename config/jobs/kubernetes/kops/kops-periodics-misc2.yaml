@@ -31,7 +31,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20211115' --channel=alpha --networking=kubenet --container-runtime=containerd --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-kops-grid-scenario-arm64/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true --override=cluster.spec.iam.useServiceAccountExternalPermissions=true" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20211118' --channel=alpha --networking=kubenet --container-runtime=containerd --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-kops-grid-scenario-arm64/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true --override=cluster.spec.iam.useServiceAccountExternalPermissions=true" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/latest.txt \
           --test=kops \
@@ -95,7 +95,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu-minimal/images-testing/hvm-ssd/ubuntu-jammy-daily-amd64-minimal-20211117' --channel=alpha --networking=calico --container-runtime=containerd --ipv6 --zones=eu-west-1a --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-kops-grid-scenario-ipv6-calico-u2204/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true --override=cluster.spec.iam.useServiceAccountExternalPermissions=true" \
+          --create-args="--image='099720109477/ubuntu-minimal/images-testing/hvm-ssd/ubuntu-jammy-daily-amd64-minimal-20211119' --channel=alpha --networking=calico --container-runtime=containerd --ipv6 --zones=eu-west-1a --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-kops-grid-scenario-ipv6-calico-u2204/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true --override=cluster.spec.iam.useServiceAccountExternalPermissions=true" \
           --env=KOPS_FEATURE_FLAGS=AWSIPv6 \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
@@ -299,7 +299,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211115' --channel=alpha --networking=kubenet --container-runtime=containerd --api-loadbalancer-type=public" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211118' --channel=alpha --networking=kubenet --container-runtime=containerd --api-loadbalancer-type=public" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/latest.txt \
           --test=kops \
@@ -363,7 +363,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211115' --channel=alpha --networking=cilium --container-runtime=containerd --api-loadbalancer-type=public --override=cluster.spec.warmPool.minSize=1 --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-kops-warm-pool/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true --override=cluster.spec.iam.useServiceAccountExternalPermissions=true" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211118' --channel=alpha --networking=cilium --container-runtime=containerd --api-loadbalancer-type=public --override=cluster.spec.warmPool.minSize=1 --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-kops-warm-pool/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true --override=cluster.spec.iam.useServiceAccountExternalPermissions=true" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/latest.txt \
           --test=kops \
@@ -427,7 +427,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211115' --channel=alpha --networking=kubenet --container-runtime=containerd --override=cluster.spec.cloudControllerManager.cloudProvider=aws --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-kops-grid-scenario-aws-cloud-controller-manager/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true --override=cluster.spec.iam.useServiceAccountExternalPermissions=true" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211118' --channel=alpha --networking=kubenet --container-runtime=containerd --override=cluster.spec.cloudControllerManager.cloudProvider=aws --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-kops-grid-scenario-aws-cloud-controller-manager/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true --override=cluster.spec.iam.useServiceAccountExternalPermissions=true" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
@@ -493,7 +493,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211115' --channel=alpha --networking=kubenet --container-runtime=containerd --zones=us-west-1a --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-kops-grid-scenario-terraform/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true --override=cluster.spec.iam.useServiceAccountExternalPermissions=true" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211118' --channel=alpha --networking=kubenet --container-runtime=containerd --zones=us-west-1a --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-kops-grid-scenario-terraform/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true --override=cluster.spec.iam.useServiceAccountExternalPermissions=true" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/latest.txt \
           --terraform-version=1.0.5 \
@@ -558,7 +558,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211115' --channel=alpha --networking=calico --container-runtime=containerd --master-count=3 --zones=eu-west-1a,eu-west-1b,eu-west-1c --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-kops-aws-misc-ha-euwest1/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true --override=cluster.spec.iam.useServiceAccountExternalPermissions=true" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211118' --channel=alpha --networking=calico --container-runtime=containerd --master-count=3 --zones=eu-west-1a,eu-west-1b,eu-west-1c --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-kops-aws-misc-ha-euwest1/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true --override=cluster.spec.iam.useServiceAccountExternalPermissions=true" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
@@ -622,7 +622,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20211115' --channel=alpha --networking=calico --container-runtime=containerd --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-kops-aws-misc-arm64-release/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true --override=cluster.spec.iam.useServiceAccountExternalPermissions=true" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20211118' --channel=alpha --networking=calico --container-runtime=containerd --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-kops-aws-misc-arm64-release/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true --override=cluster.spec.iam.useServiceAccountExternalPermissions=true" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
@@ -688,7 +688,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20211115' --channel=alpha --networking=calico --container-runtime=containerd --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-kops-aws-misc-arm64-ci/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true --override=cluster.spec.iam.useServiceAccountExternalPermissions=true" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20211118' --channel=alpha --networking=calico --container-runtime=containerd --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-kops-aws-misc-arm64-ci/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true --override=cluster.spec.iam.useServiceAccountExternalPermissions=true" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
@@ -754,7 +754,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20211115' --channel=alpha --networking=calico --container-runtime=containerd --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-kops-aws-misc-arm64-conformance/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true --override=cluster.spec.iam.useServiceAccountExternalPermissions=true" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20211118' --channel=alpha --networking=calico --container-runtime=containerd --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-kops-aws-misc-arm64-conformance/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true --override=cluster.spec.iam.useServiceAccountExternalPermissions=true" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
@@ -822,7 +822,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211115' --channel=alpha --networking=kubenet --container-runtime=containerd --node-size=c5.large --master-size=c5.large --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-kops-aws-misc-amd64-conformance/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true --override=cluster.spec.iam.useServiceAccountExternalPermissions=true" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211118' --channel=alpha --networking=kubenet --container-runtime=containerd --node-size=c5.large --master-size=c5.large --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-kops-aws-misc-amd64-conformance/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true --override=cluster.spec.iam.useServiceAccountExternalPermissions=true" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
           --test=kops \
@@ -890,7 +890,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211115' --channel=alpha --networking=calico --container-runtime=containerd --node-size=c5.large --master-size=c5.large --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-kops-aws-misc-updown/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true --override=cluster.spec.iam.useServiceAccountExternalPermissions=true" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211118' --channel=alpha --networking=calico --container-runtime=containerd --node-size=c5.large --master-size=c5.large --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-kops-aws-misc-updown/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true --override=cluster.spec.iam.useServiceAccountExternalPermissions=true" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt \
           --publish-version-marker=gs://kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
@@ -956,7 +956,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20211115' --channel=alpha --networking=cilium --container-runtime=containerd --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-kops-grid-scenario-cilium10-arm64/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true --override=cluster.spec.iam.useServiceAccountExternalPermissions=true" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20211118' --channel=alpha --networking=cilium --container-runtime=containerd --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-kops-grid-scenario-cilium10-arm64/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true --override=cluster.spec.iam.useServiceAccountExternalPermissions=true" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/latest.txt \
           --test=kops \
@@ -1020,7 +1020,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211115' --channel=alpha --networking=cilium --container-runtime=containerd --zones=eu-central-1a --override=cluster.spec.networking.cilium.version=v1.10.0-rc2 --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-kops-grid-scenario-cilium10-amd64/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true --override=cluster.spec.iam.useServiceAccountExternalPermissions=true" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211118' --channel=alpha --networking=cilium --container-runtime=containerd --zones=eu-central-1a --override=cluster.spec.networking.cilium.version=v1.10.0-rc2 --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-kops-grid-scenario-cilium10-amd64/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true --override=cluster.spec.iam.useServiceAccountExternalPermissions=true" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/latest.txt \
           --test=kops \
@@ -1316,7 +1316,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211115' --channel=alpha --networking=cilium --container-runtime=containerd --override=cluster.spec.externalDns.provider=external-dns --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-kops-aws-external-dns/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true --override=cluster.spec.iam.useServiceAccountExternalPermissions=true" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211118' --channel=alpha --networking=cilium --container-runtime=containerd --override=cluster.spec.externalDns.provider=external-dns --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-kops-aws-external-dns/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true --override=cluster.spec.iam.useServiceAccountExternalPermissions=true" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/latest.txt \
           --test=kops \
@@ -1380,7 +1380,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211115' --channel=alpha --networking=kubenet --container-runtime=containerd --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-kops-aws-apiserver-nodes/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true --override=cluster.spec.iam.useServiceAccountExternalPermissions=true" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211118' --channel=alpha --networking=kubenet --container-runtime=containerd --override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/e2e-kops-aws-apiserver-nodes/discovery --override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true --override=cluster.spec.iam.useServiceAccountExternalPermissions=true" \
           --env=KOPS_FEATURE_FLAGS=APIServerNodes \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/latest.txt \
