@@ -664,6 +664,27 @@ def generate_misc():
     ]
     return results
 
+################################
+# kops-periodics-versions.yaml #
+################################
+def generate_conformance():
+    results = []
+    for version in ['1.22', '1.21']:
+        results.append(
+            build_test(
+                k8s_version=version,
+                kops_version=version,
+                irsa=version >= '1.22',
+                kops_channel='alpha',
+                name_override=f"kops-aws-conformance-{version.replace('.', '-')}",
+                networking='calico',
+                extra_dashboards=['kops-conformance'],
+                runs_per_day=1,
+                focus_regex=r'\[Conformance\]',
+            )
+        )
+    return results
+
 ###############################
 # kops-periodics-distros.yaml #
 ###############################
@@ -1081,6 +1102,7 @@ def generate_presubmits_e2e():
 # YAML File Generation #
 ########################
 periodics_files = {
+    'kops-periodics-conformance.yaml': generate_conformance,
     'kops-periodics-distros.yaml': generate_distros,
     'kops-periodics-grid.yaml': generate_grid,
     'kops-periodics-misc2.yaml': generate_misc,
