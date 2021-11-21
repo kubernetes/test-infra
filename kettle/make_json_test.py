@@ -678,7 +678,7 @@ class ParseJsonTest(unittest.TestCase):
     ])
     def test_parse_junit(self, _, path, expected):
         self.maxDiff = None
-        
+
         if not exists(path):
             path = "../" + path
         datasource = open(path)

@@ -147,7 +147,7 @@ def main():
     forker_bin = sys.argv[2]
     generate_tests_bin = sys.argv[3]
 
-    dirname=os.path.dirname
+    dirname = os.path.dirname
     d = dirname(dirname(__file__))
     # d = os.environ.get('BUILD_WORKSPACE_DIRECTORY')
 
