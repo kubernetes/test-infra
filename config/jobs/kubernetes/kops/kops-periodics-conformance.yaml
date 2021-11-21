@@ -40,6 +40,7 @@ periodics:
           --test-args="-test.timeout=60m -num-nodes=0" \
           --test-package-marker=stable-1.22.txt \
           --focus-regex="\[Conformance\]" \
+          --skip-regex="\[Flaky\]" \
           --parallel=25
       env:
       - name: KUBE_SSH_KEY_PATH
@@ -105,6 +106,7 @@ periodics:
           --test-args="-test.timeout=60m -num-nodes=0" \
           --test-package-marker=stable-1.21.txt \
           --focus-regex="\[Conformance\]" \
+          --skip-regex="\[Flaky\]" \
           --parallel=25
       env:
       - name: KUBE_SSH_KEY_PATH

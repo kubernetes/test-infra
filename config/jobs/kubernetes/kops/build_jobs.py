@@ -681,6 +681,7 @@ def generate_conformance():
                 extra_dashboards=['kops-conformance'],
                 runs_per_day=1,
                 focus_regex=r'\[Conformance\]',
+                skip_regex=r'\[Flaky\]',
             )
         )
     return results
