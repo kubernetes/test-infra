@@ -329,7 +329,6 @@ presubmits:
         - --test-cmd-args=--experimental-prometheus-snapshot-to-report-dir=true
         - --test-cmd-args=--nodes=500
         - --test-cmd-args=--provider=kubemark
-        - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
         - --test-cmd-args=--report-dir=$(ARTIFACTS)
         - --test-cmd-args=--testconfig=testing/load/config.yaml
         - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
@@ -364,7 +363,7 @@ presubmits:
     decorate: true
     path_alias: k8s.io/kubernetes
     decoration_config:
-      timeout: 1220m
+      timeout: 1100m
     extra_refs:
     - org: kubernetes
       repo: perf-tests
@@ -414,7 +413,7 @@ presubmits:
         - --test-cmd-args=--testconfig=testing/load/config.yaml
         - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
         - --test-cmd-name=ClusterLoaderV2
-        - --timeout=1200m
+        - --timeout=1080m
         - --use-logexporter
         - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
         # TODO(krzyzacy): Figure out bazel built kubemark image
@@ -590,7 +589,6 @@ presubmits:
         - --test-cmd-args=--provider=kubemark
         - --env=CL2_ENABLE_DNS_PROGRAMMING=true
         - --env=CL2_ENABLE_HUGE_SERVICES=true
-        - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
         - --env=CL2_ENABLE_API_AVAILABILITY_MEASUREMENT=true
         - --test-cmd-args=--report-dir=$(ARTIFACTS)
         - --test-cmd-args=--testconfig=testing/load/config.yaml
