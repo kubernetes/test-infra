@@ -112,9 +112,7 @@ def build_test(cloud='aws',
     if irsa and cloud == "aws" and scenario is None:
         if extra_flags is None:
             extra_flags = []
-        extra_flags.append(f"--override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/{job_name}/discovery") # pylint: disable=line-too-long
-        extra_flags.append("--override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true") # pylint: disable=line-too-long
-        extra_flags.append("--override=cluster.spec.iam.useServiceAccountExternalPermissions=true")
+        extra_flags.append("--discovery-store=s3://k8s-kops-prow/discovery")
 
     marker, k8s_deploy_url, test_package_bucket, test_package_dir = k8s_version_info(k8s_version)
     args = create_args(kops_channel, networking, container_runtime, extra_flags, kops_image)
@@ -222,7 +220,7 @@ def presubmit_test(branch='master',
                    distro='u2004',
                    networking='kubenet',
                    container_runtime='containerd',
-                   irsa=False,
+                   irsa=True,
                    k8s_version='latest',
                    kops_channel='alpha',
                    name=None,
@@ -254,9 +252,7 @@ def presubmit_test(branch='master',
     if irsa and cloud == "aws" and scenario is None:
         if extra_flags is None:
             extra_flags = []
-        extra_flags.append(f"--override=cluster.spec.serviceAccountIssuerDiscovery.discoveryStore=s3://k8s-kops-prow/{name}/discovery") # pylint: disable=line-too-long
-        extra_flags.append("--override=cluster.spec.serviceAccountIssuerDiscovery.enableAWSOIDCProvider=true") # pylint: disable=line-too-long
-        extra_flags.append("--override=cluster.spec.iam.useServiceAccountExternalPermissions=true")
+        extra_flags.append("--discovery-store=s3://k8s-kops-prow/discovery")
 
     marker, k8s_deploy_url, test_package_bucket, test_package_dir = k8s_version_info(k8s_version)
     args = create_args(kops_channel, networking, container_runtime, extra_flags, kops_image)
