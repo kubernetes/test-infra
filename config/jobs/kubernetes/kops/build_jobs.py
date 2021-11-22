@@ -946,6 +946,15 @@ def generate_presubmits_e2e():
         ),
         presubmit_test(
             cloud='gce',
+            k8s_version='ci',
+            kops_channel='alpha',
+            name='pull-kops-e2e-k8s-gce-ci',
+            networking='cilium',
+            tab_name='e2e-gce-ci',
+            always_run=False,
+        ),
+        presubmit_test(
+            cloud='gce',
             k8s_version='stable',
             kops_channel='alpha',
             name='pull-kops-e2e-k8s-gce-calico-u2004-k22-containerd',
