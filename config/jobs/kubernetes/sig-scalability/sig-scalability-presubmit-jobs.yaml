@@ -363,7 +363,7 @@ presubmits:
     decorate: true
     path_alias: k8s.io/kubernetes
     decoration_config:
-      timeout: 1220m
+      timeout: 1100m
     extra_refs:
     - org: kubernetes
       repo: perf-tests
@@ -413,7 +413,7 @@ presubmits:
         - --test-cmd-args=--testconfig=testing/load/config.yaml
         - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
         - --test-cmd-name=ClusterLoaderV2
-        - --timeout=1200m
+        - --timeout=1080m
         - --use-logexporter
         - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
         # TODO(krzyzacy): Figure out bazel built kubemark image
