@@ -329,7 +329,6 @@ presubmits:
         - --test-cmd-args=--experimental-prometheus-snapshot-to-report-dir=true
         - --test-cmd-args=--nodes=500
         - --test-cmd-args=--provider=kubemark
-        - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
         - --test-cmd-args=--report-dir=$(ARTIFACTS)
         - --test-cmd-args=--testconfig=testing/load/config.yaml
         - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
@@ -590,7 +589,6 @@ presubmits:
         - --test-cmd-args=--provider=kubemark
         - --env=CL2_ENABLE_DNS_PROGRAMMING=true
         - --env=CL2_ENABLE_HUGE_SERVICES=true
-        - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
         - --env=CL2_ENABLE_API_AVAILABILITY_MEASUREMENT=true
         - --test-cmd-args=--report-dir=$(ARTIFACTS)
         - --test-cmd-args=--testconfig=testing/load/config.yaml
