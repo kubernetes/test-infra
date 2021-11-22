@@ -76,6 +76,7 @@ type options struct {
 	flStyles           string
 	oauthTokenFile     string
 	gcsCredentialsFile string
+	defaultCredentials bool
 
 	flVersion bool
 
@@ -97,6 +98,7 @@ func gatherOptions() options {
 	fs.StringVar(&o.flStyles, "s", "/styles", "path to the styles directory")
 	fs.StringVar(&o.oauthTokenFile, "oauth-token-file", "", "Path to the file containing the OAuth 2.0 Bearer Token secret.")
 	fs.StringVar(&o.gcsCredentialsFile, "gcs-credentials-file", "", "Path to the file containing the gcs service account credentials.")
+	fs.BoolVar(&o.defaultCredentials, "use-default-credentials", false, "Use application default credentials")
 
 	fs.BoolVar(&o.flVersion, "version", false, "print version and exit")
 	fs.BoolVar(&flUpgradeProxiedHTTPtoHTTPS, "upgrade-proxied-http-to-https", false, "upgrade any proxied request (e.g. from GCLB) from http to https")
@@ -135,21 +137,25 @@ func (o *options) validate() error {
 
 func getStorageClient(o options) (*storage.Client, error) {
 	ctx := context.Background()
-	clientOption := option.WithoutAuthentication()
+	clientOption := []option.ClientOption{}
+
+	if !o.defaultCredentials {
+		clientOption = []option.ClientOption{option.WithoutAuthentication()}
+	}
 
 	if o.oauthTokenFile != "" {
 		b, err := ioutil.ReadFile(o.oauthTokenFile)
 		if err != nil {
 			return nil, fmt.Errorf("error reading oauth token file %s: %w", o.oauthTokenFile, err)
 		}
-		clientOption = option.WithAPIKey(string(bytes.TrimSpace(b)))
+		clientOption = []option.ClientOption{option.WithAPIKey(string(bytes.TrimSpace(b)))}
 	}
 
 	if o.gcsCredentialsFile != "" {
-		clientOption = option.WithCredentialsFile(o.gcsCredentialsFile)
+		clientOption = []option.ClientOption{option.WithCredentialsFile(o.gcsCredentialsFile)}
 	}
 
-	storageClient, err := storage.NewClient(ctx, clientOption)
+	storageClient, err := storage.NewClient(ctx, clientOption...)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't create the gcs storage client: %w", err)
 	}
