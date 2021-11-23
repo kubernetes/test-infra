@@ -393,6 +393,7 @@ Only the following contexts were expected:
 	}
 
 	done := sets.String{}
+	contextsWithCreatedJobs := sets.String{}
 
 	defer func() {
 		if len(done) == 0 {
@@ -405,8 +406,7 @@ Only the following contexts were expected:
 
 	for _, status := range statuses {
 		pre := presubmitForContext(presubmits, status.Context)
-
-		if status.State == github.StatusSuccess || !(overrides.Has(status.Context) || pre != nil && overrides.Has(pre.Name)) {
+		if status.State == github.StatusSuccess || !(overrides.Has(status.Context) || pre != nil && overrides.Has(pre.Name)) || contextsWithCreatedJobs.Has(status.Context) {
 			continue
 		}
 
@@ -428,12 +428,14 @@ Only the following contexts were expected:
 				Description:    description(user),
 				URL:            e.HTMLURL,
 			}
+
 			log.WithFields(pjutil.ProwJobFields(&pj)).Info("Creating a new prowjob.")
 			if _, err := oc.Create(context.TODO(), &pj, metav1.CreateOptions{}); err != nil {
 				resp := fmt.Sprintf("Failed to create override job for %s", status.Context)
 				log.WithError(err).Warn(resp)
 				return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 			}
+			contextsWithCreatedJobs.Insert(status.Context)
 		}
 		status.State = github.StatusSuccess
 		status.Description = description(user)
