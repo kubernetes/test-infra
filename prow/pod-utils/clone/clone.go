@@ -238,18 +238,22 @@ func (g *gitCtx) commandsForBaseRef(refs prowapi.Refs, gitUserName, gitUserEmail
 		commands = append(commands, g.gitFetch(fetchArgs...))
 	}
 
+	var fetchRef string
+	var target string
+	if refs.BaseSHA != "" {
+		fetchRef = refs.BaseSHA
+		target = refs.BaseSHA
+	} else {
+		fetchRef = refs.BaseRef
+		target = "FETCH_HEAD"
+	}
+
 	{
 		fetchArgs := append([]string{}, depthArgs...)
-		fetchArgs = append(fetchArgs, g.repositoryURI, refs.BaseRef)
+		fetchArgs = append(fetchArgs, g.repositoryURI, fetchRef)
 		commands = append(commands, g.gitFetch(fetchArgs...))
 	}
 
-	var target string
-	if refs.BaseSHA != "" {
-		target = refs.BaseSHA
-	} else {
-		target = "FETCH_HEAD"
-	}
 	// we need to be "on" the target branch after the sync
 	// so we need to set the branch to point to the base ref,
 	// but we cannot update a branch we are on, so in case we
