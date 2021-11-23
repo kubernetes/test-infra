@@ -19,7 +19,7 @@ Repository permissions:
 * Actions: Read-Only (Only needed when using the merge automation `tide`)
 * Administration: Read-Only (Required to fetch teams and collaborateurs)
 * Checks: Read-Only (Only needed when using the merge automation `tide`)
-* Contents: Read-Only
+* Contents: Read (Read & write needed when using the merge automation `tide`)
 * Issues: Read & write
 * Metadata: Read-Only
 * Pull Requests: Read & write
