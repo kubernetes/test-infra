@@ -5,6 +5,9 @@ postsubmits:
       annotations:
         testgrid-dashboards: sig-cluster-lifecycle-etcdadm, sig-k8s-infra-gcb
       decorate: true
+      decoration_config:
+        timeout: 20m
+        grace_period: 5m
       branches:
         - ^master$
         - ^release-.*
