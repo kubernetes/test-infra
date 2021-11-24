@@ -63,13 +63,21 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
 		Label: plugins.Label{
 			AdditionalLabels: []string{"api-review", "community/discussion"},
+			RestrictedLabels: map[string][]plugins.RestrictedLabel{
+				"*": {{
+					Label:        "restricted-label",
+					AllowedTeams: []string{"authorized-team"},
+					AllowedUsers: []string{"alice", "bob"},
+					AssignOn:     []plugins.AssignOnLabel{{Label: "other-label"}},
+				}},
+			},
 		},
 	})
 	if err != nil {
 		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", PluginName)
 	}
 	pluginHelp := &pluginhelp.PluginHelp{
-		Description: "The label plugin provides commands that add or remove certain types of labels. Labels of the following types can be manipulated: 'area/*', 'committee/*', 'kind/*', 'language/*', 'priority/*', 'sig/*', 'triage/*', and 'wg/*'. More labels can be configured to be used via the /label command.",
+		Description: "The label plugin provides commands that add or remove certain types of labels. Labels of the following types can be manipulated: 'area/*', 'committee/*', 'kind/*', 'language/*', 'priority/*', 'sig/*', 'triage/*', and 'wg/*'. More labels can be configured to be used via the /label command. Restricted labels are only able to be added by the teams and users present in their configuration, and those users can be automatically assigned when another label is added using the assign_on config.",
 		Config: map[string]string{
 			"": configString(labels),
 		},
@@ -79,7 +87,7 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 		Usage:       "/[remove-](area|committee|kind|language|priority|sig|triage|wg|label) <target>",
 		Description: "Applies or removes a label from one of the recognized types of labels.",
 		Featured:    false,
-		WhoCanUse:   "Anyone can trigger this command on issues and PRs. `triage/accepted` can only be added by org members.",
+		WhoCanUse:   "Anyone can trigger this command on issues and PRs. `triage/accepted` can only be added by org members. Restricted labels are only able to be added by teams and users in their configuration.",
 		Examples:    []string{"/kind bug", "/remove-area prow", "/sig testing", "/language zh", "/label foo-bar-baz"},
 	})
 	return pluginHelp, nil
@@ -97,6 +105,7 @@ type githubClient interface {
 	GetRepoLabels(owner, repo string) ([]github.Label, error)
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
 	TeamBySlugHasMember(org string, teamSlug string, memberLogin string) (bool, error)
+	AssignIssue(owner, repo string, number int, assignees []string) error
 }
 
 // Get Labels from Regexp matches
@@ -217,6 +226,17 @@ func handle(gc githubClient, log *logrus.Entry, config plugins.Label, e *github.
 
 		if err := gc.AddLabel(org, repo, e.Number, labelToAdd); err != nil {
 			log.WithError(err).Errorf("GitHub failed to add the following label: %s", labelToAdd)
+		}
+
+		// Assign configured users if present
+		for _, restrictedLabel := range restrictedLabels {
+			for _, assignOn := range restrictedLabel.AssignOn {
+				if strings.EqualFold(labelToAdd, assignOn.Label) {
+					if err := gc.AssignIssue(org, repo, e.Number, restrictedLabel.AllowedUsers); err != nil {
+						log.WithError(err).Errorf("GitHub failed to assign reviewers for the following label: %s", restrictedLabel.Label)
+					}
+				}
+			}
 		}
 	}
 
