@@ -269,6 +269,7 @@ presubmits:
         - '--test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config.yaml
   - name: pull-kubernetes-node-e2e-containerd-features
+    cluster: k8s-infra-prow-build
     branches:
     - master
     always_run: false
@@ -294,7 +295,6 @@ presubmits:
         - --
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/image-config.yaml
         - --deployment=node
-        - --gcp-project=cri-containerd-node-e2e
         - --gcp-zone=us-central1-b
         - '--node-test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
         - --node-tests=true
@@ -304,14 +304,15 @@ presubmits:
         env:
         - name: GOPATH
           value: /go
-    resources:
-      requests:
-        cpu: 4
-        memory: 6Gi
-      limits:
-        cpu: 4
-        memory: 6Gi
+        resources:
+          requests:
+            cpu: 4
+            memory: 6Gi
+          limits:
+            cpu: 4
+            memory: 6Gi
   - name: pull-kubernetes-node-e2e-containerd-features-kubetest2
+    cluster: k8s-infra-prow-build
     # explicitly needs /test pull-kubernetes-node-e2e-containerd-features-kubetest2 to run
     always_run: false
     # if at all it is run and fails, don't block the PR
@@ -359,7 +360,6 @@ presubmits:
         - --test=node
         - --
         - --repo-root=.
-        - --gcp-project=cri-containerd-node-e2e
         - --gcp-zone=us-central1-b
         - --parallelism=8
         - --focus-regex=\[NodeFeature:.+\]
@@ -367,6 +367,13 @@ presubmits:
         - '--test-args=--container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
         - --image-config-file=/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-master/image-config.yaml
         - --image-config-dir=/home/prow
+    resources:
+      requests:
+        cpu: 4
+        memory: 6Gi
+      limits:
+        cpu: 4
+        memory: 6Gi
   - name: pull-kubernetes-node-e2e-alpha
     cluster: k8s-infra-prow-build
     branches:
