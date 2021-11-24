@@ -1097,6 +1097,7 @@ def generate_presubmits_e2e():
             kops_channel='alpha',
             name='pull-kops-e2e-kubernetes-aws-1-21',
             networking='calico',
+            irsa=False,
             tab_name='e2e-1-21',
             always_run=True,
             skip_regex=skip_regex + "|MetricsGrabber",
