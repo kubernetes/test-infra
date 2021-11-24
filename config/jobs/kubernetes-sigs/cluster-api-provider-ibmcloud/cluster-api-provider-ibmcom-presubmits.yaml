@@ -15,7 +15,7 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.21
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.21
         imagePullPolicy: Always
         resources:
           requests:
@@ -31,7 +31,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.21
         imagePullPolicy: Always
         command:
         - "./scripts/ci-test.sh"
@@ -45,7 +45,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-ibmcloud
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.21
         command:
         - "./scripts/ci-build.sh"
         resources:
@@ -65,7 +65,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-ibmcloud"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.21
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.21
           command:
             - "make"
             - "verify"
