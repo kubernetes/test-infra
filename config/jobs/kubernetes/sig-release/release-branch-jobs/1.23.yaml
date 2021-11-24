@@ -942,7 +942,7 @@ presubmits:
       preset-e2e-platform-aws: "true"
       preset-service-account: "true"
     max_concurrency: 12
-    name: pull-kubernetes-e2e-kops-aws-1.23
+    name: pull-kubernetes-e2e-kops-aws
     optional: true
     spec:
       containers:
@@ -992,7 +992,7 @@ presubmits:
       preset-pull-kubernetes-e2e: "true"
       preset-pull-kubernetes-e2e-gce: "true"
       preset-service-account: "true"
-    name: pull-kubernetes-e2e-gce-1.23
+    name: pull-kubernetes-e2e-gce
     spec:
       containers:
       - args:
@@ -1037,7 +1037,7 @@ presubmits:
       preset-pull-kubernetes-e2e: "true"
       preset-pull-kubernetes-e2e-gce: "true"
       preset-service-account: "true"
-    name: pull-kubernetes-e2e-gce-canary-1.23
+    name: pull-kubernetes-e2e-gce-canary
     skip_report: true
     spec:
       containers:
@@ -1085,7 +1085,7 @@ presubmits:
       preset-pull-kubernetes-e2e: "true"
       preset-pull-kubernetes-e2e-gce: "true"
       preset-service-account: "true"
-    name: pull-kubernetes-e2e-gce-ubuntu-1.23
+    name: pull-kubernetes-e2e-gce-ubuntu
     spec:
       containers:
       - args:
@@ -1133,7 +1133,7 @@ presubmits:
       preset-pull-kubernetes-e2e: "true"
       preset-pull-kubernetes-e2e-gce: "true"
       preset-service-account: "true"
-    name: pull-kubernetes-e2e-gce-ubuntu-containerd-1.23
+    name: pull-kubernetes-e2e-gce-ubuntu-containerd
     spec:
       containers:
       - args:
@@ -1188,7 +1188,7 @@ presubmits:
       preset-pull-kubernetes-e2e: "true"
       preset-pull-kubernetes-e2e-gce: "true"
       preset-service-account: "true"
-    name: pull-kubernetes-e2e-gce-ubuntu-containerd-canary-1.23
+    name: pull-kubernetes-e2e-gce-ubuntu-containerd-canary
     spec:
       containers:
       - args:
@@ -1244,7 +1244,7 @@ presubmits:
       preset-pull-kubernetes-e2e: "true"
       preset-service-account: "true"
     max_concurrency: 5
-    name: pull-kubernetes-e2e-gce-device-plugin-gpu-1.23
+    name: pull-kubernetes-e2e-gce-device-plugin-gpu
     optional: true
     spec:
       containers:
@@ -1286,7 +1286,7 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-service-account: "true"
-    name: pull-kubernetes-verify-govet-levee-1.23
+    name: pull-kubernetes-verify-govet-levee
     path_alias: k8s.io/kubernetes
     spec:
       containers:
@@ -1336,7 +1336,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
       preset-service-account: "true"
     max_concurrency: 12
-    name: pull-kubernetes-node-e2e-podutil-1.23
+    name: pull-kubernetes-node-e2e-podutil
     optional: true
     path_alias: k8s.io/kubernetes
     spec:
@@ -1377,7 +1377,7 @@ presubmits:
     labels:
       preset-k8s-ssh: "true"
       preset-service-account: "true"
-    name: pull-kubernetes-node-e2e-kubetest2-1.23
+    name: pull-kubernetes-node-e2e-kubetest2
     optional: true
     path_alias: k8s.io/kubernetes
     spec:
@@ -1415,7 +1415,7 @@ presubmits:
       preset-pull-kubernetes-e2e: "true"
       preset-pull-kubernetes-e2e-gce: "true"
       preset-service-account: "true"
-    name: pull-kubernetes-e2e-containerd-gce-1.23
+    name: pull-kubernetes-e2e-containerd-gce
     optional: true
     spec:
       containers:
@@ -1456,7 +1456,7 @@ presubmits:
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 12
-    name: pull-kubernetes-node-e2e-containerd-1.23
+    name: pull-kubernetes-node-e2e-containerd
     spec:
       containers:
       - args:
@@ -1503,7 +1503,7 @@ presubmits:
     labels:
       preset-k8s-ssh: "true"
       preset-service-account: "true"
-    name: pull-kubernetes-node-e2e-containerd-kubetest2-1.23
+    name: pull-kubernetes-node-e2e-containerd-kubetest2
     optional: true
     path_alias: k8s.io/kubernetes
     spec:
@@ -1558,7 +1558,7 @@ presubmits:
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 12
-    name: pull-kubernetes-e2e-gce-100-performance-1.23
+    name: pull-kubernetes-e2e-gce-100-performance
     path_alias: k8s.io/kubernetes
     spec:
       containers:
@@ -1628,7 +1628,7 @@ presubmits:
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 12
-    name: pull-kubernetes-kubemark-e2e-gce-big-1.23
+    name: pull-kubernetes-kubemark-e2e-gce-big
     optional: true
     path_alias: k8s.io/kubernetes
     spec:
@@ -1692,7 +1692,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
       preset-service-account: "true"
     max_concurrency: 8
-    name: pull-kubernetes-conformance-kind-ipv6-parallel-1.23
+    name: pull-kubernetes-conformance-kind-ipv6-parallel
     optional: true
     path_alias: k8s.io/kubernetes
     run_if_changed: ^test/
@@ -1728,7 +1728,7 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-service-account: "true"
-    name: pull-kubernetes-dependencies-1.23
+    name: pull-kubernetes-dependencies
     path_alias: k8s.io/kubernetes
     spec:
       containers:
@@ -1757,7 +1757,7 @@ presubmits:
     cluster: k8s-infra-prow-build
     context: pull-kubernetes-files-remake
     decorate: true
-    name: pull-kubernetes-files-remake-1.23
+    name: pull-kubernetes-files-remake
     path_alias: k8s.io/kubernetes
     run_if_changed: Makefile.generated_files|make-rules
     spec:
@@ -1787,7 +1787,7 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-service-account: "true"
-    name: pull-kubernetes-integration-1.23
+    name: pull-kubernetes-integration
     path_alias: k8s.io/kubernetes
     spec:
       containers:
@@ -1818,7 +1818,7 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-    name: pull-kubernetes-e2e-kind-1.23
+    name: pull-kubernetes-e2e-kind
     path_alias: k8s.io/kubernetes
     spec:
       containers:
@@ -1858,7 +1858,7 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-    name: pull-kubernetes-e2e-kind-ipv6-1.23
+    name: pull-kubernetes-e2e-kind-ipv6
     path_alias: k8s.io/kubernetes
     spec:
       containers:
@@ -1902,7 +1902,7 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
-    name: pull-kubernetes-conformance-kind-ga-only-parallel-1.23
+    name: pull-kubernetes-conformance-kind-ga-only-parallel
     path_alias: k8s.io/kubernetes
     spec:
       containers:
@@ -1936,7 +1936,7 @@ presubmits:
     decorate: true
     labels:
       preset-service-account: "true"
-    name: pull-kubernetes-unit-1.23
+    name: pull-kubernetes-unit
     path_alias: k8s.io/kubernetes
     spec:
       containers:
@@ -1960,7 +1960,7 @@ presubmits:
     cluster: k8s-infra-prow-build
     context: pull-kubernetes-typecheck
     decorate: true
-    name: pull-kubernetes-typecheck-1.23
+    name: pull-kubernetes-typecheck
     path_alias: k8s.io/kubernetes
     spec:
       containers:
@@ -1989,7 +1989,7 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-service-account: "true"
-    name: pull-kubernetes-verify-1.23
+    name: pull-kubernetes-verify
     path_alias: k8s.io/kubernetes
     spec:
       containers:
