@@ -10,7 +10,6 @@ presubmits:
     - master
     labels:
       preset-service-account: "true"
-      preset-azure-cred: "true"
       preset-dind-enabled: "true"
     spec:
       containers:
