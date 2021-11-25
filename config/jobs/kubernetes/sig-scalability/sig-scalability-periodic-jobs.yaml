@@ -482,6 +482,8 @@ periodics:
       - --provider=gce
       - --metadata-sources=cl2-metadata.json
       - --env=CL2_ENABLE_HUGE_SERVICES=true
+      # With APF only sum of --max-requests-inflight and --max-mutating-requests-inflight matters, so set --max-mutating-requests-inflight to 0.
+      - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=640 --max-mutating-requests-inflight=0
       - --test=false
       - --test_args=--ginkgo.focus=xxxx
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
