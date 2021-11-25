@@ -151,7 +151,7 @@ postsubmits:
     max_concurrency: 1
     spec:
       containers:
-      - image: gcr.io/k8s-prow/hmac:v20211124-6dd7957a3a
+      - image: gcr.io/k8s-prow/hmac:v20211124-70cdbf024a
         command:
         - /hmac
         args:
@@ -612,7 +612,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20211124-6dd7957a3a
+    - image: gcr.io/k8s-prow/generic-autobumper:v20211124-70cdbf024a
       command:
       - /app/prow/cmd/generic-autobumper/app.binary
       args:
@@ -649,7 +649,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20211124-6dd7957a3a
+    - image: gcr.io/k8s-prow/generic-autobumper:v20211124-70cdbf024a
       command:
       - /app/prow/cmd/generic-autobumper/app.binary
       args:
@@ -720,7 +720,7 @@ periodics:
   spec:
     containers:
     - name: branchprotector
-      image: gcr.io/k8s-prow/branchprotector:v20211124-6dd7957a3a
+      image: gcr.io/k8s-prow/branchprotector:v20211124-70cdbf024a
       command:
       - /app/prow/cmd/branchprotector/app.binary
       args:
@@ -754,7 +754,7 @@ periodics:
   spec:
     containers:
     - name: label-sync
-      image: gcr.io/k8s-prow/label_sync:v20211124-6dd7957a3a
+      image: gcr.io/k8s-prow/label_sync:v20211124-70cdbf024a
       command:
       - /app/label_sync/app.binary
       args:
@@ -800,7 +800,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/checkconfig:v20211124-6dd7957a3a
+    - image: gcr.io/k8s-prow/checkconfig:v20211124-70cdbf024a
       command:
       - /checkconfig
       args:
