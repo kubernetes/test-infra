@@ -41,6 +41,46 @@ periodics:
           memory: "9000Mi"
           cpu: 2000m
 
+- name: ci-kubernetes-e2e-kubeadm-kinder-external-ca-1-23
+  interval: 12h
+  decorate: true
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-kubeadm
+    testgrid-tab-name: kubeadm-kinder-external-ca-1-23
+    testgrid-alert-email: sig-cluster-lifecycle-kubeadm-alerts@kubernetes.io
+    description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster and tests kubeadm's support for external CA mode"
+    testgrid-num-columns-recent: "20"
+    testgrid-num-failures-to-alert: "4"
+    testgrid-alert-stale-results-hours: "48"
+  decoration_config:
+    timeout: 60m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: release-1.23
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: kubeadm
+    base_ref: main
+    path_alias: k8s.io/kubeadm
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.23
+      command:
+      - runner.sh
+      - "../kubeadm/kinder/ci/kinder-run.sh"
+      args:
+      - "external-ca-1.23"
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: "9000Mi"
+          cpu: 2000m
+
 - name: ci-kubernetes-e2e-kubeadm-kinder-external-ca-1-22
   interval: 12h
   decorate: true
