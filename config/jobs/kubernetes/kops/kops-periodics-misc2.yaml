@@ -1147,8 +1147,6 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KUBE_SSH_USER
         value: "ubuntu"
-      - name: KOPS_IRSA
-        value: "true"
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
       imagePullPolicy: Always
       resources:
