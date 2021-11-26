@@ -646,7 +646,7 @@ def generate_misc():
                    kops_channel="alpha",
                    runs_per_day=3,
                    extra_flags=[
-                       "--override=cluster.spec.externalDns.provider=external-dns"
+                       "--override=cluster.spec.externalDNS.provider=external-dns"
                    ],
                    extra_dashboards=['kops-misc']),
 
@@ -1059,7 +1059,7 @@ def generate_presubmits_e2e():
             k8s_version="ci",
             networking="calico",
             extra_flags=[
-                '--override=cluster.spec.externalDns.provider=external-dns'
+                '--override=cluster.spec.externalDNS.provider=external-dns'
             ],
         ),
 
