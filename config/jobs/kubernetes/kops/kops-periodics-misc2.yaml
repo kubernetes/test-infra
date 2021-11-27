@@ -66,7 +66,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-scenario-arm64
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204", "extra_flags": "--ipv6 --zones=eu-west-1a --discovery-store=s3://k8s-kops-prow/discovery", "feature_flags": "AWSIPv6", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204", "extra_flags": "--ipv6 --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery", "feature_flags": "AWSIPv6", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-grid-scenario-ipv6-calico-u2204
   cron: '39 22-23/24 * * *'
   labels:
@@ -95,7 +95,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu-minimal/images-testing/hvm-ssd/ubuntu-jammy-daily-amd64-minimal-20211123' --channel=alpha --networking=calico --container-runtime=containerd --ipv6 --zones=eu-west-1a --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu-minimal/images-testing/hvm-ssd/ubuntu-jammy-daily-amd64-minimal-20211123' --channel=alpha --networking=calico --container-runtime=containerd --ipv6 --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery" \
           --env=KOPS_FEATURE_FLAGS=AWSIPv6 \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
@@ -124,7 +124,7 @@ periodics:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2204
-    test.kops.k8s.io/extra_flags: --ipv6 --zones=eu-west-1a --discovery-store=s3://k8s-kops-prow/discovery
+    test.kops.k8s.io/extra_flags: --ipv6 --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/feature_flags: AWSIPv6
     test.kops.k8s.io/k8s_version: ci
     test.kops.k8s.io/kops_channel: alpha
@@ -134,7 +134,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-scenario-ipv6-calico-u2204
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "deb11", "extra_flags": "--ipv6 --zones=eu-west-1a --discovery-store=s3://k8s-kops-prow/discovery", "feature_flags": "AWSIPv6", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "deb11", "extra_flags": "--ipv6 --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery", "feature_flags": "AWSIPv6", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-grid-scenario-ipv6-calico
   cron: '59 6-23/8 * * *'
   labels:
@@ -163,7 +163,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-11-amd64-20211011-792' --channel=alpha --networking=calico --container-runtime=containerd --ipv6 --zones=eu-west-1a --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='136693071363/debian-11-amd64-20211011-792' --channel=alpha --networking=calico --container-runtime=containerd --ipv6 --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery" \
           --env=KOPS_FEATURE_FLAGS=AWSIPv6 \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
@@ -192,7 +192,7 @@ periodics:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: deb11
-    test.kops.k8s.io/extra_flags: --ipv6 --zones=eu-west-1a --discovery-store=s3://k8s-kops-prow/discovery
+    test.kops.k8s.io/extra_flags: --ipv6 --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/feature_flags: AWSIPv6
     test.kops.k8s.io/k8s_version: ci
     test.kops.k8s.io/kops_channel: alpha
@@ -202,7 +202,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-scenario-ipv6-calico
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "deb11", "extra_flags": "--ipv6 --zones=eu-west-1a --discovery-store=s3://k8s-kops-prow/discovery", "feature_flags": "AWSIPv6", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "deb11", "extra_flags": "--ipv6 --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery", "feature_flags": "AWSIPv6", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
 - name: e2e-kops-grid-scenario-ipv6-cilium
   cron: '9 4-23/8 * * *'
   labels:
@@ -231,7 +231,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-11-amd64-20211011-792' --channel=alpha --networking=cilium --container-runtime=containerd --ipv6 --zones=eu-west-1a --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='136693071363/debian-11-amd64-20211011-792' --channel=alpha --networking=cilium --container-runtime=containerd --ipv6 --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery" \
           --env=KOPS_FEATURE_FLAGS=AWSIPv6 \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
@@ -260,7 +260,7 @@ periodics:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: deb11
-    test.kops.k8s.io/extra_flags: --ipv6 --zones=eu-west-1a --discovery-store=s3://k8s-kops-prow/discovery
+    test.kops.k8s.io/extra_flags: --ipv6 --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/feature_flags: AWSIPv6
     test.kops.k8s.io/k8s_version: ci
     test.kops.k8s.io/kops_channel: alpha
