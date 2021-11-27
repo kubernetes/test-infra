@@ -7,7 +7,7 @@ postsubmits:
       decorate: true
       always_run: true
       branches:
-        - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
