@@ -67,8 +67,8 @@ periodics:
     testgrid-tab-name: kops-grid-scenario-arm64
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204", "extra_flags": "--ipv6 --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery", "feature_flags": "AWSIPv6", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
-- name: e2e-kops-grid-scenario-ipv6-calico-u2204
-  cron: '39 22-23/24 * * *'
+- name: e2e-kops-aws-cni-calico-ipv6-u2204
+  cron: '41 0-23/24 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -130,13 +130,13 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-u2204, kops-ipv6, kops-k8s-ci, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2204, kops-ipv6, kops-k8s-ci, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-scenario-ipv6-calico-u2204
+    testgrid-tab-name: kops-aws-cni-calico-ipv6-u2204
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "deb11", "extra_flags": "--ipv6 --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery", "feature_flags": "AWSIPv6", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
-- name: e2e-kops-grid-scenario-ipv6-calico
-  cron: '59 6-23/8 * * *'
+- name: e2e-kops-aws-cni-calico-ipv6
+  cron: '29 0-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -198,13 +198,13 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-distro-deb11, kops-ipv6, kops-k8s-ci, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-deb11, kops-ipv6, kops-k8s-ci, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-scenario-ipv6-calico
+    testgrid-tab-name: kops-aws-cni-calico-ipv6
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "deb11", "extra_flags": "--ipv6 --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery", "feature_flags": "AWSIPv6", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
-- name: e2e-kops-grid-scenario-ipv6-cilium
-  cron: '9 4-23/8 * * *'
+- name: e2e-kops-aws-cni-cilium-ipv6
+  cron: '22 3-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -266,9 +266,9 @@ periodics:
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-distro-deb11, kops-ipv6, kops-k8s-ci, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-deb11, kops-ipv6, kops-k8s-ci, kops-latest, kops-network-plugins, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-grid-scenario-ipv6-cilium
+    testgrid-tab-name: kops-aws-cni-cilium-ipv6
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--api-loadbalancer-type=public", "k8s_version": "latest", "kops_channel": "alpha", "kops_version": null, "networking": "kubenet"}
 - name: e2e-kops-grid-scenario-no-irsa
