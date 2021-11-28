@@ -445,7 +445,7 @@ def generate_misc():
         # A special test for IPv6 using Calico CNI on Ubuntu 22.04
         # This will fail until the fix for systemd DHCPv6 is added
         # https://github.com/systemd/systemd/issues/20803
-        build_test(name_override="kops-grid-scenario-ipv6-calico-u2204",
+        build_test(name_override="kops-aws-cni-calico-ipv6-u2204",
                    cloud="aws",
                    distro="u2204",
                    k8s_version="ci",
@@ -455,9 +455,9 @@ def generate_misc():
                    extra_flags=['--ipv6',
                                 '--zones=us-west-2a',
                                 ],
-                   extra_dashboards=['kops-misc', 'kops-ipv6']),
+                   extra_dashboards=['kops-network-plugins', 'kops-ipv6']),
         # A special test for IPv6 using Calico CNI
-        build_test(name_override="kops-grid-scenario-ipv6-calico",
+        build_test(name_override="kops-aws-cni-calico-ipv6",
                    cloud="aws",
                    distro="deb11",
                    k8s_version="ci",
@@ -467,9 +467,9 @@ def generate_misc():
                    extra_flags=['--ipv6',
                                 '--zones=us-west-2a',
                                 ],
-                   extra_dashboards=['kops-misc', 'kops-ipv6']),
+                   extra_dashboards=['kops-network-plugins', 'kops-ipv6']),
         # A special test for IPv6 using Cilium CNI
-        build_test(name_override="kops-grid-scenario-ipv6-cilium",
+        build_test(name_override="kops-aws-cni-cilium-ipv6",
                    cloud="aws",
                    distro="deb11",
                    k8s_version="ci",
@@ -479,7 +479,7 @@ def generate_misc():
                    extra_flags=['--ipv6',
                                 '--zones=us-west-2a',
                                 ],
-                   extra_dashboards=['kops-misc', 'kops-ipv6']),
+                   extra_dashboards=['kops-network-plugins', 'kops-ipv6']),
 
 
         # A special test for disabling IRSA
@@ -845,6 +845,7 @@ def generate_presubmits_network_plugins():
         'kuberouter': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.kuberouter\/|upup\/pkg\/fi\/cloudup\/template_functions.go)', # pylint: disable=line-too-long
         'weave': r'^(upup\/models\/cloudup\/resources\/addons\/networking\.weave\/|upup\/pkg\/fi\/cloudup\/template_functions.go)' # pylint: disable=line-too-long
     }
+    supports_ipv6 = {'amazonvpc', 'calico', 'cilium'}
     results = []
     for plugin, run_if_changed in plugins.items():
         networking_arg = plugin
@@ -860,10 +861,26 @@ def generate_presubmits_network_plugins():
                 extra_flags=['--node-size=t3.large'],
                 extra_dashboards=['kops-network-plugins'],
                 run_if_changed=run_if_changed,
-                skip_report=False,
-                always_run=False,
             )
         )
+        if plugin in supports_ipv6:
+            if plugin == 'amazonvpc':
+                run_if_changed = None
+            results.append(
+                presubmit_test(
+                    name=f"pull-kops-e2e-cni-{plugin}-ipv6",
+                    tab_name=f"e2e-{plugin}-ipv6",
+                    distro="deb11",
+                    k8s_version='ci',
+                    networking=networking_arg,
+                    feature_flags=["AWSIPv6"],
+                    extra_flags=['--ipv6',
+                                 '--zones=us-west-2a',
+                                 ],
+                    extra_dashboards=['kops-ipv6'],
+                    run_if_changed=run_if_changed,
+                )
+            )
     return results
 
 ############################
@@ -974,45 +991,6 @@ def generate_presubmits_e2e():
             k8s_version="ci",
             extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws'],
             tab_name='e2e-ccm',
-        ),
-
-        presubmit_test(
-            name="pull-kops-e2e-ipv6-amazonvpc",
-            cloud="aws",
-            distro="deb11",
-            k8s_version="ci",
-            networking="amazonvpc",
-            feature_flags=["AWSIPv6"],
-            extra_flags=['--ipv6',
-                         '--zones=us-west-2a',
-                         ],
-            extra_dashboards=['kops-ipv6'],
-        ),
-
-        presubmit_test(
-            name="pull-kops-e2e-ipv6-calico",
-            cloud="aws",
-            distro="deb11",
-            k8s_version="ci",
-            networking="calico",
-            feature_flags=["AWSIPv6"],
-            extra_flags=['--ipv6',
-                         '--zones=us-west-2a',
-                         ],
-            extra_dashboards=['kops-ipv6'],
-        ),
-
-        presubmit_test(
-            name="pull-kops-e2e-ipv6-cilium",
-            cloud="aws",
-            distro="deb11",
-            k8s_version="ci",
-            networking="cilium",
-            feature_flags=["AWSIPv6"],
-            extra_flags=['--ipv6',
-                         '--zones=us-west-2a',
-                         ],
-            extra_dashboards=['kops-ipv6'],
         ),
 
         presubmit_test(
