@@ -122,6 +122,48 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-kubelet
     testgrid-tab-name: node-kubelet-alpha
+- name: ci-kubernetes-node-kubelet-alpha-kubetest2
+  interval: 1h
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
+  decoration_config:
+    timeout: 65m
+  annotations:
+    testgrid-dashboards: sig-node-kubelet
+    testgrid-tab-name: node-kubelet-alpha-kubetest2
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-experimental
+      env:
+      - name: GOPATH
+        value: /go
+      command:
+      - runner.sh
+      args:
+      - kubetest2
+      - noop
+      - --test=node
+      - --
+      - --repo-root=.
+      - --gcp-project-type=node-e2e-project
+      - --gcp-zone=us-west1-b
+      - --parallelism=8
+      - --focus-regex=\[NodeConformance\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]
+      - --skip-regex=\[Flaky\]|\[Serial\]
+      - --test-args=--feature-gates=AllAlpha=true,CSIMigration=false,RotateKubeletServerCertificate=false,InTreePluginGCEUnregister=false --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+      - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/image-config.yaml
+      - --runtime-config=api/all=true
 
 - name: ci-kubernetes-node-kubelet-features
   cluster: k8s-infra-prow-build
@@ -163,6 +205,56 @@ periodics:
         requests:
           cpu: 6
           memory: 6Gi
+- name: ci-kubernetes-node-kubelet-features-kubetest2
+  cluster: k8s-infra-prow-build
+  interval: 1h
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
+  decoration_config:
+    timeout: 65m
+  annotations:
+    fork-per-release: "true"
+    testgrid-dashboards: sig-node-kubelet
+    testgrid-tab-name: node-kubelet-features-master-kubetest2
+    testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-experimental
+      resources:
+        limits:
+          cpu: 6
+          memory: 6Gi
+        requests:
+          cpu: 6
+          memory: 6Gi
+      env:
+      - name: GOPATH
+        value: /go
+      command:
+      - runner.sh
+      args:
+      - kubetest2
+      - noop
+      - --test=node
+      - --
+      - --repo-root=.
+      - --gcp-zone=us-west1-b
+      - --parallelism=8
+      - --focus-regex=\[NodeFeature:.+\]|\[NodeFeature\]
+      - --skip-regex=\[Flaky\]|\[Serial\]|\[Feature:DynamicKubeletConfig\]
+      - --test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+      - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/image-config.yaml
 
 - name: ci-kubernetes-node-kubelet-flaky
   interval: 2h
