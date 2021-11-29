@@ -16,5 +16,7 @@ docker run -e LOCAL_USER_ID="$(id -u)" \
       --bazelrc="/repo/improbable/bazelrc" \
       test \
       --config=imp-ci \
+      --test_filter=-^TestEndpointSuccess$ \
+      --test_filter=-^TestEndpointRegex$ \
       //prow/... \
       //ghproxy/...'
