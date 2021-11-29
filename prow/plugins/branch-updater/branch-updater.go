@@ -119,7 +119,7 @@ func handlePR(gc githubClient, log *logrus.Entry, config plugins.BranchUpdater, 
 		time.Sleep(gitHubMergeStateRefreshDelay * time.Second)
 		refreshedPr, err := gc.GetPullRequest(org, repo, pr.Number)
 		if err != nil {
-			refreshLogger.WithError(err).Errorf("Failed to refresh PR's mergable state")
+			refreshLogger.WithError(err).Errorf("Failed to refresh PR's mergable state.")
 			return err
 		}
 		if refreshedPr.Mergable == nil {
@@ -142,7 +142,7 @@ func handlePR(gc githubClient, log *logrus.Entry, config plugins.BranchUpdater, 
 		return updateErr
 	}
 
-	logger.Infof("Triggered UpdatePullRequestBranch")
+	logger.Infof("Triggered UpdatePullRequestBranch.")
 	return nil
 }
 
