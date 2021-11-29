@@ -82,20 +82,29 @@ func handlePR(gc githubClient, log *logrus.Entry, config plugins.BranchUpdater, 
 	repo := event.Repo.Name
 	pr := event.PullRequest
 
+	logger := log.WithFields(logrus.Fields{
+		"org":            org,
+		"repo":           repo,
+		"pr":             pr,
+		"mergeable":      *pr.Mergable,
+		"mergeableState": pr.MergeableState,
+	})
+
 	// Find the Tide status.
 	tideStatus, err := findTideStatus(gc, org, repo, pr)
 	if err != nil {
-		log.WithError(err).Errorf("Failed to get the context statuses on %s/%s#%d.", org, repo, pr.Number)
+		logger.WithError(err).Errorf("Failed to get context statuses for PR.")
 		return err
 	}
 	// Do nothing if Tide isn't in use here.
 	if tideStatus == "" {
-		log.Debugf("Skipping PR %d in repo %s/%s not monitored by Tide.", pr.Number, org, repo)
+		logger.Debugf("Skipping PR: repo not monitored by Tide.")
 		return nil
 	}
 
 	// And only take action if that status is success.
 	if tideStatus != tideContextStatusSuccess {
+		logger.Debugf("Skipping PR: not yet mergeable by Tide.")
 		return nil
 	}
 
@@ -104,15 +113,15 @@ func handlePR(gc githubClient, log *logrus.Entry, config plugins.BranchUpdater, 
 	if pr.Mergable == nil {
 		// Crude, but this should always be enough time for GitHub to reach a decision.
 		// Worst case, we'll re-check the next time the PR is updated.
-		log.Warnf("GitHub did not report mergeable status for PR %s/%s#%d. Sleeping for %d seconds and retrying.", org, repo, pr.Number, gitHubMergeStateRefreshDelay)
+		logger.Warnf("GitHub did not report mergeable status for PR %s/%s#%d. Sleeping for %d seconds and retrying.", org, repo, pr.Number, gitHubMergeStateRefreshDelay)
 		time.Sleep(gitHubMergeStateRefreshDelay * time.Second)
 		refreshedPr, err := gc.GetPullRequest(org, repo, pr.Number)
 		if err != nil {
-			log.WithError(err).Errorf("Failed to refresh PR's mergable state on %s/%s#%d: %v, %s.", org, repo, pr.Number, *refreshedPr.Mergable, err.Error())
+			logger.WithError(err).Errorf("Failed to refresh PR's mergable state")
 			return err
 		}
 		if refreshedPr.Mergable == nil {
-			log.Errorf("Skipping PR: no reported mergable state after %ds on %s/%s#%d.", gitHubMergeStateRefreshDelay, org, repo, pr.Number)
+			logger.WithField("refreshPeriod", gitHubMergeStateRefreshDelay).Errorf("Skipping PR: mergable state refreshed, still unset.")
 			return err
 		}
 		pr = *refreshedPr
@@ -120,17 +129,18 @@ func handlePR(gc githubClient, log *logrus.Entry, config plugins.BranchUpdater, 
 
 	// If the PR is already mergable, or mergeable_state is anything other than behind, there's nothing for us to do.
 	if *pr.Mergable || pr.MergeableState != gitHubMergeableStateBehind {
+		logger.Debugf("Skipping PR: no action required.")
 		return nil
 	}
 
 	// And finally, if we get to this point, tell GitHub to update the branch
 	updateErr := gc.UpdatePullRequestBranch(org, repo, pr.Number, &pr.Head.SHA)
 	if updateErr != nil {
-		log.WithError(updateErr).Errorf("Failed to update PR branch on %s/%s#%d: %s.", org, repo, pr.Number, updateErr.Error())
+		logger.WithError(updateErr).Errorf("Failed to update PR branch.")
 		return updateErr
 	}
 
-	log.Infof("Triggered update of branch %s/%s#%d", org, repo, pr.Number)
+	logger.Infof("Triggered UpdatePullRequestBranch")
 	return nil
 }
 
