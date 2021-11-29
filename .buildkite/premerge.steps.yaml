@@ -11,13 +11,14 @@
 linux_builders: &linux_builders
   agents:
     agent_count: 8
+    boot_disk_size_gb: "400"
     capable_of_building: "platform"
     environment: "production"
-    machine_type: "single"
+    machine_type: "quad"
     node_stability: "${CI_NODE_STABILITY:-interruptible}"
     permission_set: "builder"
     platform: "linux"
-    queue: "${CI_LINUX_BUILDER_QUEUE:-v4-21-03-18-120314-bk21025-ebc798f2}"
+    queue: "${CI_LINUX_BUILDER_QUEUE:-v4-21-11-24-135649-bk23966-9864ff08}"
     scaler_version: 2
 
 steps:
