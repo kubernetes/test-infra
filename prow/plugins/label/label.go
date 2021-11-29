@@ -46,6 +46,7 @@ var (
 
 func init() {
 	plugins.RegisterGenericCommentHandler(PluginName, handleGenericComment, helpProvider)
+	plugins.RegisterIssueHandler(PluginName, handleIssue, helpProvider)
 }
 
 func configString(labels []string) string {
@@ -94,7 +95,11 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 }
 
 func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
-	return handle(pc.GitHubClient, pc.Logger, pc.PluginConfig.Label, &e)
+	return handleComment(pc.GitHubClient, pc.Logger, pc.PluginConfig.Label, &e)
+}
+
+func handleIssue(pc plugins.Agent, e github.IssueEvent) error {
+	return handleLabelAdd(pc.GitHubClient, pc.Logger, pc.PluginConfig.Label, &e)
 }
 
 type githubClient interface {
@@ -137,7 +142,7 @@ func getLabelsFromGenericMatches(matches [][]string, labelFilter func(string) bo
 	return labels
 }
 
-func handle(gc githubClient, log *logrus.Entry, config plugins.Label, e *github.GenericCommentEvent) error {
+func handleComment(gc githubClient, log *logrus.Entry, config plugins.Label, e *github.GenericCommentEvent) error {
 	if e.Action != github.GenericCommentActionCreated {
 		return nil
 	}
@@ -147,13 +152,7 @@ func handle(gc githubClient, log *logrus.Entry, config plugins.Label, e *github.
 	removeLabelMatches := removeLabelRegex.FindAllStringSubmatch(bodyWithoutComments, -1)
 	customLabelMatches := customLabelRegex.FindAllStringSubmatch(bodyWithoutComments, -1)
 	customRemoveLabelMatches := customRemoveLabelRegex.FindAllStringSubmatch(bodyWithoutComments, -1)
-	restrictedLabels := config.RestrictedLabelsFor(e.Repo.Owner.Login, e.Repo.Name)
-	autoAssignLabelPresent := containsAutoAssignLabel(restrictedLabels)
-	if len(labelMatches) == 0 &&
-		len(removeLabelMatches) == 0 &&
-		len(customLabelMatches) == 0 &&
-		len(customRemoveLabelMatches) == 0 &&
-		!autoAssignLabelPresent {
+	if len(labelMatches) == 0 && len(removeLabelMatches) == 0 && len(customLabelMatches) == 0 && len(customRemoveLabelMatches) == 0 {
 		return nil
 	}
 
@@ -187,6 +186,7 @@ func handle(gc githubClient, log *logrus.Entry, config plugins.Label, e *github.
 	for _, label := range config.AdditionalLabels {
 		additionalLabelSet.Insert(strings.ToLower(label))
 	}
+	restrictedLabels := config.RestrictedLabelsFor(e.Repo.Owner.Login, e.Repo.Name)
 	labelFilter := func(label string) bool {
 		label = strings.ToLower(label)
 		_, restrictedLabel := restrictedLabels[label]
@@ -284,36 +284,7 @@ func handle(gc githubClient, log *logrus.Entry, config plugins.Label, e *github.
 		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(bodyWithoutComments, e.HTMLURL, e.User.Login, msg))
 	}
 
-	if autoAssignLabelPresent {
-		allLabels := labelsToAdd // The currently applied labels and the labels we just added
-		for _, label := range labels {
-			allLabels = append(allLabels, label.Name)
-		}
-
-		for _, label := range allLabels {
-			for _, restrictedLabel := range restrictedLabels {
-				for _, assignOn := range restrictedLabel.AssignOn {
-					if strings.EqualFold(label, assignOn.Label) {
-						// It's okay to re-assign users so no need to check if they are assigned
-						if err := gc.AssignIssue(org, repo, e.Number, restrictedLabel.AllowedUsers); err != nil {
-							log.WithError(err).Errorf("GitHub failed to assign reviewers for the following label: %s", restrictedLabel.Label)
-						}
-					}
-				}
-			}
-		}
-	}
-
 	return nil
-}
-
-func containsAutoAssignLabel(restrictedLabels map[string]plugins.RestrictedLabel) bool {
-	for _, restrictedLabel := range restrictedLabels {
-		if len(restrictedLabel.AssignOn) > 0 {
-			return true
-		}
-	}
-	return false
 }
 
 func canUserSetLabel(ghc githubClient, org string, user string, label string, restrictedLabels map[string]plugins.RestrictedLabel) (canSet bool, canNotSetReason string, err error) {
@@ -339,4 +310,34 @@ func canUserSetLabel(ghc githubClient, org string, user string, label string, re
 	}
 
 	return false, fmt.Sprintf("Can not set label %s: Must be member in one of these teams: %v", label, config.AllowedTeams), nil
+}
+
+func handleLabelAdd(gc githubClient, log *logrus.Entry, config plugins.Label, e *github.IssueEvent) error {
+	if e.Action != github.IssueActionLabeled {
+		return nil
+	}
+
+	org := e.Repo.Owner.Login
+	repo := e.Repo.Name
+	number := e.Issue.Number
+
+	labels, err := gc.GetIssueLabels(org, repo, number)
+	if err != nil {
+		return err
+	}
+	restrictedLabels := config.RestrictedLabelsFor(e.Repo.Owner.Login, e.Repo.Name)
+
+	for _, label := range labels {
+		for _, restrictedLabel := range restrictedLabels {
+			for _, assignOn := range restrictedLabel.AssignOn {
+				if strings.EqualFold(label.Name, assignOn.Label) {
+					// It's okay to re-assign users so no need to check if they are assigned
+					if err := gc.AssignIssue(org, repo, number, restrictedLabel.AllowedUsers); err != nil {
+						log.WithError(err).Errorf("GitHub failed to assign reviewers for the following label: %s", restrictedLabel.Label)
+					}
+				}
+			}
+		}
+	}
+	return nil
 }

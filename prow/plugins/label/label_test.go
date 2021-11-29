@@ -49,7 +49,7 @@ func formatWithPRInfo(labels ...string) []string {
 	return r
 }
 
-func TestLabel(t *testing.T) {
+func TestHandleComment(t *testing.T) {
 	type testCase struct {
 		name                  string
 		body                  string
@@ -59,7 +59,6 @@ func TestLabel(t *testing.T) {
 		expectedNewLabels     []string
 		expectedRemovedLabels []string
 		expectedBotComment    bool
-		expectedAssignees     []string
 		repoLabels            []string
 		issueLabels           []string
 		expectedCommentText   string
@@ -739,28 +738,6 @@ func TestLabel(t *testing.T) {
 			action:                github.GenericCommentActionCreated,
 			expectedRemovedLabels: formatWithPRInfo("restricted-label"),
 		},
-		{
-			name:              "assign users for restricted label on label add",
-			body:              "/label initial-label",
-			repoLabels:        []string{"initial-label", "secondary-label"},
-			extraLabels:       []string{"initial-label", "secondary-label"},
-			commenter:         orgMember,
-			restrictedLabels:  map[string][]plugins.RestrictedLabel{"org": {{Label: "secondary-label", AllowedUsers: []string{"bill", "sally"}, AssignOn: []plugins.AssignOnLabel{{Label: "initial-label"}}}}},
-			action:            github.GenericCommentActionCreated,
-			expectedNewLabels: formatWithPRInfo("initial-label"),
-			expectedAssignees: formatWithPRInfo("bill", "sally"),
-		},
-		{
-			name:              "assign users for restricted label for label that was manually added",
-			body:              "irrelevant",
-			issueLabels:       []string{"initial-label"},
-			repoLabels:        []string{"initial-label", "secondary-label"},
-			extraLabels:       []string{"initial-label", "secondary-label"},
-			commenter:         orgMember,
-			restrictedLabels:  map[string][]plugins.RestrictedLabel{"org": {{Label: "secondary-label", AllowedUsers: []string{"bill", "sally"}, AssignOn: []plugins.AssignOnLabel{{Label: "initial-label"}}}}},
-			action:            github.GenericCommentActionCreated,
-			expectedAssignees: formatWithPRInfo("bill", "sally"),
-		},
 	}
 
 	for _, tc := range testcases {
@@ -785,9 +762,9 @@ func TestLabel(t *testing.T) {
 				Repo:   github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 				User:   github.User{Login: tc.commenter},
 			}
-			err := handle(fakeClient, logrus.WithField("plugin", PluginName), plugins.Label{AdditionalLabels: tc.extraLabels, RestrictedLabels: tc.restrictedLabels}, e)
+			err := handleComment(fakeClient, logrus.WithField("plugin", PluginName), plugins.Label{AdditionalLabels: tc.extraLabels, RestrictedLabels: tc.restrictedLabels}, e)
 			if err != nil {
-				t.Fatalf("didn't expect error from label test: %v", err)
+				t.Fatalf("didn't expect error from handle comment test: %v", err)
 			}
 
 			// Check that all the correct labels (and only the correct labels) were added.
@@ -820,10 +797,53 @@ func TestLabel(t *testing.T) {
 					t.Errorf("expected: `%v`, actual: `%v`", tc.expectedCommentText, fakeClient.IssueComments[1][0].Body)
 				}
 			}
-			if len(tc.expectedAssignees) > 0 {
-				if diff := cmp.Diff(tc.expectedAssignees, fakeClient.AssigneesAdded, cmpopts.EquateEmpty()); diff != "" {
-					t.Errorf("expected added assignees differ from actual: %s", diff)
-				}
+		})
+	}
+}
+
+func TestHandleLabelAdd(t *testing.T) {
+	type testCase struct {
+		name              string
+		restrictedLabels  map[string][]plugins.RestrictedLabel
+		expectedAssignees []string
+		labelAdded        string
+		action            github.IssueEventAction
+	}
+	testCases := []testCase{
+		{
+			name:       "label added with no auto-assign configured",
+			labelAdded: "some-label",
+			action:     github.IssueActionLabeled,
+		},
+		{
+			name:              "assign users for restricted label on label add",
+			restrictedLabels:  map[string][]plugins.RestrictedLabel{"org": {{Label: "secondary-label", AllowedUsers: []string{"bill", "sally"}, AssignOn: []plugins.AssignOnLabel{{Label: "initial-label"}}}}},
+			labelAdded:        "initial-label",
+			action:            github.IssueActionLabeled,
+			expectedAssignees: formatWithPRInfo("bill", "sally"),
+		},
+		{
+			name:             "no assigned users on irrelevant label add",
+			restrictedLabels: map[string][]plugins.RestrictedLabel{"org": {{Label: "secondary-label", AllowedUsers: []string{"bill", "sally"}, AssignOn: []plugins.AssignOnLabel{{Label: "initial-label"}}}}},
+			labelAdded:       "other-label",
+			action:           github.IssueActionLabeled,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			fakeClient := fakegithub.NewFakeClient()
+			fakeClient.IssueLabelsAdded = formatWithPRInfo(tc.labelAdded)
+			e := &github.IssueEvent{
+				Action: tc.action,
+				Repo:   github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
+				Issue:  github.Issue{Number: 1},
+			}
+			err := handleLabelAdd(fakeClient, logrus.WithField("plugin", PluginName), plugins.Label{RestrictedLabels: tc.restrictedLabels}, e)
+			if err != nil {
+				t.Fatalf("didn't expect error from handle label test: %v", err)
+			}
+			if diff := cmp.Diff(tc.expectedAssignees, fakeClient.AssigneesAdded, cmpopts.EquateEmpty()); diff != "" {
+				t.Errorf("expected added assignees differ from actual: %s", diff)
 			}
 		})
 	}
