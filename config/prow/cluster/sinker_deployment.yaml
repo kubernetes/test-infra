@@ -48,7 +48,7 @@ spec:
         secret:
           defaultMode: 420
           secretName: kubeconfig
-      - name: build-test-infra-trusted
+      - name: kubeconfig-build-test-infra-trusted
         secret:
           defaultMode: 420
           secretName: kubeconfig-build-test-infra-trusted
