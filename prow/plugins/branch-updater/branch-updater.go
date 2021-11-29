@@ -85,7 +85,7 @@ func handlePR(gc githubClient, log *logrus.Entry, config plugins.BranchUpdater, 
 	logger := log.WithFields(logrus.Fields{
 		"org":            org,
 		"repo":           repo,
-		"pr":             pr,
+		"pr":             pr.Number,
 		"mergeable":      *pr.Mergable,
 		"mergeableState": pr.MergeableState,
 	})
