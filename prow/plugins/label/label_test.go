@@ -750,6 +750,17 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels: formatWithPRInfo("initial-label"),
 			expectedAssignees: formatWithPRInfo("bill", "sally"),
 		},
+		{
+			name:              "assign users for restricted label for label that was manually added",
+			body:              "irrelevant",
+			issueLabels:       []string{"initial-label"},
+			repoLabels:        []string{"initial-label", "secondary-label"},
+			extraLabels:       []string{"initial-label", "secondary-label"},
+			commenter:         orgMember,
+			restrictedLabels:  map[string][]plugins.RestrictedLabel{"org": {{Label: "secondary-label", AllowedUsers: []string{"bill", "sally"}, AssignOn: []plugins.AssignOnLabel{{Label: "initial-label"}}}}},
+			action:            github.GenericCommentActionCreated,
+			expectedAssignees: formatWithPRInfo("bill", "sally"),
+		},
 	}
 
 	for _, tc := range testcases {
