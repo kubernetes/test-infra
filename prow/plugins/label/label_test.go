@@ -832,11 +832,11 @@ func TestHandleLabelAdd(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			fakeClient := fakegithub.NewFakeClient()
-			fakeClient.IssueLabelsAdded = formatWithPRInfo(tc.labelAdded)
 			e := &github.IssueEvent{
 				Action: tc.action,
 				Repo:   github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 				Issue:  github.Issue{Number: 1},
+				Label:  github.Label{Name: tc.labelAdded},
 			}
 			err := handleLabelAdd(fakeClient, logrus.WithField("plugin", PluginName), plugins.Label{RestrictedLabels: tc.restrictedLabels}, e)
 			if err != nil {

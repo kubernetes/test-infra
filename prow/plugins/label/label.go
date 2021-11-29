@@ -320,21 +320,14 @@ func handleLabelAdd(gc githubClient, log *logrus.Entry, config plugins.Label, e 
 	org := e.Repo.Owner.Login
 	repo := e.Repo.Name
 	number := e.Issue.Number
-
-	labels, err := gc.GetIssueLabels(org, repo, number)
-	if err != nil {
-		return err
-	}
 	restrictedLabels := config.RestrictedLabelsFor(e.Repo.Owner.Login, e.Repo.Name)
 
-	for _, label := range labels {
-		for _, restrictedLabel := range restrictedLabels {
-			for _, assignOn := range restrictedLabel.AssignOn {
-				if strings.EqualFold(label.Name, assignOn.Label) {
-					// It's okay to re-assign users so no need to check if they are assigned
-					if err := gc.AssignIssue(org, repo, number, restrictedLabel.AllowedUsers); err != nil {
-						log.WithError(err).Errorf("GitHub failed to assign reviewers for the following label: %s", restrictedLabel.Label)
-					}
+	for _, restrictedLabel := range restrictedLabels {
+		for _, assignOn := range restrictedLabel.AssignOn {
+			if strings.EqualFold(e.Label.Name, assignOn.Label) {
+				// It's okay to re-assign users so no need to check if they are assigned
+				if err := gc.AssignIssue(org, repo, number, restrictedLabel.AllowedUsers); err != nil {
+					log.WithError(err).Errorf("GitHub failed to assign reviewers for the following label: %s", restrictedLabel.Label)
 				}
 			}
 		}
