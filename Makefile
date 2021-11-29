@@ -59,6 +59,10 @@ clean:
 # run linters, ensure generated code, etc.
 verify:
 	hack/make-rules/verify/all.sh
+# typescript linting
+verify-tslint:
+	hack/make-rules/verify/tslint.sh
+.PHONY: verify-tslint
 # go linters
 go-lint:
 	hack/make-rules/verify/golangci-lint.sh
