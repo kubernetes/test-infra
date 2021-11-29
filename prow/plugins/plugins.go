@@ -261,7 +261,8 @@ func NewFakeConfigAgent() ConfigAgent {
 // the file can't be read or the configuration is invalid.
 // If checkUnknownPlugins is true, unrecognized plugin names will make config
 // loading fail.
-func (pa *ConfigAgent) Load(path string, supplementalPluginConfigDirs []string, supplementalPluginConfigFileSuffix string, checkUnknownPlugins bool) error {
+// If skipResolveConfigUpdater is true, the ConfigUpdater of the config will not be resolved.
+func (pa *ConfigAgent) Load(path string, supplementalPluginConfigDirs []string, supplementalPluginConfigFileSuffix string, checkUnknownPlugins, skipResolveConfigUpdater bool) error {
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
 		return err
@@ -330,6 +331,11 @@ func (pa *ConfigAgent) Load(path string, supplementalPluginConfigDirs []string, 
 			return err
 		}
 	}
+	if !skipResolveConfigUpdater {
+		if err := np.ConfigUpdater.resolve(); err != nil {
+			return err
+		}
+	}
 
 	pa.Set(np)
 	return nil
@@ -356,14 +362,14 @@ func (pa *ConfigAgent) Set(pc *Configuration) {
 // then start returns the error. Future errors will halt updates but not stop.
 // If checkUnknownPlugins is true, unrecognized plugin names will make config
 // loading fail.
-func (pa *ConfigAgent) Start(path string, supplementalPluginConfigDirs []string, supplementalPluginConfigFileSuffix string, checkUnknownPlugins bool) error {
-	if err := pa.Load(path, supplementalPluginConfigDirs, supplementalPluginConfigFileSuffix, checkUnknownPlugins); err != nil {
+func (pa *ConfigAgent) Start(path string, supplementalPluginConfigDirs []string, supplementalPluginConfigFileSuffix string, checkUnknownPlugins, skipResolveConfigUpdater bool) error {
+	if err := pa.Load(path, supplementalPluginConfigDirs, supplementalPluginConfigFileSuffix, checkUnknownPlugins, skipResolveConfigUpdater); err != nil {
 		return err
 	}
 	ticker := time.NewTicker(time.Minute)
 	go func() {
 		for range ticker.C {
-			if err := pa.Load(path, supplementalPluginConfigDirs, supplementalPluginConfigFileSuffix, checkUnknownPlugins); err != nil {
+			if err := pa.Load(path, supplementalPluginConfigDirs, supplementalPluginConfigFileSuffix, checkUnknownPlugins, skipResolveConfigUpdater); err != nil {
 				logrus.WithField("path", path).WithError(err).Error("Error loading plugin config.")
 			}
 		}

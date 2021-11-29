@@ -530,28 +530,22 @@ func (cu *ConfigUpdater) UnmarshalJSON(d []byte) error {
 		return err
 	}
 	*cu = ConfigUpdater(target)
-	return cu.resolve()
+	return nil
 }
 
 func (cu *ConfigUpdater) resolve() error {
+	if err := validateConfigUpdater(cu); err != nil {
+		return err
+	}
 	var errs []error
 	for k, v := range cu.Maps {
-		if len(v.Clusters) > 0 && len(v.ClusterGroups) > 0 {
-			errs = append(errs, fmt.Errorf("item maps.%s contains both clusters and cluster_groups", k))
-			continue
-		}
-
 		if len(v.Clusters) > 0 {
 			continue
 		}
 
 		clusters := map[string][]string{}
-		for idx, clusterGroupName := range v.ClusterGroups {
-			clusterGroup, hasClusterGroup := cu.ClusterGroups[clusterGroupName]
-			if !hasClusterGroup {
-				errs = append(errs, fmt.Errorf("item maps.%s.cluster_groups.%d references inexistent cluster group named %s", k, idx, clusterGroupName))
-				continue
-			}
+		for _, clusterGroupName := range v.ClusterGroups {
+			clusterGroup := cu.ClusterGroups[clusterGroupName]
 			for _, cluster := range clusterGroup.Clusters {
 				clusters[cluster] = append(clusters[cluster], clusterGroup.Namespaces...)
 			}
@@ -971,7 +965,7 @@ func (cu *ConfigUpdater) SetDefaults() {
 	}
 
 	for name, spec := range cu.Maps {
-		if len(spec.Clusters) == 0 {
+		if len(spec.Clusters) == 0 && len(spec.ClusterGroups) == 0 {
 			spec.Clusters = map[string][]string{kube.DefaultClusterAlias: {""}}
 		}
 		cu.Maps[name] = spec
@@ -1148,7 +1142,26 @@ func validateConfigUpdater(updater *ConfigUpdater) error {
 			}
 		}
 	}
-	return nil
+	var errs []error
+	for k, v := range updater.Maps {
+		if len(v.Clusters) > 0 && len(v.ClusterGroups) > 0 {
+			errs = append(errs, fmt.Errorf("item maps.%s contains both clusters and cluster_groups", k))
+			continue
+		}
+
+		if len(v.Clusters) > 0 {
+			continue
+		}
+
+		for idx, clusterGroupName := range v.ClusterGroups {
+			_, hasClusterGroup := updater.ClusterGroups[clusterGroupName]
+			if !hasClusterGroup {
+				errs = append(errs, fmt.Errorf("item maps.%s.cluster_groups.%d references inexistent cluster group named %s", k, idx, clusterGroupName))
+				continue
+			}
+		}
+	}
+	return utilerrors.NewAggregate(errs)
 }
 
 func validateRequireMatchingLabel(rs []RequireMatchingLabel) error {

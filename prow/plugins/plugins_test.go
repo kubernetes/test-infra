@@ -359,7 +359,7 @@ plugins:
 			}
 
 			agent := &ConfigAgent{}
-			if err := agent.Load(filepath.Join(tempDir, "_plugins.yaml"), []string{tempDir}, tc.supplementalPluginConfigFileSuffix, false); err != nil {
+			if err := agent.Load(filepath.Join(tempDir, "_plugins.yaml"), []string{tempDir}, tc.supplementalPluginConfigFileSuffix, false, false); err != nil {
 				t.Fatalf("failed to load: %v", err)
 			}
 
@@ -369,4 +369,91 @@ plugins:
 
 		})
 	}
+}
+
+const configUpdater = `---
+config_updater:
+  cluster_groups:
+    build_farm:
+      clusters:
+      - app.ci
+      - build01
+      namespaces:
+      - ci
+  gzip: false
+  maps:
+    ci-operator/config/**/*-fcos.yaml:
+      clusters:
+        app.ci:
+        - ci
+      name: ci-operator-misc-configs
+    ci-operator/templates/master-sidecar-3.yaml:
+      cluster_groups:
+      - build_farm
+      name: prow-job-master-sidecar-3
+`
+
+func TestLoadConfigUpdater(t *testing.T) {
+	testCases := []struct {
+		name                     string
+		config                   string
+		skipResolveConfigUpdater bool
+		expected                 ConfigUpdater
+	}{
+		{
+			name:                     "skip resolve",
+			config:                   configUpdater,
+			skipResolveConfigUpdater: true,
+			expected: ConfigUpdater{
+				ClusterGroups: map[string]ClusterGroup{
+					"build_farm": {
+						Clusters:   []string{"app.ci", "build01"},
+						Namespaces: []string{"ci"},
+					},
+				},
+				Maps: map[string]ConfigMapSpec{
+					"ci-operator/config/**/*-fcos.yaml": {
+						Name:     "ci-operator-misc-configs",
+						Clusters: map[string][]string{"app.ci": {"ci"}},
+					},
+					"ci-operator/templates/master-sidecar-3.yaml": {
+						Name:          "prow-job-master-sidecar-3",
+						ClusterGroups: []string{"build_farm"},
+					},
+				},
+			},
+		},
+		{
+			name:   "not skip resolve",
+			config: configUpdater,
+			expected: ConfigUpdater{
+				Maps: map[string]ConfigMapSpec{
+					"ci-operator/config/**/*-fcos.yaml": {
+						Name:     "ci-operator-misc-configs",
+						Clusters: map[string][]string{"app.ci": {"ci"}},
+					},
+					"ci-operator/templates/master-sidecar-3.yaml": {
+						Name:     "prow-job-master-sidecar-3",
+						Clusters: map[string][]string{"app.ci": {"ci"}, "build01": {"ci"}},
+					},
+				},
+			},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			tempDir := t.TempDir()
+			if err := ioutil.WriteFile(filepath.Join(tempDir, "_plugins.yaml"), []byte(tc.config), 0644); err != nil {
+				t.Fatalf("failed to write config: %v", err)
+			}
+			agent := &ConfigAgent{}
+			if err := agent.Load(filepath.Join(tempDir, "_plugins.yaml"), nil, "", false, tc.skipResolveConfigUpdater); err != nil {
+				t.Fatalf("failed to load: %v", err)
+			}
+			if diff := cmp.Diff(tc.expected, agent.Config().ConfigUpdater); diff != "" {
+				t.Errorf("expected config differs from actual: %s", diff)
+			}
+		})
+	}
+
 }
