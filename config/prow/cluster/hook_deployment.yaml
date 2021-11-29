@@ -51,7 +51,7 @@ spec:
         env:
         # Use KUBECONFIG envvar rather than --kubeconfig flag in order to provide multiple configs to merge.
         - name: KUBECONFIG
-          value: "/etc/kubeconfig/config"
+          value: "/etc/kubeconfig/config:/etc/kubeconfig-build-test-infra-trusted/kubeconfig"
         ports:
         - name: http
           containerPort: 8888
@@ -83,6 +83,9 @@ spec:
           readOnly: true
         - name: kubeconfig
           mountPath: /etc/kubeconfig
+          readOnly: true
+        - mountPath: /etc/kubeconfig-build-test-infra-trusted
+          name: kubeconfig-build-test-infra-trusted
           readOnly: true
         livenessProbe:
           httpGet:
@@ -126,3 +129,7 @@ spec:
         secret:
           defaultMode: 420
           secretName: kubeconfig
+      - name: build-test-infra-trusted
+        secret:
+          defaultMode: 420
+          secretName: kubeconfig-build-test-infra-trusted
