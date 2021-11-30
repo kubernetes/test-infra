@@ -990,7 +990,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20210915-5dbaf53-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: cos-cgroupv2-containerd-e2e
