@@ -492,7 +492,7 @@ type ConfigMapSpec struct {
 	GZIP *bool `json:"gzip,omitempty"`
 	// Clusters is a map from cluster to namespaces
 	// which specifies the targets the configMap needs to be deployed, i.e., each namespace in map[cluster]
-	Clusters map[string][]string `json:"clusters"`
+	Clusters map[string][]string `json:"clusters,omitempty"`
 	// ClusterGroup is a list of named cluster_groups to target. Mutually exclusive with clusters.
 	ClusterGroups []string `json:"cluster_groups,omitempty"`
 	// UseFullPathAsKey controls if the full path of the original file relative to the
