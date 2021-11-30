@@ -23,7 +23,7 @@ postsubmits:
     spec:
       serviceAccountName: k8s-infra-dns-updater
       containers:
-      - image: us.gcr.io/k8s-artifacts-prod/infra-tools/octodns:v20200616-67ce585
+      - image: k8s.gcr.io/infra-tools/octodns:v20200616-67ce585
         command:
         - bash
         args:
@@ -56,7 +56,7 @@ periodics:
   spec:
     serviceAccountName: k8s-infra-dns-updater
     containers:
-    - image: us.gcr.io/k8s-artifacts-prod/infra-tools/octodns:v20200616-67ce585
+    - image: k8s.gcr.io/infra-tools/octodns:v20200616-67ce585
       command:
       - bash
       args:
