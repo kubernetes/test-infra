@@ -477,8 +477,11 @@ func removeLGTMAndRequestReview(gc githubClient, org, repo string, number int, l
 		return fmt.Errorf("failed removing lgtm label: %w", err)
 	}
 
-	//Re-request review because LGTM has been removed.
-	gc.RequestReview(org, repo, number, logins)
+	// Re-request review because LGTM has been removed.
+	// TODO(mpherman): Surface User errors to PR
+	if err := gc.RequestReview(org, repo, number, logins); err != nil {
+		return fmt.Errorf("failed to re-request review")
+	}
 	return nil
 }
 
