@@ -391,7 +391,11 @@ func GenerateReport(pjs []*v1.ProwJob) JobReport {
 
 	}
 	report.Header = defaultProwHeader
-	report.Header += fmt.Sprintf(" %d out of %d pjs passed!\n", report.Success, report.Total)
+	var reTestMessage string
+	if report.Success < report.Total {
+		reTestMessage = " Comment '/retest' to rerun all failed tests"
+	}
+	report.Header += fmt.Sprintf(" %d out of %d pjs passed!%s\n", report.Success, report.Total, reTestMessage)
 	return report
 }
 
