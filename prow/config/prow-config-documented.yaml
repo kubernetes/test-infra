@@ -396,6 +396,10 @@ deck:
             required_files:
               - ""
 
+        # PRHistLinkTemplate is the template for constructing href of `PR History` button,
+        # by default it's "/pr-history?org={{.Org}}&repo={{.Repo}}&pr={{.Number}}"
+        pr_history_link_template: ' '
+
         # TestGridConfig is the path to the TestGrid config proto. If the path begins with
         # "gs://" it is assumed to be a GCS reference, otherwise it is read from the local filesystem.
         # If left blank, TestGrid links will not appear.

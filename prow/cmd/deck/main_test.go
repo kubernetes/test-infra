@@ -1245,3 +1245,55 @@ func TestHttpStatusForError(t *testing.T) {
 		})
 	}
 }
+
+func TestPRHistLink(t *testing.T) {
+	tests := []struct {
+		name    string
+		tmpl    string
+		org     string
+		repo    string
+		number  int
+		want    string
+		wantErr bool
+	}{
+		{
+			name:    "default",
+			tmpl:    defaultPRHistLinkTemplate,
+			org:     "org",
+			repo:    "repo",
+			number:  0,
+			want:    "/pr-history?org=org&repo=repo&pr=0",
+			wantErr: false,
+		},
+		{
+			name:    "different-template",
+			tmpl:    "/pull={{.Number}}",
+			org:     "org",
+			repo:    "repo",
+			number:  0,
+			want:    "/pull=0",
+			wantErr: false,
+		},
+		{
+			name:    "invalid-template",
+			tmpl:    "doesn't matter {{.NotExist}}",
+			org:     "org",
+			repo:    "repo",
+			number:  0,
+			want:    "",
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got, gotErr := prHistLinkFromTemplate(tc.tmpl, tc.org, tc.repo, tc.number)
+			if (tc.wantErr && (gotErr == nil)) || (!tc.wantErr && (gotErr != nil)) {
+				t.Fatalf("Error mismatch. Want: %v, got: %v", tc.wantErr, gotErr)
+			}
+			if diff := cmp.Diff(tc.want, got); diff != "" {
+				t.Fatalf("Template mismatch. Want: (-), got: (+). \n%s", diff)
+			}
+		})
+	}
+}
