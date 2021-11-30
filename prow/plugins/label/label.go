@@ -230,7 +230,7 @@ func handleComment(gc githubClient, log *logrus.Entry, config plugins.Label, e *
 		}
 
 		if err := gc.AddLabel(org, repo, e.Number, labelToAdd); err != nil {
-			log.WithError(err).Errorf("GitHub failed to add the following label: %s", labelToAdd)
+			log.WithError(err).WithField("label", labelToAdd).Error("GitHub failed to add the label")
 		}
 	}
 
@@ -257,7 +257,7 @@ func handleComment(gc githubClient, log *logrus.Entry, config plugins.Label, e *
 		}
 
 		if err := gc.RemoveLabel(org, repo, e.Number, labelToRemove); err != nil {
-			log.WithError(err).Errorf("GitHub failed to remove the following label: %s", labelToRemove)
+			log.WithError(err).WithField("label", labelToRemove).Error("GitHub failed to remove the label")
 		}
 	}
 
@@ -327,7 +327,7 @@ func handleLabelAdd(gc githubClient, log *logrus.Entry, config plugins.Label, e 
 			if strings.EqualFold(e.Label.Name, assignOn.Label) {
 				// It's okay to re-assign users so no need to check if they are assigned
 				if err := gc.AssignIssue(org, repo, number, restrictedLabel.AllowedUsers); err != nil {
-					log.WithError(err).Errorf("GitHub failed to assign reviewers for the following label: %s", restrictedLabel.Label)
+					log.WithError(err).WithField("label", restrictedLabel.Label).Error("GitHub failed to assign reviewers for the label")
 				}
 			}
 		}

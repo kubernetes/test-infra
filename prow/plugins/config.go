@@ -417,7 +417,7 @@ type RestrictedLabel struct {
 	AssignOn     []AssignOnLabel `json:"assign_on,omitempty"`
 }
 
-// AssignOnLabel specifies the label(s) that would trigger the RestrictedLabel.AllowedUsers'
+// AssignOnLabel specifies the label that would trigger the RestrictedLabel.AllowedUsers'
 // to be assigned on the PR.
 type AssignOnLabel struct {
 	Label string `json:"label"`
