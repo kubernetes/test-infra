@@ -240,6 +240,8 @@ func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InR
 			presubmitJob = &job
 		}
 	}
+	// This also captures the case where fetching jobs from inrepoconfig failed.
+	// However doesn't not distinguish between this case and a wrong prow job name.
 	if presubmitJob == nil {
 		return nil, nil, fmt.Errorf("failed to find associated presubmit job %q", pe.Name)
 	}
@@ -302,6 +304,8 @@ func (poh *postsubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.In
 			postsubmitJob = &job
 		}
 	}
+	// This also captures the case where fetching jobs from inrepoconfig failed.
+	// However doesn't not distinguish between this case and a wrong prow job name.
 	if postsubmitJob == nil {
 		return nil, nil, fmt.Errorf("failed to find associated postsubmit job %q", pe.Name)
 	}
@@ -327,7 +331,10 @@ func (s *Subscriber) handleMessage(msg messageInterface, subscription string, al
 	eType, err := extractFromAttribute(msg.getAttributes(), prowEventType)
 	if err != nil {
 		l.WithError(err).Error("failed to read message")
-		s.Metrics.ErrorCounter.With(prometheus.Labels{subscriptionLabel: subscription})
+		s.Metrics.ErrorCounter.With(prometheus.Labels{
+			subscriptionLabel: subscription,
+			errorTypeLabel:    "malformed-message",
+		}).Inc()
 		return err
 	}
 
@@ -341,12 +348,21 @@ func (s *Subscriber) handleMessage(msg messageInterface, subscription string, al
 		jh = &postsubmitJobHandler{}
 	default:
 		l.WithField("type", eType).Debug("Unsupported event type")
-		s.Metrics.ErrorCounter.With(prometheus.Labels{subscriptionLabel: subscription})
+		s.Metrics.ErrorCounter.With(prometheus.Labels{
+			subscriptionLabel: subscription,
+			errorTypeLabel:    "unsupported-event-type",
+		}).Inc()
 		return fmt.Errorf("unsupported event type: %s", eType)
 	}
 	if err = s.handleProwJob(l, jh, msg, subscription, allowedClusters); err != nil {
 		l.WithError(err).Debug("failed to create Prow Job")
-		s.Metrics.ErrorCounter.With(prometheus.Labels{subscriptionLabel: subscription})
+		s.Metrics.ErrorCounter.With(prometheus.Labels{
+			subscriptionLabel: subscription,
+			// This should be the only case prow operator should pay more
+			// attention too, because errors here are more likely caused by
+			// prow. (There are exceptions, which we can iterate slightly later)
+			errorTypeLabel: "failed-handle-prowjob",
+		}).Inc()
 	}
 	return err
 }
@@ -404,6 +420,7 @@ func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msg messageIn
 			break
 		}
 	}
+	// This is a user error, not sure whether we want to return error here.
 	if !clusterIsAllowed {
 		err := fmt.Errorf("cluster %s is not allowed. Can be fixed by defining this cluster under pubsub_triggers -> allowed_clusters", prowJobSpec.Cluster)
 		l.WithField("cluster", prowJobSpec.Cluster).Warn("cluster not allowed")
