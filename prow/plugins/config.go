@@ -411,9 +411,16 @@ func (l Label) IsRestrictedLabelInAdditionalLables(restricted string) bool {
 }
 
 type RestrictedLabel struct {
-	Label        string   `json:"label"`
-	AllowedTeams []string `json:"allowed_teams,omitempty"`
-	AllowedUsers []string `json:"allowed_users,omitempty"`
+	Label        string          `json:"label"`
+	AllowedTeams []string        `json:"allowed_teams,omitempty"`
+	AllowedUsers []string        `json:"allowed_users,omitempty"`
+	AssignOn     []AssignOnLabel `json:"assign_on,omitempty"`
+}
+
+// AssignOnLabel specifies the label that would trigger the RestrictedLabel.AllowedUsers'
+// to be assigned on the PR.
+type AssignOnLabel struct {
+	Label string `json:"label"`
 }
 
 // Trigger specifies a configuration for a single trigger.
