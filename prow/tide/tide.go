@@ -148,10 +148,11 @@ type Pool struct {
 var (
 	tideMetrics = struct {
 		// Per pool
-		pooledPRs  *prometheus.GaugeVec
-		updateTime *prometheus.GaugeVec
-		merges     *prometheus.HistogramVec
-		poolErrors *prometheus.CounterVec
+		pooledPRs    *prometheus.GaugeVec
+		updateTime   *prometheus.GaugeVec
+		merges       *prometheus.HistogramVec
+		poolErrors   *prometheus.CounterVec
+		queryResults *prometheus.CounterVec
 
 		// Singleton
 		syncDuration         prometheus.Gauge
@@ -196,6 +197,15 @@ var (
 			"branch",
 		}),
 
+		queryResults: prometheus.NewCounterVec(prometheus.CounterOpts{
+			Name: "tidequeryresults",
+			Help: "Count of Tide queries by query index, org shard, and result (success/error).",
+		}, []string{
+			"query_index",
+			"org_shard",
+			"result",
+		}),
+
 		// Use the sync heartbeat counter to monitor for liveness. Use the duration
 		// gauges for precise sync duration graphs since the prometheus scrape
 		// period is likely much larger than the loop periods.
@@ -225,6 +235,7 @@ func init() {
 	prometheus.MustRegister(tideMetrics.statusUpdateDuration)
 	prometheus.MustRegister(tideMetrics.syncHeartbeat)
 	prometheus.MustRegister(tideMetrics.poolErrors)
+	prometheus.MustRegister(tideMetrics.queryResults)
 }
 
 type manager interface {
@@ -452,14 +463,20 @@ func (c *Controller) query() (map[string]PullRequest, error) {
 		}
 
 		for org, q := range queries {
-			org, q := org, q
+			org, q, i := org, q, i
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
 				results, err := search(c.ghc.QueryWithGitHubAppsSupport, c.logger, q, time.Time{}, time.Now(), org)
+
+				resultString := "success"
+				if err != nil {
+					resultString = "error"
+				}
+				tideMetrics.queryResults.WithLabelValues(strconv.Itoa(i), org, resultString).Inc()
+
 				lock.Lock()
 				defer lock.Unlock()
-
 				if err != nil && len(results) == 0 {
 					c.logger.WithField("query", q).WithError(err).Warn("Failed to execute query.")
 					errs = append(errs, fmt.Errorf("query %d, err: %w", i, err))
