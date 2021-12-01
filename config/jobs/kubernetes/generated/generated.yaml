@@ -62,7 +62,7 @@ periodics:
       - --extract=ci/latest-1.23
       - --extract-ci-bucket=k8s-release-dev
       - --timeout=120m
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
       env:
@@ -179,7 +179,7 @@ periodics:
       - --extract=ci/latest-1.23
       - --extract-ci-bucket=k8s-release-dev
       - --timeout=660m
-      - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
@@ -217,7 +217,7 @@ periodics:
       - --extract=ci/latest-1.23
       - --extract-ci-bucket=k8s-release-dev
       - --timeout=150m
-      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
@@ -303,7 +303,7 @@ periodics:
       - --extract=ci/latest-1.22
       - --extract-ci-bucket=k8s-release-dev
       - --timeout=120m
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       - --env=ENABLE_POD_SECURITY_POLICY=true
       env:
@@ -415,7 +415,7 @@ periodics:
       - --extract=ci/latest-1.22
       - --extract-ci-bucket=k8s-release-dev
       - --timeout=660m
-      - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
@@ -453,7 +453,7 @@ periodics:
       - --extract=ci/latest-1.22
       - --extract-ci-bucket=k8s-release-dev
       - --timeout=150m
-      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
@@ -533,7 +533,7 @@ periodics:
       - --extract=ci/latest-1.21
       - --extract-ci-bucket=k8s-release-dev
       - --timeout=120m
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
@@ -644,7 +644,7 @@ periodics:
       - --extract=ci/latest-1.21
       - --extract-ci-bucket=k8s-release-dev
       - --timeout=660m
-      - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
@@ -682,7 +682,7 @@ periodics:
       - --extract=ci/latest-1.21
       - --extract-ci-bucket=k8s-release-dev
       - --timeout=150m
-      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
@@ -762,7 +762,7 @@ periodics:
       - --extract=ci/latest-1.20
       - --extract-ci-bucket=k8s-release-dev
       - --timeout=120m
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
@@ -873,7 +873,7 @@ periodics:
       - --extract=ci/latest-1.20
       - --extract-ci-bucket=k8s-release-dev
       - --timeout=660m
-      - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=1
       env:
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
@@ -911,7 +911,7 @@ periodics:
       - --extract=ci/latest-1.20
       - --extract-ci-bucket=k8s-release-dev
       - --timeout=150m
-      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --ginkgo-parallel=30
       env:
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
