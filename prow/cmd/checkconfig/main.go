@@ -373,7 +373,7 @@ func validate(o options) error {
 			errs = append(errs, err)
 		}
 	}
-	if pcfg != nil && unknownEnabled || unknownAllEnabled {
+	if pcfg != nil && (unknownEnabled || unknownAllEnabled) {
 		pcfgBytes, err := ioutil.ReadFile(o.pluginsConfig.PluginConfigPath)
 		if err != nil {
 			return fmt.Errorf("error reading Prow plugin config for validation: %w", err)
