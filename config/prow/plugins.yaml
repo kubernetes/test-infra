@@ -132,6 +132,18 @@ label:
     # This label, for k/website, identifies PRs with large refactoring changes
     - refactor
 
+  restricted_labels:
+    kubernetes/kubernetes:
+        # Security Response Committee (SRC) is allowed to add this label, 
+        # to new and existing GitHub Issues and PRs that announce a fixed CVE triaged by SRC
+      - allowed_teams:
+          - security-response-committee
+        # SIG Security Tooling Lead is an allowed user to assist SRC in this CVE feed automation  
+        allowed_users:
+          - pushkarj
+        # This label is used to filter/tag CVEs announced by SRC
+        label: official-cve-feed
+
 lgtm:
 - repos:
   - bazelbuild

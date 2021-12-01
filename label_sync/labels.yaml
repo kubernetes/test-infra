@@ -1136,6 +1136,12 @@ repos:
         target: prs
         prowPlugin: require-matching-label
         addedBy: prow
+      - color: 0052cc
+        description: Issues or PRs related to CVEs officially announced by Security Response Committee (SRC)
+        name: official-cve-feed
+        target: both
+        prowPlugin: label
+        addedBy: anyone
 
   kubernetes/org:
     labels:
