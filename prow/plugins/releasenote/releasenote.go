@@ -256,6 +256,10 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent) e
 	labelToAdd := determineReleaseNoteLabel(pr.PullRequest.Body, prLabels)
 
 	if labelToAdd == labels.ReleaseNoteLabelNeeded {
+		//Do not add do not merge label when the PR is merged
+		if pr.PullRequest.Merged {
+			return nil
+		}
 		if !prMustFollowRelNoteProcess(gc, log, pr, prLabels, true) {
 			ensureNoRelNoteNeededLabel(gc, log, pr, prLabels)
 			return clearStaleComments(gc, log, pr, prLabels, nil)
