@@ -42,10 +42,12 @@ type Client interface {
 }
 
 type BasicAuthGenerator func() (username, password string)
+type BearerAuthGenerator func() (token string)
 
 type Options struct {
-	BasicAuth BasicAuthGenerator
-	LogFields logrus.Fields
+	BasicAuth  BasicAuthGenerator
+	BearerAuth BearerAuthGenerator
+	LogFields  logrus.Fields
 }
 
 type Option func(*Options)
@@ -53,6 +55,12 @@ type Option func(*Options)
 func WithBasicAuth(basicAuth BasicAuthGenerator) Option {
 	return func(o *Options) {
 		o.BasicAuth = basicAuth
+	}
+}
+
+func WithBearerAuth(token BearerAuthGenerator) Option {
+	return func(o *Options) {
+		o.BearerAuth = token
 	}
 }
 
@@ -87,6 +95,13 @@ func NewClient(endpoint string, opts ...Option) (Client, error) {
 	if o.BasicAuth != nil {
 		retryingClient.HTTPClient.Transport = &basicAuthRoundtripper{
 			generator: o.BasicAuth,
+			upstream:  retryingClient.HTTPClient.Transport,
+		}
+	}
+
+	if o.BearerAuth != nil {
+		retryingClient.HTTPClient.Transport = &bearerAuthRoundtripper{
+			generator: o.BearerAuth,
 			upstream:  retryingClient.HTTPClient.Transport,
 		}
 	}
@@ -177,6 +192,22 @@ func (jc *client) AddRemoteLink(id string, link *jira.RemoteLink) error {
 
 func (jc *client) JiraURL() string {
 	return jc.url
+}
+
+type bearerAuthRoundtripper struct {
+	generator BearerAuthGenerator
+	upstream  http.RoundTripper
+}
+
+func (bart *bearerAuthRoundtripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	req2 := new(http.Request)
+	*req2 = *req
+	req2.URL = new(url.URL)
+	*req2.URL = *req.URL
+	token := bart.generator()
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", token))
+	logrus.WithField("curl", toCurl(req2)).Trace("Executing http request")
+	return bart.upstream.RoundTrip(req2)
 }
 
 type basicAuthRoundtripper struct {
