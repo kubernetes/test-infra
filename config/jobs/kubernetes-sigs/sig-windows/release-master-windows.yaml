@@ -180,7 +180,7 @@ presubmits:
       description: Run Azure File e2e test with Azure File in-tree volume plugin in a Windows cluster with containerd runtime
 periodics:
 - name: ci-kubernetes-e2e-capz-staging-containerd-windows
-  interval: 8h
+  interval: 12h
   decorate: true
   decoration_config:
     timeout: 4h
@@ -222,7 +222,7 @@ periodics:
     testgrid-dashboards: sig-windows-master-release
     testgrid-tab-name: capz-windows-containerd-master
 - name: ci-kubernetes-e2e-capz-staging-containerd-windows-2022
-  interval: 8h
+  interval: 12h
   decorate: true
   decoration_config:
     timeout: 4h
@@ -494,7 +494,7 @@ periodics:
     testgrid-tab-name: aks-engine-windows-containerd-azure-file-master
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Run Azure File e2e test with Azure File in a Windows cluster configured with CSI proxy and containerd.
-- interval: 12h
+- interval: 24h
   name: ci-kubernetes-e2e-aks-engine-azure-master-windows-containerd-nightly
   decorate: true
   decoration_config:
