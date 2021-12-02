@@ -35,8 +35,7 @@ periodics:
           --ginkgo-args="--debug" \
           --test-args="-test.timeout=60m -num-nodes=0" \
           --test-package-marker=latest.txt \
-          --parallel=25 \
-          --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Firewall|Dashboard|RuntimeClass|RuntimeHandler|kube-dns|run.a.Pod.requesting.a.RuntimeClass|should.set.TCP.CLOSE_WAIT|Services.*rejected.*endpoints|should.be.mountable.when.non-attachable"
+          --parallel=25
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/ssh-key-secret/ssh-private
@@ -101,8 +100,7 @@ periodics:
           --test-package-bucket=k8s-release-dev \
           --test-package-dir=ci \
           --test-package-marker=latest.txt \
-          --parallel=25 \
-          --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|Firewall|Dashboard|RuntimeClass|RuntimeHandler|kube-dns|run.a.Pod.requesting.a.RuntimeClass|should.set.TCP.CLOSE_WAIT|Services.*rejected.*endpoints|should.be.mountable.when.non-attachable"
+          --parallel=25
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/ssh-key-secret/ssh-private
