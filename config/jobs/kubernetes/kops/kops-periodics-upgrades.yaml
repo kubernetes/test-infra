@@ -95,7 +95,7 @@ periodics:
       - name: KOPS_VERSION_A
         value: "1.22"
       - name: K8S_VERSION_A
-        value: "v1.22.7"
+        value: "v1.22.4"
       - name: KOPS_VERSION_B
         value: "latest"
       - name: K8S_VERSION_B
