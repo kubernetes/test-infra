@@ -31,7 +31,7 @@ periodics:
       - name: KOPS_VERSION_A
         value: "1.21"
       - name: K8S_VERSION_A
-        value: "v1.21.0"
+        value: "v1.21.7"
       - name: KOPS_VERSION_B
         value: "latest"
       - name: K8S_VERSION_B
@@ -95,7 +95,7 @@ periodics:
       - name: KOPS_VERSION_A
         value: "1.22"
       - name: K8S_VERSION_A
-        value: "v1.22.0"
+        value: "v1.22.7"
       - name: KOPS_VERSION_B
         value: "latest"
       - name: K8S_VERSION_B
@@ -161,11 +161,11 @@ periodics:
       - name: KOPS_VERSION_A
         value: "1.21"
       - name: K8S_VERSION_A
-        value: "v1.21.0"
+        value: "v1.21.7"
       - name: KOPS_VERSION_B
         value: "1.22"
       - name: K8S_VERSION_B
-        value: "v1.22.0"
+        value: "v1.22.4"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -225,11 +225,11 @@ periodics:
       - name: KOPS_VERSION_A
         value: "1.20"
       - name: K8S_VERSION_A
-        value: "v1.20.7"
+        value: "v1.20.13"
       - name: KOPS_VERSION_B
         value: "1.21"
       - name: K8S_VERSION_B
-        value: "v1.21.0"
+        value: "v1.21.7"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -293,7 +293,7 @@ periodics:
       - name: KOPS_VERSION_B
         value: "latest"
       - name: K8S_VERSION_B
-        value: "v1.21.0"
+        value: "v1.21.7"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -353,11 +353,11 @@ periodics:
       - name: KOPS_VERSION_A
         value: "latest"
       - name: K8S_VERSION_A
-        value: "v1.18.6"
+        value: "v1.18.20"
       - name: KOPS_VERSION_B
         value: "latest"
       - name: K8S_VERSION_B
-        value: "v1.19.0"
+        value: "v1.19.16"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
@@ -417,11 +417,11 @@ periodics:
       - name: KOPS_VERSION_A
         value: "1.20"
       - name: K8S_VERSION_A
-        value: "v1.20.6"
+        value: "v1.20.13"
       - name: KOPS_VERSION_B
         value: "latest"
       - name: K8S_VERSION_B
-        value: "v1.21.0"
+        value: "v1.21.7"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
