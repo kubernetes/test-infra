@@ -11,7 +11,7 @@ periodics:
     preset-aws-credential: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -37,11 +37,11 @@ periodics:
           --test=kops \
           -- \
           --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=120m -num-nodes=0" \
           --test-package-marker=stable-1.22.txt \
           --focus-regex="\[Conformance\]" \
-          --skip-regex="\[Flaky\]" \
-          --parallel=25
+          --skip-regex="\[NoSkip\]" \
+          --parallel=1
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/aws-ssh/aws-ssh-private
@@ -77,7 +77,7 @@ periodics:
     preset-aws-credential: "true"
   decorate: true
   decoration_config:
-    timeout: 90m
+    timeout: 150m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -103,11 +103,11 @@ periodics:
           --test=kops \
           -- \
           --ginkgo-args="--debug" \
-          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-args="-test.timeout=120m -num-nodes=0" \
           --test-package-marker=stable-1.21.txt \
           --focus-regex="\[Conformance\]" \
-          --skip-regex="\[Flaky\]" \
-          --parallel=25
+          --skip-regex="\[NoSkip\]" \
+          --parallel=1
       env:
       - name: KUBE_SSH_KEY_PATH
         value: /etc/aws-ssh/aws-ssh-private

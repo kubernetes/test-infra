@@ -676,10 +676,12 @@ def generate_conformance():
                 kops_channel='alpha',
                 name_override=f"kops-aws-conformance-{version.replace('.', '-')}",
                 networking='calico',
+                test_parallelism=1,
+                test_timeout_minutes=120,
                 extra_dashboards=['kops-conformance'],
                 runs_per_day=1,
                 focus_regex=r'\[Conformance\]',
-                skip_regex=r'\[Flaky\]',
+                skip_regex=r'\[NoSkip\]',
             )
         )
     return results
