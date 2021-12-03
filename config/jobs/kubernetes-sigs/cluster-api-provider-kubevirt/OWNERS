@@ -1,0 +1,10 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+reviewers:
+- cluster-api-admins
+- sig-cluster-lifecycle-leads
+approvers:
+- cluster-api-admins
+- sig-cluster-lifecycle-leads
+labels:
+- sig/cluster-lifecycle
