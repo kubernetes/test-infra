@@ -95,7 +95,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images-testing/hvm-ssd/ubuntu-jammy-daily-amd64-server-20211201' --channel=alpha --networking=calico --container-runtime=containerd --ipv6 --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images-testing/hvm-ssd/ubuntu-jammy-daily-amd64-server-20211203' --channel=alpha --networking=calico --container-runtime=containerd --ipv6 --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery" \
           --env=KOPS_FEATURE_FLAGS=AWSIPv6 \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \

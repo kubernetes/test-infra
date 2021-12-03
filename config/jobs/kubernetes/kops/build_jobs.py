@@ -733,13 +733,13 @@ def generate_network_plugins():
 def generate_upgrades():
     versions_list = [
         #  kops    k8s          kops      k8s
-        (('1.21', 'v1.21.0'), ('latest', 'latest')),
-        (('1.22', 'v1.22.0'), ('latest', 'latest')),
-        (('1.21', 'v1.21.0'), ('1.22', 'v1.22.0')),
-        (('1.20', 'v1.20.7'), ('1.21', 'v1.21.0')),
-        (('latest', 'v1.20.6'), ('latest', 'v1.21.0')),
-        (('latest', 'v1.18.6'), ('latest', 'v1.19.0')),
-        (('1.20', 'v1.20.6'), ('latest', 'v1.21.0')),
+        (('1.21', 'v1.21.7'), ('latest', 'latest')),
+        (('1.22', 'v1.22.7'), ('latest', 'latest')),
+        (('1.21', 'v1.21.7'), ('1.22', 'v1.22.4')),
+        (('1.20', 'v1.20.13'), ('1.21', 'v1.21.7')),
+        (('latest', 'v1.20.6'), ('latest', 'v1.21.7')),
+        (('latest', 'v1.18.20'), ('latest', 'v1.19.16')),
+        (('1.20', 'v1.20.13'), ('latest', 'v1.21.7')),
     ]
     def shorten(version):
         version = re.sub(r'^v', '', version)
