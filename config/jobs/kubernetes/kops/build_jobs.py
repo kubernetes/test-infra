@@ -690,8 +690,8 @@ def generate_conformance():
 # kops-periodics-distros.yaml #
 ###############################
 def generate_distros():
-    distros = ['debian9', 'debian10', 'debian11', 'ubuntu1804', 'ubuntu2004', 'ubuntu2110',
-               'ubuntu2204', 'centos7', 'centos8', 'amazonlinux2', 'rhel7', 'rhel8', 'flatcar']
+    distros = ['debian10', 'debian11', 'ubuntu2004', 'ubuntu2110',
+               'ubuntu2204', 'amazonlinux2', 'rhel8', 'flatcar']
     results = []
     for distro in distros:
         distro_short = distro.replace('ubuntu', 'u').replace('debian', 'deb').replace('amazonlinux', 'amzn') # pylint: disable=line-too-long

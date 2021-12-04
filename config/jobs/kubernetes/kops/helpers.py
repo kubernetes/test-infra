@@ -136,8 +136,6 @@ def latest_aws_image(owner, name):
 
 distro_images = {
     'amzn2': latest_aws_image('137112412989', 'amzn2-ami-kernel-5.10-hvm-*-x86_64-gp2'),
-    'centos7': latest_aws_image('125523088429', 'CentOS 7.*x86_64'),
-    'centos8': latest_aws_image('125523088429', 'CentOS 8.*x86_64'),
     'deb9': latest_aws_image('379101102735', 'debian-stretch-hvm-x86_64-gp2-*'),
     'deb10': latest_aws_image('136693071363', 'debian-10-amd64-*'),
     'deb11': latest_aws_image('136693071363', 'debian-11-amd64-*'),
@@ -153,8 +151,6 @@ distro_images = {
 
 distros_ssh_user = {
     'amzn2': 'ec2-user',
-    'centos7': 'centos',
-    'centos8': 'centos',
     'deb9': 'admin',
     'deb10': 'admin',
     'deb11': 'admin',
