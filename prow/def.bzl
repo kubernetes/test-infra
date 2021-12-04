@@ -211,6 +211,12 @@ def tags(cmds, targets):
         cmd_targets.update({edge_prefix(p): t for (p, t) in targets.items()})
     return _image_tags(cmd_targets)
 
+def tags_no_edge(cmds, targets):
+    # Create :YYYYmmdd-commitish :latest :latest-USER tags
+    cmd_targets = {prefix(cmd): target(cmd) for cmd in cmds}
+    cmd_targets.update({prefix(p): t for (p, t) in targets.items()})
+    return _image_tags(cmd_targets)
+
 # tags_arm64 returns a {image: target-arm64} map for each cmd kwarg.
 def tags_arm64(cmds):
     cmd_targets = {prefix(cmd): target_arm64(cmd) for cmd in cmds}

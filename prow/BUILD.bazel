@@ -2,7 +2,7 @@ package(default_visibility = ["//visibility:public"])
 
 load("@io_bazel_rules_docker//container:bundle.bzl", "container_bundle")
 load("@io_bazel_rules_docker//contrib:push-all.bzl", "docker_push")
-load("//prow:def.bzl", "dict_union", "prefix", "prow_push", "tags", "tags_arm64", "tags_ppc64le", "tags_s390x")
+load("//prow:def.bzl", "dict_union", "prefix", "prow_push", "tags", "tags_arm64", "tags_ppc64le", "tags_s390x", "tags_no_edge")
 load("//def:image.bzl", image_tags = "tags")
 
 prow_push(
@@ -85,6 +85,18 @@ prow_push(
                 "sidecar",
             ],
         ),
+    ),
+)
+
+# Only release the tide component.
+prow_push(
+    name = "tide-release-push",
+    bundle_name = "tide-release",
+    images = tags_no_edge(
+        cmds = [
+            "tide",
+        ],
+        targets = {},
     ),
 )
 
