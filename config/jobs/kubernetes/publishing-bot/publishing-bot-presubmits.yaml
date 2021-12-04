@@ -25,6 +25,30 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-release-publishing-bot
       testgrid-tab-name: test
+  - name: pull-publishing-bot-validate-rules
+    always_run: false
+    skip_report: false
+    optional: true
+    decorate: true
+    path_alias: k8s.io/publishing-bot
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - image: golang:1.16
+        command:
+        - go
+        args:
+        - run
+        - -mod=mod
+        - k8s.io/publishing-bot/cmd/validate-rules
+        - /home/prow/go/src/k8s.io/kubernetes/staging/publishing/rules.yaml
+    annotations:
+      testgrid-dashboards: sig-release-publishing-bot
+      testgrid-tab-name: validate-rules
   kubernetes/kubernetes:
   - name: pull-publishing-bot-validate
     always_run: false
