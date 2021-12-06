@@ -11,7 +11,7 @@ periodics:
     preset-aws-credential: "true"
   decorate: true
   decoration_config:
-    timeout: 330m
+    timeout: 180m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -37,7 +37,7 @@ periodics:
           --test=kops \
           -- \
           --ginkgo-args="--debug" \
-          --test-args="-test.timeout=300m -num-nodes=0" \
+          --test-args="-test.timeout=150m -num-nodes=0" \
           --test-package-marker=stable-1.22.txt \
           --focus-regex="\[Conformance\]" \
           --skip-regex="\[NoSkip\]" \
@@ -77,7 +77,7 @@ periodics:
     preset-aws-credential: "true"
   decorate: true
   decoration_config:
-    timeout: 330m
+    timeout: 180m
   extra_refs:
   - org: kubernetes
     repo: kops
@@ -103,7 +103,7 @@ periodics:
           --test=kops \
           -- \
           --ginkgo-args="--debug" \
-          --test-args="-test.timeout=300m -num-nodes=0" \
+          --test-args="-test.timeout=150m -num-nodes=0" \
           --test-package-marker=stable-1.21.txt \
           --focus-regex="\[Conformance\]" \
           --skip-regex="\[NoSkip\]" \
