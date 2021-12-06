@@ -229,7 +229,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
       testgrid-tab-name: capi-pr-e2e-full-main
-  - name: pull-cluster-api-e2e-workload-upgrade-1-22-latest-main
+  - name: pull-cluster-api-e2e-workload-upgrade-1-23-latest-main
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -253,11 +253,11 @@ presubmits:
           - "./scripts/ci-e2e.sh"
         env:
           - name: KUBERNETES_VERSION_UPGRADE_FROM
-            value: "stable-1.22"
+            value: "stable-1.23"
           - name: KUBERNETES_VERSION_UPGRADE_TO
-            value: "ci/latest-1.23"
+            value: "ci/latest-1.24"
           - name: ETCD_VERSION_UPGRADE_TO
-            value: "3.5.0-0"
+            value: "3.5.1-0"
           - name: COREDNS_VERSION_UPGRADE_TO
             value: "v1.8.4"
           - name: GINKGO_FOCUS
@@ -270,4 +270,4 @@ presubmits:
             cpu: 7300m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: capi-pr-e2e-main-1-22-latest
+      testgrid-tab-name: capi-pr-e2e-main-1-23-latest

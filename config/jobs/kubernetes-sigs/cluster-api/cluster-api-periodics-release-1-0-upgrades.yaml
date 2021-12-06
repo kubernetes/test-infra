@@ -159,7 +159,7 @@ periodics:
         - name: KUBERNETES_VERSION_UPGRADE_TO
           value: "stable-1.22"
         - name: ETCD_VERSION_UPGRADE_TO
-          value: "3.5.0-0"
+          value: "3.5.1-0"
         - name: COREDNS_VERSION_UPGRADE_TO
           value: "v1.8.4"
         - name: GINKGO_FOCUS
@@ -176,7 +176,7 @@ periodics:
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "2"
 
-- name: periodic-cluster-api-e2e-workload-upgrade-1-22-latest-release-1-0
+- name: periodic-cluster-api-e2e-workload-upgrade-1-22-1-23-release-1-0
   interval: 24h
   decorate: true
   labels:
@@ -201,9 +201,9 @@ periodics:
         - name: KUBERNETES_VERSION_UPGRADE_FROM
           value: "stable-1.22"
         - name: KUBERNETES_VERSION_UPGRADE_TO
-          value: "ci/latest-1.23"
+          value: "stable-1.23"
         - name: ETCD_VERSION_UPGRADE_TO
-          value: "3.5.0-0"
+          value: "3.5.1-0"
         - name: COREDNS_VERSION_UPGRADE_TO
           value: "v1.8.4"
         - name: GINKGO_FOCUS
@@ -216,6 +216,50 @@ periodics:
           cpu: 7300m
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.0
-    testgrid-tab-name: capi-e2e-release-1-0-1-22-latest
+    testgrid-tab-name: capi-e2e-release-1-0-1-22-1-23
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: "2"
+
+- name: periodic-cluster-api-e2e-workload-upgrade-1-23-latest-release-1-0
+  interval: 24h
+  decorate: true
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api
+    base_ref: release-1.0
+    path_alias: sigs.k8s.io/cluster-api
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.22
+      args:
+      - runner.sh
+      - "./scripts/ci-e2e.sh"
+      env:
+      - name: KUBERNETES_VERSION_UPGRADE_FROM
+        value: "stable-1.23"
+      - name: KUBERNETES_VERSION_UPGRADE_TO
+        value: "ci/latest-1.24"
+      - name: ETCD_VERSION_UPGRADE_TO
+        value: "3.5.1-0"
+      - name: COREDNS_VERSION_UPGRADE_TO
+        value: "v1.8.4"
+      - name: GINKGO_FOCUS
+        value: "\\[K8s-Upgrade\\]"
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 7300m
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.0
+    testgrid-tab-name: capi-e2e-release-1-0-1-23-latest
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "2"
