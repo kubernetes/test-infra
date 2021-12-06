@@ -677,7 +677,7 @@ def generate_conformance():
                 name_override=f"kops-aws-conformance-{version.replace('.', '-')}",
                 networking='calico',
                 test_parallelism=1,
-                test_timeout_minutes=300,
+                test_timeout_minutes=150,
                 extra_dashboards=['kops-conformance'],
                 runs_per_day=1,
                 focus_regex=r'\[Conformance\]',
