@@ -173,6 +173,8 @@ presubmits:
       description: Runs unit tests
 
   - name: pull-cluster-api-provider-vsphere-integration-test
+    labels:
+      preset-dind-enabled: "true"
     always_run: false
     run_if_changed: '^((api|cmd|config|contrib|controllers|pkg|test)/|Makefile)'
     decorate: true
