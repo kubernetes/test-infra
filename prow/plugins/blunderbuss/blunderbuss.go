@@ -19,9 +19,11 @@ package blunderbuss
 import (
 	"context"
 	"fmt"
+	"math"
+	"reflect"
 	"regexp"
+	"strconv"
 
-	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/pkg/layeredsets"
@@ -269,12 +271,20 @@ func getReviewers(rc reviewersClient, ghc githubClient, log *logrus.Entry, autho
 	reviewers := layeredsets.NewString()
 	requiredReviewers := sets.NewString()
 	leafReviewers := layeredsets.NewString()
+	fileReviewers := []layeredsets.String{}
 	busyReviewers := sets.NewString()
 	ownersSeen := sets.NewString()
 	if minReviewers == 0 {
 		return reviewers.List(), requiredReviewers.List(), nil
 	}
-	// first build 'reviewers' by taking a unique reviewer from each OWNERS file.
+
+	// find statuses of multiple reviewers in one query to respect API rate limits
+	if useStatusAvailability {
+		reviewersToQuery := prepareLeafReviewersToQuery(rc, ghc, files, authorSet)
+		findBusyReviewers(ghc, log, &busyReviewers, reviewersToQuery)
+	}
+
+	// build 'reviewers' by taking a unique reviewer from each OWNERS file.
 	for _, file := range files {
 		ownersFile := rc.FindReviewersOwnersForFile(file.Filename)
 		if ownersSeen.Has(ownersFile) {
@@ -290,24 +300,40 @@ func getReviewers(rc reviewersClient, ghc githubClient, log *logrus.Entry, autho
 			continue
 		}
 		leafReviewers = leafReviewers.Union(fileUnusedLeafs)
-		if r := findReviewer(ghc, log, useStatusAvailability, &busyReviewers, &fileUnusedLeafs); r != "" {
+		if r := findReviewer(ghc, useStatusAvailability, busyReviewers, &fileUnusedLeafs); r != "" {
 			reviewers.Insert(0, r)
 		}
 	}
-	// now ensure that we request review from at least minReviewers reviewers. Favor leaf reviewers.
+
+	// ensure that we request review from at least minReviewers reviewers. Favor leaf reviewers.
 	unusedLeafs := leafReviewers.Difference(reviewers.Set())
 	for reviewers.Len() < minReviewers && unusedLeafs.Len() > 0 {
-		if r := findReviewer(ghc, log, useStatusAvailability, &busyReviewers, &unusedLeafs); r != "" {
+		if r := findReviewer(ghc, useStatusAvailability, busyReviewers, &unusedLeafs); r != "" {
 			reviewers.Insert(1, r)
 		}
 	}
+
 	for _, file := range files {
 		if reviewers.Len() >= minReviewers {
 			break
 		}
-		fileReviewers := rc.Reviewers(file.Filename).Difference(authorSet)
-		for reviewers.Len() < minReviewers && fileReviewers.Len() > 0 {
-			if r := findReviewer(ghc, log, useStatusAvailability, &busyReviewers, &fileReviewers); r != "" {
+		reviewers := rc.Reviewers(file.Filename).Difference(authorSet)
+		fileReviewers = append(fileReviewers, reviewers)
+	}
+
+	// find statuses of all remaining reviewers
+	if useStatusAvailability {
+		reviewersToQuery := layeredsets.NewString()
+		for _, list := range fileReviewers {
+			reviewersToQuery = reviewersToQuery.Union(list)
+		}
+		reviewersToQuery = reviewersToQuery.Difference(busyReviewers)
+		findBusyReviewers(ghc, log, &busyReviewers, reviewersToQuery.List())
+	}
+
+	for _, fromFileReviewers := range fileReviewers {
+		for reviewers.Len() < minReviewers && fromFileReviewers.Len() > 0 {
+			if r := findReviewer(ghc, useStatusAvailability, busyReviewers, &fromFileReviewers); r != "" {
 				reviewers.Insert(2, r)
 			}
 		}
@@ -317,7 +343,7 @@ func getReviewers(rc reviewersClient, ghc githubClient, log *logrus.Entry, autho
 
 // findReviewer finds a reviewer from a set, potentially using status
 // availability.
-func findReviewer(ghc githubClient, log *logrus.Entry, useStatusAvailability bool, busyReviewers *sets.String, targetSet *layeredsets.String) string {
+func findReviewer(ghc githubClient, useStatusAvailability bool, busyReviewers sets.String, targetSet *layeredsets.String) string {
 	// if we don't care about status availability, just pop a target from the set
 	if !useStatusAvailability {
 		return targetSet.PopRandom()
@@ -334,34 +360,72 @@ func findReviewer(ghc githubClient, log *logrus.Entry, useStatusAvailability boo
 			// we've already verified this reviewer is busy
 			continue
 		}
-		busy, err := isUserBusy(ghc, candidate)
-		if err != nil {
-			log.Errorf("error checking user availability: %v", err)
-		}
-		if !busy {
-			return candidate
-		}
-		// if we haven't returned the candidate, then they must be busy.
-		busyReviewers.Insert(candidate)
+		return candidate
 	}
 	return ""
 }
 
-type githubAvailabilityQuery struct {
-	User struct {
-		Login  githubql.String
-		Status struct {
-			IndicatesLimitedAvailability githubql.Boolean
+// prepareLeafReviewersToQuery prepares reviewers list using info from reviewers client crossed with author set
+func prepareLeafReviewersToQuery(rc reviewersClient, ghc githubClient, files []github.PullRequestChange, authorSet sets.String) []string {
+	ownersSeen := sets.NewString()
+	reviewersToQuery := layeredsets.NewString()
+	for _, file := range files {
+		ownersFile := rc.FindReviewersOwnersForFile(file.Filename)
+		if ownersSeen.Has(ownersFile) {
+			continue
 		}
-	} `graphql:"user(login: $user)"`
+		ownersSeen.Insert(ownersFile)
+		reviewers := layeredsets.NewString(rc.LeafReviewers(file.Filename).List()...).Difference(authorSet)
+		reviewersToQuery = reviewersToQuery.Union(reviewers)
+	}
+	return reviewersToQuery.List()
 }
 
-func isUserBusy(ghc githubClient, user string) (bool, error) {
-	var query githubAvailabilityQuery
-	vars := map[string]interface{}{
-		"user": githubql.String(user),
+type githubUserAvailability struct {
+	Login  string
+	Status struct {
+		IndicatesLimitedAvailability bool
 	}
-	ctx := context.Background()
-	err := ghc.Query(ctx, &query, vars)
-	return bool(query.User.Status.IndicatesLimitedAvailability), err
+}
+
+// graphqlTag helps in formating the graphql tag
+func graphqlTag(value string) reflect.StructTag {
+	return reflect.StructTag(strconv.AppendQuote([]byte("graphql:"), value))
+}
+
+// findBusyReviewers finds all the people that are busy and excluded from the review
+func findBusyReviewers(ghc githubClient, log *logrus.Entry, busyReviewers *sets.String, reviewers []string) {
+	const (
+		// will panic if too many fields with too much data in the reflect struct, this setting is very safe
+		githubUserAvailabilityStructLimit = 300
+	)
+	currentIndex := 0
+	numberOfBatches := int(math.Ceil(float64(len(reviewers)) / githubUserAvailabilityStructLimit))
+	for batch := 0; batch < numberOfBatches; batch++ {
+		var fields []reflect.StructField
+		structsAdded := 0
+		for i := currentIndex; i < len(reviewers) && structsAdded < githubUserAvailabilityStructLimit; i++ {
+			fields = append(fields, reflect.StructField{
+				Tag:  graphqlTag(fmt.Sprintf("user%d :user(login: %q)", i, reviewers[i])),
+				Name: fmt.Sprintf("User%d", i),
+				Type: reflect.TypeOf(githubUserAvailability{}),
+			})
+			structsAdded++
+		}
+		query := reflect.New(reflect.StructOf(fields)).Elem()
+		err := ghc.Query(context.Background(), query.Addr().Interface(), nil)
+		if err != nil {
+			log.Errorf("error checking users availability: %v", err)
+		}
+		for i := 0; i < query.NumField(); i++ {
+			user := query.Field(i).Interface().(githubUserAvailability)
+			if user.Status.IndicatesLimitedAvailability {
+				busyReviewers.Insert(user.Login)
+			} else if err != nil {
+				// when error, count all queried reviewers as busy ones
+				busyReviewers.Insert(reviewers[i+currentIndex])
+			}
+		}
+		currentIndex += structsAdded
+	}
 }

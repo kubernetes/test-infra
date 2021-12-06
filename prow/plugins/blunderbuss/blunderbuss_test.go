@@ -19,6 +19,7 @@ package blunderbuss
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"reflect"
@@ -27,7 +28,6 @@ import (
 	"strings"
 	"testing"
 
-	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	"sigs.k8s.io/yaml"
 
@@ -86,15 +86,29 @@ func (c *fakeGitHubClient) GetPullRequest(org, repo string, num int) (*github.Pu
 }
 
 func (c *fakeGitHubClient) Query(ctx context.Context, q interface{}, vars map[string]interface{}) error {
-	sq, ok := q.(*githubAvailabilityQuery)
-	if !ok {
-		return errors.New("unexpected query type")
-	}
-	sq.User.Login = vars["user"].(githubql.String)
-	if sq.User.Login == githubql.String("busy-user") {
-		sq.User.Status.IndicatesLimitedAvailability = githubql.Boolean(true)
+	numField := reflect.ValueOf(q).Elem().NumField()
+	for i := 0; i < numField; i++ {
+		tag := string(reflect.TypeOf(q).Elem().Field(i).Tag)
+		//extract login from the tag which has always the same format
+		login := (strings.Split(tag, `\"`))[1]
+		user := reflect.ValueOf(q).Elem().Field(i).Addr().Interface().(*githubUserAvailability)
+		user.Login = login
+		if strings.Contains(login, "busy-user") {
+			user.Status.IndicatesLimitedAvailability = true
+		}
+		if strings.Contains(login, "invalid-user") {
+			return fmt.Errorf("Simulated connection error")
+		}
 	}
 	return nil
+}
+
+func generateBusyUsers(numberOfUsers int) sets.String {
+	busyUsers := sets.NewString()
+	for i := 0; i < numberOfUsers; i++ {
+		busyUsers.Insert(fmt.Sprintf("busy-user%d", i))
+	}
+	return busyUsers
 }
 
 type fakeRepoownersClient struct {
@@ -786,6 +800,8 @@ func TestPopActiveReviewer(t *testing.T) {
 				"b.go":  "2",
 				"bb.go": "3",
 				"c.go":  "4",
+				"d.go":  "5",
+				"e.go":  "6",
 			},
 			approvers: map[string]layeredsets.String{
 				"a.go": layeredsets.NewString("alice"),
@@ -806,6 +822,8 @@ func TestPopActiveReviewer(t *testing.T) {
 				"a.go": sets.NewString("alice"),
 				"b.go": sets.NewString("brad"),
 				"c.go": sets.NewString("busy-user"),
+				"d.go": generateBusyUsers(1000).Union(sets.NewString("bob")),
+				"e.go": generateBusyUsers(50).Union(sets.NewString("invalid-user", "alice")),
 			},
 		},
 	}
@@ -823,6 +841,17 @@ func TestPopActiveReviewer(t *testing.T) {
 			filesChanged:      []string{"a.go", "b.go", "c.go"},
 			reviewerCount:     3,
 			expectedRequested: []string{"alice", "brad"},
+		},
+		{
+			name:              "request three reviewers, only receive one as all the users are busy",
+			filesChanged:      []string{"d.go"},
+			reviewerCount:     3,
+			expectedRequested: []string{"bob"},
+		},
+		{
+			name:          "request three reviewers, receive none as communication error excludes all queried in the batch",
+			filesChanged:  []string{"e.go"},
+			reviewerCount: 3,
 		},
 	}
 	for _, tc := range testcases {
