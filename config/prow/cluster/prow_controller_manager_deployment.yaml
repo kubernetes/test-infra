@@ -22,6 +22,11 @@ metadata:
 spec:
   # Mutually exclusive with plank. Only one of them may have more than zero replicas.
   replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
   revisionHistoryLimit: 2
   selector:
     matchLabels:
@@ -34,7 +39,7 @@ spec:
       serviceAccountName: prow-controller-manager
       containers:
       - name: prow-controller-manager
-        image: gcr.io/k8s-prow/prow-controller-manager:v20211111-bce61c7c4a
+        image: gcr.io/k8s-prow/prow-controller-manager:v20211203-281e29a97a
         args:
         - --config-path=/etc/config/config.yaml
         - --dry-run=false
@@ -43,7 +48,7 @@ spec:
         env:
         # Use KUBECONFIG envvar rather than --kubeconfig flag in order to provide multiple configs to merge.
         - name: KUBECONFIG
-          value: "/etc/kubeconfig/config"
+          value: "/etc/kubeconfig/config:/etc/kubeconfig-build-test-infra-trusted/kubeconfig"
         ports:
         - name: metrics
           containerPort: 9090
@@ -51,17 +56,36 @@ spec:
         - mountPath: /etc/kubeconfig
           name: kubeconfig
           readOnly: true
+        - mountPath: /etc/kubeconfig-build-test-infra-trusted
+          name: kubeconfig-build-test-infra-trusted
+          readOnly: true
         - name: config
           mountPath: /etc/config
           readOnly: true
         - name: job-config
           mountPath: /etc/job-config
           readOnly: true
+        livenessProbe: # Pod is killed if this fails 3 times.
+          httpGet:
+            path: /healthz
+            port: 8081
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        readinessProbe: # Pod is not considered ready (for rolling deploy and request routing) if this fails 3 times.
+          httpGet:
+            path: /healthz/ready
+            port: 8081
+          initialDelaySeconds: 10
+          periodSeconds: 3
       volumes:
       - name: kubeconfig
         secret:
           defaultMode: 420
           secretName: kubeconfig
+      - name: kubeconfig-build-test-infra-trusted
+        secret:
+          defaultMode: 420
+          secretName: kubeconfig-build-test-infra-trusted
       - name: config
         configMap:
           name: config

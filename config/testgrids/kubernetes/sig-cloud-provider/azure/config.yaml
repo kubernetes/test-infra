@@ -13,6 +13,7 @@ dashboard_groups:
     - provider-azure-scalability
     - provider-azure-presubmit
     - provider-azure-master-signal
+    - provider-azure-1.23-signal
     - provider-azure-1.22-signal
     - provider-azure-1.21-signal
     - provider-azure-1.20-signal
@@ -31,6 +32,7 @@ dashboards:
 - name: provider-azure-scalability
 - name: provider-azure-presubmit
 - name: provider-azure-master-signal
+- name: provider-azure-1.23-signal
 - name: provider-azure-1.22-signal
 - name: provider-azure-1.21-signal
 - name: provider-azure-1.20-signal

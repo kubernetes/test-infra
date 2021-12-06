@@ -66,7 +66,7 @@ presubmits:
     run_if_changed: '^(config/prow/(config|plugins).yaml$|config/jobs/.*.yaml$)'
     spec:
       containers:
-      - image: gcr.io/k8s-prow/checkconfig:v20211111-bce61c7c4a
+      - image: gcr.io/k8s-prow/checkconfig:v20211203-281e29a97a
         command:
         - /checkconfig
         args:
@@ -96,7 +96,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-test-infra
         command:
         - runner.sh
         args:
@@ -122,7 +122,7 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-test-infra
         command:
         - runner.sh
         args:
@@ -138,7 +138,7 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-test-infra
         command:
         - runner.sh
         args:
@@ -159,7 +159,7 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-test-infra
         command:
         - runner.sh
         args:

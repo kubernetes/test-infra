@@ -6,7 +6,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=90
@@ -28,6 +28,46 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-docker
     testgrid-tab-name: docker-node-conformance
+- name: ci-docker-node-conformance-kubetest2
+  interval: 2h
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
+  decoration_config:
+    timeout: 65m
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  annotations:
+    testgrid-dashboards: sig-node-docker
+    testgrid-tab-name: docker-node-conformance-kubetest2
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-experimental
+      env:
+      - name: GOPATH
+        value: /go
+      command:
+      - runner.sh
+      args:
+      - kubetest2
+      - noop
+      - --test=node
+      - --
+      - --repo-root=.
+      - --gcp-zone=us-west1-b
+      - --parallelism=8
+      - --focus-regex=\[NodeConformance\]
+      - --skip-regex=\[Flaky\]|\[Serial\]
+      - --test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+      - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/image-config.yaml
 - name: ci-docker-node-features
   interval: 4h
   labels:
@@ -35,7 +75,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=200
@@ -64,7 +104,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=200

@@ -2,7 +2,7 @@ periodics:
 # This is a sig-release-master-blocking job.
 - cron: '1 12 * * *' # Run daily at 4:01PST (12:01 UTC)
   name: ci-kubernetes-e2e-gce-scale-correctness
-  cluster: scalability
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
@@ -20,7 +20,7 @@ periodics:
     description: "Uses kubetest to run correctness tests against a 5000-node cluster created with cluster/kube-up.sh"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -36,22 +36,22 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-node-size=e2-small
       - --gcp-nodes=5000
-      - --gcp-project=kubernetes-scale
+      - --gcp-project=k8s-infra-e2e-scale-5k-project
       - --gcp-ssh-proxy-instance-name=gce-scale-cluster-master
       - --gcp-zone=us-east1-b
       - --ginkgo-parallel=40
       - --provider=gce
-      - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8 --node-schedulable-timeout=90m
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[DisabledForLargeClusters\] --minStartupPods=8 --node-schedulable-timeout=90m
       - --timeout=240m
       - --use-logexporter
-      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
+      - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
       resources:
         requests:
           cpu: 6
-          memory: "48Gi"
+          memory: "39Gi"
         limits:
           cpu: 6
-          memory: "48Gi"
+          memory: "39Gi"
 
 # This is a sig-release-master-blocking job.
 - cron: '1 17 * * *' # Run daily at 9:01PST (17:01 UTC)
@@ -86,7 +86,7 @@ periodics:
     description: "Uses kubetest to run k8s.io/perf-tests/run-e2e.sh against a 5000-node cluster created with cluster/kube-up.sh"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -175,7 +175,7 @@ periodics:
     testgrid-num-failures-to-alert: '2'
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py

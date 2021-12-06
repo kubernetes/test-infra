@@ -139,14 +139,14 @@ function redrawQueries(): void {
         if (orgs.length > 0) {
             li.appendChild(document.createTextNode(" in one of the following orgs: "));
             const ul = document.createElement("ul");
-            const innerLi = document.createElement("li");
             for (let j = 0; j < orgs.length; j++) {
+                const innerLi = document.createElement("li");
                 innerLi.appendChild(createLink("/github-link?dest=" + orgs[j], orgs[j]));
                 if (j + 1 < repos.length) {
                     innerLi.appendChild(document.createTextNode(", "));
                 }
+                ul.appendChild(innerLi);
             }
-            ul.appendChild(innerLi);
             li.appendChild(ul);
         }
         if (repos.length > 0) {

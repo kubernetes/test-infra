@@ -102,9 +102,7 @@ then switch `always_run` to true. Watch for a couple days, then switch
 ## Presets
 
 [`Presets`] can be used to define commonly reused values for a subset of fields
-for PodSpecs and BuildSpecs. The subset of fields chosen was inspired by
-[PodPresets] which at time of writing are still in alpha. A preset config looks
-like:
+for PodSpecs and BuildSpecs. A preset config looks like:
 
 ```yaml
 presets:
@@ -363,7 +361,6 @@ The format to send your `deck` URL is `/badge.svg?jobs=single-job-name` or `/bad
 <!-- links -->
 
 [Pod overview]: https://kubernetes.io/docs/concepts/workloads/pods/pod-overview/#pod-templates
-[PodPresets]: https://kubernetes.io/docs/concepts/workloads/pods/podpreset/
 [PodSpec api reference]: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.16/#podspec-v1-core
 [`Presets`]: https://github.com/kubernetes/test-infra/blob/3afb608d28630b99e49e09dd101a96c201268739/prow/config/jobs.go#L33-L40
 [`plugins.yaml`]: /config/prow/plugins.yaml

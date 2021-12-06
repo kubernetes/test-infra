@@ -91,7 +91,7 @@ func (c *client) Changes() []func() (string, error) {
 
 // PRTitleBody returns the body of the PR, this function runs after each commit
 func (c *client) PRTitleBody() (string, string, error) {
-	return makeCommitSummary(c.o.Prefixes, c.versions), generatePRBody(c.images, c.o.Prefixes) + getAssignment(c.o.OncallAddress, c.o.OncallGroup) + "\n", nil
+	return makeCommitSummary(c.o.Prefixes, c.versions), generatePRBody(c.images, c.o.Prefixes) + getAssignment(c.o.OncallAddress, c.o.OncallGroup, c.o.SkipOncallAssignment, c.o.SelfAssign) + "\n", nil
 }
 
 func generatePRBody(images map[string]string, prefixes []prefix) (body string) {
@@ -121,8 +121,15 @@ type options struct {
 	OncallAddress string `json:"onCallAddress"`
 	// The oncall group that is responsible for reviewing the change, i.e. "test-infra".
 	OncallGroup string `json:"onCallGroup"`
-	// Whether skip f no oncall is discovered
+	// Whether skip if no oncall is discovered
 	SkipIfNoOncall bool `yaml:"skipIfNoOncall"`
+	// SkipOncallAssignment skips assigning to oncall.
+	// The OncallAddress and OncallGroup are required for auto-bumper to figure out whether there are active oncall,
+	// which is used to avoid bumping when there is no active oncall.
+	SkipOncallAssignment bool `yaml:"skipOncallAssignment"`
+	// SelfAssign is used to comment `/assign` and `/cc` so that blunderbuss wouldn't assign
+	// bump PR to someone else.
+	SelfAssign bool `yaml:"selfAssign"`
 }
 
 // prefix is the information needed for each prefix being bumped.
@@ -218,7 +225,15 @@ func isOncallActive(oncallAddress, oncallGroup string) bool {
 	return oncallActive
 }
 
-func getAssignment(oncallAddress, oncallGroup string) string {
+func getAssignment(oncallAddress, oncallGroup string, skipOncallAssignment, selfAssign bool) string {
+	// No reason to self assign if wants to assign to oncall
+	if selfAssign {
+		return "/cc"
+	}
+	if skipOncallAssignment {
+		return ""
+	}
+	// Processing oncall info now
 	curtOncall, _, err := getOncallInfo(oncallAddress, oncallGroup)
 	if err != nil {
 		return fmt.Sprintf(errOncallMsgTempl, err.Error())

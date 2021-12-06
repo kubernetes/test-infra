@@ -28,7 +28,7 @@ periodics:
     testgrid-tab-name: node-throughput
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -88,7 +88,7 @@ periodics:
     testgrid-tab-name: node-containerd-throughput
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -152,7 +152,7 @@ periodics:
     testgrid-num-failures-to-alert: '2'
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -177,7 +177,6 @@ periodics:
       - --test-cmd-args=--nodes=100
       - --test-cmd-args=--prometheus-scrape-node-exporter=true
       - --test-cmd-args=--provider=kubemark
-      - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
       - --test-cmd-args=--report-dir=$(ARTIFACTS)
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
@@ -230,7 +229,7 @@ periodics:
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -255,7 +254,6 @@ periodics:
       - --test-cmd-args=--prometheus-scrape-node-exporter=true
       - --test-cmd-args=--provider=kubemark
       - --env=CL2_ENABLE_DNS_PROGRAMMING=true
-      - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
       - --test-cmd-args=--report-dir=$(ARTIFACTS)
       - --test-cmd-args=--testsuite=testing/density/scheduler-suite.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
@@ -305,7 +303,7 @@ periodics:
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -387,7 +385,7 @@ periodics:
     testgrid-num-failures-to-alert: '2'
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -411,7 +409,6 @@ periodics:
       - --test-cmd-args=cluster-loader2
       - --test-cmd-args=--nodes=500
       - --test-cmd-args=--provider=kubemark
-      - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
       - --test-cmd-args=--report-dir=$(ARTIFACTS)
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
@@ -468,7 +465,7 @@ periodics:
     testgrid-num-columns-recent: '3'
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -485,6 +482,8 @@ periodics:
       - --provider=gce
       - --metadata-sources=cl2-metadata.json
       - --env=CL2_ENABLE_HUGE_SERVICES=true
+      # With APF only sum of --max-requests-inflight and --max-mutating-requests-inflight matters, so set --max-mutating-requests-inflight to 0.
+      - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=640 --max-mutating-requests-inflight=0
       - --test=false
       - --test_args=--ginkgo.focus=xxxx
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
@@ -493,7 +492,6 @@ periodics:
       - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=$(JOB_NAME)-$(BUILD_ID)
       - --test-cmd-args=--nodes=5000
       - --test-cmd-args=--provider=kubemark
-      - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
       - --test-cmd-args=--report-dir=$(ARTIFACTS)
       - --test-cmd-args=--testconfig=testing/load/config.yaml
       - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
@@ -553,7 +551,7 @@ periodics:
     testgrid-num-columns-recent: '3'
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -578,7 +576,6 @@ periodics:
       - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=$(JOB_NAME)-$(BUILD_ID)
       - --test-cmd-args=--nodes=5000
       - --test-cmd-args=--provider=kubemark
-      - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
       - --test-cmd-args=--report-dir=$(ARTIFACTS)
       - --test-cmd-args=--testsuite=testing/density/scheduler-suite.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
@@ -630,7 +627,7 @@ periodics:
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -694,7 +691,7 @@ periodics:
     testgrid-tab-name: kubemark-100-benchmark
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
       command:
       - runner.sh
       - /workspace/scenarios/execute.py
@@ -727,7 +724,7 @@ periodics:
     timeout: 1h55m
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
       command:
       - ./hack/jenkins/benchmark-dockerized.sh
       args:
@@ -764,7 +761,7 @@ periodics:
     timeout: 1h55m
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
       command:
       - ./hack/jenkins/benchmark-dockerized.sh
       args:
@@ -818,7 +815,7 @@ periodics:
     testgrid-tab-name: kube-dns
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -873,7 +870,7 @@ periodics:
     testgrid-tab-name: node-local-dns
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -955,7 +952,7 @@ periodics:
     testgrid-tab-name: metric-measurement
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master

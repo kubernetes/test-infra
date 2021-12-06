@@ -2,6 +2,7 @@ dashboard_groups:
 - name: kops
   dashboard_names:
   - kops-presubmits
+  - kops-conformance
   - kops-distros
   - kops-network-plugins
   - kops-versions
@@ -10,8 +11,6 @@ dashboard_groups:
   - kops-gce
   - kops-grid
   - kops-distro-amzn2
-  - kops-distro-centos7
-  - kops-distro-centos8
   - kops-distro-deb9
   - kops-distro-deb10
   - kops-distro-deb11
@@ -22,6 +21,7 @@ dashboard_groups:
   - kops-distro-u2004
   - kops-distro-u2004arm64
   - kops-distro-u2110
+  - kops-distro-u2204
   - kops-k8s-1.18
   - kops-k8s-1.19
   - kops-k8s-1.20
@@ -36,6 +36,7 @@ dashboard_groups:
 
 dashboards:
 - name: kops-presubmits
+- name: kops-conformance
 - name: kops-distros
 - name: kops-network-plugins
 - name: kops-versions
@@ -44,8 +45,6 @@ dashboards:
 - name: kops-gce
 - name: kops-grid
 - name: kops-distro-amzn2
-- name: kops-distro-centos7
-- name: kops-distro-centos8
 - name: kops-distro-deb9
 - name: kops-distro-deb10
 - name: kops-distro-deb11
@@ -56,6 +55,7 @@ dashboards:
 - name: kops-distro-u2004
 - name: kops-distro-u2004arm64
 - name: kops-distro-u2110
+- name: kops-distro-u2204
 - name: kops-k8s-1.18
 - name: kops-k8s-1.19
 - name: kops-k8s-1.20

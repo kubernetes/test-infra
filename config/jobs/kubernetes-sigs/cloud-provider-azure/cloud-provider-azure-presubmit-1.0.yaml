@@ -10,7 +10,7 @@ presubmits:
         preset-service-account: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
             command:
               - runner.sh
             args:
@@ -42,7 +42,7 @@ presubmits:
           workdir: true
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.21
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.21
             command:
               - runner.sh
               - kubetest
@@ -99,7 +99,7 @@ presubmits:
           workdir: true
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.21
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.21
             command:
               - runner.sh
               - kubetest
@@ -159,7 +159,7 @@ presubmits:
           workdir: true
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.21
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.21
             command:
               - runner.sh
               - kubetest
@@ -219,7 +219,7 @@ presubmits:
           workdir: true
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.21
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.21
             command:
               - runner.sh
               - kubetest
@@ -258,6 +258,52 @@ presubmits:
         testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmss-1-21
         description: "Runs Azure specific tests with cloud-provider-azure release-1.0 (https://github.com/kubernetes-sigs/cloud-provider-azure)."
         testgrid-num-columns-recent: '30'
+    - name: pull-cloud-provider-azure-e2e-ccm-capz-1-21
+      always_run: true
+      optional: true
+      decorate: true
+      decoration_config:
+        timeout: 3h
+      path_alias: sigs.k8s.io/cloud-provider-azure
+      branches:
+        - release-1.0
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+        preset-azure-cred-only: "true"
+        preset-azure-anonymous-pull: "true"
+      extra_refs:
+        - org: kubernetes-sigs
+          repo: cluster-api-provider-azure
+          base_ref: release-1.0
+          path_alias: sigs.k8s.io/cluster-api-provider-azure
+          workdir: true
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.21
+            command:
+            - runner.sh
+            - ./scripts/ci-entrypoint.sh
+            args:
+            - bash
+            - -c
+            - >-
+              cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
+              make test-ccm-e2e
+            securityContext:
+              privileged: true
+            env:
+              - name: TEST_CCM
+                value: "true"
+              - name: AZURE_LOADBALANCER_SKU
+                value: "standard"
+              - name: KUBERNETES_VERSION
+                value: 1.21.5
+      annotations:
+        testgrid-dashboards: provider-azure-cloud-provider-azure-1-21-presubmit
+        testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-capz-1-21
+        description: "Runs Azure specific tests with cloud-provider-azure release-1.0 (https://github.com/kubernetes-sigs/cloud-provider-azure) using cluster-api-provider-azure."
+        testgrid-num-columns-recent: '30'
     - name: pull-cloud-provider-azure-unit-1-21
       always_run: true
       decorate: true
@@ -268,7 +314,7 @@ presubmits:
         preset-service-account: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
             command:
               - runner.sh
             args:

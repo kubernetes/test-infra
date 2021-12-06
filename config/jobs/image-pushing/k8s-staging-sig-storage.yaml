@@ -496,6 +496,9 @@ postsubmits:
       annotations:
         testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
       decorate: true
+      decoration_config:
+        timeout: 360m
+        grace_period: 15m
       branches:
         # For publishing canary images.
         - ^master$

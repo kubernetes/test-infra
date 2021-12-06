@@ -132,6 +132,18 @@ label:
     # This label, for k/website, identifies PRs with large refactoring changes
     - refactor
 
+  restricted_labels:
+    kubernetes/kubernetes:
+        # Security Response Committee (SRC) is allowed to add this label, 
+        # to new and existing GitHub Issues and PRs that announce a fixed CVE triaged by SRC
+      - allowed_teams:
+          - security-response-committee
+        # SIG Security Tooling Lead is an allowed user to assist SRC in this CVE feed automation  
+        allowed_users:
+          - pushkarj
+        # This label is used to filter/tag CVEs announced by SRC
+        label: official-cve-feed
+
 lgtm:
 - repos:
   - bazelbuild
@@ -328,23 +340,23 @@ slack:
 
 milestone_applier:
   kubernetes/enhancements:
-    master: v1.23
+    master: v1.24
   kubernetes/kubernetes:
-    master: v1.23
+    master: v1.24
+    release-1.23: v1.23
     release-1.22: v1.22
     release-1.21: v1.21
     release-1.20: v1.20
-    release-1.19: v1.19
   kubernetes/org:
-    main: v1.23
+    main: v1.24
   kubernetes/release:
-    master: v1.23
+    master: v1.24
   kubernetes/sig-release:
-    master: v1.23
+    master: v1.24
   kubernetes/test-infra:
-    master: v1.23
+    master: v1.24
   kubernetes/k8s.io:
-    main: v1.23
+    main: v1.24
   kubernetes/kops:
     master: v1.23
     release-1.22: v1.22
@@ -1221,6 +1233,12 @@ external_plugins:
     - pull_request
     endpoint: http://cherrypicker
   kubernetes-sigs/cluster-api-provider-aws:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
+    endpoint: http://cherrypicker
+  kubernetes-sigs/cluster-api-provider-azure:
   - name: cherrypicker
     events:
     - issue_comment

@@ -122,6 +122,10 @@ type CensoringOptions struct {
 	// directory also matches a glob in IncludeDirectories. Entries in this list are
 	// parsed with the go-zglob library, allowing for globbed matches.
 	ExcludeDirectories []string `json:"exclude_directories,omitempty"`
+
+	// IniFilenames are secret filenames that should be parsed as INI files in order to
+	// censor the values in the key-value mapping as well as the full content of the file.
+	IniFilenames []string `json:"ini_filenames,omitempty"`
 }
 
 func (o Options) entries() []wrapper.Options {

@@ -11,10 +11,10 @@ plank:
       timeout: 2h
       grace_period: 15m
       utility_images:
-        clonerefs: "gcr.io/k8s-prow/clonerefs:v20211111-bce61c7c4a"
-        initupload: "gcr.io/k8s-prow/initupload:v20211111-bce61c7c4a"
-        entrypoint: "gcr.io/k8s-prow/entrypoint:v20211111-bce61c7c4a"
-        sidecar: "gcr.io/k8s-prow/sidecar:v20211111-bce61c7c4a"
+        clonerefs: "gcr.io/k8s-prow/clonerefs:v20211203-281e29a97a"
+        initupload: "gcr.io/k8s-prow/initupload:v20211203-281e29a97a"
+        entrypoint: "gcr.io/k8s-prow/entrypoint:v20211203-281e29a97a"
+        sidecar: "gcr.io/k8s-prow/sidecar:v20211203-281e29a97a"
       gcs_configuration:
         bucket: "kubernetes-jenkins"
         path_strategy: "legacy"
@@ -468,6 +468,10 @@ branch-protection:
           branches:
             gh-pages:
               protect: false
+        descheduler:
+          branches:
+            gh-pages:
+              protect: false
         external-dns:
           branches:
             gh-pages:
@@ -504,6 +508,11 @@ branch-protection:
           branches:
             gh-pages:
               protect: false
+        security-profiles-operator:
+          enforce_admins: true
+          required_linear_history: true
+          required_pull_request_reviews:
+            required_approving_review_count: 1
 
 tide:
   sync_period: 2m
@@ -563,6 +572,31 @@ tide:
     - needs-rebase
   - repos:
     - kubernetes/kubernetes
+    excludedBranches:
+    - master
+    - release-1.23
+    labels:
+    - lgtm
+    - approved
+    - "cncf-cla: yes"
+    missingLabels:
+    - do-not-merge
+    - do-not-merge/blocked-paths
+    - do-not-merge/cherry-pick-not-approved
+    - do-not-merge/hold
+    - do-not-merge/invalid-commit-message
+    - do-not-merge/invalid-owners-file
+    - do-not-merge/needs-kind
+    - do-not-merge/needs-sig
+    - do-not-merge/release-note-label-needed
+    - do-not-merge/work-in-progress
+    - needs-rebase
+  - repos:
+    - kubernetes/kubernetes
+    milestone: v1.23
+    includedBranches:
+    - master
+    - release-1.23
     labels:
     - lgtm
     - approved
@@ -657,6 +691,15 @@ tide:
         repos:
           dashboard:
             from-branch-protection: true
+      kubernetes-client:
+        optional-contexts:
+        - "EasyCLA" # NOTE(mrbobbytables): This is temporary until we fully roll out EasyCLA
+      kubernetes-csi:
+        optional-contexts:
+        - "EasyCLA" # NOTE(mrbobbytables): This is temporary until we fully roll out EasyCLA
+      kubernetes-sigs:
+        optional-contexts:
+        - "EasyCLA" # NOTE(mrbobbytables): This is temporary until we fully roll out EasyCLA
   batch_size_limit:
     "kubernetes/kubernetes": 15
   priority:

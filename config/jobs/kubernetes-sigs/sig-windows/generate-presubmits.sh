@@ -36,7 +36,7 @@ EOF
 }
 
 # we need to define the full image URL so it can be autobumped
-tmp="gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master"
+tmp="gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master"
 kubekins_e2e_image="${tmp/\-master/}"
 
 readonly ginkgo_focus="\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-network\].EndpointSlice"
@@ -61,9 +61,12 @@ for release in "$@"; do
     1.22)
       containerd_api_model="https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_1_22.json"
       ;;
+    1.23)
+      containerd_api_model="https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_1_23.json"
+      ;;
     *)
       branch="master"
-      orchestrator_release="1.22"
+      orchestrator_release="1.23"
       ;;
   esac
 
@@ -256,7 +259,7 @@ $(generate_presubmit_annotations ${branch} pull-kubernetes-e2e-aks-engine-azure-
       path_alias: sigs.k8s.io/azurefile-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
         command:
         - runner.sh
         - kubetest

@@ -2,10 +2,10 @@ dashboard_groups:
 - name: sig-windows
   dashboard_names:
     - sig-windows-signal
-    - sig-windows-1.19-release
     - sig-windows-1.20-release
     - sig-windows-1.21-release
     - sig-windows-1.22-release
+    - sig-windows-1.23-release
     - sig-windows-master-release
     - sig-windows-presubmit
     - sig-windows-gce
@@ -16,10 +16,10 @@ dashboard_groups:
 
 dashboards:
 - name: sig-windows-signal
-- name: sig-windows-1.19-release
 - name: sig-windows-1.20-release
 - name: sig-windows-1.21-release
 - name: sig-windows-1.22-release
+- name: sig-windows-1.23-release
 - name: sig-windows-master-release
 - name: sig-windows-presubmit
 - name: sig-windows-gce

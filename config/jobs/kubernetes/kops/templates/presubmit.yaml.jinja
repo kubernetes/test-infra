@@ -79,6 +79,10 @@
           value: {{kops_ssh_user}}
         - name: GOPATH
           value: /home/prow/go
+        {%- for key, val in env.items() %}
+        - name: {{ key }}
+          value: "{{ val }}"
+        {%- endfor %}
         resources:
           requests:
             cpu: "2"

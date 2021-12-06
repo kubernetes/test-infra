@@ -75,6 +75,10 @@
         value: {{kops_ssh_key_path}}
       - name: KUBE_SSH_USER
         value: {{kops_ssh_user}}
+      {%- for key, val in env.items() %}
+      - name: {{ key }}
+        value: "{{ val }}"
+      {%- endfor %}
       image: {{image}}
       imagePullPolicy: Always
       resources:

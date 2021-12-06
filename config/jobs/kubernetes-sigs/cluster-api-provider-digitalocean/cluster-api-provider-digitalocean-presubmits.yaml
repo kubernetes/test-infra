@@ -9,7 +9,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
         command:
         - "./scripts/ci-test.sh"
     annotations:
@@ -24,7 +24,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
         command:
         - "./scripts/ci-build.sh"
     annotations:
@@ -39,7 +39,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
         command:
         - make
         args:
@@ -56,7 +56,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: golangci/golangci-lint:v1.42.1
+      - image: golangci/golangci-lint:v1.43.0
         command:
         - make
         args:
@@ -80,7 +80,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
         command:
           - "runner.sh"
           - "./scripts/ci-e2e.sh"
@@ -109,7 +109,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
         command:
           - "runner.sh"
           - "./scripts/ci-e2e.sh"
@@ -141,7 +141,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
         command:
           - "runner.sh"
           - "./scripts/ci-conformance.sh"
@@ -154,3 +154,37 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
       testgrid-tab-name: capdo-pr-conformance
+  - name: pull-cluster-api-provider-digitalocean-capi-e2e-experimental
+    always_run: false
+    optional: true
+    decorate: true
+    path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
+    decoration_config:
+      timeout: 5h
+    max_concurrency: 1
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-do-credential: "true"
+    branches:
+    - ^main$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+        command:
+          - "runner.sh"
+          - "./scripts/ci-e2e-experimental.sh"
+        env:
+          - name: "BOSKOS_HOST"
+            value: "boskos.test-pods.svc.cluster.local"
+          - name: GINKGO_FOCUS
+            value: "Cluster API E2E tests"
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 1
+            memory: "4Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-digitalocean
+      testgrid-tab-name: capdo-pr-capi-e2e-experimental

@@ -22,17 +22,20 @@ spec:
         - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
         - --dry-run=false
-        image: gcr.io/k8s-prow/sinker:v20211111-bce61c7c4a
+        image: gcr.io/k8s-prow/sinker:v20211203-281e29a97a
         env:
         # Use KUBECONFIG envvar rather than --kubeconfig flag in order to provide multiple configs to merge.
         - name: KUBECONFIG
-          value: "/etc/kubeconfig/config"
+          value: "/etc/kubeconfig/config:/etc/kubeconfig-build-test-infra-trusted/kubeconfig"
         ports:
         - name: metrics
           containerPort: 9090
         volumeMounts:
         - mountPath: /etc/kubeconfig
           name: kubeconfig
+          readOnly: true
+        - mountPath: /etc/kubeconfig-build-test-infra-trusted
+          name: kubeconfig-build-test-infra-trusted
           readOnly: true
         - name: config
           mountPath: /etc/config
@@ -45,6 +48,10 @@ spec:
         secret:
           defaultMode: 420
           secretName: kubeconfig
+      - name: kubeconfig-build-test-infra-trusted
+        secret:
+          defaultMode: 420
+          secretName: kubeconfig-build-test-infra-trusted
       - name: config
         configMap:
           name: config

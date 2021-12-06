@@ -425,7 +425,7 @@ func TestCommandsForRefs(t *testing.T) {
 					fetchRetries,
 				},
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "master"}},
+					cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"fetch", "https://github.com/org/repo.git", "abcdef"}},
 					fetchRetries,
 				},
 				cloneCommand{dir: "/go/src/github.com/org/repo", command: "git", args: []string{"checkout", "abcdef"}},
@@ -635,7 +635,7 @@ func TestCommandsForRefs(t *testing.T) {
 					fetchRetries,
 				},
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"fetch", "https://github.enterprise.com/org/repo.git", "master"}},
+					cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"fetch", "https://github.enterprise.com/org/repo.git", "abcdef"}},
 					fetchRetries,
 				},
 				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"checkout", "abcdef"}},
@@ -661,7 +661,7 @@ func TestCommandsForRefs(t *testing.T) {
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.enterprise.com/org/repo"}},
 				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"init"}},
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"fetch", "https://github.enterprise.com/org/repo.git", "master"}},
+					cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"fetch", "https://github.enterprise.com/org/repo.git", "abcdef"}},
 					fetchRetries,
 				},
 				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"checkout", "abcdef"}},
@@ -688,7 +688,7 @@ func TestCommandsForRefs(t *testing.T) {
 				cloneCommand{dir: "/", command: "mkdir", args: []string{"-p", "/go/src/github.enterprise.com/org/repo"}},
 				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"init"}},
 				retryCommand{
-					cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"fetch", "--depth", "2", "https://github.enterprise.com/org/repo.git", "master"}},
+					cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"fetch", "--depth", "2", "https://github.enterprise.com/org/repo.git", "abcdef"}},
 					fetchRetries,
 				},
 				cloneCommand{dir: "/go/src/github.enterprise.com/org/repo", command: "git", args: []string{"checkout", "abcdef"}},

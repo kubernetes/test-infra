@@ -163,12 +163,14 @@ func TestCensorIntegration(t *testing.T) {
 		Entries: []wrapper.Options{
 			{ProcessLog: filepath.Join(tempDir, "logs/one.log")},
 			{ProcessLog: filepath.Join(tempDir, "logs/two.log")},
+			{ProcessLog: filepath.Join(tempDir, "logs/three.log")},
 		},
 		CensoringOptions: &CensoringOptions{
 			SecretDirectories: []string{"testdata/secrets"},
 			// this will be smaller than the size of a secret, so this tests our buffer calculation
 			CensoringBufferSize: &bufferSize,
 			ExcludeDirectories:  []string{"**/exclude"},
+			IniFilenames:        []string{".awscred"},
 		},
 	}
 	if err := options.censor(); err != nil {

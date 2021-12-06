@@ -13,7 +13,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-digitalocean"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.16
+    - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.17
       imagePullPolicy: Always
       command:
         - "./scripts/ci-janitor.sh"

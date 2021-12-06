@@ -32,7 +32,7 @@ presubmits:
       fork-per-release: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -101,7 +101,7 @@ presubmits:
       preset-e2e-scalability-presubmits: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -167,7 +167,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-e2e-gce-correctness
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -227,7 +227,7 @@ presubmits:
       preset-e2e-scalability-presubmits: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -300,7 +300,7 @@ presubmits:
       testgrid-create-test-group: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -329,7 +329,6 @@ presubmits:
         - --test-cmd-args=--experimental-prometheus-snapshot-to-report-dir=true
         - --test-cmd-args=--nodes=500
         - --test-cmd-args=--provider=kubemark
-        - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
         - --test-cmd-args=--report-dir=$(ARTIFACTS)
         - --test-cmd-args=--testconfig=testing/load/config.yaml
         - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
@@ -356,6 +355,7 @@ presubmits:
           privileged: true
 
   - name: pull-kubernetes-kubemark-e2e-gce-scale
+    cluster: k8s-infra-prow-build
     always_run: false
     max_concurrency: 1
     branches:
@@ -363,7 +363,7 @@ presubmits:
     decorate: true
     path_alias: k8s.io/kubernetes
     decoration_config:
-      timeout: 1220m
+      timeout: 1100m
     extra_refs:
     - org: kubernetes
       repo: perf-tests
@@ -382,7 +382,7 @@ presubmits:
       preset-e2e-scalability-presubmits: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -393,26 +393,31 @@ presubmits:
         - --flush-mem-after-build=true
         - --gcp-node-size=e2-standard-8
         - --gcp-nodes=84
-        - --gcp-project=k8s-presubmit-scale
+        - --gcp-project-type=scalability-project
         - --gcp-zone=us-east1-b
         - --kubemark
         - --kubemark-nodes=5000
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce-scale
         - --env=CL2_ENABLE_HUGE_SERVICES=true
+        # With APF only sum of --max-requests-inflight and --max-mutating-requests-inflight matters, so set --max-mutating-requests-inflight to 0.
+        - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=640 --max-mutating-requests-inflight=0
         - --test=false
         - --test_args=--ginkgo.focus=xxxx
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
         - --test-cmd-args=cluster-loader2
+        - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
+        - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=$(JOB_NAME)-$(BUILD_ID)
+        - --test-cmd-args=--experimental-prometheus-snapshot-to-report-dir=true
         - --test-cmd-args=--nodes=5000
         - --test-cmd-args=--provider=kubemark
         - --test-cmd-args=--report-dir=$(ARTIFACTS)
         - --test-cmd-args=--testconfig=testing/load/config.yaml
         - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
         - --test-cmd-name=ClusterLoaderV2
-        - --timeout=1200m
+        - --timeout=1080m
         - --use-logexporter
-        - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
+        - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
         # TODO(krzyzacy): Figure out bazel built kubemark image
         #env:
         # - name: KUBEMARK_BAZEL_BUILD
@@ -453,7 +458,7 @@ presubmits:
     run_if_changed: ^dns/.*$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -495,7 +500,7 @@ presubmits:
     run_if_changed: ^clusterloader2/.*$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -561,7 +566,7 @@ presubmits:
     run_if_changed: ^clusterloader2/.*$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -586,7 +591,6 @@ presubmits:
         - --test-cmd-args=--provider=kubemark
         - --env=CL2_ENABLE_DNS_PROGRAMMING=true
         - --env=CL2_ENABLE_HUGE_SERVICES=true
-        - --env=CL2_ENABLE_PVS=false # TODO(https://github.com/kubernetes/perf-tests/issues/803): Fix me
         - --env=CL2_ENABLE_API_AVAILABILITY_MEASUREMENT=true
         - --test-cmd-args=--report-dir=$(ARTIFACTS)
         - --test-cmd-args=--testconfig=testing/load/config.yaml
@@ -705,7 +709,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-verify-test
     spec:
       containers:
-      - image: golang:1.13
+      - image: golang:1.15
         command:
         - verify/test.sh
         resources:
@@ -751,7 +755,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-verify-lint
     spec:
       containers:
-      - image: golangci/golangci-lint:v1.26
+      - image: golangci/golangci-lint:v1.31
         command:
         - make
         args:

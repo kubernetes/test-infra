@@ -36,9 +36,9 @@ periodics:
         fi
         echo "Running snyk scan .."
         EXIT_CODE=0
-        RESULT_UNFILTERED=$(snyk test --json) || EXIT_CODE=$?
+        RESULT_UNFILTERED=$(snyk test -d --json) || EXIT_CODE=$?
         if [ $EXIT_CODE -gt 1 ]; then
-          echo "Failed to run snyk scan with exit code $EXIT_CODE . Error message: $RESULT_UNFILTERED"
+          echo "Failed to run snyk scan with exit code $EXIT_CODE "
           exit 1
         fi
         RESULT=$(echo $RESULT_UNFILTERED | jq \
@@ -56,7 +56,7 @@ periodics:
         while read image; do
           echo "Running container image scan.."
           EXIT_CODE=0
-          RESULT_UNFILTERED=$(snyk container test $image --json) || EXIT_CODE=$?
+          RESULT_UNFILTERED=$(snyk container test $image -d --json) || EXIT_CODE=$?
           if [ $EXIT_CODE -gt 1 ]; then
             echo "Failed to run snyk scan with exit code $EXIT_CODE . Error message: $RESULT_UNFILTERED"
             exit 1
@@ -65,7 +65,7 @@ periodics:
           '{vulnerabilities: .vulnerabilities | map(select(.isUpgradable == true or .isPatchable == true)) | select(length > 0) }')
           if [[ ${RESULT} ]]; then
             echo "Vulnerability filtering failed"
-            #exit 1
+            # exit 1 (To allow other images to be scanned even if one fails)
           else
             echo "Scan completed image $image"
           fi

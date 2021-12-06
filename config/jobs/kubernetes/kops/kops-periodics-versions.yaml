@@ -2,7 +2,7 @@
 # 6 jobs, total of 336 runs per week
 periodics:
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "ci", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-k8s-latest
   cron: '35 1-23/3 * * *'
   labels:
@@ -31,7 +31,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211021' --channel=alpha --networking=calico --container-runtime=containerd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211129' --channel=alpha --networking=calico --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --publish-version-marker=gs://kops-ci/bin/latest-ci-green.txt \
           --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
@@ -48,7 +48,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -60,6 +60,7 @@ periodics:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/k8s_version: ci
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
@@ -68,7 +69,7 @@ periodics:
     testgrid-days-of-results: '35'
     testgrid-tab-name: kops-aws-k8s-latest
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "1.22", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.22", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-k8s-1-22
   cron: '23 1-23/3 * * *'
   labels:
@@ -97,7 +98,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211021' --channel=alpha --networking=calico --container-runtime=containerd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211129' --channel=alpha --networking=calico --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -111,7 +112,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -123,6 +124,7 @@ periodics:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/k8s_version: '1.22'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
@@ -160,7 +162,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211021' --channel=alpha --networking=calico --container-runtime=containerd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211129' --channel=alpha --networking=calico --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.21.txt \
           --test=kops \
@@ -174,7 +176,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -223,7 +225,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211021' --channel=alpha --networking=calico --container-runtime=containerd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211129' --channel=alpha --networking=calico --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.20.txt \
           --test=kops \
@@ -237,7 +239,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -286,7 +288,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211021' --channel=alpha --networking=calico --container-runtime=containerd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211129' --channel=alpha --networking=calico --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.19.txt \
           --test=kops \
@@ -300,7 +302,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -349,7 +351,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211021' --channel=alpha --networking=calico --container-runtime=containerd" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20211129' --channel=alpha --networking=calico --container-runtime=containerd" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.18.txt \
           --test=kops \
@@ -363,7 +365,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
       imagePullPolicy: Always
       resources:
         limits:

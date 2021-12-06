@@ -411,9 +411,16 @@ func (l Label) IsRestrictedLabelInAdditionalLables(restricted string) bool {
 }
 
 type RestrictedLabel struct {
-	Label        string   `json:"label"`
-	AllowedTeams []string `json:"allowed_teams,omitempty"`
-	AllowedUsers []string `json:"allowed_users,omitempty"`
+	Label        string          `json:"label"`
+	AllowedTeams []string        `json:"allowed_teams,omitempty"`
+	AllowedUsers []string        `json:"allowed_users,omitempty"`
+	AssignOn     []AssignOnLabel `json:"assign_on,omitempty"`
+}
+
+// AssignOnLabel specifies the label that would trigger the RestrictedLabel.AllowedUsers'
+// to be assigned on the PR.
+type AssignOnLabel struct {
+	Label string `json:"label"`
 }
 
 // Trigger specifies a configuration for a single trigger.
@@ -492,7 +499,7 @@ type ConfigMapSpec struct {
 	GZIP *bool `json:"gzip,omitempty"`
 	// Clusters is a map from cluster to namespaces
 	// which specifies the targets the configMap needs to be deployed, i.e., each namespace in map[cluster]
-	Clusters map[string][]string `json:"clusters"`
+	Clusters map[string][]string `json:"clusters,omitempty"`
 	// ClusterGroup is a list of named cluster_groups to target. Mutually exclusive with clusters.
 	ClusterGroups []string `json:"cluster_groups,omitempty"`
 	// UseFullPathAsKey controls if the full path of the original file relative to the
@@ -530,28 +537,22 @@ func (cu *ConfigUpdater) UnmarshalJSON(d []byte) error {
 		return err
 	}
 	*cu = ConfigUpdater(target)
-	return cu.resolve()
+	return nil
 }
 
 func (cu *ConfigUpdater) resolve() error {
+	if err := validateConfigUpdater(cu); err != nil {
+		return err
+	}
 	var errs []error
 	for k, v := range cu.Maps {
-		if len(v.Clusters) > 0 && len(v.ClusterGroups) > 0 {
-			errs = append(errs, fmt.Errorf("item maps.%s contains both clusters and cluster_groups", k))
-			continue
-		}
-
 		if len(v.Clusters) > 0 {
 			continue
 		}
 
 		clusters := map[string][]string{}
-		for idx, clusterGroupName := range v.ClusterGroups {
-			clusterGroup, hasClusterGroup := cu.ClusterGroups[clusterGroupName]
-			if !hasClusterGroup {
-				errs = append(errs, fmt.Errorf("item maps.%s.cluster_groups.%d references inexistent cluster group named %s", k, idx, clusterGroupName))
-				continue
-			}
+		for _, clusterGroupName := range v.ClusterGroups {
+			clusterGroup := cu.ClusterGroups[clusterGroupName]
 			for _, cluster := range clusterGroup.Clusters {
 				clusters[cluster] = append(clusters[cluster], clusterGroup.Namespaces...)
 			}
@@ -971,7 +972,7 @@ func (cu *ConfigUpdater) SetDefaults() {
 	}
 
 	for name, spec := range cu.Maps {
-		if len(spec.Clusters) == 0 {
+		if len(spec.Clusters) == 0 && len(spec.ClusterGroups) == 0 {
 			spec.Clusters = map[string][]string{kube.DefaultClusterAlias: {""}}
 		}
 		cu.Maps[name] = spec
@@ -1148,7 +1149,26 @@ func validateConfigUpdater(updater *ConfigUpdater) error {
 			}
 		}
 	}
-	return nil
+	var errs []error
+	for k, v := range updater.Maps {
+		if len(v.Clusters) > 0 && len(v.ClusterGroups) > 0 {
+			errs = append(errs, fmt.Errorf("item maps.%s contains both clusters and cluster_groups", k))
+			continue
+		}
+
+		if len(v.Clusters) > 0 {
+			continue
+		}
+
+		for idx, clusterGroupName := range v.ClusterGroups {
+			_, hasClusterGroup := updater.ClusterGroups[clusterGroupName]
+			if !hasClusterGroup {
+				errs = append(errs, fmt.Errorf("item maps.%s.cluster_groups.%d references inexistent cluster group named %s", k, idx, clusterGroupName))
+				continue
+			}
+		}
+	}
+	return utilerrors.NewAggregate(errs)
 }
 
 func validateRequireMatchingLabel(rs []RequireMatchingLabel) error {

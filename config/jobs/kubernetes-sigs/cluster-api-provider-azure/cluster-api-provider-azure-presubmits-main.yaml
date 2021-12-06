@@ -9,7 +9,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.22
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.22
         command:
         - "./scripts/ci-test.sh"
     annotations:
@@ -25,7 +25,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.22
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.22
         command:
         - "./scripts/ci-build.sh"
     annotations:
@@ -48,7 +48,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.22
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.22
         command:
           - runner.sh
         args:
@@ -80,7 +80,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.22
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.22
         command:
           - runner.sh
         args:
@@ -113,7 +113,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.22
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.22
         command:
           - runner.sh
         args:
@@ -146,7 +146,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.22
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.22
         command:
           - runner.sh
         args:
@@ -180,7 +180,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.22
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.22
         command:
           - runner.sh
         args:
@@ -188,6 +188,8 @@ presubmits:
         env:
           - name: GINKGO_FOCUS
             value: "Cluster API E2E tests"
+          - name: GINKGO_SKIP
+            value: "\\[K8s-Upgrade\\]|API Version Upgrade"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -207,7 +209,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.22
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.22
         command:
         - "runner.sh"
         - "make"
@@ -234,7 +236,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.22
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.22
         command:
           - runner.sh
         args:
@@ -266,7 +268,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.22
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.22
         command:
           - runner.sh
         args:
@@ -304,7 +306,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.22
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.22
           command:
             - runner.sh
           args:
@@ -337,7 +339,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.22
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.22
           command:
             - runner.sh
           args:
@@ -375,7 +377,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.22
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.22
           command:
             - runner.sh
           args:
@@ -398,7 +400,48 @@ presubmits:
               memory: "9Gi"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-      testgrid-tab-name: capz-pr-upstream-v1alpha4-k8s-ci-windows-containerd-main
+      testgrid-tab-name: capz-pr-upstream-k8s-ci-windows-containerd-main
+  - name: pull-cluster-api-provider-azure-windows-containerd-upstream-with-ci-artifacts-serial-slow
+    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    always_run: false
+    optional: true
+    decorate: true
+    decoration_config:
+      timeout: 4h
+    max_concurrency: 5
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+    branches:
+    - ^main$
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.22
+          command:
+            - runner.sh
+          args:
+            - ./scripts/ci-conformance.sh
+          env:
+            - name: E2E_ARGS
+              value: "-kubetest.use-ci-artifacts"
+            - name: WINDOWS
+              value: "true"
+            - name: WINDOWS_FLAVOR
+              value: "containerd"
+            - name: CONFORMANCE_NODES
+              value: "1"
+            - name: KUBETEST_WINDOWS_CONFIG
+              value: "upstream-windows-serial-slow.yaml"
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 2
+              memory: "9Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+      testgrid-tab-name: capz-pr-upstream-k8s-ci-windows-containerd-serial-slow-main
   - name: pull-cluster-api-provider-azure-apidiff
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-azure
@@ -410,7 +453,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.22
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.22
         command:
           - runner.sh
         args:
@@ -432,7 +475,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.22
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.22
         command:
         - runner.sh
         args:
@@ -469,7 +512,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.22
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.22
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -512,7 +555,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.22
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.22
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -536,6 +579,48 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-e2e-upgrade-1-21-1-22
+  - name: pull-cluster-api-provider-azure-apiversion-upgrade
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true"
+    decorate: true
+    optional: true
+    always_run: false
+    branches:
+      - ^main$
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+    extra_refs:
+      - org: kubernetes
+        repo: kubernetes
+        base_ref: master
+        path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.22
+          args:
+            - runner.sh
+            - "./scripts/ci-e2e.sh"
+          env:
+            - name: INIT_WITH_BINARY
+              value: "https://github.com/kubernetes-sigs/cluster-api/releases/download/v0.3.23/clusterctl-{OS}-{ARCH}"
+            - name: INIT_WITH_PROVIDERS_CONTRACT
+              value: "v1alpha3"
+            - name: INIT_WITH_KUBERNETES_VERSION
+              value: "v1.21.2"
+            - name: GINKGO_FOCUS
+              value: "API Version Upgrade"
+          # we need privileged mode in order to do docker in docker
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 7300m
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+      testgrid-tab-name: capz-pr-apiversion-upgrade-main
+      description: This job creates clusters using supported older api versions (v1alpha3, v1alpha4), and verifies that the clusters continue to operate properly after the api version is upgraded to the latest(v1beta1).
   - name: pull-cluster-api-provider-azure-ci-entrypoint
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     optional: true
@@ -552,7 +637,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.22
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.22
         command:
           - runner.sh
         args:

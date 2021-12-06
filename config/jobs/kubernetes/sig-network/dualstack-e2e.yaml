@@ -1,55 +1,5 @@
 periodics:
 - interval: 24h
-  name: ci-dualstack-azure-e2e-1-19
-  decorate: true
-  decoration_config:
-    timeout: 5h
-  labels:
-    preset-service-account: "true"
-    preset-azure-cred: "true"
-    preset-dind-enabled: "true"
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: release-1.19
-    path_alias: k8s.io/kubernetes
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.19
-      command:
-      - runner.sh
-      - kubetest
-      args:
-      # Generic e2e test args
-      - --test
-      - --up
-      - --down
-      - --build=quick
-      - --dump=$(ARTIFACTS)
-      # Azure-specific test args
-      - --provider=skeleton
-      - --deployment=aksengine
-      - --aksengine-agentpoolcount=2
-      - --aksengine-admin-username=azureuser
-      - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-orchestratorRelease=1.19
-      - --aksengine-mastervmsize=Standard_DS2_v2
-      - --aksengine-agentvmsize=Standard_D4s_v3
-      - --aksengine-deploy-custom-k8s
-      - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-dual-stack-ipvs-kubenet.json
-      - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
-      # Specific test args
-      - --test_args=--ginkgo.focus=\[Feature:IPv6DualStackAlphaFeature\]
-      - --ginkgo-parallel=1
-      securityContext:
-        privileged: true
-  annotations:
-    testgrid-dashboards: sig-network-dualstack-azure-e2e, provider-azure-dualstack, provider-azure-1.19-signal
-    testgrid-tab-name: dualstack-azure-e2e-1-19
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
-    description: "Dual-stack e2e tests on a 1.19 Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
-- interval: 24h
   name: ci-dualstack-azure-e2e-1-20
   decorate: true
   decoration_config:
@@ -65,7 +15,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.20
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.20
       command:
       - runner.sh
       - kubetest
@@ -118,7 +68,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.21
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.21
       command:
       - runner.sh
       - kubetest
@@ -171,7 +121,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.22
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.22
       command:
       - runner.sh
       - kubetest
@@ -209,6 +159,59 @@ periodics:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: "Dual-stack e2e tests on a 1.22 Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
 - interval: 24h
+  name: ci-dualstack-azure-e2e-1-23
+  decorate: true
+  decoration_config:
+    timeout: 5h
+  labels:
+    preset-service-account: "true"
+    preset-azure-cred: "true"
+    preset-dind-enabled: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: release-1.23
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.23
+      command:
+      - runner.sh
+      - kubetest
+      args:
+      # Generic e2e test args
+      - --test
+      - --up
+      - --down
+      - --build=quick
+      - --dump=$(ARTIFACTS)
+      # Azure-specific test args
+      - --provider=skeleton
+      - --deployment=aksengine
+      - --aksengine-agentpoolcount=2
+      - --aksengine-admin-username=azureuser
+      - --aksengine-creds=$(AZURE_CREDENTIALS)
+      - --aksengine-orchestratorRelease=1.23
+      - --aksengine-mastervmsize=Standard_DS2_v2
+      - --aksengine-agentvmsize=Standard_D4s_v3
+      - --aksengine-deploy-custom-k8s
+      - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
+      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-dual-stack-ipvs-kubenet.json
+      - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
+      # Skipping "Should recreate evicted statefulset" because of an issue in dockershim for dualstack
+      # Suggested fix - https://github.com/kubernetes/kubernetes/pull/94382
+      # Skipping "HostPort validates that there is no conflict between pods with same hostPort but different hostIP and protocol" because of kubenet bug in HostPort impl
+      # Skipping Feature:SCTPConnectivity tests because the vhd used for tests doesn't have sctp enabled
+      - --test_args=--ginkgo.focus=\[Feature:IPv6DualStack\]|\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|\[Feature:SCTPConnectivity\]|Should.recreate.evicted.statefulset|HostPort.validates.that.there.is.no.conflict.between.pods.with.same.hostPort.but.different.hostIP.and.protocol
+      - --ginkgo-parallel=1
+      securityContext:
+        privileged: true
+  annotations:
+    testgrid-dashboards: sig-network-dualstack-azure-e2e, provider-azure-dualstack, provider-azure-1.23-signal
+    testgrid-tab-name: dualstack-azure-e2e-1-23
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    description: "Dual-stack e2e tests on a 1.23 Kubernetes cluster provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud"
+- interval: 24h
   name: ci-dualstack-azure-e2e-master-iptables
   decorate: true
   decoration_config:
@@ -224,7 +227,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
       command:
       - runner.sh
       - kubetest
@@ -277,7 +280,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
       command:
       - runner.sh
       - kubetest
@@ -334,7 +337,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
       command:
       - runner.sh
       - kubetest
@@ -390,7 +393,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
         command:
         - runner.sh
         - kubetest
@@ -443,7 +446,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
         command:
         - runner.sh
         - kubetest

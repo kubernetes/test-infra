@@ -9,7 +9,7 @@ presubmits:
     - ^release-1.*
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.22
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.22
         command:
         - "./scripts/ci-test.sh"
     annotations:
@@ -25,7 +25,7 @@ presubmits:
     - ^release-1.*
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.22
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.22
         command:
         - "./scripts/ci-build.sh"
     annotations:
@@ -48,7 +48,7 @@ presubmits:
     - ^release-1.*
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.22
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.22
         command:
           - runner.sh
         args:
@@ -65,6 +65,44 @@ presubmits:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-e2e-v1beta1
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+  - name: pull-cluster-api-provider-azure-apiversion-upgrade-v1beta1
+    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    optional: false
+    decorate: true
+    # please see: https://play.golang.org/p/JJSVylVPd53 for more insights
+    run_if_changed: (^[^d].*$)|(^d$)|(^.[^o].*$)|(^do$)|(^..[^c].*$)|(^doc$)|(^...[^s].*$)|(^docs$)|(^....[^/].*$)|(^[^d][^o][^c][^s]/.*$)
+    max_concurrency: 5
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true"
+    branches:
+      - ^release-1.*
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.22
+          command:
+            - runner.sh
+          args:
+            - ./scripts/ci-e2e.sh
+          env:
+            - name: INIT_WITH_BINARY
+              value: "https://github.com/kubernetes-sigs/cluster-api/releases/download/v0.3.23/clusterctl-{OS}-{ARCH}"
+            - name: INIT_WITH_PROVIDERS_CONTRACT
+              value: "v1alpha3"
+            - name: INIT_WITH_KUBERNETES_VERSION
+              value: "v1.21.2"
+            - name: GINKGO_FOCUS
+              value: "API Version Upgrade"
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+      testgrid-tab-name: capz-pr-apiversion-upgrade-v1beta1
+      testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+      description: This job creates clusters using supported older api versions (v1alpha3, v1alpha4), and verifies that the clusters continue to operate properly after the api version is upgraded to the latest(v1beta1).
   - name: pull-cluster-api-provider-azure-e2e-full-v1beta1
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     always_run: false
@@ -80,7 +118,7 @@ presubmits:
     - ^release-1.*
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.22
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.22
         command:
           - runner.sh
         args:
@@ -113,7 +151,7 @@ presubmits:
     - ^release-1.*
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.22
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.22
         command:
           - runner.sh
         args:
@@ -146,7 +184,7 @@ presubmits:
     - ^release-1.*
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.22
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.22
         command:
           - runner.sh
         args:
@@ -180,7 +218,7 @@ presubmits:
     - ^release-1.*
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.22
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.22
         command:
           - runner.sh
         args:
@@ -188,6 +226,8 @@ presubmits:
         env:
           - name: GINKGO_FOCUS
             value: "Cluster API E2E tests"
+          - name: GINKGO_SKIP
+            value: "\\[K8s-Upgrade\\]|API Version Upgrade"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -207,7 +247,7 @@ presubmits:
     - ^release-1.*
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.22
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.22
         command:
         - "runner.sh"
         - "make"
@@ -234,7 +274,7 @@ presubmits:
     - ^release-1.*
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.22
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.22
         command:
           - runner.sh
         args:
@@ -261,7 +301,7 @@ presubmits:
     - ^release-1.*
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.22
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.22
         command:
           - runner.sh
         args:
@@ -285,7 +325,7 @@ presubmits:
     - ^release-1.*
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211111-d096cb0c5f-1.22
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.22
         command:
           - runner.sh
         args:

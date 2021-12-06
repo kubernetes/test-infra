@@ -38,7 +38,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: deck
-        image: gcr.io/k8s-prow/deck:v20211111-bce61c7c4a
+        image: gcr.io/k8s-prow/deck:v20211203-281e29a97a
         imagePullPolicy: Always
         ports:
         - name: http
@@ -63,7 +63,7 @@ spec:
         env:
         # Use KUBECONFIG envvar rather than --kubeconfig flag in order to provide multiple configs to merge.
         - name: KUBECONFIG
-          value: "/etc/kubeconfig/config"
+          value: "/etc/kubeconfig/config:/etc/kubeconfig-build-test-infra-trusted/kubeconfig"
         volumeMounts:
         - name: oauth-config
           mountPath: /etc/githuboauth
@@ -73,6 +73,9 @@ spec:
           readOnly: true
         - mountPath: /etc/kubeconfig
           name: kubeconfig
+          readOnly: true
+        - mountPath: /etc/kubeconfig-build-test-infra-trusted
+          name: kubeconfig-build-test-infra-trusted
           readOnly: true
         - name: config
           mountPath: /etc/config
@@ -113,6 +116,10 @@ spec:
         secret:
           defaultMode: 420
           secretName: kubeconfig
+      - name: kubeconfig-build-test-infra-trusted
+        secret:
+          defaultMode: 420
+          secretName: kubeconfig-build-test-infra-trusted
       - name: config
         configMap:
           name: config

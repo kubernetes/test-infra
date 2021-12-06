@@ -33,8 +33,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
-	extensionsv1beta1 "k8s.io/api/extensions/v1beta1"
-	networking "k8s.io/api/networking/v1beta1"
+	networking "k8s.io/api/networking/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -621,15 +620,7 @@ func ingress(kc *kubernetes.Clientset, ns, service string) (url.URL, error) {
 		var err error
 
 		// Detect ingress API to use based on Kubernetes version
-		if hasResource(kc.Discovery(), networking.SchemeGroupVersion.WithResource("ingresses")) {
-			ing, err = kc.NetworkingV1beta1().Ingresses(ns).List(context2.TODO(), metav1.ListOptions{})
-		} else {
-			var oldIng *extensionsv1beta1.IngressList
-			oldIng, err = kc.ExtensionsV1beta1().Ingresses(ns).List(context2.TODO(), metav1.ListOptions{})
-			if err == nil {
-				ing, err = toNewIngress(oldIng)
-			}
-		}
+		ing, err = kc.NetworkingV1().Ingresses(ns).List(context2.TODO(), metav1.ListOptions{})
 
 		if err != nil {
 			logrus.WithError(err).Fatalf("Could not get ingresses for service: %s", service)
@@ -647,7 +638,7 @@ func ingress(kc *kubernetes.Clientset, ns, service string) (url.URL, error) {
 					continue
 				}
 				for _, p := range h.Paths {
-					if p.Backend.ServiceName != service {
+					if p.Backend.Service.Name != service {
 						continue
 					}
 					maybe.Scheme = "http"
@@ -876,7 +867,7 @@ func main() {
 	opt := addFlags(fs)
 	fs.Parse(os.Args[1:])
 
-	const ns = "default"
+	const ns = "prow"
 
 	ctx, err := selectContext(opt.contextOptions)
 	if err != nil {
@@ -908,6 +899,11 @@ func main() {
 		logrus.WithError(err).Fatalf("Failed to apply cluster role binding to %s", ctx)
 	}
 
+	fmt.Println("Deploying prow...")
+	if err := applyStarter(kc, ns, opt.starter, ctx, opt.confirm); err != nil {
+		logrus.WithError(err).Fatal("Could not deploy prow")
+	}
+
 	// configure plugins.yaml and config.yaml
 	// TODO(fejta): throw up an editor
 	if err = ensureConfigMap(kc, ns, "config", "config.yaml"); err != nil {
@@ -915,11 +911,6 @@ func main() {
 	}
 	if err = ensureConfigMap(kc, ns, "plugins", "plugins.yaml"); err != nil {
 		logrus.WithError(err).Fatal("Failed to ensure plugins.yaml exists")
-	}
-
-	fmt.Println("Deploying prow...")
-	if err := applyStarter(kc, ns, opt.starter, ctx, opt.confirm); err != nil {
-		logrus.WithError(err).Fatal("Could not deploy prow")
 	}
 
 	if !*skipGitHub {
@@ -971,6 +962,6 @@ func main() {
 		logrus.WithError(err).Fatalf("Could not find deck URL")
 	}
 	deck.Path = strings.TrimRight(deck.Path, "*")
-	fmt.Printf("Enjoy your %s prow instance at: %s!", ctx, deck.String())
+	fmt.Printf("Enjoy your %s prow instance at: %s", ctx, deck.String())
 	fmt.Println()
 }

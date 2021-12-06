@@ -83,6 +83,10 @@ presets:
     value: 90
   - name: CL2_ALLOWED_SLOW_API_CALLS
     value: 1
+  # Disable PVs until these are fixed in Kubemark:
+  # https://github.com/kubernetes/perf-tests/issues/803
+  - name: CL2_ENABLE_PVS
+    value: "false"
   # Switch to using log-dump.sh script included in the kubekins-e2e image
   # instead of relying on the deprecated one from k/k repository.
   - name: USE_TEST_INFRA_LOG_DUMPING
@@ -99,6 +103,10 @@ presets:
   # TODO(https://github.com/kubernetes/perf-tests/issues/1828): Use konnectivity in kubemark.
   - name: KUBE_ENABLE_KONNECTIVITY_SERVICE
     value: false
+  - name: DEPLOY_GCI_DRIVER
+    value: true
+  - name: PROMETHEUS_STORAGE_CLASS_PROVISIONER
+    value: pd.csi.storage.gke.io
 
 ### kubemark-gce-scale
 - labels:
@@ -236,6 +244,10 @@ presets:
     value: "containerd"
   - name: DUMP_TO_GCS_ONLY
     value: true
+  - name: DEPLOY_GCI_DRIVER
+    value: true
+  - name: PROMETHEUS_STORAGE_CLASS_PROVISIONER
+    value: pd.csi.storage.gke.io
 
   ###### Scalability Envs
   ### Common env variables for containerd scalability-related suites.
