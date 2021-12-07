@@ -308,3 +308,22 @@ aliases:
     - listx
     - puerco
     - saschagrunert
+
+  publishing-bot-approvers:
+    - cpanato
+    - dims
+    - justaugustus
+    - nikhita
+    - puerco
+    - saschagrunert
+    - sttts
+  publishing-bot-reviewers:
+    - cpanato
+    - dims
+    - justaugustus
+    - nikhita
+    - puerco
+    - saschagrunert
+    - sttts
+    - Verolop
+    - xmudrii
