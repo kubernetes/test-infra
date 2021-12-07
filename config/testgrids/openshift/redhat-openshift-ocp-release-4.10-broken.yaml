@@ -83,12 +83,12 @@ dashboards:
     test_group_name: periodic-ci-openshift-release-master-nightly-4.10-e2e-gcp-csi-migration
   name: redhat-openshift-ocp-release-4.10-broken
 test_groups:
-- days_of_results: 50
+- days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.10-e2e-aws-csi-migration
   name: periodic-ci-openshift-release-master-nightly-4.10-e2e-aws-csi-migration
-- days_of_results: 50
+- days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.10-e2e-azure-csi-migration
   name: periodic-ci-openshift-release-master-nightly-4.10-e2e-azure-csi-migration
-- days_of_results: 50
+- days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.10-e2e-gcp-csi-migration
   name: periodic-ci-openshift-release-master-nightly-4.10-e2e-gcp-csi-migration
