@@ -667,7 +667,7 @@ def generate_misc():
 ################################
 def generate_conformance():
     results = []
-    for version in ['1.22', '1.21']:
+    for version in ['1.23', '1.22', '1.21']:
         results.append(
             build_test(
                 k8s_version=version,
@@ -676,6 +676,26 @@ def generate_conformance():
                 kops_channel='alpha',
                 name_override=f"kops-aws-conformance-{version.replace('.', '-')}",
                 networking='calico',
+                test_parallelism=1,
+                test_timeout_minutes=150,
+                extra_dashboards=['kops-conformance'],
+                runs_per_day=1,
+                focus_regex=r'\[Conformance\]',
+                skip_regex=r'\[NoSkip\]',
+            )
+        )
+        results.append(
+            build_test(
+                k8s_version=version,
+                kops_version=version,
+                irsa=version >= '1.22',
+                kops_channel='alpha',
+                name_override=f"kops-aws-conformance-arm64-{version.replace('.', '-')}",
+                networking='calico',
+                distro="u2004arm64",
+                extra_flags=["--zones=eu-central-1a",
+                             "--node-size=t4g.large",
+                             "--master-size=t4g.large"],
                 test_parallelism=1,
                 test_timeout_minutes=150,
                 extra_dashboards=['kops-conformance'],
