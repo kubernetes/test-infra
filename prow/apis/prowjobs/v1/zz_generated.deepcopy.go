@@ -604,6 +604,11 @@ func (in *SlackReporterConfig) DeepCopyInto(out *SlackReporterConfig) {
 		*out = make([]ProwJobState, len(*in))
 		copy(*out, *in)
 	}
+	if in.Report != nil {
+		in, out := &in.Report, &out.Report
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 

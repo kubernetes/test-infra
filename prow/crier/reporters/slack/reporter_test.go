@@ -27,6 +27,9 @@ import (
 )
 
 func TestShouldReport(t *testing.T) {
+	boolPtr := func(b bool) *bool {
+		return &b
+	}
 	testCases := []struct {
 		name     string
 		config   config.SlackReporter
@@ -88,6 +91,46 @@ func TestShouldReport(t *testing.T) {
 			expected: true,
 		},
 		{
+			name: "Successful Job with report:false should not report",
+			config: config.SlackReporter{
+				JobTypesToReport: []v1.ProwJobType{v1.PostsubmitJob},
+				SlackReporterConfig: v1.SlackReporterConfig{
+					JobStatesToReport: []v1.ProwJobState{v1.SuccessState},
+					Report:            boolPtr(false),
+				},
+			},
+			pj: &v1.ProwJob{
+				Spec: v1.ProwJobSpec{
+					Type: v1.PostsubmitJob,
+				},
+				Status: v1.ProwJobStatus{
+					State: v1.SuccessState,
+				},
+			},
+			expected: false,
+		},
+		{
+			name: "Successful Job with report:true should report",
+			config: config.SlackReporter{
+				JobTypesToReport: []v1.ProwJobType{v1.PostsubmitJob},
+				SlackReporterConfig: v1.SlackReporterConfig{
+					JobStatesToReport: []v1.ProwJobState{v1.SuccessState},
+					Report:            boolPtr(true),
+				},
+			},
+			pj: &v1.ProwJob{
+				Spec: v1.ProwJobSpec{
+					Type: v1.PostsubmitJob,
+				},
+				Status: v1.ProwJobStatus{
+					State: v1.SuccessState,
+				},
+			},
+			expected: true,
+		},
+		{
+			// Note: this is impossible to hit, as roundtrip with `omitempty`
+			// would never result in empty slice.
 			name: "Empty job config settings negate global",
 			config: config.SlackReporter{
 				JobTypesToReport: []v1.ProwJobType{v1.PostsubmitJob},
