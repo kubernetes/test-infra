@@ -366,7 +366,8 @@ k8s_versions = [
     #"latest", # disabled until we're ready to test 1.23
     "1.20",
     "1.21",
-    "1.22"
+    "1.22",
+    "1.23"
 ]
 
 kops_versions = [
@@ -811,7 +812,7 @@ def generate_versions():
             publish_version_marker='gs://kops-ci/bin/latest-ci-green.txt',
         )
     ]
-    for version in ['1.22', '1.21', '1.20', '1.19', '1.18']:
+    for version in ['1.23', '1.22', '1.21', '1.20', '1.19', '1.18']:
         distro = 'deb9' if version == '1.17' else 'u2004'
         results.append(
             build_test(
