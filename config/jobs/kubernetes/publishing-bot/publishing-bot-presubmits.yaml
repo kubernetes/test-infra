@@ -26,9 +26,7 @@ presubmits:
       testgrid-dashboards: sig-release-publishing-bot
       testgrid-tab-name: test
   - name: pull-publishing-bot-validate-rules
-    always_run: false
-    skip_report: false
-    optional: true
+    always_run: true
     decorate: true
     path_alias: k8s.io/publishing-bot
     extra_refs:
@@ -53,9 +51,6 @@ presubmits:
     cluster: k8s-infra-prow-build
     decorate: true
     path_alias: "k8s.io/publishing-bot"
-    skip_report: false
-    # TODO(releng): Make blocking once testing is complete
-    optional: true
     always_run: true
     spec:
       serviceAccountName: gcb-builder-releng-test
