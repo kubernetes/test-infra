@@ -55,6 +55,11 @@ if [[ "${VERIFY_CODEGEN:-true}" == "true" ]]; then
   hack/make-rules/verify/codegen.sh || res=1
   cd "${REPO_ROOT}"
 fi
+if [[ "${VERIFY_TSLINT:-true}" == "true" ]]; then
+  echo "verifying tslint ..."
+  hack/make-rules/verify/tslint.sh || res=1
+  cd "${REPO_ROOT}"
+fi
 
 # exit based on verify scripts
 if [[ "${res}" = 0 ]]; then
