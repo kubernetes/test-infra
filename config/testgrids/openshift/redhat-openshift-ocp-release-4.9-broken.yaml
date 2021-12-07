@@ -218,27 +218,27 @@ dashboards:
     test_group_name: periodic-ci-openshift-release-master-nightly-4.9-e2e-vsphere-csi
   name: redhat-openshift-ocp-release-4.9-broken
 test_groups:
-- days_of_results: 50
+- days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.9-e2e-aws-csi
   name: periodic-ci-openshift-release-master-nightly-4.9-e2e-aws-csi
-- days_of_results: 50
+- days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.9-e2e-aws-csi-migration
   name: periodic-ci-openshift-release-master-nightly-4.9-e2e-aws-csi-migration
-- days_of_results: 50
+- days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.9-e2e-azure-csi
   name: periodic-ci-openshift-release-master-nightly-4.9-e2e-azure-csi
-- days_of_results: 50
+- days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.9-e2e-azure-csi-migration
   name: periodic-ci-openshift-release-master-nightly-4.9-e2e-azure-csi-migration
-- days_of_results: 50
+- days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.9-e2e-gcp-csi
   name: periodic-ci-openshift-release-master-nightly-4.9-e2e-gcp-csi
-- days_of_results: 50
+- days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.9-e2e-gcp-csi-migration
   name: periodic-ci-openshift-release-master-nightly-4.9-e2e-gcp-csi-migration
-- days_of_results: 50
+- days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.9-e2e-ovirt-csi
   name: periodic-ci-openshift-release-master-nightly-4.9-e2e-ovirt-csi
-- days_of_results: 50
+- days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.9-e2e-vsphere-csi
   name: periodic-ci-openshift-release-master-nightly-4.9-e2e-vsphere-csi
