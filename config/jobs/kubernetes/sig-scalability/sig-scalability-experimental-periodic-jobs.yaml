@@ -27,7 +27,7 @@ periodics:
     testgrid-tab-name: storage
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211208-f65d241207-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -79,7 +79,7 @@ periodics:
     testgrid-tab-name: calico
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211208-f65d241207-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -152,7 +152,7 @@ periodics:
     testgrid-tab-name: gce-cos-master-scalability-100-nodekiller
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211208-f65d241207-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
