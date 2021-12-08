@@ -9,7 +9,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20211124-2ed05120f3-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20211208-f65d241207-master
         command:
         - wrapper.sh
         - ./hack/ci/build-all.sh
@@ -24,7 +24,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20211124-2ed05120f3-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20211208-f65d241207-master
         command:
         - wrapper.sh
         - make
@@ -40,7 +40,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20211124-2ed05120f3-experimental
+      - image: gcr.io/k8s-staging-test-infra/krte:v20211208-f65d241207-experimental
         command:
         - wrapper.sh
         - make
@@ -66,7 +66,7 @@ presubmits:
       grace_period: 15m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20211124-2ed05120f3-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20211208-f65d241207-master
         command:
         - wrapper.sh
         - bash
@@ -109,7 +109,7 @@ presubmits:
       timeout: 40m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20211124-2ed05120f3-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20211208-f65d241207-master
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
@@ -151,7 +151,7 @@ presubmits:
       timeout: 40m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20211124-2ed05120f3-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20211208-f65d241207-master
         env:
         # skip serial tests and run with --ginkgo-parallel
         - name: "PARALLEL"
@@ -198,7 +198,7 @@ presubmits:
       grace_period: 15m
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/krte:v20211124-2ed05120f3-master
+      - image: gcr.io/k8s-staging-test-infra/krte:v20211208-f65d241207-master
         command:
         - wrapper.sh
         - bash
@@ -255,7 +255,7 @@ presubmits:
           value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|NFS|nfs|inline.execution.and.attach|should.be.rejected.when.no.endpoints.exist
         - name: PARALLEL
           value: "true"
-        image: gcr.io/k8s-staging-test-infra/krte:v20211124-2ed05120f3-1.22
+        image: gcr.io/k8s-staging-test-infra/krte:v20211208-f65d241207-1.22
         name: ""
         resources:
           limits:
@@ -296,7 +296,7 @@ presubmits:
           value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|NFS|nfs|inline.execution.and.attach|should.be.rejected.when.no.endpoints.exist
         - name: PARALLEL
           value: "true"
-        image: gcr.io/k8s-staging-test-infra/krte:v20211124-2ed05120f3-1.21
+        image: gcr.io/k8s-staging-test-infra/krte:v20211208-f65d241207-1.21
         name: ""
         resources:
           limits:
@@ -337,7 +337,7 @@ presubmits:
           value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|NFS|nfs|inline.execution.and.attach|should.be.rejected.when.no.endpoints.exist
         - name: PARALLEL
           value: "true"
-        image: gcr.io/k8s-staging-test-infra/krte:v20211124-2ed05120f3-1.20
+        image: gcr.io/k8s-staging-test-infra/krte:v20211208-f65d241207-1.20
         name: ""
         resources:
           limits:
