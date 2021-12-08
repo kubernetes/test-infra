@@ -412,13 +412,9 @@ periodics:
     description: files bugs for SECURITY_CONTACTS
     testgrid-tab-name: secping
   extra_refs:
-  - base_ref: master
-    org: jessfraz
+  - base_ref: main
+    org: justaugustus
     repo: secping
-  - org: fejta
-    repo: go-github
-    base_ref: master
-    path_alias: github.com/jessfraz/go-github # https://github.com/google/go-github/pull/1076
   spec:
     containers:
     - command:
@@ -432,7 +428,7 @@ periodics:
       env:
       - name: GO111MODULE
         value: "on"
-      image: golang:1.11
+      image: golang:latest
       volumeMounts:
       - name: token
         mountPath: /etc/github-token
