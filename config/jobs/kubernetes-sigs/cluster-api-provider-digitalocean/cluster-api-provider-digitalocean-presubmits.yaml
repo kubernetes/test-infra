@@ -9,7 +9,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211208-f65d241207-master
         command:
         - "./scripts/ci-test.sh"
     annotations:
@@ -24,7 +24,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211208-f65d241207-master
         command:
         - "./scripts/ci-build.sh"
     annotations:
@@ -39,7 +39,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211208-f65d241207-master
         command:
         - make
         args:
@@ -80,7 +80,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211208-f65d241207-master
         command:
           - "runner.sh"
           - "./scripts/ci-e2e.sh"
@@ -109,7 +109,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211208-f65d241207-master
         command:
           - "runner.sh"
           - "./scripts/ci-e2e.sh"
@@ -141,7 +141,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211208-f65d241207-master
         command:
           - "runner.sh"
           - "./scripts/ci-conformance.sh"
@@ -170,7 +170,7 @@ presubmits:
     - ^main$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211208-f65d241207-master
         command:
           - "runner.sh"
           - "./scripts/ci-e2e-experimental.sh"
