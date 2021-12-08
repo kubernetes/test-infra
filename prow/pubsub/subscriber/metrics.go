@@ -23,6 +23,9 @@ import (
 const (
 	responseCodeLabel = "response_code"
 	subscriptionLabel = "subscription"
+	// The value of "failed-handle-prowjob" is the only case where prow operator
+	// should care
+	errorTypeLabel = "error_type"
 )
 
 var (
@@ -36,7 +39,7 @@ var (
 	errorCounter = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "prow_pubsub_error_counter",
 		Help: "A counter of the webhooks made to prow.",
-	}, []string{subscriptionLabel})
+	}, []string{subscriptionLabel, errorTypeLabel})
 
 	// Pull Server
 	ackedMessagesCounter = prometheus.NewCounterVec(prometheus.CounterOpts{
