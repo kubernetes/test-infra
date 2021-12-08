@@ -46,7 +46,7 @@ var (
 
 func init() {
 	plugins.RegisterGenericCommentHandler(PluginName, handleGenericComment, helpProvider)
-	plugins.RegisterIssueHandler(PluginName, handleIssue, helpProvider)
+	plugins.RegisterPullRequestHandler(PluginName, handlePullRequest, helpProvider)
 }
 
 func configString(labels []string) string {
@@ -98,7 +98,7 @@ func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error 
 	return handleComment(pc.GitHubClient, pc.Logger, pc.PluginConfig.Label, &e)
 }
 
-func handleIssue(pc plugins.Agent, e github.IssueEvent) error {
+func handlePullRequest(pc plugins.Agent, e github.PullRequestEvent) error {
 	return handleLabelAdd(pc.GitHubClient, pc.Logger, pc.PluginConfig.Label, &e)
 }
 
@@ -312,19 +312,20 @@ func canUserSetLabel(ghc githubClient, org string, user string, label string, re
 	return false, fmt.Sprintf("Can not set label %s: Must be member in one of these teams: %v", label, config.AllowedTeams), nil
 }
 
-func handleLabelAdd(gc githubClient, log *logrus.Entry, config plugins.Label, e *github.IssueEvent) error {
-	if e.Action != github.IssueActionLabeled {
+func handleLabelAdd(gc githubClient, log *logrus.Entry, config plugins.Label, e *github.PullRequestEvent) error {
+	if e.Action != github.PullRequestActionLabeled {
 		return nil
 	}
 
 	org := e.Repo.Owner.Login
 	repo := e.Repo.Name
-	number := e.Issue.Number
+	number := e.PullRequest.Number
 	restrictedLabels := config.RestrictedLabelsFor(e.Repo.Owner.Login, e.Repo.Name)
 
 	for _, restrictedLabel := range restrictedLabels {
 		for _, assignOn := range restrictedLabel.AssignOn {
 			if strings.EqualFold(e.Label.Name, assignOn.Label) {
+				log.WithField("label", restrictedLabel.Label).Info("Assigning users for restricted label")
 				// It's okay to re-assign users so no need to check if they are assigned
 				if err := gc.AssignIssue(org, repo, number, restrictedLabel.AllowedUsers); err != nil {
 					log.WithError(err).WithField("label", restrictedLabel.Label).Error("GitHub failed to assign reviewers for the label")

@@ -807,36 +807,36 @@ func TestHandleLabelAdd(t *testing.T) {
 		restrictedLabels  map[string][]plugins.RestrictedLabel
 		expectedAssignees []string
 		labelAdded        string
-		action            github.IssueEventAction
+		action            github.PullRequestEventAction
 	}
 	testCases := []testCase{
 		{
 			name:       "label added with no auto-assign configured",
 			labelAdded: "some-label",
-			action:     github.IssueActionLabeled,
+			action:     github.PullRequestActionLabeled,
 		},
 		{
 			name:              "assign users for restricted label on label add",
 			restrictedLabels:  map[string][]plugins.RestrictedLabel{"org": {{Label: "secondary-label", AllowedUsers: []string{"bill", "sally"}, AssignOn: []plugins.AssignOnLabel{{Label: "initial-label"}}}}},
 			labelAdded:        "initial-label",
-			action:            github.IssueActionLabeled,
+			action:            github.PullRequestActionLabeled,
 			expectedAssignees: formatWithPRInfo("bill", "sally"),
 		},
 		{
 			name:             "no assigned users on irrelevant label add",
 			restrictedLabels: map[string][]plugins.RestrictedLabel{"org": {{Label: "secondary-label", AllowedUsers: []string{"bill", "sally"}, AssignOn: []plugins.AssignOnLabel{{Label: "initial-label"}}}}},
 			labelAdded:       "other-label",
-			action:           github.IssueActionLabeled,
+			action:           github.PullRequestActionLabeled,
 		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			fakeClient := fakegithub.NewFakeClient()
-			e := &github.IssueEvent{
-				Action: tc.action,
-				Repo:   github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
-				Issue:  github.Issue{Number: 1},
-				Label:  github.Label{Name: tc.labelAdded},
+			e := &github.PullRequestEvent{
+				Action:      tc.action,
+				Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
+				PullRequest: github.PullRequest{Number: 1},
+				Label:       github.Label{Name: tc.labelAdded},
 			}
 			err := handleLabelAdd(fakeClient, logrus.WithField("plugin", PluginName), plugins.Label{RestrictedLabels: tc.restrictedLabels}, e)
 			if err != nil {
