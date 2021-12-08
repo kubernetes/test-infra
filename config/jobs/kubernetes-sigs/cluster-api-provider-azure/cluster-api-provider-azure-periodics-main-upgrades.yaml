@@ -1,23 +1,25 @@
 periodics:
 
-- name: periodic-cluster-api-e2e-workload-upgrade-1-18-1-19-release-0-4
+- name: periodic-cluster-api-provider-azure-e2e-workload-upgrade-1-18-1-19-main
   interval: 24h
   decorate: true
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
+    preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
   extra_refs:
   - org: kubernetes-sigs
-    repo: cluster-api
-    base_ref: release-0.4
-    path_alias: sigs.k8s.io/cluster-api
+    repo: cluster-api-provider-azure
+    base_ref: main
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
   - org: kubernetes
     repo: kubernetes
     base_ref: master
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.21
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
       args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
@@ -39,29 +41,29 @@ periodics:
         requests:
           cpu: 7300m
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.4
-    testgrid-tab-name: capi-e2e-release-0-4-1-18-1-19
-    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
-    testgrid-num-failures-to-alert: "2"
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+    testgrid-tab-name: capi-e2e-main-1-18-1-19
 
-- name: periodic-cluster-api-e2e-workload-upgrade-1-19-1-20-release-0-4
+- name: periodic-cluster-api-provider-azure-e2e-workload-upgrade-1-19-1-20-main
   interval: 24h
   decorate: true
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
+    preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
   extra_refs:
   - org: kubernetes-sigs
-    repo: cluster-api
-    base_ref: release-0.4
-    path_alias: sigs.k8s.io/cluster-api
+    repo: cluster-api-provider-azure
+    base_ref: main
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
   - org: kubernetes
     repo: kubernetes
     base_ref: master
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.21
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
       args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
@@ -83,29 +85,29 @@ periodics:
         requests:
           cpu: 7300m
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.4
-    testgrid-tab-name: capi-e2e-release-0-4-1-19-1-20
-    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
-    testgrid-num-failures-to-alert: "2"
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+    testgrid-tab-name: capi-e2e-main-1-19-1-20
 
-- name: periodic-cluster-api-e2e-workload-upgrade-1-20-1-21-release-0-4
+- name: periodic-cluster-api-provider-azure-e2e-workload-upgrade-1-20-1-21-main
   interval: 24h
   decorate: true
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
+    preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
   extra_refs:
   - org: kubernetes-sigs
-    repo: cluster-api
-    base_ref: release-0.4
-    path_alias: sigs.k8s.io/cluster-api
+    repo: cluster-api-provider-azure
+    base_ref: main
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
   - org: kubernetes
     repo: kubernetes
     base_ref: master
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.21
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
       args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
@@ -127,29 +129,29 @@ periodics:
         requests:
           cpu: 7300m
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.4
-    testgrid-tab-name: capi-e2e-release-0-4-1-20-1-21
-    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
-    testgrid-num-failures-to-alert: "2"
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+    testgrid-tab-name: capi-e2e-main-1-20-1-21
 
-- name: periodic-cluster-api-e2e-workload-upgrade-1-21-1-22-release-0-4
+- name: periodic-cluster-api-provider-azure-e2e-workload-upgrade-1-21-1-22-main
   interval: 24h
   decorate: true
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
+    preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
   extra_refs:
   - org: kubernetes-sigs
-    repo: cluster-api
-    base_ref: release-0.4
-    path_alias: sigs.k8s.io/cluster-api
+    repo: cluster-api-provider-azure
+    base_ref: main
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
   - org: kubernetes
     repo: kubernetes
     base_ref: master
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.21
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
       args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
@@ -171,51 +173,5 @@ periodics:
         requests:
           cpu: 7300m
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.4
-    testgrid-tab-name: capi-e2e-release-0-4-1-21-1-22
-    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
-    testgrid-num-failures-to-alert: "2"
-
-- name: periodic-cluster-api-e2e-workload-upgrade-1-22-latest-release-0-4
-  interval: 24h
-  decorate: true
-  labels:
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-  extra_refs:
-  - org: kubernetes-sigs
-    repo: cluster-api
-    base_ref: release-0.4
-    path_alias: sigs.k8s.io/cluster-api
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.21
-      args:
-        - runner.sh
-        - "./scripts/ci-e2e.sh"
-      env:
-        - name: KUBERNETES_VERSION_UPGRADE_FROM
-          value: "stable-1.22"
-        - name: KUBERNETES_VERSION_UPGRADE_TO
-          value: "ci/latest-1.23"
-        - name: ETCD_VERSION_UPGRADE_TO
-          value: "3.5.1-0"
-        - name: COREDNS_VERSION_UPGRADE_TO
-          value: "v1.8.4"
-        - name: GINKGO_FOCUS
-          value: "\\[K8s-Upgrade\\]"
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-      resources:
-        requests:
-          cpu: 7300m
-  annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-0.4
-    testgrid-tab-name: capi-e2e-release-0-4-1-22-latest
-    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
-    testgrid-num-failures-to-alert: "2"
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+    testgrid-tab-name: capi-e2e-main-1-21-1-22

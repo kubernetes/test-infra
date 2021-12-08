@@ -66,7 +66,7 @@ presubmits:
     run_if_changed: '^(config/prow/(config|plugins).yaml$|config/jobs/.*.yaml$)'
     spec:
       containers:
-      - image: gcr.io/k8s-prow/checkconfig:v20211203-281e29a97a
+      - image: gcr.io/k8s-prow/checkconfig:v20211207-16e4d57ac1
         command:
         - /checkconfig
         args:
@@ -136,6 +136,9 @@ presubmits:
     - master
     always_run: true
     decorate: true
+    labels:
+      # Enable dind for linters that required docker to run, for example typescript.
+      preset-dind-enabled: "true"
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-test-infra
@@ -144,6 +147,9 @@ presubmits:
         args:
         - make
         - verify
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
     annotations:
       testgrid-dashboards: presubmits-test-infra
       testgrid-tab-name: verify-test

@@ -137,6 +137,10 @@ func (sr *slackReporter) ShouldReport(_ context.Context, logger *logrus.Entry, p
 	// Prow config.
 	var stateShouldReport bool
 	if merged := jobSlackConfig.ApplyDefault(&globalSlackConfig.SlackReporterConfig); merged != nil && merged.JobStatesToReport != nil {
+		if merged.Report != nil && !*merged.Report {
+			logger.WithField("job_states_to_report", merged.JobStatesToReport).Debug("Skip slack reporting as 'report: false', could result from 'job_states_to_report: []'.")
+			return false
+		}
 		for _, stateToReport := range merged.JobStatesToReport {
 			if pj.Status.State == stateToReport {
 				stateShouldReport = true

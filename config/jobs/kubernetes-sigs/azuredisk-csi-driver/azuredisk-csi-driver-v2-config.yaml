@@ -381,6 +381,8 @@ presubmits:
         env:
           - name: TEST_WINDOWS
             value: "true"
+          - name: ENABLE_TOPOLOGY
+            value: "true"
           - name: BUILD_V2
             value: "true"
     annotations:
