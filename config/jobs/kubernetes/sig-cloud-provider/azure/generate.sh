@@ -40,6 +40,7 @@ EOF
 # we need to define the full image URL so it can be autobumped
 tmp="gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211208-9473f90198-master"
 kubekins_e2e_image="${tmp/\-master/}"
+installCSIdrivers=""
 
 for release in "$@"; do
   output="${dir}/release-${release}.yaml"
@@ -50,6 +51,10 @@ for release in "$@"; do
   else
     branch="release-${release}"
     kubernetes_version+="-${release}"
+  fi
+
+  if [[ "${release}" == "master" || "${release}" == "1.23" ]]; then
+    installCSIdrivers=" ./deploy/install-driver.sh master local,snapshot,enable-avset &&"
   fi
 
   cat >"${output}" <<EOF
@@ -89,7 +94,7 @@ presubmits:
             - bash
             - -c
             - >-
-              cd \${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&
+              cd \${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&${installCSIdrivers}
               make e2e-test
           env:
             - name: AZURE_STORAGE_DRIVER
@@ -134,7 +139,7 @@ $(generate_presubmit_annotations ${branch} pull-kubernetes-e2e-capz-azure-disk)
             - bash
             - -c
             - >-
-              cd \${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&
+              cd \${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&${installCSIdrivers}
               make e2e-test
           env:
             - name: AZURE_STORAGE_DRIVER
@@ -182,7 +187,7 @@ $(generate_presubmit_annotations ${branch} pull-kubernetes-e2e-capz-azure-disk-v
             - -c
             - >-
               kubectl apply -f templates/addons/azurefile-role.yaml &&
-              cd \${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
+              cd \${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&${installCSIdrivers}
               make e2e-test
           env:
             - name: AZURE_STORAGE_DRIVER
@@ -228,7 +233,7 @@ $(generate_presubmit_annotations ${branch} pull-kubernetes-e2e-capz-azure-file)
             - -c
             - >-
               kubectl apply -f templates/addons/azurefile-role.yaml &&
-              cd \${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
+              cd \${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&${installCSIdrivers}
               make e2e-test
           env:
             - name: AZURE_STORAGE_DRIVER
@@ -332,7 +337,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-0.5
+    base_ref: main
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   spec:
     containers:
@@ -392,7 +397,7 @@ periodics:
       - -c
       - >-
         kubectl apply -f templates/addons/azurefile-role.yaml &&
-        cd \${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
+        cd \${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&${installCSIdrivers}
         make e2e-test
       env:
       - name: USE_CI_ARTIFACTS
@@ -444,7 +449,7 @@ periodics:
       - -c
       - >-
         kubectl apply -f templates/addons/azurefile-role.yaml &&
-        cd \${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
+        cd \${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&${installCSIdrivers}
         make e2e-test
       env:
       - name: USE_CI_ARTIFACTS
@@ -497,7 +502,7 @@ periodics:
       - bash
       - -c
       - >-
-        cd \${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&
+        cd \${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&${installCSIdrivers}
         make e2e-test
       env:
       - name: USE_CI_ARTIFACTS
@@ -548,7 +553,7 @@ periodics:
       - bash
       - -c
       - >-
-        cd \${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&
+        cd \${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&${installCSIdrivers}
         make e2e-test
       env:
       - name: USE_CI_ARTIFACTS

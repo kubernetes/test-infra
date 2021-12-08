@@ -2,8 +2,8 @@
 
 Job configurations for https://testgrid.k8s.io/provider-azure.
 
-To generate the job configurations for 1.18, 1.19, 1.20, and master branch:
+To generate the job configurations for 1.20, 1.21, 1.22, 1.23 and master branch:
 
 ```bash
-./generate.sh 1.18 1.19 1.20 master
+./generate.sh 1.20 1.21 1.22 1.23 master
 ```
