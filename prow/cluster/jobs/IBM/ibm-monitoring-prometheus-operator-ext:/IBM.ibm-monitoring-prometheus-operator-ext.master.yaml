@@ -100,29 +100,6 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  - name: coverage_ibm-monitoring-prometheus-operator-ext_postsubmit
-    branches:
-    - ^master$
-    - ^release-cd$
-    - ^release-eus$
-    - ^release-efix$
-    decorate: true
-    path_alias: github.com/IBM/ibm-monitoring-prometheus-operator-ext
-    spec:
-      containers:
-      - command:
-        - make
-        - coverage
-        image: quay.io/multicloudlab/check-tool:v20201130-d61b998b6
-        name: ""
-        env:
-        - name: CODECOV_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: ibm-monitoring-prometheus-operator-ext-codecov-token
-              key: codecov-token
-        securityContext:
-          privileged: true
   - name: build_ibm-monitoring-prometheus-operator-ext_postsubmit
     branches:
     - ^master$

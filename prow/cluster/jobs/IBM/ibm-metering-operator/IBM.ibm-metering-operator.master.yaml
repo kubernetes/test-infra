@@ -105,30 +105,6 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  - name: coverage_ibm-metering-operator_postsubmit
-    branches:
-    - ^master$
-    - ^release-future$
-    - ^release-efix$
-    - ^release-eus$
-    - ^release-k$
-    decorate: true
-    path_alias: github.com/IBM/ibm-metering-operator
-    spec:
-      containers:
-      - command:
-        - make
-        - coverage
-        image: quay.io/multicloudlab/check-tool:v20201130-d61b998b6
-        name: ""
-        env:
-        - name: CODECOV_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: ibm-metering-operator-codecov-token
-              key: codecov-token
-        securityContext:
-          privileged: true
   - name: build_ibm-metering-operator_postsubmit
     branches:
     - ^master$

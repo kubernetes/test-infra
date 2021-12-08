@@ -134,27 +134,6 @@ presubmits:
     trigger: '(?m)^/test (?:.*? )?build(?:.*?)?$'
 postsubmits:
   IBM/operand-deployment-lifecycle-manager:
-  - name: coverage-operand-deployment-lifecycle-manager-postsubmit
-    cluster: default
-    branches:
-    - ^release-1.1$
-    decorate: true
-    path_alias: github.com/IBM/operand-deployment-lifecycle-manager
-    spec:
-      containers:
-      - command:
-        - make
-        - coverage
-        image: quay.io/multicloudlab/check-tool:v20200319-b5bfe54
-        name: ""
-        env:
-        - name: CODECOV_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: operand-deployment-lifecycle-manager-codecov-token
-              key: codecov-token
-        securityContext:
-          privileged: true
   - name: build-operand-deployment-lifecycle-manager-amd64-postsubmit
     cluster: default
     branches:

@@ -155,30 +155,6 @@ presubmits:
     trigger: '(?m)^/test (?:.*? )?build(?:.*?)?$'
 postsubmits:
   IBM/ibm-healthcheck-operator:
-  - name: coverage-ibm-healthcheck-operator-postsubmit
-    cluster: default
-    branches:
-    - ^master$
-    - ^release-cd$
-    - ^release-eus$
-    - ^release-efix$
-    decorate: true
-    path_alias: github.com/IBM/ibm-healthcheck-operator
-    spec:
-      containers:
-      - command:
-        - make
-        - coverage
-        image: quay.io/multicloudlab/check-tool:v20201130-d61b998b6
-        name: ""
-        env:
-        - name: CODECOV_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: ibm-healthcheck-operator-codecov-token
-              key: codecov-token
-        securityContext:
-          privileged: true
   - name: build-ibm-healthcheck-operator-amd64-postsubmit
     cluster: default
     branches:

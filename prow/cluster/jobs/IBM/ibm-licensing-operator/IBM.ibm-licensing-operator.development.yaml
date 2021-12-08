@@ -134,26 +134,6 @@ presubmits:
     trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'      
 postsubmits:
   IBM/ibm-licensing-operator:
-  - name: coverage-ibm-licensing-operator-postsubmit
-    branches:
-    - ^development$
-    decorate: true
-    path_alias: github.com/IBM/ibm-licensing-operator
-    spec:
-      containers:
-      - command:
-        - make
-        - coverage
-        image: quay.io/multicloudlab/check-tool:v20201130-d61b998b6
-        name: ""
-        env:
-        - name: CODECOV_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: ibm-licensing-operator-codecov-token
-              key: codecov-token
-        securityContext:
-          privileged: true
   - name: build-ibm-licensing-operator-amd64-postsubmit
     cluster: default
     branches:

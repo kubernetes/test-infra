@@ -101,30 +101,6 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  - name: coverage_ibm-mongodb-operator_postsubmit
-    branches:
-    - ^master$
-    - ^release-efix$
-    - ^release-eus$
-    - ^release-future$
-    - ^release-k$
-    decorate: true
-    path_alias: github.com/IBM/ibm-mongodb-operator
-    spec:
-      containers:
-      - command:
-        - make
-        - coverage
-        image: quay.io/multicloudlab/check-tool:v20201130-d61b998b6
-        name: ""
-        env:
-        - name: CODECOV_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: ibm-mongodb-operator-codecov-token
-              key: codecov-token
-        securityContext:
-          privileged: true
   - name: build_ibm-mongodb-operator_postsubmit
     branches:
     - ^master$
