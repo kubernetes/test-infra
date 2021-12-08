@@ -260,6 +260,16 @@ aliases:
     - randomvariable
   # end sigs.k8s.io/cluster-api-provider-vsphere/OWNERS_ALIASES
 
+  # copied from sigs.k8s.io/cluster-api-provider-openstack/OWNERS_ALIASES
+  cluster-api-openstack-maintainers:
+    - jichenjc
+    - hidekazuna
+  cluster-api-openstack-reviewers:
+    - chrischdi
+    - prankul88
+    - seanschneeweiss
+  # end sigs.k8s.io/cluster-api-provider-openstack/OWNERS_ALIASES
+
   # mostly copied from sigs.k8s.io/controller-runtime/OWNERS_ALIASES
   controller-runtime-admins:
   - vincepri
