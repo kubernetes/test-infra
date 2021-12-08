@@ -2030,23 +2030,17 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.6-e2e-openstack-serial
   name: periodic-ci-openshift-release-master-ci-4.6-e2e-openstack-serial
-- days_of_results: 50
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.6-upgrade-from-stable-4.5-e2e-aws-upgrade
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.6-upgrade-from-stable-4.5-e2e-aws-upgrade
   name: periodic-ci-openshift-release-master-ci-4.6-upgrade-from-stable-4.5-e2e-aws-upgrade
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.6-upgrade-from-stable-4.5-e2e-aws-upgrade-rollback
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.6-upgrade-from-stable-4.5-e2e-aws-upgrade-rollback
   name: periodic-ci-openshift-release-master-ci-4.6-upgrade-from-stable-4.5-e2e-aws-upgrade-rollback
-- days_of_results: 50
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.6-upgrade-from-stable-4.5-e2e-azure-upgrade
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.6-upgrade-from-stable-4.5-e2e-azure-upgrade
   name: periodic-ci-openshift-release-master-ci-4.6-upgrade-from-stable-4.5-e2e-azure-upgrade
-- days_of_results: 50
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.6-upgrade-from-stable-4.5-e2e-gcp-upgrade
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.6-upgrade-from-stable-4.5-e2e-gcp-upgrade
   name: periodic-ci-openshift-release-master-ci-4.6-upgrade-from-stable-4.5-e2e-gcp-upgrade
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.6-upgrade-from-stable-4.5-e2e-ovirt-upgrade
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.6-upgrade-from-stable-4.5-e2e-ovirt-upgrade
   name: periodic-ci-openshift-release-master-ci-4.6-upgrade-from-stable-4.5-e2e-ovirt-upgrade
-- days_of_results: 50
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.6-upgrade-from-stable-4.5-e2e-vsphere-upgrade
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.6-upgrade-from-stable-4.5-e2e-vsphere-upgrade
   name: periodic-ci-openshift-release-master-ci-4.6-upgrade-from-stable-4.5-e2e-vsphere-upgrade
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.6-cluster-logging-operator-e2e
