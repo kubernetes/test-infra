@@ -25,7 +25,6 @@ import (
 
 	"github.com/GoogleCloudPlatform/testgrid/metadata/junit"
 	"github.com/google/go-cmp/cmp"
-
 	"k8s.io/test-infra/prow/spyglass/api"
 	"k8s.io/test-infra/prow/spyglass/lenses"
 )
@@ -121,7 +120,7 @@ func TestGetJvd(t *testing.T) {
 					{
 						Junit: []JunitResult{
 							{
-								junit.Result{
+								Result: junit.Result{
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
 									Failure:   &failureMsgs[0],
@@ -154,7 +153,7 @@ func TestGetJvd(t *testing.T) {
 					{
 						Junit: []JunitResult{
 							{
-								junit.Result{
+								Result: junit.Result{
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
 									Errored:   &errorMsgs[0],
@@ -184,7 +183,7 @@ func TestGetJvd(t *testing.T) {
 					{
 						Junit: []JunitResult{
 							{
-								junit.Result{
+								Result: junit.Result{
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
 									Failure:   nil,
@@ -219,7 +218,7 @@ func TestGetJvd(t *testing.T) {
 					{
 						Junit: []JunitResult{
 							{
-								junit.Result{
+								Result: junit.Result{
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
 									Failure:   nil,
@@ -255,14 +254,14 @@ func TestGetJvd(t *testing.T) {
 					{
 						Junit: []JunitResult{
 							{
-								junit.Result{
+								Result: junit.Result{
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
 									Failure:   &failureMsgs[0],
 								},
 							},
 							{
-								junit.Result{
+								Result: junit.Result{
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
 									Failure:   nil,
@@ -277,14 +276,14 @@ func TestGetJvd(t *testing.T) {
 					{
 						Junit: []JunitResult{
 							{
-								junit.Result{
+								Result: junit.Result{
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
 									Failure:   &failureMsgs[0],
 								},
 							},
 							{
-								junit.Result{
+								Result: junit.Result{
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
 									Failure:   nil,
@@ -317,7 +316,7 @@ func TestGetJvd(t *testing.T) {
 					{
 						Junit: []JunitResult{
 							{
-								junit.Result{
+								Result: junit.Result{
 									Name:      "fake_test_0",
 									ClassName: "fake_class_1",
 									Failure:   nil,
@@ -331,7 +330,7 @@ func TestGetJvd(t *testing.T) {
 					{
 						Junit: []JunitResult{
 							{
-								junit.Result{
+								Result: junit.Result{
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
 									Failure:   &failureMsgs[0],
@@ -370,7 +369,7 @@ func TestGetJvd(t *testing.T) {
 					{
 						Junit: []JunitResult{
 							{
-								junit.Result{
+								Result: junit.Result{
 									Name:      "fake_test_0",
 									ClassName: "fake_class_1",
 									Failure:   nil,
@@ -384,7 +383,7 @@ func TestGetJvd(t *testing.T) {
 					{
 						Junit: []JunitResult{
 							{
-								junit.Result{
+								Result: junit.Result{
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
 									Failure:   &failureMsgs[0],
@@ -422,14 +421,14 @@ func TestGetJvd(t *testing.T) {
 					{
 						Junit: []JunitResult{
 							{
-								junit.Result{
+								Result: junit.Result{
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
 									Failure:   &failureMsgs[0],
 								},
 							},
 							{
-								junit.Result{
+								Result: junit.Result{
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
 									Failure:   &failureMsgs[1],
@@ -462,14 +461,14 @@ func TestGetJvd(t *testing.T) {
 					{
 						Junit: []JunitResult{
 							{
-								junit.Result{
+								Result: junit.Result{
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
 									Failure:   nil,
 								},
 							},
 							{
-								junit.Result{
+								Result: junit.Result{
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
 									Failure:   nil,
@@ -502,14 +501,14 @@ func TestGetJvd(t *testing.T) {
 					{
 						Junit: []JunitResult{
 							{
-								junit.Result{
+								Result: junit.Result{
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
 									Failure:   nil,
 								},
 							},
 							{
-								junit.Result{
+								Result: junit.Result{
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
 									Failure:   nil,
@@ -548,14 +547,14 @@ func TestGetJvd(t *testing.T) {
 					{
 						Junit: []JunitResult{
 							{
-								junit.Result{
+								Result: junit.Result{
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
 									Failure:   &failureMsgs[0],
 								},
 							},
 							{
-								junit.Result{
+								Result: junit.Result{
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
 									Failure:   nil,
@@ -591,14 +590,14 @@ func TestGetJvd(t *testing.T) {
 					{
 						Junit: []JunitResult{
 							{
-								junit.Result{
+								Result: junit.Result{
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
 									Failure:   nil,
 								},
 							},
 							{
-								junit.Result{
+								Result: junit.Result{
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
 									Failure:   &failureMsgs[0],
@@ -639,21 +638,21 @@ func TestGetJvd(t *testing.T) {
 					{
 						Junit: []JunitResult{
 							{
-								junit.Result{
+								Result: junit.Result{
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
 									Failure:   &failureMsgs[0],
 								},
 							},
 							{
-								junit.Result{
+								Result: junit.Result{
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
 									Failure:   &failureMsgs[1],
 								},
 							},
 							{
-								junit.Result{
+								Result: junit.Result{
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
 									Failure:   nil,
@@ -690,7 +689,7 @@ func TestGetJvd(t *testing.T) {
 					{
 						Junit: []JunitResult{
 							{
-								junit.Result{
+								Result: junit.Result{
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
 									Failure:   nil,
@@ -704,7 +703,7 @@ func TestGetJvd(t *testing.T) {
 					{
 						Junit: []JunitResult{
 							{
-								junit.Result{
+								Result: junit.Result{
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
 									Failure:   &failureMsgs[0],
@@ -746,7 +745,7 @@ func TestGetJvd(t *testing.T) {
 					{
 						Junit: []JunitResult{
 							{
-								junit.Result{
+								Result: junit.Result{
 									Name:      "fake_test_0",
 									ClassName: "fake_class_0",
 									Failure:   nil,
@@ -758,7 +757,7 @@ func TestGetJvd(t *testing.T) {
 					{
 						Junit: []JunitResult{
 							{
-								junit.Result{
+								Result: junit.Result{
 									Name:      "fake_test_1",
 									ClassName: "fake_class_1",
 									Failure:   nil,
@@ -770,7 +769,7 @@ func TestGetJvd(t *testing.T) {
 					{
 						Junit: []JunitResult{
 							{
-								junit.Result{
+								Result: junit.Result{
 									Name:      "fake_test_2",
 									ClassName: "fake_class_2",
 									Failure:   nil,
@@ -782,7 +781,7 @@ func TestGetJvd(t *testing.T) {
 					{
 						Junit: []JunitResult{
 							{
-								junit.Result{
+								Result: junit.Result{
 									Name:      "fake_test_3",
 									ClassName: "fake_class_3",
 									Failure:   nil,
@@ -794,7 +793,7 @@ func TestGetJvd(t *testing.T) {
 					{
 						Junit: []JunitResult{
 							{
-								junit.Result{
+								Result: junit.Result{
 									Name:      "fake_test_4",
 									ClassName: "fake_class_4",
 									Failure:   nil,
@@ -805,6 +804,61 @@ func TestGetJvd(t *testing.T) {
 					},
 				},
 				Failed:  nil,
+				Skipped: nil,
+				Flaky:   nil,
+			},
+		}, {
+			"Same test name fails in two different files and suites",
+			[][]byte{
+				[]byte(`
+				<testsuites>
+					<testsuite name="suite1">
+						<testcase classname="fake_class_0" name="fake_test_0">
+							<failure message="Failed" type=""> failure message 0 </failure>
+						</testcase>
+					</testsuite>
+				</testsuites>
+				`),
+				[]byte(`
+				<testsuites>
+					<testsuite name="suite2">
+						<testcase classname="fake_class_0" name="fake_test_0">
+							<failure message="Failed" type=""> failure message 1 </failure>
+						</testcase>
+					</testsuite>
+				</testsuites>
+				`),
+			},
+			JVD{
+				NumTests: 2,
+				Failed: []TestResult{
+					{
+						Junit: []JunitResult{
+							{
+								Result: junit.Result{
+									Name:      "fake_test_0",
+									ClassName: "fake_class_0",
+									Failure:   &failureMsgs[1],
+								},
+								SuiteName: "suite2",
+							},
+						},
+						Link: "linknotfound.io/404",
+					},
+					{
+						Junit: []JunitResult{
+							{
+								Result: junit.Result{
+									Name:      "fake_test_0",
+									ClassName: "fake_class_0",
+									Failure:   &failureMsgs[0],
+								},
+								SuiteName: "suite1",
+							},
+						},
+						Link: "linknotfound.io/404",
+					},
+				},
 				Skipped: nil,
 				Flaky:   nil,
 			},

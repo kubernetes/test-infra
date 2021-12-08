@@ -89,6 +89,7 @@ func (lens Lens) Callback(artifacts []api.Artifact, resourceDir string, data str
 
 type JunitResult struct {
 	junit.Result
+	SuiteName string
 }
 
 func (jr JunitResult) Duration() time.Duration {
@@ -178,7 +179,7 @@ func (lens Lens) getJvd(artifacts []api.Artifact) JVD {
 					// Deduplicate them here in this case, and classify a test as being
 					// flaky if it both succeeded and failed
 					k := testIdentifier{suite.Name, test.ClassName, test.Name}
-					groups[k] = append(groups[k], JunitResult{Result: test})
+					groups[k] = append(groups[k], JunitResult{SuiteName: suite.Name, Result: test})
 					if len(groups[k]) == 1 {
 						testsSequence = append(testsSequence, k)
 					}
