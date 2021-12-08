@@ -162,7 +162,38 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
       testgrid-tab-name: capi-pr-e2e-main
-  - name: pull-cluster-api-e2e-ipv6-main
+  - name: pull-cluster-api-e2e-informing-main
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    decorate: true
+    optional: true
+    branches:
+    # The script this job runs is not in all branches.
+    - ^main$
+    path_alias: sigs.k8s.io/cluster-api
+    run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|third_party|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211208-f65d241207-1.23
+        args:
+        - runner.sh
+        - "./scripts/ci-e2e.sh"
+        env:
+        - name: GINKGO_FOCUS
+          value: "\\[PR-Informing\\]"
+        - name: GINKGO_SKIP
+          value: "\\[[IPv6]\\]"
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 7300m
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
+      testgrid-tab-name: capi-pr-e2e-informing-main
+  - name: pull-cluster-api-e2e-informing-ipv6-main
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
@@ -181,13 +212,9 @@ presubmits:
           - "./scripts/ci-e2e.sh"
         env:
           - name: GINKGO_FOCUS
-            value: "\\[PR-Blocking\\]"
+            value: "\\[[IPv6]\\] \\[PR-Informing\\]"
           - name: IP_FAMILY
             value: "IPv6"
-          - name: DOCKER_SERVICE_CIDRS
-            value: "fd00:100:64::/108"
-          - name: DOCKER_POD_CIDRS
-            value: "fd00:100:96::/48"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -196,7 +223,7 @@ presubmits:
             cpu: 7300m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: capi-pr-e2e-main-ipv6
+      testgrid-tab-name: capi-pr-e2e-informing-ipv6-main
   - name: pull-cluster-api-e2e-full-main
     labels:
       preset-dind-enabled: "true"
@@ -219,7 +246,7 @@ presubmits:
           # and the upgrade tests are being run as part of the periodic upgrade jobs.
           # This jobs ends up running all the other tests in the E2E suite
           - name: GINKGO_SKIP
-            value: "\\[PR-Blocking\\] \\[Conformance\\] \\[K8s-Upgrade\\]"
+            value: "\\[PR-Blocking\\] \\[Conformance\\] \\[K8s-Upgrade\\]|\\[IPv6\\]"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
