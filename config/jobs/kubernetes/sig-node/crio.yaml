@@ -96,6 +96,38 @@ periodics:
     testgrid-tab-name: ci-crio-cgroupv1-node-e2e-features
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
     description: "OWNER: sig-node; runs NodeFeatures e2e tests with crio master and cgroup v1"
+- name: ci-crio-cgroupv1-node-e2e-eviction
+  interval: 4h30m
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211210-0c6ec8feca-master
+      args:
+      - --root=/go/src
+      - --repo=k8s.io/kubernetes
+      - "--timeout=320"
+      - --scenario=kubernetes_e2e
+      - -- # end bootstrap args, scenario args below
+      - --deployment=node
+      - --env=KUBE_SSH_USER=core
+      - --gcp-project-type=node-e2e-project
+      - --gcp-zone=us-west1-b
+      - '--node-test-args=--feature-gates=LocalStorageCapacityIsolation=true --container-runtime=remote --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service --non-masquerade-cidr=0.0.0.0/0" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
+      - --node-tests=true
+      - --provider=gce
+      - --test_args=--nodes=1 --focus="\[NodeFeature:Eviction\]"
+      - --timeout=300m
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1-serial.yaml
+      env:
+      - name: GOPATH
+        value: /go
+  annotations:
+    testgrid-dashboards: sig-node-cri-o
+    testgrid-tab-name: ci-crio-cgroupv1-node-e2e-eviction
+    testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
+    description: "OWNER: sig-node; runs Eviction e2e tests with crio master and cgroup v1"
 - name: ci-crio-cgroupv2-node-e2e-conformance
   interval: 1h
   labels:

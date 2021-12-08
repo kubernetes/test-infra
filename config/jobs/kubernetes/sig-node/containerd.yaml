@@ -482,6 +482,46 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-cos
     testgrid-tab-name: e2e-cos-alpha-features
+
+- name: ci-kubernetes-node-kubelet-containerd-eviction
+  cluster: k8s-infra-prow-build
+  interval: 4h30m
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211210-0c6ec8feca-master
+      args:
+      - --repo=k8s.io/kubernetes=master
+      - --timeout=320
+      - --root=/go/src
+      - --scenario=kubernetes_e2e
+      - --
+      - --deployment=node
+      - --gcp-zone=us-west1-b
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/image-config-serial.yaml
+      - '--node-test-args=--feature-gates=LocalStorageCapacityIsolation=true --container-runtime=remote --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+      - --node-tests=true
+      - --provider=gce
+      - --test_args=--nodes=1 --focus="\[NodeFeature:Eviction\]"
+      - --timeout=300m
+      env:
+      - name: GOPATH
+        value: /go
+      resources:
+        limits:
+          cpu: 4
+          memory: 6Gi
+        requests:
+          cpu: 4
+          memory: 6Gi
+  annotations:
+    testgrid-dashboards: sig-node-containerd
+    testgrid-tab-name: node-kubelet-containerd-eviction
+    testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
+    description: "Uses kubetest to run node-e2e Eviction tests"
+
 - interval: 2h
   name: ci-cri-containerd-e2e-cos-gce-flaky
   labels:
