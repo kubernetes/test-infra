@@ -111,9 +111,9 @@ function deploy_prow() {
   echo "Deploy prow components"
   # An unfortunately workaround for https://github.com/kubernetes/ingress-nginx/issues/5968.
   do-kubectl delete -A ValidatingWebhookConfiguration ingress-nginx-admission
-  do-kubectl create configmap config --from-file=config.yaml=${CONFIG_ROOT_DIR}/config.yaml --dry-run -oyaml | kubectl apply -f -
-  do-kubectl create configmap plugins --from-file=plugins.yaml=${CONFIG_ROOT_DIR}/plugins.yaml --dry-run -oyaml | kubectl apply -f -
-  do-kubectl create configmap job-config --from-file=periodics.yaml=${CONFIG_ROOT_DIR}/jobs/periodics.yaml --dry-run -oyaml | kubectl apply -f -
+  do-kubectl create configmap config --from-file=config.yaml=${CONFIG_ROOT_DIR}/config.yaml --dry-run=client -oyaml | kubectl apply -f -
+  do-kubectl create configmap plugins --from-file=plugins.yaml=${CONFIG_ROOT_DIR}/plugins.yaml --dry-run=client -oyaml | kubectl apply -f -
+  do-kubectl create configmap job-config --from-file=periodics.yaml=${CONFIG_ROOT_DIR}/jobs/periodics.yaml --dry-run=client -oyaml | kubectl apply -f -
   do-kubectl apply --server-side=true -f ${CONFIG_ROOT_DIR}/cluster
 
   echo "Wait until nginx is ready"
