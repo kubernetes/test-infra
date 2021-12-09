@@ -144,7 +144,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-conformance-release-v1beta1
-  - name: pull-cluster-api-provider-gcp-conformance-ci-artifacts
+  - name: pull-cluster-api-provider-gcp-conformance-ci-artifacts-release-v1beta1
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
