@@ -1,5 +1,5 @@
 periodics:
-- name: periodic-cluster-api-provider-gcp-conformance-v1alpha4
+- name: periodic-cluster-api-provider-gcp-conformance-v1beta1
   labels:
     preset-service-account: "true"
     preset-bazel-scratch-dir: "true"
@@ -9,23 +9,19 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 3h
-  interval: 24h
+  interval: 12h
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-gcp
-    base_ref: release-0.4
+    base_ref: release-1.0
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
-  - org: kubernetes-sigs
-    repo: image-builder
-    base_ref: master
-    path_alias: "sigs.k8s.io/image-builder"
   - org: kubernetes
     repo: kubernetes
     base_ref: release-1.20
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.20
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211208-f65d241207-master
         env:
           - name: "BOSKOS_HOST"
             value: "boskos.test-pods.svc.cluster.local"
@@ -44,10 +40,10 @@ periodics:
             cpu: 2000m
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-    testgrid-tab-name: capg-conformance-v1alpha4-release-0-4
+    testgrid-tab-name: capg-conformance-release-v1beta1
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
-    testgrid-num-failures-to-alert: "2"
-- name: periodic-cluster-api-provider-gcp-conformance-v1alpha4-k8s-ci-artifacts
+    testgrid-num-failures-to-alert: "5"
+- name: periodic-cluster-api-provider-gcp-conformance-v1beta1-ci-artifacts
   labels:
     preset-service-account: "true"
     preset-bazel-scratch-dir: "true"
@@ -57,11 +53,11 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 3h
-  interval: 24h
+  interval: 12h
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-gcp
-      base_ref: release-0.4
+      base_ref: release-1.0
       path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     - org: kubernetes-sigs
       repo: image-builder
@@ -73,7 +69,7 @@ periodics:
       path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211208-f65d241207-master
         env:
           - name: "BOSKOS_HOST"
             value: "boskos.test-pods.svc.cluster.local"
@@ -92,7 +88,7 @@ periodics:
             # during the tests more like 3-20m is used
             cpu: 2000m
   annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-    testgrid-tab-name: capg-conformance-v1alpha4-release-0-4-ci-artifacts
-    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
-    testgrid-num-failures-to-alert: "2"
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp, sig-release-master-informing
+    testgrid-tab-name: capg-conformance-v1beta1-ci-artifacts
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io, release-team@kubernetes.io
+    testgrid-num-failures-to-alert: "5"

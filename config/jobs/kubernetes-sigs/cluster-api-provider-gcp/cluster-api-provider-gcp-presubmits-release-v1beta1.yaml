@@ -1,15 +1,15 @@
 presubmits:
   kubernetes-sigs/cluster-api-provider-gcp:
-  - name: pull-cluster-api-provider-gcp-test-release-0-4
+  - name: pull-cluster-api-provider-gcp-test-v1beta1
     always_run: true
     optional: false
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
-      - ^release-0.4$
+      - ^release-1.0$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211208-f65d241207-master
         command:
         - "./scripts/ci-test.sh"
         resources:
@@ -18,17 +18,17 @@ presubmits:
             cpu: "2"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-      testgrid-tab-name: pr-test-release-0-4
-  - name: pull-cluster-api-provider-gcp-build-release-0-4
+      testgrid-tab-name: pr-test-release-v1beta1
+  - name: pull-cluster-api-provider-gcp-build-v1beta1
     always_run: true
     optional: false
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
-      - ^release-0.4$
+      - ^release-1.0$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211208-f65d241207-master
         command:
         - "./scripts/ci-build.sh"
         resources:
@@ -37,8 +37,8 @@ presubmits:
             cpu: "2"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-      testgrid-tab-name: pr-build-release-0-4
-  - name: pull-cluster-api-provider-gcp-make-release-0-4
+      testgrid-tab-name: pr-build-release-v1beta1
+  - name: pull-cluster-api-provider-gcp-make-release-v1beta1
     always_run: true
     optional: false
     decorate: true
@@ -47,10 +47,10 @@ presubmits:
       preset-kind-volume-mounts: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
-      - ^release-0.4$
+      - ^release-1.0$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211208-f65d241207-master
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -63,8 +63,8 @@ presubmits:
             cpu: "2"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-      testgrid-tab-name: pr-make-release-0-4
-  - name: pull-cluster-api-provider-gcp-e2e-test-release-0-4
+      testgrid-tab-name: pr-make-release-v1beta1
+  - name: pull-cluster-api-provider-gcp-e2e-test-release-v1beta1
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
@@ -73,7 +73,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
-      - ^release-0.4$
+      - ^release-1.0$
     always_run: true
     optional: false
     decorate: true
@@ -86,7 +86,7 @@ presubmits:
       path_alias: "sigs.k8s.io/image-builder"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211208-f65d241207-master
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"
@@ -105,9 +105,9 @@ presubmits:
               cpu: 2000m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-      testgrid-tab-name: pr-e2e-test-release-0-4
+      testgrid-tab-name: pr-e2e-test-release-v1beta1
   # conformance test against kubernetes master branch with `kind` + cluster-api-provider-gcp
-  - name: pull-cluster-api-provider-gcp-make-conformance-release-0-4
+  - name: pull-cluster-api-provider-gcp-make-conformance-release-v1beta1
     labels:
       preset-service-account: "true"
       preset-bazel-scratch-dir: "true"
@@ -116,7 +116,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
     branches:
-      - ^release-0.4$
+      - ^release-1.0$
     always_run: false
     optional: true
     decorate: true
@@ -133,7 +133,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211208-f65d241207-master
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"
@@ -153,4 +153,4 @@ presubmits:
               cpu: 2000m
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
-      testgrid-tab-name: pr-conformance-release-0-4
+      testgrid-tab-name: pr-conformance-release-v1beta1
