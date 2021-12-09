@@ -34,8 +34,7 @@ presubmits:
             - bash
             - -c
             - >-
-              cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&
-              ./deploy/install-driver.sh master local,snapshot,enable-avset &&
+              cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
               make e2e-test
           env:
             - name: AZURE_STORAGE_DRIVER
@@ -84,8 +83,7 @@ presubmits:
             - bash
             - -c
             - >-
-              cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&
-              ./deploy/install-driver.sh master local,snapshot &&
+              cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
               make e2e-test
           env:
             - name: AZURE_STORAGE_DRIVER
@@ -137,8 +135,7 @@ presubmits:
             - -c
             - >-
               kubectl apply -f templates/addons/azurefile-role.yaml &&
-              cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
-              ./deploy/install-driver.sh master local,snapshot &&
+              cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
               make e2e-test
           env:
             - name: AZURE_STORAGE_DRIVER
@@ -188,8 +185,7 @@ presubmits:
             - -c
             - >-
               kubectl apply -f templates/addons/azurefile-role.yaml &&
-              cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
-              ./deploy/install-driver.sh master local,snapshot &&
+              cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
               make e2e-test
           env:
             - name: AZURE_STORAGE_DRIVER
@@ -365,8 +361,7 @@ periodics:
       - -c
       - >-
         kubectl apply -f templates/addons/azurefile-role.yaml &&
-        cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
-        ./deploy/install-driver.sh master local,snapshot &&
+        cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
         make e2e-test
       env:
       - name: USE_CI_ARTIFACTS
@@ -418,8 +413,7 @@ periodics:
       - -c
       - >-
         kubectl apply -f templates/addons/azurefile-role.yaml &&
-        cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
-        ./deploy/install-driver.sh master local,snapshot &&
+        cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
         make e2e-test
       env:
       - name: USE_CI_ARTIFACTS
@@ -472,8 +466,7 @@ periodics:
       - bash
       - -c
       - >-
-        cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&
-        ./deploy/install-driver.sh master local,snapshot,enable-avset &&
+        cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
         make e2e-test
       env:
       - name: USE_CI_ARTIFACTS
@@ -524,8 +517,7 @@ periodics:
       - bash
       - -c
       - >-
-        cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&
-        ./deploy/install-driver.sh master local,snapshot &&
+        cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
         make e2e-test
       env:
       - name: USE_CI_ARTIFACTS
