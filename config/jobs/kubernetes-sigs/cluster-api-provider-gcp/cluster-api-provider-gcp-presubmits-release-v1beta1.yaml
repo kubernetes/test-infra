@@ -106,7 +106,6 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-e2e-test-release-v1beta1
-  # conformance test against kubernetes master branch with `kind` + cluster-api-provider-gcp
   - name: pull-cluster-api-provider-gcp-make-conformance-release-v1beta1
     labels:
       preset-service-account: "true"
@@ -191,3 +190,38 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-conformance-ci-artifacts-release-v1beta1
+  - name: pull-cluster-api-provider-gcp-capi-e2e-release-v1beta1
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
+    branches:
+    - ^release-1.0$
+    always_run: false
+    optional: true
+    decorate: true
+    decoration_config:
+      timeout: 3h
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.22
+          env:
+            - name: "BOSKOS_HOST"
+              value: "boskos.test-pods.svc.cluster.local"
+            - name: GINKGO_FOCUS
+              value: "Cluster API E2E tests"
+          command:
+            - "runner.sh"
+            - "./scripts/ci-e2e.sh"
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              memory: "9000Mi"
+              cpu: 2000m
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
+      testgrid-tab-name: pr-capi-e2e-release-v1beta1
