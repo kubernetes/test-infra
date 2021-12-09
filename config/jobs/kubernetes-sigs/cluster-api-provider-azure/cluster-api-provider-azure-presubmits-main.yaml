@@ -135,7 +135,7 @@ presubmits:
     always_run: false
     optional: true
     decorate: true
-    run_if_changed: '^((exp)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
+    run_if_changed: '^((exp)/|main\.go|go\.mod|go\.sum|managed.*\.go|Dockerfile|Makefile)'
     max_concurrency: 5
     labels:
       preset-dind-enabled: "true"
