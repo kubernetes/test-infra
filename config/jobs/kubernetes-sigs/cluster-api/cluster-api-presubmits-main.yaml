@@ -183,7 +183,7 @@ presubmits:
         - name: GINKGO_FOCUS
           value: "\\[PR-Informing\\]"
         - name: GINKGO_SKIP
-          value: "\\[[IPv6]\\]"
+          value: "\\[IPv6\\]"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -212,7 +212,7 @@ presubmits:
           - "./scripts/ci-e2e.sh"
         env:
           - name: GINKGO_FOCUS
-            value: "\\[[IPv6]\\] \\[PR-Informing\\]"
+            value: "\\[IPv6\\] \\[PR-Informing\\]"
           - name: IP_FAMILY
             value: "IPv6"
         # we need privileged mode in order to do docker in docker
