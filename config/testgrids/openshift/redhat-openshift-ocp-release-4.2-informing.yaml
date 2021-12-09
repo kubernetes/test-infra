@@ -834,11 +834,9 @@ test_groups:
   name: periodic-ci-openshift-release-master-nightly-4.2-e2e-gcp-fips
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.2-e2e-gcp-fips-serial
   name: periodic-ci-openshift-release-master-nightly-4.2-e2e-gcp-fips-serial
-- days_of_results: 8
-  gcs_prefix: origin-ci-test/logs/promote-release-openshift-machine-os-content-e2e-aws-4.1
+- gcs_prefix: origin-ci-test/logs/promote-release-openshift-machine-os-content-e2e-aws-4.1
   name: promote-release-openshift-machine-os-content-e2e-aws-4.1
-- days_of_results: 8
-  gcs_prefix: origin-ci-test/logs/promote-release-openshift-machine-os-content-e2e-aws-4.2
+- gcs_prefix: origin-ci-test/logs/promote-release-openshift-machine-os-content-e2e-aws-4.2
   name: promote-release-openshift-machine-os-content-e2e-aws-4.2
 - days_of_results: 33
   gcs_prefix: origin-ci-test/logs/promote-release-openshift-machine-os-content-e2e-aws-4.2-s390x
