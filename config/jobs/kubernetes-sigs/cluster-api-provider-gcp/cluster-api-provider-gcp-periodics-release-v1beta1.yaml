@@ -1,4 +1,46 @@
 periodics:
+- name: periodic-cluster-api-provider-gcp-build-v1beta1
+  interval: 4h
+  decorate: true
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-gcp
+    base_ref: release-1.0
+    path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+      command:
+      - "runner.sh"
+      - "./scripts/ci-build.sh"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
+    testgrid-tab-name: capg-build-v1beta1
+- name: periodic-cluster-api-provider-gcp-test-v1beta1
+  interval: 4h
+  decorate: true
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-gcp
+    base_ref: release-1.0
+    path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+      args:
+      - "runner.sh"
+      - "./scripts/ci-test.sh"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
+    testgrid-tab-name: capg-test-v1beta1
 - name: periodic-cluster-api-provider-gcp-conformance-v1beta1
   labels:
     preset-service-account: "true"
@@ -15,13 +57,9 @@ periodics:
     repo: cluster-api-provider-gcp
     base_ref: release-1.0
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: release-1.20
-    path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211208-f65d241207-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-1.22
         env:
           - name: "BOSKOS_HOST"
             value: "boskos.test-pods.svc.cluster.local"
@@ -63,20 +101,20 @@ periodics:
       repo: image-builder
       base_ref: master
       path_alias: "sigs.k8s.io/image-builder"
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: master
-      path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211208-f65d241207-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
         env:
           - name: "BOSKOS_HOST"
             value: "boskos.test-pods.svc.cluster.local"
+          - name: E2E_ARGS
+            value: "-kubetest.use-ci-artifacts"
+          - name: USE_CI_ARTIFACTS
+            value: "true"
         command:
           - "runner.sh"
           - "./scripts/ci-conformance.sh"
-          - "--use-ci-artifacts"
+          - "--init-image"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
