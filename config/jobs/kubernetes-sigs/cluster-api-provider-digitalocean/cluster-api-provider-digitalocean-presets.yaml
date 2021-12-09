@@ -8,3 +8,15 @@ presets:
       secretKeyRef:
         name: cluster-api-provider-digitalocean-token
         key: DIGITALOCEAN_ACCESS_TOKEN
+# Credentials for using Quay.io account. Used for cluster-api-provider-digitalocean tests.
+- labels:
+    preset-capdo-quayio-credential: "true"
+  volumes:
+  - name: capdo-quay-cred
+    secret:
+      defaultMode: 0400
+      secretName: cluster-api-provider-digitalocean-quayio
+  volumeMounts:
+  - name: capdo-quay-cred
+    mountPath: /root/.docker/config.json
+    readOnly: true
