@@ -336,12 +336,13 @@ func findReviewer(ghc githubClient, log *logrus.Entry, useStatusAvailability boo
 		}
 		busy, err := isUserBusy(ghc, candidate)
 		if err != nil {
-			log.Errorf("error checking user availability: %v", err)
+			log.WithField("user", candidate).WithError(err).Error("Error checking user availability")
 		}
 		if !busy {
 			return candidate
 		}
 		// if we haven't returned the candidate, then they must be busy.
+		log.WithField("user", candidate).Debug("User marked as a busy reviewer")
 		busyReviewers.Insert(candidate)
 	}
 	return ""
