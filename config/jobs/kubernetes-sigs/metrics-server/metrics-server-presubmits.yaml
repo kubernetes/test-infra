@@ -8,7 +8,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211208-9473f90198-master
         command:
         - runner.sh
         - make
@@ -26,7 +26,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211208-9473f90198-master
         command:
         - runner.sh
         - make
@@ -48,7 +48,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211208-9473f90198-master
         command:
         - runner.sh
         - make
@@ -74,7 +74,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211208-9473f90198-master
         command:
           - runner.sh
           - make
@@ -102,7 +102,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211208-9473f90198-master
         command:
           - runner.sh
           - make

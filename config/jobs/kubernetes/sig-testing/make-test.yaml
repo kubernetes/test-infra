@@ -19,7 +19,7 @@ presubmits:
         runAsUser: 2000
         allowPrivilegeEscalation: false
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211208-9473f90198-master
           command:
             - make
             - test
@@ -92,7 +92,7 @@ presubmits:
         runAsUser: 2000
         allowPrivilegeEscalation: false
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-go-canary
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211208-9473f90198-go-canary
           command:
             - make
             - test
@@ -128,7 +128,7 @@ periodics:
         runAsUser: 2000
         allowPrivilegeEscalation: false
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211208-9473f90198-master
           command:
             - make
             - test
@@ -158,7 +158,7 @@ periodics:
         runAsUser: 2000
         allowPrivilegeEscalation: false
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211208-9473f90198-master
           command:
             - runner.sh
             - bash
@@ -188,7 +188,7 @@ periodics:
         runAsUser: 2000
         allowPrivilegeEscalation: false
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211208-9473f90198-master
           command:
             - runner.sh
             - bash
@@ -219,7 +219,7 @@ periodics:
         runAsUser: 2000
         allowPrivilegeEscalation: false
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211208-9473f90198-master
           command:
             - runner.sh
             - bash

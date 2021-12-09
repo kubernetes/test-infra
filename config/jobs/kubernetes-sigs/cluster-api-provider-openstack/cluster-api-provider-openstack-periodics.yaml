@@ -22,7 +22,7 @@ periodics:
   max_concurrency: 1
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211208-9473f90198-master
       env:
       - name: "BOSKOS_HOST"
         value: "boskos.test-pods.svc.cluster.local"
@@ -72,7 +72,7 @@ periodics:
   max_concurrency: 1
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211208-9473f90198-master
       env:
       - name: "BOSKOS_HOST"
         value: "boskos.test-pods.svc.cluster.local"
