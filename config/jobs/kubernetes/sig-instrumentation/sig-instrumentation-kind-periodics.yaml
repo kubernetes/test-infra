@@ -38,8 +38,7 @@ periodics:
         value: json
       - name: KIND_CLUSTER_LOG_LEVEL
         # Default is 4, but we want to exercise more log calls and get more output.
-        # TODO: go even higher, depending on log volume
-        value: "6"
+        value: "10"
       # don't retry conformance tests
       - name: GINKGO_TOLERATE_FLAKES
         value: "n"
