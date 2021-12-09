@@ -200,8 +200,8 @@ gen-prowjob-crd(){
             - required:
               - completionTime
 EOF
-    ) > ./config/prow/cluster/prowjob_customresourcedefinition.yaml
-  copyfiles "./config/prow/cluster" "prowjob_customresourcedefinition.yaml"
+    ) > ./config/prow/cluster/prowjob-crd/prowjob_customresourcedefinition.yaml
+  copyfiles "./config/prow/cluster/prowjob-crd" "prowjob_customresourcedefinition.yaml"
   unset HOME
 }
 

@@ -38,8 +38,8 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//config/prow/cluster/build:all-srcs",
-        "//config/prow/cluster/legacy:all-srcs",
         "//config/prow/cluster/monitoring:all-srcs",
+        "//config/prow/cluster/prowjob-crd/legacy:all-srcs",
         "//config/prow/cluster/starter:all-srcs",
     ],
     tags = ["automanaged"],

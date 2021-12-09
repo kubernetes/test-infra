@@ -67,7 +67,7 @@ $ bazel run //prow/cmd/tackle
 2. Once your cluster is created, you'll get a prompt to apply a `starter.yaml`. Before you do that open another terminal and apply the prow CRDs using:
 
 ```
-kubectl apply --server-side=true -f https://raw.githubusercontent.com/kubernetes/test-infra/master/config/prow/cluster/prowjob_customresourcedefinition.yaml
+kubectl apply --server-side=true -f https://raw.githubusercontent.com/kubernetes/test-infra/master/config/prow/cluster/prowjob-crd/prowjob_customresourcedefinition.yaml
 ```
 
 3. After that specify the `starter.yaml` you want to use (please make sure to replace the values mentioned [here](#update-the-sample-manifest)). Once that is done some pods still won't be in the `Running` state because we haven't created the secret containing the credentials needed for our GCS bucket. To do that follow the steps in [Configure a GCS bucket](#configure-a-gcs-bucket).
@@ -189,7 +189,7 @@ Regardless of which object storage you choose, the below adjustments are always 
 First you need to create the ProwJob custom resource:
 
 ```
-kubectl apply --server-side=true -f config/prow/cluster/prowjob_customresourcedefinition.yaml
+kubectl apply --server-side=true -f config/prow/cluster/prowjob-crd/prowjob_customresourcedefinition.yaml
 ```
 
 Apply the manifest you edited above by executing one of the following two commands:
