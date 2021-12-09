@@ -3,7 +3,7 @@ periodics:
   name: ci-kubernetes-e2e-aks-engine-azure-1-20-windows
   decorate: true
   decoration_config:
-    timeout: 3h
+    timeout: 12h
   labels:
     preset-service-account: "true"
     preset-azure-cred: "true"
