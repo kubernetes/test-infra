@@ -8,7 +8,6 @@ dashboard_groups:
     - sig-node-containerd
     - sig-node-ppc64le
     - sig-node-cri-o
-    - sig-node-docker
     - sig-node-cri-tools
     - sig-node-node-feature-discovery
     - sig-node-node-problem-detector
@@ -69,7 +68,6 @@ dashboards:
         url: https://gcsweb-ci.svc.ci.openshift.org/gcs/<gcs_prefix>
       base_options: width=10
 
-- name: sig-node-docker
 - name: sig-node-cri-tools
 - name: sig-node-node-feature-discovery
 
@@ -98,54 +96,3 @@ dashboards:
 
 - name: sig-node-cos
 - name: sig-node-presubmits
-
-test_groups:
-- name: ci-kubernetes-node-kubelet-alpha
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-alpha
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
-- name: ci-kubernetes-node-kubelet-flaky
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-flaky
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
-- name: ci-kubernetes-node-kubelet-features
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-features
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
-- name: ci-kubernetes-node-kubelet
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
-- name: ci-kubernetes-node-kubelet-orphans
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-orphans
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
-- name: ci-kubernetes-node-kubelet-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-serial
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
-- name: ci-kubernetes-node-kubelet-serial-topology-manager
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-serial-topology-manager
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
