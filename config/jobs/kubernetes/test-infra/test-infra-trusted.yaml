@@ -130,7 +130,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-bazel:v20210128-v0.6-11-gf1c6399
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20200824-5d057db
         command:
         - make
         args:
