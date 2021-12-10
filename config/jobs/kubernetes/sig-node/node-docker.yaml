@@ -6,7 +6,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211208-9473f90198-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211210-0c6ec8feca-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=90
@@ -50,7 +50,7 @@ periodics:
     testgrid-tab-name: docker-node-conformance-kubetest2
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211208-9473f90198-experimental
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211210-0c6ec8feca-experimental
       env:
       - name: GOPATH
         value: /go
@@ -75,7 +75,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211208-9473f90198-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211210-0c6ec8feca-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=200
@@ -104,7 +104,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211208-9473f90198-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211210-0c6ec8feca-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=200
