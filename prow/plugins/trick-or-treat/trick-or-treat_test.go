@@ -17,6 +17,7 @@ limitations under the License.
 package trickortreat
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -59,7 +60,7 @@ func TestImages(t *testing.T) {
 }
 
 func TestReadImage(t *testing.T) {
-	img, err := trickOrTreat.readImage(nil)
+	img, err := trickOrTreat.readImage(logrus.WithContext(context.Background()))
 	if err != nil {
 		t.Errorf("Could not read candies from %#v: %v", trickOrTreat, err)
 		return
