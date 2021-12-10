@@ -449,7 +449,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: k8s.gcr.io/artifact-promoter/kpromo:v3.3.0-beta.1-3
+      - image: k8s.gcr.io/artifact-promoter/kpromo:v3.3.0-1
         command:
         - /kpromo
         args:
