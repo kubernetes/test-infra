@@ -1,0 +1,113 @@
+presubmits:
+  IBM/crossplane-provider-ibm-cloud:
+  - name: build_crossplane-provider-ibm-cloud
+    branches:
+    - ^master$
+    - ^release-cd$
+    - ^release-efix$
+    - ^release-eus$
+    - ^release-future$
+    labels:
+      preset-service-account: "true"
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/crossplane-provider-ibm-cloud
+    rerun_command: /test build crossplane-provider-ibm-cloud
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tool:v20210203-ad22dc7f6
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
+  - name: test_crossplane-provider-ibm-cloud
+    branches:
+    - ^master$
+    - ^release-cd$
+    - ^release-efix$
+    - ^release-eus$
+    - ^release-future$
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/crossplane-provider-ibm-cloud
+    rerun_command: /test test crossplane-provider-ibm-cloud
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tool:v20210203-ad22dc7f6
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?test(?: .*?)?$'
+
+postsubmits:
+  IBM/crossplane-provider-ibm-cloud:
+  - name: test_crossplane-provider-ibm-cloud_postsubmit
+    branches:
+    - ^master$
+    - ^release-cd$
+    - ^release-efix$
+    - ^release-eus$
+    - ^release-future$
+    decorate: true
+    path_alias: github.com/IBM/crossplane-provider-ibm-cloud
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tool:v20210203-ad22dc7f6
+        name: ""
+        securityContext:
+          privileged: true
+  - name: build_crossplane-provider-ibm-cloud_postsubmit
+    branches:
+    - ^master$
+    - ^release-cd$
+    - ^release-efix$
+    - ^release-eus$
+    - ^release-future$
+    labels:
+      preset-service-account: "true"
+    decorate: true
+    path_alias: github.com/IBM/crossplane-provider-ibm-cloud
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build
+        image: quay.io/multicloudlab/build-tool:v20210203-ad22dc7f6
+        name: ""
+        securityContext:
+          privileged: true
+  - name: images_crossplane-provider-ibm-cloud_postsubmit
+    branches:
+    - ^master$
+    - ^release-cd$
+    - ^release-efix$
+    - ^release-eus$
+    - ^release-future$
+    decorate: true
+    path_alias: github.com/IBM/crossplane-provider-ibm-cloud
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - images
+        image: quay.io/multicloudlab/build-tool:v20210203-ad22dc7f6
+        name: ""
+        securityContext:
+          privileged: true
+
