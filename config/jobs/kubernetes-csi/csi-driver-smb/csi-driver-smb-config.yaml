@@ -391,6 +391,8 @@ presubmits:
         - --env=KUBE_NODE_OS_DISTRIBUTION=cos
         - --env=KUBE_GCE_NODE_IMAGE=cos-89-16108-470-11
         - --env=KUBE_GCE_NODE_PROJECT=cos-cloud
+        - --env=KUBE_WINDOWS_CONTAINER_RUNTIME=containerd
+        - --env=KUBERNETES_NODE_PLATFORM=windows
         - --extract=ci/latest
         - --gcp-zone=us-west1-b
         - --ginkgo-parallel=8
