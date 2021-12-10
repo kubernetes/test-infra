@@ -21,6 +21,8 @@ limitations under the License.
 package config
 
 import (
+	json "encoding/json"
+
 	v1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	v1 "k8s.io/api/core/v1"
 	prowjobsv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -256,6 +258,15 @@ func (in *ProwYAML) DeepCopyInto(out *ProwYAML) {
 		*out = make([]Postsubmit, len(*in))
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
+	if in.ProwIgnored != nil {
+		in, out := &in.ProwIgnored, &out.ProwIgnored
+		*out = new(json.RawMessage)
+		if **in != nil {
+			in, out := *in, *out
+			*out = make([]byte, len(*in))
+			copy(*out, *in)
 		}
 	}
 	return

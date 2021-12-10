@@ -17,6 +17,7 @@ limitations under the License.
 package config
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -45,6 +46,10 @@ type ProwYAML struct {
 	Presets     []Preset     `json:"presets"`
 	Presubmits  []Presubmit  `json:"presubmits"`
 	Postsubmits []Postsubmit `json:"postsubmits"`
+
+	// ProwIgnored is a well known, unparsed field where non-Prow fields can
+	// be defined without conflicting with unknown field validation.
+	ProwIgnored *json.RawMessage `json:"prow_ignored,omitempty"`
 }
 
 // ProwYAMLGetter is used to retrieve a ProwYAML. Tests should provide
