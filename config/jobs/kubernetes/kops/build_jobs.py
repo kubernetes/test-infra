@@ -364,7 +364,6 @@ distro_options = [
 
 k8s_versions = [
     #"latest", # disabled until we're ready to test 1.23
-    "1.20",
     "1.21",
     "1.22",
     "1.23"
@@ -373,7 +372,8 @@ k8s_versions = [
 kops_versions = [
     None, # maps to latest
     "1.21",
-    "1.22"
+    "1.22",
+    "1.23"
 ]
 
 container_runtimes = [
@@ -835,7 +835,7 @@ def generate_versions():
 ######################
 def generate_pipeline():
     results = []
-    for version in ['master', '1.22', '1.21', '1.20']:
+    for version in ['master', '1.23', '1.22', '1.21', '1.20']:
         branch = version if version == 'master' else f"release-{version}"
         publish_version_marker = f"gs://kops-ci/markers/{branch}/latest-ci-updown-green.txt"
         kops_version = f"https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/{branch}/latest-ci.txt" # pylint: disable=line-too-long
@@ -1087,6 +1087,16 @@ def generate_presubmits_e2e():
                          "--master-size=m6g.large"],
         ),
 
+        presubmit_test(
+            branch='release-1.23',
+            k8s_version='1.23',
+            kops_channel='alpha',
+            name='pull-kops-e2e-kubernetes-aws-1-23',
+            networking='calico',
+            tab_name='e2e-1-23',
+            always_run=True,
+            skip_regex=skip_regex,
+        ),
         presubmit_test(
             branch='release-1.22',
             k8s_version='1.22',
