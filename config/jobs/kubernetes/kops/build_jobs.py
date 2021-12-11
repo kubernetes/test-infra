@@ -756,15 +756,14 @@ def generate_network_plugins():
 def generate_upgrades():
     versions_list = [
         #  kops    k8s          kops      k8s
-        (('1.21', 'v1.21.7'), ('latest', '1.22.4')),
+        (('1.22', 'v1.22.4'), ('1.23', 'v1.23.0')),
         (('1.22', 'v1.22.4'), ('latest', '1.23.0')),
-        (('1.21', 'v1.21.7'), ('1.22', 'v1.22.4')),
-        #(('latest', 'v1.23.0'), ('latest', 'latest')),
+        (('1.23', 'v1.23.0'), ('latest', 'latest')),
+        (('latest', 'v1.23.0'), ('latest', 'latest')),
         (('latest', 'v1.22.4'), ('latest', 'v1.23.0')),
         (('latest', 'v1.21.7'), ('latest', 'v1.22.4')),
         (('latest', 'v1.20.6'), ('latest', 'v1.21.7')),
         (('latest', 'v1.19.16'), ('latest', 'v1.20.6')),
-        (('latest', 'v1.18.20'), ('latest', 'v1.19.16')),
     ]
     def shorten(version):
         version = re.sub(r'^v', '', version)
@@ -835,7 +834,7 @@ def generate_versions():
 ######################
 def generate_pipeline():
     results = []
-    for version in ['master', '1.23', '1.22', '1.21', '1.20']:
+    for version in ['master', '1.23', '1.22', '1.21']:
         branch = version if version == 'master' else f"release-{version}"
         publish_version_marker = f"gs://kops-ci/markers/{branch}/latest-ci-updown-green.txt"
         kops_version = f"https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/{branch}/latest-ci.txt" # pylint: disable=line-too-long
