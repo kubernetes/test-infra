@@ -735,9 +735,12 @@ def generate_network_plugins():
     results = []
     for plugin in plugins:
         networking_arg = plugin.replace('amazon-vpc', 'amazonvpc').replace('kuberouter', 'kube-router') # pylint: disable=line-too-long
+        k8s_version = 'stable'
+        if plugin == 'weave':
+            k8s_version = '1.22'
         results.append(
             build_test(
-                k8s_version='stable',
+                k8s_version=k8s_version,
                 kops_channel='alpha',
                 name_override=f"kops-aws-cni-{plugin}",
                 networking=networking_arg,
@@ -873,9 +876,12 @@ def generate_presubmits_network_plugins():
         networking_arg = plugin
         if plugin == 'kuberouter':
             networking_arg = 'kube-router'
+        k8s_version = 'stable'
+        if plugin == 'weave':
+            k8s_version = '1.22'
         results.append(
             presubmit_test(
-                k8s_version='stable',
+                k8s_version=k8s_version,
                 kops_channel='alpha',
                 name=f"pull-kops-e2e-cni-{plugin}",
                 tab_name=f"e2e-{plugin}",
