@@ -317,8 +317,6 @@ def presubmit_test(branch='master',
         'presubmits-kops',
         'kops-presubmits',
         'sig-cluster-lifecycle-kops',
-        f"kops-distro-{distro}",
-        f"kops-k8s-{k8s_version or 'latest'}",
     ]
     if extra_dashboards:
         dashboards.extend(extra_dashboards)
@@ -883,7 +881,6 @@ def generate_presubmits_network_plugins():
                 tab_name=f"e2e-{plugin}",
                 networking=networking_arg,
                 extra_flags=['--node-size=t3.large'],
-                extra_dashboards=['kops-network-plugins'],
                 run_if_changed=run_if_changed,
             )
         )
@@ -901,7 +898,6 @@ def generate_presubmits_network_plugins():
                     extra_flags=['--ipv6',
                                  '--zones=us-west-2a',
                                  ],
-                    extra_dashboards=['kops-ipv6'],
                     run_if_changed=run_if_changed,
                 )
             )
