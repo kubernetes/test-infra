@@ -26,6 +26,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"github.com/prometheus/client_golang/prometheus"
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 
@@ -458,16 +459,19 @@ func (fghc *fakeGitHubClient) QueryWithGitHubAppsSupport(ctx context.Context, q 
 func TestBlockersFindAll(t *testing.T) {
 	t.Parallel()
 
+	counter := prometheus.NewCounterVec(prometheus.CounterOpts{}, []string{"", "", ""})
+
 	orgRepoTokensByOrg := map[string]string{
 		"org-a": `org:"org-a" -repo:"org-a/repo-b"`,
 		"org-b": `org:"org-b" -repo:"org-b/repo-b"`,
+		"org-c": `org:"org-c" -repo:"org-c/repo-c"`,
 	}
 	const blockerLabel = "tide/merge-blocker"
 	testCases := []struct {
-		name         string
-		usesAppsAuth bool
-
-		expectedQueries map[string][]string
+		name                 string
+		usesAppsAuth         bool
+		maxGraphQLGoroutines uint
+		expectedQueries      map[string][]string
 	}{
 		{
 			name:         "Apps auth, query is split by org",
@@ -475,13 +479,24 @@ func TestBlockersFindAll(t *testing.T) {
 			expectedQueries: map[string][]string{
 				"org-a": {`-repo:"org-a/repo-b" is:issue label:"tide/merge-blocker" org:"org-a" state:open`},
 				"org-b": {`-repo:"org-b/repo-b" is:issue label:"tide/merge-blocker" org:"org-b" state:open`},
+				"org-c": {`-repo:"org-c/repo-c" is:issue label:"tide/merge-blocker" org:"org-c" state:open`},
 			},
+		},
+		{
+			name:         "pps auth, query is split by org, goroutines limited",
+			usesAppsAuth: true,
+			expectedQueries: map[string][]string{
+				"org-a": {`-repo:"org-a/repo-b" is:issue label:"tide/merge-blocker" org:"org-a" state:open`},
+				"org-b": {`-repo:"org-b/repo-b" is:issue label:"tide/merge-blocker" org:"org-b" state:open`},
+				"org-c": {`-repo:"org-c/repo-c" is:issue label:"tide/merge-blocker" org:"org-c" state:open`},
+			},
+			maxGraphQLGoroutines: 1,
 		},
 		{
 			name:         "No apps auth, one query",
 			usesAppsAuth: false,
 			expectedQueries: map[string][]string{
-				"": {`-repo:"org-a/repo-b" -repo:"org-b/repo-b" is:issue label:"tide/merge-blocker" org:"org-a" org:"org-b" state:open`},
+				"": {`-repo:"org-a/repo-b" -repo:"org-b/repo-b" -repo:"org-c/repo-c" is:issue label:"tide/merge-blocker" org:"org-a" org:"org-b" org:"org-c" state:open`},
 			},
 		},
 	}
@@ -490,7 +505,7 @@ func TestBlockersFindAll(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ghc := &fakeGitHubClient{}
 
-			if _, err := FindAll(ghc, logrus.WithField("tc", tc.name), blockerLabel, orgRepoTokensByOrg, tc.usesAppsAuth); err != nil {
+			if _, err := FindAll(ghc, logrus.WithField("tc", tc.name), counter, blockerLabel, orgRepoTokensByOrg, tc.usesAppsAuth, tc.maxGraphQLGoroutines); err != nil {
 				t.Fatalf("FindAll: %v", err)
 			}
 

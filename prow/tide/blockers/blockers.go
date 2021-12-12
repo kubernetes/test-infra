@@ -21,14 +21,17 @@ import (
 	"fmt"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
 	githubql "github.com/shurcooL/githubv4"
 	"github.com/sirupsen/logrus"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/test-infra/prow/tide/queryutil"
 )
 
 var (
@@ -73,7 +76,7 @@ func (b Blockers) GetApplicable(org, repo, branch string) []Blocker {
 }
 
 // FindAll finds issues with label in the specified orgs/repos that should block tide.
-func FindAll(ghc githubClient, log *logrus.Entry, label string, orgRepoTokensByOrg map[string]string, splitQueryByOrg bool) (Blockers, error) {
+func FindAll(ghc githubClient, log *logrus.Entry, blockersQueryResults *prometheus.CounterVec, label string, orgRepoTokensByOrg map[string]string, splitQueryByOrg bool, maxGraphQLGoroutines uint) (Blockers, error) {
 	queries := map[string]sets.String{}
 	for org, query := range orgRepoTokensByOrg {
 		if splitQueryByOrg {
@@ -89,23 +92,35 @@ func FindAll(ghc githubClient, log *logrus.Entry, label string, orgRepoTokensByO
 	var issues []Issue
 	var errs []error
 	var lock sync.Mutex
-	var wg sync.WaitGroup
+
+	var toQuery []queryutil.QueryData
+	metricIndex := 0
+	for org, q := range queries {
+		query := strings.Join(q.List(), " ")
+		toQuery = append(toQuery, queryutil.QueryData{Query: query, Org: org, MetricIndex: metricIndex})
+		metricIndex++
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
-	for org, query := range queries {
-		org, query := org, strings.Join(query.List(), " ")
-		wg.Add(1)
-
-		go func() {
-			defer wg.Done()
+	queryutil.QueriesInParallel(
+		maxGraphQLGoroutines,
+		toQuery,
+		func(q queryutil.QueryData) {
 			result, err := search(
 				ctx,
 				ghc,
-				org,
+				q.Org,
 				log,
-				query,
+				q.Query,
 			)
+
+			resultString := "success"
+			if err != nil {
+				resultString = "error"
+			}
+			blockersQueryResults.WithLabelValues(strconv.Itoa(q.MetricIndex), q.Org, resultString).Inc()
+
 			lock.Lock()
 			defer lock.Unlock()
 			if err != nil {
@@ -113,11 +128,7 @@ func FindAll(ghc githubClient, log *logrus.Entry, label string, orgRepoTokensByO
 				return
 			}
 			issues = append(issues, result...)
-
-		}()
-
-	}
-	wg.Wait()
+		})
 
 	if err := utilerrors.NewAggregate(errs); err != nil {
 		return Blockers{}, fmt.Errorf("error searching for blocker issues: %w", err)

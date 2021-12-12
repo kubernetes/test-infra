@@ -1268,9 +1268,10 @@ func TestNewBaseSHAGetter(t *testing.T) {
 func TestStatusControllerSearch(t *testing.T) {
 	t.Parallel()
 	testCases := []struct {
-		name         string
-		prs          map[string][]PullRequest
-		usesAppsAuth bool
+		name                 string
+		prs                  map[string][]PullRequest
+		usesAppsAuth         bool
+		maxGraphQLGoroutines uint
 
 		expected []PullRequest
 	}{
@@ -1281,6 +1282,19 @@ func TestStatusControllerSearch(t *testing.T) {
 				"org-b": {{Number: githubql.Int(2)}},
 			},
 			usesAppsAuth: true,
+			expected: []PullRequest{
+				{Number: githubql.Int(1)},
+				{Number: githubql.Int(2)},
+			},
+		},
+		{
+			name: "Apps auth: Query gets split by org, goroutines limited",
+			prs: map[string][]PullRequest{
+				"org-a": {{Number: githubql.Int(1)}},
+				"org-b": {{Number: githubql.Int(2)}},
+			},
+			usesAppsAuth:         true,
+			maxGraphQLGoroutines: 1,
 			expected: []PullRequest{
 				{Number: githubql.Int(1)},
 				{Number: githubql.Int(2)},
@@ -1303,7 +1317,13 @@ func TestStatusControllerSearch(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ghc := &fgc{prs: tc.prs}
 			cfg := func() *config.Config {
-				return &config.Config{ProwConfig: config.ProwConfig{Tide: config.Tide{Queries: config.TideQueries{{Orgs: []string{"org-a", "org-b"}}}}}}
+				return &config.Config{ProwConfig: config.ProwConfig{
+					Tide: config.Tide{
+						MaxGraphQLGoroutines: tc.maxGraphQLGoroutines,
+						Queries:              config.TideQueries{{Orgs: []string{"org-a", "org-b"}}},
+					},
+				},
+				}
 			}
 			sc, err := newStatusController(context.Background(), logrus.WithField("tc", tc), ghc, newFakeManager(), nil, cfg, nil, "", nil, tc.usesAppsAuth)
 			if err != nil {

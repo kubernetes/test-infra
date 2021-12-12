@@ -41,6 +41,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/tide/blockers"
+	"k8s.io/test-infra/prow/tide/queryutil"
 )
 
 const (
@@ -610,34 +611,44 @@ func (sc *statusController) search() []PullRequest {
 	var prs []PullRequest
 	var errs []error
 	var lock sync.Mutex
-	var wg sync.WaitGroup
 
-	for org, query := range queries {
-		org, query := org, query
-		wg.Add(1)
+	var toQuery []queryutil.QueryData
+	metricIndex := 0
+	for org, q := range queries {
+		toQuery = append(toQuery, queryutil.QueryData{Query: q, Org: org, MetricIndex: metricIndex})
+		metricIndex++
+	}
 
-		go func() {
-			defer wg.Done()
+	queryutil.QueriesInParallel(
+		sc.config().Tide.MaxGraphQLGoroutines,
+		toQuery,
+		func(q queryutil.QueryData) {
 			now := time.Now()
-			log := sc.logger.WithField("query", query)
+			log := sc.logger.WithField("query", q.Query)
 
 			sc.storedStateLock.Lock()
-			latestPR := sc.storedState[org].LatestPR
-			if query != sc.storedState[org].PreviousQuery {
+			latestPR := sc.storedState[q.Org].LatestPR
+			if q.Query != sc.storedState[q.Org].PreviousQuery {
 				// Query changed and/or tide restarted, recompute everything
-				log.WithField("previously", sc.storedState[org].PreviousQuery).Info("Query changed, resetting start time to zero")
-				sc.storedState[org] = storedState{PreviousQuery: query}
+				log.WithField("previously", sc.storedState[q.Org].PreviousQuery).Info("Query changed, resetting start time to zero")
+				sc.storedState[q.Org] = storedState{PreviousQuery: q.Query}
 			}
 			sc.storedStateLock.Unlock()
 
-			result, err := search(sc.ghc.QueryWithGitHubAppsSupport, sc.logger, query, latestPR.Time, now, org)
+			result, err := search(sc.ghc.QueryWithGitHubAppsSupport, sc.logger, q.Query, latestPR.Time, now, q.Org)
 			log.WithField("duration", time.Since(now).String()).WithField("result_count", len(result)).Debug("Searched for open PRs.")
+
+			resultString := "success"
+			if err != nil {
+				resultString = "error"
+			}
+			tideMetrics.statusQueryResults.WithLabelValues(strconv.Itoa(q.MetricIndex), q.Org, resultString).Inc()
 
 			func() {
 				sc.storedStateLock.Lock()
 				defer sc.storedStateLock.Unlock()
 
-				log := log.WithField("latestPR", sc.storedState[org].LatestPR)
+				log := log.WithField("latestPR", sc.storedState[q.Org].LatestPR)
 				if len(result) == 0 {
 					log.Debug("no new results")
 					return
@@ -647,11 +658,11 @@ func (sc *statusController) search() []PullRequest {
 					log.Debug("latest PR has zero time")
 					return
 				}
-				sc.storedState[org] = storedState{
+				sc.storedState[q.Org] = storedState{
 					LatestPR:      metav1.Time{Time: latest.Add(-30 * time.Second)},
-					PreviousQuery: sc.storedState[org].PreviousQuery,
+					PreviousQuery: sc.storedState[q.Org].PreviousQuery,
 				}
-				log.WithField("latestPR", sc.storedState[org].LatestPR).Debug("Advanced start time")
+				log.WithField("latestPR", sc.storedState[q.Org].LatestPR).Debug("Advanced start time")
 			}()
 
 			lock.Lock()
@@ -659,10 +670,7 @@ func (sc *statusController) search() []PullRequest {
 
 			prs = append(prs, result...)
 			errs = append(errs, err)
-		}()
-
-	}
-	wg.Wait()
+		})
 
 	err := utilerrors.NewAggregate(errs)
 	if err != nil {

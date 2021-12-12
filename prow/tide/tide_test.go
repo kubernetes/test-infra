@@ -4278,6 +4278,7 @@ func TestQueryShardsByOrgWhenAppsAuthIsEnabledOnly(t *testing.T) {
 		usesGitHubAppsAuth       bool
 		prs                      map[string][]PullRequest
 		expectedNumberOfApiCalls int
+		maxGraphQLGoroutines     uint
 	}{
 		{
 			name:               "Apps auth is used, one call per org",
@@ -4287,6 +4288,16 @@ func TestQueryShardsByOrgWhenAppsAuthIsEnabledOnly(t *testing.T) {
 				"other-org": {testPR("other-org", "repo", "A", 5, githubql.MergeableStateMergeable)},
 			},
 			expectedNumberOfApiCalls: 2,
+		},
+		{
+			name:               "Apps auth is used, one call per org, goroutines limited",
+			usesGitHubAppsAuth: true,
+			prs: map[string][]PullRequest{
+				"org":       {testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable)},
+				"other-org": {testPR("other-org", "repo", "A", 5, githubql.MergeableStateMergeable)},
+			},
+			expectedNumberOfApiCalls: 2,
+			maxGraphQLGoroutines:     1,
 		},
 		{
 			name:               "Apps auth is unused, one call for all orgs",
@@ -4304,7 +4315,14 @@ func TestQueryShardsByOrgWhenAppsAuthIsEnabledOnly(t *testing.T) {
 			c := &Controller{
 				logger: logrus.WithField("test", tc.name),
 				config: func() *config.Config {
-					return &config.Config{ProwConfig: config.ProwConfig{Tide: config.Tide{Queries: []config.TideQuery{{Orgs: []string{"org", "other-org"}}}}}}
+					return &config.Config{
+						ProwConfig: config.ProwConfig{
+							Tide: config.Tide{
+								MaxGraphQLGoroutines: tc.maxGraphQLGoroutines,
+								Queries:              []config.TideQuery{{Orgs: []string{"org", "other-org"}}},
+							},
+						},
+					}
 				},
 				ghc:                &fgc{prs: tc.prs},
 				usesGitHubAppsAuth: tc.usesGitHubAppsAuth,

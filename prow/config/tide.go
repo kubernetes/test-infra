@@ -173,6 +173,11 @@ type Tide struct {
 	// creates. The default is to only mention the one to which we are closest (Calculated
 	// by total number of requirements - fulfilled number of requirements).
 	DisplayAllQueriesInStatus bool `json:"display_all_tide_queries_in_status,omitempty"`
+
+	// MaxGraphQLGoroutines is the maximum number of goroutines spawned during execution
+	// of grapqh queries inside controller to handle concurrent api access. Defaults to 0
+	// which means there is no limit and every query will receive it's own goroutine.
+	MaxGraphQLGoroutines uint `json:"max_graphql_goroutines,omitempty"`
 }
 
 func (t *Tide) mergeFrom(additional *Tide) error {

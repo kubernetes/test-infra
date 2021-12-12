@@ -46,6 +46,7 @@ import (
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/tide/blockers"
 	"k8s.io/test-infra/prow/tide/history"
+	"k8s.io/test-infra/prow/tide/queryutil"
 	"k8s.io/test-infra/prow/version"
 )
 
@@ -148,11 +149,13 @@ type Pool struct {
 var (
 	tideMetrics = struct {
 		// Per pool
-		pooledPRs    *prometheus.GaugeVec
-		updateTime   *prometheus.GaugeVec
-		merges       *prometheus.HistogramVec
-		poolErrors   *prometheus.CounterVec
-		queryResults *prometheus.CounterVec
+		pooledPRs            *prometheus.GaugeVec
+		updateTime           *prometheus.GaugeVec
+		merges               *prometheus.HistogramVec
+		poolErrors           *prometheus.CounterVec
+		queryResults         *prometheus.CounterVec
+		statusQueryResults   *prometheus.CounterVec
+		blockersQueryResults *prometheus.CounterVec
 
 		// Singleton
 		syncDuration         prometheus.Gauge
@@ -206,6 +209,24 @@ var (
 			"result",
 		}),
 
+		statusQueryResults: prometheus.NewCounterVec(prometheus.CounterOpts{
+			Name: "tidestatusqueryresults",
+			Help: "Count of Tide status queries by query index, org shard, and result (success/error).",
+		}, []string{
+			"status_query_index",
+			"org_shard",
+			"result",
+		}),
+
+		blockersQueryResults: prometheus.NewCounterVec(prometheus.CounterOpts{
+			Name: "tideblockersqueryresults",
+			Help: "Count of Tide blockers queries by query index, org shard, and result (success/error).",
+		}, []string{
+			"blockers_query_index",
+			"org_shard",
+			"result",
+		}),
+
 		// Use the sync heartbeat counter to monitor for liveness. Use the duration
 		// gauges for precise sync duration graphs since the prometheus scrape
 		// period is likely much larger than the loop periods.
@@ -236,6 +257,8 @@ func init() {
 	prometheus.MustRegister(tideMetrics.syncHeartbeat)
 	prometheus.MustRegister(tideMetrics.poolErrors)
 	prometheus.MustRegister(tideMetrics.queryResults)
+	prometheus.MustRegister(tideMetrics.statusQueryResults)
+	prometheus.MustRegister(tideMetrics.blockersQueryResults)
 }
 
 type manager interface {
@@ -392,7 +415,7 @@ func (c *Controller) Sync() error {
 				orgs = append(orgs, org)
 			}
 			orgRepoQuery := orgRepoQueryStrings(orgs, repos.UnsortedList(), orgExcepts)
-			blocks, err = blockers.FindAll(c.ghc, c.logger, label, orgRepoQuery, c.usesGitHubAppsAuth)
+			blocks, err = blockers.FindAll(c.ghc, c.logger, tideMetrics.blockersQueryResults, label, orgRepoQuery, c.usesGitHubAppsAuth, c.config().Tide.MaxGraphQLGoroutines)
 			if err != nil {
 				return err
 			}
@@ -449,9 +472,9 @@ func (c *Controller) Sync() error {
 
 func (c *Controller) query() (map[string]PullRequest, error) {
 	lock := sync.Mutex{}
-	wg := sync.WaitGroup{}
 	prs := make(map[string]PullRequest)
 	var errs []error
+	var allQueries []queryutil.QueryData
 	for i, query := range c.config().Tide.Queries {
 
 		// Use org-sharded queries only when GitHub apps auth is in use
@@ -461,38 +484,37 @@ func (c *Controller) query() (map[string]PullRequest, error) {
 		} else {
 			queries = map[string]string{"": query.Query()}
 		}
-
 		for org, q := range queries {
-			org, q, i := org, q, i
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
-				results, err := search(c.ghc.QueryWithGitHubAppsSupport, c.logger, q, time.Time{}, time.Now(), org)
-
-				resultString := "success"
-				if err != nil {
-					resultString = "error"
-				}
-				tideMetrics.queryResults.WithLabelValues(strconv.Itoa(i), org, resultString).Inc()
-
-				lock.Lock()
-				defer lock.Unlock()
-				if err != nil && len(results) == 0 {
-					c.logger.WithField("query", q).WithError(err).Warn("Failed to execute query.")
-					errs = append(errs, fmt.Errorf("query %d, err: %w", i, err))
-					return
-				}
-				if err != nil {
-					c.logger.WithError(err).WithField("query", q).Warning("found partial results")
-				}
-
-				for _, pr := range results {
-					prs[prKey(&pr)] = pr
-				}
-			}()
+			allQueries = append(allQueries, queryutil.QueryData{Query: q, Org: org, MetricIndex: i})
 		}
 	}
-	wg.Wait()
+	queryutil.QueriesInParallel(
+		c.config().Tide.MaxGraphQLGoroutines,
+		allQueries,
+		func(q queryutil.QueryData) {
+			results, err := search(c.ghc.QueryWithGitHubAppsSupport, c.logger, q.Query, time.Time{}, time.Now(), q.Org)
+
+			resultString := "success"
+			if err != nil {
+				resultString = "error"
+			}
+			tideMetrics.queryResults.WithLabelValues(strconv.Itoa(q.MetricIndex), q.Org, resultString).Inc()
+
+			lock.Lock()
+			defer lock.Unlock()
+			if err != nil && len(results) == 0 {
+				c.logger.WithField("query", q).WithError(err).Warn("Failed to execute query.")
+				errs = append(errs, fmt.Errorf("query %d, err: %w", q.MetricIndex, err))
+				return
+			}
+			if err != nil {
+				c.logger.WithError(err).WithField("query", q).Warning("found partial results")
+			}
+
+			for _, pr := range results {
+				prs[prKey(&pr)] = pr
+			}
+		})
 
 	return prs, utilerrors.NewAggregate(errs)
 }
