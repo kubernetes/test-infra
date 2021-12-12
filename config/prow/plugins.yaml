@@ -151,6 +151,7 @@ lgtm:
   - kubernetes-sigs/controller-runtime
   - kubernetes-sigs/downloadkubernetes
   - kubernetes-sigs/e2e-framework
+  - kubernetes-sigs/etcdadm
   - kubernetes-sigs/promo-tools
   - kubernetes-sigs/k8s-gsm-tools
   - kubernetes-sigs/kind
