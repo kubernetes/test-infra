@@ -480,7 +480,20 @@ func (r *Repo) Push(branch string, force bool) error {
 	return r.PushToNamedFork(r.user, branch, force)
 }
 
+// PushToNamedFork is used for when the fork has a different name than the original repp
 func (r *Repo) PushToNamedFork(forkName, branch string, force bool) error {
+	remote := remoteFromBase(r.base, r.user, r.pass, r.host, r.user, forkName)
+	return r.pushToRemote(remote, branch, force)
+}
+
+// PushToCentral pushes the local state to the central remote
+func (r *Repo) PushToCentral(branch string, force bool) error {
+	remote := remoteFromBase(r.base, r.user, r.pass, r.host, r.org, r.repo)
+	return r.pushToRemote(remote, branch, force)
+}
+
+// pushToRemote pushes a branch to the given upstream repository
+func (r *Repo) pushToRemote(remote, branch string, force bool) error {
 	if err := r.refreshRepoAuth(); err != nil {
 		return err
 	}
@@ -488,7 +501,6 @@ func (r *Repo) PushToNamedFork(forkName, branch string, force bool) error {
 		return errors.New("cannot push without credentials - configure your git client")
 	}
 	r.logger.WithFields(logrus.Fields{"user": r.user, "repo": r.repo, "branch": branch}).Info("Pushing.")
-	remote := remoteFromBase(r.base, r.user, r.pass, r.host, r.user, forkName)
 	var co *exec.Cmd
 	if !force {
 		co = r.gitCommand("push", remote, branch)

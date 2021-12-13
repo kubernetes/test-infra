@@ -338,6 +338,7 @@ func testCherryPickPR(clients localgit.Clients, t *testing.T) {
 	if err != nil {
 		t.Fatalf("Making localgit: %v", err)
 	}
+
 	defer func() {
 		if err := lg.Clean(); err != nil {
 			t.Errorf("Cleaning up localgit: %v", err)
@@ -346,102 +347,6 @@ func testCherryPickPR(clients localgit.Clients, t *testing.T) {
 			t.Errorf("Cleaning up client: %v", err)
 		}
 	}()
-	if err := lg.MakeFakeRepo("foo", "bar"); err != nil {
-		t.Fatalf("Making fake repo: %v", err)
-	}
-	if err := lg.AddCommit("foo", "bar", initialFiles); err != nil {
-		t.Fatalf("Adding initial commit: %v", err)
-	}
-	expectedBranches := []string{"release-1.5", "release-1.6", "release-1.8"}
-	for _, branch := range expectedBranches {
-		if err := lg.CheckoutNewBranch("foo", "bar", branch); err != nil {
-			t.Fatalf("Checking out pull branch: %v", err)
-		}
-	}
-	if err := lg.CheckoutNewBranch("foo", "bar", "cherry-pick-2-to-release-1.5"); err != nil {
-		t.Fatalf("Checking out existing PR branch: %v", err)
-	}
-
-	ghc := &fghc{
-		orgMembers: []github.TeamMember{
-			{
-				Login: "approver",
-			},
-			{
-				Login: "merge-bot",
-			},
-		},
-		prComments: []github.IssueComment{
-			{
-				User: github.User{
-					Login: "developer",
-				},
-				Body: "a review comment",
-			},
-			{
-				User: github.User{
-					Login: "approver",
-				},
-				Body: "/cherrypick release-1.5\r\n/cherrypick release-1.8",
-			},
-			{
-				User: github.User{
-					Login: "approver",
-				},
-				Body: "/cherrypick release-1.6",
-			},
-			{
-				User: github.User{
-					Login: "fan",
-				},
-				Body: "/cherrypick release-1.7",
-			},
-			{
-				User: github.User{
-					Login: "approver",
-				},
-				Body: "/approve",
-			},
-			{
-				User: github.User{
-					Login: "merge-bot",
-				},
-				Body: "Automatic merge from submit-queue.",
-			},
-		},
-		prs: []github.PullRequest{
-			{
-				Title: "[release-1.5] This is a fix for Y",
-				Body:  "This is an automated cherry-pick of #2",
-				Base: github.PullRequestBranch{
-					Ref: "release-1.5",
-				},
-				Head: github.PullRequestBranch{
-					Ref: "ci-robot:cherry-pick-2-to-release-1.5",
-				},
-			},
-		},
-		isMember: true,
-		patch:    patch,
-	}
-	pr := github.PullRequestEvent{
-		Action: github.PullRequestActionClosed,
-		PullRequest: github.PullRequest{
-			Base: github.PullRequestBranch{
-				Ref: "master",
-				Repo: github.Repo{
-					Owner: github.User{
-						Login: "foo",
-					},
-					Name: "bar",
-				},
-			},
-			Number:   2,
-			Merged:   true,
-			MergeSHA: new(string),
-			Title:    "This is a fix for Y",
-		},
-	}
 
 	botUser := &github.UserData{Login: "ci-robot", Email: "ci-robot@users.noreply.github.com"}
 
@@ -449,49 +354,210 @@ func testCherryPickPR(clients localgit.Clients, t *testing.T) {
 		return []byte("sha=abcdefg")
 	}
 
-	s := &Server{
-		botUser:        botUser,
-		gc:             c,
-		push:           func(forkName, newBranch string, force bool) error { return nil },
-		ghc:            ghc,
-		tokenGenerator: getSecret,
-		log:            logrus.StandardLogger().WithField("client", "cherrypicker"),
-		repos:          []github.Repo{{Fork: true, FullName: "ci-robot/bar"}},
+	logger := logrus.StandardLogger().WithField("client", "cherrypicker")
+	doNotPushFn := func(forkName, newBranch string, force bool) error { return nil }
+	testCases := []struct {
+		name         string
+		testOrgName  string
+		testRepoName string
+		newServer    func(githubClient) *Server
+		newGitHubPR  func(string) github.PullRequest
+	}{
+		{
+			name:         "Push to fork",
+			testOrgName:  "foo",
+			testRepoName: "push-to-fork",
+			newServer: func(ghc githubClient) *Server {
+				return &Server{
+					botUser:        botUser,
+					gc:             c,
+					push:           doNotPushFn,
+					ghc:            ghc,
+					tokenGenerator: getSecret,
+					log:            logger,
+					repos:          []github.Repo{{Fork: true, FullName: "ci-robot/push-to-fork"}},
 
-		prowAssignments: false,
+					prowAssignments: false,
+					pushToUpstream:  false,
+				}
+			},
+			newGitHubPR: func(targetBranch string) github.PullRequest {
+				return github.PullRequest{
+					Title: fmt.Sprintf("[%s] This is a fix for Y", targetBranch),
+					Body:  "This is an automated cherry-pick of #2",
+					Base: github.PullRequestBranch{
+						Ref: targetBranch,
+					},
+					Head: github.PullRequestBranch{
+						Ref: fmt.Sprintf("ci-robot:cherry-pick-2-to-%s", targetBranch),
+					},
+				}
+			},
+		},
+		{
+			name:         "Push to upstream",
+			testOrgName:  "foo",
+			testRepoName: "push-to-upstream",
+			newServer: func(ghc githubClient) *Server {
+				return &Server{
+					botUser:        botUser,
+					gc:             c,
+					push:           doNotPushFn,
+					ghc:            ghc,
+					tokenGenerator: getSecret,
+					log:            logger,
+
+					prowAssignments: false,
+					pushToUpstream:  true,
+				}
+			},
+			newGitHubPR: func(targetBranch string) github.PullRequest {
+				return github.PullRequest{
+					Title: fmt.Sprintf("[%s] This is a fix for Y", targetBranch),
+					Body:  "This is an automated cherry-pick of #2",
+					Base: github.PullRequestBranch{
+						Ref: targetBranch,
+					},
+					Head: github.PullRequestBranch{
+						Ref: fmt.Sprintf("cherry-pick-2-to-%s", targetBranch),
+					},
+				}
+			},
+		},
 	}
 
-	if err := s.handlePullRequest(logrus.NewEntry(logrus.StandardLogger()), pr); err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// initialise the repository
+			if err := lg.MakeFakeRepo(tc.testOrgName, tc.testRepoName); err != nil {
+				t.Fatalf("Making fake repo: %v", err)
+			}
+			if err := lg.AddCommit(tc.testOrgName, tc.testRepoName, initialFiles); err != nil {
+				t.Fatalf("Adding initial commit: %v", err)
+			}
 
-	var expectedFn = func(branch string) string {
-		expectedTitle := fmt.Sprintf("[%s] This is a fix for Y", branch)
-		expectedBody := "This is an automated cherry-pick of #2"
-		expectedHead := fmt.Sprintf(botUser.Login+":"+cherryPickBranchFmt, 2, branch)
-		expectedLabels := s.labels
-		return fmt.Sprintf(expectedFmt, expectedTitle, expectedBody, expectedHead, branch, expectedLabels)
-	}
+			// make sure we can check out the target branches
+			releaseBranches := []string{"release-1.5", "release-1.6", "release-1.8"}
+			for _, branch := range releaseBranches {
+				if err := lg.CheckoutNewBranch(tc.testOrgName, tc.testRepoName, branch); err != nil {
+					t.Fatalf("Checking out pull branch: %v", err)
+				}
+			}
 
-	if len(ghc.prs) != len(expectedBranches) {
-		t.Fatalf("Expected %d PRs, got %d", len(expectedBranches), len(ghc.prs))
-	}
+			// make sure we can check out the existing PR branch
+			existingPRsBranches := []string{"cherry-pick-2-to-release-1.5"}
+			for _, branch := range existingPRsBranches {
+				if err := lg.CheckoutNewBranch(tc.testOrgName, tc.testRepoName, branch); err != nil {
+					t.Fatalf("Checking out existing PR branch: %v", err)
+				}
+			}
 
-	expectedPrs := make(map[string]string)
-	for _, branch := range expectedBranches {
-		expectedPrs[expectedFn(branch)] = branch
-	}
-	seenBranches := make(map[string]struct{})
-	for _, p := range ghc.prs {
-		pr := prToString(p)
-		branch, present := expectedPrs[pr]
-		if !present {
-			t.Errorf("Unexpected PR:\n%s\nExpected to target one of the following branches: %v\n", pr, expectedBranches)
-		}
-		seenBranches[branch] = struct{}{}
-	}
-	if len(seenBranches) != len(expectedBranches) {
-		t.Fatalf("Expected to see PRs for %d branches, got %d (%v)", len(expectedBranches), len(seenBranches), seenBranches)
+			// create a new GitHub client to be used for the test
+			ghc := &fghc{
+				orgMembers: []github.TeamMember{
+					{
+						Login: "approver",
+					},
+					{
+						Login: "merge-bot",
+					},
+				},
+				prComments: []github.IssueComment{
+					{
+						User: github.User{
+							Login: "developer",
+						},
+						Body: "a review comment",
+					},
+					{
+						User: github.User{
+							Login: "approver",
+						},
+						Body: "/cherrypick release-1.5\r\n/cherrypick release-1.8",
+					},
+					{
+						User: github.User{
+							Login: "approver",
+						},
+						Body: "/cherrypick release-1.6",
+					},
+					{
+						User: github.User{
+							Login: "fan",
+						},
+						Body: "/cherrypick release-1.7",
+					},
+					{
+						User: github.User{
+							Login: "approver",
+						},
+						Body: "/approve",
+					},
+					{
+						User: github.User{
+							Login: "merge-bot",
+						},
+						Body: "Automatic merge from submit-queue.",
+					},
+				},
+				prs: []github.PullRequest{
+					tc.newGitHubPR("release-1.5"),
+				},
+				isMember: true,
+				patch:    patch,
+			}
+
+			// create the server instance
+			server := tc.newServer(ghc)
+
+			// handle the PR event
+			pr := github.PullRequestEvent{
+				Action: github.PullRequestActionClosed,
+				PullRequest: github.PullRequest{
+					Base: github.PullRequestBranch{
+						Ref: "master",
+						Repo: github.Repo{
+							Owner: github.User{
+								Login: tc.testOrgName,
+							},
+							Name: tc.testRepoName,
+						},
+					},
+					Number:   2,
+					Merged:   true,
+					MergeSHA: new(string),
+					Title:    "This is a fix for Y",
+				},
+			}
+			if err := server.handlePullRequest(logger, pr); err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+
+			// make sure we have opened a PR for each of the release branches
+			if len(ghc.prs) != len(releaseBranches) {
+				t.Fatalf("Expected %d PRs, got %d", len(releaseBranches), len(ghc.prs))
+			}
+
+			// generate a map of the expected PRs
+			expectedPrs := make(map[string]string)
+			for _, branch := range releaseBranches {
+				expectedPrs[prToString(tc.newGitHubPR(branch))] = branch
+			}
+
+			// make sure the opened PRs matches the expectation
+			seenBranches := make(map[string]struct{})
+			for _, p := range ghc.prs {
+				seenPr := prToString(p)
+				branch, present := expectedPrs[seenPr]
+				if !present {
+					t.Errorf("Unexpected PR:\n%s\nExpected to target one of the following branches: %v\n", seenPr, releaseBranches)
+				}
+				seenBranches[branch] = struct{}{}
+			}
+			if len(seenBranches) != len(releaseBranches) {
+				t.Fatalf("Expected to see PRs for %d branches, got %d (%v)", len(releaseBranches), len(seenBranches), seenBranches)
+			}
+		})
 	}
 }
 

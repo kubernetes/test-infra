@@ -102,14 +102,17 @@ type Server struct {
 	issueOnConflict bool
 	// Set a custom label prefix.
 	labelPrefix string
+	// Push cherrypicked PRs directly to the upstream repositories.
+	pushToUpstream bool
 
 	bare     *http.Client
 	patchURL string
 
 	repoLock sync.Mutex
-	repos    []github.Repo
-	mapLock  sync.Mutex
-	lockMap  map[cherryPickRequest]*sync.Mutex
+	// List of repositories in the user org
+	repos   []github.Repo
+	mapLock sync.Mutex
+	lockMap map[cherryPickRequest]*sync.Mutex
 }
 
 type cherryPickRequest struct {
@@ -395,18 +398,22 @@ func (s *Server) handle(logger *logrus.Entry, requestor string, comment *github.
 	lock.Lock()
 	defer lock.Unlock()
 
-	forkName, err := s.ensureForkExists(org, repo)
-	if err != nil {
-		logger.WithError(err).Warn("failed to ensure fork exists")
-		resp := fmt.Sprintf("cannot fork %s/%s: %v", org, repo, err)
-		return s.createComment(logger, org, repo, num, comment, resp)
+	var forkName string
+	var err error
+	if !s.pushToUpstream {
+		forkName, err = s.ensureForkExists(org, repo)
+		if err != nil {
+			logger.WithError(err).Warn("failed to ensure fork exists")
+			resp := fmt.Sprintf("cannot fork %s/%s: %v", org, repo, err)
+			return s.createComment(logger, org, repo, num, comment, resp)
+		}
 	}
 
 	// Clone the repo, checkout the target branch.
 	startClone := time.Now()
 	r, err := s.gc.ClientFor(org, repo)
 	if err != nil {
-		return fmt.Errorf("failed to get git client for %s/%s: %w", org, forkName, err)
+		return fmt.Errorf("failed to get git client for %s/%s: %w", org, repo, err)
 	}
 	defer func() {
 		if err := r.Clean(); err != nil {
@@ -439,6 +446,10 @@ func (s *Server) handle(logger *logrus.Entry, requestor string, comment *github.
 
 	// New branch for the cherry-pick.
 	newBranch := fmt.Sprintf(cherryPickBranchFmt, num, targetBranch)
+	prHeadRef := newBranch
+	if !s.pushToUpstream {
+		prHeadRef = fmt.Sprintf("%s:%s", s.botUser.Login, newBranch)
+	}
 
 	// Check if that branch already exists, which means there is already a PR for that cherry-pick.
 	if r.BranchExists(newBranch) {
@@ -448,7 +459,7 @@ func (s *Server) handle(logger *logrus.Entry, requestor string, comment *github.
 			return fmt.Errorf("failed to get pullrequests for %s/%s: %w", org, repo, err)
 		}
 		for _, pr := range prs {
-			if pr.Head.Ref == fmt.Sprintf("%s:%s", s.botUser.Login, newBranch) {
+			if pr.Head.Ref == prHeadRef {
 				logger.WithField("preexisting_cherrypick", pr.HTMLURL).Info("PR already has cherrypick")
 				resp := fmt.Sprintf("Looks like #%d has already been cherry picked in %s", num, pr.HTMLURL)
 				return s.createComment(logger, org, repo, num, comment, resp)
@@ -483,11 +494,16 @@ func (s *Server) handle(logger *logrus.Entry, requestor string, comment *github.
 		return utilerrors.NewAggregate(errs)
 	}
 
-	push := r.PushToNamedFork
+	// Push the new branch to the repo.
+	push := func(_, branch string, force bool) error {
+		return r.PushToCentral(branch, force)
+	}
+	if !s.pushToUpstream {
+		push = r.PushToNamedFork
+	}
 	if s.push != nil {
 		push = s.push
 	}
-	// Push the new branch in the bot's fork.
 	if err := push(forkName, newBranch, true); err != nil {
 		logger.WithError(err).Warn("failed to push chery-picked changes to GitHub")
 		resp := fmt.Sprintf("failed to push cherry-picked changes in GitHub: %v", err)
@@ -501,8 +517,8 @@ func (s *Server) handle(logger *logrus.Entry, requestor string, comment *github.
 	} else {
 		cherryPickBody = cherrypicker.CreateCherrypickBody(num, "", releaseNoteFromParentPR(body))
 	}
-	head := fmt.Sprintf("%s:%s", s.botUser.Login, newBranch)
-	createdNum, err := s.ghc.CreatePullRequest(org, repo, title, cherryPickBody, head, targetBranch, true)
+
+	createdNum, err := s.ghc.CreatePullRequest(org, repo, title, cherryPickBody, prHeadRef, targetBranch, true)
 	if err != nil {
 		logger.WithError(err).Warn("failed to create new pull request")
 		resp := fmt.Sprintf("new pull request could not be created: %v", err)

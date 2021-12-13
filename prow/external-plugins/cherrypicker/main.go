@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/github"
 
 	"k8s.io/test-infra/pkg/flagutil"
 	"k8s.io/test-infra/prow/config/secret"
@@ -50,6 +51,7 @@ type options struct {
 	allowAll          bool
 	issueOnConflict   bool
 	labelPrefix       string
+	pushToUpstream    bool
 }
 
 func (o *options) Validate() error {
@@ -74,6 +76,7 @@ func gatherOptions() options {
 	fs.BoolVar(&o.allowAll, "allow-all", false, "Allow anybody to use automated cherrypicks by skipping GitHub organization membership checks.")
 	fs.BoolVar(&o.issueOnConflict, "create-issue-on-conflict", false, "Create a GitHub issue and assign it to the requestor on cherrypick conflict.")
 	fs.StringVar(&o.labelPrefix, "label-prefix", defaultLabelPrefix, "Set a custom label prefix.")
+	fs.BoolVar(&o.pushToUpstream, "push-to-upstream", false, "Push cherry-pick commits directly to the upstream repository. Required when setting -github-app-private-key-path.")
 	for _, group := range []flagutil.OptionGroup{&o.github, &o.instrumentationOptions} {
 		group.AddFlags(fs)
 	}
@@ -122,9 +125,16 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting bot name.")
 	}
-	repos, err := githubClient.GetRepos(botUser.Login, true)
-	if err != nil {
-		log.WithError(err).Fatal("Error listing bot repositories.")
+
+	var repos []github.Repo
+	if !o.pushToUpstream {
+		repos, err = githubClient.GetRepos(botUser.Login, true)
+		if err != nil {
+			log.WithError(err).Fatal("Error listing bot repositories. " +
+				"If -github-app-private-key-path is set, make sure to use -push-to-upstream " +
+				"to push the cherry-pick commits directly to the upstream as GitHub applications " +
+				"cannot maintain forks.")
+		}
 	}
 
 	server := &Server{
@@ -141,6 +151,7 @@ func main() {
 		allowAll:        o.allowAll,
 		issueOnConflict: o.issueOnConflict,
 		labelPrefix:     o.labelPrefix,
+		pushToUpstream:  o.pushToUpstream,
 
 		bare:     &http.Client{},
 		patchURL: "https://patch-diff.githubusercontent.com",

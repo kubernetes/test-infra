@@ -83,7 +83,7 @@ func (a *repoClientAdapter) PushToNamedFork(forkName, branch string, force bool)
 }
 
 func (a *repoClientAdapter) PushToCentral(branch string, force bool) error {
-	return errors.New("no PushToCentral implementation exists in the v1 repo client")
+	return a.Repo.PushToCentral(branch, force)
 }
 
 func (a *repoClientAdapter) MirrorClone() error {
