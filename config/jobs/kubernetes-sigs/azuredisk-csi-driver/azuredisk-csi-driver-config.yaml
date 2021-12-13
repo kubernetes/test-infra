@@ -685,8 +685,6 @@ presubmits:
               value: "4"
             - name: TEST_WINDOWS
               value: "true"
-            - name: "KUBERNETES_VERSION"
-              value: "latest"
             - name: WINDOWS_FLAVOR
               value: "containerd-2022"
     annotations:
