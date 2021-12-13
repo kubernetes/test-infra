@@ -44,9 +44,6 @@ dashboards:
 
 - name: sig-node-ppc64le
   dashboard_tab:
-    - name: conformance
-      test_group_name: ppc64le-conformance
-      description: conformance test results for ppc64le ****This is moved under conformance dashboard, WILL BE REMOVED FROM HERE IN THE FUTURE****
     - name: unit-tests
       test_group_name: ppc64le-unit
       description: unit test results for ppc64le
