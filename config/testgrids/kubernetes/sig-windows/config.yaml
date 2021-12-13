@@ -27,18 +27,18 @@ dashboards:
 - name: sig-windows-containerd-hyperv
 - name: sig-windows-networking
   dashboard_tab:
-  - name: ltsc2019-docker-flannel-winbridge-dsr-disabled-master
-    description: Runs Windows (LTSC 2019 with Docker) E2E tests on master branch K8s clusters (with WinDSR disabled) and latest Flannel CNI release in l2bridge network mode.
-    test_group_name: k8s-e2e-ltsc2019-docker-flannel-winbridge-dsr-disabled-master
-  - name: ltsc2019-docker-flannel-winoverlay-dsr-disabled-master
-    description: Runs Windows (LTSC 2019 with Docker) E2E tests on master branch K8s clusters (with WinDSR disabled) and latest Flannel CNI release in overlay network mode.
-    test_group_name: k8s-e2e-ltsc2019-docker-flannel-winoverlay-dsr-disabled-master
-  - name: ltsc2019-docker-flannel-winbridge-master
-    description: Runs Windows (LTSC 2019 with Docker) E2E tests on master branch K8s clusters and latest Flannel CNI release in l2bridge network mode.
-    test_group_name: k8s-e2e-ltsc2019-docker-flannel-winbridge-master
-  - name: ltsc2019-docker-flannel-winoverlay-master
-    description: Runs Windows (LTSC 2019 with Docker) E2E tests on master branch K8s clusters and latest Flannel CNI release in overlay network mode.
-    test_group_name: k8s-e2e-ltsc2019-docker-flannel-winoverlay-master
+  - name: ltsc2019-docker-flannel-winbridge-stable-dsr-disabled
+    description: Runs Windows (LTSC 2019 with Docker) E2E tests on stable branch K8s clusters (with WinDSR disabled) and latest Flannel CNI release in l2bridge network mode.
+    test_group_name: k8s-e2e-ltsc2019-docker-flannel-winbridge-stable-dsr-disabled
+  - name: ltsc2019-docker-flannel-winoverlay-stable-dsr-disabled
+    description: Runs Windows (LTSC 2019 with Docker) E2E tests on stable branch K8s clusters (with WinDSR disabled) and latest Flannel CNI release in overlay network mode.
+    test_group_name: k8s-e2e-ltsc2019-docker-flannel-winoverlay-stable-dsr-disabled
+  - name: ltsc2019-docker-flannel-winbridge-stable
+    description: Runs Windows (LTSC 2019 with Docker) E2E tests on stable branch K8s clusters and latest Flannel CNI release in l2bridge network mode.
+    test_group_name: k8s-e2e-ltsc2019-docker-flannel-winbridge-stable
+  - name: ltsc2019-docker-flannel-winoverlay-stable
+    description: Runs Windows (LTSC 2019 with Docker) E2E tests on stable branch K8s clusters and latest Flannel CNI release in overlay network mode.
+    test_group_name: k8s-e2e-ltsc2019-docker-flannel-winoverlay-stable
   - name: ltsc2019-containerd-flannel-sdnbridge-master
     description: Runs Windows (LTSC 2019 with Containerd) E2E tests on master branch K8s clusters and latest Flannel CNI release in l2bridge network mode.
     test_group_name: k8s-e2e-ltsc2019-containerd-flannel-sdnbridge-master
@@ -78,14 +78,14 @@ dashboards:
 
 test_groups:
 # Flannel CNI on Windows test groups
-- name: k8s-e2e-ltsc2019-docker-flannel-winbridge-dsr-disabled-master
-  gcs_prefix: k8s-ovn/logs/k8s-e2e-ltsc2019-docker-flannel-winbridge-dsr-disabled-master
-- name: k8s-e2e-ltsc2019-docker-flannel-winoverlay-dsr-disabled-master
-  gcs_prefix: k8s-ovn/logs/k8s-e2e-ltsc2019-docker-flannel-winoverlay-dsr-disabled-master
-- name: k8s-e2e-ltsc2019-docker-flannel-winbridge-master
-  gcs_prefix: k8s-ovn/logs/k8s-e2e-ltsc2019-docker-flannel-winbridge-master
-- name: k8s-e2e-ltsc2019-docker-flannel-winoverlay-master
-  gcs_prefix: k8s-ovn/logs/k8s-e2e-ltsc2019-docker-flannel-winoverlay-master
+- name: k8s-e2e-ltsc2019-docker-flannel-winbridge-stable-dsr-disabled
+  gcs_prefix: k8s-ovn/logs/k8s-e2e-ltsc2019-docker-flannel-winbridge-stable-dsr-disabled
+- name: k8s-e2e-ltsc2019-docker-flannel-winoverlay-stable-dsr-disabled
+  gcs_prefix: k8s-ovn/logs/k8s-e2e-ltsc2019-docker-flannel-winoverlay-stable-dsr-disabled
+- name: k8s-e2e-ltsc2019-docker-flannel-winbridge-stable
+  gcs_prefix: k8s-ovn/logs/k8s-e2e-ltsc2019-docker-flannel-winbridge-stable
+- name: k8s-e2e-ltsc2019-docker-flannel-winoverlay-stable
+  gcs_prefix: k8s-ovn/logs/k8s-e2e-ltsc2019-docker-flannel-winoverlay-stable
 - name: k8s-e2e-ltsc2019-containerd-flannel-sdnbridge-master
   gcs_prefix: k8s-ovn/logs/k8s-e2e-ltsc2019-containerd-flannel-sdnbridge-master
 - name: k8s-e2e-ltsc2019-containerd-flannel-sdnoverlay-master
