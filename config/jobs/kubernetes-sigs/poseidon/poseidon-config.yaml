@@ -67,7 +67,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20210930-b6c4097796
+      - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20211210-cf89952124
         args:
         - "--repo=github.com/$(REPO_OWNER)/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
