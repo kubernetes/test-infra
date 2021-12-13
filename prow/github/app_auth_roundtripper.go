@@ -78,10 +78,18 @@ func (arr *appsRoundTripper) RoundTrip(r *http.Request) (*http.Response, error) 
 	return arr.upstream.RoundTrip(r)
 }
 
+// TimeNow is exposed so that it can be mocked by unit test, to ensure that
+// addAppAuth always return consistent token when needed.
+// DO NOT use it in prod
+var TimeNow = func() time.Time {
+	return time.Now().UTC()
+}
+
 func (arr *appsRoundTripper) addAppAuth(r *http.Request) *appsAuthError {
-	expiresAt := time.Now().UTC().Add(10 * time.Minute)
+	now := TimeNow()
+	expiresAt := now.Add(10 * time.Minute)
 	token, err := jwt.NewWithClaims(jwt.SigningMethodRS256, &jwt.StandardClaims{
-		IssuedAt:  jwt.NewTime(float64(time.Now().Unix())),
+		IssuedAt:  jwt.NewTime(float64(now.Unix())),
 		ExpiresAt: jwt.NewTime(float64(expiresAt.Unix())),
 		Issuer:    arr.appID,
 	}).SignedString(arr.privateKey())
