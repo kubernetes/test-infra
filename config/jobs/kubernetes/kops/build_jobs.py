@@ -16,8 +16,8 @@ import hashlib
 import math
 import json
 import re
-import jinja2 # pylint: disable=import-error
 import yaml
+import jinja2 # pylint: disable=import-error
 
 
 from helpers import ( # pylint: disable=import-error, no-name-in-module
