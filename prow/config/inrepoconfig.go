@@ -26,6 +26,7 @@ import (
 	"path/filepath"
 	"sync"
 
+	gitignore "github.com/denormal/go-gitignore"
 	"github.com/sirupsen/logrus"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 
@@ -133,12 +134,20 @@ func ReadProwYAML(log *logrus.Entry, dir string, strict bool) (*ProwYAML, error)
 
 			return c
 		}
-
-		err := filepath.Walk(prowYAMLDirPath, func(p string, info os.FileInfo, err error) error {
+		prowIgnore, err := gitignore.NewRepositoryWithFile(dir, ProwIgnoreFileName)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create `%s` parser: %w", ProwIgnoreFileName, err)
+		}
+		err = filepath.Walk(prowYAMLDirPath, func(p string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err
 			}
 			if !info.IsDir() && (filepath.Ext(p) == ".yaml" || filepath.Ext(p) == ".yml") {
+				// Use 'Match' directly because 'Ignore' and 'Include' don't work properly for repositories.
+				match := prowIgnore.Match(p)
+				if match != nil && match.Ignore() {
+					return nil
+				}
 				log.Debugf("Reading YAML file %q", p)
 				bytes, err := ioutil.ReadFile(p)
 				if err != nil {

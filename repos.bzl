@@ -916,6 +916,15 @@ def go_repositories():
         version = "v0.2.2",
     )
     go_repository(
+        name = "com_github_danwakefield_fnmatch",
+        build_file_generation = "on",
+        build_file_proto_mode = "disable",
+        importpath = "github.com/danwakefield/fnmatch",
+        sum = "h1:y5HC9v93H5EPKqaS1UYVg1uYah5Xf51mBfIoWehClUQ=",
+        version = "v0.0.0-20160403171240-cbb64ac3d964",
+    )
+
+    go_repository(
         name = "com_github_datadog_zstd",
         build_file_generation = "on",
         build_file_proto_mode = "disable",
@@ -955,6 +964,15 @@ def go_repositories():
         importpath = "github.com/denisenkom/go-mssqldb",
         sum = "h1:83Wprp6ROGeiHFAP8WJdI2RoxALQYgdllERc3N5N2DM=",
         version = "v0.0.0-20191124224453-732737034ffd",
+    )
+
+    go_repository(
+        name = "com_github_denormal_go_gitignore",
+        build_file_generation = "on",
+        build_file_proto_mode = "disable",
+        importpath = "github.com/denormal/go-gitignore",
+        sum = "h1:0nsrg//Dc7xC74H/TZ5sYR8uk4UQRNjsw8zejqH5a4Q=",
+        version = "v0.0.0-20180930084346-ae8ad1d07817",
     )
 
     go_repository(

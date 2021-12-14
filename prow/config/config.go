@@ -37,6 +37,7 @@ import (
 	"text/template"
 	"time"
 
+	gitignore "github.com/denormal/go-gitignore"
 	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
 	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
@@ -72,6 +73,8 @@ const (
 	ConfigVersionFileName = "VERSION"
 
 	DefaultTenantID = "GlobalDefaultID"
+
+	ProwIgnoreFileName = ".prowignore"
 )
 
 // Config is a read-only snapshot of the config.
@@ -1361,6 +1364,10 @@ func ReadJobConfig(jobConfig string, yamlOpts ...yaml.JSONOpt) (JobConfig, error
 		return jc, nil
 	}
 
+	prowIgnore, err := gitignore.NewRepositoryWithFile(jobConfig, ProwIgnoreFileName)
+	if err != nil {
+		return JobConfig{}, fmt.Errorf("failed to create `%s` parser: %w", ProwIgnoreFileName, err)
+	}
 	// we need to ensure all config files have unique basenames,
 	// since updateconfig plugin will use basename as a key in the configmap
 	uniqueBasenames := sets.String{}
@@ -1383,8 +1390,12 @@ func ReadJobConfig(jobConfig string, yamlOpts ...yaml.JSONOpt) (JobConfig, error
 			}
 			return nil
 		}
-
 		if filepath.Ext(path) != ".yaml" && filepath.Ext(path) != ".yml" {
+			return nil
+		}
+		// Use 'Match' directly because 'Ignore' and 'Include' don't work properly for repositories.
+		match := prowIgnore.Match(path)
+		if match != nil && match.Ignore() {
 			return nil
 		}
 
