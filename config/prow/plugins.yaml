@@ -513,7 +513,7 @@ config_updater:
       clusters:
         test-infra-trusted:
           - default
-    config/jobs/**/*.yaml:
+    config/jobs/**/*.{yaml,yml}:
       name: job-config
       gzip: true
       clusters:

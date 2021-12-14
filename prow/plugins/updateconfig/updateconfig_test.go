@@ -54,6 +54,10 @@ var remoteFiles = map[string]map[string]string{
 		defaultBranch: "old-binary\x00\xFF\xFF",
 		"12345":       "new-binary\x00\xFF\xFF",
 	},
+	"prow/binary.yml": {
+		defaultBranch: "old-binary\x00\xFF\xFF",
+		"12345":       "new-binary\x00\xFF\xFF",
+	},
 	"prow/becoming-binary.yaml": {
 		defaultBranch: "not-yet-binary",
 		"12345":       "now-binary\x00\xFF\xFF",
@@ -931,6 +935,47 @@ func testUpdateConfig(clients localgit.Clients, t *testing.T) {
 			config: &plugins.ConfigUpdater{
 				Maps: map[string]plugins.ConfigMapSpec{
 					"prow/*.yaml": {
+						Name: "config",
+					},
+				},
+			},
+		},
+		{
+			name:        "both yaml and yml",
+			prAction:    github.PullRequestActionClosed,
+			merged:      true,
+			mergeCommit: "12345",
+			changes: []github.PullRequestChange{
+				{
+					Filename:  "prow/config.yaml",
+					Status:    "modified",
+					Additions: 1,
+				},
+				{
+					Filename:  "prow/binary.yml",
+					Status:    "modified",
+					Additions: 1,
+				},
+			},
+			existConfigMaps: []runtime.Object{},
+			expectedConfigMaps: []*coreapi.ConfigMap{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "config",
+						Namespace: defaultNamespace,
+					},
+					Data: map[string]string{
+						"config.yaml": "new-config",
+						"VERSION":     "12345",
+					},
+					BinaryData: map[string][]byte{
+						"binary.yml": []byte("new-binary\x00\xFF\xFF"),
+					},
+				},
+			},
+			config: &plugins.ConfigUpdater{
+				Maps: map[string]plugins.ConfigMapSpec{
+					"prow/*.{yaml,yml}": {
 						Name: "config",
 					},
 				},
