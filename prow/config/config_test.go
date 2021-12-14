@@ -572,6 +572,70 @@ periodics:
 			},
 		},
 		{
+			name: "with non-existent additional field allowed under 'prow_ignored'",
+			rawConfig: `
+prow_ignored:
+  lolNotARealField: bogus
+plank:
+  default_decoration_configs:
+    '*':
+      timeout: 2h
+      grace_period: 15s
+      utility_images:
+        clonerefs: "clonerefs:default"
+        initupload: "initupload:default"
+        entrypoint: "entrypoint:default"
+        sidecar: "sidecar:default"
+      gcs_configuration:
+        bucket: "default-bucket"
+        path_strategy: "legacy"
+        default_org: "kubernetes"
+        default_repo: "kubernetes"
+      gcs_credentials_secret: "default-service-account"
+    'random/repo':
+      timeout: 2h
+      grace_period: 15s
+      utility_images:
+        clonerefs: "clonerefs:random"
+        initupload: "initupload:random"
+        entrypoint: "entrypoint:random"
+        sidecar: "sidecar:org"
+      gcs_configuration:
+        bucket: "ignore"
+        path_strategy: "legacy"
+        default_org: "random"
+        default_repo: "repo"
+      gcs_credentials_secret: "random-service-account"
+
+periodics:
+- name: kubernetes-defaulted-decoration
+  interval: 1h
+  decorate: true
+  spec:
+    containers:
+    - image: golang:latest
+      args:
+      - "test"
+      - "./..."`,
+			expected: &prowapi.DecorationConfig{
+				Timeout:     &prowapi.Duration{Duration: 2 * time.Hour},
+				GracePeriod: &prowapi.Duration{Duration: 15 * time.Second},
+				UtilityImages: &prowapi.UtilityImages{
+					CloneRefs:  "clonerefs:default",
+					InitUpload: "initupload:default",
+					Entrypoint: "entrypoint:default",
+					Sidecar:    "sidecar:default",
+				},
+				GCSConfiguration: &prowapi.GCSConfiguration{
+					Bucket:       "default-bucket",
+					PathStrategy: prowapi.PathStrategyLegacy,
+					DefaultOrg:   "kubernetes",
+					DefaultRepo:  "kubernetes",
+				},
+				GCSCredentialsSecret: pStr("default-service-account"),
+			},
+		},
+		{
 			name: "with default, no explicit decorate",
 			rawConfig: `
 plank:

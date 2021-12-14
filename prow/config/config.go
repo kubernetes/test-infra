@@ -115,6 +115,10 @@ type JobConfig struct {
 
 	// DecorateAllJobs determines whether all jobs are decorated by default
 	DecorateAllJobs bool `json:"decorate_all_jobs,omitempty"`
+
+	// ProwIgnored is a well known, unparsed field where non-Prow fields can
+	// be defined without conflicting with unknown field validation.
+	ProwIgnored *json.RawMessage `json:"prow_ignored,omitempty"`
 }
 
 // ProwConfig is config for all prow controllers
