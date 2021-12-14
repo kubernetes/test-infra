@@ -26,9 +26,9 @@ spec:
         readinessProbe:
           httpGet:
             path: /healthy
-            port: 80
+            port: 8080
         ports:
-          - containerPort: 80
+          - containerPort: 8080
             name: nginx
         securityContext:
           allowPrivilegeEscalation: false
@@ -101,8 +101,6 @@ spec:
           readOnly: false
       nodeSelector: {}
       securityContext:
-        capabilities:
-          add: ["NET_BIND_SERVICE"]
         seccompProfile:
           type: RuntimeDefault
         runAsUser: 1000
