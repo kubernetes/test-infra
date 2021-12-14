@@ -366,31 +366,10 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: verify-govet
-  - name: pull-kops-verify-staticcheck
-    branches:
-      - master
-    always_run: true
-    labels:
-      preset-service-account: "true"
-    decorate: true
-    decoration_config:
-      timeout: 10m
-    path_alias: k8s.io/kops
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211210-0c6ec8feca-experimental
-        command:
-        - runner.sh
-        args:
-        - "make"
-        - "verify-staticcheck"
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
-      testgrid-tab-name: verify-staticcheck
   - name: pull-kops-verify-golangci-lint
     branches:
       - master
-    always_run: false
+    always_run: true
     labels:
       preset-service-account: "true"
     decorate: true
