@@ -19,7 +19,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211210-0c6ec8feca-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211214-291c9e67f9-master
         command:
         - runner.sh
         args:
@@ -70,7 +70,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211210-0c6ec8feca-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211214-291c9e67f9-master
         command:
         - runner.sh
         args:
@@ -115,7 +115,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211210-0c6ec8feca-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211214-291c9e67f9-master
         command:
         - runner.sh
         args:
@@ -166,7 +166,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211210-0c6ec8feca-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211214-291c9e67f9-master
         command:
         - runner.sh
         args:
@@ -211,7 +211,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211210-0c6ec8feca-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211214-291c9e67f9-master
         command:
         - runner.sh
         args:
@@ -266,7 +266,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211210-0c6ec8feca-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211214-291c9e67f9-master
         command:
         - runner.sh
         args:
@@ -311,7 +311,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211210-0c6ec8feca-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211214-291c9e67f9-master
         command:
         - runner.sh
         args:
@@ -359,7 +359,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211210-0c6ec8feca-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211214-291c9e67f9-master
         command:
         - runner.sh
         args:

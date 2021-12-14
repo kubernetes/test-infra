@@ -9,7 +9,7 @@ presubmits:
       - ^release-1.0$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211210-0c6ec8feca-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211214-291c9e67f9-master
         command:
         - "./scripts/ci-test.sh"
         resources:
@@ -28,7 +28,7 @@ presubmits:
       - ^release-1.0$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211210-0c6ec8feca-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211214-291c9e67f9-master
         command:
         - "./scripts/ci-build.sh"
         resources:
@@ -50,7 +50,7 @@ presubmits:
       - ^release-1.0$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211210-0c6ec8feca-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211214-291c9e67f9-master
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -86,7 +86,7 @@ presubmits:
       path_alias: "sigs.k8s.io/image-builder"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211210-0c6ec8feca-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211214-291c9e67f9-master
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"
@@ -123,7 +123,7 @@ presubmits:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211210-0c6ec8feca-1.22
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211214-291c9e67f9-1.22
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"
@@ -165,7 +165,7 @@ presubmits:
       path_alias: "sigs.k8s.io/image-builder"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211210-0c6ec8feca-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211214-291c9e67f9-master
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"
@@ -207,7 +207,7 @@ presubmits:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211210-0c6ec8feca-1.22
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211214-291c9e67f9-1.22
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"
