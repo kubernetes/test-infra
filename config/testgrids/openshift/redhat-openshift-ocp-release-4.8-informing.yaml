@@ -2826,11 +2826,9 @@ test_groups:
   name: periodic-ci-openshift-multiarch-master-nightly-4.8-ocp-image-ecosystem-remote-libvirt-ppc64le
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.8-ocp-image-ecosystem-remote-libvirt-s390x
   name: periodic-ci-openshift-multiarch-master-nightly-4.8-ocp-image-ecosystem-remote-libvirt-s390x
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.8-ocp-installer-remote-libvirt-ppc64le
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.8-ocp-installer-remote-libvirt-ppc64le
   name: periodic-ci-openshift-multiarch-master-nightly-4.8-ocp-installer-remote-libvirt-ppc64le
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.8-ocp-installer-remote-libvirt-s390x
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.8-ocp-installer-remote-libvirt-s390x
   name: periodic-ci-openshift-multiarch-master-nightly-4.8-ocp-installer-remote-libvirt-s390x
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.8-ocp-jenkins-e2e-remote-libvirt-ppc64le
   name: periodic-ci-openshift-multiarch-master-nightly-4.8-ocp-jenkins-e2e-remote-libvirt-ppc64le
