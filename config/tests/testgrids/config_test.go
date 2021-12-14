@@ -54,6 +54,7 @@ var (
 		"google",
 		"kopeio",
 		"redhat",
+		"ibm",
 		"vmware",
 		"gardener",
 		"jetstack",

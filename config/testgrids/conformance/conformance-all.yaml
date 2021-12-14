@@ -388,14 +388,6 @@ test_groups:
 - name: cel-go-conformance-tests
   gcs_prefix: cel-conformance/test-logs
 
-#ibm ppc64le test results
-- name: ppc64le-conformance-containerd
-  gcs_prefix: ppc64le-kubernetes/logs/periodic-kubernetes-containerd-conformance-test-ppc64le
-  days_of_results: 7
-  column_header:
-  - configuration_value: k8s-build-version
-- name: ppc64le-unit
-  gcs_prefix: ppc64le-kubernetes/logs/periodic-kubernetes-unit-test-ppc64le
 - name: pull-kubernetes-e2e-gce-100-performance
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-100-performance
   days_of_results: 60

@@ -6,7 +6,6 @@ dashboard_groups:
     - sig-node-cadvisor
     - sig-node-kubelet
     - sig-node-containerd
-    - sig-node-ppc64le
     - sig-node-cri-o
     - sig-node-cri-tools
     - sig-node-node-feature-discovery
@@ -41,12 +40,6 @@ dashboards:
     - name: pull-e2e-podutil
       test_group_name: pull-kubernetes-node-e2e-podutil
       base_options: width=10
-
-- name: sig-node-ppc64le
-  dashboard_tab:
-    - name: unit-tests
-      test_group_name: ppc64le-unit
-      description: unit test results for ppc64le
 
 - name: sig-node-cri-o
   dashboard_tab:
