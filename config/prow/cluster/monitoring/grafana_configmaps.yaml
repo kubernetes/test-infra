@@ -18,7 +18,7 @@ data:
         scgi_temp_path        /tmp/scgi_temp;
 
         server {
-            listen 80 default_server;
+            listen 8080 default_server;
             server_name _;
             if ($request_uri = '/healthy') {
                 return 200 'ok';

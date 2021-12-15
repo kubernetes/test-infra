@@ -26,10 +26,12 @@ spec:
         readinessProbe:
           httpGet:
             path: /healthy
-            port: 80
+            port: 8080
         ports:
-          - containerPort: 80
+          - containerPort: 8080
             name: nginx
+        securityContext:
+          allowPrivilegeEscalation: false
         volumeMounts:
           - mountPath: /etc/nginx/
             name: grafana-nginx
@@ -52,6 +54,8 @@ spec:
           requests:
             cpu: 100m
             memory: 100Mi
+        securityContext:
+          allowPrivilegeEscalation: false
         volumeMounts:
         - mountPath: /var/lib/grafana
           name: grafana-storage
@@ -96,7 +100,11 @@ spec:
           name: grafana-dashboard-tide
           readOnly: false
       nodeSelector: {}
-      securityContext: {}
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+        runAsUser: 1000
+        runAsGroup: 1000
       serviceAccountName: grafana
       volumes:
       - name: grafana-storage
