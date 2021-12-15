@@ -1,0 +1,27 @@
+dashboard_groups:
+- name: ibm
+  dashboard_names:
+    - ibm-conformance-ppc64le
+    - ibm-unit-tests-ppc64le
+
+dashboards:
+- name: ibm-conformance-ppc64le
+  dashboard_tab:
+    - name: Periodic Conformance on ppc64le with containerd as runtime
+      description: Runs conformance tests using kubetest2 against latest kubernetes nightly release on ibm ppc64le architecture with containerd as runtime
+      test_group_name: ppc64le-conformance-containerd
+- name: ibm-unit-tests-ppc64le
+  dashboard_tab:
+    - name: Periodic unit test suite on ppc64le
+      description: Runs unit tests on ibm ppc64le architecture
+      test_group_name: ppc64le-unit
+
+
+test_groups:
+- name: ppc64le-conformance-containerd
+  gcs_prefix: ppc64le-kubernetes/logs/periodic-kubernetes-containerd-conformance-test-ppc64le
+  days_of_results: 7
+  column_header:
+  - configuration_value: k8s-build-version
+- name: ppc64le-unit
+  gcs_prefix: ppc64le-kubernetes/logs/periodic-kubernetes-unit-test-ppc64le
