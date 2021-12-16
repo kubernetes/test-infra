@@ -400,7 +400,7 @@ milestone_applier:
     release-0.6: v0.6.x
     release-0.5: v0.5.x
   kubernetes/website:
-    dev-1.23: 1.23
+    dev-1.24: 1.24
 
 repo_milestone:
   # Default maintainer
