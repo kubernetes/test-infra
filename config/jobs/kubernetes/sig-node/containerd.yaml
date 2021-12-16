@@ -178,7 +178,7 @@ periodics:
       - --image-family=ubuntu-2004-lts
       - --image-project=ubuntu-os-cloud
       - --provider=gce
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211210-0c6ec8feca-master
   annotations:
@@ -390,7 +390,7 @@ periodics:
       - --provider=gce
       - --save=gs://kubernetes-e2e-soak-configs/ci-containerd-soak-gci-gce
       - --soak
-      - --test_args=--ginkgo.skip=\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
       - --timeout=1200m
       - --up=false
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211210-0c6ec8feca-master
@@ -447,7 +447,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=30
       - --provider=gce
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211210-0c6ec8feca-master
   annotations:
@@ -599,7 +599,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=30
       - --provider=gce
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211210-0c6ec8feca-master
   annotations:
@@ -626,7 +626,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=25
       - --provider=gce
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211210-0c6ec8feca-master
   annotations:
@@ -676,7 +676,7 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=500m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211210-0c6ec8feca-master
   annotations:
@@ -702,7 +702,7 @@ periodics:
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=25
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=150m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211210-0c6ec8feca-master
   annotations:
@@ -730,7 +730,7 @@ periodics:
       - --image-family=ubuntu-2004-lts
       - --image-project=ubuntu-os-cloud
       - --provider=gce
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211210-0c6ec8feca-master
   annotations:
@@ -879,7 +879,7 @@ periodics:
       - --image-family=cos-89-lts
       - --image-project=cos-cloud
       - --provider=gce
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\] --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\] --minStartupPods=8
       - --timeout=50m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211210-0c6ec8feca-master
   annotations:
@@ -906,7 +906,7 @@ periodics:
       - --image-family=pipeline-1-20
       - --image-project=ubuntu-os-gke-cloud
       - --provider=gce
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\] --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\] --minStartupPods=8
       - --timeout=50m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211210-0c6ec8feca-master
   annotations:
@@ -1059,7 +1059,7 @@ periodics:
       - --image-family=cos-93-lts
       - --image-project=cos-cloud
       - --provider=gce
-      - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211210-0c6ec8feca-master
   annotations:
