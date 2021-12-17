@@ -6,7 +6,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211214-291c9e67f9-experimental
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211217-ea95cec1d4-experimental
       args:
       - --repo=k8s.io/kops
       - --repo=k8s.io/release
