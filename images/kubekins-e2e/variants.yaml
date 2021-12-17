@@ -9,7 +9,7 @@ variants:
     UPGRADE_DOCKER: 'true'
   go-canary:
     CONFIG: go-canary
-    GO_VERSION: 1.17.5
+    GO_VERSION: 1.18beta1
     K8S_RELEASE: stable
     BAZEL_VERSION: 3.4.1
     OLD_BAZEL_VERSION: 2.2.0
