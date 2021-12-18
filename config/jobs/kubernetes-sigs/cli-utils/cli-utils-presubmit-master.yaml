@@ -9,7 +9,7 @@ presubmits:
     - ^release-.*$
     spec:
       containers:
-      - image: golang:1.16.4
+      - image: golang:1.17.6
         command:
         - make
         args:
