@@ -261,6 +261,7 @@ type Client interface {
 	ListAppInstallations() ([]AppInstallation, error)
 	GetApp() (*App, error)
 	GetAppWithContext(ctx context.Context) (*App, error)
+	GetFailedActionRunsByHeadBranch(org, repo, branchName, headSHA string) ([]WorkflowRun, error)
 
 	Throttle(hourlyTokens, burst int, org ...string) error
 	QueryWithGitHubAppsSupport(ctx context.Context, q interface{}, vars map[string]interface{}, org string) error
@@ -271,6 +272,7 @@ type Client interface {
 	WithFields(fields logrus.Fields) Client
 	ForPlugin(plugin string) Client
 	ForSubcomponent(subcomponent string) Client
+	TriggerGithubWorkflow(org, repo string, id int) error
 }
 
 // client interacts with the github api. It is reconstructed whenever
