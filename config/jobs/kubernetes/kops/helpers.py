@@ -116,7 +116,7 @@ def create_args(kops_channel, networking, container_runtime, extra_flags, kops_i
             args = f"--image='{kops_image}' {args}"
     return args.strip()
 
-def latest_aws_image(owner, name):
+def latest_aws_image(owner, name, arm64=False):
     client = boto3.client('ec2', region_name='us-east-1')
     response = client.describe_images(
         Owners=[owner],
@@ -125,6 +125,12 @@ def latest_aws_image(owner, name):
                 'Name': 'name',
                 'Values': [
                     name,
+                ],
+            },
+            {
+                'Name': 'architecture',
+                'Values': [
+                    'arm64' if arm64 else 'x86_64',
                 ],
             },
         ],
@@ -144,7 +150,7 @@ distro_images = {
     'rhel8': latest_aws_image('309956199498', 'RHEL-8.4.*_HVM-*-x86_64-0-Hourly2-GP2'),
     'u1804': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-*'), # pylint: disable=line-too-long
     'u2004': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*'), # pylint: disable=line-too-long
-    'u2004arm64': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-*'), # pylint: disable=line-too-long
+    'u2004arm64': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-*', True), # pylint: disable=line-too-long
     'u2110': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-impish-21.10-amd64-server-*'), # pylint: disable=line-too-long
     'u2204': latest_aws_image('099720109477', 'ubuntu/images-testing/hvm-ssd/ubuntu-jammy-daily-amd64-server-*'), # pylint: disable=line-too-long
 }
