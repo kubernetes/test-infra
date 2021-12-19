@@ -399,6 +399,11 @@ type RepoRequest struct {
 	AllowRebaseMerge *bool   `json:"allow_rebase_merge,omitempty"`
 }
 
+type WorkflowRuns struct {
+	Count       int           `json:"total_count,omitempty"`
+	WorflowRuns []WorkflowRun `json:"workflow_runs"`
+}
+
 // RepoCreateRequest contains metadata used in requests to create a repo.
 // See also: https://developer.github.com/v3/repos/#create
 type RepoCreateRequest struct {

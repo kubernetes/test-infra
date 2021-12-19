@@ -138,6 +138,27 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 	if pjutil.RetestRe.MatchString(gc.Body) || pjutil.RetestRequiredRe.MatchString(gc.Body) {
 		additionalLabels[kube.RetestLabel] = "true"
 	}
+	// run failed github actions
+	if pjutil.RetestRe.MatchString(gc.Body) || pjutil.TestAllRe.MatchString(gc.Body) {
+		headSHA, err := refGetter.HeadSHA()
+		if err != nil {
+			c.Logger.Warnf("headSHA unvailable, failed github actions for pr will not be triggered: %v", pr)
+		} else {
+			// pr.
+			failedRuns, err := c.GitHubClient.GetFailedActionRunsByHeadBranch(org, repo, pr.Head.Ref, headSHA)
+			if err != nil {
+				c.Logger.Errorf("unable to get failed github action runs for branch %v", pr.Head.Ref)
+			} else {
+				for _, run := range failedRuns {
+					go func() {
+						if err := c.GitHubClient.TriggerGithubWorkflow(org, repo, run.ID); err != nil {
+							c.Logger.Errorf("attempt to trigger github run failed \"%s\"(%d) for %s/%s: %w", run.Name, run.ID, org, repo, err)
+						}
+					}()
+				}
+			}
+		}
+	}
 	return RunRequestedWithLabels(c, pr, baseSHA, toTest, gc.GUID, additionalLabels)
 }
 

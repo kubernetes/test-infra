@@ -2122,6 +2122,43 @@ func (c *client) GetPullRequest(org, repo string, number int) (*PullRequest, err
 	return &pr, err
 }
 
+func (c *client) GetFailedActionRunsByHeadBranch(org, repo, branchName, headSHA string) ([]WorkflowRun, error) {
+	durationLogger := c.log("GetJobsByHeadBranch", org, repo)
+	defer durationLogger()
+
+	var runs WorkflowRuns
+
+	_, err := c.request(&request{
+		accept: "application/vnd.github.v3+json",
+		method: http.MethodGet,
+		path:   fmt.Sprintf("/repos/%s/%s/actions/runs?status=failure&event=pull-request&branch=%s", org, repo, url.QueryEscape(branchName)),
+		org:    org,
+	}, &runs)
+
+	prRuns := []WorkflowRun{}
+
+	// keep only the runs matching the current PR headSHA
+	for _, run := range runs.WorflowRuns {
+		if run.HeadSha == headSHA {
+			prRuns = append(prRuns, run)
+		}
+	}
+
+	return prRuns, err
+}
+
+func (c *client) TriggerGithubWorkflow(org, repo string, id int) error {
+	durationLogger := c.log("TriggerGithubWorkflow", org, repo, id)
+	defer durationLogger()
+	_, err := c.request(&request{
+		accept: "application/vnd.github.v3+json",
+		method: http.MethodPost,
+		path:   fmt.Sprintf("/repos/%s/%s/actions/runs/%d/rerun", org, repo, id),
+		org:    org,
+	}, nil)
+	return err
+}
+
 // EditPullRequest will update the pull request.
 //
 // See https://developer.github.com/v3/pulls/#update-a-pull-request
