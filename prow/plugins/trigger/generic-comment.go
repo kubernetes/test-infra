@@ -147,7 +147,7 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 			// pr.
 			failedRuns, err := c.GitHubClient.GetFailedActionRunsByHeadBranch(org, repo, pr.Head.Ref, headSHA)
 			if err != nil {
-				c.Logger.Errorf("unable to get failed github action runs for branch %v", pr.Head.Ref)
+				c.Logger.Errorf("%v: unable to get failed github action runs for branch %v", err, pr.Head.Ref)
 			} else {
 				for _, run := range failedRuns {
 					runID, runName := run.ID, run.Name
