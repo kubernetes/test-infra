@@ -67,6 +67,7 @@ approve:
 - repos:
   - kubernetes/cloud-provider-openstack
   - kubernetes-sigs/cluster-api
+  - kubernetes-sigs/cluster-api-operator
   - kubernetes-sigs/cluster-api-provider-aws
   - kubernetes-sigs/cluster-api-provider-azure
   - kubernetes-sigs/cluster-api-provider-gcp
