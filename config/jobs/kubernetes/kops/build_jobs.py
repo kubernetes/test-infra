@@ -79,6 +79,8 @@ def build_test(cloud='aws',
         return None
     if should_skip_newer_k8s(k8s_version, kops_version):
         return None
+    if container_runtime == 'docker' and k8s_version not in ('1.21', '1.22', '1.23'):
+        return None
 
     if cloud == 'aws':
         kops_image = distro_images[distro]
