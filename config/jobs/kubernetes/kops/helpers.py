@@ -147,7 +147,7 @@ distro_images = {
     'deb11': latest_aws_image('136693071363', 'debian-11-amd64-*'),
     'flatcar': latest_aws_image('075585003325', 'Flatcar-stable-*-hvm'),
     'rhel7': latest_aws_image('309956199498', 'RHEL-7.*_HVM_*-x86_64-0-Hourly2-GP2'),
-    'rhel8': latest_aws_image('309956199498', 'RHEL-8.4.*_HVM-*-x86_64-0-Hourly2-GP2'),
+    'rhel8': latest_aws_image('309956199498', 'RHEL-8.*_HVM-*-x86_64-0-Hourly2-GP2'),
     'u1804': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-*'), # pylint: disable=line-too-long
     'u2004': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*'), # pylint: disable=line-too-long
     'u2004arm64': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-*', True), # pylint: disable=line-too-long
