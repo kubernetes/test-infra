@@ -35,6 +35,8 @@ skip_jobs = [
 
 image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211217-ea95cec1d4-master"
 
+loader = jinja2.FileSystemLoader(searchpath="./templates")
+
 ##############
 # Build Test #
 ##############
@@ -139,7 +141,6 @@ def build_test(cloud='aws',
         if irsa and cloud == "aws":
             env['KOPS_IRSA'] = "true"
 
-    loader = jinja2.FileSystemLoader(searchpath="./templates")
     tmpl = jinja2.Environment(loader=loader).get_template(tmpl_file)
     job = tmpl.render(
         job_name=job_name,
@@ -273,7 +274,6 @@ def presubmit_test(branch='master',
         if irsa and cloud == "aws":
             env['KOPS_IRSA'] = "true"
 
-    loader = jinja2.FileSystemLoader(searchpath="./templates")
     tmpl = jinja2.Environment(loader=loader).get_template(tmpl_file)
     job = tmpl.render(
         job_name=name,
