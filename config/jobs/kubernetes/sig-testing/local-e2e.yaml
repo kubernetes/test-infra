@@ -28,7 +28,7 @@ presubmits:
         - --deployment=local
         - --ginkgo-parallel=1
         - --provider=local
-        - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Serial
+        - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Serial|should.have.at.least.two.untainted
         - --timeout=120m
         # docker-in-docker needs privileged mode
         securityContext:
@@ -43,7 +43,7 @@ presubmits:
     annotations:
       testgrid-create-test-group: 'true'
       testgrid-dashboards: sig-testing-misc
-      description: Runs conformance tests using kubetest with local-up-cluster
+      description: Runs single node conformance tests using kubetest with local-up-cluster
 
 periodics:
 - name: ci-kubernetes-local-e2e
@@ -65,7 +65,7 @@ periodics:
       - --extract-source
       - --ginkgo-parallel=1
       - --provider=local
-      - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Serial
+      - --test_args=--ginkgo.focus=\[Conformance\] --ginkgo.skip=Serial|should.have.at.least.two.untainted
       - --timeout=120m
       # docker-in-docker needs privileged mode
       securityContext:
@@ -80,6 +80,6 @@ periodics:
   annotations:
     testgrid-dashboards: conformance-all, conformance-hack-local-up-cluster, sig-testing-misc
     testgrid-tab-name: local-up-cluster, master (dev)
-    description: Runs conformance tests using kubetest with hack/local-up-cluster.sh
+    description: Runs single node conformance tests using kubetest with hack/local-up-cluster.sh
     testgrid-num-failures-to-alert: '1'
     testgrid-alert-stale-results-hours: '24'
