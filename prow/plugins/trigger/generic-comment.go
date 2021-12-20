@@ -150,9 +150,10 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 				c.Logger.Errorf("unable to get failed github action runs for branch %v", pr.Head.Ref)
 			} else {
 				for _, run := range failedRuns {
+					runID, runName := run.ID, run.Name
 					go func() {
-						if err := c.GitHubClient.TriggerGithubWorkflow(org, repo, run.ID); err != nil {
-							c.Logger.Errorf("attempt to trigger github run failed \"%s\"(%d) for %s/%s: %w", run.Name, run.ID, org, repo, err)
+						if err := c.GitHubClient.TriggerGithubWorkflow(org, repo, runID); err != nil {
+							c.Logger.Errorf("attempt to trigger github run failed \"%s\"(%d) for %s/%s: %v", runName, runID, org, repo, err)
 						}
 					}()
 				}
