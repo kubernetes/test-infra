@@ -121,6 +121,13 @@ def build_test(cloud='aws',
     marker, k8s_deploy_url, test_package_bucket, test_package_dir = k8s_version_info(k8s_version)
     args = create_args(kops_channel, networking, container_runtime, extra_flags, kops_image)
 
+    node_ig_overrides = ""
+    cp_ig_overrides = ""
+    if distro == "flatcar":
+        # https://github.com/flatcar-linux/Flatcar/issues/220
+        node_ig_overrides += "spec.instanceMetadata.httpTokens=optional"
+        cp_ig_overrides += "spec.instanceMetadata.httpTokens=optional"
+
     if tab in skip_jobs:
         return None
 
@@ -149,6 +156,8 @@ def build_test(cloud='aws',
         kops_ssh_user=kops_ssh_user,
         kops_ssh_key_path=kops_ssh_key_path,
         create_args=args,
+        cp_ig_overrides=cp_ig_overrides,
+        node_ig_overrides=node_ig_overrides,
         k8s_deploy_url=k8s_deploy_url,
         kops_deploy_url=kops_deploy_url,
         test_parallelism=str(test_parallelism),
