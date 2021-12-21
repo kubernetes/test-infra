@@ -451,7 +451,7 @@ periodics:
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
       # Specific test args
-      - --test_args=--node-os-distro=windows --docker-config-file=$(DOCKER_CONFIG_FILE) --ginkgo.focus=(\[sig-windows\]|\[sig-scheduling\].SchedulerPreemption|\[sig-autoscaling\].\[Feature:HPA\]|\[sig-apps\].CronJob).*(\[Serial\]|\[Slow\])|(\[Serial\]|\[Slow\]).*(\[Conformance\]|\[NodeConformance\])|ContainerLogRotation --ginkgo.skip=\[LinuxOnly\]|device.plugin.for.Windows
+      - --test_args=--node-os-distro=windows --docker-config-file=$(DOCKER_CONFIG_FILE) -prepull-images=true --ginkgo.focus=(\[sig-windows\]|\[sig-scheduling\].SchedulerPreemption|\[sig-autoscaling\].\[Feature:HPA\]|\[sig-apps\].CronJob).*(\[Serial\]|\[Slow\])|(\[Serial\]|\[Slow\]).*(\[Conformance\]|\[NodeConformance\])|ContainerLogRotation --ginkgo.skip=\[LinuxOnly\]|device.plugin.for.Windows
       - --ginkgo-parallel=1
       securityContext:
         privileged: true
@@ -630,7 +630,7 @@ periodics:
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
       # Specific test args
-      - --test_args=--feature-gates=WindowsHostProcessContainers=true --node-os-distro=windows -docker-config-file=$(DOCKER_CONFIG_FILE) --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-network\].EndpointSlice|WindowsHostProcessContainers --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|\[alpha\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows
+      - --test_args=--feature-gates=WindowsHostProcessContainers=true --node-os-distro=windows -docker-config-file=$(DOCKER_CONFIG_FILE) -prepull-images=true --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-network\].EndpointSlice|WindowsHostProcessContainers --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|\[alpha\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows
       - --ginkgo-parallel=4
       securityContext:
         privileged: true

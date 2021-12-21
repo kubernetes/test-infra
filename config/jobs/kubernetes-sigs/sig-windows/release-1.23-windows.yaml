@@ -42,7 +42,7 @@ periodics:
       - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_1_23.json
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
-      - --test_args=--node-os-distro=windows -docker-config-file=$(DOCKER_CONFIG_FILE) --feature-gates=WindowsHostProcessContainers=true
+      - --test_args=--node-os-distro=windows -docker-config-file=$(DOCKER_CONFIG_FILE) -prepull-images=true --feature-gates=WindowsHostProcessContainers=true
         --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-network\].EndpointSlice
         --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|\[alpha\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows
       - --ginkgo-parallel=4
@@ -99,7 +99,7 @@ periodics:
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
       # Specific test args
-      - --test_args=--node-os-distro=windows --ginkgo.focus=(\[sig-windows\]|\[sig-scheduling\].SchedulerPreemption|\[sig-autoscaling\].\[Feature:HPA\]|\[sig-apps\].CronJob).*(\[Serial\]|\[Slow\])|(\[Serial\]|\[Slow\]).*(\[Conformance\]|\[NodeConformance\]) --ginkgo.skip=\[LinuxOnly\]|device.plugin.for.Windows|\[sig-scheduling\].SchedulerPredicates.\[Serial\].validates.that.there.is.no.conflict.between.pods.with.same.hostPort
+      - --test_args=--node-os-distro=windows -prepull-images=true --ginkgo.focus=(\[sig-windows\]|\[sig-scheduling\].SchedulerPreemption|\[sig-autoscaling\].\[Feature:HPA\]|\[sig-apps\].CronJob).*(\[Serial\]|\[Slow\])|(\[Serial\]|\[Slow\]).*(\[Conformance\]|\[NodeConformance\]) --ginkgo.skip=\[LinuxOnly\]|device.plugin.for.Windows|\[sig-scheduling\].SchedulerPredicates.\[Serial\].validates.that.there.is.no.conflict.between.pods.with.same.hostPort
       - --ginkgo-parallel=1
       securityContext:
         privileged: true
@@ -154,7 +154,7 @@ periodics:
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
       # Specific test args
-      - --test_args=--node-os-distro=windows -docker-config-file=$(DOCKER_CONFIG_FILE) --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-network\].EndpointSlice --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|\[alpha\]|\[Excluded:WindowsDocker\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows
+      - --test_args=--node-os-distro=windows -docker-config-file=$(DOCKER_CONFIG_FILE) -prepull-images=true --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-network\].EndpointSlice --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|\[alpha\]|\[Excluded:WindowsDocker\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows
       - --ginkgo-parallel=4
       securityContext:
         privileged: true
