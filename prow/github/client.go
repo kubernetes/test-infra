@@ -2158,7 +2158,7 @@ func (c *client) TriggerGithubWorkflow(org, repo string, id int) error {
 		method:    http.MethodPost,
 		path:      fmt.Sprintf("/repos/%s/%s/actions/runs/%d/rerun", org, repo, id),
 		org:       org,
-		exitCodes: []int{200},
+		exitCodes: []int{201},
 	}, nil)
 	return err
 }
