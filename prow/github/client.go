@@ -2131,10 +2131,11 @@ func (c *client) GetFailedActionRunsByHeadBranch(org, repo, branchName, headSHA 
 	var runs WorkflowRuns
 
 	_, err := c.request(&request{
-		accept: "application/vnd.github.v3+json",
-		method: http.MethodGet,
-		path:   fmt.Sprintf("/repos/%s/%s/actions/runs?status=failure&event=pull-request&branch=%s", org, repo, url.QueryEscape(branchName)),
-		org:    org,
+		accept:    "application/vnd.github.v3+json",
+		method:    http.MethodGet,
+		path:      fmt.Sprintf("/repos/%s/%s/actions/runs?status=failure&event=pull-request&branch=%s", org, repo, url.QueryEscape(branchName)),
+		org:       org,
+		exitCodes: []int{200},
 	}, &runs)
 
 	prRuns := []WorkflowRun{}
@@ -2153,10 +2154,11 @@ func (c *client) TriggerGithubWorkflow(org, repo string, id int) error {
 	durationLogger := c.log("TriggerGithubWorkflow", org, repo, id)
 	defer durationLogger()
 	_, err := c.request(&request{
-		accept: "application/vnd.github.v3+json",
-		method: http.MethodPost,
-		path:   fmt.Sprintf("/repos/%s/%s/actions/runs/%d/rerun", org, repo, id),
-		org:    org,
+		accept:    "application/vnd.github.v3+json",
+		method:    http.MethodPost,
+		path:      fmt.Sprintf("/repos/%s/%s/actions/runs/%d/rerun", org, repo, id),
+		org:       org,
+		exitCodes: []int{200},
 	}, nil)
 	return err
 }
