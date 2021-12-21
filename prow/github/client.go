@@ -2133,7 +2133,7 @@ func (c *client) GetFailedActionRunsByHeadBranch(org, repo, branchName, headSHA 
 	_, err := c.request(&request{
 		accept:    "application/vnd.github.v3+json",
 		method:    http.MethodGet,
-		path:      fmt.Sprintf("/repos/%s/%s/actions/runs?status=failure&event=pull-request&branch=%s", org, repo, url.QueryEscape(branchName)),
+		path:      fmt.Sprintf("/repos/%s/%s/actions/runs?status=failure&event=pull_request&branch=%s", org, repo, url.QueryEscape(branchName)),
 		org:       org,
 		exitCodes: []int{200},
 	}, &runs)

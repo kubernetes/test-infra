@@ -149,6 +149,7 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 			if err != nil {
 				c.Logger.Errorf("%v: unable to get failed github action runs for branch %v", err, pr.Head.Ref)
 			} else {
+				c.Logger.Info("failed runs found:", len(failedRuns))
 				for _, run := range failedRuns {
 					runID, runName := run.ID, run.Name
 					go func() {
