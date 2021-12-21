@@ -497,7 +497,6 @@ periodics:
       - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/ignore_known_kubemark_container_restarts.yaml
-      - --test-cmd-args=--testoverrides=./testing/overrides/kubemark_5000_nodes.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=1080m
       - --use-logexporter
@@ -580,7 +579,6 @@ periodics:
       - --test-cmd-args=--testsuite=testing/density/scheduler-suite.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/ignore_known_kubemark_container_restarts.yaml
-      - --test-cmd-args=--testoverrides=./testing/overrides/kubemark_5000_nodes.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=1080m
       - --use-logexporter
