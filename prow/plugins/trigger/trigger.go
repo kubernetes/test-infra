@@ -155,7 +155,7 @@ type githubClient interface {
 	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
 	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
 	RemoveLabel(org, repo string, number int, label string) error
-	TriggerGithubWorkflow(org, repo string, id int) error
+	TriggerGitHubWorkflow(org, repo string, id int) error
 	DeleteStaleComments(org, repo string, number int, comments []github.IssueComment, isStale func(github.IssueComment) bool) error
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
 }

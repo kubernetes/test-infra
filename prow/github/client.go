@@ -272,7 +272,7 @@ type Client interface {
 	WithFields(fields logrus.Fields) Client
 	ForPlugin(plugin string) Client
 	ForSubcomponent(subcomponent string) Client
-	TriggerGithubWorkflow(org, repo string, id int) error
+	TriggerGitHubWorkflow(org, repo string, id int) error
 }
 
 // client interacts with the github api. It is reconstructed whenever
@@ -2150,8 +2150,8 @@ func (c *client) GetFailedActionRunsByHeadBranch(org, repo, branchName, headSHA 
 	return prRuns, err
 }
 
-func (c *client) TriggerGithubWorkflow(org, repo string, id int) error {
-	durationLogger := c.log("TriggerGithubWorkflow", org, repo, id)
+func (c *client) TriggerGitHubWorkflow(org, repo string, id int) error {
+	durationLogger := c.log("TriggerGitHubWorkflow", org, repo, id)
 	defer durationLogger()
 	_, err := c.request(&request{
 		accept:    "application/vnd.github.v3+json",

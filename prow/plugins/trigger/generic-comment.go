@@ -152,7 +152,7 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 				for _, run := range failedRuns {
 					runID, runName := run.ID, run.Name
 					go func() {
-						if err := c.GitHubClient.TriggerGithubWorkflow(org, repo, runID); err != nil {
+						if err := c.GitHubClient.TriggerGitHubWorkflow(org, repo, runID); err != nil {
 							c.Logger.Errorf("attempt to trigger github run failed '%s'(%d) for %s/%s: %v", runName, runID, org, repo, err)
 						} else {
 							c.Logger.Infof("successfully triggered action run '%s'(%d) for %s/%s", runName, runID, org, repo)
