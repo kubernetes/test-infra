@@ -1112,3 +1112,7 @@ func (f *FakeClient) MutateWithGitHubAppsSupport(ctx context.Context, m interfac
 func (f *FakeClient) GetFailedActionRunsByHeadBranch(org, repo, branchName, headSHA string) ([]github.WorkflowRun, error) {
 	return []github.WorkflowRun{}, nil
 }
+
+func (f *FakeClient) TriggerGitHubWorkflow(org, repo string, id int) error {
+	return nil
+}
