@@ -1,94 +1,4 @@
 periodics:
-- name: ci-gce-pd-csi-driver-latest-k8s-master-windows-containerd-2019
-  decorate: true
-  extra_refs:
-  - org: kubernetes-sigs
-    repo: gcp-compute-persistent-disk-csi-driver
-    base_ref: master
-    path_alias: sigs.k8s.io/gcp-compute-persistent-disk-csi-driver
-  interval: 4h
-  labels:
-    preset-k8s-ssh: "true"
-    preset-service-account: "true"
-    preset-common-gce-windows: "true"
-    preset-e2e-gce-windows: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
-    preset-dind-enabled: "true"
-    preset-e2e-gce-windows-containerd: "true"
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --check-leaked-resources
-      - --cluster=
-      - --extract=ci/latest
-      - --gcp-zone=us-west1-b
-      - --ginkgo-parallel=8
-      - --provider=gce
-      - --gcp-nodes=2
-      - --test=false
-      - --test-cmd=$GOPATH/src/sigs.k8s.io/gcp-compute-persistent-disk-csi-driver/test/run-windows-k8s-integration.sh
-      - --timeout=120m
-      env:
-      - name: WINDOWS_NODE_OS_DISTRIBUTION
-        value: "win2019"
-      - name: PREPULL_YAML
-        value: "prepull-head.yaml"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211217-ea95cec1d4-master
-      securityContext:
-          privileged: true
-  annotations:
-    testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
-    testgrid-tab-name: ci-win2019-containerd-provider-gcp-compute-persistent-disk-csi-driver
-    description: Kubernetes Integration tests for Kubernetes Master branch and Driver latest on Windows 2019 with Containerd
-- name: ci-gce-pd-csi-driver-latest-k8s-master-windows-containerd-20h2
-  decorate: true
-  extra_refs:
-  - org: kubernetes-sigs
-    repo: gcp-compute-persistent-disk-csi-driver
-    base_ref: master
-    path_alias: sigs.k8s.io/gcp-compute-persistent-disk-csi-driver
-  interval: 4h
-  labels:
-    preset-k8s-ssh: "true"
-    preset-service-account: "true"
-    preset-common-gce-windows: "true"
-    preset-e2e-gce-windows: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
-    preset-dind-enabled: "true"
-    preset-e2e-gce-windows-containerd: "true"
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --check-leaked-resources
-      - --cluster=
-      - --extract=ci/latest
-      - --gcp-zone=us-west1-b
-      - --ginkgo-parallel=8
-      - --provider=gce
-      - --gcp-nodes=2
-      - --test=false
-      - --test-cmd=$GOPATH/src/sigs.k8s.io/gcp-compute-persistent-disk-csi-driver/test/run-windows-k8s-integration.sh
-      - --timeout=180m
-      env:
-      - name: WINDOWS_NODE_OS_DISTRIBUTION
-        value: "win20h2"
-      - name: PREPULL_YAML
-        value: "prepull-head.yaml"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211217-ea95cec1d4-master
-      securityContext:
-          privileged: true
-  annotations:
-    testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
-    testgrid-tab-name: ci-win20h2-containerd-gcp-compute-persistent-disk-csi-driver
-    description: Kubernetes Integration tests for Kubernetes Master branch and Driver latest on Windows 20H2 with Containerd
 - name: ci-gce-pd-csi-driver-latest-k8s-master-windows-20h2
   decorate: true
   extra_refs:
@@ -101,6 +11,7 @@ periodics:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
     preset-common-gce-windows: "true"
+    preset-e2e-gce-windows-containerd: "true"
     preset-e2e-gce-windows: "true"
     preset-bazel-scratch-dir: "true"
     preset-bazel-remote-cache-enabled: "true"
@@ -146,6 +57,7 @@ periodics:
     preset-service-account: "true"
     preset-common-gce-windows: "true"
     preset-e2e-gce-windows: "true"
+    preset-e2e-gce-windows-containerd: "true"
     preset-bazel-scratch-dir: "true"
     preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
@@ -190,6 +102,7 @@ periodics:
     preset-service-account: "true"
     preset-common-gce-windows: "true"
     preset-e2e-gce-windows: "true"
+    preset-e2e-gce-windows-containerd: "true"
     preset-bazel-scratch-dir: "true"
     preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
@@ -236,6 +149,7 @@ periodics:
     preset-service-account: "true"
     preset-common-gce-windows: "true"
     preset-e2e-gce-windows: "true"
+    preset-e2e-gce-windows-containerd: "true"
     preset-bazel-scratch-dir: "true"
     preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
@@ -281,6 +195,7 @@ presubmits:
       preset-service-account: "true"
       preset-common-gce-windows: "true"
       preset-e2e-gce-windows: "true"
+      preset-e2e-gce-windows-containerd: "true"
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
@@ -328,6 +243,7 @@ presubmits:
       preset-service-account: "true"
       preset-common-gce-windows: "true"
       preset-e2e-gce-windows: "true"
+      preset-e2e-gce-windows-containerd: "true"
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
