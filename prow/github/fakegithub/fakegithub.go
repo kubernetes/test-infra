@@ -1108,3 +1108,7 @@ func (f *FakeClient) ListCurrentUserOrgInvitations() ([]github.UserOrgInvitation
 func (f *FakeClient) MutateWithGitHubAppsSupport(ctx context.Context, m interface{}, input githubql.Input, vars map[string]interface{}, org string) error {
 	return nil
 }
+
+func (f *FakeClient) GetFailedActionRunsByHeadBranch(org, repo, branchName, headSHA string) ([]github.WorkflowRun, error) {
+	return []github.WorkflowRun{}, nil
+}
