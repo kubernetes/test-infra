@@ -44,6 +44,7 @@ const testgridNumFailuresToAlertAnnotation = "testgrid-num-failures-to-alert"
 const testgridDaysOfResultsAnnotation = "testgrid-days-of-results"
 const testgridInCellMetric = "testgrid-in-cell-metric"
 const testGridDisableProwJobAnalysis = "testgrid-disable-prowjob-analysis"
+const testgridBaseOptionsAnnotation = "testgrid-base-options"
 const descriptionAnnotation = "description"
 const minPresubmitNumColumnsRecent = 20
 
@@ -181,6 +182,11 @@ func (pac *ProwAwareConfigurator) ApplySingleProwjobAnnotations(c *configpb.Conf
 		tabName = tn
 	}
 
+	var baseOptions string
+	if bo, ok := j.Annotations[testgridBaseOptionsAnnotation]; ok {
+		baseOptions = bo
+	}
+
 	description := pac.TabDescriptionForProwJob(j)
 
 	if addToDashboards {
@@ -221,6 +227,7 @@ func (pac *ProwAwareConfigurator) ApplySingleProwjobAnnotations(c *configpb.Conf
 				CodeSearchUrlTemplate: codeSearchLinkTemplate,
 				OpenBugTemplate:       openBugLinkTemplate,
 				OpenTestTemplate:      openTestLinkTemplate,
+				BaseOptions:           baseOptions,
 			}
 			if firstDashboard {
 				firstDashboard = false
