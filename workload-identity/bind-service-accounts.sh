@@ -98,12 +98,14 @@ else
   sleep 2m
 fi
 
+
 pod-identity() {
   head -n 1 <(
     entropy=$(date +%S)
     set -o xtrace
     kubectl run --rm=true -i \
-      "--context=$context" "--namespace=$namespace" "--serviceaccount=$name" \
+      "--context=$context" "--namespace=$namespace" \
+      "--overrides={\"spec\": {\"serviceAccount\": \"$name\"}}" \
       --image=google/cloud-sdk:slim "workload-identity-test-$entropy" \
       <<< "gcloud config get-value core/account"
   )
