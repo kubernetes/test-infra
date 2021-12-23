@@ -82,7 +82,9 @@ for image in "${IMAGES[@]}"; do
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/${image//\//\\/}\/'
       branches:
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
