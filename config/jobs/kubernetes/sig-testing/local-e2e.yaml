@@ -2,7 +2,9 @@ presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-local-e2e
     branches:
+    # TODO(releng): Remove once repo default branch has been renamed
     - master
+    - main
     always_run: false
     skip_report: false
     max_concurrency: 8

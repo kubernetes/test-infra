@@ -79,7 +79,9 @@ presubmits:
     always_run: false
     max_concurrency: 1
     branches:
+    # TODO(releng): Remove once repo default branch has been renamed
     - master
+    - main
     decorate: true
     path_alias: k8s.io/kubernetes
     decoration_config:
@@ -205,7 +207,9 @@ presubmits:
     always_run: false
     max_concurrency: 1
     branches:
+    # TODO(releng): Remove once repo default branch has been renamed
     - master
+    - main
     decorate: true
     path_alias: k8s.io/kubernetes
     decoration_config:
@@ -359,7 +363,9 @@ presubmits:
     always_run: false
     max_concurrency: 1
     branches:
+    # TODO(releng): Remove once repo default branch has been renamed
     - master
+    - main
     decorate: true
     path_alias: k8s.io/kubernetes
     decoration_config:

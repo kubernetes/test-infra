@@ -3,7 +3,9 @@ presubmits:
   - name: pull-kubernetes-node-e2e
     cluster: k8s-infra-prow-build
     branches:
-      - master
+    # TODO(releng): Remove once repo default branch has been renamed
+    - master
+    - main
     annotations:
       testgrid-create-test-group: "true"
     always_run: false
@@ -92,7 +94,9 @@ presubmits:
     # if it is run and fails, don't block the PR
     optional: true
     branches:
+    # TODO(releng): Remove once repo default branch has been renamed
     - master
+    - main
     decorate: true
     path_alias: k8s.io/kubernetes
     extra_refs:
@@ -224,7 +228,9 @@ presubmits:
     always_run: false
     optional: true
     branches:
+    # TODO(releng): Remove once repo default branch has been renamed
     - master
+    - main
     decorate: true
     path_alias: k8s.io/kubernetes
     extra_refs:
@@ -270,7 +276,9 @@ presubmits:
         - --image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/containerd/image-config.yaml
   - name: pull-kubernetes-node-e2e-containerd-features
     branches:
+    # TODO(releng): Remove once repo default branch has been renamed
     - master
+    - main
     always_run: false
     optional: true
     max_concurrency: 12
@@ -317,7 +325,9 @@ presubmits:
     # if at all it is run and fails, don't block the PR
     optional: true
     branches:
+    # TODO(releng): Remove once repo default branch has been renamed
     - master
+    - main
     decorate: true
     path_alias: k8s.io/kubernetes
     extra_refs:
@@ -370,7 +380,9 @@ presubmits:
   - name: pull-kubernetes-node-e2e-alpha
     cluster: k8s-infra-prow-build
     branches:
+    # TODO(releng): Remove once repo default branch has been renamed
     - master
+    - main
     annotations:
       testgrid-create-test-group: "true"
     always_run: false
@@ -414,7 +426,9 @@ presubmits:
     # if at all it is run and fails, don't block the PR
     optional: true
     branches:
+    # TODO(releng): Remove once repo default branch has been renamed
     - master
+    - main
     decorate: true
     path_alias: k8s.io/kubernetes
     extra_refs:
@@ -622,7 +636,9 @@ presubmits:
     # if at all it is run and fails, don't block the PR
     optional: true
     branches:
+    # TODO(releng): Remove once repo default branch has been renamed
     - master
+    - main
     decorate: true
     path_alias: k8s.io/kubernetes
     extra_refs:
@@ -714,7 +730,9 @@ presubmits:
     # if at all it is run and fails, don't block the PR
     optional: true
     branches:
+    # TODO(releng): Remove once repo default branch has been renamed
     - master
+    - main
     decorate: true
     path_alias: k8s.io/kubernetes
     extra_refs:
@@ -798,7 +816,9 @@ presubmits:
     # if at all it is run and fails, don't block the PR
     optional: true
     branches:
+    # TODO(releng): Remove once repo default branch has been renamed
     - master
+    - main
     decorate: true
     path_alias: k8s.io/kubernetes
     extra_refs:
@@ -882,7 +902,9 @@ presubmits:
     # if at all it is run and fails, don't block the PR
     optional: true
     branches:
+    # TODO(releng): Remove once repo default branch has been renamed
     - master
+    - main
     decorate: true
     path_alias: k8s.io/kubernetes
     extra_refs:
@@ -971,7 +993,9 @@ presubmits:
     # if at all it is run and fails, don't block the PR
     optional: true
     branches:
+    # TODO(releng): Remove once repo default branch has been renamed
     - master
+    - main
     decorate: true
     path_alias: k8s.io/kubernetes
     extra_refs:
@@ -1103,7 +1127,9 @@ presubmits:
     # if at all it is run and fails, don't block the PR
     optional: true
     branches:
+    # TODO(releng): Remove once repo default branch has been renamed
     - master
+    - main
     decorate: true
     path_alias: k8s.io/kubernetes
     extra_refs:
@@ -1281,7 +1307,9 @@ presubmits:
     # if at all it is run and fails, don't block the PR
     optional: true
     branches:
+    # TODO(releng): Remove once repo default branch has been renamed
     - master
+    - main
     decorate: true
     path_alias: k8s.io/kubernetes
     extra_refs:

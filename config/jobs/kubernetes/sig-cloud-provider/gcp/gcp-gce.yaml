@@ -108,7 +108,9 @@ presubmits:
     # if at all it is run and fails, don't block the PR
     optional: true
     branches:
+    # TODO(releng): Remove once repo default branch has been renamed
     - master
+    - main
     decorate: true
     decoration_config:
       timeout: 80m # hard cap, based on original pre-kubetest2 job but moved to a prow-level timeout
@@ -378,7 +380,9 @@ presubmits:
     optional: true
     run_if_changed: '^.*feature.*\.go'
     branches:
+    # TODO(releng): Remove once repo default branch has been renamed
     - master
+    - main
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
