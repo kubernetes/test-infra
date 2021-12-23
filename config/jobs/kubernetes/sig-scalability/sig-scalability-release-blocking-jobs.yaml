@@ -17,6 +17,7 @@ periodics:
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com, release-team@kubernetes.io
     testgrid-dashboards: sig-release-master-informing, sig-scalability-gce, google-gce
     testgrid-tab-name: gce-master-scale-correctness
+    testgrid-base-options: 'exclude-filter-by-regex=^kubetest.Test$'
     description: "Uses kubetest to run correctness tests against a 5000-node cluster created with cluster/kube-up.sh"
   spec:
     containers:
