@@ -41,6 +41,7 @@ for release in "$@"; do
   output="${dir}/release-${release}-windows-presubmits.yaml"
   orchestrator_release="${release}"
   branch="release-${release}"
+  branch_name="release-${release}"
   dockershim_api_model="https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_staging.json"
   containerd_api_model="https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_master.json"
 
@@ -60,7 +61,8 @@ for release in "$@"; do
       containerd_api_model="https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_1_23.json"
       ;;
     *)
-      branch="master"
+      branch=$(echo -e 'master # TODO(releng): Remove once repo default branch has been renamed\n    - main')
+      branch_name=master
       orchestrator_release="1.23"
       ;;
   esac
@@ -119,7 +121,7 @@ presubmits:
         - --ginkgo-parallel=4
         securityContext:
           privileged: true
-$(generate_presubmit_annotations ${branch} pull-kubernetes-e2e-aks-engine-windows-dockershim-${release})
+$(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-aks-engine-windows-dockershim-${release})
   - name: pull-kubernetes-e2e-aks-engine-windows-containerd-${release//./-}
     always_run: false
     optional: true
@@ -171,7 +173,7 @@ $(generate_presubmit_annotations ${branch} pull-kubernetes-e2e-aks-engine-window
         - --ginkgo-parallel=4
         securityContext:
           privileged: true
-$(generate_presubmit_annotations ${branch} pull-kubernetes-e2e-aks-engine-windows-containerd-${release})
+$(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-aks-engine-windows-containerd-${release})
   - name: pull-kubernetes-e2e-aks-engine-azure-disk-windows-dockershim-${release//./-}
     decorate: true
     decoration_config:
@@ -230,7 +232,7 @@ $(generate_presubmit_annotations ${branch} pull-kubernetes-e2e-aks-engine-window
           value: kubernetes.io/azure-disk # In-tree Azure disk storage class
         - name: TEST_WINDOWS
           value: "true"
-$(generate_presubmit_annotations ${branch} pull-kubernetes-e2e-aks-engine-azure-disk-windows-dockershim-${release})
+$(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-aks-engine-azure-disk-windows-dockershim-${release})
   - name: pull-kubernetes-e2e-aks-engine-azure-file-windows-dockershim-${release//./-}
     decorate: true
     decoration_config:
@@ -289,6 +291,6 @@ $(generate_presubmit_annotations ${branch} pull-kubernetes-e2e-aks-engine-azure-
           value: kubernetes.io/azure-file # In-tree Azure file storage class
         - name: TEST_WINDOWS
           value: "true"
-$(generate_presubmit_annotations ${branch} pull-kubernetes-e2e-aks-engine-azure-file-windows-dockershim-${release})
+$(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-aks-engine-azure-file-windows-dockershim-${release})
 EOF
 done
