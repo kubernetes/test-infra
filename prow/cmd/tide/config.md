@@ -18,9 +18,9 @@ The following configuration fields are available:
    the default method of merge as value. Valid options are `squash`, `rebase`, and `merge`.
    Defaults to `merge`.
 * `merge_commit_template`: A mapping from `org/repo` or `org` to a set of Go templates to use when creating the title and body of merge commits. Go templates are evaluated with a `PullRequest`  (see [`PullRequest`](https://godoc.org/k8s.io/test-infra/prow/tide#PullRequest) type). This field and map keys are optional.
-* `target_url`: URL for tide status contexts.
-* `pr_status_base_url`: The base URL for the PR status page. If specified, this URL is used to construct
-   a link that will be used for the tide status context. It is mutually exclusive with the `target_url` field.
+* `target_urls`: A mapping from "*", <org>, or <org/repo> to the URL for the tide status contexts. The most specific key that matches will be used.
+* `pr_status_base_urls`: A mapping from "*", <org>, or <org/repo> to the base URL for the PR status page. If specified, this URL is used to construct
+   a link that will be used for the tide status context. It is mutually exclusive with the `target_urls` field.
 * `max_goroutines`: The maximum number of goroutines spawned inside the component to
    handle org/repo:branch pools. Defaults to 20. Needs to be a positive number.
 * `blocker_label`: The label used to identify issues which block merges to repository branches.
