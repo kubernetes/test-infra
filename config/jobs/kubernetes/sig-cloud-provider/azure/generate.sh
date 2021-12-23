@@ -47,9 +47,11 @@ for release in "$@"; do
   kubernetes_version="latest"
 
   if [[ "${release}" == "master" ]]; then
-    branch="master"
+    branch=$(echo -e 'master # TODO(releng): Remove once repo default branch has been renamed\n      - main')
+    branch_name="master"
   else
     branch="release-${release}"
+    branch_name="release-${release}"
     kubernetes_version+="-${release}"
   fi
 
@@ -105,7 +107,7 @@ presubmits:
             requests:
               cpu: 1
               memory: "4Gi"
-$(generate_presubmit_annotations ${branch} pull-kubernetes-e2e-capz-azure-disk)
+$(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-azure-disk)
   - name: pull-kubernetes-e2e-capz-azure-disk-vmss
     decorate: true
     always_run: false
@@ -152,7 +154,7 @@ $(generate_presubmit_annotations ${branch} pull-kubernetes-e2e-capz-azure-disk)
             requests:
               cpu: 1
               memory: "4Gi"
-$(generate_presubmit_annotations ${branch} pull-kubernetes-e2e-capz-azure-disk-vmss)
+$(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-azure-disk-vmss)
   - name: pull-kubernetes-e2e-capz-azure-file
     decorate: true
     always_run: false
@@ -198,7 +200,7 @@ $(generate_presubmit_annotations ${branch} pull-kubernetes-e2e-capz-azure-disk-v
             requests:
               cpu: 1
               memory: "4Gi"
-$(generate_presubmit_annotations ${branch} pull-kubernetes-e2e-capz-azure-file)
+$(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-azure-file)
   - name: pull-kubernetes-e2e-capz-azure-file-vmss
     decorate: true
     always_run: false
@@ -246,7 +248,7 @@ $(generate_presubmit_annotations ${branch} pull-kubernetes-e2e-capz-azure-file)
             requests:
               cpu: 1
               memory: "4Gi"
-$(generate_presubmit_annotations ${branch} pull-kubernetes-e2e-capz-azure-file-vmss)
+$(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-azure-file-vmss)
   - name: pull-kubernetes-e2e-capz-conformance
     decorate: true
     always_run: false
@@ -283,7 +285,7 @@ $(generate_presubmit_annotations ${branch} pull-kubernetes-e2e-capz-azure-file-v
           value: /home/prow/go/src/sigs.k8s.io/cluster-api-provider-azure/test/e2e/data/kubetest/conformance-fast.yaml
         - name: CONFORMANCE_NODES
           value: "25"
-$(generate_presubmit_annotations ${branch} pull-kubernetes-e2e-capz-conformance)
+$(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-conformance)
   - name: pull-kubernetes-e2e-capz-ha-control-plane
     decorate: true
     decoration_config:
@@ -323,7 +325,7 @@ $(generate_presubmit_annotations ${branch} pull-kubernetes-e2e-capz-conformance)
           value: "1"
         - name: CONFORMANCE_CONTROL_PLANE_MACHINE_COUNT
           value: "3"
-$(generate_presubmit_annotations ${branch} pull-kubernetes-e2e-capz-ha-control-plane)
+$(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-ha-control-plane)
 periodics:
 - interval: 3h
   name: capz-conformance-${release/./-}
@@ -384,7 +386,7 @@ periodics:
     path_alias: sigs.k8s.io/azurefile-csi-driver
   - org: kubernetes
     repo: kubernetes
-    base_ref: ${branch}
+    base_ref: ${branch_name}
     path_alias: k8s.io/kubernetes
   spec:
     containers:
@@ -436,7 +438,7 @@ periodics:
     path_alias: sigs.k8s.io/azurefile-csi-driver
   - org: kubernetes
     repo: kubernetes
-    base_ref: ${branch}
+    base_ref: ${branch_name}
     path_alias: k8s.io/kubernetes
   spec:
     containers:
@@ -490,7 +492,7 @@ periodics:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   - org: kubernetes
     repo: kubernetes
-    base_ref: ${branch}
+    base_ref: ${branch_name}
     path_alias: k8s.io/kubernetes
   spec:
     containers:
@@ -541,7 +543,7 @@ periodics:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   - org: kubernetes
     repo: kubernetes
-    base_ref: ${branch}
+    base_ref: ${branch_name}
     path_alias: k8s.io/kubernetes
   spec:
     containers:
