@@ -25,12 +25,6 @@ dashboards:
 
 - name: sig-node-cadvisor
 - name: sig-node-kubelet
-  dashboard_tab:
-    - name: conformance-node-rhel
-      test_group_name: ci-kubernetes-conformance-node-e2e-rhel
-    - name: conformance-node-containerized-rhel
-      test_group_name: ci-kubernetes-conformance-node-e2e-containerized-rhel
-
 - name: sig-node-containerd
   dashboard_tab:
     - name: pull-node-e2e

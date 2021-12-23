@@ -459,9 +459,3 @@ test_groups:
   gcs_prefix: compute-image-tools-test/logs/osconfig-stable
 - name: osconfig-head-images
   gcs_prefix: compute-image-tools-test/logs/osconfig-head-images
-
-# RHEL node e2e tests on AWS (contact: aos-pod@redhat.com)
-- name: ci-kubernetes-conformance-node-e2e-containerized-rhel
-  gcs_prefix: kubernetes-github-redhat/logs/ci-kubernetes-conformance-node-e2e-containerized-rhel
-- name: ci-kubernetes-conformance-node-e2e-rhel
-  gcs_prefix: kubernetes-github-redhat/logs/ci-kubernetes-conformance-node-e2e-rhel
