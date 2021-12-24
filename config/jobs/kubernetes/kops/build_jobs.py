@@ -669,6 +669,15 @@ def generate_misc():
                    extra_dashboards=['kops-misc'],
                    feature_flags=['APIServerNodes']),
 
+        build_test(name_override="kops-aws-misc-karpenter",
+                   k8s_version="ci",
+                   networking="amazonvpc",
+                   kops_channel="alpha",
+                   runs_per_day=1,
+                   extra_flags=["--instance-manager=karpenter"],
+                   feature_flags=['Karpenter'],
+                   extra_dashboards=["kops-misc"]),
+
     ]
     return results
 
