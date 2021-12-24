@@ -1,1 +1,59 @@
-../kubekins-e2e/variants.yaml
+variants:
+  experimental:
+    CONFIG: experimental
+    GO_VERSION: 1.17.5
+    K8S_RELEASE: stable
+    BAZEL_VERSION: 3.4.1
+    OLD_BAZEL_VERSION: 2.2.0
+    KUBETEST2_VERSION: latest
+    UPGRADE_DOCKER: 'true'
+  go-canary:
+    CONFIG: go-canary
+    GO_VERSION: 1.18beta1
+    K8S_RELEASE: stable
+    BAZEL_VERSION: 3.4.1
+    OLD_BAZEL_VERSION: 2.2.0
+  test-infra:
+    CONFIG: test-infra
+    GO_VERSION: 1.15.8
+    K8S_RELEASE: stable
+    BAZEL_VERSION: 3.4.1
+    OLD_BAZEL_VERSION: 3.1.0
+    KIND_VERSION: 0.10.0
+  master:
+    CONFIG: master
+    GO_VERSION: 1.17.5
+    K8S_RELEASE: stable
+    BAZEL_VERSION: 3.4.1
+    OLD_BAZEL_VERSION: 2.2.0
+  '1.23':
+    CONFIG: '1.23'
+    GO_VERSION: 1.17.5
+    K8S_RELEASE: stable-1.23
+    BAZEL_VERSION: 3.4.1
+    OLD_BAZEL_VERSION: 2.2.0
+  '1.22':
+    CONFIG: '1.22'
+    GO_VERSION: 1.16.12
+    K8S_RELEASE: stable-1.22
+    BAZEL_VERSION: 3.4.1
+    OLD_BAZEL_VERSION: 2.2.0
+  '1.21':
+    CONFIG: '1.21'
+    GO_VERSION: 1.16.12
+    K8S_RELEASE: stable-1.21
+    BAZEL_VERSION: 3.4.1
+    OLD_BAZEL_VERSION: 2.2.0
+  '1.20':
+    CONFIG: '1.20'
+    GO_VERSION: 1.15.15
+    K8S_RELEASE: stable-1.20
+    BAZEL_VERSION: 3.4.1
+    OLD_BAZEL_VERSION: 2.2.0
+  arm64:
+    CONFIG: "arm64"
+    GO_VERSION: 1.17.5
+    K8S_RELEASE: stable
+    BAZEL_VERSION: 3.4.1
+    OLD_BAZEL_VERSION: 2.2.0
+    ARCH: "arm64/v8"
