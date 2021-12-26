@@ -1138,6 +1138,14 @@ def generate_presubmits_e2e():
             tab_name='e2e-1-21',
             always_run=True,
             skip_regex=skip_regex + "|MetricsGrabber",
+        ),
+        presubmit_test(
+            name="pull-kops-e2e-aws-karpenter",
+            k8s_version="ci",
+            networking="amazonvpc",
+            kops_channel="alpha",
+            extra_flags=["--instance-manager=karpenter"],
+            feature_flags=['Karpenter'],
         )
     ]
     return jobs
