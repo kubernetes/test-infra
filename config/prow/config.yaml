@@ -482,6 +482,10 @@ branch-protection:
           required_status_checks:
             contexts:
             - continuous-integration/travis-ci
+        kubernetes-scheduler-simulator:
+          branches:
+            gh-pages:
+              protect: false
         kubespray:
           required_status_checks:
             contexts:

@@ -1,0 +1,59 @@
+# sigs.k8s.io/kube-scheduler-simulator presubmits
+presubmits:
+  kubernetes-sigs/kube-scheduler-simulator:
+  - name: pull-kube-scheduler-simulator-get-dependencies
+    decorate: true
+    path_alias: sigs.k8s.io/kube-scheduler-simulator
+    branches:
+    - ^master$
+    always_run: true
+    spec:
+      containers:
+      - image: golang:1.17
+        command:
+        - make
+        args:
+        - mod-download
+  - name: pull-kube-scheduler-simulator-install-tools
+    decorate: true
+    path_alias: sigs.k8s.io/kube-scheduler-simulator
+    branches:
+    - ^master$
+    always_run: true
+    spec:
+      containers:
+      - image: golang:1.17
+        command:
+        - make
+        args:
+        - tools
+  - name: pull-kube-scheduler-simulator-lint
+    decorate: true
+    path_alias: sigs.k8s.io/kube-scheduler-simulator
+    branches:
+    - ^master$
+    always_run: true
+    spec:
+      containers:
+      - image: golang:1.17
+        command:
+        - make
+        args:
+        - lint
+  - name: lint-frontend-with-yarn
+    decorate: true
+    path_alias: sigs.k8s.io/kube-scheduler-simulator
+    branches:
+    - ^master$
+    always_run: true
+    spec:
+      containers:
+      - image: node:16
+        command: 
+        - /bin/bash
+        - -c
+        - >
+          npm ci &&
+          npm install -g yarn &&
+          yarn install --frozen-lockfile &&
+          yarn run lint
