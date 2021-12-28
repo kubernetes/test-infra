@@ -41422,7 +41422,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=gce \
-          --create-args="--channel=alpha --networking=kubenet --container-runtime=docker" \
+          --create-args="--channel=alpha --networking=kubenet --container-runtime=docker --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -41485,7 +41485,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=gce \
-          --create-args="--channel=alpha --networking=calico --container-runtime=docker" \
+          --create-args="--channel=alpha --networking=calico --container-runtime=docker --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -41548,7 +41548,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=gce \
-          --create-args="--channel=alpha --networking=cilium --container-runtime=docker" \
+          --create-args="--channel=alpha --networking=cilium --container-runtime=docker --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -41611,7 +41611,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=gce \
-          --create-args="--channel=alpha --networking=kubenet --container-runtime=containerd" \
+          --create-args="--channel=alpha --networking=kubenet --container-runtime=containerd --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -41674,7 +41674,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=gce \
-          --create-args="--channel=alpha --networking=calico --container-runtime=containerd" \
+          --create-args="--channel=alpha --networking=calico --container-runtime=containerd --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -41737,7 +41737,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=gce \
-          --create-args="--channel=alpha --networking=cilium --container-runtime=containerd" \
+          --create-args="--channel=alpha --networking=cilium --container-runtime=containerd --gce-service-account=default" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
