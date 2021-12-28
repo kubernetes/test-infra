@@ -105,15 +105,14 @@ def create_args(kops_channel, networking, container_runtime, extra_flags, kops_i
     if container_runtime:
         args += f" --container-runtime={container_runtime}"
 
-    if kops_image:
-        image_overridden = False
-        if extra_flags:
-            for arg in extra_flags:
-                if "--image=" in arg:
-                    image_overridden = True
-                args = args + " " + arg
-        if not image_overridden:
-            args = f"--image='{kops_image}' {args}"
+    image_overridden = False
+    if extra_flags:
+        for arg in extra_flags:
+            if "--image=" in arg:
+                image_overridden = True
+            args = args + " " + arg
+    if kops_image and not image_overridden:
+        args = f"--image='{kops_image}' {args}"
     return args.strip()
 
 def latest_aws_image(owner, name, arm64=False):

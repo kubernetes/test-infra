@@ -499,7 +499,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=gce \
-            --create-args="--channel=alpha --networking=cilium --container-runtime=containerd" \
+            --create-args="--channel=alpha --networking=cilium --container-runtime=containerd --gce-service-account=default" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
@@ -561,7 +561,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=gce \
-            --create-args="--channel=alpha --networking=cilium --container-runtime=containerd" \
+            --create-args="--channel=alpha --networking=cilium --container-runtime=containerd --gce-service-account=default" \
             --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
@@ -625,7 +625,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=gce \
-            --create-args="--channel=alpha --networking=calico --container-runtime=containerd" \
+            --create-args="--channel=alpha --networking=calico --container-runtime=containerd --gce-service-account=default" \
             --env=KOPS_FEATURE_FLAGS=GoogleCloudBucketACL \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
