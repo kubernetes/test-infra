@@ -38,6 +38,7 @@ type options struct {
 	jobName     string
 	config      configflagutil.ConfigOptions
 	triggerJob  bool
+	failWithJob bool
 	outputPath  string
 	kubeOptions prowflagutil.KubernetesOptions
 	baseRef     string
@@ -210,6 +211,7 @@ func gatherOptions() options {
 	fs.StringVar(&o.pullSha, "pull-sha", "", "Git pull SHA under test")
 	fs.StringVar(&o.pullAuthor, "pull-author", "", "Git pull author under test")
 	fs.BoolVar(&o.triggerJob, "trigger-job", false, "Submit the job to Prow and wait for results")
+	fs.BoolVar(&o.failWithJob, "fail-with-job", false, "Exit with a non-zero exit code if the triggered job fails")
 	o.config.AddFlags(fs)
 	o.kubeOptions.AddFlags(fs)
 	o.github.AddFlags(fs)
@@ -267,8 +269,10 @@ func main() {
 		return
 	}
 
-	if err := pjutil.TriggerAndWatchProwJob(o.kubeOptions, &pj, conf, nil, false); err != nil {
+	if succeeded, err := pjutil.TriggerAndWatchProwJob(o.kubeOptions, &pj, conf, nil, false); err != nil {
 		logrus.WithError(err).Fatalf("failed while submitting job or watching its result")
+	} else if !succeeded && o.failWithJob {
+		os.Exit(1)
 	}
 }
 
