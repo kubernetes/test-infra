@@ -41394,7 +41394,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-kopeio-u2004-k23-ko23-containerd
 
-# {"cloud": "gce", "container_runtime": "docker", "distro": "u2004", "k8s_version": "1.22", "kops_channel": "alpha", "kops_version": null, "networking": "kubenet"}
+# {"cloud": "gce", "container_runtime": "docker", "distro": "u2004", "extra_flags": "--gce-service-account=default", "k8s_version": "1.22", "kops_channel": "alpha", "kops_version": null, "networking": "kubenet"}
 - name: e2e-kops-grid-gce-u2004-k22-docker
   cron: '38 23 * * *'
   labels:
@@ -41448,6 +41448,7 @@ periodics:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/container_runtime: docker
     test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/extra_flags: --gce-service-account=default
     test.kops.k8s.io/k8s_version: '1.22'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
@@ -41456,7 +41457,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-gce-u2004-k22-docker
 
-# {"cloud": "gce", "container_runtime": "docker", "distro": "u2004", "k8s_version": "1.22", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "gce", "container_runtime": "docker", "distro": "u2004", "extra_flags": "--gce-service-account=default", "k8s_version": "1.22", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-grid-gce-calico-u2004-k22-docker
   cron: '28 4 * * *'
   labels:
@@ -41510,6 +41511,7 @@ periodics:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/container_runtime: docker
     test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/extra_flags: --gce-service-account=default
     test.kops.k8s.io/k8s_version: '1.22'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
@@ -41518,7 +41520,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-gce-calico-u2004-k22-docker
 
-# {"cloud": "gce", "container_runtime": "docker", "distro": "u2004", "k8s_version": "1.22", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
+# {"cloud": "gce", "container_runtime": "docker", "distro": "u2004", "extra_flags": "--gce-service-account=default", "k8s_version": "1.22", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
 - name: e2e-kops-grid-gce-cilium-u2004-k22-docker
   cron: '6 6 * * *'
   labels:
@@ -41572,6 +41574,7 @@ periodics:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/container_runtime: docker
     test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/extra_flags: --gce-service-account=default
     test.kops.k8s.io/k8s_version: '1.22'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
@@ -41580,7 +41583,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-gce-cilium-u2004-k22-docker
 
-# {"cloud": "gce", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "1.22", "kops_channel": "alpha", "kops_version": null, "networking": "kubenet"}
+# {"cloud": "gce", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--gce-service-account=default", "k8s_version": "1.22", "kops_channel": "alpha", "kops_version": null, "networking": "kubenet"}
 - name: e2e-kops-grid-gce-u2004-k22-containerd
   cron: '49 22 * * *'
   labels:
@@ -41634,6 +41637,7 @@ periodics:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/extra_flags: --gce-service-account=default
     test.kops.k8s.io/k8s_version: '1.22'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
@@ -41642,7 +41646,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-gce-u2004-k22-containerd
 
-# {"cloud": "gce", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "1.22", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
+# {"cloud": "gce", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--gce-service-account=default", "k8s_version": "1.22", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-grid-gce-calico-u2004-k22-containerd
   cron: '41 17 * * *'
   labels:
@@ -41696,6 +41700,7 @@ periodics:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/extra_flags: --gce-service-account=default
     test.kops.k8s.io/k8s_version: '1.22'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
@@ -41704,7 +41709,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-grid-gce-calico-u2004-k22-containerd
 
-# {"cloud": "gce", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "1.22", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
+# {"cloud": "gce", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--gce-service-account=default", "k8s_version": "1.22", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
 - name: e2e-kops-grid-gce-cilium-u2004-k22-containerd
   cron: '15 11 * * *'
   labels:
@@ -41758,6 +41763,7 @@ periodics:
     test.kops.k8s.io/cloud: gce
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/extra_flags: --gce-service-account=default
     test.kops.k8s.io/k8s_version: '1.22'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''

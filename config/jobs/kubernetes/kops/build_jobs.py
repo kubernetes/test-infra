@@ -433,7 +433,9 @@ def generate_grid():
                                        k8s_version=k8s_version,
                                        kops_version=kops_version,
                                        networking=networking,
-                                       container_runtime=container_runtime)
+                                       container_runtime=container_runtime,
+                                       extra_flags=["--gce-service-account=default"], # Workaround for test-infra#24747 # pylint: disable=line-too-long
+                                      )
                         )
 
     return filter(None, results)
@@ -1008,6 +1010,7 @@ def generate_presubmits_e2e():
             networking='cilium',
             tab_name='e2e-gce',
             always_run=False,
+            extra_flags=["--gce-service-account=default"], # Workaround for test-infra#24747
         ),
         presubmit_test(
             cloud='gce',
@@ -1017,6 +1020,7 @@ def generate_presubmits_e2e():
             networking='cilium',
             tab_name='e2e-gce-ci',
             always_run=False,
+            extra_flags=["--gce-service-account=default"], # Workaround for test-infra#24747
         ),
         presubmit_test(
             cloud='gce',
@@ -1028,6 +1032,7 @@ def generate_presubmits_e2e():
             tab_name='pull-kops-e2e-k8s-gce-calico-u2004-k22-containerd',
             always_run=False,
             feature_flags=['GoogleCloudBucketACL'],
+            extra_flags=["--gce-service-account=default"], # Workaround for test-infra#24747
         ),
         # A special test for AWS Cloud-Controller-Manager
         presubmit_test(
