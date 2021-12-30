@@ -9,6 +9,7 @@ dashboard_groups:
     - provider-azure-cloud-provider-azure-1-20-presubmit
     - provider-azure-cloud-provider-azure-1-21-presubmit
     - provider-azure-cloud-provider-azure-1-22-presubmit
+    - provider-azure-cloud-provider-azure-1-23-presubmit
     - provider-azure-dualstack
     - provider-azure-scalability
     - provider-azure-presubmit
@@ -27,6 +28,7 @@ dashboards:
 - name: provider-azure-cloud-provider-azure-1-20-presubmit
 - name: provider-azure-cloud-provider-azure-1-21-presubmit
 - name: provider-azure-cloud-provider-azure-1-22-presubmit
+- name: provider-azure-cloud-provider-azure-1-23-presubmit
 - name: provider-azure-dualstack
 - name: provider-azure-scalability
 - name: provider-azure-presubmit
