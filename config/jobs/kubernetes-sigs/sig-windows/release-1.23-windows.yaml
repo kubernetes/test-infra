@@ -69,7 +69,7 @@ periodics:
   extra_refs:
   - org: kubernetes
     repo: kubernetes
-    base_ref: release-1.22
+    base_ref: release-1.23
     path_alias: k8s.io/kubernetes
   spec:
     containers:
