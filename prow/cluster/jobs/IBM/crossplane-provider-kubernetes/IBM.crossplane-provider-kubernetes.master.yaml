@@ -2,7 +2,7 @@ presubmits:
   IBM/crossplane-provider-kubernetes:
   - name: build_crossplane-provider-kubernetes
     branches:
-    - ^main$
+    - ^master$
     - ^release-cd$
     - ^release-efix$
     - ^release-eus$
@@ -26,7 +26,7 @@ presubmits:
     trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
   - name: test_crossplane-provider-kubernetes
     branches:
-    - ^main$
+    - ^master$
     - ^release-cd$
     - ^release-efix$
     - ^release-eus$
@@ -51,7 +51,7 @@ postsubmits:
   IBM/crossplane-provider-kubernetes:
   - name: test_crossplane-provider-kubernetes_postsubmit
     branches:
-    - ^main$
+    - ^master$
     - ^release-cd$
     - ^release-efix$
     - ^release-eus$
@@ -70,7 +70,7 @@ postsubmits:
           privileged: true
   - name: build_crossplane-provider-kubernetes_postsubmit
     branches:
-    - ^main$
+    - ^master$
     - ^release-cd$
     - ^release-efix$
     - ^release-eus$
@@ -91,7 +91,7 @@ postsubmits:
           privileged: true
   - name: images_crossplane-provider-kubernetes_postsubmit
     branches:
-    - ^main$
+    - ^master$
     - ^release-cd$
     - ^release-efix$
     - ^release-eus$
