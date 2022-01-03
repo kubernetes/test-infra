@@ -11,7 +11,7 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.0
+      base_ref: release-1.1
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
@@ -31,7 +31,7 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
     testgrid-tab-name: capz-periodic-conformance-v1beta1
     testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
-    description: Runs conformance & node conformance tests on a stable k8s version with cluster-api-provider-azure release-1.0 (v1beta1)
+    description: Runs conformance & node conformance tests on a stable k8s version with cluster-api-provider-azure release-1.1 (v1beta1)
 - name: periodic-cluster-api-provider-azure-conformance-v1beta1-with-ci-artifacts
   decorate: true
   decoration_config:
@@ -44,7 +44,7 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.0
+      base_ref: release-1.1
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
@@ -67,7 +67,7 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
     testgrid-tab-name: capz-periodic-conformance-k8s-ci-v1beta1
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
-    description: Runs conformance & node conformance tests on latest kubernetes main with cluster-api-provider-azure release-1.0 (v1beta1)
+    description: Runs conformance & node conformance tests on latest kubernetes main with cluster-api-provider-azure release-1.1 (v1beta1)
 - name: periodic-cluster-api-provider-azure-capi-e2e-v1beta1
   decorate: true
   decoration_config:
@@ -81,7 +81,7 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.0
+      base_ref: release-1.1
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
@@ -115,7 +115,7 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.0
+      base_ref: release-1.1
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
