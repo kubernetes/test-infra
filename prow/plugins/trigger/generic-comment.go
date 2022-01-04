@@ -139,23 +139,28 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 		additionalLabels[kube.RetestLabel] = "true"
 	}
 	// run failed github actions
-	if pjutil.RetestRe.MatchString(gc.Body) || pjutil.TestAllRe.MatchString(gc.Body) {
+	if trigger.TriggerGitHubWorkflows && (pjutil.RetestRe.MatchString(gc.Body) || pjutil.TestAllRe.MatchString(gc.Body)) {
 		headSHA, err := refGetter.HeadSHA()
 		if err != nil {
 			c.Logger.Warnf("headSHA unvailable, failed github actions for pr will not be triggered: %v", pr)
 		} else {
-			// pr.
 			failedRuns, err := c.GitHubClient.GetFailedActionRunsByHeadBranch(org, repo, pr.Head.Ref, headSHA)
 			if err != nil {
 				c.Logger.Errorf("%v: unable to get failed github action runs for branch %v", err, pr.Head.Ref)
 			} else {
 				for _, run := range failedRuns {
-					runID, runName := run.ID, run.Name
+					log := c.Logger.WithFields(logrus.Fields{
+						"runID":   run.ID,
+						"runName": run.Name,
+						"org":     org,
+						"repo":    repo,
+					})
+					runID := run.ID
 					go func() {
 						if err := c.GitHubClient.TriggerGitHubWorkflow(org, repo, runID); err != nil {
-							c.Logger.Errorf("attempt to trigger github run failed '%s'(%d) for %s/%s: %v", runName, runID, org, repo, err)
+							log.Errorf("attempt to trigger github run failed: %v", err)
 						} else {
-							c.Logger.Infof("successfully triggered action run '%s'(%d) for %s/%s", runName, runID, org, repo)
+							log.Infof("successfully triggered action run")
 						}
 					}()
 				}
