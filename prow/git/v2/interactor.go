@@ -54,8 +54,8 @@ type Interactor interface {
 	MergeAndCheckout(baseSHA string, mergeStrategy string, headSHAs ...string) error
 	// Am calls `git am`
 	Am(path string) error
-	// Fetch calls `git fetch`
-	Fetch() error
+	// Fetch calls `git fetch arg...`
+	Fetch(arg ...string) error
 	// FetchRef fetches the refspec
 	FetchRef(refspec string) error
 	// FetchFromRemote fetches the branch of the given remote
@@ -301,13 +301,14 @@ func (i *interactor) RemoteUpdate() error {
 }
 
 // Fetch fetches all updates from the remote.
-func (i *interactor) Fetch() error {
+func (i *interactor) Fetch(arg ...string) error {
 	remote, err := i.remote()
 	if err != nil {
 		return fmt.Errorf("could not resolve remote for fetching: %w", err)
 	}
+	arg = append([]string{"fetch", remote}, arg...)
 	i.logger.Infof("Fetching from %s", remote)
-	if out, err := i.executor.Run("fetch", remote); err != nil {
+	if out, err := i.executor.Run(arg...); err != nil {
 		return fmt.Errorf("error fetching: %w %v", err, string(out))
 	}
 	return nil

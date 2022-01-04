@@ -589,12 +589,13 @@ func (r *Repo) ShowRef(commitlike string) (string, error) {
 }
 
 // Fetch fetches from remote
-func (r *Repo) Fetch() error {
+func (r *Repo) Fetch(arg ...string) error {
+	arg = append([]string{"fetch"}, arg...)
 	if err := r.refreshRepoAuth(); err != nil {
 		return err
 	}
 	r.logger.Infof("Fetching from remote.")
-	out, err := r.gitCommand("fetch").CombinedOutput()
+	out, err := r.gitCommand(arg...).CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("failed to fetch: %v.\nOutput: %s", err, string(out))
 	}
