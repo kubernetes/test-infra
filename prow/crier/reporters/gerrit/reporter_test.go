@@ -1528,6 +1528,57 @@ func TestReport(t *testing.T) {
 	}
 }
 
+func TestGenerateReport(t *testing.T) {
+	job := func(name, url string, state v1.ProwJobState) *v1.ProwJob {
+		var out v1.ProwJob
+		out.Spec.Job = name
+		out.Status.URL = url
+		out.Status.State = state
+		return &out
+	}
+
+	tests := []struct {
+		name             string
+		jobs             []*v1.ProwJob
+		commentSizeLimit int
+		wantHeader       string
+		wantMessage      string
+	}{
+		{
+			name: "basic",
+			jobs: []*v1.ProwJob{
+				job("this", "url", v1.SuccessState),
+				job("that", "hey", v1.FailureState),
+			},
+			wantHeader:  "Prow Status: 1 out of 2 pjs passed! Comment '/retest' to rerun all failed tests\n",
+			wantMessage: "❌ that FAILURE - hey\n\n✔️ this SUCCESS - url\n\n",
+		},
+		{
+			name: "exceed limit",
+			jobs: []*v1.ProwJob{
+				job("this", "url", v1.SuccessState),
+				job("that", "hey", v1.FailureState),
+				job("some", "other", v1.SuccessState),
+			},
+			commentSizeLimit: 81 + 27,
+			wantHeader:       "Prow Status: 2 out of 3 pjs passed! Comment '/retest' to rerun all failed tests\n",
+			wantMessage:      "❌ that FAILURE - hey\n\n[Skipped 2/3 jobs due to reaching gerrit comment size limit]\n",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			gotReport := GenerateReport(tc.jobs, tc.commentSizeLimit)
+			if want, got := tc.wantHeader, gotReport.Header; want != got {
+				t.Fatalf("Header mismatch. Want:\n%s,\ngot: \n%s", want, got)
+			}
+			if want, got := tc.wantMessage, gotReport.Message; want != got {
+				t.Fatalf("Header mismatch. Want:\n%s\ngot: \n%s", want, got)
+			}
+		})
+	}
+}
+
 func TestParseReport(t *testing.T) {
 	var testcases = []struct {
 		name         string
@@ -1600,7 +1651,7 @@ func TestReportStability(t *testing.T) {
 	expected := GenerateReport([]*v1.ProwJob{
 		job("this", "url", v1.SuccessState),
 		job("that", "hey", v1.FailureState),
-	})
+	}, 0)
 	actual := ParseReport(expected.String())
 	if !equality.Semantic.DeepEqual(&expected, actual) {
 		t.Errorf(diff.ObjectReflectDiff(&expected, actual))

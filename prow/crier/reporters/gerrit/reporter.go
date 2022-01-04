@@ -20,6 +20,7 @@ package gerrit
 import (
 	"context"
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -52,6 +53,11 @@ const (
 	lztm = "0"
 	// codeReview is the default gerrit code review label
 	codeReview = client.CodeReview
+	// maxCommentSizeLimit is from
+	// http://gerrit-documentation.storage.googleapis.com/Documentation/3.2.0/config-gerrit.html#change.maxComments,
+	// if a comment is 5000 chars it's almost not readable any way, let's not
+	// use all of the space, picking 80% as a heuristic number here
+	maxCommentSizeLimit = 5000 * 4 / 5
 )
 
 var (
@@ -283,7 +289,7 @@ func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJo
 			toReportJobs = append(toReportJobs, pjOnRevisionWithSameLabel)
 		}
 	}
-	report := GenerateReport(toReportJobs)
+	report := GenerateReport(toReportJobs, 0)
 	message := report.Header + report.Message
 	// report back
 	gerritID := pj.ObjectMeta.Annotations[clientGerritID]
@@ -377,7 +383,13 @@ func deserialize(s string, j *Job) error {
 	return nil
 }
 
-func GenerateReport(pjs []*v1.ProwJob) JobReport {
+// GenerateReport generates report header and message based on pjs passed in.
+// commentSizeLimit is used to make sure that the report generated won't exceed
+// size limit, when set to 0 the value will be the default 4000
+func GenerateReport(pjs []*v1.ProwJob, commentSizeLimit int) JobReport {
+	if commentSizeLimit == 0 {
+		commentSizeLimit = maxCommentSizeLimit
+	}
 	report := JobReport{Total: len(pjs)}
 	for _, pj := range pjs {
 		job := jobFromPJ(pj)
@@ -385,17 +397,44 @@ func GenerateReport(pjs []*v1.ProwJob) JobReport {
 		if pj.Status.State == v1.SuccessState {
 			report.Success++
 		}
-
-		report.Message += job.serialize()
-		report.Message += "\n"
-
 	}
+
 	report.Header = defaultProwHeader
 	var reTestMessage string
 	if report.Success < report.Total {
 		reTestMessage = " Comment '/retest' to rerun all failed tests"
 	}
 	report.Header += fmt.Sprintf(" %d out of %d pjs passed!%s\n", report.Success, report.Total, reTestMessage)
+
+	// Sort first so that failed jobs always on top
+	sort.Slice(report.Jobs, func(i, j int) bool {
+		if report.Jobs[i].State == v1.FailureState {
+			return true
+		}
+		if report.Jobs[j].State == v1.FailureState {
+			return false
+		}
+		if report.Jobs[i].State == v1.AbortedState {
+			return true
+		}
+		if report.Jobs[j].State == v1.AbortedState {
+			return false
+		}
+		// We don't care the orders of the following states, so keep original order
+		return true
+	})
+
+	// Truncate if there is not enough space left
+	remainingSize := commentSizeLimit - len(report.Header)
+	for i, job := range report.Jobs {
+		message := job.serialize() + "\n"
+		remainingSize -= len(message)
+		if remainingSize < 0 {
+			report.Message += fmt.Sprintf("[Skipped %d/%d jobs due to reaching gerrit comment size limit]\n", len(report.Jobs)-i, len(report.Jobs))
+			break
+		}
+		report.Message += message
+	}
 	return report
 }
 

@@ -234,7 +234,7 @@ func TestFailedJobs(t *testing.T) {
 			pj.Status.URL = "whatever"
 			pjs = append(pjs, &pj)
 		}
-		return reporter.GenerateReport(pjs).String()
+		return reporter.GenerateReport(pjs, 0).String()
 	}
 
 	cases := []struct {
