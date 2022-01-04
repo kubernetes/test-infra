@@ -57,7 +57,7 @@ const (
 	// http://gerrit-documentation.storage.googleapis.com/Documentation/3.2.0/config-gerrit.html#change.maxComments,
 	// if a comment is 5000 chars it's almost not readable any way, let's not
 	// use all of the space, picking 80% as a heuristic number here
-	maxCommentSizeLimit = 5000 * 4 / 5
+	maxCommentSizeLimit = 4000
 )
 
 var (
