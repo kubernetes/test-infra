@@ -1,0 +1,98 @@
+presubmits:
+  kubernetes-sigs/cluster-api-operator:
+  - name: pull-cluster-api-operator-build-main
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-operator
+    always_run: true
+    labels:
+      preset-service-account: "true"
+    branches:
+    # The script this job runs is not in all branches.
+    - ^main$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211217-ea95cec1d4-1.23
+        command:
+        - runner.sh
+        - ./scripts/ci-build.sh
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator
+      testgrid-tab-name: capi-operator-pr-build-main
+  - name: pull-cluster-api-operator-make-main
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-operator
+    always_run: false
+    optional: true
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    branches:
+    # The script this job runs is not in all branches.
+    - ^main$
+    spec:
+      containers:
+      - command:
+        - runner.sh
+        - ./scripts/ci-make.sh
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211217-ea95cec1d4-1.23
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator
+      testgrid-tab-name: capi-operator-pr-make-main
+  - name: pull-cluster-api-operator-apidiff-main
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-operator
+    always_run: true
+    optional: true
+    labels:
+      preset-service-account: "true"
+    branches:
+    # The script this job runs is not in all branches.
+    - ^main$
+    spec:
+      containers:
+      - command:
+        - runner.sh
+        - ./scripts/ci-apidiff.sh
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211217-ea95cec1d4-1.23
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator
+      testgrid-tab-name: capi-operator-pr-apidiff-main
+  - name: pull-cluster-api-operator-verify-main
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-operator
+    always_run: true
+    labels:
+      preset-service-account: "true"
+    branches:
+    # The script this job runs is not in all branches.
+    - ^main$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211217-ea95cec1d4-1.23
+        command:
+        - "runner.sh"
+        - ./scripts/ci-verify.sh
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator
+      testgrid-tab-name: capi-operator-pr-verify-main
+  - name: pull-cluster-api-operator-test-main
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-operator
+    always_run: true
+    labels:
+      preset-service-account: "true"
+    branches:
+    # The script this job runs is not in all branches.
+    - ^main$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211217-ea95cec1d4-1.23
+        args:
+        - runner.sh
+        - ./scripts/ci-test.sh
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator
+      testgrid-tab-name: capi-operator-pr-test-main
