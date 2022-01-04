@@ -78,42 +78,6 @@ periodics:
     testgrid-alert-email: skclark@redhat.com
     description: "Uses kubetest to run serial node-e2e tests (+Serial, -Flaky|Benchmark|Node*Feature)"
 
-# TODO: migrate swap+docker special config tests to containerd
-#- name: ci-kubernetes-node-swap-ubuntu
-#  interval: 4h
-#  labels:
-#    preset-service-account: "true"
-#    preset-k8s-ssh: "true"
-#  spec:
-#    containers:
-#      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211217-ea95cec1d4-master
-#        args:
-#          - --repo=k8s.io/kubernetes=master
-#          - --timeout=240
-#          - --root=/go/src
-#          - --scenario=kubernetes_e2e
-#          - --
-#          - --deployment=node
-#          - --gcp-project-type=node-e2e-project
-#          - --gcp-zone=us-west1-b
-#          - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/swap/image-config-swap.yaml
-#          - --node-test-args=--feature-gates=NodeSwap=true --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --fail-swap-on=false"
-#          - --node-tests=true
-#          - --provider=gce
-#          - --test_args=--nodes=8 --focus="\[NodeConformance\]|\[NodeFeature:.+\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
-#          - --timeout=180m
-#        env:
-#          - name: GOPATH
-#            value: /go
-#        resources:
-#            requests:
-#              memory: "6Gi"
-#  annotations:
-#    testgrid-dashboards: sig-node-kubelet
-#    testgrid-tab-name: kubelet-gce-e2e-swap-ubuntu
-#    testgrid-alert-email: ehashman@redhat.com, ikema@google.com
-#    description: Executes E2E suite with swap enabled on Ubuntu
-
 - name: ci-kubernetes-node-swap-fedora
   interval: 4h
   labels:
