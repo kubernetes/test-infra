@@ -282,8 +282,13 @@ func (c *InRepoConfigGitCache) ClientFor(org, repo string) (git.RepoClient, erro
 					return nil, nil
 				}
 			}
-			// Don't unlock the client unless we get an error or the consumer indicates they are done by Clean()ing.
-			if err := client.Fetch(); err != nil {
+			// Don't unlock the client unless we get an error or the consumer
+			// indicates they are done by Clean()ing.
+			// This fetch operation is repeated executed in the clone repo,
+			// which fails if there is a commit being deleted from remote. This
+			// is a corner case, but when it happens it would be really
+			// annoying, adding `--prune` tag here for mitigation.
+			if err := client.Fetch("--prune"); err != nil {
 				client.Unlock()
 				return nil, err
 			}

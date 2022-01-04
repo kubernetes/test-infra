@@ -660,7 +660,7 @@ type fetchOnlyNoCleanRepoClient struct {
 	git.RepoClient // This will be nil during testing, we override the functions that are allowed to be used.
 }
 
-func (rc *fetchOnlyNoCleanRepoClient) Fetch() error {
+func (rc *fetchOnlyNoCleanRepoClient) Fetch(arg ...string) error {
 	return nil
 }
 

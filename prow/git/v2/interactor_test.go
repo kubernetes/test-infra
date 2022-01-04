@@ -1089,6 +1089,7 @@ func TestInteractor_Fetch(t *testing.T) {
 		name          string
 		remote        RemoteResolver
 		responses     map[string]execResponse
+		extraArgs     []string
 		expectedCalls [][]string
 		expectedErr   bool
 	}{
@@ -1104,6 +1105,22 @@ func TestInteractor_Fetch(t *testing.T) {
 			},
 			expectedCalls: [][]string{
 				{"fetch", "someone.com"},
+			},
+			expectedErr: false,
+		},
+		{
+			name: "with arg",
+			remote: func() (string, error) {
+				return "someone.com", nil
+			},
+			responses: map[string]execResponse{
+				"fetch someone.com --prune": {
+					out: []byte(`ok`),
+				},
+			},
+			extraArgs: []string{"--prune"},
+			expectedCalls: [][]string{
+				{"fetch", "someone.com", "--prune"},
 			},
 			expectedErr: false,
 		},
@@ -1144,7 +1161,7 @@ func TestInteractor_Fetch(t *testing.T) {
 				remote:   testCase.remote,
 				logger:   logrus.WithField("test", testCase.name),
 			}
-			actualErr := i.Fetch()
+			actualErr := i.Fetch(testCase.extraArgs...)
 			if testCase.expectedErr && actualErr == nil {
 				t.Errorf("%s: expected an error but got none", testCase.name)
 			}
