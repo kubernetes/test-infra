@@ -615,7 +615,7 @@ triggers:
       - ""
 
     # TriggerGitHubWorkflows enables workflows run by github to be triggered by prow.
-    trigger_github_workflows: false 
+    trigger_github_workflows: false
 
     # TrustedOrg is the org whose members' PRs will be automatically built for
     # PRs to the above repos. The default is the PR's org.
