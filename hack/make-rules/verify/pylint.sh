@@ -25,13 +25,9 @@ set -o pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd -P)"
 cd "${REPO_ROOT}"
 
-# ensure deps are installed
-source hack/build/ensure-python_deps.sh
-
-echo "Grep files to inspect"
-shopt -s extglob globstar
-# files_to_inspect="$( ls !(gubernator|external|vendor|jenkins|scenarios|triage|boskos|bazel-*)/**/*.py | grep -v analyze-memory-profiles )"
-# echo "Files to inspect: ${files_to_inspect}"
-echo "Linting"
+echo "Installing requirements3.txt"
 hack/run-in-python-container.sh \
-    python3 ./hack/pylint_bin.py $( ls !(gubernator|external|vendor|jenkins|scenarios|triage|boskos|bazel-*)/**/*.py | grep -v analyze-memory-profiles )
+    pip3 install -r requirements3.txt
+
+hack/run-in-python-container.sh \
+    hack/make-rules/py-test/lint-test.sh
