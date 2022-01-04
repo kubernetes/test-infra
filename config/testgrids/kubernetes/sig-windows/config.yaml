@@ -59,9 +59,6 @@ dashboards:
     test_group_name: k8s-e2e-ltsc2022-containerd-flannel-sdnoverlay-stable
 - name: sig-windows-containerd-runtime-signal
   dashboard_tab:
-  - name: win-2004-containerd-master-integration
-    description: Runs containerd integration & cri-integration tests on Windows (SAC 2004)
-    test_group_name: integration-containerd-windows-sac2004
   - name: win-2019-containerd-master-integration
     description: Runs containerd integration & cri-integration tests on Windows (LTSC 2019)
     test_group_name: integration-containerd-windows-ltsc2019
@@ -93,9 +90,6 @@ test_groups:
 - name: k8s-e2e-ltsc2022-containerd-flannel-sdnoverlay-stable
   gcs_prefix: k8s-ovn/logs/k8s-e2e-ltsc2022-containerd-flannel-sdnoverlay-stable
 # Containerd Runtime integration test groups
-- name: integration-containerd-windows-sac2004
-  gcs_prefix: containerd-integration/logs/windows-sac2004
-  disable_prowjob_analysis: true
 - name: integration-containerd-windows-ltsc2019
   gcs_prefix: containerd-integration/logs/windows-ltsc2019
   disable_prowjob_analysis: true
