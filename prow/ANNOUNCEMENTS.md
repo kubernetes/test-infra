@@ -174,7 +174,7 @@ used when updating deployments.
                            has been extended to specify a schema. Unfortunately, this results in a huge manifest which
                            in turn makes the standard `kubectl apply` fail, as the last-applied annotation it generates
                            exceeds the maximum annotation size. If you are using Kubernetes 1.18 or newer, you can add
-                           the `--server-side=true` argument to work around this. If not, you can use a [schemelass manifest](/config/prow/cluster/legacy/prowjob-schemaless_customresourcedefinition.yaml)
+                           the `--server-side=true` argument to work around this. If not, you can use a [schemaless manifest](/config/prow/cluster/prowjob-crd/legacy/prowjob-schemaless_customresourcedefinition.yaml)
  - *September 15th, 2021* `autobump` removed, please use `generic-autobumper` instead, see [example config](/config/prow/autobump-config/prow-component-autobump-config.yaml)
  - *April 16th, 2021* Flagutil remove default value for `--github-token-path`.
  - *April 15th, 2021* Sinker requires --dry-run=false (default is true) to function correctly in production.
