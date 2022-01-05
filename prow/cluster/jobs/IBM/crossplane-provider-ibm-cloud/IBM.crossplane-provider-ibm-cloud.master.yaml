@@ -19,6 +19,9 @@ presubmits:
         - entrypoint
         - make
         - build
+        env:
+        - name: RUNNING_IN_CI
+          value: "true"
         image: quay.io/multicloudlab/build-tool:v20210203-ad22dc7f6
         name: ""
         securityContext:
@@ -41,6 +44,9 @@ presubmits:
         - entrypoint
         - make
         - test
+        env:
+        - name: RUNNING_IN_CI
+          value: "true"
         image: quay.io/multicloudlab/build-tool:v20210203-ad22dc7f6
         name: ""
         securityContext:
@@ -64,6 +70,9 @@ postsubmits:
         - entrypoint
         - make
         - test
+        env:
+        - name: RUNNING_IN_CI
+          value: "true"
         image: quay.io/multicloudlab/build-tool:v20210203-ad22dc7f6
         name: ""
         securityContext:
@@ -85,6 +94,9 @@ postsubmits:
         - entrypoint
         - make
         - build
+        env:
+        - name: RUNNING_IN_CI
+          value: "true"
         image: quay.io/multicloudlab/build-tool:v20210203-ad22dc7f6
         name: ""
         securityContext:
@@ -106,6 +118,9 @@ postsubmits:
         - entrypoint
         - make
         - images
+        env:
+        - name: RUNNING_IN_CI
+          value: "true"
         image: quay.io/multicloudlab/build-tool:v20210203-ad22dc7f6
         name: ""
         securityContext:
