@@ -261,6 +261,7 @@ type Client interface {
 	ListAppInstallations() ([]AppInstallation, error)
 	GetApp() (*App, error)
 	GetAppWithContext(ctx context.Context) (*App, error)
+	GetFailedActionRunsByHeadBranch(org, repo, branchName, headSHA string) ([]WorkflowRun, error)
 
 	Throttle(hourlyTokens, burst int, org ...string) error
 	QueryWithGitHubAppsSupport(ctx context.Context, q interface{}, vars map[string]interface{}, org string) error
@@ -271,6 +272,7 @@ type Client interface {
 	WithFields(fields logrus.Fields) Client
 	ForPlugin(plugin string) Client
 	ForSubcomponent(subcomponent string) Client
+	TriggerGitHubWorkflow(org, repo string, id int) error
 }
 
 // client interacts with the github api. It is reconstructed whenever
@@ -2120,6 +2122,56 @@ func (c *client) GetPullRequest(org, repo string, number int) (*PullRequest, err
 		exitCodes: []int{200},
 	}, &pr)
 	return &pr, err
+}
+
+func (c *client) GetFailedActionRunsByHeadBranch(org, repo, branchName, headSHA string) ([]WorkflowRun, error) {
+	durationLogger := c.log("GetJobsByHeadBranch", org, repo)
+	defer durationLogger()
+
+	var runs WorkflowRuns
+
+	url := url.URL{
+		Path: fmt.Sprintf("/repos/%s/%s/actions/runs", org, repo),
+	}
+	query := url.Query()
+
+	query.Add("status", "failure")
+	query.Add("event", "pull_request")
+	query.Add("branch", branchName)
+
+	url.RawQuery = query.Encode()
+
+	_, err := c.request(&request{
+		accept:    "application/vnd.github.v3+json",
+		method:    http.MethodGet,
+		path:      url.String(),
+		org:       org,
+		exitCodes: []int{200},
+	}, &runs)
+
+	prRuns := []WorkflowRun{}
+
+	// keep only the runs matching the current PR headSHA
+	for _, run := range runs.WorflowRuns {
+		if run.HeadSha == headSHA {
+			prRuns = append(prRuns, run)
+		}
+	}
+
+	return prRuns, err
+}
+
+func (c *client) TriggerGitHubWorkflow(org, repo string, id int) error {
+	durationLogger := c.log("TriggerGitHubWorkflow", org, repo, id)
+	defer durationLogger()
+	_, err := c.request(&request{
+		accept:    "application/vnd.github.v3+json",
+		method:    http.MethodPost,
+		path:      fmt.Sprintf("/repos/%s/%s/actions/runs/%d/rerun", org, repo, id),
+		org:       org,
+		exitCodes: []int{201},
+	}, nil)
+	return err
 }
 
 // EditPullRequest will update the pull request.

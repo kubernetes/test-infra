@@ -445,6 +445,8 @@ type Trigger struct {
 	// IgnoreOkToTest makes trigger ignore /ok-to-test comments.
 	// This is a security mitigation to only allow testing from trusted users.
 	IgnoreOkToTest bool `json:"ignore_ok_to_test,omitempty"`
+	// TriggerGitHubWorkflows enables workflows run by github to be triggered by prow.
+	TriggerGitHubWorkflows bool `json:"trigger_github_workflows,omitempty"`
 }
 
 // Heart contains the configuration for the heart plugin.
