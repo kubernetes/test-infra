@@ -292,13 +292,6 @@ func handleComment(log *logrus.Entry, ghc githubClient, cp commentPruner, config
 			return err
 		}
 		event.branch = pr.Base.Ref
-		event.currentLabels = pr.Labels
-	} else {
-		labels, err := ghc.GetIssueLabels(org, repo, number)
-		if err != nil {
-			return err
-		}
-		event.currentLabels = labels
 	}
 	return handle(log, ghc, cp, configs, event)
 }
