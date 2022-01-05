@@ -42,8 +42,10 @@ const (
 	hourglass  = "⏳"
 	prohibited = "🚫"
 
-	defaultProwHeader = "Prow Status:"
-	jobReportFormat   = "%s %s %s - %s\n"
+	defaultProwHeader            = "Prow Status:"
+	defaultProwjobsDetailsHeader = "Prow Jobs Details:"
+	jobReportFormat              = "%s %s %s - %s\n"
+	jobReportFormatWithoutURL    = "%s %s %s\n"
 
 	// lgtm means all presubmits passed, but need someone else to approve before merge (looks good to me).
 	lgtm = "+1"
@@ -336,7 +338,7 @@ func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJo
 
 	logger.Infof("Reporting to instance %s on id %s with message %s", gerritInstance, gerritID, message)
 	if err := c.gc.SetReview(gerritInstance, gerritID, gerritRevision, message, reviewLabels); err != nil {
-		logger.WithError(err).Infof("fail to set review with label %q on change ID %s", reportLabel, gerritID)
+		logger.WithError(err).WithField("gerrit_id", gerritID).WithField("label", reportLabel).Info("Fail to set review.")
 
 		if reportLabel == "" {
 			return nil, nil, err
@@ -344,9 +346,16 @@ func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJo
 		// Retry without voting on a label
 		message := fmt.Sprintf("[NOTICE]: Prow Bot cannot access %s label!\n%s", reportLabel, message)
 		if err := c.gc.SetReview(gerritInstance, gerritID, gerritRevision, message, nil); err != nil {
-			logger.WithError(err).Errorf("fail to set plain review on change ID %s", gerritID)
+			logger.WithError(err).WithField("gerrit_id", gerritID).Errorf("Fail to set plain review on change ID.")
 			return nil, nil, err
 		}
+	}
+
+	// Best effort commenting with URLs
+	reportWithURL := GenerateReportWithURL(toReportJobs, 0)
+	messageWithURL := reportWithURL.Header + reportWithURL.Message
+	if err := c.gc.SetReview(gerritInstance, gerritID, gerritRevision, messageWithURL, nil); err != nil {
+		logger.WithError(err).WithField("gerrit_id", gerritID).Warn("Fail to comment with prowjobs URLs on change ID.")
 	}
 
 	logger.Infof("Review Complete, reported jobs: %v", toReportJobs)
@@ -365,8 +374,26 @@ func jobFromPJ(pj *v1.ProwJob) Job {
 	return Job{Name: pj.Spec.Job, State: pj.Status.State, Icon: statusIcon(pj.Status.State), URL: pj.Status.URL}
 }
 
+func (j *Job) serializeWithoutURL() string {
+	return fmt.Sprintf(jobReportFormatWithoutURL, j.Icon, j.Name, strings.ToUpper(string(j.State)))
+}
+
 func (j *Job) serialize() string {
 	return fmt.Sprintf(jobReportFormat, j.Icon, j.Name, strings.ToUpper(string(j.State)), j.URL)
+}
+
+func deserializeWithoutURL(s string, j *Job) error {
+	var state string
+	n, err := fmt.Sscanf(s, jobReportFormatWithoutURL, &j.Icon, &j.Name, &state)
+	if err != nil {
+		return err
+	}
+	j.State = v1.ProwJobState(strings.ToLower(state))
+	const want = 3
+	if n != want {
+		return fmt.Errorf("scan: got %d, want %d", n, want)
+	}
+	return nil
 }
 
 func deserialize(s string, j *Job) error {
@@ -383,10 +410,28 @@ func deserialize(s string, j *Job) error {
 	return nil
 }
 
-// GenerateReport generates report header and message based on pjs passed in.
+// GenerateReport generates report header and message based on pjs passed in. As
+// URLs are very long string, includes them in the report would easily make the
+// report exceed the size limit of 5000.
+// Unfortunately we need all prowjobs info for /retest to work, which is by far
+// the most reliable way of retrieving prow jobs results, as prow jobs
+// custom resources are GCed by sinker after max_pod_age, which normally is 48
+// hours. So to ensure that all prow jobs results are displayed, URLs are not
+// included in this report.
 // commentSizeLimit is used to make sure that the report generated won't exceed
 // size limit, when set to 0 the value will be the default 4000
 func GenerateReport(pjs []*v1.ProwJob, commentSizeLimit int) JobReport {
+	return generateReportBase(pjs, commentSizeLimit, defaultProwHeader, false)
+}
+
+// GenerateReportWithURL generates report header and message based on pjs passed in.
+// commentSizeLimit is used to make sure that the report generated won't exceed
+// size limit, when set to 0 the value will be the default 4000
+func GenerateReportWithURL(pjs []*v1.ProwJob, commentSizeLimit int) JobReport {
+	return generateReportBase(pjs, commentSizeLimit, defaultProwjobsDetailsHeader, true)
+}
+
+func generateReportBase(pjs []*v1.ProwJob, commentSizeLimit int, headerString string, hasURL bool) JobReport {
 	if commentSizeLimit == 0 {
 		commentSizeLimit = maxCommentSizeLimit
 	}
@@ -399,7 +444,7 @@ func GenerateReport(pjs []*v1.ProwJob, commentSizeLimit int) JobReport {
 		}
 	}
 
-	report.Header = defaultProwHeader
+	report.Header = headerString
 	var reTestMessage string
 	if report.Success < report.Total {
 		reTestMessage = " Comment '/retest' to rerun all failed tests"
@@ -424,10 +469,14 @@ func GenerateReport(pjs []*v1.ProwJob, commentSizeLimit int) JobReport {
 		return true
 	})
 
-	// Truncate if there is not enough space left
 	remainingSize := commentSizeLimit - len(report.Header)
 	for i, job := range report.Jobs {
-		message := job.serialize() + "\n"
+		var message string
+		if hasURL {
+			message = job.serialize()
+		} else {
+			message = job.serializeWithoutURL()
+		}
 		remainingSize -= len(message)
 		if remainingSize < 0 {
 			report.Message += fmt.Sprintf("[Skipped %d/%d jobs due to reaching gerrit comment size limit]\n", len(report.Jobs)-i, len(report.Jobs))
@@ -435,6 +484,7 @@ func GenerateReport(pjs []*v1.ProwJob, commentSizeLimit int) JobReport {
 		}
 		report.Message += message
 	}
+
 	return report
 }
 
@@ -460,9 +510,13 @@ func ParseReport(message string) *JobReport {
 			continue
 		}
 		var j Job
-		if err := deserialize(contents[i], &j); err != nil {
-			logrus.Warnf("Could not deserialize %s to a job: %v", contents[i], err)
-			continue
+		if err := deserializeWithoutURL(contents[i], &j); err != nil {
+			// Due to legacy reason will need to support both reports with and
+			// without URL during the transition, so try the old way
+			if err = deserialize(contents[i], &j); err != nil {
+				logrus.Warnf("Could not deserialize %s to a job: %v", contents[i], err)
+				continue
+			}
 		}
 		report.Total++
 		if j.State == v1.SuccessState {

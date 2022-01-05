@@ -63,7 +63,9 @@ func (f *fgc) SetReview(instance, id, revision, message string, labels map[strin
 		}
 	}
 	f.reportMessage = message
-	f.reportLabel = labels
+	if len(labels) > 0 {
+		f.reportLabel = labels
+	}
 	return nil
 }
 
@@ -1541,6 +1543,7 @@ func TestGenerateReport(t *testing.T) {
 		name             string
 		jobs             []*v1.ProwJob
 		commentSizeLimit int
+		withURL          bool
 		wantHeader       string
 		wantMessage      string
 	}{
@@ -1551,7 +1554,17 @@ func TestGenerateReport(t *testing.T) {
 				job("that", "hey", v1.FailureState),
 			},
 			wantHeader:  "Prow Status: 1 out of 2 pjs passed! Comment '/retest' to rerun all failed tests\n",
-			wantMessage: "❌ that FAILURE - hey\n\n✔️ this SUCCESS - url\n\n",
+			wantMessage: "❌ that FAILURE\n✔️ this SUCCESS\n",
+		},
+		{
+			name: "basic",
+			jobs: []*v1.ProwJob{
+				job("this", "url", v1.SuccessState),
+				job("that", "hey", v1.FailureState),
+			},
+			withURL:     true,
+			wantHeader:  "Prow Jobs Details: 1 out of 2 pjs passed! Comment '/retest' to rerun all failed tests\n",
+			wantMessage: "❌ that FAILURE - hey\n✔️ this SUCCESS - url\n",
 		},
 		{
 			name: "exceed limit",
@@ -1562,13 +1575,19 @@ func TestGenerateReport(t *testing.T) {
 			},
 			commentSizeLimit: 81 + 27,
 			wantHeader:       "Prow Status: 2 out of 3 pjs passed! Comment '/retest' to rerun all failed tests\n",
-			wantMessage:      "❌ that FAILURE - hey\n\n[Skipped 2/3 jobs due to reaching gerrit comment size limit]\n",
+			wantMessage:      "❌ that FAILURE\n[Skipped 2/3 jobs due to reaching gerrit comment size limit]\n",
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			gotReport := GenerateReport(tc.jobs, tc.commentSizeLimit)
+			var gotReport JobReport
+			if tc.withURL {
+				gotReport = GenerateReportWithURL(tc.jobs, tc.commentSizeLimit)
+			} else {
+				gotReport = GenerateReport(tc.jobs, tc.commentSizeLimit)
+			}
+
 			if want, got := tc.wantHeader, gotReport.Header; want != got {
 				t.Fatalf("Header mismatch. Want:\n%s,\ngot: \n%s", want, got)
 			}
@@ -1589,6 +1608,11 @@ func TestParseReport(t *testing.T) {
 		{
 			name:         "parse multiple jobs",
 			comment:      "Prow Status: 0 out of 2 passed\n❌️ foo-job FAILURE - http://foo-status\n❌ bar-job FAILURE - http://bar-status",
+			expectedJobs: 2,
+		},
+		{
+			name:         "parse new format without URL",
+			comment:      "Prow Status: 0 out of 2 passed\n❌️ foo-job FAILURE\n❌ bar-job FAILURE",
 			expectedJobs: 2,
 		},
 		{
@@ -1649,8 +1673,8 @@ func TestReportStability(t *testing.T) {
 		return &out
 	}
 	expected := GenerateReport([]*v1.ProwJob{
-		job("this", "url", v1.SuccessState),
-		job("that", "hey", v1.FailureState),
+		job("this", "", v1.SuccessState),
+		job("that", "", v1.FailureState),
 	}, 0)
 	actual := ParseReport(expected.String())
 	if !equality.Semantic.DeepEqual(&expected, actual) {
