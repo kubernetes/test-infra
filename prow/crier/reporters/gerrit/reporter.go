@@ -54,10 +54,10 @@ const (
 	// codeReview is the default gerrit code review label
 	codeReview = client.CodeReview
 	// maxCommentSizeLimit is from
-	// http://gerrit-documentation.storage.googleapis.com/Documentation/3.2.0/config-gerrit.html#change.maxComments,
-	// if a comment is 5000 chars it's almost not readable any way, let's not
+	// http://gerrit-documentation.storage.googleapis.com/Documentation/3.2.0/config-gerrit.html#change.commentSizeLimit,
+	// if a comment is 16000 chars it's almost not readable any way, let's not
 	// use all of the space, picking 80% as a heuristic number here
-	maxCommentSizeLimit = 4000
+	maxCommentSizeLimit = 14400
 )
 
 var (
@@ -385,7 +385,7 @@ func deserialize(s string, j *Job) error {
 
 // GenerateReport generates report header and message based on pjs passed in.
 // commentSizeLimit is used to make sure that the report generated won't exceed
-// size limit, when set to 0 the value will be the default 4000
+// size limit, when set to 0 the value will be the default 14400
 func GenerateReport(pjs []*v1.ProwJob, commentSizeLimit int) JobReport {
 	if commentSizeLimit == 0 {
 		commentSizeLimit = maxCommentSizeLimit
