@@ -209,7 +209,3 @@ periodics:
             exit $result
         securityContext:
           privileged: true
-  annotations:
-    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
-    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
-    testgrid-tab-name: periodic-test-coverage
