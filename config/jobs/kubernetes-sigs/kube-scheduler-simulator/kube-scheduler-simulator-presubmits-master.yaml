@@ -6,7 +6,7 @@ presubmits:
     path_alias: sigs.k8s.io/kube-scheduler-simulator
     branches:
     - ^master$
-    always_run: true
+    always_run: false
     spec:
       containers:
       - image: golang:1.17
@@ -19,7 +19,7 @@ presubmits:
     path_alias: sigs.k8s.io/kube-scheduler-simulator
     branches:
     - ^master$
-    always_run: true
+    always_run: false
     spec:
       containers:
       - image: golang:1.17
@@ -32,7 +32,7 @@ presubmits:
     path_alias: sigs.k8s.io/kube-scheduler-simulator
     branches:
     - ^master$
-    always_run: true
+    always_run: false
     spec:
       containers:
       - image: golang:1.17
@@ -45,11 +45,11 @@ presubmits:
     path_alias: sigs.k8s.io/kube-scheduler-simulator
     branches:
     - ^master$
-    always_run: true
+    always_run: false
     spec:
       containers:
       - image: node:16
-        command: 
+        command:
         - /bin/bash
         - -c
         - >
