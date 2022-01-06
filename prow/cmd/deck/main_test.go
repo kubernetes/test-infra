@@ -803,6 +803,9 @@ func Test_gatherOptions(t *testing.T) {
 	}{
 		{
 			name: "minimal flags work",
+			expected: func(o *options) {
+				o.timeoutListingProwJobs = 30
+			},
 		},
 		{
 			name: "explicitly set --config-path",
@@ -811,6 +814,7 @@ func Test_gatherOptions(t *testing.T) {
 			},
 			expected: func(o *options) {
 				o.config.ConfigPath = "/random/value"
+				o.timeoutListingProwJobs = 30
 			},
 		},
 		{
