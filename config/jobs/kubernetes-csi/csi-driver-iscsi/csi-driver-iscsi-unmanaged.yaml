@@ -1,0 +1,28 @@
+# manually defined jobs
+
+presubmits:
+  kubernetes-csi/csi-driver-iscsi:
+  - name: pull-csi-driver-iscsi-sanity
+    decorate: true
+    always_run: true
+    path_alias: sigs.k8s.io/csi-driver-iscsi
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211124-2ed05120f3-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - sanity-test
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-storage-csi-other
+      testgrid-tab-name: pull-csi-driver-iscsi-sanity
+      description: "Run sanity tests for iscsi CSI driver."
+      testgrid-num-columns-recent: '30'
