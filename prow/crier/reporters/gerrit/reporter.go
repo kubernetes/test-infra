@@ -408,17 +408,17 @@ func GenerateReport(pjs []*v1.ProwJob, commentSizeLimit int) JobReport {
 
 	// Sort first so that failed jobs always on top
 	sort.Slice(report.Jobs, func(i, j int) bool {
-		if report.Jobs[i].State == v1.FailureState {
-			return true
-		}
-		if report.Jobs[j].State == v1.FailureState {
-			return false
-		}
-		if report.Jobs[i].State == v1.AbortedState {
-			return true
-		}
-		if report.Jobs[j].State == v1.AbortedState {
-			return false
+		for _, state := range []v1.ProwJobState{
+			v1.FailureState,
+			v1.ErrorState,
+			v1.AbortedState,
+		} {
+			if report.Jobs[i].State == state {
+				return true
+			}
+			if report.Jobs[j].State == state {
+				return false
+			}
 		}
 		// We don't care the orders of the following states, so keep original order
 		return true
