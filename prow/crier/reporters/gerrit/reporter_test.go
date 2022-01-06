@@ -1549,9 +1549,11 @@ func TestGenerateReport(t *testing.T) {
 			jobs: []*v1.ProwJob{
 				job("this", "url", v1.SuccessState),
 				job("that", "hey", v1.FailureState),
+				job("left", "foo", v1.AbortedState),
+				job("right", "bar", v1.ErrorState),
 			},
-			wantHeader:  "Prow Status: 1 out of 2 pjs passed! Comment '/retest' to rerun all failed tests\n",
-			wantMessage: "❌ that FAILURE - hey\n\n✔️ this SUCCESS - url\n\n",
+			wantHeader:  "Prow Status: 1 out of 4 pjs passed! Comment '/retest' to rerun all failed tests\n",
+			wantMessage: "❌ that FAILURE - hey\n\n🚫 right ERROR - bar\n\n🚫 left ABORTED - foo\n\n✔️ this SUCCESS - url\n\n",
 		},
 		{
 			name: "exceed limit",
