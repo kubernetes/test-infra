@@ -105,30 +105,31 @@ const (
 )
 
 type options struct {
-	config                configflagutil.ConfigOptions
-	pluginsConfig         pluginsflagutil.PluginOptions
-	instrumentation       prowflagutil.InstrumentationOptions
-	kubernetes            prowflagutil.KubernetesOptions
-	github                prowflagutil.GitHubOptions
-	tideURL               string
-	hookURL               string
-	oauthURL              string
-	githubOAuthConfigFile string
-	cookieSecretFile      string
-	redirectHTTPTo        string
-	hiddenOnly            bool
-	pregeneratedData      string
-	staticFilesLocation   string
-	templateFilesLocation string
-	showHidden            bool
-	spyglass              bool
-	spyglassFilesLocation string
-	storage               prowflagutil.StorageClientOptions
-	gcsCookieAuth         bool
-	rerunCreatesJob       bool
-	allowInsecure         bool
-	dryRun                bool
-	tenantIDs             flagutil.Strings
+	config                 configflagutil.ConfigOptions
+	pluginsConfig          pluginsflagutil.PluginOptions
+	instrumentation        prowflagutil.InstrumentationOptions
+	kubernetes             prowflagutil.KubernetesOptions
+	github                 prowflagutil.GitHubOptions
+	tideURL                string
+	hookURL                string
+	oauthURL               string
+	githubOAuthConfigFile  string
+	cookieSecretFile       string
+	redirectHTTPTo         string
+	hiddenOnly             bool
+	pregeneratedData       string
+	staticFilesLocation    string
+	templateFilesLocation  string
+	showHidden             bool
+	spyglass               bool
+	spyglassFilesLocation  string
+	storage                prowflagutil.StorageClientOptions
+	gcsCookieAuth          bool
+	rerunCreatesJob        bool
+	allowInsecure          bool
+	timeoutListingProwJobs int
+	dryRun                 bool
+	tenantIDs              flagutil.Strings
 }
 
 func (o *options) Validate() error {
@@ -182,6 +183,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.BoolVar(&o.gcsCookieAuth, "gcs-cookie-auth", false, "Use storage.cloud.google.com instead of signed URLs")
 	fs.BoolVar(&o.rerunCreatesJob, "rerun-creates-job", false, "Change the re-run option in Deck to actually create the job. **WARNING:** Only use this with non-public deck instances, otherwise strangers can DOS your Prow instance")
 	fs.BoolVar(&o.allowInsecure, "allow-insecure", false, "Allows insecure requests for CSRF and GitHub oauth.")
+	fs.IntVar(&o.timeoutListingProwJobs, "timeout-listing-prowjobs", 30, "Timeout for listing prowjobs in seconds.")
 	fs.BoolVar(&o.dryRun, "dry-run", false, "Whether or not to make mutating API calls to GitHub.")
 	fs.Var(&o.tenantIDs, "tenant-id", "The tenantID(s) used by the ProwJobs that should be displayed by this instance of Deck. This flag can be repeated.")
 	o.config.AddFlags(fs)
@@ -360,7 +362,7 @@ func main() {
 				logrus.Info("Manager stopped gracefully.")
 			}
 		}()
-		mgrSyncCtx, mgrSyncCtxCancel := context.WithTimeout(context.Background(), 30*time.Second)
+		mgrSyncCtx, mgrSyncCtxCancel := context.WithTimeout(context.Background(), time.Duration(o.timeoutListingProwJobs)*time.Second)
 		defer mgrSyncCtxCancel()
 		if synced := mgr.GetCache().WaitForCacheSync(mgrSyncCtx); !synced {
 			logrus.Fatal("Timed out waiting for cachesync")
