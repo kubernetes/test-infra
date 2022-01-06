@@ -3,10 +3,7 @@ presets:
     preset-cluster-api-provider-vsphere-e2e-config: "true"
   env:
   - name: GOVC_URL
-    valueFrom:
-      secretKeyRef:
-        name: clusterapi-provider-vsphere-ci-prow
-        key: vsphere-server
+    value: 10.2.224.4
   - name: GOVC_USERNAME
     valueFrom:
       secretKeyRef:
