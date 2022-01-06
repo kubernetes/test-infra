@@ -757,9 +757,11 @@ cherry_pick_unapproved:
 
     To merge this cherry pick, it must first be approved (`/lgtm` + `/approve`) by the relevant OWNERS.
 
-    **AFTER** it has been approved by code owners, please ping the **kubernetes/release-managers** team in a comment to request a cherry pick review.
+    **AFTER** it has been approved by code owners, please leave the following comment on a line **by itself, with no leading whitespace**: **/cc kubernetes/release-managers**
 
-    (For details on the patch release process and schedule, see the [Patch Releases](https://k8s.io/releases/patch-releases) page.)
+    (This command will request a cherry pick review from [Release Managers](https://github.com/orgs/kubernetes/teams/release-managers) and should work for all GitHub users, whether they are members of the Kubernetes GitHub organization or not.)
+
+    For details on the patch release process and schedule, see the [Patch Releases](https://k8s.io/releases/patch-releases) page.
 
 # Enabled plugins per repo.
 # Keys: Full repo name: "org/repo".
