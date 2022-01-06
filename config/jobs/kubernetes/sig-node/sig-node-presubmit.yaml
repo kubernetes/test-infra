@@ -658,7 +658,7 @@ presubmits:
           - --node-tests=true
           - --provider=gce
             #TODO: NodeFeature:DevicePluginProbe tests are failing and being investigated in https://issues.k8s.io/106635
-          - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]|[\NodeFeature:DevicePluginProbe\]"
+          - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]|\[NodeFeature:DevicePluginProbe\]"
           - --timeout=240m
           env:
           - name: GOPATH
@@ -1142,7 +1142,7 @@ presubmits:
         - --node-tests=true
         - --provider=gce
           #TODO: NodeFeature:DevicePluginProbe tests are failing and being investigated in https://issues.k8s.io/106635
-        - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[Feature:Eviction\]|[\NodeFeature:DevicePluginProbe\]"
+        - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[Feature:Eviction\]|\[NodeFeature:DevicePluginProbe\]"
         - --timeout=420m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1-serial.yaml
         resources:
@@ -1185,7 +1185,7 @@ presubmits:
         - --node-tests=true
         - --provider=gce
           #TODO: NodeFeature:DevicePluginProbe tests are failing and being investigated in https://issues.k8s.io/106635
-        - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[Feature:Eviction\]|[\NodeFeature:DevicePluginProbe\]"
+        - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[Feature:Eviction\]|\[NodeFeature:DevicePluginProbe\]"
         - --timeout=420m
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv2-serial.yaml
         resources:
