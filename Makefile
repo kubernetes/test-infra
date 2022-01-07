@@ -31,13 +31,20 @@ SHELL:=env PATH=$(subst $(SPACE),\$(SPACE),$(PATH)) $(SHELL)
 ################################################################################
 # ================================= Testing ====================================
 # unit tests (hermetic)
-unit:
+unit: go-unit py-unit
+.PHONY: unit
+go-unit:
 	hack/make-rules/go-test/unit.sh
+.PHONY: go-unit
+py-unit:
+	hack/make-rules/py-test/all.sh
+.PHONY: py-unit
 # integration tests
 # integration:
 #	hack/make-rules/go-test/integration.sh
 # all tests
 test: unit
+.PHONY: test
 ################################################################################
 # ================================= Cleanup ====================================
 # standard cleanup target
@@ -89,4 +96,4 @@ update-codegen:
 verify-codegen:
 	hack/make-rules/verify/codegen.sh
 #################################################################################
-.PHONY: unit test verify go-lint update-gofmt verify-gofmt update-file-perms verify-file-perms update-spelling verify-spelling update-labels verify-labels
+.PHONY: verify go-lint update-gofmt verify-gofmt update-file-perms verify-file-perms update-spelling verify-spelling update-labels verify-labels

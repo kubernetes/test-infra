@@ -20,12 +20,4 @@ set -o pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd -P)"
 cd "${REPO_ROOT}"
 
-# Ensure virtual env
-# Trick from https://pythonspeed.com/articles/activate-virtualenv-dockerfile/
-export VIRTUAL_ENV="${REPO_ROOT}/.python_virtual_env"
-
-if [[ ! -f "${VIRTUAL_ENV}/bin/activate" ]]; then
-    python3 -m venv "${VIRTUAL_ENV}"
-fi
-
-source "${VIRTUAL_ENV}/bin/activate"
+make -C kettle test

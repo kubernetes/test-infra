@@ -44,5 +44,21 @@ update-staging: get-cluster-credentials
 rollback: get-cluster-credentials
 	kubectl rollout undo deployments/kettle
 
+ensure-requirements3:
+	../hack/run-in-python-container.sh pip3 install -r requirements3.txt
 
-.PHONY: all push
+test-make-db: ensure-requirements3
+	../hack/run-in-python-container.sh ./kettle/make_db_test.py
+
+test-model: ensure-requirements3
+	../hack/run-in-python-container.sh ./kettle/model_test.py
+
+test-stream: ensure-requirements3
+	../hack/run-in-python-container.sh ./kettle/stream_test.py
+
+test-make-json: ensure-requirements3
+	../hack/run-in-python-container.sh ./kettle/make_json_test.py
+
+test: test-make-db test-model test-stream test-make-json
+
+.PHONY: all push test-make-db
