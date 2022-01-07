@@ -541,7 +541,9 @@ presubmits:
     always_run: false
     optional: true
     branches:
+    # TODO(releng): Remove once repo default branch has been renamed
     - master
+    - main
     spec:
       containers:
       - command:

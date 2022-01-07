@@ -5,7 +5,9 @@ presubmits:
 
   - name: pull-kubernetes-e2e-gci-gce-ingress
     branches:
+    # TODO(releng): Remove once repo default branch has been renamed
     - master
+    - main
     always_run: false
     run_if_changed: '^(test/e2e/network/|pkg/apis/networking)'
     optional: true
@@ -72,7 +74,9 @@ presubmits:
 
   - name: pull-kubernetes-e2e-ubuntu-gce-network-policies
     branches:
+    # TODO(releng): Remove once repo default branch has been renamed
     - master
+    - main
     always_run: false
     run_if_changed: '^(test/e2e/network/|pkg/apis/networking)'
     optional: true
@@ -140,7 +144,9 @@ presubmits:
 
   - name: pull-kubernetes-e2e-gci-gce-ipvs
     branches:
+    # TODO(releng): Remove once repo default branch has been renamed
     - master
+    - main
     always_run: false
     run_if_changed: '^(test/e2e/network/|pkg/apis/networking|pkg/.*/ipvs/)'
     optional: true

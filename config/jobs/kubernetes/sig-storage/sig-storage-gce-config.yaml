@@ -14,7 +14,9 @@ presubmits:
     # test/e2e/testing-manifests/storage-csi
     run_if_changed: '^(pkg\/controller\/volume|pkg\/kubelet\/volumemanager|pkg\/volume|pkg\/util\/mount|test\/e2e\/storage|test\/e2e\/testing-manifests\/storage-csi)'
     branches:
+    # TODO(releng): Remove once repo default branch has been renamed
     - master
+    - main
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -63,7 +65,9 @@ presubmits:
     # test/e2e/testing-manifests/storage-csi
     run_if_changed: '^(pkg\/controller\/volume|pkg\/kubelet\/volumemanager|pkg\/volume|pkg\/util\/mount|test\/e2e\/storage|test\/e2e\/testing-manifests\/storage-csi)'
     branches:
+    # TODO(releng): Remove once repo default branch has been renamed
     - master
+    - main
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -111,7 +115,9 @@ presubmits:
     # test/e2e/testing-manifests/storage-csi
     run_if_changed: '^(pkg\/controller\/volume|pkg\/kubelet\/volumemanager|pkg\/volume|pkg\/util\/mount|test\/e2e\/storage|test\/e2e\/testing-manifests\/storage-csi)'
     branches:
+    # TODO(releng): Remove once repo default branch has been renamed
     - master
+    - main
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -150,7 +156,9 @@ presubmits:
     optional: true
     run_if_changed: '(pkg\/volume\/iscsi)'
     branches:
+    # TODO(releng): Remove once repo default branch has been renamed
     - master
+    - main
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -193,7 +201,9 @@ presubmits:
     optional: true
     run_if_changed: '(pkg\/volume\/iscsi)'
     branches:
+    # TODO(releng): Remove once repo default branch has been renamed
     - master
+    - main
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
@@ -234,7 +244,9 @@ presubmits:
     always_run: false
     optional: true
     branches:
+    # TODO(releng): Remove once repo default branch has been renamed
     - master
+    - main
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"

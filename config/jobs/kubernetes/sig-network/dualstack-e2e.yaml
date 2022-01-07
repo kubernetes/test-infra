@@ -386,7 +386,9 @@ presubmits:
     optional: true
     path_alias: k8s.io/kubernetes
     branches:
+    # TODO(releng): Remove once repo default branch has been renamed
     - master
+    - main
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -439,7 +441,9 @@ presubmits:
     optional: true
     path_alias: k8s.io/kubernetes
     branches:
+    # TODO(releng): Remove once repo default branch has been renamed
     - master
+    - main
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"

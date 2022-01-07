@@ -21,7 +21,9 @@ postsubmits:
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/agnhost\/'
       branches:
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -61,7 +63,9 @@ postsubmits:
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/apparmor-loader\/'
       branches:
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -101,7 +105,9 @@ postsubmits:
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/busybox\/'
       branches:
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -141,7 +147,9 @@ postsubmits:
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/cuda-vector-add\/'
       branches:
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -181,7 +189,9 @@ postsubmits:
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/cuda-vector-add-old\/'
       branches:
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -221,7 +231,9 @@ postsubmits:
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/echoserver\/'
       branches:
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -261,7 +273,9 @@ postsubmits:
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/glusterdynamic-provisioner\/'
       branches:
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -301,7 +315,9 @@ postsubmits:
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/httpd\/'
       branches:
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -341,7 +357,9 @@ postsubmits:
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/httpd-new\/'
       branches:
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -381,7 +399,9 @@ postsubmits:
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/ipc-utils\/'
       branches:
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -421,7 +441,9 @@ postsubmits:
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/jessie-dnsutils\/'
       branches:
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -461,7 +483,9 @@ postsubmits:
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/kitten\/'
       branches:
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -501,7 +525,9 @@ postsubmits:
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/metadata-concealment\/'
       branches:
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -541,7 +567,9 @@ postsubmits:
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/nautilus\/'
       branches:
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -581,7 +609,9 @@ postsubmits:
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/nginx\/'
       branches:
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -621,7 +651,9 @@ postsubmits:
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/nginx-new\/'
       branches:
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -661,7 +693,9 @@ postsubmits:
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/node-perf\/tf-wide-deep\/'
       branches:
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -701,7 +735,9 @@ postsubmits:
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/node-perf\/npb-ep\/'
       branches:
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -741,7 +777,9 @@ postsubmits:
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/node-perf\/npb-is\/'
       branches:
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -781,7 +819,9 @@ postsubmits:
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/nonewprivs\/'
       branches:
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -821,7 +861,9 @@ postsubmits:
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/nonroot\/'
       branches:
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -861,7 +903,9 @@ postsubmits:
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/perl\/'
       branches:
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -901,7 +945,9 @@ postsubmits:
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/pets\/redis-installer\/'
       branches:
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -941,7 +987,9 @@ postsubmits:
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/pets\/peer-finder\/'
       branches:
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -981,7 +1029,9 @@ postsubmits:
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/pets\/zookeeper-installer\/'
       branches:
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -1021,7 +1071,9 @@ postsubmits:
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/redis\/'
       branches:
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -1061,7 +1113,9 @@ postsubmits:
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/regression-issue-74839\/'
       branches:
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -1101,7 +1155,9 @@ postsubmits:
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/resource-consumer\/'
       branches:
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -1141,7 +1197,9 @@ postsubmits:
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/sample-apiserver\/'
       branches:
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -1181,7 +1239,9 @@ postsubmits:
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/sample-device-plugin\/'
       branches:
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -1221,7 +1281,9 @@ postsubmits:
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/volume\/iscsi\/'
       branches:
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -1261,7 +1323,9 @@ postsubmits:
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/volume\/rbd\/'
       branches:
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -1301,7 +1365,9 @@ postsubmits:
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/volume\/nfs\/'
       branches:
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -1341,7 +1407,9 @@ postsubmits:
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/volume\/gluster\/'
       branches:
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
@@ -1381,7 +1449,9 @@ postsubmits:
       # we only need to run if the test images have been changed.
       run_if_changed: '^test\/images\/windows-servercore-cache\/'
       branches:
+        # TODO(releng): Remove once repo default branch has been renamed
         - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
