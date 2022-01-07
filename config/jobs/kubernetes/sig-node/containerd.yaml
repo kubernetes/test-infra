@@ -1131,9 +1131,8 @@ periodics:
       - --gcp-nodes=4
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=30
-      # Using cos-93-lts to pick up 5.10 kernel.
-      # See https://github.com/kubernetes/kubernetes/issues/103759
-      - --image-family=cos-93-lts
+      # Using cos-dev to pick up cgroupv2 enabled by default as of cos-dev-97-16778-0-0.
+      - --image-family=cos-dev
       - --image-project=cos-cloud
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
