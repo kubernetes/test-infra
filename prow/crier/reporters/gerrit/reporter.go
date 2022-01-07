@@ -349,8 +349,16 @@ func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJo
 		}
 	}
 
-	logger.Infof("Review Complete, reported jobs: %v", toReportJobs)
+	logger.Infof("Review Complete, reported jobs: %s", jobNames(toReportJobs))
 	return toReportJobs, nil, nil
+}
+
+func jobNames(jobs []*v1.ProwJob) []string {
+	names := make([]string, len(jobs))
+	for i, job := range jobs {
+		names[i] = job.Name
+	}
+	return names
 }
 
 func statusIcon(state v1.ProwJobState) string {
