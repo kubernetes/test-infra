@@ -36,8 +36,8 @@ presubmits:
         - --extract=local
         - --env=ALLOW_PRIVILEGED=true
         - --env=KUBE_CONTAINER_RUNTIME=containerd
-        - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.5.7
-        - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.2
+        - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.5.9
+        - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.3
         - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
         - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
         - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
@@ -102,8 +102,8 @@ presubmits:
         - --env=NETWORK_POLICY_PROVIDER=calico
         - --env=KUBE_CONTAINER_RUNTIME=containerd
         - --env=KUBE_FEATURE_GATES=NetworkPolicyEndPort=true
-        - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.5.7
-        - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.2
+        - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.5.9
+        - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.3
         - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
         - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
         - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
@@ -170,8 +170,8 @@ presubmits:
         - --build=quick
         - --env=ALLOW_PRIVILEGED=true
         - --env=KUBE_CONTAINER_RUNTIME=containerd
-        - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.5.7
-        - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.2
+        - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.5.9
+        - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.3
         - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
         - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
         - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
@@ -678,8 +678,8 @@ periodics:
       - --env=NETWORK_POLICY_PROVIDER=calico
       - --env=KUBE_CONTAINER_RUNTIME=containerd
       - --env=KUBE_FEATURE_GATES=NetworkPolicyEndPort=true
-      - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.5.7
-      - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.2
+      - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.5.9
+      - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.3
       - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
       - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
       - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
