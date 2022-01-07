@@ -45,6 +45,7 @@ const (
 	defaultProwHeader         = "Prow Status:"
 	jobReportFormat           = "%s %s %s - %s\n"
 	jobReportFormatWithoutURL = "%s %s %s\n"
+	errorLinePrefix           = "NOTE FROM PROW"
 
 	// lgtm means all presubmits passed, but need someone else to approve before merge (looks good to me).
 	lgtm = "+1"
@@ -410,6 +411,14 @@ func deserialize(s string, j *Job) error {
 	return nil
 }
 
+func errorMessageLine(s string) string {
+	return fmt.Sprintf("[%s: %s]", errorLinePrefix, s)
+}
+
+func isErrorMessageLine(s string) bool {
+	return strings.HasPrefix(s, fmt.Sprintf("[%s: ", errorLinePrefix))
+}
+
 // GenerateReport generates report header and message based on pjs passed in. As
 // URLs are very long string, includes them in the report would easily make the
 // report exceed the size limit of 14400.
@@ -483,7 +492,7 @@ func GenerateReport(pjs []*v1.ProwJob, commentSizeLimit int) JobReport {
 	// each job name is super long(e.g. > 50)
 	if remainingSize < 0 {
 		report.Header = fullHeader(report.Header, " Comment '/test all' to rerun all failed tests")
-		report.Message = "Prow failed to report all jobs, are there excessive amount of prow jobs?"
+		report.Message = errorMessageLine("Prow failed to report all jobs, are there excessive amount of prow jobs?")
 		return report
 	}
 
@@ -499,7 +508,7 @@ func GenerateReport(pjs []*v1.ProwJob, commentSizeLimit int) JobReport {
 	if cutoff < len(report.Jobs) {
 		// Note that this makes the comment longer, but since the size limit of
 		// 14400 is conservative, we should be fine
-		report.Message += fmt.Sprintf("[Skipped displaying URLs for %d/%d jobs due to reaching gerrit comment size limit]\n", len(report.Jobs)-cutoff, len(report.Jobs))
+		report.Message += errorMessageLine(fmt.Sprintf("Skipped displaying URLs for %d/%d jobs due to reaching gerrit comment size limit", len(report.Jobs)-cutoff, len(report.Jobs)))
 	}
 
 	report.Header = fullHeader(report.Header, reTestMessage)
@@ -524,7 +533,7 @@ func ParseReport(message string) *JobReport {
 	var report JobReport
 	report.Header = contents[start] + "\n"
 	for i := start + 1; i < len(contents); i++ {
-		if contents[i] == "" {
+		if contents[i] == "" || isErrorMessageLine(contents[i]) {
 			continue
 		}
 		var j Job
