@@ -42,8 +42,9 @@ const (
 	hourglass  = "⏳"
 	prohibited = "🚫"
 
-	defaultProwHeader = "Prow Status:"
-	jobReportFormat   = "%s %s %s - %s\n"
+	defaultProwHeader         = "Prow Status:"
+	jobReportFormat           = "%s %s %s - %s\n"
+	jobReportFormatWithoutURL = "%s %s %s\n"
 
 	// lgtm means all presubmits passed, but need someone else to approve before merge (looks good to me).
 	lgtm = "+1"
@@ -336,7 +337,7 @@ func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJo
 
 	logger.Infof("Reporting to instance %s on id %s with message %s", gerritInstance, gerritID, message)
 	if err := c.gc.SetReview(gerritInstance, gerritID, gerritRevision, message, reviewLabels); err != nil {
-		logger.WithError(err).Infof("fail to set review with label %q on change ID %s", reportLabel, gerritID)
+		logger.WithError(err).WithField("gerrit_id", gerritID).WithField("label", reportLabel).Info("Failed to set review.")
 
 		if reportLabel == "" {
 			return nil, nil, err
@@ -344,7 +345,7 @@ func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJo
 		// Retry without voting on a label
 		message := fmt.Sprintf("[NOTICE]: Prow Bot cannot access %s label!\n%s", reportLabel, message)
 		if err := c.gc.SetReview(gerritInstance, gerritID, gerritRevision, message, nil); err != nil {
-			logger.WithError(err).Errorf("fail to set plain review on change ID %s", gerritID)
+			logger.WithError(err).WithField("gerrit_id", gerritID).Errorf("Failed to set plain review on change ID.")
 			return nil, nil, err
 		}
 	}
@@ -373,8 +374,26 @@ func jobFromPJ(pj *v1.ProwJob) Job {
 	return Job{Name: pj.Spec.Job, State: pj.Status.State, Icon: statusIcon(pj.Status.State), URL: pj.Status.URL}
 }
 
+func (j *Job) serializeWithoutURL() string {
+	return fmt.Sprintf(jobReportFormatWithoutURL, j.Icon, j.Name, strings.ToUpper(string(j.State)))
+}
+
 func (j *Job) serialize() string {
 	return fmt.Sprintf(jobReportFormat, j.Icon, j.Name, strings.ToUpper(string(j.State)), j.URL)
+}
+
+func deserializeWithoutURL(s string, j *Job) error {
+	var state string
+	n, err := fmt.Sscanf(s, jobReportFormatWithoutURL, &j.Icon, &j.Name, &state)
+	if err != nil {
+		return err
+	}
+	j.State = v1.ProwJobState(strings.ToLower(state))
+	const want = 3
+	if n != want {
+		return fmt.Errorf("scan: got %d, want %d", n, want)
+	}
+	return nil
 }
 
 func deserialize(s string, j *Job) error {
@@ -391,9 +410,15 @@ func deserialize(s string, j *Job) error {
 	return nil
 }
 
-// GenerateReport generates report header and message based on pjs passed in.
+// GenerateReport generates report header and message based on pjs passed in. As
+// URLs are very long string, includes them in the report would easily make the
+// report exceed the size limit of 14400.
+// Unfortunately we need all prowjobs info for /retest to work, which is by far
+// the most reliable way of retrieving prow jobs results, as prow jobs
+// custom resources are GCed by sinker after max_pod_age, which normally is 48
+// hours. So to ensure that all prow jobs results are displayed, URLs for some
+// of the jobs are omitted from this report.
 // commentSizeLimit is used to make sure that the report generated won't exceed
-// size limit, when set to 0 the value will be the default 14400
 func GenerateReport(pjs []*v1.ProwJob, commentSizeLimit int) JobReport {
 	if commentSizeLimit == 0 {
 		commentSizeLimit = maxCommentSizeLimit
@@ -407,12 +432,15 @@ func GenerateReport(pjs []*v1.ProwJob, commentSizeLimit int) JobReport {
 		}
 	}
 
-	report.Header = defaultProwHeader
+	fullHeader := func(header, reTestMessage string) string {
+		return fmt.Sprintf("%s%s\n", header, reTestMessage)
+	}
+
+	report.Header = fmt.Sprintf("%s %d out of %d pjs passed!", defaultProwHeader, report.Success, report.Total)
 	var reTestMessage string
 	if report.Success < report.Total {
 		reTestMessage = " Comment '/retest' to rerun all failed tests"
 	}
-	report.Header += fmt.Sprintf(" %d out of %d pjs passed!%s\n", report.Success, report.Total, reTestMessage)
 
 	// Sort first so that failed jobs always on top
 	sort.Slice(report.Jobs, func(i, j int) bool {
@@ -432,17 +460,49 @@ func GenerateReport(pjs []*v1.ProwJob, commentSizeLimit int) JobReport {
 		return true
 	})
 
-	// Truncate if there is not enough space left
-	remainingSize := commentSizeLimit - len(report.Header)
+	remainingSize := commentSizeLimit - len(fullHeader(report.Header, reTestMessage))
+	linesWithURLs := make([]string, len(report.Jobs))
+	linesWithoutURLs := make([]string, len(report.Jobs))
 	for i, job := range report.Jobs {
-		message := job.serialize() + "\n"
-		remainingSize -= len(message)
-		if remainingSize < 0 {
-			report.Message += fmt.Sprintf("[Skipped %d/%d jobs due to reaching gerrit comment size limit]\n", len(report.Jobs)-i, len(report.Jobs))
-			break
-		}
-		report.Message += message
+		linesWithURLs[i] = job.serialize()
+		remainingSize -= len(linesWithURLs[i])
 	}
+
+	// cutoff is the index where if it's the line contains URL it will exceed the
+	// size limit.
+	cutoff := len(report.Jobs)
+	for cutoff > 0 && remainingSize < 0 {
+		cutoff--
+		linesWithoutURLs[cutoff] = report.Jobs[cutoff].serializeWithoutURL()
+		// remainingSize >= 0 after this condition means next line is not good
+		// to include URL
+		remainingSize += len(linesWithURLs[cutoff]) - len(linesWithoutURLs[cutoff])
+	}
+
+	// This shouldn't happen unless there are too many prow jobs(e.g. > 300) and
+	// each job name is super long(e.g. > 50)
+	if remainingSize < 0 {
+		report.Header = fullHeader(report.Header, " Comment '/test all' to rerun all failed tests")
+		report.Message = "Prow failed to report all jobs, are there excessive amount of prow jobs?"
+		return report
+	}
+
+	// Now that we know a cutoff between long and short lines, assemble them
+	for i := range report.Jobs {
+		if i < cutoff {
+			report.Message += linesWithURLs[i]
+		} else {
+			report.Message += linesWithoutURLs[i]
+		}
+	}
+
+	if cutoff < len(report.Jobs) {
+		// Note that this makes the comment longer, but since the size limit of
+		// 14400 is conservative, we should be fine
+		report.Message += fmt.Sprintf("[Skipped displaying URLs for %d/%d jobs due to reaching gerrit comment size limit]\n", len(report.Jobs)-cutoff, len(report.Jobs))
+	}
+
+	report.Header = fullHeader(report.Header, reTestMessage)
 	return report
 }
 
@@ -469,8 +529,11 @@ func ParseReport(message string) *JobReport {
 		}
 		var j Job
 		if err := deserialize(contents[i], &j); err != nil {
-			logrus.Warnf("Could not deserialize %s to a job: %v", contents[i], err)
-			continue
+			// Will also need to support reports without URL
+			if err = deserializeWithoutURL(contents[i], &j); err != nil {
+				logrus.Warnf("Could not deserialize %s to a job: %v", contents[i], err)
+				continue
+			}
 		}
 		report.Total++
 		if j.State == v1.SuccessState {

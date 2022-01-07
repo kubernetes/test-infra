@@ -63,7 +63,9 @@ func (f *fgc) SetReview(instance, id, revision, message string, labels map[strin
 		}
 	}
 	f.reportMessage = message
-	f.reportLabel = labels
+	if len(labels) > 0 {
+		f.reportLabel = labels
+	}
 	return nil
 }
 
@@ -1553,29 +1555,52 @@ func TestGenerateReport(t *testing.T) {
 				job("right", "bar", v1.ErrorState),
 			},
 			wantHeader:  "Prow Status: 1 out of 4 pjs passed! Comment '/retest' to rerun all failed tests\n",
-			wantMessage: "❌ that FAILURE - hey\n\n🚫 right ERROR - bar\n\n🚫 left ABORTED - foo\n\n✔️ this SUCCESS - url\n\n",
+			wantMessage: "❌ that FAILURE - hey\n🚫 right ERROR - bar\n🚫 left ABORTED - foo\n✔️ this SUCCESS - url\n",
 		},
 		{
-			name: "exceed limit",
+			name: "short lines only",
 			jobs: []*v1.ProwJob{
 				job("this", "url", v1.SuccessState),
 				job("that", "hey", v1.FailureState),
 				job("some", "other", v1.SuccessState),
 			},
-			commentSizeLimit: 81 + 27,
+			commentSizeLimit: 81 + 56,
 			wantHeader:       "Prow Status: 2 out of 3 pjs passed! Comment '/retest' to rerun all failed tests\n",
-			wantMessage:      "❌ that FAILURE - hey\n\n[Skipped 2/3 jobs due to reaching gerrit comment size limit]\n",
+			wantMessage:      "❌ that FAILURE\n✔️ some SUCCESS\n✔️ this SUCCESS\n[Skipped displaying URLs for 3/3 jobs due to reaching gerrit comment size limit]\n",
+		},
+		{
+			name: "mix of short and long lines",
+			jobs: []*v1.ProwJob{
+				job("this", "url", v1.SuccessState),
+				job("that", "hey", v1.FailureState),
+				job("some", "other", v1.SuccessState),
+			},
+			commentSizeLimit: 81 + 62,
+			wantHeader:       "Prow Status: 2 out of 3 pjs passed! Comment '/retest' to rerun all failed tests\n",
+			wantMessage:      "❌ that FAILURE - hey\n✔️ some SUCCESS\n✔️ this SUCCESS\n[Skipped displaying URLs for 2/3 jobs due to reaching gerrit comment size limit]\n",
+		},
+		{
+			name: "too many jobs",
+			jobs: []*v1.ProwJob{
+				job("this", "url", v1.SuccessState),
+				job("that", "hey", v1.FailureState),
+				job("some", "other", v1.SuccessState),
+			},
+			commentSizeLimit: 81 + 55,
+			wantHeader:       "Prow Status: 2 out of 3 pjs passed! Comment '/test all' to rerun all failed tests\n",
+			wantMessage:      "Prow failed to report all jobs, are there excessive amount of prow jobs?",
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			gotReport := GenerateReport(tc.jobs, tc.commentSizeLimit)
+
 			if want, got := tc.wantHeader, gotReport.Header; want != got {
 				t.Fatalf("Header mismatch. Want:\n%s,\ngot: \n%s", want, got)
 			}
 			if want, got := tc.wantMessage, gotReport.Message; want != got {
-				t.Fatalf("Header mismatch. Want:\n%s\ngot: \n%s", want, got)
+				t.Fatalf("Message mismatch. Want:\n%s\ngot: \n%s", want, got)
 			}
 		})
 	}
@@ -1591,6 +1616,16 @@ func TestParseReport(t *testing.T) {
 		{
 			name:         "parse multiple jobs",
 			comment:      "Prow Status: 0 out of 2 passed\n❌️ foo-job FAILURE - http://foo-status\n❌ bar-job FAILURE - http://bar-status",
+			expectedJobs: 2,
+		},
+		{
+			name:         "parse new format without URL",
+			comment:      "Prow Status: 0 out of 2 passed\n❌️ foo-job FAILURE\n❌ bar-job FAILURE",
+			expectedJobs: 2,
+		},
+		{
+			name:         "parse mixed formats",
+			comment:      "Prow Status: 0 out of 2 passed\n❌️ foo-job FAILURE - http://foo-status\n❌ bar-job FAILURE\n[Skipped displaying URLs for 1/2 jobs due to reaching gerrit comment size limit]",
 			expectedJobs: 2,
 		},
 		{
@@ -1651,8 +1686,8 @@ func TestReportStability(t *testing.T) {
 		return &out
 	}
 	expected := GenerateReport([]*v1.ProwJob{
-		job("this", "url", v1.SuccessState),
-		job("that", "hey", v1.FailureState),
+		job("this", "hey", v1.SuccessState),
+		job("that", "url", v1.FailureState),
 	}, 0)
 	actual := ParseReport(expected.String())
 	if !equality.Semantic.DeepEqual(&expected, actual) {
