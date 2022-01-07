@@ -20,7 +20,7 @@ sh_test(
         ":pylint_bin",
         "//:all-srcs",
     ],
-    tags = ["lint"],
+    tags = ["manual"],
 )
 
 nodejs_test(
@@ -237,7 +237,7 @@ py_binary(
     name = "pylint_bin",
     srcs = ["pylint_bin.py"],
     python_version = "PY3",
-    tags = ["lint"],
+    tags = ["manual"],
     # NOTE: this should only contain direct third party imports and pylint
     deps = [
         requirement("astroid"),
