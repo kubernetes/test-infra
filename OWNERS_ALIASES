@@ -282,6 +282,7 @@ aliases:
 
   # mostly copied from sigs.k8s.io/kubebuilder/OWNERS_ALIASES
   kubebuilder-admins:
+  - camilamacedo86
   - mengqiy
   - estroz
 
