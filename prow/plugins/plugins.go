@@ -234,6 +234,24 @@ func (a *Agent) CommentPruner() (*commentpruner.EventClient, error) {
 	return a.commentPruner, nil
 }
 
+// GatherHandlerMetrics executes handler and gathers results & durations metrics.
+func (a *Agent) GatherHandlerMetrics(handler func() error, plugin, method string) error {
+	start := time.Now()
+	err := handler()
+	stop := time.Now()
+
+	promLabels := prometheus.Labels(map[string]string{"plugin": plugin, "method": method})
+	a.Metrics.HandlerDurations.With(promLabels).Observe(float64(stop.Sub(start).Seconds()))
+
+	resultString := "success"
+	if err != nil {
+		resultString = "error"
+	}
+	a.Metrics.HandlerResults.WithLabelValues(plugin, method, resultString).Inc()
+
+	return err
+}
+
 // ClientAgent contains the various clients that are attached to the Agent.
 type ClientAgent struct {
 	GitHubClient              github.Client
@@ -543,6 +561,24 @@ var configMapSizeGauges = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 	Help: "Size of data fields in ConfigMaps updated automatically by Prow in bytes.",
 }, []string{"name", "namespace"})
 
+var handlerResults = prometheus.NewCounterVec(prometheus.CounterOpts{
+	Name: "plugin_handler_results",
+	Help: "Count of plugin handler results by handler method and result (success/error).",
+}, []string{
+	"plugin",
+	"method",
+	"result",
+})
+
+var handlerDurations = prometheus.NewHistogramVec(prometheus.HistogramOpts{
+	Name:    "plugin_handler_durations",
+	Help:    "Plugin handler durations",
+	Buckets: []float64{0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 15, 20, 30},
+}, []string{
+	"plugin",
+	"method",
+})
+
 func init() {
 	prometheus.MustRegister(configMapSizeGauges)
 }
@@ -551,13 +587,17 @@ func init() {
 // It is up the the consumers of these metrics to ensure that they
 // update the values in a thread-safe manner.
 type Metrics struct {
-	ConfigMapGauges *prometheus.GaugeVec
+	ConfigMapGauges  *prometheus.GaugeVec
+	HandlerResults   *prometheus.CounterVec
+	HandlerDurations *prometheus.HistogramVec
 }
 
 // NewMetrics returns a reference to the metrics plugins manage
 func NewMetrics() *Metrics {
 	return &Metrics{
-		ConfigMapGauges: configMapSizeGauges,
+		ConfigMapGauges:  configMapSizeGauges,
+		HandlerResults:   handlerResults,
+		HandlerDurations: handlerDurations,
 	}
 }
 

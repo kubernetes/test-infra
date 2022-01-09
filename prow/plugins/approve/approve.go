@@ -148,14 +148,20 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 }
 
 func handleGenericCommentEvent(pc plugins.Agent, ce github.GenericCommentEvent) error {
-	return handleGenericComment(
-		pc.Logger,
-		pc.GitHubClient,
-		pc.OwnersClient,
-		pc.Config.GitHubOptions,
-		pc.PluginConfig,
-		&ce,
+	return pc.GatherHandlerMetrics(func() error {
+		return handleGenericComment(
+			pc.Logger,
+			pc.GitHubClient,
+			pc.OwnersClient,
+			pc.Config.GitHubOptions,
+			pc.PluginConfig,
+			&ce,
+		)
+	},
+		PluginName,
+		"handleGenericComment",
 	)
+
 }
 
 func handleGenericComment(log *logrus.Entry, ghc githubClient, oc ownersClient, githubConfig config.GitHubOptions, config *plugins.Configuration, ce *github.GenericCommentEvent) error {
@@ -213,13 +219,18 @@ func handleGenericComment(log *logrus.Entry, ghc githubClient, oc ownersClient, 
 // handleReviewEvent should only handle reviews that have no approval command.
 // Reviews with approval commands will be handled by handleGenericCommentEvent.
 func handleReviewEvent(pc plugins.Agent, re github.ReviewEvent) error {
-	return handleReview(
-		pc.Logger,
-		pc.GitHubClient,
-		pc.OwnersClient,
-		pc.Config.GitHubOptions,
-		pc.PluginConfig,
-		&re,
+	return pc.GatherHandlerMetrics(func() error {
+		return handleReview(
+			pc.Logger,
+			pc.GitHubClient,
+			pc.OwnersClient,
+			pc.Config.GitHubOptions,
+			pc.PluginConfig,
+			&re,
+		)
+	},
+		PluginName,
+		"handleReview",
 	)
 }
 
@@ -282,14 +293,20 @@ func handleReview(log *logrus.Entry, ghc githubClient, oc ownersClient, githubCo
 }
 
 func handlePullRequestEvent(pc plugins.Agent, pre github.PullRequestEvent) error {
-	return handlePullRequest(
-		pc.Logger,
-		pc.GitHubClient,
-		pc.OwnersClient,
-		pc.Config.GitHubOptions,
-		pc.PluginConfig,
-		&pre,
+	return pc.GatherHandlerMetrics(func() error {
+		return handlePullRequest(
+			pc.Logger,
+			pc.GitHubClient,
+			pc.OwnersClient,
+			pc.Config.GitHubOptions,
+			pc.PluginConfig,
+			&pre,
+		)
+	},
+		PluginName,
+		"handlePullRequest",
 	)
+
 }
 
 func handlePullRequest(log *logrus.Entry, ghc githubClient, oc ownersClient, githubConfig config.GitHubOptions, config *plugins.Configuration, pre *github.PullRequestEvent) error {

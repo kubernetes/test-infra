@@ -151,15 +151,22 @@ func handleGenericCommentEvent(pc plugins.Agent, e github.GenericCommentEvent) e
 	if err != nil {
 		return err
 	}
-	return handleGenericComment(pc.GitHubClient, pc.PluginConfig, pc.OwnersClient, pc.Logger, cp, e)
+
+	return pc.GatherHandlerMetrics(func() error {
+		return handleGenericComment(pc.GitHubClient, pc.PluginConfig, pc.OwnersClient, pc.Logger, cp, e)
+	},
+		PluginName,
+		"handleGenericComment",
+	)
+
 }
 
 func handlePullRequestEvent(pc plugins.Agent, pre github.PullRequestEvent) error {
-	return handlePullRequest(
-		pc.Logger,
-		pc.GitHubClient,
-		pc.PluginConfig,
-		&pre,
+	return pc.GatherHandlerMetrics(func() error {
+		return handlePullRequest(pc.Logger, pc.GitHubClient, pc.PluginConfig, &pre)
+	},
+		PluginName,
+		"handlePullRequest",
 	)
 }
 
@@ -173,7 +180,12 @@ func handlePullRequestReviewEvent(pc plugins.Agent, e github.ReviewEvent) error 
 	if err != nil {
 		return err
 	}
-	return handlePullRequestReview(pc.GitHubClient, pc.PluginConfig, pc.OwnersClient, pc.Logger, cp, e)
+	return pc.GatherHandlerMetrics(func() error {
+		return handlePullRequestReview(pc.GitHubClient, pc.PluginConfig, pc.OwnersClient, pc.Logger, cp, e)
+	},
+		PluginName,
+		"handlePullRequestReview",
+	)
 }
 
 func handleGenericComment(gc githubClient, config *plugins.Configuration, ownersClient repoowners.Interface, log *logrus.Entry, cp commentPruner, e github.GenericCommentEvent) error {
