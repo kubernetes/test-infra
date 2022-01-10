@@ -645,3 +645,47 @@ periodics:
     testgrid-tab-name: aks-engine-windows-containerd-nightly
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs Windows tests on a Kubernetes cluster running nightly builds of containerd and hcsshim provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
+- name: ci-kubernetes-e2e-capz-master-containerd-nightly-windows
+  interval: 24h
+  decorate: true
+  decoration_config:
+    timeout: 4h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred-only: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-azure
+    base_ref: main
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211217-ea95cec1d4-master
+        command:
+          - "runner.sh"
+          - "./scripts/ci-conformance.sh"
+        env:
+          - name: E2E_ARGS
+            value: "-kubetest.use-ci-artifacts"
+          - name: WINDOWS
+            value: "true"
+          # Windows isn't really conformance, we typically run at 4 to keep the time reasonable (~45 mins)
+          - name: CONFORMANCE_NODES
+            value: "4"
+          - name: "KUBERNETES_VERSION"
+            value: "latest"
+          - name: WINDOWS_FLAVOR
+            value: "containerd"
+          - name: WINDOWS_CONTAINERD_URL
+            value: "https://github.com/kubernetes-sigs/sig-windows-tools/releases/download/windows-containerd-nightly/windows-containerd.tar.gz"
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 2
+            memory: "9Gi"
+  annotations:
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-dashboards: sig-windows-master-release
+    testgrid-tab-name: capz-windows-containerd-nightly-master
