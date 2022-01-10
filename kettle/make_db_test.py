@@ -16,14 +16,13 @@
 
 """Tests for make_db."""
 
-import time
 import sys
 import unittest
 
 import make_db
 import model
 
-
+static_epoch = 1641585162
 
 TEST_BUCKETS_DATA = {
     'gs://kubernetes-jenkins/logs/': {'prefix': ''},
@@ -34,7 +33,7 @@ TEST_BUCKETS_DATA = {
 
 class MockedClient(make_db.GCSClient):
     """A GCSClient with stubs for external interactions."""
-    NOW = int(time.time())
+    NOW = static_epoch
     LOG_DIR = 'gs://kubernetes-jenkins/logs/'
     JOB_DIR = LOG_DIR + 'fake/123/'
     ART_DIR = JOB_DIR + 'artifacts/'
@@ -159,11 +158,10 @@ class MainTest(unittest.TestCase):
         self.assertEqual(result, expected)
         return db
 
-    # TODO(MushEE): re-enable once fixed the timestamp inconsistency issue
-    # def test_clean(self):
-    #     self.maxDiff = None
-    #     for threads in [1, 32]:
-    #         self.assert_main_output(threads)
+    def test_clean(self):
+        self.maxDiff = None
+        for threads in [1, 32]:
+            self.assert_main_output(threads)
 
     def test_incremental_new(self):
         db = self.assert_main_output(1)
@@ -176,7 +174,7 @@ class MainTest(unittest.TestCase):
         '''
 
         class MockedClientNewer(MockedClient):
-            NOW = int(time.time())
+            NOW = static_epoch
             LOG_DIR = 'gs://kubernetes-jenkins/logs/'
             JOB_DIR = LOG_DIR + 'fake/124/'
             ART_DIR = JOB_DIR + 'artifacts/'
