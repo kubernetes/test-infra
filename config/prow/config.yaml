@@ -515,6 +515,9 @@ branch-protection:
           required_linear_history: true
           required_pull_request_reviews:
             required_approving_review_count: 1
+          restrictions:
+            users:
+            - k8s-ci-robot
 
 tide:
   sync_period: 2m
