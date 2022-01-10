@@ -1,4 +1,3 @@
-#!/usr/bin/env bash
 # Copyright 2021 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,13 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -o errexit
-set -o nounset
-set -o pipefail
+# ${CURDIR} is the directory of Makefile that sources this file, so to ensure
+# that the correct path is handled, Makefile sourcing this will need to set
+# REPO_ROOT correctly to make it work
+REPO_ROOT ?= ${CURDIR}
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd -P)"
-cd "${REPO_ROOT}"
-
-make -C kettle test
-make -C metrics test
-make -C releng test
+ensure-py-requirements3:
+	${REPO_ROOT}/hack/run-in-python-container.sh pip3 install -r requirements3.txt
+.PHONY: ensure-py-requirements3
