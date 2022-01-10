@@ -1566,7 +1566,7 @@ func TestGenerateReport(t *testing.T) {
 			},
 			commentSizeLimit: 81 + 56,
 			wantHeader:       "Prow Status: 2 out of 3 pjs passed! Comment '/retest' to rerun all failed tests\n",
-			wantMessage:      "❌ that FAILURE\n✔️ some SUCCESS\n✔️ this SUCCESS\n[Skipped displaying URLs for 3/3 jobs due to reaching gerrit comment size limit]\n",
+			wantMessage:      "❌ that FAILURE\n✔️ some SUCCESS\n✔️ this SUCCESS\n[NOTE FROM PROW: Skipped displaying URLs for 3/3 jobs due to reaching gerrit comment size limit]",
 		},
 		{
 			name: "mix of short and long lines",
@@ -1577,7 +1577,7 @@ func TestGenerateReport(t *testing.T) {
 			},
 			commentSizeLimit: 81 + 62,
 			wantHeader:       "Prow Status: 2 out of 3 pjs passed! Comment '/retest' to rerun all failed tests\n",
-			wantMessage:      "❌ that FAILURE - hey\n✔️ some SUCCESS\n✔️ this SUCCESS\n[Skipped displaying URLs for 2/3 jobs due to reaching gerrit comment size limit]\n",
+			wantMessage:      "❌ that FAILURE - hey\n✔️ some SUCCESS\n✔️ this SUCCESS\n[NOTE FROM PROW: Skipped displaying URLs for 2/3 jobs due to reaching gerrit comment size limit]",
 		},
 		{
 			name: "too many jobs",
@@ -1588,7 +1588,7 @@ func TestGenerateReport(t *testing.T) {
 			},
 			commentSizeLimit: 81 + 55,
 			wantHeader:       "Prow Status: 2 out of 3 pjs passed! Comment '/test all' to rerun all failed tests\n",
-			wantMessage:      "Prow failed to report all jobs, are there excessive amount of prow jobs?",
+			wantMessage:      "[NOTE FROM PROW: Prow failed to report all jobs, are there excessive amount of prow jobs?]",
 		},
 	}
 
