@@ -352,12 +352,17 @@ func complete(o *options) error {
 	if o.logexporterGCSPath != "" {
 		o.testArgs += fmt.Sprintf(" --logexporter-gcs-path=%s", o.logexporterGCSPath)
 	}
-	if err := prepare(o); err != nil {
+	if err := control.XMLWrap(&suite, "Prepare", func() error { return prepare(o) }); err != nil {
 		return fmt.Errorf("failed to prepare test environment: %w", err)
 	}
 	// Get the deployer before we acquire k8s so any additional flag
 	// verifications happen early.
-	deploy, err := getDeployer(o)
+	var deploy deployer
+	err := control.XMLWrap(&suite, "GetDeployer", func () error {
+		d, err := getDeployer(o)
+		deploy = d
+		return err
+	})
 	if err != nil {
 		return fmt.Errorf("error creating deployer: %w", err)
 	}
