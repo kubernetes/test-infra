@@ -2,9 +2,11 @@
 
 reviewers:
 - ahg-g
+- alculquicondor
 - Huang-Wei
 approvers:
 - ahg-g
+- alculquicondor
 - Huang-Wei
 labels:
 - sig/scheduling
