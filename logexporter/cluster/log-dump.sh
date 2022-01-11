@@ -148,31 +148,51 @@ function detect-project() {
   fi
 }
 
-# Detect Linux and Windows nodes created in the instance group.
+# Detect Linux and Windows nodes in the cluster.
 #
-# Vars set:
+# If a custom get-instances function has been set, this function will use it
+# to set the NODE_NAMES array.
+#
+# Otherwise this function will attempt to detect the nodes based on the GCP
+# instance group information. If Windows nodes are present they will be detected
+# separately. The following arrays will be set:
 #   NODE_NAMES
 #   INSTANCE_GROUPS
 #   WINDOWS_NODE_NAMES
 #   WINDOWS_INSTANCE_GROUPS
 function detect-node-names() {
+  NODE_NAMES=()
+  INSTANCE_GROUPS=()
+  WINDOWS_INSTANCE_GROUPS=()
+  WINDOWS_NODE_NAMES=()
+
+  if [[ -n "${use_custom_instance_list}" ]]; then
+    echo 'Detecting node names using log_dump_custom_get_instances() function'
+    while IFS='' read -r line; do NODE_NAMES+=("$line"); done < <(log_dump_custom_get_instances node)
+    echo "NODE_NAMES=${NODE_NAMES[*]:-}" >&2
+    return
+  fi
+
+  if ! [[ "${gcloud_supported_providers}" =~ ${KUBERNETES_PROVIDER} ]]; then
+    echo "gcloud not supported for ${KUBERNETES_PROVIDER}, can't detect node names"
+    return
+  fi
+
   # These prefixes must not be prefixes of each other, so that they can be used to
   # detect mutually exclusive sets of nodes.
   local -r NODE_INSTANCE_PREFIX=${NODE_INSTANCE_PREFIX:-"${INSTANCE_PREFIX}-minion"}
   local -r WINDOWS_NODE_INSTANCE_PREFIX=${WINDOWS_NODE_INSTANCE_PREFIX:-"${INSTANCE_PREFIX}-windows-node"}
   detect-project
-  INSTANCE_GROUPS=()
+  echo 'Detecting nodes in the cluster'
   INSTANCE_GROUPS+=($(gcloud compute instance-groups managed list \
     --project "${PROJECT}" \
     --filter "name ~ '${NODE_INSTANCE_PREFIX}-.+' AND zone:(${ZONE})" \
     --format='value(name)' || true))
-  WINDOWS_INSTANCE_GROUPS=()
   WINDOWS_INSTANCE_GROUPS+=($(gcloud compute instance-groups managed list \
     --project "${PROJECT}" \
     --filter "name ~ '${WINDOWS_NODE_INSTANCE_PREFIX}-.+' AND zone:(${ZONE})" \
     --format='value(name)' || true))
 
-  NODE_NAMES=()
   if [[ -n "${INSTANCE_GROUPS[@]:-}" ]]; then
     for group in "${INSTANCE_GROUPS[@]}"; do
       NODE_NAMES+=($(gcloud compute instance-groups managed list-instances \
@@ -184,7 +204,6 @@ function detect-node-names() {
   if [[ -n "${HEAPSTER_MACHINE_TYPE:-}" ]]; then
     NODE_NAMES+=("${NODE_INSTANCE_PREFIX}-heapster")
   fi
-  WINDOWS_NODE_NAMES=()
   if [[ -n "${WINDOWS_INSTANCE_GROUPS[@]:-}" ]]; then
     for group in "${WINDOWS_INSTANCE_GROUPS[@]}"; do
       WINDOWS_NODE_NAMES+=($(gcloud compute instance-groups managed \
@@ -195,6 +214,8 @@ function detect-node-names() {
 
   echo "INSTANCE_GROUPS=${INSTANCE_GROUPS[*]:-}" >&2
   echo "NODE_NAMES=${NODE_NAMES[*]:-}" >&2
+  echo "WINDOWS_INSTANCE_GROUPS=${WINDOWS_INSTANCE_GROUPS[*]:-}" >&2
+  echo "WINDOWS_NODE_NAMES=${WINDOWS_NODE_NAMES[*]:-}" >&2
 }
 
 # Detect the IP for the master
@@ -570,12 +591,6 @@ function dump_nodes() {
   if [[ -n "${1:-}" ]]; then
     echo 'Dumping logs for nodes provided as args to dump_nodes() function'
     node_names=( "$@" )
-  elif [[ -n "${use_custom_instance_list}" ]]; then
-    echo 'Dumping logs for nodes provided by log_dump_custom_get_instances() function'
-    while IFS='' read -r line; do node_names+=("$line"); done < <(log_dump_custom_get_instances node)
-  elif [[ ! "${node_ssh_supported_providers}" =~ ${KUBERNETES_PROVIDER} ]]; then
-    echo "Node SSH not supported for ${KUBERNETES_PROVIDER}"
-    return
   else
     echo 'Detecting nodes in the cluster'
     detect-node-names &> /dev/null
@@ -675,14 +690,7 @@ function find_non_logexported_nodes() {
 # This function examines NODE_NAMES but not WINDOWS_NODE_NAMES since logexporter
 # does not run on Windows nodes.
 function dump_nodes_with_logexporter() {
-  if [[ -n "${use_custom_instance_list}" ]]; then
-    echo 'Dumping logs for nodes provided by log_dump_custom_get_instances() function'
-    NODE_NAMES=()
-    while IFS='' read -r line; do NODE_NAMES+=("$line"); done < <(log_dump_custom_get_instances node)
-  else
-    echo 'Detecting nodes in the cluster'
-    detect-node-names &> /dev/null
-  fi
+  detect-node-names &> /dev/null
 
   if [[ -z "${NODE_NAMES:-}" ]]; then
     echo 'No nodes found!'
