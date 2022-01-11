@@ -252,7 +252,7 @@ func (c *Client) ShouldReport(ctx context.Context, log *logrus.Entry, pj *v1.Pro
 
 // Report will send the current prowjob status as a gerrit review
 func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJob) ([]*v1.ProwJob, *reconcile.Result, error) {
-	logger = logger.WithFields(logrus.Fields{"job": pj.Spec.Job, "id": pj.Name})
+	logger = logger.WithFields(logrus.Fields{"job": pj.Spec.Job, "name": pj.Name})
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
@@ -359,7 +359,7 @@ func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJo
 func jobNames(jobs []*v1.ProwJob) []string {
 	names := make([]string, len(jobs))
 	for i, job := range jobs {
-		names[i] = job.Spec.Job
+		names[i] = fmt.Sprintf("%s, %s", job.Spec.Job, job.Name)
 	}
 	return names
 }
