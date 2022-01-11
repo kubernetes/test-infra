@@ -33,6 +33,10 @@ dashboards:
 - name: sig-cluster-lifecycle-cluster-api-0.4
 - name: sig-cluster-lifecycle-cluster-api-1.0
 - name: sig-cluster-lifecycle-cluster-api-provider-aws
+  dashboard_tab:
+    - name: periodic-test-coverage-main
+      test_group_name: periodic-cluster-api-provider-aws-coverage
+      base_options: "exclude-filter-by-regex=Overall$&group-by-directory=&expand-groups=&sort-by-name="
 - name: sig-cluster-lifecycle-cluster-api-provider-azure
   dashboard_tab:
     - name: capz-periodic-coverage-main
@@ -61,4 +65,7 @@ test_groups:
   short_text_metric: coverage
 - name: pull-cluster-api-provider-azure-coverage
   gcs_prefix: kubernetes-jenkins/logs/pull-cluster-api-provider-azure-coverage
+  short_text_metric: coverage
+- name: periodic-cluster-api-provider-aws-coverage
+  gcs_prefix: kubernetes-jenkins/logs/periodic-cluster-api-provider-aws-coverage
   short_text_metric: coverage
