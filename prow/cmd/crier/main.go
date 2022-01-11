@@ -78,14 +78,6 @@ type options struct {
 }
 
 func (o *options) validate() error {
-
-	// TODO(krzyzacy): gerrit && github report are actually stateful..
-	// Need a better design to re-enable parallel reporting
-	if o.gerritWorkers > 1 {
-		logrus.Warn("gerrit reporter only supports one worker")
-		o.gerritWorkers = 1
-	}
-
 	if o.gerritWorkers+o.pubsubWorkers+o.githubWorkers+o.slackWorkers+o.gcsWorkers+o.k8sGCSWorkers+o.blobStorageWorkers+o.k8sBlobStorageWorkers <= 0 {
 		return errors.New("crier need to have at least one report worker to start")
 	}

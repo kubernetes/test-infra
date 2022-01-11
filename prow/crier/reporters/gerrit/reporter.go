@@ -19,19 +19,24 @@ package gerrit
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
 
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+
 	"github.com/andygrunwald/go-gerrit"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/sync/semaphore"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/crier/reporters/criercommonlib"
 	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/kube"
 )
@@ -79,8 +84,9 @@ type gerritClient interface {
 
 // Client is a gerrit reporter client
 type Client struct {
-	gc     gerritClient
-	lister ctrlruntimeclient.Reader
+	gc      gerritClient
+	lister  ctrlruntimeclient.Reader
+	prLocks *criercommonlib.ShardedLock
 }
 
 // Job is the view of a prowjob scoped for a report
@@ -118,10 +124,16 @@ func NewReporter(cfg config.Getter, cookiefilePath string, projects map[string][
 	// line arg(which is going to be deprecated).
 	gc.Authenticate(cookiefilePath, "")
 
-	return &Client{
+	c := &Client{
 		gc:     gc,
 		lister: lister,
-	}, nil
+		prLocks: criercommonlib.NewShardedLock(
+			semaphore.NewWeighted(1),
+			map[criercommonlib.SimplePull]*semaphore.Weighted{}),
+	}
+
+	c.prLocks.RunCleanup()
+	return c, nil
 }
 
 func applyGlobalConfig(cfg config.Getter, gerritClient *client.Client, cookiefilePath string) {
@@ -253,6 +265,47 @@ func (c *Client) ShouldReport(ctx context.Context, log *logrus.Entry, pj *v1.Pro
 // Report will send the current prowjob status as a gerrit review
 func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJob) ([]*v1.ProwJob, *reconcile.Result, error) {
 	logger = logger.WithFields(logrus.Fields{"job": pj.Spec.Job, "name": pj.Name})
+
+	// Gerrit reporter hasn't learned how to deduplicate itself from report yet,
+	// will need to block here. Unfortunately need to check after this section
+	// to ensure that the job was not already marked reported by other threads
+	// TODO(chaodaiG): remove postsubmit once
+	// https://github.com/kubernetes/test-infra/issues/22653 is fixed
+	if pj.Spec.Type == v1.PresubmitJob || pj.Spec.Type == v1.PostsubmitJob {
+		key, err := lockKeyForPJ(pj)
+		if err != nil {
+			return nil, nil, fmt.Errorf("failed to get lockkey for job: %w", err)
+		}
+		lock, err := c.prLocks.GetLock(ctx, *key)
+		if err != nil {
+			return nil, nil, err
+		}
+		if err := lock.Acquire(ctx, 1); err != nil {
+			return nil, nil, err
+		}
+		defer lock.Release(1)
+
+		// In the case where several prow jobs from the same PR are finished one
+		// after another, by the time the lock is acquired, this job might have
+		// already been reported by another worker, refetch this pj to make sure
+		// that no duplicate report is produced
+		pjObjKey := ctrlruntimeclient.ObjectKeyFromObject(pj)
+		if err := c.lister.Get(ctx, pjObjKey, pj); err != nil {
+			if apierrors.IsNotFound(err) {
+				// Job could be GC'ed or deleted for other reasons, not to
+				// report, this is not a prow error and should not be retried
+				logger.Debug("object no longer exist")
+				return nil, nil, nil
+			}
+
+			return nil, nil, fmt.Errorf("failed to get prowjob %s: %w", pjObjKey.String(), err)
+		}
+		if pj.Status.PrevReportStates[c.GetName()] == pj.Status.State {
+			logger.Trace("Already reported by other threads.")
+			return nil, nil, nil
+		}
+	}
+
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
@@ -558,4 +611,19 @@ func ParseReport(message string) *JobReport {
 // String implements Stringer for JobReport
 func (r JobReport) String() string {
 	return fmt.Sprintf("%s\n%s", r.Header, r.Message)
+}
+
+func lockKeyForPJ(pj *v1.ProwJob) (*criercommonlib.SimplePull, error) {
+	// TODO(chaodaiG): remove postsubmit once
+	// https://github.com/kubernetes/test-infra/issues/22653 is fixed
+	if pj.Spec.Type != v1.PresubmitJob && pj.Spec.Type != v1.PostsubmitJob {
+		return nil, fmt.Errorf("can only get lock key for presubmit and postsubmit jobs, was %q", pj.Spec.Type)
+	}
+	if pj.Spec.Refs == nil {
+		return nil, errors.New("pj.Spec.Refs is nil")
+	}
+	if n := len(pj.Spec.Refs.Pulls); n != 1 {
+		return nil, fmt.Errorf("prowjob doesn't have one but %d pulls", n)
+	}
+	return criercommonlib.NewSimplePull(pj.Spec.Refs.Org, pj.Spec.Refs.Repo, pj.Spec.Refs.Pulls[0].Number), nil
 }

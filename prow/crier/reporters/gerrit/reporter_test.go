@@ -28,6 +28,7 @@ import (
 
 	"github.com/andygrunwald/go-gerrit"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/sync/semaphore"
 	"k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -35,6 +36,7 @@ import (
 	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/crier/reporters/criercommonlib"
 	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/kube"
 )
@@ -205,6 +207,11 @@ func TestReport(t *testing.T) {
 				Spec: v1.ProwJobSpec{
 					Refs: &v1.Refs{
 						Repo: "foo",
+						Pulls: []v1.Pull{
+							{
+								Number: 0,
+							},
+						},
 					},
 					Job:    "ci-foo",
 					Report: true,
@@ -236,6 +243,11 @@ func TestReport(t *testing.T) {
 				Spec: v1.ProwJobSpec{
 					Refs: &v1.Refs{
 						Repo: "foo",
+						Pulls: []v1.Pull{
+							{
+								Number: 0,
+							},
+						},
 					},
 					Job:    "ci-foo",
 					Report: false,
@@ -263,6 +275,11 @@ func TestReport(t *testing.T) {
 				Spec: v1.ProwJobSpec{
 					Refs: &v1.Refs{
 						Repo: "foo",
+						Pulls: []v1.Pull{
+							{
+								Number: 0,
+							},
+						},
 					},
 					Job:    "ci-foo",
 					Report: true,
@@ -293,6 +310,11 @@ func TestReport(t *testing.T) {
 				Spec: v1.ProwJobSpec{
 					Refs: &v1.Refs{
 						Repo: "foo",
+						Pulls: []v1.Pull{
+							{
+								Number: 0,
+							},
+						},
 					},
 					Job:    "ci-foo",
 					Report: true,
@@ -323,6 +345,11 @@ func TestReport(t *testing.T) {
 				Spec: v1.ProwJobSpec{
 					Refs: &v1.Refs{
 						Repo: "foo",
+						Pulls: []v1.Pull{
+							{
+								Number: 0,
+							},
+						},
 					},
 					Job:    "ci-foo",
 					Report: true,
@@ -351,6 +378,11 @@ func TestReport(t *testing.T) {
 				Spec: v1.ProwJobSpec{
 					Refs: &v1.Refs{
 						Repo: "foo",
+						Pulls: []v1.Pull{
+							{
+								Number: 0,
+							},
+						},
 					},
 					Job:    "ci-foo",
 					Report: true,
@@ -383,6 +415,11 @@ func TestReport(t *testing.T) {
 					Type: v1.PresubmitJob,
 					Refs: &v1.Refs{
 						Repo: "foo",
+						Pulls: []v1.Pull{
+							{
+								Number: 0,
+							},
+						},
 					},
 					Job:    "ci-foo",
 					Report: true,
@@ -414,6 +451,11 @@ func TestReport(t *testing.T) {
 				Spec: v1.ProwJobSpec{
 					Refs: &v1.Refs{
 						Repo: "foo/bar",
+						Pulls: []v1.Pull{
+							{
+								Number: 0,
+							},
+						},
 					},
 					Job:    "ci-foo-bar",
 					Report: true,
@@ -446,6 +488,11 @@ func TestReport(t *testing.T) {
 				Spec: v1.ProwJobSpec{
 					Refs: &v1.Refs{
 						Repo: "foo",
+						Pulls: []v1.Pull{
+							{
+								Number: 0,
+							},
+						},
 					},
 					Job:    "ci-foo",
 					Report: true,
@@ -471,6 +518,11 @@ func TestReport(t *testing.T) {
 					Spec: v1.ProwJobSpec{
 						Refs: &v1.Refs{
 							Repo: "bar",
+							Pulls: []v1.Pull{
+								{
+									Number: 0,
+								},
+							},
 						},
 						Job:    "ci-bar",
 						Report: true,
@@ -504,6 +556,11 @@ func TestReport(t *testing.T) {
 				Spec: v1.ProwJobSpec{
 					Refs: &v1.Refs{
 						Repo: "foo",
+						Pulls: []v1.Pull{
+							{
+								Number: 0,
+							},
+						},
 					},
 					Job:    "ci-foo",
 					Report: true,
@@ -529,6 +586,11 @@ func TestReport(t *testing.T) {
 					Spec: v1.ProwJobSpec{
 						Refs: &v1.Refs{
 							Repo: "bar",
+							Pulls: []v1.Pull{
+								{
+									Number: 0,
+								},
+							},
 						},
 						Job:    "ci-bar",
 						Report: true,
@@ -557,6 +619,11 @@ func TestReport(t *testing.T) {
 				Spec: v1.ProwJobSpec{
 					Refs: &v1.Refs{
 						Repo: "foo",
+						Pulls: []v1.Pull{
+							{
+								Number: 0,
+							},
+						},
 					},
 					Job:    "ci-foo",
 					Report: true,
@@ -582,6 +649,11 @@ func TestReport(t *testing.T) {
 					Spec: v1.ProwJobSpec{
 						Refs: &v1.Refs{
 							Repo: "bar",
+							Pulls: []v1.Pull{
+								{
+									Number: 0,
+								},
+							},
 						},
 						Job:    "ci-bar",
 						Report: true,
@@ -615,6 +687,11 @@ func TestReport(t *testing.T) {
 					Type: v1.PostsubmitJob,
 					Refs: &v1.Refs{
 						Repo: "foo",
+						Pulls: []v1.Pull{
+							{
+								Number: 0,
+							},
+						},
 					},
 					Job:    "ci-foo",
 					Report: true,
@@ -646,6 +723,11 @@ func TestReport(t *testing.T) {
 					Type: v1.PresubmitJob,
 					Refs: &v1.Refs{
 						Repo: "foo",
+						Pulls: []v1.Pull{
+							{
+								Number: 0,
+							},
+						},
 					},
 					Job:    "ci-foo",
 					Report: true,
@@ -672,6 +754,11 @@ func TestReport(t *testing.T) {
 						Type: v1.PresubmitJob,
 						Refs: &v1.Refs{
 							Repo: "bar",
+							Pulls: []v1.Pull{
+								{
+									Number: 0,
+								},
+							},
 						},
 						Job:    "ci-bar",
 						Report: true,
@@ -705,6 +792,11 @@ func TestReport(t *testing.T) {
 				Spec: v1.ProwJobSpec{
 					Refs: &v1.Refs{
 						Repo: "foo",
+						Pulls: []v1.Pull{
+							{
+								Number: 0,
+							},
+						},
 					},
 					Job:    "ci-foo",
 					Report: true,
@@ -730,6 +822,11 @@ func TestReport(t *testing.T) {
 					Spec: v1.ProwJobSpec{
 						Refs: &v1.Refs{
 							Repo: "bar",
+							Pulls: []v1.Pull{
+								{
+									Number: 0,
+								},
+							},
 						},
 						Job:    "ci-bar",
 						Report: true,
@@ -763,6 +860,11 @@ func TestReport(t *testing.T) {
 				Spec: v1.ProwJobSpec{
 					Refs: &v1.Refs{
 						Repo: "foo",
+						Pulls: []v1.Pull{
+							{
+								Number: 0,
+							},
+						},
 					},
 					Job:    "ci-foo",
 					Type:   v1.PresubmitJob,
@@ -789,6 +891,11 @@ func TestReport(t *testing.T) {
 					Spec: v1.ProwJobSpec{
 						Refs: &v1.Refs{
 							Repo: "bar",
+							Pulls: []v1.Pull{
+								{
+									Number: 0,
+								},
+							},
 						},
 						Job:    "ci-bar",
 						Type:   v1.PresubmitJob,
@@ -822,6 +929,11 @@ func TestReport(t *testing.T) {
 				Spec: v1.ProwJobSpec{
 					Refs: &v1.Refs{
 						Repo: "foo",
+						Pulls: []v1.Pull{
+							{
+								Number: 0,
+							},
+						},
 					},
 					Job:    "ci-foo",
 					Report: true,
@@ -847,6 +959,11 @@ func TestReport(t *testing.T) {
 					Spec: v1.ProwJobSpec{
 						Refs: &v1.Refs{
 							Repo: "bar",
+							Pulls: []v1.Pull{
+								{
+									Number: 0,
+								},
+							},
 						},
 						Job:    "ci-bar",
 						Report: true,
@@ -879,6 +996,11 @@ func TestReport(t *testing.T) {
 				Spec: v1.ProwJobSpec{
 					Refs: &v1.Refs{
 						Repo: "foo",
+						Pulls: []v1.Pull{
+							{
+								Number: 0,
+							},
+						},
 					},
 					Job:    "ci-foo",
 					Report: true,
@@ -904,6 +1026,11 @@ func TestReport(t *testing.T) {
 					Spec: v1.ProwJobSpec{
 						Refs: &v1.Refs{
 							Repo: "bar",
+							Pulls: []v1.Pull{
+								{
+									Number: 0,
+								},
+							},
 						},
 						Job:    "ci-bar",
 						Report: true,
@@ -939,6 +1066,11 @@ func TestReport(t *testing.T) {
 				Spec: v1.ProwJobSpec{
 					Refs: &v1.Refs{
 						Repo: "foo",
+						Pulls: []v1.Pull{
+							{
+								Number: 0,
+							},
+						},
 					},
 					Job:    "ci-foo",
 					Report: true,
@@ -970,6 +1102,11 @@ func TestReport(t *testing.T) {
 					Spec: v1.ProwJobSpec{
 						Refs: &v1.Refs{
 							Repo: "foo",
+							Pulls: []v1.Pull{
+								{
+									Number: 0,
+								},
+							},
 						},
 						Job:    "ci-foo",
 						Report: true,
@@ -1002,6 +1139,11 @@ func TestReport(t *testing.T) {
 				Spec: v1.ProwJobSpec{
 					Refs: &v1.Refs{
 						Repo: "foo",
+						Pulls: []v1.Pull{
+							{
+								Number: 0,
+							},
+						},
 					},
 					Job:    "ci-foo",
 					Report: true,
@@ -1027,6 +1169,11 @@ func TestReport(t *testing.T) {
 					Spec: v1.ProwJobSpec{
 						Refs: &v1.Refs{
 							Repo: "bar",
+							Pulls: []v1.Pull{
+								{
+									Number: 0,
+								},
+							},
 						},
 						Job:    "ci-bar",
 						Report: true,
@@ -1063,6 +1210,11 @@ func TestReport(t *testing.T) {
 					Type: v1.PresubmitJob,
 					Refs: &v1.Refs{
 						Repo: "foo",
+						Pulls: []v1.Pull{
+							{
+								Number: 0,
+							},
+						},
 					},
 					Job:    "ci-foo",
 					Report: true,
@@ -1094,6 +1246,11 @@ func TestReport(t *testing.T) {
 					Spec: v1.ProwJobSpec{
 						Refs: &v1.Refs{
 							Repo: "bar",
+							Pulls: []v1.Pull{
+								{
+									Number: 0,
+								},
+							},
 						},
 						Job:    "ci-bar",
 						Type:   v1.PresubmitJob,
@@ -1125,6 +1282,11 @@ func TestReport(t *testing.T) {
 					Spec: v1.ProwJobSpec{
 						Refs: &v1.Refs{
 							Repo: "foo",
+							Pulls: []v1.Pull{
+								{
+									Number: 0,
+								},
+							},
 						},
 						Job:    "ci-foo",
 						Type:   v1.PresubmitJob,
@@ -1166,6 +1328,11 @@ func TestReport(t *testing.T) {
 					Type: v1.PresubmitJob,
 					Refs: &v1.Refs{
 						Repo: "foo",
+						Pulls: []v1.Pull{
+							{
+								Number: 0,
+							},
+						},
 					},
 					Job:    "ci-foo",
 					Report: true,
@@ -1201,6 +1368,11 @@ func TestReport(t *testing.T) {
 					Spec: v1.ProwJobSpec{
 						Refs: &v1.Refs{
 							Repo: "bar",
+							Pulls: []v1.Pull{
+								{
+									Number: 0,
+								},
+							},
 						},
 						Job:    "ci-bar",
 						Type:   v1.PresubmitJob,
@@ -1236,6 +1408,11 @@ func TestReport(t *testing.T) {
 					Spec: v1.ProwJobSpec{
 						Refs: &v1.Refs{
 							Repo: "foo",
+							Pulls: []v1.Pull{
+								{
+									Number: 0,
+								},
+							},
 						},
 						Job:    "ci-foo",
 						Type:   v1.PresubmitJob,
@@ -1268,6 +1445,11 @@ func TestReport(t *testing.T) {
 					Spec: v1.ProwJobSpec{
 						Refs: &v1.Refs{
 							Repo: "foo",
+							Pulls: []v1.Pull{
+								{
+									Number: 0,
+								},
+							},
 						},
 						Job:    "ci-foo",
 						Type:   v1.PresubmitJob,
@@ -1306,6 +1488,11 @@ func TestReport(t *testing.T) {
 					Type: v1.PresubmitJob,
 					Refs: &v1.Refs{
 						Repo: "foo",
+						Pulls: []v1.Pull{
+							{
+								Number: 0,
+							},
+						},
 					},
 					Job:    "ci-foo",
 					Report: true,
@@ -1341,6 +1528,11 @@ func TestReport(t *testing.T) {
 					Spec: v1.ProwJobSpec{
 						Refs: &v1.Refs{
 							Repo: "bar",
+							Pulls: []v1.Pull{
+								{
+									Number: 0,
+								},
+							},
 						},
 						Job:    "ci-bar",
 						Type:   v1.PresubmitJob,
@@ -1376,6 +1568,11 @@ func TestReport(t *testing.T) {
 					Spec: v1.ProwJobSpec{
 						Refs: &v1.Refs{
 							Repo: "foo",
+							Pulls: []v1.Pull{
+								{
+									Number: 0,
+								},
+							},
 						},
 						Job:    "ci-foo",
 						Type:   v1.PresubmitJob,
@@ -1408,6 +1605,11 @@ func TestReport(t *testing.T) {
 					Spec: v1.ProwJobSpec{
 						Refs: &v1.Refs{
 							Repo: "foo",
+							Pulls: []v1.Pull{
+								{
+									Number: 0,
+								},
+							},
 						},
 						Job:    "ci-foo",
 						Type:   v1.PresubmitJob,
@@ -1439,6 +1641,11 @@ func TestReport(t *testing.T) {
 					Type: v1.PresubmitJob,
 					Refs: &v1.Refs{
 						Repo: "foo",
+						Pulls: []v1.Pull{
+							{
+								Number: 0,
+							},
+						},
 					},
 					Job:    "ci-foo",
 					Report: true,
@@ -1470,6 +1677,11 @@ func TestReport(t *testing.T) {
 				Spec: v1.ProwJobSpec{
 					Refs: &v1.Refs{
 						Repo: "foo",
+						Pulls: []v1.Pull{
+							{
+								Number: 0,
+							},
+						},
 					},
 					Job:    "ci-foo",
 					Report: true,
@@ -1491,7 +1703,12 @@ func TestReport(t *testing.T) {
 				allpj = append(allpj, pj)
 			}
 
-			reporter := &Client{gc: fgc, lister: fakectrlruntimeclient.NewFakeClient(allpj...)}
+			reporter := &Client{
+				gc:     fgc,
+				lister: fakectrlruntimeclient.NewFakeClient(allpj...),
+				prLocks: criercommonlib.NewShardedLock(semaphore.NewWeighted(1),
+					map[criercommonlib.SimplePull]*semaphore.Weighted{}),
+			}
 
 			shouldReport := reporter.ShouldReport(context.Background(), logrus.NewEntry(logrus.StandardLogger()), tc.pj)
 			if shouldReport != tc.expectReport {
