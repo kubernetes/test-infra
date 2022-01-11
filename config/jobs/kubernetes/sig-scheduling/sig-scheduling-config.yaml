@@ -1,0 +1,44 @@
+periodics:
+- interval: 6h
+  name: ci-kubernetes-kind-scheduling-multizone-serial
+  decorate: true
+  decoration_config:
+    timeout: 200m # allow plenty of time for a serial conformance run
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: "k8s.io/test-infra"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/krte:v20211217-ea95cec1d4-master
+      command:
+      - wrapper.sh
+      - bash
+      - -c
+      - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/k8s.io/test-infra/experiment/kind-multizone-e2e.sh
+      env:
+      - name: PARALLEL
+        value: "false"
+      - name: FOCUS
+        value: \[Conformance\]|Multi-AZ
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: "9000Mi"
+          cpu: 4000m
+  annotations:
+    testgrid-dashboards: sig-scheduling
+    testgrid-tab-name: sig-scheduling-kind, multizone
+    description: Runs tests against a Multizone Kubernetes in Docker cluster
+    testgrid-alert-email: antonio.ojea.garcia@gmail.com, acondor@google.com
