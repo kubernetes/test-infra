@@ -44,11 +44,25 @@ periodics:
         RESULT=$(echo $RESULT_UNFILTERED | jq \
         '{vulnerabilities: .vulnerabilities | map(select((.type != "license") and (.version !=  "0.0.0"))) | select(length > 0) }')
         if [[ ${RESULT} ]]; then
-          echo "Vulnerability filtering failed"
-          exit 1
-        else
-          echo "Scan completed"
+          CVE_IDs=$(echo $RESULT | jq '.vulnerabilities[].identifiers.CVE')
+          #convert string to array
+          CVE_IDs_array=(`echo ${CVE_IDs}`)
+          #TODO:Implement deduplication of CVE IDs in future
+          for i in "${CVE_IDs_array[@]}"
+          do
+              if [[ "$i" == *"CVE"* ]]; then
+                  #Look for presence of GitHub Issues for detected CVEs. If no issues are present, this CVE needs triage
+                  #Once the job fails, CVE is triaged by SIG Security and a tracking issue is created.
+                  #This will allow in the next run for the job to pass again
+                  TOTAL_COUNT=$(curl -H "Accept: application/vnd.github.v3+json" "https://api.github.com/search/issues?q=repo:kubernetes/kubernetes+${i}" | jq .total_count)
+                  if [[ $TOTAL_COUNT -eq 0 ]]; then
+                    echo "Vulnerability filtering failed"
+                    exit 1
+                  fi
+              fi
+          done
         fi
+        echo "Build time dependency scan completed"
 
         # container images scan
         echo "Fetch the list of k8s images"
