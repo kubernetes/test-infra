@@ -48,16 +48,16 @@ func TestCLALabels(t *testing.T) {
 			removedLabels: nil,
 		},
 		{
-			name:          "cla/linuxfoundation status pending has no effect",
-			context:       "cla/linuxfoundation",
+			name:          "EasyCLA status pending has no effect",
+			context:       "EasyCLA",
 			state:         "pending",
 			addedLabels:   nil,
 			removedLabels: nil,
 		},
 		{
-			name: "cla/linuxfoundation status success does not add/remove labels " +
+			name: "EasyCLA status success does not add/remove labels " +
 				"when not the head commit in a PR",
-			context:   "cla/linuxfoundation",
+			context:   "EasyCLA",
 			state:     "success",
 			statusSHA: "a",
 			issues: []github.Issue{
@@ -70,9 +70,9 @@ func TestCLALabels(t *testing.T) {
 			removedLabels: nil,
 		},
 		{
-			name: "cla/linuxfoundation status failure does not add/remove labels " +
+			name: "EasyCLA status failure does not add/remove labels " +
 				"when not the head commit in a PR",
-			context:   "cla/linuxfoundation",
+			context:   "EasyCLA",
 			state:     "failure",
 			statusSHA: "a",
 			issues: []github.Issue{
@@ -85,8 +85,8 @@ func TestCLALabels(t *testing.T) {
 			removedLabels: nil,
 		},
 		{
-			name:      "cla/linuxfoundation status on head commit of PR adds the cla-yes label when its state is \"success\"",
-			context:   "cla/linuxfoundation",
+			name:      "EasyCLA status on head commit of PR adds the cla-yes label when its state is \"success\"",
+			context:   "EasyCLA",
 			state:     "success",
 			statusSHA: "a",
 			issues: []github.Issue{
@@ -99,8 +99,8 @@ func TestCLALabels(t *testing.T) {
 			removedLabels: nil,
 		},
 		{
-			name:      "cla/linuxfoundation status on head commit of PR does nothing when pending",
-			context:   "cla/linuxfoundation",
+			name:      "EasyCLA status on head commit of PR does nothing when pending",
+			context:   "EasyCLA",
 			state:     "pending",
 			statusSHA: "a",
 			issues: []github.Issue{
@@ -113,8 +113,8 @@ func TestCLALabels(t *testing.T) {
 			removedLabels: nil,
 		},
 		{
-			name:      "cla/linuxfoundation status success removes \"cncf-cla: no\" label",
-			context:   "cla/linuxfoundation",
+			name:      "EasyCLA status success removes \"cncf-cla: no\" label",
+			context:   "EasyCLA",
 			state:     "success",
 			statusSHA: "a",
 			issues: []github.Issue{
@@ -127,8 +127,8 @@ func TestCLALabels(t *testing.T) {
 			removedLabels: []string{fmt.Sprintf("/#3:%s", labels.ClaNo)},
 		},
 		{
-			name:      "cla/linuxfoundation status failure removes \"cncf-cla: yes\" label",
-			context:   "cla/linuxfoundation",
+			name:      "EasyCLA status failure removes \"cncf-cla: yes\" label",
+			context:   "EasyCLA",
 			state:     "failure",
 			statusSHA: "a",
 			issues: []github.Issue{
@@ -195,7 +195,7 @@ func TestCheckCLA(t *testing.T) {
 		removedLabel string
 	}{
 		{
-			name:       "ignore non cla/linuxfoundation context",
+			name:       "ignore non EasyCLA context",
 			context:    "random/context",
 			state:      "success",
 			issueState: "open",
@@ -208,7 +208,7 @@ func TestCheckCLA(t *testing.T) {
 		},
 		{
 			name:       "ignore non open PRs",
-			context:    "cla/linuxfoundation",
+			context:    "EasyCLA",
 			state:      "success",
 			issueState: "closed",
 			SHA:        "sha",
@@ -220,7 +220,7 @@ func TestCheckCLA(t *testing.T) {
 		},
 		{
 			name:       "ignore non /check-cla comments",
-			context:    "cla/linuxfoundation",
+			context:    "EasyCLA",
 			state:      "success",
 			issueState: "open",
 			SHA:        "sha",
@@ -232,7 +232,7 @@ func TestCheckCLA(t *testing.T) {
 		},
 		{
 			name:       "do nothing on when status state is \"pending\"",
-			context:    "cla/linuxfoundation",
+			context:    "EasyCLA",
 			state:      "pending",
 			issueState: "open",
 			SHA:        "sha",
@@ -243,8 +243,8 @@ func TestCheckCLA(t *testing.T) {
 			},
 		},
 		{
-			name:       "cla/linuxfoundation status adds the cla-yes label when its state is \"success\"",
-			context:    "cla/linuxfoundation",
+			name:       "EasyCLA status adds the cla-yes label when its state is \"success\"",
+			context:    "EasyCLA",
 			state:      "success",
 			issueState: "open",
 			SHA:        "sha",
@@ -257,8 +257,8 @@ func TestCheckCLA(t *testing.T) {
 			addedLabel: fmt.Sprintf("/#3:%s", labels.ClaYes),
 		},
 		{
-			name:       "cla/linuxfoundation status adds the cla-yes label and removes cla-no label when its state is \"success\"",
-			context:    "cla/linuxfoundation",
+			name:       "EasyCLA status adds the cla-yes label and removes cla-no label when its state is \"success\"",
+			context:    "EasyCLA",
 			state:      "success",
 			issueState: "open",
 			SHA:        "sha",
@@ -273,8 +273,8 @@ func TestCheckCLA(t *testing.T) {
 			removedLabel: fmt.Sprintf("/#3:%s", labels.ClaNo),
 		},
 		{
-			name:       "cla/linuxfoundation status adds the cla-no label when its state is \"failure\"",
-			context:    "cla/linuxfoundation",
+			name:       "EasyCLA status adds the cla-no label when its state is \"failure\"",
+			context:    "EasyCLA",
 			state:      "failure",
 			issueState: "open",
 			SHA:        "sha",
@@ -287,8 +287,8 @@ func TestCheckCLA(t *testing.T) {
 			addedLabel: fmt.Sprintf("/#3:%s", labels.ClaNo),
 		},
 		{
-			name:       "cla/linuxfoundation status adds the cla-no label and removes cla-yes label when its state is \"failure\"",
-			context:    "cla/linuxfoundation",
+			name:       "EasyCLA status adds the cla-no label and removes cla-yes label when its state is \"failure\"",
+			context:    "EasyCLA",
 			state:      "failure",
 			issueState: "open",
 			SHA:        "sha",
@@ -303,8 +303,8 @@ func TestCheckCLA(t *testing.T) {
 			removedLabel: fmt.Sprintf("/#3:%s", labels.ClaYes),
 		},
 		{
-			name:       "cla/linuxfoundation status retains the cla-yes label and removes cla-no label when its state is \"success\"",
-			context:    "cla/linuxfoundation",
+			name:       "EasyCLA status retains the cla-yes label and removes cla-no label when its state is \"success\"",
+			context:    "EasyCLA",
 			state:      "success",
 			issueState: "open",
 			SHA:        "sha",
@@ -319,8 +319,8 @@ func TestCheckCLA(t *testing.T) {
 			removedLabel: fmt.Sprintf("/#3:%s", labels.ClaNo),
 		},
 		{
-			name:       "cla/linuxfoundation status retains the cla-no label and removes cla-yes label when its state is \"failure\"",
-			context:    "cla/linuxfoundation",
+			name:       "EasyCLA status retains the cla-no label and removes cla-yes label when its state is \"failure\"",
+			context:    "EasyCLA",
 			state:      "failure",
 			issueState: "open",
 			SHA:        "sha",
