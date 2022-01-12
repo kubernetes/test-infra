@@ -186,7 +186,7 @@ presubmits:
       description: Run Azure File e2e test with Azure File in-tree volume plugin in a Windows cluster with containerd runtime
 periodics:
 - name: ci-kubernetes-e2e-capz-master-containerd-windows
-  interval: 12h
+  interval: 3h
   decorate: true
   decoration_config:
     timeout: 4h
