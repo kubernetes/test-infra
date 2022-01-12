@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+include ../Makefile.base.mk
+# Makefile.base.mk requires REPO_ROOT to be set
+REPO_ROOT:=${CURDIR}/..
+
 IMG = gcr.io/k8s-testimages/kettle
 TAG := $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 
@@ -44,19 +48,16 @@ update-staging: get-cluster-credentials
 rollback: get-cluster-credentials
 	kubectl rollout undo deployments/kettle
 
-ensure-requirements3:
-	../hack/run-in-python-container.sh pip3 install -r requirements3.txt
-
-test-make-db: ensure-requirements3
+test-make-db: ensure-py-requirements3
 	../hack/run-in-python-container.sh ./kettle/make_db_test.py
 
-test-model: ensure-requirements3
+test-model: ensure-py-requirements3
 	../hack/run-in-python-container.sh ./kettle/model_test.py
 
-test-stream: ensure-requirements3
+test-stream: ensure-py-requirements3
 	../hack/run-in-python-container.sh ./kettle/stream_test.py
 
-test-make-json: ensure-requirements3
+test-make-json: ensure-py-requirements3
 	../hack/run-in-python-container.sh ./kettle/make_json_test.py
 
 test: test-make-db test-model test-stream test-make-json
