@@ -809,6 +809,23 @@ function dump_nodes_with_logexporter() {
   fi
 }
 
+# Writes node information that's available through the gcloud and kubectl API
+# surfaces to a nodes/ subdirectory of $report_dir.
+function dump_node_info() {
+  nodes_dir="${report_dir}/nodes"
+  mkdir -p "${nodes_dir}"
+
+  detect-node-names
+  if [[ -n "${NODE_NAMES:-}" ]]; then
+    printf "%s\n" "${NODE_NAMES[@]}" > "${nodes_dir}/node_names.txt"
+  fi
+  if [[ -n "${WINDOWS_NODE_NAMES:-}" ]]; then
+    printf "%s\n" "${WINDOWS_NODE_NAMES[@]}" > "${nodes_dir}/windows_node_names.txt"
+  fi
+
+  kubectl get nodes -o yaml > "${nodes_dir}/kubectl_get_nodes.yaml" || true
+}
+
 function detect_node_failures() {
   if ! [[ "${gcloud_supported_providers}" =~ ${KUBERNETES_PROVIDER} ]]; then
     return
@@ -882,6 +899,7 @@ function main() {
   fi
 
   dump_logs
+  dump_node_info
 
   if [[ "${DUMP_TO_GCS_ONLY:-}" == "true" ]] && [[ -n "${gcs_artifacts_dir}" ]]; then
     if [[ "$(ls -A ${report_dir})" ]]; then
