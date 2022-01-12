@@ -144,3 +144,23 @@ func (f *pathResolverFactory) PublishRemote(org, repo string) RemoteResolver {
 		return path.Join(f.baseDir, org, repo), nil
 	}
 }
+
+// cloneURIResolverFactory is for clients where we want the Central Remote to return the CloneURI
+// and do not care about a seprate publisher Remote.
+type cloneURIResolverFactory struct {
+	cloneURI *url.URL
+}
+
+func (f *cloneURIResolverFactory) CentralRemote(_, _ string) RemoteResolver {
+	return func() (string, error) {
+		return f.cloneURI.String(), nil
+	}
+}
+
+// Gerrit does not use forks the same way that github does. This will be left Unimplemented.
+// Implementation of Gerrit Interactor will use Central Remote but commit to different Refs.
+func (f *cloneURIResolverFactory) PublishRemote(_, _ string) RemoteResolver {
+	return func() (string, error) {
+		return "", errors.New("Not Implemented")
+	}
+}

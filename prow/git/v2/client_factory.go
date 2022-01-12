@@ -23,6 +23,8 @@ import (
 	"runtime"
 	"sync"
 
+	"net/url"
+
 	"github.com/sirupsen/logrus"
 	utilpointer "k8s.io/utils/pointer"
 )
@@ -55,6 +57,8 @@ type ClientFactoryOpts struct {
 	Host string
 	// UseSSH, defaults to false
 	UseSSH *bool
+	// CloneURI will use CloneURI Remote resolver if set.
+	CloneURI *url.URL
 	// The directory in which the cache should be
 	// created. Defaults to the "/var/tmp" on
 	// Linux and os.TempDir otherwise
@@ -93,6 +97,9 @@ func (cfo *ClientFactoryOpts) Apply(target *ClientFactoryOpts) {
 	if cfo.Username != nil {
 		target.Username = cfo.Username
 	}
+	if cfo.CloneURI != nil {
+		target.CloneURI = cfo.CloneURI
+	}
 }
 
 // ClientFactoryOpts allows to manipulate the options for a ClientFactory
@@ -129,7 +136,11 @@ func NewClientFactory(opts ...ClientFactoryOpt) (ClientFactory, error) {
 		return nil, err
 	}
 	var remotes RemoteResolverFactory
-	if o.UseSSH != nil && *o.UseSSH {
+	if o.CloneURI != nil {
+		remotes = &cloneURIResolverFactory{
+			cloneURI: o.CloneURI,
+		}
+	} else if o.UseSSH != nil && *o.UseSSH {
 		remotes = &sshRemoteResolverFactory{
 			host:     o.Host,
 			username: o.Username,
