@@ -99,7 +99,9 @@ type options struct {
 	upstream       string
 	upstreamParsed *url.URL
 
-	maxConcurrency int
+	maxConcurrency              int
+	requestThrottlingTime       uint
+	requestThrottlingTimeForGET uint
 
 	// pushGateway fields are used to configure pushing prometheus metrics.
 	pushGateway         string
@@ -139,6 +141,8 @@ func flagOptions() *options {
 	flag.IntVar(&o.port, "port", 8888, "Port to listen on.")
 	flag.StringVar(&o.upstream, "upstream", "https://api.github.com", "Scheme, host, and base path of reverse proxy upstream.")
 	flag.IntVar(&o.maxConcurrency, "concurrency", 25, "Maximum number of concurrent in-flight requests to GitHub.")
+	flag.UintVar(&o.requestThrottlingTime, "throttling-time-ms", 0, "Additional throttling mechanism which imposes time spacing between outgoing requests. Counted per organization. Has to be set together with --get-throttling-time-ms.")
+	flag.UintVar(&o.requestThrottlingTimeForGET, "get-throttling-time-ms", 0, "Additional throttling mechanism which imposes time spacing between outgoing GET requests. Counted per organization. Has to be set together with --throttling-time-ms.")
 	flag.StringVar(&o.pushGateway, "push-gateway", "", "If specified, push prometheus metrics to this endpoint.")
 	flag.DurationVar(&o.pushGatewayInterval, "push-gateway-interval", time.Minute, "Interval at which prometheus metrics are pushed.")
 	flag.StringVar(&o.logLevel, "log-level", "debug", fmt.Sprintf("Log level is one of %v.", logrus.AllLevels))
@@ -158,6 +162,10 @@ func main() {
 
 	if o.diskCacheDisableAuthHeaderPartitioning {
 		logrus.Warningf("The deprecated `--legacy-disable-disk-cache-partitions-by-auth-header` flags value is `true`. If you are a bigger Prow setup, you should copy your existing cache directory to the directory mentioned in the `%s` messages to warm up the partitioned-by-auth-header cache, then set the flag to false. If you are a smaller Prow setup or just started using ghproxy you can just unconditionally set it to `false`.", ghcache.LogMessageWithDiskPartitionFields)
+	}
+
+	if (o.requestThrottlingTime > 0 && o.requestThrottlingTimeForGET == 0) || (o.requestThrottlingTime == 0 && o.requestThrottlingTimeForGET > 0) {
+		logrus.Warningln("Flags `--throttling-time-ms` and `--get-throttling-time-ms` have to be set to non-zero value, otherwise throttling feature will be disabled.")
 	}
 
 	pprof.Instrument(o.instrumentationOptions)
@@ -182,11 +190,11 @@ func main() {
 func proxy(o *options, upstreamTransport http.RoundTripper, diskCachePruneInterval time.Duration) http.Handler {
 	var cache http.RoundTripper
 	if o.redisAddress != "" {
-		cache = ghcache.NewRedisCache(apptokenequalizer.New(upstreamTransport), o.redisAddress, o.maxConcurrency)
+		cache = ghcache.NewRedisCache(apptokenequalizer.New(upstreamTransport), o.redisAddress, o.maxConcurrency, o.requestThrottlingTime, o.requestThrottlingTimeForGET)
 	} else if o.dir == "" {
-		cache = ghcache.NewMemCache(apptokenequalizer.New(upstreamTransport), o.maxConcurrency)
+		cache = ghcache.NewMemCache(apptokenequalizer.New(upstreamTransport), o.maxConcurrency, o.requestThrottlingTime, o.requestThrottlingTimeForGET)
 	} else {
-		cache = ghcache.NewDiskCache(apptokenequalizer.New(upstreamTransport), o.dir, o.sizeGB, o.maxConcurrency, o.diskCacheDisableAuthHeaderPartitioning, diskCachePruneInterval)
+		cache = ghcache.NewDiskCache(apptokenequalizer.New(upstreamTransport), o.dir, o.sizeGB, o.maxConcurrency, o.diskCacheDisableAuthHeaderPartitioning, diskCachePruneInterval, o.requestThrottlingTime, o.requestThrottlingTimeForGET)
 		go diskMonitor(o.pushGatewayInterval, o.dir)
 	}
 
