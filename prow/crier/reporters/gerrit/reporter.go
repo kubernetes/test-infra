@@ -30,7 +30,6 @@ import (
 
 	"github.com/andygrunwald/go-gerrit"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/sync/semaphore"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
@@ -84,9 +83,9 @@ type gerritClient interface {
 
 // Client is a gerrit reporter client
 type Client struct {
-	gc      gerritClient
-	lister  ctrlruntimeclient.Reader
-	prLocks *criercommonlib.ShardedLock
+	gc          gerritClient
+	pjclientset ctrlruntimeclient.Client
+	prLocks     *criercommonlib.ShardedLock
 }
 
 // Job is the view of a prowjob scoped for a report
@@ -107,7 +106,7 @@ type JobReport struct {
 }
 
 // NewReporter returns a reporter client
-func NewReporter(cfg config.Getter, cookiefilePath string, projects map[string][]string, lister ctrlruntimeclient.Reader) (*Client, error) {
+func NewReporter(cfg config.Getter, cookiefilePath string, projects map[string][]string, pjclientset ctrlruntimeclient.Client) (*Client, error) {
 	gc, err := client.NewClient(projects)
 	if err != nil {
 		return nil, err
@@ -125,11 +124,9 @@ func NewReporter(cfg config.Getter, cookiefilePath string, projects map[string][
 	gc.Authenticate(cookiefilePath, "")
 
 	c := &Client{
-		gc:     gc,
-		lister: lister,
-		prLocks: criercommonlib.NewShardedLock(
-			semaphore.NewWeighted(1),
-			map[criercommonlib.SimplePull]*semaphore.Weighted{}),
+		gc:          gc,
+		pjclientset: pjclientset,
+		prLocks:     criercommonlib.NewShardedLock(),
 	}
 
 	c.prLocks.RunCleanup()
@@ -212,7 +209,7 @@ func (c *Client) ShouldReport(ctx context.Context, log *logrus.Entry, pj *v1.Pro
 		}
 
 		var pjs v1.ProwJobList
-		if err := c.lister.List(ctx, &pjs, ctrlruntimeclient.MatchingLabels(selector)); err != nil {
+		if err := c.pjclientset.List(ctx, &pjs, ctrlruntimeclient.MatchingLabels(selector)); err != nil {
 			log.WithError(err).Errorf("Cannot list prowjob with selector %v", selector)
 			return false
 		}
@@ -269,8 +266,11 @@ func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJo
 	// Gerrit reporter hasn't learned how to deduplicate itself from report yet,
 	// will need to block here. Unfortunately need to check after this section
 	// to ensure that the job was not already marked reported by other threads
-	// TODO(chaodaiG): remove postsubmit once
-	// https://github.com/kubernetes/test-infra/issues/22653 is fixed
+	// TODO(chaodaiG): postsubmit job technically doesn't know which PR it's
+	// from, currently it's associated with a PR in gerrit in a weird way, which
+	// needs to be fixed in
+	// https://github.com/kubernetes/test-infra/issues/22653, remove the
+	// PostsubmitJob check once it's fixed
 	if pj.Spec.Type == v1.PresubmitJob || pj.Spec.Type == v1.PostsubmitJob {
 		key, err := lockKeyForPJ(pj)
 		if err != nil {
@@ -290,7 +290,7 @@ func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJo
 		// already been reported by another worker, refetch this pj to make sure
 		// that no duplicate report is produced
 		pjObjKey := ctrlruntimeclient.ObjectKeyFromObject(pj)
-		if err := c.lister.Get(ctx, pjObjKey, pj); err != nil {
+		if err := c.pjclientset.Get(ctx, pjObjKey, pj); err != nil {
 			if apierrors.IsNotFound(err) {
 				// Job could be GC'ed or deleted for other reasons, not to
 				// report, this is not a prow error and should not be retried
@@ -301,7 +301,7 @@ func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJo
 			return nil, nil, fmt.Errorf("failed to get prowjob %s: %w", pjObjKey.String(), err)
 		}
 		if pj.Status.PrevReportStates[c.GetName()] == pj.Status.State {
-			logger.Trace("Already reported by other threads.")
+			logger.Info("Already reported by other threads.")
 			return nil, nil, nil
 		}
 	}
@@ -329,7 +329,7 @@ func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJo
 		}
 
 		var pjsOnRevisionWithSameLabel v1.ProwJobList
-		if err := c.lister.List(ctx, &pjsOnRevisionWithSameLabel, ctrlruntimeclient.MatchingLabels(selector)); err != nil {
+		if err := c.pjclientset.List(ctx, &pjsOnRevisionWithSameLabel, ctrlruntimeclient.MatchingLabels(selector)); err != nil {
 			logger.WithError(err).WithField("selector", selector).Errorf("Cannot list prowjob with selector")
 			return nil, nil, err
 		}
@@ -406,7 +406,22 @@ func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJo
 	}
 
 	logger.Infof("Review Complete, reported jobs: %s", jobNames(toReportJobs))
-	return toReportJobs, nil, nil
+
+	// If return here, the shardedLock will be released, and other threads that
+	// are from the same PR will still not understand that it's already
+	// reported, as the change of previous report state happens only after the
+	// returning of current function from the caller.
+	// Ideally the previous report state should be changed here.
+	logger.WithField("job-count", len(toReportJobs)).Info("Reported job(s), now will update pj(s).")
+	var err error
+	for _, pjob := range toReportJobs {
+		if err = criercommonlib.UpdateReportStateWithRetries(ctx, pjob, logger, c.pjclientset, c.GetName()); err != nil {
+			logger.WithError(err).Error("Failed to update report state on prowjob")
+		}
+	}
+
+	// Let caller know that we are done with this job.
+	return nil, nil, err
 }
 
 func jobNames(jobs []*v1.ProwJob) []string {

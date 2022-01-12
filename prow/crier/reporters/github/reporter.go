@@ -26,7 +26,6 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	"golang.org/x/sync/semaphore"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
@@ -58,10 +57,8 @@ func NewReporter(gc report.GitHubClient, cfg config.Getter, reportAgent v1.ProwJ
 		gc:          gc,
 		config:      cfg,
 		reportAgent: reportAgent,
-		prLocks: criercommonlib.NewShardedLock(
-			semaphore.NewWeighted(1),
-			map[criercommonlib.SimplePull]*semaphore.Weighted{}),
-		lister: lister,
+		prLocks:     criercommonlib.NewShardedLock(),
+		lister:      lister,
 	}
 	c.prLocks.RunCleanup()
 	return c

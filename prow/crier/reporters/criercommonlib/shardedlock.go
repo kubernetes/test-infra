@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright 2022 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -38,13 +38,18 @@ func NewSimplePull(org, repo string, number int) *SimplePull {
 
 // ShardedLock contains sharding information based on PRs
 type ShardedLock struct {
+	// semaphore is chosed over mutex, as Acquire from semaphore respects
+	// context timeout while mutex doesn't
 	mapLock *semaphore.Weighted
 	locks   map[SimplePull]*semaphore.Weighted
 }
 
 // NewShardedLock creates ShardedLock
-func NewShardedLock(mapLock *semaphore.Weighted, locks map[SimplePull]*semaphore.Weighted) *ShardedLock {
-	return &ShardedLock{mapLock: mapLock, locks: locks}
+func NewShardedLock() *ShardedLock {
+	return &ShardedLock{
+		mapLock: semaphore.NewWeighted(1),
+		locks:   map[SimplePull]*semaphore.Weighted{},
+	}
 }
 
 // GetLock aquires the lock for a PR
@@ -73,6 +78,11 @@ func (s *ShardedLock) Cleanup() {
 	defer s.mapLock.Release(1)
 
 	for key, lock := range s.locks {
+		// There is a very low chance of race condition, that two threads got
+		// different locks from the same PR, which would end up with duplicated
+		// report once. Since this is very complicated to fix and the impact is
+		// really low, would just keep it as is.
+		// For details see: https://github.com/kubernetes/test-infra/pull/20343
 		lock.Acquire(ctx, 1)
 		delete(s.locks, key)
 		lock.Release(1)
