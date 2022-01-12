@@ -80,6 +80,7 @@ type options struct {
 	strict                 bool
 	expensive              bool
 	includeDefaultWarnings bool
+	requireUniqueBasenames bool
 
 	github  flagutil.GitHubOptions
 	storage flagutil.StorageClientOptions
@@ -212,6 +213,7 @@ func (o *options) gatherOptions(flag *flag.FlagSet, args []string) error {
 	flag.BoolVar(&o.expensive, "expensive-checks", false, "If set, additional expensive warnings will be enabled")
 	flag.BoolVar(&o.strict, "strict", false, "If set, consider all warnings as errors.")
 	flag.BoolVar(&o.includeDefaultWarnings, "include-default-warnings", false, "If set force inclusion of default warning set. Normally this is inferred based on a lack of '--warnings' flags.")
+	flag.BoolVar(&o.requireUniqueBasenames, "require-unique-basenames", true, "Can be used to disable the unique basename check for job config files. Only disable the check if config_updater.use_full_path_as_key is enabled")
 	o.github.AddCustomizedFlags(flag, throttlerDefaults)
 	o.github.AllowAnonymous = true
 	o.config.AddFlags(flag)
@@ -361,7 +363,7 @@ func validate(o options) error {
 	unknownAllEnabled := o.warningEnabled(unknownFieldsAllWarning)
 	unknownEnabled := o.warningEnabled(unknownFieldsWarning)
 	if unknownAllEnabled {
-		if _, err := config.LoadStrict(o.config.ConfigPath, o.config.JobConfigPath, nil, ""); err != nil {
+		if _, err := config.LoadStrict(o.config.ConfigPath, o.config.JobConfigPath, nil, "", o.requireUniqueBasenames); err != nil {
 			errs = append(errs, err)
 		}
 	} else if unknownEnabled {

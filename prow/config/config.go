@@ -1309,24 +1309,24 @@ func (cfg *SlackReporter) DefaultAndValidate() error {
 }
 
 // Load loads and parses the config at path.
-func Load(prowConfig, jobConfig string, supplementalProwConfigDirs []string, supplementalProwConfigsFileNameSuffix string, additionals ...func(*Config) error) (c *Config, err error) {
-	return loadWithYamlOpts(nil, prowConfig, jobConfig, supplementalProwConfigDirs, supplementalProwConfigsFileNameSuffix, additionals...)
+func Load(prowConfig, jobConfig string, supplementalProwConfigDirs []string, supplementalProwConfigsFileNameSuffix string, requireUniqueBasenames bool, additionals ...func(*Config) error) (c *Config, err error) {
+	return loadWithYamlOpts(nil, prowConfig, jobConfig, supplementalProwConfigDirs, supplementalProwConfigsFileNameSuffix, requireUniqueBasenames, additionals...)
 }
 
 // LoadStrict loads and parses the config at path.
 // Unlike Load it unmarshalls yaml with strict parsing.
-func LoadStrict(prowConfig, jobConfig string, supplementalProwConfigDirs []string, supplementalProwConfigsFileNameSuffix string, additionals ...func(*Config) error) (c *Config, err error) {
-	return loadWithYamlOpts([]yaml.JSONOpt{yaml.DisallowUnknownFields}, prowConfig, jobConfig, supplementalProwConfigDirs, supplementalProwConfigsFileNameSuffix, additionals...)
+func LoadStrict(prowConfig, jobConfig string, supplementalProwConfigDirs []string, supplementalProwConfigsFileNameSuffix string, requireUniqueBasenames bool, additionals ...func(*Config) error) (c *Config, err error) {
+	return loadWithYamlOpts([]yaml.JSONOpt{yaml.DisallowUnknownFields}, prowConfig, jobConfig, supplementalProwConfigDirs, supplementalProwConfigsFileNameSuffix, requireUniqueBasenames, additionals...)
 }
 
-func loadWithYamlOpts(yamlOpts []yaml.JSONOpt, prowConfig, jobConfig string, supplementalProwConfigDirs []string, supplementalProwConfigsFileNameSuffix string, additionals ...func(*Config) error) (c *Config, err error) {
+func loadWithYamlOpts(yamlOpts []yaml.JSONOpt, prowConfig, jobConfig string, supplementalProwConfigDirs []string, supplementalProwConfigsFileNameSuffix string, requireUniqueBasenames bool, additionals ...func(*Config) error) (c *Config, err error) {
 	// we never want config loading to take down the prow components
 	defer func() {
 		if r := recover(); r != nil {
 			c, err = nil, fmt.Errorf("panic loading config: %v\n%s", r, string(debug.Stack()))
 		}
 	}()
-	c, err = loadConfig(prowConfig, jobConfig, supplementalProwConfigDirs, supplementalProwConfigsFileNameSuffix, yamlOpts...)
+	c, err = loadConfig(prowConfig, jobConfig, supplementalProwConfigDirs, supplementalProwConfigsFileNameSuffix, requireUniqueBasenames, yamlOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1349,7 +1349,7 @@ func loadWithYamlOpts(yamlOpts []yaml.JSONOpt, prowConfig, jobConfig string, sup
 }
 
 // ReadJobConfig reads the JobConfig yaml, but does not expand or validate it.
-func ReadJobConfig(jobConfig string, yamlOpts ...yaml.JSONOpt) (JobConfig, error) {
+func ReadJobConfig(jobConfig string, requireUniqueBasenames bool, yamlOpts ...yaml.JSONOpt) (JobConfig, error) {
 	stat, err := os.Stat(jobConfig)
 	if err != nil {
 		return JobConfig{}, err
@@ -1368,8 +1368,10 @@ func ReadJobConfig(jobConfig string, yamlOpts ...yaml.JSONOpt) (JobConfig, error
 	if err != nil {
 		return JobConfig{}, fmt.Errorf("failed to create `%s` parser: %w", ProwIgnoreFileName, err)
 	}
+
 	// we need to ensure all config files have unique basenames,
-	// since updateconfig plugin will use basename as a key in the configmap
+	// since updateconfig plugin will use basename as a key in the configmap unless
+	// `use_full_path_as_key` is set in the plugin configuration
 	uniqueBasenames := sets.String{}
 
 	jobConfigCount := 0
@@ -1403,11 +1405,13 @@ func ReadJobConfig(jobConfig string, yamlOpts ...yaml.JSONOpt) (JobConfig, error
 			return nil
 		}
 
-		base := filepath.Base(path)
-		if uniqueBasenames.Has(base) {
-			return fmt.Errorf("duplicated basename is not allowed: %s", base)
+		if requireUniqueBasenames {
+			base := filepath.Base(path)
+			if uniqueBasenames.Has(base) {
+				return fmt.Errorf("duplicated basename is not allowed: %s", base)
+			}
+			uniqueBasenames.Insert(base)
 		}
-		uniqueBasenames.Insert(base)
 
 		fileStart := time.Now()
 		var subConfig JobConfig
@@ -1431,7 +1435,7 @@ func ReadJobConfig(jobConfig string, yamlOpts ...yaml.JSONOpt) (JobConfig, error
 }
 
 // loadConfig loads one or multiple config files and returns a config object.
-func loadConfig(prowConfig, jobConfig string, additionalProwConfigDirs []string, supplementalProwConfigsFileNameSuffix string, yamlOpts ...yaml.JSONOpt) (*Config, error) {
+func loadConfig(prowConfig, jobConfig string, additionalProwConfigDirs []string, supplementalProwConfigsFileNameSuffix string, requireUniqueBasenames bool, yamlOpts ...yaml.JSONOpt) (*Config, error) {
 	stat, err := os.Stat(prowConfig)
 	if err != nil {
 		return nil, err
@@ -1559,7 +1563,7 @@ func loadConfig(prowConfig, jobConfig string, additionalProwConfigDirs []string,
 		return &nc, nil
 	}
 
-	jc, err := ReadJobConfig(jobConfig, yamlOpts...)
+	jc, err := ReadJobConfig(jobConfig, requireUniqueBasenames, yamlOpts...)
 	if err != nil {
 		return nil, err
 	}

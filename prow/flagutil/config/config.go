@@ -38,6 +38,7 @@ type ConfigOptions struct {
 	// JobConfigPathFlagName allows to override the flag name for the job config. Defaults
 	// to 'job-config-path'.
 	JobConfigPathFlagName                 string
+	RequireUniqueBasenames                bool
 	SupplementalProwConfigDirs            flagutil.Strings
 	SupplementalProwConfigsFileNameSuffix string
 }
@@ -51,6 +52,7 @@ func (o *ConfigOptions) AddFlags(fs *flag.FlagSet) {
 	}
 	fs.StringVar(&o.ConfigPath, o.ConfigPathFlagName, o.ConfigPath, "Path to the prowconfig")
 	fs.StringVar(&o.JobConfigPath, o.JobConfigPathFlagName, o.JobConfigPath, "Path to the job config")
+	fs.BoolVar(&o.RequireUniqueBasenames, "require-unique-basenames", true, "Can be used to disable the unique basename check for job config files. Only disable the check if config_updater.use_full_path_as_key is enabled")
 	fs.Var(&o.SupplementalProwConfigDirs, "supplemental-prow-config-dir", "An additional directory from which to load prow configs. Can be used for config sharding but only supports a subset of the config. The flag can be passed multiple times.")
 	fs.StringVar(&o.SupplementalProwConfigsFileNameSuffix, "supplemental-prow-configs-filename", "_prowconfig.yaml", "Suffix for additional prow configs. Only files with this name will be considered. Deprecated and mutually exclusive with --supplemental-prow-configs-filename-suffix")
 	fs.StringVar(&o.SupplementalProwConfigsFileNameSuffix, "supplemental-prow-configs-filename-suffix", "_prowconfig.yaml", "Suffix for additional prow configs. Only files with this name will be considered")
@@ -83,5 +85,5 @@ func (o *ConfigOptions) ConfigAgent(reuse ...*config.Agent) (*config.Agent, erro
 }
 
 func (o *ConfigOptions) ConfigAgentWithAdditionals(ca *config.Agent, additionals []func(*config.Config) error) (*config.Agent, error) {
-	return ca, ca.Start(o.ConfigPath, o.JobConfigPath, o.SupplementalProwConfigDirs.Strings(), o.SupplementalProwConfigsFileNameSuffix, additionals...)
+	return ca, ca.Start(o.ConfigPath, o.JobConfigPath, o.SupplementalProwConfigDirs.Strings(), o.SupplementalProwConfigsFileNameSuffix, o.RequireUniqueBasenames, additionals...)
 }

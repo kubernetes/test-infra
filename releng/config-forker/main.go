@@ -417,7 +417,7 @@ func main() {
 	if err := validateOptions(o); err != nil {
 		log.Fatalln(err)
 	}
-	c, err := config.ReadJobConfig(o.jobConfig)
+	c, err := config.ReadJobConfig(o.jobConfig, false)
 	if err != nil {
 		log.Fatalf("Failed to load job config: %v\n", err)
 	}
