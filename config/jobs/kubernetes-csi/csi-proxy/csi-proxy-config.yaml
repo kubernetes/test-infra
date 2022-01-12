@@ -57,7 +57,7 @@ presubmits:
         - --check-leaked-resources
         - --cluster=
         - --extract=ci/latest
-        - --gcp-zone=$GCP_ZONE
+        - --gcp-zone=us-west1-b
         - --provider=gce
         - --gcp-nodes=1
         - --test=false
