@@ -93,6 +93,7 @@ func TestFlags(t *testing.T) {
 					JobConfigPathFlagName:                 "job-config-path",
 					ConfigPath:                            "yo",
 					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+					RequireUniqueBasenames:                true,
 				},
 				dryRun:                 false,
 				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),

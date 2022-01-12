@@ -135,7 +135,7 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 
-	prowConfig, err = prow_config.Load(*prowPath, *jobPath, nil, "")
+	prowConfig, err = prow_config.Load(*prowPath, *jobPath, nil, "", false)
 	if err != nil {
 		fmt.Printf("Could not load prow configs: %v\n", err)
 		os.Exit(1)

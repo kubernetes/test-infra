@@ -255,7 +255,7 @@ deck:
 			t.Fatalf("fail to write spyglass config: %v", err)
 		}
 
-		cfg, err := Load(spyglassConfig, "", nil, "")
+		cfg, err := Load(spyglassConfig, "", nil, "", false)
 		if (err != nil) != tc.expectError {
 			t.Fatalf("tc %s: expected error: %v, got: %v, error: %v", tc.name, tc.expectError, (err != nil), err)
 		}
@@ -936,14 +936,14 @@ periodics:
 			// all errors in Load should also apply in LoadStrict
 			// some errors in LoadStrict will not apply in Load
 			tc.expectStrictError = tc.expectStrictError || tc.expectError
-			_, err := LoadStrict(prowConfig, "", nil, "")
+			_, err := LoadStrict(prowConfig, "", nil, "", false)
 			if tc.expectStrictError && err == nil {
 				t.Errorf("tc %s: Expect error for LoadStrict, but got nil", tc.name)
 			} else if !tc.expectStrictError && err != nil {
 				t.Fatalf("tc %s: Expect no error for LoadStrict, but got error %v", tc.name, err)
 			}
 
-			cfg, err := Load(prowConfig, "", nil, "")
+			cfg, err := Load(prowConfig, "", nil, "", false)
 			if tc.expectError && err == nil {
 				t.Errorf("tc %s: Expect error for Load, but got nil", tc.name)
 			} else if !tc.expectError && err != nil {
@@ -1056,7 +1056,7 @@ gerrit:
 				t.Fatalf("fail to write prow config: %v", err)
 			}
 
-			cfg, err := Load(prowConfig, "", nil, "")
+			cfg, err := Load(prowConfig, "", nil, "", false)
 			if tc.expectError && err == nil {
 				t.Errorf("tc %s: Expect error, but got nil", tc.name)
 			} else if !tc.expectError && err != nil {
@@ -3180,7 +3180,7 @@ postsubmits:
 				}
 			}
 
-			cfg, err := Load(prowConfig, jobConfig, nil, "")
+			cfg, err := Load(prowConfig, jobConfig, nil, "", false)
 			if tc.expectError && err == nil {
 				t.Errorf("tc %s: Expect error, but got nil", tc.name)
 			} else if !tc.expectError && err != nil {
@@ -3360,7 +3360,7 @@ bar_jobs.yaml`,
 				}
 			}
 
-			cfg, err := ReadJobConfig(jobConfigDir)
+			cfg, err := ReadJobConfig(jobConfigDir, false)
 			if err != nil {
 				t.Fatalf("Unexpected error reading job config: %v.", err)
 			}
@@ -3618,7 +3618,7 @@ github_reporter:
 			t.Fatalf("fail to write prow config: %v", err)
 		}
 
-		cfg, err := Load(prowConfig, "", nil, "")
+		cfg, err := Load(prowConfig, "", nil, "", false)
 		if tc.expectError && err == nil {
 			t.Errorf("tc %s: Expect error, but got nil", tc.name)
 		} else if !tc.expectError && err != nil {
@@ -3812,7 +3812,7 @@ tide:
 			t.Fatalf("fail to write prow config: %v", err)
 		}
 
-		cfg, err := Load(prowConfig, "", nil, "")
+		cfg, err := Load(prowConfig, "", nil, "", false)
 		if tc.expectError && err == nil {
 			t.Errorf("tc %s: Expect error, but got nil", tc.name)
 		} else if !tc.expectError && err != nil {
@@ -7440,7 +7440,7 @@ func loadConfigYaml(prowConfigYaml string, t *testing.T, supplementalProwConfigs
 		}
 	}
 
-	return Load(prowConfig, "", supplementalProwConfigDirs, "_prowconfig.yaml")
+	return Load(prowConfig, "", supplementalProwConfigDirs, "_prowconfig.yaml", false)
 }
 
 func TestGenYamlDocs(t *testing.T) {

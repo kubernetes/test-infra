@@ -713,7 +713,7 @@ presubmits:
 				}
 			}
 			// Test validation
-			_, err = config.LoadStrict(prowConfigFile, jobConfigDir, nil, "")
+			_, err = config.LoadStrict(prowConfigFile, jobConfigDir, nil, "", false)
 			if (err != nil) != tc.expectedErr {
 				if tc.expectedErr {
 					t.Error("Expected an error, but did not receive one.")
@@ -1439,6 +1439,7 @@ func TestOptions(t *testing.T) {
 				"--exclude-warning=ok-if-unknown-warning",
 				"--strict=true",
 				"--expensive-checks=false",
+				"--require-unique-basenames=false",
 			},
 			expectedOptions: &options{
 				config: configflagutil.ConfigOptions{
@@ -1447,6 +1448,7 @@ func TestOptions(t *testing.T) {
 					ConfigPath:                            "prow/config.yaml",
 					JobConfigPath:                         "config/jobs/org/job.yaml",
 					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+					RequireUniqueBasenames:                false,
 				},
 				pluginsConfig: pluginsflagutil.PluginOptions{
 					PluginConfigPath:                         "prow/plugins/plugin.yaml",
@@ -1598,7 +1600,7 @@ func TestValidateInRepoConfig(t *testing.T) {
 			t.Errorf("failed to close tempFile: %v", err)
 		}
 
-		cfg, err := config.Load(tempConfig.Name(), "", nil, "")
+		cfg, err := config.Load(tempConfig.Name(), "", nil, "", false)
 		if err != nil {
 			t.Fatalf("failed to load config: %v", err)
 		}

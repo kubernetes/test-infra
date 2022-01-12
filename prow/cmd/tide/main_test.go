@@ -89,6 +89,7 @@ func Test_gatherOptions(t *testing.T) {
 					JobConfigPathFlagName:                 "job-config-path",
 					ConfigPath:                            "yo",
 					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
+					RequireUniqueBasenames:                true,
 				},
 				dryRun:                 true,
 				syncThrottle:           800,
