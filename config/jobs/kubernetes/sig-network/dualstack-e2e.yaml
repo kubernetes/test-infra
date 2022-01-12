@@ -96,7 +96,7 @@ periodics:
       # Suggested fix - https://github.com/kubernetes/kubernetes/pull/94382
       # Skipping "HostPort validates that there is no conflict between pods with same hostPort but different hostIP and protocol" because of kubenet bug in HostPort impl
       # Skipping Feature:SCTPConnectivity tests because the vhd used for tests doesn't have sctp enabled
-      - --test_args=--ginkgo.focus=\[Feature:IPv6DualStack\]|\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|\[Feature:SCTPConnectivity\]|Should.recreate.evicted.statefulset|HostPort.validates.that.there.is.no.conflict.between.pods.with.same.hostPort.but.different.hostIP.and.protocol
+      - --test_args=--ginkgo.focus=\[Feature:IPv6DualStack\]|\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|\[Feature:SCTPConnectivity\]|Should.recreate.evicted.statefulset|HostPort.validates.that.there.is.no.conflict.between.pods.with.same.hostPort.but.different.hostIP.and.protocol|should.have.ipv4.and.ipv6.node.podCIDRs
       - --ginkgo-parallel=1
       securityContext:
         privileged: true
@@ -149,7 +149,7 @@ periodics:
       # Suggested fix - https://github.com/kubernetes/kubernetes/pull/94382
       # Skipping "HostPort validates that there is no conflict between pods with same hostPort but different hostIP and protocol" because of kubenet bug in HostPort impl
       # Skipping Feature:SCTPConnectivity tests because the vhd used for tests doesn't have sctp enabled
-      - --test_args=--ginkgo.focus=\[Feature:IPv6DualStack\]|\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|\[Feature:SCTPConnectivity\]|Should.recreate.evicted.statefulset|HostPort.validates.that.there.is.no.conflict.between.pods.with.same.hostPort.but.different.hostIP.and.protocol
+      - --test_args=--ginkgo.focus=\[Feature:IPv6DualStack\]|\[Conformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|\[Feature:SCTPConnectivity\]|Should.recreate.evicted.statefulset|HostPort.validates.that.there.is.no.conflict.between.pods.with.same.hostPort.but.different.hostIP.and.protocol|should.have.ipv4.and.ipv6.node.podCIDRs
       - --ginkgo-parallel=1
       securityContext:
         privileged: true
