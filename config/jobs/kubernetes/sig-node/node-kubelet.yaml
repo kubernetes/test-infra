@@ -113,34 +113,3 @@ periodics:
     testgrid-tab-name: kubelet-gce-e2e-swap-fedora
     testgrid-alert-email: ehashman@redhat.com, ikema@google.com
     description: Executes E2E suite with swap enabled on Fedora
-
-# TODO: migrate performance special config tests to containerd/cri-o
-#- name: ci-kubernetes-node-kubelet-performance-test
-#  interval: 12h
-#  labels:
-#    preset-service-account: "true"
-#    preset-k8s-ssh: "true"
-#  spec:
-#    containers:
-#      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220124-681f3531ec-master
-#        args:
-#          - --repo=k8s.io/kubernetes=master
-#          - --timeout=90
-#          - --root=/go/src
-#          - --scenario=kubernetes_e2e
-#          - --
-#          - --deployment=node
-#          - --gcp-project-type=node-e2e-project
-#          - --gcp-zone=us-west1-b
-#          - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/perf-image-config.yaml
-#          - --node-test-args= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/" --server-start-timeout=420s
-#          - --node-tests=true
-#          - --provider=gce
-#          - --test_args=--nodes=1
-#          - --timeout=60m
-#        env:
-#          - name: GOPATH
-#            value: /go
-#  annotations:
-#    testgrid-dashboards: sig-node-kubelet
-#    testgrid-tab-name: node-performance-test
