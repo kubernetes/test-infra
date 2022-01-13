@@ -26,10 +26,10 @@ ZONE_BUILD    ?= us-central1-f
 JOB_NAMESPACE ?= test-pods
 
 update-config: get-cluster-credentials
-	kubectl create configmap config --from-file=config.yaml=config.yaml --dry-run -o yaml | kubectl replace configmap config -f -
+	kubectl create configmap config --from-file=config.yaml=config.yaml --dry-run=client -o yaml | kubectl replace configmap config -f -
 
 update-plugins: get-cluster-credentials
-	kubectl create configmap plugins --from-file=plugins.yaml=plugins.yaml --dry-run -o yaml | kubectl replace configmap plugins -f -
+	kubectl create configmap plugins --from-file=plugins.yaml=plugins.yaml --dry-run=client -o yaml | kubectl replace configmap plugins -f -
 
 deploy-prow: get-cluster-credentials
 	kubectl apply -f ./cluster/prowjob-crd/legacy/prowjob-schemaless_customresourcedefinition.yaml
@@ -37,6 +37,9 @@ deploy-prow: get-cluster-credentials
 
 deploy-build: get-build-cluster-credentials
 	kubectl apply -f ./cluster/build/
+
+update-boskos-resources: get-build-cluster-credentials
+	kubectl create configmap resources --from-file=config=./cluster/build/boskos-resources.yaml --dry-run=client -o yaml | kubectl --namespace=test-pods replace configmap resources -f -
 
 deploy-monitoring: get-cluster-credentials
 	$(MAKE) -C ./cluster/monitoring apply
