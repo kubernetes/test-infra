@@ -214,7 +214,7 @@ accomplish this, eg:
 
 ```sh
 # from test-infra root
-$ bazel run //releng/config-forker -- \
+$ go run ./releng/config-forker \
   --job-config $(pwd)/config/jobs \
   --version 1.15 \
   --output $(pwd)/config/jobs/kubernetes/sig-release/release-branch-jobs/1.15.yaml

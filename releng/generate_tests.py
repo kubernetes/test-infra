@@ -20,7 +20,7 @@ Usage example:
 
   In $GOPATH/src/k8s.io/test-infra,
 
-  $ bazel run //releng:generate_tests -- \
+  $ make -C releng generate-tests \
       --yaml-config-path=releng/test_config.yaml \
 """
 

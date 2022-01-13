@@ -17,15 +17,4 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-if [[ -n "${BUILD_WORKSPACE_DIRECTORY:-}" ]]; then # Running inside bazel
-  echo "Updating job configs..." >&2
-elif ! command -v bazel &>/dev/null; then
-  echo "Install bazel at https://bazel.build" >&2
-  exit 1
-else
-  (
-    set -o xtrace
-    bazel run //releng:generate_tests -- --yaml-config-path=releng/test_config.yaml
-  )
-  exit 0
-fi
+make -C releng ARGS="--yaml-config-path=releng/test_config.yaml" generate-tests
