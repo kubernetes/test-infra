@@ -1,5 +1,4 @@
-#!/usr/bin/env bash
-# Copyright 2021 The Kubernetes Authors.
+# Copyright 2022 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,14 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -o errexit
-set -o nounset
-set -o pipefail
+include ../Makefile.base.mk
+# Makefile.base.mk requires REPO_ROOT to be set
+REPO_ROOT:=${CURDIR}/..
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd -P)"
-cd "${REPO_ROOT}"
+# ARGS can be overriden by calling make
+ARGS ?= ""
 
-make -C kettle test
-make -C metrics test
-make -C releng test
-make -C hack test-coalesce
+run-coalesce: ensure-py-requirements3
+	../hack/run-in-python-container.sh ./hack/coalesce.py ${ARGS}
+.PHONY: run-compare-yaml
+
+test-coalesce: ensure-py-requirements3
+	../hack/run-in-python-container.sh ./hack/coalesce_test.py
+.PHONY: test-coalesce
