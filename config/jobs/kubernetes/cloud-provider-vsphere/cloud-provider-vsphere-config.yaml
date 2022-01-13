@@ -122,7 +122,7 @@ presubmits:
 
   - name: pull-cloud-provider-vsphere-verify-staticcheck
     always_run: false
-    run_if_changed: '\.go$|hack/check-staticcheck\.sh'
+    run_if_changed: '\.go$|hack/check-staticcheck\.sh$|go.mod'
     decorate: true
     path_alias: k8s.io/cloud-provider-vsphere
     spec:
