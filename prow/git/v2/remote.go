@@ -148,12 +148,12 @@ func (f *pathResolverFactory) PublishRemote(org, repo string) RemoteResolver {
 // cloneURIResolverFactory is for clients where we want the Central Remote to return the CloneURI
 // and do not care about a seprate publisher Remote.
 type cloneURIResolverFactory struct {
-	cloneURI *url.URL
+	cloneURI string
 }
 
 func (f *cloneURIResolverFactory) CentralRemote(_, _ string) RemoteResolver {
 	return func() (string, error) {
-		return f.cloneURI.String(), nil
+		return f.cloneURI, nil
 	}
 }
 
@@ -161,6 +161,6 @@ func (f *cloneURIResolverFactory) CentralRemote(_, _ string) RemoteResolver {
 // Implementation of Gerrit Interactor will use Central Remote but commit to different Refs.
 func (f *cloneURIResolverFactory) PublishRemote(_, _ string) RemoteResolver {
 	return func() (string, error) {
-		return "", errors.New("Not Implemented")
+		return "", errors.New("not implemented")
 	}
 }

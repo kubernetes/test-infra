@@ -138,7 +138,7 @@ func NewClientFactory(opts ...ClientFactoryOpt) (ClientFactory, error) {
 	var remotes RemoteResolverFactory
 	if o.CloneURI != nil {
 		remotes = &cloneURIResolverFactory{
-			cloneURI: o.CloneURI,
+			cloneURI: o.CloneURI.String(),
 		}
 	} else if o.UseSSH != nil && *o.UseSSH {
 		remotes = &sshRemoteResolverFactory{
