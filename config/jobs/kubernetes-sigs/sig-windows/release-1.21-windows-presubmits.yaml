@@ -129,11 +129,11 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: azuredisk-csi-driver
-      base_ref: master
+      base_ref: release-1.9
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211217-ea95cec1d4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211217-ea95cec1d4-1.21
         command:
         - runner.sh
         - kubetest
