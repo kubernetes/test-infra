@@ -128,7 +128,7 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: azuredisk-csi-driver
-      base_ref: master
+      base_ref: release-1.9
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
