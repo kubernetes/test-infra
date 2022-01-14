@@ -37,7 +37,7 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-node-size=e2-small
       - --gcp-nodes=5000
-      - --gcp-project=k8s-infra-e2e-scale-5k-project
+      - --gcp-project-type=scalability-scale-project
       - --gcp-ssh-proxy-instance-name=gce-scale-cluster-master
       - --gcp-zone=us-east1-b
       - --ginkgo-parallel=40
@@ -100,7 +100,7 @@ periodics:
       - --extract=ci/latest-fast
       - --extract-ci-bucket=k8s-release-dev
       - --gcp-nodes=5000
-      - --gcp-project=k8s-infra-e2e-scale-5k-project
+      - --gcp-project-type=scalability-scale-project
       - --gcp-zone=us-east1-b
       - --provider=gce
       - --metadata-sources=cl2-metadata.json
