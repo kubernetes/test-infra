@@ -17,6 +17,7 @@ limitations under the License.
 package git
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
@@ -70,6 +71,8 @@ type ClientFactoryOpts struct {
 	// The censor to use. Not needed for anonymous
 	// actions.
 	Censor Censor
+	// Path to the httpCookieFile that will be used to authenticate client
+	CookieFilePath string
 }
 
 // Apply allows to use a ClientFactoryOpts as Opt
@@ -97,6 +100,9 @@ func (cfo *ClientFactoryOpts) Apply(target *ClientFactoryOpts) {
 	}
 	if cfo.CloneURI != "" {
 		target.CloneURI = cfo.CloneURI
+	}
+	if cfo.CookieFilePath != "" {
+		target.CookieFilePath = cfo.CookieFilePath
 	}
 }
 
@@ -151,14 +157,15 @@ func NewClientFactory(opts ...ClientFactoryOpt) (ClientFactory, error) {
 		}
 	}
 	return &clientFactory{
-		cacheDir:     cacheDir,
-		cacheDirBase: *o.CacheDirBase,
-		remotes:      remotes,
-		gitUser:      o.GitUser,
-		censor:       o.Censor,
-		masterLock:   &sync.Mutex{},
-		repoLocks:    map[string]*sync.Mutex{},
-		logger:       logrus.WithField("client", "git"),
+		cacheDir:       cacheDir,
+		cacheDirBase:   *o.CacheDirBase,
+		remotes:        remotes,
+		gitUser:        o.GitUser,
+		censor:         o.Censor,
+		masterLock:     &sync.Mutex{},
+		repoLocks:      map[string]*sync.Mutex{},
+		logger:         logrus.WithField("client", "git"),
+		cookieFilePath: o.CookieFilePath,
 	}, nil
 }
 
@@ -181,10 +188,11 @@ func NewLocalClientFactory(baseDir string, gitUser GitUserGetter, censor Censor)
 }
 
 type clientFactory struct {
-	remotes RemoteResolverFactory
-	gitUser GitUserGetter
-	censor  Censor
-	logger  *logrus.Entry
+	remotes        RemoteResolverFactory
+	gitUser        GitUserGetter
+	censor         Censor
+	logger         *logrus.Entry
+	cookieFilePath string
 
 	// cacheDir is the root under which cached clones of repos are created
 	cacheDir string
@@ -227,6 +235,12 @@ func (c *clientFactory) bootstrapClients(org, repo, dir string) (cacher, cloner,
 			executor: executor,
 			logger:   logger,
 		},
+	}
+	if len(c.cookieFilePath) > 0 {
+		err := client.Config("http.cookiefile", c.cookieFilePath)
+		if err != nil {
+			return nil, nil, nil, fmt.Errorf("unable to configure http.cookeifile: %w", err)
+		}
 	}
 	return client, client, client, nil
 }
