@@ -1,0 +1,33 @@
+.autocomplete-suggestions {
+     text-align: left;
+     cursor: default;
+     background: #fff;
+    /* core styles should not be changed */
+     position: absolute;
+     display: none;
+     z-index: 9999;
+     overflow: hidden;
+     overflow-y: auto;
+     box-sizing: border-box;
+}
+ .autocomplete-suggestion {
+     position: relative;
+     cursor: pointer;
+     padding: .5em .4em;
+     line-height: 23px;
+     white-space: nowrap;
+     overflow: hidden;
+     text-overflow: ellipsis;
+     font-size: 1.02em;
+     color: #333;
+}
+.autocomplete-suggestion .context{
+     color: rgba(0,0,0,.5);
+}
+ .autocomplete-suggestion b {
+     font-weight: normal;
+     color: #1f8dd6;
+}
+ .autocomplete-suggestion.selected {
+     background: #f0f0f0;
+}

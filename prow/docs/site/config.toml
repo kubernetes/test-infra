@@ -1,0 +1,5 @@
+title = 'My New Hugo Site'
+baseURL = 'https://prow.sigs.k8s.io'
+languageCode = 'en-us'
+
+theme = "ace-documentation"
