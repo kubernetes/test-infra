@@ -13,11 +13,11 @@ approvers:
   - derekwaynecarr
   - sjenning
   - mrunalp
+  - klueska
   - ehashman
   - SergeyKanzhelev
 emeritus_approvers:
   - dashpole
-  - klueska
   - yujuhong
 labels:
   - sig/node
