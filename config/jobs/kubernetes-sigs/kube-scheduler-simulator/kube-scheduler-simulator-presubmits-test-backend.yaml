@@ -1,0 +1,35 @@
+# sigs.k8s.io/kube-scheduler-simulator presubmits
+presubmits:
+  kubernetes-sigs/kube-scheduler-simulator:
+  - name: pull-kube-scheduler-simulator-test-dependencies
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-kube-scheduler-simulator-test-dependencies
+    decorate: true
+    path_alias: sigs.k8s.io/kube-scheduler-simulator
+    branches:
+    - ^master$
+    always_run: false
+    spec:
+      containers:
+      - image: golang:1.17
+        command:
+        - make
+        args:
+        - mod-download
+  - name: pull-kube-scheduler-simulator-run-tests
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-kube-scheduler-simulator-run-tests
+    decorate: true
+    path_alias: sigs.k8s.io/kube-scheduler-simulator
+    branches:
+    - ^master$
+    always_run: false
+    spec:
+      containers:
+      - image: golang:1.17
+        command:
+        - make
+        args:
+        - test
