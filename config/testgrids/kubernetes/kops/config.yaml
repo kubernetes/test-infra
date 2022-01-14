@@ -22,7 +22,6 @@ dashboard_groups:
   - kops-distro-u2004arm64
   - kops-distro-u2110
   - kops-distro-u2204
-  - kops-k8s-1.18
   - kops-k8s-1.19
   - kops-k8s-1.20
   - kops-k8s-1.21
@@ -58,7 +57,6 @@ dashboards:
 - name: kops-distro-u2004arm64
 - name: kops-distro-u2110
 - name: kops-distro-u2204
-- name: kops-k8s-1.18
 - name: kops-k8s-1.19
 - name: kops-k8s-1.20
 - name: kops-k8s-1.21
