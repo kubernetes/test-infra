@@ -45,12 +45,16 @@ for release in "$@"; do
   dockershim_api_model="https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_staging.json"
   containerd_api_model="https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_master.json"
   repolist_label="preset-windows-repo-list-master: \"true\""
+  preset_label=$(echo -e "\n      preset-windows-private-registry-cred: \"true\"")
+  dockerconfigfile="--docker-config-file=\$(DOCKER_CONFIG_FILE) "
 
   case ${release} in
     1.20)
       dockershim_api_model="https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_1_20.json"
       containerd_api_model="https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_1_20.json"
       repolist_label="preset-windows-repo-list: \"true\""
+      dockerconfigfile=""
+      preset_label=""
       ;;
     1.21)
       dockershim_api_model="https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_1_21.json"
@@ -88,8 +92,7 @@ presubmits:
       preset-azure-windows: "true"
       ${repolist_label}
       preset-k8s-ssh: "true"
-      preset-dind-enabled: "true"
-      preset-windows-private-registry-cred: "true"
+      preset-dind-enabled: "true"${preset_label}
     spec:
       containers:
       - image: ${kubekins_e2e_image}-${release}
@@ -119,7 +122,7 @@ presubmits:
         - --aksengine-deploy-custom-k8s
         - --aksengine-agentpoolcount=2
         # Specific test args
-        - --test_args=--node-os-distro=windows --docker-config-file=\$(DOCKER_CONFIG_FILE) --ginkgo.focus=${ginkgo_focus} --ginkgo.skip=${ginkgo_skip}
+        - --test_args=--node-os-distro=windows ${dockerconfigfile}--ginkgo.focus=${ginkgo_focus} --ginkgo.skip=${ginkgo_skip}
         - --ginkgo-parallel=4
         securityContext:
           privileged: true
@@ -140,8 +143,7 @@ $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-aks-engine-w
       preset-azure-windows: "true"
       ${repolist_label}
       preset-k8s-ssh: "true"
-      preset-dind-enabled: "true"
-      preset-windows-private-registry-cred: "true"
+      preset-dind-enabled: "true"${preset_label}
     spec:
       containers:
       - image: ${kubekins_e2e_image}-${release}
@@ -171,7 +173,7 @@ $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-aks-engine-w
         - --aksengine-deploy-custom-k8s
         - --aksengine-agentpoolcount=2
         # Specific test args
-        - --test_args=--node-os-distro=windows --docker-config-file=\$(DOCKER_CONFIG_FILE) --ginkgo.focus=${ginkgo_focus} --ginkgo.skip=${ginkgo_skip}
+        - --test_args=--node-os-distro=windows ${dockerconfigfile}--ginkgo.focus=${ginkgo_focus} --ginkgo.skip=${ginkgo_skip}
         - --ginkgo-parallel=4
         securityContext:
           privileged: true
@@ -195,7 +197,7 @@ $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-aks-engine-w
     extra_refs:
     - org: kubernetes-sigs
       repo: azuredisk-csi-driver
-      base_ref: master
+      base_ref: release-1.9
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
