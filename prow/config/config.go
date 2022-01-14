@@ -216,14 +216,28 @@ type InRepoConfig struct {
 	AllowedClusters map[string][]string `json:"allowed_clusters,omitempty"`
 }
 
+func SplitRepoName(repo string) (string, string, error) {
+	// Normalize repo name to remove http:// or https://, this is the case for some
+	// of the gerrit instances.
+	repo = strings.TrimPrefix(repo, "http://")
+	repo = strings.TrimPrefix(repo, "https://")
+	s := strings.SplitN(repo, "/", 2)
+	if len(s) != 2 {
+		return "", "", fmt.Errorf("repo %s cannot be split into org/repo", repo)
+	}
+	return s[0], s[1], nil
+}
+
 // InRepoConfigEnabled returns whether InRepoConfig is enabled for a given repository.
 func (c *Config) InRepoConfigEnabled(identifier string) bool {
+
+	org, repo, err := SplitRepoName(identifier)
 	if c.InRepoConfig.Enabled[identifier] != nil {
-		return *c.InRepoConfig.Enabled[identifier]
+		return *c.InRepoConfig.Enabled[strings.Join([]string{org, repo}, "/")]
 	}
-	identifierSlashSplit := strings.Split(identifier, "/")
-	if len(identifierSlashSplit) == 2 && c.InRepoConfig.Enabled[identifierSlashSplit[0]] != nil {
-		return *c.InRepoConfig.Enabled[identifierSlashSplit[0]]
+	// If err then it cannot be split.
+	if c.InRepoConfig.Enabled[org] != nil && err == nil {
+		return *c.InRepoConfig.Enabled[org]
 	}
 	if c.InRepoConfig.Enabled["*"] != nil {
 		return *c.InRepoConfig.Enabled["*"]
@@ -233,15 +247,17 @@ func (c *Config) InRepoConfigEnabled(identifier string) bool {
 
 // InRepoConfigAllowsCluster determines if a given cluster may be used for a given repository
 func (c *Config) InRepoConfigAllowsCluster(clusterName, repoIdentifier string) bool {
-	for _, allowedCluster := range c.InRepoConfig.AllowedClusters[repoIdentifier] {
+	org, repo, err := SplitRepoName(repoIdentifier)
+
+	for _, allowedCluster := range c.InRepoConfig.AllowedClusters[strings.Join([]string{org, repo}, "/")] {
 		if allowedCluster == clusterName {
 			return true
 		}
 	}
 
-	identifierSlashSplit := strings.Split(repoIdentifier, "/")
-	if len(identifierSlashSplit) == 2 {
-		for _, allowedCluster := range c.InRepoConfig.AllowedClusters[identifierSlashSplit[0]] {
+	// If err then it cannot be split.
+	if err == nil {
+		for _, allowedCluster := range c.InRepoConfig.AllowedClusters[org] {
 			if allowedCluster == clusterName {
 				return true
 			}
