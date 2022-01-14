@@ -2,6 +2,9 @@
 presubmits:
   kubernetes-sigs/kube-scheduler-simulator:
   - name: pull-kube-scheduler-simulator-get-dependencies
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-kube-scheduler-simulator-get-dependencies
     decorate: true
     path_alias: sigs.k8s.io/kube-scheduler-simulator
     branches:
@@ -15,6 +18,9 @@ presubmits:
         args:
         - mod-download
   - name: pull-kube-scheduler-simulator-install-tools
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-kube-scheduler-simulator-install-tools
     decorate: true
     path_alias: sigs.k8s.io/kube-scheduler-simulator
     branches:
@@ -28,6 +34,9 @@ presubmits:
         args:
         - tools
   - name: pull-kube-scheduler-simulator-lint
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-kube-scheduler-simulator-lint
     decorate: true
     path_alias: sigs.k8s.io/kube-scheduler-simulator
     branches:
@@ -41,6 +50,9 @@ presubmits:
         args:
         - lint
   - name: lint-frontend-with-yarn
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: lint-frontend-with-yarn
     decorate: true
     path_alias: sigs.k8s.io/kube-scheduler-simulator
     branches:

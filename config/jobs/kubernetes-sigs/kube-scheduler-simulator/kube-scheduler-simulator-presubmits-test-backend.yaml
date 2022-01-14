@@ -2,6 +2,9 @@
 presubmits:
   kubernetes-sigs/kube-scheduler-simulator:
   - name: pull-kube-scheduler-simulator-test-dependencies
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-kube-scheduler-simulator-test-dependencies
     decorate: true
     path_alias: sigs.k8s.io/kube-scheduler-simulator
     branches:
@@ -15,6 +18,9 @@ presubmits:
         args:
         - mod-download
   - name: pull-kube-scheduler-simulator-run-tests
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-kube-scheduler-simulator-run-tests
     decorate: true
     path_alias: sigs.k8s.io/kube-scheduler-simulator
     branches:
