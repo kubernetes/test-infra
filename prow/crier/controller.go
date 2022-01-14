@@ -205,14 +205,24 @@ func (r *reconciler) reconcile(ctx context.Context, log *logrus.Entry, req recon
 	}
 
 	log.WithField("job-count", len(pjs)).Info("Reported job(s), now will update pj(s).")
+	var lastErr error
 	for _, pjob := range pjs {
 		if err := r.updateReportStateWithRetries(ctx, pjob, log); err != nil {
 			log.WithError(err).Error("Failed to update report state on prowjob")
-			return nil, err
+			// The error above is alreay logged, so it would be duplicated
+			// effort to combine all errors to return, only capture the last
+			// error should be sufficient.
+			lastErr = err
 		}
 	}
 
-	return nil, nil
+	if pj.Status.CompletionTime != nil {
+		latency := time.Now().Unix() - pj.Status.CompletionTime.Unix()
+		crierMetrics.latency.WithLabelValues(r.reporter.GetName()).Observe(float64(latency))
+		log.WithField("latency", latency).Debug("Report latency.")
+	}
+
+	return nil, lastErr
 }
 
 func (r *reconciler) shouldHandle(pj *prowv1.ProwJob) bool {
