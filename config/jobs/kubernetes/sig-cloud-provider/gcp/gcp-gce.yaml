@@ -463,52 +463,6 @@ periodics:
     description: Uses kubetest to run e2e tests (-Slow|Serial|Disruptive|Flaky|Feature) against a cluster created with cluster/kube-up.sh
 
 - interval: 120m
-  name: ci-kubernetes-e2e-ubuntu-gce
-  cluster: k8s-infra-prow-build
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-      - args:
-          - --timeout=100
-          - --bare
-          - --scenario=kubernetes_e2e
-          - --
-          - --check-leaked-resources
-          - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
-          - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-2004-focal-v20200423
-          - --env=KUBE_GCE_MASTER_PROJECT=ubuntu-os-cloud
-          - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
-          - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2004-focal-v20200423
-          - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
-          - --env=KUBE_CONTAINER_RUNTIME=docker
-          - --extract=ci/latest-fast
-          - --extract-ci-bucket=k8s-release-dev
-          - --gcp-master-image=ubuntu
-          - --gcp-node-image=ubuntu
-          - --gcp-nodes=4
-          - --gcp-zone=us-west1-b
-          - --ginkgo-parallel=30
-          - --provider=gce
-          - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-          - --timeout=80m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211217-ea95cec1d4-master
-        resources:
-          limits:
-            cpu: 2
-            memory: 6Gi
-          requests:
-            cpu: 2
-            memory: 6Gi
-  annotations:
-    testgrid-dashboards: sig-release-master-informing, google-gce, google-gci
-    testgrid-tab-name: gce-ubuntu-master-default
-    testgrid-num-failures-to-alert: '6'
-    testgrid-alert-email: release-team@kubernetes.io
-    description: Uses kubetest to run e2e tests (-Slow|Serial|Disruptive|Flaky|Feature) against a cluster (ubuntu based) created with cluster/kube-up.sh
-
-- interval: 120m
   name: ci-kubernetes-e2e-ubuntu-gce-containerd
   cluster: k8s-infra-prow-build
   labels:
