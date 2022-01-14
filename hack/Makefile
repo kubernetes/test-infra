@@ -16,7 +16,7 @@ include ../Makefile.base.mk
 # Makefile.base.mk requires REPO_ROOT to be set
 REPO_ROOT:=${CURDIR}/..
 
-# ARGS can be overriden by calling make
+# ARGS can be overridden by calling make
 ARGS ?= ""
 
 run-coalesce: ensure-py-requirements3
