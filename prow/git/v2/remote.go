@@ -144,3 +144,21 @@ func (f *pathResolverFactory) PublishRemote(org, repo string) RemoteResolver {
 		return path.Join(f.baseDir, org, repo), nil
 	}
 }
+
+// Publish Remote will not be used by Gerrit, but cloneURIResolverFactory can be used
+// by github when CentralRemote == PublishRemote == CloneURI so both methods will return CloneURI
+type cloneURIResolverFactory struct {
+	cloneURI string
+}
+
+func (f *cloneURIResolverFactory) CentralRemote(_, _ string) RemoteResolver {
+	return func() (string, error) {
+		return f.cloneURI, nil
+	}
+}
+
+func (f *cloneURIResolverFactory) PublishRemote(_, _ string) RemoteResolver {
+	return func() (string, error) {
+		return f.cloneURI, nil
+	}
+}
