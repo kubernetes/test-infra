@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright 2016 The Kubernetes Authors.
 #
@@ -23,39 +23,39 @@ import verify_boilerplate
 
 class TestBoilerplate(unittest.TestCase):
 
-  def setUp(self):
-    self.old_cwd = os.getcwd()
-    if os.getenv('TEST_WORKSPACE'): # Running in bazel
-      os.chdir('verify/boilerplate')
-    os.chdir('test/')
-    self.old_out = sys.stdout
-    sys.stdout = io.StringIO()
+    def setUp(self):
+        self.old_cwd = os.getcwd()
+        if os.getenv('TEST_WORKSPACE'): # Running in bazel
+            os.chdir('verify/boilerplate')
+        os.chdir(os.path.join(os.path.dirname(__file__), 'test/'))
+        self.old_out = sys.stdout
+        sys.stdout = io.StringIO()
 
-  def tearDown(self):
-    sys.stdout = self.old_out
-    os.chdir(self.old_cwd)
+    def tearDown(self):
+        sys.stdout = self.old_out
+        os.chdir(self.old_cwd)
 
-  def test_boilerplate(self):
+    def test_boilerplate(self):
 
-    class Args(object):
-      def __init__(self):
-        self.filenames = []
-        self.rootdir = '.'
-        self.boilerplate_dir = '../'
-        self.skip = []
-        self.verbose = True
+        class Args():
+            def __init__(self):
+                self.filenames = []
+                self.rootdir = '.'
+                self.boilerplate_dir = '../'
+                self.skip = []
+                self.verbose = True
 
-    verify_boilerplate.ARGS = Args()
-    with self.assertRaises(SystemExit):
-        verify_boilerplate.main()
+        verify_boilerplate.ARGS = Args()
+        with self.assertRaises(SystemExit):
+            verify_boilerplate.main()
 
-    output = sys.stdout.getvalue()
-    expected = '\n'.join(verify_boilerplate.nonconforming_lines([
-        './fail.go',
-        './fail.py',
-    ])) + '\n' # add trailing newline
+        output = sys.stdout.getvalue()
+        expected = '\n'.join(verify_boilerplate.nonconforming_lines([
+            './fail.go',
+            './fail.py',
+        ])) + '\n' # add trailing newline
 
-    self.assertEqual(output, expected)
+        self.assertEqual(output, expected)
 
 
 if __name__ == '__main__':

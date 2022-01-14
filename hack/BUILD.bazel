@@ -218,12 +218,12 @@ test_suite(
     name = "verify-all",
     tests = [
         ":verify-linters",
-        # Gofmt and golangci-lint have been migrated to make rules, if desired run
+        # Gofmt, golangci-lint, and boilerplate have been migrated to make rules, if desired run
         # bazel test @io_k8s_repo_infra//hack:verify-gofmt
         # bazel test @io_k8s_repo_infra//hack:verify-golangci-lint
+        # bazel test @io_k8s_repo_infra//hack:verify-boilerplate
         # Ref: https://github.com/kubernetes/test-infra/issues/23796
         "@io_k8s_repo_infra//hack:verify-bazel",
-        "@io_k8s_repo_infra//hack:verify-boilerplate",
         "@io_k8s_repo_infra//hack:verify-deps",
     ],
 )
