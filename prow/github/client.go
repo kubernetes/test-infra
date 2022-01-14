@@ -47,6 +47,8 @@ import (
 	"k8s.io/test-infra/prow/version"
 )
 
+var allowedDryRunPostPaths = regexp.MustCompile(`(?m)/app/installations/\d+/access_tokens`)
+
 type timeClient interface {
 	Sleep(time.Duration)
 	Until(time.Time) time.Duration
@@ -1005,7 +1007,7 @@ func (c *client) requestRaw(r *request) (int, []byte, error) {
 }
 
 func (c *client) requestRawWithContext(ctx context.Context, r *request) (int, []byte, error) {
-	if c.fake || (c.dry && r.method != http.MethodGet) {
+	if c.fake || c.dry && (r.method != http.MethodGet && (!allowedDryRunPostPaths.MatchString(r.path) && r.method == http.MethodPost)) {
 		return r.exitCodes[0], nil, nil
 	}
 	resp, err := c.requestRetryWithContext(ctx, r.method, r.path, r.accept, r.org, r.requestBody)
@@ -4975,10 +4977,6 @@ func (c *client) ListAppInstallations() ([]AppInstallation, error) {
 func (c *client) getAppInstallationToken(installationId int64) (*AppInstallationToken, error) {
 	durationLogger := c.log("AppInstallationToken")
 	defer durationLogger()
-
-	if c.dry {
-		return nil, fmt.Errorf("not requesting GitHub App access_token in dry-run mode")
-	}
 
 	var token AppInstallationToken
 	if _, err := c.request(&request{
