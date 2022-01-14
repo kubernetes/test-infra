@@ -44,11 +44,13 @@ for release in "$@"; do
   branch_name="release-${release}"
   dockershim_api_model="https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_staging.json"
   containerd_api_model="https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_master.json"
+  repolist_label="preset-windows-repo-list-master: \"true\""
 
   case ${release} in
     1.20)
       dockershim_api_model="https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_1_20.json"
       containerd_api_model="https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_1_20.json"
+      repolist_label="preset-windows-repo-list: \"true\""
       ;;
     1.21)
       dockershim_api_model="https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_1_21.json"
@@ -84,7 +86,7 @@ presubmits:
       preset-service-account: "true"
       preset-azure-cred: "true"
       preset-azure-windows: "true"
-      preset-windows-repo-list-master: "true"
+      ${repolist_label}
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
       preset-windows-private-registry-cred: "true"
@@ -136,7 +138,7 @@ $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-aks-engine-w
       preset-service-account: "true"
       preset-azure-cred: "true"
       preset-azure-windows: "true"
-      preset-windows-repo-list-master: "true"
+      ${repolist_label}
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
       preset-windows-private-registry-cred: "true"
