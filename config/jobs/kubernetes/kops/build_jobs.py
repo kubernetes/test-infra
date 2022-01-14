@@ -836,11 +836,10 @@ def generate_versions():
             publish_version_marker='gs://kops-ci/bin/latest-ci-green.txt',
         )
     ]
-    for version in ['1.23', '1.22', '1.21', '1.20', '1.19', '1.18']:
-        distro = 'deb9' if version == '1.17' else 'u2004'
+    for version in ['1.23', '1.22', '1.21', '1.20', '1.19']:
         results.append(
             build_test(
-                distro=distro,
+                distro='u2004',
                 k8s_version=version,
                 irsa=version >= '1.22',
                 kops_channel='alpha',
