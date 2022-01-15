@@ -27,7 +27,7 @@ var (
 		latency: prometheus.NewHistogramVec(prometheus.HistogramOpts{
 			Name:    "crier_report_latency",
 			Help:    "Histogram of time spent reporting, calculated by the time difference between job completion and end of reporting.",
-			Buckets: []float64{1, 10, 20, 30, 60, 120, 300, 600, 1800, 3600},
+			Buckets: []float64{1, 10, 20, 30, 60, 120, 180, 300, 600, 1200, 1800, 2700, 3600, 5400, 7200},
 		}, []string{
 			"reporter",
 		}),
