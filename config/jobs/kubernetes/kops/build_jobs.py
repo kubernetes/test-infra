@@ -411,7 +411,7 @@ def generate_grid():
                                        k8s_version=k8s_version,
                                        kops_version=kops_version,
                                        networking=networking,
-                                       irsa=k8s_version >= '1.22',
+                                       irsa=False,
                                        container_runtime=container_runtime)
                         )
 
