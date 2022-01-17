@@ -691,6 +691,13 @@ func (m *mergeChecker) repoMethods(orgRepo config.OrgRepo) (map[github.PullReque
 		if err != nil {
 			return nil, err
 		}
+		logrus.WithFields(logrus.Fields{
+			"org":              orgRepo.Org,
+			"repo":             orgRepo.Repo,
+			"AllowMergeCommit": fullRepo.AllowMergeCommit,
+			"AllowSquashMerge": fullRepo.AllowSquashMerge,
+			"AllowRebaseMerge": fullRepo.AllowRebaseMerge,
+		}).Debug("GetRepo returns these values for repo methods")
 		repoMethods = map[github.PullRequestMergeType]bool{
 			github.MergeMerge:  fullRepo.AllowMergeCommit,
 			github.MergeSquash: fullRepo.AllowSquashMerge,

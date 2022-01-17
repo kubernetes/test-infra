@@ -264,6 +264,7 @@ func (sc *statusController) expectedStatus(log *logrus.Entry, queryMap *config.Q
 	if reason, err := sc.mergeChecker.isAllowed(pr); err != nil {
 		return "", "", fmt.Errorf("error checking if merge is allowed: %w", err)
 	} else if reason != "" {
+		log.WithField("reason", reason).Debug("The PR is not mergeable")
 		return github.StatusError, fmt.Sprintf(statusNotInPool, " "+reason), nil
 	}
 
