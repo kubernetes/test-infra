@@ -39,7 +39,7 @@ after they have been reviewed. All job configs are located in [`config/jobs`]
 ## Other Tools
 
 - [`boskos`](/boskos) manages pools of resources; our CI leases GCP projects from these pools
-- [`experiment/`](/experiment) is a catchall directory for one-shot tools or scripts
+- [`experiment`](/experiment) is a catchall directory for one-shot tools or scripts
 - [`gcsweb`](/gcsweb) is a UI we use to display test artifacts stored in public GCS buckets
 - [`ghproxy`](/ghproxy) is a GitHub-aware reverse proxy cache to help keep our GitHub API token usage within rate limits
 - [`gopherage`](/gopherage) is a tool for manipulating Go coverage files
