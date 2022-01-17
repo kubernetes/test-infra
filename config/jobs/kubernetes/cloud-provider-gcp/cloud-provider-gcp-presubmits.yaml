@@ -15,7 +15,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211217-ea95cec1d4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220117-99a00602a5-master
         command:
         - /bin/bash
         args:
@@ -39,7 +39,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211217-ea95cec1d4-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220117-99a00602a5-master
           command:
             - runner.sh
             - ./tools/verify-all.sh
@@ -60,7 +60,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211217-ea95cec1d4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220117-99a00602a5-master
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true

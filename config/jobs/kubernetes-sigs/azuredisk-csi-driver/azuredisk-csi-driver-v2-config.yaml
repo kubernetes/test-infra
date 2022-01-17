@@ -10,7 +10,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211217-ea95cec1d4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220117-99a00602a5-master
         command:
         - runner.sh
         args:
@@ -36,7 +36,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211217-ea95cec1d4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220117-99a00602a5-master
         command:
         - runner.sh
         args:
@@ -61,7 +61,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211217-ea95cec1d4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220117-99a00602a5-master
         command:
         - runner.sh
         args:
@@ -89,7 +89,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211217-ea95cec1d4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220117-99a00602a5-master
         command:
         - runner.sh
         args:
@@ -125,7 +125,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211217-ea95cec1d4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220117-99a00602a5-master
         command:
         - runner.sh
         - kubetest
@@ -179,7 +179,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211217-ea95cec1d4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220117-99a00602a5-master
         command:
         - runner.sh
         - kubetest
@@ -234,7 +234,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211217-ea95cec1d4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220117-99a00602a5-master
         command:
         - runner.sh
         - kubetest
@@ -292,7 +292,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211217-ea95cec1d4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220117-99a00602a5-master
         command:
         - runner.sh
         - kubetest
@@ -352,7 +352,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211217-ea95cec1d4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220117-99a00602a5-master
         command:
         - runner.sh
         - kubetest
@@ -400,7 +400,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211217-ea95cec1d4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220117-99a00602a5-master
         command:
         - runner.sh
         args:

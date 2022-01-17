@@ -38,7 +38,7 @@ EOF
 }
 
 # we need to define the full image URL so it can be autobumped
-tmp="gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211217-ea95cec1d4-master"
+tmp="gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220117-99a00602a5-master"
 kubekins_e2e_image="${tmp/\-master/}"
 installCSIdrivers=""
 
