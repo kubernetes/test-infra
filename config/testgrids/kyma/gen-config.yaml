@@ -209,15 +209,6 @@ dashboards:
     test_group_name: kyma-gke-nightly-rel21
   - code_search_url_template:
       url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
-    description: 'prowjob_name: post-rel21-kyma-gke-release-upgrade'
-    name: post-rel21-kyma-gke-release-upgrade
-    open_bug_template:
-      url: https://github.com/kyma-project/kyma/issues/
-    open_test_template:
-      url: https://status.build.kyma-project.io/view/gs/<gcs_prefix>/<changelist>
-    test_group_name: post-rel21-kyma-gke-release-upgrade
-  - code_search_url_template:
-      url: https://github.com/kyma-project/kyma/compare/<start-custom-0>...<end-custom-0>
     description: 'prowjob_name: post-rel21-kyma-integration-k3d'
     name: post-rel21-kyma-integration-k3d
     open_bug_template:
@@ -480,9 +471,6 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: kyma-prow-logs/logs/post-rel20-kyma-release-candidate
   name: post-rel20-kyma-release-candidate
-- days_of_results: 90
-  gcs_prefix: kyma-prow-logs/logs/post-rel21-kyma-gke-release-upgrade
-  name: post-rel21-kyma-gke-release-upgrade
 - days_of_results: 60
   gcs_prefix: kyma-prow-logs/logs/post-rel21-kyma-integration-k3d
   name: post-rel21-kyma-integration-k3d
