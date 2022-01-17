@@ -15,7 +15,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211217-ea95cec1d4-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220117-99a00602a5-master
         args:
         - "--job=$(JOB_NAME)"
         - "--root=/go/src"
@@ -104,7 +104,7 @@ periodics:
     preset-kind-volume-mounts: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211217-ea95cec1d4-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220117-99a00602a5-master
       args:
       - "--job=$(JOB_NAME)"
       - "--root=/go/src"
