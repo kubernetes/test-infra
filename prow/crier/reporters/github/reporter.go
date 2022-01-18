@@ -26,12 +26,12 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
-	"golang.org/x/sync/semaphore"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/crier/reporters/criercommonlib"
 	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/github/report"
 	"k8s.io/test-infra/prow/kube"
@@ -47,61 +47,8 @@ type Client struct {
 	gc          report.GitHubClient
 	config      config.Getter
 	reportAgent v1.ProwJobAgent
-	prLocks     *shardedLock
+	prLocks     *criercommonlib.ShardedLock
 	lister      ctrlruntimeclient.Reader
-}
-
-type simplePull struct {
-	org, repo string
-	number    int
-}
-
-type shardedLock struct {
-	mapLock *semaphore.Weighted
-	locks   map[simplePull]*semaphore.Weighted
-}
-
-func (s *shardedLock) getLock(ctx context.Context, key simplePull) (*semaphore.Weighted, error) {
-	if err := s.mapLock.Acquire(ctx, 1); err != nil {
-		return nil, err
-	}
-	defer s.mapLock.Release(1)
-	if _, exists := s.locks[key]; !exists {
-		s.locks[key] = semaphore.NewWeighted(1)
-	}
-	return s.locks[key], nil
-}
-
-// cleanup deletes all locks by acquiring first
-// the mapLock and then each individual lock before
-// deleting it. The individual lock must be acquired
-// because otherwise it may be held, we delete it from
-// the map, it gets recreated and acquired and two
-// routines report in parallel for the same job.
-// Note that while this function is running, no new
-// presubmit reporting can happen, as we hold the mapLock.
-func (s *shardedLock) cleanup() {
-	ctx := context.Background()
-	s.mapLock.Acquire(ctx, 1)
-	defer s.mapLock.Release(1)
-
-	for key, lock := range s.locks {
-		lock.Acquire(ctx, 1)
-		delete(s.locks, key)
-		lock.Release(1)
-	}
-}
-
-// runCleanup asynchronously runs the cleanup once per hour.
-func (s *shardedLock) runCleanup() {
-	go func() {
-		for range time.Tick(time.Hour) {
-			logrus.Debug("Starting to clean up presubmit locks")
-			startTime := time.Now()
-			s.cleanup()
-			logrus.WithField("duration", time.Since(startTime).String()).Debug("Finished cleaning up presubmit locks")
-		}
-	}()
 }
 
 // NewReporter returns a reporter client
@@ -110,13 +57,10 @@ func NewReporter(gc report.GitHubClient, cfg config.Getter, reportAgent v1.ProwJ
 		gc:          gc,
 		config:      cfg,
 		reportAgent: reportAgent,
-		prLocks: &shardedLock{
-			mapLock: semaphore.NewWeighted(1),
-			locks:   map[simplePull]*semaphore.Weighted{},
-		},
-		lister: lister,
+		prLocks:     criercommonlib.NewShardedLock(),
+		lister:      lister,
 	}
-	c.prLocks.runCleanup()
+	c.prLocks.RunCleanup()
 	return c
 }
 
@@ -172,7 +116,7 @@ func (c *Client) Report(ctx context.Context, log *logrus.Entry, pj *v1.ProwJob) 
 		if err != nil {
 			return nil, nil, fmt.Errorf("failed to get lockkey for job: %w", err)
 		}
-		lock, err := c.prLocks.getLock(ctx, *key)
+		lock, err := c.prLocks.GetLock(ctx, *key)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -248,7 +192,7 @@ func pjsToReport(ctx context.Context, log *logrus.Entry, lister ctrlruntimeclien
 	return toReport, nil
 }
 
-func lockKeyForPJ(pj *v1.ProwJob) (*simplePull, error) {
+func lockKeyForPJ(pj *v1.ProwJob) (*criercommonlib.SimplePull, error) {
 	if pj.Spec.Type != v1.PresubmitJob {
 		return nil, fmt.Errorf("can only get lock key for presubmit jobs, was %q", pj.Spec.Type)
 	}
@@ -258,5 +202,5 @@ func lockKeyForPJ(pj *v1.ProwJob) (*simplePull, error) {
 	if n := len(pj.Spec.Refs.Pulls); n != 1 {
 		return nil, fmt.Errorf("prowjob doesn't have one but %d pulls", n)
 	}
-	return &simplePull{org: pj.Spec.Refs.Org, repo: pj.Spec.Refs.Repo, number: pj.Spec.Refs.Pulls[0].Number}, nil
+	return criercommonlib.NewSimplePull(pj.Spec.Refs.Org, pj.Spec.Refs.Repo, pj.Spec.Refs.Pulls[0].Number), nil
 }

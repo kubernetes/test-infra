@@ -26,7 +26,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/sync/semaphore"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 
@@ -169,18 +168,6 @@ func TestPresumitReportingLocks(t *testing.T) {
 	}()
 
 	wg.Wait()
-}
-
-func TestShardedLockCleanup(t *testing.T) {
-	t.Parallel()
-	sl := &shardedLock{mapLock: semaphore.NewWeighted(1), locks: map[simplePull]*semaphore.Weighted{}}
-	key := simplePull{"org", "repo", 1}
-	sl.locks[key] = semaphore.NewWeighted(1)
-	sl.cleanup()
-	if _, exists := sl.locks[key]; exists {
-		t.Error("lock didn't get cleaned up")
-	}
-
 }
 
 func TestReport(t *testing.T) {

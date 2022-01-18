@@ -51,10 +51,10 @@ func TestOptions(t *testing.T) {
 		},
 		//Gerrit Reporter
 		{
-			name: "gerrit only support one worker",
+			name: "gerrit supports multiple workers",
 			args: []string{"--gerrit-workers=99", "--gerrit-projects=foo=bar", "--cookiefile=foobar", "--config-path=foo"},
 			expected: &options{
-				gerritWorkers:  1,
+				gerritWorkers:  99,
 				cookiefilePath: "foobar",
 				gerritProjects: map[string][]string{
 					"foo": {"bar"},
@@ -74,7 +74,7 @@ func TestOptions(t *testing.T) {
 			name: "gerrit missing --cookiefile",
 			args: []string{"--gerrit-workers=5", "--gerrit-projects=foo=bar", "--config-path=foo"},
 			expected: &options{
-				gerritWorkers: 1,
+				gerritWorkers: 5,
 				gerritProjects: map[string][]string{
 					"foo": {"bar"},
 				},

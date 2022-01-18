@@ -24,9 +24,6 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/client-go/util/retry"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -34,6 +31,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	prowv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/crier/reporters/criercommonlib"
 )
 
 type ReportClient interface {
@@ -77,66 +75,6 @@ func New(
 		return fmt.Errorf("failed to construct controller: %w", err)
 	}
 
-	return nil
-}
-
-func (r *reconciler) updateReportState(ctx context.Context, pj *prowv1.ProwJob, log *logrus.Entry, reportedState prowv1.ProwJobState) error {
-	// update pj report status
-	newpj := pj.DeepCopy()
-	// we set omitempty on PrevReportStates, so here we need to init it if is nil
-	if newpj.Status.PrevReportStates == nil {
-		newpj.Status.PrevReportStates = map[string]prowv1.ProwJobState{}
-	}
-	newpj.Status.PrevReportStates[r.reporter.GetName()] = reportedState
-
-	if err := r.pjclientset.Patch(ctx, newpj, ctrlruntimeclient.MergeFrom(pj)); err != nil {
-		return fmt.Errorf("failed to patch: %w", err)
-	}
-
-	// Block until the update is in the lister to make sure that events from another controller
-	// that also does reporting dont trigger another report because our lister doesn't yet contain
-	// the updated Status
-	name := types.NamespacedName{Namespace: pj.Namespace, Name: pj.Name}
-	if err := wait.Poll(100*time.Millisecond, 10*time.Second, func() (bool, error) {
-		if err := r.pjclientset.Get(ctx, name, pj); err != nil {
-			return false, err
-		}
-		if pj.Status.PrevReportStates != nil &&
-			pj.Status.PrevReportStates[r.reporter.GetName()] == reportedState {
-			return true, nil
-		}
-		return false, nil
-	}); err != nil {
-		return fmt.Errorf("failed to wait for updated report status to be in lister: %w", err)
-	}
-	return nil
-}
-
-func (r *reconciler) updateReportStateWithRetries(ctx context.Context, pj *prowv1.ProwJob, log *logrus.Entry) error {
-	reportState := pj.Status.State
-	log = log.WithFields(logrus.Fields{
-		"prowjob":   pj.Name,
-		"jobName":   pj.Spec.Job,
-		"jobStatus": reportState,
-	})
-	// We have to retry here, if we return we lose the information that we already reported this job.
-	if err := retry.RetryOnConflict(retry.DefaultBackoff, func() error {
-		// Get it first, this is very cheap
-		name := types.NamespacedName{Namespace: pj.Namespace, Name: pj.Name}
-		if err := r.pjclientset.Get(ctx, name, pj); err != nil {
-			return err
-		}
-		// Must not wrap until we have kube 1.19, otherwise the RetryOnConflict won't recognize conflicts
-		// correctly
-		return r.updateReportState(ctx, pj, log, reportState)
-	}); err != nil {
-		// Very subpar, we will report again. But even if we didn't do that now, we would do so
-		// latest when crier gets restarted. In an ideal world, all reporters are idempotent and
-		// reporting has no cost.
-		return fmt.Errorf("failed to update report state on prowjob: %w", err)
-	}
-
-	log.Info("Successfully updated report state on prowjob")
 	return nil
 }
 
@@ -207,7 +145,7 @@ func (r *reconciler) reconcile(ctx context.Context, log *logrus.Entry, req recon
 	log.WithField("job-count", len(pjs)).Info("Reported job(s), now will update pj(s).")
 	var lastErr error
 	for _, pjob := range pjs {
-		if err := r.updateReportStateWithRetries(ctx, pjob, log); err != nil {
+		if err := criercommonlib.UpdateReportStateWithRetries(ctx, pjob, log, r.pjclientset, r.reporter.GetName()); err != nil {
 			log.WithError(err).Error("Failed to update report state on prowjob")
 			// The error above is alreay logged, so it would be duplicated
 			// effort to combine all errors to return, only capture the last
