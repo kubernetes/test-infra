@@ -1,10 +1,10 @@
 # sigs.k8s.io/kube-scheduler-simulator presubmits
 presubmits:
   kubernetes-sigs/kube-scheduler-simulator:
-  - name: pull-kube-scheduler-simulator-get-dependencies
+  - name: pull-kube-scheduler-simulator-backend-lint
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-kube-scheduler-simulator-get-dependencies
+      testgrid-tab-name: pull-kube-scheduler-simulator-backend-lint
     decorate: true
     path_alias: sigs.k8s.io/kube-scheduler-simulator
     branches:
@@ -14,45 +14,16 @@ presubmits:
       containers:
       - image: golang:1.17
         command:
-        - make
-        args:
-        - mod-download
-  - name: pull-kube-scheduler-simulator-install-tools
+        - /bin/bash
+        - -c
+        - >
+          make mod-download &&
+          make tools &&
+          make lint
+  - name: pull-kube-scheduler-simulator-frontend-lint
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-kube-scheduler-simulator-install-tools
-    decorate: true
-    path_alias: sigs.k8s.io/kube-scheduler-simulator
-    branches:
-    - ^master$
-    always_run: false
-    spec:
-      containers:
-      - image: golang:1.17
-        command:
-        - make
-        args:
-        - tools
-  - name: pull-kube-scheduler-simulator-lint
-    annotations:
-      testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-kube-scheduler-simulator-lint
-    decorate: true
-    path_alias: sigs.k8s.io/kube-scheduler-simulator
-    branches:
-    - ^master$
-    always_run: false
-    spec:
-      containers:
-      - image: golang:1.17
-        command:
-        - make
-        args:
-        - lint
-  - name: lint-frontend-with-yarn
-    annotations:
-      testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: lint-frontend-with-yarn
+      testgrid-tab-name: pull-kube-scheduler-simulator-frontend-lint
     decorate: true
     path_alias: sigs.k8s.io/kube-scheduler-simulator
     branches:
@@ -65,6 +36,7 @@ presubmits:
         - /bin/bash
         - -c
         - >
+          cd /web
           npm ci &&
           npm install -g yarn &&
           yarn install --frozen-lockfile &&
