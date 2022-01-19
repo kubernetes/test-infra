@@ -38,7 +38,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/yaml"
 
-	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/logrusutil"
@@ -129,6 +128,7 @@ type options struct {
 	docsOutput      string
 	tokens          int
 	tokenBurst      int
+	github          flagutil.GitHubOptions
 }
 
 func gatherOptions() options {
@@ -137,20 +137,21 @@ func gatherOptions() options {
 	fs.BoolVar(&o.debug, "debug", false, "Turn on debug to be more verbose")
 	fs.BoolVar(&o.confirm, "confirm", false, "Make mutating API calls to GitHub.")
 	o.endpoint = flagutil.NewStrings(github.DefaultAPIEndpoint)
-	fs.Var(&o.endpoint, "endpoint", "GitHub's API endpoint")
-	fs.StringVar(&o.graphqlEndpoint, "graphql-endpoint", github.DefaultGraphQLEndpoint, "GitHub's GraphQL API endpoint")
+	fs.Var(&o.endpoint, "endpoint", "GitHub's API endpoint. DEPRECATED: use --github-endpoint")
+	fs.StringVar(&o.graphqlEndpoint, "graphql-endpoint", github.DefaultGraphQLEndpoint, "GitHub's GraphQL API endpoint. DEPRECATED: use --github-graphql-endpoint")
 	fs.StringVar(&o.labelsPath, "config", "", "Path to labels.yaml")
 	fs.StringVar(&o.onlyRepos, "only", "", "Only look at the following comma separated org/repos")
 	fs.StringVar(&o.orgs, "orgs", "", "Comma separated list of orgs to sync")
 	fs.StringVar(&o.skipRepos, "skip", "", "Comma separated list of org/repos to skip syncing")
-	fs.StringVar(&o.token, "token", "", "Path to github oauth secret")
+	fs.StringVar(&o.token, "token", "", "Path to github oauth secret. DEPRECATED: use --github-token-path")
 	fs.StringVar(&o.action, "action", "sync", "One of: sync, docs")
 	fs.StringVar(&o.cssTemplate, "css-template", "", "Path to template file for label css")
 	fs.StringVar(&o.cssOutput, "css-output", "", "Path to output file for css")
 	fs.StringVar(&o.docsTemplate, "docs-template", "", "Path to template file for label docs")
 	fs.StringVar(&o.docsOutput, "docs-output", "", "Path to output file for docs")
-	fs.IntVar(&o.tokens, "tokens", defaultTokens, "Throttle hourly token consumption (0 to disable)")
-	fs.IntVar(&o.tokenBurst, "token-burst", defaultBurst, "Allow consuming a subset of hourly tokens in a short burst")
+	fs.IntVar(&o.tokens, "tokens", defaultTokens, "Throttle hourly token consumption (0 to disable). DEPRECATED: use --github-hourly-tokens")
+	fs.IntVar(&o.tokenBurst, "token-burst", defaultBurst, "Allow consuming a subset of hourly tokens in a short burst. DEPRECATED: use --github-allowed-burst")
+	o.github.AddCustomizedFlags(fs, flagutil.ThrottlerDefaults(defaultTokens, defaultBurst))
 	fs.Parse(os.Args[1:])
 	return o
 }
@@ -681,28 +682,6 @@ type client interface {
 	GetRepoLabels(string, string) ([]github.Label, error)
 }
 
-func newClient(tokenPath string, tokens, tokenBurst int, dryRun bool, graphqlEndpoint string, hosts ...string) (client, error) {
-	if tokenPath == "" {
-		return nil, errors.New("--token unset")
-	}
-
-	if err := secret.Add(tokenPath); err != nil {
-		logrus.WithError(err).Fatal("Error starting secrets agent.")
-	}
-
-	if dryRun {
-		return github.NewDryRunClient(secret.GetTokenGenerator(tokenPath), secret.Censor, graphqlEndpoint, hosts...), nil
-	}
-	c := github.NewClient(secret.GetTokenGenerator(tokenPath), secret.Censor, graphqlEndpoint, hosts...)
-	if tokens > 0 && tokenBurst >= tokens {
-		return nil, fmt.Errorf("--tokens=%d must exceed --token-burst=%d", tokens, tokenBurst)
-	}
-	if tokens > 0 {
-		c.Throttle(tokens, tokenBurst) // 300 hourly tokens, bursts of 100
-	}
-	return c, nil
-}
-
 // Main function
 // Typical run with production configuration should require no parameters
 // It expects:
@@ -742,7 +721,22 @@ func main() {
 			logrus.WithError(err).Fatalf("failed to write css file using css-template %s to css-output %s", o.cssTemplate, o.cssOutput)
 		}
 	case o.action == "sync":
-		githubClient, err := newClient(o.token, o.tokens, o.tokenBurst, !o.confirm, o.graphqlEndpoint, o.endpoint.Strings()...)
+		deprecatedGitHubOptions := len(o.token) != 0 || o.endpoint.String() != github.DefaultAPIEndpoint || o.graphqlEndpoint != github.DefaultGraphQLEndpoint || o.tokens != defaultTokens || o.tokenBurst != defaultBurst
+		newGitHubOptions := len(o.github.TokenPath) != 0 || o.github.Endpoint.String() != github.DefaultAPIEndpoint || o.github.GraphqlEndpoint != github.DefaultGraphQLEndpoint || o.github.ThrottleHourlyTokens != defaultTokens || o.github.ThrottleAllowBurst != defaultBurst
+
+		if deprecatedGitHubOptions && newGitHubOptions {
+			logrus.Fatalf("deprecated GitHub options, include --endpoint, --graphql-endpoint, --token, --tokens, --token-burst cannot be combined with new --github-XXX counterparts")
+		}
+
+		if deprecatedGitHubOptions {
+			o.github.TokenPath = o.token
+			o.github.ThrottleHourlyTokens = o.tokens
+			o.github.ThrottleAllowBurst = o.tokenBurst
+			o.github.Endpoint = o.endpoint
+			o.github.GraphqlEndpoint = o.graphqlEndpoint
+		}
+		githubClient, err := o.github.GitHubClient(!o.confirm)
+
 		if err != nil {
 			logrus.WithError(err).Fatal("failed to create client")
 		}

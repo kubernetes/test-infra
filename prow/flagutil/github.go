@@ -41,8 +41,8 @@ import (
 // Set AllowDirectAccess to be true if you want to suppress warnings on direct github access (without ghproxy).
 type GitHubOptions struct {
 	Host              string
-	endpoint          Strings
-	graphqlEndpoint   string
+	Endpoint          Strings
+	GraphqlEndpoint   string
 	TokenPath         string
 	AllowAnonymous    bool
 	AllowDirectAccess bool
@@ -118,8 +118,8 @@ func (o *GitHubOptions) addFlags(fs *flag.FlagSet, paramFuncs ...FlagParameter) 
 	params := flagParams{
 		defaults: GitHubOptions{
 			Host:            github.DefaultHost,
-			endpoint:        NewStrings(github.DefaultAPIEndpoint),
-			graphqlEndpoint: github.DefaultGraphQLEndpoint,
+			Endpoint:        NewStrings(github.DefaultAPIEndpoint),
+			GraphqlEndpoint: github.DefaultGraphQLEndpoint,
 		},
 	}
 
@@ -129,9 +129,9 @@ func (o *GitHubOptions) addFlags(fs *flag.FlagSet, paramFuncs ...FlagParameter) 
 
 	defaults := params.defaults
 	fs.StringVar(&o.Host, "github-host", defaults.Host, "GitHub's default host (may differ for enterprise)")
-	o.endpoint = NewStrings(defaults.endpoint.Strings()...)
-	fs.Var(&o.endpoint, "github-endpoint", "GitHub's API endpoint (may differ for enterprise).")
-	fs.StringVar(&o.graphqlEndpoint, "github-graphql-endpoint", defaults.graphqlEndpoint, "GitHub GraphQL API endpoint (may differ for enterprise).")
+	o.Endpoint = NewStrings(defaults.Endpoint.Strings()...)
+	fs.Var(&o.Endpoint, "github-endpoint", "GitHub's API endpoint (may differ for enterprise).")
+	fs.StringVar(&o.GraphqlEndpoint, "github-graphql-endpoint", defaults.GraphqlEndpoint, "GitHub GraphQL API endpoint (may differ for enterprise).")
 	fs.StringVar(&o.TokenPath, "github-token-path", defaults.TokenPath, "Path to the file containing the GitHub OAuth secret.")
 	fs.StringVar(&o.AppID, "github-app-id", defaults.AppID, "ID of the GitHub app. If set, requires --github-app-private-key-path to be set and --github-token-path to be unset.")
 	fs.StringVar(&o.AppPrivateKeyPath, "github-app-private-key-path", defaults.AppPrivateKeyPath, "Path to the private key of the github app. If set, requires --github-app-id to bet set and --github-token-path to be unset")
@@ -202,7 +202,7 @@ func (o *GitHubOptions) parseOrgThrottlers() error {
 // Validate validates GitHub options. Note that validate updates the GitHubOptions
 // to add default values for TokenPath and graphqlEndpoint.
 func (o *GitHubOptions) Validate(bool) error {
-	endpoints := o.endpoint.Strings()
+	endpoints := o.Endpoint.Strings()
 	for i, uri := range endpoints {
 		if uri == "" {
 			endpoints[i] = github.DefaultAPIEndpoint
@@ -222,10 +222,10 @@ func (o *GitHubOptions) Validate(bool) error {
 		logrus.Warn("It doesn't look like you are using ghproxy to cache API calls to GitHub! This has become a required component of Prow and other components will soon be allowed to add features that may rapidly consume API ratelimit without caching. Starting May 1, 2020 use Prow components without ghproxy at your own risk! https://github.com/kubernetes/test-infra/tree/master/ghproxy#ghproxy")
 	}
 
-	if o.graphqlEndpoint == "" {
-		o.graphqlEndpoint = github.DefaultGraphQLEndpoint
-	} else if _, err := url.Parse(o.graphqlEndpoint); err != nil {
-		return fmt.Errorf("invalid -github-graphql-endpoint URI: %q", o.graphqlEndpoint)
+	if o.GraphqlEndpoint == "" {
+		o.GraphqlEndpoint = github.DefaultGraphQLEndpoint
+	} else if _, err := url.Parse(o.GraphqlEndpoint); err != nil {
+		return fmt.Errorf("invalid -github-graphql-endpoint URI: %q", o.GraphqlEndpoint)
 	}
 
 	if (o.ThrottleHourlyTokens > 0) != (o.ThrottleAllowBurst > 0) {
@@ -308,8 +308,8 @@ func (o *GitHubOptions) baseClientOptions() github.ClientOptions {
 	return github.ClientOptions{
 		Censor:          secret.Censor,
 		AppID:           o.AppID,
-		GraphqlEndpoint: o.graphqlEndpoint,
-		Bases:           o.endpoint.Strings(),
+		GraphqlEndpoint: o.GraphqlEndpoint,
+		Bases:           o.Endpoint.Strings(),
 		MaxRequestTime:  o.maxRequestTime,
 		InitialDelay:    o.initialDelay,
 		MaxSleepTime:    o.maxSleepTime,
