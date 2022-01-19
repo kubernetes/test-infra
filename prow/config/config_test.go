@@ -4748,10 +4748,10 @@ default_decoration_config_entries:
 			t.Parallel()
 			p := Plank{}
 			if err := yaml.Unmarshal([]byte(tc.raw), &p); err != nil {
-				t.Errorf("error unmarshaling: %w", err)
+				t.Errorf("error unmarshaling: %v", err)
 			}
 			if err := p.FinalizeDefaultDecorationConfigs(); err != nil && !tc.expectErr {
-				t.Errorf("unexpected error finalizing DefaultDecorationConfigs: %w", err)
+				t.Errorf("unexpected error finalizing DefaultDecorationConfigs: %v", err)
 			} else if err == nil && tc.expectErr {
 				t.Error("expected error, but did not receive one")
 			}
@@ -6846,7 +6846,7 @@ func TestInRepoConfigEnabled(t *testing.T) {
 			testing:  "org/repo",
 		},
 		{
-			name: "Gerrit format repo Hostname matches",
+			name: "Gerrit format org Hostname matches",
 			config: Config{
 				ProwConfig: ProwConfig{
 					InRepoConfig: InRepoConfig{
@@ -6860,7 +6860,7 @@ func TestInRepoConfigEnabled(t *testing.T) {
 			testing:  "host-name/extra/repo",
 		},
 		{
-			name: "Gerrit format repo Hostname matches with http",
+			name: "Gerrit format org Hostname matches with http",
 			config: Config{
 				ProwConfig: ProwConfig{
 					InRepoConfig: InRepoConfig{
@@ -6872,6 +6872,62 @@ func TestInRepoConfigEnabled(t *testing.T) {
 			},
 			expected: true,
 			testing:  "http://host-name/extra/repo",
+		},
+		{
+			name: "Gerrit format Just org Hostname matches",
+			config: Config{
+				ProwConfig: ProwConfig{
+					InRepoConfig: InRepoConfig{
+						Enabled: map[string]*bool{
+							"host-name": utilpointer.BoolPtr(true),
+						},
+					},
+				},
+			},
+			expected: true,
+			testing:  "host-name",
+		},
+		{
+			name: "Gerrit format Just org Hostname matches with http",
+			config: Config{
+				ProwConfig: ProwConfig{
+					InRepoConfig: InRepoConfig{
+						Enabled: map[string]*bool{
+							"host-name": utilpointer.BoolPtr(true),
+						},
+					},
+				},
+			},
+			expected: true,
+			testing:  "http://host-name",
+		},
+		{
+			name: "Gerrit format Just repo Hostname matches",
+			config: Config{
+				ProwConfig: ProwConfig{
+					InRepoConfig: InRepoConfig{
+						Enabled: map[string]*bool{
+							"host-name/repo/name": utilpointer.BoolPtr(true),
+						},
+					},
+				},
+			},
+			expected: true,
+			testing:  "host-name/repo/name",
+		},
+		{
+			name: "Gerrit format Just org Hostname matches with http",
+			config: Config{
+				ProwConfig: ProwConfig{
+					InRepoConfig: InRepoConfig{
+						Enabled: map[string]*bool{
+							"host-name/repo/name": utilpointer.BoolPtr(true),
+						},
+					},
+				},
+			},
+			expected: true,
+			testing:  "http://host-name/repo/name",
 		},
 	}
 
@@ -7055,6 +7111,18 @@ func TestInRepoConfigAllowsCluster(t *testing.T) {
 			name:            "Allowed for gerrit repo",
 			repoIdentifier:  "https://host/repo/name",
 			allowedClusters: map[string][]string{"host/repo/name": {clusterName}},
+			expectedResult:  true,
+		},
+		{
+			name:            "Allowed for gerrit repo",
+			repoIdentifier:  "host",
+			allowedClusters: map[string][]string{"host": {clusterName}},
+			expectedResult:  true,
+		},
+		{
+			name:            "Allowed for gerrit repo",
+			repoIdentifier:  "host/repo/name",
+			allowedClusters: map[string][]string{"host": {clusterName}},
 			expectedResult:  true,
 		},
 	}

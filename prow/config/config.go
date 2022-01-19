@@ -216,11 +216,16 @@ type InRepoConfig struct {
 	AllowedClusters map[string][]string `json:"allowed_clusters,omitempty"`
 }
 
+func trimRepoPrefix(repo string) string {
+	repo = strings.TrimPrefix(repo, "http://")
+	repo = strings.TrimPrefix(repo, "https://")
+	return repo
+}
+
 func SplitRepoName(repo string) (string, string, error) {
 	// Normalize repo name to remove http:// or https://, this is the case for some
 	// of the gerrit instances.
-	repo = strings.TrimPrefix(repo, "http://")
-	repo = strings.TrimPrefix(repo, "https://")
+	repo = trimRepoPrefix(repo)
 	s := strings.SplitN(repo, "/", 2)
 	if len(s) != 2 {
 		return "", "", fmt.Errorf("repo %s cannot be split into org/repo", repo)
@@ -229,14 +234,16 @@ func SplitRepoName(repo string) (string, string, error) {
 }
 
 // InRepoConfigEnabled returns whether InRepoConfig is enabled for a given repository.
+// Assumes that config will not include http:// or https://
 func (c *Config) InRepoConfigEnabled(identifier string) bool {
+	normalizedIdentifier := trimRepoPrefix(identifier)
 
-	org, repo, err := SplitRepoName(identifier)
-	if c.InRepoConfig.Enabled[identifier] != nil {
-		return *c.InRepoConfig.Enabled[strings.Join([]string{org, repo}, "/")]
+	if c.InRepoConfig.Enabled[normalizedIdentifier] != nil {
+		return *c.InRepoConfig.Enabled[normalizedIdentifier]
 	}
-	// If err then it cannot be split.
-	if c.InRepoConfig.Enabled[org] != nil && err == nil {
+
+	// Errors if failed to split. We are ignoring this and just checking if org != "" instead
+	if org, _, _ := SplitRepoName(identifier); org != "" && c.InRepoConfig.Enabled[org] != nil {
 		return *c.InRepoConfig.Enabled[org]
 	}
 	if c.InRepoConfig.Enabled["*"] != nil {
@@ -246,17 +253,17 @@ func (c *Config) InRepoConfigEnabled(identifier string) bool {
 }
 
 // InRepoConfigAllowsCluster determines if a given cluster may be used for a given repository
+// Assumes that config will not include http:// or https://
 func (c *Config) InRepoConfigAllowsCluster(clusterName, repoIdentifier string) bool {
-	org, repo, err := SplitRepoName(repoIdentifier)
-
-	for _, allowedCluster := range c.InRepoConfig.AllowedClusters[strings.Join([]string{org, repo}, "/")] {
+	normalizedIdentifier := trimRepoPrefix(repoIdentifier)
+	for _, allowedCluster := range c.InRepoConfig.AllowedClusters[normalizedIdentifier] {
 		if allowedCluster == clusterName {
 			return true
 		}
 	}
 
-	// If err then it cannot be split.
-	if err == nil {
+	// Errors if failed to split. We are ignoring this and just checking if org != "" instead
+	if org, _, _ := SplitRepoName(repoIdentifier); org != "" {
 		for _, allowedCluster := range c.InRepoConfig.AllowedClusters[org] {
 			if allowedCluster == clusterName {
 				return true
