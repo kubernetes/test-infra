@@ -1,6 +1,6 @@
 test_groups:
 - name: redhat-hypershift-main-aws-pooled-conformance
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-main-e2e-aws-pooled-periodic-conformance
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-main-periodics-e2e-aws-pooled-periodic-conformance
 
 dashboards:
 - name: redhat-hypershift
