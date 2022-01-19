@@ -29,6 +29,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -687,8 +688,15 @@ func NewClientFromOptions(fields logrus.Fields, options ClientOptions) (TokenGen
 	options = options.Default()
 
 	// Will be nil if github app authentication is used
+	// Hack: We manually retrieve personal access token to support some operation missing GitHubApp jwtToken.
+	// This helps avoid situation that tide calls github api anonymously and leads to fields missing
 	if options.GetToken == nil {
-		options.GetToken = func() []byte { return nil }
+		personalAccessToken := os.Getenv("GITHUB_TOKEN")
+		if len(personalAccessToken) == 0 {
+			options.GetToken = func() []byte { return nil }
+		} else {
+			options.GetToken = func() []byte { return []byte(personalAccessToken) }
+		}
 	}
 	if options.BaseRoundTripper == nil {
 		options.BaseRoundTripper = http.DefaultTransport
