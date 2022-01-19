@@ -285,7 +285,6 @@ presubmits:
             - --
             - --build=quick
             - --cluster=
-            - --env=KUBE_CONTAINER_RUNTIME=containerd
             - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.5.9
             - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.3
             - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
@@ -345,7 +344,6 @@ presubmits:
             - --
             - --build=quick
             - --cluster=
-            - --env=KUBE_CONTAINER_RUNTIME=containerd
             - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.5.9
             - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.3
             - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
@@ -476,7 +474,6 @@ periodics:
           - --scenario=kubernetes_e2e
           - --
           - --check-leaked-resources
-          - --env=KUBE_CONTAINER_RUNTIME=containerd
           - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.5.9
           - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.3
           - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
