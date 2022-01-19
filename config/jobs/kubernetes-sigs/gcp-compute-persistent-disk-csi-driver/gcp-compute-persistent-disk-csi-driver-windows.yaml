@@ -186,10 +186,6 @@ periodics:
 presubmits:
   kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
   - name: pull-gcp-compute-persistent-disk-csi-driver-e2e-windows-2019
-    decorate: true
-    decoration_config:
-      timeout: 350m
-    path_alias: sigs.k8s.io/gcp-compute-persistent-disk-csi-driver
     labels:
       preset-k8s-ssh: "true"
       preset-service-account: "true"
@@ -201,8 +197,6 @@ presubmits:
       preset-dind-enabled: "true"
     always_run: false
     optional: true
-    branches:
-    - master
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220119-cac87ea594-master
@@ -235,10 +229,6 @@ presubmits:
       description: Kubernetes Integration Windows tests for Kubernetes Master branch and Driver latest build
       testgrid-alert-email: jinxu@google.com
   - name: pull-gcp-compute-persistent-disk-csi-driver-e2e-windows-20h2
-    decorate: true
-    decoration_config:
-      timeout: 200m
-    path_alias: sigs.k8s.io/gcp-compute-persistent-disk-csi-driver
     labels:
       preset-k8s-ssh: "true"
       preset-service-account: "true"
@@ -250,8 +240,6 @@ presubmits:
       preset-dind-enabled: "true"
     always_run: false
     optional: true
-    branches:
-    - master
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220119-cac87ea594-master
