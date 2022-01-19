@@ -64,29 +64,42 @@ clean:
 ################################################################################
 # ================================== Linting ===================================
 # run linters, ensure generated code, etc.
+.PHONY: verify
 verify:
 	hack/make-rules/verify/all.sh
 # typescript linting
+.PHONY: verify-tslint
 verify-tslint:
 	hack/make-rules/verify/tslint.sh
-.PHONY: verify-tslint
 # go linters
+.PHONY: go-lint
 go-lint:
 	hack/make-rules/verify/golangci-lint.sh
+.PHONY: py-lint
+py-lint:
+	hack/make-rules/verify/pylint.sh
+.PHONY: update-gofmt
 update-gofmt:
 	hack/make-rules/update/gofmt.sh
+.PHONY: verify-gofmt
 verify-gofmt:
 	hack/make-rules/verify/gofmt.sh
+.PHONY: update-file-perms
 update-file-perms:
 	hack/make-rules/update/file-perms.sh
+.PHONY: verify-file-perms
 verify-file-perms:
 	hack/make-rules/verify/file-perms.sh
+.PHONY: update-spelling
 update-spelling:
 	hack/make-rules/update/misspell.sh
+.PHONY: verify-spelling
 verify-spelling:
 	hack/make-rules/verify/misspell.sh
+.PHONY: update-labels
 update-labels:
 	hack/make-rules/update/labels.sh
+.PHONY: verify-labels
 verify-labels:
 	hack/make-rules/verify/labels.sh
 .PHONY: update-codegen
@@ -95,5 +108,7 @@ update-codegen:
 .PHONY: verify-codegen
 verify-codegen:
 	hack/make-rules/verify/codegen.sh
+.PHONY: verify-boilerplate
+verify-boilerplate:
+	hack/make-rules/verify/boilerplate.sh
 #################################################################################
-.PHONY: verify go-lint update-gofmt verify-gofmt update-file-perms verify-file-perms update-spelling verify-spelling update-labels verify-labels

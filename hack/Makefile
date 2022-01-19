@@ -21,8 +21,19 @@ ARGS ?= ""
 
 run-coalesce: ensure-py-requirements3
 	../hack/run-in-python-container.sh ./hack/coalesce.py ${ARGS}
-.PHONY: run-compare-yaml
+.PHONY: run-coalesce
 
 test-coalesce: ensure-py-requirements3
 	../hack/run-in-python-container.sh ./hack/coalesce_test.py
 .PHONY: test-coalesce
+
+verify-boilerplate: ensure-py-requirements3
+	../hack/run-in-python-container.sh ./hack/boilerplate/verify_boilerplate.py
+.PHONY: verify-boilerplate
+
+test-verify-boilerplate: ensure-py-requirements3
+	../hack/run-in-python-container.sh ./hack/boilerplate/verify_boilerplate_test.py
+.PHONY: test-verify-boilerplate
+
+py-test: test-coalesce test-verify-boilerplate
+.PHONY: py-test
