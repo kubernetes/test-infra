@@ -379,19 +379,19 @@ nodeK8sVersions:
   dev:
     args:
     - --repo=k8s.io/kubernetes=master
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220117-99a00602a5-master
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220119-cac87ea594-master
   beta:
     args:
     - --repo=k8s.io/kubernetes=release-1.23
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220117-99a00602a5-1.23
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220119-cac87ea594-1.23
   stable1:
     args:
     - --repo=k8s.io/kubernetes=release-1.22
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220117-99a00602a5-1.22
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220119-cac87ea594-1.22
   stable2:
     args:
     - --repo=k8s.io/kubernetes=release-1.21
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220117-99a00602a5-1.21
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220119-cac87ea594-1.21
   stable3:
     args:
     - --repo=k8s.io/kubernetes=release-1.20
