@@ -306,7 +306,7 @@ func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJo
 		}
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	newCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
 	clientGerritRevision := client.GerritRevision
@@ -329,7 +329,7 @@ func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJo
 		}
 
 		var pjsOnRevisionWithSameLabel v1.ProwJobList
-		if err := c.pjclientset.List(ctx, &pjsOnRevisionWithSameLabel, ctrlruntimeclient.MatchingLabels(selector)); err != nil {
+		if err := c.pjclientset.List(newCtx, &pjsOnRevisionWithSameLabel, ctrlruntimeclient.MatchingLabels(selector)); err != nil {
 			logger.WithError(err).WithField("selector", selector).Errorf("Cannot list prowjob with selector")
 			return nil, nil, err
 		}
