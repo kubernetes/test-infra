@@ -45,7 +45,7 @@ func TestGitHubOptions_Validate(t *testing.T) {
 		{
 			name: "when empty endpoint, sets graphql endpoint",
 			in: &GitHubOptions{
-				endpoint: NewStrings(""),
+				Endpoint: NewStrings(""),
 			},
 			expectedGraphqlEndpoint: github.DefaultGraphQLEndpoint,
 			expectedErr:             false,
@@ -53,7 +53,7 @@ func TestGitHubOptions_Validate(t *testing.T) {
 		{
 			name: "when invalid github endpoint, returns error",
 			in: &GitHubOptions{
-				endpoint: NewStrings("not a github url"),
+				Endpoint: NewStrings("not a github url"),
 			},
 			expectedErr: true,
 		},
@@ -109,7 +109,7 @@ func TestGitHubOptions_Validate(t *testing.T) {
 			if !testCase.expectedErr && err != nil {
 				t.Errorf("%s: expected no error but got one: %v", testCase.name, err)
 			}
-			if testCase.expectedGraphqlEndpoint != testCase.in.graphqlEndpoint {
+			if testCase.expectedGraphqlEndpoint != testCase.in.GraphqlEndpoint {
 				t.Errorf("%s: unexpected graphql endpoint", testCase.name)
 			}
 		})
