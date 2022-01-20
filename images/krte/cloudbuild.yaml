@@ -1,9 +1,11 @@
 timeout: 1800s
 steps:
-  - name: gcr.io/cloud-builders/docker
+  - name: gcr.io/k8s-testimages/gcb-docker-gcloud
+    entrypoint: /buildx-entrypoint
     args:
     - build
     - --tag=gcr.io/$PROJECT_ID/krte:$_GIT_TAG-$_CONFIG
+    - --platform=linux/amd64,linux/arm64/v8
     - --build-arg=GO_VERSION=$_GO_VERSION
     - --build-arg=K8S_RELEASE=$_K8S_RELEASE
     - --build-arg=BAZEL_VERSION_ARG=$_BAZEL_VERSION
@@ -11,11 +13,15 @@ steps:
     - --build-arg=CFSSL_VERSION=$_CFSSL_VERSION
     - --build-arg=UPGRADE_DOCKER_ARG=$_UPGRADE_DOCKER
     - --build-arg=IMAGE_ARG=gcr.io/$PROJECT_ID/krte:$_GIT_TAG-$_CONFIG
+    - --push
     - .
     dir: images/krte
-  - name: gcr.io/cloud-builders/docker
+  - name: gcr.io/k8s-testimages/gcb-docker-gcloud
+    entrypoint: gcloud
     args:
-    - tag
+    - container
+    - images
+    - add-tag
     - gcr.io/$PROJECT_ID/krte:$_GIT_TAG-$_CONFIG
     - gcr.io/$PROJECT_ID/krte:latest-$_CONFIG
     dir: images/krte
@@ -30,6 +36,3 @@ substitutions:
   _CFSSL_VERSION: R1.2
 options:
   substitution_option: ALLOW_LOOSE
-images:
-  - 'gcr.io/$PROJECT_ID/krte:$_GIT_TAG-$_CONFIG'
-  - 'gcr.io/$PROJECT_ID/krte:latest-$_CONFIG'
