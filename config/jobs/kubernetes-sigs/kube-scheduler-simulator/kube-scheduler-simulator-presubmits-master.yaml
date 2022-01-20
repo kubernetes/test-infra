@@ -36,7 +36,7 @@ presubmits:
         - /bin/bash
         - -c
         - >
-          cd /web
+          cd ./web &&
           npm ci &&
           npm install -g yarn &&
           yarn install --frozen-lockfile &&
