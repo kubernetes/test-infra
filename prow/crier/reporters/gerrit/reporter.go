@@ -412,10 +412,14 @@ func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJo
 	// reported, as the change of previous report state happens only after the
 	// returning of current function from the caller.
 	// Ideally the previous report state should be changed here.
+	// This operation takes a long time when there are a lot of jobs
+	// in the batch, so we are creating a new context.
+	loopCtx, loopCancel := context.WithTimeout(ctx, 2*time.Minute)
+	defer loopCancel()
 	logger.WithField("job-count", len(toReportJobs)).Info("Reported job(s), now will update pj(s).")
 	var err error
 	for _, pjob := range toReportJobs {
-		if err = criercommonlib.UpdateReportStateWithRetries(ctx, pjob, logger, c.pjclientset, c.GetName()); err != nil {
+		if err = criercommonlib.UpdateReportStateWithRetries(loopCtx, pjob, logger, c.pjclientset, c.GetName()); err != nil {
 			logger.WithError(err).Error("Failed to update report state on prowjob")
 		}
 	}
