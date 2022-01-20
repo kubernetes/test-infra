@@ -1043,6 +1043,8 @@ plugins:
     - milestonestatus
     - release-note
     - require-matching-label
+    - mergecommitblocker
+    - override
 
   kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
     plugins:
@@ -1238,6 +1240,12 @@ external_plugins:
     events:
       - issue_comment
       - pull_request
+  kubernetes-sigs/cloud-provider-azure:
+  - name: cherrypicker
+    events:
+    - issue_comment
+    - pull_request
+    endpoint: http://cherrypicker
   kubernetes-sigs/cluster-api:
   - name: cherrypicker
     events:
