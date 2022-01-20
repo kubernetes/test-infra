@@ -39,6 +39,7 @@ import (
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
 	reporter "k8s.io/test-infra/prow/crier/reporters/pubsub"
+	"k8s.io/test-infra/prow/gerrit/client"
 
 	v1 "k8s.io/api/core/v1"
 )
@@ -142,16 +143,16 @@ func TestProwJobEvent_ToFromMessage(t *testing.T) {
 
 func TestHandleMessage(t *testing.T) {
 	for _, tc := range []struct {
-		name   string
-		msg    *pubSubMessage
-		pe     *ProwJobEvent
-		s      string
-		config *config.Config
-		err    string
-		labels []string
+		name, eventType string
+		msg             *pubSubMessage
+		pe              *ProwJobEvent
+		config          *config.Config
+		err             string
+		labels          []string
 	}{
 		{
-			name: "PeriodicJobNoPubsub",
+			name:      "PeriodicJobNoPubsub",
+			eventType: periodicProwJobEvent,
 			pe: &ProwJobEvent{
 				Name: "test",
 			},
@@ -168,7 +169,73 @@ func TestHandleMessage(t *testing.T) {
 			},
 		},
 		{
-			name: "UnknownEventType",
+			name:      "PresubmitForGitHub",
+			eventType: presubmitProwJobEvent,
+			pe: &ProwJobEvent{
+				Name: "pull-github",
+				Refs: &prowapi.Refs{
+					Org:     "org",
+					Repo:    "repo",
+					BaseRef: "master",
+					BaseSHA: "SHA",
+					Pulls: []prowapi.Pull{
+						{
+							Number: 42,
+						},
+					},
+				},
+			},
+			config: &config.Config{
+				JobConfig: config.JobConfig{
+					PresubmitsStatic: map[string][]config.Presubmit{
+						"org/repo": {
+							{
+								JobBase: config.JobBase{
+									Name: "pull-github",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name:      "PresubmitForGerrit",
+			eventType: presubmitProwJobEvent,
+			pe: &ProwJobEvent{
+				Name: "pull-gerrit",
+				Refs: &prowapi.Refs{
+					Org:     "org",
+					Repo:    "repo",
+					BaseRef: "master",
+					BaseSHA: "SHA",
+					Pulls: []prowapi.Pull{
+						{
+							Number: 42,
+						},
+					},
+				},
+				Labels: map[string]string{
+					client.GerritRevision: "revision",
+				},
+			},
+			config: &config.Config{
+				JobConfig: config.JobConfig{
+					PresubmitsStatic: map[string][]config.Presubmit{
+						"https://org/repo": {
+							{
+								JobBase: config.JobBase{
+									Name: "pull-gerrit",
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			name:      "UnknownEventType",
+			eventType: periodicProwJobEvent,
 			msg: &pubSubMessage{
 				Message: pubsub.Message{
 					Attributes: map[string]string{
@@ -181,7 +248,8 @@ func TestHandleMessage(t *testing.T) {
 			labels: []string{reporter.PubSubTopicLabel, reporter.PubSubRunIDLabel, reporter.PubSubProjectLabel},
 		},
 		{
-			name: "NoEventType",
+			name:      "NoEventType",
+			eventType: periodicProwJobEvent,
 			msg: &pubSubMessage{
 				Message: pubsub.Message{},
 			},
@@ -203,14 +271,14 @@ func TestHandleMessage(t *testing.T) {
 				Reporter:      &fr,
 			}
 			if tc.pe != nil {
-				m, err := tc.pe.ToMessage()
+				m, err := tc.pe.ToMessageOfType(tc.eventType)
 				if err != nil {
 					t.Error(err)
 				}
 				m.ID = "id"
 				tc.msg = &pubSubMessage{*m}
 			}
-			if err := s.handleMessage(tc.msg, tc.s, []string{"*"}); err != nil {
+			if err := s.handleMessage(tc.msg, "", []string{"*"}); err != nil {
 				if err.Error() != tc.err {
 					t1.Errorf("Expected error '%v' got '%v'", tc.err, err.Error())
 				} else if tc.err == "" {
@@ -450,7 +518,7 @@ func TestHandlePeriodicJob(t *testing.T) {
 				t.Error(err)
 			}
 			m.ID = "id"
-			err = s.handleProwJob(logrus.NewEntry(logrus.New()), &periodicJobHandler{}, &pubSubMessage{*m}, tc.s, tc.allowedClusters)
+			err = s.handleProwJob(logrus.NewEntry(logrus.New()), &periodicJobHandler{}, &pubSubMessage{*m}, "", tc.allowedClusters)
 			if err != nil {
 				if err.Error() != tc.err {
 					t1.Errorf("Expected error '%v' got '%v'", tc.err, err.Error())
