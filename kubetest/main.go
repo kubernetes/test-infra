@@ -358,7 +358,7 @@ func complete(o *options) error {
 	// Get the deployer before we acquire k8s so any additional flag
 	// verifications happen early.
 	var deploy deployer
-	err := control.XMLWrap(&suite, "GetDeployer", func () error {
+	err := control.XMLWrap(&suite, "GetDeployer", func() error {
 		d, err := getDeployer(o)
 		deploy = d
 		return err
