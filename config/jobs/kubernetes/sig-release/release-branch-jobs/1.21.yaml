@@ -1200,6 +1200,8 @@ presubmits:
       preset-service-account: "true"
     max_concurrency: 12
     name: pull-kubernetes-node-e2e
+    annotations:
+      testgrid-create-test-group: "true"
     spec:
       containers:
       - args:
