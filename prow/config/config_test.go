@@ -4748,10 +4748,10 @@ default_decoration_config_entries:
 			t.Parallel()
 			p := Plank{}
 			if err := yaml.Unmarshal([]byte(tc.raw), &p); err != nil {
-				t.Errorf("error unmarshaling: %w", err)
+				t.Errorf("error unmarshaling: %v", err)
 			}
 			if err := p.FinalizeDefaultDecorationConfigs(); err != nil && !tc.expectErr {
-				t.Errorf("unexpected error finalizing DefaultDecorationConfigs: %w", err)
+				t.Errorf("unexpected error finalizing DefaultDecorationConfigs: %v", err)
 			} else if err == nil && tc.expectErr {
 				t.Error("expected error, but did not receive one")
 			}
@@ -6796,6 +6796,7 @@ func TestInRepoConfigEnabled(t *testing.T) {
 		name     string
 		config   Config
 		expected bool
+		testing  string
 	}{
 		{
 			name: "Exact match",
@@ -6809,6 +6810,7 @@ func TestInRepoConfigEnabled(t *testing.T) {
 				},
 			},
 			expected: true,
+			testing:  "org/repo",
 		},
 		{
 			name: "Orgname matches",
@@ -6822,6 +6824,7 @@ func TestInRepoConfigEnabled(t *testing.T) {
 				},
 			},
 			expected: true,
+			testing:  "org/repo",
 		},
 		{
 			name: "Globally enabled",
@@ -6835,10 +6838,96 @@ func TestInRepoConfigEnabled(t *testing.T) {
 				},
 			},
 			expected: true,
+			testing:  "org/repo",
 		},
 		{
 			name:     "Disabled by default",
 			expected: false,
+			testing:  "org/repo",
+		},
+		{
+			name: "Gerrit format org Hostname matches",
+			config: Config{
+				ProwConfig: ProwConfig{
+					InRepoConfig: InRepoConfig{
+						Enabled: map[string]*bool{
+							"host-name": utilpointer.BoolPtr(true),
+						},
+					},
+				},
+			},
+			expected: true,
+			testing:  "host-name/extra/repo",
+		},
+		{
+			name: "Gerrit format org Hostname matches with http",
+			config: Config{
+				ProwConfig: ProwConfig{
+					InRepoConfig: InRepoConfig{
+						Enabled: map[string]*bool{
+							"host-name": utilpointer.BoolPtr(true),
+						},
+					},
+				},
+			},
+			expected: true,
+			testing:  "http://host-name/extra/repo",
+		},
+		{
+			name: "Gerrit format Just org Hostname matches",
+			config: Config{
+				ProwConfig: ProwConfig{
+					InRepoConfig: InRepoConfig{
+						Enabled: map[string]*bool{
+							"host-name": utilpointer.BoolPtr(true),
+						},
+					},
+				},
+			},
+			expected: true,
+			testing:  "host-name",
+		},
+		{
+			name: "Gerrit format Just org Hostname matches with http",
+			config: Config{
+				ProwConfig: ProwConfig{
+					InRepoConfig: InRepoConfig{
+						Enabled: map[string]*bool{
+							"host-name": utilpointer.BoolPtr(true),
+						},
+					},
+				},
+			},
+			expected: true,
+			testing:  "http://host-name",
+		},
+		{
+			name: "Gerrit format Just repo Hostname matches",
+			config: Config{
+				ProwConfig: ProwConfig{
+					InRepoConfig: InRepoConfig{
+						Enabled: map[string]*bool{
+							"host-name/repo/name": utilpointer.BoolPtr(true),
+						},
+					},
+				},
+			},
+			expected: true,
+			testing:  "host-name/repo/name",
+		},
+		{
+			name: "Gerrit format Just org Hostname matches with http",
+			config: Config{
+				ProwConfig: ProwConfig{
+					InRepoConfig: InRepoConfig{
+						Enabled: map[string]*bool{
+							"host-name/repo/name": utilpointer.BoolPtr(true),
+						},
+					},
+				},
+			},
+			expected: true,
+			testing:  "http://host-name/repo/name",
 		},
 	}
 
@@ -6847,7 +6936,7 @@ func TestInRepoConfigEnabled(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			if result := tc.config.InRepoConfigEnabled("org/repo"); result != tc.expected {
+			if result := tc.config.InRepoConfigEnabled(tc.testing); result != tc.expected {
 				t.Errorf("Expected %t, got %t", tc.expected, result)
 			}
 		})
@@ -7010,6 +7099,30 @@ func TestInRepoConfigAllowsCluster(t *testing.T) {
 			name:            "Allowed globally",
 			repoIdentifier:  "foo/repo",
 			allowedClusters: map[string][]string{"*": {clusterName}},
+			expectedResult:  true,
+		},
+		{
+			name:            "Allowed for gerrit host",
+			repoIdentifier:  "https://host/repo/name",
+			allowedClusters: map[string][]string{"host": {clusterName}},
+			expectedResult:  true,
+		},
+		{
+			name:            "Allowed for gerrit repo",
+			repoIdentifier:  "https://host/repo/name",
+			allowedClusters: map[string][]string{"host/repo/name": {clusterName}},
+			expectedResult:  true,
+		},
+		{
+			name:            "Allowed for gerrit repo",
+			repoIdentifier:  "host",
+			allowedClusters: map[string][]string{"host": {clusterName}},
+			expectedResult:  true,
+		},
+		{
+			name:            "Allowed for gerrit repo",
+			repoIdentifier:  "host/repo/name",
+			allowedClusters: map[string][]string{"host": {clusterName}},
 			expectedResult:  true,
 		},
 	}
@@ -8319,6 +8432,69 @@ func TestGetAndCheckRefs(t *testing.T) {
 				if tc.expected.err != err.Error() {
 					t.Errorf("Expected error '%v', got '%v'", tc.expected.err, err.Error())
 				}
+			}
+		})
+	}
+}
+
+func TestSplitRepoName(t *testing.T) {
+	tests := []struct {
+		name     string
+		full     string
+		wantOrg  string
+		wantRepo string
+		wantErr  bool
+	}{
+		{
+			name:     "github repo",
+			full:     "orgA/repoB",
+			wantOrg:  "orgA",
+			wantRepo: "repoB",
+			wantErr:  false,
+		},
+		{
+			name:     "ref name with http://",
+			full:     "http://orgA/repoB",
+			wantOrg:  "orgA",
+			wantRepo: "repoB",
+			wantErr:  false,
+		},
+		{
+			name:     "ref name with https://",
+			full:     "https://orgA/repoB",
+			wantOrg:  "orgA",
+			wantRepo: "repoB",
+			wantErr:  false,
+		},
+		{
+			name:     "repo name contains /",
+			full:     "orgA/repoB/subC",
+			wantOrg:  "orgA",
+			wantRepo: "repoB/subC",
+			wantErr:  false,
+		},
+		{
+			name:     "invalid",
+			full:     "repoB",
+			wantOrg:  "",
+			wantRepo: "",
+			wantErr:  true,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			gotOrg, gotRepo, err := SplitRepoName(tt.full)
+			if gotOrg != tt.wantOrg {
+				t.Errorf("org mismatch. Want: %v, got: %v", tt.wantOrg, gotOrg)
+			}
+			if gotRepo != tt.wantRepo {
+				t.Errorf("repo mismatch. Want: %v, got: %v", tt.wantRepo, gotRepo)
+			}
+			gotErr := (err != nil)
+			if gotErr != (tt.wantErr && gotErr) {
+				t.Errorf("err mismatch. Want: %v, got: %v", tt.wantErr, gotErr)
 			}
 		})
 	}

@@ -21,7 +21,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/sirupsen/logrus"
 	"sigs.k8s.io/yaml"
@@ -58,7 +57,7 @@ type options struct {
 
 func (o *options) genJobSpec(conf *config.Config) (config.JobBase, prowapi.ProwJobSpec) {
 	for fullRepoName, ps := range conf.PresubmitsStatic {
-		org, repo, err := splitRepoName(fullRepoName)
+		org, repo, err := config.SplitRepoName(fullRepoName)
 		if err != nil {
 			logrus.WithError(err).Warnf("Invalid repo name %s.", fullRepoName)
 			continue
@@ -80,7 +79,7 @@ func (o *options) genJobSpec(conf *config.Config) (config.JobBase, prowapi.ProwJ
 		}
 	}
 	for fullRepoName, ps := range conf.PostsubmitsStatic {
-		org, repo, err := splitRepoName(fullRepoName)
+		org, repo, err := config.SplitRepoName(fullRepoName)
 		if err != nil {
 			logrus.WithError(err).Warnf("Invalid repo name %s.", fullRepoName)
 			continue
@@ -274,16 +273,4 @@ func main() {
 	} else if !succeeded && o.failWithJob {
 		os.Exit(1)
 	}
-}
-
-func splitRepoName(repo string) (string, string, error) {
-	// Normalize repo name to remove http:// or https://, this is the case for some
-	// of the gerrit instances.
-	repo = strings.TrimPrefix(repo, "http://")
-	repo = strings.TrimPrefix(repo, "https://")
-	s := strings.SplitN(repo, "/", 2)
-	if len(s) != 2 {
-		return "", "", fmt.Errorf("repo %s cannot be split into org/repo", repo)
-	}
-	return s[0], s[1], nil
 }
