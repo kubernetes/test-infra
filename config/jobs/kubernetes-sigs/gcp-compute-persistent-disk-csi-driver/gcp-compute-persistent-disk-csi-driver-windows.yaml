@@ -1,6 +1,5 @@
 periodics:
 - name: ci-gce-pd-csi-driver-latest-k8s-master-windows-20h2
-  decorate: true
   extra_refs:
   - org: kubernetes-sigs
     repo: gcp-compute-persistent-disk-csi-driver
@@ -18,34 +17,35 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220120-50581feb62-master
       args:
-      - --check-leaked-resources
-      - --cluster=
-      - --extract=ci/latest
-      - --gcp-zone=us-west1-b
-      - --ginkgo-parallel=8
-      - --provider=gce
-      - --gcp-nodes=2
-      - --test=false
-      - --test-cmd=$GOPATH/src/sigs.k8s.io/gcp-compute-persistent-disk-csi-driver/test/run-windows-k8s-integration.sh
-      - --timeout=180m
+      - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+      - "--root=/go/src"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      - "--clean"
+      - "--timeout=180" # Minutes (120m runs consistently time out)
+      - "--scenario=execute"
+      - "--" # end bootstrap args, scenario args below
+      - "test/run-windows-k8s-integration.sh"
       env:
       - name: WINDOWS_NODE_OS_DISTRIBUTION
         value: "win20h2"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220120-50581feb62-master
       securityContext:
-          privileged: true
+        privileged: true
+    resources:
+      requests:
+        # these are both a bit below peak usage during build
+        # this is mostly for building kubernetes
+        memory: "9000Mi"
+        # during the tests more like 3-20m is used
+        cpu: 2000m
   annotations:
     testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
-    testgrid-tab-name: ci-win20h2-provider-gcp-compute-persistent-disk-csi-driver
+    testgrid-tab-name: ci-windows-20h2-provider-gcp-compute-persistent-disk-csi-driver
     description: Kubernetes Integration tests for Kubernetes Master branch and Driver latest
 - name: ci-gce-pd-csi-driver-latest-k8s-master-windows-2019
-  decorate: true
   extra_refs:
   - org: kubernetes-sigs
     repo: gcp-compute-persistent-disk-csi-driver
@@ -63,34 +63,35 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220120-50581feb62-master
       args:
-      - --check-leaked-resources
-      - --cluster=
-      - --extract=ci/latest
-      - --gcp-zone=us-west1-b
-      - --ginkgo-parallel=8
-      - --provider=gce
-      - --gcp-nodes=2
-      - --test=false
-      - --test-cmd=$GOPATH/src/sigs.k8s.io/gcp-compute-persistent-disk-csi-driver/test/run-windows-k8s-integration.sh
-      - --timeout=120m
+      - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+      - "--root=/go/src"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      - "--clean"
+      - "--timeout=180" # Minutes (120m runs consistently time out)
+      - "--scenario=execute"
+      - "--" # end bootstrap args, scenario args below
+      - "test/run-windows-k8s-integration.sh"
       env:
       - name: WINDOWS_NODE_OS_DISTRIBUTION
         value: "win2019"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220120-50581feb62-master
       securityContext:
-          privileged: true
+        privileged: true
+    resources:
+      requests:
+        # these are both a bit below peak usage during build
+        # this is mostly for building kubernetes
+        memory: "9000Mi"
+        # during the tests more like 3-20m is used
+        cpu: 2000m
   annotations:
     testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
-    testgrid-tab-name: ci-win2019-provider-gcp-compute-persistent-disk-csi-driver
+    testgrid-tab-name: ci-windows-2019-provider-gcp-compute-persistent-disk-csi-driver
     description: Kubernetes Integration tests for Kubernetes Master branch and Driver latest
 - name: ci-gce-pd-csi-driver-latest-k8s-master-windows-20h2-migration
-  decorate: true
   extra_refs:
   - org: kubernetes-sigs
     repo: gcp-compute-persistent-disk-csi-driver
@@ -108,20 +109,16 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220120-50581feb62-master
       args:
-      - --check-leaked-resources
-      - --cluster=
-      - --extract=ci/latest
-      - --gcp-zone=us-west1-b
-      - --ginkgo-parallel=8
-      - --provider=gce
-      - --gcp-nodes=2
-      - --test=false
-      - --test-cmd=$GOPATH/src/sigs.k8s.io/gcp-compute-persistent-disk-csi-driver/test/run-k8s-windows-migration.sh
-      - --timeout=180m
+      - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+      - "--root=/go/src"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      - "--clean"
+      - "--timeout=180" # Minutes (120m runs consistently time out)
+      - "--scenario=execute"
+      - "--" # end bootstrap args, scenario args below
+      - "test/run-windows-k8s-migration.sh"
       env:
       - name: WINDOWS_NODE_OS_DISTRIBUTION
         value: "win20h2"
@@ -129,15 +126,20 @@ periodics:
         value: "prepull-head.yaml"
       - name: KUBE_FEATURE_GATES
         value: "CSIMigrationGCE=true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220120-50581feb62-master
       securityContext:
-          privileged: true
+        privileged: true
+    resources:
+      requests:
+        # these are both a bit below peak usage during build
+        # this is mostly for building kubernetes
+        memory: "9000Mi"
+        # during the tests more like 3-20m is used
+        cpu: 2000m
   annotations:
     testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
-    testgrid-tab-name: ci-win20h2-provider-gcp-compute-persistent-disk-csi-driver-migration
+    testgrid-tab-name: ci-windows-20h2-provider-gcp-compute-persistent-disk-csi-driver-migration
     description: Kubernetes Integration tests for Kubernetes Master branch and Driver latest
 - name: ci-gce-pd-csi-driver-latest-k8s-master-windows-2019-migration
-  decorate: true
   extra_refs:
   - org: kubernetes-sigs
     repo: gcp-compute-persistent-disk-csi-driver
@@ -155,20 +157,16 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220120-50581feb62-master
       args:
-      - --check-leaked-resources
-      - --cluster=
-      - --extract=ci/latest
-      - --gcp-zone=us-west1-b
-      - --ginkgo-parallel=8
-      - --provider=gce
-      - --gcp-nodes=2
-      - --test=false
-      - --test-cmd=$GOPATH/src/sigs.k8s.io/gcp-compute-persistent-disk-csi-driver/test/run-k8s-windows-migration.sh
-      - --timeout=120m
+      - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+      - "--root=/go/src"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      - "--clean"
+      - "--timeout=180" # Minutes (120m runs consistently time out)
+      - "--scenario=execute"
+      - "--" # end bootstrap args, scenario args below
+      - "test/run-windows-k8s-migration.sh"
       env:
       - name: WINDOWS_NODE_OS_DISTRIBUTION
         value: "win2019"
@@ -176,12 +174,18 @@ periodics:
         value: "prepull-head.yaml"
       - name: KUBE_FEATURE_GATES
         value: "CSIMigrationGCE=true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220120-50581feb62-master
       securityContext:
-          privileged: true
+        privileged: true
+    resources:
+      requests:
+        # these are both a bit below peak usage during build
+        # this is mostly for building kubernetes
+        memory: "9000Mi"
+        # during the tests more like 3-20m is used
+        cpu: 2000m
   annotations:
     testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
-    testgrid-tab-name: ci-win2019-provider-gcp-compute-persistent-disk-csi-driver-migration
+    testgrid-tab-name: ci-windows-2019-provider-gcp-compute-persistent-disk-csi-driver-migration
     description: Kubernetes Integration tests for Kubernetes Master branch and Driver latest
 presubmits:
   kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
