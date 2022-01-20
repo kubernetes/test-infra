@@ -68,7 +68,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220119-cac87ea594-1.21
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220120-50581feb62-1.21
       command:
       - runner.sh
       - kubetest
@@ -121,7 +121,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220119-cac87ea594-1.22
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220120-50581feb62-1.22
       command:
       - runner.sh
       - kubetest
@@ -174,7 +174,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220119-cac87ea594-1.23
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220120-50581feb62-1.23
       command:
       - runner.sh
       - kubetest
@@ -227,7 +227,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220119-cac87ea594-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220120-50581feb62-master
       command:
       - runner.sh
       - kubetest
@@ -280,7 +280,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220119-cac87ea594-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220120-50581feb62-master
       command:
       - runner.sh
       - kubetest
@@ -337,7 +337,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220119-cac87ea594-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220120-50581feb62-master
       command:
       - runner.sh
       - kubetest
@@ -395,7 +395,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220119-cac87ea594-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220120-50581feb62-master
         command:
         - runner.sh
         - kubetest
@@ -450,7 +450,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220119-cac87ea594-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220120-50581feb62-master
         command:
         - runner.sh
         - kubetest
