@@ -1155,6 +1155,9 @@ func TestReport(t *testing.T) {
 						client.GerritRevision:    "abc",
 						kube.ProwJobTypeLabel:    presubmit,
 						client.GerritReportLabel: "label-foo",
+						kube.OrgLabel:            "org",
+						kube.RepoLabel:           "repo",
+						kube.PullLabel:           "0",
 					},
 					Annotations: map[string]string{
 						client.GerritID:       "123-abc",
@@ -1190,6 +1193,9 @@ func TestReport(t *testing.T) {
 							client.GerritRevision:    "abc",
 							kube.ProwJobTypeLabel:    presubmit,
 							client.GerritReportLabel: "label-foo",
+							kube.OrgLabel:            "org",
+							kube.RepoLabel:           "repo",
+							kube.PullLabel:           "0",
 						},
 						Annotations: map[string]string{
 							client.GerritID:       "123-abc",
@@ -1226,6 +1232,88 @@ func TestReport(t *testing.T) {
 			reportInclude:     []string{"1 out of 1", "ci-foo", "SUCCESS", "guber/foo"},
 			expectLabel:       map[string]string{"label-foo": lgtm},
 			numExpectedReport: 0,
+		},
+		{
+			name: "older job, should not report",
+			pj: &v1.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						client.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:    presubmit,
+						client.GerritReportLabel: "label-foo",
+						kube.OrgLabel:            "org",
+						kube.RepoLabel:           "repo",
+						kube.PullLabel:           "0",
+					},
+					Annotations: map[string]string{
+						client.GerritID:       "123-abc",
+						client.GerritInstance: "gerrit",
+					},
+					CreationTimestamp: metav1.Time{
+						Time: timeNow.Add(-2 * time.Minute),
+					},
+					Name:      "ci-foo",
+					Namespace: "test-pods",
+				},
+				Status: v1.ProwJobStatus{
+					State: v1.SuccessState,
+					URL:   "guber/foo",
+				},
+				Spec: v1.ProwJobSpec{
+					Refs: &v1.Refs{
+						Repo: "foo",
+						Pulls: []v1.Pull{
+							{
+								Number: 0,
+							},
+						},
+					},
+					Job:    "ci-foo",
+					Report: true,
+				},
+			},
+			existingPJs: []*v1.ProwJob{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Labels: map[string]string{
+							client.GerritRevision:    "abc",
+							kube.ProwJobTypeLabel:    presubmit,
+							client.GerritReportLabel: "label-foo",
+							kube.OrgLabel:            "org",
+							kube.RepoLabel:           "repo",
+							kube.PullLabel:           "0",
+						},
+						Annotations: map[string]string{
+							client.GerritID:       "123-abc",
+							client.GerritInstance: "gerrit",
+						},
+						CreationTimestamp: metav1.Time{
+							Time: timeNow.Add(-time.Minute),
+						},
+						Name:      "ci-foo",
+						Namespace: "test-pods",
+					},
+					Status: v1.ProwJobStatus{
+						PrevReportStates: map[string]v1.ProwJobState{
+							"gerrit-reporter": v1.FailureState,
+						},
+						State: v1.FailureState,
+						URL:   "guber/foo",
+					},
+					Spec: v1.ProwJobSpec{
+						Refs: &v1.Refs{
+							Repo: "foo",
+							Pulls: []v1.Pull{
+								{
+									Number: 0,
+								},
+							},
+						},
+						Job:    "ci-foo",
+						Report: true,
+					},
+				},
+			},
 		},
 		{
 			name: "2 jobs, one SUCCESS one pending, different label, should report by itself",
