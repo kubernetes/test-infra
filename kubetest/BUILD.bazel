@@ -24,7 +24,6 @@ go_library(
     importpath = "k8s.io/test-infra/kubetest",
     visibility = ["//visibility:private"],
     deps = [
-        "//kubetest/conformance:go_default_library",
         "//kubetest/e2e:go_default_library",
         "//kubetest/kind:go_default_library",
         "//kubetest/process:go_default_library",
