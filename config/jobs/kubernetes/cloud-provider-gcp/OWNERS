@@ -1,13 +1,13 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 reviewers:
-- amwat
 - mikedanese
 - jpbetz
 approvers:
-- amwat
 - mikedanese
 - jpbetz
+emeritus_approvers:
+- amwat
 labels:
 - sig/cloud-provider
 - area/provider/gcp

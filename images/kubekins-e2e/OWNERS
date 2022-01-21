@@ -1,7 +1,6 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 reviewers:
-- amwat
 - BenTheElder
 - cpanato
 - jeremyrickard
@@ -12,10 +11,11 @@ reviewers:
 - spiffxp
 - xmudrii
 approvers:
-- amwat
 - BenTheElder
 - justaugustus
 - spiffxp
+emeritus_approvers:
+- amwat
 
 labels:
 - sig/release
