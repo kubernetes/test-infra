@@ -1,15 +1,14 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 reviewers:
-- amwat
 - spiffxp
 - BenTheElder
 - MushuEE
 approvers:
-- amwat
 - spiffxp
 - BenTheElder
 emeritus_approvers:
+- amwat
 - Katharine
 
 labels:

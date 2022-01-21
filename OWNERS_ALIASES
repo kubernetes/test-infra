@@ -12,7 +12,7 @@ aliases:
 
   # https://github.com/kubernetes/sig-release/blob/master/release-managers.md#build-admins
   build-admins:
-    - amwat
+  # TODO: add juanfescobar after https://github.com/kubernetes/org/issues/3193
     - BenTheElder
     - MushuEE
     - spiffxp
