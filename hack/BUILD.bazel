@@ -1,17 +1,6 @@
-load("@py3_deps//:requirements.bzl", "requirement")
 load("@build_bazel_rules_nodejs//:index.bzl", "nodejs_binary", "nodejs_test")
 
 package(default_visibility = ["//visibility:public"])
-
-py_test(
-    name = "coalesce_test",
-    size = "small",
-    srcs = [
-        "coalesce.py",
-        "coalesce_test.py",
-    ],
-    python_version = "PY3",
-)
 
 sh_test(
     name = "verify-pylint",
@@ -231,33 +220,6 @@ test_suite(
 test_suite(
     name = "verify-linters",
     tags = ["lint"],  # picks up all non-manual targets with this tag
-)
-
-py_binary(
-    name = "pylint_bin",
-    srcs = ["pylint_bin.py"],
-    python_version = "PY3",
-    tags = ["manual"],
-    # NOTE: this should only contain direct third party imports and pylint
-    deps = [
-        requirement("astroid"),
-        requirement("backports.functools_lru_cache"),
-        requirement("configparser"),
-        requirement("influxdb"),
-        requirement("isort"),
-        requirement("lazy-object-proxy"),
-        requirement("parameterized"),
-        requirement("pylint"),
-        requirement("pytz"),
-        requirement("PyYAML"),
-        requirement("requests"),
-        requirement("setuptools"),
-        requirement("sh"),
-        requirement("singledispatch"),
-        requirement("six"),
-        requirement("wrapt"),
-        requirement("ruamel.yaml"),
-    ],
 )
 
 sh_binary(

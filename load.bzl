@@ -56,15 +56,6 @@ def repositories():
         urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/3.1.0/rules_nodejs-3.1.0.tar.gz"],
     )
 
-    # Python setup
-    # pip_import() calls must live in WORKSPACE, otherwise we get a load() after non-load() error
-    git_repository(
-        name = "rules_python",
-        commit = "94677401bc56ed5d756f50b441a6a5c7f735a6d4",
-        remote = "https://github.com/bazelbuild/rules_python.git",
-        shallow_since = "1573842889 -0500",
-    )
-
     # TODO(fejta): get this to work
     git_repository(
         name = "io_bazel_rules_appengine",
