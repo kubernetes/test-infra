@@ -18,7 +18,7 @@ presubmits:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220120-50581feb62-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220121-bb77a9cb93-master
           env:
           - name: "BOSKOS_HOST"
             value: "boskos.test-pods.svc.cluster.local"
@@ -52,7 +52,7 @@ presubmits:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220120-50581feb62-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220121-bb77a9cb93-master
           env:
           - name: "BOSKOS_HOST"
             value: "boskos.test-pods.svc.cluster.local"
@@ -86,7 +86,7 @@ presubmits:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220120-50581feb62-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220121-bb77a9cb93-master
           env:
           - name: "BOSKOS_HOST"
             value: "boskos.test-pods.svc.cluster.local"
@@ -112,7 +112,7 @@ presubmits:
     path_alias: "k8s.io/cloud-provider-openstack"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220120-50581feb62-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220121-bb77a9cb93-master
         command:
         - make
         args:
@@ -131,7 +131,7 @@ presubmits:
     path_alias: "k8s.io/cloud-provider-openstack"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220120-50581feb62-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220121-bb77a9cb93-master
         command:
         - make
         args:
@@ -159,7 +159,7 @@ presubmits:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220120-50581feb62-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220121-bb77a9cb93-master
           env:
           - name: "BOSKOS_HOST"
             value: "boskos.test-pods.svc.cluster.local"

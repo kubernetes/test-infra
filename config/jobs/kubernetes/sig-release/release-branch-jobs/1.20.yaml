@@ -220,7 +220,7 @@ periodics:
       - --allow-dup
       - --extra-version-markers=k8s-stable3
       - --registry=gcr.io/kubernetes-ci-images
-      image: gcr.io/k8s-staging-test-infra/bootstrap:v20211008-e0e089cfce
+      image: gcr.io/k8s-staging-test-infra/bootstrap:v20220121-bb77a9cb93
       name: ""
       resources:
         limits:
@@ -635,7 +635,7 @@ periodics:
         value: "true"
       - name: BUILD_TYPE
         value: bazel
-      image: gcr.io/k8s-staging-test-infra/krte:v20220119-cac87ea594-1.20
+      image: gcr.io/k8s-staging-test-infra/krte:v20220121-bb77a9cb93-1.20
       name: ""
       resources:
         limits:
@@ -689,7 +689,7 @@ periodics:
         value: "true"
       - name: BUILD_TYPE
         value: bazel
-      image: gcr.io/k8s-staging-test-infra/krte:v20220119-cac87ea594-1.20
+      image: gcr.io/k8s-staging-test-infra/krte:v20220121-bb77a9cb93-1.20
       name: ""
       resources:
         limits:
@@ -1524,7 +1524,7 @@ presubmits:
           value: "true"
         - name: BUILD_TYPE
           value: bazel
-        image: gcr.io/k8s-staging-test-infra/krte:v20220119-cac87ea594-1.20
+        image: gcr.io/k8s-staging-test-infra/krte:v20220121-bb77a9cb93-1.20
         name: ""
         resources:
           limits:
