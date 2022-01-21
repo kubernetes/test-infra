@@ -1,0 +1,13 @@
+{
+  "extends": "../../../../../make-tsconfig.json",
+  "include": [
+    "job-history.ts",
+    "../common/common.ts",
+    "../vendor.d.ts",
+    "../../../../../node_modules/moment/moment.d.ts",
+    "../../../../../node_modules/@types/gtag.js/index.d.ts"
+  ],
+  "exclude": [
+    "zz.bundle.min.js"
+  ]
+}

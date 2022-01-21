@@ -224,6 +224,10 @@ EOF
   unset HOME
 }
 
+gen-ts-bundle() {
+  ./hack/make-rules/update/ts-rollup.sh
+}
+
 export GO111MODULE=off
 ensure-in-gopath
 old=${GOCACHE:-}
@@ -242,3 +246,5 @@ gen-informer
 gen-spyglass-bindata
 gen-prowjob-crd
 export GO111MODULE=on
+
+gen-ts-bundle
