@@ -70,7 +70,6 @@ presubmits:
     - ^release-0.7
     - ^release-0.8
     - ^release-0.9
-    - ^release-0.10
 
     decorate: true
     annotations:
