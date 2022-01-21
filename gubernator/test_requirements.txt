@@ -3,4 +3,4 @@ nosegae
 pylint==1.6.4
 coverage
 lazy-object-proxy==1.6.0
-PyYAML==5.1.1
+PyYAML==5.4.1
