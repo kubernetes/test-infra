@@ -3,16 +3,19 @@ presets:
     preset-cluster-api-provider-vsphere-e2e-config: "true"
   env:
   - name: GOVC_URL
-    value: 10.2.224.4
+    valueFrom:
+      secretKeyRef:
+        name: capv-ci-overrides
+        key: vsphere-server
   - name: GOVC_USERNAME
     valueFrom:
       secretKeyRef:
-        name: clusterapi-provider-vsphere-ci-prow
+        name: capv-ci-overrides
         key: vsphere-username
   - name: GOVC_PASSWORD
     valueFrom:
       secretKeyRef:
-        name: clusterapi-provider-vsphere-ci-prow
+        name: capv-ci-overrides
         key: vsphere-password
   - name: VM_SSH_PUB_KEY
     valueFrom:
