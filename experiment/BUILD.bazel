@@ -1,12 +1,3 @@
-load("@py3_deps//:requirements.bzl", "requirement")
-
-py_binary(
-    name = "flakedetector",
-    srcs = ["flakedetector.py"],
-    python_version = "PY3",
-    deps = [requirement("requests")],
-)
-
 filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
