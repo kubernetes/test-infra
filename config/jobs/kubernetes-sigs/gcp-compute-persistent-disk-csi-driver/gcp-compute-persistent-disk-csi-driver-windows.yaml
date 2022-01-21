@@ -19,7 +19,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220120-50581feb62-master
       args:
-      - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+      - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
       - "--root=/go/src"
       - "--upload=gs://kubernetes-jenkins/logs"
       - "--clean"
@@ -65,7 +65,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220120-50581feb62-master
       args:
-      - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+      - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
       - "--root=/go/src"
       - "--upload=gs://kubernetes-jenkins/logs"
       - "--clean"
@@ -111,7 +111,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220120-50581feb62-master
       args:
-      - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+      - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
       - "--root=/go/src"
       - "--upload=gs://kubernetes-jenkins/logs"
       - "--clean"
@@ -159,7 +159,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220120-50581feb62-master
       args:
-      - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+      - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
       - "--root=/go/src"
       - "--upload=gs://kubernetes-jenkins/logs"
       - "--clean"
@@ -205,7 +205,7 @@ presubmits:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220120-50581feb62-master
         args:
-        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/logs"
         - "--clean"
@@ -248,7 +248,7 @@ presubmits:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220120-50581feb62-master
         args:
-        - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/logs"
         - "--clean"
