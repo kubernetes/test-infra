@@ -14,7 +14,7 @@
 # limitations under the License.
 
 set -o errexit -o pipefail -o nounset
-export PYTHONPATH="third_party:${GAE_ROOT}:${GAE_ROOT}/lib/webapp2-2.5.2:${GAE_ROOT}/lib/jinja2-2.6"
+export PYTHONPATH="third_party:${GAE_ROOT}:${GAE_ROOT}/lib/webapp2-2.5.2:${GAE_ROOT}/lib/jinja2-2.11.3"
 cd "$(dirname "$0")"
 pylint ../gubernator
 shopt -s extglob
