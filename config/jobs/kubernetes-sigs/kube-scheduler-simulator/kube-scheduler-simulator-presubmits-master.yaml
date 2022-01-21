@@ -19,6 +19,7 @@ presubmits:
         - >
           make mod-download &&
           make tools &&
+          export PATH="${PATH}:${GOPATH}/bin" &&
           make lint
   - name: pull-kube-scheduler-simulator-frontend-lint
     annotations:
