@@ -460,6 +460,7 @@ presubmits:
             - name: GOPATH
               value: /go
   - name: pull-kubernetes-node-kubelet-serial-cpu-manager-kubetest2
+    cluster: k8s-infra-prow-build
     # explicitly needs /test pull-kubernetes-node-kubelet-serial-cpu-manager-kubetest2 to run
     always_run: false
     # if at all it is run and fails, don't block the PR
@@ -495,6 +496,13 @@ presubmits:
         env:
         - name: GOPATH
           value: /go
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
         command:
         - runner.sh
         args:
@@ -503,7 +511,6 @@ presubmits:
         - --test=node
         - --
         - --repo-root=.
-        - --gcp-project=k8s-jkns-pr-node-e2e
         - --gcp-zone=us-west1-b
         - --parallelism=1
         - --focus-regex=\[Feature:CPUManager\]
@@ -551,6 +558,7 @@ presubmits:
             - name: GOPATH
               value: /go
   - name: pull-kubernetes-node-kubelet-serial-topology-manager-kubetest2
+    cluster: k8s-infra-prow-build
     # explicitly needs /test pull-kubernetes-node-kubelet-serial-topology-manager-kubetest2 to run
     always_run: false
     # if at all it is run and fails, don't block the PR
@@ -586,6 +594,13 @@ presubmits:
         env:
         - name: GOPATH
           value: /go
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
         command:
         - runner.sh
         args:
@@ -594,7 +609,6 @@ presubmits:
         - --test=node
         - --
         - --repo-root=.
-        - --gcp-project=k8s-jkns-pr-node-e2e
         - --gcp-zone=us-west1-b
         - --parallelism=1
         - --focus-regex=\[Feature:TopologyManager\]
@@ -685,6 +699,7 @@ presubmits:
             cpu: 4
             memory: 6Gi
   - name: pull-kubernetes-node-crio-cgrpv2-e2e-kubetest2
+    cluster: k8s-infra-prow-build
     # explicitly needs /test pull-kubernetes-node-crio-cgrpv2-e2e-kubetest2 to run
     always_run: false
     # if at all it is run and fails, don't block the PR
@@ -716,8 +731,12 @@ presubmits:
       # https://github.com/kubernetes/test-infra/blob/3c3d64f398a5e4f324200d25183c98a4bfa842ac/images/kubekins-e2e/variants.yaml#L8
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220211-6df2c53026-experimental
         resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
           requests:
-            memory: "6Gi"
+            cpu: 4
+            memory: 6Gi
         env:
           - name: KUBE_SSH_USER
             value: core
@@ -729,7 +748,6 @@ presubmits:
         - --test=node
         - --
         - --repo-root=.
-        - --gcp-project=k8s-jkns-pr-node-e2e
         - --gcp-zone=us-west1-b
         - --parallelism=8
         - --focus-regex=\[NodeConformance\]|\[NodeFeature:.+\]|\[NodeFeature\]
@@ -868,6 +886,7 @@ presubmits:
             cpu: 4
             memory: 6Gi
   - name: pull-kubernetes-node-crio-e2e-kubetest2
+    cluster: k8s-infra-prow-build
     # explicitly needs /test pull-kubernetes-node-crio-e2e-kubetest2 to run
     always_run: false
     # if at all it is run and fails, don't block the PR
@@ -899,8 +918,12 @@ presubmits:
       # https://github.com/kubernetes/test-infra/blob/3c3d64f398a5e4f324200d25183c98a4bfa842ac/images/kubekins-e2e/variants.yaml#L8
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220211-6df2c53026-experimental
         resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
           requests:
-            memory: "6Gi"
+            cpu: 4
+            memory: 6Gi
         env:
           - name: KUBE_SSH_USER
             value: core
@@ -912,7 +935,6 @@ presubmits:
         - --test=node
         - --
         - --repo-root=.
-        - --gcp-project=k8s-jkns-pr-node-e2e
         - --gcp-zone=us-west1-b
         - --parallelism=8
         - --focus-regex=\[NodeConformance\]|\[NodeFeature:.+\]|\[NodeFeature\]
