@@ -814,6 +814,7 @@ periodics:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: node-e2e-features
 - name: ci-cri-containerd-node-e2e-unlabelled
+  cluster: k8s-infra-prow-build
   interval: 12h
   labels:
     preset-service-account: "true"
@@ -830,7 +831,6 @@ periodics:
       - --
       - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/image-config.yaml
       - --deployment=node
-      - --gcp-project=cri-containerd-node-e2e
       - --gcp-zone=us-west1-b
       - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
       - --node-tests=true
@@ -840,6 +840,13 @@ periodics:
       env:
       - name: GOPATH
         value: /go
+      resources:
+        limits:
+          cpu: 4
+          memory: 6Gi
+        requests:
+          cpu: 4
+          memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: node-e2e-unlabelled
