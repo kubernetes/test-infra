@@ -430,7 +430,7 @@ type Trigger struct {
 	// Repos is either of the form org/repos or just org.
 	Repos []string `json:"repos,omitempty"`
 	// TrustedApps is the explicit list of GitHub apps whose PRs will be automatically
-	// considered as trusted. Each app should have [bot] suffix, otherwise user will be ignored.
+	// considered as trusted. The list should contain usernames of each GitHub App without [bot] suffix.
 	// By default, trigger will ignore this list.
 	TrustedApps []string `json:"trusted_apps,omitempty"`
 	// TrustedOrg is the org whose members' PRs will be automatically built for
@@ -665,6 +665,7 @@ type Dco struct {
 	// SkipDCOCheckForMembers is used to skip DCO check for trusted org members
 	SkipDCOCheckForMembers bool `json:"skip_dco_check_for_members,omitempty"`
 	// TrustedApps defines list of apps which commits will not be checked for DCO singoff.
+	// The list should contain usernames of each GitHub App without [bot] suffix.
 	// By default, this option is ignored.
 	TrustedApps []string `json:"trusted_apps,omitempty"`
 	// TrustedOrg is the org whose members' commits will not be checked for DCO signoff

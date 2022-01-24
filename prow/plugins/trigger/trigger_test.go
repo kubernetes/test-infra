@@ -358,9 +358,9 @@ func TestTrustedUser(t *testing.T) {
 			expectedTrusted: true,
 		},
 		{
-			name:            "app[bot] is in trusted list",
+			name:            "github-app[bot] is in trusted list",
 			user:            "github-app[bot]",
-			trustedApps:     []string{"github-app[bot]"},
+			trustedApps:     []string{"github-app"},
 			expectedTrusted: true,
 		},
 	}
