@@ -81,7 +81,7 @@ presubmits:
         - --repo=k8s.io/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=150
+        - --timeout=160
         - --scenario=kubernetes_e2e
         - --
         - --build=quick
@@ -142,7 +142,7 @@ presubmits:
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-csi-serial
         - --test_args=--ginkgo.focus=CSI.*(\[Serial\]|\[Disruptive\]) --ginkgo.skip=\[Flaky\]|\[Feature:.+\]|\[Slow\] --minStartupPods=8
-        - --timeout=150m
+        - --timeout=160m
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220124-681f3531ec-master
         resources:
           requests:
@@ -172,7 +172,7 @@ presubmits:
         - --repo=k8s.io/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=150
+        - --timeout=160
         - --scenario=kubernetes_e2e
         - --
         - --build=quick
@@ -219,7 +219,7 @@ presubmits:
         - --repo=k8s.io/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-jenkins/pr-logs
-        - --timeout=150
+        - --timeout=160
         - --scenario=kubernetes_e2e
         - --
         - --build=quick
@@ -293,7 +293,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=150
+      - --timeout=160
       - --bare
       - --scenario=kubernetes_e2e
       - --
@@ -321,7 +321,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=150
+      - --timeout=160
       - --bare
       - --scenario=kubernetes_e2e
       - --
@@ -348,7 +348,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=150
+      - --timeout=160
       - --bare
       - --scenario=kubernetes_e2e
       - --
