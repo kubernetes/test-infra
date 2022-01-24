@@ -430,7 +430,7 @@ type Trigger struct {
 	// Repos is either of the form org/repos or just org.
 	Repos []string `json:"repos,omitempty"`
 	// TrustedApps is the explicit list of GitHub apps whose PRs will be automatically
-	// considered as trusted. Each app should have [bot] or [app] suffix, otherwise user will be ignored.
+	// considered as trusted. Each app should have [bot] suffix, otherwise user will be ignored.
 	// By default, trigger will ignore this list.
 	TrustedApps []string `json:"trusted_apps,omitempty"`
 	// TrustedOrg is the org whose members' PRs will be automatically built for

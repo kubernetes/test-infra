@@ -363,12 +363,6 @@ func TestTrustedUser(t *testing.T) {
 			trustedApps:     []string{"github-app[bot]"},
 			expectedTrusted: true,
 		},
-		{
-			name:            "app[app] is in trusted list",
-			user:            "github-app[app]",
-			trustedApps:     []string{"github-app[app]"},
-			expectedTrusted: true,
-		},
 	}
 
 	for _, tc := range testcases {
