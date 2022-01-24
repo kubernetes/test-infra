@@ -266,7 +266,7 @@ func TestTrustedUser(t *testing.T) {
 		name string
 
 		onlyOrgMembers bool
-		trustedUsers   []string
+		trustedApps    []string
 		trustedOrg     string
 
 		user string
@@ -358,15 +358,15 @@ func TestTrustedUser(t *testing.T) {
 			expectedTrusted: true,
 		},
 		{
-			name:            "user is in trusted users list",
-			user:            "trusted-user",
-			trustedUsers:    []string{"trusted-user"},
+			name:            "app[bot] is in trusted list",
+			user:            "github-app[bot]",
+			trustedApps:     []string{"github-app[bot]"},
 			expectedTrusted: true,
 		},
 		{
-			name:            "app is in trusted users list",
-			user:            "github-app[bot]",
-			trustedUsers:    []string{"github-app[bot]"},
+			name:            "app[app] is in trusted list",
+			user:            "github-app[app]",
+			trustedApps:     []string{"github-app[app]"},
 			expectedTrusted: true,
 		},
 	}
@@ -379,7 +379,7 @@ func TestTrustedUser(t *testing.T) {
 			}
 			fc.Collaborators = []string{"test-collaborator"}
 
-			trustedResponse, err := TrustedUser(fc, tc.onlyOrgMembers, tc.trustedUsers, tc.trustedOrg, tc.user, tc.org, tc.repo)
+			trustedResponse, err := TrustedUser(fc, tc.onlyOrgMembers, tc.trustedApps, tc.trustedOrg, tc.user, tc.org, tc.repo)
 			if err != nil {
 				t.Errorf("For case %s, didn't expect error from TrustedUser: %v", tc.name, err)
 			}

@@ -222,7 +222,7 @@ type TrustedUserResponse struct {
 
 // TrustedUser returns true if user is trusted in repo.
 // Trusted users are either repo collaborators, org members or trusted org members.
-func TrustedUser(ghc trustedUserClient, onlyOrgMembers bool, trustedUsers []string, trustedOrg, user, org, repo string) (TrustedUserResponse, error) {
+func TrustedUser(ghc trustedUserClient, onlyOrgMembers bool, trustedApps []string, trustedOrg, user, org, repo string) (TrustedUserResponse, error) {
 	errorResponse := TrustedUserResponse{IsTrusted: false}
 	okResponse := TrustedUserResponse{IsTrusted: true}
 
@@ -254,10 +254,11 @@ func TrustedUser(ghc trustedUserClient, onlyOrgMembers bool, trustedUsers []stri
 		}
 	}
 
-	// Determine if user is on trusted_users list.
-	// This allows specific users, or GitHub automations that cannot be added as collaborators.
-	for _, trustedUser := range trustedUsers {
-		if user == trustedUser {
+	// Determine if user is on trusted_apps list.
+	// This allows automatic tests execution for GitHub automations that cannot be added as collaborators.
+	for _, trustedApp := range trustedApps {
+		// username must explicitly end with either [bot] or [app]
+		if strings.HasSuffix(user, "[bot]") || strings.HasSuffix(user, "[app]") && user == trustedApp {
 			return okResponse, nil
 		}
 	}

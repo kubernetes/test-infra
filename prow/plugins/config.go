@@ -429,9 +429,10 @@ type AssignOnLabel struct {
 type Trigger struct {
 	// Repos is either of the form org/repos or just org.
 	Repos []string `json:"repos,omitempty"`
-	// TrustedUsers is the explicit list of GitHub users whose PRs will be automatically
-	// considered as trusted. By default, trigger will ignore this list.
-	TrustedUsers []string `json:"trusted_users,omitempty"`
+	// TrustedApps is the explicit list of GitHub apps whose PRs will be automatically
+	// considered as trusted. Each app should have [bot] or [app] suffix, otherwise user will be ignored.
+	// By default, trigger will ignore this list.
+	TrustedApps []string `json:"trusted_apps,omitempty"`
 	// TrustedOrg is the org whose members' PRs will be automatically built for
 	// PRs to the above repos. The default is the PR's org.
 	//
