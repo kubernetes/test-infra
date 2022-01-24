@@ -246,16 +246,20 @@ func (c *Client) ShouldReport(ctx context.Context, log *logrus.Entry, pj *v1.Pro
 	patchsetNum := patchsetNumFromPJ(pj)
 
 	// Check all other prowjobs to see whether they agree or not
-	return allPJsAgreeToReport([]string{client.GerritRevision, kube.ProwJobTypeLabel, client.GerritReportLabel}, func(pj *v1.ProwJob) bool {
-		if pj.Status.State == v1.TriggeredState || pj.Status.State == v1.PendingState {
+	return allPJsAgreeToReport([]string{client.GerritRevision, kube.ProwJobTypeLabel, client.GerritReportLabel}, func(otherPj *v1.ProwJob) bool {
+		if otherPj.Status.State == v1.TriggeredState || otherPj.Status.State == v1.PendingState {
 			// other jobs with same label are still running on this revision, skip report
 			log.Info("Other jobs with same label are still running on this revision")
 			return false
 		}
 		return true
-	}) && allPJsAgreeToReport([]string{kube.OrgLabel, kube.RepoLabel, kube.PullLabel}, func(pj *v1.ProwJob) bool {
+	}) && allPJsAgreeToReport([]string{kube.OrgLabel, kube.RepoLabel, kube.PullLabel}, func(otherPj *v1.ProwJob) bool {
+		// This job has duplicate(s) and there are newer one(s)
+		if otherPj.Spec.Job == pj.Spec.Job && otherPj.CreationTimestamp.After(pj.CreationTimestamp.Time) {
+			return false
+		}
 		// Newer patchset exists, skip report
-		return patchsetNumFromPJ(pj) <= patchsetNum
+		return patchsetNumFromPJ(otherPj) <= patchsetNum
 	})
 }
 
@@ -315,20 +319,19 @@ func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJo
 	pjTypeLabel := kube.ProwJobTypeLabel
 	gerritReportLabel := client.GerritReportLabel
 
+	var pjsOnRevisionWithSameLabel v1.ProwJobList
 	var toReportJobs []*v1.ProwJob
 	if pj.ObjectMeta.Labels[gerritReportLabel] == "" && pj.Status.State != v1.AbortedState {
 		toReportJobs = append(toReportJobs, pj)
 	} else { // generate an aggregated report
 
 		// list all prowjobs in the patchset matching pj's type (pre- or post-submit)
-
 		selector := map[string]string{
 			clientGerritRevision: pj.ObjectMeta.Labels[clientGerritRevision],
 			pjTypeLabel:          pj.ObjectMeta.Labels[pjTypeLabel],
 			gerritReportLabel:    pj.ObjectMeta.Labels[gerritReportLabel],
 		}
 
-		var pjsOnRevisionWithSameLabel v1.ProwJobList
 		if err := c.pjclientset.List(newCtx, &pjsOnRevisionWithSameLabel, ctrlruntimeclient.MatchingLabels(selector)); err != nil {
 			logger.WithError(err).WithField("selector", selector).Errorf("Cannot list prowjob with selector")
 			return nil, nil, err
@@ -416,10 +419,20 @@ func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJo
 	// in the batch, so we are creating a new context.
 	loopCtx, loopCancel := context.WithTimeout(ctx, 2*time.Minute)
 	defer loopCancel()
-	logger.WithField("job-count", len(toReportJobs)).Info("Reported job(s), now will update pj(s).")
+	logger.WithFields(logrus.Fields{
+		"job-count":      len(toReportJobs),
+		"all-jobs-count": len(pjsOnRevisionWithSameLabel.Items),
+	}).Info("Reported job(s), now will update pj(s).")
 	var err error
-	for _, pjob := range toReportJobs {
-		if err = criercommonlib.UpdateReportStateWithRetries(loopCtx, pjob, logger, c.pjclientset, c.GetName()); err != nil {
+	// All latest jobs for this label were already reported, none of the jobs
+	// for this label are worthy reporting any more. Mark all of them as
+	// reported to avoid corner cases where an older job finished later, and the
+	// newer prowjobs CRD was somehow missing from the cluster.
+	for _, pjob := range pjsOnRevisionWithSameLabel.Items {
+		if pjob.Status.State == v1.AbortedState || pjob.Status.PrevReportStates[c.GetName()] == pjob.Status.State {
+			continue
+		}
+		if err = criercommonlib.UpdateReportStateWithRetries(loopCtx, &pjob, logger, c.pjclientset, c.GetName()); err != nil {
 			logger.WithError(err).Error("Failed to update report state on prowjob")
 		}
 	}
