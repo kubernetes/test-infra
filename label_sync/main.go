@@ -38,6 +38,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/yaml"
 
+	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/logrusutil"
@@ -131,7 +132,7 @@ type options struct {
 	github          flagutil.GitHubOptions
 }
 
-func gatherOptions() options {
+func gatherOptions() (opts options, deprecatedOptions bool) {
 	o := options{}
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	fs.BoolVar(&o.debug, "debug", false, "Turn on debug to be more verbose")
@@ -153,7 +154,31 @@ func gatherOptions() options {
 	fs.IntVar(&o.tokenBurst, "token-burst", defaultBurst, "Allow consuming a subset of hourly tokens in a short burst. DEPRECATED: use --github-allowed-burst")
 	o.github.AddCustomizedFlags(fs, flagutil.ThrottlerDefaults(defaultTokens, defaultBurst))
 	fs.Parse(os.Args[1:])
-	return o
+
+	deprecatedGitHubOptions := false
+	newGitHubOptions := false
+	fs.Visit(func(f *flag.Flag) {
+		switch f.Name {
+		case "github-endpoint",
+			"github-graphql-endpoint",
+			"github-token-path",
+			"github-hourly-tokens",
+			"github-allowed-burst":
+			newGitHubOptions = true
+		case "token",
+			"endpoint",
+			"graphql-endpoint",
+			"tokens",
+			"token-burst":
+			deprecatedGitHubOptions = true
+		}
+	})
+
+	if deprecatedGitHubOptions && newGitHubOptions {
+		logrus.Fatalf("deprecated GitHub options, include --endpoint, --graphql-endpoint, --token, --tokens, --token-burst cannot be combined with new --github-XXX counterparts")
+	}
+
+	return o, deprecatedGitHubOptions
 }
 
 func pathExists(path string) bool {
@@ -682,6 +707,28 @@ type client interface {
 	GetRepoLabels(string, string) ([]github.Label, error)
 }
 
+func newClient(tokenPath string, tokens, tokenBurst int, dryRun bool, graphqlEndpoint string, hosts ...string) (client, error) {
+	if tokenPath == "" {
+		return nil, errors.New("--token unset")
+	}
+
+	if err := secret.Add(tokenPath); err != nil {
+		logrus.WithError(err).Fatal("Error starting secrets agent.")
+	}
+
+	if dryRun {
+		return github.NewDryRunClient(secret.GetTokenGenerator(tokenPath), secret.Censor, graphqlEndpoint, hosts...), nil
+	}
+	c := github.NewClient(secret.GetTokenGenerator(tokenPath), secret.Censor, graphqlEndpoint, hosts...)
+	if tokens > 0 && tokenBurst >= tokens {
+		return nil, fmt.Errorf("--tokens=%d must exceed --token-burst=%d", tokens, tokenBurst)
+	}
+	if tokens > 0 {
+		c.Throttle(tokens, tokenBurst) // 300 hourly tokens, bursts of 100
+	}
+	return c, nil
+}
+
 // Main function
 // Typical run with production configuration should require no parameters
 // It expects:
@@ -692,7 +739,7 @@ type client interface {
 // Next run takes about 22 seconds to check if all labels are correct on all repos
 func main() {
 	logrusutil.ComponentInit()
-	o := gatherOptions()
+	o, deprecated := gatherOptions()
 
 	if o.debug {
 		logrus.SetLevel(logrus.DebugLevel)
@@ -721,21 +768,13 @@ func main() {
 			logrus.WithError(err).Fatalf("failed to write css file using css-template %s to css-output %s", o.cssTemplate, o.cssOutput)
 		}
 	case o.action == "sync":
-		deprecatedGitHubOptions := len(o.token) != 0 || o.endpoint.String() != github.DefaultAPIEndpoint || o.graphqlEndpoint != github.DefaultGraphQLEndpoint || o.tokens != defaultTokens || o.tokenBurst != defaultBurst
-		newGitHubOptions := len(o.github.TokenPath) != 0 || o.github.Endpoint.String() != github.DefaultAPIEndpoint || o.github.GraphqlEndpoint != github.DefaultGraphQLEndpoint || o.github.ThrottleHourlyTokens != defaultTokens || o.github.ThrottleAllowBurst != defaultBurst
-
-		if deprecatedGitHubOptions && newGitHubOptions {
-			logrus.Fatalf("deprecated GitHub options, include --endpoint, --graphql-endpoint, --token, --tokens, --token-burst cannot be combined with new --github-XXX counterparts")
+		var githubClient client
+		var err error
+		if deprecated {
+			githubClient, err = newClient(o.token, o.tokens, o.tokenBurst, !o.confirm, o.graphqlEndpoint, o.endpoint.Strings()...)
+		} else {
+			githubClient, err = o.github.GitHubClient(!o.confirm)
 		}
-
-		if deprecatedGitHubOptions {
-			o.github.TokenPath = o.token
-			o.github.ThrottleHourlyTokens = o.tokens
-			o.github.ThrottleAllowBurst = o.tokenBurst
-			o.github.Endpoint = o.endpoint
-			o.github.GraphqlEndpoint = o.graphqlEndpoint
-		}
-		githubClient, err := o.github.GitHubClient(!o.confirm)
 
 		if err != nil {
 			logrus.WithError(err).Fatal("failed to create client")
