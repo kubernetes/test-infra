@@ -39,7 +39,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211208-9473f90198-test-infra
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220121-7b86cde1b8-test-infra
       command:
       - runner.sh
       args:
@@ -64,7 +64,7 @@ periodics:
   spec:
     serviceAccountName: triage
     containers:
-    - image: gcr.io/k8s-staging-test-infra/bigquery:v20220121-bb77a9cb93
+    - image: gcr.io/k8s-staging-test-infra/bigquery:v20220121-8b2d5086e4
       args:
       - ./kettle/monitor.py
       - --stale=6
