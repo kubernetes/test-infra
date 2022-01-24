@@ -19,7 +19,7 @@ presubmits:
         runAsUser: 2000
         allowPrivilegeEscalation: false
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220121-7b86cde1b8-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220124-681f3531ec-master
           command:
             - make
             - test
@@ -128,7 +128,7 @@ periodics:
         runAsUser: 2000
         allowPrivilegeEscalation: false
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220121-7b86cde1b8-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220124-681f3531ec-master
           command:
             - make
             - test
@@ -158,7 +158,7 @@ periodics:
         runAsUser: 2000
         allowPrivilegeEscalation: false
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220121-7b86cde1b8-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220124-681f3531ec-master
           command:
             - runner.sh
             - bash
@@ -188,7 +188,7 @@ periodics:
         runAsUser: 2000
         allowPrivilegeEscalation: false
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220121-7b86cde1b8-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220124-681f3531ec-master
           command:
             - runner.sh
             - bash
@@ -219,7 +219,7 @@ periodics:
         runAsUser: 2000
         allowPrivilegeEscalation: false
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220121-7b86cde1b8-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220124-681f3531ec-master
           command:
             - runner.sh
             - bash
