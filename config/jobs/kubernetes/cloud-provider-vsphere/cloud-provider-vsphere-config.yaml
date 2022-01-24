@@ -354,3 +354,38 @@ periodics:
     testgrid-num-failures-to-alert: '4'
     testgrid-alert-stale-results-hours: '16'
     testgrid-num-columns-recent: '20'
+# Runs the ci test coverage suite against vSphere cloud provider repo
+# This job is duplicated for multiple versions of Kubernetes.
+- name: periodic-cloud-provider-vsphere-coverage
+  interval: 12h
+  decorate: true
+  path_alias: github.com/chenlin07/cloud-provider-vsphere
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: cloud-provider-vsphere
+      base_ref: topic/chenlin/add-test-coverage
+      path_alias: github.com/chenlin07/cloud-provider-vsphere
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220120-50581feb62-master
+        command:
+          - runner.sh
+          - bash
+        args:
+          - -c
+          - |
+            result=0
+            ./scripts/ci-test-coverage.sh || result=$?
+            cp coverage.* ${ARTIFACTS}
+            cd ../../k8s.io/test-infra/gopherage
+            GO111MODULE=on go build .
+            ./gopherage filter --exclude-path="zz_generated,generated\.go" "${ARTIFACTS}/coverage.out" > "${ARTIFACTS}/filtered.cov" || result=$?
+            ./gopherage html "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/coverage.html" || result=$?
+            ./gopherage junit --threshold 0 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml" || result=$?
+            exit $result
+        securityContext:
+          privileged: true
