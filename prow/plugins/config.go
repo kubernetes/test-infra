@@ -160,6 +160,9 @@ type Blunderbuss struct {
 	// additional token per successful reviewer (and potentially more depending on
 	// how many busy reviewers it had to pass over).
 	UseStatusAvailability bool `json:"use_status_availability,omitempty"`
+	// IgnoreDrafts instructs the plugin to ignore assigning reviewers
+	// to the PR that is in Draft state. Default it's false.
+	IgnoreDrafts bool `json:"ignore_drafts,omitempty"`
 }
 
 // Owners contains configuration related to handling OWNERS files.

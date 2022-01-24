@@ -144,10 +144,13 @@ func handlePullRequestEvent(pc plugins.Agent, pre github.PullRequestEvent) error
 }
 
 func handlePullRequest(ghc githubClient, roc repoownersClient, log *logrus.Entry, config plugins.Blunderbuss, action github.PullRequestEventAction, pr *github.PullRequest, repo *github.Repo) error {
-	if action != github.PullRequestActionOpened || assign.CCRegexp.MatchString(pr.Body) {
+	if !(action == github.PullRequestActionOpened || action == github.PullRequestActionReadyForReview) || assign.CCRegexp.MatchString(pr.Body) {
 		return nil
 	}
-
+	if pr.Draft && config.IgnoreDrafts {
+		// ignore Draft PR when IgnoreDrafts is true
+		return nil
+	}
 	return handle(
 		ghc,
 		roc,
