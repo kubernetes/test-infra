@@ -121,11 +121,11 @@ type commentPruner interface {
 }
 
 // filterTrustedUsers checks whether the commits are from a trusted user and returns those that are not
-func filterTrustedUsers(gc gitHubClient, l *logrus.Entry, skipDCOCheckForCollaborators bool, trustedOrg, org, repo string, allCommits []github.RepositoryCommit) ([]github.RepositoryCommit, error) {
+func filterTrustedUsers(gc gitHubClient, l *logrus.Entry, skipDCOCheckForCollaborators bool, trustedApps []string, trustedOrg, org, repo string, allCommits []github.RepositoryCommit) ([]github.RepositoryCommit, error) {
 	untrustedCommits := make([]github.RepositoryCommit, 0, len(allCommits))
 
 	for _, commit := range allCommits {
-		trustedResponse, err := trigger.TrustedUser(gc, !skipDCOCheckForCollaborators, trustedOrg, commit.Author.Login, org, repo)
+		trustedResponse, err := trigger.TrustedUser(gc, !skipDCOCheckForCollaborators, trustedApps, trustedOrg, commit.Author.Login, org, repo)
 		if err != nil {
 			return nil, fmt.Errorf("Error checking is member trusted: %w", err)
 		}
@@ -296,7 +296,7 @@ func handle(config plugins.Dco, gc gitHubClient, cp commentPruner, log *logrus.E
 	}
 
 	if config.SkipDCOCheckForMembers || config.SkipDCOCheckForCollaborators {
-		commitsMissingDCO, err = filterTrustedUsers(gc, l, config.SkipDCOCheckForCollaborators, config.TrustedOrg, org, repo, commitsMissingDCO)
+		commitsMissingDCO, err = filterTrustedUsers(gc, l, config.SkipDCOCheckForCollaborators, config.TrustedApps, config.TrustedOrg, org, repo, commitsMissingDCO)
 		if err != nil {
 			l.WithError(err).Infof("Error running trusted org member check against commits in PR")
 			return err

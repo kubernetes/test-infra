@@ -664,6 +664,9 @@ type Welcome struct {
 type Dco struct {
 	// SkipDCOCheckForMembers is used to skip DCO check for trusted org members
 	SkipDCOCheckForMembers bool `json:"skip_dco_check_for_members,omitempty"`
+	// TrustedApps defines list of apps which commits will not be checked for DCO singoff.
+	// By default, this option is ignored.
+	TrustedApps []string `json:"trusted_apps,omitempty"`
 	// TrustedOrg is the org whose members' commits will not be checked for DCO signoff
 	// if the skip DCO option is enabled. The default is the PR's org.
 	TrustedOrg string `json:"trusted_org,omitempty"`
