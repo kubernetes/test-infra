@@ -32,6 +32,7 @@ dashboard_groups:
   - redhat-openshift-ocp-release-4.9-informing
   - redhat-openshift-okd-release-4.10-blocking
   - redhat-openshift-okd-release-4.10-informing
+  - redhat-openshift-okd-release-4.11-informing
   - redhat-openshift-okd-release-4.3-informing
   - redhat-openshift-okd-release-4.4-informing
   - redhat-openshift-okd-release-4.5-informing
