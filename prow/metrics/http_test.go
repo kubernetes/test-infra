@@ -231,7 +231,7 @@ func TestHandleWithMetricsCustomTimer(t *testing.T) {
 			rr := httptest.NewRecorder()
 			req, err := http.NewRequest("GET", "http://example.com", nil)
 			if err != nil {
-				t.Errorf("error while creating dummy request: %w", err)
+				t.Errorf("error while creating dummy request: %v", err)
 			}
 			handler.ServeHTTP(rr, req)
 			if err := testutil.CollectAndCompare(httpResponseSize, strings.NewReader(tc.expectedResponseSizeOut)); err != nil {
