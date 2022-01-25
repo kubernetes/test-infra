@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-all: build test
+all: build
 
 
 # ALPINE_VERSION is the version of the alpine image
@@ -54,10 +54,7 @@ get-build-cluster-credentials:
 build:
 	go install ./cmd/...
 
-test:
-	go test -race -cover $$(go list ./... | grep -v "\/vendor\/")
-
-.PHONY: build test get-cluster-credentials
+.PHONY: build get-cluster-credentials
 
 alpine-image:
 	docker build -t "$(REGISTRY)/$(PROJECT)/alpine:$(ALPINE_VERSION)" $(DOCKER_LABELS) cmd/images/alpine
