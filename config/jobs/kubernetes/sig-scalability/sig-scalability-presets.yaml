@@ -257,8 +257,6 @@ presets:
   env:
   - name: CL2_PROBE_MEASUREMENTS_CHECK_PROBES_READY_TIMEOUT
     value: "15m"
-  - name: KUBE_CONTAINER_RUNTIME
-    value: "containerd"
 
 ###### Scalability Envs
 ### Common env variables for node scalability-related suites.

@@ -181,7 +181,6 @@ presubmits:
         - --gcp-node-image=ubuntu
         - --image-family=ubuntu-2004-lts
         - --image-project=ubuntu-os-cloud
-        - --env=KUBE_CONTAINER_RUNTIME=containerd
         - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.5.9
         - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.3
         - --gcp-zone=us-west1-b
@@ -228,7 +227,6 @@ presubmits:
         - --gcp-node-image=ubuntu
         - --image-family=ubuntu-2004-lts
         - --image-project=ubuntu-os-cloud
-        - --env=KUBE_CONTAINER_RUNTIME=containerd
         - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.5.9
         - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.3
         - --gcp-zone=us-west1-b
@@ -302,7 +300,6 @@ periodics:
       - --gcp-node-image=ubuntu
       - --image-family=ubuntu-2004-lts
       - --image-project=ubuntu-os-cloud
-      - --env=KUBE_CONTAINER_RUNTIME=containerd
       - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.5.9
       - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.3
       - --gcp-zone=us-west1-b
@@ -330,7 +327,6 @@ periodics:
       - --gcp-node-image=ubuntu
       - --image-family=ubuntu-2004-lts
       - --image-project=ubuntu-os-cloud
-      - --env=KUBE_CONTAINER_RUNTIME=containerd
       - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.5.9
       - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.3
       - --gcp-zone=us-west1-b

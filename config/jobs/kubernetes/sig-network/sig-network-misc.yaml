@@ -37,7 +37,6 @@ presubmits:
         - --build=quick
         - --extract=local
         - --env=ALLOW_PRIVILEGED=true
-        - --env=KUBE_CONTAINER_RUNTIME=containerd
         - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.5.9
         - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.3
         - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
@@ -104,7 +103,6 @@ presubmits:
         - --extract=local
         - --env=ALLOW_PRIVILEGED=true
         - --env=NETWORK_POLICY_PROVIDER=calico
-        - --env=KUBE_CONTAINER_RUNTIME=containerd
         - --env=KUBE_FEATURE_GATES=NetworkPolicyEndPort=true
         - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.5.9
         - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.3
@@ -175,7 +173,6 @@ presubmits:
         args:
         - --build=quick
         - --env=ALLOW_PRIVILEGED=true
-        - --env=KUBE_CONTAINER_RUNTIME=containerd
         - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.5.9
         - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.3
         - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
@@ -682,7 +679,6 @@ periodics:
       - --check-leaked-resources
       - --env=ALLOW_PRIVILEGED=true
       - --env=NETWORK_POLICY_PROVIDER=calico
-      - --env=KUBE_CONTAINER_RUNTIME=containerd
       - --env=KUBE_FEATURE_GATES=NetworkPolicyEndPort=true
       - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.5.9
       - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.3
