@@ -169,7 +169,6 @@ periodics:
       - --kubemark-nodes=100
       - --provider=gce
       - --metadata-sources=cl2-metadata.json
-      - --env=CL2_ENABLE_HUGE_SERVICES=true
       - --test=false
       - --test_args=--ginkgo.focus=xxxx
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
@@ -179,6 +178,7 @@ periodics:
       - --test-cmd-args=--provider=kubemark
       - --test-cmd-args=--report-dir=$(ARTIFACTS)
       - --test-cmd-args=--testconfig=testing/load/config.yaml
+      - --test-cmd-args=--testconfig=testing/huge-service/config.yaml
       - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
@@ -402,7 +402,6 @@ periodics:
       - --kubemark-nodes=500
       - --metadata-sources=cl2-metadata.json
       - --provider=gce
-      - --env=CL2_ENABLE_HUGE_SERVICES=true
       - --test=false
       - --test_args=--ginkgo.focus=xxxx
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
@@ -411,6 +410,7 @@ periodics:
       - --test-cmd-args=--provider=kubemark
       - --test-cmd-args=--report-dir=$(ARTIFACTS)
       - --test-cmd-args=--testconfig=testing/load/config.yaml
+      - --test-cmd-args=--testconfig=testing/huge-service/config.yaml
       - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
       - --test-cmd-args=--testoverrides=./testing/overrides/kubemark_500_nodes.yaml
@@ -481,7 +481,6 @@ periodics:
       - --kubemark-nodes=5000
       - --provider=gce
       - --metadata-sources=cl2-metadata.json
-      - --env=CL2_ENABLE_HUGE_SERVICES=true
       # With APF only sum of --max-requests-inflight and --max-mutating-requests-inflight matters, so set --max-mutating-requests-inflight to 0.
       - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=640 --max-mutating-requests-inflight=0
       - --test=false
@@ -494,6 +493,7 @@ periodics:
       - --test-cmd-args=--provider=kubemark
       - --test-cmd-args=--report-dir=$(ARTIFACTS)
       - --test-cmd-args=--testconfig=testing/load/config.yaml
+      - --test-cmd-args=--testconfig=testing/huge-service/config.yaml
       - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/ignore_known_kubemark_container_restarts.yaml
@@ -566,7 +566,6 @@ periodics:
       - --kubemark-nodes=5000
       - --provider=gce
       - --metadata-sources=cl2-metadata.json
-      - --env=CL2_ENABLE_HUGE_SERVICES=true
       - --test=false
       - --test_args=--ginkgo.focus=xxxx
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
