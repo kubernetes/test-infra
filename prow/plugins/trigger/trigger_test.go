@@ -363,6 +363,13 @@ func TestTrustedUser(t *testing.T) {
 			trustedApps:     []string{"github-app"},
 			expectedTrusted: true,
 		},
+		{
+			name:            "github-app[bot] is not in trusted list",
+			user:            "github-app[bot]",
+			trustedApps:     []string{"other-app"},
+			expectedTrusted: false,
+			expectedReason:  (notMember | notCollaborator).String(),
+		},
 	}
 
 	for _, tc := range testcases {
