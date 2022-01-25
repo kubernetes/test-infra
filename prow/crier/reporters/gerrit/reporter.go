@@ -577,7 +577,7 @@ func GenerateReport(pjs []*v1.ProwJob, commentSizeLimit int) JobReport {
 	// This shouldn't happen unless there are too many prow jobs(e.g. > 300) and
 	// each job name is super long(e.g. > 50)
 	if remainingSize < 0 {
-		report.Header = fullHeader(report.Header, " Comment '/test all' to rerun all failed tests")
+		report.Header = fullHeader(report.Header, " Comment '/test all' to rerun all tests")
 		report.Message = errorMessageLine("Prow failed to report all jobs, are there excessive amount of prow jobs?")
 		return report
 	}

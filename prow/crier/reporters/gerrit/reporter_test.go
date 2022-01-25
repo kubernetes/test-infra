@@ -2147,7 +2147,7 @@ func TestGenerateReport(t *testing.T) {
 				job("some", "other", v1.SuccessState),
 			},
 			commentSizeLimit: 81 + 55,
-			wantHeader:       "Prow Status: 2 out of 3 pjs passed! Comment '/test all' to rerun all failed tests\n",
+			wantHeader:       "Prow Status: 2 out of 3 pjs passed! Comment '/test all' to rerun all tests\n",
 			wantMessage:      "[NOTE FROM PROW: Prow failed to report all jobs, are there excessive amount of prow jobs?]",
 		},
 	}
