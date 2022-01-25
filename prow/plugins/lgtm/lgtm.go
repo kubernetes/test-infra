@@ -335,7 +335,7 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 	opts := config.LgtmFor(rc.repo.Owner.Login, rc.repo.Name)
 	if hasLGTM && !wantLGTM {
 		log.Info("Removing LGTM label.")
-		if err := removeLGTMAndRequestReview(gc, org, repoName, number, getLogins(assignees)); err != nil {
+		if err := removeLGTMAndRequestReview(gc, org, repoName, number, getLogins(assignees), opts.StoreTreeHash); err != nil {
 			return err
 		}
 		if opts.StoreTreeHash {
@@ -462,7 +462,7 @@ func handlePullRequest(log *logrus.Entry, gc githubClient, config *plugins.Confi
 		}
 	}
 
-	if err := removeLGTMAndRequestReview(gc, org, repo, number, getLogins(pe.PullRequest.Assignees)); err != nil {
+	if err := removeLGTMAndRequestReview(gc, org, repo, number, getLogins(pe.PullRequest.Assignees), opts.StoreTreeHash); err != nil {
 		return fmt.Errorf("failed removing lgtm label: %w", err)
 	}
 
@@ -472,15 +472,17 @@ func handlePullRequest(log *logrus.Entry, gc githubClient, config *plugins.Confi
 	return gc.CreateComment(org, repo, number, removeLGTMLabelNoti)
 }
 
-func removeLGTMAndRequestReview(gc githubClient, org, repo string, number int, logins []string) error {
+func removeLGTMAndRequestReview(gc githubClient, org, repo string, number int, logins []string, storeTreeHash bool) error {
 	if err := gc.RemoveLabel(org, repo, number, LGTMLabel); err != nil {
 		return fmt.Errorf("failed removing lgtm label: %w", err)
 	}
 
-	// Re-request review because LGTM has been removed.
+	// Re-request review because LGTM has been removed only if storeTreeHash enabled.
 	// TODO(mpherman): Surface User errors to PR
-	if err := gc.RequestReview(org, repo, number, logins); err != nil {
-		return fmt.Errorf("failed to re-request review")
+	if storeTreeHash {
+		if err := gc.RequestReview(org, repo, number, logins); err != nil {
+			return fmt.Errorf("failed to re-request review")
+		}
 	}
 	return nil
 }
