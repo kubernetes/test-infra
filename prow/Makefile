@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-all: build test
-
+all:
+	# NOP
 
 # ALPINE_VERSION is the version of the alpine image
 ALPINE_VERSION           ?= 0.1
@@ -51,13 +51,7 @@ get-cluster-credentials:
 get-build-cluster-credentials:
 	gcloud container clusters get-credentials "$(CLUSTER)" --project="$(BUILD_PROJECT)" --zone="$(ZONE)"
 
-build:
-	go install ./cmd/...
-
-test:
-	go test -race -cover $$(go list ./... | grep -v "\/vendor\/")
-
-.PHONY: build test get-cluster-credentials
+.PHONY: get-cluster-credentials
 
 alpine-image:
 	docker build -t "$(REGISTRY)/$(PROJECT)/alpine:$(ALPINE_VERSION)" $(DOCKER_LABELS) cmd/images/alpine
