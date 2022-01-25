@@ -3,6 +3,11 @@
 ## New features
 
 New features added to each component:
+  - *January 24, 2022* It is possible now to define GitHub Apps bots as trusted
+    users to allow automatic tests trigger without relying on `/ok-to-test`
+    from organization member. Trigger and DCO plugins configuration now support
+    additional field `trusted_apps`, which contains list of GitHub Apps bot 
+    usernames without `[bot]` suffix.
   - *August 24, 2021* Postsubmit Prow jobs now support the `always_run` field.
     This field interacts with the `run_if_changed` and `skip_if_only_changed`
     fields as follows:
@@ -53,113 +58,113 @@ New features added to each component:
     plank configs (`plank.default_decoration_configs[*].gcs_configuration.bucket`) are automatically allowed access.
     Additional buckets can be allowed by adding them to the `deck.additional_allowed_buckets` list.
     (This feature will be enabled by default ~Jan 2021. For now, you will begin to notice violation warnings in your logs.)
- - *August 31th, 2020* Added `gcs_browser_prefixes` field in spyglass configuration. `gcs_browser_prefix` will
-    be deprecated in February 2021. You can now specify different values for different repositories. The
-    format should be in org, org/repo or '\*' which is the default value.
- - *July 13th, 2020* Configuring `job_url_prefix_config` with `gcs/` prefix is now deprecated.
-    Please configure a job url prefix without the `gcs/` storage provider suffix. From now on the storage
-    provider is appended automatically so multiple storage providers can be used for builds of
-    the same repository. For now we still handle the old configuration format, this will be removed
-    in *September 2020*. To be clear handling of URLs with `/view/gcs` in Deck is not deprecated.
- - *June 23rd, 2020* An [hmac](/prow/cmd/hmac) tool was added to automatically reconcile webhooks and hmac
-    tokens for the orgs and repos integrated with your prow instance.
- - *June 8th, 2020* A new informer-based Plank implementation was added. It can be used by deploying
-    the new [prow-controller-manager](/config/prow/experimental/controller_manager.yaml) binary.
-    We plan to gradually move all our controllers into that binary, see https://github.com/kubernetes/test-infra/issues/17024
- - *May 31, 2020* '--gcs-no-auth' in Deck is deprecated and not used anymore. We always
-    fall back to an anonymous GCS client now, if all other options fail. This flag will
-    be removed in *July 2020*.
- - *May 25, 2020* Added `--blob-storage-workers` and `--kubernetes-blob-storage-workers`
-    flags to crier. The flags `--gcs-workers` and `--kubernetes-gcs-workers` are now
-    deprecated and will be removed in *August 2020*.
- - *May 13, 2020* Added a `decorate_all_jobs` option to job configuration that
-     allows to control whether jobs are decorated by default. Individual jobs
-     can use the `decorate` option to override this setting.
- - *March 25, 2020* Added a `report_templates` option to the Plank config that allows
-    to specify different report templates for each organization or a specific repository.
-    The `report_template` option is deprecated and it will be removed on *September 2020*
-    which is going to be replaced with the `*` value in `report_templates`.
- - *January 03, 2020* Added a `pr_status_base_urls` option to the Tide config
-   that allows to specify different tide's URL for each organization or a specific repository.
-   The `pr_status_base_url` will be deprecated on *June 2020* and it will be replaced with the
-   `*` value in `pr_status_base_urls`.
- - *November 05, 2019* The `config-updater` plugin supports update configs on build clusters
-    by using [`clusters`](https://github.com/kubernetes/test-infra/tree/master/prow/plugins/updateconfig#usage).
-    The fields _namespace_ and _additional_namespaces_ are deprecated.
- - *October 27, 2019* The `trusted_org` functionality in trigger is being
-   deprecated in favour of being more explicit in the fact that org members or
-   repo collaborators are the trusted users. This option will be removed
-   completely in January 2020.
- - *October 07, 2019* Added a `default_decoration_configs` option to the Plank config
-   that allows to specify different plank's default configuration for each organization
-   or a specific repository. `default_decoration_config` will be deprecated in April 2020
-   and it will be replaced with the `*` value in `default_decoration_configs`.
- - *August 29, 2019* Added a `batch_size_limit` option to the Tide config that
-   allows the batch size limit to be specified globally, per org, or per repo.
-   Values default to 0 indicating no size limit. A value of -1 disables batches.
- - *July 30, 2019* `authorized_users` in `rerun_auth_config` for deck will become `github_users`.
- - *July 19, 2019* deck will soon remove its default value for `--cookie-secret-file`.
-   If you set `--oauth-url` but not `--cookie-secret-file`, add
-   `--cookie-secret-file=/etc/cookie-secret` to your deck instance. The default value
-   will be removed at the end of October 2019.
- - *July 2, 2019* prow defaults to report status for both presubmit and postsubmit
-   jobs on GitHub now.
- - *June 17, 2019* It is now possible to configure the channel for the Slack reporter
-   directly on jobs via the `.reporter_config.slack.channel` config option
- - *May 13, 2019* New `plank` config `pod_running_timeout` is added and
-   defaulted to two days to allow plank abort pods stuck in running state.
- - *April 25, 2019* `--job-config` in `peribolos` has never been used; it is
-   deprecated and will be removed in July 2019. Remove the flag from any calls
-   to the tool.
- - *April 24, 2019* `file_weight_count` in blunderbuss is being deprecated in
-   favour of the more current `max_request_count` functionality. Please ensure
-   your configuration is up to date before the end of May 2019.
- - *March 12, 2019* tide now records a history of its actions and exposes a
-   filterable view of these actions at the `/tide-history` deck path.
- - *March 9, 2019* prow components now support reading gzipped config files
- - *February 13, 2019* prow (both plank and crier) can set status on the commit
-   for postsubmit jobs on github now!
-   Type of jobs can be reported to github is gated by a config field like
-   ```yaml
-   github_reporter:
-     job_types_to_report:
-     - presubmit
-     - postsubmit
-   ```
-   now and default to report for presubmit only.
-   *** The default will change in April to include postsubmit jobs as well ***
-   You can also add `skip_report: true` to your post-submit jobs to skip reporting
-    if you enable postsubmit reporting on.
- - *January 15, 2019* `approve` now considers self-approval and github review
-   state by default. Configure with `require_self_approval` and
-   `ignore_review_state`. Temporarily revert to old defaults with `use_deprecated_2018_implicit_self_approve_default_migrate_before_july_2019` and `use_deprecated_2018_review_acts_as_approve_default_migrate_before_july_2019`.
- - *January 12, 2019* `blunderbluss` plugin now provides a new command, `/auto-cc`,
-   that triggers automatic review requests.
- - *January 7, 2019* `implicit_self_approve` will become `require_self_approval` in
-   the second half of this year.
- - *January 7, 2019* `review_acts_as_approve` will become `ignore_review_state` in
-   the second half of this year.
- - *October 10, 2018* `tide` now supports the `-repo:foo/bar` tag in queries via
-   the `excludedRepos` YAML field.
- - *October 3, 2018* `welcome` now supports a configurable message on a per-org,
-   or per-repo basis. Please note that this includes a config schema change that
-   will break previous deployments of this plugin.
- - *August 22, 2018* `spyglass` is a pluggable viewing framework for artifacts
-   produced by Prowjobs. See a demo [here](https://prow.k8s.io/view/gcs/kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-large-performance/121)!
- - *July 13, 2018* `blunderbluss` plugin will now support `required_reviewers` in
-   OWNERS file to specify a person or github team to be cc'd on every PR that
-   touches the corresponding part of the code.
- - *June 25, 2018* `updateconfig` plugin will now support update/remove keys
-   from a glob match.
- - *June 05, 2018* `blunderbuss` plugin may now suggest approvers in addition
-   to reviewers. Use `exclude_approvers: true` to revert to previous behavior.
- - *April 10, 2018* `cla` plugin now supports `/check-cla` command
-   to force rechecking of the CLA status.
- - *February 1, 2018* `updateconfig` will now update any configmap on merge
- - *November 14, 2017* `jenkins-operator:0.58` exposes prometheus metrics.
- - *November 8, 2017* `horologium:0.14` prow periodic job now support cron
-   triggers. See https://godoc.org/gopkg.in/robfig/cron.v2 for doc to the
-   cron library we are using.
+  - *August 31th, 2020* Added `gcs_browser_prefixes` field in spyglass configuration. `gcs_browser_prefix` will
+     be deprecated in February 2021. You can now specify different values for different repositories. The
+     format should be in org, org/repo or '\*' which is the default value.
+  - *July 13th, 2020* Configuring `job_url_prefix_config` with `gcs/` prefix is now deprecated.
+     Please configure a job url prefix without the `gcs/` storage provider suffix. From now on the storage
+     provider is appended automatically so multiple storage providers can be used for builds of
+     the same repository. For now we still handle the old configuration format, this will be removed
+     in *September 2020*. To be clear handling of URLs with `/view/gcs` in Deck is not deprecated.
+  - *June 23rd, 2020* An [hmac](/prow/cmd/hmac) tool was added to automatically reconcile webhooks and hmac
+     tokens for the orgs and repos integrated with your prow instance.
+  - *June 8th, 2020* A new informer-based Plank implementation was added. It can be used by deploying
+     the new [prow-controller-manager](/config/prow/experimental/controller_manager.yaml) binary.
+     We plan to gradually move all our controllers into that binary, see https://github.com/kubernetes/test-infra/issues/17024
+  - *May 31, 2020* '--gcs-no-auth' in Deck is deprecated and not used anymore. We always
+     fall back to an anonymous GCS client now, if all other options fail. This flag will
+     be removed in *July 2020*.
+  - *May 25, 2020* Added `--blob-storage-workers` and `--kubernetes-blob-storage-workers`
+     flags to crier. The flags `--gcs-workers` and `--kubernetes-gcs-workers` are now
+     deprecated and will be removed in *August 2020*.
+  - *May 13, 2020* Added a `decorate_all_jobs` option to job configuration that
+      allows to control whether jobs are decorated by default. Individual jobs
+      can use the `decorate` option to override this setting.
+  - *March 25, 2020* Added a `report_templates` option to the Plank config that allows
+     to specify different report templates for each organization or a specific repository.
+     The `report_template` option is deprecated and it will be removed on *September 2020*
+     which is going to be replaced with the `*` value in `report_templates`.
+  - *January 03, 2020* Added a `pr_status_base_urls` option to the Tide config
+    that allows to specify different tide's URL for each organization or a specific repository.
+    The `pr_status_base_url` will be deprecated on *June 2020* and it will be replaced with the
+    `*` value in `pr_status_base_urls`.
+  - *November 05, 2019* The `config-updater` plugin supports update configs on build clusters
+     by using [`clusters`](https://github.com/kubernetes/test-infra/tree/master/prow/plugins/updateconfig#usage).
+     The fields _namespace_ and _additional_namespaces_ are deprecated.
+  - *October 27, 2019* The `trusted_org` functionality in trigger is being
+    deprecated in favour of being more explicit in the fact that org members or
+    repo collaborators are the trusted users. This option will be removed
+    completely in January 2020.
+  - *October 07, 2019* Added a `default_decoration_configs` option to the Plank config
+    that allows to specify different plank's default configuration for each organization
+    or a specific repository. `default_decoration_config` will be deprecated in April 2020
+    and it will be replaced with the `*` value in `default_decoration_configs`.
+  - *August 29, 2019* Added a `batch_size_limit` option to the Tide config that
+    allows the batch size limit to be specified globally, per org, or per repo.
+    Values default to 0 indicating no size limit. A value of -1 disables batches.
+  - *July 30, 2019* `authorized_users` in `rerun_auth_config` for deck will become `github_users`.
+  - *July 19, 2019* deck will soon remove its default value for `--cookie-secret-file`.
+    If you set `--oauth-url` but not `--cookie-secret-file`, add
+    `--cookie-secret-file=/etc/cookie-secret` to your deck instance. The default value
+    will be removed at the end of October 2019.
+  - *July 2, 2019* prow defaults to report status for both presubmit and postsubmit
+    jobs on GitHub now.
+  - *June 17, 2019* It is now possible to configure the channel for the Slack reporter
+    directly on jobs via the `.reporter_config.slack.channel` config option
+  - *May 13, 2019* New `plank` config `pod_running_timeout` is added and
+    defaulted to two days to allow plank abort pods stuck in running state.
+  - *April 25, 2019* `--job-config` in `peribolos` has never been used; it is
+    deprecated and will be removed in July 2019. Remove the flag from any calls
+    to the tool.
+  - *April 24, 2019* `file_weight_count` in blunderbuss is being deprecated in
+    favour of the more current `max_request_count` functionality. Please ensure
+    your configuration is up to date before the end of May 2019.
+  - *March 12, 2019* tide now records a history of its actions and exposes a
+    filterable view of these actions at the `/tide-history` deck path.
+  - *March 9, 2019* prow components now support reading gzipped config files
+  - *February 13, 2019* prow (both plank and crier) can set status on the commit
+    for postsubmit jobs on github now!
+    Type of jobs can be reported to github is gated by a config field like
+    ```yaml
+    github_reporter:
+      job_types_to_report:
+      - presubmit
+      - postsubmit
+    ```
+    now and default to report for presubmit only.
+    *** The default will change in April to include postsubmit jobs as well ***
+    You can also add `skip_report: true` to your post-submit jobs to skip reporting
+     if you enable postsubmit reporting on.
+  - *January 15, 2019* `approve` now considers self-approval and github review
+    state by default. Configure with `require_self_approval` and
+    `ignore_review_state`. Temporarily revert to old defaults with `use_deprecated_2018_implicit_self_approve_default_migrate_before_july_2019` and `use_deprecated_2018_review_acts_as_approve_default_migrate_before_july_2019`.
+  - *January 12, 2019* `blunderbluss` plugin now provides a new command, `/auto-cc`,
+    that triggers automatic review requests.
+  - *January 7, 2019* `implicit_self_approve` will become `require_self_approval` in
+    the second half of this year.
+  - *January 7, 2019* `review_acts_as_approve` will become `ignore_review_state` in
+    the second half of this year.
+  - *October 10, 2018* `tide` now supports the `-repo:foo/bar` tag in queries via
+    the `excludedRepos` YAML field.
+  - *October 3, 2018* `welcome` now supports a configurable message on a per-org,
+    or per-repo basis. Please note that this includes a config schema change that
+    will break previous deployments of this plugin.
+  - *August 22, 2018* `spyglass` is a pluggable viewing framework for artifacts
+    produced by Prowjobs. See a demo [here](https://prow.k8s.io/view/gcs/kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-large-performance/121)!
+  - *July 13, 2018* `blunderbluss` plugin will now support `required_reviewers` in
+    OWNERS file to specify a person or github team to be cc'd on every PR that
+    touches the corresponding part of the code.
+  - *June 25, 2018* `updateconfig` plugin will now support update/remove keys
+    from a glob match.
+  - *June 05, 2018* `blunderbuss` plugin may now suggest approvers in addition
+    to reviewers. Use `exclude_approvers: true` to revert to previous behavior.
+  - *April 10, 2018* `cla` plugin now supports `/check-cla` command
+    to force rechecking of the CLA status.
+  - *February 1, 2018* `updateconfig` will now update any configmap on merge
+  - *November 14, 2017* `jenkins-operator:0.58` exposes prometheus metrics.
+  - *November 8, 2017* `horologium:0.14` prow periodic job now support cron
+    triggers. See https://godoc.org/gopkg.in/robfig/cron.v2 for doc to the
+    cron library we are using.
 
 ## Breaking changes
 
