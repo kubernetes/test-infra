@@ -33,8 +33,10 @@ presubmits:
           requests:
             cpu: 2000m
   - name: pull-kubernetes-csi-csi-proxy-integration
-    always_run: false
+    always_run: true
     decorate: true
+    skip_report: false
+    skip_branches: []
     labels:
       preset-k8s-ssh: "true"
       preset-service-account: "true"
