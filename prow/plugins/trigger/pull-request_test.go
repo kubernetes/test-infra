@@ -22,6 +22,7 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clienttesting "k8s.io/client-go/testing"
@@ -130,16 +131,17 @@ func TestHandlePullRequest(t *testing.T) {
 	var testcases = []struct {
 		name string
 
-		Author        string
-		ShouldBuild   bool
-		ShouldComment bool
-		HasOkToTest   bool
-		prLabel       string
-		prChanges     bool
-		prAction      github.PullRequestEventAction
-		prIsDraft     bool
-		eventSender   string
-		jobToAbort    *prowapi.ProwJob
+		Author           string
+		ShouldBuild      bool
+		ShouldComment    bool
+		HasOkToTest      bool
+		prLabel          string
+		prChanges        bool
+		prAction         github.PullRequestEventAction
+		prIsDraft        bool
+		eventSender      string
+		jobToAbort       *prowapi.ProwJob
+		issueLabelsAdded []string
 	}{
 		{
 			name: "Trusted user open PR should build",
@@ -158,21 +160,39 @@ func TestHandlePullRequest(t *testing.T) {
 			ShouldComment: true,
 		},
 		{
-			name: "Untrusted user open PR should not build and should comment",
+			name: "Untrusted user open PR with ok-to-test should not add needs-ok-to-test",
 
 			Author:        "u",
-			ShouldBuild:   false,
 			ShouldComment: true,
 			prAction:      github.PullRequestActionOpened,
+			HasOkToTest:   true,
+		},
+		{
+			name: "Untrusted user open PR without ok-to-test should add needs-ok-to-test",
+
+			Author:           "u",
+			ShouldComment:    true,
+			prAction:         github.PullRequestActionOpened,
+			issueLabelsAdded: []string{"org/repo#0:needs-ok-to-test"},
+		},
+		{
+			name: "Untrusted user open PR should not build and should comment",
+
+			Author:           "u",
+			ShouldBuild:      false,
+			ShouldComment:    true,
+			prAction:         github.PullRequestActionOpened,
+			issueLabelsAdded: []string{"org/repo#0:needs-ok-to-test"},
 		},
 		{
 			name: "Untrusted user open draft PR should not build and should comment",
 
-			Author:        "u",
-			ShouldBuild:   false,
-			ShouldComment: true,
-			prAction:      github.PullRequestActionOpened,
-			prIsDraft:     true,
+			Author:           "u",
+			ShouldBuild:      false,
+			ShouldComment:    true,
+			prAction:         github.PullRequestActionOpened,
+			prIsDraft:        true,
+			issueLabelsAdded: []string{"org/repo#0:needs-ok-to-test"},
 		},
 		{
 			name: "Trusted user reopen PR should build",
@@ -508,6 +528,9 @@ func TestHandlePullRequest(t *testing.T) {
 				if pj.Complete() {
 					t.Errorf("exptected job %s to not be set to complete.", tc.jobToAbort.Name)
 				}
+			}
+			if cmp.Diff(tc.issueLabelsAdded, g.IssueLabelsAdded) != "" {
+				t.Errorf("exptected added issue labels %v to match %v", tc.issueLabelsAdded, g.IssueLabelsAdded)
 			}
 		})
 	}
