@@ -372,6 +372,12 @@ config_updater:
             name: ' '
 dco:
     "":
+        # TrustedApps defines list of apps which commits will not be checked for DCO singoff.
+        # The list should contain usernames of each GitHub App without [bot] suffix.
+        # By default, this option is ignored.
+        trusted_apps:
+          - ""
+
         # TrustedOrg is the org whose members' commits will not be checked for DCO signoff
         # if the skip DCO option is enabled. The default is the PR's org.
         trusted_org: ' '
@@ -612,6 +618,12 @@ triggers:
 
     # Repos is either of the form org/repos or just org.
     repos:
+      - ""
+
+    # TrustedApps is the explicit list of GitHub apps whose PRs will be automatically
+    # considered as trusted. The list should contain usernames of each GitHub App without [bot] suffix.
+    # By default, trigger will ignore this list.
+    trusted_apps:
       - ""
 
     # TrustedOrg is the org whose members' PRs will be automatically built for

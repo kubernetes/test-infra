@@ -83,7 +83,7 @@ func handleGenericCommentEvent(pc plugins.Agent, e github.GenericCommentEvent) e
 	)
 	return handleGenericComment(pc.GitHubClient, func(user string) (bool, error) {
 		t := pc.PluginConfig.TriggerFor(org, repo)
-		trustedResponse, err := trigger.TrustedUser(pc.GitHubClient, t.OnlyOrgMembers, t.TrustedOrg, user, org, repo)
+		trustedResponse, err := trigger.TrustedUser(pc.GitHubClient, t.OnlyOrgMembers, t.TrustedApps, t.TrustedOrg, user, org, repo)
 		return trustedResponse.IsTrusted, err
 	}, pc.PluginConfig.Retitle.AllowClosedIssues, pc.Logger, e)
 }

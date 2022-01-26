@@ -76,7 +76,7 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 	}
 
 	// Skip untrusted users comments.
-	trustedResponse, err := TrustedUser(c.GitHubClient, trigger.OnlyOrgMembers, trigger.TrustedOrg, commentAuthor, org, repo)
+	trustedResponse, err := TrustedUser(c.GitHubClient, trigger.OnlyOrgMembers, trigger.TrustedApps, trigger.TrustedOrg, commentAuthor, org, repo)
 	if err != nil {
 		return fmt.Errorf("error checking trust of %s: %w", commentAuthor, err)
 	}

@@ -3,6 +3,11 @@
 ## New features
 
 New features added to each component:
+  - *January 24, 2022* It is possible now to define GitHub Apps bots as trusted 
+    users to allow automatic tests trigger without relying on `/ok-to-test` 
+    from organization member. Trigger and DCO plugins configuration now support 
+    additional field `trusted_apps`, which contains list of GitHub Apps bot
+    usernames without `[bot]` suffix.
   - *August 24, 2021* Postsubmit Prow jobs now support the `always_run` field.
     This field interacts with the `run_if_changed` and `skip_if_only_changed`
     fields as follows:
