@@ -673,7 +673,7 @@ def generate_misc():
 
         build_test(name_override="kops-aws-misc-karpenter",
                    k8s_version="ci",
-                   networking="amazonvpc",
+                   networking="cilium",
                    kops_channel="alpha",
                    runs_per_day=1,
                    extra_flags=["--instance-manager=karpenter"],
@@ -1146,7 +1146,7 @@ def generate_presubmits_e2e():
         presubmit_test(
             name="pull-kops-e2e-aws-karpenter",
             k8s_version="ci",
-            networking="amazonvpc",
+            networking="cilium",
             kops_channel="alpha",
             extra_flags=["--instance-manager=karpenter"],
             feature_flags=['Karpenter'],
