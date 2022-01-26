@@ -100,7 +100,6 @@ periodics:
       - --gcp-project-type=scalability-project
       - --gcp-zone=us-east1-b
       - --provider=gce
-      - --env=CL2_ENABLE_HUGE_SERVICES=true
       - --env=CL2_SCHEDULER_THROUGHPUT_THRESHOLD=0
       - --test=false
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
@@ -112,6 +111,7 @@ periodics:
       - --test-cmd-args=--provider=gce
       - --test-cmd-args=--report-dir=$(ARTIFACTS)
       - --test-cmd-args=--testconfig=testing/load/config.yaml
+      - --test-cmd-args=--testconfig=testing/huge-service/config.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=120m
@@ -165,7 +165,6 @@ periodics:
           - --gcp-project-type=scalability-project
           - --gcp-zone=us-east1-b
           - --provider=gce
-          - --env=CL2_ENABLE_HUGE_SERVICES=true
           - --env=CL2_ENABLE_VIOLATIONS_FOR_SCHEDULING_THROUGHPUT=false
           - --test=false
           - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
@@ -177,6 +176,7 @@ periodics:
           - --test-cmd-args=--provider=gce
           - --test-cmd-args=--report-dir=$(ARTIFACTS)
           - --test-cmd-args=--testconfig=testing/load/config.yaml
+          - --test-cmd-args=--testconfig=testing/huge-service/config.yaml
           - --test-cmd-args=--testoverrides=./testing/chaosmonkey/override.yaml
           - --test-cmd-args=--testoverrides=./testing/chaosmonkey/ignore_node_killer_container_restarts_100.yaml
           - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml

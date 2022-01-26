@@ -106,7 +106,6 @@ periodics:
       - --metadata-sources=cl2-metadata.json
       - --env=CL2_LOAD_TEST_THROUGHPUT=50
       - --env=CL2_DELETE_TEST_THROUGHPUT=50
-      - --env=CL2_ENABLE_HUGE_SERVICES=true
       # Overrides CONTROLLER_MANAGER_TEST_ARGS from preset-e2e-scalability-periodics.
       - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling --kube-api-qps=100 --kube-api-burst=100 --endpointslice-updates-batch-period=500ms --endpoint-updates-batch-period=500ms
       # With APF only sum of --max-requests-inflight and --max-mutating-requests-inflight matters, so set --max-mutating-requests-inflight to 0.
@@ -123,6 +122,7 @@ periodics:
       - --test-cmd-args=--provider=gce
       - --test-cmd-args=--report-dir=$(ARTIFACTS)
       - --test-cmd-args=--testconfig=testing/load/config.yaml
+      - --test-cmd-args=--testconfig=testing/huge-service/config.yaml
       - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/ignore_known_gce_container_restarts.yaml
@@ -194,7 +194,6 @@ periodics:
       - --metadata-sources=cl2-metadata.json
       - --env=CL2_ENABLE_DNS_PROGRAMMING=true
       - --env=CL2_SCHEDULER_THROUGHPUT_THRESHOLD=0
-      - --env=CL2_ENABLE_HUGE_SERVICES=true
       - --env=CL2_ENABLE_API_AVAILABILITY_MEASUREMENT=true
       - --env=CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD=99.5
       - --test=false
@@ -207,6 +206,7 @@ periodics:
       - --test-cmd-args=--provider=gce
       - --test-cmd-args=--report-dir=$(ARTIFACTS)
       - --test-cmd-args=--testconfig=testing/load/config.yaml
+      - --test-cmd-args=--testconfig=testing/huge-service/config.yaml
       - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
       # TODO(oxddr): re-enable this once we understand its impact on tests, https://github.com/kubernetes/kubernetes/issues/89051
       # - --test-cmd-args=--testoverrides=./testing/chaosmonkey/override.yaml
