@@ -23,21 +23,27 @@ cd $REPO_ROOT
 # place to stick temp binaries
 BINDIR="${REPO_ROOT}/_bin"
 
-DIFFROOT="${REPO_ROOT}/prow"
+DIFFROOT="${REPO_ROOT}"
 TMP_DIFFROOT="$(TMPDIR="${BINDIR}" mktemp -d "${BINDIR}/verify-codegen.XXXXX")"
 
-cp -a "${DIFFROOT}"/{apis,client,config,spyglass} "${TMP_DIFFROOT}"
+mkdir -p "${TMP_DIFFROOT}/prow"
+cp -a "${DIFFROOT}"/prow/{apis,client,config,spyglass} "${TMP_DIFFROOT}/prow"
+mkdir -p "${TMP_DIFFROOT}/config/prow/cluster/prowjob-crd"
+cp -a "${DIFFROOT}/config/prow/cluster/prowjob-crd/prowjob_customresourcedefinition.yaml" "${TMP_DIFFROOT}/config/prow/cluster/prowjob-crd/prowjob_customresourcedefinition.yaml"
 
 "${REPO_ROOT}/hack/make-rules/update/codegen.sh"
 
 echo "diffing ${DIFFROOT} against freshly generated codegen"
 ret=0
-diff -Naupr "${DIFFROOT}/apis" "${TMP_DIFFROOT}/apis" || ret=$?
-diff -Naupr "${DIFFROOT}/client" "${TMP_DIFFROOT}/client" || ret=$?
-diff -Naupr "${DIFFROOT}/config" "${TMP_DIFFROOT}/config" || ret=$?
-diff -Naupr "${DIFFROOT}/spyglass" "${TMP_DIFFROOT}/spyglass" || ret=$?
+diff -Naupr "${DIFFROOT}/prow/apis" "${TMP_DIFFROOT}/prow/apis" || ret=$?
+diff -Naupr "${DIFFROOT}/prow/client" "${TMP_DIFFROOT}/prow/client" || ret=$?
+diff -Naupr "${DIFFROOT}/prow/config" "${TMP_DIFFROOT}/prow/config" || ret=$?
+diff -Naupr "${DIFFROOT}/prow/spyglass" "${TMP_DIFFROOT}/prow/spyglass" || ret=$?
+diff -Naupr "${DIFFROOT}/config/prow/cluster/prowjob-crd/prowjob_customresourcedefinition.yaml" "${TMP_DIFFROOT}/config/prow/cluster/prowjob-crd/prowjob_customresourcedefinition.yaml" || ret=$?
 # Restore so that verify codegen doesn't modify workspace
-cp -a "${TMP_DIFFROOT}"/{apis,client,config,spyglass} "${DIFFROOT}"
+cp -a "${TMP_DIFFROOT}/prow"/{apis,client,config,spyglass} "${DIFFROOT}"/prow
+cp -a "${TMP_DIFFROOT}/config/prow/cluster/prowjob-crd/prowjob_customresourcedefinition.yaml" "${DIFFROOT}/config/prow/cluster/prowjob-crd/prowjob_customresourcedefinition.yaml"
+
 # Clean up
 rm -rf "${TMP_DIFFROOT}"
 
