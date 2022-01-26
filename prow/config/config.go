@@ -222,6 +222,7 @@ func trimRepoPrefix(repo string) string {
 	return repo
 }
 
+// TODO(mpherman): Do not return error, just use org == ""
 func SplitRepoName(repo string) (string, string, error) {
 	// Normalize repo name to remove http:// or https://, this is the case for some
 	// of the gerrit instances.
@@ -2852,15 +2853,13 @@ func (repo OrgRepo) String() string {
 
 // NewOrgRepo creates a OrgRepo from org/repo string
 func NewOrgRepo(orgRepo string) *OrgRepo {
-	parts := strings.Split(orgRepo, "/")
-	switch len(parts) {
-	case 1:
-		return &OrgRepo{Org: parts[0]}
-	case 2:
-		return &OrgRepo{Org: parts[0], Repo: parts[1]}
-	default:
-		return nil
+	org, repo, err := SplitRepoName(orgRepo)
+	// SplitRepoName errors when Unable to split to Org/Repo
+	// If we error, that means there is no slash, so org == OrgRepo
+	if err != nil {
+		return &OrgRepo{Org: orgRepo}
 	}
+	return &OrgRepo{Org: org, Repo: repo}
 }
 
 // OrgReposToStrings converts a list of OrgRepo to its String() equivalent
