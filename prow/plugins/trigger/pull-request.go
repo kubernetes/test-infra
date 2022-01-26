@@ -286,8 +286,17 @@ I understand the commands that are listed [here](https://go.k8s.io/bot-commands?
 %s
 </details>
 `, author, org, org, more, joinOrgURL, labels.OkToTest, encodedRepoFullName, plugins.AboutThisBotWithoutCommands)
-		if err := ghc.AddLabel(org, repo, pr.Number, labels.NeedsOkToTest); err != nil {
+
+		l, err := ghc.GetIssueLabels(org, repo, pr.Number)
+		if err != nil {
 			errors = append(errors, err)
+		} else if !github.HasLabel(labels.OkToTest, l) {
+			// It is possible for bots and other automations to automatically
+			// add the ok-to-test label. If that's the case, then we will not
+			// add the needs-ok-to-test-label any more.
+			if err := ghc.AddLabel(org, repo, pr.Number, labels.NeedsOkToTest); err != nil {
+				errors = append(errors, err)
+			}
 		}
 	}
 
