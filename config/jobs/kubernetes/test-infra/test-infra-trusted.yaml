@@ -113,7 +113,7 @@ postsubmits:
         - images/git/
   - name: post-test-infra-deploy-prow
     cluster: test-infra-trusted
-    run_if_changed: 'config/prow/cluster/'
+    run_if_changed: '^(config/prow/cluster/|config/prow/Makefile$|Makefile.base.mk$)'
     decorate: true
     branches:
     - ^master$
