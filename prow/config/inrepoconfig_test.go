@@ -633,15 +633,15 @@ postsubmits: [{"name": "oli", "spec": {"containers": [{}]}}]`),
 	}
 }
 
-func TestDefaultProwYAMLGetter_RejectsNonGitHubRepo(t *testing.T) {
-	testDefaultProwYAMLGetter_RejectsNonGitHubRepo(localgit.New, t)
+func TestDefaultProwYAMLGetter_RejectsJustOrg(t *testing.T) {
+	testDefaultProwYAMLGetter_RejectsJustOrg(localgit.New, t)
 }
 
-func TestDefaultProwYAMLGetter_RejectsNonGitHubRepoV2(t *testing.T) {
-	testDefaultProwYAMLGetter_RejectsNonGitHubRepo(localgit.NewV2, t)
+func TestDefaultProwYAMLGetter_RejectsJustOrgV2(t *testing.T) {
+	testDefaultProwYAMLGetter_RejectsJustOrg(localgit.NewV2, t)
 }
 
-func testDefaultProwYAMLGetter_RejectsNonGitHubRepo(clients localgit.Clients, t *testing.T) {
+func testDefaultProwYAMLGetter_RejectsJustOrg(clients localgit.Clients, t *testing.T) {
 	lg, gc, err := clients()
 	if err != nil {
 		t.Fatalf("Making local git repo: %v", err)
