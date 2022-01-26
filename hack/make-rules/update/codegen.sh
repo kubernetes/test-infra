@@ -205,6 +205,7 @@ gen-prowjob-crd(){
   if [[ -z ${HOME:-} ]]; then export HOME=$PWD; fi
   $controller_gen crd:preserveUnknownFields=false,crdVersions=v1 paths=./prow/apis/prowjobs/v1 output:stdout \
     | $SED '/^$/d' \
+    | $SED '/^spec:.*/a  \  preserveUnknownFields: false' \
     | $SED '/^  annotations.*/a  \    api-approved.kubernetes.io: https://github.com/kubernetes/test-infra/pull/8669' \
     | $SED '/^          status:/r'<(cat<<EOF
             anyOf:
