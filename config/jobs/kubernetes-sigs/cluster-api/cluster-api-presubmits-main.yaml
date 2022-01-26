@@ -18,32 +18,6 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
       testgrid-tab-name: capi-pr-build-main
-  - name: pull-cluster-api-make-main
-    decorate: true
-    path_alias: sigs.k8s.io/cluster-api
-    always_run: false
-    optional: true
-    labels:
-      preset-service-account: "true"
-      preset-dind-enabled: "true"
-    branches:
-    # The script this job runs is not in all branches.
-    - ^main$
-    spec:
-      containers:
-      - command:
-        - runner.sh
-        - ./scripts/ci-make.sh
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220124-681f3531ec-1.23
-        resources:
-          requests:
-            cpu: 7300m
-    annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-      testgrid-tab-name: capi-pr-make-main
   - name: pull-cluster-api-apidiff-main
     decorate: true
     path_alias: sigs.k8s.io/cluster-api
