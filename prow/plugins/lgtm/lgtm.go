@@ -136,6 +136,7 @@ type githubClient interface {
 	IsMember(org, user string) (bool, error)
 	ListTeams(org string) ([]github.Team, error)
 	ListTeamMembers(org string, id int, role string) ([]github.TeamMember, error)
+	RequestReview(org, repo string, number int, logins []string) error
 }
 
 // reviewCtx contains information about each review event
@@ -334,7 +335,7 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 	opts := config.LgtmFor(rc.repo.Owner.Login, rc.repo.Name)
 	if hasLGTM && !wantLGTM {
 		log.Info("Removing LGTM label.")
-		if err := gc.RemoveLabel(org, repoName, number, LGTMLabel); err != nil {
+		if err := removeLGTMAndRequestReview(gc, org, repoName, number, getLogins(assignees), opts.StoreTreeHash); err != nil {
 			return err
 		}
 		if opts.StoreTreeHash {
@@ -461,7 +462,7 @@ func handlePullRequest(log *logrus.Entry, gc githubClient, config *plugins.Confi
 		}
 	}
 
-	if err := gc.RemoveLabel(org, repo, number, LGTMLabel); err != nil {
+	if err := removeLGTMAndRequestReview(gc, org, repo, number, getLogins(pe.PullRequest.Assignees), opts.StoreTreeHash); err != nil {
 		return fmt.Errorf("failed removing lgtm label: %w", err)
 	}
 
@@ -469,6 +470,29 @@ func handlePullRequest(log *logrus.Entry, gc githubClient, config *plugins.Confi
 	// pull request changes.
 	log.Infof("Commenting with an LGTM removed notification to %s/%s#%d with a message: %s", org, repo, number, removeLGTMLabelNoti)
 	return gc.CreateComment(org, repo, number, removeLGTMLabelNoti)
+}
+
+func removeLGTMAndRequestReview(gc githubClient, org, repo string, number int, logins []string, storeTreeHash bool) error {
+	if err := gc.RemoveLabel(org, repo, number, LGTMLabel); err != nil {
+		return fmt.Errorf("failed removing lgtm label: %w", err)
+	}
+
+	// Re-request review because LGTM has been removed only if storeTreeHash enabled.
+	// TODO(mpherman): Surface User errors to PR
+	if storeTreeHash {
+		if err := gc.RequestReview(org, repo, number, logins); err != nil {
+			return fmt.Errorf("failed to re-request review")
+		}
+	}
+	return nil
+}
+
+func getLogins(usrs []github.User) []string {
+	res := []string{}
+	for _, usr := range usrs {
+		res = append(res, usr.Login)
+	}
+	return res
 }
 
 func skipCollaborators(config *plugins.Configuration, org, repo string) bool {
