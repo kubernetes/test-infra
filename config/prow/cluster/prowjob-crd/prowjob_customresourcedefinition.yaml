@@ -8,6 +8,7 @@ metadata:
   creationTimestamp: null
   name: prowjobs.prow.k8s.io
 spec:
+  preserveUnknownFields: false
   group: prow.k8s.io
   names:
     kind: ProwJob
