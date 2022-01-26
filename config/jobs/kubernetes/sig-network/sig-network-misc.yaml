@@ -54,7 +54,7 @@ presubmits:
         - --gcp-nodes=4
         - --gcp-zone=us-west1-b
         - --provider=gce
-        - --test_args=--ginkgo.focus=\[Feature:NEG\]|Loadbalancing|LoadBalancers|Ingress --ginkgo.skip=\[Feature:kubemci\]|\[Disruptive\]|\[Feature:IngressScale\]
+        - --test_args=--ginkgo.focus=\[Feature:NEG\]|Loadbalancing|LoadBalancers|Ingress --ginkgo.skip=\[Feature:kubemci\]|\[Disruptive\]|\[Feature:IngressScale\]|\[Feature:NetworkPolicy\]
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gci-gce-ingress
         - --timeout=320m
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220124-681f3531ec-master
@@ -434,7 +434,7 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:NEG\]|Loadbalancing|LoadBalancers|Ingress --ginkgo.skip=\[Feature:kubemci\]|\[Disruptive\]|\[Feature:IngressScale\]
+      - --test_args=--ginkgo.focus=\[Feature:NEG\]|Loadbalancing|LoadBalancers|Ingress --ginkgo.skip=\[Feature:kubemci\]|\[Disruptive\]|\[Feature:IngressScale\]|\[Feature:NetworkPolicy\]
       - --timeout=320m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220124-681f3531ec-master
       resources:
