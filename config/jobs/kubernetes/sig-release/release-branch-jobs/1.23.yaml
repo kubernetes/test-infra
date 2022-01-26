@@ -1282,6 +1282,8 @@ presubmits:
       preset-service-account: "true"
     max_concurrency: 12
     name: pull-kubernetes-node-e2e-podutil
+    annotations:
+      testgrid-create-test-group: "true"
     optional: true
     path_alias: k8s.io/kubernetes
     spec:
@@ -1323,6 +1325,8 @@ presubmits:
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     name: pull-kubernetes-node-e2e-kubetest2
+    annotations:
+      testgrid-create-test-group: "true"
     optional: true
     path_alias: k8s.io/kubernetes
     spec:

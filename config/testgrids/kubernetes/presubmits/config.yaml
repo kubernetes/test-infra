@@ -121,9 +121,6 @@ dashboards:
   - name: pull-kubernetes-e2e-gce-device-plugin-gpu
     test_group_name: pull-kubernetes-e2e-gce-device-plugin-gpu
     base_options: width=10
-  - name: pull-kubernetes-node-e2e-alpha
-    test_group_name: pull-kubernetes-node-e2e-alpha
-    base_options: width=10
   - name: pull-kubernetes-node-e2e-containerd-features
     test_group_name: pull-kubernetes-node-e2e-containerd-features
     base_options: width=10
@@ -155,9 +152,6 @@ dashboards:
     base_options: width=10
   - name: pull-kubernetes-node-e2e-containerd-features-kubetest2
     test_group_name: pull-kubernetes-node-e2e-containerd-features-kubetest2
-    base_options: width=10
-  - name: pull-kubernetes-node-e2e-alpha-kubetest2
-    test_group_name: pull-kubernetes-node-e2e-alpha-kubetest2
     base_options: width=10
 - name: presubmits-kubernetes-scalability
   dashboard_tab:
