@@ -32,7 +32,7 @@ update-plugins: get-cluster-credentials
 	kubectl create configmap plugins --from-file=plugins.yaml=plugins.yaml --dry-run -o yaml | kubectl replace configmap plugins -f -
 
 deploy-prow: get-cluster-credentials
-	kubectl apply -f ./cluster/prowjob-crd/legacy/prowjob-schemaless_customresourcedefinition.yaml
+	kubectl apply --server-side=true -f ./config/prow/cluster/prowjob-crd/prowjob_customresourcedefinition.yaml
 	kubectl apply -f ./cluster/
 
 deploy-build: get-build-cluster-credentials
