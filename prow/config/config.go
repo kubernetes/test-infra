@@ -2852,12 +2852,17 @@ func (repo OrgRepo) String() string {
 
 // NewOrgRepo creates a OrgRepo from org/repo string
 func NewOrgRepo(orgRepo string) *OrgRepo {
+	// Trim off http:// or https:// to support gerrit
+	orgRepo = trimRepoPrefix(orgRepo)
 	parts := strings.Split(orgRepo, "/")
 	switch len(parts) {
 	case 1:
 		return &OrgRepo{Org: parts[0]}
 	case 2:
 		return &OrgRepo{Org: parts[0], Repo: parts[1]}
+	//Support Gerrit repos with name Host/Repo/Name
+	case 3:
+		return &OrgRepo{Org: parts[0], Repo: strings.Join(parts[1:3], "/")}
 	default:
 		return nil
 	}

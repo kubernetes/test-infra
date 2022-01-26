@@ -40,7 +40,7 @@ func TestDefaultProwYAMLGetterV2(t *testing.T) {
 }
 
 func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
-	org, repo := "org", "repo"
+	org, defaultRepo := "org", "repo"
 	testCases := []struct {
 		name              string
 		baseContent       map[string][]byte
@@ -48,6 +48,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 		config            *Config
 		dontPassGitClient bool
 		validate          func(*ProwYAML, error) error
+		repo              string
 	}{
 		// presubmits
 		{
@@ -121,7 +122,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 			},
 			config: &Config{JobConfig: JobConfig{
 				PresubmitsStatic: map[string][]Presubmit{
-					org + "/" + repo: {{Reporter: Reporter{Context: "hans"}, JobBase: JobBase{Name: "hans"}}},
+					org + "/" + defaultRepo: {{Reporter: Reporter{Context: "hans"}, JobBase: JobBase{Name: "hans"}}},
 				},
 			}},
 			validate: func(_ *ProwYAML, err error) error {
@@ -226,7 +227,7 @@ func testDefaultProwYAMLGetter(clients localgit.Clients, t *testing.T) {
 			},
 			config: &Config{JobConfig: JobConfig{
 				PostsubmitsStatic: map[string][]Postsubmit{
-					org + "/" + repo: {{Reporter: Reporter{Context: "hans"}, JobBase: JobBase{Name: "hans"}}},
+					org + "/" + defaultRepo: {{Reporter: Reporter{Context: "hans"}, JobBase: JobBase{Name: "hans"}}},
 				},
 			}},
 			validate: func(_ *ProwYAML, err error) error {
@@ -527,12 +528,33 @@ postsubmits: [{"name": "oli", "spec": {"containers": [{}]}}]`),
 				return nil
 			},
 		},
+		{
+			name: "Basic happy path (presubmits, gerrit repo)",
+			baseContent: map[string][]byte{
+				".prow.yaml": []byte(`presubmits: [{"name": "hans", "spec": {"containers": [{}]}}]`),
+			},
+			validate: func(p *ProwYAML, err error) error {
+				if err != nil {
+					return fmt.Errorf("unexpected error: %w", err)
+				}
+				if n := len(p.Presubmits); n != 1 || p.Presubmits[0].Name != "hans" {
+					return fmt.Errorf(`expected exactly one presubmit with name "hans", got %v`, p.Presubmits)
+				}
+				return nil
+			},
+			repo: "repo/name",
+		},
 	}
 
 	for idx := range testCases {
 		tc := testCases[idx]
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
+
+			repo := defaultRepo
+			if len(tc.repo) > 0 {
+				repo = tc.repo
+			}
 
 			lg, gc, err := clients()
 			if err != nil {
