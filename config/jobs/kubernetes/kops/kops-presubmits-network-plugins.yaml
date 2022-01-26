@@ -36,7 +36,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220110' --channel=alpha --networking=amazonvpc --container-runtime=containerd --node-size=t3.large --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220118' --channel=alpha --networking=amazonvpc --container-runtime=containerd --node-size=t3.large --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
@@ -102,7 +102,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='136693071363/debian-11-amd64-20211220-862' --channel=alpha --networking=amazonvpc --container-runtime=containerd --ipv6 --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='136693071363/debian-11-amd64-20220121-894' --channel=alpha --networking=amazonvpc --container-runtime=containerd --ipv6 --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery" \
             --env=KOPS_FEATURE_FLAGS=AWSIPv6 \
             --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
@@ -173,7 +173,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220110' --channel=alpha --networking=calico --container-runtime=containerd --node-size=t3.large --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220118' --channel=alpha --networking=calico --container-runtime=containerd --node-size=t3.large --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
@@ -240,7 +240,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='136693071363/debian-11-amd64-20211220-862' --channel=alpha --networking=calico --container-runtime=containerd --ipv6 --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='136693071363/debian-11-amd64-20220121-894' --channel=alpha --networking=calico --container-runtime=containerd --ipv6 --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery" \
             --env=KOPS_FEATURE_FLAGS=AWSIPv6 \
             --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
@@ -311,7 +311,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220110' --channel=alpha --networking=canal --container-runtime=containerd --node-size=t3.large --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220118' --channel=alpha --networking=canal --container-runtime=containerd --node-size=t3.large --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
@@ -378,7 +378,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220110' --channel=alpha --networking=cilium --container-runtime=containerd --node-size=t3.large --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220118' --channel=alpha --networking=cilium --container-runtime=containerd --node-size=t3.large --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
@@ -445,7 +445,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='136693071363/debian-11-amd64-20211220-862' --channel=alpha --networking=cilium --container-runtime=containerd --ipv6 --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='136693071363/debian-11-amd64-20220121-894' --channel=alpha --networking=cilium --container-runtime=containerd --ipv6 --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery" \
             --env=KOPS_FEATURE_FLAGS=AWSIPv6 \
             --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
@@ -515,7 +515,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220110' --channel=alpha --networking=cilium-etcd --container-runtime=containerd --node-size=t3.large --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220118' --channel=alpha --networking=cilium-etcd --container-runtime=containerd --node-size=t3.large --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
@@ -582,7 +582,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220110' --channel=alpha --networking=flannel --container-runtime=containerd --node-size=t3.large --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220118' --channel=alpha --networking=flannel --container-runtime=containerd --node-size=t3.large --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
@@ -649,7 +649,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220110' --channel=alpha --networking=kube-router --container-runtime=containerd --node-size=t3.large --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220118' --channel=alpha --networking=kube-router --container-runtime=containerd --node-size=t3.large --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
@@ -716,7 +716,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220110' --channel=alpha --networking=weave --container-runtime=containerd --node-size=t3.large --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220118' --channel=alpha --networking=weave --container-runtime=containerd --node-size=t3.large --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
