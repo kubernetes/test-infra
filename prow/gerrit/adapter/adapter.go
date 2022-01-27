@@ -166,7 +166,25 @@ func (c *Controller) Sync() error {
 				"repo":     change.Project,
 				"revision": change.CurrentRevision,
 			})
-			if err := c.processChange(log, instance, change); err != nil {
+
+			cloneURI, err := makeCloneURI(instance, change.Project)
+			if err != nil {
+				return fmt.Errorf("makeCloneURI: %w", err)
+			}
+
+			//Attempt to Get InRepoConfig
+			opts := git.ClientFactoryOpts{
+				CloneURI:       cloneURI.String(),
+				Host:           cloneURI.Host,
+				CookieFilePath: c.cookieFilePath,
+			}
+			gc, err := git.NewClientFactory(opts.Apply)
+			if err != nil {
+				//TODO(mpherman): Return Error once we know this usually works
+				log.Warn("Failed to create Gerrit Client for InRepoConfig")
+			}
+
+			if err := c.processChange(log, instance, change, cloneURI, gc); err != nil {
 				log.WithError(err).Errorf("Failed to process change")
 			}
 			lastTime, ok := latest[instance][change.Project]
@@ -281,13 +299,7 @@ func failedJobs(account int, revision int, messages ...gerrit.ChangeMessageInfo)
 }
 
 // processChange creates new presubmit/postsubmit prowjobs base off the gerrit changes
-func (c *Controller) processChange(logger logrus.FieldLogger, instance string, change client.ChangeInfo) error {
-
-	cloneURI, err := makeCloneURI(instance, change.Project)
-	if err != nil {
-		return fmt.Errorf("makeCloneURI: %w", err)
-	}
-
+func (c *Controller) processChange(logger logrus.FieldLogger, instance string, change client.ChangeInfo, cloneURI *url.URL, gc git.ClientFactory) error {
 	baseSHA, err := c.gc.GetBranchRevision(instance, change.Project, change.Branch)
 	if err != nil {
 		return fmt.Errorf("GetBranchRevision: %w", err)
@@ -313,18 +325,6 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 
 	changedFiles := listChangedFiles(change)
 
-	//Attempt to Get InRepoConfig
-	opts := git.ClientFactoryOpts{
-		CloneURI:       cloneURI.String(),
-		Host:           cloneURI.Host,
-		CookieFilePath: c.cookieFilePath,
-	}
-	gc, err := git.NewClientFactory(opts.Apply)
-	if err != nil {
-		//TODO(mpherman): Return Error once we know this usually works
-		logger.Warn("Failed to create Gerrit Client for InRepoConfig")
-	}
-
 	switch change.Status {
 	case client.Merged:
 		postsubmits := []config.Postsubmit{}
@@ -335,6 +335,8 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 				logger.Warn("Failed to get InRepoConfig for Postsubmits")
 				postsubmits = append(postsubmits, c.config().PostsubmitsStatic[cloneURI.Host+"/"+cloneURI.Path]...)
 			}
+		} else {
+			postsubmits = append(postsubmits, c.config().PostsubmitsStatic[cloneURI.Host+"/"+cloneURI.Path]...)
 		}
 		postsubmits = append(postsubmits, c.config().PostsubmitsStatic[cloneURI.String()]...)
 		for _, postsubmit := range postsubmits {
@@ -356,6 +358,8 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 				logger.Warn("Failed to get InRepoConfig for Presubmits")
 				presubmits = append(presubmits, c.config().PresubmitsStatic[cloneURI.Host+"/"+cloneURI.Path]...)
 			}
+		} else {
+			presubmits = append(presubmits, c.config().PresubmitsStatic[cloneURI.Host+"/"+cloneURI.Path]...)
 		}
 		presubmits = append(presubmits, c.config().PresubmitsStatic[cloneURI.String()]...)
 
