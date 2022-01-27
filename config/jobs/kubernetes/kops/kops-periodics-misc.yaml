@@ -61,11 +61,11 @@ periodics:
           --env S3_ENDPOINT=sfo3.digitaloceanspaces.com \
           --create-args "--networking=calico --api-loadbalancer-type=public --node-count=2 --master-count=3" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
-          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.21.txt \
+          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
           -- \
           --ginkgo-args="--debug" \
-          --test-package-marker=stable-1.21.txt \
+          --test-package-marker=stable.txt \
           --parallel 15 \
           --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|\[Driver:.nfs\]|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*NodePort.*listening.*same.*port|TCP.CLOSE_WAIT|should.*run.*through.*the.*lifecycle.*of.*Pods.*and.*PodStatus"
       resources:
@@ -76,10 +76,10 @@ periodics:
           memory: "3Gi"
   annotations:
     test.kops.k8s.io/cloud: digitalocean
-    test.kops.k8s.io/k8s_version: '1.21'
-    test.kops.k8s.io/kops_channel: stable
-    test.kops.k8s.io/kops_version: '1.21'
+    test.kops.k8s.io/k8s_version: 'stable'
+    test.kops.k8s.io/kops_channel: alpha
+    test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: 'calico'
-    testgrid-dashboards: google-aws, kops-1.21, kops-k8s-1.21, sig-cluster-lifecycle-kops, kops-misc
+    testgrid-dashboards: google-aws, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops, kops-misc
     testgrid-days-of-results: '90'
     testgrid-tab-name: e2e-kops-do-calico
