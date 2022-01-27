@@ -38,6 +38,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	reporter "k8s.io/test-infra/prow/crier/reporters/gerrit"
 	"k8s.io/test-infra/prow/gerrit/client"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/pjutil"
 )
@@ -78,6 +79,7 @@ type Controller struct {
 	tracker            LastSyncTracker
 	projectsOptOutHelp map[string]sets.String
 	lock               sync.RWMutex
+	cookieFilePath     string
 }
 
 type LastSyncTracker interface {
@@ -115,6 +117,7 @@ func NewController(ctx context.Context, prowJobClient prowv1.ProwJobInterface, o
 		gc:                 gerritClient,
 		tracker:            lastSyncTracker,
 		projectsOptOutHelp: projectsOptOutHelpMap,
+		cookieFilePath:     cookiefilePath,
 	}
 
 	// applyGlobalConfig reads gerrit configurations from global gerrit config,
@@ -330,11 +333,30 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 
 	changedFiles := listChangedFiles(change)
 
+	//Attempt to Get InRepoConfig
+	opts := git.ClientFactoryOpts{
+		CloneURI:       cloneURI.String(),
+		Host:           cloneURI.Host,
+		CookieFilePath: c.cookieFilePath,
+	}
+	gc, err := git.NewClientFactory(opts.Apply)
+	if err != nil {
+		//TODO(mpherman): Return Error once we know this usually works
+		logger.Warn("Failed to create Gerrit Client for InRepoConfig")
+	}
+
 	switch change.Status {
 	case client.Merged:
-		// TODO: Do we want to add support for dynamic postsubmits?
-		postsubmits := c.config().PostsubmitsStatic[cloneURI.String()]
-		postsubmits = append(postsubmits, c.config().PostsubmitsStatic[cloneURI.Host+"/"+cloneURI.Path]...)
+		postsubmits := []config.Postsubmit{}
+		if gc != nil {
+			postsubmits, err = c.config().GetPostsubmits(gc, cloneURI.Host+"/"+cloneURI.Path, func() (string, error) { return baseSHA, nil })
+			if err != nil {
+				//TODO(mpherman): Return Error once we know this usually works
+				logger.Warn("Failed to get InRepoConfig for Postsubmits")
+				postsubmits = append(postsubmits, c.config().PostsubmitsStatic[cloneURI.Host+"/"+cloneURI.Path]...)
+			}
+		}
+		postsubmits = append(postsubmits, c.config().PostsubmitsStatic[cloneURI.String()]...)
 		for _, postsubmit := range postsubmits {
 			if shouldRun, err := postsubmit.ShouldRun(change.Branch, changedFiles); err != nil {
 				return fmt.Errorf("failed to determine if postsubmit %q should run: %w", postsubmit.Name, err)
@@ -346,9 +368,16 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 			}
 		}
 	case client.New:
-		// TODO: Do we want to add support for dynamic presubmits?
-		presubmits := c.config().PresubmitsStatic[cloneURI.String()]
-		presubmits = append(presubmits, c.config().PresubmitsStatic[cloneURI.Host+"/"+cloneURI.Path]...)
+		presubmits := []config.Presubmit{}
+		if gc != nil {
+			presubmits, err = c.config().GetPresubmits(gc, cloneURI.Host+"/"+cloneURI.Path, func() (string, error) { return baseSHA, nil })
+			if err != nil {
+				//TODO(mpherman): Return Error once we know this usually works
+				logger.Warn("Failed to get InRepoConfig for Presubmits")
+				presubmits = append(presubmits, c.config().PresubmitsStatic[cloneURI.Host+"/"+cloneURI.Path]...)
+			}
+		}
+		presubmits = append(presubmits, c.config().PresubmitsStatic[cloneURI.String()]...)
 
 		account, err := c.gc.Account(instance)
 		if err != nil {
