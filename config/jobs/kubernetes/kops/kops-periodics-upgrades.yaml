@@ -101,7 +101,7 @@ periodics:
       - name: KOPS_VERSION_B
         value: "latest"
       - name: K8S_VERSION_B
-        value: "1.23.0"
+        value: "v1.23.0"
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
