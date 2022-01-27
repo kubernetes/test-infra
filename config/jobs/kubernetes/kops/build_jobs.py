@@ -780,7 +780,7 @@ def generate_upgrades():
     versions_list = [
         #  kops    k8s          kops      k8s
         (('1.22', 'v1.22.4'), ('1.23', 'v1.23.0')),
-        (('1.22', 'v1.22.4'), ('latest', '1.23.0')),
+        (('1.22', 'v1.22.4'), ('latest', 'v1.23.0')),
         (('1.23', 'v1.23.0'), ('latest', 'latest')),
         (('latest', 'v1.23.0'), ('latest', 'latest')),
         (('latest', 'v1.22.4'), ('latest', 'v1.23.0')),
