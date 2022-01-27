@@ -34,6 +34,8 @@ import (
 	"k8s.io/test-infra/prow/config"
 	reporter "k8s.io/test-infra/prow/crier/reporters/gerrit"
 	"k8s.io/test-infra/prow/gerrit/client"
+	"k8s.io/test-infra/prow/git/localgit"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/kube"
 )
 
@@ -44,6 +46,7 @@ func makeStamp(t time.Time) gerrit.Timestamp {
 var (
 	timeNow  = time.Date(1234, time.May, 15, 1, 2, 3, 4, time.UTC)
 	stampNow = makeStamp(timeNow)
+	trueBool = true
 )
 
 type fca struct {
@@ -81,6 +84,55 @@ func (f *fgc) Account(instance string) (*gerrit.AccountInfo, error) {
 		return nil, errors.New("not exit")
 	}
 	return res, nil
+}
+
+func fakeProwYAMLGetter(
+	c *config.Config,
+	gc git.ClientFactory,
+	identifier string,
+	baseSHA string,
+	headSHAs ...string) (*config.ProwYAML, error) {
+	presubmits := []config.Presubmit{
+		{
+			JobBase: config.JobBase{
+				Name: "always-runs-inRepoConfig",
+			},
+			Brancher: config.Brancher{
+				Branches: []string{"inRepoConfig"},
+			},
+			AlwaysRun: true,
+			Reporter: config.Reporter{
+				Context:    "always-runs-inRepoConfig",
+				SkipReport: true,
+			},
+		},
+	}
+	postsubmits := []config.Postsubmit{
+		{
+			JobBase: config.JobBase{
+				Name: "always-runs-inRepoConfig",
+			},
+			Brancher: config.Brancher{
+				Branches: []string{"inRepoConfig"},
+			},
+			AlwaysRun: &trueBool,
+			Reporter: config.Reporter{
+				Context:    "always-runs-inRepoConfig",
+				SkipReport: true,
+			},
+		},
+	}
+	if err := config.SetPostsubmitRegexes(postsubmits); err != nil {
+		return nil, err
+	}
+	if err := config.SetPresubmitRegexes(presubmits); err != nil {
+		return nil, err
+	}
+	res := config.ProwYAML{
+		Presubmits:  presubmits,
+		Postsubmits: postsubmits,
+	}
+	return &res, nil
 }
 
 func TestMakeCloneURI(t *testing.T) {
@@ -970,6 +1022,44 @@ func TestProcessChange(t *testing.T) {
 			instance:     testInstance,
 			numPJ:        0,
 		},
+		{
+			name: "InRepoConfig Presubmits are retrieved",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "test-infra",
+				Status:          "NEW",
+				Branch:          "inRepoConfig",
+				Revisions: map[string]client.RevisionInfo{
+					"1": {
+						Ref:     "refs/changes/00/1/1",
+						Created: stampNow,
+					},
+				},
+			},
+			instancesMap: map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:     testInstance,
+			numPJ:        3,
+			pjRef:        "refs/changes/00/1/1",
+		},
+		{
+			name: "InRepoConfig Postsubmits are retrieved",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "postsubmits-project",
+				Status:          "MERGED",
+				Branch:          "inRepoConfig",
+				Revisions: map[string]client.RevisionInfo{
+					"1": {
+						Ref:     "refs/changes/00/1/1",
+						Created: stampNow,
+					},
+				},
+			},
+			instancesMap: map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:     testInstance,
+			numPJ:        2,
+			pjRef:        "refs/changes/00/1/1",
+		},
 	}
 
 	testInfraPresubmits := []config.Presubmit{
@@ -1068,6 +1158,8 @@ func TestProcessChange(t *testing.T) {
 
 	config := &config.Config{
 		JobConfig: config.JobConfig{
+			ProwYAMLGetterWithDefaults: fakeProwYAMLGetter,
+			ProwYAMLGetter:             fakeProwYAMLGetter,
 			PresubmitsStatic: map[string][]config.Presubmit{
 				"gerrit/test-infra": testInfraPresubmits,
 				"https://gerrit/other-repo": {
@@ -1089,8 +1181,13 @@ func TestProcessChange(t *testing.T) {
 				},
 			},
 		},
+		ProwConfig: config.ProwConfig{
+			InRepoConfig: config.InRepoConfig{
+				Enabled:         map[string]*bool{"*": &trueBool},
+				AllowedClusters: map[string][]string{"*": {kube.DefaultClusterAlias}},
+			},
+		},
 	}
-
 	fca := &fca{
 		c: config,
 	}
@@ -1111,8 +1208,25 @@ func TestProcessChange(t *testing.T) {
 				gc:            &gc,
 				tracker:       &fakeSync{val: fakeLastSync},
 			}
+			cloneURI, err := makeCloneURI(tc.instance, tc.change.Project)
+			if err != nil {
+				t.Errorf("error making CloneURI %v", err)
+			}
 
-			err := c.processChange(logrus.WithField("name", tc.name), tc.instance, tc.change)
+			lg, cf, err := localgit.NewV2()
+			if err != nil {
+				t.Fatalf("Making local git repo: %v", err)
+			}
+			defer func() {
+				if err := lg.Clean(); err != nil {
+					t.Errorf("Error cleaning LocalGit: %v", err)
+				}
+				if err := cf.Clean(); err != nil {
+					t.Errorf("Error cleaning Client: %v", err)
+				}
+			}()
+
+			err = c.processChange(logrus.WithField("name", tc.name), tc.instance, tc.change, cloneURI, cf)
 			if err != nil && !tc.shouldError {
 				t.Errorf("expect no error, but got %v", err)
 			} else if err == nil && tc.shouldError {

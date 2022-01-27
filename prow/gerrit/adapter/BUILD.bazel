@@ -41,6 +41,8 @@ go_test(
         "//prow/config:go_default_library",
         "//prow/crier/reporters/gerrit:go_default_library",
         "//prow/gerrit/client:go_default_library",
+        "//prow/git/localgit:go_default_library",
+        "//prow/git/v2:go_default_library",
         "//prow/io:go_default_library",
         "//prow/kube:go_default_library",
         "@com_github_andygrunwald_go_gerrit//:go_default_library",
