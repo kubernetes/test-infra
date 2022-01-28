@@ -18,11 +18,11 @@ presubmits:
     optional: true
     spec:
       containers:
-      # NOTE: We will have to keep this up to date with the repo ...
-      - image: koalaman/shellcheck:v0.8.0
+      - image: golang
         command:
-        - make
-        - shellcheck
+        - bash
+        - -c
+        - hack/tools/ci-install-shellcheck.sh && make shellcheck
   - name: pull-oci-proxy-test
     decorate: true
     always_run: true
