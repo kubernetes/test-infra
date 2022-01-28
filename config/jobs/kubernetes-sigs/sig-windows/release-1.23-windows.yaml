@@ -11,7 +11,7 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 3h
+  interval: 24h
   labels:
     preset-azure-cred: "true"
     preset-azure-windows: "true"
