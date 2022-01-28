@@ -374,7 +374,6 @@ milestone_applier:
     release-1.1: v1.1
     release-1.0: v1.0
     release-0.4: v0.4
-    operator-0.4: v0.4 # Remove this when it gets merged back.
     release-0.3: v0.3
   kubernetes-sigs/cluster-api-provider-aws:
     main: v1.x
