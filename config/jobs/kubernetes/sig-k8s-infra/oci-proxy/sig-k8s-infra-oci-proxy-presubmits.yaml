@@ -3,7 +3,6 @@ presubmits:
   - name: pull-oci-proxy-verify
     decorate: true
     always_run: true
-    optional: true
     spec:
       containers:
       - image: golang
@@ -15,7 +14,6 @@ presubmits:
   - name: pull-oci-proxy-shellcheck
     decorate: true
     always_run: true
-    optional: true
     spec:
       containers:
       - image: golang
@@ -26,7 +24,6 @@ presubmits:
   - name: pull-oci-proxy-test
     decorate: true
     always_run: true
-    optional: true
     spec:
       containers:
       - image: golang
@@ -36,7 +33,6 @@ presubmits:
   - name: pull-oci-proxy-build
     decorate: true
     always_run: true
-    optional: true
     spec:
       containers:
       - image: golang
