@@ -28,6 +28,7 @@ import (
 	"time"
 
 	"github.com/andygrunwald/go-gerrit"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -40,6 +41,23 @@ import (
 	"k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/pjutil"
 )
+
+var gerritMetrics = struct {
+	processingResults *prometheus.CounterVec
+}{
+	processingResults: prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "gerrit_processing_results",
+		Help: "Count of change processing by instance, repo, and result.",
+	}, []string{
+		"instance",
+		"repo",
+		"result",
+	}),
+}
+
+func init() {
+	prometheus.MustRegister(gerritMetrics.processingResults)
+}
 
 type prowJobClient interface {
 	Create(context.Context, *prowapi.ProwJob, metav1.CreateOptions) (*prowapi.ProwJob, error)
@@ -163,19 +181,21 @@ func (c *Controller) Sync() error {
 				"repo":     change.Project,
 				"revision": change.CurrentRevision,
 			})
+			result := client.ResultSuccess
 			if err := c.processChange(log, instance, change); err != nil {
+				result = client.ResultError
 				log.WithError(err).Errorf("Failed to process change")
 			}
+			gerritMetrics.processingResults.WithLabelValues(instance, change.Project, result).Inc()
+
 			lastTime, ok := latest[instance][change.Project]
 			if !ok || lastTime.Before(change.Updated.Time) {
 				lastTime = change.Updated.Time
 				latest[instance][change.Project] = lastTime
 			}
 		}
-
 		log.Infof("Processed %d changes", len(changes))
 	}
-
 	return c.tracker.Update(latest)
 }
 
