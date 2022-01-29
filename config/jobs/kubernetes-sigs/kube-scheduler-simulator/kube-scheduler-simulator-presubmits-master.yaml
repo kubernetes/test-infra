@@ -38,6 +38,5 @@ presubmits:
         - -c
         - >
           cd ./web &&
-          npm install -g yarn &&
           yarn install --frozen-lockfile &&
           yarn run lint
