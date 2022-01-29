@@ -457,6 +457,12 @@ func statusIcon(state v1.ProwJobState) string {
 	return icon
 }
 
+// jobFromPJ extracts the minimum job information for the given ProwJob, to be
+// used by GenerateReport to create a textual report of it. It will be
+// serialized to a single line of text, with or without the URL depending on how
+// much room we have left against maxCommentSizeLimit. The reason why it is
+// serialized as a single line of text is because ParseReport uses newlines as a
+// token delimiter.
 func jobFromPJ(pj *v1.ProwJob) Job {
 	return Job{Name: pj.Spec.Job, State: pj.Status.State, Icon: statusIcon(pj.Status.State), URL: pj.Status.URL}
 }
@@ -505,19 +511,27 @@ func isErrorMessageLine(s string) bool {
 	return strings.HasPrefix(s, fmt.Sprintf("[%s: ", errorLinePrefix))
 }
 
-// GenerateReport generates report header and message based on pjs passed in. As
-// URLs are very long string, includes them in the report would easily make the
-// report exceed the size limit of 14400.
-// Unfortunately we need all prowjobs info for /retest to work, which is by far
-// the most reliable way of retrieving prow jobs results, as prow jobs
-// custom resources are GCed by sinker after max_pod_age, which normally is 48
-// hours. So to ensure that all prow jobs results are displayed, URLs for some
-// of the jobs are omitted from this report.
-// commentSizeLimit is used to make sure that the report generated won't exceed
-func GenerateReport(pjs []*v1.ProwJob, commentSizeLimit int) JobReport {
-	if commentSizeLimit == 0 {
-		commentSizeLimit = maxCommentSizeLimit
+// GenerateReport generates a JobReport based on pjs passed in. As URLs are very
+// long string, including them in the report could easily make the report exceed
+// the maxCommentSizeLimit of 14400 characters.  Unfortunately we need info for
+// all prowjobs for /retest to work, which is by far the most reliable way of
+// retrieving prow jobs results (this is because prowjob custom resources are
+// garbage-collected by sinker after max_pod_age, which normally is 48 hours).
+// So to ensure that all prow jobs results are displayed, URLs for some of the
+// jobs are omitted from this report to keep it under 14400 characters.
+//
+// customCommentSizeLimit is used by unit tests that actually test that we
+// perform job serialization with or without URLs (without this, our unit tests
+// would have to be very large to hit the default maxCommentSizeLimit to trigger
+// the "don't print URLs" behavior).
+func GenerateReport(pjs []*v1.ProwJob, customCommentSizeLimit int) JobReport {
+	// By default, use the maximum comment size limit const.
+	commentSizeLimit := maxCommentSizeLimit
+	if customCommentSizeLimit > 0 {
+		commentSizeLimit = customCommentSizeLimit
 	}
+
+	// Construct JobReport.
 	report := JobReport{Total: len(pjs)}
 	for _, pj := range pjs {
 		job := jobFromPJ(pj)
@@ -537,7 +551,9 @@ func GenerateReport(pjs []*v1.ProwJob, commentSizeLimit int) JobReport {
 		reTestMessage = " Comment '/retest' to rerun all failed tests"
 	}
 
-	// Sort first so that failed jobs always on top
+	// Sort first so that failed jobs are always on top. This also makes it so
+	// that the failed jobs get priority in terms of getting linked to the job
+	// URL.
 	sort.Slice(report.Jobs, func(i, j int) bool {
 		for _, state := range []v1.ProwJobState{
 			v1.FailureState,
@@ -551,10 +567,26 @@ func GenerateReport(pjs []*v1.ProwJob, commentSizeLimit int) JobReport {
 				return false
 			}
 		}
-		// We don't care the orders of the following states, so keep original order
+		// We don't care about other states, so keep original order.
 		return true
 	})
 
+	// TODO(listx): Clean this up (whether we include or exclude URLs). We
+	// should probably just construct an optimistic report (with full URLs), and
+	// then decide to trim it down if we are over the commentSizeLimit.
+	//
+	// Another thing we can do is do text-to-text compression so that we
+	// (almost) never skip reporting. E.g., see
+	// https://stackoverflow.com/a/41188719/437583. This should suffice for most
+	// scenarios because most of the time the job URLs share a large prefix
+	// (ideal for compression).
+	//
+	// Additionally, note that newline characters are very special here because
+	// they are used as token delimiters during deserialization (see
+	// https://github.com/kubernetes/test-infra/blob/b45b20a405a82de65d56196da00f6106b841dd40/prow/gerrit/adapter/adapter.go#L260).
+	// The use of newline characters is most likely a result of Gerrit comments
+	// only supporting plaintext (and thus, needing to use a delimiter that is
+	// not awkward on human eyes).
 	remainingSize := commentSizeLimit - len(fullHeader(report.Header, reTestMessage))
 	linesWithURLs := make([]string, len(report.Jobs))
 	linesWithoutURLs := make([]string, len(report.Jobs))
