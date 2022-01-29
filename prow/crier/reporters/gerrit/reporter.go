@@ -548,7 +548,7 @@ func GenerateReport(pjs []*v1.ProwJob, customCommentSizeLimit int) JobReport {
 	report.Header = fmt.Sprintf("%s %d out of %d pjs passed!", defaultProwHeader, report.Success, report.Total)
 	var reTestMessage string
 	if report.Success < report.Total {
-		reTestMessage = " Comment '/retest' to rerun all failed tests"
+		reTestMessage = " 👉 Comment '/retest' to rerun all failed tests"
 	}
 
 	// Sort first so that failed jobs are always on top. This also makes it so
@@ -609,7 +609,7 @@ func GenerateReport(pjs []*v1.ProwJob, customCommentSizeLimit int) JobReport {
 	// This shouldn't happen unless there are too many prow jobs(e.g. > 300) and
 	// each job name is super long(e.g. > 50)
 	if remainingSize < 0 {
-		report.Header = fullHeader(report.Header, " Comment '/test all' to rerun all tests")
+		report.Header = fullHeader(report.Header, " 👉 Comment '/test all' to rerun all tests")
 		report.Message = errorMessageLine("Prow failed to report all jobs, are there excessive amount of prow jobs?")
 		return report
 	}
