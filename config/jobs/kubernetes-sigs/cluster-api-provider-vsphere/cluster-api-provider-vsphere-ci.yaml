@@ -1,39 +1,3 @@
-periodics:
-- name: ci-cluster-api-provider-vsphere-ova-e2e
-  labels:
-    preset-dind-enabled: "true"
-    preset-cluster-api-provider-vsphere-e2e-config: "true"
-    preset-kind-volume-mounts: "true"
-  decorate: true
-  interval: 24h
-  extra_refs:
-  - org: kubernetes-sigs
-    repo: cluster-api-provider-vsphere
-    base_ref: master
-    path_alias: sigs.k8s.io/cluster-api-provider-vsphere
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220124-681f3531ec-1.21
-      command:
-      - runner.sh
-      args:
-      - ./hack/e2e.sh
-      # we need privileged mode in order to do docker in docker
-      securityContext:
-        privileged: true
-        capabilities:
-          add: ["NET_ADMIN"]
-      resources:
-        requests:
-          cpu: "4000m"
-          memory: "6Gi"
-  annotations:
-    testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-    testgrid-tab-name: periodic-e2e
-    testgrid-alert-email: k8s-testing-clusterapi-vsphere+alerts@vmware.co
-    description: Runs periodic e2e tests
-    testgrid-num-columns-recent: '20'
-
 postsubmits:
   kubernetes-sigs/cluster-api-provider-vsphere:
 
