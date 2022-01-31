@@ -99,6 +99,11 @@ presubmits:
         # this is done so that the e2e test runs faster
         - name: WINDOWS_NODE_OS_DISTRIBUTION
           value: "win2019"
+        # in the e2e tests the flag --working-dir set on CSI Proxy allows
+        # setting the locations where CSI Proxy is supposed to run
+        # the test location is defined in /test/e2e/e2e_test.go
+        - name: CSI_PROXY_FLAGS
+          value: "--working-dir C:\\tmp"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
