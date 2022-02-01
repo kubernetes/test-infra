@@ -35,7 +35,7 @@ import (
 )
 
 const (
-	// CodeReview is the default gerrit code review label
+	// CodeReview is the default (soon to be removed) gerrit code review label
 	CodeReview = "Code-Review"
 
 	// GerritID identifies a gerrit change
