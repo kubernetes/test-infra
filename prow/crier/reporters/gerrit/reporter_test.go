@@ -2114,7 +2114,7 @@ func TestGenerateReport(t *testing.T) {
 				job("left", "foo", v1.AbortedState),
 				job("right", "bar", v1.ErrorState),
 			},
-			wantHeader:  "Prow Status: 1 out of 4 pjs passed! Comment '/retest' to rerun all failed tests\n",
+			wantHeader:  "Prow Status: 1 out of 4 pjs passed! 👉 Comment '/retest' to rerun all failed tests\n",
 			wantMessage: "❌ that FAILURE - hey\n🚫 right ERROR - bar\n🚫 left ABORTED - foo\n✔️ this SUCCESS - url\n",
 		},
 		{
@@ -2124,8 +2124,8 @@ func TestGenerateReport(t *testing.T) {
 				job("that", "hey", v1.FailureState),
 				job("some", "other", v1.SuccessState),
 			},
-			commentSizeLimit: 81 + 56,
-			wantHeader:       "Prow Status: 2 out of 3 pjs passed! Comment '/retest' to rerun all failed tests\n",
+			commentSizeLimit: 81 + 61,
+			wantHeader:       "Prow Status: 2 out of 3 pjs passed! 👉 Comment '/retest' to rerun all failed tests\n",
 			wantMessage:      "❌ that FAILURE\n✔️ some SUCCESS\n✔️ this SUCCESS\n[NOTE FROM PROW: Skipped displaying URLs for 3/3 jobs due to reaching gerrit comment size limit]",
 		},
 		{
@@ -2135,8 +2135,8 @@ func TestGenerateReport(t *testing.T) {
 				job("that", "hey", v1.FailureState),
 				job("some", "other", v1.SuccessState),
 			},
-			commentSizeLimit: 81 + 62,
-			wantHeader:       "Prow Status: 2 out of 3 pjs passed! Comment '/retest' to rerun all failed tests\n",
+			commentSizeLimit: 81 + 67,
+			wantHeader:       "Prow Status: 2 out of 3 pjs passed! 👉 Comment '/retest' to rerun all failed tests\n",
 			wantMessage:      "❌ that FAILURE - hey\n✔️ some SUCCESS\n✔️ this SUCCESS\n[NOTE FROM PROW: Skipped displaying URLs for 2/3 jobs due to reaching gerrit comment size limit]",
 		},
 		{
@@ -2147,7 +2147,7 @@ func TestGenerateReport(t *testing.T) {
 				job("some", "other", v1.SuccessState),
 			},
 			commentSizeLimit: 81 + 55,
-			wantHeader:       "Prow Status: 2 out of 3 pjs passed! Comment '/test all' to rerun all tests\n",
+			wantHeader:       "Prow Status: 2 out of 3 pjs passed! 👉 Comment '/test all' to rerun all tests\n",
 			wantMessage:      "[NOTE FROM PROW: Prow failed to report all jobs, are there excessive amount of prow jobs?]",
 		},
 	}
