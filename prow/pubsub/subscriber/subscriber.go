@@ -34,6 +34,7 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/pjutil"
 )
 
@@ -77,6 +78,11 @@ func (pe *ProwJobEvent) FromPayload(data []byte) error {
 
 // ToMessage generates a PubSub Message from a ProwJobEvent.
 func (pe *ProwJobEvent) ToMessage() (*pubsub.Message, error) {
+	return pe.ToMessageOfType(periodicProwJobEvent)
+}
+
+// ToMessage generates a PubSub Message from a ProwJobEvent.
+func (pe *ProwJobEvent) ToMessageOfType(t string) (*pubsub.Message, error) {
 	data, err := json.Marshal(pe)
 	if err != nil {
 		return nil, err
@@ -84,7 +90,7 @@ func (pe *ProwJobEvent) ToMessage() (*pubsub.Message, error) {
 	message := pubsub.Message{
 		Data: data,
 		Attributes: map[string]string{
-			prowEventType: periodicProwJobEvent,
+			prowEventType: t,
 		},
 	}
 	return &message, nil
@@ -199,6 +205,12 @@ func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InR
 	var presubmitJob *config.Presubmit
 	org, repo, branch := refs.Org, refs.Repo, refs.BaseRef
 	orgRepo := org + "/" + repo
+	// Add "https://" prefix to orgRepo if this is a gerrit job.
+	// (Unfortunately gerrit jobs use the full repo URL as the identifier.)
+	prefix := "https://"
+	if pe.Labels[client.GerritRevision] != "" && !strings.HasPrefix(orgRepo, prefix) {
+		orgRepo = prefix + orgRepo
+	}
 	baseSHAGetter := func() (string, error) {
 		return refs.BaseSHA, nil
 	}
@@ -276,6 +288,12 @@ func (poh *postsubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.In
 	var postsubmitJob *config.Postsubmit
 	org, repo, branch := refs.Org, refs.Repo, refs.BaseRef
 	orgRepo := org + "/" + repo
+	// Add "https://" prefix to orgRepo if this is a gerrit job.
+	// (Unfortunately gerrit jobs use the full repo URL as the identifier.)
+	prefix := "https://"
+	if pe.Labels[client.GerritRevision] != "" && !strings.HasPrefix(orgRepo, prefix) {
+		orgRepo = prefix + orgRepo
+	}
 	baseSHAGetter := func() (string, error) {
 		return refs.BaseSHA, nil
 	}
