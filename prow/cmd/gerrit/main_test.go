@@ -96,6 +96,7 @@ func TestFlags(t *testing.T) {
 				},
 				dryRun:                 false,
 				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
+				inRepoConfigCacheSize:  1000,
 			}
 			expected.projects.Set("foo=bar,baz")
 			expected.projectsOptOutHelp.Set("foo=bar")

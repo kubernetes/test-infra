@@ -18,12 +18,14 @@ package adapter
 
 import (
 	"errors"
+	"fmt"
 	"sync"
 	"testing"
 	"time"
 
 	"github.com/andygrunwald/go-gerrit"
 	"github.com/sirupsen/logrus"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -44,9 +46,10 @@ func makeStamp(t time.Time) gerrit.Timestamp {
 }
 
 var (
-	timeNow  = time.Date(1234, time.May, 15, 1, 2, 3, 4, time.UTC)
-	stampNow = makeStamp(timeNow)
-	trueBool = true
+	timeNow   = time.Date(1234, time.May, 15, 1, 2, 3, 4, time.UTC)
+	stampNow  = makeStamp(timeNow)
+	trueBool  = true
+	namespace = "default"
 )
 
 type fca struct {
@@ -54,7 +57,7 @@ type fca struct {
 	c *config.Config
 }
 
-func (f *fca) Config() *config.Config {
+func (f fca) Config() *config.Config {
 	f.Lock()
 	defer f.Unlock()
 	return f.c
@@ -92,10 +95,13 @@ func fakeProwYAMLGetter(
 	identifier string,
 	baseSHA string,
 	headSHAs ...string) (*config.ProwYAML, error) {
+
 	presubmits := []config.Presubmit{
 		{
 			JobBase: config.JobBase{
-				Name: "always-runs-inRepoConfig",
+				Name:      "always-runs-inRepoConfig",
+				Spec:      &v1.PodSpec{Containers: []v1.Container{{Name: "always-runs-inRepoConfig", Env: []v1.EnvVar{}}}},
+				Namespace: &namespace,
 			},
 			Brancher: config.Brancher{
 				Branches: []string{"inRepoConfig"},
@@ -110,14 +116,16 @@ func fakeProwYAMLGetter(
 	postsubmits := []config.Postsubmit{
 		{
 			JobBase: config.JobBase{
-				Name: "always-runs-inRepoConfig",
+				Name:      "always-runs-inRepoConfig-Post",
+				Spec:      &v1.PodSpec{Containers: []v1.Container{{Name: "always-runs-inRepoConfig-Post", Env: []v1.EnvVar{}}}},
+				Namespace: &namespace,
 			},
 			Brancher: config.Brancher{
 				Branches: []string{"inRepoConfig"},
 			},
 			AlwaysRun: &trueBool,
 			Reporter: config.Reporter{
-				Context:    "always-runs-inRepoConfig",
+				Context:    "always-runs-inRepoConfig-Post",
 				SkipReport: true,
 			},
 		},
@@ -395,6 +403,34 @@ func TestFailedJobs(t *testing.T) {
 	}
 }
 
+func createTestRepoCache(t *testing.T, ca *fca) (*config.InRepoConfigCache, error) {
+	// processChange takes a ClientFactory. If provided a nil clientFactory it will skip inRepoConfig
+	// otherwise it will get the prow yaml using the client provided. We are mocking ProwYamlGetter
+	// so we are creating a localClientFactory but leaving it unpopulated.
+	var cf git.ClientFactory
+	var lg *localgit.LocalGit
+	lg, cf, err := localgit.NewV2()
+	if err != nil {
+		return nil, fmt.Errorf("error making local git repo: %v", err)
+	}
+	defer func() {
+		if err := lg.Clean(); err != nil {
+			t.Errorf("Error cleaning LocalGit: %v", err)
+		}
+		if err := cf.Clean(); err != nil {
+			t.Errorf("Error cleaning Client: %v", err)
+		}
+	}()
+
+	// Initialize cache for fetching Presubmit and Postsubmit information. If
+	// the cache cannot be initialized, exit with an error.
+	cache, err := config.NewInRepoConfigCache(
+		10,
+		ca,
+		config.NewInRepoConfigGitCache(cf))
+
+	return cache, nil
+}
 func TestProcessChange(t *testing.T) {
 	testInstance := "https://gerrit"
 	var testcases = []struct {
@@ -409,6 +445,7 @@ func TestProcessChange(t *testing.T) {
 		expectedLabels   map[string]string
 		nilClientFactory bool
 	}{
+
 		{
 			name: "no presubmit Prow jobs automatically triggered from WorkInProgess change",
 			change: client.ChangeInfo{
@@ -1099,6 +1136,25 @@ func TestProcessChange(t *testing.T) {
 			pjRef:            "refs/changes/00/1/1",
 			nilClientFactory: true,
 		},
+		{
+			name: "InRepoConfig Presubmits are retrieved when repo name format has slash",
+			change: client.ChangeInfo{
+				CurrentRevision: "1",
+				Project:         "kubernetes/test-infra",
+				Status:          "NEW",
+				Branch:          "inRepoConfig",
+				Revisions: map[string]client.RevisionInfo{
+					"1": {
+						Ref:     "refs/changes/00/1/1",
+						Created: stampNow,
+					},
+				},
+			},
+			instancesMap: map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:     testInstance,
+			numPJ:        2,
+			pjRef:        "refs/changes/00/1/1",
+		},
 	}
 
 	testInfraPresubmits := []config.Presubmit{
@@ -1201,6 +1257,14 @@ func TestProcessChange(t *testing.T) {
 			ProwYAMLGetter:             fakeProwYAMLGetter,
 			PresubmitsStatic: map[string][]config.Presubmit{
 				"gerrit/test-infra": testInfraPresubmits,
+				"https://gerrit/kubernetes/test-infra": {
+					{
+						JobBase: config.JobBase{
+							Name: "other-test",
+						},
+						AlwaysRun: true,
+					},
+				},
 				"https://gerrit/other-repo": {
 					{
 						JobBase: config.JobBase{
@@ -1216,11 +1280,16 @@ func TestProcessChange(t *testing.T) {
 						JobBase: config.JobBase{
 							Name: "test-bar",
 						},
+						Reporter: config.Reporter{
+							Context:    "test-bar",
+							SkipReport: true,
+						},
 					},
 				},
 			},
 		},
 		ProwConfig: config.ProwConfig{
+			PodNamespace: namespace,
 			InRepoConfig: config.InRepoConfig{
 				Enabled:         map[string]*bool{"*": &trueBool},
 				AllowedClusters: map[string][]string{"*": {kube.DefaultClusterAlias}},
@@ -1252,29 +1321,12 @@ func TestProcessChange(t *testing.T) {
 				t.Errorf("error making CloneURI %v", err)
 			}
 
-			// processChange takes a ClientFactory. If provided a nil clientFactory it will skip inRepoConfig
-			// otherwise it will get the prow yaml using the client provided. We are mocking ProwYamlGetter
-			// so we are creating a localClientFactory but leaving it unpopulated.
-			var cf git.ClientFactory
-			var lg *localgit.LocalGit
-			if tc.nilClientFactory {
-				cf = nil
-			} else {
-				lg, cf, err = localgit.NewV2()
-				if err != nil {
-					t.Fatalf("Making local git repo: %v", err)
-				}
-				defer func() {
-					if err := lg.Clean(); err != nil {
-						t.Errorf("Error cleaning LocalGit: %v", err)
-					}
-					if err := cf.Clean(); err != nil {
-						t.Errorf("Error cleaning Client: %v", err)
-					}
-				}()
+			cache, err := createTestRepoCache(t, fca)
+			if err != nil {
+				t.Errorf("error making test repo cache %v", err)
 			}
 
-			err = c.processChange(logrus.WithField("name", tc.name), tc.instance, tc.change, cloneURI, cf)
+			err = c.processChange(logrus.WithField("name", tc.name), tc.instance, tc.change, cloneURI, cache)
 			if err != nil && !tc.shouldError {
 				t.Errorf("expect no error, but got %v", err)
 			} else if err == nil && tc.shouldError {
