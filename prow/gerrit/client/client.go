@@ -28,6 +28,7 @@ import (
 	"time"
 
 	gerrit "github.com/andygrunwald/go-gerrit"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
@@ -59,7 +60,27 @@ const (
 	ReadyForReviewMessageFixed = "Set Ready For Review"
 	// This message will be sent if users press the `SEND AND START REVIEW` button.
 	ReadyForReviewMessageCustomizable = "This change is ready for review."
+
+	ResultError   = "ERROR"
+	ResultSuccess = "SUCCESS"
 )
+
+var clientMetrics = struct {
+	queryResults *prometheus.CounterVec
+}{
+	queryResults: prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "gerrit_query_results",
+		Help: "Count of Gerrit API queries by instance, repo, and result.",
+	}, []string{
+		"instance",
+		"repo",
+		"result",
+	}),
+}
+
+func init() {
+	prometheus.MustRegister(clientMetrics.queryResults)
+}
 
 // ProjectsFlag is the flag type for gerrit projects when initializing a gerrit client
 type ProjectsFlag map[string][]string
@@ -407,6 +428,7 @@ func (h *gerritInstanceHandler) queryAllChanges(lastState map[string]time.Time, 
 		}
 		changes, err := h.queryChangesForProject(log, project, lastUpdate, rateLimit)
 		if err != nil {
+			clientMetrics.queryResults.WithLabelValues(h.instance, project, ResultError).Inc()
 			// don't halt on error from one project, log & continue
 			log.WithError(err).WithFields(logrus.Fields{
 				"lastUpdate": lastUpdate,
@@ -414,6 +436,7 @@ func (h *gerritInstanceHandler) queryAllChanges(lastState map[string]time.Time, 
 			}).Error("Failed to query changes")
 			continue
 		}
+		clientMetrics.queryResults.WithLabelValues(h.instance, project, ResultSuccess).Inc()
 		result = append(result, changes...)
 	}
 
