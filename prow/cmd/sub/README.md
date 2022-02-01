@@ -146,3 +146,16 @@ This will start postsubmit job ```my-postsubmit-job```, clones source code from 
 at ```base_sha```.
 
 (There are more fields can be supplied, see [full documentation](https://github.com/kubernetes/test-infra/blob/18678b3b8f4bc7c51475f41964927ff7e635f3b9/prow/apis/prowjobs/v1/types.go#L883))
+
+#### Gerrit Presubmits and Postsubmits
+
+Gerrit presubmit and postsubmit jobs require some additional labels and annotations to be specified in the pubsub payload if you wish for them to report results back to the Gerrit change. Specifically the following annotations must be supplied (values are examples):
+
+```yaml
+  annotations:
+    prow.k8s.io/gerrit-id: my-repo~master~I79eee198f020c2ff23d49dbe4d2b2ef7cdc4091b
+    prow.k8s.io/gerrit-instance: https://my-project-review.googlesource.com
+  labels:
+    prow.k8s.io/gerrit-patchset: "4"
+    prow.k8s.io/gerrit-revision: 2b8cafaab9bd3a829a6bdaa819a18f908bc677ca
+```
