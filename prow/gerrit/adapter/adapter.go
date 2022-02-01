@@ -174,6 +174,33 @@ func (c *Controller) applyGlobalConfigOnce(cfg config.Getter, gerritClient *clie
 	gerritClient.Authenticate(cookiefilePath, tokenPathOverride)
 }
 
+// Helper function to create the cache used for InRepoConfig. Currently only attempts to create cache and returns nil if failed.
+func createCache(cloneURI *url.URL, cookieFilePath string, cacheSize int, configAgent *config.Agent) (cache *config.InRepoConfigCache, err error) {
+	opts := git.ClientFactoryOpts{
+		CloneURI:       cloneURI.String(),
+		Host:           cloneURI.Host,
+		CookieFilePath: cookieFilePath,
+	}
+	gc, err := git.NewClientFactory(opts.Apply)
+	if err != nil {
+		//TODO(mpherman): Return Error once we know this WAI
+		logrus.Warn("Failed to create Gerrit Client for InRepoConfig")
+		return nil, nil
+	}
+	// Initialize cache for fetching Presubmit and Postsubmit information. If
+	// the cache cannot be initialized, exit with an error.
+	cache, err = config.NewInRepoConfigCache(
+		cacheSize,
+		configAgent,
+		config.NewInRepoConfigGitCache(gc))
+	// If we cannot initialize the cache, exit with an error.
+	if err != nil {
+		logrus.WithField("in-repo-config-cache-size", cacheSize).WithError(err).Fatal("unable to initialize in-repo-config-cache")
+		return nil, nil
+	}
+	return cache, nil
+}
+
 // Sync looks for newly made gerrit changes
 // and creates prowjobs according to specs
 func (c *Controller) Sync() error {
@@ -196,31 +223,12 @@ func (c *Controller) Sync() error {
 			}
 
 			var cache *config.InRepoConfigCache
-			if _, ok := repoCacheMap[cloneURI.Host]; !ok {
-				//Attempt to Get InRepoConfig
-				opts := git.ClientFactoryOpts{
-					CloneURI:       cloneURI.String(),
-					Host:           cloneURI.Host,
-					CookieFilePath: c.cookieFilePath,
-				}
-				gc, err := git.NewClientFactory(opts.Apply)
-				if err != nil {
-					//TODO(mpherman): Return Error once we know this usually works
-					log.Warn("Failed to create Gerrit Client for InRepoConfig")
-				}
-				// Initialize cache for fetching Presubmit and Postsubmit information. If
-				// the cache cannot be initialized, exit with an error.
-				cache, err = config.NewInRepoConfigCache(
-					c.cacheSize,
-					c.configAgent,
-					config.NewInRepoConfigGitCache(gc))
-				// If we cannot initialize the cache, exit with an error.
-				if err != nil {
-					logrus.WithField("in-repo-config-cache-size", c.cacheSize).WithError(err).Fatal("unable to initialize in-repo-config-cache")
+			var ok bool
+			if cache, ok = repoCacheMap[cloneURI.Host]; !ok {
+				if cache, err = createCache(cloneURI, c.cookieFilePath, c.cacheSize, c.configAgent); err != nil {
+					return err
 				}
 				repoCacheMap[cloneURI.Host] = cache
-			} else {
-				cache = repoCacheMap[cloneURI.Host]
 			}
 
 			result := client.ResultSuccess

@@ -57,7 +57,7 @@ type fca struct {
 	c *config.Config
 }
 
-func (f fca) Config() *config.Config {
+func (f *fca) Config() *config.Config {
 	f.Lock()
 	defer f.Unlock()
 	return f.c
@@ -428,7 +428,9 @@ func createTestRepoCache(t *testing.T, ca *fca) (*config.InRepoConfigCache, erro
 		10,
 		ca,
 		config.NewInRepoConfigGitCache(cf))
-
+	if err != nil {
+		t.Errorf("error creating cache: %v", err)
+	}
 	return cache, nil
 }
 func TestProcessChange(t *testing.T) {
@@ -443,7 +445,7 @@ func TestProcessChange(t *testing.T) {
 		shouldError      bool
 		shouldSkipReport bool
 		expectedLabels   map[string]string
-		nilClientFactory bool
+		nilCache         bool
 	}{
 
 		{
@@ -1111,11 +1113,11 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
-			instancesMap:     map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
-			instance:         testInstance,
-			shouldError:      false,
-			numPJ:            0,
-			nilClientFactory: true,
+			instancesMap: map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:     testInstance,
+			shouldError:  false,
+			numPJ:        0,
+			nilCache:     true,
 		},
 		{
 			name: "normal changes should trigger matching branch jobs. Works when clientFactory is nil",
@@ -1130,11 +1132,11 @@ func TestProcessChange(t *testing.T) {
 					},
 				},
 			},
-			instancesMap:     map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
-			instance:         testInstance,
-			numPJ:            2,
-			pjRef:            "refs/changes/00/1/1",
-			nilClientFactory: true,
+			instancesMap: map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
+			instance:     testInstance,
+			numPJ:        2,
+			pjRef:        "refs/changes/00/1/1",
+			nilCache:     true,
 		},
 		{
 			name: "InRepoConfig Presubmits are retrieved when repo name format has slash",
@@ -1251,7 +1253,7 @@ func TestProcessChange(t *testing.T) {
 		t.Fatalf("could not set regexes: %v", err)
 	}
 
-	config := &config.Config{
+	cfg := &config.Config{
 		JobConfig: config.JobConfig{
 			ProwYAMLGetterWithDefaults: fakeProwYAMLGetter,
 			ProwYAMLGetter:             fakeProwYAMLGetter,
@@ -1297,7 +1299,7 @@ func TestProcessChange(t *testing.T) {
 		},
 	}
 	fca := &fca{
-		c: config,
+		c: cfg,
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -1321,9 +1323,12 @@ func TestProcessChange(t *testing.T) {
 				t.Errorf("error making CloneURI %v", err)
 			}
 
-			cache, err := createTestRepoCache(t, fca)
-			if err != nil {
-				t.Errorf("error making test repo cache %v", err)
+			var cache *config.InRepoConfigCache = nil
+			if !tc.nilCache {
+				cache, err = createTestRepoCache(t, fca)
+				if err != nil {
+					t.Errorf("error making test repo cache %v", err)
+				}
 			}
 
 			err = c.processChange(logrus.WithField("name", tc.name), tc.instance, tc.change, cloneURI, cache)
