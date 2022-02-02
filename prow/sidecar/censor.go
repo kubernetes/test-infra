@@ -188,7 +188,7 @@ func determineContentType(path string) (string, error) {
 	}()
 
 	header := make([]byte, 512)
-	if _, err := file.Read(header); err != nil {
+	if _, err := file.Read(header); err != nil && err != io.EOF {
 		return "", fmt.Errorf("could not read file to check content type: %w", err)
 	}
 	return http.DetectContentType(header), nil
