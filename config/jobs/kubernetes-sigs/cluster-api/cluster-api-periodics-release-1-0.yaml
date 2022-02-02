@@ -47,7 +47,7 @@ periodics:
           - name: GINKGO_FOCUS
             value: "\\[clusterctl-Upgrade\\]"
           - name: INIT_WITH_BINARY
-            value: https://github.com/kubernetes-sigs/cluster-api/releases/download/v0.3.23/clusterctl-{OS}-{ARCH}
+            value: https://github.com/kubernetes-sigs/cluster-api/releases/download/v0.3.25/clusterctl-{OS}-{ARCH}
           - name: INIT_WITH_PROVIDERS_CONTRACT
             value: v1alpha3
           - name: INIT_WITH_KUBERNETES_VERSION
