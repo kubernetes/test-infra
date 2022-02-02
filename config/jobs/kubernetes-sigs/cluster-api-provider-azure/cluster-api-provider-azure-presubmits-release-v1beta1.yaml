@@ -333,6 +333,9 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+        env:
+          - name: TEST_WINDOWS
+            value: "true"
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
       testgrid-tab-name: capz-pr-ci-entrypoint-v1beta1
