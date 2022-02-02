@@ -203,7 +203,7 @@ func TestCensorRobustnessForCorruptArchive(t *testing.T) {
 	options := optionsForTestData(tempDir)
 
 	// We expect the error to happen
-	expectedError := fmt.Sprintf("could not walk items to censor them: could not censor archive %s: could not unpack archive: could not read archive: unexpected EOF", corruptArchiveFile)
+	expectedError := fmt.Sprintf("could not censor archive %s: could not unpack archive: could not read archive: unexpected EOF", corruptArchiveFile)
 	if diff := cmp.Diff(expectedError, options.censor().Error()); diff != "" {
 		t.Errorf("censor() did not end with expected error:\n%s", diff)
 	}
