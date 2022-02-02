@@ -44,6 +44,33 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
       testgrid-tab-name: pr-test
+  - name: pull-cluster-api-provider-ibmcloud-smoke-test
+    always_run: true
+    branches:
+      # The script this job runs is not in all branches.
+      - ^main$
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-provider-ibmcloud
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220124-681f3531ec-1.23
+        imagePullPolicy: Always
+        env:
+        - name: "IBMCLOUD_API_KEY"
+          value: "dummyApiKey"
+        command:
+        - "runner.sh"
+        - "./scripts/ci-smoke-test.sh"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
+      testgrid-tab-name: pr-smoke-test
   - name: pull-cluster-api-provider-ibmcloud-build
     always_run: true
     branches:
