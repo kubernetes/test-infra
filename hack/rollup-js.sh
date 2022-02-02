@@ -22,9 +22,15 @@ cd "${REPO_ROOT}"
 
 readonly ROLLUP_CONFIG="make-rollup.config.js"
 
-ROLLUP_ENTRYPOINT="${1:-}"
-if [[ -z $ROLLUP_ENTRYPOINT ]]; then
-    echo "ERROR: rollup entrypoint must be provided."
+ROLLUP_ENTRYPOINT_DIR="${1:-}"
+if [[ -z $ROLLUP_ENTRYPOINT_DIR ]]; then
+    echo "ERROR: rollup entrypoint dir must be provided."
+    exit 1
+fi
+
+ROLLUP_ENTRYPOINT_FILE="${2:-}"
+if [[ -z $ROLLUP_ENTRYPOINT_FILE ]]; then
+    echo "ERROR: rollup entrypoint file must be provided."
     exit 1
 fi
 
@@ -38,17 +44,17 @@ hack/run-in-node-container.sh \
     node_modules/.bin/rimraf dist
 
 echo "Running tsc"
-TSCONFIG="${ROLLUP_ENTRYPOINT}/tsconfig.json"
+TSCONFIG="${ROLLUP_ENTRYPOINT_DIR}/tsconfig.json"
 # tsc by default output to `<outDIR>/<rel-path>/<basename>.js`, for example for
 # `prow/cmd/deck/static/job-history` dir, the out file is
 # `_output/js/prow/cmd/deck/static/job-history/job-history.js`
-ENTRYPOINT_BASENAME="$(basename $ROLLUP_ENTRYPOINT)"
-JS_OUTPUT_FILE="${JS_OUTPUT_DIR}/${ROLLUP_ENTRYPOINT}/${ENTRYPOINT_BASENAME}.js"
+ENTRYPOINT_BASENAME="$(basename $ROLLUP_ENTRYPOINT_DIR)"
+JS_OUTPUT_FILE="${JS_OUTPUT_DIR}/${ROLLUP_ENTRYPOINT_DIR}/${ROLLUP_ENTRYPOINT_FILE}.js"
 hack/run-in-node-container.sh \
     node_modules/.bin/tsc -p "${TSCONFIG}" --outDir "${JS_OUTPUT_DIR}"
 
 echo "Running rollup"
-BUNDLE_OUTPUT_DIR="${JS_OUTPUT_DIR}/${ROLLUP_ENTRYPOINT}"
+BUNDLE_OUTPUT_DIR="${JS_OUTPUT_DIR}/${ROLLUP_ENTRYPOINT_DIR}"
 ROLLUP_OUT_FILE="${BUNDLE_OUTPUT_DIR}/bundle.js"
 hack/run-in-node-container.sh \
     node_modules/.bin/rollup --environment "ROLLUP_OUT_FILE:${ROLLUP_OUT_FILE},ROLLUP_ENTRYPOINT:${JS_OUTPUT_FILE}" -c "${ROLLUP_CONFIG}" --preserveSymlinks

@@ -21,10 +21,19 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd -P)"
 cd $REPO_ROOT
 
 readonly TS_PACKAGES_FILE=".ts-packages"
-while IFS= read -r package_dir; do
-    if [[ -z  "${package_dir}" ]]; then
+ROLLUP_ENTRYPOINTS=()
+while IFS= read -r rollup_entrypoint
+do
+    ROLLUP_ENTRYPOINTS+=("${rollup_entrypoint}")
+done < "${TS_PACKAGES_FILE}"
+
+for rollup_entrypoint in ${ROLLUP_ENTRYPOINTS[@]}; do
+    if [[ -z  "${rollup_entrypoint}" || ${rollup_entrypoint} =~ \#.* ]]; then
         continue
     fi
-    export OUT="${package_dir}/zz.bundle.min.js"
-    ./hack/rollup-js.sh "${package_dir}"
-done < "${TS_PACKAGES_FILE}"
+    echo "Rollup ${rollup_entrypoint}"
+    rollup_entrypoint_dir="$(dirname ${rollup_entrypoint})"
+    rollup_entrypoint_file="$(basename -s '.ts' ${rollup_entrypoint})"
+    export OUT="${rollup_entrypoint_dir}/zz.${rollup_entrypoint_file}.bundle.min.js"
+    ./hack/rollup-js.sh "${rollup_entrypoint_dir}" "${rollup_entrypoint_file}"
+done
