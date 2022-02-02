@@ -33,7 +33,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: crier
-        image: gcr.io/k8s-prow/crier:v20220202-1256a81e66
+        image: gcr.io/k8s-prow/crier:v20220202-f7725d81f6
         args:
         - --blob-storage-workers=1
         - --config-path=/etc/config/config.yaml
