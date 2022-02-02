@@ -21,7 +21,7 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api
     testgrid-tab-name: capi-test-main
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
-    testgrid-num-failures-to-alert: "2"
+    testgrid-num-failures-to-alert: "4"
 - name: periodic-cluster-api-e2e-upgrade-v0-3-to-main
   interval: 1h
   decorate: true
@@ -63,7 +63,7 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api
     testgrid-tab-name: capi-e2e-upgrade-v0-3-to-main
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
-    testgrid-num-failures-to-alert: "2"
+    testgrid-num-failures-to-alert: "4"
 - name: periodic-cluster-api-e2e-upgrade-v1-0-to-main
   interval: 1h
   decorate: true
@@ -105,7 +105,7 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api
     testgrid-tab-name: capi-e2e-upgrade-v1-0-to-main
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
-    testgrid-num-failures-to-alert: "2"
+    testgrid-num-failures-to-alert: "4"
 - name: periodic-cluster-api-e2e-main
   interval: 1h
   decorate: true
@@ -140,7 +140,7 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api
     testgrid-tab-name: capi-e2e-main
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
-    testgrid-num-failures-to-alert: "2"
+    testgrid-num-failures-to-alert: "4"
 - name: periodic-cluster-api-e2e-mink8s-main
   interval: 1h
   decorate: true
@@ -179,7 +179,7 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api
     testgrid-tab-name: capi-e2e-mink8s-main
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
-    testgrid-num-failures-to-alert: "2"
+    testgrid-num-failures-to-alert: "4"
 - name: periodic-cluster-api-verify-book-links-main
   interval: 6h
   decorate: true
