@@ -203,7 +203,12 @@ func (o Options) preUpload() {
 
 	if o.CensoringOptions != nil {
 		if err := o.censor(); err != nil {
-			logrus.Warnf("Failed to censor data: %v", err)
+			log := logrus.WithError(err)
+			handler := log.Warnf
+			if o.CensoringOptions.Strict {
+				handler = log.Fatalf
+			}
+			handler("Failed to censor data: %v", err)
 		}
 	}
 }

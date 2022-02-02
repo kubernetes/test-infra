@@ -93,6 +93,10 @@ type Options struct {
 }
 
 type CensoringOptions struct {
+	// Strict determines whether errors in the censoring process should cause the full
+	// sidecar process to error out as well, before anything is uploaded.
+	Strict bool `json:"strict,omitempty"`
+
 	// SecretDirectories are paths to directories containing secret data. The contents
 	// of these secret data files will be censored from the logs and artifacts uploaded
 	// to the cloud.
