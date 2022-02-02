@@ -422,11 +422,12 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 		labels[client.GerritPatchset] = strconv.Itoa(change.Revisions[change.CurrentRevision].Number)
 
 		if _, ok := labels[client.GerritReportLabel]; !ok {
+			logger.WithField("job", jSpec.spec.Job).Warn("Job uses default value of 'Code-Review' for 'prow.k8s.io/gerrit-report-label' label. This default will removed in March 2022.")
 			labels[client.GerritReportLabel] = client.CodeReview
 		}
 
 		pj := pjutil.NewProwJob(jSpec.spec, labels, annotations)
-		logger := logger.WithField("prowJob", pj)
+		logger := logger.WithField("prowjob", pj.Name)
 		if _, err := c.prowJobClient.Create(context.TODO(), &pj, metav1.CreateOptions{}); err != nil {
 			logger.WithError(err).Errorf("Failed to create ProwJob")
 			continue
