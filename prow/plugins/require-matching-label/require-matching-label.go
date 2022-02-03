@@ -50,7 +50,7 @@ var (
 		github.IssueActionUnlabeled: true,
 	}
 
-	checkRequireLabelsRe = regexp.MustCompile(`(?mi)^/check-require-labels\s*$`)
+	checkRequireLabelsRe = regexp.MustCompile(`(?mi)^/check-required-labels\s*$`)
 )
 
 const (
@@ -108,11 +108,11 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 		Snippet: yamlSnippet,
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
-		Usage:       "/check-require-labels",
-		Description: "Forces rechecking of the required labels.",
+		Usage:       "/check-required-labels",
+		Description: "Checks for required labels.",
 		Featured:    true,
 		WhoCanUse:   "Anyone",
-		Examples:    []string{"/check-require-labels"},
+		Examples:    []string{"/check-required-labels"},
 	})
 	return pluginHelp, nil
 }
@@ -262,7 +262,7 @@ func handleCommentEvent(pc plugins.Agent, ce github.GenericCommentEvent) error {
 	if ce.IssueState != "open" || ce.Action != github.GenericCommentActionCreated {
 		return nil
 	}
-	// Only consider "/check-require-labels" comments.
+	// Only consider "/check-required-labels" comments.
 	if !checkRequireLabelsRe.MatchString(ce.Body) {
 		return nil
 	}
