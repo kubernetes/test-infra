@@ -389,7 +389,8 @@ milestone_applier:
     release-0.5: v0.5
     release-0.4: v0.4
   kubernetes-sigs/cluster-api-provider-digitalocean:
-    main: v1.0.0
+    main: v1.1.0
+    release-1.0: v1.0.0
     release-0.5: v0.5.1
   kubernetes-sigs/cluster-api-provider-gcp:
     main: v1.1.0
