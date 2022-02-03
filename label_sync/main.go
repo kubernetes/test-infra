@@ -705,6 +705,7 @@ type client interface {
 	FindIssues(query, order string, ascending bool) ([]github.Issue, error)
 	GetRepos(org string, isUser bool) ([]github.Repo, error)
 	GetRepoLabels(string, string) ([]github.Label, error)
+	SetMax404Retries(int)
 }
 
 func newClient(tokenPath string, tokens, tokenBurst int, dryRun bool, graphqlEndpoint string, hosts ...string) (client, error) {
@@ -779,6 +780,8 @@ func main() {
 		if err != nil {
 			logrus.WithError(err).Fatal("failed to create client")
 		}
+
+		githubClient.SetMax404Retries(0)
 
 		// there are three ways to configure which repos to sync:
 		//  - a list of org/repo values
