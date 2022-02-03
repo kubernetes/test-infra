@@ -320,9 +320,11 @@ func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJo
 	gerritReportLabel := client.GerritReportLabel
 
 	var pjsOnRevisionWithSameLabel v1.ProwJobList
+	var pjsToUpdateState []v1.ProwJob
 	var toReportJobs []*v1.ProwJob
 	if pj.ObjectMeta.Labels[gerritReportLabel] == "" && pj.Status.State != v1.AbortedState {
 		toReportJobs = append(toReportJobs, pj)
+		pjsToUpdateState = []v1.ProwJob{*pj}
 	} else { // generate an aggregated report
 
 		// list all prowjobs in the patchset matching pj's type (pre- or post-submit)
@@ -343,6 +345,7 @@ func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJo
 			if !ok || job.CreationTimestamp.Time.Before(pjOnRevisionWithSameLabel.CreationTimestamp.Time) {
 				mostRecentJob[pjOnRevisionWithSameLabel.Spec.Job] = &pjsOnRevisionWithSameLabel.Items[idx]
 			}
+			pjsToUpdateState = append(pjsToUpdateState, pjOnRevisionWithSameLabel)
 		}
 		for _, pjOnRevisionWithSameLabel := range mostRecentJob {
 			toReportJobs = append(toReportJobs, pjOnRevisionWithSameLabel)
@@ -421,14 +424,14 @@ func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJo
 	defer loopCancel()
 	logger.WithFields(logrus.Fields{
 		"job-count":      len(toReportJobs),
-		"all-jobs-count": len(pjsOnRevisionWithSameLabel.Items),
+		"all-jobs-count": len(pjsToUpdateState),
 	}).Info("Reported job(s), now will update pj(s).")
 	var err error
 	// All latest jobs for this label were already reported, none of the jobs
 	// for this label are worthy reporting any more. Mark all of them as
 	// reported to avoid corner cases where an older job finished later, and the
 	// newer prowjobs CRD was somehow missing from the cluster.
-	for _, pjob := range pjsOnRevisionWithSameLabel.Items {
+	for _, pjob := range pjsToUpdateState {
 		if pjob.Status.State == v1.AbortedState || pjob.Status.PrevReportStates[c.GetName()] == pjob.Status.State {
 			continue
 		}
