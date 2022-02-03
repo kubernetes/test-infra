@@ -17,6 +17,7 @@ limitations under the License.
 package git
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -33,9 +34,12 @@ type ClientFactory interface {
 	// ClientFromDir creates a client that operates on a repo that has already
 	// been cloned to the given directory.
 	ClientFromDir(org, repo, dir string) (RepoClient, error)
+	// Same as client from dir but with dynamic host
+	ClientFromDirHost(host, org, repo, dir string) (RepoClient, error)
 	// ClientFor creates a client that operates on a new clone of the repo.
 	ClientFor(org, repo string) (RepoClient, error)
-
+	// Same as ClientFor but with dynamic host
+	ClientForHost(host, org, repo string) (RepoClient, error)
 	// Clean removes the caches used to generate clients
 	Clean() error
 }
@@ -140,18 +144,23 @@ func NewClientFactory(opts ...ClientFactoryOpt) (ClientFactory, error) {
 		return nil, err
 	}
 	var remotes RemoteResolverFactory
-	if len(o.CloneURI) != 0 {
-		remotes = &cloneURIResolverFactory{
-			cloneURI: o.CloneURI,
-		}
-	} else if o.UseSSH != nil && *o.UseSSH {
+	if o.Host != "" && o.UseSSH != nil && *o.UseSSH {
 		remotes = &sshRemoteResolverFactory{
 			host:     o.Host,
 			username: o.Username,
 		}
-	} else {
+	} else if o.Host != "" {
 		remotes = &httpResolverFactory{
 			host:     o.Host,
+			username: o.Username,
+			token:    o.Token,
+		}
+	} else if o.UseSSH != nil && *o.UseSSH {
+		remotes = &dynamicSshRemoteResolverFactory{
+			username: o.Username,
+		}
+	} else {
+		remotes = &dynamicHttpResolverFactory{
 			username: o.Username,
 			token:    o.Token,
 		}
@@ -166,6 +175,7 @@ func NewClientFactory(opts ...ClientFactoryOpt) (ClientFactory, error) {
 		repoLocks:      map[string]*sync.Mutex{},
 		logger:         logrus.WithField("client", "git"),
 		cookieFilePath: o.CookieFilePath,
+		host:           o.Host,
 	}, nil
 }
 
@@ -202,10 +212,12 @@ type clientFactory struct {
 	masterLock *sync.Mutex
 	// repoLocks guard mutating access to subdirectories under the cacheDir
 	repoLocks map[string]*sync.Mutex
+	// host should be set when remote resolver has a static host
+	host string
 }
 
 // bootstrapClients returns a repository client and cloner for a dir.
-func (c *clientFactory) bootstrapClients(org, repo, dir string) (cacher, cloner, RepoClient, error) {
+func (c *clientFactory) bootstrapClients(host, org, repo, dir string) (cacher, cloner, RepoClient, error) {
 	if dir == "" {
 		workdir, err := os.Getwd()
 		if err != nil {
@@ -222,8 +234,8 @@ func (c *clientFactory) bootstrapClients(org, repo, dir string) (cacher, cloner,
 	client := &repoClient{
 		publisher: publisher{
 			remotes: remotes{
-				publishRemote: c.remotes.PublishRemote(org, repo),
-				centralRemote: c.remotes.CentralRemote(org, repo),
+				publishRemote: c.remotes.PublishRemote(host, org, repo),
+				centralRemote: c.remotes.CentralRemote(host, org, repo),
 			},
 			executor: executor,
 			info:     c.gitUser,
@@ -231,7 +243,7 @@ func (c *clientFactory) bootstrapClients(org, repo, dir string) (cacher, cloner,
 		},
 		interactor: interactor{
 			dir:      dir,
-			remote:   c.remotes.CentralRemote(org, repo),
+			remote:   c.remotes.CentralRemote(host, org, repo),
 			executor: executor,
 			logger:   logger,
 		},
@@ -245,22 +257,42 @@ func (c *clientFactory) bootstrapClients(org, repo, dir string) (cacher, cloner,
 	return client, client, client, nil
 }
 
-// ClientFromDir returns a repository client for a directory that's already initialized with content.
+// ClientFromDirHost returns a repository client for a directory that's already initialized with content.
 // If the directory isn't specified, the current working directory is used.
-func (c *clientFactory) ClientFromDir(org, repo, dir string) (RepoClient, error) {
-	_, _, client, err := c.bootstrapClients(org, repo, dir)
+func (c *clientFactory) ClientFromDirHost(host, org, repo, dir string) (RepoClient, error) {
+	_, _, client, err := c.bootstrapClients(host, org, repo, dir)
 	return client, err
 }
 
-// ClientFor returns a repository client for the specified repository.
+// TODO(mpherman): Deprecate in favor of ClientFromDirHost
+func (c *clientFactory) ClientFromDir(org, repo, dir string) (RepoClient, error) {
+	if c.host != "" {
+		return c.ClientFromDirHost(c.host, org, repo, dir)
+	}
+	return nil, errors.New("Client does not have a default host provided. Either set host in client or use ClientFromDirHost")
+}
+
+// TODO(mpherman): Deprecate in favor of ClientForHost
+func (c *clientFactory) ClientFor(org, repo string) (RepoClient, error) {
+	if c.host != "" {
+		return c.ClientForHost(c.host, org, repo)
+	}
+	return nil, errors.New("Client does not have a default host provided. Either set host in client or use ClientForHost")
+}
+
+// ClientForHost returns a repository client for the specified repository.
 // This function may take a long time if it is the first time cloning the repo.
 // In that case, it must do a full git mirror clone. For large repos, this can
 // take a while. Once that is done, it will do a git fetch instead of a clone,
 // which will usually take at most a few seconds.
-func (c *clientFactory) ClientFor(org, repo string) (RepoClient, error) {
+func (c *clientFactory) ClientForHost(host, org, repo string) (RepoClient, error) {
+	if c.host != "" && host != c.host {
+		return nil, errors.New("Client does not have a default host provided. Either set host in client or use ClientForHost")
+	}
+
 	cacheDir := path.Join(c.cacheDir, org, repo)
 	c.logger.WithFields(logrus.Fields{"org": org, "repo": repo, "dir": cacheDir}).Debug("Creating a client from the cache.")
-	cacheClientCacher, _, _, err := c.bootstrapClients(org, repo, cacheDir)
+	cacheClientCacher, _, _, err := c.bootstrapClients(host, org, repo, cacheDir)
 	if err != nil {
 		return nil, err
 	}
@@ -269,7 +301,7 @@ func (c *clientFactory) ClientFor(org, repo string) (RepoClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	_, repoClientCloner, repoClient, err := c.bootstrapClients(org, repo, repoDir)
+	_, repoClientCloner, repoClient, err := c.bootstrapClients(host, org, repo, repoDir)
 	if err != nil {
 		return nil, err
 	}

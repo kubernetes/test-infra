@@ -123,7 +123,7 @@ func TestSSHRemoteResolverFactory(t *testing.T) {
 		}),
 	}
 
-	central := factory.CentralRemote("org", "repo")
+	central := factory.CentralRemote("", "org", "repo")
 	for i, expected := range []stringWithError{
 		{str: "git@ssh.host.com:org/repo.git", err: nil},
 		{str: "git@ssh.host.com:org/repo.git", err: nil},
@@ -138,7 +138,7 @@ func TestSSHRemoteResolverFactory(t *testing.T) {
 		}
 	}
 
-	publish := factory.PublishRemote("org", "repo")
+	publish := factory.PublishRemote("", "org", "repo")
 	for i, expected := range []stringWithError{
 		{str: "git@ssh.host.com:first/repo.git", err: nil},
 		{str: "", err: errors.New("oops")},
@@ -157,7 +157,7 @@ func TestSSHRemoteResolverFactory(t *testing.T) {
 func TestHTTPResolverFactory_NoAuth(t *testing.T) {
 	t.Run("CentralRemote", func(t *testing.T) {
 		expected := "https://some-host.com/org/repo"
-		res, err := (&httpResolverFactory{host: "some-host.com"}).CentralRemote("org", "repo")()
+		res, err := (&httpResolverFactory{host: "some-host.com"}).CentralRemote("", "org", "repo")()
 		if err != nil {
 			t.Fatalf("CentralRemote: %v", err)
 		}
@@ -168,7 +168,7 @@ func TestHTTPResolverFactory_NoAuth(t *testing.T) {
 
 	t.Run("PublishRemote", func(t *testing.T) {
 		expectedErr := "could not resolve remote: username not configured, no publish repo available"
-		_, err := (&httpResolverFactory{host: "some-host.com"}).PublishRemote("org", "repo")()
+		_, err := (&httpResolverFactory{host: "some-host.com"}).PublishRemote("", "org", "repo")()
 		if err == nil || err.Error() != expectedErr {
 			t.Errorf("expectedErr to be %s, was %v", expectedErr, err)
 		}
@@ -194,7 +194,7 @@ func TestHTTPResolverFactory(t *testing.T) {
 		token: tokenVendor([][]byte{[]byte("one"), []byte("three")}), // only called when username succeeds
 	}
 
-	central := factory.CentralRemote("org", "repo")
+	central := factory.CentralRemote("", "org", "repo")
 	for i, expected := range []stringWithError{
 		{str: "https://first:one@host.com/org/repo", err: nil},
 		{str: "", err: fmt.Errorf("could not resolve username: %w", errors.New("oops"))},
@@ -209,7 +209,118 @@ func TestHTTPResolverFactory(t *testing.T) {
 		}
 	}
 
-	publish := factory.PublishRemote("org", "repo")
+	publish := factory.PublishRemote("", "org", "repo")
+	for i, expected := range []stringWithError{
+		{str: "https://first:one@host.com/first/repo", err: nil},
+		{str: "", err: fmt.Errorf("could not resolve remote: %w", errors.New("oops"))},
+		{str: "https://third:three@host.com/third/repo", err: nil},
+		{str: "", err: fmt.Errorf("could not resolve username: %w", errors.New("oops"))},
+	} {
+		actualRemote, actualErr := publish()
+		if actualRemote != expected.str {
+			t.Errorf("publish remote test %d returned incorrect remote, expected %v got %v", i, expected.str, actualRemote)
+		}
+		if !reflect.DeepEqual(actualErr, expected.err) {
+			t.Errorf("publish remote test %d returned incorrect error, expected %v got %v", i, expected.err, actualErr)
+		}
+	}
+}
+
+func TestDynamicSSHRemoteResolverFactory(t *testing.T) {
+	factory := dynamicSshRemoteResolverFactory{
+		username: usernameVendor([]stringWithError{
+			{str: "first", err: nil},
+			{str: "second", err: errors.New("oops")},
+			{str: "third", err: nil},
+		}),
+	}
+
+	central := factory.CentralRemote("ssh.host.com", "org", "repo")
+	for i, expected := range []stringWithError{
+		{str: "git@ssh.host.com:org/repo.git", err: nil},
+		{str: "git@ssh.host.com:org/repo.git", err: nil},
+		{str: "git@ssh.host.com:org/repo.git", err: nil},
+	} {
+		actualRemote, actualErr := central()
+		if actualRemote != expected.str {
+			t.Errorf("central remote test %d returned incorrect remote, expected %v got %v", i, expected.str, actualRemote)
+		}
+		if !reflect.DeepEqual(actualErr, expected.err) {
+			t.Errorf("central remote test %d returned incorrect error, expected %v got %v", i, expected.err, actualErr)
+		}
+	}
+
+	publish := factory.PublishRemote("ssh.host.com", "org", "repo")
+	for i, expected := range []stringWithError{
+		{str: "git@ssh.host.com:first/repo.git", err: nil},
+		{str: "", err: errors.New("oops")},
+		{str: "git@ssh.host.com:third/repo.git", err: nil},
+	} {
+		actualRemote, actualErr := publish()
+		if actualRemote != expected.str {
+			t.Errorf("publish remote test %d returned incorrect remote, expected %v got %v", i, expected.str, actualRemote)
+		}
+		if !reflect.DeepEqual(actualErr, expected.err) {
+			t.Errorf("publish remote test %d returned incorrect error, expected %v got %v", i, expected.err, actualErr)
+		}
+	}
+}
+
+func TestDynamicHTTPResolverFactory_NoAuth(t *testing.T) {
+	t.Run("CentralRemote", func(t *testing.T) {
+		expected := "https://some-host.com/org/repo"
+		res, err := (&dynamicHttpResolverFactory{}).CentralRemote("some-host.com", "org", "repo")()
+		if err != nil {
+			t.Fatalf("CentralRemote: %v", err)
+		}
+		if res != expected {
+			t.Errorf("Expected result to be %s, was %s", expected, res)
+		}
+	})
+
+	t.Run("PublishRemote", func(t *testing.T) {
+		expectedErr := "could not resolve remote: username not configured, no publish repo available"
+		_, err := (&dynamicHttpResolverFactory{}).PublishRemote("some-host.com", "org", "repo")()
+		if err == nil || err.Error() != expectedErr {
+			t.Errorf("expectedErr to be %s, was %v", expectedErr, err)
+		}
+	})
+}
+
+func TestDynamicHTTPResolverFactory(t *testing.T) {
+	factory := dynamicHttpResolverFactory{
+		username: usernameVendor([]stringWithError{
+			{str: "first", err: nil},
+			{str: "second", err: errors.New("oops")},
+			{str: "third", err: nil},
+			// this is called twice for publish remote resolution
+			{str: "first", err: nil},
+			{str: "first", err: nil},
+			{str: "second", err: errors.New("oops")},
+			{str: "third", err: nil},
+			{str: "third", err: nil},
+			{str: "fourth", err: nil},
+			{str: "fourth", err: errors.New("oops")},
+		}),
+		token: tokenVendor([][]byte{[]byte("one"), []byte("three")}), // only called when username succeeds
+	}
+
+	central := factory.CentralRemote("host.com", "org", "repo")
+	for i, expected := range []stringWithError{
+		{str: "https://first:one@host.com/org/repo", err: nil},
+		{str: "", err: fmt.Errorf("could not resolve username: %w", errors.New("oops"))},
+		{str: "https://third:three@host.com/org/repo", err: nil},
+	} {
+		actualRemote, actualErr := central()
+		if actualRemote != expected.str {
+			t.Errorf("central remote test %d returned incorrect remote, expected %v got %v", i, expected.str, actualRemote)
+		}
+		if !reflect.DeepEqual(actualErr, expected.err) {
+			t.Errorf("central remote test %d returned incorrect error, expected %v got %v", i, expected.err, actualErr)
+		}
+	}
+
+	publish := factory.PublishRemote("host.com", "org", "repo")
 	for i, expected := range []stringWithError{
 		{str: "https://first:one@host.com/first/repo", err: nil},
 		{str: "", err: fmt.Errorf("could not resolve remote: %w", errors.New("oops"))},

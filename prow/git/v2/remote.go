@@ -31,11 +31,11 @@ type RemoteResolverFactory interface {
 	// CentralRemote returns a resolver for a remote server with an
 	// authoritative version of the repository. This type of remote
 	// is useful for fetching refs and cloning.
-	CentralRemote(org, repo string) RemoteResolver
+	CentralRemote(host, org, repo string) RemoteResolver
 	// PublishRemote returns a resolver for a remote server with a
 	// personal fork of the repository. This type of remote is most
 	// useful for publishing local changes.
-	PublishRemote(org, repo string) RemoteResolver
+	PublishRemote(host, org, repo string) RemoteResolver
 }
 
 // RemoteResolver knows how to construct a remote URL for git calls
@@ -54,7 +54,7 @@ type sshRemoteResolverFactory struct {
 
 // CentralRemote creates a remote resolver that refers to an authoritative remote
 // for the repository.
-func (f *sshRemoteResolverFactory) CentralRemote(org, repo string) RemoteResolver {
+func (f *sshRemoteResolverFactory) CentralRemote(_, org, repo string) RemoteResolver {
 	remote := fmt.Sprintf("git@%s:%s/%s.git", f.host, org, repo)
 	return func() (string, error) {
 		return remote, nil
@@ -63,7 +63,7 @@ func (f *sshRemoteResolverFactory) CentralRemote(org, repo string) RemoteResolve
 
 // PublishRemote creates a remote resolver that refers to a user's remote
 // for the repository that can be published to.
-func (f *sshRemoteResolverFactory) PublishRemote(_, repo string) RemoteResolver {
+func (f *sshRemoteResolverFactory) PublishRemote(_, _, repo string) RemoteResolver {
 	return func() (string, error) {
 		org, err := f.username()
 		if err != nil {
@@ -82,7 +82,7 @@ type httpResolverFactory struct {
 
 // CentralRemote creates a remote resolver that refers to an authoritative remote
 // for the repository.
-func (f *httpResolverFactory) CentralRemote(org, repo string) RemoteResolver {
+func (f *httpResolverFactory) CentralRemote(_, org, repo string) RemoteResolver {
 	return HttpResolver(func() (*url.URL, error) {
 		return &url.URL{Scheme: "https", Host: f.host, Path: fmt.Sprintf("%s/%s", org, repo)}, nil
 	}, f.username, f.token)
@@ -90,7 +90,7 @@ func (f *httpResolverFactory) CentralRemote(org, repo string) RemoteResolver {
 
 // PublishRemote creates a remote resolver that refers to a user's remote
 // for the repository that can be published to.
-func (f *httpResolverFactory) PublishRemote(_, repo string) RemoteResolver {
+func (f *httpResolverFactory) PublishRemote(_, _, repo string) RemoteResolver {
 	return HttpResolver(func() (*url.URL, error) {
 		if f.username == nil {
 			return nil, errors.New("username not configured, no publish repo available")
@@ -131,7 +131,7 @@ type pathResolverFactory struct {
 
 // CentralRemote creates a remote resolver that refers to an authoritative remote
 // for the repository.
-func (f *pathResolverFactory) CentralRemote(org, repo string) RemoteResolver {
+func (f *pathResolverFactory) CentralRemote(_, org, repo string) RemoteResolver {
 	return func() (string, error) {
 		return path.Join(f.baseDir, org, repo), nil
 	}
@@ -139,26 +139,62 @@ func (f *pathResolverFactory) CentralRemote(org, repo string) RemoteResolver {
 
 // PublishRemote creates a remote resolver that refers to a user's remote
 // for the repository that can be published to.
-func (f *pathResolverFactory) PublishRemote(org, repo string) RemoteResolver {
+func (f *pathResolverFactory) PublishRemote(_, org, repo string) RemoteResolver {
 	return func() (string, error) {
 		return path.Join(f.baseDir, org, repo), nil
 	}
 }
 
-// Publish Remote will not be used by Gerrit, but cloneURIResolverFactory can be used
-// by github when CentralRemote == PublishRemote == CloneURI so both methods will return CloneURI
-type cloneURIResolverFactory struct {
-	cloneURI string
+type dynamicSshRemoteResolverFactory struct {
+	username LoginGetter
 }
 
-func (f *cloneURIResolverFactory) CentralRemote(_, _ string) RemoteResolver {
+// CentralRemote creates a remote resolver that refers to an authoritative remote
+// for the repository.
+func (f *dynamicSshRemoteResolverFactory) CentralRemote(host, org, repo string) RemoteResolver {
+	remote := fmt.Sprintf("git@%s:%s/%s.git", host, org, repo)
 	return func() (string, error) {
-		return f.cloneURI, nil
+		return remote, nil
 	}
 }
 
-func (f *cloneURIResolverFactory) PublishRemote(_, _ string) RemoteResolver {
+// PublishRemote creates a remote resolver that refers to a user's remote
+// for the repository that can be published to.
+func (f *dynamicSshRemoteResolverFactory) PublishRemote(host, _, repo string) RemoteResolver {
 	return func() (string, error) {
-		return f.cloneURI, nil
+		org, err := f.username()
+		if err != nil {
+			return "", err
+		}
+		return fmt.Sprintf("git@%s:%s/%s.git", host, org, repo), nil
 	}
+}
+
+type dynamicHttpResolverFactory struct {
+	// Optional, either both or none must be set
+	username LoginGetter
+	token    TokenGetter
+}
+
+// CentralRemote creates a remote resolver that refers to an authoritative remote
+// for the repository.
+func (f *dynamicHttpResolverFactory) CentralRemote(host, org, repo string) RemoteResolver {
+	return HttpResolver(func() (*url.URL, error) {
+		return &url.URL{Scheme: "https", Host: host, Path: fmt.Sprintf("%s/%s", org, repo)}, nil
+	}, f.username, f.token)
+}
+
+// PublishRemote creates a remote resolver that refers to a user's remote
+// for the repository that can be published to.
+func (f *dynamicHttpResolverFactory) PublishRemote(host, _, repo string) RemoteResolver {
+	return HttpResolver(func() (*url.URL, error) {
+		if f.username == nil {
+			return nil, errors.New("username not configured, no publish repo available")
+		}
+		o, err := f.username()
+		if err != nil {
+			return nil, err
+		}
+		return &url.URL{Scheme: "https", Host: host, Path: fmt.Sprintf("%s/%s", o, repo)}, nil
+	}, f.username, f.token)
 }
