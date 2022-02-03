@@ -34,7 +34,7 @@ type ClientFactory interface {
 	// ClientFromDir creates a client that operates on a repo that has already
 	// been cloned to the given directory.
 	ClientFromDir(org, repo, dir string) (RepoClient, error)
-	// Same as client from dir but with dynamic host
+	// Same as ClientFromDir but with dynamic host
 	ClientFromDirHost(host, org, repo, dir string) (RepoClient, error)
 	// ClientFor creates a client that operates on a new clone of the repo.
 	ClientFor(org, repo string) (RepoClient, error)
@@ -270,7 +270,7 @@ func (c *clientFactory) ClientFromDir(org, repo, dir string) (RepoClient, error)
 	if c.host != "" {
 		return c.ClientFromDirHost(c.host, org, repo, dir)
 	}
-	return nil, errors.New("Client does not have a default host provided. Either set host in client or use ClientFromDirHost")
+	return nil, errors.New("client does not have a default host provided. Either set host in client or use ClientFromDirHost")
 }
 
 // TODO(mpherman): Deprecate in favor of ClientForHost
@@ -278,7 +278,7 @@ func (c *clientFactory) ClientFor(org, repo string) (RepoClient, error) {
 	if c.host != "" {
 		return c.ClientForHost(c.host, org, repo)
 	}
-	return nil, errors.New("Client does not have a default host provided. Either set host in client or use ClientForHost")
+	return nil, errors.New("client does not have a default host provided. Either set host in client or use ClientForHost")
 }
 
 // ClientForHost returns a repository client for the specified repository.
@@ -288,7 +288,7 @@ func (c *clientFactory) ClientFor(org, repo string) (RepoClient, error) {
 // which will usually take at most a few seconds.
 func (c *clientFactory) ClientForHost(host, org, repo string) (RepoClient, error) {
 	if c.host != "" && host != c.host {
-		return nil, errors.New("Client does not have a default host provided. Either set host in client or use ClientForHost")
+		return nil, fmt.Errorf("called clientForHost on %s, but clientFactory already has pre-set host %s", host, c.host)
 	}
 
 	cacheDir := path.Join(c.cacheDir, org, repo)

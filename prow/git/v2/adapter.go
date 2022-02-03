@@ -42,22 +42,24 @@ type clientFactoryAdapter struct {
 	*git.Client
 }
 
-// ClientFromDir creates a client that operates on a repo that has already
-// been cloned to the given directory.
+// ClientFromDirHost creates a client that operates on a repo that has already
+// been cloned to the given directory. Not implemented for the adapter.
 func (a *clientFactoryAdapter) ClientFromDirHost(host, org, repo, dir string) (RepoClient, error) {
 	return nil, errors.New("no ClientFromDirHost implementation exists in the v1 git client")
 }
 
+// ClientFromDir creates a client that operates on a repo that has already
+// been cloned to the given directory. Not implemented for the adapter.
 func (a *clientFactoryAdapter) ClientFromDir(org, repo, dir string) (RepoClient, error) {
 	return nil, errors.New("no ClientFromDir implementation exists in the v1 git client")
 }
 
-// Repo creates a client that operates on a new clone of the repo.
+// ClientFor creates a client that operates on a new clone of the repo.
 func (a *clientFactoryAdapter) ClientFor(org, repo string) (RepoClient, error) {
 	return a.ClientForHost("", org, repo)
 }
 
-// Repo creates a client that operates on a new clone of the repo.
+// ClientForHost creates a client that operates on a new clone of the repo.
 func (a *clientFactoryAdapter) ClientForHost(_, org, repo string) (RepoClient, error) {
 	r, err := a.Client.Clone(org, repo)
 	return &repoClientAdapter{Repo: r}, err

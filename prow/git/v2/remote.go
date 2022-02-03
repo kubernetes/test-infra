@@ -47,6 +47,46 @@ type LoginGetter func() (login string, err error)
 // TokenGetter fetches a GitHub OAuth token on-demand
 type TokenGetter func() []byte
 
+// Helper function called by both sshRemoteResolvers
+func sshCentralRemoteCommon(host, org, repo string) RemoteResolver {
+	return func() (string, error) {
+		return fmt.Sprintf("git@%s:%s/%s.git", host, org, repo), nil
+	}
+}
+
+// Helper function called by both sshRemoteResolvers
+func sshPublishRemoteCommon(host, repo string, username LoginGetter) RemoteResolver {
+	return func() (string, error) {
+		org, err := username()
+		if err != nil {
+			return "", err
+		}
+		return fmt.Sprintf("git@%s:%s/%s.git", host, org, repo), nil
+	}
+}
+
+// Helper function called by both httpRemoteResolvers
+func httpCentralRemoteCommon(host, org, repo string, username LoginGetter, token TokenGetter) RemoteResolver {
+	return HttpResolver(func() (*url.URL, error) {
+		return &url.URL{Scheme: "https", Host: host, Path: fmt.Sprintf("%s/%s", org, repo)}, nil
+	}, username, token)
+}
+
+// Helper function called by both httpRemoteResolvers
+func httpPublishRemoteCommon(host, repo string, username LoginGetter, token TokenGetter) RemoteResolver {
+	return HttpResolver(func() (*url.URL, error) {
+		if username == nil {
+			return nil, errors.New("username not configured, no publish repo available")
+		}
+		user, err := username()
+		if err != nil {
+			return nil, err
+		}
+		return &url.URL{Scheme: "https", Host: host, Path: fmt.Sprintf("%s/%s", user, repo)}, nil
+	}, username, token)
+}
+
+// sshRemoteResolverFactory will create RemoteResolver that generate ssh remote from org and repo with a static host
 type sshRemoteResolverFactory struct {
 	host     string
 	username LoginGetter
@@ -55,24 +95,16 @@ type sshRemoteResolverFactory struct {
 // CentralRemote creates a remote resolver that refers to an authoritative remote
 // for the repository.
 func (f *sshRemoteResolverFactory) CentralRemote(_, org, repo string) RemoteResolver {
-	remote := fmt.Sprintf("git@%s:%s/%s.git", f.host, org, repo)
-	return func() (string, error) {
-		return remote, nil
-	}
+	return sshCentralRemoteCommon(f.host, org, repo)
 }
 
 // PublishRemote creates a remote resolver that refers to a user's remote
 // for the repository that can be published to.
 func (f *sshRemoteResolverFactory) PublishRemote(_, _, repo string) RemoteResolver {
-	return func() (string, error) {
-		org, err := f.username()
-		if err != nil {
-			return "", err
-		}
-		return fmt.Sprintf("git@%s:%s/%s.git", f.host, org, repo), nil
-	}
+	return sshPublishRemoteCommon(f.host, repo, f.username)
 }
 
+// httpResolverFactory will create RemoteResolver that generate http remote from org and repo with a static host.
 type httpResolverFactory struct {
 	host string
 	// Optional, either both or none must be set
@@ -83,24 +115,13 @@ type httpResolverFactory struct {
 // CentralRemote creates a remote resolver that refers to an authoritative remote
 // for the repository.
 func (f *httpResolverFactory) CentralRemote(_, org, repo string) RemoteResolver {
-	return HttpResolver(func() (*url.URL, error) {
-		return &url.URL{Scheme: "https", Host: f.host, Path: fmt.Sprintf("%s/%s", org, repo)}, nil
-	}, f.username, f.token)
+	return httpCentralRemoteCommon(f.host, org, repo, f.username, f.token)
 }
 
 // PublishRemote creates a remote resolver that refers to a user's remote
 // for the repository that can be published to.
 func (f *httpResolverFactory) PublishRemote(_, _, repo string) RemoteResolver {
-	return HttpResolver(func() (*url.URL, error) {
-		if f.username == nil {
-			return nil, errors.New("username not configured, no publish repo available")
-		}
-		o, err := f.username()
-		if err != nil {
-			return nil, err
-		}
-		return &url.URL{Scheme: "https", Host: f.host, Path: fmt.Sprintf("%s/%s", o, repo)}, nil
-	}, f.username, f.token)
+	return httpPublishRemoteCommon(f.host, repo, f.username, f.token)
 }
 
 // HttpResolver builds http URLs that may optionally contain simple auth credentials, resolved dynamically.
@@ -145,6 +166,7 @@ func (f *pathResolverFactory) PublishRemote(_, org, repo string) RemoteResolver 
 	}
 }
 
+// dynamicSshRemoteResolverFactory will create RemoteResolver that generate ssh remote from host, org and repo.
 type dynamicSshRemoteResolverFactory struct {
 	username LoginGetter
 }
@@ -152,24 +174,16 @@ type dynamicSshRemoteResolverFactory struct {
 // CentralRemote creates a remote resolver that refers to an authoritative remote
 // for the repository.
 func (f *dynamicSshRemoteResolverFactory) CentralRemote(host, org, repo string) RemoteResolver {
-	remote := fmt.Sprintf("git@%s:%s/%s.git", host, org, repo)
-	return func() (string, error) {
-		return remote, nil
-	}
+	return sshCentralRemoteCommon(host, org, repo)
 }
 
 // PublishRemote creates a remote resolver that refers to a user's remote
 // for the repository that can be published to.
 func (f *dynamicSshRemoteResolverFactory) PublishRemote(host, _, repo string) RemoteResolver {
-	return func() (string, error) {
-		org, err := f.username()
-		if err != nil {
-			return "", err
-		}
-		return fmt.Sprintf("git@%s:%s/%s.git", host, org, repo), nil
-	}
+	return sshPublishRemoteCommon(host, repo, f.username)
 }
 
+// dynamicHttpResolverFactory will create RemoteResolver that generate http remote from host, org and repo.
 type dynamicHttpResolverFactory struct {
 	// Optional, either both or none must be set
 	username LoginGetter
@@ -179,22 +193,11 @@ type dynamicHttpResolverFactory struct {
 // CentralRemote creates a remote resolver that refers to an authoritative remote
 // for the repository.
 func (f *dynamicHttpResolverFactory) CentralRemote(host, org, repo string) RemoteResolver {
-	return HttpResolver(func() (*url.URL, error) {
-		return &url.URL{Scheme: "https", Host: host, Path: fmt.Sprintf("%s/%s", org, repo)}, nil
-	}, f.username, f.token)
+	return httpCentralRemoteCommon(host, org, repo, f.username, f.token)
 }
 
 // PublishRemote creates a remote resolver that refers to a user's remote
 // for the repository that can be published to.
 func (f *dynamicHttpResolverFactory) PublishRemote(host, _, repo string) RemoteResolver {
-	return HttpResolver(func() (*url.URL, error) {
-		if f.username == nil {
-			return nil, errors.New("username not configured, no publish repo available")
-		}
-		o, err := f.username()
-		if err != nil {
-			return nil, err
-		}
-		return &url.URL{Scheme: "https", Host: host, Path: fmt.Sprintf("%s/%s", o, repo)}, nil
-	}, f.username, f.token)
+	return httpPublishRemoteCommon(host, repo, f.username, f.token)
 }
