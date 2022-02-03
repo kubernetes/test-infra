@@ -76,6 +76,7 @@ approve:
 - repos:
   - bazelbuild
   - kubernetes-sigs/boskos
+  - kubernetes-sigs/cluster-api-provider-digitalocean
   - kubernetes-sigs/cluster-api-provider-gcp
   - kubernetes-sigs/downloadkubernetes
   - kubernetes-sigs/e2e-framework
@@ -150,6 +151,7 @@ lgtm:
   - bazelbuild
   - kubernetes-sigs/boskos
   - kubernetes-sigs/controller-runtime
+  - kubernetes-sigs/cluster-api-provider-digitalocean
   - kubernetes-sigs/cluster-api-provider-gcp
   - kubernetes-sigs/downloadkubernetes
   - kubernetes-sigs/e2e-framework
