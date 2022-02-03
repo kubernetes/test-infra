@@ -449,6 +449,8 @@ def generate_misc():
         build_test(name_override="kops-grid-scenario-gcr-mirror",
                    runs_per_day=24,
                    cloud="aws",
+                   # Latest runs with a staging AWS CCM, not available in registry-sandbox.k8s.io
+                   k8s_version='1.23',
                    extra_flags=['--set=spec.assets.containerProxy=registry-sandbox.k8s.io'],
                    extra_dashboards=['kops-misc']),
 
