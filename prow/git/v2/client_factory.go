@@ -194,6 +194,7 @@ func NewLocalClientFactory(baseDir string, gitUser GitUserGetter, censor Censor)
 		masterLock: &sync.Mutex{},
 		repoLocks:  map[string]*sync.Mutex{},
 		logger:     logrus.WithField("client", "git"),
+		host:       "local",
 	}, nil
 }
 
