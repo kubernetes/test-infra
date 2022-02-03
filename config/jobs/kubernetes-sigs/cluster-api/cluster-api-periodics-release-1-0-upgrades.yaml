@@ -42,7 +42,7 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.0
     testgrid-tab-name: capi-e2e-release-1-0-1-18-1-19
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
-    testgrid-num-failures-to-alert: "2"
+    testgrid-num-failures-to-alert: "4"
 
 - name: periodic-cluster-api-e2e-workload-upgrade-1-19-1-20-release-1-0
   interval: 24h
@@ -86,7 +86,7 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.0
     testgrid-tab-name: capi-e2e-release-1-0-1-19-1-20
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
-    testgrid-num-failures-to-alert: "2"
+    testgrid-num-failures-to-alert: "4"
 
 - name: periodic-cluster-api-e2e-workload-upgrade-1-20-1-21-release-1-0
   interval: 24h
@@ -130,7 +130,7 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.0
     testgrid-tab-name: capi-e2e-release-1-0-1-20-1-21
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
-    testgrid-num-failures-to-alert: "2"
+    testgrid-num-failures-to-alert: "4"
 
 - name: periodic-cluster-api-e2e-workload-upgrade-1-21-1-22-release-1-0
   interval: 24h
@@ -174,7 +174,7 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.0
     testgrid-tab-name: capi-e2e-release-1-0-1-21-1-22
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
-    testgrid-num-failures-to-alert: "2"
+    testgrid-num-failures-to-alert: "4"
 
 - name: periodic-cluster-api-e2e-workload-upgrade-1-22-1-23-release-1-0
   interval: 24h
@@ -219,7 +219,7 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.0
     testgrid-tab-name: capi-e2e-release-1-0-1-22-1-23
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
-    testgrid-num-failures-to-alert: "2"
+    testgrid-num-failures-to-alert: "4"
 
 - name: periodic-cluster-api-e2e-workload-upgrade-1-23-latest-release-1-0
   interval: 24h
@@ -263,4 +263,4 @@ periodics:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-1.0
     testgrid-tab-name: capi-e2e-release-1-0-1-23-latest
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
-    testgrid-num-failures-to-alert: "2"
+    testgrid-num-failures-to-alert: "4"
