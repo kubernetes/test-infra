@@ -157,6 +157,18 @@ func TestPopulateStructSetsStrings(t *testing.T) {
 	}
 }
 
+func TestPopulateStructBool(t *testing.T) {
+	s := struct {
+		Bool   bool   `json:"bool,omitempty"`
+		String string `json:"string,omitempty"`
+	}{}
+
+	PopulateStruct(&s)
+	if !s.Bool {
+		t.Fatalf("Bool field didn't get set, struct: %+v", s)
+	}
+}
+
 func TestPopulateStructHandlesUnexportedFields(_ *testing.T) {
 	s := struct {
 		unexported *struct {
