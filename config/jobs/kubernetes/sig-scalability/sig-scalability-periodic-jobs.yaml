@@ -35,6 +35,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --cluster=
+      - --env=CONTAINER_IMAGE=registry-sandbox.k8s.io/pause:3.1 #TODO(ameukam): revert when registry.k8s.io is ready
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-nodes=1
@@ -95,6 +96,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --cluster=
+      - --env=CONTAINER_IMAGE=registry-sandbox.k8s.io/pause:3.1 #TODO(ameukam): revert when registry.k8s.io is ready
       - --extract=ci/latest
       - --gcp-node-image=gci
       - --gcp-nodes=1
