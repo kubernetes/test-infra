@@ -22,12 +22,16 @@ cd $REPO_ROOT
 
 # place to stick temp binaries
 BINDIR="${REPO_ROOT}/_bin"
+if [[ ! -d "${BINDIR}" ]]; then
+  mkdir "${BINDIR}"
+fi
 
 DIFFROOT="${REPO_ROOT}"
 TMP_DIFFROOT="$(TMPDIR="${BINDIR}" mktemp -d "${BINDIR}/verify-codegen.XXXXX")"
 
 mkdir -p "${TMP_DIFFROOT}/prow"
-cp -a "${DIFFROOT}"/prow/{apis,client,config,spyglass} "${TMP_DIFFROOT}/prow"
+cp -a "${DIFFROOT}"/prow/{apis,client,config,spyglass,cmd/deck/static} "${TMP_DIFFROOT}/prow"
+cp -a "${DIFFROOT}"/gopherage "${TMP_DIFFROOT}"
 mkdir -p "${TMP_DIFFROOT}/config/prow/cluster/prowjob-crd"
 cp -a "${DIFFROOT}/config/prow/cluster/prowjob-crd/prowjob_customresourcedefinition.yaml" "${TMP_DIFFROOT}/config/prow/cluster/prowjob-crd/prowjob_customresourcedefinition.yaml"
 
