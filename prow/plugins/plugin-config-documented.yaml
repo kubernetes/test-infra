@@ -10,6 +10,14 @@ approve:
     # * A REQUEST_CHANGES github review is equivalent to leaving an /approve cancel" message.
     ignore_review_state: false
 
+    # IssueRequired indicates if an associated issue is required for approval in
+    # the specified repos.
+    issue_required: true
+
+    # LgtmActsAsApprove indicates that the lgtm command should be used to
+    # indicate approval
+    lgtm_acts_as_approve: true
+
     # PrProcessLink is the link to the help page which explains the code review process.
     # The default value is "https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process".
     pr_process_link: ' '
@@ -43,9 +51,25 @@ blockades:
     repos:
       - ""
 blunderbuss:
+    # ExcludeApprovers controls whether approvers are considered to be
+    # reviewers. By default, approvers are considered as reviewers if
+    # insufficient reviewers are available. If ExcludeApprovers is true,
+    # approvers will never be considered as reviewers.
+    exclude_approvers: true
+
+    # IgnoreDrafts instructs the plugin to ignore assigning reviewers
+    # to the PR that is in Draft state. Default it's false.
+    ignore_drafts: true
+
     # ReviewerCount is the minimum number of reviewers to request
     # reviews from. Defaults to requesting reviews from 2 reviewers
     request_count: 0
+
+    # UseStatusAvailability controls whether blunderbuss will consider GitHub's
+    # status availability when requesting reviews for users. This will use at one
+    # additional token per successful reviewer (and potentially more depending on
+    # how many busy reviewers it had to pass over).
+    use_status_availability: true
 branch_cleaner:
     # PreservedBranches is a map of org/repo branches
     # format:
@@ -370,8 +394,19 @@ config_updater:
 
             # Name of ConfigMap
             name: ' '
+
+            # UseFullPathAsKey controls if the full path of the original file relative to the
+            # repository root should be used as the configmap key. Slashes will be replaced by
+            # dashes. Using this avoids the need for unique file names in the original repo.
+            use_full_path_as_key: true
 dco:
     "":
+        # SkipDCOCheckForCollaborators is used to skip DCO check for trusted org members
+        skip_dco_check_for_collaborators: true
+
+        # SkipDCOCheckForMembers is used to skip DCO check for trusted org members
+        skip_dco_check_for_members: true
+
         # TrustedApps defines list of apps which commits will not be checked for DCO singoff.
         # The list should contain usernames of each GitHub App without [bot] suffix.
         # By default, this option is ignored.
@@ -442,6 +477,14 @@ lgtm:
     repos:
       - ""
 
+    # ReviewActsAsLgtm indicates that a GitHub review of "approve" or "request changes"
+    # acts as adding or removing the lgtm label
+    review_acts_as_lgtm: true
+
+    # StoreTreeHash indicates if tree_hash should be stored inside a comment to detect
+    # squashed commits before removing lgtm labels
+    store_tree_hash: true
+
     # WARNING: This disables the security mechanism that prevents a malicious member (or
     # compromised GitHub account) from merging arbitrary code. Use with caution.
 
@@ -451,6 +494,8 @@ lgtm:
 milestone_applier:
     "": null
 override:
+    allow_top_level_owners: true
+
     # AllowedGitHubTeams is a map of orgs and/or repositories (eg "org" or "org/repo") to list of GitHub team slugs,
     # members of which are allowed to override contexts
     allowed_github_teams:
@@ -554,6 +599,9 @@ require_matching_label:
     # Defaults to '5s'.
     grace_period: ' '
 
+    # Issues is a bool indicating if this config applies to issues.
+    issues: true
+
     # MissingComment is the comment to post when we add the MissingLabel to an
     # issue. This is typically used to explain why MissingLabel was added and
     # how to move forward.
@@ -567,6 +615,9 @@ require_matching_label:
     # Org is the GitHub organization that this config applies to.
     org: ' '
 
+    # PRs is a bool indicating if this config applies to PRs.
+    prs: true
+
     # Regexp is the string specifying the regular expression used to look for
     # matching labels.
     regexp: ' '
@@ -574,6 +625,9 @@ require_matching_label:
     # Repo is the GitHub repository within Org that this config applies to.
     # This fields may be omitted to apply this config across all repos in Org.
     repo: ' '
+retitle:
+    # AllowClosedIssues allows retitling closed/merged issues and PRs.
+    allow_closed_issues: true
 sigmention:
     # Regexp parses comments and should return matches to team mentions.
     # These mentions enable labeling issues or PRs with sig/team labels.
@@ -611,14 +665,25 @@ slack:
         repos:
           - ""
 triggers:
-  - # JoinOrgURL is a link that redirects users to a location where they
+  - # IgnoreOkToTest makes trigger ignore /ok-to-test comments.
+    # This is a security mitigation to only allow testing from trusted users.
+    ignore_ok_to_test: true
+
+    # JoinOrgURL is a link that redirects users to a location where they
     # should be able to read more about joining the organization in order
     # to become trusted members. Defaults to the GitHub link of TrustedOrg.
     join_org_url: ' '
 
+    # OnlyOrgMembers requires PRs and/or /ok-to-test comments to come from org members.
+    # By default, trigger also include repo collaborators.
+    only_org_members: true
+
     # Repos is either of the form org/repos or just org.
     repos:
       - ""
+
+    # TriggerGitHubWorkflows enables workflows run by github to be triggered by prow.
+    trigger_github_workflows: true
 
     # TrustedApps is the explicit list of GitHub apps whose PRs will be automatically
     # considered as trusted. The list should contain usernames of each GitHub App without [bot] suffix.
