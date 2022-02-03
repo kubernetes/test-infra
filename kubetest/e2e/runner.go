@@ -184,7 +184,7 @@ func (t *GinkgoTester) Run(control *process.Control, extraArgs []string) error {
 	a.addIfNonEmpty("cluster-monitoring-mode", t.ClusterMonitoringMode)
 
 	a.addIfNonEmpty("container-runtime", t.KubeContainerRuntime)
-	a.addIfNonEmpty("master-os-distro", t.MasterOSDistribution)
+	a.addIfNonEmpty("control-plane-os-distro", t.MasterOSDistribution)
 	a.addIfNonEmpty("node-os-distro", t.NodeOSDistribution)
 	a.addInt("num-nodes", t.NumNodes)
 	a.addIfNonEmpty("report-dir", t.ReportDir)
