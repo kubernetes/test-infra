@@ -70,13 +70,13 @@ approve:
   - kubernetes-sigs/cluster-api-operator
   - kubernetes-sigs/cluster-api-provider-aws
   - kubernetes-sigs/cluster-api-provider-azure
-  - kubernetes-sigs/cluster-api-provider-gcp
   - kubernetes-sigs/cluster-api-provider-vsphere
   require_self_approval: true
   ignore_review_state: true
 - repos:
   - bazelbuild
   - kubernetes-sigs/boskos
+  - kubernetes-sigs/cluster-api-provider-gcp
   - kubernetes-sigs/downloadkubernetes
   - kubernetes-sigs/e2e-framework
   - kubernetes-sigs/promo-tools
@@ -135,11 +135,11 @@ label:
 
   restricted_labels:
     kubernetes/kubernetes:
-        # Security Response Committee (SRC) is allowed to add this label, 
+        # Security Response Committee (SRC) is allowed to add this label,
         # to new and existing GitHub Issues and PRs that announce a fixed CVE triaged by SRC
       - allowed_teams:
           - security-response-committee
-        # SIG Security Tooling Lead is an allowed user to assist SRC in this CVE feed automation  
+        # SIG Security Tooling Lead is an allowed user to assist SRC in this CVE feed automation
         allowed_users:
           - pushkarj
         # This label is used to filter/tag CVEs announced by SRC
@@ -150,6 +150,7 @@ lgtm:
   - bazelbuild
   - kubernetes-sigs/boskos
   - kubernetes-sigs/controller-runtime
+  - kubernetes-sigs/cluster-api-provider-gcp
   - kubernetes-sigs/downloadkubernetes
   - kubernetes-sigs/e2e-framework
   - kubernetes-sigs/etcdadm
