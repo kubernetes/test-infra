@@ -101,6 +101,10 @@ const (
 	// PodSpec maps to the serialized value of <ProwJob>.Spec.PodSpec.
 	PodSpec string = "pod_spec"
 
+	defaultStaticFilesLocation   = "/static"
+	defaultTemplateFilesLocation = "/template"
+	defaultSpyglassFilesLocation = "/lenses"
+
 	defaultPRHistLinkTemplate = "/pr-history?org={{.Org}}&repo={{.Repo}}&pr={{.Number}}"
 )
 
@@ -177,9 +181,9 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.StringVar(&o.pregeneratedData, "pregenerated-data", "", "Use API output from another prow instance. Used by the prow/cmd/deck/runlocal script")
 	fs.BoolVar(&o.showHidden, "show-hidden", false, "Show all jobs, including hidden ones")
 	fs.BoolVar(&o.spyglass, "spyglass", false, "Use Prow built-in job viewing instead of Gubernator")
-	fs.StringVar(&o.spyglassFilesLocation, "spyglass-files-location", "/lenses", "Location of the static files for spyglass.")
-	fs.StringVar(&o.staticFilesLocation, "static-files-location", "/static", "Path to the static files")
-	fs.StringVar(&o.templateFilesLocation, "template-files-location", "/template", "Path to the template files")
+	fs.StringVar(&o.spyglassFilesLocation, "spyglass-files-location", fmt.Sprintf("%s%s", os.Getenv("KO_DATA_PATH"), defaultSpyglassFilesLocation), "Location of the static files for spyglass.")
+	fs.StringVar(&o.staticFilesLocation, "static-files-location", fmt.Sprintf("%s%s", os.Getenv("KO_DATA_PATH"), defaultStaticFilesLocation), "Path to the static files")
+	fs.StringVar(&o.templateFilesLocation, "template-files-location", fmt.Sprintf("%s%s", os.Getenv("KO_DATA_PATH"), defaultTemplateFilesLocation), "Path to the template files")
 	fs.BoolVar(&o.gcsCookieAuth, "gcs-cookie-auth", false, "Use storage.cloud.google.com instead of signed URLs")
 	fs.BoolVar(&o.rerunCreatesJob, "rerun-creates-job", false, "Change the re-run option in Deck to actually create the job. **WARNING:** Only use this with non-public deck instances, otherwise strangers can DOS your Prow instance")
 	fs.BoolVar(&o.allowInsecure, "allow-insecure", false, "Allows insecure requests for CSRF and GitHub oauth.")
@@ -195,6 +199,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	o.storage.AddFlags(fs)
 	o.pluginsConfig.AddFlags(fs)
 	fs.Parse(args)
+
 	return o
 }
 

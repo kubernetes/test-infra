@@ -1,3 +1,4 @@
+//go:build tools
 // +build tools
 
 /*
@@ -41,4 +42,7 @@ import (
 	_ "github.com/bazelbuild/buildtools/buildozer"
 
 	_ "github.com/client9/misspell/cmd/misspell"
+
+	// image builder
+	_ "github.com/google/ko"
 )

@@ -40,6 +40,23 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: deck
+spec:
+  ingressClassName: "nginx"
+  rules:
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: deck
+            port:
+              number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: deck-tenanted
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:

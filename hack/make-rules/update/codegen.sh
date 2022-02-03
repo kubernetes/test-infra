@@ -225,7 +225,8 @@ EOF
 }
 
 gen-ts-bundle() {
-  ./hack/make-rules/update/ts-rollup.sh
+  ./hack/make-rules/update/ts-rollup.sh prow/cmd/deck/.ts-packages
+  ./hack/make-rules/update/ts-rollup.sh gopherage/.ts-packages
 }
 
 export GO111MODULE=off

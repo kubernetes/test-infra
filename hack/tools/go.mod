@@ -7,6 +7,7 @@ require (
 	github.com/client9/misspell v0.3.4
 	github.com/go-bindata/go-bindata/v3 v3.1.3
 	github.com/golangci/golangci-lint v1.42.1
+	github.com/google/ko v0.9.3
 	github.com/prometheus/client_golang v1.11.0 // indirect
 	gotest.tools/gotestsum v1.7.0
 	k8s.io/api v0.22.2 // indirect

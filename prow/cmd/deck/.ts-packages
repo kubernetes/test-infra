@@ -1,0 +1,17 @@
+prow/spyglass/lenses/restcoverage/restcoverage.ts->script_bundle.min.js
+prow/spyglass/lenses/podinfo/podinfo.ts->script_bundle.min.js
+prow/spyglass/lenses/metadata/metadata.ts->script_bundle.min.js
+prow/spyglass/lenses/links/links.ts->script_bundle.min.js
+prow/spyglass/lenses/junit/lens.ts->script_bundle.min.js
+prow/spyglass/lenses/html/html.ts->script_bundle.min.js
+prow/spyglass/lenses/coverage/coverage.ts->script_bundle.min.js
+prow/spyglass/lenses/buildlog/buildlog.ts->script_bundle.min.js
+prow/cmd/deck/static/spyglass/spyglass.ts->../spyglass_bundle.min.js
+prow/cmd/deck/static/spyglass/lens.ts->../spyglass_lens_bundle.min.js
+prow/cmd/deck/static/command-help/command-help.ts->../command_help_bundle.min.js
+prow/cmd/deck/static/tide-history/tide-history.ts->../tide_history_bundle.min.js
+prow/cmd/deck/static/tide/tide.ts->../tide_bundle.min.js
+prow/cmd/deck/static/pr/pr.ts->../pr_bundle.min.js
+prow/cmd/deck/static/plugin-help/plugin-help.ts->../plugin_help_bundle.min.js
+prow/cmd/deck/static/prow/prow.ts->../prow_bundle.min.js
+prow/cmd/deck/static/job-history/job-history.ts->../job_history_bundle.min.js

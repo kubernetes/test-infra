@@ -29,6 +29,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"reflect"
 	"strconv"
 	"testing"
@@ -795,16 +796,36 @@ func TestHelp(t *testing.T) {
 
 func Test_gatherOptions(t *testing.T) {
 	cases := []struct {
-		name     string
-		args     map[string]string
-		del      sets.String
-		expected func(*options)
-		err      bool
+		name       string
+		args       map[string]string
+		del        sets.String
+		koDataPath string
+		expected   func(*options)
+		err        bool
 	}{
 		{
 			name: "minimal flags work",
 			expected: func(o *options) {
 				o.timeoutListingProwJobs = 30
+			},
+		},
+		{
+			name: "default static files location",
+			expected: func(o *options) {
+				o.timeoutListingProwJobs = 30
+				o.spyglassFilesLocation = "/lenses"
+				o.staticFilesLocation = "/static"
+				o.templateFilesLocation = "/template"
+			},
+		},
+		{
+			name:       "ko data path",
+			koDataPath: "ko-data",
+			expected: func(o *options) {
+				o.timeoutListingProwJobs = 30
+				o.spyglassFilesLocation = "ko-data/lenses"
+				o.staticFilesLocation = "ko-data/static"
+				o.templateFilesLocation = "ko-data/template"
 			},
 		},
 		{
@@ -841,6 +862,12 @@ func Test_gatherOptions(t *testing.T) {
 		ghoptions.AllowAnonymous = true
 		ghoptions.AllowDirectAccess = true
 		t.Run(tc.name, func(t *testing.T) {
+			oldKoDataPath := os.Getenv("KO_DATA_PATH")
+			if err := os.Setenv("KO_DATA_PATH", tc.koDataPath); err != nil {
+				t.Fatalf("Failed set env var KO_DATA_PATH: %v", err)
+			}
+			defer os.Setenv("KO_DATA_PATH", oldKoDataPath)
+
 			expected := &options{
 				config: configflagutil.ConfigOptions{
 					ConfigPathFlagName:                    "config-path",
