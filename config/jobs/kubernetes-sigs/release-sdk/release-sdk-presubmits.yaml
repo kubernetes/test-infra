@@ -19,6 +19,34 @@ presubmits:
       testgrid-tab-name: release-sdk-test
       testgrid-alert-email: release-managers+alerts@kubernetes.io
       testgrid-num-columns-recent: '30'
+  - name: pull-release-sdk-integration-test
+    # TODO(xmudrii): Make this job always run and required after
+    # https://github.com/kubernetes-sigs/release-sdk/pull/31 is merged
+    always_run: false
+    optional: true
+    decorate: true
+    path_alias: "sigs.k8s.io/release-sdk"
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-releng/k8s-ci-builder:latest-default
+        imagePullPolicy: Always
+        command:
+        - wrapper.sh
+        args:
+        - go
+        - run
+        - mage.go
+        - IntegrationTest
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-release-releng-presubmits
+      testgrid-tab-name: release-sdk-integration-test
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
+      testgrid-num-columns-recent: '30'
   - name: pull-release-sdk-verify
     always_run: true
     decorate: true
