@@ -326,6 +326,7 @@ deck:
     # config applies to and a value of: `RerunAuthConfig` struct to define the users/groups authorized to rerun jobs.
     rerun_auth_configs:
         "":
+            allow_anyone: true
             github_orgs:
               - ""
             github_team_ids:
@@ -358,6 +359,11 @@ deck:
         # They are mapped by org, org/repo or '*' which is the default value.
         gcs_browser_prefixes:
             "": ""
+
+        # HidePRHistLink allows prow hiding PR History link from deck, this is handy especially for
+        # prow instances that only serves gerrit.
+        # This might become obsolete once https://github.com/kubernetes/test-infra/issues/24130 is fixed.
+        hide_pr_history_link: true
 
         # Lenses is a list of lens configurations.
         lenses:
@@ -527,6 +533,12 @@ owners_dir_blacklist:
     default:
       - ""
 
+    # By default, some directories like ".git", "_output" and "vendor/.*/OWNERS"
+    # are preconfigured to be denylisted.
+    # If set, IgnorePreconfiguredDefaults will not add these preconfigured directories
+    # to the denylist.
+    ignore_preconfigured_defaults: true
+
     # Repos configures a directory denylist per repo (or org)
     repos:
         "": null
@@ -540,6 +552,12 @@ owners_dir_denylist:
     # are already preconfigured to be denylisted, and need not be included here.
     default:
       - ""
+
+    # By default, some directories like ".git", "_output" and "vendor/.*/OWNERS"
+    # are preconfigured to be denylisted.
+    # If set, IgnorePreconfiguredDefaults will not add these preconfigured directories
+    # to the denylist.
+    ignore_preconfigured_defaults: true
 
     # Repos configures a directory denylist per repo (or org)
     repos:
@@ -961,6 +979,10 @@ plank:
     # JobURLTemplateString compiles into JobURLTemplate at load time.
     job_url_template: ' '
 
+    # JobURLPrefixDisableAppendStorageProvider disables that the storageProvider is
+    # automatically appended to the JobURLPrefix
+    jobURLPrefixDisableAppendStorageProvider: true
+
     # PodPendingTimeout is after how long the controller will perform a garbage
     # collection on pending pods. Defaults to 10 minutes.
     pod_pending_timeout: 0s
@@ -1159,6 +1181,11 @@ tide:
         # whether to consider unknown contexts optional (skip) or required.
         skip-unknown-contexts: false
 
+    # DisplayAllQueriesInStatus controls if Tide should mention all queries in the status it
+    # creates. The default is to only mention the one to which we are closest (Calculated
+    # by total number of requirements - fulfilled number of requirements).
+    display_all_tide_queries_in_status: true
+
     # A key/value pair of an org/repo as the key and Go template to override
     # the default merge commit title and/or message. Template is passed the
     # PullRequest struct (prow/github/types.go#PullRequest)
@@ -1222,6 +1249,7 @@ tide:
           - ""
         repos:
           - ""
+        reviewApprovedRequired: true
 
     # RebaseLabel is an optional label that is used to identify PRs that should
     # always be rebased and merged.

@@ -123,6 +123,10 @@ func PopulateStruct(in interface{}) interface{} {
 			concreteMap.SetMapIndex(key, value)
 
 			valueOf.Elem().Field(i).Set(concreteMap)
+		case reflect.Bool:
+			if strings.Contains(typeOf.Elem().Field(i).Tag.Get("json"), ",omitempty") {
+				valueOf.Elem().Field(i).SetBool(true)
+			}
 		}
 
 	}
