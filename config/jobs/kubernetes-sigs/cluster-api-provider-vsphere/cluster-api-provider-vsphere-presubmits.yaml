@@ -86,7 +86,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220124-681f3531ec-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220124-681f3531ec-1.23
         command:
         - hack/check-lint.sh
     annotations:
@@ -141,7 +141,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220124-681f3531ec-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220124-681f3531ec-1.23
         command:
         - hack/verify-crds.sh
     annotations:
@@ -157,7 +157,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220124-681f3531ec-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220124-681f3531ec-1.23
         resources:
           requests:
             cpu: "500m"
@@ -184,7 +184,7 @@ presubmits:
     - ^master$
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220124-681f3531ec-1.21
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220124-681f3531ec-1.23
           # we need privileged mode in order to do docker in docker
           securityContext:
             privileged: true
@@ -218,7 +218,7 @@ presubmits:
     max_concurrency: 3
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220124-681f3531ec-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220124-681f3531ec-1.23
         command:
         - runner.sh
         args:
