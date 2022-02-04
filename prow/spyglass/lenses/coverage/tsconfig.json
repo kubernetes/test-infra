@@ -1,0 +1,14 @@
+{
+  "extends": "../../../../make-tsconfig.json",
+  "include": [
+    "coverage.ts",
+    "../lens.d.ts",
+    "../../../../gopherage/cmd/html/static",
+    "../../../../node_modules/@types/google.visualization/index.d.ts",
+    "../../../../../node_modules/@types/color",
+    "../../../../../node_modules/@types/pako"
+  ],
+  "exclude": [
+    "zz.bundle.min.js"
+  ]
+}

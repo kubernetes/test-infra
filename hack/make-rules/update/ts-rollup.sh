@@ -36,4 +36,26 @@ for rollup_entrypoint in ${ROLLUP_ENTRYPOINTS[@]}; do
     rollup_entrypoint_file="$(basename -s '.ts' ${rollup_entrypoint})"
     export OUT="${rollup_entrypoint_dir}/zz.${rollup_entrypoint_file}.bundle.min.js"
     ./hack/rollup-js.sh "${rollup_entrypoint_dir}" "${rollup_entrypoint_file}"
+
+    # For development purpose, making sure that the rolled js files are
+    # identical with prod
+    if [[ "${1:-}" != "--verify" ]]; then
+        continue
+    fi
+    if [[ "$rollup_entrypoint_dir" =~ gopherage ]]; then
+        continue
+    fi
+    rollup_entrypoint_package_name="$(basename ${rollup_entrypoint_dir})"
+    url="https://prow.k8s.io/static/${rollup_entrypoint_package_name/-/_/}_bundle.min.js"
+    if [[ "$rollup_entrypoint_dir" =~ prow/spyglass/lenses ]]; then
+        url="https://prow.k8s.io/spyglass/static/${rollup_entrypoint_package_name}/script_bundle.min.js"
+    fi
+    downloaded="${rollup_entrypoint_dir}/downloaded.${rollup_entrypoint_package_name}.bundle.min.js"
+    curl $url -o $downloaded
+    diff $downloaded $OUT || {
+        echo "ERROR: not the same"
+        rm $downloaded
+        exit 1
+    }
+    rm $downloaded
 done

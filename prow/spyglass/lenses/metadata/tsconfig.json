@@ -1,0 +1,11 @@
+{
+  "extends": "../../../../make-tsconfig.json",
+  "include": [
+    "metadata.ts",
+    "../lens.d.ts",
+    "../../../../../node_modules/moment"
+  ],
+  "exclude": [
+    "zz.bundle.min.js"
+  ]
+}
