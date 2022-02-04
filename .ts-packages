@@ -1,1 +1,9 @@
-prow/cmd/deck/static/job-history
+gopherage/cmd/html/static/browser.ts
+prow/cmd/deck/static/spyglass/spyglass.ts
+prow/cmd/deck/static/command-help/command-help.ts
+prow/cmd/deck/static/tide-history/tide-history.ts
+prow/cmd/deck/static/tide/tide.ts
+prow/cmd/deck/static/pr/pr.ts
+prow/cmd/deck/static/plugin-help/plugin-help.ts
+prow/cmd/deck/static/prow/prow.ts
+prow/cmd/deck/static/job-history/job-history.ts
