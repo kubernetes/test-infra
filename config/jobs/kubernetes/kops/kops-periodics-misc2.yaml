@@ -2,7 +2,7 @@
 # 24 jobs, total of 686 runs per week
 periodics:
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--set=spec.assets.containerProxy=registry-sandbox.k8s.io --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "latest", "kops_channel": "alpha", "kops_version": null, "networking": "kubenet"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--set=spec.assets.containerProxy=registry-sandbox.k8s.io --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.23", "kops_channel": "alpha", "kops_version": null, "networking": "kubenet"}
 - name: e2e-kops-grid-scenario-gcr-mirror
   cron: '6 0-23/1 * * *'
   labels:
@@ -33,12 +33,12 @@ periodics:
           --cloud-provider=aws \
           --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220131' --channel=alpha --networking=kubenet --container-runtime=containerd --set=spec.assets.containerProxy=registry-sandbox.k8s.io --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
-          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/latest.txt \
+          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
           -- \
           --ginkgo-args="--debug" \
           --test-args="-test.timeout=60m -num-nodes=0" \
-          --test-package-marker=latest.txt \
+          --test-package-marker=stable-1.23.txt \
           --parallel=25
       env:
       - name: KUBE_SSH_KEY_PATH
@@ -58,11 +58,11 @@ periodics:
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
     test.kops.k8s.io/extra_flags: --set=spec.assets.containerProxy=registry-sandbox.k8s.io --discovery-store=s3://k8s-kops-prow/discovery
-    test.kops.k8s.io/k8s_version: latest
+    test.kops.k8s.io/k8s_version: '1.23'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: kubenet
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-latest, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-1.23, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '11'
     testgrid-tab-name: kops-grid-scenario-gcr-mirror
 
