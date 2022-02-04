@@ -1350,7 +1350,7 @@ func loadWithYamlOpts(yamlOpts []yaml.JSONOpt, prowConfig, jobConfig string, sup
 			c, err = nil, fmt.Errorf("panic loading config: %v\n%s", r, string(debug.Stack()))
 		}
 	}()
-	c, err = loadConfig(prowConfig, jobConfig, supplementalProwConfigDirs, supplementalProwConfigsFileNameSuffix, yamlOpts...)
+	c, err = LoadConfig(prowConfig, jobConfig, supplementalProwConfigDirs, supplementalProwConfigsFileNameSuffix, yamlOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1454,8 +1454,8 @@ func ReadJobConfig(jobConfig string, yamlOpts ...yaml.JSONOpt) (JobConfig, error
 	return jc, nil
 }
 
-// loadConfig loads one or multiple config files and returns a config object.
-func loadConfig(prowConfig, jobConfig string, additionalProwConfigDirs []string, supplementalProwConfigsFileNameSuffix string, yamlOpts ...yaml.JSONOpt) (*Config, error) {
+// LoadConfig loads one or multiple config files and returns a config object.
+func LoadConfig(prowConfig, jobConfig string, additionalProwConfigDirs []string, supplementalProwConfigsFileNameSuffix string, yamlOpts ...yaml.JSONOpt) (*Config, error) {
 	stat, err := os.Stat(prowConfig)
 	if err != nil {
 		return nil, err
