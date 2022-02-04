@@ -445,7 +445,6 @@ func TestProcessChange(t *testing.T) {
 		shouldError      bool
 		shouldSkipReport bool
 		expectedLabels   map[string]string
-		nilCache         bool
 	}{
 
 		{
@@ -1101,44 +1100,6 @@ func TestProcessChange(t *testing.T) {
 			pjRef:        "refs/changes/00/1/1",
 		},
 		{
-			name: "no presubmit Prow jobs automatically triggered from WorkInProgess change. Works when clientFactory nil",
-			change: client.ChangeInfo{
-				CurrentRevision: "1",
-				Project:         "test-infra",
-				Status:          "NEW",
-				WorkInProgress:  true,
-				Revisions: map[string]gerrit.RevisionInfo{
-					"1": {
-						Number: 1001,
-					},
-				},
-			},
-			instancesMap: map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
-			instance:     testInstance,
-			shouldError:  false,
-			numPJ:        0,
-			nilCache:     true,
-		},
-		{
-			name: "normal changes should trigger matching branch jobs. Works when clientFactory is nil",
-			change: client.ChangeInfo{
-				CurrentRevision: "1",
-				Project:         "test-infra",
-				Status:          "NEW",
-				Revisions: map[string]client.RevisionInfo{
-					"1": {
-						Ref:     "refs/changes/00/1/1",
-						Created: stampNow,
-					},
-				},
-			},
-			instancesMap: map[string]*gerrit.AccountInfo{testInstance: {AccountID: 42}},
-			instance:     testInstance,
-			numPJ:        2,
-			pjRef:        "refs/changes/00/1/1",
-			nilCache:     true,
-		},
-		{
 			name: "InRepoConfig Presubmits are retrieved when repo name format has slash",
 			change: client.ChangeInfo{
 				CurrentRevision: "1",
@@ -1317,18 +1278,16 @@ func TestProcessChange(t *testing.T) {
 				prowJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
 				gc:            &gc,
 				tracker:       &fakeSync{val: fakeLastSync},
+				repoCacheMap:  map[string]*config.InRepoConfigCache{},
 			}
 			cloneURI, err := makeCloneURI(tc.instance, tc.change.Project)
 			if err != nil {
 				t.Errorf("error making CloneURI %v", err)
 			}
 
-			var cache *config.InRepoConfigCache = nil
-			if !tc.nilCache {
-				cache, err = createTestRepoCache(t, fca)
-				if err != nil {
-					t.Errorf("error making test repo cache %v", err)
-				}
+			cache, err := createTestRepoCache(t, fca)
+			if err != nil {
+				t.Errorf("error making test repo cache %v", err)
 			}
 
 			err = c.processChange(logrus.WithField("name", tc.name), tc.instance, tc.change, cloneURI, cache)
