@@ -34,6 +34,7 @@ dashboard_groups:
   - kops-1.22
   - kops-1.23
   - kops-latest
+  - kops-upgrades
 
 dashboards:
 - name: kops-presubmits
@@ -69,3 +70,4 @@ dashboards:
 - name: kops-1.22
 - name: kops-1.23
 - name: kops-latest
+- name: kops-upgrades
