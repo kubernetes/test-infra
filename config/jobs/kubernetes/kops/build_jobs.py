@@ -788,8 +788,11 @@ def generate_network_plugins():
 def generate_upgrades():
     versions_list = [
         #  kops    k8s          kops      k8s
+        (('v1.21.4', 'v1.21.4'), ('1.21', 'v1.21.4')),
+        (('v1.22.3', 'v1.22.4'), ('1.22', 'v1.22.4')),
         (('1.22', 'v1.22.4'), ('1.23', 'v1.23.0')),
         (('1.22', 'v1.22.4'), ('latest', 'v1.23.0')),
+        (('v1.23.0-beta.1', 'v1.23.1'), ('1.23', 'v1.23.1')),
         (('1.23', 'v1.23.0'), ('latest', 'latest')),
         (('latest', 'v1.23.0'), ('latest', 'latest')),
         (('latest', 'v1.22.4'), ('latest', 'v1.23.0')),
