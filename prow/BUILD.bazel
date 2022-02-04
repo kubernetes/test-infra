@@ -94,14 +94,14 @@ prow_push(
     images = image_tags(
         targets = {
             # Local registry as documented: https://kind.sigs.k8s.io/docs/user/local-registry/
-            "localhost:5000/sinker": "//prow/cmd/sinker:image",
-            "localhost:5000/crier": "//prow/cmd/crier:image",
-            "localhost:5000/hook": "//prow/cmd/hook:image",
-            "localhost:5000/horologium": "//prow/cmd/horologium:image",
-            "localhost:5000/prow-controller-manager": "//prow/cmd/prow-controller-manager:image",
-            "localhost:5000/deck": "//prow/cmd/deck:image",
-            "localhost:5000/tide": "//prow/cmd/tide:image",
-            "localhost:5000/fakeghserver": "//prow/test/integration/fakeghserver:image",
+            "localhost:5001/sinker": "//prow/cmd/sinker:image",
+            "localhost:5001/crier": "//prow/cmd/crier:image",
+            "localhost:5001/hook": "//prow/cmd/hook:image",
+            "localhost:5001/horologium": "//prow/cmd/horologium:image",
+            "localhost:5001/prow-controller-manager": "//prow/cmd/prow-controller-manager:image",
+            "localhost:5001/deck": "//prow/cmd/deck:image",
+            "localhost:5001/tide": "//prow/cmd/tide:image",
+            "localhost:5001/fakeghserver": "//prow/test/integration/fakeghserver:image",
         },
     ),
 )

@@ -38,7 +38,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: deck
-        image: localhost:5000/deck
+        image: localhost:5001/deck
         imagePullPolicy: Always
         ports:
           - name: http

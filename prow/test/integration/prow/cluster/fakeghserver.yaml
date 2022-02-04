@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: fakeghserver
-        image: localhost:5000/fakeghserver
+        image: localhost:5001/fakeghserver
         ports:
         - containerPort: 8888
 ---

@@ -85,6 +85,7 @@ filegroup(
             ".git/**",
             "*.db",
             "*.gz",
+            "_bin/**",
         ],
     ),
     visibility = ["//visibility:private"],

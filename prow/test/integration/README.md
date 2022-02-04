@@ -47,11 +47,11 @@ Delete the local cluster and the local registry.
 
 (Assume the component to be added is named `most-awesome-component`)
 
-* Add `most-awesome-component` at [`testimage-push`](https://github.com/kubernetes/test-infra/blob/f9fb6d28ebbcf77dc0b99d741b8df5f5d85c739e/prow/BUILD.bazel#L66) target, so that the component is pushed to `localhost:5000` registry
+* Add `most-awesome-component` at [`testimage-push`](https://github.com/kubernetes/test-infra/blob/f9fb6d28ebbcf77dc0b99d741b8df5f5d85c739e/prow/BUILD.bazel#L66) target, so that the component is pushed to `localhost:5001` registry
 * Deploy `most-awesome-component` during integration test https://github.com/kubernetes/test-infra/blob/f9fb6d28ebbcf77dc0b99d741b8df5f5d85c739e/prow/test/integration/setup-cluster.sh#L33, and cleanup the component after integration test https://github.com/kubernetes/test-infra/blob/f9fb6d28ebbcf77dc0b99d741b8df5f5d85c739e/prow/test/integration/cleanup.sh#L23
 * Add `most-awesome-component` deployment yaml at https://github.com/kubernetes/test-infra/tree/master/prow/test/integration/prow/cluster, so that the deployment works. Modifications involve:
   * `most-awesome-component_service.yaml` and `most-awesome-component_rbac.yaml` can be symlinks from https://github.com/kubernetes/test-infra/tree/master/config/prow/cluster.
-  * `most-awesome-component_deployment.yaml` will at least requires changing image registry to `localhost:5000` like https://github.com/kubernetes/test-infra/blob/f9fb6d28ebbcf77dc0b99d741b8df5f5d85c739e/prow/test/integration/prow/cluster/hook_deployment.yaml#L41.
+  * `most-awesome-component_deployment.yaml` will at least requires changing image registry to `localhost:5001` like https://github.com/kubernetes/test-infra/blob/f9fb6d28ebbcf77dc0b99d741b8df5f5d85c739e/prow/test/integration/prow/cluster/hook_deployment.yaml#L41.
   * [If using github client] `github-endpoint` should be changed to `fakeghserver`, which was from https://github.com/kubernetes/test-infra/tree/master/prow/test/integration/fakeghserver.
 * [If using github client] Existing fake github server only implemented partial github APIs, will need to add APIs that `most-awesome-component` uses at https://github.com/kubernetes/test-infra/tree/master/prow/test/integration/fakeghserver
 

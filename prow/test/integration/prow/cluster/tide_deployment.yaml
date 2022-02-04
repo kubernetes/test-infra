@@ -34,7 +34,7 @@ spec:
       serviceAccountName: tide
       containers:
       - name: tide
-        image: localhost:5000/tide
+        image: localhost:5001/tide
         args:
         - --dry-run=true
         - --github-endpoint=http://fakeghserver

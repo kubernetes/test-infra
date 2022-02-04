@@ -29,7 +29,7 @@ fi
 readonly DEFAULT_CLUSTER_NAME="kind-prow-integration"
 readonly DEFAULT_CONTEXT="kind-${DEFAULT_CLUSTER_NAME}"
 readonly DEFAULT_REGISTRY_NAME="kind-registry"
-readonly DEFAULT_REGISTRY_PORT="5000"
+readonly DEFAULT_REGISTRY_PORT="5001"
 readonly PROW_COMPONENTS="sinker crier hook horologium prow-controller-manager fakeghserver deck tide deck-tenanted"
 
 if [[ -z "${HOME:-}" ]]; then # kubectl looks for HOME which is not set in bazel
@@ -54,7 +54,7 @@ apiVersion: kind.x-k8s.io/v1alpha4
 containerdConfigPatches:
 - |-
   [plugins."io.containerd.grpc.v1.cri".registry.mirrors."localhost:${DEFAULT_REGISTRY_PORT}"]
-    endpoint = ["http://${DEFAULT_REGISTRY_NAME}:${DEFAULT_REGISTRY_PORT}"]
+    endpoint = ["http://${DEFAULT_REGISTRY_NAME}:5000"]
 nodes:
 - role: control-plane
   kubeadmConfigPatches:
@@ -142,8 +142,8 @@ function deploy_prow() {
 function push_prow_job_image() {
   echo "Push test image to registry"
   docker pull gcr.io/k8s-prow/alpine
-  docker tag gcr.io/k8s-prow/alpine:latest localhost:5000/alpine:latest
-  docker push localhost:5000/alpine:latest
+  docker tag gcr.io/k8s-prow/alpine:latest localhost:5001/alpine:latest
+  docker push localhost:5001/alpine:latest
 }
 
 function main() {

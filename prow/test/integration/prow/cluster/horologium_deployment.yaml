@@ -35,7 +35,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: horologium
-        image: localhost:5000/horologium
+        image: localhost:5001/horologium
         args:
         - --config-path=/etc/config/config.yaml
         - --job-config-path=/etc/job-config
