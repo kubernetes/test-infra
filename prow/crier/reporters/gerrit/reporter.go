@@ -51,6 +51,11 @@ const (
 	jobReportFormatWithoutURL = "%s %s %s\n"
 	errorLinePrefix           = "NOTE FROM PROW"
 
+	// Stub for the URL field (when using jobReportFormat), if the URL is
+	// legitimately not set (e.g., because the job never got scheduled). This is
+	// what the user will see in place of an actual URL.
+	urlNotFound = "URL_NOT_FOUND"
+
 	// lgtm means all presubmits passed, but need someone else to approve before merge (looks good to me).
 	lgtm = "+1"
 	// lbtm means some presubmits failed, perfer not merge (looks bad to me).
@@ -594,6 +599,13 @@ func GenerateReport(pjs []*v1.ProwJob, customCommentSizeLimit int) JobReport {
 	linesWithURLs := make([]string, len(report.Jobs))
 	linesWithoutURLs := make([]string, len(report.Jobs))
 	for i, job := range report.Jobs {
+		// If the URL cannot be found (for example, because the job has not been
+		// scheduled due to some other failure), then use the string
+		// URL_NOT_FOUND in its place instead. This way, we don't report jobs
+		// with an empty URL field.
+		if job.URL == "" {
+			job.URL = urlNotFound
+		}
 		linesWithURLs[i] = job.serialize()
 		remainingSize -= len(linesWithURLs[i])
 	}

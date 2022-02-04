@@ -2150,6 +2150,16 @@ func TestGenerateReport(t *testing.T) {
 			wantHeader:       "Prow Status: 2 out of 3 pjs passed! 👉 Comment '/test all' to rerun all tests\n",
 			wantMessage:      "[NOTE FROM PROW: Prow failed to report all jobs, are there excessive amount of prow jobs?]",
 		},
+		{
+			// Check cases where the job could legitimately not have its URL
+			// field set (because the job did not even get scheduled).
+			name: "missing URLs",
+			jobs: []*v1.ProwJob{
+				job("right", "", v1.ErrorState),
+			},
+			wantHeader:  "Prow Status: 0 out of 1 pjs passed! 👉 Comment '/retest' to rerun all failed tests\n",
+			wantMessage: "🚫 right ERROR - URL_NOT_FOUND\n",
+		},
 	}
 
 	for _, tc := range tests {
