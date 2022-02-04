@@ -824,7 +824,7 @@ def generate_upgrades():
                        irsa=k8s_a >= 'v1.22',
                        k8s_version='stable',
                        kops_channel='alpha',
-                       extra_dashboards=['kops-misc'],
+                       extra_dashboards=['kops-upgrades'],
                        runs_per_day=12,
                        scenario='upgrade-ab',
                        env=env,
