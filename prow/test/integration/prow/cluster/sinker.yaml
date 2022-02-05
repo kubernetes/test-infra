@@ -133,7 +133,7 @@ spec:
         args:
         - --config-path=/etc/config/config.yaml
         - --dry-run=false
-        image: localhost:5000/sinker
+        image: localhost:5001/sinker
         volumeMounts:
         - name: config
           mountPath: /etc/config

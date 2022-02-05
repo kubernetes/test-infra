@@ -19,7 +19,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: crier
-        image: localhost:5000/crier
+        image: localhost:5001/crier
         args:
         - --config-path=/etc/config/config.yaml
         - --github-endpoint=http://fakeghserver

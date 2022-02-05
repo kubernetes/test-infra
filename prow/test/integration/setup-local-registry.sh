@@ -20,14 +20,14 @@ set -o pipefail
 readonly DEFAULT_CLUSTER_NAME="kind-prow-integration"
 readonly DEFAULT_CONTEXT="kind-${DEFAULT_CLUSTER_NAME}"
 readonly DEFAULT_REGISTRY_NAME="kind-registry"
-readonly DEFAULT_REGISTRY_PORT="5000"
+readonly DEFAULT_REGISTRY_PORT="5001"
 
 # create registry container unless it already exists
 running="$(docker inspect -f '{{.State.Running}}' "${DEFAULT_REGISTRY_NAME}" 2>/dev/null || true)"
 if [ "${running}" != 'true' ]; then
   echo "Creating docker container for hosting local registry localhost:${DEFAULT_REGISTRY_PORT}"
   docker run \
-    -d --restart=always -p "127.0.0.1:${DEFAULT_REGISTRY_PORT}:${DEFAULT_REGISTRY_PORT}" --name "${DEFAULT_REGISTRY_NAME}" \
+    -d --restart=always -p "127.0.0.1:${DEFAULT_REGISTRY_PORT}:5000" --name "${DEFAULT_REGISTRY_NAME}" \
     registry:2
 else
   echo "Local registry localhost:${DEFAULT_REGISTRY_PORT} already exist and running."

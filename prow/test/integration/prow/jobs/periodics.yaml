@@ -7,4 +7,4 @@ periodics:
       - echo
       args:
       - "Hello World!"
-      image: localhost:5000/alpine
+      image: localhost:5001/alpine
