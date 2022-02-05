@@ -472,7 +472,7 @@ def generate_misc():
                    k8s_version="ci",
                    networking="calico",
                    feature_flags=["AWSIPv6"],
-                   runs_per_day=1,
+                   runs_per_day=3,
                    extra_flags=['--ipv6',
                                 '--zones=us-west-2a',
                                 ],
