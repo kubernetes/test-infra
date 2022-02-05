@@ -20,6 +20,7 @@ import (
 	"testing"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/config"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
@@ -122,6 +123,82 @@ func TestDefaultBaseRef(t *testing.T) {
 			if pjs.Refs.BaseSHA != test.expectedBaseSha {
 				t.Errorf("Expected BaseSHA to be %s after defaulting but was %s",
 					test.expectedBaseSha, pjs.Refs.BaseSHA)
+			}
+		})
+	}
+}
+
+func TestGenJobSpec(t *testing.T) {
+	author := "PR_Author"
+	sha := "PR_SHA"
+	testCases := []struct {
+		name    string
+		jobName string
+		hasPR   bool
+	}{
+		{
+			name:    "presubmit job has PR reference",
+			jobName: "presubmit-test",
+			hasPR:   true,
+		},
+		{
+			name:    "postsubmit job has PR reference",
+			jobName: "postsubmit-test",
+			hasPR:   true,
+		},
+		{
+			name:    "postsubmit job with no associated PR does not get a Pulls ref",
+			jobName: "postsubmit-test",
+		},
+	}
+	conf := &config.Config{
+		JobConfig: config.JobConfig{
+			PresubmitsStatic: map[string][]config.Presubmit{
+				"org/repo": {
+					config.Presubmit{
+						JobBase: config.JobBase{Name: "presubmit-test"},
+					},
+				},
+			},
+			PostsubmitsStatic: map[string][]config.Postsubmit{
+				"org/repo": {
+					config.Postsubmit{
+						JobBase: config.JobBase{Name: "postsubmit-test"},
+					},
+				},
+			},
+		},
+	}
+	for _, test := range testCases {
+		t.Run(test.name, func(t *testing.T) {
+			o := &options{jobName: test.jobName}
+			if test.hasPR {
+				o.pullAuthor = author
+				o.pullNumber = 1
+				o.pullSha = sha
+			}
+			_, jobSpec := o.genJobSpec(conf)
+			if jobSpec.Refs == nil {
+				t.Fatalf("expected Refs to be set on the job %s, found nil", test.jobName)
+			}
+			pulls := jobSpec.Refs.Pulls
+			if !test.hasPR {
+				if len(pulls) != 0 {
+					t.Fatalf("expected Pulls to be empty in job %s Refs, found %d pulls: %+v", test.jobName, len(pulls), pulls)
+				}
+				return
+			}
+			if len(pulls) != 1 {
+				t.Fatalf("expected Pulls to be 1 in job %s Refs, found %d", test.jobName, len(pulls))
+			}
+			if pulls[0].Author != author {
+				t.Errorf("expected %s as Pull author, found %s", author, pulls[0].Author)
+			}
+			if pulls[0].SHA != sha {
+				t.Errorf("expected %s as Pull SHA, found %s", sha, pulls[0].SHA)
+			}
+			if pulls[0].Number != 1 {
+				t.Errorf("expected 1 as Pull Number, found %d", pulls[0].Number)
 			}
 		})
 	}

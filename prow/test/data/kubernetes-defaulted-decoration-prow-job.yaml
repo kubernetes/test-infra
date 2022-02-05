@@ -46,6 +46,7 @@ spec:
   prowjob_defaults:
     tenant_id: GlobalDefaultID
   refs:
+    author: bob
     base_ref: master
     base_sha: basesha
     org: test-org
