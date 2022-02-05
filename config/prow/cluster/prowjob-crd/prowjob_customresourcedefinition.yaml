@@ -421,6 +421,9 @@ spec:
                 items:
                   description: Refs describes how the repo was constructed.
                   properties:
+                    author:
+                      description: Sender is the GitHub login of the commit author
+                      type: string
                     base_link:
                       description: BaseLink is a link to the commit identified by
                         BaseSHA.
@@ -20325,6 +20328,9 @@ spec:
                 description: Refs is the code under test, determined at runtime by
                   Prow itself
                 properties:
+                  author:
+                    description: Sender is the GitHub login of the commit author
+                    type: string
                   base_link:
                     description: BaseLink is a link to the commit identified by BaseSHA.
                     type: string
@@ -20412,6 +20418,14 @@ spec:
               reporter_config:
                 description: ReporterConfig holds reporter-specific configuration
                 properties:
+                  github:
+                    properties:
+                      comment_on_postsubmits:
+                        description: CommentOnPostsubmits determines if any comments
+                          related to the postsubmit should be left on the corresponding
+                          commit and PR.
+                        type: boolean
+                    type: object
                   slack:
                     properties:
                       channel:

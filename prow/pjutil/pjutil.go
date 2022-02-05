@@ -89,7 +89,7 @@ func setReportDefault(spec *prowapi.ProwJobSpec) {
 	}
 }
 
-func createRefs(pr github.PullRequest, baseSHA string) prowapi.Refs {
+func CreateRefs(pr github.PullRequest, baseSHA string) prowapi.Refs {
 	org := pr.Base.Repo.Owner.Login
 	repo := pr.Base.Repo.Name
 	repoLink := pr.Base.Repo.HTMLURL
@@ -101,6 +101,7 @@ func createRefs(pr github.PullRequest, baseSHA string) prowapi.Refs {
 		BaseRef:  pr.Base.Ref,
 		BaseSHA:  baseSHA,
 		BaseLink: fmt.Sprintf("%s/commit/%s", repoLink, baseSHA),
+		Author:   pr.User.Login,
 		Pulls: []prowapi.Pull{
 			{
 				Number:     number,
@@ -119,7 +120,7 @@ func createRefs(pr github.PullRequest, baseSHA string) prowapi.Refs {
 // The prowapi.Refs are configured correctly per the pr, baseSHA.
 // The eventGUID becomes a github.EventGUID label.
 func NewPresubmit(pr github.PullRequest, baseSHA string, job config.Presubmit, eventGUID string, additionalLabels map[string]string) prowapi.ProwJob {
-	refs := createRefs(pr, baseSHA)
+	refs := CreateRefs(pr, baseSHA)
 	labels := make(map[string]string)
 	for k, v := range job.Labels {
 		labels[k] = v
@@ -134,6 +135,21 @@ func NewPresubmit(pr github.PullRequest, baseSHA string, job config.Presubmit, e
 		annotations[k] = v
 	}
 	return NewProwJob(PresubmitSpec(job, refs), labels, annotations)
+}
+
+// NewPostsubmit converts a config.Postsubmit into a prowapi.ProwJob.
+// The eventGUID becomes a github.EventGUID label.
+func NewPostsubmit(refs prowapi.Refs, job config.Postsubmit, eventGUID string) prowapi.ProwJob {
+	labels := make(map[string]string)
+	for k, v := range job.Labels {
+		labels[k] = v
+	}
+	annotations := make(map[string]string)
+	for k, v := range job.Annotations {
+		annotations[k] = v
+	}
+	labels[github.EventGUID] = eventGUID
+	return NewProwJob(PostsubmitSpec(job, refs), labels, annotations)
 }
 
 // PresubmitSpec initializes a ProwJobSpec for a given presubmit job.

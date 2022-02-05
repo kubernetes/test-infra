@@ -286,6 +286,7 @@ type PullRequest struct {
 	Milestone         *Milestone `json:"milestone,omitempty"`
 	Commits           int        `json:"commits"`
 	AuthorAssociation string     `json:"author_association,omitempty"`
+	MergedAt          time.Time  `json:"merged_at,omitempty"`
 }
 
 // PullRequestBranch contains information about a particular branch in a PR.

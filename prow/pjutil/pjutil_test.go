@@ -1113,6 +1113,7 @@ func TestCreateRefs(t *testing.T) {
 		BaseRef:  "master",
 		BaseSHA:  "abcdef",
 		BaseLink: "https://github.example.com/kubernetes/Hello-World/commit/abcdef",
+		Author:   "ibzib",
 		Pulls: []prowapi.Pull{
 			{
 				Number:     42,
@@ -1125,7 +1126,7 @@ func TestCreateRefs(t *testing.T) {
 			},
 		},
 	}
-	if actual := createRefs(pr, "abcdef"); !reflect.DeepEqual(expected, actual) {
+	if actual := CreateRefs(pr, "abcdef"); !reflect.DeepEqual(expected, actual) {
 		t.Errorf("diff between expected and actual refs:%s", diff.ObjectReflectDiff(expected, actual))
 	}
 }

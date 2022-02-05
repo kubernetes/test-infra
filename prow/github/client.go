@@ -155,6 +155,7 @@ type CommitClient interface {
 	GetRef(org, repo, ref string) (string, error)
 	DeleteRef(org, repo, ref string) error
 	ListFileCommits(org, repo, path string) ([]RepositoryCommit, error)
+	ListCommitPullRequests(org, repo, SHA string) ([]PullRequest, error)
 }
 
 // RepositoryClient interface for repository related API actions
@@ -2619,6 +2620,36 @@ func (c *client) GetSingleCommit(org, repo, SHA string) (RepositoryCommit, error
 		exitCodes: []int{200},
 	}, &commit)
 	return commit, err
+}
+
+// ListCommitPullRequests lists PRs associated with a commit
+//
+// See https://docs.github.com/en/rest/reference/commits#list-pull-requests-associated-with-a-commit
+func (c *client) ListCommitPullRequests(org, repo, SHA string) ([]PullRequest, error) {
+	durationLogger := c.log("ListCommitPullRequests", org, repo, SHA)
+	defer durationLogger()
+
+	var prs []PullRequest
+	if c.fake {
+		return prs, nil
+	}
+	path := fmt.Sprintf("/repos/%s/%s/commits/%s/pulls", org, repo, SHA)
+	err := c.readPaginatedResults(
+		path,
+		// https://developer.github.com/changes/2019-04-11-pulls-branches-for-commit/
+		"application/vnd.github.groot-preview+json",
+		org,
+		func() interface{} {
+			return &[]PullRequest{}
+		},
+		func(obj interface{}) {
+			prs = append(prs, *(obj.(*[]PullRequest))...)
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return prs, err
 }
 
 // GetBranches returns all branches in the repo.

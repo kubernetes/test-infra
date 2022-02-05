@@ -18,6 +18,8 @@ package trigger
 
 import (
 	"context"
+	"sort"
+	"time"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -55,7 +57,39 @@ func createRefs(pe github.PushEvent) prowapi.Refs {
 		BaseRef:  pe.Branch(),
 		BaseSHA:  pe.After,
 		BaseLink: pe.Compare,
+		Author:   github.NormLogin(pe.Sender.Login),
 	}
+}
+
+// getPullRequests returns the list of merged pull requests associated with all the commits
+// 	of a push event, sorted by most recently merged first
+func getPullRequests(c githubClient, pe github.PushEvent) ([]github.PullRequest, error) {
+	org := pe.Repo.Owner.Login
+	repo := pe.Repo.Name
+	var pulls []github.PullRequest
+	for _, commit := range pe.Commits {
+		if commit.ID == "" {
+			continue
+		}
+		commitPulls, err := c.ListCommitPullRequests(org, repo, commit.ID)
+		if err != nil {
+			return nil, err
+		}
+		for _, pull := range commitPulls {
+			if pull.MergedAt.After(time.Time{}) {
+				pulls = append(pulls, pull)
+			}
+		}
+	}
+	sort.SliceStable(pulls, func(i, j int) bool { return pulls[i].MergedAt.After(pulls[j].MergedAt) })
+	return pulls, nil
+}
+
+func shouldCommentOn(pj config.Postsubmit) bool {
+	if pj.ReporterConfig == nil || pj.ReporterConfig.GitHub == nil {
+		return false
+	}
+	return pj.ReporterConfig.GitHub.CommentOnPostsubmits
 }
 
 func handlePE(c Client, pe github.PushEvent) error {
@@ -73,19 +107,40 @@ func handlePE(c Client, pe github.PushEvent) error {
 
 	postsubmits := getPostsubmits(c.Logger, c.GitClient, c.Config, org+"/"+repo, shaGetter)
 
+	var prsFetched bool
+	var prs []github.PullRequest
+	var err error
 	for _, j := range postsubmits {
 		if shouldRun, err := j.ShouldRun(pe.Branch(), listPushEventChanges(pe)); err != nil {
 			return err
 		} else if !shouldRun {
 			continue
 		}
-		refs := createRefs(pe)
-		labels := make(map[string]string)
-		for k, v := range j.Labels {
-			labels[k] = v
+		if shouldCommentOn(j) && !prsFetched {
+			prsFetched = true
+			// TODO: It seems there is a bug in GH API, which returns an empty list of
+			// PRs for all commits listed by a push event, if it is queried immediately after
+			// receiving a push event. Waiting for 1 second seems to successfully work around this.
+			// Remove this once the bug is fixed.
+			time.Sleep(1 * time.Second)
+			prs, err = getPullRequests(c.GitHubClient, pe)
+			if err != nil {
+				return err
+			}
 		}
-		labels[github.EventGUID] = pe.GUID
-		pj := pjutil.NewProwJob(pjutil.PostsubmitSpec(j, refs), labels, j.Annotations)
+
+		var pj prowapi.ProwJob
+		if shouldCommentOn(j) && len(prs) > 0 {
+			pj = pjutil.NewPostsubmit(pjutil.CreateRefs(prs[0], pe.After), j, pe.GUID)
+		} else {
+			refs := createRefs(pe)
+			labels := make(map[string]string)
+			for k, v := range j.Labels {
+				labels[k] = v
+			}
+			labels[github.EventGUID] = pe.GUID
+			pj = pjutil.NewProwJob(pjutil.PostsubmitSpec(j, refs), labels, j.Annotations)
+		}
 		c.Logger.WithFields(pjutil.ProwJobFields(&pj)).Info("Creating a new prowjob.")
 		if err := createWithRetry(context.TODO(), c.ProwJobClient, &pj); err != nil {
 			return err

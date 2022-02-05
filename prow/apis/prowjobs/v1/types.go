@@ -299,7 +299,8 @@ func (rac *RerunAuthConfig) IsAllowAnyone() bool {
 }
 
 type ReporterConfig struct {
-	Slack *SlackReporterConfig `json:"slack,omitempty"`
+	Slack  *SlackReporterConfig  `json:"slack,omitempty"`
+	GitHub *GitHubReporterConfig `json:"github,omitempty"`
 }
 
 type SlackReporterConfig struct {
@@ -351,6 +352,12 @@ func (src *SlackReporterConfig) ApplyDefault(def *SlackReporterConfig) *SlackRep
 		merged.Report = def.Report
 	}
 	return &merged
+}
+
+type GitHubReporterConfig struct {
+	// CommentOnPostsubmits determines if any comments related to the
+	// postsubmit should be left on the corresponding commit and PR.
+	CommentOnPostsubmits bool `json:"comment_on_postsubmits,omitempty"`
 }
 
 // Duration is a wrapper around time.Duration that parses times in either
@@ -1006,6 +1013,9 @@ type Refs struct {
 	// Multiheaded repos may need to not make this call.
 	// The git fetch <remote> <BaseRef> call occurs regardless.
 	SkipFetchHead bool `json:"skip_fetch_head,omitempty"`
+
+	// Sender is the GitHub login of the commit author
+	Author string `json:"author,omitempty"`
 }
 
 func (r Refs) String() string {

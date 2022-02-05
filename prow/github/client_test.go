@@ -750,6 +750,34 @@ func TestGetSingleCommit(t *testing.T) {
 	}
 }
 
+func TestListCommitPullRequests(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/octocat/Hello-World/commits/6dcb09b5b57875f334f61aebed695e2e4193db5e/pulls" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+
+		prs := []PullRequest{{Number: 1}, {Number: 2}}
+		b, err := json.Marshal(prs)
+		if err != nil {
+			t.Fatalf("Didn't expect error: %v", err)
+		}
+		fmt.Fprint(w, string(b))
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	prs, err := c.ListCommitPullRequests("octocat", "Hello-World", "6dcb09b5b57875f334f61aebed695e2e4193db5e")
+	if err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else if len(prs) != 2 {
+		t.Errorf("Expected two PRs, found %d: %v", len(prs), prs)
+	} else if prs[0].Number != 1 || prs[1].Number != 2 {
+		t.Errorf("Wrong PR IDs: %v", prs)
+	}
+}
+
 func TestCreateStatus(t *testing.T) {
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
