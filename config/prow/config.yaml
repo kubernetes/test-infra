@@ -671,19 +671,27 @@ tide:
     orgs:
       kubernetes:
         optional-contexts:
-        - "EasyCLA" # NOTE(cblecker): This is temporary until we fully roll out EasyCLA
+        # NOTE(MadhavJivrajani): This is temporary and left in for an additional release cycle after full EasyCLA rollout
+        # to ensure things get merged in.
+        - "cla/linuxfoundation"
         repos:
           dashboard:
             from-branch-protection: true
       kubernetes-client:
         optional-contexts:
-        - "EasyCLA" # NOTE(mrbobbytables): This is temporary until we fully roll out EasyCLA
+        # NOTE(MadhavJivrajani): This is temporary and left in for an additional release cycle after full EasyCLA rollout
+        # to ensure things get merged in.
+        - "cla/linuxfoundation"
       kubernetes-csi:
         optional-contexts:
-        - "EasyCLA" # NOTE(mrbobbytables): This is temporary until we fully roll out EasyCLA
+        # NOTE(MadhavJivrajani): This is temporary and left in for an additional release cycle after full EasyCLA rollout
+        # to ensure things get merged in.
+        - "cla/linuxfoundation"
       kubernetes-sigs:
         optional-contexts:
-        - "EasyCLA" # NOTE(mrbobbytables): This is temporary until we fully roll out EasyCLA
+        # NOTE(MadhavJivrajani): This is temporary and left in for an additional release cycle after full EasyCLA rollout
+        # to ensure things get merged in.
+        - "cla/linuxfoundation"
   batch_size_limit:
     "kubernetes/kubernetes": 15
   priority:
