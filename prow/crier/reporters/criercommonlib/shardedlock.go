@@ -19,11 +19,16 @@ package criercommonlib
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/sirupsen/logrus"
 	"golang.org/x/sync/semaphore"
 )
+
+type SimpleKey interface {
+	Key() string
+}
 
 // SimplePull contains info for identifying a shard
 type SimplePull struct {
@@ -31,9 +36,27 @@ type SimplePull struct {
 	number    int
 }
 
+func (p SimplePull) Key() string {
+	return fmt.Sprintf("%s/%s/%d", p.org, p.repo, p.number)
+}
+
 // NewSimplePull creates SimplePull
 func NewSimplePull(org, repo string, number int) *SimplePull {
 	return &SimplePull{org: org, repo: repo, number: number}
+}
+
+// SimpleCommit contains info for identifying a shard based on commit
+type SimpleCommit struct {
+	org, repo, commit string
+}
+
+func (c SimpleCommit) Key() string {
+	return fmt.Sprintf("%s/%s/%s", c.org, c.repo, c.commit)
+}
+
+// NewSimpleCommit creates SimpleCommit
+func NewSimpleCommit(org, repo, commit string) *SimpleCommit {
+	return &SimpleCommit{org: org, repo: repo, commit: commit}
 }
 
 // ShardedLock contains sharding information based on PRs
@@ -41,23 +64,24 @@ type ShardedLock struct {
 	// semaphore is chosed over mutex, as Acquire from semaphore respects
 	// context timeout while mutex doesn't
 	mapLock *semaphore.Weighted
-	locks   map[SimplePull]*semaphore.Weighted
+	locks   map[string]*semaphore.Weighted
 }
 
 // NewShardedLock creates ShardedLock
 func NewShardedLock() *ShardedLock {
 	return &ShardedLock{
 		mapLock: semaphore.NewWeighted(1),
-		locks:   map[SimplePull]*semaphore.Weighted{},
+		locks:   map[string]*semaphore.Weighted{},
 	}
 }
 
-// GetLock aquires the lock for a PR
-func (s *ShardedLock) GetLock(ctx context.Context, key SimplePull) (*semaphore.Weighted, error) {
+// GetLock aquires the lock for a PR or Commit
+func (s *ShardedLock) GetLock(ctx context.Context, simpleKey SimpleKey) (*semaphore.Weighted, error) {
 	if err := s.mapLock.Acquire(ctx, 1); err != nil {
 		return nil, err
 	}
 	defer s.mapLock.Release(1)
+	key := simpleKey.Key()
 	if _, exists := s.locks[key]; !exists {
 		s.locks[key] = semaphore.NewWeighted(1)
 	}
@@ -71,7 +95,7 @@ func (s *ShardedLock) GetLock(ctx context.Context, key SimplePull) (*semaphore.W
 // the map, it gets recreated and acquired and two
 // routines report in parallel for the same job.
 // Note that while this function is running, no new
-// presubmit reporting can happen, as we hold the mapLock.
+// presubmit or postsubmit reporting can happen, as we hold the mapLock.
 func (s *ShardedLock) Cleanup() {
 	ctx := context.Background()
 	s.mapLock.Acquire(ctx, 1)

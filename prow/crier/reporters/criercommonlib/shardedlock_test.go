@@ -25,8 +25,8 @@ import (
 
 func TestShardedLockCleanup(t *testing.T) {
 	t.Parallel()
-	sl := &ShardedLock{mapLock: semaphore.NewWeighted(1), locks: map[SimplePull]*semaphore.Weighted{}}
-	key := SimplePull{"org", "repo", 1}
+	sl := &ShardedLock{mapLock: semaphore.NewWeighted(1), locks: map[string]*semaphore.Weighted{}}
+	key := (&SimplePull{"org", "repo", 1}).Key()
 	sl.locks[key] = semaphore.NewWeighted(1)
 	sl.Cleanup()
 	if _, exists := sl.locks[key]; exists {

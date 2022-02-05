@@ -778,6 +778,69 @@ func TestListCommitPullRequests(t *testing.T) {
 	}
 }
 
+func TestCreateCommitComment(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/k8s/kuber/commits/SHA/comments" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		b, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			t.Fatalf("Could not read request body: %v", err)
+		}
+		var ic IssueComment
+		if err := json.Unmarshal(b, &ic); err != nil {
+			t.Errorf("Could not unmarshal request: %v", err)
+		} else if ic.Body != "hello" {
+			t.Errorf("Wrong body: %s", ic.Body)
+		}
+		http.Error(w, "201 Created", http.StatusCreated)
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if err := c.CreateCommitCommentWithContext(context.Background(), "k8s", "kuber", "SHA", "hello"); err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	}
+}
+
+func TestListCommitComments(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path == "/repos/k8s/kuber/commits/SHA/comments" {
+			ics := []IssueComment{{ID: 1}}
+			b, err := json.Marshal(ics)
+			if err != nil {
+				t.Fatalf("Didn't expect error: %v", err)
+			}
+			w.Header().Set("Link", fmt.Sprintf(`<blorp>; rel="first", <https://%s/someotherpath>; rel="next"`, r.Host))
+			fmt.Fprint(w, string(b))
+		} else if r.URL.Path == "/someotherpath" {
+			ics := []IssueComment{{ID: 2}}
+			b, err := json.Marshal(ics)
+			if err != nil {
+				t.Fatalf("Didn't expect error: %v", err)
+			}
+			fmt.Fprint(w, string(b))
+		} else {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	ics, err := c.ListCommitCommentsWithContext(context.Background(), "k8s", "kuber", "SHA")
+	if err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else if len(ics) != 2 {
+		t.Errorf("Expected two comments, found %d: %v", len(ics), ics)
+	} else if ics[0].ID != 1 || ics[1].ID != 2 {
+		t.Errorf("Wrong comment IDs: %v", ics)
+	}
+}
+
 func TestCreateStatus(t *testing.T) {
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {

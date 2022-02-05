@@ -32,6 +32,8 @@ import (
 	"k8s.io/test-infra/prow/kube"
 )
 
+const fakeBotName = "k8s-bot"
+
 func TestParseIssueComment(t *testing.T) {
 	var testcases = []struct {
 		name            string
@@ -224,12 +226,14 @@ func createReportEntry(context string, isRequired bool) string {
 }
 
 type fakeGhClient struct {
-	status []github.Status
+	status         []github.Status
+	commitComments map[string][]github.IssueComment
+	issueComments  map[string][]github.IssueComment
 }
 
 func (gh fakeGhClient) BotUserCheckerWithContext(_ context.Context) (func(string) bool, error) {
 	return func(candidate string) bool {
-		return candidate == "BotName"
+		return candidate == fakeBotName
 	}, nil
 }
 
@@ -244,15 +248,49 @@ func (gh *fakeGhClient) CreateStatusWithContext(_ context.Context, org, repo, re
 
 }
 func (gh fakeGhClient) ListIssueCommentsWithContext(_ context.Context, org, repo string, number int) ([]github.IssueComment, error) {
-	return nil, nil
+	var comments []github.IssueComment
+	for _, c := range gh.issueComments[fmt.Sprintf("%s/%s/%d", org, repo, number)] {
+		comments = append(comments, c)
+	}
+	return comments, nil
 }
-func (gh fakeGhClient) CreateCommentWithContext(_ context.Context, org, repo string, number int, comment string) error {
+
+func (gh *fakeGhClient) CreateCommentWithContext(_ context.Context, org, repo string, number int, comment string) error {
+	if gh.issueComments == nil {
+		gh.issueComments = make(map[string][]github.IssueComment)
+	}
+	key := fmt.Sprintf("%s/%s/%d", org, repo, number)
+	gh.issueComments[key] = append(gh.issueComments[key],
+		github.IssueComment{
+			ID:   len(gh.issueComments[key]),
+			Body: comment,
+		},
+	)
 	return nil
 }
 func (gh fakeGhClient) DeleteCommentWithContext(_ context.Context, org, repo string, ID int) error {
 	return nil
 }
 func (gh fakeGhClient) EditCommentWithContext(_ context.Context, org, repo string, ID int, comment string) error {
+	return nil
+}
+func (gh fakeGhClient) ListCommitCommentsWithContext(ctx context.Context, org, repo, SHA string) ([]github.IssueComment, error) {
+	var comments []github.IssueComment
+	key := fmt.Sprintf("%s/%s/%s", org, repo, SHA)
+	for _, c := range gh.commitComments[key] {
+		comments = append(comments, c)
+	}
+	return comments, nil
+}
+func (gh *fakeGhClient) CreateCommitCommentWithContext(ctx context.Context, org, repo, SHA, comment string) error {
+	if gh.commitComments == nil {
+		gh.commitComments = make(map[string][]github.IssueComment)
+	}
+	key := fmt.Sprintf("%s/%s/%s", org, repo, SHA)
+	gh.commitComments[key] = append(gh.commitComments[key], github.IssueComment{
+		ID:   len(gh.commitComments[key]),
+		Body: comment,
+	})
 	return nil
 }
 
@@ -634,4 +672,152 @@ func mustParseTemplate(t *testing.T, s string) *template.Template {
 		t.Fatal(err)
 	}
 	return tmpl
+}
+
+func TestReport(t *testing.T) {
+	ghCommenter := &prowapi.ReporterConfig{
+		GitHub: &prowapi.GitHubReporterConfig{
+			CommentOnPostsubmits: true,
+		},
+	}
+
+	refs := &prowapi.Refs{
+		Org:     "k8s",
+		Repo:    "test-infra",
+		BaseSHA: "SHA",
+		Pulls: []prowapi.Pull{{
+			Author: "me",
+			Number: 1,
+			SHA:    "abcdef",
+		}},
+	}
+
+	now := metav1.Now()
+	failedStatus := prowapi.ProwJobStatus{
+		State:          prowapi.FailureState,
+		URL:            "http://mytest.com",
+		CompletionTime: &now,
+	}
+	successStatus := prowapi.ProwJobStatus{
+		State:          prowapi.SuccessState,
+		URL:            "http://mytest.com",
+		CompletionTime: &now,
+	}
+
+	testCases := []struct {
+		name               string
+		pj                 prowapi.ProwJob
+		issueComments      map[string][]github.IssueComment
+		expectedComments   int
+		expectedPrComments []string
+	}{
+		{
+			name: "postsubmit comments are made on the commit",
+			pj: prowapi.ProwJob{
+				Status: failedStatus,
+				Spec: prowapi.ProwJobSpec{
+					ReporterConfig: ghCommenter,
+				},
+			},
+			expectedComments: 1,
+			expectedPrComments: []string{
+				prCommitNote,
+			},
+		},
+		{
+			name: "no comments on commits if comment_on_postsubmits not set",
+			pj: prowapi.ProwJob{
+				Status: failedStatus,
+				Spec:   prowapi.ProwJobSpec{},
+			},
+		},
+		{
+			name: "no comments on successfully completed postsubmit",
+			pj: prowapi.ProwJob{
+				Status: successStatus,
+				Spec: prowapi.ProwJobSpec{
+					ReporterConfig: ghCommenter,
+				},
+			},
+			expectedPrComments: []string{
+				prCommitNote,
+			},
+		},
+		{
+			name: "drop a note on PR",
+			pj: prowapi.ProwJob{
+				Status: failedStatus,
+				Spec: prowapi.ProwJobSpec{
+					ReporterConfig: ghCommenter,
+				},
+			},
+			expectedComments: 1,
+			expectedPrComments: []string{
+				prCommitNote,
+			},
+		},
+		{
+			name: "comment only once on the PR",
+			pj: prowapi.ProwJob{
+				Status: successStatus,
+				Spec: prowapi.ProwJobSpec{
+					ReporterConfig: ghCommenter,
+				},
+			},
+			issueComments: map[string][]github.IssueComment{
+				"org/repo/1": {
+					{
+						Body: prCommitNote,
+						User: github.User{Login: fakeBotName},
+					},
+				},
+			},
+			expectedPrComments: []string{
+				prCommitNote,
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			ghc := &fakeGhClient{
+				issueComments: tc.issueComments,
+			}
+
+			tc.pj.Spec.Job = "postsubmit-job"
+			tc.pj.Spec.Type = prowapi.PostsubmitJob
+			tc.pj.Spec.Context = "parent"
+			tc.pj.Spec.Refs = refs
+			tc.pj.Spec.Report = true
+
+			err := Report(context.Background(), ghc, nil, tc.pj, config.GitHubReporter{
+				JobTypesToReport: []prowapi.ProwJobType{prowapi.PostsubmitJob},
+			})
+			if err != nil {
+				t.Fatalf("Unexpected error from test: %s: : %v", tc.name, err)
+			}
+			comments, err := ghc.ListCommitCommentsWithContext(context.Background(), refs.Org, refs.Repo, refs.BaseSHA)
+			if err != nil {
+				t.Fatalf("Unexpected error from test: %s: %v", tc.name, err)
+			}
+			if len(comments) != tc.expectedComments {
+				t.Fatalf("Expected %d comments, got: %d", tc.expectedComments, len(comments))
+			}
+			if len(tc.expectedPrComments) == 0 {
+				return
+			}
+
+			issueComments, _ := ghc.ListIssueCommentsWithContext(context.Background(), refs.Org, refs.Repo, refs.Pulls[0].Number)
+			if len(tc.expectedPrComments) != len(issueComments) {
+				t.Fatalf("Expected %d issue comments, got: %d", len(tc.expectedPrComments), len(issueComments))
+			}
+			for i, c := range tc.expectedPrComments {
+				if !strings.Contains(issueComments[i].Body, c) {
+					t.Fatalf("Expected issue comment to contain %q, got: %q", c, issueComments[i].Body)
+				}
+			}
+		})
+	}
 }

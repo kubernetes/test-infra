@@ -185,6 +185,12 @@ func (f *fghc) EditCommentWithContext(_ context.Context, org, repo string, ID in
 	defer f.Unlock()
 	return nil
 }
+func (f *fghc) CreateCommitCommentWithContext(_ context.Context, org, repo, SHA, comment string) error {
+	return nil
+}
+func (f *fghc) ListCommitCommentsWithContext(_ context.Context, org, repo, SHA string) ([]github.IssueComment, error) {
+	return nil, nil
+}
 
 func TestSyncTriggeredJobs(t *testing.T) {
 	fakeClock := clock.NewFakeClock(time.Now().Truncate(1 * time.Second))

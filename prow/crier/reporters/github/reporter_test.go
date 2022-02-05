@@ -31,6 +31,7 @@ import (
 
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/crier/reporters/criercommonlib"
 	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/kube"
@@ -173,10 +174,10 @@ func TestPresumitReportingLocks(t *testing.T) {
 func TestReport(t *testing.T) {
 	t.Parallel()
 	testCases := []struct {
-		name                              string
-		createStatusContextError          error
-		listIssueCommentsWithContextError error
-		expectedError                     string
+		name                               string
+		createStatusContextError           error
+		listCommitCommentsWithContextError error
+		expectedError                      string
 	}{
 		{
 			name: "Success",
@@ -199,24 +200,24 @@ func TestReport(t *testing.T) {
 			expectedError:            "error setting status: something went wrong :(",
 		},
 		{
-			name:                              "Comment error_Maximum sha error gets swallowed",
-			listIssueCommentsWithContextError: errors.New(`This SHA and context has reached the maximum number of statuses`),
-			expectedError:                     "error listing comments: This SHA and context has reached the maximum number of statuses",
+			name:                               "Comment error_Maximum sha error gets swallowed",
+			listCommitCommentsWithContextError: errors.New(`This SHA and context has reached the maximum number of statuses`),
+			expectedError:                      "error listing comments: This SHA and context has reached the maximum number of statuses",
 		},
 		{
-			name:                              "Comment error_Error from user side gets swallowed",
-			listIssueCommentsWithContextError: errors.New(`error setting status: status code 404 not one of [201], body: {"message":"Not Found","documentation_url":"https://docs.github.com/rest/reference/repos#create-a-commit-status"}`),
-			expectedError:                     "error listing comments: error setting status: status code 404 not one of [201], body: {\"message\":\"Not Found\",\"documentation_url\":\"https://docs.github.com/rest/reference/repos#create-a-commit-status\"}",
+			name:                               "Comment error_Error from user side gets swallowed",
+			listCommitCommentsWithContextError: errors.New(`error setting status: status code 404 not one of [201], body: {"message":"Not Found","documentation_url":"https://docs.github.com/rest/reference/repos#create-a-commit-status"}`),
+			expectedError:                      "error listing comments: error setting status: status code 404 not one of [201], body: {\"message\":\"Not Found\",\"documentation_url\":\"https://docs.github.com/rest/reference/repos#create-a-commit-status\"}",
 		},
 		{
-			name:                              "Comment error_Error from user side gets swallowed2",
-			listIssueCommentsWithContextError: errors.New(`failed to report job: error setting status: status code 422 not one of [201], body: {"message":"No commit found for SHA: 9d04799d1a22e9e604c50f6bbbec067aaccc1b32","documentation_url":"https://docs.github.com/rest/reference/repos#create-a-commit-status"}`),
-			expectedError:                     "error listing comments: failed to report job: error setting status: status code 422 not one of [201], body: {\"message\":\"No commit found for SHA: 9d04799d1a22e9e604c50f6bbbec067aaccc1b32\",\"documentation_url\":\"https://docs.github.com/rest/reference/repos#create-a-commit-status\"}",
+			name:                               "Comment error_Error from user side gets swallowed2",
+			listCommitCommentsWithContextError: errors.New(`failed to report job: error setting status: status code 422 not one of [201], body: {"message":"No commit found for SHA: 9d04799d1a22e9e604c50f6bbbec067aaccc1b32","documentation_url":"https://docs.github.com/rest/reference/repos#create-a-commit-status"}`),
+			expectedError:                      "error listing comments: failed to report job: error setting status: status code 422 not one of [201], body: {\"message\":\"No commit found for SHA: 9d04799d1a22e9e604c50f6bbbec067aaccc1b32\",\"documentation_url\":\"https://docs.github.com/rest/reference/repos#create-a-commit-status\"}",
 		},
 		{
-			name:                              "Comment error_Other error get returned",
-			listIssueCommentsWithContextError: errors.New("something went wrong :("),
-			expectedError:                     "error listing comments: something went wrong :(",
+			name:                               "Comment error_Other error get returned",
+			listCommitCommentsWithContextError: errors.New("something went wrong :("),
+			expectedError:                      "error listing comments: something went wrong :(",
 		},
 	}
 
@@ -224,7 +225,7 @@ func TestReport(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			fghc := fakegithub.NewFakeClient()
 			fghc.Error = tc.createStatusContextError
-			fghc.ListIssueCommentsWithContextError = tc.listIssueCommentsWithContextError
+			fghc.ListCommitCommentsWithContextError = tc.listCommitCommentsWithContextError
 			c := Client{
 				gc: fghc,
 				config: func() *config.Config {
@@ -236,14 +237,16 @@ func TestReport(t *testing.T) {
 						},
 					}
 				},
+				locks: criercommonlib.NewShardedLock(),
 			}
 			pj := &v1.ProwJob{
 				Spec: v1.ProwJobSpec{
 					Type:   v1.PostsubmitJob,
 					Report: true,
-					Refs: &v1.Refs{
-						Pulls: []v1.Pull{
-							{},
+					Refs:   &v1.Refs{},
+					ReporterConfig: &v1.ReporterConfig{
+						GitHub: &v1.GitHubReporterConfig{
+							CommentOnPostsubmits: true,
 						},
 					},
 				},

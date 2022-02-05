@@ -156,6 +156,8 @@ type CommitClient interface {
 	DeleteRef(org, repo, ref string) error
 	ListFileCommits(org, repo, path string) ([]RepositoryCommit, error)
 	ListCommitPullRequests(org, repo, SHA string) ([]PullRequest, error)
+	CreateCommitCommentWithContext(ctx context.Context, org, repo, SHA, body string) error
+	ListCommitCommentsWithContext(ctx context.Context, org, repo, SHA string) ([]IssueComment, error)
 }
 
 // RepositoryClient interface for repository related API actions
@@ -3462,6 +3464,54 @@ func (c *client) ListFileCommits(org, repo, filePath string) ([]RepositoryCommit
 		return nil, err
 	}
 	return commits, nil
+}
+
+// CreateCommitCommentWithContext creates a comment on the commit
+//
+// See https://docs.github.com/en/rest/reference/repos#create-a-commit-comment
+func (c *client) CreateCommitCommentWithContext(ctx context.Context, org, repo, SHA, comment string) error {
+	c.log("CreateCommitComment", org, repo, SHA, comment)
+	ic := IssueComment{
+		Body: comment,
+	}
+	_, err := c.requestWithContext(ctx, &request{
+		method:      http.MethodPost,
+		path:        fmt.Sprintf("/repos/%s/%s/commits/%s/comments", org, repo, SHA),
+		org:         org,
+		requestBody: &ic,
+		exitCodes:   []int{201},
+	}, nil)
+	return err
+}
+
+// ListCommitCommentsWithContext returns all comments on an issue.
+//
+// Each page of results consumes one API token.
+//
+// See https://docs.github.com/en/rest/reference/repos#list-commit-comments
+func (c *client) ListCommitCommentsWithContext(ctx context.Context, org, repo, SHA string) ([]IssueComment, error) {
+	c.log("ListCommitComments", org, repo, SHA)
+	if c.fake {
+		return nil, nil
+	}
+	path := fmt.Sprintf("/repos/%s/%s/commits/%s/comments", org, repo, SHA)
+	var comments []IssueComment
+	err := c.readPaginatedResultsWithContext(
+		ctx,
+		path,
+		"application/vnd.github.v3+json",
+		org,
+		func() interface{} {
+			return &[]IssueComment{}
+		},
+		func(obj interface{}) {
+			comments = append(comments, *(obj.(*[]IssueComment))...)
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return comments, nil
 }
 
 // FindIssues uses the GitHub search API to find issues which match a particular query.
