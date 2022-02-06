@@ -123,7 +123,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20220204-7977a74ad8
+    - image: gcr.io/k8s-prow/generic-autobumper:v20220206-831340cbbf
       command:
       - /app/prow/cmd/generic-autobumper/app.binary
       args:
@@ -153,7 +153,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20220204-7977a74ad8
+    - image: gcr.io/k8s-prow/generic-autobumper:v20220206-831340cbbf
       command:
       - /app/prow/cmd/generic-autobumper/app.binary
       args:
