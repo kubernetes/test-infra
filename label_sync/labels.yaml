@@ -1617,6 +1617,12 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
+      - color: e9b3f9
+        description: Issues or PRs related to Bengali language
+        name: language/bn
+        target: both
+        prowPlugin: label
+        addedBy: anyone   
       - color: d2b48c
         description: Issues with the Katacoda infrastructure for tutorials
         name: team/katacoda
