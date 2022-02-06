@@ -23,6 +23,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"path"
 	"regexp"
 	"strings"
 	"sync"
@@ -548,6 +549,14 @@ func logDumpPath(provider string) string {
 	return "./cluster/log-dump/log-dump.sh"
 }
 
+func kubemarkPath() string {
+	if kubemarkPath := os.Getenv("KUBEMARK_PATH"); kubemarkPath != "" {
+		return os.ExpandEnv(kubemarkPath)
+	}
+
+	return "./test/kubemark/"
+}
+
 func defaultDumpClusterLogs(localArtifactsDir, logexporterGCSPath, provider string) error {
 	logDumpPath := logDumpPath(provider)
 	if _, err := os.Stat(logDumpPath); err != nil {
@@ -634,7 +643,7 @@ func nodeTest(nodeArgs []string, testArgs, nodeTestArgs, project, zone, runtimeC
 func kubemarkUp(dump string, o options, deploy deployer) error {
 	// Stop previously running kubemark cluster (if any).
 	if err := control.XMLWrap(&suite, "Kubemark TearDown Previous", func() error {
-		if err := control.FinishRunning(exec.Command("./test/kubemark/stop-kubemark.sh")); err != nil {
+		if err := control.FinishRunning(exec.Command(path.Join(kubemarkPath(), "stop-kubemark.sh"))); err != nil {
 			return fmt.Errorf("failed to stop kubemark cluster, err: %w", err)
 		}
 		return nil
@@ -650,7 +659,7 @@ func kubemarkUp(dump string, o options, deploy deployer) error {
 
 	// Start kubemark cluster.
 	if err := control.XMLWrap(&suite, "Kubemark Up", func() error {
-		return control.FinishRunning(exec.Command("./test/kubemark/start-kubemark.sh"))
+		return control.FinishRunning(exec.Command(path.Join(kubemarkPath(), "start-kubemark.sh")))
 	}); err != nil {
 		return err
 	}
@@ -768,6 +777,10 @@ func kubemarkDown(err *error, wg *sync.WaitGroup, provider, dump, logexporterGCS
 		logDumpPath := logDumpPath(provider)
 		masterName := os.Getenv("MASTER_NAME")
 		var cmd *exec.Cmd
+		if provider == "gke" {
+			log.Printf("Skipping dumping logs for gke provider")
+			return nil
+		}
 		if logexporterGCSPath != "" {
 			log.Printf("Dumping logs for kubemark master to GCS directly at path: %v", logexporterGCSPath)
 			cmd = exec.Command(logDumpPath, dump, logexporterGCSPath)
@@ -783,7 +796,7 @@ func kubemarkDown(err *error, wg *sync.WaitGroup, provider, dump, logexporterGCS
 		return control.FinishRunning(cmd)
 	})
 	*err = control.XMLWrap(&suite, "Kubemark TearDown", func() error {
-		return control.FinishRunning(exec.Command("./test/kubemark/stop-kubemark.sh"))
+		return control.FinishRunning(exec.Command(path.Join(kubemarkPath(), "stop-kubemark.sh")))
 	})
 }
 
