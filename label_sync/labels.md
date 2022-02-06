@@ -528,6 +528,7 @@ larger set of contributors to apply/remove them.
 | <a id="language/uk" href="#language/uk">`language/uk`</a> | Issues or PRs related to Ukrainian language| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="language/vi" href="#language/vi">`language/vi`</a> | Issues or PRs related to Vietnamese language| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="language/zh" href="#language/zh">`language/zh`</a> | Issues or PRs related to Chinese language <br><br> This was previously `language/cn`, | anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="language/bn" href="#language/bn">`language/bn`</a> | Issues or PRs related to Bengali language| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 
 ## Labels that apply to kubernetes/website, only for issues
 
