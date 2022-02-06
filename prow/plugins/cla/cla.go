@@ -217,7 +217,7 @@ func handleComment(gc gitHubClient, log *logrus.Entry, e *github.GenericCommentE
 
 	for _, status := range combined.Statuses {
 
-		// Only consider "cla/linuxfoundation" status.
+		// Only consider the context we care about
 		if status.Context == claContextName {
 
 			// Success state implies that the cla exists, so label should be cncf-cla:yes.

@@ -145,7 +145,7 @@ branch-protection:
       protect: true
       required_status_checks:
         contexts:
-        - cla/linuxfoundation
+        - EasyCLA
       exclude:
         - "^revert-" # don't protect revert branches
         - "^dependabot/" # don't protect branches created by dependabot
@@ -417,7 +417,7 @@ branch-protection:
       protect: true
       required_status_checks:
         contexts:
-        - cla/linuxfoundation
+        - EasyCLA
       exclude:
         - "^revert-" # don't protect revert branches
         - "^dependabot/" # don't protect branches created by dependabot
@@ -435,7 +435,7 @@ branch-protection:
       protect: true
       required_status_checks:
         contexts:
-        - cla/linuxfoundation
+        - EasyCLA
       exclude:
         - "^revert-" # don't protect revert branches
         - "^dependabot/" # don't protect branches created by dependabot
@@ -444,7 +444,7 @@ branch-protection:
       protect: true
       required_status_checks:
         contexts:
-        - cla/linuxfoundation
+        - EasyCLA
       exclude:
         - "^revert-" # don't protect revert branches
         - "^dependabot/" # don't protect branches created by dependabot
@@ -477,7 +477,7 @@ branch-protection:
         external-dns:
           branches:
             gh-pages:
-              protect: false 
+              protect: false
         kube-batch:
           required_status_checks:
             contexts:
@@ -493,7 +493,7 @@ branch-protection:
         metrics-server:
           branches:
             gh-pages:
-              protect: false          
+              protect: false
         nfs-ganesha-server-and-external-provisioner:
           branches:
             gh-pages:
