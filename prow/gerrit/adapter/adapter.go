@@ -38,6 +38,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	reporter "k8s.io/test-infra/prow/crier/reporters/gerrit"
 	"k8s.io/test-infra/prow/gerrit/client"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/pjutil"
 )
@@ -78,6 +79,10 @@ type Controller struct {
 	tracker            LastSyncTracker
 	projectsOptOutHelp map[string]sets.String
 	lock               sync.RWMutex
+	cookieFilePath     string
+	cacheSize          int
+	configAgent        *config.Agent
+	repoCacheMap       map[string]*config.InRepoConfigCache
 }
 
 type LastSyncTracker interface {
@@ -87,8 +92,9 @@ type LastSyncTracker interface {
 
 // NewController returns a new gerrit controller client
 func NewController(ctx context.Context, prowJobClient prowv1.ProwJobInterface, op io.Opener,
-	cfg config.Getter, projects, projectsOptOutHelp map[string][]string, cookiefilePath, tokenPathOverride string, lastSyncFallback string) *Controller {
+	ca *config.Agent, projects, projectsOptOutHelp map[string][]string, cookiefilePath, tokenPathOverride, lastSyncFallback string, cacheSize int) *Controller {
 
+	cfg := ca.Config
 	projectsOptOutHelpMap := map[string]sets.String{}
 	if cfg().Gerrit.OrgReposConfig != nil {
 		projectsOptOutHelpMap = cfg().Gerrit.OrgReposConfig.OptOutHelpRepos()
@@ -115,6 +121,10 @@ func NewController(ctx context.Context, prowJobClient prowv1.ProwJobInterface, o
 		gc:                 gerritClient,
 		tracker:            lastSyncTracker,
 		projectsOptOutHelp: projectsOptOutHelpMap,
+		cookieFilePath:     cookiefilePath,
+		cacheSize:          cacheSize,
+		configAgent:        ca,
+		repoCacheMap:       map[string]*config.InRepoConfigCache{},
 	}
 
 	// applyGlobalConfig reads gerrit configurations from global gerrit config,
@@ -166,12 +176,35 @@ func (c *Controller) applyGlobalConfigOnce(cfg config.Getter, gerritClient *clie
 	gerritClient.Authenticate(cookiefilePath, tokenPathOverride)
 }
 
+// Helper function to create the cache used for InRepoConfig. Currently only attempts to create cache and returns nil if failed.
+func createCache(cloneURI *url.URL, cookieFilePath string, cacheSize int, configAgent *config.Agent) (cache *config.InRepoConfigCache, err error) {
+	opts := git.ClientFactoryOpts{
+		CloneURI:       cloneURI.String(),
+		Host:           cloneURI.Host,
+		CookieFilePath: cookieFilePath,
+	}
+	gc, err := git.NewClientFactory(opts.Apply)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create Gerrit Client for InRepoConfig: %v", err)
+	}
+	// Initialize cache for fetching Presubmit and Postsubmit information. If
+	// the cache cannot be initialized, exit with an error.
+	cache, err = config.NewInRepoConfigCache(
+		cacheSize,
+		configAgent,
+		config.NewInRepoConfigGitCache(gc))
+	// If we cannot initialize the cache, exit with an error.
+	if err != nil {
+		return nil, fmt.Errorf("unable to initialize in-repo-config-cache with size %d: %v", cacheSize, err)
+	}
+	return cache, nil
+}
+
 // Sync looks for newly made gerrit changes
 // and creates prowjobs according to specs
 func (c *Controller) Sync() error {
 	syncTime := c.tracker.Current()
 	latest := syncTime.DeepCopy()
-
 	for instance, changes := range c.gc.QueryChanges(syncTime, c.config().Gerrit.RateLimit) {
 		log := logrus.WithField("host", instance)
 		for _, change := range changes {
@@ -181,8 +214,22 @@ func (c *Controller) Sync() error {
 				"repo":     change.Project,
 				"revision": change.CurrentRevision,
 			})
+
+			cloneURI, err := makeCloneURI(instance, change.Project)
+			if err != nil {
+				return fmt.Errorf("makeCloneURI: %w", err)
+			}
+
+			cache, ok := c.repoCacheMap[cloneURI.Host]
+			if !ok {
+				if cache, err = createCache(cloneURI, c.cookieFilePath, c.cacheSize, c.configAgent); err != nil {
+					return err
+				}
+				c.repoCacheMap[cloneURI.Host] = cache
+			}
+
 			result := client.ResultSuccess
-			if err := c.processChange(log, instance, change); err != nil {
+			if err := c.processChange(log, instance, change, cloneURI, cache); err != nil {
 				result = client.ResultError
 				log.WithError(err).Errorf("Failed to process change")
 			}
@@ -298,14 +345,9 @@ func failedJobs(account int, revision int, messages ...gerrit.ChangeMessageInfo)
 }
 
 // processChange creates new presubmit/postsubmit prowjobs base off the gerrit changes
-func (c *Controller) processChange(logger logrus.FieldLogger, instance string, change client.ChangeInfo) error {
-
-	cloneURI, err := makeCloneURI(instance, change.Project)
-	if err != nil {
-		return fmt.Errorf("makeCloneURI: %w", err)
-	}
-
+func (c *Controller) processChange(logger logrus.FieldLogger, instance string, change client.ChangeInfo, cloneURI *url.URL, cache *config.InRepoConfigCache) error {
 	baseSHA, err := c.gc.GetBranchRevision(instance, change.Project, change.Branch)
+	trimmedHostPath := cloneURI.Host + "/" + cloneURI.Path
 	if err != nil {
 		return fmt.Errorf("GetBranchRevision: %w", err)
 	}
@@ -332,9 +374,13 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 
 	switch change.Status {
 	case client.Merged:
-		// TODO: Do we want to add support for dynamic postsubmits?
-		postsubmits := c.config().PostsubmitsStatic[cloneURI.String()]
-		postsubmits = append(postsubmits, c.config().PostsubmitsStatic[cloneURI.Host+"/"+cloneURI.Path]...)
+		postsubmits, err := cache.GetPostsubmits(trimmedHostPath, func() (string, error) { return baseSHA, nil })
+		if err != nil {
+			//TODO(mpherman): Return Error once we know this usually works
+			logger.Warn("Failed to get cached InRepoConfig for Postsubmits")
+			postsubmits = append(postsubmits, c.config().PostsubmitsStatic[trimmedHostPath]...)
+		}
+		postsubmits = append(postsubmits, c.config().PostsubmitsStatic[cloneURI.String()]...)
 		for _, postsubmit := range postsubmits {
 			if shouldRun, err := postsubmit.ShouldRun(change.Branch, changedFiles); err != nil {
 				return fmt.Errorf("failed to determine if postsubmit %q should run: %w", postsubmit.Name, err)
@@ -346,9 +392,13 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 			}
 		}
 	case client.New:
-		// TODO: Do we want to add support for dynamic presubmits?
-		presubmits := c.config().PresubmitsStatic[cloneURI.String()]
-		presubmits = append(presubmits, c.config().PresubmitsStatic[cloneURI.Host+"/"+cloneURI.Path]...)
+		presubmits, err := cache.GetPresubmits(trimmedHostPath, func() (string, error) { return baseSHA, nil })
+		if err != nil {
+			//TODO(mpherman): Return Error once we know this usually works
+			logger.Warn("Failed to get cached InRepoConfig for Presubmits")
+			presubmits = append(presubmits, c.config().PresubmitsStatic[trimmedHostPath]...)
+		}
+		presubmits = append(presubmits, c.config().PresubmitsStatic[cloneURI.String()]...)
 
 		account, err := c.gc.Account(instance)
 		if err != nil {
