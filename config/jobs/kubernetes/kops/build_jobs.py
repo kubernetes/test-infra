@@ -747,11 +747,12 @@ def generate_distros():
         distro_short = distro.replace('ubuntu', 'u').replace('debian', 'deb').replace('amazonlinux', 'amzn') # pylint: disable=line-too-long
         results.append(
             build_test(distro=distro_short,
-                       networking='calico',
+                       networking='kubenet',
                        k8s_version='stable',
                        kops_channel='alpha',
                        name_override=f"kops-aws-distro-image{distro}",
                        extra_dashboards=['kops-distros'],
+                       extra_flags=['--set=spec.assets.containerProxy=registry-sandbox.k8s.io'],
                        runs_per_day=3,
                        )
         )
