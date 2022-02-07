@@ -23,9 +23,15 @@ source hack/build/setup-go.sh
 
 readonly PROW_IMAGES_DEF_FILE="prow/.prow-images"
 IMAGES=()
-while IFS= read -r image; do
-  IMAGES+=($image)
-done < "$PROW_IMAGES_DEF_FILE"
+if [[ -n "${PROW_IMAGES:-}" ]]; then
+  # Building prow images from supplied
+  IFS=' ' read -ra IMAGES <<< "${PROW_IMAGES}"
+else
+  # Building all prow images
+  while IFS= read -r image; do
+    IMAGES+=($image)
+  done < "$PROW_IMAGES_DEF_FILE"
+fi
 
 # overridable registry to use
 KO_DOCKER_REPO="${KO_DOCKER_REPO:-}"
