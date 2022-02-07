@@ -206,6 +206,46 @@ presubmits:
       testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
       testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
 
+  # Executes the test coverage.
+  - name: pull-cloud-provider-vsphere-coverage
+    always_run: true
+    decorate: true
+    path_alias: k8s.io/cloud-provider-vsphere
+    branches:
+    - ^master$
+    # Temporarily comment release branches until passing test.
+    # - ^release-.*$
+    extra_refs:
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220120-50581feb62-master
+        command:
+        - runner.sh
+        - bash
+        args:
+        - -c
+        - |
+          result=0
+          ./scripts/ci-test-coverage.sh || result=$?
+          cp coverage.* ${ARTIFACTS}
+          cd ../../k8s.io/test-infra/gopherage
+          GO111MODULE=on go build .
+          ./gopherage filter --exclude-path="zz_generated,generated\.go" "${ARTIFACTS}/coverage.out" > "${ARTIFACTS}/filtered.cov" || result=$?
+          ./gopherage html "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/coverage.html" || result=$?
+          ./gopherage junit --threshold 0 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml" || result=$?
+          exit $result
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+      testgrid-tab-name: pr-verify-test-coverage
+      description: Shows the test coverage of the Golang sources
+
 postsubmits:
   kubernetes/cloud-provider-vsphere:
 
