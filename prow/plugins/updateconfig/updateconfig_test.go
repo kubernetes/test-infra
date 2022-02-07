@@ -1305,7 +1305,7 @@ func testUpdateConfig(clients localgit.Clients, t *testing.T) {
 		repo := event.PullRequest.Base.Repo.Name
 		c := setupLocalGitRepo(clients, t, org, repo)
 
-		if err := handle(fgc, c, fkc.CoreV1(), nil, defaultNamespace, log, event, *m, nil); err != nil {
+		if _, err := handle(fgc, c, fkc.CoreV1(), nil, defaultNamespace, log, event, *m, nil); err != nil {
 			t.Errorf("%s: unexpected error handling: %s", tc.name, err)
 			continue
 		}

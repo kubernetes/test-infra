@@ -762,7 +762,7 @@ func TestHandleComment(t *testing.T) {
 				Repo:   github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 				User:   github.User{Login: tc.commenter},
 			}
-			err := handleComment(fakeClient, logrus.WithField("plugin", PluginName), plugins.Label{AdditionalLabels: tc.extraLabels, RestrictedLabels: tc.restrictedLabels}, e)
+			_, err := handleComment(fakeClient, logrus.WithField("plugin", PluginName), plugins.Label{AdditionalLabels: tc.extraLabels, RestrictedLabels: tc.restrictedLabels}, e)
 			if err != nil {
 				t.Fatalf("didn't expect error from handle comment test: %v", err)
 			}
@@ -838,7 +838,7 @@ func TestHandleLabelAdd(t *testing.T) {
 				PullRequest: github.PullRequest{Number: 1},
 				Label:       github.Label{Name: tc.labelAdded},
 			}
-			err := handleLabelAdd(fakeClient, logrus.WithField("plugin", PluginName), plugins.Label{RestrictedLabels: tc.restrictedLabels}, e)
+			_, err := handleLabelAdd(fakeClient, logrus.WithField("plugin", PluginName), plugins.Label{RestrictedLabels: tc.restrictedLabels}, e)
 			if err != nil {
 				t.Fatalf("didn't expect error from handle label test: %v", err)
 			}

@@ -565,7 +565,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			}
 			fc.CombinedStatuses["sha"] = combinedStatus
 
-			if err := handlePullRequest(tc.config, fc, &fakePruner{}, logrus.WithField("plugin", pluginName), tc.pullRequestEvent); err != nil {
+			if _, err := handlePullRequest(tc.config, fc, &fakePruner{}, logrus.WithField("plugin", pluginName), tc.pullRequestEvent); err != nil {
 				t.Errorf("For case %s, didn't expect error from dco plugin: %v", tc.name, err)
 			}
 			ok := tc.addedLabel == ""
@@ -767,7 +767,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			}
 			fc.CombinedStatuses["sha"] = combinedStatus
 
-			if err := handleComment(tc.config, fc, &fakePruner{}, logrus.WithField("plugin", pluginName), tc.commentEvent); err != nil {
+			if _, err := handleComment(tc.config, fc, &fakePruner{}, logrus.WithField("plugin", pluginName), tc.commentEvent); err != nil {
 				t.Errorf("For case %s, didn't expect error from dco plugin: %v", tc.name, err)
 			}
 			ok := tc.addedLabel == ""

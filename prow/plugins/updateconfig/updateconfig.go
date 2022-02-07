@@ -79,7 +79,7 @@ type githubClient interface {
 	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
 }
 
-func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) (plugins.Status, error) {
 	return handle(pc.GitHubClient, pc.GitClient, pc.KubernetesClient.CoreV1(), pc.BuildClusterCoreV1Clients, pc.Config.ProwJobNamespace, pc.Logger, pre, pc.PluginConfig.ConfigUpdater, pc.Metrics.ConfigMapGauges)
 }
 
@@ -273,20 +273,21 @@ func handleDefaultNamespace(toUpdate map[plugins.ConfigMapID][]ConfigMapUpdate, 
 	return toUpdate
 }
 
-func handle(gc githubClient, gitClient git.ClientFactory, kc corev1.ConfigMapsGetter, buildClusterCoreV1Clients map[string]corev1.CoreV1Interface, defaultNamespace string, log *logrus.Entry, pre github.PullRequestEvent, config plugins.ConfigUpdater, metrics *prometheus.GaugeVec) error {
+func handle(gc githubClient, gitClient git.ClientFactory, kc corev1.ConfigMapsGetter, buildClusterCoreV1Clients map[string]corev1.CoreV1Interface, defaultNamespace string, log *logrus.Entry, pre github.PullRequestEvent, config plugins.ConfigUpdater, metrics *prometheus.GaugeVec) (plugins.Status, error) {
+	var status plugins.Status
 	// Only consider newly merged PRs
 	if pre.Action != github.PullRequestActionClosed {
-		return nil
+		return status, nil
 	}
 
 	if len(config.Maps) == 0 { // Nothing to update
-		return nil
+		return status, nil
 	}
 
 	pr := pre.PullRequest
 
 	if !pr.Merged || pr.MergeSHA == nil || pr.Base.Repo.DefaultBranch != pr.Base.Ref {
-		return nil
+		return status, nil
 	}
 
 	org := pr.Base.Repo.Owner.Login
@@ -294,8 +295,9 @@ func handle(gc githubClient, gitClient git.ClientFactory, kc corev1.ConfigMapsGe
 
 	// Which files changed in this PR?
 	changes, err := gc.GetPullRequestChanges(org, repo, pr.Number)
+	status.TookAction()
 	if err != nil {
-		return err
+		return status, err
 	}
 
 	message := func(name, cluster, namespace string, updates []ConfigMapUpdate, indent string) string {
@@ -328,7 +330,7 @@ func handle(gc githubClient, gitClient git.ClientFactory, kc corev1.ConfigMapsGe
 
 	gitRepo, err := gitClient.ClientFor(org, repo)
 	if err != nil {
-		return err
+		return status, err
 	}
 	defer func() {
 		if err := gitRepo.Clean(); err != nil {
@@ -336,7 +338,7 @@ func handle(gc githubClient, gitClient git.ClientFactory, kc corev1.ConfigMapsGe
 		}
 	}()
 	if err := gitRepo.Checkout(*pr.MergeSHA); err != nil {
-		return err
+		return status, err
 	}
 
 	var errs []error
@@ -358,7 +360,7 @@ func handle(gc githubClient, gitClient git.ClientFactory, kc corev1.ConfigMapsGe
 	var msg string
 	switch n := len(updated); n {
 	case 0:
-		return utilerrors.NewAggregate(errs)
+		return status, utilerrors.NewAggregate(errs)
 	case 1:
 		msg = fmt.Sprintf("Updated the %s", updated[0])
 	default:
@@ -371,7 +373,7 @@ func handle(gc githubClient, gitClient git.ClientFactory, kc corev1.ConfigMapsGe
 	if err := gc.CreateComment(org, repo, pr.Number, plugins.FormatResponseRaw(pr.Body, pr.HTMLURL, pr.User.Login, msg)); err != nil {
 		errs = append(errs, fmt.Errorf("comment err: %w", err))
 	}
-	return utilerrors.NewAggregate(errs)
+	return status, utilerrors.NewAggregate(errs)
 }
 
 // GetConfigMapClient returns a configMap interface according to the given cluster and namespace

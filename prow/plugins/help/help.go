@@ -132,11 +132,11 @@ type commentPruner interface {
 	PruneComments(shouldPrune func(github.IssueComment) bool)
 }
 
-func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) (plugins.Status, error) {
 	cfg := pc.PluginConfig
 	cp, err := pc.CommentPruner()
 	if err != nil {
-		return err
+		return plugins.Status{}, err
 	}
 	ig := issueGuidelines{
 		issueGuidelinesURL:     cfg.Help.HelpGuidelinesURL,
@@ -145,10 +145,11 @@ func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error 
 	return handle(pc.GitHubClient, pc.Logger, cp, &e, ig)
 }
 
-func handle(gc githubClient, log *logrus.Entry, cp commentPruner, e *github.GenericCommentEvent, ig issueGuidelines) error {
+func handle(gc githubClient, log *logrus.Entry, cp commentPruner, e *github.GenericCommentEvent, ig issueGuidelines) (plugins.Status, error) {
+	var status plugins.Status
 	// Only consider open issues and new comments.
 	if e.IsPR || e.IssueState != "open" || e.Action != github.GenericCommentActionCreated {
-		return nil
+		return status, nil
 	}
 
 	org := e.Repo.Owner.Login
@@ -157,6 +158,7 @@ func handle(gc githubClient, log *logrus.Entry, cp commentPruner, e *github.Gene
 
 	// Determine if the issue has the help and the good-first-issue label
 	issueLabels, err := gc.GetIssueLabels(org, repo, e.Number)
+	status.TookAction()
 	if err != nil {
 		log.WithError(err).Errorf("Failed to get issue labels.")
 	}
@@ -183,7 +185,7 @@ func handle(gc githubClient, log *logrus.Entry, cp commentPruner, e *github.Gene
 			cp.PruneComments(shouldPrune(log, botUserChecker, goodFirstIssueMsgPruneMatch))
 		}
 
-		return nil
+		return status, nil
 	}
 
 	// If PR does not have the good-first-issue label and we are asking for it to be added,
@@ -203,7 +205,7 @@ func handle(gc githubClient, log *logrus.Entry, cp commentPruner, e *github.Gene
 			}
 		}
 
-		return nil
+		return status, nil
 	}
 
 	// If PR does not have the help label and we're asking it to be added,
@@ -216,7 +218,7 @@ func handle(gc githubClient, log *logrus.Entry, cp commentPruner, e *github.Gene
 			log.WithError(err).Errorf("GitHub failed to add the following label: %s", labels.Help)
 		}
 
-		return nil
+		return status, nil
 	}
 
 	// If PR has good-first-issue label and we are asking for it to be removed,
@@ -232,10 +234,10 @@ func handle(gc githubClient, log *logrus.Entry, cp commentPruner, e *github.Gene
 		}
 		cp.PruneComments(shouldPrune(log, botUserChecker, goodFirstIssueMsgPruneMatch))
 
-		return nil
+		return status, nil
 	}
 
-	return nil
+	return status, nil
 }
 
 // shouldPrune finds comments left by this plugin.

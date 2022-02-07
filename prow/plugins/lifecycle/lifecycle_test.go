@@ -24,6 +24,7 @@ import (
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
+	"k8s.io/test-infra/prow/plugins"
 )
 
 type fakeClient struct {
@@ -261,7 +262,8 @@ func TestAddLifecycleLabels(t *testing.T) {
 			Action: github.GenericCommentActionCreated,
 			IsPR:   tc.isPR,
 		}
-		err := handle(fc, logrus.WithField("plugin", "fake-lifecyle"), e)
+		var status plugins.Status
+		err := handle(fc, logrus.WithField("plugin", "fake-lifecyle"), e, &status)
 		switch {
 		case err != nil:
 			t.Errorf("%s: unexpected error: %v", tc.name, err)

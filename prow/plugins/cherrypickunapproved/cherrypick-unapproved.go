@@ -80,10 +80,10 @@ type commentPruner interface {
 	PruneComments(shouldPrune func(github.IssueComment) bool)
 }
 
-func handlePullRequest(pc plugins.Agent, pr github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pr github.PullRequestEvent) (plugins.Status, error) {
 	cp, err := pc.CommentPruner()
 	if err != nil {
-		return err
+		return plugins.Status{}, err
 	}
 	return handlePR(
 		pc.GitHubClient, pc.Logger, &pr, cp,
@@ -91,27 +91,32 @@ func handlePullRequest(pc plugins.Agent, pr github.PullRequestEvent) error {
 	)
 }
 
-func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent, cp commentPruner, branchRe *regexp.Regexp, commentBody string) error {
+func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent, cp commentPruner, branchRe *regexp.Regexp, commentBody string) (plugins.Status, error) {
 	var (
 		org    = pr.Repo.Owner.Login
 		repo   = pr.Repo.Name
 		branch = pr.PullRequest.Base.Ref
 	)
+	var status plugins.Status
 
 	switch pr.Action {
 	case github.PullRequestActionOpened, github.PullRequestActionReopened:
 		if !branchRe.MatchString(branch) {
-			return nil
+			return status, nil
 		}
-		return ensureLabels(gc, org, repo, pr, log, cp, commentBody)
+		err := ensureLabels(gc, org, repo, pr, log, cp, commentBody)
+		status.TookAction()
+		return status, err
 	case github.PullRequestActionLabeled, github.PullRequestActionUnlabeled:
 		if !branchRe.MatchString(branch) {
-			return nil
+			return status, nil
 		}
 		if !(pr.Label.Name == labels.CpApproved || pr.Label.Name == labels.CpUnapproved) {
-			return nil
+			return status, nil
 		}
-		return ensureLabels(gc, org, repo, pr, log, cp, commentBody)
+		err := ensureLabels(gc, org, repo, pr, log, cp, commentBody)
+		status.TookAction()
+		return status, err
 	case github.PullRequestActionEdited:
 		// if someone changes the base of their PR, we will get this event
 		// and the changes field will list that the base SHA and ref changes
@@ -127,24 +132,28 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent, c
 		}
 		if err := json.Unmarshal(pr.Changes, &changes); err != nil {
 			// we're detecting this best-effort so we can forget about the event
-			return nil
+			return status, nil
 		}
 
 		if changes.Base.Ref.From == "" {
 			// PR base ref did not change, ignore the event
-			return nil
+			return status, nil
 		}
 
 		if branchRe.MatchString(branch) && !branchRe.MatchString(changes.Base.Ref.From) {
 			// base ref changed from a branch not allowed for cherry-picks to a branch that is allowed for cherry-picks
-			return ensureLabels(gc, org, repo, pr, log, cp, commentBody)
+			err := ensureLabels(gc, org, repo, pr, log, cp, commentBody)
+			status.TookAction()
+			return status, err
 		} else if !branchRe.MatchString(branch) && branchRe.MatchString(changes.Base.Ref.From) {
 			// base ref changed from a branch allowed for cherry-picks to a branch that is not allowed for cherry-picks
-			return pruneLabels(gc, org, repo, pr, log, cp, commentBody)
+			err := pruneLabels(gc, org, repo, pr, log, cp, commentBody)
+			status.TookAction()
+			return status, err
 		}
 	}
 
-	return nil
+	return status, nil
 }
 
 func ensureLabels(gc githubClient, org string, repo string, pr *github.PullRequestEvent, log *logrus.Entry, cp commentPruner, commentBody string) error {

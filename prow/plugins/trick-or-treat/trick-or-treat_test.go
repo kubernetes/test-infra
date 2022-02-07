@@ -148,7 +148,7 @@ func TestAll(t *testing.T) {
 			IssueState: tc.state,
 			IsPR:       tc.pr,
 		}
-		err := handle(fc, logrus.WithField("plugin", pluginName), e, &fakeSnicker{tc.readImgErr})
+		_, err := handle(fc, logrus.WithField("plugin", pluginName), e, &fakeSnicker{tc.readImgErr})
 		if !tc.shouldError && err != nil {
 			t.Errorf("%s: didn't expect error: %v", tc.name, err)
 		} else if tc.shouldError && err == nil {

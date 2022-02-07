@@ -168,18 +168,19 @@ func handle(gc gitHubClient, log *logrus.Entry, se github.StatusEvent) error {
 	return nil
 }
 
-func handleCommentEvent(pc plugins.Agent, ce github.GenericCommentEvent) error {
+func handleCommentEvent(pc plugins.Agent, ce github.GenericCommentEvent) (plugins.Status, error) {
 	return handleComment(pc.GitHubClient, pc.Logger, &ce)
 }
 
-func handleComment(gc gitHubClient, log *logrus.Entry, e *github.GenericCommentEvent) error {
+func handleComment(gc gitHubClient, log *logrus.Entry, e *github.GenericCommentEvent) (plugins.Status, error) {
+	var status plugins.Status
 	// Only consider open PRs and new comments.
 	if e.IssueState != "open" || e.Action != github.GenericCommentActionCreated {
-		return nil
+		return status, nil
 	}
 	// Only consider "/check-cla" comments.
 	if !checkCLARe.MatchString(e.Body) {
-		return nil
+		return status, nil
 	}
 
 	org := e.Repo.Owner.Login
@@ -190,6 +191,7 @@ func handleComment(gc gitHubClient, log *logrus.Entry, e *github.GenericCommentE
 
 	// Check for existing cla labels.
 	issueLabels, err := gc.GetIssueLabels(org, repo, number)
+	status.TookAction()
 	if err != nil {
 		log.WithError(err).Errorf("Failed to get the labels on %s/%s#%d.", org, repo, number)
 	}
@@ -259,5 +261,5 @@ func handleComment(gc gitHubClient, log *logrus.Entry, e *github.GenericCommentE
 			break
 		}
 	}
-	return nil
+	return status, nil
 }

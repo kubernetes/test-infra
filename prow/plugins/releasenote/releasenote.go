@@ -214,7 +214,7 @@ func removeOtherLabels(remover func(string) error, label string, labelSet []stri
 	return nil
 }
 
-func handlePullRequest(pc plugins.Agent, pr github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pr github.PullRequestEvent) (plugins.Status, error) {
 	return handlePR(pc.GitHubClient, pc.Logger, &pr)
 }
 
@@ -239,16 +239,18 @@ func shouldHandlePR(pr *github.PullRequestEvent) bool {
 	return true
 }
 
-func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent) error {
+func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent) (plugins.Status, error) {
+	var status plugins.Status
 	if !shouldHandlePR(pr) {
-		return nil
+		return status, nil
 	}
 	org := pr.Repo.Owner.Login
 	repo := pr.Repo.Name
 
 	prInitLabels, err := gc.GetIssueLabels(org, repo, pr.Number)
+	status.TookAction()
 	if err != nil {
-		return fmt.Errorf("failed to list labels on PR #%d. err: %w", pr.Number, err)
+		return status, fmt.Errorf("failed to list labels on PR #%d. err: %w", pr.Number, err)
 	}
 	prLabels := labelsSet(prInitLabels)
 
@@ -258,11 +260,11 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent) e
 	if labelToAdd == labels.ReleaseNoteLabelNeeded {
 		//Do not add do not merge label when the PR is merged
 		if pr.PullRequest.Merged {
-			return nil
+			return status, nil
 		}
 		if !prMustFollowRelNoteProcess(gc, log, pr, prLabels, true) {
 			ensureNoRelNoteNeededLabel(gc, log, pr, prLabels)
-			return clearStaleComments(gc, log, pr, prLabels, nil)
+			return status, clearStaleComments(gc, log, pr, prLabels, nil)
 		}
 
 		if prLabels.Has(labels.DeprecationLabel) {
@@ -275,7 +277,7 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent) e
 		} else {
 			comments, err = gc.ListIssueComments(org, repo, pr.Number)
 			if err != nil {
-				return fmt.Errorf("failed to list comments on %s/%s#%d. err: %w", org, repo, pr.Number, err)
+				return status, fmt.Errorf("failed to list comments on %s/%s#%d. err: %w", org, repo, pr.Number, err)
 			}
 			if containsNoneCommand(comments) {
 				labelToAdd = labels.ReleaseNoteNone
@@ -291,7 +293,7 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent) e
 	// Add the label if needed
 	if !prLabels.Has(labelToAdd) {
 		if err = gc.AddLabel(org, repo, pr.Number, labelToAdd); err != nil {
-			return err
+			return status, err
 		}
 		prLabels.Insert(labelToAdd)
 	}
@@ -308,7 +310,7 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent) e
 		log.Error(err)
 	}
 
-	return clearStaleComments(gc, log, pr, prLabels, comments)
+	return status, clearStaleComments(gc, log, pr, prLabels, comments)
 }
 
 // clearStaleComments deletes old comments that are no longer applicable.

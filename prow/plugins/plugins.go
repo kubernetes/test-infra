@@ -64,6 +64,25 @@ var (
 	CommentMap, _              = genyaml.NewCommentMap()
 )
 
+// Status provides additional info about handler execution
+type Status struct {
+	// tookAction indicates whether the handler did any valuable work (e.g. API call)
+	tookAction bool
+}
+
+// TookAction sets the private s.tookAction value to true
+func (s *Status) TookAction() {
+	s.tookAction = true
+}
+
+// GetAction returns a string indicating whether the action was taken
+func (s *Status) GetAction() string {
+	if s.tookAction {
+		return "true"
+	}
+	return "false"
+}
+
 func init() {
 	// This requires the source code to be present and to be in the right relative
 	// location to the working directory. Don't even bother to try outside of the
@@ -107,7 +126,7 @@ func RegisterIssueCommentHandler(name string, fn IssueCommentHandler, help HelpP
 }
 
 // PullRequestHandler defines the function contract for a github.PullRequestEvent handler.
-type PullRequestHandler func(Agent, github.PullRequestEvent) error
+type PullRequestHandler func(Agent, github.PullRequestEvent) (Status, error)
 
 // RegisterPullRequestHandler registers a plugin's github.PullRequestEvent handler.
 func RegisterPullRequestHandler(name string, fn PullRequestHandler, help HelpProvider) {
@@ -134,7 +153,7 @@ func RegisterPushEventHandler(name string, fn PushEventHandler, help HelpProvide
 }
 
 // ReviewEventHandler defines the function contract for a github.ReviewEvent handler.
-type ReviewEventHandler func(Agent, github.ReviewEvent) error
+type ReviewEventHandler func(Agent, github.ReviewEvent) (Status, error)
 
 // RegisterReviewEventHandler registers a plugin's github.ReviewEvent handler.
 func RegisterReviewEventHandler(name string, fn ReviewEventHandler, help HelpProvider) {
@@ -143,7 +162,7 @@ func RegisterReviewEventHandler(name string, fn ReviewEventHandler, help HelpPro
 }
 
 // ReviewCommentEventHandler defines the function contract for a github.ReviewCommentEvent handler.
-type ReviewCommentEventHandler func(Agent, github.ReviewCommentEvent) error
+type ReviewCommentEventHandler func(Agent, github.ReviewCommentEvent) (Status, error)
 
 // RegisterReviewCommentEventHandler registers a plugin's github.ReviewCommentEvent handler.
 func RegisterReviewCommentEventHandler(name string, fn ReviewCommentEventHandler, help HelpProvider) {
@@ -152,7 +171,7 @@ func RegisterReviewCommentEventHandler(name string, fn ReviewCommentEventHandler
 }
 
 // GenericCommentHandler defines the function contract for a github.GenericCommentEvent handler.
-type GenericCommentHandler func(Agent, github.GenericCommentEvent) error
+type GenericCommentHandler func(Agent, github.GenericCommentEvent) (Status, error)
 
 // RegisterGenericCommentHandler registers a plugin's github.GenericCommentEvent handler.
 func RegisterGenericCommentHandler(name string, fn GenericCommentHandler, help HelpProvider) {

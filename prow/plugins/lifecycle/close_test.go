@@ -23,6 +23,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/plugins"
 )
 
 type fakeClientClose struct {
@@ -180,7 +181,8 @@ func TestCloseComment(t *testing.T) {
 			Number:      5,
 			IssueAuthor: github.User{Login: "author"},
 		}
-		if err := handleClose(fc, logrus.WithField("plugin", "fake-close"), e); err != nil {
+		var status plugins.Status
+		if err := handleClose(fc, logrus.WithField("plugin", "fake-close"), e, &status); err != nil {
 			t.Errorf("For case %s, didn't expect error from handle: %v", tc.name, err)
 			continue
 		}

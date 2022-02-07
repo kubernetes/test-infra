@@ -131,14 +131,15 @@ func (u realPack) readDog(dogURL string) (string, error) {
 	return FormatURL(dogURL)
 }
 
-func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) (plugins.Status, error) {
 	return handle(pc.GitHubClient, pc.Logger, &e, dogURL, defaultFineImagesRoot)
 }
 
-func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p pack, fineImagesRoot string) error {
+func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p pack, fineImagesRoot string) (plugins.Status, error) {
+	var status plugins.Status
 	// Only consider new comments.
 	if e.Action != github.GenericCommentActionCreated {
-		return nil
+		return status, nil
 	}
 	// Make sure they are requesting a dog
 	mat := match.FindStringSubmatch(e.Body)
@@ -154,7 +155,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 		}
 
 		if url == "" {
-			return nil
+			return status, nil
 		}
 	}
 
@@ -162,14 +163,15 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 	repo := e.Repo.Name
 	number := e.Number
 
+	status.TookAction()
 	for i := 0; i < 5; i++ {
 		resp, err := p.readDog(url)
 		if err != nil {
 			log.WithError(err).Println("Failed to get dog img")
 			continue
 		}
-		return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, resp))
+		return status, gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, resp))
 	}
 
-	return errors.New("could not find a valid dog image")
+	return status, errors.New("could not find a valid dog image")
 }

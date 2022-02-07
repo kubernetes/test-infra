@@ -49,7 +49,7 @@ func isActive(gc closeClient, org, repo string, number int) (bool, error) {
 	return true, nil
 }
 
-func handleClose(gc closeClient, log *logrus.Entry, e *github.GenericCommentEvent) error {
+func handleClose(gc closeClient, log *logrus.Entry, e *github.GenericCommentEvent, status *plugins.Status) error {
 	// Only consider open issues and new comments.
 	if e.IssueState != "open" || e.Action != github.GenericCommentActionCreated {
 		return nil
@@ -67,6 +67,7 @@ func handleClose(gc closeClient, log *logrus.Entry, e *github.GenericCommentEven
 	isAuthor := e.IssueAuthor.Login == commentAuthor
 
 	isCollaborator, err := gc.IsCollaborator(org, repo, commentAuthor)
+	status.TookAction()
 	if err != nil {
 		log.WithError(err).Errorf("Failed IsCollaborator(%s, %s, %s)", org, repo, commentAuthor)
 	}

@@ -184,7 +184,7 @@ func (c *realClowder) readCat(category string, movieCat bool, grumpyRoot string)
 	return a.Format()
 }
 
-func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) (plugins.Status, error) {
 	return handle(
 		pc.GitHubClient,
 		pc.Logger,
@@ -194,20 +194,21 @@ func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error 
 	)
 }
 
-func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, c clowder, setKey func()) error {
+func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, c clowder, setKey func()) (plugins.Status, error) {
+	var status plugins.Status
 	// Only consider new comments.
 	if e.Action != github.GenericCommentActionCreated {
-		return nil
+		return status, nil
 	}
 	// Make sure they are requesting a cat
 	mat := match.FindStringSubmatch(e.Body)
 	if mat == nil {
-		return nil
+		return status, nil
 	}
 
 	category, movieCat, err := parseMatch(mat)
 	if err != nil {
-		return err
+		return status, err
 	}
 
 	// Now that we know this is a relevant event we can set the key.
@@ -217,13 +218,14 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, c
 	repo := e.Repo.Name
 	number := e.Number
 
+	status.TookAction()
 	for i := 0; i < 3; i++ {
 		resp, err := c.readCat(category, movieCat, defaultGrumpyRoot)
 		if err != nil {
 			log.WithError(err).Error("Failed to get cat img")
 			continue
 		}
-		return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, resp))
+		return status, gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, resp))
 	}
 
 	var msg string
@@ -235,8 +237,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, c
 	if err := gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg)); err != nil {
 		log.WithError(err).Error("Failed to leave comment")
 	}
-
-	return errors.New("could not find a valid cat image")
+	return status, errors.New("could not find a valid cat image")
 }
 
 func parseMatch(mat []string) (string, bool, error) {

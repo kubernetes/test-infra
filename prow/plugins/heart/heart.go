@@ -97,7 +97,7 @@ func handleIssueComment(pc plugins.Agent, ic github.IssueCommentEvent) error {
 	return handleIC(getClient(pc), pc.PluginConfig.Heart.Adorees, pc.PluginConfig.Heart.CommentRe, ic)
 }
 
-func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) (plugins.Status, error) {
 	return handlePR(getClient(pc), pre, pc.PluginConfig.OwnersFilenames)
 }
 
@@ -129,18 +129,20 @@ func handleIC(c client, adorees []string, commentRe *regexp.Regexp, ic github.Is
 		reactions[rand.Intn(len(reactions))])
 }
 
-func handlePR(c client, pre github.PullRequestEvent, resolver ownersconfig.Resolver) error {
+func handlePR(c client, pre github.PullRequestEvent, resolver ownersconfig.Resolver) (plugins.Status, error) {
+	var status plugins.Status
 	// Only consider newly opened PRs
 	if pre.Action != github.PullRequestActionOpened {
-		return nil
+		return status, nil
 	}
 
 	org := pre.PullRequest.Base.Repo.Owner.Login
 	repo := pre.PullRequest.Base.Repo.Name
 
 	changes, err := c.GitHubClient.GetPullRequestChanges(org, repo, pre.PullRequest.Number)
+	status.TookAction()
 	if err != nil {
-		return err
+		return status, err
 	}
 
 	// Smile at any change that adds to OWNERS files
@@ -149,7 +151,7 @@ func handlePR(c client, pre github.PullRequestEvent, resolver ownersconfig.Resol
 		filenames := resolver(org, repo)
 		if (filename == filenames.Owners || filename == filenames.OwnersAliases) && change.Additions > 0 {
 			c.Logger.Info("Adding new OWNERS makes me happy!")
-			return c.GitHubClient.CreateIssueReaction(
+			return status, c.GitHubClient.CreateIssueReaction(
 				pre.PullRequest.Base.Repo.Owner.Login,
 				pre.PullRequest.Base.Repo.Name,
 				pre.Number,
@@ -157,5 +159,5 @@ func handlePR(c client, pre github.PullRequestEvent, resolver ownersconfig.Resol
 		}
 	}
 
-	return nil
+	return status, nil
 }

@@ -251,7 +251,7 @@ func TestHandle(t *testing.T) {
 		t.Logf("Running test case %q...", tc.name)
 		log := logrus.WithField("plugin", "require-matching-label")
 		fghc := newFakeGitHub(tc.initialLabels...)
-		if err := handle(log, fghc, &fakePruner{}, configs, tc.event); err != nil {
+		if _, err := handle(log, fghc, &fakePruner{}, configs, tc.event); err != nil {
 			t.Fatalf("Unexpected error from handle: %v.", err)
 		}
 

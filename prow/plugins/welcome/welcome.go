@@ -99,20 +99,21 @@ func getClient(pc plugins.Agent) client {
 	}
 }
 
-func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) (plugins.Status, error) {
 	t := pc.PluginConfig.TriggerFor(pre.PullRequest.Base.Repo.Owner.Login, pre.PullRequest.Base.Repo.Name)
 	return handlePR(getClient(pc), t, pre, welcomeMessageForRepo(pc.PluginConfig, pre.Repo.Owner.Login, pre.Repo.Name))
 }
 
-func handlePR(c client, t plugins.Trigger, pre github.PullRequestEvent, welcomeTemplate string) error {
+func handlePR(c client, t plugins.Trigger, pre github.PullRequestEvent, welcomeTemplate string) (plugins.Status, error) {
+	var status plugins.Status
 	// Only consider newly opened PRs
 	if pre.Action != github.PullRequestActionOpened {
-		return nil
+		return status, nil
 	}
 
 	// ignore bots, we can't query their PRs
 	if pre.PullRequest.User.Type != github.UserTypeUser {
-		return nil
+		return status, nil
 	}
 
 	org := pre.PullRequest.Base.Repo.Owner.Login
@@ -120,18 +121,19 @@ func handlePR(c client, t plugins.Trigger, pre github.PullRequestEvent, welcomeT
 	user := pre.PullRequest.User.Login
 
 	trustedResponse, err := trigger.TrustedUser(c.GitHubClient, t.OnlyOrgMembers, t.TrustedApps, t.TrustedOrg, user, org, repo)
+	status.TookAction()
 	if err != nil {
-		return fmt.Errorf("check if user %s is trusted: %w", user, err)
+		return status, fmt.Errorf("check if user %s is trusted: %w", user, err)
 	}
 	if trustedResponse.IsTrusted {
-		return nil
+		return status, nil
 	}
 
 	// search for PRs from the author in this repo
 	query := fmt.Sprintf("is:pr repo:%s/%s author:%s", org, repo, user)
 	issues, err := c.GitHubClient.FindIssues(query, "", false)
 	if err != nil {
-		return err
+		return status, err
 	}
 
 	// if there are no results, this is the first! post the welcome comment
@@ -139,7 +141,7 @@ func handlePR(c client, t plugins.Trigger, pre github.PullRequestEvent, welcomeT
 		// load the template, and run it over the PR info
 		parsedTemplate, err := template.New("welcome").Parse(welcomeTemplate)
 		if err != nil {
-			return err
+			return status, err
 		}
 		var msgBuffer bytes.Buffer
 		err = parsedTemplate.Execute(&msgBuffer, PRInfo{
@@ -149,14 +151,14 @@ func handlePR(c client, t plugins.Trigger, pre github.PullRequestEvent, welcomeT
 			AuthorName:  pre.PullRequest.User.Name,
 		})
 		if err != nil {
-			return err
+			return status, err
 		}
 
 		// actually post the comment
-		return c.GitHubClient.CreateComment(org, repo, pre.PullRequest.Number, msgBuffer.String())
+		return status, c.GitHubClient.CreateComment(org, repo, pre.PullRequest.Number, msgBuffer.String())
 	}
 
-	return nil
+	return status, nil
 }
 
 func welcomeMessageForRepo(config *plugins.Configuration, org, repo string) string {

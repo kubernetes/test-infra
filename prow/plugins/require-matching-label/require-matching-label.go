@@ -146,12 +146,14 @@ func handleIssue(pc plugins.Agent, ie github.IssueEvent) error {
 	if err != nil {
 		return err
 	}
-	return handle(pc.Logger, pc.GitHubClient, cp, pc.PluginConfig.RequireMatchingLabel, e)
+	_, err = handle(pc.Logger, pc.GitHubClient, cp, pc.PluginConfig.RequireMatchingLabel, e)
+	return err
 }
 
-func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) (plugins.Status, error) {
+	var status plugins.Status
 	if !handlePRActions[pre.Action] {
-		return nil
+		return status, nil
 	}
 	e := &event{
 		org:    pre.Repo.Owner.Login,
@@ -163,7 +165,7 @@ func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
 	}
 	cp, err := pc.CommentPruner()
 	if err != nil {
-		return err
+		return status, err
 	}
 	return handle(pc.Logger, pc.GitHubClient, cp, pc.PluginConfig.RequireMatchingLabel, e)
 }
@@ -194,11 +196,12 @@ func matchingConfigs(org, repo, branch, label string, allConfigs []plugins.Requi
 	return filtered
 }
 
-func handle(log *logrus.Entry, ghc githubClient, cp commentPruner, configs []plugins.RequireMatchingLabel, e *event) error {
+func handle(log *logrus.Entry, ghc githubClient, cp commentPruner, configs []plugins.RequireMatchingLabel, e *event) (plugins.Status, error) {
+	var status plugins.Status
 	// Find any configs that may be relevant to this event.
 	matchConfigs := matchingConfigs(e.org, e.repo, e.branch, e.label, configs)
 	if len(matchConfigs) == 0 {
-		return nil
+		return status, nil
 	}
 
 	if e.label == "" /* not a label event */ {
@@ -218,8 +221,9 @@ func handle(log *logrus.Entry, ghc githubClient, cp commentPruner, configs []plu
 	if e.currentLabels == nil {
 		var err error
 		e.currentLabels, err = ghc.GetIssueLabels(e.org, e.repo, e.number)
+		status.TookAction()
 		if err != nil {
-			return fmt.Errorf("error getting the issue or pr's labels: %w", err)
+			return status, fmt.Errorf("error getting the issue or pr's labels: %w", err)
 		}
 	}
 
@@ -233,7 +237,10 @@ func handle(log *logrus.Entry, ghc githubClient, cp commentPruner, configs []plu
 		}
 
 		if hasMatchingLabel && hasMissingLabel {
-			if err := ghc.RemoveLabel(e.org, e.repo, e.number, cfg.MissingLabel); err != nil {
+			status.TookAction()
+			err := ghc.RemoveLabel(e.org, e.repo, e.number, cfg.MissingLabel)
+			status.TookAction()
+			if err != nil {
 				log.WithError(err).Errorf("Failed to remove %q label.", cfg.MissingLabel)
 			}
 			if cfg.MissingComment != "" {
@@ -242,7 +249,9 @@ func handle(log *logrus.Entry, ghc githubClient, cp commentPruner, configs []plu
 				})
 			}
 		} else if !hasMatchingLabel && !hasMissingLabel {
-			if err := ghc.AddLabel(e.org, e.repo, e.number, cfg.MissingLabel); err != nil {
+			err := ghc.AddLabel(e.org, e.repo, e.number, cfg.MissingLabel)
+			status.TookAction()
+			if err != nil {
 				log.WithError(err).Errorf("Failed to add %q label.", cfg.MissingLabel)
 			}
 			if cfg.MissingComment != "" {
@@ -254,28 +263,28 @@ func handle(log *logrus.Entry, ghc githubClient, cp commentPruner, configs []plu
 		}
 
 	}
-	return nil
+	return status, nil
 }
 
-func handleCommentEvent(pc plugins.Agent, ce github.GenericCommentEvent) error {
+func handleCommentEvent(pc plugins.Agent, ce github.GenericCommentEvent) (plugins.Status, error) {
 	// Only consider open PRs and new comments.
 	if ce.IssueState != "open" || ce.Action != github.GenericCommentActionCreated {
-		return nil
+		return plugins.Status{}, nil
 	}
 	// Only consider "/check-required-labels" comments.
 	if !checkRequireLabelsRe.MatchString(ce.Body) {
-		return nil
+		return plugins.Status{}, nil
 	}
 
 	cp, err := pc.CommentPruner()
 	if err != nil {
-		return err
+		return plugins.Status{}, err
 	}
 
 	return handleComment(pc.Logger, pc.GitHubClient, cp, pc.PluginConfig.RequireMatchingLabel, &ce)
 }
 
-func handleComment(log *logrus.Entry, ghc githubClient, cp commentPruner, configs []plugins.RequireMatchingLabel, e *github.GenericCommentEvent) error {
+func handleComment(log *logrus.Entry, ghc githubClient, cp commentPruner, configs []plugins.RequireMatchingLabel, e *github.GenericCommentEvent) (plugins.Status, error) {
 	org := e.Repo.Owner.Login
 	repo := e.Repo.Name
 	number := e.Number
@@ -287,9 +296,11 @@ func handleComment(log *logrus.Entry, ghc githubClient, cp commentPruner, config
 		author: e.User.Login,
 	}
 	if e.IsPR {
+		var status plugins.Status
 		pr, err := ghc.GetPullRequest(org, repo, number)
+		status.TookAction()
 		if err != nil {
-			return err
+			return status, err
 		}
 		event.branch = pr.Base.Ref
 	}

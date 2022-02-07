@@ -70,7 +70,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []prowconfig.OrgRe
 	}, err
 }
 
-func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) (plugins.Status, error) {
 	return handle(pc.GitHubClient, pc.Logger, pc.PluginConfig.BranchCleaner, pre)
 }
 
@@ -78,28 +78,31 @@ type githubClient interface {
 	DeleteRef(owner, repo, ref string) error
 }
 
-func handle(gc githubClient, log *logrus.Entry, config plugins.BranchCleaner, pre github.PullRequestEvent) error {
+func handle(gc githubClient, log *logrus.Entry, config plugins.BranchCleaner, pre github.PullRequestEvent) (plugins.Status, error) {
+	var status plugins.Status
 	// Only consider closed PRs that got merged
 	if pre.Action != github.PullRequestActionClosed || !pre.PullRequest.Merged {
-		return nil
+		return status, nil
 	}
 
 	pr := pre.PullRequest
 
 	// Only consider PRs from the same repo
 	if pr.Base.Repo.FullName != pr.Head.Repo.FullName {
-		return nil
+		return status, nil
 	}
 
 	// skip preserved branches
 	if config.IsPreservedBranch(pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Head.Ref) {
-		return nil
+		return status, nil
 	}
 
-	if err := gc.DeleteRef(pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, fmt.Sprintf("heads/%s", pr.Head.Ref)); err != nil {
-		return fmt.Errorf("failed to delete branch %s on repo %s/%s after Pull Request #%d got merged: %w",
+	err := gc.DeleteRef(pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, fmt.Sprintf("heads/%s", pr.Head.Ref))
+	status.TookAction()
+	if err != nil {
+		return status, fmt.Errorf("failed to delete branch %s on repo %s/%s after Pull Request #%d got merged: %w",
 			pr.Head.Ref, pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pre.PullRequest.Number, err)
 	}
 
-	return nil
+	return status, nil
 }

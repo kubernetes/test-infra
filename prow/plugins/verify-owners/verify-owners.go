@@ -130,14 +130,15 @@ type info struct {
 	number       int
 }
 
-func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) (plugins.Status, error) {
+	var status plugins.Status
 	if pre.Action != github.PullRequestActionOpened && pre.Action != github.PullRequestActionReopened && pre.Action != github.PullRequestActionSynchronize {
-		return nil
+		return status, nil
 	}
 
 	cp, err := pc.CommentPruner()
 	if err != nil {
-		return err
+		return status, err
 	}
 
 	var skipTrustedUserCheck bool
@@ -155,13 +156,15 @@ func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
 		number:       pre.Number,
 	}
 
-	return handle(pc.GitHubClient, pc.GitClient, pc.OwnersClient, pc.Logger, &pre.PullRequest, prInfo, pc.PluginConfig.Owners.LabelsDenyList, pc.PluginConfig.TriggerFor(pre.Repo.Owner.Login, pre.Repo.Name), skipTrustedUserCheck, cp, pc.PluginConfig.OwnersFilenames)
+	err = handle(pc.GitHubClient, pc.GitClient, pc.OwnersClient, pc.Logger, &pre.PullRequest, prInfo, pc.PluginConfig.Owners.LabelsDenyList, pc.PluginConfig.TriggerFor(pre.Repo.Owner.Login, pre.Repo.Name), skipTrustedUserCheck, cp, pc.PluginConfig.OwnersFilenames)
+	status.TookAction()
+	return status, err
 }
 
-func handleGenericCommentEvent(pc plugins.Agent, e github.GenericCommentEvent) error {
+func handleGenericCommentEvent(pc plugins.Agent, e github.GenericCommentEvent) (plugins.Status, error) {
 	cp, err := pc.CommentPruner()
 	if err != nil {
-		return err
+		return plugins.Status{}, err
 	}
 
 	var skipTrustedUserCheck bool
@@ -175,14 +178,15 @@ func handleGenericCommentEvent(pc plugins.Agent, e github.GenericCommentEvent) e
 	return handleGenericComment(pc.GitHubClient, pc.GitClient, pc.OwnersClient, pc.Logger, &e, pc.PluginConfig.Owners.LabelsDenyList, pc.PluginConfig.TriggerFor(e.Repo.Owner.Login, e.Repo.Name), skipTrustedUserCheck, cp, pc.PluginConfig.OwnersFilenames)
 }
 
-func handleGenericComment(ghc githubClient, gc git.ClientFactory, roc repoownersClient, log *logrus.Entry, ce *github.GenericCommentEvent, bannedLabels []string, triggerConfig plugins.Trigger, skipTrustedUserCheck bool, cp commentPruner, resolver ownersconfig.Resolver) error {
+func handleGenericComment(ghc githubClient, gc git.ClientFactory, roc repoownersClient, log *logrus.Entry, ce *github.GenericCommentEvent, bannedLabels []string, triggerConfig plugins.Trigger, skipTrustedUserCheck bool, cp commentPruner, resolver ownersconfig.Resolver) (plugins.Status, error) {
+	var status plugins.Status
 	// Only consider open PRs and new comments.
 	if ce.IssueState != "open" || !ce.IsPR || ce.Action != github.GenericCommentActionCreated {
-		return nil
+		return status, nil
 	}
 
 	if !verifyOwnersRe.MatchString(ce.Body) {
-		return nil
+		return status, nil
 	}
 
 	prInfo := info{
@@ -193,11 +197,12 @@ func handleGenericComment(ghc githubClient, gc git.ClientFactory, roc repoowners
 	}
 
 	pr, err := ghc.GetPullRequest(ce.Repo.Owner.Login, ce.Repo.Name, ce.Number)
+	status.TookAction()
 	if err != nil {
-		return err
+		return status, err
 	}
 
-	return handle(ghc, gc, roc, log, pr, prInfo, bannedLabels, triggerConfig, skipTrustedUserCheck, cp, resolver)
+	return status, handle(ghc, gc, roc, log, pr, prInfo, bannedLabels, triggerConfig, skipTrustedUserCheck, cp, resolver)
 }
 
 type messageWithLine struct {

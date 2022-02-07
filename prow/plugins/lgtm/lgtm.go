@@ -62,7 +62,7 @@ type commentPruner interface {
 
 func init() {
 	plugins.RegisterGenericCommentHandler(PluginName, handleGenericCommentEvent, helpProvider)
-	plugins.RegisterPullRequestHandler(PluginName, func(pc plugins.Agent, pe github.PullRequestEvent) error {
+	plugins.RegisterPullRequestHandler(PluginName, func(pc plugins.Agent, pe github.PullRequestEvent) (plugins.Status, error) {
 		return handlePullRequestEvent(pc, pe)
 	}, helpProvider)
 	plugins.RegisterReviewEventHandler(PluginName, handlePullRequestReviewEvent, helpProvider)
@@ -147,15 +147,15 @@ type reviewCtx struct {
 	number                             int
 }
 
-func handleGenericCommentEvent(pc plugins.Agent, e github.GenericCommentEvent) error {
+func handleGenericCommentEvent(pc plugins.Agent, e github.GenericCommentEvent) (plugins.Status, error) {
 	cp, err := pc.CommentPruner()
 	if err != nil {
-		return err
+		return plugins.Status{}, err
 	}
 	return handleGenericComment(pc.GitHubClient, pc.PluginConfig, pc.OwnersClient, pc.Logger, cp, e)
 }
 
-func handlePullRequestEvent(pc plugins.Agent, pre github.PullRequestEvent) error {
+func handlePullRequestEvent(pc plugins.Agent, pre github.PullRequestEvent) (plugins.Status, error) {
 	return handlePullRequest(
 		pc.Logger,
 		pc.GitHubClient,
@@ -164,20 +164,21 @@ func handlePullRequestEvent(pc plugins.Agent, pre github.PullRequestEvent) error
 	)
 }
 
-func handlePullRequestReviewEvent(pc plugins.Agent, e github.ReviewEvent) error {
+func handlePullRequestReviewEvent(pc plugins.Agent, e github.ReviewEvent) (plugins.Status, error) {
 	// If ReviewActsAsLgtm is disabled, ignore review event.
 	opts := pc.PluginConfig.LgtmFor(e.Repo.Owner.Login, e.Repo.Name)
 	if !opts.ReviewActsAsLgtm {
-		return nil
+		return plugins.Status{}, nil
 	}
 	cp, err := pc.CommentPruner()
 	if err != nil {
-		return err
+		return plugins.Status{}, err
 	}
 	return handlePullRequestReview(pc.GitHubClient, pc.PluginConfig, pc.OwnersClient, pc.Logger, cp, e)
 }
 
-func handleGenericComment(gc githubClient, config *plugins.Configuration, ownersClient repoowners.Interface, log *logrus.Entry, cp commentPruner, e github.GenericCommentEvent) error {
+func handleGenericComment(gc githubClient, config *plugins.Configuration, ownersClient repoowners.Interface, log *logrus.Entry, cp commentPruner, e github.GenericCommentEvent) (plugins.Status, error) {
+	var status plugins.Status
 	rc := reviewCtx{
 		author:      e.User.Login,
 		issueAuthor: e.IssueAuthor.Login,
@@ -190,7 +191,7 @@ func handleGenericComment(gc githubClient, config *plugins.Configuration, owners
 
 	// Only consider open PRs and new comments.
 	if !e.IsPR || e.IssueState != "open" || e.Action != github.GenericCommentActionCreated {
-		return nil
+		return status, nil
 	}
 
 	// If we create an "/lgtm" comment, add lgtm if necessary.
@@ -201,14 +202,17 @@ func handleGenericComment(gc githubClient, config *plugins.Configuration, owners
 	} else if LGTMCancelRe.MatchString(rc.body) {
 		wantLGTM = false
 	} else {
-		return nil
+		return status, nil
 	}
 
 	// use common handler to do the rest
-	return handle(wantLGTM, config, ownersClient, rc, gc, log, cp)
+	err := handle(wantLGTM, config, ownersClient, rc, gc, log, cp)
+	status.TookAction()
+	return status, err
 }
 
-func handlePullRequestReview(gc githubClient, config *plugins.Configuration, ownersClient repoowners.Interface, log *logrus.Entry, cp commentPruner, e github.ReviewEvent) error {
+func handlePullRequestReview(gc githubClient, config *plugins.Configuration, ownersClient repoowners.Interface, log *logrus.Entry, cp commentPruner, e github.ReviewEvent) (plugins.Status, error) {
+	var status plugins.Status
 	rc := reviewCtx{
 		author:      e.Review.User.Login,
 		issueAuthor: e.PullRequest.User.Login,
@@ -221,13 +225,13 @@ func handlePullRequestReview(gc githubClient, config *plugins.Configuration, own
 
 	// Only react to reviews that are being submitted (not editted or dismissed).
 	if e.Action != github.ReviewActionSubmitted {
-		return nil
+		return status, nil
 	}
 
 	// If the review event body contains an '/lgtm' or '/lgtm cancel' comment,
 	// skip handling the review event
 	if LGTMRe.MatchString(rc.body) || LGTMCancelRe.MatchString(rc.body) {
-		return nil
+		return status, nil
 	}
 
 	// The review webhook returns state as lowercase, while the review API
@@ -243,11 +247,13 @@ func handlePullRequestReview(gc githubClient, config *plugins.Configuration, own
 	} else if reviewState == github.ReviewStateChangesRequested {
 		wantLGTM = false
 	} else {
-		return nil
+		return status, nil
 	}
 
 	// use common handler to do the rest
-	return handle(wantLGTM, config, ownersClient, rc, gc, log, cp)
+	err := handle(wantLGTM, config, ownersClient, rc, gc, log, cp)
+	status.TookAction()
+	return status, err
 }
 
 func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowners.Interface, rc reviewCtx, gc githubClient, log *logrus.Entry, cp commentPruner) error {
@@ -398,13 +404,14 @@ func stickyLgtm(log *logrus.Entry, gc githubClient, _ *plugins.Configuration, lg
 	return false
 }
 
-func handlePullRequest(log *logrus.Entry, gc githubClient, config *plugins.Configuration, pe *github.PullRequestEvent) error {
+func handlePullRequest(log *logrus.Entry, gc githubClient, config *plugins.Configuration, pe *github.PullRequestEvent) (plugins.Status, error) {
+	var status plugins.Status
 	if pe.PullRequest.Merged {
-		return nil
+		return status, nil
 	}
 
 	if pe.Action != github.PullRequestActionSynchronize {
-		return nil
+		return status, nil
 	}
 
 	org := pe.PullRequest.Base.Repo.Owner.Login
@@ -412,9 +419,10 @@ func handlePullRequest(log *logrus.Entry, gc githubClient, config *plugins.Confi
 	number := pe.PullRequest.Number
 
 	opts := config.LgtmFor(org, repo)
+	status.TookAction()
 	if stickyLgtm(log, gc, config, opts, pe.PullRequest.User.Login, org, repo) {
 		// If the author is trusted, skip tree hash verification and LGTM removal.
-		return nil
+		return status, nil
 	}
 
 	// If we don't have the lgtm label, we don't need to check anything
@@ -423,7 +431,7 @@ func handlePullRequest(log *logrus.Entry, gc githubClient, config *plugins.Confi
 		log.WithError(err).Error("Failed to get labels.")
 	}
 	if !github.HasLabel(LGTMLabel, labels) {
-		return nil
+		return status, nil
 	}
 
 	if opts.StoreTreeHash {
@@ -431,7 +439,7 @@ func handlePullRequest(log *logrus.Entry, gc githubClient, config *plugins.Confi
 		var lastLgtmTreeHash string
 		botUserChecker, err := gc.BotUserChecker()
 		if err != nil {
-			return err
+			return status, err
 		}
 		comments, err := gc.ListIssueComments(org, repo, number)
 		if err != nil {
@@ -457,19 +465,19 @@ func handlePullRequest(log *logrus.Entry, gc githubClient, config *plugins.Confi
 			if treeHash == lastLgtmTreeHash {
 				// Don't remove the label, PR code hasn't changed
 				log.Infof("Keeping LGTM label as the tree-hash remained the same: %s", treeHash)
-				return nil
+				return status, nil
 			}
 		}
 	}
 
 	if err := removeLGTMAndRequestReview(gc, org, repo, number, getLogins(pe.PullRequest.Assignees), opts.StoreTreeHash); err != nil {
-		return fmt.Errorf("failed removing lgtm label: %w", err)
+		return status, fmt.Errorf("failed removing lgtm label: %w", err)
 	}
 
 	// Create a comment to inform participants that LGTM label is removed due to new
 	// pull request changes.
 	log.Infof("Commenting with an LGTM removed notification to %s/%s#%d with a message: %s", org, repo, number, removeLGTMLabelNoti)
-	return gc.CreateComment(org, repo, number, removeLGTMLabelNoti)
+	return status, gc.CreateComment(org, repo, number, removeLGTMLabelNoti)
 }
 
 func removeLGTMAndRequestReview(gc githubClient, org, repo string, number int, logins []string, storeTreeHash bool) error {

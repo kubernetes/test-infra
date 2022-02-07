@@ -237,7 +237,7 @@ func TestHandlePullRequest(t *testing.T) {
 			if tc.hasInvalidCommitMessageLabel {
 				fc.IssueLabelsAdded = append(fc.IssueLabelsAdded, fmt.Sprintf("k/k#3:%s", invalidCommitMsgLabel))
 			}
-			if err := handle(fc, logrus.WithField("plugin", pluginName), event, &fakePruner{}); err != nil {
+			if _, err := handle(fc, logrus.WithField("plugin", pluginName), event, &fakePruner{}); err != nil {
 				t.Errorf("For case %s, didn't expect error from invalidcommitmsg plugin: %v", tc.name, err)
 			}
 

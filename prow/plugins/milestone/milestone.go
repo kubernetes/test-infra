@@ -83,7 +83,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []prowconfig.OrgRe
 	return pluginHelp, nil
 }
 
-func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) (plugins.Status, error) {
 	return handle(pc.GitHubClient, pc.Logger, &e, pc.PluginConfig.RepoMilestone)
 }
 
@@ -94,14 +94,15 @@ func BuildMilestoneMap(milestones []github.Milestone) map[string]int {
 	}
 	return m
 }
-func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, repoMilestone map[string]plugins.Milestone) error {
+func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, repoMilestone map[string]plugins.Milestone) (plugins.Status, error) {
+	var status plugins.Status
 	if e.Action != github.GenericCommentActionCreated {
-		return nil
+		return status, nil
 	}
 
 	milestoneMatch := milestoneRegex.FindStringSubmatch(e.Body)
 	if len(milestoneMatch) != 2 {
-		return nil
+		return status, nil
 	}
 
 	org := e.Repo.Owner.Login
@@ -114,8 +115,9 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, r
 	}
 
 	milestoneMaintainers, err := gc.ListTeamMembers(org, milestone.MaintainersID, github.RoleAll)
+	status.TookAction()
 	if err != nil {
-		return err
+		return status, err
 	}
 	found := false
 	for _, person := range milestoneMaintainers {
@@ -128,13 +130,13 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, r
 	if !found {
 		// not in the milestone maintainers team
 		msg := fmt.Sprintf(mustBeAuthorized, org, milestone.MaintainersTeam, org, milestone.MaintainersTeam, milestone.MaintainersFriendlyName)
-		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
+		return status, gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
 	}
 
 	milestones, err := gc.ListMilestones(org, repo)
 	if err != nil {
 		log.WithError(err).Errorf("Error listing the milestones in the %s/%s repo", org, repo)
-		return err
+		return status, err
 	}
 	proposedMilestone := milestoneMatch[1]
 
@@ -143,7 +145,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, r
 		if err := gc.ClearMilestone(org, repo, e.Number); err != nil {
 			log.WithError(err).Errorf("Error clearing the milestone for %s/%s#%d.", org, repo, e.Number)
 		}
-		return nil
+		return status, nil
 	}
 
 	milestoneMap := BuildMilestoneMap(milestones)
@@ -156,12 +158,12 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, r
 		sort.Strings(slice)
 
 		msg := fmt.Sprintf(invalidMilestone, strings.Join(slice, ", "), clearKeyword)
-		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
+		return status, gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
 	}
 
 	if err := gc.SetMilestone(org, repo, e.Number, milestoneNumber); err != nil {
 		log.WithError(err).Errorf("Error adding the milestone %s to %s/%s#%d.", proposedMilestone, org, repo, e.Number)
 	}
 
-	return nil
+	return status, nil
 }

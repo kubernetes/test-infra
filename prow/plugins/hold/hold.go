@@ -70,7 +70,7 @@ type githubClient interface {
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
 }
 
-func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) (plugins.Status, error) {
 	hasLabel := func(label string, labels []github.Label) bool {
 		return github.HasLabel(label, labels)
 	}
@@ -80,12 +80,13 @@ func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error 
 // handle drives the pull request to the desired state. If any user adds
 // a /hold directive, we want to add a label if one does not already exist.
 // If they add /hold cancel, we want to remove the label if it exists.
-func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, f hasLabelFunc) error {
+func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, f hasLabelFunc) (plugins.Status, error) {
+	var status plugins.Status
 	if !e.IsPR {
-		return nil
+		return status, nil
 	}
 	if e.Action != github.GenericCommentActionCreated {
-		return nil
+		return status, nil
 	}
 	needsLabel := false
 	if labelCancelRe.MatchString(e.Body) {
@@ -93,23 +94,24 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, f
 	} else if labelRe.MatchString(e.Body) {
 		needsLabel = true
 	} else {
-		return nil
+		return status, nil
 	}
 
 	org := e.Repo.Owner.Login
 	repo := e.Repo.Name
 	issueLabels, err := gc.GetIssueLabels(org, repo, e.Number)
+	status.TookAction()
 	if err != nil {
-		return fmt.Errorf("failed to get the labels on %s/%s#%d: %w", org, repo, e.Number, err)
+		return status, fmt.Errorf("failed to get the labels on %s/%s#%d: %w", org, repo, e.Number, err)
 	}
 
 	hasLabel := f(labels.Hold, issueLabels)
 	if hasLabel && !needsLabel {
 		log.Infof("Removing %q Label for %s/%s#%d", labels.Hold, org, repo, e.Number)
-		return gc.RemoveLabel(org, repo, e.Number, labels.Hold)
+		return status, gc.RemoveLabel(org, repo, e.Number, labels.Hold)
 	} else if !hasLabel && needsLabel {
 		log.Infof("Adding %q Label for %s/%s#%d", labels.Hold, org, repo, e.Number)
-		return gc.AddLabel(org, repo, e.Number, labels.Hold)
+		return status, gc.AddLabel(org, repo, e.Number, labels.Hold)
 	}
-	return nil
+	return status, nil
 }

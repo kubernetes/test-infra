@@ -371,7 +371,7 @@ func TestHandle(t *testing.T) {
 			Repo:   github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 			Number: 1,
 		}
-		if err := handle(fakeClient, logrus.WithField("plugin", PluginName), tc.config, &fakePruner{}, calcF, pre); err != nil {
+		if _, err := handle(fakeClient, logrus.WithField("plugin", PluginName), tc.config, &fakePruner{}, calcF, pre); err != nil {
 			t.Errorf("[%s] Unexpected error from handle: %v.", tc.name, err)
 			continue
 		}

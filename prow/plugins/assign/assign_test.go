@@ -23,6 +23,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/plugins"
 )
 
 type fakeClient struct {
@@ -389,17 +390,18 @@ func TestAssignAndReview(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		fc := newFakeClient([]string{"hello-world", "allow_underscore", "cjwagner", "merlin", "kubernetes/sig-testing-misc"})
+		var status plugins.Status
 		e := github.GenericCommentEvent{
 			Body:   tc.body,
 			User:   github.User{Login: tc.commenter},
 			Repo:   github.Repo{Name: "repo", Owner: github.User{Login: "org"}},
 			Number: 5,
 		}
-		if err := handle(newAssignHandler(e, fc, logrus.WithField("plugin", pluginName))); err != nil {
+		if err := handle(newAssignHandler(e, fc, logrus.WithField("plugin", pluginName)), &status); err != nil {
 			t.Errorf("For case %s, didn't expect error from handle: %v", tc.name, err)
 			continue
 		}
-		if err := handle(newReviewHandler(e, fc, logrus.WithField("plugin", pluginName))); err != nil {
+		if err := handle(newReviewHandler(e, fc, logrus.WithField("plugin", pluginName)), &status); err != nil {
 			t.Errorf("For case %s, didn't expect error from handle: %v", tc.name, err)
 			continue
 		}

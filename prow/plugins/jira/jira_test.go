@@ -351,8 +351,8 @@ func TestHandle(t *testing.T) {
 				getIssueError:  tc.getIssueClientError,
 			}
 			githubClient := &fakeGitHubClient{}
-
-			if err := handleWithProjectCache(jiraClient, githubClient, tc.cfg, logrus.NewEntry(logrus.New()), &tc.event, tc.projectCache); err != nil {
+			var status plugins.Status
+			if err := handleWithProjectCache(jiraClient, githubClient, tc.cfg, logrus.NewEntry(logrus.New()), &tc.event, tc.projectCache, &status); err != nil {
 				t.Fatalf("handle failed: %v", err)
 			}
 

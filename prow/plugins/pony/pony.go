@@ -118,19 +118,20 @@ func (h realHerd) readPony(tags string) (string, error) {
 	return formatURLs(a.Pony.Representations.Small, a.Pony.Representations.Full), nil
 }
 
-func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) (plugins.Status, error) {
 	return handle(pc.GitHubClient, pc.Logger, &e, ponyURL)
 }
 
-func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p herd) error {
+func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p herd) (plugins.Status, error) {
+	var status plugins.Status
 	// Only consider new comments.
 	if e.Action != github.GenericCommentActionCreated {
-		return nil
+		return status, nil
 	}
 	// Make sure they are requesting a pony and don't allow requesting more than 'maxPonies' defined.
 	mat := match.FindAllStringSubmatch(e.Body, maxPonies)
 	if mat == nil {
-		return nil
+		return status, nil
 	}
 
 	org := e.Repo.Owner.Login
@@ -153,8 +154,10 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 			break
 		}
 	}
+
+	status.TookAction()
 	if respBuilder.Len() > 0 {
-		return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, respBuilder.String()))
+		return status, gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, respBuilder.String()))
 	}
 
 	var msg string
@@ -167,5 +170,5 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 		log.WithError(err).Error("Failed to leave comment")
 	}
 
-	return errors.New("could not find a valid pony image")
+	return status, errors.New("could not find a valid pony image")
 }

@@ -71,7 +71,7 @@ type githubClient interface {
 	ListPullRequestComments(org, repo string, number int) ([]github.ReviewComment, error)
 }
 
-func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) (plugins.Status, error) {
 	return handle(pc.GitHubClient, pc.GitClient, pc.Logger, &e)
 }
 
@@ -132,30 +132,32 @@ func problemsInFiles(r git.RepoClient, files map[string]string) (map[string]bool
 	return problems, nil
 }
 
-func handle(ghc githubClient, gc git.ClientFactory, log *logrus.Entry, e *github.GenericCommentEvent) error {
+func handle(ghc githubClient, gc git.ClientFactory, log *logrus.Entry, e *github.GenericCommentEvent) (plugins.Status, error) {
+	var status plugins.Status
 	// Only handle open PRs and new requests.
 	if e.IssueState != "open" || !e.IsPR || e.Action != github.GenericCommentActionCreated {
-		return nil
+		return status, nil
 	}
 	if !buildifyRe.MatchString(e.Body) {
-		return nil
+		return status, nil
 	}
 
 	org := e.Repo.Owner.Login
 	repo := e.Repo.Name
 
 	pr, err := ghc.GetPullRequest(org, repo, e.Number)
+	status.TookAction()
 	if err != nil {
-		return err
+		return status, err
 	}
 
 	// List modified files.
 	modifiedFiles, err := modifiedBazelFiles(ghc, org, repo, pr.Number, pr.Head.SHA)
 	if err != nil {
-		return err
+		return status, err
 	}
 	if len(modifiedFiles) == 0 {
-		return nil
+		return status, nil
 	}
 	log.Infof("Will buildify %d modified Bazel files.", len(modifiedFiles))
 
@@ -163,7 +165,7 @@ func handle(ghc githubClient, gc git.ClientFactory, log *logrus.Entry, e *github
 	startClone := time.Now()
 	r, err := gc.ClientFor(org, repo)
 	if err != nil {
-		return err
+		return status, err
 	}
 	defer func() {
 		if err := r.Clean(); err != nil {
@@ -171,7 +173,7 @@ func handle(ghc githubClient, gc git.ClientFactory, log *logrus.Entry, e *github
 		}
 	}()
 	if err := r.CheckoutPullRequest(e.Number); err != nil {
-		return err
+		return status, err
 	}
 	finishClone := time.Now()
 	log.WithField("duration", time.Since(startClone)).Info("Cloned and checked out PR.")
@@ -179,7 +181,7 @@ func handle(ghc githubClient, gc git.ClientFactory, log *logrus.Entry, e *github
 	// Compute buildifier errors.
 	problems, err := problemsInFiles(r, modifiedFiles)
 	if err != nil {
-		return err
+		return status, err
 	}
 	log.WithField("duration", time.Since(finishClone)).Info("Buildified.")
 
@@ -208,7 +210,7 @@ func handle(ghc githubClient, gc git.ClientFactory, log *logrus.Entry, e *github
 	}
 	response := fmt.Sprintf("%d warning%s.", totalProblems, s)
 
-	return ghc.CreateReview(org, repo, e.Number, github.DraftReview{
+	return status, ghc.CreateReview(org, repo, e.Number, github.DraftReview{
 		Body:     plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, response),
 		Action:   github.Comment,
 		Comments: comments,

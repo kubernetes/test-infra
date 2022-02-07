@@ -478,7 +478,7 @@ func TestReleaseNotePR(t *testing.T) {
 		fc, pr := newFakeClient(test.body, test.branch, test.initialLabels, test.issueComments, test.parentPRs)
 		pr.PullRequest.Merged = test.merged
 
-		err := handlePR(fc, logrus.WithField("plugin", PluginName), pr)
+		_, err := handlePR(fc, logrus.WithField("plugin", PluginName), pr)
 		if err != nil {
 			t.Fatalf("Unexpected error from handlePR: %v", err)
 		}

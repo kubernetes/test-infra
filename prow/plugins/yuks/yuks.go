@@ -98,7 +98,7 @@ func (url realJoke) readJoke() (string, error) {
 	return a.Joke, nil
 }
 
-func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) (plugins.Status, error) {
 	return handle(pc.GitHubClient, pc.Logger, &e, jokeURL)
 }
 
@@ -119,14 +119,15 @@ func escapeMarkdown(s string) string {
 	return b.String()
 }
 
-func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, j joker) error {
+func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, j joker) (plugins.Status, error) {
+	var status plugins.Status
 	// Only consider new comments.
 	if e.Action != github.GenericCommentActionCreated {
-		return nil
+		return status, nil
 	}
 	// Make sure they are requesting a joke
 	if !match.MatchString(e.Body) {
-		return nil
+		return status, nil
 	}
 
 	org := e.Repo.Owner.Login
@@ -147,8 +148,9 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, j
 
 		sanitizedJoke := escapeMarkdown(resp)
 		log.Infof("commenting with \"%s\".", sanitizedJoke)
-		return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, sanitizedJoke))
+		status.TookAction()
+		return status, gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, sanitizedJoke))
 	}
 
-	return fmt.Errorf("failed to get joke after %d attempts", errorBudget)
+	return status, fmt.Errorf("failed to get joke after %d attempts", errorBudget)
 }

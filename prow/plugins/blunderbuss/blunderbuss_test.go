@@ -631,7 +631,7 @@ func TestHandlePullRequest(t *testing.T) {
 				IgnoreDrafts:     tc.ignoreDrafts,
 			}
 
-			if err := handlePullRequest(
+			if _, err := handlePullRequest(
 				fghc, froc, logrus.WithField("plugin", PluginName),
 				c, tc.action, &pr, &repo,
 			); err != nil {
@@ -726,7 +726,7 @@ func TestHandleGenericComment(t *testing.T) {
 				ExcludeApprovers: false,
 			}
 
-			if err := handleGenericComment(
+			if _, err := handleGenericComment(
 				fghc, froc, logrus.WithField("plugin", PluginName), config,
 				tc.action, tc.isPR, pr.Number, tc.issueState, &repo, tc.body,
 			); err != nil {

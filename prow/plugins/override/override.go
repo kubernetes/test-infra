@@ -195,7 +195,7 @@ func whoCanUse(overrideConfig plugins.Override, org, repo string) string {
 	return admins + owners + teams + "."
 }
 
-func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) (plugins.Status, error) {
 	c := client{
 		gc:            pc.GitClient,
 		ghc:           pc.GitHubClient,
@@ -283,15 +283,15 @@ func formatList(list []string) string {
 	return strings.Join(lines, "\n")
 }
 
-func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent, options plugins.Override) error {
-
+func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent, options plugins.Override) (plugins.Status, error) {
+	var status plugins.Status
 	if !e.IsPR || e.IssueState != "open" || e.Action != github.GenericCommentActionCreated {
-		return nil
+		return status, nil
 	}
 
 	mat := overrideRe.FindAllStringSubmatch(e.Body, -1)
 	if len(mat) == 0 {
-		return nil // no /override commands given in the comment
+		return status, nil // no /override commands given in the comment
 	}
 
 	org := e.Repo.Owner.Login
@@ -299,12 +299,13 @@ func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent,
 	number := e.Number
 	user := e.User.Login
 
+	status.TookAction()
 	overrides := sets.NewString()
 	for _, m := range mat {
 		if m[1] == "" {
 			resp := "/override requires a failed status context to operate on, but none was given"
 			log.Debug(resp)
-			return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
+			return status, oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 		}
 		overrides.Insert(strings.TrimSpace(m[2]))
 	}
@@ -316,20 +317,20 @@ func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent,
 	if !authorized && !options.AllowTopLevelOwners {
 		resp := fmt.Sprintf("%s unauthorized: /override is restricted to %s", user, whoCanUse(options, org, repo))
 		log.Debug(resp)
-		return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
+		return status, oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 	}
 
 	pr, err := oc.GetPullRequest(org, repo, number)
 	if err != nil {
 		resp := fmt.Sprintf("Cannot get PR #%d in %s/%s", number, org, repo)
 		log.WithError(err).Warn(resp)
-		return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
+		return status, oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 	}
 
 	if !authorized && !authorizedTopLevelOwner(oc, options.AllowTopLevelOwners, log, org, repo, user, pr) {
 		resp := fmt.Sprintf("%s unauthorized: /override is restricted to %s", user, whoCanUse(options, org, repo))
 		log.Debug(resp)
-		return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
+		return status, oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 	}
 
 	sha := pr.Head.SHA
@@ -337,7 +338,7 @@ func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent,
 	if err != nil {
 		resp := fmt.Sprintf("Cannot get commit statuses for PR #%d in %s/%s", number, org, repo)
 		log.WithError(err).Warn(resp)
-		return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
+		return status, oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 	}
 
 	baseSHAGetter := shaGetterFactory(oc, org, repo, pr.Base.Ref)
@@ -345,7 +346,7 @@ func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent,
 	if err != nil {
 		msg := "Failed to get presubmits"
 		log.WithError(err).Error(msg)
-		return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, msg))
+		return status, oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, msg))
 	}
 
 	contexts := sets.NewString()
@@ -369,7 +370,7 @@ func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent,
 	if err != nil {
 		resp := fmt.Sprintf("Cannot get branch protection for branch %s in %s/%s", branch, org, repo)
 		log.WithError(err).Warn(resp)
-		return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
+		return status, oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 	}
 
 	if branchProtection != nil && branchProtection.RequiredStatusChecks != nil {
@@ -389,7 +390,7 @@ The following unknown contexts were given:
 Only the following contexts were expected:
 %s`, formatList(unknown.List()), formatList(contexts.List()))
 		log.Debug(resp)
-		return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
+		return status, oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 	}
 
 	done := sets.String{}
@@ -404,9 +405,9 @@ Only the following contexts were expected:
 		oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, msg))
 	}()
 
-	for _, status := range statuses {
-		pre := presubmitForContext(presubmits, status.Context)
-		if status.State == github.StatusSuccess || !(overrides.Has(status.Context) || pre != nil && overrides.Has(pre.Name)) || contextsWithCreatedJobs.Has(status.Context) {
+	for _, ghStatus := range statuses {
+		pre := presubmitForContext(presubmits, ghStatus.Context)
+		if ghStatus.State == github.StatusSuccess || !(overrides.Has(ghStatus.Context) || pre != nil && overrides.Has(pre.Name)) || contextsWithCreatedJobs.Has(ghStatus.Context) {
 			continue
 		}
 
@@ -416,7 +417,7 @@ Only the following contexts were expected:
 			if err != nil {
 				resp := "Cannot get base ref of PR"
 				log.WithError(err).Warn(resp)
-				return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
+				return status, oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 			}
 
 			pj := pjutil.NewPresubmit(*pr, baseSHA, *pre, e.GUID, nil)
@@ -431,22 +432,22 @@ Only the following contexts were expected:
 
 			log.WithFields(pjutil.ProwJobFields(&pj)).Info("Creating a new prowjob.")
 			if _, err := oc.Create(context.TODO(), &pj, metav1.CreateOptions{}); err != nil {
-				resp := fmt.Sprintf("Failed to create override job for %s", status.Context)
+				resp := fmt.Sprintf("Failed to create override job for %s", ghStatus.Context)
 				log.WithError(err).Warn(resp)
-				return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
+				return status, oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 			}
-			contextsWithCreatedJobs.Insert(status.Context)
+			contextsWithCreatedJobs.Insert(ghStatus.Context)
 		}
-		status.State = github.StatusSuccess
-		status.Description = description(user)
-		if err := oc.CreateStatus(org, repo, sha, status); err != nil {
-			resp := fmt.Sprintf("Cannot update PR status for context %s", status.Context)
+		ghStatus.State = github.StatusSuccess
+		ghStatus.Description = description(user)
+		if err := oc.CreateStatus(org, repo, sha, ghStatus); err != nil {
+			resp := fmt.Sprintf("Cannot update PR status for context %s", ghStatus.Context)
 			log.WithError(err).Warn(resp)
-			return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
+			return status, oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 		}
-		done.Insert(status.Context)
+		done.Insert(ghStatus.Context)
 	}
-	return nil
+	return status, nil
 }
 
 // shaGetterFactory is a closure to retrieve a sha once. It is not threadsafe.

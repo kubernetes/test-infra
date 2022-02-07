@@ -199,12 +199,16 @@ func getClient(pc plugins.Agent) Client {
 	}
 }
 
-func handlePullRequest(pc plugins.Agent, pr github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pr github.PullRequestEvent) (plugins.Status, error) {
+	var status plugins.Status
 	org, repo, _ := orgRepoAuthor(pr.PullRequest)
-	return handlePR(getClient(pc), pc.PluginConfig.TriggerFor(org, repo), pr)
+	err := handlePR(getClient(pc), pc.PluginConfig.TriggerFor(org, repo), pr)
+	// API call always triggered
+	status.TookAction()
+	return status, err
 }
 
-func handleGenericCommentEvent(pc plugins.Agent, gc github.GenericCommentEvent) error {
+func handleGenericCommentEvent(pc plugins.Agent, gc github.GenericCommentEvent) (plugins.Status, error) {
 	return handleGenericComment(getClient(pc), pc.PluginConfig.TriggerFor(gc.Repo.Owner.Login, gc.Repo.Name), gc)
 }
 

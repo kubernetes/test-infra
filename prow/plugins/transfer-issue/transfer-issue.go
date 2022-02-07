@@ -64,25 +64,28 @@ func helpProvider(_ *plugins.Configuration, _ []config.OrgRepo) (*pluginhelp.Plu
 	return pluginHelp, nil
 }
 
-func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) (plugins.Status, error) {
 	return handleTransfer(pc.GitHubClient, pc.Logger, e)
 }
 
-func handleTransfer(gc githubClient, log *logrus.Entry, e github.GenericCommentEvent) error {
+func handleTransfer(gc githubClient, log *logrus.Entry, e github.GenericCommentEvent) (plugins.Status, error) {
+	var status plugins.Status
 	org := e.Repo.Owner.Login
 	srcRepoName := e.Repo.Name
 	srcRepoPair := org + "/" + srcRepoName
 	user := e.User.Login
 
 	if e.IsPR || e.Action != github.GenericCommentActionCreated {
-		return nil
+		return status, nil
 	}
 	matches := transferRe.FindAllStringSubmatch(e.Body, -1)
 	if len(matches) == 0 {
-		return nil
+		return status, nil
 	}
+
+	status.TookAction()
 	if len(matches) != 1 || len(matches[0]) != 2 || len(matches[0][1]) == 0 {
-		return gc.CreateComment(
+		return status, gc.CreateComment(
 			org, srcRepoName, e.Number,
 			plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, "/transfer-issue must only be used once and with a single destination repo."),
 		)
@@ -95,7 +98,7 @@ func handleTransfer(gc githubClient, log *logrus.Entry, e github.GenericCommentE
 	if err != nil {
 		log.WithError(err).WithField("dstRepo", dstRepoPair).Warning("could not fetch destination repo")
 		// TODO: Might want to add another GetRepo type call that checks if a repo exists vs a bad request
-		return gc.CreateComment(
+		return status, gc.CreateComment(
 			org, srcRepoName, e.Number,
 			plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, fmt.Sprintf("Something went wrong or the destination repo %s does not exist.", dstRepoPair)),
 		)
@@ -103,10 +106,10 @@ func handleTransfer(gc githubClient, log *logrus.Entry, e github.GenericCommentE
 
 	isMember, err := gc.IsMember(org, user)
 	if err != nil {
-		return fmt.Errorf("unable to fetch if %s is an org member of %s: %w", user, org, err)
+		return status, fmt.Errorf("unable to fetch if %s is an org member of %s: %w", user, org, err)
 	}
 	if !isMember {
-		return gc.CreateComment(
+		return status, gc.CreateComment(
 			org, srcRepoName, e.Number,
 			plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, "You must be an org member to transfer this issue."),
 		)
@@ -119,7 +122,7 @@ func handleTransfer(gc githubClient, log *logrus.Entry, e github.GenericCommentE
 			"srcRepo":     srcRepoPair,
 			"dstRepo":     dstRepoPair,
 		}).Error("issue could not be transferred")
-		return err
+		return status, err
 	}
 	log.WithFields(logrus.Fields{
 		"user":        user,
@@ -128,7 +131,7 @@ func handleTransfer(gc githubClient, log *logrus.Entry, e github.GenericCommentE
 		"issueNumber": e.Number,
 		"dstURL":      m.TransferIssue.Issue.URL,
 	}).Infof("successfully transferred issue")
-	return nil
+	return status, nil
 }
 
 // TransferIssueMutation is a GraphQL mutation struct compatible with shurcooL/githubql's client

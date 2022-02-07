@@ -189,7 +189,7 @@ func TestHandle(t *testing.T) {
 			return tc.hasLabel
 		}
 
-		if err := handle(fc, logrus.WithField("plugin", PluginName), e, hasLabel); err != nil {
+		if _, err := handle(fc, logrus.WithField("plugin", PluginName), e, hasLabel); err != nil {
 			t.Errorf("For case %s, didn't expect error from hold: %v", tc.name, err)
 			continue
 		}

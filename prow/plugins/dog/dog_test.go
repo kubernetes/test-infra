@@ -231,7 +231,7 @@ func TestHttpResponse(t *testing.T) {
 			Number:     5,
 			IssueState: "open",
 		}
-		err = handle(fc, logrus.WithField("plugin", pluginName), e, realPack(ts.URL), ts2.URL+"/")
+		_, err = handle(fc, logrus.WithField("plugin", pluginName), e, realPack(ts.URL), ts2.URL+"/")
 		if err != nil {
 			t.Errorf("tc %s: For comment %s, didn't expect error: %v", testcase.name, testcase.comment, err)
 		}
@@ -333,7 +333,7 @@ func TestDogs(t *testing.T) {
 			IssueState: tc.state,
 			IsPR:       tc.pr,
 		}
-		err := handle(fc, logrus.WithField("plugin", pluginName), e, fakePack("doge"), "")
+		_, err := handle(fc, logrus.WithField("plugin", pluginName), e, fakePack("doge"), "")
 		if err != nil {
 			t.Errorf("For case %s, didn't expect error: %v", tc.name, err)
 		}

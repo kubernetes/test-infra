@@ -1013,7 +1013,7 @@ func TestHandle(t *testing.T) {
 				tc.jobs = sets.String{}
 			}
 
-			err := handle(&fc, log, &event, tc.options)
+			_, err := handle(&fc, log, &event, tc.options)
 			switch {
 			case err != nil:
 				if !tc.err {

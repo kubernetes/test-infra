@@ -173,7 +173,7 @@ func TestMilestoneApplier(t *testing.T) {
 				}
 			}
 
-			if err := handle(fakeClient, logrus.WithField("plugin", pluginName), configuredMilestoneTitle, event); err != nil {
+			if _, err := handle(fakeClient, logrus.WithField("plugin", pluginName), configuredMilestoneTitle, event); err != nil {
 				t.Fatalf("(%s): Unexpected error from handle: %v.", tc.name, err)
 			}
 

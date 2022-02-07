@@ -137,7 +137,7 @@ func testBuildify(clients localgit.Clients, t *testing.T) {
 			},
 		},
 	}
-	if err := handle(gh, c, logrus.NewEntry(logrus.New()), e); err != nil {
+	if _, err := handle(gh, c, logrus.NewEntry(logrus.New()), e); err != nil {
 		t.Fatalf("Got error from handle: %v", err)
 	}
 	if len(gh.comment.Comments) != 1 {

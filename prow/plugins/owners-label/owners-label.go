@@ -55,17 +55,19 @@ type githubClient interface {
 	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
 }
 
-func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) (plugins.Status, error) {
+	var status plugins.Status
 	if pre.Action != github.PullRequestActionOpened && pre.Action != github.PullRequestActionReopened && pre.Action != github.PullRequestActionSynchronize {
-		return nil
+		return status, nil
 	}
 
 	oc, err := pc.OwnersClient.LoadRepoOwners(pre.Repo.Owner.Login, pre.Repo.Name, pre.PullRequest.Base.Ref)
 	if err != nil {
-		return fmt.Errorf("error loading RepoOwners: %w", err)
+		return status, fmt.Errorf("error loading RepoOwners: %w", err)
 	}
 
-	return handle(pc.GitHubClient, oc, pc.Logger, &pre)
+	err = handle(pc.GitHubClient, oc, pc.Logger, &pre)
+	return status, err
 }
 
 func handle(ghc githubClient, oc ownersClient, log *logrus.Entry, pre *github.PullRequestEvent) error {

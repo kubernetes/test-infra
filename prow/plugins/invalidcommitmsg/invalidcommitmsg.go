@@ -90,18 +90,19 @@ type commentPruner interface {
 	PruneComments(shouldPrune func(github.IssueComment) bool)
 }
 
-func handlePullRequest(pc plugins.Agent, pr github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pr github.PullRequestEvent) (plugins.Status, error) {
 	cp, err := pc.CommentPruner()
 	if err != nil {
-		return err
+		return plugins.Status{}, err
 	}
 	return handle(pc.GitHubClient, pc.Logger, pr, cp)
 }
 
-func handle(gc githubClient, log *logrus.Entry, pr github.PullRequestEvent, cp commentPruner) error {
+func handle(gc githubClient, log *logrus.Entry, pr github.PullRequestEvent, cp commentPruner) (plugins.Status, error) {
+	var status plugins.Status
 	// Only consider actions indicating that the code diffs may have changed.
 	if !hasPRChanged(pr) {
-		return nil
+		return status, nil
 	}
 
 	var (
@@ -112,14 +113,15 @@ func handle(gc githubClient, log *logrus.Entry, pr github.PullRequestEvent, cp c
 	)
 
 	labels, err := gc.GetIssueLabels(org, repo, number)
+	status.TookAction()
 	if err != nil {
-		return err
+		return status, err
 	}
 	hasInvalidCommitMsgLabel := github.HasLabel(invalidCommitMsgLabel, labels)
 
 	allCommits, err := gc.ListPRCommits(org, repo, number)
 	if err != nil {
-		return fmt.Errorf("error listing commits for pull request: %w", err)
+		return status, fmt.Errorf("error listing commits for pull request: %w", err)
 	}
 	log.Debugf("Found %d commits in PR", len(allCommits))
 
@@ -181,7 +183,7 @@ func handle(gc githubClient, log *logrus.Entry, pr github.PullRequestEvent, cp c
 		}
 	}
 
-	return nil
+	return status, nil
 }
 
 // hasPRChanged indicates that the code diff or PR title may have changed.

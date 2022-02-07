@@ -158,7 +158,7 @@ Thanks!`,
 				tc.fcFunc(fc)
 			}
 			log := logrus.WithField("plugin", pluginName)
-			err := handleTransfer(c, log, tc.event)
+			_, err := handleTransfer(c, log, tc.event)
 			if err != nil {
 				if !tc.expectError {
 					t.Fatalf("unexpected error: %v", err)

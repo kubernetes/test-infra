@@ -77,15 +77,17 @@ type githubClient interface {
 	EditIssue(org, repo string, number int, issue *github.Issue) (*github.Issue, error)
 }
 
-func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) (plugins.Status, error) {
 	return handle(pc.JiraClient, pc.GitHubClient, pc.PluginConfig.Jira, pc.Logger, &e)
 }
 
-func handle(jc jiraclient.Client, ghc githubClient, cfg *plugins.Jira, log *logrus.Entry, e *github.GenericCommentEvent) error {
+func handle(jc jiraclient.Client, ghc githubClient, cfg *plugins.Jira, log *logrus.Entry, e *github.GenericCommentEvent) (plugins.Status, error) {
+	var status plugins.Status
 	if projectCache.entryCount() == 0 {
 		projects, err := jc.ListProjects()
+		status.TookAction()
 		if err != nil {
-			return fmt.Errorf("failed to list jira projects: %w", err)
+			return status, fmt.Errorf("failed to list jira projects: %w", err)
 		}
 		var projectNames []string
 		for _, project := range *projects {
@@ -94,10 +96,10 @@ func handle(jc jiraclient.Client, ghc githubClient, cfg *plugins.Jira, log *logr
 		projectCache.insert(projectNames...)
 	}
 
-	return handleWithProjectCache(jc, ghc, cfg, log, e, projectCache)
+	return status, handleWithProjectCache(jc, ghc, cfg, log, e, projectCache, &status)
 }
 
-func handleWithProjectCache(jc jiraclient.Client, ghc githubClient, cfg *plugins.Jira, log *logrus.Entry, e *github.GenericCommentEvent, projectCache *threadsafeSet) error {
+func handleWithProjectCache(jc jiraclient.Client, ghc githubClient, cfg *plugins.Jira, log *logrus.Entry, e *github.GenericCommentEvent, projectCache *threadsafeSet, status *plugins.Status) error {
 	// Nothing to do on deletion
 	if e.Action == github.GenericCommentActionDeleted {
 		return nil
@@ -111,6 +113,8 @@ func handleWithProjectCache(jc jiraclient.Client, ghc githubClient, cfg *plugins
 	if len(issueCandidateNames) == 0 {
 		return nil
 	}
+
+	status.TookAction()
 
 	var errs []error
 	referencedIssues := sets.String{}

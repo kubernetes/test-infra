@@ -348,21 +348,21 @@ func shouldPrune(log *logrus.Entry) func(github.IssueComment) bool {
 	}
 }
 
-func handlePullRequestEvent(pc plugins.Agent, pe github.PullRequestEvent) error {
+func handlePullRequestEvent(pc plugins.Agent, pe github.PullRequestEvent) (plugins.Status, error) {
 	config := pc.PluginConfig.DcoFor(pe.Repo.Owner.Login, pe.Repo.Name)
 
 	cp, err := pc.CommentPruner()
 	if err != nil {
-		return err
+		return plugins.Status{}, err
 	}
 
 	return handlePullRequest(*config, pc.GitHubClient, cp, pc.Logger, pe)
 }
 
-func handlePullRequest(config plugins.Dco, gc gitHubClient, cp commentPruner, log *logrus.Entry, pe github.PullRequestEvent) error {
+func handlePullRequest(config plugins.Dco, gc gitHubClient, cp commentPruner, log *logrus.Entry, pe github.PullRequestEvent) (plugins.Status, error) {
 	org := pe.Repo.Owner.Login
 	repo := pe.Repo.Name
-
+	var status plugins.Status
 	// we only reprocess on label, unlabel, open, reopen and synchronize events
 	// this will reduce our API token usage and save processing of unrelated events
 	switch pe.Action {
@@ -370,43 +370,47 @@ func handlePullRequest(config plugins.Dco, gc gitHubClient, cp commentPruner, lo
 		github.PullRequestActionReopened,
 		github.PullRequestActionSynchronize:
 	default:
-		return nil
+		return status, nil
 	}
 
 	shouldComment := pe.Action == github.PullRequestActionSynchronize ||
 		pe.Action == github.PullRequestActionOpened
 
-	return handle(config, gc, cp, log, org, repo, pe.PullRequest, shouldComment)
+	err := handle(config, gc, cp, log, org, repo, pe.PullRequest, shouldComment)
+	status.TookAction()
+	return status, err
 }
 
-func handleCommentEvent(pc plugins.Agent, ce github.GenericCommentEvent) error {
+func handleCommentEvent(pc plugins.Agent, ce github.GenericCommentEvent) (plugins.Status, error) {
 	config := pc.PluginConfig.DcoFor(ce.Repo.Owner.Login, ce.Repo.Name)
 
 	cp, err := pc.CommentPruner()
 	if err != nil {
-		return err
+		return plugins.Status{}, err
 	}
 
 	return handleComment(*config, pc.GitHubClient, cp, pc.Logger, ce)
 }
 
-func handleComment(config plugins.Dco, gc gitHubClient, cp commentPruner, log *logrus.Entry, ce github.GenericCommentEvent) error {
+func handleComment(config plugins.Dco, gc gitHubClient, cp commentPruner, log *logrus.Entry, ce github.GenericCommentEvent) (plugins.Status, error) {
+	var status plugins.Status
 	// Only consider open PRs and new comments.
 	if ce.IssueState != "open" || ce.Action != github.GenericCommentActionCreated || !ce.IsPR {
-		return nil
+		return status, nil
 	}
 	// Only consider "/check-dco" comments.
 	if !checkDCORe.MatchString(ce.Body) {
-		return nil
+		return status, nil
 	}
 
 	org := ce.Repo.Owner.Login
 	repo := ce.Repo.Name
 
 	pr, err := gc.GetPullRequest(org, repo, ce.Number)
+	status.TookAction()
 	if err != nil {
-		return fmt.Errorf("error getting pull request for comment: %w", err)
+		return status, fmt.Errorf("error getting pull request for comment: %w", err)
 	}
 
-	return handle(config, gc, cp, log, org, repo, *pr, true)
+	return status, handle(config, gc, cp, log, org, repo, *pr, true)
 }

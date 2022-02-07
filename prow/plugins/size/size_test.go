@@ -620,7 +620,7 @@ func TestHandlePR(t *testing.T) {
 			// Set up test logging.
 			c.client.T = t
 
-			err := handlePR(c.client, c.sizes, logrus.NewEntry(logrus.New()), c.event)
+			_, err := handlePR(c.client, c.sizes, logrus.NewEntry(logrus.New()), c.event)
 
 			if err != nil && c.err == nil {
 				t.Fatalf("handlePR error: %v", err)

@@ -62,13 +62,14 @@ type githubClient interface {
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
 }
 
-func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) (plugins.Status, error) {
 	return handle(pc.GitHubClient, pc.Logger, &e)
 }
 
-func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent) error {
+func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent) (plugins.Status, error) {
+	var status plugins.Status
 	if e.Action != github.GenericCommentActionCreated {
-		return nil
+		return status, nil
 	}
 
 	wantShrug := false
@@ -77,7 +78,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent) e
 	} else if unshrugRe.MatchString(e.Body) {
 		wantShrug = false
 	} else {
-		return nil
+		return status, nil
 	}
 
 	org := e.Repo.Owner.Login
@@ -86,6 +87,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent) e
 	// Only add the label if it doesn't have it yet.
 	hasShrug := false
 	issueLabels, err := gc.GetIssueLabels(org, repo, e.Number)
+	status.TookAction()
 	if err != nil {
 		log.WithError(err).Errorf("Failed to get the labels on %s/%s#%d.", org, repo, e.Number)
 	}
@@ -100,12 +102,12 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent) e
 		resp := "¯\\\\\\_(ツ)\\_/¯"
 		log.Infof("Commenting with \"%s\".", resp)
 		if err := gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, resp)); err != nil {
-			return fmt.Errorf("failed to comment on %s/%s#%d: %w", org, repo, e.Number, err)
+			return status, fmt.Errorf("failed to comment on %s/%s#%d: %w", org, repo, e.Number, err)
 		}
-		return gc.RemoveLabel(org, repo, e.Number, labels.Shrug)
+		return status, gc.RemoveLabel(org, repo, e.Number, labels.Shrug)
 	} else if !hasShrug && wantShrug {
 		log.Info("Adding Shrug label.")
-		return gc.AddLabel(org, repo, e.Number, labels.Shrug)
+		return status, gc.AddLabel(org, repo, e.Number, labels.Shrug)
 	}
-	return nil
+	return status, nil
 }

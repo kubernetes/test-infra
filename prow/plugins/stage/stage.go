@@ -62,22 +62,25 @@ type stageClient interface {
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
 }
 
-func stageHandleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+func stageHandleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) (plugins.Status, error) {
 	return handle(pc.GitHubClient, pc.Logger, &e)
 }
 
-func handle(gc stageClient, log *logrus.Entry, e *github.GenericCommentEvent) error {
+func handle(gc stageClient, log *logrus.Entry, e *github.GenericCommentEvent) (plugins.Status, error) {
+	var status plugins.Status
 	// Only consider new comments.
 	if e.Action != github.GenericCommentActionCreated {
-		return nil
+		return status, nil
 	}
 
 	for _, mat := range stageRe.FindAllStringSubmatch(e.Body, -1) {
-		if err := handleOne(gc, log, e, mat); err != nil {
-			return err
+		err := handleOne(gc, log, e, mat)
+		status.TookAction()
+		if err != nil {
+			return status, err
 		}
 	}
-	return nil
+	return status, nil
 }
 
 func handleOne(gc stageClient, log *logrus.Entry, e *github.GenericCommentEvent, mat []string) error {

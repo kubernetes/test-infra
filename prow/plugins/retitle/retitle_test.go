@@ -218,7 +218,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			gc.PullRequests = map[int]*github.PullRequest{1: {Title: "Old"}}
 			gc.IssueComments = map[int][]github.IssueComment{}
 
-			err := handleGenericComment(gc, testCase.trusted, testCase.allowClosedIssues, logrus.WithField("test-case", testCase.name), gce)
+			_, err := handleGenericComment(gc, testCase.trusted, testCase.allowClosedIssues, logrus.WithField("test-case", testCase.name), gce)
 			if err == nil && testCase.expectedErr {
 				t.Errorf("%s: expected an error but got none", testCase.name)
 			}

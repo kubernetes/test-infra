@@ -147,7 +147,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 	return pluginHelp, nil
 }
 
-func handleGenericCommentEvent(pc plugins.Agent, ce github.GenericCommentEvent) error {
+func handleGenericCommentEvent(pc plugins.Agent, ce github.GenericCommentEvent) (plugins.Status, error) {
 	return handleGenericComment(
 		pc.Logger,
 		pc.GitHubClient,
@@ -158,40 +158,44 @@ func handleGenericCommentEvent(pc plugins.Agent, ce github.GenericCommentEvent) 
 	)
 }
 
-func handleGenericComment(log *logrus.Entry, ghc githubClient, oc ownersClient, githubConfig config.GitHubOptions, config *plugins.Configuration, ce *github.GenericCommentEvent) error {
+func handleGenericComment(log *logrus.Entry, ghc githubClient, oc ownersClient, githubConfig config.GitHubOptions, config *plugins.Configuration, ce *github.GenericCommentEvent) (plugins.Status, error) {
 	funcStart := time.Now()
+
+	var status plugins.Status
+
 	defer func() {
 		log.WithField("duration", time.Since(funcStart).String()).Debug("Completed handleGenericComment")
 	}()
 	if ce.Action != github.GenericCommentActionCreated || !ce.IsPR || ce.IssueState == "closed" {
 		log.Debug("Event is not a creation of a comment on an open PR, skipping.")
-		return nil
+		return status, nil
 	}
 
 	botUserChecker, err := ghc.BotUserChecker()
+	status.TookAction()
 	if err != nil {
-		return err
+		return status, err
 	}
 
 	opts := config.ApproveFor(ce.Repo.Owner.Login, ce.Repo.Name)
 	if !isApprovalCommand(botUserChecker, opts.LgtmActsAsApprove, &comment{Body: ce.Body, Author: ce.User.Login}) {
 		log.Debug("Comment does not constitute approval, skipping event.")
-		return nil
+		return status, nil
 	}
 
 	log.Debug("Resolving pull request...")
 	pr, err := ghc.GetPullRequest(ce.Repo.Owner.Login, ce.Repo.Name, ce.Number)
 	if err != nil {
-		return err
+		return status, err
 	}
 
 	log.Debug("Resolving repository owners...")
 	repo, err := oc.LoadRepoOwners(ce.Repo.Owner.Login, ce.Repo.Name, pr.Base.Ref)
 	if err != nil {
-		return err
+		return status, err
 	}
 
-	return handleFunc(
+	return status, handleFunc(
 		log,
 		ghc,
 		repo,
@@ -212,7 +216,7 @@ func handleGenericComment(log *logrus.Entry, ghc githubClient, oc ownersClient, 
 
 // handleReviewEvent should only handle reviews that have no approval command.
 // Reviews with approval commands will be handled by handleGenericCommentEvent.
-func handleReviewEvent(pc plugins.Agent, re github.ReviewEvent) error {
+func handleReviewEvent(pc plugins.Agent, re github.ReviewEvent) (plugins.Status, error) {
 	return handleReview(
 		pc.Logger,
 		pc.GitHubClient,
@@ -223,19 +227,21 @@ func handleReviewEvent(pc plugins.Agent, re github.ReviewEvent) error {
 	)
 }
 
-func handleReview(log *logrus.Entry, ghc githubClient, oc ownersClient, githubConfig config.GitHubOptions, config *plugins.Configuration, re *github.ReviewEvent) error {
+func handleReview(log *logrus.Entry, ghc githubClient, oc ownersClient, githubConfig config.GitHubOptions, config *plugins.Configuration, re *github.ReviewEvent) (plugins.Status, error) {
 	funcStart := time.Now()
+	var status plugins.Status
 	defer func() {
 		log.WithField("duration", time.Since(funcStart).String()).Debug("Completed handleReview")
 	}()
 	if re.Action != github.ReviewActionSubmitted && re.Action != github.ReviewActionDismissed {
 		log.Debug("Event is not a creation or dismissal of a review on an open PR, skipping.")
-		return nil
+		return status, nil
 	}
 
 	botUserChecker, err := ghc.BotUserChecker()
+	status.TookAction()
 	if err != nil {
-		return err
+		return status, err
 	}
 
 	opts := config.ApproveFor(re.Repo.Owner.Login, re.Repo.Name)
@@ -245,23 +251,23 @@ func handleReview(log *logrus.Entry, ghc githubClient, oc ownersClient, githubCo
 	// review state.
 	if isApprovalCommand(botUserChecker, opts.LgtmActsAsApprove, &comment{Body: re.Review.Body, Author: re.Review.User.Login}) {
 		log.Debug("Review constitutes approval, skipping event.")
-		return nil
+		return status, nil
 	}
 
 	// Check for an approval command via review state. If none exists, don't
 	// handle this event.
 	if !isApprovalState(botUserChecker, opts.ConsiderReviewState(), &comment{Author: re.Review.User.Login, ReviewState: re.Review.State}) {
 		log.Debug("Review does not constitute approval, skipping event.")
-		return nil
+		return status, nil
 	}
 
 	log.Debug("Resolving repository owners...")
 	repo, err := oc.LoadRepoOwners(re.Repo.Owner.Login, re.Repo.Name, re.PullRequest.Base.Ref)
 	if err != nil {
-		return err
+		return status, err
 	}
 
-	return handleFunc(
+	return status, handleFunc(
 		log,
 		ghc,
 		repo,
@@ -281,7 +287,7 @@ func handleReview(log *logrus.Entry, ghc githubClient, oc ownersClient, githubCo
 
 }
 
-func handlePullRequestEvent(pc plugins.Agent, pre github.PullRequestEvent) error {
+func handlePullRequestEvent(pc plugins.Agent, pre github.PullRequestEvent) (plugins.Status, error) {
 	return handlePullRequest(
 		pc.Logger,
 		pc.GitHubClient,
@@ -292,8 +298,9 @@ func handlePullRequestEvent(pc plugins.Agent, pre github.PullRequestEvent) error
 	)
 }
 
-func handlePullRequest(log *logrus.Entry, ghc githubClient, oc ownersClient, githubConfig config.GitHubOptions, config *plugins.Configuration, pre *github.PullRequestEvent) error {
+func handlePullRequest(log *logrus.Entry, ghc githubClient, oc ownersClient, githubConfig config.GitHubOptions, config *plugins.Configuration, pre *github.PullRequestEvent) (plugins.Status, error) {
 	funcStart := time.Now()
+	var status plugins.Status
 	defer func() {
 		log.WithField("duration", time.Since(funcStart).String()).Debug("Completed handlePullRequest")
 	}()
@@ -302,25 +309,26 @@ func handlePullRequest(log *logrus.Entry, ghc githubClient, oc ownersClient, git
 		pre.Action != github.PullRequestActionSynchronize &&
 		pre.Action != github.PullRequestActionLabeled {
 		log.Debug("Pull request event action cannot constitute approval, skipping...")
-		return nil
+		return status, nil
 	}
 	botUserChecker, err := ghc.BotUserChecker()
+	status.TookAction()
 	if err != nil {
-		return err
+		return status, err
 	}
 	if pre.Action == github.PullRequestActionLabeled &&
 		(pre.Label.Name != labels.Approved || botUserChecker(pre.Sender.Login) || pre.PullRequest.State == "closed") {
 		log.Debug("Pull request label event does not constitute approval, skipping...")
-		return nil
+		return status, nil
 	}
 
 	log.Debug("Resolving repository owners...")
 	repo, err := oc.LoadRepoOwners(pre.Repo.Owner.Login, pre.Repo.Name, pre.PullRequest.Base.Ref)
 	if err != nil {
-		return err
+		return status, err
 	}
 
-	return handleFunc(
+	return status, handleFunc(
 		log,
 		ghc,
 		repo,

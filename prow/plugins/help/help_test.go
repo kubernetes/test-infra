@@ -205,7 +205,7 @@ func TestLabel(t *testing.T) {
 			Repo:       github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 			User:       github.User{Login: "Alice"},
 		}
-		err := handle(fakeClient, logrus.WithField("plugin", pluginName), &fakePruner{}, e, ig)
+		_, err := handle(fakeClient, logrus.WithField("plugin", pluginName), &fakePruner{}, e, ig)
 		if err != nil {
 			t.Errorf("For case %s, didn't expect error from label test: %v", tc.name, err)
 			continue

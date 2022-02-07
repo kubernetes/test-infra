@@ -177,7 +177,7 @@ func TestSigMention(t *testing.T) {
 			continue
 		}
 
-		if err := handle(fakeClient, logrus.WithField("plugin", pluginName), e, re); err != nil {
+		if _, err := handle(fakeClient, logrus.WithField("plugin", pluginName), e, re); err != nil {
 			t.Errorf("(%s): Unexpected error from handle: %v.", tc.name, err)
 			continue
 		}

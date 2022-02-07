@@ -115,7 +115,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 		nil
 }
 
-func handleComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+func handleComment(pc plugins.Agent, e github.GenericCommentEvent) (plugins.Status, error) {
 	c := client{
 		GitHubClient: pc.GitHubClient,
 		SlackConfig:  pc.PluginConfig.Slack,
@@ -188,21 +188,25 @@ func getMergeWarning(mergeWarnings []plugins.MergeWarning, repo config.OrgRepo) 
 	return nil
 }
 
-func echoToSlack(pc client, e github.GenericCommentEvent) error {
+func echoToSlack(pc client, e github.GenericCommentEvent) (plugins.Status, error) {
+	var status plugins.Status
 	// Ignore bot comments and comments that aren't new.
 	botUserChecker, err := pc.GitHubClient.BotUserChecker()
 	if err != nil {
-		return err
+		return status, err
 	}
 	if botUserChecker(e.User.Login) {
-		return nil
+		return status, nil
 	}
 	if e.Action != github.GenericCommentActionCreated {
-		return nil
+		return status, nil
 	}
 
 	sigMatches := sigMatcher.FindAllStringSubmatch(e.Body, -1)
 
+	if len(sigMatches) != 0 {
+		status.TookAction()
+	}
 	for _, match := range sigMatches {
 		sig := "sig-" + match[1]
 		// Check if this sig is a slack channel that should be messaged.
@@ -219,8 +223,8 @@ func echoToSlack(pc client, e github.GenericCommentEvent) error {
 
 		msg := fmt.Sprintf("%s was mentioned by %s (<@%s>) on GitHub. (%s)\n>>>%s", sig, e.User.Login, e.User.Login, e.HTMLURL, e.Body)
 		if err := pc.SlackClient.WriteMessage(msg, sig); err != nil {
-			return fmt.Errorf("Failed to send message on slack channel: %q with message %q. Err: %w", sig, msg, err)
+			return status, fmt.Errorf("Failed to send message on slack channel: %q with message %q. Err: %w", sig, msg, err)
 		}
 	}
-	return nil
+	return status, nil
 }

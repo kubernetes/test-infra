@@ -184,7 +184,7 @@ func testLint(clients localgit.Clients, t *testing.T) {
 			},
 		},
 	}
-	if err := handle(0, gh, c, logrus.NewEntry(logrus.New()), e); err != nil {
+	if _, err := handle(0, gh, c, logrus.NewEntry(logrus.New()), e); err != nil {
 		t.Fatalf("Got error from handle: %v", err)
 	}
 	if len(gh.comment.Comments) != 2 {
@@ -198,7 +198,7 @@ func testLint(clients localgit.Clients, t *testing.T) {
 			Body:     c.Body,
 		})
 	}
-	if err := handle(0, gh, c, logrus.NewEntry(logrus.New()), e); err != nil {
+	if _, err := handle(0, gh, c, logrus.NewEntry(logrus.New()), e); err != nil {
 		t.Fatalf("Got error from handle on second try: %v", err)
 	}
 	if len(gh.comment.Comments) != 0 {
@@ -218,7 +218,7 @@ func testLint(clients localgit.Clients, t *testing.T) {
 		t.Fatalf("Adding PR commit: %v", err)
 	}
 	gh.oldComments = nil
-	if err := handle(0, gh, c, logrus.NewEntry(logrus.New()), e); err != nil {
+	if _, err := handle(0, gh, c, logrus.NewEntry(logrus.New()), e); err != nil {
 		t.Fatalf("Got error from handle on third try: %v", err)
 	}
 	if len(gh.comment.Comments) != maxComments {
@@ -422,7 +422,7 @@ func testLintCodeSuggestion(clients localgit.Clients, t *testing.T) {
 				},
 			},
 		}
-		if err := handle(0, gh, c, logrus.NewEntry(logrus.New()), e); err != nil {
+		if _, err := handle(0, gh, c, logrus.NewEntry(logrus.New()), e); err != nil {
 			t.Fatalf("Got error from handle: %v", err)
 		}
 
@@ -575,7 +575,7 @@ func testLintError(clients localgit.Clients, t *testing.T) {
 				},
 			},
 		}
-		if err := handle(0, gh, c, logrus.NewEntry(logrus.New()), e); err != nil {
+		if _, err := handle(0, gh, c, logrus.NewEntry(logrus.New()), e); err != nil {
 			t.Fatalf("Got error from handle: %v", err)
 		}
 

@@ -111,10 +111,10 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 
 type blockCalc func([]github.PullRequestChange, []blockade) summary
 
-func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) (plugins.Status, error) {
 	cp, err := pc.CommentPruner()
 	if err != nil {
-		return err
+		return plugins.Status{}, err
 	}
 	return handle(pc.GitHubClient, pc.Logger, pc.PluginConfig.Blockades, cp, calculateBlocks, &pre)
 }
@@ -146,33 +146,35 @@ func (s summary) String() string {
 	return buf.String()
 }
 
-func handle(ghc githubClient, log *logrus.Entry, config []plugins.Blockade, cp pruneClient, blockCalc blockCalc, pre *github.PullRequestEvent) error {
+func handle(ghc githubClient, log *logrus.Entry, config []plugins.Blockade, cp pruneClient, blockCalc blockCalc, pre *github.PullRequestEvent) (plugins.Status, error) {
+	var status plugins.Status
 	if pre.Action != github.PullRequestActionSynchronize &&
 		pre.Action != github.PullRequestActionOpened &&
 		pre.Action != github.PullRequestActionReopened {
-		return nil
+		return status, nil
 	}
 
 	org := pre.Repo.Owner.Login
 	repo := pre.Repo.Name
 	branch := pre.PullRequest.Base.Ref
 	issueLabels, err := ghc.GetIssueLabels(org, repo, pre.Number)
+	status.TookAction()
 	if err != nil {
-		return err
+		return status, err
 	}
 
 	labelPresent := hasBlockedLabel(issueLabels)
 	blockades := compileApplicableBlockades(org, repo, branch, log, config)
 	if len(blockades) == 0 && !labelPresent {
 		// Since the label is missing, we assume that we removed any associated comments.
-		return nil
+		return status, nil
 	}
 
 	var sum summary
 	if len(blockades) > 0 {
 		changes, err := ghc.GetPullRequestChanges(org, repo, pre.Number)
 		if err != nil {
-			return err
+			return status, err
 		}
 		sum = blockCalc(changes, blockades)
 	}
@@ -181,20 +183,20 @@ func handle(ghc githubClient, log *logrus.Entry, config []plugins.Blockade, cp p
 	if shouldBlock && !labelPresent {
 		// Add the label and leave a comment explaining why the label was added.
 		if err := ghc.AddLabel(org, repo, pre.Number, labels.BlockedPaths); err != nil {
-			return err
+			return status, err
 		}
 		msg := plugins.FormatResponse(pre.PullRequest.User.Login, blockedPathsBody, sum.String())
-		return ghc.CreateComment(org, repo, pre.Number, msg)
+		return status, ghc.CreateComment(org, repo, pre.Number, msg)
 	} else if !shouldBlock && labelPresent {
 		// Remove the label and delete any comments created by this plugin.
 		if err := ghc.RemoveLabel(org, repo, pre.Number, labels.BlockedPaths); err != nil {
-			return err
+			return status, err
 		}
 		cp.PruneComments(func(ic github.IssueComment) bool {
 			return strings.Contains(ic.Body, blockedPathsBody)
 		})
 	}
-	return nil
+	return status, nil
 }
 
 // compileApplicableBlockades filters the specified blockades and compiles those that apply to the repo.

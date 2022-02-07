@@ -1561,7 +1561,7 @@ func TestHandleGenericComment(t *testing.T) {
 			Repos:             []string{test.commentEvent.Repo.Owner.Login},
 			LgtmActsAsApprove: test.lgtmActsAsApprove,
 		})
-		err := handleGenericComment(
+		_, err := handleGenericComment(
 			logrus.WithField("plugin", "approve"),
 			fghc,
 			fakeOwnersClient{},
@@ -1782,7 +1782,7 @@ func TestHandleReview(t *testing.T) {
 			LgtmActsAsApprove: test.lgtmActsAsApprove,
 			IgnoreReviewState: &irs,
 		})
-		err := handleReview(
+		_, err := handleReview(
 			logrus.WithField("plugin", "approve"),
 			fghc,
 			fakeOwnersClient{},
@@ -1921,7 +1921,7 @@ func TestHandlePullRequest(t *testing.T) {
 
 	for _, test := range tests {
 		test.prEvent.Repo = repo
-		err := handlePullRequest(
+		_, err := handlePullRequest(
 			logrus.WithField("plugin", "approve"),
 			fghc,
 			fakeOwnersClient{},

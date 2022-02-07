@@ -287,7 +287,7 @@ func TestHandlePR(t *testing.T) {
 				SquashLabel: c.squashLabel,
 				MergeLabel:  c.mergeLabel,
 			}
-			err := handlePR(c.client, config, c.event)
+			_, err := handlePR(c.client, config, c.event)
 
 			if err != nil && c.err == nil {
 				t.Fatalf("handlePR error: %v", err)

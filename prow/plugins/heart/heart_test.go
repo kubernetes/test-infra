@@ -123,7 +123,7 @@ func TestHandlePR(t *testing.T) {
 			Logger:       logrus.WithField("plugin", pluginName),
 		}
 
-		err := handlePR(fakeClient, event, ownersconfig.FakeResolver)
+		_, err := handlePR(fakeClient, event, ownersconfig.FakeResolver)
 		if err != nil {
 			t.Fatal(err)
 		}

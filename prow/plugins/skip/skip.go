@@ -64,18 +64,19 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 	return pluginHelp, nil
 }
 
-func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) (plugins.Status, error) {
 	honorOkToTest := trigger.HonorOkToTest(pc.PluginConfig.TriggerFor(e.Repo.Owner.Login, e.Repo.Name))
 	return handle(pc.GitHubClient, pc.Logger, &e, pc.Config, pc.GitClient, honorOkToTest)
 }
 
-func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, c *config.Config, gitClient git.ClientFactory, honorOkToTest bool) error {
+func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, c *config.Config, gitClient git.ClientFactory, honorOkToTest bool) (plugins.Status, error) {
+	var status plugins.Status
 	if !e.IsPR || e.IssueState != "open" || e.Action != github.GenericCommentActionCreated {
-		return nil
+		return status, nil
 	}
 
 	if !skipRe.MatchString(e.Body) {
-		return nil
+		return status, nil
 	}
 
 	org := e.Repo.Owner.Login
@@ -83,10 +84,11 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, c
 	number := e.Number
 
 	pr, err := gc.GetPullRequest(org, repo, number)
+	status.TookAction()
 	if err != nil {
 		resp := fmt.Sprintf("Cannot get PR #%d in %s/%s: %v", number, org, repo, err)
 		log.Warn(resp)
-		return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, resp))
+		return status, gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, resp))
 	}
 	baseSHAGetter := func() (string, error) {
 		baseSHA, err := gc.GetRef(org, repo, "heads/"+pr.Base.Ref)
@@ -100,17 +102,17 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, c
 	}
 	presubmits, err := c.GetPresubmits(gitClient, org+"/"+repo, baseSHAGetter, headSHAGetter)
 	if err != nil {
-		return fmt.Errorf("failed to get presubmits: %w", err)
+		return status, fmt.Errorf("failed to get presubmits: %w", err)
 	}
 
 	combinedStatus, err := gc.GetCombinedStatus(org, repo, pr.Head.SHA)
 	if err != nil {
 		resp := fmt.Sprintf("Cannot get combined commit statuses for PR #%d in %s/%s: %v", number, org, repo, err)
 		log.Warn(resp)
-		return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, resp))
+		return status, gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, resp))
 	}
 	if combinedStatus.State == github.StatusSuccess {
-		return nil
+		return status, nil
 	}
 	statuses := combinedStatus.Statuses
 
@@ -118,7 +120,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, c
 	if err != nil {
 		resp := fmt.Sprintf("Cannot get combined status for PR #%d in %s/%s: %v", number, org, repo, err)
 		log.Warn(resp)
-		return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, resp))
+		return status, gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, resp))
 	}
 	triggerWillHandle := func(p config.Presubmit) bool {
 		for _, presubmit := range filteredPresubmits {
@@ -148,18 +150,18 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, c
 			continue
 		}
 		context := job.Context
-		status := github.Status{
+		ghStatus := github.Status{
 			State:       github.StatusSuccess,
 			Description: "Skipped",
 			Context:     context,
 		}
-		if err := gc.CreateStatus(org, repo, pr.Head.SHA, status); err != nil {
+		if err := gc.CreateStatus(org, repo, pr.Head.SHA, ghStatus); err != nil {
 			resp := fmt.Sprintf("Cannot update PR status for context %s: %v", context, err)
 			log.Warn(resp)
-			return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, resp))
+			return status, gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, resp))
 		}
 	}
-	return nil
+	return status, nil
 }
 
 func statusExists(job config.Presubmit, statuses []github.Status) bool {

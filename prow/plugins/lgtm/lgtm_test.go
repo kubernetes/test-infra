@@ -406,7 +406,7 @@ func TestLGTMComment(t *testing.T) {
 			GitHubClient:  fc,
 			IssueComments: fc.IssueComments[5],
 		}
-		if err := handleGenericComment(fc, pc, oc, logrus.WithField("plugin", PluginName), fp, *e); err != nil {
+		if _, err := handleGenericComment(fc, pc, oc, logrus.WithField("plugin", PluginName), fp, *e); err != nil {
 			t.Errorf("didn't expect error from lgtmComment: %v", err)
 			continue
 		}
@@ -572,7 +572,7 @@ func TestLGTMCommentWithLGTMNoti(t *testing.T) {
 			GitHubClient:  fc,
 			IssueComments: fc.IssueComments[5],
 		}
-		if err := handleGenericComment(fc, pc, oc, logrus.WithField("plugin", PluginName), fp, *e); err != nil {
+		if _, err := handleGenericComment(fc, pc, oc, logrus.WithField("plugin", PluginName), fp, *e); err != nil {
 			t.Errorf("For case %s, didn't expect error from lgtmComment: %v", tc.name, err)
 			continue
 		}
@@ -769,7 +769,7 @@ func TestLGTMFromApproveReview(t *testing.T) {
 			GitHubClient:  fc,
 			IssueComments: fc.IssueComments[5],
 		}
-		if err := handlePullRequestReview(fc, pc, oc, logrus.WithField("plugin", PluginName), fp, *e); err != nil {
+		if _, err := handlePullRequestReview(fc, pc, oc, logrus.WithField("plugin", PluginName), fp, *e); err != nil {
 			t.Errorf("For case %s, didn't expect error from pull request review: %v", tc.name, err)
 			continue
 		}
@@ -1148,7 +1148,7 @@ func TestHandlePullRequest(t *testing.T) {
 				StoreTreeHash:  true,
 				StickyLgtmTeam: c.trustedTeam,
 			})
-			err := handlePullRequest(
+			_, err := handlePullRequest(
 				logrus.WithField("plugin", "approve"),
 				fakeGitHub,
 				pc,

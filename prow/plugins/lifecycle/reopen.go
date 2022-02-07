@@ -35,7 +35,7 @@ type githubClient interface {
 	ReopenPR(owner, repo string, number int) error
 }
 
-func handleReopen(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent) error {
+func handleReopen(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, status *plugins.Status) error {
 	// Only consider closed issues and new comments.
 	if e.IssueState != "closed" || e.Action != github.GenericCommentActionCreated {
 		return nil
@@ -52,6 +52,7 @@ func handleReopen(gc githubClient, log *logrus.Entry, e *github.GenericCommentEv
 
 	isAuthor := e.IssueAuthor.Login == commentAuthor
 	isCollaborator, err := gc.IsCollaborator(org, repo, commentAuthor)
+	status.TookAction()
 	if err != nil {
 		log.WithError(err).Errorf("Failed IsCollaborator(%s, %s, %s)", org, repo, commentAuthor)
 	}

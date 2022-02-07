@@ -158,7 +158,7 @@ func TestBranchCleaner(t *testing.T) {
 					Number: prNumber,
 				},
 			}
-			if err := handle(fgc, log, plugins.BranchCleaner{
+			if _, err := handle(fgc, log, plugins.BranchCleaner{
 				PreservedBranches: tc.preservedBranches,
 			}, event); err != nil {
 				t.Fatalf("error in handle: %v", err)

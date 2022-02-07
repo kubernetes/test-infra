@@ -93,7 +93,7 @@ func minConfidence(g plugins.Golint) float64 {
 	return *g.MinimumConfidence
 }
 
-func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) (plugins.Status, error) {
 	return handle(minConfidence(pc.PluginConfig.Golint), pc.GitHubClient, pc.GitClient, pc.Logger, &e)
 }
 
@@ -207,30 +207,32 @@ func problemsInFiles(r git.RepoClient, files map[string]string) (map[string]map[
 	return problems, lintErrorComments
 }
 
-func handle(minimumConfidence float64, ghc githubClient, gc git.ClientFactory, log *logrus.Entry, e *github.GenericCommentEvent) error {
+func handle(minimumConfidence float64, ghc githubClient, gc git.ClientFactory, log *logrus.Entry, e *github.GenericCommentEvent) (plugins.Status, error) {
+	var status plugins.Status
 	// Only handle open PRs and new requests.
 	if e.IssueState != "open" || !e.IsPR || e.Action != github.GenericCommentActionCreated {
-		return nil
+		return status, nil
 	}
 	if !lintRe.MatchString(e.Body) {
-		return nil
+		return status, nil
 	}
 
 	org := e.Repo.Owner.Login
 	repo := e.Repo.Name
 
 	pr, err := ghc.GetPullRequest(org, repo, e.Number)
+	status.TookAction()
 	if err != nil {
-		return err
+		return status, err
 	}
 
 	// List modified files.
 	modifiedFiles, err := modifiedGoFiles(ghc, org, repo, pr.Number, pr.Head.SHA)
 	if err != nil {
-		return err
+		return status, err
 	}
 	if len(modifiedFiles) == 0 {
-		return nil
+		return status, nil
 	}
 	log.Infof("Will lint %d modified go files.", len(modifiedFiles))
 
@@ -238,7 +240,7 @@ func handle(minimumConfidence float64, ghc githubClient, gc git.ClientFactory, l
 	startClone := time.Now()
 	r, err := gc.ClientFor(org, repo)
 	if err != nil {
-		return err
+		return status, err
 	}
 	defer func() {
 		if err := r.Clean(); err != nil {
@@ -246,7 +248,7 @@ func handle(minimumConfidence float64, ghc githubClient, gc git.ClientFactory, l
 		}
 	}()
 	if err := r.CheckoutPullRequest(e.Number); err != nil {
-		return err
+		return status, err
 	}
 	finishClone := time.Now()
 	log.WithField("duration", time.Since(startClone)).Info("Cloned and checked out PR.")
@@ -268,7 +270,7 @@ func handle(minimumConfidence float64, ghc githubClient, gc git.ClientFactory, l
 	if len(problems) > 0 {
 		oldComments, err := ghc.ListPullRequestComments(org, repo, e.Number)
 		if err != nil {
-			return err
+			return status, err
 		}
 		nps = newProblems(oldComments, problems)
 	}
@@ -317,7 +319,7 @@ func handle(minimumConfidence float64, ghc githubClient, gc git.ClientFactory, l
 		response = fmt.Sprintf("%d unresolved warning%s and %d new warning%s.", oldProblems, s, newProblems, s)
 	}
 
-	return ghc.CreateReview(org, repo, e.Number, github.DraftReview{
+	return status, ghc.CreateReview(org, repo, e.Number, github.DraftReview{
 		Body:     plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, response),
 		Action:   github.Comment,
 		Comments: comments,

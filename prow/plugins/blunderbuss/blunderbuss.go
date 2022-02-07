@@ -131,7 +131,7 @@ type repoownersClient interface {
 	LoadRepoOwners(org, repo, base string) (repoowners.RepoOwner, error)
 }
 
-func handlePullRequestEvent(pc plugins.Agent, pre github.PullRequestEvent) error {
+func handlePullRequestEvent(pc plugins.Agent, pre github.PullRequestEvent) (plugins.Status, error) {
 	return handlePullRequest(
 		pc.GitHubClient,
 		pc.OwnersClient,
@@ -143,15 +143,16 @@ func handlePullRequestEvent(pc plugins.Agent, pre github.PullRequestEvent) error
 	)
 }
 
-func handlePullRequest(ghc githubClient, roc repoownersClient, log *logrus.Entry, config plugins.Blunderbuss, action github.PullRequestEventAction, pr *github.PullRequest, repo *github.Repo) error {
+func handlePullRequest(ghc githubClient, roc repoownersClient, log *logrus.Entry, config plugins.Blunderbuss, action github.PullRequestEventAction, pr *github.PullRequest, repo *github.Repo) (plugins.Status, error) {
+	var status plugins.Status
 	if !(action == github.PullRequestActionOpened || action == github.PullRequestActionReadyForReview) || assign.CCRegexp.MatchString(pr.Body) {
-		return nil
+		return status, nil
 	}
 	if pr.Draft && config.IgnoreDrafts {
 		// ignore Draft PR when IgnoreDrafts is true
-		return nil
+		return status, nil
 	}
-	return handle(
+	err := handle(
 		ghc,
 		roc,
 		log,
@@ -162,9 +163,11 @@ func handlePullRequest(ghc githubClient, roc repoownersClient, log *logrus.Entry
 		repo,
 		pr,
 	)
+	status.TookAction()
+	return status, err
 }
 
-func handleGenericCommentEvent(pc plugins.Agent, ce github.GenericCommentEvent) error {
+func handleGenericCommentEvent(pc plugins.Agent, ce github.GenericCommentEvent) (plugins.Status, error) {
 	return handleGenericComment(
 		pc.GitHubClient,
 		pc.OwnersClient,
@@ -179,21 +182,23 @@ func handleGenericCommentEvent(pc plugins.Agent, ce github.GenericCommentEvent) 
 	)
 }
 
-func handleGenericComment(ghc githubClient, roc repoownersClient, log *logrus.Entry, config plugins.Blunderbuss, action github.GenericCommentEventAction, isPR bool, prNumber int, issueState string, repo *github.Repo, body string) error {
+func handleGenericComment(ghc githubClient, roc repoownersClient, log *logrus.Entry, config plugins.Blunderbuss, action github.GenericCommentEventAction, isPR bool, prNumber int, issueState string, repo *github.Repo, body string) (plugins.Status, error) {
+	var status plugins.Status
 	if action != github.GenericCommentActionCreated || !isPR || issueState == "closed" {
-		return nil
+		return status, nil
 	}
 
 	if !match.MatchString(body) {
-		return nil
+		return status, nil
 	}
 
 	pr, err := ghc.GetPullRequest(repo.Owner.Login, repo.Name, prNumber)
+	status.TookAction()
 	if err != nil {
-		return fmt.Errorf("error loading PullRequest: %w", err)
+		return status, fmt.Errorf("error loading PullRequest: %w", err)
 	}
 
-	return handle(
+	return status, handle(
 		ghc,
 		roc,
 		log,

@@ -126,7 +126,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 	return pluginHelp, nil
 }
 
-func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) (plugins.Status, error) {
 	return handle(pc.GitHubClient, pc.Logger, &e, pc.PluginConfig.Project)
 }
 
@@ -180,46 +180,48 @@ func processCommand(match string) (string, string, bool, string) {
 	return proposedProject, proposedColumnName, shouldClear, ""
 }
 
-func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, projectConfig plugins.ProjectConfig) error {
+func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, projectConfig plugins.ProjectConfig) (plugins.Status, error) {
+	var status plugins.Status
 	// Only handle new comments
 	if e.Action != github.GenericCommentActionCreated {
-		return nil
+		return status, nil
 	}
 
 	// Only handle comments that don't come from the bot
 	botUserChecker, err := gc.BotUserChecker()
 	if err != nil {
-		return err
+		return status, err
 	}
 	if botUserChecker(e.User.Login) {
-		return nil
+		return status, nil
 	}
 
 	// Only handle comments that match the regex
 	matches := projectRegex.FindStringSubmatch(e.Body)
 	if len(matches) == 0 {
-		return nil
+		return status, nil
 	}
 
 	org := e.Repo.Owner.Login
 	repo := e.Repo.Name
+	status.TookAction()
 	proposedProject, proposedColumnName, shouldClear, msg := processCommand(matches[1])
 	if proposedProject == "" {
-		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
+		return status, gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
 	}
 
 	maintainerTeamID := projectConfig.GetMaintainerTeam(org, repo)
 	if maintainerTeamID == -1 {
-		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, notTeamConfigMsg))
+		return status, gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, notTeamConfigMsg))
 	}
 	isAMember, err := gc.TeamHasMember(org, maintainerTeamID, e.User.Login)
 	if err != nil {
-		return err
+		return status, err
 	}
 	if !isAMember {
 		// not in the project maintainers team
 		msg = fmt.Sprintf(notATeamMemberMsg, org, repo, org, repo)
-		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
+		return status, gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
 	}
 
 	var projects []github.Project
@@ -236,13 +238,13 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 	if _, ok = projectNameToIDMap[proposedProject]; !ok {
 		repos, err := gc.GetRepos(org, false)
 		if err != nil {
-			return err
+			return status, err
 		}
 		// Get all projects for all repos
 		for _, repo := range repos {
 			repoProjects, err := gc.GetRepoProjects(org, repo.Name)
 			if err != nil {
-				return err
+				return status, err
 			}
 			projects = append(projects, repoProjects...)
 		}
@@ -255,7 +257,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 		// Get all projects for this org
 		orgProjects, err := gc.GetOrgProjects(org)
 		if err != nil {
-			return err
+			return status, err
 		}
 		projects = append(projects, orgProjects...)
 
@@ -269,14 +271,14 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 			sort.Strings(slice)
 
 			msg = fmt.Sprintf(invalidProject, strings.Join(slice, ", "))
-			return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
+			return status, gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
 		}
 	}
 
 	// Get all columns for proposedProject
 	projectColumns, err := gc.GetProjectColumns(org, projectID)
 	if err != nil {
-		return err
+		return status, err
 	}
 
 	// If proposedColumnName is not found (or not provided), add to one of the default
@@ -323,7 +325,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 				projectColumnNames = append(projectColumnNames, c.Name)
 			}
 			msg = fmt.Sprintf(invalidColumn, proposedProject, projectColumnNames)
-			return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
+			return status, gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
 		}
 	}
 
@@ -336,7 +338,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 		issueURL := fmt.Sprintf("https://api.github.com/repos/%s/%s/issues/%v", org, repo, e.Number)
 		existingProjectCard, err = gc.GetColumnProjectCard(org, colID.ID, issueURL)
 		if err != nil {
-			return err
+			return status, err
 		}
 
 		if existingProjectCard != nil {
@@ -347,30 +349,30 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 
 	// no need to move the card if it is in the same column
 	if (existingProjectCard != nil) && (proposedColumnID == foundColumnID) {
-		return nil
+		return status, nil
 	}
 
 	// Clear issue/PR from project if command is to clear
 	if shouldClear {
 		if existingProjectCard != nil {
 			if err := gc.DeleteProjectCard(org, existingProjectCard.ID); err != nil {
-				return err
+				return status, err
 			}
 			msg = fmt.Sprintf(successClearingProjectMsg, proposedProject)
-			return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
+			return status, gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
 		}
 		msg = fmt.Sprintf(failedClearingProjectMsg, proposedProject, e.Number)
-		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
+		return status, gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
 	}
 
 	// Move this issue/PR to the new column if there's already a project card for this issue/PR in this project
 	if existingProjectCard != nil {
 		log.Infof("Move card to column proposedColumnID: %v with issue: %v ", proposedColumnID, e.Number)
 		if err := gc.MoveProjectCard(org, existingProjectCard.ID, proposedColumnID); err != nil {
-			return err
+			return status, err
 		}
 		msg = fmt.Sprintf(successMovingCardMsg, proposedColumnName, proposedColumnID)
-		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
+		return status, gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
 	}
 
 	projectCard := github.ProjectCard{}
@@ -382,9 +384,9 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 	}
 
 	if _, err := gc.CreateProjectCard(org, proposedColumnID, projectCard); err != nil {
-		return err
+		return status, err
 	}
 
 	msg = fmt.Sprintf(successCreatingCardMsg, proposedProject, proposedColumnName, proposedColumnID)
-	return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
+	return status, gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
 }

@@ -1793,7 +1793,7 @@ Instructions for interacting with me using PR comments are available [here](http
 			if testCase.body != "" {
 				e.body = testCase.body
 			}
-			err := handle(e, gc, &bc, testCase.options, logrus.WithField("testCase", testCase.name), sets.NewString("org/repo"))
+			_, err := handle(e, gc, &bc, testCase.options, logrus.WithField("testCase", testCase.name), sets.NewString("org/repo"))
 			if err != nil {
 				t.Errorf("%s: expected no error but got one: %v", testCase.name, err)
 			}

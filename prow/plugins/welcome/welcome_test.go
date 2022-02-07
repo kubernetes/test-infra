@@ -312,7 +312,7 @@ func TestHandlePR(t *testing.T) {
 		}
 
 		// try handling it
-		if err := handlePR(c, tr, event, testWelcomeTemplate); err != nil {
+		if _, err := handlePR(c, tr, event, testWelcomeTemplate); err != nil {
 			t.Fatalf("did not expect error handling PR for case '%s': %v", tc.name, err)
 		}
 

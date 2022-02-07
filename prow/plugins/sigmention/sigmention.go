@@ -80,38 +80,40 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 		nil
 }
 
-func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) (plugins.Status, error) {
 	return handle(pc.GitHubClient, pc.Logger, &e, pc.PluginConfig.SigMention.Re)
 }
 
-func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, re *regexp.Regexp) error {
+func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, re *regexp.Regexp) (plugins.Status, error) {
+	var status plugins.Status
 	// Ignore bot comments and comments that aren't new.
 	botUserChecker, err := gc.BotUserChecker()
 	if err != nil {
-		return err
+		return status, err
 	}
 	if botUserChecker(e.User.Login) {
-		return nil
+		return status, nil
 	}
 	if e.Action != github.GenericCommentActionCreated {
-		return nil
+		return status, nil
 	}
 
 	sigMatches := re.FindAllStringSubmatch(e.Body, -1)
 	if len(sigMatches) == 0 {
-		return nil
+		return status, nil
 	}
 
 	org := e.Repo.Owner.Login
 	repo := e.Repo.Name
 
 	labels, err := gc.GetIssueLabels(org, repo, e.Number)
+	status.TookAction()
 	if err != nil {
-		return err
+		return status, err
 	}
 	repoLabels, err := gc.GetRepoLabels(org, repo)
 	if err != nil {
-		return err
+		return status, err
 	}
 	RepoLabelsExisting := map[string]string{}
 	for _, l := range repoLabels {
@@ -152,9 +154,9 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, r
 		log.WithError(err).Errorf("Error from IsMember(%q of org %q).", e.User.Login, org)
 	}
 	if isMember || len(toRepeat) == 0 {
-		return nil
+		return status, nil
 	}
 
 	msg := fmt.Sprintf(chatBack, strings.Join(toRepeat, ", "))
-	return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
+	return status, gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
 }

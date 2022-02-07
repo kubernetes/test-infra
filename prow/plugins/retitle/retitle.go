@@ -76,7 +76,7 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 	return pluginHelp, nil
 }
 
-func handleGenericCommentEvent(pc plugins.Agent, e github.GenericCommentEvent) error {
+func handleGenericCommentEvent(pc plugins.Agent, e github.GenericCommentEvent) (plugins.Status, error) {
 	var (
 		org  = e.Repo.Owner.Login
 		repo = e.Repo.Name
@@ -96,21 +96,22 @@ type githubClient interface {
 	EditIssue(org, repo string, number int, issue *github.Issue) (*github.Issue, error)
 }
 
-func handleGenericComment(gc githubClient, isTrusted func(string) (bool, error), allowClosedIssues bool, log *logrus.Entry, gce github.GenericCommentEvent) error {
+func handleGenericComment(gc githubClient, isTrusted func(string) (bool, error), allowClosedIssues bool, log *logrus.Entry, gce github.GenericCommentEvent) (plugins.Status, error) {
+	var status plugins.Status
 	// If closed/merged issues and PRs shouldn't be considered,
 	// return early if issue state is not open.
 	if !allowClosedIssues && gce.IssueState != "open" {
-		return nil
+		return status, nil
 	}
 
 	// Only consider new comments.
 	if gce.Action != github.GenericCommentActionCreated {
-		return nil
+		return status, nil
 	}
 
 	// Make sure they are requesting a re-title
 	if !retitleRe.MatchString(gce.Body) {
-		return nil
+		return status, nil
 	}
 
 	var (
@@ -121,42 +122,43 @@ func handleGenericComment(gc githubClient, isTrusted func(string) (bool, error),
 	)
 
 	trusted, err := isTrusted(user)
+	status.TookAction()
 	if err != nil {
 		log.WithError(err).Error("Could not check if user was trusted.")
-		return err
+		return status, err
 	}
 	if !trusted {
-		return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(gce.Body, gce.HTMLURL, user, `Re-titling can only be requested by trusted users, like repository collaborators.`))
+		return status, gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(gce.Body, gce.HTMLURL, user, `Re-titling can only be requested by trusted users, like repository collaborators.`))
 	}
 
 	matches := retitleRe.FindStringSubmatch(gce.Body)
 	if matches == nil {
 		// this shouldn't happen since we checked above
-		return nil
+		return status, nil
 	}
 	newTitle := strings.TrimSpace(matches[1])
 	if newTitle == "" {
-		return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(gce.Body, gce.HTMLURL, user, `Titles may not be empty.`))
+		return status, gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(gce.Body, gce.HTMLURL, user, `Titles may not be empty.`))
 	}
 
 	if invalidcommitmsg.AtMentionRegex.MatchString(newTitle) || invalidcommitmsg.CloseIssueRegex.MatchString(newTitle) {
-		return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(gce.Body, gce.HTMLURL, user, `Titles may not contain [keywords](https://help.github.com/articles/closing-issues-using-keywords) which can automatically close issues and at(@) mentions.`))
+		return status, gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(gce.Body, gce.HTMLURL, user, `Titles may not contain [keywords](https://help.github.com/articles/closing-issues-using-keywords) which can automatically close issues and at(@) mentions.`))
 	}
 
 	if gce.IsPR {
 		pr, err := gc.GetPullRequest(org, repo, number)
 		if err != nil {
-			return err
+			return status, err
 		}
 		pr.Title = newTitle
 		_, err = gc.EditPullRequest(org, repo, number, pr)
-		return err
+		return status, err
 	}
 	issue, err := gc.GetIssue(org, repo, number)
 	if err != nil {
-		return err
+		return status, err
 	}
 	issue.Title = newTitle
 	_, err = gc.EditIssue(org, repo, number, issue)
-	return err
+	return status, err
 }

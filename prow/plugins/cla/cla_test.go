@@ -364,7 +364,7 @@ func TestCheckCLA(t *testing.T) {
 			if tc.hasCLANo {
 				fc.IssueLabelsAdded = append(fc.IssueLabelsAdded, fmt.Sprintf("/#3:%s", labels.ClaNo))
 			}
-			if err := handleComment(fc, logrus.WithField("plugin", pluginName), e); err != nil {
+			if _, err := handleComment(fc, logrus.WithField("plugin", pluginName), e); err != nil {
 				t.Errorf("For case %s, didn't expect error from cla plugin: %v", tc.name, err)
 			}
 			ok := tc.addedLabel == ""

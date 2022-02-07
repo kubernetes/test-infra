@@ -80,7 +80,7 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 		nil
 }
 
-func handlePullRequest(pc plugins.Agent, pe github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pe github.PullRequestEvent) (plugins.Status, error) {
 	return handlePR(pc.GitHubClient, sizesOrDefault(pc.PluginConfig.Size), pc.Logger, pe)
 }
 
@@ -93,9 +93,10 @@ type githubClient interface {
 	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
 }
 
-func handlePR(gc githubClient, sizes plugins.Size, le *logrus.Entry, pe github.PullRequestEvent) error {
+func handlePR(gc githubClient, sizes plugins.Size, le *logrus.Entry, pe github.PullRequestEvent) (plugins.Status, error) {
+	var status plugins.Status
 	if !isPRChanged(pe) {
-		return nil
+		return status, nil
 	}
 
 	var (
@@ -106,24 +107,25 @@ func handlePR(gc githubClient, sizes plugins.Size, le *logrus.Entry, pe github.P
 	)
 
 	gf, err := genfiles.NewGroup(gc, owner, repo, sha)
+	status.TookAction()
 	if err != nil {
 		switch err.(type) {
 		case *genfiles.ParseError:
 			// Continue on parse errors, but warn that something is wrong.
 			le.Warnf("error while parsing .generated_files: %v", err)
 		default:
-			return err
+			return status, err
 		}
 	}
 
 	ga, err := gitattributes.NewGroup(func() ([]byte, error) { return gc.GetFile(owner, repo, ".gitattributes", sha) })
 	if err != nil {
-		return err
+		return status, err
 	}
 
 	changes, err := gc.GetPullRequestChanges(owner, repo, num)
 	if err != nil {
-		return fmt.Errorf("can not get PR changes for size plugin: %w", err)
+		return status, fmt.Errorf("can not get PR changes for size plugin: %w", err)
 	}
 
 	var count int
@@ -158,14 +160,14 @@ func handlePR(gc githubClient, sizes plugins.Size, le *logrus.Entry, pe github.P
 	}
 
 	if hasLabel {
-		return nil
+		return status, nil
 	}
 
 	if err := gc.AddLabel(owner, repo, num, newLabel); err != nil {
-		return fmt.Errorf("error adding label to %s/%s PR #%d: %w", owner, repo, num, err)
+		return status, fmt.Errorf("error adding label to %s/%s PR #%d: %w", owner, repo, num, err)
 	}
 
-	return nil
+	return status, nil
 }
 
 // One of a set of discrete buckets.

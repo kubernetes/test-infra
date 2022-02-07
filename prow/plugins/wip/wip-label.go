@@ -71,14 +71,15 @@ type githubClient interface {
 	RemoveLabel(owner, repo string, number int, label string) error
 }
 
-func handlePullRequest(pc plugins.Agent, pe github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pe github.PullRequestEvent) (plugins.Status, error) {
+	var status plugins.Status
 	// These are the only actions indicating the PR title may have changed.
 	if pe.Action != github.PullRequestActionOpened &&
 		pe.Action != github.PullRequestActionReopened &&
 		pe.Action != github.PullRequestActionEdited &&
 		pe.Action != github.PullRequestActionReadyForReview &&
 		pe.Action != github.PullRequestActionConvertedToDraft {
-		return nil
+		return status, nil
 	}
 
 	var (
@@ -90,8 +91,9 @@ func handlePullRequest(pc plugins.Agent, pe github.PullRequestEvent) error {
 	)
 
 	currentLabels, err := pc.GitHubClient.GetIssueLabels(org, repo, number)
+	status.TookAction()
 	if err != nil {
-		return fmt.Errorf("could not get labels for PR %s/%s:%d in WIP plugin: %w", org, repo, number, err)
+		return status, fmt.Errorf("could not get labels for PR %s/%s:%d in WIP plugin: %w", org, repo, number, err)
 	}
 	hasLabel := false
 	for _, l := range currentLabels {
@@ -107,7 +109,7 @@ func handlePullRequest(pc plugins.Agent, pe github.PullRequestEvent) error {
 		draft:    draft,
 		hasLabel: hasLabel,
 	}
-	return handle(pc.GitHubClient, pc.Logger, e)
+	return status, handle(pc.GitHubClient, pc.Logger, e)
 }
 
 // handle interacts with GitHub to drive the pull request to the

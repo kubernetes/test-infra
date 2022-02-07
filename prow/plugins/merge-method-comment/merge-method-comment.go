@@ -52,18 +52,19 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 		nil
 }
 
-func handlePullRequest(pc plugins.Agent, pe github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pe github.PullRequestEvent) (plugins.Status, error) {
 	return handlePR(pc.GitHubClient, pc.Config.ProwConfig.Tide, pe)
 }
 
-func handlePR(gc githubClient, c config.Tide, pe github.PullRequestEvent) error {
+func handlePR(gc githubClient, c config.Tide, pe github.PullRequestEvent) (plugins.Status, error) {
+	var status plugins.Status
 	if !isPRChanged(pe) {
-		return nil
+		return status, nil
 	}
 
 	commentNeeded, comment := needsComment(c, pe)
 	if !commentNeeded {
-		return nil
+		return status, nil
 	}
 
 	owner := pe.PullRequest.Base.Repo.Owner.Login
@@ -71,14 +72,15 @@ func handlePR(gc githubClient, c config.Tide, pe github.PullRequestEvent) error 
 	num := pe.PullRequest.Number
 
 	hasComment, err := issueHasComment(gc, owner, repo, num, comment)
+	status.TookAction()
 	if err != nil {
-		return err
+		return status, err
 	}
 	if hasComment {
-		return nil
+		return status, nil
 	}
 
-	return gc.CreateComment(owner, repo, num, plugins.FormatSimpleResponse(pe.PullRequest.User.Login, comment))
+	return status, gc.CreateComment(owner, repo, num, plugins.FormatSimpleResponse(pe.PullRequest.User.Login, comment))
 }
 
 func needsComment(c config.Tide, pe github.PullRequestEvent) (bool, string) {

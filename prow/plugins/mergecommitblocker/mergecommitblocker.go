@@ -63,17 +63,20 @@ type pruneClient interface {
 	PruneComments(func(ic github.IssueComment) bool)
 }
 
-func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) (plugins.Status, error) {
+	var status plugins.Status
 	if pre.Action != github.PullRequestActionOpened &&
 		pre.Action != github.PullRequestActionReopened &&
 		pre.Action != github.PullRequestActionSynchronize {
-		return nil
+		return status, nil
 	}
 	cp, err := pc.CommentPruner()
 	if err != nil {
-		return err
+		return status, err
 	}
-	return handle(pc.GitHubClient, pc.GitClient, cp, pc.Logger, &pre)
+	err = handle(pc.GitHubClient, pc.GitClient, cp, pc.Logger, &pre)
+	status.TookAction()
+	return status, err
 }
 
 func handle(ghc githubClient, gc git.ClientFactory, cp pruneClient, log *logrus.Entry, pre *github.PullRequestEvent) error {

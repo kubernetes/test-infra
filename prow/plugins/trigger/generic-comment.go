@@ -30,7 +30,8 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 )
 
-func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCommentEvent) error {
+func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCommentEvent) (plugins.Status, error) {
+	var status plugins.Status
 	org := gc.Repo.Owner.Login
 	repo := gc.Repo.Name
 	number := gc.Number
@@ -39,18 +40,19 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 	// when it belongs to a PR,
 	// and the PR is open.
 	if gc.Action != github.GenericCommentActionCreated || !gc.IsPR || gc.IssueState != "open" {
-		return nil
+		return status, nil
 	}
 
 	// Skip bot comments.
 	botUserChecker, err := c.GitHubClient.BotUserChecker()
+	status.TookAction()
 	if err != nil {
-		return err
+		return status, err
 	}
 
 	if botUserChecker(commentAuthor) {
 		c.Logger.Debug("Comment is made by the bot, skipping.")
-		return nil
+		return status, nil
 	}
 
 	refGetter := config.NewRefGetterForGitHubPullRequest(c.GitHubClient, org, repo, number)
@@ -71,14 +73,14 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 		}
 		if !matched {
 			c.Logger.Debug("Comment doesn't match any triggering regex, skipping.")
-			return nil
+			return status, nil
 		}
 	}
 
 	// Skip untrusted users comments.
 	trustedResponse, err := TrustedUser(c.GitHubClient, trigger.OnlyOrgMembers, trigger.TrustedApps, trigger.TrustedOrg, commentAuthor, org, repo)
 	if err != nil {
-		return fmt.Errorf("error checking trust of %s: %w", commentAuthor, err)
+		return status, fmt.Errorf("error checking trust of %s: %w", commentAuthor, err)
 	}
 
 	trusted := trustedResponse.IsTrusted
@@ -87,12 +89,12 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 		// Skip untrusted PRs.
 		l, trusted, err = TrustedPullRequest(c.GitHubClient, trigger, gc.IssueAuthor.Login, org, repo, number, nil)
 		if err != nil {
-			return err
+			return status, err
 		}
 		if !trusted {
 			resp := "Cannot trigger testing until a trusted user reviews the PR and leaves an `/ok-to-test` message."
 			c.Logger.Infof("Commenting \"%s\".", resp)
-			return c.GitHubClient.CreateComment(org, repo, number, plugins.FormatResponseRaw(gc.Body, gc.HTMLURL, gc.User.Login, resp))
+			return status, c.GitHubClient.CreateComment(org, repo, number, plugins.FormatResponseRaw(gc.Body, gc.HTMLURL, gc.User.Login, resp))
 		}
 	}
 
@@ -102,36 +104,36 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 	if l == nil {
 		l, err = c.GitHubClient.GetIssueLabels(org, repo, number)
 		if err != nil {
-			return err
+			return status, err
 		}
 	}
 	isOkToTest := HonorOkToTest(trigger) && pjutil.OkToTestRe.MatchString(gc.Body)
 	if isOkToTest && !github.HasLabel(labels.OkToTest, l) {
 		if err := c.GitHubClient.AddLabel(org, repo, number, labels.OkToTest); err != nil {
-			return err
+			return status, err
 		}
 	}
 	if (isOkToTest || github.HasLabel(labels.OkToTest, l)) && github.HasLabel(labels.NeedsOkToTest, l) {
 		if err := c.GitHubClient.RemoveLabel(org, repo, number, labels.NeedsOkToTest); err != nil {
-			return err
+			return status, err
 		}
 	}
 
 	pr, err := refGetter.PullRequest()
 	if err != nil {
-		return err
+		return status, err
 	}
 	baseSHA, err := refGetter.BaseSHA()
 	if err != nil {
-		return err
+		return status, err
 	}
 
 	toTest, err := FilterPresubmits(HonorOkToTest(trigger), c.GitHubClient, gc.Body, pr, presubmits, c.Logger)
 	if err != nil {
-		return err
+		return status, err
 	}
 	if needsHelp, note := pjutil.ShouldRespondWithHelp(gc.Body, len(toTest)); needsHelp {
-		return addHelpComment(c.GitHubClient, gc.Body, org, repo, pr.Base.Ref, pr.Number, presubmits, gc.HTMLURL, commentAuthor, note, c.Logger)
+		return status, addHelpComment(c.GitHubClient, gc.Body, org, repo, pr.Base.Ref, pr.Number, presubmits, gc.HTMLURL, commentAuthor, note, c.Logger)
 	}
 	// we want to be able to track re-tests separately from the general body of tests
 	additionalLabels := map[string]string{}
@@ -167,7 +169,7 @@ func handleGenericComment(c Client, trigger plugins.Trigger, gc github.GenericCo
 			}
 		}
 	}
-	return RunRequestedWithLabels(c, pr, baseSHA, toTest, gc.GUID, additionalLabels)
+	return status, RunRequestedWithLabels(c, pr, baseSHA, toTest, gc.GUID, additionalLabels)
 }
 
 func HonorOkToTest(trigger plugins.Trigger) bool {

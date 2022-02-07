@@ -71,7 +71,8 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 	}, nil
 }
 
-func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
+func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) (plugins.Status, error) {
+	var status plugins.Status
 	org := pre.PullRequest.Base.Repo.Owner.Login
 	repo := pre.PullRequest.Base.Repo.Name
 	baseBranch := pre.PullRequest.Base.Ref
@@ -79,23 +80,24 @@ func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
 	// if there are no branch to milestone mappings for this repo, return early
 	branchToMilestone, ok := pc.PluginConfig.MilestoneApplier[fmt.Sprintf("%s/%s", org, repo)]
 	if !ok {
-		return nil
+		return status, nil
 	}
 	// if the repo does not define milestones for this branch, return early
 	milestone, ok := branchToMilestone[baseBranch]
 	if !ok {
-		return nil
+		return status, nil
 	}
 
 	return handle(pc.GitHubClient, pc.Logger, milestone, pre)
 }
 
-func handle(gc githubClient, log *logrus.Entry, configuredMilestone string, pre github.PullRequestEvent) error {
+func handle(gc githubClient, log *logrus.Entry, configuredMilestone string, pre github.PullRequestEvent) (plugins.Status, error) {
+	var status plugins.Status
 	pr := pre.PullRequest
 
 	// if the current milestone is equal to the configured milestone, return early
 	if pr.Milestone != nil && pr.Milestone.Title == configuredMilestone {
-		return nil
+		return status, nil
 	}
 
 	// if a PR targets a non-default branch, apply milestone when opened and on merge
@@ -103,10 +105,10 @@ func handle(gc githubClient, log *logrus.Entry, configuredMilestone string, pre 
 	merged := pre.Action == github.PullRequestActionClosed && pr.Merged
 	if pr.Base.Repo.DefaultBranch != pr.Base.Ref {
 		if !merged && pre.Action != github.PullRequestActionOpened {
-			return nil
+			return status, nil
 		}
 	} else if !merged {
-		return nil
+		return status, nil
 	}
 
 	number := pre.Number
@@ -114,21 +116,22 @@ func handle(gc githubClient, log *logrus.Entry, configuredMilestone string, pre 
 	repo := pr.Base.Repo.Name
 
 	milestones, err := gc.ListMilestones(org, repo)
+	status.TookAction()
 	if err != nil {
 		log.WithError(err).Errorf("Error listing the milestones in the %s/%s repo", org, repo)
-		return err
+		return status, err
 	}
 
 	milestoneMap := milestone.BuildMilestoneMap(milestones)
 	configuredMilestoneNumber, ok := milestoneMap[configuredMilestone]
 	if !ok {
-		return fmt.Errorf("The configured milestone %s for %s branch does not exist in the %s/%s repo", configuredMilestone, pr.Base.Ref, org, repo)
+		return status, fmt.Errorf("The configured milestone %s for %s branch does not exist in the %s/%s repo", configuredMilestone, pr.Base.Ref, org, repo)
 	}
 
 	if err := gc.SetMilestone(org, repo, number, configuredMilestoneNumber); err != nil {
 		log.WithError(err).Errorf("Error adding the milestone %s to %s/%s#%d.", configuredMilestone, org, repo, number)
-		return err
+		return status, err
 	}
 
-	return nil
+	return status, nil
 }

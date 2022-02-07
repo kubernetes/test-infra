@@ -180,7 +180,7 @@ func (g *realGaggle) readGoose() (string, error) {
 	return a.Format()
 }
 
-func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) (plugins.Status, error) {
 	return handle(
 		pc.GitHubClient,
 		pc.Logger,
@@ -190,15 +190,16 @@ func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error 
 	)
 }
 
-func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, g gaggle, setKey func()) error {
+func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, g gaggle, setKey func()) (plugins.Status, error) {
+	var status plugins.Status
 	// Only consider new comments.
 	if e.Action != github.GenericCommentActionCreated {
-		return nil
+		return status, nil
 	}
 	// Make sure they are requesting a goose
 	mat := match.FindStringSubmatch(e.Body)
 	if mat == nil {
-		return nil
+		return status, nil
 	}
 
 	// Now that we know this is a relevant event we can set the key.
@@ -208,13 +209,14 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, g
 	repo := e.Repo.Name
 	number := e.Number
 
+	status.TookAction()
 	for i := 0; i < 3; i++ {
 		resp, err := g.readGoose()
 		if err != nil {
 			log.WithError(err).Error("Failed to get goose img")
 			continue
 		}
-		return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, resp))
+		return status, gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, resp))
 	}
 
 	msg := "Unable to find goose. Have you checked the garden?"
@@ -222,5 +224,5 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, g
 		log.WithError(err).Error("Failed to leave comment")
 	}
 
-	return errors.New("could not find a valid goose image")
+	return status, errors.New("could not find a valid goose image")
 }

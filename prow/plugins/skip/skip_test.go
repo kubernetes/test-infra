@@ -323,7 +323,7 @@ func TestSkipStatus(t *testing.T) {
 			},
 		}
 
-		if err := handle(fghc, l, test.event, c, nil, true); err != nil {
+		if _, err := handle(fghc, l, test.event, c, nil, true); err != nil {
 			t.Errorf("%s: unexpected error: %v", test.name, err)
 			continue
 		}

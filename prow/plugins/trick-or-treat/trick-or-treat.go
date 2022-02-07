@@ -95,7 +95,7 @@ func (c *realSnicker) readImage(log *logrus.Entry) (string, error) {
 	return "", err
 }
 
-func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) (plugins.Status, error) {
 	return handle(
 		pc.GitHubClient,
 		pc.Logger,
@@ -104,20 +104,22 @@ func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error 
 	)
 }
 
-func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, c snicker) error {
+func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, c snicker) (plugins.Status, error) {
+	var status plugins.Status
 	// Only consider new comments.
 	if e.Action != github.GenericCommentActionCreated {
-		return nil
+		return status, nil
 	}
 	// Make sure they are requesting a cat
 	if mat := match.FindStringSubmatch(e.Body); mat == nil {
-		return nil
+		return status, nil
 	}
 
 	org := e.Repo.Owner.Login
 	repo := e.Repo.Name
 	number := e.Number
 	interval := 200 * time.Microsecond
+	status.TookAction()
 	for i := 0; i < 3; i++ {
 		imgURL, err := c.readImage(log)
 		if err != nil {
@@ -125,8 +127,8 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, c
 			time.Sleep(interval)
 			continue
 		}
-		return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, imgURL))
+		return status, gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, imgURL))
 	}
 
-	return errors.New("could not find a valid candy image")
+	return status, errors.New("could not find a valid candy image")
 }

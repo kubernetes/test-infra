@@ -22,6 +22,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/plugins"
 )
 
 type fakeClientReopen struct {
@@ -135,7 +136,8 @@ func TestReopenComment(t *testing.T) {
 			Number:      5,
 			IssueAuthor: github.User{Login: "author"},
 		}
-		if err := handleReopen(fc, logrus.WithField("plugin", "fake-reopen"), e); err != nil {
+		var status plugins.Status
+		if err := handleReopen(fc, logrus.WithField("plugin", "fake-reopen"), e, &status); err != nil {
 			t.Errorf("For case %s, didn't expect error from handle: %v", tc.name, err)
 			continue
 		}

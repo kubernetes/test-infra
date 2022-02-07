@@ -66,7 +66,7 @@ func TestJokesMedium(t *testing.T) {
 		Number:     5,
 		IssueState: "open",
 	}
-	if err := handle(fc, logrus.WithField("plugin", pluginName), e, realJoke(ts.URL)); err != nil {
+	if _, err := handle(fc, logrus.WithField("plugin", pluginName), e, realJoke(ts.URL)); err != nil {
 		t.Errorf("didn't expect error: %v", err)
 		return
 	}
@@ -156,7 +156,7 @@ func TestJokes(t *testing.T) {
 			IssueState: tc.state,
 			IsPR:       tc.pr,
 		}
-		err := handle(fc, logrus.WithField("plugin", pluginName), e, tc.joke)
+		_, err := handle(fc, logrus.WithField("plugin", pluginName), e, tc.joke)
 		if !tc.shouldError && err != nil {
 			t.Errorf("For case %s, didn't expect error: %v", tc.name, err)
 			continue

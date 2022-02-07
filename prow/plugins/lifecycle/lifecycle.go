@@ -73,33 +73,34 @@ type lifecycleClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
 }
 
-func lifecycleHandleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+func lifecycleHandleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) (plugins.Status, error) {
+	var status plugins.Status
 	gc := pc.GitHubClient
 	log := pc.Logger
-	if err := handleReopen(gc, log, &e); err != nil {
-		return err
+	if err := handleReopen(gc, log, &e, &status); err != nil {
+		return status, err
 	}
-	if err := handleClose(gc, log, &e); err != nil {
-		return err
+	if err := handleClose(gc, log, &e, &status); err != nil {
+		return status, err
 	}
-	return handle(gc, log, &e)
+	return status, handle(gc, log, &e, &status)
 }
 
-func handle(gc lifecycleClient, log *logrus.Entry, e *github.GenericCommentEvent) error {
+func handle(gc lifecycleClient, log *logrus.Entry, e *github.GenericCommentEvent, status *plugins.Status) error {
 	// Only consider new comments.
 	if e.Action != github.GenericCommentActionCreated {
 		return nil
 	}
 
 	for _, mat := range lifecycleRe.FindAllStringSubmatch(e.Body, -1) {
-		if err := handleOne(gc, log, e, mat); err != nil {
+		if err := handleOne(gc, log, e, mat, status); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func handleOne(gc lifecycleClient, log *logrus.Entry, e *github.GenericCommentEvent, mat []string) error {
+func handleOne(gc lifecycleClient, log *logrus.Entry, e *github.GenericCommentEvent, mat []string, status *plugins.Status) error {
 	org := e.Repo.Owner.Login
 	repo := e.Repo.Name
 	number := e.Number
@@ -111,12 +112,14 @@ func handleOne(gc lifecycleClient, log *logrus.Entry, e *github.GenericCommentEv
 
 	// Don't allow adding lifecycle/frozen label to PRs
 	if e.IsPR && lbl == labels.LifecycleFrozen && !remove {
+		status.TookAction()
 		return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, fmt.Sprintf("The `%s` label cannot be applied to Pull Requests.", labels.LifecycleFrozen)))
 	}
 
 	// Let's start simple and allow anyone to add/remove frozen, stale, rotten labels.
 	// Adjust if we find evidence of the community abusing these labels.
 	labels, err := gc.GetIssueLabels(org, repo, number)
+	status.TookAction()
 	if err != nil {
 		log.WithError(err).Errorf("Failed to get labels.")
 	}

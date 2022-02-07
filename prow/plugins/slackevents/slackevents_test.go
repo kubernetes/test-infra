@@ -301,7 +301,7 @@ func TestComment(t *testing.T) {
 			User:   github.User{Login: tc.commenter},
 		}
 
-		if err := echoToSlack(client, e); err != nil {
+		if _, err := echoToSlack(client, e); err != nil {
 			t.Fatalf("For case %s, didn't expect error from label test: %v", tc.name, err)
 		}
 		if len(tc.expectedMessages) != len(fakeSlackClient.SentMessages) {

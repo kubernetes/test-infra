@@ -83,18 +83,19 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 	return pluginHelp, nil
 }
 
-func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) error {
+func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) (plugins.Status, error) {
 	return handle(pc.GitHubClient, pc.Logger, &e, pc.PluginConfig.RepoMilestone)
 }
 
-func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, repoMilestone map[string]plugins.Milestone) error {
+func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, repoMilestone map[string]plugins.Milestone) (plugins.Status, error) {
+	var status plugins.Status
 	if e.Action != github.GenericCommentActionCreated {
-		return nil
+		return status, nil
 	}
 
 	statusMatches := statusRegex.FindAllStringSubmatch(e.Body, -1)
 	if len(statusMatches) == 0 {
-		return nil
+		return status, nil
 	}
 
 	org := e.Repo.Owner.Login
@@ -107,8 +108,9 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, r
 	}
 
 	milestoneMaintainers, err := gc.ListTeamMembers(org, milestone.MaintainersID, github.RoleAll)
+	status.TookAction()
 	if err != nil {
-		return err
+		return status, err
 	}
 	found := false
 	for _, person := range milestoneMaintainers {
@@ -121,7 +123,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, r
 	if !found {
 		// not in the milestone maintainers team
 		msg := fmt.Sprintf(mustBeAuthorized, org, milestone.MaintainersTeam, org, milestone.MaintainersTeam, milestone.MaintainersFriendlyName)
-		return gc.CreateComment(org, repo, e.Number, msg)
+		return status, gc.CreateComment(org, repo, e.Number, msg)
 	}
 
 	for _, statusMatch := range statusMatches {
@@ -133,5 +135,5 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, r
 			log.WithError(err).Errorf("Error adding the label %q to %s/%s#%d.", sLabel, org, repo, e.Number)
 		}
 	}
-	return nil
+	return status, nil
 }

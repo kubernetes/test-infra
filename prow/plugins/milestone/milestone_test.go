@@ -125,7 +125,7 @@ func TestMilestoneStatus(t *testing.T) {
 			repoMilestone["org/repo"] = plugins.Milestone{MaintainersID: maintainersID, MaintainersTeam: maintainersName}
 		}
 
-		if err := handle(fakeClient, logrus.WithField("plugin", pluginName), e, repoMilestone); err != nil {
+		if _, err := handle(fakeClient, logrus.WithField("plugin", pluginName), e, repoMilestone); err != nil {
 			t.Errorf("(%s): Unexpected error from handle: %v.", tc.name, err)
 			continue
 		}

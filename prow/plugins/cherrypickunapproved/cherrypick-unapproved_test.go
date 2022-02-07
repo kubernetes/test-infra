@@ -214,7 +214,7 @@ func TestCherryPickUnapprovedLabel(t *testing.T) {
 		event := makeFakePullRequestEvent(tc.action, tc.branch, tc.changes)
 		branchRe := regexp.MustCompile(`^release-.*$`)
 		comment := "dummy cumment"
-		err := handlePR(fc, logrus.WithField("plugin", "fake-cherrypick-unapproved"), &event, &fakePruner{}, branchRe, comment)
+		_, err := handlePR(fc, logrus.WithField("plugin", "fake-cherrypick-unapproved"), &event, &fakePruner{}, branchRe, comment)
 		switch {
 		case err != nil:
 			t.Errorf("%s: unexpected error: %v", tc.name, err)

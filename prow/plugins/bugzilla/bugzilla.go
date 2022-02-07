@@ -326,7 +326,8 @@ type githubClient interface {
 	Query(ctx context.Context, q interface{}, vars map[string]interface{}) error
 }
 
-func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) (err error) {
+func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) (status plugins.Status, err error) {
+	status = plugins.Status{}
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("recovered panic in bugzilla plugin: %v", r)
@@ -334,16 +335,18 @@ func handleGenericComment(pc plugins.Agent, e github.GenericCommentEvent) (err e
 	}()
 	event, err := digestComment(pc.GitHubClient, pc.Logger, e)
 	if err != nil {
-		return err
+		return status, err
 	}
 	if event != nil {
 		options := pc.PluginConfig.Bugzilla.OptionsForBranch(event.org, event.repo, event.baseRef)
-		return handle(*event, pc.GitHubClient, pc.BugzillaClient, options, pc.Logger, pc.Config.AllRepos)
+		status, err = handle(*event, pc.GitHubClient, pc.BugzillaClient, options, pc.Logger, pc.Config.AllRepos)
+		return status, err
 	}
-	return nil
+	return status, nil
 }
 
-func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) (err error) {
+func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) (status plugins.Status, err error) {
+	status = plugins.Status{}
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("recovered panic in bugzilla plugin: %v", r)
@@ -352,12 +355,13 @@ func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) (err error
 	options := pc.PluginConfig.Bugzilla.OptionsForBranch(pre.PullRequest.Base.Repo.Owner.Login, pre.PullRequest.Base.Repo.Name, pre.PullRequest.Base.Ref)
 	event, err := digestPR(pc.Logger, pre, options.ValidateByDefault)
 	if err != nil {
-		return err
+		return status, err
 	}
 	if event != nil {
-		return handle(*event, pc.GitHubClient, pc.BugzillaClient, options, pc.Logger, pc.Config.AllRepos)
+		status, err = handle(*event, pc.GitHubClient, pc.BugzillaClient, options, pc.Logger, pc.Config.AllRepos)
+		return status, err
 	}
-	return nil
+	return status, nil
 }
 
 func getCherryPickMatch(pre github.PullRequestEvent) (bool, int, string, error) {
@@ -577,13 +581,15 @@ func processQuery(query *emailToLoginQuery, email string, log *logrus.Entry) str
 	}
 }
 
-func handle(e event, gc githubClient, bc bugzilla.Client, options plugins.BugzillaBranchOptions, log *logrus.Entry, allRepos sets.String) error {
+func handle(e event, gc githubClient, bc bugzilla.Client, options plugins.BugzillaBranchOptions, log *logrus.Entry, allRepos sets.String) (plugins.Status, error) {
+	var status plugins.Status
 	comment := e.comment(gc)
 	// check if bug is part of a restricted group
 	if !e.missing {
 		bug, err := getBug(bc, e.bugId, log, comment)
+		status.TookAction()
 		if err != nil || bug == nil {
-			return err
+			return status, err
 		}
 		if !isBugAllowed(bug, options.AllowedGroups) {
 			// ignore bugs that are in non-allowed groups for this repo
@@ -597,22 +603,28 @@ func handle(e event, gc githubClient, bc bugzilla.Client, options plugins.Bugzil
 				} else {
 					response += " There are no allowed bug groups configured for this repo."
 				}
-				return comment(response)
+				return status, comment(response)
 			}
-			return nil
+			return status, nil
 		}
 	}
 	// merges follow a different pattern from the normal validation
 	if e.merged {
-		return handleMerge(e, gc, bc, options, log, allRepos)
+		err := handleMerge(e, gc, bc, options, log, allRepos)
+		status.TookAction()
+		return status, err
 	}
 	// close events follow a different pattern from the normal validation
 	if e.closed && !e.merged {
-		return handleClose(e, gc, bc, options, log)
+		err := handleClose(e, gc, bc, options, log)
+		status.TookAction()
+		return status, err
 	}
 	// cherrypicks follow a different pattern than normal validation
 	if e.cherrypick {
-		return handleCherrypick(e, gc, bc, options, log)
+		err := handleCherrypick(e, gc, bc, options, log)
+		status.TookAction()
+		return status, err
 	}
 
 	var needsValidLabel, needsInvalidLabel bool
@@ -627,8 +639,9 @@ To reference a bug, add 'Bug XXX:' to the title of this pull request and request
 		log = log.WithField("bugId", e.bugId)
 
 		bug, err := getBug(bc, e.bugId, log, comment)
+		status.TookAction()
 		if err != nil || bug == nil {
-			return err
+			return status, err
 		}
 		severityLabel = getSeverityLabel(bug.Severity)
 
@@ -637,7 +650,7 @@ To reference a bug, add 'Bug XXX:' to the title of this pull request and request
 			for _, id := range bug.DependsOn {
 				dependent, err := bc.GetBug(id)
 				if err != nil {
-					return comment(formatError(fmt.Sprintf("searching for dependent bug %d", id), bc.Endpoint(), e.bugId, err))
+					return status, comment(formatError(fmt.Sprintf("searching for dependent bug %d", id), bc.Endpoint(), e.bugId, err))
 				}
 				dependents = append(dependents, *dependent)
 			}
@@ -652,7 +665,7 @@ To reference a bug, add 'Bug XXX:' to the title of this pull request and request
 			if update := options.StateAfterValidation.AsBugUpdate(bug); update != nil {
 				if err := bc.UpdateBug(e.bugId, *update); err != nil {
 					log.WithError(err).Warn("Unexpected error updating Bugzilla bug.")
-					return comment(formatError(fmt.Sprintf("updating to the %s state", options.StateAfterValidation), bc.Endpoint(), e.bugId, err))
+					return status, comment(formatError(fmt.Sprintf("updating to the %s state", options.StateAfterValidation), bc.Endpoint(), e.bugId, err))
 				}
 				response += fmt.Sprintf(" The bug has been moved to the %s state.", options.StateAfterValidation)
 			}
@@ -660,7 +673,7 @@ To reference a bug, add 'Bug XXX:' to the title of this pull request and request
 				changed, err := bc.AddPullRequestAsExternalBug(e.bugId, e.org, e.repo, e.number)
 				if err != nil {
 					log.WithError(err).Warn("Unexpected error adding external tracker bug to Bugzilla bug.")
-					return comment(formatError("adding this pull request to the external tracker bugs", bc.Endpoint(), e.bugId, err))
+					return status, comment(formatError("adding this pull request to the external tracker bugs", bc.Endpoint(), e.bugId, err))
 				}
 				if changed {
 					response += " The bug has been updated to refer to the pull request using the external bug tracker."
@@ -697,7 +710,7 @@ To reference a bug, add 'Bug XXX:' to the title of this pull request and request
 				err := gc.Query(context.Background(), query, queryVars)
 				if err != nil {
 					log.WithError(err).Error("Failed to run graphql github query")
-					return comment(formatError(fmt.Sprintf("querying GitHub for users with public email (%s)", email), bc.Endpoint(), e.bugId, err))
+					return status, comment(formatError(fmt.Sprintf("querying GitHub for users with public email (%s)", email), bc.Endpoint(), e.bugId, err))
 				}
 				response += fmt.Sprint("\n\n", processQuery(query, email, log))
 				if e.assign {
@@ -720,6 +733,7 @@ Comment <code>/bugzilla refresh</code> to re-evaluate validity if changes to the
 	// as it is more important to report to the user than to
 	// fail early on a label check.
 	currentLabels, err := gc.GetIssueLabels(e.org, e.repo, e.number)
+	status.TookAction()
 	if err != nil {
 		log.WithError(err).Warn("Could not list labels on PR")
 	}
@@ -756,7 +770,7 @@ Comment <code>/bugzilla refresh</code> to re-evaluate validity if changes to the
 		humanLabelled, err := gc.WasLabelAddedByHuman(e.org, e.repo, e.number, labels.ValidBug)
 		if err != nil {
 			// Return rather than potentially doing the wrong thing. The user can re-trigger us.
-			return fmt.Errorf("failed to check if %s label was added by a human: %w", labels.ValidBug, err)
+			return status, fmt.Errorf("failed to check if %s label was added by a human: %w", labels.ValidBug, err)
 		}
 		if humanLabelled {
 			// This will make us remove the invalid label if it exists but saves us another check if it was
@@ -788,7 +802,7 @@ Comment <code>/bugzilla refresh</code> to re-evaluate validity if changes to the
 		}
 	}
 
-	return comment(response)
+	return status, comment(response)
 }
 
 func getSeverityLabel(severity string) string {
