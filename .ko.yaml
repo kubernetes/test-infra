@@ -1,0 +1,1 @@
+defaultBaseImage: gcr.io/k8s-prow/git:v20211018-372b1c8
