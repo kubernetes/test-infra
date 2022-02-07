@@ -4,6 +4,10 @@ presubmits:
     always_run: true
     skip_branches:
     - gh-pages
+    - ^release-0.6
+    - ^release-0.7
+    - ^release-0.8
+    - ^release-0.9
     decorate: true
     annotations:
       testgrid-dashboards: sig-node-node-feature-discovery
@@ -12,6 +16,23 @@ presubmits:
     spec:
       containers:
       - image: golang:1.17
+        command:
+        - scripts/test-infra/verify.sh
+  - name: pull-node-feature-discovery-verify-0-9
+    always_run: true
+    branches:
+    - ^release-0.6
+    - ^release-0.7
+    - ^release-0.8
+    - ^release-0.9
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-node-node-feature-discovery
+      testgrid-tab-name: verify-0.9
+      description: "Verify source code of pre golang 1.17 release branches"
+    spec:
+      containers:
+      - image: golang:1.16
         command:
         - scripts/test-infra/verify.sh
   - name: pull-node-feature-discovery-verify-docs
