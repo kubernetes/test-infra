@@ -115,6 +115,39 @@ presubmits:
     annotations:
       testgrid-dashboards: presubmits-test-infra
       testgrid-tab-name: integration
+  - name: pull-test-infra-integration-with-ko
+    branches:
+    - master
+    always_run: false
+    decorate: true
+    labels:
+      preset-service-account: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220124-681f3531ec-test-infra
+        command:
+        - runner.sh
+        args:
+        - ./prow/test/integration/integration-test.sh
+        - --config=ci
+        env:
+        - name: PUSH_IMAEG_WITH_KO
+          value: "true"
+        - name: BAZEL_FETCH_PLEASE
+          value: "true" # integration test fetches a very specific set of targets, define them in integration-test.sh instead of here
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 1.9 # Peak usage around 1.5 cpu
+            memory: "8Gi" # Rough estimated usage of memory
+    annotations:
+      testgrid-dashboards: presubmits-test-infra
+      testgrid-tab-name: integration-with-ko
   - name: pull-test-infra-unit-test
     branches:
     - master
