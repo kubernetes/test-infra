@@ -6,7 +6,7 @@ metadata:
   name: kettle-data
 spec:
   capacity:
-    storage: 1001Gi
+    storage: 2001Gi
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
@@ -25,7 +25,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 1001Gi
+      storage: 2001Gi
   storageClassName: ssd
   volumeName: kettle-data
 ---
