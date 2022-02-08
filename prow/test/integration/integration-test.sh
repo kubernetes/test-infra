@@ -34,7 +34,7 @@ function setup() {
   "${bazel}" run //prow/test/integration:setup-local-registry "$@" || ( echo "FAILED: set up local registry">&2; return 1 )
 
   if [[ "${PUSH_IMAEG_WITH_KO:-}" == "true" ]]; then
-    make -C prow REGISTRY="localhost:5001" push-images
+    PUSH=true KO_DOCKER_REPO="localhost:5001" PROW_IMAGES_DEF_FILE="prow/test/integration/prow/.prow-images" ./prow/prow-images.sh
   else
     # testimage-push builds images, could fail due to network flakiness
     (retry "${bazel}" run //prow:testimage-push "$@") || ( echo "FAILED: pushing images">&2; return 1 )
@@ -59,8 +59,12 @@ function main() {
     (retry "${bazel}" fetch //prow/test/integration:cleanup //prow/test/integration:setup-local-registry //prow:testimage-push //prow/test/integration:setup-cluster //prow/test/integration/test:go_default_test) || ( echo "FAILED: bazel fetch">&2; return 1 )
   fi
 
-  trap "teardown '$@'" EXIT
-  setup "$@"
+  if [[ "${SKIP_TEARDOWN:-}" != "true" ]]; then
+    trap "teardown '$@'" EXIT
+  fi
+  if [[ "${SKIP_SETUP:-}" != "true" ]]; then
+    setup "$@"
+  fi
 
   run "$@"
   exit 0
