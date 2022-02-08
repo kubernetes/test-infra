@@ -6,7 +6,7 @@ metadata:
   name: kettle-data-staging
 spec:
   capacity:
-    storage: 100Gi
+    storage: 201Gi
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
@@ -26,7 +26,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 100Gi
+      storage: 201Gi
   storageClassName: ssd
   volumeName: kettle-data-staging
 ---
