@@ -17,11 +17,16 @@ limitations under the License.
 package hook
 
 import (
+	"bytes"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 
 	"k8s.io/test-infra/prow/githubeventserver"
 	"k8s.io/test-infra/prow/plugins"
@@ -253,6 +258,55 @@ func TestNeedDemux(t *testing.T) {
 			},
 		},
 		{
+			name: "external plugins handling other events",
+
+			eventType: "repository",
+			srcRepo:   "kubernetes/test-infra",
+			plugins: map[string][]plugins.ExternalPlugin{
+				"kubernetes/test-infra": {
+					{
+						Name: "coffee",
+					},
+				},
+				"kubernetes/kubernetes": {
+					{
+						Name:   "gumbo",
+						Events: []string{"issue_comment"},
+					},
+				},
+				"kubernetes": {
+					{
+						Name:   "chicken",
+						Events: []string{"repository"},
+					},
+					{
+						Name: "water",
+					},
+					{
+						Name:   "chocolate",
+						Events: []string{"pull_request", "issue_comment", "repository"},
+					},
+				},
+			},
+
+			expected: []plugins.ExternalPlugin{
+				{
+					Name: "coffee",
+				},
+				{
+					Name: "water",
+				},
+				{
+					Name:   "chicken",
+					Events: []string{"repository"},
+				},
+				{
+					Name:   "chocolate",
+					Events: []string{"pull_request", "issue_comment", "repository"},
+				},
+			},
+		},
+		{
 			name: "we have variety but disabled that repo",
 
 			eventType: "issue_comment",
@@ -330,6 +384,191 @@ func TestNeedDemux(t *testing.T) {
 					t.Errorf("expected plugins: %+v, got: %+v", test.expected, gotPlugins)
 					break
 				}
+			}
+		})
+	}
+}
+
+type roundTripFunc func(req *http.Request) *http.Response
+
+// RoundTrip .
+func (f roundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
+	return f(req), nil
+}
+
+// newTestClient returns *http.Client with Transport replaced to avoid making real calls
+func newTestClient(fn roundTripFunc) *http.Client {
+	return &http.Client{
+		Transport: fn,
+	}
+}
+
+func TestDemuxEvent(t *testing.T) {
+
+	getSecret := func() []byte {
+		var repoLevelSecret = `
+'*':
+  - value: abc
+    created_at: 2019-10-02T15:00:00Z
+  - value: key2
+    created_at: 2020-10-02T15:00:00Z
+foo/bar:
+  - value: 123abc
+    created_at: 2019-10-02T15:00:00Z
+  - value: key6
+    created_at: 2020-10-02T15:00:00Z
+`
+		return []byte(repoLevelSecret)
+	}
+
+	externalPlugins := map[string][]plugins.ExternalPlugin{
+		"kubernetes/test-infra": {
+			{
+				Name:     "coffee",
+				Endpoint: "/coffee",
+			},
+		},
+		"kubernetes/kubernetes": {
+			{
+				Name:     "gumbo",
+				Endpoint: "/gumbo",
+				Events:   []string{"issue_comment"},
+			},
+		},
+		"kubernetes": {
+			{
+				Name:     "chicken",
+				Endpoint: "/chicken",
+				Events:   []string{"repository"},
+			},
+			{
+				Name:     "water",
+				Endpoint: "/water",
+			},
+			{
+				Name:     "chocolate",
+				Endpoint: "/chocolate",
+				Events:   []string{"pull_request", "issue_comment", "repository"},
+			},
+			{
+				Name:     "unknown_event_handler",
+				Endpoint: "/unknown",
+				Events:   []string{"unknown_event"},
+			},
+		},
+	}
+
+	// This is the SHA1 signature for payload "$BODY" and signature "abc"
+	// echo -n $BODY | openssl dgst -sha1 -hmac abc
+	const hmac string = "sha1=d5f926df2d39006bdb5b6acb18f8fcdebad7a052"
+	const body string = `{
+  "action": "edited",
+  "changes": {
+    "default_branch": {
+      "from": "master"
+    }
+  },
+  "repository": {
+    "full_name": "kubernetes/test-infra",
+    "default_branch": "master"
+  }
+}`
+
+	metrics := githubeventserver.NewMetrics()
+	pa := &plugins.ConfigAgent{}
+	pa.Set(&plugins.Configuration{
+		ExternalPlugins: externalPlugins,
+	})
+
+	var testcases = []struct {
+		name string
+
+		Method string
+		Header map[string]string
+		Body   string
+
+		ExpectedDispatch []string
+	}{
+		{
+			name: "Repository event",
+
+			Method: http.MethodPost,
+			Header: map[string]string{
+				"X-GitHub-Event":    "repository",
+				"X-GitHub-Delivery": "I am unique",
+				"X-Hub-Signature":   hmac,
+				"content-type":      "application/json",
+			},
+			Body: body,
+
+			ExpectedDispatch: []string{"/coffee", "/water", "/chicken", "/chocolate"},
+		},
+		{
+			name: "Issue comment event",
+
+			Method: http.MethodPost,
+			Header: map[string]string{
+				"X-GitHub-Event":    "issue_comment",
+				"X-GitHub-Delivery": "I am unique",
+				"X-Hub-Signature":   hmac,
+				"content-type":      "application/json",
+			},
+			Body: body,
+
+			ExpectedDispatch: []string{"/coffee", "/water", "/chocolate"},
+		},
+		{
+			name: "Unknown event type gets dispatched to external plugin",
+
+			Method: http.MethodPost,
+			Header: map[string]string{
+				"X-GitHub-Event":    "unknown_event",
+				"X-GitHub-Delivery": "I am unique",
+				"X-Hub-Signature":   hmac,
+				"content-type":      "application/json",
+			},
+			Body: body,
+
+			ExpectedDispatch: []string{"/coffee", "/water", "/unknown"},
+		},
+	}
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Logf("Running scenario %q", tc.name)
+
+			var calledExternalPlugins []string
+			client := newTestClient(func(req *http.Request) *http.Response {
+				calledExternalPlugins = append(calledExternalPlugins, req.URL.String())
+				return &http.Response{
+					StatusCode: 200,
+					Body:       ioutil.NopCloser(bytes.NewBufferString(`OK`)),
+					Header:     make(http.Header),
+				}
+			})
+
+			s := &Server{
+				Metrics:        metrics,
+				Plugins:        pa,
+				TokenGenerator: getSecret,
+				RepoEnabled:    func(org, repo string) bool { return true },
+				c:              *client,
+			}
+			w := httptest.NewRecorder()
+			r, err := http.NewRequest(tc.Method, "", strings.NewReader(tc.Body))
+			if err != nil {
+				t.Fatal(err)
+			}
+			for k, v := range tc.Header {
+				r.Header.Set(k, v)
+			}
+			s.ServeHTTP(w, r)
+			s.wg.Wait()
+
+			if diff := cmp.Diff(tc.ExpectedDispatch, calledExternalPlugins, cmpopts.SortSlices(func(a, b string) bool {
+				return a < b
+			})); diff != "" {
+				t.Fatalf("Expected plugins calls mismatch. got(+), want(-):\n%s", diff)
 			}
 		})
 	}
