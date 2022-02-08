@@ -407,6 +407,8 @@ test_groups:
   name: kyma-upgrade-gardener-kyma2-to-main
 - gcs_prefix: kyma-prow-logs/logs/kyma-upgrade-k3d-kyma2-to-main
   name: kyma-upgrade-k3d-kyma2-to-main
+- gcs_prefix: kyma-prow-logs/logs/serverless-function-benchmark
+  name: serverless-function-benchmark
 - gcs_prefix: kyma-prow-logs/logs/post-main-compass-gke-integration
   name: post-main-compass-gke-integration
 - days_of_results: 60
