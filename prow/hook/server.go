@@ -167,10 +167,16 @@ func (s *Server) demuxEvent(eventType, eventGUID string, payload []byte, h http.
 			go s.handleStatusEvent(l, se)
 		}
 	default:
+		var ge github.GenericEvent
+		if err := json.Unmarshal(payload, &ge); err != nil {
+			return err
+		}
+		srcRepo = ge.Repo.FullName
 		l.Debug("Ignoring unhandled event type. (Might still be handled by external plugins.)")
 	}
 	// Demux events only to external plugins that require this event.
 	if external := s.needDemux(eventType, srcRepo); len(external) > 0 {
+		s.wg.Add(1)
 		go s.demuxExternal(l, external, payload, h)
 	}
 	return nil
@@ -216,6 +222,7 @@ func (s *Server) needDemux(eventType, orgRepo string) []plugins.ExternalPlugin {
 
 // demuxExternal dispatches the provided payload to the external plugins.
 func (s *Server) demuxExternal(l *logrus.Entry, externalPlugins []plugins.ExternalPlugin, payload []byte, h http.Header) {
+	defer s.wg.Done()
 	h.Set("User-Agent", "ProwHook")
 	for _, p := range externalPlugins {
 		s.wg.Add(1)
