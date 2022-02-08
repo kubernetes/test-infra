@@ -1,2 +1,5 @@
-prow/cmd/deck
 prow/cmd/sinker
+prow/cmd/clonerefs;all
+prow/cmd/entrypoint;all
+prow/cmd/initupload;all
+prow/cmd/sidecar;all
