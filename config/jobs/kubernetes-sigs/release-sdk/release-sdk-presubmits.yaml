@@ -20,10 +20,7 @@ presubmits:
       testgrid-alert-email: release-managers+alerts@kubernetes.io
       testgrid-num-columns-recent: '30'
   - name: pull-release-sdk-integration-test
-    # TODO(xmudrii): Make this job always run and required after
-    # https://github.com/kubernetes-sigs/release-sdk/pull/31 is merged
-    always_run: false
-    optional: true
+    always_run: true
     decorate: true
     path_alias: "sigs.k8s.io/release-sdk"
     labels:
