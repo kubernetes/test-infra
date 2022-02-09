@@ -933,3 +933,37 @@ func TestGitFetch(t *testing.T) {
 		})
 	}
 }
+
+func TestCloneCommandString(t *testing.T) {
+	tests := []struct {
+		name string
+		cc   cloneCommand
+		want string
+	}{
+		{
+			name: "empty",
+			cc:   cloneCommand{},
+			want: "PWD=   ",
+		},
+		{
+			name: "base",
+			cc: cloneCommand{
+				dir:     "abc",
+				env:     []string{"d=e", "f=g"},
+				command: "echo",
+				args:    []string{"hij klm"},
+			},
+			want: "PWD=abc d=e f=g echo hij klm",
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			want, got := tc.want, tc.cc.String()
+			if diff := cmp.Diff(want, got); diff != "" {
+				t.Errorf("mismatch. want(-), got(+):\n%s", diff)
+			}
+		})
+	}
+}
