@@ -75,6 +75,7 @@ approve:
   ignore_review_state: true
 - repos:
   - bazelbuild
+  - kubernetes-sigs/bom
   - kubernetes-sigs/boskos
   - kubernetes-sigs/cluster-api-provider-digitalocean
   - kubernetes-sigs/cluster-api-provider-gcp
@@ -151,6 +152,7 @@ label:
 lgtm:
 - repos:
   - bazelbuild
+  - kubernetes-sigs/bom
   - kubernetes-sigs/boskos
   - kubernetes-sigs/controller-runtime
   - kubernetes-sigs/cluster-api-provider-digitalocean
