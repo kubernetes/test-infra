@@ -27,7 +27,6 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-
 	"k8s.io/test-infra/prow/gcsupload"
 	"k8s.io/test-infra/prow/pod-utils/wrapper"
 	"k8s.io/test-infra/prow/secretutil"
@@ -154,6 +153,28 @@ func TestCensorIntegration(t *testing.T) {
 	if err := archive(archiveDir, archiveFile); err != nil {
 		t.Fatalf("failed to archive input: %v", err)
 	}
+	// create a corrupt archive as well to test for resiliency
+	corruptArchiveFile := filepath.Join(tempDir, "artifacts/corrupt.tar.gz")
+	if err := archive(archiveDir, corruptArchiveFile); err != nil {
+		t.Fatalf("failed to archive input: %v", err)
+	}
+	file, err := os.OpenFile(corruptArchiveFile, os.O_RDWR, 0666)
+	if err != nil {
+		t.Fatalf("failed to open archived input: %v", err)
+	}
+	raw, err := ioutil.ReadAll(file)
+	if err != nil {
+		t.Fatalf("failed to read archived input: %v", err)
+	}
+	// the third byte in a gzip archive is a flag; some values are
+	// reserved - if we set this to be some corrupt value, we expect
+	// that the archive will be detected as gzip but that reading this
+	// archive to be impossible.
+	// ref: https://datatracker.ietf.org/doc/html/rfc1952#page-5
+	raw[3] = 0x6
+	if n, err := file.WriteAt(raw, 0); err != nil || n != len(raw) {
+		t.Fatalf("failed to write corrupted archive: wrote %d (of %d) bytes, err: %v", n, len(raw), err)
+	}
 
 	bufferSize := 1
 	options := Options{
@@ -177,6 +198,9 @@ func TestCensorIntegration(t *testing.T) {
 		t.Fatalf("got an error from censoring: %v", err)
 	}
 
+	if err := os.Remove(corruptArchiveFile); err != nil {
+		t.Fatalf("failed to remove corrupt archive: %v", err)
+	}
 	if err := unarchive(archiveFile, archiveDir); err != nil {
 		t.Fatalf("failed to unarchive input: %v", err)
 	}
