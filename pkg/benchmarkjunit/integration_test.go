@@ -47,14 +47,16 @@ var goBinaryPath = flag.String("go", "go", "The location of the go binary. This 
 
 func TestDummybenchmarksIntegration(t *testing.T) {
 	// Set HOME and GOROOT envvars for bazel if needed.
-	if os.Getenv("HOME") == "" {
-		wd, _ := os.Getwd() // Just use `/home` if we can't determine working dir.
-		os.Setenv("HOME", wd+"/home")
-	}
-	if os.Getenv("GOROOT") == "" {
-		goRoot, _ := filepath.Abs("../../external/go_sdk")
-		os.Setenv("GOROOT", goRoot)
-		t.Logf("Setting GOROOT to %q.\n", goRoot)
+	if os.Getenv("TEST_WORKSPACE") != "" { // Running in bazel
+		if os.Getenv("HOME") == "" {
+			wd, _ := os.Getwd() // Just use `/home` if we can't determine working dir.
+			os.Setenv("HOME", wd+"/home")
+		}
+		if os.Getenv("GOROOT") == "" {
+			goRoot, _ := filepath.Abs("../../external/go_sdk")
+			os.Setenv("GOROOT", goRoot)
+			t.Logf("Setting GOROOT to %q.\n", goRoot)
+		}
 	}
 
 	outFile, err := createTempFile()

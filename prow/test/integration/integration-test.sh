@@ -17,6 +17,10 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd -P)"
+cd "${REPO_ROOT}"
+source hack/build/setup-go.sh
+
 bazel=$(command -v bazelisk || command -v bazel)
 
 function retry() {
@@ -34,7 +38,7 @@ function setup() {
   "${bazel}" run //prow/test/integration:setup-local-registry "$@" || ( echo "FAILED: set up local registry">&2; return 1 )
 
   if [[ "${PUSH_IMAEG_WITH_KO:-}" == "true" ]]; then
-    PUSH=true KO_DOCKER_REPO="localhost:5001" PROW_IMAGES_DEF_FILE="prow/test/integration/prow/.prow-images" ./prow/prow-images.sh
+    go run ./hack/imagebuilder --ko-docker-repo="localhost:5001" --prow-images-file="prow/test/integration/prow/.prow-images.yaml" --push
   else
     # testimage-push builds images, could fail due to network flakiness
     (retry "${bazel}" run //prow:testimage-push "$@") || ( echo "FAILED: pushing images">&2; return 1 )
