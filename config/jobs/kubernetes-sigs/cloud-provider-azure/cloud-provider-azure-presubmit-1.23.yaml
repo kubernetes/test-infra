@@ -258,6 +258,59 @@ presubmits:
         testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmss-1-23
         description: "Runs Azure specific tests with cloud-provider-azure release-1.23 (https://github.com/kubernetes-sigs/cloud-provider-azure)."
         testgrid-num-columns-recent: '30'
+    - name: pull-cloud-provider-azure-e2e-capz-1-23
+      always_run: false
+      optional: true
+      decorate: true
+      decoration_config:
+        timeout: 5h
+      path_alias: sigs.k8s.io/cloud-provider-azure
+      branches:
+        - release-1.23
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+        preset-azure-cred-only: "true"
+      extra_refs:
+        - org: kubernetes-sigs
+          repo: cluster-api-provider-azure
+          base_ref: release-1.0
+          path_alias: sigs.k8s.io/cluster-api-provider-azure
+          workdir: true
+        - org: kubernetes
+          repo: kubernetes
+          base_ref: release-1.23
+          path_alias: k8s.io/kubernetes
+          workdir: false
+      spec:
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20211217-ea95cec1d4-1.23
+            command:
+              - runner.sh
+              - ./scripts/ci-entrypoint.sh
+            args:
+              - bash
+              - -c
+              - >-
+                cp ./kubeconfig ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure/kubeconfig &&
+                cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
+                make test-e2e-capz
+            securityContext:
+              privileged: true
+            env:
+              - name: TEST_CCM
+                value: "true"
+              - name: AZURE_LOADBALANCER_SKU
+                value: "standard"
+              - name: KUBERNETES_VERSION
+                value: 1.23.1
+              - name: GINKGO_ARGS
+                value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --test.parallel=30
+      annotations:
+        testgrid-dashboards: provider-azure-cloud-provider-azure-1-23-presubmit
+        testgrid-tab-name: pr-cloud-provider-azure-e2e-capz-1-23
+        description: "Runs Kubernetes conformance tests with cloud-provider-azure release-1.23 (https://github.com/kubernetes-sigs/cloud-provider-azure) using cluster-api-provider-azure."
+        testgrid-num-columns-recent: '30'
     - name: pull-cloud-provider-azure-e2e-ccm-capz-1-23
       always_run: true
       optional: true
