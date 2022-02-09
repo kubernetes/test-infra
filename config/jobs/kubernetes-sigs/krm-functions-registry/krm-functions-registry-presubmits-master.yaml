@@ -15,6 +15,8 @@ presubmits:
         # we use this image because we need docker-in-docker and go.
       - image: gcr.io/k8s-staging-test-infra/krte:v20220121-bb77a9cb93-1.23
         command:
+        # docker-in-docker is set up in wrapper.sh
+        - wrapper.sh
         - ./test.sh
         # docker-in-docker needs privileged mode
         securityContext:
