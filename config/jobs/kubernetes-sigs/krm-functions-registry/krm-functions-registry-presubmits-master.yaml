@@ -3,6 +3,9 @@ presubmits:
   - name: pull-krm-functions-registry-test-master
     decorate: true
     always_run: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
     path_alias: sigs.k8s.io/krm-functions-registry
     branches:
     # The script this job runs is not in all branches.
@@ -12,6 +15,9 @@ presubmits:
       - image: golang:1.17
         command:
         - ./test.sh
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
         resources:
           requests:
             cpu: "4000m"
