@@ -181,7 +181,6 @@ func TestRun(t *testing.T) {
 					user:       "me",
 					email:      "me@domain.com",
 					cookiePath: "cookies/path",
-					env:        []string{"GIT_SSH_COMMAND=/usr/bin/ssh -o UserKnownHostsFile=/tmp/known_hosts"},
 				},
 			},
 		},
@@ -224,7 +223,6 @@ func TestRun(t *testing.T) {
 							},
 						},
 					},
-					env: []string{"GIT_SSH_COMMAND=/usr/bin/ssh -o UserKnownHostsFile=/tmp/known_hosts"},
 				},
 				{
 					refs: prowapi.Refs{
@@ -233,7 +231,6 @@ func TestRun(t *testing.T) {
 						BaseRef:   "master",
 						PathAlias: "k8s.io/release",
 					},
-					env: []string{"GIT_SSH_COMMAND=/usr/bin/ssh -o UserKnownHostsFile=/tmp/known_hosts"},
 				},
 			},
 		},
@@ -282,7 +279,6 @@ func TestRun(t *testing.T) {
 					email:      "me@domain.com",
 					cookiePath: "cookies/path",
 					authToken:  "12345678",
-					env:        []string{"GIT_SSH_COMMAND=/usr/bin/ssh -o UserKnownHostsFile=/tmp/known_hosts"},
 				},
 			},
 		},
@@ -336,21 +332,12 @@ func TestRun(t *testing.T) {
 					cookiePath: "cookies/path",
 					authUser:   "x-access-token",
 					authToken:  githubAppToken,
-					env:        []string{"GIT_SSH_COMMAND=/usr/bin/ssh -o UserKnownHostsFile=/tmp/known_hosts"},
 				},
 			},
 		},
 	}
 	for _, tc := range testcases {
 		t.Run(tc.name, func(t *testing.T) {
-			oldLookExecFunc := lookExecPath
-			lookExecPath = func(s string) (string, error) {
-				return "/usr/bin/ssh", nil
-			}
-			defer func() {
-				lookExecPath = oldLookExecFunc
-			}()
-
 			defer func() { recordedClones = nil }()
 			os.RemoveAll(srcRoot)
 			os.MkdirAll(srcRoot, os.ModePerm)
@@ -370,7 +357,7 @@ func TestRun(t *testing.T) {
 					}
 				}
 				if !found {
-					t.Errorf("Got recordedClones:\n%#v\n\nwant expected clone:\n%#v", recordedClones, exp)
+					t.Errorf("recordedClones %#v is missing expected clone %#v", recordedClones, exp)
 				}
 			}
 			if rec, exp := len(recordedClones), len(tc.expectedClones); rec != exp {

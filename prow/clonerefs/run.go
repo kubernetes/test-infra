@@ -36,10 +36,7 @@ import (
 	"k8s.io/test-infra/prow/pod-utils/clone"
 )
 
-const defaultGitHubFingerprint = "github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ=="
-
 var cloneFunc = clone.Run
-var lookExecPath = exec.LookPath
 
 func (o *Options) createRecords() []clone.Record {
 	var rec clone.Record
@@ -55,9 +52,7 @@ func (o *Options) createRecords() []clone.Record {
 			return []clone.Record{rec}
 		}
 	}
-	// Always add default GitHub fingerprint
-	o.HostFingerprints = append(o.HostFingerprints, defaultGitHubFingerprint)
-	{
+	if len(o.HostFingerprints) > 0 {
 		envVar, cmds, err := addHostFingerprints(o.HostFingerprints)
 		rec.Commands = append(rec.Commands, cmds...)
 		if err != nil {
@@ -254,7 +249,7 @@ func addHostFingerprints(fingerprints []string) (string, []clone.Command, error)
 	cmds = append(cmds, cmd)
 	logrus.Infof("Updated known_hosts in file: %s", knownHostsFile)
 
-	ssh, err := lookExecPath("ssh")
+	ssh, err := exec.LookPath("ssh")
 	cmd = clone.Command{
 		Command: "golang: lookup ssh path",
 	}
