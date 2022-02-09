@@ -1332,3 +1332,26 @@ func TestCacheDoesntRace(t *testing.T) {
 
 	wg.Wait()
 }
+
+func TestRepoOwners_AllOwners(t *testing.T) {
+	expectedOwners := []string{"alice", "bob", "cjwagner", "matthyx", "mml"}
+	ro := &RepoOwners{
+		approvers: map[string]map[*regexp.Regexp]sets.String{
+			"":                    regexpAll("cjwagner"),
+			"src":                 regexpAll(),
+			"src/dir":             regexpAll("bob"),
+			"src/dir/conformance": regexpAll("mml"),
+			"src/dir/subdir":      regexpAll("alice", "bob"),
+			"vendor":              regexpAll("alice"),
+		},
+		reviewers: map[string]map[*regexp.Regexp]sets.String{
+			"":               regexpAll("alice", "bob"),
+			"src/dir":        regexpAll("alice", "matthyx"),
+			"src/dir/subdir": regexpAll("alice", "bob"),
+		},
+	}
+	foundOwners := ro.AllOwners()
+	if !foundOwners.Equal(sets.NewString(expectedOwners...)) {
+		t.Errorf("Expected Owners: %v\tFound Owners: %v ", expectedOwners, foundOwners.List())
+	}
+}

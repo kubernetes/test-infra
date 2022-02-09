@@ -115,6 +115,10 @@ type fakeOwnersClient struct {
 	dirDenylist       []*regexp.Regexp
 }
 
+func (foc *fakeOwnersClient) AllOwners() sets.String {
+	return sets.String{}
+}
+
 func (foc *fakeOwnersClient) Filenames() ownersconfig.Filenames {
 	return ownersconfig.FakeFilenames
 }

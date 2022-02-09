@@ -45,6 +45,10 @@ type fakeOwnersClient struct {
 	reviewers map[string]layeredsets.String
 }
 
+func (f *fakeOwnersClient) LoadRepoOwnersSha(org, repo, base, sha string, updateCache bool) (repoowners.RepoOwner, error) {
+	return &fakeRepoOwners{approvers: f.approvers, reviewers: f.reviewers}, nil
+}
+
 var _ repoowners.Interface = &fakeOwnersClient{}
 
 func (f *fakeOwnersClient) LoadRepoOwners(org, repo, base string) (repoowners.RepoOwner, error) {
@@ -63,6 +67,10 @@ type fakeRepoOwners struct {
 	approvers   map[string]layeredsets.String
 	reviewers   map[string]layeredsets.String
 	dirDenylist []*regexp.Regexp
+}
+
+func (f *fakeRepoOwners) AllOwners() sets.String {
+	return sets.String{}
 }
 
 func (f *fakeRepoOwners) Filenames() ownersconfig.Filenames {
