@@ -24,6 +24,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -36,10 +37,53 @@ import (
 	"k8s.io/test-infra/prow/pod-utils/clone"
 )
 
-const defaultGitHubFingerprint = "github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ=="
+// Files to be mounted before cloning, this SSH fingerprint is a well known
+// GitHub fingerprint.
+// ref: https://github.com/kubernetes/test-infra/issues/9638
+func mountDefaultGitHubFingerprint(dir string) error {
+	var sshConfigFiles = map[string]string{
+		"/etc/ssh/ssh_config": "github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==",
+		"/github_known_hosts": `Host github.com
+	HostName github.com
+	User git
+	UserKnownHostsFile /github_known_hosts
+	StrictHostKeyChecking yes
+	CheckHostIP no`,
+	}
+
+	// Best effort mounting ssh_config and know_hosts file
+	for fp, content := range sshConfigFiles {
+		// Normalize fp
+		fp = path.Join(dir, fp)
+		// Not to add it repeatedly
+		if existing, err := ioutil.ReadFile(fp); err == nil && strings.Contains(string(existing), content) {
+			continue
+		}
+
+		// Create dir if not exist
+		dir := path.Dir(fp)
+		if err := os.MkdirAll(dir, 0777); err != nil {
+			return fmt.Errorf("create dir '%s': %w", dir, err)
+		}
+		// If the file doesn't exist, create it, or append to the file
+		f, err := os.OpenFile(fp, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			return fmt.Errorf("open file '%s': %w", fp, err)
+		}
+		if _, err := f.Write([]byte(content + "\n")); err != nil {
+			if closeErr := f.Close(); closeErr != nil {
+				logrus.WithError(err).WithField("file", fp).Warn("Best effort closing file after write failure failed.")
+			}
+			return fmt.Errorf("write file '%s': %w", fp, err)
+		}
+		if err := f.Close(); err != nil {
+			return fmt.Errorf("clone file '%s': %w", fp, err)
+		}
+	}
+	return nil
+}
 
 var cloneFunc = clone.Run
-var lookExecPath = exec.LookPath
 
 func (o *Options) createRecords() []clone.Record {
 	var rec clone.Record
@@ -55,9 +99,7 @@ func (o *Options) createRecords() []clone.Record {
 			return []clone.Record{rec}
 		}
 	}
-	// Always add default GitHub fingerprint
-	o.HostFingerprints = append(o.HostFingerprints, defaultGitHubFingerprint)
-	{
+	if len(o.HostFingerprints) > 0 {
 		envVar, cmds, err := addHostFingerprints(o.HostFingerprints)
 		rec.Commands = append(rec.Commands, cmds...)
 		if err != nil {
@@ -160,6 +202,9 @@ func (o *Options) createRecords() []clone.Record {
 
 // Run clones the configured refs
 func (o Options) Run() error {
+	if err := mountDefaultGitHubFingerprint(o.GitHubFingerprintMountDir); err != nil {
+		return fmt.Errorf("mounting default github fingerprint: %w", err)
+	}
 	results := o.createRecords()
 	logData, err := json.Marshal(results)
 	if err != nil {
@@ -254,7 +299,7 @@ func addHostFingerprints(fingerprints []string) (string, []clone.Command, error)
 	cmds = append(cmds, cmd)
 	logrus.Infof("Updated known_hosts in file: %s", knownHostsFile)
 
-	ssh, err := lookExecPath("ssh")
+	ssh, err := exec.LookPath("ssh")
 	cmd = clone.Command{
 		Command: "golang: lookup ssh path",
 	}

@@ -478,18 +478,19 @@ func CloneRefs(pj prowapi.ProwJob, codeMount, logMount coreapi.VolumeMount) (*co
 	}
 
 	env, err := cloneEnv(clonerefs.Options{
-		CookiePath:              cookiefilePath,
-		GitRefs:                 refs,
-		GitUserEmail:            clonerefs.DefaultGitUserEmail,
-		GitUserName:             clonerefs.DefaultGitUserName,
-		HostFingerprints:        pj.Spec.DecorationConfig.SSHHostFingerprints,
-		KeyFiles:                sshKeyPaths,
-		Log:                     CloneLogPath(logMount),
-		SrcRoot:                 codeMount.MountPath,
-		OauthTokenFile:          oauthMountPath,
-		GitHubAPIEndpoints:      githubAPIEndpoints,
-		GitHubAppID:             pj.Spec.DecorationConfig.GitHubAppID,
-		GitHubAppPrivateKeyFile: githubAppPrivateKeyMountPath,
+		CookiePath:                cookiefilePath,
+		GitRefs:                   refs,
+		GitUserEmail:              clonerefs.DefaultGitUserEmail,
+		GitUserName:               clonerefs.DefaultGitUserName,
+		HostFingerprints:          pj.Spec.DecorationConfig.SSHHostFingerprints,
+		KeyFiles:                  sshKeyPaths,
+		Log:                       CloneLogPath(logMount),
+		SrcRoot:                   codeMount.MountPath,
+		OauthTokenFile:            oauthMountPath,
+		GitHubAPIEndpoints:        githubAPIEndpoints,
+		GitHubAppID:               pj.Spec.DecorationConfig.GitHubAppID,
+		GitHubAppPrivateKeyFile:   githubAppPrivateKeyMountPath,
+		GitHubFingerprintMountDir: "",
 	})
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("clone env: %w", err)
