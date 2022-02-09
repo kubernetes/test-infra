@@ -171,6 +171,7 @@ periodics:
       - --kubemark-nodes=100
       - --provider=gce
       - --metadata-sources=cl2-metadata.json
+      - --env=CL2_LATENCY_POD_IMAGE=registry-sandbox.k8s.io/pause:3.1
       - --test=false
       - --test_args=--ginkgo.focus=xxxx
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
@@ -403,6 +404,7 @@ periodics:
       - --kubemark
       - --kubemark-nodes=500
       - --metadata-sources=cl2-metadata.json
+      - --env=CL2_LATENCY_POD_IMAGE=registry-sandbox.k8s.io/pause:3.1
       - --provider=gce
       - --test=false
       - --test_args=--ginkgo.focus=xxxx
@@ -483,6 +485,7 @@ periodics:
       - --kubemark-nodes=5000
       - --provider=gce
       - --metadata-sources=cl2-metadata.json
+      - --env=CL2_LATENCY_POD_IMAGE=registry-sandbox.k8s.io/pause:3.1
       # With APF only sum of --max-requests-inflight and --max-mutating-requests-inflight matters, so set --max-mutating-requests-inflight to 0.
       - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=640 --max-mutating-requests-inflight=0
       - --test=false
