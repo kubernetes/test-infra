@@ -22,6 +22,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	githubql "github.com/shurcooL/githubv4"
@@ -72,23 +73,32 @@ func HandlePullRequestEvent(log *logrus.Entry, ghc githubClient, pre *github.Pul
 	if pre.Action != github.PullRequestActionOpened && pre.Action != github.PullRequestActionSynchronize && pre.Action != github.PullRequestActionReopened {
 		return nil
 	}
-
 	return handle(log, ghc, &pre.PullRequest)
 }
 
 // HandleIssueCommentEvent handles a GitHub issue comment event and adds or removes a
 // "needs-rebase" label if the issue is a PR based on whether the GitHub api considers
 // the PR mergeable
-func HandleIssueCommentEvent(log *logrus.Entry, ghc githubClient, ice *github.IssueCommentEvent) error {
+func HandleIssueCommentEvent(log *logrus.Entry, ghc githubClient, ice *github.IssueCommentEvent, cache *Cache) error {
 	if !ice.Issue.IsPullRequest() {
 		return nil
 	}
+
+	if cache.validTime > 0 && cache.Get(ice.Issue.ID) {
+		return nil
+	}
+
 	pr, err := ghc.GetPullRequest(ice.Repo.Owner.Login, ice.Repo.Name, ice.Issue.Number)
 	if err != nil {
 		return err
 	}
+	err = handle(log, ghc, pr)
 
-	return handle(log, ghc, pr)
+	if cache.validTime > 0 && err == nil {
+		cache.Set(ice.Issue.ID)
+	}
+
+	return err
 }
 
 // handle handles a GitHub PR to determine if the "needs-rebase"
@@ -122,7 +132,6 @@ func handle(log *logrus.Entry, ghc githubClient, pr *github.PullRequest) error {
 		return err
 	}
 	hasLabel := github.HasLabel(labels.NeedsRebase, issueLabels)
-
 	return takeAction(ghc, org, repo, number, pr.User.Login, hasLabel, mergeable)
 }
 
@@ -131,7 +140,11 @@ const searchQueryPrefix = "archived:false is:pr is:open"
 // HandleAll checks all orgs and repos that enabled this plugin for open PRs to
 // determine if the "needs-rebase" label needs to be added or removed. It
 // depends on GitHub's mergeability check to decide the need for a rebase.
-func HandleAll(log *logrus.Entry, ghc githubClient, config *plugins.Configuration, usesAppsAuth bool) error {
+func HandleAll(log *logrus.Entry, ghc githubClient, config *plugins.Configuration, usesAppsAuth bool, issueCache *Cache) error {
+	if issueCache.validTime > 0 {
+		issueCache.Flush()
+	}
+
 	log.Info("Checking all PRs.")
 	orgs, repos := config.EnabledReposForExternalPlugin(PluginName)
 	if len(orgs) == 0 && len(repos) == 0 {
@@ -378,4 +391,50 @@ func constructQueries(log *logrus.Entry, now time.Time, orgs, repos []string, us
 	}
 
 	return result
+}
+
+type timeNow func() time.Time
+
+type Cache struct {
+	cache       map[int]time.Time
+	validTime   time.Duration
+	currentTime timeNow
+	mutex       sync.Mutex
+}
+
+func (cache *Cache) Get(key int) bool {
+	cache.mutex.Lock()
+	defer cache.mutex.Unlock()
+
+	insertTime := cache.cache[key]
+	curTime := cache.currentTime()
+	age := curTime.Sub(insertTime)
+	if age > 0 && age < cache.validTime {
+		return true
+	}
+	delete(cache.cache, key)
+	return false
+}
+
+func (cache *Cache) Set(key int) {
+	if cache.validTime > 0 {
+		cache.mutex.Lock()
+		defer cache.mutex.Unlock()
+
+		cache.cache[key] = cache.currentTime()
+	}
+}
+
+func (cache *Cache) Flush() {
+	cache.mutex.Lock()
+	defer cache.mutex.Unlock()
+	cache.cache = make(map[int]time.Time)
+}
+
+func NewCache(validTime int) *Cache {
+	return &Cache{
+		cache:       make(map[int]time.Time),
+		validTime:   time.Second * time.Duration(validTime),
+		currentTime: func() time.Time { return time.Now() },
+	}
 }
