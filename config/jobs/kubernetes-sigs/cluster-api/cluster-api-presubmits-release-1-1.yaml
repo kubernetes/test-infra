@@ -211,6 +211,9 @@ presubmits:
           - runner.sh
           - "./scripts/ci-e2e.sh"
         env:
+          # enable IPV6 in bootstrap image
+          - name: "DOCKER_IN_DOCKER_IPV6_ENABLED"
+            value: "true"
           - name: GINKGO_FOCUS
             value: "\\[IPv6\\] \\[PR-Informing\\]"
           - name: IP_FAMILY
