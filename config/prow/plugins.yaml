@@ -75,6 +75,7 @@ approve:
   ignore_review_state: true
 - repos:
   - bazelbuild
+  - kubernetes-sigs/bom
   - kubernetes-sigs/boskos
   - kubernetes-sigs/cluster-api-provider-digitalocean
   - kubernetes-sigs/cluster-api-provider-gcp
@@ -86,6 +87,8 @@ approve:
   - kubernetes-sigs/kubetest2
   - kubernetes-sigs/mdtoc
   - kubernetes-sigs/release-notes
+  - kubernetes-sigs/release-sdk
+  - kubernetes-sigs/release-utils
   - kubernetes-sigs/security-profiles-operator
   - kubernetes-sigs/slack-infra
   - kubernetes-sigs/zeitgeist
@@ -149,6 +152,7 @@ label:
 lgtm:
 - repos:
   - bazelbuild
+  - kubernetes-sigs/bom
   - kubernetes-sigs/boskos
   - kubernetes-sigs/controller-runtime
   - kubernetes-sigs/cluster-api-provider-digitalocean
@@ -162,6 +166,8 @@ lgtm:
   - kubernetes-sigs/kubetest2
   - kubernetes-sigs/mdtoc
   - kubernetes-sigs/release-notes
+  - kubernetes-sigs/release-sdk
+  - kubernetes-sigs/release-utils
   - kubernetes-sigs/security-profiles-operator
   - kubernetes-sigs/zeitgeist
   - kubernetes/k8s.io
