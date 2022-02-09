@@ -2955,6 +2955,31 @@ tide:
 			},
 		},
 		{
+			name: "tide specific pr_status_base_urls respected",
+			prowConfig: `
+tide:
+  pr_status_base_urls:
+    "*": https://star.tide.com/pr
+    "org": https://org.tide.com/pr
+    "org/repo": https://repo.tide.com/pr
+`,
+			verify: func(c *Config) error {
+				orgRepo := OrgRepo{Org: "other-org", Repo: "other-repo"}
+				if got, expected := c.Tide.GetPRStatusBaseURL(orgRepo), "https://star.tide.com/pr"; got != expected {
+					return fmt.Errorf("expected PR Status Base URL for %q to be %q, but got %q", orgRepo.String(), expected, got)
+				}
+				orgRepo = OrgRepo{Org: "org", Repo: "other-repo"}
+				if got, expected := c.Tide.GetPRStatusBaseURL(orgRepo), "https://org.tide.com/pr"; got != expected {
+					return fmt.Errorf("expected PR Status Base URL for %q to be %q, but got %q", orgRepo.String(), expected, got)
+				}
+				orgRepo = OrgRepo{Org: "org", Repo: "repo"}
+				if got, expected := c.Tide.GetPRStatusBaseURL(orgRepo), "https://repo.tide.com/pr"; got != expected {
+					return fmt.Errorf("expected PR Status Base URL for %q to be %q, but got %q", orgRepo.String(), expected, got)
+				}
+				return nil
+			},
+		},
+		{
 			name: "postsubmit without explicit 'always_run' sets this field to nil by default",
 			jobConfigs: []string{
 				`

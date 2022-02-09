@@ -1067,7 +1067,10 @@ func TestTargetUrl(t *testing.T) {
 				},
 				HeadRefName: "head",
 			},
-			config:      config.Tide{PRStatusBaseURLs: map[string]string{"testOrg": "byorg.pr.status.com"}},
+			config: config.Tide{PRStatusBaseURLs: map[string]string{
+				"*":       "default.pr.status.com",
+				"testOrg": "byorg.pr.status.com"},
+			},
 			expectedURL: "byorg.pr.status.com?query=is%3Apr+repo%3AtestOrg%2FtestRepo+author%3Aauthor+head%3Ahead",
 		},
 		{
@@ -1090,6 +1093,7 @@ func TestTargetUrl(t *testing.T) {
 				HeadRefName: "head",
 			},
 			config: config.Tide{PRStatusBaseURLs: map[string]string{
+				"*":                "default.pr.status.com",
 				"testOrg":          "byorg.pr.status.com",
 				"testOrg/testRepo": "byrepo.pr.status.com"},
 			},
