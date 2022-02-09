@@ -285,8 +285,8 @@ presubmits:
             - --
             - --build=quick
             - --cluster=
-            - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.5.9
-            - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.3
+            - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.6.0-rc.3
+            - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.0
             - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
             - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
             - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
@@ -344,8 +344,8 @@ presubmits:
             - --
             - --build=quick
             - --cluster=
-            - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.5.9
-            - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.3
+            - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.6.0-rc.3
+            - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.0
             - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
             - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
             - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
@@ -474,8 +474,8 @@ periodics:
           - --scenario=kubernetes_e2e
           - --
           - --check-leaked-resources
-          - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.5.9
-          - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.0.3
+          - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.6.0-rc.3
+          - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.0
           - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
           - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
           - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
