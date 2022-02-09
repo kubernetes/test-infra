@@ -316,6 +316,20 @@ testSuites:
     - --timeout=180m
     - --test_args=--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly)\] --minStartupPods=8
     cluster: k8s-infra-prow-build
+  betaapis: # copied from "default" for now.  Eventaully the args should specifically choose tests tagged for Beta, but this is to get us started.
+    args:
+    - --timeout=120m
+    - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
+      --minStartupPods=8
+    - --ginkgo-parallel=30
+    cluster: k8s-infra-prow-build
+    resources:
+      requests:
+        cpu: 2000m
+        memory: 6Gi
+      limits:
+        cpu: 2000m
+        memory: 6Gi
   default:
     args:
     - --timeout=120m
