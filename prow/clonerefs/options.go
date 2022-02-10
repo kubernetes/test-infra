@@ -60,6 +60,10 @@ type Options struct {
 	// when cloning. Will be added to ~/.ssh/known_hosts
 	HostFingerprints []string `json:"host_fingerprints,omitempty"`
 
+	// GitHubFingerprintMountDir instructs whether to mount the default
+	// GitHub fingerprint, by default it'll be mounted on root dir.
+	GitHubFingerprintMountDir string `json:"github_fingerprint_mount_dir"`
+
 	// MaxParallelWorkers determines how many repositories
 	// can be cloned in parallel. If 0, interpreted as no
 	// limit to parallelism
