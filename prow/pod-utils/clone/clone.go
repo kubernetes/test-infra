@@ -383,9 +383,9 @@ func (c cloneCommand) run() (string, string, error) {
 	cmd.Stdout = &output
 	cmd.Stderr = &output
 	err := cmd.Run()
-	return strings.Join(append([]string{c.command}, c.args...), " "), output.String(), err
+	return c.String(), output.String(), err
 }
 
 func (c cloneCommand) String() string {
-	return fmt.Sprintf("PWD=%s %s %s %s", c.dir, strings.Join(c.env, " "), c.command, strings.Join(c.env, " "))
+	return fmt.Sprintf("PWD=%s %s %s %s", c.dir, strings.Join(c.env, " "), c.command, strings.Join(c.args, " "))
 }
