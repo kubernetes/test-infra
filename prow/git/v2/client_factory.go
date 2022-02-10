@@ -236,12 +236,6 @@ func (c *clientFactory) bootstrapClients(org, repo, dir string) (cacher, cloner,
 			logger:   logger,
 		},
 	}
-	if len(c.cookieFilePath) > 0 {
-		err := client.Config("http.cookiefile", c.cookieFilePath)
-		if err != nil {
-			return nil, nil, nil, fmt.Errorf("unable to configure http.cookeifile: %w", err)
-		}
-	}
 	return client, client, client, nil
 }
 
@@ -284,6 +278,12 @@ func (c *clientFactory) ClientFor(org, repo string) (RepoClient, error) {
 		// we have not yet cloned this repo, we need to do a full clone
 		if err := os.MkdirAll(cacheDir, os.ModePerm); err != nil && !os.IsExist(err) {
 			return nil, err
+		}
+		if len(c.cookieFilePath) > 0 {
+			err := repoClient.Config("http.cookiefile", c.cookieFilePath)
+			if err != nil {
+				return nil, fmt.Errorf("unable to configure http.cookiefile: %w", err)
+			}
 		}
 		if err := cacheClientCacher.MirrorClone(); err != nil {
 			return nil, err
