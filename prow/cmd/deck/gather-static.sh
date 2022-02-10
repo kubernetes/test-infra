@@ -29,7 +29,7 @@ if [[ -d $KO_DATA_PATH ]]; then
 fi
 
 # Roll up typescripts
-if [[ "${CLEAN:-}" == "true" ]]; then
+if [[ "${1:-}" == "--cleanup" ]]; then
     echo "Running in cleanup mode"
     CLEAN=true ./hack/make-rules/update/ts-rollup.sh "${REPO_ROOT}/prow/cmd/deck/.ts-packages"
     rm -rf ${KO_DATA_PATH}

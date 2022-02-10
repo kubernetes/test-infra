@@ -20,6 +20,8 @@ OUT_DIR=$(REPO_ROOT)/_output
 ################################################################################
 # ========================= Setup Go With Gimme ================================
 # go version to use for build etc.
+# setup correct go version with gimme
+PATH:=$(shell . hack/build/setup-go.sh && echo "$${PATH}")
 # go1.9+ can autodetect GOROOT, but if some other tool sets it ...
 GOROOT:=
 # enable modules
@@ -31,7 +33,7 @@ SHELL:=env PATH=$(subst $(SPACE),\$(SPACE),$(PATH)) $(SHELL)
 ################################################################################
 # ================================= Testing ====================================
 # unit tests (hermetic)
-unit: go-unit py-unit
+unit: go-unit py-unit image-build
 .PHONY: unit
 go-unit:
 	hack/make-rules/go-test/unit.sh
@@ -39,6 +41,9 @@ go-unit:
 py-unit:
 	hack/make-rules/py-test/all.sh
 .PHONY: py-unit
+image-build:
+	go run ./hack/imagebuilder
+.PHONY: image-build
 # integration tests
 # integration:
 #	hack/make-rules/go-test/integration.sh

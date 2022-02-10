@@ -1,1 +1,31 @@
-defaultBaseImage: gcr.io/k8s-prow/git:v20211018-372b1c8
+# Distroless images:
+# - prow/cmd/admission
+# - prow/cmd/gerrit
+# - prow/cmd/mkpj
+# - prow/cmd/mkpod
+# - prow/cmd/pipeline
+# defaultBaseImage: gcr.io/distroless/static:nonroot
+baseImageOverrides:
+  k8s.io/test-infra/prow/cmd/branchprotector: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
+  k8s.io/test-infra/prow/cmd/checkconfig: gcr.io/k8s-prow/git:v20211018-372b1c8
+  k8s.io/test-infra/prow/cmd/config-bootstrapper: gcr.io/k8s-prow/git:v20211018-372b1c8
+  k8s.io/test-infra/prow/cmd/deck: gcr.io/k8s-prow/git:v20211018-372b1c8
+  k8s.io/test-infra/prow/cmd/exporter: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
+  k8s.io/test-infra/prow/cmd/crier: gcr.io/k8s-prow/git:v20211018-372b1c8
+  k8s.io/test-infra/prow/cmd/generic-autobumper: gcr.io/k8s-prow/git:v20211018-372b1c8
+  k8s.io/test-infra/prow/cmd/grandmatriarch: gcr.io/cloud-builders/gcloud@sha256:5b49dfb5e366dd75a5fc6d5d447be584f8f229c5a790ee0c3b0bd0cf70ec41dd
+  k8s.io/test-infra/prow/cmd/gcsupload: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
+  k8s.io/test-infra/prow/cmd/hook: gcr.io/k8s-prow/git:v20211018-372b1c8
+  k8s.io/test-infra/prow/cmd/hmac: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
+  k8s.io/test-infra/prow/cmd/horologium: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
+  k8s.io/test-infra/prow/cmd/invitations-accepter: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
+  k8s.io/test-infra/prow/cmd/jenkins-operator: gcr.io/k8s-prow/git:v20211018-372b1c8
+  k8s.io/test-infra/prow/cmd/peribolos: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
+  k8s.io/test-infra/prow/cmd/sinker: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
+  k8s.io/test-infra/prow/cmd/status-reconciler: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
+  k8s.io/test-infra/prow/cmd/sub: gcr.io/k8s-prow/git:v20211018-372b1c8
+  k8s.io/test-infra/prow/cmd/tide: gcr.io/k8s-prow/git:v20211018-372b1c8
+  k8s.io/test-infra/prow/cmd/tot: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
+  k8s.io/test-infra/prow/cmd/prow-controller-manager: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
+  # prow integration test
+  k8s.io/test-infra/prow/test/integration/fakeghserver: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
