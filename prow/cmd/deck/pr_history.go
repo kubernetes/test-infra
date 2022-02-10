@@ -18,7 +18,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/url"
 	"path"
@@ -215,7 +214,8 @@ func getStorageDirsForPR(c *config.Config, gitHubClient deckGitHubClient, gitCli
 	fullRepo := org + "/" + repo
 
 	if c.InRepoConfigEnabled(fullRepo) && gitHubClient == nil {
-		return nil, errors.New("inrepoconfig is enabled but no --github-token-path configured on deck")
+		logrus.Info("Unable to get InRepoConfig PRs for PR History.")
+		return nil, nil
 	}
 	prRefGetter := config.NewRefGetterForGitHubPullRequest(gitHubClient, org, repo, prNumber)
 	presubmits, err := c.GetPresubmits(gitClient, org+"/"+repo, prRefGetter.BaseSHA, prRefGetter.HeadSHA)
