@@ -399,7 +399,7 @@ func main() {
 			gitClient = git.ClientFactoryFrom(g)
 		} else {
 			if len(cfg().InRepoConfig.Enabled) > 0 {
-				logrus.Fatal("--github-token-path must be configured with a valid token when using the inrepoconfig feature")
+				logrus.Info(" --github-token-path not configured. InRepoConfigEnabled, but current configuration won't display full PR history")
 			}
 		}
 
