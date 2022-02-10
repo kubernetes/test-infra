@@ -45,6 +45,7 @@ It can consist of the following dictionary of fields:
 
 * `orgs`: List of queried organizations.
 * `repos`: List of queried repositories.
+* `excludedRepos`: List of ignored repositories.
 * `labels`: List of labels any given PR must posses.
 * `missingLabels`: List of labels any given PR must not posses.
 * `excludedBranches`: List of branches that get excluded when querying the `repos`.
@@ -147,6 +148,8 @@ and do not have `do-not-merge`, `do-not-merge/hold`, `do-not-merge/work-in-progr
 All PRs that conform to the criteria are processed and merged.
 The processing itself can include running jobs (e.g. tests) to verify the PRs are good to go.
 All commits in PRs from `github.com/kubeflow/community` repository are squashed before merging.
+
+For a full list of properties of queries, please refer to [https://github.com/kubernetes/test-infra/blob/27c9a7f2784088c2db5ff133e8a7a1e2eab9ab3f/prow/config/prow-config-documented.yaml#:~:text=meet%20merge%20requirements.-,queries%3A,-%2D%20author%3A%20%27%20%27](/prow/config/prow-config-documented.yaml).
 
 ### Persistent Storage of Action History
 
