@@ -45,7 +45,7 @@ installCSIdrivers=""
 for release in "$@"; do
   output="${dir}/release-${release}.yaml"
   kubernetes_version="latest"
-  latest_capz_release="release-1.1"
+  capz_release="release-1.0"
 
   if [[ "${release}" == "master" ]]; then
     branch=$(echo -e 'master # TODO(releng): Remove once repo default branch has been renamed\n      - main')
@@ -55,7 +55,7 @@ for release in "$@"; do
     branch="release-${release}"
     branch_name="release-${release}"
     kubernetes_version+="-${release}"
-    capz_periodic_branch_name=${latest_capz_release}
+    capz_periodic_branch_name=${capz_release}
   fi
 
   if [[ "${release}" == "master" || "${release}" == "1.23" ]]; then
@@ -82,7 +82,7 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: ${latest_capz_release}
+        base_ref: ${capz_release}
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
@@ -127,7 +127,7 @@ $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-azure-d
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: ${latest_capz_release}
+        base_ref: ${capz_release}
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
@@ -174,7 +174,7 @@ $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-azure-d
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: ${latest_capz_release}
+        base_ref: ${capz_release}
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
@@ -220,7 +220,7 @@ $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-azure-f
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: ${latest_capz_release}
+        base_ref: ${capz_release}
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
@@ -268,7 +268,7 @@ $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-azure-f
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: ${latest_capz_release}
+      base_ref: ${capz_release}
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
@@ -581,9 +581,9 @@ periodics:
 EOF
   if [[ "${release}" == "master" ]]; then
     cat >>"${output}" <<EOF
-# the "capz-latest-release-*" jobs below validate the health of cloud-provider-azure:master against the latest stable release of capz
+# the "capz-release-*" jobs below validate the health of cloud-provider-azure:master against a stable release of capz
 - interval: 24h
-  name: capz-latest-release-conformance-master
+  name: capz-release-conformance-master
   decorate: true
   decoration_config:
     timeout: 3h
@@ -594,7 +594,7 @@ EOF
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: ${latest_capz_release}
+    base_ref: ${capz_release}
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   spec:
     containers:
@@ -617,12 +617,12 @@ EOF
           memory: "4Gi"
   annotations:
     testgrid-dashboards: provider-azure-master-signal
-    testgrid-tab-name: capz-latest-release-conformance
+    testgrid-tab-name: capz-release-conformance
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     testgrid-num-columns-recent: '30'
 
 - interval: 24h
-  name: capz-latest-release-azure-file-master
+  name: capz-release-azure-file-master
   decorate: true
   decoration_config:
     timeout: 3h
@@ -633,7 +633,7 @@ EOF
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: ${latest_capz_release}
+    base_ref: ${capz_release}
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   - org: kubernetes-sigs
     repo: azurefile-csi-driver
@@ -669,12 +669,12 @@ EOF
           memory: "4Gi"
   annotations:
     testgrid-dashboards: provider-azure-master-signal
-    testgrid-tab-name: capz-latest-release-azure-file
+    testgrid-tab-name: capz-release-azure-file
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     testgrid-num-columns-recent: '30'
 
 - interval: 24h
-  name: capz-latest-release-azure-file-vmss-master
+  name: capz-release-azure-file-vmss-master
   decorate: true
   decoration_config:
     timeout: 3h
@@ -685,7 +685,7 @@ EOF
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: ${latest_capz_release}
+    base_ref: ${capz_release}
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   - org: kubernetes-sigs
     repo: azurefile-csi-driver
@@ -723,12 +723,12 @@ EOF
           memory: "4Gi"
   annotations:
     testgrid-dashboards: provider-azure-master-signal
-    testgrid-tab-name: capz-latest-release-azure-file-vmss
+    testgrid-tab-name: capz-release-azure-file-vmss
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     testgrid-num-columns-recent: '30'
 
 - interval: 24h
-  name: capz-latest-release-azure-disk-master
+  name: capz-release-azure-disk-master
   decorate: true
   decoration_config:
     timeout: 3h
@@ -739,7 +739,7 @@ EOF
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: ${latest_capz_release}
+    base_ref: ${capz_release}
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   - org: kubernetes-sigs
     repo: azuredisk-csi-driver
@@ -774,12 +774,12 @@ EOF
           memory: "4Gi"
   annotations:
     testgrid-dashboards: provider-azure-master-signal
-    testgrid-tab-name: capz-latest-release-azure-disk
+    testgrid-tab-name: capz-release-azure-disk
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     testgrid-num-columns-recent: '30'
 
 - interval: 24h
-  name: capz-latest-release-azure-disk-vmss-master
+  name: capz-release-azure-disk-vmss-master
   decorate: true
   decoration_config:
     timeout: 3h
@@ -790,7 +790,7 @@ EOF
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: ${latest_capz_release}
+    base_ref: ${capz_release}
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   - org: kubernetes-sigs
     repo: azuredisk-csi-driver
@@ -827,7 +827,7 @@ EOF
           memory: "4Gi"
   annotations:
     testgrid-dashboards: provider-azure-master-signal
-    testgrid-tab-name: capz-latest-release-azure-disk-vmss
+    testgrid-tab-name: capz-release-azure-disk-vmss
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     testgrid-num-columns-recent: '30'
 EOF
