@@ -48,6 +48,7 @@ filegroup(
 
 prow_image(
     name = "image",
+    base = "@git-base//image",
     component = NAME,
     visibility = ["//visibility:public"],
 )
