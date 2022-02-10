@@ -1,29 +1,7 @@
 presubmits:
   IBM/ibm-platform-api-operator:
-  - name: build_ibm-platform-api-operator
-    branches:
-    - ^master$
-    - ^release-future$
-    - ^release-efix$
-    - ^release-eus$
-    labels:
-      preset-service-account: "true"
-    decorate: true
-    always_run: true
-    path_alias: github.com/IBM/ibm-platform-api-operator
-    rerun_command: /test build ibm-platform-api-operator
-    spec:
-      containers:
-      - command:
-        - entrypoint
-        - make
-        - build
-        image: quay.io/multicloudlab/build-tool:v20220105-f9f161e03
-        name: ""
-        securityContext:
-          privileged: true
-    trigger: '(?m)^/test (?:.*? )?build(?: .*?)?$'
-  - name: check_ibm-platform-api-operator
+  - name: check-ibm-platform-api-operator
+    cluster: default
     branches:
     - ^master$
     - ^release-future$
@@ -32,7 +10,7 @@ presubmits:
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-platform-api-operator
-    rerun_command: /test check ibm-platform-api-operator
+    rerun_command: /test check-ibm-platform-api-operator
     spec:
       containers:
       - command:
@@ -42,8 +20,9 @@ presubmits:
         name: ""
         securityContext:
           privileged: true
-    trigger: '(?m)^/test (?:.*? )?check(?: .*?)?$'
-  - name: test_ibm-platform-api-operator
+    trigger: '(?m)^/test (?:.*? )?check(?:.*?)?$'
+  - name: test-ibm-platform-api-operator-amd64
+    cluster: default
     branches:
     - ^master$
     - ^release-future$
@@ -52,7 +31,7 @@ presubmits:
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-platform-api-operator
-    rerun_command: /test test ibm-platform-api-operator
+    rerun_command: /test test-ibm-platform-api-operator-amd64
     spec:
       containers:
       - command:
@@ -63,66 +42,127 @@ presubmits:
         name: ""
         securityContext:
           privileged: true
-    trigger: '(?m)^/test (?:.*? )?test(?: .*?)?$'
-
+    trigger: '(?m)^/test (?:.*? )?test(?:.*?)?$'
+  - name: test-ibm-platform-api-operator-ppc64le
+    cluster: ppc64le
+    branches:
+    - ^master$
+    - ^release-future$
+    - ^release-efix$
+    - ^release-eus$
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/ibm-platform-api-operator
+    rerun_command: /test test-ibm-platform-api-operator-ppc64le
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tool:v20220105-f9f161e03
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?test(?:.*?)?$'
+  - name: test-ibm-platform-api-operator-s390x
+    cluster: s390x
+    branches:
+    - ^master$
+    - ^release-future$
+    - ^release-efix$
+    - ^release-eus$
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/ibm-platform-api-operator
+    rerun_command: /test test-ibm-platform-api-operator-s390x
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - test
+        image: quay.io/multicloudlab/build-tool:v20220105-f9f161e03
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?test(?:.*?)?$'
+  - name: build-ibm-platform-api-operator-amd64
+    cluster: default
+    branches:
+    - ^master$
+    - ^release-future$
+    - ^release-efix$
+    - ^release-eus$
+    labels:
+      preset-service-account: "true"
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/ibm-platform-api-operator
+    rerun_command: /test build-ibm-platform-api-operator-amd64
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build-operator-image
+        image: quay.io/multicloudlab/build-tool:v20220105-f9f161e03
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?build(?:.*?)?$'
+  - name: build-ibm-platform-api-operator-ppc64le
+    cluster: ppc64le
+    branches:
+    - ^master$
+    - ^release-future$
+    - ^release-efix$
+    - ^release-eus$
+    labels:
+      preset-service-account: "true"
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/ibm-platform-api-operator
+    rerun_command: /test build-ibm-platform-api-operator-ppc64le
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build-operator-image
+        image: quay.io/multicloudlab/build-tool:v20220105-f9f161e03
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?build(?:.*?)?$'
+  - name: build-ibm-platform-api-operator-s390x
+    cluster: s390x
+    branches:
+    - ^master$
+    - ^release-future$
+    - ^release-efix$
+    - ^release-eus$
+    labels:
+      preset-service-account: "true"
+    decorate: true
+    always_run: true
+    path_alias: github.com/IBM/ibm-platform-api-operator
+    rerun_command: /test build-ibm-platform-api-operator-s390x
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build-operator-image
+        image: quay.io/multicloudlab/build-tool:v20220105-f9f161e03
+        name: ""
+        securityContext:
+          privileged: true
+    trigger: '(?m)^/test (?:.*? )?build(?:.*?)?$'
 postsubmits:
   IBM/ibm-platform-api-operator:
-  - name: check_ibm-platform-api-operator_postsubmit
-    branches:
-    - ^master$
-    - ^release-future$
-    - ^release-efix$
-    - ^release-eus$
-    decorate: true
-    path_alias: github.com/IBM/ibm-platform-api-operator
-    spec:
-      containers:
-      - command:
-        - make
-        - check
-        image: quay.io/multicloudlab/check-tool:v20201120-383f8da3c
-        name: ""
-        securityContext:
-          privileged: true
-  - name: test_ibm-platform-api-operator_postsubmit
-    branches:
-    - ^master$
-    - ^release-future$
-    - ^release-efix$
-    - ^release-eus$
-    decorate: true
-    path_alias: github.com/IBM/ibm-platform-api-operator
-    spec:
-      containers:
-      - command:
-        - entrypoint
-        - make
-        - test
-        image: quay.io/multicloudlab/build-tool:v20220105-f9f161e03
-        name: ""
-        securityContext:
-          privileged: true
-  - name: build_ibm-platform-api-operator_postsubmit
-    branches:
-    - ^master$
-    - ^release-future$
-    - ^release-efix$
-    - ^release-eus$
-    labels:
-      preset-service-account: "true"
-    decorate: true
-    path_alias: github.com/IBM/ibm-platform-api-operator
-    spec:
-      containers:
-      - command:
-        - entrypoint
-        - make
-        - build
-        image: quay.io/multicloudlab/build-tool:v20220105-f9f161e03
-        name: ""
-        securityContext:
-          privileged: true
-  - name: images_ibm-platform-api-operator_postsubmit
+  - name: image-ibm-platform-api-operator-amd64-postsubmit
+    cluster: default
     branches:
     - ^master$
     - ^release-future$
@@ -137,9 +177,71 @@ postsubmits:
       - command:
         - entrypoint
         - make
-        - images
+        - build-push-image
         image: quay.io/multicloudlab/build-tool:v20220105-f9f161e03
         name: ""
         securityContext:
           privileged: true
-
+  - name: image-ibm-platform-api-operator-ppc64le-postsubmit
+    cluster: ppc64le
+    branches:
+    - ^master$
+    - ^release-future$
+    - ^release-efix$
+    - ^release-eus$
+    decorate: true
+    path_alias: github.com/IBM/ibm-platform-api-operator
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build-push-image
+        image: quay.io/multicloudlab/build-tool:v20220105-f9f161e03
+        name: ""
+        securityContext:
+          privileged: true
+  - name: image-ibm-platform-api-operator-s390x-postsubmit
+    cluster: s390x
+    branches:
+    - ^master$
+    - ^release-future$
+    - ^release-efix$
+    - ^release-eus$
+    decorate: true
+    path_alias: github.com/IBM/ibm-platform-api-operator
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - build-push-image
+        image: quay.io/multicloudlab/build-tool:v20220105-f9f161e03
+        name: ""
+        securityContext:
+          privileged: true
+  - name: multiarch-image-ibm-platform-api-operator-postsubmit
+    cluster: default
+    branches:
+    - ^master$
+    - ^release-future$
+    - ^release-efix$
+    - ^release-eus$
+    decorate: true
+    path_alias: github.com/IBM/ibm-platform-api-operator
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - command:
+        - entrypoint
+        - make
+        - multiarch-image
+        image: quay.io/multicloudlab/build-tool:v20220105-f9f161e03
+        name: ""
+        securityContext:
+          privileged: true
