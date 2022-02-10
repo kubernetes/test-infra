@@ -92,14 +92,37 @@ function handleLineLink(e: MouseEvent): void {
   if (!el.dataset.lineNumber) {
     return;
   }
-  location.hash = `#${el.dataset.artifact}:${el.dataset.lineNumber}`;
+  const multiple = e.shiftKey;
+  const goal = Number(el.dataset.lineNumber);
+  if (isNaN(goal)) {
+    return;
+  }
+  let result = parseHash();
+  if (result === null || !multiple) {
+    result = ["", goal, goal];
+  }
+  let startNum = result[1];
+  let endNum = result[2];
+  if (goal > startNum) {
+    endNum = goal;
+  } else {
+    [startNum, endNum] = [goal, startNum];
+  }
+  if (endNum !== startNum) {
+    location.hash = `#${el.dataset.artifact}:${startNum}-${endNum}`;
+  } else {
+    location.hash = `#${el.dataset.artifact}:${startNum}`;
+  }
   e.preventDefault();
 }
 
-function highlightLine(element: HTMLElement): void {
+function clearHighlightedLines(): void {
   for (const oldEl of Array.from(document.querySelectorAll('.highlighted-line'))) {
     oldEl.classList.remove('highlighted-line');
   }
+}
+
+function highlightLine(element: HTMLElement): void {
   element.classList.add('highlighted-line');
 }
 
@@ -121,32 +144,73 @@ async function loadLine(artifact: string, line: number): Promise<boolean> {
   return false;
 }
 
-async function handleHash(): Promise<void> {
+// parseHash extracts an artifact and line range.
+//
+// Expects URL fragment to be any of the following forms:
+// * <empty>
+// * single line: #artifact:5
+// * range of lines: #artifact:5-12.
+function parseHash(): [string, number, number]|null {
   const hash = location.hash.substr(1);
   const colonPos = hash.lastIndexOf(':');
   if (colonPos === -1) {
-    return;
+    return null;
   }
   const artifact = hash.substring(0, colonPos);
-  const lineNum = Number(hash.substring(colonPos + 1));
-  if (isNaN(lineNum)) {
+  const lineRange = hash.substring(colonPos + 1);
+  const hyphenPos = lineRange.lastIndexOf('-');
+
+  let startNum;
+  let endNum;
+
+  if (hyphenPos > 0 ) {
+    startNum = Number(lineRange.substring(0, hyphenPos));
+    endNum = Number(lineRange.substring(hyphenPos + 1));
+  } else {
+    startNum = Number(lineRange);
+    endNum = startNum;
+  }
+  if (isNaN(startNum) || isNaN(endNum)) {
+    return null;
+  }
+  if (endNum < startNum) { // ensure start has the smallest value.
+    [startNum, endNum] = [endNum, startNum];
+  }
+  return [artifact, startNum, endNum];
+}
+
+async function handleHash(): Promise<void> {
+  const result = parseHash();
+  if (!result) {
     return;
   }
-  const lineId = `${artifact}:${lineNum}`;
-  let lineEl = document.getElementById(lineId);
-  if (!lineEl) {
-    if (await loadLine(artifact, lineNum)) {
-      lineEl = document.getElementById(lineId);
-      if (!lineEl) {
+  const [artifact, startNum, endNum] = result;
+
+  let firstEl = null;
+  for (let lineNum = startNum; lineNum <= endNum; lineNum++) {
+    const lineId = `${artifact}:${lineNum}`;
+    let lineEl = document.getElementById(lineId);
+    if (!lineEl) {
+      if (await loadLine(artifact, lineNum)) {
+        lineEl = document.getElementById(lineId);
+        if (!lineEl) {
+          return;
+        }
+      } else {
         return;
       }
-    } else {
-      return;
     }
+    if (firstEl === null) {
+      firstEl = lineEl;
+      clearHighlightedLines();
+    }
+    highlightLine(lineEl);
   }
-  const top = lineEl.getBoundingClientRect().top + window.pageYOffset;
-  highlightLine(lineEl);
-  spyglass.scrollTo(0, top).then();
+
+  if (firstEl !== null) {
+    const top = firstEl.getBoundingClientRect().top + window.pageYOffset;
+    spyglass.scrollTo(0, top).then();
+  }
 }
 
 window.addEventListener('hashchange', () => handleHash());
