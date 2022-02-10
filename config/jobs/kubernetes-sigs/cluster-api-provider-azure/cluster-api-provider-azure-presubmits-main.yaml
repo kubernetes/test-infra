@@ -564,3 +564,28 @@ presubmits:
       testgrid-tab-name: capz-pr-ci-entrypoint-main
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
       description: Creates a CAPZ cluster and exports KUBECONFIG. This job validates ci-entrypoint.sh used by other repositories for running tests on CAPZ clusters.
+  - name: post-cluster-api-provider-azure-push-images-test
+    cluster: k8s-infra-prow-build-trusted
+    optional: true
+    always_run: false
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-image-pushes, sig-cluster-lifecycle-cluster-api-provider-azure, sig-k8s-infra-gcb
+      testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+    decorate: true
+    branches:
+      - ^main$
+      - ^release-0.3$
+      - ^release-0.4$
+      # this is a regex for semver, from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
+      - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
+    spec:
+      serviceAccountName: gcb-builder
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20211014-7ca1952a94
+          command:
+            - /run.sh
+          args:
+            - --project=k8s-staging-cluster-api-azure
+            - --scratch-bucket=gs://k8s-staging-cluster-api-azure-gcb
+            - --env-passthrough=PULL_BASE_REF
+            - .
