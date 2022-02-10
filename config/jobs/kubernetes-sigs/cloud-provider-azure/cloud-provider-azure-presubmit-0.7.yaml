@@ -1,7 +1,6 @@
 presubmits:
   kubernetes-sigs/cloud-provider-azure:
     - name: pull-cloud-provider-azure-check-1-20
-      always_run: true
       decorate: true
       path_alias: sigs.k8s.io/cloud-provider-azure
       branches:
@@ -23,7 +22,7 @@ presubmits:
         testgrid-num-columns-recent: '30'
     # pull-cloud-provider-azure-e2e-1-20 runs kubernetes conformance tests.
     - name: pull-cloud-provider-azure-e2e-1-20
-      always_run: true
+      skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
       decorate: true
       decoration_config:
         timeout: 5h
@@ -80,7 +79,7 @@ presubmits:
         testgrid-num-columns-recent: '30'
     # pull-cloud-provider-azure-e2e-ccm-vmss-basic-lb-1-20 runs Azure specific e2e tests with VMSS and basic loadbalancer.
     - name: pull-cloud-provider-azure-e2e-ccm-vmss-basic-lb-1-20
-      always_run: true
+      skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
       decorate: true
       decoration_config:
         timeout: 5h
@@ -140,7 +139,7 @@ presubmits:
         testgrid-num-columns-recent: '30'
       # pull-cloud-provider-azure-e2e-ccm-1-20
     - name: pull-cloud-provider-azure-e2e-ccm-1-20
-      always_run: true
+      skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
       decorate: true
       decoration_config:
         timeout: 5h
@@ -200,7 +199,7 @@ presubmits:
         testgrid-num-columns-recent: '30'
       # pull-cloud-provider-azure-e2e-ccm-vmss-1-20
     - name: pull-cloud-provider-azure-e2e-ccm-vmss-1-20
-      always_run: true
+      skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
       decorate: true
       decoration_config:
         timeout: 5h
@@ -260,6 +259,7 @@ presubmits:
         testgrid-num-columns-recent: '30'
     - name: pull-cloud-provider-azure-e2e-capz-1-20
       always_run: false
+      #skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
       optional: true
       decorate: true
       decoration_config:
@@ -313,7 +313,7 @@ presubmits:
         description: "Runs Kubernetes conformance tests with cloud-provider-azure release-0.7 (https://github.com/kubernetes-sigs/cloud-provider-azure) using cluster-api-provider-azure."
         testgrid-num-columns-recent: '30'
     - name: pull-cloud-provider-azure-e2e-ccm-capz-1-20
-      always_run: true
+      skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
       optional: true
       decorate: true
       decoration_config:
@@ -359,7 +359,7 @@ presubmits:
         description: "Runs Azure specific tests with cloud-provider-azure release-0.7 (https://github.com/kubernetes-sigs/cloud-provider-azure) using cluster-api-provider-azure."
         testgrid-num-columns-recent: '30'
     - name: pull-cloud-provider-azure-unit-1-20
-      always_run: true
+      skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
       decorate: true
       path_alias: sigs.k8s.io/cloud-provider-azure
       branches:
