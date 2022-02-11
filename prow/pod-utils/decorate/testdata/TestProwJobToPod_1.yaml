@@ -93,7 +93,7 @@ spec:
     - /clonerefs
     env:
     - name: CLONEREFS_OPTIONS
-      value: '{"src_root":"/home/prow/go","log":"/logs/clone.json","git_user_name":"ci-robot","git_user_email":"ci-robot@k8s.io","refs":[{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}],"github_fingerprint_mount_dir":"","cookie_path":"/secrets/cookiefile/.gitcookies","github_api_endpoints":["https://api.github.com"]}'
+      value: '{"src_root":"/home/prow/go","log":"/logs/clone.json","git_user_name":"ci-robot","git_user_email":"ci-robot@k8s.io","refs":[{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}],"cookie_path":"/secrets/cookiefile/.gitcookies","github_api_endpoints":["https://api.github.com"]}'
     image: clonerefs:tag
     name: clonerefs
     resources: {}
