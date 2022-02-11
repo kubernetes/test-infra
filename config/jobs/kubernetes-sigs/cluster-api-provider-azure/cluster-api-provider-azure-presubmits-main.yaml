@@ -564,13 +564,13 @@ presubmits:
       testgrid-tab-name: capz-pr-ci-entrypoint-main
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
       description: Creates a CAPZ cluster and exports KUBECONFIG. This job validates ci-entrypoint.sh used by other repositories for running tests on CAPZ clusters.
-  - name: post-cluster-api-provider-azure-push-images-test
+  - name: pull-cluster-api-provider-azure-push-images-test
+    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     cluster: k8s-infra-prow-build-trusted
     optional: true
     always_run: false
     annotations:
-      testgrid-dashboards: sig-cluster-lifecycle-image-pushes, sig-cluster-lifecycle-cluster-api-provider-azure, sig-k8s-infra-gcb
-      testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
+      description: This job replicates the postsubmit push-images job for CAPZ so PRs can be tested before merging.
     decorate: true
     branches:
       - ^main$
