@@ -149,6 +149,7 @@ presubmits:
       testgrid-dashboards: presubmits-test-infra
       testgrid-tab-name: integration-with-ko
   - name: pull-test-infra-unit-test
+    clone_uri: git@github.com:kubernetes/test-infra.git
     branches:
     - master
     always_run: true
