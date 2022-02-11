@@ -7,7 +7,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220124-681f3531ec-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220211-6df2c53026-master
         command:
         - "./hack/unit-test.sh"
     annotations:
