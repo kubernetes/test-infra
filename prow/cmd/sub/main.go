@@ -174,7 +174,7 @@ func main() {
 	pullServer := subscriber.NewPullServer(s)
 	interrupts.Run(func(ctx context.Context) {
 		if err := pullServer.Run(ctx); err != nil {
-			logrus.WithError(err).Error("Failed to run Pull Server")
+			logrus.WithError(err).Fatal("Failed to run Pull Server")
 		}
 	})
 
