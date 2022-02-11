@@ -79,6 +79,7 @@ periodics:
         Send feedback to sig-contributor-experience at [kubernetes/community](https://github.com/kubernetes/community).
 
         /check-cla
+        /easycla
       - --template
       - --ceiling=10
       - --confirm
