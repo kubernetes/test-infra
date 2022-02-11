@@ -24,6 +24,7 @@ import (
 	"net/http"
 	"reflect"
 	"strconv"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 
@@ -183,9 +184,13 @@ func (s *PullServer) handlePulls(ctx context.Context, projectSubscriptions confi
 		}
 		for _, subName := range subscriptions {
 			sub := client.subscription(subName, topics.MaxOutstandingMessages)
+			logger := logrus.WithFields(logrus.Fields{
+				"subscription": sub.string(),
+				"project":      project,
+			})
 			errGroup.Go(func() error {
-				logrus.Infof("Listening for subscription %s on project %s", sub.string(), project)
-				defer logrus.Warnf("Stopped Listening for subscription %s on project %s", sub.string(), project)
+				logger.Info("Listening for subscription")
+				defer logger.Warn("Stopped Listening for subscription")
 				err := sub.receive(derivedCtx, func(ctx context.Context, msg messageInterface) {
 					if err = s.Subscriber.handleMessage(msg, sub.string(), allowedClusters); err != nil {
 						s.Subscriber.Metrics.ACKMessageCounter.With(prometheus.Labels{subscriptionLabel: sub.string()}).Inc()
@@ -194,8 +199,16 @@ func (s *PullServer) handlePulls(ctx context.Context, projectSubscriptions confi
 					}
 					msg.ack()
 				})
-				if err != nil && !errors.Is(derivedCtx.Err(), context.Canceled) {
-					logrus.WithError(err).Errorf("failed to listen for subscription %s on project %s", sub.string(), project)
+				if err != nil {
+					if errors.Is(derivedCtx.Err(), context.Canceled) {
+						logger.WithError(err).Debug("Exiting as context cancelled")
+						return nil
+					}
+					if strings.Contains(err.Error(), "code = PermissionDenied") {
+						logger.WithError(err).Warn("Seems like missing permission.")
+						return nil
+					}
+					logger.WithError(err).Error("Failed to listen for subscription")
 					return err
 				}
 				return nil
