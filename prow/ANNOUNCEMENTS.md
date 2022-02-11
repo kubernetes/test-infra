@@ -8,6 +8,15 @@ New features added to each component:
     from organization member. Trigger and DCO plugins configuration now support 
     additional field `trusted_apps`, which contains list of GitHub Apps bot
     usernames without `[bot]` suffix.
+  - *January 11, 2022* Trigger plugin can now trigger failed github jobs.
+    The feature needs to be enabled in the `triggers` section of the `plugin.yaml` config and can be specified per trigger as follows:
+    ```yaml
+    triggers:
+    - repos:
+      - org/repo
+      - org2
+      trigger_github_workflows: true
+    ```
   - *August 24, 2021* Postsubmit Prow jobs now support the `always_run` field.
     This field interacts with the `run_if_changed` and `skip_if_only_changed`
     fields as follows:
