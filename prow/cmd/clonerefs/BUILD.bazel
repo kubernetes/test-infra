@@ -34,21 +34,14 @@ prow_image(
     build_ppc64le = True,
     build_s390x = True,
     component = NAME,
-    files = [
-        "github_known_hosts",
-        "ssh_config",
-    ],
     symlinks_arm64 = {
         "/clonerefs": "/app/prow/cmd/clonerefs/app-arm64.binary",
-        "/etc/ssh/ssh_config": "/ssh_config",
     },
     symlinks_default = {
         "/clonerefs": "/app/prow/cmd/clonerefs/app.binary",
-        "/etc/ssh/ssh_config": "/ssh_config",
     },
     symlinks_ppc64le = {
         "/clonerefs": "/app/prow/cmd/clonerefs/app-ppc64le.binary",
-        "/etc/ssh/ssh_config": "/ssh_config",
     },
     visibility = ["//visibility:public"],
 )
