@@ -34,146 +34,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/go-cmp/cmp"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pod-utils/clone"
 )
-
-func TestMountDefaultGitHubFingerprint(t *testing.T) {
-	tests := []struct {
-		name   string
-		repeat int
-		exist  map[string]string
-		want   map[string]string
-	}{
-		{
-			name: "base",
-			want: map[string]string{
-				"/etc/ssh/ssh_config": "github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==\n",
-				"/github_known_hosts": `Host github.com
-	HostName github.com
-	User git
-	UserKnownHostsFile /github_known_hosts
-	StrictHostKeyChecking yes
-	CheckHostIP no
-`,
-			},
-		},
-		{
-			name: "base",
-			exist: map[string]string{
-				"/etc/ssh/ssh_config": "",
-				"/github_known_hosts": "",
-			},
-			want: map[string]string{
-				"/etc/ssh/ssh_config": "github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==\n",
-				"/github_known_hosts": `Host github.com
-	HostName github.com
-	User git
-	UserKnownHostsFile /github_known_hosts
-	StrictHostKeyChecking yes
-	CheckHostIP no
-`,
-			},
-		},
-		{
-			name: "repeat", // Repeat should not readd
-			exist: map[string]string{
-				"/etc/ssh/ssh_config": "",
-				"/github_known_hosts": "",
-			},
-			want: map[string]string{
-				"/etc/ssh/ssh_config": "github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==\n",
-				"/github_known_hosts": `Host github.com
-	HostName github.com
-	User git
-	UserKnownHostsFile /github_known_hosts
-	StrictHostKeyChecking yes
-	CheckHostIP no
-`,
-			},
-		},
-		{
-			name: "append",
-			exist: map[string]string{
-				"/etc/ssh/ssh_config": "# pre ssh_config\n",
-				"/github_known_hosts": "# pre github_know_hosts\n",
-			},
-			want: map[string]string{
-				"/etc/ssh/ssh_config": `# pre ssh_config
-github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
-`,
-				"/github_known_hosts": `# pre github_know_hosts
-Host github.com
-	HostName github.com
-	User git
-	UserKnownHostsFile /github_known_hosts
-	StrictHostKeyChecking yes
-	CheckHostIP no
-`,
-			},
-		},
-		{
-			name:   "append repeat",
-			repeat: 2,
-			exist: map[string]string{
-				"/etc/ssh/ssh_config": "# pre ssh_config\n",
-				"/github_known_hosts": "# pre github_know_hosts\n",
-			},
-			want: map[string]string{
-				"/etc/ssh/ssh_config": `# pre ssh_config
-github.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAq2A7hRGmdnm9tUDbO9IDSwBK6TbQa+PXYPCPy6rbTrTtw7PHkccKrpp0yVhp5HdEIcKr6pLlVDBfOLX9QUsyCOV0wzfjIJNlGEYsdlLJizHhbn2mUjvSAHQqZETYP81eFzLQNnPHt4EVVUh7VfDESU84KezmD5QlWpXLmvU31/yMf+Se8xhHTvKSCZIFImWwoG6mbUoWf9nzpIoaSjB+weqqUUmpaaasXVal72J+UX2B+2RPW3RcT0eOzQgqlJL3RKrTJvdsjE3JEAvGq3lGHSZXy28G3skua2SmVi/w4yCE6gbODqnTWlg7+wC604ydGXA8VJiS5ap43JXiUFFAaQ==
-`,
-				"/github_known_hosts": `# pre github_know_hosts
-Host github.com
-	HostName github.com
-	User git
-	UserKnownHostsFile /github_known_hosts
-	StrictHostKeyChecking yes
-	CheckHostIP no
-`,
-			},
-		},
-	}
-
-	for _, tc := range tests {
-		tc := tc
-		t.Run(tc.name, func(t *testing.T) {
-			tmpDir, err := ioutil.TempDir("", "prow-clonerefs-testmountdefaultgithubfingerprint")
-			if err != nil {
-				t.Fatalf("Failed creating temp dir: %v", err)
-			}
-			for fp, content := range tc.exist {
-				fp = path.Join(tmpDir, fp)
-				// Create dir if not exist
-				if err := os.MkdirAll(path.Dir(fp), 0777); err != nil {
-					t.Fatalf("Failed creating dir '%s': %v", path.Dir(fp), err)
-				}
-				if err := ioutil.WriteFile(fp, []byte(content), 0644); err != nil {
-					t.Fatalf("Failed creating file %s: %v", fp, err)
-				}
-			}
-
-			for i := 0; i < tc.repeat+1; i++ {
-				if err := mountDefaultGitHubFingerprint(tmpDir); err != nil {
-					t.Fatalf("Unexpected error: %v", err)
-				}
-			}
-			for fp, want := range tc.want {
-				fp = path.Join(tmpDir, fp)
-				got, err := ioutil.ReadFile(fp)
-				if err != nil {
-					t.Fatalf("Failed reading afterwards: %v", err)
-				}
-				if diff := cmp.Diff(want, string(got)); diff != "" {
-					t.Errorf("File %q mismatch. Want(-), got(+):\n%s", fp, diff)
-				}
-			}
-		})
-	}
-}
 
 func TestRun(t *testing.T) {
 	srcRoot, err := ioutil.TempDir("", "clonerefs_unittest")
@@ -477,11 +342,6 @@ func TestRun(t *testing.T) {
 			os.RemoveAll(srcRoot)
 			os.MkdirAll(srcRoot, os.ModePerm)
 
-			sshConfigDir, err := ioutil.TempDir("", "prow-clonerefs-test-run")
-			if err != nil {
-				t.Fatalf("Failed creating temp dir: %v", err)
-			}
-			tc.opts.GitHubFingerprintMountDir = sshConfigDir
 			if err := tc.opts.Run(); err != nil {
 				t.Fatalf("Unexpected error: %v.", err)
 			}
@@ -497,7 +357,7 @@ func TestRun(t *testing.T) {
 					}
 				}
 				if !found {
-					t.Errorf("Got recordedClones:\n%#v\n\nwant expected clone:\n%#v", recordedClones, exp)
+					t.Errorf("recordedClones %#v is missing expected clone %#v", recordedClones, exp)
 				}
 			}
 			if rec, exp := len(recordedClones), len(tc.expectedClones); rec != exp {
