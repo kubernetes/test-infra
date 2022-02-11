@@ -70,6 +70,7 @@ postsubmits:
               - --project=k8s-staging-cluster-api-azure
               - --scratch-bucket=gs://k8s-staging-cluster-api-azure-gcb
               - --env-passthrough=PULL_BASE_REF
+              - --with-git-dir
               - .
   kubernetes-sigs/cluster-api-provider-digitalocean:
     - name: post-cluster-api-provider-digitalocean-push-images
