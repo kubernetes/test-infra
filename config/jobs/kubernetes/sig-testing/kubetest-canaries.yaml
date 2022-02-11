@@ -54,37 +54,6 @@ periodics:
     testgrid-dashboards: sig-testing-canaries
     testgrid-tab-name: gce
 
-- interval: 2h
-  name: ci-kubernetes-e2e-gce-scalability-canary
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-    preset-e2e-scalability-common: "true"
-  decorate: true
-  decoration_config:
-    timeout: 140m
-  spec:
-    containers:
-    - command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=e2e-big-canary
-      - --extract=ci/latest
-      - --gcp-nodes=100
-      - --gcp-project-type=scalability-project
-      - --gcp-zone=us-east1-b
-      - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true --gather-logs-sizes=true --minStartupPods=8
-      - --timeout=120m
-      - --use-logexporter
-      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:latest-master
-      imagePullPolicy: Always
-  annotations:
-    testgrid-dashboards: sig-testing-canaries
-    testgrid-tab-name: scalability
-
 - name: ci-kubernetes-e2e-node-canary
   interval: 1h
   labels:
@@ -118,42 +87,3 @@ periodics:
   annotations:
     testgrid-dashboards: sig-testing-canaries
     testgrid-tab-name: node
-
-- name: ci-kubernetes-kubemark-100-canary
-  interval: 1h
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-    preset-dind-enabled: "true"
-    preset-e2e-kubemark-common: "true"
-  decorate: true
-  decoration_config:
-    timeout: 260m
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:latest-master
-      imagePullPolicy: Always
-      command:
-      - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
-      args:
-      - --cluster=kubemark-100-canary
-      - --extract=ci/latest
-      - --gcp-master-size=n1-standard-2
-      - --gcp-node-size=n1-standard-4
-      - --gcp-nodes=3
-      - --gcp-zone=us-west1-b
-      - --kubemark
-      - --kubemark-nodes=100
-      - --provider=gce
-      - --test=false
-      - --test_args=--ginkgo.focus=\[Feature:Performance\] --gather-resource-usage=true --gather-metrics-at-teardown=true
-      - --timeout=240m
-      - --use-logexporter
-      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-  annotations:
-    testgrid-dashboards: sig-testing-canaries
-    testgrid-tab-name: kubemark
