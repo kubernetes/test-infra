@@ -23,6 +23,7 @@ import (
 	"net/http/httptest"
 	"reflect"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -538,8 +539,12 @@ foo/bar:
 			t.Logf("Running scenario %q", tc.name)
 
 			var calledExternalPlugins []string
+			var m sync.Mutex
+
 			client := newTestClient(func(req *http.Request) *http.Response {
+				m.Lock()
 				calledExternalPlugins = append(calledExternalPlugins, req.URL.String())
+				m.Unlock()
 				return &http.Response{
 					StatusCode: 200,
 					Body:       ioutil.NopCloser(bytes.NewBufferString(`OK`)),
