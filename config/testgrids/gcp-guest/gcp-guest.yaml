@@ -9,7 +9,9 @@ test_groups:
 - name: gcp-guest-osconfig-presubmit-gocheck
   gcs_prefix: oss-prow/pr-logs/directory/osconfig-presubmit-gocheck
 - name: gcp-guest-cloud-image-tests
-  gcs_prefix: gcp-guest-testgrid/logs/cit-periodic
+  gcs_prefix: oss-prow/logs/cit-periodic
+- name: gcp-guest-daisy-e2e
+  gcs_prefix: oss-prow/logs/compute-daisy-e2e
 
 #
 # Define dashboards
@@ -25,3 +27,5 @@ dashboards:
     test_group_name: gcp-guest-osconfig-presubmit-gocheck
   - name: CIT periodics
     test_group_name: gcp-guest-cloud-image-tests
+  - name: Daisy e2e
+    test_group_name: gcp-guest-daisy-e2e
