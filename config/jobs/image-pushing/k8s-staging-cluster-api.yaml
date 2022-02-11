@@ -121,6 +121,7 @@ postsubmits:
               - --project=k8s-staging-cluster-api-gcp
               - --scratch-bucket=gs://k8s-staging-cluster-api-gcp-gcb
               - --env-passthrough=PULL_BASE_REF
+              - --with-git-dir
               - .
   kubernetes-sigs/cluster-api-provider-nested:
     - name: post-cluster-api-provider-nested-push-images
