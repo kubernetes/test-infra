@@ -988,6 +988,15 @@ def generate_presubmits_e2e():
             always_run=True,
         ),
         presubmit_test(
+            distro="amzn2",
+            networking='calico',
+            k8s_version='stable',
+            kops_channel='alpha',
+            name='pull-kops-e2e-k8s-amzn2',
+            tab_name='e2e-amzn2',
+            always_run=False,
+        ),
+        presubmit_test(
             distro="u2110",
             networking='calico',
             k8s_version='stable',
