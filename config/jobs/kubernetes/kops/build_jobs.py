@@ -1015,6 +1015,15 @@ def generate_presubmits_e2e():
             always_run=False,
         ),
         presubmit_test(
+            distro="deb10",
+            networking='calico',
+            k8s_version='stable',
+            kops_channel='alpha',
+            name='pull-kops-e2e-k8s-debian10',
+            tab_name='e2e-debian10',
+            always_run=False,
+        ),
+        presubmit_test(
             distro="deb11",
             networking='calico',
             k8s_version='stable',
