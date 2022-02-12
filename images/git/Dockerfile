@@ -18,3 +18,6 @@ ARG IMAGE_ARG
 ENV IMAGE=${IMAGE_ARG}
 
 RUN apk add --no-cache git openssh
+
+COPY github-known-hosts /github_known_hosts
+COPY ssh-config /etc/ssh/ssh_config
