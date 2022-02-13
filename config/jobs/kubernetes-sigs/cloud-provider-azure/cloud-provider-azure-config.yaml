@@ -304,6 +304,8 @@ presubmits:
               value: "true"
             - name: AZURE_LOADBALANCER_SKU
               value: "standard"
+            - name: KUBERNETES_VERSION
+              value: 1.23.1
             - name: GINKGO_ARGS
               value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --test.parallel=30
     annotations:
