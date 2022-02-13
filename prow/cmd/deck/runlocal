@@ -59,6 +59,8 @@ if [[ "${1:-}" != '--skip-pregenerated' ]]; then
   fi
   update-pregenerated "$HOST"
   shift || true
+else
+  shift
 fi
 
 compile-typescript() {
@@ -66,7 +68,7 @@ compile-typescript() {
   ./gather-static.sh
 }
 
-if [[ -n "${GO_RUN:-}" ]]; then 
+if [[ -n "${GO_RUN:-}" ]]; then
   if [[ "${1:-}" != '--skip-typescript' ]]; then
     compile-typescript
   fi
