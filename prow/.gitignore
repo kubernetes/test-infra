@@ -30,3 +30,4 @@ external-plugins/needs-rebase/needs-rebase
 external-plugins/refresh/refresh
 pj.yaml
 pod.yaml
+*.min.js

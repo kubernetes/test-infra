@@ -25,6 +25,14 @@ cd "${REPO_ROOT}"
 # NOTE: bazel is currently on node 12.x, but we should probably upgrade at some point
 NODE_IMAGE='node:12-bullseye-slim'
 
+DOCKER=(docker)
+
+if [[ -n "${NO_DOCKER:-}" ]]; then
+  DOCKER=(echo docker)
+elif ! (command -v docker >/dev/null); then
+  echo "WARNING: docker not installed; please install docker or try setting NO_DOCKER=true" >&2
+  exit 1
+fi
 # NOTE: yarn tries to read configs under $HOME and fails if it can't,
 # we don't need these configs but we need it to not fail.
 # We set HOME to somewhere read/write-able by any user, since our uid will not
@@ -32,10 +40,16 @@ NODE_IMAGE='node:12-bullseye-slim'
 # fail instead if we don't.
 # We are running as the current host user/group so the files produced are
 # owned appropriately on the host.
-docker run \
+"${DOCKER[@]}" run \
     --rm -i \
     --user $(id -u):$(id -g) \
     -e HOME=/tmp \
     -v "${REPO_ROOT:?}:${REPO_ROOT:?}" -w "${REPO_ROOT}" \
     "${NODE_IMAGE}" \
     "$@"
+if [[ -n "${NO_DOCKER:-}" ]]; then
+  (
+    set -o xtrace
+    "$@"
+  )
+fi

@@ -13,27 +13,83 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+set -o errexit
+set -o nounset
+set -o pipefail
+
+if [[ "${1:-}" == '--help' ]]; then
+  echo "Usage: [GO_RUN=yes] [NO_DOCKER=yes] $(basename "$0") [--skip-pregenerated|HOST] [--skip-typescript]" >&2
+  echo >&2
+  echo "  --skip-pregenerated: do not fetch pregenerated cluster data from a prod instance" >&2
+  echo "  HOST: fetch pregenerated cluster data from a prod instance, eg https://prow.k8s.io" >&2
+  echo "  --skip-typescript: do not compile typescript" >&2
+  echo >&2
+  echo "  GO_RUN=yes: Use go run rather than bazel" >&2
+  echo "  NO_DOCKER=yes: Run Makefile commands on host machine, rather than a container" >&2
+  exit 1
+fi
+  
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "${DIR}"
-cd localdata
-HOST=${1:-"https://prow.k8s.io"}
-if [[ "${HOST}" == "openshift" ]]; then
-	HOST="https://prow.ci.openshift.org"
+
+fetch() {
+  echo "* $@" >&2
+  curl -s "$@" 
+}
+
+update-pregenerated() {
+  local readonly HOST=$1
+
+  echo "Updating pregenerated data from ${HOST}: " >&2
+
+  cd localdata
+  fetch "${HOST}/plugin-help.js?var=allHelp" > plugin-help.js
+  fetch "${HOST}/pr-data.js" > pr-data.js
+  fetch "${HOST}/prowjobs.js" > prowjobs.json
+  fetch "${HOST}/tide-history.js?var=tideHistory" > tide-history.js
+  fetch "${HOST}/tide.js?var=tideData" > tide.js
+  cd ..
+  echo "DONE"
+}
+
+if [[ "${1:-}" != '--skip-pregenerated' ]]; then
+  HOST=${1:-"https://prow.k8s.io"}
+  if [[ "${1:-}" == "openshift" ]]; then
+    HOST="https://prow.ci.openshift.org"
+  fi
+  update-pregenerated "$HOST"
+  shift || true
 fi
 
-echo "fetching localdata from ${HOST}"
-curl "${HOST}/prowjobs.js" > prowjobs.json
-curl "${HOST}/tide.js?var=tideData" > tide.js
-curl "${HOST}/tide-history.js?var=tideHistory" > tide-history.js
-curl "${HOST}/plugin-help.js?var=allHelp" > plugin-help.js
-curl "${HOST}/pr-data.js" > pr-data.js
+compile-typescript() {
+  echo "Compiling typescript..." >&2
+  ./gather-static.sh
+}
 
-bazel=$(command -v bazelisk || command -v bazel)
-
-"$bazel" run //prow/cmd/deck:deck -- \
-  --pregenerated-data=${DIR}/localdata \
-  --static-files-location=./prow/cmd/deck/static \
-  --template-files-location=./prow/cmd/deck/template \
-  --spyglass-files-location=./prow/spyglass/lenses \
-  --config-path "${DIR}/../../../config/prow/config.yaml" \
-  --spyglass
+if [[ -n "${GO_RUN:-}" ]]; then 
+  if [[ "${1:-}" != '--skip-typescript' ]]; then
+    compile-typescript
+  fi
+  (
+    set -o xtrace
+    go run . \
+      --pregenerated-data=${DIR}/localdata \
+      --static-files-location="$DIR/kodata/static" \
+      --template-files-location="$DIR/kodata/template" \
+      --spyglass-files-location="$DIR/kodata/lenses" \
+      --config-path "${DIR}/../../../config/prow/config.yaml" \
+      --spyglass
+  )
+else
+  bazel=$(command -v bazelisk || command -v bazel)
+  (
+    set -o xtrace
+    "$bazel" run //prow/cmd/deck:deck -- \
+      --pregenerated-data=${DIR}/localdata \
+      --static-files-location=./prow/cmd/deck/static \
+      --template-files-location=./prow/cmd/deck/template \
+      --spyglass-files-location=./prow/spyglass/lenses \
+      --config-path "${DIR}/../../../config/prow/config.yaml" \
+      --spyglass
+  )
+fi
