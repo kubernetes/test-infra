@@ -19,21 +19,10 @@
 REGISTRY ?= gcr.io/k8s-prow-staging
 PROW_IMAGES ?=
 
-################################################################################
-# ========================= Setup Go With Gimme ================================
-# go version to use for build etc.
-# setup correct go version with gimme
-PATH:=$(shell . ../hack/build/setup-go.sh && echo "$${PATH}")
-# go1.9+ can autodetect GOROOT, but if some other tool sets it ...
-GOROOT:=
-# enable modules
-GO111MODULE=on
-export PATH GOROOT GO111MODULE
-# work around broken PATH export
-SPACE:=$(subst ,, )
-SHELL:=env PATH=$(subst $(SPACE),\$(SPACE),$(PATH)) $(SHELL)
-################################################################################
-
 .PHONY: push-images
 push-images:
-	go run ../hack/imagebuilder --ko-docker-repo="${REGISTRY}" --push
+	../hack/make-rules/go-run/arbitrary.sh run ./hack/prowimagebuilder --ko-docker-repo="${REGISTRY}" --push
+
+.PHONY: build-images
+build-images:
+	../hack/make-rules/go-run/arbitrary.sh run ./hack/prowimagebuilder --push=false
