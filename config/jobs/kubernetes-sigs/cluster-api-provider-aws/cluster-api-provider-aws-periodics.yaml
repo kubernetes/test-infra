@@ -40,6 +40,46 @@ periodics:
     testgrid-tab-name: periodic-e2e-main
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "2"
+- name: periodic-cluster-api-provider-aws-e2e-mink8s
+  interval: 6h
+  decorate: true
+  labels:
+    pretest-dind-enabled: "true"
+    pretest-kind-volume-mounts: "true"
+    preset-service-account: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-aws
+    base_ref: main
+    path_alias: "sigs.k8s.io/cluster-api-provider-aws"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220211-6df2c53026-master
+      command:
+        - "runner.sh"
+        - "./scripts/ci-e2e.sh"
+      env:
+      - name: BOSKOS_HOST
+        value: "boskos.test-pods.svc.cluster.local"
+      - name: AWS_REGION
+        value: "us-west-2"
+      - name: GINKGO_ARGS
+        value: "\\[Conformance\\] \\[K8s-Upgrade\\]|\\[IPv6\\]"
+      - name: KUBERNETES_VERSION_MANAGEMENT
+        value: "stable-1.19"
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 2
+          memory: "9Gi"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
+    testgrid-tab-name: periodic-e2e-mink8s-main
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
+    testgrid-num-failures-to-alert: "2"
 - name: periodic-cluster-api-provider-aws-eks-e2e
   decorate: true
   decoration_config:
