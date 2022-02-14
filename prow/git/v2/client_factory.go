@@ -280,7 +280,7 @@ func (c *clientFactory) ClientFor(org, repo string) (RepoClient, error) {
 			return nil, err
 		}
 		if len(c.cookieFilePath) > 0 {
-			err := repoClient.Config("http.cookiefile", c.cookieFilePath)
+			err := repoClient.Config("--global", "http.cookiefile", c.cookieFilePath)
 			if err != nil {
 				return nil, fmt.Errorf("unable to configure http.cookiefile: %w", err)
 			}
