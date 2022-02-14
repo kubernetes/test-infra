@@ -307,7 +307,9 @@ presubmits:
               - name: KUBERNETES_VERSION
                 value: 1.22.2
               - name: GINKGO_ARGS
-                value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --test.parallel=30
+                value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --test.parallel=30 --report-dir=${ARTIFACTS} --disable-log-dump=true
+              - name: CONTROL_PLANE_MACHINE_COUNT
+                value: "3"
       annotations:
         testgrid-dashboards: provider-azure-cloud-provider-azure-1-22-presubmit
         testgrid-tab-name: pr-cloud-provider-azure-e2e-capz-1-22
@@ -354,6 +356,8 @@ presubmits:
                 value: "standard"
               - name: KUBERNETES_VERSION
                 value: 1.22.2
+              - name: CONTROL_PLANE_MACHINE_COUNT
+                value: "3"
       annotations:
         testgrid-dashboards: provider-azure-cloud-provider-azure-1-22-presubmit
         testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-capz-1-22
