@@ -20,7 +20,7 @@ OUT_DIR=$(REPO_ROOT)/_output
 ################################################################################
 # ================================= Testing ====================================
 # unit tests (hermetic)
-unit: go-unit py-unit image-build
+unit: go-unit py-unit
 .PHONY: unit
 go-unit:
 	hack/make-rules/go-test/unit.sh
@@ -28,9 +28,6 @@ go-unit:
 py-unit:
 	hack/make-rules/py-test/all.sh
 .PHONY: py-unit
-image-build:
-	(make -C prow build-images)
-.PHONY: image-build
 # integration tests
 # integration:
 #	hack/make-rules/go-test/integration.sh
