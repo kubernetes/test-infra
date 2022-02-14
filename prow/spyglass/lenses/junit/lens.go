@@ -105,6 +105,14 @@ func (jr JunitResult) Status() testStatus {
 	return res
 }
 
+func (jr JunitResult) SkippedReason() string {
+	res := ""
+	if jr.Skipped != nil {
+		res = *jr.Skipped
+	}
+	return res
+}
+
 // TestResult holds data about a test extracted from junit output
 type TestResult struct {
 	Junit []JunitResult
