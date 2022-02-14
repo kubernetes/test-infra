@@ -227,7 +227,7 @@ postsubmits:
     run_if_changed: '^(hack/make-rules|prow|ghproxy|label_sync/.+\.go|robots/commenter|robots/pr-creator|robots/issue-creator|testgrid/cmd|gcsweb)'
     decorate: true
     labels:
-      # Need dind for building typescript
+      # Building deck requires docker for typescript compilation.
       preset-dind-enabled: "true"
     branches:
     - ^master$

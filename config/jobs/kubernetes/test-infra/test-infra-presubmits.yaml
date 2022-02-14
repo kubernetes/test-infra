@@ -170,6 +170,32 @@ presubmits:
     annotations:
       testgrid-dashboards: presubmits-test-infra
       testgrid-tab-name: unit-test
+  - name: pull-test-infra-prow-image-build-test
+    branches:
+    - master
+    run_if_changed: '^(hack/make-rules|prow|ghproxy|label_sync/.+\.go|robots/commenter|robots/pr-creator|robots/issue-creator|testgrid/cmd|gcsweb)'
+    # TODO(chaodaiG): make it required once confirmed working
+    optional: true
+    decorate: true
+    labels:
+      # Building deck requires docker for typescript compilation.
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220211-6df2c53026-test-infra
+        command:
+        - runner.sh
+        args:
+        - make
+        - -C
+        - prow
+        - build-images
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: presubmits-test-infra
+      testgrid-tab-name: prow-image-build-test
   - name: pull-test-infra-verify-lint
     branches:
     - master
