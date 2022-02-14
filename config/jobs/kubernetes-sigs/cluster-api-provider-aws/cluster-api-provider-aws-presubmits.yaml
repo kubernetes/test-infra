@@ -43,6 +43,9 @@ presubmits:
         command:
         - "make"
         - "verify"
+        # docker-in-docker needs privileged mode
+        securityContext:
+            privileged: true
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
       testgrid-tab-name: pr-verify
