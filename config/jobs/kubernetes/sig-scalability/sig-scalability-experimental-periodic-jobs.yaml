@@ -188,3 +188,81 @@ periodics:
           - --timeout=120m
           - --use-logexporter
           - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
+
+  # Copy of ci-kubernetes-kubemark-100-gce test from sig-scalability-periodic-jobs.yaml
+  # with kubekins image reverted to previous version to verify if new image caused flakiness
+- name: ci-kubernetes-kubemark-100-gce-old-kubekins
+  tags:
+  - "perfDashPrefix: kubemark-100Nodes-old-kubekins"
+  - "perfDashJobType: performance"
+  cluster: k8s-infra-prow-build
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+    preset-e2e-kubemark-common: "true"
+    preset-e2e-scalability-periodics: "true"
+    preset-e2e-scalability-periodics-master: "true"
+  decorate: true
+  decoration_config:
+    timeout: 260m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: perf-tests
+    base_ref: master
+    path_alias: k8s.io/perf-tests
+  annotations:
+    testgrid-dashboards: sig-scalability-experiments
+    testgrid-tab-name: kubemark-100-old-kubekins
+    testgrid-num-failures-to-alert: '0'
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220124-681f3531ec-master
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      args:
+      - --cluster=kubemark-100
+      - --extract=ci/latest
+      - --gcp-master-size=n1-standard-2
+      - --gcp-node-image=gci
+      - --gcp-node-size=e2-standard-4
+      - --gcp-nodes=4
+      - --gcp-project-type=scalability-project
+      - --gcp-zone=us-east1-b
+      - --kubemark
+      - --kubemark-nodes=100
+      - --provider=gce
+      - --metadata-sources=cl2-metadata.json
+      - --test=false
+      - --test_args=--ginkgo.focus=xxxx
+      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+      - --test-cmd-args=cluster-loader2
+      - --test-cmd-args=--nodes=100
+      - --test-cmd-args=--prometheus-scrape-node-exporter=true
+      - --test-cmd-args=--provider=kubemark
+      - --test-cmd-args=--report-dir=$(ARTIFACTS)
+      - --test-cmd-args=--testconfig=testing/load/config.yaml
+      - --test-cmd-args=--testconfig=testing/huge-service/config.yaml
+      - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
+      - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
+      - --test-cmd-args=--testoverrides=./testing/experiments/use_simple_latency_query.yaml
+      - --test-cmd-args=--testoverrides=./testing/overrides/kubemark_load_throughput.yaml
+      - --test-cmd-name=ClusterLoaderV2
+      - --timeout=240m
+      - --use-logexporter
+      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          cpu: 2
+          memory: "6Gi"
+        limits:
+          cpu: 2
+          memory: "6Gi"
