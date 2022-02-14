@@ -174,8 +174,6 @@ presubmits:
     branches:
     - master
     run_if_changed: '^(hack/make-rules|prow|ghproxy|label_sync/.+\.go|robots/commenter|robots/pr-creator|robots/issue-creator|testgrid/cmd|gcsweb)'
-    # TODO(chaodaiG): make it required once confirmed working
-    optional: true
     decorate: true
     labels:
       # Building deck requires docker for typescript compilation.
