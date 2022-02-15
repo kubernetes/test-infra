@@ -48,7 +48,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-sanity
     decorate: true
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azurefile-csi-driver
     branches:
     - master
@@ -72,7 +72,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-integration
     decorate: true
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azurefile-csi-driver
     branches:
     - master
@@ -96,7 +96,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-e2e
     decorate: true
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azurefile-csi-driver
     branches:
     - master
@@ -142,7 +142,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-e2e-vmss
     decorate: true
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azurefile-csi-driver
     branches:
     - master
@@ -188,7 +188,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-e2e-windows
     decorate: true
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azurefile-csi-driver
     branches:
     - master
@@ -241,7 +241,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-e2e-migration
     decorate: true
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azurefile-csi-driver
     branches:
     - master
@@ -292,7 +292,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-windows-build
     decorate: true
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azurefile-csi-driver
     branches:
     - master
@@ -313,7 +313,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-e2e-windows-containerd
     decorate: true
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azurefile-csi-driver
     branches:
     - master
@@ -366,7 +366,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-e2e-migration-windows
     decorate: true
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azurefile-csi-driver
     branches:
     - master
@@ -420,7 +420,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-external-e2e-smb
     decorate: true
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azurefile-csi-driver
     branches:
     - master
@@ -469,7 +469,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-external-e2e-nfs
     decorate: true
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azurefile-csi-driver
     branches:
     - master

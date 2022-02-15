@@ -25,7 +25,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-unit
     decorate: true
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
@@ -48,7 +48,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-sanity
     decorate: true
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
@@ -72,7 +72,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-integration
     decorate: true
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
@@ -96,7 +96,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-single-az
     decorate: true
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
@@ -145,7 +145,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-multi-az
     decorate: true
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
@@ -195,7 +195,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-migration
     decorate: true
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
@@ -246,7 +246,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-migration-windows
     decorate: true
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
@@ -301,7 +301,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-windows
     decorate: true
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
@@ -463,7 +463,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-windows-build
     decorate: true
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
@@ -538,7 +538,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-external-e2e-single-az
     decorate: true
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
@@ -590,7 +590,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-windows-containerd
     decorate: true
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master

@@ -25,7 +25,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-smb-unit
     decorate: true
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/csi-driver-smb
     branches:
     - master
@@ -48,7 +48,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-smb-sanity
     decorate: true
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/csi-driver-smb
     branches:
     - master
@@ -98,7 +98,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-smb-windows-build
     decorate: true
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/csi-driver-smb
     branches:
     - master
@@ -119,7 +119,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-smb-e2e
     decorate: true
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/csi-driver-smb
     branches:
     - master
@@ -165,7 +165,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-smb-e2e-vmss
     decorate: true
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/csi-driver-smb
     branches:
     - master
@@ -211,7 +211,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-smb-e2e-windows
     decorate: true
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/csi-driver-smb
     branches:
     - master
@@ -264,7 +264,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-smb-e2e-windows-containerd
     decorate: true
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/csi-driver-smb
     branches:
     - master
@@ -317,7 +317,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-smb-external-e2e
     decorate: true
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/csi-driver-smb
     branches:
     - master
@@ -366,7 +366,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-smb-e2e-gce
     decorate: true
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/csi-driver-smb
     branches:
     - master
