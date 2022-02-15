@@ -1321,8 +1321,10 @@ spec:
           value: "<<CHANGE_ME_MINIO_ROOT_PASSWORD>>"
         - name: MINIO_REGION_NAME
           value: minio
+        - name: MINIO_CONSOLE_ADDRESS
+          value: ":9001"
         ports:
-        - containerPort: 9000
+        - containerPort: 9001
         readinessProbe:
           httpGet:
             path: /minio/health/ready
@@ -1342,7 +1344,7 @@ spec:
   type: ClusterIP
   ports:
   - port: 80
-    targetPort: 9000
+    targetPort: 9001
     protocol: TCP
   selector:
     app: minio
