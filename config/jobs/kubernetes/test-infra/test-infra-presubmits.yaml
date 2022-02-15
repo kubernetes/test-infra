@@ -44,22 +44,6 @@ presubmits:
       testgrid-dashboards: presubmits-test-infra
       testgrid-tab-name: gubernator
 
-  - name: pull-test-infra-yamllint
-    always_run: true
-    decorate: true
-    spec:
-      containers:
-      - image: quay.io/kubermatic/yamllint:0.1
-        command:
-        - yamllint
-        - -c
-        - config/jobs/.yamllint.conf
-        - config/jobs
-        - config/prow/cluster
-    annotations:
-      testgrid-dashboards: presubmits-test-infra
-      testgrid-tab-name: verify-yaml
-
   # Please keep this in sync with the `ci-test-infra-prow-checkconfig` job
   - name: pull-test-infra-prow-checkconfig
     decorate: true
