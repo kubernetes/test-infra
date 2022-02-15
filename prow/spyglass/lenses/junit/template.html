@@ -156,7 +156,11 @@
       {{range .Skipped}}
         {{$firstTest := index .Junit 0}}
         <tr>
-          <td class="mdl-data-table__cell--non-numeric test-name">{{$firstTest.ClassName}}: {{$firstTest.Name}}</td>
+	   {{if eq $firstTest.SkippedReason "" }}
+	   <td class="mdl-data-table__cell--non-numeric test-name">{{$firstTest.ClassName}}: {{$firstTest.Name}}</td>
+	   {{else}}
+	   <td class="mdl-data-table__cell--non-numeric test-name">{{$firstTest.ClassName}}: {{$firstTest.Name}}</br> </br><b>Reason:</b> {{$firstTest.SkippedReason}}</td>
+	   {{end}}
           <td class="mdl-data-table__cell--non-numeric">{{$firstTest.Duration}}</td>
         </tr>
       {{end}}
@@ -166,3 +170,4 @@
 </div>
 {{end}}
 {{end}}
+
