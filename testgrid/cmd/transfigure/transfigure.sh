@@ -25,6 +25,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+BINARY_DIR="${KO_DATA_PATH:-}"
+
 main() {
   branch="transfigure-branch"
 
@@ -60,7 +62,7 @@ main() {
   fi
 
   echo "Generating testgrid yaml"
-  /configurator \
+  "${BINARY_DIR}/configurator" \
     --prow-config "${prow_config}" \
     --prow-job-config "${job_config}" \
     --output-yaml \
@@ -92,7 +94,7 @@ main() {
   git push -f "https://${user}:$(cat "${token}")@github.com/${user}/${remote_fork_repo}" "HEAD:${branch}"
 
   echo "Creating PR to merge ${user}:${branch} into k8s/test-infra:master..."
-  /pr-creator \
+  "${BINARY_DIR}/pr-creator" \
     --github-token-path="${token}" \
     --org="kubernetes" --repo="test-infra" --branch=master \
     --title="${title}" --head-branch="${branch}" \
