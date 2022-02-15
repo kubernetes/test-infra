@@ -25,6 +25,15 @@ images:
   - dir: prow/cmd/tot
   - dir: prow/cmd/pipeline
   - dir: prow/cmd/prow-controller-manager
+  # pod utils
+  - dir: prow/cmd/clonerefs
+    arch: all
+  - dir: prow/cmd/entrypoint
+    arch: all
+  - dir: prow/cmd/initupload
+    arch: all
+  - dir: prow/cmd/sidecar
+    arch: all
   - dir: prow/external-plugins/needs-rebase
   - dir: prow/external-plugins/cherrypicker
   - dir: prow/external-plugins/refresh

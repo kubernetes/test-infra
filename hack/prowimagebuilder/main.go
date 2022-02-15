@@ -48,7 +48,7 @@ const (
 	defaultRetry = 3
 
 	// noOpKoDocerRepo is used when images are not pushed
-	noOpKoDocerRepo = "do.not/matter/at/all"
+	noOpKoDocerRepo = "ko.local"
 )
 
 var (

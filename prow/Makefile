@@ -21,8 +21,8 @@ PROW_IMAGES ?=
 
 .PHONY: push-images
 push-images:
-	../hack/make-rules/go-run/arbitrary.sh run ./hack/prowimagebuilder --ko-docker-repo="${REGISTRY}" --push
+	../hack/make-rules/go-run/arbitrary.sh run ./hack/prowimagebuilder --ko-docker-repo="${REGISTRY}" --push=true
 
 .PHONY: build-images
 build-images:
-	../hack/make-rules/go-run/arbitrary.sh run ./hack/prowimagebuilder --push=false
+	../hack/make-rules/go-run/arbitrary.sh run ./hack/prowimagebuilder --ko-docker-repo="ko.local" --push=false
