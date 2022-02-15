@@ -1,0 +1,60 @@
+presubmits:
+   kubernetes-sigs/ibm-powervs-block-csi-driver:
+   - name: pull-ibm-powervs-block-csi-driver-build
+     always_run: true
+     decorate: true
+     labels:
+       preset-dind-enabled: "true"
+     skip_branches:
+     - gh-pages
+     path_alias: sigs.k8s.io/ibm-powervs-block-csi-driver
+     annotations:
+       testgrid-dashboards: sig-cloud-provider-ibm-powervs-block-csi-driver
+       testgrid-tab-name: build
+       description: Build test in ibm-powervs-block-csi-driver repo.
+     spec:
+       containers:
+       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220211-6df2c53026-master
+         command:
+         - runner.sh
+         args:
+         - make
+         - bin/ibm-powervs-block-csi-driver
+         securityContext:
+           privileged: true
+
+   - name: pull-ibm-powervs-block-csi-driver-unit
+     always_run: true
+     decorate: true
+     skip_branches:
+     - gh-pages
+     path_alias: sigs.k8s.io/ibm-powervs-block-csi-driver
+     annotations:
+       testgrid-dashboards: sig-cloud-provider-ibm-powervs-block-csi-driver
+       testgrid-tab-name: unit
+       description: Unit tests in ibm-powervs-block-csi-driver repo.
+     spec:
+       containers:
+       - image: golang:1.17
+         command:
+         - make
+         args:
+         - test
+
+   - name: pull-ibm-powervs-block-csi-driver-verify
+     always_run: true
+     decorate: true
+     skip_branches:
+     - gh-pages
+     path_alias: sigs.k8s.io/ibm-powervs-block-csi-driver
+     annotations:
+       testgrid-dashboards: sig-cloud-provider-ibm-powervs-block-csi-driver
+       testgrid-tab-name: verify
+       description: ibm-powervs-block-csi-driver basic code verification.
+     spec:
+       containers:
+       - image: golang:1.17
+         command:
+         - make
+         args:
+         - verify
