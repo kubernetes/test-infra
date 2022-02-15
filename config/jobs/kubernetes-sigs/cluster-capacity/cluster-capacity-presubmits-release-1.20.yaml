@@ -1,7 +1,7 @@
 # sigs.k8s.io/cluster-capacity presubmits
 presubmits:
   kubernetes-sigs/cluster-capacity:
-  - name: pull-cluster-capacity-verify-gofmt
+  - name: pull-cluster-capacity-verify-gofmt-release-1-20
     decorate: true
     path_alias: sigs.k8s.io/cluster-capacity
     always_run: true
@@ -12,7 +12,7 @@ presubmits:
         - make
         args:
         - verify-gofmt
-  - name: pull-cluster-capacity-verify-build
+  - name: pull-cluster-capacity-verify-build-release-1-20
     decorate: true
     path_alias: sigs.k8s.io/cluster-capacity
     always_run: true
@@ -23,7 +23,7 @@ presubmits:
         - make
         args:
         - build
-  - name: pull-cluster-capacity-unit-test
+  - name: pull-cluster-capacity-unit-test-release-1-20
     decorate: true
     path_alias: sigs.k8s.io/cluster-capacity
     always_run: true
@@ -34,10 +34,10 @@ presubmits:
         - make
         args:
         - test-unit
-  - name: pull-cluster-capacity-test-e2e-k8s-master-1-21
+  - name: pull-cluster-capacity-test-e2e-k8s-release-1-20-1-20
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-master-1.21
+      testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-release-1.20-1.20
     decorate: true
     decoration_config:
       timeout: 20m
@@ -47,38 +47,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     branches:
-    - master
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220214-0aa8fe1d3a-master
-        command:
-        # generic runner script, handles DIND, bazelrc for caching, etc.
-        - runner.sh
-        env:
-        - name: KUBERNETES_VERSION
-          value: "v1.21.2"
-        - name: KIND_E2E
-          value: "true"
-        args:
-        - make
-        - test-e2e
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-  - name: pull-cluster-capacity-test-e2e-k8s-master-1-20
-    annotations:
-      testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-master-1.20
-    decorate: true
-    decoration_config:
-      timeout: 20m
-    path_alias: sigs.k8s.io/cluster-capacity
-    always_run: true
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    branches:
-    - master
+    - release-1.20
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220214-0aa8fe1d3a-master
@@ -96,10 +65,10 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-  - name: pull-cluster-capacity-test-e2e-k8s-master-1-19
+  - name: pull-cluster-capacity-test-e2e-k8s-release-1-20-1-19
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-master-1.19
+      testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-release-1.20-1.19
     decorate: true
     decoration_config:
       timeout: 20m
@@ -109,7 +78,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     branches:
-    - master
+    - release-1.20
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220214-0aa8fe1d3a-master
@@ -119,6 +88,37 @@ presubmits:
         env:
         - name: KUBERNETES_VERSION
           value: "v1.19.7"
+        - name: KIND_E2E
+          value: "true"
+        args:
+        - make
+        - test-e2e
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+  - name: pull-cluster-capacity-test-e2e-k8s-release-1-20-1-18
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-cluster-capacity-test-e2e-k8s-release-1.20-1.18
+    decorate: true
+    decoration_config:
+      timeout: 20m
+    path_alias: sigs.k8s.io/cluster-capacity
+    always_run: true
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    branches:
+    - release-1.20
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220214-0aa8fe1d3a-master
+        command:
+        # generic runner script, handles DIND, bazelrc for caching, etc.
+        - runner.sh
+        env:
+        - name: KUBERNETES_VERSION
+          value: "v1.18.2"
         - name: KIND_E2E
           value: "true"
         args:
