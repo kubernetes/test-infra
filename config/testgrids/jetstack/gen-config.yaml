@@ -22,6 +22,72 @@ dashboards:
       alert_mail_to_addresses: cert-manager-dev-alerts@googlegroups.com
     code_search_url_template:
       url: https://github.com/cert-manager/cert-manager/compare/<start-custom-0>...<end-custom-0>
+    description: Runs the end-to-end test suite against a Kubernetes v1.18 cluster with all feature gates disabled
+    name: ci-cert-manager-e2e-feature-gates-disabled-v1-18
+    open_bug_template:
+      url: https://github.com/cert-manager/cert-manager/issues/
+    open_test_template:
+      url: https://prow.build-infra.jetstack.net/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: ci-cert-manager-e2e-feature-gates-disabled-v1-18
+  - alert_options:
+      alert_mail_to_addresses: cert-manager-dev-alerts@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/cert-manager/cert-manager/compare/<start-custom-0>...<end-custom-0>
+    description: Runs the end-to-end test suite against a Kubernetes v1.19 cluster with all feature gates disabled
+    name: ci-cert-manager-e2e-feature-gates-disabled-v1-19
+    open_bug_template:
+      url: https://github.com/cert-manager/cert-manager/issues/
+    open_test_template:
+      url: https://prow.build-infra.jetstack.net/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: ci-cert-manager-e2e-feature-gates-disabled-v1-19
+  - alert_options:
+      alert_mail_to_addresses: cert-manager-dev-alerts@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/cert-manager/cert-manager/compare/<start-custom-0>...<end-custom-0>
+    description: Runs the end-to-end test suite against a Kubernetes v1.20 cluster with all feature gates disabled
+    name: ci-cert-manager-e2e-feature-gates-disabled-v1-20
+    open_bug_template:
+      url: https://github.com/cert-manager/cert-manager/issues/
+    open_test_template:
+      url: https://prow.build-infra.jetstack.net/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: ci-cert-manager-e2e-feature-gates-disabled-v1-20
+  - alert_options:
+      alert_mail_to_addresses: cert-manager-dev-alerts@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/cert-manager/cert-manager/compare/<start-custom-0>...<end-custom-0>
+    description: Runs the end-to-end test suite against a Kubernetes v1.21 cluster with all feature gates disabled
+    name: ci-cert-manager-e2e-feature-gates-disabled-v1-21
+    open_bug_template:
+      url: https://github.com/cert-manager/cert-manager/issues/
+    open_test_template:
+      url: https://prow.build-infra.jetstack.net/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: ci-cert-manager-e2e-feature-gates-disabled-v1-21
+  - alert_options:
+      alert_mail_to_addresses: cert-manager-dev-alerts@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/cert-manager/cert-manager/compare/<start-custom-0>...<end-custom-0>
+    description: Runs the end-to-end test suite against a Kubernetes v1.22 cluster with all feature gates disabled
+    name: ci-cert-manager-e2e-feature-gates-disabled-v1-22
+    open_bug_template:
+      url: https://github.com/cert-manager/cert-manager/issues/
+    open_test_template:
+      url: https://prow.build-infra.jetstack.net/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: ci-cert-manager-e2e-feature-gates-disabled-v1-22
+  - alert_options:
+      alert_mail_to_addresses: cert-manager-dev-alerts@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/cert-manager/cert-manager/compare/<start-custom-0>...<end-custom-0>
+    description: Runs the end-to-end test suite against a Kubernetes v1.23 cluster with all feature gates disabled
+    name: ci-cert-manager-e2e-feature-gates-disabled-v1-23
+    open_bug_template:
+      url: https://github.com/cert-manager/cert-manager/issues/
+    open_test_template:
+      url: https://prow.build-infra.jetstack.net/view/gs/<gcs_prefix>/<changelist>
+    test_group_name: ci-cert-manager-e2e-feature-gates-disabled-v1-23
+  - alert_options:
+      alert_mail_to_addresses: cert-manager-dev-alerts@googlegroups.com
+    code_search_url_template:
+      url: https://github.com/cert-manager/cert-manager/compare/<start-custom-0>...<end-custom-0>
     description: Runs the end-to-end test suite against a Kubernetes v1.18 cluster
     name: ci-cert-manager-e2e-v1-18
     open_bug_template:
@@ -571,6 +637,18 @@ test_groups:
   name: cert-manager-website-update-index
 - gcs_prefix: jetstack-logs/logs/ci-cert-manager-bazel
   name: ci-cert-manager-bazel
+- gcs_prefix: jetstack-logs/logs/ci-cert-manager-e2e-feature-gates-disabled-v1-18
+  name: ci-cert-manager-e2e-feature-gates-disabled-v1-18
+- gcs_prefix: jetstack-logs/logs/ci-cert-manager-e2e-feature-gates-disabled-v1-19
+  name: ci-cert-manager-e2e-feature-gates-disabled-v1-19
+- gcs_prefix: jetstack-logs/logs/ci-cert-manager-e2e-feature-gates-disabled-v1-20
+  name: ci-cert-manager-e2e-feature-gates-disabled-v1-20
+- gcs_prefix: jetstack-logs/logs/ci-cert-manager-e2e-feature-gates-disabled-v1-21
+  name: ci-cert-manager-e2e-feature-gates-disabled-v1-21
+- gcs_prefix: jetstack-logs/logs/ci-cert-manager-e2e-feature-gates-disabled-v1-22
+  name: ci-cert-manager-e2e-feature-gates-disabled-v1-22
+- gcs_prefix: jetstack-logs/logs/ci-cert-manager-e2e-feature-gates-disabled-v1-23
+  name: ci-cert-manager-e2e-feature-gates-disabled-v1-23
 - gcs_prefix: jetstack-logs/logs/ci-cert-manager-e2e-v1-18
   name: ci-cert-manager-e2e-v1-18
 - gcs_prefix: jetstack-logs/logs/ci-cert-manager-e2e-v1-19
