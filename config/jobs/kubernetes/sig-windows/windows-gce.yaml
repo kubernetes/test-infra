@@ -96,7 +96,7 @@ periodics:
         value: "win2019"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220211-6df2c53026-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220214-0aa8fe1d3a-master
   annotations:
     fork-per-release: "true"
     fork-per-release-replacements: "--extract=ci/latest -> --extract=ci/latest-{{.Version}}"
@@ -147,7 +147,7 @@ periodics:
         value: "win20h2"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220211-6df2c53026-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220214-0aa8fe1d3a-master
   annotations:
     fork-per-release: "true"
     fork-per-release-replacements: "--extract=ci/latest -> --extract=ci/latest-{{.Version}}"
@@ -200,7 +200,7 @@ periodics:
         value: "prepull-head.yaml"
       - name: KUBE_FEATURE_GATES
         value: "WindowsGMSA=true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220211-6df2c53026-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220214-0aa8fe1d3a-master
   annotations:
     testgrid-dashboards: google-windows, sig-windows-gce
     testgrid-tab-name: gce-windows-2019-master-alpha-features
@@ -249,7 +249,7 @@ periodics:
         value: "win2019"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220211-6df2c53026-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220214-0aa8fe1d3a-master
   annotations:
     testgrid-dashboards: google-windows, sig-windows-gce
     testgrid-tab-name: gce-windows-2019-serial
@@ -297,7 +297,7 @@ periodics:
         value: "win2019"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220211-6df2c53026-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220214-0aa8fe1d3a-master
   annotations:
     testgrid-dashboards: google-windows, sig-windows-gce, sig-windows-master-release
     testgrid-tab-name: gce-windows-2019-containerd-master
@@ -346,7 +346,7 @@ periodics:
         value: "win2019"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220211-6df2c53026-1.21
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220214-0aa8fe1d3a-1.21
   annotations:
     testgrid-dashboards: google-windows, sig-windows-gce, sig-windows-1.21-release
     testgrid-tab-name: gce-windows-2019-containerd-1.21
@@ -395,7 +395,7 @@ periodics:
         value: "win20h2"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220211-6df2c53026-1.21
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220214-0aa8fe1d3a-1.21
   annotations:
     testgrid-dashboards: google-windows, sig-windows-gce, sig-windows-1.21-release
     testgrid-tab-name: gce-windows-20h2-containerd-1.21
@@ -428,7 +428,7 @@ periodics:
     - command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220211-6df2c53026-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220214-0aa8fe1d3a-master
       env:
       - name: CL2_CONTAINER_IMAGE
         value: "k8s.gcr.io/pause:3.4.1"
@@ -482,7 +482,7 @@ periodics:
     - command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220211-6df2c53026-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220214-0aa8fe1d3a-master
       env:
       - name: CL2_CONTAINER_IMAGE
         value: "mcr.microsoft.com/windows/servercore/iis"
@@ -571,7 +571,7 @@ presubmits:
           value: "win2019"
         - name: PREPULL_YAML
           value: "prepull-head.yaml"
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220211-6df2c53026-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220214-0aa8fe1d3a-master
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
