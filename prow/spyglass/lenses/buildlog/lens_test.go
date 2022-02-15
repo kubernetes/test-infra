@@ -17,8 +17,56 @@ limitations under the License.
 package buildlog
 
 import (
+	"encoding/json"
+	"fmt"
+	"strings"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
+	prowconfig "k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/spyglass/api"
+	"k8s.io/test-infra/prow/spyglass/lenses/fake"
 )
+
+func TestExpand(t *testing.T) {
+	cases := []struct {
+		name string
+		g    LineGroup
+		want bool
+	}{
+		{
+			name: "basic",
+		},
+		{
+			name: "not enough",
+			g: LineGroup{
+				LogLines: make([]LogLine, moreLines-1),
+			},
+		},
+		{
+			name: "just enough",
+			g: LineGroup{
+				LogLines: make([]LogLine, moreLines),
+			},
+			want: true,
+		},
+		{
+			name: "more than enough",
+			g: LineGroup{
+				LogLines: make([]LogLine, moreLines+1),
+			},
+			want: true,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := tc.g.Expand(); got != tc.want {
+				t.Errorf("Expand() got %t, wanted %t", got, tc.want)
+			}
+		})
+	}
+}
 
 func TestGroupLines(t *testing.T) {
 	lorem := []string{
@@ -170,9 +218,10 @@ func TestGroupLines(t *testing.T) {
 			},
 		},
 	}
+	art := "fake-artifact"
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			got := groupLines(highlightLines(test.lines, 0, "", defaultErrRE))
+			got := groupLines(&art, highlightLines(test.lines, 0, &art, defaultErrRE))
 			if len(got) != len(test.groups) {
 				t.Fatalf("Expected %d groups, got %d", len(test.groups), len(got))
 			}
@@ -194,6 +243,311 @@ func TestGroupLines(t *testing.T) {
 	}
 }
 
+func TestCallback(t *testing.T) {
+	pstr := func(s string) *string { return &s }
+	render := func(groups []*LineGroup) string {
+		return executeTemplate(".", "line groups", groups)
+	}
+
+	cases := []struct {
+		name      string
+		artifact  api.Artifact
+		data      string
+		rawConfig json.RawMessage
+		want      string
+	}{
+		{
+			name: "empty",
+			data: `{"artifact": "foo"}`,
+			artifact: &fake.Artifact{
+				Path:    "foo",
+				Content: []byte(""),
+			},
+			want: render([]*LineGroup{
+				{
+					Start:        1,
+					End:          1,
+					ArtifactName: pstr("foo"),
+					LogLines: []LogLine{
+						{
+							ArtifactName: pstr("foo"),
+							Number:       1,
+							SubLines: []SubLine{
+								{},
+							},
+						},
+					},
+				},
+			}),
+		},
+		{
+			name: "single",
+			data: `{
+				"artifact": "foo",
+				"length": 5
+
+			}`,
+			artifact: &fake.Artifact{
+				Path:    "foo",
+				Content: []byte("hello"),
+			},
+			want: render([]*LineGroup{
+				{
+					Start:        1,
+					End:          1,
+					ArtifactName: pstr("foo"),
+					LogLines: []LogLine{
+						{
+							ArtifactName: pstr("foo"),
+							Number:       1,
+							SubLines: []SubLine{
+								{
+									Text: "hello",
+								},
+							},
+						},
+					},
+				},
+			}),
+		},
+		{
+			name: "multiple",
+			data: `{
+				"artifact": "foo",
+				"length": 11
+
+			}`,
+			artifact: &fake.Artifact{
+				Path:    "foo",
+				Content: []byte("hello\nworld"),
+			},
+			want: render([]*LineGroup{
+				{
+					Start:        1,
+					End:          2,
+					ArtifactName: pstr("foo"),
+					LogLines: []LogLine{
+						{
+							ArtifactName: pstr("foo"),
+							Number:       1,
+							SubLines: []SubLine{
+								{
+									Text: "hello",
+								},
+							},
+						},
+						{
+							ArtifactName: pstr("foo"),
+							Number:       2,
+							SubLines: []SubLine{
+								{
+									Text: "world",
+								},
+							},
+						},
+					},
+				},
+			}),
+		},
+		{
+			name: "top",
+			data: `{
+				"artifact": "foo",
+				"top": 3,
+				"length": 400
+			}`,
+			artifact: &fake.Artifact{
+				Path: "foo",
+				Content: func() []byte {
+					var sb strings.Builder
+					for i := 0; i < 100; i++ {
+						sb.WriteString("word\n")
+					}
+					return []byte(sb.String())
+				}(),
+			},
+			want: render([]*LineGroup{
+				{
+					Start:        1,
+					End:          3,
+					ArtifactName: pstr("foo"),
+					LogLines: []LogLine{
+						{
+							ArtifactName: pstr("foo"),
+							Number:       1,
+							SubLines: []SubLine{
+								{
+									Text: "word",
+								},
+							},
+						},
+						{
+							ArtifactName: pstr("foo"),
+							Number:       2,
+							SubLines: []SubLine{
+								{
+									Text: "word",
+								},
+							},
+						},
+						{
+							ArtifactName: pstr("foo"),
+							Number:       3,
+							SubLines: []SubLine{
+								{
+									Text: "word",
+								},
+							},
+						},
+					},
+				},
+				{
+					Start:        3,
+					End:          81,
+					ArtifactName: pstr("foo"),
+					Skip:         true,
+					ByteLength:   385,
+					ByteOffset:   15,
+					LogLines:     make([]LogLine, 77),
+				},
+			}),
+		},
+		{
+			name: "bottom",
+			data: `{
+				"artifact": "foo",
+				"bottom": 3,
+				"length": 400
+			}`,
+			artifact: &fake.Artifact{
+				Path: "foo",
+				Content: func() []byte {
+					var sb strings.Builder
+					for i := 0; i < 100; i++ {
+						sb.WriteString("word\n")
+					}
+					return []byte(sb.String())
+				}(),
+			},
+			want: render([]*LineGroup{
+				{
+					Start:        0,
+					End:          78,
+					ArtifactName: pstr("foo"),
+					Skip:         true,
+					ByteLength:   389,
+					ByteOffset:   0,
+					LogLines:     make([]LogLine, 78),
+				},
+				{
+					Start:        78,
+					End:          80,
+					ArtifactName: pstr("foo"),
+					LogLines: []LogLine{
+						{
+							ArtifactName: pstr("foo"),
+							Number:       79,
+							SubLines: []SubLine{
+								{
+									Text: "word",
+								},
+							},
+						},
+						{
+							ArtifactName: pstr("foo"),
+							Number:       80,
+							SubLines: []SubLine{
+								{
+									Text: "word",
+								},
+							},
+						},
+						{
+							ArtifactName: pstr("foo"),
+							Number:       81,
+							SubLines: []SubLine{
+								{
+									Text: "",
+								},
+							},
+						},
+					},
+				},
+			}),
+		},
+		{
+			name: "full",
+			data: `{
+				"artifact": "foo",
+				"length": 400
+			}`,
+			artifact: &fake.Artifact{
+				Path: "foo",
+				Content: func() []byte {
+					var sb strings.Builder
+					for i := 0; i < 100; i++ {
+						sb.WriteString("word\n")
+					}
+					return []byte(sb.String())
+				}(),
+			},
+			want: render([]*LineGroup{
+				{
+					Start:        0,
+					End:          81,
+					ArtifactName: pstr("foo"),
+					LogLines: func() []LogLine {
+						out := make([]LogLine, 0, 81)
+						for i := 0; i < 80; i++ {
+							out = append(out, LogLine{
+								ArtifactName: pstr("foo"),
+								Number:       i + 1,
+								SubLines: []SubLine{
+									{
+										Text: "word",
+									},
+								},
+							})
+						}
+						out = append(out, LogLine{
+							ArtifactName: pstr("foo"),
+							Number:       81,
+							SubLines: []SubLine{
+								{
+									Text: "",
+								},
+							},
+						})
+						return out
+					}(),
+				},
+			}),
+		},
+		{
+			name: "bad json",
+			want: failedUnmarshal,
+		},
+		{
+			name: "missing artifact",
+			data: `{"artifact": "foo"}`,
+			want: fmt.Sprintf(missingArtifact, "foo"),
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var arts []api.Artifact
+			if tc.artifact != nil {
+				arts = []api.Artifact{tc.artifact}
+			}
+			got := Lens{}.Callback(arts, "", tc.data, tc.rawConfig, prowconfig.Spyglass{})
+			if diff := cmp.Diff(tc.want, got); diff != "" {
+				t.Errorf("Callback() got unexpected diff (-want +got):\n%s", diff)
+			}
+		})
+	}
+}
+
 func BenchmarkHighlightLines(b *testing.B) {
 	lorem := []string{
 		"Lorem ipsum dolor sit amet",
@@ -205,7 +559,8 @@ func BenchmarkHighlightLines(b *testing.B) {
 		"Excepteur sint occaecat cupidatat non proident",
 		"sunt in culpa qui officia deserunt mollit anim id est laborum",
 	}
+	art := "fake-artifact"
 	b.Run("HighlightLines", func(b *testing.B) {
-		_ = highlightLines(lorem, 0, "artifact", defaultErrRE)
+		_ = highlightLines(lorem, 0, &art, defaultErrRE)
 	})
 }

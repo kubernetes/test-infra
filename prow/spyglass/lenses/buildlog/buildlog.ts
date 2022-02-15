@@ -46,16 +46,50 @@ function ansiToHTML(orig: string): string {
   });
 }
 
-async function replaceElementWithContent(element: HTMLDivElement) {
+interface ArtifactRequest {
+  artifact: string;
+  bottom: number;
+  length: number;
+  offset: number;
+  startLine: number;
+  top: number;
+}
+
+async function replaceElementWithContent(element: HTMLDivElement, top: number, bottom: number) {
+
+  // <div data-foo="1" data-bar="this"> will show up as element.dataset = {"foo": "1", "bar": "this"}
   const {artifact, offset, length, startLine} = element.dataset;
-  const content = await spyglass.request(JSON.stringify({
-    artifact, length: +length!, offset: +offset!, startLine: +startLine!}));
-  element.innerHTML = ansiToHTML(content);
-  fixLinks(element);
+
+  // length! => we know these values are non-null:
+  // - we know this because its tightly coupled with template.html
+  // TODO(fejta): consider more robust code, looser coupling.
+  const r: ArtifactRequest = {
+    artifact: artifact!,
+    bottom,
+    length: Number(length!),
+    offset: Number(offset!),
+    startLine: Number(startLine!),
+    top,
+  };
+  const content = await spyglass.request(JSON.stringify(r));
   showElem(element);
+  element.outerHTML = ansiToHTML(content);
+  fixLinks(document.documentElement);
+  for (const button of Array.from(document.querySelectorAll<HTMLDivElement>(".show-skipped"))) {
+    if (button.classList.contains("showable")) {
+      continue;
+    }
+    button.addEventListener('click', handleShowSkipped);
+    button.classList.add("showable");
+  }
+
+  for (const button of Array.from(document.querySelectorAll<HTMLDivElement>(".show-skipped"))) {
+    button.addEventListener('click', handleShowSkipped);
+  }
 
   // Remove the "show all" button if we no longer need it.
-  const log = document.getElementById(`${artifact}-content`)!;
+  // TODO(fejta): avoid id selectors: https://google.github.io/styleguide/htmlcssguide.html#ID_Selectors
+  const log = document.getElementById(`${r.artifact}-content`)!;
   const skipped = log.querySelectorAll<HTMLElement>(".show-skipped");
   if (skipped.length === 0) {
     const button = document.querySelector('button.show-all-button')!;
@@ -66,10 +100,27 @@ async function replaceElementWithContent(element: HTMLDivElement) {
 
 async function handleShowSkipped(this: HTMLDivElement, e: MouseEvent): Promise<void> {
   // Don't do anything unless they actually clicked the button.
+  let target: HTMLButtonElement;
   if (!(e.target instanceof HTMLButtonElement)) {
-    return;
+    if (e.target instanceof Node && e.target.parentElement instanceof HTMLButtonElement) {
+      target = e.target.parentElement;
+    } else {
+      return;
+    }
+  } else {
+    target = e.target;
   }
-  await replaceElementWithContent(this);
+
+  const classes: DOMTokenList = target.classList;
+  let top = 0;
+  let bottom = 0;
+  if (classes.contains("top")) {
+    top = 10;
+  }
+  if (classes.contains("bottom")) {
+    bottom = 10;
+  }
+  await replaceElementWithContent(this, top, bottom);
 }
 
 async function handleShowAll(this: HTMLButtonElement) {
@@ -137,7 +188,9 @@ async function loadLine(artifact: string, line: number): Promise<boolean> {
   const showers = document.querySelectorAll<HTMLDivElement>(`.show-skipped[data-artifact="${artifact}"]`);
   for (const shower of Array.from(showers)) {
     if (line >= Number(shower.dataset.startLine) && line < Number(shower.dataset.endLine)) {
-      await replaceElementWithContent(shower);
+      // TODO(fejta): could maybe do something smarter here than the whole
+      // block.
+      await replaceElementWithContent(shower, 0, 0);
       return true;
     }
   }
@@ -223,6 +276,7 @@ window.addEventListener('load', () => {
 
   for (const button of Array.from(document.querySelectorAll<HTMLDivElement>(".show-skipped"))) {
     button.addEventListener('click', handleShowSkipped);
+    button.className = button.className + " showable";
   }
 
   for (const button of Array.from(document.querySelectorAll<HTMLButtonElement>("button.show-all-button"))) {

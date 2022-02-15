@@ -7,7 +7,7 @@ html {
     overflow-x: hidden;
 }
 
-.linetext button {
+.linetext button, .linenum button {
     font-size: 1em;
     text-align: left;
     background: none;
@@ -18,9 +18,23 @@ html {
     cursor: pointer;
 }
 
+.loglines .material-icons {
+  font-size: 1em;
+  vertical-align: middle;
+}
+
+.show-skipped.showable:hover {
+    background-color: #666;
+}
+.show-skipped.showable {
+    background-color: #505050;
+}
+
 .loglines {
     color: #fff;
     width: calc(100% - 30px);
+    font-family: monospace;
+    margin-top: 15px;
 }
 .loglines .linetext span {
     white-space: pre-wrap;
