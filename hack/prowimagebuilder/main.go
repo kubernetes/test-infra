@@ -66,21 +66,21 @@ var (
 )
 
 func init() {
-	out, err := runCmd("git", "rev-parse", "--show-toplevel")
+	out, err := runCmd(nil, "git", "rev-parse", "--show-toplevel")
 	if err != nil {
 		logrus.WithError(err).Error("Failed getting git root dir")
 		os.Exit(1)
 	}
 	rootDir = out
 
-	if _, err := runCmdInDirFunc(path.Join(rootDir, "hack/tools"), "go", "build", "-o", path.Join(rootDir, "_bin/ko"), "github.com/google/ko"); err != nil {
+	if _, err := runCmdInDirFunc(path.Join(rootDir, "hack/tools"), nil, "go", "build", "-o", path.Join(rootDir, "_bin/ko"), "github.com/google/ko"); err != nil {
 		logrus.WithError(err).Error("Failed ensure ko")
 		os.Exit(1)
 	}
 }
 
 type options struct {
-	koDockerRepo      string
+	dockerRepo        string
 	prowImageListFile string
 	workers           int
 	push              bool
@@ -90,11 +90,12 @@ type options struct {
 // Mock for unit testing purpose
 var runCmdInDirFunc = runCmdInDir
 
-func runCmdInDir(dir, cmd string, args ...string) (string, error) {
+func runCmdInDir(dir string, additionalEnv []string, cmd string, args ...string) (string, error) {
 	command := exec.Command(cmd, args...)
 	if dir != "" {
 		command.Dir = dir
 	}
+	command.Env = append(os.Environ(), additionalEnv...)
 	stdOut, err := command.StdoutPipe()
 	if err != nil {
 		return "", err
@@ -122,8 +123,8 @@ func runCmdInDir(dir, cmd string, args ...string) (string, error) {
 	return strings.TrimSpace(allOut), err
 }
 
-func runCmd(cmd string, args ...string) (string, error) {
-	return runCmdInDirFunc(rootDir, cmd, args...)
+func runCmd(additionalEnv []string, cmd string, args ...string) (string, error) {
+	return runCmdInDirFunc(rootDir, additionalEnv, cmd, args...)
 }
 
 type imageDef struct {
@@ -183,11 +184,11 @@ func allTags(arch string) ([]string, error) {
 
 // gitTag returns YYYYMMDD-<GIT_TAG>
 func gitTag() (string, error) {
-	prefix, err := runCmd("date", "+v%Y%m%d")
+	prefix, err := runCmd(nil, "date", "+v%Y%m%d")
 	if err != nil {
 		return "", err
 	}
-	postfix, err := runCmd("git", "describe", "--always", "--dirty")
+	postfix, err := runCmd(nil, "git", "describe", "--always", "--dirty")
 	if err != nil {
 		return "", err
 	}
@@ -202,7 +203,7 @@ func runGatherStaticScript(id *imageDef, args ...string) error {
 		}
 		return nil
 	}
-	if _, err := runCmd(script, args...); err != nil {
+	if _, err := runCmd(nil, script, args...); err != nil {
 		return err
 	}
 	return nil
@@ -216,7 +217,7 @@ func teardown(id *imageDef) error {
 	return runGatherStaticScript(id, "--cleanup")
 }
 
-func buildAndPush(id *imageDef, koDockerRepo string, push bool) error {
+func buildAndPush(id *imageDef, dockerRepos []string, push bool) error {
 	logger := logrus.WithField("image", id.Dir)
 	logger.Info("Build and push")
 	// So far only supports certain arch
@@ -246,8 +247,14 @@ func buildAndPush(id *imageDef, koDockerRepo string, push bool) error {
 	if err := setup(id); err != nil {
 		return fmt.Errorf("setup: %w", err)
 	}
-	if _, err = runCmd("_bin/ko", publishArgs...); err != nil {
-		return fmt.Errorf("running ko: %w", err)
+	// ko only supports a single docker repo at a time, running this repeatedly
+	// on different docker repos so that multiple docker repos can be supported.
+	// This process utilized the built in cache of ko, so that pushing to
+	// subsequent docker repo(s) is relatively cheap.
+	for _, dockerRepo := range dockerRepos {
+		if _, err = runCmd([]string{"KO_DOCKER_REPO=" + dockerRepo}, "_bin/ko", publishArgs...); err != nil {
+			return fmt.Errorf("running ko: %w", err)
+		}
 	}
 	return nil
 }
@@ -255,18 +262,14 @@ func buildAndPush(id *imageDef, koDockerRepo string, push bool) error {
 func main() {
 	var o options
 	flag.StringVar(&o.prowImageListFile, "prow-images-file", path.Join(rootDir, defaultProwImageListFile), "Yaml file contains list of prow images")
-	flag.StringVar(&o.koDockerRepo, "ko-docker-repo", os.Getenv("KO_DOCKER_REPO"), "KO_DOCKER_REPO override")
+	flag.StringVar(&o.dockerRepo, "ko-docker-repo", os.Getenv("KO_DOCKER_REPO"), "Dockers repos, separated by comma")
 	flag.IntVar(&o.workers, "workers", defaultWorkersCount, "Number of workers in parallel")
 	flag.BoolVar(&o.push, "push", false, "whether push or not")
 	flag.IntVar(&o.maxRetry, "retry", defaultRetry, "Number of times retrying for each image")
 	flag.Parse()
 
-	if !o.push && o.koDockerRepo == "" {
-		o.koDockerRepo = noOpKoDocerRepo
-	}
-	if err := os.Setenv("KO_DOCKER_REPO", o.koDockerRepo); err != nil {
-		logrus.WithError(err).Error("Failed setting KO_DOCKER_REPO")
-		os.Exit(1)
+	if !o.push && o.dockerRepo == "" {
+		o.dockerRepo = noOpKoDocerRepo
 	}
 	// By default ensures timestamp of images, ref:
 	// https://github.com/google/ko#why-are-my-images-all-created-in-1970
@@ -304,7 +307,7 @@ func main() {
 			for {
 				select {
 				case id := <-imageChan:
-					err := buildAndPush(&id, o.koDockerRepo, o.push)
+					err := buildAndPush(&id, strings.Split(o.dockerRepo, ","), o.push)
 					if err != nil {
 						if id.remainingRetry > 0 {
 							// Let another routine handle this, better luck maybe?
