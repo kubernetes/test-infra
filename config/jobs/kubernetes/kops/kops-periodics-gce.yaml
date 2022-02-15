@@ -126,3 +126,52 @@ periodics:
     testgrid-dashboards: google-kops-gce, kops-distro-u2004, kops-gce, kops-k8s-latest, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '40'
     testgrid-tab-name: kops-gce-latest
+
+# Runs an upgrade/rollback test with Leader Migration from 1.23 to 1.24
+- cron: '48 1-23/3 * * *'
+  labels:
+    preset-k8s-ssh: "true"
+  name: e2e-kops-gce-leader-migration
+  decorate: true
+  decoration_config:
+    timeout: 120m
+  extra_refs:
+  - org: kubernetes
+    repo: kops
+    base_ref: master
+    workdir: true
+    path_alias: k8s.io/kops
+  spec:
+    serviceAccountName: k8s-kops-test
+    containers:
+    - command:
+      - runner.sh
+      args:
+      - bash
+      - ./tests/e2e/scenarios/upgrade-ha-leader-migration/run-test.sh
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/ssh-key-secret/ssh-private
+      - name: KUBE_SSH_USER
+        value: prow
+      - name: GCE_EXTRA_CREATE_ARGS
+        value: --gce-service-account=default
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220214-0aa8fe1d3a-master
+      imagePullPolicy: Always
+      resources:
+        limits:
+          memory: 3Gi
+        requests:
+          cpu: "2"
+          memory: 3Gi
+  annotations:
+    test.kops.k8s.io/cloud: gce
+    test.kops.k8s.io/container_runtime: containerd
+    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/k8s_version: latest
+    test.kops.k8s.io/kops_channel: alpha
+    test.kops.k8s.io/kops_version: ''
+    test.kops.k8s.io/networking: ''
+    testgrid-dashboards: google-kops-gce, kops-gce, kops-k8s-latest, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
+    testgrid-days-of-results: '40'
+    testgrid-tab-name: kops-leader-migration
