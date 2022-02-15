@@ -224,7 +224,7 @@ postsubmits:
   - name: post-test-infra-push-prow-staging
     cluster: test-infra-trusted
     # Runs on more than just the Prow dir to include some additional images that we publish to gcr.io/k8s-prow.
-    run_if_changed: '^(hack/make-rules|prow|ghproxy|label_sync/.+\.go|robots/commenter|robots/pr-creator|robots/issue-creator|testgrid/cmd|gcsweb)'
+    run_if_changed: '^(\.ko\.yaml|hack/(make-rules|prowimagebuilder)|prow|ghproxy|label_sync/.+\.go|robots/commenter|robots/pr-creator|robots/issue-creator|testgrid/cmd|gcsweb)'
     decorate: true
     labels:
       # Building deck requires docker for typescript compilation.
