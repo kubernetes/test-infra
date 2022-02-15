@@ -25,7 +25,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-blob-csi-driver-unit
     decorate: true
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/blob-csi-driver
     branches:
     - master
@@ -48,7 +48,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-blob-csi-driver-sanity
     decorate: true
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/blob-csi-driver
     branches:
     - master
@@ -73,7 +73,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-blob-csi-driver-integration
     decorate: true
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/blob-csi-driver
     branches:
     - master
@@ -98,7 +98,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-blob-csi-driver-e2e
     decorate: true
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/blob-csi-driver
     branches:
     - master
@@ -146,7 +146,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-blob-csi-driver-e2e-vmss
     decorate: true
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/blob-csi-driver
     branches:
     - master
@@ -192,7 +192,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-blob-csi-driver-e2e-proxy
     decorate: true
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/blob-csi-driver
     branches:
     - master
@@ -243,7 +243,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-blob-csi-driver-external-e2e-blobfuse
     decorate: true
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/blob-csi-driver
     branches:
     - master
@@ -294,7 +294,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-blob-csi-driver-external-e2e-nfs
     decorate: true
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/blob-csi-driver
     branches:
     - master
