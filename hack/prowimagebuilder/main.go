@@ -107,10 +107,11 @@ func runCmdInDir(dir, cmd string, args ...string) (string, error) {
 		logrus.WithField("cmd", command.Args).Info(out)
 	}
 	allErr, _ := io.ReadAll(stdErr)
-	if len(allErr) > 0 {
+	err = command.Wait()
+	// Print error only when command failed
+	if err != nil && len(allErr) > 0 {
 		logrus.WithField("cmd", command.Args).Error(string(allErr))
 	}
-	err = command.Wait()
 	return strings.TrimSpace(allOut), err
 }
 

@@ -25,3 +25,14 @@ images:
   - dir: prow/cmd/tot
   - dir: prow/cmd/pipeline
   - dir: prow/cmd/prow-controller-manager
+  - dir: prow/external-plugins/needs-rebase
+  - dir: prow/external-plugins/cherrypicker
+  - dir: prow/external-plugins/refresh
+  - dir: ghproxy
+  - dir: label_sync
+  - dir: robots/commenter
+  - dir: robots/pr-creator
+  - dir: robots/issue-creator
+  - dir: testgrid/cmd/configurator
+  - dir: testgrid/cmd/transfigure
+  - dir: gcsweb/cmd/gcsweb

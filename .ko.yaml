@@ -4,6 +4,9 @@
 # - prow/cmd/mkpj
 # - prow/cmd/mkpod
 # - prow/cmd/pipeline
+# - prow/external-plugins/needs-rebase
+# - robots/issue-creator
+# - testgrid/cmd/configurator
 # defaultBaseImage: gcr.io/distroless/static:nonroot
 baseImageOverrides:
   k8s.io/test-infra/prow/cmd/branchprotector: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
@@ -27,5 +30,14 @@ baseImageOverrides:
   k8s.io/test-infra/prow/cmd/tide: gcr.io/k8s-prow/git:v20211018-372b1c8
   k8s.io/test-infra/prow/cmd/tot: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
   k8s.io/test-infra/prow/cmd/prow-controller-manager: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
+  # external
+  k8s.io/test-infra/prow/external-plugins/cherrypicker: gcr.io/k8s-prow/git:v20211018-372b1c8
+  k8s.io/test-infra/prow/external-plugins/refresh: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
+  k8s.io/test-infra/ghproxy: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
+  k8s.io/test-infra/label_sync: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
+  k8s.io/test-infra/robots/commenter: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
+  k8s.io/test-infra/robots/pr-creator: gcr.io/k8s-prow/git:v20211018-372b1c8
+  k8s.io/test-infra/testgrid/cmd/transfigure: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20210128-721ee66-test-infra
+  k8s.io/test-infra/gcsweb/cmd/gcsweb: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
   # prow integration test
   k8s.io/test-infra/prow/test/integration/fakeghserver: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
