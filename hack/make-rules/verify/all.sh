@@ -86,6 +86,12 @@ if [[ "${VERIFY_YAMLLINT:-true}" == "true" ]]; then
   hack/make-rules/verify/yamllint.sh || { FAILED+=($name); echo "ERROR: $name failed"; }
   cd "${REPO_ROOT}"
 fi
+if [[ "${VERIFY_TS_ROLLUP:-true}" == "true" ]]; then
+  name="rollup typescripts"
+  echo "verifying $name"
+  hack/make-rules/verify/ts-rollup.sh || { FAILED+=($name); echo "ERROR: $name failed"; }
+  cd "${REPO_ROOT}"
+fi
 
 # exit based on verify scripts
 if [[ "${#FAILED[@]}" == 0 ]]; then
