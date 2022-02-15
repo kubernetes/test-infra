@@ -55,7 +55,7 @@ periodics:
 
 - interval: 4h
   name: ci-golang-tip-k8s-1-23
-  cluster: scalability
+  cluster: k8s-infra-prow-build
   tags:
   - "perfDashPrefix: golang-tip-k8s-1-23"
   - "perfDashJobType: performance"
@@ -97,7 +97,7 @@ periodics:
       - --extract=gs://k8s-scale-golang-build/ci/latest-1.23.txt
       - --gcp-node-size=e2-standard-8
       - --gcp-nodes=50
-      - --gcp-project=k8s-presubmit-scale
+      - --gcp-project-type=scalability-project
       - --gcp-zone=us-east1-b
       - --provider=gce
       - --kubemark
@@ -118,7 +118,7 @@ periodics:
       - --test-cmd-name=ClusterLoaderV2
       - --timeout=180m
       - --use-logexporter
-      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
+      - --logexporter-gcs-path=gs://k8s-infra-scalability-tests-logs/$(JOB_NAME)/$(BUILD_ID)
       env:
       - name: CL2_ENABLE_VIOLATIONS_FOR_API_CALL_PROMETHEUS
         value: "true"
