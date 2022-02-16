@@ -121,7 +121,7 @@ func prowYAMLGetter(
 func ensureHeadCommits(repo git.RepoClient, headSHAs ...string) error {
 	for _, sha := range headSHAs {
 		if err := repo.Fetch(sha); err != nil {
-			return fmt.Errorf("failed to fetch headSHA: %s", sha)
+			return fmt.Errorf("failed to fetch headSHA: %s: %v", sha, err)
 		}
 	}
 	return nil
