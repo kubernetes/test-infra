@@ -1,5 +1,6 @@
 periodics:
 - name: ci-build-and-push-k8s-at-golang-tip
+  cluster: k8s-infra-prow-build
   interval: 4h
   labels:
     preset-service-account: "true"
@@ -35,6 +36,9 @@ periodics:
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/bootstrap:v20220121-8b2d5086e4
+      env:
+      - name: GCS_BUCKET
+        value: "k8s-infra-scale-golang-builds"
       command:
       - runner.sh
       - /workspace/scenarios/execute.py
