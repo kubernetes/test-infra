@@ -220,12 +220,12 @@ func (c *Controller) Sync() error {
 				return fmt.Errorf("makeCloneURI: %w", err)
 			}
 
-			cache, ok := c.repoCacheMap[cloneURI.Host]
+			cache, ok := c.repoCacheMap[cloneURI.String()]
 			if !ok {
 				if cache, err = createCache(cloneURI, c.cookieFilePath, c.cacheSize, c.configAgent); err != nil {
 					return err
 				}
-				c.repoCacheMap[cloneURI.Host] = cache
+				c.repoCacheMap[cloneURI.String()] = cache
 			}
 
 			result := client.ResultSuccess
@@ -374,7 +374,7 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 
 	switch change.Status {
 	case client.Merged:
-		postsubmits, err := cache.GetPostsubmits(trimmedHostPath, func() (string, error) { return baseSHA, nil })
+		postsubmits, err := cache.GetPostsubmits(trimmedHostPath, func() (string, error) { return baseSHA, nil }, func() (string, error) { return change.CurrentRevision, nil })
 		if err != nil {
 			//TODO(mpherman): Return Error once we know this usually works
 			logger.WithError(err).Warn("Failed to get cached InRepoConfig for Postsubmits.")
@@ -392,7 +392,7 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 			}
 		}
 	case client.New:
-		presubmits, err := cache.GetPresubmits(trimmedHostPath, func() (string, error) { return baseSHA, nil })
+		presubmits, err := cache.GetPresubmits(trimmedHostPath, func() (string, error) { return baseSHA, nil }, func() (string, error) { return change.CurrentRevision, nil })
 		if err != nil {
 			//TODO(mpherman): Return Error once we know this usually works
 			logger.WithError(err).Warn("Failed to get cached InRepoConfig for Presubmits.")
