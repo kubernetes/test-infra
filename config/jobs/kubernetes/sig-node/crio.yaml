@@ -6,7 +6,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220214-0aa8fe1d3a-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220216-aa6d36a90c-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
@@ -38,7 +38,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220214-0aa8fe1d3a-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220216-aa6d36a90c-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
@@ -71,7 +71,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220214-0aa8fe1d3a-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220216-aa6d36a90c-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
@@ -103,7 +103,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220214-0aa8fe1d3a-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220216-aa6d36a90c-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
@@ -135,7 +135,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220214-0aa8fe1d3a-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220216-aa6d36a90c-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
@@ -167,7 +167,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220214-0aa8fe1d3a-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220216-aa6d36a90c-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
@@ -199,7 +199,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220214-0aa8fe1d3a-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220216-aa6d36a90c-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
@@ -231,7 +231,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220214-0aa8fe1d3a-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220216-aa6d36a90c-master
         args:
           - --repo=k8s.io/kubernetes=master
           - --timeout=120
@@ -263,7 +263,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220214-0aa8fe1d3a-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220216-aa6d36a90c-master
         args:
           - --repo=k8s.io/kubernetes=master
           - --timeout=120
