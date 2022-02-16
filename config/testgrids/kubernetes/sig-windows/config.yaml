@@ -13,6 +13,7 @@ dashboard_groups:
     - sig-windows-containerd-hyperv
     - sig-windows-networking
     - sig-windows-containerd-runtime-signal
+    - sig-windows-push-images
 
 dashboards:
 - name: sig-windows-signal
@@ -25,6 +26,7 @@ dashboards:
 - name: sig-windows-gce
 - name: sig-windows-sac
 - name: sig-windows-containerd-hyperv
+- name: sig-windows-push-images
 - name: sig-windows-networking
   dashboard_tab:
   - name: ltsc2019-docker-flannel-winbridge-stable-dsr-disabled
