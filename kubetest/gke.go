@@ -325,6 +325,12 @@ func (g *gkeDeployer) Up() error {
 			return err
 		}
 	}
+
+	// Export network name for gke kubemark clusters.
+	if err := os.Setenv("GKE_NETWORK", g.network); err != nil {
+		return err
+	}
+
 	// Create a custom subnet in that network if it was asked for.
 	if *gkeCustomSubnet != "" {
 		customSubnetFields := strings.Fields(*gkeCustomSubnet)
