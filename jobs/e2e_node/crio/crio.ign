@@ -21,6 +21,11 @@
   "systemd": {
     "units": [
       {
+        "contents": "[Unit]\nDescription=Download and install dbus-tools.\nBefore=crio-install.service\nAfter=network-online.target\n\n[Service]\nType=oneshot\nExecStart=/usr/bin/rpm-ostree install --apply-live --allow-inactive dbus-tools\n\n[Install]\nWantedBy=multi-user.target\n",
+        "enabled": true,
+        "name": "dbus-tools-install.service"
+      },
+      {
         "contents": "[Unit]\nDescription=Download and install crio binaries and configurations.\nAfter=network-online.target\n\n[Service]\nType=oneshot\nExecStartPre=/usr/bin/bash -c '/usr/bin/curl --fail --retry 5 --retry-delay 3 --silent --show-error -o /usr/local/crio-nodee2e-installer.sh  https://raw.githubusercontent.com/cri-o/cri-o/74583d26406963ba150004f343bc36c16a861164/scripts/node_e2e_installer'\nExecStart=/usr/bin/bash /usr/local/crio-nodee2e-installer.sh\n\n[Install]\nWantedBy=multi-user.target\n",
         "enabled": true,
         "name": "crio-install.service"
