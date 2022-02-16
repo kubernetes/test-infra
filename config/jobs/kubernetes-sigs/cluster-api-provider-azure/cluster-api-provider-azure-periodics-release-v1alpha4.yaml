@@ -105,7 +105,7 @@ periodics:
 - name: periodic-cluster-api-provider-azure-e2e-full-v1alpha4
   decorate: true
   decoration_config:
-    timeout: 2h
+    timeout: 4h
   interval: 24h
   labels:
     preset-dind-enabled: "true"

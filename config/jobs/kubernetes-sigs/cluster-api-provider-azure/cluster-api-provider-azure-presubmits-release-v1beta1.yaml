@@ -55,9 +55,9 @@ presubmits:
           - ./scripts/ci-e2e.sh
         env:
           - name: GINKGO_FOCUS
-            value: "Workload cluster creation"
+            value: \[REQUIRED\]
           - name: GINKGO_SKIP
-            value: "Creating a GPU-enabled cluster|.*Windows.*dockershim.*|.*AKS.*|Creating a cluster that uses the external cloud provider"
+            value: ""
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -103,11 +103,13 @@ presubmits:
       testgrid-tab-name: capz-pr-apiversion-upgrade-v1beta1
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
       description: This job creates clusters using supported older api versions (v1alpha3, v1alpha4), and verifies that the clusters continue to operate properly after the api version is upgraded to the latest(v1beta1).
-  - name: pull-cluster-api-provider-azure-e2e-full-v1beta1
+  - name: pull-cluster-api-provider-azure-e2e-optional-v1beta1
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
     always_run: false
     optional: true
     decorate: true
+    decoration_config:
+      timeout: 4h
     max_concurrency: 5
     labels:
       preset-dind-enabled: "true"
@@ -125,7 +127,7 @@ presubmits:
           - ./scripts/ci-e2e.sh
         env:
           - name: GINKGO_FOCUS
-            value: "Workload cluster creation"
+            value: \[OPTIONAL\]
           - name: GINKGO_SKIP
             value: ""
         # docker-in-docker needs privileged mode
@@ -133,7 +135,7 @@ presubmits:
           privileged: true
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
-      testgrid-tab-name: capz-pr-e2e-full-v1beta1
+      testgrid-tab-name: capz-pr-e2e-optional-v1beta1
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
   - name: pull-cluster-api-provider-azure-e2e-windows-dockershim-v1beta1
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
@@ -191,7 +193,7 @@ presubmits:
           - ./scripts/ci-e2e.sh
         env:
           - name: GINKGO_FOCUS
-            value: ".*AKS.*"
+            value: \[EXPERIMENTAL\]
           - name: GINKGO_SKIP
             value: ""
         # docker-in-docker needs privileged mode
