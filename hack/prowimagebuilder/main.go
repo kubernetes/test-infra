@@ -25,8 +25,10 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"context"
 
@@ -44,8 +46,7 @@ const (
 	defaultProwImageListFile = "prow/.prow-images.yaml"
 
 	defaultWorkersCount = 10
-
-	defaultRetry = 3
+	defaultRetry        = 3
 
 	// noOpKoDocerRepo is used when images are not pushed
 	noOpKoDocerRepo = "ko.local"
@@ -242,6 +243,12 @@ func main() {
 	}
 	if err := os.Setenv("KO_DOCKER_REPO", o.koDockerRepo); err != nil {
 		logrus.WithError(err).Error("Failed setting KO_DOCKER_REPO")
+		os.Exit(1)
+	}
+	// By default ensures timestamp of images, ref:
+	// https://github.com/google/ko#why-are-my-images-all-created-in-1970
+	if err := os.Setenv("SOURCE_DATE_EPOCH", strconv.Itoa(int(time.Now().Unix()))); err != nil {
+		logrus.WithError(err).Error("Failed setting SOURCE_DATE_EPOCH")
 		os.Exit(1)
 	}
 

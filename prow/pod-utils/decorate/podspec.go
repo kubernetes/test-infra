@@ -508,6 +508,18 @@ func CloneRefs(pj prowapi.ProwJob, codeMount, logMount coreapi.VolumeMount) (*co
 	return &container, refs, cloneVolumes, nil
 }
 
+// binaryPathBasedOnImage figures out the path of binary inside the image.
+// Historically images built with bazel bin placed binaries at root level,
+// this is not the case for images built with `ko`, the binaries are placed
+// under `/ko-app`. For backward compatibility dynamically configures binary
+// path based on image tag, to use this feature the tag must have `-ko` postfix.
+func binaryPathBasedOnImage(binaryPath, image string) string {
+	if strings.HasSuffix(image, "-ko") {
+		binaryPath = "/ko-app" + binaryPath
+	}
+	return binaryPath
+}
+
 func processLog(log coreapi.VolumeMount, prefix string) string {
 	if prefix == "" {
 		return filepath.Join(log.MountPath, "process-log.txt")
