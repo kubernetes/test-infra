@@ -37,6 +37,10 @@ After you saved the app, click "Generate Private Key" on the bottom
 and save the private key together with the `App ID` in the top of the
 page.
 
+## Simplified manual deployment using kind or minikube
+
+Please follow [this](/prow/getting_started_kind_minikube.md) document if you would like to test or learn prow using kind or minikube installed on your localhost machine.
+
 ## Tackle deployment
 
 Prow's `tackle` utility walks you through deploying a new instance of prow in a couple minutes, try it out!
@@ -172,6 +176,7 @@ There are two sample manifests to get you started:
 * [`starter-s3.yaml`](/config/prow/cluster/starter/starter-s3.yaml) sets up a minio as blob storage for logs and is particularly well suited to quickly get something working. NOTE: this method requires 2 PVs of 100Gi each.
 * [`starter-gcs.yaml`](/config/prow/cluster/starter/starter-gcs.yaml) uses GCS as blob storage and requires additional configuration to set up the bucket and ServiceAccounts. See [this](#configure-a-gcs-bucket) for details.
 * [`starter-azure.yaml`](/config/prow/cluster/starter/starter-azure.yaml) uses Azure as blob storage and requires MinIO deployment. See [this](#configure-an-azure-blob-storage) for details.
+* [`starter-s3-kind.yaml`](/config/prow/cluster/starter/starter-s3-kind.yaml) is a simplified kind/minikube deploymend based on [`starter-s3.yaml`](/config/prow/cluster/starter/starter-s3.yaml). Follow [this](/prow/getting_started_kind_minikube.md) tutorial if you need such deployment.
 
 **Note**: It will deploy prow in the `prow` namespace of the cluster.
 
