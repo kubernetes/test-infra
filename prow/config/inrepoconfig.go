@@ -108,11 +108,23 @@ func prowYAMLGetter(
 
 	mergeMethod := c.Tide.MergeMethod(orgRepo)
 	log.Debugf("Using merge strategy %q.", mergeMethod)
+	if err := ensureHeadCommits(repo, headSHAs...); err != nil {
+		return nil, fmt.Errorf("failed to fetch headSHAs: %v", err)
+	}
 	if err := repo.MergeAndCheckout(baseSHA, string(mergeMethod), headSHAs...); err != nil {
 		return nil, fmt.Errorf("failed to merge: %w", err)
 	}
 
 	return ReadProwYAML(log, repo.Directory(), false)
+}
+
+func ensureHeadCommits(repo git.RepoClient, headSHAs ...string) error {
+	for _, sha := range headSHAs {
+		if err := repo.Fetch(sha); err != nil {
+			return fmt.Errorf("failed to fetch headSHA: %s: %v", sha, err)
+		}
+	}
+	return nil
 }
 
 // ReadProwYAML parses the .prow.yaml file or .prow directory, no commit checkout or defaulting is included.

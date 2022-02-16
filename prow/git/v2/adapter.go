@@ -91,7 +91,9 @@ func (a *repoClientAdapter) MirrorClone() error {
 }
 
 func (a *repoClientAdapter) Fetch(arg ...string) error {
-	return a.Repo.Fetch(arg...)
+	// TODO(mpherman): Bring adapter Fetch in line with gitv2 fetch without hard-coding origin as remote.
+	args := append([]string{"origin"}, arg...)
+	return a.Repo.Fetch(args...)
 }
 
 func (a *repoClientAdapter) FetchFromRemote(resolver RemoteResolver, branch string) error {
