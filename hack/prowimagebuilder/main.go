@@ -45,6 +45,8 @@ const (
 
 	defaultWorkersCount = 10
 
+	defaultRetry = 3
+
 	// noOpKoDocerRepo is used when images are not pushed
 	noOpKoDocerRepo = "do.not/matter/at/all"
 )
@@ -81,6 +83,7 @@ type options struct {
 	prowImageListFile string
 	workers           int
 	push              bool
+	maxRetry          int
 }
 
 func runCmdInDir(dir, cmd string, args ...string) (string, error) {
@@ -120,8 +123,9 @@ func runCmd(cmd string, args ...string) (string, error) {
 }
 
 type imageDef struct {
-	Dir  string `json:"dir"`
-	Arch string `json:"arch"`
+	Dir            string `json:"dir"`
+	Arch           string `json:"arch"`
+	remainingRetry int
 }
 
 type imageDefs struct {
@@ -200,7 +204,8 @@ func teardown(id *imageDef) error {
 }
 
 func buildAndPush(id *imageDef, koDockerRepo string, push bool) error {
-	logrus.WithField("image", id.Dir).Info("Build and push")
+	logger := logrus.WithField("image", id.Dir)
+	logger.Info("Build and push")
 	publishArgs := []string{"publish", fmt.Sprintf("--tarball=_bin/%s.tar", path.Base(id.Dir)), "--push=false"}
 	if push {
 		publishArgs = []string{"publish", "--push=true"}
@@ -218,8 +223,10 @@ func buildAndPush(id *imageDef, koDockerRepo string, push bool) error {
 	if err := setup(id); err != nil {
 		return fmt.Errorf("setup: %w", err)
 	}
-	_, err = runCmd("_bin/ko", publishArgs...)
-	return err
+	if _, err = runCmd("_bin/ko", publishArgs...); err != nil {
+		return fmt.Errorf("running ko: %w", err)
+	}
+	return nil
 }
 
 func main() {
@@ -228,6 +235,7 @@ func main() {
 	flag.StringVar(&o.koDockerRepo, "ko-docker-repo", os.Getenv("KO_DOCKER_REPO"), "KO_DOCKER_REPO override")
 	flag.IntVar(&o.workers, "workers", defaultWorkersCount, "Number of workers in parallel")
 	flag.BoolVar(&o.push, "push", false, "whether push or not")
+	flag.IntVar(&o.maxRetry, "retry", defaultRetry, "Number of times retrying for each image")
 	flag.Parse()
 	if !o.push && o.koDockerRepo == "" {
 		o.koDockerRepo = noOpKoDocerRepo
@@ -254,7 +262,15 @@ func main() {
 			for {
 				select {
 				case id := <-imageChan:
-					if err := buildAndPush(&id, o.koDockerRepo, o.push); err != nil {
+					err := buildAndPush(&id, o.koDockerRepo, o.push)
+					if err != nil {
+						if id.remainingRetry > 0 {
+							// Let another routine handle this, better luck maybe?
+							id.remainingRetry--
+							imageChan <- id
+							// Don't call wg.Done() as we are not done yet
+							continue
+						}
 						errChan <- err
 					}
 					wg.Done()
@@ -267,6 +283,7 @@ func main() {
 
 	for _, id := range ids {
 		id := id
+		id.remainingRetry = o.maxRetry
 		if id.Arch == "" {
 			id.Arch = defaultArch
 		}
