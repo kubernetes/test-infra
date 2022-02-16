@@ -4,6 +4,9 @@ presubmits:
   - name: pull-cluster-capacity-verify-gofmt-release-1-21
     decorate: true
     path_alias: sigs.k8s.io/cluster-capacity
+    branches:
+    # The script this job runs is not in all branches.
+    - ^release-1.21$
     always_run: true
     spec:
       containers:
@@ -15,6 +18,9 @@ presubmits:
   - name: pull-cluster-capacity-verify-build-release-1-21
     decorate: true
     path_alias: sigs.k8s.io/cluster-capacity
+    branches:
+    # The script this job runs is not in all branches.
+    - ^release-1.21$
     always_run: true
     spec:
       containers:
@@ -26,6 +32,9 @@ presubmits:
   - name: pull-cluster-capacity-unit-test-release-1-21
     decorate: true
     path_alias: sigs.k8s.io/cluster-capacity
+    branches:
+    # The script this job runs is not in all branches.
+    - ^release-1.21$
     always_run: true
     spec:
       containers:
