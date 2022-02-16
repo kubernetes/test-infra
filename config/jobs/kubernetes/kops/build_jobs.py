@@ -402,7 +402,8 @@ def generate_grid():
                 for k8s_version in k8s_versions:
                     for kops_version in kops_versions:
                         # https://github.com/kubernetes/kops/pull/11696
-                        if kops_version is None and distro in ["deb9", "rhel7", "u1804"]:
+                        if (not (kops_version in ["1.21", "1.22"]) and
+                                distro in ["deb9", "rhel7", "u1804"]):
                             continue
                         results.append(
                             build_test(cloud="aws",
@@ -424,7 +425,8 @@ def generate_grid():
                 for k8s_version in ["1.22"]: # TODO: all k8s_versions:
                     for kops_version in [None]: # TODO: all kops_versions:
                         # https://github.com/kubernetes/kops/pull/11696
-                        if kops_version is None and distro in ["deb9", "rhel7", "u1804"]:
+                        if (not(kops_version in ["1.21", "1.22"]) and
+                                distro in ["deb9", "rhel7", "u1804"]):
                             continue
                         results.append(
                             build_test(cloud="gce",
