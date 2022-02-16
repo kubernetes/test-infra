@@ -50,6 +50,7 @@ require (
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/fsouza/fake-gcs-server v1.19.4
 	github.com/go-bindata/go-bindata/v3 v3.1.3
+	github.com/go-git/go-git/v5 v5.4.2
 	github.com/go-openapi/spec v0.19.6
 	github.com/go-test/deep v1.0.7
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
@@ -67,6 +68,7 @@ require (
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/klauspost/pgzip v1.2.1
 	github.com/mattn/go-zglob v0.0.2
+	github.com/maxbrunsfeld/counterfeiter/v6 v6.2.2
 	github.com/pelletier/go-toml v1.9.3
 	github.com/peterbourgon/diskv v2.0.1+incompatible
 	github.com/pkg/errors v0.9.1
@@ -78,11 +80,12 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/pflag v1.0.5
+	github.com/stretchr/testify v1.7.0
 	github.com/tektoncd/pipeline v0.14.1-0.20200710073957-5eeb17f81999
 	go.uber.org/zap v1.19.0
 	go4.org v0.0.0-20201209231011-d4a079459e60
 	gocloud.dev v0.19.0
-	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
+	golang.org/x/crypto v0.0.0-20210421170649-83a5a9bb288b
 	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616
 	golang.org/x/net v0.0.0-20210520170846-37e1c6afe023
 	golang.org/x/oauth2 v0.0.0-20210402161424-2e8d93401602

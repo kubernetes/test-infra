@@ -33,6 +33,7 @@ import (
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/approve/approvers"
+	"k8s.io/test-infra/prow/plugins/approve/testfreeze"
 	"k8s.io/test-infra/prow/repoowners"
 )
 
@@ -462,7 +463,17 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.Repo, githubConf
 	start = time.Now()
 	notifications := filterComments(commentsFromIssueComments, notificationMatcher(botUserChecker))
 	latestNotification := getLast(notifications)
-	newMessage := updateNotification(githubConfig.LinkURL, opts.CommandHelpLink, opts.PrProcessLink, pr.org, pr.repo, pr.branch, latestNotification, approversHandler)
+
+	var testFreezeResult *testfreeze.Result
+	// Enable test freeze only for the k/k repo and master branch
+	if pr.org == "kubernetes" && pr.repo == "kubernetes" && pr.branch == "master" {
+		testFreezeResult, err = testfreeze.NewChecker(log).InTestFreeze()
+		if err != nil {
+			log.WithError(err).Error("unable to get test freeze result")
+		}
+	}
+
+	newMessage := updateNotification(githubConfig.LinkURL, opts.CommandHelpLink, opts.PrProcessLink, pr.org, pr.repo, pr.branch, latestNotification, approversHandler, testFreezeResult)
 	log.WithField("duration", time.Since(start).String()).Debug("Completed getting notifications in handle")
 	start = time.Now()
 	if newMessage != nil {
@@ -570,8 +581,8 @@ func notificationMatcher(isBot func(string) bool) func(*comment) bool {
 	}
 }
 
-func updateNotification(linkURL *url.URL, commandHelpLink, prProcessLink, org, repo, branch string, latestNotification *comment, approversHandler approvers.Approvers) *string {
-	message := approvers.GetMessage(approversHandler, linkURL, commandHelpLink, prProcessLink, org, repo, branch)
+func updateNotification(linkURL *url.URL, commandHelpLink, prProcessLink, org, repo, branch string, latestNotification *comment, approversHandler approvers.Approvers, testFreezeResult *testfreeze.Result) *string {
+	message := approvers.GetMessage(approversHandler, linkURL, commandHelpLink, prProcessLink, org, repo, branch, testFreezeResult)
 	if message == nil || (latestNotification != nil && strings.Contains(latestNotification.Body, *message)) {
 		return nil
 	}
