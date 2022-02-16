@@ -73,10 +73,7 @@ initContainers:
   - mountPath: /secrets/gcs
     name: gcs-credentials
 - args:
-  - /entrypoint
-  - /tools/entrypoint
-  command:
-  - /bin/cp
+  - --copy-mode-only
   image: entrypointimage
   name: place-entrypoint
   resources:

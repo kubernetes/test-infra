@@ -572,8 +572,7 @@ func PlaceEntrypoint(config *prowapi.DecorationConfig, toolsMount coreapi.Volume
 	container := coreapi.Container{
 		Name:         entrypointName,
 		Image:        config.UtilityImages.Entrypoint,
-		Command:      []string{"/bin/cp"},
-		Args:         []string{"/entrypoint", entrypointLocation(toolsMount)},
+		Args:         []string{"--copy-mode-only"},
 		VolumeMounts: []coreapi.VolumeMount{toolsMount},
 	}
 	if config.Resources != nil && config.Resources.PlaceEntrypoint != nil {
