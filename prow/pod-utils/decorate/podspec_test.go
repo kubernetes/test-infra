@@ -202,8 +202,7 @@ func TestCloneRefs(t *testing.T) {
 				},
 			},
 			expected: &coreapi.Container{
-				Name:    cloneRefsName,
-				Command: []string{cloneRefsCommand},
+				Name: cloneRefsName,
 				Env: envOrDie(clonerefs.Options{
 					GitRefs:            []prowapi.Refs{{}},
 					GitUserEmail:       clonerefs.DefaultGitUserEmail,
@@ -227,8 +226,7 @@ func TestCloneRefs(t *testing.T) {
 				},
 			},
 			expected: &coreapi.Container{
-				Name:    cloneRefsName,
-				Command: []string{cloneRefsCommand},
+				Name: cloneRefsName,
 				Env: envOrDie(clonerefs.Options{
 					GitRefs:            []prowapi.Refs{{}},
 					GitUserEmail:       clonerefs.DefaultGitUserEmail,
@@ -253,8 +251,7 @@ func TestCloneRefs(t *testing.T) {
 				},
 			},
 			expected: &coreapi.Container{
-				Name:    cloneRefsName,
-				Command: []string{cloneRefsCommand},
+				Name: cloneRefsName,
 				Env: envOrDie(clonerefs.Options{
 					GitRefs:            []prowapi.Refs{{Org: "first"}, {Org: "second"}, {Org: "third"}},
 					GitUserEmail:       clonerefs.DefaultGitUserEmail,
@@ -279,8 +276,7 @@ func TestCloneRefs(t *testing.T) {
 				},
 			},
 			expected: &coreapi.Container{
-				Name:    cloneRefsName,
-				Command: []string{cloneRefsCommand},
+				Name: cloneRefsName,
 				Env: envOrDie(clonerefs.Options{
 					GitRefs:            []prowapi.Refs{{}},
 					GitUserEmail:       clonerefs.DefaultGitUserEmail,
@@ -312,8 +308,7 @@ func TestCloneRefs(t *testing.T) {
 				},
 			},
 			expected: &coreapi.Container{
-				Name:    cloneRefsName,
-				Command: []string{cloneRefsCommand},
+				Name: cloneRefsName,
 				Env: envOrDie(clonerefs.Options{
 					GitRefs:            []prowapi.Refs{{}},
 					GitUserEmail:       clonerefs.DefaultGitUserEmail,
@@ -339,9 +334,8 @@ func TestCloneRefs(t *testing.T) {
 				},
 			},
 			expected: &coreapi.Container{
-				Name:    cloneRefsName,
-				Command: []string{cloneRefsCommand},
-				Args:    []string{"--cookiefile=" + cookiePathOnly("oatmeal")},
+				Name: cloneRefsName,
+				Args: []string{"--cookiefile=" + cookiePathOnly("oatmeal")},
 				Env: envOrDie(clonerefs.Options{
 					CookiePath:         cookiePathOnly("oatmeal"),
 					GitRefs:            []prowapi.Refs{{}},
@@ -367,8 +361,7 @@ func TestCloneRefs(t *testing.T) {
 				},
 			},
 			expected: &coreapi.Container{
-				Name:    cloneRefsName,
-				Command: []string{cloneRefsCommand},
+				Name: cloneRefsName,
 				Env: envOrDie(clonerefs.Options{
 					GitRefs:            []prowapi.Refs{{}},
 					GitUserEmail:       clonerefs.DefaultGitUserEmail,
@@ -396,8 +389,7 @@ func TestCloneRefs(t *testing.T) {
 				},
 			},
 			expected: &coreapi.Container{
-				Name:    cloneRefsName,
-				Command: []string{cloneRefsCommand},
+				Name: cloneRefsName,
 				Env: envOrDie(clonerefs.Options{
 					GitRefs:            []prowapi.Refs{{}},
 					GitUserEmail:       clonerefs.DefaultGitUserEmail,
@@ -445,8 +437,7 @@ func TestCloneRefs(t *testing.T) {
 				},
 			},
 			expected: &coreapi.Container{
-				Name:    cloneRefsName,
-				Command: []string{cloneRefsCommand},
+				Name: cloneRefsName,
 				Env: envOrDie(clonerefs.Options{
 					GitRefs:                 []prowapi.Refs{{}},
 					GitUserEmail:            clonerefs.DefaultGitUserEmail,
@@ -500,8 +491,7 @@ func TestCloneRefs(t *testing.T) {
 				},
 			},
 			expected: &coreapi.Container{
-				Name:    cloneRefsName,
-				Command: []string{cloneRefsCommand},
+				Name: cloneRefsName,
 				Env: envOrDie(clonerefs.Options{
 					GitRefs:                 []prowapi.Refs{{}},
 					GitUserEmail:            clonerefs.DefaultGitUserEmail,
