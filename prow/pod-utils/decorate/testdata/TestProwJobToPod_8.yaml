@@ -70,9 +70,7 @@ spec:
     - mountPath: /home/prow/go
       name: code
     workingDir: /home/prow/go/src/somewhere/else
-  - command:
-    - /sidecar
-    env:
+  - env:
     - name: JOB_SPEC
       value: '{"type":"presubmit","job":"job-name","buildid":"blabla","prowjobid":"pod","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"},"decoration_config":{"timeout":"2h0m0s","grace_period":"10s","utility_images":{"clonerefs":"clonerefs:tag","initupload":"initupload:tag","entrypoint":"entrypoint:tag","sidecar":"sidecar:tag"},"gcs_configuration":{"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","mediaTypes":{"log":"text/plain"}},"default_service_account_name":"default-SA","cookiefile_secret":"yummy/.gitcookies"}}'
     - name: SIDECAR_OPTIONS
@@ -87,8 +85,6 @@ spec:
   initContainers:
   - args:
     - --cookiefile=/secrets/cookiefile/.gitcookies
-    command:
-    - /clonerefs
     env:
     - name: CLONEREFS_OPTIONS
       value: '{"src_root":"/home/prow/go","log":"/logs/clone.json","git_user_name":"ci-robot","git_user_email":"ci-robot@k8s.io","refs":[{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}],"path_alias":"somewhere/else"}],"cookie_path":"/secrets/cookiefile/.gitcookies","github_api_endpoints":["https://api.github.com"]}'
@@ -106,9 +102,7 @@ spec:
     - mountPath: /secrets/cookiefile
       name: cookiefile
       readOnly: true
-  - command:
-    - /initupload
-    env:
+  - env:
     - name: INITUPLOAD_OPTIONS
       value: '{"bucket":"my-bucket","path_strategy":"legacy","default_org":"kubernetes","default_repo":"kubernetes","mediaTypes":{"log":"text/plain"},"dry_run":false,"log":"/logs/clone.json"}'
     - name: JOB_SPEC

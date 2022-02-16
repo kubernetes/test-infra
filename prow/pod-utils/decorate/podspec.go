@@ -266,11 +266,10 @@ func CloneLogPath(logMount coreapi.VolumeMount) string {
 
 // Exposed for testing
 const (
-	entrypointName   = "place-entrypoint"
-	initUploadName   = "initupload"
-	sidecarName      = "sidecar"
-	cloneRefsName    = "clonerefs"
-	cloneRefsCommand = "/clonerefs"
+	entrypointName = "place-entrypoint"
+	initUploadName = "initupload"
+	sidecarName    = "sidecar"
+	cloneRefsName  = "clonerefs"
 )
 
 // cloneEnv encodes clonerefs Options into json and puts it into an environment variable
@@ -498,7 +497,6 @@ func CloneRefs(pj prowapi.ProwJob, codeMount, logMount coreapi.VolumeMount) (*co
 	container := coreapi.Container{
 		Name:         cloneRefsName,
 		Image:        pj.Spec.DecorationConfig.UtilityImages.CloneRefs,
-		Command:      []string{cloneRefsCommand},
 		Args:         cloneArgs,
 		Env:          env,
 		VolumeMounts: append([]coreapi.VolumeMount{logMount, codeMount}, cloneMounts...),
@@ -652,9 +650,8 @@ func InitUpload(config *prowapi.DecorationConfig, gcsOptions gcsupload.Options, 
 		return nil, fmt.Errorf("could not encode initupload configuration as JSON: %w", err)
 	}
 	container := &coreapi.Container{
-		Name:    initUploadName,
-		Image:   config.UtilityImages.InitUpload,
-		Command: []string{"/initupload"}, // TODO(fejta): remove this, use image's entrypoint and delete /initupload symlink
+		Name:  initUploadName,
+		Image: config.UtilityImages.InitUpload,
 		Env: KubeEnv(map[string]string{
 			downwardapi.JobSpecEnv:      encodedJobSpec,
 			initupload.JSONConfigEnvVar: initUploadConfigEnv,
@@ -887,9 +884,8 @@ func Sidecar(config *prowapi.DecorationConfig, gcsOptions gcsupload.Options, blo
 	}
 
 	container := &coreapi.Container{
-		Name:    sidecarName,
-		Image:   config.UtilityImages.Sidecar,
-		Command: []string{"/sidecar"}, // TODO(fejta): remove, use image's entrypoint
+		Name:  sidecarName,
+		Image: config.UtilityImages.Sidecar,
 		Env: KubeEnv(map[string]string{
 			sidecar.JSONConfigEnvVar: sidecarConfigEnv,
 			downwardapi.JobSpecEnv:   encodedJobSpec, // TODO: shouldn't need this?
