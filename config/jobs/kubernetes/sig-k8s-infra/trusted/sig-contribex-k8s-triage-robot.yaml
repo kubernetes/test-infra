@@ -10,7 +10,7 @@ periodics:
     testgrid-tab-name: api-review-help
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20220215-03bad893f1
+    - image: gcr.io/k8s-prow/commenter:v20220216-8e2cc32056
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -58,7 +58,7 @@ periodics:
     testgrid-tab-name: cla
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20220215-03bad893f1
+    - image: gcr.io/k8s-prow/commenter:v20220216-8e2cc32056
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -101,7 +101,7 @@ periodics:
     testgrid-tab-name: close
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20220215-03bad893f1
+    - image: gcr.io/k8s-prow/commenter:v20220216-8e2cc32056
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -155,7 +155,7 @@ periodics:
     description: Automatically /retest for approved PRs that are failing tests
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20220215-03bad893f1
+    - image: gcr.io/k8s-prow/commenter:v20220216-8e2cc32056
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -223,7 +223,7 @@ periodics:
     testgrid-tab-name: rotten
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20220215-03bad893f1
+    - image: gcr.io/k8s-prow/commenter:v20220216-8e2cc32056
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -278,7 +278,7 @@ periodics:
     testgrid-tab-name: stale
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20220215-03bad893f1
+    - image: gcr.io/k8s-prow/commenter:v20220216-8e2cc32056
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -334,7 +334,7 @@ periodics:
     testgrid-tab-name: thaw-prs
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20220215-03bad893f1
+    - image: gcr.io/k8s-prow/commenter:v20220216-8e2cc32056
       command:
       - /app/robots/commenter/app.binary
       args:
@@ -383,7 +383,7 @@ periodics:
     description: Creates github issues based on data from various 'IssueSource's.
   spec:
     containers:
-    - image: gcr.io/k8s-prow/issue-creator:v20220215-03bad893f1
+    - image: gcr.io/k8s-prow/issue-creator:v20220216-8e2cc32056
       command:
       - /app/robots/issue-creator/app.binary
       args:
