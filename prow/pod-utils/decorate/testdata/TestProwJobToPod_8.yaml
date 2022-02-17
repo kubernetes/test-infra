@@ -115,10 +115,7 @@ spec:
     - mountPath: /logs
       name: logs
   - args:
-    - /entrypoint
-    - /tools/entrypoint
-    command:
-    - /bin/cp
+    - --copy-mode-only
     image: entrypoint:tag
     name: place-entrypoint
     resources: {}
