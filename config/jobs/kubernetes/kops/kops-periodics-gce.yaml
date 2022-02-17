@@ -157,7 +157,7 @@ periodics:
       - name: CLOUD_PROVIDER
         value: "gce"
       - name: CLUSTER_NAME
-        value: "upgrade-leader-migration.test-cncf-gce.k8s.local"
+        value: "ha-migration.k8s.local"
       - name: GCE_EXTRA_CREATE_ARGS
         value: --gce-service-account=default
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220216-aa6d36a90c-master
