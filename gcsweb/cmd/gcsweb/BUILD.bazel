@@ -6,27 +6,9 @@ load("//prow:def.bzl", "prow_image")
 
 NAME = "gcsweb"
 
-container_image(
-    name = "icons-base",
-    base = "@alpine-base//image",
-    directory = "/icons",
-    files = [
-        "//gcsweb:icons",
-    ],
-)
-
-container_image(
-    name = "assets-base",
-    base = "icons-base",
-    directory = "/styles",
-    files = [
-        "//gcsweb:styles",
-    ],
-)
-
 prow_image(
     name = "image",
-    base = ":assets-base",
+    base = "@alpine-base//image",
     component = NAME,
     visibility = ["//visibility:public"],
 )
@@ -44,6 +26,10 @@ go_library(
         "gcsweb.go",
         "templates.go",
     ],
+    embedsrcs = [
+        ":icons",
+        ":styles",
+    ],
     importpath = "k8s.io/test-infra/gcsweb/cmd/gcsweb",
     deps = [
         "//gcsweb/pkg/version:go_default_library",
@@ -55,6 +41,20 @@ go_library(
         "@org_golang_google_api//iterator:go_default_library",
         "@org_golang_google_api//option:go_default_library",
     ],
+)
+
+filegroup(
+    name = "icons",
+    srcs = glob([
+        "icons/*.png",
+    ]),
+)
+
+filegroup(
+    name = "styles",
+    srcs = glob([
+        "styles/*.css",
+    ]),
 )
 
 filegroup(

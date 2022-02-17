@@ -19,6 +19,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"embed"
 	"errors"
 	"flag"
 	"fmt"
@@ -55,6 +56,9 @@ const (
 	iconDir  = "/icons/dir.png"
 	iconBack = "/icons/back.png"
 )
+
+//go:embed icons/* styles/*
+var embededStatic embed.FS
 
 type strslice []string
 
@@ -94,8 +98,8 @@ func gatherOptions() options {
 
 	fs.IntVar(&o.flPort, "p", 8080, "port number on which to listen")
 
-	fs.StringVar(&o.flIcons, "i", "/icons", "path to the icons directory")
-	fs.StringVar(&o.flStyles, "s", "/styles", "path to the styles directory")
+	fs.StringVar(&o.flIcons, "i", "", "path to the icons directory")
+	fs.StringVar(&o.flStyles, "s", "", "path to the styles directory")
 	fs.StringVar(&o.oauthTokenFile, "oauth-token-file", "", "Path to the file containing the OAuth 2.0 Bearer Token secret.")
 	fs.StringVar(&o.gcsCredentialsFile, "gcs-credentials-file", "", "Path to the file containing the gcs service account credentials.")
 	fs.BoolVar(&o.defaultCredentials, "use-default-credentials", false, "Use application default credentials")
@@ -110,25 +114,29 @@ func gatherOptions() options {
 }
 
 func (o *options) validate() error {
-	if _, err := os.Stat(o.flIcons); os.IsNotExist(err) {
-		return fmt.Errorf("icons path '%s' doesn't exists.", o.flIcons)
+	if o.flIcons != "" {
+		if _, err := os.Stat(o.flIcons); os.IsNotExist(err) {
+			return fmt.Errorf("icons path %q doesn't exist", o.flIcons)
+		}
 	}
-	if _, err := os.Stat(o.flStyles); os.IsNotExist(err) {
-		return fmt.Errorf("styles path '%s' doesn't exists.", o.flStyles)
+	if o.flStyles != "" {
+		if _, err := os.Stat(o.flStyles); os.IsNotExist(err) {
+			return fmt.Errorf("styles path %q doesn't exist", o.flStyles)
+		}
 	}
 	if o.oauthTokenFile != "" && o.gcsCredentialsFile != "" {
-		return errors.New("specifying both --oauth-token-file and --gcs-credentials-file is not allowed.")
+		return errors.New("specifying both --oauth-token-file and --gcs-credentials-file is not allowed")
 	}
 
 	if o.oauthTokenFile != "" {
 		if _, err := os.Stat(o.oauthTokenFile); os.IsNotExist(err) {
-			return fmt.Errorf("oauth token file '%s' doesn't exists.", o.oauthTokenFile)
+			return fmt.Errorf("oauth token file %q doesn't exist", o.oauthTokenFile)
 		}
 	}
 
 	if o.gcsCredentialsFile != "" {
 		if _, err := os.Stat(o.gcsCredentialsFile); os.IsNotExist(err) {
-			return fmt.Errorf("gcs service account crendentials file '%s' doesn't exists.", o.gcsCredentialsFile)
+			return fmt.Errorf("gcs service account crendentials file %q doesn't exist", o.gcsCredentialsFile)
 		}
 	}
 
@@ -209,8 +217,17 @@ func main() {
 			h.ServeHTTP(w, r)
 		}
 	}
-	http.Handle("/icons/", longCacheServer(http.StripPrefix("/icons/", http.FileServer(http.Dir(o.flIcons)))))
-	http.Handle("/styles/", longCacheServer(http.StripPrefix("/styles/", http.FileServer(http.Dir(o.flStyles)))))
+
+	if o.flIcons != "" { // If user specifies custom icons path then read it at runtime
+		http.Handle("/icons/", longCacheServer(http.StripPrefix("/icons/", http.FileServer(http.Dir(o.flIcons)))))
+	} else {
+		http.Handle("/icons/", longCacheServer(http.FileServer(http.FS(embededStatic))))
+	}
+	if o.flStyles != "" { // If user specifies custom styles path then read it at runtime
+		http.Handle("/styles/", longCacheServer(http.StripPrefix("/styles/", http.FileServer(http.Dir(o.flStyles)))))
+	} else {
+		http.Handle("/styles/", longCacheServer(http.FileServer(http.FS(embededStatic))))
+	}
 
 	// Serve HTTP.
 	http.HandleFunc("/robots.txt", robotsRequest)
