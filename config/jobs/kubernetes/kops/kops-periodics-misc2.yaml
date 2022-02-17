@@ -1177,7 +1177,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-aws-ebs-csi-driver
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "1.21", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "latest", "kops_channel": "alpha", "kops_version": null, "networking": "cilium"}
 - name: e2e-kops-aws-aws-load-balancer-controller
   cron: '37 21-23/24 * * *'
   labels:
@@ -1211,6 +1211,8 @@ periodics:
         value: "s3://k8s-kops-prow"
       - name: KUBE_SSH_USER
         value: "ubuntu"
+      - name: KOPS_IRSA
+        value: "true"
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220216-aa6d36a90c-master
       imagePullPolicy: Always
       resources:
@@ -1225,11 +1227,11 @@ periodics:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
-    test.kops.k8s.io/k8s_version: '1.21'
+    test.kops.k8s.io/k8s_version: latest
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
     test.kops.k8s.io/networking: cilium
-    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-1.21, kops-latest, kops-misc, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-latest, kops-latest, kops-misc, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-aws-load-balancer-controller
 
