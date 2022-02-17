@@ -30,8 +30,7 @@ DIFFROOT="${REPO_ROOT}"
 TMP_DIFFROOT="$(TMPDIR="${BINDIR}" mktemp -d "${BINDIR}/verify-codegen.XXXXX")"
 
 mkdir -p "${TMP_DIFFROOT}/prow"
-cp -a "${DIFFROOT}"/prow/{apis,client,config,spyglass,cmd/deck/static} "${TMP_DIFFROOT}/prow"
-cp -a "${DIFFROOT}"/gopherage "${TMP_DIFFROOT}"
+cp -a "${DIFFROOT}"/prow/{apis,client,config} "${TMP_DIFFROOT}/prow"
 mkdir -p "${TMP_DIFFROOT}/config/prow/cluster/prowjob-crd"
 cp -a "${DIFFROOT}/config/prow/cluster/prowjob-crd/prowjob_customresourcedefinition.yaml" "${TMP_DIFFROOT}/config/prow/cluster/prowjob-crd/prowjob_customresourcedefinition.yaml"
 
@@ -42,10 +41,9 @@ ret=0
 diff -Naupr "${DIFFROOT}/prow/apis" "${TMP_DIFFROOT}/prow/apis" || ret=$?
 diff -Naupr "${DIFFROOT}/prow/client" "${TMP_DIFFROOT}/prow/client" || ret=$?
 diff -Naupr "${DIFFROOT}/prow/config" "${TMP_DIFFROOT}/prow/config" || ret=$?
-diff -Naupr "${DIFFROOT}/prow/spyglass" "${TMP_DIFFROOT}/prow/spyglass" || ret=$?
 diff -Naupr "${DIFFROOT}/config/prow/cluster/prowjob-crd/prowjob_customresourcedefinition.yaml" "${TMP_DIFFROOT}/config/prow/cluster/prowjob-crd/prowjob_customresourcedefinition.yaml" || ret=$?
 # Restore so that verify codegen doesn't modify workspace
-cp -a "${TMP_DIFFROOT}/prow"/{apis,client,config,spyglass} "${DIFFROOT}"/prow
+cp -a "${TMP_DIFFROOT}/prow"/{apis,client,config} "${DIFFROOT}"/prow
 cp -a "${TMP_DIFFROOT}/config/prow/cluster/prowjob-crd/prowjob_customresourcedefinition.yaml" "${DIFFROOT}/config/prow/cluster/prowjob-crd/prowjob_customresourcedefinition.yaml"
 
 # Clean up
