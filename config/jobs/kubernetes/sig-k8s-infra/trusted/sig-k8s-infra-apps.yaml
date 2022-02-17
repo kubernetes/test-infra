@@ -2,6 +2,47 @@
 
 postsubmits:
   kubernetes/k8s.io:
+    - name: post-k8sio-deploy-app-codesearch
+      cluster: k8s-infra-prow-build-trusted
+      decorate: true
+      max_concurrency: 1
+      # intended for ignoring changes to README.md or OWNERS
+      run_if_changed: '^apps\/codesearch\/(.*.yaml|deploy.sh)$'
+      branches:
+      - ^main$
+      reporter_config:
+        slack:
+          channel: "k8s-infra-alerts"
+          job_states_to_report:
+          - success
+          - failure
+          - aborted
+          - error
+          report_template: 'Deploying codesearch: {{.Status.State}}. Commit: <{{.Spec.Refs.BaseLink}}|{{printf "%.7s" .Spec.Refs.BaseSHA}}> | <{{.Status.URL}}|Spyglass> | <https://testgrid.k8s.io/sig-k8s-infra-apps#deploy-codesearch|Testgrid> | <https://prow.k8s.io/?job={{.Spec.Job}}|Deck>'
+      annotations:
+        testgrid-create-test-group: 'true'
+        testgrid-dashboards: sig-k8s-infra-apps
+        testgrid-tab-name: deploy-codesearch
+        testgrid-description: 'runs https://git.k8s.io/k8s.io/apps/codesearch/deploy.sh if files change in kubernetes/k8s.io/apps/codesearch'
+        testgrid-alert-email: k8s-infra-rbac-codesearch@kubernetes.io, k8s-infra-alerts@kubernetes.io
+        testgrid-num-failures-to-alert: '1'
+      rerun_auth_config:
+        github_team_slugs:
+        # proxy for sig-k8s-infra-oncall
+        - org: kubernetes
+          slug: sig-k8s-infra-leads
+        # proxy for test-infra-oncall
+        - org: kubernetes
+          slug: test-infra-admins
+        # TODO: sig-specific team in charge of this app
+        # - org: kubernetes
+        #   slug: sig-foo-bar
+      spec:
+        serviceAccountName: prow-deployer
+        containers:
+        - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
+          command:
+          - ./apps/codesearch/deploy.sh
     - name: post-k8sio-deploy-app-elekto
       cluster: k8s-infra-prow-build-trusted
       decorate: true
