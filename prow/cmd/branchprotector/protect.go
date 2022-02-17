@@ -499,7 +499,9 @@ func equalBranchProtections(state *github.BranchProtection, request *github.Bran
 			equalAdminEnforcement(state.EnforceAdmins, request.EnforceAdmins) &&
 			equalRequiredPullRequestReviews(state.RequiredPullRequestReviews, request.RequiredPullRequestReviews) &&
 			equalRestrictions(state.Restrictions, request.Restrictions) &&
-			equalAllowForcePushes(state.AllowForcePushes, request.AllowForcePushes)
+			equalAllowForcePushes(state.AllowForcePushes, request.AllowForcePushes) &&
+			equalRequiredLinearHistory(state.RequiredLinearHistory, request.RequiredLinearHistory) &&
+			equalAllowDeletions(state.AllowDeletions, request.AllowDeletions)
 	default:
 		return false
 	}
@@ -536,6 +538,14 @@ func equalStringSlices(s1, s2 *[]string) bool {
 	default:
 		return false
 	}
+}
+
+func equalRequiredLinearHistory(state github.RequiredLinearHistory, request bool) bool {
+	return state.Enabled == request
+}
+
+func equalAllowDeletions(state github.AllowDeletions, request bool) bool {
+	return state.Enabled == request
 }
 
 func equalAllowForcePushes(state github.AllowForcePushes, request bool) bool {
