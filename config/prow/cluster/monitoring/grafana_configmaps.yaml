@@ -62,6 +62,8 @@ data:
     [auth.anonymous]
     enabled = true
     org_role = Viewer
+    [auth]
+    disable_login_form = true
     [paths]
     data = /var/lib/grafana
     logs = /var/lib/grafana/logs
