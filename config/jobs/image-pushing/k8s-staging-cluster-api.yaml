@@ -22,6 +22,7 @@ postsubmits:
               - --project=k8s-staging-cluster-api
               - --scratch-bucket=gs://k8s-staging-cluster-api-gcb
               - --env-passthrough=PULL_BASE_REF
+              - --with-git-dir
               - .
   kubernetes-sigs/cluster-api-provider-aws:
     - name: post-cluster-api-provider-aws-push-images
@@ -46,6 +47,7 @@ postsubmits:
               - --project=k8s-staging-cluster-api-aws
               - --scratch-bucket=gs://k8s-staging-cluster-api-aws-gcb
               - --env-passthrough=PULL_BASE_REF
+              - --with-git-dir
               - .
   kubernetes-sigs/cluster-api-provider-azure:
     - name: post-cluster-api-provider-azure-push-images
@@ -148,6 +150,7 @@ postsubmits:
               - --project=k8s-staging-cluster-api-nested
               - --scratch-bucket=gs://k8s-staging-cluster-api-nested-gcb
               - --env-passthrough=PULL_BASE_REF
+              - --with-git-dir
               - .
   kubernetes-sigs/cluster-api-provider-openstack:
     - name: post-cluster-api-provider-openstack-push-images
@@ -172,6 +175,7 @@ postsubmits:
               - --project=k8s-staging-capi-openstack
               - --scratch-bucket=gs://k8s-staging-capi-openstack-gcb
               - --env-passthrough=PULL_BASE_REF
+              - --with-git-dir
               - .
   kubernetes-sigs/image-builder:
     - name: post-image-builder-push-images
@@ -226,6 +230,7 @@ postsubmits:
               - --project=k8s-staging-capi-ibmcloud
               - --scratch-bucket=gs://k8s-staging-capi-ibmcloud-gcb
               - --env-passthrough=PULL_BASE_REF
+              - --with-git-dir
               - .
 
 periodics:
@@ -250,6 +255,7 @@ periodics:
             - --scratch-bucket=gs://k8s-staging-cluster-api-gcb
             - --env-passthrough=PULL_BASE_REF
             - --gcb-config=cloudbuild-nightly.yaml
+            - --with-git-dir
             - .
           env:
         # We need to emulate a pull job for the cloud build to work the same
@@ -282,6 +288,7 @@ periodics:
             - --scratch-bucket=gs://k8s-staging-capi-openstack-gcb
             - --env-passthrough=PULL_BASE_REF
             - --gcb-config=cloudbuild-nightly.yaml
+            - --with-git-dir
             - .
           env:
         # We need to emulate a pull job for the cloud build to work the same
@@ -314,6 +321,7 @@ periodics:
             - --scratch-bucket=gs://k8s-staging-cluster-api-aws-gcb
             - --env-passthrough=PULL_BASE_REF
             - --gcb-config=cloudbuild-nightly.yaml
+            - --with-git-dir
             - .
           env:
           # We need to emulate a pull job for the cloud build to work the same
