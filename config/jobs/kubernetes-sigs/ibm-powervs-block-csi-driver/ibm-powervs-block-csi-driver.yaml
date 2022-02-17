@@ -12,7 +12,7 @@ presubmits:
        description: Build test in ibm-powervs-block-csi-driver repo.
      spec:
        containers:
-       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220211-6df2c53026-master
+       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220216-aa6d36a90c-master
          command:
          - runner.sh
          args:
