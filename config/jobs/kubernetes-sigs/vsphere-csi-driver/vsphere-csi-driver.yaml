@@ -45,7 +45,7 @@ presubmits:
     path_alias: sigs.k8s.io/vsphere-csi-driver
     spec:
       containers:
-        - image: golangci/golangci-lint:v1.29.0
+        - image: golangci/golangci-lint:v1.44.2
           command:
             - make
           args:
