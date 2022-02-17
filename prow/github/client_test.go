@@ -2195,6 +2195,9 @@ func TestGetBranchProtection(t *testing.T) {
 			Restrictions: &Restrictions{
 				Teams: pushers,
 			},
+			AllowForcePushes: AllowForcePushes{
+				Enabled: true,
+			},
 		}
 		b, err := json.Marshal(&bp)
 		if err != nil {
@@ -2209,6 +2212,8 @@ func TestGetBranchProtection(t *testing.T) {
 		t.Errorf("Didn't expect error: %v", err)
 	}
 	switch {
+	case !bp.AllowForcePushes.Enabled:
+		t.Errorf("AllowForcePushes is not enabled")
 	case bp.Restrictions == nil:
 		t.Errorf("RestrictionsRequest unset")
 	case bp.Restrictions.Teams == nil:

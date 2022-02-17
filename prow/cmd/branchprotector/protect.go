@@ -498,7 +498,8 @@ func equalBranchProtections(state *github.BranchProtection, request *github.Bran
 		return equalRequiredStatusChecks(state.RequiredStatusChecks, request.RequiredStatusChecks) &&
 			equalAdminEnforcement(state.EnforceAdmins, request.EnforceAdmins) &&
 			equalRequiredPullRequestReviews(state.RequiredPullRequestReviews, request.RequiredPullRequestReviews) &&
-			equalRestrictions(state.Restrictions, request.Restrictions)
+			equalRestrictions(state.Restrictions, request.Restrictions) &&
+			equalAllowForcePushes(state.AllowForcePushes, request.AllowForcePushes)
 	default:
 		return false
 	}
@@ -535,6 +536,10 @@ func equalStringSlices(s1, s2 *[]string) bool {
 	default:
 		return false
 	}
+}
+
+func equalAllowForcePushes(state github.AllowForcePushes, request bool) bool {
+	return state.Enabled == request
 }
 
 func equalAdminEnforcement(state github.EnforceAdmins, request *bool) bool {

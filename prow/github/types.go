@@ -559,6 +559,12 @@ type BranchProtection struct {
 	EnforceAdmins              EnforceAdmins               `json:"enforce_admins"`
 	RequiredPullRequestReviews *RequiredPullRequestReviews `json:"required_pull_request_reviews"`
 	Restrictions               *Restrictions               `json:"restrictions"`
+	AllowForcePushes           AllowForcePushes            `json:"allow_force_pushes"`
+}
+
+// AllowForcePushes specifies whether to permit force pushes for all users with push access.
+type AllowForcePushes struct {
+	Enabled bool `json:"enabled"`
 }
 
 // EnforceAdmins specifies whether to enforce the
