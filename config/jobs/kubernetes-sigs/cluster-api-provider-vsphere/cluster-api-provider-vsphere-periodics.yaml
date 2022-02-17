@@ -114,14 +114,14 @@ periodics:
       description: Runs clusterctl upgrade tests for CAPV
 
   - name: periodic-cluster-api-provider-vsphere-coverage
-    labels:
-      preset-dind-enabled: "true"
-      preset-cluster-api-provider-vsphere-e2e-config: "true"
-      preset-kind-volume-mounts: "true"
-    interval: 24h
+    interval: 12h
     decorate: true
     path_alias: "sigs.k8s.io/cluster-api-provider-vsphere"
     extra_refs:
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-vsphere
+        base_ref: master
+        path_alias: sigs.k8s.io/cluster-api-provider-vsphere
       - org: kubernetes
         repo: test-infra
         base_ref: master
