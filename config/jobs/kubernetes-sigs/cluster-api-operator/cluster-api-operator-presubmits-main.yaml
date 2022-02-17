@@ -96,3 +96,28 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator
       testgrid-tab-name: capi-operator-pr-test-main
+  - name: pull-cluster-api-operator-e2e
+    path_alias: "sigs.k8s.io/cluster-api-operator"
+    optional: false
+    decorate: true
+    # please see: https://play.golang.org/p/JJSVylVPd53 for more insights
+    run_if_changed: (^[^d].*$)|(^d$)|(^.[^o].*$)|(^do$)|(^..[^c].*$)|(^doc$)|(^...[^s].*$)|(^docs$)|(^....[^/].*$)|(^[^d][^o][^c][^s]/.*$)
+    max_concurrency: 5
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    branches:
+    - ^main$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220216-aa6d36a90c-1.23
+        command:
+          - runner.sh
+        args:
+          - ./scripts/ci-e2e.sh
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-operator
+      testgrid-tab-name: capi-operator-pr-e2e-main
