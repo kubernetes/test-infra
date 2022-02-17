@@ -183,6 +183,23 @@ state and no claims of backwards compatibility are made for any external API.
 Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
+ - *February 22nd, 2022* Since prow version `v20220222-acb5731b85`, the
+   entrypoint container in a prow job will run as `--copy-mode-only`, instead of
+   `/bin/cp /entrypoint /tools/entrypoint`. Entrypoint images before the mentioned version
+  will not work with `--copy-mode-only`, and entrypoint image since the
+  mentioned version will not work with `/bin/cp /entrypoint /tools/entrypoint`.
+  In another word, prow versions newer than or equal to `v20220222-acb5731b85`
+  will stop working with pod utilities versions older than
+  `v20220222-acb5731b85`. If your prow instance is bumped by
+  `prow/cmd/generic-autobumper` then you should not be affected. 
+ - *February 22nd, 2022* Since prow version `v20220222-acb5731b85`, prow images
+   pushed to gcr.io/k8s-prow will be built with ko, and the binaries will be
+   placed under `/ko-app/`, for example [/robots/commenter](/robots/commenter)
+   is pushed to gcr.io/k8s-prow/commenter, the commenter binary is located at
+   `/ko-app/commenter` in the image, prow jobs that use this image will update
+   to `command: - /ko-app/commenter` to make it work.
+ - *February 22nd, 2022* Since prow version `v20220222-acb5731b85`, static files
+   in `deck` image will be stored under `/var/run/ko/` directory.
  - *October 27th, 2021* The checkconfig flag `--prow-yaml-repo-path` no longer defaults to `/home/prow/go/src/github.com/<< prow-yaml-repo-name >>/.prow.yaml` when `--prow-yaml-repo-name` is set. The defaulting has instead been replaced with the assumption that the Prow YAML file/directory can be found in the current working directory if `--prow-yaml-repo-path` is not specified. If you are running checkconfig from a decorated ProwJobs as is typical, then this is already the case.
  - *September 16th, 2021* The ProwJob [CRD manifest](/config/prow/cluster/prowjob-crd/prowjob_customresourcedefinition.yaml)
                            has been extended to specify a schema. Unfortunately, this results in a huge manifest which
