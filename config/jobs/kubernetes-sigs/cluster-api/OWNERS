@@ -7,6 +7,7 @@ reviewers:
 - fabriziopandini
 - JoelSpeed
 - justinsb
+- sbueringer
 - timothysc
 - vincepri
 approvers:
@@ -15,6 +16,7 @@ approvers:
 - detiber
 - fabriziopandini
 - justinsb
+- sbueringer
 - timothysc
 - vincepri
 emeritus_approvers:
