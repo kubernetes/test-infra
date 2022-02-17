@@ -639,9 +639,6 @@ def generate_misc():
                    cloud="aws",
                    networking="cilium",
                    distro="u2004",
-                   k8s_version='1.21',
-                   # TODO remove when kops#11689 is addressed and no longer pinned to k8s 1.21
-                   irsa=False,
                    kops_channel="alpha",
                    runs_per_day=1,
                    scenario="aws-lb-controller",
@@ -1089,8 +1086,6 @@ def generate_presubmits_e2e():
             name="pull-e2e-kops-aws-load-balancer-controller",
             cloud="aws",
             distro="u2004",
-            k8s_version='1.21',
-            irsa=False, # TODO remove when kops#11689 is addressed and no longer pinned to k8s 1.21
             networking="calico",
             scenario="aws-lb-controller",
             tab_name="pull-kops-e2e-aws-load-balancer-controller",
