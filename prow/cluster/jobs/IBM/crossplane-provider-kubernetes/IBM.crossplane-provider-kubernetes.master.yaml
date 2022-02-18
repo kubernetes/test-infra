@@ -22,7 +22,7 @@ presubmits:
         env:
         - name: RUNNING_IN_CI
           value: "true"
-        image: quay.io/multicloudlab/build-tool:v20220105-f9f161e03
+        image: quay.io/multicloudlab/build-tool:v20220217-8b85cd936
         name: ""
         securityContext:
           privileged: true
@@ -47,7 +47,7 @@ presubmits:
         env:
         - name: RUNNING_IN_CI
           value: "true"
-        image: quay.io/multicloudlab/build-tool:v20220105-f9f161e03
+        image: quay.io/multicloudlab/build-tool:v20220217-8b85cd936
         name: ""
         securityContext:
           privileged: true
@@ -73,7 +73,7 @@ postsubmits:
         env:
         - name: RUNNING_IN_CI
           value: "true"
-        image: quay.io/multicloudlab/build-tool:v20220105-f9f161e03
+        image: quay.io/multicloudlab/build-tool:v20220217-8b85cd936
         name: ""
         securityContext:
           privileged: true
@@ -97,7 +97,7 @@ postsubmits:
         env:
         - name: RUNNING_IN_CI
           value: "true"
-        image: quay.io/multicloudlab/build-tool:v20220105-f9f161e03
+        image: quay.io/multicloudlab/build-tool:v20220217-8b85cd936
         name: ""
         securityContext:
           privileged: true
@@ -121,7 +121,7 @@ postsubmits:
         env:
         - name: RUNNING_IN_CI
           value: "true"
-        image: quay.io/multicloudlab/build-tool:v20220105-f9f161e03
+        image: quay.io/multicloudlab/build-tool:v20220217-8b85cd936
         name: ""
         securityContext:
           privileged: true
