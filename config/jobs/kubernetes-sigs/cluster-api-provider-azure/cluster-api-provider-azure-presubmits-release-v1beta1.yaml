@@ -341,3 +341,36 @@ presubmits:
       testgrid-tab-name: capz-pr-ci-entrypoint-v1beta1
       testgrid-alert-email: k8s-infra-staging-cluster-api-azure@kubernetes.io
       description: Creates a CAPZ cluster and exports KUBECONFIG. This job validates ci-entrypoint.sh used by other repositories for running tests on CAPZ clusters.
+  - name: pull-cluster-api-provider-azure-conformance-with-ci-artifacts-v1beta1
+    path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+    always_run: false
+    optional: true
+    decorate: true
+    decoration_config:
+      timeout: 4h
+    max_concurrency: 5
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+    branches:
+    - ^release-1.*
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220216-aa6d36a90c-1.23
+          command:
+            - runner.sh
+          args:
+            - ./scripts/ci-conformance.sh
+          env:
+            - name: E2E_ARGS
+              value: "-kubetest.use-ci-artifacts"
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 2
+              memory: "9Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+      testgrid-tab-name: capz-pr-conformance-k8s-ci-v1beta1
