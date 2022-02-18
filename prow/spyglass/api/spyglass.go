@@ -56,6 +56,10 @@ type Artifact interface {
 	ReadTail(n int64) ([]byte, error)
 	// Size gets the size of the artifact in bytes, may make a network call
 	Size() (int64, error)
+	// Metadata fetches the custom metadata associated with the artifact
+	Metadata() (map[string]string, error)
+	// UpdateMetadata modifies the custom metadata associated with the artifact
+	UpdateMetadata(map[string]string) error
 }
 
 // RequestAction defines the action for a request

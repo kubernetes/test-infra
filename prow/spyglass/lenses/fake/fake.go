@@ -25,6 +25,7 @@ import (
 type Artifact struct {
 	Path    string
 	Content []byte
+	Meta    map[string]string
 }
 
 func (fa *Artifact) JobPath() string {
@@ -34,6 +35,17 @@ func (fa *Artifact) JobPath() string {
 func (fa *Artifact) Size() (int64, error) {
 	return int64(len(fa.Content)), nil
 }
+
+func (fa *Artifact) Metadata() (map[string]string, error) {
+	return fa.Meta, nil
+}
+
+func (fa *Artifact) UpdateMetadata(now map[string]string) error {
+	fa.Meta = now
+	return nil
+}
+
+const NotFound = "linknotfound.io/404"
 
 func (fa *Artifact) CanonicalLink() string {
 	return "linknotfound.io/404"

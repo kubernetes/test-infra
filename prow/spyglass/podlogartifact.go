@@ -188,3 +188,11 @@ func (a *PodLogArtifact) Size() (int64, error) {
 	return int64(len(logs)), nil
 
 }
+
+func (a *PodLogArtifact) Metadata() (map[string]string, error) {
+	return nil, nil
+}
+
+func (a *PodLogArtifact) UpdateMetadata(meta map[string]string) error {
+	return errors.New("not implemented")
+}

@@ -7,6 +7,51 @@ html {
     overflow-x: hidden;
 }
 
+.annotate-pin {
+    border-radius: 0.25em;
+    color: #ccc;
+    cursor: pointer;
+    padding: 0.25em;
+    position: absolute;
+    z-index: 1;
+    top: -1em;
+    left: -.5em;
+}
+
+.highlighted-line .annotate-pin {
+  background: #42425A;
+}
+
+.annotate-pin:hover {
+  background: #555568;
+}
+
+.annotate-pin i.material-icons {
+  transform: rotate(-20deg);
+  font-size: 1.2em;
+  margin: 0.05em 0.03em 0 0;
+}
+
+.shown > div {
+  position: relative;
+}
+
+.focus-clip {
+  position: absolute;
+  top: -1.5em;
+  left: -1.5em;
+  background: none;
+  color: #ccc;
+  margin: 0.5em;
+  padding: 0.25em;
+  border: none;
+}
+
+.focus-clip i.material-icons {
+  transform: rotate(-60deg);
+  font-size: 2em;
+}
+
 .linetext button, .linenum button {
     font-size: 1em;
     text-align: left;
@@ -41,6 +86,7 @@ html {
     word-break: break-all;
     overflow-wrap: break-word;
 }
+
 .line-highlighted {
     color: rgba(255, 224, 0, 1.0);
 }
@@ -79,7 +125,15 @@ html {
 }
 
 .highlighted-line {
-    background-color: #555;
+    background: #555;
+}
+
+.highlighted-line.focus-line {
+  background: #555568;
+}
+
+.focus-line {
+  background: #42425A;
 }
 
 /* ansi colors from https://en.wikipedia.org/wiki/ANSI_escape_code#Colors */

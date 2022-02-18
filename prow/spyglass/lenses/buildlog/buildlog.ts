@@ -48,11 +48,12 @@ function ansiToHTML(orig: string): string {
 
 interface ArtifactRequest {
   artifact: string;
-  bottom: number;
-  length: number;
-  offset: number;
+  bottom?: number;
+  length?: number;
+  offset?: number;
   startLine: number;
-  top: number;
+  top?: number;
+  saveEnd?: number;
 }
 
 async function replaceElementWithContent(element: HTMLDivElement, top: number, bottom: number) {
@@ -135,6 +136,35 @@ async function handleShowAll(this: HTMLButtonElement) {
   spyglass.contentUpdated();
 }
 
+async function handlePin(e: MouseEvent) {
+  const result = parseHash();
+  if (!result) {
+    return;
+  }
+  const [artifact, start, end] = result;
+  const r: ArtifactRequest = {
+    artifact,
+    saveEnd: end,
+    startLine: start,
+  };
+  const content = await spyglass.request(JSON.stringify(r));
+  if (content !== "") {
+    console.log("Failed to pin lines", content, r);
+    return;
+  }
+  const button = document.getElementById("annotate-pin");
+  if (button) {
+    const firstEl = await highlightLines(artifact, start, end, 'focus-line', button.parentElement!.parentElement);
+    button.remove();
+    if (firstEl) {
+      clipLine(firstEl);
+    }
+  }
+  location.hash = "";
+
+  clearHighlightedLines('highlighted-line', document);
+}
+
 function handleLineLink(e: MouseEvent): void {
   if (!e.target) {
     return;
@@ -167,14 +197,14 @@ function handleLineLink(e: MouseEvent): void {
   e.preventDefault();
 }
 
-function clearHighlightedLines(): void {
-  for (const oldEl of Array.from(document.querySelectorAll('.highlighted-line'))) {
-    oldEl.classList.remove('highlighted-line');
-  }
+interface Selector {
+  querySelectorAll(s: string): NodeListOf<Element>;
 }
 
-function highlightLine(element: HTMLElement): void {
-  element.classList.add('highlighted-line');
+function clearHighlightedLines(highlight: string, selector: Selector): void {
+  for (const oldEl of Array.from(selector.querySelectorAll(`.${highlight}`))) {
+    oldEl.classList.remove(highlight);
+  }
 }
 
 function fixLinks(parent: HTMLElement): void {
@@ -239,31 +269,71 @@ async function handleHash(): Promise<void> {
   }
   const [artifact, startNum, endNum] = result;
 
-  let firstEl = null;
+  const firstEl = await highlightLines(artifact, startNum, endNum, 'highlighted-line', document);
+
+  if (!firstEl) {
+    return;
+  }
+
+  const content = document.getElementById(`${artifact}-content`);
+  if (content && content.classList.contains("savable")) {
+    pinLine(firstEl);
+  }
+  const top = firstEl.getBoundingClientRect().top + window.pageYOffset;
+  spyglass.scrollTo(0, top).then();
+}
+
+async function highlightLines(artifact: string, startNum: number, endNum: number, highlight: string = 'highlighted-line', selector: Selector|null): Promise<HTMLDivElement|null> {
+  let firstEl: HTMLDivElement|null = null;
   for (let lineNum = startNum; lineNum <= endNum; lineNum++) {
     const lineId = `${artifact}:${lineNum}`;
     let lineEl = document.getElementById(lineId);
     if (!lineEl) {
-      if (await loadLine(artifact, lineNum)) {
-        lineEl = document.getElementById(lineId);
-        if (!lineEl) {
-          return;
-        }
-      } else {
-        return;
+      if (!await loadLine(artifact, lineNum)) {
+        return null;
+      }
+      lineEl = document.getElementById(lineId);
+      if (!lineEl) {
+        return null;
       }
     }
     if (firstEl === null) {
-      firstEl = lineEl;
-      clearHighlightedLines();
+      if (lineEl instanceof HTMLDivElement) {
+        firstEl = lineEl;
+      } else {
+        return null;
+      }
+      if (selector) {
+        clearHighlightedLines(highlight, selector);
+      }
     }
-    highlightLine(lineEl);
+    lineEl.classList.add(highlight);
   }
+  return firstEl;
+}
 
-  if (firstEl !== null) {
-    const top = firstEl.getBoundingClientRect().top + window.pageYOffset;
-    spyglass.scrollTo(0, top).then();
+function pinLine(lineEl: HTMLDivElement) {
+  let pin = document.getElementById("annotate-pin");
+  if (!pin) {
+    pin = document.createElement("button");
+    pin.classList.add("annotate-pin");
+    pin.title = "Pin selected lines to always display on page load";
+    pin.id = "annotate-pin";
+    pin.innerHTML = "<i class='material-icons'>push_pin</i>";
+    pin.addEventListener('click', handlePin);
   }
+  lineEl.insertAdjacentElement("afterbegin", pin);
+}
+
+function clipLine(lineEl: HTMLDivElement) {
+  let pin = document.getElementById("focus-clip");
+  if (!pin) {
+    pin = document.createElement("button");
+    pin.classList.add("focus-clip");
+    pin.id = "focus-clip";
+    pin.innerHTML = "<i class='material-icons'>attachment</i>";
+  }
+  lineEl.insertAdjacentElement("afterbegin", pin);
 }
 
 window.addEventListener('hashchange', () => handleHash());
@@ -276,7 +346,7 @@ window.addEventListener('load', () => {
 
   for (const button of Array.from(document.querySelectorAll<HTMLDivElement>(".show-skipped"))) {
     button.addEventListener('click', handleShowSkipped);
-    button.className = button.className + " showable";
+    button.classList.add("showable");
   }
 
   for (const button of Array.from(document.querySelectorAll<HTMLButtonElement>("button.show-all-button"))) {

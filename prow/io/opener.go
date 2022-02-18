@@ -61,6 +61,13 @@ type Attributes struct {
 	ContentEncoding string
 	// Size is the size of the blob's content in bytes.
 	Size int64
+	// Metadata includes user-metadata associated with the file
+	Metadata map[string]string
+}
+
+type ObjectAttrsToUpdate struct {
+	ContentEncoding *string
+	Metadata        map[string]string
 }
 
 // Opener has methods to read and write paths
@@ -71,6 +78,7 @@ type Opener interface {
 	Attributes(ctx context.Context, path string) (Attributes, error)
 	SignedURL(ctx context.Context, path string, opts SignedURLOptions) (string, error)
 	Iterator(ctx context.Context, prefix, delimiter string) (ObjectIterator, error)
+	UpdateAtributes(context.Context, string, ObjectAttrsToUpdate) (*Attributes, error)
 }
 
 type opener struct {
@@ -316,6 +324,7 @@ func (o *opener) Attributes(ctx context.Context, path string) (Attributes, error
 		return Attributes{
 			ContentEncoding: attr.ContentEncoding,
 			Size:            attr.Size,
+			Metadata:        attr.Metadata,
 		}, nil
 	}
 
@@ -331,6 +340,33 @@ func (o *opener) Attributes(ctx context.Context, path string) (Attributes, error
 	return Attributes{
 		ContentEncoding: attr.ContentEncoding,
 		Size:            attr.Size,
+		Metadata:        attr.Metadata,
+	}, nil
+}
+
+func (o *opener) UpdateAtributes(ctx context.Context, path string, attrs ObjectAttrsToUpdate) (*Attributes, error) {
+	if !strings.HasPrefix(path, providers.GS+"://") {
+		return nil, fmt.Errorf("unsupported provider: %q", path)
+	}
+
+	g, err := o.openGCS(path)
+	if err != nil {
+		return nil, fmt.Errorf("open: %w", err)
+	}
+	up := storage.ObjectAttrsToUpdate{
+		Metadata: attrs.Metadata,
+	}
+	if attrs.ContentEncoding != nil {
+		up.ContentEncoding = *attrs.ContentEncoding
+	}
+	oa, err := g.Update(ctx, up)
+	if err != nil {
+		return nil, fmt.Errorf("update: %w", err)
+	}
+	return &Attributes{
+		ContentEncoding: oa.ContentEncoding,
+		Size:            oa.Size,
+		Metadata:        oa.Metadata,
 	}, nil
 }
 
