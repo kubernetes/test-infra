@@ -687,7 +687,6 @@ def generate_misc():
                    extra_flags=["--instance-manager=karpenter"],
                    feature_flags=['Karpenter'],
                    extra_dashboards=["kops-misc"]),
-
     ]
     return results
 
@@ -1178,6 +1177,20 @@ def generate_presubmits_e2e():
             kops_channel="alpha",
             extra_flags=["--instance-manager=karpenter"],
             feature_flags=['Karpenter'],
+        ),
+        presubmit_test(
+            name="pull-kops-e2e-aws-upgrade-123-ko123-to-klatest-kolatest",
+            distro='u2004',
+            networking='cilium',
+            k8s_version='stable',
+            kops_channel='alpha',
+            scenario='upgrade-ab',
+            env={
+                'KOPS_VERSION_A': "1.23",
+                'K8S_VERSION_A': "v1.23.0",
+                'KOPS_VERSION_B': "latest",
+                'K8S_VERSION_B': "latest",
+            }
         )
     ]
     return jobs
