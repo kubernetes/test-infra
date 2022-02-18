@@ -25,6 +25,7 @@ import (
 	"io"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/sirupsen/logrus"
@@ -94,6 +95,8 @@ type LogLine struct {
 	Highlighted  bool
 	Skip         bool
 	SubLines     []SubLine
+	Focused      bool
+	Clip         bool
 }
 
 // LineGroup holds multiple lines that can be collapsed/expanded as a block
@@ -111,15 +114,16 @@ func (g LineGroup) Expand() bool {
 	return len(g.LogLines) >= moreLines
 }
 
-// LineRequest represents a request for output lines from an artifact. If Offset is 0 and Length
+// lineRequest represents a request for output lines from an artifact. If Offset is 0 and Length
 // is -1, all lines will be fetched.
-type LineRequest struct {
+type lineRequest struct {
 	Artifact  string `json:"artifact"`
 	Offset    int64  `json:"offset"`
 	Length    int64  `json:"length"`
 	StartLine int    `json:"startLine"`
 	Top       int    `json:"top"`
 	Bottom    int    `json:"bottom"`
+	SaveEnd   *int   `json:"saveEnd"`
 }
 
 // LinesSkipped returns the number of lines skipped in a line group.
@@ -134,6 +138,7 @@ type LogArtifactView struct {
 	LineGroups   []LineGroup
 	ViewAll      bool
 	ShowRawLog   bool
+	CanSave      bool
 }
 
 // buildLogsView holds each log file view
@@ -191,8 +196,28 @@ func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string,
 			continue
 		}
 		artifact := av.ArtifactName
-		av.LineGroups = groupLines(&artifact, highlightLines(lines, 0, &artifact, conf.highlightRegex))
+		meta, _ := a.Metadata()
+		start, end := -1, -1
+
+		for key, val := range meta {
+			var targ *int
+			if key == focusStart {
+				targ = &start
+			} else if key == focusEnd {
+				targ = &end
+			} else {
+				continue
+			}
+
+			n, err := strconv.Atoi(val)
+			if err != nil {
+				continue
+			}
+			*targ = n
+		}
+		av.LineGroups = groupLines(&artifact, start, end, highlightLines(lines, 0, &artifact, conf.highlightRegex)...)
 		av.ViewAll = true
+		av.CanSave = strings.Contains(a.CanonicalLink(), "storage.googleapis.com/")
 		buildLogsView.LogViews = append(buildLogsView.LogViews, av)
 	}
 
@@ -201,10 +226,12 @@ func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string,
 
 const failedUnmarshal = "Failed to unmarshal request"
 const missingArtifact = "No artifact named %s"
+const focusStart = "focus-start"
+const focusEnd = "focus-end"
 
 // Callback is used to retrieve new log segments
 func (lens Lens) Callback(artifacts []api.Artifact, resourceDir string, data string, rawConfig json.RawMessage, spyglassConfig prowconfig.Spyglass) string {
-	var request LineRequest
+	var request lineRequest
 	err := json.Unmarshal([]byte(data), &request)
 	if err != nil {
 		return failedUnmarshal
@@ -213,7 +240,31 @@ func (lens Lens) Callback(artifacts []api.Artifact, resourceDir string, data str
 	if !ok {
 		return fmt.Sprintf(missingArtifact, request.Artifact)
 	}
+	if request.SaveEnd != nil {
+		return storeHighlightedLines(&request, artifact)
+	}
+	return loadLines(&request, artifact, resourceDir, rawConfig)
+}
 
+func storeHighlightedLines(request *lineRequest, artifact api.Artifact) string {
+	err := artifact.UpdateMetadata(map[string]string{
+		focusStart: strconv.Itoa(request.StartLine),
+		focusEnd:   strconv.Itoa(*request.SaveEnd),
+	})
+	if err != nil {
+		return err.Error()
+	}
+	logrus.WithFields(logrus.Fields{
+		"artifact": artifact.CanonicalLink(),
+		"start":    request.StartLine,
+		"end":      request.SaveEnd,
+	}).Info("Saved selected lines")
+	return ""
+}
+
+func loadLines(request *lineRequest, artifact api.Artifact, resourceDir string, rawConfig json.RawMessage) string {
+
+	var err error
 	var lines []string
 	if request.Offset == 0 && request.Length == -1 {
 		lines, err = logLinesAll(artifact)
@@ -226,7 +277,7 @@ func (lens Lens) Callback(artifacts []api.Artifact, resourceDir string, data str
 
 	var skipFirst bool
 	var skipLines []string
-	skipRequest := request
+	skipRequest := *request
 	// Should we expand all the lines? Or just some from the top/bottom.
 	if t, n := request.Top, len(lines); t > 0 && t < n {
 		skipLines = lines[request.Top:]
@@ -342,9 +393,22 @@ func highlightLines(lines []string, startLine int, artifact *string, highlightRe
 }
 
 // breaks lines into important/unimportant groups
-func groupLines(artifact *string, logLines []LogLine) []LineGroup {
+func groupLines(artifact *string, start, end int, logLines ...LogLine) []LineGroup {
 	// show highlighted lines and their neighboring lines
 	for i, line := range logLines {
+		if start > 0 && end > 0 {
+			switch {
+			case line.Number >= start && line.Number <= end:
+				logLines[i].Skip = false
+				logLines[i].Focused = true
+				if line.Number == start {
+					logLines[i].Clip = true
+				}
+			case line.Number+neighborLines >= start && line.Number-neighborLines <= end:
+				logLines[i].Skip = false
+			}
+			continue
+		}
 		if line.Highlighted {
 			for d := -neighborLines; d <= neighborLines; d++ {
 				if i+d < 0 {

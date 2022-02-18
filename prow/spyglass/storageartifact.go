@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"sync"
 
 	pkgio "k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/spyglass/lenses"
@@ -43,12 +44,17 @@ type StorageArtifact struct {
 	// ctx provides context for cancellation and timeout. Embedded in struct to preserve
 	// conformance with io.ReaderAt
 	ctx context.Context
+
+	attrs *pkgio.Attributes
+
+	lock sync.RWMutex
 }
 
 type artifactHandle interface {
 	Attrs(ctx context.Context) (pkgio.Attributes, error)
 	NewRangeReader(ctx context.Context, offset, length int64) (io.ReadCloser, error)
 	NewReader(ctx context.Context) (io.ReadCloser, error)
+	UpdateAttrs(context.Context, pkgio.ObjectAttrsToUpdate) (*pkgio.Attributes, error)
 }
 
 // NewStorageArtifact returns a new StorageArtifact with a given handle, canonical link, and path within the job
@@ -62,13 +68,56 @@ func NewStorageArtifact(ctx context.Context, handle artifactHandle, link string,
 	}
 }
 
+func (a *StorageArtifact) fetchAttrs() (*pkgio.Attributes, error) {
+	a.lock.RLock()
+	attrs := a.attrs
+	a.lock.RUnlock()
+	if attrs != nil {
+		return attrs, nil
+	}
+	if a.attrs != nil {
+		return a.attrs, nil
+	}
+	{
+		attrs, err := a.handle.Attrs(a.ctx)
+		if err != nil {
+			return nil, err
+		}
+		a.lock.Lock()
+		defer a.lock.Unlock()
+		a.attrs = &attrs
+	}
+	return a.attrs, nil
+}
+
 // Size returns the size of the artifact in GCS
 func (a *StorageArtifact) Size() (int64, error) {
-	attrs, err := a.handle.Attrs(a.ctx)
+	attrs, err := a.fetchAttrs()
 	if err != nil {
 		return 0, fmt.Errorf("error getting gcs attributes for artifact: %w", err)
 	}
 	return attrs.Size, nil
+}
+
+func (a *StorageArtifact) Metadata() (map[string]string, error) {
+	attrs, err := a.fetchAttrs()
+	if err != nil {
+		return nil, fmt.Errorf("fetch attributes: %w", err)
+	}
+	return attrs.Metadata, nil
+}
+
+func (a *StorageArtifact) UpdateMetadata(meta map[string]string) error {
+	attrs, err := a.handle.UpdateAttrs(a.ctx, pkgio.ObjectAttrsToUpdate{
+		Metadata: meta,
+	})
+	if err != nil {
+		return err
+	}
+	a.lock.Lock()
+	a.attrs = attrs
+	a.lock.Unlock()
+	return nil
 }
 
 // JobPath gets the GCS path of the artifact within the current job

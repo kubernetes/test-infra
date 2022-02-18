@@ -56,6 +56,14 @@ func (fa *FakeArtifact) CanonicalLink() string {
 	return fakeCanonicalLink
 }
 
+func (fa *FakeArtifact) Metadata() (map[string]string, error) {
+	return nil, nil
+}
+
+func (fa *FakeArtifact) UpdateMetadata(map[string]string) error {
+	return nil
+}
+
 func (fa *FakeArtifact) ReadAt(b []byte, off int64) (int, error) {
 	r := bytes.NewReader(fa.content)
 	return r.ReadAt(b, off)

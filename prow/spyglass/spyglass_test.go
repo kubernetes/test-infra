@@ -88,6 +88,9 @@ func TestMain(m *testing.M) {
 			BucketName: "test-bucket",
 			Name:       "logs/example-ci-run/403/build-log.txt",
 			Content:    []byte("Oh wow\nlogs\nthis is\ncrazy"),
+			Metadata: map[string]string{
+				"foo": "bar",
+			},
 		},
 		{
 			BucketName: "test-bucket",

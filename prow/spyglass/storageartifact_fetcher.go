@@ -190,6 +190,10 @@ func (h *storageArtifactHandle) Attrs(ctx context.Context) (pkgio.Attributes, er
 	return h.Opener.Attributes(ctx, h.Name)
 }
 
+func (h *storageArtifactHandle) UpdateAttrs(ctx context.Context, attrs pkgio.ObjectAttrsToUpdate) (*pkgio.Attributes, error) {
+	return h.UpdateAtributes(ctx, h.Name, attrs)
+}
+
 // Artifact constructs a GCS artifact from the given GCS bucket and key. Uses the golang GCS library
 // to get read handles. If the artifactName is not a valid key in the bucket a handle will still be
 // constructed and returned, but all read operations will fail (dictated by behavior of golang GCS lib).

@@ -46,6 +46,14 @@ func (fa *FakeArtifact) Size() (int64, error) {
 	return int64(len(fa.content)), nil
 }
 
+func (fa *FakeArtifact) Metadata() (map[string]string, error) {
+	return nil, nil
+}
+
+func (fa *FakeArtifact) UpdateMetadata(map[string]string) error {
+	return nil
+}
+
 func (fa *FakeArtifact) CanonicalLink() string {
 	return fa.path
 }

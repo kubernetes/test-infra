@@ -8,7 +8,7 @@
   <div>
     <button class="show-all-button" data-artifact="{{$log.ArtifactName}}">Show all hidden lines</button>
     {{if .ShowRawLog}}<a href="{{$log.ArtifactLink}}" style="padding-left:15px;">Raw {{$log.ArtifactName}}<i class="material-icons" style="padding-left: 3px;">open_in_new</i></a>{{end}}
-    <div class="loglines" id="{{$log.ArtifactName}}-content">
+    <div class="loglines{{if .CanSave}} savable{{end}}" id="{{$log.ArtifactName}}-content">
       {{block "line groups" $log.LineGroups}}
       {{range . }}
         {{if .Skip}}
@@ -34,9 +34,12 @@
           {{end}}
         {{else}}
           {{block "shown group" . }}
-          <div class="shown">
-          {{range .LogLines}}
-            <div id="{{.ArtifactName}}:{{.Number}}">
+            <div class="shown">
+            {{range .LogLines}}
+            <div id="{{.ArtifactName}}:{{.Number}}"{{if .Focused}}class="focus-line"{{end}}>
+              {{if .Clip}}
+                <button class="focus-clip" id="focus-clip"><i class="material-icons">attachment</i></button>
+              {{end}}
               <div class="linenum"><a href="#{{.ArtifactName}}:{{.Number}}" data-artifact="{{.ArtifactName}}" data-line-number="{{.Number}}">{{.Number}}</a></div>
               <div class="linetext">
                 <span {{if .Highlighted}}class="line-highlighted"{{end}}>
@@ -44,8 +47,8 @@
                 </span>
               </div>
             </div>
-          {{end}}
-          </div>
+            {{end}}
+            </div>
           {{end}}
         {{end}}
       {{end}}

@@ -82,6 +82,8 @@ func TestGroupLines(t *testing.T) {
 	tests := []struct {
 		name   string
 		lines  []string
+		start  int
+		end    int
 		groups []LineGroup
 	}{
 		{
@@ -221,7 +223,7 @@ func TestGroupLines(t *testing.T) {
 	art := "fake-artifact"
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			got := groupLines(&art, highlightLines(test.lines, 0, &art, defaultErrRE))
+			got := groupLines(&art, test.start, test.end, highlightLines(test.lines, 0, &art, defaultErrRE)...)
 			if len(got) != len(test.groups) {
 				t.Fatalf("Expected %d groups, got %d", len(test.groups), len(got))
 			}
@@ -243,18 +245,172 @@ func TestGroupLines(t *testing.T) {
 	}
 }
 
+func pstr(s string) *string { return &s }
+
+func TestBody(t *testing.T) {
+	render := func(views ...LogArtifactView) string {
+		return executeTemplate(".", "body", buildLogsView{LogViews: views})
+	}
+	view := func(name, link string, groups []LineGroup) LogArtifactView {
+		return LogArtifactView{
+			ArtifactName: name,
+			ArtifactLink: link,
+			ViewAll:      true,
+			LineGroups:   groups,
+			ShowRawLog:   true,
+		}
+	}
+
+	cases := []struct {
+		name      string
+		artifact  *fake.Artifact
+		rawConfig json.RawMessage
+		want      string
+	}{
+		{
+			name: "empty",
+			artifact: &fake.Artifact{
+				Path:    "foo",
+				Content: []byte(""),
+			},
+			want: render(view("foo", fake.NotFound, []LineGroup{
+				{
+					Start:        1,
+					End:          1,
+					ArtifactName: pstr("foo"),
+					LogLines: []LogLine{
+						{
+							ArtifactName: pstr("foo"),
+							Number:       1,
+							SubLines: []SubLine{
+								{},
+							},
+						},
+					},
+				},
+			},
+			)),
+		},
+		{
+			name: "single",
+			artifact: &fake.Artifact{
+				Path:    "foo",
+				Content: []byte("hello"),
+			},
+			want: render(view("foo", fake.NotFound, []LineGroup{
+				{
+					Start:        1,
+					End:          1,
+					ArtifactName: pstr("foo"),
+					LogLines: []LogLine{
+						{
+							ArtifactName: pstr("foo"),
+							Number:       1,
+							SubLines: []SubLine{
+								{
+									Text: "hello",
+								},
+							},
+						},
+					},
+				},
+			})),
+		},
+		{
+			name: "focus",
+			artifact: &fake.Artifact{
+				Path: "foo",
+				Content: func() []byte {
+					var sb strings.Builder
+					for i := 0; i < 100; i++ {
+						sb.WriteString("word\n")
+					}
+					return []byte(sb.String())
+				}(),
+				Meta: map[string]string{
+					focusStart: "20",
+					focusEnd:   "35",
+				},
+			},
+			want: render(view("foo", fake.NotFound, []LineGroup{
+				{
+					Start:        0,
+					End:          14,
+					ArtifactName: pstr("foo"),
+					Skip:         true,
+					ByteLength:   69,
+					ByteOffset:   0,
+					LogLines:     make([]LogLine, 15),
+				},
+				{
+					Start:        15,
+					End:          40,
+					ArtifactName: pstr("foo"),
+					LogLines: func() []LogLine {
+						var out []LogLine
+						const s = 20
+						const e = 35
+						for i := s - neighborLines; i <= e+neighborLines; i++ {
+							out = append(out, LogLine{
+								ArtifactName: pstr("foo"),
+								Number:       i,
+								Focused:      i >= s && i <= e,
+								Clip:         i == s,
+								SubLines: []SubLine{
+									{
+										Text: "word",
+									},
+								},
+							})
+						}
+						return out
+					}(),
+				},
+				{
+					Start:        40,
+					End:          101,
+					ArtifactName: pstr("foo"),
+					Skip:         true,
+					ByteLength:   100*5 - 5*40,
+					ByteOffset:   5 * 40,
+					LogLines:     make([]LogLine, 101-40),
+				},
+			})),
+		},
+		{
+			name: "missing artifact",
+			want: render(),
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var arts []api.Artifact
+			if tc.artifact != nil {
+				arts = []api.Artifact{tc.artifact}
+			}
+			const dir = ""
+			const data = ""
+			got := Lens{}.Body(arts, dir, data, tc.rawConfig, prowconfig.Spyglass{})
+			if diff := cmp.Diff(tc.want, got); diff != "" {
+				t.Errorf("Body() got unexpected diff (-want +got):\n%s", diff)
+			}
+		})
+	}
+}
+
 func TestCallback(t *testing.T) {
-	pstr := func(s string) *string { return &s }
 	render := func(groups []*LineGroup) string {
 		return executeTemplate(".", "line groups", groups)
 	}
 
 	cases := []struct {
-		name      string
-		artifact  api.Artifact
-		data      string
-		rawConfig json.RawMessage
-		want      string
+		name         string
+		artifact     *fake.Artifact
+		data         string
+		rawConfig    json.RawMessage
+		want         string
+		wantArtifact func(fake.Artifact) fake.Artifact
 	}{
 		{
 			name: "empty",
@@ -524,6 +680,26 @@ func TestCallback(t *testing.T) {
 			}),
 		},
 		{
+			name: "save",
+			data: `{
+				"artifact": "foo",
+				"startLine": 7,
+				"saveEnd": 20
+			}`,
+			artifact: &fake.Artifact{
+				Path:    "foo",
+				Content: []byte("irrelevant"),
+			},
+			want: "",
+			wantArtifact: func(a fake.Artifact) fake.Artifact {
+				a.Meta = map[string]string{
+					focusStart: "7",
+					focusEnd:   "20",
+				}
+				return a
+			},
+		},
+		{
 			name: "bad json",
 			want: failedUnmarshal,
 		},
@@ -543,6 +719,13 @@ func TestCallback(t *testing.T) {
 			got := Lens{}.Callback(arts, "", tc.data, tc.rawConfig, prowconfig.Spyglass{})
 			if diff := cmp.Diff(tc.want, got); diff != "" {
 				t.Errorf("Callback() got unexpected diff (-want +got):\n%s", diff)
+			}
+
+			if tc.wantArtifact != nil {
+				want := tc.wantArtifact(*tc.artifact)
+				if diff := cmp.Diff(&want, tc.artifact); diff != "" {
+					t.Errorf("Callback() got unexpected artifact diff (-want +got):\n%s", diff)
+				}
 			}
 		})
 	}
