@@ -1,0 +1,66 @@
+presubmits:
+  kubernetes-sigs/kueue:
+  - name: pull-kueue-test-unit-main
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/kueue
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-kueue-test-unit-main
+      description: "Run kueue unit tests"
+    spec:
+      containers:
+      - image: golang:1.17
+        command:
+        - make
+        args:
+        - test
+  - name: pull-kueue-test-integration-main
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/kueue
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-kueue-test-integration-main
+      description: "Run kueue test-integration"
+    spec:
+      containers:
+      - image: golang:1.17
+        command:
+        - make
+        args:
+        - test-integration
+  - name: pull-kueue-verify-main
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/kueue
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-kueue-verify-main
+      description: "Run kueue verify checks"
+    spec:
+      containers:
+      - image: golang:1.17
+        command:
+        - make
+        args:
+        - verify
+  - name: pull-kueue-build-image-main
+    always_run: true
+    decorate: true
+    path_alias: sigs.k8s.io/kueue
+    annotations:
+      testgrid-dashboards: sig-scheduling
+      testgrid-tab-name: pull-kueue-build-image-main
+      description: "Build container image of kueue"
+    labels:
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220216-aa6d36a90c-master
+        securityContext:
+          privileged: true
+        command:
+        - make
+        args:
+        - docker-build
