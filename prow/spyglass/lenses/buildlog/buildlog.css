@@ -48,7 +48,7 @@ html {
 }
 
 .focus-clip i.material-icons {
-  transform: rotate(-60deg);
+  transform: rotate(60deg);
   font-size: 2em;
 }
 
