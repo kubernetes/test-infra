@@ -64,6 +64,26 @@ postsubmits:
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
               - images/nginx-debian
 
+    - name: post-ingress-nginx-build-opentelemetry
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
+      decorate: true
+      run_if_changed: 'images/opentelemetry/.*'
+      branches:
+        - ^main$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20211014-7ca1952a94
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-ingress-nginx
+              - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
+              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
+              - images/opentelemetry
+
     - name: post-ingress-nginx-build-modsecurity
       cluster: k8s-infra-prow-build-trusted
       annotations:
