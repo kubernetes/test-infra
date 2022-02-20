@@ -307,7 +307,9 @@ presubmits:
             - name: KUBERNETES_VERSION
               value: 1.23.1
             - name: GINKGO_ARGS
-              value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --test.parallel=30
+              value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --test.parallel=30 --report-dir=${ARTIFACTS} --disable-log-dump=true
+            - name: CONTROL_PLANE_MACHINE_COUNT
+              value: "3"
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure
       testgrid-tab-name: pr-cloud-provider-azure-e2e-capz
@@ -351,6 +353,8 @@ presubmits:
               value: "true"
             - name: AZURE_LOADBALANCER_SKU
               value: "standard"
+            - name: CONTROL_PLANE_MACHINE_COUNT
+              value: "3"
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-capz
@@ -384,55 +388,40 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 5h
+  path_alias: sigs.k8s.io/cloud-provider-azure
+  branches:
+    - master
   labels:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-dind-enabled: "true"
   extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: release-1.23
-    path_alias: k8s.io/kubernetes
-  - org: kubernetes-sigs
-    repo: cloud-provider-azure
-    base_ref: master
-    path_alias: sigs.k8s.io/cloud-provider-azure
+    - org: kubernetes-sigs
+      repo: cluster-api-provider-azure
+      base_ref: release-1.0
+      path_alias: sigs.k8s.io/cluster-api-provider-azure
+      workdir: true
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220216-aa6d36a90c-1.23
-      command:
-      - runner.sh
-      - kubetest
-      args:
-      # Generic e2e test args
-      - --test
-      - --up
-      - --down
-      - --build=quick
-      - --dump=$(ARTIFACTS)
-      # Azure-specific test args
-      - --deployment=aksengine
-      - --provider=skeleton
-      - --aksengine-agentpoolcount=2
-      - --aksengine-admin-username=azureuser
-      - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-orchestratorRelease=1.23
-      - --aksengine-mastervmsize=Standard_DS2_v2
-      - --aksengine-agentvmsize=Standard_D4s_v3
-      - --aksengine-ccm
-      - --aksengine-cnm
-      - --aksengine-deploy-custom-k8s
-      - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux.json
-      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/nightly/aks-engine-nightly-linux-amd64.tar.gz
-      # Specific test args
-      - --test-ccm
-      - --ginkgo-parallel=30
-      env:
-      - name: AZURE_LOADBALANCER_SKU
-        value: "standard"
-      securityContext:
-        privileged: true
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220216-aa6d36a90c-1.23
+        command:
+        - runner.sh
+        args:
+        - ./scripts/ci-entrypoint.sh
+        - bash
+        - -c
+        - >-
+          cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
+          make test-ccm-e2e
+        securityContext:
+          privileged: true
+        env:
+        - name: TEST_CCM
+          value: "true"
+        - name: AZURE_LOADBALANCER_SKU
+          value: "standard"
+        - name: CONTROL_PLANE_MACHINE_COUNT
+          value: "3"
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-master
@@ -568,52 +557,50 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 5h
+  path_alias: sigs.k8s.io/cloud-provider-azure
+  branches:
+  - master
   labels:
     preset-service-account: "true"
     preset-azure-cred: "true"
     preset-dind-enabled: "true"
   extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-azure
+    base_ref: release-1.0
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+    workdir: true
   - org: kubernetes
     repo: kubernetes
     base_ref: release-1.23
     path_alias: k8s.io/kubernetes
-  - org: kubernetes-sigs
-    repo: cloud-provider-azure
-    base_ref: master
-    path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220216-aa6d36a90c-1.23
       command:
       - runner.sh
-      - kubetest
       args:
-      # Generic e2e test args
-      - --test
-      - --up
-      - --down
-      - --build=quick
-      - --dump=$(ARTIFACTS)
-      # Azure-specific test args
-      - --deployment=aksengine
-      - --provider=skeleton
-      - --aksengine-agentpoolcount=2
-      - --aksengine-admin-username=azureuser
-      - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-orchestratorRelease=1.23
-      - --aksengine-mastervmsize=Standard_DS2_v2
-      - --aksengine-agentvmsize=Standard_D4s_v3
-      - --aksengine-ccm
-      - --aksengine-cnm
-      - --aksengine-deploy-custom-k8s
-      - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux.json
-      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/nightly/aks-engine-nightly-linux-amd64.tar.gz
-      # Specific test args
-      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]
-      - --ginkgo-parallel=30
+      - ./scripts/ci-entrypoint.sh
+      - bash
+      - -c
+      - >-
+        cp ./kubeconfig ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure/kubeconfig &&
+        cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
+        make test-e2e-capz
       securityContext:
         privileged: true
+      env:
+      - name: TEST_CCM
+        value: "true"
+      - name: AZURE_LOADBALANCER_SKU
+        value: "standard"
+      - name: KUBERNETES_VERSION
+        value: 1.23.1
+      - name: GINKGO_ARGS
+        value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --test.parallel=30 --report-dir=${ARTIFACTS} --disable-log-dump=true
+      - name: CONTROL_PLANE_MACHINE_COUNT
+        value: "3"
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-conformance
