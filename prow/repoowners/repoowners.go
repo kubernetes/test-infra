@@ -56,6 +56,7 @@ type dirOptions struct {
 type Config struct {
 	Approvers         []string `json:"approvers,omitempty"`
 	Reviewers         []string `json:"reviewers,omitempty"`
+	SecurityContacts  []string `json:"security_contacts,omitempty"`
 	RequiredReviewers []string `json:"required_reviewers,omitempty"`
 	Labels            []string `json:"labels,omitempty"`
 }
@@ -245,6 +246,7 @@ type RepoOwners struct {
 	approvers         map[string]map[*regexp.Regexp]sets.String
 	reviewers         map[string]map[*regexp.Regexp]sets.String
 	requiredReviewers map[string]map[*regexp.Regexp]sets.String
+	securityContacts  map[string]map[*regexp.Regexp]sets.String
 	labels            map[string]map[*regexp.Regexp]sets.String
 	options           map[string]dirOptions
 
@@ -466,6 +468,7 @@ func loadOwnersFrom(baseDir string, mdYaml bool, aliases RepoAliases, dirIgnorel
 		approvers:         make(map[string]map[*regexp.Regexp]sets.String),
 		reviewers:         make(map[string]map[*regexp.Regexp]sets.String),
 		requiredReviewers: make(map[string]map[*regexp.Regexp]sets.String),
+		securityContacts:  make(map[string]map[*regexp.Regexp]sets.String),
 		labels:            make(map[string]map[*regexp.Regexp]sets.String),
 		options:           make(map[string]dirOptions),
 
@@ -697,6 +700,12 @@ func (o *RepoOwners) applyConfigToPath(path string, re *regexp.Regexp, config *C
 			o.requiredReviewers[path] = make(map[*regexp.Regexp]sets.String)
 		}
 		o.requiredReviewers[path][re] = o.ExpandAliases(NormLogins(config.RequiredReviewers))
+	}
+	if len(config.SecurityContacts) > 0 {
+		if o.securityContacts[path] == nil {
+			o.securityContacts[path] = make(map[*regexp.Regexp]sets.String)
+		}
+		o.securityContacts[path][re] = o.ExpandAliases(NormLogins(config.SecurityContacts))
 	}
 	if len(config.Labels) > 0 {
 		if o.labels[path] == nil {

@@ -48,6 +48,9 @@ reviewers:
 - bob
 required_reviewers:
 - chris
+security_contacts:
+- alice
+- bob
 labels:
 - EVERYTHING`),
 		"src/OWNERS": []byte(`approvers:
@@ -476,7 +479,7 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 		branch                *string
 		extraBranchesAndFiles map[string]map[string][]byte
 
-		expectedApprovers, expectedReviewers, expectedRequiredReviewers, expectedLabels map[string]map[string]sets.String
+		expectedApprovers, expectedReviewers, expectedRequiredReviewers, expectedSecurityContacts, expectedLabels map[string]map[string]sets.String
 
 		expectedOptions  map[string]dirOptions
 		cacheOptions     *cacheOptions
@@ -500,6 +503,9 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 			expectedRequiredReviewers: map[string]map[string]sets.String{
 				"":        patternAll("chris"),
 				"src/dir": patternAll("ben"),
+			},
+			expectedSecurityContacts: map[string]map[string]sets.String{
+				"": patternAll("alice", "bob"),
 			},
 			expectedLabels: map[string]map[string]sets.String{
 				"":        patternAll("EVERYTHING"),
@@ -531,6 +537,9 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 			expectedRequiredReviewers: map[string]map[string]sets.String{
 				"":        patternAll("chris"),
 				"src/dir": patternAll("ben"),
+			},
+			expectedSecurityContacts: map[string]map[string]sets.String{
+				"": patternAll("alice", "bob"),
 			},
 			expectedLabels: map[string]map[string]sets.String{
 				"":        patternAll("EVERYTHING"),
@@ -564,6 +573,9 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 			expectedRequiredReviewers: map[string]map[string]sets.String{
 				"":        patternAll("chris"),
 				"src/dir": patternAll("ben"),
+			},
+			expectedSecurityContacts: map[string]map[string]sets.String{
+				"": patternAll("alice", "bob"),
 			},
 			expectedLabels: map[string]map[string]sets.String{
 				"":             patternAll("EVERYTHING"),
@@ -603,6 +615,9 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 				"":        patternAll("chris"),
 				"src/dir": patternAll("ben"),
 			},
+			expectedSecurityContacts: map[string]map[string]sets.String{
+				"": patternAll("alice", "bob"),
+			},
 			expectedLabels: map[string]map[string]sets.String{
 				"":        patternAll("EVERYTHING"),
 				"src/dir": patternAll("src-code"),
@@ -639,6 +654,9 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 				"":        patternAll("chris"),
 				"src/dir": patternAll("ben"),
 			},
+			expectedSecurityContacts: map[string]map[string]sets.String{
+				"": patternAll("alice", "bob"),
+			},
 			expectedLabels: map[string]map[string]sets.String{
 				"":        patternAll("EVERYTHING"),
 				"src/dir": patternAll("src-code"),
@@ -669,6 +687,9 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 			expectedRequiredReviewers: map[string]map[string]sets.String{
 				"":        patternAll("chris"),
 				"src/dir": patternAll("ben"),
+			},
+			expectedSecurityContacts: map[string]map[string]sets.String{
+				"": patternAll("alice", "bob"),
 			},
 			expectedLabels: map[string]map[string]sets.String{
 				"":        patternAll("EVERYTHING"),
@@ -720,6 +741,9 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 				"":        patternAll("chris"),
 				"src/dir": patternAll("ben"),
 			},
+			expectedSecurityContacts: map[string]map[string]sets.String{
+				"": patternAll("alice", "bob"),
+			},
 			expectedLabels: map[string]map[string]sets.String{
 				"":             patternAll("EVERYTHING"),
 				"src/dir":      patternAll("src-code"),
@@ -754,6 +778,9 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 			expectedRequiredReviewers: map[string]map[string]sets.String{
 				"":        patternAll("chris"),
 				"src/dir": patternAll("ben"),
+			},
+			expectedSecurityContacts: map[string]map[string]sets.String{
+				"": patternAll("alice", "bob"),
 			},
 			expectedLabels: map[string]map[string]sets.String{
 				"":             patternAll("EVERYTHING"),
@@ -790,6 +817,9 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 				"":        patternAll("chris"),
 				"src/dir": patternAll("ben"),
 			},
+			expectedSecurityContacts: map[string]map[string]sets.String{
+				"": patternAll("alice", "bob"),
+			},
 			expectedLabels: map[string]map[string]sets.String{
 				"":        patternAll("EVERYTHING"),
 				"src/dir": patternAll("src-code"),
@@ -824,6 +854,9 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 			expectedRequiredReviewers: map[string]map[string]sets.String{
 				"":        patternAll("chris"),
 				"src/dir": patternAll("ben"),
+			},
+			expectedSecurityContacts: map[string]map[string]sets.String{
+				"": patternAll("alice", "bob"),
 			},
 			expectedLabels: map[string]map[string]sets.String{
 				"":        patternAll("EVERYTHING"),
@@ -870,6 +903,9 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 			expectedRequiredReviewers: map[string]map[string]sets.String{
 				"":        patternAll("chris"),
 				"src/dir": patternAll("ben"),
+			},
+			expectedSecurityContacts: map[string]map[string]sets.String{
+				"": patternAll("alice", "bob"),
 			},
 			expectedLabels: map[string]map[string]sets.String{
 				"":             patternAll("EVERYTHING"),
@@ -950,6 +986,7 @@ func testLoadRepoOwners(clients localgit.Clients, t *testing.T) {
 			check("approvers", test.expectedApprovers, ro.approvers)
 			check("reviewers", test.expectedReviewers, ro.reviewers)
 			check("required_reviewers", test.expectedRequiredReviewers, ro.requiredReviewers)
+			check("security_contacts", test.expectedSecurityContacts, ro.securityContacts)
 			check("labels", test.expectedLabels, ro.labels)
 			if !reflect.DeepEqual(test.expectedOptions, ro.options) {
 				t.Errorf("Expected options to be:\n%#v\ngot:\n%#v.", test.expectedOptions, ro.options)

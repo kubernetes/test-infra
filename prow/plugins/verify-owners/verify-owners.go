@@ -367,6 +367,7 @@ func handle(ghc githubClient, gc git.ClientFactory, roc repoownersClient, log *l
 func parseOwnersFile(oc ownersClient, path string, c github.PullRequestChange, log *logrus.Entry, bannedLabels []string, filenames ownersconfig.Filenames) (*messageWithLine, []string) {
 	var reviewers []string
 	var approvers []string
+	var securityContacts []string
 	var labels []string
 
 	// by default we bind errors to line 1
@@ -404,12 +405,14 @@ func parseOwnersFile(oc ownersClient, path string, c github.PullRequestChange, l
 		for _, config := range full.Filters {
 			reviewers = append(reviewers, config.Reviewers...)
 			approvers = append(approvers, config.Approvers...)
+			securityContacts = append(securityContacts, config.SecurityContacts...)
 			labels = append(labels, config.Labels...)
 		}
 	} else {
 		// it's a SimpleConfig
 		reviewers = simple.Config.Reviewers
 		approvers = simple.Config.Approvers
+		securityContacts = simple.Config.SecurityContacts
 		labels = simple.Config.Labels
 	}
 	// Check labels against ban list
@@ -427,6 +430,8 @@ func parseOwnersFile(oc ownersClient, path string, c github.PullRequestChange, l
 		}, nil
 	}
 	owners := append(reviewers, approvers...)
+	owners = append(owners, securityContacts...)
+
 	return nil, owners
 }
 
