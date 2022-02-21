@@ -1998,6 +1998,7 @@ func TestHasConfigFor(t *testing.T) {
 				fuzzedConfig.Approve = nil
 				fuzzedConfig.Label.RestrictedLabels = nil
 				fuzzedConfig.Lgtm = nil
+				fuzzedConfig.Triggers = nil
 				fuzzedConfig.ExternalPlugins = nil
 				return fuzzedConfig, !reflect.DeepEqual(fuzzedConfig, &Configuration{}), nil, nil
 			},
@@ -2062,6 +2063,25 @@ func TestHasConfigFor(t *testing.T) {
 
 				for _, lgtm := range fuzzedConfig.Lgtm {
 					for _, orgOrRepo := range lgtm.Repos {
+						if strings.Contains(orgOrRepo, "/") {
+							expectRepos.Insert(orgOrRepo)
+						} else {
+							expectOrgs.Insert(orgOrRepo)
+						}
+					}
+				}
+
+				return fuzzedConfig, false, expectOrgs, expectRepos
+			},
+		},
+		{
+			name: "Any config with triggers is considered to be for the orgs and repos references there",
+			resultGenerator: func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
+				fuzzedConfig = &Configuration{Triggers: fuzzedConfig.Triggers}
+				expectOrgs, expectRepos = sets.String{}, sets.String{}
+
+				for _, trigger := range fuzzedConfig.Triggers {
+					for _, orgOrRepo := range trigger.Repos {
 						if strings.Contains(orgOrRepo, "/") {
 							expectRepos.Insert(orgOrRepo)
 						} else {
@@ -2166,6 +2186,15 @@ func TestMergeFrom(t *testing.T) {
 			in:                  Configuration{Lgtm: []Lgtm{{Repos: []string{"foo/bar"}}}},
 			supplementalConfigs: []Configuration{{Lgtm: []Lgtm{{Repos: []string{"foo/baz"}}}}},
 			expected: Configuration{Lgtm: []Lgtm{
+				{Repos: []string{"foo/bar"}},
+				{Repos: []string{"foo/baz"}},
+			}},
+		},
+		{
+			name:                "Triggers config gets merged",
+			in:                  Configuration{Triggers: []Trigger{{Repos: []string{"foo/bar"}}}},
+			supplementalConfigs: []Configuration{{Triggers: []Trigger{{Repos: []string{"foo/baz"}}}}},
+			expected: Configuration{Triggers: []Trigger{
 				{Repos: []string{"foo/bar"}},
 				{Repos: []string{"foo/baz"}},
 			}},
