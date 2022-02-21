@@ -154,6 +154,13 @@ So in the example above:
     - Enable protection (inherited from branch-protection level)
     - Require the `cla` context to be green to merge (appended by parent)
 
+
+#### Unmanaged branch protection
+
+If it is not desired to have branchprotector manage the branch protection, use 
+`unmanaged: true` in the configuration instead of `protect: false` which 
+disables branch protection. 
+
 ## Developer docs
 
 Use [`planter.sh`] if [`bazel`] is not already installed on the machine.

@@ -183,6 +183,7 @@ state and no claims of backwards compatibility are made for any external API.
 Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
+ - *March 3rd, 2022* `protected: false` disables branch protection. Not to manage branch protection by branchprotector is expressed by `unmanaged: true`. It fixes [the ambiguous semantics](https://github.com/kubernetes/test-infra/issues/14575) of `projected: false`.
  - *February 22nd, 2022* Since prow version `v20220222-acb5731b85`, the
    entrypoint container in a prow job will run as `--copy-mode-only`, instead of
    `/bin/cp /entrypoint /tools/entrypoint`. Entrypoint images before the mentioned version
