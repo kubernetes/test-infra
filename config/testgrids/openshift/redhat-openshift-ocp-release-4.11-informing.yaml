@@ -4635,7 +4635,7 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-aws
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-aws
-- days_of_results: 50
+- days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-aws-canary
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-aws-canary
 - days_of_results: 13

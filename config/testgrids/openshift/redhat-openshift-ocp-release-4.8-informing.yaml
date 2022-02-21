@@ -3081,7 +3081,7 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.8-credentials-request-freeze
   name: periodic-ci-openshift-release-master-nightly-4.8-credentials-request-freeze
-- days_of_results: 50
+- days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.8-e2e-aws-canary
   name: periodic-ci-openshift-release-master-nightly-4.8-e2e-aws-canary
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.8-e2e-aws-driver-toolkit
