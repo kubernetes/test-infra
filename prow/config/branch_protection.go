@@ -356,7 +356,9 @@ func (c *Config) GetPolicy(org, repo, branch string, b Branch, presubmits []Pres
 		// Error if protection is disabled
 		if policy.Protect != nil && !*policy.Protect {
 			if c.BranchProtection.AllowDisabledJobPolicies != nil && *c.BranchProtection.AllowDisabledJobPolicies {
-				return nil, nil
+				return &Policy{
+					Protect: policy.Protect,
+				}, nil
 			}
 			return nil, fmt.Errorf("required prow jobs require branch protection")
 		}
