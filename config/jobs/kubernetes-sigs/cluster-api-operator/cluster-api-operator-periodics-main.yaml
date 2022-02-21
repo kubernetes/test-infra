@@ -11,7 +11,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-operator
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220216-aa6d36a90c-1.23
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220221-c13e827224-1.23
       command:
       - "./scripts/ci-test.sh"
   annotations:
