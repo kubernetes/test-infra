@@ -92,7 +92,7 @@ presubmits:
         runAsUser: 2000
         allowPrivilegeEscalation: false
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220216-aa6d36a90c-go-canary
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220221-c13e827224-go-canary
           command:
             - make
             - test
