@@ -58,6 +58,17 @@ var ghRequestDurationHistVec = prometheus.NewHistogramVec(
 	[]string{"token_hash", "path", "status", "user_agent"},
 )
 
+// ghRequestDurationHistVec provides the 'github_request_duration' histogram that keeps track
+// of the duration of GitHub requests by API path.
+var ghRequestWaitDurationHistVec = prometheus.NewHistogramVec(
+	prometheus.HistogramOpts{
+		Name:    "github_request_wait_duration_seconds",
+		Help:    "GitHub request wait duration before sending to API in seconds",
+		Buckets: []float64{0.001, 0.0025, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 30, 60},
+	},
+	[]string{"token_hash", "request_type", "api"},
+)
+
 // cacheCounter provides the 'ghcache_responses' counter vec that is indexed
 // by the cache response mode.
 var cacheCounter = prometheus.NewCounterVec(
@@ -90,17 +101,6 @@ var cacheEntryAge = prometheus.NewHistogramVec(
 	[]string{"token_hash", "path", "user_agent"},
 )
 
-// ghRequestDurationHistVec provides the 'github_request_duration' histogram that keeps track
-// of the duration of GitHub requests by API path.
-var ghRequestWaitDurationHistVec = prometheus.NewHistogramVec(
-	prometheus.HistogramOpts{
-		Name:    "github_request_wait_duration_s",
-		Help:    "GitHub request wait duration before sending to API in s",
-		Buckets: []float64{0.001, 0.0025, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 30, 60},
-	},
-	[]string{"token_hash", "request_type", "api"},
-)
-
 var muxTokenUsage sync.Mutex
 var lastGitHubResponse time.Time
 
@@ -108,6 +108,7 @@ func init() {
 	prometheus.MustRegister(ghTokenUntilResetGaugeVec)
 	prometheus.MustRegister(ghTokenUsageGaugeVec)
 	prometheus.MustRegister(ghRequestDurationHistVec)
+	prometheus.MustRegister(ghRequestWaitDurationHistVec)
 	prometheus.MustRegister(cacheCounter)
 	prometheus.MustRegister(timeoutDuration)
 	prometheus.MustRegister(cacheEntryAge)
