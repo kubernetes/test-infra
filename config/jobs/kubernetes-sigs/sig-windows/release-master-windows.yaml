@@ -224,8 +224,9 @@ periodics:
             cpu: 2
             memory: "9Gi"
   annotations:
+    fork-per-release: "true"
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
-    testgrid-dashboards: sig-windows-master-release
+    testgrid-dashboards: sig-release-master-informing, sig-windows-master-release, sig-windows-signal
     testgrid-tab-name: capz-windows-containerd-master
 - name: ci-kubernetes-e2e-capz-master-containerd-windows-serial-slow
   interval: 24h
@@ -268,7 +269,7 @@ periodics:
             memory: "9Gi"
   annotations:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
-    testgrid-dashboards: sig-windows-master-release
+    testgrid-dashboards: sig-windows-master-release, sig-windows-signal
     testgrid-tab-name: capz-windows-containerd-master-serial-slow
 - name: ci-kubernetes-e2e-capz-master-containerd-windows-2022
   interval: 12h
@@ -355,7 +356,7 @@ periodics:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     testgrid-dashboards: sig-windows-master-release
     testgrid-tab-name: capz-windows-containerd-2022-master-serial-slow
-- interval: 3h
+- interval: 8h
   name: ci-kubernetes-e2e-aks-engine-azure-master-windows-containerd
   decorate: true
   decoration_config:
@@ -406,8 +407,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    fork-per-release: "true"
-    testgrid-dashboards: sig-release-master-informing, sig-windows-signal, sig-windows-master-release
+    testgrid-dashboards: sig-windows-master-release
     testgrid-tab-name: aks-engine-windows-containerd-master
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs Windows tests on a Kubernetes cluster running containerd provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
@@ -687,5 +687,5 @@ periodics:
             memory: "9Gi"
   annotations:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
-    testgrid-dashboards: sig-windows-master-release
+    testgrid-dashboards: sig-windows-master-release, sig-windows-signal
     testgrid-tab-name: capz-windows-containerd-nightly-master
