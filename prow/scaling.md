@@ -89,7 +89,7 @@ metadata across multiple orgs and repos in order to provide a consistent user
 experience in a multi-repo project.
 - [`branch_protector`](/prow/cmd/branchprotector) is a Prow component that
 synchronizes GitHub branch requirements and restrictions based on config.
-- [`peribolos`](/prow/cmd/periobolos) is a tool that synchronizes org settings,
+- [`peribolos`](/prow/cmd/peribolos) is a tool that synchronizes org settings,
 teams, and memberships based on config.
 
 ### Metrics
