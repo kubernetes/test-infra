@@ -55,9 +55,9 @@ const (
 var (
 	rootDir     string
 	otherArches = []string{
-		"arm64",
-		"s390x",
-		"ppc64le",
+		"linux/arm64",
+		"linux/s390x",
+		"linux/ppc64le",
 	}
 	defaultTags = []string{
 		"latest",
@@ -73,7 +73,7 @@ func init() {
 	}
 	rootDir = out
 
-	if _, err := runCmdInDir(path.Join(rootDir, "hack/tools"), "go", "build", "-o", path.Join(rootDir, "_bin/ko"), "github.com/google/ko"); err != nil {
+	if _, err := runCmdInDirFunc(path.Join(rootDir, "hack/tools"), "go", "build", "-o", path.Join(rootDir, "_bin/ko"), "github.com/google/ko"); err != nil {
 		logrus.WithError(err).Error("Failed ensure ko")
 		os.Exit(1)
 	}
@@ -86,6 +86,9 @@ type options struct {
 	push              bool
 	maxRetry          int
 }
+
+// Mock for unit testing purpose
+var runCmdInDirFunc = runCmdInDir
 
 func runCmdInDir(dir, cmd string, args ...string) (string, error) {
 	command := exec.Command(cmd, args...)
@@ -120,7 +123,7 @@ func runCmdInDir(dir, cmd string, args ...string) (string, error) {
 }
 
 func runCmd(cmd string, args ...string) (string, error) {
-	return runCmdInDir(rootDir, cmd, args...)
+	return runCmdInDirFunc(rootDir, cmd, args...)
 }
 
 type imageDef struct {
@@ -162,13 +165,17 @@ func allTags(arch string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	if arch != allArch {
-		return baseTags, nil
-	}
+
 	var allTags = baseTags
-	for _, arch := range otherArches {
+	for _, otherArch := range otherArches {
+		if arch != allArch && arch != otherArch {
+			continue
+		}
 		for _, base := range baseTags {
-			allTags = append(allTags, fmt.Sprintf("%s-%s", base, arch))
+			// So far only platform supported is linux, trimming off the linux/
+			// prefix so that there is no slash in tag. Also for consistency reasons.
+			platform := strings.Replace(otherArch, "linux/", "", 1)
+			allTags = append(allTags, fmt.Sprintf("%s-%s", base, platform))
 		}
 	}
 	return allTags, nil
@@ -212,6 +219,16 @@ func teardown(id *imageDef) error {
 func buildAndPush(id *imageDef, koDockerRepo string, push bool) error {
 	logger := logrus.WithField("image", id.Dir)
 	logger.Info("Build and push")
+	// So far only supports certain arch
+	isSupportedArch := (id.Arch == defaultArch || id.Arch == allArch)
+	for _, otherArch := range otherArches {
+		if id.Arch == otherArch {
+			isSupportedArch = true
+		}
+	}
+	if !isSupportedArch {
+		return fmt.Errorf("Arch '%s' not supported, only support %v", id.Arch, append([]string{defaultArch, allArch}, otherArches...))
+	}
 	publishArgs := []string{"publish", fmt.Sprintf("--tarball=_bin/%s.tar", path.Base(id.Dir)), "--push=false"}
 	if push {
 		publishArgs = []string{"publish", "--push=true"}
@@ -243,6 +260,7 @@ func main() {
 	flag.BoolVar(&o.push, "push", false, "whether push or not")
 	flag.IntVar(&o.maxRetry, "retry", defaultRetry, "Number of times retrying for each image")
 	flag.Parse()
+
 	if !o.push && o.koDockerRepo == "" {
 		o.koDockerRepo = noOpKoDocerRepo
 	}
