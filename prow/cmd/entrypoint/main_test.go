@@ -38,10 +38,7 @@ func TestCopy(t *testing.T) {
 		},
 	}
 
-	srcDir, err := ioutil.TempDir("", "test-prow-entrypoint-main")
-	if err != nil {
-		t.Fatalf("Failed preparing temp dir: %v", err)
-	}
+	srcDir := t.TempDir()
 	for _, tc := range tests {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
