@@ -266,11 +266,12 @@ func main() {
 	var wg sync.WaitGroup
 	imageChan := make(chan imageDef, 10)
 	errChan := make(chan error, len(ids))
+	doneChan := make(chan imageDef, len(ids))
 	// Start workers
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	for i := 0; i < o.workers; i++ {
-		go func(ctx context.Context, imageChan chan imageDef, errChan chan error) {
+		go func(ctx context.Context, imageChan chan imageDef, errChan chan error, doneChan chan imageDef) {
 			for {
 				select {
 				case id := <-imageChan:
@@ -285,12 +286,12 @@ func main() {
 						}
 						errChan <- err
 					}
-					wg.Done()
+					doneChan <- id
 				case <-ctx.Done():
 					return
 				}
 			}
-		}(ctx, imageChan, errChan)
+		}(ctx, imageChan, errChan, doneChan)
 	}
 
 	for _, id := range ids {
@@ -303,6 +304,20 @@ func main() {
 		wg.Add(1)
 		imageChan <- id
 	}
+
+	go func(ctx context.Context, wg *sync.WaitGroup, doneChan chan imageDef) {
+		var done int
+		for {
+			select {
+			case id := <-doneChan:
+				done++
+				logrus.WithFields(logrus.Fields{"image": id.Dir, "done": done, "total": len(ids)}).Info("Done with image.")
+				wg.Done()
+			case <-ctx.Done():
+				return
+			}
+		}
+	}(ctx, &wg, doneChan)
 
 	wg.Wait()
 	for {
