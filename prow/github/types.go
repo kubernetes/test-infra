@@ -559,6 +559,24 @@ type BranchProtection struct {
 	EnforceAdmins              EnforceAdmins               `json:"enforce_admins"`
 	RequiredPullRequestReviews *RequiredPullRequestReviews `json:"required_pull_request_reviews"`
 	Restrictions               *Restrictions               `json:"restrictions"`
+	AllowForcePushes           AllowForcePushes            `json:"allow_force_pushes"`
+	RequiredLinearHistory      RequiredLinearHistory       `json:"required_linear_history"`
+	AllowDeletions             AllowDeletions              `json:"allow_deletions"`
+}
+
+// AllowDeletions specifies whether to permit users with push access to delete matching branches.
+type AllowDeletions struct {
+	Enabled bool `json:"enabled"`
+}
+
+// RequiredLinearHistory specifies whether to prevent merge commits from being pushed to matching branches.
+type RequiredLinearHistory struct {
+	Enabled bool `json:"enabled"`
+}
+
+// AllowForcePushes specifies whether to permit force pushes for all users with push access.
+type AllowForcePushes struct {
+	Enabled bool `json:"enabled"`
 }
 
 // EnforceAdmins specifies whether to enforce the

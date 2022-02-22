@@ -1618,6 +1618,17 @@ func TestEqualBranchProtection(t *testing.T) {
 			},
 			expected: true,
 		},
+		{
+			name: "AllowForcePushes is recognized",
+			state: &github.BranchProtection{
+				AllowForcePushes: github.AllowForcePushes{
+					Enabled: false,
+				},
+			},
+			request: &github.BranchProtectionRequest{
+				AllowForcePushes: true,
+			},
+		},
 	}
 
 	for _, testCase := range testCases {
