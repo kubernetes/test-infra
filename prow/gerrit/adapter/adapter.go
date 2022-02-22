@@ -472,7 +472,7 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 		labels[client.GerritPatchset] = strconv.Itoa(change.Revisions[change.CurrentRevision].Number)
 
 		if _, ok := labels[client.GerritReportLabel]; !ok {
-			logger.WithField("job", jSpec.spec.Job).Warn("Job uses default value of 'Code-Review' for 'prow.k8s.io/gerrit-report-label' label. This default will removed in March 2022.")
+			logger.WithField("job", jSpec.spec.Job).Debug("Job uses default value of 'Code-Review' for 'prow.k8s.io/gerrit-report-label' label. This default will removed in March 2022.")
 			labels[client.GerritReportLabel] = client.CodeReview
 		}
 
