@@ -64,4 +64,4 @@ presubmits:
         - runner.sh
         args:
         - make
-        - docker-build
+        - image-build
