@@ -1,0 +1,29 @@
+periodics:
+- name: ci-k8s-infra-build-cluster-prow-build
+  cron: "*/5 * * * *" #Every 5 minutes
+  cluster: k8s-infra-prow-build
+  decorate: true
+  max_concurrency: 1
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+  annotations:
+    testgrid-dashboards: sig-k8s-infra-prow
+    testgrid-tab-name: gke-prow-build-heartbeat
+    testgrid-num-failures-to-alert: '6'
+    testgrid-alert-email: k8s-infra-alerts@kubernetes.io, k8s-infra-prow-oncall@kubernetes.io
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
+      command:
+      - "echo"
+      args:
+      - "Everything is fine!"
+      resources:
+        limits:
+          cpu: 100m
+          memory: 512Mi
+        requests:
+          cpu: 100m
+          memory: 512Mi
