@@ -1,7 +1,7 @@
 periodics:
 
 - name: periodic-cluster-api-e2e-workload-upgrade-1-18-1-19-release-0-4
-  interval: 24h
+  interval: 48h
   decorate: true
   labels:
     preset-dind-enabled: "true"
@@ -45,7 +45,7 @@ periodics:
     testgrid-num-failures-to-alert: "4"
 
 - name: periodic-cluster-api-e2e-workload-upgrade-1-19-1-20-release-0-4
-  interval: 24h
+  interval: 48h
   decorate: true
   labels:
     preset-dind-enabled: "true"
@@ -89,7 +89,7 @@ periodics:
     testgrid-num-failures-to-alert: "4"
 
 - name: periodic-cluster-api-e2e-workload-upgrade-1-20-1-21-release-0-4
-  interval: 24h
+  interval: 48h
   decorate: true
   labels:
     preset-dind-enabled: "true"
@@ -133,7 +133,7 @@ periodics:
     testgrid-num-failures-to-alert: "4"
 
 - name: periodic-cluster-api-e2e-workload-upgrade-1-21-1-22-release-0-4
-  interval: 24h
+  interval: 48h
   decorate: true
   labels:
     preset-dind-enabled: "true"
@@ -177,7 +177,7 @@ periodics:
     testgrid-num-failures-to-alert: "4"
 
 - name: periodic-cluster-api-e2e-workload-upgrade-1-22-1-23-release-0-4
-  interval: 24h
+  interval: 48h
   decorate: true
   labels:
     preset-dind-enabled: "true"
@@ -222,7 +222,7 @@ periodics:
     testgrid-num-failures-to-alert: "4"
 
 - name: periodic-cluster-api-e2e-workload-upgrade-1-23-latest-release-0-4
-  interval: 24h
+  interval: 48h
   decorate: true
   labels:
     preset-dind-enabled: "true"
