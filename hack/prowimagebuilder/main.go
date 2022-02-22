@@ -150,7 +150,11 @@ func allBaseTags() ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	return append(defaultTags, gitTag), nil
+	// Add a `ko-<GIT_TAG>` tag so that it's easy to identify images built from
+	// ko vs. images built from bazel, in case there is a revert needed.
+	// TODO(chaodaiG): remove `ko-` tag once the images produced by ko proved to
+	// be working
+	return append(defaultTags, gitTag, "ko-"+gitTag), nil
 }
 
 func allTags(arch string) ([]string, error) {
@@ -170,6 +174,7 @@ func allTags(arch string) ([]string, error) {
 	return allTags, nil
 }
 
+// gitTag returns YYYYMMDD-<GIT_TAG>
 func gitTag() (string, error) {
 	prefix, err := runCmd("date", "+v%Y%m%d")
 	if err != nil {
