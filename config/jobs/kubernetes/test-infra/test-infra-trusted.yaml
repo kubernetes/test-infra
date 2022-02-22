@@ -191,39 +191,6 @@ postsubmits:
   - name: post-test-infra-push-prow
     cluster: test-infra-trusted
     # Runs on more than just the Prow dir to include some additional images that we publish to gcr.io/k8s-prow.
-    run_if_changed: '^(WORKSPACE|load.bzl|repos.bzl|containers.bzl|prow|ghproxy|label_sync/.+\.go|robots/commenter|robots/pr-creator|robots/issue-creator|testgrid/cmd|gcsweb)'
-    decorate: true
-    branches:
-    - ^master$
-    max_concurrency: 1
-    spec:
-      serviceAccountName: pusher
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/bazelbuild:v20210930-b6c4097796-test-infra
-        command:
-        - prow/push.sh
-      tolerations:
-      - key: "highcpu"
-        operator: "Equal"
-        value: "true"
-        effect: "NoSchedule"
-      nodeSelector:
-        highcpu: "true"
-      resources:
-        requests:
-          cpu: "15"
-    annotations:
-      testgrid-dashboards: sig-testing-prow
-      testgrid-tab-name: push-prow
-      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
-      testgrid-num-failures-to-alert: '1'
-      description: builds and pushes all prow on each commit by running prow/push.sh
-    rerun_auth_config:
-      github_users:
-      - alvaroaleman
-  - name: post-test-infra-push-prow-staging
-    cluster: test-infra-trusted
-    # Runs on more than just the Prow dir to include some additional images that we publish to gcr.io/k8s-prow.
     run_if_changed: '^(\.ko\.yaml|hack/(make-rules|prowimagebuilder)|prow|ghproxy|label_sync/.+\.go|robots/commenter|robots/pr-creator|robots/issue-creator|testgrid/cmd|gcsweb)'
     decorate: true
     labels:
@@ -243,6 +210,10 @@ postsubmits:
         - -C
         - prow
         - push-images
+        env:
+        # TODO(chaodaiG): remove once this becomes the default in `prow/Makefile`
+        - name: REGISTRY
+          value: gcr.io/k8s-prow
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -258,8 +229,13 @@ postsubmits:
           cpu: "15"
     annotations:
       testgrid-dashboards: sig-testing-prow
-      testgrid-tab-name: push-prow-staging
+      testgrid-tab-name: push-prow
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+      testgrid-num-failures-to-alert: '1'
       description: builds and pushes all prow on each commit by running make -C prow push-images
+    rerun_auth_config:
+      github_users:
+      - alvaroaleman
   - name: post-test-infra-push-kettle
     cluster: test-infra-trusted
     annotations:
