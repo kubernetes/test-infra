@@ -222,6 +222,7 @@ func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InR
 		})
 	}
 
+	logger := logrus.WithFields(logrus.Fields{"org": org, "repo": repo, "branch": branch, "orgRepo": orgRepo})
 	// Get presubmits from Config alone.
 	presubmits := cfg.GetPresubmitsStatic(orgRepo)
 	// If InRepoConfigCache is provided, then it means that we also want to fetch
@@ -231,7 +232,7 @@ func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InR
 		var err error
 		presubmitsWithInrepoconfig, err = pc.GetPresubmits(orgRepo, baseSHAGetter, headSHAGetters...)
 		if err != nil {
-			logrus.WithError(err).Debug("Failed to get presubmits")
+			logger.WithError(err).Debug("Failed to get presubmits")
 		} else {
 			// Overwrite presubmits. This is safe because pc.GetPresubmits()
 			// itself calls cfg.GetPresubmitsStatic() and adds to it all the
@@ -247,7 +248,7 @@ func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InR
 		}
 		if job.Name == pe.Name {
 			if presubmitJob != nil {
-				return nil, nil, fmt.Errorf("%s matches multiple prow jobs", pe.Name)
+				return nil, nil, fmt.Errorf("%s matches multiple prow jobs from orgRepo %q", pe.Name, orgRepo)
 			}
 			presubmitJob = &job
 		}
@@ -255,7 +256,7 @@ func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InR
 	// This also captures the case where fetching jobs from inrepoconfig failed.
 	// However doesn't not distinguish between this case and a wrong prow job name.
 	if presubmitJob == nil {
-		return nil, nil, fmt.Errorf("failed to find associated presubmit job %q", pe.Name)
+		return nil, nil, fmt.Errorf("failed to find associated presubmit job %q from orgRepo %q", pe.Name, orgRepo)
 	}
 
 	prowJobSpec := pjutil.PresubmitSpec(*presubmitJob, *refs)
@@ -298,13 +299,14 @@ func (poh *postsubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.In
 		return refs.BaseSHA, nil
 	}
 
+	logger := logrus.WithFields(logrus.Fields{"org": org, "repo": repo, "branch": branch, "orgRepo": orgRepo})
 	postsubmits := cfg.GetPostsubmitsStatic(orgRepo)
 	if pc != nil {
 		var postsubmitsWithInrepoconfig []config.Postsubmit
 		var err error
 		postsubmitsWithInrepoconfig, err = pc.GetPostsubmits(orgRepo, baseSHAGetter)
 		if err != nil {
-			logrus.WithError(err).Debug("Failed to get postsubmits from inrepoconfig")
+			logger.WithError(err).Debug("Failed to get postsubmits from inrepoconfig")
 		} else {
 			postsubmits = postsubmitsWithInrepoconfig
 		}
@@ -317,7 +319,7 @@ func (poh *postsubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.In
 		}
 		if job.Name == pe.Name {
 			if postsubmitJob != nil {
-				return nil, nil, fmt.Errorf("%s matches multiple prow jobs", pe.Name)
+				return nil, nil, fmt.Errorf("%s matches multiple prow jobs from orgRepo %q", pe.Name, orgRepo)
 			}
 			postsubmitJob = &job
 		}
@@ -325,7 +327,7 @@ func (poh *postsubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.In
 	// This also captures the case where fetching jobs from inrepoconfig failed.
 	// However doesn't not distinguish between this case and a wrong prow job name.
 	if postsubmitJob == nil {
-		return nil, nil, fmt.Errorf("failed to find associated postsubmit job %q", pe.Name)
+		return nil, nil, fmt.Errorf("failed to find associated postsubmit job %q from orgRepo %q", pe.Name, orgRepo)
 	}
 
 	prowJobSpec := pjutil.PostsubmitSpec(*postsubmitJob, *refs)
