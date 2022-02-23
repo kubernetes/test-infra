@@ -38,6 +38,8 @@ func NewOptions() *Options {
 // for defining the process being watched and
 // where in GCS an upload will land.
 type Options struct {
+	// ImageRef is the image ref of current running test container
+	ImageRef string `json:"image_ref"`
 	// Timeout determines how long to wait before the
 	// entrypoint sends SIGINT to the process
 	Timeout time.Duration `json:"timeout"`
@@ -64,6 +66,10 @@ type Options struct {
 
 	CopyModeOnly bool   `json:"copy_mode_only,omitempty"`
 	CopyDst      string `json:"copy_dst,omitempty"`
+
+	// UseDefaultEntrypoint indicates whether entrypoint should try to discover
+	// the default entrypoint from the image
+	UseDefaultEntrypoint *bool `json:"use_default_entrypoint"`
 
 	*wrapper.Options
 }
@@ -98,6 +104,7 @@ func (o *Options) LoadConfig(config string) error {
 
 // AddFlags binds flags to options
 func (o *Options) AddFlags(flags *flag.FlagSet) {
+	flags.StringVar(&o.ImageRef, "image-ref", "", "Image ref of current test container.")
 	flags.DurationVar(&o.Timeout, "timeout", DefaultTimeout, "Timeout for the test command.")
 	flags.DurationVar(&o.GracePeriod, "grace-period", DefaultGracePeriod, "Grace period after timeout for the test command.")
 	flags.StringVar(&o.ArtifactDir, "artifact-dir", "", "directory where test artifacts should be placed for upload to persistent storage")

@@ -404,6 +404,9 @@ type DecorationConfig struct {
 	// after sending SIGINT to send SIGKILL when aborting
 	// a job. Only applicable if decorating the PodSpec.
 	GracePeriod *Duration `json:"grace_period,omitempty"`
+	// UseDefaultEntrypoint indicates whether entrypoint should try to discover
+	// the default entrypoint from the image
+	UseDefaultEntrypoint *bool `json:"use_default_entrypoint,omitempty"`
 
 	// UtilityImages holds pull specs for utility container
 	// images used to decorate a PodSpec.
@@ -617,6 +620,9 @@ func (d *DecorationConfig) ApplyDefault(def *DecorationConfig) *DecorationConfig
 	}
 	if merged.GracePeriod == nil {
 		merged.GracePeriod = def.GracePeriod
+	}
+	if merged.UseDefaultEntrypoint == nil {
+		merged.UseDefaultEntrypoint = def.UseDefaultEntrypoint
 	}
 	if merged.GCSCredentialsSecret == nil {
 		merged.GCSCredentialsSecret = def.GCSCredentialsSecret

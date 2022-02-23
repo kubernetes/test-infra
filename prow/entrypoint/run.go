@@ -35,6 +35,7 @@ import (
 	"github.com/google/go-containerregistry/pkg/authn"
 	"github.com/google/go-containerregistry/pkg/authn/github"
 	"github.com/google/go-containerregistry/pkg/v1/google"
+	"github.com/google/go-containerregistry/pkg/v1/remote"
 	"github.com/sirupsen/logrus"
 
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
@@ -79,11 +80,11 @@ var (
 	amazonKeychain authn.Keychain = authn.NewKeychainFromHelper(ecr.NewECRHelper(ecr.WithLogOutput(ioutil.Discard)))
 	azureKeychain  authn.Keychain = authn.NewKeychainFromHelper(credhelper.NewACRCredentialsHelper())
 	keychain                      = authn.NewMultiKeychain(
-		amazonKeychain,
 		authn.DefaultKeychain,
 		google.Keychain,
 		github.Keychain,
 		azureKeychain,
+		amazonKeychain,
 	)
 )
 
@@ -150,11 +151,46 @@ func (o Options) ExecuteProcess() (int, error) {
 	}
 
 	combinedCommandAndArgs := o.CombinedCommandAndArgs()
+	// Set the first arg as entrypoint for now
 	executable := combinedCommandAndArgs[0]
 	var arguments []string
 	if len(combinedCommandAndArgs) > 1 {
 		arguments = combinedCommandAndArgs[1:]
 	}
+	// Discover default entrypoint from the image only when it's not explicitly
+	// defined in the job
+	if o.UseDefaultEntrypoint != nil && *o.UseDefaultEntrypoint && len(o.Command) == 0 && o.ImageRef != "" {
+		// By default the entrypoint is discovered from "linux/amd64", which
+		// could be overriden by remote.WithPlatform, which probably is going to
+		// be quite some hacks to make it right as mentioned at
+		// https://github.com/kubernetes/test-infra/pull/25383#pullrequestreview-891109864,
+		// so for now we only support either "linux/amd64" or other arches that
+		// share the same entrypoint with its "linux/amd64" variant.
+		img, err := remote.Image(o.ImageRef,
+			remote.WithAuthFromKeychain(keychain))
+		if err != nil {
+			return err
+		}
+
+		cfg, err := img.ConfigFile()
+		if err != nil {
+			return err
+		}
+		ep := cfg.Config.Entrypoint
+		switch len(ep) {
+		case 1: // happy case
+			executable = ep[0]
+			arguments = combinedCommandAndArgs
+		case 0: // Fall back to use CMD if Entrypoint is empty
+			if cfg.Config.Cmd != "" {
+				executable = cfg.Config.Cmd
+				arguments = combinedCommandAndArgs
+			}
+		default:
+			logrus.WithField("entrypoints", ep).Error("Unexpected more than 1 entrypoint.")
+		}
+	}
+
 	command := exec.Command(executable, arguments...)
 	command.Stderr = output
 	command.Stdout = output

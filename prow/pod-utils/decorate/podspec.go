@@ -539,7 +539,7 @@ func entrypointLocation(tools coreapi.VolumeMount) string {
 }
 
 // InjectEntrypoint will make the entrypoint binary in the tools volume the container's entrypoint, which will output to the log volume.
-func InjectEntrypoint(c *coreapi.Container, timeout, gracePeriod time.Duration, prefix, previousMarker string, exitZero bool, log, tools coreapi.VolumeMount) (*wrapper.Options, error) {
+func InjectEntrypoint(c *coreapi.Container, timeout, gracePeriod time.Duration, useDefaultEntrypoint *bool, prefix, previousMarker string, exitZero bool, log, tools coreapi.VolumeMount) (*wrapper.Options, error) {
 	wrapperOptions := &wrapper.Options{
 		Command:       c.Command,
 		Args:          c.Args,
@@ -550,12 +550,14 @@ func InjectEntrypoint(c *coreapi.Container, timeout, gracePeriod time.Duration, 
 	}
 	// TODO(fejta): use flags
 	entrypointConfigEnv, err := entrypoint.Encode(entrypoint.Options{
-		ArtifactDir:    artifactsDir(log),
-		GracePeriod:    gracePeriod,
-		Options:        wrapperOptions,
-		Timeout:        timeout,
-		AlwaysZero:     exitZero,
-		PreviousMarker: previousMarker,
+		ImageRef:             c.Image,
+		UseDefaultEntrypoint: useDefaultEntrypoint,
+		ArtifactDir:          artifactsDir(log),
+		GracePeriod:          gracePeriod,
+		Options:              wrapperOptions,
+		Timeout:              timeout,
+		AlwaysZero:           exitZero,
+		PreviousMarker:       previousMarker,
 	})
 	if err != nil {
 		return nil, err
@@ -783,7 +785,7 @@ func decorate(spec *coreapi.PodSpec, pj *prowapi.ProwJob, rawEnv map[string]stri
 		if len(spec.Containers) == 1 {
 			prefix = ""
 		}
-		wrapperOptions, err := InjectEntrypoint(&spec.Containers[i], pj.Spec.DecorationConfig.Timeout.Get(), pj.Spec.DecorationConfig.GracePeriod.Get(), prefix, previous, exitZero, logMount, toolsMount)
+		wrapperOptions, err := InjectEntrypoint(&spec.Containers[i], pj.Spec.DecorationConfig.Timeout.Get(), pj.Spec.DecorationConfig.GracePeriod.Get(), pj.Spec.DecorationConfig.UseDefaultEntrypoint, prefix, previous, exitZero, logMount, toolsMount)
 		if err != nil {
 			return fmt.Errorf("wrap container: %w", err)
 		}
