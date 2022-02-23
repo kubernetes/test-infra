@@ -204,7 +204,7 @@ func gatherArtifacts(artifactDir, blobStoragePath, subDir string, uploadTargets 
 		if relPath, err := filepath.Rel(artifactDir, fspath); err == nil {
 			dir, filename := path.Split(path.Join(blobStoragePath, subDir, relPath))
 			metadataFromFileName, writerOptions := gcs.WriterOptionsFromFileName(filename)
-			destination := path.Join(dir, metadataFromFileName)
+			destination := escapeFileName(path.Join(dir, metadataFromFileName))
 			if _, exists := uploadTargets[destination]; exists {
 				logrus.Warnf("Encountered duplicate upload of %s, skipping...", destination)
 				return nil
@@ -216,4 +216,9 @@ func gatherArtifacts(artifactDir, blobStoragePath, subDir string, uploadTargets 
 		}
 		return nil
 	})
+}
+
+// escapeFileName escapes a file name to meet https://cloud.google.com/storage/docs/naming-objects requirements
+func escapeFileName(filename string) string {
+	return strings.ReplaceAll(filename, "#", "%23")
 }

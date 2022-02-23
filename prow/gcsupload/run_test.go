@@ -123,16 +123,17 @@ func TestOptions_AssembleTargets(t *testing.T) {
 			name:    "literal files should be uploaded under job dir",
 			jobType: prowapi.PresubmitJob,
 			options: Options{
-				Items: []string{"something", "else"},
+				Items: []string{"something", "else", "escape#me"},
 				GCSConfiguration: &prowapi.GCSConfiguration{
 					PathStrategy: prowapi.PathStrategyExplicit,
 					Bucket:       "bucket",
 				},
 			},
-			paths: []string{"something", "else", "notforupload"},
+			paths: []string{"something", "else", "notforupload", "escape#me/", "escape#me/foo"},
 			expected: []string{
 				"pr-logs/pull/org_repo/1/job/build/something",
 				"pr-logs/pull/org_repo/1/job/build/else",
+				"pr-logs/pull/org_repo/1/job/build/escape%23me/foo",
 				"pr-logs/directory/job/build.txt",
 				"pr-logs/directory/job/latest-build.txt",
 				"pr-logs/pull/org_repo/1/job/latest-build.txt",
