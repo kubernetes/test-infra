@@ -21,7 +21,10 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd -P)"
 cd "${REPO_ROOT}"
 source hack/build/setup-go.sh
 
-bazel=$(command -v bazelisk || command -v bazel)
+# build gotestsum
+cd 'hack/tools'
+go build -o "${REPO_ROOT}/_bin/gotestsum" gotest.tools/gotestsum
+cd "${REPO_ROOT}"
 
 function retry() {
   for attempt in $(seq 1 3); do
@@ -35,36 +38,38 @@ function retry() {
 }
 
 function setup() {
-  "${bazel}" run //prow/test/integration:setup-local-registry "$@" || ( echo "FAILED: set up local registry">&2; return 1 )
+  ./prow/test/integration/setup-local-registry.sh
 
-  # testimage-push builds images, could fail due to network flakiness
-  # Default is building images with go instead of bazel, keeping bazel for a
-  # short while until the images built with ko proved to work everywhere
-  if [[ "${PUSH_IMAGE_WITH_BAZEL:-}" == "true" ]]; then
-    (retry "${bazel}" run //prow:testimage-push "$@") || ( echo "FAILED: pushing images">&2; return 1 )
-  else
-    go run ./hack/prowimagebuilder --ko-docker-repo="localhost:5001" --prow-images-file="prow/test/integration/prow/.prow-images.yaml" --push
-  fi
-
-  "${bazel}" run //prow/test/integration:setup-cluster "$@" || ( echo "FAILED: setup cluster">&2; return 1 )
+  go run \
+    ./hack/prowimagebuilder \
+    --ko-docker-repo="localhost:5001" \
+    --prow-images-file="prow/test/integration/prow/.prow-images.yaml" \
+    --push
+  
+  ./prow/test/integration/setup-cluster.sh
 }
 
 function run() {
-  "${bazel}" test //prow/test/integration/test:go_default_test --action_env=KUBECONFIG="${HOME}/.kube/config" --test_arg=--run-integration-test "$@" || \
-    ( echo "FAILED: running tests">&2; return 1 )
+  JUNIT_RESULT_DIR="${REPO_ROOT}/_output"
+  # if we are in CI, copy to the artifact upload location
+  if [[ -n "${ARTIFACTS:-}" ]]; then
+    JUNIT_RESULT_DIR="${ARTIFACTS}"
+  fi
+
+  # run integration tests with junit output
+  (
+    set -x;
+    mkdir -p "${JUNIT_RESULT_DIR}"
+    "${REPO_ROOT}/_bin/gotestsum" --junitfile="${JUNIT_RESULT_DIR}/junit-integration.xml" \
+      -- "./prow/test/integration/test" --run-integration-test
+  )
 }
 
 function teardown() {
-  "${bazel}" run //prow/test/integration:cleanup "$@"
+  ./prow/test/integration/cleanup.sh
 }
 
 function main() {
-  # Remove retries after
-  # https://github.com/bazelbuild/bazel/issues/12599
-  if [ -n "${BAZEL_FETCH_PLEASE:-}" ]; then
-    (retry "${bazel}" fetch //prow/test/integration:cleanup //prow/test/integration:setup-local-registry //prow:testimage-push //prow/test/integration:setup-cluster //prow/test/integration/test:go_default_test) || ( echo "FAILED: bazel fetch">&2; return 1 )
-  fi
-
   if [[ "${SKIP_TEARDOWN:-}" != "true" ]]; then
     trap "teardown '$@'" EXIT
   fi
@@ -76,11 +81,4 @@ function main() {
   exit 0
 }
 
-# If no parameters were given or the first parameter is a flag
-if [ $# -eq 0 ] || [[ "${1:-main}" =~ ^- ]]; then
-  main "$@"
-fi
-
-declare -F "${1}" || (echo "Function \"${1}\" is unavailable. Please use one of" && compgen -A function && exit 1)
-
-"$@"
+main

@@ -18,7 +18,7 @@ set -o nounset
 set -o pipefail
 
 CURRENT_DIR="$(cd "$(dirname "$0")" && pwd)"
-CONFIG_ROOT_DIR="${CURRENT_DIR}"
+CONFIG_ROOT_DIR="${CURRENT_DIR}/prow"
 if [[ -n "${1:-}" && "$1" == "--config-path" ]]; then
   echo "Override CONFIG_ROOT_DIR"
   CONFIG_ROOT_DIR="${2:-}"
