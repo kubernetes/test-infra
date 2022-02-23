@@ -71,7 +71,7 @@ type Options struct {
 // Validate ensures that the set of options are
 // self-consistent and valid
 func (o *Options) Validate() error {
-	if len(o.Args) == 0 {
+	if len(o.CombinedCommandAndArgs()) == 0 {
 		return errors.New("no process to wrap specified")
 	}
 

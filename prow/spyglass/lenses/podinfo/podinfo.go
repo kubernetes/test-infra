@@ -145,7 +145,7 @@ func assembleContainers(containers []v1.Container, containerStatuses []v1.Contai
 					logrus.WithError(err).Infof("Couldn't parse JSON config env var")
 					break
 				}
-				ci.DecoratedArgs = entrypointOptions.Args
+				ci.DecoratedArgs = entrypointOptions.CombinedCommandAndArgs()
 				break
 			}
 		}

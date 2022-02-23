@@ -30,6 +30,11 @@ import (
 	"syscall"
 	"time"
 
+	ecr "github.com/awslabs/amazon-ecr-credential-helper/ecr-login"
+	"github.com/chrismellard/docker-credential-acr-env/pkg/credhelper"
+	"github.com/google/go-containerregistry/pkg/authn"
+	"github.com/google/go-containerregistry/pkg/authn/github"
+	"github.com/google/go-containerregistry/pkg/v1/google"
 	"github.com/sirupsen/logrus"
 
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
@@ -70,6 +75,16 @@ var (
 	// errAborted is used as the command's error when the command
 	// is shut down by an external signal
 	errAborted = errors.New("process aborted")
+
+	amazonKeychain authn.Keychain = authn.NewKeychainFromHelper(ecr.NewECRHelper(ecr.WithLogOutput(ioutil.Discard)))
+	azureKeychain  authn.Keychain = authn.NewKeychainFromHelper(credhelper.NewACRCredentialsHelper())
+	keychain                      = authn.NewMultiKeychain(
+		amazonKeychain,
+		authn.DefaultKeychain,
+		google.Keychain,
+		github.Keychain,
+		azureKeychain,
+	)
 )
 
 // Run executes the test process then writes the exit code to the marker file.
@@ -134,10 +149,11 @@ func (o Options) ExecuteProcess() (int, error) {
 		}
 	}
 
-	executable := o.Args[0]
+	combinedCommandAndArgs := o.CombinedCommandAndArgs()
+	executable := combinedCommandAndArgs[0]
 	var arguments []string
-	if len(o.Args) > 1 {
-		arguments = o.Args[1:]
+	if len(combinedCommandAndArgs) > 1 {
+		arguments = combinedCommandAndArgs[1:]
 	}
 	command := exec.Command(executable, arguments...)
 	command.Stderr = output

@@ -35,7 +35,10 @@ import (
 // Options exposes the configuration options
 // used when wrapping test execution
 type Options struct {
-	// Args is the process and args to run
+	// Command is the command overrides entrypoint
+	Command []string `json:"command,omitempty"`
+
+	// Args is the args to command
 	Args []string `json:"args,omitempty"`
 
 	// ContainerName will contain the name of the container
@@ -85,6 +88,14 @@ func (o *Options) Validate() error {
 	}
 
 	return nil
+}
+
+// CombinedCommandAndArgs returns combined command and args as a slice.
+// Prow used to allow arbitrary number of commands and args by simply
+// merging them into a single slice and considered the first item from
+// combined as the executable. Keeping this pattern for legacy reason.
+func (o *Options) CombinedCommandAndArgs() []string {
+	return append(o.Command, o.Args...)
 }
 
 func WaitForMarkers(ctx context.Context, paths ...string) map[string]MarkerResult {

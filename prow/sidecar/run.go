@@ -41,7 +41,7 @@ import (
 )
 
 func nameEntry(idx int, opt wrapper.Options) string {
-	return fmt.Sprintf("entry %d: %s", idx, strings.Join(opt.Args, " "))
+	return fmt.Sprintf("entry %d: %s", idx, strings.Join(opt.CombinedCommandAndArgs(), " "))
 }
 
 func wait(ctx context.Context, entries []wrapper.Options) (bool, bool, int) {
