@@ -388,9 +388,6 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 5h
-  path_alias: sigs.k8s.io/cloud-provider-azure
-  branches:
-    - master
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -402,6 +399,11 @@ periodics:
       base_ref: release-1.0
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
+    - org: kubernetes-sigs
+      repo: cloud-provider-azure
+      base_ref: master
+      path_alias: sigs.k8s.io/cloud-provider-azure
+      workdir: false
   spec:
     containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220221-c13e827224-1.23
@@ -558,9 +560,6 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 5h
-  path_alias: sigs.k8s.io/cloud-provider-azure
-  branches:
-  - master
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -576,6 +575,11 @@ periodics:
     repo: kubernetes
     base_ref: release-1.23
     path_alias: k8s.io/kubernetes
+    workdir: false
+  - org: kubernetes-sigs
+    repo: cloud-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cloud-provider-azure
     workdir: false
   spec:
     containers:
@@ -671,9 +675,6 @@ periodics:
   decorate: true
   decoration_config:
     timeout: 5h
-  path_alias: sigs.k8s.io/cloud-provider-azure
-  branches:
-  - master
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -689,6 +690,11 @@ periodics:
     repo: kubernetes
     base_ref: release-1.23
     path_alias: k8s.io/kubernetes
+    workdir: false
+  - org: kubernetes-sigs
+    repo: cloud-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cloud-provider-azure
     workdir: false
   spec:
     containers:
