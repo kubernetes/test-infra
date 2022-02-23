@@ -435,7 +435,7 @@ func (p *protector) UpdateBranch(orgName, repo string, branchName string, branch
 	if branch.Unmanaged != nil && *branch.Unmanaged {
 		return nil
 	}
-	bp, err := p.cfg.GetPolicy(orgName, repo, branchName, branch, p.cfg.PresubmitsStatic[orgName+"/"+repo], &protected)
+	bp, err := p.cfg.GetPolicy(orgName, repo, branchName, branch, p.cfg.PresubmitsStatic[orgName+"/"+repo])
 	if err != nil {
 		return fmt.Errorf("get policy: %w", err)
 	}

@@ -344,11 +344,11 @@ func (c *Config) GetBranchProtection(org, repo, branch string, presubmits []Pres
 		return nil, err
 	}
 
-	return c.GetPolicy(org, repo, branch, *b, presubmits, nil)
+	return c.GetPolicy(org, repo, branch, *b, presubmits)
 }
 
 // GetPolicy returns the protection policy for the branch, after merging in presubmits.
-func (c *Config) GetPolicy(org, repo, branch string, b Branch, presubmits []Presubmit, protectedOnGitHub *bool) (*Policy, error) {
+func (c *Config) GetPolicy(org, repo, branch string, b Branch, presubmits []Presubmit) (*Policy, error) {
 	policy := b.Policy
 
 	// Automatically require contexts from prow which must always be present
@@ -356,11 +356,6 @@ func (c *Config) GetPolicy(org, repo, branch string, b Branch, presubmits []Pres
 		// Error if protection is disabled
 		if policy.Protect != nil && !*policy.Protect {
 			if c.BranchProtection.AllowDisabledJobPolicies != nil && *c.BranchProtection.AllowDisabledJobPolicies {
-				if protectedOnGitHub != nil && *protectedOnGitHub {
-					logrus.WithField("branch", fmt.Sprintf("%s/%s/%s", org, repo, branch)).
-						Warn("'protect: false' configuration causes branchprotector to not manage branch protection settings at all. " +
-							"If this a desired behavior, use 'unmanaged: true' instead.")
-				}
 				return nil, nil
 			}
 			return nil, fmt.Errorf("required prow jobs require branch protection")
@@ -453,7 +448,7 @@ func (c *Config) unprotectedBranches(presubmits map[string][]Presubmit) []string
 				if err != nil {
 					continue
 				}
-				policy, err := c.GetPolicy(orgName, repoName, branchName, *b, []Presubmit{}, nil)
+				policy, err := c.GetPolicy(orgName, repoName, branchName, *b, []Presubmit{})
 				if err != nil || policy == nil {
 					continue
 				}
