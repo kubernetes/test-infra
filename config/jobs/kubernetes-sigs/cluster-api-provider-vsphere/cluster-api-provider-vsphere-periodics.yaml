@@ -136,6 +136,7 @@ periodics:
             - -c
             - |
               result=0
+              go mod vendor
               ./hack/ci-test-coverage.sh || result=$?
               cp coverage.* ${ARTIFACTS}
               cd ../../k8s.io/test-infra/gopherage
