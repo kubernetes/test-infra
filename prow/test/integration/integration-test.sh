@@ -37,11 +37,13 @@ function retry() {
 function setup() {
   "${bazel}" run //prow/test/integration:setup-local-registry "$@" || ( echo "FAILED: set up local registry">&2; return 1 )
 
-  if [[ "${PUSH_IMAEG_WITH_KO:-}" == "true" ]]; then
-    go run ./hack/prowimagebuilder --ko-docker-repo="localhost:5001" --prow-images-file="prow/test/integration/prow/.prow-images.yaml" --push
-  else
-    # testimage-push builds images, could fail due to network flakiness
+  # testimage-push builds images, could fail due to network flakiness
+  # Default is building images with go instead of bazel, keeping bazel for a
+  # short while until the images built with ko proved to work everywhere
+  if [[ "${PUSH_IMAGE_WITH_BAZEL:-}" == "true" ]]; then
     (retry "${bazel}" run //prow:testimage-push "$@") || ( echo "FAILED: pushing images">&2; return 1 )
+  else
+    go run ./hack/prowimagebuilder --ko-docker-repo="localhost:5001" --prow-images-file="prow/test/integration/prow/.prow-images.yaml" --push
   fi
 
   "${bazel}" run //prow/test/integration:setup-cluster "$@" || ( echo "FAILED: setup cluster">&2; return 1 )
