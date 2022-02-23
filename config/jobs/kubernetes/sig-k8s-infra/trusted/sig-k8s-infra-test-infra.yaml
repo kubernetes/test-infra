@@ -125,7 +125,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-prow/generic-autobumper:v20220222-8d1661c08e
       command:
-      - /app/prow/cmd/generic-autobumper/app.binary
+      - generic-autobumper
       args:
       - --config=config/prow/autobump-config/prow-job-autobump-config.yaml
       volumeMounts:
@@ -155,7 +155,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-prow/generic-autobumper:v20220222-8d1661c08e
       command:
-      - /app/prow/cmd/generic-autobumper/app.binary
+      - generic-autobumper
       args:
       - --config=config/prow/autobump-config/prow-job-autobump-config.yaml
       - --labels-override=skip-review # This label is used by tide for identifying trusted PR

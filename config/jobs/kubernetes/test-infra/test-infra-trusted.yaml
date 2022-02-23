@@ -154,7 +154,7 @@ postsubmits:
       containers:
       - image: gcr.io/k8s-prow/hmac:v20220222-8d1661c08e
         command:
-        - /hmac
+        - hmac
         args:
         - --config-path=config/prow/config.yaml
         - --hook-url=https://prow.k8s.io/hook
@@ -630,7 +630,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-prow/generic-autobumper:v20220222-8d1661c08e
       command:
-      - /app/prow/cmd/generic-autobumper/app.binary
+      - generic-autobumper
       args:
       - --config=config/prow/autobump-config/prow-component-autobump-config.yaml
       - --labels-override=skip-review # This label is used by tide for identifying trusted PR
@@ -667,7 +667,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-prow/generic-autobumper:v20220222-8d1661c08e
       command:
-      - /app/prow/cmd/generic-autobumper/app.binary
+      - generic-autobumper
       args:
       - --config=config/prow/autobump-config/prow-component-autobump-config.yaml
       volumeMounts:
@@ -738,7 +738,7 @@ periodics:
     - name: branchprotector
       image: gcr.io/k8s-prow/branchprotector:v20220222-8d1661c08e
       command:
-      - /app/prow/cmd/branchprotector/app.binary
+      - branchprotector
       args:
       - --config-path=config/prow/config.yaml
       - --job-config-path=config/jobs
@@ -772,7 +772,7 @@ periodics:
     - name: label-sync
       image: gcr.io/k8s-prow/label_sync:v20220222-8d1661c08e
       command:
-      - /app/label_sync/app.binary
+      - label_sync
       args:
       - --config=/etc/config/labels.yaml
       - --confirm=true
@@ -818,7 +818,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-prow/checkconfig:v20220222-8d1661c08e
       command:
-      - /ko-app/checkconfig
+      - checkconfig
       args:
       - --config-path=config/prow/config.yaml
       - --job-config-path=config/jobs

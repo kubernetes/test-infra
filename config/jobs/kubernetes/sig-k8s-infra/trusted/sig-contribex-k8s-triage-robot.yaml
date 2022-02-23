@@ -12,7 +12,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-prow/commenter:v20220222-8d1661c08e
       command:
-      - /app/robots/commenter/app.binary
+      - commenter
       args:
       # pull requests against master branches in the kubernetes org labeled kind/api-change
       # exclude PRs that are in progress, held, or need rebase (typically aren't ready for API review).
@@ -60,7 +60,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-prow/commenter:v20220222-8d1661c08e
       command:
-      - /app/robots/commenter/app.binary
+      - commenter
       args:
       - |-
         --query=org:kubernetes
@@ -103,7 +103,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-prow/commenter:v20220222-8d1661c08e
       command:
-      - /app/robots/commenter/app.binary
+      - commenter
       args:
       - |-
         --query=org:kubernetes
@@ -157,7 +157,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-prow/commenter:v20220222-8d1661c08e
       command:
-      - /app/robots/commenter/app.binary
+      - commenter
       args:
       - |-
         --query=is:pr
@@ -225,7 +225,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-prow/commenter:v20220222-8d1661c08e
       command:
-      - /app/robots/commenter/app.binary
+      - commenter
       args:
       - |-
         --query=org:kubernetes
@@ -280,7 +280,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-prow/commenter:v20220222-8d1661c08e
       command:
-      - /app/robots/commenter/app.binary
+      - commenter
       args:
       - |-
         --query=org:kubernetes
@@ -336,7 +336,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-prow/commenter:v20220222-8d1661c08e
       command:
-      - /app/robots/commenter/app.binary
+      - commenter
       args:
       - |-
         --query=org:kubernetes
@@ -385,7 +385,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-prow/issue-creator:v20220222-8d1661c08e
       command:
-      - /app/robots/issue-creator/app.binary
+      - issue-creator
       args:
       - --dry-run=false
       - --alsologtostderr
