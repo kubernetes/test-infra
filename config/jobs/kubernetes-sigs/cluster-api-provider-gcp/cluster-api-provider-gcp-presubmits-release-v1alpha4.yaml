@@ -154,3 +154,22 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-conformance-release-v1alpha4
+  - name: pull-cluster-api-provider-gcp-v1alpha4
+    decorate: true
+    path_alias: sigs.k8s.io/cluster-api-provider-gcp
+    always_run: true
+    optional: true
+    labels:
+      preset-service-account: "true"
+    branches:
+    - ^release-0.4$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220221-c13e827224-1.21
+        command:
+          - runner.sh
+        args:
+          - ./scripts/ci-apidiff.sh
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-api-provider-gcp
+      testgrid-tab-name: capg-pr-apidiff-v1apha4
