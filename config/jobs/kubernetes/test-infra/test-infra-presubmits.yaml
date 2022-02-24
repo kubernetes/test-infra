@@ -175,6 +175,11 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
+        resources:
+          requests:
+            # This job is very CPU intensive as building prow images in
+            # parallel
+            cpu: "14"
       tolerations:
       - key: "highcpu"
         operator: "Equal"
@@ -182,11 +187,6 @@ presubmits:
         effect: "NoSchedule"
       nodeSelector:
         highcpu: "true"
-      resources:
-        requests:
-          # This job is very CPU intensive as building prow images in
-          # parallel
-          cpu: "15"
     annotations:
       testgrid-dashboards: presubmits-test-infra
       testgrid-tab-name: prow-image-build-test
