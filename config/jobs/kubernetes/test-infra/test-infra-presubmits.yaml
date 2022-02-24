@@ -71,7 +71,7 @@ presubmits:
   - name: pull-test-infra-integration
     branches:
     - master
-    always_run: true # TODO(fejta): merge into bazel test //...
+    skip_if_only_changed: '^config/jobs/'
     decorate: true
     labels:
       preset-service-account: "true"
@@ -135,7 +135,7 @@ presubmits:
   - name: pull-test-infra-unit-test
     branches:
     - master
-    always_run: true
+    skip_if_only_changed: '^config/jobs/'
     decorate: true
     labels:
       # Python unit tests run in docker.
