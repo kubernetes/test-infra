@@ -105,22 +105,30 @@ func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string,
 		}
 		switch a.JobPath() {
 		case prowv1.StartedStatusFile:
-			if err = json.Unmarshal(read, &started); err != nil {
-				logrus.WithError(err).Error("Error unmarshaling started.json")
-			}
-			metadataViewData.StartTime = time.Unix(started.Timestamp, 0)
-		case prowv1.FinishedStatusFile:
-			if err = json.Unmarshal(read, &finished); err != nil {
-				logrus.WithError(err).Error("Error unmarshaling finished.json")
-			}
-			metadataViewData.Finished = true
-			if finished.Timestamp != nil {
-				metadataViewData.FinishedTime = time.Unix(*finished.Timestamp, 0)
-			}
-			if finished.Passed != nil {
-				metadataViewData.Passed = *finished.Passed
+			if len(read) > 0 {
+				if err = json.Unmarshal(read, &started); err != nil {
+					logrus.WithError(err).Error("Error unmarshaling started.json")
+				}
+				metadataViewData.StartTime = time.Unix(started.Timestamp, 0)
 			} else {
-				metadataViewData.Passed = finished.Result == "SUCCESS"
+				logrus.Debug("Empty finished.json")
+			}
+		case prowv1.FinishedStatusFile:
+			if len(read) > 0 {
+				if err = json.Unmarshal(read, &finished); err != nil {
+					logrus.WithError(err).Error("Error unmarshaling finished.json")
+				}
+				metadataViewData.Finished = true
+				if finished.Timestamp != nil {
+					metadataViewData.FinishedTime = time.Unix(*finished.Timestamp, 0)
+				}
+				if finished.Passed != nil {
+					metadataViewData.Passed = *finished.Passed
+				} else {
+					metadataViewData.Passed = finished.Result == "SUCCESS"
+				}
+			} else {
+				logrus.Debug("Empty finished.json")
 			}
 		case "podinfo.json":
 			metadataViewData.Hint = hintFromPodInfo(read)
