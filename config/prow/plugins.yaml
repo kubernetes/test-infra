@@ -1173,6 +1173,13 @@ plugins:
     plugins:
     - override
 
+  kubernetes-sigs/scheduler-plugins:
+    plugins:
+    - mergecommitblocker
+    - milestone
+    - override
+    - release-note
+
   containerd/cri:
     plugins:
     - assign
