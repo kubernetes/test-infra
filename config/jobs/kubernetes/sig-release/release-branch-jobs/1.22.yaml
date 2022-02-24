@@ -141,7 +141,7 @@ periodics:
       - --
       - --deployment=node
       - --gcp-zone=us-west1-b
-      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/dockershim/image-config.yaml
       - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
       - --node-tests=true
       - --provider=gce
@@ -178,7 +178,7 @@ periodics:
       - --
       - --deployment=node
       - --gcp-zone=us-west1-b
-      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/dockershim/image-config.yaml
       - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
       - --node-tests=true
       - --provider=gce
@@ -1408,7 +1408,7 @@ presubmits:
         - --provider=gce
         - --test_args=--nodes=8 --focus="\[NodeConformance\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
         - --timeout=65m
-        - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/image-config.yaml
+        - --node-args=--image-config-file=/home/prow/go/src/k8s.io/test-infra/jobs/e2e_node/dockershim/image-config.yaml
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
