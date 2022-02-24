@@ -257,6 +257,17 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Set VERSION for embedding versions with go build
+	gitTag, err := gitTag()
+	if err != nil {
+		logrus.WithError(err).Error("Failed get git tag")
+		os.Exit(1)
+	}
+	if err := os.Setenv("VERSION", gitTag); err != nil {
+		logrus.WithError(err).Error("Failed setting VERSION")
+		os.Exit(1)
+	}
+
 	ids, err := loadImageDefs(o.prowImageListFile)
 	if err != nil {
 		logrus.WithError(err).WithField("prow-image-file", o.prowImageListFile).Error("Failed loading")
