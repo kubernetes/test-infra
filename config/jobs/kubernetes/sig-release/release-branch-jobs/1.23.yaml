@@ -1031,6 +1031,8 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
       preset-service-account: "true"
     name: pull-kubernetes-e2e-gce-ubuntu
+    annotations:
+      testgrid-create-test-group: "true"
     spec:
       containers:
       - args:
