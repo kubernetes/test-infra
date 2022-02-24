@@ -204,6 +204,7 @@ periodics:
       - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=$(JOB_NAME)-$(BUILD_ID)
       - --test-cmd-args=--experimental-prometheus-snapshot-to-report-dir=true
       - --test-cmd-args=--nodes=100
+      - --test-cmd-args=--prometheus-scrape-kubelets=true
       - --test-cmd-args=--prometheus-scrape-node-exporter
       - --test-cmd-args=--provider=gce
       - --test-cmd-args=--report-dir=$(ARTIFACTS)
