@@ -21,6 +21,27 @@ presubmits:
          securityContext:
            privileged: true
 
+   - name: pull-ibm-powervs-block-csi-driver-image-build
+     always_run: true
+     decorate: true
+     labels:
+       preset-dind-enabled: "true"
+     path_alias: sigs.k8s.io/ibm-powervs-block-csi-driver
+     annotations:
+       testgrid-dashboards: sig-cloud-provider-ibm-powervs-block-csi-driver
+       testgrid-tab-name: image-build
+       description: Build image test in ibm-powervs-block-csi-driver repo.
+     spec:
+       containers:
+       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220221-c13e827224-master
+         command:
+         - runner.sh
+         args:
+         - make
+         - image
+         securityContext:
+           privileged: true
+
    - name: pull-ibm-powervs-block-csi-driver-unit
      always_run: true
      decorate: true
