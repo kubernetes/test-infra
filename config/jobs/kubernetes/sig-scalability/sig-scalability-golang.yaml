@@ -62,6 +62,7 @@ periodics:
   cluster: k8s-infra-prow-build
   tags:
   - "perfDashPrefix: golang-tip-k8s-1-23"
+  - "perfDashBuildsCount: 500"
   - "perfDashJobType: performance"
   labels:
     preset-service-account: "true"
