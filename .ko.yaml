@@ -45,3 +45,299 @@ baseImageOverrides:
   k8s.io/test-infra/gcsweb/cmd/gcsweb: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
   # prow integration test
   k8s.io/test-infra/prow/test/integration/fakeghserver: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
+
+builds:
+- id: admission
+  dir: .
+  main: prow/cmd/admission
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
+  - -X k8s.io/test-infra/prow/version.Name=admission
+- id: mkpj
+  dir: .
+  main: prow/cmd/mkpj
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
+  - -X k8s.io/test-infra/prow/version.Name=mkpj
+- id: mkpod
+  dir: .
+  main: prow/cmd/mkpod
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
+  - -X k8s.io/test-infra/prow/version.Name=mkpod
+- id: pipeline
+  dir: .
+  main: prow/cmd/pipeline
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
+  - -X k8s.io/test-infra/prow/version.Name=pipeline
+- id: needs-rebase
+  dir: .
+  main: prow/external-plugins/needs-rebase
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
+  - -X k8s.io/test-infra/prow/version.Name=needs-rebase
+- id: issue-creator
+  dir: .
+  main: robots/issue-creator
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
+  - -X k8s.io/test-infra/prow/version.Name=issue-creator
+- id: configurator
+  dir: .
+  main: testgrid/cmd/configurator
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
+  - -X k8s.io/test-infra/prow/version.Name=configurator
+- id: branchprotector
+  dir: .
+  main: prow/cmd/branchprotector
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
+  - -X k8s.io/test-infra/prow/version.Name=branchprotector
+- id: checkconfig
+  dir: .
+  main: prow/cmd/checkconfig
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
+  - -X k8s.io/test-infra/prow/version.Name=checkconfig
+- id: clonerefs
+  dir: .
+  main: prow/cmd/clonerefs
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
+  - -X k8s.io/test-infra/prow/version.Name=clonerefs
+- id: config-bootstrapper
+  dir: .
+  main: prow/cmd/config-bootstrapper
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
+  - -X k8s.io/test-infra/prow/version.Name=config-bootstrapper
+- id: deck
+  dir: .
+  main: prow/cmd/deck
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
+  - -X k8s.io/test-infra/prow/version.Name=deck
+- id: exporter
+  dir: .
+  main: prow/cmd/exporter
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
+  - -X k8s.io/test-infra/prow/version.Name=exporter
+- id: crier
+  dir: .
+  main: prow/cmd/crier
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
+  - -X k8s.io/test-infra/prow/version.Name=crier
+- id: entrypoint
+  dir: .
+  main: prow/cmd/entrypoint
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
+  - -X k8s.io/test-infra/prow/version.Name=entrypoint
+- id: generic-autobumper
+  dir: .
+  main: prow/cmd/generic-autobumper
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
+  - -X k8s.io/test-infra/prow/version.Name=generic-autobumper
+- id: gerrit
+  dir: .
+  main: prow/cmd/gerrit
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
+  - -X k8s.io/test-infra/prow/version.Name=gerrit
+- id: grandmatriarch
+  dir: .
+  main: prow/cmd/grandmatriarch
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
+  - -X k8s.io/test-infra/prow/version.Name=grandmatriarch
+- id: gcsupload
+  dir: .
+  main: prow/cmd/gcsupload
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
+  - -X k8s.io/test-infra/prow/version.Name=gcsupload
+- id: hook
+  dir: .
+  main: prow/cmd/hook
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
+  - -X k8s.io/test-infra/prow/version.Name=hook
+- id: hmac
+  dir: .
+  main: prow/cmd/hmac
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
+  - -X k8s.io/test-infra/prow/version.Name=hmac
+- id: horologium
+  dir: .
+  main: prow/cmd/horologium
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
+  - -X k8s.io/test-infra/prow/version.Name=horologium
+- id: initupload
+  dir: .
+  main: prow/cmd/initupload
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
+  - -X k8s.io/test-infra/prow/version.Name=initupload
+- id: invitations-accepter
+  dir: .
+  main: prow/cmd/invitations-accepter
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
+  - -X k8s.io/test-infra/prow/version.Name=invitations-accepter
+- id: jenkins-operator
+  dir: .
+  main: prow/cmd/jenkins-operator
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
+  - -X k8s.io/test-infra/prow/version.Name=jenkins-operator
+- id: peribolos
+  dir: .
+  main: prow/cmd/peribolos
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
+  - -X k8s.io/test-infra/prow/version.Name=peribolos
+- id: sidecar
+  dir: .
+  main: prow/cmd/sidecar
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
+  - -X k8s.io/test-infra/prow/version.Name=sidecar
+- id: sinker
+  dir: .
+  main: prow/cmd/sinker
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
+  - -X k8s.io/test-infra/prow/version.Name=sinker
+- id: status-reconciler
+  dir: .
+  main: prow/cmd/status-reconciler
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
+  - -X k8s.io/test-infra/prow/version.Name=status-reconciler
+- id: sub
+  dir: .
+  main: prow/cmd/sub
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
+  - -X k8s.io/test-infra/prow/version.Name=sub
+- id: tide
+  dir: .
+  main: prow/cmd/tide
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
+  - -X k8s.io/test-infra/prow/version.Name=tide
+- id: tot
+  dir: .
+  main: prow/cmd/tot
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
+  - -X k8s.io/test-infra/prow/version.Name=tot
+- id: prow-controller-manager
+  dir: .
+  main: prow/cmd/prow-controller-manager
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
+  - -X k8s.io/test-infra/prow/version.Name=prow-controller-manager
+- id: ghproxy
+  dir: .
+  main: ghproxy
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
+  - -X k8s.io/test-infra/prow/version.Name=ghproxy
+# External
+- id: cherrypicker
+  dir: .
+  main: prow/external-plugins/cherrypicker
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
+  - -X k8s.io/test-infra/prow/version.Name=cherrypicker
+- id: refresh
+  dir: .
+  main: prow/external-plugins/refresh
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
+  - -X k8s.io/test-infra/prow/version.Name=refresh
+- id: ghproxy
+  dir: .
+  main: ghproxy
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
+  - -X k8s.io/test-infra/prow/version.Name=ghproxy
+- id: label_sync
+  dir: .
+  main: label_sync
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
+  - -X k8s.io/test-infra/prow/version.Name=label_sync
+- id: commenter
+  dir: .
+  main: robots/commenter
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
+  - -X k8s.io/test-infra/prow/version.Name=commenter
+- id: pr-creator
+  dir: .
+  main: robots/pr-creator
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
+  - -X k8s.io/test-infra/prow/version.Name=pr-creator
+- id: transfigure
+  dir: .
+  main: testgrid/cmd/transfigure
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/prow/version.Version={{.Env.VERSION}}
+  - -X k8s.io/test-infra/prow/version.Name=transfigure
+- id: gcsweb-exp
+  dir: .
+  main: gcsweb/cmd/gcsweb
+  ldflags:
+  - -s -w
+  - -X k8s.io/test-infra/gcsweb/pkg/version.VERSION={{.Env.VERSION}}
