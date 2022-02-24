@@ -6,7 +6,7 @@ go_library(
     importpath = "k8s.io/test-infra/experiment/clustersecretbackup/secretmanager",
     visibility = ["//visibility:public"],
     deps = [
-        "@com_google_cloud_go//secretmanager/apiv1:go_default_library",
+        "@com_google_cloud_go_secretmanager//apiv1:go_default_library",
         "@go_googleapis//google/cloud/secretmanager/v1:secretmanager_go_proto",
         "@io_bazel_rules_go//proto/wkt:field_mask_go_proto",
         "@org_golang_google_api//iterator:go_default_library",
