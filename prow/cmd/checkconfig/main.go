@@ -459,7 +459,8 @@ func strictBranchesConfig(c config.ProwConfig) (*orgRepoConfig, error) {
 				for branchName := range repo.Branches {
 					branch, err := repo.GetBranch(branchName)
 					if err != nil {
-						return nil, err
+						return nil, fmt.Errorf("error for repo=%s/%s and branch=%s: %w",
+							orgName, repoName, branchName, err)
 					}
 					if policyIsStrict(branch.Policy) {
 						strict = true
