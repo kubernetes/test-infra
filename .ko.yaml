@@ -1,11 +1,4 @@
 # Distroless images:
-# - prow/cmd/admission
-# - prow/cmd/mkpj
-# - prow/cmd/mkpod
-# - prow/cmd/pipeline
-# - prow/external-plugins/needs-rebase
-# - robots/issue-creator
-# - testgrid/cmd/configurator
 # defaultBaseImage: gcr.io/distroless/static:nonroot
 baseImageOverrides:
   k8s.io/test-infra/prow/cmd/branchprotector: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
@@ -34,6 +27,13 @@ baseImageOverrides:
   k8s.io/test-infra/prow/cmd/tide: gcr.io/k8s-prow/git:v20220215-ddc3ad9
   k8s.io/test-infra/prow/cmd/tot: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
   k8s.io/test-infra/prow/cmd/prow-controller-manager: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
+  k8s.io/test-infra/prow/cmd/admission: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
+  k8s.io/test-infra/prow/cmd/mkpj: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
+  k8s.io/test-infra/prow/cmd/mkpod: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
+  k8s.io/test-infra/prow/cmd/pipeline: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
+  k8s.io/test-infra/prow/external-plugins/needs-rebase: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
+  k8s.io/test-infra/robots/issue-creator: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
+  k8s.io/test-infra/testgrid/cmd/configurator: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
   # external
   k8s.io/test-infra/prow/external-plugins/cherrypicker: gcr.io/k8s-prow/git:v20220215-ddc3ad9
   k8s.io/test-infra/prow/external-plugins/refresh: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
