@@ -73,7 +73,7 @@ func TestRunCmdInDir(t *testing.T) {
 	for _, tc := range tests {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			got, gotErr := runCmdInDir(tc.dir, tc.cmd, tc.args...)
+			got, gotErr := runCmdInDir(tc.dir, nil, tc.cmd, tc.args...)
 			if (gotErr != nil && !tc.wantErr) || (gotErr == nil && tc.wantErr) {
 				t.Fatalf("Error mismatch. Want: %v, got: %v", tc.wantErr, gotErr)
 			}
@@ -85,7 +85,7 @@ func TestRunCmdInDir(t *testing.T) {
 }
 
 func TestRunCmd(t *testing.T) {
-	gotOut, gotErr := runCmd("echo", "abc")
+	gotOut, gotErr := runCmd(nil, "echo", "abc")
 	if gotErr != nil {
 		t.Fatalf("Should not error, got: %v", gotErr)
 	}
@@ -122,7 +122,7 @@ func TestLoadImageDefs(t *testing.T) {
 func TestAllTags(t *testing.T) {
 	date, gitHash := "20220222", "a1b2c3d4"
 	oldRunCmdInDirFunc := runCmdInDirFunc
-	runCmdInDirFunc = func(dir, cmd string, args ...string) (string, error) {
+	runCmdInDirFunc = func(dir string, additionalEnv []string, cmd string, args ...string) (string, error) {
 		switch cmd {
 		case "date":
 			return date, nil
@@ -241,7 +241,7 @@ func TestGitTag(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			oldRunCmdInDirFunc := runCmdInDirFunc
-			runCmdInDirFunc = func(dir, cmd string, args ...string) (string, error) {
+			runCmdInDirFunc = func(dir string, additionalEnv []string, cmd string, args ...string) (string, error) {
 				switch cmd {
 				case "date":
 					return tc.date, tc.cmdErr
@@ -366,7 +366,7 @@ func TestBuildAndPush(t *testing.T) {
 			var gotPublishArgs []string
 
 			oldRunCmdInDirFunc := runCmdInDirFunc
-			runCmdInDirFunc = func(dir, cmd string, args ...string) (string, error) {
+			runCmdInDirFunc = func(dir string, additionalEnv []string, cmd string, args ...string) (string, error) {
 				switch cmd {
 				case "date":
 					return date, nil
@@ -383,7 +383,7 @@ func TestBuildAndPush(t *testing.T) {
 				runCmdInDirFunc = oldRunCmdInDirFunc
 			}()
 
-			err := buildAndPush(&tc.id, tc.koDockerRepo, tc.push)
+			err := buildAndPush(&tc.id, []string{tc.koDockerRepo}, tc.push)
 			if !tc.wantErr && err != nil {
 				t.Fatalf("Expect error but got nil")
 			}
