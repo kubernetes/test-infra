@@ -17,7 +17,7 @@ presubmits:
          - runner.sh
          args:
          - make
-         - bin/ibm-powervs-block-csi-driver
+         - driver
          securityContext:
            privileged: true
 
