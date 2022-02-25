@@ -186,7 +186,6 @@ func (r *reconciler) syncMetrics(ctx context.Context) error {
 				continue
 			}
 			kube.GatherProwJobMetrics(r.log, pjs.Items)
-			version.GatherProwVersion(r.log)
 		}
 	}
 }
