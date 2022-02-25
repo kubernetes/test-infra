@@ -197,7 +197,9 @@ used when updating deployments.
    placed under `/ko-app/`, for example [/robots/commenter](/robots/commenter)
    is pushed to gcr.io/k8s-prow/commenter, the commenter binary is located at
    `/ko-app/commenter` in the image, prow jobs that use this image will update
-   to `command: - /ko-app/commenter` to make it work.
+   to `command: - /ko-app/commenter` to make it work, alternatively, the command
+   could also be `command: - commenter` as `/ko-app` is added to `$PATH` env var
+   in the image.
  - *February 22nd, 2022* Since prow version `v20220222-acb5731b85`, static files
    in `deck` image will be stored under `/var/run/ko/` directory.
  - *October 27th, 2021* The checkconfig flag `--prow-yaml-repo-path` no longer defaults to `/home/prow/go/src/github.com/<< prow-yaml-repo-name >>/.prow.yaml` when `--prow-yaml-repo-name` is set. The defaulting has instead been replaced with the assumption that the Prow YAML file/directory can be found in the current working directory if `--prow-yaml-repo-path` is not specified. If you are running checkconfig from a decorated ProwJobs as is typical, then this is already the case.
