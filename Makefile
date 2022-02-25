@@ -50,6 +50,12 @@ clean:
 # gofmt
 #gofmt:
 #	hack/make-rules/update/gofmt.sh
+.PHONY: update-go-deps
+update-go-deps:
+	hack/make-rules/update/go-deps.sh
+.PHONY: verify-go-deps
+verify-go-deps:
+	hack/make-rules/verify/go-deps.sh
 ################################################################################
 # ================================== Linting ===================================
 # run linters, ensure generated code, etc.
