@@ -234,6 +234,47 @@ presubmits:
     extra_refs:
     - org: kubernetes
       repo: kubernetes
+      base_ref: release-1.23
+      path_alias: k8s.io/kubernetes
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+    name: pull-kind-e2e-kubernetes-1-23
+    path_alias: sigs.k8s.io/kind
+    spec:
+      containers:
+      - command:
+        - wrapper.sh
+        - bash
+        - -c
+        - cd ./../../k8s.io/kubernetes && ./../../sigs.k8s.io/kind/hack/ci/e2e.sh
+        env:
+        - name: FOCUS
+          value: .
+        - name: SKIP
+          value: \[Slow\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|PodSecurityPolicy|LoadBalancer|load.balancer|Simple.pod.should.support.exec.through.an.HTTP.proxy|subPath.should.support.existing|NFS|nfs|inline.execution.and.attach|should.be.rejected.when.no.endpoints.exist
+        - name: PARALLEL
+          value: "true"
+        image: gcr.io/k8s-staging-test-infra/krte:v20220221-c13e827224-1.23
+        name: ""
+        resources:
+          limits:
+            cpu: "4"
+            memory: 9000Mi
+          requests:
+            cpu: "4"
+            memory: 9000Mi
+        securityContext:
+          privileged: true
+  # mimic pull-kubernetes-e2e-kind, but using kind built in this PR
+  - always_run: true
+    decorate: true
+    decoration_config:
+      grace_period: 15m0s
+      timeout: 1h0m0s
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
       base_ref: release-1.22
       path_alias: k8s.io/kubernetes
     labels:
