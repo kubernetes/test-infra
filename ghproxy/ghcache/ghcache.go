@@ -85,6 +85,36 @@ const (
 	apiV4 = "v4"
 )
 
+// RequestThrottlingTimes keeps the information about throttling times per API and request methods
+type RequestThrottlingTimes struct {
+	// ThrottlingTime is applied for all non-GET request methods for apiV3 and apiV4
+	throttlingTime uint
+	// ThrottlingTimeV4 if different then 0, it's applied for non-GET request methods for apiV4, instead of ThrottlingTime
+	throttlingTimeV4 uint
+	// ThrottlingTimeForGET is applied for all GET request methods for apiV3 and apiV4
+	throttlingTimeForGET uint
+}
+
+func (rtt *RequestThrottlingTimes) isEnabled() bool {
+	return rtt.throttlingTime > 0 && rtt.throttlingTimeForGET > 0
+}
+
+func (rtt *RequestThrottlingTimes) getThrottlingTimeV4() uint {
+	if rtt.throttlingTimeV4 > 0 {
+		return rtt.throttlingTimeV4
+	}
+	return rtt.throttlingTime
+}
+
+// NewRequestThrottlingTimes creates a new RequestThrottlingTimes and returns it
+func NewRequestThrottlingTimes(requestThrottlingTime, requestThrottlingTimeV4, requestThrottlingTimeForGET uint) RequestThrottlingTimes {
+	return RequestThrottlingTimes{
+		throttlingTime:       requestThrottlingTime,
+		throttlingTimeV4:     requestThrottlingTimeV4,
+		throttlingTimeForGET: requestThrottlingTimeForGET,
+	}
+}
+
 func CacheModeIsFree(mode CacheResponseMode) bool {
 	switch mode {
 	case ModeCoalesced:
@@ -142,15 +172,14 @@ func cacheResponseMode(headers http.Header) CacheResponseMode {
 	return ModeMiss
 }
 
-func newThrottlingTransport(maxConcurrency int, requestThrottlingTime, requestThrottlingTimeForGET uint, roundTripper http.RoundTripper, hasher ghmetrics.Hasher) http.RoundTripper {
+func newThrottlingTransport(maxConcurrency int, roundTripper http.RoundTripper, hasher ghmetrics.Hasher, throttlingTimes RequestThrottlingTimes) http.RoundTripper {
 	return &throttlingTransport{
-		sem:                         semaphore.NewWeighted(int64(maxConcurrency)),
-		roundTripper:                roundTripper,
-		requestThrottlingTime:       requestThrottlingTime,
-		requestThrottlingTimeForGET: requestThrottlingTimeForGET,
-		hasher:                      hasher,
-		registryApiV3:               newTokensRegistry(requestThrottlingTime, requestThrottlingTimeForGET),
-		registryApiV4:               newTokensRegistry(requestThrottlingTime, requestThrottlingTimeForGET),
+		sem:                   semaphore.NewWeighted(int64(maxConcurrency)),
+		roundTripper:          roundTripper,
+		timeThrottlingEnabled: throttlingTimes.isEnabled(),
+		hasher:                hasher,
+		registryApiV3:         newTokensRegistry(throttlingTimes.throttlingTime, throttlingTimes.throttlingTimeForGET),
+		registryApiV4:         newTokensRegistry(throttlingTimes.getThrottlingTimeV4(), throttlingTimes.throttlingTimeForGET),
 	}
 }
 
@@ -223,22 +252,23 @@ func (tr *tokensRegistry) calculateRequestWaitDuration(lastRequest tokenInfo, to
 
 // throttlingTransport throttles outbound concurrency from the proxy and adds QPS limit (1 request per given time) if enabled
 type throttlingTransport struct {
-	sem                         *semaphore.Weighted
-	roundTripper                http.RoundTripper
-	hasher                      ghmetrics.Hasher
-	requestThrottlingTime       uint
-	requestThrottlingTimeForGET uint
-	registryApiV3               tokensRegistry
-	registryApiV4               tokensRegistry
+	sem                   *semaphore.Weighted
+	roundTripper          http.RoundTripper
+	hasher                ghmetrics.Hasher
+	timeThrottlingEnabled bool
+	registryApiV3         tokensRegistry
+	registryApiV4         tokensRegistry
+}
+
+func (c *throttlingTransport) getTokenBudgetName(req *http.Request) string {
+	if val := req.Header.Get(TokenBudgetIdentifierHeader); val != "" {
+		return val
+	}
+	return c.hasher.Hash(req)
 }
 
 func (c *throttlingTransport) holdRequest(req *http.Request) {
-	var tokenBudgetName string
-	if val := req.Header.Get(TokenBudgetIdentifierHeader); val != "" {
-		tokenBudgetName = val
-	} else {
-		tokenBudgetName = c.hasher.Hash(req)
-	}
+	tokenBudgetName := c.getTokenBudgetName(req)
 	getReq := req.Method == http.MethodGet
 	var duration time.Duration
 	if strings.HasPrefix(req.URL.Path, "graphql") || strings.HasPrefix(req.URL.Path, "/graphql") {
@@ -255,7 +285,7 @@ func (c *throttlingTransport) holdRequest(req *http.Request) {
 
 func (c *throttlingTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	pendingOutboundConnectionsGauge.Inc()
-	if c.requestThrottlingTime > 0 && c.requestThrottlingTimeForGET > 0 {
+	if c.timeThrottlingEnabled {
 		c.holdRequest(req)
 	}
 
@@ -336,7 +366,7 @@ const LogMessageWithDiskPartitionFields = "Not using a partitioned cache because
 // NewDiskCache creates a GitHub cache RoundTripper that is backed by a disk
 // cache.
 // It supports a partitioned cache.
-func NewDiskCache(roundTripper http.RoundTripper, cacheDir string, cacheSizeGB, maxConcurrency int, legacyDisablePartitioningByAuthHeader bool, cachePruneInterval time.Duration, requestThrottlingTime, requestThrottlingTimeForGET uint) http.RoundTripper {
+func NewDiskCache(roundTripper http.RoundTripper, cacheDir string, cacheSizeGB, maxConcurrency int, legacyDisablePartitioningByAuthHeader bool, cachePruneInterval time.Duration, throttlingTimes RequestThrottlingTimes) http.RoundTripper {
 	if legacyDisablePartitioningByAuthHeader {
 		diskCache := diskcache.NewWithDiskv(
 			diskv.New(diskv.Options{
@@ -352,8 +382,7 @@ func NewDiskCache(roundTripper http.RoundTripper, cacheDir string, cacheSizeGB, 
 				return diskCache
 			},
 			maxConcurrency,
-			requestThrottlingTime,
-			requestThrottlingTimeForGET,
+			throttlingTimes,
 		)
 	}
 
@@ -377,8 +406,7 @@ func NewDiskCache(roundTripper http.RoundTripper, cacheDir string, cacheSizeGB, 
 				}))
 		},
 		maxConcurrency,
-		requestThrottlingTime,
-		requestThrottlingTimeForGET,
+		throttlingTimes,
 	)
 }
 
@@ -454,12 +482,11 @@ type cachePartitionMetadata struct {
 // NewMemCache creates a GitHub cache RoundTripper that is backed by a memory
 // cache.
 // It supports a partitioned cache.
-func NewMemCache(roundTripper http.RoundTripper, maxConcurrency int, requestThrottlingTime, requestThrottlingTimeForGET uint) http.RoundTripper {
+func NewMemCache(roundTripper http.RoundTripper, maxConcurrency int, throttlingTimes RequestThrottlingTimes) http.RoundTripper {
 	return NewFromCache(roundTripper,
 		func(_ string, _ *time.Time) httpcache.Cache { return httpcache.NewMemoryCache() },
 		maxConcurrency,
-		requestThrottlingTime,
-		requestThrottlingTimeForGET)
+		throttlingTimes)
 }
 
 // CachePartitionCreator creates a new cache partition using the given key
@@ -467,11 +494,11 @@ type CachePartitionCreator func(partitionKey string, expiresAt *time.Time) httpc
 
 // NewFromCache creates a GitHub cache RoundTripper that is backed by the
 // specified httpcache.Cache implementation.
-func NewFromCache(roundTripper http.RoundTripper, cache CachePartitionCreator, maxConcurrency int, requestThrottlingTime, requestThrottlingTimeForGET uint) http.RoundTripper {
+func NewFromCache(roundTripper http.RoundTripper, cache CachePartitionCreator, maxConcurrency int, throttlingTimes RequestThrottlingTimes) http.RoundTripper {
 	hasher := ghmetrics.NewCachingHasher()
 	return newPartitioningRoundTripper(func(partitionKey string, expiresAt *time.Time) http.RoundTripper {
 		cacheTransport := httpcache.NewTransport(cache(partitionKey, expiresAt))
-		cacheTransport.Transport = newThrottlingTransport(maxConcurrency, requestThrottlingTime, requestThrottlingTimeForGET, upstreamTransport{roundTripper: roundTripper, hasher: hasher}, hasher)
+		cacheTransport.Transport = newThrottlingTransport(maxConcurrency, upstreamTransport{roundTripper: roundTripper, hasher: hasher}, hasher, throttlingTimes)
 		return &requestCoalescer{
 			cache:           make(map[string]*firstRequest),
 			requestExecutor: cacheTransport,
@@ -485,7 +512,7 @@ func NewFromCache(roundTripper http.RoundTripper, cache CachePartitionCreator, m
 // Important note: The redis implementation does not support partitioning the cache
 // which means that requests to the same path from different tokens will invalidate
 // each other.
-func NewRedisCache(roundTripper http.RoundTripper, redisAddress string, maxConcurrency int, requestThrottlingTime, requestThrottlingTimeForGET uint) http.RoundTripper {
+func NewRedisCache(roundTripper http.RoundTripper, redisAddress string, maxConcurrency int, throttlingTimes RequestThrottlingTimes) http.RoundTripper {
 	conn, err := redis.Dial("tcp", redisAddress)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error connecting to Redis")
@@ -494,6 +521,5 @@ func NewRedisCache(roundTripper http.RoundTripper, redisAddress string, maxConcu
 	return NewFromCache(roundTripper,
 		func(_ string, _ *time.Time) httpcache.Cache { return redisCache },
 		maxConcurrency,
-		requestThrottlingTime,
-		requestThrottlingTimeForGET)
+		throttlingTimes)
 }
