@@ -18,6 +18,7 @@ package sidecar
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -27,9 +28,9 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-
 	"k8s.io/test-infra/prow/gcsupload"
 	"k8s.io/test-infra/prow/pod-utils/wrapper"
+
 	"k8s.io/test-infra/prow/secretutil"
 	"k8s.io/test-infra/prow/testutil"
 )
@@ -143,36 +144,95 @@ func copyTestData(t *testing.T) string {
 	return tempDir
 }
 
+const (
+	artifactPath = "artifacts"
+	logPath      = "logs"
+)
+
+func optionsForTestData(location string) Options {
+	return Options{
+		GcsOptions: &gcsupload.Options{
+			Items: []string{filepath.Join(location, artifactPath)},
+		},
+		Entries: []wrapper.Options{
+			{ProcessLog: filepath.Join(location, logPath, "one.log")},
+			{ProcessLog: filepath.Join(location, logPath, "two.log")},
+			{ProcessLog: filepath.Join(location, logPath, "three.log")},
+		},
+		CensoringOptions: &CensoringOptions{
+			SecretDirectories:  []string{"testdata/secrets"},
+			ExcludeDirectories: []string{"**/exclude"},
+			IniFilenames:       []string{".awscred"},
+		},
+	}
+
+}
+
+// TestCensorRobustnessForCorruptArchive tests that all possible artifacts are censored even in
+// the presence of a corrupt archive (test that the censoring does not bail out too soon)
+func TestCensorRobustnessForCorruptArchive(t *testing.T) {
+	// copy input to a temp dir so we don't touch the golden input files
+	tempDir := copyTestData(t)
+	// also, tar the input - it's not trivial to diff two tarballs while only caring about
+	// file content, not metadata, so this test will tar up the archive from the input and
+	// untar it after the fact for simple diffs and updates
+	archiveDir := filepath.Join(tempDir, artifactPath, "archive")
+
+	// create a corrupt archive as well to test for resiliency
+	corruptArchiveFile := filepath.Join(tempDir, artifactPath, "corrupt.tar.gz")
+	if err := archive(archiveDir, corruptArchiveFile); err != nil {
+		t.Fatalf("failed to archive input: %v", err)
+	}
+	file, err := os.OpenFile(corruptArchiveFile, os.O_RDWR, 0666)
+	if err != nil {
+		t.Fatalf("failed to open archived input: %v", err)
+	}
+	raw, err := ioutil.ReadAll(file)
+	if err != nil {
+		t.Fatalf("failed to read archived input: %v", err)
+	}
+	// the third byte in a gzip archive is a flag; some values are
+	// reserved - if we set this to be some corrupt value, we expect
+	// that the archive will be detected as gzip but that reading this
+	// archive to be impossible.
+	// ref: https://datatracker.ietf.org/doc/html/rfc1952#page-5
+	raw[3] = 0x6
+	if n, err := file.WriteAt(raw, 0); err != nil || n != len(raw) {
+		t.Fatalf("failed to write corrupted archive: wrote %d (of %d) bytes, err: %v", n, len(raw), err)
+	}
+	options := optionsForTestData(tempDir)
+
+	// We expect the error to happen
+	expectedError := fmt.Sprintf("could not walk items to censor them: could not censor archive %s: could not unpack archive: could not read archive: unexpected EOF", corruptArchiveFile)
+	if diff := cmp.Diff(expectedError, options.censor().Error()); diff != "" {
+		t.Errorf("censor() did not end with expected error:\n%s", diff)
+	}
+
+	if err := os.Remove(corruptArchiveFile); err != nil {
+		t.Fatalf("failed to remove archive: %v", err)
+	}
+
+	testutil.CompareWithFixtureDir(t, "testdata/output", tempDir)
+}
+
 func TestCensorIntegration(t *testing.T) {
 	// copy input to a temp dir so we don't touch the golden input files
 	tempDir := copyTestData(t)
 	// also, tar the input - it's not trivial to diff two tarballs while only caring about
 	// file content, not metadata, so this test will tar up the archive from the input and
 	// untar it after the fact for simple diffs and updates
-	archiveDir := filepath.Join(tempDir, "artifacts/archive")
-	archiveFile := filepath.Join(tempDir, "artifacts/archive.tar.gz")
+	archiveDir := filepath.Join(tempDir, artifactPath, "archive")
+	archiveFile := filepath.Join(tempDir, artifactPath, "archive.tar.gz")
 	if err := archive(archiveDir, archiveFile); err != nil {
 		t.Fatalf("failed to archive input: %v", err)
 	}
 
 	bufferSize := 1
-	options := Options{
-		GcsOptions: &gcsupload.Options{
-			Items: []string{filepath.Join(tempDir, "artifacts")},
-		},
-		Entries: []wrapper.Options{
-			{ProcessLog: filepath.Join(tempDir, "logs/one.log")},
-			{ProcessLog: filepath.Join(tempDir, "logs/two.log")},
-			{ProcessLog: filepath.Join(tempDir, "logs/three.log")},
-		},
-		CensoringOptions: &CensoringOptions{
-			SecretDirectories: []string{"testdata/secrets"},
-			// this will be smaller than the size of a secret, so this tests our buffer calculation
-			CensoringBufferSize: &bufferSize,
-			ExcludeDirectories:  []string{"**/exclude"},
-			IniFilenames:        []string{".awscred"},
-		},
-	}
+	options := optionsForTestData(tempDir)
+
+	// this will be smaller than the size of a secret, so this tests our buffer calculation
+	options.CensoringOptions.CensoringBufferSize = &bufferSize
+
 	if err := options.censor(); err != nil {
 		t.Fatalf("got an error from censoring: %v", err)
 	}
@@ -181,7 +241,7 @@ func TestCensorIntegration(t *testing.T) {
 		t.Fatalf("failed to unarchive input: %v", err)
 	}
 	if err := os.Remove(archiveFile); err != nil {
-		t.Fatalf("failed to removce archive: %v", err)
+		t.Fatalf("failed to remove archive: %v", err)
 	}
 
 	testutil.CompareWithFixtureDir(t, "testdata/output", tempDir)
