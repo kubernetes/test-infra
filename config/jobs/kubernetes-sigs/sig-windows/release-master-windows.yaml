@@ -217,6 +217,8 @@ periodics:
             value: "latest"
           - name: WINDOWS_FLAVOR
             value: "containerd"
+          - name: AZURE_NODE_MACHINE_TYPE
+            value: "Standard_D4s_v3"
         securityContext:
           privileged: true
         resources:
@@ -303,6 +305,8 @@ periodics:
             value: "latest"
           - name: WINDOWS_FLAVOR
             value: "containerd-2022"
+          - name: AZURE_NODE_MACHINE_TYPE
+            value: "Standard_D4s_v3"
         securityContext:
           privileged: true
         resources:
@@ -679,6 +683,8 @@ periodics:
             value: "containerd"
           - name: WINDOWS_CONTAINERD_URL
             value: "https://github.com/kubernetes-sigs/sig-windows-tools/releases/download/windows-containerd-nightly/windows-containerd.tar.gz"
+          - name: AZURE_NODE_MACHINE_TYPE
+            value: "Standard_D4s_v3"
         securityContext:
           privileged: true
         resources:
