@@ -11,6 +11,9 @@ presubmits:
     spec:
       containers:
       - image: golang:1.17
+        env:
+        - name: GO_TEST_FLAGS
+          value: "-race -count 3"
         command:
         - make
         args:
