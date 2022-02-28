@@ -318,8 +318,8 @@ func (r Repo) GetBranch(name string) (*Branch, error) {
 	b, ok := r.Branches[name]
 	if ok {
 		b.Policy = r.Apply(b.Policy)
-		if b.Protect == nil {
-			return nil, errors.New("defined branch policies must set protect")
+		if b.Protect == nil && (b.Unmanaged == nil || !*b.Unmanaged) {
+			return nil, errors.New("defined branch policies must set protect or unmanaged=true")
 		}
 	} else {
 		b.Policy = r.Policy
