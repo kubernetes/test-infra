@@ -42,6 +42,8 @@ import (
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
 	"k8s.io/test-infra/prow/plank"
+
+	_ "k8s.io/test-infra/prow/version"
 )
 
 var allControllers = sets.NewString(plank.ControllerName)

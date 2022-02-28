@@ -48,6 +48,8 @@ import (
 	"k8s.io/test-infra/prow/plugins/ownersconfig"
 	"k8s.io/test-infra/prow/repoowners"
 	"k8s.io/test-infra/prow/slack"
+
+	_ "k8s.io/test-infra/prow/version"
 )
 
 const (
