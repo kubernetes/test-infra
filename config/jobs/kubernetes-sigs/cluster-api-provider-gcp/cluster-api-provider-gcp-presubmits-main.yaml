@@ -281,3 +281,22 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
       testgrid-tab-name: pr-e2e-upgrade
+  - name: pull-cluster-api-provider-gcp-apidiff
+    decorate: true
+    path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
+    always_run: true
+    optional: true
+    labels:
+      preset-service-account: "true"
+    branches:
+    - ^main$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220221-c13e827224-1.23
+        command:
+          - runner.sh
+        args:
+          - ./scripts/ci-apidiff.sh
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-gcp
+      testgrid-tab-name: pr-apidiff-main
