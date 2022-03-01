@@ -689,6 +689,8 @@ presubmits:
               value: "containerd-2022"
             - name: AZURE_NODE_MACHINE_TYPE
               value: "Standard_D4s_v3"
+            - name: DISABLE_ZONE
+              value: "true"
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
       testgrid-tab-name: pull-kubernetes-e2e-capz-azure-disk-windows
