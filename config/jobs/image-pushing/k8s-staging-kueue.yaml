@@ -1,0 +1,20 @@
+postsubmits:
+  kubernetes-sigs/kueue:
+    - name: post-kueue-push-images
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-scheduling
+      decorate: true
+      branches:
+        - ^master$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20211014-7ca1952a94
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-kueue
+              - --scratch-bucket=gs://k8s-staging-kueue-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - .
