@@ -116,9 +116,11 @@ func FilterPresubmits(filter Filter, changes config.ChangedFilesProvider, branch
 
 	var toTrigger []config.Presubmit
 	var namesToTrigger []string
+	var noMatch, shouldnotRun int
 	for _, presubmit := range presubmits {
 		matches, forced, defaults := filter(presubmit)
 		if !matches {
+			noMatch++
 			continue
 		}
 		shouldRun, err := presubmit.ShouldRun(branch, changes, forced, defaults)
@@ -126,13 +128,19 @@ func FilterPresubmits(filter Filter, changes config.ChangedFilesProvider, branch
 			return nil, fmt.Errorf("%s: should run: %w", presubmit.Name, err)
 		}
 		if !shouldRun {
+			shouldnotRun++
 			continue
 		}
 		toTrigger = append(toTrigger, presubmit)
 		namesToTrigger = append(namesToTrigger, presubmit.Name)
 	}
 
-	logger.WithFields(logrus.Fields{"to-trigger": namesToTrigger}).Debugf("Filtered %d jobs, found %d to trigger", len(presubmits), len(toTrigger))
+	logger.WithFields(logrus.Fields{
+		"to-trigger":           namesToTrigger,
+		"total-count":          len(presubmits),
+		"to-trigger-count":     len(toTrigger),
+		"no-match-count":       noMatch,
+		"should-not-run-count": shouldnotRun}).Debug("Filtered complete.")
 	return toTrigger, nil
 }
 

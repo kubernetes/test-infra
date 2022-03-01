@@ -416,6 +416,7 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 		failedJobs := failedJobs(account.AccountID, revision.Number, change.Messages...)
 		failed, all := presubmitContexts(failedJobs, presubmits, logger)
 		messages := currentMessages(change, lastUpdate)
+		logger.WithField("failed", len(failed)).Debug("Failed jobs parsed from previous comments.")
 		filters := []pjutil.Filter{
 			messageFilter(messages, failed, all, logger),
 		}
