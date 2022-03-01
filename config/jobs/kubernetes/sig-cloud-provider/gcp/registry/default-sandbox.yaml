@@ -1,0 +1,6 @@
+promoterE2eRegistry: registry-sandbox.k8s.io/e2e-test-images
+buildImageRegistry: registry-sandbox.k8s.io/build-image
+gcEtcdRegistry: registry-sandbox.k8s.io
+gcRegistry: registry-sandbox.k8s.io
+sigStorageRegistry: registry-sandbox.k8s.io/sig-storage
+cloudProviderGcpRegistry: registry-sandbox.k8s.io/cloud-provider-gcp
