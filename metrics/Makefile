@@ -17,8 +17,12 @@ include ../Makefile.base.mk
 REPO_ROOT:=${CURDIR}/..
 
 ensure-jq:
-# ./get_jq.sh script returns the path of jq
-	$(eval JQ_BIN=$(shell ./get_jq.sh))
+# ./get_jq.sh script returns the path of jq. The script downloads two versoins
+# of jq, one is `jq-linux64` that's required to run in the container, the other
+# one is `jq-<ARCH>` based on host OS, whis is copied over to `jq`. This target
+# is only used for running in container, so make sure using the one that works
+# in container.
+	$(eval JQ_BIN=$(shell ./get_jq.sh)-linux64)
 
 run: ensure-jq ensure-py-requirements3
 	../hack/run-in-python-container.sh ./metrics/bigquery.py --jq=${JQ_BIN}
