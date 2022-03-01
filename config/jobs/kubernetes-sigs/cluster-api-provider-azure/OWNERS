@@ -10,11 +10,13 @@ approvers:
 - karataliu
 - khenidak
 - nader-ziada
+- shysank
 reviewers:
 - cpanato
+- jackfrancis
+- jsturtevant
 - juan-lee
 - mboersma
-- shysank
 
 labels:
 - sig/cluster-lifecycle
