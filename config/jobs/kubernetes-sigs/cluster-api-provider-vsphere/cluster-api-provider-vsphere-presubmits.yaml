@@ -181,6 +181,7 @@ presubmits:
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     branches:
+    - ^main$
     - ^master$
     spec:
       containers:
@@ -207,6 +208,7 @@ presubmits:
 
   - name: pull-cluster-api-provider-vsphere-e2e
     branches:
+      - ^main$
       - ^master$
       - ^release-1.*
     labels:
