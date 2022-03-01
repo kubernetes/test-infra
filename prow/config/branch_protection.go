@@ -31,8 +31,6 @@ import (
 // When merging policies, a nil value results in inheriting the parent policy.
 type Policy struct {
 	// Unmanaged makes us not manage the branchprotection.
-	// Careful: Contrary to all other settings, this can _not_ be overridden
-	// on a lower level and is always inherited.
 	Unmanaged *bool `json:"unmanaged,omitempty"`
 	// Protect overrides whether branch protection is enabled if set.
 	Protect *bool `json:"protect,omitempty"`
@@ -56,6 +54,11 @@ type Policy struct {
 	// Include specifies a set of regular expressions which identify branches
 	// that should be included from the protection policy, mutually exclusive with Exclude
 	Include []string `json:"include,omitempty"`
+}
+
+// Managed returns true if Unmanaged is false in the policy
+func (p Policy) Managed() bool {
+	return p.Unmanaged != nil && !*p.Unmanaged
 }
 
 func (p Policy) defined() bool {
@@ -205,6 +208,38 @@ func isPolicySet(p Policy) bool {
 	return !apiequality.Semantic.DeepEqual(p, Policy{})
 }
 
+// HasManagedBranches returns true if the global branch protector's config has managed branches
+func (bp BranchProtection) HasManagedBranches() bool {
+	for _, org := range bp.Orgs {
+		if org.HasManagedBranches() {
+			return true
+		}
+	}
+	return false
+}
+
+// HasManagedOrgs returns true if the global branch protector's config has managed orgs
+func (bp BranchProtection) HasManagedOrgs() bool {
+	for _, org := range bp.Orgs {
+		if org.Policy.Managed() {
+			return true
+		}
+	}
+	return false
+}
+
+// HasManagedRepos returns true if the global branch protector's config has managed repos
+func (bp BranchProtection) HasManagedRepos() bool {
+	for _, org := range bp.Orgs {
+		for _, repo := range org.Repos {
+			if repo.Policy.Managed() {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func (bp *BranchProtection) merge(additional *BranchProtection) error {
 	var errs []error
 	if isPolicySet(bp.Policy) && isPolicySet(additional.Policy) {
@@ -296,6 +331,26 @@ type Org struct {
 	Repos  map[string]Repo `json:"repos,omitempty"`
 }
 
+// HasManagedRepos returns true if the org has managed repos
+func (o Org) HasManagedRepos() bool {
+	for _, repo := range o.Repos {
+		if repo.Policy.Managed() {
+			return true
+		}
+	}
+	return false
+}
+
+// HasManagedBranches returns true if the org has managed branches
+func (o Org) HasManagedBranches() bool {
+	for _, repo := range o.Repos {
+		if repo.HasManagedBranches() {
+			return true
+		}
+	}
+	return false
+}
+
 // GetRepo returns the repo config after merging in any org policies.
 func (o Org) GetRepo(name string) *Repo {
 	r, ok := o.Repos[name]
@@ -311,6 +366,16 @@ func (o Org) GetRepo(name string) *Repo {
 type Repo struct {
 	Policy   `json:",inline"`
 	Branches map[string]Branch `json:"branches,omitempty"`
+}
+
+// HasManagedBranches returns true if the repo has managed branches
+func (r Repo) HasManagedBranches() bool {
+	for _, branch := range r.Branches {
+		if branch.Policy.Managed() {
+			return true
+		}
+	}
+	return false
 }
 
 // GetBranch returns the branch config after merging in any repo policies.

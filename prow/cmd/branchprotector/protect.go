@@ -204,7 +204,7 @@ func (p *protector) configureBranches() {
 // protect protects branches specified in the presubmit and branch-protection config sections.
 func (p *protector) protect() {
 	bp := p.cfg.BranchProtection
-	if bp.Policy.Unmanaged != nil && *bp.Policy.Unmanaged {
+	if bp.Policy.Unmanaged != nil && *bp.Policy.Unmanaged && !bp.HasManagedOrgs() && !bp.HasManagedRepos() && !bp.HasManagedBranches() {
 		logrus.Warn("Branchprotection has global unmanaged: true, will not do anything")
 		return
 	}
@@ -252,7 +252,7 @@ func (p *protector) protect() {
 
 // UpdateOrg updates all repos in the org with the specified defaults
 func (p *protector) UpdateOrg(orgName string, org config.Org) error {
-	if org.Policy.Unmanaged != nil && *org.Policy.Unmanaged {
+	if org.Policy.Unmanaged != nil && *org.Policy.Unmanaged && !org.HasManagedRepos() && !org.HasManagedBranches() {
 		return nil
 	}
 
@@ -298,7 +298,7 @@ func (p *protector) UpdateOrg(orgName string, org config.Org) error {
 // UpdateRepo updates all branches in the repo with the specified defaults
 func (p *protector) UpdateRepo(orgName string, repoName string, repo config.Repo) error {
 	p.completedRepos[orgName+"/"+repoName] = true
-	if repo.Policy.Unmanaged != nil && *repo.Policy.Unmanaged {
+	if repo.Policy.Unmanaged != nil && *repo.Policy.Unmanaged && !repo.HasManagedBranches() {
 		return nil
 	}
 
