@@ -90,6 +90,7 @@ csi-test
 csi-release-tools
 csi-lib-utils
 csi-driver-iscsi
+csi-driver-nvmf
 csi-driver-nfs
 csi-proxy
 lib-volume-populator
