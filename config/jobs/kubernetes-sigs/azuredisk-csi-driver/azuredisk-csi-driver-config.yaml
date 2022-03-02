@@ -687,7 +687,7 @@ presubmits:
               value: "true"
             - name: WINDOWS_FLAVOR
               value: "containerd-2022"
-            - name: AZURE_NODE_MACHINE_TYPE
+            - name: NODE_MACHINE_TYPE
               value: "Standard_D4s_v3"
             - name: DISABLE_ZONE
               value: "true"
