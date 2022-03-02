@@ -3,7 +3,7 @@ postsubmits:
     - name: post-bom-push-images
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-release-image-pushes
+        testgrid-dashboards: sig-release-image-pushes, sig-k8s-infra-gcb
         testgrid-alert-email: release-managers+alerts@kubernetes.io
       decorate: true
       branches:
