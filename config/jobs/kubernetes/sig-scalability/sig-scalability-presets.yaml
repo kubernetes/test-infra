@@ -153,8 +153,6 @@ presets:
     value: "--enable-pprof"
   - name: CONTROLLER_MANAGER_TEST_ARGS
     value: "--profiling --kube-api-qps=100 --kube-api-burst=100"
-  - name: KUBELET_TEST_ARGS
-    value: "--enable-debugging-handlers"
   - name: KUBEPROXY_TEST_ARGS
     # TODO(#74011): Remove metrics-bind-address if the default is set.
     value: "--profiling --metrics-bind-address=0.0.0.0"
@@ -292,8 +290,6 @@ presets:
   # system pods in 1-node cluster.
   - name: MAX_PODS_PER_NODE
     value: "128"
-  - name: KUBELET_TEST_ARGS
-    value: "--enable-debugging-handlers --kube-api-qps=100 --kube-api-burst=100"
   - name: KUBEPROXY_TEST_ARGS
     value: "--profiling"
   - name: SCHEDULER_TEST_ARGS
@@ -315,10 +311,15 @@ presets:
 - labels:
     preset-e2e-scalability-presubmits: "true"
   env:
+  - name: KUBELET_TEST_ARGS
+    value: "--enable-debugging-handlers --kube-api-qps=100 --kube-api-burst=100"
 
 - labels:
     preset-e2e-scalability-periodics: "true"
   env:
+  # TODO(wojtek-t): Promote it to preset-e2e-scalability-common and preset-e2e-scalability-node.
+  - name: KUBELET_TEST_ARGS
+    value: "--enable-debugging-handlers --kube-api-qps=100 --kube-api-burst=100"
 
 - labels:
     preset-e2e-scalability-periodics-master: "true"
