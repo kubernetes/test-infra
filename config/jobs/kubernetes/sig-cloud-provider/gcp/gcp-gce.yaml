@@ -14,6 +14,10 @@ presets:
   env:
   - name: KUBE_TEST_REPO_LIST
     value: https://raw.githubusercontent.com/kubernetes/test-infra/master/config/jobs/kubernetes/sig-cloud-provider/gcp/registry/default-sandbox.yaml
+  - name: KUBE_DOCKER_REGISTRY
+    value: registry-sandbox.k8s.io
+  - name: KUBE_ADDON_REGISTRY
+    value: registry-sandbox.k8s.io
 
 presubmits:
   kubernetes/kubernetes:
