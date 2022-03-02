@@ -1893,10 +1893,46 @@ func TestEditTeam(t *testing.T) {
 }
 
 func TestListTeamMembers(t *testing.T) {
-	ts := simpleTestServer(t, "/teams/1/members", []TeamMember{{Login: "foo"}})
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+
+		var result interface{}
+		switch r.URL.Path {
+		case "/organizations/1/teams/1/members":
+			result = []TeamMember{{Login: "foo"}}
+		case "/orgs/orgName":
+			result = Organization{Login: "orgName", Id: 1}
+		default:
+			t.Errorf("Bad request path: %s", r.URL.Path)
+			return
+		}
+
+		b, err := json.Marshal(result)
+		if err != nil {
+			t.Fatalf("Didn't expect error: %v", err)
+		}
+		fmt.Fprint(w, string(b))
+	}))
+
 	defer ts.Close()
 	c := getClient(ts.URL)
-	teamMembers, err := c.ListTeamMembers("", 1, RoleAll)
+	teamMembers, err := c.ListTeamMembers("orgName", 1, RoleAll)
+	if err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else if len(teamMembers) != 1 {
+		t.Errorf("Expected one team member, found %d: %v", len(teamMembers), teamMembers)
+	} else if teamMembers[0].Login != "foo" {
+		t.Errorf("Wrong team names: %v", teamMembers)
+	}
+}
+
+func TestListTeamMembersBySlug(t *testing.T) {
+	ts := simpleTestServer(t, "/organizations/orgName/teams/team-name/members", []TeamMember{{Login: "foo"}})
+	defer ts.Close()
+	c := getClient(ts.URL)
+	teamMembers, err := c.ListTeamMembersBySlug("orgName", "team-name", RoleAll)
 	if err != nil {
 		t.Errorf("Didn't expect error: %v", err)
 	} else if len(teamMembers) != 1 {
