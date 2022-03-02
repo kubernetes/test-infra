@@ -312,7 +312,7 @@ presets:
     preset-e2e-scalability-presubmits: "true"
   env:
   - name: KUBELET_TEST_ARGS
-    value: "--enable-debugging-handlers"
+    value: "--enable-debugging-handlers --kube-api-qps=100 --kube-api-burst=100"
 
 - labels:
     preset-e2e-scalability-periodics: "true"
