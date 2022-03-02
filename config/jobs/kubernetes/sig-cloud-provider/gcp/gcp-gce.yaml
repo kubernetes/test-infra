@@ -18,6 +18,8 @@ presets:
     value: registry-sandbox.k8s.io
   - name: KUBE_ADDON_REGISTRY
     value: registry-sandbox.k8s.io
+  - name: TEST_ETCD_DOCKER_REPOSITORY
+    value: registry-sandbox.k8s.io/etcd
 
 presubmits:
   kubernetes/kubernetes:
