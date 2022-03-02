@@ -1084,6 +1084,7 @@ type Organization struct {
 	// Login has the same meaning as Name, but it's more reliable to use as Name can sometimes be empty,
 	// see https://developer.github.com/v3/orgs/#list-organizations
 	Login string `json:"login"`
+	Id    int    `json:"id"`
 	// BillingEmail holds private billing address
 	BillingEmail string `json:"billing_email"`
 	Company      string `json:"company"`

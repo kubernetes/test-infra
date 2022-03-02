@@ -196,6 +196,7 @@ type TeamClient interface {
 	UpdateTeamMembership(org string, id int, user string, maintainer bool) (*TeamMembership, error)
 	RemoveTeamMembership(org string, id int, user string) error
 	ListTeamMembers(org string, id int, role string) ([]TeamMember, error)
+	ListTeamMembersBySlug(org, teamSlug, role string) ([]TeamMember, error)
 	ListTeamRepos(org string, id int) ([]Repo, error)
 	UpdateTeamRepo(id int, org, repo string, permission TeamPermission) error
 	RemoveTeamRepo(id int, org, repo string) error
@@ -3710,16 +3711,23 @@ func (c *client) RemoveTeamMembership(org string, id int, user string) error {
 // Role options are "all", "maintainer" and "member"
 //
 // https://developer.github.com/v3/teams/members/#list-team-members
+// Deprecated: please use ListTeamMembersBySlug
 func (c *client) ListTeamMembers(org string, id int, role string) ([]TeamMember, error) {
+	c.logger.WithField("methodName", "ListTeamMembers").
+		Warn("method is deprecated, and will result in multiple api calls to achieve result")
 	durationLogger := c.log("ListTeamMembers", id, role)
 	defer durationLogger()
 
 	if c.fake {
 		return nil, nil
 	}
-	path := fmt.Sprintf("/teams/%d/members", id)
+	organization, err := c.GetOrg(org)
+	if err != nil {
+		return nil, err
+	}
+	path := fmt.Sprintf("/organizations/%d/team/%d/members", organization.Id, id)
 	var teamMembers []TeamMember
-	err := c.readPaginatedResultsWithValues(
+	err = c.readPaginatedResultsWithValues(
 		path,
 		url.Values{
 			"per_page": []string{"100"},
@@ -3728,6 +3736,41 @@ func (c *client) ListTeamMembers(org string, id int, role string) ([]TeamMember,
 		// This accept header enables the nested teams preview.
 		// https://developer.github.com/changes/2017-08-30-preview-nested-teams/
 		"application/vnd.github.hellcat-preview+json",
+		org,
+		func() interface{} {
+			return &[]TeamMember{}
+		},
+		func(obj interface{}) {
+			teamMembers = append(teamMembers, *(obj.(*[]TeamMember))...)
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return teamMembers, nil
+}
+
+// ListTeamMembersBySlug gets a list of team members for the given team slug
+//
+// Role options are "all", "maintainer" and "member"
+//
+// https://docs.github.com/en/rest/reference/teams#list-team-members
+func (c *client) ListTeamMembersBySlug(org, teamSlug, role string) ([]TeamMember, error) {
+	durationLogger := c.log("ListTeamMembersBySlug", org, teamSlug, role)
+	defer durationLogger()
+
+	if c.fake {
+		return nil, nil
+	}
+	path := fmt.Sprintf("/orgs/%s/teams/%s/members", org, teamSlug)
+	var teamMembers []TeamMember
+	err := c.readPaginatedResultsWithValues(
+		path,
+		url.Values{
+			"per_page": []string{"100"},
+			"role":     []string{role},
+		},
+		"application/vnd.github.v3+json",
 		org,
 		func() interface{} {
 			return &[]TeamMember{}
@@ -4544,6 +4587,7 @@ func (c *client) DeleteProjectCard(org string, projectCardID int) error {
 }
 
 // TeamHasMember checks if a user belongs to a team
+// Deprecated: use TeamBySlugHasMember
 func (c *client) TeamHasMember(org string, teamID int, memberLogin string) (bool, error) {
 	durationLogger := c.log("TeamHasMember", teamID, memberLogin)
 	defer durationLogger()
