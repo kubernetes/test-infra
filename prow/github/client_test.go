@@ -1900,7 +1900,7 @@ func TestListTeamMembers(t *testing.T) {
 
 		var result interface{}
 		switch r.URL.Path {
-		case "/organizations/1/teams/1/members":
+		case "/organizations/1/team/1/members":
 			result = []TeamMember{{Login: "foo"}}
 		case "/orgs/orgName":
 			result = Organization{Login: "orgName", Id: 1}
@@ -1929,7 +1929,7 @@ func TestListTeamMembers(t *testing.T) {
 }
 
 func TestListTeamMembersBySlug(t *testing.T) {
-	ts := simpleTestServer(t, "/organizations/orgName/teams/team-name/members", []TeamMember{{Login: "foo"}})
+	ts := simpleTestServer(t, "/orgs/orgName/teams/team-name/members", []TeamMember{{Login: "foo"}})
 	defer ts.Close()
 	c := getClient(ts.URL)
 	teamMembers, err := c.ListTeamMembersBySlug("orgName", "team-name", RoleAll)

@@ -3725,7 +3725,7 @@ func (c *client) ListTeamMembers(org string, id int, role string) ([]TeamMember,
 	if err != nil {
 		return nil, err
 	}
-	path := fmt.Sprintf("/organizations/%d/teams/%d/members", organization.Id, id)
+	path := fmt.Sprintf("/organizations/%d/team/%d/members", organization.Id, id)
 	var teamMembers []TeamMember
 	err = c.readPaginatedResultsWithValues(
 		path,
@@ -3762,7 +3762,7 @@ func (c *client) ListTeamMembersBySlug(org, teamSlug, role string) ([]TeamMember
 	if c.fake {
 		return nil, nil
 	}
-	path := fmt.Sprintf("/organizations/%s/teams/%s/members", org, teamSlug)
+	path := fmt.Sprintf("/orgs/%s/teams/%s/members", org, teamSlug)
 	var teamMembers []TeamMember
 	err := c.readPaginatedResultsWithValues(
 		path,
