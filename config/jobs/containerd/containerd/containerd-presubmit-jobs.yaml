@@ -5,6 +5,7 @@ presubmits:
     branches:
     - main
     - release/1.5
+    - release/1.6
     decorate: true
     annotations:
       testgrid-dashboards: sig-node-containerd
