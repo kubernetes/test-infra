@@ -61,6 +61,8 @@ presubmits:
         - make
         - test-e2e
         - KOPS_STATE_STORE=s3://cloud-provider-aws-e2e
+        securityContext:
+          privileged: true
     annotations:
       testgrid-dashboards: provider-aws-cloud-provider-aws
       testgrid-tab-name: e2e
