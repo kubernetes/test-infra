@@ -1,13 +1,12 @@
 postsubmits:
   kubernetes-sigs/cluster-api-provider-vsphere:
-  # Deploys images and binaries after all merges to master
+  # Deploys images and binaries after all merges to main
   - name: post-cluster-api-provider-vsphere-deploy
     labels:
       preset-dind-enabled: "true"
       preset-cluster-api-provider-vsphere-gcs-creds: "true"
     branches:
     - ^main$
-    - ^master$
     always_run: false
     run_if_changed: '^((api|cmd|config|contrib|controllers|pkg|test|examples)/|Dockerfile|Makefile)'
     decorate: true

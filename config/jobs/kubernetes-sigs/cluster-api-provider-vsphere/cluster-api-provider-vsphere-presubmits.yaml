@@ -182,7 +182,6 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     branches:
     - ^main$
-    - ^master$
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220221-c13e827224-1.23
@@ -209,7 +208,6 @@ presubmits:
   - name: pull-cluster-api-provider-vsphere-e2e
     branches:
       - ^main$
-      - ^master$
       - ^release-1.*
     labels:
       preset-dind-enabled: "true"
