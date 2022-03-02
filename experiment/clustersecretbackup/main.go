@@ -48,12 +48,14 @@ var (
 
 // options are the available command-line flags.
 type options struct {
-	project        string
-	clusterContext string
-	namespaces     []string
-	secrets        map[string]string
-	update         bool
-	dryRun         bool
+	project            string
+	clusterContext     string
+	namespaces         []string
+	secrets            map[string]string
+	update             bool
+	dryRun             bool
+	emitExternalSecret bool
+	skipServiceAccount bool
 }
 
 type client struct {
@@ -84,6 +86,8 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.StringToStringVar(&o.secrets, "secret-name", nil, "namespace:name of secrets to be backed up, in the form of --secret-name=<namespace>=<name>. By default all secrets in the chosen namespace(s) are backed up.")
 	fs.BoolVar(&o.update, "update", false, "Controls whether update existing secret or not, if false then secret will only be created")
 	fs.BoolVar(&o.dryRun, "dryrun", false, "Controls whether this is dry run or not")
+	fs.BoolVar(&o.skipServiceAccount, "skip-sa", true, "Controls whether to skip service account tokens")
+	fs.BoolVar(&o.emitExternalSecret, "emit-external-secret", false, "Controls whether to output an ExternalSecret referencing the Secret")
 	fs.Parse(args)
 
 	return o
@@ -197,8 +201,25 @@ func (c *client) updateAllSecrets(ctx context.Context, allowed map[string]string
 				continue
 			}
 		}
+		if c.skipServiceAccount && secret.Type == corev1.SecretTypeServiceAccountToken {
+			continue
+		}
 		if err := c.updateSingleSecret(ctx, &secret); err != nil {
 			return err
+		}
+		if c.emitExternalSecret {
+			fmt.Printf(`apiVersion: kubernetes-client.io/v1
+kind: ExternalSecret
+metadata:
+  name: "%s"
+  namespace: "%s"
+spec:
+  backendType: gcpSecretsManager
+  projectId: "%s"
+  dataFrom:
+  - "%s" # Secret name in GSM
+---
+`, secret.Name, secret.Namespace, c.project, c.gsmSecretName(&secret))
 		}
 	}
 	return nil
