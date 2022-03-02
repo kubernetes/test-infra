@@ -248,6 +248,10 @@ func TestGroupLines(t *testing.T) {
 func pstr(s string) *string { return &s }
 
 func TestBody(t *testing.T) {
+	const (
+		anonLink   = "https://storage.googleapis.com/bucket/object/build-log.txt"
+		cookieLink = "https://storage.cloud.google.com/bucket/object/build-log.txt"
+	)
 	render := func(views ...LogArtifactView) string {
 		return executeTemplate(".", "body", buildLogsView{LogViews: views})
 	}
@@ -315,6 +319,66 @@ func TestBody(t *testing.T) {
 					},
 				},
 			})),
+		},
+		{
+			name: "cookie savable",
+			artifact: &fake.Artifact{
+				Path:    "foo",
+				Content: []byte("hello"),
+				Link:    pstr(cookieLink),
+			},
+			want: render(func() LogArtifactView {
+				lav := view("foo", cookieLink, []LineGroup{
+					{
+						Start:        1,
+						End:          1,
+						ArtifactName: pstr("foo"),
+						LogLines: []LogLine{
+							{
+								ArtifactName: pstr("foo"),
+								Number:       1,
+								SubLines: []SubLine{
+									{
+										Text: "hello",
+									},
+								},
+							},
+						},
+					},
+				})
+				lav.CanSave = true
+				return lav
+			}()),
+		},
+		{
+			name: "savable",
+			artifact: &fake.Artifact{
+				Path:    "foo",
+				Content: []byte("hello"),
+				Link:    pstr(anonLink),
+			},
+			want: render(func() LogArtifactView {
+				lav := view("foo", anonLink, []LineGroup{
+					{
+						Start:        1,
+						End:          1,
+						ArtifactName: pstr("foo"),
+						LogLines: []LogLine{
+							{
+								ArtifactName: pstr("foo"),
+								Number:       1,
+								SubLines: []SubLine{
+									{
+										Text: "hello",
+									},
+								},
+							},
+						},
+					},
+				})
+				lav.CanSave = true
+				return lav
+			}()),
 		},
 		{
 			name: "focus",
