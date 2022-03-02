@@ -31,6 +31,7 @@ presubmits:
     branches:
     - main
     - release/1.5
+    - release/1.6
     decoration_config:
       timeout: 100m
     extra_refs:
