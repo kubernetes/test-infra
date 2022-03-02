@@ -10,7 +10,7 @@ periodics:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-vsphere
-        base_ref: master
+        base_ref: main
         path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
@@ -48,7 +48,7 @@ periodics:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-vsphere
-        base_ref: master
+        base_ref: main
         path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
@@ -86,7 +86,7 @@ periodics:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-vsphere
-        base_ref: master
+        base_ref: main
         path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
@@ -120,11 +120,11 @@ periodics:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-vsphere
-        base_ref: master
+        base_ref: main
         path_alias: sigs.k8s.io/cluster-api-provider-vsphere
       - org: kubernetes
         repo: test-infra
-        base_ref: master
+        base_ref: main
         path_alias: k8s.io/test-infra
     spec:
       containers:
