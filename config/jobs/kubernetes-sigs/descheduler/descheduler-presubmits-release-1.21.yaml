@@ -134,7 +134,7 @@ presubmits:
         - runner.sh
         env:
         - name: KUBERNETES_VERSION
-          value: "v1.19.14"
+          value: "v1.19.11"
         - name: KIND_E2E
           value: "true"
         args:
