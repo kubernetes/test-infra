@@ -511,6 +511,7 @@ larger set of contributors to apply/remove them.
 | <a id="area/release-eng" href="#area/release-eng">`area/release-eng`</a> | Issues or PRs related to the Release Engineering subproject| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="area/web-development" href="#area/web-development">`area/web-development`</a> | Issues or PRs related to the kubernetes.io's infrastructure, design, or build processes| humans | |
 | <a id="language/ar" href="#language/ar">`language/ar`</a> | Issues or PRs related to Arabic language| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="language/bn" href="#language/bn">`language/bn`</a> | Issues or PRs related to Bengali language| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="language/de" href="#language/de">`language/de`</a> | Issues or PRs related to German language| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="language/en" href="#language/en">`language/en`</a> | Issues or PRs related to English language| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="language/es" href="#language/es">`language/es`</a> | Issues or PRs related to Spanish language| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
