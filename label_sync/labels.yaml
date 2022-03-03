@@ -1112,6 +1112,11 @@ repos:
           - name: area/release-infra
         target: both
         addedBy: label
+      - color: 0052cc
+        description: Issues or PRs involving stable metrics
+        name: area/stable-metrics
+        target: both
+        addedBy: label
       - color: e11d21
         description: Indicates a PR which contains merge commits.
         name: do-not-merge/contains-merge-commits
