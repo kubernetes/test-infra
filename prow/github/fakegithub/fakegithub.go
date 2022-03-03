@@ -70,6 +70,8 @@ type FakeClient struct {
 
 	// org/repo#number:body
 	IssueCommentsAdded []string
+	// org/repo#issuecommentid:body
+	IssueCommentsEdited []string
 	// org/repo#issuecommentid
 	IssueCommentsDeleted []string
 
@@ -286,12 +288,22 @@ func (f *FakeClient) CreateCommentWithContext(_ context.Context, owner, repo str
 	return nil
 }
 
-// EditComment edits a comment. Its a stub that does nothing.
+// EditComment edits a comment.
 func (f *FakeClient) EditComment(org, repo string, ID int, comment string) error {
 	return f.EditCommentWithContext(context.Background(), org, repo, ID, comment)
 }
 
 func (f *FakeClient) EditCommentWithContext(_ context.Context, org, repo string, ID int, comment string) error {
+	f.lock.Lock()
+	defer f.lock.Unlock()
+	f.IssueCommentsEdited = append(f.IssueCommentsEdited, fmt.Sprintf("%s/%s#%d:%s", org, repo, ID, comment))
+	for _, ics := range f.IssueComments {
+		for _, ic := range ics {
+			if ic.ID == ID {
+				ic.Body = comment
+			}
+		}
+	}
 	return nil
 }
 
