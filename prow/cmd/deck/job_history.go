@@ -105,7 +105,12 @@ type jobHistoryTemplate struct {
 }
 
 func (bucket blobStorageBucket) readObject(ctx context.Context, key string) ([]byte, error) {
-	rc, err := bucket.Opener.Reader(ctx, fmt.Sprintf("%s://%s/%s", bucket.storageProvider, bucket.name, key))
+	u := url.URL{
+		Scheme:      bucket.storageProvider,
+		Host:        bucket.name,
+		Path:        key,
+	}
+	rc, err := bucket.Opener.Reader(ctx, u.String())
 	if err != nil {
 		return nil, fmt.Errorf("creating reader for object %s: %w", key, err)
 	}
