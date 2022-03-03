@@ -26,6 +26,7 @@ type Artifact struct {
 	Path    string
 	Content []byte
 	Meta    map[string]string
+	Link    *string
 }
 
 func (fa *Artifact) JobPath() string {
@@ -48,7 +49,10 @@ func (fa *Artifact) UpdateMetadata(now map[string]string) error {
 const NotFound = "linknotfound.io/404"
 
 func (fa *Artifact) CanonicalLink() string {
-	return "linknotfound.io/404"
+	if fa.Link == nil {
+		return NotFound
+	}
+	return *fa.Link
 }
 
 func (fa *Artifact) ReadAt(b []byte, off int64) (int, error) {

@@ -31,6 +31,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	prowconfig "k8s.io/test-infra/prow/config"
+	pkgio "k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/spyglass/api"
 	"k8s.io/test-infra/prow/spyglass/lenses"
 )
@@ -217,11 +218,15 @@ func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string,
 		}
 		av.LineGroups = groupLines(&artifact, start, end, highlightLines(lines, 0, &artifact, conf.highlightRegex)...)
 		av.ViewAll = true
-		av.CanSave = strings.Contains(a.CanonicalLink(), "storage.googleapis.com/")
+		av.CanSave = canSave(a.CanonicalLink())
 		buildLogsView.LogViews = append(buildLogsView.LogViews, av)
 	}
 
 	return executeTemplate(resourceDir, "body", buildLogsView)
+}
+
+func canSave(link string) bool {
+	return strings.Contains(link, pkgio.GSAnonHost) || strings.Contains(link, pkgio.GSCookieHost)
 }
 
 const failedUnmarshal = "Failed to unmarshal request"
