@@ -2114,7 +2114,7 @@ func TestValidateUnmanagedBranchprotectionConfigDoesntHaveSubconfig(t *testing.T
 				bp.Unmanaged = utilpointer.BoolPtr(true)
 			}),
 
-			expectedErrorMsg: `[branch protection is globally set to unmanaged, but has configuration, branch protection config is globally set to unmanaged but has configuration for org my-org]`,
+			expectedErrorMsg: `[branch protection is globally set to unmanaged, but has configuration, branch protection config is globally set to unmanaged but has configuration for org my-org without setting the org to unmanaged: false]`,
 		},
 		{
 			name: "Org-level disabled, errors for org policy and repos",
@@ -2124,7 +2124,7 @@ func TestValidateUnmanagedBranchprotectionConfigDoesntHaveSubconfig(t *testing.T
 				bp.Orgs["my-org"] = p
 			}),
 
-			expectedErrorMsg: `[branch protection config for org my-org is set to unmanaged, but it defines settings, branch protection config for repo my-org/my-repo is defined, but branch protection is unmanaged for org my-org]`,
+			expectedErrorMsg: `[branch protection config for org my-org is set to unmanaged, but it defines settings, branch protection config for repo my-org/my-repo is defined, but branch protection is unmanaged for org my-org without setting the repo to unmanaged: false]`,
 		},
 
 		{
@@ -2135,7 +2135,7 @@ func TestValidateUnmanagedBranchprotectionConfigDoesntHaveSubconfig(t *testing.T
 				bp.Orgs["my-org"].Repos["my-repo"] = p
 			}),
 
-			expectedErrorMsg: `[branch protection config for repo my-org/my-repo is set to unmanaged, but it defines settings, branch protection for repo my-org/my-repo is set to unmanaged, but it defines settings for branch my-branch]`,
+			expectedErrorMsg: `[branch protection config for repo my-org/my-repo is set to unmanaged, but it defines settings, branch protection for repo my-org/my-repo is set to unmanaged, but it defines settings for branch my-branch without setting the branch to unmanaged: false]`,
 		},
 
 		{
@@ -2147,6 +2147,17 @@ func TestValidateUnmanagedBranchprotectionConfigDoesntHaveSubconfig(t *testing.T
 			}),
 
 			expectedErrorMsg: `branch protection config for branch my-branch in repo my-org/my-repo is set to unmanaged but defines settings`,
+		},
+		{
+			name: "unmanaged repo level is overridden by branch level, no errors",
+			config: bpConfigWithSettingsOnAllLayers(func(bp *config.BranchProtection) {
+				repoP := bp.Orgs["my-org"].Repos["my-repo"]
+				repoP.Unmanaged = utilpointer.BoolPtr(true)
+				bp.Orgs["my-org"].Repos["my-repo"] = repoP
+				p := bp.Orgs["my-org"].Repos["my-repo"].Branches["my-branch"]
+				p.Unmanaged = utilpointer.BoolPtr(false)
+				bp.Orgs["my-org"].Repos["my-repo"].Branches["my-branch"] = p
+			}),
 		},
 	}
 

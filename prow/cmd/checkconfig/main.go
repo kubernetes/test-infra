@@ -1356,31 +1356,48 @@ func validateAdditionalConfigIsInOrgRepoDirectoryStructure(root string, filesyst
 func validateUnmanagedBranchprotectionConfigDoesntHaveSubconfig(bp config.BranchProtection) error {
 	var errs []error
 	if bp.Unmanaged != nil && *bp.Unmanaged {
-		if doesUnmanagedBranchprotectionPolicyHaveSettings(bp.Policy) {
+		if doesUnmanagedBranchprotectionPolicyHaveSettings(bp.Policy) && !bp.HasManagedOrgs() && !bp.HasManagedRepos() && !bp.HasManagedBranches() {
 			errs = append(errs, errors.New("branch protection is globally set to unmanaged, but has configuration"))
 		}
-		for org := range bp.Orgs {
-			errs = append(errs, fmt.Errorf("branch protection config is globally set to unmanaged but has configuration for org %s", org))
+		for orgName, org := range bp.Orgs {
+			// The global level setting is overridden by a lower level
+			if org.HasManagedRepos() {
+				continue
+			}
+			for _, repo := range org.Repos {
+				if repo.HasManagedBranches() {
+					continue
+				}
+			}
+			errs = append(errs, fmt.Errorf("branch protection config is globally set to unmanaged but has configuration for org %s without setting the org to unmanaged: false", orgName))
 		}
 	}
 	for orgName, orgConfig := range bp.Orgs {
 		if orgConfig.Unmanaged != nil && *orgConfig.Unmanaged {
-			if doesUnmanagedBranchprotectionPolicyHaveSettings(orgConfig.Policy) {
+			if doesUnmanagedBranchprotectionPolicyHaveSettings(orgConfig.Policy) && !orgConfig.HasManagedRepos() && !orgConfig.HasManagedBranches() {
 				errs = append(errs, fmt.Errorf("branch protection config for org %s is set to unmanaged, but it defines settings", orgName))
 			}
-			for repo := range orgConfig.Repos {
-				errs = append(errs, fmt.Errorf("branch protection config for repo %s/%s is defined, but branch protection is unmanaged for org %s", orgName, repo, orgName))
+			for repoName, repo := range orgConfig.Repos {
+				// The org level setting is overridden by a lower level
+				if repo.HasManagedBranches() {
+					continue
+				}
+				errs = append(errs, fmt.Errorf("branch protection config for repo %s/%s is defined, but branch protection is unmanaged for org %s without setting the repo to unmanaged: false", orgName, repoName, orgName))
 			}
 		}
 
 		for repoName, repoConfig := range orgConfig.Repos {
 			if repoConfig.Unmanaged != nil && *repoConfig.Unmanaged {
-				if doesUnmanagedBranchprotectionPolicyHaveSettings(repoConfig.Policy) {
+				if doesUnmanagedBranchprotectionPolicyHaveSettings(repoConfig.Policy) && !repoConfig.HasManagedBranches() {
 					errs = append(errs, fmt.Errorf("branch protection config for repo %s/%s is set to unmanaged, but it defines settings", orgName, repoName))
 				}
 
-				for branchName := range repoConfig.Branches {
-					errs = append(errs, fmt.Errorf("branch protection for repo %s/%s is set to unmanaged, but it defines settings for branch %s", orgName, repoName, branchName))
+				for branchName, branch := range repoConfig.Branches {
+					// The repo level setting is overridden by a lower level
+					if branch.Policy.Managed() {
+						continue
+					}
+					errs = append(errs, fmt.Errorf("branch protection for repo %s/%s is set to unmanaged, but it defines settings for branch %s without setting the branch to unmanaged: false", orgName, repoName, branchName))
 				}
 
 			}
