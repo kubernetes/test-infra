@@ -121,6 +121,15 @@ async function handleShowSkipped(this: HTMLDivElement, e: MouseEvent): Promise<v
   if (classes.contains("bottom")) {
     bottom = 10;
   }
+
+  for (const mod of [e.altKey, e.metaKey, e.ctrlKey, e.shiftKey]) {
+    if (!mod) {
+      continue;
+    }
+    bottom *= 10;
+    top *= 10;
+  }
+
   await replaceElementWithContent(this, top, bottom);
 }
 
@@ -158,6 +167,7 @@ async function handlePin(e: MouseEvent) {
     button.remove();
     if (firstEl) {
       clipLine(firstEl);
+      scrollTo(firstEl);
     }
   }
   location.hash = "";
@@ -279,8 +289,12 @@ async function handleHash(): Promise<void> {
   if (content && content.classList.contains("savable")) {
     pinLine(firstEl);
   }
-  const top = firstEl.getBoundingClientRect().top + window.pageYOffset;
-  spyglass.scrollTo(0, top).then();
+  scrollTo(firstEl);
+}
+
+function scrollTo(elem: Element) {
+      const top = elem.getBoundingClientRect().top + window.pageYOffset - 50;
+      spyglass.scrollTo(0, top).then();
 }
 
 async function highlightLines(artifact: string, startNum: number, endNum: number, highlight: string = 'highlighted-line', selector: Selector|null): Promise<HTMLDivElement|null> {
