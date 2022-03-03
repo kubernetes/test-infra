@@ -84,5 +84,5 @@ func (o *BugzillaOptions) BugzillaClient() (bugzilla.Client, error) {
 		generator = &generatorFunc
 	}
 
-	return bugzilla.NewClient(*generator, o.endpoint, o.githubExternalTrackerId), nil
+	return bugzilla.NewClient(*generator, o.endpoint, o.githubExternalTrackerId, o.authMethod), nil
 }
