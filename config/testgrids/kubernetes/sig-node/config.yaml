@@ -3,16 +3,17 @@ dashboard_groups:
   dashboard_names:
     - sig-node-release-blocking # This is a replica of sig-node jobs that are release blocking.
     - sig-node-critical # This dashboard contains jobs that sig-node has deemed critical to the greater operation of the sig. They should always be green.
-    - sig-node-cadvisor
     - sig-node-kubelet
     - sig-node-containerd
     - sig-node-cri-o
+    - sig-node-cos
+    - sig-node-presubmits
+    # These dashboards are for out-of-tree SIG Node projects
+    - sig-node-cadvisor
     - sig-node-cri-tools
     - sig-node-node-feature-discovery
     - sig-node-node-problem-detector
     - sig-node-security-profiles-operator
-    - sig-node-cos
-    - sig-node-presubmits
 
 dashboards:
 - name: sig-node-release-blocking # Tabs included in this group are defined in the jobs that are included.
