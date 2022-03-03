@@ -2,7 +2,6 @@ dashboard_groups:
 - name: sig-node
   dashboard_names:
     - sig-node-release-blocking # This is a replica of sig-node jobs that are release blocking.
-    - sig-node-critical # This dashboard contains jobs that sig-node has deemed critical to the greater operation of the sig. They should always be green.
     - sig-node-kubelet
     - sig-node-containerd
     - sig-node-cri-o
@@ -18,10 +17,6 @@ dashboard_groups:
 
 dashboards:
 - name: sig-node-release-blocking # Tabs included in this group are defined in the jobs that are included.
-- name: sig-node-critical
-  dashboard_tab:
-    - name: containerd-NodeConformance
-      test_group_name: ci-containerd-node-e2e
 
 - name: sig-node-cadvisor
 - name: sig-node-kubelet

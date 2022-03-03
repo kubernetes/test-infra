@@ -166,7 +166,7 @@ periodics:
 - annotations:
     fork-per-release-periodic-interval: 2h 6h 24h
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
-    testgrid-dashboards: sig-node-critical, sig-release-job-config-errors
+    testgrid-dashboards: sig-node-release-blocking, sig-release-job-config-errors
     testgrid-tab-name: node-kubelet-1.23-kubetest2
   cluster: k8s-infra-prow-build
   decorate: true
