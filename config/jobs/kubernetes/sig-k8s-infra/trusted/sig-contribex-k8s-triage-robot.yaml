@@ -48,6 +48,45 @@ periodics:
       secret:
         secretName: k8s-triage-robot-github-token
 
+- name: ci-k8s-triage-robot-stable-metrics
+  interval: 1h
+  cluster: k8s-infra-prow-build-trusted
+  decorate: true
+  annotations:
+    testgrid-dashboards: sig-contribex-k8s-triage-robot
+    description: Adds stable metrics review documentation to area/stable-metrics PRs
+    testgrid-tab-name: stable-metrics-help
+  spec:
+    containers:
+    - image: gcr.io/k8s-prow/commenter:v20220303-3364943fd7
+      command:
+      - commenter
+      args:
+      # pull requests against master branches in the kubernetes org labeled area/stable-metrics
+      # exclude PRs that already have the comment text
+      - |-
+        --query=org:kubernetes
+        is:pr
+        base:master
+        label:area/stable-metrics
+        NOT "documentation for the requirements and lifecycle of stable metrics"
+      - --updated=5m
+      - --token=/etc/github-token/token
+      - --endpoint=http://ghproxy.default.svc.cluster.local
+      - |-
+        --comment=This PR [may require stable metrics review](https://git.k8s.io/community/sig-instrumentation/stable-metrics.md).
+
+        Stable metrics are guaranteed to **not change**. Please review the documentation for the requirements and lifecycle of stable metrics and ensure that your metrics meet these guidelines.
+      - --ceiling=10
+      - --confirm
+      volumeMounts:
+      - name: token
+        mountPath: /etc/github-token
+    volumes:
+    - name: token
+      secret:
+        secretName: k8s-triage-robot-github-token
+
 - name: ci-k8s-triage-robot-cla
   interval: 10m
   cluster: k8s-infra-prow-build-trusted
