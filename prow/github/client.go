@@ -3782,7 +3782,7 @@ func (c *client) RemoveTeamMembership(org string, id int, user string) error {
 
 	_, err = c.request(&request{
 		method:    http.MethodDelete,
-		path:      fmt.Sprintf("/organizations/%d/teams/%d/memberships/%s", organization.Id, id, user),
+		path:      fmt.Sprintf("/organizations/%d/team/%d/memberships/%s", organization.Id, id, user),
 		org:       org,
 		exitCodes: []int{204},
 	}, nil)
