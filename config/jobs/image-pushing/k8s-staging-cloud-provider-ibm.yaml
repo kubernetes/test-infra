@@ -43,6 +43,13 @@ postsubmits:
   kubernetes-sigs/ibm-powervs-block-csi-driver:
     # The name should be changed to match the repo name above
     - name: post-ibm-powervs-block-csi-driver-push-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes-sigs
+            slug: ibm-powervs-block-csi-driver-maintainers
+        github_users:
+          - mkumatag
+          - Madhan-SWE
       cluster: k8s-infra-prow-build-trusted
       annotations:
         # This is the name of some testgrid dashboard to report to.
