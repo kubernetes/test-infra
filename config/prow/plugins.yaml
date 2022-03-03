@@ -760,6 +760,18 @@ require_matching_label:
     - `/committee <group-name>`
 
     Please see the [group list](https://git.k8s.io/community/sig-list.md) for a listing of the SIGs, working groups, and committees available.
+- missing_label: needs-triage
+  org: kubernetes
+  repo: cloud-provider-aws
+  issues: true
+  prs: true
+  regexp: ^triage/accepted$
+  missing_comment: |
+    This issue is currently awaiting triage.
+
+    If cloud-provider-aws contributors determine this is a relevant issue, they will accept it by applying the `triage/accepted` label and provide further guidance.
+
+    The `triage/accepted` label can be added by org members by writing `/triage accepted` in a comment.
 
 retitle:
   allow_closed_issues: true
