@@ -3,7 +3,7 @@ postsubmits:
     - name: post-kueue-push-images
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-scheduling
+        testgrid-dashboards: sig-scheduling, sig-k8s-infra-gcb
       decorate: true
       branches:
         - ^master$
