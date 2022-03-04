@@ -59,18 +59,25 @@ deck:
         config:
           highlight_regexes:
           - "ERROR:"
+          - "^[+-]\\s"
           - "signal: killed"
           - Cluster failed to initialize
+          - DATA RACE
           - Expected.+got
           - Full Stack Trace
+          - Master not detected
           - Merge conflict
+          - Previous write
           - Something went wrong
           - Timed out
           - Unexpected error
           - Your cluster may not be fully functional
+          - contact Google support
           - curl.+Failed to connect
           - failed to acquire k8s binaries
           - flag provided but not defined
+          - not enough arguments in call
+          - race detected
           - timed out
           - (FAIL|Failure \[)\b
           - panic\b
