@@ -58,8 +58,20 @@ deck:
         name: buildlog
         config:
           highlight_regexes:
-          - timed out
           - "ERROR:"
+          - "signal: killed"
+          - Cluster failed to initialize
+          - Expected.+got
+          - Full Stack Trace
+          - Merge conflict
+          - Something went wrong
+          - Timed out
+          - Unexpected error
+          - Your cluster may not be fully functional
+          - curl.+Failed to connect
+          - failed to acquire k8s binaries
+          - flag provided but not defined
+          - timed out
           - (FAIL|Failure \[)\b
           - panic\b
           - ^E\d{4} \d\d:\d\d:\d\d\.\d\d\d]
