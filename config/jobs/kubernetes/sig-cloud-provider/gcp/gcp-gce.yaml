@@ -20,6 +20,8 @@ presets:
     value: registry-sandbox.k8s.io
   - name: TEST_ETCD_DOCKER_REPOSITORY
     value: registry-sandbox.k8s.io/etcd
+  - name: CONTAINERD_INFRA_CONTAINER
+    value: registry-sandbox.k8s.io/pause:3.6
 
 presubmits:
   kubernetes/kubernetes:
