@@ -34,8 +34,8 @@ test_groups:
     - target_config: Tests name
     - target_config: Context
     name_format: '%s [%s]'
-- name: ci-cos-containerd-node-e2e
-  gcs_prefix: kubernetes-jenkins/logs/ci-cos-containerd-node-e2e
+- name: ci-cos-containerd-node-e2e-conformance
+  gcs_prefix: kubernetes-jenkins/logs/ci-cos-containerd-node-e2e-conformance
   test_name_config:
     name_elements:
     - target_config: Tests name

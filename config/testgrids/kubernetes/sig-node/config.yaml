@@ -20,7 +20,7 @@ dashboards:
 - name: sig-node-critical
   dashboard_tab:
     - name: containerd-NodeConformance
-      test_group_name: ci-containerd-node-e2e
+      test_group_name: ci-containerd-node-e2e-conformance
 
 - name: sig-node-cadvisor
 - name: sig-node-kubelet
