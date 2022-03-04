@@ -687,6 +687,8 @@ presubmits:
               value: "true"
             - name: WINDOWS_FLAVOR
               value: "containerd-2022"
+            - name: WINDOWS_USE_HOST_PROCESS_CONTAINERS
+              value: "true"
             - name: NODE_MACHINE_TYPE
               value: "Standard_D4s_v3"
             - name: DISABLE_ZONE
