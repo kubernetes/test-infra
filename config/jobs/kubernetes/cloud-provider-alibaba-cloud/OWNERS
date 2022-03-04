@@ -4,9 +4,11 @@ reviewers:
 - aoxn
 - cheyang
 - xlgao-zju
+- gujingit
 approvers:
 - aoxn
 - cheyang
 - xlgao-zju
+- gujingit
 labels:
 - sig/cloud-provider
