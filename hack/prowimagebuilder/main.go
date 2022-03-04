@@ -220,6 +220,10 @@ func teardown(id *imageDef) error {
 func buildAndPush(id *imageDef, dockerRepos []string, push bool) error {
 	logger := logrus.WithField("image", id.Dir)
 	logger.Info("Build and push")
+	start := time.Now()
+	defer func(logger *logrus.Entry, start time.Time) {
+		logger.WithField("duration", time.Now().Sub(start).String()).Info("Duration of image building.")
+	}(logger, start)
 	// So far only supports certain arch
 	isSupportedArch := (id.Arch == defaultArch || id.Arch == allArch)
 	for _, otherArch := range otherArches {
@@ -316,7 +320,7 @@ func main() {
 							// Don't call wg.Done() as we are not done yet
 							continue
 						}
-						errChan <- err
+						errChan <- fmt.Errorf("building image for %s failed: %v", id.Dir, err)
 					}
 					doneChan <- id
 				case <-ctx.Done():
