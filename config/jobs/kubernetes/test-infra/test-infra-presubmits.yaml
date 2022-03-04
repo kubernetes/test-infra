@@ -135,7 +135,7 @@ presubmits:
   - name: pull-test-infra-unit-test
     branches:
     - master
-    skip_if_only_changed: '^config/jobs/'
+    always_run: true
     decorate: true
     labels:
       # Python unit tests run in docker.
