@@ -180,7 +180,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: containerd-e2e-ubuntu
-- name: ci-containerd-node-e2e
+- name: ci-containerd-node-e2e-conformance
   interval: 1h
   labels:
     preset-service-account: "true"
@@ -211,7 +211,7 @@ periodics:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: containerd-node-conformance
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
-- name: ci-containerd-node-e2e-1-4
+- name: ci-containerd-node-e2e-conformance-1-4
   cluster: k8s-infra-prow-build
   interval: 1h
   labels:
@@ -247,7 +247,7 @@ periodics:
           memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: containerd-node-e2e-1.4
+    testgrid-tab-name: containerd-node-e2e-conformance-1.4
 - name: ci-containerd-node-e2e-features
   cluster: k8s-infra-prow-build
   interval: 1h
@@ -287,7 +287,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: containerd-node-features
-- name: ci-containerd-node-e2e-1-5
+- name: ci-containerd-node-e2e-conformance-1-5
   cluster: k8s-infra-prow-build
   interval: 1h
   labels:
@@ -323,7 +323,7 @@ periodics:
           memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: containerd-node-e2e-1.5
+    testgrid-tab-name: containerd-node-e2e-conformance-1.5
 - name: ci-containerd-node-e2e-features-1-4
   cluster: k8s-infra-prow-build
   interval: 1h
@@ -906,7 +906,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: image-validation-ubuntu-e2e
-- name: ci-cos-containerd-node-e2e
+- name: ci-cos-containerd-node-e2e-conformance
   cluster: k8s-infra-prow-build
   interval: 1h
   labels:
@@ -1016,7 +1016,7 @@ periodics:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: cos-cgroupv2-containerd-node-features
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
-- name: ci-cos-cgroupv2-containerd-node-e2e
+- name: ci-cos-cgroupv2-containerd-node-e2e-conformance
   cluster: k8s-infra-prow-build
   interval: 12h
   labels:
@@ -1052,8 +1052,8 @@ periodics:
           memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: cos-cgroupv2-containerd-node-e2e
-- name: ci-cgroup-systemd-containerd-node-e2e
+    testgrid-tab-name: cos-cgroupv2-containerd-node-e2e-conformance
+- name: ci-cgroup-systemd-containerd-node-e2e-conformance
   interval: 1h
   labels:
     preset-service-account: "true"
@@ -1082,7 +1082,7 @@ periodics:
         value: /go
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: cgroup-systemd-containerd-node-e2e
+    testgrid-tab-name: cgroup-systemd-containerd-node-e2e-conformance
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
 - interval: 12h
   name: ci-cos-cgroupv2-containerd-e2e-gce
