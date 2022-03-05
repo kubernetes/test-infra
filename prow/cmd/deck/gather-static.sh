@@ -35,7 +35,7 @@ if [[ "${1:-}" == "--cleanup" ]]; then
     rm -rf ${KO_DATA_PATH}
     exit 0
 fi
-./hack/make-rules/update/ts-rollup.sh "${REPO_ROOT}/prow/cmd/deck/.ts-packages"
+time ./hack/make-rules/update/ts-rollup.sh "${REPO_ROOT}/prow/cmd/deck/.ts-packages"
 
 STATIC_MAP=()
 while IFS= read -r map; do

@@ -222,7 +222,7 @@ func buildAndPush(id *imageDef, dockerRepos []string, push bool) error {
 	logger.Info("Build and push")
 	start := time.Now()
 	defer func(logger *logrus.Entry, start time.Time) {
-		logger.WithField("duration", time.Now().Sub(start).String()).Info("Duration of image building.")
+		logger.WithField("duration", time.Since(start).String()).Info("Duration of image building.")
 	}(logger, start)
 	// So far only supports certain arch
 	isSupportedArch := (id.Arch == defaultArch || id.Arch == allArch)

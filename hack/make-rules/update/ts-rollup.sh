@@ -31,6 +31,10 @@ while IFS= read -r rollup_entrypoint; do
     ROLLUP_ENTRYPOINTS+=("${rollup_entrypoint}")
 done < "${TS_PACKAGES_FILE}"
 
+# ensure deps are installed
+./hack/build/ensure-node_modules.sh
+./hack/run-in-node-container.sh ./node_modules/.bin/rimraf dist
+
 for rollup_entrypoint_info in ${ROLLUP_ENTRYPOINTS[@]}; do
     if [[ -z  "${rollup_entrypoint_info}" || ${rollup_entrypoint_info} =~ \#.* ]]; then
         continue
@@ -48,6 +52,6 @@ for rollup_entrypoint_info in ${ROLLUP_ENTRYPOINTS[@]}; do
         fi
     else
         echo "Rollup ${rollup_entrypoint}"
-        ./hack/rollup-js.sh "${rollup_entrypoint_dir}" "${rollup_entrypoint_file}"
+        ./hack/run-in-node-container.sh ./hack/rollup-js.sh "${rollup_entrypoint_dir}" "${rollup_entrypoint_file}"
     fi
 done

@@ -18,11 +18,12 @@
 # https://github.com/kubernetes/test-infra/issues/23832 is done
 REGISTRY ?= gcr.io/k8s-prow-staging
 PROW_IMAGES ?=
+ADDITIONAL_ARGS ?=
 
 .PHONY: push-images
 push-images:
-	../hack/make-rules/go-run/arbitrary.sh run ./hack/prowimagebuilder --ko-docker-repo="${REGISTRY}" --push=true
+	../hack/make-rules/go-run/arbitrary.sh run ./hack/prowimagebuilder --ko-docker-repo="${REGISTRY}" --push=true ${ADDITIONAL_ARGS}
 
 .PHONY: build-images
 build-images:
-	../hack/make-rules/go-run/arbitrary.sh run ./hack/prowimagebuilder --ko-docker-repo="ko.local" --push=false
+	../hack/make-rules/go-run/arbitrary.sh run ./hack/prowimagebuilder --ko-docker-repo="ko.local" --push=false ${ADDITIONAL_ARGS}
