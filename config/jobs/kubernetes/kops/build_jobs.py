@@ -661,6 +661,15 @@ def generate_misc():
                    scenario="metrics-server",
                    extra_dashboards=['kops-misc']),
 
+        build_test(name_override="kops-aws-pod-identity-webhook",
+                   cloud="aws",
+                   networking="cilium",
+                   distro="u2004",
+                   kops_channel="alpha",
+                   runs_per_day=3,
+                   scenario="podidentitywebhook",
+                   extra_dashboards=['kops-misc']),
+
         build_test(name_override="kops-aws-external-dns",
                    cloud="aws",
                    networking="cilium",
@@ -1108,6 +1117,16 @@ def generate_presubmits_e2e():
             networking="calico",
             scenario="metrics-server",
             tab_name="pull-kops-e2e-aws-metrics-server",
+        ),
+
+        presubmit_test(
+            name="pull-e2e-kops-pod-identity-webhook",
+            cloud="aws",
+            distro="u2004",
+            k8s_version="ci",
+            networking="calico",
+            scenario="podidentitywebhook",
+            tab_name="pull-kops-e2e-aws-pod-identity-webhook",
         ),
 
         presubmit_test(
