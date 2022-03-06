@@ -1588,6 +1588,13 @@ func TestSyncPendingJob(t *testing.T) {
 			if actual := actual.Complete(); actual != tc.ExpectedComplete {
 				t.Errorf("expected complete: %t, got complete: %t", tc.ExpectedComplete, actual)
 			}
+			maxPodUnscheduled := r.config().Plank.PodUnscheduledTimeout.Duration 
+			for i := range tc.Pods {
+				pod := tc.Pods[i]
+				if time.Since(pod.CreationTimestamp.Time) >= maxPodUnscheduled {
+					t.Errorf("build cluster is unreachable, pod %s still in pending state after maxPodUnscheduledTime %s", pod.Name, maxPodUnscheduled)
+				}
+			}
 
 		})
 	}
