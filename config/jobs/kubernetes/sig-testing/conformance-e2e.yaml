@@ -2,6 +2,7 @@ presubmits:
   kubernetes/kubernetes:
   # conformance test using image against kubernetes master branch with `kind`
   - name: pull-kubernetes-conformance-image-test
+    cluster: k8s-infra-prow-build
     skip_branches:
     - release-\d+\.\d+ # per-release settings
     always_run: false
@@ -34,18 +35,19 @@ presubmits:
         securityContext:
           privileged: true
         resources:
+          limits:
+            cpu: "4"
+            memory: 9000Mi
           requests:
-            # these are both a bit below peak usage during build
-            # this is mostly for building kubernetes
-            memory: "9000Mi"
-            # during the tests more like 3-20m is used
-            cpu: 2000m
+            cpu: "4"
+            memory: 9000Mi
     annotations:
       testgrid-create-test-group: 'true'
       testgrid-dashboards: sig-testing-misc
       description: Runs conformance tests using kind and the conformance image
 
   - name: pull-kubernetes-conformance-kind-ipv6-parallel
+    cluster: k8s-infra-prow-build
     decorate: true
     path_alias: k8s.io/kubernetes
     skip_branches:
@@ -81,12 +83,12 @@ presubmits:
         securityContext:
           privileged: true
         resources:
+          limits:
+            cpu: "4"
+            memory: 9000Mi
           requests:
-            # these are both a bit below peak usage during build
-            # this is mostly for building kubernetes
-            memory: "9000Mi"
-            # during the tests more like 3-20m is used
-            cpu: 2000m
+            cpu: "4"
+            memory: 9000Mi
     annotations:
       fork-per-release: "true"
       testgrid-dashboards: sig-testing-kind
@@ -98,6 +100,7 @@ periodics:
 # conformance test using image against kubernetes master branch with `kind`
 - interval: 1h
   name: ci-kubernetes-conformance-image-test
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -123,12 +126,12 @@ periodics:
       securityContext:
         privileged: true
       resources:
+        limits:
+          cpu: "4"
+          memory: 9000Mi
         requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+          cpu: "4"
+          memory: 9000Mi
   # conformance test using image against kubernetes 1.14 branch with `kind`
   annotations:
     testgrid-dashboards: conformance-all, conformance-kind, sig-testing-kind
@@ -169,11 +172,11 @@ periodics:
         privileged: true
       resources:
         limits:
-          memory: 12Gi
-          cpu: 7
+          cpu: "4"
+          memory: 9000Mi
         requests:
-          memory: 12Gi
-          cpu: 7
+          cpu: "4"
+          memory: 9000Mi
   annotations:
     testgrid-num-failures-to-alert: '2'
     testgrid-alert-stale-results-hours: '48'

@@ -50,6 +50,7 @@ presubmits:
           privileged: true
   # mimic pull-kubernetes-e2e-kind, but using kind built in this PR
   - name: pull-kind-e2e-kubernetes
+    cluster: k8s-infra-prow-build
     always_run: true
     labels:
       preset-dind-enabled: "true"
@@ -86,13 +87,17 @@ presubmits:
         securityContext:
           privileged: true
         resources:
+          limits:
+            cpu: "4"
+            memory: 9000Mi
           requests:
-            memory: "9000Mi"
-            cpu: 7400m
+            cpu: "4"
+            memory: 9000Mi
   # conformance test against kubernetes master branch with `kind`, skipping
   # serial tests so it runs in ~20m
   # GA-only variant
   - name: pull-kind-conformance-parallel-ga-only
+    cluster: k8s-infra-prow-build
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -125,16 +130,17 @@ presubmits:
         securityContext:
           privileged: true
         resources:
+          limits:
+            cpu: "4"
+            memory: 9000Mi
           requests:
-            # these are both a bit below peak usage during build
-            # this is mostly for building kubernetes
-            memory: "9000Mi"
-            # during the tests more like 3-20m is used
-            cpu: 2000m
+            cpu: "4"
+            memory: 9000Mi
   # conformance test against kubernetes master branch with `kind`, skipping
   # serial tests so it runs in ~20m
   # IPv6 enabled variant
   - name: pull-kind-conformance-parallel-ipv6
+    cluster: k8s-infra-prow-build
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -171,16 +177,17 @@ presubmits:
         securityContext:
           privileged: true
         resources:
+          limits:
+            cpu: "4"
+            memory: 9000Mi
           requests:
-            # these are both a bit below peak usage during build
-            # this is mostly for building kubernetes
-            memory: "9000Mi"
-            # during the tests more like 3-20m is used
-            cpu: 2000m
+            cpu: "4"
+            memory: 9000Mi
   # conformance test against kubernetes master branch with `kind`, skipping
   # serial tests so it runs in ~20m
   # Dual Stack enabled variant
   - name: pull-kind-conformance-parallel-dual-stack-ipv4-ipv6
+    cluster: k8s-infra-prow-build
     always_run: false
     optional: true
     labels:
@@ -218,13 +225,12 @@ presubmits:
         securityContext:
           privileged: true
         resources:
+          limits:
+            cpu: "4"
+            memory: 9000Mi
           requests:
-            # TODO(BenTheElder): adjust these everywhere
-            # these are both a bit below peak usage during build
-            # this is mostly for building kubernetes
-            memory: "9000Mi"
-            # during the tests more like 3-20m is used
-            cpu: 2000m
+            cpu: "4"
+            memory: 9000Mi
   # mimic pull-kubernetes-e2e-kind, but using kind built in this PR
   - always_run: true
     decorate: true
@@ -240,6 +246,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     name: pull-kind-e2e-kubernetes-1-23
+    cluster: k8s-infra-prow-build
     path_alias: sigs.k8s.io/kind
     spec:
       containers:
@@ -281,6 +288,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     name: pull-kind-e2e-kubernetes-1-22
+    cluster: k8s-infra-prow-build
     path_alias: sigs.k8s.io/kind
     spec:
       containers:
@@ -322,6 +330,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     name: pull-kind-e2e-kubernetes-1-21
+    cluster: k8s-infra-prow-build
     path_alias: sigs.k8s.io/kind
     spec:
       containers:
@@ -363,6 +372,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     name: pull-kind-e2e-kubernetes-1-20
+    cluster: k8s-infra-prow-build
     path_alias: sigs.k8s.io/kind
     spec:
       containers:
@@ -404,6 +414,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     name: pull-kind-e2e-kubernetes-1-19
+    cluster: k8s-infra-prow-build
     path_alias: sigs.k8s.io/kind
     spec:
       containers:

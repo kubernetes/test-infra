@@ -199,6 +199,7 @@ presubmits:
       testgrid-create-test-group: 'true'
 
   - name: pull-kubernetes-conformance-kind-ga-only
+    cluster: k8s-infra-prow-build
     optional: true
     always_run: false
     decorate: true
@@ -239,6 +240,7 @@ presubmits:
       testgrid-dashboards: sig-testing-kind
 
   - name: pull-kubernetes-conformance-kind-ga-only-parallel
+    cluster: k8s-infra-prow-build
     always_run: true
     decorate: true
     skip_branches:
@@ -279,4 +281,3 @@ presubmits:
       testgrid-alert-stale-results-hours: '24'
       testgrid-create-test-group: 'true'
       testgrid-dashboards: sig-testing-kind
-    cluster: k8s-infra-prow-build
