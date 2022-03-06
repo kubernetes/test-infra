@@ -58,30 +58,50 @@ deck:
         name: buildlog
         config:
           highlight_regexes:
-          - "ERROR:"
-          - "^[+-]\\s"
-          - "signal: killed"
+          - cannot use.+as.+in argument
           - Cluster failed to initialize
+          - "compilepkg: error"
+          - cannot convert.+to type
+          - configuration error
+          - contact Google support
+          - could not apply prowjob annotations
+          - "couldn't load prow config:"
+          - curl.+Failed to connect
           - DATA RACE
+          - dirty working directory
+          - ^E\d{4} \d\d:\d\d:\d\d\.\d\d\d]
+          - "ERROR:"
+          - Error.+executing benchmarks
           - Expected.+got
+          - FAILED. See logs
+          - failed to acquire k8s binaries
+          - (FAIL|Failure \[)\b
+          - fatal error
+          - flag provided but not defined
           - Full Stack Trace
+          - got.+expected
+          - Hit an unsupported type
+          - Incompatible changes
+          - LimitExceeded
+          - "make:.+Error"
           - Master not detected
           - Merge conflict
-          - Previous write
+          - not enough arguments in call
+          - panic\b
+          - Previous (write|read)
+          - Process did not finish before.+timeout
+          - race detected
+          - security token.+invalid
+          - "signal: killed"
           - Something went wrong
           - Timed out
-          - Unexpected error
-          - Your cluster may not be fully functional
-          - contact Google support
-          - curl.+Failed to connect
-          - failed to acquire k8s binaries
-          - flag provided but not defined
-          - not enough arguments in call
-          - race detected
           - timed out
-          - (FAIL|Failure \[)\b
-          - panic\b
-          - ^E\d{4} \d\d:\d\d:\d\d\.\d\d\d]
+          - too few arguments
+          - Unexpected error
+          - Unfortunately, an error
+          - Your cluster may not be fully functional
+          - "^[+-]\\s"
+          - • Failure
           # This highlights the start of bazel tests/runs to skip go importing noise.
           - "^INFO: Analyzed \\d+ targets"
       required_files:
