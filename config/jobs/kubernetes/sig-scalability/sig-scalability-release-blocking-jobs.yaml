@@ -108,6 +108,13 @@ periodics:
       - --env=CL2_DELETE_TEST_THROUGHPUT=50
       # Overrides CONTROLLER_MANAGER_TEST_ARGS from preset-e2e-scalability-periodics.
       - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling --kube-api-qps=100 --kube-api-burst=100 --endpointslice-updates-batch-period=500ms --endpoint-updates-batch-period=500ms
+      # Overrides SCHEDULER_TEST_ARGS from preset-e2e-scalability-periodics.
+      # TODO(#1311): Clean this up after the experiment - it should allow
+      #   to hugely decrease pod-startup-latency across the whole test.
+      #   Given that individual controllers have separate QPS limits, we allow
+      #   scheduler to keep up with the load from deployment, daemonset and job
+      #   performing pod creations at once.
+      - --env=SCHEDULER_TEST_ARGS=--profiling --kube-api-qps=300 --kube-api-burst=300
       # With APF only sum of --max-requests-inflight and --max-mutating-requests-inflight matters, so set --max-mutating-requests-inflight to 0.
       - --env=APISERVER_TEST_ARGS=--max-requests-inflight=640 --max-mutating-requests-inflight=0
       - --env=CL2_ENABLE_API_AVAILABILITY_MEASUREMENT=true
