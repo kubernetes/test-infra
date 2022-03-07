@@ -78,7 +78,6 @@ presubmits:
     decorate: true
     labels:
       preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     spec:
@@ -88,53 +87,25 @@ presubmits:
         - runner.sh
         args:
         - ./prow/test/integration/integration-test.sh
-        - --config=ci
         env:
-        - name: BAZEL_FETCH_PLEASE
-          value: "true" # integration test fetches a very specific set of targets, define them in integration-test.sh instead of here
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
         resources:
           requests:
-            cpu: 1.9 # Peak usage around 1.5 cpu
-            memory: "8Gi" # Rough estimated usage of memory
+            # This job is very CPU intensive as building prow images in
+            # parallel
+            cpu: "14"
+      tolerations:
+      - key: "highcpu"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"
+      nodeSelector:
+        highcpu: "true"
     annotations:
       testgrid-dashboards: presubmits-test-infra
       testgrid-tab-name: integration
-  - name: pull-test-infra-integration-with-ko
-    branches:
-    - master
-    always_run: false
-    decorate: true
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-test-infra
-        command:
-        - runner.sh
-        args:
-        - ./prow/test/integration/integration-test.sh
-        - --config=ci
-        env:
-        - name: PUSH_IMAEG_WITH_KO
-          value: "true"
-        - name: BAZEL_FETCH_PLEASE
-          value: "true" # integration test fetches a very specific set of targets, define them in integration-test.sh instead of here
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        resources:
-          requests:
-            cpu: 1.9 # Peak usage around 1.5 cpu
-            memory: "8Gi" # Rough estimated usage of memory
-    annotations:
-      testgrid-dashboards: presubmits-test-infra
-      testgrid-tab-name: integration-with-ko
   - name: pull-test-infra-unit-test
     branches:
     - master
@@ -215,24 +186,3 @@ presubmits:
     annotations:
       testgrid-dashboards: presubmits-test-infra
       testgrid-tab-name: verify-test
-
-
-  # Optional job for testing new build system.
-  # For testing a new make rule, simply pointing `make test` to the new make rule only.
-  # Once a make rule is merged the test should be moved to another job that's required.
-  - name: pull-test-infra-test-beta
-    branches:
-    - master
-    always_run: false
-    decorate: true
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-test-infra
-        command:
-        - runner.sh
-        args:
-        - make
-        - test
-    annotations:
-      testgrid-dashboards: presubmits-test-infra
-      testgrid-tab-name: make-test-beta
