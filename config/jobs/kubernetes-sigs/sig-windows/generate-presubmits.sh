@@ -49,13 +49,6 @@ for release in "$@"; do
   dockerconfigfile="--docker-config-file=\$(DOCKER_CONFIG_FILE) "
 
   case ${release} in
-    1.20)
-      dockershim_api_model="https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_1_20.json"
-      containerd_api_model="https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_1_20.json"
-      repolist_label="preset-windows-repo-list: \"true\""
-      dockerconfigfile=""
-      preset_label=""
-      ;;
     1.21)
       dockershim_api_model="https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_1_21.json"
       containerd_api_model="https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_1_21.json"
