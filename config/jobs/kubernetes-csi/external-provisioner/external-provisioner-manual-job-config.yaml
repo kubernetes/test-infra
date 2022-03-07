@@ -2,7 +2,7 @@
 
 presubmits:
   kubernetes-csi/external-provisioner:
-  - name: pull-kubernetes-csi-external-provisioner-distributed-on-kubernetes-1-21
+  - name: pull-kubernetes-csi-external-provisioner-distributed-on-kubernetes-1-23
     always_run: true
     optional: false
     decorate: true
@@ -26,7 +26,7 @@ presubmits:
         - ./.prow.sh
         env:
         - name: CSI_PROW_KUBERNETES_VERSION
-          value: "1.21.0"
+          value: "1.23.0"
         - name: CSI_PROW_USE_BAZEL
           value: "true"
         - name: CSI_PROW_DRIVER_VERSION
