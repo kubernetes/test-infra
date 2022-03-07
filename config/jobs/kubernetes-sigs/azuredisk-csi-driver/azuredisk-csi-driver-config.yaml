@@ -673,16 +673,9 @@ presubmits:
               make e2e-test
           securityContext:
             privileged: true
-          resources:
-            requests:
-              cpu: 2
-              memory: "9Gi"
           env:
             - name: WINDOWS
               value: "true"
-            # Windows isn't really conformance, we typically run at 4 to keep the time reasonable (~45 mins)
-            - name: CONFORMANCE_NODES
-              value: "4"
             - name: TEST_WINDOWS
               value: "true"
             - name: WINDOWS_FLAVOR
@@ -691,10 +684,48 @@ presubmits:
               value: "true"
             - name: NODE_MACHINE_TYPE
               value: "Standard_D4s_v3"
-            - name: DISABLE_ZONE
-              value: "true"
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
       testgrid-tab-name: pull-kubernetes-e2e-capz-azure-disk-windows
       description: "Run E2E tests on a capz Windows cluster for Azure Disk CSI driver."
+      testgrid-num-columns-recent: '30'
+  - name: pull-kubernetes-e2e-capz-azure-disk
+    decorate: true
+    always_run: false
+    optional: true
+    path_alias: sigs.k8s.io/azuredisk-csi-driver
+    branches:
+      - master
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-azure
+        base_ref: main
+        path_alias: sigs.k8s.io/cluster-api-provider-azure
+        workdir: true
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220221-c13e827224-master
+          command:
+            - runner.sh
+            - ./scripts/ci-entrypoint.sh
+          args:
+            - bash
+            - -c
+            - >-
+              cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&
+              make e2e-test
+          securityContext:
+            privileged: true
+          env:
+            - name: NODE_MACHINE_TYPE
+              value: "Standard_D2s_v3"
+    annotations:
+      testgrid-dashboards: provider-azure-azuredisk-csi-driver
+      testgrid-tab-name: pull-kubernetes-e2e-capz-azure-disk
+      description: "Run E2E tests on a capz cluster for Azure Disk CSI driver."
       testgrid-num-columns-recent: '30'
