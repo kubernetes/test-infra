@@ -1,9 +1,12 @@
 presubmits:
   kubernetes/test-infra:
+  # pull-test-infra-bazel is deprecated, leave it here just in case. Will be
+  # completely removed once bazel footprint is removed from test-infra
   - name: pull-test-infra-bazel
     branches:
     - master
-    always_run: true
+    always_run: false
+    optional: true
     decorate: true
     labels:
       preset-service-account: "true"
