@@ -6,6 +6,9 @@ postsubmits:
       annotations:
         # this is the name of some testgrid dashboard to report to.
         testgrid-dashboards: sig-cluster-lifecycle-image-pushes, sig-k8s-infra-gcb
+        testgrid-tab-name: post-cluster-api-push-images
+        testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
+        testgrid-num-failures-to-alert: "2"
       decorate: true
       branches:
         - ^main$
@@ -267,6 +270,7 @@ periodics:
       testgrid-dashboards: sig-cluster-lifecycle-image-pushes, sig-k8s-infra-gcb
       testgrid-tab-name: cluster-api-push-images-nightly
       testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: "2"
   - name: cluster-api-provider-openstack-push-images-nightly
     cluster: k8s-infra-prow-build-trusted
     decorate: true
