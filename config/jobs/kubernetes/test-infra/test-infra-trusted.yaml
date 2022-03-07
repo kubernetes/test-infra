@@ -442,9 +442,13 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/bazelbuild:v20210930-b6c4097796-test-infra
+      - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20211210-cf89952124
         command:
-        - ./boskos/update_prow_config.sh
+        - make
+        args:
+        - -C
+        - config/prow
+        - update-boskos-resources
     annotations:
       testgrid-dashboards: sig-testing-maintenance
       testgrid-tab-name: boskos-config-upload
