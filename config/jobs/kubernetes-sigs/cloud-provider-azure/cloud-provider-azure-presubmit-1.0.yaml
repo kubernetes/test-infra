@@ -286,7 +286,7 @@ presubmits:
           workdir: false
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-1.21
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-master
             command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -337,7 +337,7 @@ presubmits:
           workdir: true
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-1.22
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-master
             command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
