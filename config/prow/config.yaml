@@ -597,6 +597,10 @@ branch-protection:
           restrictions:
             users:
             - k8s-ci-robot
+        sig-storage-local-static-provisioner:
+          branches:
+            gh-pages:
+              protect: false
 
 tide:
   sync_period: 2m
