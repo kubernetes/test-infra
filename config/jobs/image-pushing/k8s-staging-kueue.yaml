@@ -6,7 +6,7 @@ postsubmits:
         testgrid-dashboards: sig-scheduling, sig-k8s-infra-gcb
       decorate: true
       branches:
-        - ^master$
+        - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
