@@ -116,7 +116,7 @@ deck:
           - Your cluster may not be fully functional
           - ^\s+\^$
           - \[31m
-          - "[+-]{3}\\s"
+          - "^diff" # [+-]{3}\\s" has too much noise from go test output
           - • Failure
           # This highlights the start of bazel tests/runs to skip go importing noise.
           - "^INFO: Analyzed \\d+ targets"
