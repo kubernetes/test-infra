@@ -704,13 +704,12 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20210806-38e1be0-test-infra
+    - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20211210-cf89952124
       command:
-      - bazel
+      - ./hack/make-rules/go-run/arbitrary.sh
       args:
       - run
-      - //experiment/slack-oncall-updater
-      - --
+      - ./experiment/slack-oncall-updater
       - --token-path=/etc/slack-token/token
       volumeMounts:
       - name: slack
