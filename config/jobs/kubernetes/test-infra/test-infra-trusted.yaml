@@ -420,7 +420,7 @@ postsubmits:
     spec:
       serviceAccountName: testgrid-config-updater
       containers:
-      - image: gcr.io/k8s-staging-test-infra/bazelbuild:v20210930-b6c4097796-test-infra
+      - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20211210-cf89952124
         command:
         - ./testgrid/config-upload.sh
         resources:
