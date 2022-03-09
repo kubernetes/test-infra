@@ -193,11 +193,11 @@ func TestGetURL(t *testing.T) {
 		{
 			name: "fallback bucket - postsubmit",
 
-			jobName: "ci-test-infra-bazel",
+			jobName: "post-test-infra-test-all",
 			c:       c,
 			bucket:  "https://storage.googleapis.com/kubernetes-jenkins",
 
-			expected: "https://storage.googleapis.com/kubernetes-jenkins/logs/ci-test-infra-bazel/latest-build.txt",
+			expected: "https://storage.googleapis.com/kubernetes-jenkins/logs/post-test-infra-test-all/latest-build.txt",
 		},
 		{
 			name: "fallback bucket - periodic",
