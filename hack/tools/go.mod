@@ -8,6 +8,7 @@ require (
 	github.com/go-bindata/go-bindata/v3 v3.1.3
 	github.com/golangci/golangci-lint v1.43.0
 	github.com/google/ko v0.9.4-0.20220213235838-0187841b1641
+	github.com/sethvargo/gcs-cacher v0.1.3
 	gotest.tools/gotestsum v1.7.0
 	k8s.io/api v0.22.2 // indirect
 	k8s.io/code-generator v0.21.4
