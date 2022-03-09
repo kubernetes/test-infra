@@ -45,7 +45,7 @@ const (
 	// Relative to root of the repo
 	defaultProwImageListFile = "prow/.prow-images.yaml"
 
-	defaultWorkersCount = 10
+	defaultWorkersCount = 5
 	defaultRetry        = 3
 
 	// noOpKoDocerRepo is used when images are not pushed
