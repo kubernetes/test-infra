@@ -28,7 +28,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20211014-7ca1952a94
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220309-4b32800b2d
             command:
               - /run.sh
             args:
@@ -43,6 +43,13 @@ postsubmits:
   kubernetes-sigs/ibm-powervs-block-csi-driver:
     # The name should be changed to match the repo name above
     - name: post-ibm-powervs-block-csi-driver-push-images
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes-sigs
+            slug: ibm-powervs-block-csi-driver-maintainers
+        github_users:
+          - mkumatag
+          - Madhan-SWE
       cluster: k8s-infra-prow-build-trusted
       annotations:
         # This is the name of some testgrid dashboard to report to.
@@ -61,7 +68,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20211014-7ca1952a94
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220309-4b32800b2d
             command:
               - /run.sh
             args:

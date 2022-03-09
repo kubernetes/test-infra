@@ -2,7 +2,7 @@
 
 presubmits:
   kubernetes-csi/external-provisioner:
-  - name: pull-kubernetes-csi-external-provisioner-distributed-on-kubernetes-1-21
+  - name: pull-kubernetes-csi-external-provisioner-distributed-on-kubernetes-1-23
     always_run: true
     optional: false
     decorate: true
@@ -19,14 +19,14 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220221-c13e827224-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-master
         command:
         - runner.sh
         args:
         - ./.prow.sh
         env:
         - name: CSI_PROW_KUBERNETES_VERSION
-          value: "1.21.0"
+          value: "1.23.0"
         - name: CSI_PROW_USE_BAZEL
           value: "true"
         - name: CSI_PROW_DRIVER_VERSION

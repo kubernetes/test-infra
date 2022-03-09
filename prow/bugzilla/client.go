@@ -101,7 +101,7 @@ type Client interface {
 }
 
 // NewClient returns a bugzilla client.
-func NewClient(getAPIKey func() []byte, endpoint string, githubExternalTrackerId uint) Client {
+func NewClient(getAPIKey func() []byte, endpoint string, githubExternalTrackerId uint, authMethod string) Client {
 	return &client{
 		logger: logrus.WithField("client", "bugzilla"),
 		delegate: &delegate{
@@ -109,6 +109,7 @@ func NewClient(getAPIKey func() []byte, endpoint string, githubExternalTrackerId
 			endpoint:                endpoint,
 			githubExternalTrackerId: githubExternalTrackerId,
 			getAPIKey:               getAPIKey,
+			authMethod:              authMethod,
 		},
 	}
 }

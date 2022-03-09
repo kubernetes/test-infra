@@ -28,6 +28,7 @@ periodics:
 # conformance test against kubernetes master branch with `kind`
 - interval: 1h
   name: ci-kubernetes-kind-conformance
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -56,12 +57,12 @@ periodics:
       securityContext:
         privileged: true
       resources:
+        limits:
+          cpu: "4"
+          memory: 9000Mi
         requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+          cpu: "4"
+          memory: 9000Mi
   annotations:
     testgrid-dashboards: conformance-all, conformance-kind, sig-testing-kind
     testgrid-tab-name: conformance, master (dev)
@@ -71,6 +72,7 @@ periodics:
 # conformance test against kubernetes master branch with `kind` ipv6
 - interval: 1h
   name: ci-kubernetes-kind-conformance-ipv6
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -105,12 +107,12 @@ periodics:
       securityContext:
         privileged: true
       resources:
+        limits:
+          cpu: "4"
+          memory: 9000Mi
         requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+          cpu: "4"
+          memory: 9000Mi
   annotations:
     testgrid-dashboards: conformance-all, conformance-kind, sig-testing-kind
     testgrid-tab-name: kind (IPv6), master (dev)
@@ -119,8 +121,9 @@ periodics:
     testgrid-num-columns-recent: '3'
 # conformance test against kubernetes master branch with `kind`, skipping
 # serial tests so it runs in ~20m
-- interval: 20m
+- interval: 1h
   name: ci-kubernetes-kind-conformance-parallel
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -150,12 +153,12 @@ periodics:
       securityContext:
         privileged: true
       resources:
+        limits:
+          cpu: "4"
+          memory: 9000Mi
         requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+          cpu: "4"
+          memory: 9000Mi
   annotations:
     testgrid-dashboards: conformance-all, conformance-kind, sig-testing-kind
     testgrid-tab-name: conformance, master (dev) [non-serial]
@@ -163,8 +166,9 @@ periodics:
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com
     testgrid-num-columns-recent: '3'
 # conformance test against kubernetes master branch with `kind` ipv6
-- interval: 20m
+- interval: 1h
   name: ci-kubernetes-kind-conformance-parallel-ipv6
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -200,12 +204,12 @@ periodics:
       securityContext:
         privileged: true
       resources:
+        limits:
+          cpu: "4"
+          memory: 9000Mi
         requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "9000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+          cpu: "4"
+          memory: 9000Mi
   annotations:
     testgrid-dashboards: conformance-all, conformance-kind, sig-testing-kind
     testgrid-tab-name: kind (IPv6), master (dev) [non-serial]

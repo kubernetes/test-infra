@@ -11,10 +11,10 @@ plank:
       timeout: 2h
       grace_period: 15m
       utility_images:
-        clonerefs: "gcr.io/k8s-prow/clonerefs:v20220303-3364943fd7"
-        initupload: "gcr.io/k8s-prow/initupload:v20220303-3364943fd7"
-        entrypoint: "gcr.io/k8s-prow/entrypoint:v20220303-3364943fd7"
-        sidecar: "gcr.io/k8s-prow/sidecar:v20220303-3364943fd7"
+        clonerefs: "gcr.io/k8s-prow/clonerefs:v20220309-f9f6d1d28f"
+        initupload: "gcr.io/k8s-prow/initupload:v20220309-f9f6d1d28f"
+        entrypoint: "gcr.io/k8s-prow/entrypoint:v20220309-f9f6d1d28f"
+        sidecar: "gcr.io/k8s-prow/sidecar:v20220309-f9f6d1d28f"
       gcs_configuration:
         bucket: "kubernetes-jenkins"
         path_strategy: "legacy"
@@ -58,11 +58,66 @@ deck:
         name: buildlog
         config:
           highlight_regexes:
-          - timed out
-          - "ERROR:"
+          - Automatic merge failed
+          - cannot convert.+to type
+          - "cannot use.+as.+(type|value)"
+          - Cluster failed to initialize
+          - cluster unreachable
+          - "compilepkg: error"
+          - configuration error
+          - contact Google support
+          - could not apply prowjob annotations
+          - could not find the referenced.+TestGroup
+          - could not write config
+          - "couldn't load prow config:"
+          - curl.+Failed to connect
+          - DATA RACE
+          - dirty working directory
+          - ^E\d{4} \d\d:\d\d:\d\d\.\d+
+          - "(Error|ERROR|error)s?:"
+          - Error.+executing benchmarks
+          - Expected.+got
+          - FAILED. See logs
+          - failed to acquire k8s binaries
+          - failed to solve
           - (FAIL|Failure \[)\b
+          - fatal error
+          - flag provided but not defined
+          - Full Stack Trace
+          - got.+expected
+          - hash mismatch
+          - Hit an unsupported type
+          - Incompatible changes
+          - indent-error-flow
+          - INSTALLATION FAILED
+          - is a misspelling
+          - LimitExceeded
+          - "make:.+Error"
+          - Master not detected
+          - Merge conflict
+          - not enough arguments in call
           - panic\b
-          - ^E\d{4} \d\d:\d\d:\d\d\.\d\d\d]
+          - Previous (write|read)
+          - Process did not finish before.+timeout
+          - race detected
+          - security token.+invalid
+          - "signal: killed"
+          - Something went wrong
+          - too few arguments
+          - "[Tt]imed out"
+          - type.+has no field
+          - unable to start the controlplane
+          - "undefined:"
+          - Unfortunately, an error
+          - unused.+deadcode
+          - "[Uu]nexpected error"
+          - verify.+failed
+          - want.+got
+          - Your cluster may not be fully functional
+          - ^\s+\^$
+          - \[31m
+          - "^diff" # [+-]{3}\\s" has too much noise from go test output
+          - • Failure
           # This highlights the start of bazel tests/runs to skip go importing noise.
           - "^INFO: Analyzed \\d+ targets"
       required_files:
@@ -517,8 +572,6 @@ branch-protection:
         security-profiles-operator:
           enforce_admins: true
           required_linear_history: true
-          required_pull_request_reviews:
-            required_approving_review_count: 1
           restrictions:
             users:
             - k8s-ci-robot

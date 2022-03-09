@@ -1,12 +1,20 @@
 test_groups:
 - name: redhat-hypershift-main-aws-pooled-conformance
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-main-periodics-e2e-aws-pooled-periodic-conformance
+- name: redhat-hypershift-main-periodic-ci-openshift-hypershift-main-periodics-e2e-conformance-azure
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-main-periodics-e2e-conformance-azure
 
 dashboards:
 - name: redhat-hypershift
   dashboard_tab:
   - name: hypershift-main-aws-pooled-conformance
     test_group_name: redhat-hypershift-main-aws-pooled-conformance
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+  - name: azure-conformance-parallel
+    test_group_name: redhat-hypershift-main-periodic-ci-openshift-hypershift-main-periodics-e2e-conformance-azure
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:

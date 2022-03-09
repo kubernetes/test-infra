@@ -16,12 +16,18 @@ include ../Makefile.base.mk
 # Makefile.base.mk requires REPO_ROOT to be set
 REPO_ROOT:=${CURDIR}/..
 
+# ARGS can be overridden by calling make
+ARGS ?= ""
+
 prepare-release-branch: ensure-py-requirements3
 	./run.sh
 
-test-generate: ensure-py-requirements3
+generate-tests: ensure-py-requirements3
+	../hack/run-in-python-container.sh ./releng/generate_tests.py ${ARGS}
+
+test-generate-tests: ensure-py-requirements3
 	../hack/run-in-python-container.sh ./releng/generate_tests_test.py
 
-test: test-generate
+test: test-generate-tests
 
 .PHONY: test

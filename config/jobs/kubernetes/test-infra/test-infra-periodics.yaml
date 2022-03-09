@@ -1,32 +1,4 @@
 periodics:
-- name: ci-test-infra-bazel
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
-  interval: 1h
-  labels:
-    preset-service-account: "true"
-    preset-bazel-scratch-dir: "true"
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20210806-38e1be0-test-infra
-      command:
-      - hack/bazel.sh
-      args:
-      - test
-      - --config=ci
-      - --nobuild_tests_only
-      - //...
-      env:
-      - name: BAZEL_FETCH_PLEASE
-        value: //...
-  annotations:
-    testgrid-dashboards: sig-testing-misc
-    testgrid-tab-name: ci-bazel
-    description: Runs bazel test //... on the test-infra repo every hour
-
 - name: ci-test-infra-continuous-test
   decorate: true
   extra_refs:
@@ -39,7 +11,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220221-c13e827224-test-infra
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-test-infra
       command:
       - runner.sh
       args:

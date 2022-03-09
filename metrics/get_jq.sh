@@ -27,13 +27,25 @@ if [[ -f "${JQ_BIN}" ]]; then
     exit 0
 fi
 
-mkdir -p "${JQ_DIR}"
-URL=https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64
-if [[ "$(uname)" == Darwin ]]; then
-    URL=https://github.com/stedolan/jq/releases/download/jq-1.5/jq-osx-amd64
-fi
+bin-path() {
+    echo "${REPO_ROOT}/${JQ_DIR}/$1"
+}
 
-curl -fsSL "${URL}" -o "${JQ_BIN}"
-chmod a+x "${JQ_BIN}"
+download() {
+    local name="$1"
+    local path="$(bin-path $name)"
+    curl -fsSL "https://github.com/stedolan/jq/releases/download/jq-1.5/$name" -o "$path"
+    chmod a+x "$path"
+    cp "$path" "$JQ_BIN"
+}
+
+mkdir -p "${JQ_DIR}"
+# linux64 is used by CI, making sure that this is used in CI as well
+download jq-linux64
+# ensure that `_bin/jq-1.5/jq` is compitable with host, so that python3 test
+# won't fail locally
+if [[ "$(uname)" == Darwin ]]; then
+    download jq-osx-amd64
+fi
 
 echo "$JQ_BIN"

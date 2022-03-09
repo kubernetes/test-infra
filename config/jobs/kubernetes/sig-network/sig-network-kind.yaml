@@ -1,6 +1,7 @@
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-e2e-kind-dual-canary
+    cluster: k8s-infra-prow-build
     optional: true
     always_run: false
     skip_report: false
@@ -37,19 +38,19 @@ presubmits:
         securityContext:
           privileged: true
         resources:
+          limits:
+            cpu: 4
+            memory: 9Gi
           requests:
-            # TODO(BenTheElder): adjust these everywhere
-            # these are both a bit below peak usage during build
-            # this is mostly for building kubernetes
-            memory: "4000Mi"
-            # during the tests more like 3-20m is used
-            cpu: 2000m
+            cpu: 4
+            memory: 9Gi
     annotations:
       testgrid-dashboards: sig-network-kind
       testgrid-tab-name: pr-sig-network-kind, dual
       description: Runs tests against a Dual Stack Kubernetes in Docker cluster
       testgrid-alert-email: antonio.ojea.garcia@gmail.com
   - name: pull-kubernetes-e2e-kind-ipvs-dual-canary
+    cluster: k8s-infra-prow-build
     optional: true
     always_run: false
     skip_report: false
@@ -88,13 +89,12 @@ presubmits:
         securityContext:
           privileged: true
         resources:
+          limits:
+            cpu: 4
+            memory: 9Gi
           requests:
-            # TODO(BenTheElder): adjust these everywhere
-            # these are both a bit below peak usage during build
-            # this is mostly for building kubernetes
-            memory: "4000Mi"
-            # during the tests more like 3-20m is used
-            cpu: 2000m
+            cpu: 4
+            memory: 9Gi
     annotations:
       testgrid-dashboards: sig-network-kind
       testgrid-tab-name: pr-sig-network-kind, ipvs, dual
@@ -102,6 +102,7 @@ presubmits:
       testgrid-alert-email: antonio.ojea.garcia@gmail.com
   # network test against kubernetes master branch with `kind` multizone cluster
   - name: pull-kubernetes-e2e-kind-multizone
+    cluster: k8s-infra-prow-build
     optional: true
     always_run: false
     skip_report: false
@@ -137,9 +138,12 @@ presubmits:
         securityContext:
           privileged: true
         resources:
+          limits:
+            cpu: 4
+            memory: 9Gi
           requests:
-            memory: "9000Mi"
-            cpu: 4000m
+            cpu: 4
+            memory: 9Gi
     annotations:
       testgrid-dashboards: sig-network-kind
       testgrid-tab-name: pr-sig-network-kind, multizone
@@ -150,6 +154,7 @@ periodics:
 # network test against kubernetes master branch with `kind`
 - interval: 6h
   name: ci-kubernetes-kind-network
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -182,12 +187,12 @@ periodics:
       securityContext:
         privileged: true
       resources:
+        limits:
+          cpu: 4
+          memory: 9Gi
         requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "4000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+          cpu: 4
+          memory: 9Gi
   annotations:
     testgrid-dashboards: sig-network-kind, sig-testing-kind
     testgrid-tab-name: sig-network-kind, master
@@ -197,6 +202,7 @@ periodics:
 # network test against kubernetes master branch with `kind` ipv6
 - interval: 6h
   name: ci-kubernetes-kind-network-ipv6
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -235,12 +241,12 @@ periodics:
       securityContext:
         privileged: true
       resources:
+        limits:
+          cpu: 4
+          memory: 9Gi
         requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "4000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+          cpu: 4
+          memory: 9Gi
   annotations:
     testgrid-dashboards: sig-network-kind, sig-testing-kind
     testgrid-tab-name: sig-network-kind, IPv6, master
@@ -250,6 +256,7 @@ periodics:
 # network test against kubernetes master branch with `kind` dual stack
 - interval: 6h
   name: ci-kubernetes-kind-network-dual
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -290,12 +297,12 @@ periodics:
       securityContext:
         privileged: true
       resources:
+        limits:
+          cpu: 4
+          memory: 9Gi
         requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "4000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+          cpu: 4
+          memory: 9Gi
   annotations:
     testgrid-dashboards: sig-network-kind, sig-testing-kind
     testgrid-tab-name: sig-network-kind, dual, master
@@ -305,6 +312,7 @@ periodics:
 # network test against kubernetes master branch with `kind`
 - interval: 6h
   name: ci-kubernetes-kind-network-ipvs
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -339,12 +347,12 @@ periodics:
       securityContext:
         privileged: true
       resources:
+        limits:
+          cpu: 4
+          memory: 9Gi
         requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "4000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+          cpu: 4
+          memory: 9Gi
   annotations:
     testgrid-dashboards: sig-network-kind, sig-testing-kind
     testgrid-tab-name: sig-network-kind, ipvs, master
@@ -354,6 +362,7 @@ periodics:
 # network test against kubernetes master branch with `kind` ipv6
 - interval: 6h
   name: ci-kubernetes-kind-network-ipvs-ipv6
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -394,12 +403,12 @@ periodics:
       securityContext:
         privileged: true
       resources:
+        limits:
+          cpu: 4
+          memory: 9Gi
         requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "4000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+          cpu: 4
+          memory: 9Gi
   annotations:
     testgrid-dashboards: sig-network-kind, sig-testing-kind
     testgrid-tab-name: sig-network-kind, ipvs, IPv6, master
@@ -409,6 +418,7 @@ periodics:
 # network test against kubernetes master branch with `kind` dual stack
 - interval: 6h
   name: ci-kubernetes-kind-network-ipvs-dual
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -451,12 +461,12 @@ periodics:
       securityContext:
         privileged: true
       resources:
+        limits:
+          cpu: 4
+          memory: 9Gi
         requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "4000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+          cpu: 4
+          memory: 9Gi
   annotations:
     testgrid-dashboards: sig-network-kind, sig-testing-kind
     testgrid-tab-name: sig-network-kind, ipvs, dual, master
@@ -467,6 +477,7 @@ periodics:
 # serial tests so it runs in ~20m
 - interval: 6h
   name: ci-kubernetes-kind-network-parallel
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -500,12 +511,12 @@ periodics:
       securityContext:
         privileged: true
       resources:
+        limits:
+          cpu: 4
+          memory: 9Gi
         requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "4000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+          cpu: 4
+          memory: 9Gi
   annotations:
     testgrid-dashboards: sig-network-kind, sig-testing-kind
     testgrid-tab-name: sig-network-kind, master [non-serial]
@@ -515,6 +526,7 @@ periodics:
 # network test against kubernetes master branch with `kind` ipv6
 - interval: 6h
   name: ci-kubernetes-kind-network-parallel-ipv6
+  cluster: k8s-infra-prow-build
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
@@ -554,12 +566,12 @@ periodics:
       securityContext:
         privileged: true
       resources:
+        limits:
+          cpu: 4
+          memory: 9Gi
         requests:
-          # these are both a bit below peak usage during build
-          # this is mostly for building kubernetes
-          memory: "4000Mi"
-          # during the tests more like 3-20m is used
-          cpu: 2000m
+          cpu: 4
+          memory: 9Gi
   annotations:
     testgrid-dashboards: sig-network-kind, sig-testing-kind
     testgrid-tab-name: sig-network-kind, IPv6, master [non-serial]
@@ -568,6 +580,7 @@ periodics:
     testgrid-num-columns-recent: '3'
 - interval: 6h
   name: ci-kubernetes-kind-multizone
+  cluster: k8s-infra-prow-build
   decorate: true
   labels:
     preset-service-account: "true"
@@ -601,9 +614,12 @@ periodics:
       securityContext:
         privileged: true
       resources:
+        limits:
+          cpu: 4
+          memory: 9Gi
         requests:
-          memory: "9000Mi"
-          cpu: 4000m
+          cpu: 4
+          memory: 9Gi
   annotations:
     testgrid-dashboards: sig-network-kind
     testgrid-tab-name: sig-network-kind, multizone

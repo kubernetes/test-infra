@@ -21,7 +21,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"path/filepath"
+	"strings"
 	"text/template"
+
+	"golang.org/x/net/html"
 
 	"github.com/sirupsen/logrus"
 
@@ -35,6 +38,12 @@ func init() {
 }
 
 type Lens struct{}
+
+type document struct {
+	Filename string
+	Title    string
+	Content  string
+}
 
 // Config returns the lens's configuration.
 func (lens Lens) Config() lenses.LensConfig {
@@ -71,7 +80,7 @@ func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string,
 		return "Why am I here? There is no html file"
 	}
 
-	documents := map[string]string{}
+	documents := make([]document, 0)
 	for _, artifact := range artifacts {
 		content, err := artifact.ReadAll()
 		if err != nil {
@@ -79,14 +88,7 @@ func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string,
 			continue
 		}
 		name := filepath.Base(artifact.CanonicalLink())
-
-		content = injectHeightNotifier(content, name)
-
-		// Escape double quotes as we are going to put this into an iframes srcdoc attribute. We can not reference the
-		// src directly because we have to inject the height notifier.
-		// Ref: https://html.spec.whatwg.org/multipage/iframe-embed-object.html#attr-iframe-srcdoc
-		content = bytes.ReplaceAll(content, []byte(`"`), []byte(`&quot;`))
-		documents[name] = string(content)
+		documents = append(documents, extractDocumentDetails(name, content))
 	}
 
 	template, err := template.ParseFiles(filepath.Join(resourceDir, "template.html"))
@@ -102,14 +104,68 @@ func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string,
 	return buf.String()
 }
 
+// extractDocumentDetails parses the HTML to extract the title and
+// meta description tag, if present.
+func extractDocumentDetails(name string, content []byte) document {
+	doc := document{
+		Filename: name,
+		Title:    name,
+		Content:  string(content),
+	}
+
+	description := ""
+	token := html.NewTokenizer(bytes.NewReader(content))
+	isTitle := false
+	for {
+		switch token.Next() {
+		case html.ErrorToken:
+			doc.Content = injectHeightNotifier(doc.Content, name)
+			// Escape double quotes as we are going to put this into an iframes srcdoc attribute. We can not reference the
+			// src directly because we have to inject the height notifier.
+			// Ref: https://html.spec.whatwg.org/multipage/iframe-embed-object.html#attr-iframe-srcdoc
+			doc.Content = strings.ReplaceAll(doc.Content, `"`, `&quot;`)
+
+			if description != "" {
+				doc.Title = doc.Title + fmt.Sprintf(` <abbr class="icon material-icons" title="%s">info</abbr>`, description)
+			}
+
+			return doc
+		case html.StartTagToken, html.SelfClosingTagToken:
+			tt := token.Token()
+			switch tt.Data {
+			case "title":
+				isTitle = true
+			case "meta":
+				content := ""
+				isDescription := false
+				for _, attr := range tt.Attr {
+					if attr.Key == "name" && attr.Val == "description" {
+						isDescription = true
+					} else if attr.Key == "content" {
+						content = attr.Val
+					}
+				}
+				if isDescription {
+					description = content
+				}
+			}
+		case html.TextToken:
+			if isTitle {
+				isTitle = false
+				tt := token.Token()
+				if tt.Data != "" {
+					doc.Title = tt.Data
+				}
+			}
+		}
+	}
+}
+
 // injectHeightNotifier injects a small javascript snippet that will tell the iframe container about the height
 // of the iframe. Iframe height can only be set as an absolute value and CORS doesn't allow the container to
 // query the iframe.
-func injectHeightNotifier(content []byte, name string) []byte {
-	content = append([]byte(`<div id="wrapper">`), content...)
-	// From https://stackoverflow.com/a/44547866 and extended to also pass
-	// back the element id, as we can have multiple pages.
-	return append(content, []byte(fmt.Sprintf(`</div><script type="text/javascript">
+func injectHeightNotifier(content string, name string) string {
+	return `<div id="wrapper">` + content + fmt.Sprintf(`</div><script type="text/javascript">
 window.addEventListener("load", function(){
     if(window.self === window.top) return; // if w.self === w.top, we are not in an iframe
     send_height_to_parent_function = function(){
@@ -122,5 +178,5 @@ window.addEventListener("load", function(){
     var config = { attributes: true, childList: true, characterData: true, subtree:true}; // PT2
     observer.observe(window.document, config);                                            // PT3
 });
-</script>`, name))...)
+</script>`, name)
 }

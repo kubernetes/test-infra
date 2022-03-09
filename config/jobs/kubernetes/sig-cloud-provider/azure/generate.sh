@@ -38,14 +38,14 @@ EOF
 }
 
 # we need to define the full image URL so it can be autobumped
-tmp="gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220221-c13e827224-master"
+tmp="gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-master"
 kubekins_e2e_image="${tmp/\-master/}"
 installCSIdrivers=""
 
 for release in "$@"; do
   output="${dir}/release-${release}.yaml"
   kubernetes_version="latest"
-  capz_release="release-1.1"
+  capz_release="release-1.2"
 
   if [[ "${release}" == "master" ]]; then
     branch=$(echo -e 'master # TODO(releng): Remove once repo default branch has been renamed\n      - main')
@@ -598,7 +598,7 @@ EOF
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220221-c13e827224-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-master
       command:
       - runner.sh
       - ./scripts/ci-conformance.sh
@@ -645,7 +645,7 @@ EOF
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220221-c13e827224-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -697,7 +697,7 @@ EOF
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220221-c13e827224-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -751,7 +751,7 @@ EOF
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220221-c13e827224-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -802,7 +802,7 @@ EOF
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220221-c13e827224-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh

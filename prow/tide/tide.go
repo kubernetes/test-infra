@@ -1088,7 +1088,12 @@ func (c *Controller) pickNewBatch(sp subpool, candidates []PullRequest, maxBatch
 	}
 
 	for _, pr := range candidates {
-		if ok, err := r.Merge(string(pr.HeadRefOID)); err != nil {
+		mergeMethod, err := prMergeMethod(c.config().Tide, &pr)
+		if err != nil {
+			sp.log.WithFields(pr.logFields()).Warnf("Failed to get merge method for PR, will skip: %v.", err)
+			continue
+		}
+		if ok, err := r.MergeWithStrategy(string(pr.HeadRefOID), string(mergeMethod)); err != nil {
 			// we failed to abort the merge and our git client is
 			// in a bad state; it must be cleaned before we try again
 			return nil, err
