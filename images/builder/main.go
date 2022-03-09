@@ -378,12 +378,6 @@ func parseFlags() options {
 func main() {
 	o := parseFlags()
 
-	if bazelWorkspace := os.Getenv("BUILD_WORKSPACE_DIRECTORY"); bazelWorkspace != "" {
-		if err := os.Chdir(bazelWorkspace); err != nil {
-			log.Fatalf("Failed to chdir to bazel workspace (%s): %v", bazelWorkspace, err)
-		}
-	}
-
 	if o.buildDir == "" {
 		o.buildDir = o.configDir
 	}

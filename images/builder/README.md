@@ -36,7 +36,7 @@ beyond `_GIT_TAG`.
 ## Usage
 
 ```shell
-bazel run //images/builder -- [options] path/to/build-directory/
+go run ./images/builder [options] path/to/build-directory/
 ```
 
 - `--allow-dirty`: If true, allow pushing dirty builds.
