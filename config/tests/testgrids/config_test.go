@@ -34,6 +34,7 @@ import (
 	"github.com/GoogleCloudPlatform/testgrid/config"
 	config_pb "github.com/GoogleCloudPlatform/testgrid/pb/config"
 	prow_config "k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/testgrid/pkg/configurator/configurator"
 	"k8s.io/test-infra/testgrid/pkg/configurator/options"
 
@@ -115,7 +116,7 @@ func TestMain(m *testing.M) {
 				JobConfigPath: *jobPath,
 			},
 			DefaultYAML:     *defaultYAML,
-			Output:          tmpFile,
+			Output:          flagutil.NewStringsBeenSet(tmpFile),
 			Oneshot:         true,
 			StrictUnmarshal: true,
 		}

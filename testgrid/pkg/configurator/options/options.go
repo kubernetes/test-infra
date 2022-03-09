@@ -21,6 +21,7 @@ import (
 	"flag"
 	"strings"
 
+	"k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 
 	"github.com/sirupsen/logrus"
@@ -41,7 +42,7 @@ type Options struct {
 	Creds              string
 	Inputs             MultiString
 	Oneshot            bool
-	Output             string
+	Output             flagutil.Strings
 	PrintText          bool
 	ValidateConfigFile bool
 	WorldReadable      bool
@@ -56,7 +57,7 @@ type Options struct {
 func (o *Options) GatherOptions(fs *flag.FlagSet, args []string) error {
 	fs.StringVar(&o.Creds, "gcp-service-account", "", "/path/to/gcp/creds (use local creds if empty)")
 	fs.BoolVar(&o.Oneshot, "oneshot", false, "Write proto once and exit instead of monitoring --yaml files for changes")
-	fs.StringVar(&o.Output, "output", "", "write proto to gs://bucket/obj or /local/path")
+	fs.Var(&o.Output, "output", "write proto to gs://bucket/obj or /local/path")
 	fs.BoolVar(&o.PrintText, "print-text", false, "print generated info in text format to stdout")
 	fs.BoolVar(&o.ValidateConfigFile, "validate-config-file", false, "validate that the given config files are syntactically correct and exit (proto is not written anywhere)")
 	fs.BoolVar(&o.WorldReadable, "world-readable", false, "when uploading the proto to GCS, makes it world readable. Has no effect on writing to the local filesystem.")
@@ -78,10 +79,10 @@ func (o *Options) GatherOptions(fs *flag.FlagSet, args []string) error {
 		return errors.New("--yaml must include at least one file")
 	}
 
-	if !o.PrintText && !o.ValidateConfigFile && o.Output == "" {
+	if !o.PrintText && !o.ValidateConfigFile && len(o.Output.Strings()) == 0 {
 		return errors.New("--print-text, --validate-config-file, or --output required")
 	}
-	if o.ValidateConfigFile && o.Output != "" {
+	if o.ValidateConfigFile && len(o.Output.Strings()) > 0 {
 		return errors.New("--validate-config-file doesn't write the proto anywhere")
 	}
 	if err := o.ProwConfig.ValidateConfigOptional(); err != nil {

@@ -126,7 +126,9 @@ func write(ctx context.Context, client *storage.Client, path string, bytes []byt
 }
 
 // Ignores what changed for now and recomputes everything
-func doOneshot(ctx context.Context, client *storage.Client, opt *options.Options, prowConfigAgent *prowConfig.Agent) error {
+func doOneshot(ctx context.Context, opt *options.Options, prowConfigAgent *prowConfig.Agent) error {
+	// Set up GCS client if output is to GCS
+	var client *storage.Client
 
 	// Read Data Sources: Default, YAML configs, Prow Annotations
 	c, err := yamlcfg.ReadConfig(opt.Inputs, opt.DefaultYAML, opt.StrictUnmarshal)
@@ -181,7 +183,7 @@ func doOneshot(ctx context.Context, client *storage.Client, opt *options.Options
 	}
 
 	// Write proto if requested
-	if opt.Output != "" {
+	if len(opt.Output.Strings()) > 0 {
 		var b []byte
 		var err error
 		if opt.WriteYAML {
@@ -189,12 +191,28 @@ func doOneshot(ctx context.Context, client *storage.Client, opt *options.Options
 		} else {
 			b, err = tgCfgUtil.MarshalBytes(&c)
 		}
-		if err == nil {
-			err = write(ctx, client, opt.Output, b, opt.WorldReadable, "")
-		}
 		if err != nil {
 			return fmt.Errorf("could not write config: %w", err)
 		}
+
+		for _, output := range opt.Output.Strings() {
+			if client == nil && strings.HasPrefix(output, "gs://") {
+				var err error
+				var creds []string
+				if opt.Creds != "" {
+					creds = append(creds, opt.Creds)
+				}
+				client, err = gcs.ClientWithCreds(ctx, creds...)
+				if err != nil {
+					return fmt.Errorf("failed to create gcs client: %w", err)
+				}
+			}
+
+			if err = write(ctx, client, output, b, opt.WorldReadable, ""); err != nil {
+				return fmt.Errorf("could not write config: %w", err)
+			}
+		}
+		return nil
 	}
 	return nil
 }
@@ -213,30 +231,16 @@ func RealMain(opt *options.Options) error {
 
 	// Config file validation only
 	if opt.ValidateConfigFile {
-		err := doOneshot(ctx, nil, opt, prowConfigAgent)
+		err := doOneshot(ctx, opt, prowConfigAgent)
 		if err == nil {
 			log.Println("Config validated successfully")
 		}
 		return err
 	}
 
-	// Set up GCS client if output is to GCS
-	var client *storage.Client
-	if strings.HasPrefix(opt.Output, "gs://") {
-		var err error
-		var creds []string
-		if opt.Creds != "" {
-			creds = append(creds, opt.Creds)
-		}
-		client, err = gcs.ClientWithCreds(ctx, creds...)
-		if err != nil {
-			return fmt.Errorf("failed to create gcs client: %w", err)
-		}
-	}
-
 	// Oneshot mode, write config and exit
 	if opt.Oneshot {
-		return doOneshot(ctx, client, opt, prowConfigAgent)
+		return doOneshot(ctx, opt, prowConfigAgent)
 	}
 
 	// Service mode, monitor input files for changes
@@ -251,11 +255,11 @@ func RealMain(opt *options.Options) error {
 	for changes := range channel {
 		log.Printf("Changed: %v", changes)
 		log.Println("Writing config...")
-		if err := doOneshot(ctx, client, opt, prowConfigAgent); err != nil {
+		if err := doOneshot(ctx, opt, prowConfigAgent); err != nil {
 			log.Printf("FAIL: %v", err)
 			continue
 		}
-		log.Printf("Wrote config to %s", opt.Output)
+		log.Printf("Wrote config to %v", opt.Output)
 	}
 	return nil
 }

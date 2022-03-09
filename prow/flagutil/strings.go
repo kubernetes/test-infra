@@ -36,6 +36,14 @@ func NewStrings(def ...string) Strings {
 	}
 }
 
+// NewStringsBeenSet returns a Strings struct with beenSet: true
+func NewStringsBeenSet(def ...string) Strings {
+	return Strings{
+		vals:    def,
+		beenSet: true,
+	}
+}
+
 // Strings returns the slice of strings set for this value instance.
 func (s *Strings) Strings() []string {
 	return s.vals
