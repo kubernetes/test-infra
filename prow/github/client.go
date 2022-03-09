@@ -239,8 +239,8 @@ type MilestoneClient interface {
 
 // RerunClient interface for job rerun access check related API actions
 type RerunClient interface {
+	TeamBySlugHasMember(org string, teamSlug string, memberLogin string) (bool, error)
 	TeamHasMember(org string, teamID int, memberLogin string) (bool, error)
-	GetTeamBySlug(slug string, org string) (*Team, error)
 	IsCollaborator(org, repo, user string) (bool, error)
 	IsMember(org, user string) (bool, error)
 	GetIssueLabels(org, repo string, number int) ([]Label, error)
