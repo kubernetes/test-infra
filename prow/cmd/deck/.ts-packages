@@ -1,17 +1,52 @@
-prow/spyglass/lenses/restcoverage/restcoverage.ts->script_bundle.min.js
-prow/spyglass/lenses/podinfo/podinfo.ts->script_bundle.min.js
-prow/spyglass/lenses/metadata/metadata.ts->script_bundle.min.js
-prow/spyglass/lenses/links/links.ts->script_bundle.min.js
-prow/spyglass/lenses/junit/lens.ts->script_bundle.min.js
-prow/spyglass/lenses/html/html.ts->script_bundle.min.js
-prow/spyglass/lenses/coverage/coverage.ts->script_bundle.min.js
-prow/spyglass/lenses/buildlog/buildlog.ts->script_bundle.min.js
-prow/cmd/deck/static/spyglass/spyglass.ts->../spyglass_bundle.min.js
-prow/cmd/deck/static/spyglass/lens.ts->../spyglass_lens_bundle.min.js
-prow/cmd/deck/static/command-help/command-help.ts->../command_help_bundle.min.js
-prow/cmd/deck/static/tide-history/tide-history.ts->../tide_history_bundle.min.js
-prow/cmd/deck/static/tide/tide.ts->../tide_bundle.min.js
-prow/cmd/deck/static/pr/pr.ts->../pr_bundle.min.js
-prow/cmd/deck/static/plugin-help/plugin-help.ts->../plugin_help_bundle.min.js
-prow/cmd/deck/static/prow/prow.ts->../prow_bundle.min.js
-prow/cmd/deck/static/job-history/job-history.ts->../job_history_bundle.min.js
+packages:
+- dir: prow/spyglass/lenses/restcoverage
+  entrypoint: restcoverage.ts
+  dst: script_bundle.min.js
+- dir: prow/spyglass/lenses/podinfo
+  entrypoint: podinfo.ts
+  dst: script_bundle.min.js
+- dir: prow/spyglass/lenses/metadata
+  entrypoint: metadata.ts
+  dst: script_bundle.min.js
+- dir: prow/spyglass/lenses/links
+  entrypoint: links.ts
+  dst: script_bundle.min.js
+- dir: prow/spyglass/lenses/junit
+  entrypoint: lens.ts
+  dst: script_bundle.min.js
+- dir: prow/spyglass/lenses/html
+  entrypoint: html.ts
+  dst: script_bundle.min.js
+- dir: prow/spyglass/lenses/coverage
+  entrypoint: coverage.ts
+  dst: script_bundle.min.js
+- dir: prow/spyglass/lenses/buildlog
+  entrypoint: buildlog.ts
+  dst: script_bundle.min.js
+- dir: prow/cmd/deck/static/spyglass
+  entrypoint: spyglass.ts
+  dst: ../spyglass_bundle.min.js
+- dir: prow/cmd/deck/static/spyglass
+  entrypoint: lens.ts
+  dst: ../spyglass_lens_bundle.min.js
+- dir: prow/cmd/deck/static/command-help
+  entrypoint: command-help.ts
+  dst: ../command_help_bundle.min.js
+- dir: prow/cmd/deck/static/tide-history
+  entrypoint: tide-history.ts
+  dst: ../tide_history_bundle.min.js
+- dir: prow/cmd/deck/static/tide
+  entrypoint: tide.ts
+  dst: ../tide_bundle.min.js
+- dir: prow/cmd/deck/static/pr
+  entrypoint: pr.ts
+  dst: ../pr_bundle.min.js
+- dir: prow/cmd/deck/static/plugin-help
+  entrypoint: plugin-help.ts
+  dst: ../plugin_help_bundle.min.js
+- dir: prow/cmd/deck/static/prow
+  entrypoint: prow.ts
+  dst: ../prow_bundle.min.js
+- dir: prow/cmd/deck/static/job-history
+  entrypoint: job-history.ts
+  dst: ../job_history_bundle.min.js
