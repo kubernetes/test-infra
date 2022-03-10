@@ -22,6 +22,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"path"
 	"reflect"
 	"strings"
 	"testing"
@@ -150,19 +151,40 @@ func TestFallback(t *testing.T) {
 	expectEqual(t, "vend quux", store.vend("quux"), 1)
 }
 
-var c *config.Config
-
-func TestMain(m *testing.M) {
-	conf, err := config.Load("../../../config/prow/config.yaml", "../../../config/jobs", nil, "")
-	if err != nil {
-		fmt.Printf("Could not load config: %v", err)
-		os.Exit(1)
-	}
-	c = conf
-	os.Exit(m.Run())
-}
-
 func TestGetURL(t *testing.T) {
+	configs := map[string]string{
+		"config.yaml": "",
+		"job-config.yaml": `
+periodics:
+- name: periodics-foo
+  interval: 1m
+  spec:
+    containers:
+    - image: localhost:5001/alpine
+presubmits:
+  some-org:
+  - name: presubmit-foo
+    spec:
+      containers:
+      - image: localhost:5001/alpine
+postsubmits:
+  some-org:
+  - name: postsubmit-foo
+    spec:
+      containers:
+      - image: localhost:5001/alpine
+`,
+	}
+	tmpDir := t.TempDir()
+	for fp, content := range configs {
+		if err := ioutil.WriteFile(path.Join(tmpDir, fp), []byte(content), 0644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	c, err := config.Load(path.Join(tmpDir, "config.yaml"), path.Join(tmpDir, "job-config.yaml"), nil, "")
+	if err != nil {
+		t.Fatalf("Could not load config: %v", err)
+	}
 	tests := []struct {
 		name string
 
@@ -184,29 +206,29 @@ func TestGetURL(t *testing.T) {
 		{
 			name: "fallback bucket - presubmit",
 
-			jobName: "pull-community-verify",
+			jobName: "presubmit-foo",
 			c:       c,
 			bucket:  "https://storage.googleapis.com/kubernetes-jenkins",
 
-			expected: "https://storage.googleapis.com/kubernetes-jenkins/pr-logs/directory/pull-community-verify/latest-build.txt",
+			expected: "https://storage.googleapis.com/kubernetes-jenkins/pr-logs/directory/presubmit-foo/latest-build.txt",
 		},
 		{
 			name: "fallback bucket - postsubmit",
 
-			jobName: "post-test-infra-test-all",
+			jobName: "postsubmit-foo",
 			c:       c,
 			bucket:  "https://storage.googleapis.com/kubernetes-jenkins",
 
-			expected: "https://storage.googleapis.com/kubernetes-jenkins/logs/post-test-infra-test-all/latest-build.txt",
+			expected: "https://storage.googleapis.com/kubernetes-jenkins/logs/postsubmit-foo/latest-build.txt",
 		},
 		{
 			name: "fallback bucket - periodic",
 
-			jobName: "ci-kubernetes-build",
+			jobName: "periodics-foo",
 			c:       c,
 			bucket:  "https://storage.googleapis.com/kubernetes-jenkins",
 
-			expected: "https://storage.googleapis.com/kubernetes-jenkins/logs/ci-kubernetes-build/latest-build.txt",
+			expected: "https://storage.googleapis.com/kubernetes-jenkins/logs/periodics-foo/latest-build.txt",
 		},
 		{
 			name: "fallback bucket - unknown",
@@ -220,30 +242,33 @@ func TestGetURL(t *testing.T) {
 		{
 			name: "fallback bucket with trailing slash",
 
-			jobName: "pull-community-verify",
+			jobName: "presubmit-foo",
 			c:       c,
 			bucket:  "https://storage.googleapis.com/kubernetes-jenkins/",
 
-			expected: "https://storage.googleapis.com/kubernetes-jenkins/pr-logs/directory/pull-community-verify/latest-build.txt",
+			expected: "https://storage.googleapis.com/kubernetes-jenkins/pr-logs/directory/presubmit-foo/latest-build.txt",
 		},
 	}
 
-	for _, test := range tests {
-		t.Logf("running scenario %q", test.name)
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Logf("running scenario %q", tc.name)
 
-		var configAgent *config.Agent
-		if test.c != nil {
-			configAgent = new(config.Agent)
-			configAgent.Set(test.c)
-		}
-		f := fallbackHandler{
-			template:    test.template,
-			configAgent: configAgent,
-			bucket:      test.bucket,
-		}
+			var configAgent *config.Agent
+			if tc.c != nil {
+				configAgent = new(config.Agent)
+				configAgent.Set(tc.c)
+			}
+			f := fallbackHandler{
+				template:    tc.template,
+				configAgent: configAgent,
+				bucket:      tc.bucket,
+			}
 
-		if got := f.getURL(test.jobName); got != test.expected {
-			t.Errorf("unexpected URL:\n%s\nexpected:\n%s", got, test.expected)
-		}
+			if got := f.getURL(tc.jobName); got != tc.expected {
+				t.Errorf("unexpected URL:\n%s\nexpected:\n%s", got, tc.expected)
+			}
+		})
 	}
 }
