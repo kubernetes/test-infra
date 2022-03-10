@@ -130,6 +130,10 @@ periodics:
         value: master
       - name: REPO_DIR
         value: /workspace/k8s.io/kubernetes
+      # Consider removing after https://github.com/golang/go/issues/49035 is solved
+      # See https://github.com/kubernetes/kubernetes/pull/108618
+      - name: TYPECHECK_SERIAL
+        value: "true"
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
