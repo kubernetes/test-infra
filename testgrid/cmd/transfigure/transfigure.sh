@@ -79,7 +79,9 @@ main() {
   fi
 
   echo "Running kubernetes/test-infra tests..."
-  bazel test //config/tests/... //hack:verify-spelling
+
+  ./hack/make-rules/go-run/arbitrary.sh test ./config/tests
+  make verify-spelling
   echo "Tests successful!"
 
   if [[ ${dry_run} = "true" ]]; then
