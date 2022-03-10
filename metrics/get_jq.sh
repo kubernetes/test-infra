@@ -42,7 +42,7 @@ download() {
 mkdir -p "${JQ_DIR}"
 # linux64 is used by CI, making sure that this is used in CI as well
 download jq-linux64
-# ensure that `_bin/jq-1.5/jq` is compitable with host, so that python3 test
+# ensure that `_bin/jq-1.5/jq` is compatible with host, so that python3 test
 # won't fail locally
 if [[ "$(uname)" == Darwin ]]; then
     download jq-osx-amd64
