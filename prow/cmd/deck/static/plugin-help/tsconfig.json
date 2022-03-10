@@ -1,5 +1,5 @@
 {
-  "extends": "../../../../../make-tsconfig.json",
+  "extends": "../../../../../tsconfig.json",
   "include": [
     "plugin-help.ts",
     "prettify.ts",
@@ -9,7 +9,4 @@
     "../../../../../node_modules/@types/gtag.js/index.d.ts",
     "../api"
   ],
-  "exclude": [
-    "zz.bundle.min.js"
-  ]
 }
