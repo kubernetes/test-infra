@@ -252,8 +252,8 @@ func (c *fakeClient) ListTeams(org string) ([]github.Team, error) {
 	return []github.Team{}, nil
 }
 
-func (c *fakeClient) ListTeamMembers(org string, id int, role string) ([]github.TeamMember, error) {
-	if id == 1 {
+func (c *fakeClient) ListTeamMembersBySlug(org, teamSlug, role string) ([]github.TeamMember, error) {
+	if teamSlug == "team-foo" {
 		return []github.TeamMember{
 			{Login: "user1"},
 			{Login: "user2"},
@@ -1163,11 +1163,11 @@ func TestValidateGitHubTeamSlugs(t *testing.T) {
 	githubTeams := []github.Team{
 		{
 			ID:   2,
-			Slug: "team-foo",
+			Slug: "team-bar",
 		},
 		{
 			ID:   3,
-			Slug: "team-bar",
+			Slug: "team-baz",
 		},
 	}
 
@@ -1187,7 +1187,7 @@ func TestValidateGitHubTeamSlugs(t *testing.T) {
 		{
 			name: "no errors for valid team slugs",
 			teamSlugs: map[string][]string{
-				repoRef: {"team-foo", "team-bar"},
+				repoRef: {"team-bar", "team-baz"},
 			},
 		},
 	}

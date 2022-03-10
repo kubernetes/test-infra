@@ -53,7 +53,7 @@ type githubClient interface {
 	ListStatuses(org, repo, ref string) ([]github.Status, error)
 	GetBranchProtection(org, repo, branch string) (*github.BranchProtection, error)
 	ListTeams(org string) ([]github.Team, error)
-	ListTeamMembers(org string, id int, role string) ([]github.TeamMember, error)
+	ListTeamMembersBySlug(org, teamSlug, role string) ([]github.TeamMember, error)
 }
 
 type prowJobClient interface {
@@ -105,8 +105,8 @@ func (c client) HasPermission(org, repo, user string, role ...string) (bool, err
 func (c client) ListTeams(org string) ([]github.Team, error) {
 	return c.ghc.ListTeams(org)
 }
-func (c client) ListTeamMembers(org string, id int, role string) ([]github.TeamMember, error) {
-	return c.ghc.ListTeamMembers(org, id, role)
+func (c client) ListTeamMembersBySlug(org, teamSlug, role string) ([]github.TeamMember, error) {
+	return c.ghc.ListTeamMembersBySlug(org, teamSlug, role)
 }
 
 func (c client) Create(ctx context.Context, pj *prowapi.ProwJob, o metav1.CreateOptions) (*prowapi.ProwJob, error) {
@@ -253,18 +253,14 @@ func authorizedGitHubTeamMember(gc githubClient, log *logrus.Entry, teamSlugs ma
 	slugs := teamSlugs[fmt.Sprintf("%s/%s", org, repo)]
 	slugs = append(slugs, teamSlugs[org]...)
 	for _, slug := range slugs {
-		for _, team := range teams {
-			if team.Slug == slug {
-				members, err := gc.ListTeamMembers(org, team.ID, github.RoleAll)
-				if err != nil {
-					log.WithError(err).Warnf("cannot find members of team %s in org %s", slug, org)
-					continue
-				}
-				for _, member := range members {
-					if member.Login == user {
-						return true
-					}
-				}
+		members, err := gc.ListTeamMembersBySlug(org, slug, github.RoleAll)
+		if err != nil {
+			log.WithError(err).Warnf("cannot find members of team %s in org %s", slug, org)
+			continue
+		}
+		for _, member := range members {
+			if member.Login == user {
+				return true
 			}
 		}
 	}
