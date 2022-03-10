@@ -413,16 +413,25 @@ postsubmits:
     branches:
     - ^master$
     max_concurrency: 1
-    labels:
-      preset-bazel-scratch-dir: "true"
     run_if_changed: '^config/(jobs|testgrids)/.*$'
     decorate: true
     spec:
       serviceAccountName: testgrid-config-updater
       containers:
-      - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20211210-cf89952124
+      - image: gcr.io/k8s-prow/configurator:v20220310-fc6dd39ec2
         command:
-        - ./testgrid/config-upload.sh
+        - configurator
+        args:
+        - --yaml="config/testgrids"
+        - --default="config/testgrids/default.yaml"
+        - --prow-config="config/prow/config.yaml"
+        - --prow-job-config="config/jobs/"
+        - --output="gs://k8s-testgrid-canary/configs/k8s/config"
+        - --output="gs://k8s-testgrid/configs/k8s/config"
+        - --prowjob-url-prefix="https://git.k8s.io/test-infra/config/jobs/"
+        - --update-description
+        - --oneshot
+        - --world-readable
         resources:
           requests:
             memory: "1Gi"
