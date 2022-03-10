@@ -4,15 +4,19 @@ This guide is directed at Prow developers and maintainers who want to build/test
 
 ## How to build and test Prow
 
-You can build, test, and deploy Prow’s binaries, container images, and cluster resources using [`bazel`](https://bazel.build).
+You can build, test, and deploy Prow’s binaries, container images, and cluster resources.
 
-Build with:
+Build locally with:
 ```shell
-bazel build //prow/...
+make -C prow build-images
+```
+Push to remote with
+```shell
+make -C prow push-images REGISTRY=<YOUR_REGISTRY>
 ```
 Unit test with:
 ```shell
-bazel test --@io_bazel_rules_go//go/config:race //prow/...
+make test
 ```
 Integration test with([more details](./test/integration)):
 ```shell
@@ -20,9 +24,11 @@ Integration test with([more details](./test/integration)):
 ```
 Individual packages and components can be built and tested like:
 ```shell
-bazel build //prow/cmd/hook
-bazel test //prow/plugins/lgtm:go_default_test
+go build ./prow/cmd/hook
+go test ./prow/plugins/lgtm
 ```
+(Note: `deck` depends on non-go static files, these were tested by integration
+tests, and for e2e test use [`runlocal`](/prow/cmd/deck/runlocal) if desired.)
 
 ### How to test a plugin
 
@@ -30,35 +36,24 @@ If you are making changes to a Prow plugin you can test the new behavior by send
 
 ## How to update the cluster
 
-Any modifications to Go code will require redeploying the affected binaries.
-Assuming your prow components have multiple replicas, this will result in no downtime.
+Any modifications to prow Go code will require redeploying the affected
+binaries. The process of doing so is streamlined, which is highly recommended to
+all prow instances:
 
-Update your deployment (optionally build/pushing the image) to a new image with:
-```shell
-# export PROW_REPO_OVERRIDE=gcr.io/k8s-prow  # optionally change k8s-prow to your project
-push.sh  # Build and push the current repo state.
-bump.sh --list  # Choose a recent published version
-bump.sh v20181002-deadbeef # Use a specific version
-```
-
-Once your deployment files are updated, please update these resources on your cluster:
-
-```shell
-# Set the kubectl context you want to use
-export PROW_CLUSTER_OVERRIDE=my-k8s-cluster-context # or whatever the correct value is
-export BUILD_CLUSTER_OVERRIDE=my-k8s-job-cluster-context # or whatever the correct value is
-
-# Generally just do
-bazel run //config/prow/cluster:production.apply # deploy everything
-
-# In case of an emergency hook update
-bazel run //config/prow/cluster:hook.apply # just update hook
-
-# This is equivalent to doing the following with kubectl directly:
-kubectl config use-context my-k8s-cluster-context
-kubectl apply -f config/prow/cluster/*.yaml
-kubectl apply -f config/prow/cluster/hook_deployment.yaml
-```
+1. Prow code change PR merged.
+1. [`post-test-infra-push-prow`](https://github.com/kubernetes/test-infra/blob/e7ff9e7ad8a395bc246c4bc38610d4d57d3b011c/config/jobs/kubernetes/test-infra/test-infra-trusted.yaml#L191)
+   is automatically triggered, can be found on
+   [prow.k8s.io](https://prow.k8s.io?job=post-test-infra-push-prow), which
+   pushes images to [gcr.io/k8s-prow](gcr.io/k8s-prow).
+1. Periodic job
+   [`ci-test-infra-autobump-prow`](https://github.com/kubernetes/test-infra/blob/e7ff9e7ad8a395bc246c4bc38610d4d57d3b011c/config/jobs/kubernetes/test-infra/test-infra-trusted.yaml#L588)
+   runs every hour, looking for latest image tags from
+   [gcr.io/k8s-prow](gcr.io/k8s-prow), and creates a PR
+   ([example](https://github.com/kubernetes/test-infra/pull/25571)) to let prow
+   use the latest tag.
+1. Once the periodic job is merged,
+   [`post-test-infra-deploy-prow`](https://github.com/kubernetes/test-infra/blob/e7ff9e7ad8a395bc246c4bc38610d4d57d3b011c/config/jobs/kubernetes/test-infra/test-infra-trusted.yaml#L114)
+   deploys the config changes from the PR above.
 
 ## How to test a ProwJob
 
@@ -162,11 +157,10 @@ To manually trigger any ProwJob, run the following, specifying `JOB_NAME`:
 
 For K8S Prow, you can trigger a job by running
 ```shell
-bazel run //config:mkpj -- --job=JOB_NAME
+go run ./config:mkpj --job=JOB_NAME
 ```
 
-For your own prow instance, you can either define your own bazel rule, or
-just go run mkpj like:
+For your own prow instance:
 ```shell
 go run k8s.io/test-infra/prow/cmd/mkpj --job=JOB_NAME --config-path=path/to/config.yaml
 ```

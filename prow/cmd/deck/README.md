@@ -18,23 +18,22 @@ This section describes how to debug Deck locally by running it inside
 VSCode or Intellij.
 
 ```bash
-TEST_INFRA_DIR=${GOPATH}/src/k8s.io/test-infra
-
 # Prepare assets
-cd ${TEST_INFRA_DIR}
-bazel build //prow/cmd/deck:image.tar
+make -C prow build-tarball PROW_IMAGE=prow/cmd/deck
 mkdir -p /tmp/deck
-tar -xvf ./bazel-bin/prow/cmd/deck/asset-base-layer.tar -C /tmp/deck 
-tar -xvf ./bazel-bin/prow/cmd/deck/spyglass-lenses-layer.tar -C /tmp/deck
+tar -xvf ./_bin/deck.tar -C /tmp/deck 
+cd /tmp/deck
+# Expand all layers
+for tar in *.tar.gz; do tar -xvf $tar; done
 
 # Start Deck via go or in your IDE with the following arguments:
---config-path=${TEST_INFRA_DIR}/config/prow/config.yaml
---job-config-path=${TEST_INFRA_DIR}/config/jobs
+--config-path=./config/prow/config.yaml
+--job-config-path=./config/jobs
 --hook-url=http://prow.k8s.io
 --spyglass
---template-files-location=/tmp/deck/template
---static-files-location=/tmp/deck/static
---spyglass-files-location=/tmp/deck/lenses
+--template-files-location=/tmp/deck/var/run/ko/template
+--static-files-location=/tmp/deck/var/run/ko/static
+--spyglass-files-location=/tmp/deck/var/run/ko/lenses
 ```
 
 ## Rerun Prow Job via Prow UI

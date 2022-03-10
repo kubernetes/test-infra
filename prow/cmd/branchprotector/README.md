@@ -156,22 +156,20 @@ So in the example above:
 
 ## Developer docs
 
-Use [`planter.sh`] if [`bazel`] is not already installed on the machine.
-
 ### Run unit tests
 
-`bazel test //prow/cmd/branchprotector:all`
+`go test ./prow/cmd/branchprotector`
 
 ### Run locally
 
-`bazel run //prow/cmd/branchprotector -- --help`, which will tell you about the
+`go run ./prow/cmd/branchprotector --help`, which will tell you about the
 current flags.
 
 Do a dry run (which will not make any changes to github) with
 something like the following command:
 
 ```sh
-bazel run //prow/cmd/branchprotector -- \
+go run ./prow/cmd/branchprotector \
   --config-path=/path/to/config.yaml \
   --github-token-path=/path/to/my-github-token
 ```
@@ -183,44 +181,24 @@ This will say how the binary will actually change github if you add a
 
 Run things like the following:
 ```sh
-# Build and push image, create job
-bazel run //prow/cmd/branchprotector:oneshot.create
-# Delete finished job
-bazel run //prow/cmd/branchprotector:oneshot.delete
-# Describe current state of job
-bazel run //prow/cmd/branchprotector:oneshot.describe
+# Build image locally
+make -C prow push-single-image PROW_IMAGE=prow/cmd/branchprotector REGISTRY=<YOUR_REGISTRY>
 ```
 
-This will build an image with your local changes, push it to
-`STABLE_DOCKER_REPO` and then deploy to `STABLE_PROW_CLUSTER`.
-
-See [`print-workspace-status.sh`] for the definition of these variables.
-See [`oneshot-job.yaml`] for details on the deployed job resource.
+This will build an image with your local changes, push it to `<YOUR_REGISTRY>`
 
 ### Deploy cronjob to production
 
-Follow the standard prow deployment process:
+[branchprotector image](gcr.io/k8s-prow/branchprotector) is automatically built
+as part of prow, see
+[build_test_update.md#how-to-update-the-cluster](/prow/build_test_update.md#how-to-update-the-cluster)
+for more details.
 
-```sh
-# build and push image, update tag used in production
-prow/bump.sh branchprotector
-# apply changes to production
-bazel run //config/prow/cluster:branchprotector.apply
-```
+Branchprotector runs as a prow periodic job, for example
+[ci-test-infra-branchprotector](https://github.com/kubernetes/test-infra/blob/6155b657d8958e60e6767be6569863e4dd08c413/config/jobs/kubernetes/test-infra/test-infra-trusted.yaml#L662).
 
-See [`prow/bump.sh`] for details on this script.
-See [`config/prow/cluster/branchprotector_cronjob.yaml`] for details on the deployed
-job resource.
-
-
-[`bazel`]: https://bazel.build
 [`branch_protection.go`]: /prow/config/branch_protection.go
 [`config.yaml`]: /config/prow/config.yaml
 [github branch protection]: https://help.github.com/articles/about-protected-branches/
-[`oneshot-job.yaml`]: oneshot-job.yaml
-[`planter.sh`]: /planter
-[`print-workspace-status.sh`]: ../../../hack/print-workspace-status.sh
-[`prow/bump.sh`]: /prow/bump.sh
-[`config/prow/cluster/branchprotector_cronjob.yaml`]: /config/prow/cluster/branchprotector_cronjob.yaml
 [status contexts]: https://developer.github.com/v3/repos/statuses/#create-a-status
 [protection api]: https://developer.github.com/v3/repos/branches/#update-branch-protection

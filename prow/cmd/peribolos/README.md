@@ -82,7 +82,7 @@ For more details please see GitHub documentation around [edit org], [update org 
 Peribolos can dump the current configuration to an org. For example you could dump the kubernetes org do the following:
 
 ```console
-$ bazel run //prow/cmd/peribolos -- --dump kubernetes-sigs --github-token-path ~/github-token | tee ~/current.yaml # --tokens=0 to disable throttling
+$ go run ./prow/cmd/peribolos --dump kubernetes-sigs --github-token-path ~/github-token | tee ~/current.yaml # --tokens=0 to disable throttling
 ...
 INFO: Build completed successfully, 1 total action
 ...
@@ -133,7 +133,7 @@ Open `~/current.yaml` and then delete any metadata you don't want peribolos to m
 Apply this config in dry-run mode to see what would happen (hopefully nothing since you just created it):
 
 ```console
-$ bazel run //prow/cmd/peribolos -- --config-path ~/current.yaml --github-token-path ~/github-token # --confirm
+$ go run ./prow/cmd/peribolos --config-path ~/current.yaml --github-token-path ~/github-token # --confirm
 
 {"client":"github","component":"peribolos","level":"info","msg":"GetOrg(kubernetes-sigs)","time":"2018-09-27T23:07:13Z"}
 {"client":"github","component":"peribolos","level":"info","msg":"ListOrgInvitations(kubernetes-sigs)","time":"2018-09-27T23:07:13Z"}
@@ -161,7 +161,7 @@ This flag is designed to protect against typos in the configuration which might 
 * `--confirm=false` - no github mutations will be made until this flag is true. It is safe to run the binary without this flag. It will print what it would do, without actually making any changes.
 
 
-See `bazel run //prow/cmd/peribolos -- --help` for the full and current list of settings that can be configured with flags.
+See `go run ./prow/cmd/peribolos --help` for the full and current list of settings that can be configured with flags.
 
 
 
