@@ -109,4 +109,10 @@ verify-boilerplate:
 .PHONY: verify-yamllint
 verify-yamllint:
 	hack/make-rules/verify/yamllint.sh
+.PHONY: update-proto
+update-proto:
+	hack/make-rules/update/proto.sh
+.PHONY: verify-proto
+verify-proto:
+	hack/make-rules/verify/proto.sh
 #################################################################################

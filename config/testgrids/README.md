@@ -21,7 +21,7 @@ directory (including a new one, if desired):
      or create a new `dashboard` and assign the testgroup to the dashboard.
      * The testgroup name from a dashboard tab should match the name from a testgroup
      * Note that a testgroup can be within multiple dashboards.
-1.   Test your new config (`bazel test //config/tests/...`)
+1.   Test your new config (`go test ./config/tests`)
 
 
 NOTE: If you're adding a periodic or postsubmit and don't want to specially configure your test
@@ -31,7 +31,7 @@ need to be added to a dashboard further down.
 
 ## Testing
 
-Run `bazel test //config/tests/...` to ensure these configurations are valid.
+Run `go test //config/tests` to ensure these configurations are valid.
 
 This finds common problems such as malformed yaml, a tab referring to a
 non-existent test group, a test group never appearing on any tab, etc. It also enforces some

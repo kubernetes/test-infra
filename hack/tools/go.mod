@@ -6,6 +6,7 @@ require (
 	github.com/bazelbuild/buildtools v0.0.0-20211007154642-8dd79e56e98e
 	github.com/client9/misspell v0.3.4
 	github.com/go-bindata/go-bindata/v3 v3.1.3
+	github.com/golang/protobuf v1.5.2
 	github.com/golangci/golangci-lint v1.43.0
 	github.com/google/ko v0.9.4-0.20220213235838-0187841b1641
 	github.com/sethvargo/gcs-cacher v0.1.3

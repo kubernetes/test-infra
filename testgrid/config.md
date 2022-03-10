@@ -185,7 +185,7 @@ dashboard_groups:
 
 ## Testing your configuration
 
-Run [`bazel test //config/tests/testgrids/..`](/config/tests/testgrids) to ensure the configuration is valid.
+Run [`go test ./config/tests/testgrids`](/config/tests/testgrids) to ensure the configuration is valid.
 
 ## Advanced configuration
 
