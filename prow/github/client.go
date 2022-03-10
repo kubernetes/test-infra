@@ -192,15 +192,22 @@ type TeamClient interface {
 	CreateTeam(org string, team Team) (*Team, error)
 	EditTeam(org string, t Team) (*Team, error)
 	DeleteTeam(org string, id int) error
+	DeleteTeamBySlug(org, teamSlug string) error
 	ListTeams(org string) ([]Team, error)
 	UpdateTeamMembership(org string, id int, user string, maintainer bool) (*TeamMembership, error)
+	UpdateTeamMembershipBySlug(org, teamSlug, user string, maintainer bool) (*TeamMembership, error)
 	RemoveTeamMembership(org string, id int, user string) error
+	RemoveTeamMembershipBySlug(org, teamSlug, user string) error
 	ListTeamMembers(org string, id int, role string) ([]TeamMember, error)
 	ListTeamMembersBySlug(org, teamSlug, role string) ([]TeamMember, error)
 	ListTeamRepos(org string, id int) ([]Repo, error)
+	ListTeamReposBySlug(org, teamSlug string) ([]Repo, error)
 	UpdateTeamRepo(id int, org, repo string, permission TeamPermission) error
+	UpdateTeamRepoBySlug(org, teamSlug, repo string, permission TeamPermission) error
 	RemoveTeamRepo(id int, org, repo string) error
+	RemoveTeamRepoBySlug(org, teamSlug, repo string) error
 	ListTeamInvitations(org string, id int) ([]OrgInvitation, error)
+	ListTeamInvitationsBySlug(org, teamSlug string) ([]OrgInvitation, error)
 	TeamHasMember(org string, teamID int, memberLogin string) (bool, error)
 	TeamBySlugHasMember(org string, teamSlug string, memberLogin string) (bool, error)
 	GetTeamBySlug(slug string, org string) (*Team, error)
@@ -3569,20 +3576,20 @@ func (c *client) CreateTeam(org string, team Team) (*Team, error) {
 	return &retTeam, err
 }
 
-// EditTeam patches team.ID to contain the specified other values.
+// EditTeam patches team.Slug to contain the specified:
+// name, description, privacy, permission, and parentTeamId values.
 //
-// See https://developer.github.com/v3/teams/#edit-team
+// See https://docs.github.com/en/rest/reference/teams#update-a-team
 func (c *client) EditTeam(org string, t Team) (*Team, error) {
 	durationLogger := c.log("EditTeam", t)
 	defer durationLogger()
 
-	if t.ID == 0 {
-		return nil, errors.New("team.ID must be non-zero")
+	if t.Slug == "" {
+		return nil, errors.New("team.Slug must be populated")
 	}
 	if c.dry {
 		return &t, nil
 	}
-	id := t.ID
 	t.ID = 0
 	// Need to send parent_team_id: null
 	team := struct {
@@ -3593,7 +3600,7 @@ func (c *client) EditTeam(org string, t Team) (*Team, error) {
 		ParentTeamID: t.ParentTeamID,
 	}
 	var retTeam Team
-	path := fmt.Sprintf("/teams/%d", id)
+	path := fmt.Sprintf("/orgs/%s/teams/%s", org, t.Slug)
 	_, err := c.request(&request{
 		method: http.MethodPatch,
 		path:   path,
@@ -3610,10 +3617,35 @@ func (c *client) EditTeam(org string, t Team) (*Team, error) {
 // DeleteTeam removes team.ID from GitHub.
 //
 // See https://developer.github.com/v3/teams/#delete-team
+// Deprecated: please use DeleteTeamBySlug
 func (c *client) DeleteTeam(org string, id int) error {
-	durationLogger := c.log("DeleteTeam", id)
+	c.logger.WithField("methodName", "DeleteTeam").
+		Warn("method is deprecated, and will result in multiple api calls to achieve result")
+	durationLogger := c.log("DeleteTeam", org, id)
 	defer durationLogger()
-	path := fmt.Sprintf("/teams/%d", id)
+
+	organization, err := c.GetOrg(org)
+	if err != nil {
+		return err
+	}
+
+	path := fmt.Sprintf("/organizations/%d/team/%d", organization.Id, id)
+	_, err = c.request(&request{
+		method:    http.MethodDelete,
+		path:      path,
+		org:       org,
+		exitCodes: []int{204},
+	}, nil)
+	return err
+}
+
+// DeleteTeamBySlug removes team.Slug from GitHub.
+//
+// See https://docs.github.com/en/rest/reference/teams#delete-a-team
+func (c *client) DeleteTeamBySlug(org, teamSlug string) error {
+	durationLogger := c.log("DeleteTeamBySlug", org, teamSlug)
+	defer durationLogger()
+	path := fmt.Sprintf("/orgs/%s/teams/%s", org, teamSlug)
 	_, err := c.request(&request{
 		method:    http.MethodDelete,
 		path:      path,
@@ -3659,8 +3691,49 @@ func (c *client) ListTeams(org string) ([]Team, error) {
 // If the user is not a member of the org, GitHub will invite them to become an outside collaborator, setting their status to pending.
 //
 // https://developer.github.com/v3/teams/members/#add-or-update-team-membership
+// Deprecated: please use UpdateTeamMembershipBySlug
 func (c *client) UpdateTeamMembership(org string, id int, user string, maintainer bool) (*TeamMembership, error) {
-	durationLogger := c.log("UpdateTeamMembership", id, user, maintainer)
+	c.logger.WithField("methodName", "UpdateTeamMembership").
+		Warn("method is deprecated, and will result in multiple api calls to achieve result")
+	durationLogger := c.log("UpdateTeamMembership", org, id, user, maintainer)
+	defer durationLogger()
+
+	if c.fake {
+		return nil, nil
+	}
+	tm := TeamMembership{}
+	if maintainer {
+		tm.Role = RoleMaintainer
+	} else {
+		tm.Role = RoleMember
+	}
+
+	if c.dry {
+		return &tm, nil
+	}
+
+	organization, err := c.GetOrg(org)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = c.request(&request{
+		method:      http.MethodPut,
+		path:        fmt.Sprintf("/organizations/%d/team/%d/memberships/%s", organization.Id, id, user),
+		org:         org,
+		requestBody: &tm,
+		exitCodes:   []int{200},
+	}, &tm)
+	return &tm, err
+}
+
+// UpdateTeamMembershipBySlug adds the user to the team and/or updates their role in that team.
+//
+// If the user is not a member of the org, GitHub will invite them to become an outside collaborator, setting their status to pending.
+//
+// https://docs.github.com/en/rest/reference/teams#add-or-update-team-membership-for-a-user
+func (c *client) UpdateTeamMembershipBySlug(org, teamSlug, user string, maintainer bool) (*TeamMembership, error) {
+	durationLogger := c.log("UpdateTeamMembershipBySlug", org, teamSlug, user, maintainer)
 	defer durationLogger()
 
 	if c.fake {
@@ -3679,7 +3752,7 @@ func (c *client) UpdateTeamMembership(org string, id int, user string, maintaine
 
 	_, err := c.request(&request{
 		method:      http.MethodPut,
-		path:        fmt.Sprintf("/teams/%d/memberships/%s", id, user),
+		path:        fmt.Sprintf("/orgs/%s/teams/%s/memberships/%s", org, teamSlug, user),
 		org:         org,
 		requestBody: &tm,
 		exitCodes:   []int{200},
@@ -3690,8 +3763,36 @@ func (c *client) UpdateTeamMembership(org string, id int, user string, maintaine
 // RemoveTeamMembership removes the user from the team (but not the org).
 //
 // https://developer.github.com/v3/teams/members/#remove-team-member
+// Deprecated: please use RemoveTeamMembershipBySlug
 func (c *client) RemoveTeamMembership(org string, id int, user string) error {
-	durationLogger := c.log("RemoveTeamMembership", id, user)
+	c.logger.WithField("methodName", "RemoveTeamMembership").
+		Warn("method is deprecated, and will result in multiple api calls to achieve result")
+	durationLogger := c.log("RemoveTeamMembership", org, id, user)
+	defer durationLogger()
+
+	if c.fake {
+		return nil
+	}
+
+	organization, err := c.GetOrg(org)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.request(&request{
+		method:    http.MethodDelete,
+		path:      fmt.Sprintf("/organizations/%d/team/%d/memberships/%s", organization.Id, id, user),
+		org:       org,
+		exitCodes: []int{204},
+	}, nil)
+	return err
+}
+
+// RemoveTeamMembershipBySlug removes the user from the team (but not the org).
+//
+// https://docs.github.com/en/rest/reference/teams#remove-team-membership-for-a-user
+func (c *client) RemoveTeamMembershipBySlug(org, teamSlug, user string) error {
+	durationLogger := c.log("RemoveTeamMembershipBySlug", org, teamSlug, user)
 	defer durationLogger()
 
 	if c.fake {
@@ -3699,7 +3800,7 @@ func (c *client) RemoveTeamMembership(org string, id int, user string) error {
 	}
 	_, err := c.request(&request{
 		method:    http.MethodDelete,
-		path:      fmt.Sprintf("/teams/%d/memberships/%s", id, user),
+		path:      fmt.Sprintf("/orgs/%s/teams/%s/memberships/%s", org, teamSlug, user),
 		org:       org,
 		exitCodes: []int{204},
 	}, nil)
@@ -3788,16 +3889,25 @@ func (c *client) ListTeamMembersBySlug(org, teamSlug, role string) ([]TeamMember
 // ListTeamRepos gets a list of team repos for the given team id
 //
 // https://developer.github.com/v3/teams/#list-team-repos
+// Deprecated: please use ListTeamReposBySlug
 func (c *client) ListTeamRepos(org string, id int) ([]Repo, error) {
-	durationLogger := c.log("ListTeamRepos", id)
+	c.logger.WithField("methodName", "ListTeamRepos").
+		Warn("method is deprecated, and will result in multiple api calls to achieve result")
+	durationLogger := c.log("ListTeamRepos", org, id)
 	defer durationLogger()
 
 	if c.fake {
 		return nil, nil
 	}
-	path := fmt.Sprintf("/teams/%d/repos", id)
+
+	organization, err := c.GetOrg(org)
+	if err != nil {
+		return nil, err
+	}
+
+	path := fmt.Sprintf("/organizations/%d/team/%d/repos", organization.Id, id)
 	var repos []Repo
-	err := c.readPaginatedResultsWithValues(
+	err = c.readPaginatedResultsWithValues(
 		path,
 		url.Values{
 			"per_page": []string{"100"},
@@ -3827,11 +3937,88 @@ func (c *client) ListTeamRepos(org string, id int) ([]Repo, error) {
 	return repos, nil
 }
 
+// ListTeamReposBySlug gets a list of team repos for the given team slug
+//
+// https://docs.github.com/en/rest/reference/teams#list-team-repositories
+func (c *client) ListTeamReposBySlug(org, teamSlug string) ([]Repo, error) {
+	durationLogger := c.log("ListTeamReposBySlug", org, teamSlug)
+	defer durationLogger()
+
+	if c.fake {
+		return nil, nil
+	}
+	path := fmt.Sprintf("/orgs/%s/teams/%s/repos", org, teamSlug)
+	var repos []Repo
+	err := c.readPaginatedResultsWithValues(
+		path,
+		url.Values{
+			"per_page": []string{"100"},
+		},
+		// This accept header enables the nested teams preview.
+		// https://developer.github.com/changes/2017-08-30-preview-nested-teams/
+		"application/vnd.github.v3+json",
+		org,
+		func() interface{} {
+			return &[]Repo{}
+		},
+		func(obj interface{}) {
+			for _, repo := range *obj.(*[]Repo) {
+				// Currently, GitHub API returns false for all permission levels
+				// for a repo on which the team has 'Maintain' or 'Triage' role.
+				// This check is to avoid listing a repo under the team but
+				// showing the permission level as none.
+				if LevelFromPermissions(repo.Permissions) != None {
+					repos = append(repos, repo)
+				}
+			}
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return repos, nil
+}
+
 // UpdateTeamRepo adds the repo to the team with the provided role.
 //
 // https://developer.github.com/v3/teams/#add-or-update-team-repository
+// Deprecated: please use UpdateTeamRepoBySlug
 func (c *client) UpdateTeamRepo(id int, org, repo string, permission TeamPermission) error {
+	c.logger.WithField("methodName", "UpdateTeamRepo").
+		Warn("method is deprecated, and will result in multiple api calls to achieve result")
 	durationLogger := c.log("UpdateTeamRepo", id, org, repo, permission)
+	defer durationLogger()
+
+	if c.fake || c.dry {
+		return nil
+	}
+
+	organization, err := c.GetOrg(org)
+	if err != nil {
+		return err
+	}
+
+	data := struct {
+		Permission string `json:"permission"`
+	}{
+		Permission: string(permission),
+	}
+
+	_, err = c.request(&request{
+		method:      http.MethodPut,
+		path:        fmt.Sprintf("/organizations/%d/team/%d/repos/%s/%s", organization.Id, id, org, repo),
+		org:         org,
+		requestBody: &data,
+		exitCodes:   []int{204},
+	}, nil)
+	return err
+}
+
+// UpdateTeamRepoBySlug adds the repo to the team with the provided role.
+//
+// https://docs.github.com/en/rest/reference/teams#add-or-update-team-repository-permissions
+func (c *client) UpdateTeamRepoBySlug(org, teamSlug, repo string, permission TeamPermission) error {
+	durationLogger := c.log("UpdateTeamRepoBySlug", org, teamSlug, repo, permission)
 	defer durationLogger()
 
 	if c.fake || c.dry {
@@ -3846,7 +4033,7 @@ func (c *client) UpdateTeamRepo(id int, org, repo string, permission TeamPermiss
 
 	_, err := c.request(&request{
 		method:      http.MethodPut,
-		path:        fmt.Sprintf("/teams/%d/repos/%s/%s", id, org, repo),
+		path:        fmt.Sprintf("/orgs/%s/teams/%s/repos/%s/%s", org, teamSlug, org, repo),
 		org:         org,
 		requestBody: &data,
 		exitCodes:   []int{204},
@@ -3856,9 +4043,37 @@ func (c *client) UpdateTeamRepo(id int, org, repo string, permission TeamPermiss
 
 // RemoveTeamRepo removes the team from the repo.
 //
-// https://developer.github.com/v3/teams/#add-or-update-team-repository
+// https://docs.github.com/en/rest/reference/teams#remove-a-repository-from-a-team-legacy
+// Deprecated: please use RemoveTeamRepoBySlug
 func (c *client) RemoveTeamRepo(id int, org, repo string) error {
+	c.logger.WithField("methodName", "RemoveTeamRepo").
+		Warn("method is deprecated, and will result in multiple api calls to achieve result")
 	durationLogger := c.log("RemoveTeamRepo", id, org, repo)
+	defer durationLogger()
+
+	if c.fake || c.dry {
+		return nil
+	}
+
+	organization, err := c.GetOrg(org)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.request(&request{
+		method:    http.MethodDelete,
+		path:      fmt.Sprintf("/organizations/%d/team/%d/repos/%s/%s", organization.Id, id, org, repo),
+		org:       org,
+		exitCodes: []int{204},
+	}, nil)
+	return err
+}
+
+// RemoveTeamRepoBySlug removes the team from the repo.
+//
+// https://docs.github.com/en/rest/reference/teams#remove-a-repository-from-a-team
+func (c *client) RemoveTeamRepoBySlug(org, teamSlug, repo string) error {
+	durationLogger := c.log("RemoveTeamRepoBySlug", org, teamSlug, repo)
 	defer durationLogger()
 
 	if c.fake || c.dry {
@@ -3867,7 +4082,7 @@ func (c *client) RemoveTeamRepo(id int, org, repo string) error {
 
 	_, err := c.request(&request{
 		method:    http.MethodDelete,
-		path:      fmt.Sprintf("/teams/%d/repos/%s/%s", id, org, repo),
+		path:      fmt.Sprintf("/orgs/%s/teams/%s/repos/%s/%s", org, teamSlug, org, repo),
 		org:       org,
 		exitCodes: []int{204},
 	}, nil)
@@ -3878,18 +4093,56 @@ func (c *client) RemoveTeamRepo(id int, org, repo string) error {
 // given team id
 //
 // https://developer.github.com/v3/teams/members/#list-pending-team-invitations
+// Deprecated: please use ListTeamInvitationsBySlug
 func (c *client) ListTeamInvitations(org string, id int) ([]OrgInvitation, error) {
-	durationLogger := c.log("ListTeamInvites", id)
+	c.logger.WithField("methodName", "ListTeamInvitations").
+		Warn("method is deprecated, and will result in multiple api calls to achieve result")
+	durationLogger := c.log("ListTeamInvitations", org, id)
 	defer durationLogger()
 
 	if c.fake {
 		return nil, nil
 	}
-	path := fmt.Sprintf("/teams/%d/invitations", id)
+
+	organization, err := c.GetOrg(org)
+	if err != nil {
+		return nil, err
+	}
+	path := fmt.Sprintf("/organizations/%d/team/%d/invitations", organization.Id, id)
+	var ret []OrgInvitation
+	err = c.readPaginatedResults(
+		path,
+		acceptNone,
+		org,
+		func() interface{} {
+			return &[]OrgInvitation{}
+		},
+		func(obj interface{}) {
+			ret = append(ret, *(obj.(*[]OrgInvitation))...)
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
+
+// ListTeamInvitationsBySlug gets a list of team members with pending invitations for the given team slug
+//
+// https://docs.github.com/en/rest/reference/teams#list-pending-team-invitations
+func (c *client) ListTeamInvitationsBySlug(org, teamSlug string) ([]OrgInvitation, error) {
+	durationLogger := c.log("ListTeamInvitationsBySlug", org, teamSlug)
+	defer durationLogger()
+
+	if c.fake {
+		return nil, nil
+	}
+
+	path := fmt.Sprintf("/orgs/%s/teams/%s/invitations", org, teamSlug)
 	var ret []OrgInvitation
 	err := c.readPaginatedResults(
 		path,
-		acceptNone,
+		"application/vnd.github.v3+json",
 		org,
 		func() interface{} {
 			return &[]OrgInvitation{}
