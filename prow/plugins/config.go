@@ -477,6 +477,7 @@ type Milestone struct {
 	// You can curl the following endpoint in order to determine the github ID of your team
 	// responsible for maintaining the milestones:
 	// curl -H "Authorization: token <token>" https://api.github.com/orgs/<org-name>/teams
+	// Deprecated: use MaintainersTeam instead
 	MaintainersID           int    `json:"maintainers_id,omitempty"`
 	MaintainersTeam         string `json:"maintainers_team,omitempty"`
 	MaintainersFriendlyName string `json:"maintainers_friendly_name,omitempty"`
@@ -1243,6 +1244,16 @@ func validateTrigger(triggers []Trigger) error {
 	return nil
 }
 
+var warnRepoMilestone time.Time
+
+func validateRepoMilestone(milestones map[string]Milestone) {
+	for _, milestone := range milestones {
+		if milestone.MaintainersID != 0 {
+			logrusutil.ThrottledWarnf(&warnRepoMilestone, time.Hour, "deprecated field: maintainers_id is configured for repo_milestone, maintainers_team should be used instead")
+		}
+	}
+}
+
 func compileRegexpsAndDurations(pc *Configuration) error {
 	cRe, err := regexp.Compile(pc.SigMention.Regexp)
 	if err != nil {
@@ -1327,6 +1338,7 @@ func (c *Configuration) Validate() error {
 	if err := validateTrigger(c.Triggers); err != nil {
 		return err
 	}
+	validateRepoMilestone(c.RepoMilestone)
 
 	return nil
 }
