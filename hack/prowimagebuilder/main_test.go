@@ -26,7 +26,49 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"k8s.io/test-infra/prow/flagutil"
 )
+
+func TestImageAllowed(t *testing.T) {
+	tests := []struct {
+		name   string
+		images flagutil.Strings
+		image  string
+		want   bool
+	}{
+		{
+			name:   "not-specified",
+			images: flagutil.Strings{},
+			image:  "whatever",
+			want:   true,
+		},
+		{
+			name:   "included",
+			images: flagutil.NewStringsBeenSet("prow/cmd/awesome"),
+			image:  "prow/cmd/awesome",
+			want:   true,
+		},
+		{
+			name:   "not-included",
+			images: flagutil.NewStringsBeenSet("prow/cmd/awesome"),
+			image:  "prow/cmd/otherawesome",
+			want:   false,
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			o := options{
+				images: tc.images,
+			}
+			got := o.imageAllowed(tc.image)
+			if got != tc.want {
+				t.Errorf("Unexpected. Want: %v, got: %v", tc.want, got)
+			}
+		})
+	}
+}
 
 func TestRunCmdInDir(t *testing.T) {
 	dir := t.TempDir()
