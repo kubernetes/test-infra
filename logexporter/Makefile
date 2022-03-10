@@ -23,7 +23,7 @@ cmd/logexporter: cmd/main.go
 build: cmd/logexporter
 
 push-prod:
-	bazel run //images/builder -- --project=k8s-testimages --scratch-bucket=gs://k8s-testimages-scratch --build-dir=. logexporter
+	../../../hack/make-rules/go-run/arbitrary.sh run ./images/builder --project=k8s-testimages --scratch-bucket=gs://k8s-testimages-scratch --build-dir=. logexporter
 
 push:
-	bazel run //images/builder -- --allow-dirty --build-dir=. logexporter
+	../../../hack/make-rules/go-run/arbitrary.sh run ./images/builder --allow-dirty --build-dir=. logexporter
