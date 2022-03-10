@@ -30,9 +30,7 @@ periodics:
       args:
       - -C
       - groups
-      - run
-      - --
-      - --confirm
+      - apply
 
 postsubmits:
   kubernetes/k8s.io:
@@ -65,6 +63,4 @@ postsubmits:
         args:
         - -C
         - groups
-        - run
-        - --
-        - --confirm
+        - apply
