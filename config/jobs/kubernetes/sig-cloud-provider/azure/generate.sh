@@ -41,6 +41,7 @@ EOF
 tmp="gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-master"
 kubekins_e2e_image="${tmp/\-master/}"
 installCSIdrivers=""
+installCSIAzureFileDrivers=""
 
 for release in "$@"; do
   output="${dir}/release-${release}.yaml"
@@ -60,6 +61,7 @@ for release in "$@"; do
 
   if [[ "${release}" == "master" || "${release}" == "1.23" ]]; then
     installCSIdrivers=" ./deploy/install-driver.sh master local,snapshot,enable-avset &&"
+    installCSIAzureFileDrivers=" ./deploy/install-driver.sh master local &&"
   fi
 
   cat >"${output}" <<EOF
@@ -103,7 +105,7 @@ presubmits:
               make e2e-test
           env:
             - name: AZURE_STORAGE_DRIVER
-              value: kubernetes.io/azure-disk # In-tree Azure disk storage class
+              value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
           securityContext:
             privileged: true
           resources:
@@ -148,7 +150,7 @@ $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-azure-d
               make e2e-test
           env:
             - name: AZURE_STORAGE_DRIVER
-              value: kubernetes.io/azure-disk # In-tree Azure disk storage class
+              value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
             - name: EXP_MACHINE_POOL
               value: "true"
           securityContext:
@@ -454,7 +456,7 @@ periodics:
       - -c
       - >-
         kubectl apply -f templates/addons/azurefile-role.yaml &&
-        cd \${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&${installCSIdrivers}
+        cd \${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&${installCSIAzureFileDrivers}
         make e2e-test
       env:
       - name: USE_CI_ARTIFACTS
@@ -513,7 +515,7 @@ periodics:
       - name: USE_CI_ARTIFACTS
         value: "true"
       - name: AZURE_STORAGE_DRIVER
-        value: kubernetes.io/azure-disk # In-tree Azure disk storage class
+        value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
       securityContext:
         privileged: true
       resources:
@@ -566,7 +568,7 @@ periodics:
       - name: EXP_MACHINE_POOL
         value: "true"
       - name: AZURE_STORAGE_DRIVER
-        value: kubernetes.io/azure-disk # In-tree Azure disk storage class
+        value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
       securityContext:
         privileged: true
       resources:
@@ -654,7 +656,7 @@ EOF
       - -c
       - >-
         kubectl apply -f templates/addons/azurefile-role.yaml &&
-        cd \${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
+        cd \${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&${installCSIAzureFileDrivers}
         make e2e-test
       env:
       - name: USE_CI_ARTIFACTS
@@ -706,7 +708,7 @@ EOF
       - -c
       - >-
         kubectl apply -f templates/addons/azurefile-role.yaml &&
-        cd \${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
+        cd \${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&${installCSIAzureFileDrivers}
         make e2e-test
       env:
       - name: USE_CI_ARTIFACTS
@@ -765,7 +767,7 @@ EOF
       - name: USE_CI_ARTIFACTS
         value: "true"
       - name: AZURE_STORAGE_DRIVER
-        value: kubernetes.io/azure-disk # In-tree Azure disk storage class
+        value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
       securityContext:
         privileged: true
       resources:
@@ -818,7 +820,7 @@ EOF
       - name: EXP_MACHINE_POOL
         value: "true"
       - name: AZURE_STORAGE_DRIVER
-        value: kubernetes.io/azure-disk # In-tree Azure disk storage class
+        value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
       securityContext:
         privileged: true
       resources:
