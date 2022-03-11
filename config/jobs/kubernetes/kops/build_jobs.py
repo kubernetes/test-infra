@@ -372,15 +372,12 @@ distro_options = [
 ]
 
 k8s_versions = [
-    #"latest", # disabled until we're ready to test 1.23
-    "1.21",
     "1.22",
     "1.23"
 ]
 
 kops_versions = [
     None, # maps to latest
-    "1.21",
     "1.22",
     "1.23"
 ]
@@ -402,7 +399,7 @@ def generate_grid():
                 for k8s_version in k8s_versions:
                     for kops_version in kops_versions:
                         # https://github.com/kubernetes/kops/pull/11696
-                        if (not (kops_version in ["1.21", "1.22"]) and
+                        if (not (kops_version in ["1.22"]) and
                                 distro in ["deb9", "rhel7", "u1804"]):
                             continue
                         results.append(
@@ -425,7 +422,7 @@ def generate_grid():
                 for k8s_version in ["1.22"]: # TODO: all k8s_versions:
                     for kops_version in [None]: # TODO: all kops_versions:
                         # https://github.com/kubernetes/kops/pull/11696
-                        if (not(kops_version in ["1.21", "1.22"]) and
+                        if (not(kops_version in ["1.22"]) and
                                 distro in ["deb9", "rhel7", "u1804"]):
                             continue
                         results.append(
@@ -704,12 +701,11 @@ def generate_misc():
 ################################
 def generate_conformance():
     results = []
-    for version in ['1.23', '1.22', '1.21']:
+    for version in ['1.23', '1.22']:
         results.append(
             build_test(
                 k8s_version=version,
                 kops_version=version,
-                irsa=version >= '1.22',
                 kops_channel='alpha',
                 name_override=f"kops-aws-conformance-{version.replace('.', '-')}",
                 networking='calico',
@@ -725,7 +721,6 @@ def generate_conformance():
             build_test(
                 k8s_version=version,
                 kops_version=version,
-                irsa=version >= '1.22',
                 kops_channel='alpha',
                 name_override=f"kops-aws-conformance-arm64-{version.replace('.', '-')}",
                 networking='calico',
@@ -796,11 +791,10 @@ def generate_network_plugins():
 def generate_upgrades():
     versions_list = [
         #  kops    k8s          kops      k8s
-        (('v1.21.4', 'v1.21.4'), ('1.21', 'v1.21.4')),
-        (('v1.22.3', 'v1.22.4'), ('1.22', 'v1.22.4')),
+        (('v1.22.4', 'v1.22.4'), ('1.22', 'v1.22.4')),
         (('1.22', 'v1.22.4'), ('1.23', 'v1.23.0')),
         (('1.22', 'v1.22.4'), ('latest', 'v1.23.0')),
-        (('v1.23.0-beta.1', 'v1.23.1'), ('1.23', 'v1.23.1')),
+        (('v1.23.0', 'v1.23.1'), ('1.23', 'v1.23.1')),
         (('1.23', 'v1.23.0'), ('latest', 'latest')),
         (('latest', 'v1.23.0'), ('latest', 'latest')),
         (('latest', 'v1.22.4'), ('latest', 'v1.23.0')),
@@ -1177,17 +1171,6 @@ def generate_presubmits_e2e():
             tab_name='e2e-1-22',
             always_run=True,
             skip_regex=skip_regex,
-        ),
-        presubmit_test(
-            branch='release-1.21',
-            k8s_version='1.21',
-            kops_channel='alpha',
-            name='pull-kops-e2e-kubernetes-aws-1-21',
-            networking='calico',
-            irsa=False,
-            tab_name='e2e-1-21',
-            always_run=True,
-            skip_regex=skip_regex + "|MetricsGrabber",
         ),
         presubmit_test(
             name="pull-kops-e2e-aws-karpenter",
