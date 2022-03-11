@@ -82,3 +82,23 @@ postsubmits:
               - --scratch-bucket=gs://k8s-staging-infra-tools-gcb
               - --env-passthrough=PULL_BASE_REF
               - images/public-log-asn-matcher
+    - name: post-k8sio-push-image-cs-fetch-repos-canary
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-k8s-infra-k8sio, sig-k8s-infra-gcb
+        description: Builds the cs-fetch-repos image which creates a git repository configuration file for indexing by codesearch (aka Hound).
+      decorate: true
+      run_if_changed: "^images/codesearch/cs-fetch-repos/"
+      branches:
+        - ^main$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220309-4b32800b2d
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-infra-tools
+              - --scratch-bucket=gs://k8s-staging-infra-tools-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - images/k8s-infra
