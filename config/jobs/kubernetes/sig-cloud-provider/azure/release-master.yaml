@@ -244,6 +244,8 @@ presubmits:
           value: /home/prow/go/src/sigs.k8s.io/cluster-api-provider-azure/test/e2e/data/kubetest/conformance-fast.yaml
         - name: CONFORMANCE_NODES
           value: "25"
+        - name: IN_TREE_CLOUDPROVIDER
+          value: "true"
     annotations:
       testgrid-dashboards: provider-azure-presubmit
       testgrid-tab-name: pull-kubernetes-e2e-capz-conformance
@@ -289,6 +291,8 @@ presubmits:
           value: "1"
         - name: CONFORMANCE_CONTROL_PLANE_MACHINE_COUNT
           value: "3"
+        - name: IN_TREE_CLOUDPROVIDER
+          value: "true"
     annotations:
       testgrid-dashboards: provider-azure-presubmit
       testgrid-tab-name: pull-kubernetes-e2e-capz-ha-control-plane
@@ -322,6 +326,8 @@ periodics:
         value: "latest"
       - name: CONFORMANCE_WORKER_MACHINE_COUNT
         value: "2"
+      - name: IN_TREE_CLOUDPROVIDER
+        value: "true"
       securityContext:
         privileged: true
       resources:
@@ -571,6 +577,8 @@ periodics:
         value: "latest"
       - name: CONFORMANCE_WORKER_MACHINE_COUNT
         value: "2"
+      - name: IN_TREE_CLOUDPROVIDER
+        value: "true"
       securityContext:
         privileged: true
       resources:

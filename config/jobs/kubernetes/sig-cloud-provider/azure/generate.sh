@@ -288,6 +288,8 @@ $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-azure-f
           value: /home/prow/go/src/sigs.k8s.io/cluster-api-provider-azure/test/e2e/data/kubetest/conformance-fast.yaml
         - name: CONFORMANCE_NODES
           value: "25"
+        - name: IN_TREE_CLOUDPROVIDER
+          value: "true"
 $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-conformance)
   - name: pull-kubernetes-e2e-capz-ha-control-plane
     decorate: true
@@ -328,6 +330,8 @@ $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-conform
           value: "1"
         - name: CONFORMANCE_CONTROL_PLANE_MACHINE_COUNT
           value: "3"
+        - name: IN_TREE_CLOUDPROVIDER
+          value: "true"
 $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-ha-control-plane)
 periodics:
 - interval: 3h
@@ -357,6 +361,8 @@ periodics:
         value: "${kubernetes_version}"
       - name: CONFORMANCE_WORKER_MACHINE_COUNT
         value: "2"
+      - name: IN_TREE_CLOUDPROVIDER
+        value: "true"
       securityContext:
         privileged: true
       resources:
@@ -609,6 +615,8 @@ EOF
         value: "latest"
       - name: CONFORMANCE_WORKER_MACHINE_COUNT
         value: "2"
+      - name: IN_TREE_CLOUDPROVIDER
+        value: "true"
       securityContext:
         privileged: true
       resources:
