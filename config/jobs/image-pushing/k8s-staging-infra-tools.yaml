@@ -86,7 +86,7 @@ postsubmits:
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-k8s-infra-k8sio, sig-k8s-infra-gcb
-        description: Builds the cs-fetch-repos image which creates a git repository configuration file for indexing by codesearch (aka Hound).
+        description: Builds the cs-fetch-repos image that creates a git repository configuration file for indexing by codesearch (aka Hound).
       decorate: true
       run_if_changed: "^images/codesearch/cs-fetch-repos/"
       branches:
