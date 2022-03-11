@@ -422,13 +422,13 @@ postsubmits:
         command:
         - configurator
         args:
-        - --yaml="config/testgrids"
-        - --default="config/testgrids/default.yaml"
-        - --prow-config="config/prow/config.yaml"
-        - --prow-job-config="config/jobs/"
-        - --output="gs://k8s-testgrid-canary/configs/k8s/config"
-        - --output="gs://k8s-testgrid/configs/k8s/config"
-        - --prowjob-url-prefix="https://git.k8s.io/test-infra/config/jobs/"
+        - --yaml=config/testgrids
+        - --default=config/testgrids/default.yaml
+        - --prow-config=config/prow/config.yaml
+        - --prow-job-config=config/jobs/
+        - --output=gs://k8s-testgrid-canary/configs/k8s/config
+        - --output=gs://k8s-testgrid/configs/k8s/config
+        - --prowjob-url-prefix=https://git.k8s.io/test-infra/config/jobs/
         - --update-description
         - --oneshot
         - --world-readable
