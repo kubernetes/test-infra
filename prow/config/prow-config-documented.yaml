@@ -758,6 +758,10 @@ plank:
             # hope that the test process exits cleanly before starting an upload.
             upload_ignores_interrupts: false
 
+            # UseDefaultEntrypoint indicates the desire of using default entrypoint
+            # from the test container image. Must not set `command`.
+            use_defautl_entrypoint: false
+
             # UtilityImages holds pull specs for utility container
             # images used to decorate a PodSpec.
             utility_images:
@@ -954,6 +958,10 @@ plank:
             # UploadIgnoresInterrupts causes sidecar to ignore interrupts for the upload process in
             # hope that the test process exits cleanly before starting an upload.
             upload_ignores_interrupts: false
+
+            # UseDefaultEntrypoint indicates the desire of using default entrypoint
+            # from the test container image. Must not set `command`.
+            use_defautl_entrypoint: false
 
             # UtilityImages holds pull specs for utility container
             # images used to decorate a PodSpec.

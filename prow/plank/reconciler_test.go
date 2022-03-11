@@ -27,6 +27,7 @@ import (
 	"time"
 
 	"github.com/go-test/deep"
+	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -654,6 +655,71 @@ func TestSyncClusterStatus(t *testing.T) {
 				if diff := deep.Equal(result, expected); diff != nil {
 					t.Errorf("result differs from expected: %v", diff)
 				}
+			}
+		})
+	}
+}
+
+func TestUseDefaultEntrypoint(t *testing.T) {
+	tests := []struct {
+		name                    string
+		jobUseDefaultEntrypoing bool
+		containers              []corev1.Container
+		want                    []corev1.Container
+	}{
+		{
+			name:                    "base",
+			jobUseDefaultEntrypoing: true,
+			containers: []corev1.Container{{
+				Image: "gcr.io/k8s-prow/crier@sha256:006ce75a5d7c971fd51c5ebcb822e87a18f119353e839455373a772a70561cde",
+			}},
+			want: []corev1.Container{{
+				Image:   "gcr.io/k8s-prow/crier@sha256:006ce75a5d7c971fd51c5ebcb822e87a18f119353e839455373a772a70561cde",
+				Command: []string{"/ko-app/crier"},
+			}},
+		},
+		{
+			name:                    "do-not-use-default",
+			jobUseDefaultEntrypoing: false,
+			containers: []corev1.Container{{
+				Image: "gcr.io/k8s-prow/crier@sha256:006ce75a5d7c971fd51c5ebcb822e87a18f119353e839455373a772a70561cde",
+			}},
+			want: []corev1.Container{{
+				Image: "gcr.io/k8s-prow/crier@sha256:006ce75a5d7c971fd51c5ebcb822e87a18f119353e839455373a772a70561cde",
+			}},
+		},
+		{
+			name:                    "already-specified",
+			jobUseDefaultEntrypoing: true,
+			containers: []corev1.Container{{
+				Image:   "gcr.io/k8s-prow/crier@sha256:006ce75a5d7c971fd51c5ebcb822e87a18f119353e839455373a772a70561cde",
+				Command: []string{"crier"},
+			}},
+			want: []corev1.Container{{
+				Image:   "gcr.io/k8s-prow/crier@sha256:006ce75a5d7c971fd51c5ebcb822e87a18f119353e839455373a772a70561cde",
+				Command: []string{"crier"},
+			}},
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(*testing.T) {
+			pj := prowv1.ProwJob{
+				Spec: prowv1.ProwJobSpec{
+					DecorationConfig: &prowv1.DecorationConfig{
+						UseDefaultEntrypoint: &tc.jobUseDefaultEntrypoing,
+					},
+				},
+			}
+			pod := corev1.Pod{
+				Spec: corev1.PodSpec{Containers: tc.containers},
+			}
+			if err := useDefaultEntrypoint(context.Background(), logrus.WithContext(context.Background()), &pj, &pod, nil); err != nil {
+				t.Fatal(err)
+			}
+			if diff := cmp.Diff(tc.want, pod.Spec.Containers); diff != "" {
+				t.Fatalf("Containers mismatch. Want(-), got(+):\n%s", diff)
 			}
 		})
 	}

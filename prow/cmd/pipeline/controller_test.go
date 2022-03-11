@@ -31,6 +31,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/diff"
+	"k8s.io/client-go/util/workqueue"
 	"k8s.io/test-infra/prow/config"
 
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
@@ -142,6 +143,7 @@ func (r *fakeReconciler) pipelineID(pj prowjobv1.ProwJob) (string, string, error
 
 type fakeLimiter struct {
 	added string
+	workqueue.RateLimitingInterface
 }
 
 func (fl *fakeLimiter) ShutDown() {}

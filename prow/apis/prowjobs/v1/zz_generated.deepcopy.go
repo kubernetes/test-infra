@@ -158,6 +158,11 @@ func (in *DecorationConfig) DeepCopyInto(out *DecorationConfig) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.UseDefaultEntrypoint != nil {
+		in, out := &in.UseDefaultEntrypoint, &out.UseDefaultEntrypoint
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 

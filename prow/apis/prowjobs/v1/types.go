@@ -475,6 +475,10 @@ type DecorationConfig struct {
 	// UploadIgnoresInterrupts causes sidecar to ignore interrupts for the upload process in
 	// hope that the test process exits cleanly before starting an upload.
 	UploadIgnoresInterrupts *bool `json:"upload_ignores_interrupts,omitempty"`
+
+	// UseDefaultEntrypoint indicates the desire of using default entrypoint
+	// from the test container image. Must not set `command`.
+	UseDefaultEntrypoint *bool `json:"use_defautl_entrypoint,omitempty"`
 }
 
 type CensoringOptions struct {
@@ -675,6 +679,10 @@ func (d *DecorationConfig) ApplyDefault(def *DecorationConfig) *DecorationConfig
 
 	if merged.UploadIgnoresInterrupts == nil {
 		merged.UploadIgnoresInterrupts = def.UploadIgnoresInterrupts
+	}
+
+	if merged.UseDefaultEntrypoint == nil {
+		merged.UseDefaultEntrypoint = def.UseDefaultEntrypoint
 	}
 
 	return &merged

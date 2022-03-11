@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"strings"
 	"sync"
 	"time"
@@ -53,6 +54,16 @@ import (
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pod-utils/decorate"
 	"k8s.io/test-infra/prow/version"
+
+	ecr "github.com/awslabs/amazon-ecr-credential-helper/ecr-login"
+	"github.com/chrismellard/docker-credential-acr-env/pkg/credhelper"
+	"github.com/google/go-containerregistry/pkg/authn"
+	"github.com/google/go-containerregistry/pkg/authn/github"
+	authnk8s "github.com/google/go-containerregistry/pkg/authn/kubernetes"
+	"github.com/google/go-containerregistry/pkg/v1/google"
+	"github.com/google/go-containerregistry/pkg/v1/remote"
+
+	containerregistry "github.com/google/go-containerregistry/pkg/name"
 )
 
 const ControllerName = "plank"
@@ -705,6 +716,93 @@ func (r *reconciler) deletePod(ctx context.Context, pj *prowv1.ProwJob) error {
 	return nil
 }
 
+func useDefaultEntrypoint(ctx context.Context, logger *logrus.Entry, pj *prowv1.ProwJob, pod *corev1.Pod, client ctrlruntimeclient.Client) error {
+	if pj.Spec.DecorationConfig == nil || pj.Spec.DecorationConfig.UseDefaultEntrypoint == nil || !*pj.Spec.DecorationConfig.UseDefaultEntrypoint {
+		logger.Debug("Skip checking for default entrypoint.")
+		return nil
+	}
+	// Respect default entrypoint if it's desired
+	// Supported images are either publicly available images, or images that can
+	// be fetched by imagePullSecrets defined on the podspec of the job. Also
+	// effort using keychains from google, github, azure, aws if they are available.
+	amazonKeychain := authn.NewKeychainFromHelper(ecr.NewECRHelper(ecr.WithLogger(ioutil.Discard)))
+	azureKeychain := authn.NewKeychainFromHelper(credhelper.NewACRCredentialsHelper())
+	keyChains := []authn.Keychain{
+		authn.DefaultKeychain,
+		google.Keychain,
+		github.Keychain,
+		azureKeychain,
+		amazonKeychain,
+	}
+	if ipss := pod.Spec.ImagePullSecrets; len(ipss) > 0 {
+		// TODO(chaodaiG): let authnk8s do the image processing once it's
+		// supported.
+		// Technically go-containerregistry supports pulling secret directly
+		// from cluster, which uses kubernetes.Interface at
+		// https://github.com/google/go-containerregistry/blob/f1fa40b162a1601a863364e8a2f63bbb9e4ff36e/pkg/authn/kubernetes/keychain.go#L48,
+		// to update it make it also support controller runtime client.
+		var ipsObjs []corev1.Secret
+		for _, ips := range ipss {
+			ipsObj := corev1.Secret{ObjectMeta: metav1.ObjectMeta{Name: ips.Name}}
+			if err := client.Get(ctx, types.NamespacedName{Namespace: pod.Namespace, Name: ips.Name}, &ipsObj); err != nil {
+				logger.WithError(err).WithField("secret", ips.Name).Error("Failed fetching imagePullSecret.")
+			} else {
+				ipsObjs = append(ipsObjs, ipsObj)
+			}
+		}
+		if len(ipsObjs) > 0 {
+			buildClusterKeychain, err := authnk8s.NewFromPullSecrets(ctx, ipsObjs)
+			if err != nil {
+				// This should not happen, but not sure. Fall back to user supplied input instead
+				logger.WithError(err).Error("Failed creating key chain.")
+			} else {
+				keyChains = append(keyChains, buildClusterKeychain)
+			}
+		}
+	}
+	keychain := authn.NewMultiKeychain(keyChains...)
+
+	for i, container := range pod.Spec.Containers {
+		if len(container.Command) > 0 {
+			continue
+		}
+
+		// By default the entrypoint is discovered from "linux/amd64", which
+		// could be overridden by remote.WithPlatform, which probably is going to
+		// be quite some hacks to make it right as mentioned at
+		// https://github.com/kubernetes/test-infra/pull/25383#pullrequestreview-891109864,
+		// so for now we only support either "linux/amd64" or other arches that
+		// share the same entrypoint with its "linux/amd64" variant.
+		ref, err := containerregistry.ParseReference(container.Image)
+		if err != nil {
+			return err
+		}
+		img, err := remote.Image(ref, remote.WithAuthFromKeychain(keychain))
+		if err != nil {
+			return err
+		}
+
+		cfg, err := img.ConfigFile()
+		if err != nil {
+			return err
+		}
+		ep := cfg.Config.Entrypoint
+		switch len(ep) {
+		case 1: // happy case
+			pod.Spec.Containers[i].Command = []string{ep[0]}
+		case 0: // Fall back to use CMD if Entrypoint is empty
+			if len(cfg.Config.Cmd) == 1 {
+				pod.Spec.Containers[i].Command = []string{cfg.Config.Cmd[0]}
+			} else {
+				return fmt.Errorf("unexpected more than 1 cmd: %v", cfg.Config.Cmd)
+			}
+		default:
+			return fmt.Errorf("unexpected more than 1 entrypoint: %v", ep)
+		}
+	}
+	return nil
+}
+
 func (r *reconciler) startPod(ctx context.Context, pj *prowv1.ProwJob) (string, string, error) {
 	buildID, err := r.getBuildID(pj.Spec.Job)
 	if err != nil {
@@ -724,6 +822,9 @@ func (r *reconciler) startPod(ctx context.Context, pj *prowv1.ProwJob) (string, 
 	client, ok := r.buildClients[pj.ClusterAlias()]
 	if !ok {
 		return "", "", TerminalError(fmt.Errorf("unknown cluster alias %q", pj.ClusterAlias()))
+	}
+	if err := useDefaultEntrypoint(ctx, r.log.WithField("pj", pj.Name), pj, pod, client); err != nil {
+		return "", "", TerminalError(fmt.Errorf("unable to discover default entrypoint: %v", err))
 	}
 	err = client.Create(ctx, pod)
 	r.log.WithFields(pjutil.ProwJobFields(pj)).Debug("Create Pod.")
@@ -785,7 +886,7 @@ func (r *reconciler) canExecuteConcurrentlyPerJob(ctx context.Context, pj *prowv
 
 	pjs := &prowv1.ProwJobList{}
 	if err := r.pjClient.List(ctx, pjs, optPendingTriggeredJobsNamed(pj.Spec.Job)); err != nil {
-		return false, fmt.Errorf("failed listing prowjobs: %w:", err)
+		return false, fmt.Errorf("failed listing prowjobs: %w", err)
 	}
 	r.log.Infof("got %d not completed with same name", len(pjs.Items))
 
