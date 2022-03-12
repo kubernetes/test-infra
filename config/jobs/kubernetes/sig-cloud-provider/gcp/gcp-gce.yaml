@@ -10,18 +10,18 @@ presets:
   - name: CREATE_CUSTOM_NETWORK
     value: "true"
 - labels:
-    preset-pull-registry-sandbox-repo-list: "true"
+    preset-pull-registry-repo-list: "true"
   env:
   - name: KUBE_TEST_REPO_LIST
-    value: https://raw.githubusercontent.com/kubernetes/test-infra/master/config/jobs/kubernetes/sig-cloud-provider/gcp/registry/default-sandbox.yaml
+    value: https://raw.githubusercontent.com/kubernetes/test-infra/master/config/jobs/kubernetes/sig-cloud-provider/gcp/registry/default.yaml
   - name: KUBE_DOCKER_REGISTRY
-    value: registry-sandbox.k8s.io
+    value: registry.k8s.io
   - name: KUBE_ADDON_REGISTRY
-    value: registry-sandbox.k8s.io
+    value: registry.k8s.io
   - name: TEST_ETCD_DOCKER_REPOSITORY
-    value: registry-sandbox.k8s.io/etcd
+    value: registry.k8s.io/etcd
   - name: CONTAINERD_INFRA_CONTAINER
-    value: registry-sandbox.k8s.io/pause:3.6
+    value: registry.k8s.io/pause:3.6
 
 presubmits:
   kubernetes/kubernetes:
@@ -346,7 +346,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-pull-kubernetes-e2e: "true"
       preset-pull-kubernetes-e2e-gce: "true"
-      preset-pull-registry-sandbox-repo-list: "true"
+      preset-pull-registry-repo-list: "true"
     spec:
       containers:
         - args:
