@@ -45,7 +45,6 @@ import (
 	utilpointer "k8s.io/utils/pointer"
 	"sigs.k8s.io/yaml"
 
-	"k8s.io/test-infra/pkg/genyaml"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config/secret"
@@ -7579,41 +7578,6 @@ func loadConfigYaml(prowConfigYaml string, t *testing.T, supplementalProwConfigs
 	}
 
 	return Load(prowConfig, "", supplementalProwConfigDirs, "_prowconfig.yaml")
-}
-
-func TestGenYamlDocs(t *testing.T) {
-	t.Parallel()
-	const fixtureName = "./prow-config-documented.yaml"
-	inputFiles, err := filepath.Glob("*.go")
-	if err != nil {
-		t.Fatalf("filepath.Glob: %v", err)
-	}
-	prowapiInputFiles, err := filepath.Glob("../apis/prowjobs/v1/*.go")
-	if err != nil {
-		t.Fatalf("prowapi filepath.Glob: %v", err)
-	}
-	inputFiles = append(inputFiles, prowapiInputFiles...)
-
-	commentMap, err := genyaml.NewCommentMap(nil, inputFiles...)
-	if err != nil {
-		t.Fatalf("failed to construct commentMap: %v", err)
-	}
-	actualYaml, err := commentMap.GenYaml(genyaml.PopulateStruct(&ProwConfig{}))
-	if err != nil {
-		t.Fatalf("genyaml errored: %v", err)
-	}
-	if os.Getenv("UPDATE") != "" {
-		if err := ioutil.WriteFile(fixtureName, []byte(actualYaml), 0644); err != nil {
-			t.Fatalf("failed to write fixture: %v", err)
-		}
-	}
-	expectedYaml, err := ioutil.ReadFile(fixtureName)
-	if err != nil {
-		t.Fatalf("failed to read fixture: %v", err)
-	}
-	if diff := cmp.Diff(actualYaml, string(expectedYaml)); diff != "" {
-		t.Errorf("Actual result differs from expected: %s\nIf this is expected, re-run the tests with the UPDATE env var set to update the fixture:\n\tUPDATE=true go test ./prow/config/... -run TestGenYamlDocs", diff)
-	}
 }
 
 func TestProwConfigMerging(t *testing.T) {
