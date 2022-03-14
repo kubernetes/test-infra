@@ -821,7 +821,6 @@ func (c *client) AddPullRequestAsExternalBug(id int, org, repo string, num int) 
 		Method:  "ExternalBugs.add_external_bug",
 		ID:      "identifier", // this is useful when fielding asynchronous responses, but not here
 		Parameters: []AddExternalBugParameters{{
-			APIKey:       string(c.getAPIKey()),
 			BugIDs:       []int{id},
 			ExternalBugs: []ExternalBugIdentifier{bugIdentifier},
 		}},
@@ -905,7 +904,6 @@ func (c *client) RemovePullRequestAsExternalBug(id int, org, repo string, num in
 		Method:  "ExternalBugs.remove_external_bug",
 		ID:      "identifier", // this is useful when fielding asynchronous responses, but not here
 		Parameters: []RemoveExternalBugParameters{{
-			APIKey: string(c.getAPIKey()),
 			BugIDs: []int{id},
 			ExternalBugIdentifier: ExternalBugIdentifier{
 				Type: "https://github.com/",
