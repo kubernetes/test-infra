@@ -1,0 +1,74 @@
+presubmits:
+  kubernetes-sigs/special-resource-operator:
+  - name: pull-special-resource-operator-verify
+    always_run: true
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-node-special-resource-operator
+      testgrid-tab-name: verify
+      description: "verify the source code of special-resource-operator."
+    spec:
+      containers:
+      - image: golang:1.17
+        command:
+        - scripts/test-infra/verify.sh
+  - name: pull-special-resource-operator-kube-lint
+    always_run: true
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-node-special-resource-operator
+      testgrid-tab-name: kube-lint
+      description: "kube-lint the source code of special-resource-operator."
+    spec:
+      containers:
+      - image: golang:1.17
+        command:
+        - scripts/test-infra/kube_lint.sh
+  - name: pull-special-resource-operator-helm-lint
+    always_run: true
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-node-special-resource-operator
+      testgrid-tab-name: helm-lint
+      description: "helm-lint the source code of special-resource-operator."
+    spec:
+      containers:
+      - image: golang:1.17
+        command:
+        - scripts/test-infra/helm_lint.sh
+  - name: pull-special-resource-operator-lint
+    always_run: true
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-node-special-resource-operator
+      testgrid-tab-name: lint
+      description: "lint the source code of special-resource-operator."
+    spec:
+      containers:
+      - image: golang:1.17
+        command:
+        - scripts/test-infra/lint.sh
+  - name: pull-special-resource-operator-unit-tests
+    always_run: true
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-node-special-resource-operator
+      testgrid-tab-name: unit-tests
+      description: "unit-tests the source code of special-resource-operator."
+    spec:
+      containers:
+      - image: golang:1.17
+        command:
+        - scripts/test-infra/unit_tests.sh
+  - name: pull-special-resource-operator-e2e-k8s
+    always_run: true
+    decorate: true
+    annotations:
+      testgrid-dashboards: sig-node-special-resource-operator
+      testgrid-tab-name: e2e-k8s
+      description: "e2e-k8s the source code of special-resource-operator."
+    spec:
+      containers:
+      - image: golang:1.17
+        command:
+        - scripts/test-infra/e2e_k8s.sh
