@@ -20,10 +20,10 @@ ifneq ($(K8S), everything)
 endif
 
 push-prod:
-	bazel run //images/builder -- $(EXTRA_ARG) --project=k8s-staging-test-infra --scratch-bucket=gs://k8s-staging-test-infra-gcb --build-dir=. images/kubekins-e2e
+	../../hack/make-rules/go-run/arbitrary.sh run ./images/builder $(EXTRA_ARG) --project=k8s-staging-test-infra --scratch-bucket=gs://k8s-staging-test-infra-gcb --build-dir=. images/kubekins-e2e
 
 push:
-	bazel run //images/builder -- $(EXTRA_ARG) --allow-dirty --build-dir=. images/kubekins-e2e
+	../../hack/make-rules/go-run/arbitrary.sh run ./images/builder $(EXTRA_ARG) --allow-dirty --build-dir=. images/kubekins-e2e
 
 .PHONY: push push-prod help
 
