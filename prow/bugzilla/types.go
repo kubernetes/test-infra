@@ -289,8 +289,6 @@ type ExternalBugType struct {
 // AddExternalBugParameters are the parameters required to add an external
 // tracker bug to a Bugzilla bug
 type AddExternalBugParameters struct {
-	// APIKey is the API key to use when authenticating with Bugzilla
-	APIKey string `json:"api_key"`
 	// BugIDs are the IDs of Bugzilla bugs to update
 	BugIDs []int `json:"bug_ids"`
 	// ExternalBugs are the external bugs to add
@@ -316,8 +314,6 @@ type ExternalBugIdentifier struct {
 // RemoveExternalBugParameters are the parameters required to remove an external
 // tracker bug from a Bugzilla bug
 type RemoveExternalBugParameters struct {
-	// APIKey is the API key to use when authenticating with Bugzilla
-	APIKey string `json:"api_key"`
 	// BugIDs are the IDs of Bugzilla bugs to update
 	BugIDs []int `json:"bug_ids"`
 	// The inline identifier for which external bug to remove

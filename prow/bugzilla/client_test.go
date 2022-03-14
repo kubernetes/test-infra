@@ -578,7 +578,7 @@ func TestAddPullRequestAsExternalBug(t *testing.T) {
 		{
 			name:            "update succeeds, makes a change",
 			id:              1705243,
-			expectedPayload: `{"jsonrpc":"1.0","method":"ExternalBugs.add_external_bug","params":[{"api_key":"api-key","bug_ids":[1705243],"external_bugs":[{"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"}]}],"id":"identifier"}`,
+			expectedPayload: `{"jsonrpc":"1.0","method":"ExternalBugs.add_external_bug","params":[{"bug_ids":[1705243],"external_bugs":[{"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"}]}],"id":"identifier"}`,
 			response:        `{"error":null,"id":"identifier","result":{"bugs":[{"alias":[],"changes":{"ext_bz_bug_map.ext_bz_bug_id":{"added":"Github org/repo/pull/1","removed":""}},"id":1705243}]}}`,
 			expectedError:   false,
 			expectedChanged: true,
@@ -587,7 +587,7 @@ func TestAddPullRequestAsExternalBug(t *testing.T) {
 			name:            "explicit tracker ID is used, update succeeds, makes a change",
 			trackerId:       123,
 			id:              17052430,
-			expectedPayload: `{"jsonrpc":"1.0","method":"ExternalBugs.add_external_bug","params":[{"api_key":"api-key","bug_ids":[17052430],"external_bugs":[{"ext_type_id":123,"ext_bz_bug_id":"org/repo/pull/1"}]}],"id":"identifier"}`,
+			expectedPayload: `{"jsonrpc":"1.0","method":"ExternalBugs.add_external_bug","params":[{"bug_ids":[17052430],"external_bugs":[{"ext_type_id":123,"ext_bz_bug_id":"org/repo/pull/1"}]}],"id":"identifier"}`,
 			response:        `{"error":null,"id":"identifier","result":{"bugs":[{"alias":[],"changes":{"ext_bz_bug_map.ext_bz_bug_id":{"added":"Github org/repo/pull/1","removed":""}},"id":17052430}]}}`,
 			expectedError:   false,
 			expectedChanged: true,
@@ -595,7 +595,7 @@ func TestAddPullRequestAsExternalBug(t *testing.T) {
 		{
 			name:            "update succeeds, makes a change as part of multiple changes reported",
 			id:              1705244,
-			expectedPayload: `{"jsonrpc":"1.0","method":"ExternalBugs.add_external_bug","params":[{"api_key":"api-key","bug_ids":[1705244],"external_bugs":[{"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"}]}],"id":"identifier"}`,
+			expectedPayload: `{"jsonrpc":"1.0","method":"ExternalBugs.add_external_bug","params":[{"bug_ids":[1705244],"external_bugs":[{"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"}]}],"id":"identifier"}`,
 			response:        `{"error":null,"id":"identifier","result":{"bugs":[{"alias":[],"changes":{"ext_bz_bug_map.ext_bz_bug_id":{"added":"Github org/repo/pull/1","removed":""}},"id":1705244},{"alias":[],"changes":{"ext_bz_bug_map.ext_bz_bug_id":{"added":"Github org/repo/pull/2","removed":""}},"id":1705244}]}}`,
 			expectedError:   false,
 			expectedChanged: true,
@@ -603,7 +603,7 @@ func TestAddPullRequestAsExternalBug(t *testing.T) {
 		{
 			name:            "update succeeds, makes no change",
 			id:              1705245,
-			expectedPayload: `{"jsonrpc":"1.0","method":"ExternalBugs.add_external_bug","params":[{"api_key":"api-key","bug_ids":[1705245],"external_bugs":[{"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"}]}],"id":"identifier"}`,
+			expectedPayload: `{"jsonrpc":"1.0","method":"ExternalBugs.add_external_bug","params":[{"bug_ids":[1705245],"external_bugs":[{"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"}]}],"id":"identifier"}`,
 			response:        `{"error":null,"id":"identifier","result":{"bugs":[]}}`,
 			expectedError:   false,
 			expectedChanged: false,
@@ -611,7 +611,7 @@ func TestAddPullRequestAsExternalBug(t *testing.T) {
 		{
 			name:            "update fails, makes no change",
 			id:              1705246,
-			expectedPayload: `{"jsonrpc":"1.0","method":"ExternalBugs.add_external_bug","params":[{"api_key":"api-key","bug_ids":[1705246],"external_bugs":[{"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"}]}],"id":"identifier"}`,
+			expectedPayload: `{"jsonrpc":"1.0","method":"ExternalBugs.add_external_bug","params":[{"bug_ids":[1705246],"external_bugs":[{"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"}]}],"id":"identifier"}`,
 			response:        `{"error":{"code": 100400,"message":"Invalid params for JSONRPC 1.0."},"id":"identifier","result":null}`,
 			expectedError:   true,
 			expectedChanged: false,
@@ -619,7 +619,7 @@ func TestAddPullRequestAsExternalBug(t *testing.T) {
 		{
 			name:            "get unrelated JSONRPC response",
 			id:              1705247,
-			expectedPayload: `{"jsonrpc":"1.0","method":"ExternalBugs.add_external_bug","params":[{"api_key":"api-key","bug_ids":[1705247],"external_bugs":[{"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"}]}],"id":"identifier"}`,
+			expectedPayload: `{"jsonrpc":"1.0","method":"ExternalBugs.add_external_bug","params":[{"bug_ids":[1705247],"external_bugs":[{"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"}]}],"id":"identifier"}`,
 			response:        `{"error":null,"id":"oops","result":{"bugs":[]}}`,
 			expectedError:   true,
 			expectedChanged: false,
@@ -627,7 +627,7 @@ func TestAddPullRequestAsExternalBug(t *testing.T) {
 		{
 			name:            "update already made earlier, makes no change",
 			id:              1705248,
-			expectedPayload: `{"jsonrpc":"1.0","method":"ExternalBugs.add_external_bug","params":[{"api_key":"api-key","bug_ids":[1705248],"external_bugs":[{"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"}]}],"id":"identifier"}`,
+			expectedPayload: `{"jsonrpc":"1.0","method":"ExternalBugs.add_external_bug","params":[{"bug_ids":[1705248],"external_bugs":[{"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"}]}],"id":"identifier"}`,
 			response:        `{"error":{"code": 100500,"message":"DBD::Pg::db do failed: ERROR:  duplicate key value violates unique constraint \"ext_bz_bug_map_bug_id_idx\"\nDETAIL:  Key (bug_id, ext_bz_id, ext_bz_bug_id)=(1778894, 131, openshift/installer/pull/2728) already exists. [for Statement \"INSERT INTO ext_bz_bug_map (ext_description, ext_bz_id, ext_bz_bug_id, ext_priority, ext_last_updated, bug_id, ext_status) VALUES (?,?,?,?,?,?,?)\"]\n\u003cpre\u003e\n at /var/www/html/bugzilla/Bugzilla/Object.pm line 754.\n\tBugzilla::Object::insert_create_data('Bugzilla::Extension::ExternalBugs::Bug', 'HASH(0x55eec2747a30)') called at /loader/0x55eec2720cc0/Bugzilla/Extension/ExternalBugs/Bug.pm line 118\n\tBugzilla::Extension::ExternalBugs::Bug::create('Bugzilla::Extension::ExternalBugs::Bug', 'HASH(0x55eed47b6d20)') called at /var/www/html/bugzilla/extensions/ExternalBugs/Extension.pm line 858\n\tBugzilla::Extension::ExternalBugs::bug_start_of_update('Bugzilla::Extension::ExternalBugs=HASH(0x55eecf484038)', 'HASH(0x55eed09302e8)') called at /var/www/html/bugzilla/Bugzilla/Hook.pm line 21\n\tBugzilla::Hook::process('bug_start_of_update', 'HASH(0x55eed09302e8)') called at /var/www/html/bugzilla/Bugzilla/Bug.pm line 1168\n\tBugzilla::Bug::update('Bugzilla::Bug=HASH(0x55eed048b350)') called at /loader/0x55eec2720cc0/Bugzilla/Extension/ExternalBugs/WebService.pm line 80\n\tBugzilla::Extension::ExternalBugs::WebService::add_external_bug('Bugzilla::WebService::Server::JSONRPC::Bugzilla::Extension::E...', 'HASH(0x55eed38bd710)') called at (eval 5435) line 1\n\teval ' $procedure-\u003e{code}-\u003e($self, @params) \n;' called at /usr/share/perl5/vendor_perl/JSON/RPC/Legacy/Server.pm line 220\n\tJSON::RPC::Legacy::Server::_handle('Bugzilla::WebService::Server::JSONRPC::Bugzilla::Extension::E...', 'HASH(0x55eed1990ef0)') called at /var/www/html/bugzilla/Bugzilla/WebService/Server/JSONRPC.pm line 295\n\tBugzilla::WebService::Server::JSONRPC::_handle('Bugzilla::WebService::Server::JSONRPC::Bugzilla::Extension::E...', 'HASH(0x55eed1990ef0)') called at /usr/share/perl5/vendor_perl/JSON/RPC/Legacy/Server.pm line 126\n\tJSON::RPC::Legacy::Server::handle('Bugzilla::WebService::Server::JSONRPC::Bugzilla::Extension::E...') called at /var/www/html/bugzilla/Bugzilla/WebService/Server/JSONRPC.pm line 70\n\tBugzilla::WebService::Server::JSONRPC::handle('Bugzilla::WebService::Server::JSONRPC::Bugzilla::Extension::E...') called at /var/www/html/bugzilla/jsonrpc.cgi line 31\n\tModPerl::ROOT::Bugzilla::ModPerl::ResponseHandler::var_www_html_bugzilla_jsonrpc_2ecgi::handler('Apache2::RequestRec=SCALAR(0x55eed3231870)') called at /usr/lib64/perl5/vendor_perl/ModPerl/RegistryCooker.pm line 207\n\teval {...} called at /usr/lib64/perl5/vendor_perl/ModPerl/RegistryCooker.pm line 207\n\tModPerl::RegistryCooker::run('Bugzilla::ModPerl::ResponseHandler=HASH(0x55eed023da08)') called at /usr/lib64/perl5/vendor_perl/ModPerl/RegistryCooker.pm line 173\n\tModPerl::RegistryCooker::default_handler('Bugzilla::ModPerl::ResponseHandler=HASH(0x55eed023da08)') called at /usr/lib64/perl5/vendor_perl/ModPerl/Registry.pm line 32\n\tModPerl::Registry::handler('Bugzilla::ModPerl::ResponseHandler', 'Apache2::RequestRec=SCALAR(0x55eed3231870)') called at /var/www/html/bugzilla/mod_perl.pl line 139\n\tBugzilla::ModPerl::ResponseHandler::handler('Bugzilla::ModPerl::ResponseHandler', 'Apache2::RequestRec=SCALAR(0x55eed3231870)') called at (eval 5435) line 0\n\teval {...} called at (eval 5435) line 0\n\n\u003c/pre\u003e at /var/www/html/bugzilla/Bugzilla/Object.pm line 754.\n at /var/www/html/bugzilla/Bugzilla/Object.pm line 754.\n\tBugzilla::Object::insert_create_data('Bugzilla::Extension::ExternalBugs::Bug', 'HASH(0x55eec2747a30)') called at /loader/0x55eec2720cc0/Bugzilla/Extension/ExternalBugs/Bug.pm line 118\n\tBugzilla::Extension::ExternalBugs::Bug::create('Bugzilla::Extension::ExternalBugs::Bug', 'HASH(0x55eed47b6d20)') called at /var/www/html/bugzilla/extensions/ExternalBugs/Extension.pm line 858\n\tBugzilla::Extension::ExternalBugs::bug_start_of_update('Bugzilla::Extension::ExternalBugs=HASH(0x55eecf484038)', 'HASH(0x55eed09302e8)') called at /var/www/html/bugzilla/Bugzilla/Hook.pm line 21\n\tBugzilla::Hook::process('bug_start_of_update', 'HASH(0x55eed09302e8)') called at /var/www/html/bugzilla/Bugzilla/Bug.pm line 1168\n\tBugzilla::Bug::update('Bugzilla::Bug=HASH(0x55eed048b350)') called at /loader/0x55eec2720cc0/Bugzilla/Extension/ExternalBugs/WebService.pm line 80\n\tBugzilla::Extension::ExternalBugs::WebService::add_external_bug('Bugzilla::WebService::Server::JSONRPC::Bugzilla::Extension::E...', 'HASH(0x55eed38bd710)') called at (eval 5435) line 1\n\teval ' $procedure-\u003e{code}-\u003e($self, @params) \n;' called at /usr/share/perl5/vendor_perl/JSON/RPC/Legacy/Server.pm line 220\n\tJSON::RPC::Legacy::Server::_handle('Bugzilla::WebService::Server::JSONRPC::Bugzilla::Extension::E...', 'HASH(0x55eed1990ef0)') called at /var/www/html/bugzilla/Bugzilla/WebService/Server/JSONRPC.pm line 295\n\tBugzilla::WebService::Server::JSONRPC::_handle('Bugzilla::WebService::Server::JSONRPC::Bugzilla::Extension::E...', 'HASH(0x55eed1990ef0)') called at /usr/share/perl5/vendor_perl/JSON/RPC/Legacy/Server.pm line 126\n\tJSON::RPC::Legacy::Server::handle('Bugzilla::WebService::Server::JSONRPC::Bugzilla::Extension::E...') called at /var/www/html/bugzilla/Bugzilla/WebService/Server/JSONRPC.pm line 70\n\tBugzilla::WebService::Server::JSONRPC::handle('Bugzilla::WebService::Server::JSONRPC::Bugzilla::Extension::E...') called at /var/www/html/bugzilla/jsonrpc.cgi line 31\n\tModPerl::ROOT::Bugzilla::ModPerl::ResponseHandler::var_www_html_bugzilla_jsonrpc_2ecgi::handler('Apache2::RequestRec=SCALAR(0x55eed3231870)') called at /usr/lib64/perl5/vendor_perl/ModPerl/RegistryCooker.pm line 207\n\teval {...} called at /usr/lib64/perl5/vendor_perl/ModPerl/RegistryCooker.pm line 207\n\tModPerl::RegistryCooker::run('Bugzilla::ModPerl::ResponseHandler=HASH(0x55eed023da08)') called at /usr/lib64/perl5/vendor_perl/ModPerl/RegistryCooker.pm line 173\n\tModPerl::RegistryCooker::default_handler('Bugzilla::ModPerl::ResponseHandler=HASH(0x55eed023da08)') called at /usr/lib64/perl5/vendor_perl/ModPerl/Registry.pm line 32\n\tModPerl::Registry::handler('Bugzilla::ModPerl::ResponseHandler', 'Apache2::RequestRec=SCALAR(0x55eed3231870)') called at /var/www/html/bugzilla/mod_perl.pl line 139\n\tBugzilla::ModPerl::ResponseHandler::handler('Bugzilla::ModPerl::ResponseHandler', 'Apache2::RequestRec=SCALAR(0x55eed3231870)') called at (eval 5435) line 0\n\teval {...} called at (eval 5435) line 0"},"id":"identifier","result":null}`,
 			expectedError:   false,
 			expectedChanged: false,
@@ -726,7 +726,7 @@ func TestRemovePullRequestAsExternalBug(t *testing.T) {
 		{
 			name:            "update succeeds, makes a change",
 			id:              1705243,
-			expectedPayload: `{"jsonrpc":"1.0","method":"ExternalBugs.remove_external_bug","params":[{"api_key":"api-key","bug_ids":[1705243],"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"}],"id":"identifier"}`,
+			expectedPayload: `{"jsonrpc":"1.0","method":"ExternalBugs.remove_external_bug","params":[{"bug_ids":[1705243],"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"}],"id":"identifier"}`,
 			response:        `{"error":null,"id":"identifier","result":{"external_bugs":[{"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"}]}}`,
 			expectedError:   false,
 			expectedChanged: true,
@@ -734,7 +734,7 @@ func TestRemovePullRequestAsExternalBug(t *testing.T) {
 		{
 			name:            "update succeeds, makes a change as part of multiple changes reported",
 			id:              1705244,
-			expectedPayload: `{"jsonrpc":"1.0","method":"ExternalBugs.remove_external_bug","params":[{"api_key":"api-key","bug_ids":[1705244],"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"}],"id":"identifier"}`,
+			expectedPayload: `{"jsonrpc":"1.0","method":"ExternalBugs.remove_external_bug","params":[{"bug_ids":[1705244],"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"}],"id":"identifier"}`,
 			response:        `{"error":null,"id":"identifier","result":{"external_bugs":[{"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"},{"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/2"}]}}`,
 			expectedError:   false,
 			expectedChanged: true,
@@ -742,7 +742,7 @@ func TestRemovePullRequestAsExternalBug(t *testing.T) {
 		{
 			name:            "update succeeds, makes no change",
 			id:              1705245,
-			expectedPayload: `{"jsonrpc":"1.0","method":"ExternalBugs.remove_external_bug","params":[{"api_key":"api-key","bug_ids":[1705245],"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"}],"id":"identifier"}`,
+			expectedPayload: `{"jsonrpc":"1.0","method":"ExternalBugs.remove_external_bug","params":[{"bug_ids":[1705245],"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"}],"id":"identifier"}`,
 			response:        `{"error":null,"id":"identifier","result":{"external_bugs":[]}}`,
 			expectedError:   false,
 			expectedChanged: false,
@@ -750,7 +750,7 @@ func TestRemovePullRequestAsExternalBug(t *testing.T) {
 		{
 			name:            "update fails, makes no change",
 			id:              1705246,
-			expectedPayload: `{"jsonrpc":"1.0","method":"ExternalBugs.remove_external_bug","params":[{"api_key":"api-key","bug_ids":[1705246],"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"}],"id":"identifier"}`,
+			expectedPayload: `{"jsonrpc":"1.0","method":"ExternalBugs.remove_external_bug","params":[{"bug_ids":[1705246],"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"}],"id":"identifier"}`,
 			response:        `{"error":{"code": 100400,"message":"Invalid params for JSONRPC 1.0."},"id":"identifier","result":null}`,
 			expectedError:   true,
 			expectedChanged: false,
@@ -758,7 +758,7 @@ func TestRemovePullRequestAsExternalBug(t *testing.T) {
 		{
 			name:            "get unrelated JSONRPC response",
 			id:              1705247,
-			expectedPayload: `{"jsonrpc":"1.0","method":"ExternalBugs.remove_external_bug","params":[{"api_key":"api-key","bug_ids":[1705247],"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"}],"id":"identifier"}`,
+			expectedPayload: `{"jsonrpc":"1.0","method":"ExternalBugs.remove_external_bug","params":[{"bug_ids":[1705247],"ext_type_url":"https://github.com/","ext_bz_bug_id":"org/repo/pull/1"}],"id":"identifier"}`,
 			response:        `{"error":null,"id":"oops","result":{"external_bugs":[]}}`,
 			expectedError:   true,
 			expectedChanged: false,
