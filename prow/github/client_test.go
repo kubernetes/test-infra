@@ -1903,29 +1903,7 @@ func TestEditTeam(t *testing.T) {
 }
 
 func TestListTeamMembers(t *testing.T) {
-	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			t.Errorf("Bad method: %s", r.Method)
-		}
-
-		var result interface{}
-		switch r.URL.Path {
-		case "/organizations/1/team/1/members":
-			result = []TeamMember{{Login: "foo"}}
-		case "/orgs/orgName":
-			result = Organization{Login: "orgName", Id: 1}
-		default:
-			t.Errorf("Bad request path: %s", r.URL.Path)
-			return
-		}
-
-		b, err := json.Marshal(result)
-		if err != nil {
-			t.Fatalf("Didn't expect error: %v", err)
-		}
-		fmt.Fprint(w, string(b))
-	}))
-
+	ts := simpleTestServer(t, "/teams/1/members", []TeamMember{{Login: "foo"}}, http.StatusOK)
 	defer ts.Close()
 	c := getClient(ts.URL)
 	teamMembers, err := c.ListTeamMembers("orgName", 1, RoleAll)

@@ -3815,20 +3815,16 @@ func (c *client) RemoveTeamMembershipBySlug(org, teamSlug, user string) error {
 // Deprecated: please use ListTeamMembersBySlug
 func (c *client) ListTeamMembers(org string, id int, role string) ([]TeamMember, error) {
 	c.logger.WithField("methodName", "ListTeamMembers").
-		Warn("method is deprecated, and will result in multiple api calls to achieve result")
+		Warn("method is deprecated, please use ListTeamMembersBySlug")
 	durationLogger := c.log("ListTeamMembers", id, role)
 	defer durationLogger()
 
 	if c.fake {
 		return nil, nil
 	}
-	organization, err := c.GetOrg(org)
-	if err != nil {
-		return nil, err
-	}
-	path := fmt.Sprintf("/organizations/%d/team/%d/members", organization.Id, id)
+	path := fmt.Sprintf("/teams/%d/members", id)
 	var teamMembers []TeamMember
-	err = c.readPaginatedResultsWithValues(
+	err := c.readPaginatedResultsWithValues(
 		path,
 		url.Values{
 			"per_page": []string{"100"},
