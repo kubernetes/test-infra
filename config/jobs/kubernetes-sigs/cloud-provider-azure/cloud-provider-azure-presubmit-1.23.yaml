@@ -21,63 +21,6 @@ presubmits:
         testgrid-tab-name: pr-cloud-provider-azure-check-1-23
         description: "Run lint check tests for cloud-provider-azure release-1.23."
         testgrid-num-columns-recent: '30'
-    # pull-cloud-provider-azure-e2e-1-23 runs kubernetes conformance tests.
-    - name: pull-cloud-provider-azure-e2e-1-23
-      skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
-      decorate: true
-      decoration_config:
-        timeout: 5h
-      path_alias: sigs.k8s.io/cloud-provider-azure
-      branches:
-        - release-1.23
-      labels:
-        preset-service-account: "true"
-        preset-azure-cred: "true"
-        preset-dind-enabled: "true"
-      extra_refs:
-        - org: kubernetes
-          repo: kubernetes
-          base_ref: release-1.23
-          path_alias: k8s.io/kubernetes
-          workdir: true
-      spec:
-        containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-1.23
-            command:
-              - runner.sh
-              - kubetest
-            args:
-              # Generic e2e test args
-              - --test
-              - --up
-              - --down
-              - --build=quick
-              - --dump=$(ARTIFACTS)
-              # Azure-specific test args
-              - --provider=skeleton
-              - --deployment=aksengine
-              - --aksengine-agentpoolcount=2
-              - --aksengine-admin-username=azureuser
-              - --aksengine-creds=$(AZURE_CREDENTIALS)
-              - --aksengine-orchestratorRelease=1.23
-              - --aksengine-mastervmsize=Standard_DS2_v2
-              - --aksengine-agentvmsize=Standard_D4s_v3
-              - --aksengine-ccm
-              - --aksengine-cnm
-              - --aksengine-deploy-custom-k8s
-              - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-              - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux.json
-              - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/nightly/aks-engine-nightly-linux-amd64.tar.gz
-              # Specific test args
-              - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]
-              - --ginkgo-parallel=30
-            securityContext:
-              privileged: true
-      annotations:
-        testgrid-dashboards: provider-azure-cloud-provider-azure-1-23-presubmit
-        testgrid-tab-name: pr-cloud-provider-azure-e2e-1-23
-        description: "Run Kubernetes e2e tests for cloud-provider-azure release-1.23."
-        testgrid-num-columns-recent: '30'
     # pull-cloud-provider-azure-e2e-ccm-vmss-basic-lb-1-23 runs Azure specific e2e tests with VMSS and basic loadbalancer.
     - name: pull-cloud-provider-azure-e2e-ccm-vmss-basic-lb-1-23
       skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
@@ -137,66 +80,6 @@ presubmits:
         testgrid-dashboards: provider-azure-cloud-provider-azure-1-23-presubmit
         testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmss-basic-lb-1-23
         description: "Runs Azure specific tests (VMSS + basic LB) with cloud-provider-azure release-1.23 (https://github.com/kubernetes-sigs/cloud-provider-azure)."
-        testgrid-num-columns-recent: '30'
-      # pull-cloud-provider-azure-e2e-ccm-1-23
-    - name: pull-cloud-provider-azure-e2e-ccm-1-23
-      skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
-      decorate: true
-      decoration_config:
-        timeout: 5h
-      path_alias: sigs.k8s.io/cloud-provider-azure
-      branches:
-        - release-1.23
-      labels:
-        preset-service-account: "true"
-        preset-azure-cred: "true"
-        preset-dind-enabled: "true"
-      extra_refs:
-        - org: kubernetes
-          repo: kubernetes
-          base_ref: release-1.23
-          path_alias: k8s.io/kubernetes
-          workdir: true
-      spec:
-        containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-1.23
-            command:
-              - runner.sh
-              - kubetest
-            args:
-              # Generic e2e test args
-              - --test
-              - --up
-              - --down
-              - --build=quick
-              - --dump=$(ARTIFACTS)
-              # Azure-specific test args
-              - --provider=skeleton
-              - --deployment=aksengine
-              - --aksengine-agentpoolcount=2
-              - --aksengine-admin-username=azureuser
-              - --aksengine-creds=$(AZURE_CREDENTIALS)
-              - --aksengine-orchestratorRelease=1.23
-              - --aksengine-mastervmsize=Standard_DS2_v2
-              - --aksengine-agentvmsize=Standard_D4s_v3
-              - --aksengine-ccm
-              - --aksengine-cnm
-              - --aksengine-deploy-custom-k8s
-              - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-              - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux.json
-              - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/nightly/aks-engine-nightly-linux-amd64.tar.gz
-              # Specific test args
-              - --test-ccm
-              - --ginkgo-parallel=30
-            securityContext:
-              privileged: true
-            env:
-              - name: AZURE_LOADBALANCER_SKU
-                value: "standard"
-      annotations:
-        testgrid-dashboards: provider-azure-cloud-provider-azure-1-23-presubmit
-        testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-1-23
-        description: "Runs Azure specific tests with cloud-provider-azure release-1.23 (https://github.com/kubernetes-sigs/cloud-provider-azure)."
         testgrid-num-columns-recent: '30'
       # pull-cloud-provider-azure-e2e-ccm-vmss-1-23
     - name: pull-cloud-provider-azure-e2e-ccm-vmss-1-23
@@ -258,10 +141,9 @@ presubmits:
         testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmss-1-23
         description: "Runs Azure specific tests with cloud-provider-azure release-1.23 (https://github.com/kubernetes-sigs/cloud-provider-azure)."
         testgrid-num-columns-recent: '30'
+    # pull-cloud-provider-azure-e2e-capz-1-23 runs kubernetes conformance tests.
     - name: pull-cloud-provider-azure-e2e-capz-1-23
-      always_run: false
-      #skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
-      optional: true
+      skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
       decorate: true
       decoration_config:
         timeout: 5h
@@ -315,9 +197,9 @@ presubmits:
         testgrid-tab-name: pr-cloud-provider-azure-e2e-capz-1-23
         description: "Runs Kubernetes conformance tests with cloud-provider-azure release-1.23 (https://github.com/kubernetes-sigs/cloud-provider-azure) using cluster-api-provider-azure."
         testgrid-num-columns-recent: '30'
+    # pull-cloud-provider-azure-e2e-ccm-1-23
     - name: pull-cloud-provider-azure-e2e-ccm-capz-1-23
       skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
-      optional: true
       decorate: true
       decoration_config:
         timeout: 3h
