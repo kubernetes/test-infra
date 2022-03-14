@@ -963,6 +963,14 @@ plank:
                 # sidecar is the pull spec used for the sidecar utility
                 sidecar: ' '
 
+    # JobQueueConcurrencies is an optional field used to define job queue max concurrency.
+    # Each job can be assigned to a specific queue which has its own max concurrency,
+    # independent from the job's name. An example use case would be easier
+    # scheduling of jobs using boskos resources. This mechanism is separate from
+    # ProwJob's MaxConcurrency setting.
+    job_queue_capacities:
+        "": 0
+
     # JobURLPrefixConfig is the host and path prefix under which job details
     # will be viewable. Use `org/repo`, `org` or `*`as key and an url as value
     job_url_prefix_config:

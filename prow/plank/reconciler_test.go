@@ -281,6 +281,7 @@ func TestProwJobIndexer(t *testing.T) {
 	t.Parallel()
 	const pjNS = "prowjobs"
 	const pjName = "my-pj"
+	const pjJobQueue = "pj-queue"
 	pj := func(modify ...func(*prowv1.ProwJob)) *prowv1.ProwJob {
 		pj := &prowv1.ProwJob{
 			ObjectMeta: metav1.ObjectMeta{
@@ -288,8 +289,9 @@ func TestProwJobIndexer(t *testing.T) {
 				Name:      "some-job",
 			},
 			Spec: prowv1.ProwJobSpec{
-				Job:   pjName,
-				Agent: prowv1.KubernetesAgent,
+				Job:          pjName,
+				JobQueueName: pjJobQueue,
+				Agent:        prowv1.KubernetesAgent,
 			},
 			Status: prowv1.ProwJobStatus{
 				State: prowv1.PendingState,
@@ -306,13 +308,22 @@ func TestProwJobIndexer(t *testing.T) {
 		expected []string
 	}{
 		{
-			name:     "Matches all keys",
-			expected: []string{prowJobIndexKeyAll, prowJobIndexKeyPending, pendingTriggeredIndexKeyByName(pjName)},
+			name: "Matches all keys",
+			expected: []string{
+				prowJobIndexKeyAll,
+				prowJobIndexKeyPending,
+				pendingTriggeredIndexKeyByName(pjName),
+				pendingTriggeredIndexKeyByJobQueueName(pjJobQueue),
+			},
 		},
 		{
-			name:     "Triggered goes into triggeredPending",
-			modify:   func(pj *prowv1.ProwJob) { pj.Status.State = prowv1.TriggeredState },
-			expected: []string{prowJobIndexKeyAll, pendingTriggeredIndexKeyByName(pjName)},
+			name: "Triggered goes into triggeredPending",
+			modify: func(pj *prowv1.ProwJob) { pj.Status.State = prowv1.TriggeredState },
+			expected: []string{
+				prowJobIndexKeyAll,
+				pendingTriggeredIndexKeyByName(pjName),
+				pendingTriggeredIndexKeyByJobQueueName(pjJobQueue),
+			},
 		},
 		{
 			name:   "Wrong namespace, no key",
@@ -328,9 +339,24 @@ func TestProwJobIndexer(t *testing.T) {
 			expected: []string{prowJobIndexKeyAll},
 		},
 		{
-			name:     "Changing name changes notCompletedByName index",
-			modify:   func(pj *prowv1.ProwJob) { pj.Spec.Job = "some-name" },
-			expected: []string{prowJobIndexKeyAll, prowJobIndexKeyPending, pendingTriggeredIndexKeyByName("some-name")},
+			name: "Changing name changes pendingTriggeredIndexKeyByName index",
+			modify: func(pj *prowv1.ProwJob) { pj.Spec.Job = "some-name" },
+			expected: []string{
+				prowJobIndexKeyAll,
+				prowJobIndexKeyPending,
+				pendingTriggeredIndexKeyByName("some-name"),
+				pendingTriggeredIndexKeyByJobQueueName(pjJobQueue),
+			},
+		},
+		{
+			name: "Changing job queue name changes pendingTriggeredIndexKeyByJobQueueName index",
+			modify: func(pj *prowv1.ProwJob) { pj.Spec.JobQueueName = "some-name" },
+			expected: []string{
+				prowJobIndexKeyAll,
+				prowJobIndexKeyPending,
+				pendingTriggeredIndexKeyByName(pjName),
+				pendingTriggeredIndexKeyByJobQueueName("some-name"),
+			},
 		},
 	}
 

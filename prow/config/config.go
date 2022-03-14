@@ -636,6 +636,13 @@ type Plank struct {
 	// to publish cluster status information.
 	// e.g. gs://my-bucket/cluster-status.json
 	BuildClusterStatusFile string `json:"build_cluster_status_file,omitempty"`
+
+	// JobQueueConcurrencies is an optional field used to define job queue max concurrency.
+	// Each job can be assigned to a specific queue which has its own max concurrency,
+	// independent from the job's name. An example use case would be easier
+	// scheduling of jobs using boskos resources. This mechanism is separate from
+	// ProwJob's MaxConcurrency setting.
+	JobQueueConcurrencies map[string]int `json:"job_queue_capacities,omitempty"`
 }
 
 type ProwJobDefaultEntry struct {
@@ -1895,7 +1902,7 @@ func (c *Config) validateComponentConfig() error {
 
 var jobNameRegex = regexp.MustCompile(`^[A-Za-z0-9-._]+$`)
 
-func validateJobBase(v JobBase, jobType prowapi.ProwJobType, podNamespace string) error {
+func (c Config) validateJobBase(v JobBase, jobType prowapi.ProwJobType) error {
 	if !jobNameRegex.MatchString(v.Name) {
 		return fmt.Errorf("name: must match regex %q", jobNameRegex.String())
 	}
@@ -1903,7 +1910,7 @@ func validateJobBase(v JobBase, jobType prowapi.ProwJobType, podNamespace string
 	if v.MaxConcurrency < 0 {
 		return fmt.Errorf("max_concurrency: %d must be a non-negative number", v.MaxConcurrency)
 	}
-	if err := validateAgent(v, podNamespace); err != nil {
+	if err := validateAgent(v, c.PodNamespace); err != nil {
 		return err
 	}
 	if err := validatePodSpec(jobType, v.Spec, v.DecorationConfig); err != nil {
@@ -1916,6 +1923,10 @@ func validateJobBase(v JobBase, jobType prowapi.ProwJobType, podNamespace string
 		return err
 	}
 	if err := validateAnnotation(v.Annotations); err != nil {
+		return err
+	}
+	validJobQueueNames := sets.StringKeySet(c.Plank.JobQueueConcurrencies)
+	if err := validateJobQueueName(v.JobQueueName, validJobQueueNames); err != nil {
 		return err
 	}
 	if v.Spec == nil || len(v.Spec.Containers) == 0 {
@@ -1936,7 +1947,7 @@ func validateJobBase(v JobBase, jobType prowapi.ProwJobType, podNamespace string
 }
 
 // validatePresubmits validates the presubmits for one repo
-func validatePresubmits(presubmits []Presubmit, podNamespace string) error {
+func (c Config) validatePresubmits(presubmits []Presubmit) error {
 	validPresubmits := map[string][]Presubmit{}
 	var errs []error
 	for _, ps := range presubmits {
@@ -1954,7 +1965,8 @@ func validatePresubmits(presubmits []Presubmit, podNamespace string) error {
 				errs = append(errs, fmt.Errorf("jobs %s and %s report to the same GitHub context %q", otherPS.Name, ps.Name, otherPS.Context))
 			}
 		}
-		if err := validateJobBase(ps.JobBase, prowapi.PresubmitJob, podNamespace); err != nil {
+
+		if err := c.validateJobBase(ps.JobBase, prowapi.PresubmitJob); err != nil {
 			errs = append(errs, fmt.Errorf("invalid presubmit job %s: %w", ps.Name, err))
 		}
 		if err := validateTriggering(ps); err != nil {
@@ -1993,7 +2005,7 @@ func ValidateRefs(repo string, jobBase JobBase) error {
 }
 
 // validatePostsubmits validates the postsubmits for one repo
-func validatePostsubmits(postsubmits []Postsubmit, podNamespace string) error {
+func (c Config) validatePostsubmits(postsubmits []Postsubmit) error {
 	validPostsubmits := map[string][]Postsubmit{}
 
 	var errs []error
@@ -2013,7 +2025,7 @@ func validatePostsubmits(postsubmits []Postsubmit, podNamespace string) error {
 			}
 		}
 
-		if err := validateJobBase(ps.JobBase, prowapi.PostsubmitJob, podNamespace); err != nil {
+		if err := c.validateJobBase(ps.JobBase, prowapi.PostsubmitJob); err != nil {
 			errs = append(errs, fmt.Errorf("invalid postsubmit job %s: %w", ps.Name, err))
 		}
 		if err := validateAlwaysRun(ps); err != nil {
@@ -2029,7 +2041,7 @@ func validatePostsubmits(postsubmits []Postsubmit, podNamespace string) error {
 }
 
 // validatePeriodics validates a set of periodics
-func validatePeriodics(periodics []Periodic, podNamespace string) error {
+func (c Config) validatePeriodics(periodics []Periodic) error {
 
 	// validate no duplicated periodics
 	validPeriodics := sets.NewString()
@@ -2039,7 +2051,7 @@ func validatePeriodics(periodics []Periodic, podNamespace string) error {
 			return fmt.Errorf("duplicated periodic job : %s", p.Name)
 		}
 		validPeriodics.Insert(p.Name)
-		if err := validateJobBase(p.JobBase, prowapi.PeriodicJob, podNamespace); err != nil {
+		if err := c.validateJobBase(p.JobBase, prowapi.PeriodicJob); err != nil {
 			return fmt.Errorf("invalid periodic job %s: %w", p.Name, err)
 		}
 	}
@@ -2055,19 +2067,19 @@ func (c *Config) ValidateJobConfig() error {
 
 	// Validate presubmits.
 	for _, jobs := range c.PresubmitsStatic {
-		if err := validatePresubmits(jobs, c.PodNamespace); err != nil {
+		if err := c.validatePresubmits(jobs); err != nil {
 			errs = append(errs, err)
 		}
 	}
 
 	// Validate postsubmits.
 	for _, jobs := range c.PostsubmitsStatic {
-		if err := validatePostsubmits(jobs, c.PodNamespace); err != nil {
+		if err := c.validatePostsubmits(jobs); err != nil {
 			errs = append(errs, err)
 		}
 	}
 
-	if err := validatePeriodics(c.Periodics, c.PodNamespace); err != nil {
+	if err := c.validatePeriodics(c.Periodics); err != nil {
 		errs = append(errs, err)
 	}
 
@@ -2409,6 +2421,13 @@ func validateAnnotation(a map[string]string) error {
 		if errs := validation.IsQualifiedName(key); len(errs) > 0 {
 			return fmt.Errorf("invalid annotation key %q: %v", key, errs)
 		}
+	}
+	return nil
+}
+
+func validateJobQueueName(name string, validNames sets.String) error {
+	if name != "" && !validNames.Has(name) {
+		return fmt.Errorf("invalid job queue name %s", name)
 	}
 	return nil
 }
