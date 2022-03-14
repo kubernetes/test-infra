@@ -80,6 +80,9 @@ func (o *BugzillaOptions) BugzillaClient() (bugzilla.Client, error) {
 		}
 		generator = &generatorFunc
 	} else {
+		if err := secret.Add(o.ApiKeyPath); err != nil {
+			return nil, fmt.Errorf("failed to add Bugzilla token to secret agent: %w", err)
+		}
 		generatorFunc := secret.GetTokenGenerator(o.ApiKeyPath)
 		generator = &generatorFunc
 	}
