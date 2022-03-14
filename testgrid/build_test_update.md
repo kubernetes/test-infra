@@ -18,7 +18,7 @@ merged.
 
 You can convert a yaml file to the config proto with:
 ```
-bazel run //testgrid/cmd/configurator -- \
+go run ./testgrid/cmd/configurator \
   --yaml=testgrid/config.yaml \
   --print-text \
   --oneshot \
@@ -36,15 +36,15 @@ Cloud Storage (GCS) location, and read from there.
 If you modify a .proto file, you'll also need to generate and check in the
 .pb.go files.
 
-Run `bazel run //hack:update-protos` to generate, and `bazel run //hack:verify-protos.sh`
+Run `make update-protos` to generate, and `make run verify-protos`
 to verify.
 
 ## Testing
 
-Run `bazel test //testgrid/...` to run all unit tests in TestGrid. Note that this does not validate
-the [testgrid.k8s.io config]; those tests are in `bazel test //config/tests/testgrids/...`
+Run `go test ./testgrid` to run all unit tests in TestGrid. Note that this does not validate
+the [testgrid.k8s.io config]; those tests are in `go test ./config/tests/testgrids`
 
-Run `bazel test //...` for repository-wide testing, such as ensuring that
+Run `make test` for repository-wide testing, such as ensuring that
 every job in our CI system appears somewhere in testgrid, etc.
 
 [`config.proto`]: ./config/config.proto

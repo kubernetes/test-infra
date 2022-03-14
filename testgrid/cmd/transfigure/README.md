@@ -42,7 +42,7 @@ and delete the `gen-config.yaml` file that Transfigure has been maintaining.
 
 The `gcr.io/k8s-prow/transfigure` image is built and published automatically by [`post-test-infra-push-prow`](https://github.com/kubernetes/test-infra/blob/9a939de10fa72af415eb1e628345b7d16c1f0be0/config/jobs/kubernetes/test-infra/test-infra-trusted.yaml#L118-L143) with the rest of the Prow components.
 
-You can build the image locally and use it in Docker with `bazel run //testgrid/cmd/transfigure`. Publish to a remote repository after building with `docker push` or build and push all Prow images at once with [`prow/push.sh`](/prow/push.sh).
+You can build the image locally and use it in Docker. Publish to a remote repository after building with `docker push` or build and push all Prow images at once with [`prow/push.sh`](/prow/push.sh).
 
 [testgrid.k8s.io]: (https://testgrid.k8s.io/)
 [Config Merger]: /testgrid/merging.md
