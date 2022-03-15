@@ -226,7 +226,7 @@ $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-aks-engine-w
           privileged: true
         env:
         - name: AZURE_STORAGE_DRIVER
-          value: kubernetes.io/azure-disk # In-tree Azure disk storage class
+          value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
         - name: TEST_WINDOWS
           value: "true"
 $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-aks-engine-azure-disk-windows-dockershim-${release})
@@ -285,7 +285,7 @@ $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-aks-engine-a
           privileged: true
         env:
         - name: AZURE_STORAGE_DRIVER
-          value: kubernetes.io/azure-file # In-tree Azure file storage class
+          value: "kubernetes.io/azure-file" # In-tree Azure file storage class
         - name: TEST_WINDOWS
           value: "true"
 $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-aks-engine-azure-file-windows-dockershim-${release})

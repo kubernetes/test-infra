@@ -165,7 +165,7 @@ presubmits:
           privileged: true
         env:
         - name: AZURE_STORAGE_DRIVER
-          value: kubernetes.io/azure-disk # In-tree Azure disk storage class
+          value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
         - name: TEST_WINDOWS
           value: "true"
     annotations:
@@ -227,7 +227,7 @@ presubmits:
           privileged: true
         env:
         - name: AZURE_STORAGE_DRIVER
-          value: kubernetes.io/azure-file # In-tree Azure file storage class
+          value: "kubernetes.io/azure-file" # In-tree Azure file storage class
         - name: TEST_WINDOWS
           value: "true"
     annotations:
