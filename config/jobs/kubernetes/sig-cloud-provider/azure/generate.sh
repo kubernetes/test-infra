@@ -198,7 +198,7 @@ $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-azure-d
               make e2e-test
           env:
             - name: AZURE_STORAGE_DRIVER
-              value: kubernetes.io/azure-file # In-tree Azure file storage class
+              value: "kubernetes.io/azure-file" # In-tree Azure file storage class
           securityContext:
             privileged: true
           resources:
@@ -244,7 +244,7 @@ $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-capz-azure-f
               make e2e-test
           env:
             - name: AZURE_STORAGE_DRIVER
-              value: kubernetes.io/azure-file # In-tree Azure file storage class
+              value: "kubernetes.io/azure-file" # In-tree Azure file storage class
             - name: EXP_MACHINE_POOL
               value: "true"
           securityContext:
@@ -410,7 +410,7 @@ periodics:
       - name: USE_CI_ARTIFACTS
         value: "true"
       - name: AZURE_STORAGE_DRIVER
-        value: kubernetes.io/azure-file # In-tree Azure file storage class
+        value: "kubernetes.io/azure-file" # In-tree Azure file storage class
       securityContext:
         privileged: true
       resources:
@@ -464,7 +464,7 @@ periodics:
       - name: EXP_MACHINE_POOL
         value: "true"
       - name: AZURE_STORAGE_DRIVER
-        value: kubernetes.io/azure-file # In-tree Azure file storage class
+        value: "kubernetes.io/azure-file" # In-tree Azure file storage class
       securityContext:
         privileged: true
       resources:
@@ -662,7 +662,7 @@ EOF
       - name: USE_CI_ARTIFACTS
         value: "true"
       - name: AZURE_STORAGE_DRIVER
-        value: kubernetes.io/azure-file # In-tree Azure file storage class
+        value: "kubernetes.io/azure-file" # In-tree Azure file storage class
       securityContext:
         privileged: true
       resources:
@@ -716,7 +716,7 @@ EOF
       - name: EXP_MACHINE_POOL
         value: "true"
       - name: AZURE_STORAGE_DRIVER
-        value: kubernetes.io/azure-file # In-tree Azure file storage class
+        value: "kubernetes.io/azure-file" # In-tree Azure file storage class
       securityContext:
         privileged: true
       resources:
