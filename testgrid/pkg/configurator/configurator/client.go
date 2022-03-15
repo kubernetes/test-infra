@@ -122,7 +122,11 @@ func write(ctx context.Context, client *storage.Client, path string, bytes []byt
 	if err = p.SetURL(u); err != nil {
 		return err
 	}
-	return gcs.Upload(ctx, client, p, bytes, worldReadable, cacheControl)
+	_, err = gcs.Upload(ctx, client, p, bytes, worldReadable, cacheControl)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // Ignores what changed for now and recomputes everything

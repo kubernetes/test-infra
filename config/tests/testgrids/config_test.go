@@ -130,7 +130,7 @@ func TestMain(m *testing.M) {
 	}
 
 	var err error
-	cfg, err = config.Read(*protoPath, context.Background(), nil)
+	cfg, err = config.Read(context.Background(), *protoPath, nil)
 	if err != nil {
 		fmt.Printf("Could not load config: %v\n", err)
 		os.Exit(1)
