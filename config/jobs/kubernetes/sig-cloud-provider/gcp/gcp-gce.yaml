@@ -329,6 +329,64 @@ presubmits:
           securityContext:
             privileged: true
 
+  - name: pull-kubernetes-e2e-gce-ubuntu-containerd-new-registry
+    cluster: k8s-infra-prow-build
+    always_run: false
+    optional: true
+    skip_branches:
+      - release-\d+\.\d+ # per-release image
+    annotations:
+      fork-per-release: "true"
+      testgrid-alert-stale-results-hours: "24"
+      testgrid-create-test-group: "true"
+      testgrid-num-failures-to-alert: "10"
+      testgrid-dashboards: google-gce
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
+      preset-use-new-registry: "true"
+    spec:
+      containers:
+        - args:
+            - --timeout=70
+            - --bare
+            - --scenario=kubernetes_e2e
+            - --
+            - --check-leaked-resources
+            - --env=KUBE_UBUNTU_INSTALL_CONTAINERD_VERSION=v1.6.0
+            - --env=KUBE_UBUNTU_INSTALL_RUNC_VERSION=v1.1.0
+            - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
+            - --env=CONTAINER_RUNTIME_TEST_HANDLER=true
+            - --env=KUBE_MASTER_OS_DISTRIBUTION=ubuntu
+            - --env=KUBE_GCE_MASTER_IMAGE=ubuntu-2004-focal-v20200423
+            - --env=KUBE_GCE_MASTER_PROJECT=ubuntu-os-cloud
+            - --env=KUBE_NODE_OS_DISTRIBUTION=ubuntu
+            - --env=KUBE_GCE_NODE_IMAGE=ubuntu-2004-focal-v20200423
+            - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-cloud
+            - --extract=ci/latest-fast
+            - --extract-ci-bucket=k8s-release-dev
+            - --gcp-master-image=ubuntu
+            - --gcp-node-image=ubuntu
+            - --gcp-nodes=4
+            - --gcp-zone=us-west1-b
+            - --ginkgo-parallel=30
+            - --provider=gce
+            - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+            - --timeout=50m
+          image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220314-46af1b01a6-master
+          resources:
+            limits:
+              cpu: 4
+              memory: "14Gi"
+            requests:
+              cpu: 4
+              memory: "14Gi"
+          securityContext:
+            privileged: true
+
   - name: pull-kubernetes-e2e-gce-ubuntu-containerd-canary
     cluster: k8s-infra-prow-build
     always_run: false
