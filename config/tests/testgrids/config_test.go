@@ -168,10 +168,6 @@ func TestConfig(t *testing.T) {
 				t.Error("IsExternal must be true")
 			}
 
-			if !testgroup.UseKubernetesClient {
-				t.Error("UseKubernetesClient must be true")
-			}
-
 			for hIdx, header := range testgroup.ColumnHeader {
 				if header.ConfigurationValue == "" {
 					t.Errorf("Column Header %d is empty", hIdx)
