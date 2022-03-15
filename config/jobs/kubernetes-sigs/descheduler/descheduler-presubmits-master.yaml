@@ -13,7 +13,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: golang:1.17.3
+      - image: golang:1.17.6
         command:
         - make
         args:
@@ -30,7 +30,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: golang:1.17.3
+      - image: golang:1.17.6
         command:
         - make
         args:
@@ -48,7 +48,7 @@ presubmits:
     run_if_changed: '\.go$'
     spec:
       containers:
-      - image: golang:1.17.3
+      - image: golang:1.17.6
         command:
         - make
         args:
