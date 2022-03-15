@@ -334,7 +334,7 @@ func failedJobs(account int, revision int, messages ...gerrit.ChangeMessageInfo)
 				continue
 			}
 			times[name] = message.Date.Time
-			if job.State == prowapi.FailureState || job.State == prowapi.ErrorState {
+			if job.State == prowapi.FailureState || job.State == prowapi.ErrorState || job.State == prowapi.AbortedState {
 				failures.Insert(name)
 			} else {
 				failures.Delete(name)
