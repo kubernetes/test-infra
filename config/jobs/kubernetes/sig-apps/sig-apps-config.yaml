@@ -19,7 +19,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:TaintEviction\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220314-46af1b01a6-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
 
 
   annotations:
@@ -43,7 +43,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:StatefulSet\] --minStartupPods=8
       - --timeout=90m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220314-46af1b01a6-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
   annotations:
     testgrid-dashboards: google-gce
     testgrid-tab-name: gci-gce-statefulset
