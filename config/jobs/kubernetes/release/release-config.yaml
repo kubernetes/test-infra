@@ -28,7 +28,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-release-cluster-up
         - --test_args=--ginkgo.focus=definitely-not-a-real-focus
         - --timeout=65m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220314-46af1b01a6-master
         resources:
           requests:
             memory: "6Gi"
@@ -99,7 +99,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220309-4b32800b2d
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
           command:
             - /run.sh
           args:
@@ -134,7 +134,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220309-4b32800b2d
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
           command:
             - /run.sh
           args:
@@ -169,7 +169,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220309-4b32800b2d
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
           command:
             - /run.sh
           args:
@@ -204,7 +204,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220309-4b32800b2d
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
           command:
             - /run.sh
           args:
@@ -239,7 +239,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220309-4b32800b2d
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
           command:
             - /run.sh
           args:
@@ -274,7 +274,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220309-4b32800b2d
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
           command:
             - /run.sh
           args:
@@ -308,7 +308,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220309-4b32800b2d
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
           command:
             - /run.sh
           args:
@@ -343,7 +343,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220309-4b32800b2d
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
           command:
             - /run.sh
           args:
@@ -378,7 +378,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220309-4b32800b2d
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
           command:
             - /run.sh
           args:
