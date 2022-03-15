@@ -310,12 +310,13 @@ func TestFailedJobs(t *testing.T) {
 			messages: []gerrit.ChangeMessageInfo{
 				message("ignore this", nil),
 				message(report(map[string]prowapi.ProwJobState{
-					"foo":         prowapi.SuccessState,
-					"should-fail": prowapi.FailureState,
+					"foo":          prowapi.SuccessState,
+					"should-fail":  prowapi.FailureState,
+					"should-abort": prowapi.AbortedState,
 				}), nil),
 				message("also ignore this", nil),
 			},
-			expected: sets.NewString("should-fail"),
+			expected: sets.NewString("should-fail", "should-abort"),
 		},
 		{
 			name: "ignore report from someone else",
