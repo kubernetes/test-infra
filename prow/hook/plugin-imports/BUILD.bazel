@@ -47,6 +47,7 @@ go_library(
         "//prow/plugins/skip:go_default_library",
         "//prow/plugins/slackevents:go_default_library",
         "//prow/plugins/stage:go_default_library",
+        "//prow/plugins/testfreeze:go_default_library",
         "//prow/plugins/transfer-issue:go_default_library",
         "//prow/plugins/trick-or-treat:go_default_library",
         "//prow/plugins/trigger:go_default_library",
