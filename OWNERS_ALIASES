@@ -282,14 +282,18 @@ aliases:
 
   # mostly copied from sigs.k8s.io/kubebuilder/OWNERS_ALIASES
   kubebuilder-admins:
-  - mengqiy
+  - pwittrock
   - estroz
+  - camilamacedo86
 
   kubebuilder-reviewers:
   - alexeldeib
+  - joelanford
 
   kubebuilder-emeritus-approvers:
-  - pwittrock
+  - directxman12
+  - droot
+  - mengqiy
 
   # end sigs.k8s.io/kubebuilder/OWNERS_ALIASES
 
