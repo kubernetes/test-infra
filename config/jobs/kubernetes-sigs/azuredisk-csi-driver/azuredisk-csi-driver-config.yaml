@@ -641,7 +641,7 @@ presubmits:
       testgrid-tab-name: pr-azuredisk-csi-driver-e2e-windows-containerd
       description: "Run E2E tests on a Windows containerd cluster for Azure Disk CSI driver."
       testgrid-num-columns-recent: '30'
-  - name: pull-kubernetes-e2e-capz-azure-disk-windows
+  - name: pull-kubernetes-e2e-capz-azure-disk-csi-windows
     decorate: true
     always_run: false
     optional: true
@@ -686,10 +686,10 @@ presubmits:
               value: "Standard_D4s_v3"
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
-      testgrid-tab-name: pull-kubernetes-e2e-capz-azure-disk-windows
+      testgrid-tab-name: pull-kubernetes-e2e-capz-azure-disk-csi-windows
       description: "Run E2E tests on a capz Windows cluster for Azure Disk CSI driver."
       testgrid-num-columns-recent: '30'
-  - name: pull-kubernetes-e2e-capz-azure-disk
+  - name: pull-kubernetes-e2e-capz-azure-disk-csi
     decorate: true
     always_run: false
     optional: true
@@ -726,6 +726,6 @@ presubmits:
               value: "Standard_D2s_v3"
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
-      testgrid-tab-name: pull-kubernetes-e2e-capz-azure-disk
+      testgrid-tab-name: pull-kubernetes-e2e-capz-azure-disk-csi
       description: "Run E2E tests on a capz cluster for Azure Disk CSI driver."
       testgrid-num-columns-recent: '30'
