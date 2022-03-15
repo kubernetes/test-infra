@@ -1160,3 +1160,44 @@ presubmits:
           requests:
             cpu: 4
             memory: 6Gi
+  - name: pull-kubernetes-e2e-containerd-gce-serial
+    always_run: false
+    optional: true
+    annotations:
+      fork-per-release: "true"
+      testgrid-create-test-group: "true"
+      testgrid-dashboards: sig-node-presubmits
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
+    spec:
+      # Same job as https://github.com/kubernetes/test-infra/blob/c22c76992431498d75c76d1c854ac898e492160d/config/jobs/kubernetes/sig-cloud-provider/gcp/gcp-gce.yaml#L718-L740  as pull job.
+      containers:
+      - args:
+        - --root=/go/src
+        - --repo=k8s.io/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --timeout=520
+        - --scenario=kubernetes_e2e
+        - --
+        - --build=quick
+        - --cluster=
+        - --extract=local
+        - --env=LOG_DUMP_SYSTEMD_SERVICES=containerd
+        - --env=NODE_LOCAL_SSDS_EXT=1,scsi,fs
+        - --gcp-node-image=gci
+        - --gcp-zone=us-west1-b
+        - --provider=gce
+        - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+        - --timeout=500m
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-master
+        resources:
+          limits:
+            cpu: "1"
+            memory: "3Gi"
+          requests:
+            cpu: "1"
+            memory: "3Gi"
