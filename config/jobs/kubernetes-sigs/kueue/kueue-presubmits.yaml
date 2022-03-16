@@ -43,7 +43,7 @@ presubmits:
       description: "Run kueue verify checks"
     spec:
       containers:
-      - image: golang:1.18
+      - image: golang:1.17
         command:
         - make
         args:
