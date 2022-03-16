@@ -87,7 +87,7 @@ func (c *ReloadingCensorer) Refresh(secrets ...string) {
 	var largestSecret int
 	var replacements []string
 	addReplacement := func(s string) {
-		replacements = append(replacements, s, strings.Repeat(`*`, len(s)))
+		replacements = append(replacements, s, strings.Repeat(`X`, len(s)))
 		if len(s) > largestSecret {
 			largestSecret = len(s)
 		}
