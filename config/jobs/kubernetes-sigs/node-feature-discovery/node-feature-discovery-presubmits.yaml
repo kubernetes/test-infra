@@ -15,7 +15,7 @@ presubmits:
       description: "Verify source code of node-feature-discovery: check formatting, lint etc."
     spec:
       containers:
-      - image: golang:1.17
+      - image: golang:1.18
         command:
         - scripts/test-infra/verify.sh
   - name: pull-node-feature-discovery-verify-0-9
@@ -60,7 +60,7 @@ presubmits:
       description: "Build node-feature-discovery binaries"
     spec:
       containers:
-      - image: golang:1.17
+      - image: golang:1.18
         command:
         - scripts/test-infra/build.sh
   - name: pull-node-feature-discovery-build-image
@@ -91,7 +91,6 @@ presubmits:
     - ^release-0.7
     - ^release-0.8
     - ^release-0.9
-
     decorate: true
     annotations:
       testgrid-dashboards: sig-node-node-feature-discovery
