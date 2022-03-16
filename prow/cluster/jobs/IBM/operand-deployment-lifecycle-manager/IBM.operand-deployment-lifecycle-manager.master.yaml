@@ -8,7 +8,7 @@ presubmits:
     - ^release-future$
     - ^release-efix$
     - ^release-eus$
-    - ^release-1.*
+    - ^release-1.13$
     decorate: true
     path_alias: github.com/IBM/operand-deployment-lifecycle-manager
     rerun_command: /test check-operand-deployment-lifecycle-manager
@@ -30,7 +30,7 @@ presubmits:
     - ^release-future$
     - ^release-efix$
     - ^release-eus$
-    - ^release-1.*
+    - ^release-1.13$
     decorate: true
     path_alias: github.com/IBM/operand-deployment-lifecycle-manager
     rerun_command: /test test-operand-deployment-lifecycle-manager-amd64
@@ -53,7 +53,7 @@ presubmits:
     - ^release-future$
     - ^release-efix$
     - ^release-eus$
-    - ^release-1.*$
+    - ^release-1.13$
     decorate: true
     labels:
       preset-service-account: "true"
@@ -79,7 +79,7 @@ postsubmits:
     - ^release-future$
     - ^release-efix$
     - ^release-eus$
-    - ^release-1.*
+    - ^release-1.13$
     decorate: true
     labels:
       preset-service-account: "true"
@@ -101,7 +101,7 @@ postsubmits:
     - ^release-future$
     - ^release-efix$
     - ^release-eus$
-    - ^release-1.*
+    - ^release-1.13$
     decorate: true
     labels:
       preset-service-account: "true"
@@ -123,7 +123,7 @@ postsubmits:
     - ^release-future$
     - ^release-efix$
     - ^release-eus$
-    - ^release-1.*
+    - ^release-1.13$
     decorate: true
     labels:
       preset-service-account: "true"
@@ -145,7 +145,7 @@ postsubmits:
     - ^release-future$
     - ^release-efix$
     - ^release-eus$
-    - ^release-1.*
+    - ^release-1.13$
     decorate: true
     labels:
       preset-service-account: "true"
