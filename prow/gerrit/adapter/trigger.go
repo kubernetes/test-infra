@@ -67,7 +67,7 @@ func messageFilter(messages []string, failingContexts, allContexts sets.String, 
 		// If the Gerrit Change changed from draft to active state, trigger all
 		// presubmit Prow jobs.
 		if strings.HasSuffix(message, client.ReadyForReviewMessageFixed) || strings.HasSuffix(message, client.ReadyForReviewMessageCustomizable) {
-			filters = append(filters, pjutil.TestAllFilter())
+			filters = append(filters, pjutil.NewTestAllFilter())
 			continue
 		}
 
@@ -79,5 +79,5 @@ func messageFilter(messages []string, failingContexts, allContexts sets.String, 
 		filters = append(filters, filter)
 	}
 
-	return pjutil.AggregateFilter(filters)
+	return pjutil.NewAggregateFilter(filters)
 }
