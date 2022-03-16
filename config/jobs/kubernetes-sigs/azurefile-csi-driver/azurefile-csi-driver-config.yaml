@@ -516,7 +516,7 @@ presubmits:
       testgrid-tab-name: pr-azurefile-csi-driver-external-e2e-nfs
       description: "Run External E2E tests for Azure File CSI driver using NFS protocol."
       testgrid-num-columns-recent: '30'
-  - name: pull-kubernetes-e2e-capz-azure-file-csi-windows
+  - name: pull-azurefile-csi-driver-e2e-capz-windows
     decorate: true
     always_run: false
     optional: true
@@ -561,10 +561,10 @@ presubmits:
               value: "Standard_D4s_v3"
     annotations:
       testgrid-dashboards: provider-azure-azurefile-csi-driver
-      testgrid-tab-name: pull-kubernetes-e2e-capz-azure-file-csi-windows
+      testgrid-tab-name: pull-azurefile-csi-driver-e2e-capz-windows
       description: "Run E2E tests on a capz Windows cluster for Azure File CSI driver."
       testgrid-num-columns-recent: '30'
-  - name: pull-kubernetes-e2e-capz-azure-file-csi
+  - name: pull-azurefile-csi-driver-e2e-capz
     decorate: true
     always_run: false
     optional: true
@@ -601,6 +601,6 @@ presubmits:
               value: "Standard_D2s_v3"
     annotations:
       testgrid-dashboards: provider-azure-azurefile-csi-driver
-      testgrid-tab-name: pull-kubernetes-e2e-capz-azure-file-csi
+      testgrid-tab-name: pull-azurefile-csi-driver-e2e-capz
       description: "Run E2E tests on a capz cluster for Azure File CSI driver."
       testgrid-num-columns-recent: '30'
