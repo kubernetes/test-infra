@@ -82,7 +82,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220316-9d252673a0-test-infra
         command:
         - runner.sh
         args:
@@ -116,7 +116,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220316-9d252673a0-test-infra
         command:
         - runner.sh
         args:
@@ -138,7 +138,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220316-9d252673a0-test-infra
         command:
         - runner.sh
         args:
@@ -174,7 +174,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220316-9d252673a0-test-infra
         command:
         - runner.sh
         args:

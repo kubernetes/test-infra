@@ -29,7 +29,7 @@ periodics:
     testgrid-tab-name: gce-master-scale-oci-proxy-canary
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220316-9d252673a0-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
