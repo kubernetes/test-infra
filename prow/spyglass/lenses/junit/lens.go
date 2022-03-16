@@ -108,7 +108,7 @@ func (jr JunitResult) Status() testStatus {
 func (jr JunitResult) SkippedReason() string {
 	res := ""
 	if jr.Skipped != nil {
-		res = *jr.Skipped
+		res = jr.Message(-1) // Don't truncate
 	}
 	return res
 }

@@ -71,12 +71,12 @@ func recordLogText(s *junit.Suite, text string) {
 
 	switch {
 	case result.Failure != nil:
-		*result.Failure = text
+		result.Failure.Value = text
 		// Also add failure text to "categorized_fail" property for TestGrid.
 		result.SetProperty("categorized_fail", text)
 
 	case result.Skipped != nil:
-		*result.Skipped = text
+		result.Skipped.Value = text
 
 	default:
 		result.Output = &text
@@ -167,13 +167,18 @@ func parse(raw []byte) (*junit.Suites, error) {
 				suite.Results = append(suite.Results, junit.Result{
 					ClassName: path.Base(suite.Name),
 					Name:      match[2],
-					Skipped:   &emptyText,
+					Skipped: &junit.Skipped{
+						Value: emptyText,
+					},
 				})
 			} else if match[1] == "FAIL" {
 				suite.Results = append(suite.Results, junit.Result{
 					ClassName: path.Base(suite.Name),
 					Name:      match[2],
-					Failure:   &emptyText,
+					Failure: &junit.Failure{
+						Type:  "failure",
+						Value: emptyText,
+					},
 				})
 				suite.Failures += 1
 				suite.Tests += 1

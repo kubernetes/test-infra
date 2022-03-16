@@ -142,22 +142,6 @@ func (pac *ProwAwareConfigurator) ApplySingleProwjobAnnotations(c *configpb.Conf
 		testGroup.NumColumnsRecent = minPresubmitNumColumnsRecent
 	}
 
-	if srh, ok := j.Annotations[testgridAlertStaleResultsHoursAnnotation]; ok {
-		srhInt, err := strconv.ParseInt(srh, 10, 32)
-		if err != nil {
-			return fmt.Errorf("%s value %q is not a valid integer", testgridAlertStaleResultsHoursAnnotation, srh)
-		}
-		testGroup.AlertStaleResultsHours = int32(srhInt)
-	}
-
-	if nfta, ok := j.Annotations[testgridNumFailuresToAlertAnnotation]; ok {
-		nftaInt, err := strconv.ParseInt(nfta, 10, 32)
-		if err != nil {
-			return fmt.Errorf("%s value %q is not a valid integer", testgridNumFailuresToAlertAnnotation, nfta)
-		}
-		testGroup.NumFailuresToAlert = int32(nftaInt)
-	}
-
 	if dora, ok := j.Annotations[testgridDaysOfResultsAnnotation]; ok {
 		doraInt, err := strconv.ParseInt(dora, 10, 32)
 		if err != nil {
@@ -232,7 +216,24 @@ func (pac *ProwAwareConfigurator) ApplySingleProwjobAnnotations(c *configpb.Conf
 			if firstDashboard {
 				firstDashboard = false
 				if emails, ok := j.Annotations[testgridEmailAnnotation]; ok {
-					dt.AlertOptions = &configpb.DashboardTabAlertOptions{AlertMailToAddresses: emails}
+					initAlertOptions(dt)
+					dt.AlertOptions.AlertMailToAddresses = emails
+				}
+				if srh, ok := j.Annotations[testgridAlertStaleResultsHoursAnnotation]; ok {
+					srhInt, err := strconv.ParseInt(srh, 10, 32)
+					if err != nil {
+						return fmt.Errorf("%s value %q is not a valid integer", testgridAlertStaleResultsHoursAnnotation, srh)
+					}
+					initAlertOptions(dt)
+					dt.AlertOptions.AlertStaleResultsHours = int32(srhInt)
+				}
+				if nfta, ok := j.Annotations[testgridNumFailuresToAlertAnnotation]; ok {
+					nftaInt, err := strconv.ParseInt(nfta, 10, 32)
+					if err != nil {
+						return fmt.Errorf("%s value %q is not a valid integer", testgridNumFailuresToAlertAnnotation, nfta)
+					}
+					initAlertOptions(dt)
+					dt.AlertOptions.NumFailuresToAlert = int32(nftaInt)
 				}
 			}
 			if dc != nil {
@@ -243,6 +244,12 @@ func (pac *ProwAwareConfigurator) ApplySingleProwjobAnnotations(c *configpb.Conf
 	}
 
 	return nil
+}
+
+func initAlertOptions(dt *configpb.DashboardTab) {
+	if dt.AlertOptions == nil {
+		dt.AlertOptions = &configpb.DashboardTabAlertOptions{}
+	}
 }
 
 // sortPeriodics sorts all periodics by name (ascending).
