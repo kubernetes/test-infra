@@ -101,4 +101,4 @@ postsubmits:
               - --project=k8s-staging-infra-tools
               - --scratch-bucket=gs://k8s-staging-infra-tools-gcb
               - --env-passthrough=PULL_BASE_REF
-              - images/k8s-infra
+              - images/codesearch/cs-fetch-repos
