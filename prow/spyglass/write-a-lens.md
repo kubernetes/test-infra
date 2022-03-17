@@ -112,9 +112,6 @@ With this setup, you would reference your script in your HTML as `script_bundle.
 <script type="text/javascript" src="script_bundle.min.js"></script>
 ```
 
-You also need to update the [spyglass `BUILD.bazel`](./BUILD.bazel) to have references to yours, in
-particular adding your lens to the `templates` and `resources` filegroups.
-
 ### Lens APIs
 
 Many Spyglass APIs are asynchronous, and so return a

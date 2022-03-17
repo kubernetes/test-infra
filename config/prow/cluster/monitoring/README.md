@@ -4,9 +4,7 @@ This folder contains the manifest files for monitoring prow resources.
 
 ## Deploy
 
-The deployment has been
-[integrated into our CI system](https://github.com/kubernetes/test-infra/blob/201c7788b244ab2fc3efae7249fb939223ef6e1e/prow/deploy.sh#L91-L92),
-except `secret` objects.
+The deployment has been integrated into our CI system except `secret` objects.
 Cluster admins need to create `secret`s  manually.
 
 ```
@@ -64,38 +62,8 @@ We use [jsonnet](https://jsonnet.org) to generate the json files for grafana das
 Developing a new dashboard can be achieved by
 
 * Create a new file `<dashhoard_name>.jsonnet` in folder [grafana_dashboards](grafana_dashboards).
-* Add `bazel` target to [grafana_dashboards/BUILD.bazel](grafana_dashboards/BUILD.bazel) for generating the corresponding json file `<dashhoard_name>.json`.
-
-    ```
-    ### if you want to take a look at some json file, eg, hook.json
-    $ bazel build //config/prow/cluster/monitoring/mixins/grafana_dashboards:hook
-    $ cat bazel-bin/config/prow/cluster/monitoring/mixins/grafana_dashboards/hook.json
-    ```
-
-* Add `bazel` target to [dashboards_out/BUILD.bazel](grafana_dashboards/BUILD.bazel) for generating the configMap with the json file above.
-
-    ```
-    ### if you want to apply the configMaps
-    $ bazel run //prow/cluster/monitoring/mixins/dashboards_out:grafana-configmaps.apply
-    ```
 
 * Use the configMap above in [grafana_deployment.yaml](grafana_deployment.yaml).
-
-As an alternative to `bazel`, the Makefile in [mixin](mixins/Makefile) folder can be used to generate the yaml/json
-files from `jsonnet` for debugging locally. As prerequisites, [`jsonnet`](https://github.com/google/jsonnet)
-and [`gojsontoyaml`](https://github.com/brancz/gojsontoyaml) should be included in `${PATH}`.
-
-## Update vendored code
-
-The generation of grafana dashboards depends on [vendored code](./mixins/vendor), the vendored code can be updated by running:
-
-```
-cd ./mixins
-mv vendor/grafonnet/BUILD.bazel .
-make clean-vendor
-make install
-cp BUILD.bazel vendor/grafonnet
-```
 
 ## Access components' Web page
 

@@ -1,6 +1,6 @@
 # Prow Images
 
-This directory includes a sub directory for every Prow component and is where all binary and container images are built. You can find the `main` packages here in addition to the `BUILD.bazel` files that contain [Bazel](https://bazel.build) rules for building binary and container images. For details about building the binaries and images see [`build_test_update.md`](/prow/build_test_update.md).
+This directory includes a sub directory for every Prow component and is where all binary and container images are built. You can find the `main` packages here. For details about building the binaries and images see [`build_test_update.md`](/prow/build_test_update.md).
 
 ## Cluster Components
 

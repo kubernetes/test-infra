@@ -13,11 +13,8 @@
 # limitations under the License.
 
 # Build and push specific variables.
-# Production prow images are still built and pushed from bazel rules. Building
-# and pushing images with this Make rule to staging registry, will migrate once
-# https://github.com/kubernetes/test-infra/issues/23832 is done
-REGISTRY ?= gcr.io/k8s-prow-staging
-PROW_IMAGES ?=
+REGISTRY ?= gcr.io/k8s-prow
+PROW_IMAGE ?=
 
 .PHONY: push-images
 push-images:
@@ -26,3 +23,17 @@ push-images:
 .PHONY: build-images
 build-images:
 	../hack/make-rules/go-run/arbitrary.sh run ./hack/prowimagebuilder --ko-docker-repo="ko.local" --push=false
+
+.PHONY: push-single-image
+push-single-image:
+	../hack/make-rules/go-run/arbitrary.sh run ./hack/prowimagebuilder --ko-docker-repo="${REGISTRY}" --push=true --image=${PROW_IMAGE}
+
+.PHONY: build-single-image
+build-single-image:
+	../hack/make-rules/go-run/arbitrary.sh run ./hack/prowimagebuilder --ko-docker-repo="ko.local" --push=false --image=${PROW_IMAGE}
+
+.PHONY: build-tarball
+build-tarball:
+# use --ko-docker-repo="something.not.exist" as ko skips writing `.tar` file if
+# it's `ko.local.
+	../hack/make-rules/go-run/arbitrary.sh run ./hack/prowimagebuilder --ko-docker-repo="something.not.exist" --push=false --image=${PROW_IMAGE}
