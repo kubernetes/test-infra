@@ -193,7 +193,7 @@ func TestInjectComment(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			cm, err := NewCommentMap()
+			cm, err := NewCommentMap(nil)
 			if err != nil {
 				t.Fatalf("Failed to construct comment map: %v", err)
 			}
@@ -245,7 +245,7 @@ func TestAddPath(t *testing.T) {
 			for _, file := range test.paths {
 				resolved = append(resolved, resolvePath(t, file))
 			}
-			cm, err := NewCommentMap(resolved...)
+			cm, err := NewCommentMap(nil, resolved...)
 			if err != nil {
 				t.Fatalf("failed to construct comment map: %v", err)
 			}
@@ -269,26 +269,50 @@ func TestAddPath(t *testing.T) {
 
 func TestGenYAML(t *testing.T) {
 	tests := []struct {
-		name      string
-		structObj interface{}
-		expected  bool
+		name            string
+		paths           []string
+		rawContents     map[string][]byte
+		structObj       interface{}
+		expectedRawYaml []byte
+		expected        bool
 	}{
 		{
-			name: "alias types",
+			name:  "alias types",
+			paths: []string{"example_config.go"},
 			structObj: &aliases.Alias{
 				StringField: "string",
 			},
 			expected: true,
 		},
 		{
-			name: "alias simple types",
+			name: "also-read-raw",
+			rawContents: map[string][]byte{
+				"alias_types.yaml": []byte(`package alias_types
+type Alias = AliasedType
+type AliasedType struct {
+  // StringField comment
+  StringField string ` + "`json:\"string\"`" + `
+}`),
+			},
+			structObj: &aliases.Alias{
+				StringField: "string",
+			},
+			expectedRawYaml: []byte(`# StringField comment
+string: string
+`),
+			expected: true,
+		},
+		{
+			name:  "alias simple types",
+			paths: []string{"example_config.go"},
 			structObj: &simplealiases.SimpleAliases{
 				AliasField: simplealiases.Alias("string"),
 			},
 			expected: true,
 		},
 		{
-			name: "primitive types",
+			name:  "primitive types",
+			paths: []string{"example_config.go"},
 			structObj: &primitives.Primitives{
 				StringField:  "string",
 				BooleanField: true,
@@ -297,7 +321,8 @@ func TestGenYAML(t *testing.T) {
 			expected: true,
 		},
 		{
-			name: "multiline comments",
+			name:  "multiline comments",
+			paths: []string{"example_config.go"},
 			structObj: &multiline.Multiline{
 				StringField1: "string1",
 				StringField2: "string2",
@@ -309,7 +334,8 @@ func TestGenYAML(t *testing.T) {
 			expected: true,
 		},
 		{
-			name: "nested structs",
+			name:  "nested structs",
+			paths: []string{"example_config.go"},
 			structObj: &nested.Parent{
 				Age: 35,
 				Children: []nested.Child{
@@ -321,7 +347,8 @@ func TestGenYAML(t *testing.T) {
 			expected: true,
 		},
 		{
-			name: "inline structs",
+			name:  "inline structs",
+			paths: []string{"example_config.go"},
 			structObj: &inlines.Resource{
 				Metadata: inlines.Metadata{
 					Name: "test",
@@ -330,7 +357,8 @@ func TestGenYAML(t *testing.T) {
 			expected: true,
 		},
 		{
-			name: "embedded structs",
+			name:  "embedded structs",
+			paths: []string{"example_config.go"},
 			structObj: &embedded.Building{
 				Address:  "123 North Main Street",
 				Bathroom: embedded.Bathroom{Width: 100, Height: 200},
@@ -339,7 +367,8 @@ func TestGenYAML(t *testing.T) {
 			expected: true,
 		},
 		{
-			name: "no tags",
+			name:  "no tags",
+			paths: []string{"example_config.go"},
 			structObj: &tags.Tagless{
 				StringField:  "string",
 				BooleanField: true,
@@ -348,7 +377,8 @@ func TestGenYAML(t *testing.T) {
 			expected: true,
 		},
 		{
-			name: "omit if empty",
+			name:  "omit if empty",
+			paths: []string{"example_config.go"},
 			structObj: &omit.OmitEmptyStrings{
 				StringFieldOmitEmpty: "",
 				StringFieldKeepEmpty: "",
@@ -358,7 +388,8 @@ func TestGenYAML(t *testing.T) {
 			expected: true,
 		},
 		{
-			name: "pointer types",
+			name:  "pointer types",
+			paths: []string{"example_config.go"},
 			structObj: &pointers.Zoo{
 				Employees: []*pointers.Employee{
 					{
@@ -375,11 +406,13 @@ func TestGenYAML(t *testing.T) {
 		},
 		{
 			name:      "private members",
+			paths:     []string{"example_config.go"},
 			structObj: private.NewPerson("gamer123", "password123"),
 			expected:  true,
 		},
 		{
-			name: "sequence items",
+			name:  "sequence items",
+			paths: []string{"example_config.go"},
 			structObj: &sequence.Recipe{
 				Ingredients: []sequence.Ingredient{
 					{
@@ -395,7 +428,8 @@ func TestGenYAML(t *testing.T) {
 			expected: true,
 		},
 		{
-			name: "interface types",
+			name:  "interface types",
+			paths: []string{"example_config.go"},
 			structObj: &interfaces.Zoo{
 				Animals: []interfaces.Animal{
 					&interfaces.Lion{
@@ -413,11 +447,18 @@ func TestGenYAML(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			cm, err := NewCommentMap(resolvePath(t, "example_config.go"))
+			var paths []string
+			for _, path := range test.paths {
+				paths = append(paths, resolvePath(t, path))
+			}
+			cm, err := NewCommentMap(test.rawContents, paths...)
 			if err != nil {
 				t.Fatalf("failed to construct comment map: %v", err)
 			}
-			expectedYaml := readFile(t, "yaml")
+			expectedYaml := test.expectedRawYaml
+			if len(expectedYaml) == 0 {
+				expectedYaml = readFile(t, "yaml")
+			}
 
 			actualYaml, err := cm.GenYaml(test.structObj)
 

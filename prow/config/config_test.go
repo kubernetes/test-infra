@@ -7594,7 +7594,7 @@ func TestGenYamlDocs(t *testing.T) {
 	}
 	inputFiles = append(inputFiles, prowapiInputFiles...)
 
-	commentMap, err := genyaml.NewCommentMap(inputFiles...)
+	commentMap, err := genyaml.NewCommentMap(nil, inputFiles...)
 	if err != nil {
 		t.Fatalf("failed to construct commentMap: %v", err)
 	}
