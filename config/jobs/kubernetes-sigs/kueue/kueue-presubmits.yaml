@@ -10,7 +10,7 @@ presubmits:
       description: "Run kueue unit tests"
     spec:
       containers:
-      - image: golang:1.18
+      - image: golang:1.17
         env:
         - name: GO_TEST_FLAGS
           value: "-race -count 3"
@@ -28,7 +28,7 @@ presubmits:
       description: "Run kueue test-integration"
     spec:
       containers:
-      - image: golang:1.18
+      - image: golang:1.17
         command:
         - make
         args:
