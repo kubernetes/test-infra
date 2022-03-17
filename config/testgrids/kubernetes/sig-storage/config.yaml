@@ -12,6 +12,7 @@ dashboard_groups:
     - sig-storage-csi-external-snapshotter
     - sig-storage-csi-livenessprobe
     - sig-storage-csi-node-driver-registrar
+    - sig-storage-csi-volume-data-source-validator
     - sig-storage-csi-other
     - sig-storage-image-build
     - sig-storage-container-object-storage-interface-api
@@ -106,6 +107,7 @@ dashboards:
 - name: sig-storage-csi-external-snapshotter
 - name: sig-storage-csi-livenessprobe
 - name: sig-storage-csi-node-driver-registrar
+- name: sig-storage-csi-volume-data-source-validator
 - name: sig-storage-csi-other
 - name: sig-storage-lib-external-provisioner
 - name: sig-storage-image-build
