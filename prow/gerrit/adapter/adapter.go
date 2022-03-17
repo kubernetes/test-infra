@@ -423,9 +423,9 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 		// Automatically trigger the Prow jobs if the revision is new and the
 		// change is not in WorkInProgress.
 		if revision.Created.Time.After(lastUpdate) && !change.WorkInProgress {
-			filters = append(filters, pjutil.TestAllFilter())
+			filters = append(filters, pjutil.NewTestAllFilter())
 		}
-		toTrigger, err := pjutil.FilterPresubmits(pjutil.AggregateFilter(filters), listChangedFiles(change), change.Branch, presubmits, logger)
+		toTrigger, err := pjutil.FilterPresubmits(pjutil.NewAggregateFilter(filters), listChangedFiles(change), change.Branch, presubmits, logger)
 		if err != nil {
 			return fmt.Errorf("filter presubmits: %w", err)
 		}
