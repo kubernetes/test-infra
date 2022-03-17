@@ -30,6 +30,12 @@ import (
 	"k8s.io/test-infra/pkg/genyaml"
 )
 
+func TestEnsureEmbed(t *testing.T) {
+	if len(embededConfigGoFileContent) == 0 {
+		t.Error("EmbededConfigGoFileContent is empty.")
+	}
+}
+
 func TestHasSelfApproval(t *testing.T) {
 	cases := []struct {
 		name     string
@@ -231,7 +237,7 @@ func TestGenYamlDocs(t *testing.T) {
 		t.Fatalf("filepath.Glob: %v", err)
 	}
 
-	commentMap, err := genyaml.NewCommentMap(inputFiles...)
+	commentMap, err := genyaml.NewCommentMap(nil, inputFiles...)
 	if err != nil {
 		t.Fatalf("failed to construct commentMap: %v", err)
 	}
