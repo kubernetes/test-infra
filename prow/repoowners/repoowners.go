@@ -148,6 +148,7 @@ type Interface interface {
 
 	WithFields(fields logrus.Fields) Interface
 	WithGitHubClient(client github.Client) Interface
+	ForPlugin(plugin string) Interface
 }
 
 // Client is an implementation of the Interface.
@@ -157,6 +158,7 @@ var _ Interface = &Client{}
 type Client struct {
 	logger *logrus.Entry
 	ghc    githubClient
+	used   bool
 	*delegate
 }
 
@@ -188,6 +190,25 @@ func (c *Client) WithGitHubClient(client github.Client) Interface {
 		ghc:      client,
 		delegate: c.delegate,
 	}
+}
+
+// ForPlugin clones the client, keeping the underlying delegate the same but adding
+// a log field
+func (c *Client) ForPlugin(plugin string) Interface {
+	return c.forKeyValue("plugin", plugin)
+}
+
+func (c *Client) forKeyValue(key, value string) Interface {
+	return &Client{
+		logger:   c.logger.WithField(key, value),
+		ghc:      c.ghc,
+		delegate: c.delegate,
+	}
+}
+
+// Used determines whether the client has been used
+func (c *Client) Used() bool {
+	return c.used
 }
 
 // NewClient is the constructor for Client
@@ -281,6 +302,7 @@ func (c *Client) LoadRepoOwners(org, repo, base string) (RepoOwner, error) {
 }
 
 func (c *Client) LoadRepoOwnersSha(org, repo, base, sha string, updateCache bool) (RepoOwner, error) {
+	c.used = true
 	log := c.logger.WithFields(logrus.Fields{"org": org, "repo": repo, "base": base, "sha": sha})
 	cloneRef := fmt.Sprintf("%s/%s", org, repo)
 	fullName := fmt.Sprintf("%s:%s", cloneRef, base)

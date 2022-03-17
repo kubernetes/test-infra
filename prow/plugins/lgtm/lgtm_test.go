@@ -63,6 +63,14 @@ func (f *fakeOwnersClient) WithGitHubClient(client github.Client) repoowners.Int
 	return f
 }
 
+func (f *fakeOwnersClient) ForPlugin(string) repoowners.Interface {
+	return f
+}
+
+func (f *fakeOwnersClient) Used() bool {
+	return true
+}
+
 type fakeRepoOwners struct {
 	approvers   map[string]layeredsets.String
 	reviewers   map[string]layeredsets.String
