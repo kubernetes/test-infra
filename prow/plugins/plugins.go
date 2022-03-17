@@ -18,6 +18,7 @@ package plugins
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -61,7 +62,12 @@ var (
 	reviewEventHandlers        = map[string]ReviewEventHandler{}
 	reviewCommentEventHandlers = map[string]ReviewCommentEventHandler{}
 	statusEventHandlers        = map[string]StatusEventHandler{}
-	CommentMap, _              = genyaml.NewCommentMap()
+	// CommentMap is used by many plugins for printing help messages defined in
+	// config.go.
+	CommentMap, _ = genyaml.NewCommentMap(nil)
+
+	//go:embed config.go
+	embededConfigGoFileContent []byte
 )
 
 func init() {
@@ -72,7 +78,8 @@ func init() {
 	if version.Name != "hook" {
 		return
 	}
-	if cm, err := genyaml.NewCommentMap("prow/plugins/config.go"); err == nil {
+
+	if cm, err := genyaml.NewCommentMap(map[string][]byte{"prow/plugins/config.go": embededConfigGoFileContent}); err == nil {
 		CommentMap = cm
 	} else {
 		logrus.WithError(err).Error("Failed to initialize commentMap")
