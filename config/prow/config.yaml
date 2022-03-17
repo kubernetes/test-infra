@@ -87,7 +87,9 @@ deck:
           - got.+expected
           - hash mismatch
           - Hit an unsupported type
+          - imported but not used
           - Incompatible changes
+          - incorrect boilerplate
           - indent-error-flow
           - INSTALLATION FAILED
           - is a misspelling
@@ -104,6 +106,7 @@ deck:
           - "signal: killed"
           - Something went wrong
           - too few arguments
+          - too many errors
           - "[Tt]imed out"
           - type.+has no field
           - unable to start the controlplane
@@ -115,8 +118,8 @@ deck:
           - want.+got
           - Your cluster may not be fully functional
           - ^\s+\^$
-          - \[31m
-          - "^diff" # [+-]{3}\\s" has too much noise from go test output
+          - \[(0;)?31m
+          - "^diff " # [+-]{3}\\s" has too much noise from go test output and set -x
           - • Failure
           # This highlights the start of bazel tests/runs to skip go importing noise.
           - "^INFO: Analyzed \\d+ targets"
