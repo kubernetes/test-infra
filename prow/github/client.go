@@ -280,6 +280,7 @@ type Client interface {
 	WithFields(fields logrus.Fields) Client
 	ForPlugin(plugin string) Client
 	ForSubcomponent(subcomponent string) Client
+	Used() bool
 	TriggerGitHubWorkflow(org, repo string, id int) error
 }
 
@@ -292,6 +293,7 @@ type client struct {
 	// identifier is used to add more identification to the user-agent header
 	identifier string
 	gqlc       gqlClient
+	used       bool
 	*delegate
 }
 
@@ -321,6 +323,11 @@ type UserData struct {
 	Name  string
 	Login string
 	Email string
+}
+
+// Used determines whether the client has been used
+func (c *client) Used() bool {
+	return c.used
 }
 
 // ForPlugin clones the client, keeping the underlying delegate the same but adding
@@ -888,6 +895,7 @@ func NewFakeClient() Client {
 }
 
 func (c *client) log(methodName string, args ...interface{}) (logDuration func()) {
+	c.used = true
 	if c.logger == nil {
 		return func() {}
 	}
