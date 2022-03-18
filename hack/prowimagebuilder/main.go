@@ -33,6 +33,7 @@ import (
 	"context"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/flagutil"
 	"sigs.k8s.io/yaml"
 )
 
@@ -82,6 +83,7 @@ func init() {
 type options struct {
 	dockerRepo        string
 	prowImageListFile string
+	images            flagutil.Strings
 	workers           int
 	push              bool
 	maxRetry          int
@@ -256,6 +258,7 @@ func buildAndPush(id *imageDef, dockerRepos []string, push bool) error {
 	// This process utilized the built in cache of ko, so that pushing to
 	// subsequent docker repo(s) is relatively cheap.
 	for _, dockerRepo := range dockerRepos {
+		logger.WithField("args", publishArgs).Info("Running ko.")
 		if _, err = runCmd([]string{"KO_DOCKER_REPO=" + dockerRepo}, "_bin/ko", publishArgs...); err != nil {
 			return fmt.Errorf("running ko: %w", err)
 		}
@@ -263,9 +266,14 @@ func buildAndPush(id *imageDef, dockerRepos []string, push bool) error {
 	return nil
 }
 
+func (o *options) imageAllowed(image string) bool {
+	return len(o.images.Strings()) == 0 || o.images.StringSet().Has(image)
+}
+
 func main() {
 	var o options
 	flag.StringVar(&o.prowImageListFile, "prow-images-file", path.Join(rootDir, defaultProwImageListFile), "Yaml file contains list of prow images")
+	flag.Var(&o.images, "image", "Images to be built, must be part of --prow-images-file, can be passed in repeatedly")
 	flag.StringVar(&o.dockerRepo, "ko-docker-repo", os.Getenv("KO_DOCKER_REPO"), "Dockers repos, separated by comma")
 	flag.IntVar(&o.workers, "workers", defaultWorkersCount, "Number of workers in parallel")
 	flag.BoolVar(&o.push, "push", false, "whether push or not")
@@ -330,8 +338,13 @@ func main() {
 		}(ctx, imageChan, errChan, doneChan)
 	}
 
+	var targetImagesCount int
 	for _, id := range ids {
 		id := id
+		if !o.imageAllowed(id.Dir) {
+			logrus.WithFields(logrus.Fields{"allowed-images": o.images, "image": id.Dir}).Info("Skipped.")
+			continue
+		}
 		id.remainingRetry = o.maxRetry
 		if id.Arch == "" {
 			id.Arch = defaultArch
@@ -339,6 +352,13 @@ func main() {
 		// Feed into channel instead
 		wg.Add(1)
 		imageChan <- id
+		targetImagesCount++
+	}
+
+	// This is used for testing images building, let's make sure it does something.
+	if targetImagesCount == 0 {
+		logrus.Error("There is no image to build.")
+		os.Exit(1)
 	}
 
 	go func(ctx context.Context, wg *sync.WaitGroup, doneChan chan imageDef) {
@@ -347,7 +367,7 @@ func main() {
 			select {
 			case id := <-doneChan:
 				done++
-				logrus.WithFields(logrus.Fields{"image": id.Dir, "done": done, "total": len(ids)}).Info("Done with image.")
+				logrus.WithFields(logrus.Fields{"image": id.Dir, "done": done, "total": targetImagesCount}).Info("Done with image.")
 				wg.Done()
 			case <-ctx.Done():
 				return

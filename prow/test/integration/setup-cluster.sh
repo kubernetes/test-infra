@@ -97,8 +97,8 @@ data:
 EOF
 
   echo "Install nginx on kind cluster"
-  # Pin the ingress-nginx manifest to 8b99f49d2d9c042355da9e53c2648bd0c049ae52 (Release 0.41.2) on 11/22/2020
-  do-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/8b99f49d2d9c042355da9e53c2648bd0c049ae52/deploy/static/provider/kind/deploy.yaml
+  # Pin the ingress-nginx manifest to fb72fcd81772fb3eca923897aec2d92fa5bdff41 (Release 1.1.2) on 3/18/2022
+  do-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/fb72fcd81772fb3eca923897aec2d92fa5bdff41/deploy/static/provider/kind/deploy.yaml
 }
 
 function deploy_prow() {

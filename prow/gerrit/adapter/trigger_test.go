@@ -351,7 +351,7 @@ func TestMessageFilter(t *testing.T) {
 					check.job = fixed[0]
 					logger := logrus.WithField("case", tc.name).WithField("job", check.job.Name)
 					filt := messageFilter(tc.messages, tc.failed, tc.all, logger)
-					shouldRun, forcedToRun, defaultBehavior := filt(check.job)
+					shouldRun, forcedToRun, defaultBehavior := filt.ShouldRun(check.job)
 					if got, want := shouldRun, check.shouldRun; got != want {
 						t.Errorf("shouldRun: got %t, want %t", got, want)
 					}

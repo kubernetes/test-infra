@@ -45,6 +45,7 @@ func TestDiskCachePruning(t *testing.T) {
 		maxConcurrency:      25,
 		pushGatewayInterval: time.Minute,
 		upstreamParsed:      &url.URL{},
+		timeout:             30,
 	}
 
 	now := time.Now()

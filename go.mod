@@ -25,13 +25,13 @@ replace (
 
 require (
 	cloud.google.com/go v0.81.0
-	cloud.google.com/go/pubsub v1.4.0
+	cloud.google.com/go/pubsub v1.9.1
 	cloud.google.com/go/storage v1.12.0
 	github.com/Azure/azure-sdk-for-go v42.3.0+incompatible
 	github.com/Azure/azure-storage-blob-go v0.8.0
 	github.com/Azure/go-autorest/autorest v0.11.18
 	github.com/Azure/go-autorest/autorest/adal v0.9.13
-	github.com/GoogleCloudPlatform/testgrid v0.0.68
+	github.com/GoogleCloudPlatform/testgrid v0.0.123
 	github.com/NYTimes/gziphandler v1.1.1
 	github.com/andygrunwald/go-gerrit v0.0.0-20210709065208-9d38b0be0268
 	github.com/andygrunwald/go-jira v1.14.0
@@ -50,6 +50,7 @@ require (
 	github.com/fsnotify/fsnotify v1.4.9
 	github.com/fsouza/fake-gcs-server v1.19.4
 	github.com/go-bindata/go-bindata/v3 v3.1.3
+	github.com/go-git/go-git/v5 v5.4.2
 	github.com/go-openapi/spec v0.19.6
 	github.com/go-test/deep v1.0.7
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
@@ -59,7 +60,7 @@ require (
 	github.com/google/gofuzz v1.2.1-0.20210504230335-f78f29fc09ea
 	github.com/google/uuid v1.2.0
 	github.com/gorilla/csrf v1.6.2
-	github.com/gorilla/mux v1.7.4
+	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/securecookie v1.1.1
 	github.com/gorilla/sessions v1.2.0
 	github.com/gregjones/httpcache v0.0.0-20190212212710-3befbb6ad0cc
@@ -67,6 +68,7 @@ require (
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/klauspost/pgzip v1.2.1
 	github.com/mattn/go-zglob v0.0.2
+	github.com/maxbrunsfeld/counterfeiter/v6 v6.4.1
 	github.com/pelletier/go-toml v1.9.3
 	github.com/peterbourgon/diskv v2.0.1+incompatible
 	github.com/pkg/errors v0.9.1
@@ -78,11 +80,12 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/pflag v1.0.5
+	github.com/stretchr/testify v1.7.0
 	github.com/tektoncd/pipeline v0.14.1-0.20200710073957-5eeb17f81999
 	go.uber.org/zap v1.19.0
 	go4.org v0.0.0-20201209231011-d4a079459e60
 	gocloud.dev v0.19.0
-	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
+	golang.org/x/crypto v0.0.0-20210421170649-83a5a9bb288b
 	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616
 	golang.org/x/net v0.0.0-20210520170846-37e1c6afe023
 	golang.org/x/oauth2 v0.0.0-20210402161424-2e8d93401602

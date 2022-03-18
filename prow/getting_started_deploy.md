@@ -43,8 +43,9 @@ Prow's `tackle` utility walks you through deploying a new instance of prow in a 
 
 You need a few things:
 
-1. [`bazel`](https://bazel.build/) build tool installed and working
-1. The prow `tackle` utility. It is recommended to use it by running `bazel run //prow/cmd/tackle` from `test-infra` directory, alternatively you can install it by running `go get -u k8s.io/test-infra/prow/cmd/tackle` (in that case you would also need go installed and working).
+1. The prow `tackle` utility. You can install it by running `go get -u
+   k8s.io/test-infra/prow/cmd/tackle` (in that case you would also need go
+   installed and working).
 **Note**: Creating the `tackle` utility assumes you have the `gcloud` application in your `$PATH`,
 if you are doing this on another cloud skip to the **Manual deployment** below.
 1. Optionally, credentials to a Kubernetes cluster (otherwise, `tackle` will help you create on GCP)
@@ -59,9 +60,7 @@ To install prow run the following from the `test-infra` directory and follow the
 
 1. Run `tackle`:
 ```sh
-# Ideally use https://bazel.build, alternatively try:
-#   go get -u k8s.io/test-infra/prow/cmd/tackle && tackle
-$ bazel run //prow/cmd/tackle
+go get -u k8s.io/test-infra/prow/cmd/tackle && tackle
 ```
 
 2. Once your cluster is created, you'll get a prompt to apply a `starter.yaml`. Before you do that open another terminal and apply the prow CRDs using:
@@ -429,7 +428,7 @@ presubmits:
 Again, run the following to test the files, replacing the paths as necessary:
 
 ```sh
-$ bazel run //prow/cmd/checkconfig -- --plugin-config=path/to/plugins.yaml --config-path=path/to/config.yaml
+$ go run ./prow/cmd/checkconfig --plugin-config=path/to/plugins.yaml --config-path=path/to/config.yaml
 ```
 
 Now run the following to update the configmap.
@@ -508,10 +507,10 @@ Use [gencred][5] to create the `kubeconfig` file (and credentials) for accessing
 
 Create a *default* cluster context (if one does not already exist):
 
-> **NOTE:** If executing `gencred` with `bazel` like below, ensure `--output` is an *absolute* path.
+> **NOTE:** If executing `gencred` like below, ensure `--output` is an *absolute* path.
 
 ```sh
-$ bazel run //gencred -- \
+$ go run ./gencred \
   --context=<kube-context> \
   --name=default \
   --output=/tmp/kubeconfig.yaml \
@@ -523,7 +522,7 @@ Create one or more *build* cluster contexts:
 > **NOTE:** the `current-context` of the *existing* `kubeconfig` will be preserved.
 
 ```sh
-$ bazel run //gencred -- \
+$ go run ./gencred \
   --context=<kube-context> \
   --name=other \
   --output=/tmp/kubeconfig.yaml \

@@ -212,13 +212,13 @@ func TestCallWithWriter(t *testing.T) {
 			description: "secret in stdout are censored",
 			command:     "echo",
 			args:        []string{"-n", "abc: 123"},
-			expectedOut: "***: 123",
+			expectedOut: "XXX: 123",
 		},
 		{
 			description: "secret in stderr are censored",
 			command:     "ls",
 			args:        []string{"/tmp/file-not-exist/abc/xyz/file-not-exist"},
-			expectedErr: "/tmp/file-not-exist/***/***/file-not-exist",
+			expectedErr: "/tmp/file-not-exist/XXX/XXX/file-not-exist",
 		},
 		{
 			description: "no secret in stderr are working well",

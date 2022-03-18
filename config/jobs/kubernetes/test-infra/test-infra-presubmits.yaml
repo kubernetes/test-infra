@@ -13,7 +13,7 @@ presubmits:
       preset-bazel-scratch-dir: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20210806-38e1be0-test-infra
+      - image: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20220314-46af1b01a6-test-infra
         command:
         - hack/bazel.sh
         args:
@@ -37,7 +37,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gubernator:v20200824-5d057db
+      - image: gcr.io/k8s-testimages/gubernator:v20220314-46af1b01a6
         command:
         - ./gubernator/test-gubernator.sh
         env:
@@ -53,7 +53,7 @@ presubmits:
     run_if_changed: '^(config/prow/(config|plugins).yaml$|config/jobs/.*.yaml$)'
     spec:
       containers:
-      - image: gcr.io/k8s-prow/checkconfig:v20220314-0269942473
+      - image: gcr.io/k8s-prow/checkconfig:v20220317-c635be23be
         command:
         - checkconfig
         args:
@@ -82,7 +82,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220316-9d252673a0-test-infra
         command:
         - runner.sh
         args:
@@ -116,7 +116,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220316-9d252673a0-test-infra
         command:
         - runner.sh
         args:
@@ -138,7 +138,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220316-9d252673a0-test-infra
         command:
         - runner.sh
         args:
@@ -174,7 +174,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220316-9d252673a0-test-infra
         command:
         - runner.sh
         args:

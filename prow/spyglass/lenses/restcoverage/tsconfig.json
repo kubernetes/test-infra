@@ -1,10 +1,7 @@
 {
-  "extends": "../../../../make-tsconfig.json",
+  "extends": "../../../../tsconfig.json",
   "include": [
     "restcoverage.ts",
     "../lens.d.ts"
   ],
-  "exclude": [
-    "zz.bundle.min.js"
-  ]
 }

@@ -8,13 +8,6 @@ test_groups:
   - configuration_value: master_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-cos-k8sbeta-betaapis
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sbeta-betaapis
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-cos-k8sbeta-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sbeta-default
   column_header:
@@ -57,13 +50,6 @@ test_groups:
   - configuration_value: master_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-cos-k8sstable1-betaapis
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable1-betaapis
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-cos-k8sstable1-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable1-default
   column_header:
@@ -101,13 +87,6 @@ test_groups:
   - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-cos-k8sstable2-alphafeatures
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable2-alphafeatures
-  column_header:
-  - configuration_value: node_os_image
-  - configuration_value: master_os_image
-  - configuration_value: Commit
-  - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gce-cos-k8sstable2-betaapis
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable2-betaapis
   column_header:
   - configuration_value: node_os_image
   - configuration_value: master_os_image

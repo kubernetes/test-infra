@@ -19,10 +19,17 @@ package crier
 
 import "github.com/prometheus/client_golang/prometheus"
 
+const (
+	ResultError   = "ERROR"
+	ResultSuccess = "SUCCESS"
+)
+
 // Prometheus Metrics
 var (
 	crierMetrics = struct {
 		latency *prometheus.HistogramVec
+		// Count success/failures of reporting attempts.
+		reportingResults *prometheus.CounterVec
 	}{
 		latency: prometheus.NewHistogramVec(prometheus.HistogramOpts{
 			Name:    "crier_report_latency",
@@ -31,9 +38,17 @@ var (
 		}, []string{
 			"reporter",
 		}),
+		reportingResults: prometheus.NewCounterVec(prometheus.CounterOpts{
+			Name: "crier_reporting_results",
+			Help: "Count of successful and failed reporting attempts by reporter.",
+		}, []string{
+			"reporter",
+			"result",
+		}),
 	}
 )
 
 func init() {
 	prometheus.MustRegister(crierMetrics.latency)
+	prometheus.MustRegister(crierMetrics.reportingResults)
 }

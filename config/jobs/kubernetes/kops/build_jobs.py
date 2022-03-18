@@ -33,7 +33,7 @@ from helpers import ( # pylint: disable=import-error, no-name-in-module
 skip_jobs = [
 ]
 
-image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-master"
+image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220316-9d252673a0-master"
 
 loader = jinja2.FileSystemLoader(searchpath="./templates")
 
@@ -448,9 +448,9 @@ def generate_misc():
         build_test(name_override="kops-grid-scenario-gcr-mirror",
                    runs_per_day=24,
                    cloud="aws",
-                   # Latest runs with a staging AWS CCM, not available in registry-sandbox.k8s.io
+                   # Latest runs with a staging AWS CCM, not available in registry.k8s.io
                    k8s_version='1.23',
-                   extra_flags=['--set=spec.assets.containerProxy=registry-sandbox.k8s.io'],
+                   extra_flags=['--set=spec.assets.containerProxy=registry.k8s.io'],
                    extra_dashboards=['kops-misc']),
 
         # A one-off scenario testing arm64
@@ -623,15 +623,6 @@ def generate_misc():
                                 "--override=cluster.spec.networking.cilium.version=v1.10.0-rc2"],
                    extra_dashboards=['kops-misc']),
 
-        build_test(name_override="kops-aws-aws-ebs-csi-driver",
-                   cloud="aws",
-                   networking="cilium",
-                   distro="u2004",
-                   kops_channel="alpha",
-                   runs_per_day=3,
-                   scenario="aws-ebs-csi",
-                   extra_dashboards=['kops-misc']),
-
         build_test(name_override="kops-aws-aws-load-balancer-controller",
                    cloud="aws",
                    networking="cilium",
@@ -754,7 +745,7 @@ def generate_distros():
                        kops_channel='alpha',
                        name_override=f"kops-aws-distro-image{distro}",
                        extra_dashboards=['kops-distros'],
-                       extra_flags=['--set=spec.assets.containerProxy=registry-sandbox.k8s.io'],
+                       extra_flags=['--set=spec.assets.containerProxy=registry.k8s.io'],
                        runs_per_day=3,
                        )
         )
@@ -1073,15 +1064,6 @@ def generate_presubmits_e2e():
             k8s_version="ci",
             extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws'],
             tab_name='e2e-ccm',
-        ),
-
-        presubmit_test(
-            name="pull-kops-e2e-aws-ebs-csi-driver",
-            cloud="aws",
-            distro="u2004",
-            k8s_version="ci",
-            networking="calico",
-            scenario="aws-ebs-csi",
         ),
 
         presubmit_test(

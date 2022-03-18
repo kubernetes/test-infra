@@ -21,7 +21,7 @@ There are two ways to run this tool:
 1. Run it on local:
 
 ```sh
-bazel run //prow/cmd/hmac -- \
+go run ./prow/cmd/hmac \
   --config-path=/path/to/prow/config \
   --github-token-path=/path/to/oauth/secret \
   --kubeconfig=/path/to/kubeconfig \

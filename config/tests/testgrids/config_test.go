@@ -130,7 +130,7 @@ func TestMain(m *testing.M) {
 	}
 
 	var err error
-	cfg, err = config.Read(*protoPath, context.Background(), nil)
+	cfg, err = config.Read(context.Background(), *protoPath, nil)
 	if err != nil {
 		fmt.Printf("Could not load config: %v\n", err)
 		os.Exit(1)
@@ -166,10 +166,6 @@ func TestConfig(t *testing.T) {
 		t.Run("Testgroup "+testgroup.Name, func(t *testing.T) {
 			if !testgroup.IsExternal {
 				t.Error("IsExternal must be true")
-			}
-
-			if !testgroup.UseKubernetesClient {
-				t.Error("UseKubernetesClient must be true")
 			}
 
 			for hIdx, header := range testgroup.ColumnHeader {
@@ -289,27 +285,6 @@ func TestConfig(t *testing.T) {
 					dashboard.Name, dashboardtab.Name, dashboardtab.TestGroupName)
 			} else {
 				testgroupMap[dashboardtab.TestGroupName]++
-			}
-
-			if dashboardtab.AlertOptions != nil && (dashboardtab.AlertOptions.AlertStaleResultsHours != 0 || dashboardtab.AlertOptions.NumFailuresToAlert != 0) {
-				for _, testgroup := range cfg.TestGroups {
-					// Disallow alert options in tab but not group.
-					// Disallow different alert options in tab vs. group.
-					if testgroup.Name == dashboardtab.TestGroupName {
-						if testgroup.AlertStaleResultsHours == 0 {
-							t.Errorf("Cannot define alert_stale_results_hours in DashboardTab %v and not TestGroup %v.", dashboardtab.Name, dashboardtab.TestGroupName)
-						}
-						if testgroup.NumFailuresToAlert == 0 {
-							t.Errorf("Cannot define num_failures_to_alert in DashboardTab %v and not TestGroup %v.", dashboardtab.Name, dashboardtab.TestGroupName)
-						}
-						if testgroup.AlertStaleResultsHours != dashboardtab.AlertOptions.AlertStaleResultsHours {
-							t.Errorf("alert_stale_results_hours for DashboardTab %v must match TestGroup %v.", dashboardtab.Name, dashboardtab.TestGroupName)
-						}
-						if testgroup.NumFailuresToAlert != dashboardtab.AlertOptions.NumFailuresToAlert {
-							t.Errorf("num_failures_to_alert for DashboardTab %v must match TestGroup %v.", dashboardtab.Name, dashboardtab.TestGroupName)
-						}
-					}
-				}
 			}
 		}
 	}
@@ -588,6 +563,9 @@ func TestNoEmpyMailToAddresses(t *testing.T) {
 		for _, dashboardtab := range dashboard.DashboardTab {
 			intro := fmt.Sprintf("dashboard_tab %v/%v", dashboard.Name, dashboardtab.Name)
 			if dashboardtab.AlertOptions != nil {
+				if dashboardtab.AlertOptions.AlertMailToAddresses == "" {
+					continue
+				}
 				mails := strings.Split(dashboardtab.AlertOptions.AlertMailToAddresses, ",")
 				for _, m := range mails {
 					_, err := mail.ParseAddress(m)

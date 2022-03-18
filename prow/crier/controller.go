@@ -136,12 +136,14 @@ func (r *reconciler) reconcile(ctx context.Context, log *logrus.Entry, req recon
 	pjs, requeue, err := r.reporter.Report(ctx, log, &pj)
 	if err != nil {
 		log.WithError(err).Error("failed to report job")
+		crierMetrics.reportingResults.WithLabelValues(r.reporter.GetName(), ResultError).Inc()
 		return nil, fmt.Errorf("failed to report job: %w", err)
 	}
 	if requeue != nil {
 		return requeue, nil
 	}
 
+	crierMetrics.reportingResults.WithLabelValues(r.reporter.GetName(), ResultSuccess).Inc()
 	log.WithField("job-count", len(pjs)).Info("Reported job(s), now will update pj(s).")
 	var lastErr error
 	for _, pjob := range pjs {

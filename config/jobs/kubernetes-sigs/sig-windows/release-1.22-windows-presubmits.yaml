@@ -20,7 +20,7 @@ presubmits:
       preset-windows-private-registry-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-1.22
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220316-9d252673a0-1.22
         command:
         - runner.sh
         - kubetest
@@ -75,7 +75,7 @@ presubmits:
       preset-windows-private-registry-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-1.22
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220316-9d252673a0-1.22
         command:
         - runner.sh
         - kubetest
@@ -133,7 +133,7 @@ presubmits:
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-1.22
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220316-9d252673a0-1.22
         command:
         - runner.sh
         - kubetest
@@ -165,7 +165,7 @@ presubmits:
           privileged: true
         env:
         - name: AZURE_STORAGE_DRIVER
-          value: kubernetes.io/azure-disk # In-tree Azure disk storage class
+          value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
         - name: TEST_WINDOWS
           value: "true"
     annotations:
@@ -195,7 +195,7 @@ presubmits:
       path_alias: sigs.k8s.io/azurefile-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220316-9d252673a0-master
         command:
         - runner.sh
         - kubetest
@@ -227,7 +227,7 @@ presubmits:
           privileged: true
         env:
         - name: AZURE_STORAGE_DRIVER
-          value: kubernetes.io/azure-file # In-tree Azure file storage class
+          value: "kubernetes.io/azure-file" # In-tree Azure file storage class
         - name: TEST_WINDOWS
           value: "true"
     annotations:

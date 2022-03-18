@@ -7,7 +7,7 @@ presubmits:
       preset-k8s-ssh: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20211210-cf89952124
+      - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20220314-46af1b01a6
         args:
         - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -26,7 +26,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20211210-cf89952124
+      - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20220314-46af1b01a6
         args:
         - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -42,7 +42,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20211210-cf89952124
+      - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20220314-46af1b01a6
         args:
         - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -58,7 +58,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20211210-cf89952124
+      - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20220314-46af1b01a6
         args:
         - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -76,7 +76,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220316-9d252673a0-master
         args:
         - "--repo=sigs.k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"

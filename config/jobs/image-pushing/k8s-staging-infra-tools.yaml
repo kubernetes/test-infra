@@ -11,7 +11,7 @@ postsubmits:
     spec:
       serviceAccountName: gcb-builder
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220309-4b32800b2d
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
           command:
           - /run.sh
           args:
@@ -32,7 +32,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220309-4b32800b2d
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
             command:
               - /run.sh
             args:
@@ -53,7 +53,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220309-4b32800b2d
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
             command:
               - /run.sh
             args:
@@ -73,7 +73,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220309-4b32800b2d
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
             command:
               - /run.sh
             args:
@@ -94,11 +94,11 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220309-4b32800b2d
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
             command:
               - /run.sh
             args:
               - --project=k8s-staging-infra-tools
               - --scratch-bucket=gs://k8s-staging-infra-tools-gcb
               - --env-passthrough=PULL_BASE_REF
-              - images/k8s-infra
+              - images/codesearch/cs-fetch-repos

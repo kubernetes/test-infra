@@ -10,7 +10,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220316-9d252673a0-master
         command:
         - runner.sh
         args:
@@ -33,7 +33,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220316-9d252673a0-master
         command:
         - runner.sh
         args:
@@ -57,7 +57,7 @@ presubmits:
       preset-azure-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220316-9d252673a0-master
         command:
         - runner.sh
         args:
@@ -81,7 +81,7 @@ presubmits:
       preset-azure-cred: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220316-9d252673a0-master
         command:
         - runner.sh
         args:
@@ -112,7 +112,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220316-9d252673a0-master
         command:
         - runner.sh
         - kubetest
@@ -161,7 +161,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220316-9d252673a0-master
         command:
         - runner.sh
         - kubetest
@@ -211,7 +211,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220316-9d252673a0-master
         command:
         - runner.sh
         - kubetest
@@ -264,7 +264,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220316-9d252673a0-master
         command:
         - runner.sh
         - kubetest
@@ -301,6 +301,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-windows
     decorate: true
+    always_run: false
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
@@ -319,7 +320,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220316-9d252673a0-master
         command:
         - runner.sh
         - kubetest
@@ -335,7 +336,7 @@ presubmits:
         - --deployment=aksengine
         - --aksengine-admin-username=azureuser
         - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-orchestratorRelease=1.20
+        - --aksengine-orchestratorRelease=1.23
         - --aksengine-location=westus2
         - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
         - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
@@ -374,7 +375,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220316-9d252673a0-master
         command:
         - runner.sh
         - kubetest
@@ -426,7 +427,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220316-9d252673a0-master
         command:
         - runner.sh
         - kubetest
@@ -442,7 +443,7 @@ presubmits:
         - --deployment=aksengine
         - --aksengine-admin-username=azureuser
         - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-orchestratorRelease=1.20
+        - --aksengine-orchestratorRelease=1.23
         - --aksengine-deploy-custom-k8s
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/e2e/manifest/in-tree-vmss.json
@@ -471,7 +472,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220316-9d252673a0-master
         command:
         - runner.sh
         args:
@@ -501,7 +502,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220316-9d252673a0-master
         command:
         - runner.sh
         - kubetest
@@ -554,7 +555,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220316-9d252673a0-master
         command:
         - runner.sh
         - kubetest
@@ -569,7 +570,7 @@ presubmits:
         - --deployment=aksengine
         - --aksengine-admin-username=azureuser
         - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-orchestratorRelease=1.22
+        - --aksengine-orchestratorRelease=1.23
         - --aksengine-location=westeurope
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/test/external-e2e/manifest/single-az.json
@@ -608,7 +609,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220316-9d252673a0-master
         command:
         - runner.sh
         - kubetest
@@ -624,7 +625,7 @@ presubmits:
         - --deployment=aksengine
         - --aksengine-admin-username=azureuser
         - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-orchestratorRelease=1.20
+        - --aksengine-orchestratorRelease=1.23
         - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
         - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azurefile-csi-driver/master/test/e2e/manifest/containerd-windows.json
@@ -641,9 +642,9 @@ presubmits:
       testgrid-tab-name: pr-azuredisk-csi-driver-e2e-windows-containerd
       description: "Run E2E tests on a Windows containerd cluster for Azure Disk CSI driver."
       testgrid-num-columns-recent: '30'
-  - name: pull-kubernetes-e2e-capz-azure-disk-windows
+  - name: pull-azuredisk-csi-driver-e2e-capz-windows
     decorate: true
-    always_run: false
+    always_run: true
     optional: true
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
@@ -661,7 +662,7 @@ presubmits:
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220316-9d252673a0-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -684,12 +685,14 @@ presubmits:
               value: "true"
             - name: NODE_MACHINE_TYPE
               value: "Standard_D4s_v3"
+            - name: DISABLE_ZONE
+              value: "true"
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
-      testgrid-tab-name: pull-kubernetes-e2e-capz-azure-disk-windows
+      testgrid-tab-name: pull-azuredisk-csi-driver-e2e-capz-windows
       description: "Run E2E tests on a capz Windows cluster for Azure Disk CSI driver."
       testgrid-num-columns-recent: '30'
-  - name: pull-kubernetes-e2e-capz-azure-disk
+  - name: pull-azuredisk-csi-driver-e2e-capz
     decorate: true
     always_run: false
     optional: true
@@ -709,7 +712,7 @@ presubmits:
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220307-7fa60e9872-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220316-9d252673a0-master
           command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -724,8 +727,10 @@ presubmits:
           env:
             - name: NODE_MACHINE_TYPE
               value: "Standard_D2s_v3"
+            - name: DISABLE_ZONE
+              value: "true"
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
-      testgrid-tab-name: pull-kubernetes-e2e-capz-azure-disk
+      testgrid-tab-name: pull-azuredisk-csi-driver-e2e-capz
       description: "Run E2E tests on a capz cluster for Azure Disk CSI driver."
       testgrid-num-columns-recent: '30'

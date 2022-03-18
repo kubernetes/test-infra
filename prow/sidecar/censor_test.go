@@ -50,14 +50,14 @@ func TestCensor(t *testing.T) {
 			name:       "input smaller than buffer size",
 			input:      preamble()[:100],
 			secrets:    []string{"younger", "my"},
-			output:     "In ** ******* and more vulnerable years ** father gave me some advice that I’ve been turning over ",
+			output:     "In XX XXXXXXX and more vulnerable years XX father gave me some advice that I’ve been turning over ",
 			bufferSize: 200,
 		},
 		{
 			name:       "input larger than buffer size, not a multiple",
 			input:      preamble()[:100],
 			secrets:    []string{"younger", "my"},
-			output:     "In ** ******* and more vulnerable years ** father gave me some advice that I’ve been turning over ",
+			output:     "In XX XXXXXXX and more vulnerable years XX father gave me some advice that I’ve been turning over ",
 			bufferSize: 16,
 		},
 	}

@@ -113,6 +113,8 @@ type options struct {
 	serveMetrics bool
 
 	instrumentationOptions flagutil.InstrumentationOptions
+
+	timeout uint
 }
 
 func (o *options) validate() error {
@@ -149,6 +151,7 @@ func flagOptions() *options {
 	flag.DurationVar(&o.pushGatewayInterval, "push-gateway-interval", time.Minute, "Interval at which prometheus metrics are pushed.")
 	flag.StringVar(&o.logLevel, "log-level", "debug", fmt.Sprintf("Log level is one of %v.", logrus.AllLevels))
 	flag.BoolVar(&o.serveMetrics, "serve-metrics", false, "If true, it serves prometheus metrics")
+	flag.UintVar(&o.timeout, "request-timeout", 30, "Request timeout which applies also to paged requests. Default is 30 seconds.")
 	o.instrumentationOptions.AddFlags(flag.CommandLine)
 	return o
 }
@@ -188,7 +191,7 @@ func main() {
 	health := pjutil.NewHealthOnPort(o.instrumentationOptions.HealthPort)
 	health.ServeReady()
 
-	interrupts.ListenAndServe(server, 30*time.Second)
+	interrupts.ListenAndServe(server, time.Duration(o.timeout)*time.Second)
 }
 
 func proxy(o *options, upstreamTransport http.RoundTripper, diskCachePruneInterval time.Duration) http.Handler {
@@ -203,7 +206,7 @@ func proxy(o *options, upstreamTransport http.RoundTripper, diskCachePruneInterv
 		go diskMonitor(o.pushGatewayInterval, o.dir)
 	}
 
-	return newReverseProxy(o.upstreamParsed, cache, 30*time.Second)
+	return newReverseProxy(o.upstreamParsed, cache, time.Duration(o.timeout)*time.Second)
 }
 
 func newReverseProxy(upstreamURL *url.URL, transport http.RoundTripper, timeout time.Duration) http.Handler {
