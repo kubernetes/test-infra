@@ -227,7 +227,7 @@ function fixLinks(parent: HTMLElement): void {
 async function loadLine(artifact: string, line: number): Promise<boolean> {
   const showers = document.querySelectorAll<HTMLDivElement>(`.show-skipped[data-artifact="${artifact}"]`);
   for (const shower of Array.from(showers)) {
-    if (line >= Number(shower.dataset.startLine) && line < Number(shower.dataset.endLine)) {
+    if (line >= Number(shower.dataset.startLine) && line <= Number(shower.dataset.endLine)) {
       // TODO(fejta): could maybe do something smarter here than the whole
       // block.
       await replaceElementWithContent(shower, 0, 0);
