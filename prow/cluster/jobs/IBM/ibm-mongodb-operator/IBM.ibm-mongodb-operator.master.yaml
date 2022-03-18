@@ -34,7 +34,7 @@ presubmits:
       - command:
         - make
         - check
-        image: quay.io/multicloudlab/check-tool:v20220318-a119a62c6
+        image: quay.io/multicloudlab/check-tool:v20220318-7fd954c3b
         name: ""
         securityContext:
           privileged: true
@@ -78,7 +78,7 @@ postsubmits:
       - command:
         - make
         - check
-        image: quay.io/multicloudlab/check-tool:v20220318-a119a62c6
+        image: quay.io/multicloudlab/check-tool:v20220318-7fd954c3b
         name: ""
         securityContext:
           privileged: true
