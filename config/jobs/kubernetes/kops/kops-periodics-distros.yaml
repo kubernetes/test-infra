@@ -287,7 +287,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images-testing/hvm-ssd/ubuntu-jammy-daily-amd64-server-20220314' --channel=alpha --networking=kubenet --container-runtime=containerd --set=spec.assets.containerProxy=registry.k8s.io --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images-testing/hvm-ssd/ubuntu-jammy-daily-amd64-server-20220317' --channel=alpha --networking=kubenet --container-runtime=containerd --set=spec.assets.containerProxy=registry.k8s.io --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
@@ -351,7 +351,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='amazon/amzn2-ami-kernel-5.10-hvm-2.0.20220310.0-x86_64-gp2' --channel=alpha --networking=kubenet --container-runtime=containerd --set=spec.assets.containerProxy=registry.k8s.io --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='amazon/amzn2-ami-kernel-5.10-hvm-2.0.20220316.0-x86_64-gp2' --channel=alpha --networking=kubenet --container-runtime=containerd --set=spec.assets.containerProxy=registry.k8s.io --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \

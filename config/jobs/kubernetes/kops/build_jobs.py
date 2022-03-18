@@ -623,15 +623,6 @@ def generate_misc():
                                 "--override=cluster.spec.networking.cilium.version=v1.10.0-rc2"],
                    extra_dashboards=['kops-misc']),
 
-        build_test(name_override="kops-aws-aws-ebs-csi-driver",
-                   cloud="aws",
-                   networking="cilium",
-                   distro="u2004",
-                   kops_channel="alpha",
-                   runs_per_day=3,
-                   scenario="aws-ebs-csi",
-                   extra_dashboards=['kops-misc']),
-
         build_test(name_override="kops-aws-aws-load-balancer-controller",
                    cloud="aws",
                    networking="cilium",
@@ -1073,15 +1064,6 @@ def generate_presubmits_e2e():
             k8s_version="ci",
             extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws'],
             tab_name='e2e-ccm',
-        ),
-
-        presubmit_test(
-            name="pull-kops-e2e-aws-ebs-csi-driver",
-            cloud="aws",
-            distro="u2004",
-            k8s_version="ci",
-            networking="calico",
-            scenario="aws-ebs-csi",
         ),
 
         presubmit_test(
