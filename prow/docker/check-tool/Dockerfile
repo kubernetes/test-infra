@@ -139,12 +139,11 @@ RUN gem install --no-wrappers --no-document fpm -v ${FPM_VERSION}
 # Python
 ##############
 
-FROM ubuntu:focal as python_context
+FROM ubuntu:bionic as python_context
 
 # Pinned versions of stuff we pull in
 ENV AUTOPEP8_VERSION=1.4.4
-ENV YAMLLINT_VERSION=1.24.2
-ENV PIP_INSTALL_VERSION=21.0.1
+ENV YAMLLINT_VERSION=1.17.0
 
 # hadolint ignore=DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -152,16 +151,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     libc-dev \
     pkg-config \
-    python3 \
-    python3-distutils \
-    python3-pip \
-    python3-setuptools
+    python3.7 \
+    python3-distutils
+
+# installing pip in this manner to get pip3.7 and not pip3.6
+RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && python3.7 get-pip.py
 
 # Install Python stuff
 # hadolint ignore=DL3013
-RUN python3 -m pip install --no-cache-dir --upgrade pip==${PIP_INSTALL_VERSION}
-RUN python3 -m pip install --no-cache-dir --no-binary :all: autopep8==${AUTOPEP8_VERSION}
-RUN python3 -m pip install --no-cache-dir yamllint==${YAMLLINT_VERSION}
+RUN pip3 install autopep8==${AUTOPEP8_VERSION}
+RUN pip3 install yamllint==${YAMLLINT_VERSION}
 
 #############
 # Base OS
