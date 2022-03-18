@@ -16,8 +16,9 @@ This script would [setup](#setup) the environment, [run](#run-test) all the avai
 * [Create a local cluster](setup-cluster.sh) using [kind](https://kind.sigs.k8s.io/).
 * Wait for prow components to be ready.
 
+In order to set up the cluster, run the integration tests, and **not** teardown the cluster after use:
 ```bash
-./prow/test/integration/integration-test.sh setup
+SKIP_TEARDOWN=true ./prow/test/integration/integration-test.sh
 ```
 
 ## Run test
@@ -35,10 +36,10 @@ Optional parameters:
 
 ## Cleanup
 
-Delete the local cluster and the local registry.
+If the local cluster exists, run the tests and then delete the local cluster and the local registry by using:
 
 ```bash
-./prow/test/integration/integration-test.sh teardown
+SKIP_SETUP=true ./prow/test/integration/integration-test.sh
 ```
 
 # Add new integration tests
