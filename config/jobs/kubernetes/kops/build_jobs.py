@@ -450,7 +450,6 @@ def generate_misc():
                    cloud="aws",
                    # Latest runs with a staging AWS CCM, not available in registry.k8s.io
                    k8s_version='1.23',
-                   extra_flags=['--set=spec.assets.containerProxy=registry.k8s.io'],
                    extra_dashboards=['kops-misc']),
 
         # A one-off scenario testing arm64
@@ -745,7 +744,6 @@ def generate_distros():
                        kops_channel='alpha',
                        name_override=f"kops-aws-distro-image{distro}",
                        extra_dashboards=['kops-distros'],
-                       extra_flags=['--set=spec.assets.containerProxy=registry.k8s.io'],
                        runs_per_day=3,
                        )
         )
