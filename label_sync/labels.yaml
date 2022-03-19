@@ -592,7 +592,13 @@ default:
       previously:
         - name: wg/apply
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to WG IOT Edge.
+      description: Categorizes an issue or PR as relevant to wg-data-protection.
+      name: wg/data-protection
+      target: both
+      prowPlugin: label
+      addedBy: anyone
+    - color: d2b48c
+      description: Categorizes an issue or PR as relevant to wg-iot-edge.
       name: wg/iot-edge
       target: both
       prowPlugin: label
