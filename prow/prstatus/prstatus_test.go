@@ -515,7 +515,6 @@ func TestHandlePrStatusAppsAuth(t *testing.T) {
 			},
 		}})
 
-	//TODO: using a real ghClient for now...i think we can continue this seeing as this test will only run when the env vars are set
 	gitHubOptions := flagutil.GitHubOptions{}
 	gitHubOptions.AddFlags(&flag.FlagSet{})
 	gitHubOptions.AppID = appID
