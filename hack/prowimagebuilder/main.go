@@ -328,7 +328,7 @@ func main() {
 							// Don't call wg.Done() as we are not done yet
 							continue
 						}
-						errChan <- fmt.Errorf("building image for %s failed: %v", id.Dir, err)
+						errChan <- fmt.Errorf("building image for %s failed: %w", id.Dir, err)
 					}
 					doneChan <- id
 				case <-ctx.Done():
