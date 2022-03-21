@@ -675,6 +675,6 @@ periodics:
           memory: 9Gi
   annotations:
     testgrid-dashboards: sig-network-kind
-    testgrid-tab-name: sig-network-kind
+    testgrid-tab-name: sig-network-kind, detect-local-node-cidr
     description: Runs network tests using KIND against latest kubernetes master with a kubernetes-in-docker cluster and kube-proxy detectLocalMode=NodeCIDR
     testgrid-alert-email: antonio.ojea.garcia@gmail.com, widaly@microsoft.com
