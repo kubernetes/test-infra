@@ -26,6 +26,7 @@ steps:
     - --build-arg=UPGRADE_DOCKER_ARG=$_UPGRADE_DOCKER
     - --build-arg=KIND_VERSION=$_KIND_VERSION
     - --build-arg=KUBETEST2_VERSION=$_KUBETEST2_VERSION
+    - --build-arg=YQ_VERSION=$_YQ_VERSION
     - -f
     - images/kubekins-e2e/Dockerfile
     - .
@@ -47,6 +48,7 @@ substitutions:
   _UPGRADE_DOCKER: 'false'
   _KIND_VERSION: ''
   _KUBETEST2_VERSION: ''
+  _YQ_VERSION: v4.23.1
 options:
   substitution_option: ALLOW_LOOSE
 images:
