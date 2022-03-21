@@ -302,7 +302,6 @@ presubmits:
   - name: pull-azuredisk-csi-driver-e2e-windows
     decorate: true
     always_run: false
-    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - master
@@ -644,8 +643,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-e2e-capz-windows
     decorate: true
-    always_run: true
-    optional: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
       - master
