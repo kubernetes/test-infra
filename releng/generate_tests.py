@@ -40,6 +40,7 @@ PROW_CONFIG_TEMPLATE = """
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+      preset-use-new-registry: "true"
     name:
     spec:
       containers:
