@@ -334,10 +334,15 @@ func TestHandle(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			// convert []jira.Issue to []*jira.Issue
+			var ptrIssues []*jira.Issue
+			for index := range tc.existingIssues {
+				ptrIssues = append(ptrIssues, &tc.existingIssues[index])
+			}
 			jiraClient := &fakejira.FakeClient{
-				ExistingIssues: tc.existingIssues,
-				ExistingLinks:  tc.existingLinks,
-				GetIssueError:  tc.getIssueClientError,
+				Issues:        ptrIssues,
+				ExistingLinks: tc.existingLinks,
+				GetIssueError: tc.getIssueClientError,
 			}
 			githubClient := fakegithub.NewFakeClient()
 
@@ -463,6 +468,8 @@ is very important` + "\n```bash\n" +
 
 func TestProjectCachingJiraClient(t *testing.T) {
 	t.Parallel()
+	lowerCaseIssue := jira.Issue{ID: "issue-123"}
+	upperCaseIssue := jira.Issue{ID: "ISSUE-123"}
 	testCases := []struct {
 		name           string
 		client         jiraclient.Client
@@ -479,13 +486,13 @@ func TestProjectCachingJiraClient(t *testing.T) {
 		},
 		{
 			name:           "Success",
-			client:         &fakejira.FakeClient{ExistingIssues: []jira.Issue{{ID: "issue-123"}}},
+			client:         &fakejira.FakeClient{Issues: []*jira.Issue{&lowerCaseIssue}},
 			issueToRequest: "issue-123",
 			cache:          &threadsafeSet{data: sets.NewString("issue")},
 		},
 		{
 			name:           "Success case-insensitive",
-			client:         &fakejira.FakeClient{ExistingIssues: []jira.Issue{{ID: "ISSUE-123"}}},
+			client:         &fakejira.FakeClient{Issues: []*jira.Issue{&upperCaseIssue}},
 			issueToRequest: "ISSUE-123",
 			cache:          &threadsafeSet{data: sets.NewString("issue")},
 		},
