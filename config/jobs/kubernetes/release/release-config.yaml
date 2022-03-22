@@ -7,6 +7,7 @@ presubmits:
       preset-k8s-ssh: "true"
       preset-dind-enabled: "true"
       preset-pull-kubernetes-e2e: "true"
+      preset-use-new-registry: "true"
     spec:
       containers:
       - args:
