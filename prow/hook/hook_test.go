@@ -26,6 +26,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/githubeventserver"
+	"k8s.io/test-infra/prow/jira"
 	"k8s.io/test-infra/prow/phony"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/ownersconfig"
@@ -106,9 +107,15 @@ func TestHook(t *testing.T) {
 	pa := &plugins.ConfigAgent{}
 	pa.Set(&plugins.Configuration{Plugins: plugins.Plugins{"foo/bar": {Plugins: []string{"baz"}}}})
 	ca := &config.Agent{}
+	var opts []jira.Option
+	jiraClient, err := jira.NewClient("", opts...)
+	if err != nil {
+		t.Fatalf("Error during Jira Client creation: %v", err)
+	}
 	clientAgent := &plugins.ClientAgent{
 		GitHubClient:   github.NewFakeClient(),
 		OwnersClient:   repoowners.NewClient(nil, nil, func(org, repo string) bool { return false }, func(org, repo string) bool { return false }, func() *config.OwnersDirDenylist { return &config.OwnersDirDenylist{} }, ownersconfig.FakeResolver),
+		JiraClient:     jiraClient,
 		BugzillaClient: &bugzilla.Fake{},
 	}
 	metrics := githubeventserver.NewMetrics()

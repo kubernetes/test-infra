@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	"github.com/andygrunwald/go-jira"
+	"github.com/sirupsen/logrus"
 	jiraclient "k8s.io/test-infra/prow/jira"
 )
 
@@ -77,4 +78,16 @@ func (f *FakeClient) UpdateRemoteLink(id string, link *jira.RemoteLink) error {
 	}
 	f.NewLinks = append(f.NewLinks, *link)
 	return nil
+}
+
+func (f *FakeClient) Used() bool {
+	return true
+}
+
+func (f *FakeClient) WithFields(fields logrus.Fields) jiraclient.Client {
+	return f
+}
+
+func (f *FakeClient) ForPlugin(string) jiraclient.Client {
+	return f
 }
