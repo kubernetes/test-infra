@@ -9,7 +9,7 @@ presubmits:
     path_alias: "k8s.io/cloud-provider-openstack"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220321-2d18391df1-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220322-ce1169a66d-master
         command:
         - make
         args:
