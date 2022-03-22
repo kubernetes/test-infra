@@ -11,6 +11,7 @@ periodics:
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
+    preset-use-new-registry: "true"
   name: ci-kubernetes-gce-conformance-latest-1-20
   spec:
     containers:
@@ -49,6 +50,7 @@ periodics:
     preset-ci-gce-device-plugin-gpu: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
+    preset-use-new-registry: "true"
   name: ci-kubernetes-e2e-gce-device-plugin-gpu-1-20
   spec:
     containers:
@@ -86,6 +88,7 @@ periodics:
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
+    preset-use-new-registry: "true"
   name: ci-kubernetes-node-kubelet-1-20
   spec:
     containers:
@@ -123,6 +126,7 @@ periodics:
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
+    preset-use-new-registry: "true"
   name: ci-kubernetes-node-kubelet-features-1-20
   spec:
     containers:
@@ -333,6 +337,7 @@ periodics:
     preset-e2e-scalability-periodics: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
+    preset-use-new-registry: "true"
   name: ci-kubernetes-e2e-gci-gce-scalability-1-20
   spec:
     containers:
@@ -401,6 +406,7 @@ periodics:
   labels:
     preset-bazel-scratch-dir: "true"
     preset-service-account: "true"
+    preset-use-new-registry: "true"
   name: periodic-kubernetes-bazel-build-1-20
   rerun_auth_config:
     github_team_slugs:
@@ -485,6 +491,7 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
+    preset-use-new-registry: "true"
   name: ci-kubernetes-integration-1-20
   spec:
     containers:
@@ -523,6 +530,7 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
+    preset-use-new-registry: "true"
   name: ci-kubernetes-verify-1-20
   spec:
     containers:
