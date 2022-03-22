@@ -88,6 +88,7 @@ periodics:
     preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
+    preset-use-new-registry: "true"
   decorate: true
   decoration_config:
     timeout: 3h

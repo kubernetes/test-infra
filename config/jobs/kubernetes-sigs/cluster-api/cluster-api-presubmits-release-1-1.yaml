@@ -166,6 +166,7 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
+      preset-use-new-registry: "true"
     decorate: true
     optional: true
     branches:
@@ -197,6 +198,7 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
+      preset-use-new-registry: "true"
     decorate: true
     optional: true
     branches:
@@ -231,6 +233,7 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
+      preset-use-new-registry: "true"
     decorate: true
     optional: true
     always_run: false
