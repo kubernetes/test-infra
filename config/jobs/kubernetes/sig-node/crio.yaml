@@ -4,6 +4,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-use-new-registry: "true"
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220321-2d18391df1-master
@@ -36,6 +37,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-use-new-registry: "true"
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220321-2d18391df1-master
@@ -69,6 +71,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-use-new-registry: "true"
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220321-2d18391df1-master
@@ -101,6 +104,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-use-new-registry: "true"
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220321-2d18391df1-master
@@ -133,6 +137,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-use-new-registry: "true"
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220321-2d18391df1-master
@@ -165,6 +170,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-use-new-registry: "true"
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220321-2d18391df1-master
@@ -229,6 +235,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-use-new-registry: "true"
   spec:
     containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220321-2d18391df1-master
@@ -261,6 +268,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-use-new-registry: "true"
   spec:
     containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220321-2d18391df1-master
