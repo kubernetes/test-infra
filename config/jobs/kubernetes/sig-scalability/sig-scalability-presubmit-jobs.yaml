@@ -42,13 +42,17 @@ presubmits:
         - --env=HEAPSTER_MACHINE_TYPE=e2-standard-8
         - --extract=local
         - --flush-mem-after-build=true
+        - --gcp-node-image=gci
         - --gcp-nodes=100
         - --gcp-project-type=scalability-project
         - --gcp-zone=us-east1-b
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-100-performance
         - --tear-down-previous
+        - --env=CL2_ENABLE_DNS_PROGRAMMING=true
         - --env=CL2_SCHEDULER_THROUGHPUT_THRESHOLD=0
+        - --env=CL2_ENABLE_API_AVAILABILITY_MEASUREMENT=true
+        - --env=CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD=99.5
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
         - --test-cmd-args=cluster-loader2
@@ -57,6 +61,8 @@ presubmits:
         - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
         - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=$(JOB_NAME)-$(BUILD_ID)
         - --test-cmd-args=--experimental-prometheus-snapshot-to-report-dir=true
+        - --test-cmd-args=--prometheus-scrape-kubelets=true
+        - --test-cmd-args=--prometheus-scrape-node-exporter
         - --test-cmd-args=--report-dir=$(ARTIFACTS)
         - --test-cmd-args=--testconfig=testing/load/config.yaml
         - --test-cmd-args=--testconfig=testing/huge-service/config.yaml
