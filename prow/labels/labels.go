@@ -53,4 +53,11 @@ const (
 	TriageAccepted              = "triage/accepted"
 	WorkInProgress              = "do-not-merge/work-in-progress"
 	ValidBug                    = "bugzilla/valid-bug"
+	JiraValidBug                = "jira/valid-bug"
+	JiraInvalidBug              = "jira/invalid-bug"
+	JiraSeverityCritical        = "jira/severity-critical"
+	JiraSeverityImportant       = "jira/severity-important"
+	JiraSeverityModerate        = "jira/severity-moderate"
+	JiraSeverityLow             = "jira/severity-low"
+	JiraSeverityInformational   = "jira/severity-informational"
 )

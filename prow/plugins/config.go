@@ -36,6 +36,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/test-infra/prow/bugzilla"
+	jiraclient "k8s.io/test-infra/prow/jira"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/labels"
 	"k8s.io/test-infra/prow/logrusutil"
@@ -77,7 +78,7 @@ type Configuration struct {
 	Heart                Heart                        `json:"heart,omitempty"`
 	Label                Label                        `json:"label,omitempty"`
 	Lgtm                 []Lgtm                       `json:"lgtm,omitempty"`
-	Jira                 *Jira                        `json:"jira,omitempty"`
+	Jira                 Jira                         `json:"jira,omitempty"`
 	MilestoneApplier     map[string]BranchToMilestone `json:"milestone_applier,omitempty"`
 	RepoMilestone        map[string]Milestone         `json:"repo_milestone,omitempty"`
 	Project              ProjectConfig                `json:"project_config,omitempty"`
@@ -366,6 +367,302 @@ type Jira struct {
 	// for example including `enterprise` here would disable linking for all issues
 	// that start with `enterprise-` like `enterprise-4.` Matching is case-insenitive.
 	DisabledJiraProjects []string `json:"disabled_jira_projects,omitempty"`
+	// Default settings mapped by branch in any repo in any org.
+	// The `*` wildcard will apply to all branches.
+	Default map[string]JiraBranchOptions `json:"default,omitempty"`
+	// Options for specific orgs. The `*` wildcard will apply to all orgs.
+	Orgs map[string]JiraOrgOptions `json:"orgs,omitempty"`
+}
+
+// JiraOrgOptions holds options for checking Jira bugs for an org.
+type JiraOrgOptions struct {
+	// Default settings mapped by branch in any repo in this org.
+	// The `*` wildcard will apply to all branches.
+	Default map[string]JiraBranchOptions `json:"default,omitempty"`
+	// Options for specific repos. The `*` wildcard will apply to all repos.
+	Repos map[string]JiraRepoOptions `json:"repos,omitempty"`
+}
+
+// JiraRepoOptions holds options for checking Jira bugs for a repo.
+type JiraRepoOptions struct {
+	// Options for specific branches in this repo.
+	// The `*` wildcard will apply to all branches.
+	Branches map[string]JiraBranchOptions `json:"branches,omitempty"`
+}
+
+// JiraBugState describes bug states in the Jira plugin config, used
+// for example to specify states that bugs are supposed to be in or to which
+// they should be made after some action.
+type JiraBugState struct {
+	Status     string `json:"status,omitempty"`
+	Resolution string `json:"resolution,omitempty"`
+}
+
+// String converts a Jira state into human-readable description
+func (s *JiraBugState) String() string {
+	return jiraclient.PrettyStatus(s.Status, s.Resolution)
+}
+
+// JiraBranchOptions describes how to check if a Jira bug is valid or not.
+type JiraBranchOptions struct {
+	// ExcludeDefaults excludes defaults from more generic Jira configurations.
+	ExcludeDefaults *bool `json:"exclude_defaults,omitempty"`
+
+	// ValidateByDefault determines whether a validation check is run for all pull
+	// requests by default
+	ValidateByDefault *bool `json:"validate_by_default,omitempty"`
+
+	// IsOpen determines whether a bug needs to be open to be valid
+	IsOpen *bool `json:"is_open,omitempty"`
+	// TargetVersion determines which release a bug needs to target to be valid
+	TargetVersion *string `json:"target_version,omitempty"`
+	// ValidStates determine states in which the bug may be to be valid
+	ValidStates *[]JiraBugState `json:"valid_states,omitempty"`
+
+	// DependentBugStates determine states in which a bug's dependents bugs may be
+	// to deem the child bug valid.  If set, all blockers must have a valid state.
+	DependentBugStates *[]JiraBugState `json:"dependent_bug_states,omitempty"`
+	// DependentBugTargetVersions determines the set of valid target
+	// versions for dependent bugs.  If set, all blockers must have a
+	// valid target version.
+	DependentBugTargetVersions *[]string `json:"dependent_bug_target_versions,omitempty"`
+
+	// StateAfterValidation is the state to which the bug will be moved after being
+	// deemed valid and linked to a PR. Will implicitly be considered a part of `ValidStates`
+	// if others are set.
+	StateAfterValidation *JiraBugState `json:"state_after_validation,omitempty"`
+	// AddExternalLink determines whether the pull request will be added to the Jira
+	// bug using the ExternalBug tracker API after being validated
+	AddExternalLink *bool `json:"add_external_link,omitempty"`
+	// StateAfterMerge is the state to which the bug will be moved after all pull requests
+	// in the external bug tracker have been merged.
+	StateAfterMerge *JiraBugState `json:"state_after_merge,omitempty"`
+	// StateAfterClose is the state to which the bug will be moved if all pull requests
+	// in the external bug tracker have been closed.
+	StateAfterClose *JiraBugState `json:"state_after_close,omitempty"`
+
+	// AllowedSecurityLevels is a list of the name of jira issue security levels that the jira plugin can
+	// link to in PRs. If an issue has a security level that is not in this list, the jira
+	// plugin will not link the issue to the PR.
+	AllowedSecurityLevels []string `json:"allowed_security_levels,omitempty"`
+}
+
+type JiraBugStateSet map[JiraBugState]interface{}
+
+func NewJiraBugStateSet(states []JiraBugState) JiraBugStateSet {
+	set := make(JiraBugStateSet, len(states))
+	for _, state := range states {
+		set[state] = nil
+	}
+
+	return set
+}
+
+func (s JiraBugStateSet) Has(state JiraBugState) bool {
+	_, ok := s[state]
+	return ok
+}
+
+func (s JiraBugStateSet) Insert(states ...JiraBugState) JiraBugStateSet {
+	for _, state := range states {
+		s[state] = nil
+	}
+	return s
+}
+
+func jiraStatesMatch(first, second []JiraBugState) bool {
+	if len(first) != len(second) {
+		return false
+	}
+
+	firstSet := NewJiraBugStateSet(first)
+	secondSet := NewJiraBugStateSet(second)
+
+	for state := range firstSet {
+		if !secondSet.Has(state) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func (o JiraBranchOptions) matches(other JiraBranchOptions) bool {
+	validateByDefaultMatch := o.ValidateByDefault == nil && other.ValidateByDefault == nil ||
+		(o.ValidateByDefault != nil && other.ValidateByDefault != nil && *o.ValidateByDefault == *other.ValidateByDefault)
+	isOpenMatch := o.IsOpen == nil && other.IsOpen == nil ||
+		(o.IsOpen != nil && other.IsOpen != nil && *o.IsOpen == *other.IsOpen)
+	targetReleaseMatch := o.TargetVersion == nil && other.TargetVersion == nil ||
+		(o.TargetVersion != nil && other.TargetVersion != nil && *o.TargetVersion == *other.TargetVersion)
+	bugStatesMatch := o.ValidStates == nil && other.ValidStates == nil ||
+		(o.ValidStates != nil && other.ValidStates != nil && jiraStatesMatch(*o.ValidStates, *other.ValidStates))
+	dependentBugStatesMatch := o.DependentBugStates == nil && other.DependentBugStates == nil ||
+		(o.DependentBugStates != nil && other.DependentBugStates != nil && jiraStatesMatch(*o.DependentBugStates, *other.DependentBugStates))
+	statesAfterValidationMatch := o.StateAfterValidation == nil && other.StateAfterValidation == nil ||
+		(o.StateAfterValidation != nil && other.StateAfterValidation != nil && *o.StateAfterValidation == *other.StateAfterValidation)
+	addExternalLinkMatch := o.AddExternalLink == nil && other.AddExternalLink == nil ||
+		(o.AddExternalLink != nil && other.AddExternalLink != nil && *o.AddExternalLink == *other.AddExternalLink)
+	statesAfterMergeMatch := o.StateAfterMerge == nil && other.StateAfterMerge == nil ||
+		(o.StateAfterMerge != nil && other.StateAfterMerge != nil && *o.StateAfterMerge == *other.StateAfterMerge)
+	return validateByDefaultMatch && isOpenMatch && targetReleaseMatch && bugStatesMatch && dependentBugStatesMatch && statesAfterValidationMatch && addExternalLinkMatch && statesAfterMergeMatch
+}
+
+const JiraOptionsWildcard = `*`
+
+// OptionsForItem resolves a set of options for an item, honoring
+// the `*` wildcard and doing defaulting if it is present with the
+// item itself.
+func JiraOptionsForItem(item string, config map[string]JiraBranchOptions) JiraBranchOptions {
+	return ResolveJiraOptions(config[JiraOptionsWildcard], config[item])
+}
+
+// ResolveJiraOptions implements defaulting for a parent/child configuration,
+// preferring child fields where set. This method also reflects all "Status"
+// fields into matching `State` fields.
+func ResolveJiraOptions(parent, child JiraBranchOptions) JiraBranchOptions {
+	output := JiraBranchOptions{}
+
+	if child.ExcludeDefaults == nil || !*child.ExcludeDefaults {
+		// populate with the parent
+		if parent.ExcludeDefaults != nil {
+			output.ExcludeDefaults = parent.ExcludeDefaults
+		}
+		if parent.ValidateByDefault != nil {
+			output.ValidateByDefault = parent.ValidateByDefault
+		}
+		if parent.IsOpen != nil {
+			output.IsOpen = parent.IsOpen
+		}
+		if parent.TargetVersion != nil {
+			output.TargetVersion = parent.TargetVersion
+		}
+		if parent.ValidStates != nil {
+			output.ValidStates = parent.ValidStates
+		}
+		if parent.DependentBugStates != nil {
+			output.DependentBugStates = parent.DependentBugStates
+		}
+		if parent.DependentBugTargetVersions != nil {
+			output.DependentBugTargetVersions = parent.DependentBugTargetVersions
+		}
+		if parent.StateAfterValidation != nil {
+			output.StateAfterValidation = parent.StateAfterValidation
+		}
+		if parent.AddExternalLink != nil {
+			output.AddExternalLink = parent.AddExternalLink
+		}
+		if parent.StateAfterMerge != nil {
+			output.StateAfterMerge = parent.StateAfterMerge
+		}
+		if parent.StateAfterClose != nil {
+			output.StateAfterClose = parent.StateAfterClose
+		}
+		if parent.AllowedSecurityLevels != nil {
+			output.AllowedSecurityLevels = sets.NewString(output.AllowedSecurityLevels...).Insert(parent.AllowedSecurityLevels...).List()
+		}
+	}
+
+	// override with the child
+	if child.ExcludeDefaults != nil {
+		output.ExcludeDefaults = child.ExcludeDefaults
+	}
+	if child.ValidateByDefault != nil {
+		output.ValidateByDefault = child.ValidateByDefault
+	}
+	if child.IsOpen != nil {
+		output.IsOpen = child.IsOpen
+	}
+	if child.TargetVersion != nil {
+		output.TargetVersion = child.TargetVersion
+	}
+
+	if child.ValidStates != nil {
+		output.ValidStates = child.ValidStates
+	}
+
+	if child.DependentBugStates != nil {
+		output.DependentBugStates = child.DependentBugStates
+	}
+	if child.DependentBugTargetVersions != nil {
+		output.DependentBugTargetVersions = child.DependentBugTargetVersions
+	}
+	if child.StateAfterValidation != nil {
+		output.StateAfterValidation = child.StateAfterValidation
+	}
+	if child.AddExternalLink != nil {
+		output.AddExternalLink = child.AddExternalLink
+	}
+	if child.StateAfterMerge != nil {
+		output.StateAfterMerge = child.StateAfterMerge
+	}
+	if child.StateAfterClose != nil {
+		output.StateAfterClose = child.StateAfterClose
+	}
+	if child.AllowedSecurityLevels != nil {
+		output.AllowedSecurityLevels = sets.NewString(output.AllowedSecurityLevels...).Insert(child.AllowedSecurityLevels...).List()
+	}
+
+	return output
+}
+
+// OptionsForBranch determines the criteria for a valid Jira bug on a branch of a repo
+// by defaulting in a cascading way, in the following order (later entries override earlier
+// ones), always searching for the wildcard as well as the branch name: global, then org,
+// repo, and finally branch-specific configuration.
+func (b *Jira) OptionsForBranch(org, repo, branch string) JiraBranchOptions {
+	options := JiraOptionsForItem(branch, b.Default)
+	orgOptions, exists := b.Orgs[org]
+	if !exists {
+		return options
+	}
+	options = ResolveJiraOptions(options, JiraOptionsForItem(branch, orgOptions.Default))
+
+	repoOptions, exists := orgOptions.Repos[repo]
+	if !exists {
+		return options
+	}
+	options = ResolveJiraOptions(options, JiraOptionsForItem(branch, repoOptions.Branches))
+
+	return options
+}
+
+// OptionsForRepo determines the criteria for a valid Jira bug on branches of a repo
+// by defaulting in a cascading way, in the following order (later entries override earlier
+// ones), always searching for the wildcard as well as the branch name: global, then org,
+// repo, and finally branch-specific configuration.
+func (b *Jira) OptionsForRepo(org, repo string) map[string]JiraBranchOptions {
+	options := map[string]JiraBranchOptions{}
+	for branch := range b.Default {
+		options[branch] = b.OptionsForBranch(org, repo, branch)
+	}
+
+	orgOptions, exists := b.Orgs[org]
+	if exists {
+		for branch := range orgOptions.Default {
+			options[branch] = b.OptionsForBranch(org, repo, branch)
+		}
+	}
+
+	repoOptions, exists := orgOptions.Repos[repo]
+	if exists {
+		for branch := range repoOptions.Branches {
+			options[branch] = b.OptionsForBranch(org, repo, branch)
+		}
+	}
+
+	// if there are nested defaults there is no reason to call out branches
+	// from higher levels of config
+	var toDelete []string
+	for branch, branchOptions := range options {
+		if branchOptions.matches(options[JiraOptionsWildcard]) && branch != JiraOptionsWildcard {
+			toDelete = append(toDelete, branch)
+		}
+	}
+	for _, branch := range toDelete {
+		delete(options, branch)
+	}
+
+	return options
 }
 
 // Cat contains the configuration for the cat plugin.
@@ -1880,7 +2177,7 @@ func (c *Configuration) mergeFrom(other *Configuration) error {
 	var errs []error
 
 	diff := cmp.Diff(other, &Configuration{Approve: other.Approve, Bugzilla: other.Bugzilla,
-		ExternalPlugins: other.ExternalPlugins, Label: Label{RestrictedLabels: other.Label.RestrictedLabels},
+		ExternalPlugins: other.ExternalPlugins, Jira: other.Jira, Label: Label{RestrictedLabels: other.Label.RestrictedLabels},
 		Lgtm: other.Lgtm, Plugins: other.Plugins, Triggers: other.Triggers, Welcome: other.Welcome})
 
 	if diff != "" {
@@ -1896,6 +2193,9 @@ func (c *Configuration) mergeFrom(other *Configuration) error {
 
 	if err := c.Bugzilla.mergeFrom(&other.Bugzilla); err != nil {
 		errs = append(errs, fmt.Errorf("failed to merge .bugzilla from supplemental config: %w", err))
+	}
+	if err := c.Jira.mergeFrom(&other.Jira); err != nil {
+		errs = append(errs, fmt.Errorf("failed to merge .jira from supplemental config: %w", err))
 	}
 
 	c.Approve = append(c.Approve, other.Approve...)
@@ -1949,6 +2249,58 @@ func (p *Plugins) mergeFrom(other *Plugins) error {
 		(*p)[orgOrRepo] = config
 	}
 
+	return utilerrors.NewAggregate(errs)
+}
+
+func (p *Jira) mergeFrom(other *Jira) error {
+	if other == nil {
+		return nil
+	}
+
+	var errs []error
+	if other.DisabledJiraProjects != nil {
+		if p.DisabledJiraProjects != nil {
+			errs = append(errs, errors.New("configuration of disabled jira projects defined in multiple places"))
+		} else {
+			p.DisabledJiraProjects = other.DisabledJiraProjects
+		}
+	}
+	if other.Default != nil {
+		if p.Default != nil {
+			errs = append(errs, errors.New("configuration of global default defined in multiple places"))
+		} else {
+			p.Default = other.Default
+		}
+	}
+	if len(other.Orgs) != 0 && p.Orgs == nil {
+		p.Orgs = make(map[string]JiraOrgOptions)
+	}
+	for org, orgConfig := range other.Orgs {
+		if _, ok := p.Orgs[org]; !ok {
+			p.Orgs[org] = JiraOrgOptions{}
+		}
+		if orgConfig.Default != nil {
+			if p.Orgs[org].Default != nil {
+				errs = append(errs, fmt.Errorf("found duplicate organization config for jira.%s", org))
+				continue
+			}
+			newConfig := p.Orgs[org]
+			newConfig.Default = orgConfig.Default
+			p.Orgs[org] = newConfig
+		}
+		if len(orgConfig.Repos) != 0 && p.Orgs[org].Repos == nil {
+			newConfig := p.Orgs[org]
+			newConfig.Repos = make(map[string]JiraRepoOptions)
+			p.Orgs[org] = newConfig
+		}
+		for repo, repoConfig := range orgConfig.Repos {
+			if _, ok := p.Orgs[org].Repos[repo]; ok {
+				errs = append(errs, fmt.Errorf("found duplicate repository config for jira.%s/%s", org, repo))
+				continue
+			}
+			p.Orgs[org].Repos[repo] = repoConfig
+		}
+	}
 	return utilerrors.NewAggregate(errs)
 }
 
@@ -2031,11 +2383,11 @@ func getLabelConfigFromRestrictedLabelsSlice(s []RestrictedLabel, label string) 
 
 func (c *Configuration) HasConfigFor() (global bool, orgs sets.String, repos sets.String) {
 	equals := reflect.DeepEqual(c,
-		&Configuration{Approve: c.Approve, Bugzilla: c.Bugzilla, ExternalPlugins: c.ExternalPlugins,
+		&Configuration{Approve: c.Approve, Bugzilla: c.Bugzilla, ExternalPlugins: c.ExternalPlugins, Jira: c.Jira,
 			Label: Label{RestrictedLabels: c.Label.RestrictedLabels}, Lgtm: c.Lgtm, Plugins: c.Plugins,
 			Triggers: c.Triggers, Welcome: c.Welcome})
 
-	if !equals || c.Bugzilla.Default != nil {
+	if !equals || c.Bugzilla.Default != nil || c.Jira.Default != nil || len(c.Jira.DisabledJiraProjects) > 0 {
 		global = true
 	}
 	orgs = sets.String{}
@@ -2049,6 +2401,15 @@ func (c *Configuration) HasConfigFor() (global bool, orgs sets.String, repos set
 	}
 
 	for org, orgConfig := range c.Bugzilla.Orgs {
+		if orgConfig.Default != nil {
+			orgs.Insert(org)
+		}
+		for repo := range orgConfig.Repos {
+			repos.Insert(org + "/" + repo)
+		}
+	}
+
+	for org, orgConfig := range c.Jira.Orgs {
 		if orgConfig.Default != nil {
 			orgs.Insert(org)
 		}

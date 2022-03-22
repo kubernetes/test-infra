@@ -74,7 +74,9 @@ type Client interface {
 	// GetIssueQaContact get the user details for the QA contact. The QA contact is a custom field in Jira
 	GetIssueQaContact(*jira.Issue) (*jira.User, error)
 	// GetIssueTargetVersion get the issue Target Release. The target release is a custom field in Jira
-	GetIssueTargetVersion(issue *jira.Issue) (*[]*jira.Version, error)
+	GetIssueTargetVersion(issue *jira.Issue) ([]*jira.Version, error)
+	// GetIssueSeverityget the issue Severity. The severity is a custom field in Jira
+	GetIssueSeverity(issue *jira.Issue) (*Severity, error)
 	// FindUser returns all users with a field matching the queryParam (ex: email, display name, etc.)
 	FindUser(queryParam string) ([]*jira.User, error)
 	GetRemoteLinks(id string) ([]jira.RemoteLink, error)
@@ -84,7 +86,7 @@ type Client interface {
 	DeleteRemoteLink(issueID string, linkID int) error
 	// DeleteRemoteLinkViaURL identifies and removes a remote link from an issue
 	// the has the provided URL.
-	DeleteRemoteLinkViaURL(issueID, url string) error
+	DeleteRemoteLinkViaURL(issueID, url string) (bool, error)
 	ForPlugin(plugin string) Client
 	AddComment(issueID string, comment *jira.Comment) (*jira.Comment, error)
 	ListProjects() (*jira.ProjectList, error)
@@ -329,20 +331,21 @@ func (jc *client) DeleteRemoteLink(issueID string, linkID int) error {
 
 // DeleteRemoteLinkViaURL identifies and removes a remote link from an issue
 // the has the provided URL.
-func DeleteRemoteLinkViaURL(jc Client, issueID, url string) error {
+func DeleteRemoteLinkViaURL(jc Client, issueID, url string) (bool, error) {
 	links, err := jc.GetRemoteLinks(issueID)
 	if err != nil {
-		return err
+		return false, err
 	}
 	for _, link := range links {
 		if link.Object.URL == url {
-			return jc.DeleteRemoteLink(issueID, link.ID)
+			return true, jc.DeleteRemoteLink(issueID, link.ID)
 		}
 	}
-	return fmt.Errorf("could not find remote link on issue with URL `%s`", url)
+	// no external link for the PR should return no error
+	return false, nil
 }
 
-func (jc *client) DeleteRemoteLinkViaURL(issueID, url string) error {
+func (jc *client) DeleteRemoteLinkViaURL(issueID, url string) (bool, error) {
 	return DeleteRemoteLinkViaURL(jc, issueID, url)
 }
 
@@ -448,7 +451,7 @@ func (jc *client) CreateIssueLink(link *jira.IssueLink) error {
 // CloneIssue copies an issue struct, clears unsettable fields, creates a new
 // issue using the updated struct, and then links the new issue as a clone to
 // the original.
-func CloneIssue(jc Client, parent *jira.Issue) (*jira.Issue, error) {
+func CloneIssue(jc Client, parent *jira.Issue, setID, setKey string) (*jira.Issue, error) {
 	// create deep copy of parent "Fields" field
 	data, err := json.Marshal(parent.Fields)
 	if err != nil {
@@ -464,6 +467,13 @@ func CloneIssue(jc Client, parent *jira.Issue) (*jira.Issue, error) {
 	}
 	// update description
 	childIssue.Fields.Description = fmt.Sprintf("This is a clone of issue %s. The following is the description of the original issue: \n---\n%s", parent.Key, parent.Fields.Description)
+
+	if setID != "" {
+		childIssue.ID = setID
+	}
+	if setKey != "" {
+		childIssue.Key = setKey
+	}
 
 	// attempt to create the new issue
 	createdIssue, err := jc.CreateIssue(childIssue)
@@ -509,7 +519,7 @@ func CloneIssue(jc Client, parent *jira.Issue) (*jira.Issue, error) {
 }
 
 func (jc *client) CloneIssue(parent *jira.Issue) (*jira.Issue, error) {
-	return CloneIssue(jc, parent)
+	return CloneIssue(jc, parent, "", "")
 }
 
 func unsetProblematicFields(issue *jira.Issue, responseBody string) (*jira.Issue, error) {
@@ -775,20 +785,26 @@ func (jc *client) SearchWithContext(ctx context.Context, jql string, options *ji
 	return issues, response, nil
 }
 
-func GetUnknownField(field string, issue *jira.Issue, fn func() interface{}) error {
+// GetUnknownField will attempt to get the specified field from the Unknowns struct and unmarshal
+// the value into the provided function. If the field is not set, the first return value of this
+// function will return false.
+func GetUnknownField(field string, issue *jira.Issue, fn func() interface{}) (bool, error) {
 	obj := fn()
+	if issue.Fields == nil || issue.Fields.Unknowns == nil {
+		return false, nil
+	}
 	unknownField, ok := issue.Fields.Unknowns[field]
 	if !ok {
-		return nil
+		return false, nil
 	}
 	bytes, err := json.Marshal(unknownField)
 	if err != nil {
-		return fmt.Errorf("failed to process the custom field %s. Error : %v", field, err)
+		return true, fmt.Errorf("failed to process the custom field %s. Error : %v", field, err)
 	}
 	if err := json.Unmarshal(bytes, obj); err != nil {
-		return fmt.Errorf("failed to unmarshall the json to struct for %s. Error: %v", field, err)
+		return true, fmt.Errorf("failed to unmarshall the json to struct for %s. Error: %v", field, err)
 	}
-	return err
+	return true, nil
 
 }
 
@@ -800,10 +816,13 @@ func GetIssueSecurityLevel(issue *jira.Issue) (*SecurityLevel, error) {
 	// as part of the issue fields
 	// See https://github.com/andygrunwald/go-jira/issues/456
 	var obj *SecurityLevel
-	err := GetUnknownField("security", issue, func() interface{} {
+	isSet, err := GetUnknownField("security", issue, func() interface{} {
 		obj = &SecurityLevel{}
 		return obj
 	})
+	if !isSet {
+		return nil, err
+	}
 	return obj, err
 }
 
@@ -813,10 +832,13 @@ func (jc *client) GetIssueSecurityLevel(issue *jira.Issue) (*SecurityLevel, erro
 
 func GetIssueQaContact(issue *jira.Issue) (*jira.User, error) {
 	var obj *jira.User
-	err := GetUnknownField("customfield_12316243", issue, func() interface{} {
+	isSet, err := GetUnknownField("customfield_12316243", issue, func() interface{} {
 		obj = &jira.User{}
 		return obj
 	})
+	if !isSet {
+		return nil, err
+	}
 	return obj, err
 }
 
@@ -824,15 +846,58 @@ func (jc *client) GetIssueQaContact(issue *jira.Issue) (*jira.User, error) {
 	return GetIssueQaContact(issue)
 }
 
-func GetIssueTargetVersion(issue *jira.Issue) (*[]*jira.Version, error) {
+func GetIssueTargetVersion(issue *jira.Issue) ([]*jira.Version, error) {
 	var obj *[]*jira.Version
-	err := GetUnknownField("customfield_12319940", issue, func() interface{} {
+	isSet, err := GetUnknownField("customfield_12319940", issue, func() interface{} {
 		obj = &[]*jira.Version{{}}
 		return obj
 	})
+	if !isSet {
+		return nil, err
+	}
+	return *obj, err
+}
+
+func (jc *client) GetIssueTargetVersion(issue *jira.Issue) ([]*jira.Version, error) {
+	return GetIssueTargetVersion(issue)
+}
+
+func GetIssueSeverity(issue *jira.Issue) (*Severity, error) {
+	var obj *Severity
+	isSet, err := GetUnknownField("customfield_12316142", issue, func() interface{} {
+		obj = &Severity{}
+		return obj
+	})
+	if !isSet {
+		return nil, err
+	}
 	return obj, err
 }
 
-func (jc *client) GetIssueTargetVersion(issue *jira.Issue) (*[]*jira.Version, error) {
-	return GetIssueTargetVersion(issue)
+func (jc *client) GetIssueSeverity(issue *jira.Issue) (*Severity, error) {
+	return GetIssueSeverity(issue)
+}
+
+type Severity struct {
+	Self     string `json:"self"`
+	ID       string `json:"id"`
+	Value    string `json:"value"`
+	Disabled bool   `json:"disabled"`
+}
+
+// PrettyStatus returns:
+//   - "status (resolution)" if both status and resolution are not empty
+//   - "status" if only resolution is empty
+//   - "any status with resolution RESOLUTION" if only status is empty
+//   - "" if both status and resolution are empty
+// This is useful in user-facing messages that communicate bug state information
+func PrettyStatus(status, resolution string) string {
+	if resolution == "" {
+		return status
+	}
+	if status == "" {
+		return fmt.Sprintf("any status with resolution %s", resolution)
+	}
+
+	return fmt.Sprintf("%s (%s)", status, resolution)
 }

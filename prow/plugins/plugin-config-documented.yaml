@@ -455,11 +455,191 @@ help:
     # The default value is "https://git.k8s.io/community/contributors/guide/help-wanted.md".
     help_guidelines_url: ' '
 jira:
+    # Default settings mapped by branch in any repo in any org.
+    # The `*` wildcard will apply to all branches.
+    default:
+        "":
+            # AddExternalLink determines whether the pull request will be added to the Jira
+            # bug using the ExternalBug tracker API after being validated
+            add_external_link: false
+
+            # AllowedSecurityLevels is a list of the name of jira issue security levels that the jira plugin can
+            # link to in PRs. If an issue has a security level that is not in this list, the jira
+            # plugin will not link the issue to the PR.
+            allowed_security_levels:
+              - ""
+
+            # DependentBugStates determine states in which a bug's dependents bugs may be
+            # to deem the child bug valid. If set, all blockers must have a valid state.
+            dependent_bug_states: null
+
+            # DependentBugTargetVersions determines the set of valid target
+            # versions for dependent bugs. If set, all blockers must have a
+            # valid target version.
+            dependent_bug_target_versions: null
+
+            # ExcludeDefaults excludes defaults from more generic Jira configurations.
+            exclude_defaults: false
+
+            # IsOpen determines whether a bug needs to be open to be valid
+            is_open: false
+
+            # StateAfterClose is the state to which the bug will be moved if all pull requests
+            # in the external bug tracker have been closed.
+            state_after_close:
+                resolution: ' '
+                status: ' '
+
+            # StateAfterMerge is the state to which the bug will be moved after all pull requests
+            # in the external bug tracker have been merged.
+            state_after_merge:
+                resolution: ' '
+                status: ' '
+
+            # StateAfterValidation is the state to which the bug will be moved after being
+            # deemed valid and linked to a PR. Will implicitly be considered a part of `ValidStates`
+            # if others are set.
+            state_after_validation:
+                resolution: ' '
+                status: ' '
+
+            # TargetVersion determines which release a bug needs to target to be valid
+            target_version: ""
+
+            # ValidStates determine states in which the bug may be to be valid
+            valid_states: null
+
+            # ValidateByDefault determines whether a validation check is run for all pull
+            # requests by default
+            validate_by_default: false
+
     # DisabledJiraProjects are projects for which we will never try to create a link,
     # for example including `enterprise` here would disable linking for all issues
     # that start with `enterprise-` like `enterprise-4.` Matching is case-insenitive.
     disabled_jira_projects:
       - ""
+
+    # Options for specific orgs. The `*` wildcard will apply to all orgs.
+    orgs:
+        "":
+            # Default settings mapped by branch in any repo in this org.
+            # The `*` wildcard will apply to all branches.
+            default:
+                "":
+                    # AddExternalLink determines whether the pull request will be added to the Jira
+                    # bug using the ExternalBug tracker API after being validated
+                    add_external_link: false
+
+                    # AllowedSecurityLevels is a list of the name of jira issue security levels that the jira plugin can
+                    # link to in PRs. If an issue has a security level that is not in this list, the jira
+                    # plugin will not link the issue to the PR.
+                    allowed_security_levels:
+                      - ""
+
+                    # DependentBugStates determine states in which a bug's dependents bugs may be
+                    # to deem the child bug valid. If set, all blockers must have a valid state.
+                    dependent_bug_states: null
+
+                    # DependentBugTargetVersions determines the set of valid target
+                    # versions for dependent bugs. If set, all blockers must have a
+                    # valid target version.
+                    dependent_bug_target_versions: null
+
+                    # ExcludeDefaults excludes defaults from more generic Jira configurations.
+                    exclude_defaults: false
+
+                    # IsOpen determines whether a bug needs to be open to be valid
+                    is_open: false
+
+                    # StateAfterClose is the state to which the bug will be moved if all pull requests
+                    # in the external bug tracker have been closed.
+                    state_after_close:
+                        resolution: ' '
+                        status: ' '
+
+                    # StateAfterMerge is the state to which the bug will be moved after all pull requests
+                    # in the external bug tracker have been merged.
+                    state_after_merge:
+                        resolution: ' '
+                        status: ' '
+
+                    # StateAfterValidation is the state to which the bug will be moved after being
+                    # deemed valid and linked to a PR. Will implicitly be considered a part of `ValidStates`
+                    # if others are set.
+                    state_after_validation:
+                        resolution: ' '
+                        status: ' '
+
+                    # TargetVersion determines which release a bug needs to target to be valid
+                    target_version: ""
+
+                    # ValidStates determine states in which the bug may be to be valid
+                    valid_states: null
+
+                    # ValidateByDefault determines whether a validation check is run for all pull
+                    # requests by default
+                    validate_by_default: false
+
+            # Options for specific repos. The `*` wildcard will apply to all repos.
+            repos:
+                "":
+                    # Options for specific branches in this repo.
+                    # The `*` wildcard will apply to all branches.
+                    branches:
+                        "":
+                            # AddExternalLink determines whether the pull request will be added to the Jira
+                            # bug using the ExternalBug tracker API after being validated
+                            add_external_link: false
+
+                            # AllowedSecurityLevels is a list of the name of jira issue security levels that the jira plugin can
+                            # link to in PRs. If an issue has a security level that is not in this list, the jira
+                            # plugin will not link the issue to the PR.
+                            allowed_security_levels:
+                              - ""
+
+                            # DependentBugStates determine states in which a bug's dependents bugs may be
+                            # to deem the child bug valid. If set, all blockers must have a valid state.
+                            dependent_bug_states: null
+
+                            # DependentBugTargetVersions determines the set of valid target
+                            # versions for dependent bugs. If set, all blockers must have a
+                            # valid target version.
+                            dependent_bug_target_versions: null
+
+                            # ExcludeDefaults excludes defaults from more generic Jira configurations.
+                            exclude_defaults: false
+
+                            # IsOpen determines whether a bug needs to be open to be valid
+                            is_open: false
+
+                            # StateAfterClose is the state to which the bug will be moved if all pull requests
+                            # in the external bug tracker have been closed.
+                            state_after_close:
+                                resolution: ' '
+                                status: ' '
+
+                            # StateAfterMerge is the state to which the bug will be moved after all pull requests
+                            # in the external bug tracker have been merged.
+                            state_after_merge:
+                                resolution: ' '
+                                status: ' '
+
+                            # StateAfterValidation is the state to which the bug will be moved after being
+                            # deemed valid and linked to a PR. Will implicitly be considered a part of `ValidStates`
+                            # if others are set.
+                            state_after_validation:
+                                resolution: ' '
+                                status: ' '
+
+                            # TargetVersion determines which release a bug needs to target to be valid
+                            target_version: ""
+
+                            # ValidStates determine states in which the bug may be to be valid
+                            valid_states: null
+
+                            # ValidateByDefault determines whether a validation check is run for all pull
+                            # requests by default
+                            validate_by_default: false
 label:
     # AdditionalLabels is a set of additional labels enabled for use
     # on top of the existing "kind/*", "priority/*", and "area/*" labels.

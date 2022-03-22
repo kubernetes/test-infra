@@ -31,14 +31,17 @@ import (
 )
 
 type FakeClient struct {
-	Issues          []*jira.Issue
-	ExistingLinks   map[string][]jira.RemoteLink
-	NewLinks        []jira.RemoteLink
-	IssueLinks      []*jira.IssueLink
-	GetIssueError   error
-	Transitions     []jira.Transition
-	Users           []*jira.User
-	SearchResponses map[SearchRequest]SearchResponse
+	Issues           []*jira.Issue
+	ExistingLinks    map[string][]jira.RemoteLink
+	NewLinks         []jira.RemoteLink
+	RemovedLinks     []jira.RemoteLink
+	IssueLinks       []*jira.IssueLink
+	GetIssueError    map[string]error
+	CreateIssueError map[string]error
+	UpdateIssueError map[string]error
+	Transitions      []jira.Transition
+	Users            []*jira.User
+	SearchResponses  map[SearchRequest]SearchResponse
 }
 
 func (f *FakeClient) ListProjects() (*jira.ProjectList, error) {
@@ -47,7 +50,9 @@ func (f *FakeClient) ListProjects() (*jira.ProjectList, error) {
 
 func (f *FakeClient) GetIssue(id string) (*jira.Issue, error) {
 	if f.GetIssueError != nil {
-		return nil, f.GetIssueError
+		if err, ok := f.GetIssueError[id]; ok {
+			return nil, err
+		}
 	}
 	for _, existingIssue := range f.Issues {
 		if existingIssue.ID == id || existingIssue.Key == id {
@@ -58,7 +63,11 @@ func (f *FakeClient) GetIssue(id string) (*jira.Issue, error) {
 }
 
 func (f *FakeClient) GetRemoteLinks(id string) ([]jira.RemoteLink, error) {
-	return f.ExistingLinks[id], nil
+	issue, err := f.GetIssue(id)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to get issue when chekcing from remote links: %+v", err)
+	}
+	return append(f.ExistingLinks[issue.ID], f.ExistingLinks[issue.Key]...), nil
 }
 
 func (f *FakeClient) AddRemoteLink(id string, link *jira.RemoteLink) (*jira.RemoteLink, error) {
@@ -107,6 +116,13 @@ func (f *FakeClient) AddComment(issueID string, comment *jira.Comment) (*jira.Co
 	if err != nil {
 		return nil, fmt.Errorf("Issue %s not found: %v", issueID, err)
 	}
+	// make sure the fields exist
+	if issue.Fields == nil {
+		issue.Fields = &jira.IssueFields{}
+	}
+	if issue.Fields.Comments == nil {
+		issue.Fields.Comments = &jira.Comments{}
+	}
 	issue.Fields.Comments.Comments = append(issue.Fields.Comments.Comments, comment)
 	return comment, nil
 }
@@ -116,18 +132,25 @@ func (f *FakeClient) CreateIssueLink(link *jira.IssueLink) error {
 	if err != nil {
 		return fmt.Errorf("failed to get outward link issue: %v", err)
 	}
-	outward.Fields.IssueLinks = append(outward.Fields.IssueLinks, link)
+	// links in an issue struct do not include the short definition of the the issue they are part of.
+	//This behavior is used by the jira hook plugin to identify which direction a clone happened,
+	// so it needs to be replicated in the fake client
+	linkForOutward := *link
+	linkForOutward.OutwardIssue = nil
+	outward.Fields.IssueLinks = append(outward.Fields.IssueLinks, &linkForOutward)
 	inward, err := f.GetIssue(link.InwardIssue.ID)
 	if err != nil {
 		return fmt.Errorf("failed to get inward link issue: %v", err)
 	}
-	inward.Fields.IssueLinks = append(inward.Fields.IssueLinks, link)
+	linkForInward := *link
+	linkForInward.InwardIssue = nil
+	inward.Fields.IssueLinks = append(inward.Fields.IssueLinks, &linkForInward)
 	f.IssueLinks = append(f.IssueLinks, link)
 	return nil
 }
 
 func (f *FakeClient) CloneIssue(issue *jira.Issue) (*jira.Issue, error) {
-	// create deep copy of parent so we can modify key and id for child
+	// create deep copy of parent so we can use updateIssueIDAndKey to get new ID and Key for child
 	data, err := json.Marshal(issue)
 	if err != nil {
 		return nil, err
@@ -139,11 +162,21 @@ func (f *FakeClient) CloneIssue(issue *jira.Issue) (*jira.Issue, error) {
 	}
 	// set ID and Key to unused id and key
 	f.updateIssueIDAndKey(issueCopy)
-	// run generic cloning function
-	return jiraclient.CloneIssue(f, issueCopy)
+	clonedIssue, err := jiraclient.CloneIssue(f, issue, issueCopy.ID, issueCopy.Key)
+	if err != nil {
+		return clonedIssue, err
+	}
+	// comments are unset during a clone on a real jira server; unset them here to replicate behavior
+	clonedIssue.Fields.Comments = nil
+	return clonedIssue, nil
 }
 
 func (f *FakeClient) CreateIssue(issue *jira.Issue) (*jira.Issue, error) {
+	if f.CreateIssueError != nil {
+		if err, ok := f.CreateIssueError[issue.Key]; ok {
+			return nil, err
+		}
+	}
 	// check that there are no ID collisions
 	for _, currIssue := range f.Issues {
 		if currIssue.ID == issue.ID {
@@ -153,7 +186,9 @@ func (f *FakeClient) CreateIssue(issue *jira.Issue) (*jira.Issue, error) {
 			return nil, fmt.Errorf("Issue key %s already exists", issue.Key)
 		}
 	}
-	f.updateIssueIDAndKey(issue)
+	if err := f.updateIssueIDAndKey(issue); err != nil {
+		return nil, err
+	}
 	f.Issues = append(f.Issues, issue)
 	return issue, nil
 }
@@ -211,13 +246,19 @@ func (f *FakeClient) DeleteLink(id string) error {
 func (f *FakeClient) DeleteRemoteLink(issueID string, linkID int) error {
 	for index, remoteLink := range f.ExistingLinks[issueID] {
 		if remoteLink.ID == linkID {
-			f.ExistingLinks[issueID] = append(f.ExistingLinks[issueID][:index], f.ExistingLinks[issueID][index+1:]...)
+			f.RemovedLinks = append(f.RemovedLinks, remoteLink)
+			if len(f.ExistingLinks[issueID]) == index+1 {
+				f.ExistingLinks[issueID] = f.ExistingLinks[issueID][:index]
+			} else {
+				f.ExistingLinks[issueID] = append(f.ExistingLinks[issueID][:index], f.ExistingLinks[issueID][index+1:]...)
+			}
+			return nil
 		}
 	}
 	return fmt.Errorf("failed to find link id %d in issue %s", linkID, issueID)
 }
 
-func (f *FakeClient) DeleteRemoteLinkViaURL(issueID, url string) error {
+func (f *FakeClient) DeleteRemoteLinkViaURL(issueID, url string) (bool, error) {
 	return jiraclient.DeleteRemoteLinkViaURL(f, issueID, url)
 }
 
@@ -254,7 +295,7 @@ func (f *FakeClient) updateIssueIDAndKey(newIssue *jira.Issue) error {
 			}
 		}
 	}
-	newIssue.Key = fmt.Sprintf("%s%d", keyPrefix, highestKeyID)
+	newIssue.Key = fmt.Sprintf("%s%d", keyPrefix, highestKeyID+1)
 	return nil
 }
 
@@ -306,11 +347,20 @@ func (f *FakeClient) GetIssueQaContact(issue *jira.Issue) (*jira.User, error) {
 	return jiraclient.GetIssueQaContact(issue)
 }
 
-func (f *FakeClient) GetIssueTargetVersion(issue *jira.Issue) (*[]*jira.Version, error) {
+func (f *FakeClient) GetIssueTargetVersion(issue *jira.Issue) ([]*jira.Version, error) {
 	return jiraclient.GetIssueTargetVersion(issue)
 }
 
+func (f *FakeClient) GetIssueSeverity(issue *jira.Issue) (*jiraclient.Severity, error) {
+	return jiraclient.GetIssueSeverity(issue)
+}
+
 func (f *FakeClient) UpdateIssue(issue *jira.Issue) (*jira.Issue, error) {
+	if f.UpdateIssueError != nil {
+		if err, ok := f.UpdateIssueError[issue.ID]; ok {
+			return nil, err
+		}
+	}
 	retrievedIssue, err := f.GetIssue(issue.ID)
 	if err != nil {
 		return nil, fmt.Errorf("unable to find issue to update: %v", err)
@@ -339,11 +389,11 @@ func (f *FakeClient) UpdateIssue(issue *jira.Issue) (*jira.Issue, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error converting updated issue to json: %v", err)
 	}
-	var newFields *jira.IssueFields
-	if err := json.Unmarshal(updatedIssueBytes, newFields); err != nil {
+	var newFields jira.IssueFields
+	if err := json.Unmarshal(updatedIssueBytes, &newFields); err != nil {
 		return nil, fmt.Errorf("failed converting updated issue to struct: %v", err)
 	}
-	retrievedIssue.Fields = newFields
+	retrievedIssue.Fields = &newFields
 	return retrievedIssue, nil
 }
 
