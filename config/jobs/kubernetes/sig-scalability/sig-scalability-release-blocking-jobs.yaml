@@ -9,6 +9,7 @@ periodics:
     preset-e2e-scalability-common: "true"
     preset-e2e-scalability-periodics: "true"
     preset-e2e-scalability-periodics-master: "true"
+    preset-use-new-registry: "true"
   decorate: true
   decoration_config:
     timeout: 270m
@@ -68,6 +69,7 @@ periodics:
     preset-e2e-scalability-common: "true"
     preset-e2e-scalability-periodics: "true"
     preset-e2e-scalability-periodics-master: "true"
+    preset-use-new-registry: "true"
   decorate: true
   decoration_config:
     timeout: 450m
@@ -160,6 +162,7 @@ periodics:
     preset-e2e-scalability-common: "true"
     preset-e2e-scalability-periodics: "true"
     preset-e2e-scalability-periodics-master: "true"
+    preset-use-new-registry: "true"
   decorate: true
   decoration_config:
     timeout: 140m
