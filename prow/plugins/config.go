@@ -91,6 +91,7 @@ type Configuration struct {
 	Welcome              []Welcome                    `json:"welcome,omitempty"`
 	Override             Override                     `json:"override,omitempty"`
 	Help                 Help                         `json:"help,omitempty"`
+	LabelBasedCommenting []LabelBasedCommenting       `json:"label_based_commenting,omitempty"`
 }
 
 type Help struct {
@@ -690,8 +691,9 @@ type CherryPickUnapproved struct {
 	Comment string `json:"comment,omitempty"`
 }
 
-// RequireMatchingLabel is the config for the require-matching-label plugin.
-type RequireMatchingLabel struct {
+// RegexBasedLabelMatch is the config required for a plugin that relies
+// on a user provided regex for a label to perform some action.
+type RegexBasedLabelMatch struct {
 	// Org is the GitHub organization that this config applies to.
 	Org string `json:"org,omitempty"`
 	// Repo is the GitHub repository within Org that this config applies to.
@@ -705,22 +707,11 @@ type RequireMatchingLabel struct {
 	PRs bool `json:"prs,omitempty"`
 	// Issues is a bool indicating if this config applies to issues.
 	Issues bool `json:"issues,omitempty"`
-
 	// Regexp is the string specifying the regular expression used to look for
 	// matching labels.
 	Regexp string `json:"regexp,omitempty"`
 	// Re is the compiled version of Regexp. It should not be specified in config.
 	Re *regexp.Regexp `json:"-"`
-
-	// MissingLabel is the label to apply if an issue does not have any label
-	// matching the Regexp.
-	MissingLabel string `json:"missing_label,omitempty"`
-	// MissingComment is the comment to post when we add the MissingLabel to an
-	// issue. This is typically used to explain why MissingLabel was added and
-	// how to move forward.
-	// This field is optional. If unspecified, no comment is created when labeling.
-	MissingComment string `json:"missing_comment,omitempty"`
-
 	// GracePeriod is the amount of time to wait before processing newly opened
 	// or reopened issues and PRs. This delay allows other automation to apply
 	// labels before we look for matching labels.
@@ -729,51 +720,7 @@ type RequireMatchingLabel struct {
 	GracePeriodDuration time.Duration `json:"-"`
 }
 
-// validate checks the following properties:
-// - Org, Regexp, MissingLabel, and GracePeriod must be non-empty.
-// - Repo does not contain a '/' (should use Org+Repo).
-// - At least one of PRs or Issues must be true.
-// - Branch only specified if 'prs: true'
-// - MissingLabel must not match Regexp.
-func (r RequireMatchingLabel) validate() error {
-	if r.Org == "" {
-		return errors.New("must specify 'org'")
-	}
-	if strings.Contains(r.Repo, "/") {
-		return errors.New("'repo' may not contain '/'; specify the organization with 'org'")
-	}
-	if r.Regexp == "" {
-		return errors.New("must specify 'regexp'")
-	}
-	if r.MissingLabel == "" {
-		return errors.New("must specify 'missing_label'")
-	}
-	if r.GracePeriod == "" {
-		return errors.New("must specify 'grace_period'")
-	}
-	if !r.PRs && !r.Issues {
-		return errors.New("must specify 'prs: true' and/or 'issues: true'")
-	}
-	if !r.PRs && r.Branch != "" {
-		return errors.New("branch cannot be specified without `prs: true'")
-	}
-	if r.Re.MatchString(r.MissingLabel) {
-		return errors.New("'regexp' must not match 'missing_label'")
-	}
-	return nil
-}
-
-// Describe generates a human readable description of the behavior that this
-// configuration specifies.
-func (r RequireMatchingLabel) Describe() string {
-	str := &strings.Builder{}
-	fmt.Fprintf(str, "Applies the '%s' label ", r.MissingLabel)
-	if r.MissingComment == "" {
-		fmt.Fprint(str, "to ")
-	} else {
-		fmt.Fprint(str, "and comments on ")
-	}
-
+func (r RegexBasedLabelMatch) describe(str *strings.Builder) *strings.Builder {
 	if r.Issues {
 		fmt.Fprint(str, "Issues ")
 		if r.PRs {
@@ -792,8 +739,109 @@ func (r RequireMatchingLabel) Describe() string {
 	} else {
 		fmt.Fprintf(str, "in the '%s/%s' GitHub repo ", r.Org, r.Repo)
 	}
+
+	return str
+}
+
+func (r RegexBasedLabelMatch) validateRegexBasedLabelMatch() error {
+	if r.Org == "" {
+		return errors.New("must specify 'org'")
+	}
+	if strings.Contains(r.Repo, "/") {
+		return errors.New("'repo' may not contain '/'; specify the organization with 'org'")
+	}
+	if r.Regexp == "" {
+		return errors.New("must specify 'regexp'")
+	}
+	if !r.PRs && !r.Issues {
+		return errors.New("must specify 'prs: true' and/or 'issues: true'")
+	}
+	if !r.PRs && r.Branch != "" {
+		return errors.New("branch cannot be specified without `prs: true'")
+	}
+	if r.GracePeriod == "" {
+		return errors.New("must specify 'grace_period'")
+	}
+
+	return nil
+}
+
+// RequireMatchingLabel is the config for the require-matching-label plugin.
+type RequireMatchingLabel struct {
+	RegexBasedLabelMatch
+	// MissingLabel is the label to apply if an issue does not have any label
+	// matching the Regexp.
+	MissingLabel string `json:"missing_label,omitempty"`
+	// MissingComment is the comment to post when we add the MissingLabel to an
+	// issue. This is typically used to explain why MissingLabel was added and
+	// how to move forward.
+	// This field is optional. If unspecified, no comment is created when labeling.
+	MissingComment string `json:"missing_comment,omitempty"`
+}
+
+// validate checks the following properties:
+// - Org, Regexp, MissingLabel, and GracePeriod must be non-empty.
+// - Repo does not contain a '/' (should use Org+Repo).
+// - At least one of PRs or Issues must be true.
+// - Branch only specified if 'prs: true'
+// - MissingLabel must not match Regexp.
+func (r RequireMatchingLabel) validate() error {
+	err := r.validateRegexBasedLabelMatch()
+	if err != nil {
+		return err
+	}
+	if r.MissingLabel == "" {
+		return errors.New("must specify 'missing_label'")
+	}
+	if r.Re.MatchString(r.MissingLabel) {
+		return errors.New("'regexp' must not match 'missing_label'")
+	}
+	return nil
+}
+
+// Describe generates a human readable description of the behavior that this
+// configuration specifies.
+func (r RequireMatchingLabel) Describe() string {
+	str := &strings.Builder{}
+	fmt.Fprintf(str, "Applies the '%s' label ", r.MissingLabel)
+	if r.MissingComment == "" {
+		fmt.Fprint(str, "to ")
+	} else {
+		fmt.Fprint(str, "and comments on ")
+	}
+
+	str = r.describe(str)
 	fmt.Fprintf(str, "that have no labels matching the regular expression '%s'.", r.Regexp)
 	return str.String()
+}
+
+// LabelBasedCommenting is the config for the label-based-commenting plugin.
+type LabelBasedCommenting struct {
+	RegexBasedLabelMatch
+	// Comment is the text to comment when a label matching the provided
+	// regex is applied.
+	Comment string `json:"comment,omitempty"`
+}
+
+func (l LabelBasedCommenting) Describe() string {
+	str := &strings.Builder{}
+	fmt.Fprintf(str, "Applies the comment '%s' ", l.Comment)
+	str = l.describe(str)
+	fmt.Fprintf(str, "that have labels matching the regular expressions '%s'.", l.Regexp)
+
+	return str.String()
+}
+
+func (l LabelBasedCommenting) validate() error {
+	err := l.validateRegexBasedLabelMatch()
+	if err != nil {
+		return err
+	}
+	if l.Comment == "" {
+		return errors.New("must specify comment")
+	}
+
+	return nil
 }
 
 // ApproveFor finds the Approve for a repo, if one exists.
@@ -1193,6 +1241,15 @@ func validateRequireMatchingLabel(rs []RequireMatchingLabel) error {
 	return nil
 }
 
+func validateLabelBasedCommenting(lbc []LabelBasedCommenting) error {
+	for i, l := range lbc {
+		if err := l.validate(); err != nil {
+			return fmt.Errorf("error validating label_based_commenting config #%d: %w", i, err)
+		}
+	}
+	return nil
+}
+
 func validateProjectManager(pm ProjectManager) error {
 
 	projectConfig := pm
@@ -1323,6 +1380,9 @@ func (c *Configuration) Validate() error {
 		return err
 	}
 	if err := validateRequireMatchingLabel(c.RequireMatchingLabel); err != nil {
+		return err
+	}
+	if err := validateLabelBasedCommenting(c.LabelBasedCommenting); err != nil {
 		return err
 	}
 	if err := validateProjectManager(c.ProjectManager); err != nil {

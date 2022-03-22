@@ -1,9 +1,9 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["require-matching-label.go"],
-    importpath = "k8s.io/test-infra/prow/plugins/require-matching-label",
+    srcs = ["label-based-commenting.go"],
+    importpath = "k8s.io/test-infra/prow/plugins/label-based-commenting",
     visibility = ["//visibility:public"],
     deps = [
         "//prow/config:go_default_library",
@@ -12,20 +12,6 @@ go_library(
         "//prow/plugins:go_default_library",
         "//prow/plugins/internal/regex-based-label-match:go_default_library",
         "@com_github_sirupsen_logrus//:go_default_library",
-    ],
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = ["require-matching-label_test.go"],
-    embed = [":go_default_library"],
-    tags = ["manual"],
-    deps = [
-        "//prow/labels:go_default_library",
-        "//prow/plugins:go_default_library",
-        "//prow/plugins/internal/regex-based-label-match:go_default_library",
-        "@com_github_sirupsen_logrus//:go_default_library",
-        "@io_k8s_apimachinery//pkg/util/sets:go_default_library",
     ],
 )
 

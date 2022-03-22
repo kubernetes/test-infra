@@ -472,6 +472,18 @@ label:
     # or a repo in org/repo notation.
     restricted_labels:
         "": null
+label_based_commenting:
+  - branch: ' '
+
+    # Comment is the text to comment when a label matching the provided
+    # regex is applied.
+    comment: ' '
+    grace_period: ' '
+    issues: true
+    org: ' '
+    prs: true
+    regexp: ' '
+    repo: ' '
 lgtm:
   - # Repos is either of the form org/repos or just org.
     repos:
@@ -588,18 +600,8 @@ repo_milestone:
         maintainers_friendly_name: ' '
         maintainers_team: ' '
 require_matching_label:
-  - # Branch is the branch ref of PRs that this config applies to.
-    # This field is only valid if `prs: true` and may be omitted to apply this
-    # config across all branches in the repo or org.
-    branch: ' '
-
-    # GracePeriod is the amount of time to wait before processing newly opened
-    # or reopened issues and PRs. This delay allows other automation to apply
-    # labels before we look for matching labels.
-    # Defaults to '5s'.
+  - branch: ' '
     grace_period: ' '
-
-    # Issues is a bool indicating if this config applies to issues.
     issues: true
 
     # MissingComment is the comment to post when we add the MissingLabel to an
@@ -611,19 +613,9 @@ require_matching_label:
     # MissingLabel is the label to apply if an issue does not have any label
     # matching the Regexp.
     missing_label: ' '
-
-    # Org is the GitHub organization that this config applies to.
     org: ' '
-
-    # PRs is a bool indicating if this config applies to PRs.
     prs: true
-
-    # Regexp is the string specifying the regular expression used to look for
-    # matching labels.
     regexp: ' '
-
-    # Repo is the GitHub repository within Org that this config applies to.
-    # This fields may be omitted to apply this config across all repos in Org.
     repo: ' '
 retitle:
     # AllowClosedIssues allows retitling closed/merged issues and PRs.

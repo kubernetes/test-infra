@@ -25,12 +25,12 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
-	"time"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
+	rblm "k8s.io/test-infra/prow/plugins/internal/regex-based-label-match"
 
 	"github.com/sirupsen/logrus"
 )
@@ -57,18 +57,6 @@ const (
 	pluginName = "require-matching-label"
 )
 
-type githubClient interface {
-	AddLabel(org, repo string, number int, label string) error
-	RemoveLabel(org, repo string, number int, label string) error
-	CreateComment(org, repo string, number int, content string) error
-	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
-	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
-}
-
-type commentPruner interface {
-	PruneComments(shouldPrune func(github.IssueComment) bool)
-}
-
 func init() {
 	plugins.RegisterIssueHandler(pluginName, handleIssue, helpProvider)
 	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, helpProvider)
@@ -85,15 +73,17 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
 		RequireMatchingLabel: []plugins.RequireMatchingLabel{
 			{
-				Org:            "org",
-				Repo:           "repo",
-				Branch:         "master",
-				PRs:            true,
-				Issues:         true,
-				Regexp:         "^kind/",
+				RegexBasedLabelMatch: plugins.RegexBasedLabelMatch{
+					Org:         "org",
+					Repo:        "repo",
+					Branch:      "master",
+					PRs:         true,
+					Issues:      true,
+					Regexp:      "^kind/",
+					GracePeriod: "5s",
+				},
 				MissingLabel:   "needs-kind",
 				MissingComment: "Please add a label referencing the kind.",
-				GracePeriod:    "5s",
 			},
 		},
 	})
@@ -117,30 +107,17 @@ func helpProvider(config *plugins.Configuration, _ []config.OrgRepo) (*pluginhel
 	return pluginHelp, nil
 }
 
-type event struct {
-	org    string
-	repo   string
-	number int
-	author string
-	// The PR's base branch. If empty this is an Issue, not a PR.
-	branch string
-	// The label that was added or removed. If empty this is an open or reopen event.
-	label string
-	// The labels currently on the issue. For PRs this is not contained in the webhook payload and may be omitted.
-	currentLabels []github.Label
-}
-
 func handleIssue(pc plugins.Agent, ie github.IssueEvent) error {
 	if !handleIssueActions[ie.Action] {
 		return nil
 	}
-	e := &event{
-		org:           ie.Repo.Owner.Login,
-		repo:          ie.Repo.Name,
-		number:        ie.Issue.Number,
-		author:        ie.Issue.User.Login,
-		label:         ie.Label.Name, // This will be empty for non-label events.
-		currentLabels: ie.Issue.Labels,
+	e := &rblm.Event{
+		Org:           ie.Repo.Owner.Login,
+		Repo:          ie.Repo.Name,
+		Number:        ie.Issue.Number,
+		Author:        ie.Issue.User.Login,
+		Label:         ie.Label.Name, // This will be empty for non-label events.
+		CurrentLabels: ie.Issue.Labels,
 	}
 	cp, err := pc.CommentPruner()
 	if err != nil {
@@ -153,13 +130,13 @@ func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
 	if !handlePRActions[pre.Action] {
 		return nil
 	}
-	e := &event{
-		org:    pre.Repo.Owner.Login,
-		repo:   pre.Repo.Name,
-		number: pre.PullRequest.Number,
-		branch: pre.PullRequest.Base.Ref,
-		author: pre.PullRequest.User.Login,
-		label:  pre.Label.Name, // This will be empty for non-label events.
+	e := &rblm.Event{
+		Org:    pre.Repo.Owner.Login,
+		Repo:   pre.Repo.Name,
+		Number: pre.PullRequest.Number,
+		Branch: pre.PullRequest.Base.Ref,
+		Author: pre.PullRequest.User.Login,
+		Label:  pre.Label.Name, // This will be empty for non-label events.
 	}
 	cp, err := pc.CommentPruner()
 	if err != nil {
@@ -170,70 +147,39 @@ func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
 
 // matchingConfigs filters irrelevant RequireMtchingLabel configs from
 // the list of all configs.
-// `branch` should be empty for Issues and non-empty for PRs.
-// `label` should be omitted in the case of 'open' and 'reopen' actions.
 func matchingConfigs(org, repo, branch, label string, allConfigs []plugins.RequireMatchingLabel) []plugins.RequireMatchingLabel {
 	var filtered []plugins.RequireMatchingLabel
 	for _, cfg := range allConfigs {
-		// Check if the config applies to this issue type.
-		if (branch == "" && !cfg.Issues) || (branch != "" && !cfg.PRs) {
-			continue
+		if rblm.ShouldConsiderConfig(org, repo, branch, label, cfg.RegexBasedLabelMatch) {
+			filtered = append(filtered, cfg)
 		}
-		// Check if the config applies to this 'org[/repo][/branch]'.
-		if org != cfg.Org ||
-			(cfg.Repo != "" && cfg.Repo != repo) ||
-			(cfg.Branch != "" && branch != "" && cfg.Branch != branch) {
-			continue
-		}
-		// If we are reacting to a label event, see if it is relevant.
-		if label != "" && !cfg.Re.MatchString(label) {
-			continue
-		}
-		filtered = append(filtered, cfg)
 	}
 	return filtered
 }
 
-func handle(log *logrus.Entry, ghc githubClient, cp commentPruner, configs []plugins.RequireMatchingLabel, e *event) error {
+func handle(log *logrus.Entry, ghc rblm.GithubClient, cp rblm.CommentPruner, configs []plugins.RequireMatchingLabel, e *rblm.Event) error {
 	// Find any configs that may be relevant to this event.
-	matchConfigs := matchingConfigs(e.org, e.repo, e.branch, e.label, configs)
+	matchConfigs := matchingConfigs(e.Org, e.Repo, e.Branch, e.Label, configs)
 	if len(matchConfigs) == 0 {
 		return nil
 	}
 
-	if e.label == "" /* not a label event */ {
-		// If we are reacting to a PR or Issue being created or reopened, we should wait a
-		// few seconds to allow other automation to apply labels in order to minimize thrashing.
-		// We use the max grace period from applicable configs.
-		gracePeriod := time.Duration(0)
-		for _, cfg := range matchConfigs {
-			if cfg.GracePeriodDuration > gracePeriod {
-				gracePeriod = cfg.GracePeriodDuration
-			}
-		}
-		time.Sleep(gracePeriod)
-		// If currentLabels was populated it is now stale.
-		e.currentLabels = nil
-	}
-	if e.currentLabels == nil {
-		var err error
-		e.currentLabels, err = ghc.GetIssueLabels(e.org, e.repo, e.number)
-		if err != nil {
-			return fmt.Errorf("error getting the issue or pr's labels: %w", err)
-		}
+	err := rblm.LabelPreChecks(e, ghc, extractRegexBasedLabelMatchConfigs(configs))
+	if err != nil {
+		return err
 	}
 
 	// Handle the potentially relevant configs.
 	for _, cfg := range matchConfigs {
 		hasMissingLabel := false
 		hasMatchingLabel := false
-		for _, label := range e.currentLabels {
+		for _, label := range e.CurrentLabels {
 			hasMissingLabel = hasMissingLabel || label.Name == cfg.MissingLabel
 			hasMatchingLabel = hasMatchingLabel || cfg.Re.MatchString(label.Name)
 		}
 
 		if hasMatchingLabel && hasMissingLabel {
-			if err := ghc.RemoveLabel(e.org, e.repo, e.number, cfg.MissingLabel); err != nil {
+			if err := ghc.RemoveLabel(e.Org, e.Repo, e.Number, cfg.MissingLabel); err != nil {
 				log.WithError(err).Errorf("Failed to remove %q label.", cfg.MissingLabel)
 			}
 			if cfg.MissingComment != "" {
@@ -242,17 +188,16 @@ func handle(log *logrus.Entry, ghc githubClient, cp commentPruner, configs []plu
 				})
 			}
 		} else if !hasMatchingLabel && !hasMissingLabel {
-			if err := ghc.AddLabel(e.org, e.repo, e.number, cfg.MissingLabel); err != nil {
+			if err := ghc.AddLabel(e.Org, e.Repo, e.Number, cfg.MissingLabel); err != nil {
 				log.WithError(err).Errorf("Failed to add %q label.", cfg.MissingLabel)
 			}
 			if cfg.MissingComment != "" {
-				msg := plugins.FormatSimpleResponse(e.author, cfg.MissingComment)
-				if err := ghc.CreateComment(e.org, e.repo, e.number, msg); err != nil {
+				msg := plugins.FormatSimpleResponse(e.Author, cfg.MissingComment)
+				if err := ghc.CreateComment(e.Org, e.Repo, e.Number, msg); err != nil {
 					log.WithError(err).Error("Failed to create comment.")
 				}
 			}
 		}
-
 	}
 	return nil
 }
@@ -275,23 +220,32 @@ func handleCommentEvent(pc plugins.Agent, ce github.GenericCommentEvent) error {
 	return handleComment(pc.Logger, pc.GitHubClient, cp, pc.PluginConfig.RequireMatchingLabel, &ce)
 }
 
-func handleComment(log *logrus.Entry, ghc githubClient, cp commentPruner, configs []plugins.RequireMatchingLabel, e *github.GenericCommentEvent) error {
+func handleComment(log *logrus.Entry, ghc rblm.GithubClient, cp rblm.CommentPruner, configs []plugins.RequireMatchingLabel, e *github.GenericCommentEvent) error {
 	org := e.Repo.Owner.Login
 	repo := e.Repo.Name
 	number := e.Number
 
-	event := &event{
-		org:    org,
-		repo:   repo,
-		number: number,
-		author: e.User.Login,
+	event := &rblm.Event{
+		Org:    org,
+		Repo:   repo,
+		Number: number,
+		Author: e.User.Login,
 	}
 	if e.IsPR {
 		pr, err := ghc.GetPullRequest(org, repo, number)
 		if err != nil {
 			return err
 		}
-		event.branch = pr.Base.Ref
+		event.Branch = pr.Base.Ref
 	}
 	return handle(log, ghc, cp, configs, event)
+}
+
+func extractRegexBasedLabelMatchConfigs(configs []plugins.RequireMatchingLabel) []plugins.RegexBasedLabelMatch {
+	res := make([]plugins.RegexBasedLabelMatch, 0, len(configs))
+	for _, cfg := range configs {
+		res = append(res, cfg.RegexBasedLabelMatch)
+	}
+
+	return res
 }
