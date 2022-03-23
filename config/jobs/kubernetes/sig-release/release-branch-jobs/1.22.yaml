@@ -45,7 +45,6 @@ periodics:
     preset-ci-gce-device-plugin-gpu: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-    preset-use-new-registry: "true"
   name: ci-kubernetes-e2e-gce-device-plugin-gpu-1-22
   spec:
     containers:
@@ -131,7 +130,6 @@ periodics:
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-    preset-use-new-registry: "true"
   name: ci-kubernetes-node-kubelet-1-22
   spec:
     containers:
@@ -169,7 +167,6 @@ periodics:
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-    preset-use-new-registry: "true"
   name: ci-kubernetes-node-kubelet-features-1-22
   spec:
     containers:
@@ -381,7 +378,6 @@ periodics:
     preset-e2e-scalability-periodics: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
-    preset-use-new-registry: "true"
   name: ci-kubernetes-e2e-gci-gce-scalability-1-22
   spec:
     containers:
@@ -453,7 +449,6 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
-    preset-use-new-registry: "true"
   name: ci-kubernetes-integration-1-22
   spec:
     containers:
@@ -491,7 +486,6 @@ periodics:
     repo: kubernetes
   interval: 1h
   labels:
-    preset-use-new-registry: "true"
   name: ci-kubernetes-unit-1-22
   spec:
     containers:
@@ -526,7 +520,6 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-service-account: "true"
-    preset-use-new-registry: "true"
   name: ci-kubernetes-verify-1-22
   spec:
     containers:
