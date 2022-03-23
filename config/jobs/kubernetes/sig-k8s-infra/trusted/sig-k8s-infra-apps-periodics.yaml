@@ -15,7 +15,7 @@ periodics:
     serviceAccountName: prow-deployer
     containers:
       - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
-          command:
+        command:
           - ./apps/codesearch/deploy.sh
     annotations:
       testgrid-create-test-group: 'true'
