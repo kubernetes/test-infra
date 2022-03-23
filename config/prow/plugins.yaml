@@ -71,6 +71,7 @@ approve:
   - kubernetes-sigs/cluster-api-provider-aws
   - kubernetes-sigs/cluster-api-provider-azure
   - kubernetes-sigs/cluster-api-provider-vsphere
+  - kubernetes-sigs/descheduler
   require_self_approval: true
   ignore_review_state: true
 - repos:
