@@ -30,7 +30,7 @@ DIFFROOT="${REPO_ROOT}"
 TMP_DIFFROOT="$(TMPDIR="${BINDIR}" mktemp -d "${BINDIR}/verify-codegen.XXXXX")"
 
 mkdir -p "${TMP_DIFFROOT}/prow"
-cp -a "${DIFFROOT}"/prow/{apis,client,config} "${TMP_DIFFROOT}/prow"
+cp -a "${DIFFROOT}"/prow/{apis,client,config,plugins} "${TMP_DIFFROOT}/prow"
 mkdir -p "${TMP_DIFFROOT}/config/prow/cluster/prowjob-crd"
 cp -a "${DIFFROOT}/config/prow/cluster/prowjob-crd/prowjob_customresourcedefinition.yaml" "${TMP_DIFFROOT}/config/prow/cluster/prowjob-crd/prowjob_customresourcedefinition.yaml"
 

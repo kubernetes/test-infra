@@ -80,6 +80,10 @@ ensure-in-gopath() {
   cd "$fake_repopath"
 }
 
+gen-prow-config-documented() {
+  go run ./hack/gen-prow-documented
+}
+
 # copyfiles will copy all files in 'path' in the fake gopath over to the
 # workspace directory as the code generators output directly into GOPATH,
 # meaning without this function the generated files are left in /tmp
@@ -223,6 +227,8 @@ EOF
   copyfiles "./config/prow/cluster/prowjob-crd" "prowjob_customresourcedefinition.yaml"
   unset HOME
 }
+
+gen-prow-config-documented
 
 export GO111MODULE=off
 ensure-in-gopath
