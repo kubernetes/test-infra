@@ -1,5 +1,3 @@
-version = 2
-
 # Kubernetes doesn't use containerd restart manager.
 disabled_plugins = ["restart"]
 
@@ -24,5 +22,5 @@ disabled_plugins = ["restart"]
 
 # Enable registry.k8s.io as the primary mirror for k8s.gcr.io
 # See: https://github.com/kubernetes/k8s.io/issues/3411
-[plugins."io.containerd.grpc.v1.cri".registry.mirrors."k8s.gcr.io"]
+[plugins.cri.registry.mirrors."k8s.gcr.io"]
   endpoint = ["https://registry.k8s.io", "https://k8s.gcr.io",]
