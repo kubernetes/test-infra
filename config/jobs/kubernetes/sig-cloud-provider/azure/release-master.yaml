@@ -543,6 +543,64 @@ periodics:
     testgrid-tab-name: capz-azure-disk-vmss
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     testgrid-num-columns-recent: '30'
+
+- interval: 24h
+  name: capz-azure-disk-master-windows
+  decorate: true
+  decoration_config:
+    timeout: 3h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-azure
+    base_ref: main
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+  - org: kubernetes-sigs
+    repo: azuredisk-csi-driver
+    base_ref: master
+    path_alias: sigs.k8s.io/azuredisk-csi-driver
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
+        command:
+          - runner.sh
+          - ./scripts/ci-entrypoint.sh
+        args:
+          - bash
+          - -c
+          - >-
+            cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&
+            make e2e-test
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 1
+            memory: "4Gi"
+        env:
+          - name: WINDOWS
+            value: "true"
+          - name: TEST_WINDOWS
+            value: "true"
+          - name: WINDOWS_USE_HOST_PROCESS_CONTAINERS
+            value: "true"
+          - name: NODE_MACHINE_TYPE
+            value: "Standard_D4s_v3"
+          - name: DISABLE_ZONE
+            value: "true"
+  annotations:
+    testgrid-dashboards: provider-azure-master-signal, sig-windows-master-release
+    testgrid-tab-name: capz-azure-disk-windows
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-num-columns-recent: '30'
+
 # the "capz-release-*" jobs below validate the health of cloud-provider-azure:master against a stable release of capz
 - interval: 24h
   name: capz-release-conformance-master
