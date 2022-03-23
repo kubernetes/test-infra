@@ -501,7 +501,6 @@ periodics:
     path_alias: k8s.io/kubernetes
     repo: kubernetes
   interval: 1h
-  labels:
   name: ci-kubernetes-unit-1-23
   spec:
     containers:
