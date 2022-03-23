@@ -18,8 +18,8 @@ periodics:
         command:
           - ./apps/codesearch/deploy.sh
     annotations:
-      testgrid-create-test-group: 'true'
       testgrid-dashboards: sig-k8s-infra-apps
+      testgrid-tab-name: periodic-deploy-codesearch
       testgrid-description: 'runs https://git.k8s.io/k8s.io/apps/codesearch/deploy.sh daily in kubernetes/k8s.io/apps/codesearch'
       testgrid-alert-email: k8s-infra-rbac-codesearch@kubernetes.io, k8s-infra-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '2'
