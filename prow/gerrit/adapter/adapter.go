@@ -376,9 +376,7 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 	case client.Merged:
 		postsubmits, err := cache.GetPostsubmits(trimmedHostPath, func() (string, error) { return baseSHA, nil }, func() (string, error) { return change.CurrentRevision, nil })
 		if err != nil {
-			//TODO(mpherman): Return Error once we know this usually works
-			logger.WithError(err).Warn("Failed to get cached InRepoConfig for Postsubmits.")
-			return fmt.Errorf("failed to get inRepoConfig for Postsubmits: %v", err)
+			return fmt.Errorf("failed to get inRepoConfig for Postsubmits: %w", err)
 		}
 		postsubmits = append(postsubmits, c.config().PostsubmitsStatic[cloneURI.String()]...)
 		for _, postsubmit := range postsubmits {
@@ -394,8 +392,7 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 	case client.New:
 		presubmits, err := cache.GetPresubmits(trimmedHostPath, func() (string, error) { return baseSHA, nil }, func() (string, error) { return change.CurrentRevision, nil })
 		if err != nil {
-			logger.WithError(err).Warn("Failed to get cached InRepoConfig for Presubmits.")
-			return fmt.Errorf("failed to get inRepoConfig for Presubmits: %v", err)
+			return fmt.Errorf("failed to get inRepoConfig for Presubmits: %w", err)
 		}
 		presubmits = append(presubmits, c.config().PresubmitsStatic[cloneURI.String()]...)
 
