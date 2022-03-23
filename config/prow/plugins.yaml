@@ -2,6 +2,12 @@
 ---
 triggers:
 - repos:
+  - kubernetes-sigs/cluster-api
+  - kubernetes-sigs/cluster-api-provider-azure
+  join_org_url: "https://git.k8s.io/community/community-membership.md#member"
+  only_org_members: true
+  trigger_github_workflows: true
+- repos:
   - kubernetes
   - kubernetes-client
   - kubernetes-csi
