@@ -21,7 +21,7 @@ import (
 	"errors"
 	"fmt"
 
-	authorizationv1beta1 "k8s.io/api/authorization/v1beta1"
+	authorizationv1 "k8s.io/api/authorization/v1"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -41,14 +41,14 @@ const (
 
 // checkSAAuth checks authorization for required cluster service account (SA) resources.
 func checkSAAuth(clientset kubernetes.Interface) error {
-	client := clientset.AuthorizationV1beta1().SelfSubjectAccessReviews()
+	client := clientset.AuthorizationV1().SelfSubjectAccessReviews()
 
 	// https://kubernetes.io/docs/reference/access-authn-authz/rbac/#privilege-escalation-prevention-and-bootstrapping
 	if sar, err := client.Create(
 		context.TODO(),
-		&authorizationv1beta1.SelfSubjectAccessReview{
-			Spec: authorizationv1beta1.SelfSubjectAccessReviewSpec{
-				ResourceAttributes: &authorizationv1beta1.ResourceAttributes{
+		&authorizationv1.SelfSubjectAccessReview{
+			Spec: authorizationv1.SelfSubjectAccessReviewSpec{
+				ResourceAttributes: &authorizationv1.ResourceAttributes{
 					Group:    "rbac.authorization.k8s.io",
 					Verb:     "bind",
 					Resource: "clusterroles",
