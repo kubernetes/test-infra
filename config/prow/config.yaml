@@ -589,6 +589,7 @@ tide:
     - kubernetes-sigs
     excludedRepos:
     - kubernetes/kubernetes # Handled with a separate Tide query below.
+    - kubernetes-sigs/lwkd # Only 2 active contributors, they've requested that Tide be disabled.
     # The following are staging repos which do not normally support merging PRs.
     # https://github.com/kubernetes/kubernetes/blob/master/staging/README.md
     # Note that k/client-go is an exception to this rule so it is not an excludedRepo.
