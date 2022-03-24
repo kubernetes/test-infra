@@ -3,6 +3,10 @@ periodics:
   cluster: k8s-infra-prow-build-trusted
   interval: 24h
   decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: k8s.io
+    base_ref: main
   reporter_config:
     slack:
       channel: "k8s-infra-alerts"
@@ -21,6 +25,15 @@ periodics:
   spec:
     serviceAccountName: prow-deployer
     containers:
-      - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
-        command:
-          - ./apps/codesearch/deploy.sh
+    - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
+      imagePullPolicy: Always
+      command:
+      - ./apps/codesearch/deploy.sh
+      volumeMounts:
+      - name: github
+        mountPath: /etc/github-token
+        readOnly: true
+    volumes:
+    - name: github
+      secret:
+        secretName: k8s-infra-ci-robot-github-token
