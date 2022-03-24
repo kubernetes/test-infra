@@ -52,6 +52,8 @@ presubmits:
     - ^release-eus$
     - ^release-future$
     decorate: true
+    labels:
+      preset-service-account: "true"
     path_alias: github.com/IBM/ibm-ingress-nginx-operator
     rerun_command: /test build-ibm-ingress-nginx-operator-amd64
     spec:
@@ -74,6 +76,8 @@ presubmits:
     - ^release-eus$
     - ^release-future$
     decorate: true
+    labels:
+      preset-service-account: "true"
     path_alias: github.com/IBM/ibm-ingress-nginx-operator
     rerun_command: /test build-ibm-ingress-nginx-operator-ppc64le
     spec:
@@ -96,6 +100,8 @@ presubmits:
     - ^release-eus$
     - ^release-future$
     decorate: true
+    labels:
+      preset-service-account: "true"
     path_alias: github.com/IBM/ibm-ingress-nginx-operator
     rerun_command: /test build-ibm-ingress-nginx-operator-s390x
     spec:
