@@ -39,7 +39,7 @@ postsubmits:
         testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
         testgrid-tab-name: postsubmit-e2e-main
         testgrid-num-columns-recent: '20'
-        testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
+        testgrid-alert-email: sig-cluster-lifecycle-cluster-api-aws-alerts@kubernetes.io
     - name: ci-cluster-api-provider-aws-eks-e2e
       branches:
       # The script this job runs is not in all branches.
@@ -79,7 +79,7 @@ postsubmits:
         testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
         testgrid-tab-name: postsubmit-eks-e2e-main
         testgrid-num-columns-recent: '20'
-        testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
+        testgrid-alert-email: sig-cluster-lifecycle-cluster-api-aws-alerts@kubernetes.io
     - name: ci-cluster-api-provider-aws-e2e-conformance
       branches:
       # The script this job runs is not in all branches.
@@ -116,4 +116,4 @@ postsubmits:
         testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
         testgrid-tab-name: postsubmit-conformance-main
         testgrid-num-columns-recent: '20'
-        testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
+        testgrid-alert-email: sig-cluster-lifecycle-cluster-api-aws-alerts@kubernetes.io
