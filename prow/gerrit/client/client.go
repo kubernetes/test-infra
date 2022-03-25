@@ -22,6 +22,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"sort"
 	"strings"
 	"sync"
@@ -344,6 +345,25 @@ func (c *Client) GetChange(instance, id string) (*ChangeInfo, error) {
 	}
 
 	return info, nil
+}
+
+func (c *Client) ChangeExist(instance, id string) (bool, error) {
+	c.lock.RLock()
+	defer c.lock.RUnlock()
+	h, ok := c.handlers[instance]
+	if !ok {
+		return false, fmt.Errorf("not activated gerrit instance: %s", instance)
+	}
+
+	_, resp, err := h.changeService.GetChange(id, nil)
+	if err != nil {
+		if resp.StatusCode == http.StatusNotFound {
+			return false, nil
+		}
+		return false, fmt.Errorf("error getting current change: %w", responseBodyError(err, resp))
+	}
+
+	return true, nil
 }
 
 // responseBodyError returns the error with the response body text appended if there is any.
