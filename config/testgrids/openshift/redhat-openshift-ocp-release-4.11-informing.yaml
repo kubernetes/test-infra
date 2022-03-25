@@ -4835,7 +4835,7 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-azure-upgrade
   name: periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-azure-upgrade
-- days_of_results: 60
+- days_of_results: 25
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-gcp-ovn-rt-upgrade
   name: periodic-ci-openshift-release-master-ci-4.11-upgrade-from-stable-4.10-e2e-gcp-ovn-rt-upgrade
 - days_of_results: 60
