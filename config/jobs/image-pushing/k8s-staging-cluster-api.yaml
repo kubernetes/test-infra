@@ -33,6 +33,7 @@ postsubmits:
       annotations:
         # this is the name of some testgrid dashboard to report to.
         testgrid-dashboards: sig-cluster-lifecycle-image-pushes, sig-k8s-infra-gcb
+        testgrid-alert-email: sig-cluster-lifecycle-cluster-api-aws-alerts@kubernetes.io
       decorate: true
       branches:
         - ^main
@@ -336,4 +337,4 @@ periodics:
     # this is the name of some testgrid dashboard to report to.
       testgrid-dashboards: sig-cluster-lifecycle-image-pushes, sig-k8s-infra-gcb
       testgrid-tab-name: cluster-api-provider-aws-push-images-nightly
-      testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
+      testgrid-alert-email: sig-cluster-lifecycle-cluster-api-aws-alerts@kubernetes.io
