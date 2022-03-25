@@ -1116,7 +1116,6 @@ plugins:
     - milestone
     - milestonestatus
     - override
-    - release-note
     - require-matching-label
 
   kubernetes-sigs/cluster-api-provider-azure:
