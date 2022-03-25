@@ -58,7 +58,7 @@ periodics:
     testgrid-tab-name: stable-metrics-help
   spec:
     containers:
-    - image: gcr.io/k8s-prow/commenter:v20220303-3364943fd7
+    - image: gcr.io/k8s-prow/commenter:v20220323-9b8611d021
       command:
       - commenter
       args:
