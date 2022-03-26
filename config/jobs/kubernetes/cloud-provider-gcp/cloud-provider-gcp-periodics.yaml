@@ -44,7 +44,7 @@ periodics:
         REPO_ROOT=$GOPATH/src/k8s.io/cloud-provider-gcp;
         cd;
         export GO111MODULE=on;
-        go get sigs.k8s.io/kubetest2@latest;
-        go get sigs.k8s.io/kubetest2/kubetest2-gce@latest;
-        go get sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest;
+        go install sigs.k8s.io/kubetest2@latest;
+        go install sigs.k8s.io/kubetest2/kubetest2-gce@latest;
+        go install sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest;
         kubetest2 gce -v 2 --repo-root $REPO_ROOT --build --up --down --test=ginkgo -- --test-package-version=v1.23.0 --focus-regex='\[Conformance\]'
