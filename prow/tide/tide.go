@@ -919,9 +919,7 @@ func (c *Controller) accumulateBatch(sp subpool) (successBatch []PullRequest, pe
 		context := pj.Spec.Context
 		jobState := toSimpleState(pj.Status.State)
 		// Store the best result for this ref+context.
-		if s, ok := states[ref].jobStates[context]; !ok || s == failureState || jobState == successState {
-			states[ref].jobStates[context] = jobState
-		}
+		states[ref].jobStates[context] = getBetterSimpleState(states[ref].jobStates[context], jobState)
 	}
 	for ref, state := range states {
 		if !state.validPulls {
@@ -1019,13 +1017,7 @@ func accumulate(presubmits map[int][]config.Presubmit, prs []PullRequest, pjs []
 			}
 
 			name := pj.Spec.Context
-			oldState := psStates[name]
-			newState := toSimpleState(pj.Status.State)
-			if oldState == failureState || oldState == "" {
-				psStates[name] = newState
-			} else if oldState == pendingState && newState == successState {
-				psStates[name] = successState
-			}
+			psStates[name] = getBetterSimpleState(psStates[name], toSimpleState(pj.Status.State))
 		}
 		// The overall result for the PR is the worst of the best of all its
 		// required Presubmits
@@ -1573,15 +1565,10 @@ func refGetterFactory(ref string) config.RefGetter {
 	}
 }
 
+// presubmitsByPull creates a map pr -> requiredPresubmits and will filter out all PRs
+// where we failed to find out the required presubmits (can happen if inrepoconfig is enabled).
 func (c *Controller) presubmitsByPull(sp *subpool) (map[int][]config.Presubmit, error) {
 	presubmits := make(map[int][]config.Presubmit, len(sp.prs))
-	record := func(num int, job config.Presubmit) {
-		if jobs, ok := presubmits[num]; ok {
-			presubmits[num] = append(jobs, job)
-		} else {
-			presubmits[num] = []config.Presubmit{job}
-		}
-	}
 
 	// filtered PRs contains all PRs for which we were able to get the presubmits
 	var filteredPRs []PullRequest
@@ -1594,7 +1581,7 @@ func (c *Controller) presubmitsByPull(sp *subpool) (map[int][]config.Presubmit, 
 			continue
 		}
 		filteredPRs = append(filteredPRs, pr)
-		log.Debugf("Found %d possible presubmits", len(presubmitsForPull))
+		log.WithField("num_possible_presubmit", len(presubmitsForPull)).Debug("Found possible preseubmits")
 
 		for _, ps := range presubmitsForPull {
 			if !ps.ContextRequired() {
@@ -1610,7 +1597,7 @@ func (c *Controller) presubmitsByPull(sp *subpool) (map[int][]config.Presubmit, 
 				continue
 			}
 
-			record(int(pr.Number), ps)
+			presubmits[int(pr.Number)] = append(presubmits[int(pr.Number)], ps)
 		}
 	}
 
@@ -1655,7 +1642,7 @@ func (c *Controller) presubmitsForBatch(prs []PullRequest, org, repo, baseSHA, b
 }
 
 func (c *Controller) syncSubpool(sp subpool, blocks []blockers.Blocker) (Pool, error) {
-	sp.log.Infof("Syncing subpool: %d PRs, %d PJs.", len(sp.prs), len(sp.pjs))
+	sp.log.WithField("num_prs", len(sp.prs)).WithField("num_prowjobs", len(sp.pjs)).Info("Syncing subpool")
 	successes, pendings, missings, missingSerialTests := accumulate(sp.presubmits, sp.prs, sp.pjs, sp.log, sp.sha, c.ghc)
 	batchMerge, batchPending := c.accumulateBatch(sp)
 	sp.log.WithFields(logrus.Fields{
@@ -1828,7 +1815,7 @@ func (c *Controller) dividePool(pool map[string]PullRequest) (map[string]*subpoo
 		if err != nil {
 			return nil, fmt.Errorf("failed to list jobs for subpool %s: %w", subpoolkey, err)
 		}
-		c.logger.WithField("subpool", subpoolkey).Debugf("Found %d prowjobs.", len(pjs.Items))
+		c.logger.WithField("subpool", subpoolkey).WithField("pj_count", len(pjs.Items)).Debug("Found prowjobs")
 		sps[subpoolkey].pjs = pjs.Items
 	}
 	return sps, nil
@@ -2262,4 +2249,16 @@ func mapKeyWithHighestvalue(m map[string]int) string {
 	}
 
 	return result
+}
+
+// getBetterSimpleState returns the better simple state. It supports
+// no state, failure, pending and success.
+func getBetterSimpleState(a, b simpleState) simpleState {
+	if a == "" || a == failureState || b == successState {
+		// b can't be worse than no state or failure and a can't be beter than success
+		return b
+	}
+
+	// a must be pending and b can not be success, so b can't be better than a
+	return a
 }
