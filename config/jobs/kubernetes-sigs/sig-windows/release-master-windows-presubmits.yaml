@@ -82,9 +82,9 @@ presubmits:
       preset-capz-containerd-latest: "true"
       preset-capz-windows-common-main-pull: "true"
     extra_refs:
-    - org: jsturtevant
+    - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: pr-support-containerd
+      base_ref: main
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
