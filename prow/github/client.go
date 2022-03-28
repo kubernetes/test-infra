@@ -823,6 +823,10 @@ func (s *addHeaderTransport) RoundTrip(r *http.Request) (*http.Response, error) 
 	// Any GHE version after 2.22 will enable the Checks types per default
 	r.Header.Add("Accept", "application/vnd.github.antiope-preview+json")
 
+	// We have to add this header to enable the Merge info scheme preview:
+	// https://docs.github.com/en/graphql/overview/schema-previews#merge-info-preview
+	r.Header.Add("Accept", "application/vnd.github.merge-info-preview+json")
+
 	// We use the context to pass the UserAgent through the V4 client we depend on
 	if v := r.Context().Value(userAgentContextKey); v != nil {
 		r.Header.Add("User-Agent", v.(string))

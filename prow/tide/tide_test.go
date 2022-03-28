@@ -1267,6 +1267,7 @@ func TestMergeMethodCheckerAndPRMergeMethod(t *testing.T) {
 				}{
 					Nodes: []struct{ Name githubql.String }{},
 				},
+				CanBeRebased: true,
 			}
 			for _, label := range tc.labels {
 				labelNode := struct{ Name githubql.String }{Name: githubql.String(label)}
@@ -1300,6 +1301,76 @@ func TestMergeMethodCheckerAndPRMergeMethod(t *testing.T) {
 			} else if tc.expectConflictErr {
 				t.Errorf("missing expected merge method conflict error")
 				return
+			}
+		})
+	}
+}
+
+func TestRebaseMergeMethodIsAllowed(t *testing.T) {
+	orgName := "fake-org"
+	repoName := "fake-repo"
+	tideConfig := config.Tide{
+		MergeType: map[string]github.PullRequestMergeType{
+			fmt.Sprintf("%s/%s", orgName, repoName): github.MergeRebase,
+		},
+	}
+	cfg := func() *config.Config { return &config.Config{ProwConfig: config.ProwConfig{Tide: tideConfig}} }
+	mmc := newMergeChecker(cfg, &fgc{})
+	mmc.cache = map[config.OrgRepo]map[github.PullRequestMergeType]bool{
+		{Org: orgName, Repo: repoName}: {
+			github.MergeRebase: true,
+		},
+	}
+
+	testCases := []struct {
+		name                string
+		expectedMergeOutput string
+		prCanBeRebased      bool
+	}{
+		{
+			name:                "Merging PR using rebase successfully",
+			expectedMergeOutput: "",
+			prCanBeRebased:      true,
+		},
+		{
+			name:                "Merging PR using rebase but it is not allowed",
+			expectedMergeOutput: "PR can't be rebased",
+			prCanBeRebased:      false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			pr := &PullRequest{
+				Repository: struct {
+					Name          githubql.String
+					NameWithOwner githubql.String
+					Owner         struct {
+						Login githubql.String
+					}
+				}{
+					Name: githubql.String(repoName),
+					Owner: struct {
+						Login githubql.String
+					}{
+						Login: githubql.String(orgName),
+					},
+				},
+				Labels: struct {
+					Nodes []struct{ Name githubql.String }
+				}{
+					Nodes: []struct{ Name githubql.String }{},
+				},
+				CanBeRebased: githubql.Boolean(tc.prCanBeRebased),
+			}
+
+			mergeOutput, err := mmc.isAllowed(pr)
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+			} else {
+				if mergeOutput != tc.expectedMergeOutput {
+					t.Errorf("Expected merge output \"%s\" but got \"%s\"\n", tc.expectedMergeOutput, mergeOutput)
+				}
 			}
 		})
 	}
