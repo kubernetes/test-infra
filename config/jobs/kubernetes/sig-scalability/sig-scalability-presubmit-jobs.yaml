@@ -240,6 +240,7 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
       preset-e2e-scalability-common: "true"
       preset-e2e-scalability-presubmits: "true"
     annotations:
