@@ -154,28 +154,6 @@ dashboards:
     test_group_name: pull-kubernetes-node-e2e-containerd-features-kubetest2
     base_options: width=10
 - name: presubmits-kubernetes-scalability
-  dashboard_tab:
-  - name: pull-kubernetes-e2e-gce-100-performance
-    test_group_name: pull-kubernetes-e2e-gce-100-performance
-    base_options: width=10
-  - name: pull-kubernetes-e2e-gce-big-performance
-    test_group_name: pull-kubernetes-e2e-gce-big-performance
-    base_options: width=10
-  - name: pull-kubernetes-e2e-gce-large-performance
-    test_group_name: pull-kubernetes-e2e-gce-large-performance
-    base_options: width=10
-  - name: pull-kubernetes-kubemark-e2e-gce-big
-    test_group_name: pull-kubernetes-kubemark-e2e-gce-big
-    base_options: width=10
-  - name: pull-kubernetes-kubemark-e2e-gce-scale
-    test_group_name: pull-kubernetes-kubemark-e2e-gce-scale
-    base_options: width=10
-  - name: pull-perf-tests-clusterloader2
-    test_group_name: pull-perf-tests-clusterloader2
-    base_options: width=10
-  - name: pull-perf-tests-clusterloader2-kubemark
-    test_group_name: pull-perf-tests-clusterloader2-kubemark
-    base_options: width=10
 - name: presubmits-misc
 - name: presubmits-node-problem-detector
 - name: presubmits-poseidon

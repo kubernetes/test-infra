@@ -388,24 +388,6 @@ test_groups:
 - name: cel-go-conformance-tests
   gcs_prefix: cel-conformance/test-logs
 
-- name: pull-kubernetes-e2e-gce-100-performance
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-100-performance
-  days_of_results: 60
-- name: pull-kubernetes-e2e-gce-big-performance
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-big-performance
-  days_of_results: 60
-- name: pull-kubernetes-e2e-gce-large-performance
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-large-performance
-  days_of_results: 60
-- name: pull-kubernetes-kubemark-e2e-gce-scale
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-kubemark-e2e-gce-scale
-  days_of_results: 30
-- name: pull-perf-tests-clusterloader2
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-perf-tests-clusterloader2
-  days_of_results: 30
-- name: pull-perf-tests-clusterloader2-kubemark
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-perf-tests-clusterloader2-kubemark
-  days_of_results: 30
 #IBM s390x test results
 - name: s390x-conformance
   gcs_prefix: k8s-conform-s390x-k8s/logs/ci-k8s-conformance-s390x
