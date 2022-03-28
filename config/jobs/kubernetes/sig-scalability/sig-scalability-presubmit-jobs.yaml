@@ -30,6 +30,8 @@ presubmits:
       preset-e2e-scalability-presubmits: "true"
     annotations:
       fork-per-release: "true"
+      testgrid-dashboards: presubmits-kubernetes-scalability
+      testgrid-tab-name: pull-kubernetes-e2e-gce-100-performance
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
@@ -110,6 +112,9 @@ presubmits:
       preset-dind-enabled: "true"
       preset-e2e-scalability-common: "true"
       preset-e2e-scalability-presubmits: "true"
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-scalability
+      testgrid-tab-name: pull-kubernetes-e2e-gce-big-performance
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
@@ -238,6 +243,9 @@ presubmits:
       preset-dind-enabled: "true"
       preset-e2e-scalability-common: "true"
       preset-e2e-scalability-presubmits: "true"
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-scalability
+      testgrid-tab-name: pull-kubernetes-e2e-gce-large-performance
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
@@ -310,7 +318,8 @@ presubmits:
       preset-e2e-scalability-presubmits: "true"
     annotations:
       fork-per-release: "true"
-      testgrid-create-test-group: "true"
+      testgrid-dashboards: presubmits-kubernetes-scalability
+      testgrid-tab-name: pull-kubernetes-kubemark-e2e-gce-big
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
@@ -395,6 +404,10 @@ presubmits:
       preset-e2e-kubemark-common: "true"
       preset-e2e-kubemark-gce-scale: "true"
       preset-e2e-scalability-presubmits: "true"
+    annotations:
+      fork-per-release: "true"
+      testgrid-dashboards: presubmits-kubernetes-scalability
+      testgrid-tab-name: pull-kubernetes-kubemark-e2e-gce-scale
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
@@ -512,6 +525,10 @@ presubmits:
       preset-k8s-ssh: "true"
       preset-e2e-scalability-common: "true"
       preset-e2e-scalability-presubmits: "true"
+    annotations:
+      fork-per-release: "true"
+      testgrid-dashboards: presubmits-kubernetes-scalability
+      testgrid-tab-name: pull-perf-tests-clusterloader2
     run_if_changed: ^clusterloader2/.*$
     spec:
       containers:
@@ -578,6 +595,10 @@ presubmits:
       preset-dind-enabled: "true"
       preset-e2e-kubemark-common: "true"
       preset-e2e-scalability-presubmits: "true"
+    annotations:
+      fork-per-release: "true"
+      testgrid-dashboards: presubmits-kubernetes-scalability
+      testgrid-tab-name: pull-perf-tests-clusterloader2-kubemark
     run_if_changed: ^clusterloader2/.*$
     spec:
       containers:
