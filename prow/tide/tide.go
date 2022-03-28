@@ -43,6 +43,7 @@ import (
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/io"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/tide/blockers"
 	"k8s.io/test-infra/prow/tide/history"
@@ -79,6 +80,7 @@ type Controller struct {
 	prowJobClient      ctrlruntimeclient.Client
 	gc                 git.ClientFactory
 	usesGitHubAppsAuth bool
+	pickNewBatch       func(sp subpool, candidates []PullRequest, maxBatchSize int) ([]PullRequest, error)
 
 	sc *statusController
 
@@ -319,6 +321,7 @@ func newSyncController(
 		config:             cfg,
 		gc:                 gc,
 		usesGitHubAppsAuth: usesGitHubAppsAuth,
+		pickNewBatch:       pickNewBatch(gc, cfg),
 		sc:                 sc,
 		changedFiles: &changedFilesAgent{
 			ghc:             ghcSync,
@@ -1059,46 +1062,48 @@ func prNumbers(prs []PullRequest) []int {
 	return nums
 }
 
-func (c *Controller) pickNewBatch(sp subpool, candidates []PullRequest, maxBatchSize int) ([]PullRequest, error) {
-	var res []PullRequest
-	r, err := c.gc.ClientFor(sp.org, sp.repo)
-	if err != nil {
-		return nil, err
-	}
-	defer r.Clean()
-	if err := r.Config("user.name", "prow"); err != nil {
-		return nil, err
-	}
-	if err := r.Config("user.email", "prow@localhost"); err != nil {
-		return nil, err
-	}
-	if err := r.Config("commit.gpgsign", "false"); err != nil {
-		sp.log.Warningf("Cannot set gpgsign=false in gitconfig: %v", err)
-	}
-	if err := r.Checkout(sp.sha); err != nil {
-		return nil, err
-	}
-
-	for _, pr := range candidates {
-		mergeMethod, err := prMergeMethod(c.config().Tide, &pr)
+func pickNewBatch(gc git.ClientFactory, cfg config.Getter) func(sp subpool, candidates []PullRequest, maxBatchSize int) ([]PullRequest, error) {
+	return func(sp subpool, candidates []PullRequest, maxBatchSize int) ([]PullRequest, error) {
+		var res []PullRequest
+		r, err := gc.ClientFor(sp.org, sp.repo)
 		if err != nil {
-			sp.log.WithFields(pr.logFields()).Warnf("Failed to get merge method for PR, will skip: %v.", err)
-			continue
-		}
-		if ok, err := r.MergeWithStrategy(string(pr.HeadRefOID), string(mergeMethod)); err != nil {
-			// we failed to abort the merge and our git client is
-			// in a bad state; it must be cleaned before we try again
 			return nil, err
-		} else if ok {
-			res = append(res, pr)
-			// TODO: Make this configurable per subpool.
-			if maxBatchSize > 0 && len(res) >= maxBatchSize {
-				break
+		}
+		defer r.Clean()
+		if err := r.Config("user.name", "prow"); err != nil {
+			return nil, err
+		}
+		if err := r.Config("user.email", "prow@localhost"); err != nil {
+			return nil, err
+		}
+		if err := r.Config("commit.gpgsign", "false"); err != nil {
+			sp.log.Warningf("Cannot set gpgsign=false in gitconfig: %v", err)
+		}
+		if err := r.Checkout(sp.sha); err != nil {
+			return nil, err
+		}
+
+		for _, pr := range candidates {
+			mergeMethod, err := prMergeMethod(cfg().Tide, &pr)
+			if err != nil {
+				sp.log.WithFields(pr.logFields()).Warnf("Failed to get merge method for PR, will skip: %v.", err)
+				continue
+			}
+			if ok, err := r.MergeWithStrategy(string(pr.HeadRefOID), string(mergeMethod)); err != nil {
+				// we failed to abort the merge and our git client is
+				// in a bad state; it must be cleaned before we try again
+				return nil, err
+			} else if ok {
+				res = append(res, pr)
+				// TODO: Make this configurable per subpool.
+				if maxBatchSize > 0 && len(res) >= maxBatchSize {
+					break
+				}
 			}
 		}
-	}
 
-	return res, nil
+		return res, nil
+	}
 }
 
 type newBatchFunc func(sp subpool, candidates []PullRequest, maxBatchSize int) ([]PullRequest, error)
@@ -1115,7 +1120,7 @@ func (c *Controller) pickBatch(sp subpool, cc map[int]contextChecker, newBatchFu
 
 	var candidates []PullRequest
 	for _, pr := range sp.prs {
-		if isPassingTests(sp.log, c.ghc, pr, cc[int(pr.Number)]) {
+		if c.isBatchCandidateEligible(sp.log, &pr, cc[int(pr.Number)]) {
 			candidates = append(candidates, pr)
 		}
 	}
@@ -1146,6 +1151,71 @@ func (c *Controller) pickBatch(sp subpool, cc map[int]contextChecker, newBatchFu
 	}
 
 	return res, presubmits, nil
+}
+
+// isBatchCandidateEligible determines batch retesting eligibility. It allows PRs where all mandatory contexts
+// are either passing or pending. Pending ones are only allowed if we find a ProwJob that corresponds to them
+// and was created by Tide, as that allows us to infer that this job passed in the past.
+// We look at the actively running ProwJob rather than a previous successful one, because the latter might
+// already be garbage collected.
+func (c *Controller) isBatchCandidateEligible(log *logrus.Entry, candidate *PullRequest, cc contextChecker) bool {
+	candidateHeadContexts, err := headContexts(log, c.ghc, candidate)
+	if err != nil {
+		log.WithError(err).WithFields(candidate.logFields()).Debug("failed to get headContexts for batch candidate, ignoring.")
+		return false
+	}
+	var contextNames []string
+	for _, headContext := range candidateHeadContexts {
+		contextNames = append(contextNames, string(headContext.Context))
+	}
+
+	if len(cc.MissingRequiredContexts(contextNames)) > 0 {
+		return false
+	}
+
+	for _, headContext := range candidateHeadContexts {
+		if headContext.State == githubql.StatusStateSuccess {
+			continue
+		}
+		if headContext.State != githubql.StatusStatePending && !cc.IsOptional(string(headContext.Context)) {
+			return false
+		}
+
+		pjLabels := createdByTideLabels()
+		pjLabels[kube.ProwJobTypeLabel] = string(prowapi.PresubmitJob)
+		pjLabels[kube.OrgLabel] = string(candidate.Repository.Owner.Login)
+		pjLabels[kube.RepoLabel] = string(candidate.Repository.Name)
+		pjLabels[kube.BaseRefLabel] = string(candidate.BaseRef.Name)
+		pjLabels[kube.PullLabel] = string(strconv.Itoa(int(candidate.Number)))
+		pjLabels[kube.ContextAnnotation] = string(headContext.Context)
+
+		var pjs prowapi.ProwJobList
+		if err := c.prowJobClient.List(c.ctx,
+			&pjs,
+			ctrlruntimeclient.InNamespace(c.config().ProwJobNamespace),
+			ctrlruntimeclient.MatchingLabels(pjLabels),
+		); err != nil {
+			log.WithError(err).Debug("failed to list prowjobs for PR, ignoring")
+			return false
+		}
+
+		if prowJobListHasProwJobWithMatchingHeadSHA(&pjs, string(candidate.HeadRefOID)) {
+			continue
+		}
+
+		return false
+	}
+
+	return true
+}
+
+func prowJobListHasProwJobWithMatchingHeadSHA(pjs *prowapi.ProwJobList, headSHA string) bool {
+	for _, pj := range pjs.Items {
+		if pj.Spec.Refs != nil && len(pj.Spec.Refs.Pulls) == 1 && pj.Spec.Refs.Pulls[0].SHA == headSHA {
+			return true
+		}
+	}
+	return false
 }
 
 func (c *Controller) prepareMergeDetails(commitTemplates config.TideMergeCommitTemplate, pr PullRequest, mergeMethod github.PullRequestMergeType) github.MergeDetails {
@@ -1413,6 +1483,12 @@ func (c *Controller) trigger(sp subpool, presubmits []config.Presubmit, prs []Pu
 		pj.Namespace = c.config().ProwJobNamespace
 		log := c.logger.WithFields(pjutil.ProwJobFields(&pj))
 		start := time.Now()
+		if pj.Labels == nil {
+			pj.Labels = map[string]string{}
+		}
+		for k, v := range createdByTideLabels() {
+			pj.Labels[k] = v
+		}
 		if err := c.prowJobClient.Create(c.ctx, &pj); err != nil {
 			log.WithField("duration", time.Since(start).String()).Debug("Failed to create ProwJob on the cluster.")
 			return fmt.Errorf("failed to create a ProwJob for job: %q, PRs: %v: %w", spec.Job, prNumbers(prs), err)
@@ -1420,6 +1496,10 @@ func (c *Controller) trigger(sp subpool, presubmits []config.Presubmit, prs []Pu
 		log.WithField("duration", time.Since(start).String()).Debug("Created ProwJob on the cluster.")
 	}
 	return nil
+}
+
+func createdByTideLabels() map[string]string {
+	return map[string]string{"created-by-tide": "true"}
 }
 
 func (c *Controller) nonFailedBatchForJobAndRefsExists(jobName string, refs *prowapi.Refs) bool {
