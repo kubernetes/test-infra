@@ -43,6 +43,11 @@ import (
 	"k8s.io/test-infra/prow/pjutil"
 )
 
+const (
+	inRepoConfigRetries       = 2
+	inRepoConfigFailedMessage = "Unable to get InRepoConfig Presubmits. This is likely due to merge conflict. Please rebase to trigger presubmits."
+)
+
 var gerritMetrics = struct {
 	processingResults *prometheus.CounterVec
 }{
@@ -374,7 +379,13 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 
 	switch change.Status {
 	case client.Merged:
-		postsubmits, err := cache.GetPostsubmits(trimmedHostPath, func() (string, error) { return baseSHA, nil }, func() (string, error) { return change.CurrentRevision, nil })
+		var postsubmits []config.Postsubmit
+		for attempt := 0; attempt < inRepoConfigRetries; attempt++ {
+			postsubmits, err = cache.GetPostsubmits(trimmedHostPath, func() (string, error) { return baseSHA, nil }, func() (string, error) { return change.CurrentRevision, nil })
+			if err == nil {
+				break
+			}
+		}
 		if err != nil {
 			return fmt.Errorf("failed to get inRepoConfig for Postsubmits: %w", err)
 		}
@@ -390,8 +401,18 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 			}
 		}
 	case client.New:
-		presubmits, err := cache.GetPresubmits(trimmedHostPath, func() (string, error) { return baseSHA, nil }, func() (string, error) { return change.CurrentRevision, nil })
+		var presubmits []config.Presubmit
+		for attempt := 0; attempt < inRepoConfigRetries; attempt++ {
+			presubmits, err = cache.GetPresubmits(trimmedHostPath, func() (string, error) { return baseSHA, nil }, func() (string, error) { return change.CurrentRevision, nil })
+			if err == nil {
+				break
+			}
+		}
 		if err != nil {
+			// Leave message to let user know that we did not get Presubmits
+			if err := c.gc.SetReview(instance, change.ID, change.CurrentRevision, inRepoConfigFailedMessage, nil); err != nil {
+				return err
+			}
 			return fmt.Errorf("failed to get inRepoConfig for Presubmits: %w", err)
 		}
 		presubmits = append(presubmits, c.config().PresubmitsStatic[cloneURI.String()]...)
