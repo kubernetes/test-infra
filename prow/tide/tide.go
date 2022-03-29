@@ -722,6 +722,9 @@ func (m *mergeChecker) isAllowed(pr *PullRequest) (string, error) {
 		// This should be impossible.
 		return "", fmt.Errorf("Programmer error! Failed to determine a merge method: %w", err)
 	}
+	if mergeMethod == github.MergeRebase && !pr.CanBeRebased {
+		return "PR can't be rebased", nil
+	}
 	orgRepo := config.OrgRepo{Org: string(pr.Repository.Owner.Login), Repo: string(pr.Repository.Name)}
 	repoMethods, err := m.repoMethods(orgRepo)
 	if err != nil {
@@ -1911,10 +1914,11 @@ type PullRequest struct {
 		Name   githubql.String
 		Prefix githubql.String
 	}
-	HeadRefName githubql.String `graphql:"headRefName"`
-	HeadRefOID  githubql.String `graphql:"headRefOid"`
-	Mergeable   githubql.MergeableState
-	Repository  struct {
+	HeadRefName  githubql.String `graphql:"headRefName"`
+	HeadRefOID   githubql.String `graphql:"headRefOid"`
+	Mergeable    githubql.MergeableState
+	CanBeRebased githubql.Boolean `graphql:"canBeRebased"`
+	Repository   struct {
 		Name          githubql.String
 		NameWithOwner githubql.String
 		Owner         struct {
