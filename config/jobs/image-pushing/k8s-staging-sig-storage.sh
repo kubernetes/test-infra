@@ -31,6 +31,8 @@ readonly REPOS=(
     kubernetes-csi/node-driver-registrar
     kubernetes-csi/csi-driver-nfs
     kubernetes-csi/csi-driver-iscsi
+    kubernetes-csi/lib-volume-populator
+    kubernetes-csi/volume-data-source-validator
     kubernetes-sigs/sig-storage-local-static-provisioner
     kubernetes-sigs/nfs-ganesha-server-and-external-provisioner
     kubernetes-sigs/nfs-subdir-external-provisioner
@@ -66,8 +68,11 @@ for repo in "${REPOS[@]}" "${BROKEN_REPOS[@]}"; do
             slug: sig-storage-image-build-admins
       cluster: k8s-infra-prow-build-trusted
       annotations:
-        testgrid-dashboards: sig-storage-image-build
+        testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
       decorate: true
+      decoration_config:
+        timeout: 240m
+        grace_period: 15m
       branches:
         # For publishing canary images.
         - ^master$
@@ -114,13 +119,13 @@ cat >>"${OUTPUT}" <<EOF
   - name: canary-${repo}-push-images
     cluster: k8s-infra-prow-build-trusted
     annotations:
-      testgrid-dashboards: sig-storage-image-build
+      testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
     decorate: true
     interval: 168h # one week
     extra_refs:
       # This also becomes the current directory for run.sh and thus
       # the cloud image build.
-      - org: kubernetes-csi
+      - org: ${org}
         repo: ${repo}
         base_ref: master
     spec:
