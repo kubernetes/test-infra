@@ -11,6 +11,8 @@ postsubmits:
         testgrid-dashboards: provider-azure-cloud-provider-azure, sig-k8s-infra-gcb
         testgrid-tab-name: post-cloud-provider-azure-push-images
       decorate: true
+      decoration_config:
+        timeout: 3h
       # this causes the job to only run on the master branch. Remove it if your
       # job makes sense on every branch (unless it's setting a `latest` tag it
       # probably does).
