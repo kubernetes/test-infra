@@ -244,6 +244,8 @@ def main():
             print(line)
         sys.exit(1)
 
+    print("Verified %d files" % (len(filenames), ))
+
 
 if __name__ == "__main__":
     ARGS = get_args()
