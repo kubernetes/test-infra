@@ -98,21 +98,22 @@ def file_passes(filename, refs, regexs):  # pylint: disable=too-many-locals
 
     basename = os.path.basename(filename)
     extension = file_extension(filename)
-    ref = refs[basename]
     if extension != "":
         ref = refs[extension]
+    else:
+        ref = refs[basename]
 
     ref = ref.copy()
 
     # remove build tags from the top of Go files
-    lang_identifiers = {
-        "go": "go_build_constraints",
-        "sh": "shebang",
-        "py": "shebang"
-    }
-    if extension in lang_identifiers:
-        con = regexs[lang_identifiers["go_build_constraints"]]
+    if extension == "go":
+        con = regexs["go_build_constraints"]
         (file_data, found) = con.subn("", file_data, 1)
+
+    # remove shebang from the top of shell files
+    if extension in ("sh", "py"):
+        she = regexs["shebang"]
+        (file_data, found) = she.subn("", file_data, 1)
 
     data = file_data.splitlines()
 
@@ -125,9 +126,10 @@ def file_passes(filename, refs, regexs):  # pylint: disable=too-many-locals
 
     # check if we encounter a 'YEAR' placeholder if the file is generated
     if is_generated(file_data):
-        for line in data:
+        for i, line in enumerate(data):
             if "Copyright YEAR" in line:
                 return False
+        return True
 
     year = regexs["year"]
     for datum in data:
@@ -142,7 +144,10 @@ def file_passes(filename, refs, regexs):  # pylint: disable=too-many-locals
             break
 
     # if we don't match the reference at this point, fail
-    return ref == data
+    if ref != data:
+        return False
+
+    return True
 
 
 def file_extension(filename):
