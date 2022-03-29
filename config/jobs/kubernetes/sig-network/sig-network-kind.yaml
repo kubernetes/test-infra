@@ -678,3 +678,56 @@ periodics:
     testgrid-tab-name: sig-network-kind, detect-local-node-cidr
     description: Runs network tests using KIND against latest kubernetes master with a kubernetes-in-docker cluster and kube-proxy detectLocalMode=NodeCIDR
     testgrid-alert-email: antonio.ojea.garcia@gmail.com, widaly@microsoft.com
+# network test against kubernetes master branch with `kind` and kube-proxy detectLocalMode="InterfaceNamePrefix"
+- interval: 6h
+  name: ci-kubernetes-kind-network-detect-local-interface-name-prefix
+  cluster: k8s-infra-prow-build
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  decorate: true
+  decoration_config:
+    timeout: 200m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: "k8s.io/test-infra"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/krte:v20220322-c5eee43783-master
+      command:
+        - wrapper.sh
+        - bash
+        - -c
+        - curl -sSL https://kind.sigs.k8s.io/dl/latest/linux-amd64.tgz | tar xvfz - -C "${PATH%%:*}/" && $GOPATH/src/k8s.io/test-infra/experiment/kind-detect-local-e2e.sh
+      env:
+      # don't retry network tests
+      - name: GINKGO_TOLERATE_FLAKES
+        value: "n"
+      - name: FOCUS
+        value: \[sig-network\]|\[Conformance\]
+      - name: SKIP
+        value: \[Feature:(Networking-IPv6|Example|Federation|PerformanceDNS)\]|LB.health.check|LoadBalancer|load.balancer|GCE|NetworkPolicy|DualStack
+      - name: KUBE_PROXY_DETECT_LOCAL_MODE
+        value: InterfaceNamePrefix
+      # we need privileged mode in order to do docker in docker
+      securityContext:
+        privileged: true
+      resources:
+        limits:
+          cpu: 4
+          memory: 9Gi
+        requests:
+          cpu: 4
+          memory: 9Gi
+  annotations:
+    testgrid-dashboards: sig-network-kind
+    testgrid-tab-name: sig-network-kind, detect-local-interface-name-prefix
+    description: Runs network tests using KIND against latest kubernetes master with a kubernetes-in-docker cluster and kube-proxy detectLocalMode=InterfaceNamePrefix
+    testgrid-alert-email: antonio.ojea.garcia@gmail.com, widaly@microsoft.com
