@@ -37,7 +37,7 @@ def get_args():
                         default=rootdir,
                         help="root directory to examine")
 
-    default_boilerplate_dir = os.path.join(rootdir, "verify/boilerplate")
+    default_boilerplate_dir = os.path.join(rootdir, "hack/boilerplate")
     parser.add_argument("--boilerplate-dir", default=default_boilerplate_dir)
 
     parser.add_argument(
@@ -49,8 +49,9 @@ def get_args():
             '_output',
             'third_party',
             'vendor',
-            'verify/boilerplate/test',
+            'hack/boilerplate/test',
             'verify_boilerplate.py',
+            '.python_virtual_env',
         ],
         action='append',
         help='Customize paths to avoid',
