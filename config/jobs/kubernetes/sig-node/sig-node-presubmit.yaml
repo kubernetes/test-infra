@@ -243,6 +243,52 @@ presubmits:
       limits:
         cpu: 4
         memory: 6Gi
+  - name: pull-kubernetes-node-e2e-containerd-alpha-features
+    cluster: k8s-infra-prow-build
+    branches:
+    # TODO(releng): Remove once repo default branch has been renamed
+    - master
+    - main
+    always_run: false
+    optional: true
+    max_concurrency: 12
+    skip_report: false
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    annotations:
+      testgrid-dashboards: sig-node-presubmits
+      testgrid-tab-name: pr-node-kubelet-containerd-alpha-features
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
+        args:
+        - --root=/go/src
+        - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
+        - --repo=github.com/containerd/containerd=main
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --service-account=/etc/service-account/service-account.json
+        - --timeout=90
+        - --scenario=kubernetes_e2e
+        - --
+        - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/image-config.yaml
+        - --deployment=node
+        - --gcp-zone=us-central1-b
+        - '--node-test-args=--feature-gates=AllAlpha=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+        - --node-tests=true
+        - --provider=gce
+        - --test_args=--nodes=8 --focus="\[NodeFeature:.+\]|\[NodeAlphaFeature:.+\]" --skip="\[Flaky\]|\[Serial\]"
+        - --timeout=65m
+        env:
+        - name: GOPATH
+          value: /go
+        resources:
+          requests:
+            cpu: 4
+            memory: 6Gi
+          limits:
+            cpu: 4
+            memory: 6Gi
   - name: pull-kubernetes-node-kubelet-serial-121
     branches:
     - release-1.21
