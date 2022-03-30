@@ -100,7 +100,9 @@ PR_PROJECTS = {
 }
 
 SCALE_PROJECT = {
-    'k8s-presubmit-scale': 3,
+    # cleans up resources older than 12h
+    # for scale presubmit job we need to give jobs enough time to finish.
+    'k8s-presubmit-scale': 12,
 }
 
 def check_predefine_jobs(jobs, ratelimit):
