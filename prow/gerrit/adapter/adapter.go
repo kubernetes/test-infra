@@ -44,8 +44,7 @@ import (
 )
 
 const (
-	inRepoConfigRetries       = 2
-	inRepoConfigFailedMessage = "Unable to get InRepoConfig Presubmits. This is likely due to merge conflict. Please rebase to trigger presubmits."
+	inRepoConfigRetries = 2
 )
 
 var gerritMetrics = struct {
@@ -409,10 +408,6 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 			}
 		}
 		if err != nil {
-			// Leave message to let user know that we did not get Presubmits
-			if err := c.gc.SetReview(instance, change.ID, change.CurrentRevision, inRepoConfigFailedMessage, nil); err != nil {
-				return err
-			}
 			return fmt.Errorf("failed to get inRepoConfig for Presubmits: %w", err)
 		}
 		presubmits = append(presubmits, c.config().PresubmitsStatic[cloneURI.String()]...)
