@@ -84,7 +84,7 @@ def is_generated(data):
     return False
 
 
-def file_passes(filename, refs, regexs):  # pylint: disable=too-many-locals
+def file_passes(filename, refs, regexs):  # pylint: disable=too-many-locals,too-many-return-statements,too-many-branches
     try:
         # Pass the encoding parameter to avoid ascii decode error for some
         # platform.
@@ -126,6 +126,7 @@ def file_passes(filename, refs, regexs):  # pylint: disable=too-many-locals
 
     # check if we encounter a 'YEAR' placeholder if the file is generated
     if is_generated(file_data):
+        # pylint: disable=unused-variable
         for i, line in enumerate(data):
             if "Copyright YEAR" in line:
                 return False
