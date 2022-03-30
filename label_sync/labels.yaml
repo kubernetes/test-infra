@@ -592,6 +592,12 @@ default:
       previously:
         - name: wg/apply
     - color: d2b48c
+      description: Categorizes an issue or PR as relevant to WG Batch.
+      name: wg/batch
+      target: both
+      prowPlugin: label
+      addedBy: anyone
+    - color: d2b48c
       description: Categorizes an issue or PR as relevant to WG Data Protection.
       name: wg/data-protection
       target: both
@@ -2049,3 +2055,4 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
+
