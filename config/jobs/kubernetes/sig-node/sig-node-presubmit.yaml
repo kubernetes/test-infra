@@ -690,7 +690,7 @@ presubmits:
         - --provider=gce
         - --test_args=--nodes=8 --focus="\[NodeConformance\]|\[NodeFeature:.+\]|\[NodeFeature\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
         - --timeout=180m
-        - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv2.yaml
+        - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv2-k8s-infra-prow-build.yaml
         resources:
           limits:
             cpu: 4
@@ -698,6 +698,9 @@ presubmits:
           requests:
             cpu: 4
             memory: 6Gi
+        env:
+        - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
+          value: "1"
   - name: pull-kubernetes-node-crio-cgrpv2-e2e-kubetest2
     cluster: k8s-infra-prow-build
     # explicitly needs /test pull-kubernetes-node-crio-cgrpv2-e2e-kubetest2 to run
@@ -882,7 +885,7 @@ presubmits:
         - --provider=gce
         - --test_args=--nodes=8 --focus="\[NodeConformance\]|\[NodeFeature:.+\]|\[NodeFeature\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"
         - --timeout=180m
-        - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1.yaml
+        - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1-k8s-infra-prow-build.yaml
         resources:
           limits:
             cpu: 4
@@ -890,6 +893,9 @@ presubmits:
           requests:
             cpu: 4
             memory: 6Gi
+        env:
+        - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
+          value: "1"
   - name: pull-kubernetes-node-crio-e2e-kubetest2
     cluster: k8s-infra-prow-build
     # explicitly needs /test pull-kubernetes-node-crio-e2e-kubetest2 to run
