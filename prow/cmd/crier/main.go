@@ -289,8 +289,10 @@ func main() {
 		}
 
 		hasReporter = true
-		if err := crier.New(mgr, gcsreporter.New(cfg, opener, o.dryrun), o.blobStorageWorkers, o.githubEnablement.EnablementChecker()); err != nil {
-			logrus.WithError(err).Fatal("failed to construct gcsreporter controller")
+		if o.blobStorageWorkers > 0 {
+			if err := crier.New(mgr, gcsreporter.New(cfg, opener, o.dryrun), o.blobStorageWorkers, o.githubEnablement.EnablementChecker()); err != nil {
+				logrus.WithError(err).Fatal("failed to construct gcsreporter controller")
+			}
 		}
 
 		if o.k8sBlobStorageWorkers > 0 {
@@ -313,8 +315,11 @@ func main() {
 	// Push metrics to the configured prometheus pushgateway endpoint or serve them
 	metrics.ExposeMetrics("crier", cfg().PushGateway, o.instrumentationOptions.MetricsPort)
 
-	if err := mgr.Start(interrupts.Context()); err != nil {
-		logrus.WithError(err).Fatal("controller manager failed")
-	}
+	interrupts.Run(func(ctx context.Context) {
+		if err := mgr.Start(ctx); err != nil {
+			logrus.WithError(err).Fatal("Controller manager exited with error.")
+		}
+	})
+	interrupts.WaitForGracefulShutdown()
 	logrus.Info("Ended gracefully")
 }
