@@ -91,7 +91,7 @@ presubmits:
         - --gcp-zone=us-west1-b
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-storage-snapshot
-        - --test_args=--ginkgo.focus=\[Feature:VolumeSnapshotDataSource\] --ginkgo.skip=\[Disruptive\]|\[Flaky\] --minStartupPods=8
+        - --test_args=--ginkgo.focus=\[Feature:(VolumeSnapshotDataSource|AnyVolumeDataSource)\] --ginkgo.skip=\[Disruptive\]|\[Flaky\] --minStartupPods=8
         - --timeout=120m
         securityContext:
           privileged: true
@@ -353,7 +353,7 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:VolumeSnapshotDataSource\] --ginkgo.skip=\[Disruptive\]|\[Flaky\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Feature:(VolumeSnapshotDataSource|AnyVolumeDataSource)\] --ginkgo.skip=\[Disruptive\]|\[Flaky\] --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220331-3fd3706520-master
   annotations:
