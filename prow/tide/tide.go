@@ -1177,10 +1177,10 @@ func (c *Controller) isBatchCandidateEligible(log *logrus.Entry, candidate *Pull
 	}
 
 	for _, headContext := range candidateHeadContexts {
-		if headContext.State == githubql.StatusStateSuccess {
+		if headContext.Context == statusContext || cc.IsOptional(string(headContext.Context)) || headContext.State == githubql.StatusStateSuccess {
 			continue
 		}
-		if headContext.State != githubql.StatusStatePending && !cc.IsOptional(string(headContext.Context)) {
+		if headContext.State != githubql.StatusStatePending {
 			return false
 		}
 

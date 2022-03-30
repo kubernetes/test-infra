@@ -2873,19 +2873,35 @@ func TestIsPassing(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		ghc := &fgc{
-			combinedStatus: tc.combinedContexts,
-			expectedSHA:    headSHA}
-		log := logrus.WithField("component", "tide")
-		_, err := log.String()
-		if err != nil {
-			t.Fatalf("Failed to get log output before testing: %v", err)
-		}
-		pr := PullRequest{HeadRefOID: githubql.String(headSHA)}
-		passing := isPassingTests(log, ghc, pr, &tc.config)
-		if passing != tc.passing {
-			t.Errorf("%s: Expected %t got %t", tc.name, tc.passing, passing)
-		}
+		t.Run(tc.name, func(t *testing.T) {
+
+			ghc := &fgc{
+				combinedStatus: tc.combinedContexts,
+				expectedSHA:    headSHA}
+			log := logrus.WithField("component", "tide")
+			_, err := log.String()
+			if err != nil {
+				t.Fatalf("Failed to get log output before testing: %v", err)
+			}
+			pr := PullRequest{HeadRefOID: githubql.String(headSHA)}
+			passing := isPassingTests(log, ghc, pr, &tc.config)
+			if passing != tc.passing {
+				t.Errorf("%s: Expected %t got %t", tc.name, tc.passing, passing)
+			}
+
+			if tc.passing {
+				c := &Controller{
+					ghc:           ghc,
+					prowJobClient: fakectrlruntimeclient.NewFakeClient(),
+					config:        func() *config.Config { return &config.Config{} },
+				}
+				// isBatchCandidateEligible is more lenient than isPassingTests, which means we expect it to allow
+				// everything that is allowed by isPassingTests. The reverse might not be true.
+				if !c.isBatchCandidateEligible(log, &pr, &tc.config) {
+					t.Error("expected pr to be batch testing eligible, wasn't the case")
+				}
+			}
+		})
 	}
 }
 
@@ -4786,10 +4802,16 @@ func TestBatchPickingConsidersPRThatIsCurrentlyBeingSeriallyRetested(t *testing.
 	// Add a successful PR to github
 	initialPR := PullRequest{}
 	initialPR.Commits.Nodes = append(initialPR.Commits.Nodes, struct{ Commit Commit }{
-		Commit: Commit{Status: CommitStatus{Contexts: []Context{{
-			Context: githubql.String("mandatory-job"),
-			State:   githubql.StatusStateSuccess,
-		}}}},
+		Commit: Commit{Status: CommitStatus{Contexts: []Context{
+			{
+				Context: githubql.String("mandatory-job"),
+				State:   githubql.StatusStateSuccess,
+			},
+			{
+				Context: githubql.String(statusContext),
+				State:   githubql.StatusStatePending,
+			},
+		}}},
 	})
 	ghc.prs = map[string][]PullRequest{"": {initialPR}}
 
@@ -4812,10 +4834,16 @@ func TestBatchPickingConsidersPRThatIsCurrentlyBeingSeriallyRetested(t *testing.
 	// Add a second PR that also needs retesting to GitHub
 	secondPR := PullRequest{Number: githubql.Int(1)}
 	secondPR.Commits.Nodes = append(secondPR.Commits.Nodes, struct{ Commit Commit }{
-		Commit: Commit{Status: CommitStatus{Contexts: []Context{{
-			Context: githubql.String("mandatory-job"),
-			State:   githubql.StatusStateSuccess,
-		}}}},
+		Commit: Commit{Status: CommitStatus{Contexts: []Context{
+			{
+				Context: githubql.String("mandatory-job"),
+				State:   githubql.StatusStateSuccess,
+			},
+			{
+				Context: githubql.String(statusContext),
+				State:   githubql.StatusStatePending,
+			},
+		}}},
 	})
 	ghc.prs[""] = append(ghc.prs[""], secondPR)
 
@@ -4865,10 +4893,21 @@ func TestIsBatchCandidateEligible(t *testing.T) {
 			expected:      true,
 		},
 		{
-			name: "Optional failed context is ignored",
+			name:     "Optional failed context is ignored",
+			expected: true,
 			prManipulator: func(pr *PullRequest) {
 				pr.Commits.Nodes[0].Commit.Status.Contexts = append(pr.Commits.Nodes[0].Commit.Status.Contexts, Context{
 					Context: githubql.String(optionalContextName),
+					State:   githubql.StatusStateFailure,
+				})
+			},
+		},
+		{
+			name:     "Tides own context is ignored",
+			expected: true,
+			prManipulator: func(pr *PullRequest) {
+				pr.Commits.Nodes[0].Commit.Status.Contexts = append(pr.Commits.Nodes[0].Commit.Status.Contexts, Context{
+					Context: githubql.String(statusContext),
 					State:   githubql.StatusStateFailure,
 				})
 			},
