@@ -45,6 +45,7 @@ fi
     --user $(id -u):$(id -g) \
     -e HOME=/tmp \
     -v "${REPO_ROOT:?}:${REPO_ROOT:?}" -w "${REPO_ROOT}" \
+    --security-opt="label=disable" \
     "${NODE_IMAGE}" \
     "$@"
 if [[ -n "${NO_DOCKER:-}" ]]; then
