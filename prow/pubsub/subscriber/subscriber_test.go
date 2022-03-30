@@ -40,8 +40,14 @@ import (
 	"k8s.io/test-infra/prow/config"
 	reporter "k8s.io/test-infra/prow/crier/reporters/pubsub"
 	"k8s.io/test-infra/prow/gerrit/client"
+	"k8s.io/test-infra/prow/git/v2"
 
 	v1 "k8s.io/api/core/v1"
+)
+
+var (
+	trueBool  = true
+	namespace = "default"
 )
 
 type pubSubTestClient struct {
@@ -257,6 +263,40 @@ func TestHandleMessage(t *testing.T) {
 			err:    "unable to find \"prow.k8s.io/pubsub.EventType\" from the attributes",
 			labels: []string{reporter.PubSubTopicLabel, reporter.PubSubRunIDLabel, reporter.PubSubProjectLabel},
 		},
+		{
+			name:      "PresubmitForGerritWithInRepoConfig",
+			eventType: presubmitProwJobEvent,
+			pe: &ProwJobEvent{
+				Name: "pull-gerrit",
+				Refs: &prowapi.Refs{
+					Org:     "org",
+					Repo:    "repo",
+					BaseRef: "master",
+					BaseSHA: "SHA",
+					Pulls: []prowapi.Pull{
+						{
+							Number: 42,
+						},
+					},
+				},
+				Labels: map[string]string{
+					client.GerritRevision: "revision",
+				},
+			},
+			config: &config.Config{
+				JobConfig: config.JobConfig{
+					ProwYAMLGetterWithDefaults: fakeProwYAMLGetter,
+					ProwYAMLGetter:             fakeProwYAMLGetter,
+				},
+				ProwConfig: config.ProwConfig{
+					PodNamespace: namespace,
+					InRepoConfig: config.InRepoConfig{
+						Enabled:         map[string]*bool{"*": &trueBool},
+						AllowedClusters: map[string][]string{"*": {"default"}},
+					},
+				},
+			},
+		},
 	} {
 		t.Run(tc.name, func(t1 *testing.T) {
 			fakeProwJobClient := fake.NewSimpleClientset()
@@ -265,10 +305,12 @@ func TestHandleMessage(t *testing.T) {
 			ca.Set(tc.config)
 			fr := fakeReporter{}
 			s := Subscriber{
-				Metrics:       NewMetrics(),
-				ProwJobClient: fakeProwJobClient.ProwV1().ProwJobs(tc.config.ProwJobNamespace),
-				ConfigAgent:   ca,
-				Reporter:      &fr,
+				Metrics:               NewMetrics(),
+				ProwJobClient:         fakeProwJobClient.ProwV1().ProwJobs(tc.config.ProwJobNamespace),
+				ConfigAgent:           ca,
+				Reporter:              &fr,
+				CookieFilePath:        "Path",
+				InRepoConfigCacheSize: 100,
 			}
 			if tc.pe != nil {
 				m, err := tc.pe.ToMessageOfType(tc.eventType)
@@ -784,4 +826,34 @@ func TestPullServer_RunConfigChange(t *testing.T) {
 			t.Errorf("unexpected error: %v", err)
 		}
 	}
+}
+
+func fakeProwYAMLGetter(
+	c *config.Config,
+	gc git.ClientFactory,
+	identifier string,
+	baseSHA string,
+	headSHAs ...string) (*config.ProwYAML, error) {
+
+	presubmits := []config.Presubmit{
+		{
+			JobBase: config.JobBase{
+				Name:      "pull-gerrit",
+				Spec:      &v1.PodSpec{Containers: []v1.Container{{Name: "always-runs-inRepoConfig", Env: []v1.EnvVar{}}}},
+				Namespace: &namespace,
+			},
+			AlwaysRun: true,
+			Reporter: config.Reporter{
+				Context:    "pull-gerrit",
+				SkipReport: true,
+			},
+		},
+	}
+	if err := config.SetPresubmitRegexes(presubmits); err != nil {
+		return nil, err
+	}
+	res := config.ProwYAML{
+		Presubmits: presubmits,
+	}
+	return &res, nil
 }

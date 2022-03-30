@@ -52,6 +52,7 @@ type options struct {
 	port                  int
 	pushSecretFile        string
 	inRepoConfigCacheSize int
+	cookiefilePath        string
 
 	config       configflagutil.ConfigOptions
 	pluginConfig string
@@ -83,7 +84,7 @@ func init() {
 	fs.BoolVar(&flagOptions.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 	fs.DurationVar(&flagOptions.gracePeriod, "grace-period", 180*time.Second, "On shutdown, try to handle remaining events for the specified duration. ")
 	fs.IntVar(&flagOptions.inRepoConfigCacheSize, "in-repo-config-cache-size", 1000, "Cache size for ProwYAMLs read from in-repo configs.")
-
+	fs.StringVar(&flagOptions.cookiefilePath, "cookiefile", "", "Path to git http.cookiefile, leave empty for github or anonymous")
 	flagOptions.config.AddFlags(fs)
 	flagOptions.client.AddFlags(fs)
 	flagOptions.github.AddFlags(fs)
@@ -150,11 +151,13 @@ func main() {
 	pprof.Instrument(flagOptions.instrumentationOptions)
 
 	s := &subscriber.Subscriber{
-		ConfigAgent:       configAgent,
-		InRepoConfigCache: cache,
-		Metrics:           promMetrics,
-		ProwJobClient:     kubeClient,
-		Reporter:          pubsub.NewReporter(configAgent.Config), // reuse crier reporter
+		ConfigAgent:           configAgent,
+		InRepoConfigCache:     cache,
+		Metrics:               promMetrics,
+		ProwJobClient:         kubeClient,
+		Reporter:              pubsub.NewReporter(configAgent.Config), // reuse crier reporter
+		CookieFilePath:        flagOptions.cookiefilePath,
+		InRepoConfigCacheSize: flagOptions.inRepoConfigCacheSize,
 	}
 
 	subMux := http.NewServeMux()
