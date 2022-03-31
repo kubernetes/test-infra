@@ -12,22 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-all: bazel
-
-
-# TODO(fejta): deploy via bazel
 # These are the usual GKE variables.
 PROJECT       ?= k8s-prow
 ZONE          ?= us-central1-f
 CLUSTER       ?= prow
-
-bazel:
-	@echo Use bazel foo or ./planter/planter.sh bazel foo
-	@echo "  bazel build //label_sync/...  # build"
-	@echo "  bazel test //label_sync/...  # test"
-	@echo "  bazel run //label_sync:push  # push image"
-	@echo "  bazel run //label_sync:deploy # deploy"
-	@exit 1
 
 get-cluster-credentials:
 	gcloud container clusters get-credentials "$(CLUSTER)" --project="$(PROJECT)" --zone="$(ZONE)"
