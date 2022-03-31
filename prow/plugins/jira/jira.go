@@ -274,16 +274,30 @@ func upsertGitHubLinkToIssue(log *logrus.Entry, issueID string, jc jiraclient.Cl
 	if idx := strings.Index(url, "#"); idx != -1 {
 		url = url[:idx]
 	}
+
+	newTitle := fmt.Sprintf("%s#%d: %s", e.Repo.FullName, e.Number, e.IssueTitle)
+	deleteOldLink := false
+
+	var oldLink *jira.RemoteLink
+	// Check if the same link exists already. We consider two links to be the same if the have the same URL.
+	// Once it is found we have two possibilities: either it is really equal (just skip the upsert) or it
+	// has to be updated (perform an upsert)
 	for _, link := range links {
 		if link.Object.URL == url {
-			return nil
+			if newTitle == link.Object.Title {
+				return nil
+			} else {
+				deleteOldLink = true
+				oldLink = &link
+				break
+			}
 		}
 	}
 
 	link := &jira.RemoteLink{
 		Object: &jira.RemoteLinkObject{
 			URL:   url,
-			Title: fmt.Sprintf("%s#%d: %s", e.Repo.FullName, e.Number, e.IssueTitle),
+			Title: newTitle,
 			Icon: &jira.RemoteLinkIcon{
 				Url16x16: "https://github.com/favicon.ico",
 				Title:    "GitHub",
@@ -291,10 +305,22 @@ func upsertGitHubLinkToIssue(log *logrus.Entry, issueID string, jc jiraclient.Cl
 		},
 	}
 
+	if deleteOldLink {
+		if err := jc.RemoveRemoteLink(issueID, oldLink); err != nil {
+			return fmt.Errorf("failed to remove remote link: %w", err)
+		}
+		log.Info("Old jira link removed")
+	}
+
 	if err := jc.AddRemoteLink(issueID, link); err != nil {
 		return fmt.Errorf("failed to add remote link: %w", err)
 	}
-	log.Info("Created jira link")
+
+	if deleteOldLink {
+		log.Info("Updated jira link")
+	} else {
+		log.Info("Created jira link")
+	}
 
 	return nil
 }

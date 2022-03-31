@@ -36,6 +36,7 @@ type Client interface {
 	GetIssue(id string) (*jira.Issue, error)
 	GetRemoteLinks(id string) ([]jira.RemoteLink, error)
 	AddRemoteLink(id string, link *jira.RemoteLink) error
+	RemoveRemoteLink(id string, link *jira.RemoteLink) error
 	ListProjects() (*jira.ProjectList, error)
 	JiraClient() *jira.Client
 	JiraURL() string
@@ -185,6 +186,23 @@ func (jc *client) AddRemoteLink(id string, link *jira.RemoteLink) error {
 	}
 	if err != nil {
 		return fmt.Errorf("failed to add link: %w", JiraError(resp, err))
+	}
+
+	return nil
+}
+
+func (jc *client) RemoveRemoteLink(id string, link *jira.RemoteLink) error {
+	internalLinkId := fmt.Sprint(link.ID)
+	req, err := jc.upstream.NewRequest("DELETE", "rest/api/2/issue/"+id+"/remotelink/"+internalLinkId, nil)
+	if err != nil {
+		return fmt.Errorf("failed to construct request: %w", err)
+	}
+	resp, err := jc.upstream.Do(req, nil)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
+	if err != nil {
+		return fmt.Errorf("failed to remove link: %w", JiraError(resp, err))
 	}
 
 	return nil
