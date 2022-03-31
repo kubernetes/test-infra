@@ -134,6 +134,17 @@ func (f *fakeJiraClient) AddRemoteLink(id string, link *jira.RemoteLink) error {
 	return nil
 }
 
+func (f *fakeJiraClient) RemoveRemoteLink(id string, link *jira.RemoteLink) error {
+	if _, err := f.GetIssue(id); err != nil {
+		return err
+	}
+	if _, found := f.existingLinks[id]; !found {
+		return jiraclient.NewNotFoundError(fmt.Errorf("Link for issue %s not found", id))
+	}
+	delete(f.existingLinks, id)
+	return nil
+}
+
 func (f *fakeJiraClient) JiraClient() *jira.Client {
 	panic("not implemented")
 }
@@ -157,11 +168,11 @@ func (f *fakeGitHubClient) EditComment(org, repo string, id int, body string) er
 }
 
 func (f *fakeGitHubClient) GetIssue(org, repo string, number int) (*github.Issue, error) {
-	return nil, nil
+	return &github.Issue{}, nil
 }
 
 func (f *fakeGitHubClient) EditIssue(org, repo string, number int, issue *github.Issue) (*github.Issue, error) {
-	return nil, nil
+	return issue, nil
 }
 
 func TestHandle(t *testing.T) {
@@ -314,7 +325,39 @@ func TestHandle(t *testing.T) {
 			},
 			projectCache:   &threadsafeSet{data: sets.NewString("abc")},
 			existingIssues: []jira.Issue{{ID: "ABC-123"}},
-			existingLinks:  map[string][]jira.RemoteLink{"ABC-123": {{Object: &jira.RemoteLinkObject{URL: "https://github.com/org/repo/issues/3"}}}},
+			existingLinks:  map[string][]jira.RemoteLink{"ABC-123": {{Object: &jira.RemoteLinkObject{URL: "https://github.com/org/repo/issues/3", Title: "Some issue"}}}},
+		},
+		{
+			name: "Link exists but title is different, replacing it",
+			event: github.GenericCommentEvent{
+				HTMLURL:    "https://github.com/org/repo/issues/3",
+				IssueTitle: "Some issue NEW",
+				Body:       "Some text and also [ABC-123:](https://my-jira.com/browse/ABC-123)",
+				Repo:       github.Repo{FullName: "org/repo"},
+				Number:     3,
+			},
+			projectCache:   &threadsafeSet{data: sets.NewString("abc")},
+			existingIssues: []jira.Issue{{ID: "ABC-123"}},
+			existingLinks: map[string][]jira.RemoteLink{
+				"ABC-123": {
+					{
+						Object: &jira.RemoteLinkObject{
+							URL:   "https://github.com/org/repo/issues/3",
+							Title: "org/repo#3: Some issue",
+							Icon:  &jira.RemoteLinkIcon{Url16x16: "https://github.com/favicon.ico", Title: "GitHub"},
+						},
+					},
+				},
+			},
+			expectedNewLinks: []jira.RemoteLink{
+				{
+					Object: &jira.RemoteLinkObject{
+						URL:   "https://github.com/org/repo/issues/3",
+						Title: "org/repo#3: Some issue NEW",
+						Icon:  &jira.RemoteLinkIcon{Url16x16: "https://github.com/favicon.ico", Title: "GitHub"},
+					},
+				},
+			},
 		},
 		{
 			name: "Valid issue in disabled project, case insensitive matching and no link",
