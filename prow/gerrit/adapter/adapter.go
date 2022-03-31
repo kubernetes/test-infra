@@ -50,6 +50,7 @@ const (
 
 var gerritMetrics = struct {
 	processingResults *prometheus.CounterVec
+	triggerLatency    *prometheus.HistogramVec
 }{
 	processingResults: prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "gerrit_processing_results",
@@ -59,10 +60,19 @@ var gerritMetrics = struct {
 		"repo",
 		"result",
 	}),
+	triggerLatency: prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Name:    "gerrit_trigger_latency",
+		Help:    "Histogram of seconds between triggering event and ProwJob creation time.",
+		Buckets: []float64{5, 10, 20, 30, 60, 120, 180, 300, 600, 1200, 3600},
+	}, []string{
+		"instance",
+		// Omit repo to avoid excessive cardinality due to the number of buckets.
+	}),
 }
 
 func init() {
 	prometheus.MustRegister(gerritMetrics.processingResults)
+	prometheus.MustRegister(gerritMetrics.triggerLatency)
 }
 
 type prowJobClient interface {
@@ -362,6 +372,7 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 		report bool
 	}
 	var triggeredJobs []triggeredJob
+	triggerTimes := map[string]time.Time{}
 
 	refs, err := createRefs(instance, change, cloneURI, baseSHA)
 	if err != nil {
@@ -394,6 +405,9 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 			if shouldRun, err := postsubmit.ShouldRun(change.Branch, changedFiles); err != nil {
 				return fmt.Errorf("failed to determine if postsubmit %q should run: %w", postsubmit.Name, err)
 			} else if shouldRun {
+				if change.Submitted != nil {
+					triggerTimes[postsubmit.Name] = change.Submitted.Time
+				}
 				jobSpecs = append(jobSpecs, jobSpec{
 					spec:   pjutil.PostsubmitSpec(postsubmit, refs),
 					labels: postsubmit.Labels,
@@ -435,21 +449,26 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 		messages := currentMessages(change, lastUpdate)
 		logger.WithField("failed", len(failed)).Debug("Failed jobs parsed from previous comments.")
 		filters := []pjutil.Filter{
-			messageFilter(messages, failed, all, logger),
+			messageFilter(messages, failed, all, triggerTimes, logger),
 		}
 		// Automatically trigger the Prow jobs if the revision is new and the
 		// change is not in WorkInProgress.
 		if revision.Created.Time.After(lastUpdate) && !change.WorkInProgress {
-			filters = append(filters, pjutil.NewTestAllFilter())
+			filters = append(filters, &timeAnnotationFilter{
+				Filter:       pjutil.NewTestAllFilter(),
+				eventTime:    revision.Created.Time,
+				triggerTimes: triggerTimes,
+			})
 		}
 		toTrigger, err := pjutil.FilterPresubmits(pjutil.NewAggregateFilter(filters), listChangedFiles(change), change.Branch, presubmits, logger)
 		if err != nil {
 			return fmt.Errorf("filter presubmits: %w", err)
 		}
+		// At this point triggerTimes should be properly populated as a side effect of FilterPresubmits.
 
 		// Reply with help information to run the presubmit Prow jobs if requested.
 		for _, msg := range messages {
-			needsHelp, note := pjutil.ShouldRespondWithHelp(msg, len(toTrigger))
+			needsHelp, note := pjutil.ShouldRespondWithHelp(msg.Message, len(toTrigger))
 			// Lock for projectOptOutHelp, which is a map.
 			c.lock.RLock()
 			optedOut := isProjectOptOutHelp(c.projectsOptOutHelp, instance, change.Project)
@@ -463,6 +482,7 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 				if err := c.gc.SetReview(instance, change.ID, change.CurrentRevision, message, nil); err != nil {
 					return err
 				}
+				gerritMetrics.triggerLatency.WithLabelValues(instance).Observe(float64(time.Since(msg.Date.Time).Seconds()))
 				// Only respond to the first message that requests help information.
 				break
 			}
@@ -501,6 +521,9 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 			continue
 		}
 		logger.Infof("Triggered new job")
+		if eventTime, ok := triggerTimes[pj.Spec.Job]; ok {
+			gerritMetrics.triggerLatency.WithLabelValues(instance).Observe(float64(time.Since(eventTime).Seconds()))
+		}
 		triggeredJobs = append(triggeredJobs, triggeredJob{
 			name:   jSpec.spec.Job,
 			report: jSpec.spec.Report,
