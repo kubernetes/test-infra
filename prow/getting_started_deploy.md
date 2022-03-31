@@ -191,7 +191,7 @@ First you need to create the ProwJob custom resource:
 kubectl apply --server-side=true -f config/prow/cluster/prowjob-crd/prowjob_customresourcedefinition.yaml
 ```
 
-Apply the manifest you edited above by executing one of the following two commands:
+Apply the manifest you edited above by executing one of the following three commands:
 
 
 * `kubectl apply -f config/prow/cluster/starter/starter-s3.yaml`
