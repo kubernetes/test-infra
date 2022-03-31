@@ -1,6 +1,7 @@
 presets:
 - labels:
     preset-pull-kubernetes-e2e: "true"
+    preset-use-new-registry: "true"
   env:
   - name: KUBE_GCS_UPDATE_LATEST
     value: "n"
@@ -441,6 +442,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-use-new-registry: "true"
   spec:
     containers:
     - args:
@@ -559,6 +561,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-use-new-registry: "true"
   spec:
     containers:
     - args:
@@ -684,6 +687,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-use-new-registry: "true"
   spec:
     containers:
     - args:

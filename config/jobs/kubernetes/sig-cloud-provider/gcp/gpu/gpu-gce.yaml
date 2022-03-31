@@ -1,6 +1,7 @@
 presets:
 - labels:
     preset-ci-gce-device-plugin-gpu: "true"
+    preset-use-new-registry: "true"
   env:
   # Note: The GCE Node image used may have a dependency on the nvidia-driver-installer image defined in https://github.com/kubernetes/kubernetes/blob/master/test/e2e/testing-manifests/scheduling/nvidia-driver-installer.yaml
   # If updating the image defined here, the cos-gpu-installer image may need to updated to support the corresponding COS image.
@@ -19,6 +20,7 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-ci-gce-device-plugin-gpu: "true"
+    preset-use-new-registry: "true"
   annotations:
     fork-per-release: "true"
     fork-per-release-replacements: "--extract=ci/latest-fast -> --extract=ci/latest-{{.Version}}"
