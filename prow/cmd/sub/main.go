@@ -150,14 +150,22 @@ func main() {
 	metrics.ExposeMetrics("sub", configAgent.Config().PushGateway, flagOptions.instrumentationOptions.MetricsPort)
 	pprof.Instrument(flagOptions.instrumentationOptions)
 
+	var cacheGetter subscriber.InRepoConfigCacheGetter
+	if flagOptions.cookiefilePath != "" {
+		cacheGetter = subscriber.InRepoConfigCacheGetter{
+			CookieFilePath: flagOptions.cookiefilePath,
+			CacheSize:      flagOptions.inRepoConfigCacheSize,
+			Agent:          configAgent,
+		}
+	}
+
 	s := &subscriber.Subscriber{
-		ConfigAgent:           configAgent,
-		InRepoConfigCache:     cache,
-		Metrics:               promMetrics,
-		ProwJobClient:         kubeClient,
-		Reporter:              pubsub.NewReporter(configAgent.Config), // reuse crier reporter
-		CookieFilePath:        flagOptions.cookiefilePath,
-		InRepoConfigCacheSize: flagOptions.inRepoConfigCacheSize,
+		ConfigAgent:       configAgent,
+		InRepoConfigCache: cache,
+		Metrics:           promMetrics,
+		ProwJobClient:     kubeClient,
+		Reporter:          pubsub.NewReporter(configAgent.Config), // reuse crier reporter
+		CacheGetter:       &cacheGetter,
 	}
 
 	subMux := http.NewServeMux()

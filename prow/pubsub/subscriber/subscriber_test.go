@@ -305,12 +305,15 @@ func TestHandleMessage(t *testing.T) {
 			ca.Set(tc.config)
 			fr := fakeReporter{}
 			s := Subscriber{
-				Metrics:               NewMetrics(),
-				ProwJobClient:         fakeProwJobClient.ProwV1().ProwJobs(tc.config.ProwJobNamespace),
-				ConfigAgent:           ca,
-				Reporter:              &fr,
-				CookieFilePath:        "Path",
-				InRepoConfigCacheSize: 100,
+				Metrics:       NewMetrics(),
+				ProwJobClient: fakeProwJobClient.ProwV1().ProwJobs(tc.config.ProwJobNamespace),
+				ConfigAgent:   ca,
+				Reporter:      &fr,
+				CacheGetter: &InRepoConfigCacheGetter{
+					CookieFilePath: "examplePath",
+					CacheSize:      100,
+					Agent:          ca,
+				},
 			}
 			if tc.pe != nil {
 				m, err := tc.pe.ToMessageOfType(tc.eventType)

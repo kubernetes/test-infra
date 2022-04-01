@@ -59,6 +59,55 @@ type prowCfgClient interface {
 	GetPostsubmitsStatic(identifier string) []config.Postsubmit
 }
 
+type InRepoConfigCacheGetter struct {
+	CookieFilePath string
+	CacheSize      int
+	Agent          *config.Agent
+
+	CacheMap map[string]*config.InRepoConfigCache
+}
+
+func (irc *InRepoConfigCacheGetter) GetCache(cloneURI, host string) (*config.InRepoConfigCache, error) {
+	if irc.CacheMap == nil {
+		irc.CacheMap = map[string]*config.InRepoConfigCache{}
+	}
+	if cache, ok := irc.CacheMap[cloneURI]; ok {
+		return cache, nil
+	}
+	cache, err := irc.CreateCache(cloneURI, host)
+	if err != nil {
+		return nil, err
+	}
+
+	return cache, nil
+
+}
+
+func (irc *InRepoConfigCacheGetter) CreateCache(cloneURI, host string) (*config.InRepoConfigCache, error) {
+	opts := git.ClientFactoryOpts{
+		CloneURI:       cloneURI,
+		Host:           host,
+		CookieFilePath: irc.CookieFilePath,
+	}
+	gc, err := git.NewClientFactory(opts.Apply)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create Gerrit Client for InRepoConfig: %v", err)
+	}
+	// Initialize cache for fetching Presubmit and Postsubmit information. If
+	// the cache cannot be initialized, exit with an error.
+	cache, err := config.NewInRepoConfigCache(
+		irc.CacheSize,
+		irc.Agent,
+		config.NewInRepoConfigGitCache(gc))
+	// If we cannot initialize the cache, exit with an error.
+	if err != nil {
+		return nil, fmt.Errorf("unable to initialize in-repo-config-cache with size %d: %v", irc.CacheSize, err)
+	}
+
+	irc.CacheMap[cloneURI] = cache
+	return cache, nil
+}
+
 // ProwJobEvent contains the minimum information required to start a ProwJob.
 type ProwJobEvent struct {
 	Name string `json:"name"`
@@ -106,14 +155,12 @@ type ProwJobClient interface {
 // validates them using Prow Configuration and
 // use a ProwJobClient to create Prow Jobs.
 type Subscriber struct {
-	ConfigAgent           *config.Agent
-	InRepoConfigCache     *config.InRepoConfigCache
-	Metrics               *Metrics
-	ProwJobClient         ProwJobClient
-	Reporter              reportClient
-	CookieFilePath        string
-	CacheMap              map[string]*config.InRepoConfigCache
-	InRepoConfigCacheSize int
+	ConfigAgent       *config.Agent
+	InRepoConfigCache *config.InRepoConfigCache
+	Metrics           *Metrics
+	ProwJobClient     ProwJobClient
+	Reporter          reportClient
+	CacheGetter       *InRepoConfigCacheGetter
 }
 
 type messageInterface interface {
@@ -180,36 +227,9 @@ func (peh *periodicJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InRe
 	return &prowJobSpec, periodicJob.Labels, nil
 }
 
-func createCache(cloneURI, host, cookieFilePath string, cacheSize int, configAgent *config.Agent) (*config.InRepoConfigCache, error) {
-	opts := git.ClientFactoryOpts{
-		CloneURI:       cloneURI,
-		Host:           host,
-		CookieFilePath: cookieFilePath,
-	}
-	gc, err := git.NewClientFactory(opts.Apply)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create Gerrit Client for InRepoConfig: %v", err)
-	}
-	// Initialize cache for fetching Presubmit and Postsubmit information. If
-	// the cache cannot be initialized, exit with an error.
-	cache, err := config.NewInRepoConfigCache(
-		cacheSize,
-		configAgent,
-		config.NewInRepoConfigGitCache(gc))
-	// If we cannot initialize the cache, exit with an error.
-	if err != nil {
-		return nil, fmt.Errorf("unable to initialize in-repo-config-cache with size %d: %v", cacheSize, err)
-	}
-
-	return cache, nil
-}
-
 // presubmitJobHandler implements jobHandler
 type presubmitJobHandler struct {
-	CacheMap       map[string]*config.InRepoConfigCache
-	CookieFilePath string
-	CacheSize      int
-	Agent          *config.Agent
+	cacheGetter *InRepoConfigCacheGetter
 }
 
 func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InRepoConfigCache, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error) {
@@ -261,15 +281,10 @@ func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InR
 	// from an inrepoconfig.
 	// If CookieFilePath is provided than we are working with a gerrit instance and need to make an InRepoConfigCache
 	var err error
-	if prh.CookieFilePath != "" {
-		if client, ok := prh.CacheMap[orgRepo]; ok {
-			pc = client
-		} else {
-			pc, err = createCache(orgRepo, org, prh.CookieFilePath, prh.CacheSize, prh.Agent)
-			if err != nil {
-				return nil, nil, err
-			}
-			prh.CacheMap[orgRepo] = pc
+	if prh.cacheGetter != nil {
+		pc, err = prh.cacheGetter.GetCache(orgRepo, org)
+		if err != nil {
+			return nil, nil, fmt.Errorf("unable to get InRepoConfig using gerrit InRepoConfigCacheGetter: %w", err)
 		}
 	}
 	if pc != nil {
@@ -310,10 +325,7 @@ func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InR
 
 // postsubmitJobHandler implements jobHandler
 type postsubmitJobHandler struct {
-	CacheMap       map[string]*config.InRepoConfigCache
-	CookieFilePath string
-	CacheSize      int
-	Agent          *config.Agent
+	cacheGetter *InRepoConfigCacheGetter
 }
 
 func (poh *postsubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InRepoConfigCache, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error) {
@@ -351,15 +363,10 @@ func (poh *postsubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.In
 	logger := logrus.WithFields(logrus.Fields{"org": org, "repo": repo, "branch": branch, "orgRepo": orgRepo})
 	postsubmits := cfg.GetPostsubmitsStatic(orgRepo)
 	var err error
-	if poh.CookieFilePath != "" {
-		if client, ok := poh.CacheMap[orgRepo]; ok {
-			pc = client
-		} else {
-			pc, err = createCache(orgRepo, org, poh.CookieFilePath, poh.CacheSize, poh.Agent)
-			if err != nil {
-				return nil, nil, err
-			}
-			poh.CacheMap[orgRepo] = pc
+	if poh.cacheGetter != nil {
+		pc, err = poh.cacheGetter.GetCache(orgRepo, org)
+		if err != nil {
+			return nil, nil, fmt.Errorf("unable to get InRepoConfig using gerrit InRepoConfigCacheGetter: %w", err)
 		}
 	}
 	if pc != nil {
@@ -420,25 +427,16 @@ func (s *Subscriber) handleMessage(msg messageInterface, subscription string, al
 	}
 
 	var jh jobHandler
-	if s.CacheMap == nil {
-		s.CacheMap = map[string]*config.InRepoConfigCache{}
-	}
 	switch eType {
 	case periodicProwJobEvent:
 		jh = &periodicJobHandler{}
 	case presubmitProwJobEvent:
 		jh = &presubmitJobHandler{
-			CacheMap:       s.CacheMap,
-			CookieFilePath: s.CookieFilePath,
-			CacheSize:      s.InRepoConfigCacheSize,
-			Agent:          s.ConfigAgent,
+			cacheGetter: s.CacheGetter,
 		}
 	case postsubmitProwJobEvent:
 		jh = &postsubmitJobHandler{
-			CacheMap:       s.CacheMap,
-			CookieFilePath: s.CookieFilePath,
-			CacheSize:      s.InRepoConfigCacheSize,
-			Agent:          s.ConfigAgent,
+			cacheGetter: s.CacheGetter,
 		}
 	default:
 		l.WithField("type", eType).Debug("Unsupported event type")
