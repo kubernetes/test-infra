@@ -1783,6 +1783,12 @@ repos:
         target: both
         addedBy: anyone
         prowPlugin: label
+      - color: 0052cc
+        description: Issues or PRs related to Runtime SDK
+        name: area/runtime-sdk
+        target: both
+        prowPlugin: label
+        addedBy: anyone
   kubernetes-sigs/cluster-api-operator:
     labels:
       - color: c7def8

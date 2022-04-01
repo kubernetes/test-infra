@@ -141,6 +141,12 @@ func main() {
 	}
 
 	buildManagers, err := o.kubernetes.BuildClusterManagers(o.dryRun,
+		// The watch apimachinery doesn't support restarts, so just exit the
+		// binary if a build cluster can be connected later .
+		func() {
+			logrus.Info("Build cluster that failed to connect initially now worked, exiting to trigger a restart.")
+			interrupts.Terminate()
+		},
 		func(o *manager.Options) {
 			o.Namespace = cfg().PodNamespace
 		},

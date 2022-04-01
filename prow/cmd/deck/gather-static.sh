@@ -22,7 +22,11 @@ cd "${REPO_ROOT}"
 
 # Build ts-rollup so that it can run in docker
 source hack/build/setup-go.sh
-GOOS=linux GOARCH=amd64 go build -o _bin/ts-rollup k8s.io/test-infra/hack/ts-rollup
+if [[ -z ${NO_DOCKER:-} ]]; then
+  GOOS=linux GOARCH=amd64 go build -o _bin/ts-rollup k8s.io/test-infra/hack/ts-rollup
+else
+  go build -o _bin/ts-rollup k8s.io/test-infra/hack/ts-rollup
+fi
 
 readonly STATIC_MAP_FILE="prow/cmd/deck/static-map"
 readonly JS_OUTPUT_DIR="_output/js"
