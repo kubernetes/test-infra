@@ -849,6 +849,7 @@ plugins:
     - size
     - skip
     - slackevents
+    - testfreeze
     - transfer-issue
     - trick-or-treat
     - trigger
