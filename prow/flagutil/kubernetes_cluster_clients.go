@@ -377,7 +377,7 @@ func (o *KubernetesOptions) BuildClusterManagers(dryRun bool, callBack func(), o
 
 	aggregatedErr := utilerrors.NewAggregate(errs)
 
-	if aggregatedErr == nil {
+	if aggregatedErr != nil {
 		// Retry the build clusters that failed to be connected initially, execute
 		// callback function when they become reachable later on.
 		// This is useful where a build cluster is not reachable transiently, for
