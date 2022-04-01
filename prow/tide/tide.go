@@ -791,9 +791,9 @@ func toSimpleState(s prowapi.ProwJobState) simpleState {
 
 // isPassingTests returns whether or not all contexts set on the PR except for
 // the tide pool context are passing.
-func isPassingTests(log *logrus.Entry, ghc githubClient, pr PullRequest, cc contextChecker) bool {
+func (c *Controller) isPassingTests(log *logrus.Entry, pr *PullRequest, cc contextChecker) bool {
 	log = log.WithFields(pr.logFields())
-	contexts, err := headContexts(log, ghc, &pr)
+	contexts, err := headContexts(log, c.ghc, pr)
 	if err != nil {
 		log.WithError(err).Error("Getting head commit status contexts.")
 		// If we can't get the status of the commit, assume that it is failing.
@@ -846,7 +846,7 @@ func hasAllLabels(pr PullRequest, labels []string) bool {
 	return prLabels.Intersection(requiredLabels).Equal(requiredLabels)
 }
 
-func pickHighestPriorityPR(log *logrus.Entry, ghc githubClient, prs []PullRequest, cc map[int]contextChecker, isPassingTestsFunc func(*logrus.Entry, githubClient, PullRequest, contextChecker) bool, priorities []config.TidePriority) (bool, PullRequest) {
+func pickHighestPriorityPR(log *logrus.Entry, prs []PullRequest, cc map[int]contextChecker, isPassingTestsFunc func(*logrus.Entry, *PullRequest, contextChecker) bool, priorities []config.TidePriority) (bool, PullRequest) {
 	smallestNumber := -1
 	var smallestPR PullRequest
 	for _, p := range append(priorities, config.TidePriority{}) {
@@ -860,7 +860,7 @@ func pickHighestPriorityPR(log *logrus.Entry, ghc githubClient, prs []PullReques
 			if len(pr.Commits.Nodes) < 1 {
 				continue
 			}
-			if !isPassingTestsFunc(log, ghc, pr, cc[int(pr.Number)]) {
+			if !isPassingTestsFunc(log, &pr, cc[int(pr.Number)]) {
 				continue
 			}
 			smallestNumber = int(pr.Number)
@@ -1123,7 +1123,7 @@ func (c *Controller) pickBatch(sp subpool, cc map[int]contextChecker, newBatchFu
 
 	var candidates []PullRequest
 	for _, pr := range sp.prs {
-		if c.isBatchCandidateEligible(sp.log, &pr, cc[int(pr.Number)]) {
+		if c.isRetestEligible(sp.log, &pr, cc[int(pr.Number)]) {
 			candidates = append(candidates, pr)
 		}
 	}
@@ -1156,12 +1156,12 @@ func (c *Controller) pickBatch(sp subpool, cc map[int]contextChecker, newBatchFu
 	return res, presubmits, nil
 }
 
-// isBatchCandidateEligible determines batch retesting eligibility. It allows PRs where all mandatory contexts
+// isRetestEligible determines retesting eligibility. It allows PRs where all mandatory contexts
 // are either passing or pending. Pending ones are only allowed if we find a ProwJob that corresponds to them
 // and was created by Tide, as that allows us to infer that this job passed in the past.
 // We look at the actively running ProwJob rather than a previous successful one, because the latter might
 // already be garbage collected.
-func (c *Controller) isBatchCandidateEligible(log *logrus.Entry, candidate *PullRequest, cc contextChecker) bool {
+func (c *Controller) isRetestEligible(log *logrus.Entry, candidate *PullRequest, cc contextChecker) bool {
 	candidateHeadContexts, err := headContexts(log, c.ghc, candidate)
 	if err != nil {
 		log.WithError(err).WithFields(candidate.logFields()).Debug("failed to get headContexts for batch candidate, ignoring.")
@@ -1527,7 +1527,7 @@ func (c *Controller) takeAction(sp subpool, batchPending, successes, pendings, m
 	// Do not merge PRs while waiting for a batch to complete. We don't want to
 	// invalidate the old batch result.
 	if len(successes) > 0 && len(batchPending) == 0 {
-		if ok, pr := pickHighestPriorityPR(sp.log, c.ghc, successes, sp.cc, isPassingTests, c.config().Tide.Priority); ok {
+		if ok, pr := pickHighestPriorityPR(sp.log, successes, sp.cc, c.isPassingTests, c.config().Tide.Priority); ok {
 			return Merge, []PullRequest{pr}, c.mergePRs(sp, []PullRequest{pr})
 		}
 	}
@@ -1547,7 +1547,7 @@ func (c *Controller) takeAction(sp subpool, batchPending, successes, pendings, m
 	}
 	// If we have no serial jobs pending or successful, trigger one.
 	if len(missings) > 0 && len(pendings) == 0 && len(successes) == 0 {
-		if ok, pr := pickHighestPriorityPR(sp.log, c.ghc, missings, sp.cc, isPassingTests, c.config().Tide.Priority); ok {
+		if ok, pr := pickHighestPriorityPR(sp.log, missings, sp.cc, c.isRetestEligible, c.config().Tide.Priority); ok {
 			return Trigger, []PullRequest{pr}, c.trigger(sp, missingSerialTests[int(pr.Number)], []PullRequest{pr})
 		}
 	}

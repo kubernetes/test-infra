@@ -2884,7 +2884,7 @@ func TestIsPassing(t *testing.T) {
 				t.Fatalf("Failed to get log output before testing: %v", err)
 			}
 			pr := PullRequest{HeadRefOID: githubql.String(headSHA)}
-			passing := isPassingTests(log, ghc, pr, &tc.config)
+			passing := (&Controller{ghc: ghc}).isPassingTests(log, &pr, &tc.config)
 			if passing != tc.passing {
 				t.Errorf("%s: Expected %t got %t", tc.name, tc.passing, passing)
 			}
@@ -2895,9 +2895,9 @@ func TestIsPassing(t *testing.T) {
 					prowJobClient: fakectrlruntimeclient.NewFakeClient(),
 					config:        func() *config.Config { return &config.Config{} },
 				}
-				// isBatchCandidateEligible is more lenient than isPassingTests, which means we expect it to allow
+				// isRetestEligible is more lenient than isPassingTests, which means we expect it to allow
 				// everything that is allowed by isPassingTests. The reverse might not be true.
-				if !c.isBatchCandidateEligible(log, &pr, &tc.config) {
+				if !c.isRetestEligible(log, &pr, &tc.config) {
 					t.Error("expected pr to be batch testing eligible, wasn't the case")
 				}
 			}
@@ -4353,10 +4353,10 @@ func TestPickSmallestPassingNumber(t *testing.T) {
 			expected: 9,
 		},
 	}
-	alwaysTrue := func(*logrus.Entry, githubClient, PullRequest, contextChecker) bool { return true }
+	alwaysTrue := func(*logrus.Entry, *PullRequest, contextChecker) bool { return true }
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, got := pickHighestPriorityPR(nil, nil, tc.prs, nil, alwaysTrue, priorities)
+			_, got := pickHighestPriorityPR(nil, tc.prs, nil, alwaysTrue, priorities)
 			if int(got.Number) != tc.expected {
 				t.Errorf("got %d, expected %d", int(got.Number), tc.expected)
 			}
@@ -4829,7 +4829,11 @@ func TestBatchPickingConsidersPRThatIsCurrentlyBeingSeriallyRetested(t *testing.
 	}
 
 	// Update the context on the PR to pending just like crier would
-	initialPR.Commits.Nodes[0].Commit.Status.Contexts[0].State = githubql.StatusStatePending
+	for idx, ctx := range initialPR.Commits.Nodes[0].Commit.Status.Contexts {
+		if pjs.Items[0].Spec.Context == string(ctx.Context) {
+			initialPR.Commits.Nodes[0].Commit.Status.Contexts[idx].State = githubql.StatusStatePending
+		}
+	}
 
 	// Add a second PR that also needs retesting to GitHub
 	secondPR := PullRequest{Number: githubql.Int(1)}
@@ -5016,9 +5020,96 @@ func TestIsBatchCandidateEligible(t *testing.T) {
 				OptionalContexts: []string{optionalContextName},
 			}
 
-			if actual := c.isBatchCandidateEligible(logrus.WithField("tc", tc.name), &pr, cc); actual != tc.expected {
+			if actual := c.isRetestEligible(logrus.WithField("tc", tc.name), &pr, cc); actual != tc.expected {
 				t.Errorf("expected result %t, got %t", tc.expected, actual)
 			}
 		})
 	}
+}
+
+// TestSerialRetestingConsidersPRThatIsCurrentlyBeingSRetested verifies the following sequence of events:
+// 1. Tide creates a serial retest run for a passing PR
+// 2. The status context on the PR gets updated to pending
+// 3. Another PR gets merged and changed the baseSHA, for example because it already had up-to-date tests but was missing labels
+// 4. Tide will again trigger serial retests for the passing PR (The runs from step 1 will be deleted by Plank)
+func TestSerialRetestingConsidersPRThatIsCurrentlyBeingSRetested(t *testing.T) {
+	t.Parallel()
+	configGetter := func() *config.Config {
+		return &config.Config{
+			ProwConfig: config.ProwConfig{Tide: config.Tide{
+				Queries:       config.TideQueries{{}},
+				MaxGoroutines: 1,
+			}},
+			JobConfig: config.JobConfig{PresubmitsStatic: map[string][]config.Presubmit{
+				"/": {{AlwaysRun: true, Reporter: config.Reporter{Context: "mandatory-job"}}},
+			}},
+		}
+	}
+	ghc := &fgc{}
+	mmc := newMergeChecker(configGetter, ghc)
+	mgr := newFakeManager()
+	log := logrus.WithField("test", t.Name())
+	history, err := history.New(1, nil, "")
+	if err != nil {
+		t.Fatalf("failed to construct history: %v", err)
+	}
+	c, err := newSyncController(
+		context.Background(), log, ghc, mgr, configGetter, nil, &statusController{}, history, mmc, false,
+	)
+	if err != nil {
+		t.Fatalf("failed to construct sync controller: %v", err)
+	}
+
+	// Add a successful PR to github
+	initialPR := PullRequest{}
+	initialPR.Commits.Nodes = append(initialPR.Commits.Nodes, struct{ Commit Commit }{
+		Commit: Commit{Status: CommitStatus{Contexts: []Context{
+			{
+				Context: githubql.String("mandatory-job"),
+				State:   githubql.StatusStateSuccess,
+			},
+			{
+				Context: githubql.String(statusContext),
+				State:   githubql.StatusStatePending,
+			},
+		}}},
+	})
+	ghc.prs = map[string][]PullRequest{"": {initialPR}}
+
+	// sync, this creates a new serial retest prowjob
+	if err := c.Sync(); err != nil {
+		t.Fatalf("sync failed: %v", err)
+	}
+	// ensure there is actually the retest job
+	var pjs prowapi.ProwJobList
+	if err := c.prowJobClient.List(c.ctx, &pjs); err != nil {
+		t.Fatalf("failed to list prowjobs: %v", err)
+	}
+	if n := len(pjs.Items); n != 1 {
+		t.Errorf("expected to find exactly one prowjob, got %d from list %+v", n, pjs)
+	}
+
+	// Update the context on the PR to pending just like crier would
+	for idx, ctx := range initialPR.Commits.Nodes[0].Commit.Status.Contexts {
+		if pjs.Items[0].Spec.Context == string(ctx.Context) {
+			initialPR.Commits.Nodes[0].Commit.Status.Contexts[idx].State = githubql.StatusStatePending
+		}
+	}
+
+	// Update the sha of the pool
+	ghc.refs = map[string]string{"/ ": "new-base-sha"}
+
+	// sync, this creates another serial retest prowjob
+	if err := c.Sync(); err != nil {
+		t.Fatalf("sync failed: %v", err)
+	}
+
+	// ensure we have the two retest prowjobs
+	if err := c.prowJobClient.List(c.ctx, &pjs); err != nil {
+		t.Fatalf("failed to list prowjobs: %v", err)
+	}
+	if n := len(pjs.Items); n != 2 {
+		t.Errorf("expected to find exactly two prowjobs, got %d from list %+v", n, pjs)
+	}
+
 }
