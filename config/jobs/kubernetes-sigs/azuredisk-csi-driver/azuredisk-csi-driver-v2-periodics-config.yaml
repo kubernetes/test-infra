@@ -1,0 +1,39 @@
+periodics:
+- name: periodic-24h-azuredisk-csi-driver-upgrade-test-mainv2
+  decorate: true
+  decoration_config:
+    timeout: 4h
+  interval: 24h
+  branches:
+    - main_v2
+  path_alias: sigs.k8s.io/azuredisk-csi-driver
+  labels:
+    preset-service-account: "true"
+    preset-azure-cred: "true"
+    preset-dind-enabled: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+    workdir: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220316-9d252673a0-master
+      command:
+      - runner.sh
+      args:
+        # Generic test args
+        - make
+        - upgrade-test
+        # Aks cluster specific args
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/main_v2/test/e2e/manifest/upgrade-test.json
+      securityContext:
+        privileged: true
+      env:
+        - name: ENABLE_TOPOLOGY
+          value: "false"
+  annotations:
+    testgrid-dashboards: provider-azure-azuredisk-csi-driver, provider-azure-azuredisk-csi-driver-periodic
+    testgrid-tab-name: periodic-24h-azuredisk-csi-driver-upgrade-test-mainv2
+    description: "Periodic (24h): Run tests to test upgrade from v1 to v2 for Azure Disk CSI driver on a single-az cluster."
