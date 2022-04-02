@@ -115,6 +115,9 @@ dashboards:
   - name: pull-kubernetes-e2e-gce-storage-snapshot
     test_group_name: pull-kubernetes-e2e-gce-storage-snapshot
     base_options: width=10
+  - name: pull-kubernetes-e2e-gce-storage-populator
+    test_group_name: pull-kubernetes-e2e-gce-storage-populator
+    base_options: width=10
   - name: pull-kubernetes-e2e-gce-csi-serial
     test_group_name: pull-kubernetes-e2e-gce-csi-serial
     base_options: width=10

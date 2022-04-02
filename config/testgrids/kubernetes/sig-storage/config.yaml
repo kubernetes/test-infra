@@ -82,6 +82,12 @@ dashboards:
       description: storage snapshot e2e tests for master branch
       alert_options:
         alert_mail_to_addresses: kubernetes-sig-storage-test-failures@googlegroups.com
+    - name: volume-populator
+      test_group_name: ci-kubernetes-e2e-populator
+      base_options: include-filter-by-regex=Volume%7Cstorage
+      description: storage populator e2e tests for master branch
+      alert_options:
+        alert_mail_to_addresses: kubernetes-sig-storage-test-failures@googlegroups.com
     - name: kops-selinux
       test_group_name: ci-kubernetes-e2e-storage-selinux
       base_options: include-filter-by-regex=Volume%7Cstorage

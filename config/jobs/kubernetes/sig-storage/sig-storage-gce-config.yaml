@@ -91,7 +91,57 @@ presubmits:
         - --gcp-zone=us-west1-b
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-storage-snapshot
-        - --test_args=--ginkgo.focus=\[Feature:(VolumeSnapshotDataSource|AnyVolumeDataSource)\] --ginkgo.skip=\[Disruptive\]|\[Flaky\] --minStartupPods=8
+        - --test_args=--ginkgo.focus=\[Feature:VolumeSnapshotDataSource\] --ginkgo.skip=\[Disruptive\]|\[Flaky\] --minStartupPods=8
+        - --timeout=120m
+        securityContext:
+          privileged: true
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
+        resources:
+          requests:
+            memory: "6Gi"
+    annotations:
+      testgrid-create-test-group: 'true'
+  - name: pull-kubernetes-e2e-gce-storage-populator
+    always_run: false
+    optional: true
+    # All the files owned by sig-storage. Keep in sync across
+    # all sig-storage-jobs
+    #
+    # pkg/controller/volume
+    # pkg/kubelet/volumemanager
+    # pkg/volume
+    # pkg/util/mount
+    # test/e2e/storage
+    # test/e2e/testing-manifests/storage-csi
+    run_if_changed: '^(pkg\/controller\/volume|pkg\/kubelet\/volumemanager|pkg\/volume|pkg\/util\/mount|test\/e2e\/storage|test\/e2e\/testing-manifests\/storage-csi)'
+    branches:
+    # TODO(releng): Remove once repo default branch has been renamed
+    - master
+    - main
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+      preset-pull-kubernetes-e2e: "true"
+      preset-pull-kubernetes-e2e-gce: "true"
+    spec:
+      containers:
+      - args:
+        - --root=/go/src
+        - --repo=k8s.io/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --timeout=150
+        - --scenario=kubernetes_e2e
+        - --
+        - --build=quick
+        - --cluster=
+        - --extract=local
+        - --gcp-node-image=gci
+        - --gcp-zone=us-west1-b
+        - --provider=gce
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-storage-populator
+        - --test_args=--ginkgo.focus=\[Feature:AnyVolumeDataSource\] --ginkgo.skip=\[Disruptive\]|\[Flaky\] --minStartupPods=8
         - --timeout=120m
         securityContext:
           privileged: true
@@ -353,7 +403,31 @@ periodics:
       - --gcp-node-image=gci
       - --gcp-zone=us-west1-b
       - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:(VolumeSnapshotDataSource|AnyVolumeDataSource)\] --ginkgo.skip=\[Disruptive\]|\[Flaky\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Feature:VolumeSnapshotDataSource\] --ginkgo.skip=\[Disruptive\]|\[Flaky\] --minStartupPods=8
+      - --timeout=120m
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
+  annotations:
+    testgrid-num-columns-recent: '20'
+    testgrid-num-failures-to-alert: '6'
+    testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
+- interval: 24h
+  name: ci-kubernetes-e2e-populator
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=150
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-zone=us-west1-b
+      - --provider=gce
+      - --test_args=--ginkgo.focus=\[Feature:AnyVolumeDataSource\] --ginkgo.skip=\[Disruptive\]|\[Flaky\] --minStartupPods=8
       - --timeout=120m
       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220331-3fd3706520-master
   annotations:
