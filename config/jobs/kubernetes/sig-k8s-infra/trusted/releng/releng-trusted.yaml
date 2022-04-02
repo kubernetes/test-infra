@@ -53,7 +53,6 @@ postsubmits:
   kubernetes-sigs/bom:
   # This job is a canary job to test the k-promo and the image promotion with signatures
   # it will promote the image to another bucket in the same gcp project
-  # TODO: update the service account to one that is inside the staging-bom project
   - name: post-bom-image-promo-canary
     cluster: k8s-infra-prow-build-trusted
     decorate: true
@@ -73,7 +72,6 @@ postsubmits:
         args:
         - cip
         - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes-sigs/bom/canary
-        - --signer-account=test-signer@ulabs-cloud-tests.iam.gserviceaccount.com
         - --confirm
     annotations:
       testgrid-dashboards: sig-release-releng-informing
