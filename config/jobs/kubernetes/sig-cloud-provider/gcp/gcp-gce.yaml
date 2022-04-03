@@ -1,7 +1,6 @@
 presets:
 - labels:
     preset-pull-kubernetes-e2e: "true"
-    preset-use-new-registry: "true"
   env:
   - name: KUBE_GCS_UPDATE_LATEST
     value: "n"
