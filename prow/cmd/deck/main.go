@@ -1097,7 +1097,9 @@ lensesLoop:
 
 	extraLinks, err := sg.ExtraLinks(ctx, src)
 	if err != nil {
-		log.WithError(err).WithField("page", src).Warn("Failed to fetch extra links")
+		log.WithError(err).WithField("page", src).Warn("Failed to fetch extra links.")
+		// This is annoying but not a fatal error, should keep going so that the
+		// other infos fetched above are displayed to user.
 		extraLinks = nil
 	}
 

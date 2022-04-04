@@ -411,12 +411,17 @@ func (sg *Spyglass) ExtraLinks(ctx context.Context, src string) ([]ExtraLink, er
 
 	// Failing to find started.json is okay, just return nothing quietly.
 	if len(artifacts) == 0 {
-		logrus.Debugf("Failed to find started.json while looking for extra links.")
+		logrus.Debug("Failed to find started.json while looking for extra links.")
 		return nil, nil
 	}
 	// Failing to read an artifact we already know to exist shouldn't happen, so that's an error.
 	content, err := artifacts[0].ReadAll()
 	if err != nil {
+		// Swallow the error if this file is empty
+		if size, sizeErr := artifacts[0].Size(); sizeErr != nil && size == 0 {
+			logrus.Debug("Started.json is empty.")
+			err = nil
+		}
 		return nil, err
 	}
 	// Being unable to parse a successfully fetched started.json correctly is also an error.
