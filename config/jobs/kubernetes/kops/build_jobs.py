@@ -918,7 +918,6 @@ def generate_presubmits_network_plugins():
                     name=f"pull-kops-e2e-cni-{plugin}-ipv6",
                     tab_name=f"e2e-{plugin}-ipv6",
                     distro="deb11",
-                    k8s_version='ci',
                     networking=networking_arg,
                     feature_flags=["AWSIPv6"],
                     extra_flags=['--ipv6',
