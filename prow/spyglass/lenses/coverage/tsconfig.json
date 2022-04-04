@@ -1,5 +1,5 @@
 {
-  "extends": "../../../../make-tsconfig.json",
+  "extends": "../../../../tsconfig.json",
   "include": [
     "coverage.ts",
     "../lens.d.ts",
@@ -8,7 +8,4 @@
     "../../../../../node_modules/@types/color",
     "../../../../../node_modules/@types/pako"
   ],
-  "exclude": [
-    "zz.bundle.min.js"
-  ]
 }

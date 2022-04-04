@@ -18,13 +18,12 @@ set -o nounset
 set -o pipefail
 
 if [[ "${1:-}" == '--help' ]]; then
-  echo "Usage: [GO_RUN=yes] [NO_DOCKER=yes] $(basename "$0") [--skip-pregenerated|HOST] [--skip-typescript]" >&2
+  echo "Usage: [NO_DOCKER=yes] $(basename "$0") [--skip-pregenerated|HOST] [--skip-typescript]" >&2
   echo >&2
   echo "  --skip-pregenerated: do not fetch pregenerated cluster data from a prod instance" >&2
   echo "  HOST: fetch pregenerated cluster data from a prod instance, eg https://prow.k8s.io" >&2
   echo "  --skip-typescript: do not compile typescript" >&2
   echo >&2
-  echo "  GO_RUN=yes: Use go run rather than bazel" >&2
   echo "  NO_DOCKER=yes: Run Makefile commands on host machine, rather than a container" >&2
   exit 1
 fi
@@ -68,30 +67,16 @@ compile-typescript() {
   ./gather-static.sh
 }
 
-if [[ -n "${GO_RUN:-}" ]]; then
-  if [[ "${1:-}" != '--skip-typescript' ]]; then
-    compile-typescript
-  fi
-  (
-    set -o xtrace
-    go run . \
-      --pregenerated-data=${DIR}/localdata \
-      --static-files-location="$DIR/kodata/static" \
-      --template-files-location="$DIR/kodata/template" \
-      --spyglass-files-location="$DIR/kodata/lenses" \
-      --config-path "${DIR}/../../../config/prow/config.yaml" \
-      --spyglass
-  )
-else
-  bazel=$(command -v bazelisk || command -v bazel)
-  (
-    set -o xtrace
-    "$bazel" run //prow/cmd/deck:deck -- \
-      --pregenerated-data=${DIR}/localdata \
-      --static-files-location=./prow/cmd/deck/static \
-      --template-files-location=./prow/cmd/deck/template \
-      --spyglass-files-location=./prow/spyglass/lenses \
-      --config-path "${DIR}/../../../config/prow/config.yaml" \
-      --spyglass
-  )
+if [[ "${1:-}" != '--skip-typescript' ]]; then
+  compile-typescript
 fi
+(
+  set -o xtrace
+  go run . \
+    --pregenerated-data=${DIR}/localdata \
+    --static-files-location="$DIR/kodata/static" \
+    --template-files-location="$DIR/kodata/template" \
+    --spyglass-files-location="$DIR/kodata/lenses" \
+    --config-path "${DIR}/../../../config/prow/config.yaml" \
+    --spyglass
+)

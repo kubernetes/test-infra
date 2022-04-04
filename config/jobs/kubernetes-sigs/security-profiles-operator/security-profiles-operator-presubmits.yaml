@@ -8,7 +8,7 @@ presubmits:
       testgrid-create-test-group: 'true'
     spec:
       containers:
-      - image: golang:1.17
+      - image: golang:1.18
         command:
         - hack/pull-security-profiles-operator-build
 
@@ -20,7 +20,7 @@ presubmits:
       testgrid-create-test-group: 'true'
     spec:
       containers:
-      - image: golang:1.17
+      - image: golang:1.18
         command:
         - hack/pull-security-profiles-operator-verify
 
@@ -32,7 +32,7 @@ presubmits:
       testgrid-create-test-group: 'true'
     spec:
       containers:
-      - image: golang:1.17
+      - image: golang:1.18
         command:
         - hack/pull-security-profiles-operator-test-unit
 
@@ -48,7 +48,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
         securityContext:
           privileged: true  # for dind
         resources:
@@ -74,7 +74,7 @@ presubmits:
       hostNetwork: true
       hostPID: true
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
         securityContext:
           privileged: true  # for dind
         resources:

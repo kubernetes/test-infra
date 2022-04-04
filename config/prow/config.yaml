@@ -11,10 +11,10 @@ plank:
       timeout: 2h
       grace_period: 15m
       utility_images:
-        clonerefs: "gcr.io/k8s-prow/clonerefs:v20220315-e2a49c85bd"
-        initupload: "gcr.io/k8s-prow/initupload:v20220315-e2a49c85bd"
-        entrypoint: "gcr.io/k8s-prow/entrypoint:v20220315-e2a49c85bd"
-        sidecar: "gcr.io/k8s-prow/sidecar:v20220315-e2a49c85bd"
+        clonerefs: "gcr.io/k8s-prow/clonerefs:v20220404-e2e605a820"
+        initupload: "gcr.io/k8s-prow/initupload:v20220404-e2e605a820"
+        entrypoint: "gcr.io/k8s-prow/entrypoint:v20220404-e2e605a820"
+        sidecar: "gcr.io/k8s-prow/sidecar:v20220404-e2e605a820"
       gcs_configuration:
         bucket: "kubernetes-jenkins"
         path_strategy: "legacy"
@@ -43,7 +43,7 @@ sinker:
 
 deck:
   spyglass:
-    size_limit: 100000000 # 100MB
+    size_limit: 200000000 # 200MB
     gcs_browser_prefix: https://gcsweb.k8s.io/gcs/
     testgrid_config: gs://k8s-testgrid/config
     testgrid_root: https://testgrid.k8s.io/
@@ -87,7 +87,9 @@ deck:
           - got.+expected
           - hash mismatch
           - Hit an unsupported type
+          - imported but not used
           - Incompatible changes
+          - incorrect boilerplate
           - indent-error-flow
           - INSTALLATION FAILED
           - is a misspelling
@@ -104,6 +106,7 @@ deck:
           - "signal: killed"
           - Something went wrong
           - too few arguments
+          - too many errors
           - "[Tt]imed out"
           - type.+has no field
           - unable to start the controlplane
@@ -115,8 +118,8 @@ deck:
           - want.+got
           - Your cluster may not be fully functional
           - ^\s+\^$
-          - \[31m
-          - "^diff" # [+-]{3}\\s" has too much noise from go test output
+          - \[(0;)?31m
+          - "^diff " # [+-]{3}\\s" has too much noise from go test output and set -x
           - • Failure
           # This highlights the start of bazel tests/runs to skip go importing noise.
           - "^INFO: Analyzed \\d+ targets"
@@ -586,6 +589,7 @@ tide:
     - kubernetes-sigs
     excludedRepos:
     - kubernetes/kubernetes # Handled with a separate Tide query below.
+    - kubernetes-sigs/lwkd # Only 2 active contributors, they've requested that Tide be disabled.
     # The following are staging repos which do not normally support merging PRs.
     # https://github.com/kubernetes/kubernetes/blob/master/staging/README.md
     # Note that k/client-go is an exception to this rule so it is not an excludedRepo.
@@ -634,6 +638,32 @@ tide:
     - needs-rebase
   - repos:
     - kubernetes/kubernetes
+    excludedBranches:
+    - master
+    - release-1.24
+    labels:
+    - lgtm
+    - approved
+    - "cncf-cla: yes"
+    missingLabels:
+    - do-not-merge
+    - do-not-merge/blocked-paths
+    - do-not-merge/cherry-pick-not-approved
+    - do-not-merge/contains-merge-commits
+    - do-not-merge/hold
+    - do-not-merge/invalid-commit-message
+    - do-not-merge/invalid-owners-file
+    - do-not-merge/needs-kind
+    - do-not-merge/needs-sig
+    - do-not-merge/release-note-label-needed
+    - do-not-merge/work-in-progress
+    - needs-rebase
+  - repos:
+    - kubernetes/kubernetes
+    milestone: v1.24
+    includedBranches:
+    - master
+    - release-1.24
     labels:
     - lgtm
     - approved

@@ -54,8 +54,14 @@ import (
 	"k8s.io/test-infra/prow/git/localgit"
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/tide/history"
 )
+
+func init() {
+	// Debugging tests without this isn't fun
+	logrus.SetLevel(logrus.DebugLevel)
+}
 
 var defaultBranch = localgit.DefaultBranch("")
 
@@ -1109,9 +1115,10 @@ func testPickBatch(clients localgit.Clients, t *testing.T) {
 		},
 	})
 	c := &Controller{
-		logger: logrus.WithField("component", "tide"),
-		gc:     gc,
-		config: ca.Config,
+		logger:       logrus.WithField("component", "tide"),
+		gc:           gc,
+		config:       ca.Config,
+		pickNewBatch: pickNewBatch(gc, ca.Config),
 	}
 	prs, presubmits, err := c.pickBatch(sp, map[int]contextChecker{
 		0: &config.TideContextPolicy{},
@@ -1267,6 +1274,7 @@ func TestMergeMethodCheckerAndPRMergeMethod(t *testing.T) {
 				}{
 					Nodes: []struct{ Name githubql.String }{},
 				},
+				CanBeRebased: true,
 			}
 			for _, label := range tc.labels {
 				labelNode := struct{ Name githubql.String }{Name: githubql.String(label)}
@@ -1300,6 +1308,76 @@ func TestMergeMethodCheckerAndPRMergeMethod(t *testing.T) {
 			} else if tc.expectConflictErr {
 				t.Errorf("missing expected merge method conflict error")
 				return
+			}
+		})
+	}
+}
+
+func TestRebaseMergeMethodIsAllowed(t *testing.T) {
+	orgName := "fake-org"
+	repoName := "fake-repo"
+	tideConfig := config.Tide{
+		MergeType: map[string]github.PullRequestMergeType{
+			fmt.Sprintf("%s/%s", orgName, repoName): github.MergeRebase,
+		},
+	}
+	cfg := func() *config.Config { return &config.Config{ProwConfig: config.ProwConfig{Tide: tideConfig}} }
+	mmc := newMergeChecker(cfg, &fgc{})
+	mmc.cache = map[config.OrgRepo]map[github.PullRequestMergeType]bool{
+		{Org: orgName, Repo: repoName}: {
+			github.MergeRebase: true,
+		},
+	}
+
+	testCases := []struct {
+		name                string
+		expectedMergeOutput string
+		prCanBeRebased      bool
+	}{
+		{
+			name:                "Merging PR using rebase successfully",
+			expectedMergeOutput: "",
+			prCanBeRebased:      true,
+		},
+		{
+			name:                "Merging PR using rebase but it is not allowed",
+			expectedMergeOutput: "PR can't be rebased",
+			prCanBeRebased:      false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			pr := &PullRequest{
+				Repository: struct {
+					Name          githubql.String
+					NameWithOwner githubql.String
+					Owner         struct {
+						Login githubql.String
+					}
+				}{
+					Name: githubql.String(repoName),
+					Owner: struct {
+						Login githubql.String
+					}{
+						Login: githubql.String(orgName),
+					},
+				},
+				Labels: struct {
+					Nodes []struct{ Name githubql.String }
+				}{
+					Nodes: []struct{ Name githubql.String }{},
+				},
+				CanBeRebased: githubql.Boolean(tc.prCanBeRebased),
+			}
+
+			mergeOutput, err := mmc.isAllowed(pr)
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+			} else {
+				if mergeOutput != tc.expectedMergeOutput {
+					t.Errorf("Expected merge output \"%s\" but got \"%s\"\n", tc.expectedMergeOutput, mergeOutput)
+				}
 			}
 		})
 	}
@@ -2795,19 +2873,35 @@ func TestIsPassing(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		ghc := &fgc{
-			combinedStatus: tc.combinedContexts,
-			expectedSHA:    headSHA}
-		log := logrus.WithField("component", "tide")
-		_, err := log.String()
-		if err != nil {
-			t.Fatalf("Failed to get log output before testing: %v", err)
-		}
-		pr := PullRequest{HeadRefOID: githubql.String(headSHA)}
-		passing := isPassingTests(log, ghc, pr, &tc.config)
-		if passing != tc.passing {
-			t.Errorf("%s: Expected %t got %t", tc.name, tc.passing, passing)
-		}
+		t.Run(tc.name, func(t *testing.T) {
+
+			ghc := &fgc{
+				combinedStatus: tc.combinedContexts,
+				expectedSHA:    headSHA}
+			log := logrus.WithField("component", "tide")
+			_, err := log.String()
+			if err != nil {
+				t.Fatalf("Failed to get log output before testing: %v", err)
+			}
+			pr := PullRequest{HeadRefOID: githubql.String(headSHA)}
+			passing := (&Controller{ghc: ghc}).isPassingTests(log, &pr, &tc.config)
+			if passing != tc.passing {
+				t.Errorf("%s: Expected %t got %t", tc.name, tc.passing, passing)
+			}
+
+			if tc.passing {
+				c := &Controller{
+					ghc:           ghc,
+					prowJobClient: fakectrlruntimeclient.NewFakeClient(),
+					config:        func() *config.Config { return &config.Config{} },
+				}
+				// isRetestEligible is more lenient than isPassingTests, which means we expect it to allow
+				// everything that is allowed by isPassingTests. The reverse might not be true.
+				if !c.isRetestEligible(log, &pr, &tc.config) {
+					t.Error("expected pr to be batch testing eligible, wasn't the case")
+				}
+			}
+		})
 	}
 }
 
@@ -4259,10 +4353,10 @@ func TestPickSmallestPassingNumber(t *testing.T) {
 			expected: 9,
 		},
 	}
-	alwaysTrue := func(*logrus.Entry, githubClient, PullRequest, contextChecker) bool { return true }
+	alwaysTrue := func(*logrus.Entry, *PullRequest, contextChecker) bool { return true }
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, got := pickHighestPriorityPR(nil, nil, tc.prs, nil, alwaysTrue, priorities)
+			_, got := pickHighestPriorityPR(nil, tc.prs, nil, alwaysTrue, priorities)
 			if int(got.Number) != tc.expected {
 				t.Errorf("got %d, expected %d", int(got.Number), tc.expected)
 			}
@@ -4667,4 +4761,355 @@ func TestSetTideStatusSuccess(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestBatchPickingConsidersPRThatIsCurrentlyBeingSeriallyRetested verifies the following sequence of events:
+// 1. Tide creates a serial retest run for a passing PR
+// 2. The status contexts on the PR get updated to pending
+// 3. A second PR becomes eligible
+// 4. Tide creates a batch of the first and the second PR
+func TestBatchPickingConsidersPRThatIsCurrentlyBeingSeriallyRetested(t *testing.T) {
+	t.Parallel()
+	configGetter := func() *config.Config {
+		return &config.Config{
+			ProwConfig: config.ProwConfig{Tide: config.Tide{
+				Queries:       config.TideQueries{{}},
+				MaxGoroutines: 1,
+			}},
+			JobConfig: config.JobConfig{PresubmitsStatic: map[string][]config.Presubmit{
+				"/": {{AlwaysRun: true, Reporter: config.Reporter{Context: "mandatory-job"}}},
+			}},
+		}
+	}
+	ghc := &fgc{}
+	mmc := newMergeChecker(configGetter, ghc)
+	mgr := newFakeManager()
+	log := logrus.WithField("test", t.Name())
+	history, err := history.New(1, nil, "")
+	if err != nil {
+		t.Fatalf("failed to construct history: %v", err)
+	}
+	c, err := newSyncController(
+		context.Background(), log, ghc, mgr, configGetter, nil, &statusController{}, history, mmc, false,
+	)
+	if err != nil {
+		t.Fatalf("failed to construct sync controller: %v", err)
+	}
+	c.pickNewBatch = func(sp subpool, candidates []PullRequest, maxBatchSize int) ([]PullRequest, error) {
+		return candidates, nil
+	}
+
+	// Add a successful PR to github
+	initialPR := PullRequest{}
+	initialPR.Commits.Nodes = append(initialPR.Commits.Nodes, struct{ Commit Commit }{
+		Commit: Commit{Status: CommitStatus{Contexts: []Context{
+			{
+				Context: githubql.String("mandatory-job"),
+				State:   githubql.StatusStateSuccess,
+			},
+			{
+				Context: githubql.String(statusContext),
+				State:   githubql.StatusStatePending,
+			},
+		}}},
+	})
+	ghc.prs = map[string][]PullRequest{"": {initialPR}}
+
+	// sync, this creates a new serial retest prowjob
+	if err := c.Sync(); err != nil {
+		t.Fatalf("sync failed: %v", err)
+	}
+	// Ensure there is actually the retest job
+	var pjs prowapi.ProwJobList
+	if err := c.prowJobClient.List(c.ctx, &pjs); err != nil {
+		t.Fatalf("failed to list prowjobs: %v", err)
+	}
+	if n := len(pjs.Items); n != 1 {
+		t.Fatalf("expected a prowjob to be created, but client had %d items", n)
+	}
+
+	// Update the context on the PR to pending just like crier would
+	for idx, ctx := range initialPR.Commits.Nodes[0].Commit.Status.Contexts {
+		if pjs.Items[0].Spec.Context == string(ctx.Context) {
+			initialPR.Commits.Nodes[0].Commit.Status.Contexts[idx].State = githubql.StatusStatePending
+		}
+	}
+
+	// Add a second PR that also needs retesting to GitHub
+	secondPR := PullRequest{Number: githubql.Int(1)}
+	secondPR.Commits.Nodes = append(secondPR.Commits.Nodes, struct{ Commit Commit }{
+		Commit: Commit{Status: CommitStatus{Contexts: []Context{
+			{
+				Context: githubql.String("mandatory-job"),
+				State:   githubql.StatusStateSuccess,
+			},
+			{
+				Context: githubql.String(statusContext),
+				State:   githubql.StatusStatePending,
+			},
+		}}},
+	})
+	ghc.prs[""] = append(ghc.prs[""], secondPR)
+
+	// sync again
+	if err := c.Sync(); err != nil {
+		t.Fatalf("failed to sync: %v", err)
+	}
+
+	// verify we have a batch prowjob
+	if err := c.prowJobClient.List(c.ctx, &pjs); err != nil {
+		t.Fatalf("failed to list prowjobs: %v", err)
+	}
+	for _, pj := range pjs.Items {
+		if pj.Spec.Type == prowapi.BatchJob {
+			return
+		}
+	}
+
+	t.Errorf("expected to find a batch prwjob, but wasn't the case. ProwJobs: %+v", pjs.Items)
+}
+
+func TestIsBatchCandidateEligible(t *testing.T) {
+	t.Parallel()
+
+	const (
+		requiredContextName = "required-context"
+		optionalContextName = "optional-context"
+	)
+
+	tcs := []struct {
+		name          string
+		pjManipulator func(**prowapi.ProwJob)
+		prManipulator func(*PullRequest)
+
+		expected bool
+	}{
+		{
+			name:     "Is eligible",
+			expected: true,
+		},
+		{
+			name: "Successful context doesn't require prowjob",
+			prManipulator: func(pr *PullRequest) {
+				pr.Commits.Nodes[0].Commit.Status.Contexts[0].State = githubql.StatusStateSuccess
+			},
+			pjManipulator: func(pj **prowapi.ProwJob) { *pj = nil },
+			expected:      true,
+		},
+		{
+			name:     "Optional failed context is ignored",
+			expected: true,
+			prManipulator: func(pr *PullRequest) {
+				pr.Commits.Nodes[0].Commit.Status.Contexts = append(pr.Commits.Nodes[0].Commit.Status.Contexts, Context{
+					Context: githubql.String(optionalContextName),
+					State:   githubql.StatusStateFailure,
+				})
+			},
+		},
+		{
+			name:     "Tides own context is ignored",
+			expected: true,
+			prManipulator: func(pr *PullRequest) {
+				pr.Commits.Nodes[0].Commit.Status.Contexts = append(pr.Commits.Nodes[0].Commit.Status.Contexts, Context{
+					Context: githubql.String(statusContext),
+					State:   githubql.StatusStateFailure,
+				})
+			},
+		},
+		{
+			name:          "Has missing required context, not eligible",
+			prManipulator: func(pr *PullRequest) { pr.Commits.Nodes[0].Commit.Status.Contexts = nil },
+		},
+		{
+			name: "Has failed context, not eligible",
+			prManipulator: func(pr *PullRequest) {
+				pr.Commits.Nodes[0].Commit.Status.Contexts[0].State = githubql.StatusStateFailure
+			},
+		},
+		{
+			name: "Has error context, not eligible",
+			prManipulator: func(pr *PullRequest) {
+				pr.Commits.Nodes[0].Commit.Status.Contexts[0].State = githubql.StatusStateError
+			},
+		},
+		{
+			name:          "No prowjob, not eligible",
+			pjManipulator: func(pj **prowapi.ProwJob) { *pj = nil },
+		},
+		{
+			name:          "Pj doesn't have created by tide label, not eligible",
+			pjManipulator: func(pj **prowapi.ProwJob) { (*pj).Labels["created-by-tide"] = "wrong" },
+		},
+		{
+			name:          "Pj doesn't have presubmit label, not eligible",
+			pjManipulator: func(pj **prowapi.ProwJob) { (*pj).Labels[kube.ProwJobTypeLabel] = "wrong" },
+		},
+		{
+			name:          "PJ doesn't have org label, not eligible",
+			pjManipulator: func(pj **prowapi.ProwJob) { (*pj).Labels[kube.OrgLabel] = "wrong" },
+		},
+		{
+			name:          "PJ doesn't have repo label, not eligible",
+			pjManipulator: func(pj **prowapi.ProwJob) { (*pj).Labels[kube.RepoLabel] = "wrong" },
+		},
+		{
+			name:          "Pj doesn't have baseref label, not eligible",
+			pjManipulator: func(pj **prowapi.ProwJob) { (*pj).Labels[kube.BaseRefLabel] = "wrong" },
+		},
+		{
+			name:          "Pj doesn't have pull label, not eligible",
+			pjManipulator: func(pj **prowapi.ProwJob) { (*pj).Labels[kube.PullLabel] = "wrong" },
+		},
+		{
+			name:          "pj doesn't have context label, not eligible",
+			pjManipulator: func(pj **prowapi.ProwJob) { (*pj).Labels[kube.ContextAnnotation] = "wrong" },
+		},
+		{
+			name:          "Pj is for wrong headref, not eligible",
+			pjManipulator: func(pj **prowapi.ProwJob) { (*pj).Spec.Refs.Pulls[0].SHA = "wrong" },
+		},
+	}
+
+	newPR := func() PullRequest {
+		pr := PullRequest{}
+		pr.Commits.Nodes = append(pr.Commits.Nodes, struct{ Commit Commit }{Commit: Commit{Status: CommitStatus{Contexts: []Context{
+			{Context: githubql.String(requiredContextName), State: githubql.StatusStatePending},
+		}}}})
+		return pr
+	}
+	newProwJob := func() *prowapi.ProwJob {
+		return &prowapi.ProwJob{
+			ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{
+				"created-by-tide":      "true",
+				kube.ProwJobTypeLabel:  "presubmit",
+				kube.OrgLabel:          "",
+				kube.RepoLabel:         "",
+				kube.BaseRefLabel:      "",
+				kube.PullLabel:         "0",
+				kube.ContextAnnotation: requiredContextName,
+			}},
+			Spec: prowapi.ProwJobSpec{Refs: &prowapi.Refs{Pulls: []prowapi.Pull{{}}}},
+		}
+	}
+
+	for _, tc := range tcs {
+		t.Run(tc.name, func(t *testing.T) {
+			pj := newProwJob()
+			pr := newPR()
+
+			if tc.prManipulator != nil {
+				tc.prManipulator(&pr)
+			}
+			if tc.pjManipulator != nil {
+				tc.pjManipulator(&pj)
+			}
+
+			var initObjects []runtime.Object
+			if pj != nil {
+				initObjects = append(initObjects, pj)
+			}
+
+			c := &Controller{
+				config:        func() *config.Config { return &config.Config{} },
+				ctx:           context.Background(),
+				prowJobClient: fakectrlruntimeclient.NewFakeClient(initObjects...),
+			}
+
+			cc := &config.TideContextPolicy{
+				RequiredContexts: []string{requiredContextName},
+				OptionalContexts: []string{optionalContextName},
+			}
+
+			if actual := c.isRetestEligible(logrus.WithField("tc", tc.name), &pr, cc); actual != tc.expected {
+				t.Errorf("expected result %t, got %t", tc.expected, actual)
+			}
+		})
+	}
+}
+
+// TestSerialRetestingConsidersPRThatIsCurrentlyBeingSRetested verifies the following sequence of events:
+// 1. Tide creates a serial retest run for a passing PR
+// 2. The status context on the PR gets updated to pending
+// 3. Another PR gets merged and changed the baseSHA, for example because it already had up-to-date tests but was missing labels
+// 4. Tide will again trigger serial retests for the passing PR (The runs from step 1 will be deleted by Plank)
+func TestSerialRetestingConsidersPRThatIsCurrentlyBeingSRetested(t *testing.T) {
+	t.Parallel()
+	configGetter := func() *config.Config {
+		return &config.Config{
+			ProwConfig: config.ProwConfig{Tide: config.Tide{
+				Queries:       config.TideQueries{{}},
+				MaxGoroutines: 1,
+			}},
+			JobConfig: config.JobConfig{PresubmitsStatic: map[string][]config.Presubmit{
+				"/": {{AlwaysRun: true, Reporter: config.Reporter{Context: "mandatory-job"}}},
+			}},
+		}
+	}
+	ghc := &fgc{}
+	mmc := newMergeChecker(configGetter, ghc)
+	mgr := newFakeManager()
+	log := logrus.WithField("test", t.Name())
+	history, err := history.New(1, nil, "")
+	if err != nil {
+		t.Fatalf("failed to construct history: %v", err)
+	}
+	c, err := newSyncController(
+		context.Background(), log, ghc, mgr, configGetter, nil, &statusController{}, history, mmc, false,
+	)
+	if err != nil {
+		t.Fatalf("failed to construct sync controller: %v", err)
+	}
+
+	// Add a successful PR to github
+	initialPR := PullRequest{}
+	initialPR.Commits.Nodes = append(initialPR.Commits.Nodes, struct{ Commit Commit }{
+		Commit: Commit{Status: CommitStatus{Contexts: []Context{
+			{
+				Context: githubql.String("mandatory-job"),
+				State:   githubql.StatusStateSuccess,
+			},
+			{
+				Context: githubql.String(statusContext),
+				State:   githubql.StatusStatePending,
+			},
+		}}},
+	})
+	ghc.prs = map[string][]PullRequest{"": {initialPR}}
+
+	// sync, this creates a new serial retest prowjob
+	if err := c.Sync(); err != nil {
+		t.Fatalf("sync failed: %v", err)
+	}
+	// ensure there is actually the retest job
+	var pjs prowapi.ProwJobList
+	if err := c.prowJobClient.List(c.ctx, &pjs); err != nil {
+		t.Fatalf("failed to list prowjobs: %v", err)
+	}
+	if n := len(pjs.Items); n != 1 {
+		t.Errorf("expected to find exactly one prowjob, got %d from list %+v", n, pjs)
+	}
+
+	// Update the context on the PR to pending just like crier would
+	for idx, ctx := range initialPR.Commits.Nodes[0].Commit.Status.Contexts {
+		if pjs.Items[0].Spec.Context == string(ctx.Context) {
+			initialPR.Commits.Nodes[0].Commit.Status.Contexts[idx].State = githubql.StatusStatePending
+		}
+	}
+
+	// Update the sha of the pool
+	ghc.refs = map[string]string{"/ ": "new-base-sha"}
+
+	// sync, this creates another serial retest prowjob
+	if err := c.Sync(); err != nil {
+		t.Fatalf("sync failed: %v", err)
+	}
+
+	// ensure we have the two retest prowjobs
+	if err := c.prowJobClient.List(c.ctx, &pjs); err != nil {
+		t.Fatalf("failed to list prowjobs: %v", err)
+	}
+	if n := len(pjs.Items); n != 2 {
+		t.Errorf("expected to find exactly two prowjobs, got %d from list %+v", n, pjs)
+	}
+
 }

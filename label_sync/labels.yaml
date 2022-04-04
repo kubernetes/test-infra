@@ -592,6 +592,18 @@ default:
       previously:
         - name: wg/apply
     - color: d2b48c
+      description: Categorizes an issue or PR as relevant to WG Batch.
+      name: wg/batch
+      target: both
+      prowPlugin: label
+      addedBy: anyone
+    - color: d2b48c
+      description: Categorizes an issue or PR as relevant to WG Data Protection.
+      name: wg/data-protection
+      target: both
+      prowPlugin: label
+      addedBy: anyone
+    - color: d2b48c
       description: Categorizes an issue or PR as relevant to WG IOT Edge.
       name: wg/iot-edge
       target: both
@@ -1110,6 +1122,11 @@ repos:
         name: area/release-eng
         previously:
           - name: area/release-infra
+        target: both
+        addedBy: label
+      - color: 0052cc
+        description: Issues or PRs involving stable metrics
+        name: area/stable-metrics
         target: both
         addedBy: label
       - color: e11d21
@@ -1766,6 +1783,12 @@ repos:
         target: both
         addedBy: anyone
         prowPlugin: label
+      - color: 0052cc
+        description: Issues or PRs related to Runtime SDK
+        name: area/runtime-sdk
+        target: both
+        prowPlugin: label
+        addedBy: anyone
   kubernetes-sigs/cluster-api-operator:
     labels:
       - color: c7def8
@@ -2038,3 +2061,4 @@ repos:
         target: both
         prowPlugin: label
         addedBy: anyone
+

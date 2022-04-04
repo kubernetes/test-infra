@@ -111,9 +111,9 @@ func (o Options) Run(ctx context.Context) (int, error) {
 				//Peform best-effort upload
 				err := o.doUpload(ctx, spec, false, true, metadata, buildLogs)
 				if err != nil {
-					logrus.Errorf("Failed to perform best-effort upload : %v", err)
+					logrus.WithError(err).Error("Failed to perform best-effort upload")
 				} else {
-					logrus.Errorf("Best-effort upload was successful")
+					logrus.Error("Best-effort upload was successful")
 				}
 			}
 		case <-ctx.Done():
@@ -198,17 +198,21 @@ func combineMetadata(entries []wrapper.Options) map[string]interface{} {
 func (o Options) preUpload() {
 	if o.DeprecatedWrapperOptions != nil {
 		// This only fires if the prowjob controller and sidecar are at different commits
-		logrus.Warnf("Using deprecated wrapper_options instead of entries. Please update prow/pod-utils/decorate before June 2019")
+		logrus.Warn("Using deprecated wrapper_options instead of entries. Please update prow/pod-utils/decorate before June 2019")
 	}
 
 	if o.CensoringOptions != nil {
 		if err := o.censor(); err != nil {
-			logrus.Warnf("Failed to censor data: %v", err)
+			logrus.WithError(err).Warn("Failed to censor data")
 		}
 	}
 }
 
 func (o Options) doUpload(ctx context.Context, spec *downwardapi.JobSpec, passed, aborted bool, metadata map[string]interface{}, logReaders map[string]io.Reader) error {
+	startTime := time.Now()
+	logrus.Info("Starting to upload")
+	defer func() { logrus.WithField("duration", time.Since(startTime).String()).Info("Finished uploading") }()
+
 	uploadTargets := make(map[string]gcs.UploadFunc)
 
 	for logName, reader := range logReaders {

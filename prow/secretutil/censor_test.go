@@ -41,14 +41,14 @@ func TestReloadingCensorer(t *testing.T) {
 			mutation: func(c *ReloadingCensorer) {
 				c.Refresh("secret")
 			},
-			expected: []byte("****** SECRET ******** sEcReT"),
+			expected: []byte("XXXXXX SECRET XXXXXXXX sEcReT"),
 		},
 		{
 			name: "registered strings with padding",
 			mutation: func(c *ReloadingCensorer) {
 				c.Refresh("		secret      ")
 			},
-			expected: []byte("****** SECRET ******** sEcReT"),
+			expected: []byte("XXXXXX SECRET XXXXXXXX sEcReT"),
 		},
 		{
 			name: "registered strings only padding",
@@ -62,14 +62,14 @@ func TestReloadingCensorer(t *testing.T) {
 			mutation: func(c *ReloadingCensorer) {
 				c.Refresh("secret", "SECRET", "sEcReT")
 			},
-			expected: []byte("****** ****** ******** ******"),
+			expected: []byte("XXXXXX XXXXXX XXXXXXXX XXXXXX"),
 		},
 		{
 			name: "registered bytes",
 			mutation: func(c *ReloadingCensorer) {
 				c.RefreshBytes([]byte("secret"))
 			},
-			expected: []byte("****** SECRET ******** sEcReT"),
+			expected: []byte("XXXXXX SECRET XXXXXXXX sEcReT"),
 		},
 	}
 

@@ -10,7 +10,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
         command:
         - runner.sh
         args:
@@ -28,7 +28,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-unit-mainv2
     decorate: true
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - main_v2
@@ -36,7 +36,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
         command:
         - runner.sh
         args:
@@ -51,7 +51,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-sanity-mainv2
     decorate: true
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - main_v2
@@ -61,7 +61,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
         command:
         - runner.sh
         args:
@@ -79,7 +79,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-integration-mainv2
     decorate: true
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - main_v2
@@ -89,7 +89,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
         command:
         - runner.sh
         args:
@@ -109,7 +109,7 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 3h
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - main_v2
@@ -125,7 +125,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
         command:
         - runner.sh
         - kubetest
@@ -140,7 +140,7 @@ presubmits:
         - --deployment=aksengine
         - --aksengine-admin-username=azureuser
         - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-orchestratorRelease=1.21
+        - --aksengine-orchestratorRelease=1.23
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/main_v2/test/e2e/manifest/single-az.json
         - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
@@ -163,7 +163,7 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 3h
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - main_v2
@@ -179,7 +179,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
         command:
         - runner.sh
         - kubetest
@@ -194,7 +194,7 @@ presubmits:
         - --deployment=aksengine
         - --aksengine-admin-username=azureuser
         - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-orchestratorRelease=1.21
+        - --aksengine-orchestratorRelease=1.23
         - --aksengine-location=eastus2
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/main_v2/test/e2e/manifest/multi-az.json
@@ -218,7 +218,7 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 3h
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - main_v2
@@ -234,7 +234,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
         command:
         - runner.sh
         - kubetest
@@ -249,7 +249,7 @@ presubmits:
         - --deployment=aksengine
         - --aksengine-admin-username=azureuser
         - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-orchestratorRelease=1.21
+        - --aksengine-orchestratorRelease=1.23
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/main_v2/test/e2e/manifest/migration.json
         - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
@@ -274,7 +274,7 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 3h
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - main_v2
@@ -292,7 +292,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
         command:
         - runner.sh
         - kubetest
@@ -307,7 +307,7 @@ presubmits:
         - --deployment=aksengine
         - --aksengine-admin-username=azureuser
         - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-orchestratorRelease=1.21
+        - --aksengine-orchestratorRelease=1.23
         - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/main_v2/test/e2e/manifest/migration-windows.json
         - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
@@ -334,7 +334,7 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 3h
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - main_v2
@@ -352,7 +352,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
         command:
         - runner.sh
         - kubetest
@@ -368,7 +368,8 @@ presubmits:
         - --deployment=aksengine
         - --aksengine-admin-username=azureuser
         - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-orchestratorRelease=1.21
+        - --aksengine-orchestratorRelease=1.23
+        - --aksengine-location=westus2
         - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
         - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
         - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/main_v2/test/e2e/manifest/windows.json
@@ -392,7 +393,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
   - name: pull-azuredisk-csi-driver-windows-build-mainv2
     decorate: true
-    always_run: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
     - main_v2
@@ -400,7 +401,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
         command:
         - runner.sh
         args:

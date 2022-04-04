@@ -33,7 +33,7 @@ from helpers import ( # pylint: disable=import-error, no-name-in-module
 skip_jobs = [
 ]
 
-image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master"
+image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master"
 
 loader = jinja2.FileSystemLoader(searchpath="./templates")
 
@@ -448,9 +448,8 @@ def generate_misc():
         build_test(name_override="kops-grid-scenario-gcr-mirror",
                    runs_per_day=24,
                    cloud="aws",
-                   # Latest runs with a staging AWS CCM, not available in registry-sandbox.k8s.io
+                   # Latest runs with a staging AWS CCM, not available in registry.k8s.io
                    k8s_version='1.23',
-                   extra_flags=['--set=spec.assets.containerProxy=registry-sandbox.k8s.io'],
                    extra_dashboards=['kops-misc']),
 
         # A one-off scenario testing arm64
@@ -468,7 +467,6 @@ def generate_misc():
         build_test(name_override="kops-aws-cni-calico-ipv6-u2204",
                    cloud="aws",
                    distro="u2204",
-                   k8s_version="ci",
                    networking="calico",
                    feature_flags=["AWSIPv6"],
                    runs_per_day=3,
@@ -480,7 +478,6 @@ def generate_misc():
         build_test(name_override="kops-aws-cni-calico-ipv6",
                    cloud="aws",
                    distro="deb11",
-                   k8s_version="ci",
                    networking="calico",
                    feature_flags=["AWSIPv6"],
                    runs_per_day=3,
@@ -492,7 +489,6 @@ def generate_misc():
         build_test(name_override="kops-aws-cni-cilium-ipv6",
                    cloud="aws",
                    distro="deb11",
-                   k8s_version="ci",
                    networking="cilium",
                    feature_flags=["AWSIPv6"],
                    runs_per_day=3,
@@ -544,7 +540,7 @@ def generate_misc():
                    extra_dashboards=["kops-misc"]),
 
         build_test(name_override="kops-aws-misc-arm64-release",
-                   k8s_version="ci",
+                   k8s_version="latest",
                    distro="u2004arm64",
                    networking="calico",
                    kops_channel="alpha",
@@ -623,15 +619,6 @@ def generate_misc():
                                 "--override=cluster.spec.networking.cilium.version=v1.10.0-rc2"],
                    extra_dashboards=['kops-misc']),
 
-        build_test(name_override="kops-aws-aws-ebs-csi-driver",
-                   cloud="aws",
-                   networking="cilium",
-                   distro="u2004",
-                   kops_channel="alpha",
-                   runs_per_day=3,
-                   scenario="aws-ebs-csi",
-                   extra_dashboards=['kops-misc']),
-
         build_test(name_override="kops-aws-aws-load-balancer-controller",
                    cloud="aws",
                    networking="cilium",
@@ -686,7 +673,6 @@ def generate_misc():
                    feature_flags=['APIServerNodes']),
 
         build_test(name_override="kops-aws-misc-karpenter",
-                   k8s_version="ci",
                    networking="cilium",
                    kops_channel="alpha",
                    runs_per_day=1,
@@ -754,7 +740,6 @@ def generate_distros():
                        kops_channel='alpha',
                        name_override=f"kops-aws-distro-image{distro}",
                        extra_dashboards=['kops-distros'],
-                       extra_flags=['--set=spec.assets.containerProxy=registry-sandbox.k8s.io'],
                        runs_per_day=3,
                        )
         )
@@ -933,7 +918,6 @@ def generate_presubmits_network_plugins():
                     name=f"pull-kops-e2e-cni-{plugin}-ipv6",
                     tab_name=f"e2e-{plugin}-ipv6",
                     distro="deb11",
-                    k8s_version='ci',
                     networking=networking_arg,
                     feature_flags=["AWSIPv6"],
                     extra_flags=['--ipv6',
@@ -1076,15 +1060,6 @@ def generate_presubmits_e2e():
         ),
 
         presubmit_test(
-            name="pull-kops-e2e-aws-ebs-csi-driver",
-            cloud="aws",
-            distro="u2004",
-            k8s_version="ci",
-            networking="calico",
-            scenario="aws-ebs-csi",
-        ),
-
-        presubmit_test(
             name="pull-e2e-kops-aws-load-balancer-controller",
             cloud="aws",
             distro="u2004",
@@ -1097,7 +1072,6 @@ def generate_presubmits_e2e():
             name="pull-e2e-kops-addon-resource-tracking",
             cloud="aws",
             distro="u2004",
-            k8s_version="ci",
             networking="calico",
             scenario="addon-resource-tracking",
             tab_name="pull-kops-e2e-aws-addon-resource-tracking",
@@ -1107,7 +1081,6 @@ def generate_presubmits_e2e():
             name="pull-e2e-kops-metrics-server",
             cloud="aws",
             distro="u2004",
-            k8s_version="ci",
             networking="calico",
             scenario="metrics-server",
             tab_name="pull-kops-e2e-aws-metrics-server",
@@ -1117,7 +1090,6 @@ def generate_presubmits_e2e():
             name="pull-e2e-kops-pod-identity-webhook",
             cloud="aws",
             distro="u2004",
-            k8s_version="ci",
             networking="calico",
             scenario="podidentitywebhook",
             tab_name="pull-kops-e2e-aws-pod-identity-webhook",
@@ -1127,7 +1099,6 @@ def generate_presubmits_e2e():
             name="pull-kops-e2e-aws-external-dns",
             cloud="aws",
             distro="u2004",
-            k8s_version="ci",
             networking="calico",
             extra_flags=[
                 '--override=cluster.spec.externalDNS.provider=external-dns'
@@ -1145,7 +1116,6 @@ def generate_presubmits_e2e():
             name="pull-kops-e2e-arm64",
             cloud="aws",
             distro="u2004arm64",
-            k8s_version="ci",
             networking="calico",
             extra_flags=["--zones=eu-central-1a",
                          "--node-size=m6g.large",
@@ -1174,7 +1144,6 @@ def generate_presubmits_e2e():
         ),
         presubmit_test(
             name="pull-kops-e2e-aws-karpenter",
-            k8s_version="ci",
             networking="cilium",
             kops_channel="alpha",
             extra_flags=["--instance-manager=karpenter"],

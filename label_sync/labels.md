@@ -133,6 +133,8 @@ larger set of contributors to apply/remove them.
 | <a id="ug/big-data" href="#ug/big-data">`ug/big-data`</a> | Categorizes an issue or PR as relevant to ug-big-data. <br><br> This was previously `sig/big-data`, | anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="ug/vmware" href="#ug/vmware">`ug/vmware`</a> | Categorizes an issue or PR as relevant to ug-vmware.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="wg/api-expression" href="#wg/api-expression">`wg/api-expression`</a> | Categorizes an issue or PR as relevant to WG API Expression. <br><br> This was previously `wg/apply`, | anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="wg/batch" href="#wg/batch">`wg/batch`</a> | Categorizes an issue or PR as relevant to WG Batch.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="wg/data-protection" href="#wg/data-protection">`wg/data-protection`</a> | Categorizes an issue or PR as relevant to WG Data Protection.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="wg/iot-edge" href="#wg/iot-edge">`wg/iot-edge`</a> | Categorizes an issue or PR as relevant to WG IOT Edge.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="wg/multitenancy" href="#wg/multitenancy">`wg/multitenancy`</a> | Categorizes an issue or PR as relevant to WG Multitenancy.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="wg/naming" href="#wg/naming">`wg/naming`</a> | Categorizes an issue or PR as relevant to WG Naming.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
@@ -200,6 +202,7 @@ larger set of contributors to apply/remove them.
 | <a id="area/operator" href="#area/operator">`area/operator`</a> | Issues or PRs related to operator| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="area/provider/docker" href="#area/provider/docker">`area/provider/docker`</a> | Issues or PRs related to docker provider| label | |
 | <a id="area/release" href="#area/release">`area/release`</a> | Issues or PRs related to releasing| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
+| <a id="area/runtime-sdk" href="#area/runtime-sdk">`area/runtime-sdk`</a> | Issues or PRs related to Runtime SDK| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="area/security" href="#area/security">`area/security`</a> | Issues or PRs related to security| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="area/testing" href="#area/testing">`area/testing`</a> | Issues or PRs related to testing| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="area/upgrades" href="#area/upgrades">`area/upgrades`</a> | Issues or PRs related to upgrades| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
@@ -400,6 +403,7 @@ larger set of contributors to apply/remove them.
 | <a id="area/e2e-test-framework" href="#area/e2e-test-framework">`area/e2e-test-framework`</a> | Issues or PRs related to refactoring the kubernetes e2e test framework| label | |
 | <a id="area/network-policy" href="#area/network-policy">`area/network-policy`</a> | Issues or PRs related to Network Policy subproject| label | |
 | <a id="area/release-eng" href="#area/release-eng">`area/release-eng`</a> | Issues or PRs related to the Release Engineering subproject <br><br> This was previously `area/release-infra`, | label | |
+| <a id="area/stable-metrics" href="#area/stable-metrics">`area/stable-metrics`</a> | Issues or PRs involving stable metrics| label | |
 | <a id="deprecated/hyperkube" href="#deprecated/hyperkube">`deprecated/hyperkube`</a> | Issues or PRs related to the hyperkube subproject <br><br> This was previously `area/hyperkube`, | label | |
 | <a id="official-cve-feed" href="#official-cve-feed">`official-cve-feed`</a> | Issues or PRs related to CVEs officially announced by Security Response Committee (SRC)| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 

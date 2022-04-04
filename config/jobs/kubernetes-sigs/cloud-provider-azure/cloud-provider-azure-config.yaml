@@ -10,7 +10,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
         command:
         - runner.sh
         args:
@@ -42,7 +42,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-1.23
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-1.23
         command:
         - runner.sh
         - kubetest
@@ -102,7 +102,7 @@ presubmits:
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-1.23
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-1.23
           command:
             - runner.sh
             - kubetest
@@ -168,7 +168,7 @@ presubmits:
         workdir: false
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
           command:
           - runner.sh
           args:
@@ -187,7 +187,7 @@ presubmits:
             - name: AZURE_LOADBALANCER_SKU
               value: "standard"
             - name: KUBERNETES_VERSION
-              value: 1.23.1
+              value: 1.23.5
             - name: GINKGO_ARGS
               value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --test.parallel=30 --report-dir=/logs/artifacts --disable-log-dump=true
             - name: CONTROL_PLANE_MACHINE_COUNT
@@ -219,7 +219,7 @@ presubmits:
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
           command:
           - runner.sh
           args:
@@ -253,7 +253,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
         command:
         - runner.sh
         args:
@@ -289,7 +289,7 @@ periodics:
       workdir: false
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
         command:
         - runner.sh
         args:
@@ -334,7 +334,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-1.23
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-1.23
       command:
       - runner.sh
       - kubetest
@@ -396,7 +396,7 @@ periodics:
       path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-1.23
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-1.23
       command:
       - runner.sh
       - kubetest
@@ -466,7 +466,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
       command:
       - runner.sh
       args:
@@ -485,7 +485,7 @@ periodics:
       - name: AZURE_LOADBALANCER_SKU
         value: "standard"
       - name: KUBERNETES_VERSION
-        value: 1.23.1
+        value: 1.23.5
       - name: GINKGO_ARGS
         value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --test.parallel=30 --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT
@@ -516,7 +516,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-1.23
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-1.23
       command:
       - runner.sh
       - kubetest
@@ -581,7 +581,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
       command:
       - runner.sh
       args:
@@ -600,7 +600,7 @@ periodics:
       - name: AZURE_LOADBALANCER_SKU
         value: "standard"
       - name: KUBERNETES_VERSION
-        value: 1.23.1
+        value: 1.23.5
       - name: GINKGO_ARGS
         value: --ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --test.parallel=4 --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT
@@ -632,7 +632,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-1.23
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-1.23
       command:
       - runner.sh
       - kubetest
@@ -699,7 +699,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-1.23
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-1.23
       command:
       - runner.sh
       - kubetest
@@ -759,7 +759,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-1.23
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-1.23
       command:
       - runner.sh
       - kubetest
@@ -816,7 +816,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-1.23
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-1.23
       command:
       - runner.sh
       - kubetest
@@ -873,7 +873,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-1.23
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-1.23
       command:
       - runner.sh
       - kubetest
@@ -928,7 +928,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
       command:
       - runner.sh
       - kubetest
@@ -964,50 +964,3 @@ periodics:
     description: Runs conformance tests using kubetest against latest kubernetes master with an IPv6 azure cluster
     testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
     testgrid-num-columns-recent: '3'
-
-# scalability tests
-- interval: 24h
-  name: ci-kubernetes-kubemark-100-azure-test
-  decorate: true
-  decoration_config:
-    timeout: 5h
-  annotations:
-    testgrid-dashboards: provider-azure-cloud-provider-azure, provider-azure-scalability
-    testgrid-tab-name: ci-kubernetes-kubemark-100-azure-test
-    testgrid-num-failures-to-alert: '1'
-    description: "Runs kubemark tests (100 nodes) with the Azure cloud provider enabled."
-  labels:
-    preset-service-account: "true"
-    preset-azure-cred: "true"
-    preset-dind-enabled: "true"
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  - org: kubernetes-sigs
-    repo: cloud-provider-azure
-    base_ref: master
-    path_alias: sigs.k8s.io/cloud-provider-azure
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
-      command:
-      - runner.sh
-      - kubetest
-      args:
-      - --up
-      - --deployment=aksengine
-      - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --build-with-kubemark=true
-      - --build=none
-      - --provider=skeleton
-      - --kubemark-build-script-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/kubemark/build-kubemark.sh
-      - --kubemark-cluster-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/kubemark/templates/kubemark-cluster.json
-      - --external-cluster-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/kubemark/templates/external-cluster.json
-      - --hollow-nodes-deployment-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/kubemark/templates/hollow-node.yaml
-      - --clusterloader2-bin-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/kubemark/clusterloader2/clusterloader-Linux
-      - --kubemark-size=100
-      - --kubemark-location=eastus2
-      securityContext:
-        privileged: true

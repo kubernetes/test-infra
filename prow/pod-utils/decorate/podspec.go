@@ -889,7 +889,8 @@ func Sidecar(config *prowapi.DecorationConfig, gcsOptions gcsupload.Options, blo
 			sidecar.JSONConfigEnvVar: sidecarConfigEnv,
 			downwardapi.JobSpecEnv:   encodedJobSpec, // TODO: shouldn't need this?
 		}),
-		VolumeMounts: mounts,
+		VolumeMounts:             mounts,
+		TerminationMessagePolicy: coreapi.TerminationMessageFallbackToLogsOnError,
 	}
 	if config.Resources != nil && config.Resources.Sidecar != nil {
 		container.Resources = *config.Resources.Sidecar

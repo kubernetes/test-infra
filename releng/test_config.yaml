@@ -74,19 +74,7 @@ jobs:
       --minStartupPods=8
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
-  ci-kubernetes-e2e-gce-cos-k8sbeta-betaapis:
-    interval: 1h
-    args:
-    - --env=KUBE_PROXY_DAEMONSET=true
-    - --env=ENABLE_POD_PRIORITY=true
-    # Panic if anything mutates a shared informer cache
-    - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
-    - --runtime-config=api/beta=true
-    - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking
-      --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance|Networking-IPv6)\]|csi-hostpath-v0
-      --minStartupPods=8
-    sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
+    
   # stable1
   ci-kubernetes-e2e-gce-cos-k8sstable1-reboot:
     interval: 2h
@@ -127,19 +115,6 @@ jobs:
       --minStartupPods=8
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
-  ci-kubernetes-e2e-gce-cos-k8sstable1-betaapis:
-    interval: 2h
-    args:
-    - --env=KUBE_PROXY_DAEMONSET=true
-    - --env=ENABLE_POD_PRIORITY=true
-    # Panic if anything mutates a shared informer cache
-    - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
-    - --runtime-config=api/beta=true
-    - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking
-      --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance|Networking-IPv6)\]|csi-hostpath-v0
-      --minStartupPods=8
-    sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
 
   # stable2
   ci-kubernetes-e2e-gce-cos-k8sstable2-reboot:
@@ -175,19 +150,6 @@ jobs:
     # Panic if anything mutates a shared informer cache
     - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
     - --runtime-config=api/all=true
-    - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking
-      --ginkgo.skip=Networking-Performance|IPv6|Feature:(Volumes|SCTPConnectivity)
-      --minStartupPods=8
-    sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
-  ci-kubernetes-e2e-gce-cos-k8sstable2-betaapis:
-    interval: 6h
-    args:
-    - --env=KUBE_PROXY_DAEMONSET=true
-    - --env=ENABLE_POD_PRIORITY=true
-    # Panic if anything mutates a shared informer cache
-    - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
-    - --runtime-config=api/beta=true
     - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking
       --ginkgo.skip=Networking-Performance|IPv6|Feature:(Volumes|SCTPConnectivity)
       --minStartupPods=8
@@ -316,7 +278,7 @@ testSuites:
     - --timeout=180m
     - --test_args=--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly)\] --minStartupPods=8
     cluster: k8s-infra-prow-build
-  betaapis: # copied from "default" for now.  Eventually the args should specifically choose tests tagged for Beta, but this is to get us started.
+  betaapis: # copied from "default".  Tests that require beta APIs should use discovery in the e2e test to decide whether or not to skip the test.
     args:
     - --timeout=120m
     - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
@@ -442,23 +404,23 @@ nodeK8sVersions:
   dev:
     args:
     - --repo=k8s.io/kubernetes=master
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
   beta:
     args:
     - --repo=k8s.io/kubernetes=release-1.23
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-1.23
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-1.23
   stable1:
     args:
     - --repo=k8s.io/kubernetes=release-1.22
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-1.22
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-1.22
   stable2:
     args:
     - --repo=k8s.io/kubernetes=release-1.21
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-1.21
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-1.21
   stable3:
     args:
     - --repo=k8s.io/kubernetes=release-1.20
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-1.20
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-1.20
 
 nodeTestSuites:
   default:

@@ -60,6 +60,22 @@ func (f *fgc) SetReview(instance, id, revision, message string, labels map[strin
 	if instance != f.instance {
 		return fmt.Errorf("wrong instance: %s", instance)
 	}
+	exist, err := f.ChangeExist(instance, id)
+	if err != nil {
+		return err
+	}
+	if !exist {
+		return errors.New("change not exist: 404")
+	}
+	change, err := f.GetChange(instance, id)
+	if err != nil {
+		return err
+	}
+
+	if _, ok := change.Revisions[revision]; !ok {
+		return errors.New("revision doesn't exist")
+	}
+
 	for label := range labels {
 		if label == "bad-label" {
 			return fmt.Errorf("bad label")
@@ -89,11 +105,27 @@ func (f *fgc) GetChange(instance, id string) (*gerrit.ChangeInfo, error) {
 	return nil, nil
 }
 
+func (f *fgc) ChangeExist(instance, id string) (bool, error) {
+	if f.changes == nil {
+		return false, errors.New("fake client changes is not initialized")
+	}
+	changes, ok := f.changes[instance]
+	if !ok {
+		return false, fmt.Errorf("instance %s not found", instance)
+	}
+	for _, change := range changes {
+		if change.ID == id {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
 func TestReport(t *testing.T) {
 	changes := map[string][]*gerrit.ChangeInfo{
 		"gerrit": {
-			{ID: "123-abc", Status: "NEW"},
-			{ID: "merged", Status: "MERGED"},
+			{ID: "123-abc", Status: "NEW", Revisions: map[string]gerrit.RevisionInfo{"abc": {}}},
+			{ID: "merged", Status: "MERGED", Revisions: map[string]gerrit.RevisionInfo{"abc": {}}},
 		},
 	}
 	var testcases = []struct {
@@ -225,6 +257,78 @@ func TestReport(t *testing.T) {
 			expectReport:      true,
 			reportInclude:     []string{"1 out of 1", "ci-foo", "SUCCESS", "guber/foo"},
 			expectLabel:       map[string]string{codeReview: lgtm},
+			numExpectedReport: 0,
+		},
+		{
+			name: "1-job-passed-change-missing",
+			pj: &v1.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						client.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:    presubmit,
+						client.GerritReportLabel: "Code-Review",
+					},
+					Annotations: map[string]string{
+						client.GerritID:       "123-not-exist",
+						client.GerritInstance: "gerrit",
+					},
+					Name:      "ci-foo",
+					Namespace: "test-pods",
+				},
+				Status: v1.ProwJobStatus{
+					State: v1.SuccessState,
+					URL:   "guber/foo",
+				},
+				Spec: v1.ProwJobSpec{
+					Refs: &v1.Refs{
+						Repo: "foo",
+						Pulls: []v1.Pull{
+							{
+								Number: 0,
+							},
+						},
+					},
+					Job:    "ci-foo",
+					Report: true,
+				},
+			},
+			expectReport:      true,
+			numExpectedReport: 0,
+		},
+		{
+			name: "1-job-passed-revision-missing",
+			pj: &v1.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						client.GerritRevision:    "not-exist",
+						kube.ProwJobTypeLabel:    presubmit,
+						client.GerritReportLabel: "Code-Review",
+					},
+					Annotations: map[string]string{
+						client.GerritID:       "123-abc",
+						client.GerritInstance: "gerrit",
+					},
+					Name:      "ci-foo",
+					Namespace: "test-pods",
+				},
+				Status: v1.ProwJobStatus{
+					State: v1.SuccessState,
+					URL:   "guber/foo",
+				},
+				Spec: v1.ProwJobSpec{
+					Refs: &v1.Refs{
+						Repo: "foo",
+						Pulls: []v1.Pull{
+							{
+								Number: 0,
+							},
+						},
+					},
+					Job:    "ci-foo",
+					Report: true,
+				},
+			},
+			expectReport:      true,
 			numExpectedReport: 0,
 		},
 		{
@@ -2016,7 +2120,7 @@ func TestMultipleWorks(t *testing.T) {
 
 			changes := map[string][]*gerrit.ChangeInfo{
 				"gerrit": {
-					{ID: "123-abc", Status: "NEW"},
+					{ID: "123-abc", Status: "NEW", Revisions: map[string]gerrit.RevisionInfo{"abc": {}}},
 				},
 			}
 

@@ -8,11 +8,14 @@ presets:
     value: "-kubetest.use-ci-artifacts"
   - name: WINDOWS
     value: "true"
+  - name: AZURE_NODE_MACHINE_TYPE
+    value: "Standard_D4s_v3"
+- labels:
+    preset-capz-windows-parallel: "true"
+  env:
   # Windows isn't really conformance, we typically run at 4 to keep the time reasonable (~45 mins)
   - name: CONFORMANCE_NODES
     value: "4"
-  - name: AZURE_NODE_MACHINE_TYPE
-    value: "Standard_D4s_v3"
 - labels:
     preset-capz-windows-2019: "true"
   env:
@@ -27,12 +30,14 @@ presets:
     preset-capz-containerd-latest: "true"
   env:
   - name: WINDOWS_CONTAINERD_URL
-    value: "https://github.com/containerd/containerd/releases/download/v1.6.1/containerd-1.6.1-windows-amd64.tar.gz"
+    value: "https://github.com/containerd/containerd/releases/download/v1.6.2/containerd-1.6.2-windows-amd64.tar.gz"
 - labels:
     preset-capz-serial-slow: "true"
   env:
   - name: KUBETEST_WINDOWS_CONFIG
     value: "upstream-windows-serial-slow.yaml"
+  - name: CONFORMANCE_NODES
+    value: "1"
 presubmits:
   kubernetes/kubernetes:
   - name: pull-kubernetes-e2e-aks-engine-azure-disk-windows-containerd
@@ -59,7 +64,7 @@ presubmits:
       path_alias: sigs.k8s.io/azuredisk-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
         command:
         - runner.sh
         - kubetest
@@ -122,7 +127,7 @@ presubmits:
       path_alias: sigs.k8s.io/azurefile-csi-driver
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
         command:
         - runner.sh
         - kubetest
@@ -174,6 +179,7 @@ periodics:
     preset-capz-windows-common-main: "true"
     preset-capz-windows-2019: "true"
     preset-capz-containerd-latest: "true"
+    preset-capz-windows-parallel: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -181,7 +187,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
         command:
           - "runner.sh"
           - "./scripts/ci-conformance.sh"
@@ -216,7 +222,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
         command:
           - "runner.sh"
           - "./scripts/ci-conformance.sh"
@@ -242,6 +248,7 @@ periodics:
     preset-capz-windows-common-main: "true"
     preset-capz-windows-2022: "true"
     preset-capz-containerd-latest: "true"
+    preset-capz-windows-parallel: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -249,7 +256,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
         command:
           - "runner.sh"
           - "./scripts/ci-conformance.sh"
@@ -283,7 +290,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
         command:
           - "runner.sh"
           - "./scripts/ci-conformance.sh"
@@ -317,7 +324,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
       command:
       - runner.sh
       - kubetest
@@ -372,7 +379,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
       command:
       - runner.sh
       - kubetest
@@ -429,7 +436,7 @@ periodics:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
       command:
       - runner.sh
       - kubetest
@@ -491,7 +498,7 @@ periodics:
     path_alias: sigs.k8s.io/azurefile-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
       command:
       - runner.sh
       - kubetest
@@ -551,7 +558,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
       command:
       - runner.sh
       - kubetest
@@ -597,6 +604,7 @@ periodics:
     preset-azure-cred-only: "true"
     preset-capz-windows-common-main: "true"
     preset-capz-windows-2019: "true"
+    preset-capz-windows-parallel: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
@@ -604,7 +612,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
         command:
           - "runner.sh"
           - "./scripts/ci-conformance.sh"

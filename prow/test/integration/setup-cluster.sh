@@ -30,7 +30,7 @@ readonly DEFAULT_CLUSTER_NAME="kind-prow-integration"
 readonly DEFAULT_CONTEXT="kind-${DEFAULT_CLUSTER_NAME}"
 readonly DEFAULT_REGISTRY_NAME="kind-registry"
 readonly DEFAULT_REGISTRY_PORT="5001"
-readonly PROW_COMPONENTS="sinker crier hook horologium prow-controller-manager fakeghserver deck tide deck-tenanted"
+readonly PROW_COMPONENTS="sinker crier hook horologium prow-controller-manager fakegerritserver fakeghserver deck tide deck-tenanted"
 
 if [[ -z "${HOME:-}" ]]; then # kubectl looks for HOME which is not set in bazel
   export HOME="$(cd ~ && pwd -P)"
@@ -97,8 +97,8 @@ data:
 EOF
 
   echo "Install nginx on kind cluster"
-  # Pin the ingress-nginx manifest to 8b99f49d2d9c042355da9e53c2648bd0c049ae52 (Release 0.41.2) on 11/22/2020
-  do-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/8b99f49d2d9c042355da9e53c2648bd0c049ae52/deploy/static/provider/kind/deploy.yaml
+  # Pin the ingress-nginx manifest to fb72fcd81772fb3eca923897aec2d92fa5bdff41 (Release 1.1.2) on 3/18/2022
+  do-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/fb72fcd81772fb3eca923897aec2d92fa5bdff41/deploy/static/provider/kind/deploy.yaml
 }
 
 function deploy_prow() {

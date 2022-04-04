@@ -157,7 +157,7 @@ config := &example.Configuration{
 }
 
 // Initialize a CommentMap instance from the `config.go` source file:
-cm, err := genyaml.NewCommentMap("config.go")
+cm, err := genyaml.NewCommentMap(nil, "config.go")
 
 // Generate a commented YAML snippet:
 yamlSnippet, err := cm.GenYaml(config)

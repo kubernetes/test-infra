@@ -37,7 +37,7 @@ def get_args():
                         default=rootdir,
                         help="root directory to examine")
 
-    default_boilerplate_dir = os.path.join(rootdir, "verify/boilerplate")
+    default_boilerplate_dir = os.path.join(rootdir, "hack/boilerplate")
     parser.add_argument("--boilerplate-dir", default=default_boilerplate_dir)
 
     parser.add_argument(
@@ -49,8 +49,9 @@ def get_args():
             '_output',
             'third_party',
             'vendor',
-            'verify/boilerplate/test',
+            'hack/boilerplate/test',
             'verify_boilerplate.py',
+            '.python_virtual_env',
         ],
         action='append',
         help='Customize paths to avoid',
@@ -83,7 +84,7 @@ def is_generated(data):
     return False
 
 
-def file_passes(filename, refs, regexs):  # pylint: disable=too-many-locals
+def file_passes(filename, refs, regexs):  # pylint: disable=too-many-locals,too-many-return-statements,too-many-branches
     try:
         # Pass the encoding parameter to avoid ascii decode error for some
         # platform.
@@ -97,21 +98,22 @@ def file_passes(filename, refs, regexs):  # pylint: disable=too-many-locals
 
     basename = os.path.basename(filename)
     extension = file_extension(filename)
-    ref = refs[basename]
     if extension != "":
         ref = refs[extension]
+    else:
+        ref = refs[basename]
 
     ref = ref.copy()
 
     # remove build tags from the top of Go files
-    lang_identifiers = {
-        "go": "go_build_constraints",
-        "sh": "shebang",
-        "py": "shebang"
-    }
-    if extension in lang_identifiers:
-        con = regexs[lang_identifiers["go_build_constraints"]]
+    if extension == "go":
+        con = regexs["go_build_constraints"]
         (file_data, found) = con.subn("", file_data, 1)
+
+    # remove shebang from the top of shell files
+    if extension in ("sh", "py"):
+        she = regexs["shebang"]
+        (file_data, found) = she.subn("", file_data, 1)
 
     data = file_data.splitlines()
 
@@ -124,9 +126,11 @@ def file_passes(filename, refs, regexs):  # pylint: disable=too-many-locals
 
     # check if we encounter a 'YEAR' placeholder if the file is generated
     if is_generated(file_data):
-        for line in data:
+        # pylint: disable=unused-variable
+        for i, line in enumerate(data):
             if "Copyright YEAR" in line:
                 return False
+        return True
 
     year = regexs["year"]
     for datum in data:
@@ -141,7 +145,10 @@ def file_passes(filename, refs, regexs):  # pylint: disable=too-many-locals
             break
 
     # if we don't match the reference at this point, fail
-    return ref == data
+    if ref != data:
+        return False
+
+    return True
 
 
 def file_extension(filename):
@@ -243,6 +250,8 @@ def main():
         for line in nonconforming_lines(nonconforming_files):
             print(line)
         sys.exit(1)
+
+    print("Verified %d files" % (len(filenames), ))
 
 
 if __name__ == "__main__":

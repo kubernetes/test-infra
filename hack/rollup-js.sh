@@ -20,7 +20,7 @@ set -o pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 cd "${REPO_ROOT}"
 
-readonly ROLLUP_CONFIG="make-rollup.config.js"
+readonly ROLLUP_CONFIG="rollup.config.js"
 
 ROLLUP_ENTRYPOINT_DIR="${1:-}"
 if [[ -z $ROLLUP_ENTRYPOINT_DIR ]]; then

@@ -2,7 +2,7 @@
 # 8 jobs, total of 168 runs per week
 periodics:
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "deb10", "extra_flags": "--set=spec.assets.containerProxy=registry-sandbox.k8s.io --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "kubenet"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "deb10", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "kubenet"}
 - name: e2e-kops-aws-distro-imagedebian10
   cron: '30 6-23/8 * * *'
   labels:
@@ -31,7 +31,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-10-amd64-20220310-944' --channel=alpha --networking=kubenet --container-runtime=containerd --set=spec.assets.containerProxy=registry-sandbox.k8s.io --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='136693071363/debian-10-amd64-20220328-962' --channel=alpha --networking=kubenet --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
@@ -45,7 +45,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: admin
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -57,7 +57,7 @@ periodics:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: deb10
-    test.kops.k8s.io/extra_flags: --set=spec.assets.containerProxy=registry-sandbox.k8s.io --discovery-store=s3://k8s-kops-prow/discovery
+    test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
@@ -66,7 +66,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-distro-imagedebian10
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "deb11", "extra_flags": "--set=spec.assets.containerProxy=registry-sandbox.k8s.io --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "kubenet"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "deb11", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "kubenet"}
 - name: e2e-kops-aws-distro-imagedebian11
   cron: '48 0-23/8 * * *'
   labels:
@@ -95,7 +95,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='136693071363/debian-11-amd64-20220310-944' --channel=alpha --networking=kubenet --container-runtime=containerd --set=spec.assets.containerProxy=registry-sandbox.k8s.io --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='136693071363/debian-11-amd64-20220328-962' --channel=alpha --networking=kubenet --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
@@ -109,7 +109,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: admin
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -121,7 +121,7 @@ periodics:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: deb11
-    test.kops.k8s.io/extra_flags: --set=spec.assets.containerProxy=registry-sandbox.k8s.io --discovery-store=s3://k8s-kops-prow/discovery
+    test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
@@ -130,7 +130,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-distro-imagedebian11
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--set=spec.assets.containerProxy=registry-sandbox.k8s.io --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "kubenet"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "kubenet"}
 - name: e2e-kops-aws-distro-imageubuntu2004
   cron: '53 6-23/8 * * *'
   labels:
@@ -159,7 +159,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220308' --channel=alpha --networking=kubenet --container-runtime=containerd --set=spec.assets.containerProxy=registry-sandbox.k8s.io --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220401' --channel=alpha --networking=kubenet --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
@@ -173,7 +173,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -185,7 +185,7 @@ periodics:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2004
-    test.kops.k8s.io/extra_flags: --set=spec.assets.containerProxy=registry-sandbox.k8s.io --discovery-store=s3://k8s-kops-prow/discovery
+    test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
@@ -194,7 +194,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-distro-imageubuntu2004
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2110", "extra_flags": "--set=spec.assets.containerProxy=registry-sandbox.k8s.io --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "kubenet"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2110", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "kubenet"}
 - name: e2e-kops-aws-distro-imageubuntu2110
   cron: '14 1-23/8 * * *'
   labels:
@@ -223,7 +223,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-impish-21.10-amd64-server-20220309' --channel=alpha --networking=kubenet --container-runtime=containerd --set=spec.assets.containerProxy=registry-sandbox.k8s.io --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-impish-21.10-amd64-server-20220309' --channel=alpha --networking=kubenet --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
@@ -237,7 +237,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -249,7 +249,7 @@ periodics:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2110
-    test.kops.k8s.io/extra_flags: --set=spec.assets.containerProxy=registry-sandbox.k8s.io --discovery-store=s3://k8s-kops-prow/discovery
+    test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
@@ -258,7 +258,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-distro-imageubuntu2110
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204", "extra_flags": "--set=spec.assets.containerProxy=registry-sandbox.k8s.io --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "kubenet"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "kubenet"}
 - name: e2e-kops-aws-distro-imageubuntu2204
   cron: '47 0-23/8 * * *'
   labels:
@@ -287,7 +287,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images-testing/hvm-ssd/ubuntu-jammy-daily-amd64-server-20220211' --channel=alpha --networking=kubenet --container-runtime=containerd --set=spec.assets.containerProxy=registry-sandbox.k8s.io --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images-testing/hvm-ssd/ubuntu-jammy-daily-amd64-server-20220323' --channel=alpha --networking=kubenet --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
@@ -301,7 +301,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ubuntu
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -313,7 +313,7 @@ periodics:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2204
-    test.kops.k8s.io/extra_flags: --set=spec.assets.containerProxy=registry-sandbox.k8s.io --discovery-store=s3://k8s-kops-prow/discovery
+    test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
@@ -322,7 +322,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-distro-imageubuntu2204
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "amzn2", "extra_flags": "--set=spec.assets.containerProxy=registry-sandbox.k8s.io --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "kubenet"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "amzn2", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "kubenet"}
 - name: e2e-kops-aws-distro-imageamazonlinux2
   cron: '55 3-23/8 * * *'
   labels:
@@ -351,7 +351,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='amazon/amzn2-ami-kernel-5.10-hvm-2.0.20220218.3-x86_64-gp2' --channel=alpha --networking=kubenet --container-runtime=containerd --set=spec.assets.containerProxy=registry-sandbox.k8s.io --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='amazon/amzn2-ami-kernel-5.10-hvm-2.0.20220316.0-x86_64-gp2' --channel=alpha --networking=kubenet --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
@@ -365,7 +365,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -377,7 +377,7 @@ periodics:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: amzn2
-    test.kops.k8s.io/extra_flags: --set=spec.assets.containerProxy=registry-sandbox.k8s.io --discovery-store=s3://k8s-kops-prow/discovery
+    test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
@@ -386,7 +386,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-distro-imageamazonlinux2
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "rhel8", "extra_flags": "--set=spec.assets.containerProxy=registry-sandbox.k8s.io --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "kubenet"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "rhel8", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "kubenet"}
 - name: e2e-kops-aws-distro-imagerhel8
   cron: '49 7-23/8 * * *'
   labels:
@@ -415,7 +415,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='309956199498/RHEL-8.5.0_HVM-20211103-x86_64-0-Hourly2-GP2' --channel=alpha --networking=kubenet --container-runtime=containerd --set=spec.assets.containerProxy=registry-sandbox.k8s.io --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='309956199498/RHEL-8.5.0_HVM-20211103-x86_64-0-Hourly2-GP2' --channel=alpha --networking=kubenet --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
@@ -429,7 +429,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: ec2-user
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -441,7 +441,7 @@ periodics:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: rhel8
-    test.kops.k8s.io/extra_flags: --set=spec.assets.containerProxy=registry-sandbox.k8s.io --discovery-store=s3://k8s-kops-prow/discovery
+    test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
@@ -450,7 +450,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-distro-imagerhel8
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "flatcar", "extra_flags": "--set=spec.assets.containerProxy=registry-sandbox.k8s.io --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "kubenet"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "flatcar", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "kubenet"}
 - name: e2e-kops-aws-distro-imageflatcar
   cron: '36 6-23/8 * * *'
   labels:
@@ -479,7 +479,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='075585003325/Flatcar-stable-3033.2.3-hvm' --channel=alpha --networking=kubenet --container-runtime=containerd --set=spec.assets.containerProxy=registry-sandbox.k8s.io --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='075585003325/Flatcar-stable-3033.2.4-hvm' --channel=alpha --networking=kubenet --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
           --control-plane-instance-group-overrides="spec.instanceMetadata.httpTokens=optional" \
           --node-instance-group-overrides="spec.instanceMetadata.httpTokens=optional" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
@@ -496,7 +496,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: KUBE_SSH_USER
         value: core
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
       imagePullPolicy: Always
       resources:
         limits:
@@ -508,7 +508,7 @@ periodics:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: flatcar
-    test.kops.k8s.io/extra_flags: --set=spec.assets.containerProxy=registry-sandbox.k8s.io --discovery-store=s3://k8s-kops-prow/discovery
+    test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''

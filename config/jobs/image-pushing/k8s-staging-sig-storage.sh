@@ -70,6 +70,9 @@ for repo in "${REPOS[@]}" "${BROKEN_REPOS[@]}"; do
       annotations:
         testgrid-dashboards: sig-storage-image-build, sig-k8s-infra-gcb
       decorate: true
+      decoration_config:
+        timeout: 240m
+        grace_period: 15m
       branches:
         # For publishing canary images.
         - ^master$
@@ -122,7 +125,7 @@ cat >>"${OUTPUT}" <<EOF
     extra_refs:
       # This also becomes the current directory for run.sh and thus
       # the cloud image build.
-      - org: kubernetes-csi
+      - org: ${org}
         repo: ${repo}
         base_ref: master
     spec:

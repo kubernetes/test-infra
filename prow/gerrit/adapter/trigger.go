@@ -40,8 +40,8 @@ func presubmitContexts(failed sets.String, presubmits []config.Presubmit, logger
 }
 
 // currentMessages returns messages on the current revision after the specified time.
-func currentMessages(change gerrit.ChangeInfo, since time.Time) []string {
-	var messages []string
+func currentMessages(change gerrit.ChangeInfo, since time.Time) []gerrit.ChangeMessageInfo {
+	var messages []gerrit.ChangeMessageInfo
 	want := change.Revisions[change.CurrentRevision].Number
 	for _, have := range change.Messages {
 		if have.RevisionNumber != want {
@@ -50,7 +50,7 @@ func currentMessages(change gerrit.ChangeInfo, since time.Time) []string {
 		if !have.Date.Time.After(since) {
 			continue
 		}
-		messages = append(messages, have.Message)
+		messages = append(messages, have)
 	}
 	return messages
 }
@@ -58,26 +58,50 @@ func currentMessages(change gerrit.ChangeInfo, since time.Time) []string {
 // messageFilter returns filter that matches all /test all, /test foo, /retest comments since lastUpdate.
 //
 // The behavior of each message matches the behavior of pjutil.PresubmitFilter.
-func messageFilter(messages []string, failingContexts, allContexts sets.String, logger logrus.FieldLogger) pjutil.Filter {
+func messageFilter(messages []gerrit.ChangeMessageInfo, failingContexts, allContexts sets.String, triggerTimes map[string]time.Time, logger logrus.FieldLogger) pjutil.Filter {
 	var filters []pjutil.Filter
 	contextGetter := func() (sets.String, sets.String, error) {
 		return failingContexts, allContexts, nil
 	}
 	for _, message := range messages {
-		// If the Gerrit Change changed from draft to active state, trigger all
-		// presubmit Prow jobs.
-		if strings.HasSuffix(message, client.ReadyForReviewMessageFixed) || strings.HasSuffix(message, client.ReadyForReviewMessageCustomizable) {
-			filters = append(filters, pjutil.TestAllFilter())
-			continue
-		}
-
-		filter, err := pjutil.PresubmitFilter(false, contextGetter, message, logger)
+		// Use the PresubmitFilter before possibly adding the /test-all filter to ensure explicitly requested presubmits are forced to run.
+		filter, err := pjutil.PresubmitFilter(false, contextGetter, message.Message, logger)
 		if err != nil {
 			logger.WithError(err).WithField("message", message).Warn("failed to create presubmit filter")
 			continue
 		}
-		filters = append(filters, filter)
+		filters = append(filters, &timeAnnotationFilter{
+			Filter:       filter,
+			eventTime:    message.Date.Time,
+			triggerTimes: triggerTimes,
+		})
+		// If the Gerrit Change changed from draft to active state, trigger all
+		// presubmit Prow jobs.
+		if strings.HasSuffix(message.Message, client.ReadyForReviewMessageFixed) || strings.HasSuffix(message.Message, client.ReadyForReviewMessageCustomizable) {
+			filters = append(filters, &timeAnnotationFilter{
+				Filter:       pjutil.NewTestAllFilter(),
+				eventTime:    message.Date.Time,
+				triggerTimes: triggerTimes,
+			})
+			continue
+		}
 	}
 
-	return pjutil.AggregateFilter(filters)
+	return pjutil.NewAggregateFilter(filters)
+}
+
+// timeAnnotationFilter is a wrapper around a pjutil.Filter that records the eventTime in
+// the triggerTimes map when the Filter returns a true 'shouldRun' value.
+type timeAnnotationFilter struct {
+	pjutil.Filter                      // Delegate filter. Only override/wrap ShouldRun() for time annotation, use Name() directly.
+	eventTime     time.Time            // The time of the event. If the filter matches, use this time for annotation.
+	triggerTimes  map[string]time.Time // This map is referenced by all timeAnnotationFilters for a single processing iteration.
+}
+
+func (taf *timeAnnotationFilter) ShouldRun(p config.Presubmit) (shouldRun bool, forcedToRun bool, defaultBehavior bool) {
+	shouldRun, forced, def := taf.Filter.ShouldRun(p)
+	if shouldRun {
+		taf.triggerTimes[p.Name] = taf.eventTime
+	}
+	return shouldRun, forced, def
 }

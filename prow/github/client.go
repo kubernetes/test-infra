@@ -280,6 +280,7 @@ type Client interface {
 	WithFields(fields logrus.Fields) Client
 	ForPlugin(plugin string) Client
 	ForSubcomponent(subcomponent string) Client
+	Used() bool
 	TriggerGitHubWorkflow(org, repo string, id int) error
 }
 
@@ -292,6 +293,7 @@ type client struct {
 	// identifier is used to add more identification to the user-agent header
 	identifier string
 	gqlc       gqlClient
+	used       bool
 	*delegate
 }
 
@@ -321,6 +323,11 @@ type UserData struct {
 	Name  string
 	Login string
 	Email string
+}
+
+// Used determines whether the client has been used
+func (c *client) Used() bool {
+	return c.used
 }
 
 // ForPlugin clones the client, keeping the underlying delegate the same but adding
@@ -816,6 +823,10 @@ func (s *addHeaderTransport) RoundTrip(r *http.Request) (*http.Response, error) 
 	// Any GHE version after 2.22 will enable the Checks types per default
 	r.Header.Add("Accept", "application/vnd.github.antiope-preview+json")
 
+	// We have to add this header to enable the Merge info scheme preview:
+	// https://docs.github.com/en/graphql/overview/schema-previews#merge-info-preview
+	r.Header.Add("Accept", "application/vnd.github.merge-info-preview+json")
+
 	// We use the context to pass the UserAgent through the V4 client we depend on
 	if v := r.Context().Value(userAgentContextKey); v != nil {
 		r.Header.Add("User-Agent", v.(string))
@@ -888,6 +899,7 @@ func NewFakeClient() Client {
 }
 
 func (c *client) log(methodName string, args ...interface{}) (logDuration func()) {
+	c.used = true
 	if c.logger == nil {
 		return func() {}
 	}

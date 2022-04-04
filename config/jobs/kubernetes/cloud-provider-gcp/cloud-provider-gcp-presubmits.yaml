@@ -15,7 +15,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
         command:
         - /bin/bash
         args:
@@ -39,7 +39,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
           command:
             - runner.sh
             - ./tools/verify-all.sh
@@ -60,7 +60,7 @@ presubmits:
       testgrid-num-columns-recent: '30'
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -76,7 +76,7 @@ presubmits:
           REPO_ROOT=$(git rev-parse --show-toplevel);
           cd;
           export GO111MODULE=on;
-          go get sigs.k8s.io/kubetest2@latest;
-          go get sigs.k8s.io/kubetest2/kubetest2-gce@latest;
-          go get sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest;
+          go install sigs.k8s.io/kubetest2@latest;
+          go install sigs.k8s.io/kubetest2/kubetest2-gce@latest;
+          go install sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest;
           kubetest2 gce -v 2 --repo-root $REPO_ROOT --build --up --down --test=ginkgo -- --test-package-version=v1.23.0 --parallel=30 --test-args='--minStartupPods=8 --container-runtime=containerd' --skip-regex='\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'

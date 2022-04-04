@@ -206,3 +206,17 @@ presubmits:
       - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
         command:
         - ./hack/verify.sh
+  - name: pull-k8sio-dns-validate-config
+    run_if_changed: "^dns/"
+    annotations:
+      testgrid-dashboards: sig-k8s-infra-k8sio
+      testgrid-tab-name: pull-k8sio-dns-validate-config
+    decorate: true
+    spec:
+      containers:
+        - image: registry.k8s.io/infra-tools/octodns:v20220319-97d14a558
+          command:
+            - bash
+          args:
+            - -c
+            - "cd dns && make validate-config"

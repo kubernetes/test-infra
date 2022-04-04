@@ -10,7 +10,7 @@ presubmits:
         preset-service-account: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
             command:
               - runner.sh
             args:
@@ -42,7 +42,7 @@ presubmits:
           workdir: true
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-1.23
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-1.23
             command:
               - runner.sh
               - kubetest
@@ -102,7 +102,7 @@ presubmits:
           workdir: true
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-1.23
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-1.23
             command:
               - runner.sh
               - kubetest
@@ -168,7 +168,7 @@ presubmits:
           workdir: false
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
             command:
               - runner.sh
               - ./scripts/ci-entrypoint.sh
@@ -187,7 +187,7 @@ presubmits:
               - name: AZURE_LOADBALANCER_SKU
                 value: "standard"
               - name: KUBERNETES_VERSION
-                value: 1.23.1
+                value: 1.23.5
               - name: GINKGO_ARGS
                 value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --test.parallel=30 --report-dir=/logs/artifacts --disable-log-dump=true
               - name: CONTROL_PLANE_MACHINE_COUNT
@@ -219,7 +219,7 @@ presubmits:
           workdir: true
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
             command:
               - runner.sh
               - ./scripts/ci-entrypoint.sh
@@ -237,7 +237,7 @@ presubmits:
               - name: AZURE_LOADBALANCER_SKU
                 value: "standard"
               - name: KUBERNETES_VERSION
-                value: 1.23.1
+                value: 1.23.5
               - name: CONTROL_PLANE_MACHINE_COUNT
                 value: "3"
       annotations:
@@ -255,7 +255,7 @@ presubmits:
         preset-service-account: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
             command:
               - runner.sh
             args:

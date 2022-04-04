@@ -348,7 +348,7 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 		if err := gc.AddLabel(org, repoName, number, LGTMLabel); err != nil {
 			return err
 		}
-		if !stickyLgtm(log, gc, config, opts, issueAuthor, org, repoName) {
+		if !stickyLgtm(log, gc, config, opts, issueAuthor, org) {
 			if opts.StoreTreeHash {
 				pr, err := gc.GetPullRequest(org, repoName, number)
 				if err != nil {
@@ -374,27 +374,33 @@ func handle(wantLGTM bool, config *plugins.Configuration, ownersClient repoowner
 	return nil
 }
 
-func stickyLgtm(log *logrus.Entry, gc githubClient, _ *plugins.Configuration, lgtm *plugins.Lgtm, author, org, repo string) bool {
-	if len(lgtm.StickyLgtmTeam) > 0 {
-		if teams, err := gc.ListTeams(org); err == nil {
-			for _, teamInOrg := range teams {
-				if strings.Compare(teamInOrg.Name, lgtm.StickyLgtmTeam) == 0 {
-					if members, err := gc.ListTeamMembers(org, teamInOrg.ID, github.RoleAll); err == nil {
-						for _, member := range members {
-							if strings.Compare(member.Login, author) == 0 {
-								// The author is in a trusted team
-								return true
-							}
-						}
-					} else {
-						log.WithError(err).Errorf("Failed to list members in %s:%s.", org, teamInOrg.Name)
-					}
+func stickyLgtm(log *logrus.Entry, gc githubClient, _ *plugins.Configuration, lgtm *plugins.Lgtm, author, org string) bool {
+	if lgtm.StickyLgtmTeam == "" {
+		return false
+	}
+	teams, err := gc.ListTeams(org)
+	if err != nil {
+		log.WithError(err).Errorf("Failed to list teams in org %s.", org)
+		return false
+	}
+	for _, teamInOrg := range teams {
+		if teamInOrg.Name == lgtm.StickyLgtmTeam {
+			members, err := gc.ListTeamMembers(org, teamInOrg.ID, github.RoleAll)
+			if err != nil {
+				log.WithError(err).Errorf("Failed to list members in %s:%s.", org, teamInOrg.Name)
+				return false
+			}
+			for _, member := range members {
+				if member.Login == author {
+					// The author is in the trusted team
+					return true
 				}
 			}
-		} else {
-			log.WithError(err).Errorf("Failed to list teams in org %s.", org)
+			// The author is not in the trusted team
+			return false
 		}
 	}
+	log.Errorf("The configured trusted_team_for_sticky_lgtm (%q) was not found in the org %q.", lgtm.StickyLgtmTeam, org)
 	return false
 }
 
@@ -412,7 +418,7 @@ func handlePullRequest(log *logrus.Entry, gc githubClient, config *plugins.Confi
 	number := pe.PullRequest.Number
 
 	opts := config.LgtmFor(org, repo)
-	if stickyLgtm(log, gc, config, opts, pe.PullRequest.User.Login, org, repo) {
+	if stickyLgtm(log, gc, config, opts, pe.PullRequest.User.Login, org) {
 		// If the author is trusted, skip tree hash verification and LGTM removal.
 		return nil
 	}

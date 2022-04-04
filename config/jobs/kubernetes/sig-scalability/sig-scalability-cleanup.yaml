@@ -11,26 +11,31 @@ periodics:
     repo: perf-tests
     base_ref: master
     path_alias: k8s.io/perf-tests
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+    path_alias: k8s.io/test-infra
   annotations:
     testgrid-dashboards: sig-scalability-experiments
     testgrid-tab-name: snapshots-cleanup
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
       command:
       - runner.sh
       - /workspace/scenarios/execute.py
       args:
-      - $(GOPATH)/src/k8s.io/perf-tests/clusterloader2/clean-up-old-snapshots.sh
+      - $(GOPATH)/src/k8s.io/perf-tests/clusterloader2/clean-up-old-snapshots-boskos.sh
       # Command (list|delete)
       - delete
-      # Comma-separated list of projects to process
-      # It should match projects list for type: scalability-project in prow/cluster/boskos-resources.yaml
-      - k8s-e2e-gce-scalability-1-1,k8s-e2e-gce-scalability-1-2,k8s-e2e-gci-gce-scale-1-4,k8s-e2e-gci-gce-scale-1-5,k8s-jenkins-gci-scalability,k8s-jenkins-gci-scalability-2,k8s-jenkins-kubemark,k8s-jenkins-scalability-2,k8s-jenkins-scalability-3,k8s-jenkins-scalability-4,k8s-jenkins-scalability-5
       # Comma-separated list of snapshot prefixes to delete
       - ci-kubernetes-e2e-gci-gce-scalability
       # Delete snapshots older than x days
       - "30"
+      # Comma-separated list of boskos pools to process
+      - scalability-project
+      # File with boskos resource definitions
+      - $(GOPATH)/src/k8s.io/test-infra/config/prow/cluster/build/boskos-resources/boskos-resources.yaml
 
 - name: ci-kubernetes-scalability-cleanup-golang-builds-canary
   cluster: k8s-infra-prow-build
@@ -56,7 +61,7 @@ periodics:
     # https://github.com/kubernetes/k8s.io/issues/2854
     serviceAccountName: boskos-janitor
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
       command:
       - runner.sh
       - /workspace/scenarios/execute.py

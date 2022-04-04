@@ -24,6 +24,7 @@ import (
 )
 
 func TestCalculateRequestWaitDuration(t *testing.T) {
+	maxDelayTime := time.Second * 10
 	throttlingTime := time.Second
 	throttlingTimeForGET := time.Millisecond * 100
 	currentTime := time.Date(2022, time.January, 2, 0, 0, 0, 0, time.UTC)
@@ -97,6 +98,29 @@ func TestCalculateRequestWaitDuration(t *testing.T) {
 			duration: time.Second + throttlingTimeForGET,
 		},
 		{
+			name: "Non-GET request needs to be scheduled, but there is a large queue formed, adding with max schedule time",
+			args: args{
+				t: tokenInfo{
+					timestamp: currentTime.Add(maxDelayTime - time.Millisecond),
+				},
+				toQueue: currentTime,
+			},
+			toQueue:  currentTime.Add(maxDelayTime),
+			duration: maxDelayTime,
+		},
+		{
+			name: "GET request needs to be scheduled, but there is a large queue formed, adding with max schedule time",
+			args: args{
+				t: tokenInfo{
+					timestamp: currentTime.Add(maxDelayTime - time.Millisecond),
+					getReq:    true,
+				},
+				toQueue: currentTime,
+			},
+			toQueue:  currentTime.Add(maxDelayTime),
+			duration: maxDelayTime,
+		},
+		{
 			name: "GET request needs to be scheduled, previous non-GET, duration shorter than throttlingTimeForGET",
 			args: args{
 				t: tokenInfo{
@@ -143,6 +167,7 @@ func TestCalculateRequestWaitDuration(t *testing.T) {
 				tokens:               map[string]tokenInfo{},
 				throttlingTime:       throttlingTime,
 				throttlingTimeForGET: throttlingTimeForGET,
+				maxDelayTime:         maxDelayTime,
 			}
 			got, got1 := tr.calculateRequestWaitDuration(tt.args.t, tt.args.toQueue, tt.args.getReq)
 			if !reflect.DeepEqual(got, tt.toQueue) {

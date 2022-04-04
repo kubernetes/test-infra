@@ -29,6 +29,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/mattn/go-zglob"
 	"github.com/sirupsen/logrus"
@@ -43,6 +44,10 @@ import (
 const defaultBufferSize = 10 * 1024 * 1024
 
 func (o Options) censor() error {
+	logrus.Info("Starting to censor data")
+	startTime := time.Now()
+	defer func() { logrus.WithField("duration", time.Since(startTime).String()).Info("Finished censoring data") }()
+
 	var concurrency int64
 	if o.CensoringOptions.CensoringConcurrency == nil {
 		concurrency = int64(10)

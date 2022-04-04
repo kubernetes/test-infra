@@ -99,10 +99,11 @@ type options struct {
 	upstream       string
 	upstreamParsed *url.URL
 
-	maxConcurrency              int
-	requestThrottlingTime       uint
-	requestThrottlingTimeV4     uint
-	requestThrottlingTimeForGET uint
+	maxConcurrency                int
+	requestThrottlingTime         uint
+	requestThrottlingTimeV4       uint
+	requestThrottlingTimeForGET   uint
+	requestThrottlingMaxDelayTime uint
 
 	// pushGateway fields are used to configure pushing prometheus metrics.
 	pushGateway         string
@@ -113,6 +114,8 @@ type options struct {
 	serveMetrics bool
 
 	instrumentationOptions flagutil.InstrumentationOptions
+
+	timeout uint
 }
 
 func (o *options) validate() error {
@@ -145,10 +148,12 @@ func flagOptions() *options {
 	flag.UintVar(&o.requestThrottlingTime, "throttling-time-ms", 0, "Additional throttling mechanism which imposes time spacing between outgoing requests. Counted per organization. Has to be set together with --get-throttling-time-ms.")
 	flag.UintVar(&o.requestThrottlingTimeV4, "throttling-time-v4-ms", 0, "Additional throttling mechanism which imposes time spacing between outgoing requests. Counted per organization. Overrides --throttling-time-ms setting for API v4.")
 	flag.UintVar(&o.requestThrottlingTimeForGET, "get-throttling-time-ms", 0, "Additional throttling mechanism which imposes time spacing between outgoing GET requests. Counted per organization. Has to be set together with --throttling-time-ms.")
+	flag.UintVar(&o.requestThrottlingMaxDelayTime, "throttling-max-delay-duration-seconds", 30, "Maximum delay for throttling in seconds. Requests will never be throttled for longer than this, used to avoid building a request backlog when the GitHub api has performance issues. Default is 30 seconds.")
 	flag.StringVar(&o.pushGateway, "push-gateway", "", "If specified, push prometheus metrics to this endpoint.")
 	flag.DurationVar(&o.pushGatewayInterval, "push-gateway-interval", time.Minute, "Interval at which prometheus metrics are pushed.")
 	flag.StringVar(&o.logLevel, "log-level", "debug", fmt.Sprintf("Log level is one of %v.", logrus.AllLevels))
 	flag.BoolVar(&o.serveMetrics, "serve-metrics", false, "If true, it serves prometheus metrics")
+	flag.UintVar(&o.timeout, "request-timeout", 30, "Request timeout which applies also to paged requests. Default is 30 seconds.")
 	o.instrumentationOptions.AddFlags(flag.CommandLine)
 	return o
 }
@@ -188,12 +193,12 @@ func main() {
 	health := pjutil.NewHealthOnPort(o.instrumentationOptions.HealthPort)
 	health.ServeReady()
 
-	interrupts.ListenAndServe(server, 30*time.Second)
+	interrupts.ListenAndServe(server, time.Duration(o.timeout)*time.Second)
 }
 
 func proxy(o *options, upstreamTransport http.RoundTripper, diskCachePruneInterval time.Duration) http.Handler {
 	var cache http.RoundTripper
-	throttlingTimes := ghcache.NewRequestThrottlingTimes(o.requestThrottlingTime, o.requestThrottlingTimeV4, o.requestThrottlingTimeForGET)
+	throttlingTimes := ghcache.NewRequestThrottlingTimes(o.requestThrottlingTime, o.requestThrottlingTimeV4, o.requestThrottlingTimeForGET, o.requestThrottlingMaxDelayTime)
 	if o.redisAddress != "" {
 		cache = ghcache.NewRedisCache(apptokenequalizer.New(upstreamTransport), o.redisAddress, o.maxConcurrency, throttlingTimes)
 	} else if o.dir == "" {
@@ -203,7 +208,7 @@ func proxy(o *options, upstreamTransport http.RoundTripper, diskCachePruneInterv
 		go diskMonitor(o.pushGatewayInterval, o.dir)
 	}
 
-	return newReverseProxy(o.upstreamParsed, cache, 30*time.Second)
+	return newReverseProxy(o.upstreamParsed, cache, time.Duration(o.timeout)*time.Second)
 }
 
 func newReverseProxy(upstreamURL *url.URL, transport http.RoundTripper, timeout time.Duration) http.Handler {

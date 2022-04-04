@@ -50,6 +50,35 @@ postsubmits:
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
       testgrid-num-failures-to-alert: '2'
 
+  kubernetes-sigs/promo-tools:
+  # This job is a canary job to test promoting the image promoter before
+  # rolling changes out to production instances
+  - name: post-promo-tools-image-promo-canary
+    cluster: k8s-infra-prow-build-trusted
+    decorate: true
+    run_if_changed: 'canary/((images/.*/images\.yaml)|(manifests/.*/promoter-manifest\.yaml))'
+    # Never run more than 1 job at a time. This is because we don't want to run
+    # into a case where an older manifest PR merge gets run last (after a newer
+    # one).
+    max_concurrency: 1
+    branches:
+    - ^main$
+    spec:
+      serviceAccountName: k8s-infra-gcr-promoter
+      containers:
+      - image: gcr.io/k8s-staging-artifact-promoter/kpromo:latest-canary
+        imagePullPolicy: Always
+        command:
+        - /kpromo
+        args:
+        - cip
+        - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes-sigs/promo-tools/canary
+        - --confirm
+    annotations:
+      testgrid-dashboards: sig-release-releng-informing
+      testgrid-alert-email: release-managers+alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '2'
+
 periodics:
 - interval: 1h
   cluster: k8s-infra-prow-build-trusted
@@ -111,6 +140,37 @@ periodics:
   annotations:
     testgrid-dashboards: sig-release-releng-blocking, sig-k8s-infra-k8sio
     testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
+    testgrid-num-failures-to-alert: '2'
+  rerun_auth_config:
+    github_team_slugs:
+      - org: kubernetes
+        slug: release-managers
+
+# This job is a canary job to test promoting the image promoter before
+# rolling changes out to production instances
+- interval: 1h
+  cluster: k8s-infra-prow-build-trusted
+  max_concurrency: 1
+  name: ci-promo-tools-image-promo-canary
+  decorate: true
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: promo-tools
+    base_ref: main
+  spec:
+    serviceAccountName: k8s-infra-gcr-promoter
+    containers:
+    - image: gcr.io/k8s-staging-artifact-promoter/kpromo:latest-canary
+      imagePullPolicy: Always
+      command:
+      - /kpromo
+      args:
+      - cip
+      - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes-sigs/promo-tools/canary
+      - --confirm
+  annotations:
+    testgrid-dashboards: sig-release-releng-informing
+    testgrid-alert-email: release-managers+alerts@kubernetes.io
     testgrid-num-failures-to-alert: '2'
   rerun_auth_config:
     github_team_slugs:

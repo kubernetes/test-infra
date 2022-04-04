@@ -84,6 +84,7 @@ var (
 type gerritClient interface {
 	SetReview(instance, id, revision, message string, labels map[string]string) error
 	GetChange(instance, id string) (*gerrit.ChangeInfo, error)
+	ChangeExist(instance, id string) (bool, error)
 }
 
 // Client is a gerrit reporter client
@@ -362,6 +363,10 @@ func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJo
 	gerritID := pj.ObjectMeta.Annotations[clientGerritID]
 	gerritInstance := pj.ObjectMeta.Annotations[clientGerritInstance]
 	gerritRevision := pj.ObjectMeta.Labels[clientGerritRevision]
+	logger = logger.WithFields(logrus.Fields{
+		"instance": gerritInstance,
+		"id":       gerritID,
+	})
 	var reportLabel string
 	if val, ok := pj.ObjectMeta.Labels[client.GerritReportLabel]; ok {
 		reportLabel = val
@@ -375,6 +380,8 @@ func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJo
 		return nil, nil, nil
 	}
 	var reviewLabels map[string]string
+	var change *gerrit.ChangeInfo
+	var err error
 	if reportLabel != "" {
 		var vote string
 		// Can only vote below zero before merge
@@ -387,10 +394,15 @@ func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJo
 			// If presubmit and failure vote -1...
 			vote = lbtm
 
-			change, err := c.gc.GetChange(gerritInstance, gerritID)
-			//TODO(mpherman): In cases where the change was deleted we do not want warn nor report
+			change, err = c.gc.GetChange(gerritInstance, gerritID)
 			if err != nil {
-				logger.WithError(err).Warnf("Unable to get change from instance %s with id %s", gerritInstance, gerritID)
+				exist, existErr := c.gc.ChangeExist(gerritInstance, gerritID)
+				if existErr == nil && !exist {
+					// PR was deleted, no reason to report or retry
+					logger.WithError(err).Info("Change doesn't exist any more, skip reporting.")
+					return nil, nil, nil
+				}
+				logger.WithError(err).Warn("Unable to get change")
 			} else if change.Status == client.Merged {
 				// Unless change is already merged. Merged changes should not be voted <0
 				vote = lztm
@@ -405,14 +417,47 @@ func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJo
 	if err := c.gc.SetReview(gerritInstance, gerritID, gerritRevision, message, reviewLabels); err != nil {
 		logger.WithError(err).WithField("gerrit_id", gerritID).WithField("label", reportLabel).Info("Failed to set review.")
 
-		if reportLabel == "" {
-			return nil, nil, err
+		// It could be that the commit is deleted by the time we want to report.
+		// Swollow the error if this is the case.
+		exist, existErr := c.gc.ChangeExist(gerritInstance, gerritID)
+		if existErr == nil {
+			if !exist {
+				// PR was deleted, no reason to report or retry
+				logger.WithError(err).Info("Change doesn't exist any more, skip reporting.")
+				return nil, nil, nil
+			}
+			if change == nil {
+				var debugErr error
+				change, debugErr = c.gc.GetChange(gerritInstance, gerritID)
+				if debugErr != nil {
+					logger.WithError(debugErr).WithField("gerrit_id", gerritID).Info("Getting change failed. This is trying to help determine why SetReview failed.")
+				}
+			}
+		} else {
+			// Checking change exist error is not as useful as the error from
+			// SetReview, log it on debug level
+			logger.WithError(existErr).Debug("Failed checking existence of change.")
 		}
-		// Retry without voting on a label
-		message := fmt.Sprintf("[NOTICE]: Prow Bot cannot access %s label!\n%s", reportLabel, message)
-		if err := c.gc.SetReview(gerritInstance, gerritID, gerritRevision, message, nil); err != nil {
-			logger.WithError(err).WithField("gerrit_id", gerritID).Errorf("Failed to set plain review on change ID.")
-			return nil, nil, err
+		if change != nil {
+			// keys of `Revisions` are the revision strings, see
+			// https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#change-info
+			if _, ok := change.Revisions[gerritRevision]; !ok {
+				logger.WithFields(logrus.Fields{"gerrit_id": gerritID, "revision": gerritRevision}).Info("The revision to be commented is missing, swallow error.")
+				// still want the rest of the function continue, so that all
+				// jobs for this revision are marked reported.
+				err = nil
+			}
+		}
+
+		if err != nil {
+			if reportLabel == "" {
+				return nil, nil, err
+			}
+			// Retry without voting on a label
+			message := fmt.Sprintf("[NOTICE]: Prow Bot cannot access %s label!\n%s", reportLabel, message)
+			if err := c.gc.SetReview(gerritInstance, gerritID, gerritRevision, message, nil); err != nil {
+				return nil, nil, err
+			}
 		}
 	}
 
@@ -431,7 +476,6 @@ func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJo
 		"job-count":      len(toReportJobs),
 		"all-jobs-count": len(pjsToUpdateState),
 	}).Info("Reported job(s), now will update pj(s).")
-	var err error
 	// All latest jobs for this label were already reported, none of the jobs
 	// for this label are worthy reporting any more. Mark all of them as
 	// reported to avoid corner cases where an older job finished later, and the

@@ -17,7 +17,7 @@ periodics:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-1.21
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-1.21
       command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
@@ -35,7 +35,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
     testgrid-tab-name: periodic-e2e-release-0-7
-    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-aws-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "2"
 - name: periodic-cluster-api-provider-aws-capi-e2e-release-0-7
   decorate: true
@@ -55,7 +55,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-1.21
         command:
           - "runner.sh"
           - "./scripts/ci-e2e.sh"
@@ -75,7 +75,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
     testgrid-tab-name: periodic-capi-e2e-release-0-7
-    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-aws-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "2"
 - name: periodic-cluster-api-provider-aws-e2e-conformance-release-0-7
   decorate: true
@@ -95,7 +95,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-1.21
         command:
           - "runner.sh"
           - "./scripts/ci-conformance.sh"
@@ -113,5 +113,5 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-aws
     testgrid-tab-name: periodic-conformance-release-0-7
-    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
+    testgrid-alert-email: sig-cluster-lifecycle-cluster-api-aws-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "2"

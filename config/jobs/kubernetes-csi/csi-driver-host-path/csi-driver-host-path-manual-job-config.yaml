@@ -19,7 +19,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
         command:
         - runner.sh
         args:
@@ -74,11 +74,11 @@ periodics:
     testgrid-dashboards: sig-storage-csi-ci
     testgrid-tab-name: distributed-on-1-23
     testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
-    description: periodic Kubernetes-CSI job for distributed provisioning on Kubernetes master, with CSIStorageCapacity
+    description: periodic Kubernetes-CSI job for distributed provisioning on Kubernetes 1.23, with CSIStorageCapacity
   spec:
     containers:
     # We need this image because it has Docker in Docker and go.
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220315-d8db32377d-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
       command:
       - runner.sh
       args:
@@ -86,6 +86,65 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "1.23.0"
+      - name: CSI_PROW_USE_BAZEL
+        value: "false"
+      - name: CSI_SNAPSHOTTER_VERSION
+        value: "master"
+      - name: CSI_PROW_BUILD_JOB
+        value: "false"
+      - name: CSI_PROW_TESTS
+        value: "sanity serial parallel serial-alpha parallel-alpha"
+      - name: CSI_PROW_DEPLOYMENT
+        value: "kubernetes-distributed"
+      - name: CSI_PROW_SANITY_POD
+        # The hostpath pod is part of a DaemonSet with an unpredictable
+        # name. There's also more than one. We can list all them by
+        # their label, but then still need to filter by node name
+        # to find the one that is on the same host as the socat pod
+        # which exposes the CSI socket for us.
+        value: kubectl get pods -l app.kubernetes.io/name=csi-hostpathplugin -o "jsonpath={.items[?(@.spec.nodeName==\"$(kubectl get pods/csi-hostpath-socat-0 -o jsonpath={.spec.nodeName})\")].metadata.name}"
+      # Replace images....
+      - name: CSI_PROW_HOSTPATH_CANARY
+        value: "canary"
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          # these are both a bit below peak usage during build
+          # this is mostly for building kubernetes
+          memory: "9000Mi"
+          # during the tests more like 3-20m is used
+          cpu: 2000m
+- interval: 6h
+  # 1.24 will change the CSIStorageCapacity API: v1beta1 becomes deprecated and v1 gets added.
+  name: ci-kubernetes-csi-canary-distributed-on-kubernetes-master
+  decorate: true
+  extra_refs:
+  - org: kubernetes-csi
+    repo: csi-driver-host-path
+    base_ref: master
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+    preset-bazel-remote-cache-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  annotations:
+    testgrid-dashboards: sig-storage-csi-ci
+    testgrid-tab-name: distributed-on-master
+    testgrid-alert-email: kubernetes-sig-storage-test-failures@googlegroups.com
+    description: periodic Kubernetes-CSI job for distributed provisioning on Kubernetes master, with CSIStorageCapacity
+  spec:
+    containers:
+    # We need this image because it has Docker in Docker and go.
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+      command:
+      - runner.sh
+      args:
+      - ./.prow.sh
+      env:
+      - name: CSI_PROW_KUBERNETES_VERSION
+        value: "latest"
       - name: CSI_PROW_USE_BAZEL
         value: "false"
       - name: CSI_SNAPSHOTTER_VERSION

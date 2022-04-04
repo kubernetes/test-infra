@@ -2,6 +2,12 @@
 ---
 triggers:
 - repos:
+  - kubernetes-sigs/cluster-api
+  - kubernetes-sigs/cluster-api-provider-azure
+  join_org_url: "https://git.k8s.io/community/community-membership.md#member"
+  only_org_members: true
+  trigger_github_workflows: true
+- repos:
   - kubernetes
   - kubernetes-client
   - kubernetes-csi
@@ -843,6 +849,7 @@ plugins:
     - size
     - skip
     - slackevents
+    - testfreeze
     - transfer-issue
     - trick-or-treat
     - trigger
@@ -1110,7 +1117,6 @@ plugins:
     - milestone
     - milestonestatus
     - override
-    - release-note
     - require-matching-label
 
   kubernetes-sigs/cluster-api-provider-azure:
