@@ -66,7 +66,8 @@ postsubmits:
     spec:
       serviceAccountName: k8s-infra-gcr-promoter
       containers:
-      - image: gcr.io/k8s-staging-artifact-promoter/kpromo:v20220402-v3.3.0-160-gc6d7a2b
+      - image: gcr.io/k8s-staging-artifact-promoter/kpromo:latest-canary
+        imagePullPolicy: Always
         command:
         - /kpromo
         args:
@@ -159,7 +160,8 @@ periodics:
   spec:
     serviceAccountName: k8s-infra-gcr-promoter
     containers:
-    - image: gcr.io/k8s-staging-artifact-promoter/kpromo:v20220402-v3.3.0-160-gc6d7a2b
+    - image: gcr.io/k8s-staging-artifact-promoter/kpromo:latest-canary
+      imagePullPolicy: Always
       command:
       - /kpromo
       args:
