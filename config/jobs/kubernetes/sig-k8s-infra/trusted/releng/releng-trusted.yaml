@@ -145,6 +145,36 @@ periodics:
       - org: kubernetes
         slug: release-managers
 
+# This job is a canary job to test promoting the image promoter before
+# rolling changes out to production instances
+- interval: 1h
+  cluster: k8s-infra-prow-build-trusted
+  max_concurrency: 1
+  name: ci-promo-tools-image-promo-canary
+  decorate: true
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: promo-tools
+    base_ref: main
+  spec:
+    serviceAccountName: k8s-infra-gcr-promoter
+    containers:
+    - image: gcr.io/k8s-staging-artifact-promoter/kpromo:v20220402-v3.3.0-160-gc6d7a2b
+      command:
+      - /kpromo
+      args:
+      - cip
+      - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes-sigs/promo-tools/canary
+      - --confirm
+  annotations:
+    testgrid-dashboards: sig-release-releng-informing
+    testgrid-alert-email: release-managers+alerts@kubernetes.io
+    testgrid-num-failures-to-alert: '2'
+  rerun_auth_config:
+    github_team_slugs:
+      - org: kubernetes
+        slug: release-managers
+
 - interval: 4h
   cluster: k8s-infra-prow-build-trusted
   max_concurrency: 1
