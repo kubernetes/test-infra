@@ -10,20 +10,6 @@ presets:
     value: cos-cloud
   - name: NODE_ACCELERATORS
     value: type=nvidia-tesla-k80,count=2
-- labels:
-    preset-use-new-registry: "true"
-  env:
-  - name: KUBE_TEST_REPO_LIST
-    value: https://raw.githubusercontent.com/kubernetes/test-infra/master/config/jobs/kubernetes/sig-cloud-provider/gcp/registry/default.yaml
-  - name: KUBE_DOCKER_REGISTRY
-    value: registry.k8s.io
-  - name: KUBE_ADDON_REGISTRY
-    value: registry.k8s.io
-  - name: TEST_ETCD_DOCKER_REPOSITORY
-    value: registry.k8s.io/etcd
-  - name: CONTAINERD_INFRA_CONTAINER
-    value: registry.k8s.io/pause:3.6
-
 
 periodics:
 - name: ci-kubernetes-e2e-gce-device-plugin-gpu
