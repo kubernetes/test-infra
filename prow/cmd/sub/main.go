@@ -112,7 +112,7 @@ func main() {
 
 	// If we need to use a GitClient (for inrepoconfig), then we must use a
 	// InRepoConfigCache.
-	var cache *config.InRepoConfigCache
+	var cache *config.InRepoConfigCache = nil
 	var gitClientFactory git.ClientFactory
 	if flagOptions.github.TokenPath != "" || flagOptions.github.AppPrivateKeyPath != "" {
 		gitClient, err := flagOptions.github.GitClient(flagOptions.dryRun)
@@ -150,22 +150,19 @@ func main() {
 	metrics.ExposeMetrics("sub", configAgent.Config().PushGateway, flagOptions.instrumentationOptions.MetricsPort)
 	pprof.Instrument(flagOptions.instrumentationOptions)
 
-	var cacheGetter subscriber.InRepoConfigCacheGetter
-	if flagOptions.cookiefilePath != "" {
-		cacheGetter = subscriber.InRepoConfigCacheGetter{
-			CookieFilePath: flagOptions.cookiefilePath,
-			CacheSize:      flagOptions.inRepoConfigCacheSize,
-			Agent:          configAgent,
-		}
+	cacheGetter := subscriber.InRepoConfigCacheGetter{
+		CookieFilePath: flagOptions.cookiefilePath,
+		CacheSize:      flagOptions.inRepoConfigCacheSize,
+		Agent:          configAgent,
+		AlwaysReturn:   cache,
 	}
 
 	s := &subscriber.Subscriber{
-		ConfigAgent:       configAgent,
-		InRepoConfigCache: cache,
-		Metrics:           promMetrics,
-		ProwJobClient:     kubeClient,
-		Reporter:          pubsub.NewReporter(configAgent.Config), // reuse crier reporter
-		CacheGetter:       &cacheGetter,
+		ConfigAgent:             configAgent,
+		Metrics:                 promMetrics,
+		ProwJobClient:           kubeClient,
+		Reporter:                pubsub.NewReporter(configAgent.Config), // reuse crier reporter
+		InRepoConfigCacheGetter: &cacheGetter,
 	}
 
 	subMux := http.NewServeMux()

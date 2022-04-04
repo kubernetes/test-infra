@@ -309,7 +309,7 @@ func TestHandleMessage(t *testing.T) {
 				ProwJobClient: fakeProwJobClient.ProwV1().ProwJobs(tc.config.ProwJobNamespace),
 				ConfigAgent:   ca,
 				Reporter:      &fr,
-				CacheGetter: &InRepoConfigCacheGetter{
+				InRepoConfigCacheGetter: &InRepoConfigCacheGetter{
 					CookieFilePath: "examplePath",
 					CacheSize:      100,
 					Agent:          ca,

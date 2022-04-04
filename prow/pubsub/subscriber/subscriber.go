@@ -22,6 +22,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"sync"
 
 	"cloud.google.com/go/pubsub"
 
@@ -63,18 +64,30 @@ type InRepoConfigCacheGetter struct {
 	CookieFilePath string
 	CacheSize      int
 	Agent          *config.Agent
+	mu             sync.Mutex
 
-	CacheMap map[string]*config.InRepoConfigCache
+	// If AlwaysReturn !=nil, it the getter will always return this cache. Otherwise it will use the CacheMap
+	AlwaysReturn *config.InRepoConfigCache
+	CacheMap     map[string]*config.InRepoConfigCache
 }
 
 func (irc *InRepoConfigCacheGetter) GetCache(cloneURI, host string) (*config.InRepoConfigCache, error) {
+	irc.mu.Lock()
+	defer irc.mu.Unlock()
+
+	if irc.AlwaysReturn != nil {
+		return irc.AlwaysReturn, nil
+	}
+
 	if irc.CacheMap == nil {
 		irc.CacheMap = map[string]*config.InRepoConfigCache{}
 	}
 	if cache, ok := irc.CacheMap[cloneURI]; ok {
 		return cache, nil
 	}
-	cache, err := irc.CreateCache(cloneURI, host)
+	cache, err := irc.CreateGerritCache(cloneURI, host)
+	irc.CacheMap[cloneURI] = cache
+
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +96,7 @@ func (irc *InRepoConfigCacheGetter) GetCache(cloneURI, host string) (*config.InR
 
 }
 
-func (irc *InRepoConfigCacheGetter) CreateCache(cloneURI, host string) (*config.InRepoConfigCache, error) {
+func (irc *InRepoConfigCacheGetter) CreateGerritCache(cloneURI, host string) (*config.InRepoConfigCache, error) {
 	opts := git.ClientFactoryOpts{
 		CloneURI:       cloneURI,
 		Host:           host,
@@ -104,7 +117,6 @@ func (irc *InRepoConfigCacheGetter) CreateCache(cloneURI, host string) (*config.
 		return nil, fmt.Errorf("unable to initialize in-repo-config-cache with size %d: %v", irc.CacheSize, err)
 	}
 
-	irc.CacheMap[cloneURI] = cache
 	return cache, nil
 }
 
@@ -155,12 +167,11 @@ type ProwJobClient interface {
 // validates them using Prow Configuration and
 // use a ProwJobClient to create Prow Jobs.
 type Subscriber struct {
-	ConfigAgent       *config.Agent
-	InRepoConfigCache *config.InRepoConfigCache
-	Metrics           *Metrics
-	ProwJobClient     ProwJobClient
-	Reporter          reportClient
-	CacheGetter       *InRepoConfigCacheGetter
+	ConfigAgent             *config.Agent
+	Metrics                 *Metrics
+	ProwJobClient           ProwJobClient
+	Reporter                reportClient
+	InRepoConfigCacheGetter *InRepoConfigCacheGetter
 }
 
 type messageInterface interface {
@@ -229,7 +240,6 @@ func (peh *periodicJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InRe
 
 // presubmitJobHandler implements jobHandler
 type presubmitJobHandler struct {
-	cacheGetter *InRepoConfigCacheGetter
 }
 
 func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InRepoConfigCache, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error) {
@@ -280,13 +290,6 @@ func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InR
 	// If InRepoConfigCache is provided, then it means that we also want to fetch
 	// from an inrepoconfig.
 	// If CookieFilePath is provided than we are working with a gerrit instance and need to make an InRepoConfigCache
-	var err error
-	if prh.cacheGetter != nil {
-		pc, err = prh.cacheGetter.GetCache(orgRepo, org)
-		if err != nil {
-			return nil, nil, fmt.Errorf("unable to get InRepoConfig using gerrit InRepoConfigCacheGetter: %w", err)
-		}
-	}
 	if pc != nil {
 		var presubmitsWithInrepoconfig []config.Presubmit
 		var err error
@@ -325,7 +328,6 @@ func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InR
 
 // postsubmitJobHandler implements jobHandler
 type postsubmitJobHandler struct {
-	cacheGetter *InRepoConfigCacheGetter
 }
 
 func (poh *postsubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InRepoConfigCache, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error) {
@@ -362,13 +364,6 @@ func (poh *postsubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.In
 
 	logger := logrus.WithFields(logrus.Fields{"org": org, "repo": repo, "branch": branch, "orgRepo": orgRepo})
 	postsubmits := cfg.GetPostsubmitsStatic(orgRepo)
-	var err error
-	if poh.cacheGetter != nil {
-		pc, err = poh.cacheGetter.GetCache(orgRepo, org)
-		if err != nil {
-			return nil, nil, fmt.Errorf("unable to get InRepoConfig using gerrit InRepoConfigCacheGetter: %w", err)
-		}
-	}
 	if pc != nil {
 		var postsubmitsWithInrepoconfig []config.Postsubmit
 		var err error
@@ -431,13 +426,9 @@ func (s *Subscriber) handleMessage(msg messageInterface, subscription string, al
 	case periodicProwJobEvent:
 		jh = &periodicJobHandler{}
 	case presubmitProwJobEvent:
-		jh = &presubmitJobHandler{
-			cacheGetter: s.CacheGetter,
-		}
+		jh = &presubmitJobHandler{}
 	case postsubmitProwJobEvent:
-		jh = &postsubmitJobHandler{
-			cacheGetter: s.CacheGetter,
-		}
+		jh = &postsubmitJobHandler{}
 	default:
 		l.WithField("type", eType).Debug("Unsupported event type")
 		s.Metrics.ErrorCounter.With(prometheus.Labels{
@@ -457,6 +448,29 @@ func (s *Subscriber) handleMessage(msg messageInterface, subscription string, al
 		}).Inc()
 	}
 	return err
+}
+
+func tryGetCloneURIAndHost(pe ProwJobEvent) (cloneURI, host string) {
+	refs := pe.Refs
+	if refs == nil {
+		return "", ""
+	}
+	if len(refs.Org) == 0 {
+		return "", ""
+	}
+	if len(refs.Repo) == 0 {
+		return "", ""
+	}
+
+	org, repo := refs.Org, refs.Repo
+	orgRepo := org + "/" + repo
+	// Add "https://" prefix to orgRepo if this is a gerrit job.
+	// (Unfortunately gerrit jobs use the full repo URL as the identifier.)
+	prefix := "https://"
+	if pe.Labels[client.GerritRevision] != "" && !strings.HasPrefix(orgRepo, prefix) {
+		orgRepo = prefix + orgRepo
+	}
+	return orgRepo, org
 }
 
 func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msg messageInterface, subscription string, allowedClusters []string) error {
@@ -491,7 +505,18 @@ func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msg messageIn
 
 	// Normalize job name
 	pe.Name = strings.TrimSpace(pe.Name)
-	prowJobSpec, labels, err := jh.getProwJobSpec(s.ConfigAgent.Config(), s.InRepoConfigCache, pe)
+
+	cloneURI, host := tryGetCloneURIAndHost(pe)
+	var cache *config.InRepoConfigCache = nil
+	var err error
+	if cloneURI != "" {
+		cache, err = s.InRepoConfigCacheGetter.GetCache(cloneURI, host)
+		if err != nil {
+			return err
+		}
+	}
+
+	prowJobSpec, labels, err := jh.getProwJobSpec(s.ConfigAgent.Config(), cache, pe)
 	if err != nil {
 		// These are user errors, i.e. missing fields, requested prowjob doesn't exist etc.
 		// These errors are already surfaced to user via pubsub two lines below.
