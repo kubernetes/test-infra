@@ -50,10 +50,10 @@ postsubmits:
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io, release-managers+alerts@kubernetes.io
       testgrid-num-failures-to-alert: '2'
 
-  kubernetes-sigs/bom:
-  # This job is a canary job to test the k-promo and the image promotion with signatures
-  # it will promote the image to another bucket in the same gcp project
-  - name: post-bom-image-promo-canary
+  kubernetes-sigs/promo-tools:
+  # This job is a canary job to test promoting the image promoter before
+  # rolling changes out to production instances
+  - name: post-promo-tools-image-promo-canary
     cluster: k8s-infra-prow-build-trusted
     decorate: true
     run_if_changed: 'canary/((images/.*/images\.yaml)|(manifests/.*/promoter-manifest\.yaml))'
@@ -71,7 +71,7 @@ postsubmits:
         - /kpromo
         args:
         - cip
-        - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes-sigs/bom/canary
+        - --thin-manifest-dir=/home/prow/go/src/github.com/kubernetes-sigs/promo-tools/canary
         - --confirm
     annotations:
       testgrid-dashboards: sig-release-releng-informing
