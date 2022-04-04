@@ -419,6 +419,7 @@ presubmits:
     run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(firewall|components\/cilium|iam\/iam_builder).go|nodeup\/pkg\/model\/(context|networking\/cilium).go|upup\/pkg\/fi\/cloudup\/template_functions.go)'
     always_run: false
     skip_report: false
+    optional: true
     labels:
       preset-service-account: "true"
       preset-aws-ssh: "true"
