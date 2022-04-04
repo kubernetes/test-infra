@@ -134,14 +134,14 @@ func (f *fakeJiraClient) AddRemoteLink(id string, link *jira.RemoteLink) error {
 	return nil
 }
 
-func (f *fakeJiraClient) RemoveRemoteLink(id string, link *jira.RemoteLink) error {
+func (f *fakeJiraClient) UpdateRemoteLink(id string, link *jira.RemoteLink) error {
 	if _, err := f.GetIssue(id); err != nil {
 		return err
 	}
 	if _, found := f.existingLinks[id]; !found {
 		return jiraclient.NewNotFoundError(fmt.Errorf("Link for issue %s not found", id))
 	}
-	delete(f.existingLinks, id)
+	f.newLinks = append(f.newLinks, *link)
 	return nil
 }
 
