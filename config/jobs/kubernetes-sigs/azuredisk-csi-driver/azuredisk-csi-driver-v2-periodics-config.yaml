@@ -1,8 +1,8 @@
 periodics:
-- name: periodic-24h-azuredisk-csi-driver-upgrade-test-mainv2
+- name: periodic-24h-azuredisk-csi-driver-e2e-single-az-mainv2
   decorate: true
   decoration_config:
-    timeout: 4h
+    timeout: 3h
   interval: 24h
   branches:
     - main_v2
@@ -22,18 +22,86 @@ periodics:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
       command:
       - runner.sh
+      - kubetest
       args:
-        # Generic test args
-        - make
-        - upgrade-test
-        # Aks cluster specific args
-        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/main_v2/test/e2e/manifest/upgrade-test.json
+        # Generic e2e test args
+        - --test
+        - --up
+        - --down
+        - --dump=$(ARTIFACTS)
+        # Azure-specific test args
+        - --provider=skeleton
+        - --deployment=aksengine
+        - --aksengine-admin-username=azureuser
+        - --aksengine-creds=$(AZURE_CREDENTIALS)
+        - --aksengine-orchestratorRelease=1.23
+        - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/main_v2/test/e2e/manifest/single-az.json
+        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
+        - --timeout=180m
+        # Specific test args
+        - --test-azure-disk-csi-driver
       securityContext:
         privileged: true
       env:
         - name: ENABLE_TOPOLOGY
           value: "false"
+        - name: BUILD_V2
+          value: "true"
   annotations:
     testgrid-dashboards: provider-azure-azuredisk-csi-driver, provider-azure-azuredisk-csi-driver-periodic
-    testgrid-tab-name: periodic-24h-azuredisk-csi-driver-upgrade-test-mainv2
-    description: "Periodic (24h): Run tests to test upgrade from v1 to v2 for Azure Disk CSI driver on a single-az cluster."
+    testgrid-tab-name: periodic-24h-azuredisk-csi-driver-e2e-single-az-mainv2
+    description: "Periodic (24h): Run E2E tests on a single-az cluster for Azure Disk CSI driver on the main_v2 branch."
+- name: periodic-24h-azuredisk-csi-driver-e2e-multi-az-mainv2
+  decorate: true
+  decoration_config:
+    timeout: 3h
+  interval: 24h
+  branches:
+    - main_v2
+  path_alias: sigs.k8s.io/azuredisk-csi-driver
+  labels:
+    preset-service-account: "true"
+    preset-azure-cred: "true"
+    preset-dind-enabled: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+    workdir: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220316-9d252673a0-master
+      command:
+      - runner.sh
+      - kubetest
+      args:
+        # Generic e2e test args
+        - --test
+        - --up
+        - --down
+        - --dump=$(ARTIFACTS)
+        # Azure-specific test args
+        - --provider=skeleton
+        - --deployment=aksengine
+        - --aksengine-admin-username=azureuser
+        - --aksengine-creds=$(AZURE_CREDENTIALS)
+        - --aksengine-orchestratorRelease=1.23
+        - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/main_v2/test/e2e/manifest/multi-az.json
+        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
+        - --timeout=180m
+        # Specific test args
+        - --test-azure-disk-csi-driver
+      securityContext:
+        privileged: true
+      env:
+        - name: ENABLE_TOPOLOGY
+          value: "true"
+        - name: BUILD_V2
+          value: "true"
+  annotations:
+    testgrid-dashboards: provider-azure-azuredisk-csi-driver, provider-azure-azuredisk-csi-driver-periodic
+    testgrid-tab-name: periodic-24h-azuredisk-csi-driver-e2e-multi-az-mainv2
+    description: "Periodic (24h): Run E2E tests on a multi-az cluster for Azure Disk CSI driver on the main_v2 branch."
