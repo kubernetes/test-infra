@@ -72,12 +72,15 @@ type InRepoConfigCacheGetter struct {
 	CacheMap map[string]*config.InRepoConfigCache
 }
 
-func (irc *InRepoConfigCacheGetter) GetCache(cloneURI, host string) (*config.InRepoConfigCache, error) {
+func (irc *InRepoConfigCacheGetter) getCache(cloneURI, host string) (*config.InRepoConfigCache, error) {
 	irc.mu.Lock()
 	defer irc.mu.Unlock()
 
 	var cache *config.InRepoConfigCache
 	var gitClientFactory git.ClientFactory
+	if irc.CacheMap == nil {
+		irc.CacheMap = map[string]*config.InRepoConfigCache{}
+	}
 
 	// Are we using github with InRepoConfig
 	if irc.GithubOptions.TokenPath != "" || irc.GithubOptions.AppPrivateKeyPath != "" {
@@ -86,7 +89,7 @@ func (irc *InRepoConfigCacheGetter) GetCache(cloneURI, host string) (*config.InR
 		}
 		gitClient, err := irc.GithubOptions.GitClient(irc.DryRun)
 		if err != nil {
-			logrus.WithError(err).Fatal("Error getting Git client.")
+			return nil, fmt.Errorf("Error getting git client: %w", err)
 		}
 		gitClientFactory = git.ClientFactoryFrom(gitClient)
 
@@ -98,19 +101,16 @@ func (irc *InRepoConfigCacheGetter) GetCache(cloneURI, host string) (*config.InR
 			config.NewInRepoConfigGitCache(gitClientFactory))
 		// If we cannot initialize the cache, exit with an error.
 		if err != nil {
-			logrus.WithField("in-repo-config-cache-size", irc.CacheSize).WithError(err).Fatal("unable to initialize in-repo-config-cache")
+			return nil, fmt.Errorf("unable to initialize in-repo-config-cache with cacheSize %d: %w", irc.CacheSize, err)
 		}
 		irc.CacheMap[irc.GithubOptions.Host] = cache
 		return cache, nil
 	}
 
-	if irc.CacheMap == nil {
-		irc.CacheMap = map[string]*config.InRepoConfigCache{}
-	}
 	if cache, ok := irc.CacheMap[cloneURI]; ok {
 		return cache, nil
 	}
-	cache, err := irc.CreateGerritCache(cloneURI, host)
+	cache, err := irc.createGerritCache(cloneURI, host)
 	irc.CacheMap[cloneURI] = cache
 
 	if err != nil {
@@ -121,7 +121,7 @@ func (irc *InRepoConfigCacheGetter) GetCache(cloneURI, host string) (*config.InR
 
 }
 
-func (irc *InRepoConfigCacheGetter) CreateGerritCache(cloneURI, host string) (*config.InRepoConfigCache, error) {
+func (irc *InRepoConfigCacheGetter) createGerritCache(cloneURI, host string) (*config.InRepoConfigCache, error) {
 	opts := git.ClientFactoryOpts{
 		CloneURI:       cloneURI,
 		Host:           host,
@@ -535,7 +535,7 @@ func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msg messageIn
 	var cache *config.InRepoConfigCache = nil
 	var err error
 	if cloneURI != "" {
-		cache, err = s.InRepoConfigCacheGetter.GetCache(cloneURI, host)
+		cache, err = s.InRepoConfigCacheGetter.getCache(cloneURI, host)
 		if err != nil {
 			return err
 		}
