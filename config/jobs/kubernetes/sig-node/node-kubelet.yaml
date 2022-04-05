@@ -39,6 +39,7 @@ periodics:
     description: "Uses kubetest to run serial node-e2e tests (+Serial, -Flaky|Benchmark|Node*Feature)"
 
 - name: ci-kubernetes-node-kubelet-serial-cri-o
+  cluster: k8s-infra-prow-build
   interval: 4h
   labels:
     preset-service-account: "true"
@@ -65,6 +66,8 @@ periodics:
       env:
       - name: GOPATH
         value: /go
+      - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
+        value: "1"
       resources:
         limits:
           cpu: 4
@@ -79,6 +82,7 @@ periodics:
     description: "Uses kubetest to run serial node-e2e tests (+Serial, -Flaky|Benchmark|Node*Feature)"
 
 - name: ci-kubernetes-node-swap-fedora
+  cluster: k8s-infra-prow-build
   interval: 4h
   labels:
     preset-service-account: "true"
@@ -106,8 +110,12 @@ periodics:
           - name: GOPATH
             value: /go
         resources:
-            requests:
-              memory: "6Gi"
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-kubelet
     testgrid-tab-name: kubelet-gce-e2e-swap-fedora
@@ -193,6 +201,9 @@ periodics:
         requests:
           cpu: 4
           memory: 6Gi
+      env:
+        - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
+          value: "1"
 
 # TODO: migrate performance special config tests to containerd/cri-o
 #- name: ci-kubernetes-node-kubelet-performance-test
