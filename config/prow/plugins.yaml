@@ -431,6 +431,7 @@ repo_milestone:
     # curl -H "Authorization: token <token>" "https://api.github.com/orgs/<org-name>/teams?page=N"
     maintainers_id: 2460384
     maintainers_team: milestone-maintainers
+    maintainers_friendly_name: Milestone Maintainers Team
   kubernetes-sigs/controller-runtime:
     maintainers_id: 2785806
     maintainers_team: controller-runtime-maintainers
