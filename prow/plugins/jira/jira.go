@@ -275,7 +275,7 @@ func upsertGitHubLinkToIssue(log *logrus.Entry, issueID string, jc jiraclient.Cl
 		url = url[:idx]
 	}
 
-	newTitle := fmt.Sprintf("%s#%d: %s", e.Repo.FullName, e.Number, e.IssueTitle)
+	title := fmt.Sprintf("%s#%d: %s", e.Repo.FullName, e.Number, e.IssueTitle)
 	var existingLink *jira.RemoteLink
 
 	// Check if the same link exists already. We consider two links to be the same if the have the same URL.
@@ -283,19 +283,19 @@ func upsertGitHubLinkToIssue(log *logrus.Entry, issueID string, jc jiraclient.Cl
 	// has to be updated (perform an upsert)
 	for _, link := range links {
 		if link.Object.URL == url {
-			if newTitle == link.Object.Title {
+			if title == link.Object.Title {
 				return nil
-			} else {
-				existingLink = &link
-				break
 			}
+			link := link
+			existingLink = &link
+			break
 		}
 	}
 
 	link := &jira.RemoteLink{
 		Object: &jira.RemoteLinkObject{
 			URL:   url,
-			Title: newTitle,
+			Title: title,
 			Icon: &jira.RemoteLinkIcon{
 				Url16x16: "https://github.com/favicon.ico",
 				Title:    "GitHub",
