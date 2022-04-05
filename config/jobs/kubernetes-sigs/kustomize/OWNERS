@@ -1,14 +1,15 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 reviewers:
-- liujingfang1
-- monopole
+- knverey
+- natasha41575
+- mengqiy
 - mortent
-- pwittrock
-- seans3
+- phanimarupaka
+
 approvers:
-- liujingfang1
-- monopole
+- knverey
+- natasha41575
+- mengqiy
 - mortent
-- pwittrock
-- seans3
+- phanimarupaka
