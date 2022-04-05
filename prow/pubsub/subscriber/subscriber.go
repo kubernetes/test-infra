@@ -35,6 +35,7 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/pjutil"
@@ -65,18 +66,42 @@ type InRepoConfigCacheGetter struct {
 	CacheSize      int
 	Agent          *config.Agent
 	mu             sync.Mutex
+	GithubOptions  flagutil.GitHubOptions
+	DryRun         bool
 
-	// If AlwaysReturn !=nil, it the getter will always return this cache. Otherwise it will use the CacheMap
-	AlwaysReturn *config.InRepoConfigCache
-	CacheMap     map[string]*config.InRepoConfigCache
+	CacheMap map[string]*config.InRepoConfigCache
 }
 
 func (irc *InRepoConfigCacheGetter) GetCache(cloneURI, host string) (*config.InRepoConfigCache, error) {
 	irc.mu.Lock()
 	defer irc.mu.Unlock()
 
-	if irc.AlwaysReturn != nil {
-		return irc.AlwaysReturn, nil
+	var cache *config.InRepoConfigCache
+	var gitClientFactory git.ClientFactory
+
+	// Are we using github with InRepoConfig
+	if irc.GithubOptions.TokenPath != "" || irc.GithubOptions.AppPrivateKeyPath != "" {
+		if cache, ok := irc.CacheMap[irc.GithubOptions.Host]; ok {
+			return cache, nil
+		}
+		gitClient, err := irc.GithubOptions.GitClient(irc.DryRun)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error getting Git client.")
+		}
+		gitClientFactory = git.ClientFactoryFrom(gitClient)
+
+		// Initialize cache for fetching Presubmit and Postsubmit information. If
+		// the cache cannot be initialized, exit with an error.
+		cache, err = config.NewInRepoConfigCache(
+			irc.CacheSize,
+			irc.Agent,
+			config.NewInRepoConfigGitCache(gitClientFactory))
+		// If we cannot initialize the cache, exit with an error.
+		if err != nil {
+			logrus.WithField("in-repo-config-cache-size", irc.CacheSize).WithError(err).Fatal("unable to initialize in-repo-config-cache")
+		}
+		irc.CacheMap[irc.GithubOptions.Host] = cache
+		return cache, nil
 	}
 
 	if irc.CacheMap == nil {

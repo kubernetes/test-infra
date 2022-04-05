@@ -29,12 +29,10 @@ import (
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
-	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/crier/reporters/pubsub"
 	"k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
-	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/metrics"
@@ -110,29 +108,6 @@ func main() {
 	}
 	tokenGenerator := secret.GetTokenGenerator(flagOptions.pushSecretFile)
 
-	// If we need to use a GitClient (for inrepoconfig), then we must use a
-	// InRepoConfigCache.
-	var cache *config.InRepoConfigCache = nil
-	var gitClientFactory git.ClientFactory
-	if flagOptions.github.TokenPath != "" || flagOptions.github.AppPrivateKeyPath != "" {
-		gitClient, err := flagOptions.github.GitClient(flagOptions.dryRun)
-		if err != nil {
-			logrus.WithError(err).Fatal("Error getting Git client.")
-		}
-		gitClientFactory = git.ClientFactoryFrom(gitClient)
-
-		// Initialize cache for fetching Presubmit and Postsubmit information. If
-		// the cache cannot be initialized, exit with an error.
-		cache, err = config.NewInRepoConfigCache(
-			flagOptions.inRepoConfigCacheSize,
-			configAgent,
-			config.NewInRepoConfigGitCache(gitClientFactory))
-		// If we cannot initialize the cache, exit with an error.
-		if err != nil {
-			logrus.WithField("in-repo-config-cache-size", flagOptions.inRepoConfigCacheSize).WithError(err).Fatal("unable to initialize in-repo-config-cache")
-		}
-	}
-
 	prowjobClient, err := flagOptions.client.ProwJobClient(configAgent.Config().ProwJobNamespace, flagOptions.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("unable to create prow job client")
@@ -154,7 +129,8 @@ func main() {
 		CookieFilePath: flagOptions.cookiefilePath,
 		CacheSize:      flagOptions.inRepoConfigCacheSize,
 		Agent:          configAgent,
-		AlwaysReturn:   cache,
+		GithubOptions:  flagOptions.github,
+		DryRun:         flagOptions.dryRun,
 	}
 
 	s := &subscriber.Subscriber{
