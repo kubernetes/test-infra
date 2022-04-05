@@ -6,6 +6,7 @@
 <div>
 {{range $log := .LogViews}}
   <div>
+    {{if .CanAnalyze}}<button class="analyze-button" data-artifact="{{$log.ArtifactName}}" title="Highlight interesting lines identified by prow">Analyze</button>{{end}}
     <button class="show-all-button" data-artifact="{{$log.ArtifactName}}">Show all hidden lines</button>
     {{if .ShowRawLog}}<a href="{{$log.ArtifactLink}}" style="padding-left:15px;">Raw {{$log.ArtifactName}}<i class="material-icons" style="padding-left: 3px;">open_in_new</i></a>{{end}}
     <div class="loglines{{if .CanSave}} savable{{end}}" id="{{$log.ArtifactName}}-content">

@@ -19,14 +19,61 @@ package buildlog
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 	prowconfig "k8s.io/test-infra/prow/config"
+	pkgio "k8s.io/test-infra/prow/io"
 	"k8s.io/test-infra/prow/spyglass/api"
 	"k8s.io/test-infra/prow/spyglass/lenses/fake"
 )
+
+func TestGetConfig(t *testing.T) {
+	def := parsedConfig{
+		showRawLog: true,
+	}
+	cases := []struct {
+		name string
+		raw  string
+		want parsedConfig
+	}{
+		{
+			name: "empty",
+			want: def,
+		},
+		{
+			name: "require highlighter endpoint",
+			raw:  `{"highlighter": {"pin": true}}`,
+			want: def,
+		},
+		{
+			name: "configure highligher",
+			raw:  `{"highlighter": {"endpoint": "service", "pin": true}}`,
+			want: func() parsedConfig {
+				d := def
+				d.highlighter = &highlightConfig{
+					Endpoint: "service",
+					Pin:      true,
+				}
+				return d
+			}(),
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := getConfig(json.RawMessage(tc.raw))
+			got.highlightRegex = nil
+			if diff := cmp.Diff(tc.want, got, cmp.AllowUnexported(parsedConfig{}, highlightConfig{})); diff != "" {
+				t.Errorf("getConfig(%q) got unexpected diff (-want +got):\n%s", tc.raw, diff)
+			}
+		})
+	}
+}
 
 func TestExpand(t *testing.T) {
 	cases := []struct {
@@ -265,11 +312,17 @@ func TestBody(t *testing.T) {
 		}
 	}
 
+	var hf http.HandlerFunc
+
+	server := httptest.NewServer(&hf)
+	defer server.Close()
+
 	cases := []struct {
-		name      string
-		artifact  *fake.Artifact
-		rawConfig json.RawMessage
-		want      string
+		name        string
+		artifact    *fake.Artifact
+		rawConfig   json.RawMessage
+		highlighter func() (highlightRequest, int, string)
+		want        string
 	}{
 		{
 			name: "empty",
@@ -442,6 +495,88 @@ func TestBody(t *testing.T) {
 			})),
 		},
 		{
+			name: "auto-focus",
+			rawConfig: json.RawMessage(fmt.Sprintf(`{"highlighter": {
+				"endpoint": "%s",
+				"auto": true
+			}}`, server.URL)),
+			artifact: &fake.Artifact{
+				Path: "foo",
+				Content: func() []byte {
+					var sb strings.Builder
+					for i := 0; i < 100; i++ {
+						sb.WriteString("word\n")
+					}
+					return []byte(sb.String())
+				}(),
+				Link: pstr("https://storage.googleapis.com/some-bucket/path/to/foo"),
+			},
+			highlighter: func() (highlightRequest, int, string) {
+				req := highlightRequest{
+					URL: "https://storage.googleapis.com/some-bucket/path/to/foo",
+					Pin: true,
+				}
+				resp := highlightResponse{
+					Min:    20,
+					Max:    35,
+					Pinned: true,
+				}
+				return req, http.StatusOK, marshalHighlightResponse(t, resp)
+			},
+			want: render(LogArtifactView{
+				ArtifactName: "foo",
+				ArtifactLink: "https://storage.googleapis.com/some-bucket/path/to/foo",
+				ShowRawLog:   true,
+				CanAnalyze:   true,
+				ViewAll:      true,
+				CanSave:      true,
+				LineGroups: []LineGroup{
+					{
+						Start:        0,
+						End:          14,
+						ArtifactName: pstr("foo"),
+						Skip:         true,
+						ByteLength:   69,
+						ByteOffset:   0,
+						LogLines:     make([]LogLine, 15),
+					},
+					{
+						Start:        15,
+						End:          40,
+						ArtifactName: pstr("foo"),
+						LogLines: func() []LogLine {
+							var out []LogLine
+							const s = 20
+							const e = 35
+							for i := s - neighborLines; i <= e+neighborLines; i++ {
+								out = append(out, LogLine{
+									ArtifactName: pstr("foo"),
+									Number:       i,
+									Focused:      i >= s && i <= e,
+									Clip:         i == s,
+									SubLines: []SubLine{
+										{
+											Text: "word",
+										},
+									},
+								})
+							}
+							return out
+						}(),
+					},
+					{
+						Start:        40,
+						End:          101,
+						ArtifactName: pstr("foo"),
+						Skip:         true,
+						ByteLength:   100*5 - 5*40,
+						ByteOffset:   5 * 40,
+						LogLines:     make([]LogLine, 101-40),
+					},
+				},
+			}),
+		},
+		{
 			name: "missing artifact",
 			want: render(),
 		},
@@ -449,6 +584,12 @@ func TestBody(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
+			if tc.highlighter != nil {
+				req, code, resp := tc.highlighter()
+				hf = testHighlighter(t, req, code, resp)
+			} else {
+				hf = nil
+			}
 			var arts []api.Artifact
 			if tc.artifact != nil {
 				arts = []api.Artifact{tc.artifact}
@@ -764,6 +905,18 @@ func TestCallback(t *testing.T) {
 			},
 		},
 		{
+			name: "highlight",
+			data: `{
+				"artifact": "bar",
+				"analyze": true
+			}`,
+			artifact: &fake.Artifact{
+				Path:    "bar",
+				Content: []byte("irrelevant"),
+			},
+			want: marshalHighlightResponse(t, highlightResponse{Error: errNoHighlighter.Error()}),
+		},
+		{
 			name: "bad json",
 			want: failedUnmarshal,
 		},
@@ -793,6 +946,191 @@ func TestCallback(t *testing.T) {
 			}
 		})
 	}
+}
+
+func marshalHighlightResponse(t *testing.T, hr highlightResponse) string {
+	b, err := json.Marshal(hr)
+	if err != nil {
+		t.Fatalf("Failed to marshal response %#v: %v", hr, err)
+	}
+	return string(b)
+}
+
+func TestAnalyzeArtifact(t *testing.T) {
+
+	basicResponse := highlightResponse{
+		Min:    1,
+		Max:    2,
+		Link:   "hello",
+		Pinned: true,
+	}
+
+	cases := []struct {
+		name     string
+		art      api.Artifact
+		high     *highlightConfig // endpoint replaced with fake
+		wantReq  *highlightRequest
+		code     int
+		response string
+		want     *highlightResponse
+		err      bool
+	}{
+		{
+			name: "unconfigured",
+			err:  true,
+		},
+		{
+			name: "unsavable link",
+			high: &highlightConfig{},
+			art:  &fake.Artifact{},
+			err:  true,
+		},
+		{
+			name: "unparseable link",
+			high: &highlightConfig{},
+			art: &fake.Artifact{
+				Link: pstr("bad::%\x00:://" + pkgio.GSAnonHost),
+			},
+			err: true,
+		},
+		{
+			name: "basic",
+			high: &highlightConfig{},
+			art: &fake.Artifact{
+				Link: pstr("https://storage.googleapis.com/bucket/obj"),
+			},
+			wantReq: &highlightRequest{
+				URL: "https://storage.googleapis.com/bucket/obj",
+			},
+			code:     http.StatusOK,
+			response: marshalHighlightResponse(t, basicResponse),
+			want:     &basicResponse,
+		},
+		{
+			name: "pin",
+			high: &highlightConfig{
+				Pin:       true,
+				Overwrite: true,
+			},
+			art: &fake.Artifact{
+				Link: pstr("https://storage.googleapis.com/bucket/obj"),
+			},
+			wantReq: &highlightRequest{
+				URL:       "https://storage.googleapis.com/bucket/obj",
+				Overwrite: true,
+				Pin:       true,
+			},
+			code:     http.StatusOK,
+			response: marshalHighlightResponse(t, basicResponse),
+			want:     &basicResponse,
+		},
+		{
+			name: "auto pin",
+			high: &highlightConfig{
+				Auto:      true,
+				Overwrite: true,
+			},
+			art: &fake.Artifact{
+				Link: pstr("https://storage.googleapis.com/bucket/obj"),
+			},
+			wantReq: &highlightRequest{
+				URL:       "https://storage.googleapis.com/bucket/obj",
+				Overwrite: true,
+				Pin:       true,
+			},
+			code:     http.StatusOK,
+			response: marshalHighlightResponse(t, basicResponse),
+			want:     &basicResponse,
+		},
+		{
+			name: "bad status",
+			high: &highlightConfig{},
+			art: &fake.Artifact{
+				Link: pstr("https://storage.googleapis.com/bucket/obj"),
+			},
+			wantReq: &highlightRequest{
+				URL: "https://storage.googleapis.com/bucket/obj",
+			},
+			code:     http.StatusNotFound,
+			response: marshalHighlightResponse(t, basicResponse),
+			err:      true,
+		},
+		{
+			name: "bad response",
+			high: &highlightConfig{},
+			art: &fake.Artifact{
+				Link: pstr("https://storage.googleapis.com/bucket/obj"),
+			},
+			wantReq: &highlightRequest{
+				URL: "https://storage.googleapis.com/bucket/obj",
+			},
+			code:     http.StatusOK,
+			response: "this is [ not a json object",
+			err:      true,
+		},
+	}
+
+	var hf http.HandlerFunc
+
+	server := httptest.NewServer(&hf)
+	defer server.Close()
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if tc.wantReq != nil {
+				hf = testHighlighter(t, *tc.wantReq, tc.code, tc.response)
+			} else {
+				hf = nil
+			}
+			if tc.high != nil {
+				tc.high.Endpoint = server.URL
+			}
+			conf := parsedConfig{
+				highlighter: tc.high,
+			}
+			got, err := analyzeArtifact(tc.art, &conf)
+			switch {
+			case err != nil:
+				if !tc.err {
+					t.Errorf("analyzeArtifact() got unexpected error: %v", err)
+				}
+			case tc.err:
+				t.Errorf("analyzeArtifact wanted err, got %v", got)
+			default:
+				if diff := cmp.Diff(tc.want, got, cmp.AllowUnexported(highlightResponse{})); diff != "" {
+					t.Errorf("analyzeArtifact() got unexpected diff (-want +got):\n%s", diff)
+				}
+			}
+		})
+	}
+}
+
+func testHighlighter(t *testing.T, wantReq highlightRequest, code int, response string) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		t.Helper()
+		buf, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			t.Fatalf("Failed to read body: %v", err)
+		}
+
+		if err := r.Body.Close(); err != nil {
+			t.Fatalf("Failed to close request: %v", err)
+		}
+
+		var gotReq highlightRequest
+		if err := json.Unmarshal(buf, &gotReq); err != nil {
+			t.Fatalf("Failed to parse request: %v", err)
+		}
+
+		if diff := cmp.Diff(wantReq, gotReq, cmp.AllowUnexported(highlightRequest{})); diff != "" {
+			t.Fatalf("Received unexpected request (-want +got):\n%s", diff)
+		}
+
+		w.WriteHeader(code)
+		if _, err := w.Write([]byte(response)); err != nil {
+			t.Fatalf("failed to write %q: %v", response, err)
+		}
+	})
 }
 
 func BenchmarkHighlightLines(b *testing.B) {

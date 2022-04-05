@@ -106,9 +106,9 @@ type jobHistoryTemplate struct {
 
 func (bucket blobStorageBucket) readObject(ctx context.Context, key string) ([]byte, error) {
 	u := url.URL{
-		Scheme:      bucket.storageProvider,
-		Host:        bucket.name,
-		Path:        key,
+		Scheme: bucket.storageProvider,
+		Host:   bucket.name,
+		Path:   key,
 	}
 	rc, err := bucket.Opener.Reader(ctx, u.String())
 	if err != nil {
