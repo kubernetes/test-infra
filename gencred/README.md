@@ -175,6 +175,8 @@ token, caPEM, err := serviceaccount.CreateClusterServiceAccountCredentials(clien
 
 `token` will contain the **service account access token** and `caPEM` will contain the **server certificate authority**.
 
+This requests a token valid for one week or until the service account is deleted.
+
 ```go
 import "encoding/base64"
 
