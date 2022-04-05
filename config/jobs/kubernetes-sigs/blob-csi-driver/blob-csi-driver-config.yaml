@@ -343,7 +343,7 @@ presubmits:
       testgrid-tab-name: pr-blob-csi-driver-external-e2e-nfs
       description: "Run External E2E tests for Azure Blob Storage CSI driver using nfs."
       testgrid-num-columns-recent: '30'
-  - name: pull-kubernetes-e2e-capz-blob
+  - name: pull-blob-csi-driver-e2e-capz
     decorate: true
     always_run: false
     optional: true
@@ -380,6 +380,6 @@ presubmits:
               value: "Standard_D2s_v3"
     annotations:
       testgrid-dashboards: provider-azure-blobfuse-csi-driver
-      testgrid-tab-name: pull-kubernetes-e2e-capz-blob
+      testgrid-tab-name: pull-blob-csi-driver-e2e-capz
       description: "Run E2E tests on a capz cluster for Blob CSI driver."
       testgrid-num-columns-recent: '30'
