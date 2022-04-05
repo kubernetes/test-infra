@@ -65,50 +65,40 @@ type InRepoConfigCacheGetter struct {
 	CookieFilePath string
 	CacheSize      int
 	Agent          *config.Agent
-	mu             sync.Mutex
+	mu             sync.RWMutex
 	GithubOptions  flagutil.GitHubOptions
 	DryRun         bool
 
 	CacheMap map[string]*config.InRepoConfigCache
 }
 
-func (irc *InRepoConfigCacheGetter) getCache(cloneURI, host string) (*config.InRepoConfigCache, error) {
-	irc.mu.Lock()
-	defer irc.mu.Unlock()
+func (irc *InRepoConfigCacheGetter) readCacheMap(key string) (*config.InRepoConfigCache, bool) {
+	irc.mu.RLock()
+	defer irc.mu.RUnlock()
 
+	res, ok := irc.CacheMap[key]
+	return res, ok
+}
+
+func (irc *InRepoConfigCacheGetter) getCache(cloneURI, host string) (*config.InRepoConfigCache, error) {
 	if irc.CacheMap == nil {
 		irc.CacheMap = map[string]*config.InRepoConfigCache{}
 	}
 
+	var key string
 	// We are using github
 	if irc.GithubOptions.TokenPath != "" || irc.GithubOptions.AppPrivateKeyPath != "" {
-		if cache, ok := irc.CacheMap[irc.GithubOptions.Host]; ok {
-			return cache, nil
-		}
-		cache, err := irc.createCache(cloneURI, host)
-		if err != nil {
-			return nil, err
-		}
-		irc.CacheMap[irc.GithubOptions.Host] = cache
+		key = irc.GithubOptions.Host
+	} else {
+		key = cloneURI
+	}
+
+	if cache, ok := irc.readCacheMap(key); ok {
 		return cache, nil
 	}
 
-	// We are using Gerrit and cache already exists
-	if cache, ok := irc.CacheMap[cloneURI]; ok {
-		return cache, nil
-	}
-	cache, err := irc.createCache(cloneURI, host)
-
-	if err != nil {
-		return nil, err
-	}
-
-	irc.CacheMap[cloneURI] = cache
-	return cache, nil
-
-}
-
-func (irc *InRepoConfigCacheGetter) createCache(cloneURI, host string) (*config.InRepoConfigCache, error) {
+	irc.mu.Lock()
+	defer irc.mu.Unlock()
 	var gitClientFactory git.ClientFactory
 	var cache *config.InRepoConfigCache
 	var err error
@@ -141,7 +131,9 @@ func (irc *InRepoConfigCacheGetter) createCache(cloneURI, host string) (*config.
 		return nil, fmt.Errorf("unable to initialize in-repo-config-cache with size %d: %v", irc.CacheSize, err)
 	}
 
+	irc.CacheMap[key] = cache
 	return cache, nil
+
 }
 
 // ProwJobEvent contains the minimum information required to start a ProwJob.
