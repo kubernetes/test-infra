@@ -274,16 +274,28 @@ func upsertGitHubLinkToIssue(log *logrus.Entry, issueID string, jc jiraclient.Cl
 	if idx := strings.Index(url, "#"); idx != -1 {
 		url = url[:idx]
 	}
+
+	title := fmt.Sprintf("%s#%d: %s", e.Repo.FullName, e.Number, e.IssueTitle)
+	var existingLink *jira.RemoteLink
+
+	// Check if the same link exists already. We consider two links to be the same if the have the same URL.
+	// Once it is found we have two possibilities: either it is really equal (just skip the upsert) or it
+	// has to be updated (perform an upsert)
 	for _, link := range links {
 		if link.Object.URL == url {
-			return nil
+			if title == link.Object.Title {
+				return nil
+			}
+			link := link
+			existingLink = &link
+			break
 		}
 	}
 
 	link := &jira.RemoteLink{
 		Object: &jira.RemoteLinkObject{
 			URL:   url,
-			Title: fmt.Sprintf("%s#%d: %s", e.Repo.FullName, e.Number, e.IssueTitle),
+			Title: title,
 			Icon: &jira.RemoteLinkIcon{
 				Url16x16: "https://github.com/favicon.ico",
 				Title:    "GitHub",
@@ -291,10 +303,18 @@ func upsertGitHubLinkToIssue(log *logrus.Entry, issueID string, jc jiraclient.Cl
 		},
 	}
 
-	if err := jc.AddRemoteLink(issueID, link); err != nil {
-		return fmt.Errorf("failed to add remote link: %w", err)
+	if existingLink != nil {
+		existingLink.Object = link.Object
+		if err := jc.UpdateRemoteLink(issueID, existingLink); err != nil {
+			return fmt.Errorf("failed to update remote link: %w", err)
+		}
+		log.Info("Updated jira link")
+	} else {
+		if err := jc.AddRemoteLink(issueID, link); err != nil {
+			return fmt.Errorf("failed to add remote link: %w", err)
+		}
+		log.Info("Created jira link")
 	}
-	log.Info("Created jira link")
 
 	return nil
 }
