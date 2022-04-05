@@ -104,7 +104,7 @@ A [postsubmit job](https://github.com/kubernetes/test-infra/blob/master/config/j
 
 Kettle `stream.py` leverages Google Cloud [PubSub] to alert on GCS changes within the `kubernetes-jenkins` bucket. These events are tied to the `gcs-changes` Topic in the `kubernetes-jenkins` project where Prow job artifacts are collated. Each time an artifact is finalized, a PubSub event is triggered and Kettle collects job information when it sees a resource uploaded called `finished.json` (indicating the build completed).
 
-[Topic Creation] can be performed by running `gsutil notification create -t gcs-chances -f json gs://kubernetes-jenkins`
+[Topic Creation] can be performed by running `gcloud config set project kubernetes-jenkins` and `gsutil notification create -t gcs-changes -f json gs://kubernetes-jenkins`
 
 [Subscriptions] are in Kuberenetes Jenkins Build - PubSub.
 - kettle
