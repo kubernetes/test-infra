@@ -76,67 +76,66 @@ func (irc *InRepoConfigCacheGetter) getCache(cloneURI, host string) (*config.InR
 	irc.mu.Lock()
 	defer irc.mu.Unlock()
 
-	var cache *config.InRepoConfigCache
-	var gitClientFactory git.ClientFactory
 	if irc.CacheMap == nil {
 		irc.CacheMap = map[string]*config.InRepoConfigCache{}
 	}
 
-	// Are we using github with InRepoConfig
+	// We are using github
 	if irc.GithubOptions.TokenPath != "" || irc.GithubOptions.AppPrivateKeyPath != "" {
 		if cache, ok := irc.CacheMap[irc.GithubOptions.Host]; ok {
 			return cache, nil
 		}
-		gitClient, err := irc.GithubOptions.GitClient(irc.DryRun)
+		cache, err := irc.createCache(cloneURI, host)
 		if err != nil {
-			return nil, fmt.Errorf("Error getting git client: %w", err)
-		}
-		gitClientFactory = git.ClientFactoryFrom(gitClient)
-
-		// Initialize cache for fetching Presubmit and Postsubmit information. If
-		// the cache cannot be initialized, exit with an error.
-		cache, err = config.NewInRepoConfigCache(
-			irc.CacheSize,
-			irc.Agent,
-			config.NewInRepoConfigGitCache(gitClientFactory))
-		// If we cannot initialize the cache, exit with an error.
-		if err != nil {
-			return nil, fmt.Errorf("unable to initialize in-repo-config-cache with cacheSize %d: %w", irc.CacheSize, err)
+			return nil, err
 		}
 		irc.CacheMap[irc.GithubOptions.Host] = cache
 		return cache, nil
 	}
 
+	// We are using Gerrit and cache already exists
 	if cache, ok := irc.CacheMap[cloneURI]; ok {
 		return cache, nil
 	}
-	cache, err := irc.createGerritCache(cloneURI, host)
-	irc.CacheMap[cloneURI] = cache
+	cache, err := irc.createCache(cloneURI, host)
 
 	if err != nil {
 		return nil, err
 	}
 
+	irc.CacheMap[cloneURI] = cache
 	return cache, nil
 
 }
 
-func (irc *InRepoConfigCacheGetter) createGerritCache(cloneURI, host string) (*config.InRepoConfigCache, error) {
-	opts := git.ClientFactoryOpts{
-		CloneURI:       cloneURI,
-		Host:           host,
-		CookieFilePath: irc.CookieFilePath,
+func (irc *InRepoConfigCacheGetter) createCache(cloneURI, host string) (*config.InRepoConfigCache, error) {
+	var gitClientFactory git.ClientFactory
+	var cache *config.InRepoConfigCache
+	var err error
+	if irc.GithubOptions.TokenPath != "" || irc.GithubOptions.AppPrivateKeyPath != "" {
+		gitClient, err := irc.GithubOptions.GitClient(irc.DryRun)
+		if err != nil {
+			return nil, fmt.Errorf("Error getting git client: %w", err)
+		}
+		gitClientFactory = git.ClientFactoryFrom(gitClient)
+	} else {
+		opts := git.ClientFactoryOpts{
+			CloneURI:       cloneURI,
+			Host:           host,
+			CookieFilePath: irc.CookieFilePath,
+		}
+		gitClientFactory, err = git.NewClientFactory(opts.Apply)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create Gerrit Client for InRepoConfig: %v", err)
+		}
 	}
-	gc, err := git.NewClientFactory(opts.Apply)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create Gerrit Client for InRepoConfig: %v", err)
-	}
+
 	// Initialize cache for fetching Presubmit and Postsubmit information. If
 	// the cache cannot be initialized, exit with an error.
-	cache, err := config.NewInRepoConfigCache(
+	cache, err = config.NewInRepoConfigCache(
 		irc.CacheSize,
 		irc.Agent,
-		config.NewInRepoConfigGitCache(gc))
+		config.NewInRepoConfigGitCache(gitClientFactory))
 	// If we cannot initialize the cache, exit with an error.
 	if err != nil {
 		return nil, fmt.Errorf("unable to initialize in-repo-config-cache with size %d: %v", irc.CacheSize, err)
