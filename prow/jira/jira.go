@@ -201,12 +201,11 @@ func (jc *client) UpdateRemoteLink(id string, link *jira.RemoteLink) error {
 	if resp != nil {
 		defer resp.Body.Close()
 	}
-	if err != nil || resp.StatusCode != http.StatusNoContent {
-		// Trace at least the status code if we got no errors but response is still not valid
-		if err == nil {
-			err = fmt.Errorf("expected status code %d but got %d instead", http.StatusNoContent, resp.StatusCode)
-		}
+	if err != nil {
 		return fmt.Errorf("failed to update link: %w", JiraError(resp, err))
+	}
+	if resp.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("failed to update link: expected status code %d but got %d instead", http.StatusNoContent, resp.StatusCode)
 	}
 	return nil
 }
