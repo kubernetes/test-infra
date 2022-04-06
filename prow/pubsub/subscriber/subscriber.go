@@ -65,7 +65,7 @@ type InRepoConfigCacheGetter struct {
 	CookieFilePath string
 	CacheSize      int
 	Agent          *config.Agent
-	mu             sync.RWMutex
+	mu             sync.Mutex
 	GithubOptions  flagutil.GitHubOptions
 	DryRun         bool
 
@@ -73,26 +73,28 @@ type InRepoConfigCacheGetter struct {
 }
 
 func (irc *InRepoConfigCacheGetter) getCache(cloneURI, host string) (*config.InRepoConfigCache, error) {
+	// No repo is cloned in getCache, Since this function should happen fast it is safe to lock the whole function.
 	irc.mu.Lock()
+	defer irc.mu.Unlock()
 	if irc.CacheMap == nil {
 		irc.CacheMap = map[string]*config.InRepoConfigCache{}
 	}
-	irc.mu.Unlock()
 
 	var key string
-	// We are using github
-	if irc.GithubOptions.TokenPath != "" || irc.GithubOptions.AppPrivateKeyPath != "" {
+	// We are using github with IRC
+	if irc.GithubOptions.Host != "" && (irc.GithubOptions.TokenPath != "" || irc.GithubOptions.AppPrivateKeyPath != "") {
 		key = irc.GithubOptions.Host
-	} else {
+		// We are using Gerrit with IRC
+	} else if irc.CookieFilePath != "" {
 		key = cloneURI
+		// Just return a nil cache
+	} else {
+		return nil, nil
 	}
 
-	irc.mu.RLock()
 	if cache, ok := irc.CacheMap[key]; ok {
-		irc.mu.RUnlock()
 		return cache, nil
 	}
-	irc.mu.RUnlock()
 
 	var gitClientFactory git.ClientFactory
 	var cache *config.InRepoConfigCache
@@ -126,8 +128,6 @@ func (irc *InRepoConfigCacheGetter) getCache(cloneURI, host string) (*config.InR
 		return nil, fmt.Errorf("unable to initialize in-repo-config-cache with size %d: %v", irc.CacheSize, err)
 	}
 
-	irc.mu.Lock()
-	defer irc.mu.Unlock()
 	irc.CacheMap[key] = cache
 	return cache, nil
 
@@ -302,7 +302,6 @@ func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InR
 	presubmits := cfg.GetPresubmitsStatic(orgRepo)
 	// If InRepoConfigCache is provided, then it means that we also want to fetch
 	// from an inrepoconfig.
-	// If CookieFilePath is provided than we are working with a gerrit instance and need to make an InRepoConfigCache
 	if pc != nil {
 		var presubmitsWithInrepoconfig []config.Presubmit
 		var err error
@@ -450,7 +449,7 @@ func (s *Subscriber) handleMessage(msg messageInterface, subscription string, al
 		}).Inc()
 		return fmt.Errorf("unsupported event type: %s", eType)
 	}
-	if err = s.handleProwJob(l, jh, msg, subscription, allowedClusters); err != nil {
+	if err = s.handleProwJob(l, jh, msg, subscription, eType, allowedClusters); err != nil {
 		l.WithError(err).Debug("failed to create Prow Job")
 		s.Metrics.ErrorCounter.With(prometheus.Labels{
 			subscriptionLabel: subscription,
@@ -486,7 +485,7 @@ func tryGetCloneURIAndHost(pe ProwJobEvent) (cloneURI, host string) {
 	return orgRepo, org
 }
 
-func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msg messageInterface, subscription string, allowedClusters []string) error {
+func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msg messageInterface, subscription, eType string, allowedClusters []string) error {
 
 	var pe ProwJobEvent
 	var prowJob prowapi.ProwJob
@@ -519,10 +518,10 @@ func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msg messageIn
 	// Normalize job name
 	pe.Name = strings.TrimSpace(pe.Name)
 
-	cloneURI, host := tryGetCloneURIAndHost(pe)
-	var cache *config.InRepoConfigCache = nil
+	var cache *config.InRepoConfigCache
 	var err error
-	if cloneURI != "" {
+	if eType != periodicProwJobEvent {
+		cloneURI, host := tryGetCloneURIAndHost(pe)
 		cache, err = s.InRepoConfigCacheGetter.getCache(cloneURI, host)
 		if err != nil {
 			return err
