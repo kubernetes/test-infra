@@ -50,7 +50,7 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
       testgrid-tab-name: bazel-test
-  - name: pull-kops-e2e-kubernetes-do-kubetest2
+  - name: pull-kops-e2e-kubernetes-do-gossip
     branches:
     - master
     always_run: false
@@ -83,13 +83,67 @@ presubmits:
             --cloud-provider=digitalocean \
             --cluster-name=e2e-test-do.k8s.local \
             --env S3_ENDPOINT=sfo3.digitaloceanspaces.com \
-            --env JOB_NAME=pull-kops-e2e-kubernetes-do-kubetest2 \
+            --env JOB_NAME=pull-kops-e2e-kubernetes-do-gossip \
             --create-args "--networking=calico --api-loadbalancer-type=public --node-count=2 --master-count=3" \
-            --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.21.txt \
+            --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
             -- \
-            --test-package-marker=stable-1.21.txt \
+            --test-package-marker=stable.txt \
+            --parallel 25 \
+            --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|\[Driver:.nfs\]|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*NodePort.*listening.*same.*port|TCP.CLOSE_WAIT|should.*run.*through.*the.*lifecycle.*of.*Pods.*and.*PodStatus"
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        resources:
+          limits:
+            memory: "3Gi"
+          requests:
+            cpu: "2"
+            memory: "3Gi"
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-kops, presubmits-kops, kops-presubmits
+      testgrid-tab-name: e2e-do-gossip
+  - name: pull-kops-e2e-kubernetes-do-fqdn
+    branches:
+    - master
+    always_run: false
+    labels:
+      preset-service-account: "true"
+      preset-do-credential: "true"
+      preset-do-spaces-credential: "true"
+      preset-do-ssh: "true"
+      preset-bazel-scratch-dir: "true"
+      preset-bazel-remote-cache-enabled: "true"
+      preset-dind-enabled: "true"
+    decorate: true
+    decoration_config:
+      timeout: 90m
+    path_alias: k8s.io/kops
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+        imagePullPolicy: Always
+        command:
+        - runner.sh
+        args:
+        - bash
+        - -c
+        - |
+            make test-e2e-install
+            kubetest2 kops \
+            -v 2 \
+            --up --build --down \
+            --cloud-provider=digitalocean \
+            --cluster-name=e2e-b284d3e83b-4c77c.test-cncf-do.k8s.io \
+            --env S3_ENDPOINT=sfo3.digitaloceanspaces.com \
+            --env JOB_NAME=pull-kops-e2e-kubernetes-do-fqdn \
+            --create-args "--networking=calico --node-count=2" \
+            --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
+            --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
+            --test=kops \
+            -- \
+            --test-package-marker=stable.txt \
             --parallel 25 \
             --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|\[Driver:.nfs\]|RuntimeClass|RuntimeHandler|Services.*functioning.*NodePort|Services.*rejected.*endpoints|Services.*NodePort.*listening.*same.*port|TCP.CLOSE_WAIT|should.*run.*through.*the.*lifecycle.*of.*Pods.*and.*PodStatus"
         # docker-in-docker needs privileged mode
