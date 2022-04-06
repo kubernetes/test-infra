@@ -57,6 +57,10 @@ deck:
     - lens:
         name: buildlog
         config:
+          #highlighter:
+          #  endpoint: http://localhost:1234, http://some-service[.namespace.svc.cluster.local]
+          #  pin: true
+          #  auto: false
           highlight_regexes:
           - Automatic merge failed
           - cannot convert.+to type

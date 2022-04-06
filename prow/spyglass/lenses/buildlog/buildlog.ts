@@ -145,6 +145,48 @@ async function handleShowAll(this: HTMLButtonElement) {
   spyglass.contentUpdated();
 }
 
+async function handleAnalyze(this: HTMLButtonElement) {
+  this.disabled = true;
+  this.title = "Requesting analysis...";
+  try {
+    const {artifact} = this.dataset;
+    const content = await spyglass.request(JSON.stringify({artifact, analyze: true}));
+    interface JsonResponse {
+      min: number;
+      max: number;
+      pinned: boolean;
+      error: string;
+    }
+    const result: JsonResponse = JSON.parse(content);
+    if (result.error) {
+      this.title = "Analysis failed: " + result.error;
+      console.log("Failed to analyze", result.error);
+      return;
+    }
+    this.title = `Analysis returned lines ${result.min}-${result.max}`;
+    await focusLines(artifact, result.min, result.max, this.parentElement);
+    if (!result.pinned) {
+      location.hash = `#${artifact}:${result.min}-${result.max}`;
+    } else {
+      location.hash = "";
+    }
+  } catch (err) {
+    this.title = "Analysis failed: " + err;
+  } finally {
+    this.textContent = "Reanalyze";
+    this.disabled = false;
+  }
+}
+
+async function focusLines(artifact: string, startNum: number, endNum: number, selector: Selector|null): Promise<void> {
+  const firstEl = await highlightLines(artifact, startNum, endNum, 'focus-line', selector);
+  if (!firstEl) {
+    return;
+  }
+  clipLine(firstEl);
+  scrollTo(firstEl);
+}
+
 async function handlePin(e: MouseEvent) {
   const result = parseHash();
   if (!result) {
@@ -163,12 +205,8 @@ async function handlePin(e: MouseEvent) {
   }
   const button = document.getElementById("annotate-pin");
   if (button) {
-    const firstEl = await highlightLines(artifact, start, end, 'focus-line', button.parentElement!.parentElement);
-    button.remove();
-    if (firstEl) {
-      clipLine(firstEl);
-      scrollTo(firstEl);
-    }
+    // TODO(fejta): class on great grandparent and/or data- on pin to make this more efficient
+    await focusLines(artifact, start, end, button.parentElement!.parentElement!.parentElement);
   }
   location.hash = "";
 
@@ -214,6 +252,10 @@ interface Selector {
 function clearHighlightedLines(highlight: string, selector: Selector): void {
   for (const oldEl of Array.from(selector.querySelectorAll(`.${highlight}`))) {
     oldEl.classList.remove(highlight);
+  }
+  const button = document.getElementById("annotate-pin");
+  if (button) {
+    button.remove();
   }
 }
 
@@ -273,13 +315,15 @@ function parseHash(): [string, number, number]|null {
 }
 
 async function handleHash(): Promise<void> {
+  const klass = 'highlighted-line';
   const result = parseHash();
   if (!result) {
+    clearHighlightedLines(klass, document);
     return;
   }
   const [artifact, startNum, endNum] = result;
 
-  const firstEl = await highlightLines(artifact, startNum, endNum, 'highlighted-line', document);
+  const firstEl = await highlightLines(artifact, startNum, endNum, klass, document);
 
   if (!firstEl) {
     return;
@@ -363,8 +407,12 @@ window.addEventListener('load', () => {
     button.classList.add("showable");
   }
 
-  for (const button of Array.from(document.querySelectorAll<HTMLButtonElement>("button.show-all-button"))) {
+  for (const button of Array.from(document.querySelectorAll<HTMLButtonElement>(".show-all-button"))) {
     button.addEventListener('click', handleShowAll);
+  }
+
+  for (const button of Array.from(document.querySelectorAll<HTMLButtonElement>(".analyze-button"))) {
+    button.addEventListener('click', handleAnalyze);
   }
 
   for (const container of Array.from(document.querySelectorAll<HTMLElement>('.loglines'))) {
