@@ -130,7 +130,7 @@ periodics:
         args:
           - --root=/go/src
           - "--job=$(JOB_NAME)"
-          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+          - --repo=k8s.io/kubernetes=master
           - "--service-account=/etc/service-account/service-account.json"
           - "--upload=gs://kubernetes-jenkins/pr-logs"
           - "--timeout=240"
@@ -171,7 +171,7 @@ periodics:
       args:
       - --root=/go/src
       - "--job=$(JOB_NAME)"
-      - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+      - --repo=k8s.io/kubernetes=master
       - "--service-account=/etc/service-account/service-account.json"
       - "--upload=gs://kubernetes-jenkins/pr-logs"
       - "--timeout=240"
