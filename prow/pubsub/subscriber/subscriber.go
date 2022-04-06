@@ -72,18 +72,12 @@ type InRepoConfigCacheGetter struct {
 	CacheMap map[string]*config.InRepoConfigCache
 }
 
-func (irc *InRepoConfigCacheGetter) readCacheMap(key string) (*config.InRepoConfigCache, bool) {
-	irc.mu.RLock()
-	defer irc.mu.RUnlock()
-
-	res, ok := irc.CacheMap[key]
-	return res, ok
-}
-
 func (irc *InRepoConfigCacheGetter) getCache(cloneURI, host string) (*config.InRepoConfigCache, error) {
+	irc.mu.Lock()
 	if irc.CacheMap == nil {
 		irc.CacheMap = map[string]*config.InRepoConfigCache{}
 	}
+	irc.mu.Unlock()
 
 	var key string
 	// We are using github
@@ -93,12 +87,13 @@ func (irc *InRepoConfigCacheGetter) getCache(cloneURI, host string) (*config.InR
 		key = cloneURI
 	}
 
-	if cache, ok := irc.readCacheMap(key); ok {
+	irc.mu.RLock()
+	if cache, ok := irc.CacheMap[key]; ok {
+		irc.mu.RUnlock()
 		return cache, nil
 	}
+	irc.mu.RUnlock()
 
-	irc.mu.Lock()
-	defer irc.mu.Unlock()
 	var gitClientFactory git.ClientFactory
 	var cache *config.InRepoConfigCache
 	var err error
@@ -131,6 +126,8 @@ func (irc *InRepoConfigCacheGetter) getCache(cloneURI, host string) (*config.InR
 		return nil, fmt.Errorf("unable to initialize in-repo-config-cache with size %d: %v", irc.CacheSize, err)
 	}
 
+	irc.mu.Lock()
+	defer irc.mu.Unlock()
 	irc.CacheMap[key] = cache
 	return cache, nil
 
