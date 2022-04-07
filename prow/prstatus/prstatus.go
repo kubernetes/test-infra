@@ -170,14 +170,12 @@ type GitHubClient interface {
 	BotUser() (*github.UserData, error)
 }
 
-type githubClientCreator func(accessToken string) (GitHubClient, error)
+type githubClientCreator func(accessToken string) GitHubClient
 
-// HandlePrStatus returns a http handler function that handles request to /pr-status endpoint.
-// If using token auth
-//		the handler takes user access token stored in the cookie to query to GitHub on behalf
-//		of the user and serve the data in return.
-// Otherwise, the app will make the request
-// The Query handler is passed to the method so as it can be mocked in the unit test..
+// HandlePrStatus returns a http handler function that handles request to /pr-status
+// endpoint. The handler takes user access token stored in the cookie to query to GitHub on behalf
+// of the user and serve the data in return. The Query handler is passed to the method so as it
+// can be mocked in the unit test..
 func (da *DashboardAgent) HandlePrStatus(queryHandler pullRequestQueryHandler, createClient githubClientCreator) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		serverError := func(action string, err error) {
@@ -201,27 +199,19 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler pullRequestQueryHandler, c
 			}
 		}
 
-		var accessToken string
-		appsAuth := da.github.AppID != ""
-		if !appsAuth {
-			// If access token exists, get user login using the access token. This is a
-			// chance to validate whether the access token is consumable or not. If
-			// not, we invalidate the sessions and continue as if not logged in.
-			token, ok := session.Values[tokenKey].(*oauth2.Token) // TODO(fejta): client cache
-			if ok && token.Valid() {
-				accessToken = token.AccessToken
-			}
-		}
-
-		if appsAuth || accessToken != "" {
-			githubClient, err := createClient(accessToken)
+		// If access token exists, get user login using the access token. This is a
+		// chance to validate whether the access token is consumable or not. If
+		// not, we invalidate the sessions and continue as if not logged in.
+		token, ok := session.Values[tokenKey].(*oauth2.Token) // TODO(fejta): client cache
+		var user *github.User
+		var botUser *github.UserData
+		if ok && token.Valid() {
+			githubClient := createClient(token.AccessToken)
+			var err error
+			botUser, err = githubClient.BotUser()
+			user = &github.User{Login: botUser.Login}
 			if err != nil {
-				serverError("Error with creating github client", err)
-				return
-			}
-			botUser, err := githubClient.BotUser()
-			if err != nil {
-				if !appsAuth && strings.Contains(err.Error(), "401") {
+				if strings.Contains(err.Error(), "401") {
 					da.log.Info("Failed to access GitHub with existing access token, invalidating GitHub login session")
 					if err := invalidateGitHubSession(w, r, session); err != nil {
 						serverError("Failed to invalidate GitHub session", err)
@@ -232,7 +222,10 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler pullRequestQueryHandler, c
 					return
 				}
 			}
-			login := botUser.Login
+		}
+
+		if user != nil {
+			login := user.Login
 			data.Login = true
 			// Saves login. We save the login under 2 cookies. One for the use of client to render the
 			// data and one encoded for server to verify the identity of the authenticated user.
@@ -250,6 +243,7 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler pullRequestQueryHandler, c
 			}
 
 			// Construct query
+			ghc := da.github.GitHubClientWithAccessToken(token.AccessToken) // TODO(fejta): we should not recreate the client
 			query := da.ConstructSearchQuery(login)
 			if err := r.ParseForm(); err == nil {
 				if q := r.Form.Get("query"); q != "" {
@@ -263,14 +257,14 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler pullRequestQueryHandler, c
 					query += fmt.Sprintf(" repo:\"%s\"", v)
 				}
 			}
-			pullRequests, err := queryHandler.queryPullRequests(context.Background(), githubClient, query)
+			pullRequests, err := queryHandler.queryPullRequests(context.Background(), ghc, query)
 			if err != nil {
 				serverError("Error with querying user data.", err)
 				return
 			}
 			var pullRequestWithContexts []PullRequestWithContexts
 			for _, pr := range pullRequests {
-				prcontexts, err := queryHandler.getHeadContexts(githubClient, pr)
+				prcontexts, err := queryHandler.getHeadContexts(ghc, pr)
 				if err != nil {
 					serverError("Error with getting head context of pr", err)
 					continue

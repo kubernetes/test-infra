@@ -20,12 +20,9 @@ import (
 	"context"
 	"encoding/gob"
 	"errors"
-	"flag"
 	"io/ioutil"
-	"k8s.io/test-infra/prow/flagutil"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"reflect"
 	"strconv"
 	"testing"
@@ -83,16 +80,12 @@ func (c fgc) BotUser() (*github.UserData, error) {
 }
 
 func newGitHubClientCreator(tokenUsers map[string]fgc) githubClientCreator {
-	return func(accessToken string) (GitHubClient, error) {
-		if accessToken != "" {
-			who, ok := tokenUsers[accessToken]
-			if !ok {
-				panic("unexpected access token: " + accessToken)
-			}
-			return who, nil
+	return func(accessToken string) GitHubClient {
+		who, ok := tokenUsers[accessToken]
+		if !ok {
+			panic("unexpected access token: " + accessToken)
 		}
-
-		return nil, errors.New("no access token provided")
+		return who
 	}
 }
 
@@ -485,80 +478,5 @@ func TestConstructSearchQuery(t *testing.T) {
 	mockQuery := "is:pr state:open author:random_username repo:\"mock/repo\" repo:\"kubernetes/test-infra\" repo:\"foo/bar\""
 	if query != mockQuery {
 		t.Errorf("Invalid query. Got: %v, expected %v", query, mockQuery)
-	}
-}
-
-func TestHandlePrStatusAppsAuth(t *testing.T) {
-	appID := os.Getenv("APP_ID")
-	privateKeyPath := os.Getenv("APP_PRIVATE_KEY_PATH")
-	org := os.Getenv("APP_GITHUB_ORG")
-	if appID == "" || privateKeyPath == "" || org == "" {
-		t.SkipNow()
-	}
-
-	repos := []string{"mock/repo", "kubernetes/test-infra", "foo/bar"}
-	mockCookieStore := sessions.NewCookieStore([]byte("secret-key"))
-	mockConfig := &githuboauth.Config{
-		CookieStore: mockCookieStore,
-	}
-	mockAgent := createMockAgent(repos, mockConfig)
-	mockQueryHandler := newMockQueryHandler([]PullRequest{
-		{
-			Number: 0,
-			Title:  "random pull request",
-		}},
-		map[int][]Context{0: {
-			{
-				Context:     "gofmt-job",
-				Description: "job succeed",
-				State:       "SUCCESS",
-			},
-		}})
-
-	gitHubOptions := flagutil.GitHubOptions{}
-	gitHubOptions.AddFlags(&flag.FlagSet{})
-	gitHubOptions.AppID = appID
-	gitHubOptions.AppPrivateKeyPath = privateKeyPath
-	mockAgent.github = gitHubOptions
-	ghClientCreator := func(accessToken string) (GitHubClient, error) {
-		return gitHubOptions.GitHubClient(false)
-	}
-
-	prHandler := mockAgent.HandlePrStatus(mockQueryHandler, ghClientCreator)
-	rr := httptest.NewRecorder()
-	request := httptest.NewRequest(http.MethodGet, "/pr-data.js", nil)
-	prHandler.ServeHTTP(rr, request)
-	if rr.Code != http.StatusOK {
-		t.Fatalf("Bad status code: %d", rr.Code)
-	}
-	response := rr.Result()
-	defer response.Body.Close()
-
-	expected := UserData{
-		Login: true,
-		PullRequestsWithContexts: []PullRequestWithContexts{{
-			PullRequest: PullRequest{
-				Number: 0,
-				Title:  "random pull request",
-			},
-			Contexts: []Context{
-				{
-					Context:     "gofmt-job",
-					Description: "job succeed",
-					State:       "SUCCESS",
-				},
-			},
-		}},
-	}
-	body, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		t.Fatalf("Error with reading response body: %v", err)
-	}
-	var dataReturned UserData
-	if err := yaml.Unmarshal(body, &dataReturned); err != nil {
-		t.Errorf("Error with unmarshaling response: %v", err)
-	}
-	if diff := cmp.Diff(expected, dataReturned); diff != "" {
-		t.Fatalf("Invalid user data, diff: %s", diff)
 	}
 }
