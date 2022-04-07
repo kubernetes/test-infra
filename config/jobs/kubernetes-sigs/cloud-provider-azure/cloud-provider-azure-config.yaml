@@ -238,6 +238,8 @@ presubmits:
               value: "standard"
             - name: CONTROL_PLANE_MACHINE_COUNT
               value: "3"
+            - name: KUBERNETES_VERSION
+              value: 1.23.5
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-capz
