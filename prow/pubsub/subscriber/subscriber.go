@@ -303,12 +303,14 @@ func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InR
 	// If InRepoConfigCache is provided, then it means that we also want to fetch
 	// from an inrepoconfig.
 	if pc != nil {
+		logger.Debug("Getting prow jobs.")
 		var presubmitsWithInrepoconfig []config.Presubmit
 		var err error
 		presubmitsWithInrepoconfig, err = pc.GetPresubmits(orgRepo, baseSHAGetter, headSHAGetters...)
 		if err != nil {
 			logger.WithError(err).Debug("Failed to get presubmits")
 		} else {
+			logger.WithField("static-jobs", len(presubmits)).WithField("jobs-with-inrepoconfig", len(presubmitsWithInrepoconfig)).Debug("Jobs found.")
 			// Overwrite presubmits. This is safe because pc.GetPresubmits()
 			// itself calls cfg.GetPresubmitsStatic() and adds to it all the
 			// presubmits found in the inrepoconfig.
@@ -377,12 +379,14 @@ func (poh *postsubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.In
 	logger := logrus.WithFields(logrus.Fields{"org": org, "repo": repo, "branch": branch, "orgRepo": orgRepo})
 	postsubmits := cfg.GetPostsubmitsStatic(orgRepo)
 	if pc != nil {
+		logger.Debug("Getting prow jobs.")
 		var postsubmitsWithInrepoconfig []config.Postsubmit
 		var err error
 		postsubmitsWithInrepoconfig, err = pc.GetPostsubmits(orgRepo, baseSHAGetter)
 		if err != nil {
 			logger.WithError(err).Debug("Failed to get postsubmits from inrepoconfig")
 		} else {
+			logger.WithField("static-jobs", len(postsubmits)).WithField("jobs-with-inrepoconfig", len(postsubmitsWithInrepoconfig)).Debug("Jobs found.")
 			postsubmits = postsubmitsWithInrepoconfig
 		}
 	}
