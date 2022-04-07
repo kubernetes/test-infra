@@ -37,7 +37,7 @@ presubmits:
         - ./test_e2e.sh
         env:
         - name: KIND_K8S_VERSION
-          value: "v1.23.3"
+          value: "v1.23.5"
         resources:
           requests:
             cpu: 4000m
