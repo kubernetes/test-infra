@@ -3,6 +3,11 @@
 ## New features
 
 New features added to each component:
+  - *April 6, 2022* Highlight and pin interesting lines. To do this,
+    shift-click on log lines in the buildlog lens. The URL fragment
+    causes the same lines to be highlighted next page load. Additionally,
+    when viewing a GCS log pressing the pin button saves the highlight.
+    The saved highlight automatically displays next page load.
   - *January 24, 2022* It is possible now to define GitHub Apps bots as trusted 
     users to allow automatic tests trigger without relying on `/ok-to-test` 
     from organization member. Trigger and DCO plugins configuration now support 
