@@ -31,6 +31,7 @@ import (
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 
 	"k8s.io/test-infra/prow/git/v2"
+	"k8s.io/test-infra/prow/github"
 	"sigs.k8s.io/yaml"
 )
 
@@ -106,7 +107,15 @@ func prowYAMLGetter(
 		return nil, err
 	}
 
-	mergeMethod := c.Tide.MergeMethod(orgRepo)
+	// TODO(mpherman): This is to hopefully mittigate issue with gerrit merges. Need to come up with a solution that checks
+	// each CLs merge strategy as they can differ. ifNecessary is just the gerrit default
+	var mergeMethod github.PullRequestMergeType
+	if c.Gerrit.DeckURL != "" {
+		mergeMethod = github.MergeIfNecessary
+	} else {
+		mergeMethod = c.Tide.MergeMethod(orgRepo)
+	}
+
 	log.Debugf("Using merge strategy %q.", mergeMethod)
 	if err := ensureHeadCommits(repo, headSHAs...); err != nil {
 		return nil, fmt.Errorf("failed to fetch headSHAs: %v", err)

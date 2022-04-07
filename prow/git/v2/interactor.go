@@ -207,14 +207,14 @@ func (i *interactor) MergeWithStrategy(commitlike, mergeStrategy string, opts ..
 		return i.mergeMerge(commitlike, opts...)
 	case "squash":
 		return i.squashMerge(commitlike)
+	case "ifNecessary":
+		return i.mergeIfNecessary(commitlike, opts...)
 	default:
 		return false, fmt.Errorf("merge strategy %q is not supported", mergeStrategy)
 	}
 }
 
-func (i *interactor) mergeMerge(commitlike string, opts ...MergeOpt) (bool, error) {
-	args := []string{"merge", "--no-ff", "--no-stat"}
-
+func (i *interactor) mergeHelper(args []string, commitlike string, opts ...MergeOpt) (bool, error) {
 	if len(opts) == 0 {
 		args = append(args, []string{"-m", "merge"}...)
 	} else {
@@ -234,6 +234,16 @@ func (i *interactor) mergeMerge(commitlike string, opts ...MergeOpt) (bool, erro
 		return false, fmt.Errorf("error aborting merge of %q: %w %v", commitlike, err, string(out))
 	}
 	return false, nil
+}
+
+func (i *interactor) mergeMerge(commitlike string, opts ...MergeOpt) (bool, error) {
+	args := []string{"merge", "--no-ff", "--no-stat"}
+	return i.mergeHelper(args, commitlike, opts...)
+}
+
+func (i *interactor) mergeIfNecessary(commitlike string, opts ...MergeOpt) (bool, error) {
+	args := []string{"merge", "--ff", "--no-stat"}
+	return i.mergeHelper(args, commitlike, opts...)
 }
 
 func (i *interactor) squashMerge(commitlike string) (bool, error) {
