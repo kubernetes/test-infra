@@ -265,8 +265,8 @@ postsubmits:
               - --project=k8s-staging-capi-ibmcloud
               - --scratch-bucket=gs://k8s-staging-capi-ibmcloud-gcb
               - --env-passthrough=PULL_BASE_REF
-              - --with-git-dir
-              - .
+              - --build-dir=.
+              - hack/ccm
 
 periodics:
   - name: cluster-api-push-images-nightly
