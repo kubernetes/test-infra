@@ -1606,7 +1606,7 @@ func TestReport(t *testing.T) {
 				},
 			},
 			expectReport:      true,
-			reportInclude:     []string{"1 out of 2", "ci-foo", "SUCCESS", "ci-bar", "FAILURE", "guber/foo", "guber/bar", "Comment '/retest'"},
+			reportInclude:     []string{"1 out of 2", "ci-foo", "SUCCESS", "ci-bar", "FAILURE", "guber/foo", "guber/bar", "Comment `/retest`"},
 			expectLabel:       map[string]string{"same-label": lbtm},
 			numExpectedReport: 0,
 		},
@@ -1965,7 +1965,7 @@ func TestReport(t *testing.T) {
 				},
 			},
 			expectReport:      true,
-			reportInclude:     []string{"0 out of 1", "ci-foo", "FAILURE", "guber/foo", "Comment '/retest'"},
+			reportInclude:     []string{"0 out of 1", "ci-foo", "FAILURE", "guber/foo", "Comment `/retest`"},
 			expectLabel:       map[string]string{codeReview: lztm},
 			numExpectedReport: 0,
 		},
@@ -2107,7 +2107,7 @@ func TestMultipleWorks(t *testing.T) {
 	for _, count := range []int{10, 20, 30} {
 		t.Run(fmt.Sprintf("%d-jobs", count), func(t *testing.T) {
 			expectedCount := 1
-			expectedComment := []string{" out of " + strconv.Itoa(count), "ci-bar", "FAILURE", "guber/bar", "Comment '/retest'"}
+			expectedComment := []string{" out of " + strconv.Itoa(count), "ci-bar", "FAILURE", "guber/bar", "Comment `/retest`"}
 			var existingPJs []*v1.ProwJob
 			for i := 0; i < count; i++ {
 				pj := samplePJ.DeepCopy()
@@ -2218,7 +2218,7 @@ func TestGenerateReport(t *testing.T) {
 				job("left", "foo", v1.AbortedState),
 				job("right", "bar", v1.ErrorState),
 			},
-			wantHeader:  "Prow Status: 1 out of 4 pjs passed! 👉 Comment '/retest' to rerun all failed tests\n",
+			wantHeader:  "Prow Status: 1 out of 4 pjs passed! 👉 Comment `/retest` to rerun only failed tests (if any), or `/test all` to rerun all tests\n",
 			wantMessage: "❌ that FAILURE - hey\n🚫 right ERROR - bar\n🚫 left ABORTED - foo\n✔️ this SUCCESS - url\n",
 		},
 		{
@@ -2228,8 +2228,10 @@ func TestGenerateReport(t *testing.T) {
 				job("that", "hey", v1.FailureState),
 				job("some", "other", v1.SuccessState),
 			},
-			commentSizeLimit: 81 + 61,
-			wantHeader:       "Prow Status: 2 out of 3 pjs passed! 👉 Comment '/retest' to rerun all failed tests\n",
+			// 127 is the length of the Header.
+			// 61 is the comment size room we give for the Message part.
+			commentSizeLimit: 127 + 61,
+			wantHeader:       "Prow Status: 2 out of 3 pjs passed! 👉 Comment `/retest` to rerun only failed tests (if any), or `/test all` to rerun all tests\n",
 			wantMessage:      "❌ that FAILURE\n✔️ some SUCCESS\n✔️ this SUCCESS\n[NOTE FROM PROW: Skipped displaying URLs for 3/3 jobs due to reaching gerrit comment size limit]",
 		},
 		{
@@ -2239,8 +2241,8 @@ func TestGenerateReport(t *testing.T) {
 				job("that", "hey", v1.FailureState),
 				job("some", "other", v1.SuccessState),
 			},
-			commentSizeLimit: 81 + 67,
-			wantHeader:       "Prow Status: 2 out of 3 pjs passed! 👉 Comment '/retest' to rerun all failed tests\n",
+			commentSizeLimit: 127 + 67,
+			wantHeader:       "Prow Status: 2 out of 3 pjs passed! 👉 Comment `/retest` to rerun only failed tests (if any), or `/test all` to rerun all tests\n",
 			wantMessage:      "❌ that FAILURE - hey\n✔️ some SUCCESS\n✔️ this SUCCESS\n[NOTE FROM PROW: Skipped displaying URLs for 2/3 jobs due to reaching gerrit comment size limit]",
 		},
 		{
@@ -2250,9 +2252,9 @@ func TestGenerateReport(t *testing.T) {
 				job("that", "hey", v1.FailureState),
 				job("some", "other", v1.SuccessState),
 			},
-			commentSizeLimit: 81 + 55,
-			wantHeader:       "Prow Status: 2 out of 3 pjs passed! 👉 Comment '/test all' to rerun all tests\n",
-			wantMessage:      "[NOTE FROM PROW: Prow failed to report all jobs, are there excessive amount of prow jobs?]",
+			commentSizeLimit: 1,
+			wantHeader:       "Prow Status: 2 out of 3 pjs passed! 👉 Comment `/retest` to rerun only failed tests (if any), or `/test all` to rerun all tests\n",
+			wantMessage:      "[NOTE FROM PROW: Skipped displaying 3/3 jobs due to reaching gerrit comment size limit (too many jobs)]",
 		},
 		{
 			// Check cases where the job could legitimately not have its URL
@@ -2261,8 +2263,9 @@ func TestGenerateReport(t *testing.T) {
 			jobs: []*v1.ProwJob{
 				job("right", "", v1.ErrorState),
 			},
-			wantHeader:  "Prow Status: 0 out of 1 pjs passed! 👉 Comment '/retest' to rerun all failed tests\n",
-			wantMessage: "🚫 right ERROR - URL_NOT_FOUND\n",
+			commentSizeLimit: 1000,
+			wantHeader:       "Prow Status: 0 out of 1 pjs passed! 👉 Comment `/retest` to rerun only failed tests (if any), or `/test all` to rerun all tests\n",
+			wantMessage:      "🚫 right ERROR - URL_NOT_FOUND\n",
 		},
 	}
 
