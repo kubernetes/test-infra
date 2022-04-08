@@ -602,7 +602,7 @@ periodics:
       - name: KUBERNETES_VERSION
         value: 1.23.5
       - name: GINKGO_ARGS
-        value: --ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --test.parallel=4 --report-dir=/logs/artifacts --disable-log-dump=true
+        value: --ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|In-tree.Volumes --test.parallel=4 --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT
         value: "3"
   annotations:
