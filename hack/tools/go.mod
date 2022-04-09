@@ -7,7 +7,9 @@ require (
 	github.com/client9/misspell v0.3.4
 	github.com/go-bindata/go-bindata/v3 v3.1.3
 	github.com/golang/protobuf v1.5.2
-	github.com/golangci/golangci-lint v1.43.0
+	// There is no release of golangci-lint with staticcheck for go 1.18 enabled but support for it is
+	// already merged. Use an unreleased version as that is probably the single most important linter.
+	github.com/golangci/golangci-lint v1.45.3-0.20220409135141-1643bd09f2b4
 	github.com/google/ko v0.11.2
 	github.com/sethvargo/gcs-cacher v0.1.3
 	gotest.tools/gotestsum v1.7.0
