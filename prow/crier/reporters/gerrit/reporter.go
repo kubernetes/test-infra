@@ -67,10 +67,26 @@ const (
 	// codeReview is the default gerrit code review label
 	codeReview = client.CodeReview
 	// maxCommentSizeLimit is from
-	// http://gerrit-documentation.storage.googleapis.com/Documentation/3.2.0/config-gerrit.html#change.commentSizeLimit,
-	// if a comment is 16000 chars it's almost not readable any way, let's not
-	// use all of the space, picking 80% as a heuristic number here
-	maxCommentSizeLimit = 14400
+	// http://gerrit-documentation.storage.googleapis.com/Documentation/3.2.0/config-gerrit.html#change.commentSizeLimit, where it says:
+	//
+	//    Maximum allowed size in characters of a regular (non-robot) comment.
+	//    Comments which exceed this size will be rejected. Size computation is
+	//    approximate and may be off by roughly 1%. Common unit suffixes of 'k',
+	//    'm', or 'g' are supported. The value must be positive.
+	//
+	//    The default limit is 16kiB.
+	//
+	// 16KiB = 16*1024 bytes. Note that the size computation is stated as
+	// **approximate** and can be off by about 1%. To be safe, we use 15*1024 or
+	// 93.75% of the default 16KiB limit. This value is lower than the limit by
+	// 6.25% to be 6x below the ~1% margin of error described by the Gerrit
+	// docs.
+	//
+	// Even assuming that the docs have their units wrong (maybe they actually
+	// mean 16KB = 16000, not 16KiB), the new value of (15*1024)/16000 = 0.96,
+	// or to be 4% less than the theoretical maximum, which is still a
+	// conservative figure.
+	maxCommentSizeLimit = 15 * 1024
 )
 
 var (
