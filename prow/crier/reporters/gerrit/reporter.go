@@ -657,6 +657,7 @@ func GenerateReport(pjs []*v1.ProwJob, customCommentSizeLimit int) JobReport {
 			report.Success++
 		}
 	}
+	numJobs := len(report.Jobs)
 
 	report.prioritizeFailedJobs()
 
@@ -691,7 +692,7 @@ func GenerateReport(pjs []*v1.ProwJob, customCommentSizeLimit int) JobReport {
 	// from the end, so that we prioritize reporting the names of the failed
 	// jobs (if any), which are at the front of the list.
 	if commentSize < commentSizeLimit {
-		skipped := len(report.Jobs)
+		skipped := numJobs
 		for i, job := range report.Jobs {
 			lineWithURL := job.serialize()
 
@@ -717,11 +718,11 @@ func GenerateReport(pjs []*v1.ProwJob, customCommentSizeLimit int) JobReport {
 		if skipped > 0 {
 			// Note that this makes the comment longer, but since the size limit of
 			// 14400 is conservative, we should be fine.
-			report.Message += errorMessageLine(fmt.Sprintf("Skipped displaying URLs for %d/%d jobs due to reaching gerrit comment size limit", skipped, len(report.Jobs)))
+			report.Message += errorMessageLine(fmt.Sprintf("Skipped displaying URLs for %d/%d jobs due to reaching gerrit comment size limit", skipped, numJobs))
 		}
 	} else {
 		skipped := 0
-		last := len(report.Jobs) - 1
+		last := numJobs - 1
 		for i := range report.Jobs {
 			j := last - i
 
@@ -738,7 +739,7 @@ func GenerateReport(pjs []*v1.ProwJob, customCommentSizeLimit int) JobReport {
 
 		report.Message += strings.Join(jobLines, "")
 
-		report.Message += errorMessageLine(fmt.Sprintf("Skipped displaying %d/%d jobs due to reaching gerrit comment size limit (too many jobs)", skipped, len(report.Jobs)))
+		report.Message += errorMessageLine(fmt.Sprintf("Skipped displaying %d/%d jobs due to reaching gerrit comment size limit (too many jobs)", skipped, numJobs))
 	}
 
 	return report
