@@ -685,12 +685,16 @@ func GenerateReport(pjs []*v1.ProwJob, customCommentSizeLimit int) JobReport {
 		commentSize += len(line)
 	}
 
-	// If we know that we can report all jobs without their URLs without hitting
-	// the comment limit, we can now try to linkify them (add the URLs).
+	// Initially we skip displaying URLs for all jobs. Then depending on where
+	// we stand with our overall commentSize, we can try to either build it up
+	// (add URL links), or truncate it down (remove jobs from the end).
 	//
-	// Otherwise, we have to truncate until we're under. Note that we truncate
-	// from the end, so that we prioritize reporting the names of the failed
-	// jobs (if any), which are at the front of the list.
+	// For truncation, note that we truncate from the end, so that we prioritize
+	// reporting the names of the failed jobs (if any), which are at the front
+	// of the list.
+	skippedURLsFormat := "Skipped displaying URLs for %d/%d jobs due to reaching gerrit comment size limit"
+	errorLine := errorMessageLine(fmt.Sprintf(skippedURLsFormat, numJobs, numJobs))
+	commentSize += len(errorLine)
 	if commentSize < commentSizeLimit {
 		skipped := numJobs
 		for i, job := range report.Jobs {
@@ -701,12 +705,24 @@ func GenerateReport(pjs []*v1.ProwJob, customCommentSizeLimit int) JobReport {
 
 			delta := lineSizeWithURL - lineSizeWithoutURL
 
+			proposedErrorLine := errorMessageLine(fmt.Sprintf(skippedURLsFormat, skipped-1, numJobs))
+
+			// It could be that the new error line is smaller than the existing
+			// one, because e.g. `skipped` goes down from 100 to 99 (1 character
+			// less), or that we don't need the errorLine at all because there
+			// would be 0 skipped.
+			if skipped-1 == 0 {
+				proposedErrorLine = ""
+			}
+			delta -= (len(errorLine) - len(proposedErrorLine))
+
 			// Only replace the current line if the new commentSize would still
 			// be under the commentSizeLimit. Otherwise, break early because the
 			// commentSize is too big already.
 			if commentSize+delta < commentSizeLimit {
 				jobLines[i] = lineWithURL
 				commentSize += delta
+				errorLine = proposedErrorLine
 				skipped--
 			} else {
 				break
@@ -716,30 +732,39 @@ func GenerateReport(pjs []*v1.ProwJob, customCommentSizeLimit int) JobReport {
 		report.Message += strings.Join(jobLines, "")
 
 		if skipped > 0 {
-			// Note that this makes the comment longer, but since the size limit of
-			// 14400 is conservative, we should be fine.
-			report.Message += errorMessageLine(fmt.Sprintf("Skipped displaying URLs for %d/%d jobs due to reaching gerrit comment size limit", skipped, numJobs))
+			report.Message += errorLine
 		}
+
 	} else {
+		// Drop existing errorLine (skip displaying URLs) because it no longer
+		// applies (we're skipping jobs entirely now, not just skipping the
+		// display of URLs).
+		commentSize -= len(errorLine)
+		errorLine = ""
 		skipped := 0
+		skippedJobsFormat := "Skipped displaying %d/%d jobs due to reaching gerrit comment size limit (too many jobs)"
+
 		last := numJobs - 1
 		for i := range report.Jobs {
 			j := last - i
 
+			// Truncate (delete) a job line.
 			commentSize -= len(jobLines[i])
 			jobLines[j] = ""
 			skipped++
 
+			// Construct new  errorLine to account for the truncation.
+			errorLine = errorMessageLine(fmt.Sprintf(skippedJobsFormat, skipped, numJobs))
+
 			// Break early if we've truncated enough to be under the
 			// commentSizeLimit.
-			if commentSize < commentSizeLimit {
+			if commentSize+len(errorLine) < commentSizeLimit {
 				break
 			}
 		}
 
 		report.Message += strings.Join(jobLines, "")
-
-		report.Message += errorMessageLine(fmt.Sprintf("Skipped displaying %d/%d jobs due to reaching gerrit comment size limit (too many jobs)", skipped, numJobs))
+		report.Message += errorLine
 	}
 
 	return report
