@@ -2257,6 +2257,17 @@ func TestGenerateReport(t *testing.T) {
 			wantMessage:      "[NOTE FROM PROW: Skipped displaying 3/3 jobs due to reaching gerrit comment size limit (too many jobs)]",
 		},
 		{
+			name: "too many jobs; only truncate the last job",
+			jobs: []*v1.ProwJob{
+				job("this", "url", v1.SuccessState),
+				job("that", "hey", v1.FailureState),
+				job("some", "other", v1.SuccessState),
+			},
+			commentSizeLimit: 127 + 60,
+			wantHeader:       "Prow Status: 2 out of 3 pjs passed! 👉 Comment `/retest` to rerun only failed tests (if any), or `/test all` to rerun all tests\n",
+			wantMessage:      "❌ that FAILURE\n✔️ some SUCCESS\n[NOTE FROM PROW: Skipped displaying 1/3 jobs due to reaching gerrit comment size limit (too many jobs)]",
+		},
+		{
 			// Check cases where the job could legitimately not have its URL
 			// field set (because the job did not even get scheduled).
 			name: "missing URLs",
