@@ -49,19 +49,14 @@ const (
 
 	defaultProwHeader               = "Prow Status:"
 	jobReportFormat                 = "%s [%s](%s) %s\n"
-	jobReportFormatUrlNotFound      = "%s %s (%s) %s\n"
+	jobReportFormatUrlNotFound      = "%s %s (URL_NOT_FOUND) %s\n"
 	jobReportFormatWithoutURL       = "%s %s %s\n"
 	jobReportFormatLegacyRegex      = `^(\S+) (\S+) (\S+) - (\S+)$`
 	jobReportFormatRegex            = `^(\S+) \[(\S+)\]\((\S+)\) (\S+)$`
-	jobReportFormatUrlNotFoundRegex = `^(\S+) (\S+) \(\S+\) (\S+)$`
+	jobReportFormatUrlNotFoundRegex = `^(\S+) (\S+) \(URL_NOT_FOUND\) (\S+)$`
 	jobReportFormatWithoutURLRegex  = `^(\S+) (\S+) (\S+)$`
 	errorLinePrefix                 = "NOTE FROM PROW"
 	jobReportHeader                 = "%s %d out of %d pjs passed! 👉 Comment `/retest` to rerun only failed tests (if any), or `/test all` to rerun all tests\n"
-
-	// Stub for the URL field (when using jobReportFormat), if the URL is
-	// legitimately not set (e.g., because the job never got scheduled). This is
-	// what the user will see in place of an actual URL.
-	urlNotFound = "URL_NOT_FOUND"
 
 	// lgtm means all presubmits passed, but need someone else to approve before merge (looks good to me).
 	lgtm = "+1"
@@ -531,15 +526,15 @@ func (j *Job) serializeWithoutURL() string {
 }
 
 func (j *Job) serialize() string {
-	format := jobReportFormat
 
-	// It may be that the URL is just "URL_NOT_FOUND", so we have to take care
-	// not to link it as such if we're doing Markdown-flavored URLs.
-	if j.URL == urlNotFound {
-		format = jobReportFormatUrlNotFound
+	// It may be that the URL is empty, so we have to take care not to link it
+	// as such if we're doing Markdown-flavored URLs. This can happen if the job
+	// has not been scheduled due to some other failure.
+	if j.URL == "" {
+		return fmt.Sprintf(jobReportFormatUrlNotFound, j.Icon, j.Name, strings.ToUpper(string(j.State)))
 	}
 
-	return fmt.Sprintf(format, j.Icon, j.Name, j.URL, strings.ToUpper(string(j.State)))
+	return fmt.Sprintf(jobReportFormat, j.Icon, j.Name, j.URL, strings.ToUpper(string(j.State)))
 }
 
 func deserialize(s string, j *Job) error {
@@ -683,15 +678,7 @@ func GenerateReport(pjs []*v1.ProwJob, customCommentSizeLimit int) JobReport {
 	// the comment limit. This second scenario is highly unlikely, but is still
 	// something to consider (and tell the user about).
 	jobLines := []string{}
-	for i, job := range report.Jobs {
-		// If the URL cannot be found (for example, because the job has not been
-		// scheduled due to some other failure), then use the string
-		// URL_NOT_FOUND in its place instead. This way, we don't report jobs
-		// with an empty URL field.
-		if job.URL == "" {
-			report.Jobs[i].URL = urlNotFound
-		}
-
+	for _, job := range report.Jobs {
 		jobLines = append(jobLines, job.serializeWithoutURL())
 	}
 
