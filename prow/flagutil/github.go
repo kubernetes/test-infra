@@ -365,16 +365,19 @@ func (o *GitHubOptions) getGitAuthentication(dryRun bool) (string, git.GitTokenG
 }
 
 func (o *GitHubOptions) appPrivateKeyGenerator() (func() *rsa.PrivateKey, error) {
-	if err := secret.Add(o.AppPrivateKeyPath); err != nil {
+	generator, err := secret.AddWithParser(
+		o.AppPrivateKeyPath,
+		func(raw []byte) (*rsa.PrivateKey, error) {
+			privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(raw)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse rsa key from pem: %w", err)
+			}
+			return privateKey, nil
+		},
+	)
+	if err != nil {
 		return nil, fmt.Errorf("failed to add the the key from --app-private-key-path to secret agent: %w", err)
 	}
-	return func() *rsa.PrivateKey {
-		raw := secret.GetTokenGenerator(o.AppPrivateKeyPath)()
-		privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(raw)
-		// TODO alvaroaleman: Add hooks to the SecretAgent
-		if err != nil {
-			panic(fmt.Sprintf("failed to parse private key: %v", err))
-		}
-		return privateKey
-	}, nil
+
+	return generator, nil
 }
