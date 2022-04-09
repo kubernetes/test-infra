@@ -665,7 +665,7 @@ func GenerateReport(pjs []*v1.ProwJob, customCommentSizeLimit int) JobReport {
 
 	// Construct report.Header portion.
 	report.Header = fmt.Sprintf(jobReportHeader, defaultProwHeader, report.Success, report.Total)
-	headerSize := len(report.Header)
+	commentSize := len(report.Header)
 
 	// Construct report.Messages portion. We need to construct the long list of
 	// job result messages, delimited by a newline, where each message
@@ -679,46 +679,59 @@ func GenerateReport(pjs []*v1.ProwJob, customCommentSizeLimit int) JobReport {
 	// something to consider (and tell the user about).
 	jobLines := []string{}
 	for _, job := range report.Jobs {
-		jobLines = append(jobLines, job.serializeWithoutURL())
+		line := job.serializeWithoutURL()
+		jobLines = append(jobLines, line)
+		commentSize += len(line)
 	}
 
-	sizeWithoutURLs := getSize(jobLines)
-
-	// Now add URLs for each job one at a time; if we we hit the
-	// commentSizeLimit, stop and tell the user about it.
-	if headerSize+sizeWithoutURLs < commentSizeLimit {
-		linked := 0
+	// If we know that we can report all jobs without their URLs without hitting
+	// the comment limit, we can now try to linkify them (add the URLs).
+	//
+	// Otherwise, we have to truncate until we're under. Note that we truncate
+	// from the end, so that we prioritize reporting the names of the failed
+	// jobs (if any), which are at the front of the list.
+	if commentSize < commentSizeLimit {
+		skipped := len(report.Jobs)
 		for i, job := range report.Jobs {
-			jobLines[i] = job.serialize()
-			linked++
-			if headerSize+getSize(jobLines) > commentSizeLimit {
-				jobLines[i] = job.serializeWithoutURL()
-				linked--
+			lineWithURL := job.serialize()
+
+			lineSizeWithoutURL := len(jobLines[i])
+			lineSizeWithURL := len(lineWithURL)
+
+			delta := lineSizeWithURL - lineSizeWithoutURL
+
+			// Only replace the current line if the new commentSize would still
+			// be under the commentSizeLimit. Otherwise, break early because the
+			// commentSize is too big already.
+			if commentSize+delta < commentSizeLimit {
+				jobLines[i] = lineWithURL
+				commentSize += delta
+				skipped--
+			} else {
 				break
 			}
 		}
 
 		report.Message += strings.Join(jobLines, "")
 
-		if linked < len(report.Jobs) {
+		if skipped > 0 {
 			// Note that this makes the comment longer, but since the size limit of
 			// 14400 is conservative, we should be fine.
-			report.Message += errorMessageLine(fmt.Sprintf("Skipped displaying URLs for %d/%d jobs due to reaching gerrit comment size limit", len(report.Jobs)-linked, len(report.Jobs)))
+			report.Message += errorMessageLine(fmt.Sprintf("Skipped displaying URLs for %d/%d jobs due to reaching gerrit comment size limit", skipped, len(report.Jobs)))
 		}
 	} else {
-		// Edge case. Even without any URLs we're still over the
-		// commentSizeLimit. We have to truncate until we're under. Note that we
-		// truncate from the end, so that we prioritize reporting the names of
-		// the failed jobs (if any), which are at the front of the list.
 		skipped := 0
 		last := len(report.Jobs) - 1
 		for i := range report.Jobs {
 			j := last - i
 
+			commentSize -= len(jobLines[i])
 			jobLines[j] = ""
 			skipped++
 
-			if headerSize+getSize(jobLines) < commentSizeLimit {
+			// Break early if we've truncated enough to be under the
+			// commentSizeLimit.
+			if commentSize < commentSizeLimit {
 				break
 			}
 		}
@@ -729,14 +742,6 @@ func GenerateReport(pjs []*v1.ProwJob, customCommentSizeLimit int) JobReport {
 	}
 
 	return report
-}
-
-func getSize(strs []string) int {
-	size := 0
-	for _, str := range strs {
-		size += len(str)
-	}
-	return size
 }
 
 // prioritizeFailedJobs sorts jobs so that the report will start with the failed

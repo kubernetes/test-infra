@@ -2241,7 +2241,7 @@ func TestGenerateReport(t *testing.T) {
 				job("that", "hey", v1.FailureState),
 				job("some", "other", v1.SuccessState),
 			},
-			commentSizeLimit: 127 + 67,
+			commentSizeLimit: 130 + 67,
 			wantHeader:       "Prow Status: 2 out of 3 pjs passed! 👉 Comment `/retest` to rerun only failed tests (if any), or `/test all` to rerun all tests\n",
 			wantMessage:      "❌ [that](hey) FAILURE\n✔️ some SUCCESS\n✔️ this SUCCESS\n[NOTE FROM PROW: Skipped displaying URLs for 2/3 jobs due to reaching gerrit comment size limit]",
 		},
@@ -2285,9 +2285,13 @@ func TestGenerateReport(t *testing.T) {
 			gotReport := GenerateReport(tc.jobs, tc.commentSizeLimit)
 
 			if want, got := tc.wantHeader, gotReport.Header; want != got {
+				fmt.Printf("Header size: %d\n", len(gotReport.Header))
+				fmt.Printf("Message size: %d\n", len(gotReport.Message))
 				t.Fatalf("Header mismatch. Want:\n%s,\ngot: \n%s", want, got)
 			}
 			if want, got := tc.wantMessage, gotReport.Message; want != got {
+				fmt.Printf("Header size: %d\n", len(gotReport.Header))
+				fmt.Printf("Message size: %d\n", len(gotReport.Message))
 				t.Fatalf("Message mismatch. Want:\n%s\ngot: \n%s", want, got)
 			}
 		})
