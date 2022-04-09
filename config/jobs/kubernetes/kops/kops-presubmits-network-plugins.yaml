@@ -70,7 +70,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-amazonvpc
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "deb11", "extra_flags": "--ipv6 --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery", "feature_flags": "AWSIPv6", "k8s_version": "latest", "kops_channel": "alpha", "networking": "amazonvpc"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "deb11", "extra_flags": "--ipv6 --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery", "feature_flags": "AWSIPv6", "k8s_version": "stable", "kops_channel": "alpha", "networking": "amazonvpc"}
   - name: pull-kops-e2e-cni-amazonvpc-ipv6
     branches:
     - master
@@ -104,13 +104,13 @@ presubmits:
             --cloud-provider=aws \
             --create-args="--image='136693071363/debian-11-amd64-20220328-962' --channel=alpha --networking=amazonvpc --container-runtime=containerd --ipv6 --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery" \
             --env=KOPS_FEATURE_FLAGS=AWSIPv6 \
-            --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/latest.txt \
+            --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
             -- \
             --ginkgo-args="--debug" \
             --test-args="-test.timeout=60m -num-nodes=0" \
-            --test-package-marker=latest.txt \
+            --test-package-marker=stable.txt \
             --parallel=25
         securityContext:
           privileged: true
@@ -131,7 +131,7 @@ presubmits:
       test.kops.k8s.io/distro: deb11
       test.kops.k8s.io/extra_flags: --ipv6 --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery
       test.kops.k8s.io/feature_flags: AWSIPv6
-      test.kops.k8s.io/k8s_version: latest
+      test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: amazonvpc
       testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
@@ -205,7 +205,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-calico
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "deb11", "extra_flags": "--ipv6 --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery", "feature_flags": "AWSIPv6", "k8s_version": "latest", "kops_channel": "alpha", "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "deb11", "extra_flags": "--ipv6 --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery", "feature_flags": "AWSIPv6", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-cni-calico-ipv6
     branches:
     - master
@@ -240,13 +240,13 @@ presubmits:
             --cloud-provider=aws \
             --create-args="--image='136693071363/debian-11-amd64-20220328-962' --channel=alpha --networking=calico --container-runtime=containerd --ipv6 --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery" \
             --env=KOPS_FEATURE_FLAGS=AWSIPv6 \
-            --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/latest.txt \
+            --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
             -- \
             --ginkgo-args="--debug" \
             --test-args="-test.timeout=60m -num-nodes=0" \
-            --test-package-marker=latest.txt \
+            --test-package-marker=stable.txt \
             --parallel=25
         securityContext:
           privileged: true
@@ -267,7 +267,7 @@ presubmits:
       test.kops.k8s.io/distro: deb11
       test.kops.k8s.io/extra_flags: --ipv6 --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery
       test.kops.k8s.io/feature_flags: AWSIPv6
-      test.kops.k8s.io/k8s_version: latest
+      test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: calico
       testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
@@ -408,7 +408,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-cilium
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "deb11", "extra_flags": "--ipv6 --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery", "feature_flags": "AWSIPv6", "k8s_version": "latest", "kops_channel": "alpha", "networking": "cilium"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "deb11", "extra_flags": "--ipv6 --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery", "feature_flags": "AWSIPv6", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-e2e-cni-cilium-ipv6
     branches:
     - master
@@ -443,13 +443,13 @@ presubmits:
             --cloud-provider=aws \
             --create-args="--image='136693071363/debian-11-amd64-20220328-962' --channel=alpha --networking=cilium --container-runtime=containerd --ipv6 --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery" \
             --env=KOPS_FEATURE_FLAGS=AWSIPv6 \
-            --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/latest.txt \
+            --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
             -- \
             --ginkgo-args="--debug" \
             --test-args="-test.timeout=60m -num-nodes=0" \
-            --test-package-marker=latest.txt \
+            --test-package-marker=stable.txt \
             --parallel=25
         securityContext:
           privileged: true
@@ -470,7 +470,7 @@ presubmits:
       test.kops.k8s.io/distro: deb11
       test.kops.k8s.io/extra_flags: --ipv6 --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery
       test.kops.k8s.io/feature_flags: AWSIPv6
-      test.kops.k8s.io/k8s_version: latest
+      test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: cilium
       testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
