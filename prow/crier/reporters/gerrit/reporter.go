@@ -21,6 +21,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -46,11 +47,16 @@ const (
 	hourglass  = "⏳"
 	prohibited = "🚫"
 
-	defaultProwHeader         = "Prow Status:"
-	jobReportFormat           = "%s %s %s - %s\n"
-	jobReportFormatWithoutURL = "%s %s %s\n"
-	errorLinePrefix           = "NOTE FROM PROW"
-	jobReportHeader           = "%s %d out of %d pjs passed! 👉 Comment `/retest` to rerun only failed tests (if any), or `/test all` to rerun all tests\n"
+	defaultProwHeader               = "Prow Status:"
+	jobReportFormat                 = "%s [%s](%s) %s\n"
+	jobReportFormatUrlNotFound      = "%s %s (%s) %s\n"
+	jobReportFormatWithoutURL       = "%s %s %s\n"
+	jobReportFormatLegacyRegex      = `^(\S+) (\S+) (\S+) - (\S+)$`
+	jobReportFormatRegex            = `^(\S+) \[(\S+)\]\((\S+)\) (\S+)$`
+	jobReportFormatUrlNotFoundRegex = `^(\S+) (\S+) \(\S+\) (\S+)$`
+	jobReportFormatWithoutURLRegex  = `^(\S+) (\S+) (\S+)$`
+	errorLinePrefix                 = "NOTE FROM PROW"
+	jobReportHeader                 = "%s %d out of %d pjs passed! 👉 Comment `/retest` to rerun only failed tests (if any), or `/test all` to rerun all tests\n"
 
 	// Stub for the URL field (when using jobReportFormat), if the URL is
 	// legitimately not set (e.g., because the job never got scheduled). This is
@@ -525,35 +531,86 @@ func (j *Job) serializeWithoutURL() string {
 }
 
 func (j *Job) serialize() string {
-	return fmt.Sprintf(jobReportFormat, j.Icon, j.Name, strings.ToUpper(string(j.State)), j.URL)
-}
+	format := jobReportFormat
 
-func deserializeWithoutURL(s string, j *Job) error {
-	var state string
-	n, err := fmt.Sscanf(s, jobReportFormatWithoutURL, &j.Icon, &j.Name, &state)
-	if err != nil {
-		return err
+	// It may be that the URL is just "URL_NOT_FOUND", so we have to take care
+	// not to link it as such if we're doing Markdown-flavored URLs.
+	if j.URL == urlNotFound {
+		format = jobReportFormatUrlNotFound
 	}
-	j.State = v1.ProwJobState(strings.ToLower(state))
-	const want = 3
-	if n != want {
-		return fmt.Errorf("scan: got %d, want %d", n, want)
-	}
-	return nil
+
+	return fmt.Sprintf(format, j.Icon, j.Name, j.URL, strings.ToUpper(string(j.State)))
 }
 
 func deserialize(s string, j *Job) error {
 	var state string
-	n, err := fmt.Sscanf(s, jobReportFormat, &j.Icon, &j.Name, &state, &j.URL)
-	if err != nil {
-		return err
+	var formats = []struct {
+		regex  string
+		tokens []*string
+	}{
+		// Legacy format. This is to cover the case where we're still trying to
+		// parse legacy style comments during the transition to the new style
+		// (just in case).
+		//
+		// TODO(listx): It should be safe to delete this legacy format checker
+		// after we migrate all Prow instances over to the version of crier's
+		// gerrit reporter (this file) that uses the Markdown-flavored links.
+		// There is no hurry to delete this code because having it here is
+		// harmless, other than incurring negligible CPU cycles.
+		{jobReportFormatLegacyRegex,
+			[]*string{&j.Icon, &j.Name, &state, &j.URL}},
+
+		// New format with Markdown syntax for the URL.
+		{jobReportFormatRegex,
+			[]*string{&j.Icon, &j.Name, &j.URL, &state}},
+
+		// New format, but where the URL was not found.
+		{jobReportFormatUrlNotFoundRegex,
+			[]*string{&j.Icon, &j.Name, &j.URL, &state}},
+
+		// Job without URL (because GenerateReport() decided that adding a URL would be too much).
+		{jobReportFormatWithoutURLRegex,
+			[]*string{&j.Icon, &j.Name, &state}},
 	}
-	j.State = v1.ProwJobState(strings.ToLower(state))
-	const want = 4
-	if n != want {
-		return fmt.Errorf("scan: got %d, want %d", n, want)
+
+	for _, format := range formats {
+
+		re := regexp.MustCompile(format.regex)
+		if !re.MatchString(s) {
+			continue
+		}
+
+		// We drop the first token because it is the
+		// entire string itself.
+		matchedTokens := re.FindStringSubmatch(s)[1:]
+
+		// Even though the regexes are exact matches "^...$", we still check the
+		// number of tokens found just to be sure.
+		if len(matchedTokens) != len(format.tokens) {
+			return fmt.Errorf("tokens: got %d, want %d", len(format.tokens), len(matchedTokens))
+		}
+
+		for i := range format.tokens {
+			*format.tokens[i] = matchedTokens[i]
+		}
+
+		state = strings.ToLower(state)
+		validProwJobState := false
+		for _, pjState := range v1.GetAllProwJobStates() {
+			if v1.ProwJobState(state) == pjState {
+				validProwJobState = true
+				break
+			}
+		}
+		if !validProwJobState {
+			return fmt.Errorf("invalid prow job state %q", state)
+		}
+		j.State = v1.ProwJobState(state)
+
+		return nil
 	}
-	return nil
+
+	return fmt.Errorf("Could not deserialize %q to a job", s)
 }
 
 func errorMessageLine(s string) string {
@@ -740,11 +797,8 @@ func ParseReport(message string) *JobReport {
 		}
 		var j Job
 		if err := deserialize(contents[i], &j); err != nil {
-			// Will also need to support reports without URL
-			if err = deserializeWithoutURL(contents[i], &j); err != nil {
-				logrus.Warnf("Could not deserialize %s to a job: %v", contents[i], err)
-				continue
-			}
+			logrus.Warn(err)
+			continue
 		}
 		report.Total++
 		if j.State == v1.SuccessState {

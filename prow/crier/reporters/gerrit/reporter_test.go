@@ -2219,7 +2219,7 @@ func TestGenerateReport(t *testing.T) {
 				job("right", "bar", v1.ErrorState),
 			},
 			wantHeader:  "Prow Status: 1 out of 4 pjs passed! 👉 Comment `/retest` to rerun only failed tests (if any), or `/test all` to rerun all tests\n",
-			wantMessage: "❌ that FAILURE - hey\n🚫 right ERROR - bar\n🚫 left ABORTED - foo\n✔️ this SUCCESS - url\n",
+			wantMessage: "❌ [that](hey) FAILURE\n🚫 [right](bar) ERROR\n🚫 [left](foo) ABORTED\n✔️ [this](url) SUCCESS\n",
 		},
 		{
 			name: "short lines only",
@@ -2243,7 +2243,7 @@ func TestGenerateReport(t *testing.T) {
 			},
 			commentSizeLimit: 127 + 67,
 			wantHeader:       "Prow Status: 2 out of 3 pjs passed! 👉 Comment `/retest` to rerun only failed tests (if any), or `/test all` to rerun all tests\n",
-			wantMessage:      "❌ that FAILURE - hey\n✔️ some SUCCESS\n✔️ this SUCCESS\n[NOTE FROM PROW: Skipped displaying URLs for 2/3 jobs due to reaching gerrit comment size limit]",
+			wantMessage:      "❌ [that](hey) FAILURE\n✔️ some SUCCESS\n✔️ this SUCCESS\n[NOTE FROM PROW: Skipped displaying URLs for 2/3 jobs due to reaching gerrit comment size limit]",
 		},
 		{
 			name: "too many jobs",
@@ -2276,7 +2276,7 @@ func TestGenerateReport(t *testing.T) {
 			},
 			commentSizeLimit: 1000,
 			wantHeader:       "Prow Status: 0 out of 1 pjs passed! 👉 Comment `/retest` to rerun only failed tests (if any), or `/test all` to rerun all tests\n",
-			wantMessage:      "🚫 right ERROR - URL_NOT_FOUND\n",
+			wantMessage:      "🚫 right (URL_NOT_FOUND) ERROR\n",
 		},
 	}
 
@@ -2301,13 +2301,14 @@ func TestParseReport(t *testing.T) {
 		expectedJobs int
 		expectNil    bool
 	}{
+		// These tests all test the legacy format.
 		{
 			name:         "parse multiple jobs",
 			comment:      "Prow Status: 0 out of 2 passed\n❌️ foo-job FAILURE - http://foo-status\n❌ bar-job FAILURE - http://bar-status",
 			expectedJobs: 2,
 		},
 		{
-			name:         "parse new format without URL",
+			name:         "parse job without URL",
 			comment:      "Prow Status: 0 out of 2 passed\n❌️ foo-job FAILURE\n❌ bar-job FAILURE",
 			expectedJobs: 2,
 		},
@@ -2345,6 +2346,42 @@ Prow Status: 0 out of 2 pjs passed!
 ❌ bar-job FAILURE - https://bar-status
 `,
 			expectedJobs: 2,
+		},
+		// New Markdown format (link uses Markdown syntax).
+		{
+			name:         "parse multiple jobs (Markdown)",
+			comment:      "Prow Status: 0 out of 2 passed\n❌️ [foo-job](http://foo-status) FAILURE\n❌ [bar-job](http://bar-status) FAILURE",
+			expectedJobs: 2,
+		},
+		{
+			name:         "parse mixed formats (Markdown)",
+			comment:      "Prow Status: 0 out of 2 passed\n❌️ [foo-job](http://foo-status) FAILURE\n❌ bar-job FAILURE\n[Skipped displaying URLs for 1/2 jobs due to reaching gerrit comment size limit]",
+			expectedJobs: 2,
+		},
+		{
+			name:         "parse one job (Markdown)",
+			comment:      "Prow Status: 0 out of 1 passed\n❌ [bar-job](http://bar-status) FAILURE",
+			expectedJobs: 1,
+		},
+		{
+			name:      "do not parse without the header (Markdown)",
+			comment:   "0 out of 1 passed\n❌ [bar-job](http://bar-status) FAILURE",
+			expectNil: true,
+		},
+		{
+			name: "parse with extra stuff at the start as long as the header and jobs start on new lines (Markdown)",
+			comment: `qwerty
+Patch Set 1:
+Prow Status: 0 out of 2 pjs passed!
+❌ [foo-job](https://foo-status) FAILURE
+❌ [bar-job](https://bar-status) FAILURE
+`,
+			expectedJobs: 2,
+		},
+		{
+			name:         "invalid job state (Markdown)",
+			comment:      "Prow Status: 0 out of 1 passed\n❌ [bar-job](http://bar-status) BANANAS",
+			expectedJobs: 0,
 		},
 	}
 	for _, tc := range testcases {
