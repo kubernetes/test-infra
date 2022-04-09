@@ -35,7 +35,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220401' --channel=alpha --networking=calico --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220404' --channel=alpha --networking=calico --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
@@ -104,7 +104,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220401' --channel=alpha --networking=calico --container-runtime=containerd --master-count=3 --node-count=6 --zones=eu-central-1a,eu-central-1b,eu-central-1c --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220404' --channel=alpha --networking=calico --container-runtime=containerd --master-count=3 --node-count=6 --zones=eu-central-1a,eu-central-1b,eu-central-1c --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
@@ -173,7 +173,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220401' --channel=alpha --networking=kubenet --container-runtime=docker --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220404' --channel=alpha --networking=kubenet --container-runtime=docker --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
@@ -239,7 +239,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220401' --channel=alpha --networking=calico --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220404' --channel=alpha --networking=calico --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
@@ -437,7 +437,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images-testing/hvm-ssd/ubuntu-jammy-daily-amd64-server-20220323' --channel=alpha --networking=calico --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images-testing/hvm-ssd/ubuntu-jammy-daily-amd64-server-20220407' --channel=alpha --networking=calico --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
@@ -825,7 +825,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220401' --channel=alpha --networking=kubenet --container-runtime=containerd --override=cluster.spec.cloudControllerManager.cloudProvider=aws --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220404' --channel=alpha --networking=kubenet --container-runtime=containerd --override=cluster.spec.cloudControllerManager.cloudProvider=aws --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/k8s-release-dev/ci/latest.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
@@ -861,7 +861,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-ccm
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "latest", "kops_channel": "alpha", "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-e2e-kops-aws-load-balancer-controller
     branches:
     - master
@@ -911,14 +911,14 @@ presubmits:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/container_runtime: containerd
       test.kops.k8s.io/distro: u2004
-      test.kops.k8s.io/k8s_version: latest
+      test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: calico
       testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-e2e-aws-load-balancer-controller
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "latest", "kops_channel": "alpha", "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-e2e-kops-addon-resource-tracking
     branches:
     - master
@@ -968,14 +968,14 @@ presubmits:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/container_runtime: containerd
       test.kops.k8s.io/distro: u2004
-      test.kops.k8s.io/k8s_version: latest
+      test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: calico
       testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-e2e-aws-addon-resource-tracking
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "latest", "kops_channel": "alpha", "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-e2e-kops-metrics-server
     branches:
     - master
@@ -1025,14 +1025,14 @@ presubmits:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/container_runtime: containerd
       test.kops.k8s.io/distro: u2004
-      test.kops.k8s.io/k8s_version: latest
+      test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: calico
       testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-e2e-aws-metrics-server
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "latest", "kops_channel": "alpha", "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-e2e-kops-pod-identity-webhook
     branches:
     - master
@@ -1082,14 +1082,14 @@ presubmits:
       test.kops.k8s.io/cloud: aws
       test.kops.k8s.io/container_runtime: containerd
       test.kops.k8s.io/distro: u2004
-      test.kops.k8s.io/k8s_version: latest
+      test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: calico
       testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-e2e-aws-pod-identity-webhook
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--override=cluster.spec.externalDNS.provider=external-dns --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "latest", "kops_channel": "alpha", "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--override=cluster.spec.externalDNS.provider=external-dns --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-aws-external-dns
     branches:
     - master
@@ -1121,14 +1121,14 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220401' --channel=alpha --networking=calico --container-runtime=containerd --override=cluster.spec.externalDNS.provider=external-dns --discovery-store=s3://k8s-kops-prow/discovery" \
-            --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/latest.txt \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220404' --channel=alpha --networking=calico --container-runtime=containerd --override=cluster.spec.externalDNS.provider=external-dns --discovery-store=s3://k8s-kops-prow/discovery" \
+            --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
             -- \
             --ginkgo-args="--debug" \
             --test-args="-test.timeout=60m -num-nodes=0" \
-            --test-package-marker=latest.txt \
+            --test-package-marker=stable.txt \
             --parallel=25
         securityContext:
           privileged: true
@@ -1148,14 +1148,14 @@ presubmits:
       test.kops.k8s.io/container_runtime: containerd
       test.kops.k8s.io/distro: u2004
       test.kops.k8s.io/extra_flags: --override=cluster.spec.externalDNS.provider=external-dns --discovery-store=s3://k8s-kops-prow/discovery
-      test.kops.k8s.io/k8s_version: latest
+      test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: calico
       testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-e2e-aws-external-dns
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "feature_flags": "APIServerNodes", "k8s_version": "latest", "kops_channel": "alpha", "networking": "kubenet"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "feature_flags": "APIServerNodes", "k8s_version": "stable", "kops_channel": "alpha", "networking": "kubenet"}
   - name: pull-kops-e2e-aws-apiserver-nodes
     branches:
     - master
@@ -1187,16 +1187,16 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220401' --channel=alpha --networking=kubenet --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220404' --channel=alpha --networking=kubenet --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
             --env=KOPS_FEATURE_FLAGS=APIServerNodes \
-            --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/latest.txt \
+            --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --template-path=/home/prow/go/src/k8s.io/kops/tests/e2e/templates/apiserver.yaml.tmpl \
             --test=kops \
             -- \
             --ginkgo-args="--debug" \
             --test-args="-test.timeout=60m -num-nodes=0" \
-            --test-package-marker=latest.txt \
+            --test-package-marker=stable.txt \
             --parallel=25
         securityContext:
           privileged: true
@@ -1217,14 +1217,14 @@ presubmits:
       test.kops.k8s.io/distro: u2004
       test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
       test.kops.k8s.io/feature_flags: APIServerNodes
-      test.kops.k8s.io/k8s_version: latest
+      test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: kubenet
       testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
       testgrid-days-of-results: '90'
       testgrid-tab-name: pull-kops-e2e-aws-apiserver-nodes
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004arm64", "extra_flags": "--zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "latest", "kops_channel": "alpha", "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004arm64", "extra_flags": "--zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
   - name: pull-kops-e2e-arm64
     branches:
     - master
@@ -1256,14 +1256,14 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20220401' --channel=alpha --networking=calico --container-runtime=containerd --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery" \
-            --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/latest.txt \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20220404' --channel=alpha --networking=calico --container-runtime=containerd --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery" \
+            --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
             -- \
             --ginkgo-args="--debug" \
             --test-args="-test.timeout=60m -num-nodes=0" \
-            --test-package-marker=latest.txt \
+            --test-package-marker=stable.txt \
             --parallel=25
         securityContext:
           privileged: true
@@ -1283,7 +1283,7 @@ presubmits:
       test.kops.k8s.io/container_runtime: containerd
       test.kops.k8s.io/distro: u2004arm64
       test.kops.k8s.io/extra_flags: --zones=eu-central-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery
-      test.kops.k8s.io/k8s_version: latest
+      test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: calico
       testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
@@ -1322,7 +1322,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220401' --channel=alpha --networking=calico --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220404' --channel=alpha --networking=calico --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
@@ -1389,7 +1389,7 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220401' --channel=alpha --networking=calico --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220404' --channel=alpha --networking=calico --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
@@ -1424,7 +1424,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-1-22
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--instance-manager=karpenter --discovery-store=s3://k8s-kops-prow/discovery", "feature_flags": "Karpenter", "k8s_version": "latest", "kops_channel": "alpha", "networking": "cilium"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--instance-manager=karpenter --discovery-store=s3://k8s-kops-prow/discovery", "feature_flags": "Karpenter", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-e2e-aws-karpenter
     branches:
     - master
@@ -1456,15 +1456,15 @@ presubmits:
             -v 2 \
             --up --build --down \
             --cloud-provider=aws \
-            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220401' --channel=alpha --networking=cilium --container-runtime=containerd --instance-manager=karpenter --discovery-store=s3://k8s-kops-prow/discovery" \
+            --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220404' --channel=alpha --networking=cilium --container-runtime=containerd --instance-manager=karpenter --discovery-store=s3://k8s-kops-prow/discovery" \
             --env=KOPS_FEATURE_FLAGS=Karpenter \
-            --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/latest.txt \
+            --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
             --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
             --test=kops \
             -- \
             --ginkgo-args="--debug" \
             --test-args="-test.timeout=60m -num-nodes=0" \
-            --test-package-marker=latest.txt \
+            --test-package-marker=stable.txt \
             --parallel=25
         securityContext:
           privileged: true
@@ -1485,7 +1485,7 @@ presubmits:
       test.kops.k8s.io/distro: u2004
       test.kops.k8s.io/extra_flags: --instance-manager=karpenter --discovery-store=s3://k8s-kops-prow/discovery
       test.kops.k8s.io/feature_flags: Karpenter
-      test.kops.k8s.io/k8s_version: latest
+      test.kops.k8s.io/k8s_version: stable
       test.kops.k8s.io/kops_channel: alpha
       test.kops.k8s.io/networking: cilium
       testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
