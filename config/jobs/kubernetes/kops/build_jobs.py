@@ -855,7 +855,7 @@ def generate_versions():
 ######################
 def generate_pipeline():
     results = []
-    for version in ['master', '1.23', '1.22', '1.21']:
+    for version in ['master', '1.23', '1.22']:
         branch = version if version == 'master' else f"release-{version}"
         publish_version_marker = f"gs://kops-ci/markers/{branch}/latest-ci-updown-green.txt"
         kops_version = f"https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/{branch}/latest-ci.txt" # pylint: disable=line-too-long
@@ -866,7 +866,6 @@ def generate_pipeline():
                 kops_channel='alpha',
                 name_override=f"kops-pipeline-updown-kops{version.replace('.', '')}",
                 networking='calico',
-                irsa=version >= '1.22',
                 extra_dashboards=['kops-versions'],
                 runs_per_day=24,
                 skip_regex=r'\[Slow\]|\[Serial\]',
