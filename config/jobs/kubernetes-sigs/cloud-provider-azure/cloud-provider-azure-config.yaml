@@ -21,6 +21,27 @@ presubmits:
       testgrid-tab-name: pr-cloud-provider-azure-check
       description: "Run lint check tests for cloud-provider-azure."
       testgrid-num-columns-recent: '30'
+  - name: pull-cloud-provider-azure-check-helm
+    run_if_changed: "^helm/"
+    decorate: true
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - test-helm
+    annotations:
+      testgrid-dashboards: provider-azure-cloud-provider-azure
+      testgrid-tab-name: pr-cloud-provider-azure-check-helm
+      description: "Run test-helm for cloud-provider-azure."
+      testgrid-num-columns-recent: '30'
   # pull-cloud-provider-azure-e2e-ccm-vmss-basic-lb runs Azure specific e2e tests with VMSS and basic loadbalancer.
   - name: pull-cloud-provider-azure-e2e-ccm-vmss-basic-lb
     skip_if_only_changed: "^docs/|^site/|^helm/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
