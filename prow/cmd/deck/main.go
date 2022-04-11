@@ -637,8 +637,8 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, authCfgGe
 			&o.github,
 			logrus.WithField("client", "pr-status"))
 
-		clientCreator := func(accessToken string) prstatus.GitHubClient {
-			return o.github.GitHubClientWithAccessToken(accessToken)
+		clientCreator := func(accessToken string) (prstatus.GitHubClient, error) {
+			return o.github.GitHubClientWithAccessToken(accessToken, true)
 		}
 		mux.Handle("/pr-data.js", handleNotCached(
 			prStatusAgent.HandlePrStatus(prStatusAgent, clientCreator)))

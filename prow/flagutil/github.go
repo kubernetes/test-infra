@@ -269,19 +269,11 @@ func (o *GitHubOptions) githubClient(dryRun bool) (github.Client, error) {
 	}
 
 	if o.AppPrivateKeyPath != "" {
-		if err := secret.Add(o.AppPrivateKeyPath); err != nil {
-			return nil, fmt.Errorf("failed to add the the key from --app-private-key-path to secret agent: %w", err)
+		apk, err := o.appPrivateKeyGenerator()
+		if err != nil {
+			return nil, err
 		}
-		options.AppPrivateKey = func() *rsa.PrivateKey {
-			raw := secret.GetTokenGenerator(o.AppPrivateKeyPath)()
-			privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(raw)
-			// TODO alvaroaleman: Add hooks to the SecretAgent
-			if err != nil {
-				panic(fmt.Sprintf("failed to parse private key: %v", err))
-			}
-			return privateKey
-		}
-
+		options.AppPrivateKey = apk
 	}
 
 	optionallyThrottled := func(c github.Client) (github.Client, error) {
@@ -324,11 +316,19 @@ func (o *GitHubOptions) GitHubClient(dryRun bool) (github.Client, error) {
 }
 
 // GitHubClientWithAccessToken creates a GitHub client from an access token.
-func (o *GitHubOptions) GitHubClientWithAccessToken(token string) github.Client {
+func (o *GitHubOptions) GitHubClientWithAccessToken(token string, usePAT bool) (github.Client, error) {
 	options := o.baseClientOptions()
 	options.GetToken = func() []byte { return []byte(token) }
+	if o.AppPrivateKeyPath != "" {
+		apk, err := o.appPrivateKeyGenerator()
+		if err != nil {
+			return nil, err
+		}
+		options.AppPrivateKey = apk
+	}
+	options.UsePAT = usePAT
 	_, _, client := github.NewClientFromOptions(logrus.Fields{}, options)
-	return client
+	return client, nil
 }
 
 // GitClient returns a Git client.
@@ -369,4 +369,19 @@ func (o *GitHubOptions) getGitAuthentication(dryRun bool) (string, git.GitTokenG
 		return "", nil, fmt.Errorf("error getting bot name: %w", err)
 	}
 	return login, git.GitTokenGenerator(o.tokenGenerator), nil
+}
+
+func (o *GitHubOptions) appPrivateKeyGenerator() (func() *rsa.PrivateKey, error) {
+	if err := secret.Add(o.AppPrivateKeyPath); err != nil {
+		return nil, fmt.Errorf("failed to add the the key from --app-private-key-path to secret agent: %w", err)
+	}
+	return func() *rsa.PrivateKey {
+		raw := secret.GetTokenGenerator(o.AppPrivateKeyPath)()
+		privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(raw)
+		// TODO alvaroaleman: Add hooks to the SecretAgent
+		if err != nil {
+			panic(fmt.Sprintf("failed to parse private key: %v", err))
+		}
+		return privateKey
+	}, nil
 }

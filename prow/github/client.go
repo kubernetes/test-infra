@@ -629,6 +629,7 @@ type ClientOptions struct {
 	GetToken      func() []byte
 	AppID         string
 	AppPrivateKey func() *rsa.PrivateKey
+	UsePAT        bool // use the provided PAT even IF AppID is provided, only relevant when using Apps Auth
 
 	// the following fields determine which server we talk to
 	GraphqlEndpoint string
@@ -714,6 +715,7 @@ func NewClientFromOptions(fields logrus.Fields, options ClientOptions) (TokenGen
 		Timeout:   options.MaxRequestTime,
 	}
 	graphQLTransport := newAddHeaderTransport(options.BaseRoundTripper)
+	usesAppsAuth := options.AppID != "" && !options.UsePAT // even if the AppID is set, we may want to utilize the provided PAT instead to function on behalf of a user
 	c := &client{
 		logger: logrus.WithFields(fields).WithField("client", "github"),
 		gqlc: &graphQLGitHubAppsAuthClientWrapper{Client: githubql.NewEnterpriseClient(
@@ -733,7 +735,7 @@ func NewClientFromOptions(fields logrus.Fields, options ClientOptions) (TokenGen
 			getToken:      options.GetToken,
 			censor:        options.Censor,
 			dry:           options.DryRun,
-			usesAppsAuth:  options.AppID != "",
+			usesAppsAuth:  usesAppsAuth,
 			maxRetries:    options.MaxRetries,
 			max404Retries: options.Max404Retries,
 			initialDelay:  options.InitialDelay,
@@ -744,7 +746,7 @@ func NewClientFromOptions(fields logrus.Fields, options ClientOptions) (TokenGen
 
 	var tokenGenerator func(_ string) (string, error)
 	var userGenerator func() (string, error)
-	if options.AppID != "" {
+	if usesAppsAuth {
 		appsTransport := &appsRoundTripper{
 			appID:        options.AppID,
 			privateKey:   options.AppPrivateKey,

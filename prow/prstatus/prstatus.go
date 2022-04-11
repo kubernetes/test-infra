@@ -170,7 +170,7 @@ type GitHubClient interface {
 	BotUser() (*github.UserData, error)
 }
 
-type githubClientCreator func(accessToken string) GitHubClient
+type githubClientCreator func(accessToken string) (GitHubClient, error)
 
 // HandlePrStatus returns a http handler function that handles request to /pr-status
 // endpoint. The handler takes user access token stored in the cookie to query to GitHub on behalf
@@ -206,8 +206,11 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler pullRequestQueryHandler, c
 		var user *github.User
 		var botUser *github.UserData
 		if ok && token.Valid() {
-			githubClient := createClient(token.AccessToken)
-			var err error
+			githubClient, err := createClient(token.AccessToken)
+			if err != nil {
+				serverError("Error creating github client", err)
+				return
+			}
 			botUser, err = githubClient.BotUser()
 			user = &github.User{Login: botUser.Login}
 			if err != nil {
@@ -222,60 +225,63 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler pullRequestQueryHandler, c
 					return
 				}
 			}
-		}
 
-		if user != nil {
-			login := user.Login
-			data.Login = true
-			// Saves login. We save the login under 2 cookies. One for the use of client to render the
-			// data and one encoded for server to verify the identity of the authenticated user.
-			http.SetCookie(w, &http.Cookie{
-				Name:    loginSession,
-				Value:   login,
-				Path:    "/",
-				Expires: time.Now().Add(time.Hour * 24 * 30),
-				Secure:  true,
-			})
-			session.Values[loginKey] = login
-			if err := session.Save(r, w); err != nil {
-				serverError("Save oauth session", err)
-				return
-			}
-
-			// Construct query
-			ghc := da.github.GitHubClientWithAccessToken(token.AccessToken) // TODO(fejta): we should not recreate the client
-			query := da.ConstructSearchQuery(login)
-			if err := r.ParseForm(); err == nil {
-				if q := r.Form.Get("query"); q != "" {
-					query = q
-				}
-			}
-			// If neither repo nor org is specified in the search query. We limit the search to repos that
-			// are configured with either Prow or Tide.
-			if !queryConstrainsRepos(query) {
-				for _, v := range da.repos {
-					query += fmt.Sprintf(" repo:\"%s\"", v)
-				}
-			}
-			pullRequests, err := queryHandler.queryPullRequests(context.Background(), ghc, query)
-			if err != nil {
-				serverError("Error with querying user data.", err)
-				return
-			}
-			var pullRequestWithContexts []PullRequestWithContexts
-			for _, pr := range pullRequests {
-				prcontexts, err := queryHandler.getHeadContexts(ghc, pr)
-				if err != nil {
-					serverError("Error with getting head context of pr", err)
-					continue
-				}
-				pullRequestWithContexts = append(pullRequestWithContexts, PullRequestWithContexts{
-					Contexts:    prcontexts,
-					PullRequest: pr,
+			if user != nil {
+				login := user.Login
+				data.Login = true
+				// Saves login. We save the login under 2 cookies. One for the use of client to render the
+				// data and one encoded for server to verify the identity of the authenticated user.
+				http.SetCookie(w, &http.Cookie{
+					Name:    loginSession,
+					Value:   login,
+					Path:    "/",
+					Expires: time.Now().Add(time.Hour * 24 * 30),
+					Secure:  true,
 				})
-			}
+				session.Values[loginKey] = login
+				if err := session.Save(r, w); err != nil {
+					serverError("Save oauth session", err)
+					return
+				}
 
-			data.PullRequestsWithContexts = pullRequestWithContexts
+				// Construct query
+				if err != nil {
+					serverError("Error creating github client", err)
+					return
+				}
+				query := da.ConstructSearchQuery(login)
+				if err := r.ParseForm(); err == nil {
+					if q := r.Form.Get("query"); q != "" {
+						query = q
+					}
+				}
+				// If neither repo nor org is specified in the search query. We limit the search to repos that
+				// are configured with either Prow or Tide.
+				if !queryConstrainsRepos(query) {
+					for _, v := range da.repos {
+						query += fmt.Sprintf(" repo:\"%s\"", v)
+					}
+				}
+				pullRequests, err := queryHandler.queryPullRequests(context.Background(), githubClient, query)
+				if err != nil {
+					serverError("Error with querying user data.", err)
+					return
+				}
+				var pullRequestWithContexts []PullRequestWithContexts
+				for _, pr := range pullRequests {
+					prcontexts, err := queryHandler.getHeadContexts(githubClient, pr)
+					if err != nil {
+						serverError("Error with getting head context of pr", err)
+						continue
+					}
+					pullRequestWithContexts = append(pullRequestWithContexts, PullRequestWithContexts{
+						Contexts:    prcontexts,
+						PullRequest: pr,
+					})
+				}
+
+				data.PullRequestsWithContexts = pullRequestWithContexts
+			}
 		}
 
 		marshaledData, err := json.Marshal(data)
