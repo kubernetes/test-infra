@@ -110,7 +110,7 @@ func prowYAMLGetter(
 	// TODO(mpherman): This is to hopefully mittigate issue with gerrit merges. Need to come up with a solution that checks
 	// each CLs merge strategy as they can differ. ifNecessary is just the gerrit default
 	var mergeMethod types.PullRequestMergeType
-	if c.Gerrit.DeckURL != "" {
+	if c.Gerrit.OrgReposConfig != nil {
 		mergeMethod = types.MergeIfNecessary
 	} else {
 		mergeMethod = c.Tide.MergeMethod(orgRepo)
