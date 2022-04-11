@@ -40,6 +40,7 @@ import (
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/git/types"
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/io"
@@ -657,14 +658,14 @@ type mergeChecker struct {
 	ghc    githubClient
 
 	sync.Mutex
-	cache map[config.OrgRepo]map[github.PullRequestMergeType]bool
+	cache map[config.OrgRepo]map[types.PullRequestMergeType]bool
 }
 
 func newMergeChecker(cfg config.Getter, ghc githubClient) *mergeChecker {
 	m := &mergeChecker{
 		config: cfg,
 		ghc:    ghc,
-		cache:  map[config.OrgRepo]map[github.PullRequestMergeType]bool{},
+		cache:  map[config.OrgRepo]map[types.PullRequestMergeType]bool{},
 	}
 
 	go m.clearCache()
@@ -678,12 +679,12 @@ func (m *mergeChecker) clearCache() {
 	for {
 		<-ticker.C
 		m.Lock()
-		m.cache = make(map[config.OrgRepo]map[github.PullRequestMergeType]bool)
+		m.cache = make(map[config.OrgRepo]map[types.PullRequestMergeType]bool)
 		m.Unlock()
 	}
 }
 
-func (m *mergeChecker) repoMethods(orgRepo config.OrgRepo) (map[github.PullRequestMergeType]bool, error) {
+func (m *mergeChecker) repoMethods(orgRepo config.OrgRepo) (map[types.PullRequestMergeType]bool, error) {
 	m.Lock()
 	defer m.Unlock()
 
@@ -700,10 +701,10 @@ func (m *mergeChecker) repoMethods(orgRepo config.OrgRepo) (map[github.PullReque
 			"AllowSquashMerge": fullRepo.AllowSquashMerge,
 			"AllowRebaseMerge": fullRepo.AllowRebaseMerge,
 		}).Debug("GetRepo returns these values for repo methods")
-		repoMethods = map[github.PullRequestMergeType]bool{
-			github.MergeMerge:  fullRepo.AllowMergeCommit,
-			github.MergeSquash: fullRepo.AllowSquashMerge,
-			github.MergeRebase: fullRepo.AllowRebaseMerge,
+		repoMethods = map[types.PullRequestMergeType]bool{
+			types.MergeMerge:  fullRepo.AllowMergeCommit,
+			types.MergeSquash: fullRepo.AllowSquashMerge,
+			types.MergeRebase: fullRepo.AllowRebaseMerge,
 		}
 		m.cache[orgRepo] = repoMethods
 	}
@@ -722,7 +723,7 @@ func (m *mergeChecker) isAllowed(pr *PullRequest) (string, error) {
 		// This should be impossible.
 		return "", fmt.Errorf("Programmer error! Failed to determine a merge method: %w", err)
 	}
-	if mergeMethod == github.MergeRebase && !pr.CanBeRebased {
+	if mergeMethod == types.MergeRebase && !pr.CanBeRebased {
 		return "PR can't be rebased", nil
 	}
 	orgRepo := config.OrgRepo{Org: string(pr.Repository.Owner.Login), Repo: string(pr.Repository.Name)}
@@ -1221,7 +1222,7 @@ func prowJobListHasProwJobWithMatchingHeadSHA(pjs *prowapi.ProwJobList, headSHA 
 	return false
 }
 
-func (c *Controller) prepareMergeDetails(commitTemplates config.TideMergeCommitTemplate, pr PullRequest, mergeMethod github.PullRequestMergeType) github.MergeDetails {
+func (c *Controller) prepareMergeDetails(commitTemplates config.TideMergeCommitTemplate, pr PullRequest, mergeMethod types.PullRequestMergeType) github.MergeDetails {
 	ghMergeDetails := github.MergeDetails{
 		SHA:         string(pr.HeadRefOID),
 		MergeMethod: string(mergeMethod),
@@ -1250,7 +1251,7 @@ func (c *Controller) prepareMergeDetails(commitTemplates config.TideMergeCommitT
 	return ghMergeDetails
 }
 
-func prMergeMethod(c config.Tide, pr *PullRequest) (github.PullRequestMergeType, error) {
+func prMergeMethod(c config.Tide, pr *PullRequest) (types.PullRequestMergeType, error) {
 	repo := config.OrgRepo{Org: string(pr.Repository.Owner.Login), Repo: string(pr.Repository.Name)}
 	method := c.MergeMethod(repo)
 	squashLabel := c.SquashLabel
@@ -1263,13 +1264,13 @@ func prMergeMethod(c config.Tide, pr *PullRequest) (github.PullRequestMergeType,
 			case "":
 				continue
 			case squashLabel:
-				method = github.MergeSquash
+				method = types.MergeSquash
 				labelCount++
 			case rebaseLabel:
-				method = github.MergeRebase
+				method = types.MergeRebase
 				labelCount++
 			case mergeLabel:
-				method = github.MergeMerge
+				method = types.MergeMerge
 				labelCount++
 			}
 			if labelCount > 1 {

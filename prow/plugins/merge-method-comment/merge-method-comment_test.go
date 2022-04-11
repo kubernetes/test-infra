@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/git/types"
 	"k8s.io/test-infra/prow/github"
 )
 
@@ -94,7 +95,7 @@ func TestHandlePR(t *testing.T) {
 		name               string
 		client             *ghc
 		event              github.PullRequestEvent
-		defaultMergeMethod github.PullRequestMergeType
+		defaultMergeMethod types.PullRequestMergeType
 		squashLabel        string
 		mergeLabel         string
 		err                error
@@ -108,7 +109,7 @@ func TestHandlePR(t *testing.T) {
 				PullRequest: singleCommitPR,
 			},
 			squashLabel:        "squash-label",
-			defaultMergeMethod: github.MergeSquash,
+			defaultMergeMethod: types.MergeSquash,
 		},
 		{
 			name:   "multiple commits, merge by-default, squash label configured",
@@ -117,7 +118,7 @@ func TestHandlePR(t *testing.T) {
 				Action:      github.PullRequestActionOpened,
 				PullRequest: multipleCommitsPR,
 			},
-			defaultMergeMethod: github.MergeMerge,
+			defaultMergeMethod: types.MergeMerge,
 			squashLabel:        "squash-label",
 			comments: []github.IssueComment{
 				{
@@ -132,7 +133,7 @@ func TestHandlePR(t *testing.T) {
 				Action:      github.PullRequestActionOpened,
 				PullRequest: multipleCommitsPR,
 			},
-			defaultMergeMethod: github.MergeMerge,
+			defaultMergeMethod: types.MergeMerge,
 			comments: []github.IssueComment{
 				{
 					Body: "Commits will be merged, as no squash labels are defined",
@@ -146,7 +147,7 @@ func TestHandlePR(t *testing.T) {
 				Action:      github.PullRequestActionOpened,
 				PullRequest: multipleCommitsPR,
 			},
-			defaultMergeMethod: github.MergeSquash,
+			defaultMergeMethod: types.MergeSquash,
 			mergeLabel:         "merge-label",
 			comments: []github.IssueComment{
 				{
@@ -161,7 +162,7 @@ func TestHandlePR(t *testing.T) {
 				Action:      github.PullRequestActionOpened,
 				PullRequest: multipleCommitsPR,
 			},
-			defaultMergeMethod: github.MergeSquash,
+			defaultMergeMethod: types.MergeSquash,
 			comments: []github.IssueComment{
 				{
 					Body: "Commits will be squashed, as no merge labels are defined",
@@ -176,7 +177,7 @@ func TestHandlePR(t *testing.T) {
 						{
 							User: github.User{Login: "k8s-bot"},
 							Body: fmt.Sprintf("This PR has multiple commits, and the default merge method is: %s.\n%s",
-								github.MergeMerge,
+								types.MergeMerge,
 								"Commits will be merged, as no squash labels are defined"),
 						},
 					},
@@ -186,7 +187,7 @@ func TestHandlePR(t *testing.T) {
 				Action:      github.PullRequestActionOpened,
 				PullRequest: multipleCommitsPR,
 			},
-			defaultMergeMethod: github.MergeMerge,
+			defaultMergeMethod: types.MergeMerge,
 			comments: []github.IssueComment{
 				{
 					Body: "Commits will be merged, as no squash labels are defined",
@@ -198,7 +199,7 @@ func TestHandlePR(t *testing.T) {
 			client: &ghc{
 				listCommentsErr: fmt.Errorf("cannot list comments"),
 			},
-			defaultMergeMethod: github.MergeMerge,
+			defaultMergeMethod: types.MergeMerge,
 			event: github.PullRequestEvent{
 				Action:      github.PullRequestActionOpened,
 				PullRequest: multipleCommitsPR,
@@ -210,7 +211,7 @@ func TestHandlePR(t *testing.T) {
 			client: &ghc{
 				createCommentErr: fmt.Errorf("cannot create comment"),
 			},
-			defaultMergeMethod: github.MergeMerge,
+			defaultMergeMethod: types.MergeMerge,
 			event: github.PullRequestEvent{
 				Action:      github.PullRequestActionSynchronize,
 				PullRequest: multipleCommitsPR,
@@ -224,7 +225,7 @@ func TestHandlePR(t *testing.T) {
 				Action:      github.PullRequestActionSynchronize,
 				PullRequest: multipleCommitsPR,
 			},
-			defaultMergeMethod: github.MergeMerge,
+			defaultMergeMethod: types.MergeMerge,
 			comments: []github.IssueComment{
 				{
 					Body: "Commits will be merged, as no squash labels are defined",
@@ -238,7 +239,7 @@ func TestHandlePR(t *testing.T) {
 				Action:      github.PullRequestActionReopened,
 				PullRequest: multipleCommitsPR,
 			},
-			defaultMergeMethod: github.MergeMerge,
+			defaultMergeMethod: types.MergeMerge,
 			comments: []github.IssueComment{
 				{
 					Body: "Commits will be merged, as no squash labels are defined",
@@ -252,7 +253,7 @@ func TestHandlePR(t *testing.T) {
 				Action:      github.PullRequestActionEdited,
 				PullRequest: multipleCommitsPR,
 			},
-			defaultMergeMethod: github.MergeMerge,
+			defaultMergeMethod: types.MergeMerge,
 			comments: []github.IssueComment{
 				{
 					Body: "Commits will be merged, as no squash labels are defined",
@@ -266,7 +267,7 @@ func TestHandlePR(t *testing.T) {
 				Action:      github.PullRequestActionReviewRequested,
 				PullRequest: multipleCommitsPR,
 			},
-			defaultMergeMethod: github.MergeMerge,
+			defaultMergeMethod: types.MergeMerge,
 		},
 	}
 
@@ -281,7 +282,7 @@ func TestHandlePR(t *testing.T) {
 
 			c.event.Number = 101
 			config := config.Tide{
-				MergeType: map[string]github.PullRequestMergeType{
+				MergeType: map[string]types.PullRequestMergeType{
 					"kubernetes/kubernetes": c.defaultMergeMethod,
 				},
 				SquashLabel: c.squashLabel,
