@@ -235,7 +235,7 @@ type fakeAuthenticatedUserIdentifier struct {
 	login string
 }
 
-func (a *fakeAuthenticatedUserIdentifier) LoginForRequester(requester, token string) (string, error) {
+func (a *fakeAuthenticatedUserIdentifier) LoginForRequester(requester, token string, usePAT bool) (string, error) {
 	return a.login, nil
 }
 
