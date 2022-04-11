@@ -14,12 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package git stores types used by all git clients
+// Package types stores types used by all git clients
 package types
 
-// PullRequestMergeType enumerates the types of merges the GitHub API can
-// perform
-// https://developer.github.com/v3/pulls/#merge-a-pull-request-merge-button
+// PullRequestMergeType enumerates the types of merges used by Prow for either Github or Gerrit API
 type PullRequestMergeType string
 
 // Possible types of merges for the GitHub merge API
