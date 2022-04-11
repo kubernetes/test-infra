@@ -236,6 +236,15 @@ func (a *Agent) InitializeCommentPruner(org, repo string, pr int) {
 	)
 }
 
+// TookAction indicates whether any client with implemented Used() function was used
+func (a *Agent) TookAction() bool {
+	jiraClientTookAction := false
+	if a.JiraClient != nil {
+		jiraClientTookAction = a.JiraClient.Used()
+	}
+	return a.GitHubClient.Used() || a.OwnersClient.Used() || a.BugzillaClient.Used() || jiraClientTookAction
+}
+
 // CommentPruner will return the commentpruner.EventClient attached to the agent or an error
 // if one is not attached.
 func (a *Agent) CommentPruner() (*commentpruner.EventClient, error) {

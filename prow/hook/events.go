@@ -19,6 +19,7 @@ package hook
 import (
 	"fmt"
 	"runtime/debug"
+	"strconv"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -90,7 +91,7 @@ func (s *Server) handleReviewEvent(l *logrus.Entry, re github.ReviewEvent) {
 				re.PullRequest.Number,
 			)
 			start := time.Now()
-			labels := prometheus.Labels{"event_type": l.Data[eventTypeField].(string), "action": string(re.Action), "plugin": p}
+			labels := prometheus.Labels{"event_type": l.Data[eventTypeField].(string), "action": string(re.Action), "plugin": p, "took_action": strconv.FormatBool(agent.TookAction())}
 			if err := errorOnPanic(func() error { return h(agent, re) }); err != nil {
 				agent.Logger.WithError(err).Error("Error handling ReviewEvent.")
 				s.Metrics.PluginHandleErrors.With(labels).Inc()
@@ -147,7 +148,7 @@ func (s *Server) handleReviewCommentEvent(l *logrus.Entry, rce github.ReviewComm
 				rce.PullRequest.Number,
 			)
 			start := time.Now()
-			labels := prometheus.Labels{"event_type": l.Data[eventTypeField].(string), "action": string(rce.Action), "plugin": p}
+			labels := prometheus.Labels{"event_type": l.Data[eventTypeField].(string), "action": string(rce.Action), "plugin": p, "took_action": strconv.FormatBool(agent.TookAction())}
 			if err := errorOnPanic(func() error { return h(agent, rce) }); err != nil {
 				agent.Logger.WithError(err).Error("Error handling ReviewCommentEvent.")
 				s.Metrics.PluginHandleErrors.With(labels).Inc()
@@ -204,7 +205,7 @@ func (s *Server) handlePullRequestEvent(l *logrus.Entry, pr github.PullRequestEv
 				pr.PullRequest.Number,
 			)
 			start := time.Now()
-			labels := prometheus.Labels{"event_type": l.Data[eventTypeField].(string), "action": string(pr.Action), "plugin": p}
+			labels := prometheus.Labels{"event_type": l.Data[eventTypeField].(string), "action": string(pr.Action), "plugin": p, "took_action": strconv.FormatBool(agent.TookAction())}
 			if err := errorOnPanic(func() error { return h(agent, pr) }); err != nil {
 				agent.Logger.WithError(err).Error("Error handling PullRequestEvent.")
 				s.Metrics.PluginHandleErrors.With(labels).Inc()
@@ -257,7 +258,7 @@ func (s *Server) handlePushEvent(l *logrus.Entry, pe github.PushEvent) {
 			defer s.wg.Done()
 			agent := plugins.NewAgent(s.ConfigAgent, s.Plugins, s.ClientAgent, pe.Repo.Owner.Login, s.Metrics.Metrics, l, p)
 			start := time.Now()
-			labels := prometheus.Labels{"event_type": l.Data[eventTypeField].(string), "action": "none", "plugin": p}
+			labels := prometheus.Labels{"event_type": l.Data[eventTypeField].(string), "action": "none", "plugin": p, "took_action": strconv.FormatBool(agent.TookAction())}
 			if err := errorOnPanic(func() error { return h(agent, pe) }); err != nil {
 				agent.Logger.WithError(err).Error("Error handling PushEvent.")
 				s.Metrics.PluginHandleErrors.With(labels).Inc()
@@ -288,7 +289,7 @@ func (s *Server) handleIssueEvent(l *logrus.Entry, i github.IssueEvent) {
 				i.Issue.Number,
 			)
 			start := time.Now()
-			labels := prometheus.Labels{"event_type": l.Data[eventTypeField].(string), "action": string(i.Action), "plugin": p}
+			labels := prometheus.Labels{"event_type": l.Data[eventTypeField].(string), "action": string(i.Action), "plugin": p, "took_action": strconv.FormatBool(agent.TookAction())}
 			if err := errorOnPanic(func() error { return h(agent, i) }); err != nil {
 				agent.Logger.WithError(err).Error("Error handling IssueEvent.")
 				s.Metrics.PluginHandleErrors.With(labels).Inc()
@@ -347,7 +348,7 @@ func (s *Server) handleIssueCommentEvent(l *logrus.Entry, ic github.IssueComment
 				ic.Issue.Number,
 			)
 			start := time.Now()
-			labels := prometheus.Labels{"event_type": l.Data[eventTypeField].(string), "action": string(ic.Action), "plugin": p}
+			labels := prometheus.Labels{"event_type": l.Data[eventTypeField].(string), "action": string(ic.Action), "plugin": p, "took_action": strconv.FormatBool(agent.TookAction())}
 			if err := errorOnPanic(func() error { return h(agent, ic) }); err != nil {
 				agent.Logger.WithError(err).Error("Error handling IssueCommentEvent.")
 				s.Metrics.PluginHandleErrors.With(labels).Inc()
@@ -401,7 +402,7 @@ func (s *Server) handleStatusEvent(l *logrus.Entry, se github.StatusEvent) {
 			defer s.wg.Done()
 			agent := plugins.NewAgent(s.ConfigAgent, s.Plugins, s.ClientAgent, se.Repo.Owner.Login, s.Metrics.Metrics, l, p)
 			start := time.Now()
-			labels := prometheus.Labels{"event_type": l.Data[eventTypeField].(string), "action": "none", "plugin": p}
+			labels := prometheus.Labels{"event_type": l.Data[eventTypeField].(string), "action": "none", "plugin": p, "took_action": strconv.FormatBool(agent.TookAction())}
 			if err := errorOnPanic(func() error { return h(agent, se) }); err != nil {
 				agent.Logger.WithError(err).Error("Error handling StatusEvent.")
 				s.Metrics.PluginHandleErrors.With(labels).Inc()
@@ -438,7 +439,7 @@ func (s *Server) handleGenericComment(l *logrus.Entry, ce *github.GenericComment
 				ce.Number,
 			)
 			start := time.Now()
-			labels := prometheus.Labels{"event_type": l.Data[eventTypeField].(string), "action": string(ce.Action), "plugin": p}
+			labels := prometheus.Labels{"event_type": l.Data[eventTypeField].(string), "action": string(ce.Action), "plugin": p, "took_action": strconv.FormatBool(agent.TookAction())}
 			if err := errorOnPanic(func() error { return h(agent, *ce) }); err != nil {
 				agent.Logger.WithError(err).Error("Error handling GenericCommentEvent.")
 				s.Metrics.PluginHandleErrors.With(labels).Inc()

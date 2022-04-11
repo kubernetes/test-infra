@@ -36,11 +36,11 @@ var (
 		Name:    "prow_plugin_handle_duration_seconds",
 		Help:    "How long Prow took to handle an event by plugin, event type and action.",
 		Buckets: []float64{0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10, 20, 40, 80, 160, 320, 640},
-	}, []string{"event_type", "action", "plugin"})
+	}, []string{"event_type", "action", "plugin", "took_action"})
 	pluginHandleErrors = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "prow_plugin_handle_errors",
 		Help: "Prow errors handling an event by plugin, event type and action",
-	}, []string{"event_type", "action", "plugin"})
+	}, []string{"event_type", "action", "plugin", "took_action"})
 )
 
 func init() {
