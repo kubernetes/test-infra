@@ -316,6 +316,57 @@ periodics:
     testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
     description: "Runs Azure specific tests periodically with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure)."
 - interval: 24h
+  name: cloud-provider-azure-master-windows-capz
+  decorate: true
+  decoration_config:
+    timeout: 5h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api-provider-azure
+      base_ref: release-1.2
+      path_alias: sigs.k8s.io/cluster-api-provider-azure
+      workdir: true
+    - org: kubernetes-sigs
+      repo: cloud-provider-azure
+      base_ref: master
+      path_alias: sigs.k8s.io/cloud-provider-azure
+      workdir: false
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220411-81093dd8e9-master
+        command:
+        - runner.sh
+        args:
+        - ./scripts/ci-entrypoint.sh
+        - bash
+        - -c
+        - >-
+          cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
+          make test-ccm-e2e
+        securityContext:
+          privileged: true
+        env:
+        - name: TEST_CCM
+          value: "true"
+        - name: AZURE_LOADBALANCER_SKU
+          value: "standard"
+        - name: CONTROL_PLANE_MACHINE_COUNT
+          value: "3"
+        - name: TEST_WINDOWS
+          value: "true"
+        - name: WINDOWS_FLAVOR
+          value: "containerd-2022"
+  annotations:
+    testgrid-dashboards: provider-azure-cloud-provider-azure
+    testgrid-tab-name: cloud-provider-azure-master-windows-capz
+    testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
+    description: "[Windows] Runs Azure specific tests periodically with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure)."
+- interval: 24h
   # cloud-provider-azure-autoscaling runs node autoscaling tests periodically.
   name: cloud-provider-azure-autoscaling
   decorate: true
@@ -497,6 +548,67 @@ periodics:
     testgrid-tab-name: cloud-provider-azure-conformance-capz
     testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
     description: "Runs Kubernetes conformance tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure)."
+- interval: 24h
+  name: cloud-provider-azure-conformance-windows-capz
+  decorate: true
+  decoration_config:
+    timeout: 5h
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-azure
+    base_ref: release-1.2
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+    workdir: true
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: release-1.23
+    path_alias: k8s.io/kubernetes
+    workdir: false
+  - org: kubernetes-sigs
+    repo: cloud-provider-azure
+    base_ref: master
+    path_alias: sigs.k8s.io/cloud-provider-azure
+    workdir: false
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220411-81093dd8e9-master
+      command:
+      - runner.sh
+      args:
+      - ./scripts/ci-entrypoint.sh
+      - bash
+      - -c
+      - >-
+        cp ./kubeconfig ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure/kubeconfig &&
+        cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
+        make test-e2e-capz
+      securityContext:
+        privileged: true
+      env:
+      - name: TEST_CCM
+        value: "true"
+      - name: AZURE_LOADBALANCER_SKU
+        value: "standard"
+      - name: KUBERNETES_VERSION
+        value: 1.23.5
+      - name: GINKGO_ARGS
+        value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --test.parallel=30 --report-dir=/logs/artifacts --disable-log-dump=true
+      - name: CONTROL_PLANE_MACHINE_COUNT
+        value: "3"
+      - name: TEST_WINDOWS
+        value: "true"
+      - name: WINDOWS_FLAVOR
+        value: "containerd-2022"
+  annotations:
+    testgrid-dashboards: provider-azure-cloud-provider-azure
+    testgrid-tab-name: cloud-provider-azure-conformance-windows-capz
+    testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
+    description: "[Windows] Runs Kubernetes conformance tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure)."
 - interval: 24h
   # cloud-provider-azure-slow runs Kubernetes slow tests periodically.
   name: cloud-provider-azure-slow
