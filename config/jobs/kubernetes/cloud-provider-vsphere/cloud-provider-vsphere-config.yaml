@@ -246,6 +246,40 @@ presubmits:
       testgrid-tab-name: pr-verify-test-coverage
       description: Shows the test coverage of the Golang sources
 
+  # Executes the e2e tests.
+  - name: pull-cloud-provider-vsphere-e2e-test
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+      # Borrows CAPV credentials for cloud provider e2e testing
+      preset-cluster-api-provider-vsphere-e2e-config: "true"
+      preset-cluster-api-provider-vsphere-gcs-creds: "true"
+      preset-kind-volume-mounts: "true"
+    branches:
+    - ^master$
+    path_alias: k8s.io/cloud-provider-vsphere
+    skip_submodules: true
+    always_run: false
+    run_if_changed: '\.go$|go.mod'
+    skip_report: false
+    optional: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+        command:
+        - runner.sh
+        args:
+        - ./hack/e2e.sh
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: "4000m"
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+
 postsubmits:
   kubernetes/cloud-provider-vsphere:
 
