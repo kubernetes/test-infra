@@ -683,6 +683,8 @@ presubmits:
               value: "Standard_D4s_v3"
             - name: DISABLE_ZONE
               value: "true"
+            - name: KUBERNETES_VERSION
+              value: 1.23.5
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
       testgrid-tab-name: pull-azuredisk-csi-driver-e2e-capz-windows-2019
@@ -732,6 +734,8 @@ presubmits:
               value: "Standard_D4s_v3"
             - name: DISABLE_ZONE
               value: "true"
+            - name: KUBERNETES_VERSION
+              value: 1.23.5
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
       testgrid-tab-name: pull-azuredisk-csi-driver-e2e-capz-windows-2022
