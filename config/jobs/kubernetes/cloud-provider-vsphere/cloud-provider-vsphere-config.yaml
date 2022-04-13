@@ -265,7 +265,7 @@ presubmits:
     optional: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220412-bafd59ddb3-master
         command:
         - runner.sh
         args:
