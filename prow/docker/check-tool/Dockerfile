@@ -7,7 +7,7 @@ FROM golang:1.18.1 as binary_tools_context
 
 # Pinned versions of stuff
 ENV GOIMPORTS_VERSION=379209517ffe
-ENV GOLANGCI_LINT_VERSION=v1.23.1
+ENV GOLANGCI_LINT_VERSION=v1.44.0
 ENV HADOLINT_VERSION=v1.17.2
 ENV HELM_VERSION=v3.4.1
 ENV KUBECTL_VERSION=v1.16.0
@@ -35,8 +35,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     xz-utils
 
 # Build and install a bunch of Go tools
-RUN go get -ldflags="-s -w" golang.org/x/tools/cmd/goimports@${GOIMPORTS_VERSION}
-RUN go get -ldflags="-s -w" github.com/golangci/golangci-lint/cmd/golangci-lint@${GOLANGCI_LINT_VERSION}
+RUN go install -ldflags="-s -w" golang.org/x/tools/cmd/goimports@${GOIMPORTS_VERSION}
+RUN go install -ldflags="-s -w" github.com/golangci/golangci-lint/cmd/golangci-lint@${GOLANGCI_LINT_VERSION}
 
 # Hadolint linter
 ADD https://github.com/hadolint/hadolint/releases/download/${HADOLINT_VERSION}/hadolint-Linux-x86_64 ${OUTDIR}/usr/bin/hadolint
