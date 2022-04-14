@@ -552,8 +552,6 @@ presubmits:
               value: "true"
             - name: TEST_WINDOWS
               value: "true"
-            - name: WINDOWS_USE_HOST_PROCESS_CONTAINERS
-              value: "true"
             - name: WINDOWS_FLAVOR
               value: "containerd-2022"
             - name: WINDOWS_USE_HOST_PROCESS_CONTAINERS
