@@ -21,7 +21,7 @@ presubmits:
         - entrypoint
         - make
         - build
-        image: quay.io/multicloudlab/build-tool:v20220315-60364bb6d
+        image: quay.io/multicloudlab/build-tool:v20220414-4b40fdbb8
         name: ""
         securityContext:
           privileged: true
@@ -72,7 +72,7 @@ presubmits:
         - entrypoint
         - make
         - test
-        image: quay.io/multicloudlab/build-tool:v20220315-60364bb6d
+        image: quay.io/multicloudlab/build-tool:v20220414-4b40fdbb8
         name: ""
         securityContext:
           privileged: true
@@ -120,7 +120,7 @@ postsubmits:
         - entrypoint
         - make
         - test
-        image: quay.io/multicloudlab/build-tool:v20220315-60364bb6d
+        image: quay.io/multicloudlab/build-tool:v20220414-4b40fdbb8
         name: ""
         securityContext:
           privileged: true
@@ -143,7 +143,7 @@ postsubmits:
         - entrypoint
         - make
         - build
-        image: quay.io/multicloudlab/build-tool:v20220315-60364bb6d
+        image: quay.io/multicloudlab/build-tool:v20220414-4b40fdbb8
         name: ""
         securityContext:
           privileged: true
@@ -167,7 +167,7 @@ postsubmits:
         - entrypoint
         - make
         - images
-        image: quay.io/multicloudlab/build-tool:v20220315-60364bb6d
+        image: quay.io/multicloudlab/build-tool:v20220414-4b40fdbb8
         name: ""
         securityContext:
           privileged: true
