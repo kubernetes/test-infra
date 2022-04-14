@@ -552,6 +552,13 @@ branch-protection:
           required_status_checks:
             contexts:
             - Kubespray CI Pipeline
+        kustomize:
+          required_status_checks:
+            contexts:
+              - Lint
+              - Test Linux
+              - Test MacOS
+              - Test Windows
         metrics-server:
           branches:
             gh-pages:
