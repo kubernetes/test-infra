@@ -19,6 +19,7 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-ci-gce-device-plugin-gpu: "true"
+    preset-use-new-registry: "true"
   annotations:
     fork-per-release: "true"
     fork-per-release-replacements: "--extract=ci/latest-fast -> --extract=ci/latest-{{.Version}}"

@@ -441,6 +441,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-use-new-registry: "true"
   spec:
     containers:
     - args:
@@ -559,6 +560,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-use-new-registry: "true"
   spec:
     containers:
     - args:
@@ -684,6 +686,7 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
+    preset-use-new-registry: "true"
   spec:
     containers:
     - args:
