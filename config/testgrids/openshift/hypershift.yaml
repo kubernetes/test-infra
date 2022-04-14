@@ -4,7 +4,7 @@ test_groups:
 - name: redhat-hypershift-main-periodic-ci-openshift-hypershift-main-periodics-e2e-conformance-azure
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-main-periodics-e2e-conformance-azure
 - name: redhat-hypershift-main-aws-4-11-conformance
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-main-periodics-e2e-aws-periodic
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-main-periodics-aws-conformance
 
 dashboards:
 - name: redhat-hypershift
