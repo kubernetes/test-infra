@@ -684,7 +684,7 @@ presubmits:
             - name: DISABLE_ZONE
               value: "true"
             - name: KUBERNETES_VERSION
-              value: 1.23.5
+              value: "v1.23.5"
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
       testgrid-tab-name: pull-azuredisk-csi-driver-e2e-capz-windows-2019
@@ -735,7 +735,7 @@ presubmits:
             - name: DISABLE_ZONE
               value: "true"
             - name: KUBERNETES_VERSION
-              value: 1.23.5
+              value: "v1.23.5"
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
       testgrid-tab-name: pull-azuredisk-csi-driver-e2e-capz-windows-2022
