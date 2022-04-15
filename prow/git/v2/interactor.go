@@ -207,6 +207,8 @@ func (i *interactor) MergeWithStrategy(commitlike, mergeStrategy string, opts ..
 		return i.mergeMerge(commitlike, opts...)
 	case "squash":
 		return i.squashMerge(commitlike)
+	case "rebase":
+		return i.mergeRebase(commitlike, opts...)
 	default:
 		return false, fmt.Errorf("merge strategy %q is not supported", mergeStrategy)
 	}
@@ -250,6 +252,18 @@ func (i *interactor) squashMerge(commitlike string) (bool, error) {
 		i.logger.WithError(err).Warnf("Error committing merge for %q: %s", commitlike, string(out))
 		if out, err := i.executor.Run("reset", "--hard", "HEAD"); err != nil {
 			return false, fmt.Errorf("error aborting merge of %q: %w %v", commitlike, err, string(out))
+		}
+		return false, nil
+	}
+	return true, nil
+}
+
+func (i *interactor) mergeRebase(commitlike string, opts ...MergeOpt) (bool, error) {
+	b, err := i.executor.Run("rebase", "--no-stat", commitlike)
+	if err != nil {
+		i.logger.WithField("out", string(b)).WithError(err).Infof("Rebase failed.")
+		if b, err := i.executor.Run("rebase", "--abort"); err != nil {
+			return false, fmt.Errorf("error aborting after failed rebase for commitlike %s: %v. output: %s", commitlike, err, string(b))
 		}
 		return false, nil
 	}

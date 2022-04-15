@@ -381,6 +381,8 @@ func (r *Repo) MergeWithStrategy(commitlike string, mergeStrategy prowgithub.Pul
 		return r.mergeWithMergeStrategyMerge(commitlike)
 	case prowgithub.MergeSquash:
 		return r.mergeWithMergeStrategySquash(commitlike)
+	case prowgithub.MergeRebase:
+		return r.mergeWithMergeStrategyRebase(commitlike)
 	default:
 		return false, fmt.Errorf("merge strategy %q is not supported", mergeStrategy)
 	}
@@ -418,6 +420,21 @@ func (r *Repo) mergeWithMergeStrategySquash(commitlike string) (bool, error) {
 	if err != nil {
 		r.logger.WithField("out", string(b)).WithError(err).Infof("Commit after squash failed.")
 		return false, err
+	}
+
+	return true, nil
+}
+
+func (r *Repo) mergeWithMergeStrategyRebase(commitlike string) (bool, error) {
+	co := r.gitCommand("rebase", "--no-stat", commitlike)
+
+	b, err := co.CombinedOutput()
+	if err != nil {
+		r.logger.WithField("out", string(b)).WithError(err).Infof("Rebase failed.")
+		if b, err := r.gitCommand("rebase", "--abort").CombinedOutput(); err != nil {
+			return false, fmt.Errorf("error aborting after failed rebase for commitlike %s: %v. output: %s", commitlike, err, string(b))
+		}
+		return false, nil
 	}
 
 	return true, nil
