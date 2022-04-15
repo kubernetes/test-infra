@@ -402,21 +402,7 @@ test_groups:
 - name: s390x-conformance-v1.18
   gcs_prefix: k8s-conform-s390x-k8s/logs/ci-k8s-conformance-s390x-v1.18
 
-# google-gce-compute-image-tools
-- name: ci-daisy-e2e
-  gcs_prefix: compute-image-tools-test/logs/ci-daisy-e2e
-- name: ci-daisy-e2e-daily
-  gcs_prefix: compute-image-tools-test/logs/ci-daisy-e2e-daily
-- name: ci-images-import-export-cli-e2e-tests
-  gcs_prefix: compute-image-tools-test/logs/ci-images-import-export-cli-e2e-tests
-- name: ci-ovf-import-e2e-tests-daily
-  gcs_prefix: compute-image-tools-test/logs/ci-ovf-import-e2e-tests-daily
-- name: ci-ovf-export-e2e-tests-daily
-  gcs_prefix: compute-image-tools-test/logs/ci-ovf-export-e2e-tests-daily
-- name: ci-windows-upgrade-e2e-tests
-  gcs_prefix: compute-image-tools-test/logs/ci-windows-upgrade-e2e-tests
-- name: ci-v2v-adapt-e2e
-  gcs_prefix: compute-image-tools-test/logs/ci-v2v-adapt-e2e
+# google-osconfig
 - name: osconfig-unstable
   gcs_prefix: compute-image-tools-test/logs/osconfig-unstable
 - name: osconfig-staging
