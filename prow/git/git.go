@@ -32,7 +32,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	prowgithub "k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/git/types"
 )
 
 const github = "github.com"
@@ -369,17 +369,17 @@ func (r *Repo) CheckoutNewBranch(branch string) error {
 // Merge attempts to merge commitlike into the current branch. It returns true
 // if the merge completes. It returns an error if the abort fails.
 func (r *Repo) Merge(commitlike string) (bool, error) {
-	return r.MergeWithStrategy(commitlike, prowgithub.MergeMerge)
+	return r.MergeWithStrategy(commitlike, types.MergeMerge)
 }
 
 // MergeWithStrategy attempts to merge commitlike into the current branch given the merge strategy.
 // It returns true if the merge completes. It returns an error if the abort fails.
-func (r *Repo) MergeWithStrategy(commitlike string, mergeStrategy prowgithub.PullRequestMergeType) (bool, error) {
+func (r *Repo) MergeWithStrategy(commitlike string, mergeStrategy types.PullRequestMergeType) (bool, error) {
 	r.logger.WithField("commitlike", commitlike).Info("Merging.")
 	switch mergeStrategy {
-	case prowgithub.MergeMerge:
+	case types.MergeMerge:
 		return r.mergeWithMergeStrategyMerge(commitlike)
-	case prowgithub.MergeSquash:
+	case types.MergeSquash:
 		return r.mergeWithMergeStrategySquash(commitlike)
 	default:
 		return false, fmt.Errorf("merge strategy %q is not supported", mergeStrategy)
@@ -426,7 +426,7 @@ func (r *Repo) mergeWithMergeStrategySquash(commitlike string) (bool, error) {
 // MergeAndCheckout merges the provided headSHAs in order onto baseSHA using the provided strategy.
 // If no headSHAs are provided, it will only checkout the baseSHA and return.
 // Only the `merge` and `squash` strategies are supported.
-func (r *Repo) MergeAndCheckout(baseSHA string, mergeStrategy prowgithub.PullRequestMergeType, headSHAs ...string) error {
+func (r *Repo) MergeAndCheckout(baseSHA string, mergeStrategy types.PullRequestMergeType, headSHAs ...string) error {
 	if baseSHA == "" {
 		return errors.New("baseSHA must be set")
 	}
