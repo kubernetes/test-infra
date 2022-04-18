@@ -235,11 +235,17 @@ function gencreds() {
   local outfile="${OUT_FILE}"
 
   cd "${ROOT_DIR}"
+  # TODO(chaodai): remove git checkout line after
+  # https://github.com/kubernetes/test-infra/issues/25993 is fixed.
+  # TLDR: https://github.com/kubernetes/test-infra/pull/25873 potentially caused
+  # regression of short-lived kubeconfig being generated.
+  git checkout 799656f1600a4cc5d2ee8d41487365913aaf3622
   go run ./gencred --context="$(kubectl config current-context)" --name="${clusterAlias}" --output="${origdir}/${outfile}" || (
     echo "gencred failed:" >&2
     cat "$origdir/$outfile" >&2
     return 1
   )
+  git checkout master
 
   # Store kubeconfig secret in the same project where build cluster is located
   # and set up externalsecret in prow service cluster so that it's synced.
