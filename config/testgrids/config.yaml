@@ -67,8 +67,6 @@ test_groups:
 # Start dashboards
 #
 dashboards:
-- name: vmware-conformance
-- name: vmware-conformance-cloud-provider
 - name: vmware-cluster-api-provider-vsphere
 
 - name: google-aws
@@ -184,8 +182,6 @@ dashboard_groups:
   - vmware-postsubmits-cloud-provider-vsphere
   - vmware-presubmits-vsphere-csi-driver
   - vmware-postsubmits-vsphere-csi-driver
-  - vmware-conformance
-  - vmware-conformance-cloud-provider
   - vmware-cluster-api-provider-vsphere
 
 - name: sig-auth
