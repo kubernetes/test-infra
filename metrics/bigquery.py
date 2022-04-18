@@ -30,7 +30,7 @@ import requests
 import ruamel.yaml as yaml
 
 BACKFILL_DAYS = 30
-DEFAULT_JQ_BIN = '../_bin/jq-1.5/jq'
+DEFAULT_JQ_BIN = '/usr/bin/jq'
 
 def check(cmd, **kwargs):
     """Logs and runs the command, raising on errors."""
