@@ -58,6 +58,7 @@ periodics:
       - ./metrics/bigquery.py
       - --bucket=gs://k8s-metrics
       - --project=k8s-infra-prow-build-trusted
+      - --jq=/usr/bin/jq
 
 - name: ci-test-infra-triage
   interval: 30m
