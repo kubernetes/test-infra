@@ -68,7 +68,7 @@ func (c *Config) InitGitHubOAuthConfig(cookie *sessions.CookieStore) {
 
 // AuthenticatedUserIdentifier knows how to get the identity of an authenticated user
 type AuthenticatedUserIdentifier interface {
-	LoginForRequester(requester, token string, usePAT bool) (string, error)
+	LoginForRequester(requester, token string) (string, error)
 }
 
 func NewAuthenticatedUserIdentifier(options *flagutil.GitHubOptions) AuthenticatedUserIdentifier {
@@ -76,11 +76,11 @@ func NewAuthenticatedUserIdentifier(options *flagutil.GitHubOptions) Authenticat
 }
 
 type authenticatedUserIdentifier struct {
-	clientFactory func(accessToken string, usePAT bool) (github.Client, error)
+	clientFactory func(accessToken string) (github.Client, error)
 }
 
-func (a *authenticatedUserIdentifier) LoginForRequester(requester, token string, usePAT bool) (string, error) {
-	factory, err := a.clientFactory(token, usePAT)
+func (a *authenticatedUserIdentifier) LoginForRequester(requester, token string) (string, error) {
+	factory, err := a.clientFactory(token)
 	if err != nil {
 		return "", err
 	}
@@ -185,7 +185,7 @@ func (ga *Agent) GetLogin(r *http.Request, identifier AuthenticatedUserIdentifie
 	if !ok || !token.Valid() {
 		return "", fmt.Errorf("Could not find GitHub token")
 	}
-	login, err := identifier.LoginForRequester("rerun", token.AccessToken, true)
+	login, err := identifier.LoginForRequester("rerun", token.AccessToken)
 	if err != nil {
 		return "", err
 	}
@@ -295,7 +295,7 @@ func (ga *Agent) HandleRedirect(client OAuthClient, identifier AuthenticatedUser
 			ga.serverErrorAndPrint(w, "Save session", err)
 			return
 		}
-		user, err := identifier.LoginForRequester("oauth", token.AccessToken, false)
+		user, err := identifier.LoginForRequester("oauth", token.AccessToken)
 		if err != nil {
 			ga.serverErrorAndPrint(w, "Get user login", err)
 			return
