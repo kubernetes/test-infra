@@ -316,12 +316,12 @@ func (o *GitHubOptions) GitHubClient(dryRun bool) (github.Client, error) {
 }
 
 // GitHubClientWithAccessToken creates a GitHub client from an access token.
-func (o *GitHubOptions) GitHubClientWithAccessToken(token string) (github.Client, error) {
+func (o *GitHubOptions) GitHubClientWithAccessToken(token string) github.Client {
 	options := o.baseClientOptions()
 	options.GetToken = func() []byte { return []byte(token) }
 	options.AppID = "" // Since we are using a token, we should not use the app auth
 	_, _, client := github.NewClientFromOptions(logrus.Fields{}, options)
-	return client, nil
+	return client
 }
 
 // GitClient returns a Git client.

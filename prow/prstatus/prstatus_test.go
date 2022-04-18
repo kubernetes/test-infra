@@ -80,12 +80,12 @@ func (c fgc) BotUser() (*github.UserData, error) {
 }
 
 func newGitHubClientCreator(tokenUsers map[string]fgc) githubClientCreator {
-	return func(accessToken string) (GitHubClient, error) {
+	return func(accessToken string) GitHubClient {
 		who, ok := tokenUsers[accessToken]
 		if !ok {
 			panic("unexpected access token: " + accessToken)
 		}
-		return who, nil
+		return who
 	}
 }
 
