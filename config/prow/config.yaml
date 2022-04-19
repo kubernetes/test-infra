@@ -941,7 +941,7 @@ presets:
     preset-bazel-remote-cache-enabled: "true"
   env:
   - name: BAZEL_REMOTE_CACHE_ENABLED
-    value: "true"
+    value: "false"
 # docker-in-docker (with images/bootstrap) preset
 # NOTE: using this also requires using that image,
 # ensuring you run your test under either the ENTRYPOINT or:
