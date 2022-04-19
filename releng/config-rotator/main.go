@@ -78,9 +78,11 @@ func updateJobBase(j *config.JobBase, old, new string) {
 		c := &j.Spec.Containers[i]
 		for j := range c.Args {
 			c.Args[j] = updateString(c.Args[j], old, new)
+			c.Args[j] = updateGenericVersionMarker(c.Args[j])
 		}
 		for j := range c.Command {
 			c.Command[j] = updateString(c.Command[j], old, new)
+			c.Command[j] = updateGenericVersionMarker(c.Command[j])
 		}
 	}
 }
@@ -169,8 +171,22 @@ var allowedMarkers = []string{
 	markerStableThree,
 }
 
-func updateGenericVersionMarker(s, marker string) string {
+func getMarker(s string) string {
+	var marker string
+	for _, m := range allowedMarkers {
+		if strings.Contains(s, m) {
+			marker = m
+			break
+		}
+	}
+
+	return marker
+}
+
+func updateGenericVersionMarker(s string) string {
 	var newMarker string
+
+	marker := getMarker(s)
 	switch marker {
 	case markerDefault:
 		newMarker = markerBeta
