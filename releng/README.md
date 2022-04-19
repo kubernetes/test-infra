@@ -17,6 +17,7 @@ a future date).
   - [Create a pull request](#create-a-pull-request)
   - [Validate](#validate)
   - [Announce](#announce)
+- [TODOs](#todos)
 
 ## Tools
 
@@ -69,5 +70,13 @@ Examples:
 ### Announce
 
 [Announce in #sig-release and #release-management](https://kubernetes.slack.com/archives/C2C40FMNF/p1565746110248300?thread_ts=1565701466.241200&cid=C2C40FMNF) that this work has been completed.
+
+## TODOs
+
+- [ ] Branch jobs build the wrong marker after new branch job creation
+  
+  e.g., `k8s-master` instead of `k8s-stable1`
+  
+  This suggests that the generic marker suffixes are not being properly replaced.
 
 [branch-manager-handbook]: https://git.k8s.io/sig-release/release-engineering/role-handbooks/branch-manager.md
