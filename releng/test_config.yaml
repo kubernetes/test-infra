@@ -74,7 +74,7 @@ jobs:
       --minStartupPods=8
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
-    
+
   # stable1
   ci-kubernetes-e2e-gce-cos-k8sstable1-reboot:
     interval: 2h
@@ -253,24 +253,24 @@ k8sVersions:
     version: master
   beta:
     args:
+    - --extract=ci/latest-1.24
+    - --extract-ci-bucket=k8s-release-dev
+    version: '1.24'
+  stable1:
+    args:
     - --extract=ci/latest-1.23
     - --extract-ci-bucket=k8s-release-dev
     version: '1.23'
-  stable1:
+  stable2:
     args:
     - --extract=ci/latest-1.22
     - --extract-ci-bucket=k8s-release-dev
     version: '1.22'
-  stable2:
+  stable3:
     args:
     - --extract=ci/latest-1.21
     - --extract-ci-bucket=k8s-release-dev
     version: '1.21'
-  stable3:
-    args:
-    - --extract=ci/latest-1.20
-    - --extract-ci-bucket=k8s-release-dev
-    version: '1.20'
 
 testSuites:
   alphafeatures:
@@ -309,7 +309,8 @@ testSuites:
   flaky:
     args:
     - --timeout=300m
-    - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Driver:.gcepd\]|\[Feature:.+\] --minStartupPods=8
+    - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Driver:.gcepd\]|\[Feature:.+\]
+      --minStartupPods=8
     cluster: k8s-infra-prow-build
   ingress:
     args:
@@ -347,8 +348,8 @@ testSuites:
     - --check-version-skew=false
     - --down=false
     - --soak
-    - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true
-      --minStartupPods=8
+    - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
+      --clean-start=true --minStartupPods=8
     - --timeout=600m
     - --up=false
   stackdriver:
@@ -407,20 +408,20 @@ nodeK8sVersions:
     prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220413-ebb00ad7a6-master
   beta:
     args:
+    - --repo=k8s.io/kubernetes=release-1.24
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220413-ebb00ad7a6-1.24
+  stable1:
+    args:
     - --repo=k8s.io/kubernetes=release-1.23
     prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220413-ebb00ad7a6-1.23
-  stable1:
+  stable2:
     args:
     - --repo=k8s.io/kubernetes=release-1.22
     prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220413-ebb00ad7a6-1.22
-  stable2:
+  stable3:
     args:
     - --repo=k8s.io/kubernetes=release-1.21
     prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220413-ebb00ad7a6-1.21
-  stable3:
-    args:
-    - --repo=k8s.io/kubernetes=release-1.20
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220413-ebb00ad7a6-1.20
 
 nodeTestSuites:
   default:
