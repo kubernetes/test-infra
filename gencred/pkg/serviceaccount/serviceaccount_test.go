@@ -99,7 +99,7 @@ func TestCreateClusterServiceAccountCredentials(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			client := test.createClient()
-			_, _, err := CreateClusterServiceAccountCredentials(client)
+			_, _, err := CreateClusterServiceAccountCredentials(client, 7)
 			success := err == nil
 
 			if success != test.expected {

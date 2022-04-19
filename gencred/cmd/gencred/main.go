@@ -39,6 +39,7 @@ const (
 	defaultContextName = "build"
 	// defaultConfigFileName is the default kubeconfig filename.
 	defaultConfigFileName = "/dev/stdout"
+	defaultDurationInDays = 7
 )
 
 // options are the available command-line flags.
@@ -48,6 +49,7 @@ type options struct {
 	output         string
 	certificate    bool
 	serviceaccount bool
+	duration       int
 	overwrite      bool
 }
 
@@ -58,6 +60,7 @@ func (o *options) parseFlags() {
 	flag.StringVarP(&o.output, "output", "o", defaultConfigFileName, "Output path for generated kubeconfig file.")
 	flag.BoolVarP(&o.certificate, "certificate", "c", false, "Authorize with a client certificate and key.")
 	flag.BoolVarP(&o.serviceaccount, "serviceaccount", "s", false, "Authorize with a service account.")
+	flag.IntVar(&o.duration, "duration", defaultDurationInDays, "How many days the cred is valid, default is 7.")
 	flag.BoolVar(&o.overwrite, "overwrite", false, "Overwrite (rather than merge) output file if exists.")
 
 	flag.Parse()
@@ -144,7 +147,7 @@ func writeConfig(o options, clientset kubernetes.Interface) error {
 		}
 	} else {
 		// Service account credentials are the default if unspecified.
-		if kubeconfig, err = serviceaccount.CreateKubeConfigWithServiceAccountCredentials(clientset, o.name); err != nil {
+		if kubeconfig, err = serviceaccount.CreateKubeConfigWithServiceAccountCredentials(clientset, o.name, o.duration); err != nil {
 			return &util.ExitError{Message: fmt.Sprintf("unable to create kubeconfig file with service account for %v: %v.", o.name, err), Code: 1}
 		}
 	}
