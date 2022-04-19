@@ -282,12 +282,7 @@ type byPJStartTime []prowapi.ProwJob
 func (a byPJStartTime) Len() int      { return len(a) }
 func (a byPJStartTime) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
 func (a byPJStartTime) Less(i, j int) bool {
-	if a[i].Status.StartTime.Time != a[j].Status.StartTime.Time {
-		return a[i].Status.StartTime.Time.After(a[j].Status.StartTime.Time)
-	}
-	// Start time only has second granularity and we often start many jobs in the
-	// same second. Use the name as tie breaker.
-	return a[i].Spec.Job < a[j].Spec.Job
+	return a[i].Status.StartTime.Time.After(a[j].Status.StartTime.Time)
 }
 
 func (ja *JobAgent) update() error {
