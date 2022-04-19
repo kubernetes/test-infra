@@ -52,6 +52,7 @@ import (
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	gerrit "k8s.io/test-infra/prow/gerrit/client"
+	"k8s.io/test-infra/prow/git/types"
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
@@ -2304,9 +2305,9 @@ func parseProwConfig(c *Config) error {
 	}
 
 	for name, method := range c.Tide.MergeType {
-		if method != github.MergeMerge &&
-			method != github.MergeRebase &&
-			method != github.MergeSquash {
+		if method != types.MergeMerge &&
+			method != types.MergeRebase &&
+			method != types.MergeSquash {
 			return fmt.Errorf("merge type %q for %s is not a valid type", method, name)
 		}
 	}

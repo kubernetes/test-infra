@@ -261,7 +261,7 @@ presubmits:
           - name: KUBERNETES_VERSION_UPGRADE_TO
             value: "ci/latest-1.24"
           - name: ETCD_VERSION_UPGRADE_TO
-            value: "3.5.1-0"
+            value: "3.5.3-0"
           - name: COREDNS_VERSION_UPGRADE_TO
             value: "v1.8.6"
           - name: GINKGO_FOCUS

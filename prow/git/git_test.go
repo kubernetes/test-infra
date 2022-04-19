@@ -30,7 +30,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/git/localgit"
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/git/types"
 )
 
 var defaultBranch = localgit.DefaultBranch("")
@@ -300,7 +300,7 @@ func testMergeAndCheckout(clients localgit.Clients, t *testing.T) {
 		name          string
 		setBaseSHA    bool
 		prBranches    []string
-		mergeStrategy github.PullRequestMergeType
+		mergeStrategy types.PullRequestMergeType
 		err           string
 	}{
 		{
@@ -317,7 +317,7 @@ func testMergeAndCheckout(clients localgit.Clients, t *testing.T) {
 			name:          "Merge succeeds with rebase strategy",
 			setBaseSHA:    true,
 			prBranches:    []string{"my-pr-branch"},
-			mergeStrategy: github.MergeRebase,
+			mergeStrategy: types.MergeRebase,
 		},
 		{
 			name:       "No pullRequestHead, no error",
@@ -327,25 +327,25 @@ func testMergeAndCheckout(clients localgit.Clients, t *testing.T) {
 			name:          "Merge succeeds with one head and merge strategy",
 			setBaseSHA:    true,
 			prBranches:    []string{"my-pr-branch"},
-			mergeStrategy: github.MergeMerge,
+			mergeStrategy: types.MergeMerge,
 		},
 		{
 			name:          "Merge succeeds with multiple heads and merge strategy",
 			setBaseSHA:    true,
 			prBranches:    []string{"my-pr-branch", "my-other-pr-branch"},
-			mergeStrategy: github.MergeMerge,
+			mergeStrategy: types.MergeMerge,
 		},
 		{
 			name:          "Merge succeeds with one head and squash strategy",
 			setBaseSHA:    true,
 			prBranches:    []string{"my-pr-branch"},
-			mergeStrategy: github.MergeSquash,
+			mergeStrategy: types.MergeSquash,
 		},
 		{
 			name:          "Merge succeeds with multiple heads and squash stragey",
 			setBaseSHA:    true,
 			prBranches:    []string{"my-pr-branch", "my-other-pr-branch"},
-			mergeStrategy: github.MergeSquash,
+			mergeStrategy: types.MergeSquash,
 		},
 	}
 

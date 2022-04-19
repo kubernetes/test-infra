@@ -52,6 +52,7 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/git/localgit"
+	"k8s.io/test-infra/prow/git/types"
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
@@ -1164,10 +1165,10 @@ func TestMergeMethodCheckerAndPRMergeMethod(t *testing.T) {
 		MergeLabel:  mergeLabel,
 		RebaseLabel: rebaseLabel,
 
-		MergeType: map[string]github.PullRequestMergeType{
-			"o/configured-rebase":              github.MergeRebase, // GH client allows merge, rebase
-			"o/configured-squash-allow-rebase": github.MergeSquash, // GH client allows merge, squash, rebase
-			"o/configure-re-base":              github.MergeRebase, // GH client allows merge
+		MergeType: map[string]types.PullRequestMergeType{
+			"o/configured-rebase":              types.MergeRebase, // GH client allows merge, rebase
+			"o/configured-squash-allow-rebase": types.MergeSquash, // GH client allows merge, squash, rebase
+			"o/configure-re-base":              types.MergeRebase, // GH client allows merge
 		},
 	}
 	cfg := func() *config.Config { return &config.Config{ProwConfig: config.ProwConfig{Tide: tideConfig}} }
@@ -1178,38 +1179,38 @@ func TestMergeMethodCheckerAndPRMergeMethod(t *testing.T) {
 		repo              string
 		labels            []string
 		conflict          bool
-		expectedMethod    github.PullRequestMergeType
+		expectedMethod    types.PullRequestMergeType
 		expectErr         bool
 		expectConflictErr bool
 	}{
 		{
 			name:           "default method without PR label override",
 			repo:           "foo",
-			expectedMethod: github.MergeMerge,
+			expectedMethod: types.MergeMerge,
 		},
 		{
 			name:           "irrelevant PR labels ignored",
 			repo:           "foo",
 			labels:         []string{"unrelated"},
-			expectedMethod: github.MergeMerge,
+			expectedMethod: types.MergeMerge,
 		},
 		{
 			name:           "default method overridden by a PR label",
 			repo:           "allow-squash-nomerge",
 			labels:         []string{"tide/squash"},
-			expectedMethod: github.MergeSquash,
+			expectedMethod: types.MergeSquash,
 		},
 		{
 			name:           "use method configured for repo in tide config",
 			repo:           "configured-squash-allow-rebase",
 			labels:         []string{"unrelated"},
-			expectedMethod: github.MergeSquash,
+			expectedMethod: types.MergeSquash,
 		},
 		{
 			name:           "tide config method overridden by a PR label",
 			repo:           "configured-squash-allow-rebase",
 			labels:         []string{"unrelated", "tide/rebase"},
-			expectedMethod: github.MergeRebase,
+			expectedMethod: types.MergeRebase,
 		},
 		{
 			name:      "multiple merge method PR labels should not merge",
@@ -1222,7 +1223,7 @@ func TestMergeMethodCheckerAndPRMergeMethod(t *testing.T) {
 			repo:              "foo",
 			labels:            []string{"unrelated"},
 			conflict:          true,
-			expectedMethod:    github.MergeMerge,
+			expectedMethod:    types.MergeMerge,
 			expectErr:         false,
 			expectConflictErr: true,
 		},
@@ -1230,7 +1231,7 @@ func TestMergeMethodCheckerAndPRMergeMethod(t *testing.T) {
 			name:              "squash label conflicts with merge only GH settings",
 			repo:              "foo",
 			labels:            []string{"tide/squash"},
-			expectedMethod:    github.MergeSquash,
+			expectedMethod:    types.MergeSquash,
 			expectErr:         false,
 			expectConflictErr: true,
 		},
@@ -1238,7 +1239,7 @@ func TestMergeMethodCheckerAndPRMergeMethod(t *testing.T) {
 			name:              "rebase method tide config conflicts with merge only GH settings",
 			repo:              "configure-re-base",
 			labels:            []string{"unrelated"},
-			expectedMethod:    github.MergeRebase,
+			expectedMethod:    types.MergeRebase,
 			expectErr:         false,
 			expectConflictErr: true,
 		},
@@ -1246,7 +1247,7 @@ func TestMergeMethodCheckerAndPRMergeMethod(t *testing.T) {
 			name:              "default method conflicts with squash only GH settings",
 			repo:              "squash-nomerge",
 			labels:            []string{"unrelated"},
-			expectedMethod:    github.MergeMerge,
+			expectedMethod:    types.MergeMerge,
 			expectErr:         false,
 			expectConflictErr: true,
 		},
@@ -1317,15 +1318,15 @@ func TestRebaseMergeMethodIsAllowed(t *testing.T) {
 	orgName := "fake-org"
 	repoName := "fake-repo"
 	tideConfig := config.Tide{
-		MergeType: map[string]github.PullRequestMergeType{
-			fmt.Sprintf("%s/%s", orgName, repoName): github.MergeRebase,
+		MergeType: map[string]types.PullRequestMergeType{
+			fmt.Sprintf("%s/%s", orgName, repoName): types.MergeRebase,
 		},
 	}
 	cfg := func() *config.Config { return &config.Config{ProwConfig: config.ProwConfig{Tide: tideConfig}} }
 	mmc := newMergeChecker(cfg, &fgc{})
-	mmc.cache = map[config.OrgRepo]map[github.PullRequestMergeType]bool{
+	mmc.cache = map[config.OrgRepo]map[types.PullRequestMergeType]bool{
 		{Org: orgName, Repo: repoName}: {
-			github.MergeRebase: true,
+			types.MergeRebase: true,
 		},
 	}
 
@@ -3232,7 +3233,7 @@ func TestPrepareMergeDetails(t *testing.T) {
 		name        string
 		tpl         config.TideMergeCommitTemplate
 		pr          PullRequest
-		mergeMethod github.PullRequestMergeType
+		mergeMethod types.PullRequestMergeType
 		expected    github.MergeDetails
 	}{{
 		name:        "No commit template",

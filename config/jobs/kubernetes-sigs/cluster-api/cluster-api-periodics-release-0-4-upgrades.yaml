@@ -159,7 +159,7 @@ periodics:
         - name: KUBERNETES_VERSION_UPGRADE_TO
           value: "stable-1.22"
         - name: ETCD_VERSION_UPGRADE_TO
-          value: "3.5.1-0"
+          value: "3.5.3-0"
         - name: COREDNS_VERSION_UPGRADE_TO
           value: "v1.8.4"
         - name: GINKGO_FOCUS
@@ -203,7 +203,7 @@ periodics:
         - name: KUBERNETES_VERSION_UPGRADE_TO
           value: "stable-1.23"
         - name: ETCD_VERSION_UPGRADE_TO
-          value: "3.5.1-0"
+          value: "3.5.3-0"
         - name: COREDNS_VERSION_UPGRADE_TO
           # CAPI 0.4 only supports up to CoreDNS version 1.8.4.
           value: "v1.8.4"

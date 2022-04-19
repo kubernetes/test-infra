@@ -1566,6 +1566,14 @@ func TestConfigMergingProperties(t *testing.T) {
 		{
 			name: "Merging a config into itself always fails",
 			verification: func(t *testing.T, fuzzedMergeableConfig *Configuration) {
+
+				// An empty bugzilla org config does nothing, so clean those.
+				for org, val := range fuzzedMergeableConfig.Bugzilla.Orgs {
+					if reflect.DeepEqual(val, BugzillaOrgOptions{}) {
+						delete(fuzzedMergeableConfig.Bugzilla.Orgs, org)
+					}
+				}
+				// An exception to the rule is merging an empty config into itself, that is valid and will just do nothing.
 				if apiequality.Semantic.DeepEqual(fuzzedMergeableConfig, &Configuration{}) {
 					return
 				}

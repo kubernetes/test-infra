@@ -58,6 +58,7 @@ periodics:
       - ./metrics/bigquery.py
       - --bucket=gs://k8s-metrics
       - --project=k8s-infra-prow-build-trusted
+      - --jq=/usr/bin/jq
 
 - name: ci-test-infra-triage
   interval: 30m
@@ -123,7 +124,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20220414-949f7bddd3
+    - image: gcr.io/k8s-prow/generic-autobumper:v20220418-9a5c901fc3
       command:
       - generic-autobumper
       args:
@@ -153,7 +154,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20220414-949f7bddd3
+    - image: gcr.io/k8s-prow/generic-autobumper:v20220418-9a5c901fc3
       command:
       - generic-autobumper
       args:

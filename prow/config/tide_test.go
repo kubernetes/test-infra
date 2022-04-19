@@ -26,8 +26,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	utilpointer "k8s.io/utils/pointer"
 
+	"k8s.io/test-infra/prow/git/types"
 	"k8s.io/test-infra/prow/git/v2"
-	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
 )
 
@@ -175,37 +175,37 @@ func TestOrgExceptionsAndRepos(t *testing.T) {
 
 func TestMergeMethod(t *testing.T) {
 	ti := &Tide{
-		MergeType: map[string]github.PullRequestMergeType{
-			"kubernetes/kops":             github.MergeRebase,
-			"kubernetes-helm":             github.MergeSquash,
-			"kubernetes-helm/chartmuseum": github.MergeMerge,
+		MergeType: map[string]types.PullRequestMergeType{
+			"kubernetes/kops":             types.MergeRebase,
+			"kubernetes-helm":             types.MergeSquash,
+			"kubernetes-helm/chartmuseum": types.MergeMerge,
 		},
 	}
 
 	var testcases = []struct {
 		org      string
 		repo     string
-		expected github.PullRequestMergeType
+		expected types.PullRequestMergeType
 	}{
 		{
 			"kubernetes",
 			"kubernetes",
-			github.MergeMerge,
+			types.MergeMerge,
 		},
 		{
 			"kubernetes",
 			"kops",
-			github.MergeRebase,
+			types.MergeRebase,
 		},
 		{
 			"kubernetes-helm",
 			"monocular",
-			github.MergeSquash,
+			types.MergeSquash,
 		},
 		{
 			"kubernetes-helm",
 			"chartmuseum",
-			github.MergeMerge,
+			types.MergeMerge,
 		},
 	}
 

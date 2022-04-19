@@ -83,6 +83,8 @@ def build_test(cloud='aws',
         return None
     if container_runtime == 'docker' and k8s_version not in ('1.21', '1.22', '1.23'):
         return None
+    if networking == 'kopeio' and distro in ('flatcar', 'deb9'):
+        return None
 
     if cloud == 'aws':
         kops_image = distro_images[distro]
