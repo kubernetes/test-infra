@@ -28,7 +28,7 @@ periodics:
         value: "us-west-2"
       # Parallelize tests
       - name: GINKGO_ARGS
-        value: "-nodes 20"
+        value: "-nodes 20 --ginkgo.skip=\\[ClusterClass\\]"
       securityContext:
         privileged: true
       resources:
