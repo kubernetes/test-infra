@@ -83,7 +83,7 @@ def build_test(cloud='aws',
         return None
     if container_runtime == 'docker' and k8s_version not in ('1.21', '1.22', '1.23'):
         return None
-    if networking == 'kopeio' and distro in ('flatcar', 'deb9'):
+    if networking == 'kopeio' and distro in ('flatcar'):
         return None
 
     if cloud == 'aws':
@@ -364,12 +364,9 @@ networking_options = [
 
 distro_options = [
     'amzn2',
-    'deb9',
     'deb10',
     'flatcar',
-    'rhel7',
     'rhel8',
-    'u1804',
     'u2004',
 ]
 
@@ -400,10 +397,6 @@ def generate_grid():
             for distro in distro_options:
                 for k8s_version in k8s_versions:
                     for kops_version in kops_versions:
-                        # https://github.com/kubernetes/kops/pull/11696
-                        if (not (kops_version in ["1.22"]) and
-                                distro in ["deb9", "rhel7", "u1804"]):
-                            continue
                         results.append(
                             build_test(cloud="aws",
                                        distro=distro,
@@ -423,10 +416,6 @@ def generate_grid():
             for distro in ['u2004']: # TODO: all distro_options:
                 for k8s_version in ["1.22"]: # TODO: all k8s_versions:
                     for kops_version in [None]: # TODO: all kops_versions:
-                        # https://github.com/kubernetes/kops/pull/11696
-                        if (not(kops_version in ["1.22"]) and
-                                distro in ["deb9", "rhel7", "u1804"]):
-                            continue
                         results.append(
                             build_test(cloud="gce",
                                        distro=distro,

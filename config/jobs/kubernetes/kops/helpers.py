@@ -141,13 +141,10 @@ def latest_aws_image(owner, name, arm64=False):
 
 distro_images = {
     'amzn2': latest_aws_image('137112412989', 'amzn2-ami-kernel-5.10-hvm-*-x86_64-gp2'),
-    'deb9': latest_aws_image('379101102735', 'debian-stretch-hvm-x86_64-gp2-*'),
     'deb10': latest_aws_image('136693071363', 'debian-10-amd64-*'),
     'deb11': latest_aws_image('136693071363', 'debian-11-amd64-*'),
     'flatcar': latest_aws_image('075585003325', 'Flatcar-stable-*-hvm'),
-    'rhel7': latest_aws_image('309956199498', 'RHEL-7.*_HVM_*-x86_64-0-Hourly2-GP2'),
     'rhel8': latest_aws_image('309956199498', 'RHEL-8.*_HVM-*-x86_64-0-Hourly2-GP2'),
-    'u1804': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-*'), # pylint: disable=line-too-long
     'u2004': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*'), # pylint: disable=line-too-long
     'u2004arm64': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-*', True), # pylint: disable=line-too-long
     'u2110': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-impish-21.10-amd64-server-*'), # pylint: disable=line-too-long
@@ -156,13 +153,10 @@ distro_images = {
 
 distros_ssh_user = {
     'amzn2': 'ec2-user',
-    'deb9': 'admin',
     'deb10': 'admin',
     'deb11': 'admin',
     'flatcar': 'core',
-    'rhel7': 'ec2-user',
     'rhel8': 'ec2-user',
-    'u1804': 'ubuntu',
     'u2004': 'ubuntu',
     'u2004arm64': 'ubuntu',
     'u2110': 'ubuntu',
