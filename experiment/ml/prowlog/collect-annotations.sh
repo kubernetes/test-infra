@@ -33,6 +33,10 @@ project=$2
 location=$3
 (
   set -o xtrace
-  gcloud logging read "--project=$project" 'jsonPayload.msg:"Saved selected lines"' "--freshness=$fresh" --format='value(jsonPayload.artifact,jsonPayload.start,jsonPayload.end)' | tee -a "$location"
+  gcloud logging read "--project=$project" \
+    'jsonPayload.msg:"Saved selected lines"' \
+    "--freshness=$fresh" \
+    --format='value(jsonPayload.artifact,jsonPayload.start,jsonPayload.end)' \
+  | tee -a "$location"
 )
 sort -u -o "$location" "$location"
