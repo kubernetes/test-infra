@@ -8,8 +8,6 @@ dashboard_groups:
     - conformance-cloud-provider-huaweicloud
     - conformance-cloud-provider-inspur
     - conformance-cloud-provider-openstack
-    - conformance-cloud-provider-vsphere
-    - conformance-vsphere
     - conformance-hack-local-up-cluster
     - conformance-ppc64le
     - conformance-gardener
@@ -166,8 +164,6 @@ dashboards:
       description: Runs conformance tests using kubetest against kubernetes v1.18 with cloud-provider-inspur
       test_group_name: cloud-provider-inspur-e2e-conformance-release-v1.18
 
-- name: conformance-cloud-provider-vsphere
-- name: conformance-vsphere
 - name: conformance-hack-local-up-cluster
 
 # ppc64le dashboard
