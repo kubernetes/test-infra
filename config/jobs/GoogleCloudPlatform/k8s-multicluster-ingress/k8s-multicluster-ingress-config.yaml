@@ -99,29 +99,3 @@ periodics:
   annotations:
     testgrid-dashboards: sig-multicluster-kubemci
     testgrid-tab-name: ci-kubemci-unit-tests
-- interval: 60m
-  name: ci-kubemci-ingress-conformance
-  labels:
-    preset-service-account: "true"
-    preset-k8s-ssh: "true"
-  spec:
-    containers:
-    - args:
-      - --timeout=110
-      - --bare
-      - --scenario=kubernetes_e2e
-      - --
-      - --check-leaked-resources
-      - --env=GCE_GLBC_IMAGE=gcr.io/k8s-ingress-image-push/ingress-gce-glbc-amd64:master
-      - --extract=ci/latest
-      - --gcp-node-image=gci
-      - --gcp-project-type=ingress-project
-      - --gcp-zone=us-central1-f
-      - --provider=gce
-      - --test_args=--ginkgo.focus=\[Feature:kubemci\] --minStartupPods=8
-      - --timeout=90m
-      image: gcr.io/k8s-testimages/e2e-kubemci:latest
-      imagePullPolicy: Always
-  annotations:
-    testgrid-dashboards: sig-multicluster-kubemci
-    testgrid-tab-name: kubemci-ingress-conformance
