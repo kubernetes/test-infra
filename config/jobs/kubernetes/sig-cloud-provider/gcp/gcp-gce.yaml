@@ -487,7 +487,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - --
       - --check-leaked-resources
-      - --env=KUBE_FEATURE_GATES=AllAlpha=true,DisableCloudProviders=false,CSIMigration=false,InTreePluginGCEUnregister=false
+      - --env=KUBE_FEATURE_GATES=AllAlpha=true,DisableCloudProviders=false,DisableKubeletCloudCredentialProviders=false,CSIMigration=false,InTreePluginGCEUnregister=false
       - --env=KUBE_PROXY_DAEMONSET=true
       - --env=ENABLE_POD_PRIORITY=true
       - --extract=ci/latest
