@@ -12,7 +12,7 @@ presubmits:
       preset-bazel-remote-cache-enabled: "true"
     decorate: true
     decoration_config:
-      timeout: 15m
+      timeout: 20m
     path_alias: k8s.io/kops
     spec:
       containers:
