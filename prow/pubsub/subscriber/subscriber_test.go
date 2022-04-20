@@ -314,7 +314,7 @@ func TestHandleMessage(t *testing.T) {
 					CookieFilePath: "examplePath",
 					CacheSize:      100,
 					Agent:          ca,
-					GithubOptions:  flagutil.GitHubOptions{},
+					GitHubOptions:  flagutil.GitHubOptions{},
 					DryRun:         true,
 				},
 			}

@@ -129,7 +129,7 @@ func main() {
 		CookieFilePath: flagOptions.cookiefilePath,
 		CacheSize:      flagOptions.inRepoConfigCacheSize,
 		Agent:          configAgent,
-		GithubOptions:  flagOptions.github,
+		GitHubOptions:  flagOptions.github,
 		DryRun:         flagOptions.dryRun,
 	}
 

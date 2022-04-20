@@ -9,14 +9,6 @@
 
 ### Script
 
-Run using Bazel:
-
-```console
-$ bazel run //gencred -- <options>
-```
-
-Run using Golang:
-
 ```console
 $ go run k8s.io/test-infra/gencred <options>
 ```

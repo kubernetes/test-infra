@@ -17,7 +17,7 @@ limitations under the License.
 // Package types stores types used by all git clients
 package types
 
-// PullRequestMergeType enumerates the types of merges used by Prow for either Github or Gerrit API
+// PullRequestMergeType enumerates the types of merges used by Prow for either GitHub or Gerrit API
 type PullRequestMergeType string
 
 // Possible types of merges for the GitHub merge API
