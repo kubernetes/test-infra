@@ -8,15 +8,14 @@
 # the test definition and Prow configuration from the test name by pulling the
 # configs of each dimension in the test name and assembling them together.
 #
-# E.g., for test "ci-kubernetes-e2e-gce-ubuntu1-k8sdev-serial", its
+# e.g., for test "ci-kubernetes-e2e-gce-ubuntu1-k8sdev-serial", its
 # configuration will be generated from the configs of cloud provider "gce", the
 # image "ubuntu1", the Kubernetes version "k8sdev" and the test suite "serial".
 
 # To generate the test definitions and Prow configurations from this file:
 #
-#   bazel run //releng:generate_tests -- \
-#     --yaml-config-path=releng/test_config.yaml
-
+#   make -C releng generate-tests
+#
 # Supported tests:
 #
 #  * cluster e2e test
