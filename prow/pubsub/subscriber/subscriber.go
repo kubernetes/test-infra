@@ -66,7 +66,7 @@ type InRepoConfigCacheGetter struct {
 	CacheSize      int
 	Agent          *config.Agent
 	mu             sync.Mutex
-	GithubOptions  flagutil.GitHubOptions
+	GitHubOptions  flagutil.GitHubOptions
 	DryRun         bool
 
 	CacheMap map[string]*config.InRepoConfigCache
@@ -82,8 +82,8 @@ func (irc *InRepoConfigCacheGetter) getCache(cloneURI, host string) (*config.InR
 
 	var key string
 	// We are using github with IRC
-	if irc.GithubOptions.Host != "" && (irc.GithubOptions.TokenPath != "" || irc.GithubOptions.AppPrivateKeyPath != "") {
-		key = irc.GithubOptions.Host
+	if irc.GitHubOptions.Host != "" && (irc.GitHubOptions.TokenPath != "" || irc.GitHubOptions.AppPrivateKeyPath != "") {
+		key = irc.GitHubOptions.Host
 		// We are using Gerrit with IRC
 	} else if irc.CookieFilePath != "" {
 		key = cloneURI
@@ -99,8 +99,8 @@ func (irc *InRepoConfigCacheGetter) getCache(cloneURI, host string) (*config.InR
 	var gitClientFactory git.ClientFactory
 	var cache *config.InRepoConfigCache
 	var err error
-	if irc.GithubOptions.TokenPath != "" || irc.GithubOptions.AppPrivateKeyPath != "" {
-		gitClient, err := irc.GithubOptions.GitClient(irc.DryRun)
+	if irc.GitHubOptions.TokenPath != "" || irc.GitHubOptions.AppPrivateKeyPath != "" {
+		gitClient, err := irc.GitHubOptions.GitClient(irc.DryRun)
 		if err != nil {
 			return nil, fmt.Errorf("Error getting git client: %w", err)
 		}

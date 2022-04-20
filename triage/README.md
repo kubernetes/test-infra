@@ -190,7 +190,7 @@ See [Main Output](#main-output). This is only a subset of the main output.
 
 ## Updating JS dependencies for the web page
 
-See: `package.json` + `bazel run @yarn//:yarn install`
+See: `package.json` + `./hack/build/ensure-node_modules.sh`
 
 ## Deployment
 Triage runs as static HTML hosted in GCS that is updated as part of a [Prow Periodic](https://github.com/kubernetes/test-infra/blob/master/config/jobs/kubernetes/test-infra/test-infra-periodics.yaml#L27).
