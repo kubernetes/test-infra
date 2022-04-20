@@ -900,42 +900,6 @@ periodics:
           cpu: 2
           memory: "4Gi"
 
-- name: ci-benchmark-microbenchmarks
-  interval: 20m
-  annotations:
-    testgrid-dashboards: sig-scalability-benchmarks
-    testgrid-tab-name: microbenchmarks
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
-    path_alias: k8s.io/test-infra
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/benchmarkjunit:latest
-      command:
-      - /benchmarkjunit
-      args:
-      - --log-file=$(ARTIFACTS)/benchmark-log.txt
-      - --output=$(ARTIFACTS)/junit_benchmarks.xml
-      - --pass-on-error
-      - ../kubernetes/pkg/...
-      - ../kubernetes/plugin/...
-      - ../kubernetes/vendor/k8s.io/apimachinery/...
-      - ../kubernetes/vendor/k8s.io/apiserver/...
-      - ../kubernetes/vendor/k8s.io/client-go/...
-      resources:
-        requests:
-          cpu: 1
-          memory: "2Gi"
-        limits:
-          cpu: 1
-          memory: "2Gi"
 - name: ci-kubernetes-e2e-gce-network-metric-measurement
   cluster: k8s-infra-prow-build
   tags:
