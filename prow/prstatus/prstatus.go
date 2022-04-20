@@ -30,7 +30,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 
-	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/githuboauth"
 )
@@ -65,9 +64,8 @@ type PullRequestWithContexts struct {
 // DashboardAgent is responsible for handling request to /pr-status endpoint.
 // It will serve a list of open pull requests owned by the user.
 type DashboardAgent struct {
-	repos  []string
-	goac   *githuboauth.Config
-	github flagutil.GitHubOptions
+	repos []string
+	goac  *githuboauth.Config
 
 	log *logrus.Entry
 }
@@ -140,12 +138,11 @@ type searchQuery struct {
 }
 
 // NewDashboardAgent creates a new user dashboard agent .
-func NewDashboardAgent(repos []string, config *githuboauth.Config, github *flagutil.GitHubOptions, log *logrus.Entry) *DashboardAgent {
+func NewDashboardAgent(repos []string, config *githuboauth.Config, log *logrus.Entry) *DashboardAgent {
 	return &DashboardAgent{
-		repos:  repos,
-		goac:   config,
-		github: *github,
-		log:    log,
+		repos: repos,
+		goac:  config,
+		log:   log,
 	}
 }
 
@@ -240,11 +237,6 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler pullRequestQueryHandler, c
 					return
 				}
 
-				// Construct query
-				if err != nil {
-					serverError("Error creating github client", err)
-					return
-				}
 				query := da.ConstructSearchQuery(login)
 				if err := r.ParseForm(); err == nil {
 					if q := r.Form.Get("query"); q != "" {
