@@ -34,74 +34,34 @@ jobs:
   # GCE e2e tests
 
   # release branch jobs - cos only (cvm is deprecated at 1.8)
-  # beta release (inactive)
-  ci-kubernetes-e2e-gce-cos-k8sbeta-reboot:
-    interval: 1h
-    sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
-  ci-kubernetes-e2e-gce-cos-k8sbeta-ingress:
-    interval: 1h
-    sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
-  ci-kubernetes-e2e-gce-cos-k8sbeta-default:
-    args:
-    - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
-    interval: 1h
-    sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
-  ci-kubernetes-e2e-gce-cos-k8sbeta-serial:
-    interval: 1h
-    sigOwners: [sig-cloud-provider-gcp]
-    releaseInforming: true
-    testgridNumFailuresToAlert: 6
-  ci-kubernetes-e2e-gce-cos-k8sbeta-slow:
-    interval: 1h
-    sigOwners: [sig-cloud-provider-gcp]
-    releaseInforming: true
-    testgridNumFailuresToAlert: 6
-  ci-kubernetes-e2e-gce-cos-k8sbeta-alphafeatures:
-    interval: 1h
-    args:
-    - --env=KUBE_PROXY_DAEMONSET=true
-    - --env=ENABLE_POD_PRIORITY=true
-    - --env=KUBE_FEATURE_GATES=AllAlpha=true,DisableCloudProviders=false,CSIMigration=false,InTreePluginGCEUnregister=false
-    # Panic if anything mutates a shared informer cache
-    - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
-    - --runtime-config=api/all=true
-    - --test_args=--ginkgo.focus=\[Feature:(Audit|BlockVolume|PodPreset|ExpandCSIVolumes|ExpandInUseVolumes)\]|Networking
-      --ginkgo.skip=\[Feature:(SCTPConnectivity|Volumes|Networking-Performance|Networking-IPv6)\]|csi-hostpath-v0
-      --minStartupPods=8
-    sigOwners: [sig-cloud-provider-gcp]
-    releaseBlocking: true
-    
   # stable1
   ci-kubernetes-e2e-gce-cos-k8sstable1-reboot:
-    interval: 2h
+    interval: 1h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sstable1-ingress:
-    interval: 2h
+    interval: 1h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sstable1-default:
     args:
     - --env=ENABLE_POD_SECURITY_POLICY=true
-    interval: 2h
+    interval: 1h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
     testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gce-cos-k8sstable1-serial:
-    interval: 2h
+    interval: 1h
     sigOwners: [sig-cloud-provider-gcp]
     releaseInforming: true
     testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gce-cos-k8sstable1-slow:
-    interval: 2h
+    interval: 1h
     sigOwners: [sig-cloud-provider-gcp]
     releaseInforming: true
     testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gce-cos-k8sstable1-alphafeatures:
-    interval: 2h
+    interval: 1h
     args:
     - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
@@ -117,30 +77,30 @@ jobs:
 
   # stable2
   ci-kubernetes-e2e-gce-cos-k8sstable2-reboot:
-    interval: 6h
+    interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sstable2-ingress:
-    interval: 6h
+    interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sstable2-default:
-    interval: 6h
+    interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
     testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gce-cos-k8sstable2-serial:
-    interval: 6h
+    interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
     releaseInforming: true
     testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gce-cos-k8sstable2-slow:
-    interval: 6h
+    interval: 2h
     sigOwners: [sig-cloud-provider-gcp]
     releaseInforming: true
     testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gce-cos-k8sstable2-alphafeatures:
-    interval: 6h
+    interval: 2h
     args:
     - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
@@ -157,30 +117,30 @@ jobs:
 
   # stable3
   ci-kubernetes-e2e-gce-cos-k8sstable3-ingress:
-    interval: 24h
+    interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sstable3-reboot:
-    interval: 24h
+    interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sstable3-default:
-    interval: 24h
+    interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
     testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gce-cos-k8sstable3-serial:
-    interval: 24h
+    interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
     releaseInforming: true
     testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gce-cos-k8sstable3-slow:
-    interval: 24h
+    interval: 6h
     sigOwners: [sig-cloud-provider-gcp]
     releaseInforming: true
     testgridNumFailuresToAlert: 6
   ci-kubernetes-e2e-gce-cos-k8sstable3-alphafeatures:
-    interval: 24h
+    interval: 6h
     args:
     - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
@@ -192,6 +152,53 @@ jobs:
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
   ci-kubernetes-e2e-gce-cos-k8sstable3-betaapis:
+    interval: 6h
+    args:
+    - --env=KUBE_PROXY_DAEMONSET=true
+    - --env=ENABLE_POD_PRIORITY=true
+    # Panic if anything mutates a shared informer cache
+    - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
+    - --runtime-config=api/beta=true
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+
+  # stable4
+  ci-kubernetes-e2e-gce-cos-k8sstable4-ingress:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+  ci-kubernetes-e2e-gce-cos-k8sstable4-reboot:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+  ci-kubernetes-e2e-gce-cos-k8sstable4-default:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+    testgridNumFailuresToAlert: 6
+  ci-kubernetes-e2e-gce-cos-k8sstable4-serial:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
+  ci-kubernetes-e2e-gce-cos-k8sstable4-slow:
+    interval: 24h
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseInforming: true
+    testgridNumFailuresToAlert: 6
+  ci-kubernetes-e2e-gce-cos-k8sstable4-alphafeatures:
+    interval: 24h
+    args:
+    - --env=KUBE_PROXY_DAEMONSET=true
+    - --env=ENABLE_POD_PRIORITY=true
+    # TODO(releng): add "InTreePluginGCEUnregister=false" to feature gates when this 1.21 reaches k8sstable3
+    - --env=KUBE_FEATURE_GATES=AllAlpha=true,CSIMigration=false
+    # Panic if anything mutates a shared informer cache
+    - --env=ENABLE_CACHE_MUTATION_DETECTOR=true
+    - --runtime-config=api/all=true
+    sigOwners: [sig-cloud-provider-gcp]
+    releaseBlocking: true
+  ci-kubernetes-e2e-gce-cos-k8sstable4-betaapis:
     interval: 24h
     args:
     - --env=KUBE_PROXY_DAEMONSET=true
@@ -250,22 +257,22 @@ k8sVersions:
     - --extract=ci/latest
     - --extract-ci-bucket=k8s-release-dev
     version: master
-  beta:
+  stable1:
     args:
     - --extract=ci/latest-1.23
     - --extract-ci-bucket=k8s-release-dev
     version: '1.23'
-  stable1:
+  stable2:
     args:
     - --extract=ci/latest-1.22
     - --extract-ci-bucket=k8s-release-dev
     version: '1.22'
-  stable2:
+  stable3:
     args:
     - --extract=ci/latest-1.21
     - --extract-ci-bucket=k8s-release-dev
     version: '1.21'
-  stable3:
+  stable4:
     args:
     - --extract=ci/latest-1.20
     - --extract-ci-bucket=k8s-release-dev
@@ -404,19 +411,19 @@ nodeK8sVersions:
     args:
     - --repo=k8s.io/kubernetes=master
     prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220413-ebb00ad7a6-master
-  beta:
+  stable1:
     args:
     - --repo=k8s.io/kubernetes=release-1.23
     prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220413-ebb00ad7a6-1.23
-  stable1:
+  stable2:
     args:
     - --repo=k8s.io/kubernetes=release-1.22
     prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220413-ebb00ad7a6-1.22
-  stable2:
+  stable3:
     args:
     - --repo=k8s.io/kubernetes=release-1.21
     prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220413-ebb00ad7a6-1.21
-  stable3:
+  stable4:
     args:
     - --repo=k8s.io/kubernetes=release-1.20
     prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220413-ebb00ad7a6-1.20
