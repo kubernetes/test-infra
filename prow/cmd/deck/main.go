@@ -631,11 +631,7 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, authCfgGe
 
 		repos := cfg().AllRepos.List()
 
-		prStatusAgent := prstatus.NewDashboardAgent(
-			repos,
-			&githubOAuthConfig,
-			&o.github,
-			logrus.WithField("client", "pr-status"))
+		prStatusAgent := prstatus.NewDashboardAgent(repos, &githubOAuthConfig, logrus.WithField("client", "pr-status"))
 
 		clientCreator := func(accessToken string) prstatus.GitHubClient {
 			return o.github.GitHubClientWithAccessToken(accessToken)

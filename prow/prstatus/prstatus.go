@@ -30,7 +30,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 
-	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/githuboauth"
 )
@@ -65,9 +64,8 @@ type PullRequestWithContexts struct {
 // DashboardAgent is responsible for handling request to /pr-status endpoint.
 // It will serve a list of open pull requests owned by the user.
 type DashboardAgent struct {
-	repos  []string
-	goac   *githuboauth.Config
-	github flagutil.GitHubOptions
+	repos []string
+	goac  *githuboauth.Config
 
 	log *logrus.Entry
 }
@@ -140,12 +138,11 @@ type searchQuery struct {
 }
 
 // NewDashboardAgent creates a new user dashboard agent .
-func NewDashboardAgent(repos []string, config *githuboauth.Config, github *flagutil.GitHubOptions, log *logrus.Entry) *DashboardAgent {
+func NewDashboardAgent(repos []string, config *githuboauth.Config, log *logrus.Entry) *DashboardAgent {
 	return &DashboardAgent{
-		repos:  repos,
-		goac:   config,
-		github: *github,
-		log:    log,
+		repos: repos,
+		goac:  config,
+		log:   log,
 	}
 }
 
@@ -207,7 +204,6 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler pullRequestQueryHandler, c
 		var botUser *github.UserData
 		if ok && token.Valid() {
 			githubClient := createClient(token.AccessToken)
-			var err error
 			botUser, err = githubClient.BotUser()
 			user = &github.User{Login: botUser.Login}
 			if err != nil {
@@ -222,60 +218,58 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler pullRequestQueryHandler, c
 					return
 				}
 			}
-		}
 
-		if user != nil {
-			login := user.Login
-			data.Login = true
-			// Saves login. We save the login under 2 cookies. One for the use of client to render the
-			// data and one encoded for server to verify the identity of the authenticated user.
-			http.SetCookie(w, &http.Cookie{
-				Name:    loginSession,
-				Value:   login,
-				Path:    "/",
-				Expires: time.Now().Add(time.Hour * 24 * 30),
-				Secure:  true,
-			})
-			session.Values[loginKey] = login
-			if err := session.Save(r, w); err != nil {
-				serverError("Save oauth session", err)
-				return
-			}
-
-			// Construct query
-			ghc := da.github.GitHubClientWithAccessToken(token.AccessToken) // TODO(fejta): we should not recreate the client
-			query := da.ConstructSearchQuery(login)
-			if err := r.ParseForm(); err == nil {
-				if q := r.Form.Get("query"); q != "" {
-					query = q
-				}
-			}
-			// If neither repo nor org is specified in the search query. We limit the search to repos that
-			// are configured with either Prow or Tide.
-			if !queryConstrainsRepos(query) {
-				for _, v := range da.repos {
-					query += fmt.Sprintf(" repo:\"%s\"", v)
-				}
-			}
-			pullRequests, err := queryHandler.queryPullRequests(context.Background(), ghc, query)
-			if err != nil {
-				serverError("Error with querying user data.", err)
-				return
-			}
-			var pullRequestWithContexts []PullRequestWithContexts
-			for _, pr := range pullRequests {
-				prcontexts, err := queryHandler.getHeadContexts(ghc, pr)
-				if err != nil {
-					serverError("Error with getting head context of pr", err)
-					continue
-				}
-				pullRequestWithContexts = append(pullRequestWithContexts, PullRequestWithContexts{
-					Contexts:    prcontexts,
-					PullRequest: pr,
+			if user != nil {
+				login := user.Login
+				data.Login = true
+				// Saves login. We save the login under 2 cookies. One for the use of client to render the
+				// data and one encoded for server to verify the identity of the authenticated user.
+				http.SetCookie(w, &http.Cookie{
+					Name:    loginSession,
+					Value:   login,
+					Path:    "/",
+					Expires: time.Now().Add(time.Hour * 24 * 30),
+					Secure:  true,
 				})
-			}
+				session.Values[loginKey] = login
+				if err := session.Save(r, w); err != nil {
+					serverError("Save oauth session", err)
+					return
+				}
 
-			data.PullRequestsWithContexts = pullRequestWithContexts
+				query := da.ConstructSearchQuery(login)
+				if err := r.ParseForm(); err == nil {
+					if q := r.Form.Get("query"); q != "" {
+						query = q
+					}
+				}
+				// If neither repo nor org is specified in the search query. We limit the search to repos that
+				// are configured with either Prow or Tide.
+				if !queryConstrainsRepos(query) {
+					for _, v := range da.repos {
+						query += fmt.Sprintf(" repo:\"%s\"", v)
+					}
+				}
+				pullRequests, err := queryHandler.queryPullRequests(context.Background(), githubClient, query)
+				if err != nil {
+					serverError("Error with querying user data.", err)
+					return
+				}
+				var pullRequestWithContexts []PullRequestWithContexts
+				for _, pr := range pullRequests {
+					prcontexts, err := queryHandler.getHeadContexts(githubClient, pr)
+					if err != nil {
+						serverError("Error with getting head context of pr", err)
+						continue
+					}
+					pullRequestWithContexts = append(pullRequestWithContexts, PullRequestWithContexts{
+						Contexts:    prcontexts,
+						PullRequest: pr,
+					})
+				}
+
+				data.PullRequestsWithContexts = pullRequestWithContexts
+			}
 		}
 
 		marshaledData, err := json.Marshal(data)
