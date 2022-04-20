@@ -26,7 +26,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/krte:v20220420-a8dc19ed91-master
+    - image: gcr.io/k8s-staging-test-infra/krte:v20220420-14f1a66a0f-master
       command:
       - wrapper.sh
       - bash

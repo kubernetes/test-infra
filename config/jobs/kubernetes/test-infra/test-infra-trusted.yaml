@@ -41,7 +41,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
+      - image: gcr.io/k8s-staging-test-infra/image-builder:v20220420-14f1a66a0f
         command:
         - /run.sh
         args:
@@ -62,7 +62,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
+      - image: gcr.io/k8s-staging-test-infra/image-builder:v20220420-14f1a66a0f
         command:
         - /run.sh
         args:
@@ -83,7 +83,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
+      - image: gcr.io/k8s-staging-test-infra/image-builder:v20220420-14f1a66a0f
         command:
         - /run.sh
         args:
@@ -104,7 +104,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
+      - image: gcr.io/k8s-staging-test-infra/image-builder:v20220420-14f1a66a0f
         command:
         - /run.sh
         args:
@@ -202,7 +202,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220420-a8dc19ed91-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220420-14f1a66a0f-test-infra
         command:
         - runner.sh
         args:
@@ -255,7 +255,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
+      - image: gcr.io/k8s-staging-test-infra/image-builder:v20220420-14f1a66a0f
         command:
         - /run.sh
         args:
@@ -279,7 +279,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
+      - image: gcr.io/k8s-staging-test-infra/image-builder:v20220420-14f1a66a0f
         command:
         - /run.sh
         args:
@@ -302,7 +302,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
+      - image: gcr.io/k8s-staging-test-infra/image-builder:v20220420-14f1a66a0f
         command:
         - /run.sh
         args:
@@ -326,7 +326,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
+      - image: gcr.io/k8s-staging-test-infra/image-builder:v20220420-14f1a66a0f
         command:
         - /run.sh
         args:
@@ -350,7 +350,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
+      - image: gcr.io/k8s-staging-test-infra/image-builder:v20220420-14f1a66a0f
         command:
         - /run.sh
         args:
@@ -374,7 +374,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
+      - image: gcr.io/k8s-staging-test-infra/image-builder:v20220420-14f1a66a0f
         command:
         - /run.sh
         args:
