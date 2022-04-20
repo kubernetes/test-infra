@@ -377,7 +377,6 @@ k8s_versions = [
 
 kops_versions = [
     None, # maps to latest
-    "1.22",
     "1.23"
 ]
 
