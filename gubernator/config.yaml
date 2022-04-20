@@ -24,8 +24,6 @@ jobs:
   - ci-kubernetes-kubemark-500-gce
   - ci-kubernetes-verify-master
   kubernetes-jenkins/pr-logs/directory/:
-  - pull-kubernetes-bazel-build
-  - pull-kubernetes-bazel-test
   - pull-kubernetes-conformance-kind-ga-only-parallel
   - pull-kubernetes-dependencies
   - pull-kubernetes-e2e-gce-100-performance

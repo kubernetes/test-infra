@@ -33,14 +33,14 @@ periodics:
           cpu: "1"
           memory: 3Gi
 - annotations:
-    fork-per-release-cron: 0 3-23/6 * * *, 0 8-23/12 * * *, 0 8-23/24 * * *
+    fork-per-release-cron: 0 8-23/12 * * *, 0 8-23/24 * * *
     testgrid-alert-email: gke-kubernetes-accelerators-bugs@google.com
     testgrid-alert-stale-results-hours: "24"
     testgrid-dashboards: sig-release-1.23-blocking, google-gce
     testgrid-num-failures-to-alert: "6"
     testgrid-tab-name: gce-device-plugin-gpu-1.23
   cluster: k8s-infra-prow-build
-  cron: 0 0-23/2 * * *
+  cron: 0 3-23/6 * * *
   labels:
     preset-ci-gce-device-plugin-gpu: "true"
     preset-k8s-ssh: "true"
@@ -73,7 +73,7 @@ periodics:
           cpu: "1"
           memory: 3Gi
 - annotations:
-    fork-per-release-periodic-interval: 2h 6h 24h
+    fork-per-release-periodic-interval: 6h 24h
     testgrid-alert-email: bentheelder@google.com,siarkowicz@google.com,patrick.ohly@intel.com
     testgrid-dashboards: sig-instrumentation-tests, sig-testing-kind, sig-release-job-config-errors
     testgrid-num-columns-recent: "6"
@@ -87,7 +87,7 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 1h
+  interval: 2h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -125,12 +125,12 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-periodic-interval: 2h 6h 24h
+    fork-per-release-periodic-interval: 6h 24h
     testgrid-alert-email: kubernetes-sig-node+testgrid@googlegroups.com,kubernetes-sig-node-test-failures@googlegroups.com
     testgrid-dashboards: sig-release-1.23-blocking, sig-node-release-blocking
     testgrid-tab-name: node-kubelet-1.23
   cluster: k8s-infra-prow-build
-  interval: 1h
+  interval: 2h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
@@ -164,7 +164,7 @@ periodics:
           cpu: "6"
           memory: 6Gi
 - annotations:
-    fork-per-release-periodic-interval: 2h 6h 24h
+    fork-per-release-periodic-interval: 6h 24h
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
     testgrid-dashboards: sig-node-release-blocking, sig-release-job-config-errors
     testgrid-tab-name: node-kubelet-1.23-kubetest2
@@ -181,7 +181,7 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/test-infra
     repo: test-infra
-  interval: 1h
+  interval: 2h
   labels:
     preset-k8s-ssh: "true"
     preset-service-account: "true"
@@ -281,7 +281,7 @@ periodics:
       - --allow-dup
       - --bucket=k8s-release-dev
       - --registry=gcr.io/k8s-staging-ci-images
-      - --extra-version-markers=k8s-stable1
+      - --extra-version-markers=k8s-stable2
       image: gcr.io/k8s-staging-releng/k8s-ci-builder:latest-default
       imagePullPolicy: Always
       name: ""
@@ -295,13 +295,13 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-cron: 0 9 * * *, 0 15 * * *, 0 21 * * *
+    fork-per-release-cron: 0 15 * * *, 0 21 * * *
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com
     testgrid-dashboards: sig-scalability-kubemark, sig-release-job-config-errors
     testgrid-num-failures-to-alert: "2"
     testgrid-tab-name: kubemark-1.23-500
   cluster: k8s-infra-prow-build
-  cron: 0 3 * * *
+  cron: 0 9 * * *
   decorate: true
   decoration_config:
     timeout: 2h0m0s
@@ -370,14 +370,14 @@ periodics:
   - 'perfDashPrefix: kubemark-500Nodes-1.23'
   - 'perfDashJobType: performance'
 - annotations:
-    fork-per-release-cron: 0 0/12 * * *, 0 4-16/12 * * *, 0 8-20/12 * * *
+    fork-per-release-cron: 0 4-16/12 * * *, 0 8-20/12 * * *
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com
     testgrid-dashboards: sig-release-1.23-blocking, sig-scalability-gce, google-gce,
       google-gci
     testgrid-num-failures-to-alert: "2"
     testgrid-tab-name: gce-cos-1.23-scalability-100
   cluster: k8s-infra-prow-build
-  cron: 0 */6 * * *
+  cron: 0 0/12 * * *
   decorate: true
   decoration_config:
     timeout: 2h20m0s
@@ -450,7 +450,7 @@ periodics:
   - 'perfDashJobType: performance'
   - 'perfDashBuildsCount: 500'
 - annotations:
-    fork-per-release-periodic-interval: 2h 6h 24h
+    fork-per-release-periodic-interval: 6h 24h
     testgrid-alert-email: release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.23-blocking
     testgrid-tab-name: integration-1.23
@@ -519,7 +519,7 @@ periodics:
     securityContext:
       runAsUser: 2000
 - annotations:
-    fork-per-release-periodic-interval: 2h 6h 24h
+    fork-per-release-periodic-interval: 6h 24h
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com,
       release-managers+alerts@kubernetes.io
     testgrid-dashboards: sig-release-1.23-blocking
@@ -723,7 +723,7 @@ periodics:
       name: ""
       resources: {}
 - annotations:
-    fork-per-release-periodic-interval: 2h 6h 24h
+    fork-per-release-periodic-interval: 6h 24h
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.23-blocking, sig-testing-kind
     testgrid-num-columns-recent: "6"
@@ -737,7 +737,7 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 1h
+  interval: 2h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -769,7 +769,7 @@ periodics:
       securityContext:
         privileged: true
 - annotations:
-    fork-per-release-periodic-interval: 2h 6h 24h
+    fork-per-release-periodic-interval: 6h 24h
     testgrid-alert-email: bentheelder@google.com,antonio.ojea.garcia@gmail.com,release-team@kubernetes.io
     testgrid-dashboards: sig-release-1.23-blocking, sig-testing-kind
     testgrid-num-columns-recent: "6"
@@ -783,7 +783,7 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 1h
+  interval: 2h
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -966,6 +966,8 @@ presubmits:
         securityContext:
           privileged: true
   - always_run: false
+    annotations:
+      testgrid-create-test-group: "true"
     branches:
     - release-1.23
     context: pull-kubernetes-e2e-gce-ubuntu
@@ -976,8 +978,6 @@ presubmits:
       preset-pull-kubernetes-e2e-gce: "true"
       preset-service-account: "true"
     name: pull-kubernetes-e2e-gce-ubuntu
-    annotations:
-      testgrid-create-test-group: "true"
     spec:
       containers:
       - args:
@@ -1212,6 +1212,8 @@ presubmits:
         securityContext:
           privileged: true
   - always_run: false
+    annotations:
+      testgrid-create-test-group: "true"
     branches:
     - release-1.23
     cluster: k8s-infra-prow-build
@@ -1229,8 +1231,6 @@ presubmits:
       preset-service-account: "true"
     max_concurrency: 12
     name: pull-kubernetes-node-e2e-podutil
-    annotations:
-      testgrid-create-test-group: "true"
     optional: true
     path_alias: k8s.io/kubernetes
     spec:
@@ -1257,6 +1257,8 @@ presubmits:
             cpu: "4"
             memory: 6Gi
   - always_run: false
+    annotations:
+      testgrid-create-test-group: "true"
     branches:
     - release-1.23
     context: pull-kubernetes-node-e2e-kubetest2
@@ -1272,8 +1274,6 @@ presubmits:
       preset-k8s-ssh: "true"
       preset-service-account: "true"
     name: pull-kubernetes-node-e2e-kubetest2
-    annotations:
-      testgrid-create-test-group: "true"
     optional: true
     path_alias: k8s.io/kubernetes
     spec:
