@@ -13,7 +13,7 @@ presubmits:
     spec:
       containers:
         # we use this image because we need docker-in-docker and go.
-      - image: gcr.io/k8s-staging-test-infra/krte:v20220420-a8dc19ed91-1.23
+      - image: gcr.io/k8s-staging-test-infra/krte:v20220420-14f1a66a0f-1.23
         command:
         # docker-in-docker is set up in wrapper.sh
         - wrapper.sh
