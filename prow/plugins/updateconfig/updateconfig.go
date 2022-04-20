@@ -111,9 +111,21 @@ func Update(fg FileGetter, kc corev1.ConfigMapInterface, name, namespace string,
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
 				Namespace: namespace,
+				Labels: map[string]string{
+					"app.kubernetes.io/name":      "prow",
+					"app.kubernetes.io/component": "updateconfig-plugin",
+				},
 			},
 		}
 	}
+
+	if cm.ObjectMeta.Labels == nil {
+		cm.ObjectMeta.Labels = map[string]string{
+			"app.kubernetes.io/name":      "prow",
+			"app.kubernetes.io/component": "updateconfig-plugin",
+		}
+	}
+
 	if cm.Data == nil || bootstrap {
 		cm.Data = map[string]string{}
 	}
