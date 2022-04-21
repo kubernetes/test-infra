@@ -560,6 +560,8 @@ presubmits:
               value: "Standard_D4s_v3"
             - name: KUBERNETES_VERSION
               value: "v1.23.5"
+            - name: WORKER_MACHINE_COUNT
+              value: "0" # Don't create any linux worker nodes
     annotations:
       testgrid-dashboards: provider-azure-azurefile-csi-driver
       testgrid-tab-name: pull-azurefile-csi-driver-e2e-capz-windows-2019
@@ -611,6 +613,8 @@ presubmits:
               value: "true"
             - name: KUBERNETES_VERSION
               value: "v1.23.5"
+            - name: WORKER_MACHINE_COUNT
+              value: "0" # Don't create any linux worker nodes
     annotations:
       testgrid-dashboards: provider-azure-azurefile-csi-driver
       testgrid-tab-name: pull-azurefile-csi-driver-e2e-capz-windows-2022
