@@ -24,6 +24,7 @@ replace (
 )
 
 require (
+	bitbucket.org/creachadair/stringset v0.0.9
 	cloud.google.com/go v0.81.0
 	cloud.google.com/go/pubsub v1.9.1
 	cloud.google.com/go/storage v1.12.0
@@ -114,7 +115,6 @@ require (
 )
 
 require (
-	bitbucket.org/creachadair/stringset v0.0.9 // indirect
 	github.com/Azure/azure-pipeline-go v0.2.2 // indirect
 	github.com/Azure/go-autorest v14.2.0+incompatible // indirect
 	github.com/Azure/go-autorest/autorest/date v0.3.0 // indirect
