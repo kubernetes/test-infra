@@ -20,7 +20,6 @@ readonly OUTPUT="$(dirname $0)/k8s-staging-sig-storage.yaml"
 # Repos for which cloud image builds are working.
 readonly REPOS=(
     kubernetes-csi/csi-driver-host-path
-    kubernetes-csi/csi-driver-smb
     kubernetes-csi/csi-test
     kubernetes-csi/external-attacher
     kubernetes-csi/external-health-monitor
