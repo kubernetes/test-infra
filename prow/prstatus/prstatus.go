@@ -205,7 +205,6 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler pullRequestQueryHandler, c
 		if ok && token.Valid() {
 			githubClient := createClient(token.AccessToken)
 			botUser, err = githubClient.BotUser()
-			user = &github.User{Login: botUser.Login}
 			if err != nil {
 				if strings.Contains(err.Error(), "401") {
 					da.log.Info("Failed to access GitHub with existing access token, invalidating GitHub login session")
@@ -218,58 +217,57 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler pullRequestQueryHandler, c
 					return
 				}
 			}
+			user = &github.User{Login: botUser.Login}
 
-			if user != nil {
-				login := user.Login
-				data.Login = true
-				// Saves login. We save the login under 2 cookies. One for the use of client to render the
-				// data and one encoded for server to verify the identity of the authenticated user.
-				http.SetCookie(w, &http.Cookie{
-					Name:    loginSession,
-					Value:   login,
-					Path:    "/",
-					Expires: time.Now().Add(time.Hour * 24 * 30),
-					Secure:  true,
-				})
-				session.Values[loginKey] = login
-				if err := session.Save(r, w); err != nil {
-					serverError("Save oauth session", err)
-					return
-				}
-
-				query := da.ConstructSearchQuery(login)
-				if err := r.ParseForm(); err == nil {
-					if q := r.Form.Get("query"); q != "" {
-						query = q
-					}
-				}
-				// If neither repo nor org is specified in the search query. We limit the search to repos that
-				// are configured with either Prow or Tide.
-				if !queryConstrainsRepos(query) {
-					for _, v := range da.repos {
-						query += fmt.Sprintf(" repo:\"%s\"", v)
-					}
-				}
-				pullRequests, err := queryHandler.queryPullRequests(context.Background(), githubClient, query)
-				if err != nil {
-					serverError("Error with querying user data.", err)
-					return
-				}
-				var pullRequestWithContexts []PullRequestWithContexts
-				for _, pr := range pullRequests {
-					prcontexts, err := queryHandler.getHeadContexts(githubClient, pr)
-					if err != nil {
-						serverError("Error with getting head context of pr", err)
-						continue
-					}
-					pullRequestWithContexts = append(pullRequestWithContexts, PullRequestWithContexts{
-						Contexts:    prcontexts,
-						PullRequest: pr,
-					})
-				}
-
-				data.PullRequestsWithContexts = pullRequestWithContexts
+			login := user.Login
+			data.Login = true
+			// Saves login. We save the login under 2 cookies. One for the use of client to render the
+			// data and one encoded for server to verify the identity of the authenticated user.
+			http.SetCookie(w, &http.Cookie{
+				Name:    loginSession,
+				Value:   login,
+				Path:    "/",
+				Expires: time.Now().Add(time.Hour * 24 * 30),
+				Secure:  true,
+			})
+			session.Values[loginKey] = login
+			if err := session.Save(r, w); err != nil {
+				serverError("Save oauth session", err)
+				return
 			}
+
+			query := da.ConstructSearchQuery(login)
+			if err := r.ParseForm(); err == nil {
+				if q := r.Form.Get("query"); q != "" {
+					query = q
+				}
+			}
+			// If neither repo nor org is specified in the search query. We limit the search to repos that
+			// are configured with either Prow or Tide.
+			if !queryConstrainsRepos(query) {
+				for _, v := range da.repos {
+					query += fmt.Sprintf(" repo:\"%s\"", v)
+				}
+			}
+			pullRequests, err := queryHandler.queryPullRequests(context.Background(), githubClient, query)
+			if err != nil {
+				serverError("Error with querying user data.", err)
+				return
+			}
+			var pullRequestWithContexts []PullRequestWithContexts
+			for _, pr := range pullRequests {
+				prcontexts, err := queryHandler.getHeadContexts(githubClient, pr)
+				if err != nil {
+					serverError("Error with getting head context of pr", err)
+					continue
+				}
+				pullRequestWithContexts = append(pullRequestWithContexts, PullRequestWithContexts{
+					Contexts:    prcontexts,
+					PullRequest: pr,
+				})
+			}
+
+			data.PullRequestsWithContexts = pullRequestWithContexts
 		}
 
 		marshaledData, err := json.Marshal(data)
