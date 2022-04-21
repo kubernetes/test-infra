@@ -404,7 +404,7 @@ presubmits:
       testgrid-days-of-results: '90'
       testgrid-tab-name: e2e-cilium
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "deb11", "extra_flags": "--ipv6 --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery", "feature_flags": "AWSIPv6", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "deb11", "extra_flags": "--ipv6 --zones=us-west-2a --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-e2e-cni-cilium-ipv6
     branches:
     - master
