@@ -15,7 +15,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220420-14f1a66a0f-1.21
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-1.21
       command:
       - runner.sh
       - kubetest
@@ -68,7 +68,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220420-14f1a66a0f-1.22
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-1.22
       command:
       - runner.sh
       - kubetest
@@ -121,7 +121,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220420-14f1a66a0f-1.23
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-1.23
       command:
       - runner.sh
       - kubetest
@@ -174,7 +174,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220420-14f1a66a0f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
       command:
       - runner.sh
       - kubetest
@@ -227,7 +227,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220420-14f1a66a0f-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
       command:
       - runner.sh
       - kubetest
@@ -284,7 +284,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220420-14f1a66a0f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
         command:
         - runner.sh
         - kubetest
@@ -339,7 +339,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220420-14f1a66a0f-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
         command:
         - runner.sh
         - kubetest

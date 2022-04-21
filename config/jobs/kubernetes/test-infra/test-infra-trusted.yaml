@@ -202,7 +202,7 @@ postsubmits:
     spec:
       serviceAccountName: pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220420-14f1a66a0f-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-test-infra
         command:
         - runner.sh
         args:
