@@ -5,9 +5,9 @@ presets:
   - name: LOG_DUMP_SYSTEMD_SERVICES
     value: containerd containerd-installation
   - name: KUBE_MASTER_EXTRA_METADATA
-    value: user-data=/workspace/github.com/containerd/containerd/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
+    value: user-data=/workspace/github.com/containerd/containerd/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/env
   - name: KUBE_NODE_EXTRA_METADATA
-    value: user-data=/workspace/github.com/containerd/containerd/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/env
+    value: user-data=/workspace/github.com/containerd/containerd/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/env
   - name: KUBE_CONTAINER_RUNTIME_ENDPOINT
     value: unix:///run/containerd/containerd.sock
   - name: KUBE_CONTAINER_RUNTIME_NAME
@@ -162,7 +162,7 @@ periodics:
       - --timeout=90
       - --scenario=kubernetes_e2e
       - --
-      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/image-config.yaml
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/image-config.yaml
       - --deployment=node
       - --gcp-project-type=node-e2e-project
       - --gcp-zone=us-west1-b
@@ -194,7 +194,7 @@ periodics:
       - --timeout=90
       - --scenario=kubernetes_e2e
       - --
-      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/image-config.yaml
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/image-config.yaml
       - --deployment=node
       - --gcp-zone=us-central1-b
       - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
@@ -722,7 +722,7 @@ periodics:
       - --timeout=90
       - --scenario=kubernetes_e2e
       - --
-      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/image-config.yaml
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/image-config.yaml
       - --deployment=node
       - --gcp-zone=us-west1-b
       - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
@@ -759,7 +759,7 @@ periodics:
       - --timeout=400
       - --scenario=kubernetes_e2e
       - --
-      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/image-config.yaml
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/image-config.yaml
       - --deployment=node
       - --gcp-zone=us-west1-b
       - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
@@ -924,7 +924,7 @@ periodics:
       - --timeout=200
       - --scenario=kubernetes_e2e
       - --
-      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/cgroupv2/image-config-cgroupv2.yaml
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv2/image-config-cgroupv2.yaml
       - --deployment=node
       - --gcp-zone=us-west1-b
       - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
@@ -962,7 +962,7 @@ periodics:
       - --timeout=200
       - --scenario=kubernetes_e2e
       - --
-      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/cgroupv2/image-config-cgroupv2.yaml
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv2/image-config-cgroupv2.yaml
       - --deployment=node
       - --gcp-zone=us-west1-b
       - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
@@ -998,7 +998,7 @@ periodics:
       - --timeout=90
       - --scenario=kubernetes_e2e
       - --
-      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/systemd/image-config.yaml
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/systemd/image-config.yaml
       - --deployment=node
       - --gcp-project-type=node-e2e-project
       - --gcp-zone=us-west1-b
@@ -1029,8 +1029,8 @@ periodics:
       - --
       - --check-leaked-resources
       - --env=ENABLE_POD_SECURITY_POLICY=true
-      - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/containerd/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh=/workspace/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/cgroupv2/env-cgroupv2
-      - --env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/containerd/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh=/workspace/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/cgroupv2/env-cgroupv2
+      - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/containerd/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh=/workspace/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv2/env-cgroupv2
+      - --env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/containerd/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh=/workspace/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv2/env-cgroupv2
       - --env=KUBELET_TEST_ARGS=--runtime-cgroups=/system.slice/containerd.service --cgroup-driver=systemd
       - --extract=ci/latest
       - --gcp-node-image=gci
@@ -1063,7 +1063,7 @@ periodics:
       - --timeout=260
       - --scenario=kubernetes_e2e
       - --
-      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/cgroupv2/image-config-cgroupv2-serial.yaml
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv2/image-config-cgroupv2-serial.yaml
       - --deployment=node
       - --gcp-zone=us-west1-b
       - '--node-test-args=--feature-gates=LocalStorageCapacityIsolation=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=containerd --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
@@ -1228,7 +1228,7 @@ periodics:
           - --deployment=node
           - --gcp-project-type=node-e2e-project
           - --gcp-zone=us-west1-b
-          - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-master/perf-image-config.yaml
+          - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/perf-image-config.yaml
           - '--node-test-args=--feature-gates=LocalStorageCapacityIsolation=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}" --server-start-timeout=420s'
           - --node-tests=true
           - --provider=gce
