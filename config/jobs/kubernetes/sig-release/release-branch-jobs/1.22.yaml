@@ -624,6 +624,7 @@ periodics:
     - args:
       - --check-leaked-resources
       - --cluster=
+      - --env=KUBE_WINDOWS_CONTAINER_RUNTIME=containerd
       - --extract=ci/latest-1.22
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=8
@@ -733,6 +734,7 @@ periodics:
     - args:
       - --check-leaked-resources
       - --cluster=
+      - --env=KUBE_WINDOWS_CONTAINER_RUNTIME=containerd
       - --extract=ci/latest-1.22
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=8
