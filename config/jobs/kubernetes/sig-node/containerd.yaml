@@ -1221,6 +1221,7 @@ periodics:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220420-14f1a66a0f-master
         args:
           - --repo=k8s.io/kubernetes=master
+          - --repo=github.com/containerd/containerd=main
           - --timeout=90
           - --root=/go/src
           - --scenario=kubernetes_e2e
