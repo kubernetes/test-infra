@@ -4,9 +4,9 @@ periodics:
   decoration_config:
     timeout: 3h
   interval: 24h
-  branches:
-    - main_v2
   path_alias: sigs.k8s.io/azuredisk-csi-driver
+  branches:
+  - main_v2
   labels:
     preset-service-account: "true"
     preset-azure-cred: "true"
@@ -57,9 +57,9 @@ periodics:
   decoration_config:
     timeout: 3h
   interval: 24h
-  branches:
-    - main_v2
   path_alias: sigs.k8s.io/azuredisk-csi-driver
+  branches:
+  - main_v2
   labels:
     preset-service-account: "true"
     preset-azure-cred: "true"
