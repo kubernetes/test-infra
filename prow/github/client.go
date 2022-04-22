@@ -116,6 +116,7 @@ type IssueClient interface {
 	CloseIssue(org, repo string, number int) error
 	ReopenIssue(org, repo string, number int) error
 	FindIssues(query, sort string, asc bool) ([]Issue, error)
+	FindIssuesWithOrg(org, query, sort string, asc bool) ([]Issue, error)
 	ListOpenIssues(org, repo string) ([]Issue, error)
 	GetIssue(org, repo string, number int) (*Issue, error)
 	EditIssue(org, repo string, number int, issue *Issue) (*Issue, error)
@@ -3458,6 +3459,7 @@ func (c *client) ListFileCommits(org, repo, filePath string) ([]RepositoryCommit
 // Input query the same way you would into the website.
 // Order returned results with sort (usually "updated").
 // Control whether oldest/newest is first with asc.
+// This method is not working in contexts where "github-app-id" is set. Please use FindIssuesWithOrg() in those cases.
 //
 // See https://help.github.com/articles/searching-issues-and-pull-requests/ for details.
 func (c *client) FindIssues(query, sort string, asc bool) ([]Issue, error) {
@@ -3481,6 +3483,48 @@ func (c *client) FindIssues(query, sort string, asc bool) ([]Issue, error) {
 		values,
 		acceptNone,
 		"",
+		func() interface{} { // newObj
+			return &IssuesSearchResult{}
+		},
+		func(obj interface{}) {
+			issues = append(issues, obj.(*IssuesSearchResult).Issues...)
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return issues, err
+}
+
+// FindIssuesWithOrg uses the GitHub search API to find issues which match a particular query.
+//
+// Input query the same way you would into the website.
+// Order returned results with sort (usually "updated").
+// Control whether oldest/newest is first with asc.
+// This method is supposed to be used in contexts where "github-app-id" is set.
+//
+// See https://help.github.com/articles/searching-issues-and-pull-requests/ for details.
+func (c *client) FindIssuesWithOrg(org, query, sort string, asc bool) ([]Issue, error) {
+	durationLogger := c.log("FindIssuesWithOrg", query)
+	defer durationLogger()
+
+	values := url.Values{
+		"per_page": []string{"100"},
+		"q":        []string{query},
+	}
+	var issues []Issue
+
+	if sort != "" {
+		values["sort"] = []string{sort}
+		if asc {
+			values["order"] = []string{"asc"}
+		}
+	}
+	err := c.readPaginatedResultsWithValues(
+		fmt.Sprintf("/search/issues"),
+		values,
+		acceptNone,
+		org,
 		func() interface{} { // newObj
 			return &IssuesSearchResult{}
 		},
