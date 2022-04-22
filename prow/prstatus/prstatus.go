@@ -167,7 +167,7 @@ type GitHubClient interface {
 	BotUser() (*github.UserData, error)
 }
 
-type githubClientCreator func(accessToken string) GitHubClient
+type githubClientCreator func(accessToken string) (GitHubClient, error)
 
 // HandlePrStatus returns a http handler function that handles request to /pr-status
 // endpoint. The handler takes user access token stored in the cookie to query to GitHub on behalf
@@ -203,7 +203,11 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler pullRequestQueryHandler, c
 		var user *github.User
 		var botUser *github.UserData
 		if ok && token.Valid() {
-			githubClient := createClient(token.AccessToken)
+			githubClient, err := createClient(token.AccessToken)
+			if err != nil {
+				serverError("creating githubClient", err)
+				return
+			}
 			botUser, err = githubClient.BotUser()
 			if err != nil {
 				if strings.Contains(err.Error(), "401") {

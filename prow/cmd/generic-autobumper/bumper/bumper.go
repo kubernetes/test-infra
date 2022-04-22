@@ -228,7 +228,10 @@ func processGitHub(ctx context.Context, o *Options, prh PRHandler) error {
 		return fmt.Errorf("start secrets agent: %w", err)
 	}
 
-	gc := github.NewClient(secret.GetTokenGenerator(o.GitHubToken), secret.Censor, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint)
+	gc, err := github.NewClient(secret.GetTokenGenerator(o.GitHubToken), secret.Censor, github.DefaultGraphQLEndpoint, github.DefaultAPIEndpoint)
+	if err != nil {
+		return fmt.Errorf("failed to construct GitHub client: %v", err)
+	}
 
 	if o.GitHubLogin == "" || o.GitName == "" || o.GitEmail == "" {
 		user, err := gc.BotUser()

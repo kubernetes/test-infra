@@ -21,6 +21,7 @@ import (
 	"crypto/rsa"
 	"fmt"
 	"net/http"
+	"net/url"
 	"reflect"
 	"runtime/debug"
 	"strings"
@@ -42,17 +43,37 @@ type appGitHubClient interface {
 	GetApp() (*App, error)
 }
 
+func newAppsRoundTripper(appID string, privateKey func() *rsa.PrivateKey, upstream http.RoundTripper, githubClient appGitHubClient, v3BaseURLs []string) (*appsRoundTripper, error) {
+	roundTripper := &appsRoundTripper{
+		appID:             appID,
+		privateKey:        privateKey,
+		upstream:          upstream,
+		githubClient:      githubClient,
+		hostPrefixMapping: make(map[string]string, len(v3BaseURLs)),
+	}
+	for _, baseURL := range v3BaseURLs {
+		url, err := url.Parse(baseURL)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse github-endpoint %s as URL: %w", baseURL, err)
+		}
+		roundTripper.hostPrefixMapping[url.Host] = url.Path
+	}
+
+	return roundTripper, nil
+}
+
 type appsRoundTripper struct {
-	appID            string
-	appSlug          string
-	appSlugLock      sync.Mutex
-	privateKey       func() *rsa.PrivateKey
-	installationLock sync.RWMutex
-	installations    map[string]AppInstallation
-	tokenLock        sync.RWMutex
-	tokens           map[int64]*AppInstallationToken
-	upstream         http.RoundTripper
-	githubClient     appGitHubClient
+	appID             string
+	appSlug           string
+	appSlugLock       sync.Mutex
+	privateKey        func() *rsa.PrivateKey
+	installationLock  sync.RWMutex
+	installations     map[string]AppInstallation
+	tokenLock         sync.RWMutex
+	tokens            map[int64]*AppInstallationToken
+	upstream          http.RoundTripper
+	githubClient      appGitHubClient
+	hostPrefixMapping map[string]string
 }
 
 // appsAuthError is returned by the appsRoundTripper if any issues were encountered
@@ -66,8 +87,12 @@ func (*appsAuthError) Is(target error) bool {
 	return ok
 }
 
+func (arr *appsRoundTripper) canonicalizedPath(url *url.URL) string {
+	return strings.TrimPrefix(url.Path, arr.hostPrefixMapping[url.Host])
+}
+
 func (arr *appsRoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
-	if strings.HasPrefix(r.URL.Path, "/app") {
+	if strings.HasPrefix(arr.canonicalizedPath(r.URL), "/app") {
 		if err := arr.addAppAuth(r); err != nil {
 			return nil, err
 		}
@@ -101,7 +126,7 @@ func (arr *appsRoundTripper) addAppAuth(r *http.Request) *appsAuthError {
 	r.Header.Set(ghcache.TokenExpiryAtHeader, expiresAt.Format(time.RFC3339))
 
 	// We call the /app endpoint to resolve the slug, so we can't set it there
-	if r.URL.Path == "/app" {
+	if arr.canonicalizedPath(r.URL) == "/app" {
 		r.Header.Set(ghcache.TokenBudgetIdentifierHeader, arr.appID)
 	} else {
 		slug, err := arr.getSlug()

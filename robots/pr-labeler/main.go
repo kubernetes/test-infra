@@ -101,9 +101,12 @@ func main() {
 
 	var c client
 	if o.confirm {
-		c = github.NewClient(secret.GetTokenGenerator(o.tokenPath), secret.Censor, o.graphqlEndpoint, o.endpoint.Strings()...)
+		c, err = github.NewClient(secret.GetTokenGenerator(o.tokenPath), secret.Censor, o.graphqlEndpoint, o.endpoint.Strings()...)
 	} else {
-		c = github.NewDryRunClient(secret.GetTokenGenerator(o.tokenPath), secret.Censor, o.graphqlEndpoint, o.endpoint.Strings()...)
+		c, err = github.NewDryRunClient(secret.GetTokenGenerator(o.tokenPath), secret.Censor, o.graphqlEndpoint, o.endpoint.Strings()...)
+	}
+	if err != nil {
+		log.Fatalf("failed to construgt GitHub client: %v", err)
 	}
 
 	// get all open PRs
