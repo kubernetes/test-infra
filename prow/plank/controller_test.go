@@ -60,7 +60,7 @@ const (
 	podUnscheduledTimeout = time.Minute * 5
 )
 
-func newFakeConfigAgent(t *testing.T, maxConcurrency int) *fca {
+func newFakeConfigAgent(t *testing.T, maxConcurrency int, queueConcurrencies map[string]int) *fca {
 	presubmits := []config.Presubmit{
 		{
 			JobBase: config.JobBase{
@@ -97,6 +97,7 @@ func newFakeConfigAgent(t *testing.T, maxConcurrency int) *fca {
 						MaxConcurrency: maxConcurrency,
 						MaxGoroutines:  20,
 					},
+					JobQueueConcurrencies: queueConcurrencies,
 					PodPendingTimeout:     &metav1.Duration{Duration: podPendingTimeout},
 					PodRunningTimeout:     &metav1.Duration{Duration: podRunningTimeout},
 					PodUnscheduledTimeout: &metav1.Duration{Duration: podUnscheduledTimeout},
@@ -758,7 +759,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 				pjClient:     fakeProwJobClient,
 				buildClients: buildClients,
 				log:          logrus.NewEntry(logrus.StandardLogger()),
-				config:       newFakeConfigAgent(t, tc.MaxConcurrency).Config,
+				config:       newFakeConfigAgent(t, tc.MaxConcurrency, nil).Config,
 				totURL:       totServ.URL,
 				clock:        fakeClock,
 			}
@@ -1543,7 +1544,7 @@ func TestSyncPendingJob(t *testing.T) {
 				pjClient:     fakeProwJobClient,
 				buildClients: buildClients,
 				log:          logrus.NewEntry(logrus.StandardLogger()),
-				config:       newFakeConfigAgent(t, 0).Config,
+				config:       newFakeConfigAgent(t, 0, nil).Config,
 				totURL:       totServ.URL,
 				clock:        clock.RealClock{},
 			}
@@ -1620,7 +1621,7 @@ func TestPeriodic(t *testing.T) {
 		pjClient:     fakeProwJobClient,
 		buildClients: buildClients,
 		log:          log,
-		config:       newFakeConfigAgent(t, 0).Config,
+		config:       newFakeConfigAgent(t, 0, nil).Config,
 		totURL:       totServ.URL,
 		clock:        clock.RealClock{},
 	}
@@ -1854,7 +1855,7 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 				&indexingClient{
 					Client:     fakeProwJobClient,
 					indexFuncs: map[string]ctrlruntimeclient.IndexerFunc{prowJobIndexName: prowJobIndexer("prowjobs")},
-				}, nil, newFakeConfigAgent(t, 0).Config, nil, "")
+				}, nil, newFakeConfigAgent(t, 0, nil).Config, nil, "")
 			r.buildClients = buildClients
 			for _, job := range test.PJs {
 				request := reconcile.Request{NamespacedName: types.NamespacedName{
@@ -1878,11 +1879,17 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 }
 
 func TestMaxConcurency(t *testing.T) {
+	type pendingJob struct {
+		Duplicates int
+		JobQueue   string
+	}
+
 	type testCase struct {
-		Name             string
-		ProwJob          prowapi.ProwJob
-		ExistingProwJobs []prowapi.ProwJob
-		PendingJobs      map[string]int
+		Name                  string
+		JobQueueConcurrencies map[string]int
+		ProwJob               prowapi.ProwJob
+		ExistingProwJobs      []prowapi.ProwJob
+		PendingJobs           map[string]pendingJob
 
 		ExpectedResult bool
 	}
@@ -1898,8 +1905,10 @@ func TestMaxConcurency(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{CreationTimestamp: metav1.Now()},
 				Spec: prowapi.ProwJobSpec{
 					MaxConcurrency: 10,
-					Job:            "my-pj"}},
-			PendingJobs:    map[string]int{"my-pj": 10},
+					Job:            "my-pj",
+				},
+			},
+			PendingJobs:    map[string]pendingJob{"my-pj": {Duplicates: 10}},
 			ExpectedResult: false,
 		},
 		{
@@ -1910,7 +1919,8 @@ func TestMaxConcurency(t *testing.T) {
 				},
 				Spec: prowapi.ProwJobSpec{
 					MaxConcurrency: 10,
-					Job:            "my-pj"},
+					Job:            "my-pj",
+				},
 			},
 			ExistingProwJobs: []prowapi.ProwJob{
 				{
@@ -1918,9 +1928,10 @@ func TestMaxConcurency(t *testing.T) {
 					Spec:       prowapi.ProwJobSpec{Agent: prowapi.KubernetesAgent, Job: "my-pj"},
 					Status: prowapi.ProwJobStatus{
 						State: prowapi.TriggeredState,
-					}},
+					},
+				},
 			},
-			PendingJobs:    map[string]int{"my-pj": 9},
+			PendingJobs:    map[string]pendingJob{"my-pj": {Duplicates: 9}},
 			ExpectedResult: false,
 		},
 		{
@@ -1931,16 +1942,18 @@ func TestMaxConcurency(t *testing.T) {
 				},
 				Spec: prowapi.ProwJobSpec{
 					MaxConcurrency: 10,
-					Job:            "my-pj"},
+					Job:            "my-pj",
+				},
 			},
 			ExistingProwJobs: []prowapi.ProwJob{
 				{
 					Spec: prowapi.ProwJobSpec{Job: "my-pj"},
 					Status: prowapi.ProwJobStatus{
 						State: prowapi.TriggeredState,
-					}},
+					},
+				},
 			},
-			PendingJobs:    map[string]int{"my-pj": 10},
+			PendingJobs:    map[string]pendingJob{"my-pj": {Duplicates: 10}},
 			ExpectedResult: false,
 		},
 		{
@@ -1948,7 +1961,8 @@ func TestMaxConcurency(t *testing.T) {
 			ProwJob: prowapi.ProwJob{
 				Spec: prowapi.ProwJobSpec{
 					MaxConcurrency: 1,
-					Job:            "my-pj"},
+					Job:            "my-pj",
+				},
 			},
 			ExistingProwJobs: []prowapi.ProwJob{
 				{
@@ -1958,7 +1972,8 @@ func TestMaxConcurency(t *testing.T) {
 					Spec: prowapi.ProwJobSpec{Job: "my-pj"},
 					Status: prowapi.ProwJobStatus{
 						State: prowapi.TriggeredState,
-					}},
+					},
+				},
 			},
 			ExpectedResult: true,
 		},
@@ -1970,25 +1985,46 @@ func TestMaxConcurency(t *testing.T) {
 				},
 				Spec: prowapi.ProwJobSpec{
 					MaxConcurrency: 2,
-					Job:            "my-pj"},
+					Job:            "my-pj",
+				},
 			},
 			ExistingProwJobs: []prowapi.ProwJob{
 				{
 					Spec: prowapi.ProwJobSpec{Job: "my-pj"},
 					Status: prowapi.ProwJobStatus{
 						CompletionTime: &[]metav1.Time{{}}[0],
-					}},
+					},
+				},
 			},
-			PendingJobs:    map[string]int{"my-pj": 1},
+			PendingJobs:    map[string]pendingJob{"my-pj": {Duplicates: 1}},
 			ExpectedResult: true,
+		},
+		{
+			Name:                  "Job queue concurency 0 always runs",
+			ProwJob:               prowapi.ProwJob{Spec: prowapi.ProwJobSpec{JobQueueName: "queue"}},
+			JobQueueConcurrencies: map[string]int{"queue": 0},
+			ExpectedResult:        true,
+		},
+		{
+			Name: "Num pending within max concurrency but exceeds job queue concurrency",
+			ProwJob: prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{CreationTimestamp: metav1.Now()},
+				Spec: prowapi.ProwJobSpec{
+					MaxConcurrency: 100,
+					Job:            "my-pj",
+					JobQueueName:   "queue",
+				},
+			},
+			JobQueueConcurrencies: map[string]int{"queue": 10},
+			PendingJobs:           map[string]pendingJob{"my-pj": {Duplicates: 10, JobQueue: "queue"}},
+			ExpectedResult:        false,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
-
 			if tc.PendingJobs == nil {
-				tc.PendingJobs = map[string]int{}
+				tc.PendingJobs = map[string]pendingJob{}
 			}
 			buildClients := map[string]ctrlruntimeclient.Client{}
 			logrus.SetLevel(logrus.DebugLevel)
@@ -1998,16 +2034,17 @@ func TestMaxConcurency(t *testing.T) {
 				tc.ExistingProwJobs[i].Namespace = "prowjobs"
 				prowJobs = append(prowJobs, &tc.ExistingProwJobs[i])
 			}
-			for jobName, numJobsToCreate := range tc.PendingJobs {
-				for i := 0; i < numJobsToCreate; i++ {
+			for jobName, jobsToCreateParams := range tc.PendingJobs {
+				for i := 0; i < jobsToCreateParams.Duplicates; i++ {
 					prowJobs = append(prowJobs, &prowapi.ProwJob{
 						ObjectMeta: metav1.ObjectMeta{
 							Name:      fmt.Sprintf("%s-%d", jobName, i),
 							Namespace: "prowjobs",
 						},
 						Spec: prowapi.ProwJobSpec{
-							Agent: prowapi.KubernetesAgent,
-							Job:   jobName,
+							Agent:        prowapi.KubernetesAgent,
+							Job:          jobName,
+							JobQueueName: jobsToCreateParams.JobQueue,
 						},
 						Status: prowapi.ProwJobStatus{
 							State: prowapi.PendingState,
@@ -2022,7 +2059,7 @@ func TestMaxConcurency(t *testing.T) {
 				},
 				buildClients: buildClients,
 				log:          logrus.NewEntry(logrus.StandardLogger()),
-				config:       newFakeConfigAgent(t, 0).Config,
+				config:       newFakeConfigAgent(t, 0, tc.JobQueueConcurrencies).Config,
 				clock:        clock.RealClock{},
 			}
 			// We filter ourselves out via the UID, so make sure its not the empty string

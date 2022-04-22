@@ -1664,7 +1664,9 @@ func TestValidateMultipleContainers(t *testing.T) {
 			},
 		},
 	}
-	ns := "target-namespace"
+	cfg := Config{
+		ProwConfig: ProwConfig{PodNamespace: "target-namespace"},
+	}
 	cases := []struct {
 		name string
 		base JobBase
@@ -1677,7 +1679,7 @@ func TestValidateMultipleContainers(t *testing.T) {
 				Agent:         ka,
 				UtilityConfig: UtilityConfig{Decorate: &yes, DecorationConfig: &defCfg},
 				Spec:          &goodSpec,
-				Namespace:     &ns,
+				Namespace:     &cfg.PodNamespace,
 			},
 			pass: true,
 		},
@@ -1697,7 +1699,7 @@ func TestValidateMultipleContainers(t *testing.T) {
 						},
 					},
 				},
-				Namespace: &ns,
+				Namespace: &cfg.PodNamespace,
 			},
 		},
 		{
@@ -1716,7 +1718,7 @@ func TestValidateMultipleContainers(t *testing.T) {
 						},
 					},
 				},
-				Namespace: &ns,
+				Namespace: &cfg.PodNamespace,
 			},
 		},
 		{
@@ -1725,7 +1727,7 @@ func TestValidateMultipleContainers(t *testing.T) {
 				Name:      "name",
 				Agent:     ka,
 				Spec:      &goodSpec,
-				Namespace: &ns,
+				Namespace: &cfg.PodNamespace,
 			},
 		},
 		{
@@ -1745,14 +1747,14 @@ func TestValidateMultipleContainers(t *testing.T) {
 							Args: []string{"hello", "world"},
 						},
 					},
-				}, Namespace: &ns,
+				}, Namespace: &cfg.PodNamespace,
 			},
 		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			switch err := validateJobBase(tc.base, prowjobv1.PresubmitJob, ns); {
+			switch err := cfg.validateJobBase(tc.base, prowjobv1.PresubmitJob); {
 			case err == nil && !tc.pass:
 				t.Error("validation failed to raise an error")
 			case err != nil && tc.pass:
@@ -1770,7 +1772,12 @@ func TestValidateJobBase(t *testing.T) {
 			{},
 		},
 	}
-	ns := "target-namespace"
+	cfg := Config{
+		ProwConfig: ProwConfig{
+			Plank:        Plank{JobQueueConcurrencies: map[string]int{"queue": 0}},
+			PodNamespace: "target-namespace",
+		},
+	}
 	cases := []struct {
 		name string
 		base JobBase
@@ -1782,7 +1789,7 @@ func TestValidateJobBase(t *testing.T) {
 				Name:      "name",
 				Agent:     ka,
 				Spec:      &goodSpec,
-				Namespace: &ns,
+				Namespace: &cfg.PodNamespace,
 			},
 			pass: true,
 		},
@@ -1791,7 +1798,7 @@ func TestValidateJobBase(t *testing.T) {
 			base: JobBase{
 				Name:      "name",
 				Agent:     ja,
-				Namespace: &ns,
+				Namespace: &cfg.PodNamespace,
 			},
 			pass: true,
 		},
@@ -1802,7 +1809,7 @@ func TestValidateJobBase(t *testing.T) {
 				MaxConcurrency: -1,
 				Agent:          ka,
 				Spec:           &goodSpec,
-				Namespace:      &ns,
+				Namespace:      &cfg.PodNamespace,
 			},
 		},
 		{
@@ -1810,7 +1817,7 @@ func TestValidateJobBase(t *testing.T) {
 			base: JobBase{
 				Name:      "name",
 				Agent:     ka,
-				Namespace: &ns,
+				Namespace: &cfg.PodNamespace,
 				Spec:      &v1.PodSpec{}, // no containers
 			},
 		},
@@ -1823,7 +1830,7 @@ func TestValidateJobBase(t *testing.T) {
 				UtilityConfig: UtilityConfig{
 					DecorationConfig: &prowjobv1.DecorationConfig{}, // missing many fields
 				},
-				Namespace: &ns,
+				Namespace: &cfg.PodNamespace,
 			},
 		},
 		{
@@ -1835,7 +1842,7 @@ func TestValidateJobBase(t *testing.T) {
 				Labels: map[string]string{
 					"_leading_underscore": "_rejected",
 				},
-				Namespace: &ns,
+				Namespace: &cfg.PodNamespace,
 			},
 		},
 		{
@@ -1844,7 +1851,7 @@ func TestValidateJobBase(t *testing.T) {
 				Name:      "a/b",
 				Agent:     ka,
 				Spec:      &goodSpec,
-				Namespace: &ns,
+				Namespace: &cfg.PodNamespace,
 			},
 			pass: false,
 		},
@@ -1854,7 +1861,7 @@ func TestValidateJobBase(t *testing.T) {
 				Name:      "a-b.c",
 				Agent:     ka,
 				Spec:      &goodSpec,
-				Namespace: &ns,
+				Namespace: &cfg.PodNamespace,
 			},
 			pass: true,
 		},
@@ -1868,11 +1875,27 @@ func TestValidateJobBase(t *testing.T) {
 			},
 			pass: false,
 		},
+		{
+			name: "valid job queue name",
+			base: JobBase{
+				Name:         "name",
+				JobQueueName: "queue",
+			},
+			pass: true,
+		},
+		{
+			name: "invalid job queue name",
+			base: JobBase{
+				Name:         "name",
+				JobQueueName: "invalid-queue",
+			},
+			pass: false,
+		},
 	}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			switch err := validateJobBase(tc.base, prowjobv1.PresubmitJob, ns); {
+			switch err := cfg.validateJobBase(tc.base, prowjobv1.PresubmitJob); {
 			case err == nil && !tc.pass:
 				t.Error("validation failed to raise an error")
 			case err != nil && tc.pass:
@@ -2037,6 +2060,11 @@ func TestValidateReportingWithGerritLabel(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
+			cfg := Config {
+				ProwConfig: ProwConfig {
+					PodNamespace: "default-namespace",
+				},
+			}
 			base := JobBase{
 				Name:   "test-job",
 				Labels: tc.labels,
@@ -2051,7 +2079,7 @@ func TestValidateReportingWithGerritLabel(t *testing.T) {
 			if tc.expected != nil {
 				expected = fmt.Errorf("invalid presubmit job %s: %w", "test-job", tc.expected)
 			}
-			if err := validatePresubmits(presubmits, "default-namespace"); !reflect.DeepEqual(err, utilerrors.NewAggregate([]error{expected})) {
+			if err := cfg.validatePresubmits(presubmits); !reflect.DeepEqual(err, utilerrors.NewAggregate([]error{expected})) {
 				t.Errorf("did not get expected validation result:\n%v", cmp.Diff(expected, err))
 			}
 
@@ -2064,7 +2092,7 @@ func TestValidateReportingWithGerritLabel(t *testing.T) {
 			if tc.expected != nil {
 				expected = fmt.Errorf("invalid postsubmit job %s: %w", "test-job", tc.expected)
 			}
-			if err := validatePostsubmits(postsubmits, "default-namespace"); !reflect.DeepEqual(err, utilerrors.NewAggregate([]error{expected})) {
+			if err := cfg.validatePostsubmits(postsubmits); !reflect.DeepEqual(err, utilerrors.NewAggregate([]error{expected})) {
 				t.Errorf("did not get expected validation result:\n%v", cmp.Diff(expected, err))
 			}
 		})
@@ -7372,7 +7400,7 @@ func TestValidatePresubmits(t *testing.T) {
 
 	for _, tc := range testCases {
 		var errMsg string
-		err := validatePresubmits(tc.presubmits, "")
+		err := Config{}.validatePresubmits(tc.presubmits)
 		if err != nil {
 			errMsg = err.Error()
 		}
@@ -7459,7 +7487,7 @@ func TestValidatePostsubmits(t *testing.T) {
 
 	for _, tc := range testCases {
 		var errMsg string
-		err := validatePostsubmits(tc.postsubmits, "")
+		err := Config{}.validatePostsubmits(tc.postsubmits)
 		if err != nil {
 			errMsg = err.Error()
 		}
