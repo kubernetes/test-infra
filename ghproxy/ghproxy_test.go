@@ -78,7 +78,7 @@ func TestDiskCachePruning(t *testing.T) {
 
 	server := httptest.NewServer(proxy(o, httpRoundTripper(roundTripper), time.Hour))
 	t.Cleanup(server.Close)
-	_, _, client := github.NewClientFromOptions(logrus.Fields{}, github.ClientOptions{
+	_, _, client, err := github.NewClientFromOptions(logrus.Fields{}, github.ClientOptions{
 		MaxRetries:      1,
 		Censor:          func(b []byte) []byte { return b },
 		AppID:           "123",
@@ -86,6 +86,9 @@ func TestDiskCachePruning(t *testing.T) {
 		Bases:           []string{server.URL},
 		GraphqlEndpoint: server.URL,
 	})
+	if err != nil {
+		t.Fatalf("failed to construct github client: %v", err)
+	}
 
 	if _, err := client.GetRef("org", "repo", "dev"); err != nil {
 		t.Fatalf("GetRef failed: %v", err)

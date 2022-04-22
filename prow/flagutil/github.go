@@ -289,7 +289,10 @@ func (o *GitHubOptions) githubClient(dryRun bool) (github.Client, error) {
 		return c, nil
 	}
 
-	tokenGenerator, userGenerator, client := github.NewClientFromOptions(fields, options)
+	tokenGenerator, userGenerator, client, err := github.NewClientFromOptions(fields, options)
+	if err != nil {
+		return nil, fmt.Errorf("failed to construct github client: %w", err)
+	}
 	o.tokenGenerator = tokenGenerator
 	o.userGenerator = userGenerator
 	return optionallyThrottled(client)
@@ -316,12 +319,12 @@ func (o *GitHubOptions) GitHubClient(dryRun bool) (github.Client, error) {
 }
 
 // GitHubClientWithAccessToken creates a GitHub client from an access token.
-func (o *GitHubOptions) GitHubClientWithAccessToken(token string) github.Client {
+func (o *GitHubOptions) GitHubClientWithAccessToken(token string) (github.Client, error) {
 	options := o.baseClientOptions()
 	options.GetToken = func() []byte { return []byte(token) }
 	options.AppID = "" // Since we are using a token, we should not use the app auth
-	_, _, client := github.NewClientFromOptions(logrus.Fields{}, options)
-	return client
+	_, _, client, err := github.NewClientFromOptions(logrus.Fields{}, options)
+	return client, err
 }
 
 // GitClient returns a Git client.

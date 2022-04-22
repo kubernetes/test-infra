@@ -42,7 +42,10 @@ func TestHook(t *testing.T) {
 
 	t.Parallel()
 
-	githubClient := github.NewClient(func() []byte { return nil }, func(b []byte) []byte { return b }, "", "http://localhost/fakeghserver")
+	githubClient, err := github.NewClient(func() []byte { return nil }, func(b []byte) []byte { return b }, "", "http://localhost/fakeghserver")
+	if err != nil {
+		t.Fatalf("failed to construct GitHub client: %v", err)
+	}
 
 	issueID, err := githubClient.CreateIssue(org, repo, "Dummy PR, do not merge", "", 0, []string{}, []string{})
 	if err != nil {

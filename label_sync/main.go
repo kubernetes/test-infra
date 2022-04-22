@@ -718,9 +718,12 @@ func newClient(tokenPath string, tokens, tokenBurst int, dryRun bool, graphqlEnd
 	}
 
 	if dryRun {
-		return github.NewDryRunClient(secret.GetTokenGenerator(tokenPath), secret.Censor, graphqlEndpoint, hosts...), nil
+		return github.NewDryRunClient(secret.GetTokenGenerator(tokenPath), secret.Censor, graphqlEndpoint, hosts...)
 	}
-	c := github.NewClient(secret.GetTokenGenerator(tokenPath), secret.Censor, graphqlEndpoint, hosts...)
+	c, err := github.NewClient(secret.GetTokenGenerator(tokenPath), secret.Censor, graphqlEndpoint, hosts...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to construct github client: %v", err)
+	}
 	if tokens > 0 && tokenBurst >= tokens {
 		return nil, fmt.Errorf("--tokens=%d must exceed --token-burst=%d", tokens, tokenBurst)
 	}

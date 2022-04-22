@@ -3145,7 +3145,10 @@ func (rt testRoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
 // their arguments and calls them with an empty argument, then verifies via a RoundTripper that
 // all requests made had an org header set.
 func TestAllMethodsThatDoRequestSetOrgHeader(t *testing.T) {
-	_, _, ghClient := NewAppsAuthClientWithFields(logrus.Fields{}, func(_ []byte) []byte { return nil }, "some-app-id", func() *rsa.PrivateKey { return nil }, "", "")
+	_, _, ghClient, err := NewAppsAuthClientWithFields(logrus.Fields{}, func(_ []byte) []byte { return nil }, "some-app-id", func() *rsa.PrivateKey { return nil }, "", "https://api.github.com")
+	if err != nil {
+		t.Fatalf("failed to construct github client: %v", err)
+	}
 	toSkip := sets.NewString(
 		// TODO: Split the search query by org when app auth is used
 		"FindIssues",
@@ -3322,7 +3325,7 @@ func TestV4ClientSetsUserAgent(t *testing.T) {
 		return &http.Response{StatusCode: 200, Body: ioutil.NopCloser(bytes.NewBufferString("{}"))}, nil
 	}}
 
-	_, _, client := NewClientFromOptions(
+	_, _, client, err := NewClientFromOptions(
 		logrus.Fields{},
 		ClientOptions{
 			Censor:           func(b []byte) []byte { return b },
@@ -3330,11 +3333,14 @@ func TestV4ClientSetsUserAgent(t *testing.T) {
 			AppID:            "",
 			AppPrivateKey:    nil,
 			GraphqlEndpoint:  "",
-			Bases:            nil,
+			Bases:            []string{"https://api.github.com"},
 			DryRun:           false,
 			BaseRoundTripper: roundTripper,
 		}.Default(),
 	)
+	if err != nil {
+		t.Fatalf("failed to construct github client: %v", err)
+	}
 
 	t.Run("User agent gets set initially", func(t *testing.T) {
 		expectedUserAgent = "unset/0"

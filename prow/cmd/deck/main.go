@@ -633,7 +633,7 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, authCfgGe
 
 		prStatusAgent := prstatus.NewDashboardAgent(repos, &githubOAuthConfig, logrus.WithField("client", "pr-status"))
 
-		clientCreator := func(accessToken string) prstatus.GitHubClient {
+		clientCreator := func(accessToken string) (prstatus.GitHubClient, error) {
 			return o.github.GitHubClientWithAccessToken(accessToken)
 		}
 		mux.Handle("/pr-data.js", handleNotCached(
