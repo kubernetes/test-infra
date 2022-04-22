@@ -97,7 +97,7 @@ func (c *Checker) InTestFreeze() (*Result, error) {
 
 			parsed, err := semver.Parse(version)
 			if err != nil {
-				c.log.Warnf("Unable parse version %s: %v", version, err)
+				c.log.WithField("version", version).WithError(err).Debug("Unable parse version.")
 				continue
 			}
 
@@ -118,7 +118,7 @@ func (c *Checker) InTestFreeze() (*Result, error) {
 
 			parsed, err := semver.Parse(tag)
 			if err != nil {
-				c.log.Warnf("Unable parse tag %s: %v", tag, err)
+				c.log.WithField("tag", tag).WithError(err).Debug("Unable parse tag.")
 				continue
 			}
 
