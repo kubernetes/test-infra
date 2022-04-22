@@ -3463,37 +3463,7 @@ func (c *client) ListFileCommits(org, repo, filePath string) ([]RepositoryCommit
 //
 // See https://help.github.com/articles/searching-issues-and-pull-requests/ for details.
 func (c *client) FindIssues(query, sort string, asc bool) ([]Issue, error) {
-	durationLogger := c.log("FindIssues", query)
-	defer durationLogger()
-
-	values := url.Values{
-		"per_page": []string{"100"},
-		"q":        []string{query},
-	}
-	var issues []Issue
-
-	if sort != "" {
-		values["sort"] = []string{sort}
-		if asc {
-			values["order"] = []string{"asc"}
-		}
-	}
-	err := c.readPaginatedResultsWithValues(
-		fmt.Sprintf("/search/issues"),
-		values,
-		acceptNone,
-		"",
-		func() interface{} { // newObj
-			return &IssuesSearchResult{}
-		},
-		func(obj interface{}) {
-			issues = append(issues, obj.(*IssuesSearchResult).Issues...)
-		},
-	)
-	if err != nil {
-		return nil, err
-	}
-	return issues, err
+	return c.FindIssuesWithOrg("", query, sort, asc)
 }
 
 // FindIssuesWithOrg uses the GitHub search API to find issues which match a particular query.
@@ -3505,7 +3475,11 @@ func (c *client) FindIssues(query, sort string, asc bool) ([]Issue, error) {
 //
 // See https://help.github.com/articles/searching-issues-and-pull-requests/ for details.
 func (c *client) FindIssuesWithOrg(org, query, sort string, asc bool) ([]Issue, error) {
-	durationLogger := c.log("FindIssuesWithOrg", query)
+	loggerName := "FindIssuesWithOrg"
+	if org == "" {
+		loggerName = "FindIssues"
+	}
+	durationLogger := c.log(loggerName, query)
 	defer durationLogger()
 
 	values := url.Values{
