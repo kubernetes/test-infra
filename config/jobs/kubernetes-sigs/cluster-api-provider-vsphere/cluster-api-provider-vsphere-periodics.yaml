@@ -14,7 +14,7 @@ periodics:
         path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-1.23
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-1.23
           command:
             - runner.sh
           args:
@@ -52,7 +52,7 @@ periodics:
         path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-1.23
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-1.23
           command:
             - runner.sh
           args:
@@ -90,7 +90,7 @@ periodics:
         path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-1.23
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-1.23
           command:
             - runner.sh
           args:
@@ -112,49 +112,3 @@ periodics:
       testgrid-tab-name: periodic-clusterctl-upgrade-main
       testgrid-alert-email: k8s-testing-clusterapi-vsphere+alerts@groups.vmware.com
       description: Runs clusterctl upgrade tests for CAPV
-
-  - name: periodic-cluster-api-provider-vsphere-coverage
-    interval: 12h
-    decorate: true
-    path_alias: "sigs.k8s.io/cluster-api-provider-vsphere"
-    extra_refs:
-      - org: kubernetes-sigs
-        repo: cluster-api-provider-vsphere
-        base_ref: main
-        path_alias: sigs.k8s.io/cluster-api-provider-vsphere
-      - org: kubernetes
-        repo: test-infra
-        base_ref: main
-        path_alias: k8s.io/test-infra
-    spec:
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-1.23
-          command:
-            - runner.sh
-            - bash
-          args:
-            - -c
-            - |
-              result=0
-              ./hack/ci-test-coverage.sh || result=$?
-              cp coverage.* ${ARTIFACTS}
-              cd ../../k8s.io/test-infra/gopherage
-              GO111MODULE=on go build .
-              ./gopherage filter --exclude-path="zz_generated,generated\.go" "${ARTIFACTS}/coverage.out" > "${ARTIFACTS}/filtered.cov" || result=$?
-              ./gopherage html "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/coverage.html" || result=$?
-              ./gopherage junit --threshold 0 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml" || result=$?
-              exit $result
-          # we need privileged mode in order to do docker in docker
-          securityContext:
-            privileged: true
-            capabilities:
-              add: ["NET_ADMIN"]
-          resources:
-            requests:
-              cpu: "4000m"
-              memory: "6Gi"
-    annotations:
-      testgrid-dashboards: vmware-cluster-api-provider-vsphere, sig-cluster-lifecycle-cluster-api-provider-vsphere
-      testgrid-tab-name: periodic-test-coverage
-      testgrid-alert-email: k8s-testing-clusterapi-vsphere+alerts@groups.vmware.com
-      description: Shows test coverage for CAPV

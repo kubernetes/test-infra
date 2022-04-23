@@ -11,11 +11,11 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.1
+      base_ref: release-1.2
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-1.23
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-1.23
         command:
           - runner.sh
         args:
@@ -44,11 +44,11 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.1
+      base_ref: release-1.2
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-1.23
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-1.23
         command:
           - runner.sh
         args:
@@ -81,11 +81,11 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.1
+      base_ref: release-1.2
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-1.23
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-1.23
       command:
         - runner.sh
       args:
@@ -115,11 +115,11 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.1
+      base_ref: release-1.2
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-1.23
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-1.23
       command:
         - runner.sh
       args:

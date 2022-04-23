@@ -28,12 +28,52 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
       args:
       - "external-ca-latest"
+      securityContext:
+        privileged: true
+      resources:
+        requests:
+          memory: "9000Mi"
+          cpu: 2000m
+
+- name: ci-kubernetes-e2e-kubeadm-kinder-external-ca-1-24
+  interval: 12h
+  decorate: true
+  labels:
+    preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+  annotations:
+    testgrid-dashboards: sig-cluster-lifecycle-kubeadm
+    testgrid-tab-name: kubeadm-kinder-external-ca-1-24
+    testgrid-alert-email: sig-cluster-lifecycle-kubeadm-alerts@kubernetes.io
+    description: "OWNER: sig-cluster-lifecycle (kinder); Uses kubeadm/kinder to create a cluster and tests kubeadm's support for external CA mode"
+    testgrid-num-columns-recent: "20"
+    testgrid-num-failures-to-alert: "4"
+    testgrid-alert-stale-results-hours: "48"
+  decoration_config:
+    timeout: 60m
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: release-1.24
+    path_alias: k8s.io/kubernetes
+  - org: kubernetes
+    repo: kubeadm
+    base_ref: main
+    path_alias: k8s.io/kubeadm
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-1.24
+      command:
+      - runner.sh
+      - "../kubeadm/kinder/ci/kinder-run.sh"
+      args:
+      - "external-ca-1.24"
       securityContext:
         privileged: true
       resources:
@@ -68,7 +108,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-1.23
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-1.23
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
@@ -108,7 +148,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-1.22
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-1.22
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"
@@ -148,7 +188,7 @@ periodics:
     path_alias: k8s.io/kubeadm
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-1.21
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-1.21
       command:
       - runner.sh
       - "../kubeadm/kinder/ci/kinder-run.sh"

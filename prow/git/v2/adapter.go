@@ -22,7 +22,7 @@ import (
 	"strings"
 
 	"k8s.io/test-infra/prow/git"
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/git/types"
 )
 
 func OrgRepo(full string) (string, string, error) {
@@ -59,11 +59,11 @@ type repoClientAdapter struct {
 }
 
 func (a *repoClientAdapter) MergeAndCheckout(baseSHA string, mergeStrategy string, headSHAs ...string) error {
-	return a.Repo.MergeAndCheckout(baseSHA, github.PullRequestMergeType(mergeStrategy), headSHAs...)
+	return a.Repo.MergeAndCheckout(baseSHA, types.PullRequestMergeType(mergeStrategy), headSHAs...)
 }
 
 func (a *repoClientAdapter) MergeWithStrategy(commitlike, mergeStrategy string, opts ...MergeOpt) (bool, error) {
-	return a.Repo.MergeWithStrategy(commitlike, github.PullRequestMergeType(mergeStrategy))
+	return a.Repo.MergeWithStrategy(commitlike, types.PullRequestMergeType(mergeStrategy))
 }
 
 func (a *repoClientAdapter) Clone(from string) error {

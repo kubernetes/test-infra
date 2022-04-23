@@ -7,3 +7,4 @@ images:
 - dir: prow/cmd/tide
 - dir: prow/cmd/prow-controller-manager
 - dir: prow/test/integration/fakeghserver
+- dir: prow/test/integration/fakegerritserver

@@ -20,7 +20,7 @@ set -o pipefail
 readonly DEFAULT_CLUSTER_NAME="kind-prow-integration"
 readonly DEFAULT_CONTEXT="kind-${DEFAULT_CLUSTER_NAME}"
 readonly DEFAULT_REGISTRY_NAME="kind-registry"
-readonly PROW_COMPONENTS="sinker crier hook horologium prow-controller-manager fakeghserver deck tide deck-tenanted"
+readonly PROW_COMPONENTS="sinker crier hook horologium prow-controller-manager fakegerritserver fakeghserver deck tide deck-tenanted"
 
 function do_kubectl() {
   kubectl --context=${DEFAULT_CONTEXT} $@
@@ -29,9 +29,14 @@ function do_kubectl() {
 if [[ -n "${ARTIFACTS:-}" && -d "${ARTIFACTS}" ]]; then
   log_dir="${ARTIFACTS}/prow_pod_logs"
   mkdir -p "${log_dir}"
+
+  # Do not fail the entire script if we can't collect logs for whatever reason
+  set +e
   for app in ${PROW_COMPONENTS}; do
     do_kubectl logs svc/$app >"${log_dir}/${app}.log"
+    do_kubectl logs -p svc/$app >"${log_dir}/${app}-previous.log"
   done
+  set -e
 fi
 
 kind delete cluster --name "${DEFAULT_CLUSTER_NAME}"

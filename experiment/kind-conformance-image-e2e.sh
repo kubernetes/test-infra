@@ -106,12 +106,21 @@ run_tests() {
   NEW_CONFORMANCE_DIR="test/conformance/image"
   # before https://github.com/kubernetes/kubernetes/pull/103874
   OLD_CONFORMANCE_DIR="cluster/images/conformance"
-  if [ -d "${NEW_CONFORMANCE_DIR}/go-runner" ]; then
-      make WHAT="test/e2e/e2e.test vendor/github.com/onsi/ginkgo/ginkgo cmd/kubectl ${NEW_CONFORMANCE_DIR}/go-runner"
-  elif [ -d "${OLD_CONFORMANCE_DIR}/go-runner" ]; then
-      make WHAT="test/e2e/e2e.test vendor/github.com/onsi/ginkgo/ginkgo cmd/kubectl ${OLD_CONFORMANCE_DIR}/go-runner"
+
+  # Ginkgo v1 is deprecated, perfer to build Ginkgo V2.
+  GINKGO_SRC_V2="vendor/github.com/onsi/ginkgo/v2/ginkgo"
+  if [ -d "$GINKGO_SRC_V2" ]; then
+      GINKGO_SRC_DIR="$GINKGO_SRC_V2"
   else
-      make WHAT="test/e2e/e2e.test vendor/github.com/onsi/ginkgo/ginkgo cmd/kubectl"
+      GINKGO_SRC_DIR="vendor/github.com/onsi/ginkgo/ginkgo"
+  fi
+
+  if [ -d "${NEW_CONFORMANCE_DIR}/go-runner" ]; then
+      make WHAT="test/e2e/e2e.test $GINKGO_SRC_DIR cmd/kubectl ${NEW_CONFORMANCE_DIR}/go-runner"
+  elif [ -d "${OLD_CONFORMANCE_DIR}/go-runner" ]; then
+      make WHAT="test/e2e/e2e.test $GINKGO_SRC_DIR cmd/kubectl ${OLD_CONFORMANCE_DIR}/go-runner"
+  else
+      make WHAT="test/e2e/e2e.test $GINKGO_SRC_DIR cmd/kubectl"
   fi
 
   # grab the version number for kubernetes

@@ -17,7 +17,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220420-14f1a66a0f
             command:
               - /run.sh
             args:
@@ -33,6 +33,7 @@ postsubmits:
       annotations:
         # this is the name of some testgrid dashboard to report to.
         testgrid-dashboards: sig-cluster-lifecycle-image-pushes, sig-k8s-infra-gcb
+        testgrid-alert-email: sig-cluster-lifecycle-cluster-api-aws-alerts@kubernetes.io
       decorate: true
       branches:
         - ^main
@@ -42,7 +43,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220420-14f1a66a0f
             command:
               - /run.sh
             args:
@@ -68,7 +69,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220420-14f1a66a0f
             command:
               - /run.sh
             args:
@@ -95,7 +96,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220420-14f1a66a0f
             command:
               - /run.sh
             args:
@@ -120,7 +121,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220420-14f1a66a0f
             command:
               - /run.sh
             args:
@@ -145,7 +146,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220420-14f1a66a0f
             command:
               - /run.sh
             args:
@@ -170,7 +171,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220420-14f1a66a0f
             command:
               - /run.sh
             args:
@@ -194,7 +195,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220420-14f1a66a0f
             command:
               - /run.sh
             args:
@@ -225,7 +226,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220420-14f1a66a0f
             command:
               - /run.sh
             args:
@@ -235,6 +236,38 @@ postsubmits:
               - --env-passthrough=PULL_BASE_REF
               - --with-git-dir
               - .
+    - name: post-ibm-powervs-cloud-provider-push-images
+      run_if_changed: 'hack/ccm'
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes-sigs
+            slug: cluster-api-provider-ibmcloud-maintainers
+        github_users:
+          - mkumatag
+          - karthik-k-n
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        # this is the name of some testgrid dashboard to report to.
+        testgrid-dashboards: sig-cluster-lifecycle-image-pushes, sig-k8s-infra-gcb
+      decorate: true
+      branches:
+        - ^main
+        - ^release-.+$
+        # this is a regex for semver, from https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
+        - ^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220420-14f1a66a0f
+            command:
+              - /run.sh
+            args:
+              # this is the project GCB will run in, which is the same as the GCR images are pushed to.
+              - --project=k8s-staging-capi-ibmcloud
+              - --scratch-bucket=gs://k8s-staging-capi-ibmcloud-gcb
+              - --env-passthrough=PULL_BASE_REF
+              - --build-dir=.
+              - hack/ccm
 
 periodics:
   - name: cluster-api-push-images-nightly
@@ -249,7 +282,7 @@ periodics:
     spec:
       serviceAccountName: gcb-builder
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220420-14f1a66a0f
           command:
             - /run.sh
           args:
@@ -283,7 +316,7 @@ periodics:
     spec:
       serviceAccountName: gcb-builder
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220420-14f1a66a0f
           command:
             - /run.sh
           args:
@@ -316,7 +349,7 @@ periodics:
     spec:
       serviceAccountName: gcb-builder
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220420-14f1a66a0f
           command:
             - /run.sh
           args:
@@ -336,4 +369,4 @@ periodics:
     # this is the name of some testgrid dashboard to report to.
       testgrid-dashboards: sig-cluster-lifecycle-image-pushes, sig-k8s-infra-gcb
       testgrid-tab-name: cluster-api-provider-aws-push-images-nightly
-      testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
+      testgrid-alert-email: sig-cluster-lifecycle-cluster-api-aws-alerts@kubernetes.io

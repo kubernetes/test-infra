@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -29,6 +30,7 @@ import (
 	"strings"
 
 	flag "github.com/spf13/pflag"
+	"golang.org/x/oauth2/google"
 
 	"github.com/sirupsen/logrus"
 
@@ -39,11 +41,13 @@ import (
 )
 
 const (
-	latestVersion          = "latest"
-	upstreamVersion        = "upstream"
-	upstreamStagingVersion = "upstream-staging"
-	tagVersion             = "vYYYYMMDD-deadbeef"
-	defaultUpstreamURLBase = "https://raw.githubusercontent.com/kubernetes/test-infra/master"
+	latestVersion           = "latest"
+	upstreamVersion         = "upstream"
+	upstreamStagingVersion  = "upstream-staging"
+	tagVersion              = "vYYYYMMDD-deadbeef"
+	defaultUpstreamURLBase  = "https://raw.githubusercontent.com/kubernetes/test-infra/master"
+	googleImageRegistryAuth = "google"
+	cloudPlatformScope      = "https://www.googleapis.com/auth/cloud-platform"
 
 	defaultOncallGroup = "testinfra"
 	errOncallMsgTempl  = "An error occurred while finding an assignee: `%s`.\nFalling back to Blunderbuss."
@@ -65,11 +69,11 @@ type client struct {
 
 // Changes returns a slice of functions, each one does some stuff, and
 // returns commit message for the changes
-func (c *client) Changes() []func() (string, error) {
-	return []func() (string, error){
-		func() (string, error) {
+func (c *client) Changes() []func(context.Context) (string, error) {
+	return []func(context.Context) (string, error){
+		func(ctx context.Context) (string, error) {
 			var err error
-			if c.images, err = updateReferencesWrapper(c.o); err != nil {
+			if c.images, err = updateReferencesWrapper(ctx, c.o); err != nil {
 				return "", fmt.Errorf("failed to update image references: %w", err)
 			}
 
@@ -130,6 +134,11 @@ type options struct {
 	// SelfAssign is used to comment `/assign` and `/cc` so that blunderbuss wouldn't assign
 	// bump PR to someone else.
 	SelfAssign bool `yaml:"selfAssign"`
+	// ImageRegistryAuth determines a way the autobumper with authenticate when talking to image registry.
+	// Allowed values:
+	// * "" (empty) -- uses no auth token
+	// * "google" -- uses Google's "Application Default Credentials" as defined on https://pkg.go.dev/golang.org/x/oauth2/google#hdr-Credentials.
+	ImageRegistryAuth string `yaml:"imageRegistryAuth"`
 }
 
 // prefix is the information needed for each prefix being bumped.
@@ -217,6 +226,10 @@ func validateOptions(o *options) error {
 		logrus.Warnf("targetVersion can't be 'upstream' or 'upstreamStaging` without upstreamURLBase set. Default upstreamURLBase is %q", defaultUpstreamURLBase)
 	}
 
+	if o.ImageRegistryAuth != "" && o.ImageRegistryAuth != googleImageRegistryAuth {
+		return fmt.Errorf("imageRegistryAuth has incorrect value: %q. Only \"\" and %q are allowed", o.ImageRegistryAuth, googleImageRegistryAuth)
+	}
+
 	return nil
 }
 
@@ -281,7 +294,7 @@ func getOncallInfo(oncallAddress, oncallGroup string) (string, bool, error) {
 // updateReferencesWrapper update the references of prow-images and/or boskos-images and/or testimages
 // in the files in any of "subfolders" of the includeConfigPaths but not in excludeConfigPaths
 // if the file is a yaml file (*.yaml) or extraFiles[file]=true
-func updateReferencesWrapper(o *options) (map[string]string, error) {
+func updateReferencesWrapper(ctx context.Context, o *options) (map[string]string, error) {
 	logrus.Info("Bumping image references...")
 	var allPrefixes []string
 	for _, prefix := range o.Prefixes {
@@ -291,7 +304,15 @@ func updateReferencesWrapper(o *options) (map[string]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("bad regexp %q: %w", strings.Join(allPrefixes, "|"), err)
 	}
-	imageBumperCli := imagebumper.NewClient()
+	var client *http.Client = http.DefaultClient
+	if o.ImageRegistryAuth == googleImageRegistryAuth {
+		var err error
+		client, err = google.DefaultClient(ctx, cloudPlatformScope)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create authed client: %v", err)
+		}
+	}
+	imageBumperCli := imagebumper.NewClient(client)
 	return updateReferences(imageBumperCli, filterRegexp, o)
 }
 
@@ -558,6 +579,7 @@ func generateSummary(name, repo, prefix string, summarise bool, images map[strin
 }
 
 func main() {
+	ctx := context.Background()
 	logrus.SetLevel(logrus.DebugLevel)
 	o, pro, err := parseOptions()
 	if err != nil {
@@ -575,7 +597,7 @@ func main() {
 		logrus.WithError(err).Fatalf("Failed validating flags")
 	}
 
-	if err := bumper.Run(pro, &client{o: o}); err != nil {
+	if err := bumper.Run(ctx, pro, &client{o: o}); err != nil {
 		logrus.WithError(err).Fatalf("failed to run the bumper tool")
 	}
 }

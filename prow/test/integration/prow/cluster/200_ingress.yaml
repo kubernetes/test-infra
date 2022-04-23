@@ -22,6 +22,27 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
+  annotations:
+    # Rewrite path to strip /fakegerritserver from path to match in cluster traffic.
+    # Doc: https://github.com/kubernetes/ingress-nginx/blob/master/docs/examples/rewrite/README.md#rewrite-target
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+  name: gerrit-ingress
+spec:
+  ingressClassName: "nginx"
+  rules:
+  - http:
+      paths:
+      - path: /fakegerritserver(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: fakegerritserver
+            port:
+              number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
   name: hook
 spec:
   ingressClassName: "nginx"

@@ -8,15 +8,14 @@
 # the test definition and Prow configuration from the test name by pulling the
 # configs of each dimension in the test name and assembling them together.
 #
-# E.g., for test "ci-kubernetes-e2e-gce-ubuntu1-k8sdev-serial", its
+# e.g., for test "ci-kubernetes-e2e-gce-ubuntu1-k8sdev-serial", its
 # configuration will be generated from the configs of cloud provider "gce", the
 # image "ubuntu1", the Kubernetes version "k8sdev" and the test suite "serial".
 
 # To generate the test definitions and Prow configurations from this file:
 #
-#   bazel run //releng:generate_tests -- \
-#     --yaml-config-path=releng/test_config.yaml
-
+#   make -C releng generate-tests
+#
 # Supported tests:
 #
 #  * cluster e2e test
@@ -74,7 +73,7 @@ jobs:
       --minStartupPods=8
     sigOwners: [sig-cloud-provider-gcp]
     releaseBlocking: true
-    
+
   # stable1
   ci-kubernetes-e2e-gce-cos-k8sstable1-reboot:
     interval: 2h
@@ -253,24 +252,24 @@ k8sVersions:
     version: master
   beta:
     args:
+    - --extract=ci/latest-1.24
+    - --extract-ci-bucket=k8s-release-dev
+    version: '1.24'
+  stable1:
+    args:
     - --extract=ci/latest-1.23
     - --extract-ci-bucket=k8s-release-dev
     version: '1.23'
-  stable1:
+  stable2:
     args:
     - --extract=ci/latest-1.22
     - --extract-ci-bucket=k8s-release-dev
     version: '1.22'
-  stable2:
+  stable3:
     args:
     - --extract=ci/latest-1.21
     - --extract-ci-bucket=k8s-release-dev
     version: '1.21'
-  stable3:
-    args:
-    - --extract=ci/latest-1.20
-    - --extract-ci-bucket=k8s-release-dev
-    version: '1.20'
 
 testSuites:
   alphafeatures:
@@ -309,7 +308,8 @@ testSuites:
   flaky:
     args:
     - --timeout=300m
-    - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Driver:.gcepd\]|\[Feature:.+\] --minStartupPods=8
+    - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Driver:.gcepd\]|\[Feature:.+\]
+      --minStartupPods=8
     cluster: k8s-infra-prow-build
   ingress:
     args:
@@ -347,8 +347,8 @@ testSuites:
     - --check-version-skew=false
     - --down=false
     - --soak
-    - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true
-      --minStartupPods=8
+    - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
+      --clean-start=true --minStartupPods=8
     - --timeout=600m
     - --up=false
   stackdriver:
@@ -404,23 +404,23 @@ nodeK8sVersions:
   dev:
     args:
     - --repo=k8s.io/kubernetes=master
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
   beta:
     args:
-    - --repo=k8s.io/kubernetes=release-1.23
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-1.23
+    - --repo=k8s.io/kubernetes=release-1.24
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-1.24
   stable1:
     args:
-    - --repo=k8s.io/kubernetes=release-1.22
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-1.22
+    - --repo=k8s.io/kubernetes=release-1.23
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-1.23
   stable2:
     args:
-    - --repo=k8s.io/kubernetes=release-1.21
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-1.21
+    - --repo=k8s.io/kubernetes=release-1.22
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-1.22
   stable3:
     args:
-    - --repo=k8s.io/kubernetes=release-1.20
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-1.20
+    - --repo=k8s.io/kubernetes=release-1.21
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-1.21
 
 nodeTestSuites:
   default:

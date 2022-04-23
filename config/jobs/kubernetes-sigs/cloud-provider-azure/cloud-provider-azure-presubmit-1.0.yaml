@@ -10,7 +10,7 @@ presubmits:
         preset-service-account: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
             command:
               - runner.sh
             args:
@@ -42,7 +42,7 @@ presubmits:
           workdir: true
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-1.21
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-1.21
             command:
               - runner.sh
               - kubetest
@@ -102,7 +102,7 @@ presubmits:
           workdir: true
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-1.21
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-1.21
             command:
               - runner.sh
               - kubetest
@@ -143,7 +143,7 @@ presubmits:
         testgrid-num-columns-recent: '30'
     # pull-cloud-provider-azure-e2e-capz-1-21 runs kubernetes conformance tests.
     - name: pull-cloud-provider-azure-e2e-capz-1-21
-      skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
+      skip_if_only_changed: "^docs/|^site/|^tests/e2e/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
       decorate: true
       decoration_config:
         timeout: 5h
@@ -168,7 +168,7 @@ presubmits:
           workdir: false
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
             command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -218,7 +218,7 @@ presubmits:
           workdir: true
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
             command:
             - runner.sh
             - ./scripts/ci-entrypoint.sh
@@ -245,7 +245,7 @@ presubmits:
         description: "Runs Azure specific tests with cloud-provider-azure release-1.0 (https://github.com/kubernetes-sigs/cloud-provider-azure) using cluster-api-provider-azure."
         testgrid-num-columns-recent: '30'
     - name: pull-cloud-provider-azure-unit-1-21
-      skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
+      skip_if_only_changed: "^docs/|^site/|^tests/e2e/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
       decorate: true
       path_alias: sigs.k8s.io/cloud-provider-azure
       branches:
@@ -254,7 +254,7 @@ presubmits:
         preset-service-account: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
             command:
               - runner.sh
             args:

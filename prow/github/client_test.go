@@ -1665,6 +1665,77 @@ func TestFindIssues(t *testing.T) {
 	}
 }
 
+func TestFindIssuesWithOrg(t *testing.T) {
+	cases := []struct {
+		name  string
+		sort  bool
+		order bool
+	}{
+		{
+			name: "simple query",
+		},
+		{
+			name: "sort no order",
+			sort: true,
+		},
+		{
+			name:  "sort and order",
+			sort:  true,
+			order: true,
+		},
+	}
+
+	issueNum := 5
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/search/issues" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		issueList := IssuesSearchResult{
+			Total: 1,
+			Issues: []Issue{
+				{
+					Number: issueNum,
+					Title:  r.URL.RawQuery,
+				},
+			},
+		}
+		b, err := json.Marshal(&issueList)
+		if err != nil {
+			t.Fatalf("Didn't expect error: %v", err)
+		}
+		fmt.Fprint(w, string(b))
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+
+	for _, tc := range cases {
+		var result []Issue
+		var err error
+		sort := ""
+		if tc.sort {
+			sort = "sort-strategy"
+		}
+		if result, err = c.FindIssuesWithOrg("k8s", "commit_hash", sort, tc.order); err != nil {
+			t.Errorf("%s: didn't expect error: %v", tc.name, err)
+		}
+		if len(result) != 1 {
+			t.Fatalf("%s: unexpected number of results: %v", tc.name, len(result))
+		}
+		if result[0].Number != issueNum {
+			t.Errorf("%s: expected issue number %+v, got %+v", tc.name, issueNum, result[0].Number)
+		}
+		if tc.sort && !strings.Contains(result[0].Title, "sort="+sort) {
+			t.Errorf("%s: missing sort=%s from query: %s", tc.name, sort, result[0].Title)
+		}
+		if tc.order && !strings.Contains(result[0].Title, "order=asc") {
+			t.Errorf("%s: missing order=asc from query: %s", tc.name, result[0].Title)
+		}
+	}
+}
+
 func TestGetFile(t *testing.T) {
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
@@ -3074,7 +3145,10 @@ func (rt testRoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
 // their arguments and calls them with an empty argument, then verifies via a RoundTripper that
 // all requests made had an org header set.
 func TestAllMethodsThatDoRequestSetOrgHeader(t *testing.T) {
-	_, _, ghClient := NewAppsAuthClientWithFields(logrus.Fields{}, func(_ []byte) []byte { return nil }, "some-app-id", func() *rsa.PrivateKey { return nil }, "", "")
+	_, _, ghClient, err := NewAppsAuthClientWithFields(logrus.Fields{}, func(_ []byte) []byte { return nil }, "some-app-id", func() *rsa.PrivateKey { return nil }, "", "https://api.github.com")
+	if err != nil {
+		t.Fatalf("failed to construct github client: %v", err)
+	}
 	toSkip := sets.NewString(
 		// TODO: Split the search query by org when app auth is used
 		"FindIssues",
@@ -3251,7 +3325,7 @@ func TestV4ClientSetsUserAgent(t *testing.T) {
 		return &http.Response{StatusCode: 200, Body: ioutil.NopCloser(bytes.NewBufferString("{}"))}, nil
 	}}
 
-	_, _, client := NewClientFromOptions(
+	_, _, client, err := NewClientFromOptions(
 		logrus.Fields{},
 		ClientOptions{
 			Censor:           func(b []byte) []byte { return b },
@@ -3259,11 +3333,14 @@ func TestV4ClientSetsUserAgent(t *testing.T) {
 			AppID:            "",
 			AppPrivateKey:    nil,
 			GraphqlEndpoint:  "",
-			Bases:            nil,
+			Bases:            []string{"https://api.github.com"},
 			DryRun:           false,
 			BaseRoundTripper: roundTripper,
 		}.Default(),
 	)
+	if err != nil {
+		t.Fatalf("failed to construct github client: %v", err)
+	}
 
 	t.Run("User agent gets set initially", func(t *testing.T) {
 		expectedUserAgent = "unset/0"

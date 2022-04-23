@@ -24,7 +24,7 @@ periodics:
       - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.skip=\[.+\]|Initializers|Dashboard
       - --timeout=150m
       - --upgrade_args=--ginkgo.focus=\[Feature:GPUClusterUpgrade\] --upgrade-target=ci/k8s-stable1 --upgrade-image=gci
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
 
   annotations:
     testgrid-dashboards: google-gce-upgrade
@@ -55,7 +55,7 @@ periodics:
       - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.skip=\[.+\]|Initializers|Dashboard
       - --timeout=150m
       - --upgrade_args=--ginkgo.focus=\[Feature:GPUMasterUpgrade\] --upgrade-target=ci/k8s-stable1 --upgrade-image=gci
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
 
   annotations:
     testgrid-dashboards: google-gce-upgrade
@@ -87,7 +87,7 @@ periodics:
       - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.skip=\[.+\]|Initializers|Dashboard
       - --timeout=150m
       - --upgrade_args=--ginkgo.focus=\[Feature:GPUClusterUpgrade\] --upgrade-target=ci/latest --upgrade-image=gci
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
 
   annotations:
     testgrid-dashboards: google-gce-upgrade
@@ -118,7 +118,7 @@ periodics:
       - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.skip=\[.+\]|Initializers|Dashboard
       - --timeout=150m
       - --upgrade_args=--ginkgo.focus=\[Feature:GPUMasterUpgrade\] --upgrade-target=ci/latest --upgrade-image=gci
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
 
   annotations:
     testgrid-dashboards: google-gce-upgrade

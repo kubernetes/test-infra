@@ -9,14 +9,6 @@
 
 ### Script
 
-Run using Bazel:
-
-```console
-$ bazel run //gencred -- <options>
-```
-
-Run using Golang:
-
 ```console
 $ go run k8s.io/test-infra/gencred <options>
 ```
@@ -174,6 +166,8 @@ token, caPEM, err := serviceaccount.CreateClusterServiceAccountCredentials(clien
 ```  
 
 `token` will contain the **service account access token** and `caPEM` will contain the **server certificate authority**.
+
+This requests a token valid for one week or until the service account is deleted.
 
 ```go
 import "encoding/base64"

@@ -86,8 +86,8 @@ periodics:
       - --gcp-nodes=2
       - --test=false
       - --test-cmd=$GOPATH/src/sigs.k8s.io/windows-testing/gce/run-e2e.sh
-      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:\s?[^(Windows)]\w+\]|\[Slow\]|(GMSA\ssupport\sworks\send\sto\send) --minStartupPods=8
-      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:\s?[^(Windows)]\w+\]|\[Slow\]|(GMSA\ssupport\sworks\send\sto\send) --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[Driver:\s?windows-gcepd\]|\[LinuxOnly\]|\[Serial\]|\[Feature:\s?[^(Windows)]\w+\]|\[Slow\]|(GMSA\ssupport\sworks\send\sto\send) --minStartupPods=8
+      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[Driver:\s?windows-gcepd\]|\[LinuxOnly\]|\[Serial\]|\[Feature:\s?[^(Windows)]\w+\]|\[Slow\]|(GMSA\ssupport\sworks\send\sto\send) --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
       - --test-cmd-args=--docker-config-file=$(DOCKER_CONFIG_FILE)
       - --timeout=180m
@@ -96,7 +96,7 @@ periodics:
         value: "win2019"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
   annotations:
     fork-per-release: "true"
     fork-per-release-replacements: "--extract=ci/latest -> --extract=ci/latest-{{.Version}}"
@@ -137,8 +137,8 @@ periodics:
       - --gcp-nodes=2
       - --test=false
       - --test-cmd=$GOPATH/src/sigs.k8s.io/windows-testing/gce/run-e2e.sh
-      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:\s?[^(Windows)]\w+\]|\[Slow\]|(GMSA\ssupport\sworks\send\sto\send) --minStartupPods=8
-      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:\s?[^(Windows)]\w+\]|\[Slow\]|(GMSA\ssupport\sworks\send\sto\send) --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[Driver:\s?windows-gcepd\]|\[LinuxOnly\]|\[Serial\]|\[Feature:\s?[^(Windows)]\w+\]|\[Slow\]|(GMSA\ssupport\sworks\send\sto\send) --minStartupPods=8
+      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[Driver:\s?windows-gcepd\]|\[LinuxOnly\]|\[Serial\]|\[Feature:\s?[^(Windows)]\w+\]|\[Slow\]|(GMSA\ssupport\sworks\send\sto\send) --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
       - --test-cmd-args=--docker-config-file=$(DOCKER_CONFIG_FILE)
       - --timeout=180m
@@ -147,7 +147,7 @@ periodics:
         value: "win20h2"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
   annotations:
     fork-per-release: "true"
     fork-per-release-replacements: "--extract=ci/latest -> --extract=ci/latest-{{.Version}}"
@@ -188,8 +188,8 @@ periodics:
       - --gcp-nodes=2
       - --test=false
       - --test-cmd=$GOPATH/src/sigs.k8s.io/windows-testing/gce/run-e2e.sh
-      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:GPUDevicePlugin\] --minStartupPods=8
-      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:GPUDevicePlugin\] --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[Driver:\s?windows-gcepd\]|\[LinuxOnly\]|\[Serial\]|\[Feature:GPUDevicePlugin\] --minStartupPods=8
+      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[Driver:\s?windows-gcepd\]|\[LinuxOnly\]|\[Serial\]|\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
       - --test-cmd-args=--docker-config-file=$(DOCKER_CONFIG_FILE)
       - --timeout=180m
@@ -198,9 +198,7 @@ periodics:
         value: "win2019"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      - name: KUBE_FEATURE_GATES
-        value: "WindowsGMSA=true"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
   annotations:
     testgrid-dashboards: google-windows, sig-windows-gce
     testgrid-tab-name: gce-windows-2019-master-alpha-features
@@ -249,7 +247,7 @@ periodics:
         value: "win2019"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
   annotations:
     testgrid-dashboards: google-windows, sig-windows-gce
     testgrid-tab-name: gce-windows-2019-serial
@@ -287,8 +285,8 @@ periodics:
       - --gcp-nodes=2
       - --test=false
       - --test-cmd=$GOPATH/src/sigs.k8s.io/windows-testing/gce/run-e2e.sh
-      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:\s?[^(Windows)]\w+\]|\[Slow\]|(GMSA\ssupport\sworks\send\sto\send) --minStartupPods=8
-      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Feature:\s?[^(Windows)]\w+\]|\[Slow\]|(GMSA\ssupport\sworks\send\sto\send) --minStartupPods=8
+      - --test_args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[Driver:\s?windows-gcepd\]|\[LinuxOnly\]|\[Serial\]|\[Feature:\s?[^(Windows)]\w+\]|\[Slow\]|(GMSA\ssupport\sworks\send\sto\send) --minStartupPods=8
+      - --test-cmd-args=--ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[Driver:\s?windows-gcepd\]|\[LinuxOnly\]|\[Serial\]|\[Feature:\s?[^(Windows)]\w+\]|\[Slow\]|(GMSA\ssupport\sworks\send\sto\send) --minStartupPods=8
       - --test-cmd-args=--node-os-distro=windows
       - --test-cmd-args=--docker-config-file=$(DOCKER_CONFIG_FILE)
       - --timeout=230m
@@ -297,7 +295,7 @@ periodics:
         value: "win2019"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
   annotations:
     testgrid-dashboards: google-windows, sig-windows-gce, sig-windows-master-release
     testgrid-tab-name: gce-windows-2019-containerd-master
@@ -329,6 +327,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --cluster=
+      - --env=KUBE_WINDOWS_CONTAINER_RUNTIME=containerd
       - --extract=ci/latest-1.21
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=8
@@ -346,7 +345,7 @@ periodics:
         value: "win2019"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-1.21
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-1.21
   annotations:
     testgrid-dashboards: google-windows, sig-windows-gce, sig-windows-1.21-release
     testgrid-tab-name: gce-windows-2019-containerd-1.21
@@ -378,6 +377,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --cluster=
+      - --env=KUBE_WINDOWS_CONTAINER_RUNTIME=containerd
       - --extract=ci/latest-1.21
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=8
@@ -395,7 +395,7 @@ periodics:
         value: "win20h2"
       - name: PREPULL_YAML
         value: "prepull-head.yaml"
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-1.21
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-1.21
   annotations:
     testgrid-dashboards: google-windows, sig-windows-gce, sig-windows-1.21-release
     testgrid-tab-name: gce-windows-20h2-containerd-1.21
@@ -428,7 +428,7 @@ periodics:
     - command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
       env:
       - name: CL2_CONTAINER_IMAGE
         value: "k8s.gcr.io/pause:3.4.1"
@@ -482,7 +482,7 @@ periodics:
     - command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
       env:
       - name: CL2_CONTAINER_IMAGE
         value: "mcr.microsoft.com/windows/servercore/iis"
@@ -571,7 +571,7 @@ presubmits:
           value: "win2019"
         - name: PREPULL_YAML
           value: "prepull-head.yaml"
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true

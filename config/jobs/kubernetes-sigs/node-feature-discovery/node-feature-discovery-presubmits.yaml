@@ -15,7 +15,7 @@ presubmits:
       description: "Verify source code of node-feature-discovery: check formatting, lint etc."
     spec:
       containers:
-      - image: golang:1.17
+      - image: golang:1.18
         command:
         - scripts/test-infra/verify.sh
   - name: pull-node-feature-discovery-verify-0-9
@@ -60,7 +60,7 @@ presubmits:
       description: "Build node-feature-discovery binaries"
     spec:
       containers:
-      - image: golang:1.17
+      - image: golang:1.18
         command:
         - scripts/test-infra/build.sh
   - name: pull-node-feature-discovery-build-image
@@ -76,7 +76,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
         securityContext:
           privileged: true
         command:
@@ -91,7 +91,6 @@ presubmits:
     - ^release-0.7
     - ^release-0.8
     - ^release-0.9
-
     decorate: true
     annotations:
       testgrid-dashboards: sig-node-node-feature-discovery
@@ -101,7 +100,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
         securityContext:
           privileged: true
         command:
@@ -121,7 +120,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
         securityContext:
           privileged: true
         command:

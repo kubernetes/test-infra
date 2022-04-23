@@ -7,7 +7,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=260
@@ -39,13 +39,14 @@ periodics:
     description: "Uses kubetest to run serial node-e2e tests (+Serial, -Flaky|Benchmark|Node*Feature)"
 
 - name: ci-kubernetes-node-kubelet-serial-cri-o
+  cluster: k8s-infra-prow-build
   interval: 4h
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
       args:
           - --repo=k8s.io/kubernetes=master
           - --timeout=260
@@ -53,7 +54,6 @@ periodics:
           - --scenario=kubernetes_e2e
           - --
           - --deployment=node
-          - --gcp-project-type=node-e2e-project
           - --gcp-zone=us-west1-b
           - '--node-test-args=--container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
           - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/crio/latest/image-config-cgrpv1-serial.yaml
@@ -65,6 +65,8 @@ periodics:
       env:
       - name: GOPATH
         value: /go
+      - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
+        value: "1"
       resources:
         limits:
           cpu: 4
@@ -79,13 +81,14 @@ periodics:
     description: "Uses kubetest to run serial node-e2e tests (+Serial, -Flaky|Benchmark|Node*Feature)"
 
 - name: ci-kubernetes-node-swap-fedora
+  cluster: k8s-infra-prow-build
   interval: 4h
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
         args:
           - --repo=k8s.io/kubernetes=master
           - --timeout=240
@@ -94,7 +97,6 @@ periodics:
           - --
           - --deployment=node
           - --env=KUBE_SSH_USER=core
-          - --gcp-project-type=node-e2e-project
           - --gcp-zone=us-west1-b
           - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/swap/image-config-swap-fedora.yaml
           - '--node-test-args=--feature-gates=NodeSwap=true --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--fail-swap-on=false --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
@@ -106,13 +108,100 @@ periodics:
           - name: GOPATH
             value: /go
         resources:
-            requests:
-              memory: "6Gi"
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-kubelet
     testgrid-tab-name: kubelet-gce-e2e-swap-fedora
     testgrid-alert-email: ehashman@redhat.com, ikema@google.com
     description: Executes E2E suite with swap enabled on Fedora
+
+- name: ci-kubernetes-node-swap-ubuntu-serial
+  interval: 4h
+  cluster: k8s-infra-prow-build
+  annotations:
+    testgrid-dashboards: sig-node-kubelet
+    testgrid-tab-name: kubelet-gce-e2e-swap-ubuntu-serial
+    description: "Run serial node e2e tests with swap environment on Ubuntu"
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
+        args:
+          - --root=/go/src
+          - "--job=$(JOB_NAME)"
+          - --repo=k8s.io/kubernetes=master
+          - "--service-account=/etc/service-account/service-account.json"
+          - "--upload=gs://kubernetes-jenkins/pr-logs"
+          - "--timeout=240"
+          - --scenario=kubernetes_e2e
+          - --
+          - --deployment=node
+          - --gcp-zone=us-west1-b
+          - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/swap/image-config-swap.yaml
+          - '--node-test-args=--feature-gates=NodeSwap=true --container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/usr/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --fail-swap-on=false --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd*\"]}"'
+          - --node-tests=true
+          - --provider=gce
+          - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Slow\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]|\[NodeFeature:DevicePluginProbe\]"
+          - --timeout=180m
+        env:
+          - name: GOPATH
+            value: /go
+        resources:
+          limits:
+            cpu: 4
+            memory: 6Gi
+          requests:
+            cpu: 4
+            memory: 6Gi
+
+- name: ci-kubernetes-node-swap-fedora-serial
+  interval: 4h
+  cluster: k8s-infra-prow-build
+  annotations:
+    testgrid-dashboards: sig-node-kubelet
+    testgrid-tab-name: kubelet-gce-e2e-swap-fedora-serial
+    description: "Run serial node e2e tests with swap environment on Fedora"
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
+      args:
+      - --root=/go/src
+      - "--job=$(JOB_NAME)"
+      - --repo=k8s.io/kubernetes=master
+      - "--service-account=/etc/service-account/service-account.json"
+      - "--upload=gs://kubernetes-jenkins/pr-logs"
+      - "--timeout=240"
+      - --scenario=kubernetes_e2e
+      - -- # end bootstrap args, scenario args below
+      - --deployment=node
+      - --env=KUBE_SSH_USER=core
+      - --gcp-zone=us-west1-b
+      - '--node-test-args=--feature-gates=NodeSwap=true --container-runtime=remote --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--fail-swap-on=false --cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
+      - --node-tests=true
+      - --provider=gce
+      - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Slow\]|\[Benchmark\]|\[NodeSpecialFeature:.+\]|\[NodeSpecialFeature\]|\[NodeAlphaFeature:.+\]|\[NodeAlphaFeature\]|\[NodeFeature:Eviction\]|\[NodeFeature:DevicePluginProbe\]"
+      - --timeout=180m
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/swap/image-config-swap-fedora.yaml
+      resources:
+        limits:
+          cpu: 4
+          memory: 6Gi
+        requests:
+          cpu: 4
+          memory: 6Gi
+      env:
+        - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
+          value: "1"
 
 # TODO: migrate performance special config tests to containerd/cri-o
 #- name: ci-kubernetes-node-kubelet-performance-test
@@ -122,7 +211,7 @@ periodics:
 #    preset-k8s-ssh: "true"
 #  spec:
 #    containers:
-#      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
+#      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
 #        args:
 #          - --repo=k8s.io/kubernetes=master
 #          - --timeout=90

@@ -53,7 +53,7 @@ presubmits:
     run_if_changed: '^(config/prow/(config|plugins).yaml$|config/jobs/.*.yaml$)'
     spec:
       containers:
-      - image: gcr.io/k8s-prow/checkconfig:v20220323-9b8611d021
+      - image: gcr.io/k8s-prow/checkconfig:v20220422-710d89b07b
         command:
         - checkconfig
         args:
@@ -82,7 +82,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-test-infra
         command:
         - runner.sh
         args:
@@ -116,7 +116,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-test-infra
         command:
         - runner.sh
         args:
@@ -138,7 +138,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-test-infra
         command:
         - runner.sh
         args:
@@ -174,7 +174,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-test-infra
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-test-infra
         command:
         - runner.sh
         args:

@@ -269,19 +269,11 @@ func (o *GitHubOptions) githubClient(dryRun bool) (github.Client, error) {
 	}
 
 	if o.AppPrivateKeyPath != "" {
-		if err := secret.Add(o.AppPrivateKeyPath); err != nil {
-			return nil, fmt.Errorf("failed to add the the key from --app-private-key-path to secret agent: %w", err)
+		apk, err := o.appPrivateKeyGenerator()
+		if err != nil {
+			return nil, err
 		}
-		options.AppPrivateKey = func() *rsa.PrivateKey {
-			raw := secret.GetTokenGenerator(o.AppPrivateKeyPath)()
-			privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(raw)
-			// TODO alvaroaleman: Add hooks to the SecretAgent
-			if err != nil {
-				panic(fmt.Sprintf("failed to parse private key: %v", err))
-			}
-			return privateKey
-		}
-
+		options.AppPrivateKey = apk
 	}
 
 	optionallyThrottled := func(c github.Client) (github.Client, error) {
@@ -297,7 +289,10 @@ func (o *GitHubOptions) githubClient(dryRun bool) (github.Client, error) {
 		return c, nil
 	}
 
-	tokenGenerator, userGenerator, client := github.NewClientFromOptions(fields, options)
+	tokenGenerator, userGenerator, client, err := github.NewClientFromOptions(fields, options)
+	if err != nil {
+		return nil, fmt.Errorf("failed to construct github client: %w", err)
+	}
 	o.tokenGenerator = tokenGenerator
 	o.userGenerator = userGenerator
 	return optionallyThrottled(client)
@@ -324,11 +319,12 @@ func (o *GitHubOptions) GitHubClient(dryRun bool) (github.Client, error) {
 }
 
 // GitHubClientWithAccessToken creates a GitHub client from an access token.
-func (o *GitHubOptions) GitHubClientWithAccessToken(token string) github.Client {
+func (o *GitHubOptions) GitHubClientWithAccessToken(token string) (github.Client, error) {
 	options := o.baseClientOptions()
 	options.GetToken = func() []byte { return []byte(token) }
-	_, _, client := github.NewClientFromOptions(logrus.Fields{}, options)
-	return client
+	options.AppID = "" // Since we are using a token, we should not use the app auth
+	_, _, client, err := github.NewClientFromOptions(logrus.Fields{}, options)
+	return client, err
 }
 
 // GitClient returns a Git client.
@@ -369,4 +365,22 @@ func (o *GitHubOptions) getGitAuthentication(dryRun bool) (string, git.GitTokenG
 		return "", nil, fmt.Errorf("error getting bot name: %w", err)
 	}
 	return login, git.GitTokenGenerator(o.tokenGenerator), nil
+}
+
+func (o *GitHubOptions) appPrivateKeyGenerator() (func() *rsa.PrivateKey, error) {
+	generator, err := secret.AddWithParser(
+		o.AppPrivateKeyPath,
+		func(raw []byte) (*rsa.PrivateKey, error) {
+			privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(raw)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse rsa key from pem: %w", err)
+			}
+			return privateKey, nil
+		},
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to add the the key from --app-private-key-path to secret agent: %w", err)
+	}
+
+	return generator, nil
 }

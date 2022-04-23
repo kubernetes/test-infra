@@ -23,7 +23,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=900m
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/latest --upgrade-image=gci
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
   annotations:
     testgrid-dashboards: google-gce-upgrade
     testgrid-tab-name: gce-stable1-latest-upgrade-cluster
@@ -53,7 +53,7 @@ periodics:
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=900m
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/latest --upgrade-image=gci
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
   annotations:
     testgrid-dashboards: google-gce-upgrade
     testgrid-tab-name: gce-stable1-latest-upgrade-cluster-parallel
@@ -83,7 +83,7 @@ periodics:
       - --skew
       - --timeout=900m
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/latest --upgrade-image=gci
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
   annotations:
     testgrid-dashboards: google-gce-upgrade
     testgrid-tab-name: gce-stable1-latest-upgrade-cluster-new
@@ -114,7 +114,7 @@ periodics:
       - --skew
       - --timeout=900m
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/latest --upgrade-image=gci
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
   annotations:
     testgrid-dashboards: google-gce-upgrade
     testgrid-tab-name: gce-stable1-latest-upgrade-cluster-new-parallel
@@ -143,7 +143,7 @@ periodics:
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=900m
       - --upgrade_args=--ginkgo.focus=\[Feature:MasterUpgrade\] --upgrade-target=ci/latest
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
   annotations:
     testgrid-dashboards: google-gce-upgrade
     testgrid-tab-name: gce-stable1-latest-upgrade-master
@@ -173,7 +173,7 @@ periodics:
       - --test_args=--ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=900m
       - --upgrade_args=--ginkgo.focus=\[Feature:MasterUpgrade\] --upgrade-target=ci/latest
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
   annotations:
     testgrid-dashboards: google-gce-upgrade
     testgrid-tab-name: gce-stable1-latest-upgrade-master-parallel
@@ -202,7 +202,7 @@ periodics:
       - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=900m
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/k8s-stable1 --upgrade-image=gci
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
   annotations:
     testgrid-dashboards: google-gce-upgrade
     testgrid-tab-name: gce-stable2-stable1-upgrade-cluster
@@ -231,7 +231,7 @@ periodics:
       - --skew
       - --timeout=900m
       - --upgrade_args=--ginkgo.focus=\[Feature:ClusterUpgrade\] --upgrade-target=ci/k8s-stable1 --upgrade-image=gci
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
   annotations:
     testgrid-dashboards: google-gce-upgrade
     testgrid-tab-name: gce-stable2-stable1-upgrade-cluster-new
@@ -260,7 +260,7 @@ periodics:
       - --test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8
       - --timeout=900m
       - --upgrade_args=--ginkgo.focus=\[Feature:MasterUpgrade\] --upgrade-target=ci/k8s-stable1
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
   annotations:
     testgrid-dashboards: google-gce-upgrade
     testgrid-tab-name: gce-stable2-stable1-upgrade-master

@@ -340,7 +340,7 @@ var clientCreationFailures = prometheus.NewCounterVec(prometheus.CounterOpts{
 // BuildClusterManagers returns a manager per buildCluster.
 // Per default, LeaderElection and the metrics listener are disabled, as we assume
 // that there is another manager for ProwJobs that handles that.
-func (o *KubernetesOptions) BuildClusterManagers(dryRun bool, opts ...func(*manager.Options)) (map[string]manager.Manager, error) {
+func (o *KubernetesOptions) BuildClusterManagers(dryRun bool, callBack func(), opts ...func(*manager.Options)) (map[string]manager.Manager, error) {
 	if err := o.resolve(dryRun); err != nil {
 		return nil, err
 	}
@@ -362,21 +362,7 @@ func (o *KubernetesOptions) BuildClusterManagers(dryRun bool, opts ...func(*mana
 	for buildCluserName, buildClusterConfig := range o.clusterConfigs {
 		go func(name string, config rest.Config) {
 			defer threads.Done()
-			var mgr manager.Manager
-			var err error
-			// Try up to 4 times to create the manager. Total time trying: ~31s
-			delay := time.Second
-			tries := 4
-			for try := 0; try < tries; try++ {
-				mgr, err = manager.New(&config, options)
-				if err == nil {
-					break
-				}
-				if try+1 < tries {
-					time.Sleep(delay)
-					delay = delay * 5
-				}
-			}
+			mgr, err := manager.New(&config, options)
 			lock.Lock()
 			defer lock.Unlock()
 			if err != nil {
@@ -388,7 +374,33 @@ func (o *KubernetesOptions) BuildClusterManagers(dryRun bool, opts ...func(*mana
 		}(buildCluserName, buildClusterConfig)
 	}
 	threads.Wait()
-	return res, utilerrors.NewAggregate(errs)
+
+	aggregatedErr := utilerrors.NewAggregate(errs)
+
+	if aggregatedErr != nil {
+		// Retry the build clusters that failed to be connected initially, execute
+		// callback function when they become reachable later on.
+		// This is useful where a build cluster is not reachable transiently, for
+		// example API server upgrade caused connection problem.
+		go func() {
+			for {
+				for buildCluserName, buildClusterConfig := range o.clusterConfigs {
+					if _, ok := res[buildCluserName]; ok {
+						continue
+					}
+					if _, err := manager.New(&buildClusterConfig, options); err == nil {
+						logrus.WithField("build-cluster", buildCluserName).Info("Build cluster that failed to connect initially now worked.")
+						callBack()
+					}
+				}
+				// Sleep arbitrarily amount of time
+				time.Sleep(5 * time.Second)
+			}
+		}()
+	} else {
+		logrus.Debug("No error constructing managers for build clusters, skip polling build clusters.")
+	}
+	return res, aggregatedErr
 }
 
 // BuildClusterUncachedRuntimeClients returns ctrlruntimeclients for the build cluster in a non-caching implementation.

@@ -34,10 +34,10 @@ This will ensure that:
 
 ```sh
 # test
-bazel test //label_sync/...
+go test ./label_sync
 
 # add or migrate labels on all repos in the kubernetes org
-bazel run //label_sync -- \
+go run ./label_sync \
   --config $(pwd)/label_sync/labels.yaml \
   --token /path/to/github_oauth_token \
   --orgs kubernetes
@@ -46,7 +46,7 @@ bazel run //label_sync -- \
   # too hastily, hence why this copy-pasta isn't including it
 
 # add or migrate labels on all repos except helm in the kubernetes org
-bazel run //label_sync -- \
+go run ./label_sync \
   --config $(pwd)/label_sync/labels.yaml \
   --token /path/to/github_oauth_token \
   --orgs kubernetes \
@@ -54,14 +54,14 @@ bazel run //label_sync -- \
   # see above
 
 # add or migrate labels on the community and steering repos in the kubernetes org
-bazel run //label_sync -- \
+go run ./label_sync \
   --config $(pwd)/label_sync/labels.yaml \
   --token /path/to/github_oauth_token \
   --only kubernetes/community,kubernetes/steering
   # see above
 
 # generate docs and a css file contains labels styling based on labels.yaml
-bazel run //label_sync -- \
+go run ./label_sync \
   --action docs \
   --config $(pwd)/label_sync/labels.yaml \
   --docs-template $(pwd)/label_sync/labels.md.tmpl \
@@ -70,8 +70,13 @@ bazel run //label_sync -- \
 
 ## Our Deployment
 
-We run this as a [`CronJob`](./cluster/label_sync_cron_job.yaml) on a kubernetes cluster managed by [test-infra oncall](https://go.k8s.io/oncall), and can also schedule it as a [`Job`](./cluster/label_sync_cron_job.yaml) for one-shot usage.
+We run this as a [`Periodic
+job`](https://prow.k8s.io?job=ci-test-infra-label-sync) as configured at
+[test-infra-trusted.yaml](https://github.com/kubernetes/test-infra/blob/0aa0d7b9cee8832e9eca748952131baaa809351c/config/jobs/kubernetes/test-infra/test-infra-trusted.yaml#L702).
 
-These pods read [`labels.yaml`](./labels.yaml) from a ConfigMap that is updated by the [prow updateconfig plugin](/prow/plugins/updateconfig).
+This job read [`labels.yaml`](./labels.yaml) from a ConfigMap that is updated by
+the [prow updateconfig plugin](/prow/plugins/updateconfig).
 
-To update the `labels.yaml` file, make the desired changes to `labels.yaml` and run the `./hack/update-labels.sh` script. Then open a pull request with the resulting `labels.yaml` and `labels.md` files.
+To update the `labels.yaml` file, make the desired changes to `labels.yaml` and
+run `make update-labels` from root of this repo. Then open a pull request with the resulting
+`labels.yaml` and `labels.md` files.

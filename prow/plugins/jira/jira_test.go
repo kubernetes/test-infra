@@ -28,7 +28,9 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/github/fakegithub"
 	jiraclient "k8s.io/test-infra/prow/jira"
+	"k8s.io/test-infra/prow/jira/fakejira"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -99,51 +101,6 @@ func TestRegex(t *testing.T) {
 	}
 }
 
-type fakeJiraClient struct {
-	existingIssues []jira.Issue
-	existingLinks  map[string][]jira.RemoteLink
-	newLinks       []jira.RemoteLink
-	getIssueError  error
-}
-
-func (f *fakeJiraClient) ListProjects() (*jira.ProjectList, error) {
-	return nil, nil
-}
-
-func (f *fakeJiraClient) GetIssue(id string) (*jira.Issue, error) {
-	if f.getIssueError != nil {
-		return nil, f.getIssueError
-	}
-	for _, existingIssue := range f.existingIssues {
-		if existingIssue.ID == id {
-			return &existingIssue, nil
-		}
-	}
-	return nil, jiraclient.NewNotFoundError(fmt.Errorf("No issue %s found", id))
-}
-
-func (f *fakeJiraClient) GetRemoteLinks(id string) ([]jira.RemoteLink, error) {
-	return f.existingLinks[id], nil
-}
-
-func (f *fakeJiraClient) AddRemoteLink(id string, link *jira.RemoteLink) error {
-	if _, err := f.GetIssue(id); err != nil {
-		return err
-	}
-	f.newLinks = append(f.newLinks, *link)
-	return nil
-}
-
-func (f *fakeJiraClient) JiraClient() *jira.Client {
-	panic("not implemented")
-}
-
-const fakeJiraUrl = "https://my-jira.com"
-
-func (f *fakeJiraClient) JiraURL() string {
-	return fakeJiraUrl
-}
-
 type fakeGitHubClient struct {
 	editedComments map[string]string
 }
@@ -157,11 +114,11 @@ func (f *fakeGitHubClient) EditComment(org, repo string, id int, body string) er
 }
 
 func (f *fakeGitHubClient) GetIssue(org, repo string, number int) (*github.Issue, error) {
-	return nil, nil
+	return &github.Issue{}, nil
 }
 
 func (f *fakeGitHubClient) EditIssue(org, repo string, number int, issue *github.Issue) (*github.Issue, error) {
-	return nil, nil
+	return issue, nil
 }
 
 func TestHandle(t *testing.T) {
@@ -175,7 +132,7 @@ func TestHandle(t *testing.T) {
 		existingIssues         []jira.Issue
 		existingLinks          map[string][]jira.RemoteLink
 		expectedNewLinks       []jira.RemoteLink
-		expectedCommentUpdates map[string]string
+		expectedCommentUpdates []string
 	}{
 		{
 			name: "No issue referenced, nothing to do",
@@ -201,7 +158,7 @@ func TestHandle(t *testing.T) {
 				},
 			},
 			}},
-			expectedCommentUpdates: map[string]string{"org/repo:1": "Some text and also [ABC-123](https://my-jira.com/browse/ABC-123)"},
+			expectedCommentUpdates: []string{"org/repo#1:Some text and also [ABC-123](https://my-jira.com/browse/ABC-123)"},
 		},
 		{
 			name: "Link is created based on body with pasted link",
@@ -246,7 +203,7 @@ func TestHandle(t *testing.T) {
 				},
 			},
 			}},
-			expectedCommentUpdates: map[string]string{"org/repo:1": "Some text and also [ABC-123](https://my-jira.com/browse/ABC-123)"},
+			expectedCommentUpdates: []string{"org/repo#1:Some text and also [ABC-123](https://my-jira.com/browse/ABC-123)"},
 		},
 		{
 			name: "Link is created based on title",
@@ -290,7 +247,7 @@ func TestHandle(t *testing.T) {
 				},
 			},
 			}},
-			expectedCommentUpdates: map[string]string{"org/repo:1": "Some text and also [ABC-123](https://my-jira.com/browse/ABC-123) and again [ABC-123](https://my-jira.com/browse/ABC-123)"},
+			expectedCommentUpdates: []string{"org/repo#1:Some text and also [ABC-123](https://my-jira.com/browse/ABC-123) and again [ABC-123](https://my-jira.com/browse/ABC-123)"},
 		},
 		{
 			name: "Referenced issue doesn't exist, nothing to do",
@@ -314,7 +271,39 @@ func TestHandle(t *testing.T) {
 			},
 			projectCache:   &threadsafeSet{data: sets.NewString("abc")},
 			existingIssues: []jira.Issue{{ID: "ABC-123"}},
-			existingLinks:  map[string][]jira.RemoteLink{"ABC-123": {{Object: &jira.RemoteLinkObject{URL: "https://github.com/org/repo/issues/3"}}}},
+			existingLinks:  map[string][]jira.RemoteLink{"ABC-123": {{Object: &jira.RemoteLinkObject{URL: "https://github.com/org/repo/issues/3", Title: "Some issue"}}}},
+		},
+		{
+			name: "Link exists but title is different, replacing it",
+			event: github.GenericCommentEvent{
+				HTMLURL:    "https://github.com/org/repo/issues/3",
+				IssueTitle: "Some issue NEW",
+				Body:       "Some text and also [ABC-123:](https://my-jira.com/browse/ABC-123)",
+				Repo:       github.Repo{FullName: "org/repo"},
+				Number:     3,
+			},
+			projectCache:   &threadsafeSet{data: sets.NewString("abc")},
+			existingIssues: []jira.Issue{{ID: "ABC-123"}},
+			existingLinks: map[string][]jira.RemoteLink{
+				"ABC-123": {
+					{
+						Object: &jira.RemoteLinkObject{
+							URL:   "https://github.com/org/repo/issues/3",
+							Title: "org/repo#3: Some issue",
+							Icon:  &jira.RemoteLinkIcon{Url16x16: "https://github.com/favicon.ico", Title: "GitHub"},
+						},
+					},
+				},
+			},
+			expectedNewLinks: []jira.RemoteLink{
+				{
+					Object: &jira.RemoteLinkObject{
+						URL:   "https://github.com/org/repo/issues/3",
+						Title: "org/repo#3: Some issue NEW",
+						Icon:  &jira.RemoteLinkIcon{Url16x16: "https://github.com/favicon.ico", Title: "GitHub"},
+					},
+				},
+			},
 		},
 		{
 			name: "Valid issue in disabled project, case insensitive matching and no link",
@@ -345,22 +334,22 @@ func TestHandle(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			jiraClient := &fakeJiraClient{
-				existingIssues: tc.existingIssues,
-				existingLinks:  tc.existingLinks,
-				getIssueError:  tc.getIssueClientError,
+			jiraClient := &fakejira.FakeClient{
+				ExistingIssues: tc.existingIssues,
+				ExistingLinks:  tc.existingLinks,
+				GetIssueError:  tc.getIssueClientError,
 			}
-			githubClient := &fakeGitHubClient{}
+			githubClient := fakegithub.NewFakeClient()
 
 			if err := handleWithProjectCache(jiraClient, githubClient, tc.cfg, logrus.NewEntry(logrus.New()), &tc.event, tc.projectCache); err != nil {
 				t.Fatalf("handle failed: %v", err)
 			}
 
-			if diff := cmp.Diff(jiraClient.newLinks, tc.expectedNewLinks); diff != "" {
+			if diff := cmp.Diff(jiraClient.NewLinks, tc.expectedNewLinks); diff != "" {
 				t.Errorf("new links differs from expected new links: %s", diff)
 			}
 
-			if diff := cmp.Diff(githubClient.editedComments, tc.expectedCommentUpdates); diff != "" {
+			if diff := cmp.Diff(githubClient.IssueCommentsEdited, tc.expectedCommentUpdates); diff != "" {
 				t.Errorf("comment updates differ from expected: %s", diff)
 			}
 		})
@@ -465,7 +454,7 @@ is very important` + "\n```bash\n" +
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			if diff := cmp.Diff(insertLinksIntoComment(tc.body, []string{issueName}, fakeJiraUrl), tc.expected); diff != "" {
+			if diff := cmp.Diff(insertLinksIntoComment(tc.body, []string{issueName}, fakejira.FakeJiraUrl), tc.expected); diff != "" {
 				t.Errorf("actual result differs from expected result: %s", diff)
 			}
 		})
@@ -483,20 +472,20 @@ func TestProjectCachingJiraClient(t *testing.T) {
 	}{
 		{
 			name:           "404 gets served from cache",
-			client:         &fakeJiraClient{},
+			client:         &fakejira.FakeClient{},
 			issueToRequest: "issue-123",
 			cache:          &threadsafeSet{data: sets.String{}},
 			expectedError:  jiraclient.NewNotFoundError(errors.New("404 from cache")),
 		},
 		{
 			name:           "Success",
-			client:         &fakeJiraClient{existingIssues: []jira.Issue{{ID: "issue-123"}}},
+			client:         &fakejira.FakeClient{ExistingIssues: []jira.Issue{{ID: "issue-123"}}},
 			issueToRequest: "issue-123",
 			cache:          &threadsafeSet{data: sets.NewString("issue")},
 		},
 		{
 			name:           "Success case-insensitive",
-			client:         &fakeJiraClient{existingIssues: []jira.Issue{{ID: "ISSUE-123"}}},
+			client:         &fakejira.FakeClient{ExistingIssues: []jira.Issue{{ID: "ISSUE-123"}}},
 			issueToRequest: "ISSUE-123",
 			cache:          &threadsafeSet{data: sets.NewString("issue")},
 		},

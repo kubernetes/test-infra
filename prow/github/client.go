@@ -116,6 +116,7 @@ type IssueClient interface {
 	CloseIssue(org, repo string, number int) error
 	ReopenIssue(org, repo string, number int) error
 	FindIssues(query, sort string, asc bool) ([]Issue, error)
+	FindIssuesWithOrg(org, query, sort string, asc bool) ([]Issue, error)
 	ListOpenIssues(org, repo string) ([]Issue, error)
 	GetIssue(org, repo string, number int) (*Issue, error)
 	EditIssue(org, repo string, number int, issue *Issue) (*Issue, error)
@@ -675,18 +676,18 @@ type UserGenerator func() (string, error)
 //   An endpoint is used when all preceding endpoints have returned a conn err.
 //   This should be used when using the ghproxy GitHub proxy cache to allow
 //   this client to bypass the cache if it is temporarily unavailable.
-func NewClientWithFields(fields logrus.Fields, getToken func() []byte, censor func([]byte) []byte, graphqlEndpoint string, bases ...string) Client {
-	_, _, client := NewClientFromOptions(fields, ClientOptions{
+func NewClientWithFields(fields logrus.Fields, getToken func() []byte, censor func([]byte) []byte, graphqlEndpoint string, bases ...string) (Client, error) {
+	_, _, client, err := NewClientFromOptions(fields, ClientOptions{
 		Censor:          censor,
 		GetToken:        getToken,
 		GraphqlEndpoint: graphqlEndpoint,
 		Bases:           bases,
 		DryRun:          false,
 	}.Default())
-	return client
+	return client, err
 }
 
-func NewAppsAuthClientWithFields(fields logrus.Fields, censor func([]byte) []byte, appID string, appPrivateKey func() *rsa.PrivateKey, graphqlEndpoint string, bases ...string) (TokenGenerator, UserGenerator, Client) {
+func NewAppsAuthClientWithFields(fields logrus.Fields, censor func([]byte) []byte, appID string, appPrivateKey func() *rsa.PrivateKey, graphqlEndpoint string, bases ...string) (TokenGenerator, UserGenerator, Client, error) {
 	return NewClientFromOptions(fields, ClientOptions{
 		Censor:          censor,
 		AppID:           appID,
@@ -698,7 +699,7 @@ func NewAppsAuthClientWithFields(fields logrus.Fields, censor func([]byte) []byt
 }
 
 // NewClientFromOptions creates a new client from the options we expose. This method should be used over the more-specific ones.
-func NewClientFromOptions(fields logrus.Fields, options ClientOptions) (TokenGenerator, UserGenerator, Client) {
+func NewClientFromOptions(fields logrus.Fields, options ClientOptions) (TokenGenerator, UserGenerator, Client, error) {
 	options = options.Default()
 
 	// Will be nil if github app authentication is used
@@ -745,11 +746,9 @@ func NewClientFromOptions(fields logrus.Fields, options ClientOptions) (TokenGen
 	var tokenGenerator func(_ string) (string, error)
 	var userGenerator func() (string, error)
 	if options.AppID != "" {
-		appsTransport := &appsRoundTripper{
-			appID:        options.AppID,
-			privateKey:   options.AppPrivateKey,
-			upstream:     options.BaseRoundTripper,
-			githubClient: c,
+		appsTransport, err := newAppsRoundTripper(options.AppID, options.AppPrivateKey, options.BaseRoundTripper, c, options.Bases)
+		if err != nil {
+			return nil, nil, nil, fmt.Errorf("failed to construct apps auth roundtripper: %w", err)
 		}
 		httpClient.Transport = appsTransport
 		graphQLTransport.upstream = appsTransport
@@ -777,7 +776,7 @@ func NewClientFromOptions(fields logrus.Fields, options ClientOptions) (TokenGen
 		}
 	}
 
-	return tokenGenerator, userGenerator, c
+	return tokenGenerator, userGenerator, c, nil
 }
 
 type graphQLGitHubAppsAuthClientWrapper struct {
@@ -823,6 +822,10 @@ func (s *addHeaderTransport) RoundTrip(r *http.Request) (*http.Response, error) 
 	// Any GHE version after 2.22 will enable the Checks types per default
 	r.Header.Add("Accept", "application/vnd.github.antiope-preview+json")
 
+	// We have to add this header to enable the Merge info scheme preview:
+	// https://docs.github.com/en/graphql/overview/schema-previews#merge-info-preview
+	r.Header.Add("Accept", "application/vnd.github.merge-info-preview+json")
+
 	// We use the context to pass the UserAgent through the V4 client we depend on
 	if v := r.Context().Value(userAgentContextKey); v != nil {
 		r.Header.Add("User-Agent", v.(string))
@@ -832,7 +835,7 @@ func (s *addHeaderTransport) RoundTrip(r *http.Request) (*http.Response, error) 
 }
 
 // NewClient creates a new fully operational GitHub client.
-func NewClient(getToken func() []byte, censor func([]byte) []byte, graphqlEndpoint string, bases ...string) Client {
+func NewClient(getToken func() []byte, censor func([]byte) []byte, graphqlEndpoint string, bases ...string) (Client, error) {
 	return NewClientWithFields(logrus.Fields{}, getToken, censor, graphqlEndpoint, bases...)
 }
 
@@ -844,21 +847,21 @@ func NewClient(getToken func() []byte, censor func([]byte) []byte, graphqlEndpoi
 //   An endpoint is used when all preceding endpoints have returned a conn err.
 //   This should be used when using the ghproxy GitHub proxy cache to allow
 //   this client to bypass the cache if it is temporarily unavailable.
-func NewDryRunClientWithFields(fields logrus.Fields, getToken func() []byte, censor func([]byte) []byte, graphqlEndpoint string, bases ...string) Client {
-	_, _, client := NewClientFromOptions(fields, ClientOptions{
+func NewDryRunClientWithFields(fields logrus.Fields, getToken func() []byte, censor func([]byte) []byte, graphqlEndpoint string, bases ...string) (Client, error) {
+	_, _, client, err := NewClientFromOptions(fields, ClientOptions{
 		Censor:          censor,
 		GetToken:        getToken,
 		GraphqlEndpoint: graphqlEndpoint,
 		Bases:           bases,
 		DryRun:          true,
 	}.Default())
-	return client
+	return client, err
 }
 
 // NewAppsAuthDryRunClientWithFields creates a new client that will not perform mutating actions
 // such as setting statuses or commenting, but it will still query GitHub and
 // use up API tokens. Additional fields are added to the logger.
-func NewAppsAuthDryRunClientWithFields(fields logrus.Fields, censor func([]byte) []byte, appId string, appPrivateKey func() *rsa.PrivateKey, graphqlEndpoint string, bases ...string) (TokenGenerator, UserGenerator, Client) {
+func NewAppsAuthDryRunClientWithFields(fields logrus.Fields, censor func([]byte) []byte, appId string, appPrivateKey func() *rsa.PrivateKey, graphqlEndpoint string, bases ...string) (TokenGenerator, UserGenerator, Client, error) {
 	return NewClientFromOptions(fields, ClientOptions{
 		Censor:          censor,
 		AppID:           appId,
@@ -877,7 +880,7 @@ func NewAppsAuthDryRunClientWithFields(fields logrus.Fields, censor func([]byte)
 //   An endpoint is used when all preceding endpoints have returned a conn err.
 //   This should be used when using the ghproxy GitHub proxy cache to allow
 //   this client to bypass the cache if it is temporarily unavailable.
-func NewDryRunClient(getToken func() []byte, censor func([]byte) []byte, graphqlEndpoint string, bases ...string) Client {
+func NewDryRunClient(getToken func() []byte, censor func([]byte) []byte, graphqlEndpoint string, bases ...string) (Client, error) {
 	return NewDryRunClientWithFields(logrus.Fields{}, getToken, censor, graphqlEndpoint, bases...)
 }
 
@@ -3454,10 +3457,27 @@ func (c *client) ListFileCommits(org, repo, filePath string) ([]RepositoryCommit
 // Input query the same way you would into the website.
 // Order returned results with sort (usually "updated").
 // Control whether oldest/newest is first with asc.
+// This method is not working in contexts where "github-app-id" is set. Please use FindIssuesWithOrg() in those cases.
 //
 // See https://help.github.com/articles/searching-issues-and-pull-requests/ for details.
 func (c *client) FindIssues(query, sort string, asc bool) ([]Issue, error) {
-	durationLogger := c.log("FindIssues", query)
+	return c.FindIssuesWithOrg("", query, sort, asc)
+}
+
+// FindIssuesWithOrg uses the GitHub search API to find issues which match a particular query.
+//
+// Input query the same way you would into the website.
+// Order returned results with sort (usually "updated").
+// Control whether oldest/newest is first with asc.
+// This method is supposed to be used in contexts where "github-app-id" is set.
+//
+// See https://help.github.com/articles/searching-issues-and-pull-requests/ for details.
+func (c *client) FindIssuesWithOrg(org, query, sort string, asc bool) ([]Issue, error) {
+	loggerName := "FindIssuesWithOrg"
+	if org == "" {
+		loggerName = "FindIssues"
+	}
+	durationLogger := c.log(loggerName, query)
 	defer durationLogger()
 
 	values := url.Values{
@@ -3476,7 +3496,7 @@ func (c *client) FindIssues(query, sort string, asc bool) ([]Issue, error) {
 		fmt.Sprintf("/search/issues"),
 		values,
 		acceptNone,
-		"",
+		org,
 		func() interface{} { // newObj
 			return &IssuesSearchResult{}
 		},

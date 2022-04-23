@@ -43,7 +43,7 @@ func TestGetOrg(t *testing.T) {
 		t.Fatalf("Failed to parse key: %v", err)
 	}
 
-	_, _, client := NewAppsAuthClientWithFields(
+	_, _, client, err := NewAppsAuthClientWithFields(
 		logrus.Fields{},
 		func(b []byte) []byte { return b },
 		appID,
@@ -51,6 +51,9 @@ func TestGetOrg(t *testing.T) {
 		"https://api.github.com/graphql",
 		"http://localhost:8888",
 	)
+	if err != nil {
+		t.Fatalf("failed to constuct client: %v", err)
+	}
 
 	if _, err := client.GetOrg(org); err != nil {
 		t.Errorf("Failed to get org: %v", err)

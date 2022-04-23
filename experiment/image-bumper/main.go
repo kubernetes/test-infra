@@ -19,6 +19,7 @@ package main
 import (
 	"flag"
 	"log"
+	"net/http"
 	"regexp"
 	"strings"
 
@@ -49,7 +50,7 @@ func main() {
 		}
 	}
 
-	cli := bumper.NewClient()
+	cli := bumper.NewClient(http.DefaultClient)
 	for _, f := range o.files {
 		if err := cli.UpdateFile(cli.FindLatestTag, f, imageRegex); err != nil {
 			log.Printf("Failed to update %s: %v", f, err)

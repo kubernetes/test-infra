@@ -54,10 +54,11 @@ const (
 )
 
 type extractStrategy struct {
-	mode      extractMode
-	option    string
-	ciVersion string
-	value     string
+	mode           extractMode
+	option         string
+	ciVersion      string
+	additionalInfo string
+	value          string
 }
 
 type extractStrategies []extractStrategy
@@ -70,14 +71,16 @@ func (l *extractStrategies) String() string {
 	return strings.Join(s, ",")
 }
 
+//^gke-?(default|channel-(rapid|regular|stable)|latest(-\d+.\d+(.\d+(-gke)?)?)?)?$
+
 // Converts --extract=release/stable, etc into an extractStrategy{}
 func (l *extractStrategies) Set(value string) error {
 	var strategies = map[string]extractMode{
 		`^(bazel)$`: localBazel,
 		`^(local)`:  local,
-		`^gke-?(default|channel-(rapid|regular|stable)|latest(-\d+.\d+(.\d+(-gke)?)?)?)?$`: gke,
-		`^gci/([\w-]+(?:\?{1}(?::?[\w-]+=[\w-]+)+)?)$`:                                     gci,
-		`^gci/([\w-]+(?:\?{1}(?::?[\w-]+=[\w-]+)+)?)/(.+)$`:                                gciCi,
+		`^gke-?(default|channel-(rapid|regular|stable)(?:-(latest))?|latest(-\d+.\d+(.\d+(-gke)?)?)?)?$`: gke,
+		`^gci/([\w-]+(?:\?{1}(?::?[\w-]+=[\w-]+)+)?)$`:                                                   gci,
+		`^gci/([\w-]+(?:\?{1}(?::?[\w-]+=[\w-]+)+)?)/(.+)$`:                                              gciCi,
 		`^ci/(.+)$`:                   ci,
 		`^ci/(.+)-fast$`:              ciFast,
 		`^release/(latest.*)$`:        rc,
@@ -107,6 +110,9 @@ func (l *extractStrategies) Set(value string) error {
 		}
 		if len(mat) > 2 {
 			e.ciVersion = mat[2]
+		}
+		if len(mat) > 3 {
+			e.additionalInfo = mat[3]
 		}
 		*l = append(*l, e)
 		log.Printf("Matched extraction strategy: %s", search)
@@ -494,8 +500,9 @@ func (e extractStrategy) Extract(project, zone, region, ciBucket, releaseBucket 
 		}
 
 		if strings.HasPrefix(e.option, "channel") {
-			// get latest supported master version
-			version, err := getChannelGKEVersion(project, zone, region, e.ciVersion)
+			// get version from selected channel. If -latest is specified after channel we try to
+			// download latest valid version. Otherwise we download default version for this channel
+			version, err := getChannelGKEVersion(project, zone, region, e.ciVersion, e.additionalInfo)
 			if err != nil {
 				return fmt.Errorf("failed to get gke version from channel %s: %s", e.ciVersion, err)
 			}

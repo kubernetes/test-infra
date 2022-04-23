@@ -77,6 +77,7 @@ approve:
   - kubernetes-sigs/cluster-api-provider-aws
   - kubernetes-sigs/cluster-api-provider-azure
   - kubernetes-sigs/cluster-api-provider-vsphere
+  - kubernetes-sigs/descheduler
   require_self_approval: true
   ignore_review_state: true
 - repos:
@@ -357,23 +358,23 @@ slack:
 
 milestone_applier:
   kubernetes/enhancements:
-    master: v1.24
+    master: v1.25
   kubernetes/kubernetes:
-    master: v1.24
+    master: v1.25
+    release-1.24: v1.24
     release-1.23: v1.23
     release-1.22: v1.22
     release-1.21: v1.21
-    release-1.20: v1.20
   kubernetes/org:
-    main: v1.24
+    main: v1.25
   kubernetes/release:
-    master: v1.24
+    master: v1.25
   kubernetes/sig-release:
-    master: v1.24
+    master: v1.25
   kubernetes/test-infra:
-    master: v1.24
+    master: v1.25
   kubernetes/k8s.io:
-    main: v1.24
+    main: v1.25
   kubernetes/kops:
     master: v1.24
     release-1.23: v1.23
@@ -431,6 +432,7 @@ repo_milestone:
     # curl -H "Authorization: token <token>" "https://api.github.com/orgs/<org-name>/teams?page=N"
     maintainers_id: 2460384
     maintainers_team: milestone-maintainers
+    maintainers_friendly_name: Milestone Maintainers Team
   kubernetes-sigs/controller-runtime:
     maintainers_id: 2785806
     maintainers_team: controller-runtime-maintainers
@@ -754,6 +756,11 @@ require_matching_label:
     If CAPA/CAPI contributors determines this is a relevant issue, they will accept it by applying the `triage/accepted` label and provide further guidance.
 
     The `triage/accepted` label can be added by org members by writing `/triage accepted` in a comment.
+- missing_label: needs-kind
+  org: kubernetes-sigs
+  repo: cloud-provider-azure
+  prs: true
+  regexp: ^kind/
 - missing_label: needs-sig
   org: kubernetes
   repo: test-infra
@@ -849,6 +856,7 @@ plugins:
     - size
     - skip
     - slackevents
+    - testfreeze
     - transfer-issue
     - trick-or-treat
     - trigger
@@ -1116,7 +1124,6 @@ plugins:
     - milestone
     - milestonestatus
     - override
-    - release-note
     - require-matching-label
 
   kubernetes-sigs/cluster-api-provider-azure:

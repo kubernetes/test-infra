@@ -44,13 +44,17 @@ const (
 type Client struct {
 	// Keys are <imageHost>/<imageName>:<currentTag>. Values are corresponding tags.
 	tagCache   map[string]string
-	httpClient http.Client
+	httpClient *http.Client
 }
 
-func NewClient() *Client {
+func NewClient(httpClient *http.Client) *Client {
+	// Shallow copy to adjust Timeout
+	httpClientCopy := *httpClient
+	httpClientCopy.Timeout = 1 * time.Minute
+
 	return &Client{
 		tagCache:   map[string]string{},
-		httpClient: http.Client{Timeout: 1 * time.Minute},
+		httpClient: &httpClientCopy,
 	}
 }
 

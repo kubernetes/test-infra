@@ -6,7 +6,7 @@ presubmits:
     path_alias: "sigs.k8s.io/zeitgeist"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.17
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.17-bullseye
         imagePullPolicy: Always
         command:
         - make
@@ -22,7 +22,7 @@ presubmits:
     path_alias: "sigs.k8s.io/zeitgeist"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.17
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.17-bullseye
         imagePullPolicy: Always
         command:
         - make
@@ -38,7 +38,7 @@ presubmits:
     path_alias: "sigs.k8s.io/zeitgeist"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.17
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.17-bullseye
         imagePullPolicy: Always
         command:
         - make

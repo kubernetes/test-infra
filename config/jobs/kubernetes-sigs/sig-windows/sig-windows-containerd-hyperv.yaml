@@ -19,7 +19,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
       command:
       - runner.sh
       - kubetest
@@ -74,7 +74,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
       command:
       - runner.sh
       - kubetest
@@ -100,7 +100,7 @@ periodics:
       - --aksengine-win-binaries
       - --aksengine-deploy-custom-k8s
       # Specific test args
-      - --test_args=--node-os-distro=windows --docker-config-file=$(DOCKER_CONFIG_FILE) -prepull-images=true --ginkgo.focus=(\[sig-windows\]|\[sig-scheduling\].SchedulerPreemption|\[sig-autoscaling\].\[Feature:HPA\]|\[sig-apps\].CronJob).*(\[Serial\]|\[Slow\])|(\[Serial\]|\[Slow\]).*(\[Conformance\]|\[NodeConformance\]) --ginkgo.skip==\[LinuxOnly\]|device.plugin.for.Windows|\[Feature:WindowsHostProcessContainers\]
+      - --test_args=--node-os-distro=windows --docker-config-file=$(DOCKER_CONFIG_FILE) -prepull-images=true --ginkgo.focus=(\[sig-windows\]|\[sig-scheduling\].SchedulerPreemption|\[sig-autoscaling\].\[Feature:HPA\]|\[sig-apps\].CronJob).*(\[Serial\]|\[Slow\])|(\[Serial\]|\[Slow\]).*(\[Conformance\]|\[NodeConformance\]) --ginkgo.skip==\[LinuxOnly\]|device.plugin.for.Windows|\[Feature:WindowsHostProcessContainers\]|should.run.as.a.reboot.process.on.the.host.node|GMSA
       - --ginkgo-parallel=1
       securityContext:
         privileged: true

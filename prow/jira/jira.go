@@ -23,6 +23,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"sync"
 
 	"github.com/andygrunwald/go-jira"
 	"github.com/hashicorp/go-retryablehttp"
@@ -36,9 +37,13 @@ type Client interface {
 	GetIssue(id string) (*jira.Issue, error)
 	GetRemoteLinks(id string) ([]jira.RemoteLink, error)
 	AddRemoteLink(id string, link *jira.RemoteLink) error
+	UpdateRemoteLink(id string, link *jira.RemoteLink) error
+	ForPlugin(plugin string) Client
 	ListProjects() (*jira.ProjectList, error)
 	JiraClient() *jira.Client
 	JiraURL() string
+	Used() bool
+	WithFields(fields logrus.Fields) Client
 }
 
 type BasicAuthGenerator func() (username, password string)
@@ -70,18 +75,7 @@ func WithFields(fields logrus.Fields) Option {
 	}
 }
 
-func NewClient(endpoint string, opts ...Option) (Client, error) {
-	o := Options{}
-	for _, opt := range opts {
-		opt(&o)
-	}
-	log := logrus.WithField("client", "jira")
-	if len(o.LogFields) > 0 {
-		log = log.WithFields(o.LogFields)
-	}
-
-	retryingClient := retryablehttp.NewClient()
-	retryingClient.Logger = &retryableHTTPLogrusWrapper{log: log}
+func newJiraClient(endpoint string, o Options, retryingClient *retryablehttp.Client) (*jira.Client, error) {
 	retryingClient.HTTPClient.Transport = &metricsTransport{
 		upstream:       retryingClient.HTTPClient.Transport,
 		pathSimplifier: pathSimplifier().Simplify,
@@ -106,8 +100,33 @@ func NewClient(endpoint string, opts ...Option) (Client, error) {
 		}
 	}
 
-	jiraClient, err := jira.NewClient(retryingClient.StandardClient(), endpoint)
-	return &client{upstream: jiraClient, url: endpoint}, err
+	return jira.NewClient(retryingClient.StandardClient(), endpoint)
+}
+
+func NewClient(endpoint string, opts ...Option) (Client, error) {
+	o := Options{}
+	for _, opt := range opts {
+		opt(&o)
+	}
+
+	log := logrus.WithField("client", "jira")
+	if len(o.LogFields) > 0 {
+		log = log.WithFields(o.LogFields)
+	}
+	retryingClient := retryablehttp.NewClient()
+	usedFlagTransport := &clientUsedTransport{
+		m:        sync.Mutex{},
+		upstream: retryingClient.HTTPClient.Transport,
+	}
+	retryingClient.HTTPClient.Transport = usedFlagTransport
+	retryingClient.Logger = &retryableHTTPLogrusWrapper{log: log}
+
+	jiraClient, err := newJiraClient(endpoint, o, retryingClient)
+	if err != nil {
+		return nil, err
+	}
+	url := jiraClient.GetBaseURL()
+	return &client{delegate: &delegate{url: url.String(), options: o}, logger: log, upstream: jiraClient, clientUsed: usedFlagTransport}, err
 }
 
 type userAgentSettingTransport struct {
@@ -120,9 +139,40 @@ func (u userAgentSettingTransport) RoundTrip(r *http.Request) (*http.Response, e
 	return u.upstream.RoundTrip(r)
 }
 
+type clientUsedTransport struct {
+	used     bool
+	m        sync.Mutex
+	upstream http.RoundTripper
+}
+
+func (c *clientUsedTransport) RoundTrip(r *http.Request) (*http.Response, error) {
+	c.m.Lock()
+	c.used = true
+	c.m.Unlock()
+	return c.upstream.RoundTrip(r)
+}
+
+func (c *clientUsedTransport) Used() bool {
+	c.m.Lock()
+	defer c.m.Unlock()
+	return c.used
+}
+
+type used interface {
+	Used() bool
+}
+
 type client struct {
-	url      string
-	upstream *jira.Client
+	logger     *logrus.Entry
+	upstream   *jira.Client
+	clientUsed used
+	*delegate
+}
+
+// delegate actually does the work to talk to Jira
+type delegate struct {
+	url     string
+	options Options
 }
 
 func (jc *client) JiraClient() *jira.Client {
@@ -190,13 +240,73 @@ func (jc *client) AddRemoteLink(id string, link *jira.RemoteLink) error {
 	return nil
 }
 
+func (jc *client) UpdateRemoteLink(id string, link *jira.RemoteLink) error {
+	internalLinkId := fmt.Sprint(link.ID)
+	req, err := jc.upstream.NewRequest("PUT", "rest/api/2/issue/"+id+"/remotelink/"+internalLinkId, link)
+	if err != nil {
+		return fmt.Errorf("failed to construct request: %w", err)
+	}
+	resp, err := jc.upstream.Do(req, nil)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
+	if err != nil {
+		return fmt.Errorf("failed to update link: %w", JiraError(resp, err))
+	}
+	if resp.StatusCode != http.StatusNoContent {
+		return fmt.Errorf("failed to update link: expected status code %d but got %d instead", http.StatusNoContent, resp.StatusCode)
+	}
+	return nil
+}
+
 func (jc *client) JiraURL() string {
 	return jc.url
+}
+
+// Used determines whether the client has been used
+func (jc *client) Used() bool {
+	return jc.clientUsed.Used()
 }
 
 type bearerAuthRoundtripper struct {
 	generator BearerAuthGenerator
 	upstream  http.RoundTripper
+}
+
+// WithFields clones the client, keeping the underlying delegate the same but adding
+// fields to the logging context
+func (jc *client) WithFields(fields logrus.Fields) Client {
+	return &client{
+		clientUsed: jc.clientUsed,
+		upstream:   jc.upstream,
+		logger:     jc.logger.WithFields(fields),
+		delegate:   jc.delegate,
+	}
+}
+
+// ForPlugin clones the client, keeping the underlying delegate the same but adding
+// a plugin identifier and log field
+func (jc *client) ForPlugin(plugin string) Client {
+	pluginLogger := jc.logger.WithField("plugin", plugin)
+	retryingClient := retryablehttp.NewClient()
+	usedFlagTransport := &clientUsedTransport{
+		m:        sync.Mutex{},
+		upstream: retryingClient.HTTPClient.Transport,
+	}
+	retryingClient.HTTPClient.Transport = usedFlagTransport
+	retryingClient.Logger = &retryableHTTPLogrusWrapper{log: pluginLogger}
+	// ignore error as url.String() was passed to the delegate
+	jiraClient, err := newJiraClient(jc.url, jc.options, retryingClient)
+	if err != nil {
+		pluginLogger.WithError(err).Error("invalid Jira URL")
+		jiraClient = jc.upstream
+	}
+	return &client{
+		logger:     pluginLogger,
+		clientUsed: usedFlagTransport,
+		upstream:   jiraClient,
+		delegate:   jc.delegate,
+	}
 }
 
 func (bart *bearerAuthRoundtripper) RoundTrip(req *http.Request) (*http.Response, error) {

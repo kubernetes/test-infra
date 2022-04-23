@@ -81,7 +81,8 @@ func (o *Options) createRecords() []clone.Record {
 			rec.Failed = true
 			return []clone.Record{rec}
 		}
-		tokenGenerator, userGenerator, _ = github.NewClientFromOptions(logrus.Fields{}, github.ClientOptions{
+		var err error
+		tokenGenerator, userGenerator, _, err = github.NewClientFromOptions(logrus.Fields{}, github.ClientOptions{
 			Censor: secret.Censor,
 			AppID:  o.GitHubAppID,
 			AppPrivateKey: func() *rsa.PrivateKey {
@@ -95,6 +96,11 @@ func (o *Options) createRecords() []clone.Record {
 			},
 			Bases: o.GitHubAPIEndpoints,
 		})
+		if err != nil {
+			logrus.WithError(err).Error("Failed to construct github client")
+			rec.Failed = true
+			return []clone.Record{rec}
+		}
 	}
 
 	// Print md5 sum of cookiefile for debugging purpose

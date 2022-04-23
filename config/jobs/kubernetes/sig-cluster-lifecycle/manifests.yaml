@@ -13,7 +13,7 @@ periodics:
       - --scenario=execute
       - --
       - ./tests/e2e/manifests/verify_manifest_lists.sh
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-all
     testgrid-tab-name: periodic-manifest-lists

@@ -87,12 +87,14 @@ const (
 
 // RequestThrottlingTimes keeps the information about throttling times per API and request methods
 type RequestThrottlingTimes struct {
-	// ThrottlingTime is applied for all non-GET request methods for apiV3 and apiV4
+	// throttlingTime is applied for all non-GET request methods for apiV3 and apiV4
 	throttlingTime uint
-	// ThrottlingTimeV4 if different then 0, it's applied for non-GET request methods for apiV4, instead of ThrottlingTime
+	// throttlingTimeV4 if different than 0, it's applied for non-GET request methods for apiV4, instead of ThrottlingTime
 	throttlingTimeV4 uint
-	// ThrottlingTimeForGET is applied for all GET request methods for apiV3 and apiV4
+	// throttlingTimeForGET is applied for all GET request methods for apiV3 and apiV4
 	throttlingTimeForGET uint
+	// maxDelayTime is applied when formed queue is too large, it allows to temporarily set max delay time provided by user instead of calculated value
+	maxDelayTime uint
 }
 
 func (rtt *RequestThrottlingTimes) isEnabled() bool {
@@ -107,11 +109,12 @@ func (rtt *RequestThrottlingTimes) getThrottlingTimeV4() uint {
 }
 
 // NewRequestThrottlingTimes creates a new RequestThrottlingTimes and returns it
-func NewRequestThrottlingTimes(requestThrottlingTime, requestThrottlingTimeV4, requestThrottlingTimeForGET uint) RequestThrottlingTimes {
+func NewRequestThrottlingTimes(requestThrottlingTime, requestThrottlingTimeV4, requestThrottlingTimeForGET, requestThrottlingMaxDelayTime uint) RequestThrottlingTimes {
 	return RequestThrottlingTimes{
 		throttlingTime:       requestThrottlingTime,
 		throttlingTimeV4:     requestThrottlingTimeV4,
 		throttlingTimeForGET: requestThrottlingTimeForGET,
+		maxDelayTime:         requestThrottlingMaxDelayTime,
 	}
 }
 
@@ -178,17 +181,18 @@ func newThrottlingTransport(maxConcurrency int, roundTripper http.RoundTripper, 
 		roundTripper:          roundTripper,
 		timeThrottlingEnabled: throttlingTimes.isEnabled(),
 		hasher:                hasher,
-		registryApiV3:         newTokensRegistry(throttlingTimes.throttlingTime, throttlingTimes.throttlingTimeForGET),
-		registryApiV4:         newTokensRegistry(throttlingTimes.getThrottlingTimeV4(), throttlingTimes.throttlingTimeForGET),
+		registryApiV3:         newTokensRegistry(throttlingTimes.throttlingTime, throttlingTimes.throttlingTimeForGET, throttlingTimes.maxDelayTime),
+		registryApiV4:         newTokensRegistry(throttlingTimes.getThrottlingTimeV4(), throttlingTimes.throttlingTimeForGET, throttlingTimes.maxDelayTime),
 	}
 }
 
-func newTokensRegistry(requestThrottlingTime, requestThrottlingTimeForGET uint) tokensRegistry {
+func newTokensRegistry(requestThrottlingTime, requestThrottlingTimeForGET, maxDelayTime uint) tokensRegistry {
 	return tokensRegistry{
 		lock:                 sync.Mutex{},
 		tokens:               map[string]tokenInfo{},
 		throttlingTime:       time.Millisecond * time.Duration(requestThrottlingTime),
 		throttlingTimeForGET: time.Millisecond * time.Duration(requestThrottlingTimeForGET),
+		maxDelayTime:         time.Second * time.Duration(maxDelayTime),
 	}
 }
 
@@ -204,6 +208,7 @@ type tokensRegistry struct {
 	tokens               map[string]tokenInfo
 	throttlingTime       time.Duration
 	throttlingTimeForGET time.Duration
+	maxDelayTime         time.Duration
 }
 
 func (tr *tokensRegistry) getRequestWaitDuration(tokenBudgetName string, getReq bool) time.Duration {
@@ -234,6 +239,12 @@ func (tr *tokensRegistry) calculateRequestWaitDuration(lastRequest tokenInfo, to
 		}
 		future := lastRequest.timestamp.Add(difference)
 		duration = future.Sub(toQueue)
+
+		// Do not exceed max wait time to avoid creating a huge request backlog if the GitHub api has performance issues
+		if duration >= tr.maxDelayTime {
+			duration = tr.maxDelayTime
+			future = toQueue.Add(tr.maxDelayTime)
+		}
 		toQueue = future
 	} else if duration >= throttlingTime || (getReq && duration >= tr.throttlingTimeForGET) {
 		// There was no request for some time, no need to wait.
