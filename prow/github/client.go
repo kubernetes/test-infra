@@ -1113,8 +1113,14 @@ func (c *client) requestRetryWithContext(ctx context.Context, method, path, acce
 						authorizedScopes = "no"
 					}
 
-					want := sets.NewString(strings.Split(acceptedScopes, ",")...)
-					got := strings.Split(authorizedScopes, ",")
+					want := sets.NewString()
+					for _, acceptedScope := range strings.Split(acceptedScopes, ",") {
+						want.Insert(strings.TrimSpace(acceptedScope))
+					}
+					var got []string
+					for _, authorizedScope := range strings.Split(authorizedScopes, ",") {
+						got = append(got, strings.TrimSpace(authorizedScope))
+					}
 					if acceptedScopes != "" && !want.HasAny(got...) {
 						err = fmt.Errorf("the account is using %s oauth scopes, please make sure you are using at least one of the following oauth scopes: %s", authorizedScopes, acceptedScopes)
 					} else {
