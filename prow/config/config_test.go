@@ -240,6 +240,17 @@ deck:
 `,
 			expectError: true,
 		},
+		{
+			name: "Invalid Spyglass gcs browser web prefix by bucket",
+			spyglassConfig: `
+deck:
+  spyglass:
+    gcs_browser_prefix: https://gcsweb.k8s.io/gcs/
+    gcs_browser_prefixes_by_bucket:
+      '*': https://gcsweb.k8s.io/gcs/
+`,
+			expectError: true,
+		},
 	}
 	for _, tc := range testCases {
 		// save the config
@@ -314,7 +325,7 @@ func TestGetGCSBrowserPrefix(t *testing.T) {
 		{
 			id: "only default",
 			config: Spyglass{
-				GCSBrowserPrefixes: map[string]string{
+				GCSBrowserPrefixesByRepo: map[string]string{
 					"*": "https://default.com/gcs/",
 				},
 			},
@@ -323,7 +334,8 @@ func TestGetGCSBrowserPrefix(t *testing.T) {
 		{
 			id: "org exists",
 			config: Spyglass{
-				GCSBrowserPrefixes: map[string]string{
+				GCSBrowserPrefixesByRepo: map[string]string{
+					"*":   "https://default.com/gcs/",
 					"org": "https://org.com/gcs/",
 				},
 			},
@@ -332,16 +344,46 @@ func TestGetGCSBrowserPrefix(t *testing.T) {
 		{
 			id: "repo exists",
 			config: Spyglass{
-				GCSBrowserPrefixes: map[string]string{
+				GCSBrowserPrefixesByRepo: map[string]string{
+					"*":        "https://default.com/gcs/",
+					"org":      "https://org.com/gcs/",
 					"org/repo": "https://repo.com/gcs/",
 				},
 			},
 			expected: "https://repo.com/gcs/",
 		},
+		{
+			id: "repo overrides bucket",
+			config: Spyglass{
+				GCSBrowserPrefixesByRepo: map[string]string{
+					"*":        "https://default.com/gcs/",
+					"org":      "https://org.com/gcs/",
+					"org/repo": "https://repo.com/gcs/",
+				},
+				GCSBrowserPrefixesByBucket: map[string]string{
+					"*":      "https://default.com/gcs/",
+					"bucket": "https://bucket.com/gcs/",
+				},
+			},
+			expected: "https://repo.com/gcs/",
+		},
+		{
+			id: "bucket exists",
+			config: Spyglass{
+				GCSBrowserPrefixesByRepo: map[string]string{
+					"*": "https://default.com/gcs/",
+				},
+				GCSBrowserPrefixesByBucket: map[string]string{
+					"*":      "https://default.com/gcs/",
+					"bucket": "https://bucket.com/gcs/",
+				},
+			},
+			expected: "https://bucket.com/gcs/",
+		},
 	}
 
 	for _, tc := range testCases {
-		actual := tc.config.GCSBrowserPrefixes.GetGCSBrowserPrefix("org", "repo")
+		actual := tc.config.GetGCSBrowserPrefix("org", "repo", "bucket")
 		if !reflect.DeepEqual(actual, tc.expected) {
 			t.Fatalf("%s", cmp.Diff(tc.expected, actual))
 		}
@@ -2060,8 +2102,8 @@ func TestValidateReportingWithGerritLabel(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			cfg := Config {
-				ProwConfig: ProwConfig {
+			cfg := Config{
+				ProwConfig: ProwConfig{
 					PodNamespace: "default-namespace",
 				},
 			}
@@ -7632,6 +7674,8 @@ deck:
   spyglass:
     gcs_browser_prefixes:
       '*': ""
+    gcs_browser_prefixes_by_bucket:
+      '*': ""
     size_limit: 100000000
   tide_update_period: 10s
 default_job_timeout: 24h0m0s
@@ -7710,6 +7754,8 @@ deck:
   spyglass:
     gcs_browser_prefixes:
       '*': ""
+    gcs_browser_prefixes_by_bucket:
+      '*': ""
     size_limit: 100000000
   tide_update_period: 10s
 default_job_timeout: 24h0m0s
@@ -7780,6 +7826,8 @@ tide:
 deck:
   spyglass:
     gcs_browser_prefixes:
+      '*': ""
+    gcs_browser_prefixes_by_bucket:
       '*': ""
     size_limit: 100000000
   tide_update_period: 10s

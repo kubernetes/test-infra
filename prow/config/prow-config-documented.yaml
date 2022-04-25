@@ -347,9 +347,16 @@ deck:
         # prefix or scheme) will be appended to GCSBrowserPrefix and shown to the user.
         gcs_browser_prefix: ' '
 
-        # GCSBrowserPrefixes are used to generate a link to a human-usable GCS browser.
+        # GCSBrowserPrefixesByRepo are used to generate a link to a human-usable GCS browser.
         # They are mapped by org, org/repo or '*' which is the default value.
+        # These are the most specific and will override GCSBrowserPrefixesByBucket if both are resolved.
         gcs_browser_prefixes:
+            "": ""
+
+        # GCSBrowserPrefixesByBucket are used to generate a link to a human-usable GCS browser.
+        # They are mapped by bucket name or '*' which is the default value.
+        # They will only be utilized if there is not a GCSBrowserPrefixesByRepo for the org/repo
+        gcs_browser_prefixes_by_bucket:
             "": ""
 
         # HidePRHistLink allows prow hiding PR History link from deck, this is handy especially for

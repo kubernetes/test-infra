@@ -27,6 +27,7 @@ import (
 	"fmt"
 	"html/template"
 	"io/ioutil"
+	"k8s.io/test-infra/prow/io/providers"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -1037,7 +1038,11 @@ lensesLoop:
 	}
 
 	artifactsLink := ""
-	gcswebPrefix := cfg().Deck.Spyglass.GCSBrowserPrefixes.GetGCSBrowserPrefix(org, repo)
+	bucket := ""
+	if jobPath != "" && strings.HasPrefix(jobPath, providers.GS) {
+		bucket = strings.Split(jobPath, "/")[1] // The provider (gs) will be in index 0, followed by the bucket name
+	}
+	gcswebPrefix := cfg().Deck.Spyglass.GetGCSBrowserPrefix(org, repo, bucket)
 	if gcswebPrefix != "" {
 		runPath, err := sg.RunPath(src)
 		if err == nil {
