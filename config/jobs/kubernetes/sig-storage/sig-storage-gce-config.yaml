@@ -178,6 +178,7 @@ presubmits:
         - --build=quick
         - --cluster=
         - --extract=local
+        - --gcp-master-image=ubuntu
         - --gcp-node-image=ubuntu
         - --image-family=ubuntu-2004-lts
         - --image-project=ubuntu-os-cloud
@@ -224,6 +225,7 @@ presubmits:
         - --build=quick
         - --cluster=
         - --extract=local
+        - --gcp-master-image=ubuntu
         - --gcp-node-image=ubuntu
         - --image-family=ubuntu-2004-lts
         - --image-project=ubuntu-os-cloud
@@ -297,6 +299,7 @@ periodics:
       - --
       - --check-leaked-resources
       - --extract=ci/latest
+      - --gcp-master-image=ubuntu
       - --gcp-node-image=ubuntu
       - --image-family=ubuntu-2004-lts
       - --image-project=ubuntu-os-cloud
@@ -324,6 +327,7 @@ periodics:
       - --
       - --check-leaked-resources
       - --extract=ci/latest
+      - --gcp-master-image=ubuntu
       - --gcp-node-image=ubuntu
       - --image-family=ubuntu-2004-lts
       - --image-project=ubuntu-os-cloud
