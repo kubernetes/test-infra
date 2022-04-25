@@ -1020,9 +1020,14 @@ type Spyglass struct {
 	// If left empty, the link will be not be shown. Otherwise, a GCS path (with no
 	// prefix or scheme) will be appended to GCSBrowserPrefix and shown to the user.
 	GCSBrowserPrefix string `json:"gcs_browser_prefix,omitempty"`
-	// GCSBrowserPrefixes are used to generate a link to a human-usable GCS browser.
+	// GCSBrowserPrefixesByRepo are used to generate a link to a human-usable GCS browser.
 	// They are mapped by org, org/repo or '*' which is the default value.
-	GCSBrowserPrefixes GCSBrowserPrefixes `json:"gcs_browser_prefixes,omitempty"`
+	// These are the most specific and will override GCSBrowserPrefixesByBucket if both are resolved.
+	GCSBrowserPrefixesByRepo GCSBrowserPrefixes `json:"gcs_browser_prefixes,omitempty"`
+	// GCSBrowserPrefixesByBucket are used to generate a link to a human-usable GCS browser.
+	// They are mapped by bucket name or '*' which is the default value.
+	// They will only be utilized if there is not a GCSBrowserPrefixesByRepo for the org/repo
+	GCSBrowserPrefixesByBucket GCSBrowserPrefixes `json:"gcs_browser_prefixes_by_bucket,omitempty"`
 	// If set, Announcement is used as a Go HTML template string to be displayed at the top of
 	// each spyglass page. Using HTML in the template is acceptable.
 	// Currently the only variable available is .ArtifactPath, which contains the GCS path for the job artifacts.
@@ -1045,16 +1050,31 @@ type Spyglass struct {
 
 type GCSBrowserPrefixes map[string]string
 
-func (p GCSBrowserPrefixes) GetGCSBrowserPrefix(org, repo string) string {
-	if prefix, exists := p[fmt.Sprintf("%s/%s", org, repo)]; exists {
+// GetGCSBrowserPrefix determines the GCS Browser prefix by checking for a config in order of:
+//   1. If org (and optionally repo) is provided resolve the GCSBrowserPrefixesByRepo config
+//   2. If bucket is provided resolve the GCSBrowserPrefixesByBucket config
+//   3. If not found in either use the default from GCSBrowserPrefixesByRepo or GCSBrowserPrefixesByBucket if not found
+func (s Spyglass) GetGCSBrowserPrefix(org, repo, bucket string) string {
+	if org != "" {
+		if prefix, exists := s.GCSBrowserPrefixesByRepo[fmt.Sprintf("%s/%s", org, repo)]; exists {
+			return prefix
+		}
+		if prefix, exists := s.GCSBrowserPrefixesByRepo[org]; exists {
+			return prefix
+		}
+	}
+	if bucket != "" {
+		if prefix, exists := s.GCSBrowserPrefixesByBucket[bucket]; exists {
+			return prefix
+		}
+	}
+
+	// If we don't find anything specific use the default by repo, if that isn't present use the default by bucket
+	if prefix, exists := s.GCSBrowserPrefixesByRepo["*"]; exists {
 		return prefix
 	}
 
-	if prefix, exists := p[org]; exists {
-		return prefix
-	}
-
-	return p["*"]
+	return s.GCSBrowserPrefixesByBucket["*"]
 }
 
 // Deck holds config for deck.
@@ -2238,17 +2258,28 @@ func parseProwConfig(c *Config) error {
 		}
 	}
 
-	if c.Deck.Spyglass.GCSBrowserPrefixes == nil {
-		c.Deck.Spyglass.GCSBrowserPrefixes = make(map[string]string)
+	if c.Deck.Spyglass.GCSBrowserPrefixesByRepo == nil {
+		c.Deck.Spyglass.GCSBrowserPrefixesByRepo = make(map[string]string)
 	}
 
-	_, exists := c.Deck.Spyglass.GCSBrowserPrefixes["*"]
-	if exists && c.Deck.Spyglass.GCSBrowserPrefix != "" {
-		return fmt.Errorf("both gcs_browser_prefixes and gcs_browser_prefix['*'] are specified.")
+	_, defaultByRepoExists := c.Deck.Spyglass.GCSBrowserPrefixesByRepo["*"]
+	if defaultByRepoExists && c.Deck.Spyglass.GCSBrowserPrefix != "" {
+		return fmt.Errorf("both gcs_browser_prefix and gcs_browser_prefixes['*'] are specified.")
+	}
+	if !defaultByRepoExists {
+		c.Deck.Spyglass.GCSBrowserPrefixesByRepo["*"] = c.Deck.Spyglass.GCSBrowserPrefix
 	}
 
-	if !exists {
-		c.Deck.Spyglass.GCSBrowserPrefixes["*"] = c.Deck.Spyglass.GCSBrowserPrefix
+	if c.Deck.Spyglass.GCSBrowserPrefixesByBucket == nil {
+		c.Deck.Spyglass.GCSBrowserPrefixesByBucket = make(map[string]string)
+	}
+
+	_, defaultByBucketExists := c.Deck.Spyglass.GCSBrowserPrefixesByBucket["*"]
+	if defaultByBucketExists && c.Deck.Spyglass.GCSBrowserPrefix != "" {
+		return fmt.Errorf("both gcs_browser_prefix and gcs_browser_prefixes_by_bucket['*'] are specified.")
+	}
+	if !defaultByBucketExists {
+		c.Deck.Spyglass.GCSBrowserPrefixesByBucket["*"] = c.Deck.Spyglass.GCSBrowserPrefix
 	}
 
 	if c.PushGateway.Interval == nil {
