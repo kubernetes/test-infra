@@ -74,7 +74,6 @@ dashboards:
 
 - name: google-kops-gce
 - name: google-gci
-- name: google-gce-upgrade
 - name: google-osconfig
   dashboard_tab:
   - name: osconfig-unstable
@@ -162,7 +161,6 @@ dashboard_groups:
   - google-gce
   - google-gcp-guest
   - google-gci
-  - google-gce-upgrade
   - google-kops-gce
   - google-osconfig
   - google-rules_k8s
