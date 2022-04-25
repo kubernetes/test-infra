@@ -737,11 +737,11 @@ periodics:
         value: BenchmarkScheduling
       resources:
         requests:
-          cpu: 8
-          memory: "32Gi"
+          cpu: 6
+          memory: "24Gi"
         limits:
-          cpu: 8
-          memory: "32Gi"
+          cpu: 6
+          memory: "24Gi"
 
 - name: ci-benchmark-scheduler-perf-master
   cluster: k8s-infra-prow-build
