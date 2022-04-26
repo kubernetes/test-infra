@@ -426,8 +426,18 @@ func (r *Repo) mergeWithMergeStrategySquash(commitlike string) (bool, error) {
 }
 
 func (r *Repo) mergeWithMergeStrategyRebase(commitlike string) (bool, error) {
-	co := r.gitCommand("rebase", "--no-stat", commitlike)
+	if commitlike == "" {
+		return false, errors.New("branch must be set")
+	}
 
+	headRev, err := r.revParse("HEAD")
+	if err != nil {
+		r.logger.WithError(err).Infof("Failed to parse HEAD revision")
+		return false, err
+	}
+	headRev = strings.TrimSuffix(headRev, "\n")
+
+	co := r.gitCommand("rebase", "--no-stat", headRev, commitlike)
 	b, err := co.CombinedOutput()
 	if err != nil {
 		r.logger.WithField("out", string(b)).WithError(err).Infof("Rebase failed.")
@@ -438,6 +448,16 @@ func (r *Repo) mergeWithMergeStrategyRebase(commitlike string) (bool, error) {
 	}
 
 	return true, nil
+}
+
+func (r *Repo) revParse(args ...string) (string, error) {
+	fullArgs := append([]string{"rev-parse"}, args...)
+	co := r.gitCommand(fullArgs...)
+	b, err := co.CombinedOutput()
+	if err != nil {
+		return "", errors.New(string(b))
+	}
+	return string(b), nil
 }
 
 // MergeAndCheckout merges the provided headSHAs in order onto baseSHA using the provided strategy.

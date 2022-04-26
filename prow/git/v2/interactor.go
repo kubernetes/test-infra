@@ -208,7 +208,7 @@ func (i *interactor) MergeWithStrategy(commitlike, mergeStrategy string, opts ..
 	case "squash":
 		return i.squashMerge(commitlike)
 	case "rebase":
-		return i.mergeRebase(commitlike, opts...)
+		return i.mergeRebase(commitlike)
 	case "ifNecessary":
 		return i.mergeIfNecessary(commitlike, opts...)
 	default:
@@ -268,8 +268,19 @@ func (i *interactor) squashMerge(commitlike string) (bool, error) {
 	return true, nil
 }
 
-func (i *interactor) mergeRebase(commitlike string, opts ...MergeOpt) (bool, error) {
-	b, err := i.executor.Run("rebase", "--no-stat", commitlike)
+func (i *interactor) mergeRebase(commitlike string) (bool, error) {
+	if commitlike == "" {
+		return false, errors.New("branch must be set")
+	}
+
+	headRev, err := i.revParse("HEAD")
+	if err != nil {
+		i.logger.WithError(err).Infof("Failed to parse HEAD revision")
+		return false, err
+	}
+	headRev = strings.TrimSuffix(headRev, "\n")
+
+	b, err := i.executor.Run("rebase", "--no-stat", headRev, commitlike)
 	if err != nil {
 		i.logger.WithField("out", string(b)).WithError(err).Infof("Rebase failed.")
 		if b, err := i.executor.Run("rebase", "--abort"); err != nil {
@@ -278,6 +289,15 @@ func (i *interactor) mergeRebase(commitlike string, opts ...MergeOpt) (bool, err
 		return false, nil
 	}
 	return true, nil
+}
+
+func (i *interactor) revParse(args ...string) (string, error) {
+	fullArgs := append([]string{"rev-parse"}, args...)
+	b, err := i.executor.Run(fullArgs...)
+	if err != nil {
+		return "", errors.New(string(b))
+	}
+	return string(b), nil
 }
 
 // Only the `merge` and `squash` strategies are supported.
