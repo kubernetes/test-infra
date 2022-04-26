@@ -21,9 +21,9 @@
   "systemd": {
     "units": [
       {
-        "contents": "[Unit]\nDescription=Enable swap on CoreOS\nBefore=swap-enable.service\nConditionFirstBoot=yes\n\n[Service]\nType=oneshot\nExecStart=/bin/sh -c \"sudo rpm-ostree install dbus-tools && sudo systemctl reboot\"\n[Install]\n\nWantedBy=multi-user.target\n",
+        "contents": "[Unit]\nDescription=Download and install dbus-tools.\nBefore=crio-install.service\nAfter=network-online.target\n\n[Service]\nType=oneshot\nExecStart=/usr/bin/rpm-ostree install --apply-live --allow-inactive dbus-tools\n\n[Install]\nWantedBy=multi-user.target\n",
         "enabled": true,
-        "name": "dbus-send-install.service"
+        "name": "dbus-tools-install.service"
       },
       {
         "contents": "[Unit]\nDescription=Enable swap on CoreOS\nBefore=crio-install.service\nConditionFirstBoot=no\n\n[Service]\nType=oneshot\nExecStart=/bin/sh -c \"sudo dd if=/dev/zero of=/var/swapfile count=1024 bs=1MiB && sudo chmod 600 /var/swapfile && sudo mkswap /var/swapfile && sudo swapon /var/swapfile && free -h\"\n[Install]\n\nWantedBy=multi-user.target\n",
