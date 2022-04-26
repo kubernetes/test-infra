@@ -10,7 +10,7 @@ presubmits:
         preset-service-account: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220426-f8da99e359-master
             command:
               - runner.sh
             args:
@@ -42,7 +42,7 @@ presubmits:
           workdir: true
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-1.23
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220426-f8da99e359-1.23
             command:
               - runner.sh
               - kubetest
@@ -102,7 +102,7 @@ presubmits:
           workdir: true
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-1.23
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220426-f8da99e359-1.23
             command:
               - runner.sh
               - kubetest
@@ -168,7 +168,7 @@ presubmits:
           workdir: false
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220426-f8da99e359-master
             command:
               - runner.sh
               - ./scripts/ci-entrypoint.sh
@@ -219,7 +219,7 @@ presubmits:
           workdir: true
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220426-f8da99e359-master
             command:
               - runner.sh
               - ./scripts/ci-entrypoint.sh
@@ -255,7 +255,7 @@ presubmits:
         preset-service-account: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220421-357450329c-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220426-f8da99e359-master
             command:
               - runner.sh
             args:
