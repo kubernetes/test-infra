@@ -47,6 +47,7 @@ import (
 	"k8s.io/test-infra/prow/version"
 )
 
+// When using AppToken Auth some POSTS that do not lead to a changed state need to be whitelisted to allow creating diffs.
 var allowedDryRunPostPaths = regexp.MustCompile(`(?m)/app/installations/\d+/access_tokens`)
 
 type timeClient interface {
