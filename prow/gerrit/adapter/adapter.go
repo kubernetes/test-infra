@@ -245,7 +245,7 @@ func (c *Controller) Sync() error {
 			result := client.ResultSuccess
 			if err := c.processChange(log, instance, change, cloneURI, cache); err != nil {
 				result = client.ResultError
-				log.WithError(err).Errorf("Failed to process change")
+				log.WithError(err).Info("Failed to process change")
 			}
 			gerritMetrics.processingResults.WithLabelValues(instance, change.Project, result).Inc()
 
