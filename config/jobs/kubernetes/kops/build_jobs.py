@@ -714,9 +714,11 @@ def generate_conformance():
 ###############################
 # kops-periodics-distros.yaml #
 ###############################
+distros = ['debian10', 'debian11',
+           'ubuntu1804', 'ubuntu2004', 'ubuntu2204',
+           'amazonlinux2', 'rhel8',
+           'flatcar']
 def generate_distros():
-    distros = ['debian10', 'debian11', 'ubuntu2004', 'ubuntu2110',
-               'ubuntu2204', 'amazonlinux2', 'rhel8', 'flatcar']
     results = []
     for distro in distros:
         distro_short = distro.replace('ubuntu', 'u').replace('debian', 'deb').replace('amazonlinux', 'amzn') # pylint: disable=line-too-long
@@ -729,6 +731,26 @@ def generate_distros():
                        extra_dashboards=['kops-distros'],
                        runs_per_day=3,
                        )
+        )
+    return results
+
+###############################
+# kops-presubmits-distros.yaml #
+###############################
+def generate_presubmits_distros():
+    results = []
+    for distro in distros:
+        distro_short = distro.replace('ubuntu', 'u').replace('debian', 'deb').replace('amazonlinux', 'amzn') # pylint: disable=line-too-long
+        results.append(
+            presubmit_test(
+                distro=distro_short,
+                networking='calico',
+                k8s_version='stable',
+                kops_channel='alpha',
+                name=f"pull-kops-aws-distro-image{distro}",
+                tab_name=f"e2e-{distro}",
+                always_run=False,
+            )
         )
     return results
 
@@ -958,51 +980,6 @@ def generate_presubmits_e2e():
             always_run=True,
         ),
         presubmit_test(
-            distro="amzn2",
-            networking='calico',
-            k8s_version='stable',
-            kops_channel='alpha',
-            name='pull-kops-e2e-k8s-amzn2',
-            tab_name='e2e-amzn2',
-            always_run=False,
-        ),
-        presubmit_test(
-            distro="u2110",
-            networking='calico',
-            k8s_version='stable',
-            kops_channel='alpha',
-            name='pull-kops-e2e-k8s-ubuntu2110',
-            tab_name='e2e-ubuntu2110',
-            always_run=False,
-        ),
-        presubmit_test(
-            distro="u2204",
-            networking='calico',
-            k8s_version='stable',
-            kops_channel='alpha',
-            name='pull-kops-e2e-k8s-ubuntu2204',
-            tab_name='e2e-ubuntu2204',
-            always_run=False,
-        ),
-        presubmit_test(
-            distro="deb10",
-            networking='calico',
-            k8s_version='stable',
-            kops_channel='alpha',
-            name='pull-kops-e2e-k8s-debian10',
-            tab_name='e2e-debian10',
-            always_run=False,
-        ),
-        presubmit_test(
-            distro="deb11",
-            networking='calico',
-            k8s_version='stable',
-            kops_channel='alpha',
-            name='pull-kops-e2e-k8s-debian11',
-            tab_name='e2e-debian11',
-            always_run=False,
-        ),
-        presubmit_test(
             cloud='gce',
             k8s_version='stable',
             kops_channel='alpha',
@@ -1166,6 +1143,7 @@ periodics_files = {
 }
 
 presubmits_files = {
+    'kops-presubmits-distros.yaml':generate_presubmits_distros,
     'kops-presubmits-network-plugins.yaml': generate_presubmits_network_plugins,
     'kops-presubmits-e2e.yaml': generate_presubmits_e2e,
 }
