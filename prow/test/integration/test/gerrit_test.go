@@ -29,7 +29,7 @@ const (
 func TestGerrit(t *testing.T) {
 	t.Parallel()
 
-	gerritClient, err := client.NewClient(map[string][]string{gerritServer: []string{"fakegerritserver"}})
+	gerritClient, err := client.NewClient(map[string][]string{gerritServer: {"fakegerritserver"}})
 	if err != nil {
 		t.Fatalf("Failed creating gerritClient: %v", err)
 	}
