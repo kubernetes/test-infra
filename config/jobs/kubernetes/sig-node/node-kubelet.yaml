@@ -106,6 +106,8 @@ periodics:
         env:
           - name: GOPATH
             value: /go
+          - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
+            value: "1"
         resources:
           limits:
             cpu: 4
@@ -201,6 +203,8 @@ periodics:
       env:
         - name: GOPATH
           value: /go
+        - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
+          value: "1"
 
 # TODO: migrate performance special config tests to containerd/cri-o
 #- name: ci-kubernetes-node-kubelet-performance-test
