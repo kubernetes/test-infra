@@ -727,7 +727,7 @@ def generate_distros():
                        networking='kubenet',
                        k8s_version='stable',
                        kops_channel='alpha',
-                       name_override=f"kops-aws-distro-image{distro}",
+                       name_override=f"kops-aws-distro-{distro}",
                        extra_dashboards=['kops-distros'],
                        runs_per_day=3,
                        )
@@ -747,7 +747,7 @@ def generate_presubmits_distros():
                 networking='calico',
                 k8s_version='stable',
                 kops_channel='alpha',
-                name=f"pull-kops-aws-distro-image{distro}",
+                name=f"pull-kops-aws-distro-{distro}",
                 tab_name=f"e2e-{distro}",
                 always_run=False,
             )

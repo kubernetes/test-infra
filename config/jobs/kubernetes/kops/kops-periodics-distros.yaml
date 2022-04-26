@@ -3,8 +3,8 @@
 periodics:
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "deb10", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "kubenet"}
-- name: e2e-kops-aws-distro-imagedebian10
-  cron: '30 6-23/8 * * *'
+- name: e2e-kops-aws-distro-debian10
+  cron: '52 1-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -64,11 +64,11 @@ periodics:
     test.kops.k8s.io/networking: kubenet
     testgrid-dashboards: google-aws, kops-distro-deb10, kops-distros, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-distro-imagedebian10
+    testgrid-tab-name: kops-aws-distro-debian10
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "deb11", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "kubenet"}
-- name: e2e-kops-aws-distro-imagedebian11
-  cron: '48 0-23/8 * * *'
+- name: e2e-kops-aws-distro-debian11
+  cron: '42 7-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -128,11 +128,11 @@ periodics:
     test.kops.k8s.io/networking: kubenet
     testgrid-dashboards: google-aws, kops-distro-deb11, kops-distros, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-distro-imagedebian11
+    testgrid-tab-name: kops-aws-distro-debian11
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u1804", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "kubenet"}
-- name: e2e-kops-aws-distro-imageubuntu1804
-  cron: '11 0-23/8 * * *'
+- name: e2e-kops-aws-distro-ubuntu1804
+  cron: '18 4-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -192,11 +192,11 @@ periodics:
     test.kops.k8s.io/networking: kubenet
     testgrid-dashboards: google-aws, kops-distro-u1804, kops-distros, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-distro-imageubuntu1804
+    testgrid-tab-name: kops-aws-distro-ubuntu1804
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "kubenet"}
-- name: e2e-kops-aws-distro-imageubuntu2004
-  cron: '53 6-23/8 * * *'
+- name: e2e-kops-aws-distro-ubuntu2004
+  cron: '44 2-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -256,11 +256,11 @@ periodics:
     test.kops.k8s.io/networking: kubenet
     testgrid-dashboards: google-aws, kops-distro-u2004, kops-distros, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-distro-imageubuntu2004
+    testgrid-tab-name: kops-aws-distro-ubuntu2004
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "kubenet"}
-- name: e2e-kops-aws-distro-imageubuntu2204
-  cron: '47 0-23/8 * * *'
+- name: e2e-kops-aws-distro-ubuntu2204
+  cron: '34 4-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -320,11 +320,11 @@ periodics:
     test.kops.k8s.io/networking: kubenet
     testgrid-dashboards: google-aws, kops-distro-u2204, kops-distros, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-distro-imageubuntu2204
+    testgrid-tab-name: kops-aws-distro-ubuntu2204
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "amzn2", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "kubenet"}
-- name: e2e-kops-aws-distro-imageamazonlinux2
-  cron: '55 3-23/8 * * *'
+- name: e2e-kops-aws-distro-amazonlinux2
+  cron: '59 1-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -384,11 +384,11 @@ periodics:
     test.kops.k8s.io/networking: kubenet
     testgrid-dashboards: google-aws, kops-distro-amzn2, kops-distros, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-distro-imageamazonlinux2
+    testgrid-tab-name: kops-aws-distro-amazonlinux2
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "rhel8", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "kubenet"}
-- name: e2e-kops-aws-distro-imagerhel8
-  cron: '49 7-23/8 * * *'
+- name: e2e-kops-aws-distro-rhel8
+  cron: '36 3-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -448,11 +448,11 @@ periodics:
     test.kops.k8s.io/networking: kubenet
     testgrid-dashboards: google-aws, kops-distro-rhel8, kops-distros, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-distro-imagerhel8
+    testgrid-tab-name: kops-aws-distro-rhel8
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "rocky8", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "kubenet"}
-- name: e2e-kops-aws-distro-imagerocky8
-  cron: '59 1-23/8 * * *'
+- name: e2e-kops-aws-distro-rocky8
+  cron: '8 4-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -512,11 +512,11 @@ periodics:
     test.kops.k8s.io/networking: kubenet
     testgrid-dashboards: google-aws, kops-distro-rocky8, kops-distros, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-distro-imagerocky8
+    testgrid-tab-name: kops-aws-distro-rocky8
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "flatcar", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "kubenet"}
-- name: e2e-kops-aws-distro-imageflatcar
-  cron: '36 6-23/8 * * *'
+- name: e2e-kops-aws-distro-flatcar
+  cron: '44 4-23/8 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -579,4 +579,4 @@ periodics:
     test.kops.k8s.io/networking: kubenet
     testgrid-dashboards: google-aws, kops-distro-flatcar, kops-distros, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
-    testgrid-tab-name: kops-aws-distro-imageflatcar
+    testgrid-tab-name: kops-aws-distro-flatcar
