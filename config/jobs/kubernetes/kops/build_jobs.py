@@ -716,7 +716,7 @@ def generate_conformance():
 ###############################
 distros = ['debian10', 'debian11',
            'ubuntu1804', 'ubuntu2004', 'ubuntu2204',
-           'amazonlinux2', 'rhel8',
+           'amazonlinux2', 'rhel8', 'rocky8',
            'flatcar']
 def generate_distros():
     results = []
