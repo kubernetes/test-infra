@@ -715,8 +715,10 @@ def generate_conformance():
 # kops-periodics-distros.yaml #
 ###############################
 def generate_distros():
-    distros = ['debian10', 'debian11', 'ubuntu2004', 'ubuntu2110',
-               'ubuntu2204', 'amazonlinux2', 'rhel8', 'flatcar']
+    distros = ['debian10', 'debian11',
+               'ubuntu1804', 'ubuntu2004', 'ubuntu2204',
+               'amazonlinux2', 'rhel8',
+               'flatcar']
     results = []
     for distro in distros:
         distro_short = distro.replace('ubuntu', 'u').replace('debian', 'deb').replace('amazonlinux', 'amzn') # pylint: disable=line-too-long
@@ -964,15 +966,6 @@ def generate_presubmits_e2e():
             kops_channel='alpha',
             name='pull-kops-e2e-k8s-amzn2',
             tab_name='e2e-amzn2',
-            always_run=False,
-        ),
-        presubmit_test(
-            distro="u2110",
-            networking='calico',
-            k8s_version='stable',
-            kops_channel='alpha',
-            name='pull-kops-e2e-k8s-ubuntu2110',
-            tab_name='e2e-ubuntu2110',
             always_run=False,
         ),
         presubmit_test(
