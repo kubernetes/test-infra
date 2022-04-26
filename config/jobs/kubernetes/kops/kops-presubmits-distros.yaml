@@ -4,7 +4,7 @@ presubmits:
   kubernetes/kops:
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "deb10", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
-  - name: pull-kops-aws-distro-imagedebian10
+  - name: pull-kops-aws-distro-debian10
     branches:
     - master
     always_run: false
@@ -70,7 +70,7 @@ presubmits:
       testgrid-tab-name: e2e-debian10
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "deb11", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
-  - name: pull-kops-aws-distro-imagedebian11
+  - name: pull-kops-aws-distro-debian11
     branches:
     - master
     always_run: false
@@ -136,7 +136,7 @@ presubmits:
       testgrid-tab-name: e2e-debian11
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u1804", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
-  - name: pull-kops-aws-distro-imageubuntu1804
+  - name: pull-kops-aws-distro-ubuntu1804
     branches:
     - master
     always_run: false
@@ -202,7 +202,7 @@ presubmits:
       testgrid-tab-name: e2e-ubuntu1804
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
-  - name: pull-kops-aws-distro-imageubuntu2004
+  - name: pull-kops-aws-distro-ubuntu2004
     branches:
     - master
     always_run: false
@@ -268,7 +268,7 @@ presubmits:
       testgrid-tab-name: e2e-ubuntu2004
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
-  - name: pull-kops-aws-distro-imageubuntu2204
+  - name: pull-kops-aws-distro-ubuntu2204
     branches:
     - master
     always_run: false
@@ -334,7 +334,7 @@ presubmits:
       testgrid-tab-name: e2e-ubuntu2204
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "amzn2", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
-  - name: pull-kops-aws-distro-imageamazonlinux2
+  - name: pull-kops-aws-distro-amazonlinux2
     branches:
     - master
     always_run: false
@@ -400,7 +400,7 @@ presubmits:
       testgrid-tab-name: e2e-amazonlinux2
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "rhel8", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
-  - name: pull-kops-aws-distro-imagerhel8
+  - name: pull-kops-aws-distro-rhel8
     branches:
     - master
     always_run: false
@@ -466,7 +466,7 @@ presubmits:
       testgrid-tab-name: e2e-rhel8
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "rocky8", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
-  - name: pull-kops-aws-distro-imagerocky8
+  - name: pull-kops-aws-distro-rocky8
     branches:
     - master
     always_run: false
@@ -532,7 +532,7 @@ presubmits:
       testgrid-tab-name: e2e-rocky8
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "flatcar", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "networking": "calico"}
-  - name: pull-kops-aws-distro-imageflatcar
+  - name: pull-kops-aws-distro-flatcar
     branches:
     - master
     always_run: false
