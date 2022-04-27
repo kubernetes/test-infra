@@ -8,7 +8,6 @@ dashboard_groups:
     - sig-windows-master-release
     - sig-windows-presubmit
     - sig-windows-sac
-    - sig-windows-containerd-hyperv
     - sig-windows-networking
     - sig-windows-containerd-runtime-signal
     - sig-windows-push-images
@@ -21,7 +20,6 @@ dashboards:
 - name: sig-windows-master-release
 - name: sig-windows-presubmit
 - name: sig-windows-sac
-- name: sig-windows-containerd-hyperv
 - name: sig-windows-push-images
 - name: sig-windows-networking
   dashboard_tab:
