@@ -42,6 +42,7 @@ postsubmits:
     max_concurrency: 1
     branches:
     - ^main$
+    run_if_changed: "^infra/gcp/terraform/k8s-infra-monitoring/"
     annotations:
       testgrid-dashboards: sig-k8s-infra-k8sio
       testgrid-alert-email: ameukam@gmail.com
