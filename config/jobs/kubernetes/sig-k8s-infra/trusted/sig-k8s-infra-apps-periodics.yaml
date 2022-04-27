@@ -1,7 +1,7 @@
 periodics:
 - name: periodic-k8sio-deploy-app-codesearch
   cluster: k8s-infra-prow-build-trusted
-  interval: 24h
+  cron: "0 11 * * 2,4" # At 11:00 UTC on Tuesday and Thursday.
   decorate: true
   extra_refs:
   - org: kubernetes
