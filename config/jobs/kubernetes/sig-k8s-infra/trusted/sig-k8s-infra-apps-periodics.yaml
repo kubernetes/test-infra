@@ -28,7 +28,7 @@ periodics:
     - image: gcr.io/k8s-staging-infra-tools/k8s-infra:latest
       imagePullPolicy: Always
       command:
-      - ./apps/codesearch/deploy.sh
+      - ./apps/codesearch/restart.sh
       volumeMounts:
       - name: github
         mountPath: /etc/github-token
