@@ -314,11 +314,10 @@ func testMergeAndCheckout(clients localgit.Clients, t *testing.T) {
 			err:        "merge strategy \"\" is not supported",
 		},
 		{
-			name:          "Merge strategy rebase, error",
+			name:          "Merge succeeds with rebase strategy",
 			setBaseSHA:    true,
 			prBranches:    []string{"my-pr-branch"},
 			mergeStrategy: types.MergeRebase,
-			err:           "merge strategy \"rebase\" is not supported",
 		},
 		{
 			name:       "No pullRequestHead, no error",
@@ -458,6 +457,15 @@ func testMerging(clients localgit.Clients, t *testing.T) {
 		{
 			name:     "Multiple branches, mergeMerge strategy",
 			strategy: "merge",
+			branches: map[string]map[string][]byte{
+				"pr-1": {"file-1": []byte("some-content")},
+				"pr-2": {"file-2": []byte("some-content")},
+			},
+			mergeOrder: []string{"pr-1", "pr-2"},
+		},
+		{
+			name:     "Multiple branches, rebase strategy",
+			strategy: "rebase",
 			branches: map[string]map[string][]byte{
 				"pr-1": {"file-1": []byte("some-content")},
 				"pr-2": {"file-2": []byte("some-content")},
