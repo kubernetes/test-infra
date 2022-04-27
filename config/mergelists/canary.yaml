@@ -8,3 +8,5 @@ sources:
   location: "gs://istio-testgrid/config"
 - name: "kubevirt"
   location: "gs://kubevirt-prow/testgrid/config"
+- name: "tekton"
+  location: "gs://tekton-prow/testgrid/config"
