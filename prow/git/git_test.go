@@ -464,7 +464,7 @@ func testMerging(clients localgit.Clients, t *testing.T) {
 			mergeOrder: []string{"pr-1", "pr-2"},
 		},
 		{
-			name:     "Multiple branches, reabse strategy",
+			name:     "Multiple branches, rebase strategy",
 			strategy: "rebase",
 			branches: map[string]map[string][]byte{
 				"pr-1": {"file-1": []byte("some-content")},
