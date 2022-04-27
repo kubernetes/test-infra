@@ -706,43 +706,6 @@ periodics:
           cpu: 1
           memory: "2Gi"
 
-- name: ci-benchmark-scheduler-master
-  cluster: k8s-infra-prow-build
-  tags:
-  - "perfDashPrefix: scheduler-benchmark"
-  - "perfDashJobType: benchmark"
-  interval: 3h
-  annotations:
-    testgrid-dashboards: sig-scalability-benchmarks
-    testgrid-tab-name: scheduler
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  decoration_config:
-    timeout: 2h55m
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220426-f8da99e359-master
-      command:
-      - ./hack/jenkins/benchmark-dockerized.sh
-      args:
-      - ./test/integration/scheduler_perf
-      env:
-      - name: KUBE_TIMEOUT
-        value: --timeout=2h50m
-      - name: TEST_PREFIX
-        value: BenchmarkScheduling
-      resources:
-        requests:
-          cpu: 6
-          memory: "24Gi"
-        limits:
-          cpu: 6
-          memory: "24Gi"
-
 - name: ci-benchmark-scheduler-perf-master
   cluster: k8s-infra-prow-build
   tags:
