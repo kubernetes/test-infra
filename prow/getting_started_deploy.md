@@ -39,28 +39,49 @@ page.
 
 ## Tackle deployment
 
-Prow's `tackle` utility walks you through deploying a new instance of prow in a couple minutes, try it out!
+Prow's `tackle` utility walks you through deploying a new instance of prow 
+in a couple of minutes, try it out!
 
-You need a few things:
+### Installing tackle
 
-1. The prow `tackle` utility. You can install it by running `go get -u
-   k8s.io/test-infra/prow/cmd/tackle` (in that case you would also need go
-   installed and working).
-**Note**: Creating the `tackle` utility assumes you have the `gcloud` application in your `$PATH`,
-if you are doing this on another cloud skip to the **Manual deployment** below.
-1. Optionally, credentials to a Kubernetes cluster (otherwise, `tackle` will help you create on GCP)
+Tackle at this point in time needs to be built from source. The following 
+steps will walk you through the process:
+
+1. Clone the `test-infra` repository:
+```shell
+$ git clone git@github.com:kubernetes/test-infra.git
+```
+
+2. Build `tackle` (This requires a working go installation on your system)
+```shell
+$ cd test-infra/prow/cmd/tackle && go build -o tackle
+```
+
+3. Optionally move `tackle` to your `$PATH`
+```shell
+$ sudo mv tackle /usr/sbin/tackle
+```
+
+
+### Deploying prow
+
+**Note**: Creating a cluster using the `tackle` utility assumes you 
+have the `gcloud` application in your `$PATH` and are logged in. If you are 
+doing this on another cloud skip to the **Manual deployment** below.
+
+
 
 Installing Prow using `tackle` will help you through the following steps:
 
-* Choosing a kubectl context (and creating a cluster / getting its credentials if necessary)
+* Choosing a kubectl context (or creating a cluster on GCP / getting its credentials if necessary)
 * Deploying prow into that cluster
 * Configuring GitHub to send prow webhooks for your repos. This is where you'll provide the absolute `/path/to/github/token`
 
-To install prow run the following from the `test-infra` directory and follow the on-screen instructions:
+To install prow run the following and follow the on-screen instructions:
 
 1. Run `tackle`:
 ```sh
-go get -u k8s.io/test-infra/prow/cmd/tackle && tackle
+tackle
 ```
 
 2. Once your cluster is created, you'll get a prompt to apply a `starter.yaml`. Before you do that open another terminal and apply the prow CRDs using:
@@ -157,7 +178,7 @@ $ openssl rand -hex 20 > /path/to/hook/secret
 $ kubectl create secret -n prow generic hmac-token --from-file=hmac=/path/to/hook/secret
 ```
 
-Aferwards, edit your GitHub app and set `Webhook secret` to the value of `/path/to/hook/secret`.
+Afterwards, edit your GitHub app and set `Webhook secret` to the value of `/path/to/hook/secret`.
 
 The `github-token` is the RSA private key and app id you created above for the GitHub App.
 
@@ -176,12 +197,12 @@ There are two sample manifests to get you started:
 
 Regardless of which object storage you choose, the below adjustments are always needed:
 
-* The github app cert by replacing the `<<insert-downloaded-cert-here>>` string
-* The github app id by replacing the `<<insert-the-app-id-here>>` string
+* The GitHub app cert by replacing the `<<insert-downloaded-cert-here>>` string
+* The GitHub app id by replacing the `<<insert-the-app-id-here>>` string
 * The hmac token by replacing the `<< insert-hmac-token-here >>` string
 * The domain by replacing the `<< your-domain.com >>` string
 * Optionally, you can update the `cert-manager.io/cluster-issuer:` annotation if you use cert-manager
-* Your github organization(s) by replacing the `<< your_github_org >>` string
+* Your GitHub organization(s) by replacing the `<< your_github_org >>` string
 
 ### Add the prow components to the cluster
 
@@ -219,7 +240,7 @@ tide-65489c49b8-rpnn2                      1/1     Running   0          3m2s
 
 #### Get ingress IP address
 
-Find out your external address. It might take a couple minutes for the IP to
+Find out your external address. It might take a couple of minutes for the IP to
 show up.
 
 ```sh
@@ -234,7 +255,7 @@ to start receiving GitHub events!
 
 ## Add the webhook to GitHub
 
-To set up the webhook, you have to go the the GitHub UI and edit your app. Update
+To set up the webhook, you have to go the GitHub UI and edit your app. Update
 the `Webhook URL` property to `https://prow.<<your-domain.com>>/hook`. Use the URL
 shown above when getting the `Ingress`.
 
@@ -247,7 +268,7 @@ can install it (Prow will not do anything for orgs or repos it doesn't have conf
 
 ## Deploying with GitHub Enterprise
 
-When using GitHub Enterpise (GHE), Prow must be configured slightly differently. It's possible to run GHE with or
+When using GitHub Enterprise (GHE), Prow must be configured slightly differently. It's possible to run GHE with or
 without the `api` subdomain:
 * with the `api` subdomain the endpoints are:
    * v3: `https://api.<<github-hostname>>`
@@ -292,7 +313,7 @@ This section will help you complete any additional setup that your instance may 
 
 > If you want to persist logs and output in Azure, you need to follow the steps below.
 
-By default Prow doesn't support Azure blob storage for storing job metadata, logs, and artifacts.
+By default, Prow doesn't support Azure blob storage for storing job metadata, logs, and artifacts.
 However, with [MinIO](https://github.com/minio/minio) it is possible to keep artifacts in
 Azure blob storage as one would in GCS or S3. MinIO Gateway adds Amazon S3 compatibility
 to Azure Blob Storage. As such, we can mimic S3 storage for Prow, while actually pushing
