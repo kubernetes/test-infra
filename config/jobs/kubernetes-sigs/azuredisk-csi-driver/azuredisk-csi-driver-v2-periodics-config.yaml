@@ -12,11 +12,9 @@ periodics:
     preset-azure-cred: "true"
     preset-dind-enabled: "true"
   extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-    workdir: true
+  - org: kubernetes-sigs
+    repo: azuredisk-csi-driver
+    base_ref: main_v2
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220426-f8da99e359-master
@@ -65,11 +63,9 @@ periodics:
     preset-azure-cred: "true"
     preset-dind-enabled: "true"
   extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-    workdir: true
+  - org: kubernetes-sigs
+    repo: azuredisk-csi-driver
+    base_ref: main_v2
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220426-f8da99e359-master
