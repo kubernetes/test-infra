@@ -135,12 +135,9 @@ periodics:
     containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220426-f8da99e359-master
         args:
-          - --root=/go/src
-          - "--job=$(JOB_NAME)"
           - --repo=k8s.io/kubernetes=master
-          - "--service-account=/etc/service-account/service-account.json"
-          - "--upload=gs://kubernetes-jenkins/pr-logs"
-          - "--timeout=240"
+          - --timeout=240
+          - --root=/go/src
           - --scenario=kubernetes_e2e
           - --
           - --deployment=node
