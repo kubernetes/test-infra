@@ -129,15 +129,15 @@ func (f *FakeClient) CloneIssue(issue *jira.Issue) (*jira.Issue, error) {
 	if err != nil {
 		return nil, err
 	}
-	childIssue := &jira.Issue{}
-	err = json.Unmarshal(data, childIssue)
+	issueCopy := &jira.Issue{}
+	err = json.Unmarshal(data, issueCopy)
 	if err != nil {
 		return nil, err
 	}
 	// set ID and Key to unused id and key
-	f.updateIssueIDAndKey(childIssue)
+	f.updateIssueIDAndKey(issueCopy)
 	// run generic cloning function
-	return jiraclient.GenericCloneIssue(f, childIssue)
+	return jiraclient.CloneIssue(f, issueCopy)
 }
 
 func (f *FakeClient) CreateIssue(issue *jira.Issue) (*jira.Issue, error) {
@@ -215,7 +215,7 @@ func (f *FakeClient) DeleteRemoteLink(issueID string, linkID int) error {
 }
 
 func (f *FakeClient) DeleteRemoteLinkViaURL(issueID, url string) error {
-	return jiraclient.GenericDeleteRemoteLinkViaURL(f, issueID, url)
+	return jiraclient.DeleteRemoteLinkViaURL(f, issueID, url)
 }
 
 func (f *FakeClient) updateIssueIDAndKey(newIssue *jira.Issue) error {
@@ -296,7 +296,7 @@ func (f *FakeClient) FindUser(property string) ([]*jira.User, error) {
 }
 
 func (f *FakeClient) GetIssueSecurityLevel(issue *jira.Issue) (*jiraclient.SecurityLevel, error) {
-	return jiraclient.GenericGetIssueSecurityLevel(f, issue)
+	return jiraclient.GetIssueSecurityLevel(f, issue)
 }
 
 func (f *FakeClient) UpdateIssue(issue *jira.Issue) (*jira.Issue, error) {
@@ -337,5 +337,5 @@ func (f *FakeClient) UpdateIssue(issue *jira.Issue) (*jira.Issue, error) {
 }
 
 func (f *FakeClient) UpdateStatus(issueID, statusName string) error {
-	return jiraclient.GenericUpdateStatus(f, issueID, statusName)
+	return jiraclient.UpdateStatus(f, issueID, statusName)
 }
