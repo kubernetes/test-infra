@@ -15,6 +15,12 @@
           "source": "data:,%5Bupdates%5D%0Aenabled%20%3D%20false%0A"
         },
         "mode": 420
+      },
+      {
+        "path": "/etc/crio/crio.conf.d/99-pids-limit.conf",
+        "contents": {
+          "source": "data:,%5Bcrio.runtime%5D%0D%0Apids_limit+%3D+0"
+        }
       }
     ]
   },
