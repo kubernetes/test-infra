@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"regexp"
 	"strconv"
 	"strings"
 	"testing"
@@ -2191,6 +2192,44 @@ func TestMultipleWorks(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestJobReportFormats(t *testing.T) {
+	tests := []struct {
+		name        string
+		format      string
+		words       []interface{}
+		formatRegex string
+	}{
+		{"jobReportFormat", jobReportFormat, []interface{}{"a", "b", "c", "d"}, jobReportFormatRegex},
+		{"jobReportFormatUrlNotFound", jobReportFormatUrlNotFound, []interface{}{"a", "b", "c"}, jobReportFormatUrlNotFoundRegex},
+		{"jobReportFormatWithoutURL", jobReportFormatWithoutURL, []interface{}{"a", "b", "c"}, jobReportFormatWithoutURLRegex},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+            // In GenerateReport(), we use a trailing newline in the
+            // jobReportFormat* constants, because we use a newline as a
+            // delimiter. In ParseReport(), we split the overall report on
+            // newlines first, before applying the jobReportFormat*Regex
+            // regexes on them. To mimic this behavior, we trim the newline
+            // before attempting to parse them with tc.formatRegex.
+			serialized := fmt.Sprintf(tc.format, tc.words...)
+            serializedWithoutNewline := strings.TrimSuffix(serialized, "\n")
+			re := regexp.MustCompile(tc.formatRegex)
+			if !re.MatchString(serializedWithoutNewline) {
+				t.Fatalf("could not parse serialized job report line %q with regex %q", serializedWithoutNewline, tc.formatRegex)
+			}
+		})
+	}
+
+	// Ensure the legacy job reporting format can be parsed by
+	// jobReportFormatLegacyRegex.
+	serializedWithoutNewline := "✔️ some-job SUCCESS - https://someURL.com/somewhere"
+	re := regexp.MustCompile(jobReportFormatLegacyRegex)
+	if !re.MatchString(serializedWithoutNewline) {
+		t.Fatalf("could not parse serialized job report line %q with regex %q", serializedWithoutNewline, jobReportFormatLegacyRegex)
 	}
 }
 
