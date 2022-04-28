@@ -33,6 +33,8 @@ import (
 	"k8s.io/test-infra/prow/entrypoint"
 	"sigs.k8s.io/yaml"
 
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+
 	"k8s.io/test-infra/prow/spyglass/api"
 	"k8s.io/test-infra/prow/spyglass/lenses"
 )
@@ -45,6 +47,17 @@ const (
 
 func init() {
 	lenses.RegisterLens(Lens{})
+}
+
+// ownConfig stores config specific to podinfo lens.
+type ownConfig struct {
+	// RunnerConfig defines the mapping between build cluster alias: <template>,
+	// where the template is used for helping displaying url to pod.
+	RunnerConfigs map[string]RunnerConfig `json:"runner_configs,omitempty"`
+}
+
+type RunnerConfig struct {
+	PodLinkTemplate string `json:"pod_link_template,omitempty"`
 }
 
 // Lens is the implementation of a coverage-rendering Spyglass lens.
@@ -78,18 +91,48 @@ func (lens Lens) Callback(artifacts []api.Artifact, resourceDir string, data str
 }
 
 // Body renders the <body>
-func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage, spyglassConfig config.Spyglass) string {
+func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string, rawConfig json.RawMessage, spyglassConfig config.Spyglass) string {
 	if len(artifacts) == 0 {
 		logrus.Error("podinfo Body() called with no artifacts, which should never happen.")
 		return "Why am I here? There is no podinfo file."
 	}
 
-	artifact := artifacts[0]
+	var conf ownConfig
+	if err := json.Unmarshal(rawConfig, &conf); err != nil {
+		logrus.WithError(err).Error("Failed to decode podinfo config")
+	}
 
-	content, err := artifact.ReadAll()
-	if err != nil {
-		logrus.WithError(err).Warn("Couldn't read a podinfo file that should exist.")
-		return fmt.Sprintf("Failed to read the podinfo file: %v", err)
+	var p k8sreporter.PodReport
+	var pj prowapi.ProwJob
+	for _, artifact := range artifacts {
+		switch artifact.JobPath() {
+		case "podinfo.json":
+			content, err := artifact.ReadAll()
+			if err != nil {
+				logrus.WithError(err).Warn("Couldn't read a podinfo file that should exist.")
+				return fmt.Sprintf("Failed to read the podinfo file: %v", err)
+			}
+
+			if err := json.Unmarshal(content, &p); err != nil {
+				logrus.WithError(err).Infof("Error unmarshalling PodReport")
+				return fmt.Sprintf("Couldn't unmarshal podinfo.json: %v", err)
+			}
+		case "prowjob.json":
+			// Need to figure out which cluster this job runs on. But pod info
+			// itself doesn't really know where it belongs to, so get it from prowjob.
+			content, err := artifact.ReadAll()
+			if err != nil {
+				logrus.WithError(err).Warn("Couldn't read a prowjob file that should exist.")
+				return fmt.Sprintf("Failed to read the prowjob file: %v", err)
+			}
+
+			if err := json.Unmarshal(content, &pj); err != nil {
+				logrus.WithError(err).Infof("Error unmarshalling prowjob")
+				return fmt.Sprintf("Couldn't unmarshal prowjob.json: %v", err)
+			}
+		default:
+			logrus.WithField("artifact", artifact.JobPath()).Debug("Unsupported artifact by podinfo lens.")
+		}
 	}
 
 	infoTemplate, err := loadTemplate(filepath.Join(resourceDir, "template.html"))
@@ -98,17 +141,31 @@ func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string,
 		return fmt.Sprintf("Failed to load template file: %v", err)
 	}
 
-	p := k8sreporter.PodReport{}
-	if err := json.Unmarshal(content, &p); err != nil {
-		logrus.WithError(err).Infof("Error unmarshalling PodReport")
-		return fmt.Sprintf("Couldn't unmarshal podinfo.json: %v", err)
+	var podLink string
+	if len(conf.RunnerConfigs) > 0 && p.Pod.Name != "" && pj.Spec.Cluster != "" {
+		runnerConfig, ok := conf.RunnerConfigs[pj.Spec.Cluster]
+		if ok {
+			tmpl, err := template.New("tmp").Parse(runnerConfig.PodLinkTemplate)
+			if err == nil {
+				var b bytes.Buffer
+				err = tmpl.Execute(&b, p.Pod)
+				if err == nil {
+					podLink = b.String()
+				}
+			}
+			if err != nil {
+				logrus.WithError(err).Info("Error parsing template")
+			}
+		}
 	}
 
 	t := struct {
 		PodReport  k8sreporter.PodReport
+		PodLink    string
 		Containers []containerInfo
 	}{
 		PodReport:  p,
+		PodLink:    podLink,
 		Containers: append(assembleContainers(p.Pod.Spec.InitContainers, p.Pod.Status.InitContainerStatuses), assembleContainers(p.Pod.Spec.Containers, p.Pod.Status.ContainerStatuses)...),
 	}
 
