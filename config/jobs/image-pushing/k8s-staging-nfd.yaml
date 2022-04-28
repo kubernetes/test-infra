@@ -15,6 +15,7 @@ postsubmits:
       # job makes sense on every branch (unless it's setting a `latest` tag it
       # probably does).
       branches:
+        - ^main$
         - ^master$
         - ^release-
         # Build semver tags, too
