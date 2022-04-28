@@ -66,7 +66,7 @@ func init() {
 
 var defaultBranch = localgit.DefaultBranch("")
 
-func testPullsMatchList(t *testing.T, test string, actual []PullRequest, expected []int) {
+func testPullsMatchList(t *testing.T, test string, actual []CodeReviewCommon, expected []int) {
 	if len(actual) != len(expected) {
 		t.Errorf("Wrong size for case %s. Got PRs %+v, wanted numbers %v.", test, actual, expected)
 		return
@@ -244,13 +244,13 @@ func TestAccumulateBatch(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 
-			var pulls []PullRequest
+			var pulls []CodeReviewCommon
 			for _, p := range test.pulls {
 				pr := PullRequest{
 					Number:     githubql.Int(p.number),
 					HeadRefOID: githubql.String(p.sha),
 				}
-				pulls = append(pulls, pr)
+				pulls = append(pulls, *CodeReviewCommonFromPullRequest(&pr))
 			}
 			var pjs []prowapi.ProwJob
 			for _, pj := range test.prowJobs {
@@ -659,13 +659,13 @@ func TestAccumulate(t *testing.T) {
 			test.name = strconv.Itoa(i)
 		}
 		t.Run(test.name, func(t *testing.T) {
-			var pulls []PullRequest
+			var pulls []CodeReviewCommon
 			for num, sha := range test.pullRequests {
 				newPull := PullRequest{Number: githubql.Int(num), HeadRefOID: githubql.String(sha)}
 				if test.pullRequestModifier != nil {
 					test.pullRequestModifier(&newPull)
 				}
-				pulls = append(pulls, newPull)
+				pulls = append(pulls, *CodeReviewCommonFromPullRequest(&newPull))
 			}
 			var pjs []prowapi.ProwJob
 			for _, pj := range test.prowJobs {
@@ -937,14 +937,15 @@ func TestDividePool(t *testing.T) {
 			t.Fatalf("failed to create prowjob: %v", err)
 		}
 	}
-	pulls := make(map[string]PullRequest)
+	pulls := make(map[string]CodeReviewCommon)
 	for _, p := range testPulls {
 		npr := PullRequest{Number: githubql.Int(p.number)}
 		npr.BaseRef.Name = githubql.String(p.branch)
 		npr.BaseRef.Prefix = "refs/heads/"
 		npr.Repository.Name = githubql.String(p.repo)
 		npr.Repository.Owner.Login = githubql.String(p.org)
-		pulls[prKey(&npr)] = npr
+		crc := CodeReviewCommonFromPullRequest(&npr)
+		pulls[prKey(crc)] = *crc
 	}
 	sps, err := c.dividePool(pulls)
 	if err != nil {
@@ -963,7 +964,7 @@ func TestDividePool(t *testing.T) {
 			t.Errorf("Subpool %s has no PRs.", name)
 		}
 		for _, pr := range sp.prs {
-			if string(pr.Repository.Owner.Login) != sp.org || string(pr.Repository.Name) != sp.repo || string(pr.BaseRef.Name) != sp.branch {
+			if pr.Org != sp.org || pr.Repo != sp.repo || pr.BaseRefName != sp.branch {
 				t.Errorf("PR in wrong subpool. Got PR %+v in subpool %s.", pr, name)
 			}
 		}
@@ -1095,7 +1096,7 @@ func testPickBatch(clients localgit.Clients, t *testing.T) {
 		if !testpr.success {
 			pr.Commits.Nodes[0].Commit.Status.Contexts[0].State = githubql.StatusStateFailure
 		}
-		sp.prs = append(sp.prs, pr)
+		sp.prs = append(sp.prs, *CodeReviewCommonFromPullRequest(&pr))
 	}
 	ca := &config.Agent{}
 	ca.Set(&config.Config{
@@ -1285,7 +1286,7 @@ func TestMergeMethodCheckerAndPRMergeMethod(t *testing.T) {
 				pr.Mergeable = githubql.MergeableStateConflicting
 			}
 
-			actual, err := prMergeMethod(tideConfig, pr)
+			actual, err := prMergeMethod(tideConfig, CodeReviewCommonFromPullRequest(pr))
 			if err != nil {
 				if !tc.expectErr {
 					t.Errorf("unexpected error: %v", err)
@@ -1298,7 +1299,7 @@ func TestMergeMethodCheckerAndPRMergeMethod(t *testing.T) {
 			if tc.expectedMethod != actual {
 				t.Errorf("wanted: %q, got: %q", tc.expectedMethod, actual)
 			}
-			reason, err := mmc.isAllowed(pr)
+			reason, err := mmc.isAllowed(CodeReviewCommonFromPullRequest(pr))
 			if err != nil {
 				t.Errorf("unexpected processing error: %v", err)
 			} else if reason != "" {
@@ -1372,7 +1373,7 @@ func TestRebaseMergeMethodIsAllowed(t *testing.T) {
 				CanBeRebased: githubql.Boolean(tc.prCanBeRebased),
 			}
 
-			mergeOutput, err := mmc.isAllowed(pr)
+			mergeOutput, err := mmc.isAllowed(CodeReviewCommonFromPullRequest(pr))
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			} else {
@@ -1889,8 +1890,8 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 				branch: defaultBranch,
 				sha:    defaultBranch,
 			}
-			genPulls := func(nums []int) []PullRequest {
-				var prs []PullRequest
+			genPulls := func(nums []int) []CodeReviewCommon {
+				var prs []CodeReviewCommon
 				for _, i := range nums {
 					if err := lg.CheckoutNewBranch("o", "r", fmt.Sprintf("pr-%d", i)); err != nil {
 						t.Fatalf("Error checking out new branch: %v", err)
@@ -1908,8 +1909,8 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 					pr.Commits.Nodes = []struct {
 						Commit Commit
 					}{{Commit: Commit{OID: oid}}}
-					sp.prs = append(sp.prs, pr)
-					prs = append(prs, pr)
+					sp.prs = append(sp.prs, *CodeReviewCommonFromPullRequest(&pr))
+					prs = append(prs, *CodeReviewCommonFromPullRequest(&pr))
 				}
 				return prs
 			}
@@ -1933,9 +1934,9 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 				ghc:             &fgc,
 				nextChangeCache: make(map[changeCacheKey][]string),
 			}
-			var batchPending []PullRequest
+			var batchPending []CodeReviewCommon
 			if tc.batchPending {
-				batchPending = []PullRequest{{}}
+				batchPending = []CodeReviewCommon{{}}
 			}
 			if act, _, _ := c.takeAction(sp, batchPending, genPulls(tc.successes), genPulls(tc.pendings), genPulls(tc.nones), genPulls(tc.batchMerges), sp.presubmits); act != tc.action {
 				t.Errorf("Wrong action. Got %v, wanted %v.", act, tc.action)
@@ -2009,7 +2010,7 @@ func TestServeHTTP(t *testing.T) {
 	c := &Controller{
 		pools: []Pool{
 			{
-				MissingPRs: []PullRequest{pr1},
+				MissingPRs: []CodeReviewCommon{*CodeReviewCommonFromPullRequest(&pr1)},
 				Action:     Merge,
 			},
 		},
@@ -2114,7 +2115,7 @@ func TestHeadContexts(t *testing.T) {
 				pr.Commits.Nodes = append(pr.Commits.Nodes, struct{ Commit Commit }{commit})
 			}
 
-			contexts, err := headContexts(logrus.WithField("component", "tide"), fgc, pr)
+			contexts, err := headContexts(logrus.WithField("component", "tide"), fgc, CodeReviewCommonFromPullRequest(pr))
 			if err != nil {
 				t.Fatalf("Unexpected error from headContexts: %v", err)
 			}
@@ -2125,7 +2126,7 @@ func TestHeadContexts(t *testing.T) {
 	}
 }
 
-func testPR(org, repo, branch string, number int, mergeable githubql.MergeableState) PullRequest {
+func testPR(org, repo, branch string, number int, mergeable githubql.MergeableState) *PullRequest {
 	pr := PullRequest{
 		Number:     githubql.Int(number),
 		Mergeable:  mergeable,
@@ -2149,10 +2150,10 @@ func testPR(org, repo, branch string, number int, mergeable githubql.MergeableSt
 			OID: githubql.String("SHA"),
 		},
 	})
-	return pr
+	return &pr
 }
 
-func testPRWithLabels(org, repo, branch string, number int, mergeable githubql.MergeableState, labels []string) PullRequest {
+func testPRWithLabels(org, repo, branch string, number int, mergeable githubql.MergeableState, labels []string) *PullRequest {
 	pr := testPR(org, repo, branch, number, mergeable)
 	for _, label := range labels {
 		labelNode := struct{ Name githubql.String }{Name: githubql.String(label)}
@@ -2165,10 +2166,10 @@ func TestSync(t *testing.T) {
 	sleep = func(time.Duration) {}
 	defer func() { sleep = time.Sleep }()
 
-	mergeableA := testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable)
-	unmergeableA := testPR("org", "repo", "A", 6, githubql.MergeableStateConflicting)
-	unmergeableB := testPR("org", "repo", "B", 7, githubql.MergeableStateConflicting)
-	unknownA := testPR("org", "repo", "A", 8, githubql.MergeableStateUnknown)
+	mergeableA := *testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable)
+	unmergeableA := *testPR("org", "repo", "A", 6, githubql.MergeableStateConflicting)
+	unmergeableB := *testPR("org", "repo", "B", 7, githubql.MergeableStateConflicting)
+	unknownA := *testPR("org", "repo", "A", 8, githubql.MergeableStateUnknown)
 
 	testcases := []struct {
 		name string
@@ -2188,9 +2189,9 @@ func TestSync(t *testing.T) {
 				Org:        "org",
 				Repo:       "repo",
 				Branch:     "A",
-				SuccessPRs: []PullRequest{mergeableA},
+				SuccessPRs: []CodeReviewCommon{*CodeReviewCommonFromPullRequest(&mergeableA)},
 				Action:     Merge,
-				Target:     []PullRequest{mergeableA},
+				Target:     []CodeReviewCommon{*CodeReviewCommonFromPullRequest(&mergeableA)},
 				TenantIDs:  []string{},
 			}},
 		},
@@ -2206,9 +2207,9 @@ func TestSync(t *testing.T) {
 				Org:        "org",
 				Repo:       "repo",
 				Branch:     "A",
-				SuccessPRs: []PullRequest{unknownA},
+				SuccessPRs: []CodeReviewCommon{*CodeReviewCommonFromPullRequest(&unknownA)},
 				Action:     Merge,
-				Target:     []PullRequest{unknownA},
+				Target:     []CodeReviewCommon{*CodeReviewCommonFromPullRequest(&unknownA)},
 				TenantIDs:  []string{},
 			}},
 		},
@@ -2219,9 +2220,9 @@ func TestSync(t *testing.T) {
 				Org:        "org",
 				Repo:       "repo",
 				Branch:     "A",
-				SuccessPRs: []PullRequest{mergeableA},
+				SuccessPRs: []CodeReviewCommon{*CodeReviewCommonFromPullRequest(&mergeableA)},
 				Action:     Merge,
-				Target:     []PullRequest{mergeableA},
+				Target:     []CodeReviewCommon{*CodeReviewCommonFromPullRequest(&mergeableA)},
 				TenantIDs:  []string{},
 			}},
 		},
@@ -2232,9 +2233,9 @@ func TestSync(t *testing.T) {
 				Org:        "org",
 				Repo:       "repo",
 				Branch:     "A",
-				SuccessPRs: []PullRequest{mergeableA},
+				SuccessPRs: []CodeReviewCommon{*CodeReviewCommonFromPullRequest(&mergeableA)},
 				Action:     Merge,
-				Target:     []PullRequest{mergeableA},
+				Target:     []CodeReviewCommon{*CodeReviewCommonFromPullRequest(&mergeableA)},
 				TenantIDs:  []string{},
 			}},
 		},
@@ -2245,88 +2246,87 @@ func TestSync(t *testing.T) {
 				Org:        "org",
 				Repo:       "repo",
 				Branch:     "A",
-				SuccessPRs: []PullRequest{mergeableA},
+				SuccessPRs: []CodeReviewCommon{*CodeReviewCommonFromPullRequest(&mergeableA)},
 				Action:     Merge,
-				Target:     []PullRequest{mergeableA},
+				Target:     []CodeReviewCommon{*CodeReviewCommonFromPullRequest(&mergeableA)},
 				TenantIDs:  []string{},
 			}},
 		},
 	}
 
 	for _, tc := range testcases {
-		t.Logf("Starting case %q...", tc.name)
-		fgc := &fgc{
-			prs: map[string][]PullRequest{"": tc.prs},
-			refs: map[string]string{
-				"org/repo heads/A": "SHA",
-				"org/repo A":       "SHA",
-				"org/repo heads/B": "SHA",
-				"org/repo B":       "SHA",
-			},
-		}
-		ca := &config.Agent{}
-		ca.Set(&config.Config{
-			ProwConfig: config.ProwConfig{
-				Tide: config.Tide{
-					Queries:            []config.TideQuery{{}},
-					MaxGoroutines:      4,
-					StatusUpdatePeriod: &metav1.Duration{Duration: time.Second * 0},
+		t.Run(tc.name, func(t *testing.T) {
+			fgc := &fgc{
+				prs: map[string][]PullRequest{"": tc.prs},
+				refs: map[string]string{
+					"org/repo heads/A": "SHA",
+					"org/repo A":       "SHA",
+					"org/repo heads/B": "SHA",
+					"org/repo B":       "SHA",
 				},
-			},
-		})
-		hist, err := history.New(100, nil, "")
-		if err != nil {
-			t.Fatalf("Failed to create history client: %v", err)
-		}
-		mergeChecker := newMergeChecker(ca.Config, fgc)
-		sc := &statusController{
-			pjClient:       fakectrlruntimeclient.NewFakeClient(),
-			logger:         logrus.WithField("controller", "status-update"),
-			ghc:            fgc,
-			gc:             nil,
-			config:         ca.Config,
-			newPoolPending: make(chan bool, 1),
-			shutDown:       make(chan bool),
-			mergeChecker:   mergeChecker,
-		}
-		go sc.run()
-		defer sc.shutdown()
-		c := &Controller{
-			config:        ca.Config,
-			ghc:           fgc,
-			gc:            nil,
-			prowJobClient: fakectrlruntimeclient.NewFakeClient(),
-			logger:        logrus.WithField("controller", "sync"),
-			sc:            sc,
-			changedFiles: &changedFilesAgent{
-				ghc:             fgc,
-				nextChangeCache: make(map[changeCacheKey][]string),
-			},
-			mergeChecker: mergeChecker,
-			History:      hist,
-		}
+			}
+			ca := &config.Agent{}
+			ca.Set(&config.Config{
+				ProwConfig: config.ProwConfig{
+					Tide: config.Tide{
+						Queries:            []config.TideQuery{{}},
+						MaxGoroutines:      4,
+						StatusUpdatePeriod: &metav1.Duration{Duration: time.Second * 0},
+					},
+				},
+			})
+			hist, err := history.New(100, nil, "")
+			if err != nil {
+				t.Fatalf("Failed to create history client: %v", err)
+			}
+			mergeChecker := newMergeChecker(ca.Config, fgc)
+			sc := &statusController{
+				pjClient:       fakectrlruntimeclient.NewFakeClient(),
+				logger:         logrus.WithField("controller", "status-update"),
+				ghc:            fgc,
+				gc:             nil,
+				config:         ca.Config,
+				newPoolPending: make(chan bool, 1),
+				shutDown:       make(chan bool),
+				mergeChecker:   mergeChecker,
+			}
+			go sc.run()
+			defer sc.shutdown()
+			c := &Controller{
+				config:        ca.Config,
+				ghc:           fgc,
+				gc:            nil,
+				prowJobClient: fakectrlruntimeclient.NewFakeClient(),
+				logger:        logrus.WithField("controller", "sync"),
+				sc:            sc,
+				changedFiles: &changedFilesAgent{
+					ghc:             fgc,
+					nextChangeCache: make(map[changeCacheKey][]string),
+				},
+				mergeChecker: mergeChecker,
+				History:      hist,
+			}
 
-		if err := c.Sync(); err != nil {
-			t.Errorf("Unexpected error from 'Sync()': %v.", err)
-			continue
-		}
-		if len(tc.expectedPools) != len(c.pools) {
-			t.Errorf("Tide pools did not match expected. Got %#v, expected %#v.", c.pools, tc.expectedPools)
-			continue
-		}
-		for _, expected := range tc.expectedPools {
-			var match *Pool
-			for i, actual := range c.pools {
-				if expected.Org == actual.Org && expected.Repo == actual.Repo && expected.Branch == actual.Branch {
-					match = &c.pools[i]
+			if err := c.Sync(); err != nil {
+				t.Fatalf("Unexpected error from 'Sync()': %v.", err)
+			}
+			if len(tc.expectedPools) != len(c.pools) {
+				t.Fatalf("Tide pools did not match expected. Got %#v, expected %#v.", c.pools, tc.expectedPools)
+			}
+			for _, expected := range tc.expectedPools {
+				var match *Pool
+				for i, actual := range c.pools {
+					if expected.Org == actual.Org && expected.Repo == actual.Repo && expected.Branch == actual.Branch {
+						match = &c.pools[i]
+					}
+				}
+				if match == nil {
+					t.Errorf("Failed to find expected pool %s/%s %s.", expected.Org, expected.Repo, expected.Branch)
+				} else if !reflect.DeepEqual(*match, expected) {
+					t.Errorf("Expected pool %#v does not match actual pool %#v.", expected, *match)
 				}
 			}
-			if match == nil {
-				t.Errorf("Failed to find expected pool %s/%s %s.", expected.Org, expected.Repo, expected.Branch)
-			} else if !reflect.DeepEqual(*match, expected) {
-				t.Errorf("Expected pool %#v does not match actual pool %#v.", expected, *match)
-			}
-		}
+		})
 	}
 }
 
@@ -2751,7 +2751,7 @@ func TestFilterSubpool(t *testing.T) {
 				if !pull.mergeable {
 					pr.Mergeable = githubql.MergeableStateConflicting
 				}
-				sp.prs = append(sp.prs, pr)
+				sp.prs = append(sp.prs, *CodeReviewCommonFromPullRequest(&pr))
 			}
 
 			configGetter := func() *config.Config { return &config.Config{} }
@@ -2885,7 +2885,7 @@ func TestIsPassing(t *testing.T) {
 				t.Fatalf("Failed to get log output before testing: %v", err)
 			}
 			pr := PullRequest{HeadRefOID: githubql.String(headSHA)}
-			passing := (&Controller{ghc: ghc}).isPassingTests(log, &pr, &tc.config)
+			passing := (&Controller{ghc: ghc}).isPassingTests(log, CodeReviewCommonFromPullRequest(&pr), &tc.config)
 			if passing != tc.passing {
 				t.Errorf("%s: Expected %t got %t", tc.name, tc.passing, passing)
 			}
@@ -2898,7 +2898,7 @@ func TestIsPassing(t *testing.T) {
 				}
 				// isRetestEligible is more lenient than isPassingTests, which means we expect it to allow
 				// everything that is allowed by isPassingTests. The reverse might not be true.
-				if !c.isRetestEligible(log, &pr, &tc.config) {
+				if !c.isRetestEligible(log, CodeReviewCommonFromPullRequest(&pr), &tc.config) {
 					t.Error("expected pr to be batch testing eligible, wasn't the case")
 				}
 			}
@@ -2916,7 +2916,7 @@ func TestPresubmitsByPull(t *testing.T) {
 
 		initialChangeCache map[changeCacheKey][]string
 		presubmits         []config.Presubmit
-		prs                []PullRequest
+		prs                []CodeReviewCommon
 		prowYAMLGetter     config.ProwYAMLGetter
 
 		expectedPresubmits  map[int][]config.Presubmit
@@ -3123,8 +3123,8 @@ func TestPresubmitsByPull(t *testing.T) {
 				AlwaysRun: true,
 				Reporter:  config.Reporter{Context: "inrepoconfig"},
 			}}),
-			prs: []PullRequest{
-				{Number: githubql.Int(1), HeadRefOID: githubql.String("1")},
+			prs: []CodeReviewCommon{
+				{Number: 1, HeadRefOID: "1"},
 			},
 			expectedPresubmits: map[int][]config.Presubmit{
 				1: {
@@ -3148,8 +3148,8 @@ func TestPresubmitsByPull(t *testing.T) {
 				}
 				return &config.ProwYAML{}, nil
 			},
-			prs: []PullRequest{
-				{Number: githubql.Int(1), HeadRefOID: githubql.String("1")},
+			prs: []CodeReviewCommon{
+				{Number: 1, HeadRefOID: "1"},
 			},
 			expectedPresubmits: map[int][]config.Presubmit{
 				100: {
@@ -3183,7 +3183,7 @@ func TestPresubmitsByPull(t *testing.T) {
 		sp := &subpool{
 			branch: defaultBranch,
 			sha:    "master-sha",
-			prs:    append(tc.prs, samplePR),
+			prs:    append(tc.prs, *CodeReviewCommonFromPullRequest(&samplePR)),
 		}
 		c := &Controller{
 			config: cfgAgent.Config,
@@ -3299,20 +3299,22 @@ func TestPrepareMergeDetails(t *testing.T) {
 	}}
 
 	for _, test := range testCases {
-		cfg := &config.Config{}
-		cfgAgent := &config.Agent{}
-		cfgAgent.Set(cfg)
-		c := &Controller{
-			config: cfgAgent.Config,
-			ghc:    &fgc{},
-			logger: logrus.WithField("component", "tide"),
-		}
+		t.Run(test.name, func(t *testing.T) {
+			cfg := &config.Config{}
+			cfgAgent := &config.Agent{}
+			cfgAgent.Set(cfg)
+			c := &Controller{
+				config: cfgAgent.Config,
+				ghc:    &fgc{},
+				logger: logrus.WithField("component", "tide"),
+			}
 
-		actual := c.prepareMergeDetails(test.tpl, test.pr, test.mergeMethod)
+			actual := c.prepareMergeDetails(test.tpl, *CodeReviewCommonFromPullRequest(&test.pr), test.mergeMethod)
 
-		if !reflect.DeepEqual(actual, test.expected) {
-			t.Errorf("Case %s failed: expected %+v, got %+v", test.name, test.expected, actual)
-		}
+			if !reflect.DeepEqual(actual, test.expected) {
+				t.Errorf("Case %s failed: expected %+v, got %+v", test.name, test.expected, actual)
+			}
+		})
 	}
 }
 
@@ -3322,15 +3324,15 @@ func TestAccumulateReturnsCorrectMissingTests(t *testing.T) {
 	testCases := []struct {
 		name               string
 		presubmits         map[int][]config.Presubmit
-		prs                []PullRequest
+		prs                []CodeReviewCommon
 		pjs                []prowapi.ProwJob
 		expectedPresubmits map[int][]config.Presubmit
 	}{
 		{
 			name: "All presubmits missing, no changes",
-			prs: []PullRequest{{
-				Number:     githubql.Int(1),
-				HeadRefOID: githubql.String("sha"),
+			prs: []CodeReviewCommon{{
+				Number:     1,
+				HeadRefOID: "sha",
 			}},
 			presubmits: map[int][]config.Presubmit{1: {{
 				Reporter: config.Reporter{
@@ -3343,9 +3345,9 @@ func TestAccumulateReturnsCorrectMissingTests(t *testing.T) {
 		},
 		{
 			name: "All presubmits successful, no retesting needed",
-			prs: []PullRequest{{
-				Number:     githubql.Int(1),
-				HeadRefOID: githubql.String("sha"),
+			prs: []CodeReviewCommon{{
+				Number:     1,
+				HeadRefOID: "sha",
 			}},
 			pjs: []prowapi.ProwJob{{
 				Spec: prowapi.ProwJobSpec{
@@ -3366,9 +3368,9 @@ func TestAccumulateReturnsCorrectMissingTests(t *testing.T) {
 		},
 		{
 			name: "All presubmits pending, no retesting needed",
-			prs: []PullRequest{{
-				Number:     githubql.Int(1),
-				HeadRefOID: githubql.String("sha"),
+			prs: []CodeReviewCommon{{
+				Number:     1,
+				HeadRefOID: "sha",
 			}},
 			pjs: []prowapi.ProwJob{{
 				Spec: prowapi.ProwJobSpec{
@@ -3388,9 +3390,9 @@ func TestAccumulateReturnsCorrectMissingTests(t *testing.T) {
 		},
 		{
 			name: "One successful, one pending, one missing, one failing, only missing and failing remain",
-			prs: []PullRequest{{
-				Number:     githubql.Int(1),
-				HeadRefOID: githubql.String("sha"),
+			prs: []CodeReviewCommon{{
+				Number:     1,
+				HeadRefOID: "sha",
 			}},
 			pjs: []prowapi.ProwJob{
 				{
@@ -3448,14 +3450,14 @@ func TestAccumulateReturnsCorrectMissingTests(t *testing.T) {
 		},
 		{
 			name: "Two prs, each with one successful, one pending, one missing, one failing, only missing and failing remain",
-			prs: []PullRequest{
+			prs: []CodeReviewCommon{
 				{
-					Number:     githubql.Int(1),
-					HeadRefOID: githubql.String("sha"),
+					Number:     1,
+					HeadRefOID: "sha",
 				},
 				{
-					Number:     githubql.Int(2),
-					HeadRefOID: githubql.String("sha"),
+					Number:     2,
+					HeadRefOID: "sha",
 				},
 			},
 			pjs: []prowapi.ProwJob{
@@ -3566,9 +3568,9 @@ func TestAccumulateReturnsCorrectMissingTests(t *testing.T) {
 		{
 			name:       "Result from successful context gets respected",
 			presubmits: map[int][]config.Presubmit{1: {{Reporter: config.Reporter{Context: "job-1"}}}},
-			prs: []PullRequest{{
-				Number:     githubql.Int(1),
-				HeadRefOID: githubql.String("headsha"),
+			prs: []CodeReviewCommon{{
+				Number:     1,
+				HeadRefOID: "headsha",
 				Commits: struct{ Nodes []struct{ Commit Commit } }{Nodes: []struct{ Commit Commit }{{Commit: Commit{
 					OID: githubql.String("headsha"),
 					Status: CommitStatus{Contexts: []Context{{
@@ -3581,9 +3583,9 @@ func TestAccumulateReturnsCorrectMissingTests(t *testing.T) {
 		{
 			name:       "Result from successful context gets respected with deprecated baseha delimiter",
 			presubmits: map[int][]config.Presubmit{1: {{Reporter: config.Reporter{Context: "job-1"}}}},
-			prs: []PullRequest{{
-				Number:     githubql.Int(1),
-				HeadRefOID: githubql.String("headsha"),
+			prs: []CodeReviewCommon{{
+				Number:     1,
+				HeadRefOID: "headsha",
 				Commits: struct{ Nodes []struct{ Commit Commit } }{Nodes: []struct{ Commit Commit }{{Commit: Commit{
 					OID: githubql.String("headsha"),
 					Status: CommitStatus{Contexts: []Context{{
@@ -3596,9 +3598,9 @@ func TestAccumulateReturnsCorrectMissingTests(t *testing.T) {
 		{
 			name:       "Result from failed context gets ignored",
 			presubmits: map[int][]config.Presubmit{1: {{Reporter: config.Reporter{Context: "job-1"}}}},
-			prs: []PullRequest{{
-				Number:     githubql.Int(1),
-				HeadRefOID: githubql.String("headsha"),
+			prs: []CodeReviewCommon{{
+				Number:     1,
+				HeadRefOID: "headsha",
 				Commits: struct{ Nodes []struct{ Commit Commit } }{Nodes: []struct{ Commit Commit }{{Commit: Commit{
 					OID: githubql.String("headsha"),
 					Status: CommitStatus{Contexts: []Context{{
@@ -3627,7 +3629,7 @@ func TestAccumulateReturnsCorrectMissingTests(t *testing.T) {
 func TestPresubmitsForBatch(t *testing.T) {
 	testCases := []struct {
 		name           string
-		prs            []PullRequest
+		prs            []CodeReviewCommon
 		changedFiles   *changedFilesAgent
 		jobs           []config.Presubmit
 		prowYAMLGetter config.ProwYAMLGetter
@@ -3635,7 +3637,7 @@ func TestPresubmitsForBatch(t *testing.T) {
 	}{
 		{
 			name: "All jobs get picked",
-			prs:  []PullRequest{getPR("org", "repo", 1)},
+			prs:  []CodeReviewCommon{*CodeReviewCommonFromPullRequest(getPR("org", "repo", 1))},
 			jobs: []config.Presubmit{{
 				AlwaysRun: true,
 				Reporter:  config.Reporter{Context: "foo"},
@@ -3647,7 +3649,7 @@ func TestPresubmitsForBatch(t *testing.T) {
 		},
 		{
 			name: "Jobs with branchconfig get picked",
-			prs:  []PullRequest{getPR("org", "repo", 1)},
+			prs:  []CodeReviewCommon{*CodeReviewCommonFromPullRequest(getPR("org", "repo", 1))},
 			jobs: []config.Presubmit{{
 				AlwaysRun: true,
 				Reporter:  config.Reporter{Context: "foo"},
@@ -3661,7 +3663,7 @@ func TestPresubmitsForBatch(t *testing.T) {
 		},
 		{
 			name: "Optional jobs are excluded",
-			prs:  []PullRequest{getPR("org", "repo", 1)},
+			prs:  []CodeReviewCommon{*CodeReviewCommonFromPullRequest(getPR("org", "repo", 1))},
 			jobs: []config.Presubmit{
 				{
 					AlwaysRun: true,
@@ -3678,11 +3680,11 @@ func TestPresubmitsForBatch(t *testing.T) {
 		},
 		{
 			name: "Jobs that are required by any of the PRs get included",
-			prs: []PullRequest{
-				getPR("org", "repo", 2),
-				getPR("org", "repo", 1, func(pr *PullRequest) {
+			prs: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(getPR("org", "repo", 2)),
+				*CodeReviewCommonFromPullRequest(getPR("org", "repo", 1, func(pr *PullRequest) {
 					pr.HeadRefOID = githubql.String("sha")
-				}),
+				})),
 			},
 			jobs: []config.Presubmit{{
 				RegexpChangeMatcher: config.RegexpChangeMatcher{
@@ -3706,11 +3708,11 @@ func TestPresubmitsForBatch(t *testing.T) {
 		},
 		{
 			name: "Inrepoconfig jobs get included if headref matches",
-			prs: []PullRequest{
-				getPR("org", "repo", 2),
-				getPR("org", "repo", 1, func(pr *PullRequest) {
+			prs: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(getPR("org", "repo", 2)),
+				*CodeReviewCommonFromPullRequest(getPR("org", "repo", 1, func(pr *PullRequest) {
 					pr.HeadRefOID = githubql.String("sha")
-				}),
+				})),
 			},
 			jobs: []config.Presubmit{
 				{
@@ -3735,11 +3737,11 @@ func TestPresubmitsForBatch(t *testing.T) {
 		},
 		{
 			name: "Inrepoconfig jobs do not get included if headref doesnt match",
-			prs: []PullRequest{
-				getPR("org", "repo", 2),
-				getPR("org", "repo", 1, func(pr *PullRequest) {
+			prs: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(getPR("org", "repo", 2)),
+				*CodeReviewCommonFromPullRequest(getPR("org", "repo", 1, func(pr *PullRequest) {
 					pr.HeadRefOID = githubql.String("sha")
-				}),
+				})),
 			},
 			jobs: []config.Presubmit{
 				{
@@ -3769,8 +3771,8 @@ func TestPresubmitsForBatch(t *testing.T) {
 				}
 				for _, pr := range tc.prs {
 					key := changeCacheKey{
-						org:    string(pr.Repository.Owner.Login),
-						repo:   string(pr.Repository.Name),
+						org:    pr.Org,
+						repo:   pr.Repo,
 						number: int(pr.Number),
 						sha:    string(pr.HeadRefOID),
 					}
@@ -3820,14 +3822,14 @@ func TestPresubmitsForBatch(t *testing.T) {
 func TestChangedFilesAgentBatchChanges(t *testing.T) {
 	testCases := []struct {
 		name         string
-		prs          []PullRequest
+		prs          []CodeReviewCommon
 		changedFiles *changedFilesAgent
 		expected     []string
 	}{
 		{
 			name: "Single PR",
-			prs: []PullRequest{
-				getPR("org", "repo", 1),
+			prs: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(getPR("org", "repo", 1)),
 			},
 			changedFiles: &changedFilesAgent{
 				changeCache: map[changeCacheKey][]string{
@@ -3838,9 +3840,9 @@ func TestChangedFilesAgentBatchChanges(t *testing.T) {
 		},
 		{
 			name: "Multiple PRs, changes are de-duplicated",
-			prs: []PullRequest{
-				getPR("org", "repo", 1),
-				getPR("org", "repo", 2),
+			prs: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(getPR("org", "repo", 1)),
+				*CodeReviewCommonFromPullRequest(getPR("org", "repo", 2)),
 			},
 			changedFiles: &changedFilesAgent{
 				changeCache: map[changeCacheKey][]string{
@@ -3867,7 +3869,7 @@ func TestChangedFilesAgentBatchChanges(t *testing.T) {
 	}
 }
 
-func getPR(org, name string, number int, opts ...func(*PullRequest)) PullRequest {
+func getPR(org, name string, number int, opts ...func(*PullRequest)) *PullRequest {
 	pr := PullRequest{}
 	pr.Repository.Owner.Login = githubql.String(org)
 	pr.Repository.NameWithOwner = githubql.String(org + "/" + name)
@@ -3876,7 +3878,7 @@ func getPR(org, name string, number int, opts ...func(*PullRequest)) PullRequest
 	for _, opt := range opts {
 		opt(&pr)
 	}
-	return pr
+	return &pr
 }
 
 func TestCacheIndexFuncReturnsDifferentResultsForDifferentInputs(t *testing.T) {
@@ -4302,59 +4304,59 @@ func TestPickSmallestPassingNumber(t *testing.T) {
 	}
 	testCases := []struct {
 		name     string
-		prs      []PullRequest
+		prs      []CodeReviewCommon
 		expected int
 	}{
 		{
 			name: "no label",
-			prs: []PullRequest{
-				testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable),
-				testPR("org", "repo", "A", 3, githubql.MergeableStateMergeable),
+			prs: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable)),
+				*CodeReviewCommonFromPullRequest(testPR("org", "repo", "A", 3, githubql.MergeableStateMergeable)),
 			},
 			expected: 3,
 		},
 		{
 			name: "deflake PR",
-			prs: []PullRequest{
-				testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable),
-				testPR("org", "repo", "A", 3, githubql.MergeableStateMergeable),
-				testPRWithLabels("org", "repo", "A", 7, githubql.MergeableStateMergeable, []string{"area/deflake"}),
+			prs: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable)),
+				*CodeReviewCommonFromPullRequest(testPR("org", "repo", "A", 3, githubql.MergeableStateMergeable)),
+				*CodeReviewCommonFromPullRequest(testPRWithLabels("org", "repo", "A", 7, githubql.MergeableStateMergeable, []string{"area/deflake"})),
 			},
 			expected: 7,
 		},
 		{
 			name: "same label",
-			prs: []PullRequest{
-				testPRWithLabels("org", "repo", "A", 7, githubql.MergeableStateMergeable, []string{"area/deflake"}),
-				testPRWithLabels("org", "repo", "A", 6, githubql.MergeableStateMergeable, []string{"area/deflake"}),
-				testPRWithLabels("org", "repo", "A", 1, githubql.MergeableStateMergeable, []string{"area/deflake"}),
+			prs: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(testPRWithLabels("org", "repo", "A", 7, githubql.MergeableStateMergeable, []string{"area/deflake"})),
+				*CodeReviewCommonFromPullRequest(testPRWithLabels("org", "repo", "A", 6, githubql.MergeableStateMergeable, []string{"area/deflake"})),
+				*CodeReviewCommonFromPullRequest(testPRWithLabels("org", "repo", "A", 1, githubql.MergeableStateMergeable, []string{"area/deflake"})),
 			},
 			expected: 1,
 		},
 		{
 			name: "missing one label",
-			prs: []PullRequest{
-				testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable),
-				testPR("org", "repo", "A", 3, githubql.MergeableStateMergeable),
-				testPRWithLabels("org", "repo", "A", 6, githubql.MergeableStateMergeable, []string{"kind/bug"}),
+			prs: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable)),
+				*CodeReviewCommonFromPullRequest(testPR("org", "repo", "A", 3, githubql.MergeableStateMergeable)),
+				*CodeReviewCommonFromPullRequest(testPRWithLabels("org", "repo", "A", 6, githubql.MergeableStateMergeable, []string{"kind/bug"})),
 			},
 			expected: 3,
 		},
 		{
 			name: "complete",
-			prs: []PullRequest{
-				testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable),
-				testPR("org", "repo", "A", 3, githubql.MergeableStateMergeable),
-				testPRWithLabels("org", "repo", "A", 6, githubql.MergeableStateMergeable, []string{"kind/bug"}),
-				testPRWithLabels("org", "repo", "A", 7, githubql.MergeableStateMergeable, []string{"area/deflake"}),
-				testPRWithLabels("org", "repo", "A", 8, githubql.MergeableStateMergeable, []string{"kind/bug"}),
-				testPRWithLabels("org", "repo", "A", 9, githubql.MergeableStateMergeable, []string{"kind/failing-test"}),
-				testPRWithLabels("org", "repo", "A", 10, githubql.MergeableStateMergeable, []string{"kind/bug", "priority/critical-urgent"}),
+			prs: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable)),
+				*CodeReviewCommonFromPullRequest(testPR("org", "repo", "A", 3, githubql.MergeableStateMergeable)),
+				*CodeReviewCommonFromPullRequest(testPRWithLabels("org", "repo", "A", 6, githubql.MergeableStateMergeable, []string{"kind/bug"})),
+				*CodeReviewCommonFromPullRequest(testPRWithLabels("org", "repo", "A", 7, githubql.MergeableStateMergeable, []string{"area/deflake"})),
+				*CodeReviewCommonFromPullRequest(testPRWithLabels("org", "repo", "A", 8, githubql.MergeableStateMergeable, []string{"kind/bug"})),
+				*CodeReviewCommonFromPullRequest(testPRWithLabels("org", "repo", "A", 9, githubql.MergeableStateMergeable, []string{"kind/failing-test"})),
+				*CodeReviewCommonFromPullRequest(testPRWithLabels("org", "repo", "A", 10, githubql.MergeableStateMergeable, []string{"kind/bug", "priority/critical-urgent"})),
 			},
 			expected: 9,
 		},
 	}
-	alwaysTrue := func(*logrus.Entry, *PullRequest, contextChecker) bool { return true }
+	alwaysTrue := func(*logrus.Entry, *CodeReviewCommon, contextChecker) bool { return true }
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			_, got := pickHighestPriorityPR(nil, tc.prs, nil, alwaysTrue, priorities)
@@ -4378,8 +4380,8 @@ func TestQueryShardsByOrgWhenAppsAuthIsEnabledOnly(t *testing.T) {
 			name:               "Apps auth is used, one call per org",
 			usesGitHubAppsAuth: true,
 			prs: map[string][]PullRequest{
-				"org":       {testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable)},
-				"other-org": {testPR("other-org", "repo", "A", 5, githubql.MergeableStateMergeable)},
+				"org":       {*testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable)},
+				"other-org": {*testPR("other-org", "repo", "A", 5, githubql.MergeableStateMergeable)},
 			},
 			expectedNumberOfApiCalls: 2,
 		},
@@ -4387,8 +4389,8 @@ func TestQueryShardsByOrgWhenAppsAuthIsEnabledOnly(t *testing.T) {
 			name:               "Apps auth is unused, one call for all orgs",
 			usesGitHubAppsAuth: false,
 			prs: map[string][]PullRequest{"": {
-				testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable),
-				testPR("other-org", "repo", "A", 5, githubql.MergeableStateMergeable),
+				*testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable),
+				*testPR("other-org", "repo", "A", 5, githubql.MergeableStateMergeable),
 			}},
 			expectedNumberOfApiCalls: 1,
 		},
@@ -4429,90 +4431,90 @@ func TestPickBatchPrefersBatchesWithPreexistingJobs(t *testing.T) {
 		maxBatchSize                 int
 		prioritizeExistingBatchesMap map[string]bool
 
-		expectedPullRequests []PullRequest
+		expectedPullRequests []CodeReviewCommon
 	}{
 		{
 			name:                 "No pre-existing jobs, new batch is picked",
 			subpool:              func(sp *subpool) { sp.pjs = nil },
-			expectedPullRequests: []PullRequest{{Number: githubql.Int(99), HeadRefOID: githubql.String("pr-from-new-batch-func")}},
+			expectedPullRequests: []CodeReviewCommon{{Number: 99, HeadRefOID: "pr-from-new-batch-func"}},
 		},
 		{
 			name:    "Batch with pre-existing success jobs exists and is picked",
 			subpool: func(sp *subpool) {},
-			expectedPullRequests: []PullRequest{
-				{
+			expectedPullRequests: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(&PullRequest{
 					Number:     githubql.Int(1),
 					HeadRefOID: githubql.String("1"),
 					Commits: struct{ Nodes []struct{ Commit Commit } }{
 						Nodes: []struct{ Commit Commit }{
 							{Commit: Commit{Status: CommitStatus{Contexts: []Context{}}, OID: "1"}}},
 					},
-				},
-				{
+				}),
+				*CodeReviewCommonFromPullRequest(&PullRequest{
 					Number:     githubql.Int(2),
 					HeadRefOID: githubql.String("2"),
 					Commits: struct{ Nodes []struct{ Commit Commit } }{
 						Nodes: []struct{ Commit Commit }{
 							{Commit: Commit{Status: CommitStatus{Contexts: []Context{}}, OID: "2"}}},
 					},
-				},
-				{
+				}),
+				*CodeReviewCommonFromPullRequest(&PullRequest{
 					Number:     githubql.Int(3),
 					HeadRefOID: githubql.String("3"),
 					Commits: struct{ Nodes []struct{ Commit Commit } }{
 						Nodes: []struct{ Commit Commit }{
 							{Commit: Commit{Status: CommitStatus{Contexts: []Context{}}, OID: "3"}}},
 					},
-				},
-				{
+				}),
+				*CodeReviewCommonFromPullRequest(&PullRequest{
 					Number:     githubql.Int(4),
 					HeadRefOID: githubql.String("4"),
 					Commits: struct{ Nodes []struct{ Commit Commit } }{
 						Nodes: []struct{ Commit Commit }{
 							{Commit: Commit{Status: CommitStatus{Contexts: []Context{}}, OID: "4"}}},
 					},
-				},
+				}),
 			},
 		},
 		{
 			name:                         "Batch with pre-existing success jobs exists but PrioritizeExistingBatches is disabled globally, new batch is picked",
 			subpool:                      func(sp *subpool) {},
 			prioritizeExistingBatchesMap: map[string]bool{"*": false},
-			expectedPullRequests:         []PullRequest{{Number: githubql.Int(99), HeadRefOID: githubql.String("pr-from-new-batch-func")}},
+			expectedPullRequests:         []CodeReviewCommon{{Number: 99, HeadRefOID: "pr-from-new-batch-func"}},
 		},
 		{
 			name:                         "Batch with pre-existing success jobs exists but PrioritizeExistingBatches is disabled for org, new batch is picked",
 			subpool:                      func(sp *subpool) {},
 			prioritizeExistingBatchesMap: map[string]bool{org: false},
-			expectedPullRequests:         []PullRequest{{Number: githubql.Int(99), HeadRefOID: githubql.String("pr-from-new-batch-func")}},
+			expectedPullRequests:         []CodeReviewCommon{{Number: 99, HeadRefOID: "pr-from-new-batch-func"}},
 		},
 		{
 			name:                         "Batch with pre-existing success jobs exists but PrioritizeExistingBatches is disabled for repo, new batch is picked",
 			subpool:                      func(sp *subpool) {},
 			prioritizeExistingBatchesMap: map[string]bool{org + "/" + repo: false},
-			expectedPullRequests:         []PullRequest{{Number: githubql.Int(99), HeadRefOID: githubql.String("pr-from-new-batch-func")}},
+			expectedPullRequests:         []CodeReviewCommon{{Number: 99, HeadRefOID: "pr-from-new-batch-func"}},
 		},
 		{
 			name:                   "Batch with pre-existing success job exists but one fails context check, new batch is picked",
 			subpool:                func(sp *subpool) {},
 			prsFailingContextCheck: sets.NewInt(1),
-			expectedPullRequests:   []PullRequest{{Number: githubql.Int(99), HeadRefOID: githubql.String("pr-from-new-batch-func")}},
+			expectedPullRequests:   []CodeReviewCommon{{Number: 99, HeadRefOID: "pr-from-new-batch-func"}},
 		},
 		{
 			name:                 "Batch with pre-existing success job exists but is bigger than maxBatchSize, new batch is picked",
 			subpool:              func(sp *subpool) {},
 			maxBatchSize:         3,
-			expectedPullRequests: []PullRequest{{Number: githubql.Int(99), HeadRefOID: githubql.String("pr-from-new-batch-func")}},
+			expectedPullRequests: []CodeReviewCommon{{Number: 99, HeadRefOID: "pr-from-new-batch-func"}},
 		},
 		{
 			name:                 "Batch with pre-existing success job exists but one PR is outdated, new batch is picked",
-			subpool:              func(sp *subpool) { sp.prs[0].HeadRefOID = githubql.String("new-sha") },
-			expectedPullRequests: []PullRequest{{Number: githubql.Int(99), HeadRefOID: githubql.String("pr-from-new-batch-func")}},
+			subpool:              func(sp *subpool) { sp.prs[0].HeadRefOID = "new-sha" },
+			expectedPullRequests: []CodeReviewCommon{{Number: 99, HeadRefOID: "pr-from-new-batch-func"}},
 		},
 		{
 			name:                 "Batchjobs exist but is failed, new batch is picked",
 			subpool:              func(sp *subpool) { sp.pjs[0].Status.State = prowapi.FailureState },
-			expectedPullRequests: []PullRequest{{Number: githubql.Int(99), HeadRefOID: githubql.String("pr-from-new-batch-func")}},
+			expectedPullRequests: []CodeReviewCommon{{Number: 99, HeadRefOID: "pr-from-new-batch-func"}},
 		},
 		{
 			name: "Batch with pre-existing success jobs and batch with pre-existing pending jobs exists, batch with success jobs is picked",
@@ -4523,61 +4525,61 @@ func TestPickBatchPrefersBatchesWithPreexistingJobs(t *testing.T) {
 				sp.pjs[1].Status.State = prowapi.PendingState
 				sp.pjs[1].Spec.Refs.Pulls = []prowapi.Pull{{Number: 3, SHA: "3"}, {Number: 4, SHA: "4"}}
 			},
-			expectedPullRequests: []PullRequest{
-				{
+			expectedPullRequests: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(&PullRequest{
 					Number:     githubql.Int(1),
 					HeadRefOID: githubql.String("1"),
 					Commits: struct{ Nodes []struct{ Commit Commit } }{
 						Nodes: []struct{ Commit Commit }{
 							{Commit: Commit{Status: CommitStatus{Contexts: []Context{}}, OID: "1"}}},
 					},
-				},
-				{
+				}),
+				*CodeReviewCommonFromPullRequest(&PullRequest{
 					Number:     githubql.Int(2),
 					HeadRefOID: githubql.String("2"),
 					Commits: struct{ Nodes []struct{ Commit Commit } }{
 						Nodes: []struct{ Commit Commit }{
 							{Commit: Commit{Status: CommitStatus{Contexts: []Context{}}, OID: "2"}}},
 					},
-				},
+				}),
 			},
 		},
 		{
 			name:    "Batch with pre-existing pending jobs exists and is picked",
 			subpool: func(sp *subpool) { sp.pjs[0].Status.State = prowapi.PendingState },
-			expectedPullRequests: []PullRequest{
-				{
+			expectedPullRequests: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(&PullRequest{
 					Number:     githubql.Int(1),
 					HeadRefOID: githubql.String("1"),
 					Commits: struct{ Nodes []struct{ Commit Commit } }{
 						Nodes: []struct{ Commit Commit }{
 							{Commit: Commit{Status: CommitStatus{Contexts: []Context{}}, OID: "1"}}},
 					},
-				},
-				{
+				}),
+				*CodeReviewCommonFromPullRequest(&PullRequest{
 					Number:     githubql.Int(2),
 					HeadRefOID: githubql.String("2"),
 					Commits: struct{ Nodes []struct{ Commit Commit } }{
 						Nodes: []struct{ Commit Commit }{
 							{Commit: Commit{Status: CommitStatus{Contexts: []Context{}}, OID: "2"}}},
 					},
-				},
-				{
+				}),
+				*CodeReviewCommonFromPullRequest(&PullRequest{
 					Number:     githubql.Int(3),
 					HeadRefOID: githubql.String("3"),
 					Commits: struct{ Nodes []struct{ Commit Commit } }{
 						Nodes: []struct{ Commit Commit }{
 							{Commit: Commit{Status: CommitStatus{Contexts: []Context{}}, OID: "3"}}},
 					},
-				},
-				{
+				}),
+				*CodeReviewCommonFromPullRequest(&PullRequest{
 					Number:     githubql.Int(4),
 					HeadRefOID: githubql.String("4"),
 					Commits: struct{ Nodes []struct{ Commit Commit } }{
 						Nodes: []struct{ Commit Commit }{
 							{Commit: Commit{Status: CommitStatus{Contexts: []Context{}}, OID: "4"}}},
 					},
-				},
+				}),
 			},
 		},
 		{
@@ -4588,23 +4590,23 @@ func TestPickBatchPrefersBatchesWithPreexistingJobs(t *testing.T) {
 				sp.pjs[1].Spec.Refs.Pulls = []prowapi.Pull{{Number: 3, SHA: "3"}, {Number: 4, SHA: "4"}}
 				sp.pjs[2].Spec.Refs.Pulls = []prowapi.Pull{{Number: 3, SHA: "3"}, {Number: 4, SHA: "4"}}
 			},
-			expectedPullRequests: []PullRequest{
-				{
+			expectedPullRequests: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(&PullRequest{
 					Number:     githubql.Int(3),
 					HeadRefOID: githubql.String("3"),
 					Commits: struct{ Nodes []struct{ Commit Commit } }{
 						Nodes: []struct{ Commit Commit }{
 							{Commit: Commit{Status: CommitStatus{Contexts: []Context{}}, OID: "3"}}},
 					},
-				},
-				{
+				}),
+				*CodeReviewCommonFromPullRequest(&PullRequest{
 					Number:     githubql.Int(4),
 					HeadRefOID: githubql.String("4"),
 					Commits: struct{ Nodes []struct{ Commit Commit } }{
 						Nodes: []struct{ Commit Commit }{
 							{Commit: Commit{Status: CommitStatus{Contexts: []Context{}}, OID: "4"}}},
 					},
-				},
+				}),
 			},
 		},
 		{
@@ -4616,23 +4618,23 @@ func TestPickBatchPrefersBatchesWithPreexistingJobs(t *testing.T) {
 				sp.pjs[1].Spec.Refs.Pulls = []prowapi.Pull{{Number: 3, SHA: "3"}, {Number: 4, SHA: "4"}}
 				sp.pjs[2].Spec.Refs.Pulls = []prowapi.Pull{{Number: 3, SHA: "3"}, {Number: 4, SHA: "4"}}
 			},
-			expectedPullRequests: []PullRequest{
-				{
+			expectedPullRequests: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(&PullRequest{
 					Number:     githubql.Int(3),
 					HeadRefOID: githubql.String("3"),
 					Commits: struct{ Nodes []struct{ Commit Commit } }{
 						Nodes: []struct{ Commit Commit }{
 							{Commit: Commit{Status: CommitStatus{Contexts: []Context{}}, OID: "3"}}},
 					},
-				},
-				{
+				}),
+				*CodeReviewCommonFromPullRequest(&PullRequest{
 					Number:     githubql.Int(4),
 					HeadRefOID: githubql.String("4"),
 					Commits: struct{ Nodes []struct{ Commit Commit } }{
 						Nodes: []struct{ Commit Commit }{
 							{Commit: Commit{Status: CommitStatus{Contexts: []Context{}}, OID: "4"}}},
 					},
-				},
+				}),
 			},
 		},
 	}
@@ -4643,12 +4645,12 @@ func TestPickBatchPrefersBatchesWithPreexistingJobs(t *testing.T) {
 				org:  org,
 				repo: repo,
 				log:  logrus.WithField("test", tc.name),
-				prs: []PullRequest{
-					{Number: githubql.Int(1), HeadRefOID: githubql.String("1")},
-					{Number: githubql.Int(2), HeadRefOID: githubql.String("2")},
-					{Number: githubql.Int(3), HeadRefOID: githubql.String("3")},
-					{Number: githubql.Int(4), HeadRefOID: githubql.String("4")},
-					{Number: githubql.Int(5), HeadRefOID: githubql.String("5")},
+				prs: []CodeReviewCommon{
+					{Number: 1, HeadRefOID: "1"},
+					{Number: 2, HeadRefOID: "2"},
+					{Number: 3, HeadRefOID: "3"},
+					{Number: 4, HeadRefOID: "4"},
+					{Number: 5, HeadRefOID: "5"},
 				},
 				pjs: []prowapi.ProwJob{{
 					Spec: prowapi.ProwJobSpec{
@@ -4676,8 +4678,8 @@ func TestPickBatchPrefersBatchesWithPreexistingJobs(t *testing.T) {
 				contextCheckers[int(pr.Number)] = cc
 			}
 
-			newBatchFunc := func(sp subpool, candidates []PullRequest, maxBatchSize int) ([]PullRequest, error) {
-				return []PullRequest{{Number: githubql.Int(99), HeadRefOID: githubql.String("pr-from-new-batch-func")}}, nil
+			newBatchFunc := func(sp subpool, candidates []CodeReviewCommon, maxBatchSize int) ([]CodeReviewCommon, error) {
+				return []CodeReviewCommon{{Number: 99, HeadRefOID: "pr-from-new-batch-func"}}, nil
 			}
 
 			c := &Controller{
@@ -4833,7 +4835,7 @@ func TestSetTideStatusSuccess(t *testing.T) {
 	t.Parallel()
 	testCases := []struct {
 		name string
-		pr   PullRequest
+		pr   CodeReviewCommon
 
 		expectApiCall bool
 	}{
@@ -4843,7 +4845,7 @@ func TestSetTideStatusSuccess(t *testing.T) {
 		},
 		{
 			name: "PR already has tide status set to success, no api call is made",
-			pr:   PullRequest{Commits: struct{ Nodes []struct{ Commit Commit } }{Nodes: []struct{ Commit Commit }{{Commit: Commit{Status: CommitStatus{Contexts: []Context{{Context: "tide", State: githubql.StatusState("success")}}}}}}}},
+			pr:   CodeReviewCommon{Commits: struct{ Nodes []struct{ Commit Commit } }{Nodes: []struct{ Commit Commit }{{Commit: Commit{Status: CommitStatus{Contexts: []Context{{Context: "tide", State: githubql.StatusState("success")}}}}}}}},
 		},
 	}
 
@@ -4894,7 +4896,7 @@ func TestBatchPickingConsidersPRThatIsCurrentlyBeingSeriallyRetested(t *testing.
 	if err != nil {
 		t.Fatalf("failed to construct sync controller: %v", err)
 	}
-	c.pickNewBatch = func(sp subpool, candidates []PullRequest, maxBatchSize int) ([]PullRequest, error) {
+	c.pickNewBatch = func(sp subpool, candidates []CodeReviewCommon, maxBatchSize int) ([]CodeReviewCommon, error) {
 		return candidates, nil
 	}
 
@@ -5119,7 +5121,7 @@ func TestIsBatchCandidateEligible(t *testing.T) {
 				OptionalContexts: []string{optionalContextName},
 			}
 
-			if actual := c.isRetestEligible(logrus.WithField("tc", tc.name), &pr, cc); actual != tc.expected {
+			if actual := c.isRetestEligible(logrus.WithField("tc", tc.name), CodeReviewCommonFromPullRequest(&pr), cc); actual != tc.expected {
 				t.Errorf("expected result %t, got %t", tc.expected, actual)
 			}
 		})
