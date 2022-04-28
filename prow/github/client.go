@@ -1008,7 +1008,7 @@ func (c *client) requestRaw(r *request) (int, []byte, error) {
 }
 
 func (c *client) requestRawWithContext(ctx context.Context, r *request) (int, []byte, error) {
-	if c.fake || c.dry && (r.method != http.MethodGet || !allowedDryRunPostPaths.MatchString(r.path)) {
+	if c.fake || c.dry && (r.method != http.MethodGet || !allowedDryRunPostPaths.MatchString(r.path) )) {
 		return r.exitCodes[0], nil, nil
 	}
 	resp, err := c.requestRetryWithContext(ctx, r.method, r.path, r.accept, r.org, r.requestBody)
