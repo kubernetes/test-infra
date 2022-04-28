@@ -184,6 +184,55 @@ periodics:
       secret:
         secretName: k8s-triage-robot-github-token
 
+- name: ci-k8s-triage-robot-freezer
+  interval: 1h
+  cluster: k8s-infra-prow-build-trusted
+  decorate: true
+  annotations:
+    testgrid-dashboards: sig-contribex-k8s-triage-robot
+    description: Freezes important triaged bug issues
+    testgrid-tab-name: freeze
+  spec:
+    containers:
+    - image: gcr.io/k8s-prow/commenter:v20220427-c2db0f69b7
+      command:
+      - commenter
+      args:
+      - |-
+        --query=org:kubernetes
+        org:kubernetes-sigs
+        org:kubernetes-client
+        org:kubernetes-csi
+        -repo:kubernetes-sigs/kind
+        -label:lifecycle/frozen
+        label:lifecycle/rotten
+        label:kind/bug
+        label:triage/accepted
+        label:priority/critical-urgent,priority/important-soon,priority/important-longterm
+        is:issue
+        is:open
+      - --token=/etc/github-token/token
+      - --endpoint=http://ghproxy.default.svc.cluster.local
+      - |-
+        --comment=The issue has been marked as an important bug and triaged.
+        Such issues are automatically marked as frozen when hitting the rotten state
+        to avoid missing important bugs.
+
+        Please send feedback to sig-contributor-experience at [kubernetes/community](https://github.com/kubernetes/community).
+
+        /lifecycle frozen
+      - --template
+      - --ceiling=10
+      - --confirm
+      volumeMounts:
+      - name: token
+        mountPath: /etc/github-token
+    volumes:
+    - name: token
+      secret:
+        secretName: k8s-triage-robot-github-token
+
+
 - name: ci-k8s-triage-robot-retester
   interval: 20m  # Retest at most 1 PR per 20m, which should not DOS the queue.
   cluster: k8s-infra-prow-build-trusted
