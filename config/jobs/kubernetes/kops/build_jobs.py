@@ -77,7 +77,7 @@ def build_test(cloud='aws',
 
 
     # https://github.com/cilium/cilium/blob/f7a3f59fd74983c600bfce9cac364b76d20849d9/Documentation/operations/system_requirements.rst
-    if networking in ("cilium", "cilium-etcd") and distro not in ["u2004", "u2004arm64", "deb10", "deb11", "rhel8", "amzn2"]: # pylint: disable=line-too-long
+    if networking in ("cilium", "cilium-etcd") and distro not in ["u2004", "u2204arm64", "deb10", "deb11", "rhel8", "amzn2"]: # pylint: disable=line-too-long
         return None
     if should_skip_newer_k8s(k8s_version, kops_version):
         return None
@@ -445,7 +445,7 @@ def generate_misc():
         # A one-off scenario testing arm64
         build_test(name_override="kops-grid-scenario-arm64",
                    cloud="aws",
-                   distro="u2004arm64",
+                   distro="u2204arm64",
                    extra_flags=["--zones=eu-central-1a",
                                 "--node-size=m6g.large",
                                 "--master-size=m6g.large"],
@@ -528,7 +528,7 @@ def generate_misc():
 
         build_test(name_override="kops-aws-misc-arm64-release",
                    k8s_version="latest",
-                   distro="u2004arm64",
+                   distro="u2204arm64",
                    networking="calico",
                    kops_channel="alpha",
                    runs_per_day=3,
@@ -539,7 +539,7 @@ def generate_misc():
 
         build_test(name_override="kops-aws-misc-arm64-ci",
                    k8s_version="ci",
-                   distro="u2004arm64",
+                   distro="u2204arm64",
                    networking="calico",
                    kops_channel="alpha",
                    runs_per_day=3,
@@ -550,7 +550,7 @@ def generate_misc():
 
         build_test(name_override="kops-aws-misc-arm64-conformance",
                    k8s_version="ci",
-                   distro="u2004arm64",
+                   distro="u2204arm64",
                    networking="calico",
                    kops_channel="alpha",
                    runs_per_day=3,
@@ -588,7 +588,7 @@ def generate_misc():
         build_test(name_override="kops-grid-scenario-cilium10-arm64",
                    cloud="aws",
                    networking="cilium",
-                   distro="u2004arm64",
+                   distro="u2204arm64",
                    kops_channel="alpha",
                    runs_per_day=1,
                    extra_flags=["--zones=eu-central-1a",
@@ -697,7 +697,7 @@ def generate_conformance():
                 kops_channel='alpha',
                 name_override=f"kops-aws-conformance-arm64-{version.replace('.', '-')}",
                 networking='calico',
-                distro="u2004arm64",
+                distro="u2204arm64",
                 extra_flags=["--zones=eu-central-1a",
                              "--node-size=t4g.large",
                              "--master-size=t4g.large"],
@@ -1077,7 +1077,7 @@ def generate_presubmits_e2e():
         presubmit_test(
             name="pull-kops-e2e-arm64",
             cloud="aws",
-            distro="u2004arm64",
+            distro="u2204arm64",
             networking="calico",
             extra_flags=["--zones=eu-central-1a",
                          "--node-size=m6g.large",
