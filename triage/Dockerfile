@@ -16,7 +16,7 @@
 # Cloud SDK, and the resulting files are then used in the second stage.
 
 # Stage 1
-FROM golang:1.16 AS build
+FROM golang:1.18 AS build
 
 # Install the Google Cloud SDK
 RUN curl -o installer https://sdk.cloud.google.com \
