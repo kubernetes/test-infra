@@ -66,6 +66,17 @@ const (
 	ErrorState ProwJobState = "error"
 )
 
+// GetAllProwJobStates returns all possible job states.
+func GetAllProwJobStates() []ProwJobState {
+	return []ProwJobState{
+		TriggeredState,
+		PendingState,
+		SuccessState,
+		FailureState,
+		AbortedState,
+		ErrorState}
+}
+
 // ProwJobAgent specifies the controller (such as plank or jenkins-agent) that runs the job.
 type ProwJobAgent string
 
