@@ -58,8 +58,6 @@ presubmits:
         env:
         - name: USE_TEST_INFRA_LOG_DUMPING
           value: "true"
-        # Feature:DynamicKubeletConfig is deprecated and soon will be removed so tests are skipped.
-        # If we want to run these tests, we need a separate job for it.
         command:
         - sh
         - -c
@@ -76,6 +74,6 @@ presubmits:
           '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
           --node-tests=true
           --provider=gce
-          '--test_args=--nodes=8 --focus="\[NodeConformance\]|\[NodeFeature:.+\]|\[NodeFeature\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]|\[NodeFeature:DynamicKubeletConfig\]"'
+          '--test_args=--nodes=8 --focus="\[NodeConformance\]|\[NodeFeature:.+\]|\[NodeFeature\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"'
           --timeout=65m
           "--node-args=--image-config-file=${GOPATH}/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main-presubmit/image-config-presubmit.yaml -node-env=PULL_REFS=$(PULL_REFS)"
