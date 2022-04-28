@@ -176,7 +176,7 @@ periodics:
       - --scenario=kubernetes_e2e
       - -- # end bootstrap args, scenario args below
       - --deployment=node
-      - --env=KUBE_SSH_USER=core
+      - --env=KUBE_SSH_USER=core CONTAINER_PIDS_LIMIT=-1
       - --gcp-project-type=node-e2e-project
       - --gcp-zone=us-west1-b
       - '--node-test-args=--feature-gates=LocalStorageCapacityIsolation=true --container-runtime-endpoint=unix:///var/run/crio/crio.sock --container-runtime-process-name=/usr/local/bin/crio --container-runtime-pid-file= --kubelet-flags="--cgroup-driver=systemd --cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/crio.service --kubelet-cgroups=/system.slice/kubelet.service" --extra-log="{\"name\": \"crio.log\", \"journalctl\": [\"-u\", \"crio\"]}"'
