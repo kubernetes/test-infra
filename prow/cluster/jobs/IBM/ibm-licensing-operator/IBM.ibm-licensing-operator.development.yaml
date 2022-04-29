@@ -5,7 +5,6 @@ presubmits:
     branches:
     - ^development$
     decorate: true
-    always_run: true
     path_alias: github.com/IBM/ibm-licensing-operator
     rerun_command: /test check ibm-licensing-operator
     spec:
@@ -23,7 +22,6 @@ presubmits:
     branches:
     - ^development$
     decorate: true
-    always_run: true
     path_alias: github.com/IBM/ibm-licensing-operator
     rerun_command: /test test ibm-licensing-operator-amd64
     spec:
@@ -42,7 +40,6 @@ presubmits:
     branches:
     - ^development$
     decorate: true
-    always_run: true
     path_alias: github.com/IBM/ibm-licensing-operator
     rerun_command: /test test ibm-licensing-operator-ppc64le
     spec:
@@ -61,7 +58,6 @@ presubmits:
     branches:
     - ^development$
     decorate: true
-    always_run: true
     path_alias: github.com/IBM/ibm-licensing-operator
     rerun_command: /test test ibm-licensing-operator-s390x
     spec:
@@ -80,7 +76,6 @@ presubmits:
     branches:
     - ^development$
     decorate: true
-    always_run: true
     path_alias: github.com/IBM/ibm-licensing-operator
     rerun_command: /test build ibm-licensing-operator-amd64
     spec:
@@ -99,7 +94,6 @@ presubmits:
     branches:
     - ^development$
     decorate: true
-    always_run: true
     path_alias: github.com/IBM/ibm-licensing-operator
     rerun_command: /test build ibm-licensing-operator-ppc64le
     spec:
@@ -118,7 +112,6 @@ presubmits:
     branches:
     - ^development$
     decorate: true
-    always_run: true
     path_alias: github.com/IBM/ibm-licensing-operator
     rerun_command: /test build ibm-licensing-operator-s390x
     spec:
