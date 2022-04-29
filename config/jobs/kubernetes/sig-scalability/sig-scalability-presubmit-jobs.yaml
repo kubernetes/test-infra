@@ -267,8 +267,9 @@ presubmits:
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-scale-performance-manual
         - --metadata-sources=cl2-metadata.json
-        - --env=CL2_LOAD_TEST_THROUGHPUT=50
-        - --env=CL2_DELETE_TEST_THROUGHPUT=50
+        # TODO(wojtek-t): Revert back to 50 after validating the impact of P&F in such setup.
+        - --env=CL2_LOAD_TEST_THROUGHPUT=1000
+        - --env=CL2_DELETE_TEST_THROUGHPUT=1000
         # Overrides CONTROLLER_MANAGER_TEST_ARGS from preset-e2e-scalability-periodics.
         - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling --kube-api-qps=100 --kube-api-burst=100 --endpointslice-updates-batch-period=500ms --endpoint-updates-batch-period=500ms
         # Overrides SCHEDULER_TEST_ARGS from preset-e2e-scalability-periodics.
