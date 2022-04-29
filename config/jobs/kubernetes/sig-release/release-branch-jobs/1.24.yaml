@@ -568,6 +568,104 @@ periodics:
           memory: 9Gi
       securityContext:
         privileged: true
+- name: ci-kubernetes-e2e-windows-containerd-gce-1-24
+  decorate: true
+  decoration_config:
+    timeout: 4h
+  extra_refs:
+  - base_ref: master
+    org: kubernetes-sigs
+    path_alias: sigs.k8s.io/windows-testing
+    repo: windows-testing
+  interval: 4h
+  labels:
+    preset-k8s-ssh: "true"
+    preset-service-account: "true"
+    preset-common-gce-windows: "true"
+    preset-e2e-gce-windows: "true"
+    preset-e2e-gce-windows-containerd: "true"
+    preset-windows-repo-list-master: "true"
+  spec:
+    containers:
+    - args:
+      - --check-leaked-resources
+      - --cluster=
+      - --extract=ci/latest-1.24
+      - --gcp-zone=us-west1-b
+      - --provider=gce
+      - --gcp-nodes=2
+      - --test=false
+      - --test-cmd=$GOPATH/src/sigs.k8s.io/windows-testing/gce/run-e2e.sh
+      - --test_args=--node-os-distro=windows -prepull-images=true --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[alpha\]|\[Slow\]|\[GMSA\]|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|\[sig-api-machinery\].Aggregator
+      - --test-cmd-args=--node-os-distro=windows -prepull-images=true --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[alpha\]|\[Slow\]|\[GMSA\]|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|\[sig-api-machinery\].Aggregator
+      - --ginkgo-parallel=4
+      - --timeout=230m
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      env:
+      - name: NO_LINUX_POOL_TAINT
+        value: "true"
+      - name: WINDOWS_NODE_OS_DISTRIBUTION
+        value: "win2019"
+      - name: NODE_SIZE
+        value: "n1-standard-4"
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220428-de61deb68b-1.24
+      securityContext:
+        privileged: true
+  annotations:
+    testgrid-dashboards: sig-windows-gce
+    testgrid-tab-name: gce-windows-2019-containerd-1.24
+    description: Runs tests on a Kubernetes cluster with Windows containerd nodes on GCE
+- name: ci-kubernetes-e2e-windows-20h2-containerd-gce-1-24
+  decorate: true
+  decoration_config:
+    timeout: 4h
+  extra_refs:
+  - base_ref: master
+    org: kubernetes-sigs
+    path_alias: sigs.k8s.io/windows-testing
+    repo: windows-testing
+  interval: 4h
+  labels:
+    preset-k8s-ssh: "true"
+    preset-service-account: "true"
+    preset-common-gce-windows: "true"
+    preset-e2e-gce-windows: "true"
+    preset-e2e-gce-windows-containerd: "true"
+    preset-windows-repo-list-master: "true"
+  spec:
+    containers:
+    - args:
+      - --check-leaked-resources
+      - --cluster=
+      - --extract=ci/latest-1.24
+      - --gcp-zone=us-west1-b
+      - --provider=gce
+      - --gcp-nodes=2
+      - --test=false
+      - --test-cmd=$GOPATH/src/sigs.k8s.io/windows-testing/gce/run-e2e.sh
+      - --test_args=--node-os-distro=windows -prepull-images=true --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[alpha\]|\[Slow\]|\[GMSA\]|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|\[sig-api-machinery\].Aggregator
+      - --test-cmd-args=--node-os-distro=windows -prepull-images=true --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[alpha\]|\[Slow\]|\[GMSA\]|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|\[sig-api-machinery\].Aggregator
+      - --ginkgo-parallel=4
+      - --timeout=230m
+      command:
+      - runner.sh
+      - /workspace/scenarios/kubernetes_e2e.py
+      env:
+      - name: NO_LINUX_POOL_TAINT
+        value: "true"
+      - name: WINDOWS_NODE_OS_DISTRIBUTION
+        value: "win20h2"
+      - name: NODE_SIZE
+        value: "n1-standard-4"
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220428-de61deb68b-1.24
+      securityContext:
+        privileged: true
+  annotations:
+    testgrid-dashboards: sig-windows-gce
+    testgrid-tab-name: gce-windows-20h2-containerd-1.24
+    description: Runs tests on a Kubernetes cluster with Windows containerd nodes on GCE
 postsubmits: {}
 presubmits:
   kubernetes/kubernetes:
