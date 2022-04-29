@@ -257,7 +257,9 @@ var simplifier = simplifypath.NewSimplifier(l("", // shadow element mimicing the
 	l("tide-history.js"),
 	l("tide.js"),
 	l("view",
-		v("job")),
+		v("job"),
+		l("gs", v("bucket", l("logs", v("job", v("build"))))),
+	),
 ))
 
 // l and v keep the tree legible
