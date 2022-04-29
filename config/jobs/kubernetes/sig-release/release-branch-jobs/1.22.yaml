@@ -745,8 +745,8 @@ periodics:
       - --gcp-nodes=2
       - --test=false
       - --test-cmd=$GOPATH/src/sigs.k8s.io/windows-testing/gce/run-e2e.sh
-      - --test_args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[alpha\]|\[Slow\]|\[GMSA\]|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|\[sig-api-machinery\].Aggregator
-      - --test-cmd-args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[alpha\]|\[Slow\]|\[GMSA\]|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|\[sig-api-machinery\].Aggregator
+      - --test_args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[alpha\]|\[Slow\]|\[GMSA\]|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|\[sig-api-machinery\].Aggregator|\[Driver:.windows-gcepd\]
+      - --test-cmd-args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[alpha\]|\[Slow\]|\[GMSA\]|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|\[sig-api-machinery\].Aggregator|\[Driver:.windows-gcepd\]
       - --ginkgo-parallel=4
       - --timeout=230m
       command:
@@ -798,8 +798,8 @@ periodics:
       - --gcp-nodes=2
       - --test=false
       - --test-cmd=$GOPATH/src/sigs.k8s.io/windows-testing/gce/run-e2e.sh
-      - --test_args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[alpha\]|\[Slow\]|\[GMSA\]|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|\[sig-api-machinery\].Aggregator
-      - --test-cmd-args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[alpha\]|\[Slow\]|\[GMSA\]|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|\[sig-api-machinery\].Aggregator
+      - --test_args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[alpha\]|\[Slow\]|\[GMSA\]|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|\[sig-api-machinery\].Aggregator|\[Driver:.windows-gcepd\]
+      - --test-cmd-args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[alpha\]|\[Slow\]|\[GMSA\]|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|\[sig-api-machinery\].Aggregator|\[Driver:.windows-gcepd\]
       - --ginkgo-parallel=4
       - --timeout=230m
       command:
@@ -850,8 +850,8 @@ periodics:
       - --gcp-nodes=2
       - --test=false
       - --test-cmd=$GOPATH/src/sigs.k8s.io/windows-testing/gce/run-e2e.sh
-      - --test_args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[alpha\]|\[Slow\]|\[GMSA\]|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|\[sig-api-machinery\].Aggregator
-      - --test-cmd-args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[alpha\]|\[Slow\]|\[GMSA\]|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|\[sig-api-machinery\].Aggregator
+      - --test_args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[alpha\]|\[Slow\]|\[GMSA\]|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|\[sig-api-machinery\].Aggregator|\[Driver:.windows-gcepd\]
+      - --test-cmd-args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[alpha\]|\[Slow\]|\[GMSA\]|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|\[sig-api-machinery\].Aggregator|\[Driver:.windows-gcepd\]
       - --ginkgo-parallel=4
       - --timeout=230m
       command:
@@ -900,8 +900,8 @@ periodics:
       - --gcp-nodes=2
       - --test=false
       - --test-cmd=$GOPATH/src/sigs.k8s.io/windows-testing/gce/run-e2e.sh
-      - --test_args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[alpha\]|\[Slow\]|\[GMSA\]|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|\[sig-api-machinery\].Aggregator
-      - --test-cmd-args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[alpha\]|\[Slow\]|\[GMSA\]|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|\[sig-api-machinery\].Aggregator
+      - --test_args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[alpha\]|\[Slow\]|\[GMSA\]|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|\[sig-api-machinery\].Aggregator|\[Driver:.windows-gcepd\]
+      - --test-cmd-args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[Feature:Windows\] --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[alpha\]|\[Slow\]|\[GMSA\]|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows|\[sig-api-machinery\].Aggregator|\[Driver:.windows-gcepd\]
       - --ginkgo-parallel=4
       - --timeout=230m
       command:
