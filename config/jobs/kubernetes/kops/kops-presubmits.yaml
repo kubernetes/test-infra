@@ -92,7 +92,7 @@ presubmits:
             --env JOB_NAME=pull-kops-e2e-kubernetes-do-gossip \
             --create-args "--networking=calico --api-loadbalancer-type=public --node-count=2 --master-count=3" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
-            --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
+            --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
             -- \
             --test-package-marker=stable.txt \
@@ -146,7 +146,7 @@ presubmits:
             --env JOB_NAME=pull-kops-e2e-kubernetes-do-fqdn \
             --create-args "--networking=calico --node-count=2" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
-            --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
+            --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
             -- \
             --test-package-marker=stable.txt \
