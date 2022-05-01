@@ -7,7 +7,7 @@ presubmits:
   - name: pull-kops-e2e-cni-amazonvpc
     branches:
     - master
-    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.amazon-vpc-routed-eni\/|pkg\/model\/(firewall|components\/kubeproxy|iam\/iam_builder).go|nodeup\/pkg\/model\/(context|kubelet).go|upup\/pkg\/fi\/cloudup\/defaults.go)'
+    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.amazon-vpc-routed-eni\/|pkg\/model\/(firewall|components\/containerd.go|components\/kubeproxy|iam\/iam_builder).go|nodeup\/pkg\/model\/(context|kubelet).go|upup\/pkg\/fi\/cloudup\/defaults.go)'
     always_run: false
     skip_report: false
     labels:
@@ -140,7 +140,7 @@ presubmits:
   - name: pull-kops-e2e-cni-calico
     branches:
     - master
-    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.projectcalico\.org\/|pkg\/model\/(firewall.go|pki.go|iam\/iam_builder.go)|nodeup\/pkg\/model\/networking\/calico.go)'
+    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.projectcalico\.org\/|pkg\/model\/(components\/containerd.go|firewall.go|pki.go|iam\/iam_builder.go)|nodeup\/pkg\/model\/networking\/calico.go)'
     always_run: false
     skip_report: false
     labels:
@@ -207,7 +207,7 @@ presubmits:
   - name: pull-kops-e2e-cni-calico-ipv6
     branches:
     - master
-    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.projectcalico\.org\/|pkg\/model\/(firewall.go|pki.go|iam\/iam_builder.go)|nodeup\/pkg\/model\/networking\/calico.go)'
+    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.projectcalico\.org\/|pkg\/model\/(components\/containerd.go|firewall.go|pki.go|iam\/iam_builder.go)|nodeup\/pkg\/model\/networking\/calico.go)'
     always_run: false
     skip_report: false
     labels:
@@ -341,7 +341,7 @@ presubmits:
   - name: pull-kops-e2e-cni-cilium
     branches:
     - master
-    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(firewall|components\/cilium|iam\/iam_builder).go|nodeup\/pkg\/model\/(context|networking\/cilium).go|upup\/pkg\/fi\/cloudup\/template_functions.go)'
+    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd.go|firewall|components\/cilium|iam\/iam_builder).go|nodeup\/pkg\/model\/(context|networking\/cilium).go)'
     always_run: false
     skip_report: false
     labels:
@@ -408,7 +408,7 @@ presubmits:
   - name: pull-kops-e2e-cni-cilium-ipv6
     branches:
     - master
-    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(firewall|components\/cilium|iam\/iam_builder).go|nodeup\/pkg\/model\/(context|networking\/cilium).go|upup\/pkg\/fi\/cloudup\/template_functions.go)'
+    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd.go|firewall|components\/cilium|iam\/iam_builder).go|nodeup\/pkg\/model\/(context|networking\/cilium).go)'
     always_run: false
     skip_report: false
     optional: true
@@ -542,7 +542,7 @@ presubmits:
   - name: pull-kops-e2e-cni-flannel
     branches:
     - master
-    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.flannel\/|upup\/pkg\/fi\/cloudup\/template_functions.go)'
+    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.flannel\/|pkg\/model\/components\/containerd.go)'
     always_run: false
     skip_report: false
     labels:
@@ -609,7 +609,7 @@ presubmits:
   - name: pull-kops-e2e-cni-kuberouter
     branches:
     - master
-    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.kuberouter\/|upup\/pkg\/fi\/cloudup\/template_functions.go)'
+    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.kuberouter\/|pkg\/model\/components\/containerd.go)'
     always_run: false
     skip_report: false
     labels:
@@ -676,7 +676,7 @@ presubmits:
   - name: pull-kops-e2e-cni-weave
     branches:
     - master
-    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.weave\/|upup\/pkg\/fi\/cloudup\/template_functions.go)'
+    run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.weave\/)'
     always_run: false
     skip_report: false
     labels:
