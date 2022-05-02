@@ -21,11 +21,7 @@ export interface PullRequest extends BasePullRequest {
       Commit: Commit;
     }>;
   };
-  Labels: {
-    Nodes: Array<{
-      Name: string;
-    }>;
-  };
+  Labels: string[];
   Milestone?: {
     Title: string;
   };
