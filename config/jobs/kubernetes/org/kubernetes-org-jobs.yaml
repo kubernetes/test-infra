@@ -7,7 +7,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: golang:1.17
+      - image: golang:1.18
         command:
         - make
         args:
@@ -22,7 +22,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: golang:1.17
+      - image: golang:1.18
         command:
         - make
         args:
