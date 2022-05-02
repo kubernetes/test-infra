@@ -3,6 +3,7 @@ presubmits:
   - name: pull-metrics-server-verify
     decorate: true
     skip_branches:
+      - gh-pages
       - release-0.3
     path_alias: sigs.k8s.io/metrics-server
     always_run: true
@@ -19,6 +20,7 @@ presubmits:
   - name: pull-metrics-server-test-unit
     decorate: true
     skip_branches:
+      - gh-pages
       - release-0.3
     path_alias: sigs.k8s.io/metrics-server
     always_run: true
@@ -43,6 +45,7 @@ presubmits:
       preset-dind-enabled: "true"
     decorate: true
     skip_branches:
+      - gh-pages
       - release-0.3
     path_alias: sigs.k8s.io/metrics-server
     always_run: true
@@ -69,6 +72,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     decorate: true
     skip_branches:
+      - gh-pages
       - release-0.3
     path_alias: sigs.k8s.io/metrics-server
     always_run: true
@@ -95,6 +99,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     decorate: true
     skip_branches:
+      - gh-pages
       - release-0.3
       - release-0.4
       - release-0.5
@@ -123,6 +128,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     decorate: true
     skip_branches:
+      - gh-pages
       - release-0.3
       - release-0.4
       - release-0.5
