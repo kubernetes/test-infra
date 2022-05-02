@@ -12,8 +12,10 @@
       preset-service-account: "true"
       preset-aws-ssh: "true"
       preset-aws-credential: "true"
+      {%- if branch in ["release-1.22", "release-1.23"] %}
       preset-bazel-scratch-dir: "true"
       preset-bazel-remote-cache-enabled: "true"
+      {%- endif %}
       preset-dind-enabled: "true"
       {%- else %}
       preset-k8s-ssh: "true"

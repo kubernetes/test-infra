@@ -65,8 +65,6 @@ presubmits:
       preset-do-credential: "true"
       preset-do-spaces-credential: "true"
       preset-do-ssh: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
     decorate: true
     decoration_config:
@@ -119,8 +117,6 @@ presubmits:
       preset-do-credential: "true"
       preset-do-spaces-credential: "true"
       preset-do-ssh: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
     decorate: true
     decoration_config:
@@ -366,8 +362,6 @@ presubmits:
     always_run: true
     labels:
       preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
     decorate: true
     decoration_config:
       timeout: 10m
@@ -503,8 +497,6 @@ postsubmits:
     - master
     labels:
       preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
     decorate: true
     decoration_config:
       timeout: 15m
