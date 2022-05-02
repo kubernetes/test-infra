@@ -37,7 +37,7 @@ presubmits:
             --cloud-provider=aws \
             --create-args="--image='136693071363/debian-10-amd64-20220328-962' --channel=alpha --networking=calico --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
-            --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
+            --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
             -- \
             --ginkgo-args="--debug" \
@@ -103,7 +103,7 @@ presubmits:
             --cloud-provider=aws \
             --create-args="--image='136693071363/debian-11-amd64-20220328-962' --channel=alpha --networking=calico --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
-            --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
+            --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
             -- \
             --ginkgo-args="--debug" \
@@ -169,7 +169,7 @@ presubmits:
             --cloud-provider=aws \
             --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20220411' --channel=alpha --networking=calico --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
-            --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
+            --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
             -- \
             --ginkgo-args="--debug" \
@@ -235,7 +235,7 @@ presubmits:
             --cloud-provider=aws \
             --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220419' --channel=alpha --networking=calico --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
-            --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
+            --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
             -- \
             --ginkgo-args="--debug" \
@@ -301,7 +301,7 @@ presubmits:
             --cloud-provider=aws \
             --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20220420' --channel=alpha --networking=calico --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
-            --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
+            --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
             -- \
             --ginkgo-args="--debug" \
@@ -367,7 +367,7 @@ presubmits:
             --cloud-provider=aws \
             --create-args="--image='amazon/amzn2-ami-kernel-5.10-hvm-2.0.20220419.0-x86_64-gp2' --channel=alpha --networking=calico --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
-            --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
+            --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
             -- \
             --ginkgo-args="--debug" \
@@ -433,7 +433,7 @@ presubmits:
             --cloud-provider=aws \
             --create-args="--image='309956199498/RHEL-8.5.0_HVM-20211103-x86_64-0-Hourly2-GP2' --channel=alpha --networking=calico --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
-            --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
+            --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
             -- \
             --ginkgo-args="--debug" \
@@ -499,7 +499,7 @@ presubmits:
             --cloud-provider=aws \
             --create-args="--image='792107900819/Rocky-8-ec2-8.5-20211114.2.x86_64' --channel=alpha --networking=calico --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
-            --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
+            --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
             -- \
             --ginkgo-args="--debug" \
@@ -565,7 +565,7 @@ presubmits:
             --cloud-provider=aws \
             --create-args="--image='075585003325/Flatcar-stable-3139.2.0-hvm' --channel=alpha --networking=calico --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
             --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
-            --kops-binary-path=/home/prow/go/src/k8s.io/kops/bazel-bin/cmd/kops/linux-amd64/kops \
+            --kops-binary-path=/home/prow/go/src/k8s.io/kops/.build/dist/linux/amd64/kops \
             --test=kops \
             -- \
             --ginkgo-args="--debug" \
