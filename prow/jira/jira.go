@@ -63,9 +63,9 @@ type Client interface {
 	// UpdateStatus updates an issue's status by identifying the ID of the provided
 	// statusName and then doing the status transition to update the issue.
 	UpdateStatus(issueID, statusName string) error
-	// GetIssueSecurityLevel returns the security level of an issue. If security level is nil and error is
-	// nil, then there is no security level set for the issue and the issue will follow the default security
-	// level of the project.
+	// GetIssueSecurityLevel returns the security level of an issue. If no security level
+	// is set for the issue, the returned SecurityLevel and error will both be nil and
+	// the issue will follow the default project security level.
 	GetIssueSecurityLevel(*jira.Issue) (*SecurityLevel, error)
 	// FindUser returns all users with a field matching the queryParam (ex: email, display name, etc.)
 	FindUser(queryParam string) ([]*jira.User, error)
@@ -461,20 +461,19 @@ func CloneIssue(jc Client, parent *jira.Issue) (*jira.Issue, error) {
 	createdIssue, err := jc.CreateIssue(childIssue)
 	if err != nil {
 		// some fields cannot be set on creation; unset them
-		if JiraErrorStatusCode(err) == 400 {
-			var newErr error
-			childIssue, newErr = unsetProblematicFields(childIssue, JiraErrorBody(err))
-			if newErr != nil {
-				// in this situation, it makes more sense to just return the original error; any error from unsetProblematicFields will be
-				// a json marshalling error, indicating an error different from the standard non-settable fields error. The error from
-				// unsetProblematicFields is not useful in these cases
-				return nil, err
-			}
-			createdIssue, err = jc.CreateIssue(childIssue)
-			if err != nil {
-				return nil, err
-			}
-		} else {
+		if JiraErrorStatusCode(err) != 400 {
+			return nil, err
+		}
+		var newErr error
+		childIssue, newErr = unsetProblematicFields(childIssue, JiraErrorBody(err))
+		if newErr != nil {
+			// in this situation, it makes more sense to just return the original error; any error from unsetProblematicFields will be
+			// a json marshalling error, indicating an error different from the standard non-settable fields error. The error from
+			// unsetProblematicFields is not useful in these cases
+			return nil, err
+		}
+		createdIssue, err = jc.CreateIssue(childIssue)
+		if err != nil {
 			return nil, err
 		}
 	}
@@ -542,11 +541,13 @@ type createIssueError struct {
 	Errors        map[string]string `json:"errors"`
 }
 
-// GetIssueSecurityLevel is a generic function for GetIssueSecurityLevel that can work with any
-// valid Client.
+// GetIssueSecurityLevel returns the security level of an issue. If no security level
+// is set for the issue, the returned SecurityLevel and error will both be nil and
+// the issue will follow the default project security level.
 func GetIssueSecurityLevel(client Client, issue *jira.Issue) (*SecurityLevel, error) {
 	// TODO: Add field to the upstream go-jira package; if a security level exists, it is returned
 	// as part of the issue fields
+	// See https://github.com/andygrunwald/go-jira/issues/456
 	securityField, ok := issue.Fields.Unknowns["security"]
 	if !ok {
 		return nil, nil
@@ -680,33 +681,39 @@ func maskAuthorizationHeader(key string, value string) string {
 }
 
 type JiraError struct {
-	statusCode    int
-	body          string
-	originalError error
+	StatusCode    int
+	Body          string
+	OriginalError error
 }
 
 func (e JiraError) Error() string {
-	return fmt.Sprintf("%s: %s", e.originalError, e.body)
+	return fmt.Sprintf("%s: %s", e.OriginalError, e.Body)
 }
 
 // JiraErrorStatusCode will identify if an error is a JiraError and return the
 // stored status code if it is; if it is not, `-1` will be returned
 func JiraErrorStatusCode(err error) int {
+	if jiraErr := (JiraError{}); errors.As(err, &jiraErr) {
+		return jiraErr.StatusCode
+	}
 	jiraErr, ok := err.(*JiraError)
 	if !ok {
 		return -1
 	}
-	return jiraErr.statusCode
+	return jiraErr.StatusCode
 }
 
 // JiraErrorBody will identify if an error is a JiraError and return the stored
 // response body if it is; if it is not, an empty string will be returned
 func JiraErrorBody(err error) string {
+	if jiraErr := (JiraError{}); errors.As(err, &jiraErr) {
+		return jiraErr.Body
+	}
 	jiraErr, ok := err.(*JiraError)
 	if !ok {
 		return ""
 	}
-	return jiraErr.body
+	return jiraErr.Body
 }
 
 // HandleJiraError collapses cryptic Jira errors to include response
@@ -720,9 +727,9 @@ func HandleJiraError(response *jira.Response, err error) error {
 				logrus.WithError(readError).Warn("Failed to read Jira response body.")
 			}
 			return &JiraError{
-				statusCode:    response.StatusCode,
-				body:          string(body),
-				originalError: err,
+				StatusCode:    response.StatusCode,
+				Body:          string(body),
+				OriginalError: err,
 			}
 		}
 	}
