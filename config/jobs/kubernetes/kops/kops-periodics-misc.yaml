@@ -31,8 +31,6 @@ periodics:
     preset-do-credential: "true"
     preset-do-spaces-credential: "true"
     preset-do-ssh: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
