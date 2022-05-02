@@ -7,6 +7,7 @@ dashboard_groups:
   - sig-contribex-k8s-triage-robot
   - sig-contribex-org
   - sig-contribex-slack-infra
+  - sig-contribex-maintainers
 
 # Dashboards
 
@@ -30,3 +31,4 @@ dashboards:
       code_search_url_template:
         url: https://github.com/kubernetes/org/compare/<start-custom-0>...<end-custom-0>
 - name: sig-contribex-slack-infra
+- name: sig-contribex-maintainers
