@@ -141,8 +141,16 @@ deck:
         - ^artifacts/filtered\.html$
     - lens:
         name: podinfo
+        config:
+          runner_configs:
+              "default":
+                pod_link_template: "https://console.cloud.google.com/kubernetes/pod/us-central1-f/prow/test-pods/{{ .Name }}/details?project=k8s-prow-builds"
+              "test-infra-trusted":
+                pod_link_template: "https://console.cloud.google.com/kubernetes/pod/us-central1-f/prow/test-pods/{{ .Name }}/details?project=k8s-prow"
       required_files:
         - ^podinfo\.json$
+      optional_files:
+        - ^prowjob\.json$
     - lens:
         name: links
       required_files:
