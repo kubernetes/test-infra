@@ -722,6 +722,13 @@ def generate_distros():
     results = []
     for distro in distros:
         distro_short = distro.replace('ubuntu', 'u').replace('debian', 'deb').replace('amazonlinux', 'amzn') # pylint: disable=line-too-long
+        extra_flags = []
+        if 'arm64' in distro:
+            extra_flags = [
+                "--zones=eu-central-1a",
+                "--node-size=m6g.large",
+                "--master-size=m6g.large"
+            ]
         results.append(
             build_test(distro=distro_short,
                        networking='kubenet',
@@ -729,6 +736,7 @@ def generate_distros():
                        kops_channel='alpha',
                        name_override=f"kops-aws-distro-{distro}",
                        extra_dashboards=['kops-distros'],
+                       extra_flags=extra_flags,
                        runs_per_day=3,
                        )
         )
@@ -741,6 +749,13 @@ def generate_presubmits_distros():
     results = []
     for distro in distros:
         distro_short = distro.replace('ubuntu', 'u').replace('debian', 'deb').replace('amazonlinux', 'amzn') # pylint: disable=line-too-long
+        extra_flags = []
+        if 'arm64' in distro:
+            extra_flags = [
+                "--zones=eu-central-1a",
+                "--node-size=m6g.large",
+                "--master-size=m6g.large"
+            ]
         results.append(
             presubmit_test(
                 distro=distro_short,
@@ -749,6 +764,7 @@ def generate_presubmits_distros():
                 kops_channel='alpha',
                 name=f"pull-kops-aws-distro-{distro}",
                 tab_name=f"e2e-{distro}",
+                extra_flags=extra_flags,
                 always_run=False,
             )
         )

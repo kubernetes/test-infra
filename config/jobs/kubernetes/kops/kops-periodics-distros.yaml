@@ -322,7 +322,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-distro-ubuntu2204
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204arm64", "extra_flags": "--discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "kubenet"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204arm64", "extra_flags": "--zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "kubenet"}
 - name: e2e-kops-aws-distro-ubuntu2204arm64
   cron: '36 3-23/8 * * *'
   labels:
@@ -351,7 +351,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20220420' --channel=alpha --networking=kubenet --container-runtime=containerd --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20220420' --channel=alpha --networking=kubenet --container-runtime=containerd --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable.txt \
           --test=kops \
@@ -377,7 +377,7 @@ periodics:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
     test.kops.k8s.io/distro: u2204arm64
-    test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
+    test.kops.k8s.io/extra_flags: --zones=eu-west-1a --node-size=m6g.large --master-size=m6g.large --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/k8s_version: stable
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: ''
