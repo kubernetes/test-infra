@@ -17,6 +17,7 @@ limitations under the License.
 package jira
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -33,12 +34,51 @@ import (
 	"k8s.io/test-infra/prow/version"
 )
 
+// These are all the current valid states for Red Hat bugs in jira
+const (
+	StatusNew            = "NEW"
+	StatusBacklog        = "BACKLOG"
+	StatusAssigned       = "ASSIGNED"
+	StatusInProgess      = "IN PROGRESS"
+	StatusModified       = "MODIFIED"
+	StatusPost           = "POST"
+	StatusOnDev          = "ON_DEV"
+	StatusOnQA           = "ON_QA"
+	StatusVerified       = "VERIFIED"
+	StatusReleasePending = "RELEASE PENDING"
+	StatusClosed         = "CLOSED"
+)
+
 type Client interface {
 	GetIssue(id string) (*jira.Issue, error)
+	UpdateIssue(*jira.Issue) (*jira.Issue, error)
+	CreateIssue(*jira.Issue) (*jira.Issue, error)
+	CreateIssueLink(*jira.IssueLink) error
+	// CloneIssue copies an issue struct, clears unsettable fields, creates a new
+	// issue using the updated struct, and then links the new issue as a clone to
+	// the original.
+	CloneIssue(*jira.Issue) (*jira.Issue, error)
+	GetTransitions(issueID string) ([]jira.Transition, error)
+	DoTransition(issueID, transitionID string) error
+	// UpdateStatus updates an issue's status by identifying the ID of the provided
+	// statusName and then doing the status transition to update the issue.
+	UpdateStatus(issueID, statusName string) error
+	// GetIssueSecurityLevel returns the security level of an issue. If no security level
+	// is set for the issue, the returned SecurityLevel and error will both be nil and
+	// the issue will follow the default project security level.
+	GetIssueSecurityLevel(*jira.Issue) (*SecurityLevel, error)
+	// FindUser returns all users with a field matching the queryParam (ex: email, display name, etc.)
+	FindUser(queryParam string) ([]*jira.User, error)
 	GetRemoteLinks(id string) ([]jira.RemoteLink, error)
-	AddRemoteLink(id string, link *jira.RemoteLink) error
+	AddRemoteLink(id string, link *jira.RemoteLink) (*jira.RemoteLink, error)
 	UpdateRemoteLink(id string, link *jira.RemoteLink) error
+	DeleteLink(id string) error
+	DeleteRemoteLink(issueID string, linkID int) error
+	// DeleteRemoteLinkViaURL identifies and removes a remote link from an issue
+	// the has the provided URL.
+	DeleteRemoteLinkViaURL(issueID, url string) error
 	ForPlugin(plugin string) Client
+	AddComment(issueID string, comment *jira.Comment) (*jira.Comment, error)
 	ListProjects() (*jira.ProjectList, error)
 	JiraClient() *jira.Client
 	JiraURL() string
@@ -185,7 +225,7 @@ func (jc *client) GetIssue(id string) (*jira.Issue, error) {
 		if response != nil && response.StatusCode == http.StatusNotFound {
 			return nil, NotFoundError{err}
 		}
-		return nil, JiraError(response, err)
+		return nil, HandleJiraError(response, err)
 	}
 
 	return issue, nil
@@ -194,7 +234,7 @@ func (jc *client) GetIssue(id string) (*jira.Issue, error) {
 func (jc *client) ListProjects() (*jira.ProjectList, error) {
 	projects, response, err := jc.upstream.Project.GetList()
 	if err != nil {
-		return nil, JiraError(response, err)
+		return nil, HandleJiraError(response, err)
 	}
 	return projects, nil
 }
@@ -219,24 +259,24 @@ func (NotFoundError) Is(target error) bool {
 func (jc *client) GetRemoteLinks(id string) ([]jira.RemoteLink, error) {
 	result, resp, err := jc.upstream.Issue.GetRemoteLinks(id)
 	if err != nil {
-		return nil, JiraError(resp, err)
+		return nil, HandleJiraError(resp, err)
 	}
 	return *result, nil
 }
 
-func (jc *client) AddRemoteLink(id string, link *jira.RemoteLink) error {
-	req, err := jc.upstream.NewRequest("POST", "rest/api/2/issue/"+id+"/remotelink", link)
+func (jc *client) AddRemoteLink(id string, link *jira.RemoteLink) (*jira.RemoteLink, error) {
+	result, resp, err := jc.upstream.Issue.AddRemoteLink(id, link)
 	if err != nil {
-		return fmt.Errorf("failed to construct request: %w", err)
+		return nil, fmt.Errorf("failed to add link: %w", HandleJiraError(resp, err))
 	}
-	resp, err := jc.upstream.Do(req, nil)
-	if resp != nil {
-		defer resp.Body.Close()
-	}
-	if err != nil {
-		return fmt.Errorf("failed to add link: %w", JiraError(resp, err))
-	}
+	return result, nil
+}
 
+func (jc *client) DeleteLink(linkID string) error {
+	resp, err := jc.upstream.Issue.DeleteLink(linkID)
+	if err != nil {
+		return HandleJiraError(resp, err)
+	}
 	return nil
 }
 
@@ -251,7 +291,7 @@ func (jc *client) UpdateRemoteLink(id string, link *jira.RemoteLink) error {
 		defer resp.Body.Close()
 	}
 	if err != nil {
-		return fmt.Errorf("failed to update link: %w", JiraError(resp, err))
+		return fmt.Errorf("failed to update link: %w", HandleJiraError(resp, err))
 	}
 	if resp.StatusCode != http.StatusNoContent {
 		return fmt.Errorf("failed to update link: expected status code %d but got %d instead", http.StatusNoContent, resp.StatusCode)
@@ -259,8 +299,280 @@ func (jc *client) UpdateRemoteLink(id string, link *jira.RemoteLink) error {
 	return nil
 }
 
-func (jc *client) JiraURL() string {
-	return jc.url
+func (jc *client) DeleteRemoteLink(issueID string, linkID int) error {
+	apiEndpoint := fmt.Sprintf("/rest/api/2/issue/%s/remotelink/%d", issueID, linkID)
+	req, err := jc.upstream.NewRequest("DELETE", apiEndpoint, nil)
+	if err != nil {
+		return err
+	}
+
+	// the response should be empty if it is not an error
+	resp, err := jc.upstream.Do(req, nil)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
+	// Status code 204 is a success for this function. On success, there will be an error message of `EOF`,
+	// so in addition to the nil check for the error, we must check the status code.
+	if resp.StatusCode != 204 && err != nil {
+		return HandleJiraError(resp, err)
+	}
+	return nil
+}
+
+// DeleteRemoteLinkViaURL identifies and removes a remote link from an issue
+// the has the provided URL.
+func DeleteRemoteLinkViaURL(jc Client, issueID, url string) error {
+	links, err := jc.GetRemoteLinks(issueID)
+	if err != nil {
+		return err
+	}
+	for _, link := range links {
+		if link.Object.URL == url {
+			return jc.DeleteRemoteLink(issueID, link.ID)
+		}
+	}
+	return fmt.Errorf("could not find remote link on issue with URL `%s`", url)
+}
+
+func (jc *client) DeleteRemoteLinkViaURL(issueID, url string) error {
+	return DeleteRemoteLinkViaURL(jc, issueID, url)
+}
+
+func (jc *client) FindUser(queryParam string) ([]*jira.User, error) {
+	// JIRA's own documentation here is incorrect; it specifies that either 'accountID',
+	// 'query', or 'property' must be used. However, JIRA throws an error unless 'username'
+	// is used. This does a search as if it were supposed to be the query param, so we can use it like that
+	queryString := "username='" + queryParam + "'"
+	queryString = url.PathEscape(queryString)
+
+	apiEndpoint := fmt.Sprintf("/rest/api/2/user/search?%s", queryString)
+	req, err := jc.upstream.NewRequest("GET", apiEndpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	users := []*jira.User{}
+	resp, err := jc.upstream.Do(req, &users)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
+	if err != nil {
+		return nil, HandleJiraError(resp, err)
+	}
+	return users, nil
+}
+
+// UpdateStatus updates an issue's status by identifying the ID of the provided
+// statusName and then doing the status transition using the provided client to update the issue.
+func UpdateStatus(jc Client, issueID, statusName string) error {
+	transitions, err := jc.GetTransitions(issueID)
+	if err != nil {
+		return err
+	}
+	transitionID := ""
+	var nameList []string
+	for _, transition := range transitions {
+		// JIRA shows all statuses as caps in the UI, but internally has different case; use EqualFold to ignore case
+		if strings.EqualFold(transition.Name, statusName) {
+			transitionID = transition.ID
+			break
+		}
+		nameList = append(nameList, transition.Name)
+	}
+	if transitionID == "" {
+		return fmt.Errorf("No transition status with name `%s` could be found. Please select from the following list: %v", statusName, nameList)
+	}
+	return jc.DoTransition(issueID, transitionID)
+}
+
+func (jc *client) UpdateStatus(issueID, statusName string) error {
+	return UpdateStatus(jc, issueID, statusName)
+}
+
+func (jc *client) GetTransitions(issueID string) ([]jira.Transition, error) {
+	transitions, resp, err := jc.upstream.Issue.GetTransitions(issueID)
+	if err != nil {
+		return nil, HandleJiraError(resp, err)
+	}
+	return transitions, nil
+}
+
+func (jc *client) DoTransition(issueID, transitionID string) error {
+	resp, err := jc.upstream.Issue.DoTransition(issueID, transitionID)
+	if err != nil {
+		return HandleJiraError(resp, err)
+	}
+	return nil
+}
+
+func (jc *client) UpdateIssue(issue *jira.Issue) (*jira.Issue, error) {
+	result, resp, err := jc.upstream.Issue.Update(issue)
+	if err != nil {
+		return nil, HandleJiraError(resp, err)
+	}
+	return result, nil
+}
+
+func (jc *client) AddComment(issueID string, comment *jira.Comment) (*jira.Comment, error) {
+	result, resp, err := jc.upstream.Issue.AddComment(issueID, comment)
+	if err != nil {
+		return nil, HandleJiraError(resp, err)
+	}
+	return result, nil
+}
+
+func (jc *client) CreateIssue(issue *jira.Issue) (*jira.Issue, error) {
+	result, resp, err := jc.upstream.Issue.Create(issue)
+	if err != nil {
+		return nil, HandleJiraError(resp, err)
+	}
+	return result, nil
+}
+
+func (jc *client) CreateIssueLink(link *jira.IssueLink) error {
+	resp, err := jc.upstream.Issue.AddLink(link)
+	if err != nil {
+		return HandleJiraError(resp, err)
+	}
+	return nil
+}
+
+// CloneIssue copies an issue struct, clears unsettable fields, creates a new
+// issue using the updated struct, and then links the new issue as a clone to
+// the original.
+func CloneIssue(jc Client, parent *jira.Issue) (*jira.Issue, error) {
+	// create deep copy of parent "Fields" field
+	data, err := json.Marshal(parent.Fields)
+	if err != nil {
+		return nil, err
+	}
+	childIssueFields := &jira.IssueFields{}
+	err = json.Unmarshal(data, childIssueFields)
+	if err != nil {
+		return nil, err
+	}
+	childIssue := &jira.Issue{
+		Fields: childIssueFields,
+	}
+	// update description
+	childIssue.Fields.Description = fmt.Sprintf("This is a clone of issue %s. The following is the description of the original issue: \n---\n%s", parent.Key, parent.Fields.Description)
+
+	// attempt to create the new issue
+	createdIssue, err := jc.CreateIssue(childIssue)
+	if err != nil {
+		// some fields cannot be set on creation; unset them
+		if JiraErrorStatusCode(err) != 400 {
+			return nil, err
+		}
+		var newErr error
+		childIssue, newErr = unsetProblematicFields(childIssue, JiraErrorBody(err))
+		if newErr != nil {
+			// in this situation, it makes more sense to just return the original error; any error from unsetProblematicFields will be
+			// a json marshalling error, indicating an error different from the standard non-settable fields error. The error from
+			// unsetProblematicFields is not useful in these cases
+			return nil, err
+		}
+		createdIssue, err = jc.CreateIssue(childIssue)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// create clone links
+	link := &jira.IssueLink{
+		OutwardIssue: &jira.Issue{ID: parent.ID},
+		InwardIssue:  &jira.Issue{ID: createdIssue.ID},
+		Type: jira.IssueLinkType{
+			Name:    "Cloners",
+			Inward:  "is cloned by",
+			Outward: "clones",
+		},
+	}
+	if err := jc.CreateIssueLink(link); err != nil {
+		return nil, err
+	}
+	// Get updated issue, which would have issue links
+	if clonedIssue, err := jc.GetIssue(createdIssue.ID); err != nil {
+		// still return the originally created child issue here in case of failure to get updated issue
+		return createdIssue, fmt.Errorf("Could not get issue after creating issue links: %w", err)
+	} else {
+		return clonedIssue, nil
+	}
+}
+
+func (jc *client) CloneIssue(parent *jira.Issue) (*jira.Issue, error) {
+	return CloneIssue(jc, parent)
+}
+
+func unsetProblematicFields(issue *jira.Issue, responseBody string) (*jira.Issue, error) {
+	// handle unsettable "unknown" fields
+	processedResponse := createIssueError{}
+	if newErr := json.Unmarshal([]byte(responseBody), &processedResponse); newErr != nil {
+		return nil, fmt.Errorf("Error processing jira error: %w", newErr)
+	}
+	// turn issue into map to simplify unsetting process
+	marshalledIssue, err := json.Marshal(issue)
+	if err != nil {
+		return nil, err
+	}
+	issueMap := make(map[string]interface{})
+	if err := json.Unmarshal(marshalledIssue, &issueMap); err != nil {
+		return nil, err
+	}
+	fieldsMap := issueMap["fields"].(map[string]interface{})
+	for field := range processedResponse.Errors {
+		delete(fieldsMap, field)
+	}
+	issueMap["fields"] = fieldsMap
+	// turn back into jira.Issue type
+	marshalledFixedIssue, err := json.Marshal(issueMap)
+	if err != nil {
+		return nil, err
+	}
+	newIssue := jira.Issue{}
+	if err := json.Unmarshal(marshalledFixedIssue, &newIssue); err != nil {
+		return nil, err
+	}
+	return &newIssue, nil
+}
+
+type createIssueError struct {
+	ErrorMessages []string          `json:"errorMessages"`
+	Errors        map[string]string `json:"errors"`
+}
+
+// GetIssueSecurityLevel returns the security level of an issue. If no security level
+// is set for the issue, the returned SecurityLevel and error will both be nil and
+// the issue will follow the default project security level.
+func GetIssueSecurityLevel(client Client, issue *jira.Issue) (*SecurityLevel, error) {
+	// TODO: Add field to the upstream go-jira package; if a security level exists, it is returned
+	// as part of the issue fields
+	// See https://github.com/andygrunwald/go-jira/issues/456
+	securityField, ok := issue.Fields.Unknowns["security"]
+	if !ok {
+		return nil, nil
+	}
+	bytes, err := json.Marshal(securityField)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to process issue security level: %v", err)
+	}
+	securityLevel := &SecurityLevel{}
+	if err := json.Unmarshal(bytes, securityLevel); err != nil {
+		return nil, fmt.Errorf("failed to convert security level json to struct: %v", err)
+	} else {
+		return securityLevel, nil
+	}
+}
+
+func (jc *client) GetIssueSecurityLevel(issue *jira.Issue) (*SecurityLevel, error) {
+	return GetIssueSecurityLevel(jc, issue)
+}
+
+type SecurityLevel struct {
+	Self        string `json:"self"`
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
 }
 
 // Used determines whether the client has been used
@@ -307,6 +619,10 @@ func (jc *client) ForPlugin(plugin string) Client {
 		upstream:   jiraClient,
 		delegate:   jc.delegate,
 	}
+}
+
+func (jc *client) JiraURL() string {
+	return jc.url
 }
 
 func (bart *bearerAuthRoundtripper) RoundTrip(req *http.Request) (*http.Response, error) {
@@ -364,17 +680,57 @@ func maskAuthorizationHeader(key string, value string) string {
 	return value
 }
 
-// JiraError collapses cryptic Jira errors to include response
+type JiraError struct {
+	StatusCode    int
+	Body          string
+	OriginalError error
+}
+
+func (e JiraError) Error() string {
+	return fmt.Sprintf("%s: %s", e.OriginalError, e.Body)
+}
+
+// JiraErrorStatusCode will identify if an error is a JiraError and return the
+// stored status code if it is; if it is not, `-1` will be returned
+func JiraErrorStatusCode(err error) int {
+	if jiraErr := (&JiraError{}); errors.As(err, &jiraErr) {
+		return jiraErr.StatusCode
+	}
+	jiraErr, ok := err.(*JiraError)
+	if !ok {
+		return -1
+	}
+	return jiraErr.StatusCode
+}
+
+// JiraErrorBody will identify if an error is a JiraError and return the stored
+// response body if it is; if it is not, an empty string will be returned
+func JiraErrorBody(err error) string {
+	if jiraErr := (&JiraError{}); errors.As(err, &jiraErr) {
+		return jiraErr.Body
+	}
+	jiraErr, ok := err.(*JiraError)
+	if !ok {
+		return ""
+	}
+	return jiraErr.Body
+}
+
+// HandleJiraError collapses cryptic Jira errors to include response
 // bodies if it's detected that the original error holds no
 // useful context in the first place
-func JiraError(response *jira.Response, err error) error {
+func HandleJiraError(response *jira.Response, err error) error {
 	if err != nil && strings.Contains(err.Error(), "Please analyze the request body for more details.") {
 		if response != nil && response.Response != nil {
 			body, readError := ioutil.ReadAll(response.Body)
 			if readError != nil && readError.Error() != "http: read on closed response body" {
 				logrus.WithError(readError).Warn("Failed to read Jira response body.")
 			}
-			return fmt.Errorf("%w: %s", err, string(body))
+			return &JiraError{
+				StatusCode:    response.StatusCode,
+				Body:          string(body),
+				OriginalError: err,
+			}
 		}
 	}
 	return err

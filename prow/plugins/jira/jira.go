@@ -310,7 +310,7 @@ func upsertGitHubLinkToIssue(log *logrus.Entry, issueID string, jc jiraclient.Cl
 		}
 		log.Info("Updated jira link")
 	} else {
-		if err := jc.AddRemoteLink(issueID, link); err != nil {
+		if _, err := jc.AddRemoteLink(issueID, link); err != nil {
 			return fmt.Errorf("failed to add remote link: %w", err)
 		}
 		log.Info("Created jira link")
