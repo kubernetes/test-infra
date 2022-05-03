@@ -24,7 +24,7 @@ presubmits:
           if [ -f Makefile ]; then
             make test
           else
-            ../test-infra/hack/bazel.sh test --test_output=errors -- //... -//vendor/...
+            bazel test --test_output=errors -- //... -//vendor/...
           fi
   - name: cloud-provider-gcp-verify-all
     always_run: true
