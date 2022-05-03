@@ -693,7 +693,7 @@ func (e JiraError) Error() string {
 // JiraErrorStatusCode will identify if an error is a JiraError and return the
 // stored status code if it is; if it is not, `-1` will be returned
 func JiraErrorStatusCode(err error) int {
-	if jiraErr := (JiraError{}); errors.As(err, &jiraErr) {
+	if jiraErr := (&JiraError{}); errors.As(err, &jiraErr) {
 		return jiraErr.StatusCode
 	}
 	jiraErr, ok := err.(*JiraError)
@@ -706,7 +706,7 @@ func JiraErrorStatusCode(err error) int {
 // JiraErrorBody will identify if an error is a JiraError and return the stored
 // response body if it is; if it is not, an empty string will be returned
 func JiraErrorBody(err error) string {
-	if jiraErr := (JiraError{}); errors.As(err, &jiraErr) {
+	if jiraErr := (&JiraError{}); errors.As(err, &jiraErr) {
 		return jiraErr.Body
 	}
 	jiraErr, ok := err.(*JiraError)
