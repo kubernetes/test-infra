@@ -117,6 +117,7 @@ periodics:
     preset-e2e-gce-windows: "true"
     preset-e2e-gce-windows-containerd: "true"
     preset-windows-repo-list-master: "true"
+    preset-windows-private-registry-cred: "true"
   spec:
     containers:
     - args:
