@@ -715,7 +715,7 @@ def generate_conformance():
 # kops-periodics-distros.yaml #
 ###############################
 distros = ['debian10', 'debian11',
-           'ubuntu1804', 'ubuntu2004', 'ubuntu2204',
+           'ubuntu1804', 'ubuntu2004', 'ubuntu2204', 'ubuntu2204arm64',
            'amazonlinux2', 'rhel8', 'rocky8',
            'flatcar']
 def generate_distros():
