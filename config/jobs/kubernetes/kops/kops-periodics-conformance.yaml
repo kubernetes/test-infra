@@ -68,7 +68,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-conformance-1-23
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204arm64", "extra_flags": "--zones=eu-central-1a --node-size=t4g.large --master-size=t4g.large --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.23", "kops_channel": "alpha", "kops_version": "1.23", "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004arm64", "extra_flags": "--zones=eu-central-1a --node-size=t4g.large --master-size=t4g.large --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.23", "kops_channel": "alpha", "kops_version": "1.23", "networking": "calico"}
 - name: e2e-kops-aws-conformance-arm64-1-23
   cron: '35 8-23/24 * * *'
   labels:
@@ -97,7 +97,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20220420' --channel=alpha --networking=calico --container-runtime=containerd --zones=eu-central-1a --node-size=t4g.large --master-size=t4g.large --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20220419' --channel=alpha --networking=calico --container-runtime=containerd --zones=eu-central-1a --node-size=t4g.large --master-size=t4g.large --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.23/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -124,13 +124,13 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
-    test.kops.k8s.io/distro: u2204arm64
+    test.kops.k8s.io/distro: u2004arm64
     test.kops.k8s.io/extra_flags: --zones=eu-central-1a --node-size=t4g.large --master-size=t4g.large --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/k8s_version: '1.23'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.23'
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-1.23, kops-conformance, kops-distro-u2204arm64, kops-k8s-1.23, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.23, kops-conformance, kops-distro-u2004arm64, kops-k8s-1.23, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-conformance-arm64-1-23
 
@@ -200,7 +200,7 @@ periodics:
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-conformance-1-22
 
-# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2204arm64", "extra_flags": "--zones=eu-central-1a --node-size=t4g.large --master-size=t4g.large --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.22", "kops_channel": "alpha", "kops_version": "1.22", "networking": "calico"}
+# {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004arm64", "extra_flags": "--zones=eu-central-1a --node-size=t4g.large --master-size=t4g.large --discovery-store=s3://k8s-kops-prow/discovery", "k8s_version": "1.22", "kops_channel": "alpha", "kops_version": "1.22", "networking": "calico"}
 - name: e2e-kops-aws-conformance-arm64-1-22
   cron: '49 6-23/24 * * *'
   labels:
@@ -229,7 +229,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-server-20220420' --channel=alpha --networking=calico --container-runtime=containerd --zones=eu-central-1a --node-size=t4g.large --master-size=t4g.large --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-arm64-server-20220419' --channel=alpha --networking=calico --container-runtime=containerd --zones=eu-central-1a --node-size=t4g.large --master-size=t4g.large --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/markers/release-1.22/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.22.txt \
           --test=kops \
@@ -256,12 +256,12 @@ periodics:
   annotations:
     test.kops.k8s.io/cloud: aws
     test.kops.k8s.io/container_runtime: containerd
-    test.kops.k8s.io/distro: u2204arm64
+    test.kops.k8s.io/distro: u2004arm64
     test.kops.k8s.io/extra_flags: --zones=eu-central-1a --node-size=t4g.large --master-size=t4g.large --discovery-store=s3://k8s-kops-prow/discovery
     test.kops.k8s.io/k8s_version: '1.22'
     test.kops.k8s.io/kops_channel: alpha
     test.kops.k8s.io/kops_version: '1.22'
     test.kops.k8s.io/networking: calico
-    testgrid-dashboards: google-aws, kops-1.22, kops-conformance, kops-distro-u2204arm64, kops-k8s-1.22, sig-cluster-lifecycle-kops
+    testgrid-dashboards: google-aws, kops-1.22, kops-conformance, kops-distro-u2004arm64, kops-k8s-1.22, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '90'
     testgrid-tab-name: kops-aws-conformance-arm64-1-22

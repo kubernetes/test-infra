@@ -697,7 +697,7 @@ def generate_conformance():
                 kops_channel='alpha',
                 name_override=f"kops-aws-conformance-arm64-{version.replace('.', '-')}",
                 networking='calico',
-                distro="u2204arm64",
+                distro="u2004arm64",
                 extra_flags=["--zones=eu-central-1a",
                              "--node-size=t4g.large",
                              "--master-size=t4g.large"],
@@ -715,7 +715,7 @@ def generate_conformance():
 # kops-periodics-distros.yaml #
 ###############################
 distros = ['debian10', 'debian11',
-           'ubuntu1804', 'ubuntu2004', 'ubuntu2204', 'ubuntu2204arm64',
+           'ubuntu1804', 'ubuntu2004', 'ubuntu2004arm64', 'ubuntu2204', 'ubuntu2204arm64',
            'amazonlinux2', 'rhel8', 'rocky8',
            'flatcar']
 def generate_distros():
@@ -725,7 +725,7 @@ def generate_distros():
         extra_flags = []
         if 'arm64' in distro:
             extra_flags = [
-                "--zones=eu-central-1a",
+                "--zones=eu-west-1a",
                 "--node-size=m6g.large",
                 "--master-size=m6g.large"
             ]
@@ -752,7 +752,7 @@ def generate_presubmits_distros():
         extra_flags = []
         if 'arm64' in distro:
             extra_flags = [
-                "--zones=eu-central-1a",
+                "--zones=eu-west-1a",
                 "--node-size=m6g.large",
                 "--master-size=m6g.large"
             ]

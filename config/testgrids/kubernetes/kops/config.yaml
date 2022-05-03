@@ -18,6 +18,7 @@ dashboard_groups:
   - kops-distro-rocky8
   - kops-distro-u1804
   - kops-distro-u2004
+  - kops-distro-u2004arm64
   - kops-distro-u2204
   - kops-distro-u2204arm64
   - kops-k8s-1.19
@@ -51,6 +52,7 @@ dashboards:
 - name: kops-distro-rocky8
 - name: kops-distro-u1804
 - name: kops-distro-u2004
+- name: kops-distro-u2004arm64
 - name: kops-distro-u2204
 - name: kops-distro-u2204arm64
 - name: kops-k8s-1.19
