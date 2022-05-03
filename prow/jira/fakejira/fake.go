@@ -17,6 +17,7 @@ limitations under the License.
 package fakejira
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -25,17 +26,19 @@ import (
 
 	"github.com/andygrunwald/go-jira"
 	"github.com/sirupsen/logrus"
+
 	jiraclient "k8s.io/test-infra/prow/jira"
 )
 
 type FakeClient struct {
-	Issues        []*jira.Issue
-	ExistingLinks map[string][]jira.RemoteLink
-	NewLinks      []jira.RemoteLink
-	IssueLinks    []*jira.IssueLink
-	GetIssueError error
-	Transitions   []jira.Transition
-	Users         []*jira.User
+	Issues          []*jira.Issue
+	ExistingLinks   map[string][]jira.RemoteLink
+	NewLinks        []jira.RemoteLink
+	IssueLinks      []*jira.IssueLink
+	GetIssueError   error
+	Transitions     []jira.Transition
+	Users           []*jira.User
+	SearchResponses map[SearchRequest]SearchResponse
 }
 
 func (f *FakeClient) ListProjects() (*jira.ProjectList, error) {
@@ -338,4 +341,23 @@ func (f *FakeClient) UpdateIssue(issue *jira.Issue) (*jira.Issue, error) {
 
 func (f *FakeClient) UpdateStatus(issueID, statusName string) error {
 	return jiraclient.UpdateStatus(f, issueID, statusName)
+}
+
+type SearchRequest struct {
+	query   string
+	options *jira.SearchOptions
+}
+
+type SearchResponse struct {
+	issues   []jira.Issue
+	response *jira.Response
+	error    error
+}
+
+func (f *FakeClient) SearchWithContext(ctx context.Context, jql string, options *jira.SearchOptions) ([]jira.Issue, *jira.Response, error) {
+	resp, expected := f.SearchResponses[SearchRequest{query: jql, options: options}]
+	if !expected {
+		return nil, nil, fmt.Errorf("the query: %s is not registered", jql)
+	}
+	return resp.issues, resp.response, resp.error
 }
