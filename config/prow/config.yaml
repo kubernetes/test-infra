@@ -485,8 +485,6 @@ branch-protection:
               protect: true
             release-1.23:
               protect: true
-            release-1.24:
-              protect: true
     kubernetes-client:
       protect: true
       required_status_checks:
