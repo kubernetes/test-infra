@@ -6,7 +6,7 @@ presubmits:
     optional: true
     decoration_config:
       timeout: 8h
-    path_alias: sigs.k8s.io/perf-tests
+    path_alias: k8s.io/perf-tests
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
@@ -23,7 +23,7 @@ presubmits:
       # - org: kubernetes
       #   repo: perf-tests
       #   base_ref: "main"
-      #   path_alias: "sigs.k8s.io/perf-tests"
+      #   path_alias: "k8s.io/perf-tests"
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
         base_ref: main
