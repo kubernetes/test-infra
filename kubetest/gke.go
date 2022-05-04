@@ -566,6 +566,9 @@ func (g *gkeDeployer) TestSetup() error {
 	if err := g.setupEnv(); err != nil {
 		return err
 	}
+	if err := initKubeTestRepoList(); err != nil {
+		return err
+	}
 	g.setup = true
 	return nil
 }
