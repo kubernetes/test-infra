@@ -18,6 +18,7 @@ package tide
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/url"
@@ -104,7 +105,7 @@ func (sc *statusController) shutdown() {
 	<-sc.shutDown
 }
 
-// requirementDiff calculates the diff between a PR and a TideQuery.
+// requirementDiff calculates the diff between a GitHub PR and a TideQuery.
 // This diff is defined with a string that describes some subset of the
 // differences and an integer counting the total number of differences.
 // The diff count should always reflect the scale of the differences between
@@ -116,7 +117,7 @@ func (sc *statusController) shutdown() {
 // Note: an empty diff can be returned if the reason that the PR does not match
 // the TideQuery is unknown. This can happen if this function's logic
 // does not match GitHub's and does not indicate that the PR matches the query.
-func requirementDiff(pr *CodeReviewCommon, q *config.TideQuery, cc contextChecker) (string, int) {
+func requirementDiff(pr *PullRequest, q *config.TideQuery, cc contextChecker) (string, int) {
 	const maxLabelChars = 50
 	var desc string
 	var diff int
@@ -137,7 +138,7 @@ func requirementDiff(pr *CodeReviewCommon, q *config.TideQuery, cc contextChecke
 	// for the correct branch.
 	targetBranchDenied := false
 	for _, excludedBranch := range q.ExcludedBranches {
-		if string(pr.BaseRefName) == excludedBranch {
+		if string(pr.BaseRef.Name) == excludedBranch {
 			targetBranchDenied = true
 			break
 		}
@@ -145,7 +146,7 @@ func requirementDiff(pr *CodeReviewCommon, q *config.TideQuery, cc contextChecke
 	// if no allowlist is configured, the target is OK by default
 	targetBranchAllowed := len(q.IncludedBranches) == 0
 	for _, includedBranch := range q.IncludedBranches {
-		if string(pr.BaseRefName) == includedBranch {
+		if string(pr.BaseRef.Name) == includedBranch {
 			targetBranchAllowed = true
 			break
 		}
@@ -153,12 +154,12 @@ func requirementDiff(pr *CodeReviewCommon, q *config.TideQuery, cc contextChecke
 	if targetBranchDenied || !targetBranchAllowed {
 		diff += 2000
 		if desc == "" {
-			desc = fmt.Sprintf(" Merging to branch %s is forbidden.", pr.BaseRefName)
+			desc = fmt.Sprintf(" Merging to branch %s is forbidden.", pr.BaseRef.Name)
 		}
 	}
 
 	qAuthor := github.NormLogin(q.Author)
-	prAuthor := github.NormLogin(string(pr.AuthorLogin))
+	prAuthor := github.NormLogin(string(pr.Author.Login))
 
 	// Weight incorrect author with very high diff so that we select the query
 	// for the correct author.
@@ -182,8 +183,8 @@ func requirementDiff(pr *CodeReviewCommon, q *config.TideQuery, cc contextChecke
 	var missingLabels []string
 	for _, l1 := range q.Labels {
 		var found bool
-		for _, l2 := range pr.Labels {
-			if l2 == l1 {
+		for _, l2 := range pr.Labels.Nodes {
+			if string(l2.Name) == l1 {
 				found = true
 				break
 			}
@@ -205,8 +206,8 @@ func requirementDiff(pr *CodeReviewCommon, q *config.TideQuery, cc contextChecke
 
 	var presentLabels []string
 	for _, l1 := range q.MissingLabels {
-		for _, l2 := range pr.Labels {
-			if l2 == l1 {
+		for _, l2 := range pr.Labels.Nodes {
+			if string(l2.Name) == l1 {
 				presentLabels = append(presentLabels, l1)
 				break
 			}
@@ -227,7 +228,7 @@ func requirementDiff(pr *CodeReviewCommon, q *config.TideQuery, cc contextChecke
 	var contexts []string
 	log := logrus.WithFields(pr.logFields())
 	for _, commit := range pr.Commits.Nodes {
-		if string(commit.Commit.OID) == pr.HeadRefOID {
+		if commit.Commit.OID == pr.HeadRefOID {
 			for _, ctx := range unsuccessfulContexts(append(commit.Commit.Status.Contexts, checkRunNodesToContexts(log, commit.Commit.StatusCheckRollup.Contexts.Nodes)...), cc, log) {
 				contexts = append(contexts, string(ctx.Context))
 			}
@@ -244,7 +245,7 @@ func requirementDiff(pr *CodeReviewCommon, q *config.TideQuery, cc contextChecke
 		}
 	}
 
-	if q.ReviewApprovedRequired && pr.ReviewDecision != string(githubql.PullRequestReviewDecisionApproved) {
+	if q.ReviewApprovedRequired && pr.ReviewDecision != githubql.PullRequestReviewDecisionApproved {
 		diff += 50
 		if desc == "" {
 			desc = " PullRequest is missing sufficient approving GitHub review(s)"
@@ -253,15 +254,23 @@ func requirementDiff(pr *CodeReviewCommon, q *config.TideQuery, cc contextChecke
 	return desc, diff
 }
 
-// Returns expected status state and description.
+// expectedStatus returns expected GitHub status state and description.
 // If a PR is not mergeable, we have to select a TideQuery to compare it against
 // in order to generate a diff for the status description. We choose the query
 // for the repo that the PR is closest to meeting (as determined by the number
 // of unmet/violated requirements).
-func (sc *statusController) expectedStatus(log *logrus.Entry, queryMap *config.QueryMap, pr *CodeReviewCommon, pool map[string]CodeReviewCommon, ccg contextCheckerGetter, blocks blockers.Blockers, baseSHA string) (string, string, error) {
-	repo := config.OrgRepo{Org: pr.Org, Repo: pr.Repo}
+func (sc *statusController) expectedStatus(log *logrus.Entry, queryMap *config.QueryMap, crc *CodeReviewCommon, pool map[string]CodeReviewCommon, ccg contextCheckerGetter, blocks blockers.Blockers, baseSHA string) (string, string, error) {
+	// Get PullRequest struct for GitHub specific logic
+	pr := crc.GitHub
+	if pr == nil {
+		// This should not happen, as this mergeChecker is meant to be used by
+		// GitHub repos only
+		return "", "", errors.New("unexpected error: CodeReviewCommon should carry PullRequest struct")
+	}
 
-	if reason, err := sc.mergeChecker.isAllowed(pr); err != nil {
+	repo := config.OrgRepo{Org: crc.Org, Repo: crc.Repo}
+
+	if reason, err := sc.mergeChecker.isAllowed(crc); err != nil {
 		return "", "", fmt.Errorf("error checking if merge is allowed: %w", err)
 	} else if reason != "" {
 		log.WithField("reason", reason).Debug("The PR is not mergeable")
@@ -273,9 +282,9 @@ func (sc *statusController) expectedStatus(log *logrus.Entry, queryMap *config.Q
 		return "", "", fmt.Errorf("failed to set up context register: %w", err)
 	}
 
-	if _, ok := pool[prKey(pr)]; !ok {
+	if _, ok := pool[prKey(crc)]; !ok {
 		// if the branch is blocked forget checking for a diff
-		blockingIssues := blocks.GetApplicable(pr.Org, pr.Repo, pr.BaseRefName)
+		blockingIssues := blocks.GetApplicable(crc.Org, crc.Repo, crc.BaseRefName)
 		var numbers []string
 		for _, issue := range blockingIssues {
 			numbers = append(numbers, strconv.Itoa(issue.Number))
@@ -316,7 +325,7 @@ func (sc *statusController) expectedStatus(log *logrus.Entry, queryMap *config.Q
 			}
 		}
 		if sc.config().Tide.DisplayAllQueriesInStatus && minDiff == "" {
-			minDiff = " No Tide query for branch " + pr.BaseRefName + " found."
+			minDiff = " No Tide query for branch " + crc.BaseRefName + " found."
 		}
 
 		if !hasFullfilledQuery {
@@ -324,7 +333,7 @@ func (sc *statusController) expectedStatus(log *logrus.Entry, queryMap *config.Q
 		}
 	}
 
-	indexKey := indexKeyPassingJobs(repo, baseSHA, pr.HeadRefOID)
+	indexKey := indexKeyPassingJobs(repo, baseSHA, crc.HeadRefOID)
 	passingUpToDatePJs := &prowapi.ProwJobList{}
 	if err := sc.pjClient.List(context.Background(), passingUpToDatePJs, ctrlruntimeclient.MatchingFields{indexNamePassingJobs: indexKey}); err != nil {
 		// Just log the error and return success, as the PR is in the merge pool
@@ -358,9 +367,17 @@ func retestingStatus(retested []string) string {
 // targetURL determines the URL used for more details in the status
 // context on GitHub. If no PR dashboard is configured, we will use
 // the administrative Prow overview.
-func targetURL(c *config.Config, pr *CodeReviewCommon, log *logrus.Entry) string {
+func targetURL(c *config.Config, crc *CodeReviewCommon, log *logrus.Entry) string {
+	// Get PullRequest struct for GitHub specific logic
+	pr := crc.GitHub
+	if pr == nil {
+		// This should not happen, as this mergeChecker is meant to be used by
+		// GitHub repos only
+		return ""
+	}
+
 	var link string
-	orgRepo := config.OrgRepo{Org: pr.Org, Repo: pr.Repo}
+	orgRepo := config.OrgRepo{Org: crc.Org, Repo: crc.Repo}
 	if tideURL := c.Tide.GetTargetURL(orgRepo); tideURL != "" {
 		link = tideURL
 	} else if baseURL := c.Tide.GetPRStatusBaseURL(orgRepo); baseURL != "" {
@@ -368,7 +385,7 @@ func targetURL(c *config.Config, pr *CodeReviewCommon, log *logrus.Entry) string
 		if err != nil {
 			log.WithError(err).Error("Failed to parse PR status base URL")
 		} else {
-			prQuery := fmt.Sprintf("is:pr repo:%s author:%s head:%s", pr.RepoWithOwner, pr.AuthorLogin, pr.HeadRefName)
+			prQuery := fmt.Sprintf("is:pr repo:%s author:%s head:%s", pr.Repository.NameWithOwner, crc.AuthorLogin, crc.HeadRefName)
 			values := parseURL.Query()
 			values.Set("query", prQuery)
 			parseURL.RawQuery = values.Encode()
@@ -378,6 +395,7 @@ func targetURL(c *config.Config, pr *CodeReviewCommon, log *logrus.Entry) string
 	return link
 }
 
+// setStatues sets GitHub context status.
 func (sc *statusController) setStatuses(all []CodeReviewCommon, pool map[string]CodeReviewCommon, blocks blockers.Blockers, baseSHAs map[string]string, requiredContexts map[string][]string) {
 	c := sc.config()
 	// queryMap caches which queries match a repo.

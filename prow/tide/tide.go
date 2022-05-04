@@ -23,6 +23,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"sort"
@@ -145,6 +146,59 @@ type Pool struct {
 
 	// All of the TenantIDs associated with PRs in the pool.
 	TenantIDs []string
+}
+
+// PoolForDeck contains the same data as Pool, the only exception is that it has
+// a minified version of CodeReviewCommon which is good for deck, as
+// MinCodeReview is a very small superset of CodeReviewCommon.
+type PoolForDeck struct {
+	Org    string
+	Repo   string
+	Branch string
+
+	// PRs with passing tests, pending tests, and missing or failed tests.
+	// Note that these results are rolled up. If all tests for a PR are passing
+	// except for one pending, it will be in PendingPRs.
+	SuccessPRs []MinCodeReviewCommon
+	PendingPRs []MinCodeReviewCommon
+	MissingPRs []MinCodeReviewCommon
+
+	// Empty if there is no pending batch.
+	BatchPending []MinCodeReviewCommon
+
+	// Which action did we last take, and to what target(s), if any.
+	Action   Action
+	Target   []MinCodeReviewCommon
+	Blockers []blockers.Blocker
+	Error    string
+
+	// All of the TenantIDs associated with PRs in the pool.
+	TenantIDs []string
+}
+
+func PoolToPoolForDeck(p *Pool) *PoolForDeck {
+	crcToMin := func(crcs []CodeReviewCommon) []MinCodeReviewCommon {
+		var res []MinCodeReviewCommon
+		for _, crc := range crcs {
+			res = append(res, MinCodeReviewCommon(crc))
+		}
+		return res
+	}
+	pfd := &PoolForDeck{
+		Org:          p.Org,
+		Repo:         p.Repo,
+		Branch:       p.Branch,
+		SuccessPRs:   crcToMin(p.SuccessPRs),
+		PendingPRs:   crcToMin(p.PendingPRs),
+		MissingPRs:   crcToMin(p.MissingPRs),
+		BatchPending: crcToMin(p.BatchPending),
+		Action:       p.Action,
+		Target:       crcToMin(p.Target),
+		Blockers:     p.Blockers,
+		Error:        p.Error,
+		TenantIDs:    p.TenantIDs,
+	}
+	return pfd
 }
 
 // Prometheus Metrics
@@ -653,6 +707,8 @@ func filterPR(ghc githubClient, mergeAllowed func(*CodeReviewCommon) (string, er
 // mergeChecker provides a function to check if a PR can be merged with
 // the requested method and does not have a merge conflict.
 // It caches results and should be cleared periodically with clearCache()
+//
+// This struct is GitHub specific
 type mergeChecker struct {
 	config config.Getter
 	ghc    githubClient
@@ -661,6 +717,7 @@ type mergeChecker struct {
 	cache map[config.OrgRepo]map[types.PullRequestMergeType]bool
 }
 
+// newMergeChecker creates a mergeChecker for GitHub.
 func newMergeChecker(cfg config.Getter, ghc githubClient) *mergeChecker {
 	m := &mergeChecker{
 		config: cfg,
@@ -714,11 +771,18 @@ func (m *mergeChecker) repoMethods(orgRepo config.OrgRepo) (map[types.PullReques
 // isAllowed checks if a PR does not have merge conflicts and requests an
 // allowed merge method. If there is no error it returns a string explanation if
 // not allowed or "" if allowed.
-func (m *mergeChecker) isAllowed(pr *CodeReviewCommon) (string, error) {
-	if pr.Mergeable == string(githubql.MergeableStateConflicting) {
+func (m *mergeChecker) isAllowed(crc *CodeReviewCommon) (string, error) {
+	// Get PullRequest struct for GitHub specific logic
+	pr := crc.GitHub
+	if pr == nil {
+		// This should not happen, as this mergeChecker is meant to be used by
+		// GitHub repos only
+		return "", errors.New("unexpected error: CodeReviewCommon should carry PullRequest struct")
+	}
+	if pr.Mergeable == githubql.MergeableStateConflicting {
 		return "PR has a merge conflict.", nil
 	}
-	mergeMethod, err := prMergeMethod(m.config().Tide, pr)
+	mergeMethod, err := prMergeMethod(m.config().Tide, crc)
 	if err != nil {
 		// This should be impossible.
 		return "", fmt.Errorf("Programmer error! Failed to determine a merge method: %w", err)
@@ -726,7 +790,7 @@ func (m *mergeChecker) isAllowed(pr *CodeReviewCommon) (string, error) {
 	if mergeMethod == types.MergeRebase && !pr.CanBeRebased {
 		return "PR can't be rebased", nil
 	}
-	orgRepo := config.OrgRepo{Org: pr.Org, Repo: pr.Repo}
+	orgRepo := config.OrgRepo{Org: crc.Org, Repo: crc.Repo}
 	repoMethods, err := m.repoMethods(orgRepo)
 	if err != nil {
 		return "", fmt.Errorf("error getting repo data: %w", err)
@@ -835,15 +899,17 @@ func unsuccessfulContexts(contexts []Context, cc contextChecker, log *logrus.Ent
 	return failed
 }
 
-func hasAllLabels(pr CodeReviewCommon, labels []string) bool {
-	if len(labels) == 0 {
+func hasAllLabels(pr CodeReviewCommon, wantLabels []string) bool {
+	if len(wantLabels) == 0 {
 		return true
 	}
 	prLabels := sets.NewString()
-	for _, l := range pr.Labels {
-		prLabels.Insert(l)
+	if labels := pr.GitHubLabels(); labels != nil {
+		for _, l2 := range labels.Nodes {
+			prLabels.Insert(string(l2.Name))
+		}
 	}
-	requiredLabels := sets.NewString(labels...)
+	requiredLabels := sets.NewString(wantLabels...)
 	return prLabels.Intersection(requiredLabels).Equal(requiredLabels)
 }
 
@@ -852,13 +918,14 @@ func pickHighestPriorityPR(log *logrus.Entry, prs []CodeReviewCommon, cc map[int
 	var smallestPR CodeReviewCommon
 	for _, p := range append(priorities, config.TidePriority{}) {
 		for _, pr := range prs {
+			// This should only apply to GitHub PRs
 			if !hasAllLabels(pr, p.Labels) {
 				continue
 			}
 			if smallestNumber != -1 && pr.Number >= smallestNumber {
 				continue
 			}
-			if len(pr.Commits.Nodes) < 1 {
+			if commits := pr.GitHubCommits(); commits == nil || len(commits.Nodes) < 1 {
 				continue
 			}
 			if !isPassingTestsFunc(log, &pr, cc[pr.Number]) {
@@ -1253,30 +1320,34 @@ func (c *Controller) prepareMergeDetails(commitTemplates config.TideMergeCommitT
 	return ghMergeDetails
 }
 
-func prMergeMethod(c config.Tide, pr *CodeReviewCommon) (types.PullRequestMergeType, error) {
-	repo := config.OrgRepo{Org: pr.Org, Repo: pr.Repo}
+// prMergeMethod figures out merge method based on tide config, this could be
+// overridden by GitHub labels.
+func prMergeMethod(c config.Tide, crc *CodeReviewCommon) (types.PullRequestMergeType, error) {
+	repo := config.OrgRepo{Org: crc.Org, Repo: crc.Repo}
 	method := c.MergeMethod(repo)
 	squashLabel := c.SquashLabel
 	rebaseLabel := c.RebaseLabel
 	mergeLabel := c.MergeLabel
 	if squashLabel != "" || rebaseLabel != "" || mergeLabel != "" {
 		labelCount := 0
-		for _, prlabel := range pr.Labels {
-			switch prlabel {
-			case "":
-				continue
-			case squashLabel:
-				method = types.MergeSquash
-				labelCount++
-			case rebaseLabel:
-				method = types.MergeRebase
-				labelCount++
-			case mergeLabel:
-				method = types.MergeMerge
-				labelCount++
-			}
-			if labelCount > 1 {
-				return "", fmt.Errorf("conflicting merge method override labels")
+		if labels := crc.GitHubLabels(); labels != nil {
+			for _, prlabel := range labels.Nodes {
+				switch string(prlabel.Name) {
+				case "":
+					continue
+				case squashLabel:
+					method = types.MergeSquash
+					labelCount++
+				case rebaseLabel:
+					method = types.MergeRebase
+					labelCount++
+				case mergeLabel:
+					method = types.MergeMerge
+					labelCount++
+				}
+				if labelCount > 1 {
+					return "", fmt.Errorf("conflicting merge method override labels")
+				}
 			}
 		}
 	}
@@ -1372,7 +1443,11 @@ func setTideStatusSuccess(pr CodeReviewCommon, ghc githubClient, cfg *config.Con
 }
 
 func prHasSuccessfullTideStatusContext(pr CodeReviewCommon) bool {
-	for _, commit := range pr.Commits.Nodes {
+	commits := pr.GitHubCommits()
+	if commits == nil {
+		return false
+	}
+	for _, commit := range commits.Nodes {
 		if string(commit.Commit.OID) != pr.HeadRefOID {
 			continue
 		}
@@ -1936,16 +2011,28 @@ type PullRequest struct {
 	// additional API token. (see the 'headContexts' func for details)
 	// We can't raise this too much or we could hit the limit of 50,000 nodes
 	// per query: https://developer.github.com/v4/guides/resource-limitations/#node-limit
-	Commits Commits `graphql:"commits(last: 4)"`
-	Labels  struct {
-		Nodes []struct {
-			Name githubql.String
-		}
-	} `graphql:"labels(first: 100)"`
+	Commits   Commits `graphql:"commits(last: 4)"`
+	Labels    Labels  `graphql:"labels(first: 100)"`
 	Milestone *Milestone
 	Body      githubql.String
 	Title     githubql.String
 	UpdatedAt githubql.DateTime
+}
+
+func (pr *PullRequest) logFields() logrus.Fields {
+	return logrus.Fields{
+		"org":    pr.Repository.Owner.Login,
+		"repo":   pr.Repository.Name,
+		"pr":     pr.Number,
+		"branch": pr.BaseRef.Name,
+		"sha":    pr.HeadRefOID,
+	}
+}
+
+type Labels struct {
+	Nodes []struct {
+		Name githubql.String
+	}
 }
 
 type Milestone struct {
@@ -2026,9 +2113,12 @@ type searchQuery struct {
 // but if we don't find the head commit we have to ask GitHub for it
 // specifically (this costs an API token).
 func headContexts(log *logrus.Entry, ghc githubClient, pr *CodeReviewCommon) ([]Context, error) {
-	for _, node := range pr.Commits.Nodes {
-		if string(node.Commit.OID) == pr.HeadRefOID {
-			return append(node.Commit.Status.Contexts, checkRunNodesToContexts(log, node.Commit.StatusCheckRollup.Contexts.Nodes)...), nil
+	commits := pr.GitHubCommits()
+	if commits != nil {
+		for _, node := range commits.Nodes {
+			if string(node.Commit.OID) == pr.HeadRefOID {
+				return append(node.Commit.Status.Contexts, checkRunNodesToContexts(log, node.Commit.StatusCheckRollup.Contexts.Nodes)...), nil
+			}
 		}
 	}
 	// We didn't get the head commit from the query (the commits must not be
@@ -2039,7 +2129,7 @@ func headContexts(log *logrus.Entry, ghc githubClient, pr *CodeReviewCommon) ([]
 	// Log this event so we can tune the number of commits we list to minimize this.
 	// TODO alvaroaleman: Add checkrun support here. Doesn't seem to happen often though,
 	// openshift doesn't have a single occurrence of this in the past seven days.
-	log.Warnf("'last' %d commits didn't contain logical last commit. Querying GitHub...", len(pr.Commits.Nodes))
+	log.Warnf("'last' %d commits didn't contain logical last commit. Querying GitHub...", len(commits.Nodes))
 	combined, err := ghc.GetCombinedStatus(org, repo, pr.HeadRefOID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get the combined status: %w", err)
@@ -2069,14 +2159,16 @@ func headContexts(log *logrus.Entry, ghc githubClient, pr *CodeReviewCommon) ([]
 	contexts = append(contexts, checkRunNodesToContexts(log, checkRunNodes)...)
 
 	// Add a commit with these contexts to pr for future look ups.
-	pr.Commits.Nodes = append(pr.Commits.Nodes,
-		struct{ Commit Commit }{
-			Commit: Commit{
-				OID:    githubql.String(pr.HeadRefOID),
-				Status: struct{ Contexts []Context }{Contexts: contexts},
+	if commits := pr.GitHubCommits(); commits != nil {
+		commits.Nodes = append(commits.Nodes,
+			struct{ Commit Commit }{
+				Commit: Commit{
+					OID:    githubql.String(pr.HeadRefOID),
+					Status: struct{ Contexts []Context }{Contexts: contexts},
+				},
 			},
-		},
-	)
+		)
+	}
 	return contexts, nil
 }
 

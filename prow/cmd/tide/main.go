@@ -176,6 +176,7 @@ func main() {
 		}
 	})
 
+	// Deck consumes these endpoints
 	controllerMux := http.NewServeMux()
 	controllerMux.Handle("/", c)
 	controllerMux.Handle("/history", c.History)

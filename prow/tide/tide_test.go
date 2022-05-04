@@ -3324,13 +3324,13 @@ func TestAccumulateReturnsCorrectMissingTests(t *testing.T) {
 	testCases := []struct {
 		name               string
 		presubmits         map[int][]config.Presubmit
-		prs                []CodeReviewCommon
+		prs                []PullRequest
 		pjs                []prowapi.ProwJob
 		expectedPresubmits map[int][]config.Presubmit
 	}{
 		{
 			name: "All presubmits missing, no changes",
-			prs: []CodeReviewCommon{{
+			prs: []PullRequest{{
 				Number:     1,
 				HeadRefOID: "sha",
 			}},
@@ -3345,7 +3345,7 @@ func TestAccumulateReturnsCorrectMissingTests(t *testing.T) {
 		},
 		{
 			name: "All presubmits successful, no retesting needed",
-			prs: []CodeReviewCommon{{
+			prs: []PullRequest{{
 				Number:     1,
 				HeadRefOID: "sha",
 			}},
@@ -3368,7 +3368,7 @@ func TestAccumulateReturnsCorrectMissingTests(t *testing.T) {
 		},
 		{
 			name: "All presubmits pending, no retesting needed",
-			prs: []CodeReviewCommon{{
+			prs: []PullRequest{{
 				Number:     1,
 				HeadRefOID: "sha",
 			}},
@@ -3390,7 +3390,7 @@ func TestAccumulateReturnsCorrectMissingTests(t *testing.T) {
 		},
 		{
 			name: "One successful, one pending, one missing, one failing, only missing and failing remain",
-			prs: []CodeReviewCommon{{
+			prs: []PullRequest{{
 				Number:     1,
 				HeadRefOID: "sha",
 			}},
@@ -3450,7 +3450,7 @@ func TestAccumulateReturnsCorrectMissingTests(t *testing.T) {
 		},
 		{
 			name: "Two prs, each with one successful, one pending, one missing, one failing, only missing and failing remain",
-			prs: []CodeReviewCommon{
+			prs: []PullRequest{
 				{
 					Number:     1,
 					HeadRefOID: "sha",
@@ -3568,10 +3568,10 @@ func TestAccumulateReturnsCorrectMissingTests(t *testing.T) {
 		{
 			name:       "Result from successful context gets respected",
 			presubmits: map[int][]config.Presubmit{1: {{Reporter: config.Reporter{Context: "job-1"}}}},
-			prs: []CodeReviewCommon{{
+			prs: []PullRequest{{
 				Number:     1,
 				HeadRefOID: "headsha",
-				Commits: struct{ Nodes []struct{ Commit Commit } }{Nodes: []struct{ Commit Commit }{{Commit: Commit{
+				Commits: Commits{Nodes: []struct{ Commit Commit }{{Commit: Commit{
 					OID: githubql.String("headsha"),
 					Status: CommitStatus{Contexts: []Context{{
 						Context:     githubql.String("job-1"),
@@ -3583,10 +3583,10 @@ func TestAccumulateReturnsCorrectMissingTests(t *testing.T) {
 		{
 			name:       "Result from successful context gets respected with deprecated baseha delimiter",
 			presubmits: map[int][]config.Presubmit{1: {{Reporter: config.Reporter{Context: "job-1"}}}},
-			prs: []CodeReviewCommon{{
+			prs: []PullRequest{{
 				Number:     1,
 				HeadRefOID: "headsha",
-				Commits: struct{ Nodes []struct{ Commit Commit } }{Nodes: []struct{ Commit Commit }{{Commit: Commit{
+				Commits: Commits{Nodes: []struct{ Commit Commit }{{Commit: Commit{
 					OID: githubql.String("headsha"),
 					Status: CommitStatus{Contexts: []Context{{
 						Context:     githubql.String("job-1"),
@@ -3598,10 +3598,10 @@ func TestAccumulateReturnsCorrectMissingTests(t *testing.T) {
 		{
 			name:       "Result from failed context gets ignored",
 			presubmits: map[int][]config.Presubmit{1: {{Reporter: config.Reporter{Context: "job-1"}}}},
-			prs: []CodeReviewCommon{{
+			prs: []PullRequest{{
 				Number:     1,
 				HeadRefOID: "headsha",
-				Commits: struct{ Nodes []struct{ Commit Commit } }{Nodes: []struct{ Commit Commit }{{Commit: Commit{
+				Commits: Commits{Nodes: []struct{ Commit Commit }{{Commit: Commit{
 					OID: githubql.String("headsha"),
 					Status: CommitStatus{Contexts: []Context{{
 						Context:     githubql.String("job-1"),
@@ -3616,7 +3616,12 @@ func TestAccumulateReturnsCorrectMissingTests(t *testing.T) {
 	log := logrus.NewEntry(logrus.New())
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			_, _, _, missingSerialTests := accumulate(tc.presubmits, tc.prs, tc.pjs, log, baseSHA, &fgc{})
+			var crcs []CodeReviewCommon
+			for _, pr := range tc.prs {
+				crc := CodeReviewCommonFromPullRequest(&pr)
+				crcs = append(crcs, *crc)
+			}
+			_, _, _, missingSerialTests := accumulate(tc.presubmits, crcs, tc.pjs, log, baseSHA, &fgc{})
 			// Apiequality treats nil slices/maps equal to a zero length slice/map, keeping us from
 			// the burden of having to always initialize them
 			if !apiequality.Semantic.DeepEqual(tc.expectedPresubmits, missingSerialTests) {
@@ -4434,9 +4439,11 @@ func TestPickBatchPrefersBatchesWithPreexistingJobs(t *testing.T) {
 		expectedPullRequests []CodeReviewCommon
 	}{
 		{
-			name:                 "No pre-existing jobs, new batch is picked",
-			subpool:              func(sp *subpool) { sp.pjs = nil },
-			expectedPullRequests: []CodeReviewCommon{{Number: 99, HeadRefOID: "pr-from-new-batch-func"}},
+			name:    "No pre-existing jobs, new batch is picked",
+			subpool: func(sp *subpool) { sp.pjs = nil },
+			expectedPullRequests: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(&PullRequest{Number: 99, HeadRefOID: "pr-from-new-batch-func"}),
+			},
 		},
 		{
 			name:    "Batch with pre-existing success jobs exists and is picked",
@@ -4480,41 +4487,55 @@ func TestPickBatchPrefersBatchesWithPreexistingJobs(t *testing.T) {
 			name:                         "Batch with pre-existing success jobs exists but PrioritizeExistingBatches is disabled globally, new batch is picked",
 			subpool:                      func(sp *subpool) {},
 			prioritizeExistingBatchesMap: map[string]bool{"*": false},
-			expectedPullRequests:         []CodeReviewCommon{{Number: 99, HeadRefOID: "pr-from-new-batch-func"}},
+			expectedPullRequests: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(&PullRequest{Number: 99, HeadRefOID: "pr-from-new-batch-func"}),
+			},
 		},
 		{
 			name:                         "Batch with pre-existing success jobs exists but PrioritizeExistingBatches is disabled for org, new batch is picked",
 			subpool:                      func(sp *subpool) {},
 			prioritizeExistingBatchesMap: map[string]bool{org: false},
-			expectedPullRequests:         []CodeReviewCommon{{Number: 99, HeadRefOID: "pr-from-new-batch-func"}},
+			expectedPullRequests: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(&PullRequest{Number: 99, HeadRefOID: "pr-from-new-batch-func"}),
+			},
 		},
 		{
 			name:                         "Batch with pre-existing success jobs exists but PrioritizeExistingBatches is disabled for repo, new batch is picked",
 			subpool:                      func(sp *subpool) {},
 			prioritizeExistingBatchesMap: map[string]bool{org + "/" + repo: false},
-			expectedPullRequests:         []CodeReviewCommon{{Number: 99, HeadRefOID: "pr-from-new-batch-func"}},
+			expectedPullRequests: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(&PullRequest{Number: 99, HeadRefOID: "pr-from-new-batch-func"}),
+			},
 		},
 		{
 			name:                   "Batch with pre-existing success job exists but one fails context check, new batch is picked",
 			subpool:                func(sp *subpool) {},
 			prsFailingContextCheck: sets.NewInt(1),
-			expectedPullRequests:   []CodeReviewCommon{{Number: 99, HeadRefOID: "pr-from-new-batch-func"}},
+			expectedPullRequests: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(&PullRequest{Number: 99, HeadRefOID: "pr-from-new-batch-func"}),
+			},
 		},
 		{
-			name:                 "Batch with pre-existing success job exists but is bigger than maxBatchSize, new batch is picked",
-			subpool:              func(sp *subpool) {},
-			maxBatchSize:         3,
-			expectedPullRequests: []CodeReviewCommon{{Number: 99, HeadRefOID: "pr-from-new-batch-func"}},
+			name:         "Batch with pre-existing success job exists but is bigger than maxBatchSize, new batch is picked",
+			subpool:      func(sp *subpool) {},
+			maxBatchSize: 3,
+			expectedPullRequests: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(&PullRequest{Number: 99, HeadRefOID: "pr-from-new-batch-func"}),
+			},
 		},
 		{
-			name:                 "Batch with pre-existing success job exists but one PR is outdated, new batch is picked",
-			subpool:              func(sp *subpool) { sp.prs[0].HeadRefOID = "new-sha" },
-			expectedPullRequests: []CodeReviewCommon{{Number: 99, HeadRefOID: "pr-from-new-batch-func"}},
+			name:    "Batch with pre-existing success job exists but one PR is outdated, new batch is picked",
+			subpool: func(sp *subpool) { sp.prs[0].HeadRefOID = "new-sha" },
+			expectedPullRequests: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(&PullRequest{Number: 99, HeadRefOID: "pr-from-new-batch-func"}),
+			},
 		},
 		{
-			name:                 "Batchjobs exist but is failed, new batch is picked",
-			subpool:              func(sp *subpool) { sp.pjs[0].Status.State = prowapi.FailureState },
-			expectedPullRequests: []CodeReviewCommon{{Number: 99, HeadRefOID: "pr-from-new-batch-func"}},
+			name:    "Batchjobs exist but is failed, new batch is picked",
+			subpool: func(sp *subpool) { sp.pjs[0].Status.State = prowapi.FailureState },
+			expectedPullRequests: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(&PullRequest{Number: 99, HeadRefOID: "pr-from-new-batch-func"}),
+			},
 		},
 		{
 			name: "Batch with pre-existing success jobs and batch with pre-existing pending jobs exists, batch with success jobs is picked",
@@ -4646,11 +4667,11 @@ func TestPickBatchPrefersBatchesWithPreexistingJobs(t *testing.T) {
 				repo: repo,
 				log:  logrus.WithField("test", tc.name),
 				prs: []CodeReviewCommon{
-					{Number: 1, HeadRefOID: "1"},
-					{Number: 2, HeadRefOID: "2"},
-					{Number: 3, HeadRefOID: "3"},
-					{Number: 4, HeadRefOID: "4"},
-					{Number: 5, HeadRefOID: "5"},
+					*CodeReviewCommonFromPullRequest(&PullRequest{Number: 1, HeadRefOID: "1"}),
+					*CodeReviewCommonFromPullRequest(&PullRequest{Number: 2, HeadRefOID: "2"}),
+					*CodeReviewCommonFromPullRequest(&PullRequest{Number: 3, HeadRefOID: "3"}),
+					*CodeReviewCommonFromPullRequest(&PullRequest{Number: 4, HeadRefOID: "4"}),
+					*CodeReviewCommonFromPullRequest(&PullRequest{Number: 5, HeadRefOID: "5"}),
 				},
 				pjs: []prowapi.ProwJob{{
 					Spec: prowapi.ProwJobSpec{
@@ -4679,7 +4700,8 @@ func TestPickBatchPrefersBatchesWithPreexistingJobs(t *testing.T) {
 			}
 
 			newBatchFunc := func(sp subpool, candidates []CodeReviewCommon, maxBatchSize int) ([]CodeReviewCommon, error) {
-				return []CodeReviewCommon{{Number: 99, HeadRefOID: "pr-from-new-batch-func"}}, nil
+				return []CodeReviewCommon{
+					*CodeReviewCommonFromPullRequest(&PullRequest{Number: 99, HeadRefOID: "pr-from-new-batch-func"})}, nil
 			}
 
 			c := &Controller{
@@ -4835,7 +4857,7 @@ func TestSetTideStatusSuccess(t *testing.T) {
 	t.Parallel()
 	testCases := []struct {
 		name string
-		pr   CodeReviewCommon
+		pr   PullRequest
 
 		expectApiCall bool
 	}{
@@ -4845,14 +4867,15 @@ func TestSetTideStatusSuccess(t *testing.T) {
 		},
 		{
 			name: "PR already has tide status set to success, no api call is made",
-			pr:   CodeReviewCommon{Commits: struct{ Nodes []struct{ Commit Commit } }{Nodes: []struct{ Commit Commit }{{Commit: Commit{Status: CommitStatus{Contexts: []Context{{Context: "tide", State: githubql.StatusState("success")}}}}}}}},
+			pr:   PullRequest{Commits: struct{ Nodes []struct{ Commit Commit } }{Nodes: []struct{ Commit Commit }{{Commit: Commit{Status: CommitStatus{Contexts: []Context{{Context: "tide", State: githubql.StatusState("success")}}}}}}}},
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			ghc := &fgc{}
-			err := setTideStatusSuccess(tc.pr, ghc, &config.Config{}, logrus.WithField("test", tc.name))
+			crc := CodeReviewCommonFromPullRequest(&tc.pr)
+			err := setTideStatusSuccess(*crc, ghc, &config.Config{}, logrus.WithField("test", tc.name))
 			if err != nil {
 				t.Fatalf("failed to set status: %v", err)
 			}

@@ -930,7 +930,7 @@ func TestSetStatuses(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		var pr CodeReviewCommon
+		var pr PullRequest
 		pr.Commits.Nodes = []struct{ Commit Commit }{{}}
 		if tc.hasContext {
 			pr.Commits.Nodes[0].Commit.Status.Contexts = []Context{
@@ -941,9 +941,10 @@ func TestSetStatuses(t *testing.T) {
 				},
 			}
 		}
+		crc := CodeReviewCommonFromPullRequest(&pr)
 		pool := make(map[string]CodeReviewCommon)
 		if tc.inPool {
-			pool[prKey(&pr)] = pr
+			pool[prKey(crc)] = *crc
 		}
 		fc := &fgc{
 			refs: map[string]string{"/ heads/": "SHA"},
@@ -966,7 +967,7 @@ func TestSetStatuses(t *testing.T) {
 		if tc.inDontSetStatus {
 			sc.dontUpdateStatus = threadSafePRSet{data: map[pullRequestIdentifier]struct{}{{}: {}}}
 		}
-		sc.setStatuses([]CodeReviewCommon{pr}, pool, blockers.Blockers{}, nil, nil)
+		sc.setStatuses([]CodeReviewCommon{*crc}, pool, blockers.Blockers{}, nil, nil)
 		if str, err := log.String(); err != nil {
 			t.Fatalf("For case %s: failed to get log output: %v", tc.name, err)
 		} else if str != initialLog {
@@ -1285,8 +1286,8 @@ func TestStatusControllerSearch(t *testing.T) {
 			},
 			usesAppsAuth: true,
 			expected: []CodeReviewCommon{
-				{Number: 1},
-				{Number: 2},
+				*CodeReviewCommonFromPullRequest(&PullRequest{Number: 1}),
+				*CodeReviewCommonFromPullRequest(&PullRequest{Number: 2}),
 			},
 		},
 		{
@@ -1296,8 +1297,8 @@ func TestStatusControllerSearch(t *testing.T) {
 			},
 			usesAppsAuth: false,
 			expected: []CodeReviewCommon{
-				{Number: 1},
-				{Number: 2},
+				*CodeReviewCommonFromPullRequest(&PullRequest{Number: 1}),
+				*CodeReviewCommonFromPullRequest(&PullRequest{Number: 2}),
 			},
 		},
 	}

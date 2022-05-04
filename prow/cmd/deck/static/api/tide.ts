@@ -1,4 +1,4 @@
-import {Commit, PullRequest as BasePullRequest} from "./github";
+import {PullRequest as BasePullRequest} from "./github";
 
 export interface TideQuery {
   orgs?: string[];
@@ -15,16 +15,6 @@ export interface TideQuery {
 
 export interface PullRequest extends BasePullRequest {
   Title: string;
-  HeadRefName: string;
-  Commits: {
-    Nodes: Array<{
-      Commit: Commit;
-    }>;
-  };
-  Labels: string[];
-  Milestone?: {
-    Title: string;
-  };
 }
 
 export type Action = "WAIT" | "TRIGGER" | "TRIGGER_BATCH" | "MERGE" | "MERGE_BATCH" | "BLOCKED";

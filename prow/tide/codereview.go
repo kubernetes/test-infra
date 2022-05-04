@@ -17,10 +17,61 @@ limitations under the License.
 package tide
 
 import (
+	"encoding/json"
+	"errors"
 	"time"
 
 	"github.com/sirupsen/logrus"
 )
+
+// CodeReviewForDeck contains superset of data from CodeReviewCommon, it's meant
+// to be consumed by deck only.
+//
+// Tide serves Pool data to deck via http request inside cluster, which could
+// contain many PullRequests, sending over full PullRequest struct could be very
+// expensive in some cases.
+type CodeReviewForDeck struct {
+	Title      string
+	Number     int
+	HeadRefOID string
+	Mergeable  string
+}
+
+func FromCodeReviewCommonToCodeReviewForDeck(crc *CodeReviewCommon) *CodeReviewForDeck {
+	if crc == nil {
+		return nil
+	}
+	return &CodeReviewForDeck{
+		Title:      crc.Title,
+		Number:     crc.Number,
+		HeadRefOID: crc.HeadRefOID,
+		Mergeable:  crc.Mergeable,
+	}
+}
+
+// MinCodeReviewCommon can be casted into full CodeReviewCommon, which will
+// result in json marshal/unmarshal overrides.
+//
+// This should be used only right before serialization, and for now it's
+// consumed only by Deck.
+type MinCodeReviewCommon CodeReviewCommon
+
+// MarshalJSON marshals MinCodeReviewCommon into CodeReviewForDeck
+func (m *MinCodeReviewCommon) MarshalJSON() ([]byte, error) {
+	min := &CodeReviewForDeck{
+		Title:      m.Title,
+		Number:     m.Number,
+		HeadRefOID: m.HeadRefOID,
+		Mergeable:  m.Mergeable,
+	}
+	return json.Marshal(min)
+}
+
+// UnmarshalJSON overrides unmarshal function, the marshalled bytes should only
+// be used by Typescript for now
+func (m *MinCodeReviewCommon) UnmarshalJSON(b []byte) error {
+	return errors.New("this is not implemented")
+}
 
 type CodeReviewCommon struct {
 	// NameWithOwner is from graphql.NameWithOwner, <org>/<repo>
@@ -35,25 +86,17 @@ type CodeReviewCommon struct {
 	HeadRefName   string
 	HeadRefOID    string
 
-	Title       string
-	Body        string
-	AuthorLogin string
-	// Labels gets labels on the PR.
-	// TODO(chaodaiG): labels might mean something different on gerrit, consider
-	// how to name this nicely.
-	Labels        []string
-	IsMergeable   bool
+	Title string
+	Body  string
+	// AuthorLogin is the author login from the fork on GitHub, this will be the
+	// author login from Gerrit.
+	AuthorLogin   string
 	UpdatedAtTime time.Time
 
 	Mergeable    string
 	CanBeRebased bool
-	LogFields    logrus.Fields
 
-	// Likely GitHub only
-	Milestone      *Milestone
-	Commits        Commits
-	ReviewDecision string
-	RepoWithOwner  string
+	GitHub *PullRequest
 }
 
 func (crc *CodeReviewCommon) logFields() logrus.Fields {
@@ -66,30 +109,54 @@ func (crc *CodeReviewCommon) logFields() logrus.Fields {
 	}
 }
 
-func CodeReviewCommonFromPullRequest(pr *PullRequest) *CodeReviewCommon {
-	crc := &CodeReviewCommon{
-		NameWithOwner:  string(pr.Repository.NameWithOwner),
-		Number:         int(pr.Number),
-		Org:            string(pr.Repository.Owner.Login),
-		Repo:           string(pr.Repository.Name),
-		BaseRefPrefix:  string(pr.BaseRef.Prefix),
-		BaseRefName:    string(pr.BaseRef.Name),
-		HeadRefName:    string(pr.HeadRefName),
-		HeadRefOID:     string(pr.HeadRefOID),
-		Title:          string(pr.Title),
-		Body:           string(pr.Body),
-		AuthorLogin:    string(pr.Author.Login),
-		Mergeable:      string(pr.Mergeable),
-		CanBeRebased:   bool(pr.CanBeRebased),
-		UpdatedAtTime:  pr.UpdatedAt.Time,
-		Commits:        pr.Commits,
-		ReviewDecision: string(pr.ReviewDecision),
-		RepoWithOwner:  string(pr.Repository.NameWithOwner),
-		Milestone:      pr.Milestone,
+// GitHubLabels returns labels struct for GitHub, using this function is almost
+// equivalent to `if isGitHub() {// then do that}`.
+//
+// This is useful for determining the merging strategy.
+func (crc *CodeReviewCommon) GitHubLabels() *Labels {
+	if crc.GitHub == nil {
+		return nil
 	}
+	return &crc.GitHub.Labels
+}
 
-	for _, label := range pr.Labels.Nodes {
-		crc.Labels = append(crc.Labels, string(label.Name))
+// GitHubCommits returns Commits struct from GitHub.
+//
+// This is used by checking status context to determine whether the PR is ready
+// for merge or not.
+func (crc *CodeReviewCommon) GitHubCommits() *Commits {
+	if crc.GitHub == nil {
+		return nil
+	}
+	return &crc.GitHub.Commits
+}
+
+// CodeReviewCommonFromPullRequest derives CodeReviewCommon struct from GitHub
+// PullRequest struct, by extracting shared fields among different code review
+// providers.
+func CodeReviewCommonFromPullRequest(pr *PullRequest) *CodeReviewCommon {
+	if pr == nil {
+		return nil
+	}
+	// Make a copy
+	prCopy := *pr
+	crc := &CodeReviewCommon{
+		NameWithOwner: string(pr.Repository.NameWithOwner),
+		Number:        int(pr.Number),
+		Org:           string(pr.Repository.Owner.Login),
+		Repo:          string(pr.Repository.Name),
+		BaseRefPrefix: string(pr.BaseRef.Prefix),
+		BaseRefName:   string(pr.BaseRef.Name),
+		HeadRefName:   string(pr.HeadRefName),
+		HeadRefOID:    string(pr.HeadRefOID),
+		Title:         string(pr.Title),
+		Body:          string(pr.Body),
+		AuthorLogin:   string(pr.Author.Login),
+		Mergeable:     string(pr.Mergeable),
+		CanBeRebased:  bool(pr.CanBeRebased),
+		UpdatedAtTime: pr.UpdatedAt.Time,
+
+		GitHub: &prCopy,
 	}
 
 	return crc
