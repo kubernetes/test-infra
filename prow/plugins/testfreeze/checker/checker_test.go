@@ -17,18 +17,23 @@ limitations under the License.
 package checker
 
 import (
+	"errors"
 	"testing"
+	"time"
 
 	"github.com/go-git/go-git/v5/plumbing"
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/plugins/testfreeze/checker/checkerfakes"
 )
 
 func TestInTestFreeze(t *testing.T) {
 	t.Parallel()
+
+	errTest := errors.New("")
 
 	releaseBranch := func(v string) *plumbing.Reference {
 		return plumbing.NewReferenceFromStrings("refs/heads/release-"+v, "")
@@ -37,6 +42,8 @@ func TestInTestFreeze(t *testing.T) {
 	tag := func(v string) *plumbing.Reference {
 		return plumbing.NewReferenceFromStrings("refs/tags/"+v, "")
 	}
+
+	testTime := metav1.Now()
 
 	for _, tc := range []struct {
 		name    string
@@ -61,6 +68,7 @@ func TestInTestFreeze(t *testing.T) {
 				assert.False(t, res.InTestFreeze)
 				assert.Equal(t, "release-1.23", res.Branch)
 				assert.Equal(t, "v1.23.0", res.Tag)
+				assert.Empty(t, res.LastFastForward)
 				assert.Nil(t, err)
 			},
 		},
@@ -74,11 +82,24 @@ func TestInTestFreeze(t *testing.T) {
 					tag("1.18.0"),
 					tag("1.22.0"),
 				}, nil)
+				mock.UnmarshalProwJobsReturns(&v1.ProwJobList{
+					Items: []v1.ProwJob{
+						{
+							Spec: v1.ProwJobSpec{Job: jobName},
+							Status: v1.ProwJobStatus{
+								State:          v1.SuccessState,
+								CompletionTime: &testTime,
+							},
+						},
+					},
+				}, nil)
 			},
 			assert: func(res *Result, err error) {
 				assert.True(t, res.InTestFreeze)
 				assert.Equal(t, "release-1.24", res.Branch)
 				assert.Equal(t, "v1.24.0", res.Tag)
+				assert.Equal(t, "v1.24.0", res.Tag)
+				assert.Equal(t, testTime.Format(time.UnixDate), res.LastFastForward)
 				assert.Nil(t, err)
 			},
 		},
@@ -97,11 +118,32 @@ func TestInTestFreeze(t *testing.T) {
 		{
 			name: "error on list refs",
 			prepare: func(mock *checkerfakes.FakeChecker) {
-				mock.ListRefsReturns(nil, errors.New(""))
+				mock.ListRefsReturns(nil, errTest)
 			},
 			assert: func(res *Result, err error) {
 				assert.Nil(t, res)
 				assert.NotNil(t, err)
+			},
+		},
+		{
+			name: "error on HttpGet",
+			prepare: func(mock *checkerfakes.FakeChecker) {
+				mock.ListRefsReturns([]*plumbing.Reference{
+					releaseBranch("1.18"),
+					releaseBranch("1.24"),
+					releaseBranch("1.22"),
+					tag("1.18.0"),
+					tag("1.22.0"),
+				}, nil)
+				mock.HttpGetReturns(nil, errTest)
+			},
+			assert: func(res *Result, err error) {
+				assert.True(t, res.InTestFreeze)
+				assert.Equal(t, "release-1.24", res.Branch)
+				assert.Equal(t, "v1.24.0", res.Tag)
+				assert.Equal(t, "v1.24.0", res.Tag)
+				assert.Equal(t, unknownTime, res.LastFastForward)
+				assert.Nil(t, err)
 			},
 		},
 	} {
