@@ -221,6 +221,7 @@ periodics:
       - fast-forward
       - --non-interactive
       - --submit
+      - --nomock
       resources:
         requests:
           cpu: 4
@@ -234,5 +235,5 @@ periodics:
         slug: release-managers
   annotations:
     testgrid-alert-email: release-managers+alerts@kubernetes.io
-    testgrid-dashboards: sig-release-releng-informing
+    testgrid-dashboards: sig-release-releng-blocking
     testgrid-tab-name: git-repo-kubernetes-fast-forward
