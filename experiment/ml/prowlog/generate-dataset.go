@@ -294,7 +294,7 @@ func writeDocuments(ctx context.Context, path string, docs ...document) error {
 		if err := ctx.Err(); err != nil {
 			return err
 		}
-		url := fmt.Sprintf("https://storage.cloud.google.com/%s/%s", d.path.Bucket(), d.path.Object())
+		url := fmt.Sprintf("https://storage.googleapis.com/%s/%s", d.path.Bucket(), d.path.Object())
 		values := []string{url, strconv.Itoa(d.start + 1), strconv.Itoa(d.end + 1)}
 		if err := w.Write(values); err != nil {
 			return fmt.Errorf("line %d: %w", i, err)
@@ -335,8 +335,12 @@ func pageByPage(ctx context.Context, builds <-chan build) (map[string]*stringset
 			if txt == "" {
 				continue
 			}
+			txt = strings.TrimSpace(txt)
 			if len(txt) > pageLen {
 				panic(fmt.Sprintf("Page too long: %d: %d > %d:\n%s", i, len(txt), pageLen, txt))
+			}
+			if highlights.Contains(txt) || lowlights.Contains(txt) {
+				continue
 			}
 			var lbl string
 			if highlight {
@@ -646,8 +650,31 @@ func (bc *buildCache) close() error {
 	}
 	if bc.existing != nil {
 		for _, f := range bc.existing.File {
-			if err := bc.additional.Copy(f); err != nil {
-				return fmt.Errorf("copy %s: %v", f.Name, err)
+			if f.Method == zip.Deflate {
+				if err := bc.additional.Copy(f); err != nil {
+					return fmt.Errorf("copy %s: %v", f.Name, err)
+				}
+			} else {
+				log.Println("Compressing", f.Name)
+				w, err := bc.additional.CreateHeader(&zip.FileHeader{
+					Name:     f.Name,
+					Comment:  f.Comment,
+					Method:   zip.Deflate,
+					Modified: f.Modified,
+				})
+				if err != nil {
+					return fmt.Errorf("create compressed %s: %v", f.Name, err)
+				}
+				r, err := bc.existing.Open(f.Name)
+				if err != nil {
+					return fmt.Errorf("open existing %s: %v", f.Name, err)
+				}
+				if _, err := io.Copy(w, r); err != nil {
+					return fmt.Errorf("compress %s: %v", f.Name, err)
+				}
+				if err := r.Close(); err != nil {
+					return fmt.Errorf("close existing %s: %v", f.Name, err)
+				}
 			}
 		}
 	}
@@ -678,6 +705,19 @@ func (bc *buildCache) discard() {
 	os.Remove(bc.tempPath)
 }
 
+func (bc *buildCache) initAdditional() error {
+	if bc.additional != nil {
+		return nil
+	}
+	f, err := os.CreateTemp(filepath.Dir(bc.archivePath), "cached-content-*")
+	if err != nil {
+		return fmt.Errorf("create %s replacement: %v", bc.archivePath, err)
+	}
+	bc.additionalF = f
+	bc.additional = zip.NewWriter(f)
+	return nil
+}
+
 func (bc *buildCache) open(ctx context.Context, client gcs.ConditionalClient, path gcs.Path) (io.ReadCloser, *time.Time, error) {
 	name := path.Bucket() + "/" + path.Object()
 	var f io.ReadCloser
@@ -690,6 +730,13 @@ func (bc *buildCache) open(ctx context.Context, client gcs.ConditionalClient, pa
 				err = fs.ErrNotExist
 			} else if err != nil {
 				return nil, nil, fmt.Errorf("open %s: %v", bc.archivePath, err)
+			} else {
+				for _, f := range bc.existing.File {
+					if f.Method != zip.Deflate {
+						bc.initAdditional()
+						break
+					}
+				}
 			}
 		} else {
 			err = fs.ErrNotExist
@@ -712,18 +759,14 @@ func (bc *buildCache) open(ctx context.Context, client gcs.ConditionalClient, pa
 		}
 		f = ioutil.NopCloser(bytes.NewBuffer(buf))
 		when = &attrs.LastModified
-		if bc.additional == nil {
-			f, err := os.CreateTemp(filepath.Dir(bc.archivePath), "cached-content-*")
-			if err != nil {
-				return nil, nil, fmt.Errorf("create %s replacement: %v", bc.archivePath, err)
-			}
-			bc.additionalF = f
-			bc.additional = zip.NewWriter(f)
+		if err := bc.initAdditional(); err != nil {
+			return nil, nil, fmt.Errorf("init additional: %v", err)
 		}
 		w, err := bc.additional.CreateHeader(&zip.FileHeader{
 			Name:     name,
 			Comment:  path.String(),
 			Modified: attrs.LastModified,
+			Method:   zip.Deflate,
 		})
 		if err != nil {
 			return nil, nil, fmt.Errorf("create: %v", err)
@@ -854,6 +897,7 @@ func zipLabels(ctx context.Context, path string, labels map[string]*stringset.Se
 				Name:     name,
 				Modified: when,
 				Comment:  where,
+				Method:   zip.Deflate,
 			})
 			if err != nil {
 				return fmt.Errorf("create %s: %v", name, err)
