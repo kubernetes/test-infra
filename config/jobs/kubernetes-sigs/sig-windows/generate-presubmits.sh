@@ -47,14 +47,17 @@ for release in "$@"; do
   repolist_label="preset-windows-repo-list-master: \"true\""
   preset_label=$(echo -e "\n      preset-windows-private-registry-cred: \"true\"")
   dockerconfigfile="--docker-config-file=\$(DOCKER_CONFIG_FILE) "
+  prepull_images="-prepull-images=true "
 
   case ${release} in
     1.21)
       dockershim_api_model="https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_1_21.json"
       containerd_api_model="https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_1_21.json"
+      prepull_images=""
       ;;
     1.22)
       containerd_api_model="https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_1_22.json"
+      prepull_images=""
       ;;
     1.23)
       containerd_api_model="https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_1_23.json"
@@ -115,7 +118,7 @@ presubmits:
         - --aksengine-deploy-custom-k8s
         - --aksengine-agentpoolcount=2
         # Specific test args
-        - --test_args=--node-os-distro=windows ${dockerconfigfile}--ginkgo.focus=${ginkgo_focus} --ginkgo.skip=${ginkgo_skip}
+        - --test_args=--node-os-distro=windows ${dockerconfigfile}${prepull_images}--ginkgo.focus=${ginkgo_focus} --ginkgo.skip=${ginkgo_skip}
         - --ginkgo-parallel=4
         securityContext:
           privileged: true
@@ -166,7 +169,7 @@ $(generate_presubmit_annotations ${branch_name} pull-kubernetes-e2e-aks-engine-w
         - --aksengine-deploy-custom-k8s
         - --aksengine-agentpoolcount=2
         # Specific test args
-        - --test_args=--node-os-distro=windows ${dockerconfigfile}--ginkgo.focus=${ginkgo_focus} --ginkgo.skip=${ginkgo_skip}
+        - --test_args=--node-os-distro=windows ${dockerconfigfile}${prepull_images}--ginkgo.focus=${ginkgo_focus} --ginkgo.skip=${ginkgo_skip}
         - --ginkgo-parallel=4
         securityContext:
           privileged: true
