@@ -1,0 +1,72 @@
+presubmits:
+  kubernetes/perf-tests:
+  - name: soak-tests-capz-windows-2019
+    decorate: true
+    always_run: false
+    optional: true
+    decoration_config:
+      timeout: 8h
+    path_alias: sigs.k8s.io/perf-tests
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true"
+      preset-azure-windows: "true"
+      preset-capz-windows-2019: "true"
+      preset-capz-containerd-latest: "true"
+    # preset-capz-windows-common-main: "true"
+      preset-capz-windows-common-main-pull: "true"
+    extra_refs:
+      # This needs to be uncommented when we switch to periodic job.
+      # - org: kubernetes
+      #   repo: perf-tests
+      #   base_ref: "main"
+      #   path_alias: "sigs.k8s.io/perf-tests"
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-azure
+        base_ref: main
+        path_alias: "sigs.k8s.io/cluster-api-provider-azure"
+        workdir: true
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220420-a8dc19ed91-master
+          command:
+            - runner.sh
+            - ./scripts/ci-entrypoint.sh
+          args:
+            - bash
+            - -c
+            - >-
+              cd ${GOPATH}/src/sigs.k8s.io/perf-tests/clusterloader2 &&
+              go run cmd/clusterloader.go
+              --testconfig=testing/windows-tests/config.yaml
+              --provider=skeleton
+              --report-dir=${REPORTS_DIR}
+              --v=2
+          securityContext:
+            privileged: true
+          env:
+            - name: TEST_WINDOWS
+              value: "true"
+            - name: WINDOWS_USE_HOST_PROCESS_CONTAINERS
+              value: "true"
+            - name: CLUSTER_TEMPLATE
+              value: "cluster-template-windows-containerd.yaml"
+            # clusterloader2 variables
+            - name: ENABLE_PROMETHEUS_SERVER
+              value: "true"
+            - name: PROMETHEUS_STORAGE_CLASS_PROVISIONER
+              value: "kubernetes.io/azure-disk"
+            - name: PROMETHEUS_STORAGE_CLASS_VOLUME_TYPE
+              value: "StandardSSD_LRS"
+            - name: PROMETHEUS_SCRAPE_WINDOWS_NODE_EXPORTER
+              value: "true"
+            - name: REPORTS_DIR
+              value: "reports"
+    annotations:
+      testgrid-dashboards: sig-windows-soak-tests
+      testgrid-tab-name: soak-tests-capz-windows-2019
+      description: "Run clusterloader2 tests on a capz Windows 2019 cluster"
+      testgrid-num-columns-recent: '30'
