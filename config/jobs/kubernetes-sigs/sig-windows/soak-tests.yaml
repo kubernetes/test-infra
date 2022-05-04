@@ -39,7 +39,7 @@ presubmits:
             - bash
             - -c
             - >-
-              cd ${GOPATH}/src/sigs.k8s.io/perf-tests/clusterloader2 &&
+              cd ${GOPATH}/src/k8s.io/perf-tests/clusterloader2 &&
               go run cmd/clusterloader.go
               --testconfig=testing/windows-tests/config.yaml
               --provider=skeleton
