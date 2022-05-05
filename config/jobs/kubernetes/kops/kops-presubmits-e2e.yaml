@@ -8,6 +8,7 @@ presubmits:
     branches:
     - master
     always_run: false
+    optional: false
     skip_report: false
     labels:
       preset-service-account: "true"
@@ -75,6 +76,7 @@ presubmits:
     branches:
     - master
     always_run: false
+    optional: false
     skip_report: false
     labels:
       preset-service-account: "true"
@@ -142,6 +144,7 @@ presubmits:
     branches:
     - master
     always_run: false
+    optional: false
     skip_report: false
     labels:
       preset-service-account: "true"
@@ -206,6 +209,7 @@ presubmits:
     branches:
     - master
     always_run: true
+    optional: false
     skip_report: false
     labels:
       preset-service-account: "true"
@@ -270,6 +274,7 @@ presubmits:
     branches:
     - master
     always_run: false
+    optional: false
     skip_report: false
     labels:
       preset-k8s-ssh: "true"
@@ -332,6 +337,7 @@ presubmits:
     branches:
     - master
     always_run: false
+    optional: false
     skip_report: false
     labels:
       preset-k8s-ssh: "true"
@@ -396,6 +402,7 @@ presubmits:
     branches:
     - master
     always_run: false
+    optional: false
     skip_report: false
     labels:
       preset-k8s-ssh: "true"
@@ -460,6 +467,7 @@ presubmits:
     branches:
     - master
     always_run: false
+    optional: false
     skip_report: false
     labels:
       preset-service-account: "true"
@@ -526,6 +534,7 @@ presubmits:
     branches:
     - master
     always_run: false
+    optional: false
     skip_report: false
     labels:
       preset-service-account: "true"
@@ -581,6 +590,7 @@ presubmits:
     branches:
     - master
     always_run: false
+    optional: false
     skip_report: false
     labels:
       preset-service-account: "true"
@@ -636,6 +646,7 @@ presubmits:
     branches:
     - master
     always_run: false
+    optional: false
     skip_report: false
     labels:
       preset-service-account: "true"
@@ -691,6 +702,7 @@ presubmits:
     branches:
     - master
     always_run: false
+    optional: false
     skip_report: false
     labels:
       preset-service-account: "true"
@@ -746,6 +758,7 @@ presubmits:
     branches:
     - master
     always_run: false
+    optional: false
     skip_report: false
     labels:
       preset-service-account: "true"
@@ -810,6 +823,7 @@ presubmits:
     branches:
     - master
     always_run: false
+    optional: false
     skip_report: false
     labels:
       preset-service-account: "true"
@@ -877,6 +891,7 @@ presubmits:
     branches:
     - master
     always_run: false
+    optional: false
     skip_report: false
     labels:
       preset-service-account: "true"
@@ -941,6 +956,7 @@ presubmits:
     branches:
     - release-1.23
     always_run: true
+    optional: false
     skip_report: false
     labels:
       preset-service-account: "true"
@@ -1008,6 +1024,7 @@ presubmits:
     branches:
     - release-1.22
     always_run: true
+    optional: false
     skip_report: false
     labels:
       preset-service-account: "true"
@@ -1075,6 +1092,7 @@ presubmits:
     branches:
     - master
     always_run: false
+    optional: false
     skip_report: false
     labels:
       preset-service-account: "true"
@@ -1141,6 +1159,7 @@ presubmits:
     branches:
     - master
     always_run: false
+    optional: false
     skip_report: false
     labels:
       preset-service-account: "true"

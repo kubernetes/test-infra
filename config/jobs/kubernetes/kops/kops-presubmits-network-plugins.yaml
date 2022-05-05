@@ -9,6 +9,7 @@ presubmits:
     - master
     run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.amazon-vpc-routed-eni\/|pkg\/model\/(firewall|components\/containerd|components\/kubeproxy|iam\/iam_builder)\.go|nodeup\/pkg\/model\/kubelet\.go)'
     always_run: false
+    optional: false
     skip_report: false
     labels:
       preset-service-account: "true"
@@ -73,6 +74,7 @@ presubmits:
     branches:
     - master
     always_run: false
+    optional: false
     skip_report: false
     labels:
       preset-service-account: "true"
@@ -138,6 +140,7 @@ presubmits:
     - master
     run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.projectcalico\.org\/|pkg\/model\/(components\/containerd|firewall|pki|iam\/iam_builder)\.go|nodeup\/pkg\/model\/networking\/calico\.go)'
     always_run: false
+    optional: false
     skip_report: false
     labels:
       preset-service-account: "true"
@@ -203,6 +206,7 @@ presubmits:
     - master
     run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.projectcalico\.org\/|pkg\/model\/(components\/containerd|firewall|pki|iam\/iam_builder)\.go|nodeup\/pkg\/model\/networking\/calico\.go)'
     always_run: false
+    optional: false
     skip_report: false
     labels:
       preset-service-account: "true"
@@ -268,6 +272,7 @@ presubmits:
     - master
     run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.projectcalico\.org\.canal\/)'
     always_run: false
+    optional: false
     skip_report: false
     labels:
       preset-service-account: "true"
@@ -333,6 +338,7 @@ presubmits:
     - master
     run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd|firewall|components\/cilium|iam\/iam_builder)\.go|nodeup\/pkg\/model\/(context|networking\/cilium)\.go)'
     always_run: false
+    optional: false
     skip_report: false
     labels:
       preset-service-account: "true"
@@ -398,8 +404,8 @@ presubmits:
     - master
     run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd|firewall|components\/cilium|iam\/iam_builder)\.go|nodeup\/pkg\/model\/(context|networking\/cilium)\.go)'
     always_run: false
+    optional: false
     skip_report: false
-    optional: true
     labels:
       preset-service-account: "true"
       preset-aws-ssh: "true"
@@ -463,6 +469,7 @@ presubmits:
     branches:
     - master
     always_run: false
+    optional: false
     skip_report: false
     labels:
       preset-service-account: "true"
@@ -528,6 +535,7 @@ presubmits:
     - master
     run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.flannel\/|pkg\/model\/components\/containerd\.go)'
     always_run: false
+    optional: false
     skip_report: false
     labels:
       preset-service-account: "true"
@@ -593,6 +601,7 @@ presubmits:
     - master
     run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.kuberouter\/|pkg\/model\/components\/containerd\.go)'
     always_run: false
+    optional: false
     skip_report: false
     labels:
       preset-service-account: "true"
@@ -658,6 +667,7 @@ presubmits:
     - master
     run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.weave\/)'
     always_run: false
+    optional: false
     skip_report: false
     labels:
       preset-service-account: "true"

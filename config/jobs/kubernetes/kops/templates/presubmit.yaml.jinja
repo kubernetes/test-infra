@@ -6,6 +6,7 @@
     run_if_changed: '{{run_if_changed}}'
     {%- endif %}
     always_run: {{always_run}}
+    optional: {{optional}}
     skip_report: {{skip_report}}
     labels:
       {%- if cloud == "aws" %}
