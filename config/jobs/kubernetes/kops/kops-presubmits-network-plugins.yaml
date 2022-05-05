@@ -74,7 +74,7 @@ presubmits:
     branches:
     - master
     always_run: false
-    optional: false
+    optional: true
     skip_report: false
     labels:
       preset-service-account: "true"
@@ -404,7 +404,7 @@ presubmits:
     - master
     run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.cilium\.io\/|pkg\/model\/(components\/containerd|firewall|components\/cilium|iam\/iam_builder)\.go|nodeup\/pkg\/model\/(context|networking\/cilium)\.go)'
     always_run: false
-    optional: false
+    optional: true
     skip_report: false
     labels:
       preset-service-account: "true"
