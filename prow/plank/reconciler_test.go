@@ -317,7 +317,7 @@ func TestProwJobIndexer(t *testing.T) {
 			},
 		},
 		{
-			name: "Triggered goes into triggeredPending",
+			name:   "Triggered goes into triggeredPending",
 			modify: func(pj *prowv1.ProwJob) { pj.Status.State = prowv1.TriggeredState },
 			expected: []string{
 				prowJobIndexKeyAll,
@@ -339,7 +339,7 @@ func TestProwJobIndexer(t *testing.T) {
 			expected: []string{prowJobIndexKeyAll},
 		},
 		{
-			name: "Changing name changes pendingTriggeredIndexKeyByName index",
+			name:   "Changing name changes pendingTriggeredIndexKeyByName index",
 			modify: func(pj *prowv1.ProwJob) { pj.Spec.Job = "some-name" },
 			expected: []string{
 				prowJobIndexKeyAll,
@@ -349,7 +349,7 @@ func TestProwJobIndexer(t *testing.T) {
 			},
 		},
 		{
-			name: "Changing job queue name changes pendingTriggeredIndexKeyByJobQueueName index",
+			name:   "Changing job queue name changes pendingTriggeredIndexKeyByJobQueueName index",
 			modify: func(pj *prowv1.ProwJob) { pj.Spec.JobQueueName = "some-name" },
 			expected: []string{
 				prowJobIndexKeyAll,

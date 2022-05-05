@@ -2209,14 +2209,14 @@ func TestJobReportFormats(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-            // In GenerateReport(), we use a trailing newline in the
-            // jobReportFormat* constants, because we use a newline as a
-            // delimiter. In ParseReport(), we split the overall report on
-            // newlines first, before applying the jobReportFormat*Regex
-            // regexes on them. To mimic this behavior, we trim the newline
-            // before attempting to parse them with tc.formatRegex.
+			// In GenerateReport(), we use a trailing newline in the
+			// jobReportFormat* constants, because we use a newline as a
+			// delimiter. In ParseReport(), we split the overall report on
+			// newlines first, before applying the jobReportFormat*Regex
+			// regexes on them. To mimic this behavior, we trim the newline
+			// before attempting to parse them with tc.formatRegex.
 			serialized := fmt.Sprintf(tc.format, tc.words...)
-            serializedWithoutNewline := strings.TrimSuffix(serialized, "\n")
+			serializedWithoutNewline := strings.TrimSuffix(serialized, "\n")
 			re := regexp.MustCompile(tc.formatRegex)
 			if !re.MatchString(serializedWithoutNewline) {
 				t.Fatalf("could not parse serialized job report line %q with regex %q", serializedWithoutNewline, tc.formatRegex)
