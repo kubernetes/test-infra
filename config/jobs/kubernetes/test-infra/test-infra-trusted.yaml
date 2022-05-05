@@ -130,7 +130,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer
       containers:
-      - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20220314-46af1b01a6
+      - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20220505-57bba9e90d
         command:
         - make
         args:
@@ -451,7 +451,7 @@ postsubmits:
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
       containers:
-      - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20220314-46af1b01a6
+      - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20220505-57bba9e90d
         command:
         - make
         args:
@@ -639,7 +639,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20220314-46af1b01a6
+    - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20220505-57bba9e90d
       command:
       - ./hack/make-rules/go-run/arbitrary.sh
       args:
