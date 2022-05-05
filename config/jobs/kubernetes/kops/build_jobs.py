@@ -247,6 +247,7 @@ def presubmit_test(branch='master',
                    skip_regex='',
                    focus_regex=None,
                    run_if_changed=None,
+                   optional=False,
                    skip_report=False,
                    always_run=False,
                    scenario=None,
@@ -304,6 +305,7 @@ def presubmit_test(branch='master',
         test_package_dir=test_package_dir,
         focus_regex=focus_regex,
         run_if_changed=run_if_changed,
+        optional='true' if optional else 'false',
         skip_report='true' if skip_report else 'false',
         always_run='true' if always_run else 'false',
         image=image,
@@ -917,10 +919,13 @@ def generate_presubmits_network_plugins():
     supports_ipv6 = {'amazonvpc', 'calico', 'cilium'}
     results = []
     for plugin, run_if_changed in plugins.items():
+        k8s_version = 'stable'
         networking_arg = plugin
+        optional = False
+        if plugin == 'amazonvpc':
+            optional = True
         if plugin == 'kuberouter':
             networking_arg = 'kube-router'
-        k8s_version = 'stable'
         if plugin == 'weave':
             k8s_version = '1.22'
         results.append(
@@ -932,11 +937,14 @@ def generate_presubmits_network_plugins():
                 networking=networking_arg,
                 extra_flags=['--node-size=t3.large'],
                 run_if_changed=run_if_changed,
+                optional=optional,
             )
         )
         if plugin in supports_ipv6:
             if plugin == 'amazonvpc':
                 run_if_changed = None
+            if plugin == 'cilium':
+                optional = True
             results.append(
                 presubmit_test(
                     name=f"pull-kops-e2e-cni-{plugin}-ipv6",
@@ -947,6 +955,7 @@ def generate_presubmits_network_plugins():
                                  '--zones=us-west-2a',
                                  ],
                     run_if_changed=run_if_changed,
+                    optional=optional,
                 )
             )
     return results
