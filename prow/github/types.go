@@ -253,6 +253,7 @@ type PullRequest struct {
 	Title              string            `json:"title"`
 	Body               string            `json:"body"`
 	RequestedReviewers []User            `json:"requested_reviewers"`
+	RequestedTeams     []Team            `json:"requested_teams"`
 	Assignees          []User            `json:"assignees"`
 	State              string            `json:"state"`
 	Draft              bool              `json:"draft"`
