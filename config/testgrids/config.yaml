@@ -79,7 +79,7 @@ dashboards:
   - name: osconfig-unstable
     test_group_name: osconfig-unstable
     open_test_template:
-      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+      url: https://oss.gprow.dev/view/gs/<gcs_prefix>/<changelist>
     file_bug_template:
       url: https://github.com/GoogleCloudPlatform/osconfig/issues/new
       options:
@@ -90,7 +90,7 @@ dashboards:
   - name: osconfig-staging
     test_group_name: osconfig-staging
     open_test_template:
-      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+      url: https://oss.gprow.dev/view/gs/<gcs_prefix>/<changelist>
     file_bug_template:
       url: https://github.com/GoogleCloudPlatform/osconfig/issues/new
       options:
@@ -101,7 +101,7 @@ dashboards:
   - name: osconfig-stable
     test_group_name: osconfig-stable
     open_test_template:
-      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+      url: https://oss.gprow.dev/view/gs/<gcs_prefix>/<changelist>
     file_bug_template:
       url: https://github.com/GoogleCloudPlatform/osconfig/issues/new
       options:
@@ -112,7 +112,7 @@ dashboards:
   - name: osconfig-head-images
     test_group_name: osconfig-head-images
     open_test_template:
-      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
+      url: https://oss.gprow.dev/view/gs/<gcs_prefix>/<changelist>
     file_bug_template:
       url: https://github.com/GoogleCloudPlatform/osconfig/issues/new
       options:
