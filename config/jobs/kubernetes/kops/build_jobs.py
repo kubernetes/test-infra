@@ -919,10 +919,13 @@ def generate_presubmits_network_plugins():
     supports_ipv6 = {'amazonvpc', 'calico', 'cilium'}
     results = []
     for plugin, run_if_changed in plugins.items():
+        k8s_version = 'stable'
         networking_arg = plugin
+        optional = False
+        if plugin == 'amazonvpc':
+            optional = True
         if plugin == 'kuberouter':
             networking_arg = 'kube-router'
-        k8s_version = 'stable'
         if plugin == 'weave':
             k8s_version = '1.22'
         results.append(
@@ -934,6 +937,7 @@ def generate_presubmits_network_plugins():
                 networking=networking_arg,
                 extra_flags=['--node-size=t3.large'],
                 run_if_changed=run_if_changed,
+                optional=optional,
             )
         )
         if plugin in supports_ipv6:

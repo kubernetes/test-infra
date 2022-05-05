@@ -9,7 +9,7 @@ presubmits:
     - master
     run_if_changed: '^(upup\/models\/cloudup\/resources\/addons\/networking\.amazon-vpc-routed-eni\/|pkg\/model\/(firewall|components\/containerd|components\/kubeproxy|iam\/iam_builder)\.go|nodeup\/pkg\/model\/kubelet\.go)'
     always_run: false
-    optional: false
+    optional: true
     skip_report: false
     labels:
       preset-service-account: "true"
