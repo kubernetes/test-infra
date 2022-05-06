@@ -548,12 +548,6 @@ default:
       prowPlugin: label
       addedBy: anyone
     - color: d2b48c
-      description: Categorizes an issue or PR as relevant to SIG Service Catalog.
-      name: sig/service-catalog
-      target: both
-      prowPlugin: label
-      addedBy: anyone
-    - color: d2b48c
       description: Categorizes an issue or PR as relevant to SIG Storage.
       name: sig/storage
       target: both
