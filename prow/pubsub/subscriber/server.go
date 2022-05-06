@@ -38,6 +38,11 @@ const (
 	tokenLabel = "token"
 )
 
+type configToWatch struct {
+	config.PubSubTriggers
+	config.PubsubSubscriptions
+}
+
 type message struct {
 	Attributes map[string]string
 	Data       []byte
@@ -231,8 +236,11 @@ func (s *PullServer) Run(ctx context.Context) error {
 		}
 		logrus.Debug("Pull server shutting down.")
 	}()
-	currentConfig := s.Subscriber.ConfigAgent.Config().PubSubTriggers
-	errGroup, derivedCtx, err := s.handlePulls(ctx, currentConfig)
+	currentConfig := configToWatch{
+		s.Subscriber.ConfigAgent.Config().PubSubTriggers,
+		s.Subscriber.ConfigAgent.Config().PubSubSubscriptions,
+	}
+	errGroup, derivedCtx, err := s.handlePulls(ctx, currentConfig.PubSubTriggers)
 	if err != nil {
 		return err
 	}
@@ -248,14 +256,17 @@ func (s *PullServer) Run(ctx context.Context) error {
 			return err
 		// Checking for update config
 		case event := <-configEvent:
-			newConfig := event.After.PubSubTriggers
+			newConfig := configToWatch{
+				event.After.PubSubTriggers,
+				event.After.PubSubSubscriptions,
+			}
 			logrus.Info("Received new config")
 			if !reflect.DeepEqual(currentConfig, newConfig) {
 				logrus.Info("New config found, reloading pull Server")
 				// Making sure the current thread finishes before starting a new one.
 				errGroup.Wait()
 				// Starting a new thread with new config
-				errGroup, derivedCtx, err = s.handlePulls(ctx, newConfig)
+				errGroup, derivedCtx, err = s.handlePulls(ctx, newConfig.PubSubTriggers)
 				if err != nil {
 					return err
 				}
