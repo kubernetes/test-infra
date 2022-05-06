@@ -98,8 +98,10 @@ func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string,
 	}
 
 	var conf ownConfig
-	if err := json.Unmarshal(rawConfig, &conf); err != nil {
-		logrus.WithError(err).Error("Failed to decode podinfo config")
+	if len(rawConfig) > 0 {
+		if err := json.Unmarshal(rawConfig, &conf); err != nil {
+			logrus.WithError(err).Error("Failed to decode podinfo config")
+		}
 	}
 
 	var p k8sreporter.PodReport
