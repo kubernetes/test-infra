@@ -45,6 +45,7 @@ const testgridDaysOfResultsAnnotation = "testgrid-days-of-results"
 const testgridInCellMetric = "testgrid-in-cell-metric"
 const testGridDisableProwJobAnalysis = "testgrid-disable-prowjob-analysis"
 const testgridBaseOptionsAnnotation = "testgrid-base-options"
+const testgridBrokenColumnThreshold = "testgrid-broken-column-threshold"
 const descriptionAnnotation = "description"
 const minPresubmitNumColumnsRecent = 20
 
@@ -171,6 +172,15 @@ func (pac *ProwAwareConfigurator) ApplySingleProwjobAnnotations(c *configpb.Conf
 		baseOptions = bo
 	}
 
+	var brokenColumnThreshold float32
+	if bct, ok := j.Annotations[testgridBrokenColumnThreshold]; ok {
+		bctFloat, err := strconv.ParseFloat(bct, 32)
+		if err != nil {
+			return fmt.Errorf("%s value %q is not a valid float", testgridBrokenColumnThreshold, bct)
+		}
+		brokenColumnThreshold = float32(bctFloat)
+	}
+
 	description := pac.TabDescriptionForProwJob(j)
 
 	if addToDashboards {
@@ -212,6 +222,7 @@ func (pac *ProwAwareConfigurator) ApplySingleProwjobAnnotations(c *configpb.Conf
 				OpenBugTemplate:       openBugLinkTemplate,
 				OpenTestTemplate:      openTestLinkTemplate,
 				BaseOptions:           baseOptions,
+				BrokenColumnThreshold: brokenColumnThreshold,
 			}
 			if firstDashboard {
 				firstDashboard = false
