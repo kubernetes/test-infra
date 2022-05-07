@@ -467,6 +467,57 @@ presubmits:
       testgrid-tab-name: pr-azurefile-csi-driver-external-e2e-smb
       description: "Run External E2E tests for Azure File CSI driver using SMB protocol."
       testgrid-num-columns-recent: '30'
+  - name: pull-azurefile-csi-driver-external-e2e-smb-windows
+    decorate: true
+    always_run: false
+    path_alias: sigs.k8s.io/azurefile-csi-driver
+    branches:
+      - master
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-azure
+        base_ref: main
+        path_alias: sigs.k8s.io/cluster-api-provider-azure
+        workdir: true
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220428-de61deb68b-master
+          command:
+            - runner.sh
+            - ./scripts/ci-entrypoint.sh
+          args:
+            - bash
+            - -c
+            - >-
+              cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
+              make e2e-test
+          securityContext:
+            privileged: true
+          env:
+            - name: WINDOWS
+              value: "true"
+            - name: TEST_WINDOWS
+              value: "true"
+            - name: WINDOWS_FLAVOR
+              value: "containerd-2022"
+            - name: WINDOWS_USE_HOST_PROCESS_CONTAINERS
+              value: "true"
+            - name: NODE_MACHINE_TYPE
+              value: "Standard_D4s_v3"
+            - name: KUBERNETES_VERSION
+              value: "v1.23.5"
+            - name: WORKER_MACHINE_COUNT
+              value: "0" # Don't create any linux worker nodes
+    annotations:
+      testgrid-dashboards: provider-azure-azurefile-csi-driver
+      testgrid-tab-name: pr-azurefile-csi-driver-external-e2e-smb-windows
+      description: "Run External E2E tests for Azure File CSI driver using SMB protocol on Windows."
+      testgrid-num-columns-recent: '30'
   - name: pull-azurefile-csi-driver-external-e2e-nfs
     decorate: true
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
