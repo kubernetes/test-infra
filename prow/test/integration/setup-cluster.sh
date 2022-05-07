@@ -18,6 +18,8 @@ set -o nounset
 set -o pipefail
 
 CURRENT_DIR="$(cd "$(dirname "$0")" && pwd)"
+source "${CURRENT_DIR}"/lib.sh
+
 CONFIG_ROOT_DIR="${CURRENT_DIR}/prow"
 if [[ -n "${1:-}" && "$1" == "--config-path" ]]; then
   echo "Override CONFIG_ROOT_DIR"
@@ -25,12 +27,6 @@ if [[ -n "${1:-}" && "$1" == "--config-path" ]]; then
   echo "CONFIG_ROOT_DIR: ${CONFIG_ROOT_DIR}"
   shift 2
 fi
-
-readonly DEFAULT_CLUSTER_NAME="kind-prow-integration"
-readonly DEFAULT_CONTEXT="kind-${DEFAULT_CLUSTER_NAME}"
-readonly DEFAULT_REGISTRY_NAME="kind-registry"
-readonly DEFAULT_REGISTRY_PORT="5001"
-readonly PROW_COMPONENTS="sinker crier hook horologium prow-controller-manager fakegerritserver fakeghserver deck tide deck-tenanted"
 
 if [[ -z "${HOME:-}" ]]; then # kubectl looks for HOME which is not set in bazel
   export HOME="$(cd ~ && pwd -P)"
@@ -103,7 +99,7 @@ EOF
 
 function deploy_prow() {
   echo "Remove previous installaion"
-  for app in ${PROW_COMPONENTS}; do
+  for app in "${PROW_COMPONENTS[@]}"; do
     do-kubectl delete deployment -l app=${app}
     do-kubectl delete pods -l app=${app}
   done

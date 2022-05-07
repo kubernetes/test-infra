@@ -17,10 +17,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-readonly DEFAULT_CLUSTER_NAME="kind-prow-integration"
-readonly DEFAULT_CONTEXT="kind-${DEFAULT_CLUSTER_NAME}"
-readonly DEFAULT_REGISTRY_NAME="kind-registry"
-readonly PROW_COMPONENTS="sinker crier hook horologium prow-controller-manager fakegerritserver fakeghserver deck tide deck-tenanted"
+CURRENT_DIR="$(cd "$(dirname "$0")" && pwd)"
+source "${CURRENT_DIR}"/lib.sh
 
 function do_kubectl() {
   kubectl --context=${DEFAULT_CONTEXT} $@
@@ -32,7 +30,7 @@ if [[ -n "${ARTIFACTS:-}" && -d "${ARTIFACTS}" ]]; then
 
   # Do not fail the entire script if we can't collect logs for whatever reason
   set +e
-  for app in ${PROW_COMPONENTS}; do
+  for app in "${PROW_COMPONENTS[@]}"; do
     do_kubectl logs svc/$app >"${log_dir}/${app}.log"
     do_kubectl logs -p svc/$app >"${log_dir}/${app}-previous.log"
   done

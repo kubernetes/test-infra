@@ -17,10 +17,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-readonly DEFAULT_CLUSTER_NAME="kind-prow-integration"
-readonly DEFAULT_CONTEXT="kind-${DEFAULT_CLUSTER_NAME}"
-readonly DEFAULT_REGISTRY_NAME="kind-registry"
-readonly DEFAULT_REGISTRY_PORT="5001"
+CURRENT_DIR="$(cd "$(dirname "$0")" && pwd)"
+source "${CURRENT_DIR}"/lib.sh
 
 # create registry container unless it already exists
 running="$(docker inspect -f '{{.State.Running}}' "${DEFAULT_REGISTRY_NAME}" 2>/dev/null || true)"
