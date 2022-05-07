@@ -3,17 +3,24 @@
 reviewers:
 - andyzhangx
 - brendandburns
+- chewong
 - feiskyer
 - karataliu
 - khenidak
-- chewong
+- lzhecheng
+- MartinForReal
+- nilo19
+
 approvers:
 - andyzhangx
 - brendandburns
+- chewong
 - feiskyer
 - karataliu
 - khenidak
-- chewong
+- lzhecheng
+- MartinForReal
+- nilo19
 
 labels:
 - area/provider/azure
