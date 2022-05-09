@@ -634,6 +634,8 @@ presubmits:
               value: "v1.23.5"
             - name: WORKER_MACHINE_COUNT
               value: "0" # Don't create any linux worker nodes
+            - name: EXTERNAL_E2E_TEST
+              value: "true"
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
       testgrid-tab-name: pr-azuredisk-csi-driver-external-e2e-windows

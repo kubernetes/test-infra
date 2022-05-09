@@ -513,6 +513,8 @@ presubmits:
               value: "v1.23.5"
             - name: WORKER_MACHINE_COUNT
               value: "0" # Don't create any linux worker nodes
+            - name: EXTERNAL_E2E_TEST_SMB
+              value: "true"
     annotations:
       testgrid-dashboards: provider-azure-azurefile-csi-driver
       testgrid-tab-name: pr-azurefile-csi-driver-external-e2e-smb-windows
