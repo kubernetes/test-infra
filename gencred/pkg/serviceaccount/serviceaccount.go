@@ -67,7 +67,7 @@ func checkSAAuth(clientset kubernetes.Interface) error {
 }
 
 // getOrCreateSA gets existing or creates new service account (SA).
-func getOrCreateSA(clientset kubernetes.Interface, days int) ([]byte, []byte, error) {
+func getOrCreateSA(clientset kubernetes.Interface, duration metav1.Duration) ([]byte, []byte, error) {
 	client := clientset.CoreV1().ServiceAccounts(corev1.NamespaceDefault)
 
 	// Check SelfSubjectAccessReviews are allowed.
@@ -103,7 +103,7 @@ func getOrCreateSA(clientset kubernetes.Interface, days int) ([]byte, []byte, er
 		return nil, nil, fmt.Errorf("get SA: %w", err)
 	}
 
-	return getSASecrets(clientset, saObj, days)
+	return getSASecrets(clientset, saObj, duration)
 }
 
 // getOrCreateCRB gets existing or creates new cluster role binding (CRB).
@@ -132,11 +132,11 @@ func getOrCreateCRB(clientset kubernetes.Interface) error {
 }
 
 // getSASecrets gets service account token and root CA secrets.
-func getSASecrets(clientset kubernetes.Interface, saObj *corev1.ServiceAccount, days int) ([]byte, []byte, error) {
-	secondsPerWeek := int64(days * 24 * 60 * 60)
+func getSASecrets(clientset kubernetes.Interface, saObj *corev1.ServiceAccount, duration metav1.Duration) ([]byte, []byte, error) {
+	durationInSeconds := int64(duration.Seconds())
 	tokenReq := &authenticationv1.TokenRequest{
 		Spec: authenticationv1.TokenRequestSpec{
-			ExpirationSeconds: &secondsPerWeek,
+			ExpirationSeconds: &durationInSeconds,
 		},
 	}
 	tokenResp, err := clientset.CoreV1().ServiceAccounts(saObj.Namespace).CreateToken(context.TODO(), saObj.Name, tokenReq, metav1.CreateOptions{})
@@ -160,8 +160,8 @@ func getSASecrets(clientset kubernetes.Interface, saObj *corev1.ServiceAccount, 
 }
 
 // CreateClusterServiceAccountCredentials creates a service account to authenticate to a cluster API server.
-func CreateClusterServiceAccountCredentials(clientset kubernetes.Interface, days int) (token []byte, caPEM []byte, err error) {
-	token, caPEM, err = getOrCreateSA(clientset, days)
+func CreateClusterServiceAccountCredentials(clientset kubernetes.Interface, duration metav1.Duration) (token []byte, caPEM []byte, err error) {
+	token, caPEM, err = getOrCreateSA(clientset, duration)
 	if err != nil {
 		return nil, nil, fmt.Errorf("get or create SA: %w", err)
 	}
@@ -170,8 +170,8 @@ func CreateClusterServiceAccountCredentials(clientset kubernetes.Interface, days
 }
 
 // CreateKubeConfigWithServiceAccountCredentials creates a kube config containing a service account token to authenticate to a Kubernetes cluster API server.
-func CreateKubeConfigWithServiceAccountCredentials(clientset kubernetes.Interface, name string, days int) ([]byte, error) {
-	token, caPEM, err := CreateClusterServiceAccountCredentials(clientset, days)
+func CreateKubeConfigWithServiceAccountCredentials(clientset kubernetes.Interface, name string, duration metav1.Duration) ([]byte, error) {
+	token, caPEM, err := CreateClusterServiceAccountCredentials(clientset, duration)
 	if err != nil {
 		return nil, err
 	}
