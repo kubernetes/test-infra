@@ -62,11 +62,6 @@ for release in "$@"; do
     1.23)
       containerd_api_model="https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_1_23.json"
       ;;
-    *)
-      branch=$(echo -e 'master # TODO(releng): Remove once repo default branch has been renamed\n    - main')
-      branch_name=master
-      orchestrator_release="1.23"
-      ;;
   esac
 
   cat > "${output}" <<EOF
