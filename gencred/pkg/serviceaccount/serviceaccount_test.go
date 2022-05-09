@@ -30,6 +30,7 @@ import (
 )
 
 func TestCreateClusterServiceAccountCredentials(t *testing.T) {
+	var expirationDuration int64 = 7
 	tests := []struct {
 		name         string
 		createClient func() kubernetes.Interface
@@ -79,6 +80,9 @@ func TestCreateClusterServiceAccountCredentials(t *testing.T) {
 						Status: authenticationv1.TokenRequestStatus{
 							Token: "abc",
 						},
+						Spec: authenticationv1.TokenRequestSpec{
+							ExpirationSeconds: &expirationDuration,
+						},
 					}
 					return true, r, nil
 				})
@@ -99,7 +103,7 @@ func TestCreateClusterServiceAccountCredentials(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			client := test.createClient()
-			_, _, err := CreateClusterServiceAccountCredentials(client, 7)
+			_, _, err := CreateClusterServiceAccountCredentials(client, expirationDuration)
 			success := err == nil
 
 			if success != test.expected {

@@ -39,7 +39,8 @@ const (
 	defaultContextName = "build"
 	// defaultConfigFileName is the default kubeconfig filename.
 	defaultConfigFileName = "/dev/stdout"
-	defaultDurationInDays = 7
+	// Two days. This is the largest allowed value for token expiration.
+	defaultDurationInDays = 172800
 )
 
 // options are the available command-line flags.
@@ -49,7 +50,7 @@ type options struct {
 	output         string
 	certificate    bool
 	serviceaccount bool
-	duration       int
+	duration       int64
 	overwrite      bool
 }
 
@@ -60,7 +61,7 @@ func (o *options) parseFlags() {
 	flag.StringVarP(&o.output, "output", "o", defaultConfigFileName, "Output path for generated kubeconfig file.")
 	flag.BoolVarP(&o.certificate, "certificate", "c", false, "Authorize with a client certificate and key.")
 	flag.BoolVarP(&o.serviceaccount, "serviceaccount", "s", false, "Authorize with a service account.")
-	flag.IntVar(&o.duration, "duration", defaultDurationInDays, "How many days the cred is valid, default is 7.")
+	flag.Int64Var(&o.duration, "duration", defaultDurationInDays, "How many seconds the cred is valid, default is 172800, can only set to be lower than the default.")
 	flag.BoolVar(&o.overwrite, "overwrite", false, "Overwrite (rather than merge) output file if exists.")
 
 	flag.Parse()
