@@ -1,15 +1,15 @@
 # sigs.k8s.io/descheduler presubmits
 presubmits:
   kubernetes-sigs/descheduler:
-  - name: pull-descheduler-verify-master
+  - name: pull-descheduler-verify-release-1-24
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-descheduler-verify-master
+      testgrid-tab-name: pull-descheduler-verify-release-1.24
     decorate: true
     path_alias: sigs.k8s.io/descheduler
     branches:
     # The script this job runs is not in all branches.
-    - ^master$
+    - ^release-1.24$
     always_run: true
     spec:
       containers:
@@ -18,15 +18,15 @@ presubmits:
         - make
         args:
         - verify
-  - name: pull-descheduler-verify-build-master
+  - name: pull-descheduler-verify-build-release-1-24
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-descheduler-verify-build-master
+      testgrid-tab-name: pull-descheduler-verify-build-release-1.24
     decorate: true
     path_alias: sigs.k8s.io/descheduler
     branches:
     # The script this job runs is not in all branches.
-    - ^master$
+    - ^release-1.24$
     always_run: true
     spec:
       containers:
@@ -35,15 +35,15 @@ presubmits:
         - make
         args:
         - build
-  - name: pull-descheduler-unit-test-master-master
+  - name: pull-descheduler-unit-test-release-1-24
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-descheduler-unit-test-master
+      testgrid-tab-name: pull-descheduler-unit-test-release-1.24
     decorate: true
     path_alias: sigs.k8s.io/descheduler
     branches:
     # The script this job runs is not in all branches.
-    - ^master$
+    - ^release-1.24$
     always_run: false
     run_if_changed: '\.go$'
     spec:
@@ -53,10 +53,10 @@ presubmits:
         - make
         args:
         - test-unit
-  - name: pull-descheduler-test-e2e-k8s-master-1-24
+  - name: pull-descheduler-test-e2e-k8s-release-1-24-1-24
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-descheduler-test-e2e-k8s-master-1.24
+      testgrid-tab-name: pull-descheduler-test-e2e-k8s-release-1-24-1.24
     decorate: true
     decoration_config:
       timeout: 20m
@@ -65,7 +65,7 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     branches:
-    - master
+    - release-1.24
     spec:
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
@@ -83,10 +83,10 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-  - name: pull-descheduler-test-e2e-k8s-master-1-23
+  - name: pull-descheduler-test-e2e-k8s-release-1-24-1-23
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-descheduler-test-e2e-k8s-master-1.23
+      testgrid-tab-name: pull-descheduler-test-e2e-k8s-release-1-24-1.23
     decorate: true
     decoration_config:
       timeout: 20m
@@ -95,16 +95,16 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     branches:
-    - master
+    - release-1.24
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220428-de61deb68b-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
         env:
         - name: KUBERNETES_VERSION
-          value: "v1.23.0"
+          value: "v1.23.1"
         - name: KIND_E2E
           value: "true"
         args:
@@ -113,10 +113,10 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-  - name: pull-descheduler-test-e2e-k8s-master-1-22
+  - name: pull-descheduler-test-e2e-k8s-release-1-24-1-22
     annotations:
       testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-descheduler-test-e2e-k8s-master-1.22
+      testgrid-tab-name: pull-descheduler-test-e2e-k8s-release-1-24-1.22
     decorate: true
     decoration_config:
       timeout: 20m
@@ -125,46 +125,21 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     branches:
-    - master
+    - release-1.24
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220428-de61deb68b-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220323-55ba9f6da3-master
         command:
         # generic runner script, handles DIND, bazelrc for caching, etc.
         - runner.sh
         env:
         - name: KUBERNETES_VERSION
-          value: "v1.22.1"
+          value: "v1.22.2"
         - name: KIND_E2E
           value: "true"
         args:
         - make
         - test-e2e
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-  - name: pull-descheduler-helm-test
-    annotations:
-      testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-descheduler-helm-test
-    decorate: true
-    decoration_config:
-      timeout: 20m
-    always_run: true
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    branches:
-    - master
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220428-de61deb68b-master
-        command:
-        # generic runner script, handles DIND, bazelrc for caching, etc.
-        - runner.sh
-        args:
-        - make
-        - test-helm
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
