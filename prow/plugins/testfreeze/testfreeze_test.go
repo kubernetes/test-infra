@@ -60,7 +60,7 @@ func TestHandle(t *testing.T) {
 				_, _, _, _, comment := mock.CreateCommentArgsForCall(0)
 				assert.Contains(t, comment, "Please note that we're already")
 				assert.Contains(t, comment, "for the `release-1.23` branch")
-				assert.Contains(t, comment, "The most recent automatic fast forward was: Wed May  4 16:15:37 CEST 2022")
+				assert.Contains(t, comment, "Fast forwards are scheduled to happen every 6 hours, whereas the most recent run was: Wed May  4 16:15:37 CEST 2022")
 			},
 		},
 		{

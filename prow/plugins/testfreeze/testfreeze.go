@@ -38,7 +38,7 @@ const (
 	defaultKubernetesRepoAndOrg = "kubernetes"
 	templateString              = `Please note that we're already in [Test Freeze](https://github.com/kubernetes/sig-release/blob/master/releases/release_phases.md#test-freeze) for the ` + "`{{ .Branch }}`" + ` branch. This means every merged PR will be automatically fast-forwarded via the periodic [ci-fast-forward](https://testgrid.k8s.io/sig-release-releng-blocking#git-repo-kubernetes-fast-forward) job to the release branch of the upcoming {{ .Tag }} release.
 
-The most recent automatic fast forward was: {{ .LastFastForward }}.
+Fast forwards are scheduled to happen every 6 hours, whereas the most recent run was: {{ .LastFastForward }}.
 `
 )
 
