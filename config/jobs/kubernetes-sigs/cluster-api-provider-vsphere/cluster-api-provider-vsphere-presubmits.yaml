@@ -81,6 +81,7 @@ presubmits:
   kubernetes-sigs/cluster-api-provider-vsphere:
   - name: pull-cluster-api-provider-vsphere-apidiff-main
     always_run: true
+    optional: true
     decorate: true
     path_alias: sigs.k8s.io/cluster-api-provider-vsphere
     spec:
