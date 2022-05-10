@@ -24,6 +24,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-testing-misc
     testgrid-tab-name: continuous
+    testgrid-broken-column-threshold: '0.5'
     description: Runs `make test verify` on the test-infra repo every hour
 
 - name: metrics-kettle
@@ -49,6 +50,7 @@ periodics:
     testgrid-alert-stale-results-hours: '12'
     testgrid-dashboards: sig-testing-misc
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+    testgrid-broken-column-threshold: '0.5'
     description: Monitors Kettle's BigQuery database freshness.
 
 - name: test-infra-fuzz
@@ -87,6 +89,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-testing-misc
     testgrid-tab-name: test-infra-fuzz
+    testgrid-broken-column-threshold: '0.5'
     description: Runs clusterfuzzlite every hour
 
 - name: test-infra-cfl-coverage-report
@@ -125,6 +128,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-testing-misc
     testgrid-tab-name: test-infra-cfl-coverage-report
+    testgrid-broken-column-threshold: '0.5'
     description: Runs clusterfuzzlite coverage report every day
 
 - name: test-infra-cfl-prune
@@ -161,4 +165,5 @@ periodics:
   annotations:
     testgrid-dashboards: sig-testing-misc
     testgrid-tab-name: test-infra-cfl-prune
+    testgrid-broken-column-threshold: '0.5'
     description: Runs clusterfuzzlite corpora prune every day
