@@ -21,19 +21,6 @@ In order to set up the cluster, run the integration tests, and **not** teardown 
 SKIP_TEARDOWN=true ./prow/test/integration/integration-test.sh
 ```
 
-## Run test
-
-After prow is installed on top of the local cluster, run the integration tests under [test](test) directory
-
-Optional parameters:
-
-- [--test_filter](https://docs.bazel.build/versions/main/command-line-reference.html#flag--test_filter) - Specifies a filter to forward to the test framework.
-- [--cache_test_results](https://docs.bazel.build/versions/main/command-line-reference.html#flag--cache_test_results) - Whether to cache test results.
-
-```bash
-./prow/test/integration/integration-test.sh run [--test_filter=TestHook] [--cache_test_results=no]
-```
-
 ## Cleanup
 
 If the local cluster exists, run the tests and then delete the local cluster and the local registry by using:
