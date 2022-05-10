@@ -54,6 +54,8 @@ presubmits:
               value: "true"
             - name: CLUSTER_TEMPLATE
               value: "cluster-template-windows-containerd.yaml"
+            - name: KUBERNETES_VERSION
+              value: "v1.23.5"
             # clusterloader2 variables
             - name: ENABLE_PROMETHEUS_SERVER
               value: "true"
