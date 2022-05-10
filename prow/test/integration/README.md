@@ -2,20 +2,22 @@
 
 ## Run everything
 
-This script would [setup](#setup) the environment, [run](#run-test) all the available integration tests, and then [cleans up](#cleanup) everything.
+Just run:
 
 ```bash
 ./prow/test/integration/integration-test.sh
 ```
 
+This script [sets up](#setup) the environment, [runs](#run-test) all the available integration tests, and then [cleans up](#cleanup) everything.
+
 ## Setup
 
-- [Setup a local registry](setup-local-registry.sh).
-- Compile prow components, generate images, and push them to the registry.
+- [Set up a local registry](setup-local-registry.sh).
+- Compile prow components, generate images, and push them to the local registry.
 - [Create a local cluster](setup-cluster.sh) using [kind](https://kind.sigs.k8s.io/).
 - Wait for prow components to be ready.
 
-In order to set up the cluster, run the integration tests, and **not** teardown the cluster after use:
+To skip tearing down the kind cluster after running the tests, set `SKIP_TEARDOWN=true` when invoking the integration test:
 
 ```bash
 SKIP_TEARDOWN=true ./prow/test/integration/integration-test.sh
@@ -23,7 +25,7 @@ SKIP_TEARDOWN=true ./prow/test/integration/integration-test.sh
 
 ## Cleanup
 
-If the local cluster exists, run the tests and then delete the local cluster and the local registry by using:
+If the local cluster exists, run the tests and then delete the local cluster and the local registry with:
 
 ```bash
 SKIP_SETUP=true ./prow/test/integration/integration-test.sh
@@ -45,7 +47,7 @@ SKIP_SETUP=true ./prow/test/integration/integration-test.sh
 
 ## Add new tests
 
-Tests are implemented in Go, located at [`test`](./test) directory.
+Tests are implemented in Go and are located under the [`test`](./test) directory.
 
 - [If this is a new component] Create a file called `most-awesome-component_test.go`
 - Add test in `most-awesome-component_test.go`
