@@ -54,12 +54,20 @@ signal_handler() {
 }
 trap signal_handler INT TERM
 
-# build kubernetes / node image, e2e binaries
+# build kubernetes / node image, e2e binaries and ginkgo
 build() {
   # build the node image w/ kubernetes
   kind build node-image -v 1
+  # Ginkgo v1 is used by Kubernetes 1.24 and earlier and exists in the vendor directory.
+  # Historically it has been built with the "vendor" prefix.
+  GINKGO_TARGET="vendor/github.com/onsi/ginkgo/ginkgo"
+  if [ ! -d "$GINKGO_TARGET" ]; then
+      # If the directory doesn't exist, then we must be on Kubernetes >= 1.25 with Ginkgo V2.
+      # The "vendor" prefix is no longer needed.
+      GINKGO_TARGET="github.com/onsi/ginkgo/v2/ginkgo"
+  fi
   # make sure we have e2e requirements
-  make all WHAT='cmd/kubectl test/e2e/e2e.test vendor/github.com/onsi/ginkgo/ginkgo'
+  make all WHAT="cmd/kubectl test/e2e/e2e.test ${GINKGO_TARGET}"
 }
 
 check_structured_log_support() {
