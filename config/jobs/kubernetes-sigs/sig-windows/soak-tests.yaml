@@ -13,11 +13,6 @@ presubmits:
       preset-kind-volume-mounts: "true"
       preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
-      preset-azure-windows: "true"
-      preset-capz-windows-2019: "true"
-      preset-capz-containerd-latest: "true"
-    # preset-capz-windows-common-main: "true"
-      preset-capz-windows-common-main-pull: "true"
     extra_refs:
       # This needs to be uncommented when we switch to periodic job.
       # - org: kubernetes
@@ -48,14 +43,15 @@ presubmits:
           securityContext:
             privileged: true
           env:
+            # CAPZ variables
+            - name: NODE_MACHINE_TYPE
+              value: "Standard_D4s_v3"
             - name: TEST_WINDOWS
               value: "true"
-            - name: WINDOWS_USE_HOST_PROCESS_CONTAINERS
-              value: "true"
-            - name: CLUSTER_TEMPLATE
-              value: "cluster-template-windows-containerd.yaml"
             - name: KUBERNETES_VERSION
               value: "v1.23.5"
+            - name: WORKER_NODE_COUNT
+              value: "0" # Don't create linux worker nodes
             # clusterloader2 variables
             - name: ENABLE_PROMETHEUS_SERVER
               value: "true"
