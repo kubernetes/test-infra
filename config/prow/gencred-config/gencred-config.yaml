@@ -1,0 +1,7 @@
+clusters:
+- gke: projects/k8s-prow/locations/us-central1-f/clusters/prow
+  name: prow-services
+  duration: 48h
+  gsm:
+    name: gke_k8s-prow_us-central1-f_prow__default__prow-services
+    project: k8s-prow
