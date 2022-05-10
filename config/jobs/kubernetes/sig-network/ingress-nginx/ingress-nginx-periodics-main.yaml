@@ -14,7 +14,6 @@ periodics:
   skip_submodules: true
   labels:
     preset-kind-volume-mounts: "true"
-    preset-dind-enabled: "true"
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/krte:v20220427-c2db0f69b7-master
