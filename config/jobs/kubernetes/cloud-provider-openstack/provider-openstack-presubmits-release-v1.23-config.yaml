@@ -22,8 +22,6 @@ presubmits:
   - name: openstack-cloud-controller-manager-e2e-test-release-123
     labels:
       preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     path_alias: "k8s.io/cloud-provider-openstack"
@@ -57,8 +55,6 @@ presubmits:
   - name: openstack-cloud-csi-cinder-e2e-test-release-123
     labels:
       preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     path_alias: "k8s.io/cloud-provider-openstack"
@@ -92,8 +88,6 @@ presubmits:
   - name: openstack-cloud-csi-manila-e2e-test-release-123
     labels:
       preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     path_alias: "k8s.io/cloud-provider-openstack"
