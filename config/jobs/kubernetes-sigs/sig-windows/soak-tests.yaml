@@ -42,7 +42,7 @@ presubmits:
               cd ${GOPATH}/src/k8s.io/perf-tests/clusterloader2 &&
               go run cmd/clusterloader.go
               --testconfig=testing/windows-tests/config.yaml
-              --provider=skeleton
+              --provider=aks
               --report-dir=${REPORTS_DIR}
               --v=2
           securityContext:
@@ -63,6 +63,10 @@ presubmits:
               value: "kubernetes.io/azure-disk"
             - name: PROMETHEUS_STORAGE_CLASS_VOLUME_TYPE
               value: "StandardSSD_LRS"
+            - name: PROMETHEUS_SCRAPE_APISERVER_ONLY
+              value: "true"
+            - name: PROMETHEUS_APISERVER_SCRAPE_PORT
+              value: "6443"
             - name: PROMETHEUS_SCRAPE_WINDOWS_NODE_EXPORTER
               value: "true"
             - name: REPORTS_DIR
