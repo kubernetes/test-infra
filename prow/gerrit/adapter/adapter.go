@@ -45,7 +45,6 @@ import (
 
 const (
 	inRepoConfigRetries = 2
-	failedIRCMsg        = "Failed to get InRepoConfig. If there is a merge conflict please rebase. Otherwise try again with /test all."
 )
 
 var gerritMetrics = struct {
@@ -398,9 +397,6 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 			}
 		}
 		if err != nil {
-			if setReviewWerr := c.gc.SetReview(instance, change.ID, change.CurrentRevision, failedIRCMsg, nil); setReviewWerr != nil {
-				return fmt.Errorf("failed to get inRepoConfig and failed to set Review to notify user: %v and %v", err, setReviewWerr)
-			}
 			return fmt.Errorf("failed to get inRepoConfig for Postsubmits: %w", err)
 		}
 		postsubmits = append(postsubmits, c.config().PostsubmitsStatic[cloneURI.String()]...)
@@ -426,9 +422,6 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 			}
 		}
 		if err != nil {
-			if setReviewWerr := c.gc.SetReview(instance, change.ID, change.CurrentRevision, failedIRCMsg, nil); setReviewWerr != nil {
-				return fmt.Errorf("failed to get inRepoConfig and failed to set Review to notify user: %v and %v", err, setReviewWerr)
-			}
 			return fmt.Errorf("failed to get inRepoConfig for Presubmits: %w", err)
 		}
 		presubmits = append(presubmits, c.config().PresubmitsStatic[cloneURI.String()]...)
