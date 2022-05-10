@@ -1,6 +1,6 @@
 periodics:
 - interval: 24h
-  name: ci-kubernetes-e2e-aks-engine-azure-master-windows-20h2-containerd
+  name: ci-kubernetes-e2e-aks-engine-azure-1-24-windows-20h2-containerd
   decorate: true
   decoration_config:
     timeout: 3h
@@ -15,11 +15,11 @@ periodics:
   extra_refs:
   - org: kubernetes
     repo: kubernetes
-    base_ref: master
+    base_ref: release-1.24
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220428-de61deb68b-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220428-de61deb68b-1.24
       command:
       - runner.sh
       - kubetest
@@ -52,11 +52,11 @@ periodics:
         privileged: true
   annotations:
     testgrid-dashboards: sig-windows-sac
-    testgrid-tab-name: aks-engine-windows-20h2-containerd-master
+    testgrid-tab-name: aks-engine-windows-20h2-containerd-1.24
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs SIG-Windows release tests on K8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
 - interval: 48h
-  name: ci-kubernetes-e2e-aks-engine-azure-master-windows-20h2-containerd-serial-slow
+  name: ci-kubernetes-e2e-aks-engine-azure-1-24-windows-20h2-containerd-serial-slow
   decorate: true
   decoration_config:
     timeout: 5h
@@ -71,11 +71,11 @@ periodics:
   extra_refs:
   - org: kubernetes
     repo: kubernetes
-    base_ref: master
+    base_ref: release-1.24
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220428-de61deb68b-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220428-de61deb68b-1.24
       command:
       - runner.sh
       - kubetest
@@ -107,6 +107,6 @@ periodics:
         privileged: true
   annotations:
     testgrid-dashboards: sig-windows-sac
-    testgrid-tab-name: aks-engine-windows-20h2-containerd-serial-slow-master
+    testgrid-tab-name: aks-engine-windows-20h2-containerd-serial-slow-1.24
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     description: Runs serial Windows tests on a Kubernetes cluster running containerd provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
