@@ -1,0 +1,49 @@
+presubmits:
+  kubernetes-sigs/azurelustre-csi-driver:
+  - name: pull-azurelustre-csi-driver-verify
+    decorate: true
+    always_run: true
+    path_alias: sigs.k8s.io/azurelustre-csi-driver
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220428-de61deb68b-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - verify
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: provider-azure-azurelustre-csi-driver
+      testgrid-tab-name: pr-azurelustre-csi-driver-verify
+      description: "Run code verification test for Azure Lustre CSI driver."
+      testgrid-num-columns-recent: '30'
+  - name: pull-azurelustre-csi-driver-build
+    decorate: true
+    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
+    path_alias: sigs.k8s.io/azurelustre-csi-driver
+    branches:
+    - master
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220428-de61deb68b-master
+        command:
+        - runner.sh
+        args:
+        - make
+        - container
+        securityContext:
+          privileged: true
+    annotations:
+      testgrid-dashboards: provider-azure-azurelustre-csi-driver
+      testgrid-tab-name: pr-azurelustre-csi-driver-build
+      description: "Run image build test for Azure Lustre CSI driver."
+      testgrid-num-columns-recent: '30'
