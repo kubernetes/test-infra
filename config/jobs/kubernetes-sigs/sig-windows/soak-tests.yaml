@@ -34,8 +34,8 @@ presubmits:
             - bash
             - -c
             - >-
-              cd ${GOPATH}/src/k8s.io/perf-tests/clusterloader2 &&
-              go run cmd/clusterloader.go
+              cd ${GOPATH}/src/k8s.io/perf-tests/ &&
+              ./run-e2e.sh cluster-loader2
               --testconfig=testing/windows-tests/config.yaml
               --provider=aks
               --report-dir=${REPORTS_DIR}
@@ -55,10 +55,6 @@ presubmits:
             # clusterloader2 variables
             - name: ENABLE_PROMETHEUS_SERVER
               value: "true"
-            - name: PROMETHEUS_STORAGE_CLASS_PROVISIONER
-              value: "kubernetes.io/azure-disk"
-            - name: PROMETHEUS_STORAGE_CLASS_VOLUME_TYPE
-              value: "StandardSSD_LRS"
             - name: PROMETHEUS_SCRAPE_APISERVER_ONLY
               value: "true"
             - name: PROMETHEUS_APISERVER_SCRAPE_PORT
@@ -67,6 +63,15 @@ presubmits:
               value: "true"
             - name: REPORTS_DIR
               value: "reports"
+            # azuredisk variables - required for Prometheus PVC
+            - name: DEPLOY_AZURE_CSI_DRIVER
+              value: "true"
+            - name: AZUREDISK_CSI_DRIVER_VERSION
+              value: "master"
+            - name: PROMETHEUS_STORAGE_CLASS_PROVISIONER
+              value: "kubernetes.io/azure-disk"
+            - name: PROMETHEUS_STORAGE_CLASS_VOLUME_TYPE
+              value: "StandardSSD_LRS"
     annotations:
       testgrid-dashboards: sig-windows-soak-tests
       testgrid-tab-name: soak-tests-capz-windows-2019
