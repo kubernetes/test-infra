@@ -352,6 +352,7 @@ func Test_applySingleProwjobAnnotations(t *testing.T) {
 						DaysOfResults:          30,
 						ShortTextMetric:        "haunted-house",
 						DisableProwjobAnalysis: true,
+						NumFailuresToAlert:     4,
 					},
 				},
 				Dashboards: []*config.Dashboard{
