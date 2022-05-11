@@ -1,3 +1,44 @@
+presubmits:
+  kubernetes/kubernetes:
+  # The presubmit version of the ci-kubernetes-coverage-unit job.
+  - name: pull-kubernetes-coverage-unit
+    always_run: false
+    skip_report: false
+    max_concurrency: 12
+    decorate: true
+    path_alias: k8s.io/kubernetes
+    decoration_config:
+      timeout: 60m
+    extra_refs:
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+    annotations:
+      testgrid-dashboards: sig-testing-canaries
+      description: unit test coverage presubmit
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220428-de61deb68b-master
+        command:
+        - runner.sh
+        - bash
+        args:
+        - -c
+        - |
+          result=0
+          ( cd hack/tools && GO111MODULE=on go install gotest.tools/gotestsum ) || result=$?
+          make test KUBE_COVER=y KUBE_COVER_REPORT_DIR="${ARTIFACTS}" KUBE_TIMEOUT="--timeout=300s" || result=$?
+          cd ../test-infra/gopherage
+          GO111MODULE=on go build .
+          find ${ARTIFACTS} -type f -iname 'junit*.xml' -exec rm {} \;
+          ./gopherage filter --exclude-path="zz_generated,generated\.pb\.go"  "${ARTIFACTS}/combined-coverage.out" > "${ARTIFACTS}/filtered.cov" || result=$?
+          ./gopherage junit --threshold 0.05 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml" || result=$?
+          # For now let's swallow the error - we can reenable returning $result once we're in better shape.
+          exit 0
+        securityContext:
+          privileged: true
+
 periodics:
 - interval: 1h
   name: ci-kubernetes-coverage-conformance
@@ -124,6 +165,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-testing-canaries
     description: build instrumented kubernetes, run (non-slow/serial/disruptive/flaky/feature) e2e tests, generate line coverage using gopherage
+
 - interval: 1h
   name: ci-kubernetes-coverage-unit
   decorate: true
