@@ -20,6 +20,7 @@ dashboards:
 - name: provider-azure-azuredisk-csi-driver
 - name: provider-azure-azurefile-csi-driver
 - name: provider-azure-blobfuse-csi-driver
+- name: provider-azure-azurelustre-csi-driver
 - name: provider-azure-cloud-provider-azure
 - name: provider-azure-cloud-provider-azure-1-20-presubmit
 - name: provider-azure-cloud-provider-azure-1-21-presubmit
