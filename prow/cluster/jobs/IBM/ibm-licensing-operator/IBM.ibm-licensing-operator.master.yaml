@@ -19,6 +19,7 @@ presubmits:
   - name: test_ibm-licensing-operator-amd64
     cluster: default
     decorate: true
+    skip_if_only_changed: "^docs/|\\.(md|png)$|^(OWNERS|LICENSE|SECURITY_CONTACTS)$"
     always_run: true
     path_alias: github.com/IBM/ibm-licensing-operator
     rerun_command: /test test ibm-licensing-operator-amd64
@@ -36,6 +37,7 @@ presubmits:
   - name: test_ibm-licensing-operator-ppc64le
     cluster: ppc64le
     decorate: true
+    skip_if_only_changed: "^docs/|\\.(md|png)$|^(OWNERS|LICENSE|SECURITY_CONTACTS)$"
     always_run: true
     path_alias: github.com/IBM/ibm-licensing-operator
     rerun_command: /test test ibm-licensing-operator-ppc64le
@@ -53,6 +55,7 @@ presubmits:
   - name: test_ibm-licensing-operator-s390x
     cluster: s390x
     decorate: true
+    skip_if_only_changed: "^docs/|\\.(md|png)$|^(OWNERS|LICENSE|SECURITY_CONTACTS)$"
     always_run: true
     path_alias: github.com/IBM/ibm-licensing-operator
     rerun_command: /test test ibm-licensing-operator-s390x
@@ -70,6 +73,7 @@ presubmits:
   - name: build_ibm-licensing-operator-amd64
     cluster: default
     decorate: true
+    skip_if_only_changed: "^docs/|\\.(md|png)$|^(OWNERS|LICENSE|SECURITY_CONTACTS)$"
     always_run: true
     path_alias: github.com/IBM/ibm-licensing-operator
     rerun_command: /test build ibm-licensing-operator-amd64
@@ -87,6 +91,7 @@ presubmits:
   - name: build_ibm-licensing-operator-ppc64le
     cluster: ppc64le
     decorate: true
+    skip_if_only_changed: "^docs/|\\.(md|png)$|^(OWNERS|LICENSE|SECURITY_CONTACTS)$"
     always_run: true
     path_alias: github.com/IBM/ibm-licensing-operator
     rerun_command: /test build ibm-licensing-operator-ppc64le
@@ -104,6 +109,7 @@ presubmits:
   - name: build_ibm-licensing-operator-s390x
     cluster: s390x
     decorate: true
+    skip_if_only_changed: "^docs/|\\.(md|png)$|^(OWNERS|LICENSE|SECURITY_CONTACTS)$"
     always_run: true
     path_alias: github.com/IBM/ibm-licensing-operator
     rerun_command: /test build ibm-licensing-operator-s390x
