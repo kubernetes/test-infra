@@ -400,7 +400,7 @@ periodics:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220412-bafd59ddb3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220428-de61deb68b-master
         command:
           - runner.sh
           - ./scripts/ci-entrypoint.sh
