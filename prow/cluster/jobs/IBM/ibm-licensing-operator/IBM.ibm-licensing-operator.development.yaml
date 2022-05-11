@@ -4,6 +4,7 @@ postsubmits:
     cluster: default
     skip_branches:
     - ^master$
+    - ^latest$
     - ^release-future$
     - ^release-eus$
     - ^release-efix$
@@ -26,6 +27,7 @@ postsubmits:
     cluster: ppc64le
     skip_branches:
     - ^master$
+    - ^latest$
     - ^release-future$
     - ^release-eus$
     - ^release-efix$
@@ -48,6 +50,7 @@ postsubmits:
     cluster: s390x
     skip_branches:
     - ^master$
+    - ^latest$
     - ^release-future$
     - ^release-eus$
     - ^release-efix$
@@ -70,6 +73,7 @@ postsubmits:
     cluster: default
     skip_branches:
     - ^master$
+    - ^latest$
     - ^release-future$
     - ^release-eus$
     - ^release-efix$
