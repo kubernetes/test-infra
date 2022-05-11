@@ -3,8 +3,6 @@ postsubmits:
   - name: ci-cluster-api-provider-openstack-e2e-test
     labels:
       preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-openstack"
@@ -42,8 +40,6 @@ postsubmits:
   - name: ci-cluster-api-provider-openstack-conformance-test
     labels:
       preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-openstack"
