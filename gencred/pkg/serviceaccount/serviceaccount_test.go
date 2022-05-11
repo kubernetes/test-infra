@@ -18,6 +18,7 @@ package serviceaccount
 
 import (
 	"testing"
+	"time"
 
 	authenticationv1 "k8s.io/api/authentication/v1"
 	authorizationv1 "k8s.io/api/authorization/v1"
@@ -99,7 +100,7 @@ func TestCreateClusterServiceAccountCredentials(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			client := test.createClient()
-			_, _, err := CreateClusterServiceAccountCredentials(client, 7)
+			_, _, err := CreateClusterServiceAccountCredentials(client, metav1.Duration{Duration: 2 * 24 * time.Hour})
 			success := err == nil
 
 			if success != test.expected {
