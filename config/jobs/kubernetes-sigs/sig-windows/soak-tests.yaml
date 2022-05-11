@@ -38,7 +38,7 @@ presubmits:
               ./run-e2e.sh cluster-loader2
               --testconfig=testing/windows-tests/config.yaml
               --provider=aks
-              --report-dir=${REPORTS_DIR}
+              --report-dir=${ARTIFACTS}
               --v=2
           securityContext:
             privileged: true
@@ -61,8 +61,6 @@ presubmits:
               value: "6443"
             - name: PROMETHEUS_SCRAPE_WINDOWS_NODE_EXPORTER
               value: "true"
-            - name: REPORTS_DIR
-              value: "reports"
             # azuredisk variables - required for Prometheus PVC
             - name: DEPLOY_AZURE_CSI_DRIVER
               value: "true"
