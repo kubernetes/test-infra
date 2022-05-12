@@ -67,8 +67,6 @@ presubmits:
   - name: pull-cluster-api-provider-gcp-e2e-test-release-release-0-4
     labels:
       preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
@@ -110,8 +108,6 @@ presubmits:
   - name: pull-cluster-api-provider-gcp-make-conformance-release-release-0-4
     labels:
       preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
