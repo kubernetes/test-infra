@@ -39,15 +39,23 @@ presets:
   - name: CONFORMANCE_NODES
     value: "1"
 - labels:
-    preset-capz-windows-azuredisk: "true"
+    preset-capz-windows-ci-entrypoint-common-main: "true"
+    # https://capz.sigs.k8s.io/developers/development.html#running-custom-test-suites-on-capz-clusters
   env:
+    - name: USE_CI_ARTIFACTS
+      value: "true"
+    - name: NODE_MACHINE_TYPE
+      value: "Standard_D4s_v3"
     - name: TEST_WINDOWS
       value: "true"
+- labels:
+    preset-capz-windows-azuredisk: "true"
+  env:
     - name: WINDOWS_USE_HOST_PROCESS_CONTAINERS
       value: "true"
     - name: DISABLE_ZONE
       value: "true"
-    - name: WORKER_NODE_count
+    - name: WORKER_MACHINE_COUNT
       value: 0 # Don't create linux worker nodes
 periodics:
 - name: ci-kubernetes-e2e-capz-master-containerd-windows
@@ -197,7 +205,7 @@ periodics:
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
     preset-azure-anonymous-pull: "true"
-    preset-capz-windows-common-main: "true"
+    preset-capz-windows-ci-entrypoint-common-main: "true"
     preset-capz-windows-azuredisk: "true"
   extra_refs:
   - org: kubernetes-sigs
