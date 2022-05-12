@@ -50,7 +50,9 @@ presubmits:
               value: "true"
             - name: KUBERNETES_VERSION
               value: "v1.23.5"
-            - name: WORKER_NODE_COUNT
+            - name: WINDOWS_WORKER_MACHINE_COUNT
+              value: "1"
+            - name: WORKER_MACHINE_COUNT
               value: "0" # Don't create linux worker nodes
             # clusterloader2 variables
             - name: ENABLE_PROMETHEUS_SERVER
