@@ -10,3 +10,5 @@ sources:
   location: "gs://kubevirt-prow/testgrid/config"
 - name: "tekton"
   location: "gs://tekton-prow/testgrid/config"
+- name: "cert-manager"
+  location: "gs://jetstack-testgrid/config"
