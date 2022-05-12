@@ -22,6 +22,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -255,7 +256,7 @@ func writeConfig(c clusterConfig, clientset kubernetes.Interface) error {
 			return err
 		}
 		ctx := context.Background()
-		allSecrets, _ := client.ListSecrets(ctx)
+		allSecrets, err := client.ListSecrets(ctx)
 		if err != nil {
 			return err
 		}
@@ -385,6 +386,8 @@ func runOnce(c config) error {
 			errs = append(errs, err)
 			continue
 		}
+
+		log.Printf("Succeeded processing %s", cc.Name)
 	}
 	return utilerrors.NewAggregate(errs)
 }
