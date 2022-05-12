@@ -3593,6 +3593,8 @@ func (c *client) CreateTeam(org string, team Team) (*Team, error) {
 	if c.fake {
 		return nil, nil
 	} else if c.dry {
+		// When in dry mode we need a believable slug to call corresponding methods for this team
+		team.Slug = strings.ToLower(strings.ReplaceAll(team.Name, " ", "-"))
 		return &team, nil
 	}
 	path := fmt.Sprintf("/orgs/%s/teams", org)
