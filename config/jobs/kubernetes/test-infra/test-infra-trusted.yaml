@@ -382,6 +382,27 @@ postsubmits:
         - --project=k8s-testimages
         - --build-dir=.
         - gencred/
+  - name: post-test-infra-gencred-refresh-kubeconfig
+    cluster: test-infra-trusted
+    run_if_changed: '^(config/prow/gencred-config/|config/jobs/kubernetes/test-infra/test-infra-trusted\.yaml)'
+    decorate: true
+    branches:
+    - ^master$
+    spec:
+      serviceAccountName: gencred-refresher
+      containers:
+      - name: gencred
+        image: gcr.io/k8s-prow/gencred:v20220511-a855e15670
+        command:
+        - gencred
+        args:
+        - --config=./config/prow/gencred-config/gencred-config.yaml
+    annotations:
+      testgrid-num-failures-to-alert: '1'
+      testgrid-dashboards: sig-testing-misc
+      testgrid-tab-name: postsubmit-gencred-refresh-kubeconfig
+      testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+      description: Runs gencred to refresh generated kubeconfigs.
   - name: post-test-infra-upload-oncall
     cluster: test-infra-trusted
     branches:
@@ -740,6 +761,30 @@ periodics:
     testgrid-tab-name: label_sync
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
     description: Runs label_sync to synchronize GitHub repo labels with the label config defined in label_sync/labels.yaml.
+- cron: "17 */6 * * *"  # Every 6 hours at 17 minutes past the hour
+  name: ci-test-infra-gencred-refresh-kubeconfig
+  cluster: test-infra-trusted
+  extra_refs:
+  - org: kubernetes
+    repo: test-infra
+    base_ref: master
+  decorate: true
+  spec:
+    serviceAccountName: gencred-refresher
+    containers:
+    - name: gencred
+      image: gcr.io/k8s-prow/gencred:v20220511-a855e15670
+      command:
+      - gencred
+      args:
+      - --config=./config/prow/gencred-config/gencred-config.yaml
+  annotations:
+    testgrid-num-failures-to-alert: '6'
+    testgrid-alert-stale-results-hours: '12'
+    testgrid-dashboards: sig-testing-misc
+    testgrid-tab-name: gencred-refresh-kubeconfig
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+    description: Runs gencred to refresh generated kubeconfigs.
 
 # This job is used as a heartbeat health check of the Prow instance's ability to run jobs.
 # Alerts expect it to run every 5 mins and will fire after 20 mins without a successful run.
