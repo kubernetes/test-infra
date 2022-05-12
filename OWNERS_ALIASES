@@ -265,9 +265,11 @@ aliases:
   controller-runtime-admins:
   - vincepri
   - mengqiy
+  - joelanford
 
   controller-runtime-maintainers:
   - vincepri
+  - joelanford
 
   controller-runtime-approvers:
   - gerred
@@ -286,6 +288,7 @@ aliases:
   - camilamacedo86
   - mengqiy
   - estroz
+  - joelanford
 
   kubebuilder-reviewers:
   - alexeldeib
