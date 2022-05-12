@@ -82,7 +82,6 @@ dashboards:
     base_options: include-filter-by-regex=sig-auth
     description: apps gce serial e2e tests for master branch
 
-- name: sig-multicluster-kubemci
 - name: sig-auth-secrets-store-csi-driver
 - name: sig-auth-secrets-store-csi-driver-postsubmit
 - name: sig-auth-secrets-store-csi-driver-periodic
@@ -100,8 +99,6 @@ dashboards:
 
 dashboard_groups:
 - name: sig-multicluster
-  dashboard_names:
-  - sig-multicluster-kubemci
 
 - name: vmware
   dashboard_names:
