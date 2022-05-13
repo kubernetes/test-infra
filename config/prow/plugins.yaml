@@ -1244,21 +1244,6 @@ plugins:
     - size
     - welcome
 
-  GoogleCloudPlatform/netd:
-    plugins:
-    - trigger
-    - lgtm
-    - golint
-    - approve
-    - verify-owners
-    - size
-    - assign
-    - help
-    - hold
-    - cat
-    - dog
-    - wip
-
   cncf/apisnoop:
     plugins:
     - wip
