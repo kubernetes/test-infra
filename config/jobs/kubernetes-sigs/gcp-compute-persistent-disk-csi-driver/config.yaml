@@ -80,6 +80,16 @@ presubmits:
         - "--scenario=execute"
         - "--" # end bootstrap args, scenario args below
         - "hack/verify-all.sh"
+        # docker-in-docker needs privileged mode
+        # hack/verify-all.sh runs docker to validate the built docker images
+        securityContext:
+          privileged: true
+      resources:
+        requests:
+          # Peak usage was measured at 4.5 Gi
+          memory: "6000Mi"
+          # Peak cpu usage was measured at 2500m, average close to 1000m
+          cpu: 2000m
     annotations:
       testgrid-dashboards: provider-gcp-compute-persistent-disk-csi-driver
       testgrid-tab-name: presubmit-gcp-compute-persistent-disk-csi-driver-verify
