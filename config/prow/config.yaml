@@ -675,17 +675,6 @@ tide:
     - do-not-merge/release-note-label-needed
     - do-not-merge/work-in-progress
     - needs-rebase
-  - repos:
-    - GoogleCloudPlatform/netd
-    labels:
-    - lgtm
-    - approved
-    missingLabels:
-    - do-not-merge
-    - do-not-merge/blocked-paths
-    - do-not-merge/hold
-    - do-not-merge/invalid-owners-file
-    - do-not-merge/work-in-progress
   - author: k8s-ci-robot
     labels: # k8s-ci-robot should only create autobump PR with this label
     - skip-review
