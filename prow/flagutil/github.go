@@ -256,8 +256,12 @@ func (o *GitHubOptions) githubClient(dryRun bool) (github.Client, error) {
 	fields := logrus.Fields{}
 	options := o.baseClientOptions()
 	options.DryRun = dryRun
-	if o.TokenPath == "" {
+
+	if o.TokenPath == "" && o.AppPrivateKeyPath == "" {
 		logrus.Warn("empty -github-token-path, will use anonymous github client")
+	}
+
+	if o.TokenPath == "" {
 		options.GetToken = func() []byte {
 			return []byte{}
 		}
