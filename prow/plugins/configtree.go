@@ -16,68 +16,72 @@ limitations under the License.
 
 package plugins
 
-// ApproveConfigTree specifies the global generic config for a plugin.
-type ApproveConfigTree struct {
-	Approve
-	Orgs map[string]ApproveOrg `json:"orgs,omitempty"`
+type ProwConfig interface {
+	Apply(config ProwConfig) ProwConfig
 }
 
-// ApproveOrg holds the default config for an entire org, as well as any repo overrides.
-type ApproveOrg struct {
-	Approve
-	Repos map[string]ApproveRepo `json:"repos,omitempty"`
+// ConfigTree specifies the global generic config for a plugin.
+type ConfigTree[T ProwConfig] struct {
+	Config T
+	Orgs   map[string]Org[T] `json:"orgs,omitempty"`
 }
 
-// ApproveRepo holds the default config for all branches in a repo, as well as specific branch overrides.
-type ApproveRepo struct {
-	Approve
-	Branches map[string]Approve `json:"branches,omitempty"`
+// Org holds the default config for an entire org, as well as any repo overrides.
+type Org[T ProwConfig] struct {
+	Config T
+	Repos  map[string]Repo[T] `json:"repos,omitempty"`
+}
+
+// Repo holds the default config for all branches in a repo, as well as specific branch overrides.
+type Repo[T ProwConfig] struct {
+	Config   T
+	Branches map[string]T `json:"branches,omitempty"`
 }
 
 // GetOrg returns the org config after merging in any global config.
-func (t ApproveConfigTree) GetOrg(name string) *ApproveOrg {
+func (t ConfigTree[T]) GetOrg(name string) *Org[T] {
 	o, ok := t.Orgs[name]
 	if ok {
-		o.Approve = t.Approve.Apply(o.Approve)
+		o.Config = t.Config.Apply(o.Config).(T)
 	} else {
-		o.Approve = t.Approve
+		o.Config = t.Config
 	}
 	return &o
 }
 
 // GetRepo returns the repo config after merging in any org config.
-func (o ApproveOrg) GetRepo(name string) *ApproveRepo {
+func (o Org[T]) GetRepo(name string) *Repo[T] {
 	r, ok := o.Repos[name]
 	if ok {
-		r.Approve = o.Apply(r.Approve)
+		r.Config = o.Config.Apply(r.Config).(T)
 	} else {
-		r.Approve = o.Approve
+		r.Config = o.Config
 	}
 	return &r
 }
 
 // GetBranch returns the branch config after merging in any repo config.
-func (r ApproveRepo) GetBranch(name string) *Approve {
+func (r Repo[T]) GetBranch(name string) *T {
 	b, ok := r.Branches[name]
 	if ok {
-		b = r.Apply(b)
+		b = r.Config.Apply(b).(T)
 	} else {
-		b = r.Approve
+		b = r.Config
 	}
 	return &b
 }
 
 // BranchOptions returns the plugin configuration for a given org/repo/branch.
-func (t *ApproveConfigTree) BranchOptions(org, repo, branch string) *Approve {
+func (t *ConfigTree[T]) BranchOptions(org, repo, branch string) *T {
 	return t.GetOrg(org).GetRepo(repo).GetBranch(branch)
 }
 
 // RepoOptions returns the plugin configuration for a given org/repo.
-func (t *ApproveConfigTree) RepoOptions(org, repo string) *Approve {
-	return &t.GetOrg(org).GetRepo(repo).Approve
+func (t *ConfigTree[T]) RepoOptions(org, repo string) *T {
+	return &t.GetOrg(org).GetRepo(repo).Config
 }
 
 // OrgOptions returns the plugin configuration for a given org.
-func (t *ApproveConfigTree) OrgOptions(org string) *Approve {
-	return &t.GetOrg(org).Approve
+func (t *ConfigTree[T]) OrgOptions(org string) *T {
+	return &t.GetOrg(org).Config
 }

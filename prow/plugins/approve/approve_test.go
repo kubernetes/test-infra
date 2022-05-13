@@ -1954,8 +1954,8 @@ func TestHelpProvider(t *testing.T) {
 		{
 			name: "All configs enabled",
 			config: &plugins.Configuration{
-				Approve: plugins.ApproveConfigTree{
-					Orgs: map[string]plugins.ApproveOrg{
+				Approve: plugins.ConfigTree[plugins.Approve]{
+					Orgs: map[string]plugins.Org[plugins.Approve]{
 						"org2": {},
 					},
 				},

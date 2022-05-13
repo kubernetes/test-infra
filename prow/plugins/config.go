@@ -63,7 +63,7 @@ type Configuration struct {
 	Owners Owners `json:"owners,omitempty"`
 
 	// Built-in plugins specific configuration.
-	Approve              ApproveConfigTree            `json:"approve,omitempty"`
+	Approve              ConfigTree[Approve]          `json:"approve,omitempty"`
 	Blockades            []Blockade                   `json:"blockades,omitempty"`
 	Blunderbuss          Blunderbuss                  `json:"blunderbuss,omitempty"`
 	Bugzilla             Bugzilla                     `json:"bugzilla,omitempty"`
@@ -816,34 +816,40 @@ func (r RequireMatchingLabel) Describe() string {
 	return str.String()
 }
 
-func oldToNewApprove(old DeprecatedApprove) *Approve {
-	a := Approve{
-		IgnoreReviewState:   old.IgnoreReviewState,
-		IssueRequired:       old.IssueRequired,
-		LgtmActsAsApprove:   old.LgtmActsAsApprove,
-		RequireSelfApproval: old.RequireSelfApproval,
-		CommandHelpLink:     old.CommandHelpLink,
-		PrProcessLink:       old.PrProcessLink,
+func oldToNewConfig[T ProwConfig](old DeprecatedApprove) *T {
+	a := new(T)
+	switch v := any(a).(type) {
+	case *Approve:
+		*v = Approve{
+			IgnoreReviewState:   old.IgnoreReviewState,
+			IssueRequired:       old.IssueRequired,
+			LgtmActsAsApprove:   old.LgtmActsAsApprove,
+			RequireSelfApproval: old.RequireSelfApproval,
+			CommandHelpLink:     old.CommandHelpLink,
+			PrProcessLink:       old.PrProcessLink,
+		}
+	default:
+		logrus.Error("unknown type for ConfigTree object", a)
 	}
-	return &a
+	return a
 }
 
-func oldToNewApproveConfig(old []DeprecatedApprove) ApproveConfigTree {
-	a := ApproveConfigTree{}
-	a.Orgs = make(map[string]ApproveOrg)
+func oldToConfigTree[T ProwConfig](old []DeprecatedApprove) ConfigTree[T] {
+	a := ConfigTree[T]{}
+	a.Orgs = make(map[string]Org[T])
 	for _, entry := range old {
 		for _, repo := range entry.Repos {
 			s := strings.Split(repo, "/")
 			ao := a.Orgs[s[0]]
 			switch len(s) {
 			case 1:
-				ao.Approve = *oldToNewApprove(entry)
+				ao.Config = *oldToNewConfig[T](entry)
 			case 2:
 				if ao.Repos == nil {
-					ao.Repos = make(map[string]ApproveRepo)
+					ao.Repos = make(map[string]Repo[T])
 				}
 				ar := ao.Repos[s[1]]
-				ar.Approve = *oldToNewApprove(entry)
+				ar.Config = *oldToNewConfig[T](entry)
 				ao.Repos[s[1]] = ar
 			}
 			a.Orgs[s[0]] = ao
@@ -852,20 +858,20 @@ func oldToNewApproveConfig(old []DeprecatedApprove) ApproveConfigTree {
 	return a
 }
 
-type approveWithoutUnmarshaler ApproveConfigTree
+type withoutUnmarshaler[T ProwConfig] ConfigTree[T]
 
 var warnTriggerDeprecatedApprove time.Time
 
-func (a *ApproveConfigTree) UnmarshalJSON(d []byte) error {
+func (a *ConfigTree[T]) UnmarshalJSON(d []byte) error {
 	var oldApprove []DeprecatedApprove
 	if err := yaml.Unmarshal(d, &oldApprove); err == nil {
 		logrusutil.ThrottledWarnf(&warnTriggerDeprecatedApprove, time.Hour, "Approve plugin uses a deprecated config style, please migrate to a ConfigTree based config")
-		*a = oldToNewApproveConfig(oldApprove)
+		*a = oldToConfigTree[T](oldApprove)
 		return nil
 	}
-	var target approveWithoutUnmarshaler
+	var target withoutUnmarshaler[T]
 	err := yaml.Unmarshal(d, &target)
-	*a = ApproveConfigTree(target)
+	*a = ConfigTree[T](target)
 	return err
 }
 

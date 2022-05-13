@@ -223,14 +223,16 @@ func TestSetApproveDefaults(t *testing.T) {
 	configYaml := `
 ---
 approve:
-  commandHelpLink: https://go.k8s.io/bot-commands
-  pr_process_link: https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process
+  config:
+    commandHelpLink: https://go.k8s.io/bot-commands
+    pr_process_link: https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process
   orgs:
     kubernetes-sigs:
       repos:
         cluster-api:
-          commandHelpLink: https://prow.k8s.io/command-help
-          pr_process_link: https://github.com/kubernetes/community/blob/427ccfbc7d423d8763ed756f3b8c888b7de3cf34/contributors/guide/pull-requests.md
+          config:
+            commandHelpLink: https://prow.k8s.io/command-help
+            pr_process_link: https://github.com/kubernetes/community/blob/427ccfbc7d423d8763ed756f3b8c888b7de3cf34/contributors/guide/pull-requests.md
 `
 	yaml.Unmarshal([]byte(configYaml), &c)
 	tests := []struct {
@@ -1999,7 +2001,7 @@ func TestHasConfigFor(t *testing.T) {
 			resultGenerator: func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
 				fuzzedConfig.Plugins = nil
 				fuzzedConfig.Bugzilla = Bugzilla{}
-				fuzzedConfig.Approve = ApproveConfigTree{}
+				fuzzedConfig.Approve = ConfigTree[Approve]{}
 				fuzzedConfig.Label.RestrictedLabels = nil
 				fuzzedConfig.Lgtm = nil
 				fuzzedConfig.Triggers = nil
@@ -2175,9 +2177,9 @@ func TestMergeFrom(t *testing.T) {
 	}{
 		{
 			name:                "Approve config gets merged",
-			in:                  Configuration{Approve: oldToNewApproveConfig([]DeprecatedApprove{{Repos: []string{"foo/bar"}}})},
-			supplementalConfigs: []Configuration{{Approve: oldToNewApproveConfig([]DeprecatedApprove{{Repos: []string{"foo/baz"}}})}},
-			expected: Configuration{Approve: oldToNewApproveConfig([]DeprecatedApprove{
+			in:                  Configuration{Approve: oldToConfigTree[Approve]([]DeprecatedApprove{{Repos: []string{"foo/bar"}}})},
+			supplementalConfigs: []Configuration{{Approve: oldToConfigTree[Approve]([]DeprecatedApprove{{Repos: []string{"foo/baz"}}})}},
+			expected: Configuration{Approve: oldToConfigTree[Approve]([]DeprecatedApprove{
 				{Repos: []string{"foo/bar"}},
 				{Repos: []string{"foo/baz"}},
 			})},

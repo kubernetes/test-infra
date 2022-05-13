@@ -16,33 +16,28 @@ limitations under the License.
 
 package plugins
 
-// Gen is a generic type used in ConfigTree as a leaf
-type Gen interface {
-	Apply(Gen) Gen
-}
-
 // Apply returns a policy that merges the child into the parent
-func (parent Approve) Apply(child Approve) Approve {
+func (parent Approve) Apply(child ProwConfig) ProwConfig {
 	new := Approve{
-		IssueRequired:       child.IssueRequired,
-		RequireSelfApproval: selectBool(parent.RequireSelfApproval, child.RequireSelfApproval),
-		LgtmActsAsApprove:   child.LgtmActsAsApprove,
-		IgnoreReviewState:   selectBool(parent.IgnoreReviewState, child.IgnoreReviewState),
-		CommandHelpLink:     child.CommandHelpLink,
-		PrProcessLink:       child.PrProcessLink,
+		IssueRequired:       child.(Approve).IssueRequired,
+		RequireSelfApproval: selectBool(parent.RequireSelfApproval, child.(Approve).RequireSelfApproval),
+		LgtmActsAsApprove:   child.(Approve).LgtmActsAsApprove,
+		IgnoreReviewState:   selectBool(parent.IgnoreReviewState, child.(Approve).IgnoreReviewState),
+		CommandHelpLink:     child.(Approve).CommandHelpLink,
+		PrProcessLink:       child.(Approve).PrProcessLink,
 	}
 	return new
 }
 
 // Apply returns a policy tree that merges the child into the parent
-func (parent ApproveConfigTree) Apply(child ApproveConfigTree) ApproveConfigTree {
-	parent.Approve = parent.Approve.Apply(child.Approve)
+func (parent ConfigTree[T]) Apply(child ConfigTree[T]) ConfigTree[T] {
+	parent.Config = parent.Config.Apply(child.Config).(T)
 	for org, childOrg := range child.Orgs {
 		if parentOrg, ok := parent.Orgs[org]; ok {
-			parentOrg.Approve = parentOrg.Approve.Apply(childOrg.Approve)
+			parentOrg.Config = parentOrg.Config.Apply(childOrg.Config).(T)
 			for repo, childRepo := range childOrg.Repos {
 				if parentRepo, ok := parentOrg.Repos[repo]; ok {
-					parentRepo.Approve = parentRepo.Approve.Apply(childRepo.Approve)
+					parentRepo.Config = parentRepo.Config.Apply(childRepo.Config).(T)
 					for branch, childBranch := range childRepo.Branches {
 						if parentBranch, ok := parentRepo.Branches[branch]; ok {
 							parentBranch.Apply(childBranch)

@@ -114,7 +114,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 	}
 
 	yamlSnippet, err := plugins.CommentMap.GenYaml(&plugins.Configuration{
-		Approve: plugins.ApproveConfigTree{},
+		Approve: plugins.ConfigTree[plugins.Approve]{},
 	})
 	if err != nil {
 		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", PluginName)

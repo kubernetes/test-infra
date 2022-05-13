@@ -137,10 +137,11 @@ func TestApproveConfigTree(t *testing.T) {
 		{
 			name: "approve no orgs",
 			config: []byte(`
-issue_required: no
-require_self_approval: yes
-lgtm_acts_as_approve: no
-ignore_review_state: yes
+config:
+  issue_required: no
+  require_self_approval: yes
+  lgtm_acts_as_approve: no
+  ignore_review_state: yes
 `),
 			expectedApproveBranch: &Approve{
 				IssueRequired:       no,
@@ -166,14 +167,18 @@ ignore_review_state: yes
 			config: []byte(`
 orgs:
   bazelbuild:
-    ignore_review_state: no
+    config:
+      ignore_review_state: no
   kubernetes:
-    lgtm_acts_as_approve: yes
+    config:
+      lgtm_acts_as_approve: yes
     repos:
       kops:
-        lgtm_acts_as_approve: no
+        config:
+          lgtm_acts_as_approve: no
       kubernetes:
-        require_self_approval: yes
+        config:
+          require_self_approval: yes
 `),
 			expectedApproveBranch: &Approve{
 				RequireSelfApproval: yes,
@@ -188,20 +193,25 @@ orgs:
 		{
 			name: "approve full",
 			config: []byte(`
-issue_required: no
-require_self_approval: no
-lgtm_acts_as_approve: no
-ignore_review_state: yes
+config:
+  issue_required: no
+  require_self_approval: no
+  lgtm_acts_as_approve: no
+  ignore_review_state: yes
 orgs:
   bazelbuild:
-    ignore_review_state: no
+    config:
+      ignore_review_state: no
   kubernetes:
-    lgtm_acts_as_approve: yes
+    config:
+      lgtm_acts_as_approve: yes
     repos:
       kops:
-        lgtm_acts_as_approve: no
+        config:
+          lgtm_acts_as_approve: no
       kubernetes:
-        require_self_approval: yes
+        config:
+          require_self_approval: yes
         branches:
           master:
             require_self_approval: no
@@ -223,7 +233,7 @@ orgs:
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			var tree ApproveConfigTree
+			var tree ConfigTree[Approve]
 			if err := yaml.Unmarshal(c.config, &tree); err != nil {
 				t.Errorf("error unmarshaling config: %v", err)
 			}
