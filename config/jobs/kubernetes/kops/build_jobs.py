@@ -1118,7 +1118,6 @@ def generate_presubmits_e2e():
             extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws'],
             tab_name='e2e-aws-1-23',
             always_run=False,
-            skip_regex=skip_regex,
         ),
         presubmit_test(
             branch='master',
@@ -1129,18 +1128,6 @@ def generate_presubmits_e2e():
             extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws'],
             tab_name='e2e-aws-1-22',
             always_run=False,
-            skip_regex=skip_regex,
-        ),
-        presubmit_test(
-            branch='master',
-            k8s_version='1.21',
-            kops_channel='alpha',
-            name='pull-kops-latest-e2e-aws-k8s-1-21',
-            networking='calico',
-            extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws'],
-            tab_name='e2e-aws-1-21',
-            always_run=False,
-            skip_regex=skip_regex,
         ),
 
         presubmit_test(
