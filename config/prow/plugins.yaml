@@ -35,7 +35,6 @@ owners:
 
 approve:
 - repos:
-  - kubernetes/cloud-provider-aws
   - kubernetes/cluster-registry
   - kubernetes/contrib
   - kubernetes/dashboard
@@ -59,6 +58,7 @@ approve:
   require_self_approval: false
   lgtm_acts_as_approve: true
 - repos:
+  - kubernetes/cloud-provider-aws
   - kubernetes/kops
   - kubernetes/website
   require_self_approval: true
@@ -177,6 +177,7 @@ lgtm:
   - kubernetes-sigs/release-utils
   - kubernetes-sigs/security-profiles-operator
   - kubernetes-sigs/zeitgeist
+  - kubernetes/cloud-provider-aws
   - kubernetes/k8s.io
   - kubernetes/kops
   - kubernetes/publishing-bot
