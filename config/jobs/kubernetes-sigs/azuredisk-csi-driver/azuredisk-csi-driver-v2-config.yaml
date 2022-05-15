@@ -632,6 +632,8 @@ presubmits:
               value: "true"
             - name: KUBERNETES_VERSION
               value: "v1.23.5"
+            - name: WINDOWS_WORKER_MACHINE_COUNT
+              value: "3" # Need at least three workers for replica testing.
             - name: WORKER_MACHINE_COUNT
               value: "0" # Don't create any linux worker nodes
     annotations:
@@ -689,6 +691,8 @@ presubmits:
               value: "true"
             - name: KUBERNETES_VERSION
               value: "v1.23.5"
+            - name: WINDOWS_WORKER_MACHINE_COUNT
+              value: "3" # Need at least three workers for replica testing.
             - name: WORKER_MACHINE_COUNT
               value: "0" # Don't create any linux worker nodes
     annotations:
@@ -736,6 +740,8 @@ presubmits:
               value: "Standard_D2s_v3"
             - name: DISABLE_ZONE
               value: "true"
+            - name: WORKER_MACHINE_COUNT
+              value: "3" # Need at least three workers for replica testing.
     annotations:
       testgrid-dashboards: provider-azure-azuredisk-csi-driver
       testgrid-tab-name: pull-azuredisk-csi-driver-e2e-capz-mainv2
