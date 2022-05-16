@@ -16,3 +16,10 @@ prowjob_default_entries:
     repo: 'testRepo'
     config:
       tenant_id: 'tester'
+
+gerrit:
+  tick_interval: 30s
+  org_repos_config:
+  - org: http://fakegerritserver
+    repos:
+    - fakegerritserver

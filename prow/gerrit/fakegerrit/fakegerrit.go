@@ -17,6 +17,7 @@ limitations under the License.
 package fakegerrit
 
 import (
+	"fmt"
 	"sync"
 
 	gerrit "github.com/andygrunwald/go-gerrit"
@@ -90,6 +91,19 @@ func (fg *FakeGerrit) AddChange(projectName string, change *gerrit.ChangeInfo) {
 	fg.Changes[change.ChangeID] = Change{ChangeInfo: change, Comments: make(map[string][]*gerrit.CommentInfo)}
 }
 
+func (fg *FakeGerrit) AddBranch(projectName, branchName string, branch *gerrit.BranchInfo) {
+	fg.lock.Lock()
+	defer fg.lock.Unlock()
+
+	if project, ok := fg.Projects[projectName]; !ok {
+		project = &Project{ChangeIDs: []string{}, Branches: map[string]*gerrit.BranchInfo{}}
+		project.Branches[branchName] = branch
+		fg.Projects[projectName] = project
+	} else {
+		project.Branches[branchName] = branch
+	}
+}
+
 func (fg *FakeGerrit) GetBranch(projectName, branchID string) *gerrit.BranchInfo {
 	fg.lock.Lock()
 	defer fg.lock.Unlock()
@@ -124,6 +138,25 @@ func (fg *FakeGerrit) GetAccount(id string) *gerrit.AccountInfo {
 		return res
 	}
 	return nil
+}
+
+func (fg *FakeGerrit) AddAccount(account *gerrit.AccountInfo) {
+	fg.lock.Lock()
+	defer fg.lock.Unlock()
+
+	fg.Accounts[fmt.Sprintf("%d", account.AccountID)] = account
+}
+
+func (fg *FakeGerrit) SetSelf(id string) error {
+	fg.lock.Lock()
+	defer fg.lock.Unlock()
+
+	if account, ok := fg.Accounts[id]; ok {
+		fg.Accounts["self"] = account
+		return nil
+	}
+
+	return fmt.Errorf("id: %s does not exist in accounts", id)
 }
 
 func NewFakeGerritClient() *FakeGerrit {

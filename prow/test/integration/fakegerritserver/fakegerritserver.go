@@ -82,7 +82,10 @@ func main() {
 	r.Path("/projects/{project-name}/branches/{branch-id}").Handler(response(projectHandler(fakeClient)))
 
 	// Use to populate the server for testing
-	r.Path("/admin/add").Handler(response(addHandler(fakeClient)))
+	r.Path("/admin/add/change/{project}").Handler(response(addChangeHandler(fakeClient)))
+	r.Path("/admin/add/branch/{project}/{branch-name}").Handler(response(addBranchHandler(fakeClient)))
+	r.Path("/admin/add/account").Handler(response(addAccountHandler(fakeClient)))
+	r.Path("/admin/login/{id}").Handler(response(loginHandler(fakeClient)))
 	r.Path("/admin/reset").Handler(response(resetHandler(fakeClient)))
 
 	health := pjutil.NewHealth()
@@ -139,16 +142,61 @@ func projectHandler(fgc *fakegerrit.FakeGerrit) func(*http.Request) (interface{}
 }
 
 // Admin endpoint to add a change to the Fake Gerrit Server
-func addHandler(fgc *fakegerrit.FakeGerrit) func(*http.Request) (interface{}, int, error) {
+func addChangeHandler(fgc *fakegerrit.FakeGerrit) func(*http.Request) (interface{}, int, error) {
 	return func(r *http.Request) (interface{}, int, error) {
+		vars := mux.Vars(r)
+		project := vars["project"]
 		change := gerrit.ChangeInfo{}
 		err := unmarshal(r, &change)
 		if err != nil {
 			logrus.Infof("Error unmarshling: %v", err)
 			return "", http.StatusInternalServerError, err
 		}
-		fgc.AddChange("fakegerritserver", &change)
+		fgc.AddChange(project, &change)
+		return "", http.StatusOK, nil
+	}
+}
 
+// Admin endpoint to add a change to the Fake Gerrit Server
+func addAccountHandler(fgc *fakegerrit.FakeGerrit) func(*http.Request) (interface{}, int, error) {
+	return func(r *http.Request) (interface{}, int, error) {
+		account := gerrit.AccountInfo{}
+		err := unmarshal(r, &account)
+		if err != nil {
+			logrus.Infof("Error unmarshling: %v", err)
+			return "", http.StatusInternalServerError, err
+		}
+		fgc.AddAccount(&account)
+		return "", http.StatusOK, nil
+	}
+}
+
+// Admin endpoint to add a change to the Fake Gerrit Server
+func loginHandler(fgc *fakegerrit.FakeGerrit) func(*http.Request) (interface{}, int, error) {
+	return func(r *http.Request) (interface{}, int, error) {
+		vars := mux.Vars(r)
+		id := vars["id"]
+
+		if err := fgc.SetSelf(id); err != nil {
+			return "", http.StatusForbidden, fmt.Errorf("unable to loging. ID %s does not exist", id)
+		}
+		return "", http.StatusOK, nil
+	}
+}
+
+// Admin endpoint to add a change to the Fake Gerrit Server
+func addBranchHandler(fgc *fakegerrit.FakeGerrit) func(*http.Request) (interface{}, int, error) {
+	return func(r *http.Request) (interface{}, int, error) {
+		vars := mux.Vars(r)
+		branchName := vars["branch-name"]
+		project := vars["project"]
+		branch := gerrit.BranchInfo{}
+		err := unmarshal(r, &branch)
+		if err != nil {
+			logrus.Infof("Error unmarshling: %v", err)
+			return "", http.StatusInternalServerError, err
+		}
+		fgc.AddBranch(project, branchName, &branch)
 		return "", http.StatusOK, nil
 	}
 }
@@ -256,6 +304,7 @@ func changesHandler(fgc *fakegerrit.FakeGerrit) func(*http.Request) (interface{}
 			return "", http.StatusMisdirectedRequest, nil
 		}
 		// SetReview
+		logrus.Infof("Set Review")
 		if r.Method == http.MethodPost {
 			if _, ok := change.Revisions[revision]; !ok {
 				return "", http.StatusNotFound, nil

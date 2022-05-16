@@ -2,6 +2,7 @@ images:
 - dir: prow/cmd/deck
 - dir: prow/cmd/crier
 - dir: prow/cmd/hook
+- dir: prow/cmd/gerrit
 - dir: prow/cmd/horologium
 - dir: prow/cmd/sinker
 - dir: prow/cmd/tide

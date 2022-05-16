@@ -106,7 +106,7 @@ func (st *syncTime) currentState() (client.LastSyncState, error) {
 	var state client.LastSyncState
 	if err := json.Unmarshal(buf, &state); err != nil {
 		// Don't error on unmarshall error, let it default
-		logrus.WithField("lastSync", st.val).Warnln("Failed to unmarshal lastSyncFallback, resetting all last update times to current.")
+		logrus.WithField("lastSync", st.val).WithField("buf", buf).Warnf("Sanity Check Failed to unmarshal lastSyncFallback: %v, resetting all last update times to current.", err)
 		return nil, nil
 	}
 	return state, nil
