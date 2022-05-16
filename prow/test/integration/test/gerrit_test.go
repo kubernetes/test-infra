@@ -38,7 +38,7 @@ var (
 	lastSyncState = client.LastSyncState{"http://localhost/fakegerritserver": map[string]time.Time{"fakegerritserver": timeLast}}
 )
 
-func makeStamp(t time.Time) gerrit.Timestamp {
+func makeTimeStamp(t time.Time) gerrit.Timestamp {
 	return gerrit.Timestamp{Time: t}
 }
 
@@ -57,18 +57,18 @@ func TestGerrit(t *testing.T) {
 		Project:         "test-infra",
 		Branch:          "master",
 		Status:          "NEW",
-		Updated:         makeStamp(timeNow),
+		Updated:         makeTimeStamp(timeNow),
 		Revisions: map[string]client.RevisionInfo{
 			"1": {
 				Number:  1,
-				Created: makeStamp(timeNow.Add(-time.Hour)),
+				Created: makeTimeStamp(timeNow.Add(-time.Hour)),
 			},
 		},
 		Messages: []gerrit.ChangeMessageInfo{
 			{
 				Message:        "Hello",
 				RevisionNumber: 1,
-				Date:           makeStamp(timeNow),
+				Date:           makeTimeStamp(timeNow),
 			},
 		},
 	}

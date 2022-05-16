@@ -49,13 +49,17 @@ func (fg *FakeGerrit) Reset() {
 	fg.Projects = make(map[string]*Project)
 }
 
-func (fg *FakeGerrit) GetChangesForProject(projectName string, start int) []*gerrit.ChangeInfo {
+// Returns changes from project with name projectName. Starts at project number start and will return total changes or less.
+func (fg *FakeGerrit) GetChangesForProject(projectName string, start, total int) []*gerrit.ChangeInfo {
 	res := []*gerrit.ChangeInfo{}
 	for _, id := range fg.Projects[projectName].ChangeIDs {
 		if start > 0 {
 			start--
 		} else {
 			res = append(res, fg.GetChange(id))
+			if len(res) == total {
+				return res
+			}
 		}
 	}
 	return res
@@ -77,8 +81,7 @@ func (fg *FakeGerrit) AddChange(projectName string, change *gerrit.ChangeInfo) {
 	defer fg.lock.Unlock()
 
 	if project, ok := fg.Projects[projectName]; !ok {
-		project = &Project{ChangeIDs: []string{}}
-		project.ChangeIDs = append(project.ChangeIDs, change.ChangeID)
+		project = &Project{ChangeIDs: []string{change.ChangeID}}
 		fg.Projects[projectName] = project
 	} else {
 		project.ChangeIDs = append(project.ChangeIDs, change.ChangeID)

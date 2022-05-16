@@ -69,7 +69,7 @@ func main() {
 	// SetReview POST
 	r.Path("/changes/{change-id}/revisions/{revision-id}/review").Handler(response(changesHandler(fakeClient)))
 	// QueryChanges GET
-	r.Path("/changes/").Handler(response(handleChangeQuery(fakeClient)))
+	r.Path("/changes/").Handler(response(handleQueryChanges(fakeClient)))
 	// ListChangeComments GET
 	r.Path("/changes/{change-id}/comments").Handler(response(handleGetComments(fakeClient)))
 
@@ -149,7 +149,6 @@ func addHandler(fgc *fakegerrit.FakeGerrit) func(*http.Request) (interface{}, in
 		}
 		fgc.AddChange("fakegerritserver", &change)
 
-		logrus.Infof("The Entire Fgc: %v", fgc)
 		return "", http.StatusOK, nil
 	}
 }
@@ -185,7 +184,7 @@ func processQueryString(query string) string {
 }
 
 // Handles QueryChanges
-func handleChangeQuery(fgc *fakegerrit.FakeGerrit) func(*http.Request) (interface{}, int, error) {
+func handleQueryChanges(fgc *fakegerrit.FakeGerrit) func(*http.Request) (interface{}, int, error) {
 	return func(r *http.Request) (interface{}, int, error) {
 		logrus.Infof("Serving: %s, %s", r.URL.Path, r.Method)
 		query := r.URL.Query().Get("q")
@@ -203,7 +202,7 @@ func handleChangeQuery(fgc *fakegerrit.FakeGerrit) func(*http.Request) (interfac
 			return "", http.StatusNotFound, nil
 		}
 
-		res := fgc.GetChangesForProject(project, startint)
+		res := fgc.GetChangesForProject(project, startint, 100)
 		content, err := json.Marshal(res)
 		if err != nil {
 			return "", http.StatusInternalServerError, err
