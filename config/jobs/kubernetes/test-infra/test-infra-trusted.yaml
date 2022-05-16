@@ -384,7 +384,7 @@ postsubmits:
         - gencred/
   - name: post-test-infra-gencred-refresh-kubeconfig
     cluster: test-infra-trusted
-    run_if_changed: '^(config/prow/gencred-config/|config/jobs/kubernetes/test-infra/test-infra-trusted\.yaml)'
+    run_if_changed: '^config/prow/gencred-config/'
     decorate: true
     branches:
     - ^master$
