@@ -342,7 +342,7 @@ func (r *reconciler) syncPendingJob(ctx context.Context, pj *prowv1.ProwJob) (*r
 		id, pn, err := r.startPod(ctx, pj)
 		if err != nil {
 			if !isRequestError(err) {
-				return nil, fmt.Errorf("error starting pod %s: %w", pod.Name, err)
+				return nil, fmt.Errorf("error starting pod for PJ %s: %w", pj.Name, err)
 			}
 			pj.Status.State = prowv1.ErrorState
 			pj.SetComplete()
