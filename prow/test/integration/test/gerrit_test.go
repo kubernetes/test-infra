@@ -47,6 +47,7 @@ func TestGerrit(t *testing.T) {
 
 	gerritClient, err := client.NewClient(map[string][]string{gerritServer: []string{"fakegerritserver"}})
 	if err != nil {
+		reset()
 		t.Fatalf("Failed creating gerritClient: %v", err)
 	}
 
@@ -75,22 +76,27 @@ func TestGerrit(t *testing.T) {
 
 	err = addChangeToServer(change)
 	if err != nil {
+		reset()
 		t.Fatalf("Failed to add change to server: %s", err)
 	}
 
 	resp, err := gerritClient.GetChange(gerritServer, "1")
 	if err != nil {
-		t.Fatalf("Failed getting gerrit change: %v", err)
+		reset()
+		t.Errorf("Failed getting gerrit change: %v", err)
 	}
 	if resp.ChangeID != "1" {
+		reset()
 		t.Errorf("Did not return expected ChangeID. Want: %q, got: %q", "1", resp.ChangeID)
 	}
 
 	changes := gerritClient.QueryChanges(lastSyncState, 10)
 	if len(changes[gerritServer]) != 1 {
+		reset()
 		t.Errorf("Did not return expected ChangeID. Want: %q, got: %v", "1", len(changes[gerritServer]))
 	}
 
+	// Reset the fakeGerritServer so the test can be run again
 	reset()
 }
 
