@@ -61,7 +61,6 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-storage-csi-csi-driver-host-path
@@ -157,7 +156,6 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-storage-csi-csi-driver-host-path
@@ -257,7 +255,6 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-storage-csi-csi-driver-host-path
@@ -401,7 +398,6 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-storage-csi-csi-driver-host-path
@@ -497,7 +493,6 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-storage-csi-csi-driver-host-path
@@ -597,7 +592,6 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-storage-csi-csi-driver-host-path
@@ -690,7 +684,6 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-storage-csi-csi-driver-host-path
@@ -729,7 +722,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "false"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -779,7 +771,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "false"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -829,7 +820,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "false"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -879,7 +869,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -925,7 +914,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "false"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -975,7 +963,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "false"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -1025,7 +1012,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -1071,7 +1057,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "false"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -1121,7 +1106,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -1167,7 +1151,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "false"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -1217,7 +1200,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "false"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -1267,7 +1249,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "false"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -1317,7 +1298,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -1363,7 +1343,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "false"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -1413,7 +1392,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "false"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -1463,7 +1441,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -1509,7 +1486,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "false"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -1559,7 +1535,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -1605,7 +1580,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -1657,7 +1631,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -1709,7 +1682,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -1761,7 +1733,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -1813,7 +1784,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -1865,7 +1835,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -1917,7 +1886,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -1969,7 +1937,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -2021,7 +1988,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -2073,7 +2039,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci

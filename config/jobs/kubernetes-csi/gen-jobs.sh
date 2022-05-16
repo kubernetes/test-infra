@@ -448,7 +448,6 @@ EOF
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-kind-volume-mounts: "true"
     $(annotations "      " "pull" "$repo" "$tests" "$deployment$deployment_suffix" master)
     spec:
@@ -491,7 +490,6 @@ EOF
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-kind-volume-mounts: "true"
     $(annotations "      " "pull" "$repo" "unit")
     spec:
@@ -647,7 +645,6 @@ for deployment_suffix in "" "-test"; do
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "$(if [ "$kubernetes" = "master" ]; then echo true; else echo false; fi)"
     preset-kind-volume-mounts: "true"
   $(annotations "    " "ci" "" "$tests" "$deployment$deployment_suffix" "$kubernetes")
   spec:
@@ -710,7 +707,6 @@ for deployment_suffix in "" "-test"; do
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
   $(annotations "    " "ci" "" "$tests" "canary$deployment_suffix" "$kubernetes")
   spec:
