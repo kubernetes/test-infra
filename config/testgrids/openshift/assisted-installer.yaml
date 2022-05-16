@@ -1,8 +1,8 @@
 dashboards:
 - name: redhat-assisted-installer
   dashboard_tab:
-  - name: periodic-ci-openshift-assisted-service-master-subsystem-aws-periodic
-    test_group_name: periodic-ci-openshift-assisted-service-master-subsystem-aws-periodic
+  - name: periodic-ci-openshift-assisted-service-master-edge-subsystem-aws-periodic
+    test_group_name: periodic-ci-openshift-assisted-service-master-edge-subsystem-aws-periodic
     base_options: width=10
     open_test_template:
       url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
@@ -28,8 +28,8 @@ dashboards:
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-  - name: periodic-ci-openshift-assisted-service-master-subsystem-kubeapi-aws-periodic
-    test_group_name: periodic-ci-openshift-assisted-service-master-subsystem-kubeapi-aws-periodic
+  - name: periodic-ci-openshift-assisted-service-master-edge-subsystem-kubeapi-aws-periodic
+    test_group_name: periodic-ci-openshift-assisted-service-master-edge-subsystem-kubeapi-aws-periodic
     base_options: width=10
     open_test_template:
       url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
@@ -163,8 +163,8 @@ dashboards:
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-  - name: periodic-ci-openshift-assisted-service-master-e2e-metal-assisted-operator-disconnected-periodic
-    test_group_name: periodic-ci-openshift-assisted-service-master-e2e-metal-assisted-operator-disconnected-periodic
+  - name: periodic-ci-openshift-assisted-service-master-edge-e2e-metal-assisted-operator-disconnected-periodic
+    test_group_name: periodic-ci-openshift-assisted-service-master-edge-e2e-metal-assisted-operator-disconnected-periodic
     base_options: width=10
     open_test_template:
       url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
@@ -190,8 +190,8 @@ dashboards:
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-  - name: periodic-ci-openshift-assisted-service-master-e2e-metal-assisted-kube-api-late-binding-single-node-periodic
-    test_group_name: periodic-ci-openshift-assisted-service-master-e2e-metal-assisted-kube-api-late-binding-single-node-periodic
+  - name: periodic-ci-openshift-assisted-service-master-edge-e2e-metal-assisted-kube-api-late-binding-single-node-periodic
+    test_group_name: periodic-ci-openshift-assisted-service-master-edge-e2e-metal-assisted-kube-api-late-binding-single-node-periodic
     base_options: width=10
     open_test_template:
       url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
@@ -217,8 +217,8 @@ dashboards:
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-  - name: periodic-ci-openshift-assisted-service-master-e2e-metal-assisted-operator-ztp-periodic
-    test_group_name: periodic-ci-openshift-assisted-service-master-e2e-metal-assisted-operator-ztp-periodic
+  - name: periodic-ci-openshift-assisted-service-master-edge-e2e-metal-assisted-operator-ztp-periodic
+    test_group_name: periodic-ci-openshift-assisted-service-master-edge-e2e-metal-assisted-operator-ztp-periodic
     base_options: width=10
     open_test_template:
       url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
@@ -271,8 +271,8 @@ dashboards:
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
-  - name: periodic-ci-openshift-assisted-service-master-e2e-metal-assisted-operator-ztp-multinode-spoke-periodic
-    test_group_name: periodic-ci-openshift-assisted-service-master-e2e-metal-assisted-operator-ztp-multinode-spoke-periodic
+  - name: periodic-ci-openshift-assisted-service-master-edge-e2e-metal-assisted-operator-ztp-multinode-spoke-periodic
+    test_group_name: periodic-ci-openshift-assisted-service-master-edge-e2e-metal-assisted-operator-ztp-multinode-spoke-periodic
     base_options: width=10
     open_test_template:
       url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
@@ -758,20 +758,20 @@ dashboards:
     code_search_url_template:
       url: https://github.com/openshift/origin/compare/<start-custom-0>...<end-custom-0>
 test_groups:
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-assisted-service-master-subsystem-aws-periodic
-  name: periodic-ci-openshift-assisted-service-master-subsystem-aws-periodic
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-assisted-service-master-subsystem-kubeapi-aws-periodic
-  name: periodic-ci-openshift-assisted-service-master-subsystem-kubeapi-aws-periodic
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-assisted-service-master-e2e-metal-assisted-operator-disconnected-periodic
-  name: periodic-ci-openshift-assisted-service-master-e2e-metal-assisted-operator-disconnected-periodic
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-assisted-service-master-e2e-metal-assisted-kube-api-late-binding-single-node-periodic
-  name: periodic-ci-openshift-assisted-service-master-e2e-metal-assisted-kube-api-late-binding-single-node-periodic
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-assisted-service-master-e2e-metal-assisted-operator-ztp-periodic
-  name: periodic-ci-openshift-assisted-service-master-e2e-metal-assisted-operator-ztp-periodic
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-assisted-service-master-edge-subsystem-aws-periodic
+  name: periodic-ci-openshift-assisted-service-master-edge-subsystem-aws-periodic
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-assisted-service-master-edge-subsystem-kubeapi-aws-periodic
+  name: periodic-ci-openshift-assisted-service-master-edge-subsystem-kubeapi-aws-periodic
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-assisted-service-master-edge-e2e-metal-assisted-operator-disconnected-periodic
+  name: periodic-ci-openshift-assisted-service-master-edge-e2e-metal-assisted-operator-disconnected-periodic
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-assisted-service-master-edge-e2e-metal-assisted-kube-api-late-binding-single-node-periodic
+  name: periodic-ci-openshift-assisted-service-master-edge-e2e-metal-assisted-kube-api-late-binding-single-node-periodic
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-assisted-service-master-edge-e2e-metal-assisted-operator-ztp-periodic
+  name: periodic-ci-openshift-assisted-service-master-edge-e2e-metal-assisted-operator-ztp-periodic
+- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-assisted-service-master-edge-e2e-metal-assisted-operator-ztp-multinode-spoke-periodic
+  name: periodic-ci-openshift-assisted-service-master-edge-e2e-metal-assisted-operator-ztp-multinode-spoke-periodic
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-assisted-test-infra-master-e2e-metal-assisted-none-periodic
   name: periodic-ci-openshift-assisted-test-infra-master-e2e-metal-assisted-none-periodic
-- gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-assisted-service-master-e2e-metal-assisted-operator-ztp-multinode-spoke-periodic
-  name: periodic-ci-openshift-assisted-service-master-e2e-metal-assisted-operator-ztp-multinode-spoke-periodic
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-assisted-test-infra-master-e2e-metal-assisted-prod-periodic
   name: periodic-ci-openshift-assisted-test-infra-master-e2e-metal-assisted-prod-periodic
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-assisted-service-release-ocm-2.5-subsystem-aws-periodic
