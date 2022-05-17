@@ -62,8 +62,6 @@ presubmits:
         env:
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "1.22.0"
-        - name: CSI_PROW_USE_BAZEL
-          value: "false"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.22"
         - name: CSI_PROW_DRIVER_VERSION
@@ -110,8 +108,6 @@ presubmits:
         env:
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "1.22.0"
-        - name: CSI_PROW_USE_BAZEL
-          value: "false"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.22"
         - name: CSI_PROW_DRIVER_VERSION
@@ -158,8 +154,6 @@ presubmits:
         env:
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "1.22.0"
-        - name: CSI_PROW_USE_BAZEL
-          value: "false"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.22"
         - name: CSI_PROW_DRIVER_VERSION
@@ -206,8 +200,6 @@ presubmits:
         env:
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "1.22.0"
-        - name: CSI_PROW_USE_BAZEL
-          value: "false"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.22"
         - name: CSI_PROW_DRIVER_VERSION

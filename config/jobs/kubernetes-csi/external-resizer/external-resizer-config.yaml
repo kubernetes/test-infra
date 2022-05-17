@@ -32,8 +32,6 @@ presubmits:
         # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "1.21.0"
-        - name: CSI_PROW_USE_BAZEL
-          value: "false"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.21"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
@@ -77,8 +75,6 @@ presubmits:
         env:
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "latest"
-        - name: CSI_PROW_USE_BAZEL
-          value: "false"
         - name: CSI_PROW_DRIVER_VERSION
           value: "v1.7.2"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
@@ -127,8 +123,6 @@ presubmits:
         # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "1.22.0"
-        - name: CSI_PROW_USE_BAZEL
-          value: "false"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.22"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
@@ -172,8 +166,6 @@ presubmits:
         env:
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "latest"
-        - name: CSI_PROW_USE_BAZEL
-          value: "false"
         - name: CSI_PROW_DRIVER_VERSION
           value: "v1.7.2"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
@@ -222,8 +214,6 @@ presubmits:
         # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "1.23.0"
-        - name: CSI_PROW_USE_BAZEL
-          value: "false"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.23"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
@@ -271,8 +261,6 @@ presubmits:
         env:
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "latest"
-        - name: CSI_PROW_USE_BAZEL
-          value: "false"
         - name: CSI_PROW_DRIVER_VERSION
           value: "v1.7.2"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
@@ -321,8 +309,6 @@ presubmits:
         # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "1.22.0"
-        - name: CSI_PROW_USE_BAZEL
-          value: "false"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.22"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX

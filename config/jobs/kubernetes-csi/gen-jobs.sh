@@ -337,20 +337,6 @@ snapshotter_version() {
     fi
 }
 
-use_bazel() (
-    local kubernetes="$1"
-
-    # Strip z from x.y.z, version_gt does not handle it when comparing against 1.20.
-    kubernetes="$(echo "$kubernetes" | sed -e 's/^\([0-9]*\)\.\([0-9]*\)\.[0-9]*$/\1.\2/')"
-
-    # Kubernetes 1.21 removed support for building with Bazel.
-    if version_gt "$kubernetes" "1.20"; then
-        echo "false"
-    else
-        echo "true"
-    fi
-)
-
 additional_deployment_suffices () (
     local repo="$1"
 
@@ -411,8 +397,6 @@ EOF
         # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "$kubernetes.0"
-        - name: CSI_PROW_USE_BAZEL
-          value: "$(use_bazel "$kubernetes")"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "$deployment"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
@@ -461,8 +445,6 @@ EOF
         env:
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "latest"
-        - name: CSI_PROW_USE_BAZEL
-          value: "$(use_bazel "latest")"
         - name: CSI_PROW_DRIVER_VERSION
           value: "$hostpath_driver_version"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
@@ -658,8 +640,6 @@ for deployment_suffix in "" "-test"; do
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "$actual"
-      - name: CSI_PROW_USE_BAZEL
-        value: "$(use_bazel "$actual")"
       - name: CSI_SNAPSHOTTER_VERSION
         value: $(snapshotter_version "$actual" "")
       - name: CSI_PROW_BUILD_JOB
@@ -720,8 +700,6 @@ for deployment_suffix in "" "-test"; do
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "$actual"
-      - name: CSI_PROW_USE_BAZEL
-        value: "$(use_bazel "$actual")"
       - name: CSI_PROW_BUILD_JOB
         value: "false"
       # Replace images....
@@ -779,8 +757,6 @@ for repo in $csi_release_tools_repos; do
         env:
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "$latest_stable_k8s_version.0"
-        - name: CSI_PROW_USE_BAZEL
-          value: "$(use_bazel "$latest_stable_k8s_version")"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "$latest_stable_k8s_version"
         - name: CSI_PROW_DRIVER_VERSION
