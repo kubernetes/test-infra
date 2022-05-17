@@ -548,7 +548,7 @@ func testCherryPickOfCherryPickPR(clients localgit.Clients, t *testing.T) {
 				Body: "/cherrypick release-1.8",
 			},
 		},
-		prs: []github.PullRequest{},
+		prs:      []github.PullRequest{},
 		isMember: true,
 		patch:    patch,
 	}
