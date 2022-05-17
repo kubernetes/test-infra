@@ -530,6 +530,7 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 3h
+    always_run: false
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
@@ -588,6 +589,7 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 3h
+    always_run: false
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
@@ -704,6 +706,7 @@ presubmits:
     decorate: true
     decoration_config:
       timeout: 3h
+    always_run: false
     skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     path_alias: sigs.k8s.io/azuredisk-csi-driver
     branches:
