@@ -672,6 +672,98 @@ presubmits:
         securityContext:
           privileged: true
 
+  # Fork of kubernetes/kubernetes: pull-kubernetes-e2e-gce-scale-performance-manual
+  - name: pull-perf-tests-clusterloader2-e2e-gce-scale-performance-manual
+    always_run: false
+    max_concurrency: 1
+    branches:
+    - master
+    decorate: true
+    path_alias: k8s.io/perf-tests
+    decoration_config:
+      timeout: 450m
+    extra_refs:
+    - org: kubernetes
+      repo: release
+      base_ref: master
+      path_alias: k8s.io/release
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+      preset-dind-enabled: "true"
+      preset-e2e-scalability-common: "true"
+      preset-e2e-scalability-presubmits: "true"
+    annotations:
+      testgrid-dashboards: presubmits-kubernetes-scalability
+      testgrid-tab-name: pull-perf-tests-clusterloader2-e2e-gce-scale-performance
+    run_if_changed: ^clusterloader2/.*$
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220514-17efd5d2c3-master
+        command:
+        - runner.sh
+        - /workspace/scenarios/kubernetes_e2e.py
+        args:
+        - --build=quick
+        - --cluster=
+        - --env=HEAPSTER_MACHINE_TYPE=e2-standard-32
+        # TODO(mborsz): Adjust or remove this change once we understand coredns
+        # memory usage regression.
+        - --env=KUBE_DNS_MEMORY_LIMIT=300Mi
+        - --extract=local
+        - --flush-mem-after-build=true
+        - --gcp-nodes=5000
+        - --gcp-project=k8s-presubmit-scale
+        - --gcp-zone=us-east1-b
+        - --provider=gce
+        - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-scale-performance-manual
+        - --metadata-sources=cl2-metadata.json
+        - --env=CL2_LOAD_TEST_THROUGHPUT=50
+        - --env=CL2_DELETE_TEST_THROUGHPUT=50
+        # Overrides CONTROLLER_MANAGER_TEST_ARGS from preset-e2e-scalability-periodics.
+        - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling --kube-api-qps=100 --kube-api-burst=100 --endpointslice-updates-batch-period=500ms --endpoint-updates-batch-period=500ms
+        # Overrides SCHEDULER_TEST_ARGS from preset-e2e-scalability-periodics.
+        # TODO(#1311): Clean this up after the experiment - it should allow
+        #   to hugely decrease pod-startup-latency across the whole test.
+        #   Given that individual controllers have separate QPS limits, we allow
+        #   scheduler to keep up with the load from deployment, daemonset and job
+        #   performing pod creations at once.
+        - --env=SCHEDULER_TEST_ARGS=--profiling --kube-api-qps=300 --kube-api-burst=300
+        # With APF only sum of --max-requests-inflight and --max-mutating-requests-inflight matters, so set --max-mutating-requests-inflight to 0.
+        - --env=APISERVER_TEST_ARGS=--max-requests-inflight=640 --max-mutating-requests-inflight=0
+        - --env=CL2_ENABLE_API_AVAILABILITY_MEASUREMENT=true
+        - --env=CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD=99.5
+        - --test=false
+        - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
+        - --test-cmd-args=cluster-loader2
+        - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
+        - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=$(JOB_NAME)-$(BUILD_ID)
+        - --test-cmd-args=--experimental-prometheus-snapshot-to-report-dir=true
+        - --test-cmd-args=--nodes=5000
+        - --test-cmd-args=--prometheus-scrape-node-exporter
+        - --test-cmd-args=--provider=gce
+        - --test-cmd-args=--report-dir=$(ARTIFACTS)
+        - --test-cmd-args=--testconfig=testing/load/config.yaml
+        - --test-cmd-args=--testconfig=testing/huge-service/config.yaml
+        - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
+        - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
+        - --test-cmd-args=--testoverrides=./testing/experiments/ignore_known_gce_container_restarts.yaml
+        - --test-cmd-args=--testoverrides=./testing/overrides/5000_nodes.yaml
+        - --test-cmd-name=ClusterLoaderV2
+        - --timeout=420m
+        - --use-logexporter
+        - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
+        resources:
+          limits:
+            # Using 6 CPU to speed up bazel build phase (4 is enough for the test itself)
+            cpu: 6
+            memory: "16Gi"
+          requests:
+            cpu: 6
+            memory: "16Gi"
+        securityContext:
+          privileged: true
+
   - name: pull-perf-tests-util-images
     always_run: false
     skip_report: false
