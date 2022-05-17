@@ -60,8 +60,6 @@ presubmits:
       preset-service-account: "true"
       preset-aws-ssh: "true"
       preset-aws-credential: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     always_run: false
     optional: true

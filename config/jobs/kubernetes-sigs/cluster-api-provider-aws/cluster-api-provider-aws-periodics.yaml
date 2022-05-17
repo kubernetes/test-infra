@@ -124,8 +124,6 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
