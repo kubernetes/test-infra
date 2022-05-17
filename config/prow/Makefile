@@ -47,3 +47,21 @@ deploy-monitoring: get-cluster-credentials
 deploy-all: deploy-prow deploy-build deploy-monitoring
 
 .PHONY: update-config update-plugins deploy-prow deploy-build deploy-monitoring deploy-all
+
+# The targets below are for breaking glass usages, should not run on a regular
+# basis
+
+# Run fix-gencred-refresher will generate kubeconfig for "trusted" build cluster
+# and store it in GSM, you will need "container.admin" and "secretManager.admin"
+# permission on k8s-prow GCP project to perform this action.
+# This target is for solving the bootstrapping problem of gencred refresher,
+# where it runs in "trusted" build cluster, as a prow job to rotate the
+# kubeconfig for "trusted" build cluster along with other build clusters. So
+# when the refresher job failed for more than 2 days, prow will stop working
+# with "trusted" build cluster and thus not able to schedule gencred refrsher
+# prow jobs any more. And this is when the admin of this repo need to run this
+# target manually.
+fix-gencred-refresher:
+	../../hack/make-rules/go-run/arbitrary.sh run ./gencred --config=./config/prow/gencred-config/gencred-config.yaml --gke-filter=projects/k8s-prow/locations/us-central1-f/clusters/prow
+
+.PHONY: fix-gencred-refresher

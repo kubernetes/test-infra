@@ -69,6 +69,7 @@ type options struct {
 	overwrite      bool
 
 	config string
+	filter filter
 	// RefreshInterval defines how frequently the secret is refreshed.
 	refreshInterval time.Duration
 }
@@ -105,6 +106,11 @@ type GSMSecretConfig struct {
 	Name    string `json:"name"`
 }
 
+type filter struct {
+	gkeConnection string
+	context       string
+}
+
 // parseFlags parses the command-line flags.
 func (o *options) parseFlags() {
 	flag.StringVar(&o.context, "context", "", "The name of the kubeconfig context to use.")
@@ -116,6 +122,8 @@ func (o *options) parseFlags() {
 	flag.BoolVar(&o.overwrite, "overwrite", false, "Overwrite (rather than merge) output file if exists.")
 
 	flag.StringVar(&o.config, "config", "", "Configurations for running gencred.")
+	flag.StringVar(&o.filter.context, "context-filter", "", "Once specified, gencred only works on this context from the config file, must be supplied together with --config.")
+	flag.StringVar(&o.filter.gkeConnection, "gke-filter", "", "Once specified, gencred only works on this gkeConn from the config file, must be supplied together with --config.")
 	flag.DurationVar(&o.refreshInterval, "refresh-interval", 0, "RefreshInterval defines how frequently the secret is refreshed, unit is second.")
 	flag.Parse()
 }
@@ -123,8 +131,12 @@ func (o *options) parseFlags() {
 // validateFlags validates the command-line flags.
 func (o *options) defaultAndValidateFlags() (*config, error) {
 	// config is mutually exclusive from local cluster.
-	if len(o.config) > 0 && (len(o.context) > 0) {
+	if len(o.config) > 0 && len(o.context) > 0 {
 		return nil, &util.ExitError{Message: "--config option is mutually exclusive with other options.", Code: 1}
+	}
+
+	if (len(o.filter.context) > 0 || len(o.filter.gkeConnection) > 0) && len(o.config) == 0 {
+		return nil, &util.ExitError{Message: "--context-filter and --gke-filter can only be used when --config option is supplied.", Code: 1}
 	}
 
 	// Read value from yaml files
@@ -289,7 +301,7 @@ func Main() {
 	}
 
 	if o.refreshInterval == 0 {
-		if err := runOnce(*c); err != nil {
+		if err := runOnce(*c, o.filter); err != nil {
 			util.PrintErrAndExit(err)
 		}
 		return
@@ -297,17 +309,21 @@ func Main() {
 
 	defer interrupts.WaitForGracefulShutdown()
 	interrupts.Tick(func() {
-		runOnce(*c)
+		runOnce(*c, o.filter)
 	}, func() time.Duration { return o.refreshInterval })
 }
 
-func runOnce(c config) error {
+func runOnce(c config, filter filter) error {
 	// Make sure process everyone before crying.
 	var errs []error
 	var config *rest.Config
 	for _, cc := range c.Clusters {
 		if cc.GKEConnection != nil && cc.Context != nil {
 			errs = append(errs, errors.New("gke and context are mutually exclusive"))
+			continue
+		}
+		if (filter.context != "" && cc.Context != nil && filter.context != *cc.Context) ||
+			(filter.gkeConnection != "" && cc.GKEConnection != nil && filter.gkeConnection != *cc.GKEConnection) {
 			continue
 		}
 		if cc.Duration.Duration == 0 {
