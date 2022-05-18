@@ -24,6 +24,7 @@ import (
 	"log"
 	"regexp"
 	"strconv"
+	"time"
 
 	"cloud.google.com/go/storage"
 	"github.com/GoogleCloudPlatform/testgrid/util/gcs"
@@ -47,16 +48,23 @@ var (
 	additional = flag.Bool("additional", false, "Print all hot lines, not just the hottest")
 	annotate   = flag.Bool("annotate", false, "Ask whether to annotate after predicting")
 	shout      = flag.Bool("shout", false, "Make the server noisy")
+
+	port    = flag.Int("port", 0, "Listen for annotation requests on this port")
+	timeout = flag.Duration("timeout", time.Minute, "Maximum time to answer a request")
 )
 
 func main() {
 	flag.Parse()
-	build, err := pathFromView(*buildURL)
-	if err != nil {
-		log.Fatalf("Could not parse --build=%q: %v", *buildURL, err)
-	}
-	if build.String() == "" {
-		log.Fatal("--build unset")
+	var build *gcs.Path
+	if *port == 0 {
+		if *buildURL == "" {
+			log.Fatal("--build and --port unset")
+		}
+		b, err := pathFromView(*buildURL)
+		if err != nil {
+			log.Fatalf("Could not parse --build=%q: %v", *buildURL, err)
+		}
+		build = b
 	}
 	if *projectID == "" {
 		log.Fatal("--project unset")
@@ -75,13 +83,21 @@ func main() {
 	if err != nil {
 		log.Fatalf("Could not create GCS client: %v", err)
 	}
-	gcsClient := gcs.NewClient(storageClient)
 
 	predictor, err := defaultPredictionClient(ctx)
 	if err != nil {
 		log.Fatalf("Failed to create predictor: %v", err)
 	}
 	defer predictor.client.Close()
+
+	if *port > 0 {
+		if err := serveOnPort(ctx, storageClient, predictor, *port, *timeout); err != nil {
+			log.Fatalf("Serve failed: %v", err)
+		}
+		return
+	}
+
+	gcsClient := gcs.NewClient(storageClient)
 
 	lines, _, err := annotateBuild(ctx, gcsClient, predictor, *build)
 	if err != nil {
