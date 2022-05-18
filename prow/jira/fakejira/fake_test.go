@@ -47,15 +47,27 @@ func TestFakeClient_SearchWithContext(t *testing.T) {
 		error:    nil,
 	}
 	fakeClient := &FakeClient{SearchResponses: s}
+
 	r, v, err := fakeClient.SearchWithContext(context.Background(), "project=test", searchOptions)
 	if err != nil {
-		t.Fatalf("unexpected error")
+		t.Fatalf("unexpected error from search: %s", err)
 	}
-	if !reflect.DeepEqual(r, issueList) || !reflect.DeepEqual(&jira.Response{StartAt: 0, MaxResults: 3, Total: 3}, v) {
-		t.Fatalf("unexpected response")
+	if !reflect.DeepEqual(r, issueList) {
+		t.Fatalf("incorrect issues from search; actual response: %v, expected response: %v", r, issueList)
 	}
-	r, v, err = fakeClient.SearchWithContext(context.Background(), "unknown_query=test", searchOptions)
-	if r != nil && v != nil && err == nil {
-		t.Fatal("unexpected result")
+	metadata := &jira.Response{StartAt: 0, MaxResults: 3, Total: 3}
+	if !reflect.DeepEqual(metadata, v) {
+		t.Fatalf("incorrect metadata from search; actual metadata: %v, expected metadata: %v", v, metadata)
+	}
+
+	r, v, err = fakeClient.SearchWithContext(context.Background(), "unknown_query=fail", searchOptions)
+	if r != nil {
+		t.Fatalf("expected empty result for an invalid query, but got: %v", r)
+	}
+	if r != nil {
+		t.Fatalf("expected no metadata for an invalid query, but got: %v", v)
+	}
+	if err == nil {
+		t.Fatal("expected invalid query to fail, but got no error")
 	}
 }
