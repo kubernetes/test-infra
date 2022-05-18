@@ -32,8 +32,6 @@ presubmits:
         # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "1.21.0"
-        - name: CSI_PROW_USE_BAZEL
-          value: "false"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.21"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
@@ -61,7 +59,6 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-storage-csi-csi-driver-host-path
@@ -78,8 +75,6 @@ presubmits:
         env:
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "latest"
-        - name: CSI_PROW_USE_BAZEL
-          value: "false"
         - name: CSI_PROW_DRIVER_VERSION
           value: "v1.7.2"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
@@ -128,8 +123,6 @@ presubmits:
         # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "1.22.0"
-        - name: CSI_PROW_USE_BAZEL
-          value: "false"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.22"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
@@ -157,7 +150,6 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-storage-csi-csi-driver-host-path
@@ -174,8 +166,6 @@ presubmits:
         env:
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "latest"
-        - name: CSI_PROW_USE_BAZEL
-          value: "false"
         - name: CSI_PROW_DRIVER_VERSION
           value: "v1.7.2"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
@@ -224,8 +214,6 @@ presubmits:
         # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "1.23.0"
-        - name: CSI_PROW_USE_BAZEL
-          value: "false"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.23"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
@@ -257,7 +245,6 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-storage-csi-csi-driver-host-path
@@ -274,8 +261,6 @@ presubmits:
         env:
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "latest"
-        - name: CSI_PROW_USE_BAZEL
-          value: "false"
         - name: CSI_PROW_DRIVER_VERSION
           value: "v1.7.2"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
@@ -324,8 +309,6 @@ presubmits:
         # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "1.22.0"
-        - name: CSI_PROW_USE_BAZEL
-          value: "false"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.22"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
@@ -372,8 +355,6 @@ presubmits:
         # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "1.21.0"
-        - name: CSI_PROW_USE_BAZEL
-          value: "false"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.21"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
@@ -401,7 +382,6 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-storage-csi-csi-driver-host-path
@@ -418,8 +398,6 @@ presubmits:
         env:
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "latest"
-        - name: CSI_PROW_USE_BAZEL
-          value: "false"
         - name: CSI_PROW_DRIVER_VERSION
           value: "v1.7.2"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
@@ -468,8 +446,6 @@ presubmits:
         # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "1.22.0"
-        - name: CSI_PROW_USE_BAZEL
-          value: "false"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.22"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
@@ -497,7 +473,6 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-storage-csi-csi-driver-host-path
@@ -514,8 +489,6 @@ presubmits:
         env:
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "latest"
-        - name: CSI_PROW_USE_BAZEL
-          value: "false"
         - name: CSI_PROW_DRIVER_VERSION
           value: "v1.7.2"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
@@ -564,8 +537,6 @@ presubmits:
         # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "1.23.0"
-        - name: CSI_PROW_USE_BAZEL
-          value: "false"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.23"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
@@ -597,7 +568,6 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-storage-csi-csi-driver-host-path
@@ -614,8 +584,6 @@ presubmits:
         env:
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "latest"
-        - name: CSI_PROW_USE_BAZEL
-          value: "false"
         - name: CSI_PROW_DRIVER_VERSION
           value: "v1.7.2"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
@@ -664,8 +632,6 @@ presubmits:
         # by periodic jobs (see https://k8s-testgrid.appspot.com/sig-storage-csi-ci#Summary).
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "1.22.0"
-        - name: CSI_PROW_USE_BAZEL
-          value: "false"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.22"
         - name: CSI_PROW_DEPLOYMENT_SUFFIX
@@ -690,7 +656,6 @@ presubmits:
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-storage-csi-csi-driver-host-path
@@ -729,7 +694,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "false"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -747,8 +711,6 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "release-1.21"
-      - name: CSI_PROW_USE_BAZEL
-        value: "false"
       - name: CSI_SNAPSHOTTER_VERSION
         value: "v4.0.0"
       - name: CSI_PROW_BUILD_JOB
@@ -779,7 +741,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "false"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -797,8 +758,6 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "release-1.22"
-      - name: CSI_PROW_USE_BAZEL
-        value: "false"
       - name: CSI_SNAPSHOTTER_VERSION
         value: "v4.0.0"
       - name: CSI_PROW_BUILD_JOB
@@ -829,7 +788,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "false"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -847,8 +805,6 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "release-1.23"
-      - name: CSI_PROW_USE_BAZEL
-        value: "false"
       - name: CSI_SNAPSHOTTER_VERSION
         value: "v4.0.0"
       - name: CSI_PROW_BUILD_JOB
@@ -879,7 +835,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -897,8 +852,6 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "latest"
-      - name: CSI_PROW_USE_BAZEL
-        value: "false"
       - name: CSI_SNAPSHOTTER_VERSION
         value: "master"
       - name: CSI_PROW_BUILD_JOB
@@ -925,7 +878,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "false"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -943,8 +895,6 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "release-1.22"
-      - name: CSI_PROW_USE_BAZEL
-        value: "false"
       - name: CSI_SNAPSHOTTER_VERSION
         value: "v4.0.0"
       - name: CSI_PROW_BUILD_JOB
@@ -975,7 +925,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "false"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -993,8 +942,6 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "release-1.23"
-      - name: CSI_PROW_USE_BAZEL
-        value: "false"
       - name: CSI_SNAPSHOTTER_VERSION
         value: "v4.0.0"
       - name: CSI_PROW_BUILD_JOB
@@ -1025,7 +972,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -1043,8 +989,6 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "latest"
-      - name: CSI_PROW_USE_BAZEL
-        value: "false"
       - name: CSI_SNAPSHOTTER_VERSION
         value: "master"
       - name: CSI_PROW_BUILD_JOB
@@ -1071,7 +1015,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "false"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -1089,8 +1032,6 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "release-1.23"
-      - name: CSI_PROW_USE_BAZEL
-        value: "false"
       - name: CSI_SNAPSHOTTER_VERSION
         value: "v4.0.0"
       - name: CSI_PROW_BUILD_JOB
@@ -1121,7 +1062,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -1139,8 +1079,6 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "latest"
-      - name: CSI_PROW_USE_BAZEL
-        value: "false"
       - name: CSI_SNAPSHOTTER_VERSION
         value: "master"
       - name: CSI_PROW_BUILD_JOB
@@ -1167,7 +1105,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "false"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -1185,8 +1122,6 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "release-1.21"
-      - name: CSI_PROW_USE_BAZEL
-        value: "false"
       - name: CSI_SNAPSHOTTER_VERSION
         value: "v4.0.0"
       - name: CSI_PROW_BUILD_JOB
@@ -1217,7 +1152,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "false"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -1235,8 +1169,6 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "release-1.22"
-      - name: CSI_PROW_USE_BAZEL
-        value: "false"
       - name: CSI_SNAPSHOTTER_VERSION
         value: "v4.0.0"
       - name: CSI_PROW_BUILD_JOB
@@ -1267,7 +1199,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "false"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -1285,8 +1216,6 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "release-1.23"
-      - name: CSI_PROW_USE_BAZEL
-        value: "false"
       - name: CSI_SNAPSHOTTER_VERSION
         value: "v4.0.0"
       - name: CSI_PROW_BUILD_JOB
@@ -1317,7 +1246,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -1335,8 +1263,6 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "latest"
-      - name: CSI_PROW_USE_BAZEL
-        value: "false"
       - name: CSI_SNAPSHOTTER_VERSION
         value: "master"
       - name: CSI_PROW_BUILD_JOB
@@ -1363,7 +1289,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "false"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -1381,8 +1306,6 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "release-1.22"
-      - name: CSI_PROW_USE_BAZEL
-        value: "false"
       - name: CSI_SNAPSHOTTER_VERSION
         value: "v4.0.0"
       - name: CSI_PROW_BUILD_JOB
@@ -1413,7 +1336,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "false"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -1431,8 +1353,6 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "release-1.23"
-      - name: CSI_PROW_USE_BAZEL
-        value: "false"
       - name: CSI_SNAPSHOTTER_VERSION
         value: "v4.0.0"
       - name: CSI_PROW_BUILD_JOB
@@ -1463,7 +1383,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -1481,8 +1400,6 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "latest"
-      - name: CSI_PROW_USE_BAZEL
-        value: "false"
       - name: CSI_SNAPSHOTTER_VERSION
         value: "master"
       - name: CSI_PROW_BUILD_JOB
@@ -1509,7 +1426,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "false"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -1527,8 +1443,6 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "release-1.23"
-      - name: CSI_PROW_USE_BAZEL
-        value: "false"
       - name: CSI_SNAPSHOTTER_VERSION
         value: "v4.0.0"
       - name: CSI_PROW_BUILD_JOB
@@ -1559,7 +1473,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -1577,8 +1490,6 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "latest"
-      - name: CSI_PROW_USE_BAZEL
-        value: "false"
       - name: CSI_SNAPSHOTTER_VERSION
         value: "master"
       - name: CSI_PROW_BUILD_JOB
@@ -1605,7 +1516,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -1623,8 +1533,6 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "1.21.0"
-      - name: CSI_PROW_USE_BAZEL
-        value: "false"
       - name: CSI_PROW_BUILD_JOB
         value: "false"
       # Replace images....
@@ -1657,7 +1565,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -1675,8 +1582,6 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "1.22.0"
-      - name: CSI_PROW_USE_BAZEL
-        value: "false"
       - name: CSI_PROW_BUILD_JOB
         value: "false"
       # Replace images....
@@ -1709,7 +1614,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -1727,8 +1631,6 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "1.23.0"
-      - name: CSI_PROW_USE_BAZEL
-        value: "false"
       - name: CSI_PROW_BUILD_JOB
         value: "false"
       # Replace images....
@@ -1761,7 +1663,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -1779,8 +1680,6 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "latest"
-      - name: CSI_PROW_USE_BAZEL
-        value: "false"
       - name: CSI_PROW_BUILD_JOB
         value: "false"
       # Replace images....
@@ -1813,7 +1712,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -1831,8 +1729,6 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "latest"
-      - name: CSI_PROW_USE_BAZEL
-        value: "false"
       - name: CSI_PROW_BUILD_JOB
         value: "false"
       # Replace images....
@@ -1865,7 +1761,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -1883,8 +1778,6 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "1.21.0"
-      - name: CSI_PROW_USE_BAZEL
-        value: "false"
       - name: CSI_PROW_BUILD_JOB
         value: "false"
       # Replace images....
@@ -1917,7 +1810,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -1935,8 +1827,6 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "1.22.0"
-      - name: CSI_PROW_USE_BAZEL
-        value: "false"
       - name: CSI_PROW_BUILD_JOB
         value: "false"
       # Replace images....
@@ -1969,7 +1859,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -1987,8 +1876,6 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "1.23.0"
-      - name: CSI_PROW_USE_BAZEL
-        value: "false"
       - name: CSI_PROW_BUILD_JOB
         value: "false"
       # Replace images....
@@ -2021,7 +1908,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -2039,8 +1925,6 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "latest"
-      - name: CSI_PROW_USE_BAZEL
-        value: "false"
       - name: CSI_PROW_BUILD_JOB
         value: "false"
       # Replace images....
@@ -2073,7 +1957,6 @@ periodics:
   labels:
     preset-service-account: "true"
     preset-dind-enabled: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-kind-volume-mounts: "true"
   annotations:
     testgrid-dashboards: sig-storage-csi-ci
@@ -2091,8 +1974,6 @@ periodics:
       env:
       - name: CSI_PROW_KUBERNETES_VERSION
         value: "latest"
-      - name: CSI_PROW_USE_BAZEL
-        value: "false"
       - name: CSI_PROW_BUILD_JOB
         value: "false"
       # Replace images....

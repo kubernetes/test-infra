@@ -3,7 +3,7 @@
 presubmits:
   kubernetes-csi/csi-driver-nfs:
   - name: pull-kubernetes-csi-csi-driver-nfs
-    skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
+    always_run: true
     decorate: true
     skip_report: false
     skip_branches: []
