@@ -803,12 +803,15 @@ def generate_network_plugins():
 def generate_upgrades():
     versions_list = [
         #  kops    k8s          kops      k8s
-        (('v1.22.4', 'v1.22.4'), ('1.22', 'v1.22.4')),
-        (('1.22', 'v1.22.4'), ('1.23', 'v1.23.0')),
-        (('1.22', 'v1.22.4'), ('latest', 'v1.23.0')),
-        (('v1.23.0', 'v1.23.1'), ('1.23', 'v1.23.1')),
-        (('1.23', 'v1.23.0'), ('latest', 'latest')),
-        (('latest', 'v1.23.0'), ('latest', 'latest')),
+        # 1.23 release branch
+        (('v1.23.2', 'v1.22.1'), ('1.23', 'v1.23.1')),
+        (('v1.23.2', 'v1.23.1'), ('1.23', 'v1.23.1')),
+        # 1,23 upgrade to latest
+        (('1.23', 'v1.22.4'), ('latest', 'v1.23.0')),
+        (('1.23', 'v1.23.0'), ('latest', 'v1.24.0')),
+        # we should have an upgrade test for every supported K8s version
+        (('latest', 'v1.24.0'), ('latest', 'latest')),
+        (('latest', 'v1.23.0'), ('latest', 'v1.24.0')),
         (('latest', 'v1.22.4'), ('latest', 'v1.23.0')),
         (('latest', 'v1.21.7'), ('latest', 'v1.22.4')),
         (('latest', 'v1.20.6'), ('latest', 'v1.21.7')),
