@@ -40,7 +40,7 @@ presubmits:
       - command:
         - entrypoint
         - make
-        - build
+        - build-image
         image: quay.io/multicloudlab/build-tool:v20220414-4b40fdbb8
         name: ""
         securityContext:
@@ -63,7 +63,7 @@ presubmits:
       - command:
         - entrypoint
         - make
-        - build
+        - build-image
         image: quay.io/multicloudlab/build-tool:v20220414-4b40fdbb8
         name: ""
         securityContext:
