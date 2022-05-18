@@ -1,6 +1,6 @@
 postsubmits:
   IBM/ibm-licensing-operator:
-  - name: image-ibm-licensing-operator-development-amd64-postsubmit
+  - name: build-push-image-ibm-licensing-operator-development-amd64-postsubmit
     cluster: default
     skip_branches:
     - ^master$
@@ -23,7 +23,7 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  - name: image-ibm-licensing-operator-development-ppc64le-postsubmit
+  - name: build-push-image-ibm-licensing-operator-development-ppc64le-postsubmit
     cluster: ppc64le
     skip_branches:
     - ^master$
@@ -46,7 +46,7 @@ postsubmits:
         name: ""
         securityContext:
           privileged: true
-  - name: image-ibm-licensing-operator-development-s390x-postsubmit
+  - name: build-push-image-ibm-licensing-operator-development-s390x-postsubmit
     cluster: s390x
     skip_branches:
     - ^master$
