@@ -1123,9 +1123,14 @@ func (c *Controller) pickBatch(sp subpool, cc map[int]contextChecker, newBatchFu
 	sort.Slice(sp.prs, func(i, j int) bool { return sp.prs[i].Number < sp.prs[j].Number })
 
 	var candidates []PullRequest
-	for _, pr := range sp.prs {
-		if c.isRetestEligible(sp.log, &pr, cc[int(pr.Number)]) {
-			candidates = append(candidates, pr)
+	for i := range sp.prs {
+		// c.isRetestEligible appends `Commits` into the passed in PullRequest
+		// struct, which is used later to avoid repeatedly looking up on GitHub.
+		// So making sure that we are passing in the pointer from the slice
+		// instead of creating new instance of pr by `for _, pr := range sp.prs`.
+		ptrPr := &sp.prs[i]
+		if c.isRetestEligible(sp.log, ptrPr, cc[int(ptrPr.Number)]) {
+			candidates = append(candidates, *ptrPr)
 		}
 	}
 

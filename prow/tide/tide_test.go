@@ -4440,10 +4440,38 @@ func TestPickBatchPrefersBatchesWithPreexistingJobs(t *testing.T) {
 			name:    "Batch with pre-existing success jobs exists and is picked",
 			subpool: func(sp *subpool) {},
 			expectedPullRequests: []PullRequest{
-				{Number: githubql.Int(1), HeadRefOID: githubql.String("1")},
-				{Number: githubql.Int(2), HeadRefOID: githubql.String("2")},
-				{Number: githubql.Int(3), HeadRefOID: githubql.String("3")},
-				{Number: githubql.Int(4), HeadRefOID: githubql.String("4")},
+				{
+					Number:     githubql.Int(1),
+					HeadRefOID: githubql.String("1"),
+					Commits: struct{ Nodes []struct{ Commit Commit } }{
+						Nodes: []struct{ Commit Commit }{
+							{Commit: Commit{Status: CommitStatus{Contexts: []Context{}}, OID: "1"}}},
+					},
+				},
+				{
+					Number:     githubql.Int(2),
+					HeadRefOID: githubql.String("2"),
+					Commits: struct{ Nodes []struct{ Commit Commit } }{
+						Nodes: []struct{ Commit Commit }{
+							{Commit: Commit{Status: CommitStatus{Contexts: []Context{}}, OID: "2"}}},
+					},
+				},
+				{
+					Number:     githubql.Int(3),
+					HeadRefOID: githubql.String("3"),
+					Commits: struct{ Nodes []struct{ Commit Commit } }{
+						Nodes: []struct{ Commit Commit }{
+							{Commit: Commit{Status: CommitStatus{Contexts: []Context{}}, OID: "3"}}},
+					},
+				},
+				{
+					Number:     githubql.Int(4),
+					HeadRefOID: githubql.String("4"),
+					Commits: struct{ Nodes []struct{ Commit Commit } }{
+						Nodes: []struct{ Commit Commit }{
+							{Commit: Commit{Status: CommitStatus{Contexts: []Context{}}, OID: "4"}}},
+					},
+				},
 			},
 		},
 		{
@@ -4496,18 +4524,60 @@ func TestPickBatchPrefersBatchesWithPreexistingJobs(t *testing.T) {
 				sp.pjs[1].Spec.Refs.Pulls = []prowapi.Pull{{Number: 3, SHA: "3"}, {Number: 4, SHA: "4"}}
 			},
 			expectedPullRequests: []PullRequest{
-				{Number: githubql.Int(1), HeadRefOID: githubql.String("1")},
-				{Number: githubql.Int(2), HeadRefOID: githubql.String("2")},
+				{
+					Number:     githubql.Int(1),
+					HeadRefOID: githubql.String("1"),
+					Commits: struct{ Nodes []struct{ Commit Commit } }{
+						Nodes: []struct{ Commit Commit }{
+							{Commit: Commit{Status: CommitStatus{Contexts: []Context{}}, OID: "1"}}},
+					},
+				},
+				{
+					Number:     githubql.Int(2),
+					HeadRefOID: githubql.String("2"),
+					Commits: struct{ Nodes []struct{ Commit Commit } }{
+						Nodes: []struct{ Commit Commit }{
+							{Commit: Commit{Status: CommitStatus{Contexts: []Context{}}, OID: "2"}}},
+					},
+				},
 			},
 		},
 		{
 			name:    "Batch with pre-existing pending jobs exists and is picked",
 			subpool: func(sp *subpool) { sp.pjs[0].Status.State = prowapi.PendingState },
 			expectedPullRequests: []PullRequest{
-				{Number: githubql.Int(1), HeadRefOID: githubql.String("1")},
-				{Number: githubql.Int(2), HeadRefOID: githubql.String("2")},
-				{Number: githubql.Int(3), HeadRefOID: githubql.String("3")},
-				{Number: githubql.Int(4), HeadRefOID: githubql.String("4")},
+				{
+					Number:     githubql.Int(1),
+					HeadRefOID: githubql.String("1"),
+					Commits: struct{ Nodes []struct{ Commit Commit } }{
+						Nodes: []struct{ Commit Commit }{
+							{Commit: Commit{Status: CommitStatus{Contexts: []Context{}}, OID: "1"}}},
+					},
+				},
+				{
+					Number:     githubql.Int(2),
+					HeadRefOID: githubql.String("2"),
+					Commits: struct{ Nodes []struct{ Commit Commit } }{
+						Nodes: []struct{ Commit Commit }{
+							{Commit: Commit{Status: CommitStatus{Contexts: []Context{}}, OID: "2"}}},
+					},
+				},
+				{
+					Number:     githubql.Int(3),
+					HeadRefOID: githubql.String("3"),
+					Commits: struct{ Nodes []struct{ Commit Commit } }{
+						Nodes: []struct{ Commit Commit }{
+							{Commit: Commit{Status: CommitStatus{Contexts: []Context{}}, OID: "3"}}},
+					},
+				},
+				{
+					Number:     githubql.Int(4),
+					HeadRefOID: githubql.String("4"),
+					Commits: struct{ Nodes []struct{ Commit Commit } }{
+						Nodes: []struct{ Commit Commit }{
+							{Commit: Commit{Status: CommitStatus{Contexts: []Context{}}, OID: "4"}}},
+					},
+				},
 			},
 		},
 		{
@@ -4519,8 +4589,22 @@ func TestPickBatchPrefersBatchesWithPreexistingJobs(t *testing.T) {
 				sp.pjs[2].Spec.Refs.Pulls = []prowapi.Pull{{Number: 3, SHA: "3"}, {Number: 4, SHA: "4"}}
 			},
 			expectedPullRequests: []PullRequest{
-				{Number: githubql.Int(3), HeadRefOID: githubql.String("3")},
-				{Number: githubql.Int(4), HeadRefOID: githubql.String("4")},
+				{
+					Number:     githubql.Int(3),
+					HeadRefOID: githubql.String("3"),
+					Commits: struct{ Nodes []struct{ Commit Commit } }{
+						Nodes: []struct{ Commit Commit }{
+							{Commit: Commit{Status: CommitStatus{Contexts: []Context{}}, OID: "3"}}},
+					},
+				},
+				{
+					Number:     githubql.Int(4),
+					HeadRefOID: githubql.String("4"),
+					Commits: struct{ Nodes []struct{ Commit Commit } }{
+						Nodes: []struct{ Commit Commit }{
+							{Commit: Commit{Status: CommitStatus{Contexts: []Context{}}, OID: "4"}}},
+					},
+				},
 			},
 		},
 		{
@@ -4533,8 +4617,22 @@ func TestPickBatchPrefersBatchesWithPreexistingJobs(t *testing.T) {
 				sp.pjs[2].Spec.Refs.Pulls = []prowapi.Pull{{Number: 3, SHA: "3"}, {Number: 4, SHA: "4"}}
 			},
 			expectedPullRequests: []PullRequest{
-				{Number: githubql.Int(3), HeadRefOID: githubql.String("3")},
-				{Number: githubql.Int(4), HeadRefOID: githubql.String("4")},
+				{
+					Number:     githubql.Int(3),
+					HeadRefOID: githubql.String("3"),
+					Commits: struct{ Nodes []struct{ Commit Commit } }{
+						Nodes: []struct{ Commit Commit }{
+							{Commit: Commit{Status: CommitStatus{Contexts: []Context{}}, OID: "3"}}},
+					},
+				},
+				{
+					Number:     githubql.Int(4),
+					HeadRefOID: githubql.String("4"),
+					Commits: struct{ Nodes []struct{ Commit Commit } }{
+						Nodes: []struct{ Commit Commit }{
+							{Commit: Commit{Status: CommitStatus{Contexts: []Context{}}, OID: "4"}}},
+					},
+				},
 			},
 		},
 	}
