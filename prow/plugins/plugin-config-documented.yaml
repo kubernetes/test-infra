@@ -698,7 +698,11 @@ triggers:
     # January 2020.
     trusted_org: ' '
 welcome:
-  - # MessageTemplate is the welcome message template to post on new-contributor PRs
+  - # Post welcome message in all cases, even if PR author is not an existing
+    # contributor or part of the organization
+    always_post: true
+
+    # MessageTemplate is the welcome message template to post on new-contributor PRs
     # For the info struct see prow/plugins/welcome/welcome.go's PRInfo
     message_template: ' '
 
