@@ -113,6 +113,8 @@ branch-protection:
 
                             # Restrictions limits who can merge
                             restrictions:
+                                apps:
+                                  - ""
                                 teams:
                                   - ""
                                 users:
@@ -169,6 +171,8 @@ branch-protection:
 
                     # Restrictions limits who can merge
                     restrictions:
+                        apps:
+                          - ""
                         teams:
                           - ""
                         users:
@@ -209,6 +213,8 @@ branch-protection:
 
             # Restrictions limits who can merge
             restrictions:
+                apps:
+                  - ""
                 teams:
                   - ""
                 users:
@@ -261,6 +267,8 @@ branch-protection:
 
     # Restrictions limits who can merge
     restrictions:
+        apps:
+          - ""
         teams:
           - ""
         users:
