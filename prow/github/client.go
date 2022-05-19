@@ -271,6 +271,7 @@ type Client interface {
 	ListAppInstallations() ([]AppInstallation, error)
 	IsAppInstalled(org, repo string) (bool, error)
 	UsesAppAuth() bool
+	ListAppInstallationsForOrg(org string) ([]AppInstallation, error)
 	GetApp() (*App, error)
 	GetAppWithContext(ctx context.Context) (*App, error)
 	GetFailedActionRunsByHeadBranch(org, repo, branchName, headSHA string) ([]WorkflowRun, error)
@@ -676,9 +677,10 @@ type UserGenerator func() (string, error)
 // added logging fields.
 // 'getToken' is a generator for the GitHub access token to use.
 // 'bases' is a variadic slice of endpoints to use in order of preference.
-//   An endpoint is used when all preceding endpoints have returned a conn err.
-//   This should be used when using the ghproxy GitHub proxy cache to allow
-//   this client to bypass the cache if it is temporarily unavailable.
+//
+//	An endpoint is used when all preceding endpoints have returned a conn err.
+//	This should be used when using the ghproxy GitHub proxy cache to allow
+//	this client to bypass the cache if it is temporarily unavailable.
 func NewClientWithFields(fields logrus.Fields, getToken func() []byte, censor func([]byte) []byte, graphqlEndpoint string, bases ...string) (Client, error) {
 	_, _, client, err := NewClientFromOptions(fields, ClientOptions{
 		Censor:          censor,
@@ -847,9 +849,10 @@ func NewClient(getToken func() []byte, censor func([]byte) []byte, graphqlEndpoi
 // use up API tokens. Additional fields are added to the logger.
 // 'getToken' is a generator the GitHub access token to use.
 // 'bases' is a variadic slice of endpoints to use in order of preference.
-//   An endpoint is used when all preceding endpoints have returned a conn err.
-//   This should be used when using the ghproxy GitHub proxy cache to allow
-//   this client to bypass the cache if it is temporarily unavailable.
+//
+//	An endpoint is used when all preceding endpoints have returned a conn err.
+//	This should be used when using the ghproxy GitHub proxy cache to allow
+//	this client to bypass the cache if it is temporarily unavailable.
 func NewDryRunClientWithFields(fields logrus.Fields, getToken func() []byte, censor func([]byte) []byte, graphqlEndpoint string, bases ...string) (Client, error) {
 	_, _, client, err := NewClientFromOptions(fields, ClientOptions{
 		Censor:          censor,
@@ -880,9 +883,10 @@ func NewAppsAuthDryRunClientWithFields(fields logrus.Fields, censor func([]byte)
 // use up API tokens.
 // 'getToken' is a generator the GitHub access token to use.
 // 'bases' is a variadic slice of endpoints to use in order of preference.
-//   An endpoint is used when all preceding endpoints have returned a conn err.
-//   This should be used when using the ghproxy GitHub proxy cache to allow
-//   this client to bypass the cache if it is temporarily unavailable.
+//
+//	An endpoint is used when all preceding endpoints have returned a conn err.
+//	This should be used when using the ghproxy GitHub proxy cache to allow
+//	this client to bypass the cache if it is temporarily unavailable.
 func NewDryRunClient(getToken func() []byte, censor func([]byte) []byte, graphqlEndpoint string, bases ...string) (Client, error) {
 	return NewDryRunClientWithFields(logrus.Fields{}, getToken, censor, graphqlEndpoint, bases...)
 }
@@ -3102,16 +3106,17 @@ func (c *client) CreateReview(org, repo string, number int, r DraftReview) error
 }
 
 // prepareReviewersBody separates reviewers from team_reviewers and prepares a map
-// {
-//   "reviewers": [
-//     "octocat",
-//     "hubot",
-//     "other_user"
-//   ],
-//   "team_reviewers": [
-//     "justice-league"
-//   ]
-// }
+//
+//	{
+//	  "reviewers": [
+//	    "octocat",
+//	    "hubot",
+//	    "other_user"
+//	  ],
+//	  "team_reviewers": [
+//	    "justice-league"
+//	  ]
+//	}
 //
 // https://developer.github.com/v3/pulls/review_requests/#create-a-review-request
 func prepareReviewersBody(logins []string, org string) (map[string][]string, error) {
@@ -5032,6 +5037,31 @@ func (c *client) IsAppInstalled(org, repo string) (bool, error) {
 	}
 
 	return code == 200, nil
+}
+
+// ListAppInstallationsForOrg lists the installations for an organisation.
+// The requestor must be  an organization owner with admin:read scope
+//
+// See https://docs.github.com/en/rest/orgs/orgs#list-app-installations-for-an-organization
+func (c *client) ListAppInstallationsForOrg(org string) ([]AppInstallation, error) {
+	durationLogger := c.log("AppInstallationForOrg")
+	defer durationLogger()
+
+	var ais []AppInstallation
+	if err := c.readPaginatedResults(
+		fmt.Sprintf("/orgs/%s/installations", org),
+		acceptNone,
+		org,
+		func() interface{} {
+			return &AppInstallationList{}
+		},
+		func(obj interface{}) {
+			ais = append(ais, obj.(*AppInstallationList).Installations...)
+		},
+	); err != nil {
+		return nil, err
+	}
+	return ais, nil
 }
 
 func (c *client) getAppInstallationToken(installationId int64) (*AppInstallationToken, error) {

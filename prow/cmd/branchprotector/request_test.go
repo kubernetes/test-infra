@@ -91,7 +91,7 @@ func TestMakeReviews(t *testing.T) {
 				Approvals:     &one,
 				RequireOwners: &yes,
 				DismissStale:  &yes,
-				DismissalRestrictions: &branchprotection.Restrictions{
+				DismissalRestrictions: &branchprotection.DismissalRestrictions{
 					Users: []string{"fred", "jane"},
 					Teams: []string{"megacorp", "startup"},
 				},
@@ -100,7 +100,7 @@ func TestMakeReviews(t *testing.T) {
 				RequiredApprovingReviewCount: 1,
 				RequireCodeOwnerReviews:      true,
 				DismissStaleReviews:          true,
-				DismissalRestrictions: github.RestrictionsRequest{
+				DismissalRestrictions: github.DismissalRestrictionsRequest{
 					Teams: &[]string{"megacorp", "startup"},
 					Users: &[]string{"fred", "jane"},
 				},

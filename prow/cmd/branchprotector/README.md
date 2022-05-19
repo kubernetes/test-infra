@@ -90,6 +90,8 @@ branch-protection:
         - foo
         - bar
       restrictions: # restrict who can push to the repo
+        apps:
+        - github-prow-app
         users:
         - her
         - him
