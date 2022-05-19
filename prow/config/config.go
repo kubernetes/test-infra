@@ -1641,7 +1641,7 @@ func ReadJobConfig(jobConfig string, yamlOpts ...yaml.JSONOpt) (JobConfig, error
 			}
 			return nil
 		}
-		if filepath.Ext(path) != ".yaml" && filepath.Ext(path) != ".yml" {
+		if filepath.Ext(path) != ".yaml" && filepath.Ext(path) != ".yml" && filepath.Ext(path) != ".json" {
 			return nil
 		}
 		// Use 'Match' directly because 'Ignore' and 'Include' don't work properly for repositories.
