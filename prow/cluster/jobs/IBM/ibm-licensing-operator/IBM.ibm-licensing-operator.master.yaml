@@ -46,7 +46,7 @@ presubmits:
         securityContext:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?build-image(?: .*?)?$'
-  - name: build-ibm-image-licensing-operator-s390x
+  - name: build-image-ibm-licensing-operator-s390x
     cluster: s390x
     branches:
     - ^master$
@@ -70,7 +70,8 @@ presubmits:
           privileged: true
     trigger: '(?m)^/test (?:.*? )?build-image(?: .*?)?$'  
 
-postsubmits:    
+postsubmits:
+  IBM/ibm-licensing-operator:
   - name: build-push-image-ibm-licensing-operator-amd64-postsubmit
     cluster: default
     branches:
