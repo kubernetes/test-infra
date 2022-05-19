@@ -65,7 +65,7 @@ presubmits:
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.22"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.7.2"
+          value: "v1.8.0"
         - name: CSI_SNAPSHOTTER_VERSION
           value: "v4.0.0"
         - name: CSI_PROW_TESTS
@@ -111,7 +111,7 @@ presubmits:
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.22"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.7.2"
+          value: "v1.8.0"
         - name: CSI_SNAPSHOTTER_VERSION
           value: "v4.0.0"
         - name: CSI_PROW_TESTS
@@ -157,7 +157,7 @@ presubmits:
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.22"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.7.2"
+          value: "v1.8.0"
         - name: CSI_SNAPSHOTTER_VERSION
           value: "v4.0.0"
         - name: CSI_PROW_TESTS
@@ -203,7 +203,7 @@ presubmits:
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.22"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.7.2"
+          value: "v1.8.0"
         - name: CSI_SNAPSHOTTER_VERSION
           value: "v4.0.0"
         - name: CSI_PROW_TESTS
