@@ -19,7 +19,8 @@ package fakejira
 import (
 	"context"
 	"github.com/andygrunwald/go-jira"
-	"reflect"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"testing"
 )
 
@@ -52,12 +53,12 @@ func TestFakeClient_SearchWithContext(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error from search: %s", err)
 	}
-	if !reflect.DeepEqual(r, issueList) {
-		t.Fatalf("incorrect issues from search; actual response: %v, expected response: %v", r, issueList)
+	cmpOption := cmpopts.IgnoreUnexported(jira.Date{})
+	if diff := cmp.Diff(r, issueList, cmpOption); diff != "" {
+		t.Fatalf("incorrect issues from search: %v", diff)
 	}
-	metadata := &jira.Response{StartAt: 0, MaxResults: 3, Total: 3}
-	if !reflect.DeepEqual(metadata, v) {
-		t.Fatalf("incorrect metadata from search; actual metadata: %v, expected metadata: %v", v, metadata)
+	if diff := cmp.Diff(&jira.Response{StartAt: 0, MaxResults: 3, Total: 3}, v, cmpOption); diff != "" {
+		t.Fatalf("incorrect metadata from search: %v", diff)
 	}
 
 	r, v, err = fakeClient.SearchWithContext(context.Background(), "unknown_query=fail", searchOptions)
