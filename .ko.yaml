@@ -47,6 +47,10 @@ baseImageOverrides:
   # prow integration test
   k8s.io/test-infra/prow/test/integration/fakeghserver: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
 
+# https://pkg.go.dev/cmd/link
+# -s: omit symbol/debug info
+# -w: omit DWARF symbol table
+# -X importpath.name=value: sets name to value
 builds:
 - id: admission
   dir: .
@@ -342,3 +346,8 @@ builds:
   ldflags:
   - -s -w
   - -X k8s.io/test-infra/gcsweb/pkg/version.VERSION={{.Env.VERSION}}
+- id: analysis
+  dir: .
+  main: experiment/ml/analyze
+  ldflags:
+  - -s -w
