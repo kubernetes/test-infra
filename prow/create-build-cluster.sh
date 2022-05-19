@@ -110,7 +110,7 @@ function parseArgs() {
     echo "${var}=${!var}"
   done
   if [[ "${PROW_INSTANCE_NAME}" != "k8s-prow" ]]; then
-    if [[ "${PROW_SECRET_ACCESSOR_SA}" == "kubernetes-external-secrets-sa@k8s-prow.iam.gserviceaccount.com" ]]; then
+    if [[ "${PROW_SECRET_ACCESSOR_SA}" == "gencred-refresher@k8s-prow.iam.gserviceaccount.com" ]]; then
       echo "${PROW_SECRET_ACCESSOR_SA} is k8s-prow specific, must pass in the service account used by ${PROW_INSTANCE_NAME}"
       exit 2
     fi
@@ -236,7 +236,7 @@ EOF
 # authorizing prow service account to access the build cluster.
 function gencreds() {
   # The secret can be stored in prow service cluster
-  gcloud projects add-iam-policy-binding --member="serviceAccount:${PROW_GENCRED_ROTATOR_SA}" --role="roles/container.admin" "${PROJECT}" --condition=None
+  gcloud projects add-iam-policy-binding --member="serviceAccount:${PROW_SECRET_ACCESSOR_SA}" --role="roles/container.admin" "${PROJECT}" --condition=None
 
   prompt "Create CL for you" create_cl
 
