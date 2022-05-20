@@ -1,0 +1,35 @@
+periodics:
+  - interval: 6h
+    name: maintainers-periodic
+    decorate: true
+    decoration_config:
+      timeout: 5m
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    spec:
+      containers:
+      - image: golang
+        command:
+        - /bin/bash
+        args:
+        - -c
+        - |
+          set -euo pipefail
+          export WORKDIR=${ARTIFACTS:-$TMPDIR}
+          export PATH=$PATH:$GOPATH/bin
+          mkdir -p "${WORKDIR}"
+          pushd "$WORKDIR"
+          go install github.com/dims/maintainers@v0.2.0
+          popd
+          maintainers prune
+          maintainers check-urls
+          maintainers validate
+          maintainers prettify
+    annotations:
+      testgrid-create-test-group: "true"
+      testgrid-dashboards: sig-contribex-maintainers
+      description: Runs maintainers tool periodically
+      testgrid-tab-name: maintainers-periodic
