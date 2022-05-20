@@ -94,6 +94,7 @@ approve:
   - kubernetes-sigs/kind
   - kubernetes-sigs/kubetest2
   - kubernetes-sigs/mdtoc
+  - kubernetes-sigs/prow
   - kubernetes-sigs/release-notes
   - kubernetes-sigs/release-sdk
   - kubernetes-sigs/release-utils
@@ -173,6 +174,7 @@ lgtm:
   - kubernetes-sigs/kind
   - kubernetes-sigs/kubetest2
   - kubernetes-sigs/mdtoc
+  - kubernetes-sigs/prow
   - kubernetes-sigs/release-notes
   - kubernetes-sigs/release-sdk
   - kubernetes-sigs/release-utils
@@ -1208,6 +1210,10 @@ plugins:
     - override
 
   kubernetes-sigs/node-feature-discovery-operator:
+    plugins:
+    - override
+
+  kubernetes-sigs/prow:
     plugins:
     - override
 
