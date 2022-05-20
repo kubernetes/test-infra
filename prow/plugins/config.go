@@ -333,28 +333,28 @@ var (
 	warnDependentBugTargetRelease time.Time
 )
 
-func (a Approve) AreIssueRequired() bool {
+func (a *Approve) AreIssueRequired() bool {
 	if a.IssueRequired != nil {
 		return *a.IssueRequired
 	}
 	return false
 }
 
-func (a Approve) ShouldLgtmActsAsApprove() bool {
+func (a *Approve) ShouldLgtmActsAsApprove() bool {
 	if a.LgtmActsAsApprove != nil {
 		return *a.LgtmActsAsApprove
 	}
 	return false
 }
 
-func (a Approve) HasSelfApproval() bool {
+func (a *Approve) HasSelfApproval() bool {
 	if a.RequireSelfApproval != nil {
 		return !*a.RequireSelfApproval
 	}
 	return true
 }
 
-func (a Approve) ConsiderReviewState() bool {
+func (a *Approve) ConsiderReviewState() bool {
 	if a.IgnoreReviewState != nil {
 		return !*a.IgnoreReviewState
 	}
