@@ -816,40 +816,34 @@ func (r RequireMatchingLabel) Describe() string {
 	return str.String()
 }
 
-func oldToNewConfig[T ProwConfig](old DeprecatedApprove) *T {
-	a := new(T)
-	switch v := any(a).(type) {
-	case *Approve:
-		*v = Approve{
-			IgnoreReviewState:   old.IgnoreReviewState,
-			IssueRequired:       old.IssueRequired,
-			LgtmActsAsApprove:   old.LgtmActsAsApprove,
-			RequireSelfApproval: old.RequireSelfApproval,
-			CommandHelpLink:     old.CommandHelpLink,
-			PrProcessLink:       old.PrProcessLink,
-		}
-	default:
-		logrus.Error("unknown type for ConfigTree object", a)
+func oldToNewApprove(old DeprecatedApprove) *Approve {
+	a := Approve{
+		IgnoreReviewState:   old.IgnoreReviewState,
+		IssueRequired:       old.IssueRequired,
+		LgtmActsAsApprove:   old.LgtmActsAsApprove,
+		RequireSelfApproval: old.RequireSelfApproval,
+		CommandHelpLink:     old.CommandHelpLink,
+		PrProcessLink:       old.PrProcessLink,
 	}
-	return a
+	return &a
 }
 
-func oldToConfigTree[T ProwConfig](old []DeprecatedApprove) ConfigTree[T] {
-	a := ConfigTree[T]{}
-	a.Orgs = make(map[string]Org[T])
+func oldToNewApproveConfig(old []DeprecatedApprove) ConfigTree[Approve] {
+	a := ConfigTree[Approve]{}
+	a.Orgs = make(map[string]Org[Approve])
 	for _, entry := range old {
 		for _, repo := range entry.Repos {
 			s := strings.Split(repo, "/")
 			ao := a.Orgs[s[0]]
 			switch len(s) {
 			case 1:
-				ao.Config = *oldToNewConfig[T](entry)
+				ao.Config = *oldToNewApprove(entry)
 			case 2:
 				if ao.Repos == nil {
-					ao.Repos = make(map[string]Repo[T])
+					ao.Repos = make(map[string]Repo[Approve])
 				}
 				ar := ao.Repos[s[1]]
-				ar.Config = *oldToNewConfig[T](entry)
+				ar.Config = *oldToNewApprove(entry)
 				ao.Repos[s[1]] = ar
 			}
 			a.Orgs[s[0]] = ao
@@ -863,11 +857,16 @@ type withoutUnmarshaler[T ProwConfig] ConfigTree[T]
 var warnTriggerDeprecatedApprove time.Time
 
 func (a *ConfigTree[T]) UnmarshalJSON(d []byte) error {
-	var oldApprove []DeprecatedApprove
-	if err := yaml.Unmarshal(d, &oldApprove); err == nil {
-		logrusutil.ThrottledWarnf(&warnTriggerDeprecatedApprove, time.Hour, "Approve plugin uses a deprecated config style, please migrate to a ConfigTree based config")
-		*a = oldToConfigTree[T](oldApprove)
-		return nil
+	switch v := any(a).(type) {
+	case *ConfigTree[Approve]:
+		var oldApprove []DeprecatedApprove
+		if err := yaml.Unmarshal(d, &oldApprove); err == nil {
+			logrusutil.ThrottledWarnf(&warnTriggerDeprecatedApprove, time.Hour, "Approve plugin uses a deprecated config style, please migrate to a ConfigTree based config")
+			*v = oldToNewApproveConfig(oldApprove)
+			return nil
+		}
+	default:
+		return fmt.Errorf("unknown type for ConfigTree object %v", v)
 	}
 	var target withoutUnmarshaler[T]
 	err := yaml.Unmarshal(d, &target)

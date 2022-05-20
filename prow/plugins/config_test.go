@@ -2177,9 +2177,9 @@ func TestMergeFrom(t *testing.T) {
 	}{
 		{
 			name:                "Approve config gets merged",
-			in:                  Configuration{Approve: oldToConfigTree[Approve]([]DeprecatedApprove{{Repos: []string{"foo/bar"}}})},
-			supplementalConfigs: []Configuration{{Approve: oldToConfigTree[Approve]([]DeprecatedApprove{{Repos: []string{"foo/baz"}}})}},
-			expected: Configuration{Approve: oldToConfigTree[Approve]([]DeprecatedApprove{
+			in:                  Configuration{Approve: oldToNewApproveConfig([]DeprecatedApprove{{Repos: []string{"foo/bar"}}})},
+			supplementalConfigs: []Configuration{{Approve: oldToNewApproveConfig([]DeprecatedApprove{{Repos: []string{"foo/baz"}}})}},
+			expected: Configuration{Approve: oldToNewApproveConfig([]DeprecatedApprove{
 				{Repos: []string{"foo/bar"}},
 				{Repos: []string{"foo/baz"}},
 			})},
