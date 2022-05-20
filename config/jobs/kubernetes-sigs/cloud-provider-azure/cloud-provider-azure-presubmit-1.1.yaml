@@ -187,7 +187,7 @@ presubmits:
               - name: AZURE_LOADBALANCER_SKU
                 value: "standard"
               - name: KUBERNETES_VERSION
-                value: "latest-1.22"
+                value: 1.22.2
               - name: GINKGO_ARGS
                 value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --test.parallel=30 --report-dir=/logs/artifacts --disable-log-dump=true
               - name: CONTROL_PLANE_MACHINE_COUNT
@@ -236,7 +236,7 @@ presubmits:
               - name: AZURE_LOADBALANCER_SKU
                 value: "standard"
               - name: KUBERNETES_VERSION
-                value: "latest-1.22"
+                value: 1.22.2
               - name: CONTROL_PLANE_MACHINE_COUNT
                 value: "3"
       annotations:

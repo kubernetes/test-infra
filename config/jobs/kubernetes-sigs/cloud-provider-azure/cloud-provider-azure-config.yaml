@@ -163,7 +163,7 @@ presubmits:
         workdir: true
       - org: kubernetes
         repo: kubernetes
-        base_ref: release-1.24
+        base_ref: release-1.23
         path_alias: k8s.io/kubernetes
         workdir: false
     spec:
@@ -187,7 +187,7 @@ presubmits:
             - name: AZURE_LOADBALANCER_SKU
               value: "standard"
             - name: KUBERNETES_VERSION
-              value: "latest-1.24"
+              value: 1.23.5
             - name: GINKGO_ARGS
               value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --test.parallel=30 --report-dir=/logs/artifacts --disable-log-dump=true
             - name: CONTROL_PLANE_MACHINE_COUNT
@@ -239,7 +239,7 @@ presubmits:
             - name: CONTROL_PLANE_MACHINE_COUNT
               value: "3"
             - name: KUBERNETES_VERSION
-              value: "latest-1.24"
+              value: 1.23.5
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-capz
@@ -311,7 +311,7 @@ periodics:
         - name: CONTROL_PLANE_MACHINE_COUNT
           value: "3"
         - name: KUBERNETES_VERSION
-          value: "latest-1.24"
+          value: 1.23.5
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-master-capz
@@ -361,7 +361,7 @@ periodics:
         - name: CONTROL_PLANE_MACHINE_COUNT
           value: "3"
         - name: KUBERNETES_VERSION
-          value: "latest-1.24"
+          value: 1.23.5
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-master-capz-main
@@ -510,7 +510,7 @@ periodics:
     workdir: true
   - org: kubernetes
     repo: kubernetes
-    base_ref: release-1.24
+    base_ref: release-1.23
     path_alias: k8s.io/kubernetes
     workdir: false
   - org: kubernetes-sigs
@@ -539,7 +539,7 @@ periodics:
       - name: AZURE_LOADBALANCER_SKU
         value: "standard"
       - name: KUBERNETES_VERSION
-        value: "latest-1.24"
+        value: 1.23.5
       - name: GINKGO_ARGS
         value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --test.parallel=30 --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT
@@ -568,7 +568,7 @@ periodics:
     workdir: true
   - org: kubernetes
     repo: kubernetes
-    base_ref: release-1.24
+    base_ref: release-1.23
     path_alias: k8s.io/kubernetes
     workdir: false
   - org: kubernetes-sigs
@@ -597,7 +597,7 @@ periodics:
       - name: AZURE_LOADBALANCER_SKU
         value: "standard"
       - name: KUBERNETES_VERSION
-        value: "latest-1.24"
+        value: 1.23.5
       - name: GINKGO_ARGS
         value: --ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|In-tree.Volumes|should.be.able.to.create.an.internal.type.load.balancer --test.parallel=4 --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT
