@@ -49,6 +49,20 @@ func init() {
 	plugins.RegisterPullRequestHandler(PluginName, handlePullRequest, helpProvider)
 }
 
+// getExistingUniquePrefixLabels returns a list of labels for every label prefix that can only exist once per issue
+func getExistingUniquePrefixLabels(config plugins.Label, labels []github.Label) map[string][]string {
+	labelsMap := make(map[string][]string)
+	prefixList := config.UniquePrefixes
+	for _, prefix := range prefixList {
+		for _, label := range labels {
+			if matched := strings.HasPrefix(label.Name, prefix); matched {
+				labelsMap[prefix] = append(labelsMap[prefix], label.Name)
+			}
+		}
+	}
+	return labelsMap
+}
+
 func configString(labels []string) string {
 	var formattedLabels []string
 	for _, label := range labels {
@@ -168,7 +182,6 @@ func handleComment(gc githubClient, log *logrus.Entry, config plugins.Label, e *
 	if err != nil {
 		return err
 	}
-
 	RepoLabelsExisting := sets.String{}
 	for _, l := range repoLabels {
 		RepoLabelsExisting.Insert(strings.ToLower(l.Name))
@@ -180,6 +193,7 @@ func handleComment(gc githubClient, log *logrus.Entry, config plugins.Label, e *
 		labelsToAdd             []string
 		labelsToRemove          []string
 		nonMemberTriageAccepted bool
+		labelPrefix             string
 	)
 
 	additionalLabelSet := sets.String{}
@@ -228,12 +242,29 @@ func handleComment(gc githubClient, log *logrus.Entry, config plugins.Label, e *
 			gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(bodyWithoutComments, e.HTMLURL, e.User.Login, canNotSetLabelReason))
 			continue
 		}
-
+		uniqueLabelsMap := getExistingUniquePrefixLabels(config, labels)
+		var labelsWithPrefixExist = false
+		for prefix := range uniqueLabelsMap {
+			if matched := strings.HasPrefix(labelToAdd, prefix); matched {
+				labelPrefix = prefix
+				labelsWithPrefixExist = true
+			}
+		}
+		// if the labelToAdd matches a unique prefix, remove all pre existing
+		// labels that match this unique prefix, and then add the new label
+		if labelsWithPrefixExist {
+			for _, label := range uniqueLabelsMap[labelPrefix] {
+				if label != labelToAdd && github.HasLabel(label, labels) {
+					if err := gc.RemoveLabel(org, repo, e.Number, label); err != nil {
+						log.WithError(err).Errorf("GitHub failed to remove the following label: %s", label)
+					}
+				}
+			}
+		}
 		if err := gc.AddLabel(org, repo, e.Number, labelToAdd); err != nil {
 			log.WithError(err).WithField("label", labelToAdd).Error("GitHub failed to add the label")
 		}
 	}
-
 	// Remove labels
 	for _, labelToRemove := range labelsToRemove {
 		if !github.HasLabel(labelToRemove, labels) {

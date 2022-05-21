@@ -391,6 +391,9 @@ type Label struct {
 	// defines to which repos this applies and can be `*` for global, an org
 	// or a repo in org/repo notation.
 	RestrictedLabels map[string][]RestrictedLabel `json:"restricted_labels,omitempty"`
+	// UniquePrefixes is the list of label prefixes that can only exist
+	// once per issue,
+	UniquePrefixes []string `json:"unique_prefixes,omitempty"`
 }
 
 func (l Label) RestrictedLabelsFor(org, repo string) map[string]RestrictedLabel {
@@ -1077,6 +1080,15 @@ func (c *Configuration) ValidatePluginsUnknown() error {
 	return utilerrors.NewAggregate(errors)
 }
 
+func validateUniquePrefixes(uniquePrefixes []string) error {
+	for _, prefix := range uniquePrefixes {
+		if len(prefix) == 0 {
+			return fmt.Errorf("prefix cannot be an empty string")
+		}
+	}
+	return nil
+}
+
 func validateSizes(size Size) error {
 	if size.S > size.M || size.M > size.L || size.L > size.Xl || size.Xl > size.Xxl {
 		return errors.New("invalid size plugin configuration - one of the smaller sizes is bigger than a larger one")
@@ -1344,7 +1356,12 @@ func (c *Configuration) Validate() error {
 	if err := validateTrigger(c.Triggers); err != nil {
 		return err
 	}
+
 	validateRepoMilestone(c.RepoMilestone)
+
+	if err := validateUniquePrefixes(c.Label.UniquePrefixes); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -2043,7 +2060,7 @@ func getLabelConfigFromRestrictedLabelsSlice(s []RestrictedLabel, label string) 
 func (c *Configuration) HasConfigFor() (global bool, orgs sets.String, repos sets.String) {
 	equals := reflect.DeepEqual(c,
 		&Configuration{Approve: c.Approve, Bugzilla: c.Bugzilla, ExternalPlugins: c.ExternalPlugins,
-			Label: Label{RestrictedLabels: c.Label.RestrictedLabels}, Lgtm: c.Lgtm, Plugins: c.Plugins,
+			Label: Label{RestrictedLabels: c.Label.RestrictedLabels, UniquePrefixes: c.Label.UniquePrefixes}, Lgtm: c.Lgtm, Plugins: c.Plugins,
 			Triggers: c.Triggers, Welcome: c.Welcome})
 
 	if !equals || c.Bugzilla.Default != nil {

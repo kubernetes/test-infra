@@ -64,6 +64,7 @@ func TestHandleComment(t *testing.T) {
 		expectedCommentText   string
 		action                github.GenericCommentEventAction
 		teams                 map[string]map[string]fakegithub.TeamWithMembers
+		uniquePrefixes        []string
 	}
 	testcases := []testCase{
 		{
@@ -476,6 +477,17 @@ func TestHandleComment(t *testing.T) {
 			action:                github.GenericCommentActionCreated,
 		},
 		{
+			name:                  "Add label that has a prefix that can only exist once per issue",
+			body:                  "/priority urgent",
+			repoLabels:            []string{"area/go", "priority/urgent", "priority/critical", "priority/l"},
+			issueLabels:           []string{"area/go", "priority/critical", "priority/l"},
+			expectedNewLabels:     formatWithPRInfo("priority/urgent"),
+			expectedRemovedLabels: formatWithPRInfo("priority/critical", "priority/l"),
+			commenter:             orgMember,
+			action:                github.GenericCommentActionCreated,
+			uniquePrefixes:        []string{"priority/"},
+		},
+		{
 			name:                  "Do nothing with empty /label command",
 			body:                  "/label",
 			extraLabels:           []string{"orchestrator/foo", "orchestrator/bar"},
@@ -762,7 +774,8 @@ func TestHandleComment(t *testing.T) {
 				Repo:   github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 				User:   github.User{Login: tc.commenter},
 			}
-			err := handleComment(fakeClient, logrus.WithField("plugin", PluginName), plugins.Label{AdditionalLabels: tc.extraLabels, RestrictedLabels: tc.restrictedLabels}, e)
+			err := handleComment(fakeClient, logrus.WithField("plugin", PluginName), plugins.Label{AdditionalLabels: tc.extraLabels, RestrictedLabels: tc.restrictedLabels, UniquePrefixes: tc.uniquePrefixes}, e)
+
 			if err != nil {
 				t.Fatalf("didn't expect error from handle comment test: %v", err)
 			}

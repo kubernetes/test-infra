@@ -104,6 +104,35 @@ func TestValidateExternalPlugins(t *testing.T) {
 	}
 }
 
+func TestValidateUniquePrefixes(t *testing.T) {
+	testCases := []struct {
+		name           string
+		uniquePrefixes []string
+		isErrorNil     bool
+	}{
+		{
+			name:           "non-zero length prefixes",
+			uniquePrefixes: []string{"prefix1/", "prefix2"},
+			isErrorNil:     true,
+		},
+		{
+			name:           "zero length prefixes",
+			uniquePrefixes: []string{"", "prefix2"},
+			isErrorNil:     false,
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.name, func(t *testing.T) {
+			err := validateUniquePrefixes(tC.uniquePrefixes)
+			if tC.isErrorNil && err != nil {
+				t.Errorf("expected nil error got %s", err)
+			} else if !tC.isErrorNil && err == nil {
+				t.Errorf("expected non nil error, got nil")
+			}
+		})
+	}
+}
+
 func TestSetDefault_Maps(t *testing.T) {
 	cases := []struct {
 		name     string

@@ -487,6 +487,11 @@ label:
     # or a repo in org/repo notation.
     restricted_labels:
         "": null
+
+    # UniquePrefixes is the list of label prefixes that can only exist
+    # once per issue.
+    unique_prefixes:
+      - ""
 lgtm:
   - # Repos is either of the form org/repos or just org.
     repos:
