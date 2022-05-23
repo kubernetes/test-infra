@@ -17,6 +17,7 @@ limitations under the License.
 package jira
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -51,6 +52,9 @@ const (
 
 type Client interface {
 	GetIssue(id string) (*jira.Issue, error)
+	// SearchWithContext will search for tickets according to the jql
+	// Jira API docs: https://developer.atlassian.com/jiradev/jira-apis/jira-rest-apis/jira-rest-api-tutorials/jira-rest-api-example-query-issues
+	SearchWithContext(ctx context.Context, jql string, options *jira.SearchOptions) ([]jira.Issue, *jira.Response, error)
 	UpdateIssue(*jira.Issue) (*jira.Issue, error)
 	CreateIssue(*jira.Issue) (*jira.Issue, error)
 	CreateIssueLink(*jira.IssueLink) error
@@ -781,4 +785,15 @@ func (l *retryableHTTPLogrusWrapper) Debug(msg string, context ...interface{}) {
 
 func (l *retryableHTTPLogrusWrapper) Warn(msg string, context ...interface{}) {
 	l.log.WithFields(l.fieldsForContext(context...)).Warn(msg)
+}
+
+func (jc *client) SearchWithContext(ctx context.Context, jql string, options *jira.SearchOptions) ([]jira.Issue, *jira.Response, error) {
+	issues, response, err := jc.upstream.Issue.SearchWithContext(ctx, jql, options)
+	if err != nil {
+		if response != nil && response.StatusCode == http.StatusNotFound {
+			return nil, response, NotFoundError{err}
+		}
+		return nil, response, HandleJiraError(response, err)
+	}
+	return issues, response, nil
 }
