@@ -246,6 +246,7 @@ func handleQueryChanges(fgc *fakegerrit.FakeGerrit) func(*http.Request) (interfa
 		}
 		project := processQueryString(query)
 
+		logrus.Infof("Query: %s, Project: %s", query, project)
 		if project == "" {
 			return "", http.StatusNotFound, nil
 		}

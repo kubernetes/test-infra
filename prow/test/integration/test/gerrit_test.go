@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"testing"
 	"time"
 
@@ -39,25 +40,11 @@ func makeTimeStamp(t time.Time) gerrit.Timestamp {
 
 type LastSyncState map[string]map[string]time.Time
 
-func TestUnmarshall(t *testing.T) {
-	var state LastSyncState
-	//buf, _ := os.ReadFile("/usr/local/google/home/mpherman/Documents/touchtest/test")
-
-	if err := json.Unmarshal([]byte(""), &state); err != nil {
-		t.Fatal(err)
-	}
-
-	t.Fatalf("Unmarshalled fine: %v", state)
-}
-
 func TestGerrit(t *testing.T) {
-	t.Parallel()
-
-	startTime := time.Now().UTC()
+	startTime := time.Now().AddDate(0, 0, 2).UTC()
 
 	gerritClient, err := client.NewClient(map[string][]string{gerritServer: {"fakegerritserver"}})
 	if err != nil {
-		reset()
 		t.Fatalf("Failed creating gerritClient: %v", err)
 	}
 
@@ -65,12 +52,12 @@ func TestGerrit(t *testing.T) {
 		CurrentRevision: "1",
 		ID:              "1",
 		ChangeID:        "1",
-		Project:         "test-infra",
+		Project:         "gerrit-test-infra",
 		Updated:         makeTimeStamp(startTime),
 		Branch:          "master",
 		Status:          "NEW",
-		Revisions:       map[string]client.RevisionInfo{},
-		Messages:        []gerrit.ChangeMessageInfo{},
+		Revisions:       map[string]client.RevisionInfo{"1": {Number: 1, Ref: "refs/changes/00/1/1", Created: makeTimeStamp(time.Now().AddDate(0, 0, 2).UTC())}},
+		Messages:        []gerrit.ChangeMessageInfo{{RevisionNumber: 1, Message: "/test all", ID: "1", Date: makeTimeStamp(time.Now().AddDate(0, 0, 2).UTC())}},
 	}
 
 	account := gerrit.AccountInfo{
@@ -81,18 +68,21 @@ func TestGerrit(t *testing.T) {
 
 	branch := gerrit.BranchInfo{}
 
-	if err = addBranchToServer(branch, "test-infra", "master"); err != nil {
+	if err = addBranchToServer(branch, "gerrit-test-infra", "master"); err != nil {
 		t.Fatalf("failed to add branch to server: %v", err)
 	}
 	if err = addAccountToServer(account); err != nil {
 		t.Fatalf("Failed to add change to server: %s", err)
 	}
-	if err = addChangeToServer(change, "fakegerritserver"); err != nil {
+	if err = login(account.AccountID); err != nil {
+		t.Fatalf("Failed to set self on server: %s", err)
+	}
+	if err = addChangeToServer(change, "gerrit-test-infra"); err != nil {
 		t.Fatalf("Failed to add change to server: %s", err)
 	}
 
 	//Give some time for gerrit to pick up the change
-	time.Sleep(1 * time.Minute)
+	time.Sleep(30 * time.Second)
 
 	resp, err := gerritClient.GetChange(gerritServer, "1")
 	if err != nil {
@@ -100,8 +90,11 @@ func TestGerrit(t *testing.T) {
 		t.Errorf("Failed getting gerrit change: %v", err)
 	}
 
-	if len(resp.Messages) < 1 {
-		t.Errorf("Original updated time was %s, and no messages have been added to change: %v", startTime, resp)
+	if len(resp.Messages) < 2 {
+		t.Errorf("gerrit did not add any messages to change: %v", resp)
+	}
+	if !strings.Contains(resp.Messages[1].Message, "Triggered 1 prow jobs") {
+		t.Errorf("Did not trigger prowjob. Message: %s", resp.Messages[1].Message)
 	}
 
 	// Reset the fakeGerritServer so the test can be run again
@@ -109,15 +102,15 @@ func TestGerrit(t *testing.T) {
 }
 
 func reset() error {
-	_, err := http.Get("http://localhost/fakegerritserver/admin/reset")
+	_, err := http.Get(fmt.Sprintf("%s/admin/reset", gerritServer))
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func login(id string) error {
-	_, err := http.Get(fmt.Sprintf("http://localhost/fakegerritserver/admin/login/%s", id))
+func login(id int) error {
+	_, err := http.Get(fmt.Sprintf("%s/admin/login/%d", gerritServer, id))
 	if err != nil {
 		return err
 	}
@@ -130,7 +123,7 @@ func addChangeToServer(change gerrit.ChangeInfo, project string) error {
 		return err
 	}
 
-	_, err = http.Post(fmt.Sprintf("http://localhost/fakegerritserver/admin/add/change/%s", project), "application/json", bytes.NewReader(body))
+	_, err = http.Post(fmt.Sprintf("%s/admin/add/change/%s", gerritServer, project), "application/json", bytes.NewReader(body))
 	if err != nil {
 		return err
 	}
@@ -143,7 +136,7 @@ func addAccountToServer(account gerrit.AccountInfo) error {
 		return err
 	}
 
-	_, err = http.Post("http://localhost/fakegerritserver/admin/add/account", "application/json", bytes.NewReader(body))
+	_, err = http.Post(fmt.Sprintf("%s/admin/add/account", gerritServer), "application/json", bytes.NewReader(body))
 	if err != nil {
 		return err
 	}
@@ -157,7 +150,7 @@ func addBranchToServer(branch gerrit.BranchInfo, project, name string) error {
 		return err
 	}
 
-	_, err = http.Post(fmt.Sprintf("http://localhost/fakegerritserver/admin/add/branch/%s/%s", project, name), "application/json", bytes.NewReader(body))
+	_, err = http.Post(fmt.Sprintf("%s/admin/add/branch/%s/%s", gerritServer, project, name), "application/json", bytes.NewReader(body))
 	if err != nil {
 		return err
 	}

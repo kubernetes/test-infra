@@ -61,3 +61,46 @@ kind: ServiceAccount
 metadata:
   name:  gerrit
   namespace: default
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  namespace: default
+  name: "gerrit"
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: default
+  name: "gerrit"
+rules:
+  - apiGroups:
+      - "prow.k8s.io"
+    resources:
+      - prowjobs
+    verbs:
+      - create
+      - get
+      - list
+      - update
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - create
+      - get
+      - update
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: default
+  name: "gerrit"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: "gerrit"
+subjects:
+- kind: ServiceAccount
+  name: "gerrit"
