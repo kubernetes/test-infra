@@ -2,9 +2,14 @@ images:
 - dir: prow/cmd/deck
 - dir: prow/cmd/crier
 - dir: prow/cmd/hook
+- dir: prow/cmd/gerrit
 - dir: prow/cmd/horologium
 - dir: prow/cmd/sinker
 - dir: prow/cmd/tide
 - dir: prow/cmd/prow-controller-manager
 - dir: prow/test/integration/fakeghserver
 - dir: prow/test/integration/fakegerritserver
+- dir: prow/cmd/clonerefs
+- dir: prow/cmd/initupload
+- dir: prow/cmd/entrypoint
+- dir: prow/cmd/sidecar

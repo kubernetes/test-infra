@@ -1,0 +1,15 @@
+presubmits:
+  http://fakegerritserver/gerrit-test-infra:
+    - name: hello-world-presubmit
+      always_run: true
+      labels:
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+        preset-cookie-file: "true"
+      spec:
+        containers:
+        - command:
+          - echo
+          args:
+          - "Hello World!"
+          image: localhost:5001/alpine

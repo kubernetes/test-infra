@@ -16,3 +16,24 @@ prowjob_default_entries:
     repo: 'testRepo'
     config:
       tenant_id: 'tester'
+
+gerrit:
+  tick_interval: 10s
+  org_repos_config:
+  - org: http://fakegerritserver
+    repos:
+    - gerrit-test-infra
+
+plank:
+  default_decoration_config_entries:
+  - config:
+      timeout: 2h
+      grace_period: 15s
+      utility_images:
+        clonerefs: localhost:5001/clonerefs:latest
+        initupload: localhost:5001/initupload:latest
+        entrypoint: localhost:5001/entrypoint:latest
+        sidecar: localhost:5001/sidecar:latest
+      gcs_configuration:
+        bucket: "none"
+        path_strategy: "explicit"
