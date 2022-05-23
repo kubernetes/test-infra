@@ -15,7 +15,7 @@ presubmits:
       repo: cloud-provider-gcp
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220514-17efd5d2c3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
         command:
         - "runner.sh"
         args:
