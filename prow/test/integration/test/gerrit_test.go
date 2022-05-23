@@ -82,7 +82,7 @@ func TestGerrit(t *testing.T) {
 	}
 
 	//Give some time for gerrit to pick up the change
-	time.Sleep(30 * time.Second)
+	time.Sleep(15 * time.Second)
 
 	resp, err := gerritClient.GetChange(gerritServer, "1")
 	if err != nil {

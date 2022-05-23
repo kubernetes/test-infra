@@ -147,9 +147,8 @@ func addChangeHandler(fgc *fakegerrit.FakeGerrit) func(*http.Request) (interface
 		vars := mux.Vars(r)
 		project := vars["project"]
 		change := gerrit.ChangeInfo{}
-		err := unmarshal(r, &change)
-		if err != nil {
-			logrus.Infof("Error unmarshling: %v", err)
+		if err := unmarshal(r, &change); err != nil {
+			logrus.Infof("Error unmarshaling: %v", err)
 			return "", http.StatusInternalServerError, err
 		}
 		fgc.AddChange(project, &change)
@@ -161,9 +160,8 @@ func addChangeHandler(fgc *fakegerrit.FakeGerrit) func(*http.Request) (interface
 func addAccountHandler(fgc *fakegerrit.FakeGerrit) func(*http.Request) (interface{}, int, error) {
 	return func(r *http.Request) (interface{}, int, error) {
 		account := gerrit.AccountInfo{}
-		err := unmarshal(r, &account)
-		if err != nil {
-			logrus.Infof("Error unmarshling: %v", err)
+		if err := unmarshal(r, &account); err != nil {
+			logrus.Infof("Error unmarshaling: %v", err)
 			return "", http.StatusInternalServerError, err
 		}
 		fgc.AddAccount(&account)
@@ -178,7 +176,7 @@ func loginHandler(fgc *fakegerrit.FakeGerrit) func(*http.Request) (interface{}, 
 		id := vars["id"]
 
 		if err := fgc.SetSelf(id); err != nil {
-			return "", http.StatusForbidden, fmt.Errorf("unable to loging. ID %s does not exist", id)
+			return "", http.StatusForbidden, fmt.Errorf("unable to login. ID %s does not exist", id)
 		}
 		return "", http.StatusOK, nil
 	}
@@ -191,9 +189,8 @@ func addBranchHandler(fgc *fakegerrit.FakeGerrit) func(*http.Request) (interface
 		branchName := vars["branch-name"]
 		project := vars["project"]
 		branch := gerrit.BranchInfo{}
-		err := unmarshal(r, &branch)
-		if err != nil {
-			logrus.Infof("Error unmarshling: %v", err)
+		if err := unmarshal(r, &branch); err != nil {
+			logrus.Infof("Error unmarshaling: %v", err)
 			return "", http.StatusInternalServerError, err
 		}
 		fgc.AddBranch(project, branchName, &branch)
