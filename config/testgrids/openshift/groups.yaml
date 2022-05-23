@@ -50,5 +50,6 @@ dashboard_groups:
   - redhat-openshift-serverless
   - redhat-openshift-virtualization
   - redhat-osd
+  - redhat-quay
   - redhat-single-node
   name: redhat
