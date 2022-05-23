@@ -119,8 +119,6 @@ func TestGatherOptions(t *testing.T) {
 					PluginConfigPathDefault:                  "/etc/plugins/plugins.yaml",
 					SupplementalPluginsConfigsFileNameSuffix: "_pluginconfig.yaml",
 				},
-				tokenBurst:             100,
-				tokensPerHour:          300,
 				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
 			}
 			expectedfs := flag.NewFlagSet("fake-flags", flag.PanicOnError)

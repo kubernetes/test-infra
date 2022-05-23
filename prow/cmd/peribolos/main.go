@@ -63,10 +63,6 @@ type options struct {
 	allowRepoPublish  bool
 	github            flagutil.GitHubOptions
 
-	// TODO(petr-muller): Remove after August 2021, replaced by github.ThrottleHourlyTokens
-	tokenBurst    int
-	tokensPerHour int
-
 	logLevel string
 }
 
@@ -86,8 +82,6 @@ func (o *options) parseArgs(flags *flag.FlagSet, args []string) error {
 	flags.Float64Var(&o.maximumDelta, "maximum-removal-delta", defaultDelta, "Fail if config removes more than this fraction of current members")
 	flags.StringVar(&o.config, "config-path", "", "Path to org config.yaml")
 	flags.BoolVar(&o.confirm, "confirm", false, "Mutate github if set")
-	flags.IntVar(&o.tokensPerHour, "tokens", defaultTokens, "Throttle hourly token consumption (0 to disable) DEPRECATED: use --github-hourly-tokens")
-	flags.IntVar(&o.tokenBurst, "token-burst", defaultBurst, "Allow consuming a subset of hourly tokens in a short burst. DEPRECATED: use --github-allowed-burst")
 	flags.StringVar(&o.dump, "dump", "", "Output current config of this org if set")
 	flags.BoolVar(&o.dumpFull, "dump-full", false, "Output current config of the org as a valid input config file instead of a snippet")
 	flags.BoolVar(&o.ignoreSecretTeams, "ignore-secret-teams", false, "Do not dump or update secret teams if set")
@@ -103,21 +97,6 @@ func (o *options) parseArgs(flags *flag.FlagSet, args []string) error {
 	o.github.AddCustomizedFlags(flags, flagutil.ThrottlerDefaults(defaultTokens, defaultBurst))
 	if err := flags.Parse(args); err != nil {
 		return err
-	}
-
-	if o.tokensPerHour != defaultTokens {
-		if o.github.ThrottleHourlyTokens != defaultTokens {
-			return fmt.Errorf("--tokens cannot be specified with together with --github-hourly-tokens: use just the latter")
-		}
-		logrus.Warn("--tokens is deprecated: use --github-hourly-tokens instead")
-		o.github.ThrottleHourlyTokens = o.tokensPerHour
-	}
-	if o.tokenBurst != defaultBurst {
-		if o.github.ThrottleAllowBurst != defaultBurst {
-			return fmt.Errorf("--token-burst cannot be specified with together with --github-allowed-burst: use just the latter")
-		}
-		logrus.Warn("--token-burst is deprecated: use --github-allowed-burst instead")
-		o.github.ThrottleAllowBurst = o.tokenBurst
 	}
 
 	if err := o.github.Validate(!o.confirm); err != nil {

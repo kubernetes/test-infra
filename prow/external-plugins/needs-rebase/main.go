@@ -48,9 +48,6 @@ type options struct {
 	instrumentationOptions prowflagutil.InstrumentationOptions
 	logLevel               string
 
-	// TODO(petr-muller): Remove after August 2021, replaced by github.ThrottleHourlyTokens
-	hourlyTokens int
-
 	updatePeriod time.Duration
 
 	webhookSecretFile string
@@ -67,14 +64,6 @@ func (o *options) Validate() error {
 		}
 	}
 
-	if o.hourlyTokens != defaultHourlyTokens {
-		if o.github.ThrottleHourlyTokens != defaultHourlyTokens {
-			return fmt.Errorf("--hourlytokens cannot be specified with together with --github-hourly-tokens: use just the latter")
-		}
-		logrus.Warn("--hourly-tokens is deprecated: use --github-hourly-tokens instead")
-		o.github.ThrottleHourlyTokens = o.hourlyTokens
-	}
-
 	return nil
 }
 
@@ -86,7 +75,6 @@ func gatherOptions() options {
 	fs.DurationVar(&o.updatePeriod, "update-period", time.Hour*24, "Period duration for periodic scans of all PRs.")
 	fs.StringVar(&o.webhookSecretFile, "hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
 	fs.StringVar(&o.logLevel, "log-level", "debug", fmt.Sprintf("Log level is one of %v.", logrus.AllLevels))
-	fs.IntVar(&o.hourlyTokens, "hourly-tokens", defaultHourlyTokens, "The number of hourly tokens need-rebase may use. DEPRECATED: use --github-allowed-burst")
 	fs.IntVar(&o.cacheValidTime, "cache-valid-time", 0, "Do not re-check PR mergeability for comment events within this time (seconds)")
 
 	o.github.AddCustomizedFlags(fs, prowflagutil.ThrottlerDefaults(defaultHourlyTokens, defaultHourlyTokens))
