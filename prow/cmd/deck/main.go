@@ -27,7 +27,6 @@ import (
 	"fmt"
 	"html/template"
 	"io/ioutil"
-	"k8s.io/test-infra/prow/io/providers"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -35,6 +34,9 @@ import (
 	"path"
 	"strings"
 	"time"
+
+	"k8s.io/test-infra/prow/io/providers"
+	"k8s.io/test-infra/prow/tide"
 
 	"github.com/NYTimes/gziphandler"
 	"github.com/gorilla/csrf"
@@ -1284,10 +1286,14 @@ func handleTidePools(cfg config.Getter, ta *tideAgent, log *logrus.Entry) http.H
 		pools := ta.pools
 		ta.Unlock()
 
+		var poolsForDeck []tide.PoolForDeck
+		for _, pool := range pools {
+			poolsForDeck = append(poolsForDeck, *tide.PoolToPoolForDeck(&pool))
+		}
 		payload := tidePools{
 			Queries:     queries,
 			TideQueries: queryConfigs,
-			Pools:       pools,
+			Pools:       poolsForDeck,
 		}
 		pd, err := json.Marshal(payload)
 		if err != nil {

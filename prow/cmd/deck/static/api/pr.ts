@@ -5,9 +5,29 @@ export interface Label {
   Name: string;
 }
 
+export interface Ref {
+  Name: string;
+  Prefix: string;
+}
+
+export interface Author {
+  Login: string;
+}
+
+export interface Repository {
+  Name: string;
+  NameWithOwner: string;
+  Owner: {
+    Login: string;
+  };
+}
+
 export interface PullRequest extends BasePullRequest {
   Merged: boolean;
   Title: string;
+  Author: Author;
+  BaseRef: Ref;
+  Repository: Repository;
   Labels: {
     Nodes: Array<{
       Label: Label;

@@ -792,9 +792,7 @@ func TestExpectedStatus(t *testing.T) {
 				Login githubql.String
 			}{githubql.String(tc.author)}
 			if tc.milestone != "" {
-				pr.Milestone = &struct {
-					Title githubql.String
-				}{githubql.String(tc.milestone)}
+				pr.Milestone = &Milestone{githubql.String(tc.milestone)}
 			}
 			if tc.mergeConflicts {
 				pr.Mergeable = githubql.MergeableStateConflicting
@@ -802,9 +800,9 @@ func TestExpectedStatus(t *testing.T) {
 			if tc.hasApprovingReview {
 				pr.ReviewDecision = githubql.PullRequestReviewDecisionApproved
 			}
-			var pool map[string]PullRequest
+			var pool map[string]CodeReviewCommon
 			if tc.inPool {
-				pool = map[string]PullRequest{"#0": {}}
+				pool = map[string]CodeReviewCommon{"#0": {}}
 			}
 			blocks := blockers.Blockers{
 				Repo: map[blockers.OrgRepo][]blockers.Blocker{},
@@ -826,7 +824,7 @@ func TestExpectedStatus(t *testing.T) {
 			ccg := func() (contextChecker, error) {
 				return &config.TideContextPolicy{RequiredContexts: tc.requiredContexts}, nil
 			}
-			state, desc, err := sc.expectedStatus(sc.logger, queriesByRepo, &pr, pool, ccg, blocks, tc.baseref)
+			state, desc, err := sc.expectedStatus(sc.logger, queriesByRepo, CodeReviewCommonFromPullRequest(&pr), pool, ccg, blocks, tc.baseref)
 			if err != nil {
 				t.Fatalf("error calling expectedStatus(): %v", err)
 			}
@@ -943,9 +941,10 @@ func TestSetStatuses(t *testing.T) {
 				},
 			}
 		}
-		pool := make(map[string]PullRequest)
+		crc := CodeReviewCommonFromPullRequest(&pr)
+		pool := make(map[string]CodeReviewCommon)
 		if tc.inPool {
-			pool[prKey(&pr)] = pr
+			pool[prKey(crc)] = *crc
 		}
 		fc := &fgc{
 			refs: map[string]string{"/ heads/": "SHA"},
@@ -968,7 +967,7 @@ func TestSetStatuses(t *testing.T) {
 		if tc.inDontSetStatus {
 			sc.dontUpdateStatus = threadSafePRSet{data: map[pullRequestIdentifier]struct{}{{}: {}}}
 		}
-		sc.setStatuses([]PullRequest{pr}, pool, blockers.Blockers{}, nil, nil)
+		sc.setStatuses([]CodeReviewCommon{*crc}, pool, blockers.Blockers{}, nil, nil)
 		if str, err := log.String(); err != nil {
 			t.Fatalf("For case %s: failed to get log output: %v", tc.name, err)
 		} else if str != initialLog {
@@ -1104,7 +1103,7 @@ func TestTargetUrl(t *testing.T) {
 	for _, tc := range testcases {
 		log := logrus.WithField("controller", "status-update")
 		c := &config.Config{ProwConfig: config.ProwConfig{Tide: tc.config}}
-		if actual, expected := targetURL(c, tc.pr, log), tc.expectedURL; actual != expected {
+		if actual, expected := targetURL(c, CodeReviewCommonFromPullRequest(tc.pr), log), tc.expectedURL; actual != expected {
 			t.Errorf("%s: expected target URL %s but got %s", tc.name, expected, actual)
 		}
 	}
@@ -1199,8 +1198,9 @@ func TestSetStatusRespectsRequiredContexts(t *testing.T) {
 		pjClient:     fakectrlruntimeclient.NewFakeClient(),
 		mergeChecker: newMergeChecker(ca.Config, fghc),
 	}
-	pool := map[string]PullRequest{prKey(&pr): pr}
-	sc.setStatuses([]PullRequest{pr}, pool, blockers.Blockers{}, nil, requiredContexts)
+	crc := CodeReviewCommonFromPullRequest(&pr)
+	pool := map[string]CodeReviewCommon{prKey(crc): *crc}
+	sc.setStatuses([]CodeReviewCommon{*crc}, pool, blockers.Blockers{}, nil, requiredContexts)
 	if str, err := log.String(); err != nil {
 		t.Fatalf("Failed to get log output: %v", err)
 	} else if str != initialLog {
@@ -1276,7 +1276,7 @@ func TestStatusControllerSearch(t *testing.T) {
 		prs          map[string][]PullRequest
 		usesAppsAuth bool
 
-		expected []PullRequest
+		expected []CodeReviewCommon
 	}{
 		{
 			name: "Apps auth: Query gets split by org",
@@ -1285,9 +1285,9 @@ func TestStatusControllerSearch(t *testing.T) {
 				"org-b": {{Number: githubql.Int(2)}},
 			},
 			usesAppsAuth: true,
-			expected: []PullRequest{
-				{Number: githubql.Int(1)},
-				{Number: githubql.Int(2)},
+			expected: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(&PullRequest{Number: 1}),
+				*CodeReviewCommonFromPullRequest(&PullRequest{Number: 2}),
 			},
 		},
 		{
@@ -1296,9 +1296,9 @@ func TestStatusControllerSearch(t *testing.T) {
 				"": {{Number: githubql.Int(1)}, {Number: githubql.Int(2)}},
 			},
 			usesAppsAuth: false,
-			expected: []PullRequest{
-				{Number: githubql.Int(1)},
-				{Number: githubql.Int(2)},
+			expected: []CodeReviewCommon{
+				*CodeReviewCommonFromPullRequest(&PullRequest{Number: 1}),
+				*CodeReviewCommonFromPullRequest(&PullRequest{Number: 2}),
 			},
 		},
 	}
@@ -1315,7 +1315,7 @@ func TestStatusControllerSearch(t *testing.T) {
 			}
 
 			result := sc.search()
-			if diff := cmp.Diff(result, tc.expected, cmpopts.SortSlices(func(a, b PullRequest) bool { return a.Number < b.Number })); diff != "" {
+			if diff := cmp.Diff(result, tc.expected, cmpopts.SortSlices(func(a, b CodeReviewCommon) bool { return a.Number < b.Number })); diff != "" {
 				t.Errorf("result differs from expected: %s", diff)
 			}
 		})
