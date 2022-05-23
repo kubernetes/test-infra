@@ -109,6 +109,7 @@ Prow is used by the following organizations and projects:
 - [KubeSphere](https://prow.kubesphere.io)
 - [OpenYurt](https://github.com/openyurtio/openyurt)
 - [KubeVirt](https://prow.ci.kubevirt.io/)
+- [AWS Controllers for Kubernetes](https://prow.ack.aws.dev/)
 
 [Jenkins X](https://jenkins-x.io/) uses [Prow as part of Serverless Jenkins](https://medium.com/@jdrawlings/serverless-jenkins-with-jenkins-x-9134cbfe6870).
 
