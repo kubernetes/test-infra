@@ -33,13 +33,6 @@ spec:
             name: deck
             port:
               number: 80
-      - path: /halogen
-        pathType: ImplementationSpecific
-        backend:
-          service:
-            name: halogen
-            port:
-              number: 80
       - path: /hook
         pathType: ImplementationSpecific
         backend:
@@ -62,13 +55,6 @@ spec:
         backend:
           service:
             name: deck
-            port:
-              number: 80
-      - path: /halogen
-        pathType: ImplementationSpecific
-        backend:
-          service:
-            name: halogen
             port:
               number: 80
       - path: /hook
