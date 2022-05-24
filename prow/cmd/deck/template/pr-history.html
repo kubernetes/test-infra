@@ -38,7 +38,7 @@
       <tr>
         <td class="mdl-data-table__cell--non-numeric">{{if .Link}}<a href="{{.Link}}">{{.Name}}</a>{{else}}{{.Name}}{{end}}</td>
         {{range .Builds}}
-        <td class="mdl-data-table__cell--non-numeric {{if eq .Result "SUCCESS"}}run-success{{else if eq .Result "FAILURE"}}run-failure{{else if eq .Result "PENDING"}}run-pending{{else if eq .Result "ABORTED"}}run-aborted{{end}}">{{if .SpyglassLink}}<a href="{{.SpyglassLink}}">{{.ID}}</a>{{else}}{{.ID}}{{end}}</td>
+        <td class="mdl-data-table__cell--non-numeric {{if eq .Result "SUCCESS"}}run-success{{else if eq .Result "FAILURE"}}run-failure{{else if eq .Result "Pending"}}run-pending{{else if eq .Result "ABORTED"}}run-aborted{{end}}">{{if .SpyglassLink}}<a href="{{.SpyglassLink}}">{{.ID}}</a>{{else}}{{.ID}}{{end}}</td>
         {{end}}
       </tr>
       {{end}}
