@@ -82,7 +82,7 @@ For more details please see GitHub documentation around [edit org], [update org 
 Peribolos can dump the current configuration to an org. For example you could dump the kubernetes org do the following:
 
 ```console
-$ go run ./prow/cmd/peribolos --dump kubernetes-sigs --github-token-path ~/github-token | tee ~/current.yaml # --tokens=0 to disable throttling
+$ go run ./prow/cmd/peribolos --dump kubernetes-sigs --github-token-path ~/github-token | tee ~/current.yaml
 ...
 INFO: Build completed successfully, 1 total action
 ...
