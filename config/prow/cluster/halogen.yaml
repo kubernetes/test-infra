@@ -62,4 +62,4 @@ spec:
   # name: metrics
   # port: 9090
   # protocol: TCP
-  type: ClusterIP
+  type: NodePort
