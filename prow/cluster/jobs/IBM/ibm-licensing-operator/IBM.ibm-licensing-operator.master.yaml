@@ -8,7 +8,7 @@ presubmits:
     - ^release-eus$
     - ^release-efix$
     decorate: true
-    skip_if_only_changed: "^docs/|\\.(md|png)$|^(OWNERS|LICENSE|SECURITY_CONTACTS)$"
+    skip_if_only_changed: "^docs/|\\.(md|png)$|^(OWNERS|SECURITY_CONTACTS)$"
     always_run: true
     path_alias: github.com/IBM/ibm-licensing-operator
     rerun_command: /test build-image ibm-licensing-operator-amd64
@@ -31,7 +31,7 @@ presubmits:
     - ^release-eus$
     - ^release-efix$
     decorate: true
-    skip_if_only_changed: "^docs/|\\.(md|png)$|^(OWNERS|LICENSE|SECURITY_CONTACTS)$"
+    skip_if_only_changed: "^docs/|\\.(md|png)$|^(OWNERS|SECURITY_CONTACTS)$"
     always_run: true
     path_alias: github.com/IBM/ibm-licensing-operator
     rerun_command: /test build-image ibm-licensing-operator-ppc64le
@@ -54,7 +54,7 @@ presubmits:
     - ^release-eus$
     - ^release-efix$
     decorate: true
-    skip_if_only_changed: "^docs/|\\.(md|png)$|^(OWNERS|LICENSE|SECURITY_CONTACTS)$"
+    skip_if_only_changed: "^docs/|\\.(md|png)$|^(OWNERS|SECURITY_CONTACTS)$"
     always_run: true
     path_alias: github.com/IBM/ibm-licensing-operator
     rerun_command: /test build-image ibm-licensing-operator-s390x
