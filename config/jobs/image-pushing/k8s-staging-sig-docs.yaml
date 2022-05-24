@@ -6,7 +6,6 @@ postsubmits:
         testgrid-dashboards: sig-docs-website, sig-k8s-infra-gcb
         testgrid-tab-name: post-website-push-image-k8s-website-hugo
       decorate: true
-      run_if_changed: "^Dockerfile$"
       branches:
         - ^main$
       spec:
@@ -19,4 +18,5 @@ postsubmits:
               - --project=k8s-staging-sig-docs
               - --scratch-bucket=gs://k8s-staging-infra-sig-docs-gcb
               - --env-passthrough=PULL_BASE_REF
+              - --with-git-dir
               - .
