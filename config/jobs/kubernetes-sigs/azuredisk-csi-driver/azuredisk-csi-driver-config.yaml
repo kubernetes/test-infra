@@ -602,7 +602,7 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: main
+        base_ref: release-1.3
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
     spec:
@@ -631,7 +631,7 @@ presubmits:
             - name: NODE_MACHINE_TYPE
               value: "Standard_D4s_v3"
             - name: KUBERNETES_VERSION
-              value: "v1.23.5"
+              value: "latest-1.23"
             - name: WORKER_MACHINE_COUNT
               value: "0" # Don't create any linux worker nodes
             - name: EXTERNAL_E2E_TEST
@@ -708,7 +708,7 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: main
+        base_ref: release-1.3
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
     spec:
@@ -737,7 +737,7 @@ presubmits:
             - name: DISABLE_ZONE
               value: "true"
             - name: KUBERNETES_VERSION
-              value: "v1.23.5"
+              value: "latest-1.23"
             - name: WORKER_MACHINE_COUNT
               value: "0" # Don't create any linux worker nodes
     annotations:
@@ -759,7 +759,7 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: main
+        base_ref: release-1.3
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
     spec:
@@ -790,7 +790,7 @@ presubmits:
             - name: DISABLE_ZONE
               value: "true"
             - name: KUBERNETES_VERSION
-              value: "v1.23.5"
+              value: "latest-1.23"
             - name: WORKER_MACHINE_COUNT
               value: "0" # Don't create any linux worker nodes
     annotations:
@@ -812,7 +812,7 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: main
+        base_ref: release-1.3
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
     spec:

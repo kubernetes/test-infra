@@ -407,8 +407,8 @@ periodics:
         cd \${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&${installCSIdrivers}
         make e2e-test
       env:
-      - name: USE_CI_ARTIFACTS
-        value: "true"
+      - name: KUBERNETES_VERSION
+        value: "latest"
       - name: AZURE_STORAGE_DRIVER
         value: "kubernetes.io/azure-file" # In-tree Azure file storage class
       securityContext:
@@ -459,8 +459,8 @@ periodics:
         cd \${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&${installCSIAzureFileDrivers}
         make e2e-test
       env:
-      - name: USE_CI_ARTIFACTS
-        value: "true"
+      - name: KUBERNETES_VERSION
+        value: "latest"
       - name: EXP_MACHINE_POOL
         value: "true"
       - name: AZURE_STORAGE_DRIVER
@@ -512,8 +512,8 @@ periodics:
         cd \${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&${installCSIdrivers}
         make e2e-test
       env:
-      - name: USE_CI_ARTIFACTS
-        value: "true"
+      - name: KUBERNETES_VERSION
+        value: "latest"
       - name: AZURE_STORAGE_DRIVER
         value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
       securityContext:
@@ -563,8 +563,8 @@ periodics:
         cd \${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&${installCSIdrivers}
         make e2e-test
       env:
-      - name: USE_CI_ARTIFACTS
-        value: "true"
+      - name: KUBERNETES_VERSION
+        value: "latest"
       - name: EXP_MACHINE_POOL
         value: "true"
       - name: AZURE_STORAGE_DRIVER
@@ -659,8 +659,8 @@ EOF
         cd \${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&${installCSIAzureFileDrivers}
         make e2e-test
       env:
-      - name: USE_CI_ARTIFACTS
-        value: "true"
+      - name: KUBERNETES_VERSION
+        value: "latest"
       - name: AZURE_STORAGE_DRIVER
         value: "kubernetes.io/azure-file" # In-tree Azure file storage class
       securityContext:
@@ -711,8 +711,8 @@ EOF
         cd \${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&${installCSIAzureFileDrivers}
         make e2e-test
       env:
-      - name: USE_CI_ARTIFACTS
-        value: "true"
+      - name: KUBERNETES_VERSION
+        value: "latest"
       - name: EXP_MACHINE_POOL
         value: "true"
       - name: AZURE_STORAGE_DRIVER
@@ -764,8 +764,8 @@ EOF
         cd \${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
         make e2e-test
       env:
-      - name: USE_CI_ARTIFACTS
-        value: "true"
+      - name: KUBERNETES_VERSION
+        value: "latest"
       - name: AZURE_STORAGE_DRIVER
         value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
       securityContext:
@@ -815,8 +815,8 @@ EOF
         cd \${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver && ./deploy/install-driver.sh master local,snapshot,enable-avset &&
         make e2e-test
       env:
-      - name: USE_CI_ARTIFACTS
-        value: "true"
+      - name: KUBERNETES_VERSION
+        value: "latest"
       - name: EXP_MACHINE_POOL
         value: "true"
       - name: AZURE_STORAGE_DRIVER
