@@ -35,6 +35,8 @@ import (
 	"strings"
 	"time"
 
+	"k8s.io/apimachinery/pkg/labels"
+
 	"k8s.io/test-infra/prow/io/providers"
 	"k8s.io/test-infra/prow/tide"
 
@@ -1489,6 +1491,14 @@ func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool, cfg 
 			}
 			return
 		}
+
+		if latestPj, err := fetchLatest(prowJobClient, pj); err != nil {
+			l.WithError(err).Warning("Failed to retrieve latest job.")
+			// Keep using the already retrieved job.
+		} else {
+			pj = latestPj
+		}
+
 		newPJ := pjutil.NewProwJob(pj.Spec, pj.ObjectMeta.Labels, pj.ObjectMeta.Annotations)
 		l = l.WithField("job", newPJ.Spec.Job)
 		switch r.Method {
@@ -1551,6 +1561,39 @@ func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool, cfg 
 			http.Error(w, fmt.Sprintf("bad verb %v", r.Method), http.StatusMethodNotAllowed)
 			return
 		}
+	}
+}
+
+func fetchLatest(prowJobClient prowv1.ProwJobInterface, pj *prowapi.ProwJob) (*prowapi.ProwJob, error) {
+	labelSelector := make(map[string]string, len(pj.Labels))
+	setNonEmptyLabel(pj.Labels, kube.OrgLabel, labelSelector)
+	setNonEmptyLabel(pj.Labels, kube.RepoLabel, labelSelector)
+	setNonEmptyLabel(pj.Labels, kube.BaseRefLabel, labelSelector)
+	setNonEmptyLabel(pj.Labels, kube.ProwJobAnnotation, labelSelector)
+	setNonEmptyLabel(pj.Labels, kube.ProwJobTypeLabel, labelSelector)
+	selector := labels.SelectorFromSet(labelSelector)
+	pjs, err := prowJobClient.List(context.TODO(), metav1.ListOptions{LabelSelector: selector.String()})
+	if err != nil {
+		return nil, fmt.Errorf("failed to list jobs: %w", err)
+	}
+
+	if len(pjs.Items) == 0 {
+		return pj, nil
+	}
+
+	latest := &pjs.Items[0]
+	for i := range pjs.Items {
+		if latest.CreationTimestamp.Before(&pjs.Items[i].CreationTimestamp) {
+			latest = &pjs.Items[i]
+		}
+	}
+
+	return latest, nil
+}
+
+func setNonEmptyLabel(labels map[string]string, key string, out map[string]string) {
+	if v, ok := labels[key]; ok {
+		out[key] = v
 	}
 }
 

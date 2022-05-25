@@ -42,6 +42,7 @@ import (
 	coreapi "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -56,6 +57,7 @@ import (
 	pluginsflagutil "k8s.io/test-infra/prow/flagutil/plugins"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/githuboauth"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 	_ "k8s.io/test-infra/prow/spyglass/lenses/buildlog"
@@ -430,6 +432,8 @@ func TestRerun(t *testing.T) {
 		shouldCreateProwJob bool
 		httpCode            int
 		httpMethod          string
+		additionalProwJobs  []prowapi.ProwJob
+		prowJobMutator      func(job *prowapi.ProwJob)
 	}{
 		{
 			name:                "Handler returns ProwJob",
@@ -511,11 +515,69 @@ func TestRerun(t *testing.T) {
 			httpCode:            http.StatusOK,
 			httpMethod:          http.MethodPost,
 		},
+		{
+			name:                "Retrieve latest prow job config",
+			login:               "authorized",
+			authorized:          []string{},
+			allowAnyone:         false,
+			rerunCreatesJob:     true,
+			shouldCreateProwJob: true,
+			httpCode:            http.StatusOK,
+			httpMethod:          http.MethodPost,
+			additionalProwJobs: []prowapi.ProwJob{
+				{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:              "wowsuch-1",
+						Namespace:         "prowjobs",
+						CreationTimestamp: metav1.NewTime(time.Time{}.Add(time.Minute)),
+						Labels: map[string]string{
+							kube.OrgLabel:          "kubernetes",
+							kube.RepoLabel:         "test-infra",
+							kube.BaseRefLabel:      "release-1.12",
+							kube.ProwJobAnnotation: "release_kubernetes_test-infra_release-1.12",
+							kube.ProwJobTypeLabel:  "periodic",
+						},
+					},
+					Spec: prowapi.ProwJobSpec{
+						Job:  "whoa",
+						Type: prowapi.PresubmitJob,
+						Refs: &prowapi.Refs{
+							Org:  "org",
+							Repo: "repo",
+							Pulls: []prowapi.Pull{
+								{
+									Number: 1,
+									Author: "authorized",
+								},
+							},
+						},
+						RerunAuthConfig: &prowapi.RerunAuthConfig{
+							AllowAnyone:   false,
+							GitHubUsers:   []string{"authorized", "alsoauthorized"},
+							GitHubTeamIDs: []int{42},
+						},
+					},
+					Status: prowapi.ProwJobStatus{
+						State: prowapi.PendingState,
+					},
+				},
+			},
+			prowJobMutator: func(job *prowapi.ProwJob) {
+				job.Labels = map[string]string{
+					kube.OrgLabel:          "kubernetes",
+					kube.RepoLabel:         "test-infra",
+					kube.BaseRefLabel:      "release-1.12",
+					kube.ProwJobAnnotation: "release_kubernetes_test-infra_release-1.12",
+					kube.ProwJobTypeLabel:  "periodic",
+				}
+			},
+		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			fakeProwJobClient := fake.NewSimpleClientset(&prowapi.ProwJob{
+
+			pj := &prowapi.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "wowsuch",
 					Namespace: "prowjobs",
@@ -542,7 +604,21 @@ func TestRerun(t *testing.T) {
 				Status: prowapi.ProwJobStatus{
 					State: prowapi.PendingState,
 				},
-			})
+			}
+
+			if tc.prowJobMutator != nil {
+				tc.prowJobMutator(pj)
+			}
+
+			jobs := []runtime.Object{pj}
+			for i := range tc.additionalProwJobs {
+				jobs = append(jobs, &tc.additionalProwJobs[i])
+			}
+			fakeProwJobClient := fake.NewSimpleClientset(jobs...)
+
+			pjs, _ := fakeProwJobClient.ProwV1().ProwJobs("prowjobs").List(context.Background(), metav1.ListOptions{})
+			initialProwJobsCount := len(pjs.Items)
+
 			authCfgGetter := func(refs *prowapi.Refs) *prowapi.RerunAuthConfig {
 				return &prowapi.RerunAuthConfig{
 					AllowAnyone: tc.allowAnyone,
@@ -588,7 +664,7 @@ func TestRerun(t *testing.T) {
 				if err != nil {
 					t.Fatalf("failed to list prowjobs: %v", err)
 				}
-				if numPJs := len(pjs.Items); numPJs != 2 {
+				if numPJs := len(pjs.Items); numPJs != initialProwJobsCount+1 {
 					t.Errorf("expected to get two prowjobs, got %d", numPJs)
 				}
 
