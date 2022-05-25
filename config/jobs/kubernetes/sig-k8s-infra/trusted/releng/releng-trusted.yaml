@@ -28,6 +28,8 @@ postsubmits:
   - name: post-k8sio-image-promo
     cluster: k8s-infra-prow-build-trusted
     decorate: true
+    decoration_config:
+      timeout: 4h
     run_if_changed: 'k8s.gcr.io/((images/.*/images\.yaml)|(manifests/.*/promoter-manifest\.yaml))'
     # Never run more than 1 job at a time. This is because we don't want to run
     # into a case where an older manifest PR merge gets run last (after a newer
