@@ -51,6 +51,7 @@ const (
 )
 
 type Client interface {
+	GetIssueWithOptions(id string, options *jira.GetQueryOptions) (*jira.Issue, error)
 	GetIssue(id string) (*jira.Issue, error)
 	// SearchWithContext will search for tickets according to the jql
 	// Jira API docs: https://developer.atlassian.com/jiradev/jira-apis/jira-rest-apis/jira-rest-api-tutorials/jira-rest-api-example-query-issues
@@ -223,8 +224,8 @@ func (jc *client) JiraClient() *jira.Client {
 	return jc.upstream
 }
 
-func (jc *client) GetIssue(id string) (*jira.Issue, error) {
-	issue, response, err := jc.upstream.Issue.Get(id, &jira.GetQueryOptions{})
+func (jc *client) GetIssueWithOptions(id string, options *jira.GetQueryOptions) (*jira.Issue, error) {
+	issue, response, err := jc.upstream.Issue.Get(id, options)
 	if err != nil {
 		if response != nil && response.StatusCode == http.StatusNotFound {
 			return nil, NotFoundError{err}
@@ -233,6 +234,10 @@ func (jc *client) GetIssue(id string) (*jira.Issue, error) {
 	}
 
 	return issue, nil
+}
+
+func (jc *client) GetIssue(id string) (*jira.Issue, error) {
+	return jc.GetIssueWithOptions(id, &jira.GetQueryOptions{})
 }
 
 func (jc *client) ListProjects() (*jira.ProjectList, error) {

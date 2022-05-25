@@ -72,3 +72,37 @@ func TestFakeClient_SearchWithContext(t *testing.T) {
 		t.Fatal("expected invalid query to fail, but got no error")
 	}
 }
+
+func TestFakeClient_GetIssueWithOptions(t *testing.T) {
+	responses := make(map[GetIssueRequest]GetIssueResponse)
+
+	issue := &jira.Issue{
+		ID:     "1234",
+		Fields: &jira.IssueFields{Project: jira.Project{Name: "test"}},
+	}
+
+	options := &jira.GetQueryOptions{Fields: "project"}
+
+	responses[GetIssueRequest{issueID: "1234", options: options}] = GetIssueResponse{
+		issue: issue,
+		error: nil,
+	}
+	fakeClient := &FakeClient{GetIssueResponses: responses}
+
+	r, err := fakeClient.GetIssueWithOptions("1234", options)
+	if err != nil {
+		t.Fatalf("unexpected error from GetIssueWithOptions: %s", err)
+	}
+	cmpOption := cmpopts.IgnoreUnexported(jira.Date{})
+	if diff := cmp.Diff(r, issue, cmpOption); diff != "" {
+		t.Fatalf("incorrect issues from search: %v", diff)
+	}
+
+	r, err = fakeClient.GetIssueWithOptions("1234", &jira.GetQueryOptions{Fields: "I_Should_Fail"})
+	if r != nil {
+		t.Fatalf("expected empty result for an invalid filtering, but got: %v", r)
+	}
+	if err == nil {
+		t.Fatal("expected invalid filtering to fail, but got no error")
+	}
+}

@@ -31,14 +31,15 @@ import (
 )
 
 type FakeClient struct {
-	Issues          []*jira.Issue
-	ExistingLinks   map[string][]jira.RemoteLink
-	NewLinks        []jira.RemoteLink
-	IssueLinks      []*jira.IssueLink
-	GetIssueError   error
-	Transitions     []jira.Transition
-	Users           []*jira.User
-	SearchResponses map[SearchRequest]SearchResponse
+	Issues            []*jira.Issue
+	ExistingLinks     map[string][]jira.RemoteLink
+	NewLinks          []jira.RemoteLink
+	IssueLinks        []*jira.IssueLink
+	GetIssueError     error
+	Transitions       []jira.Transition
+	Users             []*jira.User
+	SearchResponses   map[SearchRequest]SearchResponse
+	GetIssueResponses map[GetIssueRequest]GetIssueResponse
 }
 
 func (f *FakeClient) ListProjects() (*jira.ProjectList, error) {
@@ -55,6 +56,24 @@ func (f *FakeClient) GetIssue(id string) (*jira.Issue, error) {
 		}
 	}
 	return nil, jiraclient.NewNotFoundError(fmt.Errorf("No issue %s found", id))
+}
+
+type GetIssueRequest struct {
+	issueID string
+	options *jira.GetQueryOptions
+}
+
+type GetIssueResponse struct {
+	issue *jira.Issue
+	error error
+}
+
+func (f *FakeClient) GetIssueWithOptions(id string, options *jira.GetQueryOptions) (*jira.Issue, error) {
+	resp, expected := f.GetIssueResponses[GetIssueRequest{issueID: id, options: options}]
+	if !expected {
+		return nil, fmt.Errorf("the filtering query: %v for the issue with ID: %s is not registered", options, id)
+	}
+	return resp.issue, resp.error
 }
 
 func (f *FakeClient) GetRemoteLinks(id string) ([]jira.RemoteLink, error) {
