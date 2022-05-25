@@ -87,7 +87,7 @@ func TestGerrit(t *testing.T) {
 	resp, err := gerritClient.GetChange(gerritServer, "1")
 	if err != nil {
 		reset()
-		t.Errorf("Failed getting gerrit change: %v", err)
+		t.Fatalf("Failed getting gerrit change: %v", err)
 	}
 
 	if len(resp.Messages) < 2 {
