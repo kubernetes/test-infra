@@ -54,6 +54,8 @@ presubmits:
               value: "1"
             - name: WORKER_MACHINE_COUNT
               value: "0" # Don't create linux worker nodes
+            - name: CL2_POD_COUNT
+              value: "10"
             # clusterloader2 variables
             - name: ENABLE_PROMETHEUS_SERVER
               value: "true"
