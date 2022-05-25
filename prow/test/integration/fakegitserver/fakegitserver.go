@@ -18,6 +18,7 @@ limitations under the License.
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -57,6 +58,19 @@ func (o *options) validate() error {
 	return nil
 }
 
+type RepoSetup struct {
+	// Name of the Git repo. It will get a ".git" appended to it and be
+	// initialized underneath o.gitReposParentDir.
+	Name string `json:"name"`
+	// Script to execute. This script runs inside the repo to perform any
+	// additional repo setup tasks. This script is executed by /bin/sh.
+	Script string `json:"script"`
+	// Whether to create the repo at the path (o.gitReposParentDir + name +
+	// ".git") even if a file (directory) exists there already. This basically
+	// does a 'rm -rf' of the folder first.
+	Overwrite bool `json:"overwrite"`
+}
+
 // flagOptions defines default options.
 func flagOptions() *options {
 	o := &options{}
@@ -88,6 +102,7 @@ func main() {
 	// integration tests (e.g., "/admin/reset" to reset all repos back to their
 	// original state).
 	r.PathPrefix("/repo").Handler(gitCGIHandler(o.gitBinary, o.gitReposParentDir))
+	r.PathPrefix("/setup-repo").Handler(setupRepoHandler(o.gitReposParentDir))
 
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%d", o.port),
@@ -107,6 +122,36 @@ func main() {
 
 	logrus.Info("Start server")
 	interrupts.ListenAndServe(server, 5*time.Second)
+}
+
+// setupRepoHandler executes a JSON payload of instructions to set up a Git
+// repo.
+func setupRepoHandler(gitReposParentDir string) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		buf, err := ioutil.ReadAll(req.Body)
+		defer req.Body.Close()
+		if err != nil {
+			logrus.Errorf("failed to read request body: %v", err)
+			http.Error(w, err.Error(), 500)
+			return
+		}
+
+		logrus.Infof("request body received: %v", string(buf))
+		var repoSetup RepoSetup
+		err = json.Unmarshal(buf, &repoSetup)
+		if err != nil {
+			logrus.Errorf("failed to parse request body as RepoSetup: %v", err)
+			http.Error(w, err.Error(), 500)
+			return
+		}
+
+		if err := setupRepo(gitReposParentDir, &repoSetup); err != nil {
+			// Just log the error if the setup fails so that the developer can
+			// fix their error and retry without having to restart this server.
+			logrus.Error(err)
+		}
+
+	})
 }
 
 // gitCGIHandler returns an http.Handler that is backed by git-http-backend (a
@@ -135,6 +180,102 @@ func gitCGIHandler(gitBinary, gitReposParentDir string) http.Handler {
 	})
 }
 
+func setupRepo(gitReposParentDir string, repoSetup *RepoSetup) error {
+	dir := filepath.Join(gitReposParentDir, repoSetup.Name+".git")
+
+	if _, err := os.Stat(dir); !os.IsNotExist(err) {
+		if repoSetup.Overwrite {
+			if err := os.RemoveAll(dir); err != nil {
+				logrus.Errorf("(overwrite) could not remove directory %v", dir)
+				return err
+			}
+		} else {
+			return fmt.Errorf("path %v already exists but overwrite is not enabled; aborting", dir)
+		}
+	}
+
+	if err := os.MkdirAll(dir, os.ModePerm); err != nil {
+		logrus.Errorf("could not create directory %v", dir)
+		return err
+	}
+
+	repo, err := git.PlainInit(dir, false)
+	if err != nil {
+		return err
+	}
+
+	if err := setGitConfigOptions(repo); err != nil {
+		return err
+	}
+
+	if err := runSetupScript(dir, repoSetup.Script); err != nil {
+		return err
+	}
+
+	if err := convertToBareRepo(repo, dir); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func convertToBareRepo(repo *git.Repository, repoPath string) error {
+	// Convert to a bare repo.
+	config, err := repo.Config()
+	if err != nil {
+		return err
+	}
+	config.Core.IsBare = true
+	repo.SetConfig(config)
+
+	tempDir, err := ioutil.TempDir("", "fgs")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(tempDir)
+
+	// Move "<REPO>/.git" directory to a temporary directory.
+	err = os.Rename(filepath.Join(repoPath, ".git"), filepath.Join(tempDir, ".git"))
+	if err != nil {
+		return err
+	}
+
+	// Delete <REPO> folder. This takes care of deleting all worktree files.
+	err = os.RemoveAll(repoPath)
+	if err != nil {
+		return err
+	}
+
+	// Move the .git folder to the <REPO> folder path.
+	err = os.Rename(filepath.Join(tempDir, ".git"), repoPath)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func runSetupScript(repoPath, script string) error {
+	cmd := exec.Command("sh", "-c", script)
+	cmd.Dir = repoPath
+
+	// By default, make it so that the git commands contained in the script
+	// result in reproducible commits. This can be overridden by the script
+	// itself if it chooses to (re-)export the same environment variables.
+	cmd.Env = []string{
+		"GIT_AUTHOR_NAME=abc",
+		"GIT_AUTHOR_EMAIL=d@e.f",
+		"GIT_AUTHOR_DATE='Thu May 19 12:34:56 2022 +0000'",
+		"GIT_COMMITTER_NAME=abc",
+		"GIT_COMMITTER_EMAIL=d@e.f",
+		"GIT_COMMITTER_DATE='Thu May 19 12:34:56 2022 +0000'"}
+
+	if err := cmd.Run(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // initRepos sets common, sensible Git configuration options for all repos in
 // gitReposParentDir.
 func initRepos(gitReposParentDir string) error {
@@ -148,13 +289,21 @@ func initRepos(gitReposParentDir string) error {
 			continue
 		}
 		repoPath := fmt.Sprintf("%s/%s", gitReposParentDir, f.Name())
-		r, err := git.PlainOpen(repoPath)
-		if err != nil {
+		if err := initRepo(repoPath); err != nil {
 			return err
 		}
-		if err := setGitConfigOptions(r); err != nil {
-			return err
-		}
+	}
+	return nil
+}
+
+// initRepo initializes the Git repo at repoPath to have certain configuration settings.
+func initRepo(repoPath string) error {
+	r, err := git.PlainOpen(repoPath)
+	if err != nil {
+		return err
+	}
+	if err := setGitConfigOptions(r); err != nil {
+		return err
 	}
 	return nil
 }
