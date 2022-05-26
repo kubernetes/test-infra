@@ -31,6 +31,7 @@ import (
 	coreapi "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/client-go/kubernetes"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -392,7 +393,13 @@ fi
 	clusterContext := getClusterContext()
 	t.Logf("Creating client for cluster: %s", clusterContext)
 
-	kubeClient, err := NewClients("", clusterContext)
+	restConfig, err := NewRestConfig("", clusterContext)
+	clientset, err := kubernetes.NewForConfig(restConfig)
+	if err != nil {
+		t.Fatal("could not create Clientset")
+	}
+
+	kubeClient, err := ctrlruntimeclient.New(restConfig, ctrlruntimeclient.Options{})
 	if err != nil {
 		t.Fatalf("Failed creating clients for cluster %q: %v", clusterContext, err)
 	}
@@ -503,8 +510,43 @@ fi
 			// Wait up to 30 seconds to observe that this test passed.
 			timeout := 30 * time.Second
 			pollInterval := 500 * time.Millisecond
-			if err := wait.Poll(pollInterval, timeout, expectJobSuccess); err != nil {
-				t.Fatal(err)
+			if waitErr := wait.Poll(pollInterval, timeout, expectJobSuccess); waitErr != nil {
+				// Retrieve logs from clonerefs.
+				podLogs, err := getPodLogs(clientset, "test-pods", podName, &coreapi.PodLogOptions{Container: "clonerefs"})
+				if err != nil {
+					t.Errorf("failed getting logs for clonerefs")
+				}
+				t.Logf("logs for clonerefs:\n\n%s\n\n", podLogs)
+
+				// If we got an error, show the failing prow job's test
+				// container (our test case's "got" and "expected" shell code).
+				pjPod := &coreapi.Pod{}
+				err = kubeClient.Get(ctx, ctrlruntimeclient.ObjectKey{
+					Namespace: "test-pods",
+					Name:      podName,
+				}, pjPod)
+				if err != nil {
+					t.Errorf("failed getting prow job's pod %v; unable to determine why the test failed", podName)
+					t.Error(err)
+					t.Fatal(waitErr)
+				}
+				// Error messages from clonerefs, initupload, entrypoint, or sidecar.
+				for _, containerStatus := range pjPod.Status.InitContainerStatuses {
+					terminated := containerStatus.State.Terminated
+					if terminated != nil && len(terminated.Message) > 0 {
+						t.Errorf("InitContainer %q: %s", containerStatus.Name, terminated.Message)
+					}
+				}
+				// Error messages from the test case's shell script (showing the
+				// git SHAs that we expected vs what we got).
+				for _, containerStatus := range pjPod.Status.ContainerStatuses {
+					terminated := containerStatus.State.Terminated
+					if terminated != nil && len(terminated.Message) > 0 {
+						t.Errorf("Container %s: %s", containerStatus.Name, terminated.Message)
+					}
+				}
+
+				t.Fatal(waitErr)
 			} else {
 				// Only clean up the ProwJob if it succeeded (save the ProwJob for debugging if it failed).
 				t.Cleanup(func() {
