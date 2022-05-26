@@ -18,11 +18,6 @@ spec:
       containers:
       - name: fakegitserver
         image: localhost:5001/fakegitserver
-        command:
-        - "fakegitserver"
-        args:
-        - "-populate-sample-repos"
-        - "-foo-repo-remote-URL=http://fakegitserver.default/repo/foo"
         ports:
         - containerPort: 8888
 ---

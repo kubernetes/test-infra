@@ -17,12 +17,16 @@ limitations under the License.
 package integration
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"testing"
 	"time"
 
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/test/integration/lib"
 
 	coreapi "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -34,16 +38,16 @@ const (
 	// fooHEADsha is the HEAD commit SHA of the "foo" repo that fakegitserver
 	// always initializes on startup (see fakegitserver's
 	// `-populate-sample-repos` option, which is set to true by default).
-	fooHEADsha                    = "d502f45dd6b258da4d3002540ffe90b8858d3d37"
-	fooPR1sha                     = "4f8372a904835cd9f3475620ea1495365a9ec511"
-	fooPR1MergeSha                = "3fd823c8015fcb5dd6a7a47036b2921a8d38aef2"
-	fooPR2sha                     = "abb72af1c44933257f1b7fedb7bcc22394941866"
-	fooPR3sha                     = "51294238706cc5ba47835edb52bf31de51276d76"
-	fooMultiMergeSha              = "7288ffdf3eb79d9e6b8b7ebec8920cefc6ac979f"
-	barHEADsha                    = "98208bb2c686607dac8fe94ef42066b3954d7ca3"
-	barPR2sha                     = "ec42e7c9cc483530cd2ee6feb89b714b80372884"
-	barPR3sha                     = "ccdad555b1f5ca855908ab49e66fb5d9b5e2d453"
-	barMultiMergeWithSubmoduleSha = "18319ef2ed035229f9b9f85661d5e5d8dbc8a5eb"
+	fooHEADsha                    = "e7d762376b714fdc2d6493ecd798a9d128e4b88f"
+	fooPR1sha                     = "b343a11088668210321ca76712e9bc3b8aa1f2f7"
+	fooPR1MergeSha                = "a081e60423aea6d3bdde2a50f8c435546529a932"
+	fooPR2sha                     = "89bb95ef23c663d1b9ad97ff4351de516f25496c"
+	fooPR3sha                     = "2049df35eda98a9068ddfbc7bc6ce0ab5ef0d0ba"
+	fooMultiMergeSha              = "bc75802040886a627d4315b1c32635ab37ca0bba"
+	barHEADsha                    = "c2740e40972392a7c8954b389c71733e1f900561"
+	barPR2sha                     = "62d5ed7cbccce940421b7e234de28591472b6955"
+	barPR3sha                     = "f8387fe902fcb0c50d6d9e67f68b9802d591fd45"
+	barMultiMergeWithSubmoduleSha = "c6a86219ebf1917a0a53317067b6ad01a6ed4799"
 )
 
 // TestClonerefs tests the "clonerefs" binary by creating a ProwJob with
@@ -61,13 +65,63 @@ const (
 func TestClonerefs(t *testing.T) {
 	t.Parallel()
 
+	createRepoFoo := `
+echo hello > README.txt
+git add README.txt
+git commit -m "commit 1"
+
+echo "hello world!" > README.txt
+git add README.txt
+git commit -m "commit 2"
+
+for num in 1 2 3; do
+	git checkout -d master
+	echo "${num}" > "${num}"
+	git add "${num}"
+	git commit -m "PR${num}"
+	git update-ref "refs/pull/${num}/head" HEAD
+done
+
+git checkout master
+`
+	createRepoBar := `
+echo bar > bar.txt
+git add bar.txt
+git commit -m "commit 1"
+
+echo "hello world!" > bar.txt
+git add bar.txt
+git commit -m "commit 2"
+
+for num in 1 2 3; do
+	git checkout -d master
+	echo "${num}" > "${num}"
+	git add "${num}"
+	git commit -m "PR${num}"
+	git update-ref "refs/pull/${num}/head" HEAD
+done
+
+git checkout master
+
+git submodule add http://fakegitserver.default/repo/foo4
+git commit -m "add submodule"
+`
+
 	tests := []struct {
-		name    string
-		prowjob prowjobv1.ProwJob
+		name       string
+		repoSetups []lib.FGSRepoSetup
+		prowjob    prowjobv1.ProwJob
 	}{
 		{
 			// Check if we got a properly cloned repo.
 			name: "postsubmit",
+			repoSetups: []lib.FGSRepoSetup{
+				{
+					Name:      "foo1",
+					Script:    createRepoFoo,
+					Overwrite: true,
+				},
+			},
 			prowjob: prowjobv1.ProwJob{
 				ObjectMeta: v1.ObjectMeta{
 					Annotations: map[string]string{
@@ -80,7 +134,7 @@ func TestClonerefs(t *testing.T) {
 				Spec: prowjobv1.ProwJobSpec{
 					Type: prowjobv1.PostsubmitJob,
 					Refs: &prowjobv1.Refs{
-						Repo:    "foo",
+						Repo:    "foo1",
 						BaseSHA: fooHEADsha,
 						// According to
 						// https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/,
@@ -93,7 +147,7 @@ func TestClonerefs(t *testing.T) {
 						// The "/foo" at the end is simply to refer to the Git
 						// repo named "foo" in the "/git-repo/foo" directory in
 						// the fakegitserver container.
-						CloneURI: "http://fakegitserver.default/repo/foo",
+						CloneURI: "http://fakegitserver.default/repo/foo1",
 					},
 					PodSpec: &coreapi.PodSpec{
 						Containers: []coreapi.Container{
@@ -106,6 +160,7 @@ expected=%s
 got=$(git rev-parse HEAD)
 if [ $got != $expected ]; then
 	echo >&2 "[FAIL] got $got, expected $expected"
+	>&2 git log
 	exit 1
 fi
 `, fooHEADsha),
@@ -119,6 +174,13 @@ fi
 		{
 			// Check that the PR has been merged.
 			name: "presubmit-single-pr",
+			repoSetups: []lib.FGSRepoSetup{
+				{
+					Name:      "foo2",
+					Script:    createRepoFoo,
+					Overwrite: true,
+				},
+			},
 			prowjob: prowjobv1.ProwJob{
 				ObjectMeta: v1.ObjectMeta{
 					Annotations: map[string]string{
@@ -131,9 +193,9 @@ fi
 				Spec: prowjobv1.ProwJobSpec{
 					Type: prowjobv1.PresubmitJob,
 					Refs: &prowjobv1.Refs{
-						Repo:     "foo",
+						Repo:     "foo2",
 						BaseSHA:  fooHEADsha,
-						CloneURI: "http://fakegitserver.default/repo/foo",
+						CloneURI: "http://fakegitserver.default/repo/foo2",
 						Pulls: []prowjobv1.Pull{
 							{
 								Number: 1,
@@ -159,6 +221,7 @@ expected=%s
 got=$(git rev-parse HEAD)
 if [ $got != $expected ]; then
 	echo >&2 "[FAIL] got $got, expected $expected"
+	>&2 git log
 	exit 1
 fi
 `, fooPR1sha, fooPR1MergeSha),
@@ -172,6 +235,13 @@ fi
 		{
 			// Check that all 3 PRs have been merged.
 			name: "presubmit-multi-pr",
+			repoSetups: []lib.FGSRepoSetup{
+				{
+					Name:      "foo3",
+					Script:    createRepoFoo,
+					Overwrite: true,
+				},
+			},
 			prowjob: prowjobv1.ProwJob{
 				ObjectMeta: v1.ObjectMeta{
 					Annotations: map[string]string{
@@ -184,9 +254,9 @@ fi
 				Spec: prowjobv1.ProwJobSpec{
 					Type: prowjobv1.PresubmitJob,
 					Refs: &prowjobv1.Refs{
-						Repo:     "foo",
+						Repo:     "foo3",
 						BaseSHA:  fooHEADsha,
-						CloneURI: "http://fakegitserver.default/repo/foo",
+						CloneURI: "http://fakegitserver.default/repo/foo3",
 						Pulls: []prowjobv1.Pull{
 							// For wider code coverage, we define the first Pull
 							// with only a Ref, not a SHA.
@@ -230,6 +300,7 @@ expected=%s
 got=$(git rev-parse HEAD)
 if [ $got != $expected ]; then
 	echo >&2 "[FAIL] got $got, expected $expected"
+	>&2 git log
 	exit 1
 fi
 `, fooPR1sha, fooPR2sha, fooPR3sha, fooMultiMergeSha),
@@ -243,6 +314,18 @@ fi
 		{
 			// Check that all 3 PRs have been merged and also that the submodule has been cloned.
 			name: "presubmit-multi-pr-submodule",
+			repoSetups: []lib.FGSRepoSetup{
+				{
+					Name:      "foo4",
+					Script:    createRepoFoo,
+					Overwrite: true,
+				},
+				{
+					Name:      "bar",
+					Script:    createRepoBar,
+					Overwrite: true,
+				},
+			},
 			prowjob: prowjobv1.ProwJob{
 				ObjectMeta: v1.ObjectMeta{
 					Annotations: map[string]string{
@@ -283,16 +366,17 @@ fi
 expected=%s
 got=$(git rev-parse HEAD)
 if [ $got != $expected ]; then
-	echo >&2 "[FAIL] (bar HEAD) got $got, expected $expected"
+	echo >&2 "[FAIL] (bar HEAD post-merge) got $got, expected $expected"
 	exit 1
 fi
 # Check that the submodule is also populated (that it is set to the HEAD sha of
 # foo).
-cd foo
+cd foo4
 expected=%s
 got=$(git rev-parse HEAD)
 if [ $got != $expected ]; then
-	echo >&2 "[FAIL] (submodule foo HEAD) got $got, expected $expected"
+	echo >&2 "[FAIL] (submodule foo4 HEAD) got $got, expected $expected"
+	>&2 git log
 	exit 1
 fi
 `, barMultiMergeWithSubmoduleSha, fooHEADsha),
@@ -364,6 +448,31 @@ fi
 				// (i.e., create a pod) and kick things off.
 				State:     prowjobv1.TriggeredState,
 				StartTime: v1.NewTime(time.Now().Add(-1 * time.Second)),
+			}
+
+			// Set up repos on FGS for just this test case.
+			for _, repoSetup := range tt.repoSetups {
+				buf, err := json.Marshal(repoSetup)
+				if err != nil {
+					t.Fatalf("could not marshal %v", repoSetup)
+				}
+				// Notice that this odd-looking URL is required because we (this
+				// test) is not inside the KIND cluster and so we need to send
+				// the packets to KIND (running on localhost). KIND will then
+				// reroute the packets to fakegitserver.
+				req, err := http.NewRequest("POST", "http://localhost/fakegitserver/setup-repo", bytes.NewBuffer(buf))
+				if err != nil {
+					t.Fatalf("failed to create POST request: %v", err)
+				}
+				req.Header.Set("Content-Type", "application/json; charset=UTF-8")
+				client := &http.Client{}
+				resp, err := client.Do(req)
+				if err != nil {
+					t.Fatalf("FGS repo setup failed")
+				}
+				if resp.StatusCode != 200 {
+					t.Fatalf("got %v response", resp.StatusCode)
+				}
 			}
 
 			t.Logf("Creating prowjob: %s", podName)

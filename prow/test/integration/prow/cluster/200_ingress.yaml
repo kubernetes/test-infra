@@ -18,6 +18,13 @@ spec:
             name: fakeghserver
             port:
               number: 80
+      - path: /fakegitserver(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: fakegitserver
+            port:
+              number: 80
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress

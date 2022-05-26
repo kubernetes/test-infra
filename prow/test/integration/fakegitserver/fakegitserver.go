@@ -30,45 +30,25 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-git/go-billy/v5/osfs"
-	"github.com/go-git/go-billy/v5/util"
-
 	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/plumbing"
-	"github.com/go-git/go-git/v5/plumbing/cache"
 	"github.com/go-git/go-git/v5/plumbing/object"
-	"github.com/go-git/go-git/v5/storage/filesystem"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pjutil"
+	"k8s.io/test-infra/prow/test/integration/lib"
 )
 
 type options struct {
-	port                int
-	gitBinary           string
-	gitReposParentDir   string
-	populateSampleRepos bool
-	fooRepoRemoteURL    string
+	port              int
+	gitBinary         string
+	gitReposParentDir string
 }
 
 func (o *options) validate() error {
 	return nil
-}
-
-type RepoSetup struct {
-	// Name of the Git repo. It will get a ".git" appended to it and be
-	// initialized underneath o.gitReposParentDir.
-	Name string `json:"name"`
-	// Script to execute. This script runs inside the repo to perform any
-	// additional repo setup tasks. This script is executed by /bin/sh.
-	Script string `json:"script"`
-	// Whether to create the repo at the path (o.gitReposParentDir + name +
-	// ".git") even if a file (directory) exists there already. This basically
-	// does a 'rm -rf' of the folder first.
-	Overwrite bool `json:"overwrite"`
 }
 
 // flagOptions defines default options.
@@ -77,8 +57,6 @@ func flagOptions() *options {
 	flag.IntVar(&o.port, "port", 8888, "Port to listen on.")
 	flag.StringVar(&o.gitBinary, "git-binary", "/usr/bin/git", "Path to the `git` binary.")
 	flag.StringVar(&o.gitReposParentDir, "git-repos-parent-dir", "/git-repo", "Path to the parent folder containing all Git repos to serve over HTTP.")
-	flag.BoolVar(&o.populateSampleRepos, "populate-sample-repos", false, "Whether to populate /git-repo with hardcoded sample repos. Used for integration tests.")
-	flag.StringVar(&o.fooRepoRemoteURL, "foo-repo-remote-URL", "http://localhost:8888/repo/foo", "URL of foo repo, as a submodule from inside the bar repo. This is only used when -populate-sample-repos is given.")
 	return o
 }
 
@@ -109,17 +87,6 @@ func main() {
 		Handler: r,
 	}
 
-	if o.populateSampleRepos {
-		err := mkSampleRepos(o.gitReposParentDir, o.fooRepoRemoteURL)
-		if err != nil {
-			logrus.Fatalf("failed to create sample repos: %v", err)
-		}
-	}
-
-	if err := initRepos(o.gitReposParentDir); err != nil {
-		logrus.Fatal(err)
-	}
-
 	logrus.Info("Start server")
 	interrupts.ListenAndServe(server, 5*time.Second)
 }
@@ -137,10 +104,10 @@ func setupRepoHandler(gitReposParentDir string) http.Handler {
 		}
 
 		logrus.Infof("request body received: %v", string(buf))
-		var repoSetup RepoSetup
+		var repoSetup lib.FGSRepoSetup
 		err = json.Unmarshal(buf, &repoSetup)
 		if err != nil {
-			logrus.Errorf("failed to parse request body as RepoSetup: %v", err)
+			logrus.Errorf("failed to parse request body as FGSRepoSetup: %v", err)
 			http.Error(w, err.Error(), 500)
 			return
 		}
@@ -180,7 +147,7 @@ func gitCGIHandler(gitBinary, gitReposParentDir string) http.Handler {
 	})
 }
 
-func setupRepo(gitReposParentDir string, repoSetup *RepoSetup) error {
+func setupRepo(gitReposParentDir string, repoSetup *lib.FGSRepoSetup) error {
 	dir := filepath.Join(gitReposParentDir, repoSetup.Name+".git")
 
 	if _, err := os.Stat(dir); !os.IsNotExist(err) {
@@ -201,18 +168,22 @@ func setupRepo(gitReposParentDir string, repoSetup *RepoSetup) error {
 
 	repo, err := git.PlainInit(dir, false)
 	if err != nil {
+		logrus.Errorf("could not initialize git repo in directory %v", dir)
 		return err
 	}
 
 	if err := setGitConfigOptions(repo); err != nil {
+		logrus.Errorf("config setup failed")
 		return err
 	}
 
 	if err := runSetupScript(dir, repoSetup.Script); err != nil {
+		logrus.Errorf("running the repo setup script failed")
 		return err
 	}
 
 	if err := convertToBareRepo(repo, dir); err != nil {
+		logrus.Errorf("conversion to bare repo failed")
 		return err
 	}
 
@@ -255,6 +226,11 @@ func convertToBareRepo(repo *git.Repository, repoPath string) error {
 }
 
 func runSetupScript(repoPath, script string) error {
+	// Catch errors in the script.
+	script = "set -eu;" + script
+
+	logrus.Infof("setup script looks like: %v", script)
+
 	cmd := exec.Command("sh", "-c", script)
 	cmd.Dir = repoPath
 
@@ -273,38 +249,6 @@ func runSetupScript(repoPath, script string) error {
 		return err
 	}
 
-	return nil
-}
-
-// initRepos sets common, sensible Git configuration options for all repos in
-// gitReposParentDir.
-func initRepos(gitReposParentDir string) error {
-	files, err := ioutil.ReadDir(gitReposParentDir)
-	if err != nil {
-		return err
-	}
-
-	for _, f := range files {
-		if !f.Mode().IsDir() {
-			continue
-		}
-		repoPath := fmt.Sprintf("%s/%s", gitReposParentDir, f.Name())
-		if err := initRepo(repoPath); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-// initRepo initializes the Git repo at repoPath to have certain configuration settings.
-func initRepo(repoPath string) error {
-	r, err := git.PlainOpen(repoPath)
-	if err != nil {
-		return err
-	}
-	if err := setGitConfigOptions(r); err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -327,356 +271,6 @@ func setGitConfigOptions(r *git.Repository) error {
 	config.Raw.SetOption("uploadpack", "", "allowAnySHA1InWant", "true")
 
 	r.SetConfig(config)
-
-	return nil
-}
-
-// mkSampleRepos creates sample Git repos under /git-repo. The created repos
-// always have the same SHA because we set the Git name, email, and timestamp to
-// a constant value in defaultSignature(). The repos created here are meant to
-// be used for integrations tests.
-//
-// Having the repo information here (instead of in the integration test itself)
-// helps us debug repo state without having to run the test.
-func mkSampleRepos(gitReposParentDir, fooRepoRemoteURL string) error {
-	err := mkSampleRepoFoo(gitReposParentDir)
-	if err != nil {
-		return fmt.Errorf("failed to create foo.git repo: %v", err)
-	}
-
-	err = mkSampleRepoBar(gitReposParentDir, fooRepoRemoteURL)
-	if err != nil {
-		return fmt.Errorf("failed to create bar.git repo: %v", err)
-	}
-
-	return nil
-}
-
-func mkSampleRepoFoo(gitReposParentDir string) error {
-	repoPath := filepath.Join(gitReposParentDir, "foo.git")
-	fs := osfs.New(repoPath)
-	dot, err := fs.Chroot(".git")
-	if err != nil {
-		return err
-	}
-	storage := filesystem.NewStorage(dot, cache.NewObjectLRUDefault())
-
-	r, err := git.Init(storage, fs)
-	if err != nil {
-		return err
-	}
-
-	// Create first commit.
-	err = util.WriteFile(fs, "README.txt", []byte("hello\n"), 0755)
-	if err != nil {
-		return err
-	}
-
-	w, err := r.Worktree()
-	if err != nil {
-		return err
-	}
-
-	_, err = w.Add("README.txt")
-	if err != nil {
-		return err
-	}
-
-	_, err = w.Commit("commit 1", &git.CommitOptions{
-		Author:    defaultSignature(),
-		Committer: defaultSignature(),
-	})
-	if err != nil {
-		return err
-	}
-
-	// Create second commit.
-	err = util.WriteFile(fs, "README.txt", []byte("hello world!\n"), 0755)
-	if err != nil {
-		return err
-	}
-
-	_, err = w.Add("README.txt")
-	if err != nil {
-		return err
-	}
-
-	_, err = w.Commit("commit 2", &git.CommitOptions{
-		Author:    defaultSignature(),
-		Committer: defaultSignature(),
-	})
-	if err != nil {
-		return err
-	}
-
-	commit2, err := r.Head()
-	if err != nil {
-		return err
-	}
-
-	// Create 3 separate PR references (GitHub style "refs/pull/<ID>/head"). We
-	// take care to make sure that these PRs don't have a merge conflict. We can
-	// of course also create PRs that would result in a merge conflict in the
-	// future, if desired.
-	prs := []struct {
-		name   string
-		number int
-	}{
-		{name: "PR1", number: 1},
-		{name: "PR2", number: 2},
-		{name: "PR3", number: 3},
-	}
-
-	for _, pr := range prs {
-		// Use detached HEAD state to prevent modifying the master branch.
-		err = w.Checkout(&git.CheckoutOptions{Hash: commit2.Hash()})
-		if err != nil {
-			return err
-		}
-		err = util.WriteFile(fs, pr.name+".txt", []byte(pr.name+"\n"), 0755)
-		if err != nil {
-			return err
-		}
-
-		_, err = w.Add(pr.name + ".txt")
-		if err != nil {
-			return err
-		}
-
-		_, err = w.Commit(pr.name, &git.CommitOptions{
-			Author:    defaultSignature(),
-			Committer: defaultSignature(),
-		})
-		if err != nil {
-			return err
-		}
-
-		prRefName := plumbing.ReferenceName(fmt.Sprintf("refs/pull/%d/head", pr.number))
-		headRef, err := r.Head()
-		if err != nil {
-			return err
-		}
-		ref := plumbing.NewHashReference(prRefName, headRef.Hash())
-		err = r.Storer.SetReference(ref)
-		if err != nil {
-			return err
-		}
-	}
-
-	// Check out master again. This moves HEAD back to it.
-	err = w.Checkout(&git.CheckoutOptions{Branch: "refs/heads/master"})
-	if err != nil {
-		return err
-	}
-
-	// Convert to a bare repo.
-	config, err := r.Config()
-	if err != nil {
-		return err
-	}
-	config.Core.IsBare = true
-	r.SetConfig(config)
-
-	globPattern := filepath.Join(repoPath, "*.txt")
-	matches, err := filepath.Glob(globPattern)
-	if err != nil {
-		return err
-	}
-	for _, match := range matches {
-		if err := os.RemoveAll(match); err != nil {
-			return err
-		}
-	}
-
-	err = os.Rename(filepath.Join(repoPath, ".git"), filepath.Join(gitReposParentDir, "/.git"))
-	if err != nil {
-		return err
-	}
-	err = os.Remove(repoPath)
-	if err != nil {
-		return err
-	}
-	err = os.Rename(filepath.Join(gitReposParentDir, ".git"), repoPath)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func mkSampleRepoBar(gitReposParentDir, fooRepoRemoteURL string) error {
-	repoPath := filepath.Join(gitReposParentDir, "bar.git")
-	fs := osfs.New(repoPath)
-	dot, err := fs.Chroot(".git")
-	if err != nil {
-		return err
-	}
-	storage := filesystem.NewStorage(dot, cache.NewObjectLRUDefault())
-
-	r, err := git.Init(storage, fs)
-	if err != nil {
-		return err
-	}
-
-	// Create first commit.
-	err = util.WriteFile(fs, "bar.txt", []byte("bar\n"), 0755)
-	if err != nil {
-		return err
-	}
-
-	w, err := r.Worktree()
-	if err != nil {
-		return err
-	}
-
-	_, err = w.Add("bar.txt")
-	if err != nil {
-		return err
-	}
-
-	_, err = w.Commit("commit 1", &git.CommitOptions{
-		Author:    defaultSignature(),
-		Committer: defaultSignature(),
-	})
-	if err != nil {
-		return err
-	}
-
-	// Create second commit.
-	err = util.WriteFile(fs, "bar.txt", []byte("hello world!\n"), 0755)
-	if err != nil {
-		return err
-	}
-
-	_, err = w.Add("bar.txt")
-	if err != nil {
-		return err
-	}
-
-	_, err = w.Commit("commit 2", &git.CommitOptions{
-		Author:    defaultSignature(),
-		Committer: defaultSignature(),
-	})
-	if err != nil {
-		return err
-	}
-
-	commit2, err := r.Head()
-	if err != nil {
-		return err
-	}
-
-	// Create 3 separate PR references (GitHub style "refs/pull/<ID>/head"). We
-	// take care to make sure that these PRs don't have a merge conflict. We can
-	// of course also create PRs that would result in a merge conflict in the
-	// future, if desired.
-	prs := []struct {
-		name   string
-		number int
-	}{
-		{name: "PR1", number: 1},
-		{name: "PR2", number: 2},
-		{name: "PR3", number: 3},
-	}
-
-	for _, pr := range prs {
-		// Use detached HEAD state to prevent modifying the master branch.
-		err = w.Checkout(&git.CheckoutOptions{Hash: commit2.Hash()})
-		if err != nil {
-			return err
-		}
-		err = util.WriteFile(fs, pr.name+".txt", []byte(pr.name+"\n"), 0755)
-		if err != nil {
-			return err
-		}
-
-		_, err = w.Add(pr.name + ".txt")
-		if err != nil {
-			return err
-		}
-
-		_, err = w.Commit(pr.name, &git.CommitOptions{
-			Author:    defaultSignature(),
-			Committer: defaultSignature(),
-		})
-		if err != nil {
-			return err
-		}
-
-		prRefName := plumbing.ReferenceName(fmt.Sprintf("refs/pull/%d/head", pr.number))
-		headRef, err := r.Head()
-		if err != nil {
-			return err
-		}
-		ref := plumbing.NewHashReference(prRefName, headRef.Hash())
-		err = r.Storer.SetReference(ref)
-		if err != nil {
-			return err
-		}
-	}
-
-	// Check out master again. This moves HEAD back to it.
-	err = w.Checkout(&git.CheckoutOptions{Branch: "refs/heads/master"})
-	if err != nil {
-		return err
-	}
-
-	// Now add foo.git as a submodule. We add it using a local path (under
-	// gitReposParentDir), but afterwards have to modify the module so that it
-	// uses http://<hostname>.  We can't use a static hostname, because it
-	// depends on whether this binary is running locally or in a Docker
-	// container or in a KIND cluster. So we let the user choose with the
-	// -foo-repo-remote-URL option (fooRepoRemoteURL here).
-	//
-	// Unfortunately go-git does not naively support the creation of submodules,
-	// so we have to run git directly.
-	cmd := exec.Command("git", "submodule", "add", filepath.Join(gitReposParentDir, "foo.git"))
-	cmd.Dir = repoPath
-	err = cmd.Run()
-	if err != nil {
-		return err
-	}
-
-	cmd = exec.Command("git", "submodule", "set-url", "--", "foo", fooRepoRemoteURL)
-	cmd.Dir = repoPath
-	err = cmd.Run()
-	if err != nil {
-		return err
-	}
-
-	_, err = w.Add(".gitmodules")
-	if err != nil {
-		return err
-	}
-
-	_, err = w.Commit("add submodule", &git.CommitOptions{
-		Author:    defaultSignature(),
-		Committer: defaultSignature(),
-	})
-	if err != nil {
-		return err
-	}
-
-	// Convert to a bare repo.
-	config, err := r.Config()
-	if err != nil {
-		return err
-	}
-	config.Core.IsBare = true
-	r.SetConfig(config)
-
-	err = os.Rename(filepath.Join(repoPath, ".git"), filepath.Join(gitReposParentDir, ".git"))
-	if err != nil {
-		return err
-	}
-	err = os.RemoveAll(repoPath)
-	if err != nil {
-		return err
-	}
-	err = os.Rename(filepath.Join(gitReposParentDir, ".git"), repoPath)
-	if err != nil {
-		return err
-	}
 
 	return nil
 }
