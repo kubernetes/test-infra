@@ -1251,6 +1251,10 @@ plugins:
     - size
     - welcome
 
+  cncf/apisnoop:
+    plugins:
+    - trigger # prow.k8s.io for #sig-arch + release-informing jobs... prow.cncf.io for cncf/k8s-conformance related jobs
+
 external_plugins:
   kubernetes:
   - name: needs-rebase
