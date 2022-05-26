@@ -17,6 +17,7 @@ limitations under the License.
 package welcome
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"regexp"
@@ -126,9 +127,12 @@ func (fc *fakeClient) ClearPRs() {
 	fc.prs = make(map[string]sets.Int)
 }
 
-// FindIssues fails if the query does not match the expected query regex and
+// FindIssuesWithOrg fails if the query does not match the expected query regex and
 // looks up issues based on parsing the expected query format
-func (fc *fakeClient) FindIssues(query, sort string, asc bool) ([]github.Issue, error) {
+func (fc *fakeClient) FindIssuesWithOrg(org, query, sort string, asc bool) ([]github.Issue, error) {
+	if org == "" {
+		return nil, errors.New("passing an empty organization is highly discouraged, as it's incompatible with GitHub Apps")
+	}
 	fields := expectedQueryRegex.FindStringSubmatch(query)
 	if fields == nil || len(fields) != 4 {
 		return nil, fmt.Errorf("invalid query: `%s` does not match expected regex `%s`", query, expectedQueryRegex.String())

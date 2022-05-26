@@ -613,8 +613,13 @@ func (f *FakeClient) RemoveLabel(owner, repo string, number int, label string) e
 	return fmt.Errorf("cannot remove %v from %s/%s/#%d", label, owner, repo, number)
 }
 
-// FindIssues returns f.Issues
+// FindIssues returns the same results as FindIssuesWithOrg
 func (f *FakeClient) FindIssues(query, sort string, asc bool) ([]github.Issue, error) {
+	return f.FindIssuesWithOrg("", query, sort, asc)
+}
+
+// FindIssuesWithOrg returns f.Issues
+func (f *FakeClient) FindIssuesWithOrg(org, query, sort string, asc bool) ([]github.Issue, error) {
 	f.lock.RLock()
 	defer f.lock.RUnlock()
 	var issues []github.Issue
