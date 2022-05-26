@@ -17,6 +17,9 @@ window.onload = (): void => {
       case "FAILURE":
         className = "run-failure";
         break;
+      case "error":
+        className = "run-error";
+        break;
       case "ABORTED":
         className = "run-aborted";
         break;
