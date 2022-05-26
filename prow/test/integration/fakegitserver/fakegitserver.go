@@ -112,13 +112,45 @@ func setupRepoHandler(gitReposParentDir string) http.Handler {
 			return
 		}
 
-		if err := setupRepo(gitReposParentDir, &repoSetup); err != nil {
+		repo, err := setupRepo(gitReposParentDir, &repoSetup)
+		if err != nil {
 			// Just log the error if the setup fails so that the developer can
 			// fix their error and retry without having to restart this server.
-			logrus.Error(err)
+			logrus.Errorf("failed to setup repo: %v", err)
+			http.Error(w, err.Error(), 500)
+			return
 		}
 
+		msg, err := getLog(repo)
+		if err != nil {
+			logrus.Errorf("failed to get repo stats: %v", err)
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		fmt.Fprintf(w, "%s", msg)
 	})
+}
+
+// getLog creates a report of Git repo statistics.
+func getLog(repo *git.Repository) (string, error) {
+
+	stats := ""
+
+	// Show `git log --all` equivalent.
+	ref, err := repo.Head()
+	if err != nil {
+		return "", fmt.Errorf("could not get HEAD")
+	}
+	commits, err := repo.Log(&git.LogOptions{From: ref.Hash(), All: true})
+	if err != nil {
+		return "", fmt.Errorf("could not get git logs")
+	}
+	err = commits.ForEach(func(commit *object.Commit) error {
+		stats += fmt.Sprintln(commit)
+		return nil
+	})
+
+	return stats, nil
 }
 
 // gitCGIHandler returns an http.Handler that is backed by git-http-backend (a
@@ -147,47 +179,52 @@ func gitCGIHandler(gitBinary, gitReposParentDir string) http.Handler {
 	})
 }
 
-func setupRepo(gitReposParentDir string, repoSetup *lib.FGSRepoSetup) error {
+func setupRepo(gitReposParentDir string, repoSetup *lib.FGSRepoSetup) (*git.Repository, error) {
 	dir := filepath.Join(gitReposParentDir, repoSetup.Name+".git")
 
 	if _, err := os.Stat(dir); !os.IsNotExist(err) {
 		if repoSetup.Overwrite {
 			if err := os.RemoveAll(dir); err != nil {
 				logrus.Errorf("(overwrite) could not remove directory %v", dir)
-				return err
+				return nil, err
 			}
 		} else {
-			return fmt.Errorf("path %v already exists but overwrite is not enabled; aborting", dir)
+			return nil, fmt.Errorf("path %v already exists but overwrite is not enabled; aborting", dir)
 		}
 	}
 
 	if err := os.MkdirAll(dir, os.ModePerm); err != nil {
 		logrus.Errorf("could not create directory %v", dir)
-		return err
+		return nil, err
 	}
 
 	repo, err := git.PlainInit(dir, false)
 	if err != nil {
 		logrus.Errorf("could not initialize git repo in directory %v", dir)
-		return err
+		return nil, err
 	}
 
 	if err := setGitConfigOptions(repo); err != nil {
 		logrus.Errorf("config setup failed")
-		return err
+		return nil, err
 	}
 
 	if err := runSetupScript(dir, repoSetup.Script); err != nil {
 		logrus.Errorf("running the repo setup script failed")
-		return err
+		return nil, err
 	}
 
 	if err := convertToBareRepo(repo, dir); err != nil {
 		logrus.Errorf("conversion to bare repo failed")
-		return err
+		return nil, err
 	}
 
-	return nil
+	repo, err = git.PlainOpen(dir)
+	if err != nil {
+		logrus.Errorf("could not reopen repo")
+		return nil, err
+	}
+	return repo, nil
 }
 
 func convertToBareRepo(repo *git.Repository, repoPath string) error {

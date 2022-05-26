@@ -394,9 +394,13 @@ fi
 	t.Logf("Creating client for cluster: %s", clusterContext)
 
 	restConfig, err := NewRestConfig("", clusterContext)
+	if err != nil {
+		t.Fatalf("could not create restConfig: %v", err)
+	}
+
 	clientset, err := kubernetes.NewForConfig(restConfig)
 	if err != nil {
-		t.Fatal("could not create Clientset")
+		t.Fatalf("could not create Clientset: %v", err)
 	}
 
 	kubeClient, err := ctrlruntimeclient.New(restConfig, ctrlruntimeclient.Options{})
