@@ -182,7 +182,7 @@ presubmits:
               - name: AZURE_LOADBALANCER_SKU
                 value: "Standard"
               - name: KUBERNETES_VERSION
-                value: "latest-1.22"
+                value: "1.22.2"
               - name: CONTROL_PLANE_MACHINE_COUNT
                 value: "3"
               - name: CLUSTER_TEMPLATE

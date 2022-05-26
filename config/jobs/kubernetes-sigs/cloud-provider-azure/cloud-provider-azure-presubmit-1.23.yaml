@@ -181,7 +181,7 @@ presubmits:
               - name: TEST_CCM
                 value: "true"
               - name: KUBERNETES_VERSION
-                value: "latest-1.23"
+                value: "1.23.5"
               - name: CONTROL_PLANE_MACHINE_COUNT
                 value: "3"
               - name: CLUSTER_TEMPLATE
