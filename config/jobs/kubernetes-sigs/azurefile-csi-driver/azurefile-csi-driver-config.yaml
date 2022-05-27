@@ -6,6 +6,7 @@ presubmits:
     path_alias: sigs.k8s.io/azurefile-csi-driver
     branches:
     - master
+    - fad
     labels:
       preset-service-account: "true"
     spec:
@@ -29,6 +30,7 @@ presubmits:
     path_alias: sigs.k8s.io/azurefile-csi-driver
     branches:
     - master
+    - fad
     labels:
       preset-service-account: "true"
     spec:
@@ -52,6 +54,7 @@ presubmits:
     path_alias: sigs.k8s.io/azurefile-csi-driver
     branches:
     - master
+    - fad
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -100,6 +103,7 @@ presubmits:
     path_alias: sigs.k8s.io/azurefile-csi-driver
     branches:
     - master
+    - fad
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -146,6 +150,7 @@ presubmits:
     path_alias: sigs.k8s.io/azurefile-csi-driver
     branches:
     - master
+    - fad
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
@@ -424,6 +429,7 @@ presubmits:
     path_alias: sigs.k8s.io/azurefile-csi-driver
     branches:
     - master
+    - fad
     labels:
       preset-service-account: "true"
       preset-azure-cred: "true"
