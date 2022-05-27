@@ -51,7 +51,7 @@ periodics:
           - name: INIT_WITH_PROVIDERS_CONTRACT
             value: v1alpha3
           - name: INIT_WITH_KUBERNETES_VERSION
-            value: v1.21.2
+            value: v1.21.12
 
         # we need privileged mode in order to do docker in docker
         securityContext:
