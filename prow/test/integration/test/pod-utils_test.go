@@ -25,6 +25,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/test/integration/lib"
 
@@ -36,19 +37,14 @@ import (
 )
 
 const (
-	// fooHEADsha is the HEAD commit SHA of the "foo" repo that fakegitserver
-	// always initializes on startup (see fakegitserver's
-	// `-populate-sample-repos` option, which is set to true by default).
-	fooHEADsha                    = "e7d762376b714fdc2d6493ecd798a9d128e4b88f"
-	fooPR1sha                     = "b343a11088668210321ca76712e9bc3b8aa1f2f7"
-	fooPR1MergeSha                = "a081e60423aea6d3bdde2a50f8c435546529a932"
-	fooPR2sha                     = "89bb95ef23c663d1b9ad97ff4351de516f25496c"
-	fooPR3sha                     = "2049df35eda98a9068ddfbc7bc6ce0ab5ef0d0ba"
-	fooMultiMergeSha              = "bc75802040886a627d4315b1c32635ab37ca0bba"
-	barHEADsha                    = "c2740e40972392a7c8954b389c71733e1f900561"
-	barPR2sha                     = "62d5ed7cbccce940421b7e234de28591472b6955"
-	barPR3sha                     = "f8387fe902fcb0c50d6d9e67f68b9802d591fd45"
-	barMultiMergeWithSubmoduleSha = "c6a86219ebf1917a0a53317067b6ad01a6ed4799"
+	fooHEADsha = "e7d762376b714fdc2d6493ecd798a9d128e4b88f"
+	fooPR1sha  = "b343a11088668210321ca76712e9bc3b8aa1f2f7"
+	fooPR2sha  = "89bb95ef23c663d1b9ad97ff4351de516f25496c"
+	fooPR3sha  = "2049df35eda98a9068ddfbc7bc6ce0ab5ef0d0ba"
+
+	barHEADsha = "c2740e40972392a7c8954b389c71733e1f900561"
+	barPR2sha  = "62d5ed7cbccce940421b7e234de28591472b6955"
+	barPR3sha  = "f8387fe902fcb0c50d6d9e67f68b9802d591fd45"
 )
 
 // TestClonerefs tests the "clonerefs" binary by creating a ProwJob with
@@ -56,9 +52,8 @@ const (
 // "InitContainer" to the pod that gets scheduled for the ProwJob. We tweak
 // CloneURI so that it clones from the fakegitserver instead of GitHub (or
 // elsewhere). Inside the test container in the pod, we check that we can indeed
-// see the cloned contents by checking the HEAD SHA against an expected value
-// (this is possible because fakegitserver always populates the same "foo" Git
-// repo with the same SHA on startup).
+// see the cloned contents by checking various things like the SHAs and tree
+// hashes.
 //
 // We test a basic postsubmit job as well as a presubmit job. The main
 // difference with the presubmit job is that clonerefs needs to clone additional
@@ -112,6 +107,7 @@ git commit -m "add submodule"
 		name       string
 		repoSetups []lib.FGSRepoSetup
 		prowjob    prowjobv1.ProwJob
+		expected   string
 	}{
 		{
 			// Check if we got a properly cloned repo.
@@ -156,21 +152,32 @@ git commit -m "add submodule"
 								Args: []string{
 									"sh",
 									"-c",
-									fmt.Sprintf(`
-expected=%s
-got=$(git rev-parse HEAD)
-if [ $got != $expected ]; then
-	echo >&2 "[FAIL] got $got, expected $expected"
-	>&2 git log
-	exit 1
-fi
-`, fooHEADsha),
+									`
+cat <<EOF
+
+HEAD: $(git rev-parse HEAD)
+
+ls-tree:
+$(git ls-tree HEAD)
+EOF
+`,
 								},
 							},
 						},
 					},
 				},
 			},
+			// Use `git-ls-tree` to check that the repo __contents__
+			// (disregarding commit metadata information) are exactly what we
+			// expect. These tree SHA values should be stable even if we change
+			// the name of the GIT_USER or other fields during clonerefs' "git
+			// merge" invocations.
+			expected: `
+HEAD: e7d762376b714fdc2d6493ecd798a9d128e4b88f
+
+ls-tree:
+100644 blob a0423896973644771497bdc03eb99d5281615b51	README.txt
+`,
 		},
 		{
 			// Check that the PR has been merged.
@@ -211,27 +218,41 @@ fi
 									"sh",
 									"-c",
 									fmt.Sprintf(`
-# Check if PR1's commit SHA is in our HEAD's history (that we've merged it in).
-if ! git merge-base --is-ancestor %s HEAD; then
-	echo >&2 "[FAIL] PR1 was not merged in"
-	exit 1
-fi
+cat <<EOF
 
-# For good measure, check that we have a proper Git repo that the git client command can recognize.
-expected=%s
-got=$(git rev-parse HEAD)
-if [ $got != $expected ]; then
-	echo >&2 "[FAIL] got $got, expected $expected"
-	>&2 git log
-	exit 1
+HEAD: $(git rev-parse HEAD)
+
+ls-tree:
+$(git ls-tree HEAD)
+
+PRs:
+EOF
+
+pr="%s"
+if git merge-base --is-ancestor $pr HEAD; then
+	echo $pr was merged into HEAD
+else
+	echo $pr was NOT merged into HEAD
 fi
-`, fooPR1sha, fooPR1MergeSha),
+`, fooPR1sha),
 								},
 							},
 						},
 					},
 				},
 			},
+			// Check if PR1's commit SHA is in our HEAD's history (that we've
+			// merged it in).
+			expected: `
+HEAD: a081e60423aea6d3bdde2a50f8c435546529a932
+
+ls-tree:
+100644 blob d00491fd7e5bb6fa28c517a0bb32b8b506539d4d	1
+100644 blob a0423896973644771497bdc03eb99d5281615b51	README.txt
+
+PRs:
+b343a11088668210321ca76712e9bc3b8aa1f2f7 was merged into HEAD
+`,
 		},
 		{
 			// Check that all 3 PRs have been merged.
@@ -282,35 +303,44 @@ fi
 									"sh",
 									"-c",
 									fmt.Sprintf(`
-# Check if *all* PR commit SHAs are in our HEAD's history.
-if ! git merge-base --is-ancestor %s HEAD; then
-	echo >&2 "[FAIL] PR1 was not merged in"
-	exit 1
-fi
-if ! git merge-base --is-ancestor %s HEAD; then
-	echo >&2 "[FAIL] PR2 was not merged in"
-	exit 1
-fi
-if ! git merge-base --is-ancestor %s HEAD; then
-	echo >&2 "[FAIL] PR3 was not merged in"
-	exit 1
-fi
+cat <<EOF
 
-# For good measure, check that we have a proper Git repo that the git client command can recognize.
-expected=%s
-got=$(git rev-parse HEAD)
-if [ $got != $expected ]; then
-	echo >&2 "[FAIL] got $got, expected $expected"
-	>&2 git log
-	exit 1
-fi
-`, fooPR1sha, fooPR2sha, fooPR3sha, fooMultiMergeSha),
+HEAD: $(git rev-parse HEAD)
+
+ls-tree:
+$(git ls-tree HEAD)
+
+PRs:
+EOF
+
+for pr in %s %s %s; do
+	if git merge-base --is-ancestor $pr HEAD; then
+		echo $pr was merged into HEAD
+	else
+		echo $pr was NOT merged into HEAD
+	fi
+done
+`, fooPR1sha, fooPR2sha, fooPR3sha),
 								},
 							},
 						},
 					},
 				},
 			},
+			expected: `
+HEAD: bc75802040886a627d4315b1c32635ab37ca0bba
+
+ls-tree:
+100644 blob d00491fd7e5bb6fa28c517a0bb32b8b506539d4d	1
+100644 blob 0cfbf08886fca9a91cb753ec8734c84fcbe52c9f	2
+100644 blob 00750edc07d6415dcc07ae0351e9397b0222b7ba	3
+100644 blob a0423896973644771497bdc03eb99d5281615b51	README.txt
+
+PRs:
+b343a11088668210321ca76712e9bc3b8aa1f2f7 was merged into HEAD
+89bb95ef23c663d1b9ad97ff4351de516f25496c was merged into HEAD
+2049df35eda98a9068ddfbc7bc6ce0ab5ef0d0ba was merged into HEAD
+`,
 		},
 		{
 			// Check that all 3 PRs have been merged and also that the submodule has been cloned.
@@ -363,30 +393,38 @@ fi
 								Args: []string{
 									"sh",
 									"-c",
-									fmt.Sprintf(`
-expected=%s
-got=$(git rev-parse HEAD)
-if [ $got != $expected ]; then
-	echo >&2 "[FAIL] (bar HEAD post-merge) got $got, expected $expected"
-	exit 1
-fi
-# Check that the submodule is also populated (that it is set to the HEAD sha of
-# foo).
-cd foo4
-expected=%s
-got=$(git rev-parse HEAD)
-if [ $got != $expected ]; then
-	echo >&2 "[FAIL] (submodule foo4 HEAD) got $got, expected $expected"
-	>&2 git log
-	exit 1
-fi
-`, barMultiMergeWithSubmoduleSha, fooHEADsha),
+									`
+cat <<EOF
+
+HEAD: $(git rev-parse HEAD)
+
+ls-tree:
+$(git ls-tree HEAD)
+
+ls-tree (submodule):
+$(cd foo4 && git ls-tree HEAD)
+EOF
+`,
 								},
 							},
 						},
 					},
 				},
 			},
+			expected: `
+HEAD: c6a86219ebf1917a0a53317067b6ad01a6ed4799
+
+ls-tree:
+100644 blob 04a95473544a5229662d133e42754b940fe06735	.gitmodules
+100644 blob d00491fd7e5bb6fa28c517a0bb32b8b506539d4d	1
+100644 blob 0cfbf08886fca9a91cb753ec8734c84fcbe52c9f	2
+100644 blob 00750edc07d6415dcc07ae0351e9397b0222b7ba	3
+100644 blob a0423896973644771497bdc03eb99d5281615b51	bar.txt
+160000 commit e7d762376b714fdc2d6493ecd798a9d128e4b88f	foo4
+
+ls-tree (submodule):
+100644 blob a0423896973644771497bdc03eb99d5281615b51	README.txt
+`,
 		},
 	}
 
@@ -500,12 +538,32 @@ fi
 				}
 				switch tt.prowjob.Status.State {
 				case prowjobv1.SuccessState:
+
+					// Check logs of the finished ProwJob. We simply diff these
+					// logs against what we expect in the test case. This is
+					// much simpler than running this sort of comparison check
+					// inside the test pod itself, because here we can get all
+					// the pretty-printing facilities of cmp.Diff().
+					got, err := getPodLogs(clientset, "test-pods", podName, &coreapi.PodLogOptions{Container: "test"})
+					if err != nil {
+						t.Errorf("failed getting logs for clonerefs")
+						return false, nil
+					}
+					if diff := cmp.Diff(got, tt.expected); diff != "" {
+						return false, fmt.Errorf("actual logs differ from expected: %s", diff)
+					}
+
 					return true, nil
+
 				// If we observe a FailureState because the pod finished, exit
 				// early with an error. This way we don't have to wait until the
 				// timeout expires to see that the test failed.
+				//
+				// This should only happen for programmer errors (if there were
+				// unintended errors in the shell script (`sh -c ...`) that runs
+				// in the test case').
 				case prowjobv1.FailureState:
-					return false, fmt.Errorf("prow job %s failed", podName)
+					return false, fmt.Errorf("possible programmer error: prow job %s failed", podName)
 				default:
 					return false, nil
 				}
