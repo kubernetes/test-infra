@@ -82,7 +82,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 
 type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
-	FindIssues(query, sort string, asc bool) ([]github.Issue, error)
+	FindIssuesWithOrg(org, query, sort string, asc bool) ([]github.Issue, error)
 	IsCollaborator(org, repo, user string) (bool, error)
 	IsMember(org, user string) (bool, error)
 	BotUserChecker() (func(candidate string) bool, error)
@@ -131,7 +131,7 @@ func handlePR(c client, t plugins.Trigger, pre github.PullRequestEvent, welcomeT
 
 	// search for PRs from the author in this repo
 	query := fmt.Sprintf("is:pr repo:%s/%s author:%s", org, repo, user)
-	issues, err := c.GitHubClient.FindIssues(query, "", false)
+	issues, err := c.GitHubClient.FindIssuesWithOrg(org, query, "", false)
 	if err != nil {
 		return err
 	}
