@@ -28,7 +28,7 @@ periodics:
           -v 2 \
           --up --down \
           --cloud-provider=aws \
-          --create-args="--image='099720109477/ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-20220404' --channel=alpha --networking=kubenet --container-runtime=containerd --set=spec.assets.containerProxy=registry-sandbox.k8s.io --discovery-store=s3://k8s-kops-prow/discovery" \
+          --create-args="--channel=alpha --networking=kubenet --container-runtime=containerd --set=spec.assets.containerProxy=registry-sandbox.k8s.io --set=spec.cloudConfig.awsEBSCSIDriver.enabled=false --discovery-store=s3://k8s-kops-prow/discovery" \
           --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
           --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
           --test=kops \
@@ -36,6 +36,8 @@ periodics:
           --ginkgo-args="--debug" \
           --test-args="-test.timeout=60m -num-nodes=0" \
           --test-package-marker=stable-1.23.txt \
+          --focus-regex="\[Conformance\]" \
+          --skip-regex="\[Slow\]|\[Serial\]|\[Flaky\]" \
           --parallel=25
       env:
       - name: KUBE_SSH_KEY_PATH
