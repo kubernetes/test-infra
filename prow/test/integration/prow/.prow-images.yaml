@@ -8,7 +8,7 @@ images:
   - dir: prow/cmd/tide
   - dir: prow/cmd/prow-controller-manager
   # Fakes.
-  - dir: prow/test/integration/fakeghserver
+  - dir: prow/test/integration/cmd/fakeghserver
   - dir: prow/test/integration/fakegerritserver
   - dir: prow/test/integration/cmd/fakegitserver
   # Utility images.
