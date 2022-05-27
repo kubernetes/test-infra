@@ -1,3 +1,7 @@
+# These images are built in parallel by /hack/prowimagebuilder in
+# integration-test.sh and pushed into the docker registry on port 5001 running
+# inside the KIND cluster. These images are then available as
+# "localhost:5001/<name>" for consumption by the KIND integration test cluster.
 images:
   - dir: prow/cmd/deck
   - dir: prow/cmd/crier
