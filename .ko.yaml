@@ -45,7 +45,7 @@ baseImageOverrides:
   k8s.io/test-infra/gcsweb/cmd/gcsweb: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
   k8s.io/test-infra/gencred: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
   # prow integration test
-  k8s.io/test-infra/prow/test/integration/fakeghserver: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
+  k8s.io/test-infra/prow/test/integration/cmd/fakeghserver: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
   k8s.io/test-infra/prow/test/integration/cmd/fakegitserver: gcr.io/k8s-prow/git:v20220523-6026203ca9
 
 # https://pkg.go.dev/cmd/link
