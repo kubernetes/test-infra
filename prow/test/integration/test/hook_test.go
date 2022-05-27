@@ -32,7 +32,7 @@ import (
 
 func TestHook(t *testing.T) {
 	const (
-		commentFile = "./examples/test_comment.json"
+		commentFile = "./testdata/test_comment.json"
 		url         = "http://localhost/hook"
 		hmac        = "abcde12345"
 		org         = "fake-org-hook"
