@@ -93,7 +93,6 @@ func getPodLogs(clientset *kubernetes.Clientset, namespace, podName string, opts
 	str := buf.String()
 
 	return str, nil
-
 }
 
 // RandomString generates random string of 32 characters in length, and fail if it failed

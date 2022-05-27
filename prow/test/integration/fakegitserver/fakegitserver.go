@@ -19,6 +19,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -38,7 +39,7 @@ import (
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
 	"k8s.io/test-infra/prow/pjutil"
-	"k8s.io/test-infra/prow/test/integration/lib"
+	"k8s.io/test-infra/prow/test/integration/lib/fakegitserver"
 )
 
 type options struct {
@@ -104,7 +105,7 @@ func setupRepoHandler(gitReposParentDir string) http.Handler {
 		}
 
 		logrus.Infof("request body received: %v", string(buf))
-		var repoSetup lib.FGSRepoSetup
+		var repoSetup fakegitserver.RepoSetup
 		err = json.Unmarshal(buf, &repoSetup)
 		if err != nil {
 			logrus.Errorf("failed to parse request body as FGSRepoSetup: %v", err)
@@ -134,16 +135,16 @@ func setupRepoHandler(gitReposParentDir string) http.Handler {
 // getLog creates a report of Git repo statistics.
 func getLog(repo *git.Repository) (string, error) {
 
-	stats := ""
+	var stats string
 
 	// Show `git log --all` equivalent.
 	ref, err := repo.Head()
 	if err != nil {
-		return "", fmt.Errorf("could not get HEAD")
+		return "", errors.New("could not get HEAD")
 	}
 	commits, err := repo.Log(&git.LogOptions{From: ref.Hash(), All: true})
 	if err != nil {
-		return "", fmt.Errorf("could not get git logs")
+		return "", errors.New("could not get git logs")
 	}
 	err = commits.ForEach(func(commit *object.Commit) error {
 		stats += fmt.Sprintln(commit)
@@ -179,49 +180,50 @@ func gitCGIHandler(gitBinary, gitReposParentDir string) http.Handler {
 	})
 }
 
-func setupRepo(gitReposParentDir string, repoSetup *lib.FGSRepoSetup) (*git.Repository, error) {
+func setupRepo(gitReposParentDir string, repoSetup *fakegitserver.RepoSetup) (*git.Repository, error) {
 	dir := filepath.Join(gitReposParentDir, repoSetup.Name+".git")
+	logger := logrus.WithField("directory", dir)
 
 	if _, err := os.Stat(dir); !os.IsNotExist(err) {
 		if repoSetup.Overwrite {
 			if err := os.RemoveAll(dir); err != nil {
-				logrus.Errorf("(overwrite) could not remove directory %v", dir)
+				logger.Error("(overwrite) could not remove directory")
 				return nil, err
 			}
 		} else {
-			return nil, fmt.Errorf("path %v already exists but overwrite is not enabled; aborting", dir)
+			return nil, fmt.Errorf("path %s already exists but overwrite is not enabled; aborting", dir)
 		}
 	}
 
 	if err := os.MkdirAll(dir, os.ModePerm); err != nil {
-		logrus.Errorf("could not create directory %v", dir)
+		logger.Error("could not create directory")
 		return nil, err
 	}
 
 	repo, err := git.PlainInit(dir, false)
 	if err != nil {
-		logrus.Errorf("could not initialize git repo in directory %v", dir)
+		logger.Error("could not initialize git repo in directory")
 		return nil, err
 	}
 
 	if err := setGitConfigOptions(repo); err != nil {
-		logrus.Errorf("config setup failed")
+		logger.Error("config setup failed")
 		return nil, err
 	}
 
 	if err := runSetupScript(dir, repoSetup.Script); err != nil {
-		logrus.Errorf("running the repo setup script failed")
+		logger.Error("running the repo setup script failed")
 		return nil, err
 	}
 
 	if err := convertToBareRepo(repo, dir); err != nil {
-		logrus.Errorf("conversion to bare repo failed")
+		logger.Error("conversion to bare repo failed")
 		return nil, err
 	}
 
 	repo, err = git.PlainOpen(dir)
 	if err != nil {
-		logrus.Errorf("could not reopen repo")
+		logger.Error("could not reopen repo")
 		return nil, err
 	}
 	return repo, nil
@@ -282,11 +284,7 @@ func runSetupScript(repoPath, script string) error {
 		"GIT_COMMITTER_EMAIL=d@e.f",
 		"GIT_COMMITTER_DATE='Thu May 19 12:34:56 2022 +0000'"}
 
-	if err := cmd.Run(); err != nil {
-		return err
-	}
-
-	return nil
+	return cmd.Run()
 }
 
 func setGitConfigOptions(r *git.Repository) error {
@@ -310,16 +308,4 @@ func setGitConfigOptions(r *git.Repository) error {
 	r.SetConfig(config)
 
 	return nil
-}
-
-func defaultSignature() *object.Signature {
-	when, err := time.Parse(object.DateFormat, "Thu May 19 12:34:56 2022 +0000")
-	if err != nil {
-		logrus.Fatal(err)
-	}
-	return &object.Signature{
-		Name:  "abc",
-		Email: "d@e.f",
-		When:  when,
-	}
 }

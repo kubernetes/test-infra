@@ -73,9 +73,9 @@ clients (such as clonerefs) to fetch commits by their SHA.
 
 ## Local Usage (for debugging)
 
-FGS needs has 2 requirements:
+FGS has 2 requirements:
 
-1. the path to the local `git` binary installation
+1. the path to the local `git` binary installation, and
 2. the path to a folder containing Git repositories to be served (can be an
    empty directory, or pre-populated).
 
@@ -130,7 +130,7 @@ fakegitserver over port 8123 on the host.
 ### Custom Base Image
 
 To use a custom base image for FGS, change the `baseImageOverrides` entry for
-fakegitserver in [`.ko.yaml`](../../../../.ko.yaml) like this:
+fakegitserver in [`.ko.yaml`](/.ko.yaml) like this:
 
 ```yaml
 baseImageOverrides:

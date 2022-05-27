@@ -17,17 +17,14 @@ limitations under the License.
 package integration
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
-	"net/http"
 	"testing"
 	"time"
 
 	"github.com/google/go-cmp/cmp"
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	"k8s.io/test-infra/prow/test/integration/lib"
+	"k8s.io/test-infra/prow/test/integration/lib/fakegitserver"
 
 	coreapi "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -105,14 +102,14 @@ git commit -m "add submodule"
 
 	tests := []struct {
 		name       string
-		repoSetups []lib.FGSRepoSetup
+		repoSetups []fakegitserver.RepoSetup
 		prowjob    prowjobv1.ProwJob
 		expected   string
 	}{
 		{
 			// Check if we got a properly cloned repo.
 			name: "postsubmit",
-			repoSetups: []lib.FGSRepoSetup{
+			repoSetups: []fakegitserver.RepoSetup{
 				{
 					Name:      "foo1",
 					Script:    createRepoFoo,
@@ -182,7 +179,7 @@ ls-tree:
 		{
 			// Check that the PR has been merged.
 			name: "presubmit-single-pr",
-			repoSetups: []lib.FGSRepoSetup{
+			repoSetups: []fakegitserver.RepoSetup{
 				{
 					Name:      "foo2",
 					Script:    createRepoFoo,
@@ -257,7 +254,7 @@ b343a11088668210321ca76712e9bc3b8aa1f2f7 was merged into HEAD
 		{
 			// Check that all 3 PRs have been merged.
 			name: "presubmit-multi-pr",
-			repoSetups: []lib.FGSRepoSetup{
+			repoSetups: []fakegitserver.RepoSetup{
 				{
 					Name:      "foo3",
 					Script:    createRepoFoo,
@@ -345,7 +342,7 @@ b343a11088668210321ca76712e9bc3b8aa1f2f7 was merged into HEAD
 		{
 			// Check that all 3 PRs have been merged and also that the submodule has been cloned.
 			name: "presubmit-multi-pr-submodule",
-			repoSetups: []lib.FGSRepoSetup{
+			repoSetups: []fakegitserver.RepoSetup{
 				{
 					Name:      "foo4",
 					Script:    createRepoFoo,
@@ -446,6 +443,8 @@ ls-tree (submodule):
 		t.Fatalf("Failed creating clients for cluster %q: %v", clusterContext, err)
 	}
 
+	fgsClient := fakegitserver.NewClient("http://localhost/fakegitserver", 5*time.Second)
+
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
@@ -501,26 +500,9 @@ ls-tree (submodule):
 
 			// Set up repos on FGS for just this test case.
 			for _, repoSetup := range tt.repoSetups {
-				buf, err := json.Marshal(repoSetup)
+				err := fgsClient.SetupRepo(repoSetup)
 				if err != nil {
-					t.Fatalf("could not marshal %v", repoSetup)
-				}
-				// Notice that this odd-looking URL is required because we (this
-				// test) is not inside the KIND cluster and so we need to send
-				// the packets to KIND (running on localhost). KIND will then
-				// reroute the packets to fakegitserver.
-				req, err := http.NewRequest("POST", "http://localhost/fakegitserver/setup-repo", bytes.NewBuffer(buf))
-				if err != nil {
-					t.Fatalf("failed to create POST request: %v", err)
-				}
-				req.Header.Set("Content-Type", "application/json; charset=UTF-8")
-				client := &http.Client{}
-				resp, err := client.Do(req)
-				if err != nil {
-					t.Fatalf("FGS repo setup failed")
-				}
-				if resp.StatusCode != 200 {
-					t.Fatalf("got %v response", resp.StatusCode)
+					t.Fatalf("FGS repo setup failed: %v", err)
 				}
 			}
 
