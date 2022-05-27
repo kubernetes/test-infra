@@ -10,7 +10,7 @@ images:
   # Fakes.
   - dir: prow/test/integration/fakeghserver
   - dir: prow/test/integration/fakegerritserver
-  - dir: prow/test/integration/fakegitserver
+  - dir: prow/test/integration/cmd/fakegitserver
   # Utility images.
   - dir: prow/cmd/clonerefs
   - dir: prow/cmd/initupload
