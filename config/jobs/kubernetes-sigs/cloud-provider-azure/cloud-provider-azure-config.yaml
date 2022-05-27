@@ -1116,7 +1116,7 @@ periodics:
       - name: TEST_CCM
         value: "true"
       - name: KUBERNETES_VERSION
-        value: "latest"
+        value: "1.23.5"
       - name: GINKGO_ARGS
         # Check https://github.com/kubernetes-sigs/cloud-provider-azure/issues/224 for the status of each skipped test
         value: --ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\]|regular.resource.usage.tracking.resource.tracking.for|validates.MaxPods.limit.number.of.pods.that.are.allowed.to.run --test.parallel=30 --report-dir=/logs/artifacts --disable-log-dump=true
