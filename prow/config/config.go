@@ -171,10 +171,6 @@ type ProwConfig struct {
 	// to ignore when searching for OWNERS{,_ALIAS} files in a repo.
 	OwnersDirDenylist *OwnersDirDenylist `json:"owners_dir_denylist,omitempty"`
 
-	// OwnersDirBlacklist is deprecated, use OwnersDirDenylist instead
-	// TODO(chaodaiG, November 2021): Removed after October 2021
-	OwnersDirBlacklist *OwnersDirDenylist `json:"owners_dir_blacklist,omitempty"`
-
 	// Pub/Sub Subscriptions that we want to listen to
 	PubSubSubscriptions PubsubSubscriptions `json:"pubsub_subscriptions,omitempty"`
 
