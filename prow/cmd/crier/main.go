@@ -59,7 +59,6 @@ type options struct {
 	pubsubWorkers         int
 	githubWorkers         int
 	slackWorkers          int
-	gcsWorkers            int
 	k8sGCSWorkers         int
 	blobStorageWorkers    int
 	k8sBlobStorageWorkers int
@@ -78,7 +77,7 @@ type options struct {
 }
 
 func (o *options) validate() error {
-	if o.gerritWorkers+o.pubsubWorkers+o.githubWorkers+o.slackWorkers+o.gcsWorkers+o.k8sGCSWorkers+o.blobStorageWorkers+o.k8sBlobStorageWorkers <= 0 {
+	if o.gerritWorkers+o.pubsubWorkers+o.githubWorkers+o.slackWorkers+o.blobStorageWorkers+o.k8sBlobStorageWorkers <= 0 {
 		return errors.New("crier need to have at least one report worker to start")
 	}
 
@@ -108,25 +107,6 @@ func (o *options) validate() error {
 		}
 	}
 
-	if o.gcsWorkers > 0 {
-		logrus.Warn("--gcs-workers is deprecated and will be removed in August 2020. Use --blob-storage-workers instead.")
-		// return an error when the old and new flags are both set
-		if o.blobStorageWorkers != 0 {
-			return errors.New("only one of --gcs-workers or --blog-storage-workers can be set at the same time")
-		}
-		// use gcsWorkers if blobStorageWorkers is not set
-		o.blobStorageWorkers = o.gcsWorkers
-	}
-	if o.k8sGCSWorkers > 0 {
-		logrus.Warn("--kubernetes-gcs-workers is deprecated and will be removed in August 2020. Use --kubernetes-blob-storage-workers instead.")
-		// return an error when the old and new flags are both set
-		if o.k8sBlobStorageWorkers != 0 {
-			return errors.New("only one of --kubernetes-gcs-workers or --kubernetes-blog-storage-workers can be set at the same time")
-		}
-		// use k8sGCSWorkers if k8sBlobStorageWorkers is not set
-		o.k8sBlobStorageWorkers = o.k8sGCSWorkers
-	}
-
 	for _, opt := range []interface{ Validate(bool) error }{&o.client, &o.githubEnablement, &o.config} {
 		if err := opt.Validate(o.dryrun); err != nil {
 			return err
@@ -147,11 +127,9 @@ func (o *options) parseArgs(fs *flag.FlagSet, args []string) error {
 	fs.IntVar(&o.githubWorkers, "github-workers", 0, "Number of github report workers (0 means disabled)")
 	fs.IntVar(&o.slackWorkers, "slack-workers", 0, "Number of Slack report workers (0 means disabled)")
 	fs.Var(&o.additionalSlackTokenFiles, "additional-slack-token-files", "Map of additional slack token files. example: --additional-slack-token-files=foo=/etc/foo-slack-tokens/token, repeat flag for each host")
-	fs.IntVar(&o.gcsWorkers, "gcs-workers", 0, "Number of GCS report workers (0 means disabled)")
-	fs.IntVar(&o.k8sGCSWorkers, "kubernetes-gcs-workers", 0, "Number of Kubernetes-specific GCS report workers (0 means disabled)")
 	fs.IntVar(&o.blobStorageWorkers, "blob-storage-workers", 0, "Number of blob storage report workers (0 means disabled)")
 	fs.IntVar(&o.k8sBlobStorageWorkers, "kubernetes-blob-storage-workers", 0, "Number of Kubernetes-specific blob storage report workers (0 means disabled)")
-	fs.Float64Var(&o.k8sReportFraction, "kubernetes-report-fraction", 1.0, "Approximate portion of jobs to report pod information for, if kubernetes-gcs-workers are enabled (0 - > none, 1.0 -> all)")
+	fs.Float64Var(&o.k8sReportFraction, "kubernetes-report-fraction", 1.0, "Approximate portion of jobs to report pod information for, if kubernetes-blob-storage-workers are enabled (0 - > none, 1.0 -> all)")
 	fs.StringVar(&o.slackTokenFile, "slack-token-file", "", "Path to a Slack token file")
 	fs.StringVar(&o.reportAgent, "report-agent", "", "Only report specified agent - empty means report to all agents (effective for github and Slack only)")
 
