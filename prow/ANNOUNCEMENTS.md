@@ -188,6 +188,8 @@ state and no claims of backwards compatibility are made for any external API.
 Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
+ - *May 27th, 2022* Crier flags `--gcs-workers` and `--kubernetes-gcs-workers` are
+   removed in favor of `--blob-storage-workers` and `--kubernetes-blob-storage-workers`.
  - *May 27th, 2022* The `owners_dir_blacklist` field in prow config is removed
    in favor of `owners_dir_denylist`.
  - *February 22nd, 2022* Since prow version `v20220222-acb5731b85`, the
