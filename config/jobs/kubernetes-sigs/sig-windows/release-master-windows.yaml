@@ -42,8 +42,8 @@ presets:
     preset-capz-windows-ci-entrypoint-common-main: "true"
     # https://capz.sigs.k8s.io/developers/development.html#running-custom-test-suites-on-capz-clusters
   env:
-    - name: USE_CI_ARTIFACTS
-      value: "true"
+    - name: KUBERNETES_VERSION
+      value: "latest"
     - name: NODE_MACHINE_TYPE
       value: "Standard_D4s_v3"
     - name: TEST_WINDOWS
@@ -208,14 +208,11 @@ periodics:
     preset-capz-windows-ci-entrypoint-common-main: "true"
     preset-capz-windows-azuredisk: "true"
   extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
     base_ref: main
     path_alias: sigs.k8s.io/cluster-api-provider-azure
+    workdir: true
   - org: kubernetes-sigs
     repo: azuredisk-csi-driver
     base_ref: master
