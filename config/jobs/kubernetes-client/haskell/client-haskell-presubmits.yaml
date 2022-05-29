@@ -6,7 +6,7 @@ presubmits:
     optional: true
     spec:
       containers:
-      - image: docker.io/haskell:8.6.5
+      - image: docker.io/haskell:9.0.2
         env:
         command:
         - bash
