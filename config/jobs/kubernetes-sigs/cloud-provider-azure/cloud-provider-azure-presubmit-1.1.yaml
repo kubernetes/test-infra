@@ -172,6 +172,7 @@ presubmits:
             - bash
             - -c
             - >-
+              cp ./kubeconfig ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure/kubeconfig &&
               cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
               make test-ccm-e2e
             securityContext:
@@ -277,6 +278,7 @@ presubmits:
             - bash
             - -c
             - >-
+              cp ./kubeconfig ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure/kubeconfig &&
               cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
               make test-ccm-e2e
             securityContext:

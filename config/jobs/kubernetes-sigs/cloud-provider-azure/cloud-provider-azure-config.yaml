@@ -173,6 +173,7 @@ presubmits:
           - bash
           - -c
           - >-
+            cp ./kubeconfig ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure/kubeconfig &&
             cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
             make test-ccm-e2e
           securityContext:
@@ -279,6 +280,7 @@ presubmits:
           - bash
           - -c
           - >-
+            cp ./kubeconfig ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure/kubeconfig &&
             cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
             make test-ccm-e2e
           securityContext:
@@ -351,6 +353,7 @@ periodics:
         - bash
         - -c
         - >-
+          cp ./kubeconfig ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure/kubeconfig &&
           cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
           make test-ccm-e2e
         securityContext:
@@ -401,6 +404,7 @@ periodics:
         - bash
         - -c
         - >-
+          cp ./kubeconfig ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure/kubeconfig &&
           cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
           make test-ccm-e2e
         securityContext:
@@ -450,6 +454,7 @@ periodics:
         - bash
         - -c
         - >-
+          cp ./kubeconfig ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure/kubeconfig &&
           cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
           make test-ccm-e2e
         securityContext:
@@ -933,6 +938,7 @@ periodics:
         - bash
         - -c
         - >-
+          cp ./kubeconfig ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure/kubeconfig &&
           cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
           make test-ccm-e2e
         securityContext:
@@ -1119,7 +1125,7 @@ periodics:
         value: "1.23.5"
       - name: GINKGO_ARGS
         # Check https://github.com/kubernetes-sigs/cloud-provider-azure/issues/224 for the status of each skipped test
-        value: --ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\]|regular.resource.usage.tracking.resource.tracking.for|validates.MaxPods.limit.number.of.pods.that.are.allowed.to.run --test.parallel=30 --report-dir=/logs/artifacts --disable-log-dump=true
+        value: --ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\]|regular.resource.usage.tracking.resource.tracking.for|validates.MaxPods.limit.number.of.pods.that.are.allowed.to.run|In-tree.Volumes --test.parallel=30 --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT
         value: "3"
       - name: CLUSTER_TEMPLATE
