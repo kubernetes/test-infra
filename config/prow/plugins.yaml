@@ -366,7 +366,7 @@ slack:
     - kops-dev
     exempt_users:
     - k8s-ci-robot
-    - dependabot
+    - dependabot[bot]
   - repos:
     - kubernetes/cluster-api-provider-aws
     channels:
