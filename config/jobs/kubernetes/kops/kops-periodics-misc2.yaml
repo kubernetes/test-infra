@@ -1189,7 +1189,7 @@ periodics:
     preset-dind-enabled: "true"
   decorate: true
   decoration_config:
-    timeout: 150m
+    timeout: 180m
   extra_refs:
   - org: kubernetes
     repo: kops
