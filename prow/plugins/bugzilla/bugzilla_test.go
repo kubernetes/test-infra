@@ -2311,17 +2311,9 @@ func TestIsBugAllowed(t *testing.T) {
 			expected: true,
 		},
 		{
-			name: "multiple groups in bug but with all allowed included is allowed",
+			name: "some but not all groups matching is not allowed",
 			bug: &bugzilla.Bug{
 				Groups: []string{"whoa", "really", "cool"},
-			},
-			groups:   []string{"whoa", "really"},
-			expected: true,
-		},
-		{
-			name: "multiple groups in bug but not all allowed included is not allowed",
-			bug: &bugzilla.Bug{
-				Groups: []string{"whoa", "cool"},
 			},
 			groups:   []string{"whoa", "really"},
 			expected: false,
