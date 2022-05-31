@@ -296,21 +296,17 @@ func changesHandler(fgc *fakegerrit.FakeGerrit) func(*http.Request) (interface{}
 		logrus.Infof("Serving: %s, %s", r.URL.Path, r.Method)
 		vars := mux.Vars(r)
 		id := vars["change-id"]
-		revision := vars["revision-id"]
 		change := fgc.GetChange(id)
 		if change == nil {
 			return "", http.StatusMisdirectedRequest, nil
 		}
-		// SetReview
-		logrus.Infof("Set Review")
 		if r.Method == http.MethodPost {
-			if _, ok := change.Revisions[revision]; !ok {
-				return "", http.StatusNotFound, nil
-			}
+			logrus.Infof("Set Review")
 			review := gerrit.ReviewInput{}
 			if err := unmarshal(r, &review); err != nil {
 				return "", http.StatusInternalServerError, err
 			}
+			logrus.WithField("Review", review).Infof("Successfully got review")
 			change.Messages = append(change.Messages, gerrit.ChangeMessageInfo{Message: review.Message})
 			// GetChange
 		} else {
