@@ -1,0 +1,11 @@
+postsubmits:
+  http://fakegerritserver/gerrit-test-infra:
+    - name: hello-world-postsubmit
+      always_run: true
+      spec:
+        containers:
+        - command:
+          - echo
+          args:
+          - "Hello World!"
+          image: localhost:5001/alpine
