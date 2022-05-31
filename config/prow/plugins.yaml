@@ -1351,6 +1351,12 @@ external_plugins:
     - issue_comment
     - pull_request
     endpoint: http://cherrypicker
+  kubernetes-sigs/ibm-powervs-block-csi-driver:
+  - name: cherrypicker
+    events:
+      - issue_comment
+      - pull_request
+    endpoint: http://cherrypicker
   kubernetes-sigs/node-feature-discovery:
   - name: cherrypicker
     events:
