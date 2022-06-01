@@ -247,6 +247,13 @@ blockades:
   exceptionregexps:
   - ^README\.md$
   explanation: "We do not accept changes directly against this repository, unless the change is to the `README.md` itself. Please see `CONTRIBUTING.md` for information on where and how to contribute instead."
+- repos:
+  - kubernetes/test-infra
+  blockregexps:
+  - ^prow/.+\.md$
+  exceptionregexps:
+  - ^prow/README\.md$
+  explanation: "All Prow documentation (Markdown files) have moved to https://github.com/kubernetes-sigs/prow as part of https://github.com/kubernetes-sigs/prow/issues/4."
 
 blunderbuss:
   max_request_count: 2
@@ -973,6 +980,7 @@ plugins:
 
   kubernetes/test-infra:
     plugins:
+    - blockade
     - config-updater
     - milestone
     - override
