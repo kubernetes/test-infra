@@ -543,7 +543,7 @@ func TestRerun(t *testing.T) {
 					State: prowapi.PendingState,
 				},
 			})
-			authCfgGetter := func(refs *prowapi.Refs) *prowapi.RerunAuthConfig {
+			authCfgGetter := func(refs *prowapi.Refs, cluster string) *prowapi.RerunAuthConfig {
 				return &prowapi.RerunAuthConfig{
 					AllowAnyone: tc.allowAnyone,
 					GitHubUsers: tc.authorized,
