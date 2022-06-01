@@ -8,6 +8,8 @@ presubmits:
     - ^release-eus$
     - ^release-efix$
     decorate: true
+    labels:
+      preset-service-account: "true"
     skip_if_only_changed: "^docs/|\\.(md|png)$|^(OWNERS|SECURITY_CONTACTS)$"
     always_run: true
     path_alias: github.com/IBM/ibm-licensing-operator
@@ -31,6 +33,8 @@ presubmits:
     - ^release-eus$
     - ^release-efix$
     decorate: true
+    labels:
+      preset-service-account: "true"
     skip_if_only_changed: "^docs/|\\.(md|png)$|^(OWNERS|SECURITY_CONTACTS)$"
     always_run: true
     path_alias: github.com/IBM/ibm-licensing-operator
@@ -54,6 +58,8 @@ presubmits:
     - ^release-eus$
     - ^release-efix$
     decorate: true
+    labels:
+      preset-service-account: "true"
     skip_if_only_changed: "^docs/|\\.(md|png)$|^(OWNERS|SECURITY_CONTACTS)$"
     always_run: true
     path_alias: github.com/IBM/ibm-licensing-operator
