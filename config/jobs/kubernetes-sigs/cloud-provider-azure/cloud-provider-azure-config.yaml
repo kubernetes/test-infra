@@ -292,6 +292,8 @@ presubmits:
               value: "3"
             - name: KUBERNETES_VERSION
               value: "latest"
+            - name: AZURE_LOCATION
+              value: "westeurope"
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-capz
@@ -1058,7 +1060,8 @@ periodics:
       - name: KUBERNETES_VERSION
         value: "1.23.5"
       - name: GINKGO_ARGS
-        value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --test.parallel=30 --report-dir=/logs/artifacts --disable-log-dump=true
+        # The 3 skipped testcases need k8s v1.24
+        value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|Kubelet.should.reject.pod.when.the.node.OS.doesn't.match.pod's.OS|Probing.container.should.be.restarted.with.a.GRPC.liveness.probe|CSIStorageCapacity.should.support.CSIStorageCapacities.API.operations --test.parallel=30 --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT
         value: "3"
       - name: CLUSTER_TEMPLATE
@@ -1071,8 +1074,8 @@ periodics:
     testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
     description: "Runs Kubernetes conformance tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on vmss."
 - interval: 24h
-  # cloud-provider-azure-conformance-vmss-serial-capz runs Kubernetes conformance serial tests periodically on vmss.
-  name: cloud-provider-azure-conformance-vmss-serial-capz
+  # cloud-provider-azure-conformance-serial-vmss-capz runs Kubernetes conformance serial tests periodically on vmss.
+  name: cloud-provider-azure-conformance-serial-vmss-capz
   decorate: true
   decoration_config:
     timeout: 5h
@@ -1119,7 +1122,7 @@ periodics:
         value: "1.23.5"
       - name: GINKGO_ARGS
         # Check https://github.com/kubernetes-sigs/cloud-provider-azure/issues/224 for the status of each skipped test
-        value: --ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\]|regular.resource.usage.tracking.resource.tracking.for|validates.MaxPods.limit.number.of.pods.that.are.allowed.to.run --test.parallel=30 --report-dir=/logs/artifacts --disable-log-dump=true
+        value: --ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\]|regular.resource.usage.tracking.resource.tracking.for|validates.MaxPods.limit.number.of.pods.that.are.allowed.to.run|In-tree.Volumes --test.parallel=30 --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT
         value: "3"
       - name: CLUSTER_TEMPLATE
@@ -1128,7 +1131,7 @@ periodics:
         value: "Standard"
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
-    testgrid-tab-name: cloud-provider-azure-conformance-vmss-serial-capz
+    testgrid-tab-name: cloud-provider-azure-conformance-serial-vmss-capz
     testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
     description: "Runs Kubernetes serial conformance tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on vmss."
 - interval: 24h
@@ -1180,7 +1183,7 @@ periodics:
         value: "1.23.5"
       - name: GINKGO_ARGS
         # Check https://github.com/kubernetes-sigs/cloud-provider-azure/issues/224 for the status of each skipped test
-        value: --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|Delete.Grace.Period|runs.ReplicaSets.to.verify.preemption.running.path|client.go.should.negotiate|should.contain.custom.columns.for.each.resource|Network.should.set.TCP.CLOSE_WAIT.timeout|PodSecurityPolicy --test.parallel=30 --report-dir=/logs/artifacts --disable-log-dump=true
+        value: --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|Delete.Grace.Period|runs.ReplicaSets.to.verify.preemption.running.path|client.go.should.negotiate|should.contain.custom.columns.for.each.resource|Network.should.set.TCP.CLOSE_WAIT.timeout|PodSecurityPolicy|In-tree.Volumes --test.parallel=30 --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT
         value: "3"
       - name: CLUSTER_TEMPLATE
