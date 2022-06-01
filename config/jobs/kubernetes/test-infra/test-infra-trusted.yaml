@@ -772,3 +772,38 @@ periodics:
       - --warnings=duplicate-job-refs
   annotations:
     testgrid-dashboards: sig-testing-misc
+
+- interval: 24h
+  name: ci-org-owners-aliases-sync-kubernetes-client
+  annotations:
+    testgrid-dashboards: sig-contribex-org
+    testgrid-tab-name: ci-peribolos
+    testgrid-alert-email: kubernetes-github-managment-alerts@googlegroups.com, k8s-infra-oncall@google.com
+    testgrid-num-failures-to-alert: '1'
+  cluster: test-infra-trusted
+  decorate: true
+  max_concurrency: 1
+  extra_refs:
+  - org: kubernetes
+    repo: org
+    base_ref: main
+  spec:
+    containers:
+    - image: golang:1.17
+      command: ["/bin/bash", "-c"]
+      env:
+        - name: GITHUB_TOKEN_PATH
+          value: /etc/github-token/oauth
+      args:
+        - curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+          apt update;
+          apt install gh;
+          ./admin/aliases-sync.sh kubernetes-client;
+      volumeMounts:
+      - name: github
+        mountPath: /etc/github-token
+    volumes:
+    - name: github
+      secret:
+        secretName: oauth-token
