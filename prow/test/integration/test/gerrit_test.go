@@ -35,15 +35,9 @@ const (
 	gerritServer = "http://localhost/fakegerritserver"
 )
 
-func makeTimeStamp(t time.Time) gerrit.Timestamp {
-	return gerrit.Timestamp{Time: t}
-}
-
 type LastSyncState map[string]map[string]time.Time
 
 func TestGerrit(t *testing.T) {
-	startTime := time.Now().AddDate(0, 0, 2).UTC()
-	submitTime := makeTimeStamp(startTime.Add(time.Hour * 6))
 	tests := []struct {
 		name     string
 		change   gerrit.ChangeInfo
@@ -56,11 +50,10 @@ func TestGerrit(t *testing.T) {
 				ID:              "1",
 				ChangeID:        "1",
 				Project:         "gerrit-test-infra",
-				Updated:         makeTimeStamp(startTime),
 				Branch:          "master",
 				Status:          "NEW",
-				Revisions:       map[string]client.RevisionInfo{"1": {Number: 1, Ref: "refs/changes/00/1/1", Created: makeTimeStamp(time.Now().AddDate(0, 0, 2).UTC())}},
-				Messages:        []gerrit.ChangeMessageInfo{{RevisionNumber: 1, Message: "/test all", ID: "1", Date: makeTimeStamp(time.Now().AddDate(0, 0, 2).UTC())}},
+				Revisions:       map[string]client.RevisionInfo{"1": {Number: 1, Ref: "refs/changes/00/1/1"}},
+				Messages:        []gerrit.ChangeMessageInfo{{RevisionNumber: 1, Message: "/test all", ID: "1"}},
 			},
 			messages: []string{"/test all", "Triggered 1 prow jobs (0 suppressed reporting): \n  * Name: hello-world-presubmit"},
 		},
@@ -73,7 +66,6 @@ func TestGerrit(t *testing.T) {
 				Project:         "gerrit-test-infra",
 				Status:          "NEW",
 				Branch:          "master",
-				Updated:         makeTimeStamp(startTime.Add(time.Hour * 2)),
 				WorkInProgress:  true,
 				Revisions: map[string]gerrit.RevisionInfo{
 					"1": {
@@ -91,9 +83,8 @@ func TestGerrit(t *testing.T) {
 				ID:              "3",
 				Branch:          "master",
 				Project:         "gerrit-test-infra",
-				Updated:         makeTimeStamp(startTime.Add(time.Hour * 4)),
 				Status:          "NEW",
-				Messages:        []gerrit.ChangeMessageInfo{{RevisionNumber: 1, Message: "/test all", ID: "1", Date: makeTimeStamp(startTime.Add(time.Hour * 4))}},
+				Messages:        []gerrit.ChangeMessageInfo{{RevisionNumber: 1, Message: "/test all", ID: "1"}},
 				Revisions: map[string]client.RevisionInfo{
 					"1": {
 						Number: 1001,
@@ -102,27 +93,10 @@ func TestGerrit(t *testing.T) {
 							"africa-lyrics.txt":    {},
 							"important-code.go":    {},
 						},
-						Created: makeTimeStamp(startTime.Add(time.Hour * 4)),
 					},
 				},
 			},
 			messages: []string{"/test all", "Triggered 2 prow jobs (0 suppressed reporting): \n  * Name: hello-world-presubmit\n  * Name: bee-movie-presubmit"},
-		},
-		{
-			name: "1 merged change with 1 postsubmit triggered",
-			change: gerrit.ChangeInfo{
-				CurrentRevision: "1",
-				ID:              "4",
-				ChangeID:        "4",
-				Project:         "gerrit-test-infra",
-				Messages:        []gerrit.ChangeMessageInfo{{RevisionNumber: 1, Message: "LGTM", ID: "1", Date: makeTimeStamp(startTime.Add(time.Hour * 4))}},
-				Updated:         makeTimeStamp(startTime.Add(time.Hour * 6)),
-				Branch:          "master",
-				Status:          "MERGED",
-				Submitted:       &submitTime,
-				Revisions:       map[string]client.RevisionInfo{"1": {Number: 1, Ref: "refs/changes/00/1/1", Created: makeTimeStamp(time.Now().AddDate(0, 0, 6).UTC())}},
-			},
-			messages: []string{"LGTM", "Triggered 1 prow jobs (0 suppressed reporting): \n  * Name: hello-world-postsubmit"},
 		},
 	}
 	for _, tc := range tests {
@@ -182,44 +156,7 @@ func mapToStrings(messages []gerrit.ChangeMessageInfo) []string {
 	for _, msg := range messages {
 		res = append(res, msg.Message)
 	}
-<<<<<<< HEAD
-
-	branch := gerrit.BranchInfo{}
-
-	if err = addBranchToServer(branch, "gerrit-test-infra", "master"); err != nil {
-		t.Fatalf("failed to add branch to server: %v", err)
-	}
-	if err = addAccountToServer(account); err != nil {
-		t.Fatalf("Failed to add change to server: %s", err)
-	}
-	if err = login(account.AccountID); err != nil {
-		t.Fatalf("Failed to set self on server: %s", err)
-	}
-	if err = addChangeToServer(change, "gerrit-test-infra"); err != nil {
-		t.Fatalf("Failed to add change to server: %s", err)
-	}
-
-	//Give some time for gerrit to pick up the change
-	time.Sleep(15 * time.Second)
-
-	resp, err := gerritClient.GetChange(gerritServer, "1")
-	if err != nil {
-		reset()
-		t.Fatalf("Failed getting gerrit change: %v", err)
-	}
-
-	if len(resp.Messages) < 2 {
-		t.Errorf("gerrit did not add any messages to change: %v", resp)
-	}
-	if !strings.Contains(resp.Messages[1].Message, "Triggered 1 prow jobs") {
-		t.Errorf("Did not trigger prowjob. Message: %s", resp.Messages[1].Message)
-	}
-
-	// Reset the fakeGerritServer so the test can be run again
-	reset()
-=======
 	return res
->>>>>>> 6eb3389a15 (Add more robust testing)
 }
 
 func reset() error {
