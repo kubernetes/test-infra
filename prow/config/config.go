@@ -1423,6 +1423,7 @@ func ReadJobConfig(jobConfig string, yamlOpts ...yaml.JSONOpt) (JobConfig, error
 	jobConfigCount := 0
 	allStart := time.Now()
 	jc := JobConfig{}
+	var errs []error
 	err = filepath.Walk(jobConfig, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			logrus.WithError(err).Errorf("walking path %q.", path)
@@ -1453,23 +1454,27 @@ func ReadJobConfig(jobConfig string, yamlOpts ...yaml.JSONOpt) (JobConfig, error
 
 		base := filepath.Base(path)
 		if uniqueBasenames.Has(base) {
-			return fmt.Errorf("duplicated basename is not allowed: %s", base)
+			errs = append(errs, fmt.Errorf("duplicated basename is not allowed: %s", base))
+			return nil
 		}
 		uniqueBasenames.Insert(base)
 
 		fileStart := time.Now()
 		var subConfig JobConfig
 		if err := yamlToConfig(path, &subConfig, yamlOpts...); err != nil {
-			return err
+			errs = append(errs, err)
+			return nil
 		}
 		jc, err = mergeJobConfigs(jc, subConfig)
 		if err == nil {
 			logrus.WithField("jobConfig", path).WithField("duration", time.Since(fileStart)).Traceln("config loaded")
 			jobConfigCount++
+		} else {
+			errs = append(errs, err)
 		}
-		return err
+		return nil
 	})
-
+	err = utilerrors.NewAggregate(append(errs, err))
 	if err != nil {
 		return JobConfig{}, err
 	}
