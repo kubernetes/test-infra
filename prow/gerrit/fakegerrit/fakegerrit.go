@@ -19,6 +19,7 @@ package fakegerrit
 import (
 	"fmt"
 	"sync"
+	"time"
 
 	gerrit "github.com/andygrunwald/go-gerrit"
 )
@@ -38,7 +39,8 @@ type FakeGerrit struct {
 	Accounts map[string]*gerrit.AccountInfo
 	Projects map[string]*Project
 	// lock to be thread safe
-	lock sync.Mutex
+	lock           sync.Mutex
+	lastUpdateTime gerrit.Timestamp
 }
 
 func (fg *FakeGerrit) Reset() {
@@ -70,6 +72,10 @@ func (fg *FakeGerrit) GetChangesForProject(projectName string, start, desiredTot
 	return res
 }
 
+func makeTimeStamp(t time.Time) gerrit.Timestamp {
+	return gerrit.Timestamp{Time: t}
+}
+
 func (fg *FakeGerrit) GetComments(id string) map[string][]*gerrit.CommentInfo {
 	fg.lock.Lock()
 	defer fg.lock.Unlock()
@@ -78,6 +84,23 @@ func (fg *FakeGerrit) GetComments(id string) map[string][]*gerrit.CommentInfo {
 		return res.Comments
 	}
 	return nil
+}
+
+func (fg *FakeGerrit) AddChangeAfter(projectName string, change *gerrit.ChangeInfo) {
+	fg.lastUpdateTime = makeTimeStamp(fg.lastUpdateTime.Add(time.Hour * 12).UTC())
+	if change.Submitted != nil {
+		change.Submitted = &fg.lastUpdateTime
+	}
+	change.Updated = fg.lastUpdateTime
+	if len(change.Messages) > 0 {
+		change.Messages[len(change.Messages)-1].Date = fg.lastUpdateTime
+	}
+	if rev, ok := change.Revisions[change.CurrentRevision]; ok {
+		rev.Created = fg.lastUpdateTime
+		change.Revisions[change.CurrentRevision] = rev
+	}
+
+	fg.AddChange(projectName, change)
 }
 
 // Add a change to Fake gerrit and keep track that the change belongs to the given project
@@ -165,8 +188,9 @@ func (fg *FakeGerrit) SetSelf(id string) error {
 
 func NewFakeGerritClient() *FakeGerrit {
 	return &FakeGerrit{
-		Changes:  make(map[string]Change),
-		Accounts: make(map[string]*gerrit.AccountInfo),
-		Projects: make(map[string]*Project),
+		Changes:        make(map[string]Change),
+		Accounts:       make(map[string]*gerrit.AccountInfo),
+		Projects:       make(map[string]*Project),
+		lastUpdateTime: makeTimeStamp(time.Now().UTC()),
 	}
 }

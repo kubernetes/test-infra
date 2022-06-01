@@ -221,7 +221,6 @@ func (c *Controller) Sync() error {
 	latest := syncTime.DeepCopy()
 	for instance, changes := range c.gc.QueryChanges(syncTime, c.config().Gerrit.RateLimit) {
 		log := logrus.WithField("host", instance)
-		log.WithField("Changes", changes).Info("LOOK HERE")
 		for _, change := range changes {
 			log := log.WithFields(logrus.Fields{
 				"branch":   change.Branch,
@@ -361,7 +360,6 @@ func failedJobs(account int, revision int, messages ...gerrit.ChangeMessageInfo)
 
 // processChange creates new presubmit/postsubmit prowjobs base off the gerrit changes
 func (c *Controller) processChange(logger logrus.FieldLogger, instance string, change client.ChangeInfo, cloneURI *url.URL, cache *config.InRepoConfigCache) error {
-	logger.WithField("Change", change).Infof("Made it to process Change")
 	baseSHA, err := c.gc.GetBranchRevision(instance, change.Project, change.Branch)
 	trimmedHostPath := cloneURI.Host + "/" + cloneURI.Path
 	if err != nil {
@@ -389,14 +387,11 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 
 	changedFiles := listChangedFiles(change)
 
-	logger.WithField("Status", change.Status).Infof("MAde it to switch")
 	switch change.Status {
 	case client.Merged:
-		logger.Info("IN MERGED")
 		var postsubmits []config.Postsubmit
 		for attempt := 0; attempt < inRepoConfigRetries; attempt++ {
 			postsubmits, err = cache.GetPostsubmits(trimmedHostPath, func() (string, error) { return baseSHA, nil }, func() (string, error) { return change.CurrentRevision, nil })
-			logger.Info("HERE FOR SOME REASON")
 			if err == nil {
 				break
 			}
@@ -405,7 +400,6 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 			return fmt.Errorf("failed to get inRepoConfig for Postsubmits: %w", err)
 		}
 		postsubmits = append(postsubmits, c.config().PostsubmitsStatic[cloneURI.String()]...)
-		logger.WithField("postsubmits", postsubmits).Infof("Made it to postsubmits")
 		for _, postsubmit := range postsubmits {
 			if shouldRun, err := postsubmit.ShouldRun(change.Branch, changedFiles); err != nil {
 				return fmt.Errorf("failed to determine if postsubmit %q should run: %w", postsubmit.Name, err)

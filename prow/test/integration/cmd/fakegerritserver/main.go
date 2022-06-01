@@ -151,7 +151,7 @@ func addChangeHandler(fgc *fakegerrit.FakeGerrit) func(*http.Request) (interface
 			logrus.Infof("Error unmarshaling: %v", err)
 			return "", http.StatusInternalServerError, err
 		}
-		fgc.AddChange(project, &change)
+		fgc.AddChangeAfter(project, &change)
 		return "", http.StatusOK, nil
 	}
 }
@@ -301,12 +301,10 @@ func changesHandler(fgc *fakegerrit.FakeGerrit) func(*http.Request) (interface{}
 			return "", http.StatusMisdirectedRequest, nil
 		}
 		if r.Method == http.MethodPost {
-			logrus.Infof("Set Review")
 			review := gerrit.ReviewInput{}
 			if err := unmarshal(r, &review); err != nil {
 				return "", http.StatusInternalServerError, err
 			}
-			logrus.WithField("Review", review).Infof("Successfully got review")
 			change.Messages = append(change.Messages, gerrit.ChangeMessageInfo{Message: review.Message})
 			// GetChange
 		} else {
