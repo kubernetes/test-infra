@@ -3,6 +3,11 @@
 ## New features
 
 New features added to each component:
+  - *June 8, 2022* `deck.rerun_auth_configs` can optionally be replaced with
+    `deck.default_rerun_auth_configs` which supports a new format
+    that is a slice of filters with associated rerun auth configs rather than a
+    map. Currently entries can filter by repo and/or cluster. The old field is still
+    supported and will not be deprecated.
   - *April 6, 2022* Highlight and pin interesting lines. To do this,
     shift-click on log lines in the buildlog lens. The URL fragment
     causes the same lines to be highlighted next page load. Additionally,

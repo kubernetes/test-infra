@@ -270,7 +270,7 @@ branch-protection:
     unmanaged: false
 
 
-# The git sha from which this config was generated
+# The git sha from which this config was generated.
 config_version_sha: ' '
 deck:
     # AdditionalAllowedBuckets is a list of storage buckets to allow in artifact requests
@@ -293,6 +293,60 @@ deck:
         # Logo is the location of the logo that will be loaded in deck.
         logo: ' '
 
+    # DefaultRerunAuthConfigs is a list of DefaultRerunAuthConfigEntry structures that specify who can
+    # trigger job reruns. Reruns are based on whether the entry's org/repo or cluster matches with the
+    # expected fields in the given configuration.
+
+    # Each entry in the slice specifies Repo and Cluster regexp filter fields to
+    # match against jobs and a corresponding RerunAuthConfig. The entry matching the job with the
+    # most specification is for authentication purposes.
+
+    # This field is smarter than the RerunAuthConfigs, because each
+    # entry includes additional Cluster regexp information that the old format
+    # does not consider.
+
+    # This field is mutually exclusive with the RerunAuthConfigs field.
+    default_rerun_auth_configs:
+      - # Cluster matches against the cluster alias of the build cluster that the
+        # ProwJob is configured to run on. Recall that ProwJobs default to running on
+        # the "default" build cluster if they omit the "cluster" field in config.
+        cluster: ' '
+
+        # OrgRepo matches against the "org" or "org/repo" that the presubmit or postsubmit
+        # is associated with. If the job is a periodic, extra_refs[0] is used. If the
+        # job is a periodic without extra_refs, the empty string will be used.
+        # If this field is omitted all jobs will match.
+        repo: ' '
+
+        # Config is the RerunAuthConfig to apply if the filter fields all match the
+        # ProwJob. Note that when multiple entries match a ProwJob the entry with the
+        # highest specification is used.
+        rerun_auth_configs:
+            # If AllowAnyone is set to true, any user can rerun the job
+            allow_anyone: true
+
+            # GitHubOrgs contains names of GitHub organizations whose members can rerun the job
+            github_orgs:
+              - ""
+
+            # GitHubTeams contains IDs of GitHub teams of users who can rerun the job
+            # If you know the name of a team and the org it belongs to,
+            # you can look up its ID using this command, where the team slug is the hyphenated name:
+            # curl -H "Authorization: token <token>" "https://api.github.com/orgs/<org-name>/teams/<team slug>"
+            # or, to list all teams in a given org, use
+            # curl -H "Authorization: token <token>" "https://api.github.com/orgs/<org-name>/teams"
+            github_team_ids:
+              - 0
+
+            # GitHubTeamSlugs contains slugs and orgs of teams of users who can rerun the job
+            github_team_slugs:
+              - org: ' '
+                slug: ' '
+
+            # GitHubUsers contains names of individual users who can rerun the job
+            github_users:
+              - ""
+
     # ExternalAgentLogs ensures external agents can expose
     # their logs in prow.
     external_agent_logs:
@@ -313,6 +367,8 @@ deck:
     hidden_repos:
       - ""
 
+    # RerunAuthConfigs is not deprecated but DefaultRerunAuthConfigs should be used in favor.
+    # It remains a part of Deck for the purposes of backwards compatibility.
     # RerunAuthConfigs is a map of configs that specify who is able to trigger job reruns. The field
     # accepts a key of: `org/repo`, `org` or `*` (wildcard) to define what GitHub org (or repo) a particular
     # config applies to and a value of: `RerunAuthConfig` struct to define the users/groups authorized to rerun jobs.
@@ -335,7 +391,7 @@ deck:
     # When unspecified (nil), it defaults to true (until ~Jan 2021).
     skip_storage_path_validation: false
 
-    # Spyglass specifies which viewers will be used for which artifacts when viewing a job in Deck
+    # Spyglass specifies which viewers will be used for which artifacts when viewing a job in Deck.
     spyglass:
         # If set, Announcement is used as a Go HTML template string to be displayed at the top of
         # each spyglass page. Using HTML in the template is acceptable.
@@ -355,7 +411,7 @@ deck:
 
         # GCSBrowserPrefixesByBucket are used to generate a link to a human-usable GCS browser.
         # They are mapped by bucket name or '*' which is the default value.
-        # They will only be utilized if there is not a GCSBrowserPrefixesByRepo for the org/repo
+        # They will only be utilized if there is not a GCSBrowserPrefixesByRepo for the org/repo.
         gcs_browser_prefixes_by_bucket:
             "": ""
 
@@ -378,21 +434,21 @@ deck:
             optional_files:
               - ""
 
-            # RemoteConfig specifies how to access remote lenses
+            # RemoteConfig specifies how to access remote lenses.
             remote_config:
-                # The endpoint for the lense
+                # The endpoint for the lense.
                 endpoint: ' '
 
-                # HideTitle defines if we will keep showing the title after lens loads
+                # HideTitle defines if we will keep showing the title after lens loads.
                 hide_title: false
 
-                # Priority for lens ordering, lowest priority first
+                # Priority for lens ordering, lowest priority first.
                 priority: 0
 
-                # The endpoint for static resources
+                # The endpoint for static resources.
                 static_root: ' '
 
-                # The human-readable title for the lens
+                # The human-readable title for the lens.
                 title: ' '
 
             # RequiredFiles is a list of regexes of file paths that must all be present for a lens to appear.
@@ -433,7 +489,7 @@ gerrit:
     deck_url: ' '
     org_repos_config: null
 
-    # TickInterval is how often we do a sync with binded gerrit instance
+    # TickInterval is how often we do a sync with binded gerrit instance.
     tick_interval: 0s
 
 
@@ -445,7 +501,7 @@ github:
     link_url: ' '
 github_reporter:
     # JobTypesToReport is used to determine which type of prowjob
-    # should be reported to github
+    # should be reported to github.
 
     # defaults to both presubmit and postsubmit jobs.
     job_types_to_report:
@@ -539,7 +595,7 @@ owners_dir_denylist:
     # to the denylist.
     ignore_preconfigured_defaults: true
 
-    # Repos configures a directory denylist per repo (or org)
+    # Repos configures a directory denylist per repo (or org).
     repos:
         "": null
 plank:
@@ -960,7 +1016,7 @@ plank:
         "": 0
 
     # JobURLPrefixConfig is the host and path prefix under which job details
-    # will be viewable. Use `org/repo`, `org` or `*`as key and an url as value
+    # will be viewable. Use `org/repo`, `org` or `*`as key and an url as value.
     job_url_prefix_config:
         "": ""
 
@@ -968,7 +1024,7 @@ plank:
     job_url_template: ' '
 
     # JobURLPrefixDisableAppendStorageProvider disables that the storageProvider is
-    # automatically appended to the JobURLPrefix
+    # automatically appended to the JobURLPrefix.
     jobURLPrefixDisableAppendStorageProvider: true
 
     # PodPendingTimeout is after how long the controller will perform a garbage
@@ -1031,13 +1087,13 @@ prowjob_default_entries:
 prowjob_namespace: ' '
 
 
-# Pub/Sub Subscriptions that we want to listen to
+# Pub/Sub Subscriptions that we want to listen to.
 pubsub_subscriptions:
     "": null
 
 
 # PubSubTriggers defines Pub/Sub Subscriptions that we want to listen to,
-# can be used to restrict build cluster on a topic
+# can be used to restrict build cluster on a topic.
 pubsub_triggers:
   - allowed_clusters:
       - ""
@@ -1057,10 +1113,10 @@ push_gateway:
     # to the pushgateway. Defaults to 1m.
     interval: 0s
 
-    # ServeMetrics tells if or not the components serve metrics
+    # ServeMetrics tells if or not the components serve metrics.
     serve_metrics: false
 sinker:
-    # ExcludeClusters are build clusters that don't want to be managed by sinker
+    # ExcludeClusters are build clusters that don't want to be managed by sinker.
     exclude_clusters:
       - ""
 
@@ -1094,7 +1150,7 @@ slack_reporter_configs:
 
 # StatusErrorLink is the url that will be used for jenkins prowJobs that can't be
 # found, or have another generic issue. The default that will be used if this is not set
-# is: https://github.com/kubernetes/test-infra/issues
+# is: https://github.com/kubernetes/test-infra/issues.
 status_error_link: ' '
 tide:
     # BatchSizeLimitMap is a key/value pair of an org or org/repo as the key and

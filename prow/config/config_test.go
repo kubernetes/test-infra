@@ -3732,25 +3732,49 @@ func TestRerunAuthConfigsGetRerunAuthConfig(t *testing.T) {
 		name     string
 		configs  RerunAuthConfigs
 		refs     *prowapi.Refs
-		expected prowapi.RerunAuthConfig
+		cluster  string
+		expected *prowapi.RerunAuthConfig
 	}{
 		{
 			name:     "default to an empty config",
 			configs:  RerunAuthConfigs{},
 			refs:     &prowapi.Refs{Org: "my-default-org", Repo: "my-default-repo"},
-			expected: prowapi.RerunAuthConfig{},
+			cluster:  "",
+			expected: nil,
 		},
 		{
 			name:     "unknown org or org/repo return wildcard",
 			configs:  RerunAuthConfigs{"*": prowapi.RerunAuthConfig{GitHubUsers: []string{"clarketm"}}},
 			refs:     &prowapi.Refs{Org: "my-default-org", Repo: "my-default-repo"},
-			expected: prowapi.RerunAuthConfig{GitHubUsers: []string{"clarketm"}},
+			cluster:  "",
+			expected: &prowapi.RerunAuthConfig{GitHubUsers: []string{"clarketm"}},
 		},
 		{
-			name:     "no refs return wildcard",
-			configs:  RerunAuthConfigs{"*": prowapi.RerunAuthConfig{GitHubUsers: []string{"leonardo"}}},
+			name:     "no refs return wildcard empty string match",
+			configs:  RerunAuthConfigs{"": prowapi.RerunAuthConfig{GitHubUsers: []string{"leonardo"}}},
 			refs:     nil,
-			expected: prowapi.RerunAuthConfig{GitHubUsers: []string{"leonardo"}},
+			cluster:  "",
+			expected: &prowapi.RerunAuthConfig{GitHubUsers: []string{"leonardo"}},
+		},
+		{
+			name: "no refs return wildcard override to star match",
+			configs: RerunAuthConfigs{
+				"":      prowapi.RerunAuthConfig{GitHubUsers: []string{"clarketm"}},
+				"*":     prowapi.RerunAuthConfig{GitHubUsers: []string{"scoobydoo"}},
+				"istio": prowapi.RerunAuthConfig{GitHubUsers: []string{"billybob"}},
+			},
+			refs:     nil,
+			cluster:  "",
+			expected: &prowapi.RerunAuthConfig{GitHubUsers: []string{"scoobydoo"}},
+		},
+		{
+			name: "no refs return wildcard but there is no match",
+			configs: RerunAuthConfigs{
+				"istio": prowapi.RerunAuthConfig{GitHubUsers: []string{"billybob"}},
+			},
+			refs:     nil,
+			cluster:  "",
+			expected: nil,
 		},
 		{
 			name: "use org if defined",
@@ -3760,7 +3784,8 @@ func TestRerunAuthConfigsGetRerunAuthConfig(t *testing.T) {
 				"istio/test-infra": prowapi.RerunAuthConfig{GitHubUsers: []string{"billybob"}},
 			},
 			refs:     &prowapi.Refs{Org: "istio", Repo: "istio"},
-			expected: prowapi.RerunAuthConfig{GitHubUsers: []string{"scoobydoo"}},
+			cluster:  "",
+			expected: &prowapi.RerunAuthConfig{GitHubUsers: []string{"scoobydoo"}},
 		},
 		{
 			name: "use org/repo if defined",
@@ -3769,7 +3794,8 @@ func TestRerunAuthConfigsGetRerunAuthConfig(t *testing.T) {
 				"istio/istio": prowapi.RerunAuthConfig{GitHubUsers: []string{"skywalker"}},
 			},
 			refs:     &prowapi.Refs{Org: "istio", Repo: "istio"},
-			expected: prowapi.RerunAuthConfig{GitHubUsers: []string{"skywalker"}},
+			cluster:  "",
+			expected: &prowapi.RerunAuthConfig{GitHubUsers: []string{"skywalker"}},
 		},
 		{
 			name: "org/repo takes precedence over org",
@@ -3779,15 +3805,261 @@ func TestRerunAuthConfigsGetRerunAuthConfig(t *testing.T) {
 				"istio/istio": prowapi.RerunAuthConfig{GitHubUsers: []string{"airbender"}},
 			},
 			refs:     &prowapi.Refs{Org: "istio", Repo: "istio"},
-			expected: prowapi.RerunAuthConfig{GitHubUsers: []string{"airbender"}},
+			cluster:  "",
+			expected: &prowapi.RerunAuthConfig{GitHubUsers: []string{"airbender"}},
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			d := Deck{}
+			d.RerunAuthConfigs = tc.configs
+			err := d.FinalizeDefaultRerunAuthConfigs()
+			if err != nil {
+				t.Fatal("Failed to finalize default rerun auth config.")
+			}
 
-			if actual := tc.configs.GetRerunAuthConfig(tc.refs); !reflect.DeepEqual(actual, tc.expected) {
-				t.Errorf("Expected %v, got %v", tc.expected, actual)
+			if diff := cmp.Diff(tc.expected, d.GetRerunAuthConfig(tc.refs, tc.cluster)); diff != "" {
+				t.Errorf("GetRerunAuthConfig returned unexpected value (-want +got):\n%s", diff)
+			}
+		})
+	}
+}
+
+func TestDefaultRerunAuthConfigsGetRerunAuthConfig(t *testing.T) {
+	var testCases = []struct {
+		name     string
+		configs  []*DefaultRerunAuthConfigEntry
+		refs     *prowapi.Refs
+		cluster  string
+		expected *prowapi.RerunAuthConfig
+	}{
+		{
+			name:     "default to an empty config",
+			configs:  []*DefaultRerunAuthConfigEntry{},
+			refs:     &prowapi.Refs{Org: "my-default-org", Repo: "my-default-repo"},
+			cluster:  "",
+			expected: nil,
+		},
+		{
+			name: "unknown org or org/repo return wildcard",
+			configs: []*DefaultRerunAuthConfigEntry{
+				&DefaultRerunAuthConfigEntry{
+					OrgRepo: "*",
+					Cluster: "",
+					Config:  &prowapi.RerunAuthConfig{GitHubUsers: []string{"clarketm"}},
+				},
+			},
+			refs:     &prowapi.Refs{Org: "my-default-org", Repo: "my-default-repo"},
+			cluster:  "",
+			expected: &prowapi.RerunAuthConfig{GitHubUsers: []string{"clarketm"}},
+		},
+		{
+			name: "no refs return wildcard",
+			configs: []*DefaultRerunAuthConfigEntry{
+				&DefaultRerunAuthConfigEntry{
+					OrgRepo: "*",
+					Cluster: "",
+					Config:  &prowapi.RerunAuthConfig{GitHubUsers: []string{"leonardo"}},
+				},
+			},
+			refs:     nil,
+			cluster:  "",
+			expected: &prowapi.RerunAuthConfig{GitHubUsers: []string{"leonardo"}},
+		},
+		{
+			name: "no refs return wildcard empty string match",
+			configs: []*DefaultRerunAuthConfigEntry{
+				&DefaultRerunAuthConfigEntry{
+					OrgRepo: "",
+					Cluster: "",
+					Config:  &prowapi.RerunAuthConfig{GitHubUsers: []string{"leonardo"}},
+				},
+			},
+			refs:     nil,
+			cluster:  "",
+			expected: &prowapi.RerunAuthConfig{GitHubUsers: []string{"leonardo"}},
+		},
+		{
+			name: "no refs return wildcard override to star match",
+			configs: []*DefaultRerunAuthConfigEntry{
+				&DefaultRerunAuthConfigEntry{
+					OrgRepo: "",
+					Cluster: "",
+					Config:  &prowapi.RerunAuthConfig{GitHubUsers: []string{"clarketm"}},
+				},
+				&DefaultRerunAuthConfigEntry{
+					OrgRepo: "*",
+					Cluster: "",
+					Config:  &prowapi.RerunAuthConfig{GitHubUsers: []string{"scoobydoo"}},
+				},
+				&DefaultRerunAuthConfigEntry{
+					OrgRepo: "istio",
+					Cluster: "",
+					Config:  &prowapi.RerunAuthConfig{GitHubUsers: []string{"airbender"}},
+				},
+			},
+			refs:     nil,
+			cluster:  "",
+			expected: &prowapi.RerunAuthConfig{GitHubUsers: []string{"scoobydoo"}},
+		},
+		{
+			name: "no refs return wildcard but there is no match",
+			configs: []*DefaultRerunAuthConfigEntry{
+				&DefaultRerunAuthConfigEntry{
+					OrgRepo: "istio",
+					Cluster: "",
+					Config:  &prowapi.RerunAuthConfig{GitHubUsers: []string{"billybob"}},
+				},
+			},
+			refs:     nil,
+			cluster:  "",
+			expected: nil,
+		},
+		{
+			name: "use org if defined",
+			configs: []*DefaultRerunAuthConfigEntry{
+				&DefaultRerunAuthConfigEntry{
+					OrgRepo: "*",
+					Cluster: "",
+					Config:  &prowapi.RerunAuthConfig{GitHubUsers: []string{"clarketm"}},
+				},
+				&DefaultRerunAuthConfigEntry{
+					OrgRepo: "istio",
+					Cluster: "",
+					Config:  &prowapi.RerunAuthConfig{GitHubUsers: []string{"scoobydoo"}},
+				},
+				&DefaultRerunAuthConfigEntry{
+					OrgRepo: "istio/test-infra",
+					Cluster: "",
+					Config:  &prowapi.RerunAuthConfig{GitHubUsers: []string{"billybob"}},
+				},
+			},
+			refs:     &prowapi.Refs{Org: "istio", Repo: "istio"},
+			cluster:  "",
+			expected: &prowapi.RerunAuthConfig{GitHubUsers: []string{"scoobydoo"}},
+		},
+		{
+			name: "use org/repo if defined",
+			configs: []*DefaultRerunAuthConfigEntry{
+				&DefaultRerunAuthConfigEntry{
+					OrgRepo: "*",
+					Cluster: "",
+					Config:  &prowapi.RerunAuthConfig{GitHubUsers: []string{"clarketm"}},
+				},
+				&DefaultRerunAuthConfigEntry{
+					OrgRepo: "istio/istio",
+					Cluster: "",
+					Config:  &prowapi.RerunAuthConfig{GitHubUsers: []string{"skywalker"}},
+				},
+			},
+			refs:     &prowapi.Refs{Org: "istio", Repo: "istio"},
+			cluster:  "",
+			expected: &prowapi.RerunAuthConfig{GitHubUsers: []string{"skywalker"}},
+		},
+		{
+			name: "org/repo takes precedence over org",
+			configs: []*DefaultRerunAuthConfigEntry{
+				&DefaultRerunAuthConfigEntry{
+					OrgRepo: "*",
+					Cluster: "",
+					Config:  &prowapi.RerunAuthConfig{GitHubUsers: []string{"clarketm"}},
+				},
+				&DefaultRerunAuthConfigEntry{
+					OrgRepo: "istio",
+					Cluster: "",
+					Config:  &prowapi.RerunAuthConfig{GitHubUsers: []string{"scrappydoo"}},
+				},
+				&DefaultRerunAuthConfigEntry{
+					OrgRepo: "istio/istio",
+					Cluster: "",
+					Config:  &prowapi.RerunAuthConfig{GitHubUsers: []string{"airbender"}},
+				},
+			},
+			refs:     &prowapi.Refs{Org: "istio", Repo: "istio"},
+			cluster:  "",
+			expected: &prowapi.RerunAuthConfig{GitHubUsers: []string{"airbender"}},
+		},
+		{
+			name: "cluster returns matching cluster",
+			configs: []*DefaultRerunAuthConfigEntry{
+				&DefaultRerunAuthConfigEntry{
+					OrgRepo: "istio",
+					Cluster: "",
+					Config:  &prowapi.RerunAuthConfig{GitHubUsers: []string{"scrappydoo"}},
+				},
+				&DefaultRerunAuthConfigEntry{
+					OrgRepo: "istio",
+					Cluster: "trusted",
+					Config:  &prowapi.RerunAuthConfig{GitHubUsers: []string{"airbender"}},
+				},
+			},
+			refs:     &prowapi.Refs{Org: "istio", Repo: "istio"},
+			cluster:  "trusted",
+			expected: &prowapi.RerunAuthConfig{GitHubUsers: []string{"airbender"}},
+		},
+		{
+			name: "cluster returns wild card",
+			configs: []*DefaultRerunAuthConfigEntry{
+				&DefaultRerunAuthConfigEntry{
+					OrgRepo: "istio",
+					Cluster: "*",
+					Config:  &prowapi.RerunAuthConfig{GitHubUsers: []string{"scrappydoo"}},
+				},
+				&DefaultRerunAuthConfigEntry{
+					OrgRepo: "istio",
+					Cluster: "cluster",
+					Config:  &prowapi.RerunAuthConfig{GitHubUsers: []string{"airbender"}},
+				},
+			},
+			refs:     &prowapi.Refs{Org: "istio", Repo: "istio"},
+			cluster:  "trusted",
+			expected: &prowapi.RerunAuthConfig{GitHubUsers: []string{"scrappydoo"}},
+		},
+		{
+			name: "no refs with cluster returns overriding matching cluster",
+			configs: []*DefaultRerunAuthConfigEntry{
+				&DefaultRerunAuthConfigEntry{
+					OrgRepo: "",
+					Cluster: "*",
+					Config:  &prowapi.RerunAuthConfig{GitHubUsers: []string{"clarketm"}},
+				},
+				&DefaultRerunAuthConfigEntry{
+					OrgRepo: "",
+					Cluster: "trusted",
+					Config:  &prowapi.RerunAuthConfig{GitHubUsers: []string{"airbender"}},
+				},
+			},
+			refs:     nil,
+			cluster:  "trusted",
+			expected: &prowapi.RerunAuthConfig{GitHubUsers: []string{"airbender"}},
+		},
+		{
+			name: "no matching orgrepo or cluster",
+			configs: []*DefaultRerunAuthConfigEntry{
+				&DefaultRerunAuthConfigEntry{
+					OrgRepo: "notIstio",
+					Cluster: "notTrusted",
+					Config:  &prowapi.RerunAuthConfig{GitHubUsers: []string{"clarketm"}},
+				},
+			},
+			refs:     &prowapi.Refs{Org: "istio", Repo: "istio"},
+			cluster:  "trusted",
+			expected: nil,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			d := Deck{}
+			d.DefaultRerunAuthConfigs = tc.configs
+			err := d.FinalizeDefaultRerunAuthConfigs()
+			if err != nil {
+				t.Fatal("Failed to finalize default rerun auth config.")
+			}
+
+			if diff := cmp.Diff(tc.expected, d.GetRerunAuthConfig(tc.refs, tc.cluster)); diff != "" {
+				t.Errorf("GetRerunAuthConfig returned unexpected value (-want +got):\n%s", diff)
 			}
 		})
 	}
