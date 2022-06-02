@@ -112,20 +112,25 @@ func handlePR(c client, t plugins.Trigger, pre github.PullRequestEvent, welcomeT
 		return nil
 	}
 
-	// ignore bots, we can't query their PRs
-	if pre.PullRequest.User.Type != github.UserTypeUser {
-		return nil
-	}
-
 	org := pre.PullRequest.Base.Repo.Owner.Login
 	repo := pre.PullRequest.Base.Repo.Name
 	user := pre.PullRequest.User.Login
+	pullRequestNumber := pre.PullRequest.Number
+
+	log := c.Logger.WithFields(logrus.Fields{"org": org, "repo": repo, "user": user, "number": pullRequestNumber})
+
+	// ignore bots, we can't query their PRs
+	if pre.PullRequest.User.Type != github.UserTypeUser {
+		log.Debug("Ignoring bot user, as querying their PRs is not possible")
+		return nil
+	}
 
 	trustedResponse, err := trigger.TrustedUser(c.GitHubClient, t.OnlyOrgMembers, t.TrustedApps, t.TrustedOrg, user, org, repo)
 	if err != nil {
 		return fmt.Errorf("check if user %s is trusted: %w", user, err)
 	}
 	if trustedResponse.IsTrusted {
+		log.Debug("User is trusted. Skipping their welcome message")
 		return nil
 	}
 
@@ -154,8 +159,10 @@ func handlePR(c client, t plugins.Trigger, pre github.PullRequestEvent, welcomeT
 			return err
 		}
 
-		// actually post the comment
-		return c.GitHubClient.CreateComment(org, repo, pre.PullRequest.Number, msgBuffer.String())
+		log.Debug("Posting a welcome message for pull request")
+		return c.GitHubClient.CreateComment(org, repo, pullRequestNumber, msgBuffer.String())
+	} else {
+		log.WithField("issues_count", len(issues)).Debug("Ignoring PR, as user already has previous contributions")
 	}
 
 	return nil
