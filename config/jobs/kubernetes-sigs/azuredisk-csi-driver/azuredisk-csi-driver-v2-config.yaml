@@ -631,7 +631,7 @@ presubmits:
             - name: DISABLE_ZONE
               value: "true"
             - name: KUBERNETES_VERSION
-              value: "latest-1.3"
+              value: "latest-1.23"
             - name: WINDOWS_WORKER_MACHINE_COUNT
               value: "3" # Need at least three workers for replica testing.
             - name: WORKER_MACHINE_COUNT
