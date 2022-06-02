@@ -42,10 +42,10 @@ import (
 )
 
 const (
-	prowEventType          = "prow.k8s.io/pubsub.EventType"
-	periodicProwJobEvent   = "prow.k8s.io/pubsub.PeriodicProwJobEvent"
-	presubmitProwJobEvent  = "prow.k8s.io/pubsub.PresubmitProwJobEvent"
-	postsubmitProwJobEvent = "prow.k8s.io/pubsub.PostsubmitProwJobEvent"
+	ProwEventType          = "prow.k8s.io/pubsub.EventType"
+	PeriodicProwJobEvent   = "prow.k8s.io/pubsub.PeriodicProwJobEvent"
+	PresubmitProwJobEvent  = "prow.k8s.io/pubsub.PresubmitProwJobEvent"
+	PostsubmitProwJobEvent = "prow.k8s.io/pubsub.PostsubmitProwJobEvent"
 )
 
 // Ensure interface is intact. I.e., this declaration ensures that the type
@@ -153,7 +153,7 @@ func (pe *ProwJobEvent) FromPayload(data []byte) error {
 
 // ToMessage generates a PubSub Message from a ProwJobEvent.
 func (pe *ProwJobEvent) ToMessage() (*pubsub.Message, error) {
-	return pe.ToMessageOfType(periodicProwJobEvent)
+	return pe.ToMessageOfType(PeriodicProwJobEvent)
 }
 
 // ToMessage generates a PubSub Message from a ProwJobEvent.
@@ -165,7 +165,7 @@ func (pe *ProwJobEvent) ToMessageOfType(t string) (*pubsub.Message, error) {
 	message := pubsub.Message{
 		Data: data,
 		Attributes: map[string]string{
-			prowEventType: t,
+			ProwEventType: t,
 		},
 	}
 	return &message, nil
@@ -427,7 +427,7 @@ func (s *Subscriber) handleMessage(msg messageInterface, subscription string, al
 		"pubsub-id":           msg.getID()})
 	s.Metrics.MessageCounter.With(prometheus.Labels{subscriptionLabel: subscription}).Inc()
 	l.Info("Received message")
-	eType, err := extractFromAttribute(msg.getAttributes(), prowEventType)
+	eType, err := extractFromAttribute(msg.getAttributes(), ProwEventType)
 	if err != nil {
 		l.WithError(err).Error("failed to read message")
 		s.Metrics.ErrorCounter.With(prometheus.Labels{
@@ -439,11 +439,11 @@ func (s *Subscriber) handleMessage(msg messageInterface, subscription string, al
 
 	var jh jobHandler
 	switch eType {
-	case periodicProwJobEvent:
+	case PeriodicProwJobEvent:
 		jh = &periodicJobHandler{}
-	case presubmitProwJobEvent:
+	case PresubmitProwJobEvent:
 		jh = &presubmitJobHandler{}
-	case postsubmitProwJobEvent:
+	case PostsubmitProwJobEvent:
 		jh = &postsubmitJobHandler{}
 	default:
 		l.WithField("type", eType).Debug("Unsupported event type")
@@ -524,7 +524,7 @@ func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msg messageIn
 
 	var cache *config.InRepoConfigCache
 	var err error
-	if eType != periodicProwJobEvent {
+	if eType != PeriodicProwJobEvent {
 		cloneURI, host := tryGetCloneURIAndHost(pe)
 		cache, err = s.InRepoConfigCacheGetter.getCache(cloneURI, host)
 		if err != nil {
