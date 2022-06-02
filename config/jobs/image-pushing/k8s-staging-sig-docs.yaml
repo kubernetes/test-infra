@@ -6,6 +6,8 @@ postsubmits:
         testgrid-dashboards: sig-docs-website, sig-k8s-infra-gcb
         testgrid-tab-name: post-website-push-image-k8s-website-hugo
       decorate: true
+      run_if_changed: >-
+        ^(Dockerfile|Makefile|netlify\.toml|\.dockerignore)$
       branches:
         - ^main$
       spec:
