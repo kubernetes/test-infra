@@ -40,7 +40,7 @@ func floor(t time.Time) time.Time {
 	return t
 }
 
-func search(query querier, log *logrus.Entry, q string, start, end time.Time, org string) ([]CodeReviewCommon, error) {
+func (gi *GitHubProvider) search(query querier, log *logrus.Entry, q string, start, end time.Time, org string) ([]PullRequest, error) {
 	start = floor(start)
 	end = floor(end)
 	log = log.WithFields(logrus.Fields{
@@ -56,7 +56,7 @@ func search(query querier, log *logrus.Entry, q string, start, end time.Time, or
 	}
 
 	var totalCost, remaining int
-	var ret []CodeReviewCommon
+	var ret []PullRequest
 	var sq searchQuery
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
@@ -71,7 +71,7 @@ func search(query querier, log *logrus.Entry, q string, start, end time.Time, or
 		totalCost += int(sq.RateLimit.Cost)
 		remaining = int(sq.RateLimit.Remaining)
 		for _, n := range sq.Search.Nodes {
-			ret = append(ret, *CodeReviewCommonFromPullRequest(&n.PullRequest))
+			ret = append(ret, n.PullRequest)
 		}
 		if !sq.Search.PageInfo.HasNextPage {
 			break

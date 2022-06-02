@@ -62,15 +62,15 @@ type storedState struct {
 	PreviousQuery string
 }
 
+// statusController is a goroutine runs in the background
 type statusController struct {
 	pjClient           ctrlruntimeclient.Client
 	logger             *logrus.Entry
 	config             config.Getter
+	ghInteractor       provider
 	ghc                githubClient
 	gc                 git.ClientFactory
 	usesGitHubAppsAuth bool
-
-	mergeChecker *mergeChecker
 
 	// shutDown is used to signal to the main controller that the statusController
 	// has completed processing after newPoolPending is closed.
@@ -278,7 +278,7 @@ func (sc *statusController) expectedStatus(log *logrus.Entry, queryMap *config.Q
 
 	repo := config.OrgRepo{Org: crc.Org, Repo: crc.Repo}
 
-	if reason, err := sc.mergeChecker.isAllowed(crc); err != nil {
+	if reason, err := sc.ghInteractor.isAllowedToMerge(crc); err != nil {
 		return "", "", fmt.Errorf("error checking if merge is allowed: %w", err)
 	} else if reason != "" {
 		log.WithField("reason", reason).Debug("The PR is not mergeable")
@@ -414,7 +414,7 @@ func (sc *statusController) setStatuses(all []CodeReviewCommon, pool map[string]
 	process := func(pr *CodeReviewCommon) {
 		processed.Insert(prKey(pr))
 		log := sc.logger.WithFields(pr.logFields())
-		contexts, err := headContexts(log, sc.ghc, pr)
+		contexts, err := sc.ghInteractor.headContexts(pr)
 		if err != nil {
 			log.WithError(err).Error("Getting head commit status contexts, skipping...")
 			return
@@ -657,7 +657,7 @@ func (sc *statusController) search() []CodeReviewCommon {
 			}
 			sc.storedStateLock.Unlock()
 
-			result, err := search(sc.ghc.QueryWithGitHubAppsSupport, sc.logger, query, latestPR.Time, now, org)
+			result, err := sc.ghInteractor.search(sc.ghc.QueryWithGitHubAppsSupport, sc.logger, query, latestPR.Time, now, org)
 			log.WithField("duration", time.Since(now).String()).WithField("result_count", len(result)).Debug("Searched for open PRs.")
 
 			func() {
@@ -669,7 +669,7 @@ func (sc *statusController) search() []CodeReviewCommon {
 					log.Debug("no new results")
 					return
 				}
-				latest := result[len(result)-1].UpdatedAtTime
+				latest := result[len(result)-1].UpdatedAt
 				if latest.IsZero() {
 					log.Debug("latest PR has zero time")
 					return
@@ -684,7 +684,10 @@ func (sc *statusController) search() []CodeReviewCommon {
 			lock.Lock()
 			defer lock.Unlock()
 
-			prs = append(prs, result...)
+			for _, pr := range result {
+				pr := pr
+				prs = append(prs, *CodeReviewCommonFromPullRequest(&pr))
+			}
 			errs = append(errs, err)
 		}()
 

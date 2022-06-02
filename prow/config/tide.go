@@ -155,6 +155,8 @@ type Tide struct {
 	// Special values:
 	//  0 => unlimited batch size
 	// -1 => batch merging disabled :(
+	//
+	// This is suitable for any source code provider, so keep it global.
 	BatchSizeLimitMap map[string]int `json:"batch_size_limit,omitempty"`
 
 	// Priority is an ordered list of sets of labels that would be prioritized before other PRs
@@ -167,6 +169,8 @@ type Tide struct {
 	// eligible. Continuing on an old batch allows to re-use all existing test results whereas
 	// starting a new one requires to start new instances of all tests.
 	// Use '*' as key to set this globally. Defaults to true.
+	//
+	// This is suitable for any source code provider, so keep it global.
 	PrioritizeExistingBatchesMap map[string]bool `json:"prioritize_existing_batches,omitempty"`
 
 	// DisplayAllQueriesInStatus controls if Tide should mention all queries in the status it
