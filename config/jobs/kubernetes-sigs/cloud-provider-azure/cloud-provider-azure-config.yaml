@@ -239,7 +239,7 @@ presubmits:
             - name: AZURE_LOADBALANCER_SKU
               value: "standard"
             - name: KUBERNETES_VERSION
-              value: "latest"
+              value: "latest-1.24"
             - name: GINKGO_ARGS
               value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --test.parallel=30 --report-dir=/logs/artifacts --disable-log-dump=true
             - name: CONTROL_PLANE_MACHINE_COUNT
@@ -365,7 +365,7 @@ periodics:
         - name: CONTROL_PLANE_MACHINE_COUNT
           value: "3"
         - name: KUBERNETES_VERSION
-          value: "latest"
+          value: "latest-1.24"
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-master-capz
@@ -415,7 +415,7 @@ periodics:
         - name: CONTROL_PLANE_MACHINE_COUNT
           value: "3"
         - name: KUBERNETES_VERSION
-          value: "latest"
+          value: "latest-1.24"
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-master-capz-main
@@ -468,7 +468,7 @@ periodics:
         - name: WINDOWS_FLAVOR
           value: "containerd-2022"
         - name: KUBERNETES_VERSION
-          value: "latest"
+          value: "latest-1.24"
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-ccm-windows-capz
@@ -646,7 +646,7 @@ periodics:
       - name: AZURE_LOADBALANCER_SKU
         value: "standard"
       - name: KUBERNETES_VERSION
-        value: "latest"
+        value: "latest-1.24"
       - name: GINKGO_ARGS
         value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --test.parallel=30 --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT
@@ -703,7 +703,7 @@ periodics:
       - name: AZURE_LOADBALANCER_SKU
         value: "standard"
       - name: KUBERNETES_VERSION
-        value: "latest"
+        value: "latest-1.24"
       - name: GINKGO_ARGS
         value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[LinuxOnly\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --test.parallel=30 --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT
@@ -765,7 +765,7 @@ periodics:
       - name: AZURE_LOADBALANCER_SKU
         value: "standard"
       - name: KUBERNETES_VERSION
-        value: "latest"
+        value: "latest-1.24"
       - name: GINKGO_ARGS
         value: --ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|In-tree.Volumes|should.be.able.to.create.an.internal.type.load.balancer --test.parallel=4 --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT
