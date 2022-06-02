@@ -291,7 +291,7 @@ presubmits:
             - name: CONTROL_PLANE_MACHINE_COUNT
               value: "3"
             - name: KUBERNETES_VERSION
-              value: "latest"
+              value: "latest-1.24" # should be changed back to latest
             - name: AZURE_LOCATION
               value: "westeurope"
     annotations:
