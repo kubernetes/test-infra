@@ -136,8 +136,8 @@ func TestProwJobEvent_ToFromMessage(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	if m.Attributes[prowEventType] != periodicProwJobEvent {
-		t.Errorf("%s should be %s found %s instead", prowEventType, periodicProwJobEvent, m.Attributes[prowEventType])
+	if m.Attributes[ProwEventType] != PeriodicProwJobEvent {
+		t.Errorf("%s should be %s found %s instead", ProwEventType, PeriodicProwJobEvent, m.Attributes[ProwEventType])
 	}
 	var newPe ProwJobEvent
 	if err = newPe.FromPayload(m.Data); err != nil {
@@ -159,7 +159,7 @@ func TestHandleMessage(t *testing.T) {
 	}{
 		{
 			name:      "PeriodicJobNoPubsub",
-			eventType: periodicProwJobEvent,
+			eventType: PeriodicProwJobEvent,
 			pe: &ProwJobEvent{
 				Name: "test",
 			},
@@ -177,7 +177,7 @@ func TestHandleMessage(t *testing.T) {
 		},
 		{
 			name:      "PresubmitForGitHub",
-			eventType: presubmitProwJobEvent,
+			eventType: PresubmitProwJobEvent,
 			pe: &ProwJobEvent{
 				Name: "pull-github",
 				Refs: &prowapi.Refs{
@@ -208,7 +208,7 @@ func TestHandleMessage(t *testing.T) {
 		},
 		{
 			name:      "PresubmitForGerrit",
-			eventType: presubmitProwJobEvent,
+			eventType: PresubmitProwJobEvent,
 			pe: &ProwJobEvent{
 				Name: "pull-gerrit",
 				Refs: &prowapi.Refs{
@@ -242,11 +242,11 @@ func TestHandleMessage(t *testing.T) {
 		},
 		{
 			name:      "UnknownEventType",
-			eventType: periodicProwJobEvent,
+			eventType: PeriodicProwJobEvent,
 			msg: &pubSubMessage{
 				Message: pubsub.Message{
 					Attributes: map[string]string{
-						prowEventType: "unsupported",
+						ProwEventType: "unsupported",
 					},
 				},
 			},
@@ -256,7 +256,7 @@ func TestHandleMessage(t *testing.T) {
 		},
 		{
 			name:      "NoEventType",
-			eventType: periodicProwJobEvent,
+			eventType: PeriodicProwJobEvent,
 			msg: &pubSubMessage{
 				Message: pubsub.Message{},
 			},
@@ -266,7 +266,7 @@ func TestHandleMessage(t *testing.T) {
 		},
 		{
 			name:      "PresubmitForGerritWithInRepoConfig",
-			eventType: presubmitProwJobEvent,
+			eventType: PresubmitProwJobEvent,
 			pe: &ProwJobEvent{
 				Name: "pull-gerrit",
 				Refs: &prowapi.Refs{
@@ -566,7 +566,7 @@ func TestHandlePeriodicJob(t *testing.T) {
 				t.Error(err)
 			}
 			m.ID = "id"
-			err = s.handleProwJob(logrus.NewEntry(logrus.New()), &periodicJobHandler{}, &pubSubMessage{*m}, "", periodicProwJobEvent, tc.allowedClusters)
+			err = s.handleProwJob(logrus.NewEntry(logrus.New()), &periodicJobHandler{}, &pubSubMessage{*m}, "", PeriodicProwJobEvent, tc.allowedClusters)
 			if err != nil {
 				if err.Error() != tc.err {
 					t1.Errorf("Expected error '%v' got '%v'", tc.err, err.Error())
