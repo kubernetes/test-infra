@@ -325,11 +325,12 @@ func TestHandlePR(t *testing.T) {
 		},
 	}
 
-	c := client{
-		GitHubClient: fc,
-		Logger:       &logrus.Entry{},
-	}
 	for _, tc := range testCases {
+		c := client{
+			GitHubClient: fc,
+			Logger:       logrus.WithField("testcase", tc.name),
+		}
+
 		// clear out comments from the last test case
 		fc.ClearComments()
 
