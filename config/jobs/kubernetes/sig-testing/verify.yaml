@@ -144,3 +144,36 @@ periodics:
         requests:
           cpu: 6
           memory: 24Gi
+- interval: 6h
+  name: kubernetes-verify-go-licenses-periodical
+  decorate: true
+  decoration_config:
+    timeout: 5m
+  labels:
+    preset-service-account: "true"
+    preset-dind-enabled: "true"
+  annotations:
+    testgrid-create-test-group: "true"
+    testgrid-dashboards: sig-testing-misc
+    description: "Verify licences for the upstream Kubernetes Project's go-packages to the CNCF approved list of licences."
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: master
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220428-de61deb68b-master
+      imagePullPolicy: Always
+      command:
+      - runner.sh
+      args:
+      - ./hack/verify-licenses.sh
+      env:
+      - name: KUBE_VERIFY_GIT_BRANCH
+        value: master
+      - name: REPO_DIR
+        value: /workspace/k8s.io/kubernetes
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
