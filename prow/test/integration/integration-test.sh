@@ -74,6 +74,12 @@ Options:
         comma-separated string. Also results in only redeploying certain entries
         in PROW_COMPONENTS, by way of PROW_IMAGES_TO_COMPONENTS in lib.sh.
 
+        The value "ALL" for this falg is an alias for all images (PROW_IMAGES in
+        lib.sh).
+
+        By default, "-build=ALL" is assumed, so that users do not have to
+        provide any arguments to this script to run all tests.
+
         Implies -no-setup-kind-cluster.
 
     -run='':
@@ -101,7 +107,7 @@ function main() {
   declare -a tests_to_run
   declare -a setup_args
   declare -a teardown_args
-  setup_args=(-setup-kind-cluster -setup-prow-components)
+  setup_args=(-setup-kind-cluster -setup-prow-components -build=ALL)
   local summary_format
   summary_format=pkgname
   local setup_kind_cluster
@@ -115,13 +121,17 @@ function main() {
       -no-setup)
         unset 'setup_args[0]'
         unset 'setup_args[1]'
+        unset 'setup_args[2]'
         ;;
       -no-setup-kind-cluster)
         unset 'setup_args[0]'
         ;;
       -build=*)
-        setup_args[0]=
-        setup_args[1]="-setup-prow-components"
+        # Imply -no-setup-kind-cluster.
+        unset 'setup_args[0]'
+        # Because we specified a "-build=..." flag explicitly, drop the default
+        # "-build=ALL" option.
+        unset 'setup_args[2]'
         setup_args+=("${arg}")
         ;;
       -run=*)
