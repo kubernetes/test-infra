@@ -179,7 +179,7 @@ func main() {
 	// Deck consumes these endpoints
 	controllerMux := http.NewServeMux()
 	controllerMux.Handle("/", c)
-	controllerMux.Handle("/history", c.History)
+	controllerMux.Handle("/history", c.History())
 	server := &http.Server{Addr: ":" + strconv.Itoa(o.port), Handler: controllerMux}
 
 	// Push metrics to the configured prometheus pushgateway endpoint or serve them

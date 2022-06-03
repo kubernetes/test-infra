@@ -73,8 +73,41 @@ type contextChecker interface {
 	MissingRequiredContexts([]string) []string
 }
 
-// Controller knows how to sync PRs and PJs.
 type Controller struct {
+	syncCtrl   *syncController
+	statusCtrl *statusController
+}
+
+// Shutdown signals the statusController to stop working and waits for it to
+// finish its last update loop before terminating.
+// Controller.Sync() should not be used after this function is called.
+func (c *Controller) Shutdown() {
+	c.syncCtrl.Shutdown()
+	c.statusCtrl.Shutdown()
+}
+
+func (c *syncController) Shutdown() {
+	c.History.Flush()
+}
+
+func (c *statusController) Shutdown() {
+	c.shutdown()
+}
+
+func (c *Controller) Sync() error {
+	return c.syncCtrl.Sync()
+}
+
+func (c *Controller) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	c.syncCtrl.ServeHTTP(w, r)
+}
+
+func (c *Controller) History() *history.History {
+	return c.syncCtrl.History
+}
+
+// Controller knows how to sync PRs and PJs.
+type syncController struct {
 	ctx                context.Context
 	logger             *logrus.Entry
 	config             config.Getter
@@ -83,8 +116,6 @@ type Controller struct {
 	gc                 git.ClientFactory
 	usesGitHubAppsAuth bool
 	pickNewBatch       func(sp subpool, candidates []CodeReviewCommon, maxBatchSize int) ([]CodeReviewCommon, error)
-
-	sc *statusController
 
 	m     sync.Mutex
 	pools []Pool
@@ -96,6 +127,14 @@ type Controller struct {
 	mergeChecker *mergeChecker
 
 	History *history.History
+
+	// Channels for informing status controller about changes so that status
+	// controller can take actions.
+	// These channels are non buffered, will need to make sure that status
+	// controller clears these channels to unblock sync controller.
+	statusUpdateChan   chan statusUpdate
+	newPoolPendingChan chan bool
+	newPRChan          chan pullRequestIdentifier
 }
 
 // Action represents what actions the controller can take. It will take
@@ -311,21 +350,40 @@ func NewController(ghcSync, ghcStatus github.Client, mgr manager, cfg config.Get
 	}
 	mergeChecker := newMergeChecker(cfg, ghcSync)
 
+	// Create channels for these two controllers to communicate
+	statusUpdateChan := make(chan statusUpdate)
+	newPoolPendingChan := make(chan bool)
+	newPRChan := make(chan pullRequestIdentifier)
+
 	ctx := context.Background()
-	sc, err := newStatusController(ctx, logger, ghcStatus, mgr, gc, cfg, opener, statusURI, mergeChecker, usesGitHubAppsAuth)
+	sc, err := newStatusController(ctx, logger, ghcStatus, mgr, gc, cfg, opener, statusURI, mergeChecker, usesGitHubAppsAuth, statusUpdateChan, newPoolPendingChan, newPRChan)
 	if err != nil {
 		return nil, err
 	}
 	go sc.run()
 
-	return newSyncController(ctx, logger, ghcSync, mgr, cfg, gc, sc, hist, mergeChecker, usesGitHubAppsAuth)
+	syncCtrl, err := newSyncController(ctx, logger, ghcSync, mgr, cfg, gc, hist, mergeChecker, usesGitHubAppsAuth, statusUpdateChan, newPoolPendingChan, newPRChan)
+	return &Controller{syncCtrl, sc}, err
 }
 
-func newStatusController(ctx context.Context, logger *logrus.Entry, ghc githubClient, mgr manager, gc git.ClientFactory, cfg config.Getter, opener io.Opener, statusURI string, mergeChecker *mergeChecker, usesGitHubAppsAuth bool) (*statusController, error) {
+func newStatusController(
+	ctx context.Context,
+	logger *logrus.Entry,
+	ghc githubClient, mgr manager,
+	gc git.ClientFactory,
+	cfg config.Getter,
+	opener io.Opener,
+	statusURI string,
+	mergeChecker *mergeChecker,
+	usesGitHubAppsAuth bool,
+	statusUpdateChan chan statusUpdate,
+	newPoolPendingChan chan bool,
+	newPRChan chan pullRequestIdentifier,
+) (*statusController, error) {
 	if err := mgr.GetFieldIndexer().IndexField(ctx, &prowapi.ProwJob{}, indexNamePassingJobs, indexFuncPassingJobs); err != nil {
 		return nil, fmt.Errorf("failed to add index for passing jobs to cache: %w", err)
 	}
-	return &statusController{
+	sc := &statusController{
 		pjClient:           mgr.GetClient(),
 		logger:             logger.WithField("controller", "status-update"),
 		ghc:                ghc,
@@ -333,11 +391,23 @@ func newStatusController(ctx context.Context, logger *logrus.Entry, ghc githubCl
 		usesGitHubAppsAuth: usesGitHubAppsAuth,
 		config:             cfg,
 		mergeChecker:       mergeChecker,
-		newPoolPending:     make(chan bool, 1),
 		shutDown:           make(chan bool),
 		opener:             opener,
 		path:               statusURI,
-	}, nil
+		statusUpdateChan:   statusUpdateChan,
+		newPoolPending:     newPoolPendingChan,
+		newPRChan:          newPRChan,
+	}
+	// Start a non-blocking thread for receiving updating status request, so
+	// that sync controller won't be blocked on sending events.
+	go func() {
+		for {
+			newPR := <-sc.newPRChan
+			sc.dontUpdateStatus.insert(newPR.org, newPR.repo, newPR.number)
+		}
+	}()
+
+	return sc, nil
 }
 
 func newSyncController(
@@ -347,11 +417,13 @@ func newSyncController(
 	mgr manager,
 	cfg config.Getter,
 	gc git.ClientFactory,
-	sc *statusController,
 	hist *history.History,
 	mergeChecker *mergeChecker,
 	usesGitHubAppsAuth bool,
-) (*Controller, error) {
+	statusUpdateChan chan statusUpdate,
+	newPoolPendingChan chan bool,
+	newPRChan chan pullRequestIdentifier,
+) (*syncController, error) {
 	if err := mgr.GetFieldIndexer().IndexField(
 		ctx,
 		&prowapi.ProwJob{},
@@ -368,7 +440,7 @@ func newSyncController(
 	); err != nil {
 		return nil, fmt.Errorf("failed to add index for non failed batches: %w", err)
 	}
-	return &Controller{
+	return &syncController{
 		ctx:                ctx,
 		logger:             logger.WithField("controller", "sync"),
 		ghc:                ghcSync,
@@ -377,22 +449,16 @@ func newSyncController(
 		gc:                 gc,
 		usesGitHubAppsAuth: usesGitHubAppsAuth,
 		pickNewBatch:       pickNewBatch(gc, cfg),
-		sc:                 sc,
 		changedFiles: &changedFilesAgent{
 			ghc:             ghcSync,
 			nextChangeCache: make(map[changeCacheKey][]string),
 		},
-		mergeChecker: mergeChecker,
-		History:      hist,
+		mergeChecker:       mergeChecker,
+		History:            hist,
+		statusUpdateChan:   statusUpdateChan,
+		newPoolPendingChan: newPoolPendingChan,
+		newPRChan:          newPRChan,
 	}, nil
-}
-
-// Shutdown signals the statusController to stop working and waits for it to
-// finish its last update loop before terminating.
-// Controller.Sync() should not be used after this function is called.
-func (c *Controller) Shutdown() {
-	c.History.Flush()
-	c.sc.shutdown()
 }
 
 func prKey(pr *CodeReviewCommon) string {
@@ -418,7 +484,7 @@ func contextsToStrings(contexts []Context) []string {
 }
 
 // Sync runs one sync iteration.
-func (c *Controller) Sync() error {
+func (c *syncController) Sync() error {
 	start := time.Now()
 	defer func() {
 		duration := time.Since(start)
@@ -462,18 +528,16 @@ func (c *Controller) Sync() error {
 	}
 	filteredPools := c.filterSubpools(c.mergeChecker.isAllowed, rawPools)
 
+	// Informing status controller so that it can start loop.
+	c.newPoolPendingChan <- true
+
 	// Notify statusController about the new pool.
-	c.sc.Lock()
-	c.sc.blocks = blocks
-	c.sc.poolPRs = poolPRMap(filteredPools)
-	c.sc.baseSHAs = baseSHAMap(filteredPools)
-	c.sc.requiredContexts = requiredContextsMap(filteredPools)
-	select {
-	case c.sc.newPoolPending <- true:
-		c.sc.dontUpdateStatus.reset()
-	default:
+	c.statusUpdateChan <- statusUpdate{
+		blocks:           blocks,
+		poolPRs:          poolPRMap(filteredPools),
+		baseSHAs:         baseSHAMap(filteredPools),
+		requiredContexts: requiredContextsMap(filteredPools),
 	}
-	c.sc.Unlock()
 
 	// Sync subpools in parallel.
 	poolChan := make(chan Pool, len(filteredPools))
@@ -504,7 +568,7 @@ func (c *Controller) Sync() error {
 	return nil
 }
 
-func (c *Controller) query() (map[string]CodeReviewCommon, error) {
+func (c *syncController) query() (map[string]CodeReviewCommon, error) {
 	lock := sync.Mutex{}
 	wg := sync.WaitGroup{}
 	prs := make(map[string]CodeReviewCommon)
@@ -554,7 +618,7 @@ func (c *Controller) query() (map[string]CodeReviewCommon, error) {
 	return prs, utilerrors.NewAggregate(errs)
 }
 
-func (c *Controller) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (c *syncController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	c.m.Lock()
 	defer c.m.Unlock()
 	b, err := json.Marshal(c.pools)
@@ -594,7 +658,7 @@ func subpoolsInParallel(goroutines int, sps map[string]*subpool, process func(*s
 // filterSubpools filters non-pool PRs out of the initially identified subpools,
 // deleting any pools that become empty.
 // See filterSubpool for filtering details.
-func (c *Controller) filterSubpools(mergeAllowed func(*CodeReviewCommon) (string, error), raw map[string]*subpool) map[string]*subpool {
+func (c *syncController) filterSubpools(mergeAllowed func(*CodeReviewCommon) (string, error), raw map[string]*subpool) map[string]*subpool {
 	filtered := make(map[string]*subpool)
 	var lock sync.Mutex
 
@@ -621,7 +685,7 @@ func (c *Controller) filterSubpools(mergeAllowed func(*CodeReviewCommon) (string
 	return filtered
 }
 
-func (c *Controller) initSubpoolData(sp *subpool) error {
+func (c *syncController) initSubpoolData(sp *subpool) error {
 	var err error
 	sp.presubmits, err = c.presubmitsByPull(sp)
 	if err != nil {
@@ -856,7 +920,7 @@ func toSimpleState(s prowapi.ProwJobState) simpleState {
 
 // isPassingTests returns whether or not all contexts set on the PR except for
 // the tide pool context are passing.
-func (c *Controller) isPassingTests(log *logrus.Entry, pr *CodeReviewCommon, cc contextChecker) bool {
+func (c *syncController) isPassingTests(log *logrus.Entry, pr *CodeReviewCommon, cc contextChecker) bool {
 	log = log.WithFields(pr.logFields())
 	contexts, err := headContexts(log, c.ghc, pr)
 	if err != nil {
@@ -944,7 +1008,7 @@ func pickHighestPriorityPR(log *logrus.Entry, prs []CodeReviewCommon, cc map[int
 // accumulateBatch looks at existing batch ProwJobs and, if applicable, returns:
 // * A list of PRs that are part of a batch test that finished successfully
 // * A list of PRs that are part of a batch test that hasn't finished yet but didn't have any failures so far
-func (c *Controller) accumulateBatch(sp subpool) (successBatch []CodeReviewCommon, pendingBatch []CodeReviewCommon) {
+func (c *syncController) accumulateBatch(sp subpool) (successBatch []CodeReviewCommon, pendingBatch []CodeReviewCommon) {
 	sp.log.Debug("accumulating PRs for batch testing")
 	prNums := make(map[int]CodeReviewCommon)
 	for _, pr := range sp.prs {
@@ -1179,7 +1243,7 @@ func pickNewBatch(gc git.ClientFactory, cfg config.Getter) func(sp subpool, cand
 
 type newBatchFunc func(sp subpool, candidates []CodeReviewCommon, maxBatchSize int) ([]CodeReviewCommon, error)
 
-func (c *Controller) pickBatch(sp subpool, cc map[int]contextChecker, newBatchFunc newBatchFunc) ([]CodeReviewCommon, []config.Presubmit, error) {
+func (c *syncController) pickBatch(sp subpool, cc map[int]contextChecker, newBatchFunc newBatchFunc) ([]CodeReviewCommon, []config.Presubmit, error) {
 	batchLimit := c.config().Tide.BatchSizeLimit(config.OrgRepo{Org: sp.org, Repo: sp.repo})
 	if batchLimit < 0 {
 		sp.log.Debug("Batch merges disabled by configuration in this repo.")
@@ -1231,7 +1295,7 @@ func (c *Controller) pickBatch(sp subpool, cc map[int]contextChecker, newBatchFu
 // and was created by Tide, as that allows us to infer that this job passed in the past.
 // We look at the actively running ProwJob rather than a previous successful one, because the latter might
 // already be garbage collected.
-func (c *Controller) isRetestEligible(log *logrus.Entry, candidate *CodeReviewCommon, cc contextChecker) bool {
+func (c *syncController) isRetestEligible(log *logrus.Entry, candidate *CodeReviewCommon, cc contextChecker) bool {
 	candidateHeadContexts, err := headContexts(log, c.ghc, candidate)
 	if err != nil {
 		log.WithError(err).WithFields(candidate.logFields()).Debug("failed to get headContexts for batch candidate, ignoring.")
@@ -1291,7 +1355,7 @@ func prowJobListHasProwJobWithMatchingHeadSHA(pjs *prowapi.ProwJobList, headSHA 
 	return false
 }
 
-func (c *Controller) prepareMergeDetails(commitTemplates config.TideMergeCommitTemplate, pr CodeReviewCommon, mergeMethod types.PullRequestMergeType) github.MergeDetails {
+func (c *syncController) prepareMergeDetails(commitTemplates config.TideMergeCommitTemplate, pr CodeReviewCommon, mergeMethod types.PullRequestMergeType) github.MergeDetails {
 	ghMergeDetails := github.MergeDetails{
 		SHA:         pr.HeadRefOID,
 		MergeMethod: string(mergeMethod),
@@ -1354,7 +1418,7 @@ func prMergeMethod(c config.Tide, crc *CodeReviewCommon) (types.PullRequestMerge
 	return method, nil
 }
 
-func (c *Controller) mergePRs(sp subpool, prs []CodeReviewCommon) error {
+func (c *syncController) mergePRs(sp subpool, prs []CodeReviewCommon) error {
 	var merged, failed []int
 	defer func() {
 		if len(merged) == 0 {
@@ -1379,7 +1443,7 @@ func (c *Controller) mergePRs(sp subpool, prs []CodeReviewCommon) error {
 
 		// Ensure tide context has success state, otherwise PR merge will fail if branch protection
 		// in github is enabled and the loop to change tide context hasn't done it already
-		c.sc.dontUpdateStatus.insert(sp.org, sp.repo, pr.Number)
+		c.newPRChan <- pullRequestIdentifier{sp.org, sp.repo, pr.Number}
 		if err := setTideStatusSuccess(pr, c.ghc, c.config(), log); err != nil {
 			log.WithError(err).Error("Unable to set tide context to SUCCESS.")
 			errs = append(errs, err)
@@ -1523,7 +1587,7 @@ func tryMerge(mergeFunc func() error) (bool, error) {
 	return true, err
 }
 
-func (c *Controller) trigger(sp subpool, presubmits []config.Presubmit, prs []CodeReviewCommon) error {
+func (c *syncController) trigger(sp subpool, presubmits []config.Presubmit, prs []CodeReviewCommon) error {
 	refs := prowapi.Refs{
 		Org:     sp.org,
 		Repo:    sp.repo,
@@ -1583,7 +1647,7 @@ func createdByTideLabels() map[string]string {
 	return map[string]string{"created-by-tide": "true"}
 }
 
-func (c *Controller) nonFailedBatchForJobAndRefsExists(jobName string, refs *prowapi.Refs) bool {
+func (c *syncController) nonFailedBatchForJobAndRefsExists(jobName string, refs *prowapi.Refs) bool {
 	pjs := &prowapi.ProwJobList{}
 	if err := c.prowJobClient.List(c.ctx,
 		pjs,
@@ -1597,7 +1661,7 @@ func (c *Controller) nonFailedBatchForJobAndRefsExists(jobName string, refs *pro
 	return len(pjs.Items) > 0
 }
 
-func (c *Controller) takeAction(sp subpool, batchPending, successes, pendings, missings, batchMerges []CodeReviewCommon, missingSerialTests map[int][]config.Presubmit) (Action, []CodeReviewCommon, error) {
+func (c *syncController) takeAction(sp subpool, batchPending, successes, pendings, missings, batchMerges []CodeReviewCommon, missingSerialTests map[int][]config.Presubmit) (Action, []CodeReviewCommon, error) {
 	// Merge the batch!
 	if len(batchMerges) > 0 {
 		return MergeBatch, batchMerges, c.mergePRs(sp, batchMerges)
@@ -1728,7 +1792,7 @@ func refGetterFactory(ref string) config.RefGetter {
 
 // presubmitsByPull creates a map pr -> requiredPresubmits and will filter out all PRs
 // where we failed to find out the required presubmits (can happen if inrepoconfig is enabled).
-func (c *Controller) presubmitsByPull(sp *subpool) (map[int][]config.Presubmit, error) {
+func (c *syncController) presubmitsByPull(sp *subpool) (map[int][]config.Presubmit, error) {
 	presubmits := make(map[int][]config.Presubmit, len(sp.prs))
 
 	// filtered PRs contains all PRs for which we were able to get the presubmits
@@ -1766,7 +1830,7 @@ func (c *Controller) presubmitsByPull(sp *subpool) (map[int][]config.Presubmit, 
 	return presubmits, nil
 }
 
-func (c *Controller) presubmitsForBatch(prs []CodeReviewCommon, org, repo, baseSHA, baseBranch string) ([]config.Presubmit, error) {
+func (c *syncController) presubmitsForBatch(prs []CodeReviewCommon, org, repo, baseSHA, baseBranch string) ([]config.Presubmit, error) {
 	log := c.logger.WithFields(logrus.Fields{"repo": repo, "org": org, "base-sha": baseSHA, "base-branch": baseBranch})
 
 	var headRefGetters []config.RefGetter
@@ -1802,7 +1866,7 @@ func (c *Controller) presubmitsForBatch(prs []CodeReviewCommon, org, repo, baseS
 	return result, nil
 }
 
-func (c *Controller) syncSubpool(sp subpool, blocks []blockers.Blocker) (Pool, error) {
+func (c *syncController) syncSubpool(sp subpool, blocks []blockers.Blocker) (Pool, error) {
 	sp.log.WithField("num_prs", len(sp.prs)).WithField("num_prowjobs", len(sp.pjs)).Info("Syncing subpool")
 	successes, pendings, missings, missingSerialTests := accumulate(sp.presubmits, sp.prs, sp.pjs, sp.log, sp.sha, c.ghc)
 	batchMerge, batchPending := c.accumulateBatch(sp)
@@ -1937,7 +2001,7 @@ func poolKey(org, repo, branch string) string {
 
 // dividePool splits up the list of pull requests and prow jobs into a group
 // per repo and branch. It only keeps ProwJobs that match the latest branch.
-func (c *Controller) dividePool(pool map[string]CodeReviewCommon) (map[string]*subpool, error) {
+func (c *syncController) dividePool(pool map[string]CodeReviewCommon) (map[string]*subpool, error) {
 	sps := make(map[string]*subpool)
 	for _, pr := range pool {
 		org := pr.Org

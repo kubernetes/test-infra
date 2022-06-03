@@ -817,7 +817,7 @@ func TestExpectedStatus(t *testing.T) {
 			ca.Set(&config.Config{ProwConfig: config.ProwConfig{Tide: config.Tide{DisplayAllQueriesInStatus: tc.displayAllTideQueries}}})
 			mmc := newMergeChecker(ca.Config, &fgc{})
 
-			sc, err := newStatusController(context.Background(), logrus.NewEntry(logrus.StandardLogger()), nil, newFakeManager(tc.prowJobs...), nil, ca.Config, nil, "", mmc, false)
+			sc, err := newStatusController(context.Background(), logrus.NewEntry(logrus.StandardLogger()), nil, newFakeManager(tc.prowJobs...), nil, ca.Config, nil, "", mmc, false, make(chan statusUpdate), make(chan bool), make(chan pullRequestIdentifier))
 			if err != nil {
 				t.Fatalf("failed to get statusController: %v", err)
 			}
@@ -960,7 +960,7 @@ func TestSetStatuses(t *testing.T) {
 		}
 
 		mmc := newMergeChecker(ca.Config, fc)
-		sc, err := newStatusController(context.Background(), log, fc, newFakeManager(), nil, ca.Config, nil, "", mmc, false)
+		sc, err := newStatusController(context.Background(), log, fc, newFakeManager(), nil, ca.Config, nil, "", mmc, false, make(chan statusUpdate), make(chan bool), make(chan pullRequestIdentifier))
 		if err != nil {
 			t.Fatalf("failed to get statusController: %v", err)
 		}
@@ -1309,7 +1309,7 @@ func TestStatusControllerSearch(t *testing.T) {
 			cfg := func() *config.Config {
 				return &config.Config{ProwConfig: config.ProwConfig{Tide: config.Tide{Queries: config.TideQueries{{Orgs: []string{"org-a", "org-b"}}}}}}
 			}
-			sc, err := newStatusController(context.Background(), logrus.WithField("tc", tc), ghc, newFakeManager(), nil, cfg, nil, "", nil, tc.usesAppsAuth)
+			sc, err := newStatusController(context.Background(), logrus.WithField("tc", tc), ghc, newFakeManager(), nil, cfg, nil, "", nil, tc.usesAppsAuth, make(chan statusUpdate), make(chan bool), make(chan pullRequestIdentifier))
 			if err != nil {
 				t.Fatalf("failed to construct status controller: %v", err)
 			}

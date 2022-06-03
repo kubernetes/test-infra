@@ -72,6 +72,7 @@ type statusController struct {
 
 	mergeChecker *mergeChecker
 
+	statusUpdateChan chan statusUpdate
 	// newPoolPending is a size 1 chan that signals that the main Tide loop has
 	// updated the 'poolPRs' field with a freshly updated pool.
 	newPoolPending chan bool
@@ -87,6 +88,7 @@ type statusController struct {
 	// updated the status to success prior to merging. As the name suggests,
 	// the status controller must not update their status.
 	dontUpdateStatus threadSafePRSet
+	newPRChan        chan pullRequestIdentifier
 
 	sync.Mutex
 	poolPRs          map[string]CodeReviewCommon
@@ -98,6 +100,17 @@ type statusController struct {
 	storedStateLock sync.Mutex
 	opener          io.Opener
 	path            string
+}
+
+// statusUpdate contains the required fields from syncController when there is a
+// pending pool update.
+//
+// statusController will use the values from syncController blindly.
+type statusUpdate struct {
+	blocks           blockers.Blockers
+	poolPRs          map[string]CodeReviewCommon
+	baseSHAs         map[string]string
+	requiredContexts map[string][]string
 }
 
 func (sc *statusController) shutdown() {
@@ -554,7 +567,7 @@ func (sc *statusController) run() {
 	defer ticks.Stop()
 	go sc.save(ticks)
 	for {
-		// wait for a new pool
+		// wait for a new pool, aka when a sync loop started.
 		if !<-sc.newPoolPending {
 			// chan was closed
 			break
@@ -585,10 +598,19 @@ func (sc *statusController) waitSync() {
 			sc.Unlock()
 			sc.sync(pool, blocks, baseSHAs, requiredContexts)
 			return
+		case su := <-sc.statusUpdateChan:
+			sc.Lock()
+			sc.blocks = su.blocks
+			sc.baseSHAs = su.baseSHAs
+			sc.requiredContexts = su.requiredContexts
+			sc.poolPRs = su.poolPRs
+			sc.Unlock()
 		case more := <-sc.newPoolPending:
 			if !more {
 				return
 			}
+			// sync controller started a new cycle, reset
+			sc.dontUpdateStatus.reset()
 		}
 	}
 }

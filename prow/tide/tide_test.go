@@ -279,7 +279,7 @@ func TestAccumulateBatch(t *testing.T) {
 			if test.prowYAMLGetter != nil {
 				inrepoconfig.Enabled = map[string]*bool{"*": utilpointer.BoolPtr(true)}
 			}
-			c := &Controller{
+			c := &syncController{
 				config: func() *config.Config {
 					return &config.Config{
 						JobConfig: config.JobConfig{
@@ -911,9 +911,7 @@ func TestDividePool(t *testing.T) {
 	log := logrus.NewEntry(logrus.StandardLogger())
 	mmc := newMergeChecker(configGetter, fc)
 	mgr := newFakeManager()
-	c, err := newSyncController(
-		context.Background(), log, fc, mgr, configGetter, nil, nil, nil, mmc, false,
-	)
+	c, err := newSyncController(context.Background(), log, fc, mgr, configGetter, nil, nil, mmc, false, make(chan statusUpdate), make(chan bool), make(chan pullRequestIdentifier))
 	if err != nil {
 		t.Fatalf("failed to construct sync controller: %v", err)
 	}
@@ -1116,7 +1114,7 @@ func testPickBatch(clients localgit.Clients, t *testing.T) {
 			},
 		},
 	})
-	c := &Controller{
+	c := &syncController{
 		logger:       logrus.WithField("component", "tide"),
 		gc:           gc,
 		config:       ca.Config,
@@ -1811,7 +1809,12 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ca := &config.Agent{}
 			pjNamespace := "pj-ns"
-			cfg := &config.Config{ProwConfig: config.ProwConfig{ProwJobNamespace: pjNamespace}}
+			cfg := &config.Config{ProwConfig: config.ProwConfig{
+				ProwJobNamespace: pjNamespace,
+				Tide: config.Tide{
+					StatusUpdatePeriod: &metav1.Duration{Duration: time.Second * 0},
+				},
+			}}
 			if err := cfg.SetPresubmits(
 				map[string][]config.Presubmit{
 					"o/r": {
@@ -1915,6 +1918,9 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 				return prs
 			}
 			fgc := fgc{mergeErrs: tc.mergeErrs}
+			statusUpdateChan := make(chan statusUpdate)
+			newPoolPendingChan := make(chan bool)
+			newPRChan := make(chan pullRequestIdentifier)
 			c, err := newSyncController(
 				context.Background(),
 				logrus.WithField("controller", "tide"),
@@ -1922,14 +1928,37 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 				newFakeManager(tc.preExistingJobs...),
 				ca.Config,
 				gc,
-				&statusController{},
 				nil,
 				nil,
 				false,
+				statusUpdateChan,
+				newPoolPendingChan,
+				newPRChan,
 			)
 			if err != nil {
 				t.Fatalf("failed to construct sync controller: %v", err)
 			}
+			sc, err := newStatusController(
+				context.Background(),
+				logrus.WithField("controller", "tide"),
+				&fgc,
+				newFakeManager(tc.preExistingJobs...),
+				nil,
+				ca.Config,
+				nil,
+				"",
+				nil,
+				false,
+				statusUpdateChan,
+				newPoolPendingChan,
+				newPRChan,
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
+			go sc.run()
+			defer sc.shutdown()
+
 			c.changedFiles = &changedFilesAgent{
 				ghc:             &fgc,
 				nextChangeCache: make(map[changeCacheKey][]string),
@@ -1979,7 +2008,7 @@ func testTakeAction(clients localgit.Clients, t *testing.T) {
 			if tc.merged != fgc.merged {
 				t.Errorf("Wrong number of merges. Got %d, expected %d.", fgc.merged, tc.merged)
 			}
-			if n := len(c.sc.dontUpdateStatus.data); n != tc.merged+len(tc.mergeErrs) {
+			if n := len(sc.dontUpdateStatus.data); n != tc.merged+len(tc.mergeErrs) {
 				t.Errorf("expected %d entries in the dontUpdateStatus map, got %d", tc.merged+len(tc.mergeErrs), n)
 			}
 			// Ensure that the correct number of batch jobs were triggered
@@ -2007,7 +2036,7 @@ func TestServeHTTP(t *testing.T) {
 		t.Fatalf("Failed to create history client: %v", err)
 	}
 	cfg := func() *config.Config { return &config.Config{} }
-	c := &Controller{
+	c := &syncController{
 		pools: []Pool{
 			{
 				MissingPRs: []CodeReviewCommon{*CodeReviewCommonFromPullRequest(&pr1)},
@@ -2280,32 +2309,45 @@ func TestSync(t *testing.T) {
 				t.Fatalf("Failed to create history client: %v", err)
 			}
 			mergeChecker := newMergeChecker(ca.Config, fgc)
-			sc := &statusController{
-				pjClient:       fakectrlruntimeclient.NewFakeClient(),
-				logger:         logrus.WithField("controller", "status-update"),
-				ghc:            fgc,
-				gc:             nil,
-				config:         ca.Config,
-				newPoolPending: make(chan bool, 1),
-				shutDown:       make(chan bool),
-				mergeChecker:   mergeChecker,
-			}
-			go sc.run()
-			defer sc.shutdown()
-			c := &Controller{
+			statusUpdateChan := make(chan statusUpdate)
+			newPoolPendingChan := make(chan bool)
+			newPRChan := make(chan pullRequestIdentifier)
+			c := &syncController{
 				config:        ca.Config,
 				ghc:           fgc,
 				gc:            nil,
 				prowJobClient: fakectrlruntimeclient.NewFakeClient(),
 				logger:        logrus.WithField("controller", "sync"),
-				sc:            sc,
 				changedFiles: &changedFilesAgent{
 					ghc:             fgc,
 					nextChangeCache: make(map[changeCacheKey][]string),
 				},
-				mergeChecker: mergeChecker,
-				History:      hist,
+				mergeChecker:       mergeChecker,
+				History:            hist,
+				statusUpdateChan:   statusUpdateChan,
+				newPoolPendingChan: newPoolPendingChan,
+				newPRChan:          newPRChan,
 			}
+			sc, err := newStatusController(
+				context.Background(),
+				logrus.WithField("controller", "status-update"),
+				fgc,
+				newFakeManager(),
+				nil,
+				ca.Config,
+				nil,
+				"",
+				mergeChecker,
+				false,
+				statusUpdateChan,
+				newPoolPendingChan,
+				newPRChan,
+			)
+			if err != nil {
+				t.Fatal(err)
+			}
+			go sc.run()
+			defer sc.shutdown()
 
 			if err := c.Sync(); err != nil {
 				t.Fatalf("Unexpected error from 'Sync()': %v.", err)
@@ -2885,13 +2927,13 @@ func TestIsPassing(t *testing.T) {
 				t.Fatalf("Failed to get log output before testing: %v", err)
 			}
 			pr := PullRequest{HeadRefOID: githubql.String(headSHA)}
-			passing := (&Controller{ghc: ghc}).isPassingTests(log, CodeReviewCommonFromPullRequest(&pr), &tc.config)
+			passing := (&syncController{ghc: ghc}).isPassingTests(log, CodeReviewCommonFromPullRequest(&pr), &tc.config)
 			if passing != tc.passing {
 				t.Errorf("%s: Expected %t got %t", tc.name, tc.passing, passing)
 			}
 
 			if tc.passing {
-				c := &Controller{
+				c := &syncController{
 					ghc:           ghc,
 					prowJobClient: fakectrlruntimeclient.NewFakeClient(),
 					config:        func() *config.Config { return &config.Config{} },
@@ -3185,7 +3227,7 @@ func TestPresubmitsByPull(t *testing.T) {
 			sha:    "master-sha",
 			prs:    append(tc.prs, *CodeReviewCommonFromPullRequest(&samplePR)),
 		}
-		c := &Controller{
+		c := &syncController{
 			config: cfgAgent.Config,
 			ghc:    &fgc{},
 			gc:     nil,
@@ -3303,7 +3345,7 @@ func TestPrepareMergeDetails(t *testing.T) {
 			cfg := &config.Config{}
 			cfgAgent := &config.Agent{}
 			cfgAgent.Set(cfg)
-			c := &Controller{
+			c := &syncController{
 				config: cfgAgent.Config,
 				ghc:    &fgc{},
 				logger: logrus.WithField("component", "tide"),
@@ -3793,7 +3835,7 @@ func TestPresubmitsForBatch(t *testing.T) {
 			if tc.prowYAMLGetter != nil {
 				inrepoconfig.Enabled = map[string]*bool{"*": utilpointer.BoolPtr(true)}
 			}
-			c := &Controller{
+			c := &syncController{
 				changedFiles: tc.changedFiles,
 				config: func() *config.Config {
 					return &config.Config{
@@ -4403,7 +4445,7 @@ func TestQueryShardsByOrgWhenAppsAuthIsEnabledOnly(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			c := &Controller{
+			c := &syncController{
 				logger: logrus.WithField("test", tc.name),
 				config: func() *config.Config {
 					return &config.Config{ProwConfig: config.ProwConfig{Tide: config.Tide{Queries: []config.TideQuery{{Orgs: []string{"org", "other-org"}}}}}}
@@ -4704,7 +4746,7 @@ func TestPickBatchPrefersBatchesWithPreexistingJobs(t *testing.T) {
 					*CodeReviewCommonFromPullRequest(&PullRequest{Number: 99, HeadRefOID: "pr-from-new-batch-func"})}, nil
 			}
 
-			c := &Controller{
+			c := &syncController{
 				logger: logrus.WithField("test", tc.name),
 				config: func() *config.Config {
 					return &config.Config{ProwConfig: config.ProwConfig{
@@ -4897,8 +4939,9 @@ func TestBatchPickingConsidersPRThatIsCurrentlyBeingSeriallyRetested(t *testing.
 	configGetter := func() *config.Config {
 		return &config.Config{
 			ProwConfig: config.ProwConfig{Tide: config.Tide{
-				Queries:       config.TideQueries{{}},
-				MaxGoroutines: 1,
+				Queries:            config.TideQueries{{}},
+				MaxGoroutines:      1,
+				StatusUpdatePeriod: &metav1.Duration{Duration: time.Second * 0},
 			}},
 			JobConfig: config.JobConfig{PresubmitsStatic: map[string][]config.Presubmit{
 				"/": {{AlwaysRun: true, Reporter: config.Reporter{Context: "mandatory-job"}}},
@@ -4913,12 +4956,47 @@ func TestBatchPickingConsidersPRThatIsCurrentlyBeingSeriallyRetested(t *testing.
 	if err != nil {
 		t.Fatalf("failed to construct history: %v", err)
 	}
+	statusUpdateChan := make(chan statusUpdate)
+	newPoolPendingChan := make(chan bool)
+	newPRChan := make(chan pullRequestIdentifier)
 	c, err := newSyncController(
-		context.Background(), log, ghc, mgr, configGetter, nil, &statusController{}, history, mmc, false,
+		context.Background(),
+		log,
+		ghc,
+		mgr,
+		configGetter,
+		nil,
+		history,
+		mmc,
+		false,
+		statusUpdateChan,
+		newPoolPendingChan,
+		newPRChan,
 	)
 	if err != nil {
 		t.Fatalf("failed to construct sync controller: %v", err)
 	}
+	sc, err := newStatusController(
+		context.Background(),
+		log,
+		ghc,
+		mgr,
+		nil,
+		configGetter,
+		nil,
+		"",
+		mmc,
+		false,
+		statusUpdateChan,
+		newPoolPendingChan,
+		newPRChan,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	go sc.run()
+	defer sc.shutdown()
+
 	c.pickNewBatch = func(sp subpool, candidates []CodeReviewCommon, maxBatchSize int) ([]CodeReviewCommon, error) {
 		return candidates, nil
 	}
@@ -5133,7 +5211,7 @@ func TestIsBatchCandidateEligible(t *testing.T) {
 				initObjects = append(initObjects, pj)
 			}
 
-			c := &Controller{
+			c := &syncController{
 				config:        func() *config.Config { return &config.Config{} },
 				ctx:           context.Background(),
 				prowJobClient: fakectrlruntimeclient.NewFakeClient(initObjects...),
@@ -5161,8 +5239,9 @@ func TestSerialRetestingConsidersPRThatIsCurrentlyBeingSRetested(t *testing.T) {
 	configGetter := func() *config.Config {
 		return &config.Config{
 			ProwConfig: config.ProwConfig{Tide: config.Tide{
-				Queries:       config.TideQueries{{}},
-				MaxGoroutines: 1,
+				Queries:            config.TideQueries{{}},
+				MaxGoroutines:      1,
+				StatusUpdatePeriod: &metav1.Duration{Duration: time.Second * 0},
 			}},
 			JobConfig: config.JobConfig{PresubmitsStatic: map[string][]config.Presubmit{
 				"/": {{AlwaysRun: true, Reporter: config.Reporter{Context: "mandatory-job"}}},
@@ -5177,12 +5256,47 @@ func TestSerialRetestingConsidersPRThatIsCurrentlyBeingSRetested(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to construct history: %v", err)
 	}
+
+	statusUpdateChan := make(chan statusUpdate)
+	newPoolPendingChan := make(chan bool)
+	newPRChan := make(chan pullRequestIdentifier)
 	c, err := newSyncController(
-		context.Background(), log, ghc, mgr, configGetter, nil, &statusController{}, history, mmc, false,
+		context.Background(),
+		log,
+		ghc,
+		mgr,
+		configGetter,
+		nil,
+		history,
+		mmc,
+		false,
+		statusUpdateChan,
+		newPoolPendingChan,
+		newPRChan,
 	)
 	if err != nil {
 		t.Fatalf("failed to construct sync controller: %v", err)
 	}
+	sc, err := newStatusController(
+		context.Background(),
+		log,
+		ghc,
+		mgr,
+		nil,
+		configGetter,
+		nil,
+		"",
+		mmc,
+		false,
+		statusUpdateChan,
+		newPoolPendingChan,
+		newPRChan,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	go sc.run()
+	defer sc.shutdown()
 
 	// Add a successful PR to github
 	initialPR := PullRequest{}
