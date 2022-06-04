@@ -26,10 +26,6 @@ dashboard_groups:
 dashboards:
 - name: sig-release-master-blocking
 - name: sig-release-master-informing
-  dashboard_tab:
-  - name: Conformance - OpenStack
-    test_group_name: ci-periodic-cloud-provider-openstack-acceptance-test-e2e-conformance
-    description: "OWNER: sig-openstack; Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-openstack"
 - name: sig-release-1.24-blocking
 - name: sig-release-1.24-informing
 - name: sig-release-1.23-blocking
