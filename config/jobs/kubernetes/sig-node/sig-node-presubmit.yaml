@@ -1219,6 +1219,12 @@ presubmits:
           requests:
             cpu: 4
             memory: 6Gi
+        env:
+          - name: GOPATH
+            value: /go
+          - name: IGNITION_INJECT_GCE_SSH_PUBLIC_KEY_FILE
+            value: "1"
+
 
   - name: pull-kubernetes-node-kubelet-credential-provider
     cluster: k8s-infra-prow-build
