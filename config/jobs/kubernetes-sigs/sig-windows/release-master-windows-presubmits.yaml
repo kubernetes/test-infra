@@ -50,3 +50,46 @@ presubmits:
       testgrid-dashboards: sig-windows-presubmit
       testgrid-tab-name: pull-kubernetes-e2e-capz-windows-containerd
       testgrid-num-columns-recent: '30'
+  kubernetes-sigs/windows-testing:
+  - name: pull-e2e-capz-containerd-windows-2022-extension
+    interval: 3h
+    decorate: true
+    always_run: false
+    optional: true
+    run_if_changed: 'azure/.*'
+    decoration_config:
+      timeout: 3h
+    path_alias: k8s.io/windows-testing
+    branches:
+      - master
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+      preset-windows-private-registry-cred: "true"
+      preset-capz-windows-common-main: "true"
+      preset-capz-containerd-latest: "true"
+    extra_refs:
+    - org: jsturtevant
+      repo: cluster-api-provider-azure
+      base_ref: reuse-logging
+      path_alias: sigs.k8s.io/cluster-api-provider-azure
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
+          command:
+            - "runner.sh"
+            - "./azure/run-capz-e2e.sh"
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 2
+              memory: "9Gi"
+          env:
+          - name: WINDOWS_SERVER_VERSION
+            value: "windows-2022"
+    annotations:
+      testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+      testgrid-dashboards: sig-windows-presubmit
+      testgrid-tab-name: pull-e2e-capz-windows-containerd-extension
