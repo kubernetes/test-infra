@@ -17,7 +17,6 @@ limitations under the License.
 package main
 
 import (
-	"errors"
 	"flag"
 	"reflect"
 	"testing"
@@ -78,29 +77,6 @@ func TestGatherOptions(t *testing.T) {
 			expected: func(o *options) {
 				o.addedPresubmitDenylist = newSetStringsFlagForTest("a", "b")
 			},
-		},
-		{
-			name: "support blacklist",
-			args: []string{
-				"-blacklist=a",
-				"-blacklist=b",
-			},
-			expected: func(o *options) {
-				o.addedPresubmitBlacklist = newSetStringsFlagForTest("a", "b")
-			},
-		},
-		{
-			name: "denylist and blacklist mutual exclusive",
-			args: []string{
-				"-denylist=a",
-				"-denylist=b",
-				"-blacklist=c",
-			},
-			expected: func(o *options) {
-				o.addedPresubmitDenylist = newSetStringsFlagForTest("a", "b")
-				o.addedPresubmitBlacklist = newSetStringsFlagForTest("c")
-			},
-			expectedErr: errors.New("--denylist and --blacklist are mutual exclusive"),
 		},
 	}
 
