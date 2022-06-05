@@ -42,7 +42,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-1.23
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
         command:
         - runner.sh
         - kubetest
@@ -102,7 +102,7 @@ presubmits:
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-1.23
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
           command:
             - runner.sh
             - kubetest
@@ -183,7 +183,7 @@ presubmits:
             - name: CONTROL_PLANE_MACHINE_COUNT
               value: "3"
             - name: KUBERNETES_VERSION
-              value: "1.23.5"
+              value: "1.24.1"
             - name: CLUSTER_TEMPLATE
               value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss.yaml
             - name: AZURE_LOADBALANCER_SKU
@@ -495,7 +495,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-1.23
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
       command:
       - runner.sh
       - kubetest
@@ -557,7 +557,7 @@ periodics:
       path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-1.23
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
       command:
       - runner.sh
       - kubetest
@@ -797,7 +797,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-1.23
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
       command:
       - runner.sh
       - kubetest
@@ -864,7 +864,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-1.23
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
       command:
       - runner.sh
       - kubetest
@@ -945,7 +945,7 @@ periodics:
         - name: CONTROL_PLANE_MACHINE_COUNT
           value: "3"
         - name: KUBERNETES_VERSION
-          value: "1.23.5"
+          value: "1.24.1"
         - name: CLUSTER_TEMPLATE
           value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss.yaml
         - name: AZURE_LOADBALANCER_SKU
@@ -976,7 +976,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-1.23
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
       command:
       - runner.sh
       - kubetest
@@ -1058,10 +1058,9 @@ periodics:
       - name: TEST_CCM
         value: "true"
       - name: KUBERNETES_VERSION
-        value: "1.23.5"
+        value: "1.24.1"
       - name: GINKGO_ARGS
-        # The 3 skipped testcases need k8s v1.24
-        value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|Kubelet.should.reject.pod.when.the.node.OS.doesn't.match.pod's.OS|Probing.container.should.be.restarted.with.a.GRPC.liveness.probe|CSIStorageCapacity.should.support.CSIStorageCapacities.API.operations --test.parallel=30 --report-dir=/logs/artifacts --disable-log-dump=true
+        value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --test.parallel=30 --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT
         value: "3"
       - name: CLUSTER_TEMPLATE
@@ -1119,7 +1118,7 @@ periodics:
       - name: TEST_CCM
         value: "true"
       - name: KUBERNETES_VERSION
-        value: "1.23.5"
+        value: "1.24.1"
       - name: GINKGO_ARGS
         # Check https://github.com/kubernetes-sigs/cloud-provider-azure/issues/224 for the status of each skipped test
         value: --ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\]|regular.resource.usage.tracking.resource.tracking.for|validates.MaxPods.limit.number.of.pods.that.are.allowed.to.run|In-tree.Volumes --test.parallel=30 --report-dir=/logs/artifacts --disable-log-dump=true
@@ -1180,7 +1179,7 @@ periodics:
       - name: TEST_CCM
         value: "true"
       - name: KUBERNETES_VERSION
-        value: "1.23.5"
+        value: "1.24.1"
       - name: GINKGO_ARGS
         # Check https://github.com/kubernetes-sigs/cloud-provider-azure/issues/224 for the status of each skipped test
         value: --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|Delete.Grace.Period|runs.ReplicaSets.to.verify.preemption.running.path|client.go.should.negotiate|should.contain.custom.columns.for.each.resource|Network.should.set.TCP.CLOSE_WAIT.timeout|PodSecurityPolicy|In-tree.Volumes --test.parallel=30 --report-dir=/logs/artifacts --disable-log-dump=true
@@ -1216,7 +1215,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-1.23
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
       command:
       - runner.sh
       - kubetest
@@ -1298,7 +1297,7 @@ periodics:
       - name: TEST_CCM
         value: "true"
       - name: KUBERNETES_VERSION
-        value: "1.23.5"
+        value: "1.24.1"
       - name: GINKGO_ARGS
         value: --ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|In-tree.Volumes|should.be.able.to.create.an.internal.type.load.balancer --test.parallel=4 --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT
@@ -1333,7 +1332,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-1.23
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
       command:
       - runner.sh
       - kubetest
