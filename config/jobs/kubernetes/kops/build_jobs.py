@@ -374,12 +374,14 @@ distro_options = [
 
 k8s_versions = [
     "1.22",
-    "1.23"
+    "1.23",
+    "1.24"
 ]
 
 kops_versions = [
     None, # maps to latest
-    "1.23"
+    "1.23",
+    "1.24"
 ]
 
 container_runtimes = [
@@ -676,7 +678,7 @@ def generate_misc():
 ################################
 def generate_conformance():
     results = []
-    for version in ['1.23', '1.22']:
+    for version in ['1.24', '1.23']:
         results.append(
             build_test(
                 k8s_version=version,
@@ -804,18 +806,25 @@ def generate_upgrades():
     versions_list = [
         #  kops    k8s          kops      k8s
         # 1.23 release branch
-        (('v1.23.2', 'v1.22.1'), ('1.23', 'v1.23.1')),
-        (('v1.23.2', 'v1.23.1'), ('1.23', 'v1.23.1')),
+        (('v1.23.5', 'v1.22.1'), ('1.23', 'v1.23.1')),
+        (('v1.23.5', 'v1.23.1'), ('1.23', 'v1.23.1')),
+        # 1.24 release branch
+        (('v1.23.5', 'v1.22.1'), ('1.24', 'v1.23.1')),
+        (('v1.23.5', 'v1.23.1'), ('1.24', 'v1.24.0')),
+        (('v1.24.0-beta.0', 'v1.19.16'), ('1.24', 'v1.20.6')),
+        (('v1.24.0-beta.0', 'v1.23.1'), ('1.24', 'v1.23.1')),
         # 1,23 upgrade to latest
         (('1.23', 'v1.22.4'), ('latest', 'v1.23.0')),
         (('1.23', 'v1.23.0'), ('latest', 'v1.24.0')),
+        # 1,24 upgrade to latest
+        (('1.24.0-beta.0', 'v1.23.1'), ('latest', 'v1.24.0')),
+        (('1.24.0-beta.0', 'v1.24.0'), ('latest', 'v1.24.0')),
         # we should have an upgrade test for every supported K8s version
         (('latest', 'v1.24.0'), ('latest', 'latest')),
         (('latest', 'v1.23.0'), ('latest', 'v1.24.0')),
         (('latest', 'v1.22.4'), ('latest', 'v1.23.0')),
         (('latest', 'v1.21.7'), ('latest', 'v1.22.4')),
         (('latest', 'v1.20.6'), ('latest', 'v1.21.7')),
-        (('latest', 'v1.19.16'), ('latest', 'v1.20.6')),
     ]
     def shorten(version):
         version = re.sub(r'^v', '', version)
@@ -865,7 +874,7 @@ def generate_versions():
             publish_version_marker='gs://kops-ci/bin/latest-ci-green.txt',
         )
     ]
-    for version in ['1.23', '1.22', '1.21', '1.20', '1.19']:
+    for version in ['1.24', '1.23', '1.22', '1.21', '1.20']:
         results.append(
             build_test(
                 distro='u2004',
@@ -885,7 +894,7 @@ def generate_versions():
 ######################
 def generate_pipeline():
     results = []
-    for version in ['master', '1.23', '1.22']:
+    for version in ['master', '1.24', '1.23', '1.22']:
         branch = version if version == 'master' else f"release-{version}"
         publish_version_marker = f"gs://kops-ci/markers/{branch}/latest-ci-updown-green.txt"
         kops_version = f"https://storage.googleapis.com/k8s-staging-kops/kops/releases/markers/{branch}/latest-ci.txt" # pylint: disable=line-too-long
