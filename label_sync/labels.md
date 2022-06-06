@@ -119,7 +119,6 @@ larger set of contributors to apply/remove them.
 | <a id="sig/scalability" href="#sig/scalability">`sig/scalability`</a> | Categorizes an issue or PR as relevant to SIG Scalability.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="sig/scheduling" href="#sig/scheduling">`sig/scheduling`</a> | Categorizes an issue or PR as relevant to SIG Scheduling.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="sig/security" href="#sig/security">`sig/security`</a> | Categorizes an issue or PR as relevant to SIG Security.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
-| <a id="sig/service-catalog" href="#sig/service-catalog">`sig/service-catalog`</a> | Categorizes an issue or PR as relevant to SIG Service Catalog.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="sig/storage" href="#sig/storage">`sig/storage`</a> | Categorizes an issue or PR as relevant to SIG Storage.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="sig/testing" href="#sig/testing">`sig/testing`</a> | Categorizes an issue or PR as relevant to SIG Testing.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |
 | <a id="sig/ui" href="#sig/ui">`sig/ui`</a> | Categorizes an issue or PR as relevant to SIG UI.| anyone |  [label](https://git.k8s.io/test-infra/prow/plugins/label) |

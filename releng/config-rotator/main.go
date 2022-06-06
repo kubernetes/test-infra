@@ -78,9 +78,11 @@ func updateJobBase(j *config.JobBase, old, new string) {
 		c := &j.Spec.Containers[i]
 		for j := range c.Args {
 			c.Args[j] = updateString(c.Args[j], old, new)
+			c.Args[j] = updateGenericVersionMarker(c.Args[j])
 		}
 		for j := range c.Command {
 			c.Command[j] = updateString(c.Command[j], old, new)
+			c.Command[j] = updateGenericVersionMarker(c.Command[j])
 		}
 	}
 }
@@ -149,4 +151,54 @@ func main() {
 	if err := ioutil.WriteFile(o.configFile, output, 0666); err != nil {
 		log.Fatalf("Failed to write new presubmits: %v.\n", err)
 	}
+}
+
+// Version marker logic
+
+const (
+	markerDefault     = "k8s-master"
+	markerBeta        = "k8s-beta"
+	markerStableOne   = "k8s-stable1"
+	markerStableTwo   = "k8s-stable2"
+	markerStableThree = "k8s-stable3"
+)
+
+var allowedMarkers = []string{
+	markerDefault,
+	markerBeta,
+	markerStableOne,
+	markerStableTwo,
+	markerStableThree,
+}
+
+func getMarker(s string) string {
+	var marker string
+	for _, m := range allowedMarkers {
+		if strings.Contains(s, m) {
+			marker = m
+			break
+		}
+	}
+
+	return marker
+}
+
+func updateGenericVersionMarker(s string) string {
+	var newMarker string
+
+	marker := getMarker(s)
+	switch marker {
+	case markerDefault:
+		newMarker = markerBeta
+	case markerBeta:
+		newMarker = markerStableOne
+	case markerStableOne:
+		newMarker = markerStableTwo
+	case markerStableTwo:
+		newMarker = markerStableThree
+	default:
+		newMarker = marker
+	}
+
+	return updateString(s, marker, newMarker)
 }

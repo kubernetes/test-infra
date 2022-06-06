@@ -19,7 +19,7 @@ presubmits:
         runAsUser: 2000
         allowPrivilegeEscalation: false
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
           command:
             - make
             - test
@@ -92,7 +92,7 @@ presubmits:
         runAsUser: 2000
         allowPrivilegeEscalation: false
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-go-canary
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-go-canary
           command:
             - make
             - test
@@ -128,7 +128,7 @@ periodics:
         runAsUser: 2000
         allowPrivilegeEscalation: false
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
           command:
             - make
             - test
@@ -140,67 +140,6 @@ periodics:
             requests:
               cpu: 4
               memory: "36Gi"
-  - interval: 1h
-    name: ci-kubernetes-generate-make-test-cache
-    annotations:
-      testgrid-dashboards: sig-testing-canaries
-    decorate: true
-    extra_refs:
-      - org: kubernetes
-        repo: kubernetes
-        base_ref: master
-        path_alias: k8s.io/kubernetes
-    labels:
-      preset-service-account: "true"
-    spec:
-      # unit tests have no business requiring root or doing privileged operations
-      securityContext:
-        runAsUser: 2000
-        allowPrivilegeEscalation: false
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
-          command:
-            - runner.sh
-            - bash
-          args:
-            - -c
-            - |
-              result=0
-              # Run the tests as usual
-              time make test KUBE_TIMEOUT=--timeout=600s || result=$?
-              # Send the cache off to gcs
-              time tar -czf cache.tar.gz -C _output/local/go cache/ || result=$?
-              time gsutil cp cache.tar.gz gs://kubernetes-jenkins/cache/poc/k8s-test-cache.tar.gz || result=$?
-              exit $result
-  - interval: 15m
-    name: ci-kubernetes-cached-make-test
-    annotations:
-      testgrid-dashboards: sig-testing-canaries
-    decorate: true
-    extra_refs:
-      - org: kubernetes
-        repo: kubernetes
-        base_ref: master
-        path_alias: k8s.io/kubernetes
-    spec:
-      # unit tests have no business requiring root or doing privileged operations
-      securityContext:
-        runAsUser: 2000
-        allowPrivilegeEscalation: false
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
-          command:
-            - runner.sh
-            - bash
-          args:
-            - -c
-            - |
-              # Restore the cache
-              time curl https://storage.googleapis.com/kubernetes-jenkins/cache/poc/k8s-test-cache.tar.gz -o cache.tar.gz
-              mkdir -p _output/local/go/
-              time tar -xzf cache.tar.gz -C _output/local/go
-              # Run tests as usual
-              time make test KUBE_TIMEOUT=--timeout=600s
   - interval: 6h
     name: ci-kubernetes-generate-make-test-count10
     annotations:
@@ -219,7 +158,7 @@ periodics:
         runAsUser: 2000
         allowPrivilegeEscalation: false
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
           command:
             - runner.sh
             - bash

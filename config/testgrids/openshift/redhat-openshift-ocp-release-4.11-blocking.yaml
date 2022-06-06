@@ -353,12 +353,12 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-aws-serial
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-aws-serial
-- days_of_results: 60
+- days_of_results: 25
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-metal-ipi
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-metal-ipi
-- days_of_results: 60
+- days_of_results: 25
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-metal-ipi-ovn-ipv6
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-metal-ipi-ovn-ipv6
-- days_of_results: 60
+- days_of_results: 25
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-metal-ipi-serial-ipv4
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-metal-ipi-serial-ipv4

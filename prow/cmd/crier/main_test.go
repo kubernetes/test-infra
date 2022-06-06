@@ -189,11 +189,11 @@ func TestOptions(t *testing.T) {
 		},
 		{
 			name: "k8s-gcs with too large report fraction rejects",
-			args: []string{"--kubernetes-gcs-workers=3", "--config-path=foo", "--kubernetes-report-fraction=1.5"},
+			args: []string{"--kubernetes-blob-storage-workers=3", "--config-path=foo", "--kubernetes-report-fraction=1.5"},
 		},
 		{
 			name: "k8s-gcs with negative report fraction rejects",
-			args: []string{"--kubernetes-gcs-workers=3", "--config-path=foo", "--kubernetes-report-fraction=-1.2"},
+			args: []string{"--kubernetes-blob-storage-workers=3", "--config-path=foo", "--kubernetes-report-fraction=-1.2"},
 		},
 	}
 

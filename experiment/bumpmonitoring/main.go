@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -100,9 +101,9 @@ type client struct {
 
 // Changes returns a slice of functions, each one does some stuff, and
 // returns commit message for the changes
-func (c *client) Changes() []func() (string, error) {
-	return []func() (string, error){
-		func() (string, error) {
+func (c *client) Changes() []func(context.Context) (string, error) {
+	return []func(context.Context) (string, error){
+		func(_ context.Context) (string, error) {
 			if err := c.findConfigToUpdate(); err != nil {
 				return "", err
 			}
@@ -178,6 +179,7 @@ func (c *client) copyFiles() error {
 }
 
 func main() {
+	ctx := context.Background()
 	o, err := parseOptions()
 	if err != nil {
 		logrus.WithError(err).Fatalf("Failed to run the bumper tool")
@@ -192,7 +194,7 @@ func main() {
 		paths:   make([]string, 0),
 	}
 
-	if err := bumper.Run(&o.Options, &c); err != nil {
+	if err := bumper.Run(ctx, &o.Options, &c); err != nil {
 		logrus.Fatal(err)
 	}
 }

@@ -45,6 +45,7 @@ RUN wget -q https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.ta
     gcloud info | tee /workspace/gcloud-info.txt
 
 # Install terraform
-RUN apk add --no-cache terraform==0.14.9-r1 --repository=http://dl-cdn.alpinelinux.org/alpine/v3.14/main
+# Doc: https://pkgs.alpinelinux.org/packages?name=terraform&branch=v3.14&arch=x86_64
+RUN apk add --no-cache terraform==0.14.9-r4 --repository=http://dl-cdn.alpinelinux.org/alpine/v3.14/main
 
 ENTRYPOINT ["/bin/bash"]

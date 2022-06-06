@@ -19,6 +19,7 @@ periodics:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
     preset-ci-gce-device-plugin-gpu: "true"
+    preset-use-new-registry: "true"
   annotations:
     fork-per-release: "true"
     fork-per-release-replacements: "--extract=ci/latest-fast -> --extract=ci/latest-{{.Version}}"
@@ -45,7 +46,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
       resources:
         limits:
           cpu: 1
@@ -81,7 +82,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
       resources:
         limits:
           cpu: 1

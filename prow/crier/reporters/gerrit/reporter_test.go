@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"regexp"
 	"strconv"
 	"strings"
 	"testing"
@@ -1606,7 +1607,7 @@ func TestReport(t *testing.T) {
 				},
 			},
 			expectReport:      true,
-			reportInclude:     []string{"1 out of 2", "ci-foo", "SUCCESS", "ci-bar", "FAILURE", "guber/foo", "guber/bar", "Comment '/retest'"},
+			reportInclude:     []string{"1 out of 2", "ci-foo", "SUCCESS", "ci-bar", "FAILURE", "guber/foo", "guber/bar", "Comment `/retest`"},
 			expectLabel:       map[string]string{"same-label": lbtm},
 			numExpectedReport: 0,
 		},
@@ -1965,7 +1966,7 @@ func TestReport(t *testing.T) {
 				},
 			},
 			expectReport:      true,
-			reportInclude:     []string{"0 out of 1", "ci-foo", "FAILURE", "guber/foo", "Comment '/retest'"},
+			reportInclude:     []string{"0 out of 1", "ci-foo", "FAILURE", "guber/foo", "Comment `/retest`"},
 			expectLabel:       map[string]string{codeReview: lztm},
 			numExpectedReport: 0,
 		},
@@ -2107,7 +2108,7 @@ func TestMultipleWorks(t *testing.T) {
 	for _, count := range []int{10, 20, 30} {
 		t.Run(fmt.Sprintf("%d-jobs", count), func(t *testing.T) {
 			expectedCount := 1
-			expectedComment := []string{" out of " + strconv.Itoa(count), "ci-bar", "FAILURE", "guber/bar", "Comment '/retest'"}
+			expectedComment := []string{" out of " + strconv.Itoa(count), "ci-bar", "FAILURE", "guber/bar", "Comment `/retest`"}
 			var existingPJs []*v1.ProwJob
 			for i := 0; i < count; i++ {
 				pj := samplePJ.DeepCopy()
@@ -2194,6 +2195,44 @@ func TestMultipleWorks(t *testing.T) {
 	}
 }
 
+func TestJobReportFormats(t *testing.T) {
+	tests := []struct {
+		name        string
+		format      string
+		words       []interface{}
+		formatRegex string
+	}{
+		{"jobReportFormat", jobReportFormat, []interface{}{"a", "b", "c", "d"}, jobReportFormatRegex},
+		{"jobReportFormatUrlNotFound", jobReportFormatUrlNotFound, []interface{}{"a", "b", "c"}, jobReportFormatUrlNotFoundRegex},
+		{"jobReportFormatWithoutURL", jobReportFormatWithoutURL, []interface{}{"a", "b", "c"}, jobReportFormatWithoutURLRegex},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			// In GenerateReport(), we use a trailing newline in the
+			// jobReportFormat* constants, because we use a newline as a
+			// delimiter. In ParseReport(), we split the overall report on
+			// newlines first, before applying the jobReportFormat*Regex
+			// regexes on them. To mimic this behavior, we trim the newline
+			// before attempting to parse them with tc.formatRegex.
+			serialized := fmt.Sprintf(tc.format, tc.words...)
+			serializedWithoutNewline := strings.TrimSuffix(serialized, "\n")
+			re := regexp.MustCompile(tc.formatRegex)
+			if !re.MatchString(serializedWithoutNewline) {
+				t.Fatalf("could not parse serialized job report line %q with regex %q", serializedWithoutNewline, tc.formatRegex)
+			}
+		})
+	}
+
+	// Ensure the legacy job reporting format can be parsed by
+	// jobReportFormatLegacyRegex.
+	serializedWithoutNewline := "✔️ some-job SUCCESS - https://someURL.com/somewhere"
+	re := regexp.MustCompile(jobReportFormatLegacyRegex)
+	if !re.MatchString(serializedWithoutNewline) {
+		t.Fatalf("could not parse serialized job report line %q with regex %q", serializedWithoutNewline, jobReportFormatLegacyRegex)
+	}
+}
+
 func TestGenerateReport(t *testing.T) {
 	job := func(name, url string, state v1.ProwJobState) *v1.ProwJob {
 		var out v1.ProwJob
@@ -2218,8 +2257,8 @@ func TestGenerateReport(t *testing.T) {
 				job("left", "foo", v1.AbortedState),
 				job("right", "bar", v1.ErrorState),
 			},
-			wantHeader:  "Prow Status: 1 out of 4 pjs passed! 👉 Comment '/retest' to rerun all failed tests\n",
-			wantMessage: "❌ that FAILURE - hey\n🚫 right ERROR - bar\n🚫 left ABORTED - foo\n✔️ this SUCCESS - url\n",
+			wantHeader:  "Prow Status: 1 out of 4 pjs passed! 👉 Comment `/retest` to rerun only failed tests (if any), or `/test all` to rerun all tests\n",
+			wantMessage: "❌ [that](hey) FAILURE\n🚫 [right](bar) ERROR\n🚫 [left](foo) ABORTED\n✔️ [this](url) SUCCESS\n",
 		},
 		{
 			name: "short lines only",
@@ -2228,8 +2267,13 @@ func TestGenerateReport(t *testing.T) {
 				job("that", "hey", v1.FailureState),
 				job("some", "other", v1.SuccessState),
 			},
-			commentSizeLimit: 81 + 61,
-			wantHeader:       "Prow Status: 2 out of 3 pjs passed! 👉 Comment '/retest' to rerun all failed tests\n",
+			// 130 is the length of the Header.
+			// 154 is the comment size room we give for the Message part. Note
+			// that it should be 1 char more than what we have in the
+			// wantMessage part, because we always return comments *under* the
+			// commentSizeLimit.
+			commentSizeLimit: 130 + 154,
+			wantHeader:       "Prow Status: 2 out of 3 pjs passed! 👉 Comment `/retest` to rerun only failed tests (if any), or `/test all` to rerun all tests\n",
 			wantMessage:      "❌ that FAILURE\n✔️ some SUCCESS\n✔️ this SUCCESS\n[NOTE FROM PROW: Skipped displaying URLs for 3/3 jobs due to reaching gerrit comment size limit]",
 		},
 		{
@@ -2239,9 +2283,9 @@ func TestGenerateReport(t *testing.T) {
 				job("that", "hey", v1.FailureState),
 				job("some", "other", v1.SuccessState),
 			},
-			commentSizeLimit: 81 + 67,
-			wantHeader:       "Prow Status: 2 out of 3 pjs passed! 👉 Comment '/retest' to rerun all failed tests\n",
-			wantMessage:      "❌ that FAILURE - hey\n✔️ some SUCCESS\n✔️ this SUCCESS\n[NOTE FROM PROW: Skipped displaying URLs for 2/3 jobs due to reaching gerrit comment size limit]",
+			commentSizeLimit: 130 + 161,
+			wantHeader:       "Prow Status: 2 out of 3 pjs passed! 👉 Comment `/retest` to rerun only failed tests (if any), or `/test all` to rerun all tests\n",
+			wantMessage:      "❌ [that](hey) FAILURE\n✔️ some SUCCESS\n✔️ this SUCCESS\n[NOTE FROM PROW: Skipped displaying URLs for 2/3 jobs due to reaching gerrit comment size limit]",
 		},
 		{
 			name: "too many jobs",
@@ -2250,9 +2294,20 @@ func TestGenerateReport(t *testing.T) {
 				job("that", "hey", v1.FailureState),
 				job("some", "other", v1.SuccessState),
 			},
-			commentSizeLimit: 81 + 55,
-			wantHeader:       "Prow Status: 2 out of 3 pjs passed! 👉 Comment '/test all' to rerun all tests\n",
-			wantMessage:      "[NOTE FROM PROW: Prow failed to report all jobs, are there excessive amount of prow jobs?]",
+			commentSizeLimit: 1,
+			wantHeader:       "Prow Status: 2 out of 3 pjs passed! 👉 Comment `/retest` to rerun only failed tests (if any), or `/test all` to rerun all tests\n",
+			wantMessage:      "[NOTE FROM PROW: Skipped displaying 3/3 jobs due to reaching gerrit comment size limit (too many jobs)]",
+		},
+		{
+			name: "too many jobs; only truncate the last job",
+			jobs: []*v1.ProwJob{
+				job("this", "url", v1.SuccessState),
+				job("that", "hey", v1.FailureState),
+				job("some", "other", v1.SuccessState),
+			},
+			commentSizeLimit: 130 + 150,
+			wantHeader:       "Prow Status: 2 out of 3 pjs passed! 👉 Comment `/retest` to rerun only failed tests (if any), or `/test all` to rerun all tests\n",
+			wantMessage:      "❌ that FAILURE\n✔️ some SUCCESS\n[NOTE FROM PROW: Skipped displaying 1/3 jobs due to reaching gerrit comment size limit (too many jobs)]",
 		},
 		{
 			// Check cases where the job could legitimately not have its URL
@@ -2261,15 +2316,15 @@ func TestGenerateReport(t *testing.T) {
 			jobs: []*v1.ProwJob{
 				job("right", "", v1.ErrorState),
 			},
-			wantHeader:  "Prow Status: 0 out of 1 pjs passed! 👉 Comment '/retest' to rerun all failed tests\n",
-			wantMessage: "🚫 right ERROR - URL_NOT_FOUND\n",
+			commentSizeLimit: 1000,
+			wantHeader:       "Prow Status: 0 out of 1 pjs passed! 👉 Comment `/retest` to rerun only failed tests (if any), or `/test all` to rerun all tests\n",
+			wantMessage:      "🚫 right (URL_NOT_FOUND) ERROR\n",
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			gotReport := GenerateReport(tc.jobs, tc.commentSizeLimit)
-
 			if want, got := tc.wantHeader, gotReport.Header; want != got {
 				t.Fatalf("Header mismatch. Want:\n%s,\ngot: \n%s", want, got)
 			}
@@ -2287,13 +2342,14 @@ func TestParseReport(t *testing.T) {
 		expectedJobs int
 		expectNil    bool
 	}{
+		// These tests all test the legacy format.
 		{
 			name:         "parse multiple jobs",
 			comment:      "Prow Status: 0 out of 2 passed\n❌️ foo-job FAILURE - http://foo-status\n❌ bar-job FAILURE - http://bar-status",
 			expectedJobs: 2,
 		},
 		{
-			name:         "parse new format without URL",
+			name:         "parse job without URL",
 			comment:      "Prow Status: 0 out of 2 passed\n❌️ foo-job FAILURE\n❌ bar-job FAILURE",
 			expectedJobs: 2,
 		},
@@ -2331,6 +2387,42 @@ Prow Status: 0 out of 2 pjs passed!
 ❌ bar-job FAILURE - https://bar-status
 `,
 			expectedJobs: 2,
+		},
+		// New Markdown format (link uses Markdown syntax).
+		{
+			name:         "parse multiple jobs (Markdown)",
+			comment:      "Prow Status: 0 out of 2 passed\n❌️ [foo-job](http://foo-status) FAILURE\n❌ [bar-job](http://bar-status) FAILURE",
+			expectedJobs: 2,
+		},
+		{
+			name:         "parse mixed formats (Markdown)",
+			comment:      "Prow Status: 0 out of 2 passed\n❌️ [foo-job](http://foo-status) FAILURE\n❌ bar-job FAILURE\n[Skipped displaying URLs for 1/2 jobs due to reaching gerrit comment size limit]",
+			expectedJobs: 2,
+		},
+		{
+			name:         "parse one job (Markdown)",
+			comment:      "Prow Status: 0 out of 1 passed\n❌ [bar-job](http://bar-status) FAILURE",
+			expectedJobs: 1,
+		},
+		{
+			name:      "do not parse without the header (Markdown)",
+			comment:   "0 out of 1 passed\n❌ [bar-job](http://bar-status) FAILURE",
+			expectNil: true,
+		},
+		{
+			name: "parse with extra stuff at the start as long as the header and jobs start on new lines (Markdown)",
+			comment: `qwerty
+Patch Set 1:
+Prow Status: 0 out of 2 pjs passed!
+❌ [foo-job](https://foo-status) FAILURE
+❌ [bar-job](https://bar-status) FAILURE
+`,
+			expectedJobs: 2,
+		},
+		{
+			name:         "invalid job state (Markdown)",
+			comment:      "Prow Status: 0 out of 1 passed\n❌ [bar-job](http://bar-status) BANANAS",
+			expectedJobs: 0,
 		},
 	}
 	for _, tc := range testcases {

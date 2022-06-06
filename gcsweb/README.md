@@ -8,5 +8,5 @@ the `--oauth-token-file` flag.
 You can build a docker image of it by running the following command:
 
 ```
-bazel run //gcsweb/cmd/gcsweb:image
+go run ./gcsweb/cmd/gcsweb
 ```

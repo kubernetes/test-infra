@@ -29,7 +29,9 @@ set -o pipefail
 PROW_INSTANCE_NAME="${PROW_INSTANCE_NAME:-}"
 CONTROL_PLANE_SA="${CONTROL_PLANE_SA:-}"
 
-PROW_SECRET_ACCESSOR_SA="${PROW_SECRET_ACCESSOR_SA:-kubernetes-external-secrets-sa@k8s-prow.iam.gserviceaccount.com}"
+PROW_SERVICE_PROJECT="${PROW_SERVICE_PROJECT:-k8s-prow}"
+PROW_SECRET_ACCESSOR_SA="${PROW_SECRET_ACCESSOR_SA:-gencred-refresher@k8s-prow.iam.gserviceaccount.com}"
+
 PROW_DEPLOYMENT_DIR="${PROW_DEPLOYMENT_DIR:-./config/prow/cluster}"
 GITHUB_FORK_URI="${GITHUB_FORK_URI:-}"
 GITHUB_CLONE_URI="${GITHUB_CLONE_URI:-git@github.com:kubernetes/test-infra}"
@@ -108,7 +110,7 @@ function parseArgs() {
     echo "${var}=${!var}"
   done
   if [[ "${PROW_INSTANCE_NAME}" != "k8s-prow" ]]; then
-    if [[ "${PROW_SECRET_ACCESSOR_SA}" == "kubernetes-external-secrets-sa@k8s-prow.iam.gserviceaccount.com" ]]; then
+    if [[ "${PROW_SECRET_ACCESSOR_SA}" == "gencred-refresher@k8s-prow.iam.gserviceaccount.com" ]]; then
       echo "${PROW_SECRET_ACCESSOR_SA} is k8s-prow specific, must pass in the service account used by ${PROW_INSTANCE_NAME}"
       exit 2
     fi
@@ -228,34 +230,17 @@ EOF
   pause
 }
 
-# generate a JWT kubeconfig file that we can merge into prow's kubeconfig secret so that Prow can schedule pods
+# generate a JWT kubeconfig file that we can merge into k8s-prow's kubeconfig
+# secret so that Prow can schedule pods. This operation is now handled by a prow
+# job runs gencred pediodically. So the only action from this function is
+# authorizing prow service account to access the build cluster.
 function gencreds() {
-  getClusterCreds
-  local clusterAlias="$(cluster_alias)"
-  local outfile="${OUT_FILE}"
-
-  cd "${ROOT_DIR}"
-  go run ./gencred --context="$(kubectl config current-context)" --name="${clusterAlias}" --output="${origdir}/${outfile}" || (
-    echo "gencred failed:" >&2
-    cat "$origdir/$outfile" >&2
-    return 1
-  )
-
-  # Store kubeconfig secret in the same project where build cluster is located
-  # and set up externalsecret in prow service cluster so that it's synced.
-  # First enable secretmanager API, no op if already enabled
-  gcloud services enable secretmanager.googleapis.com --project="${PROJECT}"
-  cd "${origdir}"
-  local gsm_secret_name="$(gsm_secret_name)"
-  gcloud secrets create "${gsm_secret_name}" --data-file="$origdir/$outfile" --project="${PROJECT}"
-  # Grant prow service account access to secretmanager in build cluster
-  for role in roles/secretmanager.viewer roles/secretmanager.secretAccessor; do
-    gcloud beta secrets add-iam-policy-binding "${gsm_secret_name}" --member="serviceAccount:${PROW_SECRET_ACCESSOR_SA}" --role="${role}" --project="${PROJECT}"
-  done
+  # The secret can be stored in prow service cluster
+  gcloud projects add-iam-policy-binding --member="serviceAccount:${PROW_SECRET_ACCESSOR_SA}" --role="roles/container.admin" "${PROJECT}" --condition=None
 
   prompt "Create CL for you" create_cl
 
-  echo "ProwJobs that intend to use this cluster should specify 'cluster: ${clusterAlias}'" # TODO: color this
+  echo "ProwJobs that intend to use this cluster should specify 'cluster: $(cluster_alias)'" # TODO: color this
   echo
   echo "Press any key to acknowledge (this doesn't need to be completed to continue this script, but it needs to be done before Prow can schedule jobs to your cluster)..."
   pause
@@ -302,7 +287,19 @@ spec:
     version: latest
 EOF
 
+  # Also register this build cluster with gencred, so that the kubeconfig
+  # secrets can be rotated.
+  local gencred_config_file="${PROW_DEPLOYMENT_DIR}/../gencred-config/gencred-config.yaml"
+  "${SED}" -i "s;clusters:;clusters:\\
+- gke: projects/${PROJECT}/locations/${ZONE}/clusters/${CLUSTER}\\
+  name: ${cluster_alias}\\
+  duration: 48h\\
+  gsm:\\
+    name: ${gsm_secret_name}\\
+    project: ${PROW_SERVICE_PROJECT};" "${gencred_config_file}"
+
   git add "${PROW_DEPLOYMENT_DIR}/kubernetes_external_secrets.yaml"
+  git add "${gencred_config_file}"
   git commit -m "Add external secret from build cluster for ${TEAM}"
   git push -f "${GITHUB_FORK_URI}" "HEAD:add-build-cluster-secret-${TEAM}"
 

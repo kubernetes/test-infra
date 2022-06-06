@@ -28,7 +28,7 @@ presubmits:
         - --stage=gs://kubernetes-release-pull/ci/pull-release-cluster-up
         - --test_args=--ginkgo.focus=definitely-not-a-real-focus
         - --timeout=65m
-        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
         resources:
           requests:
             memory: "6Gi"
@@ -46,7 +46,7 @@ presubmits:
     path_alias: k8s.io/release
     spec:
       containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.17
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.18-bullseye
         imagePullPolicy: Always
         command:
         - make
@@ -63,7 +63,7 @@ presubmits:
     path_alias: k8s.io/release
     spec:
       containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.17
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.18-bullseye
         imagePullPolicy: Always
         command:
         - make
@@ -80,7 +80,7 @@ presubmits:
     path_alias: k8s.io/release
     spec:
       containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.17
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.18-bullseye
         imagePullPolicy: Always
         command:
         - make
@@ -99,7 +99,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
           command:
             - /run.sh
           args:
@@ -134,7 +134,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
           command:
             - /run.sh
           args:
@@ -169,7 +169,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
           command:
             - /run.sh
           args:
@@ -204,7 +204,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
           command:
             - /run.sh
           args:
@@ -239,7 +239,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
           command:
             - /run.sh
           args:
@@ -274,7 +274,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
           command:
             - /run.sh
           args:
@@ -308,7 +308,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
           command:
             - /run.sh
           args:
@@ -343,7 +343,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
           command:
             - /run.sh
           args:
@@ -378,7 +378,7 @@ presubmits:
     spec:
       serviceAccountName: gcb-builder-releng-test
       containers:
-        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
+        - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
           command:
             - /run.sh
           args:

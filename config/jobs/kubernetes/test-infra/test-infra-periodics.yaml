@@ -11,7 +11,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-test-infra
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-test-infra
       command:
       - runner.sh
       args:
@@ -24,6 +24,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-testing-misc
     testgrid-tab-name: continuous
+    testgrid-broken-column-threshold: '0.5'
     description: Runs `make test verify` on the test-infra repo every hour
 
 - name: metrics-kettle
@@ -36,7 +37,7 @@ periodics:
   spec:
     serviceAccountName: triage
     containers:
-    - image: gcr.io/k8s-staging-test-infra/bigquery:v20220330-0567932c13
+    - image: gcr.io/k8s-staging-test-infra/bigquery:v20220427-c2db0f69b7
       args:
       - ./kettle/monitor.py
       - --stale=6
@@ -49,116 +50,5 @@ periodics:
     testgrid-alert-stale-results-hours: '12'
     testgrid-dashboards: sig-testing-misc
     testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com, k8s-infra-oncall@google.com
+    testgrid-broken-column-threshold: '0.5'
     description: Monitors Kettle's BigQuery database freshness.
-
-- name: test-infra-fuzz
-  labels:
-    preset-dind-enabled: "true"
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
-  interval: 1h
-  spec:
-    serviceAccountName: fuzz-test
-    containers:
-      #TODO(mpherman) : Change to versioned once stable
-    - image: gcr.io/k8s-testimages/ci_fuzz:latest
-      command:
-        - runner.sh
-      args:
-        - python3
-        - "/opt/oss-fuzz/infra/cifuzz/cifuzz_combined_entrypoint.py"
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-      env:
-      - name: MODE
-        value: batch
-      - name: REPO_NAME
-        value: test-infra
-      - name: SANITIZER
-        value: 'address'
-      - name: CLOUD_BUCKET
-        value: gs://prow-cifuzz-test/
-      - name: CFL_PLATFORM
-        value: prow
-  annotations:
-    testgrid-dashboards: sig-testing-misc
-    testgrid-tab-name: test-infra-fuzz
-    description: Runs clusterfuzzlite every hour
-
-- name: test-infra-cfl-coverage-report
-  labels:
-    preset-dind-enabled: "true"
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
-  interval: 12h
-  spec:
-    serviceAccountName: fuzz-test
-    containers:
-      #TODO(mpherman) : Change to versioned once stable
-    - image: gcr.io/k8s-testimages/ci_fuzz:latest
-      command:
-        - runner.sh
-      args:
-        - python3
-        - "/opt/oss-fuzz/infra/cifuzz/cifuzz_combined_entrypoint.py"
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-      env:
-      - name: MODE
-        value: coverage
-      - name: REPO_NAME
-        value: test-infra
-      - name: SANITIZER
-        value: 'coverage'
-      - name: CLOUD_BUCKET
-        value: gs://prow-cifuzz-test/
-      - name: CFL_PLATFORM
-        value: prow
-  annotations:
-    testgrid-dashboards: sig-testing-misc
-    testgrid-tab-name: test-infra-cfl-coverage-report
-    description: Runs clusterfuzzlite coverage report every day
-
-- name: test-infra-cfl-prune
-  labels:
-    preset-dind-enabled: "true"
-  decorate: true
-  extra_refs:
-  - org: kubernetes
-    repo: test-infra
-    base_ref: master
-  interval: 12h
-  spec:
-    serviceAccountName: fuzz-test
-    containers:
-      #TODO(mpherman) : Change to versioned once stable
-    - image: gcr.io/k8s-testimages/ci_fuzz:latest
-      command:
-        - runner.sh
-      args:
-        - python3
-        - "/opt/oss-fuzz/infra/cifuzz/cifuzz_combined_entrypoint.py"
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-      env:
-      - name: MODE
-        value: prune
-      - name: REPO_NAME
-        value: test-infra
-      - name: CLOUD_BUCKET
-        value: gs://prow-cifuzz-test/
-      - name: CFL_PLATFORM
-        value: prow
-  annotations:
-    testgrid-dashboards: sig-testing-misc
-    testgrid-tab-name: test-infra-cfl-prune
-    description: Runs clusterfuzzlite corpora prune every day

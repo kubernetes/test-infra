@@ -15,7 +15,7 @@ merge them together.
 ## Usage
 
 ```
-bazel run //experiment/image-bumper -- [options] files...
+go run ./experiment/image-bumper [options] files...
 ```
 
 ### Options
@@ -26,14 +26,14 @@ bazel run //experiment/image-bumper -- [options] files...
 ### Examples
 
 ```
-bazel run //experiment/image-bumper -- --image-regex gcr.io/k8s-testimages/ config/**.yaml
+go run ./experiment/image-bumper --image-regex gcr.io/k8s-testimages/ config/**.yaml
 ```
 
 Updates every image referencing the `k8s-testimages` project in the config directory (assuming
 your shell understands `**`, e.g. fish, or bash with `globstar` enabled)
 
 ```
-bazel run //experiment/image-bumper -- --image-regex gcr.io/k8s-prow/ prow/**.yaml
+go run ./experiment/image-bumper --image-regex gcr.io/k8s-prow/ prow/**.yaml
 ```
 
 Updates prow references to the latest versions.

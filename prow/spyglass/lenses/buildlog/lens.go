@@ -20,9 +20,12 @@ package buildlog
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"html/template"
 	"io"
+	"net/http"
+	"net/url"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -46,13 +49,26 @@ const (
 )
 
 type config struct {
-	HighlightRegexes []string `json:"highlight_regexes"`
-	HideRawLog       bool     `json:"hide_raw_log,omitempty"`
+	HighlightRegexes []string         `json:"highlight_regexes"`
+	HideRawLog       bool             `json:"hide_raw_log,omitempty"`
+	Highlighter      *highlightConfig `json:"highlighter,omitempty"`
+}
+
+type highlightConfig struct {
+	// Endpoint specifies the URL to send highlight requests
+	Endpoint string `json:"endpoint"`
+	// Pin should automatically save the highlight when set.
+	Pin bool `json:"pin"`
+	// Overwrite should replace any existing highlight when set.
+	Overwrite bool `json:"overwrite"`
+	// Auto should request highlights before loading the page, implies Pin.
+	Auto bool `json:"auto"`
 }
 
 type parsedConfig struct {
 	highlightRegex *regexp.Regexp
 	showRawLog     bool
+	highlighter    *highlightConfig
 }
 
 var _ api.Lens = Lens{}
@@ -115,9 +131,9 @@ func (g LineGroup) Expand() bool {
 	return len(g.LogLines) >= moreLines
 }
 
-// lineRequest represents a request for output lines from an artifact. If Offset is 0 and Length
+// callbackRequest represents a request for output lines from an artifact. If Offset is 0 and Length
 // is -1, all lines will be fetched.
-type lineRequest struct {
+type callbackRequest struct {
 	Artifact  string `json:"artifact"`
 	Offset    int64  `json:"offset"`
 	Length    int64  `json:"length"`
@@ -125,6 +141,7 @@ type lineRequest struct {
 	Top       int    `json:"top"`
 	Bottom    int    `json:"bottom"`
 	SaveEnd   *int   `json:"saveEnd"`
+	Analyze   bool   `json:"analyze"`
 }
 
 // LinesSkipped returns the number of lines skipped in a line group.
@@ -140,6 +157,7 @@ type LogArtifactView struct {
 	ViewAll      bool
 	ShowRawLog   bool
 	CanSave      bool
+	CanAnalyze   bool
 }
 
 // buildLogsView holds each log file view
@@ -162,6 +180,10 @@ func getConfig(rawConfig json.RawMessage) parsedConfig {
 	if err := json.Unmarshal(rawConfig, &c); err != nil {
 		logrus.WithError(err).Error("Failed to decode buildlog config")
 		return conf
+	}
+	conf.highlighter = c.Highlighter
+	if conf.highlighter != nil && conf.highlighter.Endpoint == "" {
+		conf.highlighter = nil
 	}
 	conf.showRawLog = !c.HideRawLog
 	if len(c.HighlightRegexes) == 0 {
@@ -216,9 +238,19 @@ func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string,
 			}
 			*targ = n
 		}
+		analyze := conf.highlighter != nil
+		if start == -1 && analyze && conf.highlighter.Auto {
+			resp, err := analyzeArtifact(a, &conf)
+			if err != nil {
+				logrus.WithError(err).Info("Failed to analyze artifact")
+			} else {
+				start, end = resp.Min, resp.Max
+			}
+		}
 		av.LineGroups = groupLines(&artifact, start, end, highlightLines(lines, 0, &artifact, conf.highlightRegex)...)
 		av.ViewAll = true
 		av.CanSave = canSave(a.CanonicalLink())
+		av.CanAnalyze = analyze
 		buildLogsView.LogViews = append(buildLogsView.LogViews, av)
 	}
 
@@ -236,7 +268,7 @@ const focusEnd = "focus-end"
 
 // Callback is used to retrieve new log segments
 func (lens Lens) Callback(artifacts []api.Artifact, resourceDir string, data string, rawConfig json.RawMessage, spyglassConfig prowconfig.Spyglass) string {
-	var request lineRequest
+	var request callbackRequest
 	err := json.Unmarshal([]byte(data), &request)
 	if err != nil {
 		return failedUnmarshal
@@ -245,17 +277,107 @@ func (lens Lens) Callback(artifacts []api.Artifact, resourceDir string, data str
 	if !ok {
 		return fmt.Sprintf(missingArtifact, request.Artifact)
 	}
+	if request.Analyze {
+		conf := getConfig(rawConfig)
+		hr, err := analyzeArtifact(artifact, &conf)
+		if err != nil {
+			hr = &highlightResponse{Error: err.Error()}
+		}
+		buf, err := json.Marshal(hr)
+		if err != nil {
+			return err.Error()
+		}
+		return string(buf)
+	}
 	if request.SaveEnd != nil {
 		return storeHighlightedLines(&request, artifact)
 	}
 	return loadLines(&request, artifact, resourceDir, rawConfig)
 }
 
-func storeHighlightedLines(request *lineRequest, artifact api.Artifact) string {
-	err := artifact.UpdateMetadata(map[string]string{
-		focusStart: strconv.Itoa(request.StartLine),
-		focusEnd:   strconv.Itoa(*request.SaveEnd),
+type highlightRequest struct {
+	// URL to highlight
+	URL string `json:"url"`
+	// Pin if the highlight should be saved
+	Pin bool `json:"pin"`
+	// Overwrite if an existing highlight should be replaced
+	Overwrite bool `json:"overwrite"`
+}
+
+type highlightResponse struct {
+	// Min line number to highlight
+	Min int `json:"min"`
+	// Max line number to highlight (inclusive).
+	Max int `json:"max"`
+	// Link to the highlighted lines
+	Link string `json:"link,omitempty"`
+	// Pinned if the highlight changed
+	Pinned bool `json:"pinned,omitempty"`
+	// Error describing the problem.
+	Error string `json:"error,omitempty"`
+}
+
+var (
+	errNoHighlighter = errors.New("buildlog.highlighter unconfigured")
+)
+
+func analyzeArtifact(artifact api.Artifact, conf *parsedConfig) (*highlightResponse, error) {
+	if conf.highlighter == nil {
+		return nil, errNoHighlighter
+	}
+	link := artifact.CanonicalLink()
+	if !canSave(link) {
+		return nil, fmt.Errorf("Unsupported artifact: %q", link)
+	}
+	u, err := url.Parse(link)
+	if err != nil {
+		return nil, fmt.Errorf("parse artifact link %q: %v", link, err)
+	}
+	log := logrus.WithFields(logrus.Fields{
+		"artifact": link,
 	})
+
+	req := highlightRequest{
+		URL:       u.String(),
+		Pin:       conf.highlighter.Pin || conf.highlighter.Auto,
+		Overwrite: conf.highlighter.Overwrite,
+	}
+
+	buf, err := json.Marshal(req)
+	if err != nil {
+		log.WithError(err).Error("Failed to marshal highlight request")
+		return nil, fmt.Errorf("bad request for %s", link)
+	}
+
+	resp, err := http.Post(conf.highlighter.Endpoint, "text/plain", bytes.NewBuffer(buf))
+	if err != nil {
+		log.WithError(err).WithField("link", link).Error("POST to highlighter failed")
+		return nil, fmt.Errorf("POST %s failed", link)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode >= 400 {
+		log.WithField("status", resp.StatusCode).Error("Response failed")
+		return nil, fmt.Errorf("%s returned status code %d", link, resp.StatusCode)
+	}
+
+	dec := json.NewDecoder(resp.Body)
+	var hr highlightResponse
+	if err := dec.Decode(&hr); err != nil {
+		log.WithError(err).Error("Failed to decode response")
+		return nil, fmt.Errorf("bad response for %s", link)
+	}
+	return &hr, nil
+}
+
+func focusLines(artifact api.Artifact, start, end int) error {
+	return artifact.UpdateMetadata(map[string]string{
+		focusStart: strconv.Itoa(start),
+		focusEnd:   strconv.Itoa(end),
+	})
+}
+
+func storeHighlightedLines(request *callbackRequest, artifact api.Artifact) string {
+	err := focusLines(artifact, request.StartLine, *request.SaveEnd)
 	if err != nil {
 		return err.Error()
 	}
@@ -267,7 +389,7 @@ func storeHighlightedLines(request *lineRequest, artifact api.Artifact) string {
 	return ""
 }
 
-func loadLines(request *lineRequest, artifact api.Artifact, resourceDir string, rawConfig json.RawMessage) string {
+func loadLines(request *callbackRequest, artifact api.Artifact, resourceDir string, rawConfig json.RawMessage) string {
 
 	var err error
 	var lines []string

@@ -13,7 +13,7 @@ postsubmits:
     spec:
       serviceAccountName: k8s-infra-promoter
       containers:
-      - image: k8s.gcr.io/artifact-promoter/kpromo:v3.3.0-1
+      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.1-1
         command:
         - /kpromo
         args:
@@ -28,6 +28,8 @@ postsubmits:
   - name: post-k8sio-image-promo
     cluster: k8s-infra-prow-build-trusted
     decorate: true
+    decoration_config:
+      timeout: 4h
     run_if_changed: 'k8s.gcr.io/((images/.*/images\.yaml)|(manifests/.*/promoter-manifest\.yaml))'
     # Never run more than 1 job at a time. This is because we don't want to run
     # into a case where an older manifest PR merge gets run last (after a newer
@@ -38,7 +40,7 @@ postsubmits:
     spec:
       serviceAccountName: k8s-infra-gcr-promoter
       containers:
-      - image: k8s.gcr.io/artifact-promoter/kpromo:v3.3.0-1
+      - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.1-1
         command:
         - /kpromo
         args:
@@ -92,7 +94,7 @@ periodics:
   spec:
     serviceAccountName: k8s-infra-promoter
     containers:
-    - image: k8s.gcr.io/artifact-promoter/kpromo:v3.3.0-1
+    - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.1-1
       command:
       - /kpromo
       args:
@@ -130,7 +132,7 @@ periodics:
     # https://github.com/kubernetes/k8s.io/pull/695.
     serviceAccountName: k8s-infra-gcr-promoter
     containers:
-    - image: k8s.gcr.io/artifact-promoter/kpromo:v3.3.0-1
+    - image: registry.k8s.io/artifact-promoter/kpromo:v3.4.1-1
       command:
       - /kpromo
       args:
@@ -189,7 +191,7 @@ periodics:
   spec:
     serviceAccountName: k8s-infra-gcr-promoter-bak
     containers:
-    - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.17
+    - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.18-bullseye
       imagePullPolicy: Always
       command:
       - infra/gcp/bash/backup_tools/backup.sh
@@ -221,6 +223,7 @@ periodics:
       - fast-forward
       - --non-interactive
       - --submit
+      - --nomock
       resources:
         requests:
           cpu: 4
@@ -234,5 +237,5 @@ periodics:
         slug: release-managers
   annotations:
     testgrid-alert-email: release-managers+alerts@kubernetes.io
-    testgrid-dashboards: sig-release-releng-informing
+    testgrid-dashboards: sig-release-releng-blocking
     testgrid-tab-name: git-repo-kubernetes-fast-forward

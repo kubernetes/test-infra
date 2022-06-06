@@ -4,6 +4,7 @@ triggers:
 - repos:
   - kubernetes-sigs/cluster-api
   - kubernetes-sigs/cluster-api-provider-azure
+  - kubernetes-sigs/cloud-provider-azure
   join_org_url: "https://git.k8s.io/community/community-membership.md#member"
   only_org_members: true
   trigger_github_workflows: true
@@ -35,7 +36,6 @@ owners:
 
 approve:
 - repos:
-  - kubernetes/cloud-provider-aws
   - kubernetes/cluster-registry
   - kubernetes/contrib
   - kubernetes/dashboard
@@ -59,6 +59,7 @@ approve:
   require_self_approval: false
   lgtm_acts_as_approve: true
 - repos:
+  - kubernetes/cloud-provider-aws
   - kubernetes/kops
   - kubernetes/website
   require_self_approval: true
@@ -77,6 +78,7 @@ approve:
   - kubernetes-sigs/cluster-api-provider-aws
   - kubernetes-sigs/cluster-api-provider-azure
   - kubernetes-sigs/cluster-api-provider-vsphere
+  - kubernetes-sigs/descheduler
   require_self_approval: true
   ignore_review_state: true
 - repos:
@@ -92,6 +94,7 @@ approve:
   - kubernetes-sigs/kind
   - kubernetes-sigs/kubetest2
   - kubernetes-sigs/mdtoc
+  - kubernetes-sigs/prow
   - kubernetes-sigs/release-notes
   - kubernetes-sigs/release-sdk
   - kubernetes-sigs/release-utils
@@ -171,11 +174,13 @@ lgtm:
   - kubernetes-sigs/kind
   - kubernetes-sigs/kubetest2
   - kubernetes-sigs/mdtoc
+  - kubernetes-sigs/prow
   - kubernetes-sigs/release-notes
   - kubernetes-sigs/release-sdk
   - kubernetes-sigs/release-utils
   - kubernetes-sigs/security-profiles-operator
   - kubernetes-sigs/zeitgeist
+  - kubernetes/cloud-provider-aws
   - kubernetes/k8s.io
   - kubernetes/kops
   - kubernetes/publishing-bot
@@ -242,6 +247,13 @@ blockades:
   exceptionregexps:
   - ^README\.md$
   explanation: "We do not accept changes directly against this repository, unless the change is to the `README.md` itself. Please see `CONTRIBUTING.md` for information on where and how to contribute instead."
+- repos:
+  - kubernetes/test-infra
+  blockregexps:
+  - ^prow/.+\.md$
+  exceptionregexps:
+  - ^prow/README\.md$
+  explanation: "All Prow documentation (Markdown files) have moved to https://github.com/kubernetes-sigs/prow as part of https://github.com/kubernetes-sigs/prow/issues/4."
 
 blunderbuss:
   max_request_count: 2
@@ -257,6 +269,19 @@ heart:
   adorees:
   - mirandachrist
   commentregexp: ".*"
+
+branch_cleaner:
+    # PreservedBranches is a map of org/repo branches
+    # format:
+    # ```
+    # preserved_branches:
+    # <org>: ["master", "release"]
+    # <org/repo>: ["master", "release"]
+    # ```
+    # branches in this allow map would be exempt from branch gc
+    # even if the branches are already merged into the target branch
+    preserved_branches:
+        "kubernetes-sigs/cloud-provider-azure": ["master", "gh-pages", "release-1.1", "release-1.0", "release-1.23", "release-1.24", "release-0.7", "release-0.6", "release-0.5", "release-0.1"]
 
 slack:
   mergewarnings:
@@ -348,6 +373,7 @@ slack:
     - kops-dev
     exempt_users:
     - k8s-ci-robot
+    - dependabot[bot]
   - repos:
     - kubernetes/cluster-api-provider-aws
     channels:
@@ -357,23 +383,23 @@ slack:
 
 milestone_applier:
   kubernetes/enhancements:
-    master: v1.24
+    master: v1.25
   kubernetes/kubernetes:
-    master: v1.24
+    master: v1.25
+    release-1.24: v1.24
     release-1.23: v1.23
     release-1.22: v1.22
     release-1.21: v1.21
-    release-1.20: v1.20
   kubernetes/org:
-    main: v1.24
+    main: v1.25
   kubernetes/release:
-    master: v1.24
+    master: v1.25
   kubernetes/sig-release:
-    master: v1.24
+    master: v1.25
   kubernetes/test-infra:
-    master: v1.24
+    master: v1.25
   kubernetes/k8s.io:
-    main: v1.24
+    main: v1.25
   kubernetes/kops:
     master: v1.24
     release-1.23: v1.23
@@ -396,12 +422,9 @@ milestone_applier:
     release-0.7: v0.7.x
     release-0.6: v0.6.x
   kubernetes-sigs/cluster-api-provider-azure:
-    main: v1.3
+    main: v1.4
+    release-1.3: v1.3
     release-1.2: v1.2
-    release-1.1: v1.1
-    release-1.0: v1.0
-    release-0.5: v0.5
-    release-0.4: v0.4
   kubernetes-sigs/cluster-api-provider-digitalocean:
     main: v1.1.0
     release-1.0: v1.0.0
@@ -431,6 +454,7 @@ repo_milestone:
     # curl -H "Authorization: token <token>" "https://api.github.com/orgs/<org-name>/teams?page=N"
     maintainers_id: 2460384
     maintainers_team: milestone-maintainers
+    maintainers_friendly_name: Milestone Maintainers Team
   kubernetes-sigs/controller-runtime:
     maintainers_id: 2785806
     maintainers_team: controller-runtime-maintainers
@@ -754,6 +778,11 @@ require_matching_label:
     If CAPA/CAPI contributors determines this is a relevant issue, they will accept it by applying the `triage/accepted` label and provide further guidance.
 
     The `triage/accepted` label can be added by org members by writing `/triage accepted` in a comment.
+- missing_label: do-not-merge/needs-kind
+  org: kubernetes-sigs
+  repo: cloud-provider-azure
+  prs: true
+  regexp: ^kind/
 - missing_label: needs-sig
   org: kubernetes
   repo: test-infra
@@ -951,6 +980,7 @@ plugins:
 
   kubernetes/test-infra:
     plugins:
+    - blockade
     - config-updater
     - milestone
     - override
@@ -1078,6 +1108,7 @@ plugins:
     - require-matching-label
     - mergecommitblocker
     - override
+    - branchcleaner
 
   kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
     plugins:
@@ -1192,6 +1223,10 @@ plugins:
     plugins:
     - override
 
+  kubernetes-sigs/prow:
+    plugins:
+    - override
+
   kubernetes-sigs/scheduler-plugins:
     plugins:
     - mergecommitblocker
@@ -1224,21 +1259,6 @@ plugins:
     - lgtm
     - size
     - welcome
-
-  GoogleCloudPlatform/netd:
-    plugins:
-    - trigger
-    - lgtm
-    - golint
-    - approve
-    - verify-owners
-    - size
-    - assign
-    - help
-    - hold
-    - cat
-    - dog
-    - wip
 
   cncf/apisnoop:
     plugins:
@@ -1338,6 +1358,12 @@ external_plugins:
     events:
     - issue_comment
     - pull_request
+    endpoint: http://cherrypicker
+  kubernetes-sigs/ibm-powervs-block-csi-driver:
+  - name: cherrypicker
+    events:
+      - issue_comment
+      - pull_request
     endpoint: http://cherrypicker
   kubernetes-sigs/node-feature-discovery:
   - name: cherrypicker

@@ -10,6 +10,13 @@
   "storage": {
     "files": [
       {
+        "path": "/etc/ssh-key-secret/ssh-public",
+        "contents": {
+          "source": "data:text/plain;base64,GCE_SSH_PUBLIC_KEY_FILE_CONTENT"
+        },
+        "mode": 420
+      },
+      {
         "path": "/etc/zincati/config.d/90-disable-auto-updates.toml",
         "contents": {
           "source": "data:,%5Bupdates%5D%0Aenabled%20%3D%20false%0A"
@@ -21,9 +28,14 @@
   "systemd": {
     "units": [
       {
-        "contents": "[Unit]\nDescription=Enable swap on CoreOS\nBefore=swap-enable.service\nConditionFirstBoot=yes\n\n[Service]\nType=oneshot\nExecStart=/bin/sh -c \"sudo rpm-ostree install dbus-tools && sudo systemctl reboot\"\n[Install]\n\nWantedBy=multi-user.target\n",
+        "contents": "[Unit]\nDescription=Copy authorized keys\nBefore=crio-install.service\nAfter=network-online.target\n\n[Service]\nType=oneshot\nExecStart=/bin/sh -c '/usr/bin/mkdir -m 0700 -p /home/core/.ssh && /usr/bin/cat /etc/ssh-key-secret/ssh-public >> /home/core/.ssh/authorized_keys && chown -R core:core /home/core/.ssh && chmod 0600 /home/core/.ssh/authorized_keys'\n\n[Install]\nWantedBy=multi-user.target\n",
         "enabled": true,
-        "name": "dbus-send-install.service"
+        "name": "authorized-key.service"
+      },
+      {
+        "contents": "[Unit]\nDescription=Download and install dbus-tools.\nBefore=crio-install.service\nAfter=network-online.target\n\n[Service]\nType=oneshot\nExecStart=/usr/bin/rpm-ostree install --apply-live --allow-inactive dbus-tools\n\n[Install]\nWantedBy=multi-user.target\n",
+        "enabled": true,
+        "name": "dbus-tools-install.service"
       },
       {
         "contents": "[Unit]\nDescription=Enable swap on CoreOS\nBefore=crio-install.service\nConditionFirstBoot=no\n\n[Service]\nType=oneshot\nExecStart=/bin/sh -c \"sudo dd if=/dev/zero of=/var/swapfile count=1024 bs=1MiB && sudo chmod 600 /var/swapfile && sudo mkswap /var/swapfile && sudo swapon /var/swapfile && free -h\"\n[Install]\n\nWantedBy=multi-user.target\n",

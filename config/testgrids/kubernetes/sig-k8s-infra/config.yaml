@@ -9,6 +9,7 @@ dashboard_groups:
   - sig-k8s-infra-gcb
   - sig-k8s-infra-groups
   - sig-k8s-infra-k8sio
+  - sig-k8s-infra-oci-proxy
   - sig-k8s-infra-prow
 
 dashboards:
@@ -18,4 +19,5 @@ dashboards:
 - name: sig-k8s-infra-gcb
 - name: sig-k8s-infra-groups
 - name: sig-k8s-infra-k8sio
+- name: sig-k8s-infra-oci-proxy
 - name: sig-k8s-infra-prow

@@ -17,7 +17,7 @@ FROM gcr.io/k8s-prow/alpine:v20211015-92dc282
 ARG IMAGE_ARG
 ENV IMAGE=${IMAGE_ARG}
 
-RUN apk add --no-cache git openssh
+RUN apk add --no-cache git git-daemon openssh
 
 COPY github-known-hosts /github_known_hosts
 COPY ssh-config /etc/ssh/ssh_config

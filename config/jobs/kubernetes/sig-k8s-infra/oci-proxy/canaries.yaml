@@ -1,81 +1,66 @@
 periodics:
-- name: ci-kubernetes-e2e-gce-scale-oci-proxy-canary
-  cron: '3 7 * * *' # Run daily at 7:03 UTC
-  tags:
-  - "perfDashPrefix: gce-5000Nodes"
-  - "perfDashBuildsCount: 270"
-  - "perfDashJobType: performance"
-  cluster: scalability
+- name: e2e-kops-grid-gcr-mirror-canary
+  cron: '11 0-23/1 * * *'
   labels:
     preset-service-account: "true"
-    preset-k8s-ssh: "true"
-    preset-e2e-scalability-common: "true"
-    preset-e2e-scalability-periodics: "true"
-    preset-e2e-scalability-periodics-master: "true"
+    preset-aws-ssh: "true"
+    preset-aws-credential: "true"
   decorate: true
   decoration_config:
-    timeout: 450m
+    timeout: 90m
   extra_refs:
   - org: kubernetes
-    repo: kubernetes
+    repo: kops
     base_ref: master
-    path_alias: k8s.io/kubernetes
-  - org: kubernetes
-    repo: perf-tests
-    base_ref: master
-    path_alias: k8s.io/perf-tests
-  annotations:
-    testgrid-dashboards: sig-k8s-infra-canaries
-    testgrid-tab-name: gce-master-scale-oci-proxy-canary
+    workdir: true
+    path_alias: k8s.io/kops
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
       command:
       - runner.sh
-      - /workspace/scenarios/kubernetes_e2e.py
       args:
-      - --cluster=gce-scale-cluster
-      - --env=HEAPSTER_MACHINE_TYPE=e2-standard-32
-      # TODO(mborsz): Adjust or remove this change once we understand coredns
-      # memory usage regression.
-      - --env=KUBE_DNS_MEMORY_LIMIT=300Mi
-      - --extract=ci/latest-fast
-      - --extract-ci-bucket=k8s-release-dev
-      - --gcp-nodes=5000
-      - --gcp-project=kubernetes-scale
-      - --gcp-zone=us-east1-b
-      - --provider=gce
-      - --metadata-sources=cl2-metadata.json
-      - --env=CL2_LATENCY_POD_IMAGE=registry-sandbox.k8s.io/pause:3.1
-      - --env=CL2_LOAD_TEST_THROUGHPUT=50
-      - --env=CL2_DELETE_TEST_THROUGHPUT=30
-      - --env=CL2_ENABLE_HUGE_SERVICES=true
-      # Overrides CONTROLLER_MANAGER_TEST_ARGS from preset-e2e-scalability-periodics.
-      - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling --kube-api-qps=100 --kube-api-burst=100 --endpointslice-updates-batch-period=500ms --endpoint-updates-batch-period=500ms
-      - --env=CL2_ENABLE_API_AVAILABILITY_MEASUREMENT=true
-      - --env=CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD=99.5
-      - --test=false
-      - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
-      - --test-cmd-args=cluster-loader2
-      - --test-cmd-args=--experimental-gcp-snapshot-prometheus-disk=true
-      - --test-cmd-args=--experimental-prometheus-disk-snapshot-name=$(JOB_NAME)-$(BUILD_ID)
-      - --test-cmd-args=--nodes=5000
-      - --test-cmd-args=--prometheus-scrape-node-exporter
-      - --test-cmd-args=--provider=gce
-      - --test-cmd-args=--report-dir=$(ARTIFACTS)
-      - --test-cmd-args=--testconfig=testing/load/config.yaml
-      - --test-cmd-args=--testconfig=testing/access-tokens/config.yaml
-      - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
-      - --test-cmd-args=--testoverrides=./testing/experiments/ignore_known_gce_container_restarts.yaml
-      - --test-cmd-args=--testoverrides=./testing/overrides/5000_nodes.yaml
-      - --test-cmd-name=ClusterLoaderV2
-      - --timeout=420m
-      - --use-logexporter
-      - --logexporter-gcs-path=gs://sig-scalability-logs/$(JOB_NAME)/$(BUILD_ID)
+      - bash
+      - -c
+      - |
+        make test-e2e-install
+        kubetest2 kops \
+          -v 2 \
+          --up --down \
+          --cloud-provider=aws \
+          --create-args="--channel=alpha --networking=kubenet --container-runtime=containerd --set=spec.assets.containerProxy=registry-sandbox.k8s.io --set=spec.cloudConfig.awsEBSCSIDriver.enabled=false --discovery-store=s3://k8s-kops-prow/discovery" \
+          --kops-version-marker=https://storage.googleapis.com/kops-ci/bin/latest-ci-updown-green.txt \
+          --kubernetes-version=https://storage.googleapis.com/kubernetes-release/release/stable-1.23.txt \
+          --test=kops \
+          -- \
+          --ginkgo-args="--debug" \
+          --test-args="-test.timeout=60m -num-nodes=0" \
+          --test-package-marker=stable-1.23.txt \
+          --focus-regex="\[Conformance\]" \
+          --skip-regex="\[Slow\]|\[Serial\]|\[Flaky\]" \
+          --parallel=25
+      env:
+      - name: KUBE_SSH_KEY_PATH
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: KUBE_SSH_USER
+        value: ubuntu
+      imagePullPolicy: Always
       resources:
-        requests:
-          cpu: 6
-          memory: "16Gi"
         limits:
-          cpu: 6
-          memory: "16Gi"
+          cpu: "2"
+          memory: 3Gi
+        requests:
+          cpu: "2"
+          memory: 3Gi
+  annotations:
+    test.kops.k8s.io/cloud: aws
+    test.kops.k8s.io/container_runtime: containerd
+    test.kops.k8s.io/distro: u2004
+    test.kops.k8s.io/extra_flags: --discovery-store=s3://k8s-kops-prow/discovery
+    test.kops.k8s.io/k8s_version: '1.23'
+    test.kops.k8s.io/kops_channel: alpha
+    test.kops.k8s.io/kops_version: ''
+    test.kops.k8s.io/networking: kubenet
+    testgrid-dashboards: sig-k8s-infra-canaries, sig-k8s-infra-oci-proxy
+    testgrid-days-of-results: '7'
+    testgrid-tab-name: kops-grid-gcr-mirror-canary

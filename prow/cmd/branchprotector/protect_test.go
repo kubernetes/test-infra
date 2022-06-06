@@ -67,30 +67,6 @@ func TestOptions_Validate(t *testing.T) {
 			},
 			expectedErr: false,
 		},
-		{
-			name: "legacy override default tokens allowed only when new-style options are default)",
-			opt: options{
-				config: configflagutil.ConfigOptions{
-					ConfigPath: "dummy",
-				},
-				tokens:     5000,
-				tokenBurst: 200,
-				github:     flagutil.GitHubOptions{ThrottleHourlyTokens: defaultTokens, ThrottleAllowBurst: defaultBurst},
-			},
-			expectedErr: false,
-		},
-		{
-			name: "legacy override default tokens not allowed with new-style options",
-			opt: options{
-				config: configflagutil.ConfigOptions{
-					ConfigPath: "dummy",
-				},
-				tokens:     5000,
-				tokenBurst: 200,
-				github:     flagutil.GitHubOptions{ThrottleHourlyTokens: defaultTokens + 100, ThrottleAllowBurst: defaultBurst + 10},
-			},
-			expectedErr: true,
-		},
 	}
 
 	for _, testCase := range testCases {

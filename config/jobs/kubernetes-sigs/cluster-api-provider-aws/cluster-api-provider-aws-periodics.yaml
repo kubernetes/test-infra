@@ -17,7 +17,7 @@ periodics:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
       command:
         - "runner.sh"
         - "./scripts/ci-e2e.sh"
@@ -28,7 +28,7 @@ periodics:
         value: "us-west-2"
       # Parallelize tests
       - name: GINKGO_ARGS
-        value: "-nodes 20"
+        value: "-nodes 20 -skip='\\[ClusterClass\\]'"
       securityContext:
         privileged: true
       resources:
@@ -58,7 +58,7 @@ periodics:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
       command:
         - "runner.sh"
         - "./scripts/ci-e2e-eks.sh"
@@ -96,7 +96,7 @@ periodics:
       path_alias: "sigs.k8s.io/cluster-api-provider-aws"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
         command:
           - "runner.sh"
           - "./scripts/ci-conformance.sh"
@@ -124,8 +124,6 @@ periodics:
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
-    preset-bazel-scratch-dir: "true"
-    preset-bazel-remote-cache-enabled: "true"
     preset-service-account: "true"
     preset-aws-ssh: "true"
     preset-aws-credential: "true"
@@ -148,7 +146,7 @@ periodics:
       path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
         env:
           - name: BOSKOS_HOST
             value: "boskos.test-pods.svc.cluster.local"
@@ -191,7 +189,7 @@ periodics:
       path_alias: k8s.io/test-infra
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
         command:
           - runner.sh
           - bash

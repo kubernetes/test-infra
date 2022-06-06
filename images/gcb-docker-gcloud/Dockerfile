@@ -44,7 +44,7 @@ RUN echo http://dl-cdn.alpinelinux.org/alpine/latest-stable/community >> /etc/ap
 # Install docker Buildx for fast docker builds
 ENV HOME=/root
 RUN mkdir -p  $HOME/.docker/cli-plugins \
-    && curl -fsSL "https://github.com/docker/buildx/releases/download/v0.7.0/buildx-v0.7.0.linux-amd64" --output $HOME/.docker/cli-plugins/docker-buildx \
+    && curl -fsSL "https://github.com/docker/buildx/releases/download/v0.8.0/buildx-v0.8.0.linux-amd64" --output $HOME/.docker/cli-plugins/docker-buildx \
     && chmod a+x $HOME/.docker/cli-plugins/docker-buildx
 
 # Copy qemu static binaries.

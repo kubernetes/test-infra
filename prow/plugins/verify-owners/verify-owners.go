@@ -31,6 +31,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/git/types"
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/labels"
@@ -266,7 +267,7 @@ func handle(ghc githubClient, gc git.ClientFactory, roc repoownersClient, log *l
 	if err := r.Config("commit.gpgsign", "false"); err != nil {
 		log.WithError(err).Errorf("Cannot set gpgsign=false in gitconfig: %v", err)
 	}
-	if err := r.MergeAndCheckout(pr.Base.Ref, string(github.MergeMerge), pr.Head.SHA); err != nil {
+	if err := r.MergeAndCheckout(pr.Base.Ref, string(types.MergeMerge), pr.Head.SHA); err != nil {
 		return err
 	}
 	// If OWNERS_ALIASES file exists, get all aliases.
@@ -334,6 +335,13 @@ func handle(ghc githubClient, gc git.ClientFactory, roc repoownersClient, log *l
 		}
 	}
 
+	var joinOrgURL string
+	if triggerConfig.JoinOrgURL != "" {
+		joinOrgURL = triggerConfig.JoinOrgURL
+	} else {
+		joinOrgURL = fmt.Sprintf("https://github.com/orgs/%s/people", org)
+	}
+
 	if len(nonTrustedUsers) > 0 {
 		if !hasInvalidOwnersLabel {
 			if err := ghc.AddLabel(org, repo, number, labels.InvalidOwners); err != nil {
@@ -343,9 +351,9 @@ func handle(ghc githubClient, gc git.ClientFactory, roc repoownersClient, log *l
 
 		// prune old comments before adding a new one
 		cp.PruneComments(func(comment github.IssueComment) bool {
-			return strings.Contains(comment.Body, fmt.Sprintf(untrustedResponseFormat, filenames.Owners, triggerConfig.JoinOrgURL, org))
+			return strings.Contains(comment.Body, fmt.Sprintf(untrustedResponseFormat, filenames.Owners, joinOrgURL, org))
 		})
-		if err := ghc.CreateComment(org, repo, number, markdownFriendlyComment(org, triggerConfig.JoinOrgURL, nonTrustedUsers, filenames)); err != nil {
+		if err := ghc.CreateComment(org, repo, number, markdownFriendlyComment(org, joinOrgURL, nonTrustedUsers, filenames)); err != nil {
 			log.WithError(err).Errorf("Could not create comment for listing non-collaborators in %s files", filenames.Owners)
 		}
 	}
@@ -357,7 +365,7 @@ func handle(ghc githubClient, gc git.ClientFactory, roc repoownersClient, log *l
 			return fmt.Errorf("failed removing %s label: %w", labels.InvalidOwners, err)
 		}
 		cp.PruneComments(func(comment github.IssueComment) bool {
-			return strings.Contains(comment.Body, fmt.Sprintf(untrustedResponseFormat, filenames.Owners, triggerConfig.JoinOrgURL, org))
+			return strings.Contains(comment.Body, fmt.Sprintf(untrustedResponseFormat, filenames.Owners, joinOrgURL, org))
 		})
 	}
 

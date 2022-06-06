@@ -106,14 +106,25 @@ func Update(fg FileGetter, kc corev1.ConfigMapInterface, name, namespace string,
 		return fmt.Errorf("failed to fetch current state of configmap: %w", getErr)
 	}
 
+	labels := map[string]string{
+		"app.kubernetes.io/name":      "prow",
+		"app.kubernetes.io/component": "updateconfig-plugin",
+	}
+
 	if cm == nil || isNotFound {
 		cm = &coreapi.ConfigMap{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      name,
 				Namespace: namespace,
+				Labels:    labels,
 			},
 		}
 	}
+
+	if cm.ObjectMeta.Labels == nil {
+		cm.ObjectMeta.Labels = labels
+	}
+
 	if cm.Data == nil || bootstrap {
 		cm.Data = map[string]string{}
 	}

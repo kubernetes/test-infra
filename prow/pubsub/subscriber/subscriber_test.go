@@ -39,9 +39,16 @@ import (
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
 	reporter "k8s.io/test-infra/prow/crier/reporters/pubsub"
+	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/gerrit/client"
+	"k8s.io/test-infra/prow/git/v2"
 
 	v1 "k8s.io/api/core/v1"
+)
+
+var (
+	trueBool  = true
+	namespace = "default"
 )
 
 type pubSubTestClient struct {
@@ -129,8 +136,8 @@ func TestProwJobEvent_ToFromMessage(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	if m.Attributes[prowEventType] != periodicProwJobEvent {
-		t.Errorf("%s should be %s found %s instead", prowEventType, periodicProwJobEvent, m.Attributes[prowEventType])
+	if m.Attributes[ProwEventType] != PeriodicProwJobEvent {
+		t.Errorf("%s should be %s found %s instead", ProwEventType, PeriodicProwJobEvent, m.Attributes[ProwEventType])
 	}
 	var newPe ProwJobEvent
 	if err = newPe.FromPayload(m.Data); err != nil {
@@ -152,7 +159,7 @@ func TestHandleMessage(t *testing.T) {
 	}{
 		{
 			name:      "PeriodicJobNoPubsub",
-			eventType: periodicProwJobEvent,
+			eventType: PeriodicProwJobEvent,
 			pe: &ProwJobEvent{
 				Name: "test",
 			},
@@ -170,7 +177,7 @@ func TestHandleMessage(t *testing.T) {
 		},
 		{
 			name:      "PresubmitForGitHub",
-			eventType: presubmitProwJobEvent,
+			eventType: PresubmitProwJobEvent,
 			pe: &ProwJobEvent{
 				Name: "pull-github",
 				Refs: &prowapi.Refs{
@@ -201,7 +208,7 @@ func TestHandleMessage(t *testing.T) {
 		},
 		{
 			name:      "PresubmitForGerrit",
-			eventType: presubmitProwJobEvent,
+			eventType: PresubmitProwJobEvent,
 			pe: &ProwJobEvent{
 				Name: "pull-gerrit",
 				Refs: &prowapi.Refs{
@@ -235,11 +242,11 @@ func TestHandleMessage(t *testing.T) {
 		},
 		{
 			name:      "UnknownEventType",
-			eventType: periodicProwJobEvent,
+			eventType: PeriodicProwJobEvent,
 			msg: &pubSubMessage{
 				Message: pubsub.Message{
 					Attributes: map[string]string{
-						prowEventType: "unsupported",
+						ProwEventType: "unsupported",
 					},
 				},
 			},
@@ -249,13 +256,47 @@ func TestHandleMessage(t *testing.T) {
 		},
 		{
 			name:      "NoEventType",
-			eventType: periodicProwJobEvent,
+			eventType: PeriodicProwJobEvent,
 			msg: &pubSubMessage{
 				Message: pubsub.Message{},
 			},
 			config: &config.Config{},
 			err:    "unable to find \"prow.k8s.io/pubsub.EventType\" from the attributes",
 			labels: []string{reporter.PubSubTopicLabel, reporter.PubSubRunIDLabel, reporter.PubSubProjectLabel},
+		},
+		{
+			name:      "PresubmitForGerritWithInRepoConfig",
+			eventType: PresubmitProwJobEvent,
+			pe: &ProwJobEvent{
+				Name: "pull-gerrit",
+				Refs: &prowapi.Refs{
+					Org:     "org",
+					Repo:    "repo",
+					BaseRef: "master",
+					BaseSHA: "SHA",
+					Pulls: []prowapi.Pull{
+						{
+							Number: 42,
+						},
+					},
+				},
+				Labels: map[string]string{
+					client.GerritRevision: "revision",
+				},
+			},
+			config: &config.Config{
+				JobConfig: config.JobConfig{
+					ProwYAMLGetterWithDefaults: fakeProwYAMLGetter,
+					ProwYAMLGetter:             fakeProwYAMLGetter,
+				},
+				ProwConfig: config.ProwConfig{
+					PodNamespace: namespace,
+					InRepoConfig: config.InRepoConfig{
+						Enabled:         map[string]*bool{"*": &trueBool},
+						AllowedClusters: map[string][]string{"*": {"default"}},
+					},
+				},
+			},
 		},
 	} {
 		t.Run(tc.name, func(t1 *testing.T) {
@@ -269,6 +310,13 @@ func TestHandleMessage(t *testing.T) {
 				ProwJobClient: fakeProwJobClient.ProwV1().ProwJobs(tc.config.ProwJobNamespace),
 				ConfigAgent:   ca,
 				Reporter:      &fr,
+				InRepoConfigCacheGetter: &InRepoConfigCacheGetter{
+					CookieFilePath: "examplePath",
+					CacheSize:      100,
+					Agent:          ca,
+					GitHubOptions:  flagutil.GitHubOptions{},
+					DryRun:         true,
+				},
 			}
 			if tc.pe != nil {
 				m, err := tc.pe.ToMessageOfType(tc.eventType)
@@ -518,7 +566,7 @@ func TestHandlePeriodicJob(t *testing.T) {
 				t.Error(err)
 			}
 			m.ID = "id"
-			err = s.handleProwJob(logrus.NewEntry(logrus.New()), &periodicJobHandler{}, &pubSubMessage{*m}, "", tc.allowedClusters)
+			err = s.handleProwJob(logrus.NewEntry(logrus.New()), &periodicJobHandler{}, &pubSubMessage{*m}, "", PeriodicProwJobEvent, tc.allowedClusters)
 			if err != nil {
 				if err.Error() != tc.err {
 					t1.Errorf("Expected error '%v' got '%v'", tc.err, err.Error())
@@ -784,4 +832,34 @@ func TestPullServer_RunConfigChange(t *testing.T) {
 			t.Errorf("unexpected error: %v", err)
 		}
 	}
+}
+
+func fakeProwYAMLGetter(
+	c *config.Config,
+	gc git.ClientFactory,
+	identifier string,
+	baseSHA string,
+	headSHAs ...string) (*config.ProwYAML, error) {
+
+	presubmits := []config.Presubmit{
+		{
+			JobBase: config.JobBase{
+				Name:      "pull-gerrit",
+				Spec:      &v1.PodSpec{Containers: []v1.Container{{Name: "always-runs-inRepoConfig", Env: []v1.EnvVar{}}}},
+				Namespace: &namespace,
+			},
+			AlwaysRun: true,
+			Reporter: config.Reporter{
+				Context:    "pull-gerrit",
+				SkipReport: true,
+			},
+		},
+	}
+	if err := config.SetPresubmitRegexes(presubmits); err != nil {
+		return nil, err
+	}
+	res := config.ProwYAML{
+		Presubmits: presubmits,
+	}
+	return &res, nil
 }

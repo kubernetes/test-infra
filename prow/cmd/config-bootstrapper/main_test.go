@@ -122,6 +122,10 @@ func testRun(clients localgit.Clients, t *testing.T) {
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "multikey-config",
 						Namespace: defaultNamespace,
+						Labels: map[string]string{
+							"app.kubernetes.io/name":      "prow",
+							"app.kubernetes.io/component": "updateconfig-plugin",
+						},
 					},
 					Data: map[string]string{},
 				},
@@ -131,6 +135,10 @@ func testRun(clients localgit.Clients, t *testing.T) {
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "multikey-config",
 						Namespace: defaultNamespace,
+						Labels: map[string]string{
+							"app.kubernetes.io/name":      "prow",
+							"app.kubernetes.io/component": "updateconfig-plugin",
+						},
 					},
 					Data: map[string]string{
 						"VERSION":  "some-git-sha",
@@ -171,6 +179,10 @@ func testRun(clients localgit.Clients, t *testing.T) {
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "multikey-config",
 						Namespace: defaultNamespace,
+						Labels: map[string]string{
+							"app.kubernetes.io/name":      "prow",
+							"app.kubernetes.io/component": "updateconfig-plugin",
+						},
 					},
 					Data: map[string]string{},
 				},
@@ -180,6 +192,10 @@ func testRun(clients localgit.Clients, t *testing.T) {
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "multikey-config",
 						Namespace: defaultNamespace,
+						Labels: map[string]string{
+							"app.kubernetes.io/name":      "prow",
+							"app.kubernetes.io/component": "updateconfig-plugin",
+						},
 					},
 					Data: map[string]string{
 						"VERSION":  "some-git-sha",
@@ -191,6 +207,10 @@ func testRun(clients localgit.Clients, t *testing.T) {
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "other",
 						Namespace: defaultNamespace,
+						Labels: map[string]string{
+							"app.kubernetes.io/name":      "prow",
+							"app.kubernetes.io/component": "updateconfig-plugin",
+						},
 					},
 					Data: map[string]string{
 						"VERSION":        "some-git-sha",
@@ -201,6 +221,10 @@ func testRun(clients localgit.Clients, t *testing.T) {
 					ObjectMeta: metav1.ObjectMeta{
 						Name:      "bar",
 						Namespace: defaultNamespace,
+						Labels: map[string]string{
+							"app.kubernetes.io/name":      "prow",
+							"app.kubernetes.io/component": "updateconfig-plugin",
+						},
 					},
 					Data: map[string]string{
 						"VERSION":        "some-git-sha",

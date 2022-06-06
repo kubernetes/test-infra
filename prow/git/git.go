@@ -32,7 +32,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	prowgithub "k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/git/types"
 )
 
 const github = "github.com"
@@ -369,18 +369,20 @@ func (r *Repo) CheckoutNewBranch(branch string) error {
 // Merge attempts to merge commitlike into the current branch. It returns true
 // if the merge completes. It returns an error if the abort fails.
 func (r *Repo) Merge(commitlike string) (bool, error) {
-	return r.MergeWithStrategy(commitlike, prowgithub.MergeMerge)
+	return r.MergeWithStrategy(commitlike, types.MergeMerge)
 }
 
 // MergeWithStrategy attempts to merge commitlike into the current branch given the merge strategy.
 // It returns true if the merge completes. It returns an error if the abort fails.
-func (r *Repo) MergeWithStrategy(commitlike string, mergeStrategy prowgithub.PullRequestMergeType) (bool, error) {
+func (r *Repo) MergeWithStrategy(commitlike string, mergeStrategy types.PullRequestMergeType) (bool, error) {
 	r.logger.WithField("commitlike", commitlike).Info("Merging.")
 	switch mergeStrategy {
-	case prowgithub.MergeMerge:
+	case types.MergeMerge:
 		return r.mergeWithMergeStrategyMerge(commitlike)
-	case prowgithub.MergeSquash:
+	case types.MergeSquash:
 		return r.mergeWithMergeStrategySquash(commitlike)
+	case types.MergeRebase:
+		return r.mergeWithMergeStrategyRebase(commitlike)
 	default:
 		return false, fmt.Errorf("merge strategy %q is not supported", mergeStrategy)
 	}
@@ -423,10 +425,45 @@ func (r *Repo) mergeWithMergeStrategySquash(commitlike string) (bool, error) {
 	return true, nil
 }
 
+func (r *Repo) mergeWithMergeStrategyRebase(commitlike string) (bool, error) {
+	if commitlike == "" {
+		return false, errors.New("branch must be set")
+	}
+
+	headRev, err := r.revParse("HEAD")
+	if err != nil {
+		r.logger.WithError(err).Infof("Failed to parse HEAD revision")
+		return false, err
+	}
+	headRev = strings.TrimSuffix(headRev, "\n")
+
+	co := r.gitCommand("rebase", "--no-stat", headRev, commitlike)
+	b, err := co.CombinedOutput()
+	if err != nil {
+		r.logger.WithField("out", string(b)).WithError(err).Infof("Rebase failed.")
+		if b, err := r.gitCommand("rebase", "--abort").CombinedOutput(); err != nil {
+			return false, fmt.Errorf("error aborting after failed rebase for commitlike %s: %v. output: %s", commitlike, err, string(b))
+		}
+		return false, nil
+	}
+
+	return true, nil
+}
+
+func (r *Repo) revParse(args ...string) (string, error) {
+	fullArgs := append([]string{"rev-parse"}, args...)
+	co := r.gitCommand(fullArgs...)
+	b, err := co.CombinedOutput()
+	if err != nil {
+		return "", errors.New(string(b))
+	}
+	return string(b), nil
+}
+
 // MergeAndCheckout merges the provided headSHAs in order onto baseSHA using the provided strategy.
 // If no headSHAs are provided, it will only checkout the baseSHA and return.
 // Only the `merge` and `squash` strategies are supported.
-func (r *Repo) MergeAndCheckout(baseSHA string, mergeStrategy prowgithub.PullRequestMergeType, headSHAs ...string) error {
+func (r *Repo) MergeAndCheckout(baseSHA string, mergeStrategy types.PullRequestMergeType, headSHAs ...string) error {
 	if baseSHA == "" {
 		return errors.New("baseSHA must be set")
 	}

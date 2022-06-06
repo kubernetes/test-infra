@@ -17,15 +17,28 @@ limitations under the License.
 package checker
 
 import (
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	"net/http"
 	"strings"
+	"time"
 
 	"github.com/blang/semver"
 	git "github.com/go-git/go-git/v5"
 	gitconfig "github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing"
 	gitmemory "github.com/go-git/go-git/v5/storage/memory"
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+)
+
+const (
+	prowjobsURL = "https://prow.k8s.io/prowjobs.js?omit=annotations,labels,decoration_config,pod_spec"
+	jobName     = "ci-fast-forward"
+	unknownTime = "unknown"
 )
 
 // Checker is the main structure of checking if we're in Test Freeze.
@@ -44,12 +57,20 @@ type Result struct {
 
 	// Tag is the latest minor release tag to be expected.
 	Tag string
+
+	// LastFastForward specifies the latest point int time when a fast forward
+	// was successful.
+	LastFastForward string
 }
 
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
 //counterfeiter:generate . checker
 type checker interface {
 	ListRefs(*git.Remote) ([]*plumbing.Reference, error)
+	HttpGet(string) (*http.Response, error)
+	CloseBody(*http.Response) error
+	ReadAllBody(*http.Response) ([]byte, error)
+	UnmarshalProwJobs([]byte) (*v1.ProwJobList, error)
 }
 
 type defaultChecker struct{}
@@ -74,7 +95,7 @@ func (c *Checker) InTestFreeze() (*Result, error) {
 	refs, err := c.checker.ListRefs(remote)
 	if err != nil {
 		c.log.Errorf("Unable to list git remote: %v", err)
-		return nil, errors.Wrap(err, "list git remote")
+		return nil, fmt.Errorf("list git remote: %w", err)
 	}
 
 	const releaseBranchPrefix = "release-"
@@ -97,7 +118,7 @@ func (c *Checker) InTestFreeze() (*Result, error) {
 
 			parsed, err := semver.Parse(version)
 			if err != nil {
-				c.log.Warnf("Unable parse version %s: %v", version, err)
+				c.log.WithField("version", version).WithError(err).Debug("Unable to parse version.")
 				continue
 			}
 
@@ -118,7 +139,7 @@ func (c *Checker) InTestFreeze() (*Result, error) {
 
 			parsed, err := semver.Parse(tag)
 			if err != nil {
-				c.log.Warnf("Unable parse tag %s: %v", tag, err)
+				c.log.WithField("tag", tag).WithError(err).Debug("Unable to parse tag.")
 				continue
 			}
 
@@ -134,15 +155,70 @@ func (c *Checker) InTestFreeze() (*Result, error) {
 		}
 	}
 
+	lastFastForward := unknownTime
+	last, err := c.lastFastForward()
+	if err != nil {
+		c.log.WithError(err).Error("Unable to get last fast forward result.")
+	} else {
+		lastFastForward = last.Format(time.UnixDate)
+	}
+
 	// Latest minor version not found in latest release branch,
 	// we're in Test Freeze.
 	return &Result{
-		InTestFreeze: true,
-		Branch:       latestBranch,
-		Tag:          "v" + latestSemver.String(),
+		InTestFreeze:    true,
+		Branch:          latestBranch,
+		Tag:             "v" + latestSemver.String(),
+		LastFastForward: lastFastForward,
 	}, nil
+}
+
+func (c *Checker) lastFastForward() (*metav1.Time, error) {
+	resp, err := c.checker.HttpGet(prowjobsURL)
+	if err != nil {
+		return nil, fmt.Errorf("get prow jobs: %w", err)
+	}
+	defer c.checker.CloseBody(resp)
+
+	body, err := c.checker.ReadAllBody(resp)
+	if err != nil {
+		return nil, fmt.Errorf("read response body: %w", err)
+	}
+
+	prowJobs, err := c.checker.UnmarshalProwJobs(body)
+	if err != nil {
+		return nil, fmt.Errorf("unmarshal prow jobs: %w", err)
+	}
+
+	for _, job := range prowJobs.Items {
+		if job.Spec.Job == jobName && job.Status.State == v1.SuccessState {
+			return job.Status.CompletionTime, nil
+		}
+	}
+
+	return nil, errors.New("unable to find successful run")
 }
 
 func (*defaultChecker) ListRefs(r *git.Remote) ([]*plumbing.Reference, error) {
 	return r.List(&git.ListOptions{})
+}
+
+func (*defaultChecker) HttpGet(url string) (*http.Response, error) {
+	return http.Get(url)
+}
+
+func (*defaultChecker) CloseBody(resp *http.Response) error {
+	return resp.Body.Close()
+}
+
+func (*defaultChecker) ReadAllBody(resp *http.Response) ([]byte, error) {
+	return io.ReadAll(resp.Body)
+}
+
+func (*defaultChecker) UnmarshalProwJobs(data []byte) (*v1.ProwJobList, error) {
+	prowJobs := &v1.ProwJobList{}
+	if err := json.Unmarshal(data, prowJobs); err != nil {
+		return nil, err
+	}
+	return prowJobs, nil
 }

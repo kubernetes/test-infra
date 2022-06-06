@@ -6,17 +6,19 @@ postsubmits:
         testgrid-dashboards: sig-docs-website, sig-k8s-infra-gcb
         testgrid-tab-name: post-website-push-image-k8s-website-hugo
       decorate: true
-      run_if_changed: "^Dockerfile$"
+      run_if_changed: >-
+        ^(Dockerfile|Makefile|netlify\.toml|\.dockerignore)$
       branches:
         - ^main$
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
             command:
               - /run.sh
             args:
               - --project=k8s-staging-sig-docs
-              - --scratch-bucket=gs://k8s-staging-infra-sig-docs-gcb
+              - --scratch-bucket=gs://k8s-staging-sig-docs-gcb
               - --env-passthrough=PULL_BASE_REF
+              - --with-git-dir
               - .

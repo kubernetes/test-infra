@@ -36,7 +36,7 @@ import (
 type tidePools struct {
 	Queries     []string
 	TideQueries []config.TideQuery
-	Pools       []tide.Pool
+	Pools       []tide.PoolForDeck
 }
 
 type tideHistory struct {

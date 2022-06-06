@@ -3,6 +3,11 @@
 ## New features
 
 New features added to each component:
+  - *April 6, 2022* Highlight and pin interesting lines. To do this,
+    shift-click on log lines in the buildlog lens. The URL fragment
+    causes the same lines to be highlighted next page load. Additionally,
+    when viewing a GCS log pressing the pin button saves the highlight.
+    The saved highlight automatically displays next page load.
   - *January 24, 2022* It is possible now to define GitHub Apps bots as trusted 
     users to allow automatic tests trigger without relying on `/ok-to-test` 
     from organization member. Trigger and DCO plugins configuration now support 
@@ -183,6 +188,10 @@ state and no claims of backwards compatibility are made for any external API.
 Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
+ - *May 27th, 2022* Crier flags `--gcs-workers` and `--kubernetes-gcs-workers` are
+   removed in favor of `--blob-storage-workers` and `--kubernetes-blob-storage-workers`.
+ - *May 27th, 2022* The `owners_dir_blacklist` field in prow config is removed
+   in favor of `owners_dir_denylist`.
  - *February 22nd, 2022* Since prow version `v20220222-acb5731b85`, the
    entrypoint container in a prow job will run as `--copy-mode-only`, instead of
    `/bin/cp /entrypoint /tools/entrypoint`. Entrypoint images before the mentioned version

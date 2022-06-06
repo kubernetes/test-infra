@@ -35,6 +35,9 @@ import (
 	"strings"
 	"time"
 
+	"k8s.io/test-infra/prow/io/providers"
+	"k8s.io/test-infra/prow/tide"
+
 	"github.com/NYTimes/gziphandler"
 	"github.com/gorilla/csrf"
 	"github.com/gorilla/sessions"
@@ -256,7 +259,9 @@ var simplifier = simplifypath.NewSimplifier(l("", // shadow element mimicing the
 	l("tide-history.js"),
 	l("tide.js"),
 	l("view",
-		v("job")),
+		v("job"),
+		l("gs", v("bucket", l("logs", v("job", v("build"))))),
+	),
 ))
 
 // l and v keep the tree legible
@@ -631,18 +636,10 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, authCfgGe
 
 		repos := cfg().AllRepos.List()
 
-		prStatusAgent := prstatus.NewDashboardAgent(
-			repos,
-			&githubOAuthConfig,
-			&o.github,
-			logrus.WithField("client", "pr-status"))
+		prStatusAgent := prstatus.NewDashboardAgent(repos, &githubOAuthConfig, logrus.WithField("client", "pr-status"))
 
 		clientCreator := func(accessToken string) (prstatus.GitHubClient, error) {
-			if o.github.AppID != "" {
-				return o.github.GitHubClient(false)
-			} else {
-				return o.github.GitHubClientWithAccessToken(accessToken), nil
-			}
+			return o.github.GitHubClientWithAccessToken(accessToken)
 		}
 		mux.Handle("/pr-data.js", handleNotCached(
 			prStatusAgent.HandlePrStatus(prStatusAgent, clientCreator)))
@@ -1045,7 +1042,11 @@ lensesLoop:
 	}
 
 	artifactsLink := ""
-	gcswebPrefix := cfg().Deck.Spyglass.GCSBrowserPrefixes.GetGCSBrowserPrefix(org, repo)
+	bucket := ""
+	if jobPath != "" && strings.HasPrefix(jobPath, providers.GS) {
+		bucket = strings.Split(jobPath, "/")[1] // The provider (gs) will be in index 0, followed by the bucket name
+	}
+	gcswebPrefix := cfg().Deck.Spyglass.GetGCSBrowserPrefix(org, repo, bucket)
 	if gcswebPrefix != "" {
 		runPath, err := sg.RunPath(src)
 		if err == nil {
@@ -1285,10 +1286,14 @@ func handleTidePools(cfg config.Getter, ta *tideAgent, log *logrus.Entry) http.H
 		pools := ta.pools
 		ta.Unlock()
 
+		var poolsForDeck []tide.PoolForDeck
+		for _, pool := range pools {
+			poolsForDeck = append(poolsForDeck, *tide.PoolToPoolForDeck(&pool))
+		}
 		payload := tidePools{
 			Queries:     queries,
 			TideQueries: queryConfigs,
-			Pools:       pools,
+			Pools:       poolsForDeck,
 		}
 		pd, err := json.Marshal(payload)
 		if err != nil {

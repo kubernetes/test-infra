@@ -64,7 +64,6 @@ rules:
   - update
   - list
   - watch
-  - update
   - patch
 ---
 kind: Role

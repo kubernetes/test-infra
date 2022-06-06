@@ -11,10 +11,10 @@ plank:
       timeout: 2h
       grace_period: 15m
       utility_images:
-        clonerefs: "gcr.io/k8s-prow/clonerefs:v20220404-e2e605a820"
-        initupload: "gcr.io/k8s-prow/initupload:v20220404-e2e605a820"
-        entrypoint: "gcr.io/k8s-prow/entrypoint:v20220404-e2e605a820"
-        sidecar: "gcr.io/k8s-prow/sidecar:v20220404-e2e605a820"
+        clonerefs: "gcr.io/k8s-prow/clonerefs:v20220602-a4b31d7576"
+        initupload: "gcr.io/k8s-prow/initupload:v20220602-a4b31d7576"
+        entrypoint: "gcr.io/k8s-prow/entrypoint:v20220602-a4b31d7576"
+        sidecar: "gcr.io/k8s-prow/sidecar:v20220602-a4b31d7576"
       gcs_configuration:
         bucket: "kubernetes-jenkins"
         path_strategy: "legacy"
@@ -57,6 +57,10 @@ deck:
     - lens:
         name: buildlog
         config:
+          highlighter:
+            endpoint: http://halogen.default.svc.cluster.local
+            pin: true
+            auto: false
           highlight_regexes:
           - Automatic merge failed
           - cannot convert.+to type
@@ -137,8 +141,16 @@ deck:
         - ^artifacts/filtered\.html$
     - lens:
         name: podinfo
+        config:
+          runner_configs:
+              "default":
+                pod_link_template: "https://console.cloud.google.com/kubernetes/pod/us-central1-f/prow/test-pods/{{ .Name }}/details?project=k8s-prow-builds"
+              "test-infra-trusted":
+                pod_link_template: "https://console.cloud.google.com/kubernetes/pod/us-central1-f/prow/test-pods/{{ .Name }}/details?project=k8s-prow"
       required_files:
         - ^podinfo\.json$
+      optional_files:
+        - ^prowjob\.json$
     - lens:
         name: links
       required_files:
@@ -548,6 +560,13 @@ branch-protection:
           required_status_checks:
             contexts:
             - Kubespray CI Pipeline
+        kustomize:
+          required_status_checks:
+            contexts:
+              - Lint
+              - Test Linux
+              - Test MacOS
+              - Test Windows
         metrics-server:
           branches:
             gh-pages:
@@ -622,6 +641,7 @@ tide:
     - kubernetes/sample-apiserver
     - kubernetes/sample-cli-plugin
     - kubernetes/sample-controller
+    - kubernetes-sigs/cloud-provider-azure
     labels:
     - lgtm
     - approved
@@ -638,9 +658,6 @@ tide:
     - needs-rebase
   - repos:
     - kubernetes/kubernetes
-    excludedBranches:
-    - master
-    - release-1.24
     labels:
     - lgtm
     - approved
@@ -658,40 +675,6 @@ tide:
     - do-not-merge/release-note-label-needed
     - do-not-merge/work-in-progress
     - needs-rebase
-  - repos:
-    - kubernetes/kubernetes
-    milestone: v1.24
-    includedBranches:
-    - master
-    - release-1.24
-    labels:
-    - lgtm
-    - approved
-    - "cncf-cla: yes"
-    missingLabels:
-    - do-not-merge
-    - do-not-merge/blocked-paths
-    - do-not-merge/cherry-pick-not-approved
-    - do-not-merge/contains-merge-commits
-    - do-not-merge/hold
-    - do-not-merge/invalid-commit-message
-    - do-not-merge/invalid-owners-file
-    - do-not-merge/needs-kind
-    - do-not-merge/needs-sig
-    - do-not-merge/release-note-label-needed
-    - do-not-merge/work-in-progress
-    - needs-rebase
-  - repos:
-    - GoogleCloudPlatform/netd
-    labels:
-    - lgtm
-    - approved
-    missingLabels:
-    - do-not-merge
-    - do-not-merge/blocked-paths
-    - do-not-merge/hold
-    - do-not-merge/invalid-owners-file
-    - do-not-merge/work-in-progress
   - author: k8s-ci-robot
     labels: # k8s-ci-robot should only create autobump PR with this label
     - skip-review
@@ -725,7 +708,26 @@ tide:
     repos:
     - kubernetes/k8s.io
     - kubernetes/test-infra
-
+  - repos:
+    - kubernetes-sigs/cloud-provider-azure
+    labels:
+    - lgtm
+    - approved
+    - "cncf-cla: yes"
+    missingLabels:
+    - do-not-merge
+    - do-not-merge/blocked-paths
+    - do-not-merge/cherry-pick-not-approved
+    - do-not-merge/contains-merge-commits
+    - do-not-merge/hold
+    - do-not-merge/invalid-commit-message
+    - do-not-merge/invalid-owners-file
+    - do-not-merge/needs-kind
+    - do-not-merge/needs-sig
+    - do-not-merge/release-note-label-needed
+    - do-not-merge/work-in-progress
+    - needs-rebase
+    - needs-kind
   merge_method:
     kubernetes-client/csharp: squash
     kubernetes-client/gen: squash
@@ -930,7 +932,7 @@ presets:
     preset-bazel-remote-cache-enabled: "true"
   env:
   - name: BAZEL_REMOTE_CACHE_ENABLED
-    value: "true"
+    value: "false"
 # docker-in-docker (with images/bootstrap) preset
 # NOTE: using this also requires using that image,
 # ensuring you run your test under either the ENTRYPOINT or:

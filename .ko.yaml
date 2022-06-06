@@ -43,9 +43,15 @@ baseImageOverrides:
   k8s.io/test-infra/robots/pr-creator: gcr.io/k8s-prow/git:v20220215-ddc3ad9
   k8s.io/test-infra/testgrid/cmd/transfigure: gcr.io/k8s-testimages/launcher.gcr.io/google/bazel:v20210128-721ee66-test-infra
   k8s.io/test-infra/gcsweb/cmd/gcsweb: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
+  k8s.io/test-infra/gencred: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
   # prow integration test
-  k8s.io/test-infra/prow/test/integration/fakeghserver: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
+  k8s.io/test-infra/prow/test/integration/cmd/fakeghserver: gcr.io/k8s-prow/alpine:v20200713-e9b3d9d
+  k8s.io/test-infra/prow/test/integration/cmd/fakegitserver: gcr.io/k8s-prow/git:v20220523-6026203ca9
 
+# https://pkg.go.dev/cmd/link
+# -s: omit symbol/debug info
+# -w: omit DWARF symbol table
+# -X importpath.name=value: sets name to value
 builds:
 - id: admission
   dir: .
@@ -341,3 +347,8 @@ builds:
   ldflags:
   - -s -w
   - -X k8s.io/test-infra/gcsweb/pkg/version.VERSION={{.Env.VERSION}}
+- id: analysis
+  dir: .
+  main: experiment/ml/analyze
+  ldflags:
+  - -s -w

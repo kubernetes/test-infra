@@ -454,6 +454,8 @@ function createTidePoolLabel(pr: PullRequest, tidePool?: TidePool): HTMLElement 
         if (!poolType) {
             return false;
         }
+        // prInPool here references the PullRequest struct from tide, and pr
+        // here references the PullRequest struct from here.
         const index = poolType.findIndex((prInPool) => {
             return prInPool.Number === pr.Number;
         });

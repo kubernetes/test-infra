@@ -9,7 +9,7 @@ presubmits:
     path_alias: "k8s.io/cloud-provider-openstack"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
         command:
         - make
         args:
@@ -22,8 +22,6 @@ presubmits:
   - name: openstack-cloud-controller-manager-e2e-test-release-123
     labels:
       preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     path_alias: "k8s.io/cloud-provider-openstack"
@@ -37,7 +35,7 @@ presubmits:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
           env:
           - name: "BOSKOS_HOST"
             value: "boskos.test-pods.svc.cluster.local"
@@ -57,8 +55,6 @@ presubmits:
   - name: openstack-cloud-csi-cinder-e2e-test-release-123
     labels:
       preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     path_alias: "k8s.io/cloud-provider-openstack"
@@ -72,7 +68,7 @@ presubmits:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
           env:
           - name: "BOSKOS_HOST"
             value: "boskos.test-pods.svc.cluster.local"
@@ -92,8 +88,6 @@ presubmits:
   - name: openstack-cloud-csi-manila-e2e-test-release-123
     labels:
       preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     path_alias: "k8s.io/cloud-provider-openstack"
@@ -107,7 +101,7 @@ presubmits:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
           env:
           - name: "BOSKOS_HOST"
             value: "boskos.test-pods.svc.cluster.local"
@@ -133,7 +127,7 @@ presubmits:
     path_alias: "k8s.io/cloud-provider-openstack"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
         command:
         - make
         args:

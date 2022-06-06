@@ -9,7 +9,7 @@ presubmits:
       - ^release-1.0$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-1.23
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-1.23
         command:
         - "./scripts/ci-test.sh"
         resources:
@@ -28,7 +28,7 @@ presubmits:
       - ^release-1.0$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-1.23
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-1.23
         command:
         - "./scripts/ci-build.sh"
         resources:
@@ -50,7 +50,7 @@ presubmits:
       - ^release-1.0$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-1.23
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-1.23
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -67,8 +67,6 @@ presubmits:
   - name: pull-cluster-api-provider-gcp-e2e-test-release-release-1-0
     labels:
       preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
@@ -86,7 +84,7 @@ presubmits:
       path_alias: "sigs.k8s.io/image-builder"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-1.23
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-1.23
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"
@@ -109,8 +107,6 @@ presubmits:
   - name: pull-cluster-api-provider-gcp-make-conformance-release-release-1-0
     labels:
       preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
@@ -123,7 +119,7 @@ presubmits:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-1.23
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-1.23
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"
@@ -146,8 +142,6 @@ presubmits:
   - name: pull-cluster-api-provider-gcp-capi-e2e-release-release-1-0
     labels:
       preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     path_alias: "sigs.k8s.io/cluster-api-provider-gcp"
@@ -160,7 +154,7 @@ presubmits:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-1.23
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-1.23
           env:
             - name: "BOSKOS_HOST"
               value: "boskos.test-pods.svc.cluster.local"

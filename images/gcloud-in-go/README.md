@@ -5,7 +5,7 @@ Use this image when you want to use `go` and `gcloud` in the same job
 ## contents
 
 - base:
-  - golang:1.13
+  - golang:1.16
 - directories:
   - `/workspace` default working dir for `run` commands
 - languages:

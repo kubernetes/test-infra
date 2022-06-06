@@ -28,6 +28,8 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/spyglass/api"
 	"k8s.io/test-infra/prow/spyglass/lenses"
@@ -88,7 +90,7 @@ func humanReadableName(name string) string {
 	name = strings.TrimSuffix(name, ".txt")
 	words := strings.Split(name, "-")
 	if len(words) > 0 {
-		words[0] = strings.Title(words[0])
+		words[0] = cases.Title(language.English).String(words[0])
 	}
 	return strings.Join(words, " ")
 }
