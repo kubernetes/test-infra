@@ -180,7 +180,6 @@ function handleRerunButton() {
   const r = document.getElementById("header-title")!;
   const c = document.createElement("div");
   c.appendChild(createRerunProwJobIcon(modal, rerunCommand, prowJobName, rerunCreatesJob, csrfToken));
-  c.classList.add("icon-cell");
   r.appendChild(c);
 
   if (rerunStatus === "gh_redirect") {
