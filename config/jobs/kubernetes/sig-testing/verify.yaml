@@ -155,6 +155,7 @@ periodics:
   annotations:
     testgrid-create-test-group: "true"
     testgrid-dashboards: sig-testing-misc
+    testgrid-alert-email: kubernetes-sig-testing-alerts@googlegroups.com
     description: "Verify licences for the upstream Kubernetes Project's go-packages to the CNCF approved list of licences."
   extra_refs:
   - org: kubernetes
