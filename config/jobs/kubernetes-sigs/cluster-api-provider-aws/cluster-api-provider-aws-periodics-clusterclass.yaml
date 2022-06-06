@@ -29,7 +29,7 @@ periodics:
       # Parallelize tests
       - name: GINKGO_ARGS
         value: "-nodes 20"
-      - name: E2E_FOCUS
+      - name: GINKGO_FOCUS
         value: "\\[ClusterClass\\]"
       securityContext:
         privileged: true
