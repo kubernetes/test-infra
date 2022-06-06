@@ -53,11 +53,12 @@ periodics:
   spec:
     serviceAccountName: k8s-metrics
     containers:
-    - image: gcr.io/k8s-staging-test-infra/bigquery:v20220330-0567932c13
+    - image: gcr.io/k8s-staging-test-infra/bigquery:v20220427-c2db0f69b7
       args:
       - ./metrics/bigquery.py
       - --bucket=gs://k8s-metrics
       - --project=k8s-infra-prow-build-trusted
+      - --jq=/usr/bin/jq
 
 - name: ci-test-infra-triage
   interval: 30m
@@ -123,7 +124,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20220404-e2e605a820
+    - image: gcr.io/k8s-prow/generic-autobumper:v20220602-a4b31d7576
       command:
       - generic-autobumper
       args:
@@ -153,7 +154,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20220404-e2e605a820
+    - image: gcr.io/k8s-prow/generic-autobumper:v20220602-a4b31d7576
       command:
       - generic-autobumper
       args:

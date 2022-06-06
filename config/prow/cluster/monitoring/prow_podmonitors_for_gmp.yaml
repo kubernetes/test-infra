@@ -1,0 +1,149 @@
+# These will be consumed by GKE Managed Prometheus(GMP) services in the cluster.
+# (Not related to prometheus-operator).
+# Ref:
+# https://cloud.google.com/stackdriver/docs/managed-prometheus/setup-managed#gmp-pod-monitoring.
+---
+apiVersion: monitoring.googleapis.com/v1
+kind: PodMonitoring
+metadata:
+  labels:
+    app: deck
+  name: deck
+  namespace: default
+spec:
+  endpoints:
+  - interval: 30s
+    port: metrics
+    scheme: http
+  selector:
+    matchLabels:
+      app: deck
+---
+apiVersion: monitoring.googleapis.com/v1
+kind: PodMonitoring
+metadata:
+  labels:
+    app: ghproxy
+  name: ghproxy
+  namespace: default
+spec:
+  endpoints:
+  - interval: 30s
+    port: metrics
+    scheme: http
+  selector:
+    matchLabels:
+      app: ghproxy
+---
+apiVersion: monitoring.googleapis.com/v1
+kind: PodMonitoring
+metadata:
+  labels:
+    app: hook
+  name: hook
+  namespace: default
+spec:
+  endpoints:
+  - interval: 30s
+    port: metrics
+    scheme: http
+  selector:
+    matchLabels:
+      app: hook
+---
+apiVersion: monitoring.googleapis.com/v1
+kind: PodMonitoring
+metadata:
+  labels:
+    app: plank
+  name: plank
+  namespace: default
+spec:
+  endpoints:
+  - interval: 30s
+    port: metrics
+    scheme: http
+  selector:
+    matchLabels:
+      app: prow-controller-manager
+---
+apiVersion: monitoring.googleapis.com/v1
+kind: PodMonitoring
+metadata:
+  labels:
+    app: sinker
+  name: sinker
+  namespace: default
+spec:
+  endpoints:
+  - interval: 30s
+    port: metrics
+    scheme: http
+  selector:
+    matchLabels:
+      app: sinker
+---
+apiVersion: monitoring.googleapis.com/v1
+kind: PodMonitoring
+metadata:
+  labels:
+    app: tide
+  name: tide
+  namespace: default
+spec:
+  endpoints:
+  - interval: 30s
+    port: metrics
+    scheme: http
+  selector:
+    matchLabels:
+      app: tide
+---
+apiVersion: monitoring.googleapis.com/v1
+kind: PodMonitoring
+metadata:
+  labels:
+    app: horologium
+  name: horologium
+  namespace: default
+spec:
+  endpoints:
+  - interval: 30s
+    port: metrics
+    scheme: http
+  selector:
+    matchLabels:
+      app: horologium
+---
+apiVersion: monitoring.googleapis.com/v1
+kind: PodMonitoring
+metadata:
+  labels:
+    app: crier
+  name: crier
+  namespace: default
+spec:
+  endpoints:
+  - interval: 30s
+    port: metrics
+    scheme: http
+  selector:
+    matchLabels:
+      app: crier
+---
+apiVersion: monitoring.googleapis.com/v1
+kind: PodMonitoring
+metadata:
+  labels:
+    app.kubernetes.io/name: kubernetes-external-secrets
+    app: kubernetes-external-secrets
+  name: kubernetes-external-secrets
+  namespace: prow-monitoring
+spec:
+  endpoints:
+  - interval: 30s
+    port: prometheus
+    scheme: http
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kubernetes-external-secrets

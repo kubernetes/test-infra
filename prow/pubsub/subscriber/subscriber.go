@@ -22,6 +22,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"sync"
 
 	"cloud.google.com/go/pubsub"
 
@@ -34,15 +35,17 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/gerrit/client"
+	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/pjutil"
 )
 
 const (
-	prowEventType          = "prow.k8s.io/pubsub.EventType"
-	periodicProwJobEvent   = "prow.k8s.io/pubsub.PeriodicProwJobEvent"
-	presubmitProwJobEvent  = "prow.k8s.io/pubsub.PresubmitProwJobEvent"
-	postsubmitProwJobEvent = "prow.k8s.io/pubsub.PostsubmitProwJobEvent"
+	ProwEventType          = "prow.k8s.io/pubsub.EventType"
+	PeriodicProwJobEvent   = "prow.k8s.io/pubsub.PeriodicProwJobEvent"
+	PresubmitProwJobEvent  = "prow.k8s.io/pubsub.PresubmitProwJobEvent"
+	PostsubmitProwJobEvent = "prow.k8s.io/pubsub.PostsubmitProwJobEvent"
 )
 
 // Ensure interface is intact. I.e., this declaration ensures that the type
@@ -56,6 +59,78 @@ type prowCfgClient interface {
 	AllPeriodics() []config.Periodic
 	GetPresubmitsStatic(identifier string) []config.Presubmit
 	GetPostsubmitsStatic(identifier string) []config.Postsubmit
+}
+
+type InRepoConfigCacheGetter struct {
+	CookieFilePath string
+	CacheSize      int
+	Agent          *config.Agent
+	mu             sync.Mutex
+	GitHubOptions  flagutil.GitHubOptions
+	DryRun         bool
+
+	CacheMap map[string]*config.InRepoConfigCache
+}
+
+func (irc *InRepoConfigCacheGetter) getCache(cloneURI, host string) (*config.InRepoConfigCache, error) {
+	// No repo is cloned in getCache, Since this function should happen fast it is safe to lock the whole function.
+	irc.mu.Lock()
+	defer irc.mu.Unlock()
+	if irc.CacheMap == nil {
+		irc.CacheMap = map[string]*config.InRepoConfigCache{}
+	}
+
+	var key string
+	// We are using github with IRC
+	if irc.GitHubOptions.Host != "" && (irc.GitHubOptions.TokenPath != "" || irc.GitHubOptions.AppPrivateKeyPath != "") {
+		key = irc.GitHubOptions.Host
+		// We are using Gerrit with IRC
+	} else if irc.CookieFilePath != "" {
+		key = cloneURI
+		// Just return a nil cache
+	} else {
+		return nil, nil
+	}
+
+	if cache, ok := irc.CacheMap[key]; ok {
+		return cache, nil
+	}
+
+	var gitClientFactory git.ClientFactory
+	var cache *config.InRepoConfigCache
+	var err error
+	if irc.GitHubOptions.TokenPath != "" || irc.GitHubOptions.AppPrivateKeyPath != "" {
+		gitClient, err := irc.GitHubOptions.GitClient(irc.DryRun)
+		if err != nil {
+			return nil, fmt.Errorf("Error getting git client: %w", err)
+		}
+		gitClientFactory = git.ClientFactoryFrom(gitClient)
+	} else {
+		opts := git.ClientFactoryOpts{
+			CloneURI:       cloneURI,
+			Host:           host,
+			CookieFilePath: irc.CookieFilePath,
+		}
+		gitClientFactory, err = git.NewClientFactory(opts.Apply)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create Gerrit Client for InRepoConfig: %v", err)
+		}
+	}
+
+	// Initialize cache for fetching Presubmit and Postsubmit information. If
+	// the cache cannot be initialized, exit with an error.
+	cache, err = config.NewInRepoConfigCache(
+		irc.CacheSize,
+		irc.Agent,
+		config.NewInRepoConfigGitCache(gitClientFactory))
+	// If we cannot initialize the cache, exit with an error.
+	if err != nil {
+		return nil, fmt.Errorf("unable to initialize in-repo-config-cache with size %d: %v", irc.CacheSize, err)
+	}
+
+	irc.CacheMap[key] = cache
+	return cache, nil
+
 }
 
 // ProwJobEvent contains the minimum information required to start a ProwJob.
@@ -78,7 +153,7 @@ func (pe *ProwJobEvent) FromPayload(data []byte) error {
 
 // ToMessage generates a PubSub Message from a ProwJobEvent.
 func (pe *ProwJobEvent) ToMessage() (*pubsub.Message, error) {
-	return pe.ToMessageOfType(periodicProwJobEvent)
+	return pe.ToMessageOfType(PeriodicProwJobEvent)
 }
 
 // ToMessage generates a PubSub Message from a ProwJobEvent.
@@ -90,7 +165,7 @@ func (pe *ProwJobEvent) ToMessageOfType(t string) (*pubsub.Message, error) {
 	message := pubsub.Message{
 		Data: data,
 		Attributes: map[string]string{
-			prowEventType: t,
+			ProwEventType: t,
 		},
 	}
 	return &message, nil
@@ -105,11 +180,11 @@ type ProwJobClient interface {
 // validates them using Prow Configuration and
 // use a ProwJobClient to create Prow Jobs.
 type Subscriber struct {
-	ConfigAgent       *config.Agent
-	InRepoConfigCache *config.InRepoConfigCache
-	Metrics           *Metrics
-	ProwJobClient     ProwJobClient
-	Reporter          reportClient
+	ConfigAgent             *config.Agent
+	Metrics                 *Metrics
+	ProwJobClient           ProwJobClient
+	Reporter                reportClient
+	InRepoConfigCacheGetter *InRepoConfigCacheGetter
 }
 
 type messageInterface interface {
@@ -228,12 +303,14 @@ func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InR
 	// If InRepoConfigCache is provided, then it means that we also want to fetch
 	// from an inrepoconfig.
 	if pc != nil {
+		logger.Debug("Getting prow jobs.")
 		var presubmitsWithInrepoconfig []config.Presubmit
 		var err error
 		presubmitsWithInrepoconfig, err = pc.GetPresubmits(orgRepo, baseSHAGetter, headSHAGetters...)
 		if err != nil {
 			logger.WithError(err).Debug("Failed to get presubmits")
 		} else {
+			logger.WithField("static-jobs", len(presubmits)).WithField("jobs-with-inrepoconfig", len(presubmitsWithInrepoconfig)).Debug("Jobs found.")
 			// Overwrite presubmits. This is safe because pc.GetPresubmits()
 			// itself calls cfg.GetPresubmitsStatic() and adds to it all the
 			// presubmits found in the inrepoconfig.
@@ -302,12 +379,14 @@ func (poh *postsubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.In
 	logger := logrus.WithFields(logrus.Fields{"org": org, "repo": repo, "branch": branch, "orgRepo": orgRepo})
 	postsubmits := cfg.GetPostsubmitsStatic(orgRepo)
 	if pc != nil {
+		logger.Debug("Getting prow jobs.")
 		var postsubmitsWithInrepoconfig []config.Postsubmit
 		var err error
 		postsubmitsWithInrepoconfig, err = pc.GetPostsubmits(orgRepo, baseSHAGetter)
 		if err != nil {
 			logger.WithError(err).Debug("Failed to get postsubmits from inrepoconfig")
 		} else {
+			logger.WithField("static-jobs", len(postsubmits)).WithField("jobs-with-inrepoconfig", len(postsubmitsWithInrepoconfig)).Debug("Jobs found.")
 			postsubmits = postsubmitsWithInrepoconfig
 		}
 	}
@@ -348,7 +427,7 @@ func (s *Subscriber) handleMessage(msg messageInterface, subscription string, al
 		"pubsub-id":           msg.getID()})
 	s.Metrics.MessageCounter.With(prometheus.Labels{subscriptionLabel: subscription}).Inc()
 	l.Info("Received message")
-	eType, err := extractFromAttribute(msg.getAttributes(), prowEventType)
+	eType, err := extractFromAttribute(msg.getAttributes(), ProwEventType)
 	if err != nil {
 		l.WithError(err).Error("failed to read message")
 		s.Metrics.ErrorCounter.With(prometheus.Labels{
@@ -360,11 +439,11 @@ func (s *Subscriber) handleMessage(msg messageInterface, subscription string, al
 
 	var jh jobHandler
 	switch eType {
-	case periodicProwJobEvent:
+	case PeriodicProwJobEvent:
 		jh = &periodicJobHandler{}
-	case presubmitProwJobEvent:
+	case PresubmitProwJobEvent:
 		jh = &presubmitJobHandler{}
-	case postsubmitProwJobEvent:
+	case PostsubmitProwJobEvent:
 		jh = &postsubmitJobHandler{}
 	default:
 		l.WithField("type", eType).Debug("Unsupported event type")
@@ -374,7 +453,7 @@ func (s *Subscriber) handleMessage(msg messageInterface, subscription string, al
 		}).Inc()
 		return fmt.Errorf("unsupported event type: %s", eType)
 	}
-	if err = s.handleProwJob(l, jh, msg, subscription, allowedClusters); err != nil {
+	if err = s.handleProwJob(l, jh, msg, subscription, eType, allowedClusters); err != nil {
 		l.WithError(err).Debug("failed to create Prow Job")
 		s.Metrics.ErrorCounter.With(prometheus.Labels{
 			subscriptionLabel: subscription,
@@ -387,7 +466,30 @@ func (s *Subscriber) handleMessage(msg messageInterface, subscription string, al
 	return err
 }
 
-func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msg messageInterface, subscription string, allowedClusters []string) error {
+func tryGetCloneURIAndHost(pe ProwJobEvent) (cloneURI, host string) {
+	refs := pe.Refs
+	if refs == nil {
+		return "", ""
+	}
+	if len(refs.Org) == 0 {
+		return "", ""
+	}
+	if len(refs.Repo) == 0 {
+		return "", ""
+	}
+
+	org, repo := refs.Org, refs.Repo
+	orgRepo := org + "/" + repo
+	// Add "https://" prefix to orgRepo if this is a gerrit job.
+	// (Unfortunately gerrit jobs use the full repo URL as the identifier.)
+	prefix := "https://"
+	if pe.Labels[client.GerritRevision] != "" && !strings.HasPrefix(orgRepo, prefix) {
+		orgRepo = prefix + orgRepo
+	}
+	return orgRepo, org
+}
+
+func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msg messageInterface, subscription, eType string, allowedClusters []string) error {
 
 	var pe ProwJobEvent
 	var prowJob prowapi.ProwJob
@@ -419,7 +521,18 @@ func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msg messageIn
 
 	// Normalize job name
 	pe.Name = strings.TrimSpace(pe.Name)
-	prowJobSpec, labels, err := jh.getProwJobSpec(s.ConfigAgent.Config(), s.InRepoConfigCache, pe)
+
+	var cache *config.InRepoConfigCache
+	var err error
+	if eType != PeriodicProwJobEvent {
+		cloneURI, host := tryGetCloneURIAndHost(pe)
+		cache, err = s.InRepoConfigCacheGetter.getCache(cloneURI, host)
+		if err != nil {
+			return err
+		}
+	}
+
+	prowJobSpec, labels, err := jh.getProwJobSpec(s.ConfigAgent.Config(), cache, pe)
 	if err != nil {
 		// These are user errors, i.e. missing fields, requested prowjob doesn't exist etc.
 		// These errors are already surfaced to user via pubsub two lines below.

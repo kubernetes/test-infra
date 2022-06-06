@@ -103,8 +103,17 @@ deck:
       - ^artifacts/junit.*\.xml$
     - lens:
         name: podinfo
+        config:
+          runner_configs: # Would only work if `prowjob.json` is configured below
+            "<BUILD_CLUSTER_ALIAS>":
+              pod_link_template: "https://<YOUR_CLOUD_PROVIDER_URL>/{{ .Name }}" # Name is directly from the Pod truct.
+            # Example:
+            # "default":
+            #    pod_link_template: "https://console.cloud.google.com/kubernetes/pod/us-central1-f/prow/test-pods/{{ .Name }}/details?project=k8s-prow-builds"
       required_files:
         - ^podinfo\.json$
+      optional_files:
+        - ^prowjob\.json$ # Only if runner_configs is configured.
 ```
 
 ### Accessing custom storage buckets

@@ -34,7 +34,7 @@ presubmits:
     path_alias: k8s.io/cloud-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
         command:
         - make
         args:
@@ -52,7 +52,7 @@ presubmits:
     path_alias: k8s.io/cloud-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
         command:
         - make
         args:
@@ -70,7 +70,7 @@ presubmits:
     path_alias: k8s.io/cloud-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
         command:
         - make
         args:
@@ -127,7 +127,7 @@ presubmits:
     path_alias: k8s.io/cloud-provider-vsphere
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
         command:
         - make
         args:
@@ -143,6 +143,7 @@ presubmits:
     decorate: true
     branches:
     - ^master$
+    - ^release-.*$
     path_alias: k8s.io/cloud-provider-vsphere
     skip_submodules: true
     always_run: false
@@ -150,7 +151,7 @@ presubmits:
     skip_report: false
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
         command:
         - "make"
         args:
@@ -164,6 +165,7 @@ presubmits:
     decorate: true
     branches:
     - ^master$
+    - ^release-.*$
     path_alias: k8s.io/cloud-provider-vsphere
     skip_submodules: true
     always_run: false
@@ -171,7 +173,7 @@ presubmits:
     skip_report: false
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
         command:
         - "make"
         args:
@@ -188,6 +190,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     branches:
     - ^master$
+    - ^release-.*$
     path_alias: k8s.io/cloud-provider-vsphere
     skip_submodules: true
     always_run: false
@@ -195,7 +198,7 @@ presubmits:
     skip_report: false
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
         command:
         - "make"
         args:
@@ -213,8 +216,7 @@ presubmits:
     path_alias: k8s.io/cloud-provider-vsphere
     branches:
     - ^master$
-    # Temporarily comment release branches until passing test.
-    # - ^release-.*$
+    - ^release-.*$
     extra_refs:
     - org: kubernetes
       repo: test-infra
@@ -222,7 +224,7 @@ presubmits:
       path_alias: k8s.io/test-infra
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
         command:
         - runner.sh
         - bash
@@ -246,6 +248,40 @@ presubmits:
       testgrid-tab-name: pr-verify-test-coverage
       description: Shows the test coverage of the Golang sources
 
+  # Executes the e2e tests.
+  - name: pull-cloud-provider-vsphere-e2e-test
+    decorate: true
+    labels:
+      preset-dind-enabled: "true"
+      # Borrows CAPV credentials for cloud provider e2e testing
+      preset-cluster-api-provider-vsphere-e2e-config: "true"
+      preset-cloud-provider-vsphere-e2e-config: "true"
+      preset-kind-volume-mounts: "true"
+    branches:
+    - ^master$
+    path_alias: k8s.io/cloud-provider-vsphere
+    skip_submodules: true
+    always_run: false
+    run_if_changed: '\.go$|go.mod'
+    skip_report: false
+    optional: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
+        command:
+        - runner.sh
+        args:
+        - ./hack/e2e.sh
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: "4000m"
+            memory: "6Gi"
+    annotations:
+      testgrid-dashboards: vmware-presubmits-cloud-provider-vsphere, presubmits-cloud-provider-vsphere-blocking
+      testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
+
 postsubmits:
   kubernetes/cloud-provider-vsphere:
 
@@ -258,6 +294,7 @@ postsubmits:
     max_concurrency: 1
     branches:
     - ^master$
+    - ^release-.*$
     # Temporarily always pushing until workflow is worked out.
     always_run: true
     # Only build a new a image if something that could change binary changes
@@ -266,7 +303,7 @@ postsubmits:
     skip_submodules: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
         resources:
           requests:
             cpu: "1000m"
@@ -296,7 +333,7 @@ postsubmits:
     skip_submodules: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
         resources:
           requests:
             cpu: "1000m"
@@ -311,86 +348,3 @@ postsubmits:
       testgrid-tab-name: release
       testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
       description: releases new tagged images and binaries
-
-periodics:
-
-# Runs the e2e conformance suite against a cluster turned up with the
-# latest cloud provider image deployed from master. This job is duplicated
-# for multiple versions of Kubernetes.
-- name: ci-cloud-provider-vsphere-conformance-latest
-  interval: 12h
-  decorate: true
-  decoration_config:
-    timeout: 3h
-  labels:
-    preset-dind-enabled: "true"
-    preset-cloud-provider-vsphere-e2e-config: "true"
-  extra_refs:
-  - org: kubernetes
-    repo: cloud-provider-vsphere
-    base_ref: master
-  path_alias: k8s.io/cloud-provider-vsphere
-  skip_submodules: true
-  spec:
-    containers:
-    - image: gcr.io/cloud-provider-vsphere/ci:v1.0.0-40-g6a93718
-      command:
-      - "make"
-      args:
-      - "conformance-test"
-      securityContext:
-        privileged: true
-      env:
-      - name: K8S_VERSION
-        value: ci/latest.txt
-      - name: DESTROY_FORCE
-        value: "dryrun"
-      - name: LOG_LEVEL
-        value: "5"
-  annotations:
-    testgrid-dashboards: conformance-all, conformance-cloud-provider-vsphere, vmware-conformance-cloud-provider
-    testgrid-tab-name: vsphere-latest
-    description: Runs conformance tests using kubetest against latest kubernetes master with cloud-provider-vsphere
-    testgrid-alert-email: k8s-testing-cloud-provider-vsphere+alerts@groups.vmware.com
-    testgrid-num-failures-to-alert: '4'
-    testgrid-alert-stale-results-hours: '16'
-    testgrid-num-columns-recent: '20'
-# Runs the e2e conformance suite against a cluster turned up with the
-# in-tree vSphere cloud provider. This job is duplicated for multiple versions
-# of Kubernetes.
-- name: ci-vsphere-conformance-latest
-  interval: 12h
-  decorate: true
-  decoration_config:
-    timeout: 3h
-  labels:
-    preset-dind-enabled: "true"
-    preset-cloud-provider-vsphere-e2e-config: "true"
-  extra_refs:
-  - org: kubernetes
-    repo: cloud-provider-vsphere
-    base_ref: master
-  path_alias: k8s.io/cloud-provider-vsphere
-  skip_submodules: true
-  spec:
-    containers:
-    - image: gcr.io/cloud-provider-vsphere/ci:v1.0.0-40-g6a93718
-      command:
-      - "make"
-      args:
-      - "conformance-test"
-      securityContext:
-        privileged: true
-      env:
-      - name: CLOUD_PROVIDER
-        value: vsphere
-      - name: K8S_VERSION
-        value: ci/latest.txt
-  annotations:
-    testgrid-dashboards: conformance-all, conformance-vsphere, vmware-conformance
-    testgrid-tab-name: in-tree-vsphere-latest
-    description: Runs conformance tests using kubetest against latest kubernetes master with the in-tree vSphere cloud provider
-    testgrid-alert-email: k8s-testing-vsphere+alerts@groups.vmware.com
-    testgrid-num-failures-to-alert: '4'
-    testgrid-alert-stale-results-hours: '16'
-    testgrid-num-columns-recent: '20'

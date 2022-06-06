@@ -38,7 +38,7 @@ spec:
       terminationGracePeriodSeconds: 180
       containers:
       - name: hook
-        image: gcr.io/k8s-prow/hook:v20220404-e2e605a820
+        image: gcr.io/k8s-prow/hook:v20220602-a4b31d7576
         imagePullPolicy: Always
         args:
         - --dry-run=false
@@ -51,7 +51,7 @@ spec:
         env:
         # Use KUBECONFIG envvar rather than --kubeconfig flag in order to provide multiple configs to merge.
         - name: KUBECONFIG
-          value: "/etc/kubeconfig/config:/etc/kubeconfig-build-test-infra-trusted/kubeconfig"
+          value: "/etc/kubeconfig/config:/etc/kubeconfig-build-test-infra-trusted/kubeconfig:/etc/kubeconfig-build-k8s-prow-builds/kubeconfig"
         ports:
         - name: http
           containerPort: 8888
@@ -86,6 +86,9 @@ spec:
           readOnly: true
         - mountPath: /etc/kubeconfig-build-test-infra-trusted
           name: kubeconfig-build-test-infra-trusted
+          readOnly: true
+        - mountPath: /etc/kubeconfig-build-k8s-prow-builds
+          name: kubeconfig-build-k8s-prow-builds
           readOnly: true
         livenessProbe:
           httpGet:
@@ -133,3 +136,7 @@ spec:
         secret:
           defaultMode: 420
           secretName: kubeconfig-build-test-infra-trusted
+      - name: kubeconfig-build-k8s-prow-builds
+        secret:
+          defaultMode: 420
+          secretName: kubeconfig-build-k8s-prow-builds

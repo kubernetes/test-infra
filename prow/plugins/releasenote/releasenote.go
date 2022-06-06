@@ -52,7 +52,7 @@ var (
 
 	noteMatcherRE = regexp.MustCompile(`(?s)(?:Release note\*\*:\s*(?:<!--[^<>]*-->\s*)?` + "```(?:release-note)?|```release-note)(.+?)```")
 	cpRe          = regexp.MustCompile(`Cherry pick of #([[:digit:]]+) on release-([[:digit:]]+\.[[:digit:]]+).`)
-	noneRe        = regexp.MustCompile(`(?i)^\W*NONE\W*$`)
+	noneRe        = regexp.MustCompile(`(?i)^\W*(NONE|NO)\W*$`)
 
 	allRNLabels = []string{
 		labels.ReleaseNoteNone,

@@ -30,7 +30,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 
-	"k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/githuboauth"
 )
@@ -65,9 +64,8 @@ type PullRequestWithContexts struct {
 // DashboardAgent is responsible for handling request to /pr-status endpoint.
 // It will serve a list of open pull requests owned by the user.
 type DashboardAgent struct {
-	repos  []string
-	goac   *githuboauth.Config
-	github flagutil.GitHubOptions
+	repos []string
+	goac  *githuboauth.Config
 
 	log *logrus.Entry
 }
@@ -140,12 +138,11 @@ type searchQuery struct {
 }
 
 // NewDashboardAgent creates a new user dashboard agent .
-func NewDashboardAgent(repos []string, config *githuboauth.Config, github *flagutil.GitHubOptions, log *logrus.Entry) *DashboardAgent {
+func NewDashboardAgent(repos []string, config *githuboauth.Config, log *logrus.Entry) *DashboardAgent {
 	return &DashboardAgent{
-		repos:  repos,
-		goac:   config,
-		github: *github,
-		log:    log,
+		repos: repos,
+		goac:  config,
+		log:   log,
 	}
 }
 
@@ -172,12 +169,10 @@ type GitHubClient interface {
 
 type githubClientCreator func(accessToken string) (GitHubClient, error)
 
-// HandlePrStatus returns a http handler function that handles request to /pr-status endpoint.
-// If using token auth
-//		the handler takes user access token stored in the cookie to query to GitHub on behalf
-//		of the user and serve the data in return.
-// Otherwise, the app will make the request
-// The Query handler is passed to the method so as it can be mocked in the unit test..
+// HandlePrStatus returns a http handler function that handles request to /pr-status
+// endpoint. The handler takes user access token stored in the cookie to query to GitHub on behalf
+// of the user and serve the data in return. The Query handler is passed to the method so as it
+// can be mocked in the unit test..
 func (da *DashboardAgent) HandlePrStatus(queryHandler pullRequestQueryHandler, createClient githubClientCreator) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		serverError := func(action string, err error) {
@@ -201,27 +196,21 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler pullRequestQueryHandler, c
 			}
 		}
 
-		var accessToken string
-		appsAuth := da.github.AppID != ""
-		if !appsAuth {
-			// If access token exists, get user login using the access token. This is a
-			// chance to validate whether the access token is consumable or not. If
-			// not, we invalidate the sessions and continue as if not logged in.
-			token, ok := session.Values[tokenKey].(*oauth2.Token) // TODO(fejta): client cache
-			if ok && token.Valid() {
-				accessToken = token.AccessToken
-			}
-		}
-
-		if appsAuth || accessToken != "" {
-			githubClient, err := createClient(accessToken)
+		// If access token exists, get user login using the access token. This is a
+		// chance to validate whether the access token is consumable or not. If
+		// not, we invalidate the sessions and continue as if not logged in.
+		token, ok := session.Values[tokenKey].(*oauth2.Token) // TODO(fejta): client cache
+		var user *github.User
+		var botUser *github.UserData
+		if ok && token.Valid() {
+			githubClient, err := createClient(token.AccessToken)
 			if err != nil {
-				serverError("Error with creating github client", err)
+				serverError("creating githubClient", err)
 				return
 			}
-			botUser, err := githubClient.BotUser()
+			botUser, err = githubClient.BotUser()
 			if err != nil {
-				if !appsAuth && strings.Contains(err.Error(), "401") {
+				if strings.Contains(err.Error(), "401") {
 					da.log.Info("Failed to access GitHub with existing access token, invalidating GitHub login session")
 					if err := invalidateGitHubSession(w, r, session); err != nil {
 						serverError("Failed to invalidate GitHub session", err)
@@ -232,7 +221,9 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler pullRequestQueryHandler, c
 					return
 				}
 			}
-			login := botUser.Login
+			user = &github.User{Login: botUser.Login}
+
+			login := user.Login
 			data.Login = true
 			// Saves login. We save the login under 2 cookies. One for the use of client to render the
 			// data and one encoded for server to verify the identity of the authenticated user.
@@ -249,7 +240,6 @@ func (da *DashboardAgent) HandlePrStatus(queryHandler pullRequestQueryHandler, c
 				return
 			}
 
-			// Construct query
 			query := da.ConstructSearchQuery(login)
 			if err := r.ParseForm(); err == nil {
 				if q := r.Form.Get("query"); q != "" {

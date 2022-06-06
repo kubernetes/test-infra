@@ -70,6 +70,8 @@ type FakeClient struct {
 
 	// org/repo#number:body
 	IssueCommentsAdded []string
+	// org/repo#issuecommentid:body
+	IssueCommentsEdited []string
 	// org/repo#issuecommentid
 	IssueCommentsDeleted []string
 
@@ -286,12 +288,22 @@ func (f *FakeClient) CreateCommentWithContext(_ context.Context, owner, repo str
 	return nil
 }
 
-// EditComment edits a comment. Its a stub that does nothing.
+// EditComment edits a comment.
 func (f *FakeClient) EditComment(org, repo string, ID int, comment string) error {
 	return f.EditCommentWithContext(context.Background(), org, repo, ID, comment)
 }
 
 func (f *FakeClient) EditCommentWithContext(_ context.Context, org, repo string, ID int, comment string) error {
+	f.lock.Lock()
+	defer f.lock.Unlock()
+	f.IssueCommentsEdited = append(f.IssueCommentsEdited, fmt.Sprintf("%s/%s#%d:%s", org, repo, ID, comment))
+	for _, ics := range f.IssueComments {
+		for _, ic := range ics {
+			if ic.ID == ID {
+				ic.Body = comment
+			}
+		}
+	}
 	return nil
 }
 
@@ -601,8 +613,13 @@ func (f *FakeClient) RemoveLabel(owner, repo string, number int, label string) e
 	return fmt.Errorf("cannot remove %v from %s/%s/#%d", label, owner, repo, number)
 }
 
-// FindIssues returns f.Issues
+// FindIssues returns the same results as FindIssuesWithOrg
 func (f *FakeClient) FindIssues(query, sort string, asc bool) ([]github.Issue, error) {
+	return f.FindIssuesWithOrg("", query, sort, asc)
+}
+
+// FindIssuesWithOrg returns f.Issues
+func (f *FakeClient) FindIssuesWithOrg(org, query, sort string, asc bool) ([]github.Issue, error) {
 	f.lock.RLock()
 	defer f.lock.RUnlock()
 	var issues []github.Issue

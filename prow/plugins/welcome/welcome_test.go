@@ -17,6 +17,7 @@ limitations under the License.
 package welcome
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"regexp"
@@ -126,9 +127,12 @@ func (fc *fakeClient) ClearPRs() {
 	fc.prs = make(map[string]sets.Int)
 }
 
-// FindIssues fails if the query does not match the expected query regex and
+// FindIssuesWithOrg fails if the query does not match the expected query regex and
 // looks up issues based on parsing the expected query format
-func (fc *fakeClient) FindIssues(query, sort string, asc bool) ([]github.Issue, error) {
+func (fc *fakeClient) FindIssuesWithOrg(org, query, sort string, asc bool) ([]github.Issue, error) {
+	if org == "" {
+		return nil, errors.New("passing an empty organization is highly discouraged, as it's incompatible with GitHub Apps")
+	}
 	fields := expectedQueryRegex.FindStringSubmatch(query)
 	if fields == nil || len(fields) != 4 {
 		return nil, fmt.Errorf("invalid query: `%s` does not match expected regex `%s`", query, expectedQueryRegex.String())
@@ -215,6 +219,7 @@ func TestHandlePR(t *testing.T) {
 		prNumber      int
 		prAction      github.PullRequestEventAction
 		addPR         bool
+		alwaysPost    bool
 		expectComment bool
 	}{
 		{
@@ -224,6 +229,7 @@ func TestHandlePR(t *testing.T) {
 			author:        contributorA,
 			prNumber:      20,
 			prAction:      github.PullRequestActionOpened,
+			alwaysPost:    false,
 			expectComment: false,
 		},
 		{
@@ -233,7 +239,18 @@ func TestHandlePR(t *testing.T) {
 			author:        contributorB,
 			prNumber:      40,
 			prAction:      github.PullRequestActionOpened,
+			alwaysPost:    false,
 			expectComment: false,
+		},
+		{
+			name:          "existing contributor when it should greet everyone",
+			repoOwner:     "kubernetes",
+			repoName:      "test-infra",
+			author:        contributorB,
+			prNumber:      40,
+			prAction:      github.PullRequestActionOpened,
+			alwaysPost:    true,
+			expectComment: true,
 		},
 		{
 			name:          "new contributor",
@@ -242,6 +259,17 @@ func TestHandlePR(t *testing.T) {
 			author:        newContributor,
 			prAction:      github.PullRequestActionOpened,
 			prNumber:      50,
+			alwaysPost:    false,
+			expectComment: true,
+		},
+		{
+			name:          "new contributor when it should greet everyone",
+			repoOwner:     "kubernetes",
+			repoName:      "test-infra",
+			author:        newContributor,
+			prAction:      github.PullRequestActionOpened,
+			prNumber:      50,
+			alwaysPost:    true,
 			expectComment: true,
 		},
 		{
@@ -252,6 +280,7 @@ func TestHandlePR(t *testing.T) {
 			prAction:      github.PullRequestActionOpened,
 			prNumber:      50,
 			expectComment: true,
+			alwaysPost:    false,
 			addPR:         true,
 		},
 		{
@@ -261,6 +290,7 @@ func TestHandlePR(t *testing.T) {
 			author:        newContributor,
 			prAction:      github.PullRequestActionEdited,
 			prNumber:      50,
+			alwaysPost:    false,
 			expectComment: false,
 		},
 		{
@@ -270,6 +300,7 @@ func TestHandlePR(t *testing.T) {
 			author:        robot,
 			prAction:      github.PullRequestActionOpened,
 			prNumber:      500,
+			alwaysPost:    false,
 			expectComment: false,
 		},
 		{
@@ -279,6 +310,7 @@ func TestHandlePR(t *testing.T) {
 			author:        member,
 			prNumber:      101,
 			prAction:      github.PullRequestActionOpened,
+			alwaysPost:    false,
 			expectComment: false,
 		},
 		{
@@ -288,6 +320,7 @@ func TestHandlePR(t *testing.T) {
 			author:        collaborator,
 			prNumber:      102,
 			prAction:      github.PullRequestActionOpened,
+			alwaysPost:    false,
 			expectComment: false,
 		},
 	}
@@ -312,7 +345,7 @@ func TestHandlePR(t *testing.T) {
 		}
 
 		// try handling it
-		if err := handlePR(c, tr, event, testWelcomeTemplate); err != nil {
+		if err := handlePR(c, tr, event, testWelcomeTemplate, tc.alwaysPost); err != nil {
 			t.Fatalf("did not expect error handling PR for case '%s': %v", tc.name, err)
 		}
 
@@ -385,7 +418,7 @@ func TestWelcomeConfig(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		receivedMessage := welcomeMessageForRepo(config, tc.org, tc.repo)
+		receivedMessage := welcomeMessageForRepo(optionsForRepo(config, tc.org, tc.repo))
 		if receivedMessage != tc.expectedMessage {
 			t.Fatalf("%s: expected to get '%s' and received '%s'", tc.name, tc.expectedMessage, receivedMessage)
 		}

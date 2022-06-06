@@ -1,0 +1,92 @@
+
+
+
+<div class="mdl-tabs mdl-js-tabs mdl-js-ripple-effect" id="podinfo">
+  <div class="mdl-tabs__tab-bar">
+    <a href="#pod-panel" data-preserve-anchor="true" class="mdl-tabs__tab">Pod</a>
+    <a href="#volumes-panel" data-preserve-anchor="true" class="mdl-tabs__tab">Volumes</a>
+    <a href="#events-panel" data-preserve-anchor="true" class="mdl-tabs__tab">Events</a>
+    
+    <a href="#yaml-panel" data-preserve-anchor="true" class="mdl-tabs__tab">YAML</a>
+  </div>
+
+  <div class="mdl-tabs__panel" id="pod-panel">
+    <table class="mdl-data-table mdl-js-data-table metadata-table">
+      <tbody>
+      <tr>
+        <td class="mdl-data-table__cell--non-numeric">Pod name</td>
+        <td class="mdl-data-table__cell--non-numeric literal">abc-123</td>
+      </tr>
+      
+      <tr>
+        <td class="mdl-data-table__cell--non-numeric">Pod Link</td>
+        <td class="mdl-data-table__cell--non-numeric literal"><a href="http://somewhere/pod/abc-123">Click to pod</a></td>
+      </tr>
+      
+      <tr>
+        <td class="mdl-data-table__cell--non-numeric">Start time</td>
+        <td class="mdl-data-table__cell--non-numeric">&lt;nil&gt;</td>
+      </tr>
+      <tr>
+        <td class="mdl-data-table__cell--non-numeric">Pod status</td>
+        <td class="mdl-data-table__cell--non-numeric literal"></td>
+      </tr>
+      <tr>
+        <td class="mdl-data-table__cell--non-numeric">Node</td>
+        <td class="mdl-data-table__cell--non-numeric"><code></code> / <code></code></td>
+      </tr>
+      
+      
+      
+      <tr>
+        <td class="mdl-data-table__cell--non-numeric">Labels</td>
+        <td class="mdl-data-table__cell--non-numeric">
+          <ul class="data">
+            
+            
+            
+          </ul>
+        </td>
+      </tr>
+      <tr>
+        <td class="mdl-data-table__cell--non-numeric">Annotations</td>
+        <td class="mdl-data-table__cell--non-numeric">
+          <ul class="data">
+            
+            
+            
+          </ul>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <div class="mdl-tabs__panel" id="volumes-panel">
+    <table class="mdl-data-table mdl-js-data-table">
+      
+    </table>
+  </div>
+  <div class="mdl-tabs__panel" id="events-panel">
+    <table class="mdl-data-table mdl-js-data-table">
+      <thead>
+      <tr>
+        <th>Type</th>
+        <th>Reason</th>
+        <th>Age</th>
+        <th>Source</th>
+        <th>Message</th>
+      </tr>
+      </thead>
+      
+    </table>
+  </div>
+  
+  <div class="mdl-tabs__panel" id="yaml-panel">
+    <div class="pre literal">metadata:
+  creationTimestamp: null
+  name: abc-123
+spec:
+  containers: null
+status: {}
+</div>
+  </div>
+</div>

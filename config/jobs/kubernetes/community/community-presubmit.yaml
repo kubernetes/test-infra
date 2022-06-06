@@ -7,7 +7,7 @@ presubmits:
     decorate: true
     spec:
       containers:
-      - image: golang:1.12.5
+      - image: golang:1.18.2
         command:
         - sh
         - "-c"

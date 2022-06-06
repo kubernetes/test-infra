@@ -4,6 +4,12 @@ postsubmits:
   kubernetes-sigs/descheduler:
     # The name should be changed to match the repo name above
     - name: post-descheduler-push-images
+      rerun_auth_config:
+        # approvers from https://github.com/kubernetes-sigs/descheduler/blob/master/OWNERS
+        github_users:
+        - damemi
+        - ingvagabund
+        - seanmalloy
       cluster: k8s-infra-prow-build-trusted
       annotations:
         # This is the name of some testgrid dashboard to report to.
@@ -17,7 +23,7 @@ postsubmits:
       spec:
         serviceAccountName: gcb-builder
         containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220314-46af1b01a6
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
             command:
               - /run.sh
             args:

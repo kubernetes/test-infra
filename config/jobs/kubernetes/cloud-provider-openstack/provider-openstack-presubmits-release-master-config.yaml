@@ -3,8 +3,6 @@ presubmits:
   - name: openstack-cloud-controller-manager-e2e-test
     labels:
       preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     path_alias: "k8s.io/cloud-provider-openstack"
@@ -18,7 +16,7 @@ presubmits:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
           env:
           - name: "BOSKOS_HOST"
             value: "boskos.test-pods.svc.cluster.local"
@@ -35,46 +33,42 @@ presubmits:
       testgrid-dashboards: provider-openstack-openstack-cloud-controller-manager
       testgrid-tab-name: presubmit-e2e-test
 
-  - name: openstack-cloud-controller-manager-e2e-conformance-test
-    labels:
-      preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    path_alias: "k8s.io/cloud-provider-openstack"
-    always_run: false
-    branches:
-      - ^master$
-    run_if_changed: '^(pkg\/openstack\/|cmd\/openstack-cloud-controller-manager\/|tests\/e2e\/cloudprovider\/)'
-    optional: false
-    decorate: true
-    decoration_config:
-      timeout: 3h
-    spec:
-      containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
-          env:
-          - name: "BOSKOS_HOST"
-            value: "boskos.test-pods.svc.cluster.local"
-          command:
-          - "runner.sh"
-          - "./tests/ci-occm-e2e-conformance.sh"
-          securityContext:
-            privileged: true
-          resources:
-            requests:
-              memory: "1Gi"
-              cpu: 1
-    annotations:
-      testgrid-dashboards: provider-openstack-openstack-cloud-controller-manager
-      testgrid-tab-name: presubmit-e2e-conformance-test
+  # - name: openstack-cloud-controller-manager-e2e-conformance-test
+  #   labels:
+  #     preset-service-account: "true"
+  #     preset-dind-enabled: "true"
+  #     preset-kind-volume-mounts: "true"
+  #   path_alias: "k8s.io/cloud-provider-openstack"
+  #   always_run: false
+  #   branches:
+  #     - ^master$
+  #   run_if_changed: '^(pkg\/openstack\/|cmd\/openstack-cloud-controller-manager\/|tests\/e2e\/cloudprovider\/)'
+  #   optional: false
+  #   decorate: true
+  #   decoration_config:
+  #     timeout: 3h
+  #   spec:
+  #     containers:
+  #       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
+  #         env:
+  #         - name: "BOSKOS_HOST"
+  #           value: "boskos.test-pods.svc.cluster.local"
+  #         command:
+  #         - "runner.sh"
+  #         - "./tests/ci-occm-e2e-conformance.sh"
+  #         securityContext:
+  #           privileged: true
+  #         resources:
+  #           requests:
+  #             memory: "1Gi"
+  #             cpu: 1
+  #   annotations:
+  #     testgrid-dashboards: provider-openstack-openstack-cloud-controller-manager
+  #     testgrid-tab-name: presubmit-e2e-conformance-test
 
   - name: openstack-cloud-csi-cinder-e2e-test
     labels:
       preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     path_alias: "k8s.io/cloud-provider-openstack"
@@ -88,7 +82,7 @@ presubmits:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
           env:
           - name: "BOSKOS_HOST"
             value: "boskos.test-pods.svc.cluster.local"
@@ -108,8 +102,6 @@ presubmits:
   - name: openstack-cloud-csi-manila-e2e-test
     labels:
       preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     path_alias: "k8s.io/cloud-provider-openstack"
@@ -123,7 +115,7 @@ presubmits:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
           env:
           - name: "BOSKOS_HOST"
             value: "boskos.test-pods.svc.cluster.local"
@@ -149,7 +141,7 @@ presubmits:
     path_alias: "k8s.io/cloud-provider-openstack"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
         command:
         - make
         args:
@@ -168,7 +160,7 @@ presubmits:
     path_alias: "k8s.io/cloud-provider-openstack"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
         command:
         - make
         args:
@@ -181,8 +173,6 @@ presubmits:
   - name: openstack-cloud-keystone-authentication-authorization-test
     labels:
       preset-service-account: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     path_alias: "k8s.io/cloud-provider-openstack"
@@ -196,7 +186,7 @@ presubmits:
       timeout: 3h
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
           env:
           - name: "BOSKOS_HOST"
             value: "boskos.test-pods.svc.cluster.local"

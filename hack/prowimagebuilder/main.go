@@ -253,10 +253,10 @@ func buildAndPush(id *imageDef, dockerRepos []string, push bool) error {
 	if err := setup(id); err != nil {
 		return fmt.Errorf("setup: %w", err)
 	}
-	// ko only supports a single docker repo at a time, running this repeatedly
-	// on different docker repos so that multiple docker repos can be supported.
-	// This process utilized the built in cache of ko, so that pushing to
-	// subsequent docker repo(s) is relatively cheap.
+	// ko only supports a single docker repo at a time; we run ko repeatedly
+	// against different docker repos to support pushing to multiple docker
+	// repos.  This process utilizes the built-in cache of ko, so that pushing
+	// to subsequent identical docker repo(s) is relatively cheap.
 	for _, dockerRepo := range dockerRepos {
 		logger.WithField("args", publishArgs).Info("Running ko.")
 		if _, err = runCmd([]string{"KO_DOCKER_REPO=" + dockerRepo}, "_bin/ko", publishArgs...); err != nil {

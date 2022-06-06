@@ -48,9 +48,10 @@ func TestHandle(t *testing.T) {
 			branch: defaultKubernetesBranch,
 			prepare: func(mock *testfreezefakes.FakeVerifier) {
 				mock.CheckInTestFreezeReturns(&checker.Result{
-					InTestFreeze: true,
-					Tag:          "v1.23.0",
-					Branch:       "release-1.23",
+					InTestFreeze:    true,
+					Tag:             "v1.23.0",
+					Branch:          "release-1.23",
+					LastFastForward: "Wed May  4 16:15:37 CEST 2022",
 				}, nil)
 			},
 			assert: func(mock *testfreezefakes.FakeVerifier, err error) {
@@ -59,7 +60,7 @@ func TestHandle(t *testing.T) {
 				_, _, _, _, comment := mock.CreateCommentArgsForCall(0)
 				assert.Contains(t, comment, "Please note that we're already")
 				assert.Contains(t, comment, "for the `release-1.23` branch")
-				assert.Contains(t, comment, "upcoming v1.23.0 release")
+				assert.Contains(t, comment, "Fast forwards are scheduled to happen every 6 hours, whereas the most recent run was: Wed May  4 16:15:37 CEST 2022")
 			},
 		},
 		{

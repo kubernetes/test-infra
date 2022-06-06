@@ -45,6 +45,7 @@ const testgridDaysOfResultsAnnotation = "testgrid-days-of-results"
 const testgridInCellMetric = "testgrid-in-cell-metric"
 const testGridDisableProwJobAnalysis = "testgrid-disable-prowjob-analysis"
 const testgridBaseOptionsAnnotation = "testgrid-base-options"
+const testgridBrokenColumnThreshold = "testgrid-broken-column-threshold"
 const descriptionAnnotation = "description"
 const minPresubmitNumColumnsRecent = 20
 
@@ -162,6 +163,14 @@ func (pac *ProwAwareConfigurator) ApplySingleProwjobAnnotations(c *configpb.Conf
 		testGroup.DisableProwjobAnalysis = dpaBool
 	}
 
+	if nfta, ok := j.Annotations[testgridNumFailuresToAlertAnnotation]; ok {
+		nftaInt, err := strconv.ParseInt(nfta, 10, 32)
+		if err != nil {
+			return fmt.Errorf("%s value %q is not a valid integer", testgridNumFailuresToAlertAnnotation, nfta)
+		}
+		testGroup.NumFailuresToAlert = int32(nftaInt) //nolint // The updater (and tabulator, when a feature flag is not set) still depend on the test group field.
+	}
+
 	if tn, ok := j.Annotations[testgridTabNameAnnotation]; ok {
 		tabName = tn
 	}
@@ -169,6 +178,15 @@ func (pac *ProwAwareConfigurator) ApplySingleProwjobAnnotations(c *configpb.Conf
 	var baseOptions string
 	if bo, ok := j.Annotations[testgridBaseOptionsAnnotation]; ok {
 		baseOptions = bo
+	}
+
+	var brokenColumnThreshold float32
+	if bct, ok := j.Annotations[testgridBrokenColumnThreshold]; ok {
+		bctFloat, err := strconv.ParseFloat(bct, 32)
+		if err != nil {
+			return fmt.Errorf("%s value %q is not a valid float", testgridBrokenColumnThreshold, bct)
+		}
+		brokenColumnThreshold = float32(bctFloat)
 	}
 
 	description := pac.TabDescriptionForProwJob(j)
@@ -212,6 +230,7 @@ func (pac *ProwAwareConfigurator) ApplySingleProwjobAnnotations(c *configpb.Conf
 				OpenBugTemplate:       openBugLinkTemplate,
 				OpenTestTemplate:      openTestLinkTemplate,
 				BaseOptions:           baseOptions,
+				BrokenColumnThreshold: brokenColumnThreshold,
 			}
 			if firstDashboard {
 				firstDashboard = false
@@ -219,22 +238,22 @@ func (pac *ProwAwareConfigurator) ApplySingleProwjobAnnotations(c *configpb.Conf
 					initAlertOptions(dt)
 					dt.AlertOptions.AlertMailToAddresses = emails
 				}
-				if srh, ok := j.Annotations[testgridAlertStaleResultsHoursAnnotation]; ok {
-					srhInt, err := strconv.ParseInt(srh, 10, 32)
-					if err != nil {
-						return fmt.Errorf("%s value %q is not a valid integer", testgridAlertStaleResultsHoursAnnotation, srh)
-					}
-					initAlertOptions(dt)
-					dt.AlertOptions.AlertStaleResultsHours = int32(srhInt)
+			}
+			if srh, ok := j.Annotations[testgridAlertStaleResultsHoursAnnotation]; ok {
+				srhInt, err := strconv.ParseInt(srh, 10, 32)
+				if err != nil {
+					return fmt.Errorf("%s value %q is not a valid integer", testgridAlertStaleResultsHoursAnnotation, srh)
 				}
-				if nfta, ok := j.Annotations[testgridNumFailuresToAlertAnnotation]; ok {
-					nftaInt, err := strconv.ParseInt(nfta, 10, 32)
-					if err != nil {
-						return fmt.Errorf("%s value %q is not a valid integer", testgridNumFailuresToAlertAnnotation, nfta)
-					}
-					initAlertOptions(dt)
-					dt.AlertOptions.NumFailuresToAlert = int32(nftaInt)
+				initAlertOptions(dt)
+				dt.AlertOptions.AlertStaleResultsHours = int32(srhInt)
+			}
+			if nfta, ok := j.Annotations[testgridNumFailuresToAlertAnnotation]; ok {
+				nftaInt, err := strconv.ParseInt(nfta, 10, 32)
+				if err != nil {
+					return fmt.Errorf("%s value %q is not a valid integer", testgridNumFailuresToAlertAnnotation, nfta)
 				}
+				initAlertOptions(dt)
+				dt.AlertOptions.NumFailuresToAlert = int32(nftaInt)
 			}
 			if dc != nil {
 				yamlcfg.ReconcileDashboardTab(dt, dc.DefaultDashboardTab)

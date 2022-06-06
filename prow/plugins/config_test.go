@@ -1566,6 +1566,14 @@ func TestConfigMergingProperties(t *testing.T) {
 		{
 			name: "Merging a config into itself always fails",
 			verification: func(t *testing.T, fuzzedMergeableConfig *Configuration) {
+
+				// An empty bugzilla org config does nothing, so clean those.
+				for org, val := range fuzzedMergeableConfig.Bugzilla.Orgs {
+					if reflect.DeepEqual(val, BugzillaOrgOptions{}) {
+						delete(fuzzedMergeableConfig.Bugzilla.Orgs, org)
+					}
+				}
+				// An exception to the rule is merging an empty config into itself, that is valid and will just do nothing.
 				if apiequality.Semantic.DeepEqual(fuzzedMergeableConfig, &Configuration{}) {
 					return
 				}
@@ -1999,6 +2007,7 @@ func TestHasConfigFor(t *testing.T) {
 				fuzzedConfig.Label.RestrictedLabels = nil
 				fuzzedConfig.Lgtm = nil
 				fuzzedConfig.Triggers = nil
+				fuzzedConfig.Welcome = nil
 				fuzzedConfig.ExternalPlugins = nil
 				return fuzzedConfig, !reflect.DeepEqual(fuzzedConfig, &Configuration{}), nil, nil
 			},
@@ -2082,6 +2091,25 @@ func TestHasConfigFor(t *testing.T) {
 
 				for _, trigger := range fuzzedConfig.Triggers {
 					for _, orgOrRepo := range trigger.Repos {
+						if strings.Contains(orgOrRepo, "/") {
+							expectRepos.Insert(orgOrRepo)
+						} else {
+							expectOrgs.Insert(orgOrRepo)
+						}
+					}
+				}
+
+				return fuzzedConfig, false, expectOrgs, expectRepos
+			},
+		},
+		{
+			name: "Any config with welcome is considered to be for the orgs and repos references there",
+			resultGenerator: func(fuzzedConfig *Configuration) (toCheck *Configuration, expectGlobal bool, expectOrgs sets.String, expectRepos sets.String) {
+				fuzzedConfig = &Configuration{Welcome: fuzzedConfig.Welcome}
+				expectOrgs, expectRepos = sets.String{}, sets.String{}
+
+				for _, welcome := range fuzzedConfig.Welcome {
+					for _, orgOrRepo := range welcome.Repos {
 						if strings.Contains(orgOrRepo, "/") {
 							expectRepos.Insert(orgOrRepo)
 						} else {
@@ -2195,6 +2223,15 @@ func TestMergeFrom(t *testing.T) {
 			in:                  Configuration{Triggers: []Trigger{{Repos: []string{"foo/bar"}}}},
 			supplementalConfigs: []Configuration{{Triggers: []Trigger{{Repos: []string{"foo/baz"}}}}},
 			expected: Configuration{Triggers: []Trigger{
+				{Repos: []string{"foo/bar"}},
+				{Repos: []string{"foo/baz"}},
+			}},
+		},
+		{
+			name:                "Welcome config gets merged",
+			in:                  Configuration{Welcome: []Welcome{{Repos: []string{"foo/bar"}}}},
+			supplementalConfigs: []Configuration{{Welcome: []Welcome{{Repos: []string{"foo/baz"}}}}},
+			expected: Configuration{Welcome: []Welcome{
 				{Repos: []string{"foo/bar"}},
 				{Repos: []string{"foo/baz"}},
 			}},

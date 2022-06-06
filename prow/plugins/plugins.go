@@ -206,6 +206,10 @@ func NewAgent(configAgent *config.Agent, pluginConfigAgent *ConfigAgent, clientA
 	prowConfig := configAgent.Config()
 	pluginConfig := pluginConfigAgent.Config()
 	gitHubClient := &githubV4OrgAddingWrapper{org: githubOrg, Client: clientAgent.GitHubClient.WithFields(logger.Data).ForPlugin(plugin)}
+	jiraClient := clientAgent.JiraClient
+	if jiraClient != nil {
+		jiraClient = clientAgent.JiraClient.WithFields(logger.Data).ForPlugin(plugin)
+	}
 	return Agent{
 		GitHubClient:              gitHubClient,
 		KubernetesClient:          clientAgent.KubernetesClient,
@@ -215,7 +219,7 @@ func NewAgent(configAgent *config.Agent, pluginConfigAgent *ConfigAgent, clientA
 		SlackClient:               clientAgent.SlackClient,
 		OwnersClient:              clientAgent.OwnersClient.WithFields(logger.Data).WithGitHubClient(gitHubClient).ForPlugin(plugin),
 		BugzillaClient:            clientAgent.BugzillaClient.WithFields(logger.Data).ForPlugin(plugin),
-		JiraClient:                clientAgent.JiraClient,
+		JiraClient:                jiraClient,
 		Metrics:                   metrics,
 		Config:                    prowConfig,
 		PluginConfig:              pluginConfig,
@@ -230,6 +234,15 @@ func (a *Agent) InitializeCommentPruner(org, repo string, pr int) {
 		a.GitHubClient, a.Logger.WithField("client", "commentpruner"),
 		org, repo, pr,
 	)
+}
+
+// TookAction indicates whether any client with implemented Used() function was used
+func (a *Agent) TookAction() bool {
+	jiraClientTookAction := false
+	if a.JiraClient != nil {
+		jiraClientTookAction = a.JiraClient.Used()
+	}
+	return a.GitHubClient.Used() || a.OwnersClient.Used() || a.BugzillaClient.Used() || jiraClientTookAction
 }
 
 // CommentPruner will return the commentpruner.EventClient attached to the agent or an error

@@ -18,7 +18,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
         command:
         - runner.sh
         args:
@@ -54,7 +54,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
         command:
         - runner.sh
         args:
@@ -62,12 +62,10 @@ presubmits:
         env:
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "1.22.0"
-        - name: CSI_PROW_USE_BAZEL
-          value: "false"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.22"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.7.2"
+          value: "v1.8.0"
         - name: CSI_SNAPSHOTTER_VERSION
           value: "v4.0.0"
         - name: CSI_PROW_TESTS
@@ -102,7 +100,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
         command:
         - runner.sh
         args:
@@ -110,12 +108,10 @@ presubmits:
         env:
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "1.22.0"
-        - name: CSI_PROW_USE_BAZEL
-          value: "false"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.22"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.7.2"
+          value: "v1.8.0"
         - name: CSI_SNAPSHOTTER_VERSION
           value: "v4.0.0"
         - name: CSI_PROW_TESTS
@@ -150,7 +146,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
         command:
         - runner.sh
         args:
@@ -158,12 +154,10 @@ presubmits:
         env:
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "1.22.0"
-        - name: CSI_PROW_USE_BAZEL
-          value: "false"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.22"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.7.2"
+          value: "v1.8.0"
         - name: CSI_SNAPSHOTTER_VERSION
           value: "v4.0.0"
         - name: CSI_PROW_TESTS
@@ -198,7 +192,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
         command:
         - runner.sh
         args:
@@ -206,12 +200,10 @@ presubmits:
         env:
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "1.22.0"
-        - name: CSI_PROW_USE_BAZEL
-          value: "false"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "1.22"
         - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.7.2"
+          value: "v1.8.0"
         - name: CSI_SNAPSHOTTER_VERSION
           value: "v4.0.0"
         - name: CSI_PROW_TESTS

@@ -128,6 +128,10 @@ type JobBase struct {
 	// ProwJobDefault holds configuration options provided as defaults
 	// in the Prow config
 	ProwJobDefault *prowapi.ProwJobDefault `json:"prowjob_defaults,omitempty"`
+	// Name of the job queue specifying maximum concurrency, omission implies no limit.
+	// Works in parallel with MaxConcurrency and the limit is selected from the
+	// minimal setting of those two fields.
+	JobQueueName string `json:"job_queue_name,omitempty"`
 
 	UtilityConfig
 }

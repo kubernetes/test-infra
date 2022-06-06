@@ -341,6 +341,7 @@ func Test_applySingleProwjobAnnotations(t *testing.T) {
 				"testgrid-in-cell-metric":            "haunted-house",
 				"testgrid-disable-prowjob-analysis":  "true",
 				"testgrid-base-options":              "exclude-filter-by-regex=^kubetest.Test$",
+				"testgrid-broken-column-threshold":   "0.5",
 			},
 			expectedConfig: config.Configuration{
 				TestGroups: []*config.TestGroup{
@@ -351,6 +352,7 @@ func Test_applySingleProwjobAnnotations(t *testing.T) {
 						DaysOfResults:          30,
 						ShortTextMetric:        "haunted-house",
 						DisableProwjobAnalysis: true,
+						NumFailuresToAlert:     4,
 					},
 				},
 				Dashboards: []*config.Dashboard{
@@ -372,7 +374,8 @@ func Test_applySingleProwjobAnnotations(t *testing.T) {
 								OpenBugTemplate: &config.LinkTemplate{
 									Url: "https://github.com/test/repo/issues/",
 								},
-								BaseOptions: "exclude-filter-by-regex=^kubetest.Test$",
+								BaseOptions:           "exclude-filter-by-regex=^kubetest.Test$",
+								BrokenColumnThreshold: 0.5,
 							},
 						},
 					},

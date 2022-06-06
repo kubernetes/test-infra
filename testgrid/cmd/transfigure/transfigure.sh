@@ -80,7 +80,7 @@ main() {
 
   echo "Running kubernetes/test-infra tests..."
 
-  ./hack/make-rules/go-run/arbitrary.sh test ./config/tests
+  ./hack/make-rules/go-run/arbitrary.sh test ./config/tests/...
   make verify-spelling
   echo "Tests successful!"
 

@@ -33,7 +33,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: crier
-        image: gcr.io/k8s-prow/crier:v20220404-e2e605a820
+        image: gcr.io/k8s-prow/crier:v20220602-a4b31d7576
         args:
         - --blob-storage-workers=1
         - --config-path=/etc/config/config.yaml
@@ -48,7 +48,7 @@ spec:
         env:
         # Use KUBECONFIG envvar rather than --kubeconfig flag in order to provide multiple configs to merge.
         - name: KUBECONFIG
-          value: "/etc/kubeconfig/config:/etc/kubeconfig-build-test-infra-trusted/kubeconfig"
+          value: "/etc/kubeconfig/config:/etc/kubeconfig-build-test-infra-trusted/kubeconfig:/etc/kubeconfig-build-k8s-prow-builds/kubeconfig"
         ports:
         - name: metrics
           containerPort: 9090
@@ -58,6 +58,9 @@ spec:
           readOnly: true
         - mountPath: /etc/kubeconfig-build-test-infra-trusted
           name: kubeconfig-build-test-infra-trusted
+          readOnly: true
+        - mountPath: /etc/kubeconfig-build-k8s-prow-builds
+          name: kubeconfig-build-k8s-prow-builds
           readOnly: true
         - name: config
           mountPath: /etc/config
@@ -92,3 +95,7 @@ spec:
         secret:
           defaultMode: 420
           secretName: kubeconfig-build-test-infra-trusted
+      - name: kubeconfig-build-k8s-prow-builds
+        secret:
+          defaultMode: 420
+          secretName: kubeconfig-build-k8s-prow-builds

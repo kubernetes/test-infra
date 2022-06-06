@@ -11,7 +11,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-1.23
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-1.23
       command:
       - "./scripts/ci-test.sh"
       resources:
@@ -39,7 +39,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-1.23
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-1.23
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -51,7 +51,7 @@ periodics:
           - name: INIT_WITH_PROVIDERS_CONTRACT
             value: v1alpha3
           - name: INIT_WITH_KUBERNETES_VERSION
-            value: v1.21.2
+            value: v1.21.12
 
         # we need privileged mode in order to do docker in docker
         securityContext:
@@ -81,7 +81,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-1.23
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-1.23
       args:
       - runner.sh
       - "./scripts/ci-e2e.sh"
@@ -93,7 +93,7 @@ periodics:
       - name: INIT_WITH_PROVIDERS_CONTRACT
         value: v1beta1
       - name: INIT_WITH_KUBERNETES_VERSION
-        value: v1.23.3
+        value: v1.24.0
 
       # we need privileged mode in order to do docker in docker
       securityContext:
@@ -123,7 +123,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-1.23
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-1.23
         args:
           - runner.sh
           - "./scripts/ci-e2e.sh"
@@ -158,7 +158,7 @@ periodics:
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-1.23
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-1.23
       args:
       - runner.sh
       - "./scripts/ci-e2e.sh"

@@ -193,6 +193,7 @@ func (cache *InRepoConfigCache) GetProwYAML(
 	// older (useful) key is evicted).
 	c := cache.configAgent.Config()
 	if !c.InRepoConfigEnabled(identifier) {
+		logrus.WithField("identifier", identifier).Debug("Inrepoconfig not enabled, skipping getting prow yaml.")
 		return &ProwYAML{}, nil
 	}
 

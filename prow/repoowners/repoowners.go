@@ -149,6 +149,7 @@ type Interface interface {
 	WithFields(fields logrus.Fields) Interface
 	WithGitHubClient(client github.Client) Interface
 	ForPlugin(plugin string) Interface
+	Used() bool
 }
 
 // Client is an implementation of the Interface.

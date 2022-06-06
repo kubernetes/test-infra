@@ -52,7 +52,7 @@ func init() {
 func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) (*pluginhelp.PluginHelp, error) {
 	welcomeConfig := map[string]string{}
 	for _, repo := range enabledRepos {
-		messageTemplate := welcomeMessageForRepo(config, repo.Org, repo.Repo)
+		messageTemplate := welcomeMessageForRepo(optionsForRepo(config, repo.Org, repo.Repo))
 		welcomeConfig[repo.String()] = fmt.Sprintf("The welcome plugin is configured to post using following welcome template: %s.", messageTemplate)
 	}
 
@@ -65,6 +65,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 					"org/repo2",
 				},
 				MessageTemplate: "Welcome @{{.AuthorLogin}}!",
+				AlwaysPost:      false,
 			},
 		},
 	})
@@ -72,7 +73,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 		logrus.WithError(err).Warnf("cannot generate comments for %s plugin", pluginName)
 	}
 	return &pluginhelp.PluginHelp{
-			Description: "The welcome plugin posts a welcoming message when it detects a user's first contribution to a repo.",
+			Description: "The welcome plugin greets incoming PRs with a welcoming message.",
 			Config:      welcomeConfig,
 			Snippet:     yamlSnippet,
 		},
@@ -81,7 +82,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []config.OrgRepo) 
 
 type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
-	FindIssues(query, sort string, asc bool) ([]github.Issue, error)
+	FindIssuesWithOrg(org, query, sort string, asc bool) ([]github.Issue, error)
 	IsCollaborator(org, repo, user string) (bool, error)
 	IsMember(org, user string) (bool, error)
 	BotUserChecker() (func(candidate string) bool, error)
@@ -101,10 +102,11 @@ func getClient(pc plugins.Agent) client {
 
 func handlePullRequest(pc plugins.Agent, pre github.PullRequestEvent) error {
 	t := pc.PluginConfig.TriggerFor(pre.PullRequest.Base.Repo.Owner.Login, pre.PullRequest.Base.Repo.Name)
-	return handlePR(getClient(pc), t, pre, welcomeMessageForRepo(pc.PluginConfig, pre.Repo.Owner.Login, pre.Repo.Name))
+	options := optionsForRepo(pc.PluginConfig, pre.Repo.Owner.Login, pre.Repo.Name)
+	return handlePR(getClient(pc), t, pre, welcomeMessageForRepo(options), options.AlwaysPost)
 }
 
-func handlePR(c client, t plugins.Trigger, pre github.PullRequestEvent, welcomeTemplate string) error {
+func handlePR(c client, t plugins.Trigger, pre github.PullRequestEvent, welcomeTemplate string, alwaysPost bool) error {
 	// Only consider newly opened PRs
 	if pre.Action != github.PullRequestActionOpened {
 		return nil
@@ -129,13 +131,13 @@ func handlePR(c client, t plugins.Trigger, pre github.PullRequestEvent, welcomeT
 
 	// search for PRs from the author in this repo
 	query := fmt.Sprintf("is:pr repo:%s/%s author:%s", org, repo, user)
-	issues, err := c.GitHubClient.FindIssues(query, "", false)
+	issues, err := c.GitHubClient.FindIssuesWithOrg(org, query, "", false)
 	if err != nil {
 		return err
 	}
 
-	// if there are no results, this is the first! post the welcome comment
-	if len(issues) == 0 || len(issues) == 1 && issues[0].Number == pre.Number {
+	// if there are no results, or if configured to greet any PR - post the welcome comment
+	if alwaysPost || len(issues) == 0 || len(issues) == 1 && issues[0].Number == pre.Number {
 		// load the template, and run it over the PR info
 		parsedTemplate, err := template.New("welcome").Parse(welcomeTemplate)
 		if err != nil {
@@ -159,10 +161,9 @@ func handlePR(c client, t plugins.Trigger, pre github.PullRequestEvent, welcomeT
 	return nil
 }
 
-func welcomeMessageForRepo(config *plugins.Configuration, org, repo string) string {
-	opts := optionsForRepo(config, org, repo)
-	if opts.MessageTemplate != "" {
-		return opts.MessageTemplate
+func welcomeMessageForRepo(options *plugins.Welcome) string {
+	if options.MessageTemplate != "" {
+		return options.MessageTemplate
 	}
 	return defaultWelcomeMessage
 }

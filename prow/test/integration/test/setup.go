@@ -17,13 +17,19 @@ limitations under the License.
 package integration
 
 import (
+	"bytes"
+	"context"
 	"crypto/rand"
 	"crypto/sha256"
 	"flag"
 	"fmt"
+	"io"
 	"testing"
 
+	coreapi "k8s.io/api/core/v1"
+	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -40,6 +46,14 @@ func getClusterContext() string {
 }
 
 func NewClients(configPath, clusterName string) (ctrlruntimeclient.Client, error) {
+	cfg, err := NewRestConfig(configPath, clusterName)
+	if err != nil {
+		return nil, err
+	}
+	return ctrlruntimeclient.New(cfg, ctrlruntimeclient.Options{})
+}
+
+func NewRestConfig(configPath, clusterName string) (*rest.Config, error) {
 	var loader clientcmd.ClientConfigLoader
 	if configPath != "" {
 		loader = &clientcmd.ClientConfigLoadingRules{ExplicitPath: configPath}
@@ -59,7 +73,26 @@ func NewClients(configPath, clusterName string) (ctrlruntimeclient.Client, error
 	if err != nil {
 		return nil, fmt.Errorf("failed create rest config: %w", err)
 	}
-	return ctrlruntimeclient.New(cfg, ctrlruntimeclient.Options{})
+
+	return cfg, nil
+}
+
+func getPodLogs(clientset *kubernetes.Clientset, namespace, podName string, opts *coreapi.PodLogOptions) (string, error) {
+	req := clientset.CoreV1().Pods(namespace).GetLogs(podName, opts)
+	podLogs, err := req.Stream(context.Background())
+	if err != nil {
+		return "", fmt.Errorf("error in opening stream")
+	}
+	defer podLogs.Close()
+
+	buf := new(bytes.Buffer)
+	_, err = io.Copy(buf, podLogs)
+	if err != nil {
+		return "", fmt.Errorf("error in copy information from podLogs to buf")
+	}
+	str := buf.String()
+
+	return str, nil
 }
 
 // RandomString generates random string of 32 characters in length, and fail if it failed

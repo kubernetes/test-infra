@@ -207,14 +207,16 @@ func (i *interactor) MergeWithStrategy(commitlike, mergeStrategy string, opts ..
 		return i.mergeMerge(commitlike, opts...)
 	case "squash":
 		return i.squashMerge(commitlike)
+	case "rebase":
+		return i.mergeRebase(commitlike)
+	case "ifNecessary":
+		return i.mergeIfNecessary(commitlike, opts...)
 	default:
 		return false, fmt.Errorf("merge strategy %q is not supported", mergeStrategy)
 	}
 }
 
-func (i *interactor) mergeMerge(commitlike string, opts ...MergeOpt) (bool, error) {
-	args := []string{"merge", "--no-ff", "--no-stat"}
-
+func (i *interactor) mergeHelper(args []string, commitlike string, opts ...MergeOpt) (bool, error) {
 	if len(opts) == 0 {
 		args = append(args, []string{"-m", "merge"}...)
 	} else {
@@ -236,6 +238,16 @@ func (i *interactor) mergeMerge(commitlike string, opts ...MergeOpt) (bool, erro
 	return false, nil
 }
 
+func (i *interactor) mergeMerge(commitlike string, opts ...MergeOpt) (bool, error) {
+	args := []string{"merge", "--no-ff", "--no-stat"}
+	return i.mergeHelper(args, commitlike, opts...)
+}
+
+func (i *interactor) mergeIfNecessary(commitlike string, opts ...MergeOpt) (bool, error) {
+	args := []string{"merge", "--ff", "--no-stat"}
+	return i.mergeHelper(args, commitlike, opts...)
+}
+
 func (i *interactor) squashMerge(commitlike string) (bool, error) {
 	out, err := i.executor.Run("merge", "--squash", "--no-stat", commitlike)
 	if err != nil {
@@ -254,6 +266,38 @@ func (i *interactor) squashMerge(commitlike string) (bool, error) {
 		return false, nil
 	}
 	return true, nil
+}
+
+func (i *interactor) mergeRebase(commitlike string) (bool, error) {
+	if commitlike == "" {
+		return false, errors.New("branch must be set")
+	}
+
+	headRev, err := i.revParse("HEAD")
+	if err != nil {
+		i.logger.WithError(err).Infof("Failed to parse HEAD revision")
+		return false, err
+	}
+	headRev = strings.TrimSuffix(headRev, "\n")
+
+	b, err := i.executor.Run("rebase", "--no-stat", headRev, commitlike)
+	if err != nil {
+		i.logger.WithField("out", string(b)).WithError(err).Infof("Rebase failed.")
+		if b, err := i.executor.Run("rebase", "--abort"); err != nil {
+			return false, fmt.Errorf("error aborting after failed rebase for commitlike %s: %v. output: %s", commitlike, err, string(b))
+		}
+		return false, nil
+	}
+	return true, nil
+}
+
+func (i *interactor) revParse(args ...string) (string, error) {
+	fullArgs := append([]string{"rev-parse"}, args...)
+	b, err := i.executor.Run(fullArgs...)
+	if err != nil {
+		return "", errors.New(string(b))
+	}
+	return string(b), nil
 }
 
 // Only the `merge` and `squash` strategies are supported.

@@ -73,6 +73,7 @@ func TestSimplify(t *testing.T) {
 			),
 		),
 		L("labels", VGreedy("labelname")),
+		L("view", L("gs", V("bucket", L("logs", V("job", V("build")))))),
 	))
 
 	var testCases = []struct {
@@ -134,6 +135,10 @@ func TestSimplify(t *testing.T) {
 			name:     "Label with slash matches due to greedyness",
 			path:     "/labels/labels/do-not-merge/hold",
 			expected: "/labels/:labelname"},
+		{
+			name:     "deck's build page",
+			path:     "/view/gs/origin-ci-test/logs/release-openshift-origin-installer-launch-azure-modern/1496462115936931840",
+			expected: "/view/gs/:bucket/logs/:job/:build"},
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {

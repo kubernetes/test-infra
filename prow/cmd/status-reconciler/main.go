@@ -20,7 +20,6 @@ import (
 	"context"
 	"errors"
 	"flag"
-	"fmt"
 	"os"
 	"time"
 
@@ -56,10 +55,6 @@ type options struct {
 	storage                   prowflagutil.StorageClientOptions
 	instrumentationOptions    prowflagutil.InstrumentationOptions
 
-	// TODO(petr-muller): Remove after August 2021, replaced by github.ThrottleHourlyTokens
-	tokenBurst    int
-	tokensPerHour int
-
 	// statusURI where Status-reconciler stores last known state, i.e. configuration.
 	// Can be /local/path, gs://path/to/object or s3://path/to/object.
 	// GCS writes will use the bucket's default acl for new objects. Ensure both that
@@ -78,8 +73,6 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.Var(&o.addedPresubmitDenylistAll, "denylist-all", "Org or org/repo to ignore reconciling, set more than once to add more.")
 	fs.Var(&o.addedPresubmitBlacklist, "blacklist", "[Will be deprecated after May 2021] Org or org/repo to ignore new added presubmits for, set more than once to add more.")
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether or not to make mutating API calls to GitHub.")
-	fs.IntVar(&o.tokensPerHour, "tokens", defaultTokens, "Throttle hourly token consumption (0 to disable). DEPRECATED: use --github-hourly-tokens")
-	fs.IntVar(&o.tokenBurst, "token-burst", defaultBurst, "Allow consuming a subset of hourly tokens in a short burst. DEPRECATED: use --github-allowed-burst")
 	o.github.AddCustomizedFlags(fs, prowflagutil.ThrottlerDefaults(defaultTokens, defaultBurst))
 	o.pluginsConfig.PluginConfigPathDefault = "/etc/plugins/plugins.yaml"
 	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.storage, &o.instrumentationOptions, &o.config, &o.pluginsConfig} {
@@ -90,21 +83,6 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 }
 
 func (o *options) Validate() error {
-	if o.tokensPerHour != defaultTokens {
-		if o.github.ThrottleHourlyTokens != defaultTokens {
-			return fmt.Errorf("--tokens cannot be specified with together with --github-hourly-tokens: use just the latter")
-		}
-		logrus.Warn("--tokens is deprecated: use --github-hourly-tokens instead")
-		o.github.ThrottleHourlyTokens = o.tokensPerHour
-	}
-	if o.tokenBurst != defaultBurst {
-		if o.github.ThrottleAllowBurst != defaultBurst {
-			return fmt.Errorf("--token-burst cannot be specified with together with --github-allowed-burst: use just the latter")
-		}
-		logrus.Warn("--token-burst is deprecated: use --github-allowed-burst instead")
-		o.github.ThrottleAllowBurst = o.tokenBurst
-	}
-
 	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.storage, &o.config, &o.pluginsConfig} {
 		if err := group.Validate(o.dryRun); err != nil {
 			return err

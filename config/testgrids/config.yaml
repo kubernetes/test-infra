@@ -13,13 +13,6 @@ test_groups:
     - target_config: Tests name
     - target_config: Context
     name_format: '%s [%s]'
-- name: ci-cri-containerd-node-e2e-benchmark
-  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-node-e2e-benchmark
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
 - name: ci-containerd-node-e2e
   gcs_prefix: kubernetes-jenkins/logs/ci-containerd-node-e2e
   test_name_config:
@@ -74,154 +67,6 @@ test_groups:
 # Start dashboards
 #
 dashboards:
-- name: vmware-conformance
-- name: vmware-conformance-cloud-provider
-- name: vmware-cluster-api-provider-vsphere
-
-- name: google-aws
-- name: google-gce
-- name: google-gce-compute-image-tools
-  dashboard_tab:
-  - name: ci-daisy-e2e
-    test_group_name: ci-daisy-e2e
-    open_test_template:
-      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
-    alert_options:
-      alert_mail_to_addresses: gcedaisy+alerts@google.com    
-    file_bug_template:
-      url: https://github.com/GoogleCloudPlatform/compute-image-tools/issues/new
-      options:
-      - key: title
-        value: 'ci-daisy-e2e issue: <test-name>'
-      - key: body
-        value: <test-url>
-  - name: ci-daisy-e2e-daily
-    test_group_name: ci-daisy-e2e-daily
-    open_test_template:
-      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
-    alert_options:
-      alert_mail_to_addresses: gcedaisy+alerts@google.com       
-    file_bug_template:
-      url: https://github.com/GoogleCloudPlatform/compute-image-tools/issues/new
-      options:
-      - key: title
-        value: 'ci-daisy-e2e-daily issue: <test-name>'
-      - key: body
-        value: <test-url>
-  - name: ci-images-import-export-cli-e2e-tests
-    test_group_name: ci-images-import-export-cli-e2e-tests
-    open_test_template:
-      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
-    alert_options:
-      alert_mail_to_addresses: gcedaisy+alerts@google.com   
-    file_bug_template:
-      url: https://github.com/GoogleCloudPlatform/compute-image-tools/issues/new
-      options:
-      - key: title
-        value: 'ci-images-import-export-cli-e2e-tests issue: <test-name>'
-      - key: body
-        value: <test-url>
-  - name: ci-ovf-import-e2e-tests-daily
-    test_group_name: ci-ovf-import-e2e-tests-daily
-    open_test_template:
-      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
-    alert_options:
-      alert_mail_to_addresses: gcedaisy+alerts@google.com
-    file_bug_template:
-      url: https://github.com/GoogleCloudPlatform/compute-image-tools/issues/new
-      options:
-      - key: title
-        value: 'ci-ovf-import-e2e-tests-daily issue: <test-name>'
-      - key: body
-        value: <test-url>
-  - name: ci-ovf-export-e2e-tests-daily
-    test_group_name: ci-ovf-export-e2e-tests-daily
-    open_test_template:
-      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
-    alert_options:
-      alert_mail_to_addresses: gcedaisy+alerts@google.com
-    file_bug_template:
-      url: https://github.com/GoogleCloudPlatform/compute-image-tools/issues/new
-      options:
-      - key: title
-        value: 'ci-ovf-export-e2e-tests-daily issue: <test-name>'
-      - key: body
-        value: <test-url>
-  - name: ci-windows-upgrade-e2e-tests
-    test_group_name: ci-windows-upgrade-e2e-tests
-    open_test_template:
-      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
-    file_bug_template:
-      url: https://github.com/GoogleCloudPlatform/compute-image-tools/issues/new
-      options:
-      - key: title
-        value: 'ci-windows-upgrade-e2e-tests issue: <test-name>'
-      - key: body
-        value: <test-url>
-  - name: ci-v2v-adapt-e2e
-    test_group_name: ci-v2v-adapt-e2e
-    open_test_template:
-      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
-    file_bug_template:
-      url: https://github.com/GoogleCloudPlatform/compute-image-tools/issues/new
-      options:
-      - key: title
-        value: 'ci-v2v-adapt-e2e issue: <test-name>'
-      - key: body
-        value: <test-url>
-
-- name: google-kops-gce
-- name: google-gci
-- name: google-gce-upgrade
-- name: google-osconfig
-  dashboard_tab:
-  - name: osconfig-unstable
-    test_group_name: osconfig-unstable
-    open_test_template:
-      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
-    file_bug_template:
-      url: https://github.com/GoogleCloudPlatform/osconfig/issues/new
-      options:
-      - key: title
-        value: 'osconfig-unstable issue: <test-name>'
-      - key: body
-        value: <test-url>
-  - name: osconfig-staging
-    test_group_name: osconfig-staging
-    open_test_template:
-      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
-    file_bug_template:
-      url: https://github.com/GoogleCloudPlatform/osconfig/issues/new
-      options:
-      - key: title
-        value: 'osconfig-staging issue: <test-name>'
-      - key: body
-        value: <test-url>
-  - name: osconfig-stable
-    test_group_name: osconfig-stable
-    open_test_template:
-      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
-    file_bug_template:
-      url: https://github.com/GoogleCloudPlatform/osconfig/issues/new
-      options:
-      - key: title
-        value: 'osconfig-stable issue: <test-name>'
-      - key: body
-        value: <test-url>
-  - name: osconfig-head-images
-    test_group_name: osconfig-head-images
-    open_test_template:
-      url: https://oss-prow.knative.dev/view/gs/<gcs_prefix>/<changelist>
-    file_bug_template:
-      url: https://github.com/GoogleCloudPlatform/osconfig/issues/new
-      options:
-      - key: title
-        value: 'osconfig-head-images issue: <test-name>'
-      - key: body
-        value: <test-url>
-- name: google-soak
-- name: google-windows
-
 - name: sig-auth-gce
   dashboard_tab:
   - name: gce
@@ -237,43 +82,23 @@ dashboards:
     base_options: include-filter-by-regex=sig-auth
     description: apps gce serial e2e tests for master branch
 
-- name: sig-multicluster-kubemci
 - name: sig-auth-secrets-store-csi-driver
 - name: sig-auth-secrets-store-csi-driver-postsubmit
 - name: sig-auth-secrets-store-csi-driver-periodic
 - name: sig-auth-secrets-store-csi-driver-presubmit
 - name: sig-auth-secrets-store-csi-driver-release-signal
+- name: vmware-cluster-api-provider-vsphere
 - name: vmware-presubmits-cloud-provider-vsphere
 - name: vmware-postsubmits-cloud-provider-vsphere
 - name: vmware-presubmits-vsphere-csi-driver
 - name: vmware-postsubmits-vsphere-csi-driver
-- name: google-rules_k8s
 
 #
 # Start dashboard groups
 #
 
 dashboard_groups:
-- name: google
-  dashboard_names:
-  - google-aws
-  - google-cel
-  - google-gce
-  - google-gce-compute-image-tools
-  - google-gcp-guest
-  - google-gci
-  - google-gce-upgrade
-  - google-kops-gce
-  - google-osconfig
-  - google-rules_k8s
-  - google-soak
-  - google-windows
-
-
-
 - name: sig-multicluster
-  dashboard_names:
-  - sig-multicluster-kubemci
 
 - name: vmware
   dashboard_names:
@@ -281,8 +106,6 @@ dashboard_groups:
   - vmware-postsubmits-cloud-provider-vsphere
   - vmware-presubmits-vsphere-csi-driver
   - vmware-postsubmits-vsphere-csi-driver
-  - vmware-conformance
-  - vmware-conformance-cloud-provider
   - vmware-cluster-api-provider-vsphere
 
 - name: sig-auth

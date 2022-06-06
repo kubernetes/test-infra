@@ -33,16 +33,26 @@ elif ! (command -v docker >/dev/null); then
   echo "WARNING: docker not installed; please install docker or try setting NO_DOCKER=true" >&2
   exit 1
 fi
+
+# We are running as the current host user/group so the files produced are
+# owned appropriately on the host.
+# With rootless mode, this happens without the need for a --user option.
+# https://www.redhat.com/sysadmin/user-flag-rootless-containers
+# Docker includes the "rootless" keyword in its "system info" output,
+# whereas podman includes "rootless: (true|false)".
+DOCKER_USER=""
+if ! "${DOCKER[@]}" system info | grep -q "rootless\(: true\)\?$"; then
+    DOCKER_USER="--user $(id -u):$(id -g)"
+fi
+
 # NOTE: yarn tries to read configs under $HOME and fails if it can't,
 # we don't need these configs but we need it to not fail.
 # We set HOME to somewhere read/write-able by any user, since our uid will not
 # exist in /etc/passwd in the node image and yarn will try to read from / and
 # fail instead if we don't.
-# We are running as the current host user/group so the files produced are
-# owned appropriately on the host.
 "${DOCKER[@]}" run \
     --rm -i \
-    --user $(id -u):$(id -g) \
+    ${DOCKER_USER} \
     -e HOME=/tmp \
     -v "${REPO_ROOT:?}:${REPO_ROOT:?}" -w "${REPO_ROOT}" \
     "${NODE_IMAGE}" \

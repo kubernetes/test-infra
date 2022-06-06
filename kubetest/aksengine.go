@@ -1208,23 +1208,6 @@ func (c *aksEngineDeployer) GetClusterCreated(clusterName string) (time.Time, er
 }
 
 func (c *aksEngineDeployer) setCred() error {
-	// TODO (cecile): remove old variables once the cloud provider e2e test variables are updated.
-	if err := os.Setenv("K8S_AZURE_TENANTID", c.credentials.TenantID); err != nil {
-		return err
-	}
-	if err := os.Setenv("K8S_AZURE_SUBSID", c.credentials.SubscriptionID); err != nil {
-		return err
-	}
-	if err := os.Setenv("K8S_AZURE_SPID", c.credentials.ClientID); err != nil {
-		return err
-	}
-	if err := os.Setenv("K8S_AZURE_SPSEC", c.credentials.ClientSecret); err != nil {
-		return err
-	}
-	if err := os.Setenv("K8S_AZURE_LOCATION", c.location); err != nil {
-		return err
-	}
-
 	if err := os.Setenv("AZURE_TENANT_ID", c.credentials.TenantID); err != nil {
 		return err
 	}

@@ -23,6 +23,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"sort"
@@ -40,6 +41,7 @@ import (
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/git/types"
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/io"
@@ -80,7 +82,7 @@ type Controller struct {
 	prowJobClient      ctrlruntimeclient.Client
 	gc                 git.ClientFactory
 	usesGitHubAppsAuth bool
-	pickNewBatch       func(sp subpool, candidates []PullRequest, maxBatchSize int) ([]PullRequest, error)
+	pickNewBatch       func(sp subpool, candidates []CodeReviewCommon, maxBatchSize int) ([]CodeReviewCommon, error)
 
 	sc *statusController
 
@@ -129,21 +131,74 @@ type Pool struct {
 	// PRs with passing tests, pending tests, and missing or failed tests.
 	// Note that these results are rolled up. If all tests for a PR are passing
 	// except for one pending, it will be in PendingPRs.
-	SuccessPRs []PullRequest
-	PendingPRs []PullRequest
-	MissingPRs []PullRequest
+	SuccessPRs []CodeReviewCommon
+	PendingPRs []CodeReviewCommon
+	MissingPRs []CodeReviewCommon
 
 	// Empty if there is no pending batch.
-	BatchPending []PullRequest
+	BatchPending []CodeReviewCommon
 
 	// Which action did we last take, and to what target(s), if any.
 	Action   Action
-	Target   []PullRequest
+	Target   []CodeReviewCommon
 	Blockers []blockers.Blocker
 	Error    string
 
 	// All of the TenantIDs associated with PRs in the pool.
 	TenantIDs []string
+}
+
+// PoolForDeck contains the same data as Pool, the only exception is that it has
+// a minified version of CodeReviewCommon which is good for deck, as
+// MinCodeReview is a very small superset of CodeReviewCommon.
+type PoolForDeck struct {
+	Org    string
+	Repo   string
+	Branch string
+
+	// PRs with passing tests, pending tests, and missing or failed tests.
+	// Note that these results are rolled up. If all tests for a PR are passing
+	// except for one pending, it will be in PendingPRs.
+	SuccessPRs []MinCodeReviewCommon
+	PendingPRs []MinCodeReviewCommon
+	MissingPRs []MinCodeReviewCommon
+
+	// Empty if there is no pending batch.
+	BatchPending []MinCodeReviewCommon
+
+	// Which action did we last take, and to what target(s), if any.
+	Action   Action
+	Target   []MinCodeReviewCommon
+	Blockers []blockers.Blocker
+	Error    string
+
+	// All of the TenantIDs associated with PRs in the pool.
+	TenantIDs []string
+}
+
+func PoolToPoolForDeck(p *Pool) *PoolForDeck {
+	crcToMin := func(crcs []CodeReviewCommon) []MinCodeReviewCommon {
+		var res []MinCodeReviewCommon
+		for _, crc := range crcs {
+			res = append(res, MinCodeReviewCommon(crc))
+		}
+		return res
+	}
+	pfd := &PoolForDeck{
+		Org:          p.Org,
+		Repo:         p.Repo,
+		Branch:       p.Branch,
+		SuccessPRs:   crcToMin(p.SuccessPRs),
+		PendingPRs:   crcToMin(p.PendingPRs),
+		MissingPRs:   crcToMin(p.MissingPRs),
+		BatchPending: crcToMin(p.BatchPending),
+		Action:       p.Action,
+		Target:       crcToMin(p.Target),
+		Blockers:     p.Blockers,
+		Error:        p.Error,
+		TenantIDs:    p.TenantIDs,
+	}
+	return pfd
 }
 
 // Prometheus Metrics
@@ -340,8 +395,8 @@ func (c *Controller) Shutdown() {
 	c.sc.shutdown()
 }
 
-func prKey(pr *PullRequest) string {
-	return fmt.Sprintf("%s#%d", string(pr.Repository.NameWithOwner), int(pr.Number))
+func prKey(pr *CodeReviewCommon) string {
+	return fmt.Sprintf("%s#%d", string(pr.NameWithOwner), pr.Number)
 }
 
 // newExpectedContext creates a Context with Expected state.
@@ -449,10 +504,10 @@ func (c *Controller) Sync() error {
 	return nil
 }
 
-func (c *Controller) query() (map[string]PullRequest, error) {
+func (c *Controller) query() (map[string]CodeReviewCommon, error) {
 	lock := sync.Mutex{}
 	wg := sync.WaitGroup{}
-	prs := make(map[string]PullRequest)
+	prs := make(map[string]CodeReviewCommon)
 	var errs []error
 	for i, query := range c.config().Tide.Queries {
 
@@ -539,7 +594,7 @@ func subpoolsInParallel(goroutines int, sps map[string]*subpool, process func(*s
 // filterSubpools filters non-pool PRs out of the initially identified subpools,
 // deleting any pools that become empty.
 // See filterSubpool for filtering details.
-func (c *Controller) filterSubpools(mergeAllowed func(*PullRequest) (string, error), raw map[string]*subpool) map[string]*subpool {
+func (c *Controller) filterSubpools(mergeAllowed func(*CodeReviewCommon) (string, error), raw map[string]*subpool) map[string]*subpool {
 	filtered := make(map[string]*subpool)
 	var lock sync.Mutex
 
@@ -574,9 +629,9 @@ func (c *Controller) initSubpoolData(sp *subpool) error {
 	}
 	sp.cc = make(map[int]contextChecker, len(sp.prs))
 	for _, pr := range sp.prs {
-		sp.cc[int(pr.Number)], err = c.config().GetTideContextPolicy(c.gc, sp.org, sp.repo, sp.branch, refGetterFactory(string(sp.sha)), string(pr.HeadRefOID))
+		sp.cc[pr.Number], err = c.config().GetTideContextPolicy(c.gc, sp.org, sp.repo, sp.branch, refGetterFactory(string(sp.sha)), pr.HeadRefOID)
 		if err != nil {
-			return fmt.Errorf("error setting up context checker for pr %d: %w", int(pr.Number), err)
+			return fmt.Errorf("error setting up context checker for pr %d: %w", pr.Number, err)
 		}
 	}
 	return nil
@@ -586,8 +641,8 @@ func (c *Controller) initSubpoolData(sp *subpool) error {
 // filtered subpool.
 // If the subpool becomes empty 'nil' is returned to indicate that the subpool
 // should be deleted.
-func filterSubpool(ghc githubClient, mergeAllowed func(*PullRequest) (string, error), sp *subpool) *subpool {
-	var toKeep []PullRequest
+func filterSubpool(ghc githubClient, mergeAllowed func(*CodeReviewCommon) (string, error), sp *subpool) *subpool {
+	var toKeep []CodeReviewCommon
 	for _, pr := range sp.prs {
 		if !filterPR(ghc, mergeAllowed, sp, &pr) {
 			toKeep = append(toKeep, pr)
@@ -609,7 +664,7 @@ func filterSubpool(ghc githubClient, mergeAllowed func(*PullRequest) (string, er
 //   status is preventing merge. Required ProwJob statuses are allowed to be
 //   'pending' because this prevents kicking PRs from the pool when Tide is
 //   retesting them.)
-func filterPR(ghc githubClient, mergeAllowed func(*PullRequest) (string, error), sp *subpool, pr *PullRequest) bool {
+func filterPR(ghc githubClient, mergeAllowed func(*CodeReviewCommon) (string, error), sp *subpool, pr *CodeReviewCommon) bool {
 	log := sp.log.WithFields(pr.logFields())
 	// Skip PRs that are known to be unmergeable.
 	if reason, err := mergeAllowed(pr); err != nil {
@@ -628,14 +683,14 @@ func filterPR(ghc githubClient, mergeAllowed func(*PullRequest) (string, error),
 		return true
 	}
 	presubmitsHaveContext := func(context string) bool {
-		for _, job := range sp.presubmits[int(pr.Number)] {
+		for _, job := range sp.presubmits[pr.Number] {
 			if job.Context == context {
 				return true
 			}
 		}
 		return false
 	}
-	for _, ctx := range unsuccessfulContexts(contexts, sp.cc[int(pr.Number)], log) {
+	for _, ctx := range unsuccessfulContexts(contexts, sp.cc[pr.Number], log) {
 		if ctx.State != githubql.StatusStatePending {
 			log.WithField("context", ctx.Context).Debug("filtering out PR as unsuccessful context is not pending")
 			return true
@@ -652,19 +707,22 @@ func filterPR(ghc githubClient, mergeAllowed func(*PullRequest) (string, error),
 // mergeChecker provides a function to check if a PR can be merged with
 // the requested method and does not have a merge conflict.
 // It caches results and should be cleared periodically with clearCache()
+//
+// This struct is GitHub specific
 type mergeChecker struct {
 	config config.Getter
 	ghc    githubClient
 
 	sync.Mutex
-	cache map[config.OrgRepo]map[github.PullRequestMergeType]bool
+	cache map[config.OrgRepo]map[types.PullRequestMergeType]bool
 }
 
+// newMergeChecker creates a mergeChecker for GitHub.
 func newMergeChecker(cfg config.Getter, ghc githubClient) *mergeChecker {
 	m := &mergeChecker{
 		config: cfg,
 		ghc:    ghc,
-		cache:  map[config.OrgRepo]map[github.PullRequestMergeType]bool{},
+		cache:  map[config.OrgRepo]map[types.PullRequestMergeType]bool{},
 	}
 
 	go m.clearCache()
@@ -678,12 +736,12 @@ func (m *mergeChecker) clearCache() {
 	for {
 		<-ticker.C
 		m.Lock()
-		m.cache = make(map[config.OrgRepo]map[github.PullRequestMergeType]bool)
+		m.cache = make(map[config.OrgRepo]map[types.PullRequestMergeType]bool)
 		m.Unlock()
 	}
 }
 
-func (m *mergeChecker) repoMethods(orgRepo config.OrgRepo) (map[github.PullRequestMergeType]bool, error) {
+func (m *mergeChecker) repoMethods(orgRepo config.OrgRepo) (map[types.PullRequestMergeType]bool, error) {
 	m.Lock()
 	defer m.Unlock()
 
@@ -700,10 +758,10 @@ func (m *mergeChecker) repoMethods(orgRepo config.OrgRepo) (map[github.PullReque
 			"AllowSquashMerge": fullRepo.AllowSquashMerge,
 			"AllowRebaseMerge": fullRepo.AllowRebaseMerge,
 		}).Debug("GetRepo returns these values for repo methods")
-		repoMethods = map[github.PullRequestMergeType]bool{
-			github.MergeMerge:  fullRepo.AllowMergeCommit,
-			github.MergeSquash: fullRepo.AllowSquashMerge,
-			github.MergeRebase: fullRepo.AllowRebaseMerge,
+		repoMethods = map[types.PullRequestMergeType]bool{
+			types.MergeMerge:  fullRepo.AllowMergeCommit,
+			types.MergeSquash: fullRepo.AllowSquashMerge,
+			types.MergeRebase: fullRepo.AllowRebaseMerge,
 		}
 		m.cache[orgRepo] = repoMethods
 	}
@@ -713,19 +771,26 @@ func (m *mergeChecker) repoMethods(orgRepo config.OrgRepo) (map[github.PullReque
 // isAllowed checks if a PR does not have merge conflicts and requests an
 // allowed merge method. If there is no error it returns a string explanation if
 // not allowed or "" if allowed.
-func (m *mergeChecker) isAllowed(pr *PullRequest) (string, error) {
+func (m *mergeChecker) isAllowed(crc *CodeReviewCommon) (string, error) {
+	// Get PullRequest struct for GitHub specific logic
+	pr := crc.GitHub
+	if pr == nil {
+		// This should not happen, as this mergeChecker is meant to be used by
+		// GitHub repos only
+		return "", errors.New("unexpected error: CodeReviewCommon should carry PullRequest struct")
+	}
 	if pr.Mergeable == githubql.MergeableStateConflicting {
 		return "PR has a merge conflict.", nil
 	}
-	mergeMethod, err := prMergeMethod(m.config().Tide, pr)
+	mergeMethod, err := prMergeMethod(m.config().Tide, crc)
 	if err != nil {
 		// This should be impossible.
 		return "", fmt.Errorf("Programmer error! Failed to determine a merge method: %w", err)
 	}
-	if mergeMethod == github.MergeRebase && !pr.CanBeRebased {
+	if mergeMethod == types.MergeRebase && !pr.CanBeRebased {
 		return "PR can't be rebased", nil
 	}
-	orgRepo := config.OrgRepo{Org: string(pr.Repository.Owner.Login), Repo: string(pr.Repository.Name)}
+	orgRepo := config.OrgRepo{Org: crc.Org, Repo: crc.Repo}
 	repoMethods, err := m.repoMethods(orgRepo)
 	if err != nil {
 		return "", fmt.Errorf("error getting repo data: %w", err)
@@ -748,8 +813,8 @@ func baseSHAMap(subpoolMap map[string]*subpool) map[string]string {
 }
 
 // poolPRMap collects all subpool PRs into a map containing all pooled PRs.
-func poolPRMap(subpoolMap map[string]*subpool) map[string]PullRequest {
-	prs := make(map[string]PullRequest)
+func poolPRMap(subpoolMap map[string]*subpool) map[string]CodeReviewCommon {
+	prs := make(map[string]CodeReviewCommon)
 	for _, sp := range subpoolMap {
 		for _, pr := range sp.prs {
 			prs[prKey(&pr)] = pr
@@ -763,7 +828,7 @@ func requiredContextsMap(subpoolMap map[string]*subpool) map[string][]string {
 	for _, sp := range subpoolMap {
 		for _, pr := range sp.prs {
 			requiredContextsSet := sets.String{}
-			for _, requiredJob := range sp.presubmits[int(pr.Number)] {
+			for _, requiredJob := range sp.presubmits[pr.Number] {
 				requiredContextsSet.Insert(requiredJob.Context)
 			}
 			requiredContextsMap[prKey(&pr)] = requiredContextsSet.List()
@@ -791,7 +856,7 @@ func toSimpleState(s prowapi.ProwJobState) simpleState {
 
 // isPassingTests returns whether or not all contexts set on the PR except for
 // the tide pool context are passing.
-func (c *Controller) isPassingTests(log *logrus.Entry, pr *PullRequest, cc contextChecker) bool {
+func (c *Controller) isPassingTests(log *logrus.Entry, pr *CodeReviewCommon, cc contextChecker) bool {
 	log = log.WithFields(pr.logFields())
 	contexts, err := headContexts(log, c.ghc, pr)
 	if err != nil {
@@ -834,36 +899,39 @@ func unsuccessfulContexts(contexts []Context, cc contextChecker, log *logrus.Ent
 	return failed
 }
 
-func hasAllLabels(pr PullRequest, labels []string) bool {
-	if len(labels) == 0 {
+func hasAllLabels(pr CodeReviewCommon, wantLabels []string) bool {
+	if len(wantLabels) == 0 {
 		return true
 	}
 	prLabels := sets.NewString()
-	for _, l := range pr.Labels.Nodes {
-		prLabels.Insert(string(l.Name))
+	if labels := pr.GitHubLabels(); labels != nil {
+		for _, l2 := range labels.Nodes {
+			prLabels.Insert(string(l2.Name))
+		}
 	}
-	requiredLabels := sets.NewString(labels...)
+	requiredLabels := sets.NewString(wantLabels...)
 	return prLabels.Intersection(requiredLabels).Equal(requiredLabels)
 }
 
-func pickHighestPriorityPR(log *logrus.Entry, prs []PullRequest, cc map[int]contextChecker, isPassingTestsFunc func(*logrus.Entry, *PullRequest, contextChecker) bool, priorities []config.TidePriority) (bool, PullRequest) {
+func pickHighestPriorityPR(log *logrus.Entry, prs []CodeReviewCommon, cc map[int]contextChecker, isPassingTestsFunc func(*logrus.Entry, *CodeReviewCommon, contextChecker) bool, priorities []config.TidePriority) (bool, CodeReviewCommon) {
 	smallestNumber := -1
-	var smallestPR PullRequest
+	var smallestPR CodeReviewCommon
 	for _, p := range append(priorities, config.TidePriority{}) {
 		for _, pr := range prs {
+			// This should only apply to GitHub PRs
 			if !hasAllLabels(pr, p.Labels) {
 				continue
 			}
-			if smallestNumber != -1 && int(pr.Number) >= smallestNumber {
+			if smallestNumber != -1 && pr.Number >= smallestNumber {
 				continue
 			}
-			if len(pr.Commits.Nodes) < 1 {
+			if commits := pr.GitHubCommits(); commits == nil || len(commits.Nodes) < 1 {
 				continue
 			}
-			if !isPassingTestsFunc(log, &pr, cc[int(pr.Number)]) {
+			if !isPassingTestsFunc(log, &pr, cc[pr.Number]) {
 				continue
 			}
-			smallestNumber = int(pr.Number)
+			smallestNumber = pr.Number
 			smallestPR = pr
 		}
 		if smallestNumber > -1 {
@@ -876,14 +944,14 @@ func pickHighestPriorityPR(log *logrus.Entry, prs []PullRequest, cc map[int]cont
 // accumulateBatch looks at existing batch ProwJobs and, if applicable, returns:
 // * A list of PRs that are part of a batch test that finished successfully
 // * A list of PRs that are part of a batch test that hasn't finished yet but didn't have any failures so far
-func (c *Controller) accumulateBatch(sp subpool) (successBatch []PullRequest, pendingBatch []PullRequest) {
+func (c *Controller) accumulateBatch(sp subpool) (successBatch []CodeReviewCommon, pendingBatch []CodeReviewCommon) {
 	sp.log.Debug("accumulating PRs for batch testing")
-	prNums := make(map[int]PullRequest)
+	prNums := make(map[int]CodeReviewCommon)
 	for _, pr := range sp.prs {
-		prNums[int(pr.Number)] = pr
+		prNums[pr.Number] = pr
 	}
 	type accState struct {
-		prs       []PullRequest
+		prs       []CodeReviewCommon
 		jobStates map[string]simpleState
 		// Are the pull requests in the ref still acceptable? That is, do they
 		// still point to the heads of the PRs?
@@ -902,7 +970,7 @@ func (c *Controller) accumulateBatch(sp subpool) (successBatch []PullRequest, pe
 				validPulls: true,
 			}
 			for _, pull := range pj.Spec.Refs.Pulls {
-				if pr, ok := prNums[pull.Number]; ok && string(pr.HeadRefOID) == pull.SHA {
+				if pr, ok := prNums[pull.Number]; ok && pr.HeadRefOID == pull.SHA {
 					state.prs = append(state.prs, pr)
 				} else if !ok {
 					state.validPulls = false
@@ -963,7 +1031,7 @@ func (c *Controller) accumulateBatch(sp subpool) (successBatch []PullRequest, pe
 // prowJobsFromContexts constructs ProwJob objects from all successful presubmit contexts that include a baseSHA.
 // This is needed because otherwise we would always need retesting for results that are older than sinkers
 // max_prowjob_age.
-func prowJobsFromContexts(l *logrus.Entry, ghc githubClient, pr *PullRequest, baseSHA string) ([]prowapi.ProwJob, error) {
+func prowJobsFromContexts(l *logrus.Entry, ghc githubClient, pr *CodeReviewCommon, baseSHA string) ([]prowapi.ProwJob, error) {
 	headContexts, err := headContexts(l, ghc, pr)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get head contexts: %w", err)
@@ -983,7 +1051,7 @@ func prowJobsFromContexts(l *logrus.Entry, ghc githubClient, pr *PullRequest, ba
 		prowjobsFromContexts = append(prowjobsFromContexts, prowapi.ProwJob{
 			Spec: prowapi.ProwJobSpec{
 				Context: passingCurrentContext,
-				Refs:    &prowapi.Refs{Pulls: []prowapi.Pull{{Number: int(pr.Number), SHA: string(pr.HeadRefOID)}}},
+				Refs:    &prowapi.Refs{Pulls: []prowapi.Pull{{Number: pr.Number, SHA: pr.HeadRefOID}}},
 				Type:    prowapi.PresubmitJob,
 			},
 			Status: prowapi.ProwJobStatus{
@@ -997,7 +1065,7 @@ func prowJobsFromContexts(l *logrus.Entry, ghc githubClient, pr *PullRequest, ba
 
 // accumulate returns the supplied PRs sorted into three buckets based on their
 // accumulated state across the presubmits.
-func accumulate(presubmits map[int][]config.Presubmit, prs []PullRequest, pjs []prowapi.ProwJob, log *logrus.Entry, baseSHA string, ghc githubClient) (successes, pendings, missings []PullRequest, missingTests map[int][]config.Presubmit) {
+func accumulate(presubmits map[int][]config.Presubmit, prs []CodeReviewCommon, pjs []prowapi.ProwJob, log *logrus.Entry, baseSHA string, ghc githubClient) (successes, pendings, missings []CodeReviewCommon, missingTests map[int][]config.Presubmit) {
 
 	missingTests = map[int][]config.Presubmit{}
 	for _, pr := range prs {
@@ -1015,10 +1083,10 @@ func accumulate(presubmits map[int][]config.Presubmit, prs []PullRequest, pjs []
 			if pj.Spec.Type != prowapi.PresubmitJob {
 				continue
 			}
-			if pj.Spec.Refs.Pulls[0].Number != int(pr.Number) {
+			if pj.Spec.Refs.Pulls[0].Number != pr.Number {
 				continue
 			}
-			if pj.Spec.Refs.Pulls[0].SHA != string(pr.HeadRefOID) {
+			if pj.Spec.Refs.Pulls[0].SHA != pr.HeadRefOID {
 				continue
 			}
 
@@ -1028,21 +1096,21 @@ func accumulate(presubmits map[int][]config.Presubmit, prs []PullRequest, pjs []
 		// The overall result for the PR is the worst of the best of all its
 		// required Presubmits
 		overallState := successState
-		for _, ps := range presubmits[int(pr.Number)] {
+		for _, ps := range presubmits[pr.Number] {
 			if s, ok := psStates[ps.Context]; !ok {
 				// No PJ with correct baseSHA+headSHA exists
-				missingTests[int(pr.Number)] = append(missingTests[int(pr.Number)], ps)
+				missingTests[pr.Number] = append(missingTests[pr.Number], ps)
 				log.WithFields(pr.logFields()).Debugf("missing presubmit %s", ps.Context)
 			} else if s == failureState {
 				// PJ with correct baseSHA+headSHA exists but failed
-				missingTests[int(pr.Number)] = append(missingTests[int(pr.Number)], ps)
+				missingTests[pr.Number] = append(missingTests[pr.Number], ps)
 				log.WithFields(pr.logFields()).Debugf("presubmit %s not passing", ps.Context)
 			} else if s == pendingState {
 				log.WithFields(pr.logFields()).Debugf("presubmit %s pending", ps.Context)
 				overallState = pendingState
 			}
 		}
-		if len(missingTests[int(pr.Number)]) > 0 {
+		if len(missingTests[pr.Number]) > 0 {
 			overallState = failureState
 		}
 
@@ -1057,17 +1125,17 @@ func accumulate(presubmits map[int][]config.Presubmit, prs []PullRequest, pjs []
 	return
 }
 
-func prNumbers(prs []PullRequest) []int {
+func prNumbers(prs []CodeReviewCommon) []int {
 	var nums []int
 	for _, pr := range prs {
-		nums = append(nums, int(pr.Number))
+		nums = append(nums, pr.Number)
 	}
 	return nums
 }
 
-func pickNewBatch(gc git.ClientFactory, cfg config.Getter) func(sp subpool, candidates []PullRequest, maxBatchSize int) ([]PullRequest, error) {
-	return func(sp subpool, candidates []PullRequest, maxBatchSize int) ([]PullRequest, error) {
-		var res []PullRequest
+func pickNewBatch(gc git.ClientFactory, cfg config.Getter) func(sp subpool, candidates []CodeReviewCommon, maxBatchSize int) ([]CodeReviewCommon, error) {
+	return func(sp subpool, candidates []CodeReviewCommon, maxBatchSize int) ([]CodeReviewCommon, error) {
+		var res []CodeReviewCommon
 		r, err := gc.ClientFor(sp.org, sp.repo)
 		if err != nil {
 			return nil, err
@@ -1092,7 +1160,7 @@ func pickNewBatch(gc git.ClientFactory, cfg config.Getter) func(sp subpool, cand
 				sp.log.WithFields(pr.logFields()).Warnf("Failed to get merge method for PR, will skip: %v.", err)
 				continue
 			}
-			if ok, err := r.MergeWithStrategy(string(pr.HeadRefOID), string(mergeMethod)); err != nil {
+			if ok, err := r.MergeWithStrategy(pr.HeadRefOID, string(mergeMethod)); err != nil {
 				// we failed to abort the merge and our git client is
 				// in a bad state; it must be cleaned before we try again
 				return nil, err
@@ -1109,9 +1177,9 @@ func pickNewBatch(gc git.ClientFactory, cfg config.Getter) func(sp subpool, cand
 	}
 }
 
-type newBatchFunc func(sp subpool, candidates []PullRequest, maxBatchSize int) ([]PullRequest, error)
+type newBatchFunc func(sp subpool, candidates []CodeReviewCommon, maxBatchSize int) ([]CodeReviewCommon, error)
 
-func (c *Controller) pickBatch(sp subpool, cc map[int]contextChecker, newBatchFunc newBatchFunc) ([]PullRequest, []config.Presubmit, error) {
+func (c *Controller) pickBatch(sp subpool, cc map[int]contextChecker, newBatchFunc newBatchFunc) ([]CodeReviewCommon, []config.Presubmit, error) {
 	batchLimit := c.config().Tide.BatchSizeLimit(config.OrgRepo{Org: sp.org, Repo: sp.repo})
 	if batchLimit < 0 {
 		sp.log.Debug("Batch merges disabled by configuration in this repo.")
@@ -1121,9 +1189,11 @@ func (c *Controller) pickBatch(sp subpool, cc map[int]contextChecker, newBatchFu
 	// we must choose the oldest PRs for the batch
 	sort.Slice(sp.prs, func(i, j int) bool { return sp.prs[i].Number < sp.prs[j].Number })
 
-	var candidates []PullRequest
+	var candidates []CodeReviewCommon
 	for _, pr := range sp.prs {
-		if c.isRetestEligible(sp.log, &pr, cc[int(pr.Number)]) {
+		// c.isRetestEligible appends `Commits` into the passed in PullRequest
+		// struct, which is used later to avoid repeatedly looking up on GitHub.
+		if c.isRetestEligible(sp.log, &pr, cc[pr.Number]) {
 			candidates = append(candidates, pr)
 		}
 	}
@@ -1135,7 +1205,7 @@ func (c *Controller) pickBatch(sp subpool, cc map[int]contextChecker, newBatchFu
 	}
 	log.WithField("candidate_count", len(candidates)).Debug("Found PRs with passing tests when picking batch")
 
-	var res []PullRequest
+	var res []CodeReviewCommon
 	if c.config().Tide.PrioritizeExistingBatches(config.OrgRepo{Repo: sp.repo, Org: sp.org}) {
 		res = pickBatchWithPreexistingTests(sp, candidates, batchLimit)
 	}
@@ -1161,7 +1231,7 @@ func (c *Controller) pickBatch(sp subpool, cc map[int]contextChecker, newBatchFu
 // and was created by Tide, as that allows us to infer that this job passed in the past.
 // We look at the actively running ProwJob rather than a previous successful one, because the latter might
 // already be garbage collected.
-func (c *Controller) isRetestEligible(log *logrus.Entry, candidate *PullRequest, cc contextChecker) bool {
+func (c *Controller) isRetestEligible(log *logrus.Entry, candidate *CodeReviewCommon, cc contextChecker) bool {
 	candidateHeadContexts, err := headContexts(log, c.ghc, candidate)
 	if err != nil {
 		log.WithError(err).WithFields(candidate.logFields()).Debug("failed to get headContexts for batch candidate, ignoring.")
@@ -1186,9 +1256,9 @@ func (c *Controller) isRetestEligible(log *logrus.Entry, candidate *PullRequest,
 
 		pjLabels := createdByTideLabels()
 		pjLabels[kube.ProwJobTypeLabel] = string(prowapi.PresubmitJob)
-		pjLabels[kube.OrgLabel] = string(candidate.Repository.Owner.Login)
-		pjLabels[kube.RepoLabel] = string(candidate.Repository.Name)
-		pjLabels[kube.BaseRefLabel] = string(candidate.BaseRef.Name)
+		pjLabels[kube.OrgLabel] = string(candidate.Org)
+		pjLabels[kube.RepoLabel] = string(candidate.Repo)
+		pjLabels[kube.BaseRefLabel] = string(candidate.BaseRefName)
 		pjLabels[kube.PullLabel] = string(strconv.Itoa(int(candidate.Number)))
 		pjLabels[kube.ContextAnnotation] = string(headContext.Context)
 
@@ -1221,9 +1291,9 @@ func prowJobListHasProwJobWithMatchingHeadSHA(pjs *prowapi.ProwJobList, headSHA 
 	return false
 }
 
-func (c *Controller) prepareMergeDetails(commitTemplates config.TideMergeCommitTemplate, pr PullRequest, mergeMethod github.PullRequestMergeType) github.MergeDetails {
+func (c *Controller) prepareMergeDetails(commitTemplates config.TideMergeCommitTemplate, pr CodeReviewCommon, mergeMethod types.PullRequestMergeType) github.MergeDetails {
 	ghMergeDetails := github.MergeDetails{
-		SHA:         string(pr.HeadRefOID),
+		SHA:         pr.HeadRefOID,
 		MergeMethod: string(mergeMethod),
 	}
 
@@ -1250,37 +1320,41 @@ func (c *Controller) prepareMergeDetails(commitTemplates config.TideMergeCommitT
 	return ghMergeDetails
 }
 
-func prMergeMethod(c config.Tide, pr *PullRequest) (github.PullRequestMergeType, error) {
-	repo := config.OrgRepo{Org: string(pr.Repository.Owner.Login), Repo: string(pr.Repository.Name)}
+// prMergeMethod figures out merge method based on tide config, this could be
+// overridden by GitHub labels.
+func prMergeMethod(c config.Tide, crc *CodeReviewCommon) (types.PullRequestMergeType, error) {
+	repo := config.OrgRepo{Org: crc.Org, Repo: crc.Repo}
 	method := c.MergeMethod(repo)
 	squashLabel := c.SquashLabel
 	rebaseLabel := c.RebaseLabel
 	mergeLabel := c.MergeLabel
 	if squashLabel != "" || rebaseLabel != "" || mergeLabel != "" {
 		labelCount := 0
-		for _, prlabel := range pr.Labels.Nodes {
-			switch string(prlabel.Name) {
-			case "":
-				continue
-			case squashLabel:
-				method = github.MergeSquash
-				labelCount++
-			case rebaseLabel:
-				method = github.MergeRebase
-				labelCount++
-			case mergeLabel:
-				method = github.MergeMerge
-				labelCount++
-			}
-			if labelCount > 1 {
-				return "", fmt.Errorf("conflicting merge method override labels")
+		if labels := crc.GitHubLabels(); labels != nil {
+			for _, prlabel := range labels.Nodes {
+				switch string(prlabel.Name) {
+				case "":
+					continue
+				case squashLabel:
+					method = types.MergeSquash
+					labelCount++
+				case rebaseLabel:
+					method = types.MergeRebase
+					labelCount++
+				case mergeLabel:
+					method = types.MergeMerge
+					labelCount++
+				}
+				if labelCount > 1 {
+					return "", fmt.Errorf("conflicting merge method override labels")
+				}
 			}
 		}
 	}
 	return method, nil
 }
 
-func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
+func (c *Controller) mergePRs(sp subpool, prs []CodeReviewCommon) error {
 	var merged, failed []int
 	defer func() {
 		if len(merged) == 0 {
@@ -1299,31 +1373,31 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 		if err != nil {
 			log.WithError(err).Error("Failed to determine merge method.")
 			errs = append(errs, err)
-			failed = append(failed, int(pr.Number))
+			failed = append(failed, pr.Number)
 			continue
 		}
 
 		// Ensure tide context has success state, otherwise PR merge will fail if branch protection
 		// in github is enabled and the loop to change tide context hasn't done it already
-		c.sc.dontUpdateStatus.insert(sp.org, sp.repo, int(pr.Number))
+		c.sc.dontUpdateStatus.insert(sp.org, sp.repo, pr.Number)
 		if err := setTideStatusSuccess(pr, c.ghc, c.config(), log); err != nil {
 			log.WithError(err).Error("Unable to set tide context to SUCCESS.")
 			errs = append(errs, err)
-			failed = append(failed, int(pr.Number))
+			failed = append(failed, pr.Number)
 			continue
 		}
 
 		commitTemplates := tideConfig.MergeCommitTemplate(config.OrgRepo{Org: sp.org, Repo: sp.repo})
 		keepTrying, err := tryMerge(func() error {
 			ghMergeDetails := c.prepareMergeDetails(commitTemplates, pr, mergeMethod)
-			return c.ghc.Merge(sp.org, sp.repo, int(pr.Number), ghMergeDetails)
+			return c.ghc.Merge(sp.org, sp.repo, pr.Number, ghMergeDetails)
 		})
 		if err != nil {
 			// These are user errors, shouldn't be printed as tide errors
 			log.WithError(err).Debug("Merge failed.")
 		} else {
 			log.Info("Merged.")
-			merged = append(merged, int(pr.Number))
+			merged = append(merged, pr.Number)
 		}
 		if !keepTrying {
 			break
@@ -1351,16 +1425,16 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 }
 
 // setTideStatusSuccess ensures the tide context is set to success
-func setTideStatusSuccess(pr PullRequest, ghc githubClient, cfg *config.Config, log *logrus.Entry) error {
+func setTideStatusSuccess(pr CodeReviewCommon, ghc githubClient, cfg *config.Config, log *logrus.Entry) error {
 	// Do not waste api tokens and risk hitting the 2.5k context limit by setting it to success if it is
 	// already set to success.
 	if prHasSuccessfullTideStatusContext(pr) {
 		return nil
 	}
 	return ghc.CreateStatus(
-		string(pr.Repository.Owner.Login),
-		string(pr.Repository.Name),
-		string(pr.HeadRefOID),
+		pr.Org,
+		pr.Repo,
+		pr.HeadRefOID,
 		github.Status{
 			Context:   statusContext,
 			State:     "success",
@@ -1368,9 +1442,13 @@ func setTideStatusSuccess(pr PullRequest, ghc githubClient, cfg *config.Config, 
 		})
 }
 
-func prHasSuccessfullTideStatusContext(pr PullRequest) bool {
-	for _, commit := range pr.Commits.Nodes {
-		if commit.Commit.OID != pr.HeadRefOID {
+func prHasSuccessfullTideStatusContext(pr CodeReviewCommon) bool {
+	commits := pr.GitHubCommits()
+	if commits == nil {
+		return false
+	}
+	for _, commit := range commits.Nodes {
+		if string(commit.Commit.OID) != pr.HeadRefOID {
 			continue
 		}
 		for _, context := range commit.Commit.Status.Contexts {
@@ -1445,7 +1523,7 @@ func tryMerge(mergeFunc func() error) (bool, error) {
 	return true, err
 }
 
-func (c *Controller) trigger(sp subpool, presubmits []config.Presubmit, prs []PullRequest) error {
+func (c *Controller) trigger(sp subpool, presubmits []config.Presubmit, prs []CodeReviewCommon) error {
 	refs := prowapi.Refs{
 		Org:     sp.org,
 		Repo:    sp.repo,
@@ -1456,10 +1534,10 @@ func (c *Controller) trigger(sp subpool, presubmits []config.Presubmit, prs []Pu
 		refs.Pulls = append(
 			refs.Pulls,
 			prowapi.Pull{
-				Number: int(pr.Number),
-				Title:  string(pr.Title),
-				Author: string(pr.Author.Login),
-				SHA:    string(pr.HeadRefOID),
+				Number: pr.Number,
+				Title:  pr.Title,
+				Author: string(pr.AuthorLogin),
+				SHA:    pr.HeadRefOID,
 			},
 		)
 	}
@@ -1519,7 +1597,7 @@ func (c *Controller) nonFailedBatchForJobAndRefsExists(jobName string, refs *pro
 	return len(pjs.Items) > 0
 }
 
-func (c *Controller) takeAction(sp subpool, batchPending, successes, pendings, missings, batchMerges []PullRequest, missingSerialTests map[int][]config.Presubmit) (Action, []PullRequest, error) {
+func (c *Controller) takeAction(sp subpool, batchPending, successes, pendings, missings, batchMerges []CodeReviewCommon, missingSerialTests map[int][]config.Presubmit) (Action, []CodeReviewCommon, error) {
 	// Merge the batch!
 	if len(batchMerges) > 0 {
 		return MergeBatch, batchMerges, c.mergePRs(sp, batchMerges)
@@ -1528,7 +1606,7 @@ func (c *Controller) takeAction(sp subpool, batchPending, successes, pendings, m
 	// invalidate the old batch result.
 	if len(successes) > 0 && len(batchPending) == 0 {
 		if ok, pr := pickHighestPriorityPR(sp.log, successes, sp.cc, c.isPassingTests, c.config().Tide.Priority); ok {
-			return Merge, []PullRequest{pr}, c.mergePRs(sp, []PullRequest{pr})
+			return Merge, []CodeReviewCommon{pr}, c.mergePRs(sp, []CodeReviewCommon{pr})
 		}
 	}
 	// If no presubmits are configured, just wait.
@@ -1548,7 +1626,7 @@ func (c *Controller) takeAction(sp subpool, batchPending, successes, pendings, m
 	// If we have no serial jobs pending or successful, trigger one.
 	if len(missings) > 0 && len(pendings) == 0 && len(successes) == 0 {
 		if ok, pr := pickHighestPriorityPR(sp.log, missings, sp.cc, c.isRetestEligible, c.config().Tide.Priority); ok {
-			return Trigger, []PullRequest{pr}, c.trigger(sp, missingSerialTests[int(pr.Number)], []PullRequest{pr})
+			return Trigger, []CodeReviewCommon{pr}, c.trigger(sp, missingSerialTests[pr.Number], []CodeReviewCommon{pr})
 		}
 	}
 	return Wait, nil, nil
@@ -1573,13 +1651,13 @@ type changeCacheKey struct {
 
 // prChanges gets the files changed by the PR, either from the cache or by
 // querying GitHub.
-func (c *changedFilesAgent) prChanges(pr *PullRequest) config.ChangedFilesProvider {
+func (c *changedFilesAgent) prChanges(pr *CodeReviewCommon) config.ChangedFilesProvider {
 	return func() ([]string, error) {
 		cacheKey := changeCacheKey{
-			org:    string(pr.Repository.Owner.Login),
-			repo:   string(pr.Repository.Name),
-			number: int(pr.Number),
-			sha:    string(pr.HeadRefOID),
+			org:    pr.Org,
+			repo:   pr.Repo,
+			number: pr.Number,
+			sha:    pr.HeadRefOID,
 		}
 
 		c.RLock()
@@ -1599,12 +1677,12 @@ func (c *changedFilesAgent) prChanges(pr *PullRequest) config.ChangedFilesProvid
 
 		// We need to query the changes from GitHub.
 		changes, err := c.ghc.GetPullRequestChanges(
-			string(pr.Repository.Owner.Login),
-			string(pr.Repository.Name),
-			int(pr.Number),
+			pr.Org,
+			pr.Repo,
+			pr.Number,
 		)
 		if err != nil {
-			return nil, fmt.Errorf("error getting PR changes for #%d: %w", int(pr.Number), err)
+			return nil, fmt.Errorf("error getting PR changes for #%d: %w", pr.Number, err)
 		}
 		changedFiles = make([]string, 0, len(changes))
 		for _, change := range changes {
@@ -1618,7 +1696,7 @@ func (c *changedFilesAgent) prChanges(pr *PullRequest) config.ChangedFilesProvid
 	}
 }
 
-func (c *changedFilesAgent) batchChanges(prs []PullRequest) config.ChangedFilesProvider {
+func (c *changedFilesAgent) batchChanges(prs []CodeReviewCommon) config.ChangedFilesProvider {
 	return func() ([]string, error) {
 		result := sets.String{}
 		for _, pr := range prs {
@@ -1654,11 +1732,11 @@ func (c *Controller) presubmitsByPull(sp *subpool) (map[int][]config.Presubmit, 
 	presubmits := make(map[int][]config.Presubmit, len(sp.prs))
 
 	// filtered PRs contains all PRs for which we were able to get the presubmits
-	var filteredPRs []PullRequest
+	var filteredPRs []CodeReviewCommon
 
 	for _, pr := range sp.prs {
 		log := c.logger.WithField("base-sha", sp.sha).WithFields(pr.logFields())
-		presubmitsForPull, err := c.config().GetPresubmits(c.gc, sp.org+"/"+sp.repo, refGetterFactory(sp.sha), refGetterFactory(string(pr.HeadRefOID)))
+		presubmitsForPull, err := c.config().GetPresubmits(c.gc, sp.org+"/"+sp.repo, refGetterFactory(sp.sha), refGetterFactory(pr.HeadRefOID))
 		if err != nil {
 			c.logger.WithError(err).Debug("Failed to get presubmits for PR, excluding from subpool")
 			continue
@@ -1680,7 +1758,7 @@ func (c *Controller) presubmitsByPull(sp *subpool) (map[int][]config.Presubmit, 
 				continue
 			}
 
-			presubmits[int(pr.Number)] = append(presubmits[int(pr.Number)], ps)
+			presubmits[pr.Number] = append(presubmits[pr.Number], ps)
 		}
 	}
 
@@ -1688,12 +1766,12 @@ func (c *Controller) presubmitsByPull(sp *subpool) (map[int][]config.Presubmit, 
 	return presubmits, nil
 }
 
-func (c *Controller) presubmitsForBatch(prs []PullRequest, org, repo, baseSHA, baseBranch string) ([]config.Presubmit, error) {
+func (c *Controller) presubmitsForBatch(prs []CodeReviewCommon, org, repo, baseSHA, baseBranch string) ([]config.Presubmit, error) {
 	log := c.logger.WithFields(logrus.Fields{"repo": repo, "org": org, "base-sha": baseSHA, "base-branch": baseBranch})
 
 	var headRefGetters []config.RefGetter
 	for _, pr := range prs {
-		headRefGetters = append(headRefGetters, refGetterFactory(string(pr.HeadRefOID)))
+		headRefGetters = append(headRefGetters, refGetterFactory(pr.HeadRefOID))
 	}
 
 	presubmits, err := c.config().GetPresubmits(c.gc, org+"/"+repo, refGetterFactory(baseSHA), headRefGetters...)
@@ -1738,7 +1816,7 @@ func (c *Controller) syncSubpool(sp subpool, blocks []blockers.Blocker) (Pool, e
 
 	tenantIDs := sp.TenantIDs()
 	var act Action
-	var targets []PullRequest
+	var targets []CodeReviewCommon
 	var err error
 	var errorString string
 	if len(blocks) > 0 {
@@ -1787,14 +1865,14 @@ func (c *Controller) syncSubpool(sp subpool, blocks []blockers.Blocker) (Pool, e
 		err
 }
 
-func prMeta(prs ...PullRequest) []prowapi.Pull {
+func prMeta(prs ...CodeReviewCommon) []prowapi.Pull {
 	var res []prowapi.Pull
 	for _, pr := range prs {
 		res = append(res, prowapi.Pull{
-			Number: int(pr.Number),
-			Author: string(pr.Author.Login),
-			Title:  string(pr.Title),
-			SHA:    string(pr.HeadRefOID),
+			Number: pr.Number,
+			Author: pr.AuthorLogin,
+			Title:  pr.Title,
+			SHA:    pr.HeadRefOID,
 		})
 	}
 	return res
@@ -1811,7 +1889,7 @@ func sortPools(pools []Pool) {
 		return string(pools[i].Branch) < string(pools[j].Branch)
 	})
 
-	sortPRs := func(prs []PullRequest) {
+	sortPRs := func(prs []CodeReviewCommon) {
 		sort.Slice(prs, func(i, j int) bool { return int(prs[i].Number) < int(prs[j].Number) })
 	}
 	for i := range pools {
@@ -1833,7 +1911,7 @@ type subpool struct {
 	// pjs contains all ProwJobs of type Presubmit or Batch
 	// that have the same baseSHA as the subpool
 	pjs []prowapi.ProwJob
-	prs []PullRequest
+	prs []CodeReviewCommon
 
 	cc map[int]contextChecker
 	// presubmit contains all required presubmits for each PR
@@ -1859,13 +1937,13 @@ func poolKey(org, repo, branch string) string {
 
 // dividePool splits up the list of pull requests and prow jobs into a group
 // per repo and branch. It only keeps ProwJobs that match the latest branch.
-func (c *Controller) dividePool(pool map[string]PullRequest) (map[string]*subpool, error) {
+func (c *Controller) dividePool(pool map[string]CodeReviewCommon) (map[string]*subpool, error) {
 	sps := make(map[string]*subpool)
 	for _, pr := range pool {
-		org := string(pr.Repository.Owner.Login)
-		repo := string(pr.Repository.Name)
-		branch := string(pr.BaseRef.Name)
-		branchRef := string(pr.BaseRef.Prefix) + string(pr.BaseRef.Name)
+		org := pr.Org
+		repo := pr.Repo
+		branch := pr.BaseRefName
+		branchRef := pr.BaseRefPrefix + pr.BaseRefName
 		fn := poolKey(org, repo, branch)
 		if sps[fn] == nil {
 			sha, err := c.ghc.GetRef(org, repo, strings.TrimPrefix(branchRef, "refs/"))
@@ -1904,7 +1982,9 @@ func (c *Controller) dividePool(pool map[string]PullRequest) (map[string]*subpoo
 	return sps, nil
 }
 
-// PullRequest holds graphql data about a PR, including its commits and their contexts.
+// PullRequest holds graphql data about a PR, including its commits and their
+// contexts.
+// This struct is GitHub specific
 type PullRequest struct {
 	Number githubql.Int
 	Author struct {
@@ -1926,27 +2006,43 @@ type PullRequest struct {
 		}
 	}
 	ReviewDecision githubql.PullRequestReviewDecision `graphql:"reviewDecision"`
-	Commits        struct {
-		Nodes []struct {
-			Commit Commit
-		}
-		// Request the 'last' 4 commits hoping that one of them is the logically 'last'
-		// commit with OID matching HeadRefOID. If we don't find it we have to use an
-		// additional API token. (see the 'headContexts' func for details)
-		// We can't raise this too much or we could hit the limit of 50,000 nodes
-		// per query: https://developer.github.com/v4/guides/resource-limitations/#node-limit
-	} `graphql:"commits(last: 4)"`
-	Labels struct {
-		Nodes []struct {
-			Name githubql.String
-		}
-	} `graphql:"labels(first: 100)"`
-	Milestone *struct {
-		Title githubql.String
-	}
+	// Request the 'last' 4 commits hoping that one of them is the logically 'last'
+	// commit with OID matching HeadRefOID. If we don't find it we have to use an
+	// additional API token. (see the 'headContexts' func for details)
+	// We can't raise this too much or we could hit the limit of 50,000 nodes
+	// per query: https://developer.github.com/v4/guides/resource-limitations/#node-limit
+	Commits   Commits `graphql:"commits(last: 4)"`
+	Labels    Labels  `graphql:"labels(first: 100)"`
+	Milestone *Milestone
 	Body      githubql.String
 	Title     githubql.String
 	UpdatedAt githubql.DateTime
+}
+
+func (pr *PullRequest) logFields() logrus.Fields {
+	return logrus.Fields{
+		"org":    pr.Repository.Owner.Login,
+		"repo":   pr.Repository.Name,
+		"pr":     pr.Number,
+		"branch": pr.BaseRef.Name,
+		"sha":    pr.HeadRefOID,
+	}
+}
+
+type Labels struct {
+	Nodes []struct {
+		Name githubql.String
+	}
+}
+
+type Milestone struct {
+	Title githubql.String
+}
+
+type Commits struct {
+	Nodes []struct {
+		Commit Commit
+	}
 }
 
 type CommitNode struct {
@@ -2007,16 +2103,6 @@ type searchQuery struct {
 	} `graphql:"search(type: ISSUE, first: 37, after: $searchCursor, query: $query)"`
 }
 
-func (pr *PullRequest) logFields() logrus.Fields {
-	return logrus.Fields{
-		"org":    string(pr.Repository.Owner.Login),
-		"repo":   string(pr.Repository.Name),
-		"pr":     int(pr.Number),
-		"branch": string(pr.BaseRef.Name),
-		"sha":    string(pr.HeadRefOID),
-	}
-}
-
 // headContexts gets the status contexts for the commit with OID == pr.HeadRefOID
 //
 // First, we try to get this value from the commits we got with the PR query.
@@ -2026,26 +2112,29 @@ func (pr *PullRequest) logFields() logrus.Fields {
 // We list multiple commits with the query to increase our chance of success,
 // but if we don't find the head commit we have to ask GitHub for it
 // specifically (this costs an API token).
-func headContexts(log *logrus.Entry, ghc githubClient, pr *PullRequest) ([]Context, error) {
-	for _, node := range pr.Commits.Nodes {
-		if node.Commit.OID == pr.HeadRefOID {
-			return append(node.Commit.Status.Contexts, checkRunNodesToContexts(log, node.Commit.StatusCheckRollup.Contexts.Nodes)...), nil
+func headContexts(log *logrus.Entry, ghc githubClient, pr *CodeReviewCommon) ([]Context, error) {
+	commits := pr.GitHubCommits()
+	if commits != nil {
+		for _, node := range commits.Nodes {
+			if string(node.Commit.OID) == pr.HeadRefOID {
+				return append(node.Commit.Status.Contexts, checkRunNodesToContexts(log, node.Commit.StatusCheckRollup.Contexts.Nodes)...), nil
+			}
 		}
 	}
 	// We didn't get the head commit from the query (the commits must not be
 	// logically ordered) so we need to specifically ask GitHub for the status
 	// and coerce it to a graphql type.
-	org := string(pr.Repository.Owner.Login)
-	repo := string(pr.Repository.Name)
+	org := pr.Org
+	repo := pr.Repo
 	// Log this event so we can tune the number of commits we list to minimize this.
 	// TODO alvaroaleman: Add checkrun support here. Doesn't seem to happen often though,
 	// openshift doesn't have a single occurrence of this in the past seven days.
-	log.Warnf("'last' %d commits didn't contain logical last commit. Querying GitHub...", len(pr.Commits.Nodes))
-	combined, err := ghc.GetCombinedStatus(org, repo, string(pr.HeadRefOID))
+	log.Warnf("'last' %d commits didn't contain logical last commit. Querying GitHub...", len(commits.Nodes))
+	combined, err := ghc.GetCombinedStatus(org, repo, pr.HeadRefOID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get the combined status: %w", err)
 	}
-	checkRunList, err := ghc.ListCheckRuns(org, repo, string(pr.HeadRefOID))
+	checkRunList, err := ghc.ListCheckRuns(org, repo, pr.HeadRefOID)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to list checkruns: %w", err)
 	}
@@ -2070,14 +2159,16 @@ func headContexts(log *logrus.Entry, ghc githubClient, pr *PullRequest) ([]Conte
 	contexts = append(contexts, checkRunNodesToContexts(log, checkRunNodes)...)
 
 	// Add a commit with these contexts to pr for future look ups.
-	pr.Commits.Nodes = append(pr.Commits.Nodes,
-		struct{ Commit Commit }{
-			Commit: Commit{
-				OID:    pr.HeadRefOID,
-				Status: struct{ Contexts []Context }{Contexts: contexts},
+	if commits := pr.GitHubCommits(); commits != nil {
+		commits.Nodes = append(commits.Nodes,
+			struct{ Commit Commit }{
+				Commit: Commit{
+					OID:    githubql.String(pr.HeadRefOID),
+					Status: struct{ Contexts []Context }{Contexts: contexts},
+				},
 			},
-		},
-	)
+		)
+	}
 	return contexts, nil
 }
 
@@ -2247,7 +2338,7 @@ func checkRunToContext(checkRun CheckRun) Context {
 	return context
 }
 
-func pickBatchWithPreexistingTests(sp subpool, candidates []PullRequest, maxSize int) []PullRequest {
+func pickBatchWithPreexistingTests(sp subpool, candidates []CodeReviewCommon, maxSize int) []CodeReviewCommon {
 	batchCandidatesBySuccessfulJobCount := map[string]int{}
 	batchCandidatesByPendingJobCount := map[string]int{}
 
@@ -2298,10 +2389,10 @@ func pickBatchWithPreexistingTests(sp subpool, candidates []PullRequest, maxSize
 		resultPullNumbers = prNumbersFromMapKey(mapKeyWithHighestvalue(batchCandidatesByPendingJobCount))
 	}
 
-	var result []PullRequest
+	var result []CodeReviewCommon
 	for _, resultPRNumber := range resultPullNumbers {
 		for _, pr := range sp.prs {
-			if int(pr.Number) == resultPRNumber {
+			if pr.Number == resultPRNumber {
 				result = append(result, pr)
 				break
 			}
@@ -2311,7 +2402,7 @@ func pickBatchWithPreexistingTests(sp subpool, candidates []PullRequest, maxSize
 	return result
 }
 
-func isPullInPRList(pull prowapi.Pull, allPRs []PullRequest) bool {
+func isPullInPRList(pull prowapi.Pull, allPRs []CodeReviewCommon) bool {
 	for _, pullRequest := range allPRs {
 		if pull.Number != int(pullRequest.Number) {
 			continue

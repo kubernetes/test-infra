@@ -250,7 +250,7 @@ func gitCommitAndPush() error {
 		return fmt.Errorf("%v (Caused by: %v)", "Error on git commit", err)
 	}
 
-	log.Print(fmt.Sprintf("Pushing commit to %s/%s:%s...", o.gitUser, o.remoteForkRepo, Branch))
+	log.Printf("Pushing commit to %s/%s:%s...", o.gitUser, o.remoteForkRepo, Branch)
 	pushTarget := fmt.Sprintf("https://%s:%s@github.com/%s/%s", o.gitUser, o.tokenContents, o.gitUser, o.remoteForkRepo)
 	_, err = runCmd(exec.Command("git", "push", "-f", pushTarget, "HEAD:"+Branch))
 	return wrapErrorOrNil("Error on git push", err)

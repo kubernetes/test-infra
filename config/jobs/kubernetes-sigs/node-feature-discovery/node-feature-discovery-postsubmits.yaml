@@ -2,6 +2,7 @@ postsubmits:
   kubernetes-sigs/node-feature-discovery:
   - name: postsubmit-node-feature-discovery-e2e-test
     branches:
+    - ^main$
     - ^master$
     max_concurrency: 1
     decorate: true

@@ -18,8 +18,10 @@ package serviceaccount
 
 import (
 	"testing"
+	"time"
 
-	authorizationv1beta1 "k8s.io/api/authorization/v1beta1"
+	authenticationv1 "k8s.io/api/authentication/v1"
+	authorizationv1 "k8s.io/api/authorization/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -39,16 +41,14 @@ func TestCreateClusterServiceAccountCredentials(t *testing.T) {
 			createClient: func() kubernetes.Interface {
 				var client kubernetes.Interface = &k8sFake.Clientset{}
 
-				client.(*k8sFake.Clientset).Fake.AddReactor("get", "secrets", func(action k8sTesting.Action) (handled bool, ret runtime.Object, err error) {
-					r := &corev1.Secret{
-						TypeMeta: metav1.TypeMeta{},
+				client.(*k8sFake.Clientset).Fake.AddReactor("get", "configmaps", func(action k8sTesting.Action) (handled bool, ret runtime.Object, err error) {
+					r := &corev1.ConfigMap{
 						ObjectMeta: metav1.ObjectMeta{
-							Name:      "secret-abc",
+							Name:      "kube-root-ca.crt",
 							Namespace: corev1.NamespaceDefault,
 						},
-						Data: map[string][]uint8{
-							corev1.ServiceAccountTokenKey:  {1, 2, 3},
-							corev1.ServiceAccountRootCAKey: {1, 2, 3},
+						Data: map[string]string{
+							"ca.crt": "ca",
 						},
 					}
 					return true, r, nil
@@ -66,10 +66,19 @@ func TestCreateClusterServiceAccountCredentials(t *testing.T) {
 				})
 
 				client.(*k8sFake.Clientset).Fake.AddReactor("create", "selfsubjectaccessreviews", func(action k8sTesting.Action) (handled bool, ret runtime.Object, err error) {
-					r := &authorizationv1beta1.SelfSubjectAccessReview{
-						Status: authorizationv1beta1.SubjectAccessReviewStatus{
+					r := &authorizationv1.SelfSubjectAccessReview{
+						Status: authorizationv1.SubjectAccessReviewStatus{
 							Allowed: true,
 							Reason:  "I am a test!",
+						},
+					}
+					return true, r, nil
+				})
+
+				client.(*k8sFake.Clientset).Fake.AddReactor("create", "serviceaccounts/token", func(action k8sTesting.Action) (handled bool, ret runtime.Object, err error) {
+					r := &authenticationv1.TokenRequest{
+						Status: authenticationv1.TokenRequestStatus{
+							Token: "abc",
 						},
 					}
 					return true, r, nil
@@ -91,7 +100,7 @@ func TestCreateClusterServiceAccountCredentials(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			client := test.createClient()
-			_, _, err := CreateClusterServiceAccountCredentials(client)
+			_, _, err := CreateClusterServiceAccountCredentials(client, metav1.Duration{Duration: 2 * 24 * time.Hour})
 			success := err == nil
 
 			if success != test.expected {

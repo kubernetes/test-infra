@@ -18,7 +18,7 @@ presubmits:
     spec:
       containers:
       # We need this image because it has Docker in Docker and go.
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
         command:
         - runner.sh
         args:
@@ -32,55 +32,3 @@ presubmits:
         resources:
           requests:
             cpu: 2000m
-  - name: pull-kubernetes-csi-csi-proxy-integration
-    always_run: true
-    decorate: true
-    skip_report: false
-    skip_branches: []
-    labels:
-      preset-k8s-ssh: "true"
-      preset-service-account: "true"
-      preset-common-gce-windows: "true"
-      preset-e2e-gce-windows-containerd: "true"
-      preset-bazel-scratch-dir: "true"
-      preset-bazel-remote-cache-enabled: "true"
-      preset-dind-enabled: "true"
-    annotations:
-      testgrid-dashboards: sig-storage-csi-other
-      testgrid-tab-name: pull-kubernetes-csi-csi-proxy-integration
-      description: kubernetes-csi/csi-proxy integration tests
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
-        command:
-        - runner.sh
-        - /workspace/scenarios/kubernetes_e2e.py
-        args:
-        - --check-leaked-resources
-        - --cluster=
-        - --extract=ci/latest
-        - --gcp-zone=us-west1-b
-        - --provider=gce
-        - --gcp-nodes=1
-        - --test=false
-        - --test-cmd=$GOPATH/src/github.com/kubernetes-csi/csi-proxy/scripts/run-integration.sh
-        - --timeout=60m
-        env:
-        - name: NODE_SIZE
-          value: "n2-standard-2"
-        # added in https://github.com/kubernetes/kubernetes/pull/105999
-        - name: WINDOWS_ENABLE_HYPERV
-          value: "true"
-        - name: WINDOWS_NODE_OS_DISTRIBUTION
-          value: "win2019"
-        - name: PREPULL_YAML
-          value: "prepull-head.yaml"
-        # these two values replace the preset-e2e-gce-windows values
-        - name: NUM_WINDOWS_NODES
-          value: "1"
-        - name: NUM_NODES
-          value: "1"
-        - name: GCP_ZONE
-          value: "us-west1-b"
-        securityContext:
-            privileged: true

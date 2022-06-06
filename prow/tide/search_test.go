@@ -165,7 +165,11 @@ func TestSearch(t *testing.T) {
 				t.Errorf("failed to receive expected error")
 			}
 			// Always check prs because we might return some results on error
-			if !reflect.DeepEqual(tc.expected, prs) {
+			var expectedCrcs []CodeReviewCommon
+			for _, pr := range tc.expected {
+				expectedCrcs = append(expectedCrcs, *CodeReviewCommonFromPullRequest(&pr))
+			}
+			if !reflect.DeepEqual(expectedCrcs, prs) {
 				t.Errorf("prs do not match:\n%s", diff.ObjectReflectDiff(tc.expected, prs))
 			}
 		})

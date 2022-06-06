@@ -2,21 +2,13 @@
 
 approvers:
 - alexeldeib
-- andyzhangx
-- brendandburns
 - CecileRobertMichon
-- feiskyer
 - devigned
-- karataliu
-- khenidak
-- nader-ziada
+- mboersma
 - shysank
 reviewers:
-- cpanato
 - jackfrancis
 - jsturtevant
-- juan-lee
-- mboersma
 
 labels:
 - sig/cluster-lifecycle

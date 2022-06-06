@@ -21,6 +21,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -46,15 +47,16 @@ const (
 	hourglass  = "⏳"
 	prohibited = "🚫"
 
-	defaultProwHeader         = "Prow Status:"
-	jobReportFormat           = "%s %s %s - %s\n"
-	jobReportFormatWithoutURL = "%s %s %s\n"
-	errorLinePrefix           = "NOTE FROM PROW"
-
-	// Stub for the URL field (when using jobReportFormat), if the URL is
-	// legitimately not set (e.g., because the job never got scheduled). This is
-	// what the user will see in place of an actual URL.
-	urlNotFound = "URL_NOT_FOUND"
+	defaultProwHeader               = "Prow Status:"
+	jobReportFormat                 = "%s [%s](%s) %s\n"
+	jobReportFormatUrlNotFound      = "%s %s (URL_NOT_FOUND) %s\n"
+	jobReportFormatWithoutURL       = "%s %s %s\n"
+	jobReportFormatLegacyRegex      = `^(\S+) (\S+) (\S+) - (\S+)$`
+	jobReportFormatRegex            = `^(\S+) \[(\S+)\]\((\S+)\) (\S+)$`
+	jobReportFormatUrlNotFoundRegex = `^(\S+) (\S+) \(URL_NOT_FOUND\) (\S+)$`
+	jobReportFormatWithoutURLRegex  = `^(\S+) (\S+) (\S+)$`
+	errorLinePrefix                 = "NOTE FROM PROW"
+	jobReportHeader                 = "%s %d out of %d pjs passed! 👉 Comment `/retest` to rerun only failed tests (if any), or `/test all` to rerun all tests\n"
 
 	// lgtm means all presubmits passed, but need someone else to approve before merge (looks good to me).
 	lgtm = "+1"
@@ -65,10 +67,26 @@ const (
 	// codeReview is the default gerrit code review label
 	codeReview = client.CodeReview
 	// maxCommentSizeLimit is from
-	// http://gerrit-documentation.storage.googleapis.com/Documentation/3.2.0/config-gerrit.html#change.commentSizeLimit,
-	// if a comment is 16000 chars it's almost not readable any way, let's not
-	// use all of the space, picking 80% as a heuristic number here
-	maxCommentSizeLimit = 14400
+	// http://gerrit-documentation.storage.googleapis.com/Documentation/3.2.0/config-gerrit.html#change.commentSizeLimit, where it says:
+	//
+	//    Maximum allowed size in characters of a regular (non-robot) comment.
+	//    Comments which exceed this size will be rejected. Size computation is
+	//    approximate and may be off by roughly 1%. Common unit suffixes of 'k',
+	//    'm', or 'g' are supported. The value must be positive.
+	//
+	//    The default limit is 16kiB.
+	//
+	// 16KiB = 16*1024 bytes. Note that the size computation is stated as
+	// **approximate** and can be off by about 1%. To be safe, we use 15*1024 or
+	// 93.75% of the default 16KiB limit. This value is lower than the limit by
+	// 6.25% to be 6x below the ~1% margin of error described by the Gerrit
+	// docs.
+	//
+	// Even assuming that the docs have their units wrong (maybe they actually
+	// mean 16KB = 16000, not 16KiB), the new value of (15*1024)/16000 = 0.96,
+	// or to be 4% less than the theoretical maximum, which is still a
+	// conservative figure.
+	maxCommentSizeLimit = 15 * 1024
 )
 
 var (
@@ -524,35 +542,86 @@ func (j *Job) serializeWithoutURL() string {
 }
 
 func (j *Job) serialize() string {
-	return fmt.Sprintf(jobReportFormat, j.Icon, j.Name, strings.ToUpper(string(j.State)), j.URL)
-}
 
-func deserializeWithoutURL(s string, j *Job) error {
-	var state string
-	n, err := fmt.Sscanf(s, jobReportFormatWithoutURL, &j.Icon, &j.Name, &state)
-	if err != nil {
-		return err
+	// It may be that the URL is empty, so we have to take care not to link it
+	// as such if we're doing Markdown-flavored URLs. This can happen if the job
+	// has not been scheduled due to some other failure.
+	if j.URL == "" {
+		return fmt.Sprintf(jobReportFormatUrlNotFound, j.Icon, j.Name, strings.ToUpper(string(j.State)))
 	}
-	j.State = v1.ProwJobState(strings.ToLower(state))
-	const want = 3
-	if n != want {
-		return fmt.Errorf("scan: got %d, want %d", n, want)
-	}
-	return nil
+
+	return fmt.Sprintf(jobReportFormat, j.Icon, j.Name, j.URL, strings.ToUpper(string(j.State)))
 }
 
 func deserialize(s string, j *Job) error {
 	var state string
-	n, err := fmt.Sscanf(s, jobReportFormat, &j.Icon, &j.Name, &state, &j.URL)
-	if err != nil {
-		return err
+	var formats = []struct {
+		regex  string
+		tokens []*string
+	}{
+		// Legacy format. This is to cover the case where we're still trying to
+		// parse legacy style comments during the transition to the new style
+		// (just in case).
+		//
+		// TODO(listx): It should be safe to delete this legacy format checker
+		// after we migrate all Prow instances over to the version of crier's
+		// gerrit reporter (this file) that uses the Markdown-flavored links.
+		// There is no hurry to delete this code because having it here is
+		// harmless, other than incurring negligible CPU cycles.
+		{jobReportFormatLegacyRegex,
+			[]*string{&j.Icon, &j.Name, &state, &j.URL}},
+
+		// New format with Markdown syntax for the URL.
+		{jobReportFormatRegex,
+			[]*string{&j.Icon, &j.Name, &j.URL, &state}},
+
+		// New format, but where the URL was not found.
+		{jobReportFormatUrlNotFoundRegex,
+			[]*string{&j.Icon, &j.Name, &j.URL, &state}},
+
+		// Job without URL (because GenerateReport() decided that adding a URL would be too much).
+		{jobReportFormatWithoutURLRegex,
+			[]*string{&j.Icon, &j.Name, &state}},
 	}
-	j.State = v1.ProwJobState(strings.ToLower(state))
-	const want = 4
-	if n != want {
-		return fmt.Errorf("scan: got %d, want %d", n, want)
+
+	for _, format := range formats {
+
+		re := regexp.MustCompile(format.regex)
+		if !re.MatchString(s) {
+			continue
+		}
+
+		// We drop the first token because it is the
+		// entire string itself.
+		matchedTokens := re.FindStringSubmatch(s)[1:]
+
+		// Even though the regexes are exact matches "^...$", we still check the
+		// number of tokens found just to be sure.
+		if len(matchedTokens) != len(format.tokens) {
+			return fmt.Errorf("tokens: got %d, want %d", len(format.tokens), len(matchedTokens))
+		}
+
+		for i := range format.tokens {
+			*format.tokens[i] = matchedTokens[i]
+		}
+
+		state = strings.ToLower(state)
+		validProwJobState := false
+		for _, pjState := range v1.GetAllProwJobStates() {
+			if v1.ProwJobState(state) == pjState {
+				validProwJobState = true
+				break
+			}
+		}
+		if !validProwJobState {
+			return fmt.Errorf("invalid prow job state %q", state)
+		}
+		j.State = v1.ProwJobState(state)
+
+		return nil
 	}
-	return nil
+
+	return fmt.Errorf("Could not deserialize %q to a job", s)
 }
 
 func errorMessageLine(s string) string {
@@ -572,11 +641,23 @@ func isErrorMessageLine(s string) bool {
 // So to ensure that all prow jobs results are displayed, URLs for some of the
 // jobs are omitted from this report to keep it under 14400 characters.
 //
+// Note that even if we drop all URLs, it may be that we're forced to drop jobs
+// names entirely if there are just too many jobs. So there is actually no
+// guarantee that we'll always report all job names (although this is rare in
+// practice).
+//
 // customCommentSizeLimit is used by unit tests that actually test that we
 // perform job serialization with or without URLs (without this, our unit tests
 // would have to be very large to hit the default maxCommentSizeLimit to trigger
 // the "don't print URLs" behavior).
 func GenerateReport(pjs []*v1.ProwJob, customCommentSizeLimit int) JobReport {
+	// A JobReport has 2 string parts: (1) the "Header" that summarizes the
+	// report, and (2) a list of links to each job result (URL) (the "Message").
+	// We take care to make sure that the overall Header + Message falls under
+	// the commentSizeLimit, which is the maxCommentSizeLimit by default (this
+	// limit is parameterized so that we can test different size limits in unit
+	// tests).
+
 	// By default, use the maximum comment size limit const.
 	commentSizeLimit := maxCommentSizeLimit
 	if customCommentSizeLimit > 0 {
@@ -592,20 +673,123 @@ func GenerateReport(pjs []*v1.ProwJob, customCommentSizeLimit int) JobReport {
 			report.Success++
 		}
 	}
+	numJobs := len(report.Jobs)
 
-	fullHeader := func(header, reTestMessage string) string {
-		return fmt.Sprintf("%s%s\n", header, reTestMessage)
+	report.prioritizeFailedJobs()
+
+	// Construct our comment that we want to send off to Gerrit. It is composed
+	// of the Header + Message.
+
+	// Construct report.Header portion.
+	report.Header = fmt.Sprintf(jobReportHeader, defaultProwHeader, report.Success, report.Total)
+	commentSize := len(report.Header)
+
+	// Construct report.Messages portion. We need to construct the long list of
+	// job result messages, delimited by a newline, where each message
+	// corresponds to a single job result.  These messages are concatenated
+	// together into report.Message.
+
+	// First just serialize without the URL. Afterwards, if we have room, we can
+	// start adding URLs as much as possible (failed jobs first). If we do not
+	// have room, simply truncate from the end of the list until we fall under
+	// the comment limit. This second scenario is highly unlikely, but is still
+	// something to consider (and tell the user about).
+	jobLines := []string{}
+	for _, job := range report.Jobs {
+		line := job.serializeWithoutURL()
+		jobLines = append(jobLines, line)
+		commentSize += len(line)
 	}
 
-	report.Header = fmt.Sprintf("%s %d out of %d pjs passed!", defaultProwHeader, report.Success, report.Total)
-	var reTestMessage string
-	if report.Success < report.Total {
-		reTestMessage = " 👉 Comment '/retest' to rerun all failed tests"
+	// Initially we skip displaying URLs for all jobs. Then depending on where
+	// we stand with our overall commentSize, we can try to either build it up
+	// (add URL links), or truncate it down (remove jobs from the end).
+	//
+	// For truncation, note that we truncate from the end, so that we prioritize
+	// reporting the names of the failed jobs (if any), which are at the front
+	// of the list.
+	skippedURLsFormat := "Skipped displaying URLs for %d/%d jobs due to reaching gerrit comment size limit"
+	errorLine := errorMessageLine(fmt.Sprintf(skippedURLsFormat, numJobs, numJobs))
+	commentSize += len(errorLine)
+	if commentSize < commentSizeLimit {
+		skipped := numJobs
+		for i, job := range report.Jobs {
+			lineWithURL := job.serialize()
+
+			lineSizeWithoutURL := len(jobLines[i])
+			lineSizeWithURL := len(lineWithURL)
+
+			delta := lineSizeWithURL - lineSizeWithoutURL
+
+			proposedErrorLine := errorMessageLine(fmt.Sprintf(skippedURLsFormat, skipped-1, numJobs))
+
+			// It could be that the new error line is smaller than the existing
+			// one, because e.g. `skipped` goes down from 100 to 99 (1 character
+			// less), or that we don't need the errorLine at all because there
+			// would be 0 skipped.
+			if skipped-1 == 0 {
+				proposedErrorLine = ""
+			}
+			delta -= (len(errorLine) - len(proposedErrorLine))
+
+			// Only replace the current line if the new commentSize would still
+			// be under the commentSizeLimit. Otherwise, break early because the
+			// commentSize is too big already.
+			if commentSize+delta < commentSizeLimit {
+				jobLines[i] = lineWithURL
+				commentSize += delta
+				errorLine = proposedErrorLine
+				skipped--
+			} else {
+				break
+			}
+		}
+
+		report.Message += strings.Join(jobLines, "")
+
+		if skipped > 0 {
+			report.Message += errorLine
+		}
+
+	} else {
+		// Drop existing errorLine (skip displaying URLs) because it no longer
+		// applies (we're skipping jobs entirely now, not just skipping the
+		// display of URLs).
+		commentSize -= len(errorLine)
+		errorLine = ""
+		skipped := 0
+		skippedJobsFormat := "Skipped displaying %d/%d jobs due to reaching gerrit comment size limit (too many jobs)"
+
+		last := numJobs - 1
+		for i := range report.Jobs {
+			j := last - i
+
+			// Truncate (delete) a job line.
+			commentSize -= len(jobLines[i])
+			jobLines[j] = ""
+			skipped++
+
+			// Construct new  errorLine to account for the truncation.
+			errorLine = errorMessageLine(fmt.Sprintf(skippedJobsFormat, skipped, numJobs))
+
+			// Break early if we've truncated enough to be under the
+			// commentSizeLimit.
+			if commentSize+len(errorLine) < commentSizeLimit {
+				break
+			}
+		}
+
+		report.Message += strings.Join(jobLines, "")
+		report.Message += errorLine
 	}
 
-	// Sort first so that failed jobs are always on top. This also makes it so
-	// that the failed jobs get priority in terms of getting linked to the job
-	// URL.
+	return report
+}
+
+// prioritizeFailedJobs sorts jobs so that the report will start with the failed
+// jobs first. This also makes it so that the failed jobs get priority in terms
+// of getting linked to the job URL.
+func (report *JobReport) prioritizeFailedJobs() {
 	sort.Slice(report.Jobs, func(i, j int) bool {
 		for _, state := range []v1.ProwJobState{
 			v1.FailureState,
@@ -622,74 +806,6 @@ func GenerateReport(pjs []*v1.ProwJob, customCommentSizeLimit int) JobReport {
 		// We don't care about other states, so keep original order.
 		return true
 	})
-
-	// TODO(listx): Clean this up (whether we include or exclude URLs). We
-	// should probably just construct an optimistic report (with full URLs), and
-	// then decide to trim it down if we are over the commentSizeLimit.
-	//
-	// Another thing we can do is do text-to-text compression so that we
-	// (almost) never skip reporting. E.g., see
-	// https://stackoverflow.com/a/41188719/437583. This should suffice for most
-	// scenarios because most of the time the job URLs share a large prefix
-	// (ideal for compression).
-	//
-	// Additionally, note that newline characters are very special here because
-	// they are used as token delimiters during deserialization (see
-	// https://github.com/kubernetes/test-infra/blob/b45b20a405a82de65d56196da00f6106b841dd40/prow/gerrit/adapter/adapter.go#L260).
-	// The use of newline characters is most likely a result of Gerrit comments
-	// only supporting plaintext (and thus, needing to use a delimiter that is
-	// not awkward on human eyes).
-	remainingSize := commentSizeLimit - len(fullHeader(report.Header, reTestMessage))
-	linesWithURLs := make([]string, len(report.Jobs))
-	linesWithoutURLs := make([]string, len(report.Jobs))
-	for i, job := range report.Jobs {
-		// If the URL cannot be found (for example, because the job has not been
-		// scheduled due to some other failure), then use the string
-		// URL_NOT_FOUND in its place instead. This way, we don't report jobs
-		// with an empty URL field.
-		if job.URL == "" {
-			job.URL = urlNotFound
-		}
-		linesWithURLs[i] = job.serialize()
-		remainingSize -= len(linesWithURLs[i])
-	}
-
-	// cutoff is the index where if it's the line contains URL it will exceed the
-	// size limit.
-	cutoff := len(report.Jobs)
-	for cutoff > 0 && remainingSize < 0 {
-		cutoff--
-		linesWithoutURLs[cutoff] = report.Jobs[cutoff].serializeWithoutURL()
-		// remainingSize >= 0 after this condition means next line is not good
-		// to include URL
-		remainingSize += len(linesWithURLs[cutoff]) - len(linesWithoutURLs[cutoff])
-	}
-
-	// This shouldn't happen unless there are too many prow jobs(e.g. > 300) and
-	// each job name is super long(e.g. > 50)
-	if remainingSize < 0 {
-		report.Header = fullHeader(report.Header, " 👉 Comment '/test all' to rerun all tests")
-		report.Message = errorMessageLine("Prow failed to report all jobs, are there excessive amount of prow jobs?")
-		return report
-	}
-
-	// Now that we know a cutoff between long and short lines, assemble them
-	for i := range report.Jobs {
-		if i < cutoff {
-			report.Message += linesWithURLs[i]
-		} else {
-			report.Message += linesWithoutURLs[i]
-		}
-	}
-
-	if cutoff < len(report.Jobs) {
-		// Note that this makes the comment longer, but since the size limit of
-		// 14400 is conservative, we should be fine
-		report.Message += errorMessageLine(fmt.Sprintf("Skipped displaying URLs for %d/%d jobs due to reaching gerrit comment size limit", len(report.Jobs)-cutoff, len(report.Jobs)))
-	}
-
-	report.Header = fullHeader(report.Header, reTestMessage)
-	return report
 }
 
 // ParseReport creates a jobReport from a string, nil if cannot parse
@@ -715,11 +831,8 @@ func ParseReport(message string) *JobReport {
 		}
 		var j Job
 		if err := deserialize(contents[i], &j); err != nil {
-			// Will also need to support reports without URL
-			if err = deserializeWithoutURL(contents[i], &j); err != nil {
-				logrus.Warnf("Could not deserialize %s to a job: %v", contents[i], err)
-				continue
-			}
+			logrus.Warn(err)
+			continue
 		}
 		report.Total++
 		if j.State == v1.SuccessState {

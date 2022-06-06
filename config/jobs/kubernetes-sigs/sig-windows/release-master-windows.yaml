@@ -38,134 +38,32 @@ presets:
     value: "upstream-windows-serial-slow.yaml"
   - name: CONFORMANCE_NODES
     value: "1"
-presubmits:
-  kubernetes/kubernetes:
-  - name: pull-kubernetes-e2e-aks-engine-azure-disk-windows-containerd
-    decorate: true
-    decoration_config:
-      timeout: 2h
-    always_run: false
-    optional: true
-    path_alias: k8s.io/kubernetes
-    branches:
-    # TODO(releng): Remove once repo default branch has been renamed
-    - master
-    - main
-    labels:
-      preset-service-account: "true"
-      preset-azure-cred: "true"
-      preset-azure-windows: "true"
-      preset-k8s-ssh: "true"
-      preset-dind-enabled: "true"
-    extra_refs:
-    - org: kubernetes-sigs
-      repo: azuredisk-csi-driver
-      base_ref: master
-      path_alias: sigs.k8s.io/azuredisk-csi-driver
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
-        command:
-        - runner.sh
-        - kubetest
-        args:
-        # Generic e2e test args
-        - --test
-        - --up
-        - --down
-        - --build=quick
-        - --dump=$(ARTIFACTS)
-        # Azure-specific test args
-        - --deployment=aksengine
-        - --provider=skeleton
-        - --aksengine-admin-username=azureuser
-        - --aksengine-admin-password=AdminPassw0rd
-        - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
-        - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
-        - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
-        - --aksengine-winZipBuildScript=$(WIN_BUILD)
-        - --aksengine-orchestratorRelease=1.24
-        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_master_csi_enabled.json
-        - --aksengine-win-binaries
-        - --aksengine-deploy-custom-k8s
-        - --aksengine-agentpoolcount=2
-        # Specific test args
-        - --test-azure-disk-csi-driver
-        securityContext:
-          privileged: true
-        env:
-        - name: AZURE_STORAGE_DRIVER
-          value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
-        - name: TEST_WINDOWS
-          value: "true"
-    annotations:
-      testgrid-dashboards: sig-windows-presubmit
-      testgrid-tab-name: pull-kubernetes-e2e-aks-engine-azure-disk-windows-containerd
-      description: Run Azure Disk e2e test with Azure Disk in-tree volume plugin in a Windows cluster with containerd runtime.
-  - name: pull-kubernetes-e2e-aks-engine-azure-file-windows-containerd
-    decorate: true
-    decoration_config:
-      timeout: 2h
-    always_run: false
-    optional: true
-    path_alias: k8s.io/kubernetes
-    branches:
-    # TODO(releng): Remove once repo default branch has been renamed
-    - master
-    - main
-    labels:
-      preset-service-account: "true"
-      preset-azure-cred: "true"
-      preset-azure-windows: "true"
-      preset-k8s-ssh: "true"
-      preset-dind-enabled: "true"
-    extra_refs:
-    - org: kubernetes-sigs
-      repo: azurefile-csi-driver
-      base_ref: master
-      path_alias: sigs.k8s.io/azurefile-csi-driver
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
-        command:
-        - runner.sh
-        - kubetest
-        args:
-        # Generic e2e test args
-        - --test
-        - --up
-        - --down
-        - --build=quick
-        - --dump=$(ARTIFACTS)
-        # Azure-specific test args
-        - --deployment=aksengine
-        - --provider=skeleton
-        - --aksengine-admin-username=azureuser
-        - --aksengine-admin-password=AdminPassw0rd
-        - --aksengine-creds=$(AZURE_CREDENTIALS)
-        - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
-        - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
-        - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
-        - --aksengine-winZipBuildScript=$(WIN_BUILD)
-        - --aksengine-orchestratorRelease=1.24
-        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_csi_proxy.json
-        - --aksengine-win-binaries
-        - --aksengine-deploy-custom-k8s
-        - --aksengine-agentpoolcount=2
-        # Specific test args
-        - --test-azure-file-csi-driver
-        securityContext:
-          privileged: true
-        env:
-        - name: AZURE_STORAGE_DRIVER
-          value: "kubernetes.io/azure-file" # In-tree Azure file storage class
-        - name: TEST_WINDOWS
-          value: "true"
-    annotations:
-      testgrid-dashboards: sig-windows-presubmit
-      testgrid-tab-name: pull-kubernetes-e2e-aks-engine-azure-file-windows-containerd
-      description: Run Azure File e2e test with Azure File in-tree volume plugin in a Windows cluster with containerd runtime
+- labels:
+    preset-capz-windows-ci-entrypoint-common-main: "true"
+    # https://capz.sigs.k8s.io/developers/development.html#running-custom-test-suites-on-capz-clusters
+  env:
+    - name: KUBERNETES_VERSION
+      value: "latest"
+    - name: NODE_MACHINE_TYPE
+      value: "Standard_D4s_v3"
+    - name: TEST_WINDOWS
+      value: "true"
+- labels:
+    preset-capz-windows-azuredisk: "true"
+  env:
+    - name: WINDOWS_USE_HOST_PROCESS_CONTAINERS
+      value: "true"
+    - name: DISABLE_ZONE
+      value: "true"
+    - name: WORKER_MACHINE_COUNT
+      value: 0 # Don't create linux worker nodes
+- labels:
+    preset-capz-windows-azurefile: "true"
+  env:
+    - name: WINDOWS_USE_HOST_PROCESS_CONTAINERS
+      value: "true"
+    - name: WORKER_MACHINE_COUNT
+      value: 0 # Don't create linux worker nodes
 periodics:
 - name: ci-kubernetes-e2e-capz-master-containerd-windows
   interval: 3h
@@ -187,7 +85,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
         command:
           - "runner.sh"
           - "./scripts/ci-conformance.sh"
@@ -222,7 +120,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
         command:
           - "runner.sh"
           - "./scripts/ci-conformance.sh"
@@ -237,7 +135,7 @@ periodics:
     testgrid-dashboards: sig-windows-master-release, sig-windows-signal
     testgrid-tab-name: capz-windows-containerd-master-serial-slow
 - name: ci-kubernetes-e2e-capz-master-containerd-windows-2022
-  interval: 12h
+  interval: 3h
   decorate: true
   decoration_config:
     timeout: 4h
@@ -256,7 +154,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
         command:
           - "runner.sh"
           - "./scripts/ci-conformance.sh"
@@ -290,7 +188,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
         command:
           - "runner.sh"
           - "./scripts/ci-conformance.sh"
@@ -304,295 +202,88 @@ periodics:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
     testgrid-dashboards: sig-windows-master-release
     testgrid-tab-name: capz-windows-containerd-2022-master-serial-slow
-- interval: 8h
-  name: ci-kubernetes-e2e-aks-engine-azure-master-windows-containerd
-  decorate: true
-  decoration_config:
-    timeout: 3h
-  labels:
-    preset-service-account: "true"
-    preset-azure-cred: "true"
-    preset-azure-windows: "true"
-    preset-windows-repo-list-master: "true"
-    preset-k8s-ssh: "true"
-    preset-dind-enabled: "true"
-    preset-windows-private-registry-cred: "true"
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
-      command:
-      - runner.sh
-      - kubetest
-      args:
-      # Generic e2e test args
-      - --test
-      - --up
-      - --down
-      - --build=quick
-      - --dump=$(ARTIFACTS)
-      # Azure-specific test args
-      - --deployment=aksengine
-      - --provider=skeleton
-      - --aksengine-admin-username=azureuser
-      - --aksengine-admin-password=AdminPassw0rd
-      - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
-      - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
-      - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
-      - --aksengine-winZipBuildScript=$(WIN_BUILD)
-      - --aksengine-orchestratorRelease=1.24
-      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_master.json
-      - --aksengine-win-binaries
-      - --aksengine-deploy-custom-k8s
-      # Specific test args
-      - --test_args=--node-os-distro=windows -docker-config-file=$(DOCKER_CONFIG_FILE) -prepull-images=true --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-network\].EndpointSlice --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|\[alpha\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows
-      - --ginkgo-parallel=4
-      securityContext:
-        privileged: true
-  annotations:
-    testgrid-dashboards: sig-windows-master-release
-    testgrid-tab-name: aks-engine-windows-containerd-master
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
-    description: Runs Windows tests on a Kubernetes cluster running containerd provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
-- interval: 24h
-  name: ci-kubernetes-e2e-aks-engine-azure-master-windows-containerd-serial-slow
-  decorate: true
-  decoration_config:
-    timeout: 5h
-  labels:
-    preset-service-account: "true"
-    preset-azure-cred: "true"
-    preset-azure-windows: "true"
-    preset-windows-repo-list-master: "true"
-    preset-k8s-ssh: "true"
-    preset-dind-enabled: "true"
-    preset-windows-private-registry-cred: "true"
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
-      command:
-      - runner.sh
-      - kubetest
-      args:
-      # Generic e2e test args
-      - --test
-      - --up
-      - --down
-      - --build=quick
-      - --dump=$(ARTIFACTS)
-      # Azure-specific test args
-      - --deployment=aksengine
-      - --provider=skeleton
-      - --aksengine-admin-username=azureuser
-      - --aksengine-admin-password=AdminPassw0rd
-      - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
-      - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
-      - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
-      - --aksengine-winZipBuildScript=$(WIN_BUILD)
-      - --aksengine-orchestratorRelease=1.24
-      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_master_serial.json
-      - --aksengine-win-binaries
-      - --aksengine-deploy-custom-k8s
-      # Specific test args
-      - --test_args=--node-os-distro=windows --docker-config-file=$(DOCKER_CONFIG_FILE) -prepull-images=true --ginkgo.focus=(\[sig-windows\]|\[sig-scheduling\].SchedulerPreemption|\[sig-autoscaling\].\[Feature:HPA\]|\[sig-apps\].CronJob).*(\[Serial\]|\[Slow\])|(\[Serial\]|\[Slow\]).*(\[Conformance\]|\[NodeConformance\])|ContainerLogRotation --ginkgo.skip=\[LinuxOnly\]|device.plugin.for.Windows
-      - --ginkgo-parallel=1
-      securityContext:
-        privileged: true
-  annotations:
-    testgrid-dashboards: sig-windows-master-release
-    testgrid-tab-name: aks-engine-windows-containerd-serial-slow-master
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
-    description: Runs serial Windows tests on a Kubernetes cluster running containerd provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
-- interval: 48h
-  name: ci-kubernetes-e2e-azure-disk-windows-containerd
+- name: ci-kubernetes-e2e-azuredisk-capz-windows-2019
+  interval: 48h
   decorate: true
   decoration_config:
     timeout: 2h
   labels:
-    preset-service-account: "true"
-    preset-azure-cred: "true"
-    preset-azure-windows: "true"
-    preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
+    preset-capz-windows-ci-entrypoint-common-main: "true"
+    preset-capz-windows-azuredisk: "true"
   extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-azure
+    base_ref: main
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+    workdir: true
   - org: kubernetes-sigs
     repo: azuredisk-csi-driver
     base_ref: master
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
-      command:
-      - runner.sh
-      - kubetest
-      args:
-      # Generic e2e test args
-      - --test
-      - --up
-      - --down
-      - --build=quick
-      - --dump=$(ARTIFACTS)
-      # Azure-specific test args
-      - --deployment=aksengine
-      - --provider=skeleton
-      - --aksengine-admin-username=azureuser
-      - --aksengine-admin-password=AdminPassw0rd
-      - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
-      - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
-      - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
-      - --aksengine-winZipBuildScript=$(WIN_BUILD)
-      - --aksengine-orchestratorRelease=1.24
-      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_csi_proxy.json
-      - --aksengine-win-binaries
-      - --aksengine-deploy-custom-k8s
-      - --aksengine-agentpoolcount=2
-      # Specific test args
-      - --test-azure-disk-csi-driver
-      securityContext:
-        privileged: true
-      env:
-      - name: AZURE_STORAGE_DRIVER
-        value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
-      - name: TEST_WINDOWS
-        value: "true"
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
+        command:
+          - runner.sh
+          - ./scripts/ci-entrypoint.sh
+        args:
+          - bash
+          - -c
+          - >-
+            cd ${GOPATH}/src/sigs.k8s.io/azuredisk-csi-driver &&
+            make e2e-test
+        securityContext:
+          privileged: true
   annotations:
     testgrid-dashboards: sig-windows-master-release
-    testgrid-tab-name: aks-engine-windows-containerd-azure-disk-master
+    testgrid-tab-name: capz-azuredisk-windows-2019
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
-    description: Run Azure Disk e2e test with Azure Disk in a Windows cluster configured with CSI proxy and containerd.
-- interval: 48h
-  name: ci-kubernetes-e2e-azure-file-windows-containerd
+    description: Run Azure Disk e2e test in a CAPZ cluster on Windows 2019 nodes
+- name: ci-kubernetes-e2e-azurefile-capz-windows-2019
+  interval: 48h
   decorate: true
   decoration_config:
     timeout: 2h
   labels:
-    preset-service-account: "true"
-    preset-azure-cred: "true"
-    preset-azure-windows: "true"
-    preset-k8s-ssh: "true"
     preset-dind-enabled: "true"
+    preset-kind-volume-mounts: "true"
+    preset-azure-cred-only: "true"
+    preset-azure-anonymous-pull: "true"
+    preset-capz-windows-ci-entrypoint-common-main: "true"
+    preset-capz-windows-azuredisk: "true"
   extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
+  - org: kubernetes-sigs
+    repo: cluster-api-provider-azure
+    base_ref: main
+    path_alias: sigs.k8s.io/cluster-api-provider-azure
+    workdir: true
   - org: kubernetes-sigs
     repo: azurefile-csi-driver
     base_ref: master
     path_alias: sigs.k8s.io/azurefile-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
-      command:
-      - runner.sh
-      - kubetest
-      args:
-      # Generic e2e test args
-      - --test
-      - --up
-      - --down
-      - --build=quick
-      - --dump=$(ARTIFACTS)
-      # Azure-specific test args
-      - --deployment=aksengine
-      - --provider=skeleton
-      - --aksengine-admin-username=azureuser
-      - --aksengine-admin-password=AdminPassw0rd
-      - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
-      - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
-      - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
-      - --aksengine-winZipBuildScript=$(WIN_BUILD)
-      - --aksengine-orchestratorRelease=1.24
-      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_csi_proxy.json
-      - --aksengine-win-binaries
-      - --aksengine-deploy-custom-k8s
-      - --aksengine-agentpoolcount=2
-      # Specific test args
-      - --test-azure-file-csi-driver
-      securityContext:
-        privileged: true
-      env:
-      - name: AZURE_STORAGE_DRIVER
-        value: "kubernetes.io/azure-file" # In-tree Azure file storage class
-      - name: TEST_WINDOWS
-        value: "true"
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
+        command:
+          - runner.sh
+          - ./scripts/ci-entrypoint.sh
+        args:
+          - bash
+          - -c
+          - >-
+            cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
+            make e2e-test
+        securityContext:
+          privileged: true
   annotations:
     testgrid-dashboards: sig-windows-master-release
-    testgrid-tab-name: aks-engine-windows-containerd-azure-file-master
+    testgrid-tab-name: capz-azurefile-windows-2019
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
-    description: Run Azure File e2e test with Azure File in a Windows cluster configured with CSI proxy and containerd.
-- interval: 24h
-  name: ci-kubernetes-e2e-aks-engine-azure-master-windows-containerd-nightly
-  decorate: true
-  decoration_config:
-    timeout: 3h
-  labels:
-    preset-service-account: "true"
-    preset-azure-cred: "true"
-    preset-azure-windows: "true"
-    preset-windows-repo-list-master: "true"
-    preset-k8s-ssh: "true"
-    preset-dind-enabled: "true"
-    preset-windows-private-registry-cred: "true"
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: master
-    path_alias: k8s.io/kubernetes
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
-      command:
-      - runner.sh
-      - kubetest
-      args:
-      # Generic e2e test args
-      - --test
-      - --up
-      - --down
-      - --build=quick
-      - --dump=$(ARTIFACTS)
-      # Azure-specific test args
-      - --deployment=aksengine
-      - --provider=skeleton
-      - --aksengine-admin-username=azureuser
-      - --aksengine-admin-password=AdminPassw0rd
-      - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
-      - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
-      - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
-      - --aksengine-winZipBuildScript=$(WIN_BUILD)
-      - --aksengine-orchestratorRelease=1.24
-      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_nightly.json
-      - --aksengine-win-binaries
-      - --aksengine-deploy-custom-k8s
-      # Specific test args
-      - --test_args=--feature-gates=WindowsHostProcessContainers=true --node-os-distro=windows -docker-config-file=$(DOCKER_CONFIG_FILE) -prepull-images=true --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-network\].EndpointSlice|WindowsHostProcessContainers --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|\[alpha\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows
-      - --ginkgo-parallel=4
-      securityContext:
-        privileged: true
-  annotations:
-    testgrid-dashboards: sig-windows-master-release
-    testgrid-tab-name: aks-engine-windows-containerd-nightly
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
-    description: Runs Windows tests on a Kubernetes cluster running nightly builds of containerd and hcsshim provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
+    description: Run Azure File e2e test in a CAPZ cluster on Windows 2019 nodes
 - name: ci-kubernetes-e2e-capz-master-containerd-nightly-windows
   interval: 24h
   decorate: true
@@ -612,7 +303,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220404-0178a71d18-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
         command:
           - "runner.sh"
           - "./scripts/ci-conformance.sh"

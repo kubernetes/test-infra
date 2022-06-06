@@ -66,6 +66,17 @@ const (
 	ErrorState ProwJobState = "error"
 )
 
+// GetAllProwJobStates returns all possible job states.
+func GetAllProwJobStates() []ProwJobState {
+	return []ProwJobState{
+		TriggeredState,
+		PendingState,
+		SuccessState,
+		FailureState,
+		AbortedState,
+		ErrorState}
+}
+
 // ProwJobAgent specifies the controller (such as plank or jenkins-agent) that runs the job.
 type ProwJobAgent string
 
@@ -155,7 +166,9 @@ type ProwJobSpec struct {
 	// trigger this job on their pull request
 	RerunCommand string `json:"rerun_command,omitempty"`
 	// MaxConcurrency restricts the total number of instances
-	// of this job that can run in parallel at once
+	// of this job that can run in parallel at once. This is
+	// a separate mechanism to JobQueueName and the lowest max
+	// concurrency is selected from these two.
 	// +kubebuilder:validation:Minimum=0
 	MaxConcurrency int `json:"max_concurrency,omitempty"`
 	// ErrorOnEviction indicates that the ProwJob should be completed and given
@@ -196,6 +209,15 @@ type ProwJobSpec struct {
 	// ProwJobDefault holds configuration options provided as defaults
 	// in the Prow config
 	ProwJobDefault *ProwJobDefault `json:"prowjob_defaults,omitempty"`
+
+	// JobQueueName is an optional field with name of a queue defining
+	// max concurrency. When several jobs from the same queue try to run
+	// at the same time, the number of them that is actually started is
+	// limited by JobQueueConcurrencies (part of Plank's config). If
+	// this field is left undefined inifinite concurrency is assumed.
+	// This behaviour may be superseded by MaxConcurrency field, if it
+	// is set to a constraining value.
+	JobQueueName string `json:"job_queue_name,omitempty"`
 }
 
 type GitHubTeamSlug struct {
