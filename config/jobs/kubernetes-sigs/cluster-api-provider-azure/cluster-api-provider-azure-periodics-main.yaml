@@ -128,7 +128,7 @@ periodics:
           - name: INIT_WITH_BINARY
             value: "https://github.com/kubernetes-sigs/cluster-api/releases/download/v0.3.23/clusterctl-{OS}-{ARCH}"
           - name: INIT_WITH_PROVIDERS_CONTRACT
-            value: "v1alpha3"
+            value: "v1alpha4"
           - name: INIT_WITH_KUBERNETES_VERSION
             value: "v1.21.2"
           - name: GINKGO_FOCUS
@@ -142,7 +142,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
     testgrid-tab-name: capz-periodic-apiversion-upgrade-main
-    description: This job creates clusters using supported older api versions (v1alpha3, v1alpha4), and verifies that the clusters continue to operate properly after the api version is upgraded to the latest(v1beta1).
+    description: This job creates clusters using supported older api versions (v1alpha4), and verifies that the clusters continue to operate properly after the api version is upgraded to the latest (v1beta1).
 - name: periodic-cluster-api-provider-azure-coverage
   interval: 12h
   decorate: true
