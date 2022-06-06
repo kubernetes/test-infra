@@ -136,9 +136,10 @@ th {
     color: #EF5350;
 }
 
-.icon-cell {
+.icon-cell-32 {
     width: 32px;
 }
+
 /**
  * ProwJob State style
  */

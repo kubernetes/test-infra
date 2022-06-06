@@ -44,7 +44,6 @@ export namespace cell {
       c.appendChild(document.createTextNode(""));
       return c;
     }
-    c.classList.add("icon-cell");
 
     let displayState = stateToAdj(s);
     displayState = displayState[0].toUpperCase() + displayState.slice(1);
