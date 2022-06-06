@@ -138,7 +138,7 @@ metadata:
     app.kubernetes.io/name: kubernetes-external-secrets
     app: kubernetes-external-secrets
   name: kubernetes-external-secrets
-  namespace: prow-monitoring
+  namespace: default
 spec:
   endpoints:
   - interval: 30s
