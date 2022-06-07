@@ -10,7 +10,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-master
         command:
         - runner.sh
         args:
@@ -42,7 +42,7 @@ presubmits:
       workdir: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-master
         command:
         - runner.sh
         - kubetest
@@ -102,7 +102,7 @@ presubmits:
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-master
           command:
             - runner.sh
             - kubetest
@@ -165,7 +165,7 @@ presubmits:
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-master
           command:
           - runner.sh
           args:
@@ -220,7 +220,7 @@ presubmits:
         workdir: false
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-master
           command:
           - runner.sh
           args:
@@ -271,7 +271,7 @@ presubmits:
         workdir: true
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-master
           command:
           - runner.sh
           args:
@@ -309,7 +309,7 @@ presubmits:
       preset-service-account: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-master
         command:
         - runner.sh
         args:
@@ -345,7 +345,7 @@ periodics:
       workdir: false
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-master
         command:
         - runner.sh
         args:
@@ -395,7 +395,7 @@ periodics:
       workdir: false
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-master
         command:
         - runner.sh
         args:
@@ -444,7 +444,7 @@ periodics:
       workdir: false
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-master
         command:
         - runner.sh
         args:
@@ -495,7 +495,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-master
       command:
       - runner.sh
       - kubetest
@@ -557,7 +557,7 @@ periodics:
       path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-master
       command:
       - runner.sh
       - kubetest
@@ -627,7 +627,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-master
       command:
       - runner.sh
       args:
@@ -684,7 +684,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-master
       command:
       - runner.sh
       args:
@@ -746,7 +746,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-master
       command:
       - runner.sh
       args:
@@ -797,7 +797,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-master
       command:
       - runner.sh
       - kubetest
@@ -864,7 +864,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-master
       command:
       - runner.sh
       - kubetest
@@ -927,7 +927,7 @@ periodics:
       workdir: false
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-master
         command:
         - runner.sh
         args:
@@ -976,7 +976,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-master
       command:
       - runner.sh
       - kubetest
@@ -1041,7 +1041,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-master
       command:
       - runner.sh
       args:
@@ -1101,7 +1101,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-master
       command:
       - runner.sh
       args:
@@ -1162,7 +1162,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-master
       command:
       - runner.sh
       args:
@@ -1215,7 +1215,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-master
       command:
       - runner.sh
       - kubetest
@@ -1280,7 +1280,7 @@ periodics:
     workdir: false
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-master
       command:
       - runner.sh
       args:
@@ -1332,7 +1332,7 @@ periodics:
     path_alias: sigs.k8s.io/cloud-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220523-f2a2939508-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-master
       command:
       - runner.sh
       - kubetest
