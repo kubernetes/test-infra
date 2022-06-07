@@ -6,7 +6,7 @@ presubmits:
     path_alias: sigs.k8s.io/e2e-framework
     spec:
       containers:
-      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.17
+      - image: gcr.io/k8s-staging-releng/releng-ci:latest-go1.18
         imagePullPolicy: Always
         command:
         - make
