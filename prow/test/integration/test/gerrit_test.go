@@ -28,6 +28,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/test-infra/prow/gerrit/client"
 )
 
@@ -39,12 +40,12 @@ type LastSyncState map[string]map[string]time.Time
 
 func TestGerrit(t *testing.T) {
 	tests := []struct {
-		name     string
-		change   gerrit.ChangeInfo
-		messages []string
+		name             string
+		change           gerrit.ChangeInfo
+		expectedMessages []string
 	}{
 		{
-			name: "1 New change with 1 presubit triggered",
+			name: "1 New change with 1 presubmit triggered",
 			change: gerrit.ChangeInfo{
 				CurrentRevision: "1",
 				ID:              "1",
@@ -55,10 +56,10 @@ func TestGerrit(t *testing.T) {
 				Revisions:       map[string]client.RevisionInfo{"1": {Number: 1, Ref: "refs/changes/00/1/1"}},
 				Messages:        []gerrit.ChangeMessageInfo{{RevisionNumber: 1, Message: "/test all", ID: "1"}},
 			},
-			messages: []string{"/test all", "Triggered 1 prow jobs (0 suppressed reporting): \n  * Name: hello-world-presubmit"},
+			expectedMessages: []string{"/test all", "Triggered 1 prow jobs (0 suppressed reporting): \n  * Name: hello-world-presubmit"},
 		},
 		{
-			name: "no presubmit Prow jobs automatically triggered from WorkInProgess change",
+			name: "WorkInProgress change does not trigger new presubmit jobs",
 			change: client.ChangeInfo{
 				CurrentRevision: "1",
 				ChangeID:        "2",
@@ -73,7 +74,7 @@ func TestGerrit(t *testing.T) {
 					},
 				},
 			},
-			messages: []string{},
+			expectedMessages: []string{},
 		},
 		{
 			name: "presubmit runs when a file matches run_if_changed",
@@ -96,7 +97,7 @@ func TestGerrit(t *testing.T) {
 					},
 				},
 			},
-			messages: []string{"/test all", "Triggered 2 prow jobs (0 suppressed reporting): \n  * Name: hello-world-presubmit\n  * Name: bee-movie-presubmit"},
+			expectedMessages: []string{"/test all", "Triggered 2 prow jobs (0 suppressed reporting): \n  * Name: hello-world-presubmit\n  * Name: bee-movie-presubmit"},
 		},
 	}
 	for _, tc := range tests {
@@ -130,7 +131,7 @@ func TestGerrit(t *testing.T) {
 			}
 
 			//Give some time for gerrit to pick up the change
-			time.Sleep(20 * time.Second)
+			wait.Poll(5*time.Second, 20*time.Second, expectedMessagesRecievedFunc(gerritClient, tc.change.ChangeID, tc.expectedMessages))
 
 			resp, err := gerritClient.GetChange(gerritServer, tc.change.ChangeID)
 			if err != nil {
@@ -138,7 +139,7 @@ func TestGerrit(t *testing.T) {
 				t.Errorf("Failed getting gerrit change: %v", err)
 			}
 
-			if diff := cmp.Diff(tc.messages, mapToStrings(resp.Messages), cmpopts.SortSlices(func(a, b string) bool {
+			if diff := cmp.Diff(tc.expectedMessages, mapToStrings(resp.Messages), cmpopts.SortSlices(func(a, b string) bool {
 				return a < b
 			})); diff != "" {
 				t.Errorf("change message mismatch. want(-), got(+):\n%s", diff)
@@ -149,6 +150,22 @@ func TestGerrit(t *testing.T) {
 		})
 	}
 
+}
+
+func expectedMessagesRecievedFunc(gerritClient *client.Client, ChangeID string, expectedMessages []string) func() (bool, error) {
+	return func() (bool, error) {
+		resp, err := gerritClient.GetChange(gerritServer, ChangeID)
+		if err != nil {
+			return false, nil
+		}
+
+		if diff := cmp.Diff(expectedMessages, mapToStrings(resp.Messages), cmpopts.SortSlices(func(a, b string) bool {
+			return a < b
+		})); diff != "" {
+			return false, nil
+		}
+		return true, nil
+	}
 }
 
 func mapToStrings(messages []gerrit.ChangeMessageInfo) []string {

@@ -72,10 +72,6 @@ func (fg *FakeGerrit) GetChangesForProject(projectName string, start, desiredTot
 	return res
 }
 
-func makeTimeStamp(t time.Time) gerrit.Timestamp {
-	return gerrit.Timestamp{Time: t}
-}
-
 func (fg *FakeGerrit) GetComments(id string) map[string][]*gerrit.CommentInfo {
 	fg.lock.Lock()
 	defer fg.lock.Unlock()
@@ -86,8 +82,11 @@ func (fg *FakeGerrit) GetComments(id string) map[string][]*gerrit.CommentInfo {
 	return nil
 }
 
+// The Gerrit component keeps track of lastUpdateTime and only process changes after that time
+// we need a way to create a change that we are sure the gerrit componenet will pick up
+// especially once multiple integration tests are using the same fakegerritserver
 func (fg *FakeGerrit) AddChangeAfter(projectName string, change *gerrit.ChangeInfo) {
-	fg.lastUpdateTime = makeTimeStamp(fg.lastUpdateTime.Add(time.Hour * 12).UTC())
+	fg.lastUpdateTime = gerrit.Timestamp{Time: fg.lastUpdateTime.Add(time.Hour * 12).UTC()}
 	if change.Submitted != nil {
 		change.Submitted = &fg.lastUpdateTime
 	}
@@ -191,6 +190,6 @@ func NewFakeGerritClient() *FakeGerrit {
 		Changes:        make(map[string]Change),
 		Accounts:       make(map[string]*gerrit.AccountInfo),
 		Projects:       make(map[string]*Project),
-		lastUpdateTime: makeTimeStamp(time.Now().UTC()),
+		lastUpdateTime: gerrit.Timestamp{Time: time.Now().UTC()},
 	}
 }
