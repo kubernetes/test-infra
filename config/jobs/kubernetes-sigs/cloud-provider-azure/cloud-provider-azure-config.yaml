@@ -160,7 +160,7 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.3
+        base_ref: main
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
     spec:
@@ -917,7 +917,7 @@ periodics:
   extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.3
+      base_ref: main
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     - org: kubernetes-sigs
@@ -1026,7 +1026,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.3
+    base_ref: main
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes
@@ -1086,7 +1086,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.3
+    base_ref: main
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes
@@ -1134,8 +1134,8 @@ periodics:
     testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
     description: "Runs Kubernetes serial conformance tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on vmss."
 - interval: 24h
-  # cloud-provider-azure-conformance-vmss-multiple-zones-capz runs Kubernetes conformance tests periodically on vmss multiple zones.
-  name: cloud-provider-azure-conformance-vmss-multiple-zones-capz
+  # cloud-provider-azure-conformance-multiple-zones-vmss-capz runs Kubernetes conformance tests periodically on vmss multiple zones.
+  name: cloud-provider-azure-conformance-multiple-zones-vmss-capz
   decorate: true
   decoration_config:
     timeout: 5h
@@ -1147,7 +1147,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.3
+    base_ref: main
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes
@@ -1191,7 +1191,7 @@ periodics:
         value: "Standard"
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
-    testgrid-tab-name: cloud-provider-azure-conformance-vmss-multiple-zones-capz
+    testgrid-tab-name: cloud-provider-azure-conformance-multiple-zones-vmss-capz
     testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
     description: "Runs Kubernetes conformance tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on vmss multiple zones."
 - interval: 24h
@@ -1265,7 +1265,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.3
+    base_ref: main
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes
