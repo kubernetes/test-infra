@@ -188,6 +188,8 @@ presubmits:
                 value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss.yaml
               - name: AZURE_LOADBALANCER_SKU
                 value: "Standard"
+              - name: K8S_FEATURE_GATES
+                value: "MixedProtocolLBService=true"
       annotations:
         testgrid-dashboards: provider-azure-cloud-provider-azure-1-23-presubmit
         testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmss-capz-1-23
@@ -292,6 +294,8 @@ presubmits:
                 value: "latest-1.23"
               - name: CONTROL_PLANE_MACHINE_COUNT
                 value: "3"
+              - name: K8S_FEATURE_GATES
+                value: "MixedProtocolLBService=true"
       annotations:
         testgrid-dashboards: provider-azure-cloud-provider-azure-1-23-presubmit
         testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-capz-1-23
