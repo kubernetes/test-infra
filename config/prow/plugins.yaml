@@ -252,7 +252,7 @@ blockades:
   blockregexps:
   - ^prow/.+\.md$
   exceptionregexps:
-  - ^prow/README\.md$
+  - ^prow/(ANNOUNCEMENTS|README)\.md$
   explanation: "All Prow documentation (Markdown files) have moved to https://github.com/kubernetes-sigs/prow as part of https://github.com/kubernetes-sigs/prow/issues/4."
 
 blunderbuss:
