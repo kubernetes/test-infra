@@ -2326,6 +2326,14 @@ func TestIsBugAllowed(t *testing.T) {
 			groups:   []string{"other"},
 			expected: false,
 		},
+		{
+			name: "a subset of groups matching is allowed",
+			bug: &bugzilla.Bug{
+				Groups: []string{"whoa", "really"},
+			},
+			groups:   []string{"whoa", "really", "cool"},
+			expected: true,
+		},
 	}
 	for _, testCase := range testCases {
 		if actual, expected := isBugAllowed(testCase.bug, testCase.groups), testCase.expected; actual != expected {
