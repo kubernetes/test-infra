@@ -129,7 +129,7 @@ func handlePR(c client, t plugins.Trigger, pre github.PullRequestEvent, welcomeT
 	if err != nil {
 		return fmt.Errorf("check if user %s is trusted: %w", user, err)
 	}
-	if trustedResponse.IsTrusted {
+	if !alwaysPost && trustedResponse.IsTrusted {
 		log.Debug("User is trusted. Skipping their welcome message")
 		return nil
 	}
