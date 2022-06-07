@@ -817,7 +817,22 @@ func TestExpectedStatus(t *testing.T) {
 			ca.Set(&config.Config{ProwConfig: config.ProwConfig{Tide: config.Tide{DisplayAllQueriesInStatus: tc.displayAllTideQueries}}})
 			mmc := newMergeChecker(ca.Config, &fgc{})
 
-			sc, err := newStatusController(context.Background(), logrus.NewEntry(logrus.StandardLogger()), nil, newFakeManager(tc.prowJobs...), nil, ca.Config, nil, "", mmc, false)
+			sc, err := newStatusController(
+				context.Background(),
+				logrus.NewEntry(logrus.StandardLogger()),
+				nil,
+				newFakeManager(tc.prowJobs...),
+				nil,
+				ca.Config,
+				nil,
+				"",
+				mmc,
+				false,
+				&statusUpdate{
+					dontUpdateStatus: &threadSafePRSet{},
+					newPoolPending:   make(chan bool),
+				},
+			)
 			if err != nil {
 				t.Fatalf("failed to get statusController: %v", err)
 			}
@@ -960,12 +975,27 @@ func TestSetStatuses(t *testing.T) {
 		}
 
 		mmc := newMergeChecker(ca.Config, fc)
-		sc, err := newStatusController(context.Background(), log, fc, newFakeManager(), nil, ca.Config, nil, "", mmc, false)
+		sc, err := newStatusController(
+			context.Background(),
+			log,
+			fc,
+			newFakeManager(),
+			nil,
+			ca.Config,
+			nil,
+			"",
+			mmc,
+			false,
+			&statusUpdate{
+				dontUpdateStatus: &threadSafePRSet{},
+				newPoolPending:   make(chan bool),
+			},
+		)
 		if err != nil {
 			t.Fatalf("failed to get statusController: %v", err)
 		}
 		if tc.inDontSetStatus {
-			sc.dontUpdateStatus = threadSafePRSet{data: map[pullRequestIdentifier]struct{}{{}: {}}}
+			sc.dontUpdateStatus = &threadSafePRSet{data: map[pullRequestIdentifier]struct{}{{}: {}}}
 		}
 		sc.setStatuses([]CodeReviewCommon{*crc}, pool, blockers.Blockers{}, nil, nil)
 		if str, err := log.String(); err != nil {
@@ -1197,6 +1227,10 @@ func TestSetStatusRespectsRequiredContexts(t *testing.T) {
 		config:       ca.Config,
 		pjClient:     fakectrlruntimeclient.NewFakeClient(),
 		mergeChecker: newMergeChecker(ca.Config, fghc),
+		statusUpdate: &statusUpdate{
+			dontUpdateStatus: &threadSafePRSet{},
+			newPoolPending:   make(chan bool),
+		},
 	}
 	crc := CodeReviewCommonFromPullRequest(&pr)
 	pool := map[string]CodeReviewCommon{prKey(crc): *crc}
@@ -1309,7 +1343,22 @@ func TestStatusControllerSearch(t *testing.T) {
 			cfg := func() *config.Config {
 				return &config.Config{ProwConfig: config.ProwConfig{Tide: config.Tide{Queries: config.TideQueries{{Orgs: []string{"org-a", "org-b"}}}}}}
 			}
-			sc, err := newStatusController(context.Background(), logrus.WithField("tc", tc), ghc, newFakeManager(), nil, cfg, nil, "", nil, tc.usesAppsAuth)
+			sc, err := newStatusController(
+				context.Background(),
+				logrus.WithField("tc", tc),
+				ghc,
+				newFakeManager(),
+				nil,
+				cfg,
+				nil,
+				"",
+				nil,
+				tc.usesAppsAuth,
+				&statusUpdate{
+					dontUpdateStatus: &threadSafePRSet{},
+					newPoolPending:   make(chan bool),
+				},
+			)
 			if err != nil {
 				t.Fatalf("failed to construct status controller: %v", err)
 			}

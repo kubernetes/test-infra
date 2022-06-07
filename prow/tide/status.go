@@ -72,9 +72,6 @@ type statusController struct {
 
 	mergeChecker *mergeChecker
 
-	// newPoolPending is a size 1 chan that signals that the main Tide loop has
-	// updated the 'poolPRs' field with a freshly updated pool.
-	newPoolPending chan bool
 	// shutDown is used to signal to the main controller that the statusController
 	// has completed processing after newPoolPending is closed.
 	shutDown chan bool
@@ -83,21 +80,32 @@ type statusController struct {
 	// the minimum status update period.
 	lastSyncStart time.Time
 
-	// dontUpdateStatus contains all PRs for which the Tide sync controller
-	// updated the status to success prior to merging. As the name suggests,
-	// the status controller must not update their status.
-	dontUpdateStatus threadSafePRSet
-
-	sync.Mutex
-	poolPRs          map[string]CodeReviewCommon
-	requiredContexts map[string][]string
-	blocks           blockers.Blockers
-	baseSHAs         map[string]string
-
 	storedState     map[string]storedState
 	storedStateLock sync.Mutex
 	opener          io.Opener
 	path            string
+
+	// Shared fields with sync controller
+	*statusUpdate
+}
+
+// statusUpdate contains the required fields from syncController when there is a
+// pending pool update.
+//
+// statusController will use the values from syncController blindly.
+type statusUpdate struct {
+	blocks           blockers.Blockers
+	poolPRs          map[string]CodeReviewCommon
+	baseSHAs         map[string]string
+	requiredContexts map[string][]string
+	sync.Mutex
+	// dontUpdateStatus contains all PRs for which the Tide sync controller
+	// updated the status to success prior to merging. As the name suggests,
+	// the status controller must not update their status.
+	dontUpdateStatus *threadSafePRSet
+	// newPoolPending is a size 1 chan that signals that the main Tide loop has
+	// updated the 'poolPRs' field with a freshly updated pool.
+	newPoolPending chan bool
 }
 
 func (sc *statusController) shutdown() {
@@ -574,7 +582,7 @@ func (sc *statusController) waitSync() {
 	for {
 		select {
 		case <-wait:
-			sc.Lock()
+			sc.statusUpdate.Lock()
 			pool := sc.poolPRs
 			blocks := sc.blocks
 			baseSHAs := sc.baseSHAs
@@ -582,7 +590,7 @@ func (sc *statusController) waitSync() {
 				baseSHAs = map[string]string{}
 			}
 			requiredContexts := sc.requiredContexts
-			sc.Unlock()
+			sc.statusUpdate.Unlock()
 			sc.sync(pool, blocks, baseSHAs, requiredContexts)
 			return
 		case more := <-sc.newPoolPending:
