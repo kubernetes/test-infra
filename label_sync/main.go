@@ -418,7 +418,7 @@ func loadLabels(gc client, org string, repos []string) (*RepoLabels, error) {
 				logrus.WithField("org", org).WithField("repo", repository).Info("Listing labels for repo")
 				repoLabels, err := gc.GetRepoLabels(org, repository)
 				if err != nil {
-					logrus.WithField("org", org).WithField("repo", repository).Error("Failed listing labels for repo")
+					logrus.WithField("org", org).WithField("repo", repository).WithError(err).Error("Failed listing labels for repo")
 					errChan <- err
 				}
 				labels <- RepoLabels{repository: repoLabels}
