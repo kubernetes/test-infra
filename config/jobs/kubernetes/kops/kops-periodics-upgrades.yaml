@@ -27,7 +27,7 @@ periodics:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
       - name: KOPS_VERSION_A
-        value: "v1.23.5"
+        value: "v1.23.2"
       - name: K8S_VERSION_A
         value: "v1.22.1"
       - name: KOPS_VERSION_B
@@ -91,7 +91,7 @@ periodics:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
       - name: KOPS_VERSION_A
-        value: "v1.23.5"
+        value: "v1.23.2"
       - name: K8S_VERSION_A
         value: "v1.23.1"
       - name: KOPS_VERSION_B
@@ -155,7 +155,7 @@ periodics:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
       - name: KOPS_VERSION_A
-        value: "v1.23.5"
+        value: "v1.23.2"
       - name: K8S_VERSION_A
         value: "v1.22.1"
       - name: KOPS_VERSION_B
@@ -219,7 +219,7 @@ periodics:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
       - name: KOPS_VERSION_A
-        value: "v1.23.5"
+        value: "v1.23.2"
       - name: K8S_VERSION_A
         value: "v1.23.1"
       - name: KOPS_VERSION_B
@@ -259,8 +259,8 @@ periodics:
     testgrid-tab-name: kops-aws-upgrade-k123-ko123-to-k124-ko124
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
-- name: e2e-kops-aws-upgrade-k119-ko1240-beta0-to-k120-ko124
-  cron: '13 0-23/2 * * *'
+- name: e2e-kops-aws-upgrade-k119-ko1240-beta1-to-k120-ko124
+  cron: '37 0-23/2 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -283,7 +283,7 @@ periodics:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
       - name: KOPS_VERSION_A
-        value: "v1.24.0-beta.0"
+        value: "v1.24.0-beta.1"
       - name: K8S_VERSION_A
         value: "v1.19.16"
       - name: KOPS_VERSION_B
@@ -293,7 +293,7 @@ periodics:
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
-        value: "e2e-084935c973-1bebf.test-cncf-aws.k8s.io"
+        value: "e2e-aaf246acd4-e3175.test-cncf-aws.k8s.io"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-prow"
       - name: KUBE_SSH_USER
@@ -318,11 +318,11 @@ periodics:
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '23'
-    testgrid-tab-name: kops-aws-upgrade-k119-ko1240-beta0-to-k120-ko124
+    testgrid-tab-name: kops-aws-upgrade-k119-ko1240-beta1-to-k120-ko124
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
-- name: e2e-kops-aws-upgrade-k123-ko1240-beta0-to-k123-ko124
-  cron: '50 1-23/2 * * *'
+- name: e2e-kops-aws-upgrade-k123-ko1240-beta1-to-k123-ko124
+  cron: '18 1-23/2 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -345,7 +345,7 @@ periodics:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
       - name: KOPS_VERSION_A
-        value: "v1.24.0-beta.0"
+        value: "v1.24.0-beta.1"
       - name: K8S_VERSION_A
         value: "v1.23.1"
       - name: KOPS_VERSION_B
@@ -355,7 +355,7 @@ periodics:
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
-        value: "e2e-28dff11a4a-ec142.test-cncf-aws.k8s.io"
+        value: "e2e-dd871ad8e0-693c5.test-cncf-aws.k8s.io"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-prow"
       - name: KUBE_SSH_USER
@@ -382,7 +382,7 @@ periodics:
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '23'
-    testgrid-tab-name: kops-aws-upgrade-k123-ko1240-beta0-to-k123-ko124
+    testgrid-tab-name: kops-aws-upgrade-k123-ko1240-beta1-to-k123-ko124
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k122-ko123-to-k123-kolatest
@@ -513,8 +513,8 @@ periodics:
     testgrid-tab-name: kops-aws-upgrade-k123-ko123-to-k124-kolatest
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
-- name: e2e-kops-aws-upgrade-k123-ko1240-beta0-to-k124-kolatest
-  cron: '59 1-23/2 * * *'
+- name: e2e-kops-aws-upgrade-k123-ko1240-beta1-to-k124-kolatest
+  cron: '30 0-23/2 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -537,7 +537,7 @@ periodics:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
       - name: KOPS_VERSION_A
-        value: "1.24.0-beta.0"
+        value: "v1.24.0-beta.1"
       - name: K8S_VERSION_A
         value: "v1.23.1"
       - name: KOPS_VERSION_B
@@ -547,7 +547,7 @@ periodics:
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
-        value: "e2e-4914d36082-2755c.test-cncf-aws.k8s.io"
+        value: "e2e-3b78312de3-aae45.test-cncf-aws.k8s.io"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-prow"
       - name: KUBE_SSH_USER
@@ -574,11 +574,11 @@ periodics:
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '23'
-    testgrid-tab-name: kops-aws-upgrade-k123-ko1240-beta0-to-k124-kolatest
+    testgrid-tab-name: kops-aws-upgrade-k123-ko1240-beta1-to-k124-kolatest
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
-- name: e2e-kops-aws-upgrade-k124-ko1240-beta0-to-k124-kolatest
-  cron: '56 0-23/2 * * *'
+- name: e2e-kops-aws-upgrade-k124-ko1240-beta1-to-k124-kolatest
+  cron: '1 1-23/2 * * *'
   labels:
     preset-service-account: "true"
     preset-aws-ssh: "true"
@@ -601,7 +601,7 @@ periodics:
       - ./tests/e2e/scenarios/upgrade-ab/run-test.sh
       env:
       - name: KOPS_VERSION_A
-        value: "1.24.0-beta.0"
+        value: "v1.24.0-beta.1"
       - name: K8S_VERSION_A
         value: "v1.24.0"
       - name: KOPS_VERSION_B
@@ -611,7 +611,7 @@ periodics:
       - name: CLOUD_PROVIDER
         value: "aws"
       - name: CLUSTER_NAME
-        value: "e2e-d715334619-003a1.test-cncf-aws.k8s.io"
+        value: "e2e-6655bc81b8-79a58.test-cncf-aws.k8s.io"
       - name: KOPS_STATE_STORE
         value: "s3://k8s-kops-prow"
       - name: KUBE_SSH_USER
@@ -638,7 +638,7 @@ periodics:
     test.kops.k8s.io/networking: calico
     testgrid-dashboards: google-aws, kops-distro-u2004, kops-k8s-stable, kops-latest, kops-upgrades, sig-cluster-lifecycle-kops
     testgrid-days-of-results: '23'
-    testgrid-tab-name: kops-aws-upgrade-k124-ko1240-beta0-to-k124-kolatest
+    testgrid-tab-name: kops-aws-upgrade-k124-ko1240-beta1-to-k124-kolatest
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "kops_version": null, "networking": "calico"}
 - name: e2e-kops-aws-upgrade-k124-kolatest-to-klatest-kolatest
