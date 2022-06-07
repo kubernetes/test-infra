@@ -588,6 +588,7 @@ presubmits:
       testgrid-tab-name: pr-azuredisk-csi-driver-external-e2e-single-az
       description: "Run k8s External E2E tests on a single-az cluster for Azure Disk CSI driver."
       testgrid-num-columns-recent: '30'
+  # pull-azuredisk-csi-driver-external-e2e-windows is currently experimental and not yet stable
   - name: pull-azuredisk-csi-driver-external-e2e-windows
     decorate: true
     always_run: false
