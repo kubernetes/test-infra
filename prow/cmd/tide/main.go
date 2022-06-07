@@ -154,7 +154,19 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error constructing mgr.")
 	}
-	c, err := tide.NewController(githubSync, githubStatus, mgr, cfg, git.ClientFactoryFrom(gitClient), o.maxRecordsPerPool, opener, o.historyURI, o.statusURI, nil, o.github.AppPrivateKeyPath != "")
+	c, err := tide.NewController(
+		githubSync,
+		githubStatus,
+		mgr,
+		cfg,
+		git.ClientFactoryFrom(gitClient),
+		o.maxRecordsPerPool,
+		opener,
+		o.historyURI,
+		o.statusURI,
+		nil,
+		o.github.AppPrivateKeyPath != "",
+	)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating Tide controller.")
 	}
@@ -179,7 +191,7 @@ func main() {
 	// Deck consumes these endpoints
 	controllerMux := http.NewServeMux()
 	controllerMux.Handle("/", c)
-	controllerMux.Handle("/history", c.History)
+	controllerMux.Handle("/history", c.History())
 	server := &http.Server{Addr: ":" + strconv.Itoa(o.port), Handler: controllerMux}
 
 	// Push metrics to the configured prometheus pushgateway endpoint or serve them
