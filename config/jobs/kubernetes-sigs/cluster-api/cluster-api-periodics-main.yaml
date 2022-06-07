@@ -201,7 +201,7 @@ periodics:
       - "./scripts/ci-e2e.sh"
       env:
       - name: GINKGO_SKIP
-        value: "\\[Conformance\\] \\[K8s-Upgrade\\]|\\[IPv6\\]"
+        value: "\\[Conformance\\] \\[K8s-Upgrade\\]|\\[IPv6\\]|\\[ClusterClass\\]"
       # This value determines the minimum Kubernetes
       # supported version for Cluster API management cluster.
       - name: KUBERNETES_VERSION_MANAGEMENT
