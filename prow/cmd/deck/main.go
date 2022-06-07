@@ -216,7 +216,7 @@ var (
 	traceHandler        = metrics.TraceHandler(simplifier, httpRequestDuration, httpResponseSize)
 )
 
-type authCfgGetter func(*prowapi.Refs) *prowapi.RerunAuthConfig
+type authCfgGetter func(*prowapi.Refs, string) *prowapi.RerunAuthConfig
 
 func init() {
 	prometheus.MustRegister(httpRequestDuration)
@@ -419,9 +419,8 @@ func main() {
 		}
 	}
 
-	authCfgGetter := func(refs *prowapi.Refs) *prowapi.RerunAuthConfig {
-		rac := cfg().Deck.RerunAuthConfigs.GetRerunAuthConfig(refs)
-		return &rac
+	authCfgGetter := func(refs *prowapi.Refs, cluster string) *prowapi.RerunAuthConfig {
+		return cfg().Deck.GetRerunAuthConfig(refs, cluster)
 	}
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -493,7 +492,7 @@ func main() {
 	// if we allow direct reruns, we must protect against CSRF in all post requests using the cookie secret as a token
 	// for more information about CSRF, see https://github.com/kubernetes/test-infra/blob/master/prow/cmd/deck/csrf.md
 	empty := prowapi.Refs{}
-	if o.rerunCreatesJob && csrfToken == nil && !authCfgGetter(&empty).IsAllowAnyone() {
+	if o.rerunCreatesJob && csrfToken == nil && !authCfgGetter(&empty, "").IsAllowAnyone() {
 		logrus.Fatal("Rerun creates job cannot be enabled without CSRF protection, which requires --cookie-secret to be exactly 32 bytes")
 		return
 	}
@@ -1499,7 +1498,7 @@ func handleRerun(prowJobClient prowv1.ProwJobInterface, createProwJob bool, cfg 
 				http.Error(w, "Direct rerun feature is not enabled. Enable with the '--rerun-creates-job' flag.", http.StatusMethodNotAllowed)
 				return
 			}
-			authConfig := cfg(pj.Spec.Refs)
+			authConfig := cfg(pj.Spec.Refs, pj.Spec.Cluster)
 			var allowed bool
 			if pj.Spec.RerunAuthConfig.IsAllowAnyone() || authConfig.IsAllowAnyone() {
 				// Skip getting the users login via GH oauth if anyone is allowed to rerun
