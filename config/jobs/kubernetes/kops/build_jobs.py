@@ -1123,6 +1123,15 @@ def generate_presubmits_e2e():
 
         presubmit_test(
             branch='master',
+            k8s_version='1.24',
+            kops_channel='alpha',
+            name='pull-kops-latest-e2e-aws-k8s-1-24',
+            networking='calico',
+            tab_name='e2e-aws-1-24',
+            always_run=False,
+        ),
+        presubmit_test(
+            branch='master',
             k8s_version='1.23',
             kops_channel='alpha',
             name='pull-kops-latest-e2e-aws-k8s-1-23',
@@ -1142,6 +1151,16 @@ def generate_presubmits_e2e():
             always_run=False,
         ),
 
+        presubmit_test(
+            branch='release-1.24',
+            k8s_version='1.24',
+            kops_channel='alpha',
+            name='pull-kops-e2e-kubernetes-aws-1-24',
+            networking='calico',
+            tab_name='e2e-1-24',
+            always_run=True,
+            skip_regex=skip_regex,
+        ),
         presubmit_test(
             branch='release-1.23',
             k8s_version='1.23',
