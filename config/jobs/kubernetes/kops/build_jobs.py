@@ -803,22 +803,26 @@ def generate_network_plugins():
 # kops-periodics-upgrades.yaml #
 ################################
 def generate_upgrades():
+
+    kops23 = 'v1.23.2'
+    kops24 = 'v1.24.0-beta.1'
+
     versions_list = [
         #  kops    k8s          kops      k8s
         # 1.23 release branch
-        (('v1.23.5', 'v1.22.1'), ('1.23', 'v1.23.1')),
-        (('v1.23.5', 'v1.23.1'), ('1.23', 'v1.23.1')),
+        ((kops23, 'v1.22.1'), ('1.23', 'v1.23.1')),
+        ((kops23, 'v1.23.1'), ('1.23', 'v1.23.1')),
         # 1.24 release branch
-        (('v1.23.5', 'v1.22.1'), ('1.24', 'v1.23.1')),
-        (('v1.23.5', 'v1.23.1'), ('1.24', 'v1.24.0')),
-        (('v1.24.0-beta.0', 'v1.19.16'), ('1.24', 'v1.20.6')),
-        (('v1.24.0-beta.0', 'v1.23.1'), ('1.24', 'v1.23.1')),
+        ((kops23, 'v1.22.1'), ('1.24', 'v1.23.1')),
+        ((kops23, 'v1.23.1'), ('1.24', 'v1.24.0')),
+        ((kops24, 'v1.19.16'), ('1.24', 'v1.20.6')),
+        ((kops24, 'v1.23.1'), ('1.24', 'v1.23.1')),
         # 1,23 upgrade to latest
         (('1.23', 'v1.22.4'), ('latest', 'v1.23.0')),
         (('1.23', 'v1.23.0'), ('latest', 'v1.24.0')),
         # 1,24 upgrade to latest
-        (('1.24.0-beta.0', 'v1.23.1'), ('latest', 'v1.24.0')),
-        (('1.24.0-beta.0', 'v1.24.0'), ('latest', 'v1.24.0')),
+        ((kops24, 'v1.23.1'), ('latest', 'v1.24.0')),
+        ((kops24, 'v1.24.0'), ('latest', 'v1.24.0')),
         # we should have an upgrade test for every supported K8s version
         (('latest', 'v1.24.0'), ('latest', 'latest')),
         (('latest', 'v1.23.0'), ('latest', 'v1.24.0')),
