@@ -101,7 +101,7 @@ presubmits:
         # To check the available envtest in Kubebuilder, please
         # refer to https://github.com/kubernetes-sigs/kubebuilder/tree/tools-releases.
         - name: KUBEBUILDER_ENVTEST_KUBERNETES_VERSION
-          value: "1.19.2"
+          value: "1.20.2"
         resources:
           requests:
             cpu: 7300m
