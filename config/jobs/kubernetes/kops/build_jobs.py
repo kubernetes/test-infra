@@ -976,7 +976,6 @@ def generate_presubmits_network_plugins():
 # kops-presubmits-e2e.yaml #
 ############################
 def generate_presubmits_e2e():
-    skip_regex = r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[HPA\]|\[Driver:.nfs\]|RuntimeClass|RuntimeHandler' # pylint: disable=line-too-long
     jobs = [
         presubmit_test(
             k8s_version='ci',
@@ -1159,7 +1158,6 @@ def generate_presubmits_e2e():
             networking='calico',
             tab_name='e2e-1-24',
             always_run=True,
-            skip_regex=skip_regex,
         ),
         presubmit_test(
             branch='release-1.23',
@@ -1169,7 +1167,6 @@ def generate_presubmits_e2e():
             networking='calico',
             tab_name='e2e-1-23',
             always_run=True,
-            skip_regex=skip_regex,
         ),
         presubmit_test(
             branch='release-1.22',
@@ -1179,7 +1176,6 @@ def generate_presubmits_e2e():
             networking='calico',
             tab_name='e2e-1-22',
             always_run=True,
-            skip_regex=skip_regex,
         ),
         presubmit_test(
             name="pull-kops-e2e-aws-karpenter",
