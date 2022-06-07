@@ -14,7 +14,7 @@
 
 # NOTE: CHANGE THIS LINE TO FORCE A NEW IMAGE: 20200109
 # Includes go and gcloud
-FROM golang:1.16
+FROM golang:1.17
 
 # add env we can debug with the image name:tag
 ARG IMAGE_ARG
