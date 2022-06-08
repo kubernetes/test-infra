@@ -39,34 +39,37 @@ const (
 type LastSyncState map[string]map[string]time.Time
 
 func TestGerrit(t *testing.T) {
+	startTime := gerrit.Timestamp{Time: time.Now().AddDate(0, 0, 2).UTC()}
 	tests := []struct {
 		name             string
 		change           gerrit.ChangeInfo
 		expectedMessages []string
 	}{
 		{
-			name: "1 New change with 1 presubmit triggered",
+			name: "1 New change with 1 presubit triggered",
 			change: gerrit.ChangeInfo{
 				CurrentRevision: "1",
 				ID:              "1",
 				ChangeID:        "1",
-				Project:         "gerrit-test-infra",
+				Project:         "gerrit-test-infra-0",
+				Updated:         startTime,
 				Branch:          "master",
 				Status:          "NEW",
-				Revisions:       map[string]client.RevisionInfo{"1": {Number: 1, Ref: "refs/changes/00/1/1"}},
-				Messages:        []gerrit.ChangeMessageInfo{{RevisionNumber: 1, Message: "/test all", ID: "1"}},
+				Revisions:       map[string]client.RevisionInfo{"1": {Number: 1, Ref: "refs/changes/00/1/1", Created: startTime}},
+				Messages:        []gerrit.ChangeMessageInfo{{RevisionNumber: 1, Message: "/test all", ID: "1", Date: startTime}},
 			},
 			expectedMessages: []string{"/test all", "Triggered 1 prow jobs (0 suppressed reporting): \n  * Name: hello-world-presubmit"},
 		},
 		{
-			name: "WorkInProgress change does not trigger new presubmit jobs",
+			name: "no presubmit Prow jobs automatically triggered from WorkInProgess change",
 			change: client.ChangeInfo{
 				CurrentRevision: "1",
 				ChangeID:        "2",
 				ID:              "2",
-				Project:         "gerrit-test-infra",
+				Project:         "gerrit-test-infra-1",
 				Status:          "NEW",
 				Branch:          "master",
+				Updated:         startTime,
 				WorkInProgress:  true,
 				Revisions: map[string]gerrit.RevisionInfo{
 					"1": {
@@ -83,9 +86,10 @@ func TestGerrit(t *testing.T) {
 				ChangeID:        "3",
 				ID:              "3",
 				Branch:          "master",
-				Project:         "gerrit-test-infra",
+				Project:         "gerrit-test-infra-2",
+				Updated:         startTime,
 				Status:          "NEW",
-				Messages:        []gerrit.ChangeMessageInfo{{RevisionNumber: 1, Message: "/test all", ID: "1"}},
+				Messages:        []gerrit.ChangeMessageInfo{{RevisionNumber: 1, Message: "/test all", ID: "1", Date: startTime}},
 				Revisions: map[string]client.RevisionInfo{
 					"1": {
 						Number: 1001,
@@ -94,6 +98,7 @@ func TestGerrit(t *testing.T) {
 							"africa-lyrics.txt":    {},
 							"important-code.go":    {},
 						},
+						Created: startTime,
 					},
 				},
 			},
@@ -116,7 +121,7 @@ func TestGerrit(t *testing.T) {
 
 			branch := gerrit.BranchInfo{}
 
-			if err = addBranchToServer(branch, "gerrit-test-infra", "master"); err != nil {
+			if err = addBranchToServer(branch, tc.change.Project, "master"); err != nil {
 				t.Fatalf("failed to add branch to server: %v", err)
 			}
 			if err = addAccountToServer(account); err != nil {
@@ -125,7 +130,7 @@ func TestGerrit(t *testing.T) {
 			if err = login(account.AccountID); err != nil {
 				t.Fatalf("Failed to set self on server: %s", err)
 			}
-			if err = addChangeToServer(tc.change, "gerrit-test-infra"); err != nil {
+			if err = addChangeToServer(tc.change, tc.change.Project); err != nil {
 				t.Fatalf("Failed to add change to server: %s", err)
 
 			}

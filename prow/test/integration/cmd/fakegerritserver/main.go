@@ -151,7 +151,7 @@ func addChangeHandler(fgc *fakegerrit.FakeGerrit) func(*http.Request) (interface
 			logrus.Infof("Error unmarshaling: %v", err)
 			return "", http.StatusInternalServerError, err
 		}
-		fgc.AddChangeAfter(project, &change)
+		fgc.AddChange(project, &change)
 		return "", http.StatusOK, nil
 	}
 }

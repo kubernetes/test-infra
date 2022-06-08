@@ -22,7 +22,9 @@ gerrit:
   org_repos_config:
   - org: http://fakegerritserver
     repos:
-    - gerrit-test-infra
+    - gerrit-test-infra-0
+    - gerrit-test-infra-1
+    - gerrit-test-infra-2
 
 plank:
   default_decoration_config_entries:
