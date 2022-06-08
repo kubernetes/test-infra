@@ -215,17 +215,18 @@ func insertLinksIntoComment(body string, issueNames []string, jiraBaseURL string
 func insertLinksIntoLine(line string, issueNames []string, jiraBaseURL string) string {
 	for _, issue := range issueNames {
 		replacement := fmt.Sprintf("[%s](%s/browse/%s)", issue, jiraBaseURL, issue)
-		line = replaceStringIfHasntSquareBracketOrSlashPrefix(line, issue, replacement)
+		line = replaceStringIfNeeded(line, issue, replacement)
 	}
 	return line
 }
 
-// replaceStringIfHasntSquareBracketOrSlashPrefix replaces a string if it is not prefixed by
-// a `[` which we use as heuristic for "Already replaced" or a `/` which we use as heuristic
-// for "Part of a link in a previous replacement".
-// It golang would support backreferences in regex replacements, this would have been a lot
+// replaceStringIfNeeded replaces a string if it is not prefixed by:
+// * `[` which we use as heuristic for "Already replaced",
+// * `/` which we use as heuristic for "Part of a link in a previous replacement",
+// * ``` (backtick) which we use as heuristic for "Inline code".
+// If golang would support back-references in regex replacements, this would have been a lot
 // simpler.
-func replaceStringIfHasntSquareBracketOrSlashPrefix(text, old, new string) string {
+func replaceStringIfNeeded(text, old, new string) string {
 	if old == "" {
 		return text
 	}
@@ -252,7 +253,7 @@ func replaceStringIfHasntSquareBracketOrSlashPrefix(text, old, new string) strin
 	startingIdx = 0
 	for _, idx := range allOldIdx {
 		result += text[startingIdx:idx]
-		if idx == 0 || (text[idx-1] != '[' && text[idx-1] != '/') {
+		if idx == 0 || (text[idx-1] != '[' && text[idx-1] != '/') && text[idx-1] != '`' {
 			result += new
 		} else {
 			result += old

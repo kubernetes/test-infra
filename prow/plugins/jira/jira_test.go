@@ -451,6 +451,17 @@ is very important` + "\n```bash\n" +
 `,
 		},
 		{
+			name: "inline code is not replaced",
+			body: `This change:
+is very important` + "\n``ABC-123`` and `ABC-123` shouldn't be replaced, as well as ``ABC-123: text text``. " +
+				`ABC-123 should be replaced.
+`,
+			expected: `This change:
+is very important` + "\n``ABC-123`` and `ABC-123` shouldn't be replaced, as well as ``ABC-123: text text``. " +
+				`[ABC-123](https://my-jira.com/browse/ABC-123) should be replaced.
+`,
+		},
+		{
 			name:     "Multiline codeblock that is denoted through four leading spaces",
 			body:     "I meant to do this test:\r\n\r\n    operator_test.go:1914: failed to read output from pod unique-id-header-test-1: container \"curl\" in pod \"unique-id-header-ABC-123\" is waiting to start: ContainerCreating\r\n\r\n",
 			expected: "I meant to do this test:\r\n\r\n    operator_test.go:1914: failed to read output from pod unique-id-header-test-1: container \"curl\" in pod \"unique-id-header-ABC-123\" is waiting to start: ContainerCreating\r\n\r\n",
