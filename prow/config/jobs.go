@@ -23,7 +23,7 @@ import (
 	"strings"
 	"time"
 
-	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
+	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -113,7 +113,7 @@ type JobBase struct {
 	// Spec is the Kubernetes pod spec used if Agent is kubernetes.
 	Spec *v1.PodSpec `json:"spec,omitempty"`
 	// PipelineRunSpec is the tekton pipeline spec used if Agent is tekton-pipeline.
-	PipelineRunSpec *pipelinev1alpha1.PipelineRunSpec `json:"pipeline_run_spec,omitempty"`
+	PipelineRunSpec *pipelinev1beta1.PipelineRunSpec `json:"pipeline_run_spec,omitempty"`
 	// Annotations are unused by prow itself, but provide a space to configure other automation.
 	Annotations map[string]string `json:"annotations,omitempty"`
 	// ReporterConfig provides the option to configure reporting on job level

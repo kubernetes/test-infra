@@ -40,7 +40,7 @@ import (
 	"k8s.io/test-infra/prow/logrusutil"
 	pipelineset "k8s.io/test-infra/prow/pipeline/clientset/versioned"
 	pipelineinfo "k8s.io/test-infra/prow/pipeline/informers/externalversions"
-	pipelineinfov1alpha1 "k8s.io/test-infra/prow/pipeline/informers/externalversions/pipeline/v1alpha1"
+	pipelineinfov1beta1 "k8s.io/test-infra/prow/pipeline/informers/externalversions/pipeline/v1beta1"
 )
 
 type options struct {
@@ -78,7 +78,7 @@ func (o *options) parse(flags *flag.FlagSet, args []string) error {
 
 type pipelineConfig struct {
 	client   pipelineset.Interface
-	informer pipelineinfov1alpha1.PipelineRunInformer
+	informer pipelineinfov1beta1.PipelineRunInformer
 }
 
 // newPipelineConfig returns a client and informer capable of mutating and monitoring the specified config.
@@ -90,17 +90,17 @@ func newPipelineConfig(cfg rest.Config, stop <-chan struct{}) (*pipelineConfig, 
 
 	// Ensure the pipeline CRD is deployed
 	// TODO(fejta): probably a better way to do this
-	if _, err := bc.TektonV1alpha1().PipelineRuns("").List(context.TODO(), metav1.ListOptions{Limit: 1}); err != nil {
+	if _, err := bc.TektonV1beta1().PipelineRuns("").List(context.TODO(), metav1.ListOptions{Limit: 1}); err != nil {
 		return nil, err
 	}
 
 	// Assume watches receive updates, but resync every 30m in case something wonky happens
 	bif := pipelineinfo.NewSharedInformerFactory(bc, 30*time.Minute)
-	bif.Tekton().V1alpha1().PipelineRuns().Lister()
+	bif.Tekton().v1beta1().PipelineRuns().Lister()
 	go bif.Start(stop)
 	return &pipelineConfig{
 		client:   bc,
-		informer: bif.Tekton().V1alpha1().PipelineRuns(),
+		informer: bif.Tekton().v1beta1().PipelineRuns(),
 	}, nil
 }
 
