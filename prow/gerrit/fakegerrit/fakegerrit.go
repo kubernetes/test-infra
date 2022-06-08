@@ -19,7 +19,6 @@ package fakegerrit
 import (
 	"fmt"
 	"sync"
-	"time"
 
 	gerrit "github.com/andygrunwald/go-gerrit"
 )
@@ -39,8 +38,7 @@ type FakeGerrit struct {
 	Accounts map[string]*gerrit.AccountInfo
 	Projects map[string]*Project
 	// lock to be thread safe
-	lock           sync.Mutex
-	lastUpdateTime gerrit.Timestamp
+	lock sync.Mutex
 }
 
 func (fg *FakeGerrit) Reset() {
@@ -80,26 +78,6 @@ func (fg *FakeGerrit) GetComments(id string) map[string][]*gerrit.CommentInfo {
 		return res.Comments
 	}
 	return nil
-}
-
-// The Gerrit component keeps track of lastUpdateTime and only process changes after that time
-// we need a way to create a change that we are sure the gerrit componenet will pick up
-// especially once multiple integration tests are using the same fakegerritserver
-func (fg *FakeGerrit) AddChangeAfter(projectName string, change *gerrit.ChangeInfo) {
-	fg.lastUpdateTime = gerrit.Timestamp{Time: fg.lastUpdateTime.Add(time.Hour * 12).UTC()}
-	if change.Submitted != nil {
-		change.Submitted = &fg.lastUpdateTime
-	}
-	change.Updated = fg.lastUpdateTime
-	if len(change.Messages) > 0 {
-		change.Messages[len(change.Messages)-1].Date = fg.lastUpdateTime
-	}
-	if rev, ok := change.Revisions[change.CurrentRevision]; ok {
-		rev.Created = fg.lastUpdateTime
-		change.Revisions[change.CurrentRevision] = rev
-	}
-
-	fg.AddChange(projectName, change)
 }
 
 // Add a change to Fake gerrit and keep track that the change belongs to the given project
@@ -187,9 +165,8 @@ func (fg *FakeGerrit) SetSelf(id string) error {
 
 func NewFakeGerritClient() *FakeGerrit {
 	return &FakeGerrit{
-		Changes:        make(map[string]Change),
-		Accounts:       make(map[string]*gerrit.AccountInfo),
-		Projects:       make(map[string]*Project),
-		lastUpdateTime: gerrit.Timestamp{Time: time.Now().UTC()},
+		Changes:  make(map[string]Change),
+		Accounts: make(map[string]*gerrit.AccountInfo),
+		Projects: make(map[string]*Project),
 	}
 }
