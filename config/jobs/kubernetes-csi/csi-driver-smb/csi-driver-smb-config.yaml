@@ -343,17 +343,69 @@ presubmits:
             - bash
             - -c
             - >-
-              cd ${GOPATH}/src/sigs.k8s.io/csi-driver-smb &&
+              cd ${GOPATH}/src/github.com/kubernetes-csi/csi-driver-smb &&
               make e2e-test
           securityContext:
             privileged: true
           env:
             - name: NODE_MACHINE_TYPE
               value: "Standard_D2s_v3"
+            - name: KUBERNETES_VERSION
+              value: "latest-1.23"
     annotations:
       testgrid-dashboards: sig-storage-csi-other
       testgrid-tab-name: pull-csi-driver-smb-e2e-capz
       description: "Run E2E tests on a capz cluster for SMB CSI driver."
+      testgrid-num-columns-recent: '30'
+  - name: pull-csi-driver-smb-e2e-capz-windows-2019
+    decorate: true
+    always_run: false
+    optional: true
+    path_alias: sigs.k8s.io/csi-driver-smb
+    branches:
+      - master
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true"
+    extra_refs:
+      - org: kubernetes-sigs
+        repo: cluster-api-provider-azure
+        base_ref: release-1.3
+        path_alias: sigs.k8s.io/cluster-api-provider-azure
+        workdir: true
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-master
+          command:
+            - runner.sh
+            - ./scripts/ci-entrypoint.sh
+          args:
+            - bash
+            - -c
+            - >-
+              cd ${GOPATH}/src/github.com/kubernetes-csi/csi-driver-smb &&
+              make e2e-test
+          securityContext:
+            privileged: true
+          env:
+            - name: WINDOWS
+              value: "true"
+            - name: TEST_WINDOWS
+              value: "true"
+            - name: WINDOWS_USE_HOST_PROCESS_CONTAINERS
+              value: "true"
+            - name: NODE_MACHINE_TYPE
+              value: "Standard_D4s_v3"
+            - name: KUBERNETES_VERSION
+              value: "latest-1.23"
+            - name: WORKER_MACHINE_COUNT
+              value: "0" # Don't create any linux worker nodes
+    annotations:
+      testgrid-dashboards: sig-storage-csi-other
+      testgrid-tab-name: pull-csi-driver-smb-e2e-capz-windows-2019
+      description: "Run E2E tests on a capz Windows 2019 cluster for SMB CSI driver."
       testgrid-num-columns-recent: '30'
   - name: pull-csi-driver-smb-external-e2e
     decorate: true
