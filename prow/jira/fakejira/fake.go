@@ -306,7 +306,7 @@ func (f *FakeClient) GetIssueQaContact(issue *jira.Issue) (*jira.User, error) {
 	return jiraclient.GetIssueQaContact(issue)
 }
 
-func (f *FakeClient) GetIssueTargetVersion(issue *jira.Issue) (*jira.Version, error) {
+func (f *FakeClient) GetIssueTargetVersion(issue *jira.Issue) (*[]*jira.Version, error) {
 	return jiraclient.GetIssueTargetVersion(issue)
 }
 

@@ -74,7 +74,7 @@ type Client interface {
 	// GetIssueQaContact get the user details for the QA contact. The QA contact is a custom field in Jira
 	GetIssueQaContact(*jira.Issue) (*jira.User, error)
 	// GetIssueTargetVersion get the issue Target Release. The target release is a custom field in Jira
-	GetIssueTargetVersion(issue *jira.Issue) (*jira.Version, error)
+	GetIssueTargetVersion(issue *jira.Issue) (*[]*jira.Version, error)
 	// FindUser returns all users with a field matching the queryParam (ex: email, display name, etc.)
 	FindUser(queryParam string) ([]*jira.User, error)
 	GetRemoteLinks(id string) ([]jira.RemoteLink, error)
@@ -824,15 +824,15 @@ func (jc *client) GetIssueQaContact(issue *jira.Issue) (*jira.User, error) {
 	return GetIssueQaContact(issue)
 }
 
-func GetIssueTargetVersion(issue *jira.Issue) (*jira.Version, error) {
-	var obj *jira.Version
+func GetIssueTargetVersion(issue *jira.Issue) (*[]*jira.Version, error) {
+	var obj *[]*jira.Version
 	err := GetUnknownField("customfield_12319940", issue, func() interface{} {
-		obj = &jira.Version{}
+		obj = &[]*jira.Version{{}}
 		return obj
 	})
 	return obj, err
 }
 
-func (jc *client) GetIssueTargetVersion(issue *jira.Issue) (*jira.Version, error) {
+func (jc *client) GetIssueTargetVersion(issue *jira.Issue) (*[]*jira.Version, error) {
 	return GetIssueTargetVersion(issue)
 }
