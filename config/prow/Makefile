@@ -38,7 +38,7 @@ deploy-prow: get-cluster-credentials
 	# Temporary solution for working around the issue of KES being flaky, see
 	# https://github.com/kubernetes/test-infra/issues/24869#issuecomment-1147530320.
 	# TODO(chaodaiG): remove this once the above issue is fixed.
-	kubectl rollout restart deployment kubernetes-external-secrets
+	kubectl -n default rollout restart deployment kubernetes-external-secrets
 
 deploy-build: get-build-cluster-credentials
 	kubectl apply -f ./cluster/build/
