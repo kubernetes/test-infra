@@ -81,15 +81,14 @@ func TestFakeClient_GetIssueWithOptions(t *testing.T) {
 		Fields: &jira.IssueFields{Project: jira.Project{Name: "test"}},
 	}
 
-	options := &jira.GetQueryOptions{Fields: "project"}
-
-	responses[GetIssueRequest{issueID: "1234", options: options}] = GetIssueResponse{
+	responses[GetIssueRequest{issueID: "1234", options: jira.GetQueryOptions{Fields: "project"}}] = GetIssueResponse{
 		issue: issue,
 		error: nil,
 	}
+
 	fakeClient := &FakeClient{GetIssueResponses: responses}
 
-	r, err := fakeClient.GetIssueWithOptions("1234", options)
+	r, err := fakeClient.GetIssueWithOptions("1234", &jira.GetQueryOptions{Fields: "project"})
 	if err != nil {
 		t.Fatalf("unexpected error from GetIssueWithOptions: %s", err)
 	}

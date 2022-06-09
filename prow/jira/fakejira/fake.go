@@ -60,7 +60,7 @@ func (f *FakeClient) GetIssue(id string) (*jira.Issue, error) {
 
 type GetIssueRequest struct {
 	issueID string
-	options *jira.GetQueryOptions
+	options jira.GetQueryOptions
 }
 
 type GetIssueResponse struct {
@@ -69,7 +69,7 @@ type GetIssueResponse struct {
 }
 
 func (f *FakeClient) GetIssueWithOptions(id string, options *jira.GetQueryOptions) (*jira.Issue, error) {
-	resp, expected := f.GetIssueResponses[GetIssueRequest{issueID: id, options: options}]
+	resp, expected := f.GetIssueResponses[GetIssueRequest{issueID: id, options: *options}]
 	if !expected {
 		return nil, fmt.Errorf("the filtering query: %v for the issue with ID: %s is not registered", options, id)
 	}
