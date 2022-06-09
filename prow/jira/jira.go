@@ -71,6 +71,10 @@ type Client interface {
 	// is set for the issue, the returned SecurityLevel and error will both be nil and
 	// the issue will follow the default project security level.
 	GetIssueSecurityLevel(*jira.Issue) (*SecurityLevel, error)
+	// GetIssueQaContact get the user details for the QA contact. The QA contact is a custom field in Jira
+	GetIssueQaContact(*jira.Issue) (*jira.User, error)
+	// GetIssueTargetVersion get the issue Target Release. The target release is a custom field in Jira
+	GetIssueTargetVersion(issue *jira.Issue) (*[]*jira.Version, error)
 	// FindUser returns all users with a field matching the queryParam (ex: email, display name, etc.)
 	FindUser(queryParam string) ([]*jira.User, error)
 	GetRemoteLinks(id string) ([]jira.RemoteLink, error)
@@ -545,33 +549,6 @@ type createIssueError struct {
 	Errors        map[string]string `json:"errors"`
 }
 
-// GetIssueSecurityLevel returns the security level of an issue. If no security level
-// is set for the issue, the returned SecurityLevel and error will both be nil and
-// the issue will follow the default project security level.
-func GetIssueSecurityLevel(client Client, issue *jira.Issue) (*SecurityLevel, error) {
-	// TODO: Add field to the upstream go-jira package; if a security level exists, it is returned
-	// as part of the issue fields
-	// See https://github.com/andygrunwald/go-jira/issues/456
-	securityField, ok := issue.Fields.Unknowns["security"]
-	if !ok {
-		return nil, nil
-	}
-	bytes, err := json.Marshal(securityField)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to process issue security level: %v", err)
-	}
-	securityLevel := &SecurityLevel{}
-	if err := json.Unmarshal(bytes, securityLevel); err != nil {
-		return nil, fmt.Errorf("failed to convert security level json to struct: %v", err)
-	} else {
-		return securityLevel, nil
-	}
-}
-
-func (jc *client) GetIssueSecurityLevel(issue *jira.Issue) (*SecurityLevel, error) {
-	return GetIssueSecurityLevel(jc, issue)
-}
-
 type SecurityLevel struct {
 	Self        string `json:"self"`
 	ID          string `json:"id"`
@@ -796,4 +773,66 @@ func (jc *client) SearchWithContext(ctx context.Context, jql string, options *ji
 		return nil, response, HandleJiraError(response, err)
 	}
 	return issues, response, nil
+}
+
+func GetUnknownField(field string, issue *jira.Issue, fn func() interface{}) error {
+	obj := fn()
+	unknownField, ok := issue.Fields.Unknowns[field]
+	if !ok {
+		return nil
+	}
+	bytes, err := json.Marshal(unknownField)
+	if err != nil {
+		return fmt.Errorf("failed to process the custom field %s. Error : %v", field, err)
+	}
+	if err := json.Unmarshal(bytes, obj); err != nil {
+		return fmt.Errorf("failed to unmarshall the json to struct for %s. Error: %v", field, err)
+	}
+	return err
+
+}
+
+// GetIssueSecurityLevel returns the security level of an issue. If no security level
+// is set for the issue, the returned SecurityLevel and error will both be nil and
+// the issue will follow the default project security level.
+func GetIssueSecurityLevel(issue *jira.Issue) (*SecurityLevel, error) {
+	// TODO: Add field to the upstream go-jira package; if a security level exists, it is returned
+	// as part of the issue fields
+	// See https://github.com/andygrunwald/go-jira/issues/456
+	var obj *SecurityLevel
+	err := GetUnknownField("security", issue, func() interface{} {
+		obj = &SecurityLevel{}
+		return obj
+	})
+	return obj, err
+}
+
+func (jc *client) GetIssueSecurityLevel(issue *jira.Issue) (*SecurityLevel, error) {
+	return GetIssueSecurityLevel(issue)
+}
+
+func GetIssueQaContact(issue *jira.Issue) (*jira.User, error) {
+	var obj *jira.User
+	err := GetUnknownField("customfield_12316243", issue, func() interface{} {
+		obj = &jira.User{}
+		return obj
+	})
+	return obj, err
+}
+
+func (jc *client) GetIssueQaContact(issue *jira.Issue) (*jira.User, error) {
+	return GetIssueQaContact(issue)
+}
+
+func GetIssueTargetVersion(issue *jira.Issue) (*[]*jira.Version, error) {
+	var obj *[]*jira.Version
+	err := GetUnknownField("customfield_12319940", issue, func() interface{} {
+		obj = &[]*jira.Version{{}}
+		return obj
+	})
+	return obj, err
+}
+
+func (jc *client) GetIssueTargetVersion(issue *jira.Issue) (*[]*jira.Version, error) {
+	return GetIssueTargetVersion(issue)
 }

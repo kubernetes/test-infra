@@ -299,7 +299,15 @@ func (f *FakeClient) FindUser(property string) ([]*jira.User, error) {
 }
 
 func (f *FakeClient) GetIssueSecurityLevel(issue *jira.Issue) (*jiraclient.SecurityLevel, error) {
-	return jiraclient.GetIssueSecurityLevel(f, issue)
+	return jiraclient.GetIssueSecurityLevel(issue)
+}
+
+func (f *FakeClient) GetIssueQaContact(issue *jira.Issue) (*jira.User, error) {
+	return jiraclient.GetIssueQaContact(issue)
+}
+
+func (f *FakeClient) GetIssueTargetVersion(issue *jira.Issue) (*[]*jira.Version, error) {
+	return jiraclient.GetIssueTargetVersion(issue)
 }
 
 func (f *FakeClient) UpdateIssue(issue *jira.Issue) (*jira.Issue, error) {
