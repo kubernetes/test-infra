@@ -6,8 +6,8 @@ plank:
     '*': https://prow.k8s.io/view/
   pod_pending_timeout: 15m
   pod_unscheduled_timeout: 5m
-  default_decoration_configs:
-    '*':
+  default_decoration_config_entries:
+  - config:
       timeout: 2h
       grace_period: 15m
       utility_images:
@@ -34,6 +34,10 @@ plank:
         sidecar:
           requests:
             cpu: 100m
+  - cluster: gke_rules-k8s_us-central1-f_testing
+    config:
+      gcs_credentials_secret: ""
+      default_service_account_name: "prowjob-default-sa"
 
 sinker:
   resync_period: 1m
