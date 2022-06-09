@@ -30,19 +30,54 @@ Build Prow components and deploy them into the KIND test cluster.
 Usage: $0 [options]
 
 Examples:
-  # Recompile all Prow components and deploy them.
+  # Deploy all Prow components without building anything. This fails if the
+  # images the components rely on have not yet been built by ko.
   $0
 
-  # Recompile fakegitserver and deploy it to Prow.
+  # Build all images required by Prow components, and deploy them.
+  $0 -build=ALL
+
+  # Build only the fakegitserver image and deploy it to Prow.
   $0 -build=fakegitserver
+
+  # Build only the fakegitserver and fakegerritserver images and deploy them to
+  # Prow.
+  $0 -build=fakegitserver,fakegerritserver
+
+  # Redeploy fakegitserver to Prow, without building it, by deleting the current
+  # pods associated with it. This fails if this component has not been built
+  # yet.
+  $0 -delete=fakegitserver
+
+  # Delete all Prow components from the cluster, then deploy them all back
+  # again. This is useful if you want to force pods to restart from a blank
+  # slate.
+  $0 -delete=ALL
+
+  # Delete *ALL* components, recompile them all, and finally deploy everything
+  # again.
+
+  $0 -delete=ALL -build=ALL
 
 Options:
     -build='':
         Build only the comma-separated list of Prow components with
         "${REPO_ROOT}"/hack/prowimagebuilder. Useful when developing a fake
         service that needs frequent recompilation. The images are a
-        comma-separated string. Also results in only redeploying certain entries
-        in PROW_COMPONENTS, by way of PROW_IMAGES_TO_COMPONENTS in lib.sh.
+        comma-separated string.
+
+        The value "ALL" for this falg is an alias for all images (PROW_IMAGES in
+        lib.sh).
+
+    -delete='':
+        Force the deletion of the given (currently deployed) Prow components by
+        deleting their associated pods. The value "ALL" for this flag is an
+        alias for all components (PROW_COMPONENTS in lib.sh).
+
+        You only need to use this flag if you want to force the given components
+        to start from a blank state (e.g., you want to clear its memory for
+        whatever reason). Technically, you can delete pods manually with kubectl
+        to achieve the same effect; this flag is given here as a convenience.
 
     -help:
         Display this help message.
@@ -50,15 +85,33 @@ EOF
 }
 
 function main() {
-  declare -a build_images
-  local build_images_val
+  declare -a images
+  declare -a components
+  local images_val
+  local components_val
 
   for arg in "$@"; do
     case "${arg}" in
       -build=*)
-        build_images_val="${arg#-build=}"
-        for image in ${build_images_val//,/ }; do
-          build_images+=("${image}")
+        images_val="${arg#-build=}"
+        for image in ${images_val//,/ }; do
+          if [[ "${image}" == ALL ]]; then
+            images=("${!PROW_IMAGES[@]}")
+            break
+          else
+            images+=("${image}")
+          fi
+        done
+        ;;
+      -delete=*)
+        components_val="${arg#-delete=}"
+        for component in ${components_val//,/ }; do
+          if [[ "${component}" == ALL ]]; then
+            components=("${PROW_COMPONENTS[@]}")
+            break
+          else
+            components+=("${component}")
+          fi
         done
         ;;
       -help)
@@ -71,28 +124,35 @@ function main() {
         ;;
     esac
   done
-  build_prow_images "${build_images[@]}"
-  remove_old_components "${build_images[@]}"
+
+  if [[ -n "${images[*]}" ]]; then
+    build_prow_images "${images[@]}"
+  fi
+
+  if [[ -n "${components[*]}" ]]; then
+    delete_components "${components[@]}"
+  fi
+
   deploy_prow
 }
 
 function build_prow_images() {
-  declare -a build_images
+  declare -a images
   local prowimagebuilder_yaml
 
   if (($#)); then
     log "Building select Prow images"
     for image in "${@}"; do
-      build_images+=("${image}")
+      images+=("${image}")
     done
   else
     log "Building *all* Prow images"
     for image in "${!PROW_IMAGES[@]}"; do
-      build_images+=("${image}")
+      images+=("${image}")
     done
   fi
 
-  prowimagebuilder_yaml="$(create_prowimagebuilder_yaml "${build_images[@]}")"
+  prowimagebuilder_yaml="$(create_prowimagebuilder_yaml "${images[@]}")"
   # shellcheck disable=SC2064
   trap "rm -f ${prowimagebuilder_yaml}" EXIT SIGINT SIGTERM
 
@@ -134,36 +194,28 @@ function create_prowimagebuilder_yaml() {
   echo "${tmpfile}"
 }
 
-function remove_old_components() {
-  declare -a prow_components
-  local prow_component
-  if (($#)); then
-    log "Removing select Prow components"
-    for image in "$@"; do
-      if [[ -v "PROW_IMAGES_TO_COMPONENTS[${image}]" ]]; then
-        for prow_component in ${PROW_IMAGES_TO_COMPONENTS[${image}]//,/ }; do
-          prow_components+=("${prow_component}")
-        done
-      fi
-    done
-
-  else
-    log "Removing *all* Prow components (if any)"
-    for prow_component in "${PROW_COMPONENTS[@]}"; do
-      prow_components+=("${prow_component}")
-    done
+function delete_components() {
+  local component
+  if ! (($#)); then
+    log "(Prow components) nothing to delete"
+    return
   fi
 
-  for prow_component in "${prow_components[@]}"; do
-    do_kubectl delete deployment -l app="${prow_component}"
-    do_kubectl delete pods -l app="${prow_component}"
+  log "Deleting Prow components: $*"
+  for component in "$@"; do
+    do_kubectl delete deployment -l app="${component}"
+    do_kubectl delete pods -l app="${component}"
   done
 }
 
+# deploy_prow applies the full Kubernetes configuration for all components. If
+# any component's images have changed (recompiled and republished to the logal
+# registry by ko), then they will be picked up and Kubernetes will restart those
+# affected pods.
 function deploy_prow() {
-  local prow_component
+  local component
   local component_ready
-  log "Deploying prow component(s)"
+  log "Deploying Prow components"
 
   # Even though we apply the entire Prow configuration, Kubernetes is smart
   # enough to only redeploy those components who configurations have changed as
@@ -176,13 +228,13 @@ function deploy_prow() {
   popd
 
   log "Waiting for Prow components"
-  for prow_component in "${PROW_COMPONENTS[@]}"; do
+  for component in "${PROW_COMPONENTS[@]}"; do
     component_ready=0
-    >&2 echo "Waiting for ${prow_component}"
+    >&2 echo "Waiting for ${component}"
     for _ in $(seq 1 180); do
       if do_kubectl wait pod \
         --for=condition=ready \
-        --selector=app="${prow_component}" \
+        --selector=app="${component}" \
         --timeout=180s; then
         component_ready=1
         break
