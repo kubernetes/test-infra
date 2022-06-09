@@ -132,15 +132,16 @@ func NewController(ctx context.Context, prowJobClient prowv1.ProwJobInterface, o
 		logrus.WithError(err).Fatal("Error creating gerrit client.")
 	}
 	c := &Controller{
-		prowJobClient:      prowJobClient,
-		config:             cfg,
-		gc:                 gerritClient,
-		tracker:            lastSyncTracker,
-		projectsOptOutHelp: projectsOptOutHelpMap,
-		cookieFilePath:     cookiefilePath,
-		cacheSize:          cacheSize,
-		configAgent:        ca,
-		repoCacheMap:       map[string]*config.InRepoConfigCache{},
+		prowJobClient:        prowJobClient,
+		config:               cfg,
+		gc:                   gerritClient,
+		tracker:              lastSyncTracker,
+		projectsOptOutHelp:   projectsOptOutHelpMap,
+		cookieFilePath:       cookiefilePath,
+		cacheSize:            cacheSize,
+		configAgent:          ca,
+		repoCacheMap:         map[string]*config.InRepoConfigCache{},
+		inRepoConfigFailures: map[string]bool{},
 	}
 
 	// applyGlobalConfig reads gerrit configurations from global gerrit config,
