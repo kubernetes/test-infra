@@ -22,7 +22,7 @@ import (
 	"context"
 	"time"
 
-	v1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
+	v1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
@@ -38,14 +38,14 @@ type ConditionsGetter interface {
 
 // ConditionInterface has methods to work with Condition resources.
 type ConditionInterface interface {
-	Create(ctx context.Context, condition *v1beta1.Condition, opts v1.CreateOptions) (*v1beta1.Condition, error)
-	Update(ctx context.Context, condition *v1beta1.Condition, opts v1.UpdateOptions) (*v1beta1.Condition, error)
+	Create(ctx context.Context, condition *v1alpha1.Condition, opts v1.CreateOptions) (*v1alpha1.Condition, error)
+	Update(ctx context.Context, condition *v1alpha1.Condition, opts v1.UpdateOptions) (*v1alpha1.Condition, error)
 	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
 	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
-	Get(ctx context.Context, name string, opts v1.GetOptions) (*v1beta1.Condition, error)
-	List(ctx context.Context, opts v1.ListOptions) (*v1beta1.ConditionList, error)
+	Get(ctx context.Context, name string, opts v1.GetOptions) (*v1alpha1.Condition, error)
+	List(ctx context.Context, opts v1.ListOptions) (*v1alpha1.ConditionList, error)
 	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
-	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1beta1.Condition, err error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.Condition, err error)
 	ConditionExpansion
 }
 
@@ -64,8 +64,8 @@ func newConditions(c *Tektonv1beta1Client, namespace string) *conditions {
 }
 
 // Get takes name of the condition, and returns the corresponding condition object, and an error if there is any.
-func (c *conditions) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1beta1.Condition, err error) {
-	result = &v1beta1.Condition{}
+func (c *conditions) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.Condition, err error) {
+	result = &v1alpha1.Condition{}
 	err = c.client.Get().
 		Namespace(c.ns).
 		Resource("conditions").
@@ -77,12 +77,12 @@ func (c *conditions) Get(ctx context.Context, name string, options v1.GetOptions
 }
 
 // List takes label and field selectors, and returns the list of Conditions that match those selectors.
-func (c *conditions) List(ctx context.Context, opts v1.ListOptions) (result *v1beta1.ConditionList, err error) {
+func (c *conditions) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.ConditionList, err error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
 	}
-	result = &v1beta1.ConditionList{}
+	result = &v1alpha1.ConditionList{}
 	err = c.client.Get().
 		Namespace(c.ns).
 		Resource("conditions").
@@ -109,8 +109,8 @@ func (c *conditions) Watch(ctx context.Context, opts v1.ListOptions) (watch.Inte
 }
 
 // Create takes the representation of a condition and creates it.  Returns the server's representation of the condition, and an error, if there is any.
-func (c *conditions) Create(ctx context.Context, condition *v1beta1.Condition, opts v1.CreateOptions) (result *v1beta1.Condition, err error) {
-	result = &v1beta1.Condition{}
+func (c *conditions) Create(ctx context.Context, condition *v1alpha1.Condition, opts v1.CreateOptions) (result *v1alpha1.Condition, err error) {
+	result = &v1alpha1.Condition{}
 	err = c.client.Post().
 		Namespace(c.ns).
 		Resource("conditions").
@@ -122,8 +122,8 @@ func (c *conditions) Create(ctx context.Context, condition *v1beta1.Condition, o
 }
 
 // Update takes the representation of a condition and updates it. Returns the server's representation of the condition, and an error, if there is any.
-func (c *conditions) Update(ctx context.Context, condition *v1beta1.Condition, opts v1.UpdateOptions) (result *v1beta1.Condition, err error) {
-	result = &v1beta1.Condition{}
+func (c *conditions) Update(ctx context.Context, condition *v1alpha1.Condition, opts v1.UpdateOptions) (result *v1alpha1.Condition, err error) {
+	result = &v1alpha1.Condition{}
 	err = c.client.Put().
 		Namespace(c.ns).
 		Resource("conditions").
@@ -163,8 +163,8 @@ func (c *conditions) DeleteCollection(ctx context.Context, opts v1.DeleteOptions
 }
 
 // Patch applies the patch and returns the patched condition.
-func (c *conditions) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1beta1.Condition, err error) {
-	result = &v1beta1.Condition{}
+func (c *conditions) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.Condition, err error) {
+	result = &v1alpha1.Condition{}
 	err = c.client.Patch(pt).
 		Namespace(c.ns).
 		Resource("conditions").

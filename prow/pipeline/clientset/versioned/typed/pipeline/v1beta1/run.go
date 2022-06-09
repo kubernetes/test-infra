@@ -22,7 +22,7 @@ import (
 	"context"
 	"time"
 
-	v1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
+	v1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
@@ -38,15 +38,15 @@ type RunsGetter interface {
 
 // RunInterface has methods to work with Run resources.
 type RunInterface interface {
-	Create(ctx context.Context, run *v1beta1.Run, opts v1.CreateOptions) (*v1beta1.Run, error)
-	Update(ctx context.Context, run *v1beta1.Run, opts v1.UpdateOptions) (*v1beta1.Run, error)
-	UpdateStatus(ctx context.Context, run *v1beta1.Run, opts v1.UpdateOptions) (*v1beta1.Run, error)
+	Create(ctx context.Context, run *v1alpha1.Run, opts v1.CreateOptions) (*v1alpha1.Run, error)
+	Update(ctx context.Context, run *v1alpha1.Run, opts v1.UpdateOptions) (*v1alpha1.Run, error)
+	UpdateStatus(ctx context.Context, run *v1alpha1.Run, opts v1.UpdateOptions) (*v1alpha1.Run, error)
 	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
 	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
-	Get(ctx context.Context, name string, opts v1.GetOptions) (*v1beta1.Run, error)
-	List(ctx context.Context, opts v1.ListOptions) (*v1beta1.RunList, error)
+	Get(ctx context.Context, name string, opts v1.GetOptions) (*v1alpha1.Run, error)
+	List(ctx context.Context, opts v1.ListOptions) (*v1alpha1.RunList, error)
 	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
-	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1beta1.Run, err error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.Run, err error)
 	RunExpansion
 }
 
@@ -65,8 +65,8 @@ func newRuns(c *Tektonv1beta1Client, namespace string) *runs {
 }
 
 // Get takes name of the run, and returns the corresponding run object, and an error if there is any.
-func (c *runs) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1beta1.Run, err error) {
-	result = &v1beta1.Run{}
+func (c *runs) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.Run, err error) {
+	result = &v1alpha1.Run{}
 	err = c.client.Get().
 		Namespace(c.ns).
 		Resource("runs").
@@ -78,12 +78,12 @@ func (c *runs) Get(ctx context.Context, name string, options v1.GetOptions) (res
 }
 
 // List takes label and field selectors, and returns the list of Runs that match those selectors.
-func (c *runs) List(ctx context.Context, opts v1.ListOptions) (result *v1beta1.RunList, err error) {
+func (c *runs) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.RunList, err error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
 	}
-	result = &v1beta1.RunList{}
+	result = &v1alpha1.RunList{}
 	err = c.client.Get().
 		Namespace(c.ns).
 		Resource("runs").
@@ -110,8 +110,8 @@ func (c *runs) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface,
 }
 
 // Create takes the representation of a run and creates it.  Returns the server's representation of the run, and an error, if there is any.
-func (c *runs) Create(ctx context.Context, run *v1beta1.Run, opts v1.CreateOptions) (result *v1beta1.Run, err error) {
-	result = &v1beta1.Run{}
+func (c *runs) Create(ctx context.Context, run *v1alpha1.Run, opts v1.CreateOptions) (result *v1alpha1.Run, err error) {
+	result = &v1alpha1.Run{}
 	err = c.client.Post().
 		Namespace(c.ns).
 		Resource("runs").
@@ -123,8 +123,8 @@ func (c *runs) Create(ctx context.Context, run *v1beta1.Run, opts v1.CreateOptio
 }
 
 // Update takes the representation of a run and updates it. Returns the server's representation of the run, and an error, if there is any.
-func (c *runs) Update(ctx context.Context, run *v1beta1.Run, opts v1.UpdateOptions) (result *v1beta1.Run, err error) {
-	result = &v1beta1.Run{}
+func (c *runs) Update(ctx context.Context, run *v1alpha1.Run, opts v1.UpdateOptions) (result *v1alpha1.Run, err error) {
+	result = &v1alpha1.Run{}
 	err = c.client.Put().
 		Namespace(c.ns).
 		Resource("runs").
@@ -138,8 +138,8 @@ func (c *runs) Update(ctx context.Context, run *v1beta1.Run, opts v1.UpdateOptio
 
 // UpdateStatus was generated because the type contains a Status member.
 // Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *runs) UpdateStatus(ctx context.Context, run *v1beta1.Run, opts v1.UpdateOptions) (result *v1beta1.Run, err error) {
-	result = &v1beta1.Run{}
+func (c *runs) UpdateStatus(ctx context.Context, run *v1alpha1.Run, opts v1.UpdateOptions) (result *v1alpha1.Run, err error) {
+	result = &v1alpha1.Run{}
 	err = c.client.Put().
 		Namespace(c.ns).
 		Resource("runs").
@@ -180,8 +180,8 @@ func (c *runs) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, list
 }
 
 // Patch applies the patch and returns the patched run.
-func (c *runs) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1beta1.Run, err error) {
-	result = &v1beta1.Run{}
+func (c *runs) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.Run, err error) {
+	result = &v1alpha1.Run{}
 	err = c.client.Patch(pt).
 		Namespace(c.ns).
 		Resource("runs").
