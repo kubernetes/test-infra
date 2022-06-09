@@ -571,14 +571,14 @@ function redraw(fz: FuzzySearch, pushState: boolean = true): void {
 
         totalJob++;
         jobCountMap.set(state, (jobCountMap.get(state) || 0) + 1);
+        const dashCell = "-";
 
         // accumulate a count of the percentage of successful jobs over each interval
         const started = Date.parse(startTime) / 1000;
         const finished = Date.parse(completionTime) / 1000;
-        // const finished = completionTime ? Date.parse(completionTime): now;
 
         const durationSec = completionTime ? finished - started : 0;
-        const durationStr = completionTime ? formatDuration(durationSec) : "";
+        const durationStr = completionTime ? formatDuration(durationSec) : dashCell;
 
         if (currentInterval >= 0 && (now - started) > jobInterval[currentInterval][0]) {
             const successCount = jobCountMap.get("success") || 0;
@@ -604,32 +604,15 @@ function redraw(fz: FuzzySearch, pushState: boolean = true): void {
         }
         displayedJob++;
         const r = document.createElement("tr");
+        // State column
         r.appendChild(cell.state(state));
-        if ((agent === "kubernetes" && pod_name) || agent !== "kubernetes") {
-            const logIcon = icon.create("description", "Build log");
-            if (pod_spec == null || pod_spec.containers.length <= 1) {
-                logIcon.href = `log?job=${job}&id=${build_id}`;
-            } else {
-                // this logic exists for legacy jobs that are configured for gubernator compatibility
-                const buildIndex = buildUrl.indexOf('/build/');
-                if (buildIndex !== -1) {
-                    const gcsUrl = `${window.location.origin}/view/gcs/${buildUrl.substring(buildIndex + '/build/'.length)}`;
-                    logIcon.href = gcsUrl;
-                } else if (buildUrl.includes('/view/')) {
-                    logIcon.href = buildUrl;
-                } else {
-                    logIcon.href = `log?job=${job}&id=${build_id}`;
-                }
-            }
-            const c = document.createElement("td");
-            c.classList.add("icon-cell");
-            c.appendChild(logIcon);
-            r.appendChild(c);
-        } else {
-            r.appendChild(cell.text(""));
-        }
+        // Log column
+        r.appendChild(createLogCell(build, buildUrl));
+        // Rerun column
         r.appendChild(createRerunCell(modal, rerunCommand, prowJobName));
+        // Job Yaml column
         r.appendChild(createViewJobCell(prowJobName));
+        // Repository column
         const key = groupKey(build);
         if (key !== lastKey) {
             // This is a different PR or commit than the previous row.
@@ -637,7 +620,7 @@ function redraw(fz: FuzzySearch, pushState: boolean = true): void {
             r.className = "changed";
 
             if (type === "periodic") {
-                r.appendChild(cell.text(""));
+                r.appendChild(cell.text(dashCell));
             } else {
                 let repoLink = repo_link;
                 if (!repoLink) {
@@ -649,19 +632,19 @@ function redraw(fz: FuzzySearch, pushState: boolean = true): void {
                 if (pulls.length) {
                     r.appendChild(cell.prRevision(`${org}/${repo}`, pulls[0]));
                 } else {
-                    r.appendChild(cell.text(""));
+                    r.appendChild(cell.text(dashCell));
                 }
             } else if (type === "batch") {
                 r.appendChild(batchRevisionCell(build));
             } else if (type === "postsubmit") {
                 r.appendChild(cell.commitRevision(`${org}/${repo}`, base_ref, base_sha, base_link));
             } else if (type === "periodic") {
-                r.appendChild(cell.text(""));
+                r.appendChild(cell.text(dashCell));
             }
         } else {
             // Don't render identical cells for the same PR/commit.
-            r.appendChild(cell.text(""));
-            r.appendChild(cell.text(""));
+            r.appendChild(cell.text(dashCell));
+            r.appendChild(cell.text(dashCell));
         }
         if (spyglass) {
             // this logic exists for legacy jobs that are configured for gubernator compatibility
@@ -677,13 +660,15 @@ function redraw(fz: FuzzySearch, pushState: boolean = true): void {
         } else {
             r.appendChild(cell.text(''));
         }
+        // Results column
         if (buildUrl === "") {
             r.appendChild(cell.text(job));
         } else {
             r.appendChild(cell.link(job, buildUrl));
         }
-
+        // Started column
         r.appendChild(cell.time(i.toString(), moment.unix(started)));
+        // Duration column
         r.appendChild(cell.text(durationStr));
         builds.appendChild(r);
     }
@@ -739,15 +724,40 @@ function redraw(fz: FuzzySearch, pushState: boolean = true): void {
 function createRerunCell(modal: HTMLElement, rerunElement: HTMLElement, prowjob: string): HTMLTableDataCellElement {
     const c = document.createElement("td");
     c.appendChild(createRerunProwJobIcon(modal, rerunElement, prowjob, rerunCreatesJob, csrfToken));
-    c.classList.add("icon-cell");
     return c;
+}
+
+function createLogCell(build: ProwJob, buildUrl: string): HTMLTableDataCellElement {
+    const { agent, job, pod_spec } = build.spec;
+    const { pod_name, build_id } = build.status;
+
+    if ((agent === "kubernetes" && pod_name) || agent !== "kubernetes") {
+        const logIcon = icon.create("description", "Build log");
+        if (pod_spec == null || pod_spec.containers.length <= 1) {
+            logIcon.href = `log?job=${job}&id=${build_id}`;
+        } else {
+            // this logic exists for legacy jobs that are configured for gubernator compatibility
+            const buildIndex = buildUrl.indexOf('/build/');
+            if (buildIndex !== -1) {
+                const gcsUrl = `${window.location.origin}/view/gcs/${buildUrl.substring(buildIndex + '/build/'.length)}`;
+                logIcon.href = gcsUrl;
+            } else if (buildUrl.includes('/view/')) {
+                logIcon.href = buildUrl;
+            } else {
+                logIcon.href = `log?job=${job}&id=${build_id}`;
+            }
+        }
+        const c = document.createElement("td");
+        c.appendChild(logIcon);
+        return c;
+    }
+    return cell.text("");
 }
 
 function createViewJobCell(prowjob: string): HTMLTableDataCellElement {
     const c = document.createElement("td");
     const i = icon.create("pageview", "Show job YAML", () => gtag("event", "view_job_yaml", {event_category: "engagement", transport_type: "beacon"}));
     i.href = `/prowjob?prowjob=${prowjob}`;
-    c.classList.add("icon-cell");
     c.appendChild(i);
     return c;
 }
@@ -899,7 +909,6 @@ function createSpyglassCell(url: string): HTMLTableDataCellElement {
     const i = icon.create('visibility', 'View in Spyglass');
     i.href = url;
     const c = document.createElement('td');
-    c.classList.add('icon-cell');
     c.appendChild(i);
     return c;
 }
