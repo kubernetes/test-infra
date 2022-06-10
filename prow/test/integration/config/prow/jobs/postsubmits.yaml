@@ -1,0 +1,23 @@
+postsubmits:
+  org1/repo1:
+    - name: trigger-postsubmit-via-pubsub1
+      always_run: false
+      decorate: true
+      # Without this, the ProwJob CR that gets created will attempt to clone
+      # from GitHub, not the fakegitserver. We can't set this in the test case
+      # code because sub (production code), not our test code, is the one
+      # creating the ProwJob CR.
+      clone_uri: "http://fakegitserver.default/repo/repo1"
+      spec:
+        containers:
+        - image: localhost:5001/alpine
+          command:
+          - sh
+          args:
+          - -c
+          - |
+            set -eu
+            echo "hello from trigger-postsubmit-via-pubsub1"
+            # Cat out the contents of the file that is only available from the
+            # repo1 Git repo.
+            cat README.txt
