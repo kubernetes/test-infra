@@ -43,7 +43,7 @@ import (
 	"k8s.io/test-infra/prow/pod-utils/wrapper"
 )
 
-const LogFileName = "sidecar-logs-json"
+const LogFileName = "sidecar-logs.json"
 
 func LogSetup() (*os.File, error) {
 	logrusutil.ComponentInit()
