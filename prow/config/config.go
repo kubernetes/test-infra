@@ -1375,7 +1375,7 @@ const (
 	defaultMaxOutstandingMessages = 10
 )
 
-// PubsubSubscriptions maps GCP projects to a list of Topics.
+// PubsubSubscriptions maps GCP project IDs to a list of subscription IDs.
 type PubsubSubscriptions map[string][]string
 
 // PubSubTriggers contains pubsub configurations.

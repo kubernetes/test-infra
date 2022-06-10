@@ -162,7 +162,7 @@ func (c *pubSubClient) new(ctx context.Context, project string) (pubsubClientInt
 	return c, nil
 }
 
-// Subscription creates a subscription from the Cloud Pub/Sub Client
+// Subscription creates a reference to an existing subscription via the Cloud Pub/Sub Client.
 func (c *pubSubClient) subscription(id string, maxOutstandingMessages int) subscriptionInterface {
 	sub := c.client.Subscription(id)
 	sub.ReceiveSettings.MaxOutstandingMessages = maxOutstandingMessages
