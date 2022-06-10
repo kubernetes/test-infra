@@ -39,3 +39,4 @@ plank:
       gcs_configuration:
         bucket: "none"
         path_strategy: "explicit"
+        local_output_dir: "/output"
