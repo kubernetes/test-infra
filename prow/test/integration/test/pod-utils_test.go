@@ -138,8 +138,8 @@ git commit -m "add submodule"
 						// the "fakegitserver" in the "default" namespace, so
 						// the hostname is "fakegitserver.default".
 						//
-						// The "/foo" at the end is simply to refer to the Git
-						// repo named "foo" in the "/git-repo/foo" directory in
+						// The "/foo1" at the end is simply to refer to the Git
+						// repo named "foo" in the "/git-repo/foo1" directory in
 						// the fakegitserver container.
 						CloneURI: "http://fakegitserver.default/repo/foo1",
 					},
