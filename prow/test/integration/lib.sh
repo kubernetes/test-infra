@@ -40,6 +40,7 @@ declare -ra PROW_COMPONENTS=(
   fakegerritserver
   fakegitserver
   fakeghserver
+  fakepubsub
   gerrit
   hook
   horologium
@@ -67,6 +68,7 @@ declare -rA PROW_IMAGES=(
   [fakegerritserver]=prow/test/integration/cmd/fakegerritserver
   [fakegitserver]=prow/test/integration/cmd/fakegitserver
   [fakeghserver]=prow/test/integration/cmd/fakeghserver
+  [fakepubsub]=prow/test/integration/cmd/fakepubsub
   # Utility images. These images are not Prow components per se, and so do not
   # have corresponding Kubernetes configurations.
   [clonerefs]=prow/cmd/clonerefs
@@ -91,6 +93,7 @@ declare -rA PROW_IMAGES_TO_COMPONENTS=(
   [fakegerritserver]=fakegerritserver
   [fakegitserver]=fakegitserver
   [fakeghserver]=fakeghserver
+  [fakepubsub]=fakepubsub
 )
 
 function do_kubectl() {
