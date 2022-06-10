@@ -7,7 +7,7 @@ presubmits:
     spec:
       serviceAccount: prowjob-default-sa
       containers:
-      - image: gcr.io/rules-k8s/gcloud-bazel:v20220609-v0.6-47-g5fc96f5
+      - image: gcr.io/rules-k8s/gcloud-bazel:v20220610-v0.6-49-g6238b69
         args:
         - bash
         - -c
