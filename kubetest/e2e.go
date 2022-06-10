@@ -391,12 +391,18 @@ func listNodes(dp deployer, dump string) error {
 	if cmd == nil {
 		cmd = exec.Command("./cluster/kubectl.sh")
 	}
+	d := time.Duration(1) * time.Minute
 	cmd.Args = append(cmd.Args, "--match-server-version=false", "get", "nodes", "-oyaml")
-	b, err := control.Output(cmd)
-	if err != nil {
-		return err
+
+	for i := 0; i < 5; i++ {
+		b, err := control.Output(cmd)
+		if err == nil {
+			return ioutil.WriteFile(filepath.Join(dump, "nodes.yaml"), b, 0644)
+		}
+		log.Printf("kubectl --match-server-version=false get nodes -o yaml failed: %s\n%s", wrapError(err).Error(), string(b))
+		time.Sleep(d)
 	}
-	return ioutil.WriteFile(filepath.Join(dump, "nodes.yaml"), b, 0644)
+	return err
 }
 
 func listKubemarkNodes(dp deployer, dump string) error {
