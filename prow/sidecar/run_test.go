@@ -23,17 +23,24 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 	"regexp"
 	"strconv"
+	"strings"
+	"sync"
 	"testing"
 	"time"
 
+	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/entrypoint"
+	"k8s.io/test-infra/prow/gcsupload"
+	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 	"k8s.io/test-infra/prow/pod-utils/wrapper"
 
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/sets"
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
 
 var re = regexp.MustCompile(`(?m)(Failed to open) .*log\.txt: .*$`)
@@ -525,6 +532,76 @@ func TestLogReaders(t *testing.T) {
 				t.Errorf("maps do not match:\n%s", diff.ObjectReflectDiff(tc.expected, actual))
 			}
 		})
+	}
+
+}
+
+func TestSideCarLogsUpload(t *testing.T) {
+	logFile, err := LogSetup()
+	if err != nil {
+		t.Fatalf("Unable to set up log file")
+	}
+	defer os.Remove(logFile.Name())
+	testString := "Testing...Hello world!"
+	logrus.Info(testString)
+	var once sync.Once
+
+	localOutputDir, err := ioutil.TempDir("", "testdir")
+	if err != nil {
+		t.Errorf("Unable to create temp dir: %v", err)
+	}
+	defer func() {
+		os.RemoveAll(localOutputDir)
+	}()
+
+	options := Options{
+		GcsOptions: &gcsupload.Options{
+			GCSConfiguration: &prowapi.GCSConfiguration{
+				PathStrategy:   prowapi.PathStrategyExplicit,
+				Bucket:         "bucket",
+				LocalOutputDir: localOutputDir,
+			},
+		},
+	}
+
+	spec := &downwardapi.JobSpec{
+		Job:  "job",
+		Type: prowapi.PostsubmitJob,
+		Refs: &prowapi.Refs{
+			Org:  "org",
+			Repo: "repo",
+			Pulls: []prowapi.Pull{
+				{
+					Number: 1,
+				},
+			},
+		},
+		BuildID: "build",
+	}
+
+	entries := options.entries()
+	metadata := combineMetadata(entries)
+	buildLogs := logReaders(entries)
+
+	options.doUpload(context.Background(), spec, true, false, metadata, buildLogs, logFile, &once)
+
+	files, err := ioutil.ReadDir(localOutputDir)
+	if err != nil {
+		t.Errorf("Unable to access files in directory: %v", err)
+	}
+	if len(files) == 0 {
+		t.Fatal("Log file was not uploaded")
+	}
+
+	var s []byte
+	s, err = ioutil.ReadFile(filepath.Join(localOutputDir, LogFileName))
+	if err != nil {
+		t.Fatalf("Unable to read log file: %v", err)
+	}
+
+	f := string(s)
+	if !strings.Contains(f, testString) {
+		t.Fatal("Log file not correctly capturing logs")
 	}
 
 }
