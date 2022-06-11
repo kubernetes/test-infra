@@ -37,15 +37,15 @@ import (
 func TestPubSubSubscriptions(t *testing.T) {
 	t.Parallel()
 
-	createRepoRepo1 := `
-echo this-is-from-repo1 > README.txt
-git add README.txt
-git commit -m "commit 1"
-`
 	const (
 		PubsubEmulatorHost = "localhost:30303"
 		UidLabel           = "integration-test/uid"
 		Repo1HEADsha       = "8c5dc6fe1b5a63200f23a2364011e8270f0f7cd0"
+		CreateRepoRepo1    = `
+echo this-is-from-repo1 > README.txt
+git add README.txt
+git commit -m "commit 1"
+`
 	)
 
 	tests := []struct {
@@ -55,12 +55,11 @@ git commit -m "commit 1"
 		expected   string
 	}{
 		{
-			// Run a job defined in the static config (not inrepoconfig).
-			name: "non-inrepoconfig",
+			name: "staticconfig-postsubmit",
 			repoSetups: []fakegitserver.RepoSetup{
 				{
 					Name:      "repo1",
-					Script:    createRepoRepo1,
+					Script:    CreateRepoRepo1,
 					Overwrite: true,
 				},
 			},
@@ -132,7 +131,7 @@ this-is-from-repo1
 			// Create a unique test case ID (UID) for this particular test
 			// invocation. This makes it easier to check from this code whether
 			// sub actually received the exact same message we just published.
-			uid := fmt.Sprintf("%s-%s", tt.name, RandomString(t))
+			uid := RandomString(t)
 			tt.msg.Data.Labels = make(map[string]string)
 			tt.msg.Data.Labels[UidLabel] = uid
 
