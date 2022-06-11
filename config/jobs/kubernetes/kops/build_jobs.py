@@ -1190,6 +1190,7 @@ def generate_presubmits_e2e():
         ),
         presubmit_test(
             name="pull-kops-e2e-aws-upgrade-123-ko123-to-klatest-kolatest",
+            optional=True,
             distro='u2004',
             networking='cilium',
             k8s_version='stable',
