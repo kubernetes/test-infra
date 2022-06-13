@@ -53,6 +53,10 @@ Examples:
   # "TestClonerefs/postsubmit" test.
   $0 -verbose -no-setup-kind-cluster -run=Clonerefs/post
 
+  # Before running the "TestClonerefs/postsubmit" test, delete all ProwJob
+  # Custom Resources and test pods from test-pods namespace.
+  $0 -verbose -no-setup-kind-cluster -run=Clonerefs/post -clear=ALL
+
 Options:
     -no-setup:
         Skip setup of the KIND cluster and Prow installation. That is, only run
@@ -82,6 +86,15 @@ Options:
 
         Implies -no-setup-kind-cluster.
 
+    -clear='':
+        Delete the comma-separated list of Kubernetes resources from the KIND
+        cluster before running the test. Possible values: "ALL", "prowjobs",
+        "test-pods". ALL is an alias for prowjobs and test-pods.
+
+        This makes it easier to see the exact ProwJob Custom Resource ("watch
+        kubectl get prowjobs.prow.k8s.io") or associated test pod ("watch
+        kubectl get pods -n test-pods") that is created by the test being run.
+
     -run='':
         Run only those tests that match the given pattern. The format is
         "TestName/testcasename". E.g., "TestClonerefs/postsubmit" will only run
@@ -106,6 +119,7 @@ EOF
 function main() {
   declare -a tests_to_run
   declare -a setup_args
+  declare -a clear_args
   declare -a teardown_args
   setup_args=(-setup-kind-cluster -setup-prow-components -build=ALL)
   local summary_format
@@ -113,6 +127,8 @@ function main() {
   local setup_kind_cluster
   local setup_prow_components
   local build_images
+  local resource
+  local resources_val
   setup_kind_cluster=0
   setup_prow_components=0
 
@@ -133,6 +149,23 @@ function main() {
         # "-build=ALL" option.
         unset 'setup_args[2]'
         setup_args+=("${arg}")
+        ;;
+      -clear=*)
+        resources_val="${arg#-clear=}"
+        for resource in ${resources_val//,/ }; do
+          case "${resource}" in
+            ALL)
+              clear_args=(-prowjobs -test-pods)
+            ;;
+            prowjobs|test-pods)
+              clear_args+=("${resource}")
+            ;;
+            *)
+              echo >&2 "unrecognized argument to -clear: ${resource}"
+              return 1
+            ;;
+          esac
+        done
         ;;
       -run=*)
         tests_to_run+=("${arg}")
@@ -187,6 +220,10 @@ function main() {
   fi
 
   build_gotestsum
+
+  if [[ -n "${clear_args[*]}" ]]; then
+    "${SCRIPT_ROOT}/clear.sh" "${clear_args[@]}"
+  fi
 
   log "Finished preparing environment; running integration test"
 
