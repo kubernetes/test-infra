@@ -42,9 +42,9 @@ type Client struct {
 }
 
 func NewClient(projectID, pubsubEmulatorHost string) (*Client, error) {
-	client, err := newClientOnEmulator(projectID, pubsubEmulatorHost)
+	client, err := newClientForEmulator(projectID, pubsubEmulatorHost)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to create pubsub client to project %q: %v", projectID, err)
+		return nil, fmt.Errorf("Unable to create pubsub client to project %q for the emulator: %v", projectID, err)
 	}
 
 	return &Client{
@@ -53,14 +53,14 @@ func NewClient(projectID, pubsubEmulatorHost string) (*Client, error) {
 	}, nil
 }
 
-// newClientOnEmulator returns a pubsub client that is hardcoded to always talk
+// newClientForEmulator returns a pubsub client that is hardcoded to always talk
 // to the fakepubsub service running in the test KIND cluster via the
 // pubsubEmulatorHost parameter. This is taken from
 // https://github.com/googleapis/google-cloud-go/blob/e43c095c94e44a95c618861f9da8f2469b53be16/pubsub/pubsub.go#L126.
 // This is better than getting the PUBSUB_EMULATOR_HOST environment variable
 // because this makes the code thread-safe (we no longer rely on a global
 // environment variable).
-func newClientOnEmulator(projectID, pubsubEmulatorHost string) (*pubsub.Client, error) {
+func newClientForEmulator(projectID, pubsubEmulatorHost string) (*pubsub.Client, error) {
 	conn, err := grpc.Dial(pubsubEmulatorHost, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, fmt.Errorf("grpc.Dial: %v", err)

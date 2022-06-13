@@ -196,6 +196,8 @@ func setupRepo(gitReposParentDir string, repoSetup *RepoSetup) (*git.Repository,
 		return nil, err
 	}
 
+	logger.Infof("successfully ran setup script in %s", dir)
+
 	if err := convertToBareRepo(repo, dir); err != nil {
 		logger.Error("conversion to bare repo failed")
 		return nil, err
@@ -274,6 +276,9 @@ func runSetupScript(repoPath, script string) error {
 
 	cmd := exec.Command("sh", "-c", script)
 	cmd.Dir = repoPath
+
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 
 	// By default, make it so that the git commands contained in the script
 	// result in reproducible commits. This can be overridden by the script
