@@ -39,3 +39,9 @@ plank:
       gcs_configuration:
         bucket: "none"
         path_strategy: "explicit"
+        local_output_dir: "/output"
+
+# fakepubsub will read this config and create all necessary subscriptions.
+pubsub_subscriptions:
+  "project1":
+  - "subscription1" # Subscribed to "topic1".

@@ -40,11 +40,13 @@ declare -ra PROW_COMPONENTS=(
   fakegerritserver
   fakegitserver
   fakeghserver
+  fakepubsub
   gerrit
   hook
   horologium
   prow-controller-manager
   sinker
+  sub
   tide
 )
 
@@ -60,11 +62,13 @@ declare -rA PROW_IMAGES=(
   [horologium]=prow/cmd/horologium
   [prow-controller-manager]=prow/cmd/prow-controller-manager
   [sinker]=prow/cmd/sinker
+  [sub]=prow/cmd/sub
   [tide]=prow/cmd/tide
   # Fakes.
   [fakegerritserver]=prow/test/integration/cmd/fakegerritserver
   [fakegitserver]=prow/test/integration/cmd/fakegitserver
   [fakeghserver]=prow/test/integration/cmd/fakeghserver
+  [fakepubsub]=prow/test/integration/cmd/fakepubsub
   # Utility images. These images are not Prow components per se, and so do not
   # have corresponding Kubernetes configurations.
   [clonerefs]=prow/cmd/clonerefs
@@ -84,10 +88,12 @@ declare -rA PROW_IMAGES_TO_COMPONENTS=(
   [horologium]=horologium
   [prow-controller-manager]=prow-controller-manager
   [sinker]=sinker
+  [sub]=sub
   [tide]=tide
   [fakegerritserver]=fakegerritserver
   [fakegitserver]=fakegitserver
   [fakeghserver]=fakeghserver
+  [fakepubsub]=fakepubsub
 )
 
 function do_kubectl() {
