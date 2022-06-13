@@ -56,7 +56,7 @@ presubmits:
     decorate: true
     always_run: false
     optional: true
-    run_if_changed: 'azure/.*'
+    run_if_changed: 'capz/.*'
     decoration_config:
       timeout: 3h
     path_alias: k8s.io/windows-testing
@@ -79,7 +79,7 @@ presubmits:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-master
           command:
             - "runner.sh"
-            - "./azure/run-capz-e2e.sh"
+            - "./capz/run-capz-e2e.sh"
           securityContext:
             privileged: true
           resources:
