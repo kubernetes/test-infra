@@ -83,8 +83,10 @@ type Client interface {
 	DeleteLink(id string) error
 	DeleteRemoteLink(issueID string, linkID int) error
 	// DeleteRemoteLinkViaURL identifies and removes a remote link from an issue
-	// the has the provided URL.
-	DeleteRemoteLinkViaURL(issueID, url string) error
+	// the has the provided URL. The returned bool indicates whether a change
+	// was made during the operation as a remote link with the URL not existing
+	// is not consider an error for this function.
+	DeleteRemoteLinkViaURL(issueID, url string) (bool, error)
 	ForPlugin(plugin string) Client
 	AddComment(issueID string, comment *jira.Comment) (*jira.Comment, error)
 	ListProjects() (*jira.ProjectList, error)
@@ -328,21 +330,23 @@ func (jc *client) DeleteRemoteLink(issueID string, linkID int) error {
 }
 
 // DeleteRemoteLinkViaURL identifies and removes a remote link from an issue
-// the has the provided URL.
-func DeleteRemoteLinkViaURL(jc Client, issueID, url string) error {
+// the has the provided URL. The returned bool indicates whether a change
+// was made during the operation as a remote link with the URL not existing
+// is not consider an error for this function.
+func DeleteRemoteLinkViaURL(jc Client, issueID, url string) (bool, error) {
 	links, err := jc.GetRemoteLinks(issueID)
 	if err != nil {
-		return err
+		return false, err
 	}
 	for _, link := range links {
 		if link.Object.URL == url {
-			return jc.DeleteRemoteLink(issueID, link.ID)
+			return true, jc.DeleteRemoteLink(issueID, link.ID)
 		}
 	}
-	return fmt.Errorf("could not find remote link on issue with URL `%s`", url)
+	return false, fmt.Errorf("could not find remote link on issue with URL `%s`", url)
 }
 
-func (jc *client) DeleteRemoteLinkViaURL(issueID, url string) error {
+func (jc *client) DeleteRemoteLinkViaURL(issueID, url string) (bool, error) {
 	return DeleteRemoteLinkViaURL(jc, issueID, url)
 }
 
@@ -514,7 +518,7 @@ func (jc *client) CloneIssue(parent *jira.Issue) (*jira.Issue, error) {
 
 func unsetProblematicFields(issue *jira.Issue, responseBody string) (*jira.Issue, error) {
 	// handle unsettable "unknown" fields
-	processedResponse := createIssueError{}
+	processedResponse := CreateIssueError{}
 	if newErr := json.Unmarshal([]byte(responseBody), &processedResponse); newErr != nil {
 		return nil, fmt.Errorf("Error processing jira error: %w", newErr)
 	}
@@ -544,7 +548,7 @@ func unsetProblematicFields(issue *jira.Issue, responseBody string) (*jira.Issue
 	return &newIssue, nil
 }
 
-type createIssueError struct {
+type CreateIssueError struct {
 	ErrorMessages []string          `json:"errorMessages"`
 	Errors        map[string]string `json:"errors"`
 }

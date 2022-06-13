@@ -83,6 +83,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.7.0
 	github.com/tektoncd/pipeline v0.14.1-0.20200710073957-5eeb17f81999
+	github.com/trivago/tgo v1.0.7
 	go.uber.org/zap v1.19.0
 	go4.org v0.0.0-20201209231011-d4a079459e60
 	gocloud.dev v0.19.0
@@ -190,7 +191,6 @@ require (
 	github.com/prometheus/procfs v0.6.0 // indirect
 	github.com/sergi/go-diff v1.1.0 // indirect
 	github.com/shurcooL/graphql v0.0.0-20181231061246-d48a9a75455f // indirect
-	github.com/trivago/tgo v1.0.7 // indirect
 	github.com/xanzy/ssh-agent v0.3.0 // indirect
 	go.opencensus.io v0.23.0 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
