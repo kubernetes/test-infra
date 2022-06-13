@@ -24,6 +24,8 @@ import (
 	"time"
 
 	"github.com/andygrunwald/go-gerrit"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
@@ -141,6 +143,80 @@ func fakeProwYAMLGetter(
 		Postsubmits: postsubmits,
 	}
 	return &res, nil
+}
+
+func TestHandleInRepoConfigError(t *testing.T) {
+	change := gerrit.ChangeInfo{ID: "1", CurrentRevision: "1"}
+	instanceName := "instance"
+	changeHash := fmt.Sprintf("%s%s%s", instanceName, change.ID, change.CurrentRevision)
+	cases := []struct {
+		name             string
+		err              error
+		startingFailures map[string]bool
+		expectedFailures map[string]bool
+		expectedReview   bool
+	}{
+		{
+			name:             "No error. Do not send message",
+			expectedReview:   false,
+			startingFailures: map[string]bool{},
+			expectedFailures: map[string]bool{},
+			err:              nil,
+		},
+		{
+			name:             "First time error send review",
+			err:              errors.New("InRepoConfigError"),
+			expectedReview:   true,
+			startingFailures: map[string]bool{},
+			expectedFailures: map[string]bool{changeHash: true},
+		},
+		{
+			name:             "second time error do not send review",
+			err:              errors.New("InRepoConfigError"),
+			expectedReview:   false,
+			startingFailures: map[string]bool{changeHash: true},
+			expectedFailures: map[string]bool{changeHash: true},
+		},
+		{
+			name:             "Resolved error sends error again, resend review",
+			err:              errors.New("InRepoConfigError"),
+			expectedReview:   true,
+			startingFailures: map[string]bool{changeHash: false},
+			expectedFailures: map[string]bool{changeHash: true},
+		},
+		{
+			name:             "Resolved error changes Failures map",
+			err:              nil,
+			expectedReview:   false,
+			startingFailures: map[string]bool{changeHash: true},
+			expectedFailures: map[string]bool{changeHash: false},
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			gc := &fgc{reviews: 0}
+			controller := &Controller{
+				inRepoConfigFailures: tc.startingFailures,
+				gc:                   gc,
+			}
+
+			ret := controller.handleInRepoConfigError(tc.err, instanceName, change)
+			if ret != nil {
+				t.Errorf("handleInRepoConfigError returned with non nil error")
+			}
+			if tc.expectedReview && gc.reviews == 0 {
+				t.Errorf("expected a review and did not get one")
+			}
+			if !tc.expectedReview && gc.reviews != 0 {
+				t.Error("expected no reviews and got one")
+			}
+			if diff := cmp.Diff(tc.expectedFailures, controller.inRepoConfigFailures, cmpopts.SortSlices(func(a, b string) bool {
+				return a < b
+			})); diff != "" {
+				t.Fatalf("expected failures mismatch. got(+), want(-):\n%s", diff)
+			}
+		})
+	}
 }
 
 func TestMakeCloneURI(t *testing.T) {

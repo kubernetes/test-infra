@@ -45,6 +45,7 @@ import (
 
 const (
 	inRepoConfigRetries = 2
+	inRepoConfigFailed  = "Unable to get inRepoConfig. This could be due to a merge conflict or a flake. If a merge conflict, please rebase and fix conflicts. Otherwise try again with /test all"
 )
 
 var gerritMetrics = struct {
@@ -87,16 +88,17 @@ type gerritClient interface {
 
 // Controller manages gerrit changes.
 type Controller struct {
-	config             config.Getter
-	prowJobClient      prowJobClient
-	gc                 gerritClient
-	tracker            LastSyncTracker
-	projectsOptOutHelp map[string]sets.String
-	lock               sync.RWMutex
-	cookieFilePath     string
-	cacheSize          int
-	configAgent        *config.Agent
-	repoCacheMap       map[string]*config.InRepoConfigCache
+	config               config.Getter
+	prowJobClient        prowJobClient
+	gc                   gerritClient
+	tracker              LastSyncTracker
+	projectsOptOutHelp   map[string]sets.String
+	lock                 sync.RWMutex
+	cookieFilePath       string
+	cacheSize            int
+	configAgent          *config.Agent
+	repoCacheMap         map[string]*config.InRepoConfigCache
+	inRepoConfigFailures map[string]bool
 }
 
 type LastSyncTracker interface {
@@ -130,15 +132,16 @@ func NewController(ctx context.Context, prowJobClient prowv1.ProwJobInterface, o
 		logrus.WithError(err).Fatal("Error creating gerrit client.")
 	}
 	c := &Controller{
-		prowJobClient:      prowJobClient,
-		config:             cfg,
-		gc:                 gerritClient,
-		tracker:            lastSyncTracker,
-		projectsOptOutHelp: projectsOptOutHelpMap,
-		cookieFilePath:     cookiefilePath,
-		cacheSize:          cacheSize,
-		configAgent:        ca,
-		repoCacheMap:       map[string]*config.InRepoConfigCache{},
+		prowJobClient:        prowJobClient,
+		config:               cfg,
+		gc:                   gerritClient,
+		tracker:              lastSyncTracker,
+		projectsOptOutHelp:   projectsOptOutHelpMap,
+		cookieFilePath:       cookiefilePath,
+		cacheSize:            cacheSize,
+		configAgent:          ca,
+		repoCacheMap:         map[string]*config.InRepoConfigCache{},
+		inRepoConfigFailures: map[string]bool{},
 	}
 
 	// applyGlobalConfig reads gerrit configurations from global gerrit config,
@@ -358,6 +361,25 @@ func failedJobs(account int, revision int, messages ...gerrit.ChangeMessageInfo)
 	return failures
 }
 
+func (c *Controller) handleInRepoConfigError(err error, instance string, change gerrit.ChangeInfo) error {
+	if err != nil {
+		// If we have not already recorded this failure send an error essage
+		if failed, ok := c.inRepoConfigFailures[fmt.Sprintf("%s%s%s", instance, change.ID, change.CurrentRevision)]; !ok || !failed {
+			if setReviewWerr := c.gc.SetReview(instance, change.ID, change.CurrentRevision, inRepoConfigFailed, nil); setReviewWerr != nil {
+				return fmt.Errorf("failed to get inRepoConfig and failed to set Review to notify user: %v and %v", err, setReviewWerr)
+			}
+			c.inRepoConfigFailures[fmt.Sprintf("%s%s%s", instance, change.ID, change.CurrentRevision)] = true
+		}
+
+		// We do not want to return that there was an error processing change. If we are unable to get inRepoConfig we do not process. This is expected behavior.
+		return nil
+	} else if failed, ok := c.inRepoConfigFailures[fmt.Sprintf("%s%s%s", instance, change.ID, change.CurrentRevision)]; ok && failed {
+		// If failed in the past but passes now, allow future failures to send message
+		c.inRepoConfigFailures[fmt.Sprintf("%s%s%s", instance, change.ID, change.CurrentRevision)] = false
+	}
+	return nil
+}
+
 // processChange creates new presubmit/postsubmit prowjobs base off the gerrit changes
 func (c *Controller) processChange(logger logrus.FieldLogger, instance string, change client.ChangeInfo, cloneURI *url.URL, cache *config.InRepoConfigCache) error {
 	baseSHA, err := c.gc.GetBranchRevision(instance, change.Project, change.Branch)
@@ -396,8 +418,8 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 				break
 			}
 		}
-		if err != nil {
-			return fmt.Errorf("failed to get inRepoConfig for Postsubmits: %w", err)
+		if err := c.handleInRepoConfigError(err, instance, change); err != nil {
+			return err
 		}
 		postsubmits = append(postsubmits, c.config().PostsubmitsStatic[cloneURI.String()]...)
 		for _, postsubmit := range postsubmits {
@@ -421,8 +443,8 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 				break
 			}
 		}
-		if err != nil {
-			return fmt.Errorf("failed to get inRepoConfig for Presubmits: %w", err)
+		if err := c.handleInRepoConfigError(err, instance, change); err != nil {
+			return err
 		}
 		presubmits = append(presubmits, c.config().PresubmitsStatic[cloneURI.String()]...)
 
