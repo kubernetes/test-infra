@@ -83,7 +83,9 @@ periodics:
             value: v1alpha3
           - name: INIT_WITH_KUBERNETES_VERSION
             value: v1.21.12
-
+          # CAPI does not work with v1.21 if ClusterClass is enabled, so we have to disable it.
+          - name: CLUSTER_TOPOLOGY
+            value: "false"
         # we need privileged mode in order to do docker in docker
         securityContext:
           privileged: true
@@ -206,6 +208,9 @@ periodics:
       # supported version for Cluster API management cluster.
       - name: KUBERNETES_VERSION_MANAGEMENT
         value: "stable-1.20"
+      # CAPI does not work with v1.20 if ClusterClass is enabled, so we have to disable it.
+      - name: CLUSTER_TOPOLOGY
+        value: "false"
       # we need privileged mode in order to do docker in docker
       securityContext:
         privileged: true
