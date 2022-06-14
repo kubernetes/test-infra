@@ -10,7 +10,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220614-cde7860a33-1.21
         command:
         - "./scripts/ci-test.sh"
     annotations:
@@ -26,7 +26,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220614-cde7860a33-1.21
         command:
         - "./scripts/ci-build.sh"
     annotations:
@@ -42,7 +42,7 @@ presubmits:
     path_alias: "sigs.k8s.io/cluster-api-provider-aws"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-1.21
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220614-cde7860a33-1.21
         command:
         - "make"
         - "verify"
@@ -78,7 +78,7 @@ presubmits:
       path_alias: k8s.io/kubernetes
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-1.21
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220614-cde7860a33-1.21
           command:
             - "runner.sh"
             - "./scripts/ci-conformance.sh"
@@ -121,7 +121,7 @@ presubmits:
       preset-aws-credential: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-1.21
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220614-cde7860a33-1.21
           command:
             - "runner.sh"
             - "./scripts/ci-conformance.sh"
@@ -161,7 +161,7 @@ presubmits:
       preset-aws-credential: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-1.21
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220614-cde7860a33-1.21
           command:
             - "runner.sh"
             - "./scripts/ci-e2e.sh"
@@ -199,7 +199,7 @@ presubmits:
       preset-aws-credential: "true"
     spec:
       containers:
-        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-1.21
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220614-cde7860a33-1.21
           command:
             - "runner.sh"
             - "./scripts/ci-e2e-eks.sh"
