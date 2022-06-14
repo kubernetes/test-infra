@@ -9,7 +9,7 @@ presubmits:
     always_run: false
     branches:
       - ^master$
-    run_if_changed: '^(pkg\/openstack\/|cmd\/openstack-cloud-controller-manager\/|tests\/e2e\/cloudprovider\/)'
+    run_if_changed: '^(pkg\/util\/|pkg\/openstack\/|cmd\/openstack-cloud-controller-manager\/|tests\/e2e\/cloudprovider\/)'
     optional: false
     decorate: true
     decoration_config:
@@ -42,7 +42,7 @@ presubmits:
   #   always_run: false
   #   branches:
   #     - ^master$
-  #   run_if_changed: '^(pkg\/openstack\/|cmd\/openstack-cloud-controller-manager\/|tests\/e2e\/cloudprovider\/)'
+  #   run_if_changed: '^(pkg\/openstack\/|cmd\/openstack-cloud-controller-manager\/|tests\/e2e\/cloudprovider\/)
   #   optional: false
   #   decorate: true
   #   decoration_config:
@@ -75,7 +75,7 @@ presubmits:
     always_run: false
     branches:
       - ^master$
-    run_if_changed: '^(pkg\/csi\/cinder\/|cmd\/cinder-csi-plugin\/|tests\/e2e\/csi\/cinder\/|manifests\/cinder-csi-plugin\/)'
+    run_if_changed: '^(pkg\/util\/|pkg\/csi\/cinder\/|cmd\/cinder-csi-plugin\/|tests\/e2e\/csi\/cinder\/|manifests\/cinder-csi-plugin\/)'
     optional: false
     decorate: true
     decoration_config:
@@ -108,7 +108,7 @@ presubmits:
     always_run: false
     branches:
       - ^master$
-    run_if_changed: '^(pkg\/csi\/manila\/|cmd\/manila-csi-plugin\/|tests\/e2e\/csi\/manila\/)'
+    run_if_changed: '^(pkg\/util\/|pkg\/csi\/manila\/|cmd\/manila-csi-plugin\/|tests\/e2e\/csi\/manila\/)'
     optional: false
     decorate: true
     decoration_config:
@@ -134,7 +134,7 @@ presubmits:
 
   - name: openstack-cloud-csi-cinder-sanity-test
     always_run: false
-    run_if_changed: '^(pkg\/csi\/cinder\/|cmd\/cinder-csi-plugin\/|tests\/sanity\/cinder\/)'
+    run_if_changed: '^(pkg\/util\/|pkg\/csi\/cinder\/|cmd\/cinder-csi-plugin\/|tests\/sanity\/cinder\/)'
     decorate: true
     branches:
       - ^master$
@@ -153,7 +153,7 @@ presubmits:
 
   - name: openstack-cloud-csi-manila-sanity-test
     always_run: false
-    run_if_changed: '^(pkg\/csi\/manila\/|cmd\/manila-csi-plugin\/|tests\/sanity\/manila\/)'
+    run_if_changed: '^(pkg\/util\/|pkg\/csi\/manila\/|cmd\/manila-csi-plugin\/|tests\/sanity\/manila\/)'
     decorate: true
     branches:
       - ^master$
@@ -179,7 +179,7 @@ presubmits:
     always_run: false
     branches:
       - ^master$
-    run_if_changed: '^(pkg\/identity\/|cmd\/k8s-keystone-auth\/|tests\/e2e\/k8s-keystone-auth\/)'
+    run_if_changed: '^(pkg\/util\/|pkg\/identity\/|cmd\/k8s-keystone-auth\/|tests\/e2e\/k8s-keystone-auth\/)'
     optional: false
     decorate: true
     decoration_config:
