@@ -243,9 +243,9 @@ periodics:
         - name: AZURE_LOADBALANCER_SKU
           value: "standard"
         - name: CONTROL_PLANE_MACHINE_COUNT
-          value: "3"
+          value: "1"
         - name: KUBERNETES_VERSION
-          value: "latest-1.24"
+          value: "latest"
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-master-capz
@@ -355,130 +355,6 @@ periodics:
     testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
     description: "[Windows] Runs Azure specific tests periodically with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure)."
 - interval: 24h
-  # cloud-provider-azure-autoscaling runs node autoscaling tests periodically.
-  name: cloud-provider-azure-autoscaling
-  decorate: true
-  decoration_config:
-    timeout: 5h
-  labels:
-    preset-service-account: "true"
-    preset-azure-cred: "true"
-    preset-dind-enabled: "true"
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: release-1.23
-    path_alias: k8s.io/kubernetes
-  - org: kubernetes-sigs
-    repo: cloud-provider-azure
-    base_ref: master
-    path_alias: sigs.k8s.io/cloud-provider-azure
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-master
-      command:
-      - runner.sh
-      - kubetest
-      args:
-      # Generic e2e test args
-      - --test
-      - --up
-      - --down
-      - --build=quick
-      - --dump=$(ARTIFACTS)
-      # Azure-specific test args
-      - --deployment=aksengine
-      - --provider=skeleton
-      - --aksengine-agentpoolcount=2
-      - --aksengine-admin-username=azureuser
-      - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-orchestratorRelease=1.23
-      - --aksengine-mastervmsize=Standard_DS2_v2
-      - --aksengine-agentvmsize=Standard_D4s_v3
-      - --aksengine-ccm
-      - --aksengine-cnm
-      - --aksengine-deploy-custom-k8s
-      - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-autoscaler.json
-      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/nightly/aks-engine-nightly-linux-amd64.tar.gz
-      # Specific test args
-      - --test-ccm
-      - --ginkgo-parallel=1
-      securityContext:
-        privileged: true
-      env:
-      - name: CCM_E2E_ARGS
-        value: "-ginkgo.focus=autoscaler"
-      - name: AZURE_LOADBALANCER_SKU
-        value: "standard"
-  annotations:
-    testgrid-dashboards: provider-azure-cloud-provider-azure
-    testgrid-tab-name: cloud-provider-azure-autoscaling
-    testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
-    description: "Runs node autoscaling tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure)."
-- interval: 24h
-  # cloud-provider-azure-autoscaling-multipool runs node autoscaling tests with multiple nodepools periodically.
-  name: cloud-provider-azure-autoscaling-multipool
-  decorate: true
-  decoration_config:
-    timeout: 5h
-  labels:
-    preset-service-account: "true"
-    preset-azure-cred: "true"
-    preset-dind-enabled: "true"
-  extra_refs:
-    - org: kubernetes
-      repo: kubernetes
-      base_ref: release-1.23
-      path_alias: k8s.io/kubernetes
-    - org: kubernetes-sigs
-      repo: cloud-provider-azure
-      base_ref: master
-      path_alias: sigs.k8s.io/cloud-provider-azure
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-master
-      command:
-      - runner.sh
-      - kubetest
-      args:
-      # Generic e2e test args
-      - --test
-      - --up
-      - --down
-      - --build=quick
-      - --dump=$(ARTIFACTS)
-      # Azure-specific test args
-      - --deployment=aksengine
-      - --provider=skeleton
-      - --aksengine-agentpoolcount=2
-      - --aksengine-admin-username=azureuser
-      - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-orchestratorRelease=1.23
-      - --aksengine-mastervmsize=Standard_DS2_v2
-      - --aksengine-agentvmsize=Standard_F2
-      - --aksengine-ccm
-      - --aksengine-cnm
-      - --aksengine-deploy-custom-k8s
-      - --aksengine-public-key=$(AZURE_SSH_PUBLIC_KEY_FILE)
-      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-autoscaler-multi-nodepool.json
-      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/nightly/aks-engine-nightly-linux-amd64.tar.gz
-      # Specific test args
-      - --test-ccm
-      - --ginkgo-parallel=1
-      securityContext:
-        privileged: true
-      env:
-      - name: CCM_E2E_ARGS
-        value: "-ginkgo.focus=autoscaler"
-      - name: AZURE_LOADBALANCER_SKU
-        value: "standard"
-  annotations:
-    testgrid-dashboards: provider-azure-cloud-provider-azure
-    testgrid-tab-name: cloud-provider-azure-autoscaling-multipool
-    testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
-    description: "Runs node multiple nodepools autoscaling tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure)."
-- interval: 24h
   # cloud-provider-azure-conformance-capz runs Kubernetes conformance tests periodically.
   name: cloud-provider-azure-conformance-capz
   decorate: true
@@ -526,11 +402,11 @@ periodics:
       - name: AZURE_LOADBALANCER_SKU
         value: "standard"
       - name: KUBERNETES_VERSION
-        value: "latest-1.24"
+        value: "latest"
       - name: GINKGO_ARGS
         value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --test.parallel=30 --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT
-        value: "3"
+        value: "1"
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-conformance-capz
@@ -649,7 +525,7 @@ periodics:
       - name: GINKGO_ARGS
         value: --ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|In-tree.Volumes|should.be.able.to.create.an.internal.type.load.balancer --test.parallel=4 --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT
-        value: "3"
+        value: "1"
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-slow-capz
@@ -763,9 +639,9 @@ periodics:
         - name: TEST_CCM
           value: "true"
         - name: CONTROL_PLANE_MACHINE_COUNT
-          value: "3"
+          value: "1"
         - name: KUBERNETES_VERSION
-          value: "1.24.1"
+          value: "latest"
         - name: CLUSTER_TEMPLATE
           value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss.yaml
         - name: AZURE_LOADBALANCER_SKU
@@ -821,11 +697,11 @@ periodics:
       - name: TEST_CCM
         value: "true"
       - name: KUBERNETES_VERSION
-        value: "1.24.1"
+        value: "latest"
       - name: GINKGO_ARGS
         value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --test.parallel=30 --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT
-        value: "3"
+        value: "1"
       - name: CLUSTER_TEMPLATE
         value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss.yaml
       - name: AZURE_LOADBALANCER_SKU
@@ -884,9 +760,9 @@ periodics:
         value: "latest"
       - name: GINKGO_ARGS
         # Check https://github.com/kubernetes-sigs/cloud-provider-azure/issues/224 for the status of each skipped test
-        value: --ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\]|regular.resource.usage.tracking.resource.tracking.for|validates.MaxPods.limit.number.of.pods.that.are.allowed.to.run|In-tree.Volumes --test.parallel=30 --report-dir=/logs/artifacts --disable-log-dump=true
+        value: --ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\]|regular.resource.usage.tracking.resource.tracking.for|validates.MaxPods.limit.number.of.pods.that.are.allowed.to.run|In-tree.Volumes|RuntimeClass.should.run.a.Pod.requesting.a.RuntimeClass.with.scheduling.with.taints|Multi-AZ.Clusters.should.spread.the.pods.of.a.replication.controller.across.zones|Multi-AZ.Clusters.should.spread.the.pods.of.a.service.across.zones|Should.test.that.pv.used.in.a.pod.that.is.deleted.while.the.kubelet.is.down.cleans.up.when.the.kubelet.returns|Should.test.that.pv.used.in.a.pod.that.is.force.deleted.while.the.kubelet.is.down.cleans.up.when.the.kubelet.returns|Should.test.that.pv.written.before.kubelet.restart.is.readable.after.restart|subPath.should.unmount.if.pod.is.force.deleted.while.kubelet.is.down|subPath.should.unmount.if.pod.is.gracefully.deleted.while.kubelet.is.down|Should.test.that.pv.written.before.kubelet.restart.is.readable.after.restart --test.parallel=30 --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT
-        value: "3"
+        value: "1"
       - name: CLUSTER_TEMPLATE
         value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
       - name: AZURE_LOADBALANCER_SKU
@@ -945,9 +821,9 @@ periodics:
         value: "latest"
       - name: GINKGO_ARGS
         # Check https://github.com/kubernetes-sigs/cloud-provider-azure/issues/224 for the status of each skipped test
-        value: --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|Delete.Grace.Period|runs.ReplicaSets.to.verify.preemption.running.path|client.go.should.negotiate|should.contain.custom.columns.for.each.resource|Network.should.set.TCP.CLOSE_WAIT.timeout|PodSecurityPolicy|In-tree.Volumes --test.parallel=30 --report-dir=/logs/artifacts --disable-log-dump=true
+        value: --ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|Delete.Grace.Period|runs.ReplicaSets.to.verify.preemption.running.path|client.go.should.negotiate|should.contain.custom.columns.for.each.resource|Network.should.set.TCP.CLOSE_WAIT.timeout|PodSecurityPolicy|In-tree.Volumes|ephemeral.should.support.expansion.of.pvcs.created.for.ephemeral.pvcs --test.parallel=30 --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT
-        value: "3"
+        value: "1"
       - name: CLUSTER_TEMPLATE
         value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-multiple-zones-ci-version.yaml
       - name: AZURE_LOADBALANCER_SKU
@@ -1003,11 +879,11 @@ periodics:
       - name: TEST_CCM
         value: "true"
       - name: KUBERNETES_VERSION
-        value: "1.24.1"
+        value: "latest"
       - name: GINKGO_ARGS
         value: --ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|In-tree.Volumes|should.be.able.to.create.an.internal.type.load.balancer --test.parallel=4 --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT
-        value: "3"
+        value: "1"
       - name: CLUSTER_TEMPLATE
         value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss.yaml
       - name: AZURE_LOADBALANCER_SKU
