@@ -131,9 +131,8 @@ func (f *FakeClient) CreateIssueLink(link *jira.IssueLink) error {
 	if err != nil {
 		return fmt.Errorf("failed to get outward link issue: %v", err)
 	}
-	// links in an issue struct do not include the short definition of the the issue they are part of.
-	// This behavior is used by the external jira-lifecycle hook plugin to identify which direction a clone happened,
-	// so it needs to be replicated in the fake client
+	// when part of an issue struct, the issue link type does not include the
+	// short definition of the issue it is in
 	linkForOutward := *link
 	linkForOutward.OutwardIssue = nil
 	outward.Fields.IssueLinks = append(outward.Fields.IssueLinks, &linkForOutward)
