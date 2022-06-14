@@ -466,7 +466,7 @@ postsubmits:
     branches:
     - ^master$
     max_concurrency: 1
-    run_if_changed: '^config/prow/cluster/build/boskos-resources.yaml$'
+    run_if_changed: '^config/prow/cluster/build/boskos-resources/boskos-resources.yaml$'
     decorate: true
     spec:
       serviceAccountName: deployer # TODO(fejta): should be pusher
