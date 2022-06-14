@@ -698,7 +698,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-clusterloader2-e2e-gce-scale-performance
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220514-17efd5d2c3-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -780,7 +780,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-util-images
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/bootstrap:v20220427-c2db0f69b7
+      - image: gcr.io/k8s-staging-test-infra/bootstrap:v20220614-ad0ae57da9
         command:
         - runner.sh
         - /workspace/scenarios/execute.py
