@@ -327,6 +327,10 @@ resources:
   state: dirty
   type: scalability-presubmit-project
 - names:
+    - k8s-presubmit-scale
+  state: dirty
+  type: scalability-presubmit-5k-project
+- names:
   - k8s-jkns-gke-ubuntu
   - k8s-jkns-gke-ubuntu-1-6
   - k8s-jkns-gke-ubuntu-1-6-alpha

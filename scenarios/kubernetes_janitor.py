@@ -99,12 +99,6 @@ PR_PROJECTS = {
     'k8s-jkns-pr-gce-gpus': 3,
 }
 
-SCALE_PROJECT = {
-    # cleans up resources older than 12h
-    # for scale presubmit job we need to give jobs enough time to finish.
-    'k8s-presubmit-scale': 12,
-}
-
 def check_predefine_jobs(jobs, ratelimit):
     """Handle predefined jobs"""
     for project, expire in jobs.iteritems():
@@ -131,8 +125,6 @@ def check_ci_jobs():
             if any(b in project for b in EXEMPT_PROJECTS):
                 print >>sys.stderr, 'Project %r is exempted in ci-janitor' % project
                 continue
-            if project in PR_PROJECTS or project in SCALE_PROJECT:
-                continue # CI janitor skips all PR jobs
             found = project
         if found:
             clean_project(found, clean_hours)
@@ -142,8 +134,6 @@ def main(mode, ratelimit, projects, age, artifacts, filt):
     """Run janitor for each project."""
     if mode == 'pr':
         check_predefine_jobs(PR_PROJECTS, ratelimit)
-    elif mode == 'scale':
-        check_predefine_jobs(SCALE_PROJECT, ratelimit)
     elif mode == 'custom':
         projs = str.split(projects, ',')
         for proj in projs:
@@ -183,7 +173,7 @@ if __name__ == '__main__':
     VERBOSE = False
     PARSER = argparse.ArgumentParser()
     PARSER.add_argument(
-        '--mode', default='ci', choices=['ci', 'pr', 'scale', 'custom'],
+        '--mode', default='ci', choices=['ci', 'pr', 'custom'],
         help='Which type of projects to clear')
     PARSER.add_argument(
         '--ratelimit', type=int,

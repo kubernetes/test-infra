@@ -73,6 +73,7 @@ local config = {
     {job: "k8s-prow-builds-new-boskos", type: "scalability-project", friendly: "Scalability project"},
     {job: "k8s-infra-prow-builds-boskos", type: "scalability-project", friendly: "Scalability project (k8s-infra)"},
     {job: "k8s-prow-builds-new-boskos", type: "scalability-presubmit-project", friendly: "Scalability presubmit project"}
+    {job: "k8s-prow-builds-new-boskos", type: "scalability-presubmit-5k-project", friendly: "Scalability presubmit project (5k)"}
   ],
 
   // How long we go during work hours without seeing a webhook before alerting.
