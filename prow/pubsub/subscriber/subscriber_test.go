@@ -17,13 +17,9 @@ limitations under the License.
 package subscriber
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
-	"net/http/httptest"
 	"reflect"
 	"strings"
 	"testing"
@@ -591,131 +587,6 @@ func TestHandlePeriodicJob(t *testing.T) {
 
 			if fr.reported != tc.reported {
 				t1.Errorf("Expected Reporting: %t, found: %t", tc.reported, fr.reported)
-			}
-		})
-	}
-}
-
-func TestPushServer_ServeHTTP(t *testing.T) {
-	for _, tc := range []struct {
-		name         string
-		url          string
-		secret       string
-		pushRequest  interface{}
-		pe           *ProwJobEvent
-		expectedCode int
-	}{
-		{
-			name:   "WrongToken",
-			secret: "wrongToken",
-			url:    "https://prow.k8s.io/push",
-			pushRequest: pushRequest{
-				Message: message{
-					ID: "runid",
-				},
-			},
-			expectedCode: http.StatusForbidden,
-		},
-		{
-			name: "NoToken",
-			url:  "https://prow.k8s.io/push",
-			pushRequest: pushRequest{
-				Message: message{
-					ID: "runid",
-				},
-			},
-			expectedCode: http.StatusNotModified,
-		},
-		{
-			name:   "RightToken",
-			secret: "secret",
-			url:    "https://prow.k8s.io/push?token=secret",
-			pushRequest: pushRequest{
-				Message: message{
-					ID: "runid",
-				},
-			},
-			expectedCode: http.StatusNotModified,
-		},
-		{
-			name:         "InvalidPushRequest",
-			secret:       "secret",
-			url:          "https://prow.k8s.io/push?token=secret",
-			pushRequest:  "invalid",
-			expectedCode: http.StatusBadRequest,
-		},
-		{
-			name:        "SuccessToken",
-			secret:      "secret",
-			url:         "https://prow.k8s.io/push?token=secret",
-			pushRequest: pushRequest{},
-			pe: &ProwJobEvent{
-				Name: "test",
-			},
-			expectedCode: http.StatusOK,
-		},
-		{
-			name:        "SuccessNoToken",
-			url:         "https://prow.k8s.io/push",
-			pushRequest: pushRequest{},
-			pe: &ProwJobEvent{
-				Name: "test",
-			},
-			expectedCode: http.StatusOK,
-		},
-	} {
-		t.Run(tc.name, func(t1 *testing.T) {
-			c := &config.Config{
-				ProwConfig: config.ProwConfig{
-					ProwJobNamespace: "prowjobs",
-				},
-				JobConfig: config.JobConfig{
-					Periodics: []config.Periodic{
-						{
-							JobBase: config.JobBase{
-								Name: "test",
-							},
-						},
-					},
-				},
-			}
-			fakeProwJobClient := fake.NewSimpleClientset()
-			pushServer := PushServer{
-				Subscriber: &Subscriber{
-					ConfigAgent:   &config.Agent{},
-					Metrics:       NewMetrics(),
-					ProwJobClient: fakeProwJobClient.ProwV1().ProwJobs(c.ProwJobNamespace),
-					Reporter:      &fakeReporter{},
-				},
-			}
-			pushServer.Subscriber.ConfigAgent.Set(c)
-			pushServer.TokenGenerator = func() []byte { return []byte(tc.secret) }
-
-			body := new(bytes.Buffer)
-
-			if tc.pe != nil {
-				msg, err := tc.pe.ToMessage()
-				if err != nil {
-					t.Error(err)
-				}
-				tc.pushRequest = pushRequest{
-					Message: message{
-						Attributes: msg.Attributes,
-						ID:         "id",
-						Data:       msg.Data,
-					},
-				}
-			}
-
-			if err := json.NewEncoder(body).Encode(tc.pushRequest); err != nil {
-				t1.Errorf(err.Error())
-			}
-			req := httptest.NewRequest(http.MethodPost, tc.url, body)
-			w := httptest.NewRecorder()
-			pushServer.ServeHTTP(w, req)
-			resp := w.Result()
-			if resp.StatusCode != tc.expectedCode {
-				t1.Errorf("exected code %d got %d", tc.expectedCode, resp.StatusCode)
 			}
 		})
 	}
