@@ -35,7 +35,7 @@ periodics:
     testgrid-tab-name: build-and-push-k8s-at-golang-tip
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/bootstrap:v20220427-c2db0f69b7
+    - image: gcr.io/k8s-staging-test-infra/bootstrap:v20220614-ad0ae57da9
       env:
       - name: GCS_BUCKET
         value: "k8s-infra-scale-golang-builds"
