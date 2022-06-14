@@ -29,7 +29,6 @@ import (
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
-	"k8s.io/test-infra/prow/config/secret"
 	"k8s.io/test-infra/prow/crier/reporters/pubsub"
 	"k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
@@ -48,7 +47,6 @@ type options struct {
 	client                flagutil.KubernetesOptions
 	github                flagutil.GitHubOptions
 	port                  int
-	pushSecretFile        string
 	inRepoConfigCacheSize int
 	cookiefilePath        string
 
@@ -77,7 +75,6 @@ func init() {
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 
 	fs.IntVar(&flagOptions.port, "port", 80, "HTTP Port.")
-	fs.StringVar(&flagOptions.pushSecretFile, "push-secret-file", "", "Path to Pub/Sub Push secret file.")
 
 	fs.BoolVar(&flagOptions.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 	fs.DurationVar(&flagOptions.gracePeriod, "grace-period", 180*time.Second, "On shutdown, try to handle remaining events for the specified duration. ")
@@ -98,15 +95,6 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
-
-	var tokens []string
-	if flagOptions.pushSecretFile != "" {
-		tokens = append(tokens, flagOptions.pushSecretFile)
-	}
-	if err := secret.Add(tokens...); err != nil {
-		logrus.WithError(err).Fatal("failed to start secret agent")
-	}
-	tokenGenerator := secret.GetTokenGenerator(flagOptions.pushSecretFile)
 
 	prowjobClient, err := flagOptions.client.ProwJobClient(configAgent.Config().ProwJobNamespace, flagOptions.dryRun)
 	if err != nil {
@@ -144,14 +132,6 @@ func main() {
 	subMux := http.NewServeMux()
 	// Return 200 on / for health checks.
 	subMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {})
-
-	// Setting up Push Server
-	logrus.Info("Setting up Push Server")
-	pushServer := &subscriber.PushServer{
-		Subscriber:     s,
-		TokenGenerator: tokenGenerator,
-	}
-	subMux.Handle("/push", pushServer)
 
 	// Setting up Pull Server
 	logrus.Info("Setting up Pull Server")

@@ -18,12 +18,8 @@ package subscriber
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
-	"fmt"
-	"net/http"
 	"reflect"
-	"strconv"
 	"strings"
 
 	"github.com/sirupsen/logrus"
@@ -34,31 +30,9 @@ import (
 	"k8s.io/test-infra/prow/config"
 )
 
-const (
-	tokenLabel = "token"
-)
-
 type configToWatch struct {
 	config.PubSubTriggers
 	config.PubsubSubscriptions
-}
-
-type message struct {
-	Attributes map[string]string
-	Data       []byte
-	ID         string `json:"message_id"`
-}
-
-// pushRequest is the format of the push Pub/Sub subscription received form the WebHook.
-type pushRequest struct {
-	Message      message
-	Subscription string
-}
-
-// PushServer implements http.Handler. It validates incoming Pub/Sub subscriptions handle them.
-type PushServer struct {
-	Subscriber     *Subscriber
-	TokenGenerator func() []byte
 }
 
 // PullServer listen to Pull Pub/Sub subscriptions and handle them.
@@ -72,51 +46,6 @@ func NewPullServer(s *Subscriber) *PullServer {
 	return &PullServer{
 		Subscriber: s,
 		Client:     &pubSubClient{},
-	}
-}
-
-// ServeHTTP validates an incoming Push Pub/Sub subscription and handle them.
-func (s *PushServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	HTTPCode := http.StatusOK
-	subscription := "unknown-subscription"
-	var finalError error
-
-	defer func() {
-		s.Subscriber.Metrics.ResponseCounter.With(prometheus.Labels{
-			subscriptionLabel: subscription,
-			responseCodeLabel: strconv.Itoa(HTTPCode),
-		}).Inc()
-		if finalError != nil {
-			http.Error(w, finalError.Error(), HTTPCode)
-		}
-	}()
-
-	if s.TokenGenerator != nil {
-		token := r.URL.Query().Get(tokenLabel)
-		if token != string(s.TokenGenerator()) {
-			finalError = fmt.Errorf("wrong token")
-			HTTPCode = http.StatusForbidden
-			return
-		}
-	}
-	// Get the payload and act on it.
-	pr := &pushRequest{}
-	if err := json.NewDecoder(r.Body).Decode(pr); err != nil {
-		finalError = err
-		HTTPCode = http.StatusBadRequest
-		return
-	}
-
-	msg := pubsub.Message{
-		Data:       pr.Message.Data,
-		ID:         pr.Message.ID,
-		Attributes: pr.Message.Attributes,
-	}
-
-	if err := s.Subscriber.handleMessage(&pubSubMessage{Message: msg}, pr.Subscription, []string{"*"}); err != nil {
-		finalError = err
-		HTTPCode = http.StatusNotModified
-		return
 	}
 }
 
