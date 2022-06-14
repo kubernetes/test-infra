@@ -38,7 +38,7 @@ EOF
 }
 
 # we need to define the full image URL so it can be autobumped
-tmp="gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-master"
+tmp="gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220614-cde7860a33-master"
 kubekins_e2e_image="${tmp/\-master/}"
 installCSIdrivers=""
 installCSIAzureFileDrivers=""
@@ -600,7 +600,7 @@ EOF
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220614-cde7860a33-master
       command:
       - runner.sh
       - ./scripts/ci-conformance.sh
@@ -647,7 +647,7 @@ EOF
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220614-cde7860a33-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -699,7 +699,7 @@ EOF
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220614-cde7860a33-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -753,7 +753,7 @@ EOF
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220614-cde7860a33-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh
@@ -804,7 +804,7 @@ EOF
     path_alias: k8s.io/kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220614-cde7860a33-master
       command:
       - runner.sh
       - ./scripts/ci-entrypoint.sh

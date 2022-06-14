@@ -10,7 +10,7 @@ presubmits:
         preset-service-account: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220614-cde7860a33-master
             command:
               - runner.sh
             args:
@@ -42,7 +42,7 @@ presubmits:
           workdir: true
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-1.23
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220614-cde7860a33-1.23
             command:
               - runner.sh
               - kubetest
@@ -105,7 +105,7 @@ presubmits:
           workdir: true
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220614-cde7860a33-master
             command:
               - runner.sh
               - ./scripts/ci-entrypoint.sh
@@ -162,7 +162,7 @@ presubmits:
           workdir: false
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220614-cde7860a33-master
             command:
               - runner.sh
               - ./scripts/ci-entrypoint.sh
@@ -213,7 +213,7 @@ presubmits:
           workdir: true
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220614-cde7860a33-master
             command:
               - runner.sh
               - ./scripts/ci-entrypoint.sh
@@ -251,7 +251,7 @@ presubmits:
         preset-service-account: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220607-4b3fb50c36-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220614-cde7860a33-master
             command:
               - runner.sh
             args:
