@@ -834,6 +834,115 @@ func TestPullServer_RunConfigChange(t *testing.T) {
 	}
 }
 
+func TestTryGetCloneURIAndHost(t *testing.T) {
+	tests := []struct {
+		name             string
+		pe               ProwJobEvent
+		expectedCloneURI string
+		expectedHost     string
+	}{
+		{
+			name: "regular",
+			pe: ProwJobEvent{
+				Refs: &prowapi.Refs{
+					Org:  "org",
+					Repo: "repo",
+				},
+			},
+			expectedCloneURI: "org/repo",
+			expectedHost:     "org",
+		},
+		{
+			name: "empty org",
+			pe: ProwJobEvent{
+				Refs: &prowapi.Refs{
+					Org:  "",
+					Repo: "repo",
+				},
+			},
+			expectedCloneURI: "",
+			expectedHost:     "",
+		},
+		{
+			name: "empty repo",
+			pe: ProwJobEvent{
+				Refs: &prowapi.Refs{
+					Org:  "org",
+					Repo: "",
+				},
+			},
+			expectedCloneURI: "",
+			expectedHost:     "",
+		},
+		{
+			name: "empty org and repo",
+			pe: ProwJobEvent{
+				Refs: &prowapi.Refs{
+					Org:  "",
+					Repo: "",
+				},
+			},
+			expectedCloneURI: "",
+			expectedHost:     "",
+		},
+		{
+			name: "gerrit",
+			pe: ProwJobEvent{
+				Refs: &prowapi.Refs{
+					Org:  "https://org",
+					Repo: "repo",
+				},
+				Labels: map[string]string{
+					client.GerritRevision: "foo",
+				},
+			},
+			expectedCloneURI: "https://org/repo",
+			expectedHost:     "https://org",
+		},
+		{
+			name: "nil Refs",
+			pe: ProwJobEvent{
+				Refs: nil,
+			},
+			expectedCloneURI: "",
+			expectedHost:     "",
+		},
+		{
+			name: "use CloneURI",
+			pe: ProwJobEvent{
+				Refs: &prowapi.Refs{
+					Org:      "http://org",
+					Repo:     "repo",
+					CloneURI: "some-clone-uri",
+				},
+			},
+			expectedCloneURI: "some-clone-uri",
+			expectedHost:     "http://org",
+		},
+		{
+			name: "use ssh-style CloneURI",
+			pe: ProwJobEvent{
+				Refs: &prowapi.Refs{
+					Org:      "git@github.com:kubernetes/test-infra.git",
+					Repo:     "repo",
+					CloneURI: "some-clone-uri",
+				},
+			},
+			expectedCloneURI: "some-clone-uri",
+			expectedHost:     "",
+		},
+	}
+	for _, tc := range tests {
+		gotCloneURI, gotHost := tryGetCloneURIAndHost(tc.pe)
+		if gotCloneURI != tc.expectedCloneURI {
+			t.Errorf("%s: got %q, expected %q", tc.name, gotCloneURI, tc.expectedCloneURI)
+		}
+		if gotHost != tc.expectedHost {
+			t.Errorf("%s: got %q, expected %q", tc.name, gotHost, tc.expectedHost)
+		}
+	}
+}
+
 func fakeProwYAMLGetter(
 	c *config.Config,
 	gc git.ClientFactory,

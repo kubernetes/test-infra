@@ -478,6 +478,15 @@ func tryGetCloneURIAndHost(pe ProwJobEvent) (cloneURI, host string) {
 		return "", ""
 	}
 
+	// If the Refs struct already has a populated CloneURI field, use that
+	// instead.
+	if refs.CloneURI != "" {
+		if strings.HasPrefix(refs.Org, "http") {
+			return refs.CloneURI, refs.Org
+		}
+		return refs.CloneURI, ""
+	}
+
 	org, repo := refs.Org, refs.Repo
 	orgRepo := org + "/" + repo
 	// Add "https://" prefix to orgRepo if this is a gerrit job.
