@@ -42,7 +42,7 @@ presubmits:
         - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
         - --aksengine-winZipBuildScript=$(WIN_BUILD)
         - --aksengine-orchestratorRelease=1.23
-        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_staging.json
+        - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_1_23.json
         - --aksengine-win-binaries
         - --aksengine-deploy-custom-k8s
         - --aksengine-agentpoolcount=2
