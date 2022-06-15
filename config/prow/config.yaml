@@ -366,6 +366,12 @@ branch-protection:
             users: []
             teams:
             - stage-bots
+        kube-openapi:
+          required_status_checks:
+            contexts:
+            - ci (1.x, true)
+            - ci (1.16, true)
+            - ci (1.x, false)
         kube-proxy:
           restrictions:
             users: []
