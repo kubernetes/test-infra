@@ -21,6 +21,7 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -34,8 +35,11 @@ import (
 
 type options struct {
 	port              int
+	portHttps         int
 	gitBinary         string
 	gitReposParentDir string
+	cert              string
+	key               string
 }
 
 func (o *options) validate() error {
@@ -46,8 +50,11 @@ func (o *options) validate() error {
 func flagOptions() *options {
 	o := &options{}
 	flag.IntVar(&o.port, "port", 8888, "Port to listen on.")
+	flag.IntVar(&o.portHttps, "port-https", 4443, "Port to listen on for HTTPS traffic.")
 	flag.StringVar(&o.gitBinary, "git-binary", "/usr/bin/git", "Path to the `git` binary.")
 	flag.StringVar(&o.gitReposParentDir, "git-repos-parent-dir", "/git-repo", "Path to the parent folder containing all Git repos to serve over HTTP.")
+	flag.StringVar(&o.cert, "cert", "", "Path to the server cert file for HTTPS.")
+	flag.StringVar(&o.key, "key", "", "Path to the server key file for HTTPS.")
 	return o
 }
 
@@ -73,11 +80,26 @@ func main() {
 	r.PathPrefix("/repo").Handler(fakegitserver.GitCGIHandler(o.gitBinary, o.gitReposParentDir))
 	r.PathPrefix("/setup-repo").Handler(fakegitserver.SetupRepoHandler(o.gitReposParentDir))
 
+	if err := os.MkdirAll(o.gitReposParentDir, os.ModePerm); err != nil {
+		logrus.Fatalf("could not create directory %q", o.gitReposParentDir)
+	}
+
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%d", o.port),
 		Handler: r,
 	}
 
-	logrus.Info("Start server")
+	// Serve HTTPS traffic.
+	if o.cert != "" && o.key != "" {
+		serverHttps := &http.Server{
+			Addr:    fmt.Sprintf(":%d", o.portHttps),
+			Handler: r,
+		}
+		logrus.Infof("Starting HTTPS server on port %d", o.portHttps)
+		interrupts.ListenAndServeTLS(serverHttps, o.cert, o.key, 5*time.Second)
+	}
+
+	// Serve HTTP traffic.
+	logrus.Infof("Starting HTTP server on port %d", o.port)
 	interrupts.ListenAndServe(server, 5*time.Second)
 }

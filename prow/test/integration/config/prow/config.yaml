@@ -32,7 +32,7 @@ plank:
       timeout: 2h
       grace_period: 15s
       utility_images:
-        clonerefs: localhost:5001/clonerefs:latest
+        clonerefs: localhost:5001/clonerefs-ssl-disabled:latest
         initupload: localhost:5001/initupload:latest
         entrypoint: localhost:5001/entrypoint:latest
         sidecar: localhost:5001/sidecar:latest
