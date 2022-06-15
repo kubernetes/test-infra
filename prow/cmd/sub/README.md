@@ -1,29 +1,19 @@
 # Sub
 
-Sub is a Prow Cloud Pub/Sub adapter for handling CI Pub/Sub notification requests.
+Sub is a Prow Cloud Pub/Sub adapter for handling CI Pub/Sub notification requests to create Prow jobs.
 Note that the prow job need to be defined in the configuration.
 
 ## Deployment Usage
 
-Sub supports 2 running modes, Push and Pull. Note that each subscription need to be one or the other, but Sub will run both.
+Sub can listen to Pub/Sub subscriptions (known as "pull subscriptions").
 
 When deploy the sub component, you need to specify `--config-path` to your prow config, and optionally
 `--job-config-path` to your prowjob config if you have split them up.
 
-
 Options:
-* `--push-secret-file`: Path to Pub/Sub Push secret file.
-* `--dry-run`: Dry run for testing. Uses API tokens but does not mutate.
-* `--grace-period`: On shutdown, try to handle remaining events for the specified duration.
 
-### Push Server
-
-In order to use the Push Mode, an HTTPs server needs to be setup and the URL must be defined in the Cloud Pub/Sub subscription.
-More information at https://cloud.google.com/pubsub/docs/quickstart-console.
-
-To secure even more requests from Cloud Pub/Sub, you can use `--push-secret-file` option.
-When using a push secret add the token to the URL like so  https://myapp.mydomain.com/myhandler?token=application-secret.
-More info at https://cloud.google.com/pubsub/docs/faq#security.
+- `--dry-run`: Dry run for testing. Uses API tokens but does not mutate.
+- `--grace-period`: On shutdown, try to handle remaining events for the specified duration.
 
 ### Pull Server
 
@@ -51,10 +41,10 @@ More information at https://cloud.google.com/pubsub/docs/access-control.
 
 #### Periodic Prow Jobs
 
-When creating your Pub/Sub message, add an attributes with key ```prow.k8s.io/pubsub.EventType```
-and value ```prow.k8s.io/pubsub.PeriodicProwJobEvent```, and a payload like so:
+When creating your Pub/Sub message, add an attributes with key `prow.k8s.io/pubsub.EventType`
+and value `prow.k8s.io/pubsub.PeriodicProwJobEvent`, and a payload like so:
 
-```yaml
+```json
 {
   "name":"my-periodic-job",
   "envs":{
@@ -76,8 +66,8 @@ and value ```prow.k8s.io/pubsub.PeriodicProwJobEvent```, and a payload like so:
 }
 ```
 
-This will find and start the periodic job ```my-periodic-job```, and add / overwrite the
-annotations and envs to the Prow job. The ```prow.k8s.io/pubsub.*``` annotations are
+This will find and start the periodic job `my-periodic-job`, and add / overwrite the
+annotations and envs to the Prow job. The `prow.k8s.io/pubsub.*` annotations are
 used to publish job status.
 
 _Note: periodic jobs always clone source code from ref instead of specific SHA, if it's desired to trigger a prowjob on specific SHA you can use [postsubmit job](#postsubmit-prow-jobs)_
@@ -86,11 +76,11 @@ _Note: periodic jobs always clone source code from ref instead of specific SHA, 
 
 Triggering presubmit job is similar to periodic jobs. Two things to change:
 
-- instead of an attributes with key ```prow.k8s.io/pubsub.EventType``` and value
-```prow.k8s.io/pubsub.PeriodicProwJobEvent```, replace the value with ```prow.k8s.io/pubsub.PresubmitProwJobEvent```
+- instead of an attributes with key `prow.k8s.io/pubsub.EventType` and value
+  `prow.k8s.io/pubsub.PeriodicProwJobEvent`, replace the value with `prow.k8s.io/pubsub.PresubmitProwJobEvent`
 - requires setting `refs` instructing presubmit jobs how to clone source code:
 
-```yaml
+```json
 {
   # Common fields as above
   "name":"my-presubmit-job",
@@ -112,20 +102,20 @@ Triggering presubmit job is similar to periodic jobs. Two things to change:
 }
 ```
 
-This will start presubmit job ```my-presubmit-job```, clones source code like pull requests
-defined under ```pulls```, which merges to ```base_ref``` at ```base_sha```.
+This will start presubmit job `my-presubmit-job`, clones source code like pull requests
+defined under `pulls`, which merges to `base_ref` at `base_sha`.
 
-(There are more fields can be supplied, see [full documentation](https://github.com/kubernetes/test-infra/blob/18678b3b8f4bc7c51475f41964927ff7e635f3b9/prow/apis/prowjobs/v1/types.go#L883). For example, if you want the job to be reported on the PR, add ```number``` field right next to ```sha```)
+(There are more fields can be supplied, see [full documentation](https://github.com/kubernetes/test-infra/blob/18678b3b8f4bc7c51475f41964927ff7e635f3b9/prow/apis/prowjobs/v1/types.go#L883). For example, if you want the job to be reported on the PR, add `number` field right next to `sha`)
 
 #### Postsubmit Prow Jobs
 
 Triggering presubmit job is similar to periodic jobs. Two things to change:
 
-- instead of an attributes with key ```prow.k8s.io/pubsub.EventType``` and value
-```prow.k8s.io/pubsub.PeriodicProwJobEvent```, replace the value with ```prow.k8s.io/pubsub.PostsubmitProwJobEvent```
+- instead of an attributes with key `prow.k8s.io/pubsub.EventType` and value
+  `prow.k8s.io/pubsub.PeriodicProwJobEvent`, replace the value with `prow.k8s.io/pubsub.PostsubmitProwJobEvent`
 - requires setting `refs` instructing postsubmit jobs how to clone source code:
 
-```yaml
+```json
 {
   # Common fields as above
   "name":"my-postsubmit-job",
@@ -142,8 +132,8 @@ Triggering presubmit job is similar to periodic jobs. Two things to change:
 }
 ```
 
-This will start postsubmit job ```my-postsubmit-job```, clones source code from ```base_ref```
-at ```base_sha```.
+This will start postsubmit job `my-postsubmit-job`, clones source code from `base_ref`
+at `base_sha`.
 
 (There are more fields can be supplied, see [full documentation](https://github.com/kubernetes/test-infra/blob/18678b3b8f4bc7c51475f41964927ff7e635f3b9/prow/apis/prowjobs/v1/types.go#L883))
 
