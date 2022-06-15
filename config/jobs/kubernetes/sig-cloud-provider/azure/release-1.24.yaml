@@ -341,7 +341,7 @@ periodics:
         make e2e-test
       env:
       - name: KUBERNETES_VERSION
-        value: "latest"
+        value: "latest-1.24"
       - name: AZURE_STORAGE_DRIVER
         value: "kubernetes.io/azure-file" # In-tree Azure file storage class
       securityContext:
@@ -393,7 +393,7 @@ periodics:
         make e2e-test
       env:
       - name: KUBERNETES_VERSION
-        value: "latest"
+        value: "latest-1.24"
       - name: EXP_MACHINE_POOL
         value: "true"
       - name: AZURE_STORAGE_DRIVER
@@ -446,7 +446,7 @@ periodics:
         make e2e-test
       env:
       - name: KUBERNETES_VERSION
-        value: "latest"
+        value: "latest-1.24"
       - name: AZURE_STORAGE_DRIVER
         value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
       securityContext:
@@ -497,7 +497,7 @@ periodics:
         make e2e-test
       env:
       - name: KUBERNETES_VERSION
-        value: "latest"
+        value: "latest-1.24"
       - name: EXP_MACHINE_POOL
         value: "true"
       - name: AZURE_STORAGE_DRIVER
