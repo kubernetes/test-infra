@@ -172,7 +172,31 @@ EOF
     --prow-images-file="${prowimagebuilder_yaml}" \
     --push
   set +x
+
+  build_extra_images
   log "Finished building images"
+}
+
+function build_extra_images() {
+  log "Building extra images"
+
+  build_clonerefs_ssl_disabled
+}
+
+function build_clonerefs_ssl_disabled() {
+  echo >&2 "Building clonerefs-ssl-disabled"
+  local src
+  local dest
+  src="localhost:${LOCAL_DOCKER_REGISTRY_PORT}/clonerefs:latest"
+  dest="localhost:${LOCAL_DOCKER_REGISTRY_PORT}/clonerefs-ssl-disabled:latest"
+
+  docker build --tag "${dest}" - <<EOF
+FROM ${src}
+# Allow Git to accept traffic from HTTPS servers with self-signed certs.
+ENV GIT_SSL_NO_VERIFY 1
+EOF
+
+  docker push "${dest}"
 }
 
 function create_prowimagebuilder_yaml() {
