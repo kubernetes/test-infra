@@ -61,11 +61,11 @@ presubmits:
             - name: TEST_CCM
               value: "true"
             - name: CONTROL_PLANE_MACHINE_COUNT
-              value: "3"
+              value: "1"
             - name: KUBERNETES_VERSION
-              value: "1.24.1"
+              value: "latest"
             - name: CLUSTER_TEMPLATE
-              value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss.yaml
+              value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
             - name: AZURE_LOADBALANCER_SKU
               value: "Standard"
     annotations:
@@ -95,7 +95,7 @@ presubmits:
         workdir: true
       - org: kubernetes
         repo: kubernetes
-        base_ref: release-1.24
+        base_ref: master
         path_alias: k8s.io/kubernetes
         workdir: false
     spec:
@@ -119,11 +119,11 @@ presubmits:
             - name: AZURE_LOADBALANCER_SKU
               value: "standard"
             - name: KUBERNETES_VERSION
-              value: "latest-1.24"
+              value: "latest"
             - name: GINKGO_ARGS
               value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --test.parallel=30 --report-dir=/logs/artifacts --disable-log-dump=true
             - name: CONTROL_PLANE_MACHINE_COUNT
-              value: "3"
+              value: "1"
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure
       testgrid-tab-name: pr-cloud-provider-azure-e2e-capz
@@ -169,11 +169,9 @@ presubmits:
             - name: AZURE_LOADBALANCER_SKU
               value: "standard"
             - name: CONTROL_PLANE_MACHINE_COUNT
-              value: "3"
+              value: "1"
             - name: KUBERNETES_VERSION
-              value: "latest-1.24" # should be changed back to latest
-            - name: AZURE_LOCATION
-              value: "westeurope"
+              value: "latest"
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-capz
@@ -293,9 +291,9 @@ periodics:
         - name: AZURE_LOADBALANCER_SKU
           value: "standard"
         - name: CONTROL_PLANE_MACHINE_COUNT
-          value: "3"
+          value: "1"
         - name: KUBERNETES_VERSION
-          value: "latest-1.24"
+          value: "latest"
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-master-capz-main
@@ -342,13 +340,15 @@ periodics:
         - name: AZURE_LOADBALANCER_SKU
           value: "standard"
         - name: CONTROL_PLANE_MACHINE_COUNT
-          value: "3"
+          value: "1"
         - name: TEST_WINDOWS
           value: "true"
         - name: WINDOWS_FLAVOR
           value: "containerd-2022"
         - name: KUBERNETES_VERSION
-          value: "latest-1.24"
+          value: "latest"
+        - name: WORKER_MACHINE_COUNT
+          value: "0"
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-ccm-windows-capz
@@ -373,7 +373,7 @@ periodics:
     workdir: true
   - org: kubernetes
     repo: kubernetes
-    base_ref: release-1.24
+    base_ref: master
     path_alias: k8s.io/kubernetes
     workdir: false
   - org: kubernetes-sigs
@@ -459,15 +459,17 @@ periodics:
       - name: AZURE_LOADBALANCER_SKU
         value: "standard"
       - name: KUBERNETES_VERSION
-        value: "latest-1.24"
+        value: "latest"
       - name: GINKGO_ARGS
         value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[LinuxOnly\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --test.parallel=30 --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT
-        value: "3"
+        value: "1"
       - name: TEST_WINDOWS
         value: "true"
       - name: WINDOWS_FLAVOR
         value: "containerd-2022"
+      - name: WORKER_MACHINE_COUNT
+        value: "0"
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-conformance-windows-capz
@@ -487,12 +489,12 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.3
+    base_ref: main
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     workdir: true
   - org: kubernetes
     repo: kubernetes
-    base_ref: release-1.24
+    base_ref: master
     path_alias: k8s.io/kubernetes
     workdir: false
   - org: kubernetes-sigs
@@ -531,74 +533,6 @@ periodics:
     testgrid-tab-name: cloud-provider-azure-slow-capz
     testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
     description: "Runs Kubernetes slow tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure)."
-- interval: 24h
-  # cloud-provider-azure-serial runs Kubernetes serial tests periodically.
-  name: cloud-provider-azure-serial
-  decorate: true
-  decoration_config:
-    timeout: 5h
-  labels:
-    preset-service-account: "true"
-    preset-azure-cred: "true"
-    preset-dind-enabled: "true"
-    preset-k8s-ssh: "true"
-  extra_refs:
-  - org: kubernetes
-    repo: kubernetes
-    base_ref: release-1.23
-    path_alias: k8s.io/kubernetes
-  - org: kubernetes
-    repo: cloud-provider-azure
-    base_ref: master
-    path_alias: sigs.k8s.io/cloud-provider-azure
-  spec:
-    containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220614-cde7860a33-master
-      command:
-      - runner.sh
-      - kubetest
-      args:
-      # Generic e2e test args
-      - --test
-      - --up
-      - --down
-      - --build=quick
-      - --dump=$(ARTIFACTS)
-      # Azure-specific test args
-      - --deployment=aksengine
-      - --provider=skeleton
-      - --aksengine-agentpoolcount=2
-      - --aksengine-admin-username=azureuser
-      - --aksengine-creds=$(AZURE_CREDENTIALS)
-      - --aksengine-orchestratorRelease=1.23
-      - --aksengine-mastervmsize=Standard_D4s_v3
-      - --aksengine-agentvmsize=Standard_D4s_v3
-      - --aksengine-ccm
-      - --aksengine-cnm
-      - --aksengine-deploy-custom-k8s
-      - --aksengine-public-key=$(KUBE_SSH_PUBLIC_KEY_PATH)
-      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/linux-vmss-serial.json
-      - --aksengine-download-url=https://github.com/Azure/aks-engine/releases/download/nightly/aks-engine-nightly-linux-amd64.tar.gz
-      # Specific test args
-      # Check https://github.com/kubernetes-sigs/cloud-provider-azure/issues/224 for the status of each skipped test
-      - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\]|regular.resource.usage.tracking.resource.tracking.for|validates.MaxPods.limit.number.of.pods.that.are.allowed.to.run
-      - --ginkgo-parallel=1
-      securityContext:
-        privileged: true
-      env:
-      - name: KUBE_SSH_PUBLIC_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-public # Requires preset-k8s-ssh label
-      - name: KUBE_SSH_KEY_PATH
-        value: /etc/ssh-key-secret/ssh-private # Requires preset-k8s-ssh label
-      - name: KUBE_SSH_USER
-        value: azureuser
-      - name: AZURE_LOADBALANCER_SKU
-        value: "standard"
-  annotations:
-    testgrid-dashboards: provider-azure-cloud-provider-azure
-    testgrid-tab-name: cloud-provider-azure-serial
-    testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
-    description: "Runs Kubernetes serial tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure)."
 - interval: 24h
   # cloud-provider-azure-master-vmss-capz runs Azure specific tests periodically using a stable capz release on vmss.
   name: cloud-provider-azure-master-vmss-capz
@@ -643,7 +577,7 @@ periodics:
         - name: KUBERNETES_VERSION
           value: "latest"
         - name: CLUSTER_TEMPLATE
-          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss.yaml
+          value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
         - name: AZURE_LOADBALANCER_SKU
           value: "Standard"
   annotations:
@@ -703,7 +637,7 @@ periodics:
       - name: CONTROL_PLANE_MACHINE_COUNT
         value: "1"
       - name: CLUSTER_TEMPLATE
-        value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss.yaml
+        value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
       - name: AZURE_LOADBALANCER_SKU
         value: "Standard"
   annotations:
@@ -885,7 +819,7 @@ periodics:
       - name: CONTROL_PLANE_MACHINE_COUNT
         value: "1"
       - name: CLUSTER_TEMPLATE
-        value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss.yaml
+        value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
       - name: AZURE_LOADBALANCER_SKU
         value: "Standard"
   annotations:
