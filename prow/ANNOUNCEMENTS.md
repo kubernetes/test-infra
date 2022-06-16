@@ -192,7 +192,6 @@ used when updating deployments.
    removed in favor of `--blob-storage-workers` and `--kubernetes-blob-storage-workers`.
  - *May 27th, 2022* The `owners_dir_blacklist` field in prow config is removed
    in favor of `owners_dir_denylist`.
- - *May 17th, 2022* prow version `v20220517-1a0a6be57b`, all the deprecated fields are now removed.
  - *February 22nd, 2022* Since prow version `v20220222-acb5731b85`, the
    entrypoint container in a prow job will run as `--copy-mode-only`, instead of
    `/bin/cp /entrypoint /tools/entrypoint`. Entrypoint images before the mentioned version
@@ -225,6 +224,10 @@ used when updating deployments.
  - *April 12th, 2021* Horologium now uses a cached client, which requires it to have watch permissions for Prowjobs on top of the already-required list and create.
  - *April 11th, 2021* The plank binary has been removed. Please use the [Prow Controller Manager](/prow/cmd/prow-controller-manager) instead, which provides a more modern implementation
    of the same functionality.
+ - *April 1st, 2021* The `owners_dir_blacklist` field in prow config has been deprecated in favor of `owners_dir_denylist`. The support of `owners_dir_blacklist` will be stopped in October 2021.
+ - *April 1st, 2021* The `labels_blacklist` field in verify-owners plugin config
+   is deprecated in favor of `labels_denylist`. The support for `labels_blacklist` shall be stopped in
+   *October 2021*.
  - *January 24th, 2021* Planks Pod pending and Pod scheduling timeout defaults where changed from 24h each to the more reasonable 10 minutes/5 minutes, respectively.
  - *January 1, 2021* Support for `whitelist` and `branch_whitelist` fields in Slack merge warning configuration is discontinued. You can use `exempt_users` and `exempt_branches` fields instead.
  - *November 24, 2020* The `requiresig` plugin has been removed in favor of the `require-matching-label` plugin
@@ -233,6 +236,7 @@ used when updating deployments.
  - *November 11th, 2020* The prow-controller-manager and sinker now require RBAC to be set up to manage their leader lock in the `coordination.k8s.io` group. See [here](https://github.com/kubernetes/test-infra/pull/19906/files?diff=split&w=1)
  - *November, 2020* The deprecated `namespace` and `additional_namespaces` properties have been removed from the config updater plugin
                        for more details.
+ - *November, 2020* The `blacklist` flag in status reconciler has been deprecated in favor of `denylist`. The support of `blacklist` will be stopped in February 2021.
  - *October, 2020*  The `plank` binary has been deprecated in favor of the more modern implementation in the prow-controller-manager that provides the same functionality. Check out
                   its [README](/prow//prow-controller-manager/README.md) or check out its [deployment](config/prow/cluster/prow_controller_manager_deployment.yaml) and
                   [rbac](config/prow/cluster/prow_controller_manager_rbac.yaml) manifest. The plank binary will be removed in February, 2021.
@@ -281,7 +285,7 @@ used when updating deployments.
    to the Prometheus PushGateway, if configured, or serve them locally on port 9090 at
    `/metrics`, if not configured (the default).
  - *April 26, 2019* `blunderbuss`, `approve`, and other plugins that read OWNERS
-   now treat `owners_dir_denylist` as a list of regular expressions matched
+   now treat `owners_dir_blacklist` as a list of regular expressions matched
    against the entire (repository-relative) directory path of the OWNERS file rather
    than as a list of strings matched exactly against the basename only of the directory
    containing the OWNERS file.
