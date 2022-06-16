@@ -86,7 +86,7 @@ func (c *Client) SetupRepo(repoSetup RepoSetup) error {
 
 	resp, err := c.do(http.MethodPost, "setup-repo", buf, nil)
 	if err != nil {
-		return errors.New("FGS repo setup failed")
+		return err
 	}
 	if resp.StatusCode != 200 {
 		return fmt.Errorf("got %v response", resp.StatusCode)
