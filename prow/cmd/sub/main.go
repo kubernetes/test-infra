@@ -50,8 +50,7 @@ type options struct {
 	inRepoConfigCacheSize int
 	cookiefilePath        string
 
-	config       configflagutil.ConfigOptions
-	pluginConfig string
+	config configflagutil.ConfigOptions
 
 	dryRun                 bool
 	gracePeriod            time.Duration
