@@ -43,7 +43,7 @@ periodics:
       securityContext:
         privileged: true
   annotations:
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-release-1.24-informing, sig-windows-1.24-release, sig-windows-signal
     testgrid-tab-name: capz-windows-containerd-1.24
 - name: ci-kubernetes-e2e-capz-master-containerd-windows-serial-slow-1-24
@@ -77,7 +77,7 @@ periodics:
             cpu: 2
             memory: "9Gi"
   annotations:
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-windows-1.24-release
     testgrid-tab-name: capz-windows-containerd-serial-slow-1.24
 - name: ci-kubernetes-e2e-azure-disk-windows-containerd-1-24
@@ -140,7 +140,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-windows-1.24-release
     testgrid-tab-name: aks-engine-windows-containerd-azure-disk-1.24
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     description: Run Azure Disk e2e test with Azure Disk in a Windows cluster configured with CSI proxy and containerd.
 - name: ci-kubernetes-e2e-azure-file-windows-containerd
   interval: 48h
@@ -202,5 +202,5 @@ periodics:
   annotations:
     testgrid-dashboards: sig-windows-1.24-release
     testgrid-tab-name: aks-engine-windows-containerd-azure-file-1.24
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     description: Run Azure File e2e test with Azure File in a Windows cluster configured with CSI proxy and containerd.

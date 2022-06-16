@@ -90,6 +90,5 @@ presubmits:
           - name: WINDOWS_SERVER_VERSION
             value: "windows-2022"
     annotations:
-      testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
       testgrid-dashboards: sig-windows-presubmit
       testgrid-tab-name: pull-e2e-capz-windows-containerd-extension

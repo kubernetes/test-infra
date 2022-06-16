@@ -52,7 +52,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-windows-1.21-release
     testgrid-tab-name: aks-engine-windows-dockershim-1.21
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     description: Runs SIG-Windows release tests on K8s 1.21 clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
 - interval: 24h
   name: ci-kubernetes-e2e-aks-engine-azure-1-21-windows-serial-slow
@@ -106,63 +106,8 @@ periodics:
   annotations:
     testgrid-dashboards: sig-windows-1.21-release
     testgrid-tab-name: aks-engine-windows-dockershim-serial-slow-1.21
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     description: Runs SIG-Windows release serial tests on K8s 1.21 clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
-# This job lives in config/jobs/kubernetes/sig-release/release-branch-jobs/1.21.yaml instead
-# - interval: 24h
-#   name: ci-kubernetes-e2e-aks-engine-azure-1-21-windows-containerd
-#   decorate: true
-#   decoration_config:
-#     timeout: 3h
-#   labels:
-#     preset-service-account: "true"
-#     preset-azure-cred: "true"
-#     preset-azure-windows: "true"
-#     preset-windows-repo-list-master: "true"
-#     preset-k8s-ssh: "true"
-#     preset-dind-enabled: "true"
-#   extra_refs:
-#   - org: kubernetes
-#     repo: kubernetes
-#     base_ref: release-1.21
-#     path_alias: k8s.io/kubernetes
-#   spec:
-#     containers:
-#     - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220614-cde7860a33-1.21
-#       command:
-#       - runner.sh
-#       - kubetest
-#       args:
-#       # Generic e2e test args
-#       - --test
-#       - --up
-#       - --down
-#       - --build=quick
-#       - --dump=$(ARTIFACTS)
-#       # Azure-specific test args
-#       - --deployment=aksengine
-#       - --provider=skeleton
-#       - --aksengine-orchestratorRelease=1.21
-#       - --aksengine-admin-username=azureuser
-#       - --aksengine-admin-password=AdminPassw0rd
-#       - --aksengine-creds=$(AZURE_CREDENTIALS)
-#       - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
-#       - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
-#       - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
-#       - --aksengine-winZipBuildScript=$(WIN_BUILD)
-#       - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_containerd_1_21.json
-#       - --aksengine-win-binaries
-#       - --aksengine-deploy-custom-k8s
-#       # Specific test args
-#       - --test_args=--node-os-distro=windows --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-network\].EndpointSlice --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|\[alpha\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows
-#       - --ginkgo-parallel=4
-#       securityContext:
-#         privileged: true
-#   annotations:
-#     testgrid-dashboards: sig-release-1.21-informing, sig-windows-1.21-release
-#     testgrid-tab-name: aks-engine-windows-containerd-1.21
-#     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
-#     description: Runs SIG-Windows release tests on K8s 1.21 clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud#
 - interval: 24h
   name: ci-kubernetes-e2e-aks-engine-azure-1-21-windows-containerd-serial-slow
   decorate: true
@@ -215,5 +160,5 @@ periodics:
   annotations:
     testgrid-dashboards: sig-windows-1.21-release
     testgrid-tab-name: aks-engine-windows-containerd-serial-slow-1.21
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     description: Runs SIG-Windows release serial tests on K8s 1.21 clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
