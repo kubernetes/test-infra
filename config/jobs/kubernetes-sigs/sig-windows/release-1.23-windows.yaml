@@ -1,6 +1,6 @@
 periodics:
 - annotations:
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-release-1.23-informing, sig-windows-signal, sig-windows-1.23-release
     testgrid-tab-name: aks-engine-windows-containerd-1.23
   decorate: true
@@ -106,7 +106,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-windows-1.23-release
     testgrid-tab-name: aks-engine-windows-containerd-serial-slow-1.23
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     description: Runs SIG-Windows release serial tests on K8s 1.23 clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
 - interval: 24h
   name: ci-kubernetes-e2e-aks-engine-azure-1-23-windows
@@ -161,5 +161,5 @@ periodics:
   annotations:
     testgrid-dashboards: sig-windows-1.23-release
     testgrid-tab-name: aks-engine-windows-dockershim-1.23
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     description: Runs SIG-Windows release tests on K8s 1.23 clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud

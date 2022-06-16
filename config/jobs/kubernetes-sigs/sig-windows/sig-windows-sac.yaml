@@ -53,7 +53,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-windows-sac
     testgrid-tab-name: aks-engine-windows-20h2-containerd-1.24
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     description: Runs SIG-Windows release tests on K8s clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
 - interval: 48h
   name: ci-kubernetes-e2e-aks-engine-azure-1-24-windows-20h2-containerd-serial-slow
@@ -108,5 +108,5 @@ periodics:
   annotations:
     testgrid-dashboards: sig-windows-sac
     testgrid-tab-name: aks-engine-windows-20h2-containerd-serial-slow-1.24
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     description: Runs serial Windows tests on a Kubernetes cluster running containerd provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud

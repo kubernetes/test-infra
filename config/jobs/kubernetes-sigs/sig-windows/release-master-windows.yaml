@@ -97,7 +97,7 @@ periodics:
             memory: "9Gi"
   annotations:
     fork-per-release: "true"
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-release-master-informing, sig-windows-master-release, sig-windows-signal
     testgrid-tab-name: capz-windows-containerd-master
 - name: ci-kubernetes-e2e-capz-master-containerd-windows-serial-slow
@@ -131,7 +131,7 @@ periodics:
             cpu: 2
             memory: "9Gi"
   annotations:
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-windows-master-release, sig-windows-signal
     testgrid-tab-name: capz-windows-containerd-master-serial-slow
 - name: ci-kubernetes-e2e-capz-master-containerd-windows-2022
@@ -165,7 +165,7 @@ periodics:
             cpu: 2
             memory: "9Gi"
   annotations:
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-windows-master-release
     testgrid-tab-name: capz-windows-containerd-2022-master
 - name: ci-kubernetes-e2e-capz-master-containerd-windows-2022-serial-slow
@@ -199,7 +199,7 @@ periodics:
             cpu: 2
             memory: "9Gi"
   annotations:
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-windows-master-release
     testgrid-tab-name: capz-windows-containerd-2022-master-serial-slow
 - name: ci-kubernetes-e2e-azuredisk-capz-windows-2019
@@ -241,7 +241,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-windows-master-release
     testgrid-tab-name: capz-azuredisk-windows-2019
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     description: Run Azure Disk e2e test in a CAPZ cluster on Windows 2019 nodes
 - name: ci-kubernetes-e2e-azurefile-capz-windows-2019
   interval: 48h
@@ -282,7 +282,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-windows-master-release
     testgrid-tab-name: capz-azurefile-windows-2019
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     description: Run Azure File e2e test in a CAPZ cluster on Windows 2019 nodes
 - name: ci-kubernetes-e2e-capz-master-containerd-nightly-windows
   interval: 24h
@@ -317,6 +317,6 @@ periodics:
             cpu: 2
             memory: "9Gi"
   annotations:
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-windows-master-release, sig-windows-signal
     testgrid-tab-name: capz-windows-containerd-nightly-master
