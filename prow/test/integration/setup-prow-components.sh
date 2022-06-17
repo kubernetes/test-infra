@@ -238,7 +238,6 @@ function delete_components() {
 # affected pods.
 function deploy_prow() {
   local component
-  local component_ready
   log "Deploying Prow components"
 
   # Even though we apply the entire Prow configuration, Kubernetes is smart
@@ -248,30 +247,38 @@ function deploy_prow() {
   do_kubectl create configmap config --from-file=./config.yaml --dry-run=client -oyaml | do_kubectl apply -f -
   do_kubectl create configmap plugins --from-file=./plugins.yaml --dry-run=client -oyaml | do_kubectl apply -f -
   do_kubectl create configmap job-config --from-file=./jobs --dry-run=client -oyaml | do_kubectl apply -f -
+
+  # Create the fakes first. This is because other things depend on it. Otherwise
+  # we end up logging a lot of errors about failing to connect to a fake service
+  # (e.g., fakeghserver) because it is not running yet. Connection failures slow
+  # down the startup time a bit because they can lead to exponential backoffs
+  # until the connections succeed.
+  pushd cluster
+    for fake in fake*; do
+      do_kubectl apply --server-side=true -f "${fake}"
+    done
+    for fake in fake*; do
+      wait_for_readiness "${fake%.yaml}"
+    done
+  popd
+
+  # Create the rest.
   do_kubectl apply --server-side=true -f ./cluster
   popd
 
   log "Waiting for Prow components"
   for component in "${PROW_COMPONENTS[@]}"; do
-    component_ready=0
-    >&2 echo "Waiting for ${component}"
-    for _ in $(seq 1 180); do
-      if do_kubectl wait pod \
-        --for=condition=ready \
-        --selector=app="${component}" \
-        --timeout=180s; then
-        component_ready=1
-        break
-      else
-        sleep 1
+    if [[ "${component}" =~ fake ]]; then
+    >&2 echo "Skipping ${component} (already ready)"
+      continue
+    fi
+    if ! wait_for_readiness "${component}"; then
+      # If a component fails to start up and we're in CI, record logs.
+      if [[ -n "${ARTIFACTS:-}" ]]; then
+        >&2 do_kubectl get pods
+        "${SCRIPT_ROOT}/teardown.sh" "-save-logs=${ARTIFACTS}/kind_logs"
+        return 1
       fi
-    done
-
-    # If a component fails to start up and we're in CI, record logs.
-    if ! ((component_ready)) && [[ -n "${ARTIFACTS:-}" ]]; then
-      >&2 do_kubectl get pods
-      "${SCRIPT_ROOT}/teardown.sh" "-save-logs=${ARTIFACTS}/kind_logs"
-      return 1
     fi
   done
 

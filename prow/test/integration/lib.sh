@@ -107,3 +107,25 @@ function log() {
 
 EOF
 }
+
+function wait_for_readiness() {
+  local component
+
+  component="${1}"
+
+  echo >&2 "Waiting for ${component}"
+  for _ in $(seq 1 180); do
+    if  >/dev/null 2>&1 do_kubectl wait pod \
+      --for=condition=ready \
+      --selector=app="${component}" \
+      --timeout=5s; then
+      return
+    else
+      echo >&2 "waiting..."
+      sleep 1
+    fi
+  done
+
+  echo >&2 "${component} failed to get ready"
+  return 1
+}

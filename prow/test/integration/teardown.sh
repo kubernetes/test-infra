@@ -135,8 +135,8 @@ function teardown_kind_cluster() {
 }
 function teardown_local_registry() {
   log "Deleting local registry (if any)"
-  docker stop "${LOCAL_DOCKER_REGISTRY_NAME}" || true
-  docker rm -f "${LOCAL_DOCKER_REGISTRY_NAME}" || true
+  docker stop "${LOCAL_DOCKER_REGISTRY_NAME}" 2>/dev/null || true
+  docker rm -f "${LOCAL_DOCKER_REGISTRY_NAME}" 2>/dev/null || true
 }
 
 main "$@"
