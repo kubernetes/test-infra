@@ -371,31 +371,6 @@ this-is-from-repo5
 		t.Fatal(err)
 	}
 
-	clusterContext := getClusterContext()
-	t.Logf("Creating client for cluster: %s", clusterContext)
-
-	restConfig, err := NewRestConfig("", clusterContext)
-	if err != nil {
-		t.Fatalf("could not create restConfig: %v", err)
-	}
-
-	clientset, err := kubernetes.NewForConfig(restConfig)
-	if err != nil {
-		t.Fatalf("could not create Clientset: %v", err)
-	}
-
-	kubeClient, err := ctrlruntimeclient.New(restConfig, ctrlruntimeclient.Options{})
-	if err != nil {
-		t.Fatalf("Failed creating clients for cluster %q: %v", clusterContext, err)
-	}
-
-	fpsClient, err := fakepubsub.NewClient("project1", PubsubEmulatorHost)
-	if err != nil {
-		t.Fatalf("Failed creating fakepubsub client")
-	}
-
-	fgsClient := fakegitserver.NewClient("http://localhost/fakegitserver", 5*time.Second)
-
 	for _, tt := range tests {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
@@ -407,7 +382,31 @@ this-is-from-repo5
 			var prowjobList prowjobv1.ProwJobList
 			var podName *string
 
+			clusterContext := getClusterContext()
+			t.Logf("Creating client for cluster: %s", clusterContext)
+
+			restConfig, err := NewRestConfig("", clusterContext)
+			if err != nil {
+				t.Fatalf("could not create restConfig: %v", err)
+			}
+
+			clientset, err := kubernetes.NewForConfig(restConfig)
+			if err != nil {
+				t.Fatalf("could not create Clientset: %v", err)
+			}
+
+			kubeClient, err := ctrlruntimeclient.New(restConfig, ctrlruntimeclient.Options{})
+			if err != nil {
+				t.Fatalf("Failed creating clients for cluster %q: %v", clusterContext, err)
+			}
+
+			fpsClient, err := fakepubsub.NewClient("project1", PubsubEmulatorHost)
+			if err != nil {
+				t.Fatalf("Failed creating fakepubsub client")
+			}
+
 			// Set up repos on FGS for just this test case.
+			fgsClient := fakegitserver.NewClient("http://localhost/fakegitserver", 5*time.Second)
 			for _, repoSetup := range tt.repoSetups {
 				err := fgsClient.SetupRepo(repoSetup)
 				if err != nil {
@@ -424,7 +423,7 @@ this-is-from-repo5
 
 			// Publish the message to the topic being watched by sub. This topic
 			// is defined in the integration tests's config/prow/config.yaml.
-			err := fpsClient.PublishMessage(ctx, tt.msg, "topic1")
+			err = fpsClient.PublishMessage(ctx, tt.msg, "topic1")
 			if err != nil {
 				t.Fatalf("Failed to publish message to topic1: %v", err)
 			}
