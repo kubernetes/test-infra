@@ -83,8 +83,6 @@ presubmits:
         testgrid-num-columns-recent: '30'
     - name: pull-cloud-provider-azure-e2e-ccm-vmss-capz-1-22
       skip_if_only_changed: "^docs/|^site/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
-      always_run: false
-      optional: true
       decorate: true
       decoration_config:
         timeout: 3h
