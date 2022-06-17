@@ -30,15 +30,16 @@ ENV PATH=/google-cloud-sdk/bin:/workspace:${PATH} \
 WORKDIR /workspace
 
 RUN echo http://dl-cdn.alpinelinux.org/alpine/latest-stable/community >> /etc/apk/repositories && \
-    apk --no-cache add curl python3 py-crcmod bash libc6-compat openssh-client git gnupg docker-cli make && \
-    curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz && \
-    tar xzf google-cloud-sdk.tar.gz -C / && \
-    rm google-cloud-sdk.tar.gz && \
-    /google-cloud-sdk/install.sh \
-        --disable-installation-options \
-        --bash-completion=false \
-        --path-update=false \
-        --usage-reporting=false && \
+    apk --no-cache add curl python3 py-crcmod bash libc6-compat openssh-client git gnupg docker-cli make
+
+RUN curl -fsSLO https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz
+RUN tar xzf google-cloud-sdk.tar.gz -C /
+RUN rm google-cloud-sdk.tar.gz
+RUN gcloud config set core/disable_usage_reporting true && \
+    gcloud config set component_manager/disable_update_check true && \
+    gcloud config set metrics/environment github_docker_image && \
+    gcloud components install alpha beta gke-gcloud-auth-plugin && \
+    gcloud --version && \
     gcloud info > /workspace/gcloud-info.txt
 
 # Install docker Buildx for fast docker builds
