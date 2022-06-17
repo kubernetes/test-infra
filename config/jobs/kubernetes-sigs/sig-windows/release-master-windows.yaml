@@ -143,27 +143,34 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
+    preset-windows-private-registry-cred: "true"
     preset-capz-windows-common-main: "true"
-    preset-capz-windows-2022: "true"
     preset-capz-containerd-latest: "true"
-    preset-capz-windows-parallel: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
     base_ref: main
     path_alias: sigs.k8s.io/cluster-api-provider-azure
+  - org: kubernetes-sigs
+    repo: windows-testing
+    base_ref: master
+    path_alias: k8s.io/windows-testing
+    workdir: true
   spec:
     containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220614-cde7860a33-master
         command:
           - "runner.sh"
-          - "./scripts/ci-conformance.sh"
+          - "./capz/run-capz-e2e.sh"
         securityContext:
           privileged: true
         resources:
           requests:
             cpu: 2
             memory: "9Gi"
+        env:
+          - name: WINDOWS_SERVER_VERSION
+            value: "windows-2022"
   annotations:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-windows-master-release
@@ -177,27 +184,38 @@ periodics:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
     preset-azure-cred-only: "true"
+    preset-windows-private-registry-cred: "true"
     preset-capz-windows-common-main: "true"
-    preset-capz-windows-2022: "true"
     preset-capz-containerd-latest: "true"
-    preset-capz-serial-slow: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
     base_ref: main
     path_alias: sigs.k8s.io/cluster-api-provider-azure
+  - org: kubernetes-sigs
+    repo: windows-testing
+    base_ref: master
+    path_alias: k8s.io/windows-testing
+    workdir: true
   spec:
     containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220614-cde7860a33-master
         command:
           - "runner.sh"
-          - "./scripts/ci-conformance.sh"
+          - "./capz/run-capz-e2e.sh"
         securityContext:
           privileged: true
         resources:
           requests:
             cpu: 2
             memory: "9Gi"
+        env:
+          - name: WINDOWS_SERVER_VERSION
+            value: "windows-2022"
+          - name: GINKGO_FOCUS
+            value: "(\[sig-windows\]|\[sig-scheduling\].SchedulerPreemption|\[sig-autoscaling\].\[Feature:HPA\]|\[sig-apps\].CronJob).*(\[Serial\]|\[Slow\])|(\[Serial\]|\[Slow\]).*(\[Conformance\]|\[NodeConformance\])|\[sig-api-machinery\].Garbage.collector"
+          - name: GINKGO_SKIP
+            value: "\[LinuxOnly\]|device.plugin.for.Windows"
   annotations:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-windows-master-release

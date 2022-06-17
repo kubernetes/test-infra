@@ -70,7 +70,7 @@ presubmits:
       preset-capz-windows-common-main: "true"
       preset-capz-containerd-latest: "true"
     extra_refs:
-    - org: jsturtevant
+    - org: kubernetes-sigs
       repo: cluster-api-provider-azure
       base_ref: reuse-logging
       path_alias: sigs.k8s.io/cluster-api-provider-azure
