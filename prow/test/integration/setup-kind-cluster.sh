@@ -119,9 +119,10 @@ EOF
     if do_kubectl wait --namespace ingress-nginx \
       --for=condition=ready pod \
       --selector=app.kubernetes.io/component=controller \
-      --timeout=180s; then
+      --timeout=180s 2>/dev/null; then
       break
     else
+      echo >&2 "waiting..."
       sleep 1
     fi
   done
