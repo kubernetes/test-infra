@@ -386,6 +386,9 @@ presubmits:
           exit $result
         securityContext:
           privileged: true
+    annotations:
+      testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-azure
+      testgrid-tab-name: capz-pr-coverage-main
   - name: pull-cluster-api-provider-azure-e2e-workload-upgrade
     labels:
       preset-dind-enabled: "true"
