@@ -23,8 +23,6 @@ presubmits:
       testgrid-num-columns-recent: '30'
   # pull-cloud-provider-azure-e2e-ccm-vmss-capz runs Azure specific e2e tests on vmss.
   - name: pull-cloud-provider-azure-e2e-ccm-vmss-capz
-    always_run: false
-    optional: true
     skip_if_only_changed: "^docs/|^site/|^helm/|^\\.github/|\\.(md|adoc)$|^(README|LICENSE)$"
     decorate: true
     decoration_config:
