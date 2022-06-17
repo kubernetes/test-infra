@@ -20,7 +20,7 @@ metadata:
   labels:
     app: deck-tenanted
 spec:
-  replicas: 3
+  replicas: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:
