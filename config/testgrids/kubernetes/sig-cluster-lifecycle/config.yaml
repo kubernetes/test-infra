@@ -52,6 +52,13 @@ dashboards:
 - name: sig-cluster-lifecycle-cluster-api-provider-digitalocean
 - name: sig-cluster-lifecycle-cluster-api-provider-gcp
 - name: sig-cluster-lifecycle-cluster-api-provider-ibmcloud
+  dashboard_tab:
+    - name: capibm-periodic-coverage-main
+      test_group_name: periodic-cluster-api-provider-ibmcloud-coverage
+      base_options: "exclude-filter-by-regex=Overall$&group-by-directory=&expand-groups=&sort-by-name="
+    - name: capibm-pr-coverage-main
+      test_group_name: pull-cluster-api-provider-ibmcloud-coverage
+      base_options: "exclude-filter-by-regex=Overall$&group-by-directory=&expand-groups=&sort-by-name="
 - name: sig-cluster-lifecycle-cluster-api-provider-vsphere
 - name: sig-cluster-lifecycle-cluster-api-provider-openstack
 - name: sig-cluster-lifecycle-cluster-api-provider-nested
@@ -72,4 +79,10 @@ test_groups:
   short_text_metric: coverage
 - name: periodic-cluster-api-provider-aws-coverage
   gcs_prefix: kubernetes-jenkins/logs/periodic-cluster-api-provider-aws-coverage
+  short_text_metric: coverage
+- name: periodic-cluster-api-provider-ibmcloud-coverage
+  gcs_prefix: kubernetes-jenkins/logs/periodic-cluster-api-provider-ibmcloud-coverage
+  short_text_metric: coverage
+- name: pull-cluster-api-provider-ibmcloud-coverage
+  gcs_prefix: kubernetes-jenkins/logs/pull-cluster-api-provider-ibmcloud-coverage
   short_text_metric: coverage

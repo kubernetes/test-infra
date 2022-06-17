@@ -1,0 +1,31 @@
+periodics:
+- name: periodic-cluster-api-provider-ibmcloud-coverage
+  interval: 12h
+  decorate: true
+  extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api-provider-ibmcloud
+      base_ref: main
+      path_alias: "sigs.k8s.io/cluster-api-provider-ibmcloud"
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220614-cde7860a33-1.23
+      command:
+        - runner.sh
+      args:
+        - bash
+        - -c
+        - |
+          result=0
+          ./scripts/ci-test-coverage.sh || result=$?
+          cp cover.* ${ARTIFACTS}
+          cd ../../k8s.io/test-infra/gopherage
+          GO111MODULE=on go build .
+          ./gopherage filter --exclude-path="zz_generated,generated\.go" "${ARTIFACTS}/cover.out" > "${ARTIFACTS}/filtered.cov" || result=$?
+          ./gopherage html "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/coverage.html" || result=$?
+          ./gopherage junit --threshold 0 "${ARTIFACTS}/filtered.cov" > "${ARTIFACTS}/junit_coverage.xml" || result=$?
+          exit $result
