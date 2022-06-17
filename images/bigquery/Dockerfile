@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM ubuntu:18.04
+FROM ubuntu:22.04
 
 RUN apt-get update && apt-get install -y \
     git \
@@ -23,14 +23,24 @@ RUN apt-get update && apt-get install -y \
     python3-pip && \
     rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install --no-cache-dir influxdb==5.2.2 google-cloud-bigquery==0.24.0 ruamel.yaml==0.16
+ARG CLOUD_SDK_VERSION=390.0.0
+ARG INFLUXDB_VERSION=5.2.2
+ARG BIGQUERY_LIBRARY_VERSION=0.26.0
+ARG RUAMEL_VERSION=0.16
 
-ENV GCLOUD_VERSION 265.0.0
-RUN wget https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-$GCLOUD_VERSION-linux-x86_64.tar.gz && \
-    tar xf google-cloud-sdk-$GCLOUD_VERSION-linux-x86_64.tar.gz && \
-    rm google-cloud-sdk-$GCLOUD_VERSION-linux-x86_64.tar.gz && \
-    ./google-cloud-sdk/install.sh
-ENV PATH "/google-cloud-sdk/bin:${PATH}"
+RUN pip3 install --no-cache-dir influxdb=={INFLUXDB_VERSION} google-cloud-bigquery==${BIGQUERY_LIBRARY_VERSION} ruamel.yaml==${RUAMEL_VERSION}}
+
+ENV PATH=/google-cloud-sdk/bin:${PATH} \
+    CLOUDSDK_CORE_DISABLE_PROMPTS=1
+
+RUN pip3 install -U crcmod==1.7
+RUN wget https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${CLOUD_SDK_VERSION}-linux-x86_64.tar.gz
+RUN tar xzf google-cloud-sdk-${CLOUD_SDK_VERSION}-linux-x86_64.tar.gz -C /
+RUN rm google-cloud-sdk-${CLOUD_SDK_VERSION}-linux-x86_64.tar.gz
+RUN gcloud config set core/disable_usage_reporting true && \
+    gcloud config set component_manager/disable_update_check true && \
+    gcloud config set metrics/environment github_docker_image && \
+    gcloud --version
 
 WORKDIR /workspace
 ADD runner /
