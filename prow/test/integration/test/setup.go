@@ -24,9 +24,11 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"sync"
 	"testing"
 
 	coreapi "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
 	"k8s.io/client-go/rest"
@@ -39,7 +41,11 @@ const (
 	testpodNamespace = "test-pods"
 )
 
-var clusterContext = flag.String("cluster", "kind-kind-prow-integration", "The context of cluster to use for test")
+var (
+	clusterContext = flag.String("cluster", "kind-kind-prow-integration", "The context of cluster to use for test")
+
+	jobConfigMux sync.Mutex
+)
 
 func getClusterContext() string {
 	return *clusterContext
@@ -102,4 +108,23 @@ func RandomString(t *testing.T) string {
 		t.Fatalf("failed to generate random: %v", err)
 	}
 	return fmt.Sprintf("%x", sha256.Sum256(b[:]))[:32]
+}
+
+func updateJobConfig(ctx context.Context, kubeClient ctrlruntimeclient.Client, filename string, rawConfig []byte) error {
+	jobConfigMux.Lock()
+	defer jobConfigMux.Unlock()
+
+	var existingMap v1.ConfigMap
+	if err := kubeClient.Get(ctx, ctrlruntimeclient.ObjectKey{
+		Namespace: defaultNamespace,
+		Name:      "job-config",
+	}, &existingMap); err != nil {
+		return err
+	}
+
+	if existingMap.BinaryData == nil {
+		existingMap.BinaryData = make(map[string][]byte)
+	}
+	existingMap.BinaryData[filename] = rawConfig
+	return kubeClient.Update(ctx, &existingMap)
 }
