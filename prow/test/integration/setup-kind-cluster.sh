@@ -50,6 +50,12 @@ function main() {
     create_cluster
   fi
   setup_cluster
+
+  # Use nginx as a reverse proxy and load balancer for the cluster. We don't
+  # wait for it here in this script because it can take a while to finish. We do
+  # wait for it in the setup-prow-components.sh script.
+  log "Installing nginx ingress controller on KIND cluster"
+  do_kubectl apply -f "${SCRIPT_ROOT}/config/nginx.yaml"
 }
 
 function cluster_running() {
@@ -110,24 +116,6 @@ data:
     help: "https://kind.sigs.k8s.io/docs/user/local-registry/"
 EOF
 
-  # Use nginx as a reverse proxy and load balancer for the cluster.
-  log "Installing nginx ingress controller on KIND cluster"
-  do_kubectl apply -f "${SCRIPT_ROOT}/config/nginx.yaml"
-
-  log "Waiting for nginx"
-  for _ in $(seq 1 180); do
-    if do_kubectl wait --namespace ingress-nginx \
-      --for=condition=ready pod \
-      --selector=app.kubernetes.io/component=controller \
-      --timeout=180s 2>/dev/null; then
-      break
-    else
-      echo >&2 "waiting..."
-      sleep 1
-    fi
-  done
-
-  log "nginx is ready"
 }
 
 function setup_local_docker_registry() {

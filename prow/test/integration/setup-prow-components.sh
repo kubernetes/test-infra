@@ -134,6 +134,8 @@ function main() {
   fi
 
   deploy_prow
+
+  wait_for_nginx
 }
 
 function build_prow_images() {
@@ -205,16 +207,21 @@ function create_prowimagebuilder_yaml() {
   local tmpfile
   tmpfile=$(mktemp /tmp/prowimagebuilder.XXXXXX.yaml)
 
+  local contents
+
   echo "images:" >> "${tmpfile}"
 
   for arg in "$@"; do
     if [[ -v "PROW_IMAGES[${arg}]" ]]; then
-      echo "  - dir: ${PROW_IMAGES[${arg}]}" >> "${tmpfile}"
+      contents+="  - dir: ${PROW_IMAGES[${arg}]}
+"
     else
       echo >&2 "Unrecognized prow component \"${arg}\""
       return 1
     fi
   done
+
+  echo "${contents}" | sort >> "${tmpfile}"
   echo "${tmpfile}"
 }
 
@@ -244,45 +251,60 @@ function deploy_prow() {
   # enough to only redeploy those components who configurations have changed as
   # a result of newly built images (from build_prow_images()).
   pushd "${SCRIPT_ROOT}/config/prow"
-  do_kubectl create configmap config --from-file=./config.yaml --dry-run=client -oyaml | do_kubectl apply -f -
-  do_kubectl create configmap plugins --from-file=./plugins.yaml --dry-run=client -oyaml | do_kubectl apply -f -
-  do_kubectl create configmap job-config --from-file=./jobs --dry-run=client -oyaml | do_kubectl apply -f -
-
-  # Create the fakes first. This is because other things depend on it. Otherwise
-  # we end up logging a lot of errors about failing to connect to a fake service
-  # (e.g., fakeghserver) because it is not running yet. Connection failures slow
-  # down the startup time a bit because they can lead to exponential backoffs
-  # until the connections succeed.
-  pushd cluster
-    for fake in fake*; do
-      do_kubectl apply --server-side=true -f "${fake}"
-    done
-    for fake in fake*; do
-      wait_for_readiness "${fake%.yaml}"
-    done
+  do_kubectl create configmap config --from-file=./config.yaml --dry-run=client -oyaml | do_kubectl apply -f - &
+  do_kubectl create configmap plugins --from-file=./plugins.yaml --dry-run=client -oyaml | do_kubectl apply -f - &
+  do_kubectl create configmap job-config --from-file=./jobs --dry-run=client -oyaml | do_kubectl apply -f - &
   popd
 
-  # Create the rest.
-  do_kubectl apply --server-side=true -f ./cluster
-  popd
+  deploy_components
 
-  log "Waiting for Prow components"
-  for component in "${PROW_COMPONENTS[@]}"; do
-    if [[ "${component}" =~ fake ]]; then
-    >&2 echo "Skipping ${component} (already ready)"
-      continue
-    fi
+  log "Prow components are ready"
+}
+
+function deploy_components() {
+  local item
+  for item in "${PROW_DEPLOYMENT_ORDER[@]}"; do
+    deploy_item "${item}"
+  done
+}
+
+function deploy_item() {
+  local item
+  local component
+  item="${1}"
+
+  if [[ "${item}" =~ WAIT ]]; then
+    component="${item#WAIT_}"
     if ! wait_for_readiness "${component}"; then
       # If a component fails to start up and we're in CI, record logs.
       if [[ -n "${ARTIFACTS:-}" ]]; then
         >&2 do_kubectl get pods
         "${SCRIPT_ROOT}/teardown.sh" "-save-logs=${ARTIFACTS}/kind_logs"
-        return 1
       fi
+      return 1
+    fi
+    return
+  fi
+
+  do_kubectl apply --server-side=true -f "${SCRIPT_ROOT}"/config/prow/cluster/"${item}" &
+}
+
+function wait_for_nginx() {
+  log "Waiting for nginx"
+  for _ in $(seq 1 180); do
+    if do_kubectl wait --namespace ingress-nginx \
+      --for=condition=ready pod \
+      --selector=app.kubernetes.io/component=controller \
+      --timeout=180s 2>/dev/null; then
+
+      log "nginx is ready (Prow instance is ready!)"
+
+      return
+    else
+      echo >&2 "waiting..."
+      sleep 1
     fi
   done
-
-  log "Prow components are ready"
 }
 
 main "$@"

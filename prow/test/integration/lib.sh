@@ -96,6 +96,75 @@ declare -rA PROW_IMAGES_TO_COMPONENTS=(
   [fakepubsub]=fakepubsub
 )
 
+# Defines the order in which we'll start and wait for components to be ready.
+# Each element is deployed in order. If we encounter a WAIT value, we wait until
+# the component is ready before proceeding with further deployments.
+declare -ra PROW_DEPLOYMENT_ORDER=(
+  # Start up basic, dependency-free components (and non-components like secrets,
+  # ingress, etc) first.
+  50_crd.yaml
+  100_starter.yaml
+  101_secrets.yaml
+  200_ingress.yaml
+  # Create ghserver early, because other things depend on it. Otherwise we end
+  # up logging a lot of errors about failing to connect to a fake service (e.g.,
+  # fakeghserver) because it is not running yet. Connection failures slow down
+  # the startup time a bit because they can lead to exponential backoffs until
+  # the connections succeed.
+  fakeghserver.yaml
+  # Start fakepubsub early, but don't wait for it just yet. This is because this
+  # is a big image and if the local registry is empty (we're running integraion
+  # tests on a cold machine), it takes a long time for the deployment to pull it
+  # from the local registry.
+  fakepubsub.yaml
+  fakegerritserver.yaml
+  fakegitserver.yaml
+  gerrit.yaml
+  horologium_rbac.yaml
+  horologium_service.yaml
+  horologium_deployment.yaml
+  prow_controller_manager_rbac.yaml
+  prow_controller_manager_service.yaml
+  prow_controller_manager_deployment.yaml
+  sinker.yaml
+
+  WAIT_fakegerritserver
+  WAIT_fakegitserver
+  WAIT_gerrit
+  WAIT_horologium
+  WAIT_prow-controller-manager
+  WAIT_sinker
+  WAIT_fakeghserver
+
+  # Deploy hook and tide early because crier, deck, etc. depend on them.
+  hook_rbac.yaml
+  hook_service.yaml
+  hook_deployment.yaml
+  tide_rbac.yaml
+  tide_service.yaml
+  tide_deployment.yaml
+  WAIT_hook
+  WAIT_tide
+
+  crier_rbac.yaml
+  crier_service.yaml
+  crier_deployment.yaml
+  deck_rbac.yaml
+  deck_service.yaml
+  deck_deployment.yaml
+  deck_tenant_deployment.yaml
+  WAIT_crier
+  WAIT_deck
+  WAIT_deck-tenanted
+
+  # Sub can't properly start its PullServer unless the subscriptions have
+  # already been created. So wait for fakepubsub to be initialized with those
+  # subscriptions first.
+  WAIT_fakepubsub
+  sub.yaml
+  WAIT_sub
+)
+
 function do_kubectl() {
   kubectl --context="${_KIND_CONTEXT}" "$@"
 }
