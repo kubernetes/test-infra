@@ -33,6 +33,7 @@ dashboard_groups:
   - kops-1.24
   - kops-latest
   - kops-upgrades
+  - kops-upgrades-many-addons
 
 dashboards:
 - name: kops-presubmits
@@ -67,3 +68,4 @@ dashboards:
 - name: kops-1.24
 - name: kops-latest
 - name: kops-upgrades
+- name: kops-upgrades-many-addons

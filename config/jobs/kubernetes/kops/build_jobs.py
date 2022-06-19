@@ -826,6 +826,15 @@ def generate_upgrades():
             'KOPS_VERSION_B': kops_b,
             'K8S_VERSION_B': k8s_b,
         }
+        addonsenv = {
+            'KOPS_VERSION_A': kops_a,
+            'K8S_VERSION_A': k8s_a,
+            'KOPS_VERSION_B': kops_b,
+            'K8S_VERSION_B': k8s_b,
+            'KOPS_SKIP_E2E': '1',
+            'KOPS_TEMPLATE': 'tests/e2e/templates/many-addons.yaml.tmpl',
+            'KOPS_CONTROL_PLANE': '3',
+        }
         results.append(
             build_test(name_override=job_name,
                        distro='u2004',
@@ -834,9 +843,22 @@ def generate_upgrades():
                        k8s_version='stable',
                        kops_channel='alpha',
                        extra_dashboards=['kops-upgrades'],
-                       runs_per_day=12,
+                       runs_per_day=8,
                        scenario='upgrade-ab',
                        env=env,
+                       )
+        )
+        results.append(
+            build_test(name_override=job_name + "-many-addons",
+                       distro='u2004',
+                       networking='calico',
+                       irsa=k8s_a >= 'v1.22',
+                       k8s_version='stable',
+                       kops_channel='alpha',
+                       extra_dashboards=['kops-upgrades-many-addons'],
+                       runs_per_day=4,
+                       scenario='upgrade-ab',
+                       env=addonsenv,
                        )
         )
     return results
