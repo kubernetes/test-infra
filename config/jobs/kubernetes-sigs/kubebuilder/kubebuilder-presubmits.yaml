@@ -2,6 +2,7 @@ presubmits:
   kubernetes-sigs/kubebuilder:
   - name: pull-kubebuilder-test
     decorate: true
+    skip_if_only_changed: "^docs/|^netlify\\.toml|\\.(md|MD|png|pdf)$|^(OWNERS|OWNERS_ALIASES|LICENSE)$"
     always_run: true
     optional: false
     path_alias: sigs.k8s.io/kubebuilder
@@ -21,6 +22,7 @@ presubmits:
       testgrid-tab-name: kubebuilder
   - name: pull-kubebuilder-e2e-k8s-1-24-1
     decorate: true
+    skip_if_only_changed: "^docs/|^netlify\\.toml|\\.(md|MD|png|pdf)$|^(OWNERS|OWNERS_ALIASES|LICENSE)$"
     always_run: true
     optional: true
     path_alias: sigs.k8s.io/kubebuilder
@@ -51,6 +53,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
   - name: pull-kubebuilder-e2e-k8s-1-23-3
     decorate: true
+    skip_if_only_changed: "^docs/|^netlify\\.toml|\\.(md|MD|png|pdf)$|^(OWNERS|OWNERS_ALIASES|LICENSE)$"
     always_run: true
     optional: true
     path_alias: sigs.k8s.io/kubebuilder
@@ -81,6 +84,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
   - name: pull-kubebuilder-e2e-k8s-1-22-1
     decorate: true
+    skip_if_only_changed: "^docs/|^netlify\\.toml|\\.(md|MD|png|pdf)$|^(OWNERS|OWNERS_ALIASES|LICENSE)$"
     always_run: true
     optional: true
     path_alias: sigs.k8s.io/kubebuilder
@@ -111,6 +115,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
   - name: pull-kubebuilder-e2e-k8s-1-21-2
     decorate: true
+    skip_if_only_changed: "^docs/|^netlify\\.toml|\\.(md|MD|png|pdf)$|^(OWNERS|OWNERS_ALIASES|LICENSE)$"
     always_run: true
     optional: true
     path_alias: sigs.k8s.io/kubebuilder
@@ -141,6 +146,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
   - name: pull-kubebuilder-e2e-k8s-1-20-7
     decorate: true
+    skip_if_only_changed: "^docs/|^netlify\\.toml|\\.(md|MD|png|pdf)$|^(OWNERS|OWNERS_ALIASES|LICENSE)$"
     always_run: true
     optional: true
     path_alias: sigs.k8s.io/kubebuilder
@@ -171,6 +177,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
   - name: pull-kubebuilder-e2e-k8s-1-19-16
     decorate: true
+    skip_if_only_changed: "^docs/|^netlify\\.toml|\\.(md|MD|png|pdf)$|^(OWNERS|OWNERS_ALIASES|LICENSE)$"
     always_run: true
     optional: true
     path_alias: sigs.k8s.io/kubebuilder
@@ -201,6 +208,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
   - name: pull-kubebuilder-e2e-k8s-1-18-20
     decorate: true
+    skip_if_only_changed: "^docs/|^netlify\\.toml|\\.(md|MD|png|pdf)$|^(OWNERS|OWNERS_ALIASES|LICENSE)$"
     always_run: true
     optional: true
     path_alias: sigs.k8s.io/kubebuilder
