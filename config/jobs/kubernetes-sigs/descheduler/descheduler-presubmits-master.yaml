@@ -143,28 +143,3 @@ presubmits:
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
-  - name: pull-descheduler-helm-test
-    annotations:
-      testgrid-dashboards: sig-scheduling
-      testgrid-tab-name: pull-descheduler-helm-test
-    decorate: true
-    decoration_config:
-      timeout: 20m
-    always_run: true
-    labels:
-      preset-dind-enabled: "true"
-      preset-kind-volume-mounts: "true"
-    branches:
-    - master
-    spec:
-      containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220804-4fa19ea91a-master
-        command:
-        # generic runner script, handles DIND, bazelrc for caching, etc.
-        - runner.sh
-        args:
-        - make
-        - test-helm
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
