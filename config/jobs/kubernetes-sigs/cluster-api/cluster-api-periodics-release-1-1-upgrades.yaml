@@ -293,7 +293,7 @@ periodics:
           - name: ETCD_VERSION_UPGRADE_TO
             value: "3.5.3-0"
           - name: COREDNS_VERSION_UPGRADE_TO
-            value: "v1.8.6"
+            value: "v1.9.3"
           - name: GINKGO_FOCUS
             value: "\\[K8s-Upgrade\\]"
         # we need privileged mode in order to do docker in docker
