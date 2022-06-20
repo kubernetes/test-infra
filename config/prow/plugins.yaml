@@ -412,7 +412,8 @@ milestone_applier:
     release-1.17: v1.17
     release-1.16: v1.16
   kubernetes-sigs/cluster-api:
-    main: v1.2
+    main: v1.3
+    release-1.2: v1.2
     release-1.1: v1.1
     release-1.0: v1.0
     release-0.4: v0.4
