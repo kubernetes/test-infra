@@ -465,7 +465,7 @@ presubmits:
       description: This job creates clusters using supported older api versions (v1alpha4), and verifies that the clusters continue to operate properly after the api version is upgraded to the latest (v1beta1).
   - name: pull-cluster-api-provider-azure-ci-entrypoint
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
-    optional: true
+    optional: false
     decorate: true
     # please see: https://play.golang.org/p/JJSVylVPd53 for more insights
     run_if_changed: (^[^d].*$)|(^d$)|(^.[^o].*$)|(^do$)|(^..[^c].*$)|(^doc$)|(^...[^s].*$)|(^docs$)|(^....[^/].*$)|(^[^d][^o][^c][^s]/.*$)

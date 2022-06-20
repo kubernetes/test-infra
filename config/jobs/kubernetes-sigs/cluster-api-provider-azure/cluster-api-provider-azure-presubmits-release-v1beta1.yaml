@@ -313,7 +313,7 @@ presubmits:
       testgrid-tab-name: capz-pr-apidiff-v1beta1
   - name: pull-cluster-api-provider-azure-ci-entrypoint-v1beta1
     path_alias: "sigs.k8s.io/cluster-api-provider-azure"
-    optional: true
+    optional: false
     decorate: true
     # please see: https://play.golang.org/p/JJSVylVPd53 for more insights
     run_if_changed: (^[^d].*$)|(^d$)|(^.[^o].*$)|(^do$)|(^..[^c].*$)|(^doc$)|(^...[^s].*$)|(^docs$)|(^....[^/].*$)|(^[^d][^o][^c][^s]/.*$)
