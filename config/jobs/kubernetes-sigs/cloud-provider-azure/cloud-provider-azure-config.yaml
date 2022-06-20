@@ -60,6 +60,10 @@ presubmits:
               value: "true"
             - name: CONTROL_PLANE_MACHINE_COUNT
               value: "1"
+            - name: WINDOWS_WORKER_MACHINE_COUNT
+              value: "2"
+            - name: WINDOWS_SERVER_VERSION
+              value: "windows-2022"
             - name: KUBERNETES_VERSION
               value: "latest"
             - name: CLUSTER_TEMPLATE
@@ -572,6 +576,10 @@ periodics:
           value: "true"
         - name: CONTROL_PLANE_MACHINE_COUNT
           value: "1"
+        - name: WINDOWS_WORKER_MACHINE_COUNT
+          value: "2"
+        - name: WINDOWS_SERVER_VERSION
+          value: "windows-2022"
         - name: KUBERNETES_VERSION
           value: "latest"
         - name: CLUSTER_TEMPLATE
@@ -634,6 +642,10 @@ periodics:
         value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --test.parallel=30 --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT
         value: "1"
+      - name: WINDOWS_WORKER_MACHINE_COUNT
+        value: "2"
+      - name: WINDOWS_SERVER_VERSION
+        value: "windows-2022"
       - name: CLUSTER_TEMPLATE
         value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
       - name: AZURE_LOADBALANCER_SKU
@@ -695,6 +707,10 @@ periodics:
         value: --ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\]|regular.resource.usage.tracking.resource.tracking.for|validates.MaxPods.limit.number.of.pods.that.are.allowed.to.run|In-tree.Volumes|RuntimeClass.should.run.a.Pod.requesting.a.RuntimeClass.with.scheduling.with.taints|Multi-AZ.Clusters.should.spread.the.pods.of.a.replication.controller.across.zones|Multi-AZ.Clusters.should.spread.the.pods.of.a.service.across.zones|Should.test.that.pv.used.in.a.pod.that.is.deleted.while.the.kubelet.is.down.cleans.up.when.the.kubelet.returns|Should.test.that.pv.used.in.a.pod.that.is.force.deleted.while.the.kubelet.is.down.cleans.up.when.the.kubelet.returns|Should.test.that.pv.written.before.kubelet.restart.is.readable.after.restart|subPath.should.unmount.if.pod.is.force.deleted.while.kubelet.is.down|subPath.should.unmount.if.pod.is.gracefully.deleted.while.kubelet.is.down|Should.test.that.pv.written.before.kubelet.restart.is.readable.after.restart --test.parallel=30 --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT
         value: "1"
+      - name: WINDOWS_WORKER_MACHINE_COUNT
+        value: "2"
+      - name: WINDOWS_SERVER_VERSION
+        value: "windows-2022"
       - name: CLUSTER_TEMPLATE
         value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
       - name: AZURE_LOADBALANCER_SKU
@@ -816,6 +832,10 @@ periodics:
         value: --ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|In-tree.Volumes|should.be.able.to.create.an.internal.type.load.balancer --test.parallel=4 --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT
         value: "1"
+      - name: WINDOWS_WORKER_MACHINE_COUNT
+        value: "2"
+      - name: WINDOWS_SERVER_VERSION
+        value: "windows-2022"
       - name: CLUSTER_TEMPLATE
         value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
       - name: AZURE_LOADBALANCER_SKU
