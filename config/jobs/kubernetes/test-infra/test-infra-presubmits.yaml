@@ -186,3 +186,26 @@ presubmits:
     annotations:
       testgrid-dashboards: presubmits-test-infra
       testgrid-tab-name: verify-test
+  - name: pull-test-infra-push-gcloud-terraform
+    cluster: test-infra-trusted
+    run_if_changed: '^images/gcloud-terraform/'
+    decorate: true
+    branches:
+    - ^master$
+    max_concurrency: 1
+    spec:
+      serviceAccountName: deployer # TODO(fejta): should be pusher
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
+        command:
+        - /run.sh
+        args:
+        - --scratch-bucket=gs://k8s-testimages-scratch
+        - --project=k8s-testimages
+        - --build-dir=.
+        - images/gcloud-terraform/
+        env:
+        - name: IS_PRESUBMIT
+          value: "true"
+        - name: IMAGE
+          value: gcloud-terraform

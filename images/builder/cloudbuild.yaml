@@ -22,6 +22,7 @@ steps:
 substitutions:
   _GIT_TAG: '12345'
   _GO_VERSION: '1.18'
+  _YQ_VERSION: v4.23.1
 images:
   - 'gcr.io/$PROJECT_ID/image-builder:$_GIT_TAG'
   - 'gcr.io/$PROJECT_ID/image-builder:latest'

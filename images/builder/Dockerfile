@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM google/cloud-sdk:343.0.0-alpine
+FROM google/cloud-sdk:390.0.0-alpine
+ARG YQ_VERSION
+RUN wget -q "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64" \
+    -O /usr/local/bin/yq && chmod +x /usr/local/bin/yq
 COPY builder run.sh /
 CMD ["/run.sh"]

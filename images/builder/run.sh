@@ -23,6 +23,12 @@ if [[ -n "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
   gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}"
 fi
 
+# If IS_PRESUBMIT & IMAGE env is set, use yq to strip images key
+# from cloudbuild.yaml file to avoid pushing images to GCR/AR.
+
+if [[ -n "${IS_PRESUBMIT:-}" ]]; then
+  yq 'del(.images)' -i images/${IMAGE}/cloudbuild.yaml --exit-status
+fi
 
 echo "Running..."
 if [ -n "${ARTIFACTS}" ] && [ -z "${LOG_TO_STDOUT}" ]; then
