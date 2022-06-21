@@ -1203,6 +1203,24 @@ def generate_presubmits_e2e():
                 'KOPS_VERSION_B': "latest",
                 'K8S_VERSION_B': "latest",
             }
+        ),
+        presubmit_test(
+            name="pull-kops-e2e-aws-upgrade-123-ko123-to-klatest-kolatest-many-addons",
+            optional=True,
+            distro='u2004',
+            networking='cilium',
+            k8s_version='stable',
+            kops_channel='alpha',
+            scenario='upgrade-ab',
+            env={
+                'KOPS_VERSION_A': "1.23",
+                'K8S_VERSION_A': "v1.23.0",
+                'KOPS_VERSION_B': "latest",
+                'K8S_VERSION_B': "latest",
+                'KOPS_SKIP_E2E': '1',
+                'KOPS_TEMPLATE': 'tests/e2e/templates/many-addons.yaml.tmpl',
+                'KOPS_CONTROL_PLANE': '3',
+            }
         )
     ]
     return jobs
