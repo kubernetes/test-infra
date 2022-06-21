@@ -157,24 +157,8 @@ func (f *FakeClient) CreateIssue(issue *jira.Issue) (*jira.Issue, error) {
 			return nil, err
 		}
 	}
-	if issue.Fields == nil || issue.Fields.Project.Name == "" {
-		return nil, fmt.Errorf("issue.fields.project must be set to create new issue")
-	}
-	issueCreationErrors := jiraclient.CreateIssueError{}
-	issueCreationErrors.Errors = make(map[string]string)
-	// simulate unsettable fields
-	if issue.Fields.Comments != nil {
-		issueCreationErrors.Errors["comment"] = "this field cannot be set"
-	}
-	if issue.Fields.Status != nil {
-		issueCreationErrors.Errors["status"] = "this field cannot be set"
-	}
-	if len(issueCreationErrors.Errors) != 0 {
-		data, err := json.Marshal(issueCreationErrors)
-		if err != nil {
-			return nil, err
-		}
-		return nil, &jiraclient.JiraError{StatusCode: 400, Body: string(data)}
+	if issue.Fields == nil {
+		issue.Fields = &jira.IssueFields{}
 	}
 	// find highest issueID and make new issue one higher
 	highestID := 0
