@@ -362,20 +362,23 @@ func failedJobs(account int, revision int, messages ...gerrit.ChangeMessageInfo)
 }
 
 func (c *Controller) handleInRepoConfigError(err error, instance string, change gerrit.ChangeInfo) error {
+	key := fmt.Sprintf("%s%s%s", instance, change.ID, change.CurrentRevision)
 	if err != nil {
 		// If we have not already recorded this failure send an error essage
-		if failed, ok := c.inRepoConfigFailures[fmt.Sprintf("%s%s%s", instance, change.ID, change.CurrentRevision)]; !ok || !failed {
+		if failed, ok := c.inRepoConfigFailures[key]; !ok || !failed {
 			if setReviewWerr := c.gc.SetReview(instance, change.ID, change.CurrentRevision, inRepoConfigFailed, nil); setReviewWerr != nil {
 				return fmt.Errorf("failed to get inRepoConfig and failed to set Review to notify user: %v and %v", err, setReviewWerr)
 			}
-			c.inRepoConfigFailures[fmt.Sprintf("%s%s%s", instance, change.ID, change.CurrentRevision)] = true
+			c.inRepoConfigFailures[key] = true
 		}
 
 		// We do not want to return that there was an error processing change. If we are unable to get inRepoConfig we do not process. This is expected behavior.
 		return nil
-	} else if failed, ok := c.inRepoConfigFailures[fmt.Sprintf("%s%s%s", instance, change.ID, change.CurrentRevision)]; ok && failed {
-		// If failed in the past but passes now, allow future failures to send message
-		c.inRepoConfigFailures[fmt.Sprintf("%s%s%s", instance, change.ID, change.CurrentRevision)] = false
+	}
+
+	// If failed in the past but passes now, allow future failures to send message
+	if _, ok := c.inRepoConfigFailures[key]; ok {
+		c.inRepoConfigFailures[key] = false
 	}
 	return nil
 }
