@@ -4,7 +4,6 @@ dashboard_groups:
   - presubmits-alibaba-cloud-csi-driver
   - presubmits-cloud-provider-alibaba
   - presubmits-cloud-provider-vsphere-blocking
-  - presubmits-cluster-registry
   - presubmits-kops
   - presubmits-kube-batch
   - presubmits-kubernetes-blocking
@@ -12,21 +11,12 @@ dashboard_groups:
   - presubmits-kubernetes-scalability
   - presubmits-misc
   - presubmits-node-problem-detector
-  - presubmits-poseidon
   - presubmits-test-infra
 
 dashboards:
 - name: presubmits-alibaba-cloud-csi-driver
 - name: presubmits-cloud-provider-alibaba
 - name: presubmits-cloud-provider-vsphere-blocking
-- name: presubmits-cluster-registry
-  dashboard_tab:
-  - name: verify-gensrc
-    test_group_name: pull-cluster-registry-verify-gensrc
-    base_options: width=10
-  - name: verify-gosrc
-    test_group_name: pull-cluster-registry-verify-gosrc
-    base_options: width=10
 - name: presubmits-kops
 - name: presubmits-kube-batch
 - name: presubmits-kubernetes-blocking
@@ -144,5 +134,4 @@ dashboards:
 - name: presubmits-kubernetes-scalability
 - name: presubmits-misc
 - name: presubmits-node-problem-detector
-- name: presubmits-poseidon
 - name: presubmits-test-infra
