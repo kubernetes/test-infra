@@ -12,3 +12,5 @@ sources:
   location: "gs://tekton-prow/testgrid/config"
 - name: "cert-manager"
   location: "gs://jetstack-testgrid/config"
+- name: "gardener"
+  location: "gs://gardener-prow/testgrid/config"
