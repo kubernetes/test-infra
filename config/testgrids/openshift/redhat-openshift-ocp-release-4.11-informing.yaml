@@ -127,14 +127,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-aws-multi
+    name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-aws-heterogeneous
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-aws-multi
+    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-aws-heterogeneous
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -343,14 +343,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-serial-aws-multi
+    name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-serial-aws-heterogeneous
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-serial-aws-multi
+    test_group_name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-serial-aws-heterogeneous
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -5010,8 +5010,8 @@ test_groups:
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-aws-arm64-techpreview-serial
   name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-aws-arm64-techpreview-serial
 - days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-aws-multi
-  name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-aws-multi
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-aws-heterogeneous
+  name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-aws-heterogeneous
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-aws-ovn-arm64
   name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-aws-ovn-arm64
@@ -5030,8 +5030,8 @@ test_groups:
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-remote-libvirt-s390x
   name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-remote-libvirt-s390x
 - days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-serial-aws-multi
-  name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-serial-aws-multi
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-serial-aws-heterogeneous
+  name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-serial-aws-heterogeneous
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-serial-remote-libvirt-ppc64le
   name: periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-serial-remote-libvirt-ppc64le
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-multiarch-master-nightly-4.11-ocp-e2e-serial-remote-libvirt-s390x
