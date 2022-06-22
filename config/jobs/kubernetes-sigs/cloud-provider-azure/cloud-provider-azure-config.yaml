@@ -197,7 +197,7 @@ presubmits:
       description: "Run unit tests for cloud-provider-azure."
       testgrid-num-columns-recent: '30'
 periodics:
-- interval: 24h
+- cron: '0 16 * * *'  # Run at 16:00 UTC everyday
   # cloud-provider-azure-master-capz runs Azure specific tests periodically using a stable capz release.
   name: cloud-provider-azure-master-capz
   decorate: true
@@ -247,7 +247,7 @@ periodics:
     testgrid-tab-name: cloud-provider-azure-master-capz
     testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
     description: "Runs Azure specific tests periodically with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) using a stable capz release."
-- interval: 24h
+- cron: '0 16 * * *'  # Run at 16:00 UTC everyday
   # cloud-provider-azure-master-capz runs Azure specific tests periodically using capz:main.
   name: cloud-provider-azure-master-capz-main
   decorate: true
@@ -297,7 +297,7 @@ periodics:
     testgrid-tab-name: cloud-provider-azure-master-capz-main
     testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
     description: "Runs Azure specific tests periodically with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) using capz:main."
-- interval: 24h
+- cron: '0 16 * * *'  # Run at 16:00 UTC everyday
   name: cloud-provider-azure-ccm-windows-capz
   decorate: true
   decoration_config:
@@ -352,7 +352,7 @@ periodics:
     testgrid-tab-name: cloud-provider-azure-ccm-windows-capz
     testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
     description: "[Windows] Runs Azure specific tests periodically with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure)."
-- interval: 24h
+- cron: '0 17 * * *'  # Run at 17:00 UTC everyday
   # cloud-provider-azure-conformance-capz runs Kubernetes conformance tests periodically.
   name: cloud-provider-azure-conformance-capz
   decorate: true
@@ -410,7 +410,7 @@ periodics:
     testgrid-tab-name: cloud-provider-azure-conformance-capz
     testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
     description: "Runs Kubernetes conformance tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure)."
-- interval: 24h
+- cron: '0 17 * * *'  # Run at 17:00 UTC everyday
   name: cloud-provider-azure-conformance-windows-capz
   decorate: true
   decoration_config:
@@ -473,7 +473,7 @@ periodics:
     testgrid-tab-name: cloud-provider-azure-conformance-windows-capz
     testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
     description: "[Windows] Runs Kubernetes conformance tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure)."
-- interval: 24h
+- cron: '0 17 * * *'  # Run at 17:00 UTC everyday
   # cloud-provider-azure-slow-capz runs Kubernetes slow tests periodically.
   name: cloud-provider-azure-slow-capz
   decorate: true
@@ -531,7 +531,7 @@ periodics:
     testgrid-tab-name: cloud-provider-azure-slow-capz
     testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
     description: "Runs Kubernetes slow tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure)."
-- interval: 24h
+- cron: '0 18 * * *'  # Run at 18:00 UTC everyday
   # cloud-provider-azure-master-vmss-capz runs Azure specific tests periodically using a stable capz release on vmss.
   name: cloud-provider-azure-master-vmss-capz
   decorate: true
@@ -583,7 +583,7 @@ periodics:
     testgrid-tab-name: cloud-provider-azure-master-vmss-capz
     testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
     description: "Runs Azure specific tests periodically with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on vmss using a stable capz release."
-- interval: 24h
+- cron: '0 18 * * *'  # Run at 18:00 UTC everyday
   # cloud-provider-azure-conformance-vmss-capz runs Kubernetes conformance tests periodically on vmss.
   name: cloud-provider-azure-conformance-vmss-capz
   decorate: true
@@ -643,7 +643,7 @@ periodics:
     testgrid-tab-name: cloud-provider-azure-conformance-vmss-capz
     testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
     description: "Runs Kubernetes conformance tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on vmss."
-- interval: 24h
+- cron: '0 18 * * *'  # Run at 18:00 UTC everyday
   # cloud-provider-azure-conformance-serial-vmss-capz runs Kubernetes conformance serial tests periodically on vmss.
   name: cloud-provider-azure-conformance-serial-vmss-capz
   decorate: true
@@ -704,7 +704,7 @@ periodics:
     testgrid-tab-name: cloud-provider-azure-conformance-serial-vmss-capz
     testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
     description: "Runs Kubernetes serial conformance tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on vmss."
-- interval: 24h
+- cron: '0 19 * * *'  # Run at 19:00 UTC everyday
   # cloud-provider-azure-conformance-multiple-zones-vmss-capz runs Kubernetes conformance tests periodically on vmss multiple zones.
   name: cloud-provider-azure-conformance-multiple-zones-vmss-capz
   decorate: true
@@ -765,7 +765,7 @@ periodics:
     testgrid-tab-name: cloud-provider-azure-conformance-multiple-zones-vmss-capz
     testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
     description: "Runs Kubernetes conformance tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on vmss multiple zones."
-- interval: 24h
+- cron: '0 19 * * *'  # Run at 19:00 UTC everyday
   # cloud-provider-azure-slow-vmss-capz runs Kubernetes slow tests periodically.
   name: cloud-provider-azure-slow-vmss-capz
   decorate: true
