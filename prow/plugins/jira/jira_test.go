@@ -128,7 +128,7 @@ func TestHandle(t *testing.T) {
 		event                  github.GenericCommentEvent
 		cfg                    *plugins.Jira
 		projectCache           *threadsafeSet
-		getIssueClientError    error
+		getIssueClientError    map[string]error
 		existingIssues         []jira.Issue
 		existingLinks          map[string][]jira.RemoteLink
 		expectedNewLinks       []jira.RemoteLink
@@ -328,7 +328,7 @@ func TestHandle(t *testing.T) {
 				Number:     3,
 			},
 			projectCache:        &threadsafeSet{},
-			getIssueClientError: errors.New("error: didn't serve 404 from cache"),
+			getIssueClientError: map[string]error{"ABC-123": errors.New("error: didn't serve 404 from cache")},
 		},
 	}
 
