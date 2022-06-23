@@ -8,6 +8,7 @@ presubmits:
     - ^release-cd$
     - ^release-efix$
     - ^release-eus$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-ingress-nginx-operator
     rerun_command: /test check-ibm-ingress-nginx-operator
@@ -29,6 +30,7 @@ presubmits:
     - ^release-efix$
     - ^release-eus$
     - ^release-future$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-ingress-nginx-operator
     rerun_command: /test test-ibm-ingress-nginx-operator
@@ -51,6 +53,7 @@ presubmits:
     - ^release-efix$
     - ^release-eus$
     - ^release-future$
+    - ^release-ltsr$
     decorate: true
     labels:
       preset-service-account: "true"
@@ -75,6 +78,7 @@ presubmits:
     - ^release-efix$
     - ^release-eus$
     - ^release-future$
+    - ^release-ltsr$
     decorate: true
     labels:
       preset-service-account: "true"
@@ -99,6 +103,7 @@ presubmits:
     - ^release-efix$
     - ^release-eus$
     - ^release-future$
+    - ^release-ltsr$
     decorate: true
     labels:
       preset-service-account: "true"
@@ -124,6 +129,7 @@ postsubmits:
     - ^release-efix$
     - ^release-eus$
     - ^release-future$
+    - ^release-ltsr$
     decorate: true
     labels:
       preset-service-account: "true"
@@ -145,6 +151,7 @@ postsubmits:
     - ^release-efix$
     - ^release-eus$
     - ^release-future$
+    - ^release-ltsr$
     decorate: true
     labels:
       preset-service-account: "true"
@@ -166,6 +173,7 @@ postsubmits:
     - ^release-efix$
     - ^release-eus$
     - ^release-future$
+    - ^release-ltsr$
     decorate: true
     labels:
       preset-service-account: "true"
@@ -187,6 +195,7 @@ postsubmits:
     - ^release-efix$
     - ^release-eus$
     - ^release-future$
+    - ^release-ltsr$
     decorate: true
     labels:
       preset-service-account: "true"

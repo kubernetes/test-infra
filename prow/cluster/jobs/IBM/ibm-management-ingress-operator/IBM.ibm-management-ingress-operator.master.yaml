@@ -9,6 +9,7 @@ presubmits:
     - ^release-efix$
     - ^release-eus$
     - ^release-k$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-management-ingress-operator
     rerun_command: /test check-ibm-management-ingress-operator
@@ -31,6 +32,7 @@ presubmits:
     - ^release-efix$
     - ^release-eus$
     - ^release-k$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-management-ingress-operator
     rerun_command: /test test-ibm-management-ingress-operator
@@ -54,6 +56,7 @@ presubmits:
     - ^release-efix$
     - ^release-eus$
     - ^release-k$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-management-ingress-operator
     rerun_command: /test test-ibm-management-ingress-operator-ppc64le
@@ -77,6 +80,7 @@ presubmits:
     - ^release-efix$
     - ^release-eus$
     - ^release-k$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-management-ingress-operator
     rerun_command: /test test-ibm-management-ingress-operator-s390x
@@ -100,6 +104,7 @@ presubmits:
     - ^release-efix$
     - ^release-eus$
     - ^release-k$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-management-ingress-operator
     rerun_command: /test build-ibm-management-ingress-operator
@@ -123,6 +128,7 @@ presubmits:
     - ^release-efix$
     - ^release-eus$
     - ^release-k$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-management-ingress-operator
     rerun_command: /test build-ibm-management-ingress-operator-ppc64le
@@ -146,6 +152,7 @@ presubmits:
     - ^release-efix$
     - ^release-eus$
     - ^release-k$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-management-ingress-operator
     rerun_command: /test build-ibm-management-ingress-operator-s390x
@@ -170,6 +177,7 @@ postsubmits:
     - ^release-efix$
     - ^release-eus$
     - ^release-k$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-management-ingress-operator
     spec:
@@ -190,6 +198,7 @@ postsubmits:
     - ^release-efix$
     - ^release-eus$
     - ^release-k$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-management-ingress-operator
     spec:
@@ -210,6 +219,7 @@ postsubmits:
     - ^release-efix$
     - ^release-eus$
     - ^release-k$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-management-ingress-operator
     spec:
@@ -230,6 +240,7 @@ postsubmits:
     - ^release-efix$
     - ^release-eus$
     - ^release-k$
+    - ^release-ltsr$
     decorate: true
     labels:
       preset-service-account: "true"
@@ -252,6 +263,7 @@ postsubmits:
     - ^release-efix$
     - ^release-eus$
     - ^release-k$
+    - ^release-ltsr$
     decorate: true
     labels:
       preset-service-account: "true"
@@ -274,6 +286,7 @@ postsubmits:
     - ^release-efix$
     - ^release-eus$
     - ^release-k$
+    - ^release-ltsr$
     decorate: true
     labels:
       preset-service-account: "true"
@@ -296,6 +309,7 @@ postsubmits:
     - ^release-efix$
     - ^release-eus$
     - ^release-k$
+    - ^release-ltsr$
     decorate: true
     labels:
       preset-service-account: "true"
