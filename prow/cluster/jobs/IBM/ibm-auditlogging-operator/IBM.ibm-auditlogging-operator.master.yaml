@@ -3,6 +3,7 @@ presubmits:
   - name: build_ibm-auditlogging-operator
     branches:
     - ^master$
+    - ^release-ltsr$
     - ^release-future$
     - ^release-efix$
     - ^release-eus$
@@ -24,6 +25,7 @@ presubmits:
   - name: check_ibm-auditlogging-operator
     branches:
     - ^master$
+    - ^release-ltsr$
     - ^release-future$
     - ^release-efix$
     - ^release-eus$
@@ -44,6 +46,7 @@ presubmits:
   - name: test_ibm-auditlogging-operator
     branches:
     - ^master$
+    - ^release-ltsr$
     - ^release-future$
     - ^release-efix$
     - ^release-eus$
@@ -68,6 +71,7 @@ postsubmits:
   - name: check_ibm-auditlogging-operator_postsubmit
     branches:
     - ^master$
+    - ^release-ltsr$
     - ^release-future$
     - ^release-efix$
     - ^release-eus$
@@ -85,6 +89,7 @@ postsubmits:
   - name: test_ibm-auditlogging-operator_postsubmit
     branches:
     - ^master$
+    - ^release-ltsr$
     - ^release-future$
     - ^release-efix$
     - ^release-eus$
@@ -103,6 +108,7 @@ postsubmits:
   - name: build_ibm-auditlogging-operator_postsubmit
     branches:
     - ^master$
+    - ^release-ltsr$
     - ^release-future$
     - ^release-efix$
     - ^release-eus$
@@ -121,6 +127,7 @@ postsubmits:
   - name: images_ibm-auditlogging-operator_postsubmit
     branches:
     - ^master$
+    - ^release-ltsr$
     - ^release-future$
     - ^release-efix$
     - ^release-eus$
