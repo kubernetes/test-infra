@@ -6,6 +6,7 @@ presubmits:
     - ^release-future$
     - ^release-eus$
     - ^release-efix$
+    - ^release-ltsr$
     decorate: true
     decoration_config:
       ssh_key_secrets:
@@ -32,6 +33,7 @@ presubmits:
     - ^release-future$
     - ^release-eus$
     - ^release-efix$
+    - ^release-ltsr$
     decorate: true
     decoration_config:
       ssh_key_secrets:
@@ -57,6 +59,7 @@ presubmits:
     - ^release-future$
     - ^release-eus$
     - ^release-efix$
+    - ^release-ltsr$
     decorate: true
     decoration_config:
       ssh_key_secrets:
@@ -85,6 +88,7 @@ postsubmits:
     - ^release-future$
     - ^release-eus$
     - ^release-efix$
+    - ^release-ltsr$
     decorate: true
     decoration_config:
       ssh_key_secrets:
@@ -107,6 +111,7 @@ postsubmits:
     - ^release-future$
     - ^release-eus$
     - ^release-efix$
+    - ^release-ltsr$
     decorate: true
     decoration_config:
       ssh_key_secrets:
@@ -130,6 +135,7 @@ postsubmits:
     - ^release-future$
     - ^release-eus$
     - ^release-efix$
+    - ^release-ltsr$
     decorate: true
     decoration_config:
       ssh_key_secrets:
@@ -153,6 +159,7 @@ postsubmits:
     - ^release-future$
     - ^release-eus$
     - ^release-efix$
+    - ^release-ltsr$
     decorate: true
     decoration_config:
       ssh_key_secrets:
