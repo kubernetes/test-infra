@@ -16,6 +16,12 @@ limitations under the License.
 
 package kube
 
+import (
+	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/test-infra/prow/gerrit/client"
+	"k8s.io/test-infra/prow/github"
+)
+
 const (
 	// CreatedByProw is added on resources created by prow.
 	// Since resources often live in another cluster/namespace,
@@ -66,4 +72,18 @@ const (
 	// IsOptionalLabel is added in resources created by prow and
 	// carries the Optional from a Presubmit job.
 	IsOptionalLabel = "prow.k8s.io/is-optional"
+)
+
+var (
+	ComponentSpecifiedAnnotationsAndLabels = sets.NewString(
+		// Labels
+		client.GerritRevision,
+		client.GerritPatchset,
+		client.GerritReportLabel,
+		github.EventGUID,
+		"created-by-tide",
+		// Annotations
+		client.GerritID,
+		client.GerritInstance,
+	)
 )
