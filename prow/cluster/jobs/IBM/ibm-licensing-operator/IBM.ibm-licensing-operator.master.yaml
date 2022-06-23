@@ -7,6 +7,7 @@ presubmits:
     - ^release-future$
     - ^release-eus$
     - ^release-efix$
+    - ^release-ltsr$
     decorate: true
     labels:
       preset-service-account: "true"
@@ -32,6 +33,7 @@ presubmits:
     - ^release-future$
     - ^release-eus$
     - ^release-efix$
+    - ^release-ltsr$
     decorate: true
     labels:
       preset-service-account: "true"
@@ -57,6 +59,7 @@ presubmits:
     - ^release-future$
     - ^release-eus$
     - ^release-efix$
+    - ^release-ltsr$
     decorate: true
     labels:
       preset-service-account: "true"
@@ -85,6 +88,7 @@ postsubmits:
     - ^release-future$
     - ^release-eus$
     - ^release-efix$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-licensing-operator
     labels:
@@ -106,6 +110,7 @@ postsubmits:
     - ^release-future$
     - ^release-eus$
     - ^release-efix$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-licensing-operator
     labels:
@@ -127,6 +132,7 @@ postsubmits:
     - ^release-future$
     - ^release-eus$
     - ^release-efix$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-licensing-operator
     labels:
@@ -148,6 +154,7 @@ postsubmits:
     - ^release-future$
     - ^release-eus$
     - ^release-efix$
+    - ^release-ltsr$
     decorate: true
     labels:
       preset-service-account: "true"
