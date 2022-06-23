@@ -8,6 +8,7 @@ presubmits:
     - ^release-future$
     - ^release-efix$
     - ^release-eus$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-common-service-webhook
     rerun_command: /test check-ibm-common-service-webhook
@@ -29,6 +30,7 @@ presubmits:
     - ^release-future$
     - ^release-efix$
     - ^release-eus$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-common-service-webhook
     rerun_command: /test test-ibm-common-service-webhook-amd64
@@ -51,6 +53,7 @@ presubmits:
     - ^release-future$
     - ^release-efix$
     - ^release-eus$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-common-service-webhook
     rerun_command: /test test-ibm-common-service-webhook-ppc64le
@@ -73,6 +76,7 @@ presubmits:
     - ^release-future$
     - ^release-efix$
     - ^release-eus$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-common-service-webhook
     rerun_command: /test test-ibm-common-service-webhook-s390x
@@ -95,6 +99,7 @@ presubmits:
     - ^release-future$
     - ^release-efix$
     - ^release-eus$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-common-service-webhook
     rerun_command: /test build-ibm-common-service-webhook-amd64
@@ -117,6 +122,7 @@ presubmits:
     - ^release-future$
     - ^release-efix$
     - ^release-eus$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-common-service-webhook
     rerun_command: /test build-ibm-common-service-webhook-ppc64le
@@ -139,6 +145,7 @@ presubmits:
     - ^release-future$
     - ^release-efix$
     - ^release-eus$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-common-service-webhook
     rerun_command: /test build-ibm-common-service-webhook-s390x
@@ -162,6 +169,7 @@ postsubmits:
     - ^release-future$
     - ^release-efix$
     - ^release-eus$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-common-service-webhook
     spec:
@@ -181,6 +189,7 @@ postsubmits:
     - ^release-future$
     - ^release-efix$
     - ^release-eus$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-common-service-webhook
     spec:
@@ -200,6 +209,7 @@ postsubmits:
     - ^release-future$
     - ^release-efix$
     - ^release-eus$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-common-service-webhook
     spec:
@@ -219,6 +229,7 @@ postsubmits:
     - ^release-future$
     - ^release-efix$
     - ^release-eus$
+    - ^release-ltsr$
     decorate: true
     labels:
       preset-service-account: "true"
@@ -240,6 +251,7 @@ postsubmits:
     - ^release-future$
     - ^release-efix$
     - ^release-eus$
+    - ^release-ltsr$
     decorate: true
     labels:
       preset-service-account: "true"
@@ -261,6 +273,7 @@ postsubmits:
     - ^release-future$
     - ^release-efix$
     - ^release-eus$
+    - ^release-ltsr$
     decorate: true
     labels:
       preset-service-account: "true"
@@ -282,6 +295,7 @@ postsubmits:
     - ^release-future$
     - ^release-efix$
     - ^release-eus$
+    - ^release-ltsr$
     decorate: true
     labels:
       preset-service-account: "true"
