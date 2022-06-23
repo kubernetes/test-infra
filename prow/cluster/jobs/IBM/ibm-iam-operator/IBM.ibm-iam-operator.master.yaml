@@ -3,6 +3,7 @@ presubmits:
   - name: build_ibm-iam-operator
     branches:
     - ^master$
+    - ^release-ltsr$
     - ^release-cd$
     - ^release-efix$
     - ^release-eus$
@@ -25,6 +26,7 @@ presubmits:
   - name: check_ibm-iam-operator
     branches:
     - ^master$
+    - ^release-ltsr$
     - ^release-cd$
     - ^release-efix$
     - ^release-eus$
@@ -46,6 +48,7 @@ presubmits:
   - name: test_ibm-iam-operator
     branches:
     - ^master$
+    - ^release-ltsr$
     - ^release-cd$
     - ^release-efix$
     - ^release-eus$
@@ -71,6 +74,7 @@ postsubmits:
   - name: check_ibm-iam-operator_postsubmit
     branches:
     - ^master$
+    - ^release-ltsr$
     - ^release-cd$
     - ^release-efix$
     - ^release-eus$
@@ -89,6 +93,7 @@ postsubmits:
   - name: test_ibm-iam-operator_postsubmit
     branches:
     - ^master$
+    - ^release-ltsr$
     - ^release-cd$
     - ^release-efix$
     - ^release-eus$
@@ -108,6 +113,7 @@ postsubmits:
   - name: build_ibm-iam-operator_postsubmit
     branches:
     - ^master$
+    - ^release-ltsr$
     - ^release-cd$
     - ^release-efix$
     - ^release-eus$
@@ -127,6 +133,7 @@ postsubmits:
   - name: images_ibm-iam-operator_postsubmit
     branches:
     - ^master$
+    - ^release-ltsr$
     - ^release-cd$
     - ^release-efix$
     - ^release-eus$
