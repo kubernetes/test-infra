@@ -51,9 +51,11 @@ presubmits:
       timeout: 80m
     path_alias: k8s.io/cloud-provider-gcp
     labels:
-      preset-service-account: "true"
-      preset-k8s-ssh: "true"
+      preset-cloud-provider-gcp-e2e-common: "true"
+      preset-cloud-provider-gcp-e2e-full: "true"
       preset-dind-enabled: "true"
+      preset-k8s-ssh: "true"
+      preset-service-account: "true"
     annotations:
       testgrid-dashboards: provider-gcp-presubmits
       description: End to end test of kubernetes/cloud-provider-gcp.
