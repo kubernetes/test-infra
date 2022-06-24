@@ -738,7 +738,7 @@ func TestClean(t *testing.T) {
 	assertSetsEqual(deletedPodsTrusted, fkc[1].deletedPods, t, "did not delete correct trusted Pods")
 
 	remainingProwJobs := &prowv1.ProwJobList{}
-	if err := fpjc.List(context.Background(), remainingProwJobs); err != nil {
+	if err := clientWrapper.fpjc.List(context.Background(), remainingProwJobs); err != nil {
 		t.Fatalf("failed to get remaining prowjobs: %v", err)
 	}
 	actuallyDeletedProwJobs := sets.String{}

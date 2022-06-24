@@ -276,7 +276,7 @@ func TestAccumulateBatch(t *testing.T) {
 			}
 
 			inrepoconfig := config.InRepoConfig{}
-			if test.prowYAMLGetter != nil {
+			if test.prowYAMLGetter != "" {
 				inrepoconfig.Enabled = map[string]*bool{"*": utilpointer.BoolPtr(true)}
 			}
 			c := &syncController{
@@ -3194,7 +3194,7 @@ func TestPresubmitsByPull(t *testing.T) {
 			"/":       tc.presubmits,
 			"foo/bar": {{Reporter: config.Reporter{Context: "wrong-repo"}, AlwaysRun: true}},
 		})
-		if tc.prowYAMLGetter != nil {
+		if tc.prowYAMLGetter != "" {
 			cfg.InRepoConfig.Enabled = map[string]*bool{"*": utilpointer.BoolPtr(true)}
 			cfg.ProwYAMLGetterWithDefaults = tc.prowYAMLGetter
 		}
@@ -3810,7 +3810,7 @@ func TestPresubmitsForBatch(t *testing.T) {
 			}
 
 			inrepoconfig := config.InRepoConfig{}
-			if tc.prowYAMLGetter != nil {
+			if tc.prowYAMLGetter != "" {
 				inrepoconfig.Enabled = map[string]*bool{"*": utilpointer.BoolPtr(true)}
 			}
 			c := &syncController{
@@ -4917,7 +4917,7 @@ func TestBatchPickingConsidersPRThatIsCurrentlyBeingSeriallyRetested(t *testing.
 	configGetter := func() *config.Config {
 		return &config.Config{
 			ProwConfig: config.ProwConfig{Tide: config.Tide{
-				Queries:       config.TideQueries{{}},
+				Queries:       config.TideQueries{config.TideQuery{}},
 				MaxGoroutines: 1,
 			}},
 			JobConfig: config.JobConfig{PresubmitsStatic: map[string][]config.Presubmit{
@@ -5193,7 +5193,7 @@ func TestSerialRetestingConsidersPRThatIsCurrentlyBeingSRetested(t *testing.T) {
 	configGetter := func() *config.Config {
 		return &config.Config{
 			ProwConfig: config.ProwConfig{Tide: config.Tide{
-				Queries:       config.TideQueries{{}},
+				Queries:       config.TideQueries{config.TideQuery{}},
 				MaxGoroutines: 1,
 			}},
 			JobConfig: config.JobConfig{PresubmitsStatic: map[string][]config.Presubmit{
