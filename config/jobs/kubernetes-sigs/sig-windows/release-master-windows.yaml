@@ -215,7 +215,7 @@ periodics:
           - name: GINKGO_FOCUS
             value: (\[sig-windows\]|\[sig-scheduling\].SchedulerPreemption|\[sig-autoscaling\].\[Feature:HPA\]|\[sig-apps\].CronJob).*(\[Serial\]|\[Slow\])|(\[Serial\]|\[Slow\]).*(\[Conformance\]|\[NodeConformance\])|\[sig-api-machinery\].Garbage.collector
           - name: GINKGO_SKIP
-            value: \[LinuxOnly\]|device.plugin.for.Windows
+            value: \[LinuxOnly\]|device.plugin.for.Windows|RebootHost
   annotations:
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     testgrid-dashboards: sig-windows-master-release
@@ -261,47 +261,48 @@ periodics:
     testgrid-tab-name: capz-azuredisk-windows-2019
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     description: Run Azure Disk e2e test in a CAPZ cluster on Windows 2019 nodes
-- name: ci-kubernetes-e2e-azurefile-capz-windows-2019
-  interval: 48h
-  decorate: true
-  decoration_config:
-    timeout: 2h
-  labels:
-    preset-dind-enabled: "true"
-    preset-kind-volume-mounts: "true"
-    preset-azure-cred-only: "true"
-    preset-azure-anonymous-pull: "true"
-    preset-capz-windows-ci-entrypoint-common-main: "true"
-    preset-capz-windows-azuredisk: "true"
-  extra_refs:
-  - org: kubernetes-sigs
-    repo: cluster-api-provider-azure
-    base_ref: main
-    path_alias: sigs.k8s.io/cluster-api-provider-azure
-    workdir: true
-  - org: kubernetes-sigs
-    repo: azurefile-csi-driver
-    base_ref: master
-    path_alias: sigs.k8s.io/azurefile-csi-driver
-  spec:
-    containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220624-1a63fdd9f2-master
-        command:
-          - runner.sh
-          - ./scripts/ci-entrypoint.sh
-        args:
-          - bash
-          - -c
-          - >-
-            cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
-            make e2e-test
-        securityContext:
-          privileged: true
-  annotations:
-    testgrid-dashboards: sig-windows-master-release
-    testgrid-tab-name: capz-azurefile-windows-2019
-    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
-    description: Run Azure File e2e test in a CAPZ cluster on Windows 2019 nodes
+# disabling while job is debugged
+# - name: ci-kubernetes-e2e-azurefile-capz-windows-2019
+#   interval: 48h
+#   decorate: true
+#   decoration_config:
+#     timeout: 2h
+#   labels:
+#     preset-dind-enabled: "true"
+#     preset-kind-volume-mounts: "true"
+#     preset-azure-cred-only: "true"
+#     preset-azure-anonymous-pull: "true"
+#     preset-capz-windows-ci-entrypoint-common-main: "true"
+#     preset-capz-windows-azuredisk: "true"
+#   extra_refs:
+#   - org: kubernetes-sigs
+#     repo: cluster-api-provider-azure
+#     base_ref: main
+#     path_alias: sigs.k8s.io/cluster-api-provider-azure
+#     workdir: true
+#   - org: kubernetes-sigs
+#     repo: azurefile-csi-driver
+#     base_ref: master
+#     path_alias: sigs.k8s.io/azurefile-csi-driver
+#   spec:
+#     containers:
+#       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220624-1a63fdd9f2-master
+#         command:
+#           - runner.sh
+#           - ./scripts/ci-entrypoint.sh
+#         args:
+#           - bash
+#           - -c
+#           - >-
+#             cd ${GOPATH}/src/sigs.k8s.io/azurefile-csi-driver &&
+#             make e2e-test
+#         securityContext:
+#           privileged: true
+#   annotations:
+#     testgrid-dashboards: sig-windows-master-release
+#     testgrid-tab-name: capz-azurefile-windows-2019
+#     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
+#     description: Run Azure File e2e test in a CAPZ cluster on Windows 2019 nodes
 - name: ci-kubernetes-e2e-capz-master-containerd-nightly-windows
   interval: 24h
   decorate: true
