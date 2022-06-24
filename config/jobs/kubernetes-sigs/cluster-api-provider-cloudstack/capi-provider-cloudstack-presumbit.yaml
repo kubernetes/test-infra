@@ -1,0 +1,123 @@
+presets:
+- labels:
+    preset-image-build: "true"
+  env:
+  - name: AWS_SDK_LOAD_CONFIG
+    value: "true"
+  - name: GOPROXY
+  volumeMounts:
+  - name: docker-registry-config
+    readOnly: false
+    mountPath: /root/.docker
+  - name: run-buildkit
+    readOnly: false
+    mountPath: /run/buildkit
+  - name: entrypoint
+    readOnly: false
+    mountPath: /script
+  - name: status
+    readOnly: false
+    mountPath: /status
+  volumes:
+  # The files in this repo update the respective configmaps
+  # via the config-updater plugin in plugins.yaml for hook
+  - name: docker-registry-config
+    configMap:
+      name: build-setup
+      items:
+      - key: docker-ecr-config.json
+        path: config.json
+  - name: entrypoint
+    configMap:
+      name: buildkitd-entrypoint
+      items:
+      - key: buildkitd-entrypoint.sh
+        path: entrypoint.sh
+  - name: run-buildkit
+    emptyDir: {}
+  - name: status
+    emptyDir: {}
+- env:
+  - name: AWS_ROLE_SESSION_NAME
+    valueFrom:
+      fieldRef:
+        fieldPath: metadata.name
+
+
+presubmits:
+  kubernetes-sigs/cluster-api-provider-cloudstack:
+    - name: "capi-provider-cloudstack-presubmit-build"
+      labels:
+        preset-service-account: "true"
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+      always_run: false
+      run_if_changed: ".*"
+      max_concurrency: 10
+      decorate: true
+      decoration_config:
+        timeout: 1h
+      skip_report: false
+      annotations:
+        testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-cloudstack
+        testgrid-tab-name: pr-build
+      spec:
+        serviceaccountName: presubmits-build-account
+        automountServiceAccountToken: false
+        containers:
+        - name: build-container
+          image: public.ecr.aws/r9t0b9f2/capc-builder:latest
+          command:
+          - bash
+          - -c
+          - >
+            mv /mybin ./bin && make build
+          resources:
+            requests:
+              memory: "8Gi"
+              cpu: "1024m"
+            limits:
+              memory: "8Gi"
+              cpu: "1024m"
+    - name: capi-provider-cloudstack-presubmit-unit-test
+      labels:
+        preset-service-account: "true"
+        preset-dind-enabled: "true"
+        preset-kind-volume-mounts: "true"
+      always_run: false
+      run_if_changed: ".*"
+      max_concurrency: 10
+      decorate: true
+      decoration_config:
+        timeout: 1h
+      skip_report: false
+      annotations:
+        testgrid-dashboards: sig-cluster-lifecycle-cluster-api-provider-cloudstack
+        testgrid-tab-name: pr-unit-test
+      spec:
+        serviceaccountName: presubmits-build-account
+        automountServiceAccountToken: false
+        containers:
+        - name: build-container
+          image: public.ecr.aws/r9t0b9f2/capc-builder:latest
+          command:
+          - bash
+          - -c
+          - >
+            cp /secrets/cloud-config ./cloud-config && cat ./cloud-config && mv /mybin ./bin && make test
+          resources:
+            requests:
+              memory: "8Gi"
+              cpu: "1024m"
+            limits:
+              memory: "8Gi"
+              cpu: "1024m"
+          volumeMounts:
+          - mountPath: /secrets
+            name: secrets
+            readOnly: true
+        volumes:
+        - name: secrets
+          secret:
+            defaultMode: 256
+            secretName: cloudstack-token
