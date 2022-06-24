@@ -7,6 +7,7 @@ presubmits:
     - ^release-future$
     - ^release-efix$
     - ^release-eus$
+    - ^release-ltsr$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-platform-api-operator
@@ -28,6 +29,7 @@ presubmits:
     - ^release-future$
     - ^release-efix$
     - ^release-eus$
+    - ^release-ltsr$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-platform-api-operator
@@ -50,6 +52,7 @@ presubmits:
     - ^release-future$
     - ^release-efix$
     - ^release-eus$
+    - ^release-ltsr$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-platform-api-operator
@@ -72,6 +75,7 @@ presubmits:
     - ^release-future$
     - ^release-efix$
     - ^release-eus$
+    - ^release-ltsr$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-platform-api-operator
@@ -94,6 +98,7 @@ presubmits:
     - ^release-future$
     - ^release-efix$
     - ^release-eus$
+    - ^release-ltsr$
     labels:
       preset-service-account: "true"
     decorate: true
@@ -118,6 +123,7 @@ presubmits:
     - ^release-future$
     - ^release-efix$
     - ^release-eus$
+    - ^release-ltsr$
     labels:
       preset-service-account: "true"
     decorate: true
@@ -142,6 +148,7 @@ presubmits:
     - ^release-future$
     - ^release-efix$
     - ^release-eus$
+    - ^release-ltsr$
     labels:
       preset-service-account: "true"
     decorate: true
@@ -168,6 +175,7 @@ postsubmits:
     - ^release-future$
     - ^release-efix$
     - ^release-eus$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-platform-api-operator
     labels:
@@ -189,6 +197,7 @@ postsubmits:
     - ^release-future$
     - ^release-efix$
     - ^release-eus$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-platform-api-operator
     labels:
@@ -210,6 +219,7 @@ postsubmits:
     - ^release-future$
     - ^release-efix$
     - ^release-eus$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-platform-api-operator
     labels:
@@ -231,6 +241,7 @@ postsubmits:
     - ^release-future$
     - ^release-efix$
     - ^release-eus$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-platform-api-operator
     labels:

@@ -7,6 +7,7 @@ presubmits:
     - ^release-efix$
     - ^release-eus$
     - ^release-k$
+    - ^release-ltsr$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-cert-manager-operator
@@ -29,6 +30,7 @@ presubmits:
     - ^release-efix$
     - ^release-eus$
     - ^release-k$
+    - ^release-ltsr$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-cert-manager-operator
@@ -50,6 +52,7 @@ presubmits:
     - ^release-efix$
     - ^release-eus$
     - ^release-k$
+    - ^release-ltsr$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-cert-manager-operator
@@ -75,6 +78,7 @@ postsubmits:
     - ^release-efix$
     - ^release-eus$
     - ^release-k$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-cert-manager-operator
     spec:
@@ -93,6 +97,7 @@ postsubmits:
     - ^release-efix$
     - ^release-eus$
     - ^release-k$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-cert-manager-operator
     spec:
@@ -112,6 +117,7 @@ postsubmits:
     - ^release-efix$
     - ^release-eus$
     - ^release-k$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-cert-manager-operator
     spec:
@@ -131,6 +137,7 @@ postsubmits:
     - ^release-efix$
     - ^release-eus$
     - ^release-k$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-cert-manager-operator
     labels:
