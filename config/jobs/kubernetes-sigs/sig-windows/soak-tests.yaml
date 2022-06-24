@@ -89,6 +89,9 @@ periodics:
     decoration_config:
       timeout: 8h
     path_alias: k8s.io/perf-tests
+    tags:
+      - "perfDashPrefix: soak-tests-capz-windows-2019"
+      - "perfDashJobType: windows"
     labels:
       preset-service-account: "true"
       preset-dind-enabled: "true"
