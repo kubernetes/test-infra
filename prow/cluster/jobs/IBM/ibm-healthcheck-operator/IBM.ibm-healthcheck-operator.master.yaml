@@ -8,6 +8,7 @@ presubmits:
     - ^release-cd$
     - ^release-eus$
     - ^release-efix$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-healthcheck-operator
     rerun_command: /test check-ibm-healthcheck-operator
@@ -29,6 +30,7 @@ presubmits:
     - ^release-cd$
     - ^release-eus$
     - ^release-efix$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-healthcheck-operator
     rerun_command: /test test-ibm-healthcheck-operator-amd64
@@ -51,6 +53,7 @@ presubmits:
     - ^release-cd$
     - ^release-eus$
     - ^release-efix$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-healthcheck-operator
     rerun_command: /test test-ibm-healthcheck-operator-ppc64le
@@ -73,6 +76,7 @@ presubmits:
     - ^release-cd$
     - ^release-eus$
     - ^release-efix$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-healthcheck-operator
     rerun_command: /test test-ibm-healthcheck-operator-s390x
@@ -95,6 +99,7 @@ presubmits:
     - ^release-cd$
     - ^release-eus$
     - ^release-efix$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-healthcheck-operator
     rerun_command: /test build-ibm-healthcheck-operator-amd64
@@ -117,6 +122,7 @@ presubmits:
     - ^release-cd$
     - ^release-eus$
     - ^release-efix$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-healthcheck-operator
     rerun_command: /test build-ibm-healthcheck-operator-ppc64le
@@ -139,6 +145,7 @@ presubmits:
     - ^release-cd$
     - ^release-eus$
     - ^release-efix$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-healthcheck-operator
     rerun_command: /test build-ibm-healthcheck-operator-s390x
@@ -162,6 +169,7 @@ postsubmits:
     - ^release-cd$
     - ^release-eus$
     - ^release-efix$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-healthcheck-operator
     spec:
@@ -181,6 +189,7 @@ postsubmits:
     - ^release-cd$
     - ^release-eus$
     - ^release-efix$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-healthcheck-operator
     spec:
@@ -200,6 +209,7 @@ postsubmits:
     - ^release-cd$
     - ^release-eus$
     - ^release-efix$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-healthcheck-operator
     spec:
@@ -219,6 +229,7 @@ postsubmits:
     - ^release-cd$
     - ^release-eus$
     - ^release-efix$
+    - ^release-ltsr$
     decorate: true
     labels:
       preset-service-account: "true"
@@ -240,6 +251,7 @@ postsubmits:
     - ^release-cd$
     - ^release-eus$
     - ^release-efix$
+    - ^release-ltsr$
     decorate: true
     labels:
       preset-service-account: "true"
@@ -261,6 +273,7 @@ postsubmits:
     - ^release-cd$
     - ^release-eus$
     - ^release-efix$
+    - ^release-ltsr$
     decorate: true
     labels:
       preset-service-account: "true"
@@ -282,6 +295,7 @@ postsubmits:
     - ^release-cd$
     - ^release-eus$
     - ^release-efix$
+    - ^release-ltsr$
     decorate: true
     labels:
       preset-service-account: "true"
