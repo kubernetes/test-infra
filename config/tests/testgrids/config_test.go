@@ -70,6 +70,7 @@ var (
 		"wg",
 		"provider",
 		"kubernetes-clients",
+		"kcp",
 	}
 	dashboardPrefixes = [][]string{orgs, companies}
 

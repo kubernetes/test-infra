@@ -1,0 +1,29 @@
+test_groups:
+  - name: pull-ci-kcp-dev-kcp-main-test
+    gcs_prefix: origin-ci-test/pr-logs/pull/kcp-dev_kcp
+  - name: pull-ci-kcp-dev-kcp-main-e2e
+    gcs_prefix: origin-ci-test/pr-logs/pull/kcp-dev_kcp
+  - name: pull-ci-kcp-dev-kcp-main-e2e-multiple-runs
+    gcs_prefix: origin-ci-test/pr-logs/pull/kcp-dev_kcp
+
+dashboards:
+  - name: kcp-main
+    dashboard_tab:
+      - name: test
+        test_group_name: pull-ci-kcp-dev-kcp-main-test
+        open_test_template:
+          url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+        results_url_template:
+          url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+      - name: e2e
+        test_group_name: pull-ci-kcp-dev-kcp-main-e2e
+        open_test_template:
+          url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+        results_url_template:
+          url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+      - name: e2e-multiple-runs
+        test_group_name: pull-ci-kcp-dev-kcp-main-e2e-multiple-runs
+        open_test_template:
+          url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+        results_url_template:
+          url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
