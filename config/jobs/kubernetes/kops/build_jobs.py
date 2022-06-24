@@ -125,10 +125,6 @@ def build_test(cloud='aws',
 
     node_ig_overrides = ""
     cp_ig_overrides = ""
-    if distro == "flatcar":
-        # https://github.com/flatcar-linux/Flatcar/issues/220
-        node_ig_overrides += "spec.instanceMetadata.httpTokens=optional"
-        cp_ig_overrides += "spec.instanceMetadata.httpTokens=optional"
 
     if tab in skip_jobs:
         return None
