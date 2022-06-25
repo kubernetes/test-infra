@@ -37,13 +37,14 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/clock"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
+	"k8s.io/utils/clock"
+	clocktesting "k8s.io/utils/clock/testing"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	fakectrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -314,7 +315,7 @@ func handleTot(w http.ResponseWriter, r *http.Request) {
 }
 
 func TestSyncTriggeredJobs(t *testing.T) {
-	fakeClock := clock.NewFakeClock(time.Now().Truncate(1 * time.Second))
+	fakeClock := clocktesting.NewFakeClock(time.Now().Truncate(1 * time.Second))
 	pendingTime := metav1.NewTime(fakeClock.Now())
 
 	type testCase struct {
