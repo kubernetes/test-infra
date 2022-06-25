@@ -1028,6 +1028,16 @@ def generate_presubmits_e2e():
         ),
         presubmit_test(
             cloud='gce',
+            k8s_version='stable',
+            kops_channel='alpha',
+            name='pull-kops-e2e-k8s-gce-long-cluster-name',
+            networking='cilium',
+            tab_name='e2e-gce-long-name',
+            always_run=False,
+            extra_flags=["--gce-service-account=default"], # Workaround for test-infra#24747
+        ),
+        presubmit_test(
+            cloud='gce',
             k8s_version='ci',
             kops_channel='alpha',
             name='pull-kops-e2e-k8s-gce-ci',
