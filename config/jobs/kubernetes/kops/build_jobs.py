@@ -413,7 +413,7 @@ def generate_grid():
     for container_runtime in container_runtimes:
         for networking in ['kubenet', 'calico', 'cilium']: # TODO: all networking_options:
             for distro in ['u2004']: # TODO: all distro_options:
-                for k8s_version in ["1.22"]: # TODO: all k8s_versions:
+                for k8s_version in ["1.24"]: # TODO: all k8s_versions:
                     for kops_version in [None]: # TODO: all kops_versions:
                         results.append(
                             build_test(cloud="gce",
