@@ -143,7 +143,7 @@ distro_images = {
     'amzn2': latest_aws_image('137112412989', 'amzn2-ami-kernel-5.10-hvm-*-x86_64-gp2'),
     'deb10': latest_aws_image('136693071363', 'debian-10-amd64-*'),
     'deb11': latest_aws_image('136693071363', 'debian-11-amd64-*'),
-    'flatcar': latest_aws_image('075585003325', 'Flatcar-stable-*-hvm'),
+    'flatcar': latest_aws_image('075585003325', 'Flatcar-beta-*-hvm'),
     'rhel8': latest_aws_image('309956199498', 'RHEL-8.*_HVM-*-x86_64-0-Hourly2-GP2'),
     'rocky8': latest_aws_image('792107900819', 'Rocky-8-ec2-8.*.x86_64'),
     'u1804': latest_aws_image('099720109477', 'ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-*'), # pylint: disable=line-too-long
