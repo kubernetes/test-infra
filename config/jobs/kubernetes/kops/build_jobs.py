@@ -780,7 +780,7 @@ def generate_network_plugins():
 def generate_upgrades():
 
     kops23 = 'v1.23.2'
-    kops24 = 'v1.24.0-beta.2'
+    kops24 = 'v1.24.0-beta.3'
 
     versions_list = [
         #  kops    k8s          kops      k8s
