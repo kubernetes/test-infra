@@ -1292,9 +1292,6 @@ func (c *Configuration) Validate() error {
 		logrus.Warn("no plugins specified-- check syntax?")
 	}
 
-	if c.Owners.LabelsDenyList != nil {
-		return errors.New("labels_denylist cannot be supplied")
-	}
 	// Defaulting should run before validation.
 	c.setDefaults()
 	// Regexp compilation should run after defaulting, but before validation.
