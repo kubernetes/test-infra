@@ -416,13 +416,13 @@ def generate_grid():
                 for kops_version in [None]: # TODO: all kops_versions:
                     results.append(
                         build_test(cloud="gce",
-                                    distro=distro,
-                                    extra_dashboards=['kops-grid'],
-                                    k8s_version=k8s_version,
-                                    kops_version=kops_version,
-                                    networking=networking,
-                                    extra_flags=["--gce-service-account=default"], # Workaround for test-infra#24747 # pylint: disable=line-too-long
-                                    )
+                                   distro=distro,
+                                   extra_dashboards=['kops-grid'],
+                                   k8s_version=k8s_version,
+                                   kops_version=kops_version,
+                                   networking=networking,
+                                   extra_flags=["--gce-service-account=default"], # Workaround for test-infra#24747 # pylint: disable=line-too-long
+                                   )
                     )
 
     return filter(None, results)
