@@ -21,6 +21,7 @@ import (
 	"flag"
 	"net/http"
 	"os"
+	"os/exec"
 	"strconv"
 	"time"
 
@@ -113,12 +114,20 @@ func main() {
 	metrics.ExposeMetrics("sub", configAgent.Config().PushGateway, flagOptions.instrumentationOptions.MetricsPort)
 	pprof.Instrument(flagOptions.instrumentationOptions)
 
+	// If we are provided credentials for Git hosts, use them. These credentials
+	// hold per-host information in them so it's safe to set them globally.
+	if flagOptions.cookiefilePath != "" {
+		cmd := exec.Command("git", "config", "--global", "http.cookiefile", flagOptions.cookiefilePath)
+		if err := cmd.Run(); err != nil {
+			logrus.WithError(err).Fatal("unable to set cookiefile")
+		}
+	}
+
 	cacheGetter := subscriber.InRepoConfigCacheGetter{
-		CookieFilePath: flagOptions.cookiefilePath,
-		CacheSize:      flagOptions.inRepoConfigCacheSize,
-		Agent:          configAgent,
-		GitHubOptions:  flagOptions.github,
-		DryRun:         flagOptions.dryRun,
+		CacheSize:     flagOptions.inRepoConfigCacheSize,
+		Agent:         configAgent,
+		GitHubOptions: flagOptions.github,
+		DryRun:        flagOptions.dryRun,
 	}
 
 	s := &subscriber.Subscriber{

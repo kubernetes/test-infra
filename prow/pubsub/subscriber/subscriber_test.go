@@ -307,11 +307,10 @@ func TestHandleMessage(t *testing.T) {
 				ConfigAgent:   ca,
 				Reporter:      &fr,
 				InRepoConfigCacheGetter: &InRepoConfigCacheGetter{
-					CookieFilePath: "examplePath",
-					CacheSize:      100,
-					Agent:          ca,
-					GitHubOptions:  flagutil.GitHubOptions{},
-					DryRun:         true,
+					CacheSize:     100,
+					Agent:         ca,
+					GitHubOptions: flagutil.GitHubOptions{},
+					DryRun:        true,
 				},
 			}
 			if tc.pe != nil {

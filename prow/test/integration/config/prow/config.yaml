@@ -45,3 +45,11 @@ plank:
 pubsub_subscriptions:
   "project1":
   - "subscription1" # Subscribed to "topic1".
+
+in_repo_config:
+  enabled:
+   "org1/repo1": true
+   "fakegitserver.default/repo/repo2": true
+   "fakegitserver.default/repo/repo3": true
+   "fakegitserver.default/repo/org1/repo4": true
+   "fakegitserver.default/repo/org1/repo5": true

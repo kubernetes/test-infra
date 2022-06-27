@@ -62,12 +62,11 @@ type prowCfgClient interface {
 }
 
 type InRepoConfigCacheGetter struct {
-	CookieFilePath string
-	CacheSize      int
-	Agent          *config.Agent
-	mu             sync.Mutex
-	GitHubOptions  flagutil.GitHubOptions
-	DryRun         bool
+	CacheSize     int
+	Agent         *config.Agent
+	mu            sync.Mutex
+	GitHubOptions flagutil.GitHubOptions
+	DryRun        bool
 
 	CacheMap map[string]*config.InRepoConfigCache
 }
@@ -85,11 +84,8 @@ func (irc *InRepoConfigCacheGetter) getCache(cloneURI, host string) (*config.InR
 	if irc.GitHubOptions.Host != "" && (irc.GitHubOptions.TokenPath != "" || irc.GitHubOptions.AppPrivateKeyPath != "") {
 		key = irc.GitHubOptions.Host
 		// We are using Gerrit with IRC
-	} else if irc.CookieFilePath != "" {
-		key = cloneURI
-		// Just return a nil cache
 	} else {
-		return nil, nil
+		key = cloneURI
 	}
 
 	if cache, ok := irc.CacheMap[key]; ok {
@@ -107,9 +103,8 @@ func (irc *InRepoConfigCacheGetter) getCache(cloneURI, host string) (*config.InR
 		gitClientFactory = git.ClientFactoryFrom(gitClient)
 	} else {
 		opts := git.ClientFactoryOpts{
-			CloneURI:       cloneURI,
-			Host:           host,
-			CookieFilePath: irc.CookieFilePath,
+			CloneURI: cloneURI,
+			Host:     host,
 		}
 		gitClientFactory, err = git.NewClientFactory(opts.Apply)
 		if err != nil {
