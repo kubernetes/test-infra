@@ -280,7 +280,7 @@ metadata:
   namespace: default
 spec:
   backendType: gcpSecretsManager
-  projectId: ${PROJECT}
+  projectId: ${PROW_SERVICE_PROJECT}
   data:
   - key: ${gsm_secret_name}
     name: kubeconfig
