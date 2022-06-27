@@ -76,7 +76,7 @@ func TestPubSubSubscriptions(t *testing.T) {
 	t.Parallel()
 
 	const (
-		PubsubEmulatorHost = "localhost:30303"
+		PubsubEmulatorHost = "localhost"
 		UidLabel           = "integration-test/uid"
 		Repo1HEADsha       = "8c5dc6fe1b5a63200f23a2364011e8270f0f7cd0"
 		Repo2HEADsha       = "0c035e2664a380bf17cbef8ba78c6381cc78e1ce"
@@ -400,7 +400,7 @@ this-is-from-repo5
 				t.Fatalf("Failed creating clients for cluster %q: %v", clusterContext, err)
 			}
 
-			fpsClient, err := fakepubsub.NewClient("project1", PubsubEmulatorHost)
+			fpsClient, err := fakepubsub.NewClient("project1", fmt.Sprintf("%s:%d", PubsubEmulatorHost, *fakepubsubNodePort))
 			if err != nil {
 				t.Fatalf("Failed creating fakepubsub client")
 			}

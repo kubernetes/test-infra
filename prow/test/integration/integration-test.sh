@@ -129,6 +129,7 @@ function main() {
   local build_images
   local resource
   local resources_val
+  local fakepubsub_node_port
   setup_kind_cluster=0
   setup_prow_components=0
 
@@ -190,10 +191,16 @@ function main() {
     esac
   done
 
-  # If in CI (pull-test-infra-integration presubmit job), use the ARTIFACTS
-  # variable to save log output.
+  # By default use 30303 for fakepubsub.
+  fakepubsub_node_port="30303"
+
+  # If in CI (pull-test-infra-integration presubmit job), do some things slightly differently.
   if [[ -n "${ARTIFACTS:-}" ]]; then
+    # Use the ARTIFACTS variable to save log output.
     teardown_args+=(-save-logs="${ARTIFACTS}/kind_logs")
+    # Randomize the node port used for the fakepubsub service.
+    fakepubsub_node_port="$(get_random_node_port)"
+    log "Using randomized port ${fakepubsub_node_port} for fakepubsub"
   fi
 
   if [[ -n "${teardown_args[*]}" ]]; then
@@ -212,11 +219,14 @@ function main() {
   done
 
   if ((setup_kind_cluster)); then
-    "${SCRIPT_ROOT}"/setup-kind-cluster.sh
+    "${SCRIPT_ROOT}"/setup-kind-cluster.sh \
+      -fakepubsub-node-port="${fakepubsub_node_port}"
   fi
 
   if ((setup_prow_components)); then
-    "${SCRIPT_ROOT}"/setup-prow-components.sh ${build_images:+"-build=${build_images}"}
+    "${SCRIPT_ROOT}"/setup-prow-components.sh \
+      ${build_images:+"-build=${build_images}"} \
+      -fakepubsub-node-port="${fakepubsub_node_port}"
   fi
 
   build_gotestsum
@@ -239,7 +249,8 @@ function main() {
     --format "${summary_format}" \
     --junitfile="${JUNIT_RESULT_DIR}/junit-integration.xml" \
     -- "${SCRIPT_ROOT}/test" \
-    --run-integration-test ${tests_to_run[@]:+"${tests_to_run[@]}"}
+    --run-integration-test ${tests_to_run[@]:+"${tests_to_run[@]}"} \
+    --fakepubsub-node-port "${fakepubsub_node_port}"
 }
 
 function build_gotestsum() {

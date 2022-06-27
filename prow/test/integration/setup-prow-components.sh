@@ -79,6 +79,9 @@ Options:
         whatever reason). Technically, you can delete pods manually with kubectl
         to achieve the same effect; this flag is given here as a convenience.
 
+    -fakepubsub-node-port='':
+        Make the fakepubsub service use the provided node port (default 30303).
+
     -help:
         Display this help message.
 EOF
@@ -89,6 +92,7 @@ function main() {
   declare -a components
   local images_val
   local components_val
+  local fakepubsub_node_port
 
   for arg in "$@"; do
     case "${arg}" in
@@ -114,6 +118,9 @@ function main() {
           fi
         done
         ;;
+      -fakepubsub-node-port=*)
+        fakepubsub_node_port="${arg#-fakepubsub-node-port=}"
+        ;;
       -help)
         usage
         return
@@ -133,7 +140,7 @@ function main() {
     delete_components "${components[@]}"
   fi
 
-  deploy_prow
+  deploy_prow "${fakepubsub_node_port}"
 
   wait_for_nginx
 }
@@ -245,6 +252,8 @@ function delete_components() {
 # affected pods.
 function deploy_prow() {
   local component
+  local fakepubsub_node_port
+  fakepubsub_node_port="${1:-30303}"
   log "Deploying Prow components"
 
   # Even though we apply the entire Prow configuration, Kubernetes is smart
@@ -256,37 +265,49 @@ function deploy_prow() {
   do_kubectl create configmap job-config --from-file=./jobs --dry-run=client -oyaml | do_kubectl apply -f - &
   popd
 
-  deploy_components
+  deploy_components "${fakepubsub_node_port}"
 
   log "Prow components are ready"
 }
 
 function deploy_components() {
   local item
+  local fakepubsub_node_port
+  fakepubsub_node_port="${1:-30303}"
   for item in "${PROW_DEPLOYMENT_ORDER[@]}"; do
-    deploy_item "${item}"
+    deploy_item "${item}" "${fakepubsub_node_port}"
   done
 }
 
 function deploy_item() {
   local item
   local component
+  local fakepubsub_node_port
   item="${1}"
+  fakepubsub_node_port="${2:-30303}"
 
-  if [[ "${item}" =~ WAIT ]]; then
-    component="${item#WAIT_}"
-    if ! wait_for_readiness "${component}"; then
-      # If a component fails to start up and we're in CI, record logs.
-      if [[ -n "${ARTIFACTS:-}" ]]; then
-        >&2 do_kubectl get pods
-        "${SCRIPT_ROOT}/teardown.sh" "-save-logs=${ARTIFACTS}/kind_logs"
+  case "${item}" in
+    WAIT_*)
+      component="${item#WAIT_}"
+      if ! wait_for_readiness "${component}"; then
+        # If a component fails to start up and we're in CI, record logs.
+        if [[ -n "${ARTIFACTS:-}" ]]; then
+          >&2 do_kubectl get pods
+          "${SCRIPT_ROOT}/teardown.sh" "-save-logs=${ARTIFACTS}/kind_logs"
+        fi
+        return 1
       fi
-      return 1
-    fi
-    return
-  fi
-
-  do_kubectl apply --server-side=true -f "${SCRIPT_ROOT}"/config/prow/cluster/"${item}" &
+      ;;
+    # Special-case for fakepubsub which requires a sed-replacement for the
+    # randomized node port number.
+    fakepubsub.yaml)
+      sed "s/FAKEPUBSUB_RANDOM_NODE_PORT/${fakepubsub_node_port}/" "${SCRIPT_ROOT}"/config/prow/cluster/"${item}" |
+        do_kubectl apply --server-side=true -f - &
+      ;;
+    *)
+      do_kubectl apply --server-side=true -f "${SCRIPT_ROOT}"/config/prow/cluster/"${item}" &
+      ;;
+  esac
 }
 
 function wait_for_nginx() {
