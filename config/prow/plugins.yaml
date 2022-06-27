@@ -922,6 +922,7 @@ plugins:
     plugins:
     - require-matching-label
     - milestone
+    - project
 
   kubernetes/k8s.io:
     plugins:
