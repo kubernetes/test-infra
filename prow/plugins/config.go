@@ -192,10 +192,6 @@ type Owners struct {
 	// This check is performed by the verify-owners plugin.
 	LabelsDenyList []string `json:"labels_denylist,omitempty"`
 
-	// LabelsBlackList will be removed after October 2021, use
-	// labels_denylist instead
-	LabelsBlackList []string `json:"labels_blacklist,omitempty"`
-
 	// Filenames allows configuring repos to use a separate set of filenames for
 	// any plugin that interacts with these files. Keys are in "org/repo" format.
 	Filenames map[string]ownersconfig.Filenames `json:"filenames,omitempty"`
@@ -1019,11 +1015,7 @@ func (c *Configuration) setDefaults() {
 		c.SigMention.Regexp = `(?m)@kubernetes/sig-([\w-]*)-(misc|test-failures|bugs|feature-requests|proposals|pr-reviews|api-reviews)`
 	}
 	if c.Owners.LabelsDenyList == nil {
-		if c.Owners.LabelsBlackList != nil {
-			c.Owners.LabelsDenyList = c.Owners.LabelsBlackList
-		} else {
-			c.Owners.LabelsDenyList = []string{labels.Approved, labels.LGTM}
-		}
+		c.Owners.LabelsDenyList = []string{labels.Approved, labels.LGTM}
 	}
 	for _, milestone := range c.RepoMilestone {
 		if milestone.MaintainersFriendlyName == "" {
@@ -1300,9 +1292,6 @@ func (c *Configuration) Validate() error {
 		logrus.Warn("no plugins specified-- check syntax?")
 	}
 
-	if c.Owners.LabelsBlackList != nil && c.Owners.LabelsDenyList != nil {
-		return errors.New("labels_blacklist and labels_denylist cannot be both supplied")
-	}
 	// Defaulting should run before validation.
 	c.setDefaults()
 	// Regexp compilation should run after defaulting, but before validation.
