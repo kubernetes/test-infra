@@ -148,7 +148,7 @@ func (f *fghc) compareExpected(t *testing.T, org, repo string, num int, expected
 }
 
 func TestHandleIssueCommentEvent(t *testing.T) {
-
+	t.Parallel()
 	pr := func() *github.PullRequest {
 		pr := github.PullRequest{
 			Base: github.PullRequestBranch{
@@ -251,6 +251,7 @@ func TestHandleIssueCommentEvent(t *testing.T) {
 }
 
 func TestHandlePullRequestEvent(t *testing.T) {
+	t.Parallel()
 	oldSleep := sleep
 	sleep = func(time.Duration) {}
 	defer func() { sleep = oldSleep }()
@@ -310,31 +311,36 @@ func TestHandlePullRequestEvent(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		fake := newFakeClient(nil, tc.labels, tc.mergeable, nil)
-		pre := &github.PullRequestEvent{
-			Action: github.PullRequestActionSynchronize,
-			PullRequest: github.PullRequest{
-				Base: github.PullRequestBranch{
-					Repo: github.Repo{
-						Name:  "repo",
-						Owner: github.User{Login: "org"},
+		t.Run(tc.name, func(t *testing.T) {
+			fake := newFakeClient(nil, tc.labels, tc.mergeable, nil)
+			pre := &github.PullRequestEvent{
+				Action: github.PullRequestActionSynchronize,
+				PullRequest: github.PullRequest{
+					Base: github.PullRequestBranch{
+						Repo: github.Repo{
+							Name:  "repo",
+							Owner: github.User{Login: "org"},
+						},
 					},
+					Merged: tc.merged,
+					State:  tc.state,
+					Number: 5,
 				},
-				Merged: tc.merged,
-				State:  tc.state,
-				Number: 5,
-			},
-		}
-		t.Logf("Running test scenario: %q", tc.name)
-		if err := HandlePullRequestEvent(logrus.WithField("plugin", PluginName), fake, pre); err != nil {
-			t.Fatalf("Unexpected error handling event: %v.", err)
-		}
-		fake.compareExpected(t, "org", "repo", 5, tc.expectedAdded, tc.expectedRemoved, tc.expectComment, tc.expectDeletion)
+			}
+			t.Logf("Running test scenario: %q", tc.name)
+			if err := HandlePullRequestEvent(logrus.WithField("plugin", PluginName), fake, pre); err != nil {
+				t.Fatalf("Unexpected error handling event: %v.", err)
+			}
+			fake.compareExpected(t, "org", "repo", 5, tc.expectedAdded, tc.expectedRemoved, tc.expectComment, tc.expectDeletion)
+		})
 	}
 }
 
 func TestHandleAll(t *testing.T) {
+	t.Parallel()
 	testPRs := []struct {
+		name string
+
 		labels    []string
 		mergeable bool
 		state     githubql.PullRequestState
@@ -343,21 +349,25 @@ func TestHandleAll(t *testing.T) {
 		expectComment, expectDeletion  bool
 	}{
 		{
+			name:      "PR State Merged",
 			mergeable: false,
 			state:     githubql.PullRequestStateMerged,
 			labels:    []string{labels.LGTM, labels.Approved},
 		},
 		{
+			name:      "PR State Closed",
 			mergeable: false,
 			state:     githubql.PullRequestStateClosed,
 			labels:    []string{labels.LGTM, labels.Approved},
 		},
 		{
+			name:      "PR State Closed with need-rebase label",
 			mergeable: false,
 			state:     githubql.PullRequestStateClosed,
 			labels:    []string{labels.LGTM, labels.Approved, labels.NeedsRebase},
 		},
 		{
+			name:      "PR State Open with non-mergeable",
 			mergeable: false,
 			state:     githubql.PullRequestStateOpen,
 			labels:    []string{labels.LGTM, labels.Approved},
@@ -366,6 +376,7 @@ func TestHandleAll(t *testing.T) {
 			expectComment: true,
 		},
 		{
+			name:      "PR State Open with mergeable",
 			mergeable: true,
 			state:     githubql.PullRequestStateOpen,
 			labels:    []string{labels.LGTM, labels.Approved, labels.NeedsRebase},
@@ -408,7 +419,9 @@ func TestHandleAll(t *testing.T) {
 		t.Fatalf("Unexpected error handling all prs: %v.", err)
 	}
 	for i, pr := range testPRs {
-		fake.compareExpected(t, "", "", i, pr.expectedAdded, pr.expectedRemoved, pr.expectComment, pr.expectDeletion)
+		t.Run(pr.name, func(t *testing.T) {
+			fake.compareExpected(t, "", "", i, pr.expectedAdded, pr.expectedRemoved, pr.expectComment, pr.expectDeletion)
+		})
 	}
 }
 
@@ -608,14 +621,16 @@ func TestCache(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		fake := NewFakeCache(tc.validTime)
-		t.Logf("Running test scenario: %q", tc.name)
-		for idx, key := range tc.keys {
-			age := fake.Get(key)
-			if age != tc.expected[idx] {
-				t.Errorf("Unexpected cache age %t, expected %t.", age, tc.expected[idx])
+		t.Run(tc.name, func(t *testing.T) {
+			fake := NewFakeCache(tc.validTime)
+			t.Logf("Running test scenario: %q", tc.name)
+			for idx, key := range tc.keys {
+				age := fake.Get(key)
+				if age != tc.expected[idx] {
+					t.Errorf("Unexpected cache age %t, expected %t.", age, tc.expected[idx])
+				}
+				fake.Set(key)
 			}
-			fake.Set(key)
-		}
+		})
 	}
 }
