@@ -110,9 +110,14 @@ func (o *options) parseArgs(flags *flag.FlagSet, args []string) error {
 		return fmt.Errorf("--maximum-removal-delta=%f must be a non-negative number less than 1.0", o.maximumDelta)
 	}
 
-	if o.confirm && o.dump != "" {
+	if o.confirm && o.dump != "" && o.github.AppID == "" {
 		return fmt.Errorf("--confirm cannot be used with --dump=%s", o.dump)
 	}
+
+	if o.dump != "" && !o.confirm && o.github.AppID != "" {
+		return fmt.Errorf("--confirm has to be used with --dump=%s and --github-app-id", o.dump)
+	}
+
 	if o.config == "" && o.dump == "" {
 		return errors.New("--config-path or --dump required")
 	}
@@ -152,7 +157,7 @@ func main() {
 	}
 
 	if o.dump != "" {
-		ret, err := dumpOrgConfig(githubClient, o.dump, o.ignoreSecretTeams)
+		ret, err := dumpOrgConfig(githubClient, o.dump, o.ignoreSecretTeams, o.github.AppID)
 		if err != nil {
 			logrus.WithError(err).Fatalf("Dump %s failed to collect current data.", o.dump)
 		}
@@ -202,7 +207,7 @@ type dumpClient interface {
 	BotUser() (*github.UserData, error)
 }
 
-func dumpOrgConfig(client dumpClient, orgName string, ignoreSecretTeams bool) (*org.Config, error) {
+func dumpOrgConfig(client dumpClient, orgName string, ignoreSecretTeams bool, appID string) (*org.Config, error) {
 	out := org.Config{}
 	meta, err := client.GetOrg(orgName)
 	if err != nil {
@@ -233,7 +238,7 @@ func dumpOrgConfig(client dumpClient, orgName string, ignoreSecretTeams bool) (*
 	for _, m := range admins {
 		logrus.WithField("login", m.Login).Debug("Recording admin.")
 		out.Admins = append(out.Admins, m.Login)
-		if runningAs.Login == m.Login {
+		if runningAs.Login == m.Login || appID != "" {
 			runningAsAdmin = true
 		}
 	}
