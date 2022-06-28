@@ -23,6 +23,7 @@ import (
 )
 
 var runIntegrationTest = flag.Bool("run-integration-test", false, "The switch for whether run integration test or not")
+var fakepubsubNodePort = flag.Int("fakepubsub-node-port", 30303, "The port to use for connecting sub tests with the fakepubsub service (for configuring PUBSUB_EMULATOR_HOST)")
 
 func TestMain(m *testing.M) {
 	flag.Parse()

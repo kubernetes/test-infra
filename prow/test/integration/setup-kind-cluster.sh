@@ -22,7 +22,34 @@ set -o pipefail
 SCRIPT_ROOT="$(cd "$(dirname "$0")" && pwd)"
 source "${SCRIPT_ROOT}"/lib.sh
 
+function usage() {
+  >&2 cat <<EOF
+Set up the KIND cluster. Ultimately, this results in the running of 2 docker containers, called kind-prow-integration-control-plane and kind-prow-integration-registry.
+
+Usage: $0 [options]
+
+Examples:
+  # Setup the KIND cluster with default settings (this is what you want when you
+  # are running this script manually for debugging).
+  $0
+
+  # Use a different node port (32222) for the KIND cluster than the default
+  # 30303 one. This port is used by fakepubsub. Note that the port must be in
+  # the range 30000-32767.
+  $0 -fakepubsub-node-port=32222
+
+Options:
+    -fakepubsub-node-port='':
+        Make the fakepubsub service use the provided node port (default 30303).
+
+    -help:
+        Display this help message.
+EOF
+}
+
 function main() {
+  local fakepubsub_node_port
+  fakepubsub_node_port=30303
   # If we abort the setup script with Ctrl+C, delete the cluster because the
   # setup process was interrupted.
   # shellcheck disable=SC2064
@@ -32,6 +59,22 @@ function main() {
     HOME="$(cd ~ && pwd -P)"
     export HOME
   fi
+
+  for arg in "$@"; do
+    case "${arg}" in
+      -fakepubsub-node-port=*)
+        fakepubsub_node_port="${arg#-fakepubsub-node-port=}"
+        ;;
+      -help)
+        usage
+        return
+        ;;
+      --*)
+        echo >&2 "cannot use flags with two leading dashes ('--...'), use single dashes instead ('-...')"
+        return 1
+        ;;
+    esac
+  done
 
   # The KIND cluster is configured to use a special local docker registry; this
   # registry must exist before we bring up the cluster. See https://github.com/kubernetes/enhancements/tree/master/keps/sig-cluster-lifecycle/generic/1755-communicating-a-local-registry for more information.
@@ -47,7 +90,7 @@ function main() {
     log "Using existing KIND cluster"
   else
     "${SCRIPT_ROOT}/teardown.sh" -kind-cluster
-    create_cluster
+    create_cluster "${fakepubsub_node_port:-30303}"
   fi
   setup_cluster
 
@@ -69,6 +112,10 @@ function cluster_running() {
 # See: https://kind.sigs.k8s.io/docs/user/ingress/#create-cluster.
 function create_cluster() {
   log "Creating KIND cluster"
+
+  local fakepubsub_node_port
+  fakepubsub_node_port="${1:-30303}"
+
   cat <<EOF | kind create cluster --name "${_KIND_CLUSTER_NAME}" --config=-
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
@@ -91,8 +138,8 @@ nodes:
   - containerPort: 443
     hostPort: 443
     protocol: TCP
-  - containerPort: 30303
-    hostPort: 30303
+  - containerPort: ${fakepubsub_node_port}
+    hostPort: ${fakepubsub_node_port}
     protocol: TCP
 EOF
 
@@ -145,4 +192,4 @@ function populate_registry() {
   docker push "${dest}"
 }
 
-main
+main "$@"
