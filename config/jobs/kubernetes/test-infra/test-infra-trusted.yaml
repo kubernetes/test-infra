@@ -151,7 +151,7 @@ postsubmits:
     max_concurrency: 1
     spec:
       containers:
-      - image: gcr.io/k8s-prow/hmac:v20220627-1557d615e7
+      - image: gcr.io/k8s-prow/hmac:v20220628-2cb592725d
         command:
         - hmac
         args:
@@ -391,7 +391,7 @@ postsubmits:
       serviceAccountName: gencred-refresher
       containers:
       - name: gencred
-        image: gcr.io/k8s-prow/gencred:v20220627-1557d615e7
+        image: gcr.io/k8s-prow/gencred:v20220628-2cb592725d
         command:
         - gencred
         args:
@@ -438,7 +438,7 @@ postsubmits:
     spec:
       serviceAccountName: testgrid-config-updater
       containers:
-      - image: gcr.io/k8s-prow/configurator:v20220627-1557d615e7
+      - image: gcr.io/k8s-prow/configurator:v20220628-2cb592725d
         command:
         - configurator
         args:
@@ -586,7 +586,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20220627-1557d615e7
+    - image: gcr.io/k8s-prow/generic-autobumper:v20220628-2cb592725d
       command:
       - generic-autobumper
       args:
@@ -623,7 +623,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/generic-autobumper:v20220627-1557d615e7
+    - image: gcr.io/k8s-prow/generic-autobumper:v20220628-2cb592725d
       command:
       - generic-autobumper
       args:
@@ -693,7 +693,7 @@ periodics:
   spec:
     containers:
     - name: branchprotector
-      image: gcr.io/k8s-prow/branchprotector:v20220627-1557d615e7
+      image: gcr.io/k8s-prow/branchprotector:v20220628-2cb592725d
       command:
       - branchprotector
       args:
@@ -727,7 +727,7 @@ periodics:
   spec:
     containers:
     - name: label-sync
-      image: gcr.io/k8s-prow/label_sync:v20220627-1557d615e7
+      image: gcr.io/k8s-prow/label_sync:v20220628-2cb592725d
       command:
       - label_sync
       args:
@@ -771,7 +771,7 @@ periodics:
     serviceAccountName: gencred-refresher
     containers:
     - name: gencred
-      image: gcr.io/k8s-prow/gencred:v20220627-1557d615e7
+      image: gcr.io/k8s-prow/gencred:v20220628-2cb592725d
       command:
       - gencred
       args:
@@ -797,7 +797,7 @@ periodics:
     base_ref: master
   spec:
     containers:
-    - image: gcr.io/k8s-prow/checkconfig:v20220627-1557d615e7
+    - image: gcr.io/k8s-prow/checkconfig:v20220628-2cb592725d
       command:
       - checkconfig
       args:
