@@ -66,6 +66,8 @@ presubmits:
               value: "6443"
             - name: PROMETHEUS_SCRAPE_WINDOWS_NODE_EXPORTER
               value: "true"
+            - name: CL2_PROMETHEUS_TOLERATE_MASTER
+              value: "true"
             # azuredisk variables - required for Prometheus PVC
             - name: DEPLOY_AZURE_CSI_DRIVER
               value: "true"
@@ -148,6 +150,8 @@ periodics:
             - name: PROMETHEUS_APISERVER_SCRAPE_PORT
               value: "6443"
             - name: PROMETHEUS_SCRAPE_WINDOWS_NODE_EXPORTER
+              value: "true"
+            - name: CL2_PROMETHEUS_TOLERATE_MASTER
               value: "true"
             # azuredisk variables - required for Prometheus PVC
             - name: DEPLOY_AZURE_CSI_DRIVER
