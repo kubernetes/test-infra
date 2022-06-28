@@ -351,3 +351,4 @@ resources:
   - k8s-jkns-gke-ubuntu-updown
   state: dirty
   type: node-e2e-project
+# TODO: Remove this comment after post-test-infra-upload-boskos-config succeeds
