@@ -66,7 +66,7 @@ periodics:
 
         # container images scan
         echo "Fetch the list of k8s images"
-        curl -Ls https://sbom.k8s.io/$(curl -Ls https://dl.k8s.io/release/latest.txt)/release | grep 'PackageName: k8s.gcr.io/' | awk '{print $2}' > images
+        curl -Ls https://sbom.k8s.io/$(curl -Ls https://dl.k8s.io/release/latest.txt)/release | grep 'PackageName: registry.k8s.io/' | awk '{print $2}' > images
         while read image; do
           echo "Running container image scan.."
           EXIT_CODE=0
