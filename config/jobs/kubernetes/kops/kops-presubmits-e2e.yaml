@@ -1540,7 +1540,7 @@ presubmits:
       testgrid-tab-name: pull-kops-e2e-aws-upgrade-123-ko123-to-klatest-kolatest
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
-  - name: pull-kops-e2e-aws-upgrade-119-kolatest-to-k120-kolatest
+  - name: pull-kops-e2e-aws-upgrade-k120-kolatest-to-k121-kolatest
     branches:
     - master
     always_run: false
@@ -1575,15 +1575,21 @@ presubmits:
         - name: KOPS_VERSION_A
           value: "latest"
         - name: K8S_VERSION_A
-          value: "v1.19.16"
+          value: "v1.20.6"
         - name: KOPS_VERSION_B
           value: "latest"
         - name: K8S_VERSION_B
-          value: "v1.20.6"
+          value: "v1.21.7"
+        - name: KOPS_SKIP_E2E
+          value: "1"
+        - name: KOPS_TEMPLATE
+          value: "tests/e2e/templates/many-addons.yaml.tmpl"
+        - name: KOPS_CONTROL_PLANE
+          value: "3"
         - name: CLOUD_PROVIDER
           value: "aws"
         - name: CLUSTER_NAME
-          value: "e2e-097d785fef-84633.test-cncf-aws.k8s.io"
+          value: "e2e-8cc6f205fc-626e6.test-cncf-aws.k8s.io"
         - name: KOPS_STATE_STORE
           value: "s3://k8s-kops-prow"
         - name: KOPS_IRSA
@@ -1601,7 +1607,7 @@ presubmits:
       test.kops.k8s.io/networking: cilium
       testgrid-dashboards: kops-presubmits, presubmits-kops, sig-cluster-lifecycle-kops
       testgrid-days-of-results: '90'
-      testgrid-tab-name: pull-kops-e2e-aws-upgrade-119-kolatest-to-k120-kolatest
+      testgrid-tab-name: pull-kops-e2e-aws-upgrade-k120-kolatest-to-k121-kolatest
 
 # {"cloud": "aws", "container_runtime": "containerd", "distro": "u2004", "k8s_version": "stable", "kops_channel": "alpha", "networking": "cilium"}
   - name: pull-kops-e2e-aws-upgrade-123-ko123-to-klatest-kolatest-many-addons

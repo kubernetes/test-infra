@@ -1209,7 +1209,7 @@ def generate_presubmits_e2e():
             }
         ),
         presubmit_test(
-            name="pull-kops-e2e-aws-upgrade-119-kolatest-to-k120-kolatest",
+            name="pull-kops-e2e-aws-upgrade-k120-kolatest-to-k121-kolatest",
             optional=True,
             distro='u2004',
             networking='cilium',
@@ -1218,9 +1218,12 @@ def generate_presubmits_e2e():
             scenario='upgrade-ab',
             env={
                 'KOPS_VERSION_A': "latest",
-                'K8S_VERSION_A': "v1.19.16",
+                'K8S_VERSION_A': "v1.20.6",
                 'KOPS_VERSION_B': "latest",
-                'K8S_VERSION_B': "v1.20.6",
+                'K8S_VERSION_B': "v1.21.7",
+                'KOPS_SKIP_E2E': '1',
+                'KOPS_TEMPLATE': 'tests/e2e/templates/many-addons.yaml.tmpl',
+                'KOPS_CONTROL_PLANE': '3',
             }
         ),
         presubmit_test(
