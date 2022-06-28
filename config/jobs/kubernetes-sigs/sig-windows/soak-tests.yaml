@@ -101,9 +101,9 @@ periodics:
       preset-azure-cred-only: "true"
       preset-azure-anonymous-pull: "true"
     extra_refs:
-      - org: oprinmarius
+      - org: kubernetes
         repo: perf-tests
-        base_ref: "windows-soak-tests"
+        base_ref: "master"
         path_alias: "k8s.io/perf-tests"
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
