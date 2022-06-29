@@ -1,0 +1,31 @@
+periodics:
+- name: ci-kubernetes-unit-master
+  interval: 12h
+  decorate: true
+  decoration_config:
+    timeout: 4h
+  labels:
+    preset-dind-enabled: "true"
+    preset-azure-cred-only: "true"
+  extra_refs:
+  - org: kubernetes-sigs
+    repo: windows-testing
+    base_ref: main
+    path_alias: sigs.k8s.io/windows-testing
+  spec:
+    containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220624-1a63fdd9f2-master
+        command:
+          - "runner.sh"
+          - "./scripts/ci-k8s-unit-test.sh"
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 2
+            memory: "4Gi"
+  annotations:
+    fork-per-release: "true"
+    testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
+    testgrid-dashboards: sig-windows-signal
+    testgrid-tab-name: windows-unit-master
