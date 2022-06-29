@@ -230,6 +230,8 @@ presubmits:
               value: "nodeIP"
             - name: CUSTOM_CLOUD_PROVIDER_CONFIG
               value: "https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/cloud-config-vmss-default.json"
+            - name: CCM_E2E_ARGS
+              value: "-ginkgo.skip=\\[Serial\\]\\[Slow\\]|Private\\slink\\sservice"
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmss-ip-lb-capz
