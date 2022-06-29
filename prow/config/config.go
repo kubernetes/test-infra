@@ -725,6 +725,16 @@ type DefaultDecorationConfigEntry struct {
 	// by sequentially merging with later entries overriding fields from earlier
 	// entries.
 	Config *prowapi.DecorationConfig `json:"config,omitempty"`
+
+	// PodPendingTimeout is after how long the controller will perform a garbage
+	// collection on pending pods. Defaults to 10 minutes.
+	PodPendingTimeout *metav1.Duration `json:"pod_pending_timeout,omitempty"`
+	// PodRunningTimeout is after how long the controller will abort a prowjob pod
+	// stuck in running state. Defaults to two days.
+	PodRunningTimeout *metav1.Duration `json:"pod_running_timeout,omitempty"`
+	// PodUnscheduledTimeout is after how long the controller will abort a prowjob
+	// stuck in an unscheduled state. Defaults to 5 minutes.
+	PodUnscheduledTimeout *metav1.Duration `json:"pod_unscheduled_timeout,omitempty"`
 }
 
 // TODO(mpherman): Make a Matcher struct embedded in both ProwJobDefaultEntry and
@@ -735,14 +745,23 @@ func matches(givenOrgRepo, givenCluster, orgRepo, cluster string) bool {
 	return orgRepoMatch && clusterMatch
 }
 
+func matchesDefaultDecorationConfigEntry(givenOrgRepo, givenCluster, orgRepo, cluster string, givenPodPendingTimeout, givenPodRunningTimeout, givenPodUnscheduledTimeout, podPendingTimeout, podRunningTimeout, podUnscheduledTimeout *metav1.Duration) bool {
+	orgRepoMatch := givenOrgRepo == "" || givenOrgRepo == "*" || givenOrgRepo == strings.Split(orgRepo, "/")[0] || givenOrgRepo == orgRepo
+	clusterMatch := givenCluster == "" || givenCluster == "*" || givenCluster == cluster
+	podPendingTimeoutMatch := givenPodPendingTimeout == nil || givenPodPendingTimeout == podPendingTimeout
+	podRunningTimeoutMatch := givenPodRunningTimeout == nil || givenPodRunningTimeout == podRunningTimeout
+	podUnscheduledTimeoutMatch := givenPodUnscheduledTimeout == nil || givenPodUnscheduledTimeout == podUnscheduledTimeout
+	return orgRepoMatch && clusterMatch && podPendingTimeoutMatch && podRunningTimeoutMatch && podUnscheduledTimeoutMatch
+}
+
 // matches returns true iff all the filters for the entry match a job.
 func (d *ProwJobDefaultEntry) matches(repo, cluster string) bool {
 	return matches(d.OrgRepo, d.Cluster, repo, cluster)
 }
 
 // matches returns true iff all the filters for the entry match a job.
-func (d *DefaultDecorationConfigEntry) matches(repo, cluster string) bool {
-	return matches(d.OrgRepo, d.Cluster, repo, cluster)
+func (d *DefaultDecorationConfigEntry) matches(repo, cluster string, podPendingTimeout, podRunningTimeout, podUnscheduledTimeout *metav1.Duration) bool {
+	return matchesDefaultDecorationConfigEntry(d.OrgRepo, d.Cluster, repo, cluster, d.PodPendingTimeout, d.PodRunningTimeout, d.PodUnscheduledTimeout, podPendingTimeout, podRunningTimeout, podUnscheduledTimeout)
 }
 
 // matches returns true iff all the filters for the entry match a job.
@@ -773,10 +792,10 @@ func (pc *ProwConfig) mergeProwJobDefault(repo, cluster string, jobDefault *prow
 // mergeDefaultDecorationConfig finds all matching DefaultDecorationConfigEntry
 // for a job and merges them sequentially before merging into the job's own
 // DecorationConfig. Configs merged later override values from earlier configs.
-func (p *Plank) mergeDefaultDecorationConfig(repo, cluster string, jobDC *prowapi.DecorationConfig) *prowapi.DecorationConfig {
+func (p *Plank) mergeDefaultDecorationConfig(repo, cluster string, podPendingTimeout, podRunningTimeout, podUnscheduledTimeout *metav1.Duration, jobDC *prowapi.DecorationConfig) *prowapi.DecorationConfig {
 	var merged *prowapi.DecorationConfig
 	for _, entry := range p.DefaultDecorationConfigs {
-		if entry.matches(repo, cluster) {
+		if entry.matches(repo, cluster, podPendingTimeout, podRunningTimeout, podUnscheduledTimeout) {
 			merged = entry.Config.ApplyDefault(merged)
 		}
 	}
@@ -797,7 +816,7 @@ func (c *Config) GetProwJobDefault(repo, cluster string) *prowapi.ProwJobDefault
 // config for a given repo and cluster. It is primarily used for best effort
 // guesses about GCS configuration for undecorated jobs.
 func (p *Plank) GuessDefaultDecorationConfig(repo, cluster string) *prowapi.DecorationConfig {
-	return p.mergeDefaultDecorationConfig(repo, cluster, nil)
+	return p.mergeDefaultDecorationConfig(repo, cluster, nil, nil, nil, nil)
 }
 
 // GuessDefaultDecorationConfig attempts to find the resolved default decoration
@@ -814,9 +833,12 @@ func defaultDecorationMapToSlice(m map[string]*prowapi.DecorationConfig) []*Defa
 	var entries []*DefaultDecorationConfigEntry
 	add := func(repo string, dc *prowapi.DecorationConfig) {
 		entries = append(entries, &DefaultDecorationConfigEntry{
-			OrgRepo: repo,
-			Cluster: "",
-			Config:  dc,
+			OrgRepo:               repo,
+			Cluster:               "",
+			Config:                dc,
+			PodPendingTimeout:     nil,
+			PodRunningTimeout:     nil,
+			PodUnscheduledTimeout: nil,
 		})
 	}
 	// Ensure "*" comes first...
@@ -1958,13 +1980,13 @@ func setPeriodicProwJobDefaults(c *Config, ps *Periodic) {
 }
 func setPresubmitDecorationDefaults(c *Config, ps *Presubmit, repo string) {
 	if shouldDecorate(&c.JobConfig, &ps.JobBase.UtilityConfig) {
-		ps.DecorationConfig = c.Plank.mergeDefaultDecorationConfig(repo, ps.Cluster, ps.DecorationConfig)
+		ps.DecorationConfig = c.Plank.mergeDefaultDecorationConfig(repo, ps.Cluster, &metav1.Duration{Duration: 10 * time.Minute}, &metav1.Duration{Duration: 48 * time.Hour}, &metav1.Duration{Duration: 5 * time.Minute}, ps.DecorationConfig)
 	}
 }
 
 func setPostsubmitDecorationDefaults(c *Config, ps *Postsubmit, repo string) {
 	if shouldDecorate(&c.JobConfig, &ps.JobBase.UtilityConfig) {
-		ps.DecorationConfig = c.Plank.mergeDefaultDecorationConfig(repo, ps.Cluster, ps.DecorationConfig)
+		ps.DecorationConfig = c.Plank.mergeDefaultDecorationConfig(repo, ps.Cluster, nil, nil, nil, ps.DecorationConfig)
 	}
 }
 
@@ -1975,7 +1997,7 @@ func setPeriodicDecorationDefaults(c *Config, ps *Periodic) {
 			repo = fmt.Sprintf("%s/%s", ps.UtilityConfig.ExtraRefs[0].Org, ps.UtilityConfig.ExtraRefs[0].Repo)
 		}
 
-		ps.DecorationConfig = c.Plank.mergeDefaultDecorationConfig(repo, ps.Cluster, ps.DecorationConfig)
+		ps.DecorationConfig = c.Plank.mergeDefaultDecorationConfig(repo, ps.Cluster, nil, nil, nil, ps.DecorationConfig)
 	}
 }
 
