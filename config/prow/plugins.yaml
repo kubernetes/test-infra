@@ -1281,6 +1281,11 @@ plugins:
     - shrug
     - size
 
+  kubernetes-sigs/secrets-store-csi-driver:
+    plugins:
+    - milestone
+    - milestonestatus
+
 external_plugins:
   kubernetes:
   - name: needs-rebase
