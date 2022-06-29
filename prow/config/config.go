@@ -383,8 +383,8 @@ func (rg *RefGetterForGitHubPullRequest) BaseSHA() (string, error) {
 // retrieval of a *ProwYAML.
 func GetAndCheckRefs(
 	baseSHAGetter RefGetter,
-	headSHAGetters ...RefGetter) (string, []string, error) {
-
+	headSHAGetters ...RefGetter,
+) (string, []string, error) {
 	// Parse "baseSHAGetter".
 	baseSHA, err := baseSHAGetter()
 	if err != nil {
@@ -745,15 +745,6 @@ func matches(givenOrgRepo, givenCluster, orgRepo, cluster string) bool {
 	return orgRepoMatch && clusterMatch
 }
 
-func matchesDefaultDecorationConfigEntry(givenOrgRepo, givenCluster, orgRepo, cluster string, givenPodPendingTimeout, givenPodRunningTimeout, givenPodUnscheduledTimeout, podPendingTimeout, podRunningTimeout, podUnscheduledTimeout *metav1.Duration) bool {
-	orgRepoMatch := givenOrgRepo == "" || givenOrgRepo == "*" || givenOrgRepo == strings.Split(orgRepo, "/")[0] || givenOrgRepo == orgRepo
-	clusterMatch := givenCluster == "" || givenCluster == "*" || givenCluster == cluster
-	podPendingTimeoutMatch := givenPodPendingTimeout == nil || givenPodPendingTimeout == podPendingTimeout
-	podRunningTimeoutMatch := givenPodRunningTimeout == nil || givenPodRunningTimeout == podRunningTimeout
-	podUnscheduledTimeoutMatch := givenPodUnscheduledTimeout == nil || givenPodUnscheduledTimeout == podUnscheduledTimeout
-	return orgRepoMatch && clusterMatch && podPendingTimeoutMatch && podRunningTimeoutMatch && podUnscheduledTimeoutMatch
-}
-
 // matches returns true iff all the filters for the entry match a job.
 func (d *ProwJobDefaultEntry) matches(repo, cluster string) bool {
 	return matches(d.OrgRepo, d.Cluster, repo, cluster)
@@ -761,7 +752,7 @@ func (d *ProwJobDefaultEntry) matches(repo, cluster string) bool {
 
 // matches returns true iff all the filters for the entry match a job.
 func (d *DefaultDecorationConfigEntry) matches(repo, cluster string, podPendingTimeout, podRunningTimeout, podUnscheduledTimeout *metav1.Duration) bool {
-	return matchesDefaultDecorationConfigEntry(d.OrgRepo, d.Cluster, repo, cluster, d.PodPendingTimeout, d.PodRunningTimeout, d.PodUnscheduledTimeout, podPendingTimeout, podRunningTimeout, podUnscheduledTimeout)
+	return matches(d.OrgRepo, d.Cluster, repo, cluster)
 }
 
 // matches returns true iff all the filters for the entry match a job.
@@ -1978,6 +1969,7 @@ func setPeriodicProwJobDefaults(c *Config, ps *Periodic) {
 
 	ps.ProwJobDefault = c.mergeProwJobDefault(repo, ps.Cluster, ps.ProwJobDefault)
 }
+
 func setPresubmitDecorationDefaults(c *Config, ps *Presubmit, repo string) {
 	if shouldDecorate(&c.JobConfig, &ps.JobBase.UtilityConfig) {
 		ps.DecorationConfig = c.Plank.mergeDefaultDecorationConfig(repo, ps.Cluster, &metav1.Duration{Duration: 10 * time.Minute}, &metav1.Duration{Duration: 48 * time.Hour}, &metav1.Duration{Duration: 5 * time.Minute}, ps.DecorationConfig)
@@ -2333,7 +2325,6 @@ func (c Config) validatePeriodics(periodics []Periodic) error {
 // ValidateJobConfig validates if all the jobspecs/presets are valid
 // if you are mutating the jobs, please add it to finalizeJobConfig above.
 func (c *Config) ValidateJobConfig() error {
-
 	var errs []error
 
 	// Validate presubmits.
@@ -2595,7 +2586,6 @@ func parseProwConfig(c *Config) error {
 	for name, templates := range c.Tide.MergeTemplate {
 		if templates.TitleTemplate != "" {
 			titleTemplate, err := template.New("CommitTitle").Parse(templates.TitleTemplate)
-
 			if err != nil {
 				return fmt.Errorf("parsing template for commit title: %w", err)
 			}
@@ -2605,7 +2595,6 @@ func parseProwConfig(c *Config) error {
 
 		if templates.BodyTemplate != "" {
 			bodyTemplate, err := template.New("CommitBody").Parse(templates.BodyTemplate)
-
 			if err != nil {
 				return fmt.Errorf("parsing template for commit body: %w", err)
 			}
