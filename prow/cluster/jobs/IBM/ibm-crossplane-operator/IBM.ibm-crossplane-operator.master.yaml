@@ -7,6 +7,7 @@ presubmits:
     - ^release-efix$
     - ^release-eus$
     - ^release-future$
+    - ^release-ltsr$
     labels:
       preset-service-account: "true"
     decorate: true
@@ -31,6 +32,7 @@ presubmits:
     - ^release-efix$
     - ^release-eus$
     - ^release-future$
+    - ^release-ltsr$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-crossplane-operator
@@ -52,6 +54,7 @@ presubmits:
     - ^release-efix$
     - ^release-eus$
     - ^release-future$
+    - ^release-ltsr$
     decorate: true
     always_run: true
     path_alias: github.com/IBM/ibm-crossplane-operator
@@ -77,6 +80,7 @@ postsubmits:
     - ^release-efix$
     - ^release-eus$
     - ^release-future$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-crossplane-operator
     spec:
@@ -95,6 +99,7 @@ postsubmits:
     - ^release-efix$
     - ^release-eus$
     - ^release-future$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-crossplane-operator
     spec:
@@ -114,6 +119,7 @@ postsubmits:
     - ^release-efix$
     - ^release-eus$
     - ^release-future$
+    - ^release-ltsr$
     labels:
       preset-service-account: "true"
     decorate: true
@@ -135,6 +141,7 @@ postsubmits:
     - ^release-efix$
     - ^release-eus$
     - ^release-future$
+    - ^release-ltsr$
     decorate: true
     path_alias: github.com/IBM/ibm-crossplane-operator
     labels:
