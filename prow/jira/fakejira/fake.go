@@ -308,11 +308,11 @@ func (f *FakeClient) GetIssueTargetVersion(issue *jira.Issue) (*[]*jira.Version,
 
 func (f *FakeClient) UpdateIssue(issue *jira.Issue) (*jira.Issue, error) {
 	if f.UpdateIssueError != nil {
-		if err, ok := f.UpdateIssueError[issue.ID]; ok {
+		if err, ok := f.UpdateIssueError[issue.Key]; ok {
 			return nil, err
 		}
 	}
-	retrievedIssue, err := f.GetIssue(issue.ID)
+	retrievedIssue, err := f.GetIssue(issue.Key)
 	if err != nil {
 		return nil, fmt.Errorf("unable to find issue to update: %v", err)
 	}
