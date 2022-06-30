@@ -412,10 +412,11 @@ def generate_grid():
     # pylint: disable=too-many-nested-blocks
     for networking in ['kubenet', 'calico', 'cilium']: # TODO: all networking_options:
         for distro in ['u2004']: # TODO: all distro_options:
-            for k8s_version in ["1.24"]: # TODO: all k8s_versions:
+            for k8s_version in k8s_versions:
                 for kops_version in [None]: # TODO: all kops_versions:
                     results.append(
                         build_test(cloud="gce",
+                                   runs_per_day=3,
                                    distro=distro,
                                    extra_dashboards=['kops-grid'],
                                    k8s_version=k8s_version,
