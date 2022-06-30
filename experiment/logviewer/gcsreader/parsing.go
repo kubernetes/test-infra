@@ -23,7 +23,7 @@ import (
 	"strings"
 	"time"
 
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
 func processLines(reader io.Reader, regex *regexp.Regexp) ([]*logEntry, error) {

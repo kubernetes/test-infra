@@ -27,7 +27,7 @@ import (
 	dto "github.com/prometheus/client_model/go"
 
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/clock"
+	clock "k8s.io/utils/clock/testing"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
