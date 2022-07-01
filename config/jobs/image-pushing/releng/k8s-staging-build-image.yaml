@@ -64,6 +64,38 @@ postsubmits:
         github_team_slugs:
           - org: kubernetes
             slug: release-managers
+    - name: post-release-push-image-distroless-iptables
+      cluster: k8s-infra-prow-build-trusted
+      annotations:
+        testgrid-dashboards: sig-release-releng-informing, sig-release-master-informing, sig-release-image-pushes, sig-k8s-infra-gcb
+        testgrid-alert-email: release-managers+alerts@kubernetes.io
+      decorate: true
+      run_if_changed: '^images\/build\/distroless-iptables\/'
+      branches:
+        - ^main$
+        # TODO(releng): Remove once repo default branch has been renamed
+        - ^master$
+      spec:
+        serviceAccountName: gcb-builder
+        containers:
+          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
+            command:
+              - /run.sh
+            args:
+              - --project=k8s-staging-build-image
+              - --scratch-bucket=gs://k8s-staging-build-image-gcb
+              - --env-passthrough=REGISTRY
+              - --build-dir=.
+              - images/build/distroless-iptables
+            env:
+              - name: LOG_TO_STDOUT
+                value: "y"
+              - name: REGISTRY
+                value: "gcr.io/k8s-staging-build-image"
+      rerun_auth_config:
+        github_team_slugs:
+          - org: kubernetes
+            slug: release-managers
     - name: post-release-push-image-go-runner
       cluster: k8s-infra-prow-build-trusted
       annotations:
