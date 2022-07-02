@@ -643,7 +643,8 @@ def generate_misc():
                    runs_per_day=1,
                    extra_flags=["--instance-manager=karpenter"],
                    feature_flags=['Karpenter'],
-                   extra_dashboards=["kops-misc"]),
+                   extra_dashboards=["kops-misc"],
+                   skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|nfs|NFS|Gluster|Services.*rejected.*endpoints|TCP.CLOSE_WAIT|external.IP.is.not.assigned.to.a.node|same.port.number.but.different.protocols|same.hostPort.but.different.hostIP.and.protocol|should.create.a.Pod.with.SCTP.HostPort|Services.should.create.endpoints.for.unready.pods|Services.should.be.able.to.connect.to.terminating.and.unready.endpoints.if.PublishNotReadyAddresses.is.true|In-tree.Volumes'), # pylint: disable=line-too-long
     ]
     return results
 
@@ -1193,6 +1194,7 @@ def generate_presubmits_e2e():
             kops_channel="alpha",
             extra_flags=["--instance-manager=karpenter"],
             feature_flags=['Karpenter'],
+            skip_regex=r'\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|nfs|NFS|Gluster|Services.*rejected.*endpoints|TCP.CLOSE_WAIT|external.IP.is.not.assigned.to.a.node|same.port.number.but.different.protocols|same.hostPort.but.different.hostIP.and.protocol|should.create.a.Pod.with.SCTP.HostPort|Services.should.create.endpoints.for.unready.pods|Services.should.be.able.to.connect.to.terminating.and.unready.endpoints.if.PublishNotReadyAddresses.is.true|In-tree.Volumes' # pylint: disable=line-too-long
         ),
         presubmit_test(
             name="pull-kops-e2e-aws-upgrade-123-ko123-to-klatest-kolatest",
