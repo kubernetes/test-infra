@@ -1448,6 +1448,7 @@ presubmits:
             --ginkgo-args="--debug" \
             --test-args="-test.timeout=60m -num-nodes=0" \
             --test-package-marker=stable.txt \
+            --skip-regex="\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|nfs|NFS|Gluster|Services.*rejected.*endpoints|TCP.CLOSE_WAIT|external.IP.is.not.assigned.to.a.node|same.port.number.but.different.protocols|same.hostPort.but.different.hostIP.and.protocol|should.create.a.Pod.with.SCTP.HostPort|Services.should.create.endpoints.for.unready.pods|Services.should.be.able.to.connect.to.terminating.and.unready.endpoints.if.PublishNotReadyAddresses.is.true|In-tree.Volumes" \
             --parallel=25
         securityContext:
           privileged: true
