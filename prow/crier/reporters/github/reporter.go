@@ -172,7 +172,7 @@ func pjsToReport(ctx context.Context, log *logrus.Entry, lister ctrlruntimeclien
 		if !pjob.Complete() { // Any job still running should prevent from comments
 			return nil, nil
 		}
-		if !pj.Spec.Report { // Filtering out non-reporting jobs
+		if !pjob.Spec.Report { // Filtering out non-reporting jobs
 			continue
 		}
 		// Now you have convinced me that you are the same job from my revision,
