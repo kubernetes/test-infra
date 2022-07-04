@@ -17,10 +17,10 @@ limitations under the License.
 package migrator
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
-	"github.com/pkg/errors"
 	"k8s.io/test-infra/prow/github"
 )
 

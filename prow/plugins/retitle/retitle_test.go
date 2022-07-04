@@ -17,9 +17,9 @@ limitations under the License.
 package retitle
 
 import (
+	"errors"
 	"testing"
 
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/test-infra/prow/github"
