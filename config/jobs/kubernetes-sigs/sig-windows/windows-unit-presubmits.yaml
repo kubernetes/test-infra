@@ -1,0 +1,36 @@
+presubmits:
+  kubernetes/kubernetes:
+  - name: pull-ci-kubernetes-unit-windows
+    always_run: false
+    optional: true
+    decorate: true
+    decoration_config:
+      timeout: 4h
+    path_alias: k8s.io/kubernetes
+    branches:
+      - master
+      - main
+    labels:
+      preset-dind-enabled: "true"
+      preset-azure-cred-only: "true"
+    extra_refs:
+    - org: kubernetes-sigs
+      repo: windows-testing
+      base_ref: master
+      path_alias: sigs.k8s.io/windows-testing
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220624-1a63fdd9f2-master
+          command:
+            - "runner.sh"
+            - "./scripts/ci-k8s-unit-test.sh"
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 2
+              memory: "4Gi"
+    annotations:
+      testgrid-dashboards: sig-windows-presubmit
+      testgrid-tab-name: pull-windows-unit-master
+      testgrid-num-columns-recent: '20'
