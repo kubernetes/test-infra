@@ -78,13 +78,61 @@
                 </table>
               </td>
             </tr>
+            {{end}}
+            {{end}}
+          {{end}}
           </table>
         </td>
       </tr>
-      {{end}}
+    {{range $ix, $test := .Failed }}
+    {{$firstTestFailed := index $test.Junit 0}}
+    <tr class="failure-name">
+      <td class="mdl-data-table__cell--non-numeric test-name">{{$firstTestFailed.ClassName}}: {{$firstTestFailed.Name}}&nbsp;<i class="icon-button material-icons arrow-icon">expand_more</i></td>
+      <td class="mdl-data-table__cell--non-numeric" style="text-align: right;">{{$firstTestFailed.FinishedTime}}</td>
+    </tr>
+    {{range $iy, $testall := $.Passed}}
+    {{$firstTest := index $testall.Junit 0}}
+              {{if ne $firstTest.Name $firstTestFailed.Name}}
+                  {{if gt $firstTestFailed.StartTime $firstTest.StartTime}}
+                      {{if lt $firstTestFailed.StartTime $firstTest.FinishedTime}}
+                           <tr class="passed-name">
+                           <td class="mdl-data-table__cell--non-numeric test-name">{{$firstTest.ClassName}}: {{$firstTest.Name}}&nbsp;<i class="icon-button material-icons arrow-icon">expand_more</i></td>
+                            <td class="mdl-data-table__cell--non-numeric" style="text-align: right;">{{$firstTest.Duration}}</td>
+                            </tr>
+                      {{end}}
+                  {{else}}
+                    {{if lt $firstTest.StartTime $firstTestFailed.FinishedTime }}
+                      <tr class="passed-name">
+                        <td class="mdl-data-table__cell--non-numeric test-name">{{$firstTest.ClassName}}: {{$firstTest.Name}}&nbsp;<i class="icon-button material-icons arrow-icon">expand_more</i></td>
+                        <td class="mdl-data-table__cell--non-numeric" style="text-align: right;">{{$firstTest.Duration}}</td>
+                      </tr>
+                   {{end}}
+                   {{end}}
+              {{end}}
+             
     {{end}}
-  </tbody>
-  {{end}}
+    {{range $iy, $testall := $.Failed}}
+    {{$firstTest := index $testall.Junit 0}}
+              {{if ne $firstTest.Name $firstTestFailed.Name}}
+                  {{if gt $firstTestFailed.StartTime $firstTest.StartTime}}
+                      {{if lt $firstTestFailed.StartTime $firstTest.FinishedTime}}
+                           <tr class="passed-name">
+                           <td class="mdl-data-table__cell--non-numeric test-name">{{$firstTest.ClassName}}: {{$firstTest.Name}}&nbsp;<i class="icon-button material-icons arrow-icon">expand_more</i></td>
+                            <td class="mdl-data-table__cell--non-numeric" style="text-align: right;">{{$firstTest.FinishedTime}}</td>
+                            </tr>
+                      {{end}}
+                  {{else}}
+                    {{if lt $firstTest.StartTime $firstTestFailed.FinishedTime }}
+                      <tr class="passed-name">
+                        <td class="mdl-data-table__cell--non-numeric test-name">{{$firstTest.ClassName}}: {{$firstTest.Name}}&nbsp;<i class="icon-button material-icons arrow-icon">expand_more</i></td>
+                        <td class="mdl-data-table__cell--non-numeric" style="text-align: right;">{{$firstTest.Duration}}</td>
+                      </tr>
+                   {{end}}
+                   {{end}}
+              {{end}}
+             
+    {{end}}
+    {{end}}
   {{if gt $numFlk 0}}
   <tr id="flaky-theader" class="header section-expander">
     <td class="mdl-data-table__cell--non-numeric expander flaky" colspan="1"><h6>{{len .Flaky}}/{{.NumTests}} Tests Flaky.</h6></td>
@@ -170,4 +218,3 @@
 </div>
 {{end}}
 {{end}}
-

@@ -28,7 +28,6 @@ import (
 
 	"github.com/GoogleCloudPlatform/testgrid/metadata/junit"
 	"github.com/sirupsen/logrus"
-
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/spyglass/api"
 	"k8s.io/test-infra/prow/spyglass/lenses"
@@ -52,12 +51,22 @@ type testStatus string
 // Lens is the implementation of a JUnit-rendering Spyglass lens.
 type Lens struct{}
 
+
 type JVD struct {
 	NumTests int
 	Passed   []TestResult
 	Failed   []TestResult
 	Skipped  []TestResult
 	Flaky    []TestResult
+}
+type ownConfig struct {
+	// RunnerConfig defines the mapping between build cluster alias: <template>,
+	// where the template is used for helping displaying url to pod.
+	RunnerConfigs map[string]RunnerConfig `json:"runner_configs,omitempty"`
+}
+
+type RunnerConfig struct {
+	PodLinkTemplate string `json:"pod_link_template,omitempty"`
 }
 
 // Config returns the lens's configuration.
@@ -118,6 +127,14 @@ type TestResult struct {
 	Junit []JunitResult
 	Link  string
 }
+
+
+ func (jr JunitResult) StartTime() time.Duration{
+	return time.Duration(jr.Start * float64(time.Second)).Round(time.Second)
+ }
+ func (jr JunitResult) FinishedTime() time.Duration{
+	return time.Duration(jr.Start * float64(time.Second)).Round(time.Second) + time.Duration(jr.Time * float64(time.Second)).Round(time.Second)
+ }
 
 // Body renders the <body> for JUnit tests
 func (lens Lens) Body(artifacts []api.Artifact, resourceDir string, data string, config json.RawMessage, spyglassConfig config.Spyglass) string {
@@ -220,6 +237,7 @@ func (lens Lens) getJvd(artifacts []api.Artifact) JVD {
 				passed  bool
 				failed  bool
 				flaky   bool
+				
 			)
 			for _, test := range tests {
 				// skipped test has no reason to rerun, so no deduplication
@@ -230,6 +248,7 @@ func (lens Lens) getJvd(artifacts []api.Artifact) JVD {
 						passed = false
 						failed = false
 						flaky = true
+						
 					}
 					if !flaky {
 						failed = true

@@ -22,10 +22,14 @@ import (
 	"context"
 	"io/ioutil"
 	"testing"
+	"encoding/json"
+	"path"
 
 	"github.com/GoogleCloudPlatform/testgrid/metadata/junit"
 	"github.com/google/go-cmp/cmp"
+	"github.com/sirupsen/logrus/hooks/test"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/spyglass/api"
 	"k8s.io/test-infra/prow/spyglass/lenses"
 )
@@ -92,6 +96,106 @@ func (fa *FakeArtifact) UseContext(ctx context.Context) error {
 func (fa *FakeArtifact) ReadAtMost(n int64) ([]byte, error) {
 	return nil, nil
 }
+
+func TestBody(t *testing.T){ 
+	tests := []struct {
+		name  	  string
+		rawResults [][]byte
+	}{
+		{	"tests_run_in_parallel",
+		[][]byte{
+			[]byte(`
+			<testsuites>
+				<testsuite>
+					<testcase classname="fake_class_0" name="fake_test_0" time="20" start="30">
+						<failure message="failure message 0" type="failure"> failure value 0 </failure>
+					</testcase>
+				<testcase classname="fake_class_0" name="fake_test_1" time="3" start="28">
+				</testcase>
+				<testcase classname="fake_class_0" name="fake_test_2" time="3" start="40">
+				</testcase>
+				</testsuite>
+			</testsuites>
+			`),
+			
+		},
+		},
+		{	"independent_tests",
+		[][]byte{
+			[]byte(`
+			<testsuites>
+				<testsuite>
+					<testcase classname="fake_class_0" name="fake_test_0" time="20" start="30">
+						<failure message="failure message 0" type="failure"> failure value 0 </failure>
+					</testcase>
+				<testcase classname="fake_class_0" name="fake_test_1" time="3" start="20">
+				</testcase>
+				</testsuite>
+			</testsuites>
+			`),
+			
+		},
+		},
+		{	"notests",
+		[][]byte{
+			[]byte(
+			``),
+			
+		},
+		},
+		{	"failledAndpassed",
+		[][]byte{
+			[]byte(`
+			<testsuites>
+				<testsuite>
+					<testcase classname="fake_class_0" name="fake_test_0" time="20" start="30">
+						<failure message="failure message 0" type="failure"> failure value 0 </failure>
+					</testcase>
+					<testcase classname="fake_class_1" name="fake_test_1" time="20" start="49">
+						<failure message="failure message 0" type="failure"> failure value 0 </failure>
+					</testcase>
+				<testcase classname="fake_class_2" name="fake_test_2" time="3" start="54">
+				</testcase>
+				</testsuite>
+			</testsuites>
+			`),
+			
+		},
+		},
+
+	}
+	logHook := test.NewGlobal()
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			logHook.Reset()
+			wantFile := path.Join("testdata/"+tc.name+".html")
+			wantBytes, err := ioutil.ReadFile(wantFile)
+			if err != nil {
+				t.Fatalf("Failed reading output file %s: %v", wantFile, err)
+			}
+			artifacts := make([]api.Artifact, 0)
+			for _, rr := range tc.rawResults {
+				artifacts = append(artifacts, &FakeArtifact{
+					path:      "log.txt",
+					content:   rr,
+					sizeLimit: 500e6,
+				})
+			}
+			output, expectedWanted := Lens{}.Body(artifacts, ".", "", json.RawMessage{}, config.Spyglass{}), string(wantBytes)
+			if output != expectedWanted {
+				t.Errorf("Output mismatch\nwant: %s\n got: %s", expectedWanted, output)
+			}
+			if entries := logHook.AllEntries(); len(entries) > 0 {
+				var logs []string
+				for _, entry := range entries {
+					log, _ := entry.String()
+					logs = append(logs, log)
+				}
+				t.Errorf("Unexpected log messages: %v", logs)
+			}
+		})
+	}
+ }
 
 func TestGetJvd(t *testing.T) {
 	emptySkipped := junit.Skipped{}
