@@ -332,3 +332,5 @@ presets:
 - labels:
     preset-e2e-scalability-periodics-master: "true"
   env:
+  - name: CL2_ENABLE_QUOTAS_USAGE_MEASUREMENT
+    value: "true"
