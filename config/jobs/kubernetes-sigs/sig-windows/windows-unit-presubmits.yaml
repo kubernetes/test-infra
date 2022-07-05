@@ -18,6 +18,7 @@ presubmits:
       repo: windows-testing
       base_ref: master
       path_alias: sigs.k8s.io/windows-testing
+      workdir: true
     spec:
       containers:
         - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220624-1a63fdd9f2-master
