@@ -7657,11 +7657,11 @@ func TestMergeDefaultDecorationConfigThreadSafety(t *testing.T) {
 	s2 := make(chan struct{})
 
 	go func() {
-		_ = p.mergeDefaultDecorationConfig(repo, cluster, nil, nil, nil, jobDC)
+		_ = p.mergeDefaultDecorationConfig(repo, cluster, jobDC)
 		close(s1)
 	}()
 	go func() {
-		_ = p.mergeDefaultDecorationConfig(repo, cluster, nil, nil, nil, jobDC)
+		_ = p.mergeDefaultDecorationConfig(repo, cluster, jobDC)
 		close(s2)
 	}()
 

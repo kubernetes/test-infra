@@ -751,7 +751,7 @@ func (d *ProwJobDefaultEntry) matches(repo, cluster string) bool {
 }
 
 // matches returns true iff all the filters for the entry match a job.
-func (d *DefaultDecorationConfigEntry) matches(repo, cluster string, podPendingTimeout, podRunningTimeout, podUnscheduledTimeout *metav1.Duration) bool {
+func (d *DefaultDecorationConfigEntry) matches(repo, cluster string) bool {
 	return matches(d.OrgRepo, d.Cluster, repo, cluster)
 }
 
@@ -783,10 +783,10 @@ func (pc *ProwConfig) mergeProwJobDefault(repo, cluster string, jobDefault *prow
 // mergeDefaultDecorationConfig finds all matching DefaultDecorationConfigEntry
 // for a job and merges them sequentially before merging into the job's own
 // DecorationConfig. Configs merged later override values from earlier configs.
-func (p *Plank) mergeDefaultDecorationConfig(repo, cluster string, podPendingTimeout, podRunningTimeout, podUnscheduledTimeout *metav1.Duration, jobDC *prowapi.DecorationConfig) *prowapi.DecorationConfig {
+func (p *Plank) mergeDefaultDecorationConfig(repo, cluster string, jobDC *prowapi.DecorationConfig) *prowapi.DecorationConfig {
 	var merged *prowapi.DecorationConfig
 	for _, entry := range p.DefaultDecorationConfigs {
-		if entry.matches(repo, cluster, podPendingTimeout, podRunningTimeout, podUnscheduledTimeout) {
+		if entry.matches(repo, cluster) {
 			merged = entry.Config.ApplyDefault(merged)
 		}
 	}
@@ -807,7 +807,7 @@ func (c *Config) GetProwJobDefault(repo, cluster string) *prowapi.ProwJobDefault
 // config for a given repo and cluster. It is primarily used for best effort
 // guesses about GCS configuration for undecorated jobs.
 func (p *Plank) GuessDefaultDecorationConfig(repo, cluster string) *prowapi.DecorationConfig {
-	return p.mergeDefaultDecorationConfig(repo, cluster, nil, nil, nil, nil)
+	return p.mergeDefaultDecorationConfig(repo, cluster, nil)
 }
 
 // GuessDefaultDecorationConfig attempts to find the resolved default decoration
@@ -824,12 +824,9 @@ func defaultDecorationMapToSlice(m map[string]*prowapi.DecorationConfig) []*Defa
 	var entries []*DefaultDecorationConfigEntry
 	add := func(repo string, dc *prowapi.DecorationConfig) {
 		entries = append(entries, &DefaultDecorationConfigEntry{
-			OrgRepo:               repo,
-			Cluster:               "",
-			Config:                dc,
-			PodPendingTimeout:     nil,
-			PodRunningTimeout:     nil,
-			PodUnscheduledTimeout: nil,
+			OrgRepo: repo,
+			Cluster: "",
+			Config:  dc,
 		})
 	}
 	// Ensure "*" comes first...
@@ -1972,13 +1969,13 @@ func setPeriodicProwJobDefaults(c *Config, ps *Periodic) {
 
 func setPresubmitDecorationDefaults(c *Config, ps *Presubmit, repo string) {
 	if shouldDecorate(&c.JobConfig, &ps.JobBase.UtilityConfig) {
-		ps.DecorationConfig = c.Plank.mergeDefaultDecorationConfig(repo, ps.Cluster, &metav1.Duration{Duration: 10 * time.Minute}, &metav1.Duration{Duration: 48 * time.Hour}, &metav1.Duration{Duration: 5 * time.Minute}, ps.DecorationConfig)
+		ps.DecorationConfig = c.Plank.mergeDefaultDecorationConfig(repo, ps.Cluster, ps.DecorationConfig)
 	}
 }
 
 func setPostsubmitDecorationDefaults(c *Config, ps *Postsubmit, repo string) {
 	if shouldDecorate(&c.JobConfig, &ps.JobBase.UtilityConfig) {
-		ps.DecorationConfig = c.Plank.mergeDefaultDecorationConfig(repo, ps.Cluster, nil, nil, nil, ps.DecorationConfig)
+		ps.DecorationConfig = c.Plank.mergeDefaultDecorationConfig(repo, ps.Cluster, ps.DecorationConfig)
 	}
 }
 
@@ -1989,7 +1986,7 @@ func setPeriodicDecorationDefaults(c *Config, ps *Periodic) {
 			repo = fmt.Sprintf("%s/%s", ps.UtilityConfig.ExtraRefs[0].Org, ps.UtilityConfig.ExtraRefs[0].Repo)
 		}
 
-		ps.DecorationConfig = c.Plank.mergeDefaultDecorationConfig(repo, ps.Cluster, nil, nil, nil, ps.DecorationConfig)
+		ps.DecorationConfig = c.Plank.mergeDefaultDecorationConfig(repo, ps.Cluster, ps.DecorationConfig)
 	}
 }
 
@@ -2325,6 +2322,7 @@ func (c Config) validatePeriodics(periodics []Periodic) error {
 // ValidateJobConfig validates if all the jobspecs/presets are valid
 // if you are mutating the jobs, please add it to finalizeJobConfig above.
 func (c *Config) ValidateJobConfig() error {
+
 	var errs []error
 
 	// Validate presubmits.
@@ -2586,6 +2584,7 @@ func parseProwConfig(c *Config) error {
 	for name, templates := range c.Tide.MergeTemplate {
 		if templates.TitleTemplate != "" {
 			titleTemplate, err := template.New("CommitTitle").Parse(templates.TitleTemplate)
+
 			if err != nil {
 				return fmt.Errorf("parsing template for commit title: %w", err)
 			}
@@ -2595,6 +2594,7 @@ func parseProwConfig(c *Config) error {
 
 		if templates.BodyTemplate != "" {
 			bodyTemplate, err := template.New("CommitBody").Parse(templates.BodyTemplate)
+
 			if err != nil {
 				return fmt.Errorf("parsing template for commit body: %w", err)
 			}
