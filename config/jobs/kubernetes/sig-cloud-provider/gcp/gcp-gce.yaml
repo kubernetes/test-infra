@@ -384,6 +384,53 @@ presubmits:
       testgrid-create-test-group: 'true'
 
 periodics:
+- interval: 168h # one week
+  name: canary-e2e-gce-cloud-provider-disabled
+  cluster: k8s-infra-prow-build
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-use-new-registry: "true"
+    preset-dind-enabled: "true"
+    preset-pull-kubernetes-e2e: "true"
+    preset-pull-kubernetes-e2e-gce: "true"
+  spec:
+    containers:
+    - args:
+      - --timeout=100
+      - --bare
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env=KUBE_FEATURE_GATES=DisableCloudProviders=true,DisableKubeletCloudCredentialProviders=true
+      - --env=CLOUD_PROVIDER_FLAG=external
+      - --extract=ci/latest-fast
+      - --extract-ci-bucket=k8s-release-dev
+      - --gcp-master-image=gci
+      - --gcp-node-image=gci
+      - --gcp-nodes=4
+      - --gcp-zone=us-west1-b
+      - --ginkgo-parallel=30
+      - --provider=gce
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --timeout=80m # thinking about making this longer? don't! 80m is a hard cap, and should get down to no more than 60m.
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220624-1a63fdd9f2-master
+      resources:
+        limits:
+          cpu: 2
+          memory: 6Gi
+        requests:
+          cpu: 2
+          memory: 6Gi
+      securityContext:
+        privileged: true
+  annotations:
+    testgrid-dashboards: google-gce, google-gci, provider-gcp-periodics
+    testgrid-tab-name: disable-cloud-provider
+    testgrid-num-failures-to-alert: '6'
+    testgrid-alert-email: release-team@kubernetes.io
+    description: Determine how many tests are broken when cloud provider is disabled.
+
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce
   cluster: k8s-infra-prow-build
