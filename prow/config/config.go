@@ -2223,20 +2223,45 @@ func (c *Config) ValidateJobConfig() error {
 	// Set the interval on the periodic jobs. It doesn't make sense to do this
 	// for child jobs.
 	for j, p := range c.Periodics {
-		if p.Cron != "" && p.Interval != "" {
-			errs = append(errs, fmt.Errorf("cron and interval cannot be both set in periodic %s", p.Name))
-		} else if p.Cron == "" && p.Interval == "" {
-			errs = append(errs, fmt.Errorf("cron and interval cannot be both empty in periodic %s", p.Name))
-		} else if p.Cron != "" {
+		seen := 0
+		if p.Cron != "" {
+			seen += 1
+		}
+		if p.Interval != "" {
+			seen += 1
+		}
+		if p.MinimumInterval != "" {
+			seen += 1
+		}
+
+		if seen > 1 {
+			errs = append(errs, fmt.Errorf("cron, interval, and minimum_interval are mutually exclusive in periodic %s", p.Name))
+			continue
+		} else if seen == 0 {
+			errs = append(errs, fmt.Errorf("at least one of cron, interval, or minimum_interval must be set in periodic %s", p.Name))
+			continue
+		}
+
+		if p.Cron != "" {
 			if _, err := cron.Parse(p.Cron); err != nil {
 				errs = append(errs, fmt.Errorf("invalid cron string %s in periodic %s: %w", p.Cron, p.Name, err))
 			}
-		} else {
+		}
+
+		if p.Interval != "" {
 			d, err := time.ParseDuration(c.Periodics[j].Interval)
 			if err != nil {
 				errs = append(errs, fmt.Errorf("cannot parse duration for %s: %w", c.Periodics[j].Name, err))
 			}
 			c.Periodics[j].interval = d
+		}
+
+		if p.MinimumInterval != "" {
+			d, err := time.ParseDuration(c.Periodics[j].MinimumInterval)
+			if err != nil {
+				errs = append(errs, fmt.Errorf("cannot parse duration for %s: %w", c.Periodics[j].Name, err))
+			}
+			c.Periodics[j].minimum_interval = d
 		}
 	}
 
