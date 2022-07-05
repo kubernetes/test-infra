@@ -89,7 +89,7 @@ branch-protection:
                                 # DismissStale overrides whether new commits automatically dismiss old reviews if set
                                 dismiss_stale_reviews: false
 
-                                # Restrictions appends users/teams that are allowed to merge
+                                # DismissalRestrictions appends users/teams that are allowed to merge
                                 dismissal_restrictions:
                                     teams:
                                       - ""
@@ -147,7 +147,7 @@ branch-protection:
                         # DismissStale overrides whether new commits automatically dismiss old reviews if set
                         dismiss_stale_reviews: false
 
-                        # Restrictions appends users/teams that are allowed to merge
+                        # DismissalRestrictions appends users/teams that are allowed to merge
                         dismissal_restrictions:
                             teams:
                               - ""
@@ -189,7 +189,7 @@ branch-protection:
                 # DismissStale overrides whether new commits automatically dismiss old reviews if set
                 dismiss_stale_reviews: false
 
-                # Restrictions appends users/teams that are allowed to merge
+                # DismissalRestrictions appends users/teams that are allowed to merge
                 dismissal_restrictions:
                     teams:
                       - ""
@@ -243,7 +243,7 @@ branch-protection:
         # DismissStale overrides whether new commits automatically dismiss old reviews if set
         dismiss_stale_reviews: false
 
-        # Restrictions appends users/teams that are allowed to merge
+        # DismissalRestrictions appends users/teams that are allowed to merge
         dismissal_restrictions:
             teams:
               - ""

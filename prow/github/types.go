@@ -582,7 +582,7 @@ type RequiredPullRequestReviews struct {
 	RequiredApprovingReviewCount int                    `json:"required_approving_review_count"`
 }
 
-// DismissalRestrictions exposes restrictions in github for an activity to apps/people/teams.
+// DismissalRestrictions exposes restrictions in github for an activity to people/teams.
 type DismissalRestrictions struct {
 	Users []User `json:"users,omitempty"`
 	Teams []Team `json:"teams,omitempty"`

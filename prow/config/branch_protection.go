@@ -80,7 +80,7 @@ type ContextPolicy struct {
 // Any nil values inherit the policy from the parent, otherwise bool/ints are overridden.
 // Non-empty lists are appended to parent lists.
 type ReviewPolicy struct {
-	// Restrictions appends users/teams that are allowed to merge
+	// DismissalRestrictions appends users/teams that are allowed to merge
 	DismissalRestrictions *DismissalRestrictions `json:"dismissal_restrictions,omitempty"`
 	// DismissStale overrides whether new commits automatically dismiss old reviews if set
 	DismissStale *bool `json:"dismiss_stale_reviews,omitempty"`
