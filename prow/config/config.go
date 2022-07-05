@@ -383,8 +383,8 @@ func (rg *RefGetterForGitHubPullRequest) BaseSHA() (string, error) {
 // retrieval of a *ProwYAML.
 func GetAndCheckRefs(
 	baseSHAGetter RefGetter,
-	headSHAGetters ...RefGetter,
-) (string, []string, error) {
+	headSHAGetters ...RefGetter) (string, []string, error) {
+
 	// Parse "baseSHAGetter".
 	baseSHA, err := baseSHAGetter()
 	if err != nil {
@@ -1966,7 +1966,6 @@ func setPeriodicProwJobDefaults(c *Config, ps *Periodic) {
 
 	ps.ProwJobDefault = c.mergeProwJobDefault(repo, ps.Cluster, ps.ProwJobDefault)
 }
-
 func setPresubmitDecorationDefaults(c *Config, ps *Presubmit, repo string) {
 	if shouldDecorate(&c.JobConfig, &ps.JobBase.UtilityConfig) {
 		ps.DecorationConfig = c.Plank.mergeDefaultDecorationConfig(repo, ps.Cluster, ps.DecorationConfig)

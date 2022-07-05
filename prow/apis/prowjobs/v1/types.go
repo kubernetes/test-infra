@@ -75,8 +75,7 @@ func GetAllProwJobStates() []ProwJobState {
 		SuccessState,
 		FailureState,
 		AbortedState,
-		ErrorState,
-	}
+		ErrorState}
 }
 
 // ProwJobAgent specifies the controller (such as plank or jenkins-agent) that runs the job.
