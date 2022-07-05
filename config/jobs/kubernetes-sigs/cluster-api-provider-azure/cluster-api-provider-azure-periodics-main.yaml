@@ -187,9 +187,9 @@ periodics:
     preset-azure-cred-only: "true"
     preset-azure-anonymous-pull: "true"
   extra_refs:
-    - org: kubernetes-sigs
+    - org: jackfrancis
       repo: cluster-api-provider-azure
-      base_ref: main
+      base_ref: capz-periodic-flakes
       path_alias: "sigs.k8s.io/cluster-api-provider-azure"
   spec:
     containers:
