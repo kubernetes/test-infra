@@ -97,7 +97,7 @@ periodics:
     testgrid-tab-name: capi-e2e-upgrade-v0-3-to-main
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
-- name: periodic-cluster-api-e2e-upgrade-v1-1-to-main
+- name: periodic-cluster-api-e2e-upgrade-v1-2-to-main
   interval: 1h
   decorate: true
   labels:
@@ -122,7 +122,7 @@ periodics:
       - name: GINKGO_FOCUS
         value: "\\[clusterctl-Upgrade\\]"
       - name: INIT_WITH_BINARY
-        value: https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.1.0/clusterctl-{OS}-{ARCH}
+        value: https://github.com/kubernetes-sigs/cluster-api/releases/download/v1.2.0-beta.2/clusterctl-{OS}-{ARCH}
       - name: INIT_WITH_PROVIDERS_CONTRACT
         value: v1beta1
       - name: INIT_WITH_KUBERNETES_VERSION
@@ -136,7 +136,7 @@ periodics:
           cpu: 7300m
   annotations:
     testgrid-dashboards: sig-cluster-lifecycle-cluster-api
-    testgrid-tab-name: capi-e2e-upgrade-v1-1-to-main
+    testgrid-tab-name: capi-e2e-upgrade-v1-2-to-main
     testgrid-alert-email: sig-cluster-lifecycle-cluster-api-alerts@kubernetes.io
     testgrid-num-failures-to-alert: "4"
 - name: periodic-cluster-api-e2e-main
