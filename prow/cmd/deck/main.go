@@ -647,7 +647,7 @@ func prodOnlyMain(cfg config.Getter, pluginAgent *plugins.ConfigAgent, authCfgGe
 		mux.Handle("/github-login/redirect", goa.HandleRedirect(oauthClient, githuboauth.NewAuthenticatedUserIdentifier(&o.github), secure))
 	}
 
-	mux.Handle("/rerun", gziphandler.GzipHandler(handleRerun(prowJobClient, o.rerunCreatesJob, authCfgGetter, goa, githuboauth.NewAuthenticatedUserIdentifier(&o.github), githubClient, pluginAgent, logrus.WithField("handler", "/rerun"))))
+	mux.Handle("/rerun", gziphandler.GzipHandler(handleRerun(cfg, prowJobClient, o.rerunCreatesJob, authCfgGetter, goa, githuboauth.NewAuthenticatedUserIdentifier(&o.github), githubClient, pluginAgent, logrus.WithField("handler", "/rerun"))))
 
 	// optionally inject http->https redirect handler when behind loadbalancer
 	if o.redirectHTTPTo != "" {
