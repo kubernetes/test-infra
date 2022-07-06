@@ -445,12 +445,6 @@ presubmits:
             - runner.sh
             - "./scripts/ci-e2e.sh"
           env:
-            - name: INIT_WITH_BINARY
-              value: "https://github.com/kubernetes-sigs/cluster-api/releases/download/v0.4.8/clusterctl-{OS}-{ARCH}"
-            - name: INIT_WITH_PROVIDERS_CONTRACT
-              value: "v1alpha4"
-            - name: INIT_WITH_KUBERNETES_VERSION
-              value: "v1.21.2"
             - name: GINKGO_FOCUS
               value: "API Version Upgrade"
           # we need privileged mode in order to do docker in docker
