@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"mime"
 	"net/url"
 	"strings"
@@ -245,7 +246,7 @@ type RerunAuthConfig struct {
 
 // IsSpecifiedUser returns true if AllowAnyone is set to true or if the given user is
 // specified as a permitted GitHubUser
-func (rac *RerunAuthConfig) IsAuthorized(org, user string, cli prowgithub.RerunClient) (bool, error) {
+func (rac *RerunAuthConfig) IsAuthorized(org, user string, cli prowgithub.RerunClient, log *logrus.Entry) (bool, error) {
 	if rac == nil {
 		return false, nil
 	}
@@ -280,11 +281,13 @@ func (rac *RerunAuthConfig) IsAuthorized(org, user string, cli prowgithub.RerunC
 		}
 	}
 	for _, ghts := range rac.GitHubTeamSlugs {
+		log.Debugf("checking %s/%s for membership", ghts.Org, ghts.Slug)
 		member, err := cli.TeamBySlugHasMember(ghts.Org, ghts.Slug, user)
 		if err != nil {
 			return false, fmt.Errorf("GitHub failed to check if team with slug %s has member %s: %w", ghts.Slug, user, err)
 		}
 		if member {
+			log.Debug("user is member of authorized team")
 			return true, nil
 		}
 	}

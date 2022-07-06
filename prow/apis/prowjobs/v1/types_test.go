@@ -17,6 +17,7 @@ limitations under the License.
 package v1
 
 import (
+	"github.com/sirupsen/logrus"
 	"strconv"
 	"testing"
 	"time"
@@ -537,7 +538,7 @@ func TestRerunAuthConfigIsAuthorized(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 
-			if actual, _ := tc.config.IsAuthorized("", tc.user, nil); actual != tc.authorized {
+			if actual, _ := tc.config.IsAuthorized("", tc.user, nil, &logrus.Entry{}); actual != tc.authorized {
 				t.Errorf("Expected %v, got %v", tc.authorized, actual)
 			}
 		})

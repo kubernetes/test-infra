@@ -1433,14 +1433,14 @@ func canTriggerJob(user string, pj prowapi.ProwJob, cfg *prowapi.RerunAuthConfig
 	}
 
 	// Then check config-level rerun auth config.
-	if auth, err := cfg.IsAuthorized(org, user, cli); err != nil {
+	if auth, err := cfg.IsAuthorized(org, user, cli, log); err != nil {
 		return false, err
 	} else if auth {
 		return true, err
 	}
 
 	// Check job-level rerun auth config.
-	if auth, err := pj.Spec.RerunAuthConfig.IsAuthorized(org, user, cli); err != nil {
+	if auth, err := pj.Spec.RerunAuthConfig.IsAuthorized(org, user, cli, log); err != nil {
 		return false, err
 	} else if auth {
 		return true, nil
