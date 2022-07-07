@@ -2029,7 +2029,7 @@ func TestDumpOrgConfig(t *testing.T) {
 				repoPermissions: tc.repoPermissions,
 				repos:           tc.repos,
 			}
-			actual, err := dumpOrgConfig(fc, orgName, tc.ignoreSecretTeams)
+			actual, err := dumpOrgConfig(fc, orgName, tc.ignoreSecretTeams, "")
 			switch {
 			case err != nil:
 				if !tc.err {
