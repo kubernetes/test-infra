@@ -38,8 +38,8 @@ steps:
     - gcr.io/$PROJECT_ID/kubekins-e2e:latest-$_CONFIG
     dir: .
 substitutions:
-  _BAZEL_VERSION: 3.4.1
-  _OLD_BAZEL_VERSION: 2.2.0
+  _BAZEL_VERSION: 5.2.0
+  _OLD_BAZEL_VERSION: 3.4.1
   _CFSSL_VERSION: R1.2
   _CONFIG: master
   _GIT_TAG: '12345'
