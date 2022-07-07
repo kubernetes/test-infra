@@ -300,6 +300,7 @@ func TestProtect(t *testing.T) {
 		collaborators          []github.User
 		teams                  []github.Team
 		skipVerifyRestrictions bool
+		enableAppsRestrictions bool
 		errors                 int
 
 		enabled func(org, repo string) bool
@@ -718,8 +719,9 @@ branch-protection:
 			},
 		},
 		{
-			name:     "all modern fields",
-			branches: []string{"all/modern=master"},
+			name:                   "all modern fields",
+			branches:               []string{"all/modern=master"},
+			enableAppsRestrictions: true,
 			appInstallations: []github.AppInstallation{
 				{
 					AppSlug: "content-app",
@@ -867,8 +869,9 @@ branch-protection:
 			},
 		},
 		{
-			name:     "do not make update request if the branch is already up-to-date",
-			branches: []string{"kubernetes/test-infra=master"},
+			name:                   "do not make update request if the branch is already up-to-date",
+			enableAppsRestrictions: true,
+			branches:               []string{"kubernetes/test-infra=master"},
 			appInstallations: []github.AppInstallation{
 				{
 					AppSlug: "content-app",
@@ -1130,8 +1133,9 @@ branch-protection:
 			},
 		},
 		{
-			name:     "do not make update request if the app, team or collaborator is not authorized",
-			branches: []string{"org/unauthorized-app=master", "org/unauthorized-collaborator=master", "org/unauthorized-team=master"},
+			name:                   "do not make update request if the app, team or collaborator is not authorized",
+			branches:               []string{"org/unauthorized-app=master", "org/unauthorized-collaborator=master", "org/unauthorized-team=master"},
+			enableAppsRestrictions: true,
 			config: `
 branch-protection:
   protect: true
@@ -1407,6 +1411,76 @@ branch-protection:
 				},
 			},
 		},
+		{
+			name:                   "existing app restrictions with apps restrictions feature flag disabled",
+			branches:               []string{"org/apps-restrictions-disabled=master"},
+			enableAppsRestrictions: false,
+			appInstallations: []github.AppInstallation{
+				{
+					AppSlug: "content-app",
+					Permissions: github.InstallationPermissions{
+						Contents: string(github.Write),
+					},
+				},
+			},
+			collaborators: []github.User{
+				{
+					Login:       "cindy",
+					Permissions: github.RepoPermissions{Push: true},
+				},
+			},
+			teams: []github.Team{
+				{
+					Slug:       "org-team",
+					Permission: github.RepoPush,
+				},
+			},
+			config: `
+branch-protection:
+  protect: true
+  restrictions:
+    users:
+    - cindy
+  orgs:
+    org:
+      restrictions:
+        teams:
+        - org-team
+`,
+			expected: []requirements{
+				{
+					Org:    "org",
+					Repo:   "apps-restrictions-disabled",
+					Branch: "master",
+					Request: &github.BranchProtectionRequest{
+						EnforceAdmins: &no,
+						Restrictions: &github.RestrictionsRequest{
+							Apps:  nil,
+							Users: &[]string{"cindy"},
+							Teams: &[]string{"org-team"},
+						},
+					},
+				},
+			},
+		},
+		{
+			name:                   "configured app restrictions with app restriction feature gate disabled",
+			branches:               []string{"org/apps-restrictions-disabled=master"},
+			enableAppsRestrictions: false,
+			config: `
+branch-protection:
+  protect: true
+  restrictions:
+    users:
+    - cindy
+  orgs:
+    org:
+      restrictions:
+        apps:
+        - content-app
+`,
+			errors: 1,
+		},
 	}
 
 	for _, tc := range cases {
@@ -1449,14 +1523,15 @@ branch-protection:
 				tc.enabled = func(org, repo string) bool { return true }
 			}
 			p := protector{
-				client:             &fc,
-				cfg:                &cfg,
-				errors:             Errors{},
-				updates:            make(chan requirements),
-				done:               make(chan []error),
-				completedRepos:     make(map[string]bool),
-				verifyRestrictions: !tc.skipVerifyRestrictions,
-				enabled:            tc.enabled,
+				client:                 &fc,
+				cfg:                    &cfg,
+				errors:                 Errors{},
+				updates:                make(chan requirements),
+				done:                   make(chan []error),
+				completedRepos:         make(map[string]bool),
+				verifyRestrictions:     !tc.skipVerifyRestrictions,
+				enableAppsRestrictions: tc.enableAppsRestrictions,
+				enabled:                tc.enabled,
 			}
 			go func() {
 				p.protect()

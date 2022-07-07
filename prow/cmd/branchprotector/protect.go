@@ -43,9 +43,10 @@ const (
 )
 
 type options struct {
-	config             configflagutil.ConfigOptions
-	confirm            bool
-	verifyRestrictions bool
+	config                 configflagutil.ConfigOptions
+	confirm                bool
+	verifyRestrictions     bool
+	enableAppsRestrictions bool
 
 	github           flagutil.GitHubOptions
 	githubEnablement flagutil.GitHubEnablementOptions
@@ -72,6 +73,7 @@ func gatherOptions() options {
 	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 	fs.BoolVar(&o.confirm, "confirm", false, "Mutate github if set")
 	fs.BoolVar(&o.verifyRestrictions, "verify-restrictions", false, "Verify the restrictions section of the request for authorized apps/collaborators/teams")
+	fs.BoolVar(&o.enableAppsRestrictions, "enable-apps-restrictions", false, "Enable feature to enforce apps restrictions in branch protection rules")
 	o.config.AddFlags(fs)
 	o.github.AddCustomizedFlags(fs, flagutil.ThrottlerDefaults(defaultTokens, defaultBurst))
 	o.githubEnablement.AddFlags(fs)
@@ -120,14 +122,15 @@ func main() {
 	}
 
 	p := protector{
-		client:             githubClient,
-		cfg:                cfg,
-		updates:            make(chan requirements),
-		errors:             Errors{},
-		completedRepos:     make(map[string]bool),
-		done:               make(chan []error),
-		verifyRestrictions: o.verifyRestrictions,
-		enabled:            o.githubEnablement.EnablementChecker(),
+		client:                 githubClient,
+		cfg:                    cfg,
+		updates:                make(chan requirements),
+		errors:                 Errors{},
+		completedRepos:         make(map[string]bool),
+		done:                   make(chan []error),
+		verifyRestrictions:     o.verifyRestrictions,
+		enableAppsRestrictions: o.enableAppsRestrictions,
+		enabled:                o.githubEnablement.EnablementChecker(),
 	}
 
 	go p.configureBranches()
@@ -155,14 +158,15 @@ type client interface {
 }
 
 type protector struct {
-	client             client
-	cfg                *config.Config
-	updates            chan requirements
-	errors             Errors
-	completedRepos     map[string]bool
-	done               chan []error
-	verifyRestrictions bool
-	enabled            func(org, repo string) bool
+	client                 client
+	cfg                    *config.Config
+	updates                chan requirements
+	errors                 Errors
+	completedRepos         map[string]bool
+	done                   chan []error
+	verifyRestrictions     bool
+	enableAppsRestrictions bool
+	enabled                func(org, repo string) bool
 }
 
 func (p *protector) configureBranches() {
@@ -454,9 +458,14 @@ func (p *protector) UpdateBranch(orgName, repo string, branchName string, branch
 		return nil
 	}
 
+	// Return error if apps restrictions if feature is disabled, but there are apps restrictions in the config
+	if !p.enableAppsRestrictions && bp != nil && bp.Restrictions != nil && bp.Restrictions.Apps != nil {
+		return fmt.Errorf("'enable-apps-restrictions' command line flag is not true, but Apps Restrictions are maintainted for %s/%s=%s", orgName, repo, branchName)
+	}
+
 	var req *github.BranchProtectionRequest
 	if *bp.Protect {
-		r := makeRequest(*bp)
+		r := makeRequest(*bp, p.enableAppsRestrictions)
 		req = &r
 	}
 
@@ -631,7 +640,7 @@ func equalApps(stateApps []github.App, requestApps *[]string) bool {
 		apps = append(apps, app.Slug)
 	}
 	// Treat unspecified Apps configuration as no change that we do not create a breaking change when introducing Apps in branchprotector
-	// TODO: consider harmonizing apps handling with teams and users
+	// TODO: could be changed when "enableAppsRestrictions" flag is not needed anymore
 	return equalStringSlices(&apps, requestApps) || requestApps == nil
 }
 

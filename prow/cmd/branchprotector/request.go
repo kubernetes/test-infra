@@ -25,12 +25,12 @@ import (
 )
 
 // makeRequest renders a branch protection policy into the corresponding GitHub api request.
-func makeRequest(policy branchprotection.Policy) github.BranchProtectionRequest {
+func makeRequest(policy branchprotection.Policy, enableAppsRestrictions bool) github.BranchProtectionRequest {
 	return github.BranchProtectionRequest{
 		EnforceAdmins:              makeAdmins(policy.Admins),
 		RequiredPullRequestReviews: makeReviews(policy.RequiredPullRequestReviews),
 		RequiredStatusChecks:       makeChecks(policy.RequiredStatusChecks),
-		Restrictions:               makeRestrictions(policy.Restrictions),
+		Restrictions:               makeRestrictions(policy.Restrictions, enableAppsRestrictions),
 		RequiredLinearHistory:      makeBool(policy.RequiredLinearHistory),
 		AllowForcePushes:           makeBool(policy.AllowForcePushes),
 		AllowDeletions:             makeBool(policy.AllowDeletions),
@@ -88,17 +88,16 @@ func makeDismissalRestrictions(rp *branchprotection.DismissalRestrictions) *gith
 // makeRestrictions renders restrictions into the corresponding GitHub api object.
 //
 // Returns nil when input restrictions is nil.
-// Otherwise Teams and Users are both non-nil (empty list if unset).
-// Apps have been introduced later and are nil if unset. This avoids silently removing all manually configured github app exceptions when the feature is introduced
-// `dismissal_restrictions` in branch protection does not apps, so it is optional to set them to a non nil value
-func makeRestrictions(rp *branchprotection.Restrictions) *github.RestrictionsRequest {
+// Otherwise Teams and Users are non-nil (empty list if unset).
+// If enableAppsRestrictions is set Apps behave like Teams and Users, otherwise Apps are nil
+func makeRestrictions(rp *branchprotection.Restrictions, enableAppsRestrictions bool) *github.RestrictionsRequest {
 	if rp == nil {
 		return nil
 	}
-	// Treat unspecified Apps configuration as nil value that we do not remove all manual in github configured apps silently when introducing Apps in branchprotector
-	// TODO: consider harmonizing apps handling with teams and users
+	// Only set restriction request for apps if feature flag is true
+	// TODO: consider removing feature flag in the future
 	var apps *[]string
-	if rp.Apps != nil {
+	if enableAppsRestrictions {
 		a := append([]string{}, sets.NewString(rp.Apps...).List()...)
 		apps = &a
 	}
