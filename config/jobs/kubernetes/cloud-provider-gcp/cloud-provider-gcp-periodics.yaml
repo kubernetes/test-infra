@@ -10,7 +10,6 @@ periodics:
     testgrid-dashboards: provider-gcp-periodics
     description: Runs conformance tests using kubetest2 against cloud-provider-gcp master on GCE
   labels:
-    preset-cloud-provider-gcp-e2e-common: "true"
     preset-dind-enabled: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
@@ -48,7 +47,7 @@ periodics:
         go install sigs.k8s.io/kubetest2@latest;
         go install sigs.k8s.io/kubetest2/kubetest2-gce@latest;
         go install sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest;
-        kubetest2 gce -v 2 --repo-root $REPO_ROOT --build --up --down --test=ginkgo -- --test-package-version=v1.23.0 --focus-regex='\[Conformance\]'
+        kubetest2 gce -v 2 --repo-root $REPO_ROOT --build --up --down --test=ginkgo --master-size n1-standard-2  -- --test-package-version=v1.23.0 --focus-regex='\[Conformance\]'
 - interval: 24h
   cluster: k8s-infra-prow-build
   name: ci-cloud-provider-gcp-e2e-latest
@@ -60,8 +59,6 @@ periodics:
     testgrid-dashboards: provider-gcp-periodics
     description: Runs e2e-full tests using kubetest2 against cloud-provider-gcp master on GCE
   labels:
-    preset-cloud-provider-gcp-e2e-common: "true"
-    preset-cloud-provider-gcp-e2e-full: "true"
     preset-dind-enabled: "true"
     preset-k8s-ssh: "true"
     preset-service-account: "true"
@@ -99,4 +96,4 @@ periodics:
         go install sigs.k8s.io/kubetest2@latest;
         go install sigs.k8s.io/kubetest2/kubetest2-gce@latest;
         go install sigs.k8s.io/kubetest2/kubetest2-tester-ginkgo@latest;
-        kubetest2 gce -v 2 --repo-root $REPO_ROOT --build --up --down --test=ginkgo -- --test-package-version=v1.23.0 --parallel=30 --test-args='--minStartupPods=8 --container-runtime=containerd' --skip-regex='\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
+        kubetest2 gce -v 2 --repo-root $REPO_ROOT --build --up --down --test=ginkgo --node-size n1-standard-4 --master-size n1-standard-2 -- --test-package-version=v1.23.0 --parallel=30 --test-args='--minStartupPods=8 --container-runtime=containerd' --skip-regex='\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'
