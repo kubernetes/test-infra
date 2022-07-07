@@ -179,7 +179,7 @@ periodics:
   extra_refs:
   - org: kubernetes
     repo: kubernetes
-    base_ref: 938a3203c #before #110702
+    base_ref: d11725a28e7e6e6d69f267a90028004133f6f108 #before #110702
     path_alias: k8s.io/kubernetes
   spec:
     containers:
