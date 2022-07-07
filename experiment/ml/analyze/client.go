@@ -39,7 +39,7 @@ func newPredictionClient(ctx context.Context, projectID, location, model, quotaP
 	}
 	client, err := automl.NewPredictionClient(ctx, opts...)
 	if err != nil {
-		return nil, fmt.Errorf("create clent: %w", err)
+		return nil, fmt.Errorf("create client: %w", err)
 	}
 
 	return &predictionClient{
