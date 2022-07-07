@@ -35,6 +35,20 @@ import (
 	"k8s.io/test-infra/prow/logrusutil"
 )
 
+var (
+	// clone might fail due to various reasons. For example:
+	//   - DNS not ready when new node just started
+	//   - Hit quota limit
+	// exponential retry could potentially help.
+	cloneRetries = []time.Duration{
+		100 * time.Millisecond,
+		200 * time.Millisecond,
+		400 * time.Millisecond,
+		800 * time.Millisecond,
+		2 * time.Second,
+	}
+)
+
 type runnable interface {
 	run() (string, string, error)
 }
@@ -99,15 +113,30 @@ func Run(refs prowapi.Refs, dir, gitUserName, gitUserEmail, cookiePath string, e
 	}
 
 	g := gitCtxForRefs(refs, dir, env, user, token)
-	if err := runCommands(g.commandsForBaseRef(refs, gitUserName, gitUserEmail, cookiePath)); err != nil {
+	if err := runCommands(g.commandsForSeed(refs, gitUserName, gitUserEmail, cookiePath)); err != nil {
 		return record
 	}
 
-	timestamp, err := g.gitHeadTimestamp()
-	if err != nil {
-		timestamp = int(time.Now().Unix())
+	for _, interval := range cloneRetries {
+		if err = runCommands(g.commandsForBaseRef(refs)); err != nil {
+			// the err will be captured later
+			time.Sleep(interval)
+			continue
+		}
+
+		timestamp, err := g.gitHeadTimestamp()
+		if err != nil {
+			timestamp = int(time.Now().Unix())
+		}
+		err = runCommands(g.commandsForPullRefs(refs, timestamp))
+		if err == nil {
+			break
+		}
+
+		// failed running previous command, sleep
+		time.Sleep(interval)
 	}
-	if err := runCommands(g.commandsForPullRefs(refs, timestamp)); err != nil {
+	if err != nil {
 		return record
 	}
 
@@ -189,30 +218,7 @@ func (g *gitCtx) gitCommand(args ...string) cloneCommand {
 	return cloneCommand{dir: g.cloneDir, env: g.env, command: "git", args: args}
 }
 
-var (
-	fetchRetries = []time.Duration{
-		100 * time.Millisecond,
-		200 * time.Millisecond,
-		400 * time.Millisecond,
-		800 * time.Millisecond,
-		2 * time.Second,
-	}
-)
-
-func (g *gitCtx) gitFetch(fetchArgs ...string) retryCommand {
-	args := []string{"fetch"}
-	args = append(args, fetchArgs...)
-
-	return retryCommand{
-		runnable: g.gitCommand(args...),
-		retries:  fetchRetries,
-	}
-}
-
-// commandsForBaseRef returns the list of commands needed to initialize and
-// configure a local git directory, as well as fetch and check out the provided
-// base ref.
-func (g *gitCtx) commandsForBaseRef(refs prowapi.Refs, gitUserName, gitUserEmail, cookiePath string) []runnable {
+func (g *gitCtx) commandsForSeed(refs prowapi.Refs, gitUserName, gitUserEmail, cookiePath string) []runnable {
 	var commands []runnable
 	commands = append(commands, cloneCommand{dir: "/", env: g.env, command: "mkdir", args: []string{"-p", g.cloneDir}})
 
@@ -226,6 +232,14 @@ func (g *gitCtx) commandsForBaseRef(refs prowapi.Refs, gitUserName, gitUserEmail
 	if cookiePath != "" && refs.SkipSubmodules {
 		commands = append(commands, g.gitCommand("config", "http.cookiefile", cookiePath))
 	}
+	return commands
+}
+
+// commandsForBaseRef returns the list of commands needed to initialize and
+// configure a local git directory, as well as fetch and check out the provided
+// base ref.
+func (g *gitCtx) commandsForBaseRef(refs prowapi.Refs) []runnable {
+	var commands []runnable
 
 	var depthArgs []string
 	if d := refs.CloneDepth; d > 0 {
@@ -235,7 +249,7 @@ func (g *gitCtx) commandsForBaseRef(refs prowapi.Refs, gitUserName, gitUserEmail
 	if !refs.SkipFetchHead {
 		fetchArgs := []string{g.repositoryURI, "--tags", "--prune"}
 		fetchArgs = append(fetchArgs, depthArgs...)
-		commands = append(commands, g.gitFetch(fetchArgs...))
+		commands = append(commands, g.gitCommand(append([]string{"fetch"}, fetchArgs...)...))
 	}
 
 	var fetchRef string
@@ -251,7 +265,7 @@ func (g *gitCtx) commandsForBaseRef(refs prowapi.Refs, gitUserName, gitUserEmail
 	{
 		fetchArgs := append([]string{}, depthArgs...)
 		fetchArgs = append(fetchArgs, g.repositoryURI, fetchRef)
-		commands = append(commands, g.gitFetch(fetchArgs...))
+		commands = append(commands, g.gitCommand(append([]string{"fetch"}, fetchArgs...)...))
 	}
 
 	// we need to be "on" the target branch after the sync
@@ -323,7 +337,7 @@ func (g *gitCtx) commandsForPullRefs(refs prowapi.Refs, fakeTimestamp int) []run
 		if prRef.Ref != "" {
 			ref = prRef.Ref
 		}
-		commands = append(commands, g.gitFetch(g.repositoryURI, ref))
+		commands = append(commands, g.gitCommand("fetch", g.repositoryURI, ref))
 		var prCheckout string
 		if prRef.SHA != "" {
 			prCheckout = prRef.SHA
