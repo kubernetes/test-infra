@@ -796,7 +796,10 @@ func IsAccessDenied(err error) bool {
 	if !ok {
 		return false
 	}
-	return reqError.bugzillaCode == 102
+	if reqError.bugzillaCode == 102 || reqError.statusCode == 401 {
+		return true
+	}
+	return false
 }
 
 // AddPullRequestAsExternalBug attempts to add a PR to the external tracker list.
