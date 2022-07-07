@@ -11,7 +11,7 @@ periodics:
     org: kubernetes
     path_alias: k8s.io/kubernetes
     repo: kubernetes
-  interval: 24h
+  interval: 3h
   labels:
     preset-azure-cred: "true"
     preset-azure-windows: "true"
@@ -108,7 +108,7 @@ periodics:
     testgrid-tab-name: aks-engine-windows-containerd-serial-slow-1.23
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     description: Runs SIG-Windows release serial tests on K8s 1.23 clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
-- interval: 24h
+- interval: 3h
   name: ci-kubernetes-e2e-aks-engine-azure-1-23-windows
   decorate: true
   decoration_config:
@@ -163,3 +163,57 @@ periodics:
     testgrid-tab-name: aks-engine-windows-dockershim-1.23
     testgrid-alert-email: kubernetes-provider-azure@googlegroups.com, sig-windows-leads@kubernetes.io
     description: Runs SIG-Windows release tests on K8s 1.23 clusters provided by aks-engine (https://github.com/Azure/aks-engine) on Azure cloud
+- interval: 3h
+  name: ci-kubernetes-e2e-aks-engine-azure-1-23-windows-938a3203c
+  decorate: true
+  decoration_config:
+    timeout: 3h
+  labels:
+    preset-service-account: "true"
+    preset-azure-cred: "true"
+    preset-azure-windows: "true"
+    preset-windows-repo-list-master: "true"
+    preset-windows-private-registry-cred: "true"
+    preset-k8s-ssh: "true"
+    preset-dind-enabled: "true"
+  extra_refs:
+  - org: kubernetes
+    repo: kubernetes
+    base_ref: 938a3203c #before #110702
+    path_alias: k8s.io/kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220624-1a63fdd9f2-1.23
+      command:
+      - runner.sh
+      - kubetest
+      args:
+      # Generic e2e test args
+      - --test
+      - --up
+      - --down
+      - --build=quick
+      - --dump=$(ARTIFACTS)
+      # Azure-specific test args
+      - --deployment=aksengine
+      - --provider=skeleton
+      - --aksengine-orchestratorRelease=1.23
+      - --aksengine-admin-username=azureuser
+      - --aksengine-admin-password=AdminPassw0rd
+      - --aksengine-creds=$(AZURE_CREDENTIALS)
+      - --aksengine-download-url=https://aka.ms/aks-engine/aks-engine-k8s-e2e.tar.gz
+      - --aksengine-public-key=$(K8S_SSH_PUBLIC_KEY_PATH)
+      - --aksengine-private-key=$(K8S_SSH_PRIVATE_KEY_PATH)
+      - --aksengine-winZipBuildScript=$(WIN_BUILD)
+      - --aksengine-template-url=https://raw.githubusercontent.com/kubernetes-sigs/windows-testing/master/job-templates/kubernetes_release_1_23.json
+      - --aksengine-win-binaries
+      - --aksengine-deploy-custom-k8s
+      # Specific test args
+      - --test_args=--node-os-distro=windows -docker-config-file=$(DOCKER_CONFIG_FILE) -prepull-images=true --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[sig-windows\]|\[sig-apps\].CronJob|\[sig-api-machinery\].ResourceQuota|\[sig-network\].EndpointSlice --ginkgo.skip=\[LinuxOnly\]|\[Serial\]|\[Slow\]|\[alpha\]|\[Excluded:WindowsDocker\]|GMSA|Guestbook.application.should.create.and.stop.a.working.application|device.plugin.for.Windows
+      - --ginkgo-parallel=4
+      securityContext:
+        privileged: true
+  annotations:
+    testgrid-dashboards: sig-windows-1.23-release
+    testgrid-tab-name: aks-engine-windows-dockershim-1.23-938a3203c
+    description: This is a temporary job to investigate a flaky backport.  It is stuck at commit 938a3203c
