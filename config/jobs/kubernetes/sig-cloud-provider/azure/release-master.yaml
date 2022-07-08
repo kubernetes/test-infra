@@ -18,7 +18,7 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.3
+        base_ref: release-1.4
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
@@ -68,7 +68,7 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.3
+        base_ref: release-1.4
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
@@ -120,7 +120,7 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.3
+        base_ref: release-1.4
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
@@ -171,7 +171,7 @@ presubmits:
     extra_refs:
       - org: kubernetes-sigs
         repo: cluster-api-provider-azure
-        base_ref: release-1.3
+        base_ref: release-1.4
         path_alias: sigs.k8s.io/cluster-api-provider-azure
         workdir: true
       - org: kubernetes-sigs
@@ -224,7 +224,7 @@ presubmits:
     extra_refs:
     - org: kubernetes-sigs
       repo: cluster-api-provider-azure
-      base_ref: release-1.3
+      base_ref: release-1.4
       path_alias: sigs.k8s.io/cluster-api-provider-azure
       workdir: true
     spec:
@@ -371,7 +371,7 @@ periodics:
         make e2e-test
       env:
       - name: KUBERNETES_VERSION
-        value: "latest"
+        value: "latest-master"
       - name: AZURE_STORAGE_DRIVER
         value: "kubernetes.io/azure-file" # In-tree Azure file storage class
       securityContext:
@@ -423,7 +423,7 @@ periodics:
         make e2e-test
       env:
       - name: KUBERNETES_VERSION
-        value: "latest"
+        value: "latest-master"
       - name: EXP_MACHINE_POOL
         value: "true"
       - name: AZURE_STORAGE_DRIVER
@@ -476,7 +476,7 @@ periodics:
         make e2e-test
       env:
       - name: KUBERNETES_VERSION
-        value: "latest"
+        value: "latest-master"
       - name: AZURE_STORAGE_DRIVER
         value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
       securityContext:
@@ -527,7 +527,7 @@ periodics:
         make e2e-test
       env:
       - name: KUBERNETES_VERSION
-        value: "latest"
+        value: "latest-master"
       - name: EXP_MACHINE_POOL
         value: "true"
       - name: AZURE_STORAGE_DRIVER
@@ -556,7 +556,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.3
+    base_ref: release-1.4
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   spec:
     containers:
@@ -568,7 +568,7 @@ periodics:
       - name: E2E_ARGS
         value: "-kubetest.use-ci-artifacts"
       - name: KUBERNETES_VERSION
-        value: "latest"
+        value: "latest-master"
       - name: CONFORMANCE_WORKER_MACHINE_COUNT
         value: "2"
       securityContext:
@@ -595,7 +595,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.3
+    base_ref: release-1.4
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   - org: kubernetes-sigs
     repo: azurefile-csi-driver
@@ -620,7 +620,7 @@ periodics:
         make e2e-test
       env:
       - name: KUBERNETES_VERSION
-        value: "latest"
+        value: "latest-master"
       - name: AZURE_STORAGE_DRIVER
         value: "kubernetes.io/azure-file" # In-tree Azure file storage class
       securityContext:
@@ -647,7 +647,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.3
+    base_ref: release-1.4
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   - org: kubernetes-sigs
     repo: azurefile-csi-driver
@@ -672,7 +672,7 @@ periodics:
         make e2e-test
       env:
       - name: KUBERNETES_VERSION
-        value: "latest"
+        value: "latest-master"
       - name: EXP_MACHINE_POOL
         value: "true"
       - name: AZURE_STORAGE_DRIVER
@@ -701,7 +701,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.3
+    base_ref: release-1.4
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   - org: kubernetes-sigs
     repo: azuredisk-csi-driver
@@ -725,7 +725,7 @@ periodics:
         make e2e-test
       env:
       - name: KUBERNETES_VERSION
-        value: "latest"
+        value: "latest-master"
       - name: AZURE_STORAGE_DRIVER
         value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
       securityContext:
@@ -752,7 +752,7 @@ periodics:
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
-    base_ref: release-1.3
+    base_ref: release-1.4
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   - org: kubernetes-sigs
     repo: azuredisk-csi-driver
@@ -776,7 +776,7 @@ periodics:
         make e2e-test
       env:
       - name: KUBERNETES_VERSION
-        value: "latest"
+        value: "latest-master"
       - name: EXP_MACHINE_POOL
         value: "true"
       - name: AZURE_STORAGE_DRIVER
