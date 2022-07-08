@@ -1,6 +1,7 @@
 import moment from "moment";
 import {ProwJob, ProwJobList, ProwJobState, ProwJobType, Pull} from "../api/prow";
-import {cell, createRerunProwJobIcon, formatDuration, icon} from "../common/common";
+import {cell, formatDuration, icon} from "../common/common";
+import {createRerunProwJobIcon} from "../common/rerun";
 import {getParameterByName} from "../common/urls";
 import {FuzzySearch} from './fuzzy-search';
 import {JobHistogram, JobSample} from './histogram';

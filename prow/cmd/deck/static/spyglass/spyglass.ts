@@ -1,4 +1,4 @@
-import {createRerunProwJobIcon} from "../common/common";
+import {createRerunProwJobIcon} from "../common/rerun";
 import {getParameterByName} from "../common/urls";
 import {isTransitMessage, serialiseHashes} from "./common";
 
