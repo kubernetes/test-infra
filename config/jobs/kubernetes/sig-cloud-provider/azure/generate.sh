@@ -408,7 +408,7 @@ periodics:
         make e2e-test
       env:
       - name: KUBERNETES_VERSION
-        value: "latest-${release}"
+        value: "${kubernetes_version}"
       - name: AZURE_STORAGE_DRIVER
         value: "kubernetes.io/azure-file" # In-tree Azure file storage class
       securityContext:
@@ -460,7 +460,7 @@ periodics:
         make e2e-test
       env:
       - name: KUBERNETES_VERSION
-        value: "latest-${release}"
+        value: "${kubernetes_version}"
       - name: EXP_MACHINE_POOL
         value: "true"
       - name: AZURE_STORAGE_DRIVER
@@ -513,7 +513,7 @@ periodics:
         make e2e-test
       env:
       - name: KUBERNETES_VERSION
-        value: "latest-${release}"
+        value: "${kubernetes_version}"
       - name: AZURE_STORAGE_DRIVER
         value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
       securityContext:
@@ -564,7 +564,7 @@ periodics:
         make e2e-test
       env:
       - name: KUBERNETES_VERSION
-        value: "latest-${release}"
+        value: "${kubernetes_version}"
       - name: EXP_MACHINE_POOL
         value: "true"
       - name: AZURE_STORAGE_DRIVER
@@ -608,7 +608,7 @@ EOF
       - name: E2E_ARGS
         value: "-kubetest.use-ci-artifacts"
       - name: KUBERNETES_VERSION
-        value: "latest-${release}"
+        value: "${kubernetes_version}"
       - name: CONFORMANCE_WORKER_MACHINE_COUNT
         value: "2"
       securityContext:
@@ -660,7 +660,7 @@ EOF
         make e2e-test
       env:
       - name: KUBERNETES_VERSION
-        value: "latest-${release}"
+        value: "${kubernetes_version}"
       - name: AZURE_STORAGE_DRIVER
         value: "kubernetes.io/azure-file" # In-tree Azure file storage class
       securityContext:
@@ -712,7 +712,7 @@ EOF
         make e2e-test
       env:
       - name: KUBERNETES_VERSION
-        value: "latest-${release}"
+        value: "${kubernetes_version}"
       - name: EXP_MACHINE_POOL
         value: "true"
       - name: AZURE_STORAGE_DRIVER
@@ -765,7 +765,7 @@ EOF
         make e2e-test
       env:
       - name: KUBERNETES_VERSION
-        value: "latest-${release}"
+        value: "${kubernetes_version}"
       - name: AZURE_STORAGE_DRIVER
         value: "kubernetes.io/azure-disk" # In-tree Azure disk storage class
       securityContext:
@@ -816,7 +816,7 @@ EOF
         make e2e-test
       env:
       - name: KUBERNETES_VERSION
-        value: "latest-${release}"
+        value: "${kubernetes_version}"
       - name: EXP_MACHINE_POOL
         value: "true"
       - name: AZURE_STORAGE_DRIVER
