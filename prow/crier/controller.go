@@ -85,7 +85,11 @@ func (r *reconciler) Reconcile(ctx context.Context, req reconcile.Request) (reco
 	log.Debug("processing next key")
 	result, err := r.reconcile(ctx, log, req)
 	if err != nil {
-		log.WithError(err).Error("Reconciliation failed")
+		if criercommonlib.IsUserError(err) {
+			log.WithError(err).Debug("Reconciliation failed")
+		} else {
+			log.WithError(err).Error("Reconciliation failed")
+		}
 	}
 	if result == nil {
 		result = &reconcile.Result{}
@@ -135,7 +139,11 @@ func (r *reconciler) reconcile(ctx context.Context, log *logrus.Entry, req recon
 	log.Info("Will report state")
 	pjs, requeue, err := r.reporter.Report(ctx, log, &pj)
 	if err != nil {
-		log.WithError(err).Error("failed to report job")
+		if criercommonlib.IsUserError(err) {
+			log.WithError(err).Debug("Failed to report job.")
+		} else {
+			log.WithError(err).Error("Failed to report job.")
+		}
 		crierMetrics.reportingResults.WithLabelValues(r.reporter.GetName(), ResultError).Inc()
 		return nil, fmt.Errorf("failed to report job: %w", err)
 	}
