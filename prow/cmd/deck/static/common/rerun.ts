@@ -1,4 +1,4 @@
-import {copyToClipboardWithToast, icon} from "./common";
+import {alertToast, copyToClipboardWithToast, icon} from "./common";
 import {relativeURL} from "./urls";
 
 export function createRerunProwJobIcon(modal: HTMLElement, rerunElement: HTMLElement, prowjob: string, rerunCreatesJob: boolean, csrfToken: string): HTMLElement {
@@ -128,7 +128,7 @@ export function createRerunProwJobIcon(modal: HTMLElement, rerunElement: HTMLEle
             if (result.status === 401) {
                 window.location.href = window.location.origin + `/github-login?dest=${relativeURL({rerun: "gh_redirect"})}`;
             } else {
-                rerunElement.innerHTML = data;
+                alertToast(data)
             }
         };
         rerunElement.appendChild(runButton);

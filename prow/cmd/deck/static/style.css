@@ -306,6 +306,10 @@ i.state {
     width: 52px;
 }
 
+#toastAlert {
+    background-color: #F44336;
+}
+
 #rerun {
     display: none;
     position: fixed;
@@ -327,6 +331,7 @@ i.state {
     padding: 40px;
     border: 1px solid #888;
     width: 50%;
+    max-width: 1500px;
     color: #444;
     border-radius: 10px;
     box-shadow: 0px 20px 80px 0px; 
@@ -390,10 +395,6 @@ i.state {
 
 .accordion-panel-content {
     padding: 20px;
-}
-
-.rerunModal-commandContent {
-    display: flex;
 }
 
 .rerunModal-accordionDescription {

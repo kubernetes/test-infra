@@ -225,6 +225,11 @@ export function getCookieByName(name: string): string {
   return "";
 }
 
+export function alertToast(text: string): void {
+  const toast = document.getElementById("toastAlert") as SnackbarElement<HTMLDivElement>;
+  toast.MaterialSnackbar.showSnackbar({message: text});
+}
+
 export function copyToClipboardWithToast(text: string): void {
   copyToClipboard(text);
 
