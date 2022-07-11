@@ -50,6 +50,44 @@ presubmits:
       testgrid-dashboards: sig-windows-presubmit
       testgrid-tab-name: pull-kubernetes-e2e-capz-windows-containerd
       testgrid-num-columns-recent: '30'
+  - name: pull-kubernetes-e2e-capz-windows-containerd-test
+    decorate: true
+    always_run: false
+    optional: true
+    path_alias: k8s.io/kubernetes
+    branches:
+      - master
+      - main
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true"
+      preset-capz-windows-2019: "true"
+      preset-capz-containerd-latest: "true"
+      preset-capz-windows-common-pull: "true"
+    extra_refs:
+    - org: marosset
+      repo: cluster-api-provider-azure
+      base_ref: windows-us-pr-bits
+      path_alias: sigs.k8s.io/cluster-api-provider-azure
+      workdir: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+        command:
+        - runner.sh
+        - ./scripts/ci-conformance.sh
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 2
+            memory: "9Gi"
+    annotations:
+      testgrid-dashboards: sig-windows-presubmit
+      testgrid-tab-name: pull-kubernetes-e2e-capz-windows-containerd-test
+      testgrid-num-columns-recent: '30'
   kubernetes-sigs/windows-testing:
   - name: pull-e2e-capz-containerd-windows-2022-extension
     interval: 3h
