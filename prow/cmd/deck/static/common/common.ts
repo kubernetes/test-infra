@@ -181,6 +181,16 @@ export namespace icon {
 
     return container;
   }
+
+  export function createAsString(iconString: string, tip: string = "", onClick?: (this: HTMLElement, ev: MouseEvent) => any, href?: string): string {
+    return `
+      <a class="mdl-button mdl-js-button mdl-button--icon" ${href ? `href="${href}"` : ''}>
+        <i class="icon-button material-icons" title=${(tip !== "") ? `"${tip}"` : ''} onclick=${onClick}>
+          ${iconString}
+        </i>
+      </a>
+    `;
+  }
 }
 
 export namespace tidehistory {
@@ -250,7 +260,6 @@ function copyToClipboard(text: string) {
       }
   }
 }
-
 export function formatDuration(seconds: number): string {
   const parts: string[] = [];
   if (seconds >= 3600) {
