@@ -153,7 +153,7 @@ presubmits:
         workdir: true
       - org: kubernetes
         repo: kubernetes
-        base_ref: release-1.24
+        base_ref: master
         path_alias: k8s.io/kubernetes
         workdir: false
     spec:
@@ -179,7 +179,7 @@ presubmits:
             - name: KUBERNETES_VERSION
               value: "latest"
             - name: GINKGO_ARGS
-              value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --test.parallel=30 --report-dir=/logs/artifacts --disable-log-dump=true
+              value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --nodes=30 --report-dir=/logs/artifacts --disable-log-dump=true
             - name: CONTROL_PLANE_MACHINE_COUNT
               value: "1"
     annotations:
