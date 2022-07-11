@@ -33,6 +33,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
@@ -222,44 +223,74 @@ func createCache(cloneURI *url.URL, cookieFilePath string, cacheSize int, config
 func (c *Controller) Sync() error {
 	syncTime := c.tracker.Current()
 	latest := syncTime.DeepCopy()
+
+	var wg sync.WaitGroup
+	errChan := make(chan error)
+	var repoCacheMapMux, latestMux sync.Mutex
 	for instance, changes := range c.gc.QueryChanges(syncTime, c.config().Gerrit.RateLimit) {
-		log := logrus.WithField("host", instance)
-		for _, change := range changes {
-			log := log.WithFields(logrus.Fields{
-				"branch":   change.Branch,
-				"change":   change.Number,
-				"repo":     change.Project,
-				"revision": change.CurrentRevision,
-			})
+		wg.Add(1)
+		go func(instance string, changes []gerrit.ChangeInfo) {
+			defer wg.Done()
+			log := logrus.WithField("host", instance)
+			for _, change := range changes {
+				log := log.WithFields(logrus.Fields{
+					"branch":   change.Branch,
+					"change":   change.Number,
+					"repo":     change.Project,
+					"revision": change.CurrentRevision,
+				})
 
-			cloneURI, err := makeCloneURI(instance, change.Project)
-			if err != nil {
-				return fmt.Errorf("makeCloneURI: %w", err)
-			}
-
-			cache, ok := c.repoCacheMap[cloneURI.String()]
-			if !ok {
-				if cache, err = createCache(cloneURI, c.cookieFilePath, c.cacheSize, c.configAgent); err != nil {
-					return err
+				cloneURI, err := makeCloneURI(instance, change.Project)
+				if err != nil {
+					errChan <- fmt.Errorf("makeCloneURI: %w", err)
+					return
 				}
-				c.repoCacheMap[cloneURI.String()] = cache
-			}
 
-			result := client.ResultSuccess
-			if err := c.processChange(log, instance, change, cloneURI, cache); err != nil {
-				result = client.ResultError
-				log.WithError(err).Info("Failed to process change")
-			}
-			gerritMetrics.processingResults.WithLabelValues(instance, change.Project, result).Inc()
+				repoCacheMapMux.Lock()
+				cache, ok := c.repoCacheMap[cloneURI.String()]
+				if !ok {
+					if cache, err = createCache(cloneURI, c.cookieFilePath, c.cacheSize, c.configAgent); err != nil {
+						repoCacheMapMux.Unlock()
+						errChan <- err
+						return
+					}
+					c.repoCacheMap[cloneURI.String()] = cache
+				}
+				repoCacheMapMux.Unlock()
 
-			lastTime, ok := latest[instance][change.Project]
-			if !ok || lastTime.Before(change.Updated.Time) {
-				lastTime = change.Updated.Time
-				latest[instance][change.Project] = lastTime
+				result := client.ResultSuccess
+				if err := c.processChange(log, instance, change, cloneURI, cache); err != nil {
+					result = client.ResultError
+					log.WithError(err).Info("Failed to process change")
+				}
+				gerritMetrics.processingResults.WithLabelValues(instance, change.Project, result).Inc()
+
+				latestMux.Lock()
+				lastTime, ok := latest[instance][change.Project]
+				if !ok || lastTime.Before(change.Updated.Time) {
+					lastTime = change.Updated.Time
+					latest[instance][change.Project] = lastTime
+				}
+				latestMux.Unlock()
 			}
-		}
-		log.Infof("Processed %d changes", len(changes))
+			log.Infof("Processed %d changes", len(changes))
+		}(instance, changes)
 	}
+
+	// Capture errors here so that goroutines are unblocked.
+	var errs []error
+	go func() {
+		for err := range errChan {
+			errs = append(errs, err)
+		}
+	}()
+	wg.Wait()
+	close(errChan)
+
+	if len(errs) > 0 {
+		return utilerrors.NewAggregate(errs)
+	}
+
 	return c.tracker.Update(latest)
 }
 
