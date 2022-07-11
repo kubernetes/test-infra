@@ -31,6 +31,7 @@ import (
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/crier/reporters/criercommonlib"
 	"k8s.io/test-infra/prow/io/providers"
 	"k8s.io/test-infra/prow/spyglass/api"
 )
@@ -124,9 +125,18 @@ func (c *Client) Report(ctx context.Context, _ *logrus.Entry, pj *prowapi.ProwJo
 
 	_, err = res.Get(ctx)
 	if err != nil {
-		return nil, nil, fmt.Errorf(
+		wrappedError := fmt.Errorf(
 			"failed to publish pubsub message with run ID %q to topic: \"%s/%s\". %v",
 			message.RunID, message.Project, message.Topic, err)
+
+		// It would be a user error if the topic doesn't exist, return a user
+		// error in this case so that we can avoid logging on error level.
+		topicExist, existErr := topic.Exists(ctx)
+		if existErr == nil && !topicExist {
+			return nil, nil, criercommonlib.UserError(wrappedError)
+		}
+
+		return nil, nil, wrappedError
 	}
 
 	return []*prowapi.ProwJob{pj}, nil, nil
