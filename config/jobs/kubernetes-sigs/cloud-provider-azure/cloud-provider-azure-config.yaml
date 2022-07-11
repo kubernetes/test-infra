@@ -66,6 +66,8 @@ presubmits:
               value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
             - name: AZURE_LOADBALANCER_SKU
               value: "Standard"
+            - name: CLUSTER_PROVISIONING_TOOL
+              value: "capz"
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmss-capz
@@ -182,6 +184,8 @@ presubmits:
               value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --nodes=30 --report-dir=/logs/artifacts --disable-log-dump=true
             - name: CONTROL_PLANE_MACHINE_COUNT
               value: "1"
+            - name: CLUSTER_PROVISIONING_TOOL
+              value: "capz"
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure
       testgrid-tab-name: pr-cloud-provider-azure-e2e-capz
@@ -230,6 +234,8 @@ presubmits:
               value: "1"
             - name: KUBERNETES_VERSION
               value: "latest"
+            - name: CLUSTER_PROVISIONING_TOOL
+              value: "capz"
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-capz
@@ -294,6 +300,8 @@ presubmits:
               value: "-ginkgo.skip=\"\\[Serial\\]\\[Slow\\]|Private\\slink\\sservice|\\[MultipleAgentPools\\]\""
             - name: LABEL_FILTER
               value: "!Serial && !Slow && !PLS && !Multi-Nodepool"
+            - name: CLUSTER_PROVISIONING_TOOL
+              value: "capz"
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure
       testgrid-tab-name: pr-cloud-provider-azure-e2e-ccm-vmss-ip-lb-capz
@@ -366,6 +374,8 @@ periodics:
           value: "1"
         - name: KUBERNETES_VERSION
           value: "latest"
+        - name: CLUSTER_PROVISIONING_TOOL
+          value: "capz"
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-master-capz
@@ -416,6 +426,8 @@ periodics:
           value: "1"
         - name: KUBERNETES_VERSION
           value: "latest"
+        - name: CLUSTER_PROVISIONING_TOOL
+          value: "capz"
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-master-capz-main
@@ -471,6 +483,8 @@ periodics:
           value: "latest"
         - name: WORKER_MACHINE_COUNT
           value: "0"
+        - name: CLUSTER_PROVISIONING_TOOL
+          value: "capz"
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-ccm-windows-capz
@@ -529,6 +543,8 @@ periodics:
         value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --test.parallel=30 --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT
         value: "1"
+      - name: CLUSTER_PROVISIONING_TOOL
+        value: "capz"
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-conformance-capz
@@ -592,6 +608,8 @@ periodics:
         value: "containerd-2022"
       - name: WORKER_MACHINE_COUNT
         value: "0"
+      - name: CLUSTER_PROVISIONING_TOOL
+        value: "capz"
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-conformance-windows-capz
@@ -650,6 +668,8 @@ periodics:
         value: --ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|In-tree.Volumes|should.be.able.to.create.an.internal.type.load.balancer --test.parallel=4 --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT
         value: "1"
+      - name: CLUSTER_PROVISIONING_TOOL
+        value: "capz"
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-slow-capz
@@ -702,6 +722,8 @@ periodics:
           value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
         - name: AZURE_LOADBALANCER_SKU
           value: "Standard"
+        - name: CLUSTER_PROVISIONING_TOOL
+          value: "capz"
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-master-vmss-capz
@@ -762,6 +784,8 @@ periodics:
         value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
       - name: AZURE_LOADBALANCER_SKU
         value: "Standard"
+      - name: CLUSTER_PROVISIONING_TOOL
+        value: "capz"
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-conformance-vmss-capz
@@ -823,6 +847,8 @@ periodics:
         value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
       - name: AZURE_LOADBALANCER_SKU
         value: "Standard"
+      - name: CLUSTER_PROVISIONING_TOOL
+        value: "capz"
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-conformance-serial-vmss-capz
@@ -884,6 +910,8 @@ periodics:
         value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-multiple-zones-ci-version.yaml
       - name: AZURE_LOADBALANCER_SKU
         value: "Standard"
+      - name: CLUSTER_PROVISIONING_TOOL
+        value: "capz"
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-conformance-multiple-zones-vmss-capz
@@ -944,6 +972,8 @@ periodics:
         value: https://raw.githubusercontent.com/kubernetes-sigs/cloud-provider-azure/master/tests/k8s-azure/manifest/cluster-api/linux-vmss-ci-version.yaml
       - name: AZURE_LOADBALANCER_SKU
         value: "Standard"
+      - name: CLUSTER_PROVISIONING_TOOL
+        value: "capz"
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-slow-vmss-capz
