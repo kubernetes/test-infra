@@ -776,7 +776,7 @@ function dump_nodes_with_logexporter() {
       echo "Attempt ${retry} failed to list marker files for successful nodes"
       if [[ "${retry}" == 10 ]]; then
         echo 'Final attempt to list marker files failed.. falling back to logdump through SSH'
-        kubectl delete namespace "${logexporter_namespace}" || true
+        kubectl delete namespace "${logexporter_namespace}" --timeout 15m || true
         dump_nodes "${NODE_NAMES[@]}"
         logexporter_failed=1
         return
