@@ -17,7 +17,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220624-1a63fdd9f2-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
       args:
       - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
       - "--root=/go/src"
@@ -63,7 +63,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220624-1a63fdd9f2-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
       args:
       - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
       - "--root=/go/src"
@@ -107,7 +107,7 @@ presubmits:
     optional: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220624-1a63fdd9f2-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
         args:
         - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
         - "--root=/go/src"
@@ -150,7 +150,7 @@ presubmits:
     optional: true
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220624-1a63fdd9f2-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
         args:
         - "--repo=sigs.k8s.io/gcp-compute-persistent-disk-csi-driver"
         - "--root=/go/src"
