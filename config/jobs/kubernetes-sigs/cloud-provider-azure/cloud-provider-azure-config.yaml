@@ -181,11 +181,13 @@ presubmits:
             - name: KUBERNETES_VERSION
               value: "latest"
             - name: GINKGO_ARGS
-              value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --nodes=30 --report-dir=/logs/artifacts --disable-log-dump=true
+              value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --report-dir=/logs/artifacts --disable-log-dump=true
             - name: CONTROL_PLANE_MACHINE_COUNT
               value: "1"
             - name: CLUSTER_PROVISIONING_TOOL
               value: "capz"
+            - name: GINKGO_PARALLEL_NODES
+              value: "30"
     annotations:
       testgrid-dashboards: provider-azure-cloud-provider-azure
       testgrid-tab-name: pr-cloud-provider-azure-e2e-capz
