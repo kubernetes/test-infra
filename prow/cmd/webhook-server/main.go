@@ -18,17 +18,19 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
-
+	
 	"github.com/sirupsen/logrus"
 	secretmanagerpb "google.golang.org/genproto/googleapis/cloud/secretmanager/v1"
 	"k8s.io/test-infra/experiment/clustersecretbackup/secretmanager"
-	"k8s.io/test-infra/prow/flagutil"
+	"k8s.io/test-infra/pkg/flagutil"
+	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/logrusutil"
+	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
@@ -45,41 +47,88 @@ type ClientInterface interface {
 	GetSecretValue(ctx context.Context, secretName, versionName string) ([]byte, error)
 }
 
+type options struct {
+	projectId string
+	expiryInYears int
+	dnsNames []string
+	dryRun                 bool
+	kubernetes             prowflagutil.KubernetesOptions
+}
+
+func (o *options) Validate() error {
+	optionGroup := []flagutil.OptionGroup{&o.kubernetes}
+	if err := optionGroup[0].Validate(o.dryRun); err != nil {
+		return err
+	}
+	if len(o.projectId) == 0 || o.expiryInYears < 0 {
+		return fmt.Errorf("project id not supplied")
+	}
+	return nil
+}
+
+func gatherOptions(fs *flag.FlagSet, args ...string) options {
+	var o options	
+	fs.StringVar(&o.projectId, "project-id", "colew-test", "Project ID for storing GCP Secrets")
+	fs.IntVar(&o.expiryInYears, "expiry-years", 30, "CA certificate expiry in years")
+	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether to mutate any real-world state")
+	optionGroup := []flagutil.OptionGroup{&o.kubernetes}
+	optionGroup[0].AddFlags(fs)
+	fs.Parse(args)
+	return o
+}
+
 func main() {
 	logrusutil.ComponentInit()
 	logrus.SetLevel(logrus.DebugLevel)
-	p := flag.String("project-id", 
-	"colew-test", "Project ID for storing GCP Secrets")
-	e := flag.Int("expiry-years", 30, "CA certificate expiry in years")
-	dns := flagutil.NewStrings("validation-webhook-service", "validation-webhook-service.default", "validation-webhook-service.default.svc")
+	dns := prowflagutil.NewStrings("validation-webhook-service", "validation-webhook-service.default", "validation-webhook-service.default.svc")
 	flag.Var(&dns, "dns", "DNS Names CA-Cert config")
 	flag.Parse()
-	exp := *e
-	projectId := *p
-	if len(projectId) == 0 {
-		logrus.Fatal("project-id flag not supplied")
+	o := gatherOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:]...)
+	o.dnsNames = dns.Strings()
+	if err := o.Validate(); err != nil {
+		logrus.WithError(err).Fatal("Invalid options")
 	}
-	client, err := secretmanager.NewClient(projectId, false)
+	client, err := secretmanager.NewClient(o.projectId, false)
 	if err != nil {
 		logrus.WithError(err).Fatal("Unable to create secret manager client")
 	}
 	ctx := context.Background()
-	cert, privKey, err := getGCPSecrets(client, ctx, exp, dns)
-	secretUnavailable := strings.Contains(err.Error(), gcpSecretError)
+	kubeCfg, err := o.kubernetes.InfrastructureClusterConfig(o.dryRun)
+	if err != nil {
+		logrus.WithError(err).Fatal("Error getting kubeconfig.")
+	}
+	cl, err := ctrlruntimeclient.New(kubeCfg, ctrlruntimeclient.Options{})
+	if err != nil {
+		logrus.WithError(err).Fatal("Could not create writer client")
+	}
+	cert, privKey, _, err := getGCPSecrets(client, ctx, o.expiryInYears, dns)
+	var caPem string
+	var secretUnavailable bool
+	if err != nil {
+		secretUnavailable = strings.Contains(err.Error(), gcpSecretError)
+	}
 	if err != nil && secretUnavailable {
 		logrus.Info(err)
-		cert, privKey, err = createGCPSecret(client, ctx, exp, dns.Strings())
+		cert, privKey, caPem, err = createGCPSecret(client, ctx, o.expiryInYears, dns.Strings())
 		if err != nil {
 			logrus.WithError(err).Fatal("Unable to create ca certificate")
+		}
+		err := createOrPatchValidationWebhookConfig(ctx, caPem, cl, false)
+		if err != nil {
+			logrus.WithError(err).Fatal("Unable to generate ValidationWebhookConfig")
 		}
 	} else if err != nil && !secretUnavailable {
 		logrus.WithError(err).Fatal("Unable to get GCP Secret")
 	}
 	if err = isCertValid(cert); err != nil {
 		logrus.Info(err)
-		cert, privKey, err = updateGCPSecret(client, ctx, exp, dns.Strings())
+		cert, privKey, caPem, err = updateGCPSecret(client, ctx, o.expiryInYears, dns.Strings())
 		if err != nil {
 			logrus.WithError(err).Fatal("Unable to update GCP Secret")
+		}
+		err := createOrPatchValidationWebhookConfig(ctx, caPem, cl, true)
+		if err != nil {
+			logrus.WithError(err).Fatal("Unable to generate ValidationWebhookConfig")
 		}
 	} 
 	http.HandleFunc("/validate", serveValidate)
@@ -87,70 +136,4 @@ func main() {
 	logrus.Fatal(http.ListenAndServeTLS(":8008", cert, privKey, nil))
 }
 
-func getGCPSecrets(client ClientInterface, ctx context.Context, expiry int, dns flagutil.Strings) (string, string, error) {
-	secretsMap := make(map[string]string)
-	data, err := client.GetSecretValue(ctx, secretID, "latest")
-	if err != nil {
-		return "", "", fmt.Errorf(gcpSecretError)
-	}
 
-	err = json.Unmarshal(data, &secretsMap)
-	if err != nil {
-		return "", "", fmt.Errorf("error marshalling CA cert secret data: %v", err)
-	}
-
-	cert := secretsMap[caCert]
-	privKey := secretsMap[caPrivKey]
-
-	return cert, privKey, nil
-}
-
-
-func createGCPSecret(client ClientInterface, ctx context.Context, expiry int, dns []string) (string, string, error) {
-	serverCertPerm, serverPrivKey, secretData, err := genSecretData(expiry, dns)
-	if err != nil {
-		return "", "", err
-	}
-
-	if _, err := client.CreateSecret(ctx, secretID); err != nil {
-		return "", "", fmt.Errorf("unable to create secret %v", err)
-	}
-
-	if err := client.AddSecretVersion(ctx, secretID, secretData); err != nil {
-		return "", "", fmt.Errorf("unable to add secret version %v", err)
-	}
-
-	return serverCertPerm, serverPrivKey, nil
-}
-
-func updateGCPSecret(client ClientInterface, ctx context.Context, expiry int, dns[] string) (string, string, error) {
-	serverCertPerm, serverPrivKey, secretData, err := genSecretData(expiry, dns)
-	if err != nil {
-		return "", "", err
-	}
-
-	if err := client.AddSecretVersion(ctx, secretID, secretData); err != nil {
-		return "", "", fmt.Errorf("unable to add secret version %v", err)
-	}
-
-	return serverCertPerm, serverPrivKey, nil
-}
-
-func genSecretData(expiry int, dns []string) (string, string, []byte, error) {
-	serverCertPerm, serverPrivKey, caPem, err := genCert(expiry, dns)
-	if err != nil {
-		return "", "", nil, fmt.Errorf("could not generate ca credentials")
-	}
-	caSecrets := map[string]string{
-	    caCert: serverCertPerm,
-	    caPrivKey: serverPrivKey,
-	    caBundle: caPem,
-	}
-	secretData, err := json.Marshal(caSecrets)
-
-	if err != nil {
-		return "", "", nil, fmt.Errorf("error unmarshalling CA cert secret data: %v", err)
-	}
-
-	return serverCertPerm, serverPrivKey, secretData, nil
-}

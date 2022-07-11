@@ -66,11 +66,11 @@ func TestCreateGCPSecrets(t * testing.T) {
 			store: store,
 		},
 	}
-	cert, key, err := createGCPSecret(f, ctx, 30, dns.Strings())
+	cert, key, caPem, err := createGCPSecret(f, ctx, 30, dns.Strings())
 	if err != nil {
 		t.Errorf("Unable to create GCP Secrets %v", err)
 	}
-	if len(cert) == 0 || len(key) == 0 {
+	if len(cert) == 0 || len(key) == 0 || len(caPem) == 0 {
 		t.Errorf("Issue generating ca certificate")
 	}
 	if len(store) == 0 {
@@ -87,15 +87,15 @@ func TestGetGCPSecrets(t *testing.T) {
 			store: store,
 		},
 	}
-	origCert, origKey, err := createGCPSecret(f, ctx, 30, dns.Strings())
+	origCert, origKey, origCaPem, err := createGCPSecret(f, ctx, 30, dns.Strings())
 	if err != nil {
 		t.Errorf("Unable to create GCP Secrets %v", err)
 	}
-	cert, key, err := getGCPSecrets(f, ctx,  30, dns)
+	cert, key, caPem, err := getGCPSecrets(f, ctx,  30, dns)
 	if err != nil {
 		t.Errorf("Unable to get GCP Secrets %v", err)
 	}
-	if (origCert != cert || origKey != key) {
+	if (origCert != cert || origKey != key || origCaPem != caPem) {
 		t.Errorf("Error getting certificate and key")
 	}
 	if len(cert) == 0 || len(key) == 0 {
