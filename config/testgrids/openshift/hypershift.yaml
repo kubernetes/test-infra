@@ -5,6 +5,8 @@ test_groups:
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-release-4.11-periodics-aws-conformance
 - name: redhat-hypershift-main-aws-4-12-conformance
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-main-periodics-aws-conformance
+- name: redhat-hypershift-main-periodics-e2e-conformance-proxy
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-hypershift-main-periodics-e2e-conformance-proxy
 
 dashboards:
 - name: redhat-hypershift
@@ -17,6 +19,12 @@ dashboards:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
   - name: aws-conformance-4.12
     test_group_name: redhat-hypershift-main-aws-4-12-conformance
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+  - name: aws-conformance-4.12-proxy
+    test_group_name: redhat-hypershift-main-periodics-e2e-conformance-proxy
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
