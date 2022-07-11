@@ -344,10 +344,17 @@ i.state {
 
 .rerunModal-description {
     font-size: 16px;
+    margin-bottom: 24px;
+}
+
+.rerunModal-openOut {
+    /* HACK: "open out" icon scaling is off otherwise. */
+    transform: scale(.75);
+    margin: 0px -7px;
 }
 
 .rerunModal-radioButtonGroup {
-    margin: 10px 0px 10px 0px;
+    margin: 10px 0px;
 }
 
 .rerunModal-radioButtonRow {
@@ -402,6 +409,7 @@ i.state {
 }
 
 .rerunModal-commandContent {
+    display: flex;
     background-color: lightgrey;
     padding: 10px;
     border-radius: 5px;

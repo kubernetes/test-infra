@@ -181,16 +181,6 @@ export namespace icon {
 
     return container;
   }
-
-  export function createAsString(iconString: string, tip: string = "", onClick?: (this: HTMLElement, ev: MouseEvent) => any, href?: string): string {
-    return `
-      <a class="mdl-button mdl-js-button mdl-button--icon" ${href ? `href="${href}"` : ''}>
-        <i class="icon-button material-icons" title=${(tip !== "") ? `"${tip}"` : ''} onclick=${onClick}>
-          ${iconString}
-        </i>
-      </a>
-    `;
-  }
 }
 
 export namespace tidehistory {
@@ -225,16 +215,14 @@ export function getCookieByName(name: string): string {
   return "";
 }
 
-export function alertToast(text: string): void {
-  const toast = document.getElementById("toastAlert") as SnackbarElement<HTMLDivElement>;
+export function showToast(text: string): void {
+  const toast = document.getElementById("toast") as SnackbarElement<HTMLDivElement>;
   toast.MaterialSnackbar.showSnackbar({message: text});
 }
 
-export function copyToClipboardWithToast(text: string): void {
-  copyToClipboard(text);
-
-  const toast = document.getElementById("toast") as SnackbarElement<HTMLDivElement>;
-  toast.MaterialSnackbar.showSnackbar({message: "Copied to clipboard"});
+export function showAlert(text: string): void {
+  const toast = document.getElementById("toastAlert") as SnackbarElement<HTMLDivElement>;
+  toast.MaterialSnackbar.showSnackbar({message: text});
 }
 
 // copyToClipboard is from https://stackoverflow.com/a/33928558
@@ -245,7 +233,7 @@ export function copyToClipboardWithToast(text: string): void {
 // IE: The clipboard feature may be disabled by an administrator. By
 // default a prompt is shown the first time the clipboard is
 // used (per session).
-function copyToClipboard(text: string) {
+export function copyToClipboard(text: string) {
   if (window.clipboardData && window.clipboardData.setData) {
       // IE specific code path to prevent textarea being shown while dialog is visible.
       return window.clipboardData.setData("Text", text);
