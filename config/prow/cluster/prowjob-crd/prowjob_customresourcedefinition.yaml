@@ -551,15 +551,23 @@ spec:
                         name:
                           type: string
                         value:
-                          description: ArrayOrString is a type that can hold a single
+                          description: 'ArrayOrString is a type that can hold a single
                             string or string array. Used in JSON unmarshalling so
                             that a single JSON field can accept either an individual
-                            string or an array of strings.
+                            string or an array of strings. TODO (@chuangw6): This
+                            struct will be renamed or be embedded in a new struct
+                            to take into consideration the object case after the community
+                            reaches an agreement on it.'
                           properties:
                             arrayVal:
                               items:
                                 type: string
                               type: array
+                              x-kubernetes-list-type: atomic
+                            objectVal:
+                              additionalProperties:
+                                type: string
+                              type: object
                             stringVal:
                               type: string
                             type:
@@ -569,6 +577,7 @@ spec:
                               type: string
                           required:
                           - arrayVal
+                          - objectVal
                           - stringVal
                           - type
                           type: object
@@ -584,9 +593,40 @@ spec:
                       apiVersion:
                         description: API version of the referent
                         type: string
+                      bundle:
+                        description: Bundle url reference to a Tekton Bundle.
+                        type: string
                       name:
                         description: 'Name of the referent; More info: http://kubernetes.io/docs/user-guide/identifiers#names'
                         type: string
+                      resolver:
+                        description: Resolver is the name of the resolver that should
+                          perform resolution of the referenced Tekton resource, such
+                          as "git".
+                        type: string
+                      resource:
+                        description: Resource contains the parameters used to identify
+                          the referenced Tekton resource. Example entries might include
+                          "repo" or "path" but the set of params ultimately depends
+                          on the chosen resolver.
+                        items:
+                          description: ResolverParam is a single parameter passed
+                            to a resolver.
+                          properties:
+                            name:
+                              description: Name is the name of the parameter that
+                                will be passed to the resolver.
+                              type: string
+                            value:
+                              description: Value is the string value of the parameter
+                                that will be passed to the resolver.
+                              type: string
+                          required:
+                          - name
+                          - value
+                          type: object
+                        type: array
+                        x-kubernetes-list-type: atomic
                     type: object
                   pipelineSpec:
                     description: PipelineSpec defines the desired state of Pipeline.
@@ -613,6 +653,11 @@ spec:
                                   items:
                                     type: string
                                   type: array
+                                  x-kubernetes-list-type: atomic
+                                objectVal:
+                                  additionalProperties:
+                                    type: string
+                                  type: object
                                 stringVal:
                                   type: string
                                 type:
@@ -622,6 +667,7 @@ spec:
                                   type: string
                               required:
                               - arrayVal
+                              - objectVal
                               - stringVal
                               - type
                               type: object
@@ -633,10 +679,24 @@ spec:
                               description: Name declares the name by which a parameter
                                 is referenced.
                               type: string
+                            properties:
+                              additionalProperties:
+                                description: PropertySpec defines the struct for object
+                                  keys
+                                properties:
+                                  type:
+                                    description: ParamType indicates the type of an
+                                      input parameter; Used to distinguish between
+                                      a single string and an array of strings.
+                                    type: string
+                                type: object
+                              description: Properties is the JSON Schema properties
+                                to support key-value pairs parameter.
+                              type: object
                             type:
                               description: Type is the user-specified type of the
-                                parameter. The possible types are currently "string"
-                                and "array", and "string" is the default.
+                                parameter. The possible types are currently "string",
+                                "array" and "object", and "string" is the default.
                               type: string
                           required:
                           - name
@@ -726,16 +786,25 @@ spec:
                                         name:
                                           type: string
                                         value:
-                                          description: ArrayOrString is a type that
+                                          description: 'ArrayOrString is a type that
                                             can hold a single string or string array.
                                             Used in JSON unmarshalling so that a single
                                             JSON field can accept either an individual
-                                            string or an array of strings.
+                                            string or an array of strings. TODO (@chuangw6):
+                                            This struct will be renamed or be embedded
+                                            in a new struct to take into consideration
+                                            the object case after the community reaches
+                                            an agreement on it.'
                                           properties:
                                             arrayVal:
                                               items:
                                                 type: string
                                               type: array
+                                              x-kubernetes-list-type: atomic
+                                            objectVal:
+                                              additionalProperties:
+                                                type: string
+                                              type: object
                                             stringVal:
                                               type: string
                                             type:
@@ -746,6 +815,7 @@ spec:
                                               type: string
                                           required:
                                           - arrayVal
+                                          - objectVal
                                           - stringVal
                                           - type
                                           type: object
@@ -754,6 +824,7 @@ spec:
                                       - value
                                       type: object
                                     type: array
+                                    x-kubernetes-list-type: atomic
                                   resources:
                                     description: Resources declare the resources provided
                                       to this Condition as input
@@ -773,6 +844,7 @@ spec:
                                           items:
                                             type: string
                                           type: array
+                                          x-kubernetes-list-type: atomic
                                         name:
                                           description: Name is the name of the PipelineResource
                                             as declared by the Task.
@@ -786,6 +858,7 @@ spec:
                                       - resource
                                       type: object
                                     type: array
+                                    x-kubernetes-list-type: atomic
                                 required:
                                 - conditionRef
                                 type: object
@@ -806,16 +879,24 @@ spec:
                                   name:
                                     type: string
                                   value:
-                                    description: ArrayOrString is a type that can
+                                    description: 'ArrayOrString is a type that can
                                       hold a single string or string array. Used in
                                       JSON unmarshalling so that a single JSON field
                                       can accept either an individual string or an
-                                      array of strings.
+                                      array of strings. TODO (@chuangw6): This struct
+                                      will be renamed or be embedded in a new struct
+                                      to take into consideration the object case after
+                                      the community reaches an agreement on it.'
                                     properties:
                                       arrayVal:
                                         items:
                                           type: string
                                         type: array
+                                        x-kubernetes-list-type: atomic
+                                      objectVal:
+                                        additionalProperties:
+                                          type: string
+                                        type: object
                                       stringVal:
                                         type: string
                                       type:
@@ -826,6 +907,7 @@ spec:
                                         type: string
                                     required:
                                     - arrayVal
+                                    - objectVal
                                     - stringVal
                                     - type
                                     type: object
@@ -856,6 +938,7 @@ spec:
                                         items:
                                           type: string
                                         type: array
+                                        x-kubernetes-list-type: atomic
                                       name:
                                         description: Name is the name of the PipelineResource
                                           as declared by the Task.
@@ -869,6 +952,7 @@ spec:
                                     - resource
                                     type: object
                                   type: array
+                                  x-kubernetes-list-type: atomic
                                 outputs:
                                   description: Outputs holds the mapping from the
                                     PipelineResources declared in DeclaredPipelineResources
@@ -893,6 +977,7 @@ spec:
                                     - resource
                                     type: object
                                   type: array
+                                  x-kubernetes-list-type: atomic
                               type: object
                             retries:
                               description: 'Retries represents how many times this
@@ -912,6 +997,9 @@ spec:
                                 apiVersion:
                                   description: API version of the referent
                                   type: string
+                                bundle:
+                                  description: Bundle url reference to a Tekton Bundle.
+                                  type: string
                                 kind:
                                   description: TaskKind indicates the kind of the
                                     task, namespaced or cluster scoped.
@@ -919,6 +1007,36 @@ spec:
                                 name:
                                   description: 'Name of the referent; More info: http://kubernetes.io/docs/user-guide/identifiers#names'
                                   type: string
+                                resolver:
+                                  description: Resolver is the name of the resolver
+                                    that should perform resolution of the referenced
+                                    Tekton resource, such as "git".
+                                  type: string
+                                resource:
+                                  description: Resource contains the parameters used
+                                    to identify the referenced Tekton resource. Example
+                                    entries might include "repo" or "path" but the
+                                    set of params ultimately depends on the chosen
+                                    resolver.
+                                  items:
+                                    description: ResolverParam is a single parameter
+                                      passed to a resolver.
+                                    properties:
+                                      name:
+                                        description: Name is the name of the parameter
+                                          that will be passed to the resolver.
+                                        type: string
+                                      value:
+                                        description: Value is the string value of
+                                          the parameter that will be passed to the
+                                          resolver.
+                                        type: string
+                                    required:
+                                    - name
+                                    - value
+                                    type: object
+                                  type: array
+                                  x-kubernetes-list-type: atomic
                               type: object
                             taskSpec:
                               description: TaskSpec is specification of a task
@@ -953,6 +1071,11 @@ spec:
                                                 items:
                                                   type: string
                                                 type: array
+                                                x-kubernetes-list-type: atomic
+                                              objectVal:
+                                                additionalProperties:
+                                                  type: string
+                                                type: object
                                               stringVal:
                                                 type: string
                                               type:
@@ -963,6 +1086,7 @@ spec:
                                                 type: string
                                             required:
                                             - arrayVal
+                                            - objectVal
                                             - stringVal
                                             - type
                                             type: object
@@ -975,11 +1099,28 @@ spec:
                                             description: Name declares the name by
                                               which a parameter is referenced.
                                             type: string
+                                          properties:
+                                            additionalProperties:
+                                              description: PropertySpec defines the
+                                                struct for object keys
+                                              properties:
+                                                type:
+                                                  description: ParamType indicates
+                                                    the type of an input parameter;
+                                                    Used to distinguish between a
+                                                    single string and an array of
+                                                    strings.
+                                                  type: string
+                                              type: object
+                                            description: Properties is the JSON Schema
+                                              properties to support key-value pairs
+                                              parameter.
+                                            type: object
                                           type:
                                             description: Type is the user-specified
                                               type of the parameter. The possible
-                                              types are currently "string" and "array",
-                                              and "string" is the default.
+                                              types are currently "string", "array"
+                                              and "object", and "string" is the default.
                                             type: string
                                         required:
                                         - name
@@ -1136,6 +1277,11 @@ spec:
                                             items:
                                               type: string
                                             type: array
+                                            x-kubernetes-list-type: atomic
+                                          objectVal:
+                                            additionalProperties:
+                                              type: string
+                                            type: object
                                           stringVal:
                                             type: string
                                           type:
@@ -1146,6 +1292,7 @@ spec:
                                             type: string
                                         required:
                                         - arrayVal
+                                        - objectVal
                                         - stringVal
                                         - type
                                         type: object
@@ -1158,16 +1305,32 @@ spec:
                                         description: Name declares the name by which
                                           a parameter is referenced.
                                         type: string
+                                      properties:
+                                        additionalProperties:
+                                          description: PropertySpec defines the struct
+                                            for object keys
+                                          properties:
+                                            type:
+                                              description: ParamType indicates the
+                                                type of an input parameter; Used to
+                                                distinguish between a single string
+                                                and an array of strings.
+                                              type: string
+                                          type: object
+                                        description: Properties is the JSON Schema
+                                          properties to support key-value pairs parameter.
+                                        type: object
                                       type:
                                         description: Type is the user-specified type
                                           of the parameter. The possible types are
-                                          currently "string" and "array", and "string"
-                                          is the default.
+                                          currently "string", "array" and "object",
+                                          and "string" is the default.
                                         type: string
                                     required:
                                     - name
                                     type: object
                                   type: array
+                                  x-kubernetes-list-type: atomic
                                 resources:
                                   description: Resources is a list input and output
                                     resource to run the task Resources are represented
@@ -1224,6 +1387,7 @@ spec:
                                         - type
                                         type: object
                                       type: array
+                                      x-kubernetes-list-type: atomic
                                     outputs:
                                       description: Outputs holds the mapping from
                                         the PipelineResources declared in DeclaredPipelineResources
@@ -1275,6 +1439,7 @@ spec:
                                         - type
                                         type: object
                                       type: array
+                                      x-kubernetes-list-type: atomic
                                   type: object
                                 results:
                                   description: Results are values that this Task can
@@ -1290,22 +1455,29 @@ spec:
                                       name:
                                         description: Name the given name
                                         type: string
+                                      type:
+                                        description: Type is the user-specified type
+                                          of the result. The possible type is currently
+                                          "string" and will support "array" in following
+                                          work.
+                                        type: string
                                     required:
                                     - name
                                     type: object
                                   type: array
+                                  x-kubernetes-list-type: atomic
                                 sidecars:
                                   description: Sidecars are run alongside the Task's
                                     step containers. They begin before the steps start
                                     and end after the steps complete.
                                   items:
-                                    description: Step embeds the Container type, which
-                                      allows it to include fields not provided by
-                                      Container.
+                                    description: Sidecar has nearly the same data
+                                      structure as Step but does not have the ability
+                                      to timeout.
                                     properties:
                                       args:
                                         description: 'Arguments to the entrypoint.
-                                          The container image''s CMD is used if this
+                                          The docker image''s CMD is used if this
                                           is not provided. Variable references $(VAR_NAME)
                                           are expanded using the container''s environment.
                                           If a variable cannot be resolved, the reference
@@ -1320,9 +1492,10 @@ spec:
                                         items:
                                           type: string
                                         type: array
+                                        x-kubernetes-list-type: atomic
                                       command:
                                         description: 'Entrypoint array. Not executed
-                                          within a shell. The container image''s ENTRYPOINT
+                                          within a shell. The docker image''s ENTRYPOINT
                                           is used if this is not provided. Variable
                                           references $(VAR_NAME) are expanded using
                                           the container''s environment. If a variable
@@ -1338,6 +1511,7 @@ spec:
                                         items:
                                           type: string
                                         type: array
+                                        x-kubernetes-list-type: atomic
                                       env:
                                         description: List of environment variables
                                           to set in the container. Cannot be updated.
@@ -1470,6 +1644,7 @@ spec:
                                           - name
                                           type: object
                                         type: array
+                                        x-kubernetes-list-type: atomic
                                       envFrom:
                                         description: List of sources to populate environment
                                           variables in the container. The keys defined
@@ -1521,8 +1696,9 @@ spec:
                                               type: object
                                           type: object
                                         type: array
+                                        x-kubernetes-list-type: atomic
                                       image:
-                                        description: 'Container image name. More info:
+                                        description: 'Docker image name. More info:
                                           https://kubernetes.io/docs/concepts/containers/images
                                           This field is optional to allow higher level
                                           config management to default or override
@@ -2707,6 +2883,7 @@ spec:
                                           - name
                                           type: object
                                         type: array
+                                        x-kubernetes-list-type: atomic
                                       volumeMounts:
                                         description: Pod volumes to mount into the
                                           container's filesystem. Cannot be updated.
@@ -2756,16 +2933,52 @@ spec:
                                           - name
                                           type: object
                                         type: array
+                                        x-kubernetes-list-type: atomic
                                       workingDir:
                                         description: Container's working directory.
                                           If not specified, the container runtime's
                                           default will be used, which might be configured
                                           in the container image. Cannot be updated.
                                         type: string
+                                      workspaces:
+                                        description: "This is an alpha field. You
+                                          must set the \"enable-api-fields\" feature
+                                          flag to \"alpha\" for this field to be supported.
+                                          \n Workspaces is a list of workspaces from
+                                          the Task that this Sidecar wants exclusive
+                                          access to. Adding a workspace to this list
+                                          means that any other Step or Sidecar that
+                                          does not also request this Workspace will
+                                          not have access to it."
+                                        items:
+                                          description: WorkspaceUsage is used by a
+                                            Step or Sidecar to declare that it wants
+                                            isolated access to a Workspace defined
+                                            in a Task.
+                                          properties:
+                                            mountPath:
+                                              description: MountPath is the path that
+                                                the workspace should be mounted to
+                                                inside the Step or Sidecar, overriding
+                                                any MountPath specified in the Task's
+                                                WorkspaceDeclaration.
+                                              type: string
+                                            name:
+                                              description: Name is the name of the
+                                                workspace this Step or Sidecar wants
+                                                access to.
+                                              type: string
+                                          required:
+                                          - mountPath
+                                          - name
+                                          type: object
+                                        type: array
+                                        x-kubernetes-list-type: atomic
                                     required:
                                     - name
                                     type: object
                                   type: array
+                                  x-kubernetes-list-type: atomic
                                 stepTemplate:
                                   description: StepTemplate can be used as the basis
                                     for all step containers within the Task, so that
@@ -2773,8 +2986,8 @@ spec:
                                   properties:
                                     args:
                                       description: 'Arguments to the entrypoint. The
-                                        container image''s CMD is used if this is
-                                        not provided. Variable references $(VAR_NAME)
+                                        docker image''s CMD is used if this is not
+                                        provided. Variable references $(VAR_NAME)
                                         are expanded using the container''s environment.
                                         If a variable cannot be resolved, the reference
                                         in the input string will be unchanged. Double
@@ -2788,9 +3001,10 @@ spec:
                                       items:
                                         type: string
                                       type: array
+                                      x-kubernetes-list-type: atomic
                                     command:
                                       description: 'Entrypoint array. Not executed
-                                        within a shell. The container image''s ENTRYPOINT
+                                        within a shell. The docker image''s ENTRYPOINT
                                         is used if this is not provided. Variable
                                         references $(VAR_NAME) are expanded using
                                         the container''s environment. If a variable
@@ -2805,6 +3019,7 @@ spec:
                                       items:
                                         type: string
                                       type: array
+                                      x-kubernetes-list-type: atomic
                                     env:
                                       description: List of environment variables to
                                         set in the container. Cannot be updated.
@@ -2932,6 +3147,7 @@ spec:
                                         - name
                                         type: object
                                       type: array
+                                      x-kubernetes-list-type: atomic
                                     envFrom:
                                       description: List of sources to populate environment
                                         variables in the container. The keys defined
@@ -2981,8 +3197,9 @@ spec:
                                             type: object
                                         type: object
                                       type: array
+                                      x-kubernetes-list-type: atomic
                                     image:
-                                      description: 'Container image name. More info:
+                                      description: 'Docker image name. More info:
                                         https://kubernetes.io/docs/concepts/containers/images
                                         This field is optional to allow higher level
                                         config management to default or override container
@@ -2996,9 +3213,10 @@ spec:
                                         otherwise. Cannot be updated. More info: https://kubernetes.io/docs/concepts/containers/images#updating-images'
                                       type: string
                                     lifecycle:
-                                      description: Actions that the management system
-                                        should take in response to container lifecycle
-                                        events. Cannot be updated.
+                                      description: Deprecated. This field will be
+                                        removed in a future release. Actions that
+                                        the management system should take in response
+                                        to container lifecycle events. Cannot be updated.
                                       properties:
                                         postStart:
                                           description: 'PostStart is called immediately
@@ -3228,9 +3446,11 @@ spec:
                                           type: object
                                       type: object
                                     livenessProbe:
-                                      description: 'Periodic probe of container liveness.
-                                        Container will be restarted if the probe fails.
-                                        Cannot be updated. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
+                                      description: 'Deprecated. This field will be
+                                        removed in a future release. Periodic probe
+                                        of container liveness. Container will be restarted
+                                        if the probe fails. Cannot be updated. More
+                                        info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
                                       properties:
                                         exec:
                                           description: Exec specifies the action to
@@ -3403,22 +3623,24 @@ spec:
                                           type: integer
                                       type: object
                                     name:
-                                      description: Name of the container specified
-                                        as a DNS_LABEL. Each container in a pod must
-                                        have a unique name (DNS_LABEL). Cannot be
-                                        updated.
+                                      description: Deprecated. This field will be
+                                        removed in a future release. DeprecatedName
+                                        of the container specified as a DNS_LABEL.
+                                        Each container in a pod must have a unique
+                                        name (DNS_LABEL). Cannot be updated.
                                       type: string
                                     ports:
-                                      description: List of ports to expose from the
-                                        container. Exposing a port here gives the
-                                        system additional information about the network
-                                        connections a container uses, but is primarily
-                                        informational. Not specifying a port here
-                                        DOES NOT prevent that port from being exposed.
-                                        Any port which is listening on the default
-                                        "0.0.0.0" address inside a container will
-                                        be accessible from the network. Cannot be
-                                        updated.
+                                      description: Deprecated. This field will be
+                                        removed in a future release. List of ports
+                                        to expose from the container. Exposing a port
+                                        here gives the system additional information
+                                        about the network connections a container
+                                        uses, but is primarily informational. Not
+                                        specifying a port here DOES NOT prevent that
+                                        port from being exposed. Any port which is
+                                        listening on the default "0.0.0.0" address
+                                        inside a container will be accessible from
+                                        the network. Cannot be updated.
                                       items:
                                         description: ContainerPort represents a network
                                           port in a single container.
@@ -3463,10 +3685,12 @@ spec:
                                       - protocol
                                       x-kubernetes-list-type: map
                                     readinessProbe:
-                                      description: 'Periodic probe of container service
-                                        readiness. Container will be removed from
-                                        service endpoints if the probe fails. Cannot
-                                        be updated. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
+                                      description: 'Deprecated. This field will be
+                                        removed in a future release. Periodic probe
+                                        of container service readiness. Container
+                                        will be removed from service endpoints if
+                                        the probe fails. Cannot be updated. More info:
+                                        https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
                                       properties:
                                         exec:
                                           description: Exec specifies the action to
@@ -3878,17 +4102,18 @@ spec:
                                           type: object
                                       type: object
                                     startupProbe:
-                                      description: 'StartupProbe indicates that the
-                                        Pod has successfully initialized. If specified,
-                                        no other probes are executed until this completes
-                                        successfully. If this probe fails, the Pod
-                                        will be restarted, just as if the livenessProbe
-                                        failed. This can be used to provide different
-                                        probe parameters at the beginning of a Pod''s
-                                        lifecycle, when it might take a long time
-                                        to load data or warm a cache, than during
-                                        steady-state operation. This cannot be updated.
-                                        More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
+                                      description: 'Deprecated. This field will be
+                                        removed in a future release. DeprecatedStartupProbe
+                                        indicates that the Pod has successfully initialized.
+                                        If specified, no other probes are executed
+                                        until this completes successfully. If this
+                                        probe fails, the Pod will be restarted, just
+                                        as if the livenessProbe failed. This can be
+                                        used to provide different probe parameters
+                                        at the beginning of a Pod''s lifecycle, when
+                                        it might take a long time to load data or
+                                        warm a cache, than during steady-state operation.
+                                        This cannot be updated. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
                                       properties:
                                         exec:
                                           description: Exec specifies the action to
@@ -4061,55 +4286,63 @@ spec:
                                           type: integer
                                       type: object
                                     stdin:
-                                      description: Whether this container should allocate
-                                        a buffer for stdin in the container runtime.
-                                        If this is not set, reads from stdin in the
-                                        container will always result in EOF. Default
-                                        is false.
+                                      description: Deprecated. This field will be
+                                        removed in a future release. Whether this
+                                        container should allocate a buffer for stdin
+                                        in the container runtime. If this is not set,
+                                        reads from stdin in the container will always
+                                        result in EOF. Default is false.
                                       type: boolean
                                     stdinOnce:
-                                      description: Whether the container runtime should
-                                        close the stdin channel after it has been
-                                        opened by a single attach. When stdin is true
-                                        the stdin stream will remain open across multiple
-                                        attach sessions. If stdinOnce is set to true,
-                                        stdin is opened on container start, is empty
-                                        until the first client attaches to stdin,
-                                        and then remains open and accepts data until
-                                        the client disconnects, at which time stdin
-                                        is closed and remains closed until the container
-                                        is restarted. If this flag is false, a container
-                                        processes that reads from stdin will never
-                                        receive an EOF. Default is false
+                                      description: Deprecated. This field will be
+                                        removed in a future release. Whether the container
+                                        runtime should close the stdin channel after
+                                        it has been opened by a single attach. When
+                                        stdin is true the stdin stream will remain
+                                        open across multiple attach sessions. If stdinOnce
+                                        is set to true, stdin is opened on container
+                                        start, is empty until the first client attaches
+                                        to stdin, and then remains open and accepts
+                                        data until the client disconnects, at which
+                                        time stdin is closed and remains closed until
+                                        the container is restarted. If this flag is
+                                        false, a container processes that reads from
+                                        stdin will never receive an EOF. Default is
+                                        false
                                       type: boolean
                                     terminationMessagePath:
-                                      description: 'Optional: Path at which the file
-                                        to which the container''s termination message
-                                        will be written is mounted into the container''s
-                                        filesystem. Message written is intended to
-                                        be brief final status, such as an assertion
-                                        failure message. Will be truncated by the
-                                        node if greater than 4096 bytes. The total
-                                        message length across all containers will
-                                        be limited to 12kb. Defaults to /dev/termination-log.
-                                        Cannot be updated.'
+                                      description: 'Deprecated. This field will be
+                                        removed in a future release. Optional: Path
+                                        at which the file to which the container''s
+                                        termination message will be written is mounted
+                                        into the container''s filesystem. Message
+                                        written is intended to be brief final status,
+                                        such as an assertion failure message. Will
+                                        be truncated by the node if greater than 4096
+                                        bytes. The total message length across all
+                                        containers will be limited to 12kb. Defaults
+                                        to /dev/termination-log. Cannot be updated.'
                                       type: string
                                     terminationMessagePolicy:
-                                      description: Indicate how the termination message
-                                        should be populated. File will use the contents
-                                        of terminationMessagePath to populate the
-                                        container status message on both success and
-                                        failure. FallbackToLogsOnError will use the
-                                        last chunk of container log output if the
-                                        termination message file is empty and the
-                                        container exited with an error. The log output
-                                        is limited to 2048 bytes or 80 lines, whichever
-                                        is smaller. Defaults to File. Cannot be updated.
+                                      description: Deprecated. This field will be
+                                        removed in a future release. Indicate how
+                                        the termination message should be populated.
+                                        File will use the contents of terminationMessagePath
+                                        to populate the container status message on
+                                        both success and failure. FallbackToLogsOnError
+                                        will use the last chunk of container log output
+                                        if the termination message file is empty and
+                                        the container exited with an error. The log
+                                        output is limited to 2048 bytes or 80 lines,
+                                        whichever is smaller. Defaults to File. Cannot
+                                        be updated.
                                       type: string
                                     tty:
-                                      description: Whether this container should allocate
-                                        a TTY for itself, also requires 'stdin' to
-                                        be true. Default is false.
+                                      description: Deprecated. This field will be
+                                        removed in a future release. Whether this
+                                        container should allocate a DeprecatedTTY
+                                        for itself, also requires 'stdin' to be true.
+                                        Default is false.
                                       type: boolean
                                     volumeDevices:
                                       description: volumeDevices is the list of block
@@ -4132,6 +4365,7 @@ spec:
                                         - name
                                         type: object
                                       type: array
+                                      x-kubernetes-list-type: atomic
                                     volumeMounts:
                                       description: Pod volumes to mount into the container's
                                         filesystem. Cannot be updated.
@@ -4181,6 +4415,7 @@ spec:
                                         - name
                                         type: object
                                       type: array
+                                      x-kubernetes-list-type: atomic
                                     workingDir:
                                       description: Container's working directory.
                                         If not specified, the container runtime's
@@ -4195,13 +4430,11 @@ spec:
                                     step is run sequentially with the source mounted
                                     into /workspace.
                                   items:
-                                    description: Step embeds the Container type, which
-                                      allows it to include fields not provided by
-                                      Container.
+                                    description: Step runs a subcomponent of a Task
                                     properties:
                                       args:
                                         description: 'Arguments to the entrypoint.
-                                          The container image''s CMD is used if this
+                                          The docker image''s CMD is used if this
                                           is not provided. Variable references $(VAR_NAME)
                                           are expanded using the container''s environment.
                                           If a variable cannot be resolved, the reference
@@ -4216,9 +4449,10 @@ spec:
                                         items:
                                           type: string
                                         type: array
+                                        x-kubernetes-list-type: atomic
                                       command:
                                         description: 'Entrypoint array. Not executed
-                                          within a shell. The container image''s ENTRYPOINT
+                                          within a shell. The docker image''s ENTRYPOINT
                                           is used if this is not provided. Variable
                                           references $(VAR_NAME) are expanded using
                                           the container''s environment. If a variable
@@ -4234,6 +4468,7 @@ spec:
                                         items:
                                           type: string
                                         type: array
+                                        x-kubernetes-list-type: atomic
                                       env:
                                         description: List of environment variables
                                           to set in the container. Cannot be updated.
@@ -4366,6 +4601,7 @@ spec:
                                           - name
                                           type: object
                                         type: array
+                                        x-kubernetes-list-type: atomic
                                       envFrom:
                                         description: List of sources to populate environment
                                           variables in the container. The keys defined
@@ -4417,8 +4653,9 @@ spec:
                                               type: object
                                           type: object
                                         type: array
+                                        x-kubernetes-list-type: atomic
                                       image:
-                                        description: 'Container image name. More info:
+                                        description: 'Docker image name. More info:
                                           https://kubernetes.io/docs/concepts/containers/images
                                           This field is optional to allow higher level
                                           config management to default or override
@@ -4433,9 +4670,11 @@ spec:
                                           https://kubernetes.io/docs/concepts/containers/images#updating-images'
                                         type: string
                                       lifecycle:
-                                        description: Actions that the management system
-                                          should take in response to container lifecycle
-                                          events. Cannot be updated.
+                                        description: Deprecated. This field will be
+                                          removed in a future release. Actions that
+                                          the management system should take in response
+                                          to container lifecycle events. Cannot be
+                                          updated.
                                         properties:
                                           postStart:
                                             description: 'PostStart is called immediately
@@ -4672,10 +4911,11 @@ spec:
                                             type: object
                                         type: object
                                       livenessProbe:
-                                        description: 'Periodic probe of container
-                                          liveness. Container will be restarted if
-                                          the probe fails. Cannot be updated. More
-                                          info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
+                                        description: 'Deprecated. This field will
+                                          be removed in a future release. Periodic
+                                          probe of container liveness. Container will
+                                          be restarted if the probe fails. Cannot
+                                          be updated. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
                                         properties:
                                           exec:
                                             description: Exec specifies the action
@@ -4856,17 +5096,27 @@ spec:
                                           must have a unique name (DNS_LABEL). Cannot
                                           be updated.
                                         type: string
+                                      onError:
+                                        description: OnError defines the exiting behavior
+                                          of a container on error can be set to [
+                                          continue | stopAndFail ] stopAndFail indicates
+                                          exit the taskRun if the container exits
+                                          with non-zero exit code continue indicates
+                                          continue executing the rest of the steps
+                                          irrespective of the container exit code
+                                        type: string
                                       ports:
-                                        description: List of ports to expose from
-                                          the container. Exposing a port here gives
-                                          the system additional information about
-                                          the network connections a container uses,
-                                          but is primarily informational. Not specifying
-                                          a port here DOES NOT prevent that port from
-                                          being exposed. Any port which is listening
-                                          on the default "0.0.0.0" address inside
-                                          a container will be accessible from the
-                                          network. Cannot be updated.
+                                        description: Deprecated. This field will be
+                                          removed in a future release. List of ports
+                                          to expose from the container. Exposing a
+                                          port here gives the system additional information
+                                          about the network connections a container
+                                          uses, but is primarily informational. Not
+                                          specifying a port here DOES NOT prevent
+                                          that port from being exposed. Any port which
+                                          is listening on the default "0.0.0.0" address
+                                          inside a container will be accessible from
+                                          the network. Cannot be updated.
                                         items:
                                           description: ContainerPort represents a
                                             network port in a single container.
@@ -4913,10 +5163,12 @@ spec:
                                         - protocol
                                         x-kubernetes-list-type: map
                                       readinessProbe:
-                                        description: 'Periodic probe of container
-                                          service readiness. Container will be removed
-                                          from service endpoints if the probe fails.
-                                          Cannot be updated. More info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
+                                        description: 'Deprecated. This field will
+                                          be removed in a future release. Periodic
+                                          probe of container service readiness. Container
+                                          will be removed from service endpoints if
+                                          the probe fails. Cannot be updated. More
+                                          info: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle#container-probes'
                                         properties:
                                           exec:
                                             description: Exec specifies the action
@@ -5126,7 +5378,7 @@ spec:
                                         description: "Script is the contents of an
                                           executable file to execute. \n If Script
                                           is not empty, the Step cannot have an Command
-                                          or Args."
+                                          and the Args will be passed to the Script."
                                         type: string
                                       securityContext:
                                         description: 'SecurityContext defines the
@@ -5342,11 +5594,12 @@ spec:
                                             type: object
                                         type: object
                                       startupProbe:
-                                        description: 'StartupProbe indicates that
-                                          the Pod has successfully initialized. If
-                                          specified, no other probes are executed
-                                          until this completes successfully. If this
-                                          probe fails, the Pod will be restarted,
+                                        description: 'Deprecated. This field will
+                                          be removed in a future release. DeprecatedStartupProbe
+                                          indicates that the Pod has successfully
+                                          initialized. If specified, no other probes
+                                          are executed until this completes successfully.
+                                          If this probe fails, the Pod will be restarted,
                                           just as if the livenessProbe failed. This
                                           can be used to provide different probe parameters
                                           at the beginning of a Pod''s lifecycle,
@@ -5529,46 +5782,51 @@ spec:
                                             type: integer
                                         type: object
                                       stdin:
-                                        description: Whether this container should
-                                          allocate a buffer for stdin in the container
-                                          runtime. If this is not set, reads from
-                                          stdin in the container will always result
-                                          in EOF. Default is false.
+                                        description: Deprecated. This field will be
+                                          removed in a future release. Whether this
+                                          container should allocate a buffer for stdin
+                                          in the container runtime. If this is not
+                                          set, reads from stdin in the container will
+                                          always result in EOF. Default is false.
                                         type: boolean
                                       stdinOnce:
-                                        description: Whether the container runtime
-                                          should close the stdin channel after it
-                                          has been opened by a single attach. When
-                                          stdin is true the stdin stream will remain
-                                          open across multiple attach sessions. If
-                                          stdinOnce is set to true, stdin is opened
-                                          on container start, is empty until the first
-                                          client attaches to stdin, and then remains
-                                          open and accepts data until the client disconnects,
-                                          at which time stdin is closed and remains
-                                          closed until the container is restarted.
-                                          If this flag is false, a container processes
-                                          that reads from stdin will never receive
-                                          an EOF. Default is false
+                                        description: Deprecated. This field will be
+                                          removed in a future release. Whether the
+                                          container runtime should close the stdin
+                                          channel after it has been opened by a single
+                                          attach. When stdin is true the stdin stream
+                                          will remain open across multiple attach
+                                          sessions. If stdinOnce is set to true, stdin
+                                          is opened on container start, is empty until
+                                          the first client attaches to stdin, and
+                                          then remains open and accepts data until
+                                          the client disconnects, at which time stdin
+                                          is closed and remains closed until the container
+                                          is restarted. If this flag is false, a container
+                                          processes that reads from stdin will never
+                                          receive an EOF. Default is false
                                         type: boolean
                                       terminationMessagePath:
-                                        description: 'Optional: Path at which the
-                                          file to which the container''s termination
-                                          message will be written is mounted into
-                                          the container''s filesystem. Message written
-                                          is intended to be brief final status, such
-                                          as an assertion failure message. Will be
-                                          truncated by the node if greater than 4096
-                                          bytes. The total message length across all
-                                          containers will be limited to 12kb. Defaults
-                                          to /dev/termination-log. Cannot be updated.'
+                                        description: 'Deprecated. This field will
+                                          be removed in a future release. Optional:
+                                          Path at which the file to which the container''s
+                                          termination message will be written is mounted
+                                          into the container''s filesystem. Message
+                                          written is intended to be brief final status,
+                                          such as an assertion failure message. Will
+                                          be truncated by the node if greater than
+                                          4096 bytes. The total message length across
+                                          all containers will be limited to 12kb.
+                                          Defaults to /dev/termination-log. Cannot
+                                          be updated.'
                                         type: string
                                       terminationMessagePolicy:
-                                        description: Indicate how the termination
-                                          message should be populated. File will use
-                                          the contents of terminationMessagePath to
-                                          populate the container status message on
-                                          both success and failure. FallbackToLogsOnError
+                                        description: Deprecated. This field will be
+                                          removed in a future release. Indicate how
+                                          the termination message should be populated.
+                                          File will use the contents of terminationMessagePath
+                                          to populate the container status message
+                                          on both success and failure. FallbackToLogsOnError
                                           will use the last chunk of container log
                                           output if the termination message file is
                                           empty and the container exited with an error.
@@ -5576,10 +5834,18 @@ spec:
                                           or 80 lines, whichever is smaller. Defaults
                                           to File. Cannot be updated.
                                         type: string
+                                      timeout:
+                                        description: 'Timeout is the time after which
+                                          the step times out. Defaults to never. Refer
+                                          to Go''s ParseDuration documentation for
+                                          expected format: https://golang.org/pkg/time/#ParseDuration'
+                                        type: string
                                       tty:
-                                        description: Whether this container should
-                                          allocate a TTY for itself, also requires
-                                          'stdin' to be true. Default is false.
+                                        description: Deprecated. This field will be
+                                          removed in a future release. Whether this
+                                          container should allocate a DeprecatedTTY
+                                          for itself, also requires 'stdin' to be
+                                          true. Default is false.
                                         type: boolean
                                       volumeDevices:
                                         description: volumeDevices is the list of
@@ -5603,6 +5869,7 @@ spec:
                                           - name
                                           type: object
                                         type: array
+                                        x-kubernetes-list-type: atomic
                                       volumeMounts:
                                         description: Pod volumes to mount into the
                                           container's filesystem. Cannot be updated.
@@ -5652,16 +5919,52 @@ spec:
                                           - name
                                           type: object
                                         type: array
+                                        x-kubernetes-list-type: atomic
                                       workingDir:
                                         description: Container's working directory.
                                           If not specified, the container runtime's
                                           default will be used, which might be configured
                                           in the container image. Cannot be updated.
                                         type: string
+                                      workspaces:
+                                        description: "This is an alpha field. You
+                                          must set the \"enable-api-fields\" feature
+                                          flag to \"alpha\" for this field to be supported.
+                                          \n Workspaces is a list of workspaces from
+                                          the Task that this Step wants exclusive
+                                          access to. Adding a workspace to this list
+                                          means that any other Step or Sidecar that
+                                          does not also request this Workspace will
+                                          not have access to it."
+                                        items:
+                                          description: WorkspaceUsage is used by a
+                                            Step or Sidecar to declare that it wants
+                                            isolated access to a Workspace defined
+                                            in a Task.
+                                          properties:
+                                            mountPath:
+                                              description: MountPath is the path that
+                                                the workspace should be mounted to
+                                                inside the Step or Sidecar, overriding
+                                                any MountPath specified in the Task's
+                                                WorkspaceDeclaration.
+                                              type: string
+                                            name:
+                                              description: Name is the name of the
+                                                workspace this Step or Sidecar wants
+                                                access to.
+                                              type: string
+                                          required:
+                                          - mountPath
+                                          - name
+                                          type: object
+                                        type: array
+                                        x-kubernetes-list-type: atomic
                                     required:
                                     - name
                                     type: object
                                   type: array
+                                  x-kubernetes-list-type: atomic
                                 volumes:
                                   description: Volumes is a collection of volumes
                                     that are available to mount into the steps of
@@ -7523,6 +7826,7 @@ spec:
                                     - name
                                     type: object
                                   type: array
+                                  x-kubernetes-list-type: atomic
                                 workspaces:
                                   description: Workspaces are the volumes that this
                                     Task requires.
@@ -7542,6 +7846,12 @@ spec:
                                         description: Name is the name by which you
                                           can bind the volume at runtime.
                                         type: string
+                                      optional:
+                                        description: Optional marks a Workspace as
+                                          not being required in TaskRuns. By default
+                                          this field is false and so declared workspaces
+                                          are required.
+                                        type: boolean
                                       readOnly:
                                         description: ReadOnly dictates whether a mounted
                                           volume is writable. By default this field
@@ -7551,6 +7861,7 @@ spec:
                                     - name
                                     type: object
                                   type: array
+                                  x-kubernetes-list-type: atomic
                               type: object
                             timeout:
                               description: 'Time after which the TaskRun times out.
@@ -7582,7 +7893,6 @@ spec:
                                     type: string
                                 required:
                                 - name
-                                - workspace
                                 type: object
                               type: array
                           type: object
@@ -7606,6 +7916,11 @@ spec:
                               description: Name is the name of a workspace to be provided
                                 by a PipelineRun.
                               type: string
+                            optional:
+                              description: Optional marks a Workspace as not being
+                                required in PipelineRuns. By default this field is
+                                false and so declared workspaces are required.
+                              type: boolean
                           required:
                           - name
                           type: object
@@ -8560,6 +8875,26 @@ spec:
                           variables, matching the syntax of Docker links. Optional:
                           Defaults to true.'
                         type: boolean
+                      hostAliases:
+                        description: HostAliases is an optional list of hosts and
+                          IPs that will be injected into the pod's hosts file if specified.
+                          This is only valid for non-hostNetwork pods.
+                        items:
+                          description: HostAlias holds the mapping between IP and
+                            hostnames that will be injected as an entry in the pod's
+                            hosts file.
+                          properties:
+                            hostnames:
+                              description: Hostnames for the above IP address.
+                              items:
+                                type: string
+                              type: array
+                            ip:
+                              description: IP address of the host file entry.
+                              type: string
+                          type: object
+                        type: array
+                        x-kubernetes-list-type: atomic
                       hostNetwork:
                         description: HostNetwork specifies whether the pod may use
                           the node network namespace
@@ -8578,6 +8913,7 @@ spec:
                               type: string
                           type: object
                         type: array
+                        x-kubernetes-list-type: atomic
                       nodeSelector:
                         additionalProperties:
                           type: string
@@ -8830,6 +9166,7 @@ spec:
                               type: string
                           type: object
                         type: array
+                        x-kubernetes-list-type: atomic
                       volumes:
                         description: 'List of volumes that can be mounted by containers
                           belonging to the pod. More info: https://kubernetes.io/docs/concepts/storage/volumes'
@@ -10461,8 +10798,7 @@ spec:
                           - name
                           type: object
                         type: array
-                    required:
-                    - imagePullSecrets
+                        x-kubernetes-list-type: atomic
                     type: object
                   resources:
                     description: Resources is a list of bindings specifying which
@@ -10511,6 +10847,7 @@ spec:
                                 - value
                                 type: object
                               type: array
+                              x-kubernetes-list-type: atomic
                             secrets:
                               description: Secrets to fetch to populate some of resource
                                 fields
@@ -10530,6 +10867,7 @@ spec:
                                 - secretName
                                 type: object
                               type: array
+                              x-kubernetes-list-type: atomic
                             type:
                               type: string
                           required:
@@ -10563,7 +10901,7 @@ spec:
                         pipelineTaskName:
                           type: string
                         taskPodTemplate:
-                          description: PodTemplate holds pod specific configuration
+                          description: Template holds pod specific configuration
                           properties:
                             affinity:
                               description: If specified, the pod's scheduling constraints
@@ -11597,6 +11935,27 @@ spec:
                                 variables, matching the syntax of Docker links. Optional:
                                 Defaults to true.'
                               type: boolean
+                            hostAliases:
+                              description: HostAliases is an optional list of hosts
+                                and IPs that will be injected into the pod's hosts
+                                file if specified. This is only valid for non-hostNetwork
+                                pods.
+                              items:
+                                description: HostAlias holds the mapping between IP
+                                  and hostnames that will be injected as an entry
+                                  in the pod's hosts file.
+                                properties:
+                                  hostnames:
+                                    description: Hostnames for the above IP address.
+                                    items:
+                                      type: string
+                                    type: array
+                                  ip:
+                                    description: IP address of the host file entry.
+                                    type: string
+                                type: object
+                              type: array
+                              x-kubernetes-list-type: atomic
                             hostNetwork:
                               description: HostNetwork specifies whether the pod may
                                 use the node network namespace
@@ -11617,6 +11976,7 @@ spec:
                                     type: string
                                 type: object
                               type: array
+                              x-kubernetes-list-type: atomic
                             nodeSelector:
                               additionalProperties:
                                 type: string
@@ -11885,6 +12245,7 @@ spec:
                                     type: string
                                 type: object
                               type: array
+                              x-kubernetes-list-type: atomic
                             volumes:
                               description: 'List of volumes that can be mounted by
                                 containers belonging to the pod. More info: https://kubernetes.io/docs/concepts/storage/volumes'
@@ -13635,8 +13996,7 @@ spec:
                                 - name
                                 type: object
                               type: array
-                          required:
-                          - imagePullSecrets
+                              x-kubernetes-list-type: atomic
                           type: object
                         taskServiceAccountName:
                           type: string
