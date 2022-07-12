@@ -797,8 +797,7 @@ func TestGetMessage(t *testing.T) {
 	want := `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by: *<a href="REFERENCE" title="Approved">Bill</a>*
-To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **alice** after the PR has been reviewed.
-You can assign the PR to them by writing ` + "`/assign @alice`" + ` in a comment when ready.
+**Once this PR has been reviewed and has the lgtm label**, please assign alice for approval by writing ` + "`/assign @alice`" + ` in a comment. For more information see:[The Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
 
 *No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
 
@@ -879,8 +878,7 @@ func TestGetMessageNoneApproved(t *testing.T) {
 	want := `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by: *<a href="REFERENCE" title="Author self-approved">John</a>*
-To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **alice**, **bill** after the PR has been reviewed.
-You can assign the PR to them by writing ` + "`/assign @alice @bill`" + ` in a comment when ready.
+**Once this PR has been reviewed and has the lgtm label**, please assign alice for approval by writing ` + "`/assign @alice`" + ` in a comment. For more information see:[The Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
 
 *No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
 
@@ -1007,8 +1005,7 @@ func TestGetMessageMDOwners(t *testing.T) {
 	want := `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by: *<a href="REFERENCE" title="Author self-approved">John</a>*
-To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **alice**, **doctor** after the PR has been reviewed.
-You can assign the PR to them by writing ` + "`/assign @alice @doctor`" + ` in a comment when ready.
+**Once this PR has been reviewed and has the lgtm label**, please assign alice for approval by writing ` + "`/assign @alice`" + ` in a comment. For more information see:[The Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
 
 *No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
 
@@ -1048,8 +1045,7 @@ func TestGetMessageDifferentGitHubLink(t *testing.T) {
 	want := `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by: *<a href="REFERENCE" title="Author self-approved">John</a>*
-To complete the [pull request process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process), please assign **alice**, **doctor** after the PR has been reviewed.
-You can assign the PR to them by writing ` + "`/assign @alice @doctor`" + ` in a comment when ready.
+**Once this PR has been reviewed and has the lgtm label**, please assign alice for approval by writing ` + "`/assign @alice`" + ` in a comment. For more information see:[The Kubernetes Code Review Process](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process).
 
 *No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
 
