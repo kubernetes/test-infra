@@ -50,8 +50,9 @@ const (
 )
 
 var gerritMetrics = struct {
-	processingResults *prometheus.CounterVec
-	triggerLatency    *prometheus.HistogramVec
+	processingResults     *prometheus.CounterVec
+	triggerLatency        *prometheus.HistogramVec
+	changeProcessDuration *prometheus.HistogramVec
 }{
 	processingResults: prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "gerrit_processing_results",
@@ -69,11 +70,19 @@ var gerritMetrics = struct {
 		"instance",
 		// Omit repo to avoid excessive cardinality due to the number of buckets.
 	}),
+	changeProcessDuration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Name:    "gerrit_instance_process_duration",
+		Help:    "Histogram of seconds spent processing a single gerrit instance.",
+		Buckets: []float64{5, 10, 20, 30, 60, 120, 180, 300, 600, 1200, 3600},
+	}, []string{
+		"instance",
+	}),
 }
 
 func init() {
 	prometheus.MustRegister(gerritMetrics.processingResults)
 	prometheus.MustRegister(gerritMetrics.triggerLatency)
+	prometheus.MustRegister(gerritMetrics.changeProcessDuration)
 }
 
 type prowJobClient interface {
@@ -231,6 +240,11 @@ func (c *Controller) Sync() error {
 		wg.Add(1)
 		go func(instance string, changes []gerrit.ChangeInfo) {
 			defer wg.Done()
+			now := time.Now()
+			defer func() {
+				gerritMetrics.changeProcessDuration.WithLabelValues(instance).Observe(float64(time.Since(now).Seconds()))
+			}()
+
 			log := logrus.WithField("host", instance)
 			for _, change := range changes {
 				log := log.WithFields(logrus.Fields{
