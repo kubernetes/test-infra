@@ -2345,3 +2345,102 @@ func TestVerifyLabelPlugin(t *testing.T) {
 		})
 	}
 }
+
+func TestValidateRequiredJobAnnotations(t *testing.T) {
+	tc := []struct {
+		name                string
+		presubmits          []config.Presubmit
+		postsubmits         []config.Postsubmit
+		periodics           []config.Periodic
+		expectedErr         bool
+		expectedAnnotations []string
+	}{
+		{
+			name: "no annotation is required, pass",
+			presubmits: []config.Presubmit{
+				{
+					JobBase: config.JobBase{},
+				},
+			},
+			postsubmits: []config.Postsubmit{
+				{
+					JobBase: config.JobBase{
+						Annotations: map[string]string{"prow.k8s.io/cat": "meow"},
+					},
+				},
+			},
+			periodics: []config.Periodic{
+				{
+					JobBase: config.JobBase{},
+				},
+			},
+			expectedErr:         false,
+			expectedAnnotations: nil,
+		},
+		{
+			name: "jobs don't have required annotation, fail",
+			presubmits: []config.Presubmit{
+				{
+					JobBase: config.JobBase{},
+				},
+			},
+			postsubmits: []config.Postsubmit{
+				{
+					JobBase: config.JobBase{
+						Annotations: map[string]string{"prow.k8s.io/cat": "meow"},
+					},
+				},
+			},
+			periodics: []config.Periodic{
+				{
+					JobBase: config.JobBase{},
+				},
+			},
+			expectedAnnotations: []string{"prow.k8s.io/maintainer"},
+			expectedErr:         true,
+		},
+		{
+			name: "jobs have required annotations, pass",
+			presubmits: []config.Presubmit{
+				{
+					JobBase: config.JobBase{
+						Annotations: map[string]string{"prow.k8s.io/maintainer": "job-maintainer"},
+					},
+				},
+			},
+			postsubmits: []config.Postsubmit{
+				{
+					JobBase: config.JobBase{
+						Annotations: map[string]string{"prow.k8s.io/maintainer": "job-maintainer"},
+					},
+				},
+			},
+			periodics: []config.Periodic{
+				{
+					JobBase: config.JobBase{
+						Annotations: map[string]string{"prow.k8s.io/maintainer": "job-maintainer"},
+					},
+				},
+			},
+			expectedAnnotations: []string{"prow.k8s.io/maintainer"},
+			expectedErr:         false,
+		},
+	}
+
+	for _, c := range tc {
+		t.Run(c.name, func(t *testing.T) {
+			jcfg := config.JobConfig{
+				PresubmitsStatic:  map[string][]config.Presubmit{"org/repo": c.presubmits},
+				PostsubmitsStatic: map[string][]config.Postsubmit{"org/repo": c.postsubmits},
+				Periodics:         c.periodics,
+			}
+			err := validateRequiredJobAnnotations(c.expectedAnnotations, jcfg)
+			if c.expectedErr && err == nil {
+				t.Errorf("Expected error but got none")
+			}
+			if !c.expectedErr && err != nil {
+				t.Errorf("Got error but didn't expect one: %v", err)
+			}
+		})
+	}
+}
