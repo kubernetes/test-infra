@@ -100,6 +100,39 @@ presubmits:
       description: "Run clusterloader2 tests on a capz Windows 2019 cluster"
       testgrid-num-columns-recent: '30'
 periodics:
+  - name: delete-win-soak-test-cluster
+    cron: "0 0 * * SUN"
+    decorate: true
+    always_run: true
+    optional: true
+    decoration_config:
+      timeout: 8h
+    labels:
+      preset-service-account: "true"
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+      preset-azure-anonymous-pull: "true"
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220624-1a63fdd9f2-master
+          command:
+            - az
+          args:
+            - >-
+              group
+              delete
+              --resource-group
+              win-soak-test
+              -y
+          securityContext:
+            privileged: true
+    annotations:
+      testgrid-dashboards: sig-windows-soak-tests
+      testgrid-tab-name: delete-win-soak-test-cluster
+      description: "Delete win-soak-test cluster"
+      testgrid-num-columns-recent: '30'
+
   - interval: 24h
     name: periodic-soak-tests-capz-windows-2019
     decorate: true
