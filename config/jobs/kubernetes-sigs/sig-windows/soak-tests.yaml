@@ -1,4 +1,21 @@
 ---
+presets:
+- labels:
+    preset-azure-win-soak-test-creds: "true"
+  env:
+  - name: KUBECONFIG
+    value: "/root/.kube/win-soak-test"
+  volumeMounts:
+  - name: win-soak-test
+    mountPath: /root/.kube/win-soak-test
+  volumes:
+  - name: win-soak-test
+    secret:
+      secretName: win-soak-test
+      defaultMode: 420
+      items:
+      - key: win-soak-test
+        path: win-soak-test.kubeconfig
 presubmits:
   kubernetes/perf-tests:
   - name: soak-tests-capz-windows-2019
