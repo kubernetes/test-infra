@@ -58,7 +58,7 @@ var gerritMetrics = struct {
 		Name: "gerrit_processing_results",
 		Help: "Count of change processing by instance, repo, and result.",
 	}, []string{
-		"instance",
+		"org",
 		"repo",
 		"result",
 	}),
@@ -67,7 +67,7 @@ var gerritMetrics = struct {
 		Help:    "Histogram of seconds between triggering event and ProwJob creation time.",
 		Buckets: []float64{5, 10, 20, 30, 60, 120, 180, 300, 600, 1200, 3600},
 	}, []string{
-		"instance",
+		"org",
 		// Omit repo to avoid excessive cardinality due to the number of buckets.
 	}),
 	changeProcessDuration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
@@ -75,7 +75,7 @@ var gerritMetrics = struct {
 		Help:    "Histogram of seconds spent processing a single gerrit instance.",
 		Buckets: []float64{5, 10, 20, 30, 60, 120, 180, 300, 600, 1200, 3600},
 	}, []string{
-		"instance",
+		"org",
 	}),
 }
 

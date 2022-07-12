@@ -73,7 +73,7 @@ var clientMetrics = struct {
 		Name: "gerrit_query_results",
 		Help: "Count of Gerrit API queries by instance, repo, and result.",
 	}, []string{
-		"instance",
+		"org",
 		"repo",
 		"result",
 	}),
