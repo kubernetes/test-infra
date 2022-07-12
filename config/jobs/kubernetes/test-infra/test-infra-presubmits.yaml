@@ -209,5 +209,5 @@ presubmits:
         - name: IMAGE
           value: gcloud-terraform
     annotations:
-      testgrid-dashboards: "sig-testing-images"
-      testgrid-tab-name: "gcloud-terraform"
+      testgrid-dashboards: presubmits-test-infra
+      testgrid-tab-name: images-gcloud-terraform
