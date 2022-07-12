@@ -33,4 +33,10 @@ config="${root}/config/prow/config.yaml"
 job_config_path="${root}/config/jobs"
 
 docker pull gcr.io/k8s-prow/mkpj 1>&2 || true
-docker run -i --rm --user "$(id -u):$(id -g)" -v "${root}:${root}:z" gcr.io/k8s-prow/mkpj "--config-path=${config}" "--job-config-path=${job_config_path}" "$@"
+docker run \
+       -i --rm \
+       --user "$(id -u):$(id -g)" \
+       -v "${root}:${root}" \
+       --security-opt="label=disable" \
+       gcr.io/k8s-prow/mkpj \
+       "--config-path=${config}" "--job-config-path=${job_config_path}" "$@"

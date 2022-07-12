@@ -55,6 +55,7 @@ fi
     ${DOCKER_USER} \
     -e HOME=/tmp \
     -v "${REPO_ROOT:?}:${REPO_ROOT:?}" -w "${REPO_ROOT}" \
+    --security-opt="label=disable" \
     "${NODE_IMAGE}" \
     "$@"
 if [[ -n "${NO_DOCKER:-}" ]]; then

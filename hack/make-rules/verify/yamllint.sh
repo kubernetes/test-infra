@@ -33,7 +33,8 @@ LINT_COMMAND=("yamllint" "-c" "config/jobs/.yamllint.conf" "config/jobs" "config
 
 "${DOCKER[@]}" run \
     --rm -i \
-    -v "${REPO_ROOT:?}:${REPO_ROOT:?}:z" -w "${REPO_ROOT}" \
+    -v "${REPO_ROOT:?}:${REPO_ROOT:?}" -w "${REPO_ROOT}" \
+    --security-opt="label=disable" \
     "quay.io/kubermatic/yamllint:0.1" \
     "${LINT_COMMAND[@]}"
 
