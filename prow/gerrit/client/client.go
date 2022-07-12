@@ -331,6 +331,18 @@ func (c *Client) QueryChanges(lastState LastSyncState, rateLimit int) map[string
 	return result
 }
 
+func (c *Client) QueryChangesForInstance(instance string, lastState LastSyncState, rateLimit int) []ChangeInfo {
+	c.lock.RLock()
+	defer c.lock.RUnlock()
+	h, ok := c.handlers[instance]
+	if !ok {
+		logrus.WithField("instance", instance).WithField("laststate", lastState).Warn("Instance not registered as handlers.")
+		return []ChangeInfo{}
+	}
+	lastStateForInstance := lastState[instance]
+	return h.queryAllChanges(lastStateForInstance, rateLimit)
+}
+
 func (c *Client) GetChange(instance, id string) (*ChangeInfo, error) {
 	c.lock.RLock()
 	defer c.lock.RUnlock()
