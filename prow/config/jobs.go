@@ -136,6 +136,18 @@ type JobBase struct {
 	UtilityConfig
 }
 
+func (jb JobBase) GetName() string {
+	return jb.Name
+}
+
+func (jb JobBase) GetLabels() map[string]string {
+	return jb.Labels
+}
+
+func (jb JobBase) GetAnnotations() map[string]string {
+	return jb.Annotations
+}
+
 // +k8s:deepcopy-gen=true
 
 // Presubmit runs on PRs.
