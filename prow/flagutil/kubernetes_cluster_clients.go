@@ -334,7 +334,7 @@ func (o *KubernetesOptions) BuildClusterCoreV1Clients(dryRun bool) (v1Clients ma
 
 var clientCreationFailures = prometheus.NewCounterVec(prometheus.CounterOpts{
 	Name: "kubernetes_failed_client_creations",
-	Help: "The number of clusters for which we failed to create a client",
+	Help: "The number of clusters for which we failed to create a client.",
 }, []string{"cluster"})
 
 // BuildClusterManagers returns a manager per buildCluster.

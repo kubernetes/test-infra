@@ -24,7 +24,7 @@ import (
 var (
 	prowVersion = prometheus.NewGauge(prometheus.GaugeOpts{
 		Name: "prow_version",
-		Help: "Prow version",
+		Help: "Prow version.",
 	})
 )
 

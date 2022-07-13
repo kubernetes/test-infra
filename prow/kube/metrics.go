@@ -46,11 +46,11 @@ var (
 	}
 	prowJobs = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "prowjobs",
-		Help: "Number of prowjobs in the system",
+		Help: "Number of prowjobs in the system.",
 	}, metricLabels)
 	prowJobTransitions = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "prowjob_state_transitions",
-		Help: "Number of prowjobs transitioning states",
+		Help: "Number of prowjobs transitioning states.",
 	}, metricLabels)
 )
 

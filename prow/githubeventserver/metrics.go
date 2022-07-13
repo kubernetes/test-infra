@@ -39,7 +39,7 @@ var (
 	}, []string{"event_type", "action", "plugin", "took_action"})
 	pluginHandleErrors = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "prow_plugin_handle_errors",
-		Help: "Prow errors handling an event by plugin, event type and action",
+		Help: "Prow errors handling an event by plugin, event type and action.",
 	}, []string{"event_type", "action", "plugin", "took_action"})
 )
 

@@ -150,7 +150,7 @@ var pendingOutboundConnectionsGauge = prometheus.NewGauge(prometheus.GaugeOpts{
 var cachePartitionsCounter = prometheus.NewCounterVec(
 	prometheus.CounterOpts{
 		Name: "ghcache_cache_parititions",
-		Help: "Which cache partitions exist",
+		Help: "Which cache partitions exist.",
 	},
 	[]string{"token_hash"},
 )
