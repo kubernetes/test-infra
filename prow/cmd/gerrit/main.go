@@ -137,11 +137,7 @@ func main() {
 
 	defer interrupts.WaitForGracefulShutdown()
 	interrupts.Tick(func() {
-		start := time.Now()
-		if err := c.Sync(); err != nil {
-			logrus.WithError(err).Error("Error syncing.")
-		}
-		logrus.WithField("duration", fmt.Sprintf("%v", time.Since(start))).Info("Synced")
+		c.Sync()
 	}, func() time.Duration {
 		return cfg().Gerrit.TickInterval.Duration
 	})
