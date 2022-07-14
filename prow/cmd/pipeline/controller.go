@@ -37,6 +37,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
+	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	untypedcorev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -259,7 +260,7 @@ func (c *controller) enqueueKey(ctx string, obj interface{}) {
 			ns = o.Namespace
 		}
 		c.workqueue.AddRateLimited(toKey(ctx, ns, o.Name))
-	case *pipelinev1alpha1.PipelineRun:
+	case *pipelinev1beta1.PipelineRun:
 		c.workqueue.AddRateLimited(toKey(ctx, o.Namespace, o.Name))
 	default:
 		logrus.Warnf("cannot enqueue unknown type %T: %v", o, obj)
@@ -270,9 +271,9 @@ func (c *controller) enqueueKey(ctx string, obj interface{}) {
 type reconciler interface {
 	getProwJob(name string) (*prowjobv1.ProwJob, error)
 	patchProwJob(pj *prowjobv1.ProwJob, newpj *prowjobv1.ProwJob) (*prowjobv1.ProwJob, error)
-	getPipelineRun(context, namespace, name string) (*pipelinev1alpha1.PipelineRun, error)
+	getPipelineRun(context, namespace, name string) (*pipelinev1beta1.PipelineRun, error)
 	deletePipelineRun(context, namespace, name string) error
-	createPipelineRun(context, namespace string, b *pipelinev1alpha1.PipelineRun) (*pipelinev1alpha1.PipelineRun, error)
+	createPipelineRun(context, namespace string, b *pipelinev1beta1.PipelineRun) (*pipelinev1beta1.PipelineRun, error)
 	pipelineID(prowjobv1.ProwJob) (string, string, error)
 	now() metav1.Time
 }
@@ -299,7 +300,7 @@ func (c *controller) patchProwJob(pj *prowjobv1.ProwJob, newpj *prowjobv1.ProwJo
 	return pjutil.PatchProwjob(context.TODO(), c.pjc.ProwV1().ProwJobs(c.pjNamespace()), logrus.NewEntry(logrus.StandardLogger()), *pj, *newpj)
 }
 
-func (c *controller) getPipelineRun(context, namespace, name string) (*pipelinev1alpha1.PipelineRun, error) {
+func (c *controller) getPipelineRun(context, namespace, name string) (*pipelinev1beta1.PipelineRun, error) {
 	p, err := c.getPipelineConfig(context)
 	if err != nil {
 		return nil, err
@@ -313,16 +314,16 @@ func (c *controller) deletePipelineRun(pContext, namespace, name string) error {
 	if err != nil {
 		return err
 	}
-	return p.client.TektonV1alpha1().PipelineRuns(namespace).Delete(context.TODO(), name, metav1.DeleteOptions{})
+	return p.client.TektonV1beta1().PipelineRuns(namespace).Delete(context.TODO(), name, metav1.DeleteOptions{})
 }
 
-func (c *controller) createPipelineRun(pContext, namespace string, p *pipelinev1alpha1.PipelineRun) (*pipelinev1alpha1.PipelineRun, error) {
+func (c *controller) createPipelineRun(pContext, namespace string, p *pipelinev1beta1.PipelineRun) (*pipelinev1beta1.PipelineRun, error) {
 	logrus.Debugf("createPipelineRun(%s,%s,%s)", pContext, namespace, p.Name)
 	pc, err := c.getPipelineConfig(pContext)
 	if err != nil {
 		return nil, err
 	}
-	p, err = pc.client.TektonV1alpha1().PipelineRuns(namespace).Create(context.TODO(), p, metav1.CreateOptions{})
+	p, err = pc.client.TektonV1beta1().PipelineRuns(namespace).Create(context.TODO(), p, metav1.CreateOptions{})
 	if err != nil {
 		return p, err
 	}
@@ -504,7 +505,7 @@ const (
 )
 
 // prowJobStatus returns the desired state and description based on the pipeline status
-func prowJobStatus(ps pipelinev1alpha1.PipelineRunStatus) (prowjobv1.ProwJobState, string) {
+func prowJobStatus(ps pipelinev1beta1.PipelineRunStatus) (prowjobv1.ProwJobState, string) {
 	started := ps.StartTime
 	finished := ps.CompletionTime
 	pcond := ps.GetCondition(apis.ConditionSucceeded)
@@ -573,7 +574,7 @@ func makePipelineGitResource(name string, refs prowjobv1.Refs, pj prowjobv1.Prow
 		ObjectMeta: pipelineMeta(name, pj),
 		Spec: pipelinev1alpha1.PipelineResourceSpec{
 			Type: pipelinev1alpha1.PipelineResourceTypeGit,
-			Params: []pipelinev1alpha1.ResourceParam{
+			Params: []pipelinev1beta1.ResourceParam{
 				{
 					Name:  "url",
 					Value: sourceURL,
@@ -590,7 +591,7 @@ func makePipelineGitResource(name string, refs prowjobv1.Refs, pj prowjobv1.Prow
 
 // makePipeline creates a PipelineRun and substitutes ProwJob managed pipeline resources with ResourceSpec instead of ResourceRef
 // so that we don't have to take care of potentially dangling created pipeline resources.
-func makePipelineRun(pj prowjobv1.ProwJob) (*pipelinev1alpha1.PipelineRun, error) {
+func makePipelineRun(pj prowjobv1.ProwJob) (*pipelinev1beta1.PipelineRun, error) {
 	// First validate.
 	if pj.Spec.PipelineRunSpec == nil {
 		return nil, errors.New("no PipelineSpec defined")
@@ -603,7 +604,7 @@ func makePipelineRun(pj prowjobv1.ProwJob) (*pipelinev1alpha1.PipelineRun, error
 		return nil, fmt.Errorf("invalid pipeline_run_spec: %w", err)
 	}
 
-	p := pipelinev1alpha1.PipelineRun{
+	p := pipelinev1beta1.PipelineRun{
 		ObjectMeta: pipelineMeta(pj.Name, pj),
 		Spec:       *pj.Spec.PipelineRunSpec.DeepCopy(),
 	}
@@ -616,10 +617,10 @@ func makePipelineRun(pj prowjobv1.ProwJob) (*pipelinev1alpha1.PipelineRun, error
 	for _, key := range sets.StringKeySet(env).List() {
 		val := env[key]
 		// TODO: make this handle existing values/substitutions.
-		p.Spec.Params = append(p.Spec.Params, pipelinev1alpha1.Param{
+		p.Spec.Params = append(p.Spec.Params, pipelinev1beta1.Param{
 			Name: key,
-			Value: pipelinev1alpha1.ArrayOrString{
-				Type:      pipelinev1alpha1.ParamTypeString,
+			Value: pipelinev1beta1.ArrayOrString{
+				Type:      pipelinev1beta1.ParamTypeString,
 				StringVal: val,
 			},
 		})
