@@ -99,11 +99,12 @@ type options struct {
 	upstream       string
 	upstreamParsed *url.URL
 
-	maxConcurrency                int
-	requestThrottlingTime         uint
-	requestThrottlingTimeV4       uint
-	requestThrottlingTimeForGET   uint
-	requestThrottlingMaxDelayTime uint
+	maxConcurrency                  int
+	requestThrottlingTime           uint
+	requestThrottlingTimeV4         uint
+	requestThrottlingTimeForGET     uint
+	requestThrottlingMaxDelayTime   uint
+	requestThrottlingMaxDelayTimeV4 uint
 
 	// pushGateway fields are used to configure pushing prometheus metrics.
 	pushGateway         string
@@ -149,6 +150,7 @@ func flagOptions() *options {
 	flag.UintVar(&o.requestThrottlingTimeV4, "throttling-time-v4-ms", 0, "Additional throttling mechanism which imposes time spacing between outgoing requests. Counted per organization. Overrides --throttling-time-ms setting for API v4.")
 	flag.UintVar(&o.requestThrottlingTimeForGET, "get-throttling-time-ms", 0, "Additional throttling mechanism which imposes time spacing between outgoing GET requests. Counted per organization. Has to be set together with --throttling-time-ms.")
 	flag.UintVar(&o.requestThrottlingMaxDelayTime, "throttling-max-delay-duration-seconds", 30, "Maximum delay for throttling in seconds. Requests will never be throttled for longer than this, used to avoid building a request backlog when the GitHub api has performance issues. Default is 30 seconds.")
+	flag.UintVar(&o.requestThrottlingMaxDelayTimeV4, "throttling-max-delay-duration-v4-seconds", 30, "Maximum delay for throttling in seconds for APIv4. Requests will never be throttled for longer than this, used to avoid building a request backlog when the GitHub api has performance issues. Default is 30 seconds.")
 	flag.StringVar(&o.pushGateway, "push-gateway", "", "If specified, push prometheus metrics to this endpoint.")
 	flag.DurationVar(&o.pushGatewayInterval, "push-gateway-interval", time.Minute, "Interval at which prometheus metrics are pushed.")
 	flag.StringVar(&o.logLevel, "log-level", "debug", fmt.Sprintf("Log level is one of %v.", logrus.AllLevels))
@@ -198,7 +200,7 @@ func main() {
 
 func proxy(o *options, upstreamTransport http.RoundTripper, diskCachePruneInterval time.Duration) http.Handler {
 	var cache http.RoundTripper
-	throttlingTimes := ghcache.NewRequestThrottlingTimes(o.requestThrottlingTime, o.requestThrottlingTimeV4, o.requestThrottlingTimeForGET, o.requestThrottlingMaxDelayTime)
+	throttlingTimes := ghcache.NewRequestThrottlingTimes(o.requestThrottlingTime, o.requestThrottlingTimeV4, o.requestThrottlingTimeForGET, o.requestThrottlingMaxDelayTime, o.requestThrottlingMaxDelayTimeV4)
 	if o.redisAddress != "" {
 		cache = ghcache.NewRedisCache(apptokenequalizer.New(upstreamTransport), o.redisAddress, o.maxConcurrency, throttlingTimes)
 	} else if o.dir == "" {
