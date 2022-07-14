@@ -57,34 +57,13 @@ func handleAbort(prowJobClient prowv1.ProwJobInterface, cfg authCfgGetter, goa *
 				l.Error("Cannot abort job with state")
 				return
 			}
-			authConfig := cfg(pj.Spec.Refs, pj.Spec.Cluster)
-			var allowed bool
-			if pj.Spec.RerunAuthConfig.IsAllowAnyone() || authConfig.IsAllowAnyone() {
-				// Skip getting the users login via GH oauth if anyone is allowed to abort
-				// jobs so that GH oauth doesn't need to be set up for private Prows.
-				allowed = true
-			} else {
-				if goa == nil {
-					msg := "GitHub oauth must be configured to abort jobs unless 'allow_anyone: true' is specified."
-					http.Error(w, msg, http.StatusInternalServerError)
-					l.Error(msg)
-					return
-				}
-				login, err := goa.GetLogin(r, ghc)
-				if err != nil {
-					l.WithError(err).Errorf("Error retrieving GitHub login")
-					http.Error(w, "Error retrieving GitHub login", http.StatusUnauthorized)
-					return
-				}
-				l = l.WithField("user", login)
-				allowed, err = canTriggerJob(login, *pj, authConfig, cli, pluginAgent.Config, l)
-				if err != nil {
-					http.Error(w, fmt.Sprintf("Error checking if user can trigger job: %v", err), http.StatusInternalServerError)
-					l.WithError(err).Errorf("Error checking if user can trigger job")
-					return
-				}
+			// Using same permission validation as rerun, could be future work to add validation
+			// unique to Abort
+			allowed, err, code := isAllowedToRerun(r, cfg, goa, ghc, *pj, cli, pluginAgent, l)
+			if err != nil {
+				http.Error(w, fmt.Sprintf("Could not verify if allowed to abort: %v", err), code)
+				l.WithError(err).Debug("Could not verify if allowed to abort")
 			}
-
 			l = l.WithField("allowed", allowed)
 			l.Info("Attempted abort")
 			if !allowed {
