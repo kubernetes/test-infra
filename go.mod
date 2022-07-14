@@ -38,7 +38,7 @@ require (
 	github.com/andygrunwald/go-jira v1.14.0
 	github.com/aws/aws-sdk-go v1.37.22
 	github.com/bazelbuild/buildtools v0.0.0-20200922170545-10384511ce98
-	github.com/blang/semver v3.5.1+incompatible
+	github.com/blang/semver/v4 v4.0.0
 	github.com/bwmarrin/snowflake v0.0.0
 	github.com/clarketm/json v1.13.4
 	github.com/client9/misspell v0.3.4
