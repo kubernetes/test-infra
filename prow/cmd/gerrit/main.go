@@ -52,6 +52,7 @@ type options struct {
 	storage                prowflagutil.StorageClientOptions
 	instrumentationOptions prowflagutil.InstrumentationOptions
 	inRepoConfigCacheSize  int
+	changeWorkerPoolSize   int
 }
 
 func (o *options) validate() error {
@@ -80,6 +81,9 @@ func (o *options) validate() error {
 	if strings.HasPrefix(o.lastSyncFallback, "s3://") && !o.storage.HasS3Credentials() {
 		logrus.WithField("last-sync-fallback", o.lastSyncFallback).Info("--s3-credentials-file unset, will try and access with auto-discovered credentials")
 	}
+	if o.changeWorkerPoolSize < 1 {
+		return fmt.Errorf("change-worker-pool-size must be at least 1")
+	}
 	return nil
 }
 
@@ -94,6 +98,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.BoolVar(&o.dryRun, "dry-run", false, "Run in dry-run mode, performing no modifying actions.")
 	fs.StringVar(&o.tokenPathOverride, "token-path", "", "Force the use of the token in this path, use with gcloud auth print-access-token")
 	fs.IntVar(&o.inRepoConfigCacheSize, "in-repo-config-cache-size", 100, "Cache size for ProwYAMLs read from in-repo configs. Each host receives its own cache.")
+	fs.IntVar(&o.changeWorkerPoolSize, "change-worker-pool-size", 10, "Number of workers processing changes for each instance.")
 	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.storage, &o.instrumentationOptions, &o.config} {
 		group.AddFlags(fs)
 	}
@@ -131,7 +136,7 @@ func main() {
 		logrus.WithError(err).Fatal("Error creating opener")
 	}
 
-	c := adapter.NewController(ctx, prowJobClient, op, ca, o.projects, o.projectsOptOutHelp, o.cookiefilePath, o.tokenPathOverride, o.lastSyncFallback, o.inRepoConfigCacheSize)
+	c := adapter.NewController(ctx, prowJobClient, op, ca, o.projects, o.projectsOptOutHelp, o.cookiefilePath, o.tokenPathOverride, o.lastSyncFallback, o.inRepoConfigCacheSize, o.changeWorkerPoolSize)
 
 	logrus.Infof("Starting gerrit fetcher")
 
