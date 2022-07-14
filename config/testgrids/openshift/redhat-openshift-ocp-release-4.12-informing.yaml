@@ -1315,14 +1315,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-release-master-ci-4.12-e2e-azure-sdn-upgrade
+    name: periodic-ci-openshift-release-master-ci-4.12-e2e-azure-sdn-techpreview-serial
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-release-master-ci-4.12-e2e-azure-sdn-upgrade
+    test_group_name: periodic-ci-openshift-release-master-ci-4.12-e2e-azure-sdn-techpreview-serial
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -1342,14 +1342,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-release-master-ci-4.12-e2e-azure-techpreview-serial
+    name: periodic-ci-openshift-release-master-ci-4.12-e2e-azure-sdn-upgrade
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-release-master-ci-4.12-e2e-azure-techpreview-serial
+    test_group_name: periodic-ci-openshift-release-master-ci-4.12-e2e-azure-sdn-upgrade
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -1531,14 +1531,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-release-master-ci-4.12-e2e-gcp-sdn-upgrade
+    name: periodic-ci-openshift-release-master-ci-4.12-e2e-gcp-sdn-techpreview-serial
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-release-master-ci-4.12-e2e-gcp-sdn-upgrade
+    test_group_name: periodic-ci-openshift-release-master-ci-4.12-e2e-gcp-sdn-techpreview-serial
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -1558,14 +1558,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-release-master-ci-4.12-e2e-gcp-techpreview-serial
+    name: periodic-ci-openshift-release-master-ci-4.12-e2e-gcp-sdn-upgrade
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-release-master-ci-4.12-e2e-gcp-techpreview-serial
+    test_group_name: periodic-ci-openshift-release-master-ci-4.12-e2e-gcp-sdn-upgrade
   - base_options: width=10&exclude-filter-by-regex=Monitor%5Cscluster&exclude-filter-by-regex=%5Eoperator.Run%20template.*container%20test%24
     code_search_path: https://github.com/openshift/origin/search
     code_search_url_template:
@@ -4859,12 +4859,12 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.12-e2e-azure-sdn-techpreview
   name: periodic-ci-openshift-release-master-ci-4.12-e2e-azure-sdn-techpreview
+- days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.12-e2e-azure-sdn-techpreview-serial
+  name: periodic-ci-openshift-release-master-ci-4.12-e2e-azure-sdn-techpreview-serial
 - days_of_results: 17
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.12-e2e-azure-sdn-upgrade
   name: periodic-ci-openshift-release-master-ci-4.12-e2e-azure-sdn-upgrade
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.12-e2e-azure-techpreview-serial
-  name: periodic-ci-openshift-release-master-ci-4.12-e2e-azure-techpreview-serial
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.12-e2e-azure-upgrade-ovn-single-node
   name: periodic-ci-openshift-release-master-ci-4.12-e2e-azure-upgrade-ovn-single-node
@@ -4884,11 +4884,11 @@ test_groups:
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.12-e2e-gcp-sdn-techpreview
   name: periodic-ci-openshift-release-master-ci-4.12-e2e-gcp-sdn-techpreview
 - days_of_results: 60
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.12-e2e-gcp-sdn-techpreview-serial
+  name: periodic-ci-openshift-release-master-ci-4.12-e2e-gcp-sdn-techpreview-serial
+- days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.12-e2e-gcp-sdn-upgrade
   name: periodic-ci-openshift-release-master-ci-4.12-e2e-gcp-sdn-upgrade
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.12-e2e-gcp-techpreview-serial
-  name: periodic-ci-openshift-release-master-ci-4.12-e2e-gcp-techpreview-serial
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-ci-4.12-e2e-network-migration
   name: periodic-ci-openshift-release-master-ci-4.12-e2e-network-migration
