@@ -37,39 +37,39 @@ func initMetrics() *prometheusMetrics {
 	metrics := &prometheusMetrics{
 		DiskFree: prometheus.NewGauge(prometheus.GaugeOpts{
 			Name: "bazel_cache_disk_free",
-			Help: "Free gb on bazel cache disk",
+			Help: "Free gb on bazel cache disk.",
 		}),
 		DiskUsed: prometheus.NewGauge(prometheus.GaugeOpts{
 			Name: "bazel_cache_disk_used",
-			Help: "Used gb on bazel cache disk",
+			Help: "Used gb on bazel cache disk.",
 		}),
 		DiskTotal: prometheus.NewGauge(prometheus.GaugeOpts{
 			Name: "bazel_cache_disk_total",
-			Help: "Total gb on bazel cache disk",
+			Help: "Total gb on bazel cache disk.",
 		}),
 		FilesEvicted: prometheus.NewCounter(prometheus.CounterOpts{
 			Name: "bazel_cache_evicted_files",
-			Help: "number of files evicted since last server start",
+			Help: "number of files evicted since last server start.",
 		}),
 		ActionCacheHits: prometheus.NewCounter(prometheus.CounterOpts{
 			Name: "bazel_cache_cas_hits",
-			Help: "Approximate number of Action Cache hits since last server start",
+			Help: "Approximate number of Action Cache hits since last server start.",
 		}),
 		CASHits: prometheus.NewCounter(prometheus.CounterOpts{
 			Name: "bazel_cache_action_hits",
-			Help: "Approximate number of Content Addressed Storage cache hits since last server start",
+			Help: "Approximate number of Content Addressed Storage cache hits since last server start.",
 		}),
 		ActionCacheMisses: prometheus.NewCounter(prometheus.CounterOpts{
 			Name: "bazel_cache_action_misses",
-			Help: "Approximate number of Content Addressed Storage cache misses since last server start",
+			Help: "Approximate number of Content Addressed Storage cache misses since last server start.",
 		}),
 		CASMisses: prometheus.NewCounter(prometheus.CounterOpts{
 			Name: "bazel_cache_cas_misses",
-			Help: "Approximate number of Content Addressed Storage cache misses since last server start",
+			Help: "Approximate number of Content Addressed Storage cache misses since last server start.",
 		}),
 		LastEvictedAccessAge: prometheus.NewGauge(prometheus.GaugeOpts{
 			Name: "bazel_cache_last_evicted_access_age",
-			Help: "Hours since last access of most recently evicted file (at eviction time)",
+			Help: "Hours since last access of most recently evicted file (at eviction time).",
 		}),
 	}
 	prometheus.MustRegister(metrics.DiskFree)

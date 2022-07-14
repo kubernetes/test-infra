@@ -135,7 +135,7 @@ func TestRecordError(t *testing.T) {
 			name:          "Simple Error String",
 			namespace:     "testnamespace",
 			expectedError: "sample error message to ensure proper working",
-			expectedOut: `# HELP testnamespace_error_rate number of errors, sorted by label/type
+			expectedOut: `# HELP testnamespace_error_rate number of errors, sorted by label/type.
 					   # TYPE testnamespace_error_rate counter
 					   testnamespace_error_rate{error="sample error message to ensure proper working"} 1
 					   `,

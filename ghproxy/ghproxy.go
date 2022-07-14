@@ -45,27 +45,27 @@ import (
 var (
 	diskFree = prometheus.NewGauge(prometheus.GaugeOpts{
 		Name: "ghcache_disk_free",
-		Help: "Free gb on github-cache disk",
+		Help: "Free gb on github-cache disk.",
 	})
 	diskUsed = prometheus.NewGauge(prometheus.GaugeOpts{
 		Name: "ghcache_disk_used",
-		Help: "Used gb on github-cache disk",
+		Help: "Used gb on github-cache disk.",
 	})
 	diskTotal = prometheus.NewGauge(prometheus.GaugeOpts{
 		Name: "ghcache_disk_total",
-		Help: "Total gb on github-cache disk",
+		Help: "Total gb on github-cache disk.",
 	})
 	diskInodeFree = prometheus.NewGauge(prometheus.GaugeOpts{
 		Name: "ghcache_disk_inode_free",
-		Help: "Free inodes on github-cache disk",
+		Help: "Free inodes on github-cache disk.",
 	})
 	diskInodeUsed = prometheus.NewGauge(prometheus.GaugeOpts{
 		Name: "ghcache_disk_inode_used",
-		Help: "Used inodes on github-cache disk",
+		Help: "Used inodes on github-cache disk.",
 	})
 	diskInodeTotal = prometheus.NewGauge(prometheus.GaugeOpts{
 		Name: "ghcache_disk_inode_total",
-		Help: "Total inodes on github-cache disk",
+		Help: "Total inodes on github-cache disk.",
 	})
 )
 
