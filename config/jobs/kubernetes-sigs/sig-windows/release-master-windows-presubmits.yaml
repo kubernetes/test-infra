@@ -52,7 +52,6 @@ presubmits:
       testgrid-num-columns-recent: '30'
   kubernetes-sigs/windows-testing:
   - name: pull-e2e-capz-containerd-windows-2022-extension
-    interval: 3h
     decorate: true
     always_run: false
     optional: true
@@ -89,6 +88,56 @@ presubmits:
           env:
           - name: WINDOWS_SERVER_VERSION
             value: "windows-2022"
+          - name: GINKGO_FOCUS
+            value: \[sig-windows\] # run just a subset to speed up testing time
     annotations:
       testgrid-dashboards: sig-windows-presubmit
       testgrid-tab-name: pull-e2e-capz-windows-containerd-extension
+  - name: pull-e2e-capz-containerd-windows-2022-extension-gmsa
+    decorate: true
+    always_run: false
+    optional: true
+    run_if_changed: 'capz/gmsa/.*|capz/templates/gmsa.yaml'
+    decoration_config:
+      timeout: 3h
+    path_alias: k8s.io/windows-testing
+    branches:
+      - master
+    labels:
+      preset-dind-enabled: "true"
+      preset-kind-volume-mounts: "true"
+      preset-azure-cred-only: "true"
+      preset-windows-private-registry-cred: "true"
+      preset-capz-windows-common-main: "true"
+      preset-capz-containerd-latest: "true"
+    extra_refs:
+    - org: kubernetes-sigs
+      repo: cluster-api-provider-azure
+      base_ref: main
+      path_alias: sigs.k8s.io/cluster-api-provider-azure
+    spec:
+      containers:
+        - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+          command:
+            - "runner.sh"
+            - "./capz/run-capz-e2e.sh"
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 2
+              memory: "9Gi"
+          env:
+          - name: WINDOWS_SERVER_VERSION
+            value: "windows-2022"
+          - name: GINKGO_NODES
+            value: "1"
+          - name: GMSA
+            value: "true"
+          - name: GINKGO_FOCUS
+            value: GMSA
+          - name: GINKGO_SKIP
+            value: "" #don't skip any gmsa tests.  The focus of GMSA will select just those tests
+    annotations:
+      testgrid-dashboards: sig-windows-presubmit
+      testgrid-tab-name: pull-e2e-capz-windows-containerd-extension-gmsa
