@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2022 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -54,12 +54,12 @@ func handleAbort(prowJobClient prowv1.ProwJobInterface, cfg authCfgGetter, goa *
 		case http.MethodPost:
 			if pj.Status.State != prowapi.TriggeredState && pj.Status.State != prowapi.PendingState {
 				http.Error(w, fmt.Sprintf("Cannot abort job with state: %q", pj.Status.State), http.StatusBadRequest)
-				l.Error("Cannot abort job with state")
+				l.Debug("Cannot abort job with state")
 				return
 			}
 			// Using same permission validation as rerun, could be future work to add validation
 			// unique to Abort
-			allowed, err, code := isAllowedToRerun(r, cfg, goa, ghc, *pj, cli, pluginAgent, l)
+			allowed, user, err, code := isAllowedToRerun(r, cfg, goa, ghc, *pj, cli, pluginAgent, l)
 			if err != nil {
 				http.Error(w, fmt.Sprintf("Could not verify if allowed to abort: %v", err), code)
 				l.WithError(err).Debug("Could not verify if allowed to abort")
@@ -68,11 +68,17 @@ func handleAbort(prowJobClient prowv1.ProwJobInterface, cfg authCfgGetter, goa *
 			l.Info("Attempted abort")
 			if !allowed {
 				http.Error(w, "You don't have permission to abort this job", http.StatusUnauthorized)
-				l.Error("Error writing to abort response.")
+				l.Debug("You don't have permission to abort this job")
 				return
 			}
-			pj.SetComplete()
+			var abortDescription string
+			if len(user) > 0 {
+				abortDescription = fmt.Sprintf("%v successfully aborted %v.", user, name)
+			} else {
+				abortDescription = fmt.Sprintf("Successfully aborted %v.", name)
+			}
 			pj.Status.State = prowapi.AbortedState
+			pj.Status.Description = abortDescription
 			jsonPJ, err := json.Marshal(pj)
 			if err != nil {
 				http.Error(w, fmt.Sprintf("Error marshal source job: %v", err), http.StatusInternalServerError)
@@ -83,10 +89,9 @@ func handleAbort(prowJobClient prowv1.ProwJobInterface, cfg authCfgGetter, goa *
 				http.Error(w, fmt.Sprintf("Could not patch aborted job: %v", err), http.StatusInternalServerError)
 				l.WithError(err).Errorf("Could not patch aborted job")
 			}
-			l.Info("Successfully aborted PJ.")
-			json.NewEncoder(w).Encode(pj)
+			l.Info(abortDescription)
 			if _, err = w.Write([]byte("Job successfully aborted.")); err != nil {
-				l.WithError(err).Error("Error writing to abort response.")
+				l.WithError(err).Debug(fmt.Sprintf("Error writing to abort response for %v.", pj.Name))
 			}
 			return
 		default:

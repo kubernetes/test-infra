@@ -18,13 +18,12 @@ package main
 
 import (
 	"context"
-	"io/ioutil"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
-	"github.com/google/go-cmp/cmp"
 	"github.com/gorilla/sessions"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
@@ -34,7 +33,6 @@ import (
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/githuboauth"
 	"k8s.io/test-infra/prow/plugins"
-	"sigs.k8s.io/yaml"
 )
 
 // TestAbort that an aborted job has an updated status and
@@ -153,7 +151,7 @@ func TestAbort(t *testing.T) {
 					State: tc.jobState,
 				},
 			})
-			authCfgGetter := func(refs *prowapi.Refs, cluster string) *prowapi.RerunAuthConfig {
+			authCfgGetter := func(refs *prowapi.ProwJobSpec) *prowapi.RerunAuthConfig {
 				return &prowapi.RerunAuthConfig{
 					AllowAnyone: tc.allowAnyone,
 					GitHubUsers: tc.authorized,
@@ -198,24 +196,18 @@ func TestAbort(t *testing.T) {
 				if err != nil {
 					t.Fatalf("Job not found: %v", err)
 				}
-				resp := rr.Result()
-				defer resp.Body.Close()
-				body, err := ioutil.ReadAll(resp.Body)
-				if err != nil {
-					t.Fatalf("Error reading response body: %v", err)
+				if pj.Status.State != prowapi.AbortedState {
+					t.Errorf("Wrong state, expected \"%v\", got \"%v\"", prowapi.AbortedState, pj.Status.State)
 				}
-				var res prowapi.ProwJob
-				if err := yaml.Unmarshal(body, &res); err != nil {
-					t.Fatalf("Error unmarshaling: %v", err)
+				if pj.Complete() {
+					t.Errorf("Did not expect to be complete, expected \"%v\", got \"%v\"", !pj.Complete(), pj.Complete())
 				}
-				if !res.Complete() {
-					t.Error("Job is not complete, was expected to be complete")
+				expectedDescription := fmt.Sprintf("%v successfully aborted wowsuch.", tc.login)
+				if tc.allowAnyone {
+					expectedDescription = "Successfully aborted wowsuch."
 				}
-				if res.Status.State != prowapi.AbortedState {
-					t.Errorf("Wrong state, expected \"%v\", got \"%v\"", prowapi.AbortedState, res.Status.State)
-				}
-				if diff := cmp.Diff(res, *pj); diff != "" {
-					t.Fatalf("Job mismatch. Want: (-), got: (+). \n%s", diff)
+				if pj.Status.Description != expectedDescription {
+					t.Errorf("Wrong description, expected \"%v\", got \"%v\"", expectedDescription, pj.Status.Description)
 				}
 			}
 		})

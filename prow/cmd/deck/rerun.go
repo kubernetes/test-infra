@@ -209,28 +209,30 @@ func canTriggerJob(user string, pj prowapi.ProwJob, cfg *prowapi.RerunAuthConfig
 	return false, nil
 }
 
-func isAllowedToRerun(r *http.Request, acfg authCfgGetter, goa *githuboauth.Agent, ghc githuboauth.AuthenticatedUserIdentifier, pj prowapi.ProwJob, cli deckGitHubClient, pluginAgent *plugins.ConfigAgent, log *logrus.Entry) (bool, error, int) {
-	authConfig := acfg(pj.Spec.Refs, pj.Spec.Cluster)
+func isAllowedToRerun(r *http.Request, acfg authCfgGetter, goa *githuboauth.Agent, ghc githuboauth.AuthenticatedUserIdentifier, pj prowapi.ProwJob, cli deckGitHubClient, pluginAgent *plugins.ConfigAgent, log *logrus.Entry) (bool, string, error, int) {
+	authConfig := acfg(&pj.Spec)
 	var allowed bool
+	var login string
 	if pj.Spec.RerunAuthConfig.IsAllowAnyone() || authConfig.IsAllowAnyone() {
 		// Skip getting the users login via GH oauth if anyone is allowed to rerun
 		// jobs so that GH oauth doesn't need to be set up for private Prows.
 		allowed = true
 	} else {
 		if goa == nil {
-			return allowed, errors.New("GitHub oauth must be configured to rerun jobs unless 'allow_anyone: true' is specified."), http.StatusInternalServerError
+			return allowed, "", errors.New("GitHub oauth must be configured to rerun jobs unless 'allow_anyone: true' is specified."), http.StatusInternalServerError
 		}
-		login, err := goa.GetLogin(r, ghc)
+		var err error
+		login, err = goa.GetLogin(r, ghc)
 		if err != nil {
-			return allowed, errors.New("Error retrieving GitHub login."), http.StatusUnauthorized
+			return allowed, "", errors.New("Error retrieving GitHub login."), http.StatusUnauthorized
 		}
 		log = log.WithField("user", login)
 		allowed, err = canTriggerJob(login, pj, authConfig, cli, pluginAgent.Config, log)
 		if err != nil {
-			return allowed, err, http.StatusInternalServerError
+			return allowed, "", err, http.StatusInternalServerError
 		}
 	}
-	return allowed, nil, http.StatusOK
+	return allowed, login, nil, http.StatusOK
 }
 
 // Valid value for query parameter mode in rerun route
@@ -301,7 +303,7 @@ func handleRerun(cfg config.Getter, prowJobClient prowv1.ProwJobInterface, creat
 				http.Error(w, "Direct rerun feature is not enabled. Enable with the '--rerun-creates-job' flag.", http.StatusMethodNotAllowed)
 				return
 			}
-			allowed, err, code := isAllowedToRerun(r, acfg, goa, ghc, newPJ, cli, pluginAgent, l)
+			allowed, user, err, code := isAllowedToRerun(r, acfg, goa, ghc, newPJ, cli, pluginAgent, l)
 			if err != nil {
 				http.Error(w, fmt.Sprintf("Could not verify if allowed to rerun: %v", err), code)
 				l.WithError(err).Debug("Could not verify if allowed to rerun")
@@ -321,7 +323,11 @@ func handleRerun(cfg config.Getter, prowJobClient prowv1.ProwJobInterface, creat
 				return
 			}
 			l = l.WithField("new-prowjob", created.Name)
-			l.Info("Successfully created a rerun PJ.")
+			if len(user) > 0 {
+				l.Info(fmt.Sprintf("%v successfully created a rerun of %v.", user, name))
+			} else {
+				l.Info(fmt.Sprintf("Successfully created a rerun of %v.", name))
+			}
 			if _, err = w.Write([]byte("Job successfully triggered. Wait 30 seconds and refresh the page for the job to show up")); err != nil {
 				l.WithError(err).Error("Error writing to rerun response.")
 			}
