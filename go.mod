@@ -105,6 +105,7 @@ require (
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
 	k8s.io/code-generator v0.24.2
 	k8s.io/klog/v2 v2.70.0
+	k8s.io/kubernetes v1.15.0
 	k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9
 	knative.dev/pkg v0.0.0-20220329144915-0a1ec2e0d46c
 	mvdan.cc/xurls/v2 v2.0.0
