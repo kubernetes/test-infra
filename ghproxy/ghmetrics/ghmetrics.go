@@ -64,7 +64,7 @@ var ghRequestWaitDurationHistVec = prometheus.NewHistogramVec(
 	prometheus.HistogramOpts{
 		Name:    "github_request_wait_duration_seconds",
 		Help:    "GitHub request wait duration before sending to API in seconds",
-		Buckets: []float64{0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 7.5, 10, 15, 20, 25, 30, 45, 60},
+		Buckets: []float64{0.1, 0.25, 0.5, 1, 2.5, 5, 7.5, 10, 15, 20, 25, 30, 45, 60, 90, 120, 150, 180},
 	},
 	[]string{"token_hash", "request_type", "api"},
 )
