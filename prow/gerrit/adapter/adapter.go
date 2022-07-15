@@ -262,7 +262,7 @@ func (c *Controller) syncChange(latest client.LastSyncState, changeChan <-chan C
 				c.repoCacheMapMux.Unlock()
 				wg.Done()
 				log.WithError(err).Error("create repo cache.")
-				return
+				continue
 			}
 			c.repoCacheMap[cloneURI.String()] = cache
 		}
