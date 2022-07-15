@@ -77,3 +77,56 @@ presubmits:
           '--test_args=--nodes=8 --focus="\[NodeConformance\]|\[NodeFeature:.+\]|\[NodeFeature\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"'
           --timeout=65m
           "--node-args=--image-config-file=${GOPATH}/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main-presubmit/image-config-presubmit.yaml -node-env=PULL_REFS=$(PULL_REFS)"
+
+  - name: pull-containerd-sandboxed-node-e2e
+    always_run: false
+    max_concurrency: 8
+    decorate: true
+    branches:
+    - main
+    decoration_config:
+      timeout: 100m
+    extra_refs:
+    - org: kubernetes
+      repo: kubernetes
+      base_ref: master
+      path_alias: k8s.io/kubernetes
+    - org: kubernetes
+      repo: test-infra
+      base_ref: master
+      path_alias: k8s.io/test-infra
+    annotations:
+      testgrid-dashboards: sig-node-containerd
+      testgrid-tab-name: pull-containerd-sandboxed-node-e2e
+      description: run node e2e tests sandboxed
+    labels:
+      preset-service-account: "true"
+      preset-k8s-ssh: "true"
+    spec:
+      containers:
+      - name: pull-containerd-node-e2e
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+        env:
+        - name: USE_TEST_INFRA_LOG_DUMPING
+          value: "true"
+        - name: ENABLE_CRI_SANDBOXES
+          value: "sandboxed"
+        command:
+        - sh
+        - -c
+        - >
+          runner.sh
+          ./test/build.sh
+          &&
+          cd ${GOPATH}/src/k8s.io/kubernetes
+          &&
+          /workspace/scenarios/kubernetes_e2e.py
+          --deployment=node
+          --gcp-project=cri-c8d-pr-node-e2e
+          --gcp-zone=us-central1-f
+          '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
+          --node-tests=true
+          --provider=gce
+          '--test_args=--nodes=8 --focus="\[NodeConformance\]|\[NodeFeature:.+\]|\[NodeFeature\]" --skip="\[Flaky\]|\[Slow\]|\[Serial\]"'
+          --timeout=65m
+          "--node-args=--image-config-file=${GOPATH}/src/k8s.io/test-infra/jobs/e2e_node/containerd/containerd-main-presubmit/image-config-presubmit.yaml -node-env=PULL_REFS=$(PULL_REFS)"
