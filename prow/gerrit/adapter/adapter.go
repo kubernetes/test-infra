@@ -308,7 +308,7 @@ func (c *Controller) Sync() {
 		wg.Add(len(changes))
 
 		changeChan := make(chan Change)
-		for i := 1; i < c.workerPoolSize; i++ {
+		for i := 0; i < c.workerPoolSize; i++ {
 			go c.syncChange(latest, changeChan, log, &wg)
 		}
 		for _, change := range changes {
