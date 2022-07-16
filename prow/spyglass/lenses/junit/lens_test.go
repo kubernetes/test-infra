@@ -20,11 +20,14 @@ package junit
 import (
 	"bytes"
 	"context"
+	"html/template"
 	"io/ioutil"
+	"strings"
 	"testing"
 
 	"github.com/GoogleCloudPlatform/testgrid/metadata/junit"
 	"github.com/google/go-cmp/cmp"
+	utilpointer "k8s.io/utils/pointer"
 
 	"k8s.io/test-infra/prow/spyglass/api"
 	"k8s.io/test-infra/prow/spyglass/lenses"
@@ -849,6 +852,97 @@ func TestGetJvd(t *testing.T) {
 			got := l.getJvd(artifacts)
 			if diff := cmp.Diff(tt.exp, got); diff != "" {
 				t.Fatalf("JVD mismatch, want(-), got(+): \n%s", diff)
+			}
+		})
+	}
+}
+
+func TestTemplate(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name               string
+		input              JVD
+		expectedSubstrings []string
+	}{
+		{
+			name: "Both stdout and stderr get rendered when there is one test",
+			input: JVD{NumTests: 1, Failed: []TestResult{{
+				Junit: []JunitResult{{
+					Result: junit.Result{
+						Output: utilpointer.String("output"),
+						Error:  utilpointer.String("error"),
+					},
+				}},
+			}}},
+			expectedSubstrings: []string{
+				`<a href="#" class="open-stdout-stderr">open stdout<i class="material-icons" `,
+				`<a href="#" class="open-stdout-stderr">open stderr<i class="material-icons"`,
+				`output`,
+				`error`,
+			},
+		},
+		{
+			name: "Both stdout and stderr get rendered when there are multiple tests",
+			input: JVD{NumTests: 1, Failed: []TestResult{{
+				Junit: []JunitResult{
+					{
+						Result: junit.Result{
+							Output: utilpointer.String("output"),
+							Error:  utilpointer.String("error"),
+						},
+					},
+					{
+						Result: junit.Result{
+							Output: utilpointer.String("output"),
+							Error:  utilpointer.String("error"),
+						},
+					},
+				},
+			}}},
+			expectedSubstrings: []string{
+				`<a href="#" class="open-stdout-stderr">open stdout<i class="material-icons" `,
+				`<a href="#" class="open-stdout-stderr">open stderr<i class="material-icons"`,
+				`<td class="mdl-data-table__cell--non-numeric test-name">Run #0`,
+				`<td class="mdl-data-table__cell--non-numeric test-name">Run #1`,
+				`output`,
+				`error`,
+			},
+		},
+		{
+			name: "Both stdout and stderr get rendered for flaky tests",
+			input: JVD{NumTests: 1, Flaky: []TestResult{{
+				Junit: []JunitResult{{
+					Result: junit.Result{
+						Output: utilpointer.String("output"),
+						Error:  utilpointer.String("error"),
+					},
+				}},
+			}}},
+			expectedSubstrings: []string{
+				`<a href="#" class="open-stdout-stderr">open stdout<i class="material-icons" `,
+				`<a href="#" class="open-stdout-stderr">open stderr<i class="material-icons"`,
+				`output`,
+				`error`,
+			},
+		},
+	}
+
+	tmpl, err := template.ParseFiles("template.html")
+	if err != nil {
+		t.Fatalf("failed to parse template: %v", err)
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			var buf bytes.Buffer
+			if err := tmpl.ExecuteTemplate(&buf, "body", tc.input); err != nil {
+				t.Fatalf("failed to execute template: %v", err)
+			}
+			result := buf.String()
+
+			for _, substring := range tc.expectedSubstrings {
+				if !strings.Contains(result, substring) {
+					t.Errorf("expected to find substring '%s' in rendered template '%s', wasn't the case", substring, result)
+				}
 			}
 		})
 	}

@@ -36,8 +36,12 @@
               <td colspan="2" class="mdl-data-table__cell--non-numeric">
                 <div>{{$firstTest.Failure}}</div>
                 {{if $firstTest.Output}}
-                <a href="#" class="open-stdout">open stdout<i class="material-icons" style="font-size: 1em; vertical-align: middle; padding-left: 3px;">open_in_new</i></a>
+                <a href="#" class="open-stdout-stderr">open stdout<i class="material-icons" style="font-size: 1em; vertical-align: middle; padding-left: 3px;">open_in_new</i></a>
                 <pre style="display: none;">{{$firstTest.Output}}</pre>
+                {{end}}
+                {{if $firstTest.Error}}
+                <a href="#" class="open-stdout-stderr">open stderr<i class="material-icons" style="font-size: 1em; vertical-align: middle; padding-left: 3px;">open_in_new</i></a>
+                <pre style="display: none;">{{$firstTest.Error}}</pre>
                 {{end}}
               </td>
             </tr>
@@ -66,8 +70,12 @@
                           <td colspan="2" class="mdl-data-table__cell--non-numeric">
                             <div>{{$indTest.Failure}}</div>
                             {{if $indTest.Output}}
-                            <a href="#" class="open-stdout">open stdout<i class="material-icons" style="font-size: 1em; vertical-align: middle; padding-left: 3px;">open_in_new</i></a>
+                            <a href="#" class="open-stdout-stderr">open stdout<i class="material-icons" style="font-size: 1em; vertical-align: middle; padding-left: 3px;">open_in_new</i></a>
                             <pre style="display: none;">{{$indTest.Output}}</pre>
+                            {{end}}
+                            {{if $indTest.Error}}
+                            <a href="#" class="open-stdout-stderr">open stderr<i class="material-icons" style="font-size: 1em; vertical-align: middle; padding-left: 3px;">open_in_new</i></a>
+                            <pre style="display: none;">{{$indTest.Error}}</pre>
                             {{end}}
                           </td>
                         </tr>
@@ -114,8 +122,12 @@
                           <td colspan="2" class="mdl-data-table__cell--non-numeric">
                             <div>{{$indTest.Failure}}</div>
                             {{if $indTest.Output}}
-                            <a href="#" class="open-stdout">open stdout<i class="material-icons" style="font-size: 1em; vertical-align: middle; padding-left: 3px;">open_in_new</i></a>
+                            <a href="#" class="open-stdout-stderr">open stdout<i class="material-icons" style="font-size: 1em; vertical-align: middle; padding-left: 3px;">open_in_new</i></a>
                             <pre style="display: none;">{{$indTest.Output}}</pre>
+                            {{end}}
+                            {{if $indTest.Error}}
+                            <a href="#" class="open-stdout-stderr">open stderr<i class="material-icons" style="font-size: 1em; vertical-align: middle; padding-left: 3px;">open_in_new</i></a>
+                            <pre style="display: none;">{{$indTest.Error}}</pre>
                             {{end}}
                           </td>
                         </tr>
