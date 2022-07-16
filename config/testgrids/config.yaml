@@ -13,15 +13,15 @@ test_groups:
     - target_config: Tests name
     - target_config: Context
     name_format: '%s [%s]'
-- name: ci-containerd-node-e2e
-  gcs_prefix: kubernetes-jenkins/logs/ci-containerd-node-e2e
+- name: ci-cos-cgroupv1-containerd-node-e2e
+  gcs_prefix: kubernetes-jenkins/logs/ci-cos-cgroupv1-containerd-node-e2e
   test_name_config:
     name_elements:
     - target_config: Tests name
     - target_config: Context
     name_format: '%s [%s]'
-- name: ci-containerd-node-e2e-features
-  gcs_prefix: kubernetes-jenkins/logs/ci-containerd-node-e2e-features
+- name: ci-cos-cgroupv1-containerd-node-e2e-features
+  gcs_prefix: kubernetes-jenkins/logs/ci-cos-cgroupv1-containerd-node-e2e-features
   test_name_config:
     name_elements:
     - target_config: Tests name
