@@ -131,7 +131,7 @@ presubmits:
   - name: pull-test-infra-prow-image-build-test
     branches:
     - master
-    run_if_changed: '^(\.ko\.yaml|hack/(make-rules|prowimagebuilder)|prow|ghproxy|label_sync/.+\.go|robots/commenter|robots/pr-creator|robots/issue-creator|testgrid/cmd|gcsweb)'
+    run_if_changed: '^(\.ko\.yaml|hack/(ts-rollup|make-rules|prowimagebuilder)|prow|ghproxy|label_sync/.+\.go|robots/commenter|robots/pr-creator|robots/issue-creator|testgrid/cmd|gcsweb)'
     decorate: true
     labels:
       # Building deck requires docker for typescript compilation.
