@@ -1,6 +1,5 @@
 import moment from "moment";
 import {ProwJobState, Pull} from "../api/prow";
-import {relativeURL} from "./urls";
 
 // This file likes namespaces, so stick with it for now.
 /* tslint:disable:no-namespace */
@@ -216,65 +215,14 @@ export function getCookieByName(name: string): string {
   return "";
 }
 
-export function createRerunProwJobIcon(modal: HTMLElement, rerunElement: HTMLElement, prowjob: string, rerunCreatesJob: boolean, csrfToken: string): HTMLElement {
-  const url = `${location.protocol}//${location.host}/rerun?prowjob=${prowjob}`;
-  const i = icon.create("refresh", "Show instructions for rerunning this job");
-
-  window.onkeydown = (event: any) => {
-    if ( event.key === "Escape" ) {
-      modal.style.display = "none";
-    }
-  };
-  window.onclick = (event: any) => {
-    if (event.target === modal) {
-      modal.style.display = "none";
-    }
-  };
-
-  // we actually want to know whether the "access-token-session" cookie exists, but we can't always
-  // access it from the frontend. "github_login" should be set whenever "access-token-session" is
-  i.onclick = () => {
-    modal.style.display = "block";
-    rerunElement.innerHTML = `kubectl create -f "<a href="${url}">${url}</a>"`;
-    const copyButton = document.createElement('a');
-    copyButton.className = "mdl-button mdl-js-button mdl-button--icon";
-    copyButton.onclick = () => copyToClipboardWithToast(`kubectl create -f "${url}"`);
-    copyButton.innerHTML = "<i class='material-icons state triggered' style='color: gray'>file_copy</i>";
-    rerunElement.appendChild(copyButton);
-    if (rerunCreatesJob) {
-        const runButton = document.createElement('a');
-        runButton.innerHTML = "<button class='mdl-button mdl-js-button mdl-button--raised mdl-button--colored'>Rerun</button>";
-        runButton.onclick = async () => {
-            gtag("event", "rerun", {
-                event_category: "engagement",
-                transport_type: "beacon",
-            });
-            const result = await fetch(url, {
-                headers: {
-                    "Content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-                    "X-CSRF-Token": csrfToken,
-                },
-                method: 'post',
-            });
-            const data = await result.text();
-            if (result.status === 401) {
-                window.location.href = window.location.origin + `/github-login?dest=${relativeURL({rerun: "gh_redirect"})}`;
-            } else {
-                rerunElement.innerHTML = data;
-            }
-        };
-        rerunElement.appendChild(runButton);
-    }
-  };
-
-  return i;
+export function showToast(text: string): void {
+  const toast = document.getElementById("toast") as SnackbarElement<HTMLDivElement>;
+  toast.MaterialSnackbar.showSnackbar({message: text});
 }
 
-function copyToClipboardWithToast(text: string): void {
-  copyToClipboard(text);
-
-  const toast = document.getElementById("toast") as SnackbarElement<HTMLDivElement>;
-  toast.MaterialSnackbar.showSnackbar({message: "Copied to clipboard"});
+export function showAlert(text: string): void {
+  const toast = document.getElementById("toastAlert") as SnackbarElement<HTMLDivElement>;
+  toast.MaterialSnackbar.showSnackbar({message: text});
 }
 
 // copyToClipboard is from https://stackoverflow.com/a/33928558
@@ -285,7 +233,7 @@ function copyToClipboardWithToast(text: string): void {
 // IE: The clipboard feature may be disabled by an administrator. By
 // default a prompt is shown the first time the clipboard is
 // used (per session).
-function copyToClipboard(text: string) {
+export function copyToClipboard(text: string) {
   if (window.clipboardData && window.clipboardData.setData) {
       // IE specific code path to prevent textarea being shown while dialog is visible.
       return window.clipboardData.setData("Text", text);
@@ -305,7 +253,6 @@ function copyToClipboard(text: string) {
       }
   }
 }
-
 export function formatDuration(seconds: number): string {
   const parts: string[] = [];
   if (seconds >= 3600) {

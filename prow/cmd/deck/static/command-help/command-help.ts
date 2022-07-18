@@ -1,5 +1,6 @@
 import dialogPolyfill from "dialog-polyfill";
 import {Command, Help, PluginHelp} from "../api/help";
+import {showToast} from "../common/common";
 import {getParameterByName} from '../common/urls';
 
 declare const allHelp: Help;
@@ -266,8 +267,7 @@ function createCommandLink(name: string, no: number): HTMLTableDataCellElement {
         document.execCommand("copy");
         document.body.removeChild(tempInput);
 
-        const toast = document.body.querySelector("#toast")! as SnackbarElement;
-        toast.MaterialSnackbar.showSnackbar({message: "Copied to clipboard"});
+        showToast("Copied to clipboard");
     });
 
     link.appendChild(iconButton);
