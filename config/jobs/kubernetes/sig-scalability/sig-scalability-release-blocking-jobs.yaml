@@ -191,6 +191,7 @@ periodics:
       args:
       - --check-leaked-resources
       - --cluster=e2e-big
+      - --env=APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0
       - --env=HEAPSTER_MACHINE_TYPE=e2-standard-8
       - --extract=ci/latest-fast
       - --extract-ci-bucket=k8s-release-dev

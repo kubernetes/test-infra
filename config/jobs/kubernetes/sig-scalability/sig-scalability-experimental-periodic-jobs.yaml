@@ -166,6 +166,7 @@ periodics:
           - --gcp-project-type=scalability-project
           - --gcp-zone=us-east1-b
           - --provider=gce
+          - --env=APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0
           - --env=CL2_ENABLE_VIOLATIONS_FOR_SCHEDULING_THROUGHPUT=false
           - --test=false
           - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
