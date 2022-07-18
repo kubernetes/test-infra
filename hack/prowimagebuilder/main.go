@@ -93,6 +93,7 @@ type options struct {
 var runCmdInDirFunc = runCmdInDir
 
 func runCmdInDir(dir string, additionalEnv []string, cmd string, args ...string) (string, error) {
+	log := logrus.WithFields(logrus.Fields{"cmd": cmd, "args": args})
 	command := exec.Command(cmd, args...)
 	if dir != "" {
 		command.Dir = dir
@@ -118,9 +119,12 @@ func runCmdInDir(dir string, additionalEnv []string, cmd string, args ...string)
 	}
 	allErr, _ := io.ReadAll(stdErr)
 	err = command.Wait()
-	// Print error only when command failed
-	if err != nil && len(allErr) > 0 {
-		logrus.WithField("cmd", command.Args).Error(string(allErr))
+	if len(allErr) > 0 {
+		if err != nil {
+			log.Error(string(allErr))
+		} else {
+			log.Warn(string(allErr))
+		}
 	}
 	return strings.TrimSpace(allOut), err
 }
