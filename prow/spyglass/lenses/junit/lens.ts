@@ -34,8 +34,8 @@ function addTestExpanders(): void {
   }
 }
 
-function addStdoutOpeners(): void {
-  const links = document.querySelectorAll<HTMLAnchorElement>('a.open-stdout');
+function addStdoutStderrOpeners(): void {
+  const links = document.querySelectorAll<HTMLAnchorElement>('a.open-stdout-stderr');
   for (const link of Array.from(links)) {
     link.onclick = (e) => {
       e.preventDefault();
@@ -52,7 +52,7 @@ function addStdoutOpeners(): void {
 
 function loaded(): void {
   addTestExpanders();
-  addStdoutOpeners();
+  addStdoutStderrOpeners();
   addSectionExpanders();
 }
 
