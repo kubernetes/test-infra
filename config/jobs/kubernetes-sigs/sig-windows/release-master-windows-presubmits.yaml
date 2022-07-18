@@ -137,7 +137,7 @@ presubmits:
           - name: GINKGO_FOCUS
             value: GMSA
           - name: GINKGO_SKIP
-            value: "" #don't skip any gmsa tests.  The focus of GMSA will select just those tests
+            value: \[LinuxOnly\] #must set some value otherwise default is used.  The focus of GMSA will select just those tests
     annotations:
       testgrid-dashboards: sig-windows-presubmit
       testgrid-tab-name: pull-e2e-capz-windows-containerd-extension-gmsa
