@@ -3731,29 +3731,29 @@ func TestRerunAuthConfigsGetRerunAuthConfig(t *testing.T) {
 	var testCases = []struct {
 		name     string
 		configs  RerunAuthConfigs
-		refs     *prowapi.Refs
-		cluster  string
+		jobSpec  *prowapi.ProwJobSpec
 		expected *prowapi.RerunAuthConfig
 	}{
 		{
-			name:     "default to an empty config",
-			configs:  RerunAuthConfigs{},
-			refs:     &prowapi.Refs{Org: "my-default-org", Repo: "my-default-repo"},
-			cluster:  "",
+			name:    "default to an empty config",
+			configs: RerunAuthConfigs{},
+			jobSpec: &prowapi.ProwJobSpec{
+				Refs: &prowapi.Refs{Org: "my-default-org", Repo: "my-default-repo"},
+			},
 			expected: nil,
 		},
 		{
-			name:     "unknown org or org/repo return wildcard",
-			configs:  RerunAuthConfigs{"*": prowapi.RerunAuthConfig{GitHubUsers: []string{"clarketm"}}},
-			refs:     &prowapi.Refs{Org: "my-default-org", Repo: "my-default-repo"},
-			cluster:  "",
+			name:    "unknown org or org/repo return wildcard",
+			configs: RerunAuthConfigs{"*": prowapi.RerunAuthConfig{GitHubUsers: []string{"clarketm"}}},
+			jobSpec: &prowapi.ProwJobSpec{
+				Refs: &prowapi.Refs{Org: "my-default-org", Repo: "my-default-repo"},
+			},
 			expected: &prowapi.RerunAuthConfig{GitHubUsers: []string{"clarketm"}},
 		},
 		{
 			name:     "no refs return wildcard empty string match",
 			configs:  RerunAuthConfigs{"": prowapi.RerunAuthConfig{GitHubUsers: []string{"leonardo"}}},
-			refs:     nil,
-			cluster:  "",
+			jobSpec:  &prowapi.ProwJobSpec{},
 			expected: &prowapi.RerunAuthConfig{GitHubUsers: []string{"leonardo"}},
 		},
 		{
@@ -3763,8 +3763,7 @@ func TestRerunAuthConfigsGetRerunAuthConfig(t *testing.T) {
 				"*":     prowapi.RerunAuthConfig{GitHubUsers: []string{"scoobydoo"}},
 				"istio": prowapi.RerunAuthConfig{GitHubUsers: []string{"billybob"}},
 			},
-			refs:     nil,
-			cluster:  "",
+			jobSpec:  &prowapi.ProwJobSpec{},
 			expected: &prowapi.RerunAuthConfig{GitHubUsers: []string{"scoobydoo"}},
 		},
 		{
@@ -3772,8 +3771,7 @@ func TestRerunAuthConfigsGetRerunAuthConfig(t *testing.T) {
 			configs: RerunAuthConfigs{
 				"istio": prowapi.RerunAuthConfig{GitHubUsers: []string{"billybob"}},
 			},
-			refs:     nil,
-			cluster:  "",
+			jobSpec:  &prowapi.ProwJobSpec{},
 			expected: nil,
 		},
 		{
@@ -3783,8 +3781,9 @@ func TestRerunAuthConfigsGetRerunAuthConfig(t *testing.T) {
 				"istio":            prowapi.RerunAuthConfig{GitHubUsers: []string{"scoobydoo"}},
 				"istio/test-infra": prowapi.RerunAuthConfig{GitHubUsers: []string{"billybob"}},
 			},
-			refs:     &prowapi.Refs{Org: "istio", Repo: "istio"},
-			cluster:  "",
+			jobSpec: &prowapi.ProwJobSpec{
+				Refs: &prowapi.Refs{Org: "istio", Repo: "istio"},
+			},
 			expected: &prowapi.RerunAuthConfig{GitHubUsers: []string{"scoobydoo"}},
 		},
 		{
@@ -3793,8 +3792,9 @@ func TestRerunAuthConfigsGetRerunAuthConfig(t *testing.T) {
 				"*":           prowapi.RerunAuthConfig{GitHubUsers: []string{"clarketm"}},
 				"istio/istio": prowapi.RerunAuthConfig{GitHubUsers: []string{"skywalker"}},
 			},
-			refs:     &prowapi.Refs{Org: "istio", Repo: "istio"},
-			cluster:  "",
+			jobSpec: &prowapi.ProwJobSpec{
+				Refs: &prowapi.Refs{Org: "istio", Repo: "istio"},
+			},
 			expected: &prowapi.RerunAuthConfig{GitHubUsers: []string{"skywalker"}},
 		},
 		{
@@ -3804,9 +3804,21 @@ func TestRerunAuthConfigsGetRerunAuthConfig(t *testing.T) {
 				"istio":       prowapi.RerunAuthConfig{GitHubUsers: []string{"scrappydoo"}},
 				"istio/istio": prowapi.RerunAuthConfig{GitHubUsers: []string{"airbender"}},
 			},
-			refs:     &prowapi.Refs{Org: "istio", Repo: "istio"},
-			cluster:  "",
+			jobSpec: &prowapi.ProwJobSpec{
+				Refs: &prowapi.Refs{Org: "istio", Repo: "istio"},
+			},
 			expected: &prowapi.RerunAuthConfig{GitHubUsers: []string{"airbender"}},
+		},
+		{
+			name: "use org/repo from extra refs",
+			configs: RerunAuthConfigs{
+				"*":           prowapi.RerunAuthConfig{GitHubUsers: []string{"clarketm"}},
+				"istio/istio": prowapi.RerunAuthConfig{GitHubUsers: []string{"skywalker"}},
+			},
+			jobSpec: &prowapi.ProwJobSpec{
+				ExtraRefs: []prowapi.Refs{{Org: "istio", Repo: "istio"}},
+			},
+			expected: &prowapi.RerunAuthConfig{GitHubUsers: []string{"skywalker"}},
 		},
 	}
 
@@ -3819,7 +3831,7 @@ func TestRerunAuthConfigsGetRerunAuthConfig(t *testing.T) {
 				t.Fatal("Failed to finalize default rerun auth config.")
 			}
 
-			if diff := cmp.Diff(tc.expected, d.GetRerunAuthConfig(tc.refs, tc.cluster)); diff != "" {
+			if diff := cmp.Diff(tc.expected, d.GetRerunAuthConfig(tc.jobSpec)); diff != "" {
 				t.Errorf("GetRerunAuthConfig returned unexpected value (-want +got):\n%s", diff)
 			}
 		})
@@ -3830,15 +3842,15 @@ func TestDefaultRerunAuthConfigsGetRerunAuthConfig(t *testing.T) {
 	var testCases = []struct {
 		name     string
 		configs  []*DefaultRerunAuthConfigEntry
-		refs     *prowapi.Refs
-		cluster  string
+		jobSpec  *prowapi.ProwJobSpec
 		expected *prowapi.RerunAuthConfig
 	}{
 		{
-			name:     "default to an empty config",
-			configs:  []*DefaultRerunAuthConfigEntry{},
-			refs:     &prowapi.Refs{Org: "my-default-org", Repo: "my-default-repo"},
-			cluster:  "",
+			name:    "default to an empty config",
+			configs: []*DefaultRerunAuthConfigEntry{},
+			jobSpec: &prowapi.ProwJobSpec{
+				Refs: &prowapi.Refs{Org: "my-default-org", Repo: "my-default-repo"},
+			},
 			expected: nil,
 		},
 		{
@@ -3850,8 +3862,9 @@ func TestDefaultRerunAuthConfigsGetRerunAuthConfig(t *testing.T) {
 					Config:  &prowapi.RerunAuthConfig{GitHubUsers: []string{"clarketm"}},
 				},
 			},
-			refs:     &prowapi.Refs{Org: "my-default-org", Repo: "my-default-repo"},
-			cluster:  "",
+			jobSpec: &prowapi.ProwJobSpec{
+				Refs: &prowapi.Refs{Org: "my-default-org", Repo: "my-default-repo"},
+			},
 			expected: &prowapi.RerunAuthConfig{GitHubUsers: []string{"clarketm"}},
 		},
 		{
@@ -3863,8 +3876,7 @@ func TestDefaultRerunAuthConfigsGetRerunAuthConfig(t *testing.T) {
 					Config:  &prowapi.RerunAuthConfig{GitHubUsers: []string{"leonardo"}},
 				},
 			},
-			refs:     nil,
-			cluster:  "",
+			jobSpec:  &prowapi.ProwJobSpec{},
 			expected: &prowapi.RerunAuthConfig{GitHubUsers: []string{"leonardo"}},
 		},
 		{
@@ -3876,8 +3888,7 @@ func TestDefaultRerunAuthConfigsGetRerunAuthConfig(t *testing.T) {
 					Config:  &prowapi.RerunAuthConfig{GitHubUsers: []string{"leonardo"}},
 				},
 			},
-			refs:     nil,
-			cluster:  "",
+			jobSpec:  &prowapi.ProwJobSpec{},
 			expected: &prowapi.RerunAuthConfig{GitHubUsers: []string{"leonardo"}},
 		},
 		{
@@ -3899,8 +3910,7 @@ func TestDefaultRerunAuthConfigsGetRerunAuthConfig(t *testing.T) {
 					Config:  &prowapi.RerunAuthConfig{GitHubUsers: []string{"airbender"}},
 				},
 			},
-			refs:     nil,
-			cluster:  "",
+			jobSpec:  &prowapi.ProwJobSpec{},
 			expected: &prowapi.RerunAuthConfig{GitHubUsers: []string{"scoobydoo"}},
 		},
 		{
@@ -3912,8 +3922,7 @@ func TestDefaultRerunAuthConfigsGetRerunAuthConfig(t *testing.T) {
 					Config:  &prowapi.RerunAuthConfig{GitHubUsers: []string{"billybob"}},
 				},
 			},
-			refs:     nil,
-			cluster:  "",
+			jobSpec:  &prowapi.ProwJobSpec{},
 			expected: nil,
 		},
 		{
@@ -3935,8 +3944,9 @@ func TestDefaultRerunAuthConfigsGetRerunAuthConfig(t *testing.T) {
 					Config:  &prowapi.RerunAuthConfig{GitHubUsers: []string{"billybob"}},
 				},
 			},
-			refs:     &prowapi.Refs{Org: "istio", Repo: "istio"},
-			cluster:  "",
+			jobSpec: &prowapi.ProwJobSpec{
+				Refs: &prowapi.Refs{Org: "istio", Repo: "istio"},
+			},
 			expected: &prowapi.RerunAuthConfig{GitHubUsers: []string{"scoobydoo"}},
 		},
 		{
@@ -3953,8 +3963,9 @@ func TestDefaultRerunAuthConfigsGetRerunAuthConfig(t *testing.T) {
 					Config:  &prowapi.RerunAuthConfig{GitHubUsers: []string{"skywalker"}},
 				},
 			},
-			refs:     &prowapi.Refs{Org: "istio", Repo: "istio"},
-			cluster:  "",
+			jobSpec: &prowapi.ProwJobSpec{
+				Refs: &prowapi.Refs{Org: "istio", Repo: "istio"},
+			},
 			expected: &prowapi.RerunAuthConfig{GitHubUsers: []string{"skywalker"}},
 		},
 		{
@@ -3976,8 +3987,9 @@ func TestDefaultRerunAuthConfigsGetRerunAuthConfig(t *testing.T) {
 					Config:  &prowapi.RerunAuthConfig{GitHubUsers: []string{"airbender"}},
 				},
 			},
-			refs:     &prowapi.Refs{Org: "istio", Repo: "istio"},
-			cluster:  "",
+			jobSpec: &prowapi.ProwJobSpec{
+				Refs: &prowapi.Refs{Org: "istio", Repo: "istio"},
+			},
 			expected: &prowapi.RerunAuthConfig{GitHubUsers: []string{"airbender"}},
 		},
 		{
@@ -3994,8 +4006,10 @@ func TestDefaultRerunAuthConfigsGetRerunAuthConfig(t *testing.T) {
 					Config:  &prowapi.RerunAuthConfig{GitHubUsers: []string{"airbender"}},
 				},
 			},
-			refs:     &prowapi.Refs{Org: "istio", Repo: "istio"},
-			cluster:  "trusted",
+			jobSpec: &prowapi.ProwJobSpec{
+				Refs:    &prowapi.Refs{Org: "istio", Repo: "istio"},
+				Cluster: "trusted",
+			},
 			expected: &prowapi.RerunAuthConfig{GitHubUsers: []string{"airbender"}},
 		},
 		{
@@ -4012,8 +4026,10 @@ func TestDefaultRerunAuthConfigsGetRerunAuthConfig(t *testing.T) {
 					Config:  &prowapi.RerunAuthConfig{GitHubUsers: []string{"airbender"}},
 				},
 			},
-			refs:     &prowapi.Refs{Org: "istio", Repo: "istio"},
-			cluster:  "trusted",
+			jobSpec: &prowapi.ProwJobSpec{
+				Refs:    &prowapi.Refs{Org: "istio", Repo: "istio"},
+				Cluster: "trusted",
+			},
 			expected: &prowapi.RerunAuthConfig{GitHubUsers: []string{"scrappydoo"}},
 		},
 		{
@@ -4030,8 +4046,9 @@ func TestDefaultRerunAuthConfigsGetRerunAuthConfig(t *testing.T) {
 					Config:  &prowapi.RerunAuthConfig{GitHubUsers: []string{"airbender"}},
 				},
 			},
-			refs:     nil,
-			cluster:  "trusted",
+			jobSpec: &prowapi.ProwJobSpec{
+				Cluster: "trusted",
+			},
 			expected: &prowapi.RerunAuthConfig{GitHubUsers: []string{"airbender"}},
 		},
 		{
@@ -4043,9 +4060,30 @@ func TestDefaultRerunAuthConfigsGetRerunAuthConfig(t *testing.T) {
 					Config:  &prowapi.RerunAuthConfig{GitHubUsers: []string{"clarketm"}},
 				},
 			},
-			refs:     &prowapi.Refs{Org: "istio", Repo: "istio"},
-			cluster:  "trusted",
+			jobSpec: &prowapi.ProwJobSpec{
+				Refs:    &prowapi.Refs{Org: "istio", Repo: "istio"},
+				Cluster: "trusted",
+			},
 			expected: nil,
+		},
+		{
+			name: "use org/repo from extra refs",
+			configs: []*DefaultRerunAuthConfigEntry{
+				{
+					OrgRepo: "*",
+					Cluster: "",
+					Config:  &prowapi.RerunAuthConfig{GitHubUsers: []string{"clarketm"}},
+				},
+				{
+					OrgRepo: "istio/istio",
+					Cluster: "",
+					Config:  &prowapi.RerunAuthConfig{GitHubUsers: []string{"skywalker"}},
+				},
+			},
+			jobSpec: &prowapi.ProwJobSpec{
+				ExtraRefs: []prowapi.Refs{{Org: "istio", Repo: "istio"}},
+			},
+			expected: &prowapi.RerunAuthConfig{GitHubUsers: []string{"skywalker"}},
 		},
 	}
 
@@ -4058,7 +4096,7 @@ func TestDefaultRerunAuthConfigsGetRerunAuthConfig(t *testing.T) {
 				t.Fatal("Failed to finalize default rerun auth config.")
 			}
 
-			if diff := cmp.Diff(tc.expected, d.GetRerunAuthConfig(tc.refs, tc.cluster)); diff != "" {
+			if diff := cmp.Diff(tc.expected, d.GetRerunAuthConfig(tc.jobSpec)); diff != "" {
 				t.Errorf("GetRerunAuthConfig returned unexpected value (-want +got):\n%s", diff)
 			}
 		})

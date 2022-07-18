@@ -277,7 +277,7 @@ func handleRerun(cfg config.Getter, prowJobClient prowv1.ProwJobInterface, creat
 				http.Error(w, "Direct rerun feature is not enabled. Enable with the '--rerun-creates-job' flag.", http.StatusMethodNotAllowed)
 				return
 			}
-			authConfig := acfg(newPJ.Spec.Refs, newPJ.Spec.Cluster)
+			authConfig := acfg(&newPJ.Spec)
 			var allowed bool
 			if newPJ.Spec.RerunAuthConfig.IsAllowAnyone() || authConfig.IsAllowAnyone() {
 				// Skip getting the users login via GH oauth if anyone is allowed to rerun
