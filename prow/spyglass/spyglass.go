@@ -271,11 +271,11 @@ func (sg *Spyglass) JobPath(src string) (string, error) {
 
 // ProwJob returns a prowjob to the YAML for the job specified in src.
 // If no job is found, it returns nil and nil error.
-func (sg *Spyglass) ProwJob(src string) (*prowapi.ProwJob, error) {
+func (sg *Spyglass) ProwJob(src string) (string, prowapi.ProwJobState, error) {
 	src = strings.TrimSuffix(src, "/")
 	keyType, key, err := splitSrc(src)
 	if err != nil {
-		return nil, fmt.Errorf("error parsing src: %v", src)
+		return "", "", fmt.Errorf("error parsing src: %v", src)
 	}
 	split := strings.Split(key, "/")
 	var jobName string
@@ -283,13 +283,13 @@ func (sg *Spyglass) ProwJob(src string) (*prowapi.ProwJob, error) {
 	switch keyType {
 	case prowKeyType:
 		if len(split) < 2 {
-			return nil, fmt.Errorf("invalid key %s: expected <job-name>/<build-id>", key)
+			return "", "", fmt.Errorf("invalid key %s: expected <job-name>/<build-id>", key)
 		}
 		jobName = split[0]
 		buildID = split[1]
 	default:
 		if len(split) < 4 {
-			return nil, fmt.Errorf("invalid key %s: expected <bucket-name>/<log-type>/.../<job-name>/<build-id>", key)
+			return "", "", fmt.Errorf("invalid key %s: expected <bucket-name>/<log-type>/.../<job-name>/<build-id>", key)
 		}
 		jobName = split[len(split)-2]
 		buildID = split[len(split)-1]
@@ -297,11 +297,11 @@ func (sg *Spyglass) ProwJob(src string) (*prowapi.ProwJob, error) {
 	job, err := sg.jobAgent.GetProwJob(jobName, buildID)
 	if err != nil {
 		if jobs.IsErrProwJobNotFound(err) {
-			return nil, nil
+			return "", "", nil
 		}
-		return nil, err
+		return "", "", err
 	}
-	return &job, nil
+	return job.Name, job.Status.State, nil
 }
 
 // RunPath returns the path to the directory for the job run specified in src.

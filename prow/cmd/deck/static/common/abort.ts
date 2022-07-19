@@ -1,4 +1,4 @@
-import {icon, showAlert, showToast, State} from "./common";
+import {showAlert, showToast, State} from "./common";
 
 export function createAbortProwJobIcon(state: string, prowjob: string, csrfToken: string): HTMLElement {
   const url = `${location.protocol}//${location.host}/abort?prowjob=${prowjob}`;

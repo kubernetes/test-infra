@@ -1,8 +1,8 @@
 import moment from "moment";
 import {ProwJob, ProwJobList, ProwJobState, ProwJobType, Pull} from "../api/prow";
+import {createAbortProwJobIcon} from "../common/abort";
 import {cell, formatDuration, icon} from "../common/common";
 import {createRerunProwJobIcon} from "../common/rerun";
-import {createAbortProwJobIcon} from "../common/abort";
 import {getParameterByName} from "../common/urls";
 import {FuzzySearch} from './fuzzy-search';
 import {JobHistogram, JobSample} from './histogram';
@@ -613,7 +613,7 @@ function redraw(fz: FuzzySearch, pushState: boolean = true): void {
         // Rerun column
         r.appendChild(createRerunCell(modal, rerunCommand, prowJobName));
         // Abort column
-        r.appendChild(createAbortCell(state, prowJobName))
+        r.appendChild(createAbortCell(state, prowJobName));
         // Job Yaml column
         r.appendChild(createViewJobCell(prowJobName));
         // Repository column
@@ -729,7 +729,7 @@ function createAbortCell(state: string, prowjob: string): HTMLTableCellElement {
     const c = document.createElement("td");
     c.appendChild(createAbortProwJobIcon(state, prowjob, csrfToken));
     return c;
-} 
+}
 
 function createRerunCell(modal: HTMLElement, rerunElement: HTMLElement, prowjob: string): HTMLTableDataCellElement {
     const c = document.createElement("td");

@@ -1013,15 +1013,15 @@ lensesLoop:
 	}
 
 	var prowJobLink string
-	prowJob, err := sg.ProwJob(src)
+	prowJobName, prowJobState, err := sg.ProwJob(src)
 	if err == nil {
-		if prowJob != nil {
+		if prowJobName != "" {
 			u, err := url.Parse("/prowjob")
 			if err != nil {
 				return "", fmt.Errorf("error parsing prowjob path: %w", err)
 			}
 			query := url.Values{}
-			query.Set("prowjob", prowJob.Name)
+			query.Set("prowjob", prowJobName)
 			u.RawQuery = query.Encode()
 			prowJobLink = u.String()
 		}
@@ -1141,8 +1141,8 @@ lensesLoop:
 		PRLink:          prLink,
 		ExtraLinks:      extraLinks,
 		ReRunCreatesJob: o.rerunCreatesJob,
-		ProwJobName:     prowJob.Name,
-		ProwJobState:    string(prowJob.Status.State),
+		ProwJobName:     prowJobName,
+		ProwJobState:    string(prowJobState),
 	}
 	t := template.New("spyglass.html")
 
