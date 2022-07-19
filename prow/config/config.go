@@ -40,7 +40,7 @@ import (
 	gitignore "github.com/denormal/go-gitignore"
 	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
-	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
+	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	"gopkg.in/robfig/cron.v2"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -2642,7 +2642,7 @@ func resolvePresets(name string, labels map[string]string, spec *v1.PodSpec, pre
 
 var ReProwExtraRef = regexp.MustCompile(`PROW_EXTRA_GIT_REF_(\d+)`)
 
-func ValidatePipelineRunSpec(jobType prowapi.ProwJobType, extraRefs []prowapi.Refs, spec *pipelinev1alpha1.PipelineRunSpec) error {
+func ValidatePipelineRunSpec(jobType prowapi.ProwJobType, extraRefs []prowapi.Refs, spec *pipelinev1beta1.PipelineRunSpec) error {
 	if spec == nil {
 		return nil
 	}

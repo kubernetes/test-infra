@@ -851,7 +851,7 @@ func TestMakePipelineGitResource(t *testing.T) {
 			expected := &pipelinev1alpha1.PipelineResource{
 				ObjectMeta: pipelineMeta(resourceName, pj),
 				Spec: pipelinev1alpha1.PipelineResourceSpec{
-					Type: pipelinev1alpha1.PipelineResourceTypeGit,
+					Type: pipelinev1beta1.PipelineResourceTypeGit,
 					Params: []pipelinev1beta1.ResourceParam{
 						{
 							Name:  "url",
@@ -900,10 +900,10 @@ func TestMakeResources(t *testing.T) {
 						},
 					},
 				}
-				pj.Spec.PipelineRunSpec.Resources = []pipelinev1alpha1.PipelineResourceBinding{
+				pj.Spec.PipelineRunSpec.Resources = []pipelinev1beta1.PipelineResourceBinding{
 					{
 						Name:        "implicit git resource",
-						ResourceRef: &pipelinev1alpha1.PipelineResourceRef{Name: config.ProwImplicitGitResource},
+						ResourceRef: &pipelinev1beta1.PipelineResourceRef{Name: config.ProwImplicitGitResource},
 					},
 				}
 				return pj
@@ -964,7 +964,7 @@ func TestMakeResources(t *testing.T) {
 						},
 					},
 				)
-				pr.Spec.Resources = []pipelinev1alpha1.PipelineResourceBinding{
+				pr.Spec.Resources = []pipelinev1beta1.PipelineResourceBinding{
 					{
 						Name: "implicit git resource",
 						ResourceSpec: &pipelinev1alpha1.PipelineResourceSpec{
@@ -983,20 +983,20 @@ func TestMakeResources(t *testing.T) {
 			name: "configure sources when extra refs are configured",
 			job: func(pj prowjobv1.ProwJob) prowjobv1.ProwJob {
 				pj.Spec.ExtraRefs = []prowjobv1.Refs{{Org: "org0"}, {Org: "org1"}}
-				pj.Spec.PipelineRunSpec.Resources = []pipelinev1alpha1.PipelineResourceBinding{
+				pj.Spec.PipelineRunSpec.Resources = []pipelinev1beta1.PipelineResourceBinding{
 					{
 						Name:        "git resource A",
-						ResourceRef: &pipelinev1alpha1.PipelineResourceRef{Name: "PROW_EXTRA_GIT_REF_0"},
+						ResourceRef: &pipelinev1beta1.PipelineResourceRef{Name: "PROW_EXTRA_GIT_REF_0"},
 					},
 					{
 						Name:        "git resource B",
-						ResourceRef: &pipelinev1alpha1.PipelineResourceRef{Name: "PROW_EXTRA_GIT_REF_1"},
+						ResourceRef: &pipelinev1beta1.PipelineResourceRef{Name: "PROW_EXTRA_GIT_REF_1"},
 					},
 				}
 				return pj
 			},
 			pipelineRun: func(pr pipelinev1beta1.PipelineRun) pipelinev1beta1.PipelineRun {
-				pr.Spec.Resources = []pipelinev1alpha1.PipelineResourceBinding{
+				pr.Spec.Resources = []pipelinev1beta1.PipelineResourceBinding{
 					{
 						Name: "git resource A",
 						ResourceSpec: &pipelinev1alpha1.PipelineResourceSpec{
@@ -1024,14 +1024,14 @@ func TestMakeResources(t *testing.T) {
 		{
 			name: "do not override unrelated git resources",
 			job: func(pj prowjobv1.ProwJob) prowjobv1.ProwJob {
-				pj.Spec.PipelineRunSpec.Resources = []pipelinev1alpha1.PipelineResourceBinding{
+				pj.Spec.PipelineRunSpec.Resources = []pipelinev1beta1.PipelineResourceBinding{
 					{
 						Name:        "git resource A",
-						ResourceRef: &pipelinev1alpha1.PipelineResourceRef{Name: "PROW_EXTRA_GIT_REF_LOL_JK"},
+						ResourceRef: &pipelinev1beta1.PipelineResourceRef{Name: "PROW_EXTRA_GIT_REF_LOL_JK"},
 					},
 					{
 						Name:        "git resource B",
-						ResourceRef: &pipelinev1alpha1.PipelineResourceRef{Name: "some-other-ref"},
+						ResourceRef: &pipelinev1beta1.PipelineResourceRef{Name: "some-other-ref"},
 					},
 				}
 				return pj

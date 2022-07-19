@@ -34,7 +34,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	fuzz "github.com/google/gofuzz"
-	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
+	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	v1 "k8s.io/api/core/v1"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -1439,7 +1439,7 @@ func TestValidatePipelineRunSpec(t *testing.T) {
 	cases := []struct {
 		name      string
 		jobType   prowapi.ProwJobType
-		spec      func(s *pipelinev1alpha1.PipelineRunSpec)
+		spec      func(s *pipelinev1beta1.PipelineRunSpec)
 		extraRefs []prowapi.Refs
 		noSpec    bool
 		pass      bool
@@ -1456,10 +1456,10 @@ func TestValidatePipelineRunSpec(t *testing.T) {
 		{
 			name:    "reject implicit ref for periodic",
 			jobType: prowapi.PeriodicJob,
-			spec: func(s *pipelinev1alpha1.PipelineRunSpec) {
-				s.Resources = append(s.Resources, pipelinev1alpha1.PipelineResourceBinding{
+			spec: func(s *pipelinev1beta1.PipelineRunSpec) {
+				s.Resources = append(s.Resources, pipelinev1beta1.PipelineResourceBinding{
 					Name:        "git ref",
-					ResourceRef: &pipelinev1alpha1.PipelineResourceRef{Name: "PROW_IMPLICIT_GIT_REF"},
+					ResourceRef: &pipelinev1beta1.PipelineResourceRef{Name: "PROW_IMPLICIT_GIT_REF"},
 				})
 			},
 			pass: false,
@@ -1467,10 +1467,10 @@ func TestValidatePipelineRunSpec(t *testing.T) {
 		{
 			name:    "allow implicit ref for presubmit",
 			jobType: prowapi.PresubmitJob,
-			spec: func(s *pipelinev1alpha1.PipelineRunSpec) {
-				s.Resources = append(s.Resources, pipelinev1alpha1.PipelineResourceBinding{
+			spec: func(s *pipelinev1beta1.PipelineRunSpec) {
+				s.Resources = append(s.Resources, pipelinev1beta1.PipelineResourceBinding{
 					Name:        "git ref",
-					ResourceRef: &pipelinev1alpha1.PipelineResourceRef{Name: "PROW_IMPLICIT_GIT_REF"},
+					ResourceRef: &pipelinev1beta1.PipelineResourceRef{Name: "PROW_IMPLICIT_GIT_REF"},
 				})
 			},
 			pass: true,
@@ -1478,30 +1478,30 @@ func TestValidatePipelineRunSpec(t *testing.T) {
 		{
 			name:    "allow implicit ref for postsubmit",
 			jobType: prowapi.PostsubmitJob,
-			spec: func(s *pipelinev1alpha1.PipelineRunSpec) {
-				s.Resources = append(s.Resources, pipelinev1alpha1.PipelineResourceBinding{
+			spec: func(s *pipelinev1beta1.PipelineRunSpec) {
+				s.Resources = append(s.Resources, pipelinev1beta1.PipelineResourceBinding{
 					Name:        "git ref",
-					ResourceRef: &pipelinev1alpha1.PipelineResourceRef{Name: "PROW_IMPLICIT_GIT_REF"},
+					ResourceRef: &pipelinev1beta1.PipelineResourceRef{Name: "PROW_IMPLICIT_GIT_REF"},
 				})
 			},
 			pass: true,
 		},
 		{
 			name: "reject extra refs usage with no extra refs",
-			spec: func(s *pipelinev1alpha1.PipelineRunSpec) {
-				s.Resources = append(s.Resources, pipelinev1alpha1.PipelineResourceBinding{
+			spec: func(s *pipelinev1beta1.PipelineRunSpec) {
+				s.Resources = append(s.Resources, pipelinev1beta1.PipelineResourceBinding{
 					Name:        "git ref",
-					ResourceRef: &pipelinev1alpha1.PipelineResourceRef{Name: "PROW_EXTRA_GIT_REF_0"},
+					ResourceRef: &pipelinev1beta1.PipelineResourceRef{Name: "PROW_EXTRA_GIT_REF_0"},
 				})
 			},
 			pass: false,
 		},
 		{
 			name: "allow extra refs usage with extra refs",
-			spec: func(s *pipelinev1alpha1.PipelineRunSpec) {
-				s.Resources = append(s.Resources, pipelinev1alpha1.PipelineResourceBinding{
+			spec: func(s *pipelinev1beta1.PipelineRunSpec) {
+				s.Resources = append(s.Resources, pipelinev1beta1.PipelineResourceBinding{
 					Name:        "git ref",
-					ResourceRef: &pipelinev1alpha1.PipelineResourceRef{Name: "PROW_EXTRA_GIT_REF_0"},
+					ResourceRef: &pipelinev1beta1.PipelineResourceRef{Name: "PROW_EXTRA_GIT_REF_0"},
 				})
 			},
 			extraRefs: []prowapi.Refs{{Org: "o", Repo: "r"}},
@@ -1509,10 +1509,10 @@ func TestValidatePipelineRunSpec(t *testing.T) {
 		},
 		{
 			name: "reject wrong extra refs index usage",
-			spec: func(s *pipelinev1alpha1.PipelineRunSpec) {
-				s.Resources = append(s.Resources, pipelinev1alpha1.PipelineResourceBinding{
+			spec: func(s *pipelinev1beta1.PipelineRunSpec) {
+				s.Resources = append(s.Resources, pipelinev1beta1.PipelineResourceBinding{
 					Name:        "git ref",
-					ResourceRef: &pipelinev1alpha1.PipelineResourceRef{Name: "PROW_EXTRA_GIT_REF_1"},
+					ResourceRef: &pipelinev1beta1.PipelineResourceRef{Name: "PROW_EXTRA_GIT_REF_1"},
 				})
 			},
 			extraRefs: []prowapi.Refs{{Org: "o", Repo: "r"}},
@@ -1525,20 +1525,20 @@ func TestValidatePipelineRunSpec(t *testing.T) {
 		},
 		{
 			name: "allow unrelated resource refs",
-			spec: func(s *pipelinev1alpha1.PipelineRunSpec) {
-				s.Resources = append(s.Resources, pipelinev1alpha1.PipelineResourceBinding{
+			spec: func(s *pipelinev1beta1.PipelineRunSpec) {
+				s.Resources = append(s.Resources, pipelinev1beta1.PipelineResourceBinding{
 					Name:        "git ref",
-					ResourceRef: &pipelinev1alpha1.PipelineResourceRef{Name: "some-other-ref"},
+					ResourceRef: &pipelinev1beta1.PipelineResourceRef{Name: "some-other-ref"},
 				})
 			},
 			pass: true,
 		},
 		{
 			name: "reject leading zeros when extra ref usage is otherwise valid",
-			spec: func(s *pipelinev1alpha1.PipelineRunSpec) {
-				s.Resources = append(s.Resources, pipelinev1alpha1.PipelineResourceBinding{
+			spec: func(s *pipelinev1beta1.PipelineRunSpec) {
+				s.Resources = append(s.Resources, pipelinev1beta1.PipelineResourceBinding{
 					Name:        "git ref",
-					ResourceRef: &pipelinev1alpha1.PipelineResourceRef{Name: "PROW_EXTRA_GIT_REF_000"},
+					ResourceRef: &pipelinev1beta1.PipelineResourceRef{Name: "PROW_EXTRA_GIT_REF_000"},
 				})
 			},
 			extraRefs: []prowapi.Refs{{Org: "o", Repo: "r"}},
@@ -1546,7 +1546,7 @@ func TestValidatePipelineRunSpec(t *testing.T) {
 		},
 	}
 
-	spec := pipelinev1alpha1.PipelineRunSpec{}
+	spec := pipelinev1beta1.PipelineRunSpec{}
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

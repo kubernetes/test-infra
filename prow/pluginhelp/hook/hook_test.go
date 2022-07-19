@@ -88,10 +88,10 @@ func TestGeneratePluginHelp(t *testing.T) {
 
 	config := &plugins.Configuration{
 		Plugins: plugins.Plugins{
-			"org1":       {Plugins: []string{"org-plugin"}},
-			"org1/repo1": {Plugins: []string{"repo-plugin1", "no-help-plugin"}},
-			"org1/repo2": {Plugins: []string{"repo-plugin1", "repo-plugin2"}},
-			"org2/repo1": {Plugins: []string{"repo-plugin3"}},
+			"org1":       plugins.OrgPlugins{Plugins: []string{"org-plugin"}},
+			"org1/repo1": plugins.OrgPlugins{Plugins: []string{"repo-plugin1", "no-help-plugin"}},
+			"org1/repo2": plugins.OrgPlugins{Plugins: []string{"repo-plugin1", "repo-plugin2"}},
+			"org2/repo1": plugins.OrgPlugins{Plugins: []string{"repo-plugin3"}},
 		},
 		ExternalPlugins: map[string][]plugins.ExternalPlugin{
 			"org1/repo1": {

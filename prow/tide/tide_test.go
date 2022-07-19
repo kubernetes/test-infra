@@ -4917,7 +4917,7 @@ func TestBatchPickingConsidersPRThatIsCurrentlyBeingSeriallyRetested(t *testing.
 	configGetter := func() *config.Config {
 		return &config.Config{
 			ProwConfig: config.ProwConfig{Tide: config.Tide{
-				Queries:       config.TideQueries{{}},
+				Queries:       config.TideQueries{config.TideQuery{}},
 				MaxGoroutines: 1,
 			}},
 			JobConfig: config.JobConfig{PresubmitsStatic: map[string][]config.Presubmit{
@@ -5193,7 +5193,7 @@ func TestSerialRetestingConsidersPRThatIsCurrentlyBeingSRetested(t *testing.T) {
 	configGetter := func() *config.Config {
 		return &config.Config{
 			ProwConfig: config.ProwConfig{Tide: config.Tide{
-				Queries:       config.TideQueries{{}},
+				Queries:       config.TideQueries{config.TideQuery{}},
 				MaxGoroutines: 1,
 			}},
 			JobConfig: config.JobConfig{PresubmitsStatic: map[string][]config.Presubmit{
