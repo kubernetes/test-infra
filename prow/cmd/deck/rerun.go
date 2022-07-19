@@ -102,9 +102,10 @@ func getPreOrPostSpec[p preOrPostsubmit](jobGetter func(string) []p, creator fun
 	nameFound := false
 	for _, job := range jobGetter(orgRepo) {
 		job := job
-		if job.GetName() == name {
-			nameFound = true
+		if job.GetName() != name {
+			continue
 		}
+		nameFound = true
 		if job.CouldRun(branch) { // filter out jobs that are not branch matching
 			if result != nil {
 				return nil, nil, nil, fmt.Errorf("%s matches multiple prow jobs from orgRepo %q", name, orgRepo)
