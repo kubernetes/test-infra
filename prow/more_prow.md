@@ -52,4 +52,4 @@ If your Prow instance operates on a lot of GitHub repos or runs lots of jobs you
 
 ## Private Front end
 
-If you want to create a private Deck instnace that contains a subset of prowjobs, you should review the ["Private Deck"](/prow/private_deck.md) guide.
+If you want to create a private Deck instance that contains a subset of prowjobs, you should review the ["Private Deck"](/prow/private_deck.md) guide.
