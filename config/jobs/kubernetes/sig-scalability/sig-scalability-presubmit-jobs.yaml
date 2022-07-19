@@ -42,6 +42,7 @@ presubmits:
         - --build=quick
         - --cluster=
         - --env=HEAPSTER_MACHINE_TYPE=e2-standard-8
+        - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0
         - --extract=local
         - --flush-mem-after-build=true
         - --gcp-node-image=gci
@@ -125,6 +126,7 @@ presubmits:
         - --build=quick
         - --cluster=
         - --env=HEAPSTER_MACHINE_TYPE=e2-standard-4
+        - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=160 --max-mutating-requests-inflight=0
         - --extract=local
         - --flush-mem-after-build=true
         - --gcp-nodes=500
@@ -192,6 +194,7 @@ presubmits:
         - --cluster=gce-cluster
         - --env=CONCURRENT_SERVICE_SYNCS=5
         - --env=HEAPSTER_MACHINE_TYPE=e2-standard-2
+        - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0
         - --extract=local
         - --gcp-master-image=gci
         - --gcp-node-image=gci
@@ -362,6 +365,7 @@ presubmits:
         - --gcp-zone=us-east1-b
         - --kubemark
         - --kubemark-nodes=500
+        - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=160 --max-mutating-requests-inflight=0
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce-big
         - --tear-down-previous
@@ -573,6 +577,7 @@ presubmits:
         - --env=CL2_SCHEDULER_THROUGHPUT_THRESHOLD=0
         - --env=CL2_ENABLE_API_AVAILABILITY_MEASUREMENT=true
         - --env=CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD=99.5
+        - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
         - --test-cmd-args=cluster-loader2
@@ -640,6 +645,7 @@ presubmits:
         - --gcp-zone=us-east1-b
         - --kubemark
         - --kubemark-nodes=100
+        - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0
         - --provider=gce
         - --tear-down-previous
         - --test=false
