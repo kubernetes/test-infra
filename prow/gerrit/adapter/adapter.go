@@ -303,6 +303,7 @@ func (c *Controller) Sync() {
 		if len(changes) == 0 {
 			return
 		}
+		log.Infof("Processing %d changes for instance: %s", len(changes), instance)
 
 		var wg sync.WaitGroup
 		wg.Add(len(changes))
@@ -497,7 +498,8 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 		var postsubmits []config.Postsubmit
 		for attempt := 0; attempt < inRepoConfigRetries; attempt++ {
 			postsubmits, err = cache.GetPostsubmits(trimmedHostPath, func() (string, error) { return baseSHA, nil }, func() (string, error) { return change.CurrentRevision, nil })
-			if err == nil {
+			// Break if there was no error, or if there was a merge conflict
+			if err == nil || strings.Contains(err.Error(), "Merge conflict in") {
 				break
 			}
 		}
