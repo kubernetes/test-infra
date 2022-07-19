@@ -267,7 +267,7 @@ func handleRerun(cfg config.Getter, prowJobClient prowv1.ProwJobInterface, creat
 			if err != nil {
 				// These are user errors, i.e. missing fields, requested prowjob doesn't exist etc.
 				// These errors are already surfaced to user via pubsub two lines below.
-				http.Error(w, "Could not create new prowjob: Failed getting prowjob spec", http.StatusBadRequest)
+				http.Error(w, fmt.Sprintf("Could not create new prowjob: Failed getting prowjob spec: %v", err), http.StatusBadRequest)
 				l.WithError(err).Debug("Could not create new prowjob")
 				return
 			}
