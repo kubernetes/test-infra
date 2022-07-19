@@ -1,3 +1,4 @@
+import {createAbortProwJobIcon} from "../common/abort";
 import {createRerunProwJobIcon} from "../common/rerun";
 import {getParameterByName} from "../common/urls";
 import {isTransitMessage, serialiseHashes} from "./common";
@@ -8,6 +9,7 @@ declare const lensIndexes: number[];
 declare const csrfToken: string;
 declare const rerunCreatesJob: boolean;
 declare const prowJobName: string;
+declare const prowJobState: string;
 
 // Loads views for this job
 function loadLenses(): void {
@@ -165,6 +167,7 @@ window.addEventListener('hashchange', (e) => {
 window.addEventListener('load', () => {
     loadLenses();
     handleRerunButton();
+    handleAbortButton();
 });
 
 function handleRerunButton() {
@@ -186,4 +189,16 @@ function handleRerunButton() {
     modal.style.display = "block";
     rerunCommand.innerHTML = "Rerunning that job requires GitHub login. Now that you're logged in, try again";
   }
+}
+
+function handleAbortButton(): void {
+  // In case prowJob is unavailable, the abort button shouldn't be shown
+  if (!prowJobName) {
+    return;
+  }
+
+  const r = document.getElementById("header-title")!;
+  const c = document.createElement("div");
+  c.appendChild(createAbortProwJobIcon(prowJobState, prowJobName, csrfToken));
+  r.appendChild(c);
 }
