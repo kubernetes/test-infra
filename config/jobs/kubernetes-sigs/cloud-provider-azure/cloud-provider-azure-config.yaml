@@ -603,7 +603,7 @@ periodics:
       - name: KUBERNETES_VERSION
         value: "latest"
       - name: GINKGO_ARGS
-        value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\]|\[LinuxOnly\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\] --report-dir=/logs/artifacts --disable-log-dump=true
+        value: --ginkgo.focus=\[Conformance\]|\[NodeConformance\] --ginkgo.skip=\[Slow\]|\[Serial\]|\[Flaky\]|\[LinuxOnly\] --node-os-distro=windows --report-dir=/logs/artifacts --disable-log-dump=true
       - name: CONTROL_PLANE_MACHINE_COUNT
         value: "1"
       - name: TEST_WINDOWS
@@ -615,7 +615,9 @@ periodics:
       - name: CLUSTER_PROVISIONING_TOOL
         value: "capz"
       - name: GINKGO_PARALLEL_NODES
-        value: "30"
+        value: "20"
+      - name: GINKGO_TOLERATE_FLAKES
+        value: "y"
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-conformance-windows-capz
