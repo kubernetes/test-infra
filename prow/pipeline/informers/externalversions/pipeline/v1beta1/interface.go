@@ -26,14 +26,10 @@ import (
 type Interface interface {
 	// ClusterTasks returns a ClusterTaskInformer.
 	ClusterTasks() ClusterTaskInformer
-	// Conditions returns a ConditionInformer.
-	Conditions() ConditionInformer
 	// Pipelines returns a PipelineInformer.
 	Pipelines() PipelineInformer
 	// PipelineRuns returns a PipelineRunInformer.
 	PipelineRuns() PipelineRunInformer
-	// Runs returns a RunInformer.
-	Runs() RunInformer
 	// Tasks returns a TaskInformer.
 	Tasks() TaskInformer
 	// TaskRuns returns a TaskRunInformer.
@@ -56,11 +52,6 @@ func (v *version) ClusterTasks() ClusterTaskInformer {
 	return &clusterTaskInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
 }
 
-// Conditions returns a ConditionInformer.
-func (v *version) Conditions() ConditionInformer {
-	return &conditionInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
-}
-
 // Pipelines returns a PipelineInformer.
 func (v *version) Pipelines() PipelineInformer {
 	return &pipelineInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
@@ -69,11 +60,6 @@ func (v *version) Pipelines() PipelineInformer {
 // PipelineRuns returns a PipelineRunInformer.
 func (v *version) PipelineRuns() PipelineRunInformer {
 	return &pipelineRunInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
-}
-
-// Runs returns a RunInformer.
-func (v *version) Runs() RunInformer {
-	return &runInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
 // Tasks returns a TaskInformer.

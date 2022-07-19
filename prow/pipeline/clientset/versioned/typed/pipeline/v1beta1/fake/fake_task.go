@@ -21,7 +21,7 @@ package fake
 import (
 	"context"
 
-	v1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
+	v1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -32,29 +32,29 @@ import (
 
 // FakeTasks implements TaskInterface
 type FakeTasks struct {
-	Fake *FakeTektonV1alpha1
+	Fake *FakeTektonV1beta1
 	ns   string
 }
 
-var tasksResource = schema.GroupVersionResource{Group: "tekton.dev", Version: "v1alpha1", Resource: "tasks"}
+var tasksResource = schema.GroupVersionResource{Group: "tekton.dev", Version: "v1beta1", Resource: "tasks"}
 
-var tasksKind = schema.GroupVersionKind{Group: "tekton.dev", Version: "v1alpha1", Kind: "Task"}
+var tasksKind = schema.GroupVersionKind{Group: "tekton.dev", Version: "v1beta1", Kind: "Task"}
 
 // Get takes name of the task, and returns the corresponding task object, and an error if there is any.
-func (c *FakeTasks) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.Task, err error) {
+func (c *FakeTasks) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1beta1.Task, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewGetAction(tasksResource, c.ns, name), &v1alpha1.Task{})
+		Invokes(testing.NewGetAction(tasksResource, c.ns, name), &v1beta1.Task{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha1.Task), err
+	return obj.(*v1beta1.Task), err
 }
 
 // List takes label and field selectors, and returns the list of Tasks that match those selectors.
-func (c *FakeTasks) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.TaskList, err error) {
+func (c *FakeTasks) List(ctx context.Context, opts v1.ListOptions) (result *v1beta1.TaskList, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewListAction(tasksResource, tasksKind, c.ns, opts), &v1alpha1.TaskList{})
+		Invokes(testing.NewListAction(tasksResource, tasksKind, c.ns, opts), &v1beta1.TaskList{})
 
 	if obj == nil {
 		return nil, err
@@ -64,8 +64,8 @@ func (c *FakeTasks) List(ctx context.Context, opts v1.ListOptions) (result *v1al
 	if label == nil {
 		label = labels.Everything()
 	}
-	list := &v1alpha1.TaskList{ListMeta: obj.(*v1alpha1.TaskList).ListMeta}
-	for _, item := range obj.(*v1alpha1.TaskList).Items {
+	list := &v1beta1.TaskList{ListMeta: obj.(*v1beta1.TaskList).ListMeta}
+	for _, item := range obj.(*v1beta1.TaskList).Items {
 		if label.Matches(labels.Set(item.Labels)) {
 			list.Items = append(list.Items, item)
 		}
@@ -81,31 +81,31 @@ func (c *FakeTasks) Watch(ctx context.Context, opts v1.ListOptions) (watch.Inter
 }
 
 // Create takes the representation of a task and creates it.  Returns the server's representation of the task, and an error, if there is any.
-func (c *FakeTasks) Create(ctx context.Context, task *v1alpha1.Task, opts v1.CreateOptions) (result *v1alpha1.Task, err error) {
+func (c *FakeTasks) Create(ctx context.Context, task *v1beta1.Task, opts v1.CreateOptions) (result *v1beta1.Task, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewCreateAction(tasksResource, c.ns, task), &v1alpha1.Task{})
+		Invokes(testing.NewCreateAction(tasksResource, c.ns, task), &v1beta1.Task{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha1.Task), err
+	return obj.(*v1beta1.Task), err
 }
 
 // Update takes the representation of a task and updates it. Returns the server's representation of the task, and an error, if there is any.
-func (c *FakeTasks) Update(ctx context.Context, task *v1alpha1.Task, opts v1.UpdateOptions) (result *v1alpha1.Task, err error) {
+func (c *FakeTasks) Update(ctx context.Context, task *v1beta1.Task, opts v1.UpdateOptions) (result *v1beta1.Task, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewUpdateAction(tasksResource, c.ns, task), &v1alpha1.Task{})
+		Invokes(testing.NewUpdateAction(tasksResource, c.ns, task), &v1beta1.Task{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha1.Task), err
+	return obj.(*v1beta1.Task), err
 }
 
 // Delete takes name of the task and deletes it. Returns an error if one occurs.
 func (c *FakeTasks) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
-		Invokes(testing.NewDeleteAction(tasksResource, c.ns, name), &v1alpha1.Task{})
+		Invokes(testing.NewDeleteAction(tasksResource, c.ns, name), &v1beta1.Task{})
 
 	return err
 }
@@ -114,17 +114,17 @@ func (c *FakeTasks) Delete(ctx context.Context, name string, opts v1.DeleteOptio
 func (c *FakeTasks) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
 	action := testing.NewDeleteCollectionAction(tasksResource, c.ns, listOpts)
 
-	_, err := c.Fake.Invokes(action, &v1alpha1.TaskList{})
+	_, err := c.Fake.Invokes(action, &v1beta1.TaskList{})
 	return err
 }
 
 // Patch applies the patch and returns the patched task.
-func (c *FakeTasks) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.Task, err error) {
+func (c *FakeTasks) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1beta1.Task, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(tasksResource, c.ns, name, pt, data, subresources...), &v1alpha1.Task{})
+		Invokes(testing.NewPatchSubresourceAction(tasksResource, c.ns, name, pt, data, subresources...), &v1beta1.Task{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha1.Task), err
+	return obj.(*v1beta1.Task), err
 }

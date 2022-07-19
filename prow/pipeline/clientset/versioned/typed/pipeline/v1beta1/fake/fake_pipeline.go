@@ -21,7 +21,7 @@ package fake
 import (
 	"context"
 
-	v1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
+	v1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -32,29 +32,29 @@ import (
 
 // FakePipelines implements PipelineInterface
 type FakePipelines struct {
-	Fake *FakeTektonV1alpha1
+	Fake *FakeTektonV1beta1
 	ns   string
 }
 
-var pipelinesResource = schema.GroupVersionResource{Group: "tekton.dev", Version: "v1alpha1", Resource: "pipelines"}
+var pipelinesResource = schema.GroupVersionResource{Group: "tekton.dev", Version: "v1beta1", Resource: "pipelines"}
 
-var pipelinesKind = schema.GroupVersionKind{Group: "tekton.dev", Version: "v1alpha1", Kind: "Pipeline"}
+var pipelinesKind = schema.GroupVersionKind{Group: "tekton.dev", Version: "v1beta1", Kind: "Pipeline"}
 
 // Get takes name of the pipeline, and returns the corresponding pipeline object, and an error if there is any.
-func (c *FakePipelines) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.Pipeline, err error) {
+func (c *FakePipelines) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1beta1.Pipeline, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewGetAction(pipelinesResource, c.ns, name), &v1alpha1.Pipeline{})
+		Invokes(testing.NewGetAction(pipelinesResource, c.ns, name), &v1beta1.Pipeline{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha1.Pipeline), err
+	return obj.(*v1beta1.Pipeline), err
 }
 
 // List takes label and field selectors, and returns the list of Pipelines that match those selectors.
-func (c *FakePipelines) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.PipelineList, err error) {
+func (c *FakePipelines) List(ctx context.Context, opts v1.ListOptions) (result *v1beta1.PipelineList, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewListAction(pipelinesResource, pipelinesKind, c.ns, opts), &v1alpha1.PipelineList{})
+		Invokes(testing.NewListAction(pipelinesResource, pipelinesKind, c.ns, opts), &v1beta1.PipelineList{})
 
 	if obj == nil {
 		return nil, err
@@ -64,8 +64,8 @@ func (c *FakePipelines) List(ctx context.Context, opts v1.ListOptions) (result *
 	if label == nil {
 		label = labels.Everything()
 	}
-	list := &v1alpha1.PipelineList{ListMeta: obj.(*v1alpha1.PipelineList).ListMeta}
-	for _, item := range obj.(*v1alpha1.PipelineList).Items {
+	list := &v1beta1.PipelineList{ListMeta: obj.(*v1beta1.PipelineList).ListMeta}
+	for _, item := range obj.(*v1beta1.PipelineList).Items {
 		if label.Matches(labels.Set(item.Labels)) {
 			list.Items = append(list.Items, item)
 		}
@@ -81,31 +81,31 @@ func (c *FakePipelines) Watch(ctx context.Context, opts v1.ListOptions) (watch.I
 }
 
 // Create takes the representation of a pipeline and creates it.  Returns the server's representation of the pipeline, and an error, if there is any.
-func (c *FakePipelines) Create(ctx context.Context, pipeline *v1alpha1.Pipeline, opts v1.CreateOptions) (result *v1alpha1.Pipeline, err error) {
+func (c *FakePipelines) Create(ctx context.Context, pipeline *v1beta1.Pipeline, opts v1.CreateOptions) (result *v1beta1.Pipeline, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewCreateAction(pipelinesResource, c.ns, pipeline), &v1alpha1.Pipeline{})
+		Invokes(testing.NewCreateAction(pipelinesResource, c.ns, pipeline), &v1beta1.Pipeline{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha1.Pipeline), err
+	return obj.(*v1beta1.Pipeline), err
 }
 
 // Update takes the representation of a pipeline and updates it. Returns the server's representation of the pipeline, and an error, if there is any.
-func (c *FakePipelines) Update(ctx context.Context, pipeline *v1alpha1.Pipeline, opts v1.UpdateOptions) (result *v1alpha1.Pipeline, err error) {
+func (c *FakePipelines) Update(ctx context.Context, pipeline *v1beta1.Pipeline, opts v1.UpdateOptions) (result *v1beta1.Pipeline, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewUpdateAction(pipelinesResource, c.ns, pipeline), &v1alpha1.Pipeline{})
+		Invokes(testing.NewUpdateAction(pipelinesResource, c.ns, pipeline), &v1beta1.Pipeline{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha1.Pipeline), err
+	return obj.(*v1beta1.Pipeline), err
 }
 
 // Delete takes name of the pipeline and deletes it. Returns an error if one occurs.
 func (c *FakePipelines) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
-		Invokes(testing.NewDeleteAction(pipelinesResource, c.ns, name), &v1alpha1.Pipeline{})
+		Invokes(testing.NewDeleteAction(pipelinesResource, c.ns, name), &v1beta1.Pipeline{})
 
 	return err
 }
@@ -114,17 +114,17 @@ func (c *FakePipelines) Delete(ctx context.Context, name string, opts v1.DeleteO
 func (c *FakePipelines) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
 	action := testing.NewDeleteCollectionAction(pipelinesResource, c.ns, listOpts)
 
-	_, err := c.Fake.Invokes(action, &v1alpha1.PipelineList{})
+	_, err := c.Fake.Invokes(action, &v1beta1.PipelineList{})
 	return err
 }
 
 // Patch applies the patch and returns the patched pipeline.
-func (c *FakePipelines) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.Pipeline, err error) {
+func (c *FakePipelines) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1beta1.Pipeline, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(pipelinesResource, c.ns, name, pt, data, subresources...), &v1alpha1.Pipeline{})
+		Invokes(testing.NewPatchSubresourceAction(pipelinesResource, c.ns, name, pt, data, subresources...), &v1beta1.Pipeline{})
 
 	if obj == nil {
 		return nil, err
 	}
-	return obj.(*v1alpha1.Pipeline), err
+	return obj.(*v1beta1.Pipeline), err
 }
