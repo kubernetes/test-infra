@@ -20,13 +20,9 @@ package v1beta1
 
 type ClusterTaskExpansion interface{}
 
-type ConditionExpansion interface{}
-
 type PipelineExpansion interface{}
 
 type PipelineRunExpansion interface{}
-
-type RunExpansion interface{}
 
 type TaskExpansion interface{}
 
