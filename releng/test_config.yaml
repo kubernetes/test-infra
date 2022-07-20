@@ -404,23 +404,23 @@ nodeK8sVersions:
   dev:
     args:
     - --repo=k8s.io/kubernetes=master
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220720-b949db7485-master
   beta:
     args:
     - --repo=k8s.io/kubernetes=release-1.24
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-1.24
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220720-b949db7485-1.24
   stable1:
     args:
     - --repo=k8s.io/kubernetes=release-1.23
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-1.23
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220720-b949db7485-1.23
   stable2:
     args:
     - --repo=k8s.io/kubernetes=release-1.22
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-1.22
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220720-b949db7485-1.22
   stable3:
     args:
     - --repo=k8s.io/kubernetes=release-1.21
-    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-1.21
+    prowImage: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220720-b949db7485-1.21
 
 nodeTestSuites:
   default:
