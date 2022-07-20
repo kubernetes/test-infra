@@ -65,7 +65,7 @@ presubmits:
       preset-dind-enabled: "true"
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-go-canary
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220720-66e8b57c40-go-canary
         imagePullPolicy: Always
         command:
         - runner.sh
