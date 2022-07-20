@@ -65,6 +65,8 @@ presubmits:
           runner.sh
           ./test/build.sh
           &&
+          rm -f /etc/containerd/containerd.env
+          &&
           cd ${GOPATH}/src/k8s.io/kubernetes
           &&
           /workspace/scenarios/kubernetes_e2e.py
@@ -109,14 +111,16 @@ presubmits:
         env:
         - name: USE_TEST_INFRA_LOG_DUMPING
           value: "true"
-        - name: ENABLE_CRI_SANDBOXES
-          value: "sandboxed"
         command:
         - sh
         - -c
         - >
           runner.sh
           ./test/build.sh
+          &&
+          mkdir -p /etc/containerd
+          &&
+          echo "ENABLE_CRI_SANDBOXES=sandboxed" > /etc/containerd/containerd.env
           &&
           cd ${GOPATH}/src/k8s.io/kubernetes
           &&
