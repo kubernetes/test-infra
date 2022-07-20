@@ -38,9 +38,12 @@ for tar in *.tar.gz; do tar -xvf $tar; done
 
 ## Rerun Prow Job via Prow UI
 
-Rerun prow job can be done by visiting prow UI, locate prow job and rerun job by clicking on the ↻ button then clicking `Rerun` button. For prow on github, the permission is controlled by github membership, and configured as part of deck configuration, see [`rerun_auth_configs`](https://github.com/kubernetes/test-infra/blob/0dfe42533307f9733f22d4a6abf08e1df2229fcb/config/prow/config.yaml#L92) for k8s prow.
+Rerun prow job can be done by visiting prow UI, locate prow job and rerun job by clicking on the ↻ button, selecting a configuration option, and then clicking `Rerun` button. For prow on github, the permission is controlled by github membership, and configured as part of deck configuration, see [`rerun_auth_configs`](https://github.com/kubernetes/test-infra/blob/0dfe42533307f9733f22d4a6abf08e1df2229fcb/config/prow/config.yaml#L92) for k8s prow.
 
 See example below:
-![Example](./rerun_button.png)
+![Example](./prow_rerun.png)
+
+Rerunning can also be done on Spyglass:
+![Example](./spyglass_rerun.png)
 
 This is also available for non github prow if the frontend is secured and [`allow_anyone`](https://github.com/kubernetes/test-infra/blob/95cc9f4b68d0ce5702c3b3e009221de0fe0a482a/prow/apis/prowjobs/v1/types.go#L190-L191) is set to true for the job.
