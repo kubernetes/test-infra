@@ -776,6 +776,8 @@ function dump_nodes_with_logexporter() {
       echo "Attempt ${retry} failed to list marker files for successful nodes"
       if [[ "${retry}" == 10 ]]; then
         echo 'Final attempt to list marker files failed.. falling back to logdump through SSH'
+        # Timeout prevents the test waiting too long to delete resources and
+        # never uploading logs, as happened in https://github.com/kubernetes/kubernetes/issues/111111
         kubectl delete namespace "${logexporter_namespace}" --timeout 15m || true
         dump_nodes "${NODE_NAMES[@]}"
         logexporter_failed=1
