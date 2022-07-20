@@ -862,7 +862,9 @@ periodics:
       - name: CLUSTER_PROVISIONING_TOOL
         value: "capz"
       - name: GINKGO_PARALLEL_NODES
-        value: "30"
+        value: "4"
+      - name: GINKGO_TOLERATE_FLAKES
+        value: "y"
   annotations:
     testgrid-dashboards: provider-azure-cloud-provider-azure
     testgrid-tab-name: cloud-provider-azure-conformance-serial-vmss-capz
