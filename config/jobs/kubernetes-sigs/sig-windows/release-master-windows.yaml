@@ -36,7 +36,11 @@ presets:
   env:
   - name: KUBETEST_WINDOWS_CONFIG
     value: "upstream-windows-serial-slow.yaml"
+  # capz scripts use confromance nodes for ginkgo nodes (working on migration away from these)
   - name: CONFORMANCE_NODES
+    value: "1"
+  # windows-test scripts use this
+  - name: GINKGO_NODES
     value: "1"
 - labels:
     preset-capz-windows-ci-entrypoint-common-main: "true"
@@ -187,6 +191,7 @@ periodics:
     preset-windows-private-registry-cred: "true"
     preset-capz-windows-common-main: "true"
     preset-capz-containerd-latest: "true"
+    preset-capz-serial-slow: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api-provider-azure
