@@ -303,7 +303,7 @@ func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InR
 		var err error
 		presubmitsWithInrepoconfig, err = pc.GetPresubmits(orgRepo, baseSHAGetter, headSHAGetters...)
 		if err != nil {
-			logger.WithError(err).Debug("Failed to get presubmits")
+			logger.WithError(err).Info("Failed to get presubmits")
 		} else {
 			logger.WithField("static-jobs", len(presubmits)).WithField("jobs-with-inrepoconfig", len(presubmitsWithInrepoconfig)).Debug("Jobs found.")
 			// Overwrite presubmits. This is safe because pc.GetPresubmits()
@@ -379,7 +379,7 @@ func (poh *postsubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.In
 		var err error
 		postsubmitsWithInrepoconfig, err = pc.GetPostsubmits(orgRepo, baseSHAGetter)
 		if err != nil {
-			logger.WithError(err).Debug("Failed to get postsubmits from inrepoconfig")
+			logger.WithError(err).Info("Failed to get postsubmits from inrepoconfig")
 		} else {
 			logger.WithField("static-jobs", len(postsubmits)).WithField("jobs-with-inrepoconfig", len(postsubmitsWithInrepoconfig)).Debug("Jobs found.")
 			postsubmits = postsubmitsWithInrepoconfig
@@ -441,7 +441,7 @@ func (s *Subscriber) handleMessage(msg messageInterface, subscription string, al
 	case PostsubmitProwJobEvent:
 		jh = &postsubmitJobHandler{}
 	default:
-		l.WithField("type", eType).Debug("Unsupported event type")
+		l.WithField("type", eType).Info("Unsupported event type")
 		s.Metrics.ErrorCounter.With(prometheus.Labels{
 			subscriptionLabel: subscription,
 			errorTypeLabel:    "unsupported-event-type",
@@ -449,7 +449,7 @@ func (s *Subscriber) handleMessage(msg messageInterface, subscription string, al
 		return fmt.Errorf("unsupported event type: %s", eType)
 	}
 	if err = s.handleProwJob(l, jh, msg, subscription, eType, allowedClusters); err != nil {
-		l.WithError(err).Debug("failed to create Prow Job")
+		l.WithError(err).Info("failed to create Prow Job")
 		s.Metrics.ErrorCounter.With(prometheus.Labels{
 			subscriptionLabel: subscription,
 			// This should be the only case prow operator should pay more
@@ -540,7 +540,7 @@ func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msg messageIn
 	if err != nil {
 		// These are user errors, i.e. missing fields, requested prowjob doesn't exist etc.
 		// These errors are already surfaced to user via pubsub two lines below.
-		l.WithError(err).WithField("name", pe.Name).Debug("Failed getting prowjob spec")
+		l.WithError(err).WithField("name", pe.Name).Info("Failed getting prowjob spec")
 		prowJob = pjutil.NewProwJob(prowapi.ProwJobSpec{}, nil, pe.Annotations)
 		reportProwJobFailure(&prowJob, err)
 		return err
