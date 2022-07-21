@@ -1617,6 +1617,12 @@ repos:
         prowPlugin: label
         addedBy: anyone
       - color: e9b3f9
+        description: Issues or PRs related to Turkish language
+        name: language/tr
+        target: both
+        prowPlugin: label
+        addedBy: anyone
+      - color: e9b3f9
         description: Issues or PRs related to Ukrainian language
         name: language/uk
         target: both
