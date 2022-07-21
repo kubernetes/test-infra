@@ -52,20 +52,20 @@ export function createRerunProwJobIcon(modal: HTMLElement, parentEl: HTMLElement
       </p>
       <div class="rerunModal-radioButtonGroup">
         <div class="rerunModal-radioButtonRow">
-          <label class="rerunModal-radioLabel mdl-radio mdl-js-radio mdl-js-ripple-effect" for="rerunLatestOption">
-            <input type="radio" id="rerunLatestOption" class="rerunLatestOption mdl-radio__button" name="rerunOptions" checked>
-            <span class="mdl-radio__label">Latest Configuration</span>
+          <label class="rerunModal-radioLabel mdl-radio mdl-js-radio mdl-js-ripple-effect" for="rerunOriginalOption">
+            <input type="radio" id="rerunOriginalOption" class="rerunOriginalOption mdl-radio__button" name="rerunOptions" checked>
+            <span class="mdl-radio__label">Original Configuration</span>
           </label>
-          (<a href="${getJobURL(LATEST_JOB)}" target="_blank">View YAML
+          (<a href="${getJobURL(ORIGINAL_JOB)}" target="_blank">View YAML
           <i class="rerunModal-openOut material-icons state triggered" style="color: gray">open_in_new</i>
           </a>)
         </div>
         <div class="rerunModal-radioButtonRow">
-          <label class="rerunModal-radioLabel mdl-radio mdl-js-radio mdl-js-ripple-effect" for="rerunOriginalOption">
-            <input type="radio" id="rerunOriginalOption" class="rerunOriginalOption mdl-radio__button" name="rerunOptions">
-            <span class="mdl-radio__label">Original Configuration</span>
+          <label class="rerunModal-radioLabel mdl-radio mdl-js-radio mdl-js-ripple-effect" for="rerunLatestOption">
+            <input type="radio" id="rerunLatestOption" class="rerunLatestOption mdl-radio__button" name="rerunOptions">
+            <span class="mdl-radio__label">Latest Configuration</span>
           </label>
-          (<a href="${getJobURL(ORIGINAL_JOB)}" target="_blank">View YAML
+          (<a href="${getJobURL(LATEST_JOB)}" target="_blank">View YAML
           <i class="rerunModal-openOut material-icons state triggered" style="color: gray">open_in_new</i>
           </a>)
         </div>
