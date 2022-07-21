@@ -269,8 +269,8 @@ func (sg *Spyglass) JobPath(src string) (string, error) {
 	}
 }
 
-// ProwJob returns a prowjob to the YAML for the job specified in src.
-// If no job is found, it returns nil and nil error.
+// ProwJob returns a link and state to the YAML for the job specified in src.
+// If no job is found, it returns empty strings and nil error.
 func (sg *Spyglass) ProwJob(src string) (string, prowapi.ProwJobState, error) {
 	src = strings.TrimSuffix(src, "/")
 	keyType, key, err := splitSrc(src)

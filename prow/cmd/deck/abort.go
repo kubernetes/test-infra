@@ -38,12 +38,12 @@ func handleAbort(prowJobClient prowv1.ProwJobInterface, cfg authCfgGetter, goa *
 		name := r.URL.Query().Get("prowjob")
 		l := log.WithField("prowjob", name)
 		if name == "" {
-			http.Error(w, "request did not provide the 'prowjob' query parameter", http.StatusBadRequest)
+			http.Error(w, "Request did not provide the 'prowjob' query parameter.", http.StatusBadRequest)
 			return
 		}
 		pj, err := prowJobClient.Get(ctx, name, metav1.GetOptions{})
 		if err != nil {
-			http.Error(w, fmt.Sprintf("ProwJob not found: %v", err), http.StatusNotFound)
+			http.Error(w, fmt.Sprintf("ProwJob not found: %v.", err), http.StatusNotFound)
 			if !kerrors.IsNotFound(err) {
 				// admins only care about errors other than not found
 				l.WithError(err).Warning("ProwJob not found.")
@@ -53,22 +53,23 @@ func handleAbort(prowJobClient prowv1.ProwJobInterface, cfg authCfgGetter, goa *
 		switch r.Method {
 		case http.MethodPost:
 			if pj.Status.State != prowapi.TriggeredState && pj.Status.State != prowapi.PendingState {
-				http.Error(w, fmt.Sprintf("Cannot abort job with state: %q", pj.Status.State), http.StatusBadRequest)
-				l.Debug("Cannot abort job with state")
+				http.Error(w, fmt.Sprintf("Cannot abort job with state: %q.", pj.Status.State), http.StatusBadRequest)
+				l.Debug("Cannot abort job with state.")
 				return
 			}
 			// Using same permission validation as rerun, could be future work to add validation
 			// unique to Abort
 			allowed, user, err, code := isAllowedToRerun(r, cfg, goa, ghc, *pj, cli, pluginAgent, l)
 			if err != nil {
-				http.Error(w, fmt.Sprintf("Could not verify if allowed to abort: %v", err), code)
-				l.WithError(err).Debug("Could not verify if allowed to abort")
+				http.Error(w, fmt.Sprintf("Could not verify if allowed to abort: %v.", err), code)
+				l.WithError(err).Debug("Could not verify if allowed to abort.")
+				return
 			}
 			l = l.WithField("allowed", allowed)
 			l.Info("Attempted abort")
 			if !allowed {
-				http.Error(w, "You don't have permission to abort this job", http.StatusUnauthorized)
-				l.Debug("You don't have permission to abort this job")
+				http.Error(w, "You don't have permission to abort this job.", http.StatusUnauthorized)
+				l.Debug("You don't have permission to abort this job.")
 				return
 			}
 			var abortDescription string
@@ -81,13 +82,15 @@ func handleAbort(prowJobClient prowv1.ProwJobInterface, cfg authCfgGetter, goa *
 			pj.Status.Description = abortDescription
 			jsonPJ, err := json.Marshal(pj)
 			if err != nil {
-				http.Error(w, fmt.Sprintf("Error marshal source job: %v", err), http.StatusInternalServerError)
-				l.WithError(err).Errorf("Error marshal source job")
+				http.Error(w, fmt.Sprintf("Error marshal source job: %v.", err), http.StatusInternalServerError)
+				l.WithError(err).Errorf("Error marshal source job.")
+				return
 			}
 			pj, err := prowJobClient.Patch(ctx, pj.Name, ktypes.MergePatchType, jsonPJ, metav1.PatchOptions{})
 			if err != nil {
-				http.Error(w, fmt.Sprintf("Could not patch aborted job: %v", err), http.StatusInternalServerError)
-				l.WithError(err).Errorf("Could not patch aborted job")
+				http.Error(w, fmt.Sprintf("Could not patch aborted job: %v.", err), http.StatusInternalServerError)
+				l.WithError(err).Errorf("Could not patch aborted job.")
+				return
 			}
 			l.Info(abortDescription)
 			if _, err = w.Write([]byte("Job successfully aborted.")); err != nil {

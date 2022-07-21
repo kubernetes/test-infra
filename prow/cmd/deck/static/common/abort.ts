@@ -7,7 +7,7 @@ export function createAbortProwJobIcon(state: string, prowjob: string, csrfToken
   button.innerHTML = '<i class="icon-button material-icons" title="Cancel this job" style="color: gray">cancel</i>';
 
   if (state !== State.TRIGGERED && state !== State.PENDING) {
-    button.innerHTML = `<i class="icon-button material-icons" title="Can't cancel job in ${state} state" style="color: lightgray">cancel</i>`;
+    button.innerHTML = `<i class="icon-button material-icons" title="Can't abort job in ${state} state" style="color: lightgray">cancel</i>`;
     button.classList.remove('icon-button');
     button.disabled = true;
   }
