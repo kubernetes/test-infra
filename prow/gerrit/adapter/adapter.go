@@ -303,7 +303,7 @@ func (c *Controller) Sync() {
 		if len(changes) == 0 {
 			return
 		}
-		log.Infof("Processing %d changes for instance: %s", len(changes), instance)
+		log.WithFields(logrus.Fields{"instance": instance, "changes": len(changes)}).Info("Finished querying instance for changes")
 
 		var wg sync.WaitGroup
 		wg.Add(len(changes))
