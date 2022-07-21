@@ -468,6 +468,7 @@ func (h *gerritInstanceHandler) queryAllChanges(lastState map[string]time.Time, 
 			}).Error("Failed to query changes")
 			continue
 		}
+		log.WithFields(logrus.Fields{"Project": project, "Changes": len(changes)}).Infof("Finished querying for changes.")
 		clientMetrics.queryResults.WithLabelValues(h.instance, project, ResultSuccess).Inc()
 		result = append(result, changes...)
 	}
