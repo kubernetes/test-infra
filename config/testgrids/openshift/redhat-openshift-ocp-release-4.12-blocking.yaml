@@ -343,14 +343,14 @@ dashboards:
       - key: comment
         value: 'test: <test-name> failed, see job: <link>'
       url: https://bugzilla.redhat.com/enter_bug.cgi
-    name: periodic-ci-openshift-release-master-nightly-4.12-e2e-metal-sdn-ipi
+    name: periodic-ci-openshift-release-master-nightly-4.12-e2e-metal-ipi-sdn
     open_bug_template:
       url: https://github.com/openshift/origin/issues/
     open_test_template:
       url: https://prow.ci.openshift.org/view/gs/<gcs_prefix>/<changelist>
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
-    test_group_name: periodic-ci-openshift-release-master-nightly-4.12-e2e-metal-sdn-ipi
+    test_group_name: periodic-ci-openshift-release-master-nightly-4.12-e2e-metal-ipi-sdn
   name: redhat-openshift-ocp-release-4.12-blocking
 test_groups:
 - days_of_results: 60
@@ -390,5 +390,5 @@ test_groups:
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.12-e2e-metal-ipi-ovn-ipv6
   name: periodic-ci-openshift-release-master-nightly-4.12-e2e-metal-ipi-ovn-ipv6
 - days_of_results: 25
-  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.12-e2e-metal-sdn-ipi
-  name: periodic-ci-openshift-release-master-nightly-4.12-e2e-metal-sdn-ipi
+  gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.12-e2e-metal-ipi-sdn
+  name: periodic-ci-openshift-release-master-nightly-4.12-e2e-metal-ipi-sdn

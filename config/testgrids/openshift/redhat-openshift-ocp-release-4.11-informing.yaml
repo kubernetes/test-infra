@@ -5220,7 +5220,7 @@ test_groups:
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-ovirt-csi
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-ovirt-ovn
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-ovirt-ovn
-- days_of_results: 25
+- days_of_results: 60
   gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-telco5g
   name: periodic-ci-openshift-release-master-nightly-4.11-e2e-telco5g
 - gcs_prefix: origin-ci-test/logs/periodic-ci-openshift-release-master-nightly-4.11-e2e-vsphere
