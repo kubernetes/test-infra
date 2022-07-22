@@ -171,10 +171,6 @@ func CodeReviewCommonFromPullRequest(pr *PullRequest) *CodeReviewCommon {
 	return crc
 }
 
-type CodeReviewEntity interface {
-	PullRequest
-}
-
 // provider is the interface implemented by each source code
 // providers, such as GitHub and Gerrit.
 type provider interface {
@@ -192,7 +188,6 @@ type provider interface {
 	// merging. And also transform any other label that is not voted by prow
 	// into a context.
 	headContexts(pr *CodeReviewCommon) ([]Context, error)
-	search(query querier, log *logrus.Entry, q string, start, end time.Time, org string) ([]PullRequest, error)
 	mergePRs(sp subpool, prs []CodeReviewCommon, dontUpdateStatus *threadSafePRSet) error
 	GetTideContextPolicy(gitClient git.ClientFactory, org, repo, branch string, baseSHAGetter config.RefGetter, headSHA string) (contextChecker, error)
 	refsForJob(sp subpool, prs []CodeReviewCommon) prowapi.Refs

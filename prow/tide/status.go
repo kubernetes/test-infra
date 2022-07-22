@@ -67,7 +67,7 @@ type statusController struct {
 	pjClient           ctrlruntimeclient.Client
 	logger             *logrus.Entry
 	config             config.Getter
-	ghInteractor       provider
+	ghProvider         *GitHubProvider
 	ghc                githubClient
 	gc                 git.ClientFactory
 	usesGitHubAppsAuth bool
@@ -278,7 +278,7 @@ func (sc *statusController) expectedStatus(log *logrus.Entry, queryMap *config.Q
 
 	repo := config.OrgRepo{Org: crc.Org, Repo: crc.Repo}
 
-	if reason, err := sc.ghInteractor.isAllowedToMerge(crc); err != nil {
+	if reason, err := sc.ghProvider.isAllowedToMerge(crc); err != nil {
 		return "", "", fmt.Errorf("error checking if merge is allowed: %w", err)
 	} else if reason != "" {
 		log.WithField("reason", reason).Debug("The PR is not mergeable")
@@ -414,7 +414,7 @@ func (sc *statusController) setStatuses(all []CodeReviewCommon, pool map[string]
 	process := func(pr *CodeReviewCommon) {
 		processed.Insert(prKey(pr))
 		log := sc.logger.WithFields(pr.logFields())
-		contexts, err := sc.ghInteractor.headContexts(pr)
+		contexts, err := sc.ghProvider.headContexts(pr)
 		if err != nil {
 			log.WithError(err).Error("Getting head commit status contexts, skipping...")
 			return
@@ -657,7 +657,7 @@ func (sc *statusController) search() []CodeReviewCommon {
 			}
 			sc.storedStateLock.Unlock()
 
-			result, err := sc.ghInteractor.search(sc.ghc.QueryWithGitHubAppsSupport, sc.logger, query, latestPR.Time, now, org)
+			result, err := sc.ghProvider.search(sc.ghc.QueryWithGitHubAppsSupport, sc.logger, query, latestPR.Time, now, org)
 			log.WithField("duration", time.Since(now).String()).WithField("result_count", len(result)).Debug("Searched for open PRs.")
 
 			func() {

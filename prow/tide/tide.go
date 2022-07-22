@@ -386,7 +386,7 @@ func newStatusController(
 	return &statusController{
 		pjClient: mgr.GetClient(),
 		logger:   logger.WithField("controller", "status-update"),
-		ghInteractor: &GitHubProvider{
+		ghProvider: &GitHubProvider{
 			ghc:                ghc,
 			usesGitHubAppsAuth: usesGitHubAppsAuth,
 			mergeChecker:       mergeChecker,
@@ -432,9 +432,11 @@ func newSyncController(
 	}
 
 	provider := &GitHubProvider{
+		cfg:                cfg,
 		ghc:                ghcSync,
 		usesGitHubAppsAuth: usesGitHubAppsAuth,
 		mergeChecker:       mergeChecker,
+		logger:             logger,
 	}
 	return &syncController{
 		ctx:           ctx,
