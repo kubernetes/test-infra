@@ -34,7 +34,7 @@ periodics:
     - command:
       - runner.sh
       - ./scripts/ci-conformance.sh
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220720-b949db7485-1.24
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220722-16ae0286c2-1.24
       name: ""
       resources:
         requests:
@@ -66,7 +66,7 @@ periodics:
     path_alias: sigs.k8s.io/cluster-api-provider-azure
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220720-b949db7485-1.24
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220722-16ae0286c2-1.24
         command:
           - "runner.sh"
           - "./scripts/ci-conformance.sh"
@@ -102,7 +102,7 @@ periodics:
     path_alias: sigs.k8s.io/azuredisk-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220720-b949db7485-1.24
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220722-16ae0286c2-1.24
       command:
       - runner.sh
       - kubetest
@@ -164,7 +164,7 @@ periodics:
     path_alias: sigs.k8s.io/azurefile-csi-driver
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220720-b949db7485-1.24
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220722-16ae0286c2-1.24
       command:
       - runner.sh
       - kubetest

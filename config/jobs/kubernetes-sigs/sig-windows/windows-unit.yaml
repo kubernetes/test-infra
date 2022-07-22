@@ -14,7 +14,7 @@ periodics:
     path_alias: sigs.k8s.io/windows-testing
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220720-b949db7485-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220722-16ae0286c2-master
         command:
           - "runner.sh"
           - "./scripts/ci-k8s-unit-test.sh"
