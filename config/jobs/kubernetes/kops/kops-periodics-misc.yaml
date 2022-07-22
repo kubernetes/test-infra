@@ -137,4 +137,3 @@ periodics:
     testgrid-dashboards: google-aws, kops-k8s-stable, kops-latest, sig-cluster-lifecycle-kops, kops-misc
     testgrid-days-of-results: '90'
     testgrid-tab-name: e2e-kops-do-calico-fqdn
-    
