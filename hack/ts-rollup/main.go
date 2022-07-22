@@ -135,7 +135,7 @@ func rollupOne(pi *packageInfo, cleanupOnly bool) error {
 	// Intermediate output files, stored under `_output` dir
 	jsOutputFile := path.Join(defaultOutputDir, pi.Dir, entrypointFileBasename+".js")
 	bundleOutputDir := path.Join(defaultOutputDir, pi.Dir)
-	rollupOutputFile := path.Join(bundleOutputDir, "bundle.js")
+	rollupOutputFile := path.Join(bundleOutputDir, fmt.Sprintf("%s_bundle.js", entrypointFileBasename))
 	// terserOutputFile is the minified bundle, which is placed next to all
 	// other static files in the source tree
 	terserOutputFile := path.Join(pi.Dir, pi.Dst)
