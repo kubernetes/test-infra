@@ -804,7 +804,9 @@ function dump_nodes_with_logexporter() {
 
   # Delete the logexporter resources and dump logs for the failed nodes (if any) through SSH.
   kubectl get pods --namespace "${logexporter_namespace}" || true
-  kubectl delete namespace "${logexporter_namespace}" || true
+  # Timeout prevents the test waiting too long to delete resources and
+  # never uploading logs, as happened in https://github.com/kubernetes/kubernetes/issues/111111
+  kubectl delete namespace "${logexporter_namespace}" --timeout 15m || true
   if [[ "${#failed_nodes[@]}" != 0 ]]; then
     echo -e "Dumping logs through SSH for the following nodes:\n${failed_nodes[*]}"
     dump_nodes "${failed_nodes[@]}"
