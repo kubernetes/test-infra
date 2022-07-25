@@ -360,6 +360,74 @@ func TestInteractor_BranchExists(t *testing.T) {
 	}
 }
 
+func TestInteractor_CommitExists(t *testing.T) {
+	var testCases = []struct {
+		name          string
+		responses     map[string]execResponse
+		expectedCalls [][]string
+		expectedOut   bool
+		expectedErr   bool
+	}{
+		{
+			name: "happy case",
+			responses: map[string]execResponse{
+				"branch --contains abc123": {out: []byte("")},
+			},
+			expectedCalls: [][]string{
+				{"branch", "--contains", "abc123"},
+			},
+			expectedOut: true,
+		},
+		{
+			name: "Does not exist",
+			responses: map[string]execResponse{
+				"branch --contains abc123": {out: []byte(""), err: errors.New("error: no such commit abc123")},
+			},
+			expectedCalls: [][]string{
+				{"branch", "--contains", "abc123"},
+			},
+			expectedOut: false,
+		},
+		{
+			name: "error",
+			responses: map[string]execResponse{
+				"branch --contains abc123": {out: []byte(""), err: errors.New("error: malformed object name abc123")},
+			},
+			expectedCalls: [][]string{
+				{"branch", "--contains", "abc123"},
+			},
+			expectedOut: false,
+			expectedErr: true,
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			e := fakeExecutor{
+				records:   [][]string{},
+				responses: testCase.responses,
+			}
+			i := interactor{
+				executor: &e,
+				logger:   logrus.WithField("test", testCase.name),
+			}
+			actualOut, err := i.CommitExists("abc123")
+			if err != nil && !testCase.expectedErr {
+				t.Errorf("did not expect error, but got err: %v", err)
+			}
+			if err == nil && testCase.expectedErr {
+				t.Error("expected error but did not get one")
+			}
+			if testCase.expectedOut != actualOut {
+				t.Errorf("%s: got incorrect output: expected %v, got %v", testCase.name, testCase.expectedOut, actualOut)
+			}
+			if actual, expected := e.records, testCase.expectedCalls; !reflect.DeepEqual(actual, expected) {
+				t.Errorf("%s: got incorrect git calls: %v", testCase.name, diff.ObjectReflectDiff(actual, expected))
+			}
+		})
+	}
+}
+
 func TestInteractor_CheckoutNewBranch(t *testing.T) {
 	var testCases = []struct {
 		name          string

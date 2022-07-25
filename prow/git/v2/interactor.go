@@ -44,6 +44,8 @@ type Interactor interface {
 	RevParse(commitlike string) (string, error)
 	// BranchExists determines if a branch with the name exists
 	BranchExists(branch string) bool
+	// CommitExists determines if the commit SHA exists locally
+	CommitExists(sha string) (bool, error)
 	// CheckoutNewBranch creates a new branch from HEAD and checks it out
 	CheckoutNewBranch(branch string) error
 	// Merge merges the commitlike into the current HEAD
@@ -180,6 +182,18 @@ func (i *interactor) BranchExists(branch string) bool {
 	i.logger.Infof("Checking if branch %q exists", branch)
 	_, err := i.executor.Run("ls-remote", "--exit-code", "--heads", "origin", branch)
 	return err == nil
+}
+
+func (i *interactor) CommitExists(sha string) (bool, error) {
+	i.logger.WithField("SHA", sha).Info("Checking if SHA exists")
+	_, err := i.executor.Run("branch", "--contains", sha)
+	if err != nil && strings.Contains(err.Error(), "no such commit") {
+		return false, nil
+	} else if err != nil {
+		return false, fmt.Errorf("Unable to check if commit exists: %v", err)
+	}
+	return true, nil
+
 }
 
 // CheckoutNewBranch creates a new branch and checks it out.
