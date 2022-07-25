@@ -17,7 +17,7 @@ presubmits:
         - entrypoint
         - make
         - build
-        image: quay.io/multicloudlab/build-tool:v20220414-4b40fdbb8
+        image: quay.io/multicloudlab/build-tool:v20220715-5c584fb43
         name: ""
         securityContext:
           privileged: true
@@ -38,7 +38,7 @@ presubmits:
       - command:
         - make
         - check
-        image: quay.io/multicloudlab/check-tool:v20220414-4b40fdbb8
+        image: quay.io/multicloudlab/check-tool:v20220715-41326ee25
         name: ""
         securityContext:
           privileged: true
@@ -60,7 +60,7 @@ presubmits:
         - entrypoint
         - make
         - test
-        image: quay.io/multicloudlab/build-tool:v20220414-4b40fdbb8
+        image: quay.io/multicloudlab/build-tool:v20220715-5c584fb43
         name: ""
         securityContext:
           privileged: true
@@ -82,7 +82,7 @@ postsubmits:
       - command:
         - make
         - check
-        image: quay.io/multicloudlab/check-tool:v20220414-4b40fdbb8
+        image: quay.io/multicloudlab/check-tool:v20220715-41326ee25
         name: ""
         securityContext:
           privileged: true
@@ -101,7 +101,7 @@ postsubmits:
         - entrypoint
         - make
         - test
-        image: quay.io/multicloudlab/build-tool:v20220414-4b40fdbb8
+        image: quay.io/multicloudlab/build-tool:v20220715-5c584fb43
         name: ""
         securityContext:
           privileged: true
@@ -120,7 +120,7 @@ postsubmits:
         - entrypoint
         - make
         - build
-        image: quay.io/multicloudlab/build-tool:v20220414-4b40fdbb8
+        image: quay.io/multicloudlab/build-tool:v20220715-5c584fb43
         name: ""
         securityContext:
           privileged: true
@@ -141,7 +141,7 @@ postsubmits:
         - entrypoint
         - make
         - images
-        image: quay.io/multicloudlab/build-tool:v20220414-4b40fdbb8
+        image: quay.io/multicloudlab/build-tool:v20220715-5c584fb43
         name: ""
         securityContext:
           privileged: true
