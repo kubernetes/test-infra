@@ -3,10 +3,10 @@
 reviewers:
 - andyzhangx
 - feiskyer
-- chewong
 approvers:
 - andyzhangx
 - feiskyer
+emeritus_approvers:
 - chewong
 
 labels:
