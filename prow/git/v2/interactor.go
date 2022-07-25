@@ -185,7 +185,7 @@ func (i *interactor) BranchExists(branch string) bool {
 }
 
 func (i *interactor) CommitExists(sha string) (bool, error) {
-	i.logger.Infof("Checking if SHA %s exusts", sha)
+	i.logger.WithField("SHA", sha).Info("Checking if SHA exists")
 	_, err := i.executor.Run("branch", "--contains", sha)
 	if err != nil && strings.Contains(err.Error(), "no such commit") {
 		return false, nil
