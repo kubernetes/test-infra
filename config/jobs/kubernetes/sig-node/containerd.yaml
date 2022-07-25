@@ -147,7 +147,7 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: containerd-e2e-ubuntu
-- name: ci-containerd-node-e2e
+- name: ci-cos-cgroupv1-containerd-node-e2e
   interval: 1h
   labels:
     preset-service-account: "true"
@@ -162,7 +162,7 @@ periodics:
       - --timeout=90
       - --scenario=kubernetes_e2e
       - --
-      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/image-config.yaml
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv1/image-config-cgroupv1.yaml
       - --deployment=node
       - --gcp-project-type=node-e2e-project
       - --gcp-zone=us-west1-b
@@ -176,9 +176,9 @@ periodics:
         value: /go
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: containerd-node-conformance
+    testgrid-tab-name: cos-cgroupv1-containerd-node-e2e
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
-- name: ci-containerd-node-e2e-features
+- name: ci-cos-cgroupv1-containerd-node-e2e-features
   cluster: k8s-infra-prow-build
   interval: 1h
   labels:
@@ -194,7 +194,7 @@ periodics:
       - --timeout=90
       - --scenario=kubernetes_e2e
       - --
-      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/image-config.yaml
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv1/image-config-cgroupv1.yaml
       - --deployment=node
       - --gcp-zone=us-central1-b
       - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
@@ -214,7 +214,7 @@ periodics:
           memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: containerd-node-features
+    testgrid-tab-name: cos-cgroupv1-containerd-node-features
 - name: ci-containerd-node-e2e-1-5
   cluster: k8s-infra-prow-build
   interval: 1h
@@ -1036,8 +1036,7 @@ periodics:
       - --gcp-nodes=4
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=30
-      # Using cos-beta to pick up cgroupv2 enabled by default as of cos-beta-97-16919-0-3.
-      - --image-family=cos-beta
+      - --image-family=cos-97-lts
       - --image-project=cos-cloud
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
@@ -1046,6 +1045,38 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: cos-cgroupv2-containerd-e2e
+- interval: 12h
+  name: ci-cos-cgroupv1-containerd-e2e-gce
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-e2e-containerd: "true"
+  spec:
+    containers:
+    - args:
+      - --repo=github.com/containerd/containerd=main
+      - --timeout=70
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env=ENABLE_POD_SECURITY_POLICY=true
+      - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/containerd/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh=/workspace/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv1/env-cgroupv1
+      - --env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/containerd/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh=/workspace/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv1/env-cgroupv1
+      - --env=KUBELET_TEST_ARGS=--runtime-cgroups=/system.slice/containerd.service
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-nodes=4
+      - --gcp-zone=us-west1-b
+      - --ginkgo-parallel=30
+      - --image-family=cos-97-lts
+      - --image-project=cos-cloud
+      - --provider=gce
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --timeout=50m
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+  annotations:
+    testgrid-dashboards: sig-node-containerd
+    testgrid-tab-name: cos-cgroupv1-containerd-e2e
 - name: ci-cos-cgroupv2-containerd-node-e2e-serial
   cluster: k8s-infra-prow-build
   interval: 12h
