@@ -431,8 +431,10 @@ func TestTide(t *testing.T) {
 	ca.Set(&config.Config{
 		ProwConfig: config.ProwConfig{
 			Tide: config.Tide{
-				Queries: []config.TideQuery{
-					{Repos: []string{"prowapi.netes/test-infra"}},
+				TideGitHubConfig: config.TideGitHubConfig{
+					Queries: []config.TideQuery{
+						{Repos: []string{"prowapi.netes/test-infra"}},
+					},
 				},
 			},
 		},
@@ -756,8 +758,10 @@ func TestHandleConfig(t *testing.T) {
 				},
 			},
 			Tide: config.Tide{
-				Queries: []config.TideQuery{
-					{Repos: []string{"prowapi.netes/test-infra"}},
+				TideGitHubConfig: config.TideGitHubConfig{
+					Queries: []config.TideQuery{
+						{Repos: []string{"prowapi.netes/test-infra"}},
+					},
 				},
 			},
 		},

@@ -1181,14 +1181,16 @@ func TestMergeMethodCheckerAndPRMergeMethod(t *testing.T) {
 	rebaseLabel := "tide/rebase"
 
 	tideConfig := config.Tide{
-		SquashLabel: squashLabel,
-		MergeLabel:  mergeLabel,
-		RebaseLabel: rebaseLabel,
+		TideGitHubConfig: config.TideGitHubConfig{
+			SquashLabel: squashLabel,
+			MergeLabel:  mergeLabel,
+			RebaseLabel: rebaseLabel,
 
-		MergeType: map[string]types.PullRequestMergeType{
-			"o/configured-rebase":              types.MergeRebase, // GH client allows merge, rebase
-			"o/configured-squash-allow-rebase": types.MergeSquash, // GH client allows merge, squash, rebase
-			"o/configure-re-base":              types.MergeRebase, // GH client allows merge
+			MergeType: map[string]types.PullRequestMergeType{
+				"o/configured-rebase":              types.MergeRebase, // GH client allows merge, rebase
+				"o/configured-squash-allow-rebase": types.MergeSquash, // GH client allows merge, squash, rebase
+				"o/configure-re-base":              types.MergeRebase, // GH client allows merge
+			},
 		},
 	}
 	cfg := func() *config.Config { return &config.Config{ProwConfig: config.ProwConfig{Tide: tideConfig}} }
@@ -1338,8 +1340,10 @@ func TestRebaseMergeMethodIsAllowed(t *testing.T) {
 	orgName := "fake-org"
 	repoName := "fake-repo"
 	tideConfig := config.Tide{
-		MergeType: map[string]types.PullRequestMergeType{
-			fmt.Sprintf("%s/%s", orgName, repoName): types.MergeRebase,
+		TideGitHubConfig: config.TideGitHubConfig{
+			MergeType: map[string]types.PullRequestMergeType{
+				fmt.Sprintf("%s/%s", orgName, repoName): types.MergeRebase,
+			},
 		},
 	}
 	cfg := func() *config.Config { return &config.Config{ProwConfig: config.ProwConfig{Tide: tideConfig}} }
@@ -2297,9 +2301,11 @@ func TestSync(t *testing.T) {
 			ca.Set(&config.Config{
 				ProwConfig: config.ProwConfig{
 					Tide: config.Tide{
-						Queries:            []config.TideQuery{{}},
-						MaxGoroutines:      4,
-						StatusUpdatePeriod: &metav1.Duration{Duration: time.Second * 0},
+						MaxGoroutines: 4,
+						TideGitHubConfig: config.TideGitHubConfig{
+							Queries:            []config.TideQuery{{}},
+							StatusUpdatePeriod: &metav1.Duration{Duration: time.Second * 0},
+						},
 					},
 				},
 			})
@@ -4457,7 +4463,8 @@ func TestQueryShardsByOrgWhenAppsAuthIsEnabledOnly(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			provider := &GitHubProvider{
 				cfg: func() *config.Config {
-					return &config.Config{ProwConfig: config.ProwConfig{Tide: config.Tide{Queries: []config.TideQuery{{Orgs: []string{"org", "other-org"}}}}}}
+					return &config.Config{ProwConfig: config.ProwConfig{Tide: config.Tide{
+						TideGitHubConfig: config.TideGitHubConfig{Queries: []config.TideQuery{{Orgs: []string{"org", "other-org"}}}}}}}
 				},
 				ghc:                &fgc{prs: tc.prs},
 				usesGitHubAppsAuth: tc.usesGitHubAppsAuth,
@@ -4756,8 +4763,7 @@ func TestPickBatchPrefersBatchesWithPreexistingJobs(t *testing.T) {
 					*CodeReviewCommonFromPullRequest(&PullRequest{Number: 99, HeadRefOID: "pr-from-new-batch-func"})}, nil
 			}
 
-			logger := logrus.WithField("test", tc.name)
-			config := func() *config.Config {
+			cfg := func() *config.Config {
 				return &config.Config{ProwConfig: config.ProwConfig{
 					Tide: config.Tide{
 						BatchSizeLimitMap:            map[string]int{"*": tc.maxBatchSize},
@@ -4765,13 +4771,14 @@ func TestPickBatchPrefersBatchesWithPreexistingJobs(t *testing.T) {
 					}},
 				}
 			}
-			ghc := &fgc{skipExpectedShaCheck: true}
 
+			logger := logrus.WithField("test", tc.name)
+			ghc := &fgc{skipExpectedShaCheck: true}
 			c := &syncController{
-				logger: logger,
-				config: config,
+				logger: logrus.WithField("test", tc.name),
+				config: cfg,
 				provider: &GitHubProvider{
-					cfg:    config,
+					cfg:    cfg,
 					logger: logger,
 					ghc:    ghc,
 				},
@@ -4956,10 +4963,14 @@ func TestBatchPickingConsidersPRThatIsCurrentlyBeingSeriallyRetested(t *testing.
 	t.Parallel()
 	configGetter := func() *config.Config {
 		return &config.Config{
-			ProwConfig: config.ProwConfig{Tide: config.Tide{
-				Queries:       config.TideQueries{{}},
-				MaxGoroutines: 1,
-			}},
+			ProwConfig: config.ProwConfig{
+				Tide: config.Tide{
+					MaxGoroutines: 1,
+					TideGitHubConfig: config.TideGitHubConfig{
+						Queries: config.TideQueries{{}},
+					},
+				},
+			},
 			JobConfig: config.JobConfig{PresubmitsStatic: map[string][]config.Presubmit{
 				"/": {{AlwaysRun: true, Reporter: config.Reporter{Context: "mandatory-job"}}},
 			}},
@@ -5234,10 +5245,14 @@ func TestSerialRetestingConsidersPRThatIsCurrentlyBeingSRetested(t *testing.T) {
 	t.Parallel()
 	configGetter := func() *config.Config {
 		return &config.Config{
-			ProwConfig: config.ProwConfig{Tide: config.Tide{
-				Queries:       config.TideQueries{{}},
-				MaxGoroutines: 1,
-			}},
+			ProwConfig: config.ProwConfig{
+				Tide: config.Tide{
+					MaxGoroutines: 1,
+					TideGitHubConfig: config.TideGitHubConfig{
+						Queries: config.TideQueries{{}},
+					},
+				},
+			},
 			JobConfig: config.JobConfig{PresubmitsStatic: map[string][]config.Presubmit{
 				"/": {{AlwaysRun: true, Reporter: config.Reporter{Context: "mandatory-job"}}},
 			}},

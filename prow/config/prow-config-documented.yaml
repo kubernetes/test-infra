@@ -1158,8 +1158,6 @@ tide:
     # Special values:
     # 0 => unlimited batch size
     # -1 => batch merging disabled :(
-
-    # This is suitable for any source code provider, so keep it global.
     batch_size_limit:
         "": 0
 
@@ -1266,8 +1264,6 @@ tide:
     # eligible. Continuing on an old batch allows to re-use all existing test results whereas
     # starting a new one requires to start new instances of all tests.
     # Use '*' as key to set this globally. Defaults to true.
-
-    # This is suitable for any source code provider, so keep it global.
     prioritize_existing_batches:
         "": false
 
@@ -1313,7 +1309,7 @@ tide:
     # Defaults to the value of SyncPeriod.
     status_update_period: 0s
 
-    # SyncPeriod specifies how often Tide will sync jobs with GitHub. Defaults to 1m.
+    # SyncPeriod specifies how often Tide will sync jobs with provider. Defaults to 1m.
     sync_period: 0s
 
     # URL for tide status contexts.
