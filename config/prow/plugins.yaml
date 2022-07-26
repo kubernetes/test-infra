@@ -1265,21 +1265,7 @@ plugins:
 
   cncf/apisnoop:
     plugins:
-    - wip
-    - trigger
-    - assign
-    - cla
-    - cat # /meow replies with cat pictures
-    - dog # /bark replies with dog pictures
-    - goose
-    - heart
-    - help
-    - hold
-    - label
-    - lgtm
-    - retitle
-    - shrug
-    - size
+    - trigger # prow.k8s.io for #sig-arch + release-informing jobs... prow.cncf.io for cncf/k8s-conformance related jobs
 
   kubernetes-sigs/secrets-store-csi-driver:
     plugins:
