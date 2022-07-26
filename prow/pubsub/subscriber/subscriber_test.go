@@ -308,6 +308,7 @@ func TestHandleMessage(t *testing.T) {
 				Reporter:      &fr,
 				InRepoConfigCacheGetter: &InRepoConfigCacheGetter{
 					CacheSize:     100,
+					CacheCopies:   1,
 					Agent:         ca,
 					GitHubOptions: flagutil.GitHubOptions{},
 					DryRun:        true,

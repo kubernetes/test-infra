@@ -106,8 +106,9 @@ type Controller struct {
 	lock                 sync.RWMutex
 	cookieFilePath       string
 	cacheSize            int
+	cacheCopies          int
 	configAgent          *config.Agent
-	repoCacheMap         map[string]*config.InRepoConfigCache
+	repoCacheMap         map[string]*config.InRepoConfigCacheHandler
 	inRepoConfigFailures map[string]bool
 	instancesWithWorker  map[string]bool
 	repoCacheMapMux      sync.Mutex
@@ -122,7 +123,7 @@ type LastSyncTracker interface {
 
 // NewController returns a new gerrit controller client
 func NewController(ctx context.Context, prowJobClient prowv1.ProwJobInterface, op io.Opener,
-	ca *config.Agent, projects, projectsOptOutHelp map[string][]string, cookiefilePath, tokenPathOverride, lastSyncFallback string, cacheSize, workerPoolSize int) *Controller {
+	ca *config.Agent, projects, projectsOptOutHelp map[string][]string, cookiefilePath, tokenPathOverride, lastSyncFallback string, cacheSize, cacheCopies, workerPoolSize int) *Controller {
 
 	cfg := ca.Config
 	projectsOptOutHelpMap := map[string]sets.String{}
@@ -153,8 +154,9 @@ func NewController(ctx context.Context, prowJobClient prowv1.ProwJobInterface, o
 		projectsOptOutHelp:   projectsOptOutHelpMap,
 		cookieFilePath:       cookiefilePath,
 		cacheSize:            cacheSize,
+		cacheCopies:          cacheCopies,
 		configAgent:          ca,
-		repoCacheMap:         map[string]*config.InRepoConfigCache{},
+		repoCacheMap:         map[string]*config.InRepoConfigCacheHandler{},
 		inRepoConfigFailures: map[string]bool{},
 		instancesWithWorker:  make(map[string]bool),
 		workerPoolSize:       workerPoolSize,
@@ -210,7 +212,7 @@ func (c *Controller) applyGlobalConfigOnce(cfg config.Getter, gerritClient *clie
 }
 
 // Helper function to create the cache used for InRepoConfig. Currently only attempts to create cache and returns nil if failed.
-func createCache(cloneURI *url.URL, cookieFilePath string, cacheSize int, configAgent *config.Agent) (cache *config.InRepoConfigCache, err error) {
+func createCache(cloneURI *url.URL, cookieFilePath string, cacheSize, cacheCopies int, configAgent *config.Agent) (cache *config.InRepoConfigCacheHandler, err error) {
 	opts := git.ClientFactoryOpts{
 		CloneURI:       cloneURI.String(),
 		Host:           cloneURI.Host,
@@ -222,10 +224,11 @@ func createCache(cloneURI *url.URL, cookieFilePath string, cacheSize int, config
 	}
 	// Initialize cache for fetching Presubmit and Postsubmit information. If
 	// the cache cannot be initialized, exit with an error.
-	cache, err = config.NewInRepoConfigCache(
+	cache, err = config.NewInRepoConfigCacheHandler(
 		cacheSize,
 		configAgent,
-		config.NewInRepoConfigGitCache(gc))
+		config.NewInRepoConfigGitCache(gc),
+		cacheCopies)
 	// If we cannot initialize the cache, exit with an error.
 	if err != nil {
 		return nil, fmt.Errorf("unable to initialize in-repo-config-cache with size %d: %v", cacheSize, err)
@@ -258,7 +261,7 @@ func (c *Controller) syncChange(latest client.LastSyncState, changeChan <-chan C
 		c.repoCacheMapMux.Lock()
 		cache, ok := c.repoCacheMap[cloneURI.String()]
 		if !ok {
-			if cache, err = createCache(cloneURI, c.cookieFilePath, c.cacheSize, c.configAgent); err != nil {
+			if cache, err = createCache(cloneURI, c.cookieFilePath, c.cacheSize, c.cacheCopies, c.configAgent); err != nil {
 				c.repoCacheMapMux.Unlock()
 				wg.Done()
 				log.WithError(err).Error("create repo cache.")
@@ -465,7 +468,7 @@ func (c *Controller) handleInRepoConfigError(err error, instance string, change 
 }
 
 // processChange creates new presubmit/postsubmit prowjobs base off the gerrit changes
-func (c *Controller) processChange(logger logrus.FieldLogger, instance string, change client.ChangeInfo, cloneURI *url.URL, cache *config.InRepoConfigCache) error {
+func (c *Controller) processChange(logger logrus.FieldLogger, instance string, change client.ChangeInfo, cloneURI *url.URL, cache *config.InRepoConfigCacheHandler) error {
 	baseSHA, err := c.gc.GetBranchRevision(instance, change.Project, change.Branch)
 	trimmedHostPath := cloneURI.Host + "/" + cloneURI.Path
 	if err != nil {

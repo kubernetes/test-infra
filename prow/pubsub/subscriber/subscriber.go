@@ -63,20 +63,21 @@ type prowCfgClient interface {
 
 type InRepoConfigCacheGetter struct {
 	CacheSize     int
+	CacheCopies   int
 	Agent         *config.Agent
 	mu            sync.Mutex
 	GitHubOptions flagutil.GitHubOptions
 	DryRun        bool
 
-	CacheMap map[string]*config.InRepoConfigCache
+	CacheMap map[string]*config.InRepoConfigCacheHandler
 }
 
-func (irc *InRepoConfigCacheGetter) getCache(cloneURI, host string) (*config.InRepoConfigCache, error) {
+func (irc *InRepoConfigCacheGetter) getCache(cloneURI, host string) (*config.InRepoConfigCacheHandler, error) {
 	// No repo is cloned in getCache, Since this function should happen fast it is safe to lock the whole function.
 	irc.mu.Lock()
 	defer irc.mu.Unlock()
 	if irc.CacheMap == nil {
-		irc.CacheMap = map[string]*config.InRepoConfigCache{}
+		irc.CacheMap = map[string]*config.InRepoConfigCacheHandler{}
 	}
 
 	var key string
@@ -93,7 +94,7 @@ func (irc *InRepoConfigCacheGetter) getCache(cloneURI, host string) (*config.InR
 	}
 
 	var gitClientFactory git.ClientFactory
-	var cache *config.InRepoConfigCache
+	var cache *config.InRepoConfigCacheHandler
 	var err error
 	if irc.GitHubOptions.TokenPath != "" || irc.GitHubOptions.AppPrivateKeyPath != "" {
 		gitClient, err := irc.GitHubOptions.GitClient(irc.DryRun)
@@ -114,10 +115,11 @@ func (irc *InRepoConfigCacheGetter) getCache(cloneURI, host string) (*config.InR
 
 	// Initialize cache for fetching Presubmit and Postsubmit information. If
 	// the cache cannot be initialized, exit with an error.
-	cache, err = config.NewInRepoConfigCache(
+	cache, err = config.NewInRepoConfigCacheHandler(
 		irc.CacheSize,
 		irc.Agent,
-		config.NewInRepoConfigGitCache(gitClientFactory))
+		config.NewInRepoConfigGitCache(gitClientFactory),
+		irc.CacheCopies)
 	// If we cannot initialize the cache, exit with an error.
 	if err != nil {
 		return nil, fmt.Errorf("unable to initialize in-repo-config-cache with size %d: %v", irc.CacheSize, err)
@@ -220,13 +222,13 @@ func (m *pubSubMessage) nack() {
 
 // jobHandler handles job type specific logic
 type jobHandler interface {
-	getProwJobSpec(cfg prowCfgClient, pc *config.InRepoConfigCache, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error)
+	getProwJobSpec(cfg prowCfgClient, pc *config.InRepoConfigCacheHandler, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error)
 }
 
 // periodicJobHandler implements jobHandler
 type periodicJobHandler struct{}
 
-func (peh *periodicJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InRepoConfigCache, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error) {
+func (peh *periodicJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InRepoConfigCacheHandler, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error) {
 	var periodicJob *config.Periodic
 	// TODO(chaodaiG): do we want to support inrepoconfig when
 	// https://github.com/kubernetes/test-infra/issues/21729 is done?
@@ -250,7 +252,7 @@ func (peh *periodicJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InRe
 type presubmitJobHandler struct {
 }
 
-func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InRepoConfigCache, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error) {
+func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InRepoConfigCacheHandler, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error) {
 	// presubmit jobs require Refs and Refs.Pulls to be set
 	refs := pe.Refs
 	if refs == nil {
@@ -339,7 +341,7 @@ func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InR
 type postsubmitJobHandler struct {
 }
 
-func (poh *postsubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InRepoConfigCache, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error) {
+func (poh *postsubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InRepoConfigCacheHandler, pe ProwJobEvent) (*v1.ProwJobSpec, map[string]string, error) {
 	// postsubmit jobs require Refs to be set
 	refs := pe.Refs
 	if refs == nil {
@@ -526,7 +528,7 @@ func (s *Subscriber) handleProwJob(l *logrus.Entry, jh jobHandler, msg messageIn
 	// Normalize job name
 	pe.Name = strings.TrimSpace(pe.Name)
 
-	var cache *config.InRepoConfigCache
+	var cache *config.InRepoConfigCacheHandler
 	var err error
 	if eType != PeriodicProwJobEvent {
 		cloneURI, host := tryGetCloneURIAndHost(pe)
