@@ -324,7 +324,7 @@ i.state {
     background-color: rgba(0,0,0,0.4);
 }
 
-#rerun-content {
+.rerun-content {
     font-family: monospace;
     background-color: #fefefe;
     margin: auto;
@@ -334,7 +334,35 @@ i.state {
     max-width: 1500px;
     color: #444;
     border-radius: 10px;
-    box-shadow: 0px 20px 80px 0px; 
+    box-shadow: 0px 20px 80px 0px;
+}
+
+.abort-content {
+    font-family: monospace;
+    background-color: #fefefe;
+    margin: auto;
+    padding: 40px;
+    border: 1px solid #888;
+    width: 25%;
+    max-width: 1500px;
+    color: #444;
+    border-radius: 10px;
+    box-shadow: 0px 20px 80px 0px;
+}
+
+.abortModal-title {
+    font-size: 35px;
+    margin-top: 0px;
+}
+
+.abortModal-description {
+    font-size: 16px;
+    margin-bottom: 24px;
+}
+
+.abortModal-buttonDiv {
+    display: flex;
+    justify-content: space-around;
 }
 
 .rerunModal-title {

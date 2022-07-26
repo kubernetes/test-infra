@@ -432,7 +432,7 @@ function escapeRegexLiteral(s: string): string {
 function redraw(fz: FuzzySearch, pushState: boolean = true): void {
     const rerunStatus = getParameterByName("rerun");
     const modal = document.getElementById('rerun')!;
-    const rerunCommand = document.getElementById('rerun-content')!;
+    const modalContent = document.querySelector('.modal-content')!;
     const builds = document.getElementById("builds")!.getElementsByTagName(
         "tbody")[0];
     while (builds.firstChild) {
@@ -611,9 +611,9 @@ function redraw(fz: FuzzySearch, pushState: boolean = true): void {
         // Log column
         r.appendChild(createLogCell(build, buildUrl));
         // Rerun column
-        r.appendChild(createRerunCell(modal, rerunCommand, prowJobName));
+        r.appendChild(createRerunCell(modal, modalContent, prowJobName));
         // Abort column
-        r.appendChild(createAbortCell(state, prowJobName));
+        r.appendChild(createAbortCell(modal, modalContent, job, state, prowJobName));
         // Job Yaml column
         r.appendChild(createViewJobCell(prowJobName));
         // Repository column
@@ -718,20 +718,20 @@ function redraw(fz: FuzzySearch, pushState: boolean = true): void {
     drawJobHistogram(totalJob, jobHistogram, now - (12 * 3600), now, max);
     if (rerunStatus === "gh_redirect") {
         modal.style.display = "block";
-        rerunCommand.innerHTML = "Rerunning that job requires GitHub login. Now that you're logged in, try again";
+        modalContent.innerHTML = "Rerunning that job requires GitHub login. Now that you're logged in, try again";
     }
     // we need to upgrade DOM for new created dynamic elements
     // see https://getmdl.io/started/index.html#dynamic
     componentHandler.upgradeDom();
 }
 
-function createAbortCell(state: ProwJobState, prowjob: string): HTMLTableCellElement {
+function createAbortCell(modal: HTMLElement, modalContent: Element, job: string, state: ProwJobState, prowjob: string): HTMLTableCellElement {
     const c = document.createElement("td");
-    c.appendChild(createAbortProwJobIcon(state, prowjob, csrfToken));
+    c.appendChild(createAbortProwJobIcon(modal, modalContent, job, state, prowjob, csrfToken));
     return c;
 }
 
-function createRerunCell(modal: HTMLElement, rerunElement: HTMLElement, prowjob: string): HTMLTableDataCellElement {
+function createRerunCell(modal: HTMLElement, rerunElement: Element, prowjob: string): HTMLTableDataCellElement {
     const c = document.createElement("td");
     c.appendChild(createRerunProwJobIcon(modal, rerunElement, prowjob, rerunCreatesJob, csrfToken));
     return c;

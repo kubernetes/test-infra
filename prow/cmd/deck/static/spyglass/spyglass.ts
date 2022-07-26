@@ -9,6 +9,7 @@ declare const lensArtifacts: {[index: string]: string[]};
 declare const lensIndexes: number[];
 declare const csrfToken: string;
 declare const rerunCreatesJob: boolean;
+declare const prowJob: string;
 declare const prowJobName: string;
 declare const prowJobState: ProwJobState;
 
@@ -179,16 +180,16 @@ function handleRerunButton() {
 
   const rerunStatus = getParameterByName("rerun");
   const modal = document.getElementById('rerun')!;
-  const rerunCommand = document.getElementById('rerun-content')!;
+  const modalContent = document.querySelector('.modal-content')!;
 
   const r = document.getElementById("header-title")!;
   const c = document.createElement("div");
-  c.appendChild(createRerunProwJobIcon(modal, rerunCommand, prowJobName, rerunCreatesJob, csrfToken));
+  c.appendChild(createRerunProwJobIcon(modal, modalContent, prowJobName, rerunCreatesJob, csrfToken));
   r.appendChild(c);
 
   if (rerunStatus === "gh_redirect") {
     modal.style.display = "block";
-    rerunCommand.innerHTML = "Rerunning that job requires GitHub login. Now that you're logged in, try again";
+    modalContent.innerHTML = "Rerunning that job requires GitHub login. Now that you're logged in, try again";
   }
 }
 
@@ -198,8 +199,11 @@ function handleAbortButton(): void {
     return;
   }
 
+  const modal = document.getElementById('rerun')!;
+  const modalContent = document.querySelector('.modal-content')!;
+
   const r = document.getElementById("header-title")!;
   const c = document.createElement("div");
-  c.appendChild(createAbortProwJobIcon(prowJobState, prowJobName, csrfToken));
+  c.appendChild(createAbortProwJobIcon(modal, modalContent, prowJob, prowJobState, prowJobName, csrfToken));
   r.appendChild(c);
 }

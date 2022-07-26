@@ -568,6 +568,7 @@ func TestProwJob(t *testing.T) {
 	testCases := []struct {
 		name        string
 		src         string
+		expJob      string
 		expJobPath  string
 		expJobState prowapi.ProwJobState
 		expError    bool
@@ -575,42 +576,49 @@ func TestProwJob(t *testing.T) {
 		{
 			name:        "non-presubmit job in GCS without trailing /",
 			src:         "gcs/kubernetes-jenkins/logs/example-periodic-job/1111/",
+			expJob:      "example-periodic-job",
 			expJobPath:  "flying-whales-1",
 			expJobState: prowapi.TriggeredState,
 		},
 		{
 			name:        "presubmit job in GCS with trailing /",
 			src:         "gcs/kubernetes-jenkins/pr-logs/pull/test-infra/0000/example-presubmit-job/2222/",
+			expJob:      "example-presubmit-job",
 			expJobPath:  "flying-whales-2",
 			expJobState: prowapi.PendingState,
 		},
 		{
 			name:        "non-presubmit Prow job",
 			src:         "prowjob/example-periodic-job/1111",
+			expJob:      "example-periodic-job",
 			expJobPath:  "flying-whales-1",
 			expJobState: prowapi.TriggeredState,
 		},
 		{
 			name:        "Prow presubmit job",
 			src:         "prowjob/example-presubmit-job/2222",
+			expJob:      "example-presubmit-job",
 			expJobPath:  "flying-whales-2",
 			expJobState: prowapi.PendingState,
 		},
 		{
 			name:        "nonexistent job",
 			src:         "prowjob/example-periodic-job/0000",
+			expJob:      "",
 			expJobPath:  "",
 			expJobState: "",
 		},
 		{
 			name:        "job missing name",
 			src:         "prowjob/missing-name-job/1",
+			expJob:      "missing-name-job",
 			expJobPath:  "",
 			expJobState: "",
 		},
 		{
 			name:        "previously invalid key type is now valid but nonexistent",
 			src:         "oh/my/glob/drama/bomb",
+			expJob:      "",
 			expJobPath:  "",
 			expJobState: "",
 		},
@@ -625,7 +633,7 @@ func TestProwJob(t *testing.T) {
 		fakeOpener := io.NewGCSOpener(fakeGCSClient)
 		fca := config.Agent{}
 		sg := New(context.Background(), fakeJa, fca.Config, fakeOpener, false)
-		jobPath, jobState, err := sg.ProwJob(tc.src)
+		job, jobPath, jobState, err := sg.ProwJob(tc.src)
 		if tc.expError && err == nil {
 			t.Errorf("test %q: JobPath(%q) expected error", tc.name, tc.src)
 			continue
@@ -633,6 +641,9 @@ func TestProwJob(t *testing.T) {
 		if !tc.expError && err != nil {
 			t.Errorf("test %q: JobPath(%q) returned unexpected error %v", tc.name, tc.src, err)
 			continue
+		}
+		if job != tc.expJob {
+			t.Errorf("test %q: Job(%q) expected %q, got %q", tc.name, tc.src, tc.expJob, job)
 		}
 		if jobPath != tc.expJobPath {
 			t.Errorf("test %q: JobPath(%q) expected %q, got %q", tc.name, tc.src, tc.expJobPath, jobPath)
