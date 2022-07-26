@@ -5,26 +5,26 @@ periodics:
     decorate: true
     max_concurrency: 1
     annotations:
-      testgrid-dashboards: sig-k8s-infra-gcr-to-ar
+      testgrid-dashboards: sig-k8s-infra-k8sio
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
     rerun_auth_config:
       github_team_slugs:
-      - org: kubernetes
-        slug: sig-k8s-infra-leads
-      - org: kubernetes
-        slug: release-managers
+        - org: kubernetes
+          slug: sig-k8s-infra-leads
+        - org: kubernetes
+          slug: release-managers
     spec:
       serviceAccountName: k8s-infra-gcr-promoter
       containers:
         - image: gcr.io/go-containerregistry/gcrane:v0.11.0
           imagePullPolicy: Always
           command:
-            - gcrane 
+            - gcrane
           args:
-            - cp 
+            - cp
             - --recursive
-            - eu.gcr.io/k8s-artifacts-prod 
+            - eu.gcr.io/k8s-artifacts-prod
             - europe-docker.pkg.dev/k8s-artifacts-prod/images
   - name: gcr-to-ar-sync-asia
     interval: 2h
@@ -32,26 +32,26 @@ periodics:
     decorate: true
     max_concurrency: 1
     annotations:
-      testgrid-dashboards: sig-k8s-infra-gcr-to-ar
+      testgrid-dashboards: sig-k8s-infra-k8sio
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
     rerun_auth_config:
       github_team_slugs:
-      - org: kubernetes
-        slug: sig-k8s-infra-leads
-      - org: kubernetes
-        slug: release-managers
+        - org: kubernetes
+          slug: sig-k8s-infra-leads
+        - org: kubernetes
+          slug: release-managers
     spec:
       serviceAccountName: k8s-infra-gcr-promoter
       containers:
         - image: gcr.io/go-containerregistry/gcrane:v0.11.0
           imagePullPolicy: Always
           command:
-            - gcrane 
+            - gcrane
           args:
-            - cp 
+            - cp
             - --recursive
-            - asia.gcr.io/k8s-artifacts-prod 
+            - asia.gcr.io/k8s-artifacts-prod
             - asia-docker.pkg.dev/k8s-artifacts-prod/images
   - name: gcr-to-ar-sync-us
     interval: 2h
@@ -59,24 +59,24 @@ periodics:
     decorate: true
     max_concurrency: 1
     annotations:
-      testgrid-dashboards: sig-k8s-infra-gcr-to-ar
+      testgrid-dashboards: sig-k8s-infra-k8sio
       testgrid-alert-email: k8s-infra-alerts@kubernetes.io
       testgrid-num-failures-to-alert: '1'
     rerun_auth_config:
       github_team_slugs:
-      - org: kubernetes
-        slug: sig-k8s-infra-leads
-      - org: kubernetes
-        slug: release-managers
+        - org: kubernetes
+          slug: sig-k8s-infra-leads
+        - org: kubernetes
+          slug: release-managers
     spec:
       serviceAccountName: k8s-infra-gcr-promoter
       containers:
         - image: gcr.io/go-containerregistry/gcrane:v0.11.0
           imagePullPolicy: Always
           command:
-            - gcrane 
+            - gcrane
           args:
-            - cp 
+            - cp
             - --recursive
-            - us.gcr.io/k8s-artifacts-prod 
+            - us.gcr.io/k8s-artifacts-prod
             - us-docker.pkg.dev/k8s-artifacts-prod/images
