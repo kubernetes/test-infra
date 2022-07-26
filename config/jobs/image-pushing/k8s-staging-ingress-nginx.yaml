@@ -123,6 +123,7 @@ postsubmits:
               - --project=k8s-staging-ingress-nginx
               - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
+              - --build-dir=.
               - images/test-runner
 
     - name: post-ingress-nginx-build-e2e-image-debian
