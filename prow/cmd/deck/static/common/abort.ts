@@ -1,6 +1,7 @@
+import {ProwJobState} from "../api/prow";
 import {showAlert, showToast, State} from "./common";
 
-export function createAbortProwJobIcon(state: string, prowjob: string, csrfToken: string): HTMLElement {
+export function createAbortProwJobIcon(state: ProwJobState, prowjob: string, csrfToken: string): HTMLElement {
   const url = `${location.protocol}//${location.host}/abort?prowjob=${prowjob}`;
   const button = document.createElement('button');
   button.classList.add('mdl-button', 'mdl-js-button', 'mdl-button--icon');

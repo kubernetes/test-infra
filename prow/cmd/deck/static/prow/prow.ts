@@ -725,7 +725,7 @@ function redraw(fz: FuzzySearch, pushState: boolean = true): void {
     componentHandler.upgradeDom();
 }
 
-function createAbortCell(state: string, prowjob: string): HTMLTableCellElement {
+function createAbortCell(state: ProwJobState, prowjob: string): HTMLTableCellElement {
     const c = document.createElement("td");
     c.appendChild(createAbortProwJobIcon(state, prowjob, csrfToken));
     return c;

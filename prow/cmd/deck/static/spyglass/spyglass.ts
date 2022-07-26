@@ -1,3 +1,4 @@
+import {ProwJobState} from "../api/prow";
 import {createAbortProwJobIcon} from "../common/abort";
 import {createRerunProwJobIcon} from "../common/rerun";
 import {getParameterByName} from "../common/urls";
@@ -9,7 +10,7 @@ declare const lensIndexes: number[];
 declare const csrfToken: string;
 declare const rerunCreatesJob: boolean;
 declare const prowJobName: string;
-declare const prowJobState: string;
+declare const prowJobState: ProwJobState;
 
 // Loads views for this job
 function loadLenses(): void {
