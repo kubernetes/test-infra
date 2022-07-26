@@ -63,9 +63,10 @@ type options struct {
 	config        configflagutil.ConfigOptions
 	pluginsConfig pluginsflagutil.PluginOptions
 
-	dryRun                 bool
-	gracePeriod            time.Duration
-	kubernetes             prowflagutil.KubernetesOptions
+	dryRun      bool
+	gracePeriod time.Duration
+	// removed k8s options to allow hook to run as part of a GH Action
+	// kubernetes             prowflagutil.KubernetesOptions
 	github                 prowflagutil.GitHubOptions
 	githubEnablement       prowflagutil.GitHubEnablementOptions
 	bugzilla               prowflagutil.BugzillaOptions
@@ -77,7 +78,7 @@ type options struct {
 }
 
 func (o *options) Validate() error {
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.bugzilla, &o.jira, &o.githubEnablement, &o.config, &o.pluginsConfig} {
+	for _, group := range []flagutil.OptionGroup{&o.github, &o.bugzilla, &o.jira, &o.githubEnablement, &o.config, &o.pluginsConfig} {
 		if err := group.Validate(o.dryRun); err != nil {
 			return err
 		}
@@ -94,7 +95,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 	fs.DurationVar(&o.gracePeriod, "grace-period", 180*time.Second, "On shutdown, try to handle remaining events for the specified duration. ")
 	o.pluginsConfig.PluginConfigPathDefault = "/etc/plugins/plugins.yaml"
-	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.github, &o.bugzilla, &o.instrumentationOptions, &o.jira, &o.githubEnablement, &o.config, &o.pluginsConfig} {
+	for _, group := range []flagutil.OptionGroup{&o.github, &o.bugzilla, &o.instrumentationOptions, &o.jira, &o.githubEnablement, &o.config, &o.pluginsConfig} {
 		group.AddFlags(fs)
 	}
 
@@ -177,21 +178,6 @@ func main() {
 		jiraClient = client
 	}
 
-	infrastructureClient, err := o.kubernetes.InfrastructureClusterClient(o.dryRun)
-	if err != nil {
-		logrus.WithError(err).Fatal("Error getting Kubernetes client for infrastructure cluster.")
-	}
-
-	buildClusterCoreV1Clients, err := o.kubernetes.BuildClusterCoreV1Clients(o.dryRun)
-	if err != nil {
-		logrus.WithError(err).Fatal("Error getting Kubernetes clients for build cluster.")
-	}
-
-	prowJobClient, err := o.kubernetes.ProwJobClient(configAgent.Config().ProwJobNamespace, o.dryRun)
-	if err != nil {
-		logrus.WithError(err).Fatal("Error getting ProwJob client for infrastructure cluster.")
-	}
-
 	var slackClient *slack.Client
 	if !o.dryRun && string(secret.GetSecret(o.slackTokenFile)) != "" {
 		logrus.Info("Using real slack client.")
@@ -223,15 +209,12 @@ func main() {
 	ownersClient := repoowners.NewClient(git.ClientFactoryFrom(gitClient), githubClient, mdYAMLEnabled, skipCollaborators, ownersDirDenylist, resolver)
 
 	clientAgent := &plugins.ClientAgent{
-		GitHubClient:              githubClient,
-		ProwJobClient:             prowJobClient,
-		KubernetesClient:          infrastructureClient,
-		BuildClusterCoreV1Clients: buildClusterCoreV1Clients,
-		GitClient:                 git.ClientFactoryFrom(gitClient),
-		SlackClient:               slackClient,
-		OwnersClient:              ownersClient,
-		BugzillaClient:            bugzillaClient,
-		JiraClient:                jiraClient,
+		GitHubClient:   githubClient,
+		GitClient:      git.ClientFactoryFrom(gitClient),
+		SlackClient:    slackClient,
+		OwnersClient:   ownersClient,
+		BugzillaClient: bugzillaClient,
+		JiraClient:     jiraClient,
 	}
 
 	promMetrics := githubeventserver.NewMetrics()
