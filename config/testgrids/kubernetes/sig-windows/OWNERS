@@ -1,13 +1,11 @@
 reviewers:
 - adelina-t
-- chewong
 - claudiubelu
-- jsturtevant 
+- jsturtevant
 - marosset
 - pjh
 approvers:
 - adelina-t
-- chewong
 - claudiubelu
 - jsturtevant
 - marosset
@@ -15,6 +13,7 @@ approvers:
 
 emeritus_approvers:
 - benmoss
+- chewong
 - ddebroy
 - jeremyje
 - michmike

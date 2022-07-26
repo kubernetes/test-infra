@@ -1,5 +1,4 @@
 reviewers:
-- chewong
 - ddebroy
 - ibabou
 - jayunit100
@@ -7,13 +6,14 @@ reviewers:
 - marosset
 - pjh
 approvers:
-- chewong
 - ddebroy
 - ibabou
 - jayunit100
 - jsturtevant
 - marosset
 - pjh
+emeritus_approvers:
+- chewong
 
 labels:
 - sig/windows
