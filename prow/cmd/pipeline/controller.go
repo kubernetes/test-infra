@@ -36,8 +36,8 @@ import (
 	"k8s.io/test-infra/prow/pod-utils/downwardapi"
 
 	"github.com/sirupsen/logrus"
-	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
 	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
+	resourcev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/resource/v1alpha1"
 	untypedcorev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -543,7 +543,7 @@ func pipelineMeta(name string, pj prowjobv1.ProwJob) metav1.ObjectMeta {
 }
 
 // makePipelineGitResource creates a pipeline git resource from prow job
-func makePipelineGitResource(name string, refs prowjobv1.Refs, pj prowjobv1.ProwJob) *pipelinev1alpha1.PipelineResource {
+func makePipelineGitResource(name string, refs prowjobv1.Refs, pj prowjobv1.ProwJob) *resourcev1alpha1.PipelineResource {
 	// Pick source URL
 	var sourceURL string
 	switch {
@@ -570,11 +570,11 @@ func makePipelineGitResource(name string, refs prowjobv1.Refs, pj prowjobv1.Prow
 		revision = refs.BaseRef
 	}
 
-	pr := pipelinev1alpha1.PipelineResource{
+	pr := resourcev1alpha1.PipelineResource{
 		ObjectMeta: pipelineMeta(name, pj),
-		Spec: pipelinev1alpha1.PipelineResourceSpec{
-			Type: pipelinev1alpha1.PipelineResourceTypeGit,
-			Params: []pipelinev1beta1.ResourceParam{
+		Spec: resourcev1alpha1.PipelineResourceSpec{
+			Type: resourcev1alpha1.PipelineResourceTypeGit,
+			Params: []resourcev1alpha1.ResourceParam{
 				{
 					Name:  "url",
 					Value: sourceURL,
