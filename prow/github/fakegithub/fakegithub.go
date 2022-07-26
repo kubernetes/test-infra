@@ -453,6 +453,22 @@ func (f *FakeClient) CloseIssue(org, repo string, number int) error {
 	}
 
 	f.Issues[number].State = "closed"
+	f.Issues[number].StateReason = "completed"
+
+	return nil
+}
+
+func (f *FakeClient) CloseIssueAsNotPlanned(org, repo string, number int) error {
+	f.lock.Lock()
+	defer f.lock.Unlock()
+
+	if _, ok := f.Issues[number]; !ok {
+		return fmt.Errorf("issue number %d does not exist", number)
+	}
+
+	f.Issues[number].State = "closed"
+	f.Issues[number].StateReason = "not_planned"
+
 	return nil
 }
 

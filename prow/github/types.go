@@ -756,19 +756,20 @@ type IssueCommentEvent struct {
 
 // Issue represents general info about an issue.
 type Issue struct {
-	ID        int       `json:"id"`
-	NodeID    string    `json:"node_id"`
-	User      User      `json:"user"`
-	Number    int       `json:"number"`
-	Title     string    `json:"title"`
-	State     string    `json:"state"`
-	HTMLURL   string    `json:"html_url"`
-	Labels    []Label   `json:"labels"`
-	Assignees []User    `json:"assignees"`
-	Body      string    `json:"body"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	Milestone Milestone `json:"milestone"`
+	ID          int       `json:"id"`
+	NodeID      string    `json:"node_id"`
+	User        User      `json:"user"`
+	Number      int       `json:"number"`
+	Title       string    `json:"title"`
+	State       string    `json:"state"`
+	HTMLURL     string    `json:"html_url"`
+	Labels      []Label   `json:"labels"`
+	Assignees   []User    `json:"assignees"`
+	Body        string    `json:"body"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+	Milestone   Milestone `json:"milestone"`
+	StateReason string    `json:"state_reason"`
 
 	// This will be non-nil if it is a pull request.
 	PullRequest *struct{} `json:"pull_request,omitempty"`
