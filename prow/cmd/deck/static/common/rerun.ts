@@ -25,7 +25,7 @@ export function createRerunProwJobIcon(modal: HTMLElement, parentEl: HTMLElement
   const getJobURL = (mode: string): string => {
     return `${location.protocol}//${location.host}/rerun?mode=${mode}&prowjob=${prowjob}`;
   };
-  let commandURL = getJobURL(LATEST_JOB);
+  let commandURL = getJobURL(ORIGINAL_JOB);
   const getCommandDescription = (mode: string): string => {
     return `The command is for the ${mode} configuration. Admin permissions are required to rerun via kubectl.`;
   };
