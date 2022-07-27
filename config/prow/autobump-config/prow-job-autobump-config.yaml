@@ -12,6 +12,9 @@ headBranchName: "prowjobs-autobump"
 upstreamURLBase: "https://raw.githubusercontent.com/kubernetes/test-infra/master"
 includedConfigPaths:
   - "config/jobs"
+# TODO: don't exclude govet-levee once issue.k8s.io/111452 has been fixed
+excludedConfigPaths:
+  - "config/jobs/kubernetes/sig-instrumentation/verify-govet-levee.yaml"
 extraFiles:
   - "config/jobs/image-pushing/k8s-staging-e2e-test-images.sh"
   - "config/jobs/image-pushing/k8s-staging-sig-storage.sh"
