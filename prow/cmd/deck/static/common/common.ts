@@ -4,6 +4,16 @@ import {ProwJobState, Pull} from "../api/prow";
 // This file likes namespaces, so stick with it for now.
 /* tslint:disable:no-namespace */
 
+// State enum describes different state a job can be in
+export enum State {
+  TRIGGERED = 'triggered',
+  PENDING = 'pending',
+  SUCCESS = 'success',
+  FAILURE = 'failure',
+  ABORTED = 'aborted',
+  ERROR = 'error',
+}
+
 // The cell namespace exposes functions for constructing common table cells.
 export namespace cell {
 
@@ -48,22 +58,22 @@ export namespace cell {
     displayState = displayState[0].toUpperCase() + displayState.slice(1);
     let displayIcon = "";
     switch (s) {
-      case "triggered":
+      case State.TRIGGERED:
         displayIcon = "schedule";
         break;
-      case "pending":
+      case State.PENDING:
         displayIcon = "watch_later";
         break;
-      case "success":
+      case State.SUCCESS:
         displayIcon = "check_circle";
         break;
-      case "failure":
+      case State.FAILURE:
         displayIcon = "error";
         break;
-      case "aborted":
+      case State.ABORTED:
         displayIcon = "remove_circle";
         break;
-      case "error":
+      case State.ERROR:
         displayIcon = "warning";
         break;
     }

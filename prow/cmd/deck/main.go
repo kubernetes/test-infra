@@ -1013,7 +1013,7 @@ lensesLoop:
 	}
 
 	var prowJobLink string
-	prowJobName, err := sg.ProwJobName(src)
+	prowJob, prowJobName, prowJobState, err := sg.ProwJob(src)
 	if err == nil {
 		if prowJobName != "" {
 			u, err := url.Parse("/prowjob")
@@ -1122,7 +1122,9 @@ lensesLoop:
 		PRLink          string
 		ExtraLinks      []spyglass.ExtraLink
 		ReRunCreatesJob bool
+		ProwJob         string
 		ProwJobName     string
+		ProwJobState    string
 	}
 	sTmpl := spyglassTemplate{
 		Lenses:          ls,
@@ -1140,7 +1142,9 @@ lensesLoop:
 		PRLink:          prLink,
 		ExtraLinks:      extraLinks,
 		ReRunCreatesJob: o.rerunCreatesJob,
+		ProwJob:         prowJob,
 		ProwJobName:     prowJobName,
+		ProwJobState:    string(prowJobState),
 	}
 	t := template.New("spyglass.html")
 

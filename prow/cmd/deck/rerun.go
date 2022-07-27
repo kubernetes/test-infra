@@ -306,20 +306,20 @@ func handleRerun(cfg config.Getter, prowJobClient prowv1.ProwJobInterface, creat
 			}
 			allowed, user, err, code := isAllowedToRerun(r, acfg, goa, ghc, newPJ, cli, pluginAgent, l)
 			if err != nil {
-				http.Error(w, fmt.Sprintf("Could not verify if allowed to rerun: %v", err), code)
-				l.WithError(err).Debug("Could not verify if allowed to rerun")
+				http.Error(w, fmt.Sprintf("Could not verify if allowed to rerun: %v.", err), code)
+				l.WithError(err).Debug("Could not verify if allowed to rerun.")
 			}
 			l = l.WithField("allowed", allowed)
 			l.Info("Attempted rerun")
 			if !allowed {
-				if _, err = w.Write([]byte("You don't have permission to rerun that job")); err != nil {
+				if _, err = w.Write([]byte("You don't have permission to rerun that job.")); err != nil {
 					l.WithError(err).Error("Error writing to rerun response.")
 				}
 				return
 			}
 			created, err := prowJobClient.Create(context.TODO(), &newPJ, metav1.CreateOptions{})
 			if err != nil {
-				l.WithError(err).Error("Error creating job")
+				l.WithError(err).Error("Error creating job.")
 				http.Error(w, fmt.Sprintf("Error creating job: %v", err), http.StatusInternalServerError)
 				return
 			}
@@ -329,7 +329,7 @@ func handleRerun(cfg config.Getter, prowJobClient prowv1.ProwJobInterface, creat
 			} else {
 				l.Info(fmt.Sprintf("Successfully created a rerun of %v.", name))
 			}
-			if _, err = w.Write([]byte("Job successfully triggered. Wait 30 seconds and refresh the page for the job to show up")); err != nil {
+			if _, err = w.Write([]byte("Job successfully triggered. Wait 30 seconds and refresh the page for the job to show up.")); err != nil {
 				l.WithError(err).Error("Error writing to rerun response.")
 			}
 			return

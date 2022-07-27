@@ -1,7 +1,7 @@
 import {copyToClipboard, icon, showAlert, showToast} from "./common";
 import {relativeURL} from "./urls";
 
-export function createRerunProwJobIcon(modal: HTMLElement, parentEl: HTMLElement, prowjob: string, showRerunButton: boolean, csrfToken: string): HTMLElement {
+export function createRerunProwJobIcon(modal: HTMLElement, parentEl: Element, prowjob: string, showRerunButton: boolean, csrfToken: string): HTMLElement {
   const LATEST_JOB = 'latest';
   const ORIGINAL_JOB = 'original';
   const inrepoconfigURL = 'https://github.com/kubernetes/test-infra/blob/master/prow/inrepoconfig.md';
@@ -10,6 +10,7 @@ export function createRerunProwJobIcon(modal: HTMLElement, parentEl: HTMLElement
   const closeModal = (): void => {
     modal.style.display = "none";
     // Resets modal content. If removed, elements will be concatenated, causing duplicates.
+    parentEl.classList.remove('rerun-content', 'abort-content');
     parentEl.innerHTML = '';
   };
   window.onkeydown = (event: any) => {
@@ -37,6 +38,8 @@ export function createRerunProwJobIcon(modal: HTMLElement, parentEl: HTMLElement
   // access it from the frontend. "github_login" should be set whenever "access-token-session" is
   i.onclick = () => {
     modal.style.display = "block";
+    // Add the styles for rerun modal
+    parentEl.classList.add('rerun-content');
 
     parentEl.innerHTML = `
       <h2 class="rerunModal-title">Rerun ProwJob</h2>
