@@ -16,6 +16,10 @@ presubmits:
             args:
               - make
               - test-check
+            resources:
+              requests:
+                memory: "9Gi"
+                cpu: "2"
       annotations:
         testgrid-dashboards: provider-azure-cloud-provider-azure-1-22-presubmit
         testgrid-tab-name: pr-cloud-provider-azure-check-1-22
