@@ -51,7 +51,7 @@ require (
 	github.com/fsouza/fake-gcs-server v1.19.4
 	github.com/go-bindata/go-bindata/v3 v3.1.3
 	github.com/go-git/go-git/v5 v5.4.2
-	github.com/go-openapi/spec v0.19.6
+	github.com/go-openapi/spec v0.20.4
 	github.com/go-test/deep v1.0.7
 	github.com/golang/glog v1.0.0
 	github.com/gomodule/redigo v1.8.5
@@ -64,7 +64,7 @@ require (
 	github.com/gorilla/securecookie v1.1.1
 	github.com/gorilla/sessions v1.2.0
 	github.com/gregjones/httpcache v0.0.0-20190212212710-3befbb6ad0cc
-	github.com/hashicorp/go-retryablehttp v0.6.6
+	github.com/hashicorp/go-retryablehttp v0.7.0
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/klauspost/pgzip v1.2.1
 	github.com/mattn/go-zglob v0.0.2
@@ -105,12 +105,12 @@ require (
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
 	k8s.io/code-generator v0.24.2
 	k8s.io/klog/v2 v2.70.0
-	k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9
+	k8s.io/utils v0.0.0-20220725171434-9bab9ef40391
 	knative.dev/pkg v0.0.0-20220329144915-0a1ec2e0d46c
 	mvdan.cc/xurls/v2 v2.0.0
-	sigs.k8s.io/boskos v0.0.0-20210730172138-093b54882439
-	sigs.k8s.io/controller-runtime v0.12.2
-	sigs.k8s.io/controller-tools v0.6.3-0.20210827222652-7b3a8699fa04
+	sigs.k8s.io/boskos v0.0.0-20220725190635-b0ffc2fcc06a
+	sigs.k8s.io/controller-runtime v0.12.3
+	sigs.k8s.io/controller-tools v0.9.2
 	sigs.k8s.io/yaml v1.3.0
 )
 
@@ -151,9 +151,9 @@ require (
 	github.com/go-logr/logr v1.2.2 // indirect
 	github.com/go-logr/zapr v1.2.3 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
-	github.com/go-openapi/jsonreference v0.19.5 // indirect
-	github.com/go-openapi/swag v0.19.15 // indirect
-	github.com/gobuffalo/flect v0.2.4 // indirect
+	github.com/go-openapi/jsonreference v0.19.6 // indirect
+	github.com/go-openapi/swag v0.21.1 // indirect
+	github.com/gobuffalo/flect v0.2.5 // indirect
 	github.com/gofrs/uuid v4.2.0+incompatible // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang-jwt/jwt v3.2.1+incompatible // indirect
@@ -171,8 +171,8 @@ require (
 	github.com/googleapis/go-type-adapters v1.0.0 // indirect
 	github.com/gorilla/handlers v1.4.2 // indirect
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0 // indirect
-	github.com/hashicorp/errwrap v1.0.0 // indirect
-	github.com/hashicorp/go-cleanhttp v0.5.1 // indirect
+	github.com/hashicorp/errwrap v1.1.0 // indirect
+	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
