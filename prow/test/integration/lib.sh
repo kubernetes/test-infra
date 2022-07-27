@@ -48,6 +48,7 @@ declare -ra PROW_COMPONENTS=(
   sinker
   sub
   tide
+  webhook-server
 )
 
 # These are the images to build. The keys are the short (unique) image names,
@@ -75,6 +76,7 @@ declare -rA PROW_IMAGES=(
   [initupload]=prow/cmd/initupload
   [entrypoint]=prow/cmd/entrypoint
   [sidecar]=prow/cmd/sidecar
+  [webhook-server]=prow/cmd/webhook-server
 )
 
 # Defines the one-to-many relationship between Prow images and components. This
@@ -94,6 +96,7 @@ declare -rA PROW_IMAGES_TO_COMPONENTS=(
   [fakegitserver]=fakegitserver
   [fakeghserver]=fakeghserver
   [fakepubsub]=fakepubsub
+  [webhook-server]=webhook-server
 )
 
 # Defines the order in which we'll start and wait for components to be ready.
@@ -153,6 +156,9 @@ declare -ra PROW_DEPLOYMENT_ORDER=(
   deck_service.yaml
   deck_deployment.yaml
   deck_tenant_deployment.yaml
+  webhook_server_rbac.yaml
+  webhook_server_service.yaml
+  webhook_server_deployment.yaml
   WAIT_crier
   WAIT_deck
   WAIT_deck-tenanted

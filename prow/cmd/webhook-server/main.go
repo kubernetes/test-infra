@@ -18,6 +18,7 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -25,141 +26,211 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
+	"sync"
+	"time"
 
 	"github.com/sirupsen/logrus"
-	secretmanagerpb "google.golang.org/genproto/googleapis/cloud/secretmanager/v1"
 	"k8s.io/test-infra/experiment/clustersecretbackup/secretmanager"
-	"k8s.io/test-infra/prow/flagutil"
+	"k8s.io/test-infra/pkg/flagutil"
+	prowflagutil "k8s.io/test-infra/prow/flagutil"
+	configflagutil "k8s.io/test-infra/prow/flagutil/config"
+	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
+	"k8s.io/test-infra/prow/plank"
+	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
-	secretID  = "prowjob-webhook-ca-cert"
-	caCert = "ca-cert"
-	caPrivKey = "ca-priv-key"
-	caBundle = "ca-bundle"
-	gcpSecretError = "failed to access secret version"
+	configAlreadyExistsError = "already exists"
+	certFile                 = "certFile.pem"
+	privKeyFile              = "privKeyFile.pem"
+	caBundleFile             = "caBundle.pem"
 )
 
 type ClientInterface interface {
-	CreateSecret(ctx context.Context, secretID string) (*secretmanagerpb.Secret, error)
+	CreateSecret(ctx context.Context, secretID string) error
 	AddSecretVersion(ctx context.Context, secretName string, payload []byte) error
-	GetSecretValue(ctx context.Context, secretName, versionName string) ([]byte, error)
+	GetSecretValue(ctx context.Context, secretName string, versionName string) ([]byte, bool, error)
+}
+
+type options struct {
+	projectId      string
+	expiryInYears  int
+	dnsNames       prowflagutil.Strings
+	dryRun         bool
+	kubernetes     prowflagutil.KubernetesOptions
+	fileSystemPath string
+	secretID       string
+	config         configflagutil.ConfigOptions
+	storage        prowflagutil.StorageClientOptions
+	time           int
+}
+
+type webhookAgent struct {
+	storage  prowflagutil.StorageClientOptions
+	statuses map[string]plank.ClusterStatus
+	mu       sync.Mutex
+}
+
+func (o *options) DefaultAndValidate() error {
+	optionGroup := []flagutil.OptionGroup{&o.kubernetes, &o.config, &o.storage}
+	if err := optionGroup[0].Validate(o.dryRun); err != nil {
+		return err
+	}
+	if o.expiryInYears < 0 {
+		return fmt.Errorf("invalid expiry years")
+	}
+	if o.projectId == "" && o.fileSystemPath == "" {
+		return fmt.Errorf("both projectid and filesystem path cannot be specified")
+	}
+	if o.projectId != "" && o.fileSystemPath != "" {
+		return fmt.Errorf("either projectid or filesystem path must be specified")
+	}
+	if o.projectId != "" && o.secretID == "" {
+		return fmt.Errorf("secretID must be specified if choosing to use a GCP project")
+	}
+	if o.dnsNames.StringSet().Len() == 0 {
+		o.dnsNames.Set("prowjob-validation-webhook.default.svc")
+	}
+	return nil
+}
+
+func gatherOptions(fs *flag.FlagSet, args ...string) options {
+	var o options
+	fs.StringVar(&o.projectId, "project-id", "", "Project ID for storing GCP Secrets")
+	fs.StringVar(&o.fileSystemPath, "filesys-path", "", "File system path for storing ca-cert secrets")
+	fs.StringVar(&o.secretID, "secret-id", "", "GCP Project secret name")
+	fs.IntVar(&o.expiryInYears, "expiry-years", 30, "CA certificate expiry in years")
+	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether to mutate any real-world state")
+	fs.IntVar(&o.time, "time", 1, "duration in minutes to fetch build clusters")
+	fs.Var(&o.dnsNames, "dns", "DNS Names CA-Cert config")
+	optionGroups := []flagutil.OptionGroup{&o.kubernetes, &o.config}
+	for _, optionGroup := range optionGroups {
+		optionGroup.AddFlags(fs)
+	}
+	fs.Parse(args)
+	return o
 }
 
 func main() {
 	logrusutil.ComponentInit()
 	logrus.SetLevel(logrus.DebugLevel)
-	p := flag.String("project-id", 
-	"", "Project ID for storing GCP Secrets")
-	e := flag.Int("expiry-years", 30, "CA certificate expiry in years")
-	dns := flagutil.NewStrings("validation-webhook-service", "validation-webhook-service.default", "validation-webhook-service.default.svc")
-	flag.Var(&dns, "dns", "DNS Names CA-Cert config")
-	flag.Parse()
-	exp := *e
-	projectId := *p
-	if len(projectId) == 0 {
-		logrus.Fatal("project-id flag not supplied")
+	o := gatherOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:]...)
+	if err := o.DefaultAndValidate(); err != nil {
+		logrus.WithError(err).Fatal("Invalid options")
 	}
-	client, err := secretmanager.NewClient(projectId, false)
+	kubeCfg, err := o.kubernetes.InfrastructureClusterConfig(o.dryRun)
 	if err != nil {
-		logrus.WithError(err).Fatal("Unable to create secret manager client")
+		logrus.WithError(err).Fatal("Error getting kubeconfig")
 	}
+	var certFile string
+	var privKeyFile string
 	ctx := context.Background()
-	cert, privKey, err := getGCPSecrets(client, ctx, exp, dns)
-	if err != nil && strings.Contains(err.Error(), gcpSecretError) {
-		logrus.Infof("%v, Will now proceed to create GCP Secret", err)
-		cert, privKey, err = createGCPSecret(client, ctx, exp, dns.Strings())
-		if err != nil {
-			logrus.WithError(err).Fatal("Unable to create ca certificate")
-		}
-	} else if err != nil {
-		logrus.WithError(err).Fatal("Unable to get GCP Secret")
-	}
-	if err = isCertValid(cert); err != nil {
-		logrus.WithError(err).Info("Certificate is not valid, will replace.")
-		cert, privKey, err = updateGCPSecret(client, ctx, exp, dns.Strings())
-		if err != nil {
-			logrus.WithError(err).Fatal("Unable to update GCP Secret")
-		}
-	} 
-	tempDir, err := ioutil.TempDir("", "cert")
+	cl, err := ctrlruntimeclient.New(kubeCfg, ctrlruntimeclient.Options{})
 	if err != nil {
-		logrus.WithError(err).Fatal("Unable to create temp directory")
+		logrus.WithError(err).Fatal("Could not create writer client")
 	}
-	defer os.RemoveAll(tempDir)
-	certFile := filepath.Join(tempDir, "certFile.pem")
-	if err := ioutil.WriteFile(certFile, []byte(cert), 0666); err != nil {
-		logrus.WithError(err).Fatal("Could not write contents of cert file")
+	var client ClientInterface
+	statuses := make(map[string]plank.ClusterStatus)
+	wa := &webhookAgent{
+		storage:  o.storage,
+		statuses: statuses,
 	}
-	privKeyFile := filepath.Join(tempDir, "privKey.pem")
-	if err := ioutil.WriteFile(privKeyFile, []byte(privKey), 0666); err != nil {
-		logrus.WithError(err).Fatal("Could not write contents of privKey file")
+	logrus.Info("%v", o.config)
+	if o.projectId != "" {
+		secretManagerClient, err := secretmanager.NewClient(o.projectId, false)
+		if err != nil {
+			logrus.WithError(err).Fatal("Unable to create secretmanager client", err)
+		}
+		client = newGCPClient(secretManagerClient, o.secretID)
+		if err != nil {
+			logrus.WithError(err).Fatal("Unable to create secret manager client")
+		}
 	}
-	http.HandleFunc("/validate", serveValidate)
+	if o.fileSystemPath != "" {
+		absPath, err := filepath.Abs(o.fileSystemPath)
+		if err != nil {
+			logrus.WithError(err).Fatal("Unable to generate absolute file path")
+		}
+		client = NewLocalFSClient(absPath, o.expiryInYears, o.dnsNames.Strings())
+	}
+	certFile, privKeyFile, err = handleSecrets(client, ctx, o, cl)
+	if err != nil {
+		logrus.WithError(err).Fatal("could not get necessary ca secret files", err)
+	}
+	configAgent, err := o.config.ConfigAgent()
+	if err != nil {
+		logrus.WithError(err).Fatal("could not create config agent")
+	}
+	interrupts.Run(func(ctx context.Context) {
+		wa.fetchClusters(time.Duration(o.time*int(time.Minute)), ctx, &wa.statuses, configAgent)
+	})
+	defer interrupts.WaitForGracefulShutdown()
+	mux := http.NewServeMux()
+	mux.HandleFunc("/validate", wa.serveValidate)
+	s := http.Server{
+		Addr: ":8008",
+		TLSConfig: &tls.Config{
+			ClientAuth: tls.NoClientCert,
+		},
+		Handler: mux,
+	}
 	logrus.Info("Listening on port 8008...")
-	logrus.Fatal(http.ListenAndServeTLS(":8008", certFile, privKeyFile, nil))
+	interrupts.ListenAndServeTLS(&s, certFile, privKeyFile, 5*time.Second)
 }
 
-func getGCPSecrets(client ClientInterface, ctx context.Context, expiry int, dns flagutil.Strings) (string, string, error) {
+//get or creates the necessary ca secret files and returns the ca-cert file name, priv-key file name and tempDir name
+//for use by the http listenAndServe
+func handleSecrets(client ClientInterface, ctx context.Context, o options, cl ctrlruntimeclient.Client) (string, string, error) {
+	var cert string
+	var privKey string
+	var caPem string
 	secretsMap := make(map[string]string)
-	data, err := client.GetSecretValue(ctx, secretID, "latest")
-	if err != nil {
-		return "", "", fmt.Errorf("%s, unable to get secret value: %v", gcpSecretError, err)
-	}
-
-	err = json.Unmarshal(data, &secretsMap)
-	if err != nil {
-		return "", "", fmt.Errorf("error unmarshalling CA cert secret data: %v", err)
-	}
-
-	cert := secretsMap[caCert]
-	privKey := secretsMap[caPrivKey]
-
-	return cert, privKey, nil
-}
-
-
-func createGCPSecret(client ClientInterface, ctx context.Context, expiry int, dns []string) (string, string, error) {
-	if _, err := client.CreateSecret(ctx, secretID); err != nil {
-		return "", "", fmt.Errorf("unable to create secret %v", err)
-	}
-	serverCertPerm, serverPrivKey, err := updateGCPSecret(client, ctx, expiry, dns)
-	if err != nil {
-		return "", "", fmt.Errorf("unable to write secret value %v", err)
-	}
-	return serverCertPerm, serverPrivKey, nil
-}
-
-func updateGCPSecret(client ClientInterface, ctx context.Context, expiry int, dns[] string) (string, string, error) {
-	serverCertPerm, serverPrivKey, secretData, err := genSecretData(expiry, dns)
+	data, exist, err := client.GetSecretValue(ctx, o.secretID, "latest")
 	if err != nil {
 		return "", "", err
 	}
-
-	if err := client.AddSecretVersion(ctx, secretID, secretData); err != nil {
-		return "", "", fmt.Errorf("unable to add secret version %v", err)
+	if !exist {
+		logrus.WithError(err).Info("Secret does not exist, now creating")
+		cert, privKey, caPem, err = createSecret(client, ctx, o)
+		if err != nil {
+			return "", "", fmt.Errorf("unable to create ca certificate %v", err)
+		}
+		if err = createValidatingWebhookConfig(ctx, caPem, cl); err != nil {
+			return "", "", fmt.Errorf("unable to generate ValidationWebhookConfig %v", err)
+		}
+	} else {
+		err = json.Unmarshal(data, &secretsMap)
+		if err != nil {
+			return "", "", fmt.Errorf("error marshalling CA cert secret data: %v", err)
+		}
+		cert = secretsMap[certFile]
+		privKey = secretsMap[privKeyFile]
 	}
 
-	return serverCertPerm, serverPrivKey, nil
-}
+	if err := isCertValid(cert); err != nil {
+		logrus.WithError(err).Info("Certificate is not valid, will replace.")
+		cert, privKey, caPem, err = updateSecret(client, ctx, o)
+		if err != nil {
+			return "", "", fmt.Errorf("unable to update secret %v", err)
+		}
+		if err := patchValidatingWebhookConfig(ctx, caPem, cl); err != nil {
+			return "", "", fmt.Errorf("unable to generate ValidationWebhookConfig %v", err)
+		}
+	}
 
-func genSecretData(expiry int, dns []string) (string, string, []byte, error) {
-	serverCertPerm, serverPrivKey, caPem, err := genCert(expiry, dns)
+	tempDir, err := ioutil.TempDir("", "cert")
 	if err != nil {
-		return "", "", nil, fmt.Errorf("could not generate ca credentials")
+		return "", "", fmt.Errorf("unable to create temp directory %v", err)
 	}
-	caSecrets := map[string]string{
-	    caCert: serverCertPerm,
-	    caPrivKey: serverPrivKey,
-	    caBundle: caPem,
+	certFile := filepath.Join(tempDir, certFile)
+	if err := ioutil.WriteFile(certFile, []byte(cert), 0666); err != nil {
+		return "", "", fmt.Errorf("could not write contents of cert file %v", err)
 	}
-	secretData, err := json.Marshal(caSecrets)
-
-	if err != nil {
-		return "", "", nil, fmt.Errorf("error marshalling CA cert secret data: %v", err)
+	privKeyFile := filepath.Join(tempDir, privKeyFile)
+	if err := ioutil.WriteFile(privKeyFile, []byte(privKey), 0666); err != nil {
+		return "", "", fmt.Errorf("could not write contents of privKey file %v", err)
 	}
 
-	return serverCertPerm, serverPrivKey, secretData, nil
+	return certFile, privKeyFile, nil
 }

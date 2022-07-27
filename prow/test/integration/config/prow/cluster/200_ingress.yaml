@@ -29,6 +29,13 @@ spec:
             name: deck-tenanted
             port:
               number: 80
+      - path: /webhook-server(/|$)(.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: webhook-server
+            port:
+              number: 80
       # Fakes.
       - path: /fakeghserver(/|$)(.*)
         pathType: Prefix
