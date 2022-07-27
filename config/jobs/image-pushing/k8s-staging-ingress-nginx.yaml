@@ -21,6 +21,7 @@ postsubmits:
               - --project=k8s-staging-ingress-nginx
               - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
+              - --build-dir=.
               - .
 
     - name: post-ingress-nginx-build-nginx-image
@@ -42,6 +43,7 @@ postsubmits:
               - --project=k8s-staging-ingress-nginx
               - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
+              - --build-dir=.
               - images/nginx
 
     - name: post-ingress-nginx-build-nginx-image-debian
@@ -62,6 +64,7 @@ postsubmits:
               - --project=k8s-staging-ingress-nginx
               - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
+              - --build-dir=.
               - images/nginx-debian
 
     - name: post-ingress-nginx-build-opentelemetry
@@ -82,6 +85,7 @@ postsubmits:
               - --project=k8s-staging-ingress-nginx
               - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
+              - --build-dir=.
               - images/opentelemetry
 
     - name: post-ingress-nginx-build-modsecurity
@@ -102,6 +106,7 @@ postsubmits:
               - --project=k8s-staging-ingress-nginx
               - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
+              - --build-dir=.
               - images/modsecurity
 
     - name: post-ingress-nginx-build-e2e-image
@@ -123,6 +128,7 @@ postsubmits:
               - --project=k8s-staging-ingress-nginx
               - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
+              - --build-dir=.
               - images/test-runner
 
     - name: post-ingress-nginx-build-e2e-image-debian
@@ -143,6 +149,7 @@ postsubmits:
               - --project=k8s-staging-ingress-nginx
               - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
+              - --build-dir=.
               - images/test-runner-debian
 
     - name: post-ingress-nginx-build-cfssl-image
@@ -163,6 +170,7 @@ postsubmits:
               - --project=k8s-staging-ingress-nginx
               - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
+              - --build-dir=.
               - images/cfssl
 
     - name: post-ingress-nginx-build-echo-image
@@ -183,6 +191,7 @@ postsubmits:
               - --project=k8s-staging-ingress-nginx
               - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
+              - --build-dir=.
               - images/echo
 
     - name: post-ingress-nginx-build-fastcgi-helloserver-image
@@ -203,6 +212,7 @@ postsubmits:
               - --project=k8s-staging-ingress-nginx
               - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
+              - --build-dir=.
               - images/fastcgi-helloserver
 
     - name: post-ingress-nginx-build-httpbin-image
@@ -223,6 +233,7 @@ postsubmits:
               - --project=k8s-staging-ingress-nginx
               - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
+              - --build-dir=.
               - images/httpbin
 
     - name: post-ingress-nginx-build-webhook-certgen-image
@@ -243,6 +254,7 @@ postsubmits:
               - --project=k8s-staging-ingress-nginx
               - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
+              - --build-dir=.
               - images/kube-webhook-certgen
 
     - name: post-ingress-nginx-build-custom-error-pages-image
@@ -263,4 +275,5 @@ postsubmits:
               - --project=k8s-staging-ingress-nginx
               - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
+              - --build-dir=.
               - images/custom-error-pages

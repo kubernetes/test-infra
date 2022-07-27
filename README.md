@@ -19,7 +19,7 @@ after they have been reviewed. All job configs are located in [`config/jobs`]
 - [Add or update job configs](/config/jobs/README.md#adding-or-updating-jobs)
 - [Delete job configs](/config/jobs/README.md#deleting-jobs)
 - [Test job configs locally](/config/jobs/README.md#testing-jobs-locally)
-- [Trigger jobs on PRs using bot commmands](https://go.k8s.io/bot-commands)
+- [Trigger jobs on PRs using bot commands](https://go.k8s.io/bot-commands)
 
 ## Dashboards
 

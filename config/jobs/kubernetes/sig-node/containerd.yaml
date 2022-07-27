@@ -42,7 +42,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
       args:
       - --repo=github.com/containerd/containerd=main
       - --root=/go/src
@@ -64,7 +64,7 @@ periodics:
     preset-service-account: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
         args:
           - --repo=github.com/containerd/containerd=release/1.5
           - --root=/go/src
@@ -84,7 +84,7 @@ periodics:
     preset-dind-enabled: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
         args:
           - --repo=github.com/containerd/containerd=main
           - --root=/go/src
@@ -106,7 +106,7 @@ periodics:
     preset-service-account: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
         args:
           - --repo=github.com/containerd/containerd=release/1.6
           - --root=/go/src
@@ -143,18 +143,18 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: containerd-e2e-ubuntu
-- name: ci-containerd-node-e2e
+- name: ci-cos-cgroupv1-containerd-node-e2e
   interval: 1h
   labels:
     preset-service-account: "true"
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
@@ -162,7 +162,7 @@ periodics:
       - --timeout=90
       - --scenario=kubernetes_e2e
       - --
-      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/image-config.yaml
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv1/image-config-cgroupv1.yaml
       - --deployment=node
       - --gcp-project-type=node-e2e-project
       - --gcp-zone=us-west1-b
@@ -176,9 +176,9 @@ periodics:
         value: /go
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: containerd-node-conformance
+    testgrid-tab-name: cos-cgroupv1-containerd-node-e2e
     testgrid-alert-email: kubernetes-sig-node-test-failures@googlegroups.com
-- name: ci-containerd-node-e2e-features
+- name: ci-cos-cgroupv1-containerd-node-e2e-features
   cluster: k8s-infra-prow-build
   interval: 1h
   labels:
@@ -186,7 +186,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
@@ -194,7 +194,7 @@ periodics:
       - --timeout=90
       - --scenario=kubernetes_e2e
       - --
-      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/image-config.yaml
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv1/image-config-cgroupv1.yaml
       - --deployment=node
       - --gcp-zone=us-central1-b
       - '--node-test-args=--container-runtime-endpoint=unix:///run/containerd/containerd.sock --container-runtime-process-name=/home/containerd/usr/local/bin/containerd --container-runtime-pid-file= --kubelet-flags="--cgroups-per-qos=true --cgroup-root=/ --runtime-cgroups=/system.slice/containerd.service" --extra-log="{\"name\": \"containerd.log\", \"journalctl\": [\"-u\", \"containerd\"]}"'
@@ -214,7 +214,7 @@ periodics:
           memory: 6Gi
   annotations:
     testgrid-dashboards: sig-node-containerd
-    testgrid-tab-name: containerd-node-features
+    testgrid-tab-name: cos-cgroupv1-containerd-node-features
 - name: ci-containerd-node-e2e-1-5
   cluster: k8s-infra-prow-build
   interval: 1h
@@ -223,7 +223,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-1.22
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-1.22
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes=release-1.22
@@ -260,7 +260,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-1.23
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-1.23
         args:
           - --root=/go/src
           - --repo=k8s.io/kubernetes=release-1.23
@@ -297,7 +297,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-1.22
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-1.22
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes=release-1.22
@@ -334,7 +334,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-1.23
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-1.23
         args:
           - --root=/go/src
           - --repo=k8s.io/kubernetes=release-1.23
@@ -389,7 +389,7 @@ periodics:
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
       - --timeout=1200m
       - --up=false
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
   annotations:
     testgrid-dashboards: sig-node-cos
     testgrid-tab-name: soak-cos-gce
@@ -416,7 +416,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:GPUDevicePlugin\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: e2e-cos-device-plugin-gpu
@@ -445,7 +445,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
   annotations:
     testgrid-dashboards: sig-node-cos
     testgrid-tab-name: e2e-cos
@@ -475,7 +475,7 @@ periodics:
 #       - --runtime-config=api/all=true
 #       - --test_args=--ginkgo.focus=\[Feature:()\]|Networking --ginkgo.skip=Networking-Performance|IPv6|Feature:Volumes|Feature:SCTPConnectivity --minStartupPods=8
 #       - --timeout=180m
-#       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+#       image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
 #   annotations:
 #     testgrid-dashboards: sig-node-cos
 #     testgrid-tab-name: e2e-cos-alpha-features
@@ -488,7 +488,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=320
@@ -540,7 +540,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Feature:.+\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
   annotations:
     testgrid-dashboards: sig-node-cos
     testgrid-tab-name: e2e-cos-flaky
@@ -568,7 +568,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:Ingress\]|\[Feature:NEG\]
       - --timeout=320m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
   annotations:
     testgrid-dashboards: sig-network-gce, sig-node-cos
     testgrid-tab-name: e2e-cos-ingress
@@ -598,7 +598,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
   annotations:
     testgrid-dashboards: sig-node-cos
     testgrid-tab-name: e2e-cos-ip-alias
@@ -625,7 +625,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
   annotations:
     testgrid-dashboards: sig-node-cos
     testgrid-tab-name: e2e-cos-proto
@@ -650,7 +650,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
       - --timeout=180m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
   annotations:
     testgrid-dashboards: sig-node-cos
     testgrid-tab-name: e2e-cos-reboot
@@ -675,7 +675,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=500m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
   annotations:
     testgrid-dashboards: sig-node-cos
     testgrid-tab-name: e2e-cos-serial
@@ -701,7 +701,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Driver:.gcepd\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=150m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
   annotations:
     testgrid-dashboards: sig-node-cos
     testgrid-tab-name: e2e-cos-slow
@@ -713,7 +713,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
@@ -750,7 +750,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
@@ -804,7 +804,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: image-validation-cos-e2e
@@ -831,7 +831,7 @@ periodics:
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: image-validation-ubuntu-e2e
@@ -843,7 +843,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
@@ -879,7 +879,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
@@ -915,7 +915,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
@@ -953,7 +953,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
@@ -989,7 +989,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
@@ -1036,16 +1036,47 @@ periodics:
       - --gcp-nodes=4
       - --gcp-zone=us-west1-b
       - --ginkgo-parallel=30
-      # Using cos-beta to pick up cgroupv2 enabled by default as of cos-beta-97-16919-0-3.
-      - --image-family=cos-beta
+      - --image-family=cos-97-lts
       - --image-project=cos-cloud
       - --provider=gce
       - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: cos-cgroupv2-containerd-e2e
+- interval: 12h
+  name: ci-cos-cgroupv1-containerd-e2e-gce
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-e2e-containerd: "true"
+  spec:
+    containers:
+    - args:
+      - --repo=github.com/containerd/containerd=main
+      - --timeout=70
+      - --scenario=kubernetes_e2e
+      - --
+      - --check-leaked-resources
+      - --env=ENABLE_POD_SECURITY_POLICY=true
+      - --env=KUBE_MASTER_EXTRA_METADATA=user-data=/workspace/github.com/containerd/containerd/test/e2e/master.yaml,containerd-configure-sh=/workspace/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh=/workspace/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv1/env-cgroupv1
+      - --env=KUBE_NODE_EXTRA_METADATA=user-data=/workspace/github.com/containerd/containerd/test/e2e/node.yaml,containerd-configure-sh=/workspace/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-extra-init-sh=/workspace/github.com/containerd/containerd/test/e2e_node/gci-init.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/cgroupv1/env-cgroupv1
+      - --env=KUBELET_TEST_ARGS=--runtime-cgroups=/system.slice/containerd.service
+      - --extract=ci/latest
+      - --gcp-node-image=gci
+      - --gcp-nodes=4
+      - --gcp-zone=us-west1-b
+      - --ginkgo-parallel=30
+      - --image-family=cos-97-lts
+      - --image-project=cos-cloud
+      - --provider=gce
+      - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+      - --timeout=50m
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
+  annotations:
+    testgrid-dashboards: sig-node-containerd
+    testgrid-tab-name: cos-cgroupv1-containerd-e2e
 - name: ci-cos-cgroupv2-containerd-node-e2e-serial
   cluster: k8s-infra-prow-build
   interval: 12h
@@ -1054,7 +1085,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
@@ -1108,7 +1139,7 @@ periodics:
       # uses cloud-provider-gcp. see issue https://github.com/kubernetes/cloud-provider-gcp/issues/293
       - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Driver:.gcepd\]|\[Flaky\]|\[Feature:.+\]|\[NodeFeature:RuntimeHandler\] --minStartupPods=8
       - --timeout=50m
-      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+      image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
   annotations:
     testgrid-dashboards: google-gce, sig-storage-kubernetes
     testgrid-tab-name: gce-containerd
@@ -1120,7 +1151,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
         args:
           - --repo=k8s.io/kubernetes=master
           - --timeout=120
@@ -1151,7 +1182,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
         args:
           - --repo=k8s.io/kubernetes=master
           - --timeout=120
@@ -1183,7 +1214,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
         args:
           - --repo=k8s.io/kubernetes=master
           - --timeout=240
@@ -1217,7 +1248,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
         args:
           - --repo=k8s.io/kubernetes=master
           - --repo=github.com/containerd/containerd=main
@@ -1249,7 +1280,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
         args:
           - --repo=k8s.io/kubernetes=master
           - --timeout=240
@@ -1278,7 +1309,7 @@ periodics:
     preset-k8s-ssh: "true"
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
         args:
           - --repo=k8s.io/kubernetes=master
           - --timeout=240

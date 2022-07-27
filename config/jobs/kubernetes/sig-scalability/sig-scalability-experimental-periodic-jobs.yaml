@@ -27,7 +27,7 @@ periodics:
     testgrid-tab-name: storage
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -79,7 +79,7 @@ periodics:
     testgrid-tab-name: calico
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -153,7 +153,7 @@ periodics:
     testgrid-tab-name: gce-cos-master-scalability-100-nodekiller
   spec:
     containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -166,6 +166,7 @@ periodics:
           - --gcp-project-type=scalability-project
           - --gcp-zone=us-east1-b
           - --provider=gce
+          - --env=APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0
           - --env=CL2_ENABLE_VIOLATIONS_FOR_SCHEDULING_THROUGHPUT=false
           - --test=false
           - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh

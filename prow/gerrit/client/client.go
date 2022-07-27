@@ -73,7 +73,7 @@ var clientMetrics = struct {
 		Name: "gerrit_query_results",
 		Help: "Count of Gerrit API queries by instance, repo, and result.",
 	}, []string{
-		"instance",
+		"org",
 		"repo",
 		"result",
 	}),
@@ -331,6 +331,18 @@ func (c *Client) QueryChanges(lastState LastSyncState, rateLimit int) map[string
 	return result
 }
 
+func (c *Client) QueryChangesForInstance(instance string, lastState LastSyncState, rateLimit int) []ChangeInfo {
+	c.lock.RLock()
+	defer c.lock.RUnlock()
+	h, ok := c.handlers[instance]
+	if !ok {
+		logrus.WithField("instance", instance).WithField("laststate", lastState).Warn("Instance not registered as handlers.")
+		return []ChangeInfo{}
+	}
+	lastStateForInstance := lastState[instance]
+	return h.queryAllChanges(lastStateForInstance, rateLimit)
+}
+
 func (c *Client) GetChange(instance, id string) (*ChangeInfo, error) {
 	c.lock.RLock()
 	defer c.lock.RUnlock()
@@ -502,12 +514,15 @@ func (h *gerritInstanceHandler) queryChangesForProject(log logrus.FieldLogger, p
 	opt.Query = append(opt.Query, "project:"+project)
 	opt.AdditionalFields = []string{"CURRENT_REVISION", "CURRENT_COMMIT", "CURRENT_FILES", "MESSAGES"}
 
+	log = log.WithFields(logrus.Fields{"query": opt.Query, "additional_fields": opt.AdditionalFields})
 	var start int
 
 	for {
 		opt.Limit = rateLimit
 		opt.Start = start
 
+		// override log just for this for loop
+		log := log.WithField("start", opt.Start)
 		// The change output is sorted by the last update time, most recently updated to oldest updated.
 		// Gerrit API docs: https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-changes
 		changes, resp, err := h.changeService.QueryChanges(&opt)
@@ -521,7 +536,7 @@ func (h *gerritInstanceHandler) queryChangesForProject(log logrus.FieldLogger, p
 			return pending, nil
 		}
 
-		log.WithField("query", opt.Query).Infof("Found %d changes", len(*changes))
+		log.WithField("changes", len(*changes)).Debug("Found gerrit changes from page.")
 
 		start += len(*changes)
 
@@ -538,7 +553,7 @@ func (h *gerritInstanceHandler) queryChangesForProject(log logrus.FieldLogger, p
 
 			// stop when we find a change last updated before lastUpdate
 			if !updated.After(lastUpdate) {
-				log.Info("No more recently updated changes")
+				log.Debug("No more recently updated changes")
 				return pending, nil
 			}
 
@@ -548,10 +563,10 @@ func (h *gerritInstanceHandler) queryChangesForProject(log logrus.FieldLogger, p
 				submitted := parseStamp(*change.Submitted)
 				log := log.WithField("submitted", submitted)
 				if !submitted.After(lastUpdate) {
-					log.Info("Skipping previously merged change")
+					log.Debug("Skipping previously merged change")
 					continue
 				}
-				log.Info("Found merged change")
+				log.Debug("Found merged change")
 				pending = append(pending, change)
 			case New:
 				// we need to make sure the change update is from a fresh commit change
@@ -585,16 +600,16 @@ func (h *gerritInstanceHandler) queryChangesForProject(log logrus.FieldLogger, p
 
 				if !newMessages && !created.After(lastUpdate) {
 					// stale commit
-					log.Info("Skipping existing change")
+					log.Debug("Skipping existing change")
 					continue
 				}
 				if !newMessages {
-					log.Info("Found updated change")
+					log.Debug("Found updated change")
 				}
 				pending = append(pending, change)
 			default:
 				// change has been abandoned, do nothing
-				log.Info("Ignored change")
+				log.Debug("Ignored change")
 			}
 		}
 	}

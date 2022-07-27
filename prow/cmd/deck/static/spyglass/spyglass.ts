@@ -1,4 +1,6 @@
-import {createRerunProwJobIcon} from "../common/common";
+import {ProwJobState} from "../api/prow";
+import {createAbortProwJobIcon} from "../common/abort";
+import {createRerunProwJobIcon} from "../common/rerun";
 import {getParameterByName} from "../common/urls";
 import {isTransitMessage, serialiseHashes} from "./common";
 
@@ -7,7 +9,9 @@ declare const lensArtifacts: {[index: string]: string[]};
 declare const lensIndexes: number[];
 declare const csrfToken: string;
 declare const rerunCreatesJob: boolean;
+declare const prowJob: string;
 declare const prowJobName: string;
+declare const prowJobState: ProwJobState;
 
 // Loads views for this job
 function loadLenses(): void {
@@ -165,6 +169,7 @@ window.addEventListener('hashchange', (e) => {
 window.addEventListener('load', () => {
     loadLenses();
     handleRerunButton();
+    handleAbortButton();
 });
 
 function handleRerunButton() {
@@ -175,15 +180,30 @@ function handleRerunButton() {
 
   const rerunStatus = getParameterByName("rerun");
   const modal = document.getElementById('rerun')!;
-  const rerunCommand = document.getElementById('rerun-content')!;
+  const modalContent = document.querySelector('.modal-content')!;
 
   const r = document.getElementById("header-title")!;
   const c = document.createElement("div");
-  c.appendChild(createRerunProwJobIcon(modal, rerunCommand, prowJobName, rerunCreatesJob, csrfToken));
+  c.appendChild(createRerunProwJobIcon(modal, modalContent, prowJobName, rerunCreatesJob, csrfToken));
   r.appendChild(c);
 
   if (rerunStatus === "gh_redirect") {
     modal.style.display = "block";
-    rerunCommand.innerHTML = "Rerunning that job requires GitHub login. Now that you're logged in, try again";
+    modalContent.innerHTML = "Rerunning that job requires GitHub login. Now that you're logged in, try again";
   }
+}
+
+function handleAbortButton(): void {
+  // In case prowJob is unavailable, the abort button shouldn't be shown
+  if (!prowJobName) {
+    return;
+  }
+
+  const modal = document.getElementById('rerun')!;
+  const modalContent = document.querySelector('.modal-content')!;
+
+  const r = document.getElementById("header-title")!;
+  const c = document.createElement("div");
+  c.appendChild(createAbortProwJobIcon(modal, modalContent, prowJob, prowJobState, prowJobName, csrfToken));
+  r.appendChild(c);
 }

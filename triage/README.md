@@ -200,4 +200,4 @@ To update the triage image run `make push` from `./triage` which will trigger a 
 To update Triage frontend in Production or Staging manually run `make push-static` or `make push-staging` respectively. Otherwise it is updated on postsubmit via [post-test-infra-upload-triage](https://github.com/kubernetes/test-infra/blob/master/config/jobs/kubernetes/test-infra/test-infra-trusted.yaml#L616).
 
 ### Staging
-   To acces staging see [Triage Staging](https://storage.googleapis.com/k8s-triage/staging).
+   To access staging see [Triage Staging](https://storage.googleapis.com/k8s-triage/staging).

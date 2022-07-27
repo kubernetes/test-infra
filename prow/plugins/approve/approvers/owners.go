@@ -641,14 +641,13 @@ This pull-request has been approved by:{{range $index, $approval := .ap.ListAppr
 {{- if (and (not .ap.AreFilesApproved) (not (call .ap.ManuallyApproved))) }}
 {{ if len .ap.SuggestedCCs -}}
 {{- if len .ap.AssignedCCs -}}
-To complete the [pull request process]({{ .prProcessLink }}), please ask for approval from {{range $index, $cc := .ap.AssignedCCs}}{{if $index}}, {{end}}**{{$cc}}**{{end}} and additionally assign {{range $index, $cc := .ap.SuggestedCCs}}{{if $index}}, {{end}}**{{$cc}}**{{end}} after the PR has been reviewed.
+**Once this PR has been reviewed and has the lgtm label**, please ask for approval from {{range $index, $cc := .ap.AssignedCCs}}{{if $index}}, {{end}}{{$cc}}{{end}} and additionally assign {{range $index, $cc := .ap.SuggestedCCs}}{{if $index}}, {{end}}{{$cc}}{{end}} for approval by writing `+"`/assign @{{range $index, $cc := .ap.SuggestedCCs}}{{if $index}}, {{end}}{{$cc}}{{end}}`"+` in a comment. For more information see:[The Kubernetes Code Review Process]({{ .prProcessLink }}).
 {{- else -}}
-To complete the [pull request process]({{ .prProcessLink }}), please assign {{range $index, $cc := .ap.SuggestedCCs}}{{if $index}}, {{end}}**{{$cc}}**{{end}} after the PR has been reviewed.
+**Once this PR has been reviewed and has the lgtm label**, please assign {{range $index, $cc := .ap.SuggestedCCs}}{{if $index}}, {{end}}{{$cc}}{{end}} for approval by writing `+"`/assign @{{range $index, $cc := .ap.SuggestedCCs}}{{if $index}}, {{end}}{{$cc}}{{end}}`"+` in a comment. For more information see:[The Kubernetes Code Review Process]({{ .prProcessLink }}).
 {{- end}}
-You can assign the PR to them by writing `+"`/assign {{range $index, $cc := .ap.SuggestedCCs}}{{if $index}} {{end}}@{{$cc}}{{end}}`"+` in a comment when ready.
 {{- else -}}
 {{- if len .ap.AssignedCCs -}}
-To complete the [pull request process]({{ .prProcessLink }}), please ask for approval from {{range $index, $cc := .ap.AssignedCCs}}{{if $index}}, {{end}}**{{$cc}}**{{end}} after the PR has been reviewed.
+**Once this PR has been reviewed and has the lgtm label**, please ask for approval from {{range $index, $cc := .ap.AssignedCCs}}{{if $index}}, {{end}}{{$cc}}{{end}} by writing `+"`/assign @{{range $index, $cc := .ap.AssignedCCs}}{{if $index}}, {{end}}{{$cc}}{{end}}`"+` in a comment. For more information see:[The Kubernetes Code Review Process]({{ .prProcessLink }}).
 {{- end}}
 {{- end}}
 {{- end}}

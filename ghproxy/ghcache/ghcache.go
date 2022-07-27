@@ -95,6 +95,8 @@ type RequestThrottlingTimes struct {
 	throttlingTimeForGET uint
 	// maxDelayTime is applied when formed queue is too large, it allows to temporarily set max delay time provided by user instead of calculated value
 	maxDelayTime uint
+	// maxDelayTimeV4 is maxDelayTime for APIv4
+	maxDelayTimeV4 uint
 }
 
 func (rtt *RequestThrottlingTimes) isEnabled() bool {
@@ -109,12 +111,13 @@ func (rtt *RequestThrottlingTimes) getThrottlingTimeV4() uint {
 }
 
 // NewRequestThrottlingTimes creates a new RequestThrottlingTimes and returns it
-func NewRequestThrottlingTimes(requestThrottlingTime, requestThrottlingTimeV4, requestThrottlingTimeForGET, requestThrottlingMaxDelayTime uint) RequestThrottlingTimes {
+func NewRequestThrottlingTimes(requestThrottlingTime, requestThrottlingTimeV4, requestThrottlingTimeForGET, requestThrottlingMaxDelayTime, requestThrottlingMaxDelayTimeV4 uint) RequestThrottlingTimes {
 	return RequestThrottlingTimes{
 		throttlingTime:       requestThrottlingTime,
 		throttlingTimeV4:     requestThrottlingTimeV4,
 		throttlingTimeForGET: requestThrottlingTimeForGET,
 		maxDelayTime:         requestThrottlingMaxDelayTime,
+		maxDelayTimeV4:       requestThrottlingMaxDelayTimeV4,
 	}
 }
 
@@ -150,7 +153,7 @@ var pendingOutboundConnectionsGauge = prometheus.NewGauge(prometheus.GaugeOpts{
 var cachePartitionsCounter = prometheus.NewCounterVec(
 	prometheus.CounterOpts{
 		Name: "ghcache_cache_parititions",
-		Help: "Which cache partitions exist",
+		Help: "Which cache partitions exist.",
 	},
 	[]string{"token_hash"},
 )
@@ -182,7 +185,7 @@ func newThrottlingTransport(maxConcurrency int, roundTripper http.RoundTripper, 
 		timeThrottlingEnabled: throttlingTimes.isEnabled(),
 		hasher:                hasher,
 		registryApiV3:         newTokensRegistry(throttlingTimes.throttlingTime, throttlingTimes.throttlingTimeForGET, throttlingTimes.maxDelayTime),
-		registryApiV4:         newTokensRegistry(throttlingTimes.getThrottlingTimeV4(), throttlingTimes.throttlingTimeForGET, throttlingTimes.maxDelayTime),
+		registryApiV4:         newTokensRegistry(throttlingTimes.getThrottlingTimeV4(), throttlingTimes.throttlingTimeForGET, throttlingTimes.maxDelayTimeV4),
 	}
 }
 

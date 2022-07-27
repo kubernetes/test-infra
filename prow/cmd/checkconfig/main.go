@@ -77,6 +77,7 @@ type options struct {
 
 	warnings               flagutil.Strings
 	excludeWarnings        flagutil.Strings
+	requiredJobAnnotations flagutil.Strings
 	strict                 bool
 	expensive              bool
 	includeDefaultWarnings bool
@@ -120,6 +121,7 @@ const (
 	validateUnmanagedBranchConfigHasNoSubconfig   = "validate-unmanaged-branchconfig-has-no-subconfig"
 	validateGitHubAppInstallationWarning          = "validate-github-app-installation"
 	validateLabelWarning                          = "validate-label"
+	requiredJobAnnotationsWarning                 = "required-job-annotations"
 
 	defaultHourlyTokens = 3000
 	defaultAllowedBurst = 100
@@ -143,6 +145,7 @@ var defaultWarnings = []string{
 	validateSupplementalProwConfigOrgRepoHirarchy,
 	validateUnmanagedBranchConfigHasNoSubconfig,
 	validateLabelWarning,
+	requiredJobAnnotationsWarning,
 }
 
 var expensiveWarnings = []string{
@@ -209,6 +212,7 @@ func (o *options) gatherOptions(flag *flag.FlagSet, args []string) error {
 	flag.StringVar(&o.prowYAMLPath, "prow-yaml-path", "", "Path to the .prow.yaml file to check. Requires --prow-yaml-repo-name to be set. Omit to look for either .prow.yaml or a .prow directory in the current working directory (recommended).")
 	flag.Var(&o.warnings, "warnings", "Warnings to validate. Use repeatedly to provide a list of warnings")
 	flag.Var(&o.excludeWarnings, "exclude-warning", "Warnings to exclude. Use repeatedly to provide a list of warnings to exclude")
+	flag.Var(&o.requiredJobAnnotations, "required-job-annotations", "Required annotation names that job has to include in a definition. Use repeatedly to provide a list of required annotations")
 	flag.BoolVar(&o.expensive, "expensive-checks", false, "If set, additional expensive warnings will be enabled")
 	flag.BoolVar(&o.strict, "strict", false, "If set, consider all warnings as errors.")
 	flag.BoolVar(&o.includeDefaultWarnings, "include-default-warnings", false, "If set force inclusion of default warning set. Normally this is inferred based on a lack of '--warnings' flags.")
@@ -427,6 +431,12 @@ func validate(o options) error {
 
 	if pcfg != nil && o.warningEnabled(validateLabelWarning) {
 		if err := verifyLabelPlugin(pcfg.Label); err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	if o.warningEnabled(requiredJobAnnotationsWarning) {
+		if err := validateRequiredJobAnnotations(o.requiredJobAnnotations.Strings(), cfg.JobConfig); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -1463,5 +1473,39 @@ func validateGitHubAppIsInstalled(client ghAppListingClient, allRepos sets.Strin
 		}
 	}
 
+	return utilerrors.NewAggregate(errs)
+}
+
+func validateRequiredJobAnnotations(a []string, c config.JobConfig) error {
+	validator := func(job config.JobBase, annotations []string) error {
+		var errs []error
+		for _, annotation := range annotations {
+			if _, ok := job.Annotations[annotation]; !ok {
+				errs = append(errs, fmt.Errorf(annotation))
+			}
+		}
+		return utilerrors.NewAggregate(errs)
+	}
+	var errs []error
+
+	for _, presubmits := range c.PresubmitsStatic {
+		for _, presubmit := range presubmits {
+			if err := validator(presubmit.JobBase, a); err != nil {
+				errs = append(errs, fmt.Errorf("job '%s' is missing required annotations: %w", presubmit.Name, err))
+			}
+		}
+	}
+	for _, postsubmits := range c.PostsubmitsStatic {
+		for _, postsubmit := range postsubmits {
+			if err := validator(postsubmit.JobBase, a); err != nil {
+				errs = append(errs, fmt.Errorf("job '%s' is missing required annotations: %w", postsubmit.Name, err))
+			}
+		}
+	}
+	for _, periodic := range c.Periodics {
+		if err := validator(periodic.JobBase, a); err != nil {
+			errs = append(errs, fmt.Errorf("job '%s' is missing required annotations: %w", periodic.Name, err))
+		}
+	}
 	return utilerrors.NewAggregate(errs)
 }

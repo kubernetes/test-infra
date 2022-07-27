@@ -18,7 +18,7 @@ prowjob_default_entries:
       tenant_id: 'tester'
 
 gerrit:
-  tick_interval: 10s
+  tick_interval: 1s
   org_repos_config:
   - org: http://fakegerritserver
     repos:

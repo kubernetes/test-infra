@@ -214,7 +214,7 @@ func (d *Deployer) prepareKindBinary() error {
 	return nil
 }
 
-// Build handles building kubernetes / kubectl / the node image.
+// Build handles building kubernetes / kubectl / the node image / ginkgo.
 func (d *Deployer) Build() error {
 	log.Println("kind.go:Build()")
 	// Adapt the build type if needed.
@@ -251,11 +251,20 @@ func (d *Deployer) Build() error {
 		return err
 	}
 
+	// Ginkgo v1 is used by Kubernetes 1.24 and earlier and exists in the vendor directory.
+	// Historically it has been built with the "vendor" prefix.
+	ginkgoTarget := "vendor/github.com/onsi/ginkgo/ginkgo"
+	if _, err := os.Stat(ginkgoTarget); os.IsNotExist(err) {
+		// If the directory doesn't exist, then we must be on Kubernetes >= 1.25 with Ginkgo V2.
+		// The "vendor" prefix is no longer needed.
+		ginkgoTarget = "github.com/onsi/ginkgo/v2/ginkgo"
+	}
+
 	// Build binaries for the host, including kubectl, ginkgo, e2e.test
 	if d.buildType != "bazel" {
 		cmd := exec.Command(
 			"make", "all",
-			"WHAT=cmd/kubectl test/e2e/e2e.test vendor/github.com/onsi/ginkgo/ginkgo",
+			"WHAT=cmd/kubectl test/e2e/e2e.test"+" "+ginkgoTarget,
 		)
 		cmd.Dir = d.importPathK8s
 		if err := d.control.FinishRunning(cmd); err != nil {
@@ -272,7 +281,7 @@ func (d *Deployer) Build() error {
 		cmd := exec.Command(
 			"bazel", "build",
 			"//cmd/kubectl", "//test/e2e:e2e.test",
-			"//vendor/github.com/onsi/ginkgo/ginkgo",
+			"//"+ginkgoTarget,
 		)
 		cmd.Dir = d.importPathK8s
 		if err := d.control.FinishRunning(cmd); err != nil {

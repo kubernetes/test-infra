@@ -34,7 +34,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-e2e-gce-100-performance
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -42,6 +42,7 @@ presubmits:
         - --build=quick
         - --cluster=
         - --env=HEAPSTER_MACHINE_TYPE=e2-standard-8
+        - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0
         - --extract=local
         - --flush-mem-after-build=true
         - --gcp-node-image=gci
@@ -117,7 +118,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-e2e-gce-big-performance
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -125,6 +126,7 @@ presubmits:
         - --build=quick
         - --cluster=
         - --env=HEAPSTER_MACHINE_TYPE=e2-standard-4
+        - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=160 --max-mutating-requests-inflight=0
         - --extract=local
         - --flush-mem-after-build=true
         - --gcp-nodes=500
@@ -183,7 +185,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-e2e-gce-correctness
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -192,6 +194,7 @@ presubmits:
         - --cluster=gce-cluster
         - --env=CONCURRENT_SERVICE_SYNCS=5
         - --env=HEAPSTER_MACHINE_TYPE=e2-standard-2
+        - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0
         - --extract=local
         - --gcp-master-image=gci
         - --gcp-node-image=gci
@@ -248,7 +251,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-e2e-gce-large-performance
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -346,7 +349,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-kubemark-e2e-gce-big
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -362,6 +365,7 @@ presubmits:
         - --gcp-zone=us-east1-b
         - --kubemark
         - --kubemark-nodes=500
+        - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=160 --max-mutating-requests-inflight=0
         - --provider=gce
         - --stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce-big
         - --tear-down-previous
@@ -434,7 +438,7 @@ presubmits:
       testgrid-tab-name: pull-kubernetes-kubemark-e2e-gce-scale
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -510,7 +514,7 @@ presubmits:
     run_if_changed: ^dns/.*$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -556,7 +560,7 @@ presubmits:
     run_if_changed: ^clusterloader2/.*$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -573,6 +577,7 @@ presubmits:
         - --env=CL2_SCHEDULER_THROUGHPUT_THRESHOLD=0
         - --env=CL2_ENABLE_API_AVAILABILITY_MEASUREMENT=true
         - --env=CL2_API_AVAILABILITY_PERCENTAGE_THRESHOLD=99.5
+        - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0
         - --test=false
         - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
         - --test-cmd-args=cluster-loader2
@@ -626,7 +631,7 @@ presubmits:
     run_if_changed: ^clusterloader2/.*$
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py
@@ -640,6 +645,7 @@ presubmits:
         - --gcp-zone=us-east1-b
         - --kubemark
         - --kubemark-nodes=100
+        - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0
         - --provider=gce
         - --tear-down-previous
         - --test=false
@@ -698,7 +704,7 @@ presubmits:
       testgrid-tab-name: pull-perf-tests-clusterloader2-e2e-gce-scale-performance
     spec:
       containers:
-      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
         command:
         - runner.sh
         - /workspace/scenarios/kubernetes_e2e.py

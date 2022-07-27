@@ -1281,16 +1281,18 @@ type DefaultRerunAuthConfigEntry struct {
 	Config *prowapi.RerunAuthConfig `json:"rerun_auth_configs,omitempty"`
 }
 
-func (d *Deck) GetRerunAuthConfig(refs *prowapi.Refs, cluster string) *prowapi.RerunAuthConfig {
+func (d *Deck) GetRerunAuthConfig(jobSpec *prowapi.ProwJobSpec) *prowapi.RerunAuthConfig {
 	var config *prowapi.RerunAuthConfig
 
 	var orgRepo string
-	if refs != nil {
-		orgRepo = refs.OrgRepoString()
+	if jobSpec.Refs != nil {
+		orgRepo = jobSpec.Refs.OrgRepoString()
+	} else if len(jobSpec.ExtraRefs) > 0 {
+		orgRepo = jobSpec.ExtraRefs[0].OrgRepoString()
 	}
 
 	for _, drac := range d.DefaultRerunAuthConfigs {
-		if drac.matches(orgRepo, cluster) {
+		if drac.matches(orgRepo, jobSpec.Cluster) {
 			config = drac.Config
 		}
 	}

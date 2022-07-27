@@ -49,14 +49,15 @@ const (
 )
 
 var gerritMetrics = struct {
-	processingResults *prometheus.CounterVec
-	triggerLatency    *prometheus.HistogramVec
+	processingResults     *prometheus.CounterVec
+	triggerLatency        *prometheus.HistogramVec
+	changeProcessDuration *prometheus.HistogramVec
 }{
 	processingResults: prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "gerrit_processing_results",
 		Help: "Count of change processing by instance, repo, and result.",
 	}, []string{
-		"instance",
+		"org",
 		"repo",
 		"result",
 	}),
@@ -65,14 +66,22 @@ var gerritMetrics = struct {
 		Help:    "Histogram of seconds between triggering event and ProwJob creation time.",
 		Buckets: []float64{5, 10, 20, 30, 60, 120, 180, 300, 600, 1200, 3600},
 	}, []string{
-		"instance",
+		"org",
 		// Omit repo to avoid excessive cardinality due to the number of buckets.
+	}),
+	changeProcessDuration: prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Name:    "gerrit_instance_process_duration",
+		Help:    "Histogram of seconds spent processing a single gerrit instance.",
+		Buckets: []float64{5, 10, 20, 30, 60, 120, 180, 300, 600, 1200, 3600},
+	}, []string{
+		"org",
 	}),
 }
 
 func init() {
 	prometheus.MustRegister(gerritMetrics.processingResults)
 	prometheus.MustRegister(gerritMetrics.triggerLatency)
+	prometheus.MustRegister(gerritMetrics.changeProcessDuration)
 }
 
 type prowJobClient interface {
@@ -81,6 +90,7 @@ type prowJobClient interface {
 
 type gerritClient interface {
 	QueryChanges(lastState client.LastSyncState, rateLimit int) map[string][]client.ChangeInfo
+	QueryChangesForInstance(instance string, lastState client.LastSyncState, rateLimit int) []client.ChangeInfo
 	GetBranchRevision(instance, project, branch string) (string, error)
 	SetReview(instance, id, revision, message string, labels map[string]string) error
 	Account(instance string) (*gerrit.AccountInfo, error)
@@ -99,6 +109,10 @@ type Controller struct {
 	configAgent          *config.Agent
 	repoCacheMap         map[string]*config.InRepoConfigCache
 	inRepoConfigFailures map[string]bool
+	instancesWithWorker  map[string]bool
+	repoCacheMapMux      sync.Mutex
+	latestMux            sync.Mutex
+	workerPoolSize       int
 }
 
 type LastSyncTracker interface {
@@ -108,7 +122,7 @@ type LastSyncTracker interface {
 
 // NewController returns a new gerrit controller client
 func NewController(ctx context.Context, prowJobClient prowv1.ProwJobInterface, op io.Opener,
-	ca *config.Agent, projects, projectsOptOutHelp map[string][]string, cookiefilePath, tokenPathOverride, lastSyncFallback string, cacheSize int) *Controller {
+	ca *config.Agent, projects, projectsOptOutHelp map[string][]string, cookiefilePath, tokenPathOverride, lastSyncFallback string, cacheSize, workerPoolSize int) *Controller {
 
 	cfg := ca.Config
 	projectsOptOutHelpMap := map[string]sets.String{}
@@ -142,6 +156,8 @@ func NewController(ctx context.Context, prowJobClient prowv1.ProwJobInterface, o
 		configAgent:          ca,
 		repoCacheMap:         map[string]*config.InRepoConfigCache{},
 		inRepoConfigFailures: map[string]bool{},
+		instancesWithWorker:  make(map[string]bool),
+		workerPoolSize:       workerPoolSize,
 	}
 
 	// applyGlobalConfig reads gerrit configurations from global gerrit config,
@@ -217,50 +233,115 @@ func createCache(cloneURI *url.URL, cookieFilePath string, cacheSize int, config
 	return cache, nil
 }
 
+type Change struct {
+	changeInfo gerrit.ChangeInfo
+	instance   string
+}
+
+func (c *Controller) syncChange(latest client.LastSyncState, changeChan <-chan Change, log *logrus.Entry, wg *sync.WaitGroup) {
+	for changeStruct := range changeChan {
+		change := changeStruct.changeInfo
+		instance := changeStruct.instance
+
+		log := log.WithFields(logrus.Fields{
+			"branch":   change.Branch,
+			"change":   change.Number,
+			"repo":     change.Project,
+			"revision": change.CurrentRevision,
+		})
+
+		cloneURI, err := makeCloneURI(instance, change.Project)
+		if err != nil {
+			log.WithError(err).Error("makeCloneURI.")
+		}
+
+		c.repoCacheMapMux.Lock()
+		cache, ok := c.repoCacheMap[cloneURI.String()]
+		if !ok {
+			if cache, err = createCache(cloneURI, c.cookieFilePath, c.cacheSize, c.configAgent); err != nil {
+				c.repoCacheMapMux.Unlock()
+				wg.Done()
+				log.WithError(err).Error("create repo cache.")
+				continue
+			}
+			c.repoCacheMap[cloneURI.String()] = cache
+		}
+		c.repoCacheMapMux.Unlock()
+
+		result := client.ResultSuccess
+		if err := c.processChange(log, instance, change, cloneURI, cache); err != nil {
+			result = client.ResultError
+			log.WithError(err).Info("Failed to process change")
+		}
+		gerritMetrics.processingResults.WithLabelValues(instance, change.Project, result).Inc()
+
+		c.latestMux.Lock()
+		lastTime, ok := latest[instance][change.Project]
+		if !ok || lastTime.Before(change.Updated.Time) {
+			lastTime = change.Updated.Time
+			latest[instance][change.Project] = lastTime
+		}
+		c.latestMux.Unlock()
+		wg.Done()
+	}
+}
+
 // Sync looks for newly made gerrit changes
 // and creates prowjobs according to specs
-func (c *Controller) Sync() error {
-	syncTime := c.tracker.Current()
-	latest := syncTime.DeepCopy()
-	for instance, changes := range c.gc.QueryChanges(syncTime, c.config().Gerrit.RateLimit) {
+func (c *Controller) Sync() {
+	processSingleInstance := func(instance string) {
 		log := logrus.WithField("host", instance)
-		for _, change := range changes {
-			log := log.WithFields(logrus.Fields{
-				"branch":   change.Branch,
-				"change":   change.Number,
-				"repo":     change.Project,
-				"revision": change.CurrentRevision,
-			})
+		syncTime := c.tracker.Current()
+		latest := syncTime.DeepCopy()
 
-			cloneURI, err := makeCloneURI(instance, change.Project)
-			if err != nil {
-				return fmt.Errorf("makeCloneURI: %w", err)
-			}
+		now := time.Now()
+		defer func() {
+			gerritMetrics.changeProcessDuration.WithLabelValues(instance).Observe(float64(time.Since(now).Seconds()))
+		}()
 
-			cache, ok := c.repoCacheMap[cloneURI.String()]
-			if !ok {
-				if cache, err = createCache(cloneURI, c.cookieFilePath, c.cacheSize, c.configAgent); err != nil {
-					return err
-				}
-				c.repoCacheMap[cloneURI.String()] = cache
-			}
-
-			result := client.ResultSuccess
-			if err := c.processChange(log, instance, change, cloneURI, cache); err != nil {
-				result = client.ResultError
-				log.WithError(err).Info("Failed to process change")
-			}
-			gerritMetrics.processingResults.WithLabelValues(instance, change.Project, result).Inc()
-
-			lastTime, ok := latest[instance][change.Project]
-			if !ok || lastTime.Before(change.Updated.Time) {
-				lastTime = change.Updated.Time
-				latest[instance][change.Project] = lastTime
-			}
+		changes := c.gc.QueryChangesForInstance(instance, syncTime, c.config().Gerrit.RateLimit)
+		if len(changes) == 0 {
+			return
 		}
-		log.Infof("Processed %d changes", len(changes))
+		log.WithFields(logrus.Fields{"instance": instance, "changes": len(changes)}).Info("Finished querying instance for changes")
+
+		var wg sync.WaitGroup
+		wg.Add(len(changes))
+
+		changeChan := make(chan Change)
+		for i := 0; i < c.workerPoolSize; i++ {
+			go c.syncChange(latest, changeChan, log, &wg)
+		}
+		for _, change := range changes {
+			changeChan <- Change{changeInfo: change, instance: instance}
+		}
+		wg.Wait()
+		close(changeChan)
+		c.tracker.Update(latest)
 	}
-	return c.tracker.Update(latest)
+
+	for instance := range c.config().Gerrit.OrgReposConfig.AllRepos() {
+		if _, ok := c.instancesWithWorker[instance]; ok {
+			// The work thread of already up for this instance, nothing needs
+			// to be done.
+			continue
+		}
+		c.instancesWithWorker[instance] = true
+
+		// First time see this instance, spin up a worker thread for it
+		logrus.WithField("instance", instance).Info("Start worker for instance.")
+		go func(instance string) {
+			previousRun := time.Now()
+			for {
+				timeDiff := time.Until(previousRun.Add(c.config().Gerrit.TickInterval.Duration))
+				if timeDiff > 0 {
+					time.Sleep(timeDiff)
+				}
+				previousRun = time.Now()
+				processSingleInstance(instance)
+			}
+		}(instance)
+	}
 }
 
 func makeCloneURI(instance, project string) (*url.URL, error) {
@@ -417,7 +498,8 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 		var postsubmits []config.Postsubmit
 		for attempt := 0; attempt < inRepoConfigRetries; attempt++ {
 			postsubmits, err = cache.GetPostsubmits(trimmedHostPath, func() (string, error) { return baseSHA, nil }, func() (string, error) { return change.CurrentRevision, nil })
-			if err == nil {
+			// Break if there was no error, or if there was a merge conflict
+			if err == nil || strings.Contains(err.Error(), "Merge conflict in") {
 				break
 			}
 		}

@@ -25,6 +25,7 @@ images:
   - dir: prow/cmd/tot
   - dir: prow/cmd/pipeline
   - dir: prow/cmd/prow-controller-manager
+  - dir: prow/cmd/webhook-server
   # pod utils
   - dir: prow/cmd/clonerefs
     arch: all

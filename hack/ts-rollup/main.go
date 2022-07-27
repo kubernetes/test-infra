@@ -90,6 +90,7 @@ func loadPackagesInfo(f string) (*packagesInfo, error) {
 var runCmdInDirFunc = runCmdInDir
 
 func runCmdInDir(dir string, additionalEnv []string, cmd string, args ...string) (string, error) {
+	log := logrus.WithFields(logrus.Fields{"cmd": cmd, "args": args})
 	command := exec.Command(cmd, args...)
 	if dir != "" {
 		command.Dir = dir
@@ -111,13 +112,16 @@ func runCmdInDir(dir string, additionalEnv []string, cmd string, args ...string)
 	for scanner.Scan() {
 		out := scanner.Text()
 		allOut = allOut + out
-		logrus.WithField("cmd", command.Args).Info(out)
+		log.Info(out)
 	}
 	allErr, _ := io.ReadAll(stdErr)
 	err = command.Wait()
-	// Print error only when command failed
-	if err != nil && len(allErr) > 0 {
-		logrus.WithField("cmd", command.Args).Error(string(allErr))
+	if len(allErr) > 0 {
+		if err != nil {
+			log.Error(string(allErr))
+		} else {
+			log.Warn(string(allErr))
+		}
 	}
 	return strings.TrimSpace(allOut), err
 }
@@ -131,7 +135,7 @@ func rollupOne(pi *packageInfo, cleanupOnly bool) error {
 	// Intermediate output files, stored under `_output` dir
 	jsOutputFile := path.Join(defaultOutputDir, pi.Dir, entrypointFileBasename+".js")
 	bundleOutputDir := path.Join(defaultOutputDir, pi.Dir)
-	rollupOutputFile := path.Join(bundleOutputDir, "bundle.js")
+	rollupOutputFile := path.Join(bundleOutputDir, fmt.Sprintf("%s_bundle.js", entrypointFileBasename))
 	// terserOutputFile is the minified bundle, which is placed next to all
 	// other static files in the source tree
 	terserOutputFile := path.Join(pi.Dir, pi.Dst)
@@ -189,7 +193,7 @@ func main() {
 				case pi := <-packageChan:
 					err := rollupOne(&pi, o.cleanupOnly)
 					if err != nil {
-						errChan <- fmt.Errorf("building image for %s failed: %v", pi.Entrypoint, err)
+						errChan <- fmt.Errorf("rollup package %q failed: %v", pi.Entrypoint, err)
 					}
 					doneChan <- pi
 				case <-ctx.Done():
