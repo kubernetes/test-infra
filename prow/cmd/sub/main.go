@@ -45,11 +45,12 @@ var (
 )
 
 type options struct {
-	client                flagutil.KubernetesOptions
-	github                flagutil.GitHubOptions
-	port                  int
-	inRepoConfigCacheSize int
-	cookiefilePath        string
+	client                  flagutil.KubernetesOptions
+	github                  flagutil.GitHubOptions
+	port                    int
+	inRepoConfigCacheSize   int
+	inRepoConfigCacheCopies int
+	cookiefilePath          string
 
 	config configflagutil.ConfigOptions
 
@@ -79,6 +80,7 @@ func init() {
 	fs.BoolVar(&flagOptions.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 	fs.DurationVar(&flagOptions.gracePeriod, "grace-period", 180*time.Second, "On shutdown, try to handle remaining events for the specified duration. ")
 	fs.IntVar(&flagOptions.inRepoConfigCacheSize, "in-repo-config-cache-size", 1000, "Cache size for ProwYAMLs read from in-repo configs.")
+	fs.IntVar(&flagOptions.inRepoConfigCacheCopies, "in-repo-config-cache-copies", 1, "Copy of caches for ProwYAMLs read from in-repo configs.")
 	fs.StringVar(&flagOptions.cookiefilePath, "cookiefile", "", "Path to git http.cookiefile, leave empty for github or anonymous")
 	flagOptions.config.AddFlags(fs)
 	flagOptions.client.AddFlags(fs)
@@ -124,6 +126,7 @@ func main() {
 
 	cacheGetter := subscriber.InRepoConfigCacheGetter{
 		CacheSize:     flagOptions.inRepoConfigCacheSize,
+		CacheCopies:   flagOptions.inRepoConfigCacheCopies,
 		Agent:         configAgent,
 		GitHubOptions: flagOptions.github,
 		DryRun:        flagOptions.dryRun,

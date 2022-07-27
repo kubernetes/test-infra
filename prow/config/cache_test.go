@@ -23,6 +23,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"golang.org/x/sync/errgroup"
 	v1 "k8s.io/api/core/v1"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/git/v2"
@@ -37,6 +38,46 @@ func (fca *fakeConfigAgent) Config() *Config {
 	fca.Lock()
 	defer fca.Unlock()
 	return fca.c
+}
+
+func TestNewInRepoConfigCacheHandler(t *testing.T) {
+	// Invalid size arguments result in a nil cache and non-nil error.
+	invalids := []int{-1, 0}
+	for _, invalid := range invalids {
+
+		fca := &fakeConfigAgent{}
+		cf := &testClientFactory{}
+		cache, err := NewInRepoConfigCacheHandler(invalid, fca, cf, 1)
+
+		if err == nil {
+			t.Fatal("Expected non-nil error, got nil")
+		}
+
+		if err.Error() != "Must provide a positive size" {
+			t.Errorf("Expected error 'Must provide a positive size', got '%v'", err.Error())
+		}
+
+		if cache != nil {
+			t.Errorf("Expected nil cache, got %v", cache)
+		}
+	}
+
+	// Valid size arguments.
+	valids := []int{1, 5, 1000}
+	for _, valid := range valids {
+
+		fca := &fakeConfigAgent{}
+		cf := &testClientFactory{}
+		cache, err := NewInRepoConfigCacheHandler(valid, fca, cf, 1)
+
+		if err != nil {
+			t.Errorf("Expected error 'nil' got '%v'", err.Error())
+		}
+
+		if cache == nil {
+			t.Errorf("Expected non-nil cache, got nil")
+		}
+	}
 }
 
 func TestNewInRepoConfigCache(t *testing.T) {
@@ -395,7 +436,7 @@ func TestGetProwYAMLCached(t *testing.T) {
 				}
 			}
 
-			prowYAML, err := cache.GetProwYAML(tc.valConstructor, tc.identifier, tc.baseSHAGetter, tc.headSHAGetters...)
+			prowYAML, err := cache.getProwYAML(tc.valConstructor, tc.identifier, tc.baseSHAGetter, tc.headSHAGetters...)
 
 			if tc.expected.err == "" {
 				if err != nil {
@@ -781,38 +822,52 @@ func TestGetProwYAMLCachedAndDefaulted(t *testing.T) {
 			cf := &testClientFactory{}
 
 			// Initialize cache. Notice that it relies on a snapshot of the Config with configBefore.
-			cache, err := NewInRepoConfigCache(10, fca, cf)
+			cache, err := NewInRepoConfigCacheHandler(10, fca, cf, 10)
 			if err != nil {
 				t1.Fatal("could not initialize cache")
 			}
 
 			// Get cached values. These cached values should be defaulted by the
 			// initial Config.
-			presubmits, err := cache.GetPresubmits(identifier, baseSHAGetter, headSHAGetters...)
-			if err != nil {
-				t1.Errorf("Expected error 'nil' got '%v'", err.Error())
+			// Make sure that this runs concurrently without problem.
+			var errGroup errgroup.Group
+			for i := 0; i < 1000; i++ {
+				errGroup.Go(func() error {
+					presubmits, err := cache.GetPresubmits(identifier, baseSHAGetter, headSHAGetters...)
+					if err != nil {
+						return fmt.Errorf("Expected error 'nil' got '%v'", err.Error())
+					}
+					if diff := cmp.Diff(tc.expectedBefore.presubmits, presubmits, cmpopts.IgnoreUnexported(Presubmit{}, Brancher{}, RegexpChangeMatcher{})); diff != "" {
+						return fmt.Errorf("(before Config reload) presubmits mismatch (-want +got):\n%s", diff)
+					}
+					return nil
+				})
+
+				errGroup.Go(func() error {
+					postsubmits, err := cache.GetPostsubmits(identifier, baseSHAGetter, headSHAGetters...)
+					if err != nil {
+						return fmt.Errorf("Expected error 'nil' got '%v'", err.Error())
+					}
+
+					if diff := cmp.Diff(tc.expectedBefore.postsubmits, postsubmits, cmpopts.IgnoreUnexported(Postsubmit{}, Brancher{}, RegexpChangeMatcher{})); diff != "" {
+						return fmt.Errorf("(before Config reload) postsubmits mismatch (-want +got):\n%s", diff)
+					}
+					return nil
+				})
 			}
 
-			postsubmits, err := cache.GetPostsubmits(identifier, baseSHAGetter, headSHAGetters...)
-			if err != nil {
-				t1.Errorf("Expected error 'nil' got '%v'", err.Error())
-			}
-
-			if diff := cmp.Diff(tc.expectedBefore.presubmits, presubmits, cmpopts.IgnoreUnexported(Presubmit{}, Brancher{}, RegexpChangeMatcher{})); diff != "" {
-				t1.Errorf("(before Config reload) presubmits mismatch (-want +got):\n%s", diff)
-			}
-			if diff := cmp.Diff(tc.expectedBefore.postsubmits, postsubmits, cmpopts.IgnoreUnexported(Postsubmit{}, Brancher{}, RegexpChangeMatcher{})); diff != "" {
-				t1.Errorf("(before Config reload) postsubmits mismatch (-want +got):\n%s", diff)
+			if err := errGroup.Wait(); err != nil {
+				t.Fatalf("Failed processing concurrently: %v", err)
 			}
 
 			// Reload Config.
 			fca.c = tc.configAfter
 
-			presubmits, err = cache.GetPresubmits(identifier, baseSHAGetter, headSHAGetters...)
+			presubmits, err := cache.GetPresubmits(identifier, baseSHAGetter, headSHAGetters...)
 			if err != nil {
 				t1.Fatalf("Expected error 'nil' got '%v'", err.Error())
 			}
-			postsubmits, err = cache.GetPostsubmits(identifier, baseSHAGetter, headSHAGetters...)
+			postsubmits, err := cache.GetPostsubmits(identifier, baseSHAGetter, headSHAGetters...)
 			if err != nil {
 				t1.Fatalf("Expected error 'nil' got '%v'", err.Error())
 			}
