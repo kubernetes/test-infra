@@ -10,7 +10,7 @@ presubmits:
         preset-service-account: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220726-61b7bafca6-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
             command:
               - runner.sh
             args:
@@ -47,7 +47,7 @@ presubmits:
           workdir: true
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220726-61b7bafca6-1.24
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-1.24
             command:
               - runner.sh
               - ./scripts/ci-entrypoint.sh
@@ -102,7 +102,7 @@ presubmits:
           workdir: false
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220726-61b7bafca6-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
             command:
               - runner.sh
               - ./scripts/ci-entrypoint.sh
@@ -153,7 +153,7 @@ presubmits:
           workdir: true
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220726-61b7bafca6-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
             command:
               - runner.sh
               - ./scripts/ci-entrypoint.sh
@@ -189,7 +189,7 @@ presubmits:
         preset-service-account: "true"
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220726-61b7bafca6-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
             command:
               - runner.sh
             args:
@@ -221,7 +221,7 @@ presubmits:
           workdir: true
       spec:
         containers:
-          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220726-61b7bafca6-master
+          - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
             command:
               - runner.sh
               - kubetest
