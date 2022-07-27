@@ -10,7 +10,7 @@ presubmits:
       description: Build test in container-object-storage-interface-provisioner-sidecar repo.
     spec:
       containers:
-      - image: golang:1.13.10
+      - image: golang:1.18.4
         command:
         # Plain make runs also verify
         - make
@@ -25,7 +25,7 @@ presubmits:
       description: Unit tests in container-object-storage-interface-provisioner-sidecar repo.
     spec:
       containers:
-      - image: golang:1.13.10
+      - image: golang:1.18.4
         command:
         - make
         args:
