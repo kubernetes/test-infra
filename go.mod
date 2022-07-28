@@ -4,10 +4,6 @@ module k8s.io/test-infra
 
 replace github.com/golang/lint => golang.org/x/lint v0.0.0-20190301231843-5614ed5bae6f
 
-// Pin all k8s.io staging repositories to kubernetes v0.18.6
-// When bumping Kubernetes dependencies, you should update each of these lines
-// to point to the same kubernetes v0.KubernetesMinor.KubernetesPatch version
-// before running update-deps.sh.
 replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.0+incompatible
 
@@ -18,7 +14,6 @@ replace (
 
 	golang.org/x/lint => golang.org/x/lint v0.0.0-20190409202823-959b441ac422
 	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.0-20190709130402-674ba3eaed22
-	k8s.io/client-go => k8s.io/client-go v0.24.2
 )
 
 require (
@@ -64,6 +59,7 @@ require (
 	github.com/gorilla/securecookie v1.1.1
 	github.com/gorilla/sessions v1.2.0
 	github.com/gregjones/httpcache v0.0.0-20190212212710-3befbb6ad0cc
+	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/go-retryablehttp v0.7.0
 	github.com/hashicorp/golang-lru v0.5.4
 	github.com/klauspost/pgzip v1.2.1
@@ -102,13 +98,12 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.24.2
 	k8s.io/apimachinery v0.24.2
-	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
+	k8s.io/client-go v0.24.2
 	k8s.io/code-generator v0.24.2
 	k8s.io/klog/v2 v2.70.0
 	k8s.io/utils v0.0.0-20220725171434-9bab9ef40391
 	knative.dev/pkg v0.0.0-20220329144915-0a1ec2e0d46c
 	mvdan.cc/xurls/v2 v2.0.0
-	sigs.k8s.io/boskos v0.0.0-20220725190635-b0ffc2fcc06a
 	sigs.k8s.io/controller-runtime v0.12.3
 	sigs.k8s.io/controller-tools v0.9.2
 	sigs.k8s.io/yaml v1.3.0
@@ -153,6 +148,7 @@ require (
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/jsonreference v0.19.6 // indirect
 	github.com/go-openapi/swag v0.21.1 // indirect
+	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/gobuffalo/flect v0.2.5 // indirect
 	github.com/gofrs/uuid v4.2.0+incompatible // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
@@ -173,7 +169,6 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
-	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
