@@ -164,6 +164,8 @@ periodics:
           - --scenario=kubernetes_e2e
           - --
           - --check-leaked-resources
+          - --env=KUBE_MASTER_EXTRA_METADATA=user-data=user-data=/go/src/github.com/containerd/containerd/test/e2e/master.yaml,containerd-configure-sh=/go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/env
+          - --env=KUBE_NODE_EXTRA_METADATA=user-data=/go/src/github.com/containerd/containerd/test/e2e/node.yaml,containerd-configure-sh=/go/src/github.com/containerd/containerd/cluster/gce/configure.sh,containerd-env=/workspace/test-infra/jobs/e2e_node/containerd/containerd-main/env
           - --extract=ci/latest
           - --gcp-node-image=ubuntu
           - --gcp-zone=us-west1-b
