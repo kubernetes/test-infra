@@ -17,6 +17,9 @@ presubmits:
               - make
               - test-check
             resources:
+              limits:
+                memory: "9Gi"
+                cpu: "2"
               requests:
                 memory: "9Gi"
                 cpu: "2"
