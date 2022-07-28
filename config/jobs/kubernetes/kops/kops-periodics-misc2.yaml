@@ -1127,7 +1127,7 @@ periodics:
       args:
       - ./tests/e2e/scenarios/keypair-rotation/run-test.sh
       env:
-      - name: KOPS_CONTROL_PLANE
+      - name: KOPS_CONTROL_PLANE_SIZE
         value: "3"
       - name: CLOUD_PROVIDER
         value: "aws"
