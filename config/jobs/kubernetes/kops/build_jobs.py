@@ -623,6 +623,15 @@ def generate_misc():
                    scenario="podidentitywebhook",
                    extra_dashboards=['kops-misc']),
 
+        build_test(name_override="kops-aws-addon-resource-tracking",
+                   cloud="aws",
+                   networking="cilium",
+                   distro="u2004",
+                   kops_channel="alpha",
+                   runs_per_day=3,
+                   scenario="addon-resource-tracking",
+                   extra_dashboards=['kops-misc']),
+
         build_test(name_override="kops-aws-external-dns",
                    cloud="aws",
                    networking="cilium",
