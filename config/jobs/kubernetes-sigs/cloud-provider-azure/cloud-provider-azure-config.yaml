@@ -554,7 +554,7 @@ periodics:
     testgrid-tab-name: cloud-provider-azure-conformance-capz
     testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
     description: "Runs Kubernetes conformance tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure)."
-- cron: '0 17 * * *'  # Run at 17:00 UTC everyday
+- cron: "0 4/2 * * *"  # Temporarily run every 2h
   name: cloud-provider-azure-conformance-windows-capz
   decorate: true
   decoration_config:
@@ -615,7 +615,7 @@ periodics:
       - name: CLUSTER_PROVISIONING_TOOL
         value: "capz"
       - name: GINKGO_PARALLEL_NODES
-        value: "20"
+        value: "10"
       - name: GINKGO_TOLERATE_FLAKES
         value: "y"
   annotations:
