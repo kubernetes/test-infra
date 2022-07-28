@@ -147,6 +147,36 @@ periodics:
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: containerd-e2e-ubuntu
+- interval: 4h
+  name: ci-containerd-e2e-ubuntu-gce-1-6
+  labels:
+    preset-service-account: "true"
+    preset-k8s-ssh: "true"
+    preset-e2e-containerd: "true"
+    preset-e2e-containerd-image-load: "true"
+  spec:
+    containers:
+      - args:
+          - --root=/go/src
+          - --repo=k8s.io/kubernetes=release-1.24
+          - --repo=github.com/containerd/containerd=release/1.6
+          - --timeout=70
+          - --scenario=kubernetes_e2e
+          - --
+          - --check-leaked-resources
+          - --extract=ci/latest
+          - --gcp-node-image=ubuntu
+          - --gcp-zone=us-west1-b
+          - --ginkgo-parallel=30
+          - --image-family=ubuntu-2004-lts
+          - --image-project=ubuntu-os-cloud
+          - --provider=gce
+          - --test_args=--ginkgo.skip=\[Driver:.gcepd\]|\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
+          - --timeout=50m
+        image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-master
+  annotations:
+    testgrid-dashboards: sig-node-containerd
+    testgrid-tab-name: containerd-e2e-ubuntu-1-6
 - name: ci-cos-cgroupv1-containerd-node-e2e
   interval: 1h
   labels:
