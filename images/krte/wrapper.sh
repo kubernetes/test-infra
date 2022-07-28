@@ -47,11 +47,15 @@ cleanup(){
 
 early_exit_handler() {
   >&2 echo "wrapper.sh] [EARLY EXIT] Interrupted, entering handler ..."
-  if [ -n "${WRAPPED_COMMAND_PID:-}" ]; then
+  # if we got here before the wrapped command exited, skip, otherwise signal and wait
+  if [ -n "${WRAPPED_COMMAND_PID:-}" && -z "${EXIT_VALUE:-}" ]; then
     kill -TERM "$WRAPPED_COMMAND_PID" || true
-  fi
-  if [ -n "${EXIT_VALUE:-}" ]; then
-    >&2 echo "Original exit code was ${EXIT_VALUE}, not preserving due to interrupt signal"
+    wait $WRAPPED_COMMAND_PID
+    EXIT_VALUE=$?
+    >&2 echo "wrapper.sh] [EARLY EXIT] Exit code was ${EXIT_VALUE}, not preserving due to interrupt signal"
+  # else if we have an exit code because we already waited on the process then debug it
+  elif [ -n "${EXIT_VALUE:-}" ]; then
+    >&2 echo "wrapper.sh] [EARLY EXIT] Original exit code was ${EXIT_VALUE}, not preserving due to interrupt signal"
   fi
   cleanup
   >&2 echo "wrapper.sh] [EARLY EXIT] Completed handler ..."
