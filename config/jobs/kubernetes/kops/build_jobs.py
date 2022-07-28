@@ -610,7 +610,7 @@ def generate_misc():
                    runs_per_day=3,
                    test_timeout_minutes=240,
                    scenario="keypair-rotation",
-                   env={'KOPS_CONTROL_PLANE': '3'},
+                   env={'KOPS_CONTROL_PLANE_SIZE': '3'},
                    extra_dashboards=['kops-misc']),
 
         build_test(name_override="kops-aws-metrics-server",
