@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/sirupsen/logrus"
 
@@ -139,18 +140,6 @@ type CacheKeyParts struct {
 	Identifier string   `json:"identifier"`
 	BaseSHA    string   `json:"baseSHA"`
 	HeadSHAs   []string `json:"headSHAs"`
-}
-
-// MakeCacheKey simply bundles up the given arguments into a CacheKeyParts
-// struct, then converts it into a CacheKey (string).
-func MakeCacheKey(identifier string, baseSHA string, headSHAs []string) (CacheKey, error) {
-	kp := CacheKeyParts{
-		Identifier: identifier,
-		BaseSHA:    baseSHA,
-		HeadSHAs:   headSHAs,
-	}
-
-	return kp.CacheKey()
 }
 
 // CacheKey converts a CacheKeyParts object into a JSON string (to be used as a
@@ -309,16 +298,11 @@ func (cache *InRepoConfigCache) getProwYAML(
 		return nil, err
 	}
 
-	key, err := MakeCacheKey(identifier, baseSHA, headSHAs)
-	if err != nil {
-		return nil, err
-	}
-
 	valConstructor := func() (interface{}, error) {
 		return valConstructorHelper(cache.gitClient, identifier, baseSHAGetter, headSHAGetters...)
 	}
 
-	got, err := cache.get(key, valConstructor)
+	got, err := cache.get(CacheKeyParts{Identifier: identifier, BaseSHA: baseSHA, HeadSHAs: headSHAs}, valConstructor)
 	if err != nil {
 		return nil, err
 	}
@@ -331,13 +315,25 @@ func (cache *InRepoConfigCache) getProwYAML(
 // values). It wraps around the low-level GetOrAdd function. Users are expected
 // to add their own get method for their own cached value.
 func (cache *InRepoConfigCache) get(
-	key CacheKey,
+	keyParts CacheKeyParts,
 	valConstructor cache.ValConstructor) (*ProwYAML, error) {
 
-	val, err := cache.GetOrAdd(key, valConstructor)
+	key, err := keyParts.CacheKey()
+	if err != nil {
+		return nil, fmt.Errorf("converting CacheKeyParts to CacheKey: %v", err)
+	}
+
+	now := time.Now()
+	val, cacheHit, err := cache.GetOrAdd(key, valConstructor)
 	if err != nil {
 		return nil, err
 	}
+	logrus.WithFields(logrus.Fields{
+		"identifier":        keyParts.Identifier,
+		"key":               key,
+		"duration(seconds)": -time.Until(now).Seconds(),
+		"cache_hit":         cacheHit,
+	}).Debug("Duration for resolving inrepoconfig cache.")
 
 	prowYAML, ok := val.(*ProwYAML)
 	if ok {
