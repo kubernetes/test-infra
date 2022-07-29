@@ -116,7 +116,7 @@ type Resource struct {
 type ResourceEntry struct {
 	Type     string        `json:"type"`
 	State    string        `json:"state"`
-	Names    []string      `json:"names,flow"`
+	Names    []string      `json:"names"`
 	MaxCount int           `json:"max-count,omitempty"`
 	MinCount int           `json:"min-count,omitempty"`
 	LifeSpan *Duration     `json:"lifespan,omitempty"`
@@ -130,7 +130,7 @@ func (re *ResourceEntry) IsDRLC() bool {
 
 // BoskosConfig defines config used by boskos server
 type BoskosConfig struct {
-	Resources []ResourceEntry `json:"resources,flow"`
+	Resources []ResourceEntry `json:"resources"`
 }
 
 // Metric contains analytics about a specific resource type
