@@ -370,6 +370,7 @@ distro_options = [
     'flatcar',
     'rhel8',
     'u2004',
+    'u2204',
 ]
 
 k8s_versions = [
