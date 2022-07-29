@@ -48,7 +48,7 @@ cleanup(){
 early_exit_handler() {
   >&2 echo "wrapper.sh] [EARLY EXIT] Interrupted, entering handler ..."
   # if we got here before the wrapped command exited, skip, otherwise signal and wait
-  if [ -n "${WRAPPED_COMMAND_PID:-}" && -z "${EXIT_VALUE:-}" ]; then
+  if [ -n "${WRAPPED_COMMAND_PID:-}" ] && [ -z "${EXIT_VALUE:-}" ]; then
     kill -TERM "$WRAPPED_COMMAND_PID" || true
     wait $WRAPPED_COMMAND_PID
     EXIT_VALUE=$?
