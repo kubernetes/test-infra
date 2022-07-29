@@ -91,3 +91,28 @@ periodics:
     testgrid-num-failures-to-alert: '1'
     testgrid-dashboards: sig-security-snyk-scan
     description: Run snyk scan on k/k master periodically
+- name: auto-refreshing-official-cve-feed
+  interval: 2h
+  cluster: k8s-infra-prow-build-trusted
+  decorate: true
+  extra_refs:
+  - org: kubernetes
+    repo: sig-security
+    base_ref: main
+  labels:
+    preset-service-account: "true"
+  spec:
+    serviceAccountName: k8s-cve-feed
+    containers:
+    - image: python3.7
+      command:
+      - cd sig-security-tooling/cve-feed/hack/ && ./fetch-cve-feed.sh
+      env:
+      - name: CVE_GCS_PATH
+        value: "gs://k8s-cve-feed"
+  annotations:
+    testgrid-create-test-group: "true"
+    testgrid-alert-email: security-tooling-private@kubernetes.io
+    testgrid-num-failures-to-alert: '1'
+    testgrid-dashboards: sig-security-cve-feed
+    description: Auto refreshing official cve feed KEP 3203
