@@ -72,7 +72,7 @@ postsubmits:
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
       decorate: true
-      run_if_changed: 'images/opentelemetry/.*'
+      run_if_changed: 'images/opentelemetry/.*|NGINX_BASE'
       branches:
         - ^main$
       spec:
@@ -93,7 +93,7 @@ postsubmits:
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
       decorate: true
-      run_if_changed: 'images/modsecurity/.*'
+      run_if_changed: 'images/modsecurity/.*|NGINX_BASE'
       branches:
         - ^main$
       spec:
@@ -114,7 +114,7 @@ postsubmits:
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
       decorate: true
-      run_if_changed: 'images/test-runner/.*'
+      run_if_changed: 'images/test-runner/.*|NGINX_BASE'
       branches:
         - ^main$
         - ^legacy$
@@ -136,7 +136,7 @@ postsubmits:
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
       decorate: true
-      run_if_changed: 'images/test-runner-debian/.*'
+      run_if_changed: 'images/test-runner-debian/.*|NGINX_BASE'
       branches:
         - ^main$
       spec:
@@ -157,7 +157,7 @@ postsubmits:
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
       decorate: true
-      run_if_changed: 'images/cfssl/.*'
+      run_if_changed: 'images/cfssl/.*|NGINX_BASE'
       branches:
         - ^main$
       spec:
@@ -178,7 +178,7 @@ postsubmits:
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
       decorate: true
-      run_if_changed: 'images/echo/.*'
+      run_if_changed: 'images/echo/.*|NGINX_BASE'
       branches:
         - ^main$
       spec:
@@ -199,7 +199,7 @@ postsubmits:
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
       decorate: true
-      run_if_changed: 'images/fastcgi-helloserver/.*'
+      run_if_changed: 'images/fastcgi-helloserver/.*|NGINX_BASE'
       branches:
         - ^main$
       spec:
@@ -220,7 +220,7 @@ postsubmits:
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
       decorate: true
-      run_if_changed: 'images/httpbin/.*'
+      run_if_changed: 'images/httpbin/.*|NGINX_BASE'
       branches:
         - ^main$
       spec:
@@ -241,7 +241,7 @@ postsubmits:
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
       decorate: true
-      run_if_changed: 'images/kube-webhook-certgen/.*'
+      run_if_changed: 'images/kube-webhook-certgen/.*|NGINX_BASE'
       branches:
         - ^main$
       spec:
@@ -262,7 +262,7 @@ postsubmits:
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
       decorate: true
-      run_if_changed: 'images/custom-error-pages/.*'
+      run_if_changed: 'images/custom-error-pages/.*|NGINX_BASE'
       branches:
         - ^main$
       spec:
