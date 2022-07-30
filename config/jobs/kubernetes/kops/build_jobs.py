@@ -866,6 +866,9 @@ def generate_upgrades():
                        env=env,
                        )
         )
+        # k8s 1.19 has issues with our server side apply logic for addons
+        if 'v1.19.' in k8s_a:
+            continue
         results.append(
             build_test(name_override=job_name + "-many-addons",
                        distro='u2004',
