@@ -18,14 +18,14 @@ limitations under the License.
 // Provide our own tools.
 
 export function*
-    map<T, U>(iterable: Iterable<T>, fn: (value: T) => U): Iterable<U> {
+map<T, U>(iterable: Iterable<T>, fn: (value: T) => U): Iterable<U> {
   for (const entry of iterable) {
     yield fn(entry);
   }
 }
 
 export function reduce<T, U>(
-    iterable: Iterable<T>, fn: (acc: U, value: T) => U, initialValue: U): U {
+  iterable: Iterable<T>, fn: (acc: U, value: T) => U, initialValue: U): U {
   let accumulator = initialValue;
   for (const entry of iterable) {
     accumulator = fn(accumulator, entry);
@@ -34,7 +34,7 @@ export function reduce<T, U>(
 }
 
 export function*
-    filter<T>(iterable: Iterable<T>, fn: (value: T) => boolean): Iterable<T> {
+filter<T>(iterable: Iterable<T>, fn: (value: T) => boolean): Iterable<T> {
   for (const entry of iterable) {
     if (fn(entry)) {
       yield entry;

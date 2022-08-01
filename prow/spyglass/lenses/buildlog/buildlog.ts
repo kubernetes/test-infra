@@ -65,11 +65,11 @@ async function replaceElementWithContent(element: HTMLDivElement, top: number, b
   // - we know this because its tightly coupled with template.html
   // TODO(fejta): consider more robust code, looser coupling.
   const r: ArtifactRequest = {
-    artifact: artifact!,
+    artifact,
     bottom,
-    length: Number(length!),
-    offset: Number(offset!),
-    startLine: Number(startLine!),
+    length: Number(length),
+    offset: Number(offset),
+    startLine: Number(startLine),
     top,
   };
   const content = await spyglass.request(JSON.stringify(r));
@@ -94,7 +94,7 @@ async function replaceElementWithContent(element: HTMLDivElement, top: number, b
   const skipped = log.querySelectorAll<HTMLElement>(".show-skipped");
   if (skipped.length === 0) {
     const button = document.querySelector('button.show-all-button')!;
-    button.parentNode!.removeChild(button);
+    button.parentNode.removeChild(button);
   }
   spyglass.contentUpdated();
 }
@@ -159,7 +159,7 @@ async function handleAnalyze(this: HTMLButtonElement) {
     }
     const result: JsonResponse = JSON.parse(content);
     if (result.error) {
-      this.title = "Analysis failed: " + result.error;
+      this.title = `Analysis failed: ${  result.error}`;
       console.log("Failed to analyze", result.error);
       return;
     }
@@ -171,7 +171,7 @@ async function handleAnalyze(this: HTMLButtonElement) {
       location.hash = "";
     }
   } catch (err) {
-    this.title = "Analysis failed: " + err;
+    this.title = `Analysis failed: ${  err}`;
   } finally {
     this.textContent = "Reanalyze";
     this.disabled = false;
@@ -206,7 +206,7 @@ async function handlePin(e: MouseEvent) {
   const button = document.getElementById("annotate-pin");
   if (button) {
     // TODO(fejta): class on great grandparent and/or data- on pin to make this more efficient
-    await focusLines(artifact, start, end, button.parentElement!.parentElement!.parentElement);
+    await focusLines(artifact, start, end, button.parentElement.parentElement.parentElement);
   }
   location.hash = "";
 
@@ -337,11 +337,11 @@ async function handleHash(): Promise<void> {
 }
 
 function scrollTo(elem: Element) {
-      const top = elem.getBoundingClientRect().top + window.pageYOffset - 50;
-      spyglass.scrollTo(0, top).then();
+  const top = elem.getBoundingClientRect().top + window.pageYOffset - 50;
+  spyglass.scrollTo(0, top).then();
 }
 
-async function highlightLines(artifact: string, startNum: number, endNum: number, highlight: string = 'highlighted-line', selector: Selector|null): Promise<HTMLDivElement|null> {
+async function highlightLines(artifact: string, startNum: number, endNum: number, highlight = 'highlighted-line', selector: Selector|null): Promise<HTMLDivElement|null> {
   let firstEl: HTMLDivElement|null = null;
   for (let lineNum = startNum; lineNum <= endNum; lineNum++) {
     const lineId = `${artifact}:${lineNum}`;

@@ -68,7 +68,7 @@ function parseHash(): {[index: string]: string} {
       continue;
     }
     const [index, hash] = part.split(':');
-    result[index] = '#' + unescape(hash);
+    result[index] = `#${  unescape(hash)}`;
   }
   return result;
 }
@@ -86,7 +86,7 @@ window.addEventListener('message', async (e) => {
     const index = Number(frame.dataset.lensIndex!);
 
     const respond = (response: string): void => {
-      frame.contentWindow!.postMessage({id, message: {type: 'response', data: response}}, '*');
+      frame.contentWindow.postMessage({id, message: {type: 'response', data: response}}, '*');
     };
 
     switch (message.type) {
@@ -94,7 +94,7 @@ window.addEventListener('message', async (e) => {
         frame.style.height = `${message.height}px`;
         frame.style.visibility = 'visible';
         if (frame.dataset.hideTitle) {
-          frame.parentElement!.parentElement!.classList.add('hidden-title');
+          frame.parentElement.parentElement.classList.add('hidden-title');
         }
         document.querySelector<HTMLElement>(`#${lens}-loading`)!.style.display = 'none';
         respond('');
@@ -167,9 +167,9 @@ window.addEventListener('hashchange', (e) => {
 
 // We can't use DOMContentLoaded here or we end up with a bunch of flickering. This appears to be MDL's fault.
 window.addEventListener('load', () => {
-    loadLenses();
-    handleRerunButton();
-    handleAbortButton();
+  loadLenses();
+  handleRerunButton();
+  handleAbortButton();
 });
 
 function handleRerunButton() {

@@ -62,10 +62,10 @@ if [[ "${VERIFY_CODEGEN:-true}" == "true" ]]; then
   hack/make-rules/verify/codegen.sh || { FAILED+=($name); echo "ERROR: $name failed"; }
   cd "${REPO_ROOT}"
 fi
-if [[ "${VERIFY_TSLINT:-true}" == "true" ]]; then
-  name="tslint"
+if [[ "${VERIFY_ESLINT:-true}" == "true" ]]; then
+  name="eslint"
   echo "verifying $name"
-  hack/make-rules/verify/tslint.sh || { FAILED+=($name); echo "ERROR: $name failed"; }
+  hack/make-rules/verify/eslint.sh || { FAILED+=($name); echo "ERROR: $name failed"; }
   cd "${REPO_ROOT}"
 fi
 if [[ "${VERIFY_PYLINT:-true}" == "true" ]]; then

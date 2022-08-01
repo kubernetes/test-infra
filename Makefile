@@ -63,9 +63,9 @@ verify-go-deps:
 verify:
 	hack/make-rules/verify/all.sh
 # typescript linting
-.PHONY: verify-tslint
-verify-tslint:
-	hack/make-rules/verify/tslint.sh
+.PHONY: verify-eslint
+verify-eslint:
+	hack/make-rules/verify/eslint.sh
 # go linters
 .PHONY: go-lint
 go-lint:

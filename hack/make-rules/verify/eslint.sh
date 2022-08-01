@@ -13,10 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# this script runs tslint against the repo using docker
-#
-# TODO: we should be using eslint instead now, but this repo is also
-# on a rather old version of node, first we get the build system migrated.
+# this script runs eslint against the repo using docker
 
 set -o errexit
 set -o nounset
@@ -31,4 +28,4 @@ hack/build/ensure-node_modules.sh
 
 # TODO: make sure this matches bazel version
 hack/run-in-node-container.sh \
-    node_modules/tslint/bin/tslint -c tslint.json --project .
+    node_modules/eslint/bin/eslint -c eslintrc.js --fix --ext .ts .

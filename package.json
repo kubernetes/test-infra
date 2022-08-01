@@ -7,7 +7,7 @@
     "pako": "^1.0.10"
   },
   "bazel-update-info": {
-      "WORKSPACE": "NB: set frozen_lockfile = False"
+    "WORKSPACE": "NB: set frozen_lockfile = False"
   },
   "devDependencies": {
     "@bazel/bazelisk": "^1.5.0",
@@ -18,17 +18,21 @@
     "@rollup/plugin-commonjs": "14.0.0",
     "@rollup/plugin-json": "4.1.0",
     "@rollup/plugin-node-resolve": "8.4.0",
-    "rollup-plugin-terser": "5.1.3",
     "@types/color": "^3.0.0",
     "@types/google.visualization": "^0.0.43",
     "@types/gtag.js": "^0.0.0",
     "@types/jasmine": "~3.3.13",
     "@types/pako": "^1.0.1",
+    "@typescript-eslint/eslint-plugin": "^5.31.0",
+    "@typescript-eslint/parser": "^5.31.0",
+    "eslint": "^8.20.0",
+    "eslint-plugin-jsdoc": "^39.3.3",
+    "eslint-plugin-prefer-arrow": "^1.2.3",
     "jasmine": "~3.4.0",
-    "rollup": "2.3.4",
+    "rollup": "2.77.2",
     "rollup-plugin-amd": "4.0.0",
-    "terser": "4.4.0",
-    "tslint": "^5.12.1",
+    "rollup-plugin-terser": "5.1.3",
+    "terser": "5.14.2",
     "typescript": "^3.7.5"
   }
 }

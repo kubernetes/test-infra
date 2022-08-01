@@ -10,7 +10,7 @@ export interface Spyglass {
    * The returned promise will be resolved once the page has been updated.
    *
    * @param data Some data to pass back to the server. JSON encoding is
-   *             recommended, but not required.
+   * recommended, but not required.
    */
   updatePage(data: string): Promise<void>;
   /**
@@ -19,8 +19,9 @@ export interface Spyglass {
    *
    * This is equivalent to updatePage(), except that the displayed content is
    * not automatically changed.
+   *
    * @param data Some data to pass back to the server. JSON encoding is
-   *             recommended, but not required.
+   * recommended, but not required.
    */
   requestPage(data: string): Promise<string>;
   /**
@@ -28,7 +29,7 @@ export interface Spyglass {
    * returns a promise that will resolve with the response as a string.
    *
    * @param data Some data to pass back to the server. JSON encoding is
-   *             recommended, but not required.
+   * recommended, but not required.
    */
   request(data: string): Promise<string>;
   /**
@@ -40,8 +41,9 @@ export interface Spyglass {
    * Returns a top-level URL that will cause your lens to be loaded with the
    * specified fragment. This is useful to construct copyable links, but generally
    * should not be used for immediate navigation.
+   *
    * @param fragment The fragment you want. If not prefixed with a #, one will
-   *                 be assumed.
+   * be assumed.
    */
   makeFragmentLink(fragment: string): string;
 
@@ -107,7 +109,7 @@ class SpyglassImpl implements Spyglass {
     const topURL = q.topURL!;
     const lensIndex = q.lensIndex!;
     if (fragment[0] !== '#') {
-      fragment = '#' + fragment;
+      fragment = `#${  fragment}`;
     }
     return `${topURL}#${serialiseHashes({[lensIndex]: fragment})}`;
   }
@@ -160,8 +162,8 @@ class SpyglassImpl implements Spyglass {
         if (mutation.target instanceof HTMLDivElement &&
             (mutation.target.classList.contains('shown') ||
              mutation.target.classList.contains('loglines'))) {
-               this.createHyperlinks(mutation.target);
-             }
+          this.createHyperlinks(mutation.target);
+        }
       } else if (mutation.type === 'attributes') {
         if (mutation.target instanceof HTMLAnchorElement && mutation.attributeName === 'href') {
           const href = mutation.target.getAttribute('href');
@@ -199,9 +201,9 @@ class SpyglassImpl implements Spyglass {
     this.scrollTo(0, top).then();
   }
 
- private setLink(match: string, attr: string): string {
+  private setLink(match: string, attr: string): string {
     if (typeof attr !== 'undefined') {
-        return match;
+      return match;
     }
     return `</span><a target="_blank" href="${match}">${match}</a><span>`;
   }
@@ -215,6 +217,7 @@ class SpyglassImpl implements Spyglass {
   private createHyperlink(elem: HTMLElement): void {
     // Doing a light match check before running heavier replace regex manipulation
     if (elem.innerText.match(linkRegex)) {
+      /* eslint-disable  @typescript-eslint/unbound-method */
       elem.innerHTML = elem.innerText.replace(linkRegex, this.setLink);
     }
   }

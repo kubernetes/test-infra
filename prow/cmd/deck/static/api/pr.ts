@@ -29,9 +29,9 @@ export interface PullRequest extends BasePullRequest {
   BaseRef: Ref;
   Repository: Repository;
   Labels: {
-    Nodes: Array<{
+    Nodes: {
       Label: Label;
-    }>;
+    }[];
   };
   Milestone: {
     Title: string;
