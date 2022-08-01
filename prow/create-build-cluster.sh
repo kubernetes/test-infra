@@ -25,14 +25,17 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-# Specific to Prow instance
+# Specific to Prow instance. Use "k8s-prow" if onboarding prow.k8s.io
 PROW_INSTANCE_NAME="${PROW_INSTANCE_NAME:-}"
+# Crier and deck needs to access the GCS bucket. Use
+# "control-plane@k8s-prow.iam.gserviceaccount.com" if onboarding prow.k8s.io
 CONTROL_PLANE_SA="${CONTROL_PLANE_SA:-}"
 
 PROW_SERVICE_PROJECT="${PROW_SERVICE_PROJECT:-k8s-prow}"
 PROW_SECRET_ACCESSOR_SA="${PROW_SECRET_ACCESSOR_SA:-gencred-refresher@k8s-prow.iam.gserviceaccount.com}"
 
 PROW_DEPLOYMENT_DIR="${PROW_DEPLOYMENT_DIR:-./config/prow/cluster}"
+# URI for cloning your fork locally, for example "git@github.com:chaodaiG/test-infra.git"
 GITHUB_FORK_URI="${GITHUB_FORK_URI:-}"
 GITHUB_CLONE_URI="${GITHUB_CLONE_URI:-git@github.com:kubernetes/test-infra}"
 
@@ -92,12 +95,12 @@ ROOT_DIR="${tempdir}/test-infra"
 
 function main() {
   parseArgs "$@"
-  prompt "Create project" createProject
-  prompt "Create/ensure GCS job result bucket" ensureBucket
-  prompt "Create cluster" createCluster
-  prompt "Create a service account for uploading results to GCS" createUploadSA
-  prompt "Generate necessary core Prow configuration" genConfig
-  prompt "Generate kubeconfig credentials for Prow" gencreds
+  ensureProject
+  ensureBucket
+  ensureCluster
+  ensureUploadSA
+  genConfig
+  gencreds
   echo "All done!"
 }
 # Prep and check args.
@@ -144,7 +147,13 @@ function getClusterCreds() {
     authed="true"
   fi
 }
-function createProject() {
+function ensureProject() {
+  if gcloud projects describe ${PROJECT}; then
+    echo "GCP project '${PROJECT}' exists, skip creating."
+    return
+  fi
+
+  prompt "Failed to describe the project ${PROJECT}, press Y/y to create the project" echo
   # Create project, configure billing, enable GKE, add IAM rule for oncall team.
   echo "Creating project '${PROJECT}' (this may take a few minutes)..."
   gcloud projects create "${PROJECT}" --name="${PROJECT}" --folder="${FOLDER_ID}"
@@ -152,7 +161,13 @@ function createProject() {
   gcloud services enable "container.googleapis.com" --project="${PROJECT}"
   gcloud projects add-iam-policy-binding "${PROJECT}" --member="${ADMIN_IAM_MEMBER}" --role="roles/owner"
 }
-function createCluster() {
+function ensureCluster() {
+  if gcloud container clusters describe "${CLUSTER}" --project="${PROJECT}" --zone="${ZONE}" >/dev/null 2>&1; then
+    echo "Cluster '${CLUSTER}' exists in zone '${ZONE}' in project '${PROJECT}', skip creating."
+    return
+  fi
+
+  prompt "Pressing Y/y to create the cluster" echo
   echo "Creating cluster '${CLUSTER}' (this may take a few minutes)..."
   echo "If this fails due to insufficient project quota, request more at https://console.cloud.google.com/iam-admin/quotas?project=${PROJECT}"
   echo
@@ -170,24 +185,33 @@ function createBucket() {
 }
 
 function ensureBucket() {
-  if ! gsutil ls -p "${PROJECT}" "${GCS_BUCKET}"; then
-    if ! createBucket; then
-      echo "FAILED to create GCS bucket ${GCS_BUCKET}. This is expected if this is a shared default job result bucket."
-      echo "Please press any key to acknowledge and continue."
-      pause
-    fi
+  if ! gsutil ls "${GCS_BUCKET}"; then
+    prompt "The specified GCS bucket '${GCS_BUCKET}' cannot be located. This is expected if this is a shared default job result bucket. Otherwise press Y/y to create it." createBucket
+  else
+    echo "Bucket '${GCS_BUCKET}' already exists, skip creation."
   fi
 }
-function createUploadSA() {
+
+function ensureUploadSA() {
   getClusterCreds
   local sa="prowjob-default-sa"
   local saFull="${sa}@${PROJECT}.iam.gserviceaccount.com"
   # Create a GCP service account for uploading to GCS
-  gcloud beta iam service-accounts create "${sa}" --project="${PROJECT}" --description="Default SA for ProwJobs to use to upload job results to GCS." --display-name="ProwJob default SA"
+  if ! gcloud beta iam service-accounts describe "${saFull}" --project="${PROJECT}" >/dev/null 2>&1; then
+    gcloud beta iam service-accounts create "${sa}" --project="${PROJECT}" --description="Default SA for ProwJobs to use to upload job results to GCS." --display-name="ProwJob default SA"
+  else
+    echo "Service account '${sa}' already exists, skip creation."
+  fi
   # Ensure workload identity is enabled on the cluster
-  "${ROOT_DIR}/workload-identity/enable-workload-identity.sh" "${PROJECT}" "${ZONE}" "${CLUSTER}"
+  if ! gcloud container clusters describe ${CLUSTER} --project=${PROJECT} --zone=${ZONE} | grep "${CLUSTER}.svc.id.goog" >/dev/null 2>&1; then
+    "${ROOT_DIR}/workload-identity/enable-workload-identity.sh" "${PROJECT}" "${ZONE}" "${CLUSTER}"
+  else
+    echo "Workload identity is enabled on cluster '${CLUSTER}', skip enabling."
+  fi
+
   # Create a k8s service account to associate with the GCP service account
-  kubectl apply -f - <<EOF
+  if ! kubectl -n test-pods get ${sa}; then
+    kubectl apply -f - <<EOF
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -196,18 +220,25 @@ metadata:
   name: ${sa}
   namespace: test-pods
 EOF
-  echo "Binding GCP service account with k8s service account via workload identity. Propagation and validation may take a few minutes..."
-  "${ROOT_DIR}/workload-identity/bind-service-accounts.sh" "${PROJECT}" "${ZONE}" "${CLUSTER}" test-pods "${sa}" "${saFull}"
+  fi
 
-  # Try to authorize SA to upload to GCS_BUCKET. If this fails, the bucket if probably a shared result bucket and oncall will need to handle.
-  if ! gsutil iam ch "serviceAccount:${saFull}:roles/storage.objectAdmin" "${GCS_BUCKET}"; then
-    echo
-    echo "It doesn't look you have permission to authorize access to this bucket. This is expected for the default job result bucket."
-    echo "If this is a default job result bucket, please ask the test-infra oncall (https://go.k8s.io/oncall) to run the following:"
-    echo "  gsutil iam ch \"serviceAccount:${saFull}:roles/storage.objectAdmin\" \"${GCS_BUCKET}\""
-    echo
-    echo "Press any key to acknowledge (this doesn't need to be completed to continue this script, but it needs to be done before uploading will work)..."
-    pause
+  echo "Binding GCP service account with k8s service account via workload identity. Propagation and validation may take a few minutes..."
+  if ! gcloud iam service-accounts get-iam-policy --project=gob-prow prowjob-default-sa@gob-prow.iam.gserviceaccount.com | grep "${CLUSTER}.svc.id.goog[test-pods/${saFull}]" >/dev/null 2>&1; then
+    "${ROOT_DIR}/workload-identity/bind-service-accounts.sh" "${PROJECT}" "${ZONE}" "${CLUSTER}" test-pods "${sa}" "${saFull}"
+  fi
+
+  # Try to authorize SA to upload to GCS_BUCKET. If this fails, the bucket if
+  # probably a shared result bucket and oncall will need to handle.
+  if ! gsutil iam get "${GCS_BUCKET}" | grep "serviceAccount:${saFull}" >/dev/null 2>&1; then
+    if ! gsutil iam ch "serviceAccount:${saFull}:roles/storage.objectAdmin" "${GCS_BUCKET}"; then
+      echo
+      echo "It doesn't look you have permission to authorize access to this bucket. This is expected for the default job result bucket."
+      echo "If this is a default job result bucket, please ask the test-infra oncall (https://go.k8s.io/oncall) to run the following:"
+      echo "  gsutil iam ch \"serviceAccount:${saFull}:roles/storage.objectAdmin\" \"${GCS_BUCKET}\""
+      echo
+      echo "Press any key to acknowledge (this doesn't need to be completed to continue this script, but it needs to be done before uploading will work)..."
+      pause
+    fi
   fi
 }
 
