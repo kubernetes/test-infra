@@ -1155,6 +1155,7 @@ plugins:
     plugins:
     - milestone
     - override
+    - require-matching-label
 
   kubernetes-sigs/cluster-api-provider-aws:
     plugins:
