@@ -374,6 +374,7 @@ slack:
     exempt_users:
     - k8s-ci-robot
     - dependabot[bot]
+    - github-actions[bot]
   - repos:
     - kubernetes/cluster-api-provider-aws
     channels:
