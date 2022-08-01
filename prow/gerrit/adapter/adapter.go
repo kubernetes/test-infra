@@ -114,6 +114,7 @@ type Controller struct {
 	repoCacheMapMux      sync.Mutex
 	latestMux            sync.Mutex
 	workerPoolSize       int
+	cacheDirBase         string
 }
 
 type LastSyncTracker interface {
@@ -123,7 +124,7 @@ type LastSyncTracker interface {
 
 // NewController returns a new gerrit controller client
 func NewController(ctx context.Context, prowJobClient prowv1.ProwJobInterface, op io.Opener,
-	ca *config.Agent, projects, projectsOptOutHelp map[string][]string, cookiefilePath, tokenPathOverride, lastSyncFallback string, cacheSize, cacheCopies, workerPoolSize int) *Controller {
+	ca *config.Agent, projects, projectsOptOutHelp map[string][]string, cookiefilePath, tokenPathOverride, lastSyncFallback, cacheDirBase string, cacheSize, cacheCopies, workerPoolSize int) *Controller {
 
 	cfg := ca.Config
 	projectsOptOutHelpMap := map[string]sets.String{}
@@ -160,6 +161,7 @@ func NewController(ctx context.Context, prowJobClient prowv1.ProwJobInterface, o
 		inRepoConfigFailures: map[string]bool{},
 		instancesWithWorker:  make(map[string]bool),
 		workerPoolSize:       workerPoolSize,
+		cacheDirBase:         cacheDirBase,
 	}
 
 	// applyGlobalConfig reads gerrit configurations from global gerrit config,
@@ -212,11 +214,12 @@ func (c *Controller) applyGlobalConfigOnce(cfg config.Getter, gerritClient *clie
 }
 
 // Helper function to create the cache used for InRepoConfig. Currently only attempts to create cache and returns nil if failed.
-func createCache(cloneURI *url.URL, cookieFilePath string, cacheSize, cacheCopies int, configAgent *config.Agent) (cache *config.InRepoConfigCacheHandler, err error) {
+func createCache(cloneURI *url.URL, cookieFilePath, cacheDirBase string, cacheSize, cacheCopies int, configAgent *config.Agent) (cache *config.InRepoConfigCacheHandler, err error) {
 	opts := git.ClientFactoryOpts{
 		CloneURI:       cloneURI.String(),
 		Host:           cloneURI.Host,
 		CookieFilePath: cookieFilePath,
+		CacheDirBase:   &cacheDirBase,
 	}
 	gc, err := git.NewClientFactory(opts.Apply)
 	if err != nil {
@@ -261,7 +264,7 @@ func (c *Controller) syncChange(latest client.LastSyncState, changeChan <-chan C
 		c.repoCacheMapMux.Lock()
 		cache, ok := c.repoCacheMap[cloneURI.String()]
 		if !ok {
-			if cache, err = createCache(cloneURI, c.cookieFilePath, c.cacheSize, c.cacheCopies, c.configAgent); err != nil {
+			if cache, err = createCache(cloneURI, c.cookieFilePath, c.cacheDirBase, c.cacheSize, c.cacheCopies, c.configAgent); err != nil {
 				c.repoCacheMapMux.Unlock()
 				wg.Done()
 				log.WithError(err).Error("create repo cache.")

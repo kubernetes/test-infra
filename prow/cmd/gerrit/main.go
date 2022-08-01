@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+
 	"k8s.io/test-infra/prow/metrics"
 	"k8s.io/test-infra/prow/pjutil/pprof"
 
@@ -54,6 +55,7 @@ type options struct {
 	inRepoConfigCacheSize   int
 	inRepoConfigCacheCopies int
 	changeWorkerPoolSize    int
+	cacheDirBase            string
 }
 
 func (o *options) validate() error {
@@ -104,6 +106,7 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.IntVar(&o.inRepoConfigCacheSize, "in-repo-config-cache-size", 100, "Cache size for ProwYAMLs read from in-repo configs. Each host receives its own cache.")
 	fs.IntVar(&o.inRepoConfigCacheCopies, "in-repo-config-cache-copies", 1, "Copy of caches for ProwYAMLs read from in-repo configs.")
 	fs.IntVar(&o.changeWorkerPoolSize, "change-worker-pool-size", 1, "Number of workers processing changes for each instance.")
+	fs.StringVar(&o.cacheDirBase, "cache-dir-base", "", "Directory where the repo cache should be mounted.")
 	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.storage, &o.instrumentationOptions, &o.config} {
 		group.AddFlags(fs)
 	}
@@ -141,7 +144,7 @@ func main() {
 		logrus.WithError(err).Fatal("Error creating opener")
 	}
 
-	c := adapter.NewController(ctx, prowJobClient, op, ca, o.projects, o.projectsOptOutHelp, o.cookiefilePath, o.tokenPathOverride, o.lastSyncFallback, o.inRepoConfigCacheSize, o.inRepoConfigCacheCopies, o.changeWorkerPoolSize)
+	c := adapter.NewController(ctx, prowJobClient, op, ca, o.projects, o.projectsOptOutHelp, o.cookiefilePath, o.tokenPathOverride, o.lastSyncFallback, o.cacheDirBase, o.inRepoConfigCacheSize, o.inRepoConfigCacheCopies, o.changeWorkerPoolSize)
 
 	logrus.Infof("Starting gerrit fetcher")
 
