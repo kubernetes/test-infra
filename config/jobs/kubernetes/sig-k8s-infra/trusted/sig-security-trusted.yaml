@@ -104,7 +104,7 @@ periodics:
   spec:
     serviceAccountName: k8s-cve-feed
     containers:
-    - image: python3.7
+    - image: python:3.7
       command:
       - cd sig-security-tooling/cve-feed/hack/ && ./fetch-cve-feed.sh
       env:
