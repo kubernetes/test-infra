@@ -99,14 +99,17 @@ periodics:
   - org: kubernetes
     repo: sig-security
     base_ref: main
+    workdir: true
   labels:
     preset-service-account: "true"
   spec:
     serviceAccountName: k8s-cve-feed
     containers:
-    - image: python:3.7
+    - image: gcr.io/k8s-staging-test-infra/gcloud-in-go:v20220607-33951ed1ed
       command:
-      - cd sig-security-tooling/cve-feed/hack/ && ./fetch-cve-feed.sh
+      - sh
+      - "-c"
+      - "cd sig-security-tooling/cve-feed/hack/ && ./fetch-cve-feed.sh"
       env:
       - name: CVE_GCS_PATH
         value: "gs://k8s-cve-feed"
