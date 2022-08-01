@@ -149,7 +149,12 @@ func TestGetProwYAMLCached(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		key, err := MakeCacheKey(identifier, baseSHA, headSHAs)
+		kp := CacheKeyParts{
+			Identifier: identifier,
+			BaseSHA:    baseSHA,
+			HeadSHAs:   headSHAs,
+		}
+		key, err := kp.CacheKey()
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -414,7 +419,7 @@ func TestGetProwYAMLCached(t *testing.T) {
 				if err != nil {
 					t.Errorf("Expected error 'nil' got '%v'", err.Error())
 				}
-				_, _ = cache.GetOrAdd(k, goodValConstructorForInitialState(ProwYAML{
+				_, _, _ = cache.GetOrAdd(k, goodValConstructorForInitialState(ProwYAML{
 					Presubmits: []Presubmit{
 						{
 							JobBase: JobBase{Name: string(k)}},
@@ -432,7 +437,7 @@ func TestGetProwYAMLCached(t *testing.T) {
 					if err != nil {
 						t.Errorf("Expected error 'nil' got '%v'", err.Error())
 					}
-					_, _ = cache.GetOrAdd(k, func() (interface{}, error) { return "<wrong-type>", nil })
+					_, _, _ = cache.GetOrAdd(k, func() (interface{}, error) { return "<wrong-type>", nil })
 				}
 			}
 

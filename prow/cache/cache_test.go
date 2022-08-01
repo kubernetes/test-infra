@@ -154,11 +154,11 @@ func TestGetOrAddSimple(t *testing.T) {
 
 			for k, v := range tc.cacheInitialState {
 				if tc.cache != nil {
-					_, _ = tc.cache.GetOrAdd(k, goodValConstructorForInitialState(v))
+					_, _, _ = tc.cache.GetOrAdd(k, goodValConstructorForInitialState(v))
 				}
 			}
 
-			val, err := tc.cache.GetOrAdd(tc.key, tc.valConstructor)
+			val, _, err := tc.cache.GetOrAdd(tc.key, tc.valConstructor)
 
 			if tc.expected.err == "" {
 				if err != nil {
@@ -257,7 +257,7 @@ func TestGetOrAddBurst(t *testing.T) {
 		go func() {
 			// Input of 3 for goodValConstructor will take 7 steps and reach a
 			// maximum value of 16. We check this below.
-			constructedVal, err := lruCache.GetOrAdd(3, goodValConstructor(3))
+			constructedVal, _, err := lruCache.GetOrAdd(3, goodValConstructor(3))
 			if err != nil {
 				t.Error("could not fetch or construct value")
 			}
@@ -290,7 +290,7 @@ func TestGetOrAddBurst(t *testing.T) {
 		j := (i % 5) + 1
 		expectedVal := ""
 		go func() {
-			constructedVal, err := lruCache.GetOrAdd(j, goodValConstructor(j))
+			constructedVal, _, err := lruCache.GetOrAdd(j, goodValConstructor(j))
 			if err != nil {
 				t.Error("could not fetch or construct value")
 			}
