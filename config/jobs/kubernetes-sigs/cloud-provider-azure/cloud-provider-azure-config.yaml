@@ -869,7 +869,7 @@ periodics:
       - name: CLUSTER_PROVISIONING_TOOL
         value: "capz"
       - name: GINKGO_PARALLEL_NODES
-        value: "1"
+        value: "3"
       - name: GINKGO_TOLERATE_FLAKES
         value: "y"
   annotations:
