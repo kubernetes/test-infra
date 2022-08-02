@@ -1,7 +1,7 @@
 import {Pull} from "../api/prow";
 
 export interface HistoryData {
-    History: {[key: string]: Record[]};
+  History: {[key: string]: Record[]};
 }
 
 export interface Record {

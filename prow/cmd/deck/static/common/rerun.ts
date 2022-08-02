@@ -141,7 +141,7 @@ export function createRerunProwJobIcon(modal: HTMLElement, parentEl: Element, pr
             method: 'post',
           });
           if (result.status === 401) {
-            window.location.href = window.location.origin + `/github-login?dest=${relativeURL({rerun: "gh_redirect"})}`;
+            window.location.href = `${window.location.origin  }/github-login?dest=${relativeURL({rerun: "gh_redirect"})}`;
           }
           const data = await result.text();
           if (result.status >= 400) {

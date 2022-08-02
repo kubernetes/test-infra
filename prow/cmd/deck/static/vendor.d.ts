@@ -10,7 +10,7 @@ interface Window {
 // Needed for mysterious reasons, otherwise ts doesn't understand this is a module
 declare module 'dialog-polyfill';
 
-declare var componentHandler: any;
+declare let componentHandler: any;
 
 // Enough typing for the Material Design library to be usable.
 interface MaterialSnackbarOptionsNoAction {

@@ -2,7 +2,7 @@ import moment from "moment";
 import {ProwJobState, Pull} from "../api/prow";
 
 // This file likes namespaces, so stick with it for now.
-/* tslint:disable:no-namespace */
+/* eslint-disable @typescript-eslint/no-namespace */
 
 // State enum describes different state a job can be in
 export enum State {
@@ -24,7 +24,7 @@ export namespace cell {
   }
 
   export function time(id: string, when: moment.Moment): HTMLTableDataCellElement {
-    const tid = "time-cell-" + id;
+    const tid = `time-cell-${  id}`;
     const main = document.createElement("div");
     const isADayOld = when.isBefore(moment().startOf('day'));
     main.textContent = when.format(isADayOld ? 'MMM DD HH:mm:ss' : 'HH:mm:ss');
@@ -118,7 +118,7 @@ export namespace cell {
   let idCounter = 0;
   function nextID(): string {
     idCounter++;
-    return "tipID-" + String(idCounter);
+    return `tipID-${  String(idCounter)}`;
   }
 
   export function addPRRevision(elem: Node, repo: string, pull: Pull): void {
@@ -154,7 +154,7 @@ export namespace cell {
       if (pull.author_link) {
         al.href = pull.author_link;
       } else {
-        al.href = "/github-link?dest=" + pull.author;
+        al.href = `/github-link?dest=${  pull.author}`;
       }
       al.text = pull.author;
       elem.appendChild(al);
@@ -174,12 +174,12 @@ export namespace tooltip {
 }
 
 export namespace icon {
-  export function create(iconString: string, tip: string = "", onClick?: (this: HTMLElement, ev: MouseEvent) => any): HTMLAnchorElement {
+  export function create(iconString: string, tip = "", onClick?: (this: HTMLElement, ev: MouseEvent) => any): HTMLAnchorElement {
     const i = document.createElement("i");
     i.classList.add("icon-button", "material-icons");
     i.innerHTML = iconString;
     if (tip !== "") {
-       i.title = tip;
+      i.title = tip;
     }
     if (onClick) {
       i.addEventListener("click", onClick);
@@ -217,7 +217,7 @@ export function getCookieByName(name: string): string {
   const docCookies = decodeURIComponent(document.cookie).split(";");
   for (const cookie of docCookies) {
     const c = cookie.trim();
-    const pref = name + "=";
+    const pref = `${name  }=`;
     if (c.indexOf(pref) === 0) {
       return c.slice(pref.length);
     }
@@ -245,43 +245,43 @@ export function showAlert(text: string): void {
 // used (per session).
 export function copyToClipboard(text: string) {
   if (window.clipboardData && window.clipboardData.setData) {
-      // IE specific code path to prevent textarea being shown while dialog is visible.
-      return window.clipboardData.setData("Text", text);
+    // IE specific code path to prevent textarea being shown while dialog is visible.
+    return window.clipboardData.setData("Text", text);
   } else if (document.queryCommandSupported && document.queryCommandSupported("copy")) {
-      const textarea = document.createElement("textarea");
-      textarea.textContent = text;
-      textarea.style.position = "fixed";  // Prevent scrolling to bottom of page in MS Edge.
-      document.body.appendChild(textarea);
-      textarea.select();
-      try {
-          return document.execCommand("copy");  // Security exception may be thrown by some browsers.
-      } catch (ex) {
-          console.warn("Copy to clipboard failed.", ex);
-          return false;
-      } finally {
-          document.body.removeChild(textarea);
-      }
+    const textarea = document.createElement("textarea");
+    textarea.textContent = text;
+    textarea.style.position = "fixed";  // Prevent scrolling to bottom of page in MS Edge.
+    document.body.appendChild(textarea);
+    textarea.select();
+    try {
+      return document.execCommand("copy");  // Security exception may be thrown by some browsers.
+    } catch (ex) {
+      console.warn("Copy to clipboard failed.", ex);
+      return false;
+    } finally {
+      document.body.removeChild(textarea);
+    }
   }
 }
 export function formatDuration(seconds: number): string {
   const parts: string[] = [];
   if (seconds >= 3600) {
-      const hours = Math.floor(seconds / 3600);
-      parts.push(String(hours));
-      parts.push('h');
-      seconds = seconds % 3600;
+    const hours = Math.floor(seconds / 3600);
+    parts.push(String(hours));
+    parts.push('h');
+    seconds = seconds % 3600;
   }
   if (seconds >= 60) {
-      const minutes = Math.floor(seconds / 60);
-      if (minutes > 0) {
-          parts.push(String(minutes));
-          parts.push('m');
-          seconds = seconds % 60;
-      }
+    const minutes = Math.floor(seconds / 60);
+    if (minutes > 0) {
+      parts.push(String(minutes));
+      parts.push('m');
+      seconds = seconds % 60;
+    }
   }
   if (seconds >= 0) {
-      parts.push(String(seconds));
-      parts.push('s');
+    parts.push(String(seconds));
+    parts.push('s');
   }
   return parts.join('');
 }

@@ -1,8 +1,8 @@
-function addSectionExpanders(): void {
+const addSectionExpanders = (): void => {
   const expanders = document.querySelectorAll<HTMLTableRowElement>('tr.section-expander');
   for (const expander of Array.from(expanders)) {
     expander.onclick = () => {
-      const tbody = expander.parentElement!.nextElementSibling!;
+      const tbody = expander.parentElement.nextElementSibling;
       const icon = expander.querySelector('i')!;
       if (tbody.classList.contains('hidden-tests')) {
         tbody.classList.remove('hidden-tests');
@@ -14,13 +14,13 @@ function addSectionExpanders(): void {
       spyglass.contentUpdated();
     };
   }
-}
+};
 
-function addTestExpanders(): void {
+const addTestExpanders = (): void => {
   const rows = document.querySelectorAll<HTMLTableRowElement>('.failure-name,.flaky-name');
   for (const row of Array.from(rows)) {
     row.onclick = () => {
-      const sibling = row.nextElementSibling!;
+      const sibling = row.nextElementSibling;
       const icon = row.querySelector('i')!;
       if (sibling.classList.contains('hidden')) {
         sibling.classList.remove('hidden');
@@ -32,14 +32,14 @@ function addTestExpanders(): void {
       spyglass.contentUpdated();
     };
   }
-}
+};
 
-function addStdoutStderrOpeners(): void {
+const addStdoutStderrOpeners = (): void => {
   const links = document.querySelectorAll<HTMLAnchorElement>('a.open-stdout-stderr');
   for (const link of Array.from(links)) {
     link.onclick = (e) => {
       e.preventDefault();
-      const text = (link.nextElementSibling! as HTMLElement).innerHTML;
+      const text = (link.nextElementSibling as HTMLElement).innerHTML;
       const blob = new Blob([`
       <head>
         <title>Logs</title>
@@ -48,12 +48,12 @@ function addStdoutStderrOpeners(): void {
       window.open(URL.createObjectURL(blob));
     };
   }
-}
+};
 
-function loaded(): void {
+const loaded = (): void => {
   addTestExpanders();
   addStdoutStderrOpeners();
   addSectionExpanders();
-}
+};
 
 window.addEventListener('DOMContentLoaded', loaded);
