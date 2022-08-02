@@ -796,7 +796,7 @@ func TestHandleConfig(t *testing.T) {
 func TestHandlePluginConfig(t *testing.T) {
 	c := plugins.Configuration{
 		Plugins: plugins.Plugins{
-			"org/repo": plugins.OrgPlugins{Plugins: []string{
+			"org/repo": {Plugins: []string{
 				"approve",
 				"lgtm",
 			}},
