@@ -186,6 +186,7 @@ type RepositoryClient interface {
 	ListRepoTeams(org, repo string) ([]Team, error)
 	CreateRepo(owner string, isUser bool, repo RepoCreateRequest) (*FullRepo, error)
 	UpdateRepo(owner, name string, repo RepoUpdateRequest) (*FullRepo, error)
+	UpdateRepoTopics(owner, name string, repo RepoUpdateRequest) (*FullRepo, error)
 }
 
 // TeamClient interface for team related API actions
@@ -2578,7 +2579,6 @@ func (c *client) UpdateRepo(owner, name string, repo RepoUpdateRequest) (*FullRe
 	} else if c.dry {
 		return repo.ToRepo(), nil
 	}
-
 	path := fmt.Sprintf("/repos/%s/%s", owner, name)
 	var retRepo FullRepo
 	_, err := c.request(&request{
@@ -2588,6 +2588,33 @@ func (c *client) UpdateRepo(owner, name string, repo RepoUpdateRequest) (*FullRe
 		requestBody: &repo,
 		exitCodes:   []int{200},
 	}, &retRepo)
+
+	return &retRepo, err
+}
+
+// UpdateRepoTopics replaces the topics on an existing repository
+// See https://developer.github.com/v3/repos/#edit
+func (c *client) UpdateRepoTopics(owner, name string, repo RepoUpdateRequest) (*FullRepo, error) {
+	durationLogger := c.log("UpdateRepoTopics", owner, name, repo)
+	defer durationLogger()
+
+	if c.fake {
+		return nil, nil
+	} else if c.dry {
+		return repo.ToRepo(), nil
+	}
+	path := fmt.Sprintf("/repos/%s/%s/topics", owner, name)
+	var retRepo FullRepo
+	_, err := c.request(&request{
+		method: http.MethodPut,
+		path:   path,
+		org:    owner,
+		requestBody: struct {
+			Names []string `json:"names"`
+		}{Names: *repo.Topics},
+		exitCodes: []int{200},
+	}, &retRepo)
+
 	return &retRepo, err
 }
 

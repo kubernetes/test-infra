@@ -324,20 +324,21 @@ type PullRequestChange struct {
 // "Get" method.
 // See also https://developer.github.com/v3/repos/#list-organization-repositories
 type Repo struct {
-	Owner         User   `json:"owner"`
-	Name          string `json:"name"`
-	FullName      string `json:"full_name"`
-	HTMLURL       string `json:"html_url"`
-	Fork          bool   `json:"fork"`
-	DefaultBranch string `json:"default_branch"`
-	Archived      bool   `json:"archived"`
-	Private       bool   `json:"private"`
-	Description   string `json:"description"`
-	Homepage      string `json:"homepage"`
-	HasIssues     bool   `json:"has_issues"`
-	HasProjects   bool   `json:"has_projects"`
-	HasWiki       bool   `json:"has_wiki"`
-	NodeID        string `json:"node_id"`
+	Owner         User     `json:"owner"`
+	Name          string   `json:"name"`
+	FullName      string   `json:"full_name"`
+	HTMLURL       string   `json:"html_url"`
+	Fork          bool     `json:"fork"`
+	DefaultBranch string   `json:"default_branch"`
+	Archived      bool     `json:"archived"`
+	Private       bool     `json:"private"`
+	Description   string   `json:"description"`
+	Homepage      string   `json:"homepage"`
+	Topics        []string `json:"topics"`
+	HasIssues     bool     `json:"has_issues"`
+	HasProjects   bool     `json:"has_projects"`
+	HasWiki       bool     `json:"has_wiki"`
+	NodeID        string   `json:"node_id"`
 	// Permissions reflect the permission level for the requester, so
 	// on a repository GET call this will be for the user whose token
 	// is being used, if listing a team's repos this will be for the
@@ -376,16 +377,17 @@ type FullRepo struct {
 // - https://developer.github.com/v3/repos/#create
 // - https://developer.github.com/v3/repos/#edit
 type RepoRequest struct {
-	Name             *string `json:"name,omitempty"`
-	Description      *string `json:"description,omitempty"`
-	Homepage         *string `json:"homepage,omitempty"`
-	Private          *bool   `json:"private,omitempty"`
-	HasIssues        *bool   `json:"has_issues,omitempty"`
-	HasProjects      *bool   `json:"has_projects,omitempty"`
-	HasWiki          *bool   `json:"has_wiki,omitempty"`
-	AllowSquashMerge *bool   `json:"allow_squash_merge,omitempty"`
-	AllowMergeCommit *bool   `json:"allow_merge_commit,omitempty"`
-	AllowRebaseMerge *bool   `json:"allow_rebase_merge,omitempty"`
+	Name             *string   `json:"name,omitempty"`
+	Description      *string   `json:"description,omitempty"`
+	Homepage         *string   `json:"homepage,omitempty"`
+	Topics           *[]string `json:"topics,omitempty"`
+	Private          *bool     `json:"private,omitempty"`
+	HasIssues        *bool     `json:"has_issues,omitempty"`
+	HasProjects      *bool     `json:"has_projects,omitempty"`
+	HasWiki          *bool     `json:"has_wiki,omitempty"`
+	AllowSquashMerge *bool     `json:"allow_squash_merge,omitempty"`
+	AllowMergeCommit *bool     `json:"allow_merge_commit,omitempty"`
+	AllowRebaseMerge *bool     `json:"allow_rebase_merge,omitempty"`
 }
 
 type WorkflowRuns struct {
@@ -409,6 +411,13 @@ func (r RepoRequest) ToRepo() *FullRepo {
 			*dest = *src
 		}
 	}
+	setStringArray := func(dest, src *[]string) {
+		fmt.Println("src is", src)
+		fmt.Println("dest is", dest)
+		if src != nil {
+			*dest = *src
+		}
+	}
 	setBool := func(dest, src *bool) {
 		if src != nil {
 			*dest = *src
@@ -419,6 +428,7 @@ func (r RepoRequest) ToRepo() *FullRepo {
 	setString(&repo.Name, r.Name)
 	setString(&repo.Description, r.Description)
 	setString(&repo.Homepage, r.Homepage)
+	setStringArray(&repo.Topics, r.Topics)
 	setBool(&repo.Private, r.Private)
 	setBool(&repo.HasIssues, r.HasIssues)
 	setBool(&repo.HasProjects, r.HasProjects)
@@ -432,7 +442,7 @@ func (r RepoRequest) ToRepo() *FullRepo {
 
 // Defined returns true if at least one of the pointer fields are not nil
 func (r RepoRequest) Defined() bool {
-	return r.Name != nil || r.Description != nil || r.Homepage != nil || r.Private != nil ||
+	return r.Name != nil || r.Description != nil || r.Homepage != nil || r.Topics != nil || r.Private != nil ||
 		r.HasIssues != nil || r.HasProjects != nil || r.HasWiki != nil || r.AllowSquashMerge != nil ||
 		r.AllowMergeCommit != nil || r.AllowRebaseMerge != nil
 }

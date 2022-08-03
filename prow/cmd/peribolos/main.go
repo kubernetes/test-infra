@@ -358,6 +358,7 @@ func dumpOrgConfig(client dumpClient, orgName string, ignoreSecretTeams bool, ap
 		out.Repos[full.Name] = org.PruneRepoDefaults(org.Repo{
 			Description:      &full.Description,
 			HomePage:         &full.Homepage,
+			Topics:           &full.Topics,
 			Private:          &full.Private,
 			HasIssues:        &full.HasIssues,
 			HasProjects:      &full.HasProjects,
@@ -861,6 +862,7 @@ type repoClient interface {
 	GetRepos(orgName string, isUser bool) ([]github.Repo, error)
 	CreateRepo(owner string, isUser bool, repo github.RepoCreateRequest) (*github.FullRepo, error)
 	UpdateRepo(owner, name string, repo github.RepoUpdateRequest) (*github.FullRepo, error)
+	UpdateRepoTopics(owner string, name string, repo github.RepoUpdateRequest) (*github.FullRepo, error)
 }
 
 func newRepoCreateRequest(name string, definition org.Repo) github.RepoCreateRequest {
@@ -869,6 +871,7 @@ func newRepoCreateRequest(name string, definition org.Repo) github.RepoCreateReq
 			Name:             &name,
 			Description:      definition.Description,
 			Homepage:         definition.HomePage,
+			Topics:           definition.Topics,
 			Private:          definition.Private,
 			HasIssues:        definition.HasIssues,
 			HasProjects:      definition.HasProjects,
@@ -923,6 +926,12 @@ func newRepoUpdateRequest(current github.FullRepo, name string, repo org.Repo) g
 		}
 		return nil
 	}
+	setStringArray := func(current []string, want *[]string) *[]string {
+		if want != nil && strings.Join(*want, "$") != strings.Join(current, "$") {
+			return want
+		}
+		return nil
+	}
 	setBool := func(current bool, want *bool) *bool {
 		if want != nil && *want != current {
 			return want
@@ -934,6 +943,7 @@ func newRepoUpdateRequest(current github.FullRepo, name string, repo org.Repo) g
 			Name:             setString(current.Name, &name),
 			Description:      setString(current.Description, repo.Description),
 			Homepage:         setString(current.Homepage, repo.HomePage),
+			Topics:           setStringArray(current.Topics, repo.Topics),
 			Private:          setBool(current.Private, repo.Private),
 			HasIssues:        setBool(current.HasIssues, repo.HasIssues),
 			HasProjects:      setBool(current.HasProjects, repo.HasProjects),
@@ -1043,9 +1053,19 @@ func configureRepos(opt options, client repoClient, orgName string, orgConfig or
 			}
 			if delta.Defined() {
 				repoLogger.Info("repo exists and differs from desired state, updating")
+				repoLogger.Info("-----------------------")
+				repoLogger.Info(delta.Topics)
+				repoLogger.Info("-----------------------")
 				if _, err := client.UpdateRepo(orgName, existing.Name, delta); err != nil {
 					repoLogger.WithError(err).Error("failed to update repository")
 					allErrors = append(allErrors, err)
+				}
+
+				if delta.Topics != nil {
+					if _, err := client.UpdateRepoTopics(orgName, existing.Name, delta); err != nil {
+						repoLogger.WithError(err).Error("failed to update repository topics")
+						allErrors = append(allErrors, err)
+					}
 				}
 			}
 		}
