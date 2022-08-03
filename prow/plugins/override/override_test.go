@@ -356,7 +356,7 @@ func TestHandle(t *testing.T) {
 		},
 		{
 			name:    "successfully override unknown context derived from checkruns",
-			comment: "/override success-checkrun",
+			comment: "/override failure-checkrun",
 			checkruns: &github.CheckRunList{
 				CheckRuns: []github.CheckRun{
 					{Name: "incomplete-checkrun"},
@@ -367,7 +367,7 @@ func TestHandle(t *testing.T) {
 			},
 			expected: []github.Status{
 				{
-					Context:     "success-checkrun",
+					Context:     "failure-checkrun",
 					Description: description(adminUser),
 					State:       github.StatusSuccess,
 				},
