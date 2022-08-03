@@ -44,6 +44,12 @@ var (
 	overrideRe = regexp.MustCompile(`(?mi)^/override( (.+?)\s*)?$`)
 )
 
+type Context struct {
+	Context     string
+	Description string
+	State       string
+}
+
 type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
 	CreateStatus(org, repo, ref string, s github.Status) error
@@ -54,6 +60,7 @@ type githubClient interface {
 	GetBranchProtection(org, repo, branch string) (*github.BranchProtection, error)
 	ListTeams(org string) ([]github.Team, error)
 	ListTeamMembersBySlug(org, teamSlug, role string) ([]github.TeamMember, error)
+	ListCheckRuns(org, repo, ref string) (*github.CheckRunList, error)
 }
 
 type prowJobClient interface {
@@ -107,6 +114,9 @@ func (c client) ListTeams(org string) ([]github.Team, error) {
 }
 func (c client) ListTeamMembersBySlug(org, teamSlug, role string) ([]github.TeamMember, error) {
 	return c.ghc.ListTeamMembersBySlug(org, teamSlug, role)
+}
+func (c client) ListCheckRuns(org, teamSlug, role string) (*github.CheckRunList, error) {
+	return c.ghc.ListCheckRuns(org, teamSlug, role)
 }
 
 func (c client) Create(ctx context.Context, pj *prowapi.ProwJob, o metav1.CreateOptions) (*prowapi.ProwJob, error) {
@@ -336,6 +346,30 @@ func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent,
 		return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 	}
 
+	checkruns, err := oc.ListCheckRuns(org, repo, sha)
+	if err != nil {
+		resp := fmt.Sprintf("Cannot get commit checkruns for PR #%d in %s/%s", number, org, repo)
+		log.WithError(err).Warn(resp)
+		return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
+	}
+
+	checkrunContexts := make([]Context, len(checkruns.CheckRuns))
+	for _, checkrun := range checkruns.CheckRuns {
+		var state string
+		if checkrun.CompletedAt == "" {
+			state = "PENDING"
+		} else if strings.ToUpper(checkrun.Conclusion) == "NEUTRAL" {
+			state = "SUCCESS"
+		} else {
+			state = strings.ToUpper(checkrun.Conclusion)
+		}
+		checkrunContexts = append(checkrunContexts, Context{
+			Context:     checkrun.Name,
+			Description: checkrun.DetailsURL,
+			State:       state,
+		})
+		statuses = append(statuses, github.Status{Context: checkrun.Name})
+	}
 	baseSHAGetter := shaGetterFactory(oc, org, repo, pr.Base.Ref)
 	presubmits, err := oc.presubmits(org, repo, baseSHAGetter, sha)
 	if err != nil {
@@ -351,6 +385,13 @@ func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent,
 		}
 
 		contexts.Insert(status.Context)
+
+		for _, cr := range checkrunContexts {
+			if cr.State == "SUCCESS" {
+				continue
+			}
+			contexts.Insert(cr.Context)
+		}
 
 		for _, job := range presubmits {
 			if job.Context == status.Context {

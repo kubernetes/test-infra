@@ -126,6 +126,7 @@ type fakeClient struct {
 	ps               []config.Presubmit
 	jobs             sets.String
 	owners           ownersClient
+	checkruns        *github.CheckRunList
 }
 
 func (c *fakeClient) presubmits(_, _ string, _ config.RefGetter, _ string) ([]config.Presubmit, error) {
@@ -197,6 +198,13 @@ func (c *fakeClient) ListStatuses(org, repo, ref string) ([]github.Status, error
 		out = append(out, s)
 	}
 	return out, nil
+}
+
+func (c *fakeClient) ListCheckRuns(org, repo, ref string) (*github.CheckRunList, error) {
+	if c.checkruns != nil {
+		return c.checkruns, nil
+	}
+	return &github.CheckRunList{}, nil
 }
 
 func (c *fakeClient) GetBranchProtection(org, repo, branch string) (*github.BranchProtection, error) {
@@ -326,6 +334,7 @@ func TestHandle(t *testing.T) {
 		options          plugins.Override
 		approvers        []string
 		err              bool
+		checkruns        *github.CheckRunList
 	}{
 		{
 			name:    "successfully override failure",
@@ -346,12 +355,40 @@ func TestHandle(t *testing.T) {
 			checkComments: []string{"on behalf of " + adminUser},
 		},
 		{
+			name:    "successfully override unknown context derived from checkruns",
+			comment: "/override success-checkrun",
+			checkruns: &github.CheckRunList{
+				CheckRuns: []github.CheckRun{
+					{Name: "incomplete-checkrun"},
+					{Name: "neutral-is-considered-success-checkrun", CompletedAt: "2000 BC", Conclusion: "neutral"},
+					{Name: "success-checkrun", CompletedAt: "1900 BC", Conclusion: "success"},
+					{Name: "failure-checkrun", CompletedAt: "1800 BC", Conclusion: "failure"},
+				},
+			},
+			expected: []github.Status{
+				{
+					Context:     "success-checkrun",
+					Description: description(adminUser),
+					State:       github.StatusSuccess,
+				},
+			},
+			checkComments: []string{"on behalf of " + adminUser},
+		},
+		{
 			name:    "successfully override pending",
 			comment: "/override hung-test",
 			contexts: []github.Status{
 				{
 					Context: "hung-test",
 					State:   github.StatusPending,
+				},
+			},
+			checkruns: &github.CheckRunList{
+				CheckRuns: []github.CheckRun{
+					{Name: "incomplete-checkrun"},
+					{Name: "neutral-is-considered-success-checkrun", CompletedAt: "2000 BC", Conclusion: "neutral"},
+					{Name: "success-checkrun", CompletedAt: "1900 BC", Conclusion: "success"},
+					{Name: "failure-checkrun", CompletedAt: "1800 BC", Conclusion: "failure"},
 				},
 			},
 			expected: []github.Status{
@@ -484,6 +521,14 @@ func TestHandle(t *testing.T) {
 					State:   github.StatusPending,
 				},
 			},
+			checkruns: &github.CheckRunList{
+				CheckRuns: []github.CheckRun{
+					{Name: "incomplete-checkrun"},
+					{Name: "neutral-is-considered-success-checkrun", CompletedAt: "2000 BC", Conclusion: "neutral"},
+					{Name: "success-checkrun", CompletedAt: "1900 BC", Conclusion: "success"},
+					{Name: "failure-checkrun", CompletedAt: "1800 BC", Conclusion: "failure"},
+				},
+			},
 			expected: []github.Status{
 				{
 					Context: "broken-test",
@@ -549,6 +594,14 @@ func TestHandle(t *testing.T) {
 				{
 					Context: "broken-test",
 					State:   github.StatusFailure,
+				},
+			},
+			checkruns: &github.CheckRunList{
+				CheckRuns: []github.CheckRun{
+					{Name: "incomplete-checkrun"},
+					{Name: "neutral-is-considered-success-checkrun", CompletedAt: "2000 BC", Conclusion: "neutral"},
+					{Name: "success-checkrun", CompletedAt: "1900 BC", Conclusion: "success"},
+					{Name: "failure-checkrun", CompletedAt: "1800 BC", Conclusion: "failure"},
 				},
 			},
 			expected: []github.Status{
@@ -1011,6 +1064,7 @@ func TestHandle(t *testing.T) {
 				ps:               tc.presubmits,
 				jobs:             sets.String{},
 				owners:           froc,
+				checkruns:        tc.checkruns,
 			}
 
 			if tc.jobs == nil {
