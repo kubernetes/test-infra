@@ -30,7 +30,9 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/test-infra/prow/pjutil/pprof"
 
-	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp" // support gcp users in .kube/config
+	pipelineset "github.com/tektoncd/pipeline/pkg/client/clientset/versioned"
+	pipelineinfo "github.com/tektoncd/pipeline/pkg/client/informers/externalversions"
+	pipelineinfov1alpha1 "github.com/tektoncd/pipeline/pkg/client/informers/externalversions/pipeline/v1alpha1"
 	prowjobset "k8s.io/test-infra/prow/client/clientset/versioned"
 	prowjobinfo "k8s.io/test-infra/prow/client/informers/externalversions"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
@@ -38,9 +40,6 @@ import (
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/logrusutil"
-	pipelineset "k8s.io/test-infra/prow/pipeline/clientset/versioned"
-	pipelineinfo "k8s.io/test-infra/prow/pipeline/informers/externalversions"
-	pipelineinfov1alpha1 "k8s.io/test-infra/prow/pipeline/informers/externalversions/pipeline/v1alpha1"
 )
 
 type options struct {
