@@ -369,9 +369,7 @@ branch-protection:
         kube-openapi:
           required_status_checks:
             contexts:
-            - ci (1.x, true)
-            - ci (1.18, true)
-            - ci (1.x, false)
+            - required
         kube-proxy:
           restrictions:
             users: []
