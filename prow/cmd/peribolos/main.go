@@ -927,7 +927,7 @@ func newRepoUpdateRequest(current github.FullRepo, name string, repo org.Repo) g
 		return nil
 	}
 	setStringArray := func(current []string, want *[]string) *[]string {
-		if want != nil && strings.Join(*want, "$") != strings.Join(current, "$") {
+		if want != nil && strings.Join(*want, "") != strings.Join(current, "") {
 			return want
 		}
 		return nil
@@ -1053,9 +1053,6 @@ func configureRepos(opt options, client repoClient, orgName string, orgConfig or
 			}
 			if delta.Defined() {
 				repoLogger.Info("repo exists and differs from desired state, updating")
-				repoLogger.Info("-----------------------")
-				repoLogger.Info(delta.Topics)
-				repoLogger.Info("-----------------------")
 				if _, err := client.UpdateRepo(orgName, existing.Name, delta); err != nil {
 					repoLogger.WithError(err).Error("failed to update repository")
 					allErrors = append(allErrors, err)

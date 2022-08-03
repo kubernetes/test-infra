@@ -412,8 +412,6 @@ func (r RepoRequest) ToRepo() *FullRepo {
 		}
 	}
 	setStringArray := func(dest, src *[]string) {
-		fmt.Println("src is", src)
-		fmt.Println("dest is", dest)
 		if src != nil {
 			*dest = *src
 		}
