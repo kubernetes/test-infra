@@ -810,7 +810,7 @@ periodics:
     testgrid-tab-name: cloud-provider-azure-conformance-vmss-capz
     testgrid-alert-email: kubernetes-provider-azure-oot@googlegroups.com
     description: "Runs Kubernetes conformance tests with cloud-provider-azure (https://github.com/kubernetes-sigs/cloud-provider-azure) on vmss."
-- cron: '0 18 * * *'  # Run at 18:00 UTC everyday
+- cron: '0 4/3 * * *'  # Temporarily run every 3h
   # cloud-provider-azure-conformance-serial-vmss-capz runs Kubernetes conformance serial tests periodically on vmss.
   name: cloud-provider-azure-conformance-serial-vmss-capz
   decorate: true
@@ -869,7 +869,7 @@ periodics:
       - name: CLUSTER_PROVISIONING_TOOL
         value: "capz"
       - name: GINKGO_PARALLEL_NODES
-        value: "3"
+        value: "2"
       - name: GINKGO_TOLERATE_FLAKES
         value: "y"
   annotations:
