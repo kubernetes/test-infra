@@ -3,7 +3,7 @@
 ## New features
 
 New features added to each component:
-  - *August 4, 2022* override plugin will now override checkruns set by Github Actions and other CI
+  - *August 4, 2022* override plugin will now override checkruns set by GitHub Actions and other CI
     systems on a PR.
   - *June 8, 2022* `deck.rerun_auth_configs` can optionally be replaced with
     `deck.default_rerun_auth_configs` which supports a new format
