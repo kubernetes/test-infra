@@ -20,7 +20,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"k8s.io/test-infra/prow/flagutil"
 	"testing"
 )
 
@@ -68,23 +67,35 @@ func (f *fakeClient) CheckSecret(ctx context.Context, secretName string) (bool, 
 	}
 }
 
-func TestCreateSecrets(t *testing.T) {
-	dns := flagutil.NewStrings("validation-webhook-service", "validation-webhook-service.default", "validation-webhook-service.default.svc")
-	store := make(map[string]string)
-	ctx := context.Background()
-	f := &fakeClient{
+var (
+	store = make(map[string]string)
+	f     = &fakeClient{
 		project: secretStore{
 			store: store,
 		},
 	}
-	cert, key, caPem, err := createSecret(f, ctx, 30, dns.Strings())
+	ctx      = context.Background()
+	secretID = "prowjob-webhook-secrets"
+	payload  = "xxx123"
+)
+
+func TestCreateSecrets(t *testing.T) {
+	f.CreateSecret(ctx, secretID)
+	if len(f.project.store) == 0 {
+		t.Errorf("secret was not created successfully")
+	}
+}
+
+func TestGetSecretValue(t *testing.T) {
+	f.AddSecretVersion(ctx, secretID, []byte(payload))
+	res, exist, err := f.GetSecretValue(ctx, secretID, "")
 	if err != nil {
-		t.Errorf("Unable to create GCP Secrets %v", err)
+		t.Errorf("could not get secret value %v", err)
 	}
-	if len(cert) == 0 || len(key) == 0 || len(caPem) == 0 {
-		t.Errorf("Issue generating ca certificate")
+	if !exist {
+		t.Errorf("secret was not created")
 	}
-	if len(store) == 0 {
-		t.Errorf("Error populating store")
+	if string(res) != payload {
+		t.Errorf("wrong secret obtained")
 	}
 }

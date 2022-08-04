@@ -30,12 +30,14 @@ import (
 )
 
 type GCPClient struct {
-	client *secretmanager.Client
+	client   *secretmanager.Client
+	secretID string
 }
 
-func newGCPClient(client *secretmanager.Client) *GCPClient {
+func newGCPClient(client *secretmanager.Client, secretID string) *GCPClient {
 	return &GCPClient{
-		client: client,
+		client:   client,
+		secretID: secretID,
 	}
 }
 
@@ -75,7 +77,7 @@ func (g *GCPClient) checkSecret(ctx context.Context, secretName string) error {
 		return fmt.Errorf("could not make call to list secrets successfully %v", err)
 	}
 	for _, secret := range res {
-		if strings.Contains(secret.Name, secretID) {
+		if strings.Contains(secret.Name, g.secretID) {
 			return nil
 		}
 	}
