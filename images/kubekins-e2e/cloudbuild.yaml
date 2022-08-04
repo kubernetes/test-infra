@@ -4,7 +4,7 @@ steps:
     - go
     - build
     - -o=/workspace/images/kubekins-e2e/kubetest
-    - -ldflags="-X=main.gitTag=$_GIT_TAG"
+    - -ldflags=-X=main.gitTag=$_GIT_TAG
     - ./kubetest/
     env:
     - CGO_ENABLED=0
