@@ -17,6 +17,7 @@ limitations under the License.
 package config
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"regexp"
@@ -24,6 +25,7 @@ import (
 	"time"
 
 	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
+	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -114,6 +116,8 @@ type JobBase struct {
 	Spec *v1.PodSpec `json:"spec,omitempty"`
 	// PipelineRunSpec is the tekton pipeline spec used if Agent is tekton-pipeline.
 	PipelineRunSpec *pipelinev1alpha1.PipelineRunSpec `json:"pipeline_run_spec,omitempty"`
+	// TektonPipelineRunSpec is the versioned tekton pipeline spec used if Agent is tekton-pipeline.
+	TektonPipelineRunSpec *prowapi.TektonPipelineRunSpec `json:"tekton_pipeline_run_spec,omitempty"`
 	// Annotations are unused by prow itself, but provide a space to configure other automation.
 	Annotations map[string]string `json:"annotations,omitempty"`
 	// ReporterConfig provides the option to configure reporting on job level
@@ -146,6 +150,20 @@ func (jb JobBase) GetLabels() map[string]string {
 
 func (jb JobBase) GetAnnotations() map[string]string {
 	return jb.Annotations
+}
+
+func (jb JobBase) GetPipelineRunSpec() *pipelinev1beta1.PipelineRunSpec {
+	if jb.TektonPipelineRunSpec != nil {
+		return jb.TektonPipelineRunSpec.V1Beta1
+	}
+	if jb.PipelineRunSpec != nil {
+		var spec pipelinev1beta1.PipelineRunSpec
+		// TODO(eddycharly) error management
+		if err := jb.PipelineRunSpec.ConvertTo(context.TODO(), &spec); err == nil {
+			return &spec
+		}
+	}
+	return nil
 }
 
 // +k8s:deepcopy-gen=true

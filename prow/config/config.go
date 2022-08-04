@@ -40,7 +40,7 @@ import (
 	gitignore "github.com/denormal/go-gitignore"
 	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
-	pipelinev1alpha1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1alpha1"
+	pipelinev1beta1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1beta1"
 	"gopkg.in/robfig/cron.v2"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -2055,7 +2055,7 @@ func (c Config) validateJobBase(v JobBase, jobType prowapi.ProwJobType) error {
 	if err := validatePodSpec(jobType, v.Spec, v.DecorationConfig); err != nil {
 		return err
 	}
-	if err := ValidatePipelineRunSpec(jobType, v.ExtraRefs, v.PipelineRunSpec); err != nil {
+	if err := ValidatePipelineRunSpec(jobType, v.ExtraRefs, v.GetPipelineRunSpec()); err != nil {
 		return err
 	}
 	if err := validateLabels(v.Labels); err != nil {
@@ -2596,9 +2596,9 @@ func validateAgent(v JobBase, podNamespace string) error {
 		return fmt.Errorf("job specs require agent: %s (found %q)", k, agent)
 	case agent == k && v.Spec == nil:
 		return errors.New("kubernetes jobs require a spec")
-	case v.PipelineRunSpec != nil && agent != p:
+	case v.GetPipelineRunSpec() != nil && agent != p:
 		return fmt.Errorf("job pipeline_run_spec require agent: %s (found %q)", p, agent)
-	case agent == p && v.PipelineRunSpec == nil:
+	case agent == p && v.GetPipelineRunSpec() == nil:
 		return fmt.Errorf("agent: %s jobs require a pipeline_run_spec", p)
 	case v.DecorationConfig != nil && agent != k:
 		// TODO(fejta): only source decoration supported...
@@ -2644,7 +2644,7 @@ func resolvePresets(name string, labels map[string]string, spec *v1.PodSpec, pre
 
 var ReProwExtraRef = regexp.MustCompile(`PROW_EXTRA_GIT_REF_(\d+)`)
 
-func ValidatePipelineRunSpec(jobType prowapi.ProwJobType, extraRefs []prowapi.Refs, spec *pipelinev1alpha1.PipelineRunSpec) error {
+func ValidatePipelineRunSpec(jobType prowapi.ProwJobType, extraRefs []prowapi.Refs, spec *pipelinev1beta1.PipelineRunSpec) error {
 	if spec == nil {
 		return nil
 	}
