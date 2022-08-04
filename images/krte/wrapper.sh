@@ -109,6 +109,10 @@ if [[ "${DOCKER_IN_DOCKER_ENABLED}" == "true" ]]; then
     fi
   done
   echo "wrapper.sh] [SETUP] Done setting up Docker in Docker."
+  echo "wrapper.sh] [SETUP] Printing 'docker info'"
+  docker info
+  echo "wrapper.sh] [SETUP] Printing 'docker version'"
+  docker version
 fi
 
 # add $GOPATH/bin to $PATH
