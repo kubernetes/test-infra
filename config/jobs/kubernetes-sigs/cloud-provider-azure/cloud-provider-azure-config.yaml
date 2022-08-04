@@ -842,7 +842,7 @@ periodics:
       - >-
         cp ./kubeconfig ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure/kubeconfig &&
         cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
-        make test-e2e-capz &&
+        make test-e2e-capz ||
         export KUBECONFIG=${GOPATH}/src/sigs.k8s.io/cloud-provider-azure/kubeconfig &&
         kubectl get apiservice &&
         kubectl get ns -A &&
