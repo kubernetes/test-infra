@@ -842,7 +842,11 @@ periodics:
       - >-
         cp ./kubeconfig ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure/kubeconfig &&
         cd ${GOPATH}/src/sigs.k8s.io/cloud-provider-azure &&
-        make test-e2e-capz
+        make test-e2e-capz &&
+        export KUBECONFIG=${GOPATH}/src/sigs.k8s.io/cloud-provider-azure/kubeconfig &&
+        kubectl get apiservice &&
+        kubectl get ns -A &&
+        kubectl get ns -A | grep -m1 "nsdeletetest" | awk '{printf("kubectl describe ns %s\n",$1)}' | /bin/bash
       securityContext:
         privileged: true
       env:
@@ -862,7 +866,7 @@ periodics:
       - name: CLUSTER_PROVISIONING_TOOL
         value: "capz"
       - name: GINKGO_PARALLEL_NODES
-        value: "2"
+        value: "1"
       - name: GINKGO_TOLERATE_FLAKES
         value: "y"
   annotations:
