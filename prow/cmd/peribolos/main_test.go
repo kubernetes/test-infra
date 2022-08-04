@@ -2613,6 +2613,25 @@ func (f fakeRepoClient) UpdateRepo(owner, name string, want github.RepoUpdateReq
 	return &have, nil
 }
 
+func (f fakeRepoClient) UpdateRepoTopics(owner, name string, want github.RepoUpdateRequest) (*github.FullRepo, error) {
+	if name == "fail" {
+		return nil, fmt.Errorf("injected UpdateRepo failure")
+	}
+	if want.Archived != nil && !*want.Archived {
+		f.t.Errorf("UpdateRepo() called to unarchive a repo (not supported by API)")
+		return nil, fmt.Errorf("UpdateRepo() called to unarchive a repo (not supported by API)")
+	}
+
+	have, exists := f.repos[name]
+	if !exists {
+		f.t.Errorf("UpdateRepo() called on repo that does not exists")
+		return nil, fmt.Errorf("UpdateRepo() called on repo that does not exist")
+	}
+
+	f.repos[name] = have
+	return &have, nil
+}
+
 func makeFakeRepoClient(t *testing.T, repos ...github.FullRepo) fakeRepoClient {
 	fc := fakeRepoClient{
 		repos: make(map[string]github.FullRepo, len(repos)),
