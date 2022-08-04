@@ -1,0 +1,4 @@
+# See the OWNERS docs at https://github.com/kubernetes-sigs/cluster-api-provider-cloudstack/blob/main/OWNERS
+approvers:
+  - rohityadavcloud
+  - davidjumani
