@@ -2179,21 +2179,67 @@ func (c Config) validatePostsubmits(postsubmits []Postsubmit) error {
 
 // validatePeriodics validates a set of periodics.
 func (c Config) validatePeriodics(periodics []Periodic) error {
+	var errs []error
 
 	// validate no duplicated periodics.
 	validPeriodics := sets.NewString()
 	// Ensure that the periodic durations are valid and specs exist.
-	for _, p := range periodics {
+	for j, p := range periodics {
 		if validPeriodics.Has(p.Name) {
-			return fmt.Errorf("duplicated periodic job : %s", p.Name)
+			errs = append(errs, fmt.Errorf("duplicated periodic job: %s", p.Name))
 		}
 		validPeriodics.Insert(p.Name)
 		if err := c.validateJobBase(p.JobBase, prowapi.PeriodicJob); err != nil {
-			return fmt.Errorf("invalid periodic job %s: %w", p.Name, err)
+			errs = append(errs, fmt.Errorf("invalid periodic job %s: %w", p.Name, err))
 		}
+
+		// Validate mutually exclusive properties
+		seen := 0
+		if p.Cron != "" {
+			seen += 1
+		}
+		if p.Interval != "" {
+			seen += 1
+		}
+		if p.MinimumInterval != "" {
+			seen += 1
+		}
+		if seen > 1 {
+			errs = append(errs, fmt.Errorf("cron, interval, and minimum_interval are mutually exclusive in periodic %s", p.Name))
+			continue
+		}
+		if seen == 0 {
+			errs = append(errs, fmt.Errorf("at least one of cron, interval, or minimum_interval must be set in periodic %s", p.Name))
+			continue
+		}
+
+		if p.Cron != "" {
+			if _, err := cron.Parse(p.Cron); err != nil {
+				errs = append(errs, fmt.Errorf("invalid cron string %s in periodic %s: %w", p.Cron, p.Name, err))
+			}
+		}
+
+		// Set the interval on the periodic jobs. It doesn't make sense to do this
+		// for child jobs.
+		if p.Interval != "" {
+			d, err := time.ParseDuration(periodics[j].Interval)
+			if err != nil {
+				errs = append(errs, fmt.Errorf("cannot parse duration for %s: %w", periodics[j].Name, err))
+			}
+			periodics[j].interval = d
+		}
+
+		if p.MinimumInterval != "" {
+			d, err := time.ParseDuration(periodics[j].MinimumInterval)
+			if err != nil {
+				errs = append(errs, fmt.Errorf("cannot parse duration for %s: %w", periodics[j].Name, err))
+			}
+			periodics[j].minimum_interval = d
+		}
+
 	}
 
-	return nil
+	return utilerrors.NewAggregate(errs)
 }
 
 // ValidateJobConfig validates if all the jobspecs/presets are valid
@@ -2216,53 +2262,9 @@ func (c *Config) ValidateJobConfig() error {
 		}
 	}
 
+	// Validate periodics.
 	if err := c.validatePeriodics(c.Periodics); err != nil {
 		errs = append(errs, err)
-	}
-
-	// Set the interval on the periodic jobs. It doesn't make sense to do this
-	// for child jobs.
-	for j, p := range c.Periodics {
-		seen := 0
-		if p.Cron != "" {
-			seen += 1
-		}
-		if p.Interval != "" {
-			seen += 1
-		}
-		if p.MinimumInterval != "" {
-			seen += 1
-		}
-
-		if seen > 1 {
-			errs = append(errs, fmt.Errorf("cron, interval, and minimum_interval are mutually exclusive in periodic %s", p.Name))
-			continue
-		} else if seen == 0 {
-			errs = append(errs, fmt.Errorf("at least one of cron, interval, or minimum_interval must be set in periodic %s", p.Name))
-			continue
-		}
-
-		if p.Cron != "" {
-			if _, err := cron.Parse(p.Cron); err != nil {
-				errs = append(errs, fmt.Errorf("invalid cron string %s in periodic %s: %w", p.Cron, p.Name, err))
-			}
-		}
-
-		if p.Interval != "" {
-			d, err := time.ParseDuration(c.Periodics[j].Interval)
-			if err != nil {
-				errs = append(errs, fmt.Errorf("cannot parse duration for %s: %w", c.Periodics[j].Name, err))
-			}
-			c.Periodics[j].interval = d
-		}
-
-		if p.MinimumInterval != "" {
-			d, err := time.ParseDuration(c.Periodics[j].MinimumInterval)
-			if err != nil {
-				errs = append(errs, fmt.Errorf("cannot parse duration for %s: %w", c.Periodics[j].Name, err))
-			}
-			c.Periodics[j].minimum_interval = d
-		}
 	}
 
 	c.Deck.AllKnownStorageBuckets = calculateStorageBuckets(c)

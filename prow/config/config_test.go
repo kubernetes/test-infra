@@ -7811,6 +7811,92 @@ func TestValidatePostsubmits(t *testing.T) {
 	}
 }
 
+func TestValidatePeriodics(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name          string
+		periodics     []Periodic
+		expected      []Periodic
+		expectedError string
+	}{
+		{
+			name: "Duplicate jobname causes error",
+			periodics: []Periodic{
+				{JobBase: JobBase{Name: "a"}, Interval: "6h"},
+				{JobBase: JobBase{Name: "a"}, Interval: "12h"},
+			},
+			expectedError: "duplicated periodic job: a",
+		},
+		{
+			name: "Mutually exclusive settings: cron, interval, and minimal_interval",
+			periodics: []Periodic{
+				{JobBase: JobBase{Name: "a"}, Interval: "6h", MinimumInterval: "6h"},
+			},
+			expectedError: "cron, interval, and minimum_interval are mutually exclusive in periodic a",
+		},
+		{
+			name: "Required settings: cron, interval, or minimal_interval",
+			periodics: []Periodic{
+				{JobBase: JobBase{Name: "a"}},
+			},
+			expectedError: "at least one of cron, interval, or minimum_interval must be set in periodic a",
+		},
+		{
+			name: "Invalid cron string",
+			periodics: []Periodic{
+				{JobBase: JobBase{Name: "a"}, Cron: "hello"},
+			},
+			expectedError: "invalid cron string hello in periodic a: Expected 5 or 6 fields, found 1: hello",
+		},
+		{
+			name: "Invalid interval",
+			periodics: []Periodic{
+				{JobBase: JobBase{Name: "a"}, Interval: "hello"},
+			},
+			expectedError: "cannot parse duration for a: time: invalid duration \"hello\"",
+		},
+		{
+			name: "Invalid minimum_interval",
+			periodics: []Periodic{
+				{JobBase: JobBase{Name: "a"}, MinimumInterval: "hello"},
+			},
+			expectedError: "cannot parse duration for a: time: invalid duration \"hello\"",
+		},
+		{
+			name: "Sets interval",
+			periodics: []Periodic{
+				{JobBase: JobBase{Name: "a"}, Interval: "10ns"},
+			},
+			expected: []Periodic{
+				{JobBase: JobBase{Name: "a"}, Interval: "10ns", interval: time.Duration(10)},
+			},
+		},
+		{
+			name: "Sets minimum_interval",
+			periodics: []Periodic{
+				{JobBase: JobBase{Name: "a"}, MinimumInterval: "10ns"},
+			},
+			expected: []Periodic{
+				{JobBase: JobBase{Name: "a"}, MinimumInterval: "10ns", minimum_interval: time.Duration(10)},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		var errMsg string
+		err := Config{}.validatePeriodics(tc.periodics)
+		if err != nil {
+			errMsg = err.Error()
+		}
+		if len(tc.expected) > 0 && !reflect.DeepEqual(tc.periodics, tc.expected) {
+			t.Errorf("expected '%v', got '%v'", tc.expected, tc.periodics)
+		}
+		if tc.expectedError != "" && errMsg != tc.expectedError {
+			t.Errorf("expected error '%s', got error '%s'", tc.expectedError, errMsg)
+		}
+	}
+}
+
 func TestValidateStorageBucket(t *testing.T) {
 	testCases := []struct {
 		name        string
