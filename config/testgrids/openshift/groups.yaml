@@ -54,4 +54,6 @@ dashboard_groups:
   - redhat-osd
   - redhat-quay
   - redhat-single-node
+  - redhat-stackrox-merge
+  - redhat-stackrox-nightly
   name: redhat

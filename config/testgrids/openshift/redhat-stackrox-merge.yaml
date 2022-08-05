@@ -1,0 +1,211 @@
+dashboards:
+- dashboard_tab:
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-master-merge-gke-kernel-qa-e2e-tests
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-master-merge-gke-kernel-qa-e2e-tests
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-master-merge-gke-nongroovy-e2e-tests
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-master-merge-gke-nongroovy-e2e-tests
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-master-merge-gke-postgres-qa-e2e-tests
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-master-merge-gke-postgres-qa-e2e-tests
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-master-merge-gke-postgres-scale-tests
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-master-merge-gke-postgres-scale-tests
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-master-merge-gke-qa-e2e-tests
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-master-merge-gke-qa-e2e-tests
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-master-merge-gke-race-condition-qa-e2e-tests
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-master-merge-gke-race-condition-qa-e2e-tests
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-master-merge-gke-scale-tests
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-master-merge-gke-scale-tests
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-master-merge-gke-ui-e2e-tests
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-master-merge-gke-ui-e2e-tests
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-master-merge-gke-upgrade-tests
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-master-merge-gke-upgrade-tests
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-master-merge-go-postgres-tests
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-master-merge-go-postgres-tests
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-master-merge-go-unit-tests
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-master-merge-go-unit-tests
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-master-merge-go-unit-tests-release
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-master-merge-go-unit-tests-release
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-master-merge-grouped-static-checks
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-master-merge-grouped-static-checks
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-master-merge-integration-unit-tests
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-master-merge-integration-unit-tests
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-master-merge-local-roxctl-tests
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-master-merge-local-roxctl-tests
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-master-merge-mitre-bundles-checks
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-master-merge-mitre-bundles-checks
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-master-merge-openshift-4-operator-e2e-tests
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-master-merge-openshift-4-operator-e2e-tests
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-master-merge-openshift-4-qa-e2e-tests
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-master-merge-openshift-4-qa-e2e-tests
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-master-merge-policy-checks
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-master-merge-policy-checks
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-master-merge-push-and-release
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-master-merge-push-and-release
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-master-merge-shell-unit-tests
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-master-merge-shell-unit-tests
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-master-merge-style-checks
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-master-merge-style-checks
+  - base_options: width=10
+    name: branch-ci-stackrox-stackrox-master-merge-ui-unit-tests
+    open_test_template:
+      url: https://prow.ci.openshift.org/view/gcs/<gcs_prefix>/<changelist>
+    results_url_template:
+      url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
+    test_group_name: branch-ci-stackrox-stackrox-master-merge-ui-unit-tests
+  name: redhat-stackrox-merge
+test_groups:
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-gke-kernel-qa-e2e-tests
+  name: branch-ci-stackrox-stackrox-master-merge-gke-kernel-qa-e2e-tests
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-gke-nongroovy-e2e-tests
+  name: branch-ci-stackrox-stackrox-master-merge-gke-nongroovy-e2e-tests
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-gke-postgres-qa-e2e-tests
+  name: branch-ci-stackrox-stackrox-master-merge-gke-postgres-qa-e2e-tests
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-gke-postgres-scale-tests
+  name: branch-ci-stackrox-stackrox-master-merge-gke-postgres-scale-tests
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-gke-qa-e2e-tests
+  name: branch-ci-stackrox-stackrox-master-merge-gke-qa-e2e-tests
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-gke-race-condition-qa-e2e-tests
+  name: branch-ci-stackrox-stackrox-master-merge-gke-race-condition-qa-e2e-tests
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-gke-scale-tests
+  name: branch-ci-stackrox-stackrox-master-merge-gke-scale-tests
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-gke-ui-e2e-tests
+  name: branch-ci-stackrox-stackrox-master-merge-gke-ui-e2e-tests
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-gke-upgrade-tests
+  name: branch-ci-stackrox-stackrox-master-merge-gke-upgrade-tests
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-go-postgres-tests
+  name: branch-ci-stackrox-stackrox-master-merge-go-postgres-tests
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-go-unit-tests
+  name: branch-ci-stackrox-stackrox-master-merge-go-unit-tests
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-go-unit-tests-release
+  name: branch-ci-stackrox-stackrox-master-merge-go-unit-tests-release
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-grouped-static-checks
+  name: branch-ci-stackrox-stackrox-master-merge-grouped-static-checks
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-integration-unit-tests
+  name: branch-ci-stackrox-stackrox-master-merge-integration-unit-tests
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-local-roxctl-tests
+  name: branch-ci-stackrox-stackrox-master-merge-local-roxctl-tests
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-mitre-bundles-checks
+  name: branch-ci-stackrox-stackrox-master-merge-mitre-bundles-checks
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-openshift-4-operator-e2e-tests
+  name: branch-ci-stackrox-stackrox-master-merge-openshift-4-operator-e2e-tests
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-openshift-4-qa-e2e-tests
+  name: branch-ci-stackrox-stackrox-master-merge-openshift-4-qa-e2e-tests
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-policy-checks
+  name: branch-ci-stackrox-stackrox-master-merge-policy-checks
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-push-and-release
+  name: branch-ci-stackrox-stackrox-master-merge-push-and-release
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-shell-unit-tests
+  name: branch-ci-stackrox-stackrox-master-merge-shell-unit-tests
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-style-checks
+  name: branch-ci-stackrox-stackrox-master-merge-style-checks
+- gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-master-merge-ui-unit-tests
+  name: branch-ci-stackrox-stackrox-master-merge-ui-unit-tests
