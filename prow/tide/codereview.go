@@ -207,6 +207,22 @@ type GitHubProvider struct {
 	logger *logrus.Entry
 }
 
+func newGitHubProvider(
+	logger *logrus.Entry,
+	ghc githubClient,
+	cfg config.Getter,
+	mergeChecker *mergeChecker,
+	usesGitHubAppsAuth bool,
+) *GitHubProvider {
+	return &GitHubProvider{
+		logger:             logger,
+		ghc:                ghc,
+		cfg:                cfg,
+		usesGitHubAppsAuth: usesGitHubAppsAuth,
+		mergeChecker:       mergeChecker,
+	}
+}
+
 func (gi *GitHubProvider) blockers() (blockers.Blockers, error) {
 	label := gi.cfg().Tide.BlockerLabel
 	if label == "" {

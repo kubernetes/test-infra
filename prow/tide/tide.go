@@ -384,13 +384,9 @@ func newStatusController(
 		return nil, fmt.Errorf("failed to add index for passing jobs to cache: %w", err)
 	}
 	return &statusController{
-		pjClient: mgr.GetClient(),
-		logger:   logger.WithField("controller", "status-update"),
-		ghProvider: &GitHubProvider{
-			ghc:                ghc,
-			usesGitHubAppsAuth: usesGitHubAppsAuth,
-			mergeChecker:       mergeChecker,
-		},
+		pjClient:           mgr.GetClient(),
+		logger:             logger.WithField("controller", "status-update"),
+		ghProvider:         newGitHubProvider(logger, ghc, cfg, mergeChecker, usesGitHubAppsAuth),
 		ghc:                ghc,
 		gc:                 gc,
 		usesGitHubAppsAuth: usesGitHubAppsAuth,
@@ -431,13 +427,7 @@ func newSyncController(
 		return nil, fmt.Errorf("failed to add index for non failed batches: %w", err)
 	}
 
-	provider := &GitHubProvider{
-		cfg:                cfg,
-		ghc:                ghcSync,
-		usesGitHubAppsAuth: usesGitHubAppsAuth,
-		mergeChecker:       mergeChecker,
-		logger:             logger,
-	}
+	provider := newGitHubProvider(logger, ghcSync, cfg, mergeChecker, usesGitHubAppsAuth)
 	return &syncController{
 		ctx:           ctx,
 		logger:        logger.WithField("controller", "sync"),
