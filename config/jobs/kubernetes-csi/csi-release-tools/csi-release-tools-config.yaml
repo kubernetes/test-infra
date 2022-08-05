@@ -68,8 +68,6 @@ presubmits:
         env:
         - name: PULL_TEST_REPO_DIR
           value: /home/prow/go/src/github.com/kubernetes-csi/csi-test
-        - name: CSI_SNAPSHOTTER_VERSION
-          value: "v4.0.0"
   - name: pull-kubernetes-csi-release-tools-external-provisioner
     always_run: true
     optional: true # cannot be required because updates in csi-release-tools may include breaking changes
@@ -106,8 +104,6 @@ presubmits:
         env:
         - name: PULL_TEST_REPO_DIR
           value: /home/prow/go/src/github.com/kubernetes-csi/external-provisioner
-        - name: CSI_SNAPSHOTTER_VERSION
-          value: "v4.0.0"
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "1.22.0"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
@@ -116,6 +112,8 @@ presubmits:
           value: "v1.8.0"
         - name: CSI_PROW_TESTS
           value: "unit sanity parallel"
+        - name: CSI_SNAPSHOTTER_VERSION
+          value: "v4.0.0"
   - name: pull-kubernetes-csi-release-tools-external-snapshotter
     always_run: true
     optional: true # cannot be required because updates in csi-release-tools may include breaking changes
@@ -152,8 +150,6 @@ presubmits:
         env:
         - name: PULL_TEST_REPO_DIR
           value: /home/prow/go/src/github.com/kubernetes-csi/external-snapshotter
-        - name: CSI_SNAPSHOTTER_VERSION
-          value: "v4.0.0"
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "1.22.0"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
@@ -162,6 +158,8 @@ presubmits:
           value: "v1.8.0"
         - name: CSI_PROW_TESTS
           value: "unit sanity parallel"
+        - name: CSI_SNAPSHOTTER_VERSION
+          value: "v4.0.0"
   - name: pull-kubernetes-csi-release-tools-csi-driver-host-path
     always_run: true
     optional: true # cannot be required because updates in csi-release-tools may include breaking changes
@@ -198,8 +196,6 @@ presubmits:
         env:
         - name: PULL_TEST_REPO_DIR
           value: /home/prow/go/src/github.com/kubernetes-csi/csi-driver-host-path
-        - name: CSI_SNAPSHOTTER_VERSION
-          value: "v4.0.0"
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "1.22.0"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
@@ -208,3 +204,5 @@ presubmits:
           value: "v1.8.0"
         - name: CSI_PROW_TESTS
           value: "unit sanity parallel"
+        - name: CSI_SNAPSHOTTER_VERSION
+          value: "v4.0.0"
