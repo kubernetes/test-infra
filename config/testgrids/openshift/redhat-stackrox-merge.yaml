@@ -1,5 +1,5 @@
 dashboards:
-  dashboard_tab:
+- dashboard_tab:
   - base_options: width=10
     name: branch-ci-stackrox-stackrox-master-merge-gke-kernel-qa-e2e-tests
     open_test_template:
