@@ -826,6 +826,9 @@ def generate_upgrades():
         (('latest', 'v1.22.4'), ('latest', 'v1.23.0')),
         (('latest', 'v1.21.7'), ('latest', 'v1.22.4')),
         (('latest', 'v1.20.6'), ('latest', 'v1.21.7')),
+        # kOps latest should always be able to upgrade from stable to latest and stable to ci
+        (('latest', 'stable'), ('latest', 'latest')),
+        (('latest', 'stable'), ('latest', 'ci')),
     ]
     def shorten(version):
         version = re.sub(r'^v', '', version)
