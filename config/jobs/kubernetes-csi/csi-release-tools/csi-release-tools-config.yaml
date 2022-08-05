@@ -59,25 +59,15 @@ presubmits:
         - runner.sh
         args:
         - ./pull-test.sh # provided by csi-release-tools
-        env:
-        - name: CSI_PROW_KUBERNETES_VERSION
-          value: "1.22.0"
-        - name: CSI_PROW_KUBERNETES_DEPLOYMENT
-          value: "1.22"
-        - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.8.0"
-        - name: CSI_SNAPSHOTTER_VERSION
-          value: "v4.0.0"
-        - name: CSI_PROW_TESTS
-          value: "unit sanity parallel"
-        - name: PULL_TEST_REPO_DIR
-          value: /home/prow/go/src/github.com/kubernetes-csi/csi-test
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
         resources:
           requests:
             cpu: 2000m
+        env:
+        - name: CSI_SNAPSHOTTER_VERSION
+          value: "v4.0.0"
   - name: pull-kubernetes-csi-release-tools-external-provisioner
     always_run: true
     optional: true # cannot be required because updates in csi-release-tools may include breaking changes
@@ -105,25 +95,25 @@ presubmits:
         - runner.sh
         args:
         - ./pull-test.sh # provided by csi-release-tools
-        env:
-        - name: CSI_PROW_KUBERNETES_VERSION
-          value: "1.22.0"
-        - name: CSI_PROW_KUBERNETES_DEPLOYMENT
-          value: "1.22"
-        - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.8.0"
-        - name: CSI_SNAPSHOTTER_VERSION
-          value: "v4.0.0"
-        - name: CSI_PROW_TESTS
-          value: "unit sanity parallel"
-        - name: PULL_TEST_REPO_DIR
-          value: /home/prow/go/src/github.com/kubernetes-csi/external-provisioner
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
         resources:
           requests:
             cpu: 2000m
+        env:
+        - name: CSI_SNAPSHOTTER_VERSION
+          value: "v4.0.0"
+        - name: CSI_PROW_KUBERNETES_VERSION
+          value: "1.22.0"
+        - name: CSI_PROW_KUBERNETES_DEPLOYMENT
+          value: "1.22"
+        - name: CSI_PROW_DRIVER_VERSION
+          value: "v1.8.0"
+        - name: CSI_PROW_TESTS
+          value: "unit sanity parallel"
+        - name: PULL_TEST_REPO_DIR
+          value: /home/prow/go/src/github.com/kubernetes-csi/external-provisioner
   - name: pull-kubernetes-csi-release-tools-external-snapshotter
     always_run: true
     optional: true # cannot be required because updates in csi-release-tools may include breaking changes
@@ -151,25 +141,25 @@ presubmits:
         - runner.sh
         args:
         - ./pull-test.sh # provided by csi-release-tools
-        env:
-        - name: CSI_PROW_KUBERNETES_VERSION
-          value: "1.22.0"
-        - name: CSI_PROW_KUBERNETES_DEPLOYMENT
-          value: "1.22"
-        - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.8.0"
-        - name: CSI_SNAPSHOTTER_VERSION
-          value: "v4.0.0"
-        - name: CSI_PROW_TESTS
-          value: "unit sanity parallel"
-        - name: PULL_TEST_REPO_DIR
-          value: /home/prow/go/src/github.com/kubernetes-csi/external-snapshotter
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
         resources:
           requests:
             cpu: 2000m
+        env:
+        - name: CSI_SNAPSHOTTER_VERSION
+          value: "v4.0.0"
+        - name: CSI_PROW_KUBERNETES_VERSION
+          value: "1.22.0"
+        - name: CSI_PROW_KUBERNETES_DEPLOYMENT
+          value: "1.22"
+        - name: CSI_PROW_DRIVER_VERSION
+          value: "v1.8.0"
+        - name: CSI_PROW_TESTS
+          value: "unit sanity parallel"
+        - name: PULL_TEST_REPO_DIR
+          value: /home/prow/go/src/github.com/kubernetes-csi/external-snapshotter
   - name: pull-kubernetes-csi-release-tools-csi-driver-host-path
     always_run: true
     optional: true # cannot be required because updates in csi-release-tools may include breaking changes
@@ -197,22 +187,22 @@ presubmits:
         - runner.sh
         args:
         - ./pull-test.sh # provided by csi-release-tools
-        env:
-        - name: CSI_PROW_KUBERNETES_VERSION
-          value: "1.22.0"
-        - name: CSI_PROW_KUBERNETES_DEPLOYMENT
-          value: "1.22"
-        - name: CSI_PROW_DRIVER_VERSION
-          value: "v1.8.0"
-        - name: CSI_SNAPSHOTTER_VERSION
-          value: "v4.0.0"
-        - name: CSI_PROW_TESTS
-          value: "unit sanity parallel"
-        - name: PULL_TEST_REPO_DIR
-          value: /home/prow/go/src/github.com/kubernetes-csi/csi-driver-host-path
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
         resources:
           requests:
             cpu: 2000m
+        env:
+        - name: CSI_SNAPSHOTTER_VERSION
+          value: "v4.0.0"
+        - name: CSI_PROW_KUBERNETES_VERSION
+          value: "1.22.0"
+        - name: CSI_PROW_KUBERNETES_DEPLOYMENT
+          value: "1.22"
+        - name: CSI_PROW_DRIVER_VERSION
+          value: "v1.8.0"
+        - name: CSI_PROW_TESTS
+          value: "unit sanity parallel"
+        - name: PULL_TEST_REPO_DIR
+          value: /home/prow/go/src/github.com/kubernetes-csi/csi-driver-host-path
