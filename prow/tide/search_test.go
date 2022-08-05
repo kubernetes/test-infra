@@ -136,7 +136,6 @@ func TestSearch(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			client := &GitHubProvider{}
 			var i int
 			querier := func(_ context.Context, result interface{}, actual map[string]interface{}, _ string) error {
 				expected := map[string]interface{}{
@@ -156,7 +155,7 @@ func TestSearch(t *testing.T) {
 				*ret = sq
 				return nil
 			}
-			prs, err := client.search(querier, logrus.WithField("test", tc.name), q, tc.start, tc.end, "")
+			prs, err := search(querier, logrus.WithField("test", tc.name), q, tc.start, tc.end, "")
 			switch {
 			case err != nil:
 				if !tc.err {
@@ -165,8 +164,12 @@ func TestSearch(t *testing.T) {
 			case tc.err:
 				t.Errorf("failed to receive expected error")
 			}
-
-			if !reflect.DeepEqual(tc.expected, prs) {
+			// Always check prs because we might return some results on error
+			var expectedCrcs []CodeReviewCommon
+			for _, pr := range tc.expected {
+				expectedCrcs = append(expectedCrcs, *CodeReviewCommonFromPullRequest(&pr))
+			}
+			if !reflect.DeepEqual(expectedCrcs, prs) {
 				t.Errorf("prs do not match:\n%s", diff.ObjectReflectDiff(tc.expected, prs))
 			}
 		})

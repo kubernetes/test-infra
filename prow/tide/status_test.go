@@ -1222,14 +1222,11 @@ func TestSetStatusRespectsRequiredContexts(t *testing.T) {
 	ca.Set(&config.Config{})
 
 	sc := &statusController{
-		logger:   log,
-		ghc:      fghc,
-		config:   ca.Config,
-		pjClient: fakectrlruntimeclient.NewFakeClient(),
-		ghProvider: &GitHubProvider{
-			ghc:          fghc,
-			mergeChecker: newMergeChecker(ca.Config, fghc),
-		},
+		logger:       log,
+		ghc:          fghc,
+		config:       ca.Config,
+		pjClient:     fakectrlruntimeclient.NewFakeClient(),
+		mergeChecker: newMergeChecker(ca.Config, fghc),
 		statusUpdate: &statusUpdate{
 			dontUpdateStatus: &threadSafePRSet{},
 			newPoolPending:   make(chan bool),
