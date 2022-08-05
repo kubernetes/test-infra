@@ -623,6 +623,16 @@ def generate_misc():
                    scenario="metrics-server",
                    extra_dashboards=['kops-misc']),
 
+        build_test(name_override="kops-aws-static-cpu-manager-policy",
+                   k8s_version="ci",
+                   cloud="aws",
+                   networking="cilium",
+                   distro="u2004",
+                   kops_channel="alpha",
+                   runs_per_day=1,
+                   scenario="staticcpumanagerpolicy",
+                   extra_dashboards=['kops-misc']),
+
         build_test(name_override="kops-aws-pod-identity-webhook",
                    cloud="aws",
                    networking="cilium",
