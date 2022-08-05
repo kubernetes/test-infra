@@ -362,7 +362,7 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/aggregated-aws-sdn-upgrade-4.11-micro-release-openshift-release-analysis-aggregator
   name: aggregated-aws-sdn-upgrade-4.11-micro-release-openshift-release-analysis-aggregator
-- days_of_results: 60
+- days_of_results: 8
   gcs_prefix: origin-ci-test/logs/aggregated-azure-ovn-upgrade-4.11-micro-release-openshift-release-analysis-aggregator
   name: aggregated-azure-ovn-upgrade-4.11-micro-release-openshift-release-analysis-aggregator
 - days_of_results: 60
