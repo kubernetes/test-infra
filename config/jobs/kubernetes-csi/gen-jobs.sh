@@ -754,22 +754,35 @@ for repo in $csi_release_tools_repos; do
         - runner.sh
         args:
         - ./pull-test.sh # provided by csi-release-tools
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+$(resources_for_kubernetes "$latest_stable_k8s_version")
         env:
+        - name: CSI_SNAPSHOTTER_VERSION
+          value: $(snapshotter_version "$latest_stable_k8s_version" "")
+EOF
+
+    # The environment must mirror the corresponding pull jobs for those repos,
+    # otherwise our pre-merge testing will not match what those jobs will do
+    # after updating csi-release-tools.
+    #
+    # CSI_SNAPSHOTTER_VERSION above is common to all jobs. csi-test only
+    # has one job which uses the default Kubernetes defined in prow.sh.
+    # We should therefore not override these settings. For the other
+    # repos we mimick testing on the latest stable K8S.
+    if [ "${repo}" != "csi-test" ]; then
+        cat >>"$base/csi-release-tools/csi-release-tools-config.yaml" <<EOF
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "$latest_stable_k8s_version.0"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "$latest_stable_k8s_version"
         - name: CSI_PROW_DRIVER_VERSION
           value: "$hostpath_driver_version"
-        - name: CSI_SNAPSHOTTER_VERSION
-          value: $(snapshotter_version "$latest_stable_k8s_version" "")
         - name: CSI_PROW_TESTS
           value: "unit sanity parallel"
         - name: PULL_TEST_REPO_DIR
           value: /home/prow/go/src/github.com/kubernetes-csi/$repo
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-$(resources_for_kubernetes "$latest_stable_k8s_version")
 EOF
+    fi
 done
