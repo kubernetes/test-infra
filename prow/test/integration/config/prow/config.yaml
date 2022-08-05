@@ -1,3 +1,8 @@
+deck:
+  rerun_auth_configs:
+    '*':
+      allow_anyone: true
+
 sinker:
   resync_period: 5s
   max_prowjob_age: 48h

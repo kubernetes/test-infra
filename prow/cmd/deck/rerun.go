@@ -317,6 +317,13 @@ func handleRerun(cfg config.Getter, prowJobClient prowv1.ProwJobInterface, creat
 				}
 				return
 			}
+			var rerunDescription string
+			if len(user) > 0 {
+				rerunDescription = fmt.Sprintf("%v successfully reran %v.", user, name)
+			} else {
+				rerunDescription = fmt.Sprintf("Successfully reran %v.", name)
+			}
+			newPJ.Status.Description = rerunDescription
 			created, err := prowJobClient.Create(context.TODO(), &newPJ, metav1.CreateOptions{})
 			if err != nil {
 				l.WithError(err).Error("Error creating job.")

@@ -21,14 +21,18 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"sort"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/google/go-cmp/cmp"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/util/wait"
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/kube"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 )
@@ -315,7 +319,125 @@ func TestDeckTenantIDs(t *testing.T) {
 			}
 		})
 	}
+}
 
+func TestRerun(t *testing.T) {
+	t.Parallel()
+	t.Run("Test rerun functionality with original and latest configs", func(t *testing.T) {
+		t.Parallel()
+		const rerunJobConfigFile = "rerun-test.yaml"
+		jobName := "rerun-test-job-" + RandomString(t)
+		var rerunJobConfig = fmt.Sprintf(`periodics:
+- interval: 1h
+  name: %s
+  spec:
+    containers:
+    - command:
+      - echo
+      args:
+      - "Hello World!"
+      image: localhost:5001/alpine
+  rerun_auth_config:
+    allow_anyone: true`, jobName)
+
+		clusterContext := getClusterContext()
+		t.Logf("Creating client for cluster: %s", clusterContext)
+		kubeClient, err := NewClients("", clusterContext)
+		if err != nil {
+			t.Fatalf("Failed creating clients for cluster %q: %v", clusterContext, err)
+		}
+		if err := updateJobConfig(context.Background(), kubeClient, rerunJobConfigFile, []byte(rerunJobConfig)); err != nil {
+			t.Fatalf("Failed update job config: %v", err)
+		}
+		t.Cleanup(func() {
+			if err := updateJobConfig(context.Background(), kubeClient, rerunJobConfigFile, []byte{}); err != nil {
+				t.Logf("ERROR CLEANUP: %v", err)
+			}
+			labels, _ := labels.Parse("prow.k8s.io/job = " + jobName)
+			if err := kubeClient.DeleteAllOf(context.Background(), &prowjobv1.ProwJob{}, &ctrlruntimeclient.DeleteAllOfOptions{
+				ListOptions: ctrlruntimeclient.ListOptions{LabelSelector: labels},
+			}); err != nil {
+				t.Logf("ERROR CLEANUP: %v", err)
+			}
+		})
+		ctx := context.Background()
+		getLatestJob := func(t *testing.T, jobName string, lastRun *v1.Time) *prowjobv1.ProwJob {
+			var res *prowjobv1.ProwJob
+			if err := wait.Poll(time.Second, 70*time.Second, func() (bool, error) {
+				pjs := &prowjobv1.ProwJobList{}
+				err = kubeClient.List(ctx, pjs, &ctrlruntimeclient.ListOptions{
+					LabelSelector: labels.SelectorFromSet(map[string]string{kube.ProwJobAnnotation: jobName}),
+					Namespace:     defaultNamespace,
+				})
+				if err != nil {
+					return false, fmt.Errorf("failed listing prow jobs: %w", err)
+				}
+				sort.Slice(pjs.Items, func(i, j int) bool {
+					return pjs.Items[i].Status.StartTime.After(pjs.Items[j].Status.StartTime.Time)
+				})
+				if len(pjs.Items) > 0 {
+					if lastRun != nil && pjs.Items[0].CreationTimestamp.Before(lastRun) {
+						return false, nil
+					}
+					res = &pjs.Items[0]
+				}
+				return res != nil, nil
+			}); err != nil {
+				t.Fatalf("Failed waiting for job %q: %v", jobName, err)
+			}
+			return res
+		}
+		rerun := func(t *testing.T, jobName string, mode string) {
+			req, err := http.NewRequest("POST", fmt.Sprintf("http://localhost/rerun?mode=%v&prowjob=%v", mode, jobName), nil)
+			if err != nil {
+				t.Fatalf("Could not generate a request %v", err)
+			}
+			res, err := http.DefaultClient.Do(req)
+			if err != nil {
+				t.Fatalf("Could not make post request %v", err)
+			}
+			defer res.Body.Close()
+			body, err := ioutil.ReadAll(res.Body)
+			t.Log(string(body))
+			if err != nil {
+				t.Fatalf("Could not read body response %v", err)
+			}
+		}
+		jobToRerun := getLatestJob(t, jobName, nil)
+		rerunNewJobConfig := fmt.Sprintf(`periodics:
+- interval: 1h
+  name: %s
+  spec:
+    containers:
+    - command:
+      - echo
+      args:
+      - "Hello World!"
+      image: localhost:5001/alpine
+  labels:
+    foo: "foo"
+  rerun_auth_config:
+    allow_anyone: true`, jobName)
+
+		if err := updateJobConfig(context.Background(), kubeClient, rerunJobConfigFile, []byte(rerunNewJobConfig)); err != nil {
+			t.Fatalf("Failed update job config: %v", err)
+		}
+		var passed bool
+		// It may take some time for the new ProwJob to show up, so we will
+		// check every 30s interval three times for it to appear
+		for i := 0; i < 3; i++ {
+			time.Sleep(30 * time.Second)
+			rerun(t, jobToRerun.Name, "latest")
+			latestRerun := getLatestJob(t, jobName, &jobToRerun.CreationTimestamp)
+			if len(latestRerun.Labels["foo"]) != 0 {
+				passed = true
+				break
+			}
+		}
+		if !passed {
+			t.Fatal("Expected updated job.")
+		}
+	})
 }
 
 func renamePJs(pjs *prowjobv1.ProwJobList, name string) prowjobv1.ProwJobList {
