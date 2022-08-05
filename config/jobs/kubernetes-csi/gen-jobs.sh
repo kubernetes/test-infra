@@ -759,6 +759,8 @@ for repo in $csi_release_tools_repos; do
           privileged: true
 $(resources_for_kubernetes "$latest_stable_k8s_version")
         env:
+        - name: PULL_TEST_REPO_DIR
+          value: /home/prow/go/src/github.com/kubernetes-csi/$repo
         - name: CSI_SNAPSHOTTER_VERSION
           value: $(snapshotter_version "$latest_stable_k8s_version" "")
 EOF
@@ -781,8 +783,6 @@ EOF
           value: "$hostpath_driver_version"
         - name: CSI_PROW_TESTS
           value: "unit sanity parallel"
-        - name: PULL_TEST_REPO_DIR
-          value: /home/prow/go/src/github.com/kubernetes-csi/$repo
 EOF
     fi
 done
