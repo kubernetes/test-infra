@@ -182,7 +182,7 @@ dashboards:
     results_url_template:
       url: https://prow.ci.openshift.org/job-history/<gcs_prefix>
     test_group_name: branch-ci-stackrox-stackrox-nightlies-ui-unit-tests
-  name: redhat-stackrox-merge
+  name: redhat-stackrox-nightly
 test_groups:
 - gcs_prefix: origin-ci-test/logs/branch-ci-stackrox-stackrox-nightlies-eks-qa-e2e-tests
   name: branch-ci-stackrox-stackrox-nightlies-eks-qa-e2e-tests
