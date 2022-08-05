@@ -9,6 +9,11 @@ periodics:
   decoration_config:
     timeout: 75m
   extra_refs:
+  - org: go.googlesource.com
+    repo: go
+    base_ref: master
+    path_alias: golang
+    clone_uri: https://go.googlesource.com/go
   - org: kubernetes
     repo: kubernetes
     base_ref: master
@@ -23,11 +28,6 @@ periodics:
     base_sha: 0ff1922aa2269879957646a232f657bcb57824b1 # head of master branch as of 2021-09-25
     base_ref: master
     path_alias: k8s.io/release
-  - org: go.googlesource.com
-    repo: go
-    base_ref: master
-    path_alias: golang
-    clone_uri: https://go.googlesource.com/go
   annotations:
     testgrid-alert-email: kubernetes-sig-scale@googlegroups.com, kubernetes-scalability-tickets@google.com, go-kubernetes-scalability-tickets@googlegroups.com
     testgrid-dashboards: sig-scalability-golang
@@ -36,9 +36,6 @@ periodics:
   spec:
     containers:
     - image: gcr.io/k8s-staging-test-infra/bootstrap:v20220614-ad0ae57da9
-      env:
-      - name: GCS_BUCKET
-        value: "k8s-infra-scale-golang-builds"
       command:
       - runner.sh
       - /workspace/scenarios/execute.py
@@ -62,7 +59,6 @@ periodics:
   cluster: k8s-infra-prow-build
   tags:
   - "perfDashPrefix: golang-tip-k8s-1-23"
-  - "perfDashBuildsCount: 500"
   - "perfDashJobType: performance"
   labels:
     preset-service-account: "true"
