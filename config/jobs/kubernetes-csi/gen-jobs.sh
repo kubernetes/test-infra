@@ -522,10 +522,6 @@ EOF
         args:
         - ./.prow.sh
         env:
-        - name: CSI_PROW_DRIVER_VERSION
-          value: "$hostpath_driver_version"
-        - name: CSI_SNAPSHOTTER_VERSION
-          value: $(snapshotter_version "" "")
         - name: CSI_PROW_TESTS
           value: "$(expand_tests "$tests")"
         # docker-in-docker needs privileged mode
@@ -565,9 +561,6 @@ EOF
         - runner.sh
         args:
         - ./.prow.sh
-        env:
-        - name: CSI_SNAPSHOTTER_VERSION
-          value: $(snapshotter_version "" "")
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
