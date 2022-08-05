@@ -36,6 +36,7 @@ import (
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
+	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/plank"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -125,6 +126,8 @@ func main() {
 	if err := o.DefaultAndValidate(); err != nil {
 		logrus.WithError(err).Fatal("Invalid options")
 	}
+	defer interrupts.WaitForGracefulShutdown()
+	health := pjutil.NewHealth()
 	kubeCfg, err := o.kubernetes.InfrastructureClusterConfig(o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting kubeconfig")
@@ -175,7 +178,7 @@ func main() {
 	interrupts.Run(func(ctx context.Context) {
 		wa.fetchClusters(time.Duration(o.time*int(time.Minute)), ctx, &wa.statuses, configAgent)
 	})
-	defer interrupts.WaitForGracefulShutdown()
+	
 	mux := http.NewServeMux()
 	mux.HandleFunc("/validate", wa.serveValidate)
 	s := http.Server{
@@ -187,6 +190,9 @@ func main() {
 	}
 	logrus.Info("Listening on port 8008...")
 	interrupts.ListenAndServeTLS(&s, certFile, privKeyFile, 5*time.Second)
+	health.ServeReady(func() bool {
+		return true
+	})
 }
 
 //get or creates the necessary ca secret files and returns the ca-cert file name, priv-key file name and tempDir name
