@@ -23,9 +23,6 @@ presubmits:
         - runner.sh
         args:
         - ./.prow.sh
-        env:
-        - name: CSI_SNAPSHOTTER_VERSION
-          value: "v3.0.3"
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
