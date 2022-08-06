@@ -1272,11 +1272,11 @@ periodics:
             value: /go
         resources:
           limits:
-            cpu: 15000m
-            memory: 16Gi
+            cpu: 4
+            memory: 8Gi
           requests:
-            cpu: 15000m
-            memory: 16Gi
+            cpu: 4
+            memory: 8Gi
   annotations:
     testgrid-dashboards: sig-node-containerd
     testgrid-tab-name: node-kubelet-containerd-performance-test
