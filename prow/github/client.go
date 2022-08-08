@@ -4959,7 +4959,8 @@ func (c *client) CreateCheckRun(org, repo string, checkRun CheckRun) (*CheckRun,
 	var retCheckRun CheckRun
 	_, err := c.request(&request{
 		method:      http.MethodPost,
-		path:        fmt.Sprintf("/repos/%s/%s/commits/%s/check-runs", org, repo),
+		path:        fmt.Sprintf("/repos/%s/%s/commits/%s/check-runs", org, repo, checkRun.HeadSHA),
+		org:         org,
 		requestBody: &checkRun,
 		exitCodes:   []int{201},
 	}, &retCheckRun)
