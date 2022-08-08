@@ -32,6 +32,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/experiment/clustersecretbackup/secretmanager"
 	"k8s.io/test-infra/pkg/flagutil"
+	"k8s.io/test-infra/prow/config"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/interrupts"
@@ -77,6 +78,7 @@ type webhookAgent struct {
 	storage  prowflagutil.StorageClientOptions
 	statuses map[string]plank.ClusterStatus
 	mu       sync.Mutex
+	plank    config.Plank
 }
 
 func (o *options) DefaultAndValidate() error {
@@ -97,7 +99,7 @@ func (o *options) DefaultAndValidate() error {
 		return fmt.Errorf("secretID must be specified if choosing to use a GCP project")
 	}
 	if o.dnsNames.StringSet().Len() == 0 {
-		o.dnsNames.Set("prowjob-validation-webhook.default.svc")
+		o.dnsNames.Add(prowjobAdmissionServiceName + ".default.svc")
 	}
 	return nil
 }
@@ -105,7 +107,7 @@ func (o *options) DefaultAndValidate() error {
 func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	var o options
 	fs.StringVar(&o.projectId, "project-id", "", "Project ID for storing GCP Secrets")
-	fs.StringVar(&o.fileSystemPath, "filesys-path", "", "File system path for storing ca-cert secrets")
+	fs.StringVar(&o.fileSystemPath, "filesys-path", "./prowjob-webhook-ca-cert", "File system path for storing ca-cert secrets")
 	fs.StringVar(&o.secretID, "secret-id", "", "GCP Project secret name")
 	fs.IntVar(&o.expiryInYears, "expiry-years", 30, "CA certificate expiry in years")
 	fs.BoolVar(&o.dryRun, "dry-run", true, "Whether to mutate any real-world state")
@@ -141,10 +143,6 @@ func main() {
 	}
 	var client ClientInterface
 	statuses := make(map[string]plank.ClusterStatus)
-	wa := &webhookAgent{
-		storage:  o.storage,
-		statuses: statuses,
-	}
 	clientoptions := &clientOptions{
 		secretID:      o.secretID,
 		dnsNames:      o.dnsNames,
@@ -175,12 +173,19 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("could not create config agent")
 	}
+	cfg := configAgent.Config()
+	wa := &webhookAgent{
+		storage:  o.storage,
+		statuses: statuses,
+		plank:    cfg.Plank,
+	}
 	interrupts.Run(func(ctx context.Context) {
 		wa.fetchClusters(time.Duration(o.time*int(time.Minute)), ctx, &wa.statuses, configAgent)
 	})
-	
+
 	mux := http.NewServeMux()
-	mux.HandleFunc("/validate", wa.serveValidate)
+	mux.HandleFunc(validatePath, wa.serveValidate)
+	mux.HandleFunc(mutatePath, wa.serveMutate)
 	s := http.Server{
 		Addr: ":8008",
 		TLSConfig: &tls.Config{
@@ -212,9 +217,6 @@ func handleSecrets(client ClientInterface, ctx context.Context, clientoptions cl
 		if err != nil {
 			return "", "", fmt.Errorf("unable to create ca certificate %v", err)
 		}
-		if err = createValidatingWebhookConfig(ctx, caPem, cl); err != nil {
-			return "", "", fmt.Errorf("unable to generate ValidationWebhookConfig %v", err)
-		}
 	} else {
 		err = json.Unmarshal(data, &secretsMap)
 		if err != nil {
@@ -222,19 +224,17 @@ func handleSecrets(client ClientInterface, ctx context.Context, clientoptions cl
 		}
 		cert = secretsMap[certFile]
 		privKey = secretsMap[privKeyFile]
-	}
-
-	if err := isCertValid(cert); err != nil {
-		logrus.WithError(err).Info("Certificate is not valid, will replace.")
-		cert, privKey, caPem, err = updateSecret(client, ctx, clientoptions)
-		if err != nil {
-			return "", "", fmt.Errorf("unable to update secret %v", err)
-		}
-		if err := patchValidatingWebhookConfig(ctx, caPem, cl); err != nil {
-			return "", "", fmt.Errorf("unable to generate ValidationWebhookConfig %v", err)
+		if err := isCertValid(cert); err != nil {
+			logrus.WithError(err).Info("Certificate is not valid, will replace.")
+			cert, privKey, caPem, err = updateSecret(client, ctx, clientoptions)
+			if err != nil {
+				return "", "", fmt.Errorf("unable to update secret %v", err)
+			}
 		}
 	}
-
+	if err = reconcileWebhooks(ctx, caPem, cl); err != nil {
+		return "", "", err
+	}
 	tempDir, err := ioutil.TempDir("", "cert")
 	if err != nil {
 		return "", "", fmt.Errorf("unable to create temp directory %v", err)
@@ -247,6 +247,5 @@ func handleSecrets(client ClientInterface, ctx context.Context, clientoptions cl
 	if err := ioutil.WriteFile(privKeyFile, []byte(privKey), 0666); err != nil {
 		return "", "", fmt.Errorf("could not write contents of privKey file %v", err)
 	}
-
 	return certFile, privKeyFile, nil
 }

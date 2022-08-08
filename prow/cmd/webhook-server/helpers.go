@@ -44,7 +44,18 @@ import (
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-const org = "prow.k8s.io"
+const (
+	org                          = "prow.k8s.io"
+	defaultNamespace             = "default"
+	prowjobAdmissionServiceName  = "prowjob-admission-webhook"
+	prowJobMutatingWebhookName   = "prow-job-mutating-webhook-config.prow.k8s.io"
+	prowJobValidatingWebhookName = "prow-job-validating-webhook-config.prow.k8s.io"
+	mutatePath                   = "/mutate"
+	validatePath                 = "/validate"
+)
+
+//for unit testing purposes
+var genCertFunc = genCert
 
 func genCert(expiry int, dnsNames []string) (string, string, string, error) {
 	//https://gist.github.com/velotiotech/2e0cfd15043513d253cad7c9126d2026#file-initcontainer_main-go
@@ -90,7 +101,7 @@ func genCert(expiry int, dnsNames []string) (string, string, string, error) {
 		DNSNames:     dnsNames,
 		SerialNumber: big.NewInt(1658), //unique identifier for cert
 		Subject: pkix.Name{
-			CommonName:   "validation-webhook-service.default.svc",
+			CommonName:   "admission-webhook-service.default.svc", //this field doesn't affect the server cert config
 			Organization: []string{org},
 		},
 		NotBefore:    time.Now(),
@@ -173,7 +184,7 @@ func updateSecret(client ClientInterface, ctx context.Context, clientoptions cli
 }
 
 func genSecretData(expiry int, dns []string) (string, string, string, []byte, error) {
-	serverCertPerm, serverPrivKey, caPem, err := genCert(expiry, dns)
+	serverCertPerm, serverPrivKey, caPem, err := genCertFunc(expiry, dns)
 	if err != nil {
 		return "", "", "", nil, fmt.Errorf("could not generate ca credentials")
 	}
@@ -191,10 +202,10 @@ func genSecretData(expiry int, dns []string) (string, string, string, []byte, er
 	return serverCertPerm, serverPrivKey, caPem, secretData, nil
 }
 
-func createValidatingWebhookConfig(ctx context.Context, caPem string, client ctrlruntimeclient.Client) error {
+func ensureValidatingWebhookConfig(ctx context.Context, caPem string, client ctrlruntimeclient.Client) error {
 	operations := []admregistration.OperationType{"CREATE", "UPDATE"}
 	scope := admregistration.ScopeType("*")
-	path := "/validate"
+	path := validatePath
 	sideEffects := admregistration.SideEffectClass("None")
 
 	validatingWebhookConfig := &admregistration.ValidatingWebhookConfiguration{
@@ -203,14 +214,14 @@ func createValidatingWebhookConfig(ctx context.Context, caPem string, client ctr
 			APIVersion: "admissionregistration.k8s.io/v1",
 		},
 		ObjectMeta: v1.ObjectMeta{
-			Name: "prow-job-validating-webhook-config.prow.k8s.io",
+			Name: prowJobValidatingWebhookName,
 		},
 		Webhooks: []admregistration.ValidatingWebhook{
 			{
-				Name: "prow-job-validating-webhook-config.prow.k8s.io",
+				Name: prowJobValidatingWebhookName,
 				ObjectSelector: &v1.LabelSelector{
 					MatchLabels: map[string]string{
-						"admission-webhook": "enabled",
+						"admission-webhook": "enabled", // for now till there is more confidence, ensures only prowjobs with this label are affected
 					},
 				},
 				Rules: []admregistration.RuleWithOperations{
@@ -226,8 +237,94 @@ func createValidatingWebhookConfig(ctx context.Context, caPem string, client ctr
 				},
 				ClientConfig: admregistration.WebhookClientConfig{
 					Service: &admregistration.ServiceReference{
-						Namespace: "default",
-						Name:      "prowjob-validation-webhook",
+						Namespace: defaultNamespace,
+						Name:      prowjobAdmissionServiceName,
+						Path:      &path,
+					},
+					CABundle: []byte(caPem),
+				},
+				SideEffects:             &sideEffects,
+				AdmissionReviewVersions: []string{"v1"},
+			},
+		},
+	}
+
+	createOptions := &ctrlruntimeclient.CreateOptions{
+		FieldManager: "webhook-server", // indicates the configuration was created by the webhook server
+	}
+
+	err := client.Create(ctx, validatingWebhookConfig, createOptions)
+	if err != nil && strings.Contains(err.Error(), configAlreadyExistsError) {
+		logrus.Info("ValidatingWebhookConfiguration already exists, proceeding to patch")
+		if err := patchValidatingWebhookConfig(ctx, caPem, client); err != nil {
+			return fmt.Errorf("failed to patch validating webhook config: %w", err)
+		}
+	} else if err != nil {
+		return fmt.Errorf("failed to create validating webhook config: %w", err)
+	}
+
+	return nil
+}
+
+func patchValidatingWebhookConfig(ctx context.Context, caPem string, client ctrlruntimeclient.Client) error {
+	key := types.NamespacedName{
+		Namespace: defaultNamespace,
+		Name:      prowJobValidatingWebhookName,
+	}
+
+	patchOptions := &ctrlruntimeclient.PatchOptions{
+		FieldManager: "webhook-server",
+	}
+	var validatingWebhookConfig admregistration.ValidatingWebhookConfiguration
+	if err := client.Get(ctx, key, &validatingWebhookConfig); err != nil {
+		return fmt.Errorf("failed to get validating webhook config: %w", err)
+	}
+	oldValidatingWebhook := validatingWebhookConfig.DeepCopy()
+	validatingWebhookConfig.Webhooks[0].ClientConfig.CABundle = []byte(caPem)
+	if err := client.Patch(ctx, &validatingWebhookConfig, ctrlruntimeclient.MergeFrom(oldValidatingWebhook), patchOptions); err != nil {
+		return fmt.Errorf("failed to patch validating webhook config: %w", err)
+	}
+	return nil
+}
+
+func ensureMutatingWebhookConfig(ctx context.Context, caPem string, client ctrlruntimeclient.Client) error {
+	operations := []admregistration.OperationType{"CREATE"}
+	scope := admregistration.ScopeType("*")
+	path := mutatePath
+	sideEffects := admregistration.SideEffectClass("None")
+
+	mutatingWebhookConfig := &admregistration.MutatingWebhookConfiguration{
+		TypeMeta: v1.TypeMeta{
+			Kind:       "MutatingWebhookConfiguration",
+			APIVersion: "admissionregistration.k8s.io/v1",
+		},
+		ObjectMeta: v1.ObjectMeta{
+			Name: prowJobMutatingWebhookName,
+		},
+		Webhooks: []admregistration.MutatingWebhook{
+			{
+				Name: prowJobMutatingWebhookName,
+				ObjectSelector: &v1.LabelSelector{
+					MatchLabels: map[string]string{
+						"admission-webhook": "enabled", //for now till there is more confidence, ensures only prowjobs with this label are affected
+						"default-me":        "enabled", //for now till there is more confidence, ensures only prowjobs with this label are affected
+					},
+				},
+				Rules: []admregistration.RuleWithOperations{
+					{
+						Operations: operations,
+						Rule: admregistration.Rule{
+							APIGroups:   []string{"prow.k8s.io"},
+							APIVersions: []string{"v1"},
+							Resources:   []string{"prowjobs"},
+							Scope:       &scope,
+						},
+					},
+				},
+				ClientConfig: admregistration.WebhookClientConfig{
+					Service: &admregistration.ServiceReference{
+						Namespace: defaultNamespace,
+						Name:      prowjobAdmissionServiceName,
 						Path:      &path,
 					},
 					CABundle: []byte(caPem),
@@ -242,41 +339,103 @@ func createValidatingWebhookConfig(ctx context.Context, caPem string, client ctr
 		FieldManager: "webhook-server",
 	}
 
-	err := client.Create(ctx, validatingWebhookConfig, createOptions)
+	err := client.Create(ctx, mutatingWebhookConfig, createOptions)
 	if err != nil && strings.Contains(err.Error(), configAlreadyExistsError) {
-		logrus.Info("ValidatingWebhookConfiguration already exists, proceeding to patch")
-		if err := patchValidatingWebhookConfig(ctx, caPem, client); err != nil {
-			return fmt.Errorf("failed to patch validation webhook config: %w", err)
+		logrus.Info("MutatingWebhookConfiguration already exists, proceeding to patch")
+		if err := patchMutatingWebhookConfig(ctx, caPem, client); err != nil {
+			return fmt.Errorf("failed to patch mutating webhook config: %w", err)
 		}
 	} else if err != nil {
-		return fmt.Errorf("failed to create validation webhook config: %w", err)
+		return fmt.Errorf("failed to create mutating webhook config: %w", err)
 	}
 
 	return nil
 }
 
-func patchValidatingWebhookConfig(ctx context.Context, caPem string, client ctrlruntimeclient.Client) error {
+func patchMutatingWebhookConfig(ctx context.Context, caPem string, client ctrlruntimeclient.Client) error {
 	key := types.NamespacedName{
-		Namespace: "default",
-		Name:      "prow-job-validating-webhook-config.prow.k8s.io",
+		Namespace: defaultNamespace,
+		Name:      prowJobMutatingWebhookName,
 	}
 
 	patchOptions := &ctrlruntimeclient.PatchOptions{
 		FieldManager: "webhook-server",
 	}
-	var validatingWebhookConfig admregistration.ValidatingWebhookConfiguration
-	if err := client.Get(ctx, key, &validatingWebhookConfig); err != nil {
-		return fmt.Errorf("failed to get validation webhook config: %w", err)
+	var mutatingWebhookConfig admregistration.MutatingWebhookConfiguration
+	if err := client.Get(ctx, key, &mutatingWebhookConfig); err != nil {
+		return fmt.Errorf("failed to get mutating webhook config: %w", err)
 	}
-	oldValidatingWebhook := validatingWebhookConfig.DeepCopy()
-	validatingWebhookConfig.Webhooks[0].ClientConfig.CABundle = []byte(caPem)
-	if err := client.Patch(ctx, &validatingWebhookConfig, ctrlruntimeclient.MergeFrom(oldValidatingWebhook), patchOptions); err != nil {
-		return fmt.Errorf("failed to patch validation webhook config: %w", err)
+	oldMutatingWebhook := mutatingWebhookConfig.DeepCopy()
+	mutatingWebhookConfig.Webhooks[0].ClientConfig.CABundle = []byte(caPem)
+	if err := client.Patch(ctx, &mutatingWebhookConfig, ctrlruntimeclient.MergeFrom(oldMutatingWebhook), patchOptions); err != nil {
+		return fmt.Errorf("failed to patch mutating webhook config: %w", err)
 	}
 	return nil
 }
 
-// this method runs on a go routine as a periodic task to continuously update the clusters in the config
+// we would like both webhookconfigurations to exist at any given time so this function ensures both are present
+// and returns their caBundle contents
+func checkWebhooksExist(ctx context.Context, client ctrlruntimeclient.Client) (string, string, bool, error) {
+	var mutatingExists bool
+	var validatingExists bool
+	var mutatingWebhookConfig admregistration.MutatingWebhookConfiguration
+	var validatingWebhookConfig admregistration.ValidatingWebhookConfiguration
+	mutatingKey := types.NamespacedName{
+		Namespace: defaultNamespace,
+		Name:      prowJobMutatingWebhookName,
+	}
+	validatingKey := types.NamespacedName{
+		Namespace: defaultNamespace,
+		Name:      prowJobValidatingWebhookName,
+	}
+
+	err := client.Get(ctx, mutatingKey, &mutatingWebhookConfig)
+	if err != nil && strings.Contains(err.Error(), "not found") {
+		return "", "", false, nil
+	} else if err != nil {
+		return "", "", false, fmt.Errorf("error getting mutating webhook config %v", err)
+	}
+	mutatingExists = true
+
+	err = client.Get(ctx, validatingKey, &validatingWebhookConfig)
+	if err != nil && strings.Contains(err.Error(), "not found") {
+		return "", "", false, nil
+	} else if err != nil {
+		return "", "", false, fmt.Errorf("error getting validating webhook config %v", err)
+	}
+	validatingExists = true
+
+	if mutatingExists && validatingExists {
+		return string(mutatingWebhookConfig.Webhooks[0].ClientConfig.CABundle), string(validatingWebhookConfig.Webhooks[0].ClientConfig.CABundle), true, nil
+	}
+
+	return "", "", false, nil
+}
+
+func reconcileWebhooks(ctx context.Context, caPem string, cl ctrlruntimeclient.Client) error {
+	mutatingCAPem, validatingCAPem, exist, err := checkWebhooksExist(ctx, cl)
+	if err != nil {
+		return err
+	}
+	if exist && (validatingCAPem != caPem || mutatingCAPem != caPem) {
+		if err := patchValidatingWebhookConfig(ctx, caPem, cl); err != nil {
+			return fmt.Errorf("unable to patch ValidatingWebhookConfig %v", err)
+		}
+		if err := patchMutatingWebhookConfig(ctx, caPem, cl); err != nil {
+			return fmt.Errorf("unable to patch MutatingWebhookConfig %v", err)
+		}
+	} else if !exist {
+		if err = ensureValidatingWebhookConfig(ctx, caPem, cl); err != nil {
+			return fmt.Errorf("unable to generate ValidatingWebhookConfig %v", err)
+		}
+		if err = ensureMutatingWebhookConfig(ctx, caPem, cl); err != nil {
+			return fmt.Errorf("unable to generate MutatingWebhookConfig %v", err)
+		}
+	}
+	return nil
+}
+
+// this method runs on a go routine as a periodic task to continuously fetch the clusters in the config
 func (wa *webhookAgent) fetchClusters(d time.Duration, ctx context.Context, statuses *map[string]plank.ClusterStatus, configAgent *config.Agent) error {
 	ticker := time.NewTicker(d)
 	defer ticker.Stop()

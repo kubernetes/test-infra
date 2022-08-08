@@ -31,6 +31,13 @@ type fakeClient struct {
 	project secretStore
 }
 
+func newFakeClient() *fakeClient {
+	return &fakeClient{
+		project: secretStore{
+			store: make(map[string]string),
+		},
+	}
+}
 func (f *fakeClient) CreateSecret(ctx context.Context, secretID string) error {
 	f.project.store[secretID] = ""
 	return nil
@@ -67,19 +74,14 @@ func (f *fakeClient) CheckSecret(ctx context.Context, secretName string) (bool, 
 	}
 }
 
-var (
-	store = make(map[string]string)
-	f     = &fakeClient{
-		project: secretStore{
-			store: store,
-		},
-	}
-	ctx      = context.Background()
+const (
 	secretID = "prowjob-webhook-secrets"
 	payload  = "xxx123"
 )
 
 func TestCreateSecrets(t *testing.T) {
+	ctx := context.Background()
+	f := newFakeClient()
 	f.CreateSecret(ctx, secretID)
 	if len(f.project.store) == 0 {
 		t.Errorf("secret was not created successfully")
@@ -87,6 +89,8 @@ func TestCreateSecrets(t *testing.T) {
 }
 
 func TestGetSecretValue(t *testing.T) {
+	ctx := context.Background()
+	f := newFakeClient()
 	f.AddSecretVersion(ctx, secretID, []byte(payload))
 	res, exist, err := f.GetSecretValue(ctx, secretID, "")
 	if err != nil {

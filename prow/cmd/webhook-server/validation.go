@@ -43,35 +43,44 @@ const (
 func (wa *webhookAgent) serveValidate(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		logrus.WithError(err).Fatal("Unable to read request")
+		logrus.WithError(err).Info("unable to read request")
+		http.Error(w, fmt.Sprintf("bad request %v", err), http.StatusBadRequest)
+		return
 	}
 	admissionReview := &v1beta1.AdmissionReview{}
 	err = json.Unmarshal(body, admissionReview)
 	if err != nil {
-		logrus.WithError(err).Fatal("Unable to unmarshal admission review request")
+		logrus.WithError(err).Info("unable to unmarshal admission review request")
+		http.Error(w, fmt.Sprintf("unable to unmarshal admission review request %v", err), http.StatusBadRequest)
+		return
 	}
 	admissionRequest := admissionReview.Request
 	var prowJob v1.ProwJob
 	err = json.Unmarshal(admissionRequest.Object.Raw, &prowJob)
 	if err != nil {
-		logrus.WithError(err).Fatal("Unable to unmarshal admission review request")
+		logrus.WithError(err).Info("unable to prowjob from request")
+		http.Error(w, fmt.Sprintf("unable to unmarshal prowjob %v", err), http.StatusBadRequest)
+		return
 	}
 	var admissionResponse *v1beta1.AdmissionResponse
 	if admissionRequest.Operation == "CREATE" {
 		if err := validateProwJobClusterOnCreate(prowJob, wa.statuses); err != nil {
-			admissionResponse = createAdmissionResponse(admissionRequest.UID, err)
+			admissionResponse = createValidatingAdmissionResponse(admissionRequest.UID, err)
 		} else {
-			admissionResponse = createAdmissionResponse(admissionRequest.UID, nil)
+			admissionResponse = createValidatingAdmissionResponse(admissionRequest.UID, nil)
 		}
 	}
 	admissionReview.Response = admissionResponse
 	resp, err := json.Marshal(admissionReview)
 	if err != nil {
-		logrus.WithError(err).Fatal("Unable to marshal response")
+		logrus.WithError(err).Info("unable to marshal response")
+		http.Error(w, fmt.Sprintf("unable to unmarshal prowjob %v", err), http.StatusInternalServerError)
+		return
 	}
 	if _, err := w.Write(resp); err != nil {
-		logrus.WithError(err).Fatal("Unable to write response")
+		logrus.WithError(err).Info("unable to write response")
 		http.Error(w, fmt.Sprintf("unable to write response: %v", err), http.StatusInternalServerError)
+		return
 	}
 }
 
@@ -88,7 +97,7 @@ func validateProwJobClusterOnCreate(prowJob v1.ProwJob, statuses map[string]plan
 	return nil
 }
 
-func createAdmissionResponse(uid types.UID, err error) *v1beta1.AdmissionResponse {
+func createValidatingAdmissionResponse(uid types.UID, err error) *v1beta1.AdmissionResponse {
 	var ar *v1beta1.AdmissionResponse
 	var result *apiv1.Status
 	if err != nil {
