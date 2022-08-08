@@ -621,7 +621,7 @@ func (c *syncController) initSubpoolData(sp *subpool) error {
 	}
 	sp.cc = make(map[int]contextChecker, len(sp.prs))
 	for _, pr := range sp.prs {
-		sp.cc[pr.Number], err = c.provider.GetTideContextPolicy(c.gc, sp.org, sp.repo, sp.branch, refGetterFactory(string(sp.sha)), pr.HeadRefOID)
+		sp.cc[pr.Number], err = c.provider.GetTideContextPolicy(c.gc, sp.org, sp.repo, sp.branch, refGetterFactory(string(sp.sha)), &pr)
 		if err != nil {
 			return fmt.Errorf("error setting up context checker for pr %d: %w", pr.Number, err)
 		}
@@ -1852,9 +1852,14 @@ type CheckRun struct {
 
 // Context holds graphql response data for github contexts.
 type Context struct {
-	Context     githubql.String
+	// Context is the name of the context, it's identical to the full name of a
+	// prowjob if the context is for a prowjob.
+	Context githubql.String
+	// Description is the description for a context, it's formed by
+	// config.ContextDescriptionWithBaseSha for a prowjob.
 	Description githubql.String
-	State       githubql.StatusState
+	// State is the state for a prowjob: EXPECTED, ERROR, FAILURE, PENDING, SUCCESS.
+	State githubql.StatusState
 }
 
 type PRNode struct {

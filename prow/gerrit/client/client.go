@@ -19,6 +19,7 @@ limitations under the License.
 package client
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -378,6 +379,35 @@ func (c *Client) QueryChangesForInstance(instance string, lastState LastSyncStat
 	return h.queryAllChanges(lastStateForInstance, rateLimit)
 }
 
+// QueryChangesForProject queries change for a project.
+//
+// Important: this method does not update LastSyncState as it is per instance
+// based. It doesn't make sense to update the state as this method has no idea
+// whether all other projects have been queries or not yet. So caller of this
+// method is responsible for making sure that LastSyncState is up-to-date, if
+// the lastUpdate time is used by caller.
+func (c *Client) QueryChangesForProject(instance, project string, lastUpdate time.Time, rateLimit int, additionalFilters []string) ([]ChangeInfo, error) {
+	log := logrus.WithContext(context.Background()).WithField("instance", instance)
+
+	c.lock.RLock()
+	defer c.lock.RUnlock()
+	h, ok := c.handlers[instance]
+	if !ok {
+		return []ChangeInfo{}, fmt.Errorf("instance handler for %q not found, it might not have been initialized yet", instance)
+	}
+
+	queryFilters, ok := h.projects[project]
+	if !ok {
+		return []ChangeInfo{}, fmt.Errorf("project %q from instance %q not registered in gerrit handler, it might not have been initialized yet", project, instance)
+	}
+
+	changes, err := h.QueryChangesForProject(log, project, lastUpdate, rateLimit, queryStringsFromQueryFilter(queryFilters))
+	if err != nil {
+		return []ChangeInfo{}, fmt.Errorf("failed to query changes for project %q of %q instance: %v", project, instance, err)
+	}
+	return changes, nil
+}
+
 func (c *Client) GetChange(instance, id string) (*ChangeInfo, error) {
 	c.lock.RLock()
 	defer c.lock.RUnlock()
@@ -493,7 +523,7 @@ func (h *gerritInstanceHandler) queryAllChanges(lastState map[string]time.Time, 
 			lastUpdate = timeNow
 			log.WithField("now", timeNow).Warn("lastState not found, defaulting to now")
 		}
-		changes, err := h.queryChangesForProject(log, project, lastUpdate, rateLimit, filters)
+		changes, err := h.QueryChangesForProject(log, project, lastUpdate, rateLimit, queryStringsFromQueryFilter(filters))
 		if err != nil {
 			clientMetrics.queryResults.WithLabelValues(h.instance, project, ResultError).Inc()
 			// don't halt on error from one project, log & continue
@@ -567,12 +597,12 @@ func queryStringsFromQueryFilter(filters *config.GerritQueryFilter) []string {
 	return res
 }
 
-func (h *gerritInstanceHandler) queryChangesForProject(log logrus.FieldLogger, project string, lastUpdate time.Time, rateLimit int, filters *config.GerritQueryFilter) ([]gerrit.ChangeInfo, error) {
+func (h *gerritInstanceHandler) QueryChangesForProject(log logrus.FieldLogger, project string, lastUpdate time.Time, rateLimit int, additionalFilters []string) ([]gerrit.ChangeInfo, error) {
 	var pending []gerrit.ChangeInfo
 
 	var opt gerrit.QueryChangeOptions
 	opt.Query = append(opt.Query, "project:"+project)
-	opt.Query = append(opt.Query, queryStringsFromQueryFilter(filters)...)
+	opt.Query = append(opt.Query, additionalFilters...)
 	opt.AdditionalFields = []string{"CURRENT_REVISION", "CURRENT_COMMIT", "CURRENT_FILES", "MESSAGES"}
 
 	log = log.WithFields(logrus.Fields{"query": opt.Query, "additional_fields": opt.AdditionalFields})

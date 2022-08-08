@@ -21,12 +21,15 @@ import (
 	"errors"
 	"time"
 
+	"github.com/andygrunwald/go-gerrit"
 	"github.com/sirupsen/logrus"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/git/types"
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/tide/blockers"
+
+	githubql "github.com/shurcooL/githubv4"
 )
 
 // CodeReviewForDeck contains superset of data from CodeReviewCommon, it's meant
@@ -101,6 +104,7 @@ type CodeReviewCommon struct {
 	Mergeable string
 
 	GitHub *PullRequest
+	Gerrit *gerrit.ChangeInfo
 }
 
 func (crc *CodeReviewCommon) logFields() logrus.Fields {
@@ -186,12 +190,60 @@ func CodeReviewCommonFromPullRequest(pr *PullRequest) *CodeReviewCommon {
 	return crc
 }
 
+// CodeReviewCommonFromGerrit derives CodeReviewCommon struct from Gerrit
+// ChangeInfo struct, by extracting shared fields among different code review
+// providers.
+//
+// Gerrit ChangeInfo doesn't know which host it's from, which makes sense, as
+// host for Gerrit is like `github.com` for GitHub, so it's required to be
+// passed in by caller.
+func CodeReviewCommonFromGerrit(gci *gerrit.ChangeInfo, instance string) *CodeReviewCommon {
+	if gci == nil {
+		return nil
+	}
+	// Make a copy
+	gciCopy := *gci
+
+	// MergeableState is an enum with three different values:
+	// MergeableStateUnknown, MergeableStateMergeable, and
+	// MergeableStateConflicting.
+	// Ref: https://pkg.go.dev/github.com/shurcooL/githubv4#MergeableState
+	mergeable := string(githubql.MergeableStateUnknown)
+	if gci.Mergeable {
+		mergeable = string(githubql.MergeableStateMergeable)
+	} else if gci.ContainsGitConflicts {
+		mergeable = string(githubql.MergeableStateConflicting)
+	}
+	crc := &CodeReviewCommon{
+		NameWithOwner: instance + "/" + gci.Project, // org + "/" + repo
+		Number:        gci.Number,
+		Org:           instance,
+		Repo:          gci.Project,
+		BaseRefPrefix: "refs/",          // This will be stripped
+		BaseRefName:   gci.Branch,       // Target branch without `/refs/for` prefix.
+		HeadRefName:   "not_applicable", // Used by GitHub status controller, not useful for Gerrit at all.
+		HeadRefOID:    gci.CurrentRevision,
+		Title:         gci.Subject,
+		Body:          "",
+		AuthorLogin:   gci.Owner.Username,
+		Mergeable:     mergeable,
+		UpdatedAtTime: gci.Updated.Time,
+
+		Gerrit: &gciCopy,
+	}
+
+	return crc
+}
+
 // provider is the interface implemented by each source code
 // providers, such as GitHub and Gerrit.
 type provider interface {
 	Query() (map[string]CodeReviewCommon, error)
 	blockers() (blockers.Blockers, error)
 	isAllowedToMerge(crc *CodeReviewCommon) (string, error)
+	// GetRef returns the SHA of the given ref, such as the latest SHA for
+	// "heads/master", which tide will use for making decision on whether a
+	// prowjob was tested against latest HEAD, it has to be from remote server.
 	GetRef(org, repo, ref string) (string, error)
 	// headContexts returns Contexts from all presubmit requirements.
 	// Tide needs to know whether a PR passed all tests or not, this includes
@@ -204,6 +256,6 @@ type provider interface {
 	// into a context.
 	headContexts(pr *CodeReviewCommon) ([]Context, error)
 	mergePRs(sp subpool, prs []CodeReviewCommon, dontUpdateStatus *threadSafePRSet) error
-	GetTideContextPolicy(gitClient git.ClientFactory, org, repo, branch string, baseSHAGetter config.RefGetter, headSHA string) (contextChecker, error)
+	GetTideContextPolicy(gitClient git.ClientFactory, org, repo, branch string, baseSHAGetter config.RefGetter, pr *CodeReviewCommon) (contextChecker, error)
 	prMergeMethod(crc *CodeReviewCommon) (types.PullRequestMergeType, error)
 }

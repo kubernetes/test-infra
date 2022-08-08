@@ -18,6 +18,8 @@ package tide
 
 import (
 	"encoding/json"
+	"regexp"
+	"strconv"
 	"testing"
 	"time"
 
@@ -26,13 +28,21 @@ import (
 )
 
 func TestMinStruct(t *testing.T) {
+	var fieldsPopulated bool
 	for i := 0; i < 100; i++ {
 		seed := time.Now().UnixNano()
 		fuzzer := fuzz.NewWithSeed(seed)
 
 		crc := &CodeReviewCommon{}
-		fuzzer.Fuzz(crc)
+		// For unknown reason, including Gerrit field causing timeout, ignoring
+		// it, it should be fine as this test is focusing on the the fields for
+		// the Min struct only.
+		fuzzer.SkipFieldsWithPattern(regexp.MustCompile(`Gerrit`)).Fuzz(crc)
 
+		// Guard against the chance of fuzzer not doing it's job.
+		if crc.Title+strconv.Itoa(crc.Number)+crc.HeadRefOID+crc.Mergeable != "0" {
+			fieldsPopulated = true
+		}
 		want := CodeReviewForDeck{
 			Title:      crc.Title,
 			Number:     crc.Number,
@@ -52,5 +62,9 @@ func TestMinStruct(t *testing.T) {
 		if diff := cmp.Diff(string(wantBytes), string(gotBytes)); diff != "" {
 			t.Fatalf("Output mismatch. Want(-), got(+):\n%s", diff)
 		}
+	}
+
+	if !fieldsPopulated {
+		t.Fatalf("Expecting fuzzer to fuzz Title, Number, HeadRefOID, or Mergeable, but it didn't")
 	}
 }

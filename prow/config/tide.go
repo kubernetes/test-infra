@@ -81,7 +81,8 @@ type TidePriority struct {
 
 // Tide is config for the tide pool.
 type Tide struct {
-	// SyncPeriod specifies how often Tide will sync jobs with provider. Defaults to 1m.
+	Gerrit *TideGerritConfig `json:"gerrit,omitempty"`
+	// SyncPeriod specifies how often Tide will sync jobs with GitHub. Defaults to 1m.
 	SyncPeriod *metav1.Duration `json:"sync_period,omitempty"`
 	// MaxGoroutines is the maximum number of goroutines spawned inside the
 	// controller to handle org/repo:branch pools. Defaults to 20. Needs to be a
@@ -183,6 +184,14 @@ type TideGitHubConfig struct {
 	// creates. The default is to only mention the one to which we are closest (Calculated
 	// by total number of requirements - fulfilled number of requirements).
 	DisplayAllQueriesInStatus bool `json:"display_all_tide_queries_in_status,omitempty"`
+}
+
+// TideGerritConfig contains all Gerrit related configurations for tide.
+type TideGerritConfig struct {
+	Queries GerritOrgRepoConfigs `json:"queries"`
+	// RateLimit defines how many changes to query per gerrit API call
+	// default is 5.
+	RateLimit int `json:"ratelimit,omitempty"`
 }
 
 func (t *Tide) mergeFrom(additional *Tide) error {
