@@ -260,9 +260,16 @@ function deploy_prow() {
   # enough to only redeploy those components who configurations have changed as
   # a result of newly built images (from build_prow_images()).
   pushd "${SCRIPT_ROOT}/config/prow"
+  local threads_to_wait_for=()
   do_kubectl create configmap config --from-file=./config.yaml --dry-run=client -oyaml | do_kubectl apply -f - &
+  threads_to_wait_for+=($!)
   do_kubectl create configmap plugins --from-file=./plugins.yaml --dry-run=client -oyaml | do_kubectl apply -f - &
+  threads_to_wait_for+=($!)
   do_kubectl create configmap job-config --from-file=./jobs --dry-run=client -oyaml | do_kubectl apply -f - &
+  threads_to_wait_for+=($!)
+  for thread_to_wait_for in ${threads_to_wait_for[@]}; do
+    wait $thread_to_wait_for
+  done
   popd
 
   deploy_components "${fakepubsub_node_port}"
