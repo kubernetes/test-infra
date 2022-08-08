@@ -512,49 +512,68 @@ ls-tree (submodule):
 			}
 			t.Logf("Finished creating prowjob: %s", podName)
 
+			var lastErr error
 			expectJobSuccess := func() (bool, error) {
-				err = kubeClient.Get(ctx, ctrlruntimeclient.ObjectKey{Namespace: defaultNamespace, Name: podName}, &tt.prowjob)
+				lastErr = nil
+				// Check pod status instead of prowjob, to reduce the dependency
+				// on prow-controller-manager.
+				var pod coreapi.Pod
+				lastErr = kubeClient.Get(ctx, ctrlruntimeclient.ObjectKey{Namespace: testpodNamespace, Name: podName}, &pod)
+				if lastErr != nil {
+					return false, nil
+				}
+				var finished bool
+				for _, c := range pod.Status.ContainerStatuses {
+					if c.Name != "test" {
+						continue
+					}
+					if c.State.Terminated == nil {
+						// Not finished yet
+						continue
+					}
+					if c.State.Terminated.ExitCode != 0 {
+						// If we observe a FailureState because the pod finished, exit
+						// early with an error. This way we don't have to wait until the
+						// timeout expires to see that the test failed.
+						//
+						// This should only happen for programmer errors (if there were
+						// unintended errors in the shell script (`sh -c ...`) that runs
+						// in the test case').
+						lastErr = fmt.Errorf("possible programmer error: clonerefs %s failed with exit code '%d', message: '%s'", podName, c.State.Terminated.ExitCode, c.State.Terminated.Message)
+						return false, lastErr
+					}
+					finished = true
+				}
+
+				if !finished {
+					return false, nil
+				}
+
+				// Check logs of the finished ProwJob. We simply diff these
+				// logs against what we expect in the test case. This is
+				// much simpler than running this sort of comparison check
+				// inside the test pod itself, because here we can get all
+				// the pretty-printing facilities of cmp.Diff().
+				got, err := getPodLogs(clientset, "test-pods", podName, &coreapi.PodLogOptions{Container: "test"})
 				if err != nil {
-					t.Logf("failed getting prow job: %s", podName)
+					t.Errorf("failed getting logs for clonerefs")
 					return false, nil
 				}
-				switch tt.prowjob.Status.State {
-				case prowjobv1.SuccessState:
-
-					// Check logs of the finished ProwJob. We simply diff these
-					// logs against what we expect in the test case. This is
-					// much simpler than running this sort of comparison check
-					// inside the test pod itself, because here we can get all
-					// the pretty-printing facilities of cmp.Diff().
-					got, err := getPodLogs(clientset, "test-pods", podName, &coreapi.PodLogOptions{Container: "test"})
-					if err != nil {
-						t.Errorf("failed getting logs for clonerefs")
-						return false, nil
-					}
-					if diff := cmp.Diff(got, tt.expected); diff != "" {
-						return false, fmt.Errorf("actual logs differ from expected: %s", diff)
-					}
-
-					return true, nil
-
-				// If we observe a FailureState because the pod finished, exit
-				// early with an error. This way we don't have to wait until the
-				// timeout expires to see that the test failed.
-				//
-				// This should only happen for programmer errors (if there were
-				// unintended errors in the shell script (`sh -c ...`) that runs
-				// in the test case').
-				case prowjobv1.FailureState:
-					return false, fmt.Errorf("possible programmer error: prow job %s failed", podName)
-				default:
-					return false, nil
+				if diff := cmp.Diff(got, tt.expected); diff != "" {
+					lastErr = fmt.Errorf("actual logs differ from expected: %s", diff)
+					return true, lastErr
 				}
+
+				return true, nil
 			}
 
-			// Wait up to 30 seconds to observe that this test passed.
-			timeout := 30 * time.Second
+			// Wait up to 60 seconds to observe that this test passed.
+			timeout := 60 * time.Second
 			pollInterval := 500 * time.Millisecond
 			if waitErr := wait.Poll(pollInterval, timeout, expectJobSuccess); waitErr != nil {
+				if lastErr != nil {
+					t.Logf("The last wait error is: %v", lastErr)
+				}
 				// Retrieve logs from clonerefs.
 				podLogs, err := getPodLogs(clientset, "test-pods", podName, &coreapi.PodLogOptions{Container: "clonerefs"})
 				if err != nil {
