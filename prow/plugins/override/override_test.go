@@ -207,6 +207,13 @@ func (c *fakeClient) ListCheckRuns(org, repo, ref string) (*github.CheckRunList,
 	return &github.CheckRunList{}, nil
 }
 
+func (c *fakeClient) CreateCheckRun(org, repo string, checkRun github.CheckRun) (*github.CheckRun, error) {
+	if c.checkruns != nil {
+		return &c.checkruns.CheckRuns[0], nil
+	}
+	return &github.CheckRun{}, nil
+}
+
 func (c *fakeClient) GetBranchProtection(org, repo, branch string) (*github.BranchProtection, error) {
 	switch {
 	case org != fakeOrg:
@@ -318,23 +325,24 @@ func TestAuthorizedUser(t *testing.T) {
 
 func TestHandle(t *testing.T) {
 	cases := []struct {
-		name             string
-		action           github.GenericCommentEventAction
-		issue            bool
-		state            string
-		comment          string
-		contexts         []github.Status
-		branchProtection *github.BranchProtection
-		presubmits       []config.Presubmit
-		user             string
-		number           int
-		expected         []github.Status
-		jobs             sets.String
-		checkComments    []string
-		options          plugins.Override
-		approvers        []string
-		err              bool
-		checkruns        *github.CheckRunList
+		name              string
+		action            github.GenericCommentEventAction
+		issue             bool
+		state             string
+		comment           string
+		contexts          []github.Status
+		branchProtection  *github.BranchProtection
+		presubmits        []config.Presubmit
+		user              string
+		number            int
+		expected          []github.Status
+		expectedCheckRuns *github.CheckRunList
+		jobs              sets.String
+		checkComments     []string
+		options           plugins.Override
+		approvers         []string
+		err               bool
+		checkruns         *github.CheckRunList
 	}{
 		{
 			name:    "successfully override failure",
@@ -360,19 +368,18 @@ func TestHandle(t *testing.T) {
 			checkruns: &github.CheckRunList{
 				CheckRuns: []github.CheckRun{
 					{Name: "incomplete-checkrun"},
-					{Name: "neutral-is-considered-success-checkrun", CompletedAt: "2000 BC", Conclusion: "neutral"},
-					{Name: "success-checkrun", CompletedAt: "1900 BC", Conclusion: "success"},
 					{Name: "failure-checkrun", CompletedAt: "1800 BC", Conclusion: "failure"},
+					{Name: "failure-checkrun", CompletedAt: "1800 BC", Conclusion: "success"},
 				},
 			},
-			expected: []github.Status{
-				{
-					Context:     "failure-checkrun",
-					Description: description(adminUser),
-					State:       github.StatusSuccess,
+			expected: []github.Status{},
+			expectedCheckRuns: &github.CheckRunList{
+				CheckRuns: []github.CheckRun{
+					{Name: "incomplete-checkrun"},
+					{Name: "failure-checkrun", CompletedAt: "1800 BC", Conclusion: "failure"},
+					{Name: "failure-checkrun", CompletedAt: "1800 BC", Conclusion: "success"},
 				},
 			},
-			checkComments: []string{"on behalf of " + adminUser},
 		},
 		{
 			name:    "successfully override pending",
@@ -381,14 +388,6 @@ func TestHandle(t *testing.T) {
 				{
 					Context: "hung-test",
 					State:   github.StatusPending,
-				},
-			},
-			checkruns: &github.CheckRunList{
-				CheckRuns: []github.CheckRun{
-					{Name: "incomplete-checkrun"},
-					{Name: "neutral-is-considered-success-checkrun", CompletedAt: "2000 BC", Conclusion: "neutral"},
-					{Name: "success-checkrun", CompletedAt: "1900 BC", Conclusion: "success"},
-					{Name: "failure-checkrun", CompletedAt: "1800 BC", Conclusion: "failure"},
 				},
 			},
 			expected: []github.Status{
@@ -521,14 +520,6 @@ func TestHandle(t *testing.T) {
 					State:   github.StatusPending,
 				},
 			},
-			checkruns: &github.CheckRunList{
-				CheckRuns: []github.CheckRun{
-					{Name: "incomplete-checkrun"},
-					{Name: "neutral-is-considered-success-checkrun", CompletedAt: "2000 BC", Conclusion: "neutral"},
-					{Name: "success-checkrun", CompletedAt: "1900 BC", Conclusion: "success"},
-					{Name: "failure-checkrun", CompletedAt: "1800 BC", Conclusion: "failure"},
-				},
-			},
 			expected: []github.Status{
 				{
 					Context: "broken-test",
@@ -594,14 +585,6 @@ func TestHandle(t *testing.T) {
 				{
 					Context: "broken-test",
 					State:   github.StatusFailure,
-				},
-			},
-			checkruns: &github.CheckRunList{
-				CheckRuns: []github.CheckRun{
-					{Name: "incomplete-checkrun"},
-					{Name: "neutral-is-considered-success-checkrun", CompletedAt: "2000 BC", Conclusion: "neutral"},
-					{Name: "success-checkrun", CompletedAt: "1900 BC", Conclusion: "success"},
-					{Name: "failure-checkrun", CompletedAt: "1800 BC", Conclusion: "failure"},
 				},
 			},
 			expected: []github.Status{
@@ -1083,6 +1066,8 @@ func TestHandle(t *testing.T) {
 				t.Errorf("bad statuses: actual %#v != expected %#v", fc.statuses, tc.expected)
 			case !reflect.DeepEqual(fc.jobs, tc.jobs):
 				t.Errorf("bad jobs: actual %#v != expected %#v", fc.jobs, tc.jobs)
+			case !reflect.DeepEqual(fc.checkruns, tc.expectedCheckRuns):
+				t.Errorf("bad jobs: actual %#v != expected %#v", fc.checkruns, tc.expectedCheckRuns)
 			}
 
 			for _, expectedComment := range tc.checkComments {

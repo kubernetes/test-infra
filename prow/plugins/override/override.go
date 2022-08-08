@@ -61,6 +61,7 @@ type githubClient interface {
 	ListTeams(org string) ([]github.Team, error)
 	ListTeamMembersBySlug(org, teamSlug, role string) ([]github.TeamMember, error)
 	ListCheckRuns(org, repo, ref string) (*github.CheckRunList, error)
+	CreateCheckRun(org, repo string, checkRun github.CheckRun) (*github.CheckRun, error)
 }
 
 type prowJobClient interface {
@@ -117,6 +118,10 @@ func (c client) ListTeamMembersBySlug(org, teamSlug, role string) ([]github.Team
 }
 func (c client) ListCheckRuns(org, teamSlug, role string) (*github.CheckRunList, error) {
 	return c.ghc.ListCheckRuns(org, teamSlug, role)
+}
+
+func (c client) CreateCheckRun(org, repo string, checkRun github.CheckRun) (*github.CheckRun, error) {
+	return c.ghc.CreateCheckRun(org, repo, checkRun)
 }
 
 func (c client) Create(ctx context.Context, pj *prowapi.ProwJob, o metav1.CreateOptions) (*prowapi.ProwJob, error) {
@@ -368,7 +373,6 @@ func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent,
 			Description: checkrun.DetailsURL,
 			State:       state,
 		})
-		statuses = append(statuses, github.Status{Context: checkrun.Name})
 	}
 	baseSHAGetter := shaGetterFactory(oc, org, repo, pr.Base.Ref)
 	presubmits, err := oc.presubmits(org, repo, baseSHAGetter, sha)
@@ -386,19 +390,17 @@ func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent,
 
 		contexts.Insert(status.Context)
 
-		for _, cr := range checkrunContexts {
-			if cr.State == "SUCCESS" {
-				continue
-			}
-			contexts.Insert(cr.Context)
-		}
-
 		for _, job := range presubmits {
 			if job.Context == status.Context {
 				contexts.Insert(job.Name)
 				break
 			}
 		}
+	}
+
+	// add checkruns to the list of contexts being tracked
+	for _, cr := range checkrunContexts {
+		contexts.Insert(cr.Context)
 	}
 
 	branch := pr.Base.Ref
@@ -419,7 +421,7 @@ func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent,
 	}
 
 	if unknown := overrides.Difference(contexts); unknown.Len() > 0 {
-		resp := fmt.Sprintf(`/override requires a failed status context or a job name to operate on.
+		resp := fmt.Sprintf(`/override requires a failed status context, check run or a job name to operate on.
 The following unknown contexts were given:
 %s
 
@@ -483,6 +485,37 @@ Only the following contexts were expected:
 		}
 		done.Insert(status.Context)
 	}
+
+	// We want to interate over the checkruns, create one with the same name and mark it as successful.
+	// Tide has logic to pick the best checkrun result
+
+	for _, checkrun := range checkruns.CheckRuns {
+		if checkrun.CompletedAt == "" {
+			continue
+		} else if strings.ToUpper(checkrun.Conclusion) == "NEUTRAL" {
+			continue
+		} else if strings.ToUpper(checkrun.Conclusion) == "SUCCESS" {
+			continue
+		} else {
+			prowOverrideCR := github.CheckRun{
+				Name:       checkrun.Name,
+				HeadSHA:    sha,
+				Status:     "completed",
+				Conclusion: "success",
+				Output: github.CheckRunOutput{
+					Title:   fmt.Sprintf("Prow override - %s", checkrun.Name),
+					Summary: fmt.Sprintf("Prow has received override command for the %s checkrun.", checkrun.Name),
+				},
+			}
+			if _, err := oc.CreateCheckRun(org, repo, prowOverrideCR); err != nil {
+				resp := fmt.Sprintf("cannot create prow-override CheckRun %v", prowOverrideCR)
+				log.WithError(err).Warn(resp)
+				return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
+			}
+			done.Insert(checkrun.Name)
+		}
+	}
+
 	return nil
 }
 
