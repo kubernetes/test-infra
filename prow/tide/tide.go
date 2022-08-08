@@ -20,7 +20,6 @@ limitations under the License.
 package tide
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -38,7 +37,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/git/types"
@@ -1312,35 +1310,6 @@ func prowJobListHasProwJobWithMatchingHeadSHA(pjs *prowapi.ProwJobList, headSHA 
 	return false
 }
 
-func (gi *GitHubProvider) prepareMergeDetails(commitTemplates config.TideMergeCommitTemplate, pr CodeReviewCommon, mergeMethod types.PullRequestMergeType) github.MergeDetails {
-	ghMergeDetails := github.MergeDetails{
-		SHA:         pr.HeadRefOID,
-		MergeMethod: string(mergeMethod),
-	}
-
-	if commitTemplates.Title != nil {
-		var b bytes.Buffer
-
-		if err := commitTemplates.Title.Execute(&b, pr); err != nil {
-			gi.logger.Errorf("error executing commit title template: %v", err)
-		} else {
-			ghMergeDetails.CommitTitle = b.String()
-		}
-	}
-
-	if commitTemplates.Body != nil {
-		var b bytes.Buffer
-
-		if err := commitTemplates.Body.Execute(&b, pr); err != nil {
-			gi.logger.Errorf("error executing commit body template: %v", err)
-		} else {
-			ghMergeDetails.CommitMessage = b.String()
-		}
-	}
-
-	return ghMergeDetails
-}
-
 // prMergeMethod figures out merge method based on tide config, this could be
 // overridden by GitHub labels.
 func (mc *mergeChecker) prMergeMethod(c config.Tide, crc *CodeReviewCommon) (types.PullRequestMergeType, error) {
@@ -1373,76 +1342,6 @@ func (mc *mergeChecker) prMergeMethod(c config.Tide, crc *CodeReviewCommon) (typ
 		}
 	}
 	return method, nil
-}
-
-func (gi *GitHubProvider) mergePRs(sp subpool, prs []CodeReviewCommon, dontUpdateStatus *threadSafePRSet) error {
-	var merged, failed []int
-	defer func() {
-		if len(merged) == 0 {
-			return
-		}
-		tideMetrics.merges.WithLabelValues(sp.org, sp.repo, sp.branch).Observe(float64(len(merged)))
-	}()
-
-	var errs []error
-	log := sp.log.WithField("merge-targets", prNumbers(prs))
-	tideConfig := gi.cfg().Tide
-
-	for i, pr := range prs {
-		log := log.WithFields(pr.logFields())
-		mergeMethod, err := gi.prMergeMethod(&pr)
-		if err != nil {
-			log.WithError(err).Error("Failed to determine merge method.")
-			errs = append(errs, err)
-			failed = append(failed, pr.Number)
-			continue
-		}
-
-		// Ensure tide context has success state, otherwise PR merge will fail if branch protection
-		// in github is enabled and the loop to change tide context hasn't done it already
-		dontUpdateStatus.insert(sp.org, sp.repo, pr.Number)
-		if err := setTideStatusSuccess(pr, gi.ghc, gi.cfg(), log); err != nil {
-			log.WithError(err).Error("Unable to set tide context to SUCCESS.")
-			errs = append(errs, err)
-			failed = append(failed, pr.Number)
-			continue
-		}
-
-		commitTemplates := tideConfig.MergeCommitTemplate(config.OrgRepo{Org: sp.org, Repo: sp.repo})
-		keepTrying, err := tryMerge(func() error {
-			ghMergeDetails := gi.prepareMergeDetails(commitTemplates, pr, mergeMethod)
-			return gi.ghc.Merge(sp.org, sp.repo, pr.Number, ghMergeDetails)
-		})
-		if err != nil {
-			// These are user errors, shouldn't be printed as tide errors
-			log.WithError(err).Debug("Merge failed.")
-		} else {
-			log.Info("Merged.")
-			merged = append(merged, pr.Number)
-		}
-		if !keepTrying {
-			break
-		}
-		// If we successfully merged this PR and have more to merge, sleep to give
-		// GitHub time to recalculate mergeability.
-		if err == nil && i+1 < len(prs) {
-			sleep(time.Second * 5)
-		}
-	}
-
-	if len(errs) == 0 {
-		return nil
-	}
-
-	// Construct a more informative error.
-	var batch string
-	if len(prs) > 1 {
-		batch = fmt.Sprintf(" from batch %v", prNumbers(prs))
-		if len(merged) > 0 {
-			batch = fmt.Sprintf("%s, partial merge %v", batch, merged)
-		}
-	}
-	return fmt.Errorf("failed merging %v%s: %w", failed, batch, utilerrors.NewAggregate(errs))
 }
 
 // setTideStatusSuccess ensures the tide context is set to success
@@ -2117,79 +2016,6 @@ type searchQuery struct {
 		}
 		Nodes []PRNode
 	} `graphql:"search(type: ISSUE, first: 37, after: $searchCursor, query: $query)"`
-}
-
-// headContexts gets the status contexts for the commit with OID == pr.HeadRefOID
-//
-// First, we try to get this value from the commits we got with the PR query.
-// Unfortunately the 'last' commit ordering is determined by author date
-// not commit date so if commits are reordered non-chronologically on the PR
-// branch the 'last' commit isn't necessarily the logically last commit.
-// We list multiple commits with the query to increase our chance of success,
-// but if we don't find the head commit we have to ask GitHub for it
-// specifically (this costs an API token).
-//
-// This function is very GitHub centric, make sure this that is only referenced
-// by GitHub interactor.
-func (gi *GitHubProvider) headContexts(pr *CodeReviewCommon) ([]Context, error) {
-	log := gi.logger
-	commits := pr.GitHubCommits()
-	if commits != nil {
-		for _, node := range commits.Nodes {
-			if string(node.Commit.OID) == pr.HeadRefOID {
-				return append(node.Commit.Status.Contexts, checkRunNodesToContexts(log, node.Commit.StatusCheckRollup.Contexts.Nodes)...), nil
-			}
-		}
-	}
-	// We didn't get the head commit from the query (the commits must not be
-	// logically ordered) so we need to specifically ask GitHub for the status
-	// and coerce it to a graphql type.
-	org := pr.Org
-	repo := pr.Repo
-	// Log this event so we can tune the number of commits we list to minimize this.
-	// TODO alvaroaleman: Add checkrun support here. Doesn't seem to happen often though,
-	// openshift doesn't have a single occurrence of this in the past seven days.
-	log.Warnf("'last' %d commits didn't contain logical last commit. Querying GitHub...", len(commits.Nodes))
-	combined, err := gi.ghc.GetCombinedStatus(org, repo, pr.HeadRefOID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get the combined status: %w", err)
-	}
-	checkRunList, err := gi.ghc.ListCheckRuns(org, repo, pr.HeadRefOID)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to list checkruns: %w", err)
-	}
-	checkRunNodes := make([]CheckRunNode, 0, len(checkRunList.CheckRuns))
-	for _, checkRun := range checkRunList.CheckRuns {
-		checkRunNodes = append(checkRunNodes, CheckRunNode{CheckRun: CheckRun{
-			Name: githubql.String(checkRun.Name),
-			// They are uppercase in the V4 api and lowercase in the V3 api
-			Conclusion: githubql.String(strings.ToUpper(checkRun.Conclusion)),
-			Status:     githubql.String(strings.ToUpper(checkRun.Status)),
-		}})
-	}
-
-	contexts := make([]Context, 0, len(combined.Statuses)+len(checkRunNodes))
-	for _, status := range combined.Statuses {
-		contexts = append(contexts, Context{
-			Context:     githubql.String(status.Context),
-			Description: githubql.String(status.Description),
-			State:       githubql.StatusState(strings.ToUpper(status.State)),
-		})
-	}
-	contexts = append(contexts, checkRunNodesToContexts(log, checkRunNodes)...)
-
-	// Add a commit with these contexts to pr for future look ups.
-	if commits := pr.GitHubCommits(); commits != nil {
-		commits.Nodes = append(commits.Nodes,
-			struct{ Commit Commit }{
-				Commit: Commit{
-					OID:    githubql.String(pr.HeadRefOID),
-					Status: struct{ Contexts []Context }{Contexts: contexts},
-				},
-			},
-		)
-	}
-	return contexts, nil
 }
 
 // orgRepoQueryStrings returns the GitHub query strings for given orgs and
