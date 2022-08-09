@@ -3082,7 +3082,7 @@ func StringsToOrgRepos(vs []string) []OrgRepo {
 func (pc *ProwConfig) mergeFrom(additional *ProwConfig) error {
 	emptyReference := &ProwConfig{
 		BranchProtection: additional.BranchProtection,
-		Tide:             Tide{MergeType: additional.Tide.MergeType, Queries: additional.Tide.Queries},
+		Tide:             Tide{TideGitHubConfig: TideGitHubConfig{MergeType: additional.Tide.MergeType, Queries: additional.Tide.Queries}},
 	}
 
 	var errs []error
@@ -3189,7 +3189,7 @@ func (pc *ProwConfig) hasGlobalConfig() bool {
 	}
 	emptyReference := &ProwConfig{
 		BranchProtection: pc.BranchProtection,
-		Tide:             Tide{MergeType: pc.Tide.MergeType, Queries: pc.Tide.Queries},
+		Tide:             Tide{TideGitHubConfig: TideGitHubConfig{MergeType: pc.Tide.MergeType, Queries: pc.Tide.Queries}},
 	}
 	return cmp.Diff(pc, emptyReference) != ""
 }
