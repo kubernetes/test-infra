@@ -32,9 +32,9 @@ import (
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/githuboauth"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/trigger"
@@ -45,14 +45,14 @@ var (
 	// and specified within components.
 	ComponentSpecifiedAnnotationsAndLabels = sets.NewString(
 		// Labels
-		client.GerritRevision,
-		client.GerritPatchset,
-		client.GerritReportLabel,
+		kube.GerritRevision,
+		kube.GerritPatchset,
+		kube.GerritReportLabel,
 		github.EventGUID,
 		"created-by-tide",
 		// Annotations
-		client.GerritID,
-		client.GerritInstance,
+		kube.GerritID,
+		kube.GerritInstance,
 	)
 )
 
@@ -79,7 +79,7 @@ func setRerunOrgRepo(refs *prowapi.Refs, labels map[string]string) string {
 	// Add "https://" prefix to orgRepo if this is a gerrit job.
 	// (Unfortunately gerrit jobs use the full repo URL as the identifier.)
 	prefix := "https://"
-	if labels[client.GerritRevision] != "" && !strings.HasPrefix(orgRepo, prefix) {
+	if labels[kube.GerritRevision] != "" && !strings.HasPrefix(orgRepo, prefix) {
 		orgRepo = prefix + orgRepo
 	}
 	return orgRepo

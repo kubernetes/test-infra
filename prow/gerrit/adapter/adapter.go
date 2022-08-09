@@ -40,6 +40,7 @@ import (
 	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/io"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 )
 
@@ -143,7 +144,7 @@ func NewController(ctx context.Context, prowJobClient prowv1.ProwJobInterface, o
 	if err := lastSyncTracker.init(projects); err != nil {
 		logrus.WithError(err).Fatal("Error initializing lastSyncFallback.")
 	}
-	gerritClient, err := client.NewClient(projects)
+	gerritClient, err := client.NewClient(client.ProjectsFlagToConfig(projects))
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating gerrit client.")
 	}
@@ -605,8 +606,8 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 	}
 
 	annotations := map[string]string{
-		client.GerritID:       change.ID,
-		client.GerritInstance: instance,
+		kube.GerritID:       change.ID,
+		kube.GerritInstance: instance,
 	}
 
 	for _, jSpec := range jobSpecs {
@@ -614,12 +615,12 @@ func (c *Controller) processChange(logger logrus.FieldLogger, instance string, c
 		for k, v := range jSpec.labels {
 			labels[k] = v
 		}
-		labels[client.GerritRevision] = change.CurrentRevision
-		labels[client.GerritPatchset] = strconv.Itoa(change.Revisions[change.CurrentRevision].Number)
+		labels[kube.GerritRevision] = change.CurrentRevision
+		labels[kube.GerritPatchset] = strconv.Itoa(change.Revisions[change.CurrentRevision].Number)
 
-		if _, ok := labels[client.GerritReportLabel]; !ok {
+		if _, ok := labels[kube.GerritReportLabel]; !ok {
 			logger.WithField("job", jSpec.spec.Job).Debug("Job uses default value of 'Code-Review' for 'prow.k8s.io/gerrit-report-label' label. This default will removed in March 2022.")
-			labels[client.GerritReportLabel] = client.CodeReview
+			labels[kube.GerritReportLabel] = client.CodeReview
 		}
 
 		pj := pjutil.NewProwJob(jSpec.spec, labels, annotations)

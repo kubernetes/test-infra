@@ -51,7 +51,6 @@ import (
 	"sigs.k8s.io/yaml"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	gerrit "k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/git/types"
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
@@ -871,18 +870,29 @@ type GerritOrgRepoConfigs []GerritOrgRepoConfig
 
 // GerritOrgRepoConfig is config for repos.
 type GerritOrgRepoConfig struct {
-	Org        string   `json:"org,omitempty"`
-	Repos      []string `json:"repos,omitempty"`
-	OptOutHelp bool     `json:"opt_out_help,omitempty"`
+	Org        string             `json:"org,omitempty"`
+	Repos      []string           `json:"repos,omitempty"`
+	OptOutHelp bool               `json:"opt_out_help,omitempty"`
+	Filters    *GerritQueryFilter `json:"filters,omitempty"`
 }
 
-func (goc *GerritOrgRepoConfigs) AllRepos() map[string][]string {
-	var res map[string][]string
+type GerritQueryFilter struct {
+	Branches         []string `json:"branches,omitempty"`
+	ExcludedBranches []string `json:"excluded_branches,omitempty"`
+}
+
+func (goc *GerritOrgRepoConfigs) AllRepos() map[string]map[string]*GerritQueryFilter {
+	var res map[string]map[string]*GerritQueryFilter
 	for _, orgConfig := range *goc {
 		if res == nil {
-			res = make(map[string][]string)
+			res = make(map[string]map[string]*GerritQueryFilter)
 		}
-		res[orgConfig.Org] = append(res[orgConfig.Org], orgConfig.Repos...)
+		for _, repo := range orgConfig.Repos {
+			if _, ok := res[orgConfig.Org]; !ok {
+				res[orgConfig.Org] = make(map[string]*GerritQueryFilter)
+			}
+			res[orgConfig.Org][repo] = orgConfig.Filters
+		}
 	}
 	return res
 }
@@ -2843,7 +2853,7 @@ func validateReporting(j JobBase, r Reporter) error {
 		return nil
 	}
 	for label, value := range j.Labels {
-		if label == gerrit.GerritReportLabel && value != "" {
+		if label == kube.GerritReportLabel && value != "" {
 			return fmt.Errorf("Gerrit report label %s set to non-empty string but job is configured to skip reporting.", label)
 		}
 	}

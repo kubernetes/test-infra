@@ -48,7 +48,6 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config/secret"
-	gerrit "k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/kube"
@@ -2073,7 +2072,7 @@ func TestValidateReportingWithGerritLabel(t *testing.T) {
 				Context: "context",
 			},
 			labels: map[string]string{
-				gerrit.GerritReportLabel: "label",
+				kube.GerritReportLabel: "label",
 			},
 		},
 		{
@@ -2087,16 +2086,16 @@ func TestValidateReportingWithGerritLabel(t *testing.T) {
 			name:     "no errors if job is set to skip report and Gerrit report label is empty",
 			reporter: Reporter{SkipReport: true},
 			labels: map[string]string{
-				gerrit.GerritReportLabel: "",
+				kube.GerritReportLabel: "",
 			},
 		},
 		{
 			name:     "error if job is set to skip report and Gerrit report label is set to non-empty",
 			reporter: Reporter{SkipReport: true},
 			labels: map[string]string{
-				gerrit.GerritReportLabel: "label",
+				kube.GerritReportLabel: "label",
 			},
-			expected: fmt.Errorf("Gerrit report label %s set to non-empty string but job is configured to skip reporting.", gerrit.GerritReportLabel),
+			expected: fmt.Errorf("Gerrit report label %s set to non-empty string but job is configured to skip reporting.", kube.GerritReportLabel),
 		},
 	}
 
@@ -2145,7 +2144,7 @@ func TestGerritAllRepos(t *testing.T) {
 	tests := []struct {
 		name string
 		in   *GerritOrgRepoConfigs
-		want map[string][]string
+		want map[string]map[string]*GerritQueryFilter
 	}{
 		{
 			name: "multiple-org",
@@ -2159,10 +2158,7 @@ func TestGerritAllRepos(t *testing.T) {
 					Repos: []string{"repo-2"},
 				},
 			},
-			want: map[string][]string{
-				"org-1": {"repo-1"},
-				"org-2": {"repo-2"},
-			},
+			want: map[string]map[string]*GerritQueryFilter{"org-1": {"repo-1": nil}, "org-2": {"repo-2": nil}},
 		},
 		{
 			name: "org-union",
@@ -2176,9 +2172,7 @@ func TestGerritAllRepos(t *testing.T) {
 					Repos: []string{"repo-2"},
 				},
 			},
-			want: map[string][]string{
-				"org-1": {"repo-1", "repo-2"},
-			},
+			want: map[string]map[string]*GerritQueryFilter{"org-1": {"repo-1": nil, "repo-2": nil}},
 		},
 		{
 			name: "empty",

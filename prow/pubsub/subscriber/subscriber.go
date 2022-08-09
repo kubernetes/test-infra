@@ -36,8 +36,8 @@ import (
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/flagutil"
-	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/git/v2"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 )
 
@@ -280,7 +280,7 @@ func (prh *presubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.InR
 	// Add "https://" prefix to orgRepo if this is a gerrit job.
 	// (Unfortunately gerrit jobs use the full repo URL as the identifier.)
 	prefix := "https://"
-	if pe.Labels[client.GerritRevision] != "" && !strings.HasPrefix(orgRepo, prefix) {
+	if pe.Labels[kube.GerritRevision] != "" && !strings.HasPrefix(orgRepo, prefix) {
 		orgRepo = prefix + orgRepo
 	}
 	baseSHAGetter := func() (string, error) {
@@ -366,7 +366,7 @@ func (poh *postsubmitJobHandler) getProwJobSpec(cfg prowCfgClient, pc *config.In
 	// Add "https://" prefix to orgRepo if this is a gerrit job.
 	// (Unfortunately gerrit jobs use the full repo URL as the identifier.)
 	prefix := "https://"
-	if pe.Labels[client.GerritRevision] != "" && !strings.HasPrefix(orgRepo, prefix) {
+	if pe.Labels[kube.GerritRevision] != "" && !strings.HasPrefix(orgRepo, prefix) {
 		orgRepo = prefix + orgRepo
 	}
 	baseSHAGetter := func() (string, error) {
@@ -489,7 +489,7 @@ func tryGetCloneURIAndHost(pe ProwJobEvent) (cloneURI, host string) {
 	// Add "https://" prefix to orgRepo if this is a gerrit job.
 	// (Unfortunately gerrit jobs use the full repo URL as the identifier.)
 	prefix := "https://"
-	if pe.Labels[client.GerritRevision] != "" && !strings.HasPrefix(orgRepo, prefix) {
+	if pe.Labels[kube.GerritRevision] != "" && !strings.HasPrefix(orgRepo, prefix) {
 		orgRepo = prefix + orgRepo
 	}
 	return orgRepo, org

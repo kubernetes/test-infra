@@ -26,6 +26,7 @@ import (
 	gerrit "github.com/andygrunwald/go-gerrit"
 	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/config"
 )
 
 type fgc struct {
@@ -48,6 +49,54 @@ func (f *fgc) ListChangeComments(id string) (*map[string][]gerrit.CommentInfo, *
 
 	return &comments, nil, nil
 
+}
+
+func TestQueryStringsFromQueryFilter(t *testing.T) {
+	t.Parallel()
+	tests := []struct {
+		name     string
+		filters  *config.GerritQueryFilter
+		expected []string
+	}{
+		{
+			name: "nil",
+		},
+		{
+			name: "single-branch",
+			filters: &config.GerritQueryFilter{
+				Branches: []string{"foo"},
+			},
+			expected: []string{"(branch:'foo')"},
+		},
+		{
+			name: "multiple-branches",
+			filters: &config.GerritQueryFilter{
+				Branches: []string{"foo1", "foo2", "foo3"},
+			},
+			expected: []string{"(branch:'foo1' OR branch:'foo2' OR branch:'foo3')"},
+		},
+		{
+			name: "branches-and-excluded",
+			filters: &config.GerritQueryFilter{
+				Branches:         []string{"foo1", "foo2", "foo3"},
+				ExcludedBranches: []string{"bar1", "bar2", "bar3"},
+			},
+			expected: []string{
+				"(branch:'foo1' OR branch:'foo2' OR branch:'foo3')",
+				"(-branch:'bar1' AND -branch:'bar2' AND -branch:'bar3')",
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			if diff := cmp.Diff(tc.expected, queryStringsFromQueryFilter(tc.filters)); diff != "" {
+				t.Fatalf("Output mismatch. Want(-), got(+):\n%s", diff)
+			}
+		})
+	}
 }
 
 func (f *fgc) QueryChanges(opt *gerrit.QueryChangeOptions) (*[]gerrit.ChangeInfo, *gerrit.Response, error) {
@@ -100,25 +149,25 @@ func TestUpdateClients(t *testing.T) {
 		name              string
 		existingInstances map[string][]string
 		newInstances      map[string][]string
-		wantInstances     map[string][]string
+		wantInstances     map[string]map[string]*config.GerritQueryFilter
 	}{
 		{
 			name:              "normal",
 			existingInstances: map[string][]string{"foo1": {"bar1"}},
 			newInstances:      map[string][]string{"foo2": {"bar2"}},
-			wantInstances:     map[string][]string{"foo2": {"bar2"}},
+			wantInstances:     map[string]map[string]*config.GerritQueryFilter{"foo2": {"bar2": nil}},
 		},
 		{
 			name:              "same instance",
 			existingInstances: map[string][]string{"foo1": {"bar1"}},
 			newInstances:      map[string][]string{"foo1": {"bar2"}},
-			wantInstances:     map[string][]string{"foo1": {"bar2"}},
+			wantInstances:     map[string]map[string]*config.GerritQueryFilter{"foo1": {"bar2": nil}},
 		},
 		{
 			name:              "delete",
 			existingInstances: map[string][]string{"foo1": {"bar1"}, "foo2": {"bar2"}},
 			newInstances:      map[string][]string{"foo1": {"bar1"}},
-			wantInstances:     map[string][]string{"foo1": {"bar1"}},
+			wantInstances:     map[string]map[string]*config.GerritQueryFilter{"foo1": {"bar1": nil}},
 		},
 	}
 
@@ -127,17 +176,17 @@ func TestUpdateClients(t *testing.T) {
 			client := &Client{
 				handlers: make(map[string]*gerritInstanceHandler),
 			}
-			for instance, projects := range tc.existingInstances {
+			for instance, projects := range ProjectsFlagToConfig(tc.existingInstances) {
 				client.handlers[instance] = &gerritInstanceHandler{
 					instance: instance,
 					projects: projects,
 				}
 			}
 
-			if err := client.UpdateClients(tc.newInstances); err != nil {
+			if err := client.UpdateClients(ProjectsFlagToConfig(tc.newInstances)); err != nil {
 				t.Fatal(err)
 			}
-			gotInstances := make(map[string][]string)
+			gotInstances := make(map[string]map[string]*config.GerritQueryFilter)
 			for instance, handler := range client.handlers {
 				gotInstances[instance] = handler.projects
 			}
@@ -685,7 +734,7 @@ func TestQueryChange(t *testing.T) {
 			handlers: map[string]*gerritInstanceHandler{
 				"foo": {
 					instance: "foo",
-					projects: []string{"bar"},
+					projects: map[string]*config.GerritQueryFilter{"bar": nil},
 					changeService: &fgc{
 						changes:  tc.changes,
 						instance: "foo",
@@ -695,7 +744,7 @@ func TestQueryChange(t *testing.T) {
 				},
 				"baz": {
 					instance: "baz",
-					projects: []string{"boo"},
+					projects: map[string]*config.GerritQueryFilter{"boo": nil},
 					changeService: &fgc{
 						changes:  tc.changes,
 						instance: "baz",

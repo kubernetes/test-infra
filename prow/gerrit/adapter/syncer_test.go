@@ -31,6 +31,7 @@ import (
 
 	"cloud.google.com/go/storage"
 	"github.com/google/go-cmp/cmp"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/io"
 )
@@ -105,7 +106,7 @@ func TestSyncTime(t *testing.T) {
 		t.Errorf("init() failed to reload %v, got %v", expected, actual)
 	}
 	// Make sure update can work
-	if err := st.update(client.ProjectsFlag{"foo-updated": []string{"bar-updated"}}); err != nil {
+	if err := st.update(map[string]map[string]*config.GerritQueryFilter{"foo-updated": {"bar-updated": nil}}); err != nil {
 		t.Fatalf("Failed update: %v", err)
 	}
 	{
