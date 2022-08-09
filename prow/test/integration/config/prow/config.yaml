@@ -10,7 +10,7 @@ sinker:
   terminated_pod_ttl: 30m
 
 horologium:
-  tick_interval: 5s
+  tick_interval: 1s
 
 prowjob_namespace: default
 pod_namespace: test-pods

@@ -29,6 +29,7 @@ import (
 
 	coreapi "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
 	"k8s.io/client-go/rest"
@@ -44,7 +45,8 @@ const (
 var (
 	clusterContext = flag.String("cluster", "kind-kind-prow-integration", "The context of cluster to use for test")
 
-	jobConfigMux sync.Mutex
+	jobConfigMux      sync.Mutex
+	prowComponentsMux sync.Mutex
 )
 
 func getClusterContext() string {
@@ -99,6 +101,23 @@ func getPodLogs(clientset *kubernetes.Clientset, namespace, podName string, opts
 	str := buf.String()
 
 	return str, nil
+}
+
+func refreshProwPods(client ctrlruntimeclient.Client, ctx context.Context, name string) error {
+	prowComponentsMux.Lock()
+	defer prowComponentsMux.Unlock()
+
+	var pods coreapi.PodList
+	labels, _ := labels.Parse("app = " + name)
+	if err := client.List(ctx, &pods, &ctrlruntimeclient.ListOptions{LabelSelector: labels}); err != nil {
+		return err
+	}
+	for _, pod := range pods.Items {
+		if err := client.Delete(ctx, &pod); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // RandomString generates random string of 32 characters in length, and fail if it failed
