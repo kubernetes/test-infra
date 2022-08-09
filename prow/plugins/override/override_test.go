@@ -411,6 +411,43 @@ func TestHandle(t *testing.T) {
 			usesAppsAuth: true,
 		},
 		{
+			name:    "override failure-checkrun checkrun, usesAppsAuth is false",
+			comment: "/override failure-checkrun",
+			checkruns: &github.CheckRunList{
+				CheckRuns: []github.CheckRun{
+					{Name: "incomplete-checkrun"},
+					{Name: "failure-checkrun", CompletedAt: "1800 BC", Conclusion: "failure"},
+				},
+			},
+			expected: []github.Status{},
+			expectedCheckRuns: &github.CheckRunList{
+				CheckRuns: []github.CheckRun{
+					{Name: "incomplete-checkrun"},
+					{Name: "failure-checkrun", CompletedAt: "1800 BC", Conclusion: "failure"},
+				},
+			},
+			usesAppsAuth: false,
+		},
+		{
+			name:    "override nonexistant checkrun",
+			comment: "/override foobar",
+			checkruns: &github.CheckRunList{
+				CheckRuns: []github.CheckRun{
+					{Name: "incomplete-checkrun"},
+					{Name: "failure-checkrun", CompletedAt: "1800 BC", Conclusion: "failure"},
+				},
+			},
+			expected: []github.Status{},
+			expectedCheckRuns: &github.CheckRunList{
+				CheckRuns: []github.CheckRun{
+					{Name: "incomplete-checkrun"},
+					{Name: "failure-checkrun", CompletedAt: "1800 BC", Conclusion: "failure"},
+				},
+			},
+			usesAppsAuth: true,
+		},
+
+		{
 			name:    "successfully override pending",
 			comment: "/override hung-test",
 			contexts: []github.Status{
