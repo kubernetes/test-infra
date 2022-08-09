@@ -4938,13 +4938,19 @@ func (c *client) ListCheckRuns(org, repo, ref string) (*CheckRunList, error) {
 	defer durationLogger()
 
 	var checkRunList CheckRunList
-	_, err := c.request(&request{
-		method:    http.MethodGet,
-		path:      fmt.Sprintf("/repos/%s/%s/commits/%s/check-runs", org, repo, ref),
-		org:       org,
-		exitCodes: []int{200},
-	}, &checkRunList)
-	if err != nil {
+	if err := c.readPaginatedResults(
+		fmt.Sprintf("/repos/%s/%s/commits/%s/check-runs", org, repo, ref),
+		"",
+		org,
+		func() interface{} {
+			return &CheckRunList{}
+		},
+		func(obj interface{}) {
+			cr := *(obj.(*CheckRunList))
+			cr.CheckRuns = append(checkRunList.CheckRuns, cr.CheckRuns...)
+			checkRunList = cr
+		},
+	); err != nil {
 		return nil, err
 	}
 	return &checkRunList, nil
