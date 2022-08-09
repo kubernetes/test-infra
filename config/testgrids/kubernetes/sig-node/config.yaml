@@ -11,7 +11,7 @@ dashboard_groups:
     - sig-node-cadvisor
     - sig-node-cri-tools
     - sig-node-node-feature-discovery
-    - sig-node-special-resource-operator
+    - sig-node-kernel-module-management
     - sig-node-node-problem-detector
     - sig-node-security-profiles-operator
 
@@ -51,7 +51,7 @@ dashboards:
 
 - name: sig-node-cri-tools
 - name: sig-node-node-feature-discovery
-- name: sig-node-special-resource-operator
+- name: sig-node-kernel-module-management
 
 - name: sig-node-node-problem-detector
 
