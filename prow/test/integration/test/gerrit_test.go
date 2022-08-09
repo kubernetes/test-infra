@@ -29,6 +29,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/gerrit/client"
 )
 
@@ -108,7 +109,7 @@ func TestGerrit(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 
-			gerritClient, err := client.NewClient(map[string][]string{gerritServer: {"fakegerritserver"}})
+			gerritClient, err := client.NewClient(map[string]map[string]*config.GerritQueryFilter{gerritServer: {"fakegerritserver": nil}})
 			if err != nil {
 				t.Fatalf("Failed creating gerritClient: %v", err)
 			}

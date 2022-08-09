@@ -33,9 +33,9 @@ import (
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/client/clientset/versioned/fake"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/githuboauth"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/plugins"
 	"sigs.k8s.io/yaml"
 )
@@ -444,12 +444,12 @@ func TestLatestRerun(t *testing.T) {
 					Name:      "wowsuch",
 					Namespace: "prowjobs",
 					Labels: map[string]string{
-						client.GerritReportLabel: "foo",
-						"random":                 "foo",
+						kube.GerritReportLabel: "foo",
+						"random":               "foo",
 					},
 					Annotations: map[string]string{
-						client.GerritID: "foo",
-						"random":        "foo",
+						kube.GerritID: "foo",
+						"random":      "foo",
 					},
 				},
 				Spec: prowapi.ProwJobSpec{

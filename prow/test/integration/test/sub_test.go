@@ -26,10 +26,10 @@ import (
 	coreapi "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/test-infra/prow/gerrit/client"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pubsub/subscriber"
 	"k8s.io/test-infra/prow/test/integration/internal/fakegitserver"
 	"k8s.io/test-infra/prow/test/integration/internal/fakepubsub"
@@ -212,7 +212,7 @@ this-is-from-repo1
 						},
 					},
 					Labels: map[string]string{
-						client.GerritRevision: "123",
+						kube.GerritRevision: "123",
 					},
 				},
 			},
@@ -262,7 +262,7 @@ this-is-from-repo2
 						},
 					},
 					Labels: map[string]string{
-						client.GerritRevision: "123",
+						kube.GerritRevision: "123",
 					},
 				},
 			},
@@ -307,7 +307,7 @@ this-is-from-repo3
 						},
 					},
 					Labels: map[string]string{
-						client.GerritRevision: "123",
+						kube.GerritRevision: "123",
 					},
 				},
 			},
@@ -347,7 +347,7 @@ this-is-from-repo4
 						},
 					},
 					Labels: map[string]string{
-						client.GerritRevision: "123",
+						kube.GerritRevision: "123",
 					},
 				},
 			},

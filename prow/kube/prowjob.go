@@ -66,4 +66,17 @@ const (
 	// IsOptionalLabel is added in resources created by prow and
 	// carries the Optional from a Presubmit job.
 	IsOptionalLabel = "prow.k8s.io/is-optional"
+
+	// Gerrit related labels that are used by Prow
+
+	// GerritID identifies a gerrit change
+	GerritID = "prow.k8s.io/gerrit-id"
+	// GerritInstance is the gerrit host url
+	GerritInstance = "prow.k8s.io/gerrit-instance"
+	// GerritRevision is the SHA of current patchset from a gerrit change
+	GerritRevision = "prow.k8s.io/gerrit-revision"
+	// GerritPatchset is the numeric ID of the current patchset
+	GerritPatchset = "prow.k8s.io/gerrit-patchset"
+	// GerritReportLabel is the gerrit label prow will cast vote on, fallback to CodeReview label if unset
+	GerritReportLabel = "prow.k8s.io/gerrit-report-label"
 )

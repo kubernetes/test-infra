@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/io"
 )
@@ -52,10 +53,10 @@ func (st *syncTime) init(hostProjects client.ProjectsFlag) error {
 	if !zero {
 		return nil
 	}
-	return st.update(hostProjects)
+	return st.update(client.ProjectsFlagToConfig(hostProjects))
 }
 
-func (st *syncTime) update(hostProjects client.ProjectsFlag) error {
+func (st *syncTime) update(hostProjects map[string]map[string]*config.GerritQueryFilter) error {
 	timeNow := time.Now()
 	st.lock.Lock()
 	defer st.lock.Unlock()
@@ -69,7 +70,7 @@ func (st *syncTime) update(hostProjects client.ProjectsFlag) error {
 			if _, ok := state[host]; !ok {
 				state[host] = map[string]time.Time{}
 			}
-			for _, project := range projects {
+			for project := range projects {
 				if _, ok := state[host][project]; !ok {
 					state[host][project] = timeNow
 				}
@@ -81,7 +82,7 @@ func (st *syncTime) update(hostProjects client.ProjectsFlag) error {
 		targetState := client.LastSyncState{}
 		for host, projects := range hostProjects {
 			targetState[host] = map[string]time.Time{}
-			for _, project := range projects {
+			for project := range projects {
 				targetState[host][project] = timeNow
 			}
 		}

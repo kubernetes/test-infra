@@ -38,7 +38,6 @@ import (
 
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/crier/reporters/criercommonlib"
-	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/kube"
 )
 
@@ -170,12 +169,12 @@ func TestReport(t *testing.T) {
 				},
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritRevision:    "abc",
-						kube.ProwJobTypeLabel:    presubmit,
-						client.GerritReportLabel: "Code-Review",
+						kube.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:  presubmit,
+						kube.GerritReportLabel: "Code-Review",
 					},
 					Annotations: map[string]string{
-						client.GerritInstance: "gerrit",
+						kube.GerritInstance: "gerrit",
 					},
 				},
 				Status: v1.ProwJobStatus{
@@ -191,9 +190,9 @@ func TestReport(t *testing.T) {
 				},
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
-						client.GerritID:          "123-abc",
-						client.GerritInstance:    "gerrit",
-						client.GerritReportLabel: "Code-Review",
+						kube.GerritID:          "123-abc",
+						kube.GerritInstance:    "gerrit",
+						kube.GerritReportLabel: "Code-Review",
 					},
 				},
 				Status: v1.ProwJobStatus{
@@ -209,12 +208,12 @@ func TestReport(t *testing.T) {
 				},
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritRevision:    "abc",
-						kube.ProwJobTypeLabel:    presubmit,
-						client.GerritReportLabel: "Code-Review",
+						kube.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:  presubmit,
+						kube.GerritReportLabel: "Code-Review",
 					},
 					Annotations: map[string]string{
-						client.GerritID: "123-abc",
+						kube.GerritID: "123-abc",
 					},
 				},
 				Status: v1.ProwJobStatus{
@@ -227,13 +226,13 @@ func TestReport(t *testing.T) {
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritRevision:    "abc",
-						kube.ProwJobTypeLabel:    presubmit,
-						client.GerritReportLabel: "Code-Review",
+						kube.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:  presubmit,
+						kube.GerritReportLabel: "Code-Review",
 					},
 					Annotations: map[string]string{
-						client.GerritID:       "123-abc",
-						client.GerritInstance: "gerrit",
+						kube.GerritID:       "123-abc",
+						kube.GerritInstance: "gerrit",
 					},
 					Name:      "ci-foo",
 					Namespace: "test-pods",
@@ -265,13 +264,13 @@ func TestReport(t *testing.T) {
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritRevision:    "abc",
-						kube.ProwJobTypeLabel:    presubmit,
-						client.GerritReportLabel: "Code-Review",
+						kube.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:  presubmit,
+						kube.GerritReportLabel: "Code-Review",
 					},
 					Annotations: map[string]string{
-						client.GerritID:       "123-not-exist",
-						client.GerritInstance: "gerrit",
+						kube.GerritID:       "123-not-exist",
+						kube.GerritInstance: "gerrit",
 					},
 					Name:      "ci-foo",
 					Namespace: "test-pods",
@@ -301,13 +300,13 @@ func TestReport(t *testing.T) {
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritRevision:    "not-exist",
-						kube.ProwJobTypeLabel:    presubmit,
-						client.GerritReportLabel: "Code-Review",
+						kube.GerritRevision:    "not-exist",
+						kube.ProwJobTypeLabel:  presubmit,
+						kube.GerritReportLabel: "Code-Review",
 					},
 					Annotations: map[string]string{
-						client.GerritID:       "123-abc",
-						client.GerritInstance: "gerrit",
+						kube.GerritID:       "123-abc",
+						kube.GerritInstance: "gerrit",
 					},
 					Name:      "ci-foo",
 					Namespace: "test-pods",
@@ -337,13 +336,13 @@ func TestReport(t *testing.T) {
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritRevision:    "abc",
-						kube.ProwJobTypeLabel:    presubmit,
-						client.GerritReportLabel: "Code-Review",
+						kube.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:  presubmit,
+						kube.GerritReportLabel: "Code-Review",
 					},
 					Annotations: map[string]string{
-						client.GerritID:       "123-abc",
-						client.GerritInstance: "gerrit",
+						kube.GerritID:       "123-abc",
+						kube.GerritInstance: "gerrit",
 					},
 				},
 				Status: v1.ProwJobStatus{
@@ -369,13 +368,13 @@ func TestReport(t *testing.T) {
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritRevision:    "abc",
-						kube.ProwJobTypeLabel:    presubmit,
-						client.GerritReportLabel: "bad-label",
+						kube.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:  presubmit,
+						kube.GerritReportLabel: "bad-label",
 					},
 					Annotations: map[string]string{
-						client.GerritID:       "123-abc",
-						client.GerritInstance: "gerrit",
+						kube.GerritID:       "123-abc",
+						kube.GerritInstance: "gerrit",
 					},
 					Name:      "ci-foo",
 					Namespace: "test-pods",
@@ -406,13 +405,13 @@ func TestReport(t *testing.T) {
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritRevision:    "abc",
-						kube.ProwJobTypeLabel:    presubmit,
-						client.GerritReportLabel: "",
+						kube.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:  presubmit,
+						kube.GerritReportLabel: "",
 					},
 					Annotations: map[string]string{
-						client.GerritID:       "123-abc",
-						client.GerritInstance: "gerrit",
+						kube.GerritID:       "123-abc",
+						kube.GerritInstance: "gerrit",
 					},
 					Name:      "ci-foo",
 					Namespace: "test-pods",
@@ -443,13 +442,13 @@ func TestReport(t *testing.T) {
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritRevision:    "abc",
-						kube.ProwJobTypeLabel:    presubmit,
-						client.GerritReportLabel: "Code-Review",
+						kube.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:  presubmit,
+						kube.GerritReportLabel: "Code-Review",
 					},
 					Annotations: map[string]string{
-						client.GerritID:       "123-abc",
-						client.GerritInstance: "gerrit",
+						kube.GerritID:       "123-abc",
+						kube.GerritInstance: "gerrit",
 					},
 				},
 				Status: v1.ProwJobStatus{
@@ -476,13 +475,13 @@ func TestReport(t *testing.T) {
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritRevision:    "abc",
-						client.GerritReportLabel: "foobar-label",
-						kube.ProwJobTypeLabel:    presubmit,
+						kube.GerritRevision:    "abc",
+						kube.GerritReportLabel: "foobar-label",
+						kube.ProwJobTypeLabel:  presubmit,
 					},
 					Annotations: map[string]string{
-						client.GerritID:       "123-abc",
-						client.GerritInstance: "gerrit",
+						kube.GerritID:       "123-abc",
+						kube.GerritInstance: "gerrit",
 					},
 					Name:      "ci-foo",
 					Namespace: "test-pods",
@@ -514,13 +513,13 @@ func TestReport(t *testing.T) {
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritRevision:    "abc",
-						kube.ProwJobTypeLabel:    presubmit,
-						client.GerritReportLabel: "Code-Review",
+						kube.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:  presubmit,
+						kube.GerritReportLabel: "Code-Review",
 					},
 					Annotations: map[string]string{
-						client.GerritID:       "123-abc",
-						client.GerritInstance: "gerrit",
+						kube.GerritID:       "123-abc",
+						kube.GerritInstance: "gerrit",
 					},
 					Name:      "ci-foo",
 					Namespace: "test-pods",
@@ -553,13 +552,13 @@ func TestReport(t *testing.T) {
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritRevision:    "abc",
-						kube.ProwJobTypeLabel:    presubmit,
-						client.GerritReportLabel: "Code-Review",
+						kube.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:  presubmit,
+						kube.GerritReportLabel: "Code-Review",
 					},
 					Annotations: map[string]string{
-						client.GerritID:       "123-abc",
-						client.GerritInstance: "gerrit",
+						kube.GerritID:       "123-abc",
+						kube.GerritInstance: "gerrit",
 					},
 					Name:      "ci-foo",
 					Namespace: "test-pods",
@@ -592,13 +591,13 @@ func TestReport(t *testing.T) {
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritRevision:    "abc",
-						kube.ProwJobTypeLabel:    presubmit,
-						client.GerritReportLabel: "Code-Review",
+						kube.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:  presubmit,
+						kube.GerritReportLabel: "Code-Review",
 					},
 					Annotations: map[string]string{
-						client.GerritID:       "123-abc",
-						client.GerritInstance: "gerrit",
+						kube.GerritID:       "123-abc",
+						kube.GerritInstance: "gerrit",
 					},
 				},
 				Status: v1.ProwJobStatus{
@@ -622,13 +621,13 @@ func TestReport(t *testing.T) {
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritRevision:    "abc",
-						kube.ProwJobTypeLabel:    postsubmit,
-						client.GerritReportLabel: "Code-Review",
+						kube.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:  postsubmit,
+						kube.GerritReportLabel: "Code-Review",
 					},
 					Annotations: map[string]string{
-						client.GerritID:       "123-abc",
-						client.GerritInstance: "gerrit",
+						kube.GerritID:       "123-abc",
+						kube.GerritInstance: "gerrit",
 					},
 				},
 				Status: v1.ProwJobStatus{
@@ -652,13 +651,13 @@ func TestReport(t *testing.T) {
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritRevision:    "abc",
-						kube.ProwJobTypeLabel:    presubmit,
-						client.GerritReportLabel: "Code-Review",
+						kube.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:  presubmit,
+						kube.GerritReportLabel: "Code-Review",
 					},
 					Annotations: map[string]string{
-						client.GerritID:       "123-abc",
-						client.GerritInstance: "gerrit",
+						kube.GerritID:       "123-abc",
+						kube.GerritInstance: "gerrit",
 					},
 					Name:      "ci-foo",
 					Namespace: "test-pods",
@@ -684,13 +683,13 @@ func TestReport(t *testing.T) {
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels: map[string]string{
-							client.GerritRevision:    "def",
-							kube.ProwJobTypeLabel:    presubmit,
-							client.GerritReportLabel: "Code-Review",
+							kube.GerritRevision:    "def",
+							kube.ProwJobTypeLabel:  presubmit,
+							kube.GerritReportLabel: "Code-Review",
 						},
 						Annotations: map[string]string{
-							client.GerritID:       "123-def",
-							client.GerritInstance: "gerrit",
+							kube.GerritID:       "123-def",
+							kube.GerritInstance: "gerrit",
 						},
 						Name:      "ci-foo",
 						Namespace: "test-pods",
@@ -724,13 +723,13 @@ func TestReport(t *testing.T) {
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritRevision:    "abc",
-						kube.ProwJobTypeLabel:    presubmit,
-						client.GerritReportLabel: "Code-Review",
+						kube.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:  presubmit,
+						kube.GerritReportLabel: "Code-Review",
 					},
 					Annotations: map[string]string{
-						client.GerritID:       "123-abc",
-						client.GerritInstance: "gerrit",
+						kube.GerritID:       "123-abc",
+						kube.GerritInstance: "gerrit",
 					},
 				},
 				Status: v1.ProwJobStatus{
@@ -754,13 +753,13 @@ func TestReport(t *testing.T) {
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels: map[string]string{
-							client.GerritRevision:    "abc",
-							kube.ProwJobTypeLabel:    presubmit,
-							client.GerritReportLabel: "Code-Review",
+							kube.GerritRevision:    "abc",
+							kube.ProwJobTypeLabel:  presubmit,
+							kube.GerritReportLabel: "Code-Review",
 						},
 						Annotations: map[string]string{
-							client.GerritID:       "123-abc",
-							client.GerritInstance: "gerrit",
+							kube.GerritID:       "123-abc",
+							kube.GerritInstance: "gerrit",
 						},
 					},
 					Status: v1.ProwJobStatus{
@@ -787,13 +786,13 @@ func TestReport(t *testing.T) {
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritRevision:    "abc",
-						kube.ProwJobTypeLabel:    presubmit,
-						client.GerritReportLabel: "",
+						kube.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:  presubmit,
+						kube.GerritReportLabel: "",
 					},
 					Annotations: map[string]string{
-						client.GerritID:       "123-abc",
-						client.GerritInstance: "gerrit",
+						kube.GerritID:       "123-abc",
+						kube.GerritInstance: "gerrit",
 					},
 					Name:      "ci-foo",
 					Namespace: "test-pods",
@@ -819,13 +818,13 @@ func TestReport(t *testing.T) {
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels: map[string]string{
-							client.GerritRevision:    "abc",
-							kube.ProwJobTypeLabel:    presubmit,
-							client.GerritReportLabel: "",
+							kube.GerritRevision:    "abc",
+							kube.ProwJobTypeLabel:  presubmit,
+							kube.GerritReportLabel: "",
 						},
 						Annotations: map[string]string{
-							client.GerritID:       "123-abc",
-							client.GerritInstance: "gerrit",
+							kube.GerritID:       "123-abc",
+							kube.GerritInstance: "gerrit",
 						},
 						Name:      "ci-foo",
 						Namespace: "test-pods",
@@ -858,13 +857,13 @@ func TestReport(t *testing.T) {
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritRevision:    "abc",
-						kube.ProwJobTypeLabel:    postsubmit,
-						client.GerritReportLabel: "Code-Review",
+						kube.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:  postsubmit,
+						kube.GerritReportLabel: "Code-Review",
 					},
 					Annotations: map[string]string{
-						client.GerritID:       "123-abc",
-						client.GerritInstance: "gerrit",
+						kube.GerritID:       "123-abc",
+						kube.GerritInstance: "gerrit",
 					},
 					Name:      "ci-foo",
 					Namespace: "test-pods",
@@ -896,13 +895,13 @@ func TestReport(t *testing.T) {
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritRevision:    "abc",
-						kube.ProwJobTypeLabel:    presubmit,
-						client.GerritReportLabel: "Code-Review",
+						kube.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:  presubmit,
+						kube.GerritReportLabel: "Code-Review",
 					},
 					Annotations: map[string]string{
-						client.GerritID:       "123-abc",
-						client.GerritInstance: "gerrit",
+						kube.GerritID:       "123-abc",
+						kube.GerritInstance: "gerrit",
 					},
 					Name:      "ci-foo",
 					Namespace: "test-pods",
@@ -929,13 +928,13 @@ func TestReport(t *testing.T) {
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels: map[string]string{
-							client.GerritRevision:    "abc",
-							kube.ProwJobTypeLabel:    presubmit,
-							client.GerritReportLabel: "Code-Review",
+							kube.GerritRevision:    "abc",
+							kube.ProwJobTypeLabel:  presubmit,
+							kube.GerritReportLabel: "Code-Review",
 						},
 						Annotations: map[string]string{
-							client.GerritID:       "123-abc",
-							client.GerritInstance: "gerrit",
+							kube.GerritID:       "123-abc",
+							kube.GerritInstance: "gerrit",
 						},
 						Name:      "ci-bar",
 						Namespace: "test-pods",
@@ -970,13 +969,13 @@ func TestReport(t *testing.T) {
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritRevision:    "abc",
-						kube.ProwJobTypeLabel:    presubmit,
-						client.GerritReportLabel: "Code-Review",
+						kube.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:  presubmit,
+						kube.GerritReportLabel: "Code-Review",
 					},
 					Annotations: map[string]string{
-						client.GerritID:       "123-abc",
-						client.GerritInstance: "gerrit",
+						kube.GerritID:       "123-abc",
+						kube.GerritInstance: "gerrit",
 					},
 					Name:      "ci-foo",
 					Namespace: "test-pods",
@@ -1002,13 +1001,13 @@ func TestReport(t *testing.T) {
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels: map[string]string{
-							client.GerritRevision:    "abc",
-							kube.ProwJobTypeLabel:    presubmit,
-							client.GerritReportLabel: "Code-Review",
+							kube.GerritRevision:    "abc",
+							kube.ProwJobTypeLabel:  presubmit,
+							kube.GerritReportLabel: "Code-Review",
 						},
 						Annotations: map[string]string{
-							client.GerritID:       "123-abc",
-							client.GerritInstance: "gerrit",
+							kube.GerritID:       "123-abc",
+							kube.GerritInstance: "gerrit",
 						},
 						Name:      "ci-bar",
 						Namespace: "test-pods",
@@ -1042,13 +1041,13 @@ func TestReport(t *testing.T) {
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritRevision:    "abc",
-						kube.ProwJobTypeLabel:    presubmit,
-						client.GerritReportLabel: "Code-Review",
+						kube.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:  presubmit,
+						kube.GerritReportLabel: "Code-Review",
 					},
 					Annotations: map[string]string{
-						client.GerritID:       "123-abc",
-						client.GerritInstance: "gerrit",
+						kube.GerritID:       "123-abc",
+						kube.GerritInstance: "gerrit",
 					},
 					Name:      "ci-foo",
 					Namespace: "test-pods",
@@ -1075,13 +1074,13 @@ func TestReport(t *testing.T) {
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels: map[string]string{
-							client.GerritRevision:    "abc",
-							kube.ProwJobTypeLabel:    presubmit,
-							client.GerritReportLabel: "Code-Review",
+							kube.GerritRevision:    "abc",
+							kube.ProwJobTypeLabel:  presubmit,
+							kube.GerritReportLabel: "Code-Review",
 						},
 						Annotations: map[string]string{
-							client.GerritID:       "123-abc",
-							client.GerritInstance: "gerrit",
+							kube.GerritID:       "123-abc",
+							kube.GerritInstance: "gerrit",
 						},
 						Name:      "ci-bar",
 						Namespace: "test-pods",
@@ -1115,13 +1114,13 @@ func TestReport(t *testing.T) {
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritRevision:    "abc",
-						client.GerritReportLabel: "postsubmit-label",
-						kube.ProwJobTypeLabel:    postsubmit,
+						kube.GerritRevision:    "abc",
+						kube.GerritReportLabel: "postsubmit-label",
+						kube.ProwJobTypeLabel:  postsubmit,
 					},
 					Annotations: map[string]string{
-						client.GerritID:       "123-abc",
-						client.GerritInstance: "gerrit",
+						kube.GerritID:       "123-abc",
+						kube.GerritInstance: "gerrit",
 					},
 					Name:      "ci-foo",
 					Namespace: "test-pods",
@@ -1147,13 +1146,13 @@ func TestReport(t *testing.T) {
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels: map[string]string{
-							client.GerritRevision:    "abc",
-							kube.ProwJobTypeLabel:    presubmit,
-							client.GerritReportLabel: "Code-Review",
+							kube.GerritRevision:    "abc",
+							kube.ProwJobTypeLabel:  presubmit,
+							kube.GerritReportLabel: "Code-Review",
 						},
 						Annotations: map[string]string{
-							client.GerritID:       "123-abc",
-							client.GerritInstance: "gerrit",
+							kube.GerritID:       "123-abc",
+							kube.GerritInstance: "gerrit",
 						},
 						Name:      "ci-bar",
 						Namespace: "test-pods",
@@ -1186,13 +1185,13 @@ func TestReport(t *testing.T) {
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritRevision:    "abc",
-						kube.ProwJobTypeLabel:    presubmit,
-						client.GerritReportLabel: "label-foo",
+						kube.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:  presubmit,
+						kube.GerritReportLabel: "label-foo",
 					},
 					Annotations: map[string]string{
-						client.GerritID:       "123-abc",
-						client.GerritInstance: "gerrit",
+						kube.GerritID:       "123-abc",
+						kube.GerritInstance: "gerrit",
 					},
 					Name:      "ci-foo",
 					Namespace: "test-pods",
@@ -1218,13 +1217,13 @@ func TestReport(t *testing.T) {
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels: map[string]string{
-							client.GerritRevision:    "abc",
-							kube.ProwJobTypeLabel:    presubmit,
-							client.GerritReportLabel: "label-bar",
+							kube.GerritRevision:    "abc",
+							kube.ProwJobTypeLabel:  presubmit,
+							kube.GerritReportLabel: "label-bar",
 						},
 						Annotations: map[string]string{
-							client.GerritID:       "123-abc",
-							client.GerritInstance: "gerrit",
+							kube.GerritID:       "123-abc",
+							kube.GerritInstance: "gerrit",
 						},
 						Name:      "ci-foo",
 						Namespace: "test-pods",
@@ -1257,16 +1256,16 @@ func TestReport(t *testing.T) {
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritRevision:    "abc",
-						kube.ProwJobTypeLabel:    presubmit,
-						client.GerritReportLabel: "label-foo",
-						kube.OrgLabel:            "org",
-						kube.RepoLabel:           "repo",
-						kube.PullLabel:           "0",
+						kube.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:  presubmit,
+						kube.GerritReportLabel: "label-foo",
+						kube.OrgLabel:          "org",
+						kube.RepoLabel:         "repo",
+						kube.PullLabel:         "0",
 					},
 					Annotations: map[string]string{
-						client.GerritID:       "123-abc",
-						client.GerritInstance: "gerrit",
+						kube.GerritID:       "123-abc",
+						kube.GerritInstance: "gerrit",
 					},
 					CreationTimestamp: metav1.Time{
 						Time: timeNow,
@@ -1295,16 +1294,16 @@ func TestReport(t *testing.T) {
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels: map[string]string{
-							client.GerritRevision:    "abc",
-							kube.ProwJobTypeLabel:    presubmit,
-							client.GerritReportLabel: "label-foo",
-							kube.OrgLabel:            "org",
-							kube.RepoLabel:           "repo",
-							kube.PullLabel:           "0",
+							kube.GerritRevision:    "abc",
+							kube.ProwJobTypeLabel:  presubmit,
+							kube.GerritReportLabel: "label-foo",
+							kube.OrgLabel:          "org",
+							kube.RepoLabel:         "repo",
+							kube.PullLabel:         "0",
 						},
 						Annotations: map[string]string{
-							client.GerritID:       "123-abc",
-							client.GerritInstance: "gerrit",
+							kube.GerritID:       "123-abc",
+							kube.GerritInstance: "gerrit",
 						},
 						CreationTimestamp: metav1.Time{
 							Time: timeNow.Add(-time.Minute),
@@ -1343,16 +1342,16 @@ func TestReport(t *testing.T) {
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritRevision:    "abc",
-						kube.ProwJobTypeLabel:    presubmit,
-						client.GerritReportLabel: "label-foo",
-						kube.OrgLabel:            "org",
-						kube.RepoLabel:           "repo",
-						kube.PullLabel:           "0",
+						kube.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:  presubmit,
+						kube.GerritReportLabel: "label-foo",
+						kube.OrgLabel:          "org",
+						kube.RepoLabel:         "repo",
+						kube.PullLabel:         "0",
 					},
 					Annotations: map[string]string{
-						client.GerritID:       "123-abc",
-						client.GerritInstance: "gerrit",
+						kube.GerritID:       "123-abc",
+						kube.GerritInstance: "gerrit",
 					},
 					CreationTimestamp: metav1.Time{
 						Time: timeNow.Add(-2 * time.Minute),
@@ -1381,16 +1380,16 @@ func TestReport(t *testing.T) {
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels: map[string]string{
-							client.GerritRevision:    "abc",
-							kube.ProwJobTypeLabel:    presubmit,
-							client.GerritReportLabel: "label-foo",
-							kube.OrgLabel:            "org",
-							kube.RepoLabel:           "repo",
-							kube.PullLabel:           "0",
+							kube.GerritRevision:    "abc",
+							kube.ProwJobTypeLabel:  presubmit,
+							kube.GerritReportLabel: "label-foo",
+							kube.OrgLabel:          "org",
+							kube.RepoLabel:         "repo",
+							kube.PullLabel:         "0",
 						},
 						Annotations: map[string]string{
-							client.GerritID:       "123-abc",
-							client.GerritInstance: "gerrit",
+							kube.GerritID:       "123-abc",
+							kube.GerritInstance: "gerrit",
 						},
 						CreationTimestamp: metav1.Time{
 							Time: timeNow.Add(-time.Minute),
@@ -1425,13 +1424,13 @@ func TestReport(t *testing.T) {
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritRevision:    "abc",
-						kube.ProwJobTypeLabel:    presubmit,
-						client.GerritReportLabel: "label-foo",
+						kube.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:  presubmit,
+						kube.GerritReportLabel: "label-foo",
 					},
 					Annotations: map[string]string{
-						client.GerritID:       "123-abc",
-						client.GerritInstance: "gerrit",
+						kube.GerritID:       "123-abc",
+						kube.GerritInstance: "gerrit",
 					},
 					Name:      "ci-foo",
 					Namespace: "test-pods",
@@ -1457,13 +1456,13 @@ func TestReport(t *testing.T) {
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels: map[string]string{
-							client.GerritRevision:    "abc",
-							kube.ProwJobTypeLabel:    presubmit,
-							client.GerritReportLabel: "label-bar",
+							kube.GerritRevision:    "abc",
+							kube.ProwJobTypeLabel:  presubmit,
+							kube.GerritReportLabel: "label-bar",
 						},
 						Annotations: map[string]string{
-							client.GerritID:       "123-abc",
-							client.GerritInstance: "gerrit",
+							kube.GerritID:       "123-abc",
+							kube.GerritInstance: "gerrit",
 						},
 						Name:      "ci-bar",
 						Namespace: "test-pods",
@@ -1496,13 +1495,13 @@ func TestReport(t *testing.T) {
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritRevision:    "abc",
-						kube.ProwJobTypeLabel:    presubmit,
-						client.GerritReportLabel: "same-label",
+						kube.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:  presubmit,
+						kube.GerritReportLabel: "same-label",
 					},
 					Annotations: map[string]string{
-						client.GerritID:       "123-abc",
-						client.GerritInstance: "gerrit",
+						kube.GerritID:       "123-abc",
+						kube.GerritInstance: "gerrit",
 					},
 					CreationTimestamp: metav1.Time{
 						Time: timeNow,
@@ -1532,13 +1531,13 @@ func TestReport(t *testing.T) {
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels: map[string]string{
-							client.GerritRevision:    "abc",
-							kube.ProwJobTypeLabel:    presubmit,
-							client.GerritReportLabel: "same-label",
+							kube.GerritRevision:    "abc",
+							kube.ProwJobTypeLabel:  presubmit,
+							kube.GerritReportLabel: "same-label",
 						},
 						Annotations: map[string]string{
-							client.GerritID:       "123-abc",
-							client.GerritInstance: "gerrit",
+							kube.GerritID:       "123-abc",
+							kube.GerritInstance: "gerrit",
 						},
 						CreationTimestamp: metav1.Time{
 							Time: timeNow.Add(-time.Hour),
@@ -1570,13 +1569,13 @@ func TestReport(t *testing.T) {
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels: map[string]string{
-							client.GerritRevision:    "abc",
-							kube.ProwJobTypeLabel:    presubmit,
-							client.GerritReportLabel: "same-label",
+							kube.GerritRevision:    "abc",
+							kube.ProwJobTypeLabel:  presubmit,
+							kube.GerritReportLabel: "same-label",
 						},
 						Annotations: map[string]string{
-							client.GerritID:       "123-abc",
-							client.GerritInstance: "gerrit",
+							kube.GerritID:       "123-abc",
+							kube.GerritInstance: "gerrit",
 						},
 						CreationTimestamp: metav1.Time{
 							Time: timeNow.Add(-time.Hour),
@@ -1616,17 +1615,17 @@ func TestReport(t *testing.T) {
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritRevision:    "abc",
-						kube.ProwJobTypeLabel:    presubmit,
-						client.GerritReportLabel: "same-label",
-						client.GerritPatchset:    "5",
-						kube.OrgLabel:            "same-org",
-						kube.RepoLabel:           "same-repo",
-						kube.PullLabel:           "123456",
+						kube.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:  presubmit,
+						kube.GerritReportLabel: "same-label",
+						kube.GerritPatchset:    "5",
+						kube.OrgLabel:          "same-org",
+						kube.RepoLabel:         "same-repo",
+						kube.PullLabel:         "123456",
 					},
 					Annotations: map[string]string{
-						client.GerritID:       "123-abc",
-						client.GerritInstance: "gerrit",
+						kube.GerritID:       "123-abc",
+						kube.GerritInstance: "gerrit",
 					},
 					CreationTimestamp: metav1.Time{
 						Time: timeNow,
@@ -1654,17 +1653,17 @@ func TestReport(t *testing.T) {
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels: map[string]string{
-							client.GerritRevision:    "abc",
-							kube.ProwJobTypeLabel:    presubmit,
-							client.GerritReportLabel: "same-label",
-							client.GerritPatchset:    "5",
-							kube.OrgLabel:            "same-org",
-							kube.RepoLabel:           "same-repo",
-							kube.PullLabel:           "123456",
+							kube.GerritRevision:    "abc",
+							kube.ProwJobTypeLabel:  presubmit,
+							kube.GerritReportLabel: "same-label",
+							kube.GerritPatchset:    "5",
+							kube.OrgLabel:          "same-org",
+							kube.RepoLabel:         "same-repo",
+							kube.PullLabel:         "123456",
 						},
 						Annotations: map[string]string{
-							client.GerritID:       "123-abc",
-							client.GerritInstance: "gerrit",
+							kube.GerritID:       "123-abc",
+							kube.GerritInstance: "gerrit",
 						},
 						CreationTimestamp: metav1.Time{
 							Time: timeNow.Add(-time.Hour),
@@ -1694,17 +1693,17 @@ func TestReport(t *testing.T) {
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels: map[string]string{
-							client.GerritRevision:    "abc",
-							kube.ProwJobTypeLabel:    presubmit,
-							client.GerritReportLabel: "same-label",
-							client.GerritPatchset:    "5",
-							kube.OrgLabel:            "same-org",
-							kube.RepoLabel:           "same-repo",
-							kube.PullLabel:           "123456",
+							kube.GerritRevision:    "abc",
+							kube.ProwJobTypeLabel:  presubmit,
+							kube.GerritReportLabel: "same-label",
+							kube.GerritPatchset:    "5",
+							kube.OrgLabel:          "same-org",
+							kube.RepoLabel:         "same-repo",
+							kube.PullLabel:         "123456",
 						},
 						Annotations: map[string]string{
-							client.GerritID:       "123-abc",
-							client.GerritInstance: "gerrit",
+							kube.GerritID:       "123-abc",
+							kube.GerritInstance: "gerrit",
 						},
 						CreationTimestamp: metav1.Time{
 							Time: timeNow.Add(-time.Hour),
@@ -1734,17 +1733,17 @@ func TestReport(t *testing.T) {
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels: map[string]string{
-							client.GerritRevision:    "def",
-							kube.ProwJobTypeLabel:    presubmit,
-							client.GerritReportLabel: "same-label",
-							client.GerritPatchset:    "6",
-							kube.OrgLabel:            "same-org",
-							kube.RepoLabel:           "same-repo",
-							kube.PullLabel:           "123456",
+							kube.GerritRevision:    "def",
+							kube.ProwJobTypeLabel:  presubmit,
+							kube.GerritReportLabel: "same-label",
+							kube.GerritPatchset:    "6",
+							kube.OrgLabel:          "same-org",
+							kube.RepoLabel:         "same-repo",
+							kube.PullLabel:         "123456",
 						},
 						Annotations: map[string]string{
-							client.GerritID:       "123-def",
-							client.GerritInstance: "gerrit",
+							kube.GerritID:       "123-def",
+							kube.GerritInstance: "gerrit",
 						},
 						CreationTimestamp: metav1.Time{
 							Time: timeNow.Add(-time.Hour),
@@ -1776,17 +1775,17 @@ func TestReport(t *testing.T) {
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritRevision:    "abc",
-						kube.ProwJobTypeLabel:    presubmit,
-						client.GerritReportLabel: "same-label",
-						client.GerritPatchset:    "5",
-						kube.OrgLabel:            "same-org",
-						kube.RepoLabel:           "same-repo",
-						kube.PullLabel:           "123456",
+						kube.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:  presubmit,
+						kube.GerritReportLabel: "same-label",
+						kube.GerritPatchset:    "5",
+						kube.OrgLabel:          "same-org",
+						kube.RepoLabel:         "same-repo",
+						kube.PullLabel:         "123456",
 					},
 					Annotations: map[string]string{
-						client.GerritID:       "123-abc",
-						client.GerritInstance: "gerrit",
+						kube.GerritID:       "123-abc",
+						kube.GerritInstance: "gerrit",
 					},
 					CreationTimestamp: metav1.Time{
 						Time: timeNow,
@@ -1814,17 +1813,17 @@ func TestReport(t *testing.T) {
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels: map[string]string{
-							client.GerritRevision:    "abc",
-							kube.ProwJobTypeLabel:    presubmit,
-							client.GerritReportLabel: "same-label",
-							client.GerritPatchset:    "5",
-							kube.OrgLabel:            "same-org",
-							kube.RepoLabel:           "same-repo",
-							kube.PullLabel:           "123456",
+							kube.GerritRevision:    "abc",
+							kube.ProwJobTypeLabel:  presubmit,
+							kube.GerritReportLabel: "same-label",
+							kube.GerritPatchset:    "5",
+							kube.OrgLabel:          "same-org",
+							kube.RepoLabel:         "same-repo",
+							kube.PullLabel:         "123456",
 						},
 						Annotations: map[string]string{
-							client.GerritID:       "123-abc",
-							client.GerritInstance: "gerrit",
+							kube.GerritID:       "123-abc",
+							kube.GerritInstance: "gerrit",
 						},
 						CreationTimestamp: metav1.Time{
 							Time: timeNow.Add(-time.Hour),
@@ -1854,17 +1853,17 @@ func TestReport(t *testing.T) {
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels: map[string]string{
-							client.GerritRevision:    "abc",
-							kube.ProwJobTypeLabel:    presubmit,
-							client.GerritReportLabel: "same-label",
-							client.GerritPatchset:    "5",
-							kube.OrgLabel:            "same-org",
-							kube.RepoLabel:           "same-repo",
-							kube.PullLabel:           "123456",
+							kube.GerritRevision:    "abc",
+							kube.ProwJobTypeLabel:  presubmit,
+							kube.GerritReportLabel: "same-label",
+							kube.GerritPatchset:    "5",
+							kube.OrgLabel:          "same-org",
+							kube.RepoLabel:         "same-repo",
+							kube.PullLabel:         "123456",
 						},
 						Annotations: map[string]string{
-							client.GerritID:       "123-abc",
-							client.GerritInstance: "gerrit",
+							kube.GerritID:       "123-abc",
+							kube.GerritInstance: "gerrit",
 						},
 						CreationTimestamp: metav1.Time{
 							Time: timeNow.Add(-time.Hour),
@@ -1894,17 +1893,17 @@ func TestReport(t *testing.T) {
 				{
 					ObjectMeta: metav1.ObjectMeta{
 						Labels: map[string]string{
-							client.GerritRevision:    "def",
-							kube.ProwJobTypeLabel:    presubmit,
-							client.GerritReportLabel: "same-label",
-							client.GerritPatchset:    "6",
-							kube.OrgLabel:            "same-org",
-							kube.RepoLabel:           "same-repo",
-							kube.PullLabel:           "123456",
+							kube.GerritRevision:    "def",
+							kube.ProwJobTypeLabel:  presubmit,
+							kube.GerritReportLabel: "same-label",
+							kube.GerritPatchset:    "6",
+							kube.OrgLabel:          "same-org",
+							kube.RepoLabel:         "same-repo",
+							kube.PullLabel:         "123456",
 						},
 						Annotations: map[string]string{
-							client.GerritID:       "123-def",
-							client.GerritInstance: "gerrit",
+							kube.GerritID:       "123-def",
+							kube.GerritInstance: "gerrit",
 						},
 						CreationTimestamp: metav1.Time{
 							Time: timeNow.Add(-time.Hour),
@@ -1936,13 +1935,13 @@ func TestReport(t *testing.T) {
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritRevision:    "abc",
-						kube.ProwJobTypeLabel:    presubmit,
-						client.GerritReportLabel: "Code-Review",
+						kube.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:  presubmit,
+						kube.GerritReportLabel: "Code-Review",
 					},
 					Annotations: map[string]string{
-						client.GerritID:       "merged",
-						client.GerritInstance: "gerrit",
+						kube.GerritID:       "merged",
+						kube.GerritInstance: "gerrit",
 					},
 					Name:      "ci-foo",
 					Namespace: "test-pods",
@@ -1975,13 +1974,13 @@ func TestReport(t *testing.T) {
 			pj: &v1.ProwJob{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						client.GerritRevision:    "abc",
-						kube.ProwJobTypeLabel:    presubmit,
-						client.GerritReportLabel: "Code-Review",
+						kube.GerritRevision:    "abc",
+						kube.ProwJobTypeLabel:  presubmit,
+						kube.GerritReportLabel: "Code-Review",
 					},
 					Annotations: map[string]string{
-						client.GerritID:       "merged",
-						client.GerritInstance: "gerrit",
+						kube.GerritID:       "merged",
+						kube.GerritInstance: "gerrit",
 					},
 					Name:      "ci-foo",
 					Namespace: "test-pods",
@@ -2069,17 +2068,17 @@ func TestMultipleWorks(t *testing.T) {
 	samplePJ := v1.ProwJob{
 		ObjectMeta: metav1.ObjectMeta{
 			Labels: map[string]string{
-				client.GerritRevision:    "abc",
-				kube.ProwJobTypeLabel:    presubmit,
-				client.GerritReportLabel: "same-label",
-				client.GerritPatchset:    "5",
-				kube.OrgLabel:            "same-org",
-				kube.RepoLabel:           "same-repo",
-				kube.PullLabel:           "123456",
+				kube.GerritRevision:    "abc",
+				kube.ProwJobTypeLabel:  presubmit,
+				kube.GerritReportLabel: "same-label",
+				kube.GerritPatchset:    "5",
+				kube.OrgLabel:          "same-org",
+				kube.RepoLabel:         "same-repo",
+				kube.PullLabel:         "123456",
 			},
 			Annotations: map[string]string{
-				client.GerritID:       "123-abc",
-				client.GerritInstance: "gerrit",
+				kube.GerritID:       "123-abc",
+				kube.GerritInstance: "gerrit",
 			},
 			CreationTimestamp: metav1.Time{
 				Time: timeNow.Add(-time.Hour),
