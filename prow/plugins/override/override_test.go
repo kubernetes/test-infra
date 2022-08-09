@@ -24,6 +24,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -127,6 +128,7 @@ type fakeClient struct {
 	jobs             sets.String
 	owners           ownersClient
 	checkruns        *github.CheckRunList
+	usesAppsAuth     bool
 }
 
 func (c *fakeClient) presubmits(_, _ string, _ config.RefGetter, _ string) ([]config.Presubmit, error) {
@@ -207,11 +209,30 @@ func (c *fakeClient) ListCheckRuns(org, repo, ref string) (*github.CheckRunList,
 	return &github.CheckRunList{}, nil
 }
 
-func (c *fakeClient) CreateCheckRun(org, repo string, checkRun github.CheckRun) (*github.CheckRun, error) {
-	if c.checkruns != nil {
-		return &c.checkruns.CheckRuns[0], nil
+func (c *fakeClient) CreateCheckRun(org, repo string, checkRun github.CheckRun) error {
+	for _, checkrun := range c.checkruns.CheckRuns {
+		if checkrun.CompletedAt == "" {
+			continue
+		} else if strings.ToUpper(checkrun.Conclusion) == "NEUTRAL" {
+			continue
+		} else if strings.ToUpper(checkrun.Conclusion) == "SUCCESS" {
+			continue
+		} else if checkrun.Name == checkRun.Name {
+			prowOverrideCR := github.CheckRun{
+				Name:        checkrun.Name,
+				HeadSHA:     checkrun.HeadSHA,
+				CompletedAt: checkrun.CompletedAt,
+				Status:      "completed",
+				Conclusion:  "success",
+				Output: github.CheckRunOutput{
+					Title:   fmt.Sprintf("Prow override - %s", checkrun.Name),
+					Summary: fmt.Sprintf("Prow has received override command for the %s checkrun.", checkrun.Name),
+				},
+			}
+			c.checkruns.CheckRuns = append(c.checkruns.CheckRuns, prowOverrideCR)
+		}
 	}
-	return &github.CheckRun{}, nil
+	return nil
 }
 
 func (c *fakeClient) GetBranchProtection(org, repo, branch string) (*github.BranchProtection, error) {
@@ -292,6 +313,10 @@ func (c *fakeClient) LoadRepoOwners(org, repo, base string) (repoowners.RepoOwne
 	return c.owners.LoadRepoOwners(org, repo, base)
 }
 
+func (c *fakeClient) UsesAppAuth() bool {
+	return c.usesAppsAuth
+}
+
 func TestAuthorizedUser(t *testing.T) {
 	cases := []struct {
 		name     string
@@ -343,6 +368,7 @@ func TestHandle(t *testing.T) {
 		approvers         []string
 		err               bool
 		checkruns         *github.CheckRunList
+		usesAppsAuth      bool
 	}{
 		{
 			name:    "successfully override failure",
@@ -369,7 +395,6 @@ func TestHandle(t *testing.T) {
 				CheckRuns: []github.CheckRun{
 					{Name: "incomplete-checkrun"},
 					{Name: "failure-checkrun", CompletedAt: "1800 BC", Conclusion: "failure"},
-					{Name: "failure-checkrun", CompletedAt: "1800 BC", Conclusion: "success"},
 				},
 			},
 			expected: []github.Status{},
@@ -377,9 +402,13 @@ func TestHandle(t *testing.T) {
 				CheckRuns: []github.CheckRun{
 					{Name: "incomplete-checkrun"},
 					{Name: "failure-checkrun", CompletedAt: "1800 BC", Conclusion: "failure"},
-					{Name: "failure-checkrun", CompletedAt: "1800 BC", Conclusion: "success"},
+					{Name: "failure-checkrun", CompletedAt: "1800 BC", Status: "completed", Conclusion: "success", Output: github.CheckRunOutput{
+						Title:   fmt.Sprintf("Prow override - %s", "failure-checkrun"),
+						Summary: fmt.Sprintf("Prow has received override command for the %s checkrun.", "failure-checkrun"),
+					}},
 				},
 			},
+			usesAppsAuth: true,
 		},
 		{
 			name:    "successfully override pending",
@@ -397,6 +426,7 @@ func TestHandle(t *testing.T) {
 					State:       github.StatusSuccess,
 				},
 			},
+			usesAppsAuth: true,
 		},
 		{
 			name:    "comment for incorrect context",
@@ -1048,6 +1078,7 @@ func TestHandle(t *testing.T) {
 				jobs:             sets.String{},
 				owners:           froc,
 				checkruns:        tc.checkruns,
+				usesAppsAuth:     tc.usesAppsAuth,
 			}
 
 			if tc.jobs == nil {
@@ -1067,7 +1098,8 @@ func TestHandle(t *testing.T) {
 			case !reflect.DeepEqual(fc.jobs, tc.jobs):
 				t.Errorf("bad jobs: actual %#v != expected %#v", fc.jobs, tc.jobs)
 			case !reflect.DeepEqual(fc.checkruns, tc.expectedCheckRuns):
-				t.Errorf("bad jobs: actual %#v != expected %#v", fc.checkruns, tc.expectedCheckRuns)
+				t.Errorf("expected checkruns differs from actual: %s", cmp.Diff(fc.checkruns, tc.expectedCheckRuns))
+
 			}
 
 			for _, expectedComment := range tc.checkComments {

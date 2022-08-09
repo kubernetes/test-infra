@@ -156,7 +156,7 @@ type CommitClient interface {
 	GetRef(org, repo, ref string) (string, error)
 	DeleteRef(org, repo, ref string) error
 	ListFileCommits(org, repo, path string) ([]RepositoryCommit, error)
-	CreateCheckRun(org, repo string, checkRun CheckRun) (*CheckRun, error)
+	CreateCheckRun(org, repo string, checkRun CheckRun) error
 }
 
 // RepositoryClient interface for repository related API actions
@@ -269,6 +269,7 @@ type Client interface {
 	UserClient
 	HookClient
 	ListAppInstallations() ([]AppInstallation, error)
+	UsesAppAuth() bool
 	GetApp() (*App, error)
 	GetAppWithContext(ctx context.Context) (*App, error)
 	GetFailedActionRunsByHeadBranch(org, repo, branchName, headSHA string) ([]WorkflowRun, error)
@@ -4952,7 +4953,7 @@ func (c *client) ListCheckRuns(org, repo, ref string) (*CheckRunList, error) {
 // CreateCheckRun Creates a new check run for a specific commit in a repository.
 //
 // See https://docs.github.com/en/rest/checks/runs#create-a-check-run
-func (c *client) CreateCheckRun(org, repo string, checkRun CheckRun) (*CheckRun, error) {
+func (c *client) CreateCheckRun(org, repo string, checkRun CheckRun) error {
 	durationLogger := c.log("CreateCheckRun", org, repo, checkRun)
 	defer durationLogger()
 
@@ -4965,9 +4966,14 @@ func (c *client) CreateCheckRun(org, repo string, checkRun CheckRun) (*CheckRun,
 		exitCodes:   []int{201},
 	}, &retCheckRun)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return &retCheckRun, nil
+	return nil
+}
+
+// Simple function to check if GitHub App Authentication is being used
+func (c *client) UsesAppAuth() bool {
+	return c.delegate.usesAppsAuth
 }
 
 // ListAppInstallations lists the installations for the current app. Will not work with
