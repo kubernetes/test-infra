@@ -419,7 +419,9 @@ func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent,
 
 	// add checkruns to the list of contexts being tracked
 	for _, cr := range checkrunContexts {
-		contexts.Insert(cr.Context)
+		if cr.Context != "" {
+			contexts.Insert(cr.Context)
+		}
 	}
 
 	branch := pr.Base.Ref
@@ -441,11 +443,13 @@ func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent,
 
 	if unknown := overrides.Difference(contexts); unknown.Len() > 0 {
 		resp := fmt.Sprintf(`/override requires a failed status context, check run or a job name to operate on.
-The following unknown contexts were given:
+The following unknown contexts/checkruns were given:
 %s
 
-Only the following contexts were expected:
-%s`, formatList(unknown.List()), formatList(contexts.List()))
+Only the following contexts/checkruns were expected:
+%s
+
+Successful checkruns are listed but can not be overridden.`, formatList(unknown.List()), formatList(contexts.List()))
 		log.Debug(resp)
 		return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 	}
@@ -510,7 +514,7 @@ Only the following contexts were expected:
 	// Checkruns have been converted to contexts and deduped
 	if oc.UsesAppAuth() {
 		for _, checkrun := range checkrunContexts {
-			if overrides.Has(checkrun.Context) {
+			if overrides.Has(checkrun.Context) && checkrun.State != "SUCCESS" {
 				prowOverrideCR := github.CheckRun{
 					Name:       checkrun.Context,
 					HeadSHA:    sha,
@@ -527,6 +531,11 @@ Only the following contexts were expected:
 					return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 				}
 				done.Insert(checkrun.Context)
+			} else if overrides.Has(checkrun.Context) && checkrun.State == "SUCCESS" {
+				// This is to prevent creating duplicate success checkrun by prow. Legacy contexts are updated in place but you cant update checkruns submitted by another github app
+				resp := fmt.Sprintf("The Check Run %s is already marked as successful, skipping override. If you specified another checkrun in the same comment that isn't successful, please reissue the override command for the failed checkrun.", checkrun.Context)
+				log.Info(resp)
+				oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 			}
 		}
 	}
