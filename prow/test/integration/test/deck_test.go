@@ -349,6 +349,24 @@ func TestRerun(t *testing.T) {
 	if err := updateJobConfig(context.Background(), kubeClient, rerunJobConfigFile, []byte(rerunJobConfig)); err != nil {
 		t.Fatalf("Failed update job config: %v", err)
 	}
+
+	// Now we are waiting on Horologium to create the first prow job so that we
+	// can rerun from.
+	// Horologium itself is pretty good at handling the configmap update, but
+	// not kubelet, accoriding to
+	// https://github.com/kubernetes/kubernetes/issues/30189 kubelet syncs
+	// configmap updates on existing pods every minute, which is a long wait.
+	// The proposed fix in the issue was updating the deployment, which imo
+	// should be better handled by just refreshing pods.
+	// So here comes forcing restart of horologium pods.
+	if err := refreshProwPods(kubeClient, context.Background(), "horologium"); err != nil {
+		t.Fatalf("Failed refreshing horologium pods: %v", err)
+	}
+	// Same with deck
+	if err := refreshProwPods(kubeClient, context.Background(), "deck"); err != nil {
+		t.Fatalf("Failed refreshing deck pods: %v", err)
+	}
+
 	t.Cleanup(func() {
 		if err := updateJobConfig(context.Background(), kubeClient, rerunJobConfigFile, []byte{}); err != nil {
 			t.Logf("ERROR CLEANUP: %v", err)
@@ -367,7 +385,7 @@ func TestRerun(t *testing.T) {
 	ctx := context.Background()
 	getLatestJob := func(t *testing.T, jobName string, lastRun *v1.Time) *prowjobv1.ProwJob {
 		var res *prowjobv1.ProwJob
-		if err := wait.Poll(time.Second, 70*time.Second, func() (bool, error) {
+		if err := wait.Poll(time.Second, 90*time.Second, func() (bool, error) {
 			pjs := &prowjobv1.ProwJobList{}
 			err = kubeClient.List(ctx, pjs, &ctrlruntimeclient.ListOptions{
 				LabelSelector: labels.SelectorFromSet(map[string]string{kube.ProwJobAnnotation: jobName}),
