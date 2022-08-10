@@ -533,7 +533,7 @@ Successful checkruns are listed but can not be overridden.`, formatList(unknown.
 				done.Insert(checkrun.Context)
 			} else if overrides.Has(checkrun.Context) && checkrun.State == "SUCCESS" {
 				// This is to prevent creating duplicate success checkrun by prow. Legacy contexts are updated in place but you cant update checkruns submitted by another github app
-				resp := fmt.Sprintf("The Check Run %s is already marked as successful, skipping override. If you specified another checkrun in the same comment that isn't successful, please reissue the override command for the failed checkrun.", checkrun.Context)
+				resp := fmt.Sprintf("The Check Run %s is already marked as successful, skipping override.", checkrun.Context)
 				log.Info(resp)
 				oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
 			}
