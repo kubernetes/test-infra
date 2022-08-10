@@ -3544,3 +3544,34 @@ func TestThrottlerRespectsContexts(t *testing.T) {
 		})
 	}
 }
+
+func TestCreateCheckRun(t *testing.T) {
+	checkRun := CheckRun{
+		Name:    "foo",
+		HeadSHA: "someref",
+	}
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/k8s/kuber/check-runs" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		b, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			t.Fatalf("Could not read request body: %v", err)
+		}
+		var cr CheckRun
+		if err := json.Unmarshal(b, &cr); err != nil {
+			t.Errorf("Could not unmarshal request: %v", err)
+		} else if !reflect.DeepEqual(checkRun, cr) {
+			t.Errorf("expected checkrun differs from actual: %s", cmp.Diff(checkRun, cr))
+		}
+		http.Error(w, "201 Created", http.StatusCreated)
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if err := c.CreateCheckRun("k8s", "kuber", checkRun); err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	}
+}

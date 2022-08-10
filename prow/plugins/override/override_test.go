@@ -411,6 +411,27 @@ func TestHandle(t *testing.T) {
 			usesAppsAuth: true,
 		},
 		{
+			name:    "override a successful unknown context derived from checkruns",
+			comment: "/override success-checkrun",
+			checkruns: &github.CheckRunList{
+				CheckRuns: []github.CheckRun{
+					{Name: "incomplete-checkrun"},
+					{Name: "success-checkrun", CompletedAt: "1800 BC", Conclusion: "success"},
+				},
+			},
+			expected: []github.Status{},
+			expectedCheckRuns: &github.CheckRunList{
+				CheckRuns: []github.CheckRun{
+					{Name: "incomplete-checkrun"},
+					{Name: "success-checkrun", CompletedAt: "1800 BC", Conclusion: "success"},
+				},
+			},
+			usesAppsAuth: true,
+			checkComments: []string{
+				"The following unknown contexts/checkruns were given:", "`success-checkrun`",
+			},
+		},
+		{
 			name:    "override failure-checkrun checkrun, usesAppsAuth is false",
 			comment: "/override failure-checkrun",
 			checkruns: &github.CheckRunList{
@@ -491,8 +512,8 @@ func TestHandle(t *testing.T) {
 				},
 			},
 			checkComments: []string{
-				"The following unknown contexts were given", "whatever-you-want",
-				"Only the following contexts were expected", "hung-test", "hung-prow-job",
+				"The following unknown contexts/checkruns were given", "whatever-you-want",
+				"Only the following failed contexts/checkruns were expected", "hung-test", "hung-prow-job",
 			},
 		},
 		{
@@ -1138,7 +1159,6 @@ func TestHandle(t *testing.T) {
 				t.Errorf("expected checkruns differs from actual: %s", cmp.Diff(fc.checkruns, tc.expectedCheckRuns))
 
 			}
-
 			for _, expectedComment := range tc.checkComments {
 				if !strings.Contains(strings.Join(fc.comments, "\n"), expectedComment) {
 					t.Errorf("bad comments: expected %#v to be in %#v", expectedComment, fc.comments)

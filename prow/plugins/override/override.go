@@ -417,9 +417,11 @@ func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent,
 		}
 	}
 
-	// add checkruns to the list of contexts being tracked
+	// add all checkruns that are not successful or pending to the list of contexts being tracked
 	for _, cr := range checkrunContexts {
-		contexts.Insert(cr.Context)
+		if cr.Context != "" && cr.State != "SUCCESS" && cr.State != "PENDING" {
+			contexts.Insert(cr.Context)
+		}
 	}
 
 	branch := pr.Base.Ref
@@ -440,11 +442,11 @@ func handle(oc overrideClient, log *logrus.Entry, e *github.GenericCommentEvent,
 	}
 
 	if unknown := overrides.Difference(contexts); unknown.Len() > 0 {
-		resp := fmt.Sprintf(`/override requires a failed status context, check run or a job name to operate on.
-The following unknown contexts were given:
+		resp := fmt.Sprintf(`/override requires a failed status context, check run or a prowjob name to operate on.
+The following unknown contexts/checkruns were given:
 %s
 
-Only the following contexts were expected:
+Only the following failed contexts/checkruns were expected:
 %s`, formatList(unknown.List()), formatList(contexts.List()))
 		log.Debug(resp)
 		return oc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, user, resp))
