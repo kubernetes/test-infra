@@ -76,8 +76,12 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: golang:1.18
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220804-4fa19ea91a-master
         command:
-        - make
+        - runner.sh
         args:
+        - make
         - e2e-test
+        # we need privileged mode in order to do docker in docker
+        securityContext:
+          privileged: true
