@@ -428,7 +428,7 @@ func TestHandle(t *testing.T) {
 			},
 			usesAppsAuth: true,
 			checkComments: []string{
-				"The Check Run success-checkrun is already marked as successful",
+				"The following unknown contexts/checkruns were given:", "`success-checkrun`",
 			},
 		},
 		{
@@ -513,7 +513,7 @@ func TestHandle(t *testing.T) {
 			},
 			checkComments: []string{
 				"The following unknown contexts/checkruns were given", "whatever-you-want",
-				"Only the following contexts/checkruns were expected", "hung-test", "hung-prow-job",
+				"Only the following failed contexts/checkruns were expected", "hung-test", "hung-prow-job",
 			},
 		},
 		{
