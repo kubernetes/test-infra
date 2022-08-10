@@ -510,7 +510,7 @@ func (dir *gcsDir) Render(out http.ResponseWriter, inPath string) {
 		htmlNextButton(out, gcsPath+inPath, dir.NextMarker)
 	}
 
-	htmlContentFooter(out)
+	htmlContentFooter(out, strings.TrimPrefix(inPath, "/"))
 
 	htmlPageFooter(out)
 }

@@ -401,7 +401,15 @@ func TestHandleDirectory(t *testing.T) {
 	    <div class="pure-u-1-5">0</div>
 	    <div class="pure-u-2-5">Sat, 01 Jan 2000 23:00:00 UTC</div>
 	</li>
-</ul></body></html>`,
+</ul>
+<details>
+	<summary style="display: list-item; padding-left: 1em">Download</summary>
+	<div style="padding: 1em">
+		You can download this directory by running the following <a href="https://cloud.google.com/storage/docs/gsutil">gsutil</a> command:
+		<pre>gsutil -m cp -r gs://test-bucket/pr-logs/12345/ .</pre>
+	</div>
+</details>
+</body></html>`,
 		},
 	}
 
