@@ -630,7 +630,7 @@ def generate_misc():
                    distro="u2004",
                    kops_channel="alpha",
                    runs_per_day=1,
-                   scenario="staticcpumanagerpolicy",
+                   template_path="/home/prow/go/src/k8s.io/kops/tests/e2e/templates/staticcpumanagerpolicy.tmpl", # pylint: disable=line-too-long
                    extra_dashboards=['kops-misc']),
 
         build_test(name_override="kops-aws-pod-identity-webhook",
