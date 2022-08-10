@@ -514,7 +514,7 @@ Successful checkruns are listed but can not be overridden.`, formatList(unknown.
 	// Checkruns have been converted to contexts and deduped
 	if oc.UsesAppAuth() {
 		for _, checkrun := range checkrunContexts {
-			if overrides.Has(checkrun.Context) && checkrun.State != "SUCCESS" {
+			if overrides.Has(checkrun.Context) && !done.Has(checkrun.Context) && checkrun.State != "SUCCESS" {
 				prowOverrideCR := github.CheckRun{
 					Name:       checkrun.Context,
 					HeadSHA:    sha,
