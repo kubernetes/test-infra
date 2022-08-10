@@ -71,6 +71,8 @@ presubmits:
     annotations:
       testgrid-dashboards: sig-scheduling
       testgrid-tab-name: pull-kwok-e2e-test-main
+    labels:
+      preset-dind-enabled: "true"
     branches:
     - ^main$
     always_run: true
