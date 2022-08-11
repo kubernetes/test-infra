@@ -17,14 +17,23 @@ limitations under the License.
 package integration
 
 import (
+	"context"
+
+	"io/ioutil"
 	"os/exec"
 	"path/filepath"
 
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
+	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/types"
+	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"sigs.k8s.io/yaml"
 )
 
 func cleanUpCluster(prowjob string) error {
-	err := exec.Command("kubectl", "--context=kind-kind-prow-integration", "delete", "prowjob", prowjob).Run()
+	err := exec.Command("kubectl", "--context="+getClusterContext(), "delete", "prowjob", prowjob).Run()
 	if err != nil {
 		return err
 	}
@@ -32,34 +41,85 @@ func cleanUpCluster(prowjob string) error {
 }
 
 const (
-	validProwJobID   = "test-job2"
+	validProwJobID       = "test-job2"
+	validBareProwJobID   = "test-mutate-job"
+	validBareProwJobPath = "./testdata/valid_bare_prowjob.yaml"
+	invalidProwJobPath   = "./testdata/invalid_prowjob.yaml"
+	validProwJobPath     = "./testdata/valid_prowjob.yaml"
 )
 
 func TestWebhookServerValidateCluster(t *testing.T) {
-	invalidProwJobPath := "./testdata/invalid_prowjob.yaml"
-	validProwJobPath := "./testdata/valid_prowjob.yaml"
+	t.Cleanup(func() {
+		err := cleanUpCluster(validProwJobID)
+		if err != nil {
+			logrus.WithError(err).Infof("could not delete prowjob %s", validProwJobID)
+		}
+	})
 
 	absInvalidProwJobPath, err := filepath.Abs(invalidProwJobPath)
 	if err != nil {
-		t.Errorf("could not find absolute file path")
+		t.Fatalf("could not find absolute file path")
 	}
 	absValidProwJobPath, err := filepath.Abs(validProwJobPath)
 	if err != nil {
-		t.Errorf("could not find absolute file path")
+		t.Fatalf("could not find absolute file path")
 	}
 	//prowjob should fail and produce error
-	err = exec.Command("kubectl", "--context=kind-kind-prow-integration", "apply", "-f", absInvalidProwJobPath).Run()
+	out, err := exec.Command("kubectl", "--context="+getClusterContext(), "apply", "-f", absInvalidProwJobPath).CombinedOutput()
 	if err == nil {
-		t.Errorf("prowjob was not properly validated")
+		t.Fatalf("prowjob was not properly validated. Output: %s", string(out))
 	}
 	//prowjob should be created successfully
-	err = exec.Command("kubectl", "--context=kind-kind-prow-integration", "apply", "-f", absValidProwJobPath).Run()
+	out, err = exec.Command("kubectl", "--context="+getClusterContext(), "apply", "-f", absValidProwJobPath).CombinedOutput()
 	if err != nil {
-		t.Errorf("prowjob was not properly validated")
+		t.Fatalf("prowjob was not properly validated. Error: %v Output: %s", err, string(out))
 	}
-	//cleanup prowjob that was created
-	err = cleanUpCluster(validProwJobID)
+}
+
+func TestWebhookServerMutateProwjob(t *testing.T) {
+	t.Cleanup(func() {
+		err := cleanUpCluster(validBareProwJobID)
+		if err != nil {
+			logrus.WithError(err).Infof("could not delete prowjob %s", validProwJobID)
+		}
+	})
+
+	absValidBareProwJobPath, err := filepath.Abs(validBareProwJobPath)
 	if err != nil {
-		t.Errorf("could not delete prowjob %s", validProwJobID)
+		t.Fatalf("could not find absolute file path")
+	}
+	var mutatedProwJob v1.ProwJob
+	//prowjob should be created successfully
+	out, err := exec.Command("kubectl", "--context="+getClusterContext(), "apply", "-f", absValidBareProwJobPath).CombinedOutput()
+	if err != nil {
+		t.Fatalf("prowjob was not properly validated. Error: %v Output: %s", err, string(out))
+	}
+	key := types.NamespacedName{
+		Namespace: defaultNamespace,
+		Name:      validBareProwJobID,
+	}
+	clusterContext := getClusterContext()
+	t.Logf("Creating client for cluster: %s", clusterContext)
+	kubeClient, err := NewClients("", clusterContext)
+	if err != nil {
+		t.Fatalf("Failed creating clients for cluster %q: %v", clusterContext, err)
+	}
+	ctx := context.Background()
+	if err := kubeClient.Get(ctx, key, &mutatedProwJob); err != nil {
+		t.Fatalf("could not get prowjob: %v", err)
+	}
+
+	originalProwJobYAML, err := ioutil.ReadFile(absValidBareProwJobPath)
+	if err != nil {
+		t.Fatalf("unable to read yaml file %v", err)
+	}
+	var originalProwJob v1.ProwJob
+	err = yaml.Unmarshal(originalProwJobYAML, &originalProwJob)
+	if err != nil {
+		t.Fatalf("unable to unmarshal into prowjob %v", err)
+	}
+	diff := cmp.Diff(originalProwJob.Spec.DecorationConfig, mutatedProwJob.Spec.DecorationConfig)
+	if diff == "" {
+		t.Errorf("prowjob was not mutated %v", err)
 	}
 }

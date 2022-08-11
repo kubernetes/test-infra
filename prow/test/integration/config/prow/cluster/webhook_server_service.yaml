@@ -18,7 +18,7 @@ metadata:
   labels:
     app: webhook-server
   namespace: default
-  name: prowjob-validation-webhook
+  name: prowjob-admission-webhook
 spec:
   selector:
     app: webhook-server
@@ -31,3 +31,4 @@ spec:
     port: 9090
     protocol: TCP
   type: ClusterIP
+

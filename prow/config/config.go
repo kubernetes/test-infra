@@ -762,6 +762,13 @@ func (p *Plank) GuessDefaultDecorationConfig(repo, cluster string) *prowapi.Deco
 	return p.mergeDefaultDecorationConfig(repo, cluster, nil)
 }
 
+// GuessDefaultDecorationConfig attempts to find the resolved default decoration
+// config for a given repo, cluster and job DecorationConfig. It is primarily used for best effort
+// guesses about GCS configuration for undecorated jobs.
+func (p *Plank) GuessDefaultDecorationConfigWithJobDC(repo, cluster string, jobDC *prowapi.DecorationConfig) *prowapi.DecorationConfig {
+	return p.mergeDefaultDecorationConfig(repo, cluster, jobDC)
+}
+
 // defaultDecorationMapToSlice converts the old format
 // (map[string]*prowapi.DecorationConfig) to the new format
 // ([]*DefaultDecorationConfigEntry).
