@@ -3,6 +3,8 @@ presubmits:
   - name: pull-container-object-storage-interface-api-build
     always_run: true
     decorate: true
+    skip_report: false
+    skip_branches: []
     path_alias: sigs.k8s.io/container-object-storage-interface-api
     annotations:
       testgrid-dashboards: sig-storage-container-object-storage-interface-api
@@ -10,14 +12,23 @@ presubmits:
       description: Build test in container-object-storage-interface-api repo.
     spec:
       containers:
-      - image: golang:1.18.4
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220804-4fa19ea91a-master
         command:
         # Plain make runs also verify
         - make
+        args:
+        - build
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 2000m
 
   - name: pull-container-object-storage-interface-api-unit
     always_run: true
     decorate: true
+    skip_report: false
+    skip_branches: []
     path_alias: sigs.k8s.io/container-object-storage-interface-api
     annotations:
       testgrid-dashboards: sig-storage-container-object-storage-interface-api
@@ -25,8 +36,13 @@ presubmits:
       description: Unit tests in container-object-storage-interface-api repo.
     spec:
       containers:
-      - image: golang:1.18.4
+      - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220804-4fa19ea91a-master
         command:
         - make
         args:
         - test
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 2000m
