@@ -2,18 +2,17 @@
 
 approvers:
 - andrewsykim
-- BenTheElder
 - spiffxp
 - vladimirvivien
 reviewers:
 - andrewsykim
-- BenTheElder
 - cpanato
 - spiffxp
 - vladimirvivien
 
 emeritus_approvers:
 - alejandrox1
+- BenTheElder
 
 labels:
 - sig/testing
