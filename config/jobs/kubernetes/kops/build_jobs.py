@@ -508,15 +508,6 @@ def generate_misc():
                                 ],
                    extra_dashboards=['kops-misc']),
 
-        # A special test for AWS Cloud-Controller-Manager
-        build_test(name_override="kops-grid-scenario-aws-cloud-controller-manager",
-                   cloud="aws",
-                   distro="u2004",
-                   k8s_version="ci",
-                   runs_per_day=3,
-                   extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws'],
-                   extra_dashboards=['provider-aws-cloud-provider-aws', 'kops-misc']),
-
         build_test(name_override="kops-grid-scenario-terraform",
                    terraform_version="1.0.5",
                    extra_flags=["--zones=us-west-1a"],
@@ -621,16 +612,6 @@ def generate_misc():
                    kops_channel="alpha",
                    runs_per_day=3,
                    scenario="metrics-server",
-                   extra_dashboards=['kops-misc']),
-
-        build_test(name_override="kops-aws-static-cpu-manager-policy",
-                   k8s_version="ci",
-                   cloud="aws",
-                   networking="cilium",
-                   distro="u2004",
-                   kops_channel="alpha",
-                   runs_per_day=1,
-                   template_path="/home/prow/go/src/k8s.io/kops/tests/e2e/templates/staticcpumanagerpolicy.tmpl", # pylint: disable=line-too-long
                    extra_dashboards=['kops-misc']),
 
         build_test(name_override="kops-aws-pod-identity-webhook",
