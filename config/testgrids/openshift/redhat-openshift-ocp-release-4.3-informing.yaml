@@ -1011,8 +1011,7 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/release-openshift-ocp-e2e-aws-scaleup-rhel7-4.3
   name: release-openshift-ocp-e2e-aws-scaleup-rhel7-4.3
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-proxy-4.3
+- gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-proxy-4.3
   name: release-openshift-ocp-installer-e2e-aws-proxy-4.3
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-upi-4.3
