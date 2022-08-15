@@ -1,5 +1,5 @@
 # action.yml
-name: "hook-plugin-docker-action"
+name: "prow-github-action"
 description: "Runs a test-infra Prow Plugin using a custom build of hook (k8s build cluster not required.) "
 inputs:
   hmac:
@@ -29,7 +29,7 @@ outputs:
 
 runs:
   using: "docker"
-  image: "Dockerfile"
+  image: "ghcr.io/cncf-infra/prow-github-action/hook@latest"
   args:
     - ${{ inputs.hmac }}
     - ${{ inputs.gh-app-id }}
