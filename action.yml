@@ -30,6 +30,7 @@ outputs:
 runs:
   using: "docker"
   image: "docker://ghcr.io/cncf-infra/prow-github-action:latest"
+  pre-entrypoint: "/var/run/ko/pre-entrypoint.sh"
   args:
     - ${{ inputs.hmac }}
     - ${{ inputs.gh-app-id }}
