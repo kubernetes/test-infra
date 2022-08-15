@@ -135,6 +135,27 @@ func (crc *CodeReviewCommon) GitHubCommits() *Commits {
 	return &crc.GitHub.Commits
 }
 
+func refsForJob(sp subpool, prs []CodeReviewCommon) prowapi.Refs {
+	refs := prowapi.Refs{
+		Org:     sp.org,
+		Repo:    sp.repo,
+		BaseRef: sp.branch,
+		BaseSHA: sp.sha,
+	}
+	for _, pr := range prs {
+		refs.Pulls = append(
+			refs.Pulls,
+			prowapi.Pull{
+				Number: pr.Number,
+				Title:  pr.Title,
+				Author: string(pr.AuthorLogin),
+				SHA:    pr.HeadRefOID,
+			},
+		)
+	}
+	return refs
+}
+
 // CodeReviewCommonFromPullRequest derives CodeReviewCommon struct from GitHub
 // PullRequest struct, by extracting shared fields among different code review
 // providers.
@@ -184,6 +205,5 @@ type provider interface {
 	headContexts(pr *CodeReviewCommon) ([]Context, error)
 	mergePRs(sp subpool, prs []CodeReviewCommon, dontUpdateStatus *threadSafePRSet) error
 	GetTideContextPolicy(gitClient git.ClientFactory, org, repo, branch string, baseSHAGetter config.RefGetter, headSHA string) (contextChecker, error)
-	refsForJob(sp subpool, prs []CodeReviewCommon) prowapi.Refs
 	prMergeMethod(crc *CodeReviewCommon) (types.PullRequestMergeType, error)
 }
