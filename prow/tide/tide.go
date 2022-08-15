@@ -1308,7 +1308,7 @@ func tryMerge(mergeFunc func() error) (bool, error) {
 }
 
 func (c *syncController) trigger(sp subpool, presubmits []config.Presubmit, prs []CodeReviewCommon) error {
-	refs := c.provider.refsForJob(sp, prs)
+	refs := refsForJob(sp, prs)
 
 	// If PRs require the same job, we only want to trigger it once.
 	// If multiple required jobs have the same context, we assume the
