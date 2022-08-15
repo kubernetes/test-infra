@@ -1,0 +1,1399 @@
+# Plugin configuration
+---
+triggers:
+  - repos:
+      - kubernetes-sigs/cluster-api
+      - kubernetes-sigs/cluster-api-provider-azure
+      - kubernetes-sigs/cloud-provider-azure
+    join_org_url: "https://git.k8s.io/community/community-membership.md#member"
+    only_org_members: true
+    trigger_github_workflows: true
+  - repos:
+      - kubernetes
+      - kubernetes-client
+      - kubernetes-csi
+      - kubernetes-sigs
+    join_org_url: "https://git.k8s.io/community/community-membership.md#member"
+    only_org_members: true
+  - repos:
+      - google/cadvisor
+      - GoogleCloudPlatform/k8s-multicluster-ingress
+    join_org_url: "https://git.k8s.io/community/community-membership.md#member"
+  - repos:
+      - containerd/cri
+    join_org_url: "https://github.com/containerd/project/blob/main/MAINTAINERS"
+  - repos:
+      - containerd/containerd
+    join_org_url: "https://github.com/containerd/project/blob/main/MAINTAINERS"
+  - repos:
+      - bazelbuild
+
+owners:
+  mdyamlrepos:
+    - kubernetes/website
+  skip_collaborators:
+    - kubernetes-sigs/contributor-playground
+
+approve:
+  - repos:
+      - kubernetes/cluster-registry
+      - kubernetes/contrib
+      - kubernetes/dashboard
+      - kubernetes/dns
+      - kubernetes/examples
+      - kubernetes/federation
+      - kubernetes/gengo
+      - kubernetes/ingress-gce
+      - kubernetes/ingress-nginx
+      - kubernetes/klog
+      - kubernetes/kubeadm
+      - kubernetes/kubectl
+      - kubernetes/kubernetes-template-project
+      - kubernetes/kube-state-metrics
+      - kubernetes/minikube
+      - kubernetes/node-problem-detector
+      - kubernetes/perf-tests
+      - kubernetes/steering
+      - kubernetes/system-validators
+      - kubernetes/utils
+    require_self_approval: false
+    lgtm_acts_as_approve: true
+  - repos:
+      - kubernetes/cloud-provider-aws
+      - kubernetes/kops
+      - kubernetes/website
+    require_self_approval: true
+    lgtm_acts_as_approve: false
+  - repos:
+      - kubernetes/enhancements
+      - kubernetes/kubernetes
+      - kubernetes-client
+      - kubernetes-csi
+      - kubernetes-sigs
+    require_self_approval: false
+  - repos:
+      - kubernetes/cloud-provider-openstack
+      - kubernetes-sigs/cluster-api
+      - kubernetes-sigs/cluster-api-operator
+      - kubernetes-sigs/cluster-api-provider-aws
+      - kubernetes-sigs/cluster-api-provider-azure
+      - kubernetes-sigs/cluster-api-provider-vsphere
+      - kubernetes-sigs/descheduler
+    require_self_approval: true
+    ignore_review_state: true
+  - repos:
+      - bazelbuild
+      - kubernetes-sigs/bom
+      - kubernetes-sigs/boskos
+      - kubernetes-sigs/cluster-api-provider-digitalocean
+      - kubernetes-sigs/cluster-api-provider-gcp
+      - kubernetes-sigs/downloadkubernetes
+      - kubernetes-sigs/e2e-framework
+      - kubernetes-sigs/promo-tools
+      - kubernetes-sigs/k8s-gsm-tools
+      - kubernetes-sigs/kind
+      - kubernetes-sigs/kubetest2
+      - kubernetes-sigs/mdtoc
+      - kubernetes-sigs/prow
+      - kubernetes-sigs/release-notes
+      - kubernetes-sigs/release-sdk
+      - kubernetes-sigs/release-utils
+      - kubernetes-sigs/security-profiles-operator
+      - kubernetes-sigs/slack-infra
+      - kubernetes-sigs/zeitgeist
+      - kubernetes/community
+      - kubernetes/k8s.io
+      - kubernetes/org
+      - kubernetes/publishing-bot
+      - kubernetes/release
+      - kubernetes/repo-infra
+      - kubernetes/sig-release
+      - kubernetes/test-infra
+      - kubernetes/cloud-provider-gcp
+    require_self_approval: false
+    ignore_review_state: false
+  - repos:
+      - kubernetes-sigs/gateway-api
+    lgtm_acts_as_approve: false
+
+help:
+  help_guidelines_summary: |
+    Please ensure that the issue body includes answers to the following questions:
+    - Why are we solving this issue?
+    - To address this issue, are there any code changes? If there are code changes, what needs to be done in the code and what places can the assignee treat as reference points?
+    - Does this issue have zero to low barrier of entry?
+    - How can the assignee reach out to you for help?
+
+# Lower bounds in number of lines changed; XS is assumed to be zero.
+size:
+  s: 10
+  m: 30
+  l: 100
+  xl: 500
+  xxl: 1000
+
+label:
+  additional_labels:
+    # This label is used by the API review process
+    # https://git.k8s.io/community/sig-architecture/api-review-process.md#mechanics
+    - api-review
+    # These labels are used to make Tide merge with a non-default merge method
+    - tide/merge-method-merge
+    - tide/merge-method-rebase
+    - tide/merge-method-squash
+    # This label, for k/website, identifies issues relevant to https://katacoda.com/
+    - team/katacoda
+    # This label, for k/website, identifies PRs with large refactoring changes
+    - refactor
+
+  restricted_labels:
+    kubernetes/kubernetes:
+      # Security Response Committee (SRC) is allowed to add this label,
+      # to new and existing GitHub Issues and PRs that announce a fixed CVE triaged by SRC
+      - allowed_teams:
+          - security-response-committee
+        # SIG Security Tooling Lead is an allowed user to assist SRC in this CVE feed automation
+        allowed_users:
+          - pushkarj
+        # This label is used to filter/tag CVEs announced by SRC
+        label: official-cve-feed
+
+lgtm:
+  - repos:
+      - bazelbuild
+      - kubernetes-sigs/bom
+      - kubernetes-sigs/boskos
+      - kubernetes-sigs/controller-runtime
+      - kubernetes-sigs/cluster-api-provider-digitalocean
+      - kubernetes-sigs/cluster-api-provider-gcp
+      - kubernetes-sigs/downloadkubernetes
+      - kubernetes-sigs/e2e-framework
+      - kubernetes-sigs/etcdadm
+      - kubernetes-sigs/promo-tools
+      - kubernetes-sigs/k8s-gsm-tools
+      - kubernetes-sigs/kind
+      - kubernetes-sigs/kubetest2
+      - kubernetes-sigs/mdtoc
+      - kubernetes-sigs/prow
+      - kubernetes-sigs/release-notes
+      - kubernetes-sigs/release-sdk
+      - kubernetes-sigs/release-utils
+      - kubernetes-sigs/security-profiles-operator
+      - kubernetes-sigs/zeitgeist
+      - kubernetes/cloud-provider-aws
+      - kubernetes/k8s.io
+      - kubernetes/kops
+      - kubernetes/publishing-bot
+      - kubernetes/release
+      - kubernetes/repo-infra
+      - kubernetes/sig-release
+      - kubernetes/test-infra
+    review_acts_as_lgtm: true
+  - repos:
+      - kubernetes/website
+    store_tree_hash: true
+
+blockades:
+  - repos:
+      - kubernetes/kubernetes
+    blockregexps:
+      - ^examples/
+    explanation: "examples/ has moved to https://github.com/kubernetes/examples/"
+  - repos:
+      - kubernetes/kubernetes
+    blockregexps:
+      - ^pkg/util/[^/]+\.go$
+    explanation: "Utility code must be added to a subpackage like pkg/util/flag, not pkg/util directly. See: #49923"
+  - repos:
+      - kubernetes/kubernetes
+    blockregexps:
+      - ^test/conformance/testdata/conformance.yaml$
+    branchregexp: "^release-*"
+    explanation: "`test/conformance/testdata/conformance.yaml` cannot be updated on release branches."
+  - repos:
+      - kubernetes/community
+    blockregexps:
+      - ^events/2016
+      - ^events/2017
+      - ^events/2018
+      - ^events/elections/2017
+      - ^events/elections/2018
+      - ^events/elections/2019
+    explanation: "These files are historical, and from events that have already occurred."
+  - repos:
+      - kubernetes/community
+    blockregexps:
+      - ^keps/
+    explanation: "KEPs have been relocated to [kubernetes/enhancements](https://git.k8s.io/enhancements/)! Please submit any updates there."
+  - repos:
+      - kubernetes/community
+    blockregexps:
+      - ^contributors/design-proposals/
+    explanation: "The Design Proposal process has been deprecated in favor of [Kubernetes Enhancement Proposals (KEP)](https://git.k8s.io/enhancements/). These documents are here for historical purposes only."
+  - repos:
+      - kubernetes/enhancements
+    blockregexps:
+      - ^keps/NEXT_KEP_NUMBER$
+    explanation: "KEP numbers are obsolete. Please remove any changes to `NEXT_KEP_NUMBER` from this PR and ensure the KEP filename is the draft date and KEP title e.g., `YYYYMMDD-pony-controller.md`"
+  - repos:
+      - kubernetes/release
+    blockregexps:
+      - ^push-build.sh
+    explanation: "Changes to push-build.sh will immediately affect the Kubernetes CI. This PR must be explicitly approved by SIG Release repo admins."
+  - repos:
+      - kubernetes/client-go
+    blockregexps:
+      - .*
+    exceptionregexps:
+      - ^README\.md$
+    explanation: "We do not accept changes directly against this repository, unless the change is to the `README.md` itself. Please see `CONTRIBUTING.md` for information on where and how to contribute instead."
+  - repos:
+      - kubernetes/test-infra
+    blockregexps:
+      - ^prow/.+\.md$
+    exceptionregexps:
+      - ^prow/(ANNOUNCEMENTS|README)\.md$
+    explanation: "All Prow documentation (Markdown files) have moved to https://github.com/kubernetes-sigs/prow as part of https://github.com/kubernetes-sigs/prow/issues/4. Instructions for updating existing docs are at https://docs.prow.k8s.io/docs/contribution-guidelines/#updating-existing-docs."
+
+blunderbuss:
+  max_request_count: 2
+  use_status_availability: true
+
+cat:
+  key_path: /etc/cat-api/api-key
+
+goose:
+  key_path: /etc/unsplash-api/honk.txt
+
+heart:
+  adorees:
+    - mirandachrist
+  commentregexp: ".*"
+
+branch_cleaner:
+  # PreservedBranches is a map of org/repo branches
+  # format:
+  # ```
+  # preserved_branches:
+  # <org>: ["master", "release"]
+  # <org/repo>: ["master", "release"]
+  # ```
+  # branches in this allow map would be exempt from branch gc
+  # even if the branches are already merged into the target branch
+  preserved_branches:
+    "kubernetes-sigs/cloud-provider-azure":
+      [
+        "master",
+        "gh-pages",
+        "release-1.1",
+        "release-1.0",
+        "release-1.23",
+        "release-1.24",
+        "release-0.7",
+        "release-0.6",
+        "release-0.5",
+        "release-0.1",
+      ]
+
+slack:
+  mergewarnings:
+    - repos:
+        - kubernetes/community
+        - kubernetes/org
+      channels:
+        - sig-contribex
+      exempt_users:
+        - k8s-ci-robot
+    - repos:
+        - kubernetes/enhancements
+      channels:
+        - enhancements
+      exempt_users:
+        - k8s-ci-robot
+    - repos:
+        - kubernetes/utils
+        - kubernetes/component-helpers
+      channels:
+        - sig-architecture
+      exempt_users:
+        - k8s-ci-robot
+        - k8s-publishing-bot
+    - repos:
+        - kubernetes/api
+        - kubernetes/apiextensions-apiserver
+        - kubernetes/apimachinery
+        - kubernetes/apiserver
+        - kubernetes/client-go
+        - kubernetes/code-generator
+        - kubernetes/component-base
+        - kubernetes/controller-manager
+        - kubernetes/kube-aggregator
+        - kubernetes/kube-controller-manager
+        - kubernetes/sample-apiserver
+        - kubernetes/sample-controller
+      channels:
+        - sig-api-machinery
+      exempt_users:
+        - k8s-publishing-bot
+    - repos:
+        - kubernetes/pod-security-admission
+      channels:
+        - sig-auth
+      exempt_users:
+        - k8s-publishing-bot
+    - repos:
+        - kubernetes/kubernetes
+      channels:
+        - github-management
+      exempt_users:
+        - k8s-ci-robot # future home of tide
+        - k8s-release-robot # anago
+      exempt_branches:
+        feature-serverside-apply:
+          - lavalamp # feature-serverside-apply "branch manager"
+          - apelisse # feature-serverside-apply "branch manager"
+        feature-rate-limiting:
+          - lavalamp # feature-rate-limiting "branch manager"
+          - deads2k # feature-rate-limiting "branch manager"
+    - repos:
+        - kubernetes/test-infra
+      channels:
+        - testing-ops
+      exempt_users:
+        - k8s-ci-robot
+    - repos:
+        - kubernetes/sig-release
+      channels:
+        - release-management
+      exempt_users:
+        - k8s-ci-robot
+    - repos:
+        - kubernetes/release
+      channels:
+        - release-management
+      exempt_users:
+        - k8s-ci-robot
+    - repos:
+        - kubernetes/k8s.io
+      channels:
+        - sig-k8s-infra
+      exempt_users:
+        - k8s-ci-robot
+    - repos:
+        - kubernetes/kops
+      channels:
+        - kops-dev
+      exempt_users:
+        - k8s-ci-robot
+        - dependabot[bot]
+    - repos:
+        - kubernetes/cluster-api-provider-aws
+      channels:
+        - cluster-api-aws
+      exempt_users:
+        - k8s-ci-robot
+
+milestone_applier:
+  kubernetes/enhancements:
+    master: v1.25
+  kubernetes/kubernetes:
+    master: v1.25
+    release-1.24: v1.24
+    release-1.23: v1.23
+    release-1.22: v1.22
+    release-1.21: v1.21
+  kubernetes/org:
+    main: v1.25
+  kubernetes/release:
+    master: v1.25
+  kubernetes/sig-release:
+    master: v1.25
+  kubernetes/test-infra:
+    master: v1.25
+  kubernetes/k8s.io:
+    main: v1.25
+  kubernetes/kops:
+    master: v1.25
+    release-1.24: v1.24
+    release-1.23: v1.23
+    release-1.22: v1.22
+    release-1.21: v1.21
+    release-1.20: v1.20
+    release-1.19: v1.19
+    release-1.18: v1.18
+    release-1.17: v1.17
+    release-1.16: v1.16
+  kubernetes-sigs/cluster-api:
+    main: v1.3
+    release-1.2: v1.2
+    release-1.1: v1.1
+    release-1.0: v1.0
+    release-0.4: v0.4
+    release-0.3: v0.3
+  kubernetes-sigs/cluster-api-provider-aws:
+    main: v1.x
+    release-1.0: v1.0.x
+    release-0.7: v0.7.x
+    release-0.6: v0.6.x
+  kubernetes-sigs/cluster-api-provider-azure:
+    main: v1.5
+    release-1.4: v1.4
+    release-1.3: v1.3
+  kubernetes-sigs/cluster-api-provider-digitalocean:
+    main: v1.1.0
+    release-1.0: v1.0.0
+    release-0.5: v0.5.1
+  kubernetes-sigs/cluster-api-provider-gcp:
+    main: v1.1.0
+    release-1.0: v1.0.0
+    release-0.4: v0.4
+    release-0.3: v0.3
+  kubernetes-sigs/boskos:
+    master: v1.23
+  kubernetes-sigs/controller-runtime:
+    master: v0.10.x
+    release-0.9: v0.9.x
+    release-0.8: v0.8.x
+    release-0.7: v0.7.x
+    release-0.6: v0.6.x
+    release-0.5: v0.5.x
+  kubernetes/website:
+    dev-1.24: 1.24
+
+repo_milestone:
+  # Default maintainer
+  "":
+    # You can curl the following endpoint in order to determine the github ID of your team
+    # responsible for maintaining the milestones. You may need to specify the page number.
+    # curl -H "Authorization: token <token>" "https://api.github.com/orgs/<org-name>/teams?page=N"
+    maintainers_id: 2460384
+    maintainers_team: milestone-maintainers
+    maintainers_friendly_name: Milestone Maintainers Team
+  kubernetes-sigs/controller-runtime:
+    maintainers_id: 2785806
+    maintainers_team: controller-runtime-maintainers
+    maintainers_friendly_name: Controller Runtime Maintainers
+  kubernetes-sigs/cluster-api:
+    maintainers_id: 3058957
+    maintainers_team: cluster-api-maintainers
+    maintainers_friendly_name: Cluster API Maintainers
+  kubernetes-sigs/cluster-api-provider-aws:
+    maintainers_id: 2830895
+    maintainers_team: cluster-api-provider-aws-maintainers
+    maintainers_friendly_name: Cluster API Provider AWS Maintainers
+  kubernetes-sigs/cluster-api-provider-azure:
+    maintainers_id: 3063852
+    maintainers_team: cluster-api-provider-azure-maintainers
+    maintainers_friendly_name: Cluster API Provider Azure Maintainers
+  kubernetes-sigs/cluster-api-provider-digitalocean:
+    maintainers_id: 2978501
+    maintainers_team: cluster-api-provider-digitalocean-maintainers
+    maintainers_friendly_name: Cluster API Provider DigitalOcean Maintainers
+  kubernetes-sigs/cluster-api-provider-gcp:
+    maintainers_id: 2829767
+    maintainers_team: cluster-api-provider-gcp-maintainers
+    maintainers_friendly_name: Cluster API Provider GCP Maintainers
+  kubernetes-sigs/cluster-api-provider-nested:
+    maintainers_id: 4158805
+    maintainers_team: cluster-api-provider-nested-maintainers
+    maintainers_friendly_name: Cluster API Provider Nested Maintainers
+  kubernetes-sigs/cluster-api-provider-vsphere:
+    maintainers_id: 2850058
+    maintainers_team: cluster-api-provider-vsphere-maintainers
+    maintainers_friendly_name: Cluster API Provider vSphere Maintainers
+  kubernetes/community:
+    maintainers_id: 3169231
+    maintainers_team: community-milestone-maintainers
+    maintainers_friendly_name: Community Milestone Maintainers
+  kubernetes/kops:
+    maintainers_id: 2060651
+    maintainers_team: kops-maintainers
+    maintainers_friendly_name: Kops Maintainers
+  kubernetes/ingress-nginx:
+    maintainers_id: 2179129
+    maintainers_team: ingress-nginx-maintainers
+    maintainers_friendly_name: Ingress Nginx Maintainers
+  kubernetes/org:
+    maintainers_id: 2842373
+    maintainers_team: owners
+    maintainers_friendly_name: GitHub Admin Team
+  kubernetes/website:
+    maintainers_id: 3175912
+    maintainers_team: website-milestone-maintainers
+    maintainers_friendly_name: Website milestone maintainers
+  kubernetes/kubeadm:
+    maintainers_id: 2195382
+    maintainers_team: kubeadm-maintainers
+    maintainers_friendly_name: Kubeadm maintainers
+  kubernetes-sigs/kubebuilder:
+    maintainers_id: 2688053
+    maintainers_team: kubebuilder-maintainers
+    maintainers_friendly_name: Kubebuilder Maintainers
+
+project_config:
+  project_org_configs:
+    kubernetes:
+      org_maintainers_team_id: 3162587 # sig-testing-dummy-project-team
+      org_default_column_map:
+        test-infra-dummy-testing-project-plugin: To do
+        KEP Implementation Tracking: To do
+      project_repo_configs:
+        kubernetes:
+          repo_maintainers_team_id: 2460384 # milestone-maintainers
+          repo_default_column_map:
+            component-base: To do
+            Workloads: Backlog
+        website:
+          repo_maintainers_team_id: 3175912 # website-milestone-maintainers
+          repo_default_column_map:
+            component-base: To do
+            Doc Writing and Editing: To do
+
+config_updater:
+  maps:
+    label_sync/labels.yaml:
+      name: label-config
+      clusters:
+        test-infra-trusted:
+          - test-pods
+    config/prow/config.yaml:
+      name: config
+      clusters:
+        test-infra-trusted:
+          - default
+    config/prow/plugins.yaml:
+      name: plugins
+      clusters:
+        test-infra-trusted:
+          - default
+    config/jobs/**/*.{yaml,yml}:
+      name: job-config
+      gzip: true
+      clusters:
+        test-infra-trusted:
+          - default
+    experiment/test-configmap.txt:
+      name: test-configmap
+      gzip: true
+      clusters:
+        test-infra-trusted:
+          - default
+
+welcome:
+  - repos:
+      - kubernetes
+      - kubernetes-client
+      - kubernetes-csi
+      - kubernetes-sigs
+    message_template: "Welcome @{{.AuthorLogin}}! <br><br>It looks like this is your first PR to <a href='https://github.com/{{.Org}}/{{.Repo}}'>{{.Org}}/{{.Repo}}</a> 🎉. Please refer to our [pull request process documentation](https://git.k8s.io/community/contributors/guide/pull-requests.md) to help your PR have a smooth ride to approval. <br><br>You will be prompted by a bot to use commands during the review process. Do not be afraid to follow the prompts! It is okay to experiment. [Here is the bot commands documentation](https://go.k8s.io/bot-commands). <br><br>You can also check if {{.Org}}/{{.Repo}} has [its own contribution guidelines](https://github.com/{{.Org}}/{{.Repo}}/tree/master/CONTRIBUTING.md). <br><br>You may want to refer to our [testing guide](https://git.k8s.io/community/contributors/devel/sig-testing/testing.md) if you run into trouble with your tests not passing. <br><br>If you are having difficulty getting your pull request seen, please follow the [recommended escalation practices](https://github.com/kubernetes/community/blob/master/contributors/guide/pull-requests.md#why-is-my-pull-request-not-getting-reviewed). Also, for tips and tricks in the contribution process you may want to read the [Kubernetes contributor cheat sheet](https://git.k8s.io/community/contributors/guide/contributor-cheatsheet/README.md). We want to make sure your contribution gets all the attention it needs! <br><br>Thank you, and welcome to Kubernetes. :smiley:"
+
+require_matching_label:
+  - missing_label: do-not-merge/needs-kind
+    org: kubernetes
+    repo: kubernetes
+    prs: true
+    regexp: ^kind/
+  - missing_label: do-not-merge/needs-sig
+    org: kubernetes
+    repo: kubernetes
+    prs: true
+    regexp: ^(sig|wg|committee)/
+    # Define needs-sig separately for issues so that we only comment on issues.
+  - missing_label: needs-sig
+    org: kubernetes
+    repo: kubernetes
+    issues: true
+    regexp: ^(sig|wg|committee)/
+    missing_comment: |
+      There are no sig labels on this issue. Please add an appropriate label by using one of the following commands:
+      - `/sig <group-name>`
+      - `/wg <group-name>`
+      - `/committee <group-name>`
+
+      Please see the [group list](https://git.k8s.io/community/sig-list.md) for a listing of the SIGs, working groups, and committees available.
+  # Needs triage configuration
+  - missing_label: needs-triage
+    org: kubernetes
+    repo: kubernetes
+    issues: true
+    prs: true
+    regexp: ^triage/accepted$
+    missing_comment: |
+      This issue is currently awaiting triage.
+
+      If a SIG or subproject determines this is a relevant issue, they will accept it by applying the `triage/accepted` label and provide further guidance.
+
+      The `triage/accepted` label can be added by org members by writing `/triage accepted` in a comment.
+  - missing_label: needs-triage
+    org: kubernetes
+    repo: website
+    issues: true
+    regexp: ^triage/accepted$
+    missing_comment: |
+      This issue is currently awaiting triage.
+
+      SIG Docs takes a lead on issue triage for this website, but any Kubernetes member can accept issues by applying the `triage/accepted` label.
+
+      The `triage/accepted` label can be added by org members by writing `/triage accepted` in a comment.
+  - missing_label: needs-triage
+    org: kubernetes
+    repo: kubectl
+    issues: true
+    regexp: ^triage/accepted$
+    missing_comment: |
+      This issue is currently awaiting triage.
+
+      SIG CLI takes a lead on issue triage for this repo, but any Kubernetes member can accept issues by applying the `triage/accepted` label.
+
+      The `triage/accepted` label can be added by org members by writing `/triage accepted` in a comment.
+  - missing_label: needs-sig
+    org: kubernetes
+    repo: community
+    issues: true
+    regexp: ^(sig|wg|committee)/
+    missing_comment: |
+      There are no sig labels on this issue. Please add an appropriate label by using one of the following commands:
+      - `/sig <group-name>`
+      - `/wg <group-name>`
+      - `/committee <group-name>`
+
+      Please see the [group list](https://git.k8s.io/community/sig-list.md) for a listing of the SIGs, working groups, and committees available.
+  - missing_label: needs-sig
+    org: kubernetes
+    repo: enhancements
+    issues: true
+    regexp: ^(sig|wg|committee)/
+    missing_comment: |
+      There are no sig labels on this issue. Please add an appropriate label by using one of the following commands:
+      - `/sig <group-name>`
+      - `/wg <group-name>`
+      - `/committee <group-name>`
+
+      Please see the [group list](https://git.k8s.io/community/sig-list.md) for a listing of the SIGs, working groups, and committees available.
+  - missing_label: needs-sig
+    org: kubernetes-sigs
+    repo: contributor-playground
+    issues: true
+    regexp: ^(sig|wg|committee)/
+    missing_comment: |
+      There are no sig labels on this issue. Please add an appropriate label by using one of the following commands:
+      - `/sig <group-name>`
+      - `/wg <group-name>`
+      - `/committee <group-name>`
+
+      Please see the [group list](https://git.k8s.io/community/sig-list.md) for a listing of the SIGs, working groups, and committees available.
+  - missing_label: needs-priority
+    org: kubernetes
+    repo: kubernetes
+    prs: true
+    regexp: ^priority/
+  - missing_label: needs-kind
+    org: kubernetes
+    repo: cloud-provider-aws
+    prs: true
+    regexp: ^kind/
+  - missing_label: needs-kind
+    org: kubernetes
+    repo: release
+    issues: true
+    prs: true
+    regexp: ^kind/
+  - missing_label: needs-priority
+    org: kubernetes
+    repo: release
+    issues: true
+    prs: true
+    regexp: ^priority/
+  - missing_label: needs-kind
+    org: kubernetes
+    repo: sig-release
+    issues: true
+    prs: true
+    regexp: ^kind/
+  - missing_label: needs-priority
+    org: kubernetes
+    repo: sig-release
+    issues: true
+    prs: true
+    regexp: ^priority/
+  - missing_label: needs-kind
+    org: kubernetes-client
+    repo: python
+    prs: true
+    regexp: ^kind/
+  - missing_label: needs-kind
+    org: kubernetes-client
+    repo: python-base
+    prs: true
+    regexp: ^kind/
+  - missing_label: needs-triage
+    org: kubernetes
+    repo: ingress-nginx
+    issues: true
+    prs: true
+    regexp: ^triage/accepted$
+    missing_comment: |
+      This issue is currently awaiting triage.
+
+      If Ingress contributors determines this is a relevant issue, they will accept it by applying the `triage/accepted` label and provide further guidance.
+
+      The `triage/accepted` label can be added by org members by writing `/triage accepted` in a comment.
+  - missing_label: needs-kind
+    org: kubernetes
+    repo: ingress-nginx
+    issues: true
+    prs: true
+    regexp: ^kind/
+  - missing_label: needs-priority
+    org: kubernetes
+    repo: ingress-nginx
+    issues: true
+    prs: true
+    regexp: ^priority/
+  - missing_label: needs-kind
+    org: kubernetes-sigs
+    repo: kustomize
+    issues: true
+    prs: false
+    regexp: ^kind/
+  - missing_label: needs-triage
+    org: kubernetes-sigs
+    repo: kustomize
+    issues: true
+    prs: false
+    regexp: ^triage/accepted$
+    missing_comment: |
+      This issue is currently awaiting triage.
+
+      SIG CLI takes a lead on issue triage for this repo, but any Kubernetes member can accept issues by applying the `triage/accepted` label.
+
+      The `triage/accepted` label can be added by org members by writing `/triage accepted` in a comment.
+  - missing_label: needs-priority
+    org: kubernetes-sigs
+    repo: cluster-api-provider-aws
+    issues: true
+    prs: true
+    regexp: ^priority/
+  - missing_label: needs-triage
+    org: kubernetes-sigs
+    repo: cluster-api-provider-aws
+    issues: true
+    prs: true
+    regexp: ^triage/accepted$
+    missing_comment: |
+      This issue is currently awaiting triage.
+
+      If CAPA/CAPI contributors determines this is a relevant issue, they will accept it by applying the `triage/accepted` label and provide further guidance.
+
+      The `triage/accepted` label can be added by org members by writing `/triage accepted` in a comment.
+  - missing_label: do-not-merge/needs-kind
+    org: kubernetes-sigs
+    repo: cloud-provider-azure
+    prs: true
+    regexp: ^kind/
+  - missing_label: needs-sig
+    org: kubernetes
+    repo: test-infra
+    issues: true
+    regexp: ^(sig|wg|committee)/
+    missing_comment: |
+      There are no sig labels on this issue. Please add an appropriate label by using one of the following commands:
+      - `/sig <group-name>`
+      - `/wg <group-name>`
+      - `/committee <group-name>`
+
+      Please see the [group list](https://git.k8s.io/community/sig-list.md) for a listing of the SIGs, working groups, and committees available.
+  - missing_label: needs-triage
+    org: kubernetes
+    repo: cloud-provider-aws
+    issues: true
+    prs: true
+    regexp: ^triage/accepted$
+    missing_comment: |
+      This issue is currently awaiting triage.
+
+      If cloud-provider-aws contributors determine this is a relevant issue, they will accept it by applying the `triage/accepted` label and provide further guidance.
+
+      The `triage/accepted` label can be added by org members by writing `/triage accepted` in a comment.
+
+retitle:
+  allow_closed_issues: true
+
+cherry_pick_unapproved:
+  comment: |
+    This cherry pick PR is for a release branch and has not yet been approved by [Release Managers](https://k8s.io/releases/release-managers).
+    Adding the `do-not-merge/cherry-pick-not-approved` label.
+
+    To merge this cherry pick, it must first be approved (`/lgtm` + `/approve`) by the relevant OWNERS.
+
+    **AFTER** it has been approved by code owners, please leave the following comment on a line **by itself, with no leading whitespace**: **/cc kubernetes/release-managers**
+
+    (This command will request a cherry pick review from [Release Managers](https://github.com/orgs/kubernetes/teams/release-managers) and should work for all GitHub users, whether they are members of the Kubernetes GitHub organization or not.)
+
+    For details on the patch release process and schedule, see the [Patch Releases](https://k8s.io/releases/patch-releases) page.
+
+# Enabled plugins per repo.
+# Keys: Full repo name: "org/repo".
+# Values: List of plugins to run against the repo.
+plugins:
+  # Enable the following for any bazelbuild repo (rules_k8s, rules_docker) that sends prow webhooks
+  # Repos that do not send prow webhooks will see no effect.
+  bazelbuild:
+    plugins:
+      - approve # Allow OWNERS to /approve
+      - assign # Allow /assign and /cc
+      - blunderbuss # Auto-assign people
+      - cat # /meow replies with cat pictures
+      - dog # /bark replies with dog pictures
+      - help # Support /help and /good-first-issue
+      - hold # Support /hold to delay merge
+      - lgtm # Allow /lgtm
+      - lifecycle # Allow /lifecycle stale
+      - override
+      - size # Auto-label size of PR
+      - trigger # Allow people to configure CI jobs to /test
+      - verify-owners # Validates OWNERS file changes in PRs.
+      - wip # Auto-hold PRs with WIP in title
+      - yuks # Let prow tell a /joke
+
+  google/cadvisor:
+    plugins:
+      - trigger
+
+  kubernetes:
+    plugins:
+      - approve
+      - assign
+      - blunderbuss
+      - cat
+      - cla
+      - dog
+      - golint
+      - goose
+      - heart
+      - help
+      - hold
+      - invalidcommitmsg
+      - label
+      - lgtm
+      - lifecycle
+      - milestoneapplier
+      - owners-label
+      - pony
+      - retitle
+      - shrug
+      - sigmention
+      - size
+      - skip
+      - slackevents
+      - testfreeze
+      - transfer-issue
+      - trick-or-treat
+      - trigger
+      - verify-owners
+      - welcome
+      - wip
+      - yuks
+
+  kubernetes/cloud-provider-aws:
+    plugins:
+      - milestone
+      - milestonestatus
+      - release-note
+      - require-matching-label
+
+  kubernetes/cloud-provider-openstack:
+    plugins:
+      - override
+      - release-note
+
+  kubernetes/community:
+    plugins:
+      - blockade
+      - milestone
+      - require-matching-label
+
+  kubernetes/dashboard:
+    plugins:
+      - override
+
+  kubernetes/enhancements:
+    plugins:
+      - blockade
+      - milestone
+      - require-matching-label
+      - stage
+
+  kubernetes/ingress-nginx:
+    plugins:
+      - require-matching-label
+      - milestone
+      - project
+
+  kubernetes/k8s.io:
+    plugins:
+      - milestone
+
+  kubernetes/kops:
+    plugins:
+      - mergecommitblocker
+      - milestone
+      - override
+
+  kubernetes/kubeadm:
+    plugins:
+      - milestone
+
+  kubernetes/kubectl:
+    plugins:
+      - require-matching-label
+
+  kubernetes/kubernetes:
+    plugins:
+      - blockade
+      - cherry-pick-unapproved
+      - mergecommitblocker
+      - milestone
+      - milestonestatus
+      - override
+      - release-note
+      - require-matching-label
+
+  kubernetes/org:
+    plugins:
+      - milestone
+
+  kubernetes/publishing-bot:
+    plugins:
+      - override
+
+  kubernetes/release:
+    plugins:
+      - blockade
+      - mergecommitblocker
+      - milestone
+      - override
+      - release-note
+      - require-matching-label
+
+  kubernetes/sig-release:
+    plugins:
+      - mergecommitblocker
+      - milestone
+      - override
+      - require-matching-label
+
+  kubernetes/system-validators:
+    plugins:
+      - milestone
+
+  kubernetes/test-infra:
+    plugins:
+      - blockade
+      - config-updater
+      - milestone
+      - override
+      - project
+      - require-matching-label
+
+  kubernetes/utils:
+    plugins:
+      - override
+
+  kubernetes/website:
+    plugins:
+      - milestone
+      - project
+      - require-matching-label
+
+  kubernetes-client:
+    plugins:
+      - approve
+      - assign
+      - blunderbuss
+      - cat
+      - cla
+      - dog
+      - goose
+      - heart
+      - help
+      - hold
+      - invalidcommitmsg
+      - label
+      - lgtm
+      - lifecycle
+      - milestoneapplier
+      - owners-label
+      - pony
+      - retitle
+      - shrug
+      - size
+      - skip
+      - trigger
+      - verify-owners
+      - welcome
+      - wip
+      - yuks
+
+  kubernetes-client/python:
+    plugins:
+      - release-note
+      - require-matching-label
+
+  kubernetes-client/python-base:
+    plugins:
+      - release-note
+      - require-matching-label
+
+  kubernetes-csi:
+    plugins:
+      - approve
+      - assign
+      - blunderbuss
+      - cat
+      - cla
+      - dog
+      - goose
+      - heart
+      - help
+      - hold
+      - invalidcommitmsg
+      - label
+      - lgtm
+      - lifecycle
+      - owners-label
+      - pony
+      - retitle
+      - release-note
+      - shrug
+      - size
+      - skip
+      - trigger
+      - verify-owners
+      - welcome
+      - wip
+      - yuks
+
+  kubernetes-security/cvelist-public:
+    plugins:
+      - trigger
+
+  kubernetes-sigs:
+    plugins:
+      - approve
+      - assign
+      - blunderbuss
+      - cat
+      - cla
+      - dog
+      - goose
+      - heart
+      - help
+      - hold
+      - invalidcommitmsg
+      - label
+      - lgtm
+      - lifecycle
+      - milestoneapplier
+      - owners-label
+      - pony
+      - retitle
+      - shrug
+      - size
+      - skip
+      - transfer-issue
+      - trick-or-treat
+      - trigger
+      - verify-owners
+      - welcome
+      - wip
+      - yuks
+
+  kubernetes-sigs/cloud-provider-azure:
+    plugins:
+      - milestone
+      - milestonestatus
+      - release-note
+      - require-matching-label
+      - mergecommitblocker
+      - override
+      - branchcleaner
+
+  kubernetes-sigs/gcp-compute-persistent-disk-csi-driver:
+    plugins:
+      - release-note
+
+  kubernetes-sigs/gcp-filestore-csi-driver:
+    plugins:
+      - release-note
+
+  kubernetes-sigs/boskos:
+    plugins:
+      - milestone
+      - override
+
+  kubernetes-sigs/kind:
+    plugins:
+      - override
+
+  kubernetes-sigs/kustomize:
+    plugins:
+      - require-matching-label
+      - merge-method-comment
+
+  kubernetes-sigs/controller-runtime:
+    plugins:
+      - milestone
+
+  kubernetes-sigs/cluster-api:
+    plugins:
+      - milestone
+      - override
+
+  kubernetes-sigs/cluster-api-provider-aws:
+    plugins:
+      - golint
+      - mergecommitblocker
+      - milestone
+      - milestonestatus
+      - override
+      - require-matching-label
+
+  kubernetes-sigs/cluster-api-provider-azure:
+    plugins:
+      - milestone
+      - milestonestatus
+      - release-note
+      - require-matching-label
+      - override
+
+  kubernetes-sigs/cluster-api-provider-digitalocean:
+    plugins:
+      - milestone
+      - milestonestatus
+      - release-note
+      - require-matching-label
+
+  kubernetes-sigs/cluster-api-provider-gcp:
+    plugins:
+      - milestone
+      - milestonestatus
+      - release-note
+      - require-matching-label
+      - override
+
+  kubernetes-sigs/cluster-api-provider-ibmcloud:
+    plugins:
+      - milestone
+
+  kubernetes-sigs/cluster-api-provider-nested:
+    plugins:
+      - milestone
+      - override
+
+  kubernetes-sigs/image-builder:
+    plugins:
+      - mergecommitblocker
+
+  kubernetes-sigs/etcdadm:
+    plugins:
+      - milestone
+
+  kubernetes-sigs/contributor-playground:
+    plugins:
+      - require-matching-label
+
+  kubernetes-sigs/security-profiles-operator:
+    plugins:
+      - mergecommitblocker
+      - milestone
+      - override
+      - release-note
+
+  kubernetes-sigs/promo-tools:
+    plugins:
+      - mergecommitblocker
+      - override
+      - release-note
+
+  kubernetes-sigs/kubebuilder:
+    plugins:
+      - override
+
+  kubernetes-sigs/hierarchical-namespaces:
+    plugins:
+      - milestone
+
+  kubernetes-sigs/node-feature-discovery:
+    plugins:
+      - override
+
+  kubernetes-sigs/node-feature-discovery-operator:
+    plugins:
+      - override
+
+  kubernetes-sigs/prow:
+    plugins:
+      - override
+
+  kubernetes-sigs/scheduler-plugins:
+    plugins:
+      - mergecommitblocker
+      - milestone
+      - override
+      - release-note
+
+  containerd/cri:
+    plugins:
+      - assign
+      - cla
+      - label
+      - lgtm
+      - lifecycle
+      - size
+      - trigger
+
+  containerd/containerd:
+    plugins:
+      - assign # Allow /assign and /cc
+      - trigger # Allow people to configure CI jobs to /test
+
+  GoogleCloudPlatform/k8s-multicluster-ingress:
+    plugins:
+      - trigger
+
+  GoogleCloudPlatform/k8s-cluster-bundle:
+    plugins:
+      - trigger
+      - lgtm
+      - size
+      - welcome
+
+  cncf/apisnoop:
+    plugins:
+      - wip
+      - trigger
+      - assign
+      - cla
+      - cat # /meow replies with cat pictures
+      - dog # /bark replies with dog pictures
+      - goose
+      - heart
+      - help
+      - hold
+      - label
+      - lgtm
+      - retitle
+      - shrug
+      - size
+
+  kubernetes-sigs/secrets-store-csi-driver:
+    plugins:
+      - milestone
+      - milestonestatus
+
+external_plugins:
+  kubernetes:
+    - name: needs-rebase
+      events:
+        - issue_comment
+        - pull_request
+  kubernetes-sigs:
+    - name: needs-rebase
+      events:
+        - issue_comment
+        - pull_request
+  kubernetes-csi:
+    - name: needs-rebase
+      events:
+        - issue_comment
+        - pull_request
+  kubernetes-client:
+    - name: needs-rebase
+      events:
+        - issue_comment
+        - pull_request
+  kubernetes-sigs/cloud-provider-azure:
+    - name: cherrypicker
+      events:
+        - issue_comment
+        - pull_request
+      endpoint: http://cherrypicker
+  kubernetes-sigs/cluster-api:
+    - name: cherrypicker
+      events:
+        - issue_comment
+        - pull_request
+      endpoint: http://cherrypicker
+  kubernetes-sigs/cluster-api-provider-aws:
+    - name: cherrypicker
+      events:
+        - issue_comment
+        - pull_request
+      endpoint: http://cherrypicker
+  kubernetes-sigs/cluster-api-provider-azure:
+    - name: cherrypicker
+      events:
+        - issue_comment
+        - pull_request
+      endpoint: http://cherrypicker
+  kubernetes-sigs/cluster-api-provider-ibmcloud:
+    - name: cherrypicker
+      events:
+        - issue_comment
+        - pull_request
+      endpoint: http://cherrypicker
+  kubernetes-sigs/cluster-api-provider-digitalocean:
+    - name: cherrypicker
+      events:
+        - issue_comment
+        - pull_request
+      endpoint: http://cherrypicker
+  kubernetes-sigs/cluster-api-provider-gcp:
+    - name: cherrypicker
+      events:
+        - issue_comment
+        - pull_request
+      endpoint: http://cherrypicker
+  kubernetes-sigs/cluster-api-provider-openstack:
+    - name: cherrypicker
+      events:
+        - issue_comment
+        - pull_request
+      endpoint: http://cherrypicker
+  kubernetes-sigs/controller-tools:
+    - name: cherrypicker
+      events:
+        - issue_comment
+        - pull_request
+      endpoint: http://cherrypicker
+  kubernetes-sigs/controller-runtime:
+    - name: cherrypicker
+      events:
+        - issue_comment
+        - pull_request
+      endpoint: http://cherrypicker
+  kubernetes-sigs/ibm-powervs-block-csi-driver:
+    - name: cherrypicker
+      events:
+        - issue_comment
+        - pull_request
+      endpoint: http://cherrypicker
+  kubernetes-sigs/node-feature-discovery:
+    - name: cherrypicker
+      events:
+        - issue_comment
+        - pull_request
+      endpoint: http://cherrypicker
+  kubernetes-sigs/node-feature-discovery-operator:
+    - name: cherrypicker
+      events:
+        - issue_comment
+        - pull_request
+      endpoint: http://cherrypicker
+  kubernetes-sigs/secrets-store-csi-driver:
+    - name: cherrypicker
+      events:
+        - issue_comment
+        - pull_request
+      endpoint: http://cherrypicker

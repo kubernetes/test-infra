@@ -1,0 +1,38 @@
+#+TITLE: Build
+* Build "pipeline"
+hacked hook on rob's fork of test-infra published as a container image to
+ghcr.io [[https://github.com/users/RobertKielty/packages/container/package/test-infra%2Fhook-1eb1aded4295c31cc560eb5b2f39bd36][Packages]] is linked on that repo
+
+Rob's fork of hook has the k8s build cluster setup stripped out of. This is
+temporary hack to protoype launching a Prow Plugin from a Github Action.
+
+#+begin_src tmate :session hpda-cntr-build
+export CR_PATH=$(cat ~/.github/.PAT)
+echo $CR_PAT | docker login ghcr.io -u RobertKielty --password-stdin
+#docker build -t hpda:latest .
+ko build .
+#+end_src
+
+#+RESULTS:
+#+begin_example
+#+end_example
+
+There's no point in running this as a local container as
+the next step here is to get this *launched* from a github action.
+
+However, I am currently troubleshooting the following output when
+we [[https://github.com/mock-cncf-project-org/mock-project/runs/7618521661?check_suite_focus=true][using this GH Action ..]]
+
+#+begin_quote
+Run RobertKielty/hook-plugin-docker-action@main
+  with:
+    plugin: size
+/usr/bin/docker run --name cd98f5c69b6441ff748baba0e4ccf2b30094c_756e75 --label 4cd98f --workdir /github/workspace --rm -e INPUT_HMAC -e INPUT_GH-APP-ID-PIVATE-KEY -e INPUT_PLUGIN -e HOME -e GITHUB_JOB -e GITHUB_REF -e GITHUB_SHA -e GITHUB_REPOSITORY -e GITHUB_REPOSITORY_OWNER -e GITHUB_RUN_ID -e GITHUB_RUN_NUMBER -e GITHUB_RETENTION_DAYS -e GITHUB_RUN_ATTEMPT -e GITHUB_ACTOR -e GITHUB_TRIGGERING_ACTOR -e GITHUB_WORKFLOW -e GITHUB_HEAD_REF -e GITHUB_BASE_REF -e GITHUB_EVENT_NAME -e GITHUB_SERVER_URL -e GITHUB_API_URL -e GITHUB_GRAPHQL_URL -e GITHUB_REF_NAME -e GITHUB_REF_PROTECTED -e GITHUB_REF_TYPE -e GITHUB_WORKSPACE -e GITHUB_ACTION -e GITHUB_EVENT_PATH -e GITHUB_ACTION_REPOSITORY -e GITHUB_ACTION_REF -e GITHUB_PATH -e GITHUB_ENV -e GITHUB_STEP_SUMMARY -e RUNNER_OS -e RUNNER_ARCH -e RUNNER_NAME -e RUNNER_TOOL_CACHE -e RUNNER_TEMP -e RUNNER_WORKSPACE -e ACTIONS_RUNTIME_URL -e ACTIONS_RUNTIME_TOKEN -e ACTIONS_CACHE_URL -e GITHUB_ACTIONS=true -e CI=true -v "/var/run/docker.sock":"/var/run/docker.sock" -v "/home/runner/work/_temp/_github_home":"/github/home" -v "/home/runner/work/_temp/_github_workflow":"/github/workflow" -v "/home/runner/work/_temp/_runner_file_commands":"/github/file_commands" -v "/home/runner/work/mock-project/mock-project":"/github/workspace" 4cd98f:5c69b6441ff748baba0e4ccf2b30094c  "" "" ""
+standard_init_linux.go:228: exec user process caused: no such file or directory
+#+end_quote
+
+/usr/bin/docker run --name cd98f5c69b6441ff748baba0e4ccf2b30094c_756e75 --label 4cd98f --workdir /github/workspace --rm -e INPUT_HMAC -e INPUT_GH-APP-ID-PIVATE-KEY -e INPUT_PLUGIN -e HOME -e GITHUB_JOB -e GITHUB_REF -e GITHUB_SHA -e GITHUB_REPOSITORY -e GITHUB_REPOSITORY_OWNER -e GITHUB_RUN_ID -e GITHUB_RUN_NUMBER -e GITHUB_RETENTION_DAYS -e GITHUB_RUN_ATTEMPT -e GITHUB_ACTOR -e GITHUB_TRIGGERING_ACTOR -e GITHUB_WORKFLOW -e GITHUB_HEAD_REF -e GITHUB_BASE_REF -e GITHUB_EVENT_NAME -e GITHUB_SERVER_URL -e GITHUB_API_URL -e GITHUB_GRAPHQL_URL -e GITHUB_REF_NAME -e GITHUB_REF_PROTECTED -e GITHUB_REF_TYPE -e GITHUB_WORKSPACE -e GITHUB_ACTION -e GITHUB_EVENT_PATH -e GITHUB_ACTION_REPOSITORY -e GITHUB_ACTION_REF -e GITHUB_PATH -e GITHUB_ENV -e GITHUB_STEP_SUMMARY -e RUNNER_OS -e RUNNER_ARCH -e RUNNER_NAME -e RUNNER_TOOL_CACHE -e RUNNER_TEMP -e RUNNER_WORKSPACE -e ACTIONS_RUNTIME_URL -e ACTIONS_RUNTIME_TOKEN -e ACTIONS_CACHE_URL -e GITHUB_ACTIONS=true -e CI=true -v "/var/run/docker.sock":"/var/run/docker.sock" -v "/home/runner/work/_temp/_github_home":"/github/home" -v "/home/runner/work/_temp/_github_workflow":"/github/workflow" -v "/home/runner/work/_temp/_runner_file_commands":"/github/file_commands" -v "/home/runner/work/mock-project/mock-project":"/github/workspace" 4cd98f:5c69b6441ff748baba0e4ccf2b30094c  "" "" ""
+
+#+begin_src tmate :session hpca-cntr-build
+docker run hpda:latest hmac private-key
+#+end_src

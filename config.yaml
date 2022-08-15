@@ -1,0 +1,8 @@
+metadata:
+  namespace: prow
+  name: hook
+spec:
+  selector:
+    app: hook
+  ports:
+    - port: 8888

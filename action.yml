@@ -1,0 +1,39 @@
+# action.yml
+name: "hook-plugin-docker-action"
+description: "Runs a test-infra Prow Plugin using a custom build of hook (k8s build cluster not required.) "
+inputs:
+  hmac:
+    description: "HMAC secret that must be be included in GH events sent to our hook"
+    required: true
+  gh-app-id:
+    description: "Github App Id for hook"
+    required: true
+  gh-app-pk:
+    description: "Github App Private Key for hook"
+    required: true
+  plugin:
+    description: "Plugin Name that we want to use for this Github Action"
+    required: false
+    default: "size" # size is a Prow Plugin
+  hook-config:
+    description: "Custom Hook Config"
+    required: false
+    default: ""
+  plugin-config:
+    description: "Custom Prow Plugin Config"
+    required: false
+    default: ""
+outputs:
+  time: # id of output
+    description: "The time plugin ran"
+
+runs:
+  using: "docker"
+  image: "Dockerfile"
+  args:
+    - ${{ inputs.hmac }}
+    - ${{ inputs.gh-app-id }}
+    - ${{ inputs.gh-app-pk }}
+    - ${{ inputs.plugin }}
+    - ${{ inputs.hook-config }}
+    - ${{ inputs.plugin-config }}
