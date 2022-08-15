@@ -22,7 +22,6 @@ package tide
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"sort"
@@ -39,7 +38,6 @@ import (
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/git/types"
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/io"
@@ -702,113 +700,6 @@ func filterPR(provider provider, mergeAllowed func(*CodeReviewCommon) (string, e
 	return false
 }
 
-// mergeChecker provides a function to check if a PR can be merged with
-// the requested method and does not have a merge conflict.
-// It caches results and should be cleared periodically with clearCache()
-//
-// This struct is GitHub specific, and should be used only by GitHubProvider.
-type mergeChecker struct {
-	config config.Getter
-	ghc    githubClient
-
-	sync.Mutex
-	cache map[config.OrgRepo]map[types.PullRequestMergeType]bool
-}
-
-// newMergeChecker creates a mergeChecker for GitHub, and should be used only by
-// GitHubProvider.
-func newMergeChecker(cfg config.Getter, ghc githubClient) *mergeChecker {
-	m := &mergeChecker{
-		config: cfg,
-		ghc:    ghc,
-		cache:  map[config.OrgRepo]map[types.PullRequestMergeType]bool{},
-	}
-
-	go m.clearCache()
-	return m
-}
-
-// clearCache is an internal function that's only used by newMergeChecker.
-func (m *mergeChecker) clearCache() {
-	// Only do this once per token reset since it could be a bit expensive for
-	// Tide instances that handle hundreds of repos.
-	ticker := time.NewTicker(time.Hour)
-	for {
-		<-ticker.C
-		m.Lock()
-		m.cache = make(map[config.OrgRepo]map[types.PullRequestMergeType]bool)
-		m.Unlock()
-	}
-}
-
-// repoMethods is used only by isAllowedToMerge.
-//
-// As a result it is also referenced only from GitHubProvider.
-func (m *mergeChecker) repoMethods(orgRepo config.OrgRepo) (map[types.PullRequestMergeType]bool, error) {
-	m.Lock()
-	defer m.Unlock()
-
-	repoMethods, ok := m.cache[orgRepo]
-	if !ok {
-		fullRepo, err := m.ghc.GetRepo(orgRepo.Org, orgRepo.Repo)
-		if err != nil {
-			return nil, err
-		}
-		logrus.WithFields(logrus.Fields{
-			"org":              orgRepo.Org,
-			"repo":             orgRepo.Repo,
-			"AllowMergeCommit": fullRepo.AllowMergeCommit,
-			"AllowSquashMerge": fullRepo.AllowSquashMerge,
-			"AllowRebaseMerge": fullRepo.AllowRebaseMerge,
-		}).Debug("GetRepo returns these values for repo methods")
-		repoMethods = map[types.PullRequestMergeType]bool{
-			types.MergeMerge:  fullRepo.AllowMergeCommit,
-			types.MergeSquash: fullRepo.AllowSquashMerge,
-			types.MergeRebase: fullRepo.AllowRebaseMerge,
-		}
-		m.cache[orgRepo] = repoMethods
-	}
-	return repoMethods, nil
-}
-
-// isAllowed checks if a PR does not have merge conflicts and requests an
-// allowed merge method. If there is no error it returns a string explanation if
-// not allowed or "" if allowed.
-//
-//
-func (m *mergeChecker) isAllowedToMerge(crc *CodeReviewCommon) (string, error) {
-	// Get PullRequest struct for GitHub specific logic
-	pr := crc.GitHub
-	if pr == nil {
-		// This should not happen, as this mergeChecker is meant to be used by
-		// GitHub repos only
-		return "", errors.New("unexpected error: CodeReviewCommon should carry PullRequest struct")
-	}
-	if pr.Mergeable == githubql.MergeableStateConflicting {
-		return "PR has a merge conflict.", nil
-	}
-	mergeMethod, err := m.prMergeMethod(m.config().Tide, crc)
-	if err != nil {
-		// This should be impossible.
-		return "", fmt.Errorf("Programmer error! Failed to determine a merge method: %w", err)
-	}
-	if mergeMethod == types.MergeRebase && !pr.CanBeRebased {
-		return "PR can't be rebased", nil
-	}
-	orgRepo := config.OrgRepo{Org: crc.Org, Repo: crc.Repo}
-	repoMethods, err := m.repoMethods(orgRepo)
-	if err != nil {
-		return "", fmt.Errorf("error getting repo data: %w", err)
-	}
-	if allowed, exists := repoMethods[mergeMethod]; !exists {
-		// Should be impossible as well.
-		return "", fmt.Errorf("Programmer error! PR requested the unrecognized merge type %q", mergeMethod)
-	} else if !allowed {
-		return fmt.Sprintf("Merge type %q disallowed by repo settings", mergeMethod), nil
-	}
-	return "", nil
-}
-
 func baseSHAMap(subpoolMap map[string]*subpool) map[string]string {
 	baseSHAs := make(map[string]string, len(subpoolMap))
 	for key, sp := range subpoolMap {
@@ -1308,40 +1199,6 @@ func prowJobListHasProwJobWithMatchingHeadSHA(pjs *prowapi.ProwJobList, headSHA 
 		}
 	}
 	return false
-}
-
-// prMergeMethod figures out merge method based on tide config, this could be
-// overridden by GitHub labels.
-func (mc *mergeChecker) prMergeMethod(c config.Tide, crc *CodeReviewCommon) (types.PullRequestMergeType, error) {
-	repo := config.OrgRepo{Org: crc.Org, Repo: crc.Repo}
-	method := c.MergeMethod(repo)
-	squashLabel := c.SquashLabel
-	rebaseLabel := c.RebaseLabel
-	mergeLabel := c.MergeLabel
-	if squashLabel != "" || rebaseLabel != "" || mergeLabel != "" {
-		labelCount := 0
-		if labels := crc.GitHubLabels(); labels != nil {
-			for _, prlabel := range labels.Nodes {
-				switch string(prlabel.Name) {
-				case "":
-					continue
-				case squashLabel:
-					method = types.MergeSquash
-					labelCount++
-				case rebaseLabel:
-					method = types.MergeRebase
-					labelCount++
-				case mergeLabel:
-					method = types.MergeMerge
-					labelCount++
-				}
-				if labelCount > 1 {
-					return "", fmt.Errorf("conflicting merge method override labels")
-				}
-			}
-		}
-	}
-	return method, nil
 }
 
 // setTideStatusSuccess ensures the tide context is set to success
