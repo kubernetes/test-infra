@@ -29,7 +29,7 @@ outputs:
 
 runs:
   using: "docker"
-  image: "docker://ghcr.io/cncf-infra/prow-github-action/hook:latest"
+  image: "docker://ghcr.io/cncf-infra/prow-github-action:latest"
   args:
     - ${{ inputs.hmac }}
     - ${{ inputs.gh-app-id }}
