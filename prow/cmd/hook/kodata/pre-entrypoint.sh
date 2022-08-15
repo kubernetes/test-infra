@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 #!/bin/sh
 #
 # Launch custom (no k8s infra) hook build* as a GH Action to run a prow plugin
