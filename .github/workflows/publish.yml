@@ -14,4 +14,4 @@ jobs:
           go-version: 1.18.4
       - uses: actions/checkout@v2
       - uses: imjasonh/setup-ko@v0.4
-      - run: ko publish ./prow/cmd/hook
+      - run: VERSION=v1 ko publish ./prow/cmd/hook
