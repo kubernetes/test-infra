@@ -98,8 +98,7 @@ type CodeReviewCommon struct {
 	AuthorLogin   string
 	UpdatedAtTime time.Time
 
-	Mergeable    string
-	CanBeRebased bool
+	Mergeable string
 
 	GitHub *PullRequest
 }
@@ -158,7 +157,6 @@ func CodeReviewCommonFromPullRequest(pr *PullRequest) *CodeReviewCommon {
 		Body:          string(pr.Body),
 		AuthorLogin:   string(pr.Author.Login),
 		Mergeable:     string(pr.Mergeable),
-		CanBeRebased:  bool(pr.CanBeRebased),
 		UpdatedAtTime: pr.UpdatedAt.Time,
 
 		GitHub: &prCopy,
