@@ -17,7 +17,7 @@ periodics:
     spec:
       serviceAccountName: k8s-infra-gcr-promoter
       containers:
-        - image: go:1.18
+        - image: golang:1.18
           imagePullPolicy: Always
           command:
             - /bin/bash
@@ -47,7 +47,7 @@ periodics:
     spec:
       serviceAccountName: k8s-infra-gcr-promoter
       containers:
-        - image: go:1.18
+        - image: golang:1.18
           imagePullPolicy: Always
           command:
             - /bin/bash
@@ -77,7 +77,7 @@ periodics:
     spec:
       serviceAccountName: k8s-infra-gcr-promoter
       containers:
-        - image: go:1.18
+        - image: golang:1.18
           imagePullPolicy: Always
           command:
             - /bin/bash
