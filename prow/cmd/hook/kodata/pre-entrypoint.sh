@@ -6,6 +6,12 @@
 set -x
 set -e
 
+env | grep INPUT_
+
+if [ "${INPUT_PLUGIN}" != "" ]; then
+    echo "${INPUT_PLUGIN}" > "$HOME/plugin"
+fi
+
 if [ "${INPUT_HMAC}" != "" ]; then
     echo "${INPUT_HMAC}" > "$HOME/hmac"
 fi
