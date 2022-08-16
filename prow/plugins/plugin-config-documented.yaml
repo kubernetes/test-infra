@@ -4,6 +4,9 @@ approve:
       # The default value is "https://go.k8s.io/bot-commands". The command help page is served by Deck
       # and available under https://<deck-url>/command-help, e.g. "https://prow.k8s.io/command-help"
       commandHelpLink: ' '
+      # GranularApproval if set to true will allow approvers to approve individual files
+      # in the PR. Defaults to false.
+      granular_approval: false
       # IgnoreReviewState causes the approve plugin to ignore the GitHub review state. Otherwise:
       # * an APPROVE github review is equivalent to leaving an "/approve" message.
       # * A REQUEST_CHANGES github review is equivalent to leaving an /approve cancel" message.
