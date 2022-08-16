@@ -773,7 +773,7 @@ require_matching_label:
   org: kubernetes-sigs
   repo: cluster-api
   issues: true
-  prs: true
+  prs: false
   regexp: ^triage/accepted$
   missing_comment: |
     This issue is currently awaiting triage.
