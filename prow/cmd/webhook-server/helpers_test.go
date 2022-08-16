@@ -32,6 +32,7 @@ func TestCreateSecret(t *testing.T) {
 		dnsNames []string
 		expiry   int
 		want     [3]string
+		wantErr  bool
 	}{
 		{
 			name:     "base",
@@ -44,6 +45,7 @@ func TestCreateSecret(t *testing.T) {
 			dnsNames: []string{},
 			expiry:   10,
 			want:     [3]string{"", "", ""},
+			wantErr:  true,
 		},
 	}
 
@@ -72,10 +74,15 @@ func TestCreateSecret(t *testing.T) {
 			f := newFakeClient()
 
 			gotCert, gotPrivKey, gotCaPem, gotErr := createSecret(f, ctx, clientoptions)
-			if tc.name == "noDnsNames" && gotErr == nil {
-				t.Fatalf("unexpected error %v", gotErr)
-			} else if tc.name != "noDnsNames" && gotErr != nil {
-				t.Fatalf("unexpected error %v", gotErr)
+			if tc.wantErr {
+				if gotErr == nil {
+					t.Fatalf("Want error, but got nil")
+				}
+				// When an error occurred there is no need to check the rest of
+				// the test.
+				return
+			} else if gotErr != nil {
+				t.Fatalf("Want no error, got: %v", gotErr)
 			}
 			if gotCert != tc.want[0] || gotPrivKey != tc.want[1] || gotCaPem != tc.want[2] {
 				t.Fatalf("cert values do not match")
@@ -86,26 +93,26 @@ func TestCreateSecret(t *testing.T) {
 }
 
 func TestUpdateSecret(t *testing.T) {
-	f := newFakeClient()
-	expectedValue := "{\"caBundle.pem\":\"bar10c\",\"certFile.pem\":\"bar10a\",\"privKeyFile.pem\":\"bar10b\"}"
-	f.project.store = map[string]string{secretID: "hello"}
 	tests := []struct {
 		name     string
 		dnsNames []string
 		expiry   int
 		want     [3]string
+		wantCert string
+		wantErr  bool
 	}{
 		{
 			name:     "base",
 			dnsNames: []string{"bar"},
 			expiry:   10,
 			want:     [3]string{"bar10a", "bar10b", "bar10c"},
+			wantCert: "{\"caBundle.pem\":\"bar10c\",\"certFile.pem\":\"bar10a\",\"privKeyFile.pem\":\"bar10b\"}",
 		},
 		{
 			name:     "noDnsNames",
 			dnsNames: []string{},
 			expiry:   10,
-			want:     [3]string{"", "", ""},
+			wantErr:  true,
 		},
 	}
 
@@ -125,6 +132,10 @@ func TestUpdateSecret(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
+
+			f := newFakeClient()
+			f.project.store = map[string]string{secretID: "hello"}
+
 			ctx := context.Background()
 			clientoptions := clientOptions{
 				secretID:      secretID,
@@ -133,15 +144,19 @@ func TestUpdateSecret(t *testing.T) {
 			}
 
 			gotCert, gotPrivKey, gotCaPem, gotErr := updateSecret(f, ctx, clientoptions)
-			if tc.name == "noDnsNames" && gotErr == nil {
-				t.Fatalf("unexpected error %v", gotErr)
-			} else if tc.name != "noDnsNames" && gotErr != nil {
-				t.Fatalf("unexpected error %v", gotErr)
+			if tc.wantErr {
+				if gotErr == nil {
+					t.Fatalf("Want error, but got nil")
+				}
+				t.Logf("When an error occurred there is no need to check the rest of the test.")
+				return
+			} else if gotErr != nil {
+				t.Fatalf("Want no error, got: %v", gotErr)
 			}
 			if gotCert != tc.want[0] || gotPrivKey != tc.want[1] || gotCaPem != tc.want[2] {
 				t.Fatalf("cert values do not match")
 			}
-			if f.project.store[secretID] != expectedValue {
+			if f.project.store[secretID] != tc.wantCert {
 				t.Fatalf("secret was not updated")
 			}
 		})
