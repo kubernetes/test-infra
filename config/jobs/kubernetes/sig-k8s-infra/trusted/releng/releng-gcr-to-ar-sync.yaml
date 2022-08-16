@@ -1,0 +1,91 @@
+periodics:
+  - name: gcr-to-ar-sync-europe
+    interval: 2h
+    cluster: k8s-infra-prow-build-trusted
+    decorate: true
+    max_concurrency: 1
+    annotations:
+      testgrid-dashboards: sig-k8s-infra-k8sio
+      testgrid-alert-email: k8s-infra-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '1'
+    rerun_auth_config:
+      github_team_slugs:
+        - org: kubernetes
+          slug: sig-k8s-infra-leads
+        - org: kubernetes
+          slug: release-managers
+    spec:
+      serviceAccountName: k8s-infra-gcr-promoter
+      containers:
+        - image: go:1.18
+          imagePullPolicy: Always
+          command:
+            - /bin/bash
+            - c
+            - |
+              go install github.com/google/go-containerregistry/cmd/gcrane@latest
+              REGIONS=(europe-north1 europe-southwest1 europe-west1 europe-west2 europe-west4 europe-west8 europe-west9)
+              for REGION in $REGIONS
+              do
+                  gcrane cp --recursive --allow-nondistributable-artifacts eu.gcr.io/k8s-artifacts-prod $REGION-docker.pkg.dev/k8s-artifacts-prod/images &
+              done
+  - name: gcr-to-ar-sync-asia
+    interval: 2h
+    cluster: k8s-infra-prow-build-trusted
+    decorate: true
+    max_concurrency: 1
+    annotations:
+      testgrid-dashboards: sig-k8s-infra-k8sio
+      testgrid-alert-email: k8s-infra-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '1'
+    rerun_auth_config:
+      github_team_slugs:
+        - org: kubernetes
+          slug: sig-k8s-infra-leads
+        - org: kubernetes
+          slug: release-managers
+    spec:
+      serviceAccountName: k8s-infra-gcr-promoter
+      containers:
+        - image: go:1.18
+          imagePullPolicy: Always
+          command:
+            - /bin/bash
+            - c
+            - |
+              go install github.com/google/go-containerregistry/cmd/gcrane@latest
+              REGIONS=(asia-east1 asia-south1 asia-northeast1 asia-northeast2 australia-southeast1)
+              for REGION in $REGIONS
+              do
+                  gcrane cp --recursive --allow-nondistributable-artifacts asia.gcr.io/k8s-artifacts-prod $REGION-docker.pkg.dev/k8s-artifacts-prod/images &
+              done
+  - name: gcr-to-ar-sync-us
+    interval: 2h
+    cluster: k8s-infra-prow-build-trusted
+    decorate: true
+    max_concurrency: 1
+    annotations:
+      testgrid-dashboards: sig-k8s-infra-k8sio
+      testgrid-alert-email: k8s-infra-alerts@kubernetes.io
+      testgrid-num-failures-to-alert: '1'
+    rerun_auth_config:
+      github_team_slugs:
+        - org: kubernetes
+          slug: sig-k8s-infra-leads
+        - org: kubernetes
+          slug: release-managers
+    spec:
+      serviceAccountName: k8s-infra-gcr-promoter
+      containers:
+        - image: go:1.18
+          imagePullPolicy: Always
+          command:
+            - /bin/bash
+            - c
+            - |
+              go install github.com/google/go-containerregistry/cmd/gcrane@latest
+              REGIONS=(southamerica-west1 us-central1 us-east1 us-east4 us-east5 us-south1 us-west1 us-west2)
+              for REGION in $REGIONS
+              do
+                  gcrane cp --recursive --allow-nondistributable-artifacts us.gcr.io/k8s-artifacts-prod $REGION-docker.pkg.dev/k8s-artifacts-prod/images &
+              done
