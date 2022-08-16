@@ -9,19 +9,19 @@ set -e
 env | grep INPUT_
 
 if [ "${INPUT_PLUGIN}" != "" ]; then
-    echo "${INPUT_PLUGIN}" > "$HOME/plugin"
+    echo "${INPUT_PLUGIN}" > "/mnt/plugin"
 fi
 
 if [ "${INPUT_HMAC}" != "" ]; then
-    echo "${INPUT_HMAC}" > "$HOME/hmac"
+    echo "${INPUT_HMAC}" > "/mnt/hmac"
 fi
 
-if [ "${INPUT_GH_APP_ID}" != "" ]; then
-    echo "${INPUT_GH-APP-ID}" > "$HOME/app_id"
+if [ "${INPUT_GH-APP-ID}" != "" ]; then
+    echo "${INPUT_GH-APP-ID}" > "/mnt/app_id"
 fi
 
-if [ "${INPUT_GH_APP_PK}" != "" ]; then
-    echo "${INPUT_GH-APP-PK}" > "$HOME/app_pkey"
+if [ "${INPUT_GH-APP-PK}" != "" ]; then
+    echo "${INPUT_GH-APP-PK}" > "/mnt/app_pkey"
 fi
 
 # HBD? Would have to consider whether or not to expose this capability to
@@ -29,11 +29,11 @@ fi
 # and ./plugins.yaml from this repo.
 #
 if [ "${INPUT_HOOK-CONFIG}" != "" ]; then
-    echo "${INPUT_HOOK-CONFIG}" > $HOME/config.yaml
+    echo "${INPUT_HOOK-CONFIG}" > /mnt/config.yaml
 fi
 
 if [ "${INPUT_PLUGIN_CONFIG}" != "" ]; then
-    echo "${INPUT_PLUGIN-CONFIG}" > $HOME/plugins.yaml
+    echo "${INPUT_PLUGIN-CONFIG}" > /mnt/plugins.yaml
 fi
 
-ls -la $HOME/
+ls -la /mnt/
