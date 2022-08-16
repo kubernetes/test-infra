@@ -27,7 +27,6 @@ periodics:
               apt update && apt install parallel -qqy
               go install github.com/google/go-containerregistry/cmd/gcrane@latest
               parallel "gcrane cp --recursive --allow-nondistributable-artifacts eu.gcr.io/k8s-artifacts-prod {}-docker.pkg.dev/k8s-artifacts-prod/images" ::: europe-north1 europe-southwest1 europe-west1 europe-west2 europe-west4 europe-west8 europe-west9
-
   - name: gcr-to-ar-sync-asia
     interval: 2h
     cluster: k8s-infra-prow-build-trusted
@@ -56,7 +55,6 @@ periodics:
               apt update && apt install parallel -qqy
               go install github.com/google/go-containerregistry/cmd/gcrane@latest
               parallel "gcrane cp --recursive --allow-nondistributable-artifacts asia.gcr.io/k8s-artifacts-prod {}-docker.pkg.dev/k8s-artifacts-prod/images" ::: asia-east1 asia-south1 asia-northeast1 asia-northeast2 australia-southeast1
-
   - name: gcr-to-ar-sync-us
     interval: 2h
     cluster: k8s-infra-prow-build-trusted
