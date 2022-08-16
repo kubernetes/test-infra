@@ -17,6 +17,8 @@ limitations under the License.
 package clone
 
 import (
+	"time"
+
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 )
 
@@ -32,6 +34,9 @@ type Record struct {
 	// FinalSHA is the SHA from ultimate state of a cloned ref
 	// This is used to populate RepoCommit in started.json properly
 	FinalSHA string `json:"final_sha,omitempty"`
+
+	// Duration is the total runtime for the clone.
+	Duration time.Duration `json:"duration,omitempty"`
 }
 
 // Command is a trace of a command executed
@@ -40,4 +45,6 @@ type Command struct {
 	Command string `json:"command"`
 	Output  string `json:"output,omitempty"`
 	Error   string `json:"error,omitempty"`
+	// Duration is the runtime for the command.
+	Duration time.Duration `json:"duration,omitempty"`
 }
