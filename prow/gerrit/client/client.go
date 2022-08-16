@@ -204,6 +204,38 @@ func NewClient(instances map[string]map[string]*config.GerritQueryFilter) (*Clie
 	return c, nil
 }
 
+func (c *Client) ApplyGlobalConfig(cfg config.Getter, lastSyncTracker *SyncTime, cookiefilePath, tokenPathOverride string, additionalFunc func()) {
+	c.applyGlobalConfigOnce(cfg, lastSyncTracker, cookiefilePath, tokenPathOverride, additionalFunc)
+
+	go func() {
+		for {
+			c.applyGlobalConfigOnce(cfg, lastSyncTracker, cookiefilePath, tokenPathOverride, additionalFunc)
+			// No need to spin constantly, give it a break. It's ok that config change has one second delay.
+			time.Sleep(time.Second)
+		}
+	}()
+}
+
+func (c *Client) applyGlobalConfigOnce(cfg config.Getter, lastSyncTracker *SyncTime, cookiefilePath, tokenPathOverride string, additionalFunc func()) {
+	orgReposConfig := cfg().Gerrit.OrgReposConfig
+	if orgReposConfig == nil {
+		return
+	}
+	// Use globally defined gerrit repos if present
+	if err := c.UpdateClients(orgReposConfig.AllRepos()); err != nil {
+		logrus.WithError(err).Error("Updating clients.")
+	}
+	if err := lastSyncTracker.update(orgReposConfig.AllRepos()); err != nil {
+		logrus.WithError(err).Error("Syncing states.")
+	}
+
+	additionalFunc()
+
+	// Authenticate creates a goroutine for rotating token secrets when called the first
+	// time, afterwards it only authenticate once.
+	c.Authenticate(cookiefilePath, tokenPathOverride)
+}
+
 func (c *Client) authenticateOnce(previousToken string) string {
 	c.lock.RLock()
 	auth := c.authentication

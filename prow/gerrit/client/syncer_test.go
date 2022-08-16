@@ -14,8 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package adapter implements a controller that interacts with gerrit instances
-package adapter
+package client
 
 import (
 	"context"
@@ -32,7 +31,6 @@ import (
 	"cloud.google.com/go/storage"
 	"github.com/google/go-cmp/cmp"
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/io"
 )
 
@@ -61,14 +59,14 @@ func TestSyncTime(t *testing.T) {
 		t.Fatalf("Failed to create opener: %v", err)
 	}
 
-	st := syncTime{
+	st := SyncTime{
 		path:   path,
 		opener: open,
 		ctx:    ctx,
 	}
-	testProjectsFlag := client.ProjectsFlag{"foo": []string{"bar"}}
+	testProjectsFlag := ProjectsFlag{"foo": []string{"bar"}}
 	now := time.Now()
-	if err := st.init(testProjectsFlag); err != nil {
+	if err := st.Init(testProjectsFlag); err != nil {
 		t.Fatalf("Failed init: %v", err)
 	}
 	cur := st.Current()["foo"]["bar"]
@@ -79,14 +77,14 @@ func TestSyncTime(t *testing.T) {
 	earlier := now.Add(-time.Hour)
 	later := now.Add(time.Hour)
 
-	if err := st.Update(client.LastSyncState{"foo": {"bar": earlier}}); err != nil {
+	if err := st.Update(LastSyncState{"foo": {"bar": earlier}}); err != nil {
 		t.Fatalf("Failed update: %v", err)
 	}
 	if actual := st.Current()["foo"]["bar"]; !actual.Equal(cur) {
 		t.Errorf("Update(%v) should not have reduced value from %v, got %v", earlier, cur, actual)
 	}
 
-	if err := st.Update(client.LastSyncState{"foo": {"bar": later}}); err != nil {
+	if err := st.Update(LastSyncState{"foo": {"bar": later}}); err != nil {
 		t.Fatalf("Failed update: %v", err)
 	}
 	if actual := st.Current()["foo"]["bar"]; !actual.After(cur) {
@@ -94,12 +92,12 @@ func TestSyncTime(t *testing.T) {
 	}
 
 	expected := later
-	st = syncTime{
+	st = SyncTime{
 		path:   path,
 		opener: open,
 		ctx:    ctx,
 	}
-	if err := st.init(testProjectsFlag); err != nil {
+	if err := st.Init(testProjectsFlag); err != nil {
 		t.Fatalf("Failed init: %v", err)
 	}
 	if actual := st.Current()["foo"]["bar"]; !actual.Equal(expected) {
@@ -118,12 +116,12 @@ func TestSyncTime(t *testing.T) {
 		}
 	}
 
-	st = syncTime{
+	st = SyncTime{
 		path:   path,
 		opener: fakeOpener{}, // return storage.ErrObjectNotExist on open
 		ctx:    ctx,
 	}
-	if err := st.init(testProjectsFlag); err != nil {
+	if err := st.Init(testProjectsFlag); err != nil {
 		t.Fatalf("Failed init: %v", err)
 	}
 	if actual := st.Current()["foo"]["bar"]; now.After(actual) || actual.After(later) {
@@ -143,16 +141,16 @@ func TestSyncTimeThreadSafe(t *testing.T) {
 		t.Fatalf("Failed to create opener: %v", err)
 	}
 
-	st := syncTime{
+	st := SyncTime{
 		path:   path,
 		opener: open,
 		ctx:    ctx,
 	}
-	testProjectsFlag := client.ProjectsFlag{
+	testProjectsFlag := ProjectsFlag{
 		"foo1": []string{"bar1"},
 		"foo2": []string{"bar2"},
 	}
-	if err := st.init(testProjectsFlag); err != nil {
+	if err := st.Init(testProjectsFlag); err != nil {
 		t.Fatalf("Failed init: %v", err)
 	}
 
@@ -189,7 +187,7 @@ func TestSyncTimeThreadSafe(t *testing.T) {
 			t.Fatalf("Failed running goroutines: %v", err)
 		}
 
-		want := client.LastSyncState(map[string]map[string]time.Time{
+		want := LastSyncState(map[string]map[string]time.Time{
 			"foo1": {"bar1": later},
 			"foo2": {"bar2": later},
 		})
@@ -209,7 +207,7 @@ func TestNewProjectAddition(t *testing.T) {
 	path := filepath.Join(dir, "value.txt")
 
 	testTime := time.Now().Add(-time.Minute)
-	testStVal := client.LastSyncState{"foo": {"bar": testTime}}
+	testStVal := LastSyncState{"foo": {"bar": testTime}}
 	testStValBytes, _ := json.Marshal(testStVal)
 	_ = ioutil.WriteFile(path, testStValBytes, os.ModePerm)
 
@@ -219,15 +217,15 @@ func TestNewProjectAddition(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create opener: %v", err)
 	}
-	testProjectsFlag := client.ProjectsFlag{"foo": []string{"bar"}, "qwe": []string{"qux"}}
+	testProjectsFlag := ProjectsFlag{"foo": []string{"bar"}, "qwe": []string{"qux"}}
 
-	st := syncTime{
+	st := SyncTime{
 		path:   path,
 		opener: open,
 		ctx:    ctx,
 	}
 
-	if err := st.init(testProjectsFlag); err != nil {
+	if err := st.Init(testProjectsFlag); err != nil {
 		t.Fatalf("Failed init: %v", err)
 	}
 	if _, ok := st.val["qwe"]; !ok {
