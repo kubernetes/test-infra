@@ -21,14 +21,12 @@ periodics:
           imagePullPolicy: Always
           command:
             - /bin/bash
-            - c
+          args:
+            - -c
             - |
+              apt update && apt install parallel -qqy
               go install github.com/google/go-containerregistry/cmd/gcrane@latest
-              REGIONS=(europe-north1 europe-southwest1 europe-west1 europe-west2 europe-west4 europe-west8 europe-west9)
-              for REGION in $REGIONS
-              do
-                  gcrane cp --recursive --allow-nondistributable-artifacts eu.gcr.io/k8s-artifacts-prod $REGION-docker.pkg.dev/k8s-artifacts-prod/images &
-              done
+              parallel "gcrane cp --recursive --allow-nondistributable-artifacts eu.gcr.io/k8s-artifacts-prod {}-docker.pkg.dev/k8s-artifacts-prod/images" ::: europe-north1 europe-southwest1 europe-west1 europe-west2 europe-west4 europe-west8 europe-west9
   - name: gcr-to-ar-sync-asia
     interval: 2h
     cluster: k8s-infra-prow-build-trusted
@@ -51,14 +49,12 @@ periodics:
           imagePullPolicy: Always
           command:
             - /bin/bash
-            - c
+          args:
+            - -c
             - |
+              apt update && apt install parallel -qqy
               go install github.com/google/go-containerregistry/cmd/gcrane@latest
-              REGIONS=(asia-east1 asia-south1 asia-northeast1 asia-northeast2 australia-southeast1)
-              for REGION in $REGIONS
-              do
-                  gcrane cp --recursive --allow-nondistributable-artifacts asia.gcr.io/k8s-artifacts-prod $REGION-docker.pkg.dev/k8s-artifacts-prod/images &
-              done
+              parallel "gcrane cp --recursive --allow-nondistributable-artifacts asia.gcr.io/k8s-artifacts-prod {}-docker.pkg.dev/k8s-artifacts-prod/images" ::: asia-east1 asia-south1 asia-northeast1 asia-northeast2 australia-southeast1
   - name: gcr-to-ar-sync-us
     interval: 2h
     cluster: k8s-infra-prow-build-trusted
@@ -81,11 +77,9 @@ periodics:
           imagePullPolicy: Always
           command:
             - /bin/bash
-            - c
+          args:
+            - -c
             - |
+              apt update && apt install parallel -qqy
               go install github.com/google/go-containerregistry/cmd/gcrane@latest
-              REGIONS=(southamerica-west1 us-central1 us-east1 us-east4 us-east5 us-south1 us-west1 us-west2)
-              for REGION in $REGIONS
-              do
-                  gcrane cp --recursive --allow-nondistributable-artifacts us.gcr.io/k8s-artifacts-prod $REGION-docker.pkg.dev/k8s-artifacts-prod/images &
-              done
+              parallel "gcrane cp --recursive --allow-nondistributable-artifacts us.gcr.io/k8s-artifacts-prod {}-docker.pkg.dev/k8s-artifacts-prod/images" ::: southamerica-west1 us-central1 us-east1 us-east4 us-east5 us-south1 us-west1 us-west2
