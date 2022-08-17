@@ -2,6 +2,8 @@ presubmits:
   kubernetes-sigs/cluster-api:
   - name: pull-cluster-api-build-main
     decorate: true
+    decoration_config:
+      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     path_alias: sigs.k8s.io/cluster-api
     always_run: true
     labels:
@@ -10,6 +12,7 @@ presubmits:
     # The script this job runs is not in all branches.
     - ^main$
     spec:
+      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220812-a0f1ed2b84-1.24
         command:
@@ -20,6 +23,8 @@ presubmits:
       testgrid-tab-name: capi-pr-build-main
   - name: pull-cluster-api-apidiff-main
     decorate: true
+    decoration_config:
+      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     path_alias: sigs.k8s.io/cluster-api
     always_run: true
     optional: true
@@ -29,6 +34,7 @@ presubmits:
     # The script this job runs is not in all branches.
     - ^main$
     spec:
+      serviceAccountName: prowjob-default-sa
       containers:
       - command:
         - runner.sh
@@ -39,6 +45,8 @@ presubmits:
       testgrid-tab-name: capi-pr-apidiff-main
   - name: pull-cluster-api-verify-main
     decorate: true
+    decoration_config:
+      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     path_alias: sigs.k8s.io/cluster-api
     always_run: true
     labels:
@@ -47,6 +55,7 @@ presubmits:
     # The script this job runs is not in all branches.
     - ^main$
     spec:
+      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220812-a0f1ed2b84-1.24
         command:
@@ -60,6 +69,8 @@ presubmits:
       testgrid-tab-name: capi-pr-verify-main
   - name: pull-cluster-api-test-main
     decorate: true
+    decoration_config:
+      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     path_alias: sigs.k8s.io/cluster-api
     always_run: true
     labels:
@@ -68,6 +79,7 @@ presubmits:
     # The script this job runs is not in all branches.
     - ^main$
     spec:
+      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220812-a0f1ed2b84-1.24
         args:
@@ -81,6 +93,8 @@ presubmits:
       testgrid-tab-name: capi-pr-test-main
   - name: pull-cluster-api-test-mink8s-main
     decorate: true
+    decoration_config:
+      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     path_alias: sigs.k8s.io/cluster-api
     always_run: true
     labels:
@@ -89,6 +103,7 @@ presubmits:
     # The script this job runs is not in all branches.
     - ^main$
     spec:
+      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220812-a0f1ed2b84-1.24
         args:
@@ -113,12 +128,15 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     decorate: true
+    decoration_config:
+      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     branches:
     # The script this job runs is not in all branches.
     - ^main$
     path_alias: sigs.k8s.io/cluster-api
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|third_party|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
+      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220812-a0f1ed2b84-1.24
         args:
@@ -141,6 +159,8 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     decorate: true
+    decoration_config:
+      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     optional: true
     branches:
     # The script this job runs is not in all branches.
@@ -148,6 +168,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|third_party|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
+      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220812-a0f1ed2b84-1.24
         args:
@@ -172,6 +193,8 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     decorate: true
+    decoration_config:
+      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     optional: true
     branches:
     # The script this job runs is not in all branches.
@@ -179,6 +202,7 @@ presubmits:
     path_alias: sigs.k8s.io/cluster-api
     run_if_changed: '^((api|bootstrap|cmd|config|controllers|controlplane|errors|exp|feature|hack|internal|scripts|test|third_party|util|webhooks|version)/|main\.go|go\.mod|go\.sum|Dockerfile|Makefile)'
     spec:
+      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220812-a0f1ed2b84-1.24
         args:
@@ -206,6 +230,8 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     decorate: true
+    decoration_config:
+      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     optional: true
     always_run: false
     branches:
@@ -213,6 +239,7 @@ presubmits:
     - ^main$
     path_alias: sigs.k8s.io/cluster-api
     spec:
+      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220812-a0f1ed2b84-1.24
         args:
@@ -238,6 +265,8 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     decorate: true
+    decoration_config:
+      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     optional: true
     always_run: false
     branches:
@@ -250,6 +279,7 @@ presubmits:
       base_ref: master
       path_alias: k8s.io/kubernetes
     spec:
+      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220812-a0f1ed2b84-1.24
         args:
@@ -280,6 +310,8 @@ presubmits:
       preset-dind-enabled: "true"
       preset-kind-volume-mounts: "true"
     decorate: true
+    decoration_config:
+      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     optional: true
     always_run: false
     branches:
@@ -292,6 +324,7 @@ presubmits:
       base_ref: master
       path_alias: k8s.io/kubernetes
     spec:
+      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220812-a0f1ed2b84-1.24
         args:
