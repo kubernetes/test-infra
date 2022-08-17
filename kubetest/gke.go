@@ -594,7 +594,6 @@ func (g *gkeDeployer) setupBastion() error {
 		output, err := exec.Command("gcloud", "compute", "instances", "list",
 			"--filter="+filter,
 			"--format=value(name,zone)",
-			"--limit=1",
 			"--project="+g.project).Output()
 		if err != nil {
 			return fmt.Errorf("listing instances failed: %s", util.ExecError(err))
@@ -602,8 +601,9 @@ func (g *gkeDeployer) setupBastion() error {
 		if len(output) == 0 {
 			continue
 		}
+		instances := strings.Split(string(output), "\n")
 		// Proxy instance found
-		fields := strings.Split(strings.TrimSpace(string(output)), "\t")
+		fields := strings.Split(strings.TrimSpace(string(instances[0])), "\t")
 		if len(fields) != 2 {
 			return fmt.Errorf("error parsing instances list output %q", output)
 		}
