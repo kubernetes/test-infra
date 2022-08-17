@@ -12,7 +12,6 @@ presubmits:
       testgrid-tab-name: pull-containerd-build
       description: build artifacts
     labels:
-      preset-service-account: "true"
       preset-dind-enabled: "true"
     spec:
       containers:
@@ -49,7 +48,6 @@ presubmits:
       testgrid-tab-name: pull-containerd-node-e2e
       description: run node e2e tests
     labels:
-      preset-service-account: "true"
       preset-k8s-ssh: "true"
     spec:
       containers:
@@ -100,7 +98,6 @@ presubmits:
       testgrid-tab-name: pull-containerd-sandboxed-node-e2e
       description: run node e2e tests sandboxed
     labels:
-      preset-service-account: "true"
       preset-k8s-ssh: "true"
     spec:
       containers:
