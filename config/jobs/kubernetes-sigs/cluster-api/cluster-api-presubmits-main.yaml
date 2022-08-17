@@ -51,6 +51,7 @@ presubmits:
     always_run: true
     labels:
       preset-service-account: "true"
+      preset-dind-enabled: "true"
     branches:
     # The script this job runs is not in all branches.
     - ^main$
@@ -64,6 +65,8 @@ presubmits:
         resources:
           requests:
             cpu: 7300m
+        securityContext:
+          privileged: true
     annotations:
       testgrid-dashboards: sig-cluster-lifecycle-cluster-api
       testgrid-tab-name: capi-pr-verify-main
