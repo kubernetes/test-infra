@@ -2,8 +2,6 @@ periodics:
 - name: periodic-cluster-api-test-main
   interval: 1h
   decorate: true
-  labels:
-    preset-service-account: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api
@@ -25,8 +23,6 @@ periodics:
 - name: periodic-cluster-api-test-mink8s-main
   interval: 1h
   decorate: true
-  labels:
-    preset-service-account: "true"
   extra_refs:
   - org: kubernetes-sigs
     repo: cluster-api
