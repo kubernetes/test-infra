@@ -2,7 +2,7 @@
 
 presubmits:
   kubernetes-csi/external-provisioner:
-  - name: pull-kubernetes-csi-external-provisioner-distributed-on-kubernetes-1-23
+  - name: pull-kubernetes-csi-external-provisioner-distributed-on-kubernetes-1-24
     always_run: true
     optional: false
     decorate: true
@@ -14,7 +14,7 @@ presubmits:
       preset-kind-volume-mounts: "true"
     annotations:
       testgrid-dashboards: sig-storage-csi-external-provisioner
-      testgrid-tab-name: distributed-on-kubernetes-1-23
+      testgrid-tab-name: distributed-on-kubernetes-1-24
       description: Kubernetes-CSI pull job in repo external-provisioner for distributed provisioning, with CSIStorageCapacity
     spec:
       containers:
@@ -26,7 +26,7 @@ presubmits:
         - ./.prow.sh
         env:
         - name: CSI_PROW_KUBERNETES_VERSION
-          value: "1.23.0"
+          value: "1.24.0"
         - name: CSI_PROW_USE_BAZEL
           value: "true"
         - name: CSI_PROW_DRIVER_VERSION
