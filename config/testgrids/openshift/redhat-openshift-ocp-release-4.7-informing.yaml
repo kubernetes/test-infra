@@ -2237,8 +2237,7 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/promote-release-openshift-machine-os-content-e2e-aws-4.7-s390x
   name: promote-release-openshift-machine-os-content-e2e-aws-4.7-s390x
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-csi-4.7
+- gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-csi-4.7
   name: release-openshift-ocp-installer-e2e-aws-csi-4.7
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-aws-upi-4.7
@@ -2248,36 +2247,25 @@ test_groups:
 - days_of_results: 60
   gcs_prefix: origin-ci-test/logs/release-openshift-ocp-installer-e2e-gcp-serial-4.7
   name: release-openshift-ocp-installer-e2e-gcp-serial-4.7
-- days_of_results: 33
-  gcs_prefix: origin-ci-test/logs/release-openshift-ocp-osd-aws-nightly-4.7
+- gcs_prefix: origin-ci-test/logs/release-openshift-ocp-osd-aws-nightly-4.7
   name: release-openshift-ocp-osd-aws-nightly-4.7
-- days_of_results: 33
-  gcs_prefix: origin-ci-test/logs/release-openshift-ocp-osd-gcp-nightly-4.7
+- gcs_prefix: origin-ci-test/logs/release-openshift-ocp-osd-gcp-nightly-4.7
   name: release-openshift-ocp-osd-gcp-nightly-4.7
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-compact-4.7
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-compact-4.7
   name: release-openshift-origin-installer-e2e-aws-compact-4.7
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-disruptive-4.7
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-disruptive-4.7
   name: release-openshift-origin-installer-e2e-aws-disruptive-4.7
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-shared-vpc-4.7
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-shared-vpc-4.7
   name: release-openshift-origin-installer-e2e-aws-shared-vpc-4.7
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.4-to-4.5-to-4.6-to-4.7-ci
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-aws-upgrade-4.4-to-4.5-to-4.6-to-4.7-ci
   name: release-openshift-origin-installer-e2e-aws-upgrade-4.4-to-4.5-to-4.6-to-4.7-ci
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-azure-compact-4.7
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-azure-compact-4.7
   name: release-openshift-origin-installer-e2e-azure-compact-4.7
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-azure-shared-vpc-4.7
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-azure-shared-vpc-4.7
   name: release-openshift-origin-installer-e2e-azure-shared-vpc-4.7
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-gcp-compact-4.7
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-gcp-compact-4.7
   name: release-openshift-origin-installer-e2e-gcp-compact-4.7
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-gcp-serial-4.7
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-gcp-serial-4.7
   name: release-openshift-origin-installer-e2e-gcp-serial-4.7
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-gcp-shared-vpc-4.7
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-gcp-shared-vpc-4.7
   name: release-openshift-origin-installer-e2e-gcp-shared-vpc-4.7
