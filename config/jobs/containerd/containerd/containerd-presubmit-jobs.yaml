@@ -7,8 +7,6 @@ presubmits:
     - release/1.5
     - release/1.6
     decorate: true
-    decoration_config:
-      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     annotations:
       testgrid-dashboards: sig-node-containerd
       testgrid-tab-name: pull-containerd-build
@@ -16,7 +14,6 @@ presubmits:
     labels:
       preset-dind-enabled: "true"
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220812-a0f1ed2b84-master
         command:
@@ -37,7 +34,6 @@ presubmits:
     - release/1.6
     decoration_config:
       timeout: 100m
-      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     extra_refs:
     - org: kubernetes
       repo: kubernetes
@@ -54,7 +50,6 @@ presubmits:
     labels:
       preset-k8s-ssh: "true"
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
       - name: pull-containerd-node-e2e
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220812-a0f1ed2b84-master
@@ -89,7 +84,6 @@ presubmits:
     - main
     decoration_config:
       timeout: 100m
-      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     extra_refs:
     - org: kubernetes
       repo: kubernetes
@@ -106,7 +100,6 @@ presubmits:
     labels:
       preset-k8s-ssh: "true"
     spec:
-      serviceAccountName: prowjob-default-sa
       containers:
       - name: pull-containerd-node-e2e
         image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220812-a0f1ed2b84-master
