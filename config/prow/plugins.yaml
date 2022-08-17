@@ -767,7 +767,7 @@ require_matching_label:
   org: kubernetes-sigs
   repo: cluster-api-provider-aws
   issues: true
-  prs: true
+  prs: false
   regexp: ^priority/
 - missing_label: needs-triage
   org: kubernetes-sigs
