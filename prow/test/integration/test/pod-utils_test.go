@@ -567,8 +567,11 @@ ls-tree (submodule):
 				return true, nil
 			}
 
-			// Wait up to 60 seconds to observe that this test passed.
-			timeout := 60 * time.Second
+			// Wait up to 90 seconds to observe that this test passed.
+			// These 90 seconds are spent waiting on serial execution of
+			// clonerefs, initupload, sidecar, place-entrypoint then test. Based
+			// on observation from kind logs these could take ~60 seconds.
+			timeout := 90 * time.Second
 			pollInterval := 500 * time.Millisecond
 			if waitErr := wait.Poll(pollInterval, timeout, expectJobSuccess); waitErr != nil {
 				if lastErr != nil {
