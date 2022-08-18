@@ -89,6 +89,11 @@ func TestRegex(t *testing.T) {
 			name:  "Trailing special characters, no match",
 			input: "rehearse-15676-pull",
 		},
+		{
+			name:     "Included in markdown link",
+			input:    "[Jira Bug ABC-123](https://my-jira.com/browse/ABC-123)",
+			expected: []string{"ABC-123", "ABC-123"},
+		},
 	}
 
 	for _, tc := range testCases {
