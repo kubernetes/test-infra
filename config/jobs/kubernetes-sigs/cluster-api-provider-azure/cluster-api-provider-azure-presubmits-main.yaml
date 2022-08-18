@@ -371,12 +371,15 @@ presubmits:
       testgrid-tab-name: capz-pr-upstream-k8s-ci-windows-containerd-serial-slow-main
   - name: pull-cluster-api-provider-azure-apidiff
     decorate: true
+    decoration_config:
+      gcs_credentials_secret: "" # Use workload identity for uploading artifacts
     path_alias: sigs.k8s.io/cluster-api-provider-azure
     always_run: true
     optional: true
     branches:
     - ^main$
     spec:
+      serviceAccountName: prowjob-default-sa
       containers:
       - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220812-a0f1ed2b84-1.24
         command:
