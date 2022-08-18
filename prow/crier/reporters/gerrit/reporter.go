@@ -130,7 +130,7 @@ type JobReport struct {
 }
 
 // NewReporter returns a reporter client
-func NewReporter(cfg config.Getter, cookiefilePath string, projects map[string][]string, pjclientset ctrlruntimeclient.Client) (*Client, error) {
+func NewReporter(orgRepoConfigGetter func() *config.GerritOrgRepoConfigs, cookiefilePath string, projects map[string][]string, pjclientset ctrlruntimeclient.Client) (*Client, error) {
 	gc, err := client.NewClient(client.ProjectsFlagToConfig(projects))
 	if err != nil {
 		return nil, err
@@ -138,7 +138,7 @@ func NewReporter(cfg config.Getter, cookiefilePath string, projects map[string][
 	// applyGlobalConfig reads gerrit configurations from global gerrit config,
 	// it will completely override previously configured gerrit hosts and projects.
 	// it will also by the way authenticate gerrit
-	gc.ApplyGlobalConfig(cfg, nil, cookiefilePath, "", func() {})
+	gc.ApplyGlobalConfig(orgRepoConfigGetter, nil, cookiefilePath, "", func() {})
 
 	// Authenticate creates a goroutine for rotating token secrets when called the first
 	// time, afterwards it only authenticate once.

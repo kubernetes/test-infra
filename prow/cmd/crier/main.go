@@ -223,7 +223,10 @@ func main() {
 	}
 
 	if o.gerritWorkers > 0 {
-		gerritReporter, err := gerritreporter.NewReporter(cfg, o.cookiefilePath, o.gerritProjects, mgr.GetClient())
+		orgRepoConfigGetter := func() *config.GerritOrgRepoConfigs {
+			return cfg().Gerrit.OrgReposConfig
+		}
+		gerritReporter, err := gerritreporter.NewReporter(orgRepoConfigGetter, o.cookiefilePath, o.gerritProjects, mgr.GetClient())
 		if err != nil {
 			logrus.WithError(err).Fatal("Error starting gerrit reporter")
 		}

@@ -17,9 +17,12 @@ limitations under the License.
 package client
 
 import (
+	"context"
+	"path/filepath"
 	"reflect"
 	"sort"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -27,6 +30,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/io"
 )
 
 type fgc struct {
@@ -48,7 +52,113 @@ func (f *fgc) ListChangeComments(id string) (*map[string][]gerrit.CommentInfo, *
 	}
 
 	return &comments, nil, nil
+}
 
+func TestApplyGlobalConfigOnce(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "value.txt")
+	// Empty opener so *syncTime won't panic.
+	opener, err := io.NewOpener(context.Background(), "", "")
+	if err != nil {
+		t.Fatalf("Failed to create opener: %v", err)
+	}
+
+	// Fixed org/repo, as this test doesn't check the output.
+	cfg := config.Config{
+		ProwConfig: config.ProwConfig{
+			Gerrit: config.Gerrit{
+				OrgReposConfig: &config.GerritOrgRepoConfigs{
+					{
+						Org:   "foo1",
+						Repos: []string{"bar1"},
+					},
+				},
+			},
+		},
+	}
+
+	// A thread safe map for checking additionalFunc.
+	var mux sync.RWMutex
+	records := make(map[string]string)
+	setRecond := func(key, val string) {
+		mux.Lock()
+		defer mux.Unlock()
+		records[key] = val
+	}
+	getRecord := func(key string) string {
+		mux.RLock()
+		defer mux.RUnlock()
+		return records[key]
+	}
+
+	tests := []struct {
+		name                string
+		orgRepoConfigGetter func() *config.GerritOrgRepoConfigs
+		lastSyncTracker     *SyncTime
+		additionalFunc      func()
+		expect              func(t *testing.T)
+	}{
+		{
+			name: "base",
+			orgRepoConfigGetter: func() *config.GerritOrgRepoConfigs {
+				return cfg.Gerrit.OrgReposConfig
+			},
+			lastSyncTracker: NewSyncTime(path, opener, context.Background()),
+			additionalFunc: func() {
+				setRecond("base", "base")
+			},
+			expect: func(t *testing.T) {
+				if got, want := getRecord("base"), "base"; got != want {
+					t.Fatalf("Output mismatch. Want: %s, got: %s", want, got)
+				}
+			},
+		},
+		{
+			name: "nil-lastsynctracker",
+			orgRepoConfigGetter: func() *config.GerritOrgRepoConfigs {
+				return cfg.Gerrit.OrgReposConfig
+			},
+			additionalFunc: func() {
+				setRecond("nil-lastsynctracker", "nil-lastsynctracker")
+			},
+			expect: func(t *testing.T) {
+				if got, want := getRecord("nil-lastsynctracker"), "nil-lastsynctracker"; got != want {
+					t.Fatalf("Output mismatch. Want: %s, got: %s", want, got)
+				}
+			},
+		},
+		{
+			name: "empty-addtionalfunc",
+			orgRepoConfigGetter: func() *config.GerritOrgRepoConfigs {
+				return cfg.Gerrit.OrgReposConfig
+			},
+			additionalFunc: func() {},
+			expect: func(t *testing.T) {
+				// additionalFunc is nil, there is nothing expected
+			},
+		},
+		{
+			name: "nil-addtionalfunc",
+			orgRepoConfigGetter: func() *config.GerritOrgRepoConfigs {
+				return cfg.Gerrit.OrgReposConfig
+			},
+			additionalFunc: nil,
+			expect: func(t *testing.T) {
+				// additionalFunc is nil, there is nothing expected
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			fc := &Client{}
+			fc.applyGlobalConfigOnce(tc.orgRepoConfigGetter, tc.lastSyncTracker, "", "", tc.additionalFunc)
+			if tc.expect != nil {
+				tc.expect(t)
+			}
+		})
+	}
 }
 
 func TestQueryStringsFromQueryFilter(t *testing.T) {

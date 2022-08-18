@@ -90,7 +90,7 @@ type prowJobClient interface {
 }
 
 type gerritClient interface {
-	ApplyGlobalConfig(cfg config.Getter, lastSyncTracker *client.SyncTime, cookiefilePath, tokenPathOverride string, additionalFunc func())
+	ApplyGlobalConfig(orgRepoConfigGetter func() *config.GerritOrgRepoConfigs, lastSyncTracker *client.SyncTime, cookiefilePath, tokenPathOverride string, additionalFunc func())
 	Authenticate(cookiefilePath, tokenPath string)
 	QueryChanges(lastState client.LastSyncState, rateLimit int) map[string][]client.ChangeInfo
 	QueryChangesForInstance(instance string, lastState client.LastSyncState, rateLimit int) []client.ChangeInfo
@@ -166,8 +166,11 @@ func NewController(ctx context.Context, prowJobClient prowv1.ProwJobInterface, o
 	// applyGlobalConfig reads gerrit configurations from global gerrit config,
 	// it will completely override previously configured gerrit hosts and projects.
 	// it will also by the way authenticate gerrit
-	c.gc.ApplyGlobalConfig(cfg, lastSyncTracker, cookiefilePath, tokenPathOverride, func() {
-		orgReposConfig := cfg().Gerrit.OrgReposConfig
+	orgRepoConfigGetter := func() *config.GerritOrgRepoConfigs {
+		return cfg().Gerrit.OrgReposConfig
+	}
+	c.gc.ApplyGlobalConfig(orgRepoConfigGetter, lastSyncTracker, cookiefilePath, tokenPathOverride, func() {
+		orgReposConfig := orgRepoConfigGetter()
 		if orgReposConfig == nil {
 			return
 		}

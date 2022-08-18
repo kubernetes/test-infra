@@ -70,7 +70,7 @@ type fgc struct {
 	instanceMap map[string]*gerrit.AccountInfo
 }
 
-func (f *fgc) ApplyGlobalConfig(cfg config.Getter, lastSyncTracker *client.SyncTime, cookiefilePath, tokenPathOverride string, additionalFunc func()) {
+func (f *fgc) ApplyGlobalConfig(orgRepoConfigGetter func() *config.GerritOrgRepoConfigs, lastSyncTracker *client.SyncTime, cookiefilePath, tokenPathOverride string, additionalFunc func()) {
 
 }
 
