@@ -1864,6 +1864,16 @@ func TestUpdateSize(t *testing.T) {
 	log := logrus.NewEntry(logrus.New())
 	fs := MapFS{
 		"s": {Data: []byte("string data"), Mode: 0777},
+		"c": {
+			// $ printf 'string data' | gzip | hexdump -ve '1/1 "0x%02x, "'
+			Data: []byte{
+				0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03,
+				0x2b, 0x2e, 0x29, 0xca, 0xcc, 0x4b, 0x57, 0x48, 0x49, 0x2c,
+				0x49, 0x04, 0x00, 0x1e, 0xfb, 0x1a, 0x61, 0x0b, 0x00, 0x00,
+				0x00,
+			},
+			Mode: 0777,
+		},
 	}
 	testCases := []struct {
 		name     string
@@ -1882,6 +1892,27 @@ func TestUpdateSize(t *testing.T) {
 				{Key: "k2", Filename: "s"},
 			},
 			expected: 73,
+		},
+		{
+			name: "compressed data",
+			updates: []ConfigMapUpdate{
+				{Key: "k0", Filename: "c"},
+				{Key: "k1", Filename: "c"},
+				{Key: "k2", Filename: "c"},
+			},
+			expected: 133,
+		},
+		{
+			name: "combined data",
+			updates: []ConfigMapUpdate{
+				{Key: "k0", Filename: "s"},
+				{Key: "k1", Filename: "s"},
+				{Key: "k2", Filename: "s"},
+				{Key: "k3", Filename: "c"},
+				{Key: "k4", Filename: "c"},
+				{Key: "k5", Filename: "c"},
+			},
+			expected: 166,
 		},
 	}
 	for _, tc := range testCases {
