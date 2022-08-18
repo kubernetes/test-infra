@@ -3,6 +3,8 @@ periodics:
 - name: periodic-cluster-api-e2e-workload-upgrade-1-18-1-19-release-0-4
   interval: 48h
   decorate: true
+  decoration_config:
+    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -16,8 +18,9 @@ periodics:
     base_ref: master
     path_alias: k8s.io/kubernetes
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-1.21
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-1.21
       args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
@@ -47,6 +50,8 @@ periodics:
 - name: periodic-cluster-api-e2e-workload-upgrade-1-19-1-20-release-0-4
   interval: 48h
   decorate: true
+  decoration_config:
+    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -60,8 +65,9 @@ periodics:
     base_ref: master
     path_alias: k8s.io/kubernetes
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-1.21
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-1.21
       args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
@@ -91,6 +97,8 @@ periodics:
 - name: periodic-cluster-api-e2e-workload-upgrade-1-20-1-21-release-0-4
   interval: 48h
   decorate: true
+  decoration_config:
+    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -104,8 +112,9 @@ periodics:
     base_ref: master
     path_alias: k8s.io/kubernetes
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-1.21
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-1.21
       args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
@@ -135,6 +144,8 @@ periodics:
 - name: periodic-cluster-api-e2e-workload-upgrade-1-21-1-22-release-0-4
   interval: 48h
   decorate: true
+  decoration_config:
+    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -148,8 +159,9 @@ periodics:
     base_ref: master
     path_alias: k8s.io/kubernetes
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-1.21
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-1.21
       args:
         - runner.sh
         - "./scripts/ci-e2e.sh"
@@ -179,6 +191,8 @@ periodics:
 - name: periodic-cluster-api-e2e-workload-upgrade-1-22-1-23-release-0-4
   interval: 48h
   decorate: true
+  decoration_config:
+    gcs_credentials_secret: "" # Use workload identity for uploading artifacts
   labels:
     preset-dind-enabled: "true"
     preset-kind-volume-mounts: "true"
@@ -192,8 +206,9 @@ periodics:
     base_ref: master
     path_alias: k8s.io/kubernetes
   spec:
+    serviceAccountName: prowjob-default-sa
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-1.21
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220727-f055b40439-1.21
       args:
         - runner.sh
         - "./scripts/ci-e2e.sh"

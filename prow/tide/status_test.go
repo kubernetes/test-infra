@@ -814,7 +814,8 @@ func TestExpectedStatus(t *testing.T) {
 			blocks.Repo[blockers.OrgRepo{Org: "", Repo: ""}] = items
 
 			ca := &config.Agent{}
-			ca.Set(&config.Config{ProwConfig: config.ProwConfig{Tide: config.Tide{DisplayAllQueriesInStatus: tc.displayAllTideQueries}}})
+			ca.Set(&config.Config{ProwConfig: config.ProwConfig{Tide: config.Tide{
+				TideGitHubConfig: config.TideGitHubConfig{DisplayAllQueriesInStatus: tc.displayAllTideQueries}}}})
 			mmc := newMergeChecker(ca.Config, &fgc{})
 
 			sc, err := newStatusController(
@@ -1028,13 +1029,13 @@ func TestTargetUrl(t *testing.T) {
 		{
 			name:        "tide overview config",
 			pr:          &PullRequest{},
-			config:      config.Tide{TargetURLs: map[string]string{"*": "tide.com"}},
+			config:      config.Tide{TideGitHubConfig: config.TideGitHubConfig{TargetURLs: map[string]string{"*": "tide.com"}}},
 			expectedURL: "tide.com",
 		},
 		{
 			name:        "PR dashboard config and overview config",
 			pr:          &PullRequest{},
-			config:      config.Tide{TargetURLs: map[string]string{"*": "tide.com"}, PRStatusBaseURLs: map[string]string{"*": "pr.status.com"}},
+			config:      config.Tide{TideGitHubConfig: config.TideGitHubConfig{TargetURLs: map[string]string{"*": "tide.com"}, PRStatusBaseURLs: map[string]string{"*": "pr.status.com"}}},
 			expectedURL: "tide.com",
 		},
 		{
@@ -1052,7 +1053,7 @@ func TestTargetUrl(t *testing.T) {
 				}{NameWithOwner: githubql.String("org/repo")},
 				HeadRefName: "head",
 			},
-			config:      config.Tide{PRStatusBaseURLs: map[string]string{"*": "pr.status.com"}},
+			config:      config.Tide{TideGitHubConfig: config.TideGitHubConfig{PRStatusBaseURLs: map[string]string{"*": "pr.status.com"}}},
 			expectedURL: "pr.status.com?query=is%3Apr+repo%3Aorg%2Frepo+author%3Aauthor+head%3Ahead",
 		},
 		{
@@ -1074,7 +1075,7 @@ func TestTargetUrl(t *testing.T) {
 				},
 				HeadRefName: "head",
 			},
-			config:      config.Tide{PRStatusBaseURLs: map[string]string{"*": "default.pr.status.com"}},
+			config:      config.Tide{TideGitHubConfig: config.TideGitHubConfig{PRStatusBaseURLs: map[string]string{"*": "default.pr.status.com"}}},
 			expectedURL: "default.pr.status.com?query=is%3Apr+repo%3AtestOrg%2FtestRepo+author%3Aauthor+head%3Ahead",
 		},
 		{
@@ -1096,10 +1097,10 @@ func TestTargetUrl(t *testing.T) {
 				},
 				HeadRefName: "head",
 			},
-			config: config.Tide{PRStatusBaseURLs: map[string]string{
+			config: config.Tide{TideGitHubConfig: config.TideGitHubConfig{PRStatusBaseURLs: map[string]string{
 				"*":       "default.pr.status.com",
 				"testOrg": "byorg.pr.status.com"},
-			},
+			}},
 			expectedURL: "byorg.pr.status.com?query=is%3Apr+repo%3AtestOrg%2FtestRepo+author%3Aauthor+head%3Ahead",
 		},
 		{
@@ -1121,11 +1122,11 @@ func TestTargetUrl(t *testing.T) {
 				},
 				HeadRefName: "head",
 			},
-			config: config.Tide{PRStatusBaseURLs: map[string]string{
+			config: config.Tide{TideGitHubConfig: config.TideGitHubConfig{PRStatusBaseURLs: map[string]string{
 				"*":                "default.pr.status.com",
 				"testOrg":          "byorg.pr.status.com",
 				"testOrg/testRepo": "byrepo.pr.status.com"},
-			},
+			}},
 			expectedURL: "byrepo.pr.status.com?query=is%3Apr+repo%3AtestOrg%2FtestRepo+author%3Aauthor+head%3Ahead",
 		},
 	}
@@ -1222,11 +1223,14 @@ func TestSetStatusRespectsRequiredContexts(t *testing.T) {
 	ca.Set(&config.Config{})
 
 	sc := &statusController{
-		logger:       log,
-		ghc:          fghc,
-		config:       ca.Config,
-		pjClient:     fakectrlruntimeclient.NewFakeClient(),
-		mergeChecker: newMergeChecker(ca.Config, fghc),
+		logger:   log,
+		ghc:      fghc,
+		config:   ca.Config,
+		pjClient: fakectrlruntimeclient.NewFakeClient(),
+		ghProvider: &GitHubProvider{
+			ghc:          fghc,
+			mergeChecker: newMergeChecker(ca.Config, fghc),
+		},
 		statusUpdate: &statusUpdate{
 			dontUpdateStatus: &threadSafePRSet{},
 			newPoolPending:   make(chan bool),
@@ -1341,7 +1345,8 @@ func TestStatusControllerSearch(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			ghc := &fgc{prs: tc.prs}
 			cfg := func() *config.Config {
-				return &config.Config{ProwConfig: config.ProwConfig{Tide: config.Tide{Queries: config.TideQueries{{Orgs: []string{"org-a", "org-b"}}}}}}
+				return &config.Config{ProwConfig: config.ProwConfig{Tide: config.Tide{
+					TideGitHubConfig: config.TideGitHubConfig{Queries: config.TideQueries{{Orgs: []string{"org-a", "org-b"}}}}}}}
 			}
 			sc, err := newStatusController(
 				context.Background(),

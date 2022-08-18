@@ -11,10 +11,10 @@ plank:
       timeout: 2h
       grace_period: 15m
       utility_images:
-        clonerefs: "gcr.io/k8s-prow/clonerefs:v20220707-6c9b2eb5c9"
-        initupload: "gcr.io/k8s-prow/initupload:v20220707-6c9b2eb5c9"
-        entrypoint: "gcr.io/k8s-prow/entrypoint:v20220707-6c9b2eb5c9"
-        sidecar: "gcr.io/k8s-prow/sidecar:v20220707-6c9b2eb5c9"
+        clonerefs: "gcr.io/k8s-prow/clonerefs:v20220817-d4b9308af4"
+        initupload: "gcr.io/k8s-prow/initupload:v20220817-d4b9308af4"
+        entrypoint: "gcr.io/k8s-prow/entrypoint:v20220817-d4b9308af4"
+        sidecar: "gcr.io/k8s-prow/sidecar:v20220817-d4b9308af4"
       gcs_configuration:
         bucket: "kubernetes-jenkins"
         path_strategy: "legacy"
@@ -369,9 +369,7 @@ branch-protection:
         kube-openapi:
           required_status_checks:
             contexts:
-            - ci (1.x, true)
-            - ci (1.18, true)
-            - ci (1.x, false)
+            - required
         kube-proxy:
           restrictions:
             users: []
@@ -668,6 +666,32 @@ tide:
     - needs-rebase
   - repos:
     - kubernetes/kubernetes
+    excludedBranches:
+    - master
+    - release-1.25
+    labels:
+    - lgtm
+    - approved
+    - "cncf-cla: yes"
+    missingLabels:
+    - do-not-merge
+    - do-not-merge/blocked-paths
+    - do-not-merge/cherry-pick-not-approved
+    - do-not-merge/contains-merge-commits
+    - do-not-merge/hold
+    - do-not-merge/invalid-commit-message
+    - do-not-merge/invalid-owners-file
+    - do-not-merge/needs-kind
+    - do-not-merge/needs-sig
+    - do-not-merge/release-note-label-needed
+    - do-not-merge/work-in-progress
+    - needs-rebase
+  - repos:
+    - kubernetes/kubernetes
+    milestone: v1.25
+    includedBranches:
+    - master
+    - release-1.25
     labels:
     - lgtm
     - approved

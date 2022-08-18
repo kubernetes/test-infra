@@ -94,7 +94,6 @@ func TestFetchArtifacts_Prow(t *testing.T) {
 			res, err := artifact.ReadAll()
 			if err != nil {
 				t.Fatalf("%s failed reading bytes of log. got err: %v", tc.name, err)
-				continue
 			}
 			if !bytes.Equal(tc.expected, res) {
 				t.Errorf("Unexpected result of reading pod logs, expected %q, got %q", tc.expected, res)

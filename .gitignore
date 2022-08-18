@@ -30,3 +30,6 @@ secret.yaml
 
 # Binaries
 logexporter/cmd/logexporter
+
+# artifacts
+package-lock.json

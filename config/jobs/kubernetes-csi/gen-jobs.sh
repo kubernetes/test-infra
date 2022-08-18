@@ -24,29 +24,29 @@ base="$(dirname $0)"
 # irrelevant because the prow.sh script will pick a suitable KinD
 # image or build from source.
 k8s_versions="
-1.21
 1.22
 1.23
+1.24
 "
 
 # All the deployment versions we're testing.
 deployment_versions="
-1.21
 1.22
 1.23
+1.24
 "
 
 # The experimental version for which jobs are optional.
-experimental_k8s_version="1.23"
+experimental_k8s_version="1.24"
 
 # The latest stable Kubernetes version for testing alpha jobs
-latest_stable_k8s_version="1.22" # TODO: bump to 1.23 after testing a pull job
+latest_stable_k8s_version="1.23" # TODO: bump to 1.24 after testing a pull job
 
 # Tag of the hostpath driver we should use for sidecar pull jobs
 hostpath_driver_version="v1.8.0"
 
 # We need this image because it has Docker in Docker and go.
-dind_image="gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master"
+dind_image="gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220812-a0f1ed2b84-master"
 
 # All kubernetes-csi repos which are part of the hostpath driver example.
 # For these repos we generate the full test matrix. For each entry here
@@ -522,10 +522,6 @@ EOF
         args:
         - ./.prow.sh
         env:
-        - name: CSI_PROW_DRIVER_VERSION
-          value: "$hostpath_driver_version"
-        - name: CSI_SNAPSHOTTER_VERSION
-          value: $(snapshotter_version "" "")
         - name: CSI_PROW_TESTS
           value: "$(expand_tests "$tests")"
         # docker-in-docker needs privileged mode
@@ -565,9 +561,6 @@ EOF
         - runner.sh
         args:
         - ./.prow.sh
-        env:
-        - name: CSI_SNAPSHOTTER_VERSION
-          value: $(snapshotter_version "" "")
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
@@ -754,22 +747,30 @@ for repo in $csi_release_tools_repos; do
         - runner.sh
         args:
         - ./pull-test.sh # provided by csi-release-tools
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+$(resources_for_kubernetes "$latest_stable_k8s_version")
         env:
+        - name: PULL_TEST_REPO_DIR
+          value: /home/prow/go/src/github.com/kubernetes-csi/$repo
+EOF
+
+    # The environment must mirror the corresponding pull jobs for those repos,
+    # otherwise our pre-merge testing will not match what those jobs will do
+    # after updating csi-release-tools.
+    if [ "${repo}" != "csi-test" ]; then
+        cat >>"$base/csi-release-tools/csi-release-tools-config.yaml" <<EOF
         - name: CSI_PROW_KUBERNETES_VERSION
           value: "$latest_stable_k8s_version.0"
         - name: CSI_PROW_KUBERNETES_DEPLOYMENT
           value: "$latest_stable_k8s_version"
         - name: CSI_PROW_DRIVER_VERSION
           value: "$hostpath_driver_version"
-        - name: CSI_SNAPSHOTTER_VERSION
-          value: $(snapshotter_version "$latest_stable_k8s_version" "")
         - name: CSI_PROW_TESTS
           value: "unit sanity parallel"
-        - name: PULL_TEST_REPO_DIR
-          value: /home/prow/go/src/github.com/kubernetes-csi/$repo
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-$(resources_for_kubernetes "$latest_stable_k8s_version")
+        - name: CSI_SNAPSHOTTER_VERSION
+          value: $(snapshotter_version "$latest_stable_k8s_version" "")
 EOF
+    fi
 done

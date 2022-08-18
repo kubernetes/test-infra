@@ -33,7 +33,7 @@ from helpers import ( # pylint: disable=import-error, no-name-in-module
 skip_jobs = [
 ]
 
-image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master"
+image = "gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220812-a0f1ed2b84-master"
 
 loader = jinja2.FileSystemLoader(searchpath="./templates")
 
@@ -75,10 +75,6 @@ def build_test(cloud='aws',
     else:
         kops_deploy_url = f"https://storage.googleapis.com/kops-ci/markers/release-{kops_version}/latest-ci-updown-green.txt" # pylint: disable=line-too-long
 
-
-    # https://github.com/cilium/cilium/blob/f7a3f59fd74983c600bfce9cac364b76d20849d9/Documentation/operations/system_requirements.rst
-    if networking in ("cilium", "cilium-etcd") and distro not in ["u2004", "u2204arm64", "deb10", "deb11", "rhel8", "amzn2"]: # pylint: disable=line-too-long
-        return None
     if should_skip_newer_k8s(k8s_version, kops_version):
         return None
     if container_runtime == 'docker' and k8s_version not in ('1.21', '1.22', '1.23'):
@@ -125,6 +121,10 @@ def build_test(cloud='aws',
 
     node_ig_overrides = ""
     cp_ig_overrides = ""
+    if distro == "flatcar":
+        # https://github.com/flatcar-linux/Flatcar/issues/220
+        node_ig_overrides += "spec.instanceMetadata.httpTokens=optional"
+        cp_ig_overrides += "spec.instanceMetadata.httpTokens=optional"
 
     if tab in skip_jobs:
         return None
@@ -366,6 +366,7 @@ distro_options = [
     'flatcar',
     'rhel8',
     'u2004',
+    'u2204',
 ]
 
 k8s_versions = [
@@ -503,15 +504,6 @@ def generate_misc():
                                 ],
                    extra_dashboards=['kops-misc']),
 
-        # A special test for AWS Cloud-Controller-Manager
-        build_test(name_override="kops-grid-scenario-aws-cloud-controller-manager",
-                   cloud="aws",
-                   distro="u2004",
-                   k8s_version="ci",
-                   runs_per_day=3,
-                   extra_flags=['--override=cluster.spec.cloudControllerManager.cloudProvider=aws'],
-                   extra_dashboards=['provider-aws-cloud-provider-aws', 'kops-misc']),
-
         build_test(name_override="kops-grid-scenario-terraform",
                    terraform_version="1.0.5",
                    extra_flags=["--zones=us-west-1a"],
@@ -600,6 +592,14 @@ def generate_misc():
                    test_timeout_minutes=150,
                    scenario="keypair-rotation",
                    extra_dashboards=['kops-misc']),
+        build_test(name_override="kops-aws-keypair-rotation-ha",
+                   cloud="aws",
+                   kops_channel="alpha",
+                   runs_per_day=3,
+                   test_timeout_minutes=240,
+                   scenario="keypair-rotation",
+                   env={'KOPS_CONTROL_PLANE_SIZE': '3'},
+                   extra_dashboards=['kops-misc']),
 
         build_test(name_override="kops-aws-metrics-server",
                    cloud="aws",
@@ -617,6 +617,15 @@ def generate_misc():
                    kops_channel="alpha",
                    runs_per_day=3,
                    scenario="podidentitywebhook",
+                   extra_dashboards=['kops-misc']),
+
+        build_test(name_override="kops-aws-addon-resource-tracking",
+                   cloud="aws",
+                   networking="cilium",
+                   distro="u2004",
+                   kops_channel="alpha",
+                   runs_per_day=3,
+                   scenario="addon-resource-tracking",
                    extra_dashboards=['kops-misc']),
 
         build_test(name_override="kops-aws-external-dns",
@@ -780,7 +789,7 @@ def generate_network_plugins():
 def generate_upgrades():
 
     kops23 = 'v1.23.2'
-    kops24 = 'v1.24.0-beta.3'
+    kops24 = 'v1.24.0'
 
     versions_list = [
         #  kops    k8s          kops      k8s
@@ -804,6 +813,9 @@ def generate_upgrades():
         (('latest', 'v1.22.4'), ('latest', 'v1.23.0')),
         (('latest', 'v1.21.7'), ('latest', 'v1.22.4')),
         (('latest', 'v1.20.6'), ('latest', 'v1.21.7')),
+        # kOps latest should always be able to upgrade from stable to latest and stable to ci
+        (('latest', 'stable'), ('latest', 'latest')),
+        (('latest', 'stable'), ('latest', 'ci')),
     ]
     def shorten(version):
         version = re.sub(r'^v', '', version)
@@ -844,6 +856,9 @@ def generate_upgrades():
                        env=env,
                        )
         )
+        # k8s 1.19 has issues with our server side apply logic for addons
+        if 'v1.19.' in k8s_a:
+            continue
         results.append(
             build_test(name_override=job_name + "-many-addons",
                        distro='u2004',

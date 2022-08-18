@@ -136,6 +136,18 @@ type JobBase struct {
 	UtilityConfig
 }
 
+func (jb JobBase) GetName() string {
+	return jb.Name
+}
+
+func (jb JobBase) GetLabels() map[string]string {
+	return jb.Labels
+}
+
+func (jb JobBase) GetAnnotations() map[string]string {
+	return jb.Annotations
+}
+
 // +k8s:deepcopy-gen=true
 
 // Presubmit runs on PRs.
@@ -226,13 +238,19 @@ type Periodic struct {
 	JobBase
 
 	// (deprecated)Interval to wait between two runs of the job.
+	// Consecutive jobs are run at `interval` duration apart, provided the
+	// previous job has completed.
 	Interval string `json:"interval,omitempty"`
+	// MinimumInterval to wait between two runs of the job.
+	// Consecutive jobs are run at `interval` + `duration of previous job` apart.
+	MinimumInterval string `json:"minimun_interval,omitempty"`
 	// Cron representation of job trigger time
 	Cron string `json:"cron,omitempty"`
 	// Tags for config entries
 	Tags []string `json:"tags,omitempty"`
 
-	interval time.Duration
+	interval         time.Duration
+	minimum_interval time.Duration
 }
 
 // JenkinsSpec holds optional Jenkins job config
@@ -250,6 +268,16 @@ func (p *Periodic) SetInterval(d time.Duration) {
 // GetInterval returns interval, the frequency duration it runs.
 func (p *Periodic) GetInterval() time.Duration {
 	return p.interval
+}
+
+// SetMinimumInterval updates minimum_interval, the minimum frequency duration it runs.
+func (p *Periodic) SetMinimumInterval(d time.Duration) {
+	p.minimum_interval = d
+}
+
+// GetMinimumInterval returns minimum_interval, the minimum frequency duration it runs.
+func (p *Periodic) GetMinimumInterval() time.Duration {
+	return p.minimum_interval
 }
 
 // +k8s:deepcopy-gen=true

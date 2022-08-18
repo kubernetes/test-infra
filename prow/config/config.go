@@ -51,7 +51,6 @@ import (
 	"sigs.k8s.io/yaml"
 
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
-	gerrit "k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/git/types"
 	"k8s.io/test-infra/prow/git/v2"
 	"k8s.io/test-infra/prow/github"
@@ -763,6 +762,13 @@ func (p *Plank) GuessDefaultDecorationConfig(repo, cluster string) *prowapi.Deco
 	return p.mergeDefaultDecorationConfig(repo, cluster, nil)
 }
 
+// GuessDefaultDecorationConfig attempts to find the resolved default decoration
+// config for a given repo, cluster and job DecorationConfig. It is primarily used for best effort
+// guesses about GCS configuration for undecorated jobs.
+func (p *Plank) GuessDefaultDecorationConfigWithJobDC(repo, cluster string, jobDC *prowapi.DecorationConfig) *prowapi.DecorationConfig {
+	return p.mergeDefaultDecorationConfig(repo, cluster, jobDC)
+}
+
 // defaultDecorationMapToSlice converts the old format
 // (map[string]*prowapi.DecorationConfig) to the new format
 // ([]*DefaultDecorationConfigEntry).
@@ -871,18 +877,29 @@ type GerritOrgRepoConfigs []GerritOrgRepoConfig
 
 // GerritOrgRepoConfig is config for repos.
 type GerritOrgRepoConfig struct {
-	Org        string   `json:"org,omitempty"`
-	Repos      []string `json:"repos,omitempty"`
-	OptOutHelp bool     `json:"opt_out_help,omitempty"`
+	Org        string             `json:"org,omitempty"`
+	Repos      []string           `json:"repos,omitempty"`
+	OptOutHelp bool               `json:"opt_out_help,omitempty"`
+	Filters    *GerritQueryFilter `json:"filters,omitempty"`
 }
 
-func (goc *GerritOrgRepoConfigs) AllRepos() map[string][]string {
-	var res map[string][]string
+type GerritQueryFilter struct {
+	Branches         []string `json:"branches,omitempty"`
+	ExcludedBranches []string `json:"excluded_branches,omitempty"`
+}
+
+func (goc *GerritOrgRepoConfigs) AllRepos() map[string]map[string]*GerritQueryFilter {
+	var res map[string]map[string]*GerritQueryFilter
 	for _, orgConfig := range *goc {
 		if res == nil {
-			res = make(map[string][]string)
+			res = make(map[string]map[string]*GerritQueryFilter)
 		}
-		res[orgConfig.Org] = append(res[orgConfig.Org], orgConfig.Repos...)
+		for _, repo := range orgConfig.Repos {
+			if _, ok := res[orgConfig.Org]; !ok {
+				res[orgConfig.Org] = make(map[string]*GerritQueryFilter)
+			}
+			res[orgConfig.Org][repo] = orgConfig.Filters
+		}
 	}
 	return res
 }
@@ -1281,16 +1298,18 @@ type DefaultRerunAuthConfigEntry struct {
 	Config *prowapi.RerunAuthConfig `json:"rerun_auth_configs,omitempty"`
 }
 
-func (d *Deck) GetRerunAuthConfig(refs *prowapi.Refs, cluster string) *prowapi.RerunAuthConfig {
+func (d *Deck) GetRerunAuthConfig(jobSpec *prowapi.ProwJobSpec) *prowapi.RerunAuthConfig {
 	var config *prowapi.RerunAuthConfig
 
 	var orgRepo string
-	if refs != nil {
-		orgRepo = refs.OrgRepoString()
+	if jobSpec.Refs != nil {
+		orgRepo = jobSpec.Refs.OrgRepoString()
+	} else if len(jobSpec.ExtraRefs) > 0 {
+		orgRepo = jobSpec.ExtraRefs[0].OrgRepoString()
 	}
 
 	for _, drac := range d.DefaultRerunAuthConfigs {
-		if drac.matches(orgRepo, cluster) {
+		if drac.matches(orgRepo, jobSpec.Cluster) {
 			config = drac.Config
 		}
 	}
@@ -2179,21 +2198,67 @@ func (c Config) validatePostsubmits(postsubmits []Postsubmit) error {
 
 // validatePeriodics validates a set of periodics.
 func (c Config) validatePeriodics(periodics []Periodic) error {
+	var errs []error
 
 	// validate no duplicated periodics.
 	validPeriodics := sets.NewString()
 	// Ensure that the periodic durations are valid and specs exist.
-	for _, p := range periodics {
+	for j, p := range periodics {
 		if validPeriodics.Has(p.Name) {
-			return fmt.Errorf("duplicated periodic job : %s", p.Name)
+			errs = append(errs, fmt.Errorf("duplicated periodic job: %s", p.Name))
 		}
 		validPeriodics.Insert(p.Name)
 		if err := c.validateJobBase(p.JobBase, prowapi.PeriodicJob); err != nil {
-			return fmt.Errorf("invalid periodic job %s: %w", p.Name, err)
+			errs = append(errs, fmt.Errorf("invalid periodic job %s: %w", p.Name, err))
 		}
+
+		// Validate mutually exclusive properties
+		seen := 0
+		if p.Cron != "" {
+			seen += 1
+		}
+		if p.Interval != "" {
+			seen += 1
+		}
+		if p.MinimumInterval != "" {
+			seen += 1
+		}
+		if seen > 1 {
+			errs = append(errs, fmt.Errorf("cron, interval, and minimum_interval are mutually exclusive in periodic %s", p.Name))
+			continue
+		}
+		if seen == 0 {
+			errs = append(errs, fmt.Errorf("at least one of cron, interval, or minimum_interval must be set in periodic %s", p.Name))
+			continue
+		}
+
+		if p.Cron != "" {
+			if _, err := cron.Parse(p.Cron); err != nil {
+				errs = append(errs, fmt.Errorf("invalid cron string %s in periodic %s: %w", p.Cron, p.Name, err))
+			}
+		}
+
+		// Set the interval on the periodic jobs. It doesn't make sense to do this
+		// for child jobs.
+		if p.Interval != "" {
+			d, err := time.ParseDuration(periodics[j].Interval)
+			if err != nil {
+				errs = append(errs, fmt.Errorf("cannot parse duration for %s: %w", periodics[j].Name, err))
+			}
+			periodics[j].interval = d
+		}
+
+		if p.MinimumInterval != "" {
+			d, err := time.ParseDuration(periodics[j].MinimumInterval)
+			if err != nil {
+				errs = append(errs, fmt.Errorf("cannot parse duration for %s: %w", periodics[j].Name, err))
+			}
+			periodics[j].minimum_interval = d
+		}
+
 	}
 
-	return nil
+	return utilerrors.NewAggregate(errs)
 }
 
 // ValidateJobConfig validates if all the jobspecs/presets are valid
@@ -2216,28 +2281,9 @@ func (c *Config) ValidateJobConfig() error {
 		}
 	}
 
+	// Validate periodics.
 	if err := c.validatePeriodics(c.Periodics); err != nil {
 		errs = append(errs, err)
-	}
-
-	// Set the interval on the periodic jobs. It doesn't make sense to do this
-	// for child jobs.
-	for j, p := range c.Periodics {
-		if p.Cron != "" && p.Interval != "" {
-			errs = append(errs, fmt.Errorf("cron and interval cannot be both set in periodic %s", p.Name))
-		} else if p.Cron == "" && p.Interval == "" {
-			errs = append(errs, fmt.Errorf("cron and interval cannot be both empty in periodic %s", p.Name))
-		} else if p.Cron != "" {
-			if _, err := cron.Parse(p.Cron); err != nil {
-				errs = append(errs, fmt.Errorf("invalid cron string %s in periodic %s: %w", p.Cron, p.Name, err))
-			}
-		} else {
-			d, err := time.ParseDuration(c.Periodics[j].Interval)
-			if err != nil {
-				errs = append(errs, fmt.Errorf("cannot parse duration for %s: %w", c.Periodics[j].Name, err))
-			}
-			c.Periodics[j].interval = d
-		}
 	}
 
 	c.Deck.AllKnownStorageBuckets = calculateStorageBuckets(c)
@@ -2814,7 +2860,7 @@ func validateReporting(j JobBase, r Reporter) error {
 		return nil
 	}
 	for label, value := range j.Labels {
-		if label == gerrit.GerritReportLabel && value != "" {
+		if label == kube.GerritReportLabel && value != "" {
 			return fmt.Errorf("Gerrit report label %s set to non-empty string but job is configured to skip reporting.", label)
 		}
 	}
@@ -3053,7 +3099,7 @@ func StringsToOrgRepos(vs []string) []OrgRepo {
 func (pc *ProwConfig) mergeFrom(additional *ProwConfig) error {
 	emptyReference := &ProwConfig{
 		BranchProtection: additional.BranchProtection,
-		Tide:             Tide{MergeType: additional.Tide.MergeType, Queries: additional.Tide.Queries},
+		Tide:             Tide{TideGitHubConfig: TideGitHubConfig{MergeType: additional.Tide.MergeType, Queries: additional.Tide.Queries}},
 	}
 
 	var errs []error
@@ -3160,7 +3206,7 @@ func (pc *ProwConfig) hasGlobalConfig() bool {
 	}
 	emptyReference := &ProwConfig{
 		BranchProtection: pc.BranchProtection,
-		Tide:             Tide{MergeType: pc.Tide.MergeType, Queries: pc.Tide.Queries},
+		Tide:             Tide{TideGitHubConfig: TideGitHubConfig{MergeType: pc.Tide.MergeType, Queries: pc.Tide.Queries}},
 	}
 	return cmp.Diff(pc, emptyReference) != ""
 }

@@ -29,5 +29,6 @@ docker run \
     -e HOME=/tmp \
     -e PYTHONPATH='' \
     -v "${REPO_ROOT:?}:${REPO_ROOT:?}" -w "${REPO_ROOT}" \
+    --security-opt="label=disable" \
     "${PY_IMAGE}" \
     bash -c 'source ./hack/make-rules/py-test/activate-python_venv.sh && $0 $@' "$@"

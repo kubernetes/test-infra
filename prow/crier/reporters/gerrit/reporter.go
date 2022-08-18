@@ -131,7 +131,7 @@ type JobReport struct {
 
 // NewReporter returns a reporter client
 func NewReporter(cfg config.Getter, cookiefilePath string, projects map[string][]string, pjclientset ctrlruntimeclient.Client) (*Client, error) {
-	gc, err := client.NewClient(projects)
+	gc, err := client.NewClient(client.ProjectsFlagToConfig(projects))
 	if err != nil {
 		return nil, err
 	}
@@ -211,15 +211,15 @@ func (c *Client) ShouldReport(ctx context.Context, log *logrus.Entry, pj *v1.Pro
 	}
 
 	// has gerrit metadata (scheduled by gerrit adapter)
-	if pj.ObjectMeta.Annotations[client.GerritID] == "" ||
-		pj.ObjectMeta.Annotations[client.GerritInstance] == "" ||
-		pj.ObjectMeta.Labels[client.GerritRevision] == "" {
+	if pj.ObjectMeta.Annotations[kube.GerritID] == "" ||
+		pj.ObjectMeta.Annotations[kube.GerritInstance] == "" ||
+		pj.ObjectMeta.Labels[kube.GerritRevision] == "" {
 		log.Info("Not a gerrit job")
 		return false
 	}
 
 	// Don't wait for report aggregation if not voting on any label
-	if pj.ObjectMeta.Labels[client.GerritReportLabel] == "" {
+	if pj.ObjectMeta.Labels[kube.GerritReportLabel] == "" {
 		return true
 	}
 
@@ -253,14 +253,14 @@ func (c *Client) ShouldReport(ctx context.Context, log *logrus.Entry, pj *v1.Pro
 	// current prowjob doesn't have this label or has an invalid value, this
 	// will be reflected as warning message in prow.
 	patchsetNumFromPJ := func(pj *v1.ProwJob) int {
-		ps, ok := pj.ObjectMeta.Labels[client.GerritPatchset]
+		ps, ok := pj.ObjectMeta.Labels[kube.GerritPatchset]
 		if !ok {
-			log.Warnf("Label %s not found in prowjob %s", client.GerritPatchset, pj.Name)
+			log.Warnf("Label %s not found in prowjob %s", kube.GerritPatchset, pj.Name)
 			return -1
 		}
 		intPs, err := strconv.Atoi(ps)
 		if err != nil {
-			log.Warnf("Found non integer label for %s: %s in prowjob %s", client.GerritPatchset, ps, pj.Name)
+			log.Warnf("Found non integer label for %s: %s in prowjob %s", kube.GerritPatchset, ps, pj.Name)
 			return -1
 		}
 		return intPs
@@ -270,7 +270,7 @@ func (c *Client) ShouldReport(ctx context.Context, log *logrus.Entry, pj *v1.Pro
 	patchsetNum := patchsetNumFromPJ(pj)
 
 	// Check all other prowjobs to see whether they agree or not
-	return allPJsAgreeToReport([]string{client.GerritRevision, kube.ProwJobTypeLabel, client.GerritReportLabel}, func(otherPj *v1.ProwJob) bool {
+	return allPJsAgreeToReport([]string{kube.GerritRevision, kube.ProwJobTypeLabel, kube.GerritReportLabel}, func(otherPj *v1.ProwJob) bool {
 		if otherPj.Status.State == v1.TriggeredState || otherPj.Status.State == v1.PendingState {
 			// other jobs with same label are still running on this revision, skip report
 			log.Info("Other jobs with same label are still running on this revision")
@@ -337,11 +337,11 @@ func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJo
 	newCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
-	clientGerritRevision := client.GerritRevision
-	clientGerritID := client.GerritID
-	clientGerritInstance := client.GerritInstance
+	clientGerritRevision := kube.GerritRevision
+	clientGerritID := kube.GerritID
+	clientGerritInstance := kube.GerritInstance
 	pjTypeLabel := kube.ProwJobTypeLabel
-	gerritReportLabel := client.GerritReportLabel
+	gerritReportLabel := kube.GerritReportLabel
 
 	var pjsOnRevisionWithSameLabel v1.ProwJobList
 	var pjsToUpdateState []v1.ProwJob
@@ -386,7 +386,7 @@ func (c *Client) Report(ctx context.Context, logger *logrus.Entry, pj *v1.ProwJo
 		"id":       gerritID,
 	})
 	var reportLabel string
-	if val, ok := pj.ObjectMeta.Labels[client.GerritReportLabel]; ok {
+	if val, ok := pj.ObjectMeta.Labels[kube.GerritReportLabel]; ok {
 		reportLabel = val
 	} else {
 		reportLabel = codeReview

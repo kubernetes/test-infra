@@ -659,6 +659,10 @@ func TestAccumulate(t *testing.T) {
 			test.name = strconv.Itoa(i)
 		}
 		t.Run(test.name, func(t *testing.T) {
+			syncCtrl := &syncController{
+				provider: &GitHubProvider{ghc: &fgc{}, logger: logrus.NewEntry(logrus.New())},
+				logger:   logrus.NewEntry(logrus.New()),
+			}
 			var pulls []CodeReviewCommon
 			for num, sha := range test.pullRequests {
 				newPull := PullRequest{Number: githubql.Int(num), HeadRefOID: githubql.String(sha)}
@@ -680,7 +684,7 @@ func TestAccumulate(t *testing.T) {
 				})
 			}
 
-			successes, pendings, nones, _ := accumulate(test.presubmits, pulls, pjs, logrus.NewEntry(logrus.New()), baseSHA, &fgc{})
+			successes, pendings, nones, _ := syncCtrl.accumulate(test.presubmits, pulls, pjs, baseSHA)
 
 			t.Logf("test run %d", i)
 			testPullsMatchList(t, "successes", successes, test.successes)
@@ -1128,11 +1132,14 @@ func testPickBatch(clients localgit.Clients, t *testing.T) {
 			},
 		},
 	})
+	logger := logrus.WithField("component", "tide")
+	ghProvider := &GitHubProvider{cfg: ca.Config, mergeChecker: newMergeChecker(ca.Config, &fgc{}), logger: logger}
 	c := &syncController{
-		logger:       logrus.WithField("component", "tide"),
+		logger:       logger,
 		gc:           gc,
+		provider:     ghProvider,
 		config:       ca.Config,
-		pickNewBatch: pickNewBatch(gc, ca.Config),
+		pickNewBatch: pickNewBatch(gc, ca.Config, ghProvider),
 	}
 	prs, presubmits, err := c.pickBatch(sp, map[int]contextChecker{
 		0: &config.TideContextPolicy{},
@@ -1174,14 +1181,16 @@ func TestMergeMethodCheckerAndPRMergeMethod(t *testing.T) {
 	rebaseLabel := "tide/rebase"
 
 	tideConfig := config.Tide{
-		SquashLabel: squashLabel,
-		MergeLabel:  mergeLabel,
-		RebaseLabel: rebaseLabel,
+		TideGitHubConfig: config.TideGitHubConfig{
+			SquashLabel: squashLabel,
+			MergeLabel:  mergeLabel,
+			RebaseLabel: rebaseLabel,
 
-		MergeType: map[string]types.PullRequestMergeType{
-			"o/configured-rebase":              types.MergeRebase, // GH client allows merge, rebase
-			"o/configured-squash-allow-rebase": types.MergeSquash, // GH client allows merge, squash, rebase
-			"o/configure-re-base":              types.MergeRebase, // GH client allows merge
+			MergeType: map[string]types.PullRequestMergeType{
+				"o/configured-rebase":              types.MergeRebase, // GH client allows merge, rebase
+				"o/configured-squash-allow-rebase": types.MergeSquash, // GH client allows merge, squash, rebase
+				"o/configure-re-base":              types.MergeRebase, // GH client allows merge
+			},
 		},
 	}
 	cfg := func() *config.Config { return &config.Config{ProwConfig: config.ProwConfig{Tide: tideConfig}} }
@@ -1298,7 +1307,7 @@ func TestMergeMethodCheckerAndPRMergeMethod(t *testing.T) {
 				pr.Mergeable = githubql.MergeableStateConflicting
 			}
 
-			actual, err := prMergeMethod(tideConfig, CodeReviewCommonFromPullRequest(pr))
+			actual, err := mmc.prMergeMethod(tideConfig, CodeReviewCommonFromPullRequest(pr))
 			if err != nil {
 				if !tc.expectErr {
 					t.Errorf("unexpected error: %v", err)
@@ -1311,7 +1320,7 @@ func TestMergeMethodCheckerAndPRMergeMethod(t *testing.T) {
 			if tc.expectedMethod != actual {
 				t.Errorf("wanted: %q, got: %q", tc.expectedMethod, actual)
 			}
-			reason, err := mmc.isAllowed(CodeReviewCommonFromPullRequest(pr))
+			reason, err := mmc.isAllowedToMerge(CodeReviewCommonFromPullRequest(pr))
 			if err != nil {
 				t.Errorf("unexpected processing error: %v", err)
 			} else if reason != "" {
@@ -1331,8 +1340,10 @@ func TestRebaseMergeMethodIsAllowed(t *testing.T) {
 	orgName := "fake-org"
 	repoName := "fake-repo"
 	tideConfig := config.Tide{
-		MergeType: map[string]types.PullRequestMergeType{
-			fmt.Sprintf("%s/%s", orgName, repoName): types.MergeRebase,
+		TideGitHubConfig: config.TideGitHubConfig{
+			MergeType: map[string]types.PullRequestMergeType{
+				fmt.Sprintf("%s/%s", orgName, repoName): types.MergeRebase,
+			},
 		},
 	}
 	cfg := func() *config.Config { return &config.Config{ProwConfig: config.ProwConfig{Tide: tideConfig}} }
@@ -1385,7 +1396,7 @@ func TestRebaseMergeMethodIsAllowed(t *testing.T) {
 				CanBeRebased: githubql.Boolean(tc.prCanBeRebased),
 			}
 
-			mergeOutput, err := mmc.isAllowed(CodeReviewCommonFromPullRequest(pr))
+			mergeOutput, err := mmc.isAllowedToMerge(CodeReviewCommonFromPullRequest(pr))
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			} else {
@@ -2029,8 +2040,10 @@ func TestServeHTTP(t *testing.T) {
 				Action:     Merge,
 			},
 		},
-		mergeChecker: newMergeChecker(cfg, &fgc{}),
-		History:      hist,
+		provider: &GitHubProvider{
+			mergeChecker: newMergeChecker(cfg, &fgc{}),
+		},
+		History: hist,
 	}
 	s := httptest.NewServer(c)
 	defer s.Close()
@@ -2045,99 +2058,6 @@ func TestServeHTTP(t *testing.T) {
 	}
 	if !reflect.DeepEqual(c.pools, pools) {
 		t.Errorf("Received pools %v do not match original pools %v.", pools, c.pools)
-	}
-}
-
-func TestHeadContexts(t *testing.T) {
-	type commitContext struct {
-		// one context per commit for testing
-		context string
-		sha     string
-	}
-
-	win := "win"
-	lose := "lose"
-	headSHA := "head"
-	testCases := []struct {
-		name                string
-		commitContexts      []commitContext
-		expectAPICall       bool
-		expectChecksAPICall bool
-	}{
-		{
-			name: "first commit is head",
-			commitContexts: []commitContext{
-				{context: win, sha: headSHA},
-				{context: lose, sha: "other"},
-				{context: lose, sha: "sha"},
-			},
-		},
-		{
-			name: "last commit is head",
-			commitContexts: []commitContext{
-				{context: lose, sha: "shaaa"},
-				{context: lose, sha: "other"},
-				{context: win, sha: headSHA},
-			},
-		},
-		{
-			name: "no commit is head, falling back to v3 api and getting context via status api",
-			commitContexts: []commitContext{
-				{context: lose, sha: "shaaa"},
-				{context: lose, sha: "other"},
-				{context: lose, sha: "sha"},
-			},
-			expectAPICall: true,
-		},
-		{
-			name: "no commit is head, falling back to v3 api and getting context via checks api",
-			commitContexts: []commitContext{
-				{context: lose, sha: "shaaa"},
-				{context: lose, sha: "other"},
-				{context: lose, sha: "sha"},
-			},
-			expectAPICall:       true,
-			expectChecksAPICall: true,
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			t.Logf("Running test case %q", tc.name)
-			fgc := &fgc{}
-			if !tc.expectChecksAPICall {
-				fgc.combinedStatus = map[string]string{win: string(githubql.StatusStateSuccess)}
-			} else {
-				fgc.checkRuns = &github.CheckRunList{CheckRuns: []github.CheckRun{
-					{Name: win, Status: "completed", Conclusion: "neutral"},
-				}}
-			}
-			if tc.expectAPICall {
-				fgc.expectedSHA = headSHA
-			}
-			pr := &PullRequest{HeadRefOID: githubql.String(headSHA)}
-			for _, ctx := range tc.commitContexts {
-				commit := Commit{
-					Status: struct{ Contexts []Context }{
-						Contexts: []Context{
-							{
-								Context: githubql.String(ctx.context),
-							},
-						},
-					},
-					OID: githubql.String(ctx.sha),
-				}
-				pr.Commits.Nodes = append(pr.Commits.Nodes, struct{ Commit Commit }{commit})
-			}
-
-			contexts, err := headContexts(logrus.WithField("component", "tide"), fgc, CodeReviewCommonFromPullRequest(pr))
-			if err != nil {
-				t.Fatalf("Unexpected error from headContexts: %v", err)
-			}
-			if len(contexts) != 1 || string(contexts[0].Context) != win {
-				t.Errorf("Expected exactly 1 %q context, but got: %#v", win, contexts)
-			}
-		})
 	}
 }
 
@@ -2284,9 +2204,11 @@ func TestSync(t *testing.T) {
 			ca.Set(&config.Config{
 				ProwConfig: config.ProwConfig{
 					Tide: config.Tide{
-						Queries:            []config.TideQuery{{}},
-						MaxGoroutines:      4,
-						StatusUpdatePeriod: &metav1.Duration{Duration: time.Second * 0},
+						MaxGoroutines: 4,
+						TideGitHubConfig: config.TideGitHubConfig{
+							Queries:            []config.TideQuery{{}},
+							StatusUpdatePeriod: &metav1.Duration{Duration: time.Second * 0},
+						},
 					},
 				},
 			})
@@ -2310,8 +2232,13 @@ func TestSync(t *testing.T) {
 			go sc.run()
 			defer sc.shutdown()
 			c := &syncController{
-				config:        ca.Config,
-				ghc:           fgc,
+				config: ca.Config,
+				provider: &GitHubProvider{
+					cfg:          ca.Config,
+					ghc:          fgc,
+					mergeChecker: mergeChecker,
+					logger:       logrus.WithField("controller", "sync"),
+				},
 				gc:            nil,
 				prowJobClient: fakectrlruntimeclient.NewFakeClient(),
 				logger:        logrus.WithField("controller", "sync"),
@@ -2319,8 +2246,7 @@ func TestSync(t *testing.T) {
 					ghc:             fgc,
 					nextChangeCache: make(map[changeCacheKey][]string),
 				},
-				mergeChecker: mergeChecker,
-				History:      hist,
+				History: hist,
 				statusUpdate: &statusUpdate{
 					dontUpdateStatus: &threadSafePRSet{},
 					newPoolPending:   make(chan bool),
@@ -2776,7 +2702,12 @@ func TestFilterSubpool(t *testing.T) {
 
 			configGetter := func() *config.Config { return &config.Config{} }
 			mmc := newMergeChecker(configGetter, &fgc{})
-			filtered := filterSubpool(nil, mmc.isAllowed, sp)
+			provider := &GitHubProvider{
+				cfg:          configGetter,
+				mergeChecker: mmc,
+				logger:       logrus.WithContext(context.Background()),
+			}
+			filtered := filterSubpool(provider, mmc.isAllowedToMerge, sp)
 			if len(tc.expectedPRs) == 0 {
 				if filtered != nil {
 					t.Fatalf("Expected subpool to be pruned, but got: %v", filtered)
@@ -2904,15 +2835,16 @@ func TestIsPassing(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Failed to get log output before testing: %v", err)
 			}
+			syncCtl := &syncController{provider: &GitHubProvider{ghc: ghc, logger: log}}
 			pr := PullRequest{HeadRefOID: githubql.String(headSHA)}
-			passing := (&syncController{ghc: ghc}).isPassingTests(log, CodeReviewCommonFromPullRequest(&pr), &tc.config)
+			passing := syncCtl.isPassingTests(log, CodeReviewCommonFromPullRequest(&pr), &tc.config)
 			if passing != tc.passing {
 				t.Errorf("%s: Expected %t got %t", tc.name, tc.passing, passing)
 			}
 
 			if tc.passing {
 				c := &syncController{
-					ghc:           ghc,
+					provider:      &GitHubProvider{ghc: ghc, logger: log},
 					prowJobClient: fakectrlruntimeclient.NewFakeClient(),
 					config:        func() *config.Config { return &config.Config{} },
 				}
@@ -3207,15 +3139,17 @@ func TestPresubmitsByPull(t *testing.T) {
 		}
 		c := &syncController{
 			config: cfgAgent.Config,
-			ghc:    &fgc{},
-			gc:     nil,
+			provider: &GitHubProvider{
+				ghc:          &fgc{},
+				mergeChecker: newMergeChecker(cfgAgent.Config, &fgc{}),
+			},
+			gc: nil,
 			changedFiles: &changedFilesAgent{
 				ghc:             &fgc{},
 				changeCache:     tc.initialChangeCache,
 				nextChangeCache: make(map[changeCacheKey][]string),
 			},
-			mergeChecker: newMergeChecker(cfgAgent.Config, &fgc{}),
-			logger:       logrus.WithField("test", tc.name),
+			logger: logrus.WithField("test", tc.name),
 		}
 		presubmits, err := c.presubmitsByPull(sp)
 		if err != nil {
@@ -3238,104 +3172,6 @@ func TestPresubmitsByPull(t *testing.T) {
 func getTemplate(name, tplStr string) *template.Template {
 	tpl, _ := template.New(name).Parse(tplStr)
 	return tpl
-}
-
-func TestPrepareMergeDetails(t *testing.T) {
-	pr := PullRequest{
-		Number:     githubql.Int(1),
-		Mergeable:  githubql.MergeableStateMergeable,
-		HeadRefOID: githubql.String("SHA"),
-		Title:      "my commit title",
-		Body:       "my commit body",
-	}
-
-	testCases := []struct {
-		name        string
-		tpl         config.TideMergeCommitTemplate
-		pr          PullRequest
-		mergeMethod types.PullRequestMergeType
-		expected    github.MergeDetails
-	}{{
-		name:        "No commit template",
-		tpl:         config.TideMergeCommitTemplate{},
-		pr:          pr,
-		mergeMethod: "merge",
-		expected: github.MergeDetails{
-			SHA:         "SHA",
-			MergeMethod: "merge",
-		},
-	}, {
-		name: "No commit template fields",
-		tpl: config.TideMergeCommitTemplate{
-			Title: nil,
-			Body:  nil,
-		},
-		pr:          pr,
-		mergeMethod: "merge",
-		expected: github.MergeDetails{
-			SHA:         "SHA",
-			MergeMethod: "merge",
-		},
-	}, {
-		name: "Static commit template",
-		tpl: config.TideMergeCommitTemplate{
-			Title: getTemplate("CommitTitle", "static title"),
-			Body:  getTemplate("CommitBody", "static body"),
-		},
-		pr:          pr,
-		mergeMethod: "merge",
-		expected: github.MergeDetails{
-			SHA:           "SHA",
-			MergeMethod:   "merge",
-			CommitTitle:   "static title",
-			CommitMessage: "static body",
-		},
-	}, {
-		name: "Commit template uses PullRequest fields",
-		tpl: config.TideMergeCommitTemplate{
-			Title: getTemplate("CommitTitle", "{{ .Number }}: {{ .Title }}"),
-			Body:  getTemplate("CommitBody", "{{ .HeadRefOID }} - {{ .Body }}"),
-		},
-		pr:          pr,
-		mergeMethod: "merge",
-		expected: github.MergeDetails{
-			SHA:           "SHA",
-			MergeMethod:   "merge",
-			CommitTitle:   "1: my commit title",
-			CommitMessage: "SHA - my commit body",
-		},
-	}, {
-		name: "Commit template uses nonexistent fields",
-		tpl: config.TideMergeCommitTemplate{
-			Title: getTemplate("CommitTitle", "{{ .Hello }}"),
-			Body:  getTemplate("CommitBody", "{{ .World }}"),
-		},
-		pr:          pr,
-		mergeMethod: "merge",
-		expected: github.MergeDetails{
-			SHA:         "SHA",
-			MergeMethod: "merge",
-		},
-	}}
-
-	for _, test := range testCases {
-		t.Run(test.name, func(t *testing.T) {
-			cfg := &config.Config{}
-			cfgAgent := &config.Agent{}
-			cfgAgent.Set(cfg)
-			c := &syncController{
-				config: cfgAgent.Config,
-				ghc:    &fgc{},
-				logger: logrus.WithField("component", "tide"),
-			}
-
-			actual := c.prepareMergeDetails(test.tpl, *CodeReviewCommonFromPullRequest(&test.pr), test.mergeMethod)
-
-			if !reflect.DeepEqual(actual, test.expected) {
-				t.Errorf("Case %s failed: expected %+v, got %+v", test.name, test.expected, actual)
-			}
-		})
-	}
 }
 
 func TestAccumulateReturnsCorrectMissingTests(t *testing.T) {
@@ -3641,7 +3477,14 @@ func TestAccumulateReturnsCorrectMissingTests(t *testing.T) {
 				crc := CodeReviewCommonFromPullRequest(&pr)
 				crcs = append(crcs, *crc)
 			}
-			_, _, _, missingSerialTests := accumulate(tc.presubmits, crcs, tc.pjs, log, baseSHA, &fgc{})
+			syncCtrl := &syncController{
+				provider: &GitHubProvider{
+					ghc:    &fgc{},
+					logger: log,
+				},
+				logger: log,
+			}
+			_, _, _, missingSerialTests := syncCtrl.accumulate(tc.presubmits, crcs, tc.pjs, baseSHA)
 			// Apiequality treats nil slices/maps equal to a zero length slice/map, keeping us from
 			// the burden of having to always initialize them
 			if !apiequality.Semantic.DeepEqual(tc.expectedPresubmits, missingSerialTests) {
@@ -4423,23 +4266,24 @@ func TestQueryShardsByOrgWhenAppsAuthIsEnabledOnly(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			c := &syncController{
-				logger: logrus.WithField("test", tc.name),
-				config: func() *config.Config {
-					return &config.Config{ProwConfig: config.ProwConfig{Tide: config.Tide{Queries: []config.TideQuery{{Orgs: []string{"org", "other-org"}}}}}}
+			provider := &GitHubProvider{
+				cfg: func() *config.Config {
+					return &config.Config{ProwConfig: config.ProwConfig{Tide: config.Tide{
+						TideGitHubConfig: config.TideGitHubConfig{Queries: []config.TideQuery{{Orgs: []string{"org", "other-org"}}}}}}}
 				},
 				ghc:                &fgc{prs: tc.prs},
 				usesGitHubAppsAuth: tc.usesGitHubAppsAuth,
+				logger:             logrus.WithField("test", tc.name),
 			}
 
-			prs, err := c.query()
+			prs, err := provider.Query()
 			if err != nil {
 				t.Fatalf("query() failed: %v", err)
 			}
 			if n := len(prs); n != 2 {
 				t.Errorf("expected to get two prs back, got %d", n)
 			}
-			if diff := cmp.Diff(tc.expectedNumberOfApiCalls, c.ghc.(*fgc).queryCalls); diff != "" {
+			if diff := cmp.Diff(tc.expectedNumberOfApiCalls, provider.ghc.(*fgc).queryCalls); diff != "" {
 				t.Errorf("expectedNumberOfApiCallsByOrg differs from actual: %s", diff)
 			}
 		})
@@ -4724,17 +4568,25 @@ func TestPickBatchPrefersBatchesWithPreexistingJobs(t *testing.T) {
 					*CodeReviewCommonFromPullRequest(&PullRequest{Number: 99, HeadRefOID: "pr-from-new-batch-func"})}, nil
 			}
 
+			cfg := func() *config.Config {
+				return &config.Config{ProwConfig: config.ProwConfig{
+					Tide: config.Tide{
+						BatchSizeLimitMap:            map[string]int{"*": tc.maxBatchSize},
+						PrioritizeExistingBatchesMap: tc.prioritizeExistingBatchesMap,
+					}},
+				}
+			}
+
+			logger := logrus.WithField("test", tc.name)
+			ghc := &fgc{skipExpectedShaCheck: true}
 			c := &syncController{
 				logger: logrus.WithField("test", tc.name),
-				config: func() *config.Config {
-					return &config.Config{ProwConfig: config.ProwConfig{
-						Tide: config.Tide{
-							BatchSizeLimitMap:            map[string]int{"*": tc.maxBatchSize},
-							PrioritizeExistingBatchesMap: tc.prioritizeExistingBatchesMap,
-						}},
-					}
+				config: cfg,
+				provider: &GitHubProvider{
+					cfg:    cfg,
+					logger: logger,
+					ghc:    ghc,
 				},
-				ghc: &fgc{skipExpectedShaCheck: true},
 			}
 			prs, _, err := c.pickBatch(sp, contextCheckers, newBatchFunc)
 			if err != nil {
@@ -4916,10 +4768,14 @@ func TestBatchPickingConsidersPRThatIsCurrentlyBeingSeriallyRetested(t *testing.
 	t.Parallel()
 	configGetter := func() *config.Config {
 		return &config.Config{
-			ProwConfig: config.ProwConfig{Tide: config.Tide{
-				Queries:       config.TideQueries{{}},
-				MaxGoroutines: 1,
-			}},
+			ProwConfig: config.ProwConfig{
+				Tide: config.Tide{
+					MaxGoroutines: 1,
+					TideGitHubConfig: config.TideGitHubConfig{
+						Queries: config.TideQueries{{}},
+					},
+				},
+			},
 			JobConfig: config.JobConfig{PresubmitsStatic: map[string][]config.Presubmit{
 				"/": {{AlwaysRun: true, Reporter: config.Reporter{Context: "mandatory-job"}}},
 			}},
@@ -5165,8 +5021,10 @@ func TestIsBatchCandidateEligible(t *testing.T) {
 				initObjects = append(initObjects, pj)
 			}
 
+			cfg := func() *config.Config { return &config.Config{} }
 			c := &syncController{
-				config:        func() *config.Config { return &config.Config{} },
+				config:        cfg,
+				provider:      &GitHubProvider{cfg: cfg},
 				ctx:           context.Background(),
 				prowJobClient: fakectrlruntimeclient.NewFakeClient(initObjects...),
 			}
@@ -5192,10 +5050,14 @@ func TestSerialRetestingConsidersPRThatIsCurrentlyBeingSRetested(t *testing.T) {
 	t.Parallel()
 	configGetter := func() *config.Config {
 		return &config.Config{
-			ProwConfig: config.ProwConfig{Tide: config.Tide{
-				Queries:       config.TideQueries{{}},
-				MaxGoroutines: 1,
-			}},
+			ProwConfig: config.ProwConfig{
+				Tide: config.Tide{
+					MaxGoroutines: 1,
+					TideGitHubConfig: config.TideGitHubConfig{
+						Queries: config.TideQueries{{}},
+					},
+				},
+			},
 			JobConfig: config.JobConfig{PresubmitsStatic: map[string][]config.Presubmit{
 				"/": {{AlwaysRun: true, Reporter: config.Reporter{Context: "mandatory-job"}}},
 			}},

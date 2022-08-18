@@ -190,7 +190,18 @@ func ReportComment(ctx context.Context, ghc GitHubClient, reportTemplate *templa
 			return fmt.Errorf("error deleting comment: %w", err)
 		}
 	}
-	if len(entries) > 0 || mustCreate {
+
+	// If there are any aborted pjs for this ref we don't want to report that all tests passed.
+	// This could be due to a push while pjs are running.
+	aborted := false
+	for _, pj := range validPjs {
+		if pj.Status.State == v1.AbortedState {
+			aborted = true
+			break
+		}
+	}
+
+	if len(entries) > 0 || (mustCreate && !aborted) {
 		comment, err := createComment(reportTemplate, validPjs, entries)
 		if err != nil {
 			return fmt.Errorf("generating comment: %w", err)

@@ -18,6 +18,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"net/http"
 	"os"
@@ -28,10 +29,12 @@ import (
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+	"k8s.io/test-infra/pkg/flagutil"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowv1 "k8s.io/test-infra/prow/client/clientset/versioned/typed/prowjobs/v1"
 	"k8s.io/test-infra/prow/crier/reporters/pubsub"
-	"k8s.io/test-infra/prow/flagutil"
+	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	configflagutil "k8s.io/test-infra/prow/flagutil/config"
 	"k8s.io/test-infra/prow/interrupts"
 	"k8s.io/test-infra/prow/logrusutil"
@@ -40,22 +43,50 @@ import (
 	"k8s.io/test-infra/prow/pubsub/subscriber"
 )
 
-var (
-	flagOptions *options
-)
-
 type options struct {
-	client                flagutil.KubernetesOptions
-	github                flagutil.GitHubOptions
-	port                  int
-	inRepoConfigCacheSize int
-	cookiefilePath        string
+	client                  prowflagutil.KubernetesOptions
+	github                  prowflagutil.GitHubOptions
+	port                    int
+	inRepoConfigCacheSize   int
+	inRepoConfigCacheCopies int
+	cookiefilePath          string
 
 	config configflagutil.ConfigOptions
 
 	dryRun                 bool
 	gracePeriod            time.Duration
-	instrumentationOptions flagutil.InstrumentationOptions
+	instrumentationOptions prowflagutil.InstrumentationOptions
+}
+
+func (o *options) validate() error {
+	var errs []error
+	for _, group := range []flagutil.OptionGroup{&o.client, &o.github, &o.instrumentationOptions, &o.config} {
+		if err := group.Validate(o.dryRun); err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	if o.inRepoConfigCacheCopies < 1 {
+		errs = append(errs, errors.New("in-repo-config-cache-copies must be at least 1"))
+	}
+	return utilerrors.NewAggregate(errs)
+}
+
+func gatherOptions(fs *flag.FlagSet, args ...string) options {
+	var o options
+	fs.IntVar(&o.port, "port", 80, "HTTP Port.")
+	fs.BoolVar(&o.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
+	fs.DurationVar(&o.gracePeriod, "grace-period", 180*time.Second, "On shutdown, try to handle remaining events for the specified duration. ")
+	fs.IntVar(&o.inRepoConfigCacheSize, "in-repo-config-cache-size", 1000, "Cache size for ProwYAMLs read from in-repo configs.")
+	fs.IntVar(&o.inRepoConfigCacheCopies, "in-repo-config-cache-copies", 1, "Copy of caches for ProwYAMLs read from in-repo configs.")
+	fs.StringVar(&o.cookiefilePath, "cookiefile", "", "Path to git http.cookiefile, leave empty for github or anonymous")
+	for _, group := range []flagutil.OptionGroup{&o.client, &o.github, &o.instrumentationOptions, &o.config} {
+		group.AddFlags(fs)
+	}
+
+	fs.Parse(args)
+
+	return o
 }
 
 type kubeClient struct {
@@ -70,39 +101,26 @@ func (c *kubeClient) Create(ctx context.Context, job *prowapi.ProwJob, o metav1.
 	return c.client.Create(ctx, job, o)
 }
 
-func init() {
-	flagOptions = &options{config: configflagutil.ConfigOptions{ConfigPath: "/etc/config/config.yaml"}}
-	fs := flag.NewFlagSet(os.Args[0], flag.ExitOnError)
-
-	fs.IntVar(&flagOptions.port, "port", 80, "HTTP Port.")
-
-	fs.BoolVar(&flagOptions.dryRun, "dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
-	fs.DurationVar(&flagOptions.gracePeriod, "grace-period", 180*time.Second, "On shutdown, try to handle remaining events for the specified duration. ")
-	fs.IntVar(&flagOptions.inRepoConfigCacheSize, "in-repo-config-cache-size", 1000, "Cache size for ProwYAMLs read from in-repo configs.")
-	fs.StringVar(&flagOptions.cookiefilePath, "cookiefile", "", "Path to git http.cookiefile, leave empty for github or anonymous")
-	flagOptions.config.AddFlags(fs)
-	flagOptions.client.AddFlags(fs)
-	flagOptions.github.AddFlags(fs)
-	flagOptions.instrumentationOptions.AddFlags(fs)
-
-	fs.Parse(os.Args[1:])
-}
-
 func main() {
 	logrusutil.ComponentInit()
 
-	configAgent, err := flagOptions.config.ConfigAgent()
+	o := gatherOptions(flag.NewFlagSet(os.Args[0], flag.ExitOnError), os.Args[1:]...)
+	if err := o.validate(); err != nil {
+		logrus.WithError(err).Fatal("Invalid options")
+	}
+
+	configAgent, err := o.config.ConfigAgent()
 	if err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
-	prowjobClient, err := flagOptions.client.ProwJobClient(configAgent.Config().ProwJobNamespace, flagOptions.dryRun)
+	prowjobClient, err := o.client.ProwJobClient(configAgent.Config().ProwJobNamespace, o.dryRun)
 	if err != nil {
 		logrus.WithError(err).Fatal("unable to create prow job client")
 	}
 	kubeClient := &kubeClient{
 		client: prowjobClient,
-		dryRun: flagOptions.dryRun,
+		dryRun: o.dryRun,
 	}
 
 	promMetrics := subscriber.NewMetrics()
@@ -110,23 +128,24 @@ func main() {
 	defer interrupts.WaitForGracefulShutdown()
 
 	// Expose prometheus and pprof metrics
-	metrics.ExposeMetrics("sub", configAgent.Config().PushGateway, flagOptions.instrumentationOptions.MetricsPort)
-	pprof.Instrument(flagOptions.instrumentationOptions)
+	metrics.ExposeMetrics("sub", configAgent.Config().PushGateway, o.instrumentationOptions.MetricsPort)
+	pprof.Instrument(o.instrumentationOptions)
 
 	// If we are provided credentials for Git hosts, use them. These credentials
 	// hold per-host information in them so it's safe to set them globally.
-	if flagOptions.cookiefilePath != "" {
-		cmd := exec.Command("git", "config", "--global", "http.cookiefile", flagOptions.cookiefilePath)
+	if o.cookiefilePath != "" {
+		cmd := exec.Command("git", "config", "--global", "http.cookiefile", o.cookiefilePath)
 		if err := cmd.Run(); err != nil {
 			logrus.WithError(err).Fatal("unable to set cookiefile")
 		}
 	}
 
 	cacheGetter := subscriber.InRepoConfigCacheGetter{
-		CacheSize:     flagOptions.inRepoConfigCacheSize,
+		CacheSize:     o.inRepoConfigCacheSize,
+		CacheCopies:   o.inRepoConfigCacheCopies,
 		Agent:         configAgent,
-		GitHubOptions: flagOptions.github,
-		DryRun:        flagOptions.dryRun,
+		GitHubOptions: o.github,
+		DryRun:        o.dryRun,
 	}
 
 	s := &subscriber.Subscriber{
@@ -150,6 +169,6 @@ func main() {
 		}
 	})
 
-	httpServer := &http.Server{Addr: ":" + strconv.Itoa(flagOptions.port), Handler: subMux}
-	interrupts.ListenAndServe(httpServer, flagOptions.gracePeriod)
+	httpServer := &http.Server{Addr: ":" + strconv.Itoa(o.port), Handler: subMux}
+	interrupts.ListenAndServe(httpServer, o.gracePeriod)
 }

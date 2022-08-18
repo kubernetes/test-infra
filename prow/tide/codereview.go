@@ -22,6 +22,11 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
+	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/git/types"
+	"k8s.io/test-infra/prow/git/v2"
+	"k8s.io/test-infra/prow/tide/blockers"
 )
 
 // CodeReviewForDeck contains superset of data from CodeReviewCommon, it's meant
@@ -93,8 +98,7 @@ type CodeReviewCommon struct {
 	AuthorLogin   string
 	UpdatedAtTime time.Time
 
-	Mergeable    string
-	CanBeRebased bool
+	Mergeable string
 
 	GitHub *PullRequest
 }
@@ -131,6 +135,27 @@ func (crc *CodeReviewCommon) GitHubCommits() *Commits {
 	return &crc.GitHub.Commits
 }
 
+func refsForJob(sp subpool, prs []CodeReviewCommon) prowapi.Refs {
+	refs := prowapi.Refs{
+		Org:     sp.org,
+		Repo:    sp.repo,
+		BaseRef: sp.branch,
+		BaseSHA: sp.sha,
+	}
+	for _, pr := range prs {
+		refs.Pulls = append(
+			refs.Pulls,
+			prowapi.Pull{
+				Number: pr.Number,
+				Title:  pr.Title,
+				Author: string(pr.AuthorLogin),
+				SHA:    pr.HeadRefOID,
+			},
+		)
+	}
+	return refs
+}
+
 // CodeReviewCommonFromPullRequest derives CodeReviewCommon struct from GitHub
 // PullRequest struct, by extracting shared fields among different code review
 // providers.
@@ -153,11 +178,32 @@ func CodeReviewCommonFromPullRequest(pr *PullRequest) *CodeReviewCommon {
 		Body:          string(pr.Body),
 		AuthorLogin:   string(pr.Author.Login),
 		Mergeable:     string(pr.Mergeable),
-		CanBeRebased:  bool(pr.CanBeRebased),
 		UpdatedAtTime: pr.UpdatedAt.Time,
 
 		GitHub: &prCopy,
 	}
 
 	return crc
+}
+
+// provider is the interface implemented by each source code
+// providers, such as GitHub and Gerrit.
+type provider interface {
+	Query() (map[string]CodeReviewCommon, error)
+	blockers() (blockers.Blockers, error)
+	isAllowedToMerge(crc *CodeReviewCommon) (string, error)
+	GetRef(org, repo, ref string) (string, error)
+	// headContexts returns Contexts from all presubmit requirements.
+	// Tide needs to know whether a PR passed all tests or not, this includes
+	// prow jobs, but also any external tests that are required by GitHub branch
+	// protection, for example GH actions. For GitHub these are all reflected on
+	// status contexts, and more importantly each prowjob is a context. For
+	// Gerrit we can transform every prow jobs into a context, and mark it
+	// optional if the prowjob doesn't vote on label that's required for
+	// merging. And also transform any other label that is not voted by prow
+	// into a context.
+	headContexts(pr *CodeReviewCommon) ([]Context, error)
+	mergePRs(sp subpool, prs []CodeReviewCommon, dontUpdateStatus *threadSafePRSet) error
+	GetTideContextPolicy(gitClient git.ClientFactory, org, repo, branch string, baseSHAGetter config.RefGetter, headSHA string) (contextChecker, error)
+	prMergeMethod(crc *CodeReviewCommon) (types.PullRequestMergeType, error)
 }

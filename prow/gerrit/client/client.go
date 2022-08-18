@@ -33,22 +33,12 @@ import (
 	"github.com/sirupsen/logrus"
 
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+	"k8s.io/test-infra/prow/config"
 )
 
 const (
 	// CodeReview is the default (soon to be removed) gerrit code review label
 	CodeReview = "Code-Review"
-
-	// GerritID identifies a gerrit change
-	GerritID = "prow.k8s.io/gerrit-id"
-	// GerritInstance is the gerrit host url
-	GerritInstance = "prow.k8s.io/gerrit-instance"
-	// GerritRevision is the SHA of current patchset from a gerrit change
-	GerritRevision = "prow.k8s.io/gerrit-revision"
-	// GerritPatchset is the numeric ID of the current patchset
-	GerritPatchset = "prow.k8s.io/gerrit-patchset"
-	// GerritReportLabel is the gerrit label prow will cast vote on, fallback to CodeReview label if unset
-	GerritReportLabel = "prow.k8s.io/gerrit-report-label"
 
 	// Merged status indicates a Gerrit change has been merged
 	Merged = "MERGED"
@@ -73,7 +63,7 @@ var clientMetrics = struct {
 		Name: "gerrit_query_results",
 		Help: "Count of Gerrit API queries by instance, repo, and result.",
 	}, []string{
-		"instance",
+		"org",
 		"repo",
 		"result",
 	}),
@@ -109,6 +99,19 @@ func (p ProjectsFlag) Set(value string) error {
 	return nil
 }
 
+// ProjectsFlagToConfig converts Gerrit project configured as command line args
+// to prow config struct for backward compatilibity
+func ProjectsFlagToConfig(hostProjects ProjectsFlag) map[string]map[string]*config.GerritQueryFilter {
+	res := make(map[string]map[string]*config.GerritQueryFilter)
+	for host, projects := range hostProjects {
+		res[host] = make(map[string]*config.GerritQueryFilter)
+		for _, project := range projects {
+			res[host][project] = nil
+		}
+	}
+	return res
+}
+
 type gerritAuthentication interface {
 	SetCookieAuth(name, value string)
 }
@@ -132,7 +135,7 @@ type gerritProjects interface {
 // gerritInstanceHandler holds all actual gerrit handlers
 type gerritInstanceHandler struct {
 	instance string
-	projects []string
+	projects map[string]*config.GerritQueryFilter
 
 	authService    gerritAuthentication
 	accountService gerritAccount
@@ -176,7 +179,7 @@ func (l LastSyncState) DeepCopy() LastSyncState {
 }
 
 // NewClient returns a new gerrit client
-func NewClient(instances map[string][]string) (*Client, error) {
+func NewClient(instances map[string]map[string]*config.GerritQueryFilter) (*Client, error) {
 	c := &Client{
 		handlers: map[string]*gerritInstanceHandler{},
 		accounts: map[string]*gerrit.AccountInfo{},
@@ -277,7 +280,7 @@ func (c *Client) Authenticate(cookiefilePath, tokenPath string) {
 }
 
 // UpdateClients update gerrit clients with new instances map
-func (c *Client) UpdateClients(instances map[string][]string) error {
+func (c *Client) UpdateClients(instances map[string]map[string]*config.GerritQueryFilter) error {
 	// Recording in newHandlers, so that deleted instances can be handled.
 	newHandlers := make(map[string]*gerritInstanceHandler)
 	var errs []error
@@ -329,6 +332,18 @@ func (c *Client) QueryChanges(lastState LastSyncState, rateLimit int) map[string
 		result[h.instance] = append(result[h.instance], changes...)
 	}
 	return result
+}
+
+func (c *Client) QueryChangesForInstance(instance string, lastState LastSyncState, rateLimit int) []ChangeInfo {
+	c.lock.RLock()
+	defer c.lock.RUnlock()
+	h, ok := c.handlers[instance]
+	if !ok {
+		logrus.WithField("instance", instance).WithField("laststate", lastState).Warn("Instance not registered as handlers.")
+		return []ChangeInfo{}
+	}
+	lastStateForInstance := lastState[instance]
+	return h.queryAllChanges(lastStateForInstance, rateLimit)
 }
 
 func (c *Client) GetChange(instance, id string) (*ChangeInfo, error) {
@@ -439,14 +454,14 @@ func (c *Client) Account(instance string) (*gerrit.AccountInfo, error) {
 func (h *gerritInstanceHandler) queryAllChanges(lastState map[string]time.Time, rateLimit int) []gerrit.ChangeInfo {
 	result := []gerrit.ChangeInfo{}
 	timeNow := time.Now()
-	for _, project := range h.projects {
+	for project, filters := range h.projects {
 		log := h.log.WithField("repo", project)
 		lastUpdate, ok := lastState[project]
 		if !ok {
 			lastUpdate = timeNow
 			log.WithField("now", timeNow).Warn("lastState not found, defaulting to now")
 		}
-		changes, err := h.queryChangesForProject(log, project, lastUpdate, rateLimit)
+		changes, err := h.queryChangesForProject(log, project, lastUpdate, rateLimit, filters)
 		if err != nil {
 			clientMetrics.queryResults.WithLabelValues(h.instance, project, ResultError).Inc()
 			// don't halt on error from one project, log & continue
@@ -495,19 +510,48 @@ func (h *gerritInstanceHandler) injectPatchsetMessages(change *gerrit.ChangeInfo
 	return nil
 }
 
-func (h *gerritInstanceHandler) queryChangesForProject(log logrus.FieldLogger, project string, lastUpdate time.Time, rateLimit int) ([]gerrit.ChangeInfo, error) {
+func queryStringsFromQueryFilter(filters *config.GerritQueryFilter) []string {
+	if filters == nil {
+		return nil
+	}
+
+	var res []string
+
+	var branchFilter []string
+	for _, br := range filters.Branches {
+		branchFilter = append(branchFilter, fmt.Sprintf("branch:'%s'", br))
+	}
+	if len(branchFilter) > 0 {
+		res = append(res, fmt.Sprintf("(%s)", strings.Join(branchFilter, " OR ")))
+	}
+	var excludedBranchFilter []string
+	for _, br := range filters.ExcludedBranches {
+		excludedBranchFilter = append(excludedBranchFilter, fmt.Sprintf("-branch:'%s'", br))
+	}
+	if len(excludedBranchFilter) > 0 {
+		res = append(res, fmt.Sprintf("(%s)", strings.Join(excludedBranchFilter, " AND ")))
+	}
+
+	return res
+}
+
+func (h *gerritInstanceHandler) queryChangesForProject(log logrus.FieldLogger, project string, lastUpdate time.Time, rateLimit int, filters *config.GerritQueryFilter) ([]gerrit.ChangeInfo, error) {
 	var pending []gerrit.ChangeInfo
 
 	var opt gerrit.QueryChangeOptions
 	opt.Query = append(opt.Query, "project:"+project)
+	opt.Query = append(opt.Query, queryStringsFromQueryFilter(filters)...)
 	opt.AdditionalFields = []string{"CURRENT_REVISION", "CURRENT_COMMIT", "CURRENT_FILES", "MESSAGES"}
 
+	log = log.WithFields(logrus.Fields{"query": opt.Query, "additional_fields": opt.AdditionalFields})
 	var start int
 
 	for {
 		opt.Limit = rateLimit
 		opt.Start = start
 
+		// override log just for this for loop
+		log := log.WithField("start", opt.Start)
 		// The change output is sorted by the last update time, most recently updated to oldest updated.
 		// Gerrit API docs: https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-changes
 		changes, resp, err := h.changeService.QueryChanges(&opt)
@@ -521,7 +565,7 @@ func (h *gerritInstanceHandler) queryChangesForProject(log logrus.FieldLogger, p
 			return pending, nil
 		}
 
-		log.WithField("query", opt.Query).Infof("Found %d changes", len(*changes))
+		log.WithField("changes", len(*changes)).Debug("Found gerrit changes from page.")
 
 		start += len(*changes)
 
@@ -538,7 +582,7 @@ func (h *gerritInstanceHandler) queryChangesForProject(log logrus.FieldLogger, p
 
 			// stop when we find a change last updated before lastUpdate
 			if !updated.After(lastUpdate) {
-				log.Info("No more recently updated changes")
+				log.Debug("No more recently updated changes")
 				return pending, nil
 			}
 
@@ -548,10 +592,10 @@ func (h *gerritInstanceHandler) queryChangesForProject(log logrus.FieldLogger, p
 				submitted := parseStamp(*change.Submitted)
 				log := log.WithField("submitted", submitted)
 				if !submitted.After(lastUpdate) {
-					log.Info("Skipping previously merged change")
+					log.Debug("Skipping previously merged change")
 					continue
 				}
-				log.Info("Found merged change")
+				log.Debug("Found merged change")
 				pending = append(pending, change)
 			case New:
 				// we need to make sure the change update is from a fresh commit change
@@ -585,16 +629,16 @@ func (h *gerritInstanceHandler) queryChangesForProject(log logrus.FieldLogger, p
 
 				if !newMessages && !created.After(lastUpdate) {
 					// stale commit
-					log.Info("Skipping existing change")
+					log.Debug("Skipping existing change")
 					continue
 				}
 				if !newMessages {
-					log.Info("Found updated change")
+					log.Debug("Found updated change")
 				}
 				pending = append(pending, change)
 			default:
 				// change has been abandoned, do nothing
-				log.Info("Ignored change")
+				log.Debug("Ignored change")
 			}
 		}
 	}

@@ -152,6 +152,118 @@ func TestSync(t *testing.T) {
 	}
 }
 
+// Assumes there is one periodic job called "p" with a minimum_interval of one minute.
+func TestSyncMinimumInterval(t *testing.T) {
+	testcases := []struct {
+		testName string
+
+		jobName         string
+		jobComplete     bool
+		jobStartTimeAgo time.Duration
+		// defaults to 1 ms
+		jobCompleteTimeAgo time.Duration
+
+		shouldStart bool
+	}{
+		{
+			testName:    "no job",
+			shouldStart: true,
+		},
+		{
+			testName:        "job with other name",
+			jobName:         "not-j",
+			jobComplete:     true,
+			jobStartTimeAgo: time.Hour,
+			shouldStart:     true,
+		},
+		{
+			testName:           "old, complete job",
+			jobName:            "j",
+			jobComplete:        true,
+			jobStartTimeAgo:    time.Hour,
+			jobCompleteTimeAgo: 30 * time.Minute,
+			shouldStart:        true,
+		},
+		{
+			testName:        "old, recently complete job",
+			jobName:         "j",
+			jobComplete:     true,
+			jobStartTimeAgo: time.Hour,
+			shouldStart:     false,
+		},
+		{
+			testName:        "old, incomplete job",
+			jobName:         "j",
+			jobComplete:     false,
+			jobStartTimeAgo: time.Hour,
+			shouldStart:     false,
+		},
+		{
+			testName:        "new, complete job",
+			jobName:         "j",
+			jobComplete:     true,
+			jobStartTimeAgo: time.Second,
+			shouldStart:     false,
+		},
+		{
+			testName:        "new, incomplete job",
+			jobName:         "j",
+			jobComplete:     false,
+			jobStartTimeAgo: time.Second,
+			shouldStart:     false,
+		},
+	}
+	for _, tc := range testcases {
+		cfg := config.Config{
+			ProwConfig: config.ProwConfig{
+				ProwJobNamespace: "prowjobs",
+			},
+			JobConfig: config.JobConfig{
+				Periodics: []config.Periodic{{JobBase: config.JobBase{Name: "j"}}},
+			},
+		}
+		cfg.Periodics[0].MinimumInterval = "1m"
+		cfg.Periodics[0].SetMinimumInterval(time.Minute)
+
+		var jobs []runtime.Object
+		now := time.Now()
+		if tc.jobName != "" {
+			job := &prowapi.ProwJob{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "with-minimum_interval",
+					Namespace: "prowjobs",
+				},
+				Spec: prowapi.ProwJobSpec{
+					Type: prowapi.PeriodicJob,
+					Job:  tc.jobName,
+				},
+				Status: prowapi.ProwJobStatus{
+					StartTime: metav1.NewTime(now.Add(-tc.jobStartTimeAgo)),
+				},
+			}
+			jobCompleteTimeAgo := time.Millisecond
+			if tc.jobCompleteTimeAgo != 0 {
+				jobCompleteTimeAgo = tc.jobCompleteTimeAgo
+			}
+			complete := metav1.NewTime(now.Add(-jobCompleteTimeAgo))
+			if tc.jobComplete {
+				job.Status.CompletionTime = &complete
+			}
+			jobs = append(jobs, job)
+		}
+		fakeProwJobClient := &createTrackingClient{Client: fakectrlruntimeclient.NewFakeClient(jobs...)}
+		fc := &fakeCron{}
+		if err := sync(fakeProwJobClient, &cfg, fc, now); err != nil {
+			t.Fatalf("For case %s, didn't expect error: %v", tc.testName, err)
+		}
+
+		sawCreation := fakeProwJobClient.sawCreate
+		if tc.shouldStart != sawCreation {
+			t.Errorf("For case %s, did the wrong thing.", tc.testName)
+		}
+	}
+}
+
 // Test sync periodic job scheduled by cron.
 func TestSyncCron(t *testing.T) {
 	testcases := []struct {

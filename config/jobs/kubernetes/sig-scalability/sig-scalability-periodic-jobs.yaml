@@ -28,7 +28,7 @@ periodics:
     testgrid-tab-name: node-throughput
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220812-a0f1ed2b84-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -89,7 +89,7 @@ periodics:
     testgrid-tab-name: node-containerd-throughput
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220812-a0f1ed2b84-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -154,7 +154,7 @@ periodics:
     testgrid-num-failures-to-alert: '2'
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220812-a0f1ed2b84-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -171,6 +171,7 @@ periodics:
       - --kubemark-nodes=100
       - --provider=gce
       - --metadata-sources=cl2-metadata.json
+      - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0
       - --test=false
       - --test_args=--ginkgo.focus=xxxx
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
@@ -231,7 +232,7 @@ periodics:
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220812-a0f1ed2b84-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -256,6 +257,7 @@ periodics:
       - --test-cmd-args=--prometheus-scrape-node-exporter=true
       - --test-cmd-args=--provider=kubemark
       - --env=CL2_ENABLE_DNS_PROGRAMMING=true
+      - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0
       - --test-cmd-args=--report-dir=$(ARTIFACTS)
       - --test-cmd-args=--testsuite=testing/density/scheduler-suite.yaml
       - --test-cmd-args=--testoverrides=./testing/experiments/enable_restart_count_check.yaml
@@ -305,7 +307,7 @@ periodics:
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220812-a0f1ed2b84-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -322,6 +324,7 @@ periodics:
       - --kubemark-nodes=100
       - --provider=gce
       - --metadata-sources=cl2-metadata.json
+      - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0
       - --env=CONTROLLER_MANAGER_TEST_ARGS=--profiling --kube-api-qps=300 --kube-api-burst=300
       - --env=SCHEDULER_TEST_ARGS=--profiling --kube-api-qps=300 --kube-api-burst=300
       - --env=CL2_ENABLE_CLUSTER_OOMS_TRACKER=true
@@ -387,7 +390,7 @@ periodics:
     testgrid-num-failures-to-alert: '2'
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220812-a0f1ed2b84-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -403,6 +406,7 @@ periodics:
       - --kubemark
       - --kubemark-nodes=500
       - --metadata-sources=cl2-metadata.json
+      - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=160 --max-mutating-requests-inflight=0
       - --provider=gce
       - --test=false
       - --test_args=--ginkgo.focus=xxxx
@@ -467,7 +471,7 @@ periodics:
     testgrid-num-columns-recent: '3'
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220812-a0f1ed2b84-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -553,7 +557,7 @@ periodics:
     testgrid-num-columns-recent: '3'
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220812-a0f1ed2b84-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -628,7 +632,7 @@ periodics:
     testgrid-num-failures-to-alert: '1'
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220812-a0f1ed2b84-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -645,6 +649,7 @@ periodics:
       - --kubemark-nodes=600
       - --provider=gce
       - --metadata-sources=cl2-metadata.json
+      - --env=KUBEMARK_APISERVER_TEST_ARGS=--max-requests-inflight=80 --max-mutating-requests-inflight=0
       - --test=false
       - --test_args=--ginkgo.focus=xxxx
       - --test-cmd=$GOPATH/src/k8s.io/perf-tests/run-e2e.sh
@@ -692,7 +697,7 @@ periodics:
     testgrid-tab-name: kubemark-100-benchmark
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220812-a0f1ed2b84-master
       command:
       - runner.sh
       - /workspace/scenarios/execute.py
@@ -725,7 +730,7 @@ periodics:
     timeout: 1h55m
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220812-a0f1ed2b84-master
       command:
       - ./hack/jenkins/benchmark-dockerized.sh
       args:
@@ -779,7 +784,7 @@ periodics:
     testgrid-tab-name: kube-dns
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220812-a0f1ed2b84-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -834,7 +839,7 @@ periodics:
     testgrid-tab-name: node-local-dns
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220812-a0f1ed2b84-master
       command:
       - runner.sh
       - /workspace/scenarios/kubernetes_e2e.py
@@ -880,7 +885,7 @@ periodics:
     testgrid-tab-name: metric-measurement
   spec:
     containers:
-    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220708-6b0cfd300e-master
+    - image: gcr.io/k8s-staging-test-infra/kubekins-e2e:v20220812-a0f1ed2b84-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --repo=k8s.io/perf-tests=master

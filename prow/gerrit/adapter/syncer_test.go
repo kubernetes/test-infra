@@ -21,13 +21,17 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sync"
 	"testing"
 	"time"
 
 	"cloud.google.com/go/storage"
+	"github.com/google/go-cmp/cmp"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/io"
 )
@@ -102,7 +106,7 @@ func TestSyncTime(t *testing.T) {
 		t.Errorf("init() failed to reload %v, got %v", expected, actual)
 	}
 	// Make sure update can work
-	if err := st.update(client.ProjectsFlag{"foo-updated": []string{"bar-updated"}}); err != nil {
+	if err := st.update(map[string]map[string]*config.GerritQueryFilter{"foo-updated": {"bar-updated": nil}}); err != nil {
 		t.Fatalf("Failed update: %v", err)
 	}
 	{
@@ -124,6 +128,75 @@ func TestSyncTime(t *testing.T) {
 	}
 	if actual := st.Current()["foo"]["bar"]; now.After(actual) || actual.After(later) {
 		t.Fatalf("should initialize to start %v <= actual <= later %v, but got %v", now, later, actual)
+	}
+}
+
+// TestSyncTimeThreadSafe ensures that the sync time can be updated threadsafe
+// without lock.
+func TestSyncTimeThreadSafe(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "value.txt")
+	var noCreds string
+	ctx := context.Background()
+	open, err := io.NewOpener(ctx, noCreds, noCreds)
+	if err != nil {
+		t.Fatalf("Failed to create opener: %v", err)
+	}
+
+	st := syncTime{
+		path:   path,
+		opener: open,
+		ctx:    ctx,
+	}
+	testProjectsFlag := client.ProjectsFlag{
+		"foo1": []string{"bar1"},
+		"foo2": []string{"bar2"},
+	}
+	if err := st.init(testProjectsFlag); err != nil {
+		t.Fatalf("Failed init: %v", err)
+	}
+
+	// This is for detecting threading issue, running 100 times should be
+	// sufficient for catching the issue.
+	for i := 0; i < 100; i++ {
+		// Two threads, one update foo1, the other update foo2
+		var wg sync.WaitGroup
+		wg.Add(2)
+		later := time.Now().Add(time.Hour)
+		var threadErr error
+		go func() {
+			defer wg.Done()
+			syncTime := st.Current()
+			latest := syncTime.DeepCopy()
+			latest["foo1"]["bar1"] = later
+			if err := st.Update(latest); err != nil {
+				threadErr = fmt.Errorf("failed update: %v", err)
+			}
+		}()
+
+		go func() {
+			defer wg.Done()
+			syncTime := st.Current()
+			latest := syncTime.DeepCopy()
+			latest["foo2"]["bar2"] = later
+			if err := st.Update(latest); err != nil {
+				threadErr = fmt.Errorf("failed update: %v", err)
+			}
+		}()
+
+		wg.Wait()
+		if threadErr != nil {
+			t.Fatalf("Failed running goroutines: %v", err)
+		}
+
+		want := client.LastSyncState(map[string]map[string]time.Time{
+			"foo1": {"bar1": later},
+			"foo2": {"bar2": later},
+		})
+
+		if diff := cmp.Diff(st.Current(), want); diff != "" {
+			t.Fatalf("Mismatch. Want(-), got(+):\n%s", diff)
+		}
 	}
 }
 

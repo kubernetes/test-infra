@@ -175,10 +175,12 @@ func TestOrgExceptionsAndRepos(t *testing.T) {
 
 func TestMergeMethod(t *testing.T) {
 	ti := &Tide{
-		MergeType: map[string]types.PullRequestMergeType{
-			"kubernetes/kops":             types.MergeRebase,
-			"kubernetes-helm":             types.MergeSquash,
-			"kubernetes-helm/chartmuseum": types.MergeMerge,
+		TideGitHubConfig: TideGitHubConfig{
+			MergeType: map[string]types.PullRequestMergeType{
+				"kubernetes/kops":             types.MergeRebase,
+				"kubernetes-helm":             types.MergeSquash,
+				"kubernetes-helm/chartmuseum": types.MergeMerge,
+			},
 		},
 	}
 
@@ -218,14 +220,16 @@ func TestMergeMethod(t *testing.T) {
 }
 func TestMergeTemplate(t *testing.T) {
 	ti := &Tide{
-		MergeTemplate: map[string]TideMergeCommitTemplate{
-			"kubernetes/kops": {
-				TitleTemplate: "",
-				BodyTemplate:  "",
-			},
-			"kubernetes-helm": {
-				TitleTemplate: "{{ .Title }}",
-				BodyTemplate:  "{{ .Body }}",
+		TideGitHubConfig: TideGitHubConfig{
+			MergeTemplate: map[string]TideMergeCommitTemplate{
+				"kubernetes/kops": {
+					TitleTemplate: "",
+					BodyTemplate:  "",
+				},
+				"kubernetes-helm": {
+					TitleTemplate: "{{ .Title }}",
+					BodyTemplate:  "{{ .Body }}",
+				},
 			},
 		},
 	}
@@ -476,9 +480,11 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 			config: Config{
 				ProwConfig: ProwConfig{
 					Tide: Tide{
-						ContextOptions: TideContextPolicyOptions{
-							TideContextPolicy: TideContextPolicy{
-								FromBranchProtection: &yes,
+						TideGitHubConfig: TideGitHubConfig{
+							ContextOptions: TideContextPolicyOptions{
+								TideContextPolicy: TideContextPolicy{
+									FromBranchProtection: &yes,
+								},
 							},
 						},
 					},
@@ -504,9 +510,11 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 						},
 					},
 					Tide: Tide{
-						ContextOptions: TideContextPolicyOptions{
-							TideContextPolicy: TideContextPolicy{
-								FromBranchProtection: &yes,
+						TideGitHubConfig: TideGitHubConfig{
+							ContextOptions: TideContextPolicyOptions{
+								TideContextPolicy: TideContextPolicy{
+									FromBranchProtection: &yes,
+								},
 							},
 						},
 					},
@@ -523,12 +531,14 @@ func TestConfigGetTideContextPolicy(t *testing.T) {
 			config: Config{
 				ProwConfig: ProwConfig{
 					Tide: Tide{
-						ContextOptions: TideContextPolicyOptions{
-							TideContextPolicy: TideContextPolicy{
-								RequiredContexts:          []string{"r1"},
-								RequiredIfPresentContexts: []string{},
-								OptionalContexts:          []string{"o1"},
-								SkipUnknownContexts:       &yes,
+						TideGitHubConfig: TideGitHubConfig{
+							ContextOptions: TideContextPolicyOptions{
+								TideContextPolicy: TideContextPolicy{
+									RequiredContexts:          []string{"r1"},
+									RequiredIfPresentContexts: []string{},
+									OptionalContexts:          []string{"o1"},
+									SkipUnknownContexts:       &yes,
+								},
 							},
 						},
 					},

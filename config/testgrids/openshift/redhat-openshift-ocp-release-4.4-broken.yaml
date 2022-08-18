@@ -29,6 +29,5 @@ dashboards:
     test_group_name: release-openshift-origin-installer-e2e-azure-compact-4.4
   name: redhat-openshift-ocp-release-4.4-broken
 test_groups:
-- days_of_results: 60
-  gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-azure-compact-4.4
+- gcs_prefix: origin-ci-test/logs/release-openshift-origin-installer-e2e-azure-compact-4.4
   name: release-openshift-origin-installer-e2e-azure-compact-4.4

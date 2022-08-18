@@ -21,6 +21,7 @@ postsubmits:
               - --project=k8s-staging-ingress-nginx
               - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
+              - --build-dir=.
               - .
 
     - name: post-ingress-nginx-build-nginx-image
@@ -42,6 +43,7 @@ postsubmits:
               - --project=k8s-staging-ingress-nginx
               - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
+              - --build-dir=.
               - images/nginx
 
     - name: post-ingress-nginx-build-nginx-image-debian
@@ -62,6 +64,7 @@ postsubmits:
               - --project=k8s-staging-ingress-nginx
               - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
+              - --build-dir=.
               - images/nginx-debian
 
     - name: post-ingress-nginx-build-opentelemetry
@@ -82,34 +85,15 @@ postsubmits:
               - --project=k8s-staging-ingress-nginx
               - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
+              - --build-dir=.
               - images/opentelemetry
-
-    - name: post-ingress-nginx-build-modsecurity
-      cluster: k8s-infra-prow-build-trusted
-      annotations:
-        testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
-      decorate: true
-      run_if_changed: 'images/modsecurity/.*'
-      branches:
-        - ^main$
-      spec:
-        serviceAccountName: gcb-builder
-        containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
-            command:
-              - /run.sh
-            args:
-              - --project=k8s-staging-ingress-nginx
-              - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
-              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
-              - images/modsecurity
 
     - name: post-ingress-nginx-build-e2e-image
       cluster: k8s-infra-prow-build-trusted
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
       decorate: true
-      run_if_changed: 'images/test-runner/.*'
+      run_if_changed: 'images/test-runner/.*|NGINX_BASE'
       branches:
         - ^main$
         - ^legacy$
@@ -123,27 +107,8 @@ postsubmits:
               - --project=k8s-staging-ingress-nginx
               - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
+              - --build-dir=.
               - images/test-runner
-
-    - name: post-ingress-nginx-build-e2e-image-debian
-      cluster: k8s-infra-prow-build-trusted
-      annotations:
-        testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
-      decorate: true
-      run_if_changed: 'images/test-runner-debian/.*'
-      branches:
-        - ^main$
-      spec:
-        serviceAccountName: gcb-builder
-        containers:
-          - image: gcr.io/k8s-staging-test-infra/image-builder:v20220428-ae431ed1aa
-            command:
-              - /run.sh
-            args:
-              - --project=k8s-staging-ingress-nginx
-              - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
-              - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
-              - images/test-runner-debian
 
     - name: post-ingress-nginx-build-cfssl-image
       cluster: k8s-infra-prow-build-trusted
@@ -163,6 +128,7 @@ postsubmits:
               - --project=k8s-staging-ingress-nginx
               - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
+              - --build-dir=.
               - images/cfssl
 
     - name: post-ingress-nginx-build-echo-image
@@ -170,7 +136,7 @@ postsubmits:
       annotations:
         testgrid-dashboards: sig-network-ingress-nginx, sig-k8s-infra-gcb
       decorate: true
-      run_if_changed: 'images/echo/.*'
+      run_if_changed: 'images/echo/.*|NGINX_BASE'
       branches:
         - ^main$
       spec:
@@ -183,6 +149,7 @@ postsubmits:
               - --project=k8s-staging-ingress-nginx
               - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
+              - --build-dir=.
               - images/echo
 
     - name: post-ingress-nginx-build-fastcgi-helloserver-image
@@ -203,6 +170,7 @@ postsubmits:
               - --project=k8s-staging-ingress-nginx
               - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
+              - --build-dir=.
               - images/fastcgi-helloserver
 
     - name: post-ingress-nginx-build-httpbin-image
@@ -223,6 +191,7 @@ postsubmits:
               - --project=k8s-staging-ingress-nginx
               - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
+              - --build-dir=.
               - images/httpbin
 
     - name: post-ingress-nginx-build-webhook-certgen-image
@@ -243,6 +212,7 @@ postsubmits:
               - --project=k8s-staging-ingress-nginx
               - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
+              - --build-dir=.
               - images/kube-webhook-certgen
 
     - name: post-ingress-nginx-build-custom-error-pages-image
@@ -263,4 +233,5 @@ postsubmits:
               - --project=k8s-staging-ingress-nginx
               - --scratch-bucket=gs://k8s-staging-ingress-nginx-gcb
               - --env-passthrough=PULL_BASE_REF,PULL_BASE_SHA
+              - --build-dir=.
               - images/custom-error-pages

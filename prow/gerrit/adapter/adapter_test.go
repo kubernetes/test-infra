@@ -74,6 +74,10 @@ func (f *fgc) QueryChanges(lastUpdate client.LastSyncState, rateLimit int) map[s
 	return nil
 }
 
+func (f *fgc) QueryChangesForInstance(instance string, lastState client.LastSyncState, rateLimit int) []client.ChangeInfo {
+	return nil
+}
+
 func (f *fgc) SetReview(instance, id, revision, message string, labels map[string]string) error {
 	f.reviews++
 	return nil
@@ -480,7 +484,7 @@ func TestFailedJobs(t *testing.T) {
 	}
 }
 
-func createTestRepoCache(t *testing.T, ca *fca) (*config.InRepoConfigCache, error) {
+func createTestRepoCache(t *testing.T, ca *fca) (*config.InRepoConfigCacheHandler, error) {
 	// processChange takes a ClientFactory. If provided a nil clientFactory it will skip inRepoConfig
 	// otherwise it will get the prow yaml using the client provided. We are mocking ProwYamlGetter
 	// so we are creating a localClientFactory but leaving it unpopulated.
@@ -501,10 +505,11 @@ func createTestRepoCache(t *testing.T, ca *fca) (*config.InRepoConfigCache, erro
 
 	// Initialize cache for fetching Presubmit and Postsubmit information. If
 	// the cache cannot be initialized, exit with an error.
-	cache, err := config.NewInRepoConfigCache(
+	cache, err := config.NewInRepoConfigCacheHandler(
 		10,
 		ca,
-		config.NewInRepoConfigGitCache(cf))
+		config.NewInRepoConfigGitCache(cf),
+		1)
 	if err != nil {
 		t.Errorf("error creating cache: %v", err)
 	}
@@ -622,17 +627,17 @@ func TestProcessChange(t *testing.T) {
 			numPJ:        2,
 			pjRef:        "refs/changes/00/1/1",
 			expectedLabels: map[string]string{
-				client.GerritRevision:    "rev42",
-				client.GerritPatchset:    "42",
-				client.GerritReportLabel: client.CodeReview,
-				kube.CreatedByProw:       "true",
-				kube.ProwJobTypeLabel:    "presubmit",
-				kube.ProwJobAnnotation:   "always-runs-all-branches",
-				kube.ContextAnnotation:   "always-runs-all-branches",
-				kube.OrgLabel:            "gerrit",
-				kube.RepoLabel:           "test-infra",
-				kube.BaseRefLabel:        "",
-				kube.PullLabel:           "0",
+				kube.GerritRevision:    "rev42",
+				kube.GerritPatchset:    "42",
+				kube.GerritReportLabel: client.CodeReview,
+				kube.CreatedByProw:     "true",
+				kube.ProwJobTypeLabel:  "presubmit",
+				kube.ProwJobAnnotation: "always-runs-all-branches",
+				kube.ContextAnnotation: "always-runs-all-branches",
+				kube.OrgLabel:          "gerrit",
+				kube.RepoLabel:         "test-infra",
+				kube.BaseRefLabel:      "",
+				kube.PullLabel:         "0",
 			},
 		},
 		{
@@ -1355,7 +1360,7 @@ func TestProcessChange(t *testing.T) {
 				prowJobClient: fakeProwJobClient.ProwV1().ProwJobs("prowjobs"),
 				gc:            &gc,
 				tracker:       &fakeSync{val: fakeLastSync},
-				repoCacheMap:  map[string]*config.InRepoConfigCache{},
+				repoCacheMap:  map[string]*config.InRepoConfigCacheHandler{},
 			}
 			cloneURI, err := makeCloneURI(tc.instance, tc.change.Project)
 			if err != nil {

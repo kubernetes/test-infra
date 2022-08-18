@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/sirupsen/logrus"
 
@@ -50,6 +51,49 @@ type InRepoConfigCache struct {
 	*cache.LRUCache
 	configAgent prowConfigAgentClient
 	gitClient   git.ClientFactory
+}
+
+type InrepoconfigPresubmitRequest struct {
+	Identifier     string
+	BaseSHAGetter  RefGetter
+	HeadSHAGetters []RefGetter
+	resChan        chan []Presubmit
+	errChan        chan error
+}
+
+type InrepoconfigPostsubmitRequest struct {
+	Identifier     string
+	BaseSHAGetter  RefGetter
+	HeadSHAGetters []RefGetter
+	resChan        chan []Postsubmit
+	errChan        chan error
+}
+
+type InRepoConfigCacheHandler struct {
+	presubmitChan  chan InrepoconfigPresubmitRequest
+	postsubmitChan chan InrepoconfigPostsubmitRequest
+}
+
+func NewInRepoConfigCacheHandler(size int,
+	configAgent prowConfigAgentClient,
+	gitClientFactory git.ClientFactory,
+	count int) (*InRepoConfigCacheHandler, error) {
+
+	c := &InRepoConfigCacheHandler{
+		presubmitChan:  make(chan InrepoconfigPresubmitRequest),
+		postsubmitChan: make(chan InrepoconfigPostsubmitRequest),
+	}
+
+	for i := 0; i < count; i++ {
+		cacheClient, err := NewInRepoConfigCache(size, configAgent, gitClientFactory)
+		if err != nil {
+			return nil, err
+		}
+		go cacheClient.handlePresubmit(c.presubmitChan)
+		go cacheClient.handlePostsubmit(c.postsubmitChan)
+	}
+
+	return c, nil
 }
 
 // NewInRepoConfigCache creates a new LRU cache for ProwYAML values, where the keys
@@ -98,18 +142,6 @@ type CacheKeyParts struct {
 	HeadSHAs   []string `json:"headSHAs"`
 }
 
-// MakeCacheKey simply bundles up the given arguments into a CacheKeyParts
-// struct, then converts it into a CacheKey (string).
-func MakeCacheKey(identifier string, baseSHA string, headSHAs []string) (CacheKey, error) {
-	kp := CacheKeyParts{
-		Identifier: identifier,
-		BaseSHA:    baseSHA,
-		HeadSHAs:   headSHAs,
-	}
-
-	return kp.CacheKey()
-}
-
 // CacheKey converts a CacheKeyParts object into a JSON string (to be used as a
 // CacheKey).
 func (kp *CacheKeyParts) CacheKey() (CacheKey, error) {
@@ -121,6 +153,70 @@ func (kp *CacheKeyParts) CacheKey() (CacheKey, error) {
 	return CacheKey(data), nil
 }
 
+func (cache *InRepoConfigCache) handlePresubmit(requestChan chan InrepoconfigPresubmitRequest) {
+	for r := range requestChan {
+		res, err := cache.GetPresubmits(r.Identifier, r.BaseSHAGetter, r.HeadSHAGetters...)
+		if err != nil {
+			r.errChan <- err
+			continue
+		}
+		r.resChan <- res
+	}
+}
+
+func (cache *InRepoConfigCache) handlePostsubmit(requestChan chan InrepoconfigPostsubmitRequest) {
+	for r := range requestChan {
+		res, err := cache.GetPostsubmits(r.Identifier, r.BaseSHAGetter, r.HeadSHAGetters...)
+		if err != nil {
+			r.errChan <- err
+			continue
+		}
+		r.resChan <- res
+	}
+}
+
+func (ih *InRepoConfigCacheHandler) GetPresubmits(identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Presubmit, error) {
+	resChan := make(chan []Presubmit)
+	errChan := make(chan error)
+	ih.presubmitChan <- InrepoconfigPresubmitRequest{
+		Identifier:     identifier,
+		BaseSHAGetter:  baseSHAGetter,
+		HeadSHAGetters: headSHAGetters,
+		resChan:        resChan,
+		errChan:        errChan,
+	}
+
+	for {
+		select {
+		case err := <-errChan:
+			return nil, err
+		case res := <-resChan:
+			return res, nil
+		}
+	}
+}
+
+func (ih *InRepoConfigCacheHandler) GetPostsubmits(identifier string, baseSHAGetter RefGetter, headSHAGetters ...RefGetter) ([]Postsubmit, error) {
+	resChan := make(chan []Postsubmit)
+	errChan := make(chan error)
+	ih.postsubmitChan <- InrepoconfigPostsubmitRequest{
+		Identifier:     identifier,
+		BaseSHAGetter:  baseSHAGetter,
+		HeadSHAGetters: headSHAGetters,
+		resChan:        resChan,
+		errChan:        errChan,
+	}
+
+	for {
+		select {
+		case err := <-errChan:
+			return nil, err
+		case res := <-resChan:
+			return res, nil
+		}
+	}
+}
+
 // GetPresubmits uses a cache lookup to get the *ProwYAML value (cache hit),
 // instead of computing it from scratch (cache miss). It also stores the
 // *ProwYAML into the cache if there is a cache miss.
@@ -128,7 +224,7 @@ func (cache *InRepoConfigCache) GetPresubmits(identifier string, baseSHAGetter R
 
 	c := cache.configAgent.Config()
 
-	prowYAML, err := cache.GetProwYAML(c.getProwYAML, identifier, baseSHAGetter, headSHAGetters...)
+	prowYAML, err := cache.getProwYAML(c.getProwYAML, identifier, baseSHAGetter, headSHAGetters...)
 	if err != nil {
 		return nil, err
 	}
@@ -155,7 +251,7 @@ func (cache *InRepoConfigCache) GetPostsubmits(identifier string, baseSHAGetter 
 
 	c := cache.configAgent.Config()
 
-	prowYAML, err := cache.GetProwYAML(c.getProwYAML, identifier, baseSHAGetter, headSHAGetters...)
+	prowYAML, err := cache.getProwYAML(c.getProwYAML, identifier, baseSHAGetter, headSHAGetters...)
 	if err != nil {
 		return nil, err
 	}
@@ -168,14 +264,14 @@ func (cache *InRepoConfigCache) GetPostsubmits(identifier string, baseSHAGetter 
 	return append(c.GetPostsubmitsStatic(identifier), newProwYAML.Postsubmits...), nil
 }
 
-// GetProwYAML performs a lookup of previously-calculated *ProwYAML objects. The
+// getProwYAML performs a lookup of previously-calculated *ProwYAML objects. The
 // 'valConstructorHelper' is used in two ways. First it is used by the caching
 // mechanism to lazily generate the value only when it is required (otherwise,
 // if all threads had to generate the value, it would defeat the purpose of the
 // cache in the first place). Second, it makes it easier to test this function,
 // because unit tests can just provide its own function for constructing a
 // *ProwYAML object (instead of needing to create an actual Git repo, etc.).
-func (cache *InRepoConfigCache) GetProwYAML(
+func (cache *InRepoConfigCache) getProwYAML(
 	valConstructorHelper func(git.ClientFactory, string, RefGetter, ...RefGetter) (*ProwYAML, error),
 	identifier string,
 	baseSHAGetter RefGetter,
@@ -202,16 +298,11 @@ func (cache *InRepoConfigCache) GetProwYAML(
 		return nil, err
 	}
 
-	key, err := MakeCacheKey(identifier, baseSHA, headSHAs)
-	if err != nil {
-		return nil, err
-	}
-
 	valConstructor := func() (interface{}, error) {
 		return valConstructorHelper(cache.gitClient, identifier, baseSHAGetter, headSHAGetters...)
 	}
 
-	got, err := cache.Get(key, valConstructor)
+	got, err := cache.get(CacheKeyParts{Identifier: identifier, BaseSHA: baseSHA, HeadSHAs: headSHAs}, valConstructor)
 	if err != nil {
 		return nil, err
 	}
@@ -219,18 +310,30 @@ func (cache *InRepoConfigCache) GetProwYAML(
 	return got, err
 }
 
-// Get is a type assertion wrapper around the values retrieved from the inner
+// get is a type assertion wrapper around the values retrieved from the inner
 // LRUCache object (which only understands empty interfaces for both keys and
 // values). It wraps around the low-level GetOrAdd function. Users are expected
-// to add their own Get method for their own cached value.
-func (cache *InRepoConfigCache) Get(
-	key CacheKey,
+// to add their own get method for their own cached value.
+func (cache *InRepoConfigCache) get(
+	keyParts CacheKeyParts,
 	valConstructor cache.ValConstructor) (*ProwYAML, error) {
 
-	val, err := cache.GetOrAdd(key, valConstructor)
+	key, err := keyParts.CacheKey()
+	if err != nil {
+		return nil, fmt.Errorf("converting CacheKeyParts to CacheKey: %v", err)
+	}
+
+	now := time.Now()
+	val, cacheHit, err := cache.GetOrAdd(key, valConstructor)
 	if err != nil {
 		return nil, err
 	}
+	logrus.WithFields(logrus.Fields{
+		"identifier":        keyParts.Identifier,
+		"key":               key,
+		"duration(seconds)": -time.Until(now).Seconds(),
+		"cache_hit":         cacheHit,
+	}).Debug("Duration for resolving inrepoconfig cache.")
 
 	prowYAML, ok := val.(*ProwYAML)
 	if ok {

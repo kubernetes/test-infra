@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+
 	"k8s.io/test-infra/prow/metrics"
 	"k8s.io/test-infra/prow/pjutil/pprof"
 
@@ -46,12 +47,15 @@ type options struct {
 	projectsOptOutHelp client.ProjectsFlag
 	// lastSyncFallback is the path to sync the latest timestamp
 	// Can be /local/path, gs://path/to/object or s3://path/to/object.
-	lastSyncFallback       string
-	dryRun                 bool
-	kubernetes             prowflagutil.KubernetesOptions
-	storage                prowflagutil.StorageClientOptions
-	instrumentationOptions prowflagutil.InstrumentationOptions
-	inRepoConfigCacheSize  int
+	lastSyncFallback        string
+	dryRun                  bool
+	kubernetes              prowflagutil.KubernetesOptions
+	storage                 prowflagutil.StorageClientOptions
+	instrumentationOptions  prowflagutil.InstrumentationOptions
+	inRepoConfigCacheSize   int
+	inRepoConfigCacheCopies int
+	changeWorkerPoolSize    int
+	cacheDirBase            string
 }
 
 func (o *options) validate() error {
@@ -80,6 +84,12 @@ func (o *options) validate() error {
 	if strings.HasPrefix(o.lastSyncFallback, "s3://") && !o.storage.HasS3Credentials() {
 		logrus.WithField("last-sync-fallback", o.lastSyncFallback).Info("--s3-credentials-file unset, will try and access with auto-discovered credentials")
 	}
+	if o.inRepoConfigCacheCopies < 1 {
+		return errors.New("in-repo-config-cache-copies must be at least 1")
+	}
+	if o.changeWorkerPoolSize < 1 {
+		return errors.New("change-worker-pool-size must be at least 1")
+	}
 	return nil
 }
 
@@ -94,6 +104,9 @@ func gatherOptions(fs *flag.FlagSet, args ...string) options {
 	fs.BoolVar(&o.dryRun, "dry-run", false, "Run in dry-run mode, performing no modifying actions.")
 	fs.StringVar(&o.tokenPathOverride, "token-path", "", "Force the use of the token in this path, use with gcloud auth print-access-token")
 	fs.IntVar(&o.inRepoConfigCacheSize, "in-repo-config-cache-size", 100, "Cache size for ProwYAMLs read from in-repo configs. Each host receives its own cache.")
+	fs.IntVar(&o.inRepoConfigCacheCopies, "in-repo-config-cache-copies", 1, "Copy of caches for ProwYAMLs read from in-repo configs.")
+	fs.IntVar(&o.changeWorkerPoolSize, "change-worker-pool-size", 1, "Number of workers processing changes for each instance.")
+	fs.StringVar(&o.cacheDirBase, "cache-dir-base", "", "Directory where the repo cache should be mounted.")
 	for _, group := range []flagutil.OptionGroup{&o.kubernetes, &o.storage, &o.instrumentationOptions, &o.config} {
 		group.AddFlags(fs)
 	}
@@ -131,17 +144,13 @@ func main() {
 		logrus.WithError(err).Fatal("Error creating opener")
 	}
 
-	c := adapter.NewController(ctx, prowJobClient, op, ca, o.projects, o.projectsOptOutHelp, o.cookiefilePath, o.tokenPathOverride, o.lastSyncFallback, o.inRepoConfigCacheSize)
+	c := adapter.NewController(ctx, prowJobClient, op, ca, o.projects, o.projectsOptOutHelp, o.cookiefilePath, o.tokenPathOverride, o.lastSyncFallback, o.cacheDirBase, o.inRepoConfigCacheSize, o.inRepoConfigCacheCopies, o.changeWorkerPoolSize)
 
 	logrus.Infof("Starting gerrit fetcher")
 
 	defer interrupts.WaitForGracefulShutdown()
 	interrupts.Tick(func() {
-		start := time.Now()
-		if err := c.Sync(); err != nil {
-			logrus.WithError(err).Error("Error syncing.")
-		}
-		logrus.WithField("duration", fmt.Sprintf("%v", time.Since(start))).Info("Synced")
+		c.Sync()
 	}, func() time.Duration {
 		return cfg().Gerrit.TickInterval.Duration
 	})

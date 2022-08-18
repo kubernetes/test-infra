@@ -253,7 +253,7 @@ blockades:
   - ^prow/.+\.md$
   exceptionregexps:
   - ^prow/(ANNOUNCEMENTS|README)\.md$
-  explanation: "All Prow documentation (Markdown files) have moved to https://github.com/kubernetes-sigs/prow as part of https://github.com/kubernetes-sigs/prow/issues/4."
+  explanation: "All Prow documentation (Markdown files) have moved to https://github.com/kubernetes-sigs/prow as part of https://github.com/kubernetes-sigs/prow/issues/4. Instructions for updating existing docs are at https://docs.prow.k8s.io/docs/contribution-guidelines/#updating-existing-docs."
 
 blunderbuss:
   max_request_count: 2
@@ -374,6 +374,7 @@ slack:
     exempt_users:
     - k8s-ci-robot
     - dependabot[bot]
+    - github-actions[bot]
   - repos:
     - kubernetes/cluster-api-provider-aws
     channels:
@@ -386,10 +387,10 @@ milestone_applier:
     master: v1.25
   kubernetes/kubernetes:
     master: v1.25
+    release-1.25: v1.25
     release-1.24: v1.24
     release-1.23: v1.23
     release-1.22: v1.22
-    release-1.21: v1.21
   kubernetes/org:
     main: v1.25
   kubernetes/release:
@@ -766,8 +767,20 @@ require_matching_label:
   org: kubernetes-sigs
   repo: cluster-api-provider-aws
   issues: true
-  prs: true
+  prs: false
   regexp: ^priority/
+- missing_label: needs-triage
+  org: kubernetes-sigs
+  repo: cluster-api
+  issues: true
+  prs: true
+  regexp: ^triage/accepted$
+  missing_comment: |
+    This issue is currently awaiting triage.
+
+    If CAPI contributors determines this is a relevant issue, they will accept it by applying the `triage/accepted` label and provide further guidance.
+
+    The `triage/accepted` label can be added by org members by writing `/triage accepted` in a comment.
 - missing_label: needs-triage
   org: kubernetes-sigs
   repo: cluster-api-provider-aws
@@ -1143,6 +1156,7 @@ plugins:
     plugins:
     - milestone
     - override
+    - require-matching-label
 
   kubernetes-sigs/cluster-api-provider-aws:
     plugins:
@@ -1265,21 +1279,7 @@ plugins:
 
   cncf/apisnoop:
     plugins:
-    - wip
-    - trigger
-    - assign
-    - cla
-    - cat # /meow replies with cat pictures
-    - dog # /bark replies with dog pictures
-    - goose
-    - heart
-    - help
-    - hold
-    - label
-    - lgtm
-    - retitle
-    - shrug
-    - size
+    - trigger # prow.k8s.io for #sig-arch + release-informing jobs... prow.cncf.io for cncf/k8s-conformance related jobs
 
   kubernetes-sigs/secrets-store-csi-driver:
     plugins:

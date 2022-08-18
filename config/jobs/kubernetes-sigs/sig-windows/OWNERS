@@ -3,7 +3,6 @@
 reviewers:
 - adelina-t
 - andyzhangx
-- chewong
 - claudiubelu
 - ddebroy
 - feiskyer
@@ -14,13 +13,14 @@ approvers:
 - adelina-t
 - andyzhangx
 - benmoss
-- chewong
 - claudiubelu
 - ddebroy
 - feiskyer
 - jayunit100
 - jsturtevant
 - marosset
+emeritus_approvers:
+- chewong
 
 labels:
 - sig/windows

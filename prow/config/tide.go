@@ -81,8 +81,30 @@ type TidePriority struct {
 
 // Tide is config for the tide pool.
 type Tide struct {
-	// SyncPeriod specifies how often Tide will sync jobs with GitHub. Defaults to 1m.
+	// SyncPeriod specifies how often Tide will sync jobs with provider. Defaults to 1m.
 	SyncPeriod *metav1.Duration `json:"sync_period,omitempty"`
+	// MaxGoroutines is the maximum number of goroutines spawned inside the
+	// controller to handle org/repo:branch pools. Defaults to 20. Needs to be a
+	// positive number.
+	MaxGoroutines int `json:"max_goroutines,omitempty"`
+	// BatchSizeLimitMap is a key/value pair of an org or org/repo as the key and
+	// integer batch size limit as the value. Use "*" as key to set a global default.
+	// Special values:
+	//  0 => unlimited batch size
+	// -1 => batch merging disabled :(
+	BatchSizeLimitMap map[string]int `json:"batch_size_limit,omitempty"`
+	// PrioritizeExistingBatches configures on org or org/repo level if Tide should continue
+	// testing pre-existing batches instead of immediately including new PRs as they become
+	// eligible. Continuing on an old batch allows to re-use all existing test results whereas
+	// starting a new one requires to start new instances of all tests.
+	// Use '*' as key to set this globally. Defaults to true.
+	PrioritizeExistingBatchesMap map[string]bool `json:"prioritize_existing_batches,omitempty"`
+
+	TideGitHubConfig `json:",inline"`
+}
+
+// TideGitHubConfig is the tide config for GitHub.
+type TideGitHubConfig struct {
 	// StatusUpdatePeriod specifies how often Tide will update GitHub status contexts.
 	// Defaults to the value of SyncPeriod.
 	StatusUpdatePeriod *metav1.Duration `json:"status_update_period,omitempty"`
@@ -139,11 +161,6 @@ type Tide struct {
 	// Leave this blank to disable this feature.
 	MergeLabel string `json:"merge_label,omitempty"`
 
-	// MaxGoroutines is the maximum number of goroutines spawned inside the
-	// controller to handle org/repo:branch pools. Defaults to 20. Needs to be a
-	// positive number.
-	MaxGoroutines int `json:"max_goroutines,omitempty"`
-
 	// TideContextPolicyOptions defines merge options for context. If not set it will infer
 	// the required and optional contexts from the prow jobs configured and use the github
 	// combined status; otherwise it may apply the branch protection setting or let user
@@ -161,13 +178,6 @@ type Tide struct {
 	// PRs should match all labels contained in a set to be prioritized. The first entry has
 	// the highest priority.
 	Priority []TidePriority `json:"priority,omitempty"`
-
-	// PrioritizeExistingBatches configures on org or org/repo level if Tide should continue
-	// testing pre-existing batches instead of immediately including new PRs as they become
-	// eligible. Continuing on an old batch allows to re-use all existing test results whereas
-	// starting a new one requires to start new instances of all tests.
-	// Use '*' as key to set this globally. Defaults to true.
-	PrioritizeExistingBatchesMap map[string]bool `json:"prioritize_existing_batches,omitempty"`
 
 	// DisplayAllQueriesInStatus controls if Tide should mention all queries in the status it
 	// creates. The default is to only mention the one to which we are closest (Calculated

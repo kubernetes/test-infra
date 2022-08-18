@@ -1309,7 +1309,7 @@ tide:
     # Defaults to the value of SyncPeriod.
     status_update_period: 0s
 
-    # SyncPeriod specifies how often Tide will sync jobs with GitHub. Defaults to 1m.
+    # SyncPeriod specifies how often Tide will sync jobs with provider. Defaults to 1m.
     sync_period: 0s
 
     # URL for tide status contexts.

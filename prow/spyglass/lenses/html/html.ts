@@ -14,11 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-function addSectionExpanders(): void {
+const addSectionExpanders = (): void => {
   const expanders = document.querySelectorAll<HTMLTableRowElement>('tr.section-expander');
   for (const expander of Array.from(expanders)) {
     expander.onclick = () => {
-      const nextRow = expander.nextElementSibling!;
+      const nextRow = expander.nextElementSibling;
       const icon = expander.querySelector('i')!;
       if (nextRow.classList.contains('hidden-data')) {
         nextRow.classList.remove('hidden-data');
@@ -30,27 +30,27 @@ function addSectionExpanders(): void {
       spyglass.contentUpdated();
     };
   }
-}
+};
 
-function resizeIframe(e: MessageEvent): void {
-    const iFrame = document.getElementById(e.data.id) as HTMLIFrameElement;
-    if (!iFrame) {
-        return;
-    }
-    if (iFrame.contentWindow !== e.source) {
-        return;
-    }
-    const height = e.data.height + "px";
-    iFrame.height = height;
-    iFrame.style.height = height;
+const resizeIframe = (e: MessageEvent): void => {
+  const iFrame = document.getElementById(String(e.data.id)) as HTMLIFrameElement;
+  if (!iFrame) {
+    return;
+  }
+  if (iFrame.contentWindow !== e.source) {
+    return;
+  }
+  const height = `${e.data.height  }px`;
+  iFrame.height = height;
+  iFrame.style.height = height;
 
-    const row = document.getElementById(e.data.id + '-tr') as HTMLTableRowElement;
-    if (row && row.classList.contains("initial")) {
-      row.classList.remove("initial");
-      row.classList.add("hidden-data");
-    }
-    spyglass.contentUpdated();
-}
+  const row = document.getElementById(`${e.data.id  }-tr`) as HTMLTableRowElement;
+  if (row && row.classList.contains("initial")) {
+    row.classList.remove("initial");
+    row.classList.add("hidden-data");
+  }
+  spyglass.contentUpdated();
+};
 
 window.addEventListener('DOMContentLoaded', addSectionExpanders);
 window.addEventListener('message', resizeIframe );

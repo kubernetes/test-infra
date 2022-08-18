@@ -32,7 +32,6 @@ import (
 	v1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/crier/reporters/criercommonlib"
-	"k8s.io/test-infra/prow/gerrit/client"
 	"k8s.io/test-infra/prow/github/report"
 	"k8s.io/test-infra/prow/kube"
 )
@@ -76,7 +75,7 @@ func (c *Client) ShouldReport(_ context.Context, _ *logrus.Entry, pj *v1.ProwJob
 	}
 
 	switch {
-	case pj.Labels[client.GerritReportLabel] != "":
+	case pj.Labels[kube.GerritReportLabel] != "":
 		return false // TODO(fejta): opt-in to github reporting
 	case pj.Spec.Type != v1.PresubmitJob && pj.Spec.Type != v1.PostsubmitJob:
 		return false // Report presubmit and postsubmit github jobs for github reporter
@@ -172,7 +171,7 @@ func pjsToReport(ctx context.Context, log *logrus.Entry, lister ctrlruntimeclien
 		if !pjob.Complete() { // Any job still running should prevent from comments
 			return nil, nil
 		}
-		if !pj.Spec.Report { // Filtering out non-reporting jobs
+		if !pjob.Spec.Report { // Filtering out non-reporting jobs
 			continue
 		}
 		// Now you have convinced me that you are the same job from my revision,

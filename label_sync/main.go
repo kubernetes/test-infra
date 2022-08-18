@@ -777,7 +777,10 @@ func main() {
 		if deprecated {
 			githubClient, err = newClient(o.token, o.tokens, o.tokenBurst, !o.confirm, o.graphqlEndpoint, o.endpoint.Strings()...)
 		} else {
-			githubClient, err = o.github.GitHubClient(!o.confirm)
+			err = o.github.Validate(!o.confirm)
+			if err == nil {
+				githubClient, err = o.github.GitHubClient(!o.confirm)
+			}
 		}
 
 		if err != nil {

@@ -21,14 +21,18 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"sort"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/google/go-cmp/cmp"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/util/wait"
 	prowjobv1 "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/kube"
 	ctrlruntimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/yaml"
 )
@@ -315,7 +319,162 @@ func TestDeckTenantIDs(t *testing.T) {
 			}
 		})
 	}
+}
 
+func TestRerun(t *testing.T) {
+	t.Parallel()
+	const rerunJobConfigFile = "rerun-test.yaml"
+	jobName := "rerun-test-job-" + RandomString(t)
+	var rerunJobConfigTemplate = `periodics:
+- interval: 1h
+  name: %s
+  spec:
+    containers:
+    - command:
+      - echo
+      args:
+      - "Hello World!"
+      image: localhost:5001/alpine
+  labels:
+    foo: "%s"`
+
+	clusterContext := getClusterContext()
+	t.Logf("Creating client for cluster: %s", clusterContext)
+	kubeClient, err := NewClients("", clusterContext)
+	if err != nil {
+		t.Fatalf("Failed creating clients for cluster %q: %v", clusterContext, err)
+	}
+
+	rerunJobConfig := fmt.Sprintf(rerunJobConfigTemplate, jobName, "foo")
+	if err := updateJobConfig(context.Background(), kubeClient, rerunJobConfigFile, []byte(rerunJobConfig)); err != nil {
+		t.Fatalf("Failed update job config: %v", err)
+	}
+
+	// Now we are waiting on Horologium to create the first prow job so that we
+	// can rerun from.
+	// Horologium itself is pretty good at handling the configmap update, but
+	// not kubelet, accoriding to
+	// https://github.com/kubernetes/kubernetes/issues/30189 kubelet syncs
+	// configmap updates on existing pods every minute, which is a long wait.
+	// The proposed fix in the issue was updating the deployment, which imo
+	// should be better handled by just refreshing pods.
+	// So here comes forcing restart of horologium pods.
+	if err := refreshProwPods(kubeClient, context.Background(), "horologium"); err != nil {
+		t.Fatalf("Failed refreshing horologium pods: %v", err)
+	}
+	// Same with deck
+	if err := refreshProwPods(kubeClient, context.Background(), "deck"); err != nil {
+		t.Fatalf("Failed refreshing deck pods: %v", err)
+	}
+
+	t.Cleanup(func() {
+		if err := updateJobConfig(context.Background(), kubeClient, rerunJobConfigFile, []byte{}); err != nil {
+			t.Logf("ERROR CLEANUP: %v", err)
+		}
+		labels, err := labels.Parse("prow.k8s.io/job = " + jobName)
+		if err != nil {
+			t.Logf("Skip cleaning up jobs, as failed parsing label: %v", err)
+			return
+		}
+		if err := kubeClient.DeleteAllOf(context.Background(), &prowjobv1.ProwJob{}, &ctrlruntimeclient.DeleteAllOfOptions{
+			ListOptions: ctrlruntimeclient.ListOptions{LabelSelector: labels},
+		}); err != nil {
+			t.Logf("ERROR CLEANUP: %v", err)
+		}
+	})
+	ctx := context.Background()
+	getLatestJob := func(t *testing.T, jobName string, lastRun *v1.Time) *prowjobv1.ProwJob {
+		var res *prowjobv1.ProwJob
+		if err := wait.Poll(time.Second, 90*time.Second, func() (bool, error) {
+			pjs := &prowjobv1.ProwJobList{}
+			err = kubeClient.List(ctx, pjs, &ctrlruntimeclient.ListOptions{
+				LabelSelector: labels.SelectorFromSet(map[string]string{kube.ProwJobAnnotation: jobName}),
+				Namespace:     defaultNamespace,
+			})
+			if err != nil {
+				return false, fmt.Errorf("failed listing prow jobs: %w", err)
+			}
+			sort.Slice(pjs.Items, func(i, j int) bool {
+				return pjs.Items[i].Status.StartTime.After(pjs.Items[j].Status.StartTime.Time)
+			})
+			if len(pjs.Items) > 0 {
+				if lastRun != nil && pjs.Items[0].CreationTimestamp.Before(lastRun) {
+					return false, nil
+				}
+				res = &pjs.Items[0]
+			}
+			return res != nil, nil
+		}); err != nil {
+			t.Fatalf("Failed waiting for job %q: %v", jobName, err)
+		}
+		return res
+	}
+	rerun := func(t *testing.T, jobName string, mode string) {
+		req, err := http.NewRequest("POST", fmt.Sprintf("http://localhost/rerun?mode=%v&prowjob=%v", mode, jobName), nil)
+		if err != nil {
+			t.Fatalf("Could not generate a request %v", err)
+		}
+
+		// Deck might not have been informed about the job config update, retry
+		// for this case.
+		waitDur := time.Second * 5
+		var lastErr error
+		for i := 0; i < 3; i++ {
+			lastErr = nil
+			res, err := http.DefaultClient.Do(req)
+			if err != nil {
+				lastErr = fmt.Errorf("could not make post request %v", err)
+				res.Body.Close()
+				break
+			}
+			// The only retry condition is status not ok
+			if res.StatusCode != http.StatusOK {
+				lastErr = fmt.Errorf("status not expected: %d", res.StatusCode)
+				res.Body.Close()
+				waitDur *= 2
+				time.Sleep(waitDur)
+				continue
+			}
+			body, err := ioutil.ReadAll(res.Body)
+			if err != nil {
+				lastErr = fmt.Errorf("could not read body response %v", err)
+				res.Body.Close()
+				break
+			}
+			t.Logf("Response body: %s", string(body))
+			break
+		}
+		if lastErr != nil {
+			t.Fatalf("Failed trigger rerun: %v", lastErr)
+		}
+	}
+	jobToRerun := getLatestJob(t, jobName, nil)
+	rerunJobConfig = fmt.Sprintf(rerunJobConfigTemplate, jobName, "bar")
+	if err := updateJobConfig(context.Background(), kubeClient, rerunJobConfigFile, []byte(rerunJobConfig)); err != nil {
+		t.Fatalf("Failed update job config: %v", err)
+	}
+	var passed bool
+	// It may take some time for the new ProwJob to show up, so we will
+	// check every 30s interval three times for it to appear
+	latestRun := jobToRerun
+	for i := 0; i < 3; i++ {
+		time.Sleep(30 * time.Second)
+		rerun(t, jobToRerun.Name, "latest")
+		if latestRun = getLatestJob(t, jobName, &latestRun.CreationTimestamp); latestRun.Labels["foo"] == "bar" {
+			passed = true
+			break
+		}
+	}
+	if !passed {
+		t.Fatal("Expected updated job.")
+	}
+
+	// Deck scheduled job from latest configuration, rerun with "original"
+	// should still go with original configuration.
+	rerun(t, jobToRerun.Name, "original")
+	if latestRun := getLatestJob(t, jobName, &latestRun.CreationTimestamp); latestRun.Labels["foo"] != "foo" {
+		t.Fatalf("Job label mismatch. Want: 'foo', got: '%s'", latestRun.Labels["foo"])
+	}
 }
 
 func renamePJs(pjs *prowjobv1.ProwJobList, name string) prowjobv1.ProwJobList {

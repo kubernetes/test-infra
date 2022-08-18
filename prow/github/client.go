@@ -156,6 +156,7 @@ type CommitClient interface {
 	GetRef(org, repo, ref string) (string, error)
 	DeleteRef(org, repo, ref string) error
 	ListFileCommits(org, repo, path string) ([]RepositoryCommit, error)
+	CreateCheckRun(org, repo string, checkRun CheckRun) error
 }
 
 // RepositoryClient interface for repository related API actions
@@ -268,6 +269,7 @@ type Client interface {
 	UserClient
 	HookClient
 	ListAppInstallations() ([]AppInstallation, error)
+	UsesAppAuth() bool
 	GetApp() (*App, error)
 	GetAppWithContext(ctx context.Context) (*App, error)
 	GetFailedActionRunsByHeadBranch(org, repo, branchName, headSHA string) ([]WorkflowRun, error)
@@ -4930,23 +4932,52 @@ func (c *client) GetTeamBySlug(slug string, org string) (*Team, error) {
 
 // ListCheckRuns lists all checkruns for the given ref
 //
-// See https://docs.github.com/en/free-pro-team@latest/rest/reference/checks#list-check-runs-for-a-git-reference
+// See https://docs.github.com/en/rest/checks/runs#list-check-runs-for-a-git-reference
 func (c *client) ListCheckRuns(org, repo, ref string) (*CheckRunList, error) {
 	durationLogger := c.log("ListCheckRuns", org, repo, ref)
 	defer durationLogger()
 
 	var checkRunList CheckRunList
-	_, err := c.request(&request{
-		accept:    "application/vnd.github.antiope-preview+json",
-		method:    http.MethodGet,
-		path:      fmt.Sprintf("/repos/%s/%s/commits/%s/check-runs", org, repo, ref),
-		org:       org,
-		exitCodes: []int{200},
-	}, &checkRunList)
-	if err != nil {
+	if err := c.readPaginatedResults(
+		fmt.Sprintf("/repos/%s/%s/commits/%s/check-runs", org, repo, ref),
+		"",
+		org,
+		func() interface{} {
+			return &CheckRunList{}
+		},
+		func(obj interface{}) {
+			cr := *(obj.(*CheckRunList))
+			cr.CheckRuns = append(checkRunList.CheckRuns, cr.CheckRuns...)
+			checkRunList = cr
+		},
+	); err != nil {
 		return nil, err
 	}
 	return &checkRunList, nil
+}
+
+// CreateCheckRun Creates a new check run for a specific commit in a repository.
+//
+// See https://docs.github.com/en/rest/checks/runs#create-a-check-run
+func (c *client) CreateCheckRun(org, repo string, checkRun CheckRun) error {
+	durationLogger := c.log("CreateCheckRun", org, repo, checkRun)
+	defer durationLogger()
+	_, err := c.request(&request{
+		method:      http.MethodPost,
+		path:        fmt.Sprintf("/repos/%s/%s/check-runs", org, repo),
+		org:         org,
+		requestBody: &checkRun,
+		exitCodes:   []int{201},
+	}, nil)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// Simple function to check if GitHub App Authentication is being used
+func (c *client) UsesAppAuth() bool {
+	return c.delegate.usesAppsAuth
 }
 
 // ListAppInstallations lists the installations for the current app. Will not work with

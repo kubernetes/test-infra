@@ -94,9 +94,11 @@ func TestFlags(t *testing.T) {
 					ConfigPath:                            "yo",
 					SupplementalProwConfigsFileNameSuffix: "_prowconfig.yaml",
 				},
-				dryRun:                 false,
-				instrumentationOptions: flagutil.DefaultInstrumentationOptions(),
-				inRepoConfigCacheSize:  100,
+				dryRun:                  false,
+				instrumentationOptions:  flagutil.DefaultInstrumentationOptions(),
+				inRepoConfigCacheSize:   100,
+				inRepoConfigCacheCopies: 1,
+				changeWorkerPoolSize:    1,
 			}
 			expected.projects.Set("foo=bar,baz")
 			expected.projectsOptOutHelp.Set("foo=bar")

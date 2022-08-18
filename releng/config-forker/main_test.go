@@ -559,7 +559,7 @@ func TestGeneratePresubmits(t *testing.T) {
 		"kubernetes/kubernetes": {
 			{
 				JobBase: config.JobBase{
-					Name:        "pull-kubernetes-e2e-1.15",
+					Name:        "pull-kubernetes-e2e",
 					Annotations: map[string]string{},
 				},
 				Brancher: config.Brancher{
@@ -571,7 +571,7 @@ func TestGeneratePresubmits(t *testing.T) {
 			},
 			{
 				JobBase: config.JobBase{
-					Name:        "pull-kubernetes-e2e-branch-in-name-1.15",
+					Name:        "pull-kubernetes-e2e-branch-in-name-master",
 					Annotations: map[string]string{},
 				},
 				Brancher: config.Brancher{
@@ -583,7 +583,7 @@ func TestGeneratePresubmits(t *testing.T) {
 			},
 			{
 				JobBase: config.JobBase{
-					Name:        "pull-kubernetes-e2e-keep-context-1.15",
+					Name:        "pull-kubernetes-e2e-keep-context",
 					Annotations: map[string]string{},
 				},
 				Brancher: config.Brancher{
@@ -595,7 +595,7 @@ func TestGeneratePresubmits(t *testing.T) {
 			},
 			{
 				JobBase: config.JobBase{
-					Name:        "pull-kubernetes-e2e-replace-context-1.15",
+					Name:        "pull-kubernetes-e2e-replace-context",
 					Annotations: map[string]string{},
 				},
 				Brancher: config.Brancher{
@@ -607,7 +607,7 @@ func TestGeneratePresubmits(t *testing.T) {
 			},
 			{
 				JobBase: config.JobBase{
-					Name: "pull-replace-some-things-1.15",
+					Name: "pull-replace-some-things",
 					Annotations: map[string]string{
 						"some-annotation": "yup",
 					},

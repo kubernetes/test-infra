@@ -741,9 +741,11 @@ func TestValidateStrictBranches(t *testing.T) {
 			name: "no conflict: no strict config",
 			config: config.ProwConfig{
 				Tide: config.Tide{
-					Queries: []config.TideQuery{
-						{
-							Orgs: []string{"kubernetes"},
+					TideGitHubConfig: config.TideGitHubConfig{
+						Queries: []config.TideQuery{
+							{
+								Orgs: []string{"kubernetes"},
+							},
 						},
 					},
 				},
@@ -774,10 +776,12 @@ func TestValidateStrictBranches(t *testing.T) {
 			name: "no conflict: tide repo exclusion",
 			config: config.ProwConfig{
 				Tide: config.Tide{
-					Queries: []config.TideQuery{
-						{
-							Orgs:          []string{"kubernetes"},
-							ExcludedRepos: []string{"kubernetes/test-infra"},
+					TideGitHubConfig: config.TideGitHubConfig{
+						Queries: []config.TideQuery{
+							{
+								Orgs:          []string{"kubernetes"},
+								ExcludedRepos: []string{"kubernetes/test-infra"},
+							},
 						},
 					},
 				},
@@ -808,9 +812,11 @@ func TestValidateStrictBranches(t *testing.T) {
 			name: "no conflict: protection repo exclusion",
 			config: config.ProwConfig{
 				Tide: config.Tide{
-					Queries: []config.TideQuery{
-						{
-							Repos: []string{"kubernetes/test-infra"},
+					TideGitHubConfig: config.TideGitHubConfig{
+						Queries: []config.TideQuery{
+							{
+								Repos: []string{"kubernetes/test-infra"},
+							},
 						},
 					},
 				},
@@ -841,9 +847,11 @@ func TestValidateStrictBranches(t *testing.T) {
 			name: "conflict: tide more general",
 			config: config.ProwConfig{
 				Tide: config.Tide{
-					Queries: []config.TideQuery{
-						{
-							Orgs: []string{"kubernetes"},
+					TideGitHubConfig: config.TideGitHubConfig{
+						Queries: []config.TideQuery{
+							{
+								Orgs: []string{"kubernetes"},
+							},
 						},
 					},
 				},
@@ -874,9 +882,11 @@ func TestValidateStrictBranches(t *testing.T) {
 			name: "conflict: tide more specific",
 			config: config.ProwConfig{
 				Tide: config.Tide{
-					Queries: []config.TideQuery{
-						{
-							Repos: []string{"kubernetes/test-infra"},
+					TideGitHubConfig: config.TideGitHubConfig{
+						Queries: []config.TideQuery{
+							{
+								Repos: []string{"kubernetes/test-infra"},
+							},
 						},
 					},
 				},
@@ -902,9 +912,11 @@ func TestValidateStrictBranches(t *testing.T) {
 			name: "conflict: org level",
 			config: config.ProwConfig{
 				Tide: config.Tide{
-					Queries: []config.TideQuery{
-						{
-							Orgs: []string{"kubernetes", "k8s"},
+					TideGitHubConfig: config.TideGitHubConfig{
+						Queries: []config.TideQuery{
+							{
+								Orgs: []string{"kubernetes", "k8s"},
+							},
 						},
 					},
 				},
@@ -930,12 +942,14 @@ func TestValidateStrictBranches(t *testing.T) {
 			name: "conflict: repo level",
 			config: config.ProwConfig{
 				Tide: config.Tide{
-					Queries: []config.TideQuery{
-						{
-							Repos: []string{"kubernetes/kubernetes"},
-						},
-						{
-							Repos: []string{"kubernetes/test-infra"},
+					TideGitHubConfig: config.TideGitHubConfig{
+						Queries: []config.TideQuery{
+							{
+								Repos: []string{"kubernetes/kubernetes"},
+							},
+							{
+								Repos: []string{"kubernetes/test-infra"},
+							},
 						},
 					},
 				},
@@ -965,13 +979,15 @@ func TestValidateStrictBranches(t *testing.T) {
 			name: "conflict: branch level",
 			config: config.ProwConfig{
 				Tide: config.Tide{
-					Queries: []config.TideQuery{
-						{
-							Repos:            []string{"kubernetes/test-infra"},
-							IncludedBranches: []string{"master"},
-						},
-						{
-							Repos: []string{"kubernetes/kubernetes"},
+					TideGitHubConfig: config.TideGitHubConfig{
+						Queries: []config.TideQuery{
+							{
+								Repos:            []string{"kubernetes/test-infra"},
+								IncludedBranches: []string{"master"},
+							},
+							{
+								Repos: []string{"kubernetes/kubernetes"},
+							},
 						},
 					},
 				},
@@ -1005,9 +1021,11 @@ func TestValidateStrictBranches(t *testing.T) {
 			name: "conflict: global strict",
 			config: config.ProwConfig{
 				Tide: config.Tide{
-					Queries: []config.TideQuery{
-						{
-							Repos: []string{"kubernetes/test-infra"},
+					TideGitHubConfig: config.TideGitHubConfig{
+						Queries: []config.TideQuery{
+							{
+								Repos: []string{"kubernetes/test-infra"},
+							},
 						},
 					},
 				},
@@ -2341,6 +2359,105 @@ func TestVerifyLabelPlugin(t *testing.T) {
 			}
 			if actualErrMsg != tc.expectedErrorMsg {
 				t.Errorf("expected error %q, got error %q", tc.expectedErrorMsg, actualErrMsg)
+			}
+		})
+	}
+}
+
+func TestValidateRequiredJobAnnotations(t *testing.T) {
+	tc := []struct {
+		name                string
+		presubmits          []config.Presubmit
+		postsubmits         []config.Postsubmit
+		periodics           []config.Periodic
+		expectedErr         bool
+		expectedAnnotations []string
+	}{
+		{
+			name: "no annotation is required, pass",
+			presubmits: []config.Presubmit{
+				{
+					JobBase: config.JobBase{},
+				},
+			},
+			postsubmits: []config.Postsubmit{
+				{
+					JobBase: config.JobBase{
+						Annotations: map[string]string{"prow.k8s.io/cat": "meow"},
+					},
+				},
+			},
+			periodics: []config.Periodic{
+				{
+					JobBase: config.JobBase{},
+				},
+			},
+			expectedErr:         false,
+			expectedAnnotations: nil,
+		},
+		{
+			name: "jobs don't have required annotation, fail",
+			presubmits: []config.Presubmit{
+				{
+					JobBase: config.JobBase{},
+				},
+			},
+			postsubmits: []config.Postsubmit{
+				{
+					JobBase: config.JobBase{
+						Annotations: map[string]string{"prow.k8s.io/cat": "meow"},
+					},
+				},
+			},
+			periodics: []config.Periodic{
+				{
+					JobBase: config.JobBase{},
+				},
+			},
+			expectedAnnotations: []string{"prow.k8s.io/maintainer"},
+			expectedErr:         true,
+		},
+		{
+			name: "jobs have required annotations, pass",
+			presubmits: []config.Presubmit{
+				{
+					JobBase: config.JobBase{
+						Annotations: map[string]string{"prow.k8s.io/maintainer": "job-maintainer"},
+					},
+				},
+			},
+			postsubmits: []config.Postsubmit{
+				{
+					JobBase: config.JobBase{
+						Annotations: map[string]string{"prow.k8s.io/maintainer": "job-maintainer"},
+					},
+				},
+			},
+			periodics: []config.Periodic{
+				{
+					JobBase: config.JobBase{
+						Annotations: map[string]string{"prow.k8s.io/maintainer": "job-maintainer"},
+					},
+				},
+			},
+			expectedAnnotations: []string{"prow.k8s.io/maintainer"},
+			expectedErr:         false,
+		},
+	}
+
+	for _, c := range tc {
+		t.Run(c.name, func(t *testing.T) {
+			jcfg := config.JobConfig{
+				PresubmitsStatic:  map[string][]config.Presubmit{"org/repo": c.presubmits},
+				PostsubmitsStatic: map[string][]config.Postsubmit{"org/repo": c.postsubmits},
+				Periodics:         c.periodics,
+			}
+			err := validateRequiredJobAnnotations(c.expectedAnnotations, jcfg)
+			if c.expectedErr && err == nil {
+				t.Errorf("Expected error but got none")
+			}
+			if !c.expectedErr && err != nil {
+				t.Errorf("Got error but didn't expect one: %v", err)
 			}
 		})
 	}

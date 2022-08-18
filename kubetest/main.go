@@ -35,7 +35,7 @@ import (
 	"time"
 
 	"github.com/spf13/pflag"
-	"sigs.k8s.io/boskos/client"
+	"k8s.io/test-infra/kubetest/boskos/client"
 
 	"k8s.io/test-infra/kubetest/conformance"
 	"k8s.io/test-infra/kubetest/kind"

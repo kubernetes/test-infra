@@ -22,8 +22,7 @@ set -o pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 cd "${REPO_ROOT}"
 
-# NOTE: bazel is currently on node 12.x, but we should probably upgrade at some point
-NODE_IMAGE='node:12-bullseye-slim'
+NODE_IMAGE='node:14-bullseye-slim'
 
 DOCKER=(docker)
 
@@ -55,6 +54,7 @@ fi
     ${DOCKER_USER} \
     -e HOME=/tmp \
     -v "${REPO_ROOT:?}:${REPO_ROOT:?}" -w "${REPO_ROOT}" \
+    --security-opt="label=disable" \
     "${NODE_IMAGE}" \
     "$@"
 if [[ -n "${NO_DOCKER:-}" ]]; then

@@ -1,14 +1,13 @@
 # See the OWNERS docs at https://go.k8s.io/owners
 
 reviewers:
-- BenTheElder
 - MushuEE
 - spiffxp
 approvers:
-- BenTheElder
 - spiffxp
 emeritus_approvers:
 - amwat
+- BenTheElder
 - cjwagner
 - fejta
 - krzyzacy
