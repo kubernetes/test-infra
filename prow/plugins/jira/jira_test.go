@@ -276,7 +276,7 @@ func TestHandle(t *testing.T) {
 			},
 			projectCache:   &threadsafeSet{data: sets.NewString("abc")},
 			existingIssues: []jira.Issue{{ID: "ABC-123"}},
-			existingLinks:  map[string][]jira.RemoteLink{"ABC-123": {{Object: &jira.RemoteLinkObject{URL: "https://github.com/org/repo/issues/3", Title: "Some issue"}}}},
+			existingLinks:  map[string][]jira.RemoteLink{"ABC-123": {{Object: &jira.RemoteLinkObject{URL: "https://github.com/org/repo/issues/3", Title: "org/repo#3: Some issue"}}}},
 		},
 		{
 			name: "Link exists but title is different, replacing it",
