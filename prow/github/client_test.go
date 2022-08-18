@@ -3575,3 +3575,51 @@ func TestCreateCheckRun(t *testing.T) {
 		t.Errorf("Didn't expect error: %v", err)
 	}
 }
+
+func TestIsAppInstalled(t *testing.T) {
+	testCases := []struct {
+		name     string
+		org      string
+		repo     string
+		expected bool
+	}{
+		{
+			name:     "App is installed",
+			org:      "k8s",
+			repo:     "kuber",
+			expected: true,
+		},
+		{
+			name:     "App is not installed",
+			org:      "k8s",
+			repo:     "other",
+			expected: false,
+		},
+	}
+
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path == "/repos/k8s/kuber/installation" {
+			w.WriteHeader(http.StatusOK)
+		} else {
+			w.WriteHeader(http.StatusNotFound)
+		}
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	c.usesAppsAuth = true
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			installed, err := c.IsAppInstalled(tc.org, tc.repo)
+			if err != nil {
+				t.Fatalf("unexpected error received: %v", err)
+			}
+			if installed != tc.expected {
+				t.Fatalf("response: %v doesn't match expected: %v", installed, tc.expected)
+			}
+		})
+	}
+}

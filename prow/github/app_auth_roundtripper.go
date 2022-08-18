@@ -92,7 +92,9 @@ func (arr *appsRoundTripper) canonicalizedPath(url *url.URL) string {
 }
 
 func (arr *appsRoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
-	if strings.HasPrefix(arr.canonicalizedPath(r.URL), "/app") {
+	path := arr.canonicalizedPath(r.URL)
+	// We need to use a JWT when we are getting /app/* endpoints or installation information for a particular repo
+	if strings.HasPrefix(path, "/app") || strings.HasSuffix(path, "/installation") {
 		if err := arr.addAppAuth(r); err != nil {
 			return nil, err
 		}

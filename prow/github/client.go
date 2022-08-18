@@ -269,6 +269,7 @@ type Client interface {
 	UserClient
 	HookClient
 	ListAppInstallations() ([]AppInstallation, error)
+	IsAppInstalled(org, repo string) (bool, error)
 	UsesAppAuth() bool
 	GetApp() (*App, error)
 	GetAppWithContext(ctx context.Context) (*App, error)
@@ -5003,6 +5004,34 @@ func (c *client) ListAppInstallations() ([]AppInstallation, error) {
 		return nil, err
 	}
 	return ais, nil
+}
+
+// IsAppInstalled returns true if there is an app installation for the provided org and repo
+// Will not work with a Personal Access Token.
+//
+// See https://docs.github.com/en/rest/apps/apps#get-a-repository-installation-for-the-authenticated-app
+func (c *client) IsAppInstalled(org, repo string) (bool, error) {
+	durationLogger := c.log("IsAppInstalled", org, repo)
+	defer durationLogger()
+
+	if c.dry {
+		return false, fmt.Errorf("not getting AppInstallation in dry-run mode")
+	}
+	if !c.usesAppsAuth {
+		return false, fmt.Errorf("IsAppInstalled was called when not using appsAuth")
+	}
+
+	code, err := c.request(&request{
+		method:    http.MethodGet,
+		path:      fmt.Sprintf("/repos/%s/%s/installation", org, repo),
+		org:       org,
+		exitCodes: []int{200, 404},
+	}, nil)
+	if err != nil {
+		return false, err
+	}
+
+	return code == 200, nil
 }
 
 func (c *client) getAppInstallationToken(installationId int64) (*AppInstallationToken, error) {
