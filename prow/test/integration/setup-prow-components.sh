@@ -260,15 +260,18 @@ function deploy_prow() {
   # enough to only redeploy those components who configurations have changed as
   # a result of newly built images (from build_prow_images()).
   pushd "${SCRIPT_ROOT}/config/prow"
-  local threads_to_wait_for=()
+  declare -a workers
   do_kubectl create configmap config --from-file=./config.yaml --dry-run=client -oyaml | do_kubectl apply -f - &
-  threads_to_wait_for+=($!)
+  workers+=($!)
   do_kubectl create configmap plugins --from-file=./plugins.yaml --dry-run=client -oyaml | do_kubectl apply -f - &
-  threads_to_wait_for+=($!)
+  workers+=($!)
   do_kubectl create configmap job-config --from-file=./jobs --dry-run=client -oyaml | do_kubectl apply -f - &
-  threads_to_wait_for+=($!)
-  for thread_to_wait_for in ${threads_to_wait_for[@]}; do
-    wait $thread_to_wait_for
+  workers+=($!)
+  for worker in ${workers[@]}; do
+    if ! wait $worker; then
+      echo >&2 "kubectl apply failed"
+      return 1
+    fi
   done
   popd
 
